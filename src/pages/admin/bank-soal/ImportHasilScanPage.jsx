@@ -2,48 +2,24 @@
 // ============================================================
 // IMPORT HASIL SCAN AI -> BANK SOAL GEMILANG
 //
-// SUPPORT:
-// - JSON array langsung
-// - { questions: [...] }
-// - { soal: [...] }
-// - { data: [...] }
-// - { items: [...] }
-// - JSON dari Gemini / ChatGPT / Claude / AI lain
-// - Gambar base64 / dataUrl / URL
-// - Pembahasan
+// FITUR:
+// - Import JSON
+// - Import CSV
+// - JSON array / questions / soal / items / data
+// - Normalisasi format AI
+// - Kunci jawaban
 // - Penanda jawaban benar
-// - PG sederhana
-// - PG kompleks
-// - Benar / Salah
-// - Isian singkat
-// - Menjodohkan
-// - LaTeX
-//
-// FORMAT JSON YANG DIREKOMENDASIKAN:
-//
-// [
-//   {
-//     "nomor": 1,
-//     "tipe": "pg_sederhana",
-//     "teks_soal": "Hasil dari $2+3$ adalah ...",
-//     "opsi_jawaban": [
-//       "4",
-//       "5",
-//       "6",
-//       "7"
-//     ],
-//     "kunci_jawaban": "B",
-//     "jawaban_benar": ["B"],
-//     "pembahasan": "Karena 2 + 3 = 5, maka jawaban yang benar adalah B.",
-//     "gambar": [
-//       {
-//         "id": "gambar_1",
-//         "dataUrl": "data:image/png;base64,...",
-//         "deskripsi": "Gambar pendukung soal"
-//       }
-//     ]
-//   }
-// ]
+// - Pembahasan
+// - Gambar URL
+// - Gambar base64 / dataUrl
+// - Placeholder {{GAMBAR}}, {{GAMBAR_1}}, dst
+// - Upload gambar ke Supabase
+// - Preview LaTeX
+// - Fallback aman jika KaTeX gagal
+// - Validasi soal
+// - Download JSON hasil normalisasi
+// - Firestore batch save
+// - Error isolation agar 1 soal rusak tidak membuat halaman crash
 // ============================================================
 
 import React, {
@@ -62,88 +38,14 @@ import React, {
     serverTimestamp,
   } from 'firebase/firestore';
   
-  import { db, auth } from '../../../firebase';
+  import {
+    db,
+    auth,
+  } from '../../../firebase';
   
-  /* ============================================================
-     TAILWIND
-  ============================================================ */
-  
-  const useTailwind = () => {
-    useEffect(() => {
-      if (
-        typeof document !== 'undefined' &&
-        !document.querySelector('script[src*="cdn.tailwindcss.com"]')
-      ) {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.tailwindcss.com';
-        s.async = true;
-        document.head.insertBefore(s, document.head.firstChild);
-      }
-    }, []);
-  };
-  
-  /* ============================================================
-     KATEX
-  ============================================================ */
-  
-  const useKaTeX = () => {
-    const [ready, setReady] = useState(
-      typeof window !== 'undefined' && !!window.katex
-    );
-  
-    useEffect(() => {
-      if (typeof window === 'undefined') return;
-  
-      if (window.katex) {
-        setReady(true);
-        return;
-      }
-  
-      if (
-        !document.querySelector(
-          'link[href*="katex.min.css"]'
-        )
-      ) {
-        const css = document.createElement('link');
-        css.rel = 'stylesheet';
-        css.href =
-          'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
-        document.head.appendChild(css);
-      }
-  
-      const existingScript = document.querySelector(
-        'script[src*="katex.min.js"]'
-      );
-  
-      if (existingScript) {
-        existingScript.addEventListener('load', () => {
-          setReady(true);
-        });
-        return;
-      }
-  
-      const script = document.createElement('script');
-      script.src =
-        'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
-      script.async = true;
-  
-      script.onload = () => {
-        setReady(true);
-      };
-  
-      script.onerror = () => {
-        setReady(false);
-      };
-  
-      document.body.appendChild(script);
-    }, []);
-  
-    return ready;
-  };
-  
-  /* ============================================================
-     CONSTANT
-  ============================================================ */
+  // ============================================================
+  // CONSTANT
+  // ============================================================
   
   const BANK_SOAL_COLLECTION = 'bank_soal';
   
@@ -201,25 +103,15 @@ import React, {
     menjodohkan: 'Menjodohkan',
   };
   
-  /* ============================================================
-     HELPER UMUM
-  ============================================================ */
+  // ============================================================
+  // SAFE HELPERS
+  // ============================================================
   
-  function isObject(value) {
-    return (
-      value !== null &&
-      typeof value === 'object' &&
-      !Array.isArray(value)
-    );
-  }
-  
-  function toCleanString(value) {
-    if (value === null || value === undefined) {
-      return '';
-    }
+  function safeString(value, fallback = '') {
+    if (value === null || value === undefined) return fallback;
   
     if (typeof value === 'string') {
-      return value.trim();
+      return value;
     }
   
     if (
@@ -229,31 +121,1112 @@ import React, {
       return String(value);
     }
   
-    return '';
+    return fallback;
   }
   
-  function toArray(value) {
-    if (Array.isArray(value)) {
-      return value;
+  function safeArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+  
+  function safeBoolean(value) {
+    if (typeof value === 'boolean') return value;
+  
+    if (typeof value === 'string') {
+      return [
+        'true',
+        '1',
+        'yes',
+        'ya',
+        'benar',
+      ].includes(value.toLowerCase().trim());
+    }
+  
+    if (typeof value === 'number') {
+      return value === 1;
+    }
+  
+    return false;
+  }
+  
+  function cleanCodeFence(text) {
+    let result = safeString(text).trim();
+  
+    result = result.replace(/^\uFEFF/, '');
+  
+    result = result.replace(
+      /^```(?:json|JSON)?\s*/i,
+      '',
+    );
+  
+    result = result.replace(
+      /\s*```\s*$/i,
+      '',
+    );
+  
+    return result.trim();
+  }
+  
+  function tryParseJSON(text) {
+    const cleaned = cleanCodeFence(text);
+  
+    try {
+      return JSON.parse(cleaned);
+    } catch (firstError) {
+      // Coba mencari array JSON di dalam teks.
+      const firstArray = cleaned.indexOf('[');
+      const lastArray = cleaned.lastIndexOf(']');
+  
+      if (
+        firstArray >= 0 &&
+        lastArray > firstArray
+      ) {
+        const candidate = cleaned.slice(
+          firstArray,
+          lastArray + 1,
+        );
+  
+        try {
+          return JSON.parse(candidate);
+        } catch (_) {
+          // lanjut ke error asli
+        }
+      }
+  
+      // Coba object JSON.
+      const firstObject = cleaned.indexOf('{');
+      const lastObject = cleaned.lastIndexOf('}');
+  
+      if (
+        firstObject >= 0 &&
+        lastObject > firstObject
+      ) {
+        const candidate = cleaned.slice(
+          firstObject,
+          lastObject + 1,
+        );
+  
+        try {
+          return JSON.parse(candidate);
+        } catch (_) {
+          // gunakan error asli
+        }
+      }
+  
+      throw new Error(
+        `JSON tidak valid: ${firstError.message}`,
+      );
+    }
+  }
+  
+  // ============================================================
+  // EXTRACT ARRAY
+  // ============================================================
+  
+  function extractQuestionArray(parsed) {
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error(
+        'Format JSON tidak dikenali. JSON harus berupa array soal atau object yang berisi array soal.',
+      );
+    }
+  
+    const candidates = [
+      'questions',
+      'question',
+      'soal',
+      'soals',
+      'items',
+      'data',
+      'results',
+      'bankSoal',
+      'bank_soal',
+    ];
+  
+    for (const key of candidates) {
+      if (Array.isArray(parsed[key])) {
+        return parsed[key];
+      }
+    }
+  
+    // Jika object hanya berisi satu level object yang merupakan soal.
+    const objectValues = Object.values(parsed);
+  
+    if (
+      objectValues.length > 0 &&
+      objectValues.every(
+        item =>
+          item &&
+          typeof item === 'object' &&
+          !Array.isArray(item),
+      )
+    ) {
+      const looksLikeQuestions =
+        objectValues.some(item =>
+          item.soal ||
+          item.teks_soal ||
+          item.question ||
+          item.pertanyaan,
+        );
+  
+      if (looksLikeQuestions) {
+        return objectValues;
+      }
+    }
+  
+    throw new Error(
+      'Format JSON tidak dikenali. Gunakan array soal seperti [{...}] atau {"questions":[{...}]}',
+    );
+  }
+  
+  // ============================================================
+  // NORMALIZE TYPE
+  // ============================================================
+  
+  function normalizeTipe(value) {
+    const raw = safeString(value)
+      .toLowerCase()
+      .trim();
+  
+    const aliases = {
+      pg: 'pg_sederhana',
+      pilihan_ganda: 'pg_sederhana',
+      pilihan_ganda_sederhana: 'pg_sederhana',
+      multiple_choice: 'pg_sederhana',
+      multiplechoice: 'pg_sederhana',
+  
+      pg_sederhana: 'pg_sederhana',
+  
+      pg_kompleks: 'pg_kompleks',
+      multiple_select: 'pg_kompleks',
+      multiple_answers: 'pg_kompleks',
+  
+      benar_salah: 'benar_salah',
+      benar_salah: 'benar_salah',
+      true_false: 'benar_salah',
+  
+      isian: 'isian_singkat',
+      isian_singkat: 'isian_singkat',
+      short_answer: 'isian_singkat',
+  
+      menjodohkan: 'menjodohkan',
+      matching: 'menjodohkan',
+    };
+  
+    return aliases[raw] || 'pg_sederhana';
+  }
+  
+  // ============================================================
+  // NORMALIZE IMAGE
+  // ============================================================
+  
+  function normalizeImage(image, index = 0) {
+    if (!image) {
+      return {
+        id: `gambar-${index + 1}`,
+        url: '',
+        dataUrl: '',
+        uploadedUrl: '',
+        deskripsi: '',
+        nomor: index + 1,
+      };
+    }
+  
+    if (typeof image === 'string') {
+      const isData =
+        image.startsWith('data:image');
+  
+      return {
+        id: `gambar-${index + 1}`,
+        url: isData ? '' : image,
+        dataUrl: isData ? image : '',
+        uploadedUrl: '',
+        deskripsi: '',
+        nomor: index + 1,
+      };
+    }
+  
+    const dataUrl =
+      safeString(
+        image.dataUrl ||
+        image.base64 ||
+        image.data ||
+        '',
+      );
+  
+    const url =
+      safeString(
+        image.url ||
+        image.src ||
+        image.imageUrl ||
+        '',
+      );
+  
+    return {
+      id:
+        safeString(
+          image.id,
+          `gambar-${index + 1}`,
+        ),
+  
+      url,
+  
+      dataUrl:
+        dataUrl.startsWith('data:image')
+          ? dataUrl
+          : '',
+  
+      uploadedUrl:
+        safeString(
+          image.uploadedUrl,
+          '',
+        ),
+  
+      deskripsi:
+        safeString(
+          image.deskripsi ||
+          image.description ||
+          image.alt ||
+          '',
+        ),
+  
+      nomor:
+        Number(image.nomor) ||
+        index + 1,
+    };
+  }
+  
+  // ============================================================
+  // NORMALIZE OPTION
+  // ============================================================
+  
+  function normalizeOption(option) {
+    if (typeof option === 'string') {
+      return option.trim();
     }
   
     if (
-      value === null ||
-      value === undefined ||
-      value === ''
+      option &&
+      typeof option === 'object'
     ) {
-      return [];
+      return safeString(
+        option.teks ||
+        option.text ||
+        option.jawaban ||
+        option.value ||
+        option.label ||
+        '',
+      );
     }
   
-    return [value];
+    return '';
   }
   
-  /* ============================================================
-     ESCAPE HTML
-  ============================================================ */
+  // ============================================================
+  // NORMALIZE ANSWER KEY
+  // ============================================================
+  
+  function normalizeAnswerKey(value) {
+    if (Array.isArray(value)) {
+      return value
+        .map(item =>
+          safeString(item)
+            .trim()
+            .toUpperCase(),
+        )
+        .filter(Boolean);
+    }
+  
+    return safeString(value)
+      .trim()
+      .toUpperCase();
+  }
+  
+  // ============================================================
+  // DETERMINE CORRECT OPTIONS
+  // ============================================================
+  
+  function getCorrectAnswerIndexes(
+    opsi,
+    kunci,
+  ) {
+    const keys = Array.isArray(kunci)
+      ? kunci
+      : safeString(kunci)
+          .split(/[,\s]+/)
+          .filter(Boolean);
+  
+    const normalizedKeys = keys.map(key =>
+      safeString(key)
+        .trim()
+        .toUpperCase(),
+    );
+  
+    return opsi.map((_, index) => {
+      const letter =
+        String.fromCharCode(
+          65 + index,
+        );
+  
+      return normalizedKeys.includes(letter);
+    });
+  }
+  
+  // ============================================================
+  // NORMALIZE SOAL
+  // ============================================================
+  
+  function normalizeSoal(
+    q,
+    idx,
+  ) {
+    if (!q || typeof q !== 'object') {
+      return {
+        nomor: idx + 1,
+        tipe: 'pg_sederhana',
+        teks_soal: '',
+        opsi_jawaban: [],
+        opsi_benar: [],
+        pernyataan: [],
+        tabel_benar_salah: [],
+        pasangan: [],
+        kunci_jawaban: '',
+        kunci_terverifikasi: false,
+        pembahasan: '',
+        gambar: [],
+        valid: false,
+        errors: [
+          'Data soal bukan object.',
+        ],
+      };
+    }
+  
+    const nomor =
+      Number(
+        q.nomor ??
+        q.no ??
+        q.number,
+      ) || idx + 1;
+  
+    const tipe = normalizeTipe(
+      q.tipe ||
+      q.type ||
+      q.jenis ||
+      q.jenis_soal,
+    );
+  
+    const teksSoal = safeString(
+      q.teks_soal ||
+      q.soal ||
+      q.question ||
+      q.pertanyaan ||
+      '',
+    );
+  
+    // ----------------------------------------------------------
+    // OPTIONS
+    // ----------------------------------------------------------
+  
+    let opsiSource =
+      q.opsi_jawaban ??
+      q.opsiJawaban ??
+      q.options ??
+      q.pilihan ??
+      q.choices ??
+      [];
+  
+    let opsiJawaban = [];
+  
+    if (Array.isArray(opsiSource)) {
+      opsiJawaban =
+        opsiSource
+          .map(normalizeOption)
+          .filter(Boolean);
+    } else if (
+      opsiSource &&
+      typeof opsiSource === 'object'
+    ) {
+      const letters = [
+        'A',
+        'B',
+        'C',
+        'D',
+        'E',
+      ];
+  
+      opsiJawaban = letters
+        .map(letter =>
+          normalizeOption(
+            opsiSource[letter] ??
+            opsiSource[letter.toLowerCase()],
+          ),
+        )
+        .filter(Boolean);
+    }
+  
+    // ----------------------------------------------------------
+    // ANSWER KEY
+    // ----------------------------------------------------------
+  
+    const rawKey =
+      q.kunci_jawaban ??
+      q.kunciJawaban ??
+      q.kunci ??
+      q.jawaban_benar ??
+      q.jawabanBenar ??
+      q.correctAnswer ??
+      q.correct_answer ??
+      q.answer ??
+      '';
+  
+    const kunciJawaban =
+      normalizeAnswerKey(rawKey);
+  
+    const opsiBenar =
+      getCorrectAnswerIndexes(
+        opsiJawaban,
+        kunciJawaban,
+      );
+  
+    // ----------------------------------------------------------
+    // PERNYATAAN
+    // ----------------------------------------------------------
+  
+    const pernyataan = safeArray(
+      q.pernyataan ||
+      q.statements,
+    )
+      .map(item => {
+        if (
+          item &&
+          typeof item === 'object'
+        ) {
+          return {
+            teks: safeString(
+              item.teks ||
+              item.text ||
+              item.pernyataan ||
+              '',
+            ),
+  
+            jawaban: safeString(
+              item.jawaban ||
+              item.answer ||
+              item.nilai ||
+              '',
+            ),
+          };
+        }
+  
+        return {
+          teks: safeString(item),
+          jawaban: '',
+        };
+      })
+      .filter(item => item.teks);
+  
+    // ----------------------------------------------------------
+    // TABEL BENAR SALAH
+    // ----------------------------------------------------------
+  
+    const tabelBenarSalah =
+      safeArray(
+        q.tabel_benar_salah ||
+        q.tabelBenarSalah ||
+        q.trueFalseTable,
+      )
+        .map(item => {
+          if (
+            item &&
+            typeof item === 'object'
+          ) {
+            return {
+              pernyataan: safeString(
+                item.pernyataan ||
+                item.teks ||
+                item.text ||
+                '',
+              ),
+  
+              jawaban: safeString(
+                item.jawaban ||
+                item.answer ||
+                '',
+              ),
+            };
+          }
+  
+          return safeString(item);
+        })
+        .filter(Boolean);
+  
+    // ----------------------------------------------------------
+    // MATCHING
+    // ----------------------------------------------------------
+  
+    const pasangan =
+      safeArray(
+        q.pasangan ||
+        q.matching ||
+        q.pairs,
+      )
+        .map(pair => ({
+          kiri: safeString(
+            pair?.kiri ||
+            pair?.left ||
+            pair?.pertanyaan ||
+            '',
+          ),
+  
+          kanan: safeString(
+            pair?.kanan ||
+            pair?.right ||
+            pair?.jawaban ||
+            '',
+          ),
+        }))
+        .filter(
+          pair =>
+            pair.kiri ||
+            pair.kanan,
+        );
+  
+    // ----------------------------------------------------------
+    // IMAGES
+    // ----------------------------------------------------------
+  
+    let imageSource =
+      q.gambar ??
+      q.images ??
+      q.image ??
+      q.gambar_soal ??
+      [];
+  
+    if (
+      imageSource &&
+      !Array.isArray(imageSource)
+    ) {
+      imageSource = [
+        imageSource,
+      ];
+    }
+  
+    const gambar =
+      safeArray(imageSource)
+        .map((image, imageIndex) =>
+          normalizeImage(
+            image,
+            imageIndex,
+          ),
+        );
+  
+    // ----------------------------------------------------------
+    // EXPLICIT CORRECT FLAGS
+    // ----------------------------------------------------------
+  
+    const explicitCorrect =
+      safeArray(
+        q.opsi_benar ||
+        q.opsiBenar ||
+        q.correctOptions,
+      );
+  
+    let finalOpsiBenar = opsiBenar;
+  
+    if (explicitCorrect.length > 0) {
+      finalOpsiBenar =
+        opsiJawaban.map(
+          (_, optionIndex) => {
+            const letter =
+              String.fromCharCode(
+                65 + optionIndex,
+              );
+  
+            return explicitCorrect.some(
+              value => {
+                const normalized =
+                  safeString(value)
+                    .trim()
+                    .toUpperCase();
+  
+                return (
+                  normalized === letter ||
+                  normalized ===
+                    String(optionIndex)
+                );
+              },
+            );
+          },
+        );
+    }
+  
+    // ----------------------------------------------------------
+    // VALIDATION
+    // ----------------------------------------------------------
+  
+    const errors = [];
+  
+    if (!teksSoal.trim()) {
+      errors.push(
+        'Teks soal kosong.',
+      );
+    }
+  
+    if (
+      [
+        'pg_sederhana',
+        'pg_kompleks',
+      ].includes(tipe) &&
+      opsiJawaban.length < 2
+    ) {
+      errors.push(
+        'Pilihan jawaban kurang dari 2.',
+      );
+    }
+  
+    if (
+      [
+        'pg_sederhana',
+        'pg_kompleks',
+      ].includes(tipe) &&
+      !kunciJawaban
+    ) {
+      errors.push(
+        'Kunci jawaban belum ditemukan.',
+      );
+    }
+  
+    return {
+      nomor,
+  
+      tipe,
+  
+      teks_soal: teksSoal,
+  
+      opsi_jawaban:
+        opsiJawaban,
+  
+      opsi_benar:
+        finalOpsiBenar,
+  
+      pernyataan,
+  
+      tabel_benar_salah:
+        tabelBenarSalah,
+  
+      pasangan,
+  
+      kunci_jawaban:
+        kunciJawaban,
+  
+      kunci_terverifikasi:
+        safeBoolean(
+          q.kunci_terverifikasi ??
+          q.kunciTerverifikasi ??
+          q.verifiedAnswer ??
+          false,
+        ),
+  
+      pembahasan:
+        safeString(
+          q.pembahasan ||
+          q.penjelasan ||
+          q.explanation ||
+          q.solusi ||
+          '',
+        ),
+  
+      gambar,
+  
+      valid:
+        errors.length === 0,
+  
+      errors,
+    };
+  }
+  
+  // ============================================================
+  // JSON PARSER
+  // ============================================================
+  
+  function parseJSON(raw) {
+    const parsed = tryParseJSON(raw);
+  
+    const questions =
+      extractQuestionArray(parsed);
+  
+    if (
+      !Array.isArray(questions) ||
+      questions.length === 0
+    ) {
+      throw new Error(
+        'JSON berhasil dibaca tetapi tidak berisi soal.',
+      );
+    }
+  
+    return questions;
+  }
+  
+  // ============================================================
+  // CSV PARSER
+  // ============================================================
+  
+  function parseCSV(raw) {
+    const text = safeString(raw).trim();
+  
+    if (!text) {
+      throw new Error(
+        'CSV kosong.',
+      );
+    }
+  
+    const rows = [];
+  
+    let row = [];
+    let cell = '';
+    let inQuotes = false;
+  
+    for (
+      let i = 0;
+      i < text.length;
+      i++
+    ) {
+      const char = text[i];
+  
+      if (char === '"') {
+        if (
+          inQuotes &&
+          text[i + 1] === '"'
+        ) {
+          cell += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+  
+        continue;
+      }
+  
+      if (
+        char === ',' &&
+        !inQuotes
+      ) {
+        row.push(cell);
+        cell = '';
+        continue;
+      }
+  
+      if (
+        (char === '\n' ||
+          char === '\r') &&
+        !inQuotes
+      ) {
+        if (
+          char === '\r' &&
+          text[i + 1] === '\n'
+        ) {
+          i++;
+        }
+  
+        row.push(cell);
+        cell = '';
+  
+        if (
+          row.some(
+            item =>
+              item.trim() !== '',
+          )
+        ) {
+          rows.push(row);
+        }
+  
+        row = [];
+        continue;
+      }
+  
+      cell += char;
+    }
+  
+    row.push(cell);
+  
+    if (
+      row.some(
+        item =>
+          item.trim() !== '',
+      )
+    ) {
+      rows.push(row);
+    }
+  
+    if (rows.length < 2) {
+      throw new Error(
+        'CSV harus memiliki header dan minimal satu soal.',
+      );
+    }
+  
+    const header =
+      rows[0].map(
+        item =>
+          item
+            .replace(/^\uFEFF/, '')
+            .trim()
+            .toLowerCase(),
+      );
+  
+    const get = (
+      currentRow,
+      ...names
+    ) => {
+      for (const name of names) {
+        const index =
+          header.indexOf(
+            name.toLowerCase(),
+          );
+  
+        if (index >= 0) {
+          return safeString(
+            currentRow[index],
+          ).trim();
+        }
+      }
+  
+      return '';
+    };
+  
+    return rows
+      .slice(1)
+      .map((currentRow, index) => {
+        const opsi =
+          [
+            'a',
+            'b',
+            'c',
+            'd',
+            'e',
+          ]
+            .map(letter =>
+              get(
+                currentRow,
+                `opsi ${letter}`,
+                `option ${letter}`,
+                letter,
+              ),
+            )
+            .filter(Boolean);
+  
+        return {
+          nomor:
+            Number(
+              get(
+                currentRow,
+                'nomor',
+                'no',
+                'number',
+              ),
+            ) ||
+            index + 1,
+  
+          tipe:
+            get(
+              currentRow,
+              'tipe',
+              'type',
+            ) ||
+            'pg_sederhana',
+  
+          teks_soal:
+            get(
+              currentRow,
+              'soal',
+              'teks soal',
+              'teks_soal',
+              'question',
+            ),
+  
+          opsi_jawaban:
+            opsi,
+  
+          kunci_jawaban:
+            get(
+              currentRow,
+              'kunci',
+              'kunci jawaban',
+              'kunci_jawaban',
+              'jawaban benar',
+              'correct answer',
+            ),
+  
+          pembahasan:
+            get(
+              currentRow,
+              'pembahasan',
+              'penjelasan',
+              'explanation',
+            ),
+  
+          pernyataan:
+            get(
+              currentRow,
+              'pernyataan',
+            )
+              .split('|')
+              .map(x => x.trim())
+              .filter(Boolean),
+  
+          tabel_benar_salah:
+            get(
+              currentRow,
+              'tabel benar-salah',
+              'tabel benar salah',
+            )
+              .split('|')
+              .map(x => x.trim())
+              .filter(Boolean),
+  
+          pasangan: [],
+  
+          gambar: [],
+        };
+      });
+  }
+  
+  // ============================================================
+  // IMAGE SRC
+  // ============================================================
+  
+  function getImageSrc(gambar) {
+    if (!gambar) return '';
+  
+    return (
+      gambar.uploadedUrl ||
+      gambar.url ||
+      gambar.dataUrl ||
+      ''
+    );
+  }
+  
+  // ============================================================
+  // SAFE LATEX LOADER
+  // ============================================================
+  
+  function useSafeKaTeX() {
+    const [
+      ready,
+      setReady,
+    ] = useState(false);
+  
+    useEffect(() => {
+      let cancelled = false;
+  
+      try {
+        if (
+          typeof window !== 'undefined' &&
+          window.katex
+        ) {
+          setReady(true);
+          return undefined;
+        }
+  
+        const existingCss =
+          document.querySelector(
+            'link[data-gemilang-katex]',
+          );
+  
+        if (!existingCss) {
+          const css =
+            document.createElement(
+              'link',
+            );
+  
+          css.rel = 'stylesheet';
+  
+          css.href =
+            'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
+  
+          css.dataset.gemilangKatex =
+            'true';
+  
+          document.head.appendChild(
+            css,
+          );
+        }
+  
+        const existingScript =
+          document.querySelector(
+            'script[data-gemilang-katex]',
+          );
+  
+        if (existingScript) {
+          existingScript.addEventListener(
+            'load',
+            () => {
+              if (
+                !cancelled &&
+                window.katex
+              ) {
+                setReady(true);
+              }
+            },
+          );
+  
+          return () => {
+            cancelled = true;
+          };
+        }
+  
+        const script =
+          document.createElement(
+            'script',
+          );
+  
+        script.src =
+          'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
+  
+        script.async = true;
+  
+        script.dataset.gemilangKatex =
+          'true';
+  
+        script.onload = () => {
+          if (
+            !cancelled &&
+            window.katex
+          ) {
+            setReady(true);
+          }
+        };
+  
+        script.onerror = () => {
+          if (!cancelled) {
+            setReady(false);
+          }
+        };
+  
+        document.body.appendChild(
+          script,
+        );
+      } catch (_) {
+        if (!cancelled) {
+          setReady(false);
+        }
+      }
+  
+      return () => {
+        cancelled = true;
+      };
+    }, []);
+  
+    return ready;
+  }
+  
+  // ============================================================
+  // ESCAPE HTML
+  // ============================================================
   
   function escapeHtml(value) {
-    return String(value ?? '')
+    return safeString(value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -261,88 +1234,72 @@ import React, {
       .replace(/'/g, '&#039;');
   }
   
-  /* ============================================================
-     LATEX
-  ============================================================ */
+  // ============================================================
+  // INLINE MATH
+  // ============================================================
   
-  function findInlineEnd(text, start, close) {
-    for (let i = start; i < text.length; i++) {
-      if (text[i] === '\n') {
-        return -1;
-      }
+  function renderTextWithMath(
+    text,
+    mathReady,
+  ) {
+    const value =
+      safeString(text);
   
-      if (text.startsWith(close, i)) {
-        return i;
-      }
+    if (!value) return '';
   
-      if (text[i] === '\\') {
-        i++;
-      }
-    }
+    const katex =
+      mathReady &&
+      typeof window !== 'undefined' &&
+      window.katex
+        ? window.katex
+        : null;
   
-    return -1;
-  }
+    let output = '';
   
-  function processSegment(text, renderMath) {
-    let result = '';
     let i = 0;
   
-    while (i < text.length) {
+    while (i < value.length) {
       // $$ ... $$
       if (
-        text[i] === '$' &&
-        text[i + 1] === '$'
+        value[i] === '$' &&
+        value[i + 1] === '$'
       ) {
-        const end = text.indexOf(
-          '$$',
-          i + 2
-        );
-  
-        if (end !== -1) {
-          result += renderMath(
-            text.slice(i + 2, end),
-            true
+        const end =
+          value.indexOf(
+            '$$',
+            i + 2,
           );
   
-          i = end + 2;
-          continue;
-        }
-      }
+        if (end >= 0) {
+          const math =
+            value.slice(
+              i + 2,
+              end,
+            );
   
-      // $ ... $
-      if (text[i] === '$') {
-        const end = findInlineEnd(
-          text,
-          i + 1,
-          '$'
-        );
-  
-        if (end !== -1) {
-          result += renderMath(
-            text.slice(i + 1, end),
-            false
-          );
-  
-          i = end + 1;
-          continue;
-        }
-      }
-  
-      // \[ ... \]
-      if (
-        text[i] === '\\' &&
-        text[i + 1] === '['
-      ) {
-        const end = text.indexOf(
-          '\\]',
-          i + 2
-        );
-  
-        if (end !== -1) {
-          result += renderMath(
-            text.slice(i + 2, end),
-            true
-          );
+          if (katex) {
+            try {
+              output +=
+                katex.renderToString(
+                  math,
+                  {
+                    displayMode: true,
+                    throwOnError: false,
+                    output: 'html',
+                  },
+                );
+            } catch (_) {
+              output +=
+                `<span class="math-fallback">${escapeHtml(
+                  math,
+                )}</span>`;
+            }
+          } else {
+            output +=
+              `<span class="math-fallback">${escapeHtml(
+                math,
+              )}</span>`;
+          }
   
           i = end + 2;
           continue;
@@ -351,1053 +1308,389 @@ import React, {
   
       // \( ... \)
       if (
-        text[i] === '\\' &&
-        text[i + 1] === '('
+        value[i] === '\\' &&
+        value[i + 1] === '('
       ) {
-        const end = text.indexOf(
-          '\\)',
-          i + 2
-        );
-  
-        if (end !== -1) {
-          result += renderMath(
-            text.slice(i + 2, end),
-            false
+        const end =
+          value.indexOf(
+            '\\)',
+            i + 2,
           );
+  
+        if (end >= 0) {
+          const math =
+            value.slice(
+              i + 2,
+              end,
+            );
+  
+          if (katex) {
+            try {
+              output +=
+                katex.renderToString(
+                  math,
+                  {
+                    displayMode: false,
+                    throwOnError: false,
+                    output: 'html',
+                  },
+                );
+            } catch (_) {
+              output +=
+                `<span class="math-fallback">${escapeHtml(
+                  math,
+                )}</span>`;
+            }
+          } else {
+            output +=
+              `<span class="math-fallback">${escapeHtml(
+                math,
+              )}</span>`;
+          }
   
           i = end + 2;
           continue;
         }
       }
   
-      const ch = text[i];
+      // \[ ... \]
+      if (
+        value[i] === '\\' &&
+        value[i + 1] === '['
+      ) {
+        const end =
+          value.indexOf(
+            '\\]',
+            i + 2,
+          );
   
-      if (ch === '&') {
-        result += '&amp;';
-      } else if (ch === '<') {
-        result += '&lt;';
-      } else if (ch === '>') {
-        result += '&gt;';
-      } else if (ch === '\n') {
-        result += '<br />';
-      } else {
-        result += ch;
+        if (end >= 0) {
+          const math =
+            value.slice(
+              i + 2,
+              end,
+            );
+  
+          if (katex) {
+            try {
+              output +=
+                katex.renderToString(
+                  math,
+                  {
+                    displayMode: true,
+                    throwOnError: false,
+                    output: 'html',
+                  },
+                );
+            } catch (_) {
+              output +=
+                `<span class="math-fallback">${escapeHtml(
+                  math,
+                )}</span>`;
+            }
+          } else {
+            output +=
+              `<span class="math-fallback">${escapeHtml(
+                math,
+              )}</span>`;
+          }
+  
+          i = end + 2;
+          continue;
+        }
       }
+  
+      // $ ... $
+      if (value[i] === '$') {
+        const end =
+          value.indexOf(
+            '$',
+            i + 1,
+          );
+  
+        if (end > i + 1) {
+          const math =
+            value.slice(
+              i + 1,
+              end,
+            );
+  
+          if (katex) {
+            try {
+              output +=
+                katex.renderToString(
+                  math,
+                  {
+                    displayMode: false,
+                    throwOnError: false,
+                    output: 'html',
+                  },
+                );
+            } catch (_) {
+              output +=
+                `<span class="math-fallback">${escapeHtml(
+                  math,
+                )}</span>`;
+            }
+          } else {
+            output +=
+              `<span class="math-fallback">${escapeHtml(
+                math,
+              )}</span>`;
+          }
+  
+          i = end + 1;
+          continue;
+        }
+      }
+  
+      const char =
+        value[i];
+  
+      output += escapeHtml(
+        char,
+      );
   
       i++;
     }
   
-    return result;
-  }
-  
-  /* ============================================================
-     GAMBAR HELPER
-  ============================================================ */
-  
-  function getImageSource(gambar) {
-    if (!gambar) return null;
-  
-    return (
-      gambar.uploadedUrl ||
-      gambar.url ||
-      gambar.src ||
-      gambar.dataUrl ||
-      gambar.data_url ||
-      gambar.base64 ||
-      null
+    return output.replace(
+      /\n/g,
+      '<br/>',
     );
   }
   
-  function normalizeImage(gambar, index) {
-    if (typeof gambar === 'string') {
-      const value = gambar.trim();
+  // ============================================================
+  // RICH TEXT
+  // ============================================================
   
-      return {
-        id: `gambar_${index + 1}`,
-        url: value.startsWith('http')
-          ? value
-          : null,
-        dataUrl: value.startsWith('data:image')
-          ? value
-          : null,
-        deskripsi: 'Gambar soal',
-        uploadedUrl: null,
-      };
-    }
+  function RichText({
+    text,
+    gambar = [],
+    mathReady,
+  }) {
+    const html = useMemo(() => {
+      const safe =
+        safeString(text);
   
-    if (!isObject(gambar)) {
-      return {
-        id: `gambar_${index + 1}`,
-        url: null,
-        dataUrl: null,
-        deskripsi: 'Gambar soal',
-        uploadedUrl: null,
-      };
-    }
-  
-    let source = getImageSource(gambar);
-  
-    let url = null;
-    let dataUrl = null;
-  
-    if (
-      typeof source === 'string'
-    ) {
-      if (source.startsWith('data:image')) {
-        dataUrl = source;
-      } else if (
-        source.startsWith('http://') ||
-        source.startsWith('https://')
-      ) {
-        url = source;
+      if (!safe) {
+        return '';
       }
-    }
   
-    return {
-      ...gambar,
-      id:
-        gambar.id ||
-        gambar.nama ||
-        `gambar_${index + 1}`,
-      url,
-      dataUrl,
-      uploadedUrl:
-        gambar.uploadedUrl || null,
-      deskripsi:
-        gambar.deskripsi ||
-        gambar.description ||
-        gambar.alt ||
-        'Gambar soal',
-    };
-  }
+      const images =
+        safeArray(gambar);
   
-  /* ============================================================
-     PARSE JSON AI
-  ============================================================ */
-  
-  function removeCodeFence(text) {
-    return text
-      .replace(/^\uFEFF/, '')
-      .replace(/^```(?:json|javascript|js)?\s*/i, '')
-      .replace(/\s*```\s*$/i, '')
-      .trim();
-  }
-  
-  /**
-   * Mengambil bagian JSON jika AI memberikan teks:
-   *
-   * Berikut hasilnya:
-   * ```json
-   * [...]
-   * ```
-   *
-   * atau:
-   *
-   * Berikut hasilnya:
-   * [...]
-   */
-  function extractPossibleJSON(text) {
-    const cleaned = removeCodeFence(text);
-  
-    // Coba langsung
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      // lanjut
-    }
-  
-    // Cari array JSON
-    const firstArray = cleaned.indexOf('[');
-    const lastArray = cleaned.lastIndexOf(']');
-  
-    if (
-      firstArray !== -1 &&
-      lastArray !== -1 &&
-      lastArray > firstArray
-    ) {
-      const candidate = cleaned.slice(
-        firstArray,
-        lastArray + 1
-      );
-  
-      try {
-        return JSON.parse(candidate);
-      } catch {
-        // lanjut
-      }
-    }
-  
-    // Cari object JSON
-    const firstObject = cleaned.indexOf('{');
-    const lastObject = cleaned.lastIndexOf('}');
-  
-    if (
-      firstObject !== -1 &&
-      lastObject !== -1 &&
-      lastObject > firstObject
-    ) {
-      const candidate = cleaned.slice(
-        firstObject,
-        lastObject + 1
-      );
-  
-      try {
-        return JSON.parse(candidate);
-      } catch {
-        // lanjut
-      }
-    }
-  
-    throw new Error(
-      'JSON tidak valid. Pastikan isi JSON benar dan tidak terpotong.'
-    );
-  }
-  
-  /**
-   * Mencari array soal di berbagai struktur JSON.
-   */
-  function findQuestionArray(parsed) {
-    if (Array.isArray(parsed)) {
-      return parsed;
-    }
-  
-    if (!isObject(parsed)) {
-      return null;
-    }
-  
-    const possibleKeys = [
-      'questions',
-      'question',
-      'soal',
-      'soals',
-      'data',
-      'items',
-      'results',
-      'questionsData',
-      'bankSoal',
-      'bank_soal',
-    ];
-  
-    for (const key of possibleKeys) {
-      if (Array.isArray(parsed[key])) {
-        return parsed[key];
-      }
-    }
-  
-    // Struktur seperti:
-    // { data: { questions: [...] } }
-    for (const key of possibleKeys) {
-      if (isObject(parsed[key])) {
-        const nested = findQuestionArray(
-          parsed[key]
+      const parts =
+        safe.split(
+          /(\{\{\s*GAMBAR(?:_\d+)?\s*\}\})/gi,
         );
   
-        if (Array.isArray(nested)) {
-          return nested;
-        }
-      }
-    }
+      let imageIndex = 0;
   
-    return null;
-  }
+      let result = '';
   
-  function parseJSON(raw) {
-    if (!raw || !raw.trim()) {
-      throw new Error(
-        'Input JSON kosong.'
-      );
-    }
-  
-    const parsed = extractPossibleJSON(raw);
-  
-    const questions =
-      findQuestionArray(parsed);
-  
-    if (!Array.isArray(questions)) {
-      throw new Error(
-        'Format JSON tidak dikenali. JSON harus berupa array soal atau object yang memiliki questions, soal, data, items, atau results.'
-      );
-    }
-  
-    if (questions.length === 0) {
-      throw new Error(
-        'JSON berhasil dibaca tetapi tidak berisi soal.'
-      );
-    }
-  
-    return questions;
-  }
-  
-  /* ============================================================
-     PARSE CSV
-  ============================================================ */
-  
-  function parseCSVLine(line) {
-    const cols = [];
-    let current = '';
-    let inQuotes = false;
-  
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-  
-      if (char === '"') {
+      for (const part of parts) {
         if (
-          inQuotes &&
-          line[i + 1] === '"'
+          /^\{\{\s*GAMBAR/i.test(
+            part,
+          )
         ) {
-          current += '"';
-          i++;
+          const image =
+            images[
+              imageIndex
+            ];
+  
+          imageIndex++;
+  
+          if (image) {
+            const src =
+              getImageSrc(
+                image,
+              );
+  
+            if (src) {
+              result += `
+                <figure style="
+                  margin:12px 0;
+                  width:100%;
+                ">
+                  <img
+                    src="${escapeHtml(
+                      src,
+                    )}"
+                    alt="${escapeHtml(
+                      image.deskripsi ||
+                      'Gambar soal',
+                    )}"
+                    style="
+                      display:block;
+                      max-width:100%;
+                      max-height:500px;
+                      width:auto;
+                      height:auto;
+                      object-fit:contain;
+                      border:1px solid #e5e7eb;
+                      border-radius:10px;
+                      background:#fff;
+                      padding:4px;
+                      margin:0 auto;
+                    "
+                  />
+                  ${
+                    image.deskripsi
+                      ? `<figcaption style="
+                          font-size:11px;
+                          color:#6b7280;
+                          margin-top:4px;
+                          text-align:center;
+                        ">${escapeHtml(
+                          image.deskripsi,
+                        )}</figcaption>`
+                      : ''
+                  }
+                </figure>
+              `;
+            } else {
+              result += `
+                <div style="
+                  padding:8px;
+                  margin:8px 0;
+                  border:1px dashed #f59e0b;
+                  border-radius:8px;
+                  color:#b45309;
+                  font-size:12px;
+                  background:#fffbeb;
+                ">
+                  🖼️ Gambar belum memiliki URL/data gambar.
+                </div>
+              `;
+            }
+          }
         } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (
-        char === ',' &&
-        !inQuotes
-      ) {
-        cols.push(current);
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-  
-    cols.push(current);
-  
-    return cols.map(
-      value => value.trim()
-    );
-  }
-  
-  function parseCSV(raw) {
-    const text = raw.trim();
-  
-    if (!text) {
-      throw new Error(
-        'CSV kosong.'
-      );
-    }
-  
-    const lines = text
-      .split(/\r?\n/)
-      .filter(line => line.trim());
-  
-    if (lines.length < 2) {
-      throw new Error(
-        'CSV kosong atau hanya memiliki header.'
-      );
-    }
-  
-    const header =
-      parseCSVLine(lines[0]).map(
-        h =>
-          h
-            .replace(/^"|"$/g, '')
-            .trim()
-            .toLowerCase()
-      );
-  
-    const results = [];
-  
-    for (
-      let i = 1;
-      i < lines.length;
-      i++
-    ) {
-      const cols =
-        parseCSVLine(lines[i]);
-  
-      const get = key => {
-        const index =
-          header.indexOf(key);
-  
-        return index >= 0
-          ? (
-              cols[index] || ''
-            ).trim()
-          : '';
-      };
-  
-      const opsiJawaban = [
-        'opsi a',
-        'opsi b',
-        'opsi c',
-        'opsi d',
-        'opsi e',
-      ]
-        .map(get)
-        .filter(Boolean);
-  
-      const kunci =
-        get('kunci') ||
-        get('kunci jawaban') ||
-        get('jawaban benar');
-  
-      const pembahasan =
-        get('pembahasan') ||
-        get('penjelasan') ||
-        '';
-  
-      results.push({
-        nomor:
-          parseInt(get('nomor'), 10) ||
-          i,
-  
-        tipe:
-          get('tipe') ||
-          'pg_sederhana',
-  
-        teks_soal:
-          get('soal') ||
-          get('teks soal') ||
-          get('pertanyaan') ||
-          '',
-  
-        opsi_jawaban:
-          opsiJawaban,
-  
-        pernyataan: get(
-          'pernyataan'
-        )
-          ? get('pernyataan')
-              .split(' | ')
-              .filter(Boolean)
-          : [],
-  
-        tabel_benar_salah:
-          get('tabel benar-salah')
-            ? get('tabel benar-salah')
-                .split(' | ')
-                .filter(Boolean)
-            : [],
-  
-        pasangan: [],
-  
-        kunci_jawaban: kunci,
-  
-        jawaban_benar: kunci,
-  
-        jawaban_benar_index: [],
-  
-        pembahasan,
-  
-        kunci_terverifikasi:
-          Boolean(kunci),
-  
-        gambar: [],
-      });
-    }
-  
-    if (results.length === 0) {
-      throw new Error(
-        'Tidak ada baris soal di CSV.'
-      );
-    }
-  
-    return results;
-  }
-  
-  /* ============================================================
-     TIPE SOAL
-  ============================================================ */
-  
-  function normalizeTipe(tipe) {
-    const value = String(
-      tipe || ''
-    )
-      .trim()
-      .toLowerCase();
-  
-    const aliases = {
-      pg: 'pg_sederhana',
-      pilihan_ganda:
-        'pg_sederhana',
-      pilihan_ganda_sederhana:
-        'pg_sederhana',
-      pilihan_ganda_kompleks:
-        'pg_kompleks',
-      kompleks:
-        'pg_kompleks',
-      benar_salah:
-        'benar_salah',
-      benar_salah: 'benar_salah',
-      isian:
-        'isian_singkat',
-      isian_singkat:
-        'isian_singkat',
-      menjodohkan:
-        'menjodohkan',
-    };
-  
-    return (
-      aliases[value] ||
-      value ||
-      'pg_sederhana'
-    );
-  }
-  
-  /* ============================================================
-     NORMALIZE OPSI
-  ============================================================ */
-  
-  function getOptionText(option) {
-    if (
-      typeof option === 'string' ||
-      typeof option === 'number'
-    ) {
-      return String(option);
-    }
-  
-    if (!isObject(option)) {
-      return '';
-    }
-  
-    return (
-      toCleanString(option.teks) ||
-      toCleanString(option.text) ||
-      toCleanString(option.label) ||
-      toCleanString(option.jawaban) ||
-      toCleanString(option.value) ||
-      ''
-    );
-  }
-  
-  function isOptionCorrect(option) {
-    if (!isObject(option)) {
-      return false;
-    }
-  
-    return Boolean(
-      option.benar === true ||
-      option.correct === true ||
-      option.isCorrect === true ||
-      option.jawabanBenar === true ||
-      option.jawaban_benar === true
-    );
-  }
-  
-  /* ============================================================
-     NORMALIZE KUNCI JAWABAN
-  ============================================================ */
-  
-  function letterFromIndex(index) {
-    const n = Number(index);
-  
-    if (
-      !Number.isInteger(n) ||
-      n < 0
-    ) {
-      return '';
-    }
-  
-    return String.fromCharCode(
-      65 + n
-    );
-  }
-  
-  function normalizeAnswerValue(
-    value,
-    opsi
-  ) {
-    const answers = [];
-  
-    const addAnswer = item => {
-      if (
-        item === null ||
-        item === undefined
-      ) {
-        return;
-      }
-  
-      if (
-        typeof item === 'number'
-      ) {
-        const letter =
-          letterFromIndex(item);
-  
-        if (letter) {
-          answers.push(letter);
-        }
-  
-        return;
-      }
-  
-      if (
-        typeof item === 'string'
-      ) {
-        const clean =
-          item
-            .trim()
-            .toUpperCase();
-  
-        if (!clean) return;
-  
-        // "A,B,C"
-        if (
-          clean.includes(',')
-        ) {
-          clean
-            .split(',')
-            .map(x => x.trim())
-            .filter(Boolean)
-            .forEach(addAnswer);
-  
-          return;
-        }
-  
-        // "A C"
-        if (
-          clean.length > 1 &&
-          /^[A-Z]+$/.test(clean) &&
-          clean.length <= 5
-        ) {
-          for (
-            let i = 0;
-            i < clean.length;
-            i++
-          ) {
-            answers.push(clean[i]);
-          }
-  
-          return;
-        }
-  
-        // "opsi B"
-        const match =
-          clean.match(
-            /(?:OPSI|PILIHAN|JAWABAN)\s*([A-Z])/i
-          );
-  
-        if (match) {
-          answers.push(
-            match[1].toUpperCase()
-          );
-          return;
-        }
-  
-        // "B. ..."
-        const letterMatch =
-          clean.match(
-            /^([A-Z])(?:\.|\)|:|-|\s)/
-          );
-  
-        if (letterMatch) {
-          answers.push(
-            letterMatch[1]
-          );
-          return;
-        }
-  
-        // Jika hanya satu huruf
-        if (
-          /^[A-Z]$/.test(clean)
-        ) {
-          answers.push(clean);
-          return;
-        }
-  
-        // Jika isi jawaban sama persis
-        if (
-          Array.isArray(opsi)
-        ) {
-          const index =
-            opsi.findIndex(
-              option =>
-                getOptionText(
-                  option
-                )
-                  .trim()
-                  .toUpperCase() ===
-                clean
+          result +=
+            renderTextWithMath(
+              part,
+              mathReady,
             );
-  
-          if (index >= 0) {
-            answers.push(
-              letterFromIndex(index)
-            );
-          }
         }
-  
-        return;
       }
   
-      if (isObject(item)) {
-        addAnswer(
-          item.huruf ||
-          item.letter ||
-          item.label ||
-          item.kode ||
-          item.index
+      // Jika gambar tersedia tetapi placeholder
+      // tidak ada, tampilkan setelah teks.
+      if (
+        imageIndex === 0 &&
+        images.some(
+          image =>
+            getImageSrc(
+              image,
+            ),
+        )
+      ) {
+        result += `
+          <div style="margin-top:10px;">
+        `;
+  
+        images.forEach(
+          image => {
+            const src =
+              getImageSrc(
+                image,
+              );
+  
+            if (!src) return;
+  
+            result += `
+              <img
+                src="${escapeHtml(
+                  src,
+                )}"
+                alt="${escapeHtml(
+                  image.deskripsi ||
+                  'Gambar soal',
+                )}"
+                style="
+                  display:block;
+                  max-width:100%;
+                  max-height:500px;
+                  width:auto;
+                  height:auto;
+                  object-fit:contain;
+                  border:1px solid #e5e7eb;
+                  border-radius:10px;
+                  padding:4px;
+                  background:#fff;
+                  margin:8px auto;
+                "
+              />
+            `;
+          },
         );
+  
+        result += '</div>';
       }
-    };
   
-    if (Array.isArray(value)) {
-      value.forEach(addAnswer);
-    } else {
-      addAnswer(value);
-    }
-  
-    return [
-      ...new Set(
-        answers.filter(Boolean)
-      ),
-    ];
-  }
-  
-  /* ============================================================
-     NORMALIZE SOAL
-  ============================================================ */
-  
-  function normalizeSoal(
-    q,
-    idx
-  ) {
-    if (!isObject(q)) {
-      return {
-        nomor: idx + 1,
-        tipe: 'pg_sederhana',
-        teks_soal: String(q || ''),
-        opsi_jawaban: [],
-        pernyataan: [],
-        tabel_benar_salah: [],
-        pasangan: [],
-        kunci_jawaban: '',
-        jawaban_benar: [],
-        jawaban_benar_index: [],
-        kunci_terverifikasi: false,
-        pembahasan: '',
-        gambar: [],
-      };
-    }
-  
-    const rawOptions =
-      q.opsi_jawaban ??
-      q.opsiJawaban ??
-      q.options ??
-      q.pilihan ??
-      q.opsi ??
-      [];
-  
-    const optionObjects =
-      Array.isArray(rawOptions)
-        ? rawOptions
-        : [];
-  
-    const opsi_jawaban =
-      optionObjects
-        .map(getOptionText)
-        .filter(Boolean);
-  
-    /* ----------------------------------------------------------
-       Jawaban benar dari:
-       - jawaban_benar
-       - jawabanBenar
-       - kunci_jawaban
-       - kunciJawaban
-       - kunci
-       - answer
-       - correctAnswer
-       ---------------------------------------------------------- */
-  
-    let rawAnswer =
-      q.jawaban_benar ??
-      q.jawabanBenar ??
-      q.kunci_jawaban ??
-      q.kunciJawaban ??
-      q.kunci ??
-      q.answer ??
-      q.correctAnswer ??
-      '';
-  
-    /*
-     * Jika opsi berbentuk object dan punya benar:true,
-     * otomatis cari jawaban benar.
-     */
-    const markedCorrectIndexes =
-      optionObjects
-        .map(
-          (option, optionIndex) =>
-            isOptionCorrect(option)
-              ? optionIndex
-              : -1
-        )
-        .filter(index => index >= 0);
-  
-    let jawabanBenar =
-      normalizeAnswerValue(
-        rawAnswer,
-        opsi_jawaban
-      );
-  
-    if (
-      jawabanBenar.length === 0 &&
-      markedCorrectIndexes.length > 0
-    ) {
-      jawabanBenar =
-        markedCorrectIndexes.map(
-          letterFromIndex
-        );
-    }
-  
-    /*
-     * Jika jawaban benar berupa index
-     * [0, 2] -> ["A", "C"]
-     */
-    const jawabanBenarIndex =
-      jawabanBenar
-        .map(letter =>
-          letter.charCodeAt(0) -
-          65
-        )
-        .filter(
-          index =>
-            index >= 0 &&
-            index < opsi_jawaban.length
-        );
-  
-    const kunciJawaban =
-      jawabanBenar.join(',');
-  
-    /* ----------------------------------------------------------
-       Gambar
-       ---------------------------------------------------------- */
-  
-    const rawImages =
-      q.gambar ??
-      q.gambar_soal ??
-      q.gambarSoal ??
-      q.images ??
-      q.image ??
-      [];
-  
-    const gambar = toArray(
-      rawImages
-    )
-      .map(normalizeImage)
-      .filter(
-        image =>
-          image.url ||
-          image.dataUrl ||
-          image.uploadedUrl
-      );
-  
-    /* ----------------------------------------------------------
-       Pasangan
-       ---------------------------------------------------------- */
-  
-    const pasanganRaw =
-      q.pasangan ??
-      q.matching ??
-      q.menjodohkan ??
-      [];
-  
-    const pasangan =
-      Array.isArray(
-        pasanganRaw
-      )
-        ? pasanganRaw.map(
-            p => ({
-              kiri: String(
-                p?.kiri ??
-                p?.left ??
-                ''
-              ),
-              kanan: String(
-                p?.kanan ??
-                p?.right ??
-                ''
-              ),
-            })
-          )
-        : [];
-  
-    /* ----------------------------------------------------------
-       Pernyataan
-       ---------------------------------------------------------- */
-  
-    const pernyataanRaw =
-      q.pernyataan ??
-      q.statements ??
-      [];
-  
-    const pernyataan =
-      Array.isArray(
-        pernyataanRaw
-      )
-        ? pernyataanRaw.map(
-            item =>
-              typeof item === 'string'
-                ? item
-                : toCleanString(
-                    item?.teks ??
-                    item?.text ??
-                    item?.pernyataan
-                  )
-          )
-        : [];
-  
-    /* ----------------------------------------------------------
-       Tabel benar salah
-       ---------------------------------------------------------- */
-  
-    const tabelRaw =
-      q.tabel_benar_salah ??
-      q.tabelBenarSalah ??
-      q.benarSalah ??
-      [];
-  
-    const tabel_benar_salah =
-      Array.isArray(tabelRaw)
-        ? tabelRaw
-        : [];
-  
-    /* ----------------------------------------------------------
-       Pembahasan
-       ---------------------------------------------------------- */
-  
-    const pembahasan =
-      toCleanString(
-        q.pembahasan ??
-        q.penjelasan ??
-        q.explanation ??
-        q.solusi ??
-        q.pembahasan_jawaban ??
-        ''
-      );
-  
-    /* ----------------------------------------------------------
-       Nomor
-       ---------------------------------------------------------- */
-  
-    const parsedNomor =
-      parseInt(
-        q.nomor ??
-        q.no ??
-        q.number ??
-        idx + 1,
-        10
-      );
-  
-    return {
-      nomor:
-        Number.isFinite(parsedNomor)
-          ? parsedNomor
-          : idx + 1,
-  
-      tipe: normalizeTipe(
-        q.tipe ??
-        q.type ??
-        q.jenis ??
-        q.jenis_soal
-      ),
-  
-      teks_soal:
-        toCleanString(
-          q.teks_soal ??
-          q.teksSoal ??
-          q.soal ??
-          q.pertanyaan ??
-          q.question ??
-          ''
-        ),
-  
-      opsi_jawaban,
-  
-      pernyataan,
-  
-      tabel_benar_salah,
-  
-      pasangan,
-  
-      kunci_jawaban:
-        kunciJawaban,
-  
-      jawaban_benar:
-        jawabanBenar,
-  
-      jawaban_benar_index:
-        jawabanBenarIndex,
-  
-      kunci_terverifikasi:
-        Boolean(
-          q.kunci_terverifikasi ??
-          q.kunciTerverifikasi ??
-          q.verified ??
-          q.terverifikasi ??
-          jawabanBenar.length > 0
-        ),
-  
-      pembahasan,
-  
+      return result;
+    }, [
+      text,
       gambar,
+      mathReady,
+    ]);
   
-      /* Data tambahan */
-      sumber:
-        q.sumber ??
-        q.source ??
-        '',
-  
-      catatan:
-        q.catatan ??
-        q.notes ??
-        '',
-    };
+    return (
+      <div
+        className="text-sm text-gray-700 leading-7 break-words"
+        dangerouslySetInnerHTML={{
+          __html: html,
+        }}
+      />
+    );
   }
   
-  /* ============================================================
-     BUILD FIRESTORE DOCUMENT
-  ============================================================ */
+  // ============================================================
+  // OPTION LETTER
+  // ============================================================
+  
+  function optionLetter(index) {
+    return String.fromCharCode(
+      65 + index,
+    );
+  }
+  
+  // ============================================================
+  // FIRESTORE DOCUMENT
+  // ============================================================
   
   function buildDoc(
     q,
-    meta
+    meta,
   ) {
     const gambarUrls =
-      (q.gambar || [])
+      safeArray(q.gambar)
         .map(
-          g =>
-            g.uploadedUrl ||
-            g.url ||
-            (
-              typeof g.dataUrl ===
-                'string' &&
-              g.dataUrl.startsWith(
-                'https://'
-              )
-                ? g.dataUrl
-                : null
-            )
+          image =>
+            image.uploadedUrl ||
+            image.url ||
+            '',
         )
         .filter(Boolean);
   
-    /*
-     * Simpan struktur jawaban yang lengkap.
-     *
-     * kunciJawaban:
-     *   "B"
-     *
-     * jawabanBenar:
-     *   ["B"]
-     *
-     * jawabanBenarIndex:
-     *   [1]
-     *
-     * Ini sengaja disimpan semua agar
-     * kompatibel dengan sistem yang mungkin
-     * membaca salah satu field tersebut.
-     */
-  
     return {
-      nomor: q.nomor,
+      nomor:
+        q.nomor,
   
-      soal: q.teks_soal,
+      soal:
+        q.teks_soal,
   
-      teksSoal: q.teks_soal,
-  
-      tipe: q.tipe,
+      tipe:
+        q.tipe,
   
       opsiJawaban:
         q.opsi_jawaban,
+  
+      // Array boolean:
+      // [true,false,false,false,false]
+      opsiBenar:
+        q.opsi_benar,
   
       pernyataan:
         q.pernyataan,
@@ -1408,44 +1701,17 @@ import React, {
       pasangan:
         q.pasangan,
   
-      /* Jawaban */
       kunciJawaban:
         q.kunci_jawaban,
-  
-      jawabanBenar:
-        q.jawaban_benar,
-  
-      jawabanBenarIndex:
-        q.jawaban_benar_index,
   
       kunciTerverifikasi:
         q.kunci_terverifikasi,
   
-      /* Pembahasan */
       pembahasan:
         q.pembahasan,
   
-      penjelasan:
-        q.pembahasan,
-  
-      /* Gambar */
       gambarUrls,
   
-      gambar:
-        (q.gambar || []).map(
-          g => ({
-            id: g.id || null,
-            url:
-              g.uploadedUrl ||
-              g.url ||
-              null,
-            deskripsi:
-              g.deskripsi ||
-              'Gambar soal',
-          })
-        ),
-  
-      /* Metadata */
       mataPelajaran:
         meta.mataPelajaran,
   
@@ -1482,496 +1748,340 @@ import React, {
     };
   }
   
-  /* ============================================================
-     RENDER RICH TEXT
-  ============================================================ */
+  // ============================================================
+  // DOWNLOAD JSON
+  // ============================================================
   
-  function RichText({
-    text,
-    gambar,
-    mathReady,
-  }) {
-    const html = useMemo(() => {
-      const safe =
-        typeof text === 'string'
-          ? text
-          : String(text ?? '');
+  function downloadJSON(
+    soalList,
+  ) {
+    try {
+      const payload = soalList.map(
+        q => ({
+          nomor: q.nomor,
+          tipe: q.tipe,
+          teks_soal:
+            q.teks_soal,
   
-      if (!safe) {
-        return '';
-      }
+          opsi_jawaban:
+            q.opsi_jawaban,
   
-      const imgs = (
-        Array.isArray(gambar)
-          ? gambar
-          : []
-      ).filter(Boolean);
+          opsi_benar:
+            q.opsi_benar,
   
-      const katexLib =
-        mathReady &&
-        typeof window !== 'undefined' &&
-        window.katex
-          ? window.katex
-          : null;
+          kunci_jawaban:
+            q.kunci_jawaban,
   
-      const renderMath = (
-        math,
-        display
-      ) => {
-        if (!katexLib) {
-          return display
-            ? `<span>$$${escapeHtml(
-                math
-              )}$$</span>`
-            : `<span>$${escapeHtml(
-                math
-              )}$</span>`;
-        }
+          kunci_terverifikasi:
+            q.kunci_terverifikasi,
   
-        try {
-          return katexLib.renderToString(
-            math,
-            {
-              displayMode:
-                display,
-              throwOnError:
-                false,
-              output: 'html',
-            }
-          );
-        } catch {
-          return display
-            ? `<span>$$${escapeHtml(
-                math
-              )}$$</span>`
-            : `<span>$${escapeHtml(
-                math
-              )}$</span>`;
-        }
-      };
+          pembahasan:
+            q.pembahasan,
   
-      const makeImg = g => {
-        const src =
-          getImageSource(g);
+          pernyataan:
+            q.pernyataan,
   
-        if (!src) {
-          return `
-            <span style="
-              color:#d97706;
-              font-size:11px;
-            ">
-              [Gambar belum tersedia]
-            </span>
-          `;
-        }
+          tabel_benar_salah:
+            q.tabel_benar_salah,
   
-        const alt =
-          escapeHtml(
-            g.deskripsi ||
-            'Gambar soal'
-          );
+          pasangan:
+            q.pasangan,
   
-        return `
-          <figure style="
-            margin:10px 0;
-          ">
-            <img
-              src="${src}"
-              alt="${alt}"
-              style="
-                max-width:100%;
-                max-height:360px;
-                width:auto;
-                height:auto;
-                display:block;
-                border-radius:8px;
-                border:1px solid #e5e7eb;
-                background:#fff;
-                padding:4px;
-                object-fit:contain;
-              "
-            />
-            ${
-              g.deskripsi
-                ? `
-                  <figcaption style="
-                    margin-top:4px;
-                    font-size:11px;
-                    color:#6b7280;
-                  ">
-                    ${escapeHtml(
-                      g.deskripsi
-                    )}
-                  </figcaption>
-                `
-                : ''
-            }
-          </figure>
-        `;
-      };
+          gambar:
+            q.gambar.map(
+              image => ({
+                id:
+                  image.id,
   
-      /*
-       * Support:
-       * {{GAMBAR}}
-       * {{GAMBAR_1}}
-       * {{GAMBAR_2}}
-       */
-      const parts =
-        safe.split(
-          /(\{\{\s*GAMBAR(?:_\d+)?\s*\}\})/gi
-        );
+                url:
+                  image.url,
   
-      let sequentialImageIndex = 0;
-      let result = '';
+                dataUrl:
+                  image.dataUrl,
   
-      for (
-        const part of parts
-      ) {
-        const isImagePlaceholder =
-          /^\{\{\s*GAMBAR/i.test(
-            part
-          );
+                uploadedUrl:
+                  image.uploadedUrl,
   
-        if (
-          isImagePlaceholder
-        ) {
-          const numbered =
-            part.match(
-              /GAMBAR_(\d+)/i
-            );
+                deskripsi:
+                  image.deskripsi,
   
-          let image;
-  
-          if (numbered) {
-            const index =
-              parseInt(
-                numbered[1],
-                10
-              ) - 1;
-  
-            image =
-              imgs[index];
-          } else {
-            image =
-              imgs[
-                sequentialImageIndex
-              ];
-  
-            sequentialImageIndex++;
-          }
-  
-          result += makeImg(
-            image || {}
-          );
-        } else {
-          result += processSegment(
-            part,
-            renderMath
-          );
-        }
-      }
-  
-      /*
-       * Jika tidak ada placeholder gambar,
-       * tampilkan gambar setelah teks.
-       */
-      if (
-        !safe.match(
-          /\{\{\s*GAMBAR/i
-        ) &&
-        imgs.some(
-          g =>
-            getImageSource(g)
-        )
-      ) {
-        imgs.forEach(
-          image => {
-            result += makeImg(
-              image
-            );
-          }
-        );
-      }
-  
-      return result;
-    }, [
-      text,
-      gambar,
-      mathReady,
-    ]);
-  
-    return (
-      <div
-        className="
-          text-sm
-          text-gray-700
-          leading-relaxed
-          break-words
-        "
-        dangerouslySetInnerHTML={{
-          __html: html,
-        }}
-      />
-    );
-  }
-  
-  /* ============================================================
-     BADGE JAWABAN
-  ============================================================ */
-  
-  function AnswerBadge({
-    optionIndex,
-    isCorrect,
-  }) {
-    const letter =
-      String.fromCharCode(
-        65 + optionIndex
+                nomor:
+                  image.nomor,
+              }),
+            ),
+        }),
       );
   
-    return (
-      <div
-        className={`
-          flex
-          items-start
-          gap-2
-          rounded-lg
-          border
-          px-3
-          py-2
-          text-sm
-          transition
-          ${
-            isCorrect
-              ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-              : 'border-gray-200 bg-white text-gray-700'
-          }
-        `}
-      >
-        <span
-          className={`
-            flex
-            h-6
-            w-6
-            shrink-0
-            items-center
-            justify-center
-            rounded-full
-            text-xs
-            font-bold
-            ${
-              isCorrect
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-100 text-gray-600'
-            }
-          `}
-        >
-          {letter}
-        </span>
+      const blob =
+        new Blob(
+          [
+            JSON.stringify(
+              payload,
+              null,
+              2,
+            ),
+          ],
+          {
+            type:
+              'application/json;charset=utf-8',
+          },
+        );
   
-        <div className="min-w-0 flex-1">
-          {isCorrect && (
-            <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-emerald-600">
-              ✓ Jawaban Benar
-            </div>
-          )}
+      const url =
+        URL.createObjectURL(
+          blob,
+        );
   
-          <RichText
-            text={
-              arguments?.[0]
-                ?.text || ''
-            }
-            gambar={[]}
-            mathReady={
-              arguments?.[0]
-                ?.mathReady
-            }
-          />
-        </div>
-      </div>
-    );
+      const anchor =
+        document.createElement(
+          'a',
+        );
+  
+      anchor.href = url;
+  
+      anchor.download =
+        `hasil-scan-gemilang-${Date.now()}.json`;
+  
+      document.body.appendChild(
+        anchor,
+      );
+  
+      anchor.click();
+  
+      anchor.remove();
+  
+      URL.revokeObjectURL(
+        url,
+      );
+    } catch (error) {
+      console.error(
+        'Download JSON error:',
+        error,
+      );
+  
+      alert(
+        'Gagal membuat file JSON.',
+      );
+    }
   }
   
-  /* ============================================================
-     KOMPONEN UTAMA
-  ============================================================ */
+  // ============================================================
+  // MAIN COMPONENT
+  // ============================================================
   
   export default function ImportHasilScanPage() {
-    useTailwind();
-  
     const mathReady =
-      useKaTeX();
+      useSafeKaTeX();
   
-    const [isMobile, setIsMobile] =
-      useState(
-        typeof window !==
-          'undefined'
-          ? window.innerWidth < 1024
-          : false
-      );
+    // ----------------------------------------------------------
+    // MOBILE
+    // ----------------------------------------------------------
+  
+    const [
+      isMobile,
+      setIsMobile,
+    ] = useState(
+      typeof window !== 'undefined'
+        ? window.innerWidth < 1024
+        : false,
+    );
   
     useEffect(() => {
-      const handleResize = () => {
-        setIsMobile(
-          window.innerWidth < 1024
-        );
-      };
+      const handleResize =
+        () => {
+          setIsMobile(
+            window.innerWidth <
+              1024,
+          );
+        };
   
       window.addEventListener(
         'resize',
-        handleResize
+        handleResize,
       );
   
       return () => {
         window.removeEventListener(
           'resize',
-          handleResize
+          handleResize,
         );
       };
     }, []);
   
-    /* ==========================================================
-       INPUT
-    ========================================================== */
+    // ----------------------------------------------------------
+    // INPUT
+    // ----------------------------------------------------------
   
-    const [format, setFormat] =
-      useState('json');
+    const [
+      format,
+      setFormat,
+    ] = useState('json');
   
-    const [rawInput, setRawInput] =
-      useState('');
+    const [
+      rawInput,
+      setRawInput,
+    ] = useState('');
   
-    const [sumberAI, setSumberAI] =
-      useState(
-        'Gemini Canvas'
-      );
+    const [
+      sumberAI,
+      setSumberAI,
+    ] = useState(
+      'Gemini Canvas',
+    );
   
-    /* ==========================================================
-       PARSE
-    ========================================================== */
+    // ----------------------------------------------------------
+    // PARSE
+    // ----------------------------------------------------------
   
-    const [soalList, setSoalList] =
-      useState([]);
+    const [
+      soalList,
+      setSoalList,
+    ] = useState([]);
   
-    const [parseError, setParseError] =
-      useState('');
+    const [
+      parseError,
+      setParseError,
+    ] = useState('');
   
-    /* ==========================================================
-       METADATA
-    ========================================================== */
+    const [
+      warnings,
+      setWarnings,
+    ] = useState([]);
+  
+    // ----------------------------------------------------------
+    // METADATA
+    // ----------------------------------------------------------
   
     const [
       mataPelajaran,
       setMataPelajaran,
-    ] = useState('Matematika');
+    ] = useState(
+      'Matematika',
+    );
   
     const [
       tingkatKelas,
       setTingkatKelas,
     ] = useState('10');
   
-    const [jenjang, setJenjang] =
-      useState('SMA/MA');
+    const [
+      jenjang,
+      setJenjang,
+    ] = useState(
+      'SMA/MA',
+    );
   
-    const [kategori, setKategori] =
-      useState('');
+    const [
+      kategori,
+      setKategori,
+    ] = useState('');
   
-    const [tags, setTags] =
-      useState('');
+    const [
+      tags,
+      setTags,
+    ] = useState('');
   
     const [
       tingkatKesulitan,
       setTingkatKesulitan,
-    ] = useState('sedang');
+    ] = useState(
+      'sedang',
+    );
   
     const [
       sumberFile,
       setSumberFile,
     ] = useState('');
   
-    /* ==========================================================
-       SAVE
-    ========================================================== */
+    // ----------------------------------------------------------
+    // SAVE
+    // ----------------------------------------------------------
   
-    const [saving, setSaving] =
-      useState(false);
+    const [
+      saving,
+      setSaving,
+    ] = useState(false);
   
     const [
       saveResult,
       setSaveResult,
     ] = useState(null);
   
-    const [saveLog, setSaveLog] =
-      useState([]);
+    const [
+      saveLog,
+      setSaveLog,
+    ] = useState([]);
   
-    /* ==========================================================
-       STATISTIK
-    ========================================================== */
+    // ----------------------------------------------------------
+    // STATS
+    // ----------------------------------------------------------
   
     const statistik =
       useMemo(() => {
         const total =
           soalList.length;
   
+        const valid =
+          soalList.filter(
+            q => q.valid,
+          ).length;
+  
+        const invalid =
+          total - valid;
+  
         const denganGambar =
           soalList.filter(
             q =>
-              Array.isArray(
-                q.gambar
-              ) &&
-              q.gambar.some(
-                g =>
-                  !!getImageSource(
-                    g
-                  )
-              )
+              safeArray(
+                q.gambar,
+              ).some(
+                image =>
+                  Boolean(
+                    getImageSrc(
+                      image,
+                    ),
+                  ),
+              ),
           ).length;
   
         const denganPembahasan =
           soalList.filter(
             q =>
-              !!q.pembahasan
+              Boolean(
+                safeString(
+                  q.pembahasan,
+                ).trim(),
+              ),
           ).length;
   
         const denganKunci =
           soalList.filter(
             q =>
-              Array.isArray(
-                q.jawaban_benar
-              ) &&
-              q.jawaban_benar
-                .length > 0
-          ).length;
-  
-        const pgSederhana =
-          soalList.filter(
-            q =>
-              q.tipe ===
-              'pg_sederhana'
-          ).length;
-  
-        const pgKompleks =
-          soalList.filter(
-            q =>
-              q.tipe ===
-              'pg_kompleks'
+              Boolean(
+                q.kunci_jawaban,
+              ),
           ).length;
   
         return {
           total,
+          valid,
+          invalid,
           denganGambar,
           denganPembahasan,
           denganKunci,
-          pgSederhana,
-          pgKompleks,
         };
-      }, [soalList]);
+      }, [
+        soalList,
+      ]);
   
-    /* ==========================================================
-       PARSE HANDLER
-    ========================================================== */
+    // ----------------------------------------------------------
+    // PARSE HANDLER
+    // ----------------------------------------------------------
   
     const handleParse =
       useCallback(() => {
         setParseError('');
+        setWarnings([]);
         setSoalList([]);
         setSaveResult(null);
         setSaveLog([]);
@@ -1980,8 +2090,9 @@ import React, {
           !rawInput.trim()
         ) {
           setParseError(
-            'Input kosong. Paste JSON atau CSV terlebih dahulu.'
+            'Input kosong. Paste JSON atau CSV terlebih dahulu.',
           );
+  
           return;
         }
   
@@ -1989,49 +2100,53 @@ import React, {
           const raw =
             format === 'json'
               ? parseJSON(
-                  rawInput
+                  rawInput,
                 )
               : parseCSV(
-                  rawInput
+                  rawInput,
                 );
   
           const normalized =
-            raw
-              .map(
-                (q, i) =>
-                  normalizeSoal(
-                    q,
-                    i
-                  )
-              )
+            raw.map(
+              (
+                question,
+                index,
+              ) =>
+                normalizeSoal(
+                  question,
+                  index,
+                ),
+            );
+  
+          const warningList =
+            normalized
               .filter(
                 q =>
-                  q.teks_soal ||
-                  q.opsi_jawaban
-                    .length > 0
+                  !q.valid,
+              )
+              .map(
+                q =>
+                  `Soal ${q.nomor}: ${q.errors.join(
+                    ' ',
+                  )}`,
               );
   
-          if (
-            normalized.length ===
-            0
-          ) {
-            throw new Error(
-              'Data berhasil dibaca tetapi tidak ada soal valid yang ditemukan.'
-            );
-          }
+          setWarnings(
+            warningList,
+          );
   
           setSoalList(
-            normalized
+            normalized,
           );
         } catch (error) {
           console.error(
             'Parse error:',
-            error
+            error,
           );
   
           setParseError(
             error?.message ||
-              'Gagal membaca data.'
+              'Gagal membaca data.',
           );
         }
       }, [
@@ -2039,482 +2154,520 @@ import React, {
         format,
       ]);
   
-    /* ==========================================================
-       FILE UPLOAD
-    ========================================================== */
+    // ----------------------------------------------------------
+    // FILE HANDLER
+    // ----------------------------------------------------------
   
-    const handleFile = (
-      event
-    ) => {
-      const file =
-        event.target.files?.[0];
+    const handleFile =
+      useCallback(
+        event => {
+          try {
+            const file =
+              event.target.files?.[0];
   
-      if (!file) return;
+            if (!file) {
+              return;
+            }
   
-      const fileName =
-        file.name.toLowerCase();
+            const lowerName =
+              file.name.toLowerCase();
   
-      if (
-        fileName.endsWith(
-          '.json'
-        )
-      ) {
-        setFormat('json');
-      } else if (
-        fileName.endsWith(
-          '.csv'
-        )
-      ) {
-        setFormat('csv');
-      }
+            if (
+              lowerName.endsWith(
+                '.json',
+              )
+            ) {
+              setFormat('json');
+            } else if (
+              lowerName.endsWith(
+                '.csv',
+              )
+            ) {
+              setFormat('csv');
+            }
   
-      const reader =
-        new FileReader();
+            setSumberFile(
+              file.name,
+            );
   
-      reader.onload =
-        e => {
-          setRawInput(
-            e.target?.result ||
-              ''
-          );
+            const reader =
+              new FileReader();
   
-          setParseError('');
-          setSoalList([]);
-          setSaveResult(null);
-        };
+            reader.onload =
+              e => {
+                setRawInput(
+                  safeString(
+                    e.target?.result,
+                  ),
+                );
   
-      reader.onerror =
-        () => {
-          setParseError(
-            'File gagal dibaca.'
-          );
-        };
+                setParseError('');
+                setSoalList([]);
+                setWarnings([]);
+              };
   
-      reader.readAsText(
-        file
+            reader.onerror =
+              () => {
+                setParseError(
+                  'File gagal dibaca.',
+                );
+              };
+  
+            reader.readAsText(
+              file,
+              'UTF-8',
+            );
+          } catch (error) {
+            console.error(
+              'File error:',
+              error,
+            );
+  
+            setParseError(
+              'Gagal membaca file.',
+            );
+          }
+        },
+        [],
       );
   
-      setSumberFile(
-        file.name
-      );
-    };
-  
-    /* ==========================================================
-       RESET
-    ========================================================== */
-  
-    const handleReset =
-      () => {
-        if (saving) return;
-  
-        setRawInput('');
-        setSoalList([]);
-        setParseError('');
-        setSaveResult(null);
-        setSaveLog([]);
-      };
-  
-    /* ==========================================================
-       COPY CONTOH JSON
-    ========================================================== */
-  
-    const contohJSON =
-      `[{
-    "nomor": 1,
-    "tipe": "pg_sederhana",
-    "teks_soal": "Hasil dari $2+3$ adalah ...",
-    "opsi_jawaban": [
-      "4",
-      "5",
-      "6",
-      "7"
-    ],
-    "jawaban_benar": ["B"],
-    "kunci_jawaban": "B",
-    "pembahasan": "Karena $2+3=5$, maka jawaban yang benar adalah B.",
-    "gambar": []
-  }]`;
-  
-    const handleLoadExample =
-      () => {
-        setFormat('json');
-        setRawInput(
-          contohJSON
-        );
-        setSoalList([]);
-        setParseError('');
-        setSaveResult(null);
-        setSaveLog([]);
-      };
-  
-    /* ==========================================================
-       SAVE
-    ========================================================== */
+    // ----------------------------------------------------------
+    // SAVE
+    // ----------------------------------------------------------
   
     const handleSave =
-      async () => {
-        if (
-          soalList.length === 0
-        ) {
-          return;
-        }
+      useCallback(
+        async () => {
+          if (
+            !soalList.length
+          ) {
+            return;
+          }
   
-        if (saving) {
-          return;
-        }
+          const invalid =
+            soalList.filter(
+              q =>
+                !q.valid,
+            );
   
-        setSaving(true);
-        setSaveResult(null);
+          if (
+            invalid.length >
+            0
+          ) {
+            const proceed =
+              window.confirm(
+                `Ada ${invalid.length} soal yang belum lengkap/valid.\n\nTetap simpan soal yang valid saja?`,
+              );
   
-        const log = [];
+            if (!proceed) {
+              return;
+            }
+          }
   
-        const addLog = msg => {
-          log.push(msg);
-          setSaveLog([
-            ...log,
-          ]);
-        };
+          const validSoal =
+            soalList.filter(
+              q =>
+                q.valid,
+            );
   
-        const meta = {
+          if (
+            validSoal.length ===
+            0
+          ) {
+            setSaveResult({
+              success: false,
+              error:
+                'Tidak ada soal valid untuk disimpan.',
+            });
+  
+            return;
+          }
+  
+          setSaving(true);
+          setSaveResult(null);
+          setSaveLog([]);
+  
+          const logs = [];
+  
+          const addLog =
+            message => {
+              logs.push(
+                message,
+              );
+  
+              setSaveLog([
+                ...logs,
+              ]);
+            };
+  
+          const meta = {
+            mataPelajaran,
+            tingkatKelas,
+            jenjang,
+            kategori,
+            tags: tags
+              .split(',')
+              .map(
+                tag =>
+                  tag.trim(),
+              )
+              .filter(Boolean),
+            tingkatKesulitan,
+            sumberFile,
+            sumberAI,
+          };
+  
+          // ----------------------------------------------------
+          // CLONE
+          // ----------------------------------------------------
+  
+          const soalProcessed =
+            validSoal.map(
+              q => ({
+                ...q,
+                gambar:
+                  safeArray(
+                    q.gambar,
+                  ).map(
+                    image => ({
+                      ...image,
+                    }),
+                  ),
+              }),
+            );
+  
+          // ----------------------------------------------------
+          // FIND BASE64 IMAGES
+          // ----------------------------------------------------
+  
+          const toUpload = [];
+  
+          soalProcessed.forEach(
+            (
+              question,
+              questionIndex,
+            ) => {
+              safeArray(
+                question.gambar,
+              ).forEach(
+                (
+                  image,
+                  imageIndex,
+                ) => {
+                  if (
+                    safeString(
+                      image.dataUrl,
+                    ).startsWith(
+                      'data:image',
+                    )
+                  ) {
+                    toUpload.push({
+                      key: `q${questionIndex}-g${imageIndex}-${Date.now()}-${Math.random()
+                        .toString(36)
+                        .slice(
+                          2,
+                        )}`,
+  
+                      dataUrl:
+                        image.dataUrl,
+  
+                      qi:
+                        questionIndex,
+  
+                      gi:
+                        imageIndex,
+                    });
+                  }
+                },
+              );
+            },
+          );
+  
+          // ----------------------------------------------------
+          // UPLOAD IMAGES
+          // ----------------------------------------------------
+  
+          if (
+            toUpload.length >
+            0
+          ) {
+            addLog(
+              `⏳ Menyiapkan ${toUpload.length} gambar...`,
+            );
+  
+            try {
+              const response =
+                await fetch(
+                  '/api/uploadBankSoalImages',
+                  {
+                    method:
+                      'POST',
+  
+                    headers: {
+                      'Content-Type':
+                        'application/json',
+                    },
+  
+                    body:
+                      JSON.stringify({
+                        images:
+                          toUpload.map(
+                            item => ({
+                              key:
+                                item.key,
+  
+                              dataUrl:
+                                item.dataUrl,
+                            }),
+                          ),
+                      }),
+                  },
+                );
+  
+              let result = null;
+  
+              try {
+                result =
+                  await response.json();
+              } catch (_) {
+                result =
+                  null;
+              }
+  
+              if (
+                !response.ok
+              ) {
+                throw new Error(
+                  result?.error ||
+                    `Server upload mengembalikan HTTP ${response.status}`,
+                );
+              }
+  
+              const urlMap =
+                {};
+  
+              safeArray(
+                result?.uploaded,
+              ).forEach(
+                upload => {
+                  if (
+                    upload?.key &&
+                    upload?.url
+                  ) {
+                    urlMap[
+                      upload.key
+                    ] =
+                      upload.url;
+                  }
+                },
+              );
+  
+              let uploadedCount =
+                0;
+  
+              toUpload.forEach(
+                item => {
+                  const uploadedUrl =
+                    urlMap[
+                      item.key
+                    ];
+  
+                  if (
+                    uploadedUrl
+                  ) {
+                    const images =
+                      [
+                        ...safeArray(
+                          soalProcessed[
+                            item.qi
+                          ]
+                            .gambar,
+                        ),
+                      ];
+  
+                    images[
+                      item.gi
+                    ] = {
+                      ...images[
+                        item.gi
+                      ],
+  
+                      uploadedUrl,
+  
+                      dataUrl:
+                        '',
+                    };
+  
+                    soalProcessed[
+                      item.qi
+                    ] = {
+                      ...soalProcessed[
+                        item.qi
+                      ],
+  
+                      gambar:
+                        images,
+                    };
+  
+                    uploadedCount++;
+                  }
+                },
+              );
+  
+              addLog(
+                `✅ ${uploadedCount}/${toUpload.length} gambar berhasil diproses.`,
+              );
+  
+              const uploadErrors =
+                safeArray(
+                  result?.errors,
+                );
+  
+              if (
+                uploadErrors.length
+              ) {
+                addLog(
+                  `⚠️ ${uploadErrors.length} gambar gagal diupload.`,
+                );
+              }
+            } catch (error) {
+              console.error(
+                'Image upload error:',
+                error,
+              );
+  
+              addLog(
+                `⚠️ Upload gambar gagal: ${
+                  error?.message ||
+                  'error tidak diketahui'
+                }`,
+              );
+  
+              addLog(
+                'ℹ️ Proses penyimpanan tetap dilanjutkan. Gambar base64 yang gagal upload tidak akan menjadi URL.',
+              );
+            }
+          }
+  
+          // ----------------------------------------------------
+          // FIRESTORE
+          // ----------------------------------------------------
+  
+          try {
+            addLog(
+              `📝 Menyimpan ${soalProcessed.length} soal valid ke Firestore...`,
+            );
+  
+            const CHUNK =
+              400;
+  
+            let saved = 0;
+  
+            for (
+              let i = 0;
+              i <
+              soalProcessed.length;
+              i += CHUNK
+            ) {
+              const chunk =
+                soalProcessed.slice(
+                  i,
+                  i + CHUNK,
+                );
+  
+              const batch =
+                writeBatch(db);
+  
+              chunk.forEach(
+                question => {
+                  const ref =
+                    doc(
+                      collection(
+                        db,
+                        BANK_SOAL_COLLECTION,
+                      ),
+                    );
+  
+                  batch.set(
+                    ref,
+                    buildDoc(
+                      question,
+                      meta,
+                    ),
+                  );
+                },
+              );
+  
+              await batch.commit();
+  
+              saved +=
+                chunk.length;
+  
+              addLog(
+                `💾 ${saved}/${soalProcessed.length} soal tersimpan...`,
+              );
+            }
+  
+            addLog(
+              `🎉 Selesai! ${saved} soal berhasil masuk Bank Soal.`,
+            );
+  
+            setSaveResult({
+              success: true,
+              count: saved,
+              skipped:
+                soalList.length -
+                validSoal.length,
+            });
+          } catch (error) {
+            console.error(
+              'Firestore save error:',
+              error,
+            );
+  
+            addLog(
+              `❌ Gagal simpan Firestore: ${
+                error?.message ||
+                'error tidak diketahui'
+              }`,
+            );
+  
+            setSaveResult({
+              success: false,
+              error:
+                error?.message ||
+                'Gagal menyimpan soal.',
+            });
+          } finally {
+            setSaving(false);
+          }
+        },
+        [
+          soalList,
           mataPelajaran,
           tingkatKelas,
           jenjang,
           kategori,
-          tags: tags
-            .split(',')
-            .map(
-              t =>
-                t.trim()
-            )
-            .filter(Boolean),
+          tags,
           tingkatKesulitan,
           sumberFile,
           sumberAI,
-        };
+        ],
+      );
   
-        /*
-         * Clone soal.
-         */
-        const soalProcessed =
-          soalList.map(q => ({
-            ...q,
-            gambar: (
-              q.gambar || []
-            ).map(g => ({
-              ...g,
-            })),
-          }));
-  
-        /* ======================================================
-           UPLOAD GAMBAR BASE64
-        ====================================================== */
-  
-        const toUpload = [];
-  
-        soalProcessed.forEach(
-          (q, qi) => {
-            (
-              q.gambar || []
-            ).forEach(
-              (g, gi) => {
-                const src =
-                  g.dataUrl;
-  
-                if (
-                  typeof src ===
-                    'string' &&
-                  src.startsWith(
-                    'data:image'
-                  )
-                ) {
-                  toUpload.push({
-                    key: `q${qi}-g${gi}-${Date.now()}-${Math.random()
-                      .toString(36)
-                      .slice(2, 8)}`,
-                    dataUrl: src,
-                    qi,
-                    gi,
-                  });
-                }
-              }
-            );
-          }
-        );
-  
-        if (
-          toUpload.length > 0
-        ) {
-          addLog(
-            `⏳ Menyiapkan ${toUpload.length} gambar untuk upload...`
-          );
-  
-          try {
-            const response =
-              await fetch(
-                '/api/uploadBankSoalImages',
-                {
-                  method:
-                    'POST',
-  
-                  headers: {
-                    'Content-Type':
-                      'application/json',
-                  },
-  
-                  body: JSON.stringify(
-                    {
-                      images:
-                        toUpload.map(
-                          item => ({
-                            key:
-                              item.key,
-                            dataUrl:
-                              item.dataUrl,
-                          })
-                        ),
-                    }
-                  ),
-                }
-              );
-  
-            if (
-              !response.ok
-            ) {
-              throw new Error(
-                `HTTP ${response.status}`
-              );
-            }
-  
-            const result =
-              await response.json();
-  
-            const urlMap = {};
-  
-            (
-              result.uploaded ||
-              []
-            ).forEach(
-              uploaded => {
-                if (
-                  uploaded.key &&
-                  uploaded.url
-                ) {
-                  urlMap[
-                    uploaded.key
-                  ] =
-                    uploaded.url;
-                }
-              }
-            );
-  
-            toUpload.forEach(
-              ({
-                key,
-                qi,
-                gi,
-              }) => {
-                const uploadedUrl =
-                  urlMap[key];
-  
-                if (
-                  uploadedUrl
-                ) {
-                  const gambar =
-                    [
-                      ...(
-                        soalProcessed[
-                          qi
-                        ].gambar ||
-                        []
-                      ),
-                    ];
-  
-                  gambar[gi] = {
-                    ...gambar[gi],
-                    uploadedUrl,
-                    dataUrl:
-                      null,
-                  };
-  
-                  soalProcessed[
-                    qi
-                  ] = {
-                    ...soalProcessed[
-                      qi
-                    ],
-                    gambar,
-                  };
-                }
-              }
-            );
-  
-            const uploadedCount =
-              result.uploadedCount ??
-              Object.keys(
-                urlMap
-              ).length;
-  
-            addLog(
-              `✅ ${uploadedCount}/${toUpload.length} gambar berhasil diupload.`
-            );
-  
-            if (
-              Array.isArray(
-                result.errors
-              ) &&
-              result.errors
-                .length > 0
-            ) {
-              addLog(
-                `⚠️ ${result.errors.length} gambar gagal upload.`
-              );
-            }
-          } catch (
-            error
-          ) {
-            addLog(
-              `❌ Upload gambar gagal: ${
-                error?.message ||
-                'unknown error'
-              }`
-            );
-  
-            addLog(
-              '⚠️ Soal tetap diproses. Gambar yang gagal upload tidak akan memiliki URL.'
-            );
-          }
-        } else {
-          addLog(
-            'ℹ️ Tidak ada gambar base64 yang perlu diupload.'
-          );
-        }
-  
-        /* ======================================================
-           VALIDASI SEBELUM FIRESTORE
-        ====================================================== */
-  
-        const invalidQuestions =
-          soalProcessed.filter(
-            q =>
-              !q.teks_soal &&
-              (
-                q.opsi_jawaban ||
-                []
-              ).length === 0
-          );
-  
-        if (
-          invalidQuestions.length >
-          0
-        ) {
-          addLog(
-            `⚠️ ${invalidQuestions.length} soal tidak memiliki teks maupun opsi.`
-          );
-        }
-  
-        /* ======================================================
-           FIRESTORE
-        ====================================================== */
-  
-        addLog(
-          `📝 Menyimpan ${soalProcessed.length} soal ke Firestore...`
-        );
-  
-        try {
-          const CHUNK = 400;
-  
-          let saved = 0;
-  
-          for (
-            let i = 0;
-            i <
-            soalProcessed.length;
-            i += CHUNK
-          ) {
-            const chunk =
-              soalProcessed.slice(
-                i,
-                i + CHUNK
-              );
-  
-            const batch =
-              writeBatch(db);
-  
-            chunk.forEach(
-              q => {
-                const ref =
-                  doc(
-                    collection(
-                      db,
-                      BANK_SOAL_COLLECTION
-                    )
-                  );
-  
-                batch.set(
-                  ref,
-                  buildDoc(
-                    q,
-                    meta
-                  )
-                );
-              }
-            );
-  
-            await batch.commit();
-  
-            saved +=
-              chunk.length;
-  
-            addLog(
-              `💾 ${saved}/${soalProcessed.length} soal tersimpan...`
-            );
-          }
-  
-          addLog(
-            `🎉 Selesai! ${soalProcessed.length} soal berhasil masuk Bank Soal.`
-          );
-  
-          setSaveResult({
-            success: true,
-            count:
-              soalProcessed.length,
-          });
-        } catch (
-          error
-        ) {
-          console.error(
-            'Firestore save error:',
-            error
-          );
-  
-          addLog(
-            `❌ Gagal simpan ke Firestore: ${
-              error?.message ||
-              'Unknown error'
-            }`
-          );
-  
-          setSaveResult({
-            success: false,
-            error:
-              error?.message ||
-              'Gagal menyimpan soal.',
-          });
-        } finally {
-          setSaving(false);
-        }
-      };
-  
-    /* ==========================================================
-       RENDER
-    ========================================================== */
+    // ==========================================================
+    // RENDER
+    // ==========================================================
   
     return (
       <div
         style={{
-          display: 'flex',
+          display:
+            'flex',
+  
           minHeight:
             '100vh',
+  
           background:
             '#f8fafc',
         }}
@@ -2524,14 +2677,17 @@ import React, {
         <main
           style={{
             flex: 1,
+  
             marginLeft:
               isMobile
                 ? 0
                 : 260,
-            transition:
-              'margin-left .3s',
+  
             minHeight:
               '100vh',
+  
+            transition:
+              'margin-left .2s',
           }}
         >
           <div
@@ -2540,59 +2696,37 @@ import React, {
               sm:p-6
               max-w-6xl
               mx-auto
-              space-y-6
+              space-y-5
             "
           >
-            {/* =================================================
+            {/* ==================================================
                 HEADER
-            ================================================= */}
+            ================================================== */}
   
             <div>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold text-gray-800">
                   Import Hasil Scan AI
                 </h1>
   
-                <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
-                  JSON + GAMBAR
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
+                  SAFE IMPORT
                 </span>
               </div>
   
               <p className="text-gray-500 text-sm mt-1">
-                Import hasil scan dari Gemini,
-                ChatGPT, Claude, atau AI lain
-                ke Bank Soal Gemilang.
+                Import soal hasil scan AI ke Bank
+                Soal Gemilang dengan gambar,
+                kunci jawaban, penanda jawaban
+                benar, dan pembahasan.
               </p>
-  
-              <div className="flex flex-wrap gap-2 mt-3 text-xs">
-                <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-600">
-                  ✓ Pembahasan
-                </span>
-  
-                <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-600">
-                  ✓ Jawaban benar
-                </span>
-  
-                <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-600">
-                  ✓ Gambar Base64
-                </span>
-  
-                <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-600">
-                  ✓ LaTeX
-                </span>
-  
-                <span className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-600">
-                  ✓ PG Kompleks
-                </span>
-              </div>
             </div>
   
-            {/* =================================================
-                INPUT CARD
-            ================================================= */}
+            {/* ==================================================
+                FORMAT
+            ================================================== */}
   
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 space-y-4">
-              {/* Format */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
               <div className="flex flex-wrap gap-3 items-center">
                 <span className="text-sm font-semibold text-gray-600">
                   Format:
@@ -2601,61 +2735,67 @@ import React, {
                 {[
                   'json',
                   'csv',
-                ].map(f => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() =>
-                      setFormat(f)
+                ].map(
+                  currentFormat => (
+                    <button
+                      key={
+                        currentFormat
+                      }
+                      type="button"
+                      onClick={() => {
+                        setFormat(
+                          currentFormat,
+                        );
+  
+                        setParseError(
+                          '',
+                        );
+                      }}
+                      className={`
+                        px-4
+                        py-2
+                        rounded-lg
+                        text-sm
+                        font-bold
+                        border
+                        transition
+                        ${
+                          format ===
+                          currentFormat
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                        }
+                      `}
+                    >
+                      {currentFormat.toUpperCase()}
+  
+                      <span className="ml-1 text-[10px] opacity-70">
+                        {currentFormat ===
+                        'json'
+                          ? 'Gambar + pembahasan'
+                          : 'Teks'}
+                      </span>
+                    </button>
+                  ),
+                )}
+  
+                <label className="cursor-pointer ml-auto px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-600 hover:border-blue-400 bg-white">
+                  📂 Pilih File
+  
+                  <input
+                    type="file"
+                    accept=".json,.csv,application/json,text/csv"
+                    onChange={
+                      handleFile
                     }
-                    className={`
-                      px-4
-                      py-2
-                      rounded-lg
-                      text-sm
-                      font-bold
-                      border
-                      transition-all
-                      ${
-                        format === f
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : 'bg-white text-gray-500 border-gray-300 hover:border-blue-400'
-                      }
-                    `}
-                  >
-                    {f.toUpperCase()}
-  
-                    <span className="ml-1.5 text-[10px] font-normal opacity-80">
-                      {f ===
-                      'json'
-                        ? 'gambar + pembahasan'
-                        : 'teks'}
-                    </span>
-                  </button>
-                ))}
-  
-                <div className="w-full sm:w-auto sm:ml-auto flex items-center gap-2">
-                  <label className="text-sm text-gray-500">
-                    Upload:
-                  </label>
-  
-                  <label className="cursor-pointer px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-600 hover:border-blue-400 bg-white transition">
-                    📂 Pilih file
-  
-                    <input
-                      type="file"
-                      accept=".json,.csv"
-                      onChange={
-                        handleFile
-                      }
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+                    className="hidden"
+                  />
+                </label>
               </div>
   
-              {/* Source */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* SOURCE */}
+  
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">
                     Sumber AI
@@ -2668,7 +2808,8 @@ import React, {
                     }
                     onChange={e =>
                       setSumberAI(
-                        e.target.value
+                        e.target
+                          .value,
                       )
                     }
                     placeholder="Gemini Canvas, ChatGPT, Claude..."
@@ -2689,7 +2830,7 @@ import React, {
   
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">
-                    Nama file sumber
+                    Nama File Sumber
                   </label>
   
                   <input
@@ -2699,10 +2840,11 @@ import React, {
                     }
                     onChange={e =>
                       setSumberFile(
-                        e.target.value
+                        e.target
+                          .value,
                       )
                     }
-                    placeholder="Contoh: TKA Matematika.pdf"
+                    placeholder="Contoh: TO TKA Matematika.pdf"
                     className="
                       w-full
                       border
@@ -2719,25 +2861,18 @@ import React, {
                 </div>
               </div>
   
-              {/* Textarea */}
+              {/* TEXTAREA */}
+  
               <div>
-                <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-gray-500">
-                    Paste {format.toUpperCase()} di sini
+                    Paste{' '}
+                    {format.toUpperCase()}
                   </label>
   
-                  {format ===
-                    'json' && (
-                    <button
-                      type="button"
-                      onClick={
-                        handleLoadExample
-                      }
-                      className="text-xs text-blue-600 hover:text-blue-700 font-semibold"
-                    >
-                      Gunakan contoh JSON
-                    </button>
-                  )}
+                  <span className="text-[11px] text-gray-400">
+                    Aman untuk JSON besar
+                  </span>
                 </div>
   
                 <textarea
@@ -2745,20 +2880,34 @@ import React, {
                   value={
                     rawInput
                   }
-                  onChange={e => {
+                  onChange={e =>
                     setRawInput(
                       e.target
-                        .value
-                    );
-                    setParseError(
-                      ''
-                    );
-                  }}
+                        .value,
+                    )
+                  }
+                  spellCheck="false"
                   placeholder={
                     format ===
                     'json'
-                      ? contohJSON
-                      : 'Nomor,Tipe,Soal,Opsi A,Opsi B,Opsi C,Opsi D,Opsi E,Kunci,Pembahasan'
+                      ? `[
+    {
+      "nomor": 1,
+      "tipe": "pg_sederhana",
+      "teks_soal": "Berapakah hasil $2+3$?",
+      "opsi_jawaban": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "kunci_jawaban": "B",
+      "pembahasan": "2 + 3 = 5.",
+      "gambar": []
+    }
+  ]`
+                      : `Nomor,Tipe,Soal,Opsi A,Opsi B,Opsi C,Opsi D,Opsi E,Kunci,Pembahasan
+  1,pg_sederhana,"Berapakah 2+3?",4,5,6,7,8,B,"2+3=5"`
                   }
                   className="
                     w-full
@@ -2769,6 +2918,7 @@ import React, {
                     py-3
                     text-sm
                     font-mono
+                    leading-6
                     focus:outline-none
                     focus:ring-2
                     focus:ring-blue-500
@@ -2778,22 +2928,21 @@ import React, {
                 />
               </div>
   
-              {/* Error */}
+              {/* ERROR */}
+  
               {parseError && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
                   <div className="font-bold mb-1">
-                    ❌ Gagal membaca data
+                    ❌ JSON/CSV tidak
+                    dapat diproses
                   </div>
   
                   <div>
-                    {
-                      parseError
-                    }
+                    {parseError}
                   </div>
                 </div>
               )}
   
-              {/* Buttons */}
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -2815,861 +2964,988 @@ import React, {
                   🔍 Parse & Preview
                 </button>
   
-                <button
-                  type="button"
-                  onClick={
-                    handleReset
-                  }
-                  disabled={saving}
-                  className="
-                    px-5
-                    py-2.5
-                    bg-white
-                    hover:bg-gray-50
-                    text-gray-600
-                    border
-                    border-gray-300
-                    rounded-xl
-                    text-sm
-                    font-semibold
-                    disabled:opacity-50
-                  "
-                >
-                  ↻ Reset
-                </button>
+                {soalList.length >
+                  0 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      downloadJSON(
+                        soalList,
+                      )
+                    }
+                    className="
+                      px-5
+                      py-2.5
+                      bg-gray-800
+                      hover:bg-gray-900
+                      text-white
+                      rounded-xl
+                      text-sm
+                      font-bold
+                    "
+                  >
+                    ⬇️ Download JSON
+                  </button>
+                )}
+  
+                {rawInput && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRawInput(
+                        '',
+                      );
+  
+                      setSoalList(
+                        [],
+                      );
+  
+                      setParseError(
+                        '',
+                      );
+  
+                      setWarnings(
+                        [],
+                      );
+                    }}
+                    className="
+                      px-5
+                      py-2.5
+                      bg-white
+                      hover:bg-gray-50
+                      text-gray-700
+                      border
+                      border-gray-300
+                      rounded-xl
+                      text-sm
+                      font-bold
+                    "
+                  >
+                    🗑️ Bersihkan
+                  </button>
+                )}
               </div>
             </div>
   
-            {/* =================================================
-                PREVIEW
-            ================================================= */}
+            {/* ==================================================
+                WARNING
+            ================================================== */}
   
-            {soalList.length >
+            {warnings.length >
               0 && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 space-y-5">
-                {/* Header Preview */}
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h2 className="font-bold text-gray-800 text-lg">
-                      Preview
-                    </h2>
-  
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {
-                        statistik.total
-                      }{' '}
-                      soal berhasil dibaca.
-                    </p>
-                  </div>
-  
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold">
-                      📝{' '}
-                      {
-                        statistik.total
-                      }{' '}
-                      soal
-                    </span>
-  
-                    <span className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">
-                      ✓{' '}
-                      {
-                        statistik.denganKunci
-                      }{' '}
-                      ada kunci
-                    </span>
-  
-                    <span className="px-2.5 py-1.5 rounded-lg bg-violet-50 text-violet-700 text-xs font-semibold">
-                      📖{' '}
-                      {
-                        statistik.denganPembahasan
-                      }{' '}
-                      pembahasan
-                    </span>
-  
-                    <span className="px-2.5 py-1.5 rounded-lg bg-purple-50 text-purple-700 text-xs font-semibold">
-                      🖼️{' '}
-                      {
-                        statistik.denganGambar
-                      }{' '}
-                      gambar
-                    </span>
-                  </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                <div className="font-bold text-amber-800 mb-2">
+                  ⚠️ Ada soal yang perlu
+                  diperiksa
                 </div>
   
-                {/* =================================================
-                    SOAL LIST
-                ================================================= */}
-  
-                <div className="space-y-4 max-h-[700px] overflow-y-auto pr-1">
-                  {soalList
-                    .slice(
-                      0,
-                      50
-                    )
-                    .map(
-                      (
-                        q,
-                        i
-                      ) => {
-                        const correctSet =
-                          new Set(
-                            q.jawaban_benar ||
-                              []
-                          );
-  
-                        return (
-                          <div
-                            key={`${q.nomor}-${i}`}
-                            className="
-                              border
-                              border-gray-200
-                              rounded-2xl
-                              p-4
-                              bg-gray-50
-                            "
-                          >
-                            {/* Badge */}
-                            <div className="flex flex-wrap gap-1.5 mb-3">
-                              <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                                Soal{' '}
-                                {
-                                  q.nomor
-                                }
-                              </span>
-  
-                              <span
-                                className={`
-                                  px-2.5
-                                  py-1
-                                  text-xs
-                                  font-bold
-                                  rounded-full
-                                  ${
-                                    q.tipe ===
-                                    'pg_sederhana'
-                                      ? 'bg-sky-100 text-sky-700'
-                                      : q.tipe ===
-                                        'pg_kompleks'
-                                      ? 'bg-violet-100 text-violet-700'
-                                      : q.tipe ===
-                                        'benar_salah'
-                                      ? 'bg-amber-100 text-amber-700'
-                                      : q.tipe ===
-                                        'isian_singkat'
-                                      ? 'bg-emerald-100 text-emerald-700'
-                                      : 'bg-rose-100 text-rose-700'
-                                  }
-                                `}
-                              >
-                                {
-                                  TIPE_LABELS[
-                                    q.tipe
-                                  ] ||
-                                    q.tipe
-                                }
-                              </span>
-  
-                              {q.gambar?.some(
-                                g =>
-                                  !!getImageSource(
-                                    g
-                                  )
-                              ) && (
-                                <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
-                                  🖼️ Gambar
-                                </span>
-                              )}
-  
-                              {q.pembahasan && (
-                                <span className="px-2.5 py-1 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">
-                                  📖 Pembahasan
-                                </span>
-                              )}
-  
-                              {q.jawaban_benar?.length >
-                                0 && (
-                                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full font-mono">
-                                  ✓ Kunci:{' '}
-                                  {q.jawaban_benar.join(
-                                    ', '
-                                  )}
-                                </span>
-                              )}
-                            </div>
-  
-                            {/* Soal */}
-                            <div className="bg-white rounded-xl border border-gray-100 p-4">
-                              <RichText
-                                text={
-                                  q.teks_soal
-                                }
-                                gambar={
-                                  q.gambar
-                                }
-                                mathReady={
-                                  mathReady
-                                }
-                              />
-                            </div>
-  
-                            {/* Opsi */}
-                            {q.opsi_jawaban
-                              ?.length >
-                              0 && (
-                              <div className="mt-3 space-y-2">
-                                {q.opsi_jawaban.map(
-                                  (
-                                    opt,
-                                    oi
-                                  ) => {
-                                    const letter =
-                                      String.fromCharCode(
-                                        65 +
-                                          oi
-                                      );
-  
-                                    const isCorrect =
-                                      correctSet.has(
-                                        letter
-                                      );
-  
-                                    return (
-                                      <div
-                                        key={
-                                          oi
-                                        }
-                                        className={`
-                                          flex
-                                          items-start
-                                          gap-3
-                                          rounded-xl
-                                          border
-                                          p-3
-                                          ${
-                                            isCorrect
-                                              ? 'border-emerald-300 bg-emerald-50'
-                                              : 'border-gray-200 bg-white'
-                                          }
-                                        `}
-                                      >
-                                        <span
-                                          className={`
-                                            flex
-                                            h-7
-                                            w-7
-                                            shrink-0
-                                            items-center
-                                            justify-center
-                                            rounded-full
-                                            text-xs
-                                            font-bold
-                                            ${
-                                              isCorrect
-                                                ? 'bg-emerald-600 text-white'
-                                                : 'bg-gray-100 text-gray-600'
-                                            }
-                                          `}
-                                        >
-                                          {
-                                            letter
-                                          }
-                                        </span>
-  
-                                        <div className="flex-1 min-w-0">
-                                          {isCorrect && (
-                                            <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-emerald-600">
-                                              ✓ JAWABAN BENAR
-                                            </div>
-                                          )}
-  
-                                          <RichText
-                                            text={
-                                              opt
-                                            }
-                                            gambar={[]}
-                                            mathReady={
-                                              mathReady
-                                            }
-                                          />
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-                                )}
-                              </div>
-                            )}
-  
-                            {/* =================================================
-                                BENAR SALAH
-                            ================================================= */}
-  
-                            {q.pernyataan
-                              ?.length >
-                              0 && (
-                              <div className="mt-3">
-                                <div className="text-xs font-bold text-gray-500 uppercase mb-2">
-                                  Pernyataan
-                                </div>
-  
-                                <div className="space-y-2">
-                                  {q.pernyataan.map(
-                                    (
-                                      statement,
-                                      si
-                                    ) => (
-                                      <div
-                                        key={
-                                          si
-                                        }
-                                        className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                                      >
-                                        <span className="font-bold mr-2">
-                                          {
-                                            si +
-                                            1
-                                          }.
-                                        </span>
-  
-                                        {
-                                          statement
-                                        }
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-  
-                            {/* =================================================
-                                MENJODOHKAN
-                            ================================================= */}
-  
-                            {q.pasangan
-                              ?.length >
-                              0 && (
-                              <div className="mt-3">
-                                <div className="text-xs font-bold text-gray-500 uppercase mb-2">
-                                  Pasangan
-                                </div>
-  
-                                <div className="space-y-2">
-                                  {q.pasangan.map(
-                                    (
-                                      pair,
-                                      pi
-                                    ) => (
-                                      <div
-                                        key={
-                                          pi
-                                        }
-                                        className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-                                      >
-                                        <div className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                                          <span className="font-bold mr-2">
-                                            Kiri:
-                                          </span>
-                                          {
-                                            pair.kiri
-                                          }
-                                        </div>
-  
-                                        <div className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                                          <span className="font-bold mr-2">
-                                            Kanan:
-                                          </span>
-                                          {
-                                            pair.kanan
-                                          }
-                                        </div>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-  
-                            {/* =================================================
-                                PEMBAHASAN
-                            ================================================= */}
-  
-                            {q.pembahasan && (
-                              <div className="mt-4 border-t border-gray-200 pt-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="text-sm font-bold text-indigo-700">
-                                    📖 Pembahasan
-                                  </span>
-                                </div>
-  
-                                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3">
-                                  <RichText
-                                    text={
-                                      q.pembahasan
-                                    }
-                                    gambar={[]}
-                                    mathReady={
-                                      mathReady
-                                    }
-                                  />
-                                </div>
-                              </div>
-                            )}
-  
-                            {/* =================================================
-                                CATATAN / SUMBER
-                            ================================================= */}
-  
-                            {(q.sumber ||
-                              q.catatan) && (
-                              <div className="mt-3 text-xs text-gray-500">
-                                {q.sumber && (
-                                  <div>
-                                    <b>
-                                      Sumber:
-                                    </b>{' '}
-                                    {
-                                      q.sumber
-                                    }
-                                  </div>
-                                )}
-  
-                                {q.catatan && (
-                                  <div>
-                                    <b>
-                                      Catatan:
-                                    </b>{' '}
-                                    {
-                                      q.catatan
-                                    }
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      }
-                    )}
-  
-                  {soalList.length >
-                    50 && (
-                    <div className="text-center text-sm text-gray-400 py-3">
-                      ...dan{' '}
-                      {soalList.length -
-                        50}{' '}
-                      soal lainnya
-                    </div>
+                <div className="space-y-1 max-h-48 overflow-auto">
+                  {warnings.map(
+                    (
+                      warning,
+                      index,
+                    ) => (
+                      <div
+                        key={
+                          index
+                        }
+                        className="text-xs text-amber-700"
+                      >
+                        {warning}
+                      </div>
+                    ),
                   )}
                 </div>
   
-                {/* =================================================
-                    METADATA
-                ================================================= */}
+                <div className="text-xs text-amber-700 mt-3">
+                  Soal yang valid tetap
+                  bisa disimpan.
+                </div>
+              </div>
+            )}
   
-                <div className="border-t border-gray-100 pt-5">
-                  <h3 className="font-semibold text-gray-700 mb-3 text-sm">
-                    Metadata Soal
-                  </h3>
+            {/* ==================================================
+                STATS
+            ================================================== */}
   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {/* Mapel */}
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Mata Pelajaran *
-                      </label>
+            {soalList.length >
+              0 && (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                  <StatCard
+                    label="Total"
+                    value={
+                      statistik.total
+                    }
+                    icon="📚"
+                  />
   
-                      <select
-                        value={
-                          mataPelajaran
-                        }
-                        onChange={e =>
-                          setMataPelajaran(
-                            e.target
-                              .value
-                          )
-                        }
-                        className="
-                          w-full
-                          border
-                          border-gray-300
-                          rounded-lg
-                          px-3
-                          py-2
-                          text-sm
-                          bg-white
-                          focus:outline-none
-                          focus:ring-2
-                          focus:ring-blue-500
-                        "
-                      >
-                        {DAFTAR_MAPEL.map(
-                          m => (
-                            <option
-                              key={m}
-                              value={m}
-                            >
-                              {m}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </div>
+                  <StatCard
+                    label="Valid"
+                    value={
+                      statistik.valid
+                    }
+                    icon="✅"
+                    good
+                  />
   
-                    {/* Jenjang */}
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Jenjang
-                      </label>
+                  <StatCard
+                    label="Perlu Cek"
+                    value={
+                      statistik.invalid
+                    }
+                    icon="⚠️"
+                  />
   
-                      <select
-                        value={
-                          jenjang
-                        }
-                        onChange={e =>
-                          setJenjang(
-                            e.target
-                              .value
-                          )
-                        }
-                        className="
-                          w-full
-                          border
-                          border-gray-300
-                          rounded-lg
-                          px-3
-                          py-2
-                          text-sm
-                          bg-white
-                          focus:outline-none
-                          focus:ring-2
-                          focus:ring-blue-500
-                        "
-                      >
-                        {DAFTAR_JENJANG.map(
-                          j => (
-                            <option
-                              key={j}
-                              value={j}
-                            >
-                              {j}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </div>
+                  <StatCard
+                    label="Gambar"
+                    value={
+                      statistik.denganGambar
+                    }
+                    icon="🖼️"
+                  />
   
-                    {/* Kelas */}
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Kelas
-                      </label>
+                  <StatCard
+                    label="Kunci"
+                    value={
+                      statistik.denganKunci
+                    }
+                    icon="🔑"
+                  />
   
-                      <select
-                        value={
-                          tingkatKelas
-                        }
-                        onChange={e =>
-                          setTingkatKelas(
-                            e.target
-                              .value
-                          )
-                        }
-                        className="
-                          w-full
-                          border
-                          border-gray-300
-                          rounded-lg
-                          px-3
-                          py-2
-                          text-sm
-                          bg-white
-                          focus:outline-none
-                          focus:ring-2
-                          focus:ring-blue-500
-                        "
-                      >
-                        {DAFTAR_KELAS.map(
-                          k => (
-                            <option
-                              key={k}
-                              value={k}
-                            >
-                              Kelas {k}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </div>
-  
-                    {/* Kategori */}
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Kategori / Bab
-                      </label>
-  
-                      <input
-                        type="text"
-                        placeholder="Contoh: Fungsi Kuadrat"
-                        value={
-                          kategori
-                        }
-                        onChange={e =>
-                          setKategori(
-                            e.target
-                              .value
-                          )
-                        }
-                        className="
-                          w-full
-                          border
-                          border-gray-300
-                          rounded-lg
-                          px-3
-                          py-2
-                          text-sm
-                          focus:outline-none
-                          focus:ring-2
-                          focus:ring-blue-500
-                        "
-                      />
-                    </div>
-  
-                    {/* Kesulitan */}
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Tingkat Kesulitan
-                      </label>
-  
-                      <select
-                        value={
-                          tingkatKesulitan
-                        }
-                        onChange={e =>
-                          setTingkatKesulitan(
-                            e.target
-                              .value
-                          )
-                        }
-                        className="
-                          w-full
-                          border
-                          border-gray-300
-                          rounded-lg
-                          px-3
-                          py-2
-                          text-sm
-                          bg-white
-                          focus:outline-none
-                          focus:ring-2
-                          focus:ring-blue-500
-                        "
-                      >
-                        {DAFTAR_KESULITAN.map(
-                          k => (
-                            <option
-                              key={k}
-                              value={k}
-                            >
-                              {k
-                                .charAt(
-                                  0
-                                )
-                                .toUpperCase() +
-                                k.slice(
-                                  1
-                                )}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </div>
-  
-                    {/* Tags */}
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        Tags
-                      </label>
-  
-                      <input
-                        type="text"
-                        placeholder="UTBK, TKA, Try Out"
-                        value={
-                          tags
-                        }
-                        onChange={e =>
-                          setTags(
-                            e.target
-                              .value
-                          )
-                        }
-                        className="
-                          w-full
-                          border
-                          border-gray-300
-                          rounded-lg
-                          px-3
-                          py-2
-                          text-sm
-                          focus:outline-none
-                          focus:ring-2
-                          focus:ring-blue-500
-                        "
-                      />
-                    </div>
-                  </div>
+                  <StatCard
+                    label="Pembahasan"
+                    value={
+                      statistik.denganPembahasan
+                    }
+                    icon="💡"
+                  />
                 </div>
   
-                {/* =================================================
-                    SAVE LOG
-                ================================================= */}
+                {/* ==================================================
+                    PREVIEW
+                ================================================== */}
   
-                {saveLog.length >
-                  0 && (
-                  <div className="bg-gray-950 rounded-xl p-4 font-mono text-xs space-y-1 max-h-48 overflow-y-auto">
-                    {saveLog.map(
-                      (
-                        message,
-                        index
-                      ) => (
-                        <div
-                          key={
-                            index
-                          }
-                          className={
-                            message.startsWith(
-                              '❌'
-                            )
-                              ? 'text-red-400'
-                              : message.startsWith(
-                                  '⚠️'
-                                )
-                              ? 'text-yellow-400'
-                              : message.startsWith(
-                                  'ℹ️'
-                                )
-                              ? 'text-blue-400'
-                              : 'text-green-400'
-                          }
-                        >
-                          {
-                            message
-                          }
-                        </div>
-                      )
-                    )}
-                  </div>
-                )}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="font-bold text-gray-800 text-lg">
+                        Preview —{' '}
+                        {
+                          soalList.length
+                        }{' '}
+                        soal
+                      </h2>
   
-                {/* =================================================
-                    RESULT
-                ================================================= */}
-  
-                {saveResult && (
-                  <div
-                    className={`
-                      rounded-xl
-                      px-4
-                      py-3
-                      text-sm
-                      font-medium
-                      ${
-                        saveResult.success
-                          ? 'bg-green-50 border border-green-200 text-green-700'
-                          : 'bg-red-50 border border-red-200 text-red-700'
-                      }
-                    `}
-                  >
-                    {saveResult.success
-                      ? `✅ ${saveResult.count} soal berhasil disimpan ke Bank Soal Gemilang!`
-                      : `❌ Gagal: ${saveResult.error}`}
-                  </div>
-                )}
-  
-                {/* =================================================
-                    SAVE BUTTON
-                ================================================= */}
-  
-                {!saveResult?.success && (
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                    <div className="text-xs text-gray-500">
-                      <div>
-                        Soal:{' '}
-                        <b>
-                          {
-                            statistik.total
-                          }
-                        </b>
-                      </div>
-  
-                      <div>
-                        Gambar:{' '}
-                        <b>
-                          {
-                            statistik.denganGambar
-                          }
-                        </b>
-                      </div>
-  
-                      <div>
-                        Pembahasan:{' '}
-                        <b>
-                          {
-                            statistik.denganPembahasan
-                          }
-                        </b>
-                      </div>
-  
-                      <div>
-                        Kunci:{' '}
-                        <b>
-                          {
-                            statistik.denganKunci
-                          }
-                        </b>
-                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Gambar ditampilkan tanpa
+                        cropping.
+                      </p>
                     </div>
   
                     <button
                       type="button"
-                      onClick={
-                        handleSave
-                      }
-                      disabled={
-                        saving ||
-                        soalList.length ===
-                          0
+                      onClick={() =>
+                        downloadJSON(
+                          soalList,
+                        )
                       }
                       className="
-                        px-7
-                        py-3
-                        bg-gradient-to-r
-                        from-emerald-600
-                        to-teal-600
-                        hover:from-emerald-500
-                        hover:to-teal-500
-                        text-white
-                        rounded-xl
-                        text-sm
+                        px-4
+                        py-2
+                        bg-gray-100
+                        hover:bg-gray-200
+                        text-gray-700
+                        rounded-lg
+                        text-xs
                         font-bold
-                        flex
-                        items-center
-                        justify-center
-                        gap-2
-                        disabled:opacity-50
-                        disabled:cursor-not-allowed
-                        transition
-                        shadow-sm
                       "
                     >
-                      {saving
-                        ? '⏳ Menyimpan...'
-                        : `💾 Simpan ${soalList.length} Soal ke Bank Soal`}
+                      ⬇️ Export JSON
                     </button>
                   </div>
-                )}
-              </div>
+  
+                  <div className="space-y-4 max-h-[700px] overflow-y-auto pr-1">
+                    {soalList
+                      .slice(
+                        0,
+                        100,
+                      )
+                      .map(
+                        (
+                          q,
+                          index,
+                        ) => (
+                          <QuestionPreview
+                            key={`${q.nomor}-${index}`}
+                            question={
+                              q
+                            }
+                            mathReady={
+                              mathReady
+                            }
+                          />
+                        ),
+                      )}
+  
+                    {soalList.length >
+                      100 && (
+                      <div className="text-center text-xs text-gray-400 py-3">
+                        Menampilkan 100
+                        soal pertama dari{' '}
+                        {
+                          soalList.length
+                        }
+                        .
+                      </div>
+                    )}
+                  </div>
+  
+                  {/* ==================================================
+                      METADATA
+                  ================================================== */}
+  
+                  <div className="border-t border-gray-100 pt-5">
+                    <h3 className="font-bold text-gray-700 mb-3">
+                      Metadata Soal
+                    </h3>
+  
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      <Field label="Mata Pelajaran">
+                        <select
+                          value={
+                            mataPelajaran
+                          }
+                          onChange={e =>
+                            setMataPelajaran(
+                              e.target
+                                .value,
+                            )
+                          }
+                          className="input"
+                        >
+                          {DAFTAR_MAPEL.map(
+                            mapel => (
+                              <option
+                                key={
+                                  mapel
+                                }
+                                value={
+                                  mapel
+                                }
+                              >
+                                {
+                                  mapel
+                                }
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </Field>
+  
+                      <Field label="Jenjang">
+                        <select
+                          value={
+                            jenjang
+                          }
+                          onChange={e =>
+                            setJenjang(
+                              e.target
+                                .value,
+                            )
+                          }
+                          className="input"
+                        >
+                          {DAFTAR_JENJANG.map(
+                            item => (
+                              <option
+                                key={
+                                  item
+                                }
+                                value={
+                                  item
+                                }
+                              >
+                                {
+                                  item
+                                }
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </Field>
+  
+                      <Field label="Kelas">
+                        <select
+                          value={
+                            tingkatKelas
+                          }
+                          onChange={e =>
+                            setTingkatKelas(
+                              e.target
+                                .value,
+                            )
+                          }
+                          className="input"
+                        >
+                          {DAFTAR_KELAS.map(
+                            item => (
+                              <option
+                                key={
+                                  item
+                                }
+                                value={
+                                  item
+                                }
+                              >
+                                Kelas{' '}
+                                {
+                                  item
+                                }
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </Field>
+  
+                      <Field label="Kategori / Bab">
+                        <input
+                          value={
+                            kategori
+                          }
+                          onChange={e =>
+                            setKategori(
+                              e.target
+                                .value,
+                            )
+                          }
+                          placeholder="Contoh: Eksponen"
+                          className="input"
+                        />
+                      </Field>
+  
+                      <Field label="Kesulitan">
+                        <select
+                          value={
+                            tingkatKesulitan
+                          }
+                          onChange={e =>
+                            setTingkatKesulitan(
+                              e.target
+                                .value,
+                            )
+                          }
+                          className="input"
+                        >
+                          {DAFTAR_KESULITAN.map(
+                            item => (
+                              <option
+                                key={
+                                  item
+                                }
+                                value={
+                                  item
+                                }
+                              >
+                                {item
+                                  .charAt(
+                                    0,
+                                  )
+                                  .toUpperCase() +
+                                  item.slice(
+                                    1,
+                                  )}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </Field>
+  
+                      <Field label="Tags">
+                        <input
+                          value={
+                            tags
+                          }
+                          onChange={e =>
+                            setTags(
+                              e.target
+                                .value,
+                            )
+                          }
+                          placeholder="TKA, HOTS, UTBK"
+                          className="input"
+                        />
+                      </Field>
+                    </div>
+                  </div>
+  
+                  {/* ==================================================
+                      SAVE LOG
+                  ================================================== */}
+  
+                  {saveLog.length >
+                    0 && (
+                    <div className="bg-gray-950 rounded-xl p-4 max-h-48 overflow-y-auto">
+                      {saveLog.map(
+                        (
+                          log,
+                          index,
+                        ) => (
+                          <div
+                            key={
+                              index
+                            }
+                            className="text-xs text-green-400 font-mono mb-1"
+                          >
+                            {log}
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  )}
+  
+                  {/* ==================================================
+                      RESULT
+                  ================================================== */}
+  
+                  {saveResult && (
+                    <div
+                      className={`
+                        rounded-xl
+                        px-4
+                        py-4
+                        text-sm
+                        ${
+                          saveResult.success
+                            ? 'bg-green-50 border border-green-200 text-green-700'
+                            : 'bg-red-50 border border-red-200 text-red-700'
+                        }
+                      `}
+                    >
+                      {saveResult.success ? (
+                        <>
+                          <div className="font-bold">
+                            🎉 Berhasil!
+                          </div>
+  
+                          <div className="mt-1">
+                            {
+                              saveResult.count
+                            }{' '}
+                            soal berhasil
+                            disimpan ke
+                            Bank Soal.
+                          </div>
+  
+                          {saveResult.skipped >
+                            0 && (
+                            <div className="text-xs mt-1">
+                              {
+                                saveResult.skipped
+                              }{' '}
+                              soal dilewati
+                              karena tidak
+                              valid.
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-bold">
+                            ❌ Gagal
+                          </div>
+  
+                          <div className="mt-1">
+                            {
+                              saveResult.error
+                            }
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+  
+                  {/* ==================================================
+                      SAVE BUTTON
+                  ================================================== */}
+  
+                  {!saveResult?.success && (
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          downloadJSON(
+                            soalList,
+                          )
+                        }
+                        className="
+                          px-5
+                          py-3
+                          bg-gray-800
+                          hover:bg-gray-900
+                          text-white
+                          rounded-xl
+                          text-sm
+                          font-bold
+                        "
+                      >
+                        ⬇️ Download JSON
+                      </button>
+  
+                      <button
+                        type="button"
+                        onClick={
+                          handleSave
+                        }
+                        disabled={
+                          saving
+                        }
+                        className="
+                          px-6
+                          py-3
+                          bg-emerald-600
+                          hover:bg-emerald-700
+                          text-white
+                          rounded-xl
+                          text-sm
+                          font-bold
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
+                        "
+                      >
+                        {saving
+                          ? '⏳ Menyimpan...'
+                          : `💾 Simpan Soal Valid ke Bank Soal`}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </main>
+  
+        {/* ========================================================
+            GLOBAL LOCAL CSS
+        ======================================================== */}
+  
+        <style>
+          {`
+            .input {
+              width: 100%;
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              padding: 8px 12px;
+              font-size: 14px;
+              outline: none;
+              background: white;
+            }
+  
+            .input:focus {
+              border-color: #3b82f6;
+              box-shadow: 0 0 0 2px rgba(59,130,246,.15);
+            }
+  
+            .math-fallback {
+              display: inline-block;
+              padding: 1px 4px;
+              border-radius: 4px;
+              background: #f3f4f6;
+              color: #374151;
+              font-family: Georgia, serif;
+            }
+  
+            .katex-display {
+              overflow-x: auto;
+              overflow-y: hidden;
+              padding: 4px 0;
+            }
+  
+            @media (max-width: 640px) {
+              .katex-display {
+                max-width: 100%;
+              }
+            }
+          `}
+        </style>
+      </div>
+    );
+  }
+  
+  // ============================================================
+  // STAT CARD
+  // ============================================================
+  
+  function StatCard({
+    label,
+    value,
+    icon,
+    good = false,
+  }) {
+    return (
+      <div
+        className={`
+          rounded-xl
+          border
+          p-3
+          ${
+            good
+              ? 'bg-green-50 border-green-200'
+              : 'bg-white border-gray-200'
+          }
+        `}
+      >
+        <div className="text-lg">
+          {icon}
+        </div>
+  
+        <div className="text-xl font-bold text-gray-800">
+          {value}
+        </div>
+  
+        <div className="text-[11px] text-gray-500">
+          {label}
+        </div>
+      </div>
+    );
+  }
+  
+  // ============================================================
+  // FIELD
+  // ============================================================
+  
+  function Field({
+    label,
+    children,
+  }) {
+    return (
+      <div>
+        <label className="text-xs text-gray-500 mb-1 block">
+          {label}
+        </label>
+  
+        {children}
+      </div>
+    );
+  }
+  
+  // ============================================================
+  // QUESTION PREVIEW
+  // ============================================================
+  
+  function QuestionPreview({
+    question,
+    mathReady,
+  }) {
+    const q =
+      question;
+  
+    const correctIndexes =
+      safeArray(
+        q.opsi_benar,
+      );
+  
+    return (
+      <div
+        className={`
+          rounded-2xl
+          border
+          p-4
+          ${
+            q.valid
+              ? 'border-gray-200 bg-gray-50'
+              : 'border-amber-300 bg-amber-50'
+          }
+        `}
+      >
+        {/* HEADER */}
+  
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+            Soal {q.nomor}
+          </span>
+  
+          <span className="px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-full">
+            {TIPE_LABELS[
+              q.tipe
+            ] ||
+              q.tipe}
+          </span>
+  
+          {q.valid ? (
+            <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+              ✓ Valid
+            </span>
+          ) : (
+            <span className="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+              ⚠ Perlu cek
+            </span>
+          )}
+  
+          {q.kunci_jawaban && (
+            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full font-mono">
+              Kunci:{' '}
+              {
+                q.kunci_jawaban
+              }
+            </span>
+          )}
+  
+          {q.gambar?.length >
+            0 && (
+            <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
+              🖼️{' '}
+              {
+                q.gambar
+                  .length
+              }{' '}
+              gambar
+            </span>
+          )}
+  
+          {q.pembahasan && (
+            <span className="px-2.5 py-1 bg-cyan-100 text-cyan-700 text-xs font-bold rounded-full">
+              💡 Pembahasan
+            </span>
+          )}
+        </div>
+  
+        {/* ERROR */}
+  
+        {q.errors?.length >
+          0 && (
+          <div className="mb-3 rounded-lg bg-white border border-amber-200 p-3 text-xs text-amber-700">
+            {q.errors.map(
+              (
+                error,
+                index,
+              ) => (
+                <div
+                  key={
+                    index
+                  }
+                >
+                  ⚠️ {error}
+                </div>
+              ),
+            )}
+          </div>
+        )}
+  
+        {/* QUESTION */}
+  
+        <RichText
+          text={
+            q.teks_soal
+          }
+          gambar={
+            q.gambar
+          }
+          mathReady={
+            mathReady
+          }
+        />
+  
+        {/* OPTIONS */}
+  
+        {q.opsi_jawaban
+          ?.length >
+          0 && (
+          <div className="mt-4 space-y-2">
+            {q.opsi_jawaban.map(
+              (
+                option,
+                optionIndex,
+              ) => {
+                const isCorrect =
+                  Boolean(
+                    correctIndexes[
+                      optionIndex
+                    ],
+                  );
+  
+                return (
+                  <div
+                    key={
+                      optionIndex
+                    }
+                    className={`
+                      flex
+                      gap-3
+                      items-start
+                      rounded-xl
+                      border
+                      px-3
+                      py-2.5
+                      ${
+                        isCorrect
+                          ? 'bg-green-50 border-green-300'
+                          : 'bg-white border-gray-200'
+                      }
+                    `}
+                  >
+                    <div
+                      className={`
+                        flex
+                        items-center
+                        justify-center
+                        w-7
+                        h-7
+                        rounded-full
+                        text-xs
+                        font-bold
+                        flex-shrink-0
+                        ${
+                          isCorrect
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-600'
+                        }
+                      `}
+                    >
+                      {optionLetter(
+                        optionIndex,
+                      )}
+                    </div>
+  
+                    <div className="flex-1">
+                      <RichText
+                        text={
+                          option
+                        }
+                        gambar={
+                          []
+                        }
+                        mathReady={
+                          mathReady
+                        }
+                      />
+                    </div>
+  
+                    {isCorrect && (
+                      <span className="text-green-600 text-xs font-bold whitespace-nowrap">
+                        ✓ BENAR
+                      </span>
+                    )}
+                  </div>
+                );
+              },
+            )}
+          </div>
+        )}
+  
+        {/* TRUE FALSE */}
+  
+        {q.tabel_benar_salah
+          ?.length >
+          0 && (
+          <div className="mt-4 rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-3 py-2 bg-gray-100 text-xs font-bold text-gray-700">
+              Pernyataan
+            </div>
+  
+            {q.tabel_benar_salah.map(
+              (
+                item,
+                index,
+              ) => (
+                <div
+                  key={
+                    index
+                  }
+                  className="grid grid-cols-1 md:grid-cols-[1fr_120px] border-t border-gray-200"
+                >
+                  <div className="p-3 text-sm">
+                    {typeof item ===
+                    'object' ? (
+                      <RichText
+                        text={
+                          item.pernyataan
+                        }
+                        gambar={
+                          []
+                        }
+                        mathReady={
+                          mathReady
+                        }
+                      />
+                    ) : (
+                      item
+                    )}
+                  </div>
+  
+                  <div className="p-3 text-sm font-bold text-center">
+                    {typeof item ===
+                    'object'
+                      ? item.jawaban
+                      : ''}
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+        )}
+  
+        {/* MATCHING */}
+  
+        {q.pasangan?.length >
+          0 && (
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+            {q.pasangan.map(
+              (
+                pair,
+                index,
+              ) => (
+                <div
+                  key={
+                    index
+                  }
+                  className="rounded-lg border border-gray-200 bg-white p-3 text-sm"
+                >
+                  <div className="font-semibold">
+                    {pair.kiri}
+                  </div>
+  
+                  <div className="text-blue-600 my-1">
+                    ↕
+                  </div>
+  
+                  <div>
+                    {pair.kanan}
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+        )}
+  
+        {/* PEMBAHASAN */}
+  
+        {q.pembahasan && (
+          <div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4">
+            <div className="text-xs font-bold text-cyan-700 mb-2">
+              💡 PEMBAHASAN
+            </div>
+  
+            <RichText
+              text={
+                q.pembahasan
+              }
+              gambar={[]}
+              mathReady={
+                mathReady
+              }
+            />
+          </div>
+        )}
+  
+        {/* VERIFIED */}
+  
+        {q.kunci_terverifikasi && (
+          <div className="mt-3 text-xs text-green-700 font-semibold">
+            ✓ Kunci jawaban
+            terverifikasi.
+          </div>
+        )}
       </div>
     );
   }
