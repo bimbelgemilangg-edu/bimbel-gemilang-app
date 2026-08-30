@@ -61,10 +61,11 @@ import React, {
   
   const TIPE_LABELS = {
     pg_sederhana: 'PG Sederhana',
-    pg_kompleks: 'PG Kompleks',
-    benar_salah: 'Benar / Salah',
+    pg_kompleks: 'PG Kompleks (jawaban lebih dari satu)',
+    benar_salah: 'Benar / Salah (pernyataan majemuk)',
     isian_singkat: 'Isian Singkat',
     menjodohkan: 'Menjodohkan',
+    uraian: 'Uraian / Esai',
   };
   
   // Kunci-kunci yang dikenali sebagai "grup paket" di level JSON teratas.
@@ -225,6 +226,9 @@ import React, {
       short_answer: 'isian_singkat',
       menjodohkan: 'menjodohkan',
       matching: 'menjodohkan',
+      uraian: 'uraian',
+      esai: 'uraian',
+      essay: 'uraian',
     };
     return aliases[raw] || 'pg_sederhana';
   }
@@ -362,6 +366,7 @@ import React, {
         paket: null,
         paketMeta: null,
         tipe: 'pg_sederhana',
+        bacaan: null,
         teks_soal: '',
         opsi_jawaban: [],
         opsi_benar: [],
@@ -389,6 +394,27 @@ import React, {
     const teksSoal = safeString(
       q.teks_soal || q.soal || q.question || q.pertanyaan || '',
     );
+  
+    // ----------------------------------------------------------
+    // BACAAN / STIMULUS (mis. teks panjang, data, atau ilustrasi yang
+    // dipakai bersama oleh sekelompok soal). SENGAJA disalin utuh ke
+    // tiap soal (bukan direferensikan via id) supaya tiap soal tetap
+    // jadi satu kesatuan lengkap saat ditarik terpisah / dicampur
+    // dengan soal lain, tanpa bergantung pada folder/objek lain.
+    // ----------------------------------------------------------
+  
+    const bacaanSource = q.bacaan ?? q.stimulus ?? q.wacana ?? null;
+    let bacaan = null;
+  
+    if (typeof bacaanSource === 'string' && bacaanSource.trim()) {
+      bacaan = { teks: bacaanSource.trim(), gambar: [] };
+    } else if (bacaanSource && typeof bacaanSource === 'object') {
+      const teksBacaan = safeString(bacaanSource.teks || bacaanSource.text || '');
+      const gambarBacaan = normalizeImageArray(bacaanSource.gambar ?? bacaanSource.images ?? []);
+      if (teksBacaan || gambarBacaan.length > 0) {
+        bacaan = { teks: teksBacaan, gambar: gambarBacaan };
+      }
+    }
   
     // ----------------------------------------------------------
     // OPTIONS (rich: teks + gambar + tabel per opsi)
@@ -497,6 +523,7 @@ import React, {
       paket,
       paketMeta,
       tipe,
+      bacaan,
       teks_soal: teksSoal,
       opsi_jawaban: opsiJawaban,
       opsi_benar: finalOpsiBenar,
@@ -836,6 +863,178 @@ import React, {
   }
   
   // ============================================================
+  // IMAGE CROP MODAL (crop manual pakai canvas, tanpa library tambahan)
+  // ============================================================
+  
+  function ImageCropModal({ src, onCancel, onSave }) {
+    const [imgEl, setImgEl] = useState(null);
+    const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
+    const [rect, setRect] = useState(null); // {x,y,w,h} dalam koordinat tampilan
+    const [dragStart, setDragStart] = useState(null);
+    const containerRef = React.useRef(null);
+  
+    useEffect(() => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const maxW = 640;
+        const scale = img.naturalWidth > maxW ? maxW / img.naturalWidth : 1;
+        setDisplaySize({ w: img.naturalWidth * scale, h: img.naturalHeight * scale });
+        setImgEl(img);
+      };
+      img.onerror = () => {
+        alert('Gambar gagal dimuat untuk di-crop (kemungkinan URL belum diupload / CORS diblokir).');
+        onCancel();
+      };
+      img.src = src;
+    }, [src]);
+  
+    const handleMouseDown = e => {
+      const bounds = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - bounds.left;
+      const y = e.clientY - bounds.top;
+      setDragStart({ x, y });
+      setRect({ x, y, w: 0, h: 0 });
+    };
+  
+    const handleMouseMove = e => {
+      if (!dragStart) return;
+      const bounds = containerRef.current.getBoundingClientRect();
+      const x = Math.max(0, Math.min(displaySize.w, e.clientX - bounds.left));
+      const y = Math.max(0, Math.min(displaySize.h, e.clientY - bounds.top));
+      setRect({
+        x: Math.min(dragStart.x, x),
+        y: Math.min(dragStart.y, y),
+        w: Math.abs(x - dragStart.x),
+        h: Math.abs(y - dragStart.y),
+      });
+    };
+  
+    const handleMouseUp = () => setDragStart(null);
+  
+    const handleSave = () => {
+      if (!imgEl || !rect || rect.w < 5 || rect.h < 5) {
+        alert('Tarik dulu kotak crop di atas gambar (drag mouse).');
+        return;
+      }
+  
+      const scaleX = imgEl.naturalWidth / displaySize.w;
+      const scaleY = imgEl.naturalHeight / displaySize.h;
+  
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(rect.w * scaleX);
+      canvas.height = Math.round(rect.h * scaleY);
+  
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(
+        imgEl,
+        rect.x * scaleX, rect.y * scaleY, rect.w * scaleX, rect.h * scaleY,
+        0, 0, canvas.width, canvas.height,
+      );
+  
+      onSave(canvas.toDataURL('image/png'));
+    };
+  
+    return (
+      <div
+        style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+        }}
+      >
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '20px', maxWidth: '90vw' }}>
+          <div style={{ fontWeight: '700', marginBottom: '4px', color: '#1f2937' }}>✂️ Crop Gambar</div>
+          <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
+            Tarik (drag) mouse di atas gambar untuk memilih area yang mau dipakai.
+          </div>
+  
+          {!imgEl && <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Memuat gambar...</div>}
+  
+          {imgEl && (
+            <div
+              ref={containerRef}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              style={{
+                position: 'relative', width: displaySize.w, height: displaySize.h,
+                backgroundImage: `url(${src})`, backgroundSize: 'cover',
+                cursor: 'crosshair', userSelect: 'none', border: '1px solid #e5e7eb',
+              }}
+            >
+              {rect && (
+                <div
+                  style={{
+                    position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h,
+                    border: '2px dashed #2563eb', backgroundColor: 'rgba(37,99,235,0.15)',
+                  }}
+                />
+              )}
+            </div>
+          )}
+  
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+            <button
+              type="button"
+              onClick={onCancel}
+              style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: '#ffffff', cursor: 'pointer' }}
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#2563eb', color: '#ffffff', fontWeight: '700', cursor: 'pointer' }}
+            >
+              Simpan Crop
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // ============================================================
+  // IMAGE WITH CROP (thumbnail + tombol crop, dipakai di panel "Kelola Gambar")
+  // ============================================================
+  
+  function ImageWithCrop({ image, onCropped }) {
+    const [cropping, setCropping] = useState(false);
+    const src = getImageSrc(image);
+  
+    if (!src) return null;
+  
+    return (
+      <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '4px', marginRight: '10px', marginBottom: '10px' }}>
+        <img
+          src={src}
+          alt={image.deskripsi || 'Gambar'}
+          style={{ width: '120px', height: '90px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e5e7eb' }}
+        />
+        <button
+          type="button"
+          onClick={() => setCropping(true)}
+          style={{
+            fontSize: '11px', padding: '4px 8px', borderRadius: '6px',
+            border: '1px solid #d1d5db', backgroundColor: '#ffffff', cursor: 'pointer',
+          }}
+        >
+          ✂️ Crop
+        </button>
+  
+        {cropping && (
+          <ImageCropModal
+            src={src}
+            onCancel={() => setCropping(false)}
+            onSave={newDataUrl => { setCropping(false); onCropped(newDataUrl); }}
+          />
+        )}
+      </div>
+    );
+  }
+  
+  // ============================================================
   // FIRESTORE DOCUMENT
   // ============================================================
   
@@ -856,10 +1055,24 @@ import React, {
   function buildDoc(q, meta) {
     const gambarUrls = safeArray(q.gambar).map(image => image.uploadedUrl || image.url || '').filter(Boolean);
   
+    const bacaan = q.bacaan
+      ? {
+          teks: q.bacaan.teks || '',
+          gambar: safeArray(q.bacaan.gambar).map(image => ({
+            id: image.id,
+            url: image.url,
+            uploadedUrl: image.uploadedUrl,
+            deskripsi: image.deskripsi,
+            nomor: image.nomor,
+          })),
+        }
+      : null;
+  
     return {
       nomor: q.nomor,
       paket: q.paket ?? null,
       paketNama: q.paketMeta?.nama || null,
+      bacaan,
       soal: q.teks_soal,
       tipe: q.tipe,
       opsiJawaban: opsiToPlainForFirestore(q.opsi_jawaban),
@@ -897,6 +1110,7 @@ import React, {
         nomor: q.nomor,
         paket: q.paket ?? null,
         tipe: q.tipe,
+        bacaan: q.bacaan,
         teks_soal: q.teks_soal,
         opsi_jawaban: q.opsi_jawaban,
         opsi_benar: q.opsi_benar,
@@ -1007,6 +1221,40 @@ import React, {
     const adaPengelompokan = groupedByPaket.length > 1 || (groupedByPaket.length === 1 && groupedByPaket[0].paket !== null);
   
     // ----------------------------------------------------------
+    // CROP GAMBAR — update dataUrl gambar tertentu di soalList (identitas via _idx)
+    // location: 'soal' | 'bacaan' | { opsi: optionIndex }
+    // ----------------------------------------------------------
+  
+    const handleCropImage = useCallback((idx, location, imageIndex, newDataUrl) => {
+      setSoalList(prev => prev.map(q => {
+        if (q._idx !== idx) return q;
+  
+        if (location === 'soal') {
+          const images = [...safeArray(q.gambar)];
+          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          return { ...q, gambar: images };
+        }
+  
+        if (location === 'bacaan' && q.bacaan) {
+          const images = [...safeArray(q.bacaan.gambar)];
+          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          return { ...q, bacaan: { ...q.bacaan, gambar: images } };
+        }
+  
+        if (location && typeof location === 'object' && typeof location.opsi === 'number') {
+          const opsi = [...safeArray(q.opsi_jawaban)];
+          const opt = opsi[location.opsi];
+          const images = [...safeArray(opt.gambar)];
+          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          opsi[location.opsi] = { ...opt, gambar: images };
+          return { ...q, opsi_jawaban: opsi };
+        }
+  
+        return q;
+      }));
+    }, []);
+  
+    // ----------------------------------------------------------
     // PARSE (dipakai bareng oleh tombol Parse & oleh auto-parse setelah upload file)
     // ----------------------------------------------------------
   
@@ -1026,7 +1274,9 @@ import React, {
   
       try {
         const raw = activeFormat === 'json' ? parseJSON(content) : parseCSV(content);
-        const normalized = raw.map((question, index) => normalizeSoal(question, index));
+        const normalized = raw
+          .map((question, index) => normalizeSoal(question, index))
+          .map((q, index) => ({ ...q, _idx: index }));
   
         const warningList = normalized
           .filter(q => !q.valid)
@@ -1116,6 +1366,7 @@ import React, {
       const soalProcessed = validSoal.map(q => ({
         ...q,
         gambar: safeArray(q.gambar).map(image => ({ ...image })),
+        bacaan: q.bacaan ? { ...q.bacaan, gambar: safeArray(q.bacaan.gambar).map(image => ({ ...image })) } : null,
         opsi_jawaban: safeArray(q.opsi_jawaban).map(opt => ({
           ...opt,
           gambar: safeArray(opt.gambar).map(image => ({ ...image })),
@@ -1139,6 +1390,19 @@ import React, {
             });
           }
         });
+  
+        if (question.bacaan) {
+          safeArray(question.bacaan.gambar).forEach((image, gi) => {
+            if (safeString(image.dataUrl).startsWith('data:image')) {
+              toUpload.push({
+                key: `q${qi}-bacaan-g${gi}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                dataUrl: image.dataUrl,
+                kind: 'bacaan',
+                qi, gi,
+              });
+            }
+          });
+        }
   
         safeArray(question.opsi_jawaban).forEach((opt, oi) => {
           safeArray(opt.gambar).forEach((image, gi) => {
@@ -1188,6 +1452,11 @@ import React, {
               const images = [...safeArray(soalProcessed[item.qi].gambar)];
               images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
               soalProcessed[item.qi] = { ...soalProcessed[item.qi], gambar: images };
+            } else if (item.kind === 'bacaan') {
+              const bacaan = soalProcessed[item.qi].bacaan;
+              const images = [...safeArray(bacaan?.gambar)];
+              images[item.gi] = { ...images[item.gi], uploadedUrl, dataUrl: '' };
+              soalProcessed[item.qi] = { ...soalProcessed[item.qi], bacaan: { ...bacaan, gambar: images } };
             } else {
               const opsi = [...safeArray(soalProcessed[item.qi].opsi_jawaban)];
               const opt = opsi[item.oi];
@@ -1493,7 +1762,12 @@ import React, {
   
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                           {group.soal.slice(0, 100).map((q, index) => (
-                            <QuestionPreview key={`${q.paket ?? 'x'}-${q.nomor}-${index}`} question={q} mathReady={mathReady} />
+                            <QuestionPreview
+                              key={`${q.paket ?? 'x'}-${q.nomor}-${index}`}
+                              question={q}
+                              mathReady={mathReady}
+                              onCropImage={handleCropImage}
+                            />
                           ))}
                         </div>
                       </div>
@@ -1693,9 +1967,17 @@ import React, {
   // QUESTION PREVIEW
   // ============================================================
   
-  function QuestionPreview({ question, mathReady }) {
+  function QuestionPreview({ question, mathReady, onCropImage }) {
     const q = question;
     const correctIndexes = safeArray(q.opsi_benar);
+  
+    const semuaGambar = [
+      ...safeArray(q.gambar).map((img, i) => ({ img, location: 'soal', imageIndex: i, label: `Gambar soal #${i + 1}` })),
+      ...(q.bacaan ? safeArray(q.bacaan.gambar).map((img, i) => ({ img, location: 'bacaan', imageIndex: i, label: `Gambar bacaan #${i + 1}` })) : []),
+      ...safeArray(q.opsi_jawaban).flatMap((opt, oi) =>
+        safeArray(opt.gambar).map((img, i) => ({ img, location: { opsi: oi }, imageIndex: i, label: `Gambar opsi ${optionLetter(oi)} #${i + 1}` })),
+      ),
+    ].filter(item => getImageSrc(item.img));
   
     return (
       <div
@@ -1748,6 +2030,24 @@ import React, {
         {q.errors?.length > 0 && (
           <div style={{ marginBottom: '12px', borderRadius: '8px', backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderColor: '#fde68a', padding: '12px', fontSize: '12px', color: '#b45309' }}>
             {q.errors.map((error, index) => <div key={index}>⚠️ {error}</div>)}
+          </div>
+        )}
+  
+        {/* BACAAN / STIMULUS (kalau ada) */}
+        {q.bacaan && (q.bacaan.teks || safeArray(q.bacaan.gambar).length > 0) && (
+          <div
+            style={{
+              marginBottom: '12px',
+              borderRadius: '12px',
+              border: '1px solid #e0e7ff',
+              backgroundColor: '#eef2ff',
+              padding: '12px',
+            }}
+          >
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#4338ca', marginBottom: '6px' }}>
+              📖 BACAAN / DATA (dipakai untuk soal ini)
+            </div>
+            <RichText text={q.bacaan.teks} gambar={q.bacaan.gambar} mathReady={mathReady} />
           </div>
         )}
   
@@ -1853,6 +2153,26 @@ import React, {
   
         {q.kunci_terverifikasi && (
           <div style={{ marginTop: '12px', fontSize: '12px', color: '#15803d', fontWeight: '600' }}>✓ Kunci jawaban terverifikasi.</div>
+        )}
+  
+        {/* PANEL KELOLA & CROP GAMBAR */}
+        {semuaGambar.length > 0 && onCropImage && (
+          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px dashed #d1d5db' }}>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', marginBottom: '8px' }}>
+              🖼️ KELOLA & CROP GAMBAR ({semuaGambar.length})
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+              {semuaGambar.map((item, i) => (
+                <div key={i}>
+                  <div style={{ fontSize: '10px', color: '#9ca3af', marginBottom: '2px' }}>{item.label}</div>
+                  <ImageWithCrop
+                    image={item.img}
+                    onCropped={newDataUrl => onCropImage(q._idx, item.location, item.imageIndex, newDataUrl)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     );
