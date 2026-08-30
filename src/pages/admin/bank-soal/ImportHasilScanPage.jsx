@@ -20,6 +20,18 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 
+/* Tailwind CDN auto-load — supaya styling jalan tanpa config tambahan */
+const useTailwind = () => {
+  React.useEffect(() => {
+    if (!document.querySelector('script[src*="cdn.tailwindcss.com"]')) {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.tailwindcss.com';
+      s.async = true;
+      document.head.insertBefore(s, document.head.firstChild);
+    }
+  }, []);
+};
+
 /* ============================================================
    KONSTANTA
 ============================================================ */
@@ -177,6 +189,8 @@ function buildDoc(q, meta) {
 ============================================================ */
 
 export default function ImportHasilScanPage() {
+  useTailwind(); // ← load Tailwind CSS otomatis
+
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   React.useEffect(() => {
