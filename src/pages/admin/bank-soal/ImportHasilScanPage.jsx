@@ -792,7 +792,7 @@ import React, {
   
     return (
       <div
-        className="text-sm text-gray-700 leading-7 break-words"
+        style={{ fontSize: '14px', color: '#374151', lineHeight: '1.75rem', overflowWrap: 'break-word' }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     );
@@ -806,16 +806,21 @@ import React, {
     if (!safeArray(rows).length) return null;
   
     return (
-      <div className="mt-2 rounded-lg border border-gray-200 overflow-hidden bg-white">
+      <div style={{ marginTop: '8px', borderRadius: '8px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', overflow: 'hidden', backgroundColor: '#ffffff' }}>
         {rows.map((row, i) => (
           <div
             key={i}
-            className={`grid grid-cols-[100px_1fr] text-xs ${i > 0 ? 'border-t border-gray-100' : ''}`}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '100px 1fr',
+              fontSize: '12px',
+              borderTop: i > 0 ? '1px solid #f3f4f6' : 'none',
+            }}
           >
-            <div className="px-2 py-1.5 bg-gray-50 font-semibold text-gray-600">
+            <div style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '6px', paddingBottom: '6px', backgroundColor: '#f9fafb', fontWeight: '600', color: '#4b5563' }}>
               {row.kolom || `Baris ${i + 1}`}
             </div>
-            <div className="px-2 py-1.5 text-gray-700">{row.isi}</div>
+            <div style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '6px', paddingBottom: '6px', color: '#374151' }}>{row.isi}</div>
           </div>
         ))}
       </div>
@@ -1262,16 +1267,16 @@ import React, {
             transition: 'margin-left .2s',
           }}
         >
-          <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-5">
+          <div style={{ padding: '16px', maxWidth: '72rem', marginLeft: 'auto', marginRight: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* HEADER */}
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold text-gray-800">Import Hasil Scan AI</h1>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>Import Hasil Scan AI</h1>
+                <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', borderRadius: '9999px', backgroundColor: '#d1fae5', color: '#047857', fontSize: '12px', fontWeight: '700' }}>
                   SAFE IMPORT
                 </span>
               </div>
-              <p className="text-gray-500 text-sm mt-1">
+              <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '4px' }}>
                 Import soal hasil scan AI ke Bank Soal Gemilang — mendukung 1 file JSON gabungan
                 berisi banyak paket (otomatis dikelompokkan), gambar/grafik per opsi, tabel per opsi,
                 kunci jawaban, dan pembahasan.
@@ -1279,73 +1284,76 @@ import React, {
             </div>
   
             {/* FORMAT */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
-              <div className="flex flex-wrap gap-3 items-center">
-                <span className="text-sm font-semibold text-gray-600">Format:</span>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#4b5563' }}>Format:</span>
   
                 {['json', 'csv'].map(currentFormat => (
                   <button
                     key={currentFormat}
                     type="button"
                     onClick={() => { setFormat(currentFormat); setParseError(''); }}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold border transition ${
-                      format === currentFormat
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
-                    }`}
+                    style={{
+                      paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px',
+                      borderRadius: '8px', fontSize: '14px', fontWeight: '700',
+                      border: format === currentFormat ? '1px solid #2563eb' : '1px solid #d1d5db',
+                      backgroundColor: format === currentFormat ? '#2563eb' : '#ffffff',
+                      color: format === currentFormat ? '#ffffff' : '#4b5563',
+                      cursor: 'pointer',
+                    }}
                   >
                     {currentFormat.toUpperCase()}
-                    <span className="ml-1 text-[10px] opacity-70">
+                    <span style={{ marginLeft: '4px', fontSize: '10px', opacity: 0.7 }}>
                       {currentFormat === 'json' ? 'Gambar + tabel + pembahasan' : 'Teks'}
                     </span>
                   </button>
                 ))}
   
-                <label className="cursor-pointer ml-auto px-5 py-2.5 rounded-lg border-2 border-blue-500 text-sm font-bold text-blue-600 hover:bg-blue-50 bg-white">
+                <label style={{ cursor: 'pointer', marginLeft: 'auto', paddingLeft: '20px', paddingRight: '20px', paddingTop: '10px', paddingBottom: '10px', borderRadius: '8px', border: '2px solid #3b82f6', borderColor: '#3b82f6', fontSize: '14px', fontWeight: '700', color: '#2563eb', backgroundColor: '#ffffff' }}>
                   📂 Upload File (1 file, semua paket)
                   <input
                     type="file"
                     accept=".json,.csv,application/json,text/csv"
                     onChange={handleFile}
-                    className="hidden"
+                    style={{ display: 'none' }}
                   />
                 </label>
               </div>
   
-              <p className="text-[11px] text-gray-400 -mt-2">
+              <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '-8px' }}>
                 Ini satu-satunya jalur upload: pilih 1 file JSON (boleh berisi banyak paket sekaligus),
                 otomatis langsung ter-parse & dikelompokkan. Kotak teks di bawah hanya untuk
                 tempel manual / edit cepat sebagai alternatif, bukan jalur upload terpisah.
               </p>
   
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', gap: '12px' }}>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Sumber AI</label>
+                  <label style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', display: 'block' }}>Sumber AI</label>
                   <input
                     type="text"
                     value={sumberAI}
                     onChange={e => setSumberAI(e.target.value)}
                     placeholder="Gemini Canvas, ChatGPT, Claude..."
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ width: '100%', border: '1px solid #e5e7eb', borderColor: '#d1d5db', borderRadius: '8px', paddingLeft: '12px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', fontSize: '14px' }}
                   />
                 </div>
   
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Nama File Sumber</label>
+                  <label style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', display: 'block' }}>Nama File Sumber</label>
                   <input
                     type="text"
                     value={sumberFile}
                     onChange={e => setSumberFile(e.target.value)}
                     placeholder="Contoh: 7 Paket Tryout TKA Fisika.pdf"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ width: '100%', border: '1px solid #e5e7eb', borderColor: '#d1d5db', borderRadius: '8px', paddingLeft: '12px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', fontSize: '14px' }}
                   />
                 </div>
               </div>
   
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs text-gray-500">Paste {format.toUpperCase()}</label>
-                  <span className="text-[11px] text-gray-400">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '12px', color: '#6b7280' }}>Paste {format.toUpperCase()}</label>
+                  <span style={{ fontSize: '11px', color: '#9ca3af' }}>
                     Bisa 1 file gabungan banyak paket — otomatis dikelompokkan
                   </span>
                 </div>
@@ -1383,22 +1391,22 @@ import React, {
                       : `Nomor,Tipe,Soal,Opsi A,Opsi B,Opsi C,Opsi D,Opsi E,Kunci,Pembahasan
   1,pg_sederhana,"Berapakah 2+3?",4,5,6,7,8,B,"2+3=5"`
                   }
-                  className="w-full border border-gray-300 rounded-xl px-3 py-3 text-sm font-mono leading-6 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y bg-gray-50"
+                  style={{ width: '100%', border: '1px solid #e5e7eb', borderColor: '#d1d5db', borderRadius: '12px', paddingLeft: '12px', paddingRight: '12px', paddingTop: '12px', paddingBottom: '12px', fontSize: '14px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', lineHeight: '1.5rem', resize: 'vertical', backgroundColor: '#f9fafb' }}
                 />
               </div>
   
               {parseError && (
-                <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-                  <div className="font-bold mb-1">❌ JSON/CSV tidak dapat diproses</div>
+                <div style={{ backgroundColor: '#fef2f2', border: '1px solid #e5e7eb', borderColor: '#fecaca', borderRadius: '12px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px', fontSize: '14px', color: '#b91c1c' }}>
+                  <div style={{ fontWeight: '700', marginBottom: '4px' }}>❌ JSON/CSV tidak dapat diproses</div>
                   <div>{parseError}</div>
                 </div>
               )}
   
-              <div className="flex flex-wrap gap-2">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 <button
                   type="button"
                   onClick={handleParse}
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition"
+                  style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '10px', paddingBottom: '10px', backgroundColor: '#2563eb', color: '#ffffff', borderRadius: '12px', fontSize: '14px', fontWeight: '700', transition: 'all .15s ease' }}
                 >
                   🔍 Parse & Preview
                 </button>
@@ -1407,7 +1415,7 @@ import React, {
                   <button
                     type="button"
                     onClick={() => downloadJSON(soalList)}
-                    className="px-5 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-sm font-bold"
+                    style={{ paddingLeft: '20px', paddingRight: '20px', paddingTop: '10px', paddingBottom: '10px', backgroundColor: '#1f2937', color: '#ffffff', borderRadius: '12px', fontSize: '14px', fontWeight: '700' }}
                   >
                     ⬇️ Download JSON
                   </button>
@@ -1417,7 +1425,7 @@ import React, {
                   <button
                     type="button"
                     onClick={() => { setRawInput(''); setSoalList([]); setParseError(''); setWarnings([]); }}
-                    className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-xl text-sm font-bold"
+                    style={{ paddingLeft: '20px', paddingRight: '20px', paddingTop: '10px', paddingBottom: '10px', backgroundColor: '#ffffff', color: '#374151', border: '1px solid #e5e7eb', borderColor: '#d1d5db', borderRadius: '12px', fontSize: '14px', fontWeight: '700' }}
                   >
                     🗑️ Bersihkan
                   </button>
@@ -1427,21 +1435,21 @@ import React, {
   
             {/* WARNING */}
             {warnings.length > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-                <div className="font-bold text-amber-800 mb-2">⚠️ Ada soal yang perlu diperiksa</div>
-                <div className="space-y-1 max-h-48 overflow-auto">
+              <div style={{ backgroundColor: '#fffbeb', border: '1px solid #e5e7eb', borderColor: '#fde68a', borderRadius: '16px', padding: '20px' }}>
+                <div style={{ fontWeight: '700', color: '#92400e', marginBottom: '8px' }}>⚠️ Ada soal yang perlu diperiksa</div>
+                <div style={{ maxHeight: '192px', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {warnings.map((warning, index) => (
-                    <div key={index} className="text-xs text-amber-700">{warning}</div>
+                    <div key={index} style={{ fontSize: '12px', color: '#b45309' }}>{warning}</div>
                   ))}
                 </div>
-                <div className="text-xs text-amber-700 mt-3">Soal yang valid tetap bisa disimpan.</div>
+                <div style={{ fontSize: '12px', color: '#b45309', marginTop: '12px' }}>Soal yang valid tetap bisa disimpan.</div>
               </div>
             )}
   
             {/* STATS + PREVIEW */}
             {soalList.length > 0 && (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
                   <StatCard label="Total" value={statistik.total} icon="📚" />
                   <StatCard label="Valid" value={statistik.valid} icon="✅" good />
                   <StatCard label="Perlu Cek" value={statistik.invalid} icon="⚠️" />
@@ -1451,11 +1459,11 @@ import React, {
                   <StatCard label="Paket" value={statistik.jumlahPaket || (adaPengelompokan ? 1 : 0)} icon="📦" />
                 </div>
   
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-5">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                     <div>
-                      <h2 className="font-bold text-gray-800 text-lg">Preview — {soalList.length} soal</h2>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <h2 style={{ fontWeight: '700', color: '#1f2937', fontSize: '18px' }}>Preview — {soalList.length} soal</h2>
+                      <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
                         {adaPengelompokan
                           ? `Dikelompokkan otomatis menjadi ${groupedByPaket.length} paket. Gambar/tabel/grafik opsi ditampilkan apa adanya.`
                           : 'Gambar & tabel opsi ditampilkan tanpa cropping.'}
@@ -1465,25 +1473,25 @@ import React, {
                     <button
                       type="button"
                       onClick={() => downloadJSON(soalList)}
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold"
+                      style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px', backgroundColor: '#f3f4f6', color: '#374151', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}
                     >
                       ⬇️ Export JSON
                     </button>
                   </div>
   
-                  <div className="space-y-6 max-h-[700px] overflow-y-auto pr-1">
+                  <div style={{ maxHeight: '700px', overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {groupedByPaket.map((group, gIdx) => (
                       <div key={gIdx}>
                         {adaPengelompokan && (
-                          <div className="sticky top-0 z-10 bg-white/95 backdrop-blur px-3 py-2 mb-3 rounded-lg border border-blue-100 flex items-center gap-2">
-                            <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">
+                          <div style={{ position: 'sticky', top: '0', zIndex: 10, backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', paddingLeft: '12px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', marginBottom: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', borderColor: '#dbeafe', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#2563eb', color: '#ffffff', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
                               {group.nama || `Paket ${group.paket ?? '-'}`}
                             </span>
-                            <span className="text-xs text-gray-500">{group.soal.length} soal</span>
+                            <span style={{ fontSize: '12px', color: '#6b7280' }}>{group.soal.length} soal</span>
                           </div>
                         )}
   
-                        <div className="space-y-4">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                           {group.soal.slice(0, 100).map((q, index) => (
                             <QuestionPreview key={`${q.paket ?? 'x'}-${q.nomor}-${index}`} question={q} mathReady={mathReady} />
                           ))}
@@ -1492,17 +1500,17 @@ import React, {
                     ))}
   
                     {soalList.length > 100 && (
-                      <div className="text-center text-xs text-gray-400 py-3">
+                      <div style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', paddingTop: '12px', paddingBottom: '12px' }}>
                         Total {soalList.length} soal dimuat (preview membatasi 100 soal per grup).
                       </div>
                     )}
                   </div>
   
                   {/* METADATA */}
-                  <div className="border-t border-gray-100 pt-5">
-                    <h3 className="font-bold text-gray-700 mb-3">Metadata Soal</h3>
+                  <div style={{ borderTop: '1px solid #e5e7eb', borderColor: '#f3f4f6', paddingTop: '20px' }}>
+                    <h3 style={{ fontWeight: '700', color: '#374151', marginBottom: '12px' }}>Metadata Soal</h3>
   
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', gap: '12px' }}>
                       <Field label="Mata Pelajaran">
                         <select value={mataPelajaran} onChange={e => setMataPelajaran(e.target.value)} className="input">
                           {DAFTAR_MAPEL.map(mapel => <option key={mapel} value={mapel}>{mapel}</option>)}
@@ -1550,44 +1558,46 @@ import React, {
                   </div>
   
                   {saveLog.length > 0 && (
-                    <div className="bg-gray-950 rounded-xl p-4 max-h-48 overflow-y-auto">
+                    <div style={{ backgroundColor: '#030712', borderRadius: '12px', padding: '16px', maxHeight: '192px', overflowY: 'auto' }}>
                       {saveLog.map((log, index) => (
-                        <div key={index} className="text-xs text-green-400 font-mono mb-1">{log}</div>
+                        <div key={index} style={{ fontSize: '12px', color: '#4ade80', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', marginBottom: '4px' }}>{log}</div>
                       ))}
                     </div>
                   )}
   
                   {saveResult && (
                     <div
-                      className={`rounded-xl px-4 py-4 text-sm ${
-                        saveResult.success
-                          ? 'bg-green-50 border border-green-200 text-green-700'
-                          : 'bg-red-50 border border-red-200 text-red-700'
-                      }`}
+                      style={{
+                        borderRadius: '12px', paddingLeft: '16px', paddingRight: '16px',
+                        paddingTop: '16px', paddingBottom: '16px', fontSize: '14px',
+                        border: saveResult.success ? '1px solid #bbf7d0' : '1px solid #fecaca',
+                        backgroundColor: saveResult.success ? '#f0fdf4' : '#fef2f2',
+                        color: saveResult.success ? '#15803d' : '#b91c1c',
+                      }}
                     >
                       {saveResult.success ? (
                         <>
-                          <div className="font-bold">🎉 Berhasil!</div>
-                          <div className="mt-1">{saveResult.count} soal berhasil disimpan ke Bank Soal.</div>
+                          <div style={{ fontWeight: '700' }}>🎉 Berhasil!</div>
+                          <div style={{ marginTop: '4px' }}>{saveResult.count} soal berhasil disimpan ke Bank Soal.</div>
                           {saveResult.skipped > 0 && (
-                            <div className="text-xs mt-1">{saveResult.skipped} soal dilewati karena tidak valid.</div>
+                            <div style={{ fontSize: '12px', marginTop: '4px' }}>{saveResult.skipped} soal dilewati karena tidak valid.</div>
                           )}
                         </>
                       ) : (
                         <>
-                          <div className="font-bold">❌ Gagal</div>
-                          <div className="mt-1">{saveResult.error}</div>
+                          <div style={{ fontWeight: '700' }}>❌ Gagal</div>
+                          <div style={{ marginTop: '4px' }}>{saveResult.error}</div>
                         </>
                       )}
                     </div>
                   )}
   
                   {!saveResult?.success && (
-                    <div className="flex flex-wrap justify-end gap-2">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '8px' }}>
                       <button
                         type="button"
                         onClick={() => downloadJSON(soalList)}
-                        className="px-5 py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-sm font-bold"
+                        style={{ paddingLeft: '20px', paddingRight: '20px', paddingTop: '12px', paddingBottom: '12px', backgroundColor: '#1f2937', color: '#ffffff', borderRadius: '12px', fontSize: '14px', fontWeight: '700' }}
                       >
                         ⬇️ Download JSON
                       </button>
@@ -1596,7 +1606,7 @@ import React, {
                         type="button"
                         onClick={handleSave}
                         disabled={saving}
-                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '12px', paddingBottom: '12px', backgroundColor: '#059669', color: '#ffffff', borderRadius: '12px', fontSize: '14px', fontWeight: '700' }}
                       >
                         {saving ? '⏳ Menyimpan...' : '💾 Simpan Soal Valid ke Bank Soal'}
                       </button>
@@ -1651,10 +1661,17 @@ import React, {
   
   function StatCard({ label, value, icon, good = false }) {
     return (
-      <div className={`rounded-xl border p-3 ${good ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
-        <div className="text-lg">{icon}</div>
-        <div className="text-xl font-bold text-gray-800">{value}</div>
-        <div className="text-[11px] text-gray-500">{label}</div>
+      <div
+        style={{
+          borderRadius: '12px',
+          border: good ? '1px solid #bbf7d0' : '1px solid #e5e7eb',
+          padding: '12px',
+          backgroundColor: good ? '#f0fdf4' : '#ffffff',
+        }}
+      >
+        <div style={{ fontSize: '18px' }}>{icon}</div>
+        <div style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937' }}>{value}</div>
+        <div style={{ fontSize: '11px', color: '#6b7280' }}>{label}</div>
       </div>
     );
   }
@@ -1666,7 +1683,7 @@ import React, {
   function Field({ label, children }) {
     return (
       <div>
-        <label className="text-xs text-gray-500 mb-1 block">{label}</label>
+        <label style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', display: 'block' }}>{label}</label>
         {children}
       </div>
     );
@@ -1681,48 +1698,55 @@ import React, {
     const correctIndexes = safeArray(q.opsi_benar);
   
     return (
-      <div className={`rounded-2xl border p-4 ${q.valid ? 'border-gray-200 bg-gray-50' : 'border-amber-300 bg-amber-50'}`}>
+      <div
+        style={{
+          borderRadius: '16px',
+          border: q.valid ? '1px solid #e5e7eb' : '1px solid #fcd34d',
+          padding: '16px',
+          backgroundColor: q.valid ? '#f9fafb' : '#fffbeb',
+        }}
+      >
         {/* HEADER */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#dbeafe', color: '#1d4ed8', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             Soal {q.nomor}
           </span>
   
-          <span className="px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-full">
+          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ede9fe', color: '#6d28d9', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             {TIPE_LABELS[q.tipe] || q.tipe}
           </span>
   
           {q.valid ? (
-            <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">✓ Valid</span>
+            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#dcfce7', color: '#15803d', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>✓ Valid</span>
           ) : (
-            <span className="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">⚠ Perlu cek</span>
+            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fef3c7', color: '#b45309', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>⚠ Perlu cek</span>
           )}
   
           {q.kunci_jawaban && (
-            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full font-mono">
+            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#d1fae5', color: '#047857', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
               Kunci: {q.kunci_jawaban}
             </span>
           )}
   
           {q.gambar?.length > 0 && (
-            <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
+            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#f3e8ff', color: '#7e22ce', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
               🖼️ {q.gambar.length} gambar
             </span>
           )}
   
           {q.pembahasan && (
-            <span className="px-2.5 py-1 bg-cyan-100 text-cyan-700 text-xs font-bold rounded-full">💡 Pembahasan</span>
+            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#cffafe', color: '#0e7490', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>💡 Pembahasan</span>
           )}
   
           {q.materi && (
-            <span className="px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
+            <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#c2410c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
               📘 {q.materi}
             </span>
           )}
         </div>
   
         {q.errors?.length > 0 && (
-          <div className="mb-3 rounded-lg bg-white border border-amber-200 p-3 text-xs text-amber-700">
+          <div style={{ marginBottom: '12px', borderRadius: '8px', backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderColor: '#fde68a', padding: '12px', fontSize: '12px', color: '#b45309' }}>
             {q.errors.map((error, index) => <div key={index}>⚠️ {error}</div>)}
           </div>
         )}
@@ -1732,32 +1756,40 @@ import React, {
   
         {/* OPTIONS (teks / gambar / tabel per opsi) */}
         {q.opsi_jawaban?.length > 0 && (
-          <div className="mt-4 space-y-2">
+          <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {q.opsi_jawaban.map((option, optionIndex) => {
               const isCorrect = Boolean(correctIndexes[optionIndex]);
   
               return (
                 <div
                   key={optionIndex}
-                  className={`flex gap-3 items-start rounded-xl border px-3 py-2.5 ${
-                    isCorrect ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'
-                  }`}
+                  style={{
+                    display: 'flex', gap: '12px', alignItems: 'flex-start',
+                    borderRadius: '12px', paddingLeft: '12px', paddingRight: '12px',
+                    paddingTop: '10px', paddingBottom: '10px',
+                    border: isCorrect ? '1px solid #86efac' : '1px solid #e5e7eb',
+                    backgroundColor: isCorrect ? '#f0fdf4' : '#ffffff',
+                  }}
                 >
                   <div
-                    className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold flex-shrink-0 ${
-                      isCorrect ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'
-                    }`}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: '28px', height: '28px', borderRadius: '9999px',
+                      fontSize: '12px', fontWeight: '700', flexShrink: 0,
+                      backgroundColor: isCorrect ? '#16a34a' : '#f3f4f6',
+                      color: isCorrect ? '#ffffff' : '#4b5563',
+                    }}
                   >
                     {optionLetter(optionIndex)}
                   </div>
   
-                  <div className="flex-1">
+                  <div style={{ flex: '1' }}>
                     {option.teks && (
                       <RichText text={option.teks} gambar={[]} mathReady={mathReady} />
                     )}
   
                     {safeArray(option.gambar).length > 0 && (
-                      <div className={option.teks ? 'mt-2' : ''}>
+                      <div style={option.teks ? { marginTop: '8px' } : undefined}>
                         {option.gambar.map((image, gi) => (
                           <div
                             key={gi}
@@ -1771,7 +1803,7 @@ import React, {
                   </div>
   
                   {isCorrect && (
-                    <span className="text-green-600 text-xs font-bold whitespace-nowrap">✓ BENAR</span>
+                    <span style={{ color: '#16a34a', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap' }}>✓ BENAR</span>
                   )}
                 </div>
               );
@@ -1781,16 +1813,16 @@ import React, {
   
         {/* TRUE FALSE */}
         {q.tabel_benar_salah?.length > 0 && (
-          <div className="mt-4 rounded-xl border border-gray-200 bg-white overflow-hidden">
-            <div className="px-3 py-2 bg-gray-100 text-xs font-bold text-gray-700">Pernyataan</div>
+          <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', backgroundColor: '#ffffff', overflow: 'hidden' }}>
+            <div style={{ paddingLeft: '12px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', backgroundColor: '#f3f4f6', fontSize: '12px', fontWeight: '700', color: '#374151' }}>Pernyataan</div>
             {q.tabel_benar_salah.map((item, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_120px] border-t border-gray-200">
-                <div className="p-3 text-sm">
+              <div key={index} style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', borderTop: '1px solid #e5e7eb', borderColor: '#e5e7eb' }}>
+                <div style={{ padding: '12px', fontSize: '14px' }}>
                   {typeof item === 'object'
                     ? <RichText text={item.pernyataan} gambar={[]} mathReady={mathReady} />
                     : item}
                 </div>
-                <div className="p-3 text-sm font-bold text-center">
+                <div style={{ padding: '12px', fontSize: '14px', fontWeight: '700', textAlign: 'center' }}>
                   {typeof item === 'object' ? item.jawaban : ''}
                 </div>
               </div>
@@ -1800,11 +1832,11 @@ import React, {
   
         {/* MATCHING */}
         {q.pasangan?.length > 0 && (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', gap: '8px' }}>
             {q.pasangan.map((pair, index) => (
-              <div key={index} className="rounded-lg border border-gray-200 bg-white p-3 text-sm">
-                <div className="font-semibold">{pair.kiri}</div>
-                <div className="text-blue-600 my-1">↕</div>
+              <div key={index} style={{ borderRadius: '8px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', backgroundColor: '#ffffff', padding: '12px', fontSize: '14px' }}>
+                <div style={{ fontWeight: '600' }}>{pair.kiri}</div>
+                <div style={{ color: '#2563eb', marginTop: '4px', marginBottom: '4px' }}>↕</div>
                 <div>{pair.kanan}</div>
               </div>
             ))}
@@ -1813,14 +1845,14 @@ import React, {
   
         {/* PEMBAHASAN */}
         {q.pembahasan && (
-          <div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4">
-            <div className="text-xs font-bold text-cyan-700 mb-2">💡 PEMBAHASAN</div>
+          <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', borderColor: '#a5f3fc', backgroundColor: '#ecfeff', padding: '16px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#0e7490', marginBottom: '8px' }}>💡 PEMBAHASAN</div>
             <RichText text={q.pembahasan} gambar={[]} mathReady={mathReady} />
           </div>
         )}
   
         {q.kunci_terverifikasi && (
-          <div className="mt-3 text-xs text-green-700 font-semibold">✓ Kunci jawaban terverifikasi.</div>
+          <div style={{ marginTop: '12px', fontSize: '12px', color: '#15803d', fontWeight: '600' }}>✓ Kunci jawaban terverifikasi.</div>
         )}
       </div>
     );
