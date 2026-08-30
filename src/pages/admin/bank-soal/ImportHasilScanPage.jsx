@@ -13,16 +13,16 @@
 // - CSV   : teks saja (tanpa gambar)
 // ============================================================
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import {
   collection, doc, writeBatch, serverTimestamp,
 } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 
-/* Tailwind CDN auto-load — supaya styling jalan tanpa config tambahan */
+/* Tailwind CDN auto-load */
 const useTailwind = () => {
-  React.useEffect(() => {
+  useEffect(() => {
     if (!document.querySelector('script[src*="cdn.tailwindcss.com"]')) {
       const s = document.createElement('script');
       s.src = 'https://cdn.tailwindcss.com';
@@ -31,6 +31,82 @@ const useTailwind = () => {
     }
   }, []);
 };
+
+/* KaTeX loader — pakai katex.renderToString (sinkron, no timing issue) */
+const useKaTeX = () => {
+  const [ready, setReady] = useState(!!window.katex);
+  useEffect(() => {
+    if (window.katex) { setReady(true); return; }
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
+    document.head.appendChild(css);
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
+    script.async = true;
+    script.onload = () => setReady(true);
+    document.body.appendChild(script);
+  }, []);
+  return ready;
+};
+
+/* ── LaTeX + gambar renderer ── */
+function findInlineEnd(text, start, close) {
+  for (let i = start; i < text.length; i++) {
+    if (text[i] === '\n') return -1;
+    if (text.startsWith(close, i)) return i;
+    if (text[i] === '\\') i++;
+  }
+  return -1;
+}
+
+function processSegment(text, renderMath) {
+  let result = '', i = 0;
+  while (i < text.length) {
+    if (text[i]==='$'&&text[i+1]==='$'){const e=text.indexOf('$$',i+2);if(e!==-1){result+=renderMath(text.slice(i+2,e),true);i=e+2;continue;}}
+    if (text[i]==='$'){const e=findInlineEnd(text,i+1,'$');if(e!==-1){result+=renderMath(text.slice(i+1,e),false);i=e+1;continue;}}
+    if (text[i]==='\\' && text[i+1]==='['){const e=text.indexOf('\\]',i+2);if(e!==-1){result+=renderMath(text.slice(i+2,e),true);i=e+2;continue;}}
+    if (text[i]==='\\' && text[i+1]==='('){const e=text.indexOf('\\)',i+2);if(e!==-1){result+=renderMath(text.slice(i+2,e),false);i=e+2;continue;}}
+    const ch=text[i];
+    if(ch==='&') result+='&amp;';
+    else if(ch==='<') result+='&lt;';
+    else if(ch==='>') result+='&gt;';
+    else if(ch==='\n') result+='<br>';
+    else result+=ch;
+    i++;
+  }
+  return result;
+}
+
+function RichText({ text, gambar, mathReady }) {
+  const html = useMemo(() => {
+    const safe = typeof text === 'string' ? text : (text ?? '');
+    if (!safe) return '';
+    const imgs = (Array.isArray(gambar) ? gambar : []).filter(Boolean);
+    const katexLib = mathReady && window.katex ? window.katex : null;
+    const renderMath = (math, display) => {
+      if (!katexLib) return display ? `<span>$$${math}$$</span>` : `<span>$${math}$</span>`;
+      try { return katexLib.renderToString(math, { displayMode: display, throwOnError: false, output: 'html' }); }
+      catch { return display ? `$$${math}$$` : `$${math}$`; }
+    };
+    const makeImg = g => {
+      const src = g.url || g.dataUrl || null;
+      const alt = (g.deskripsi||'Gambar soal').replace(/"/g,'&quot;');
+      if (src) return `<figure style="margin:8px 0;"><img src="${src}" alt="${alt}" style="max-width:100%;max-height:280px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;padding:3px;"/></figure>`;
+      return `<span style="color:#d97706;font-size:11px;">[Gambar belum dicrop]</span>`;
+    };
+    const parts = safe.split(/(\{\{\s*GAMBAR(?:_\d+)?\s*\}\})/gi);
+    let gIdx = 0, result = '';
+    for (const part of parts) {
+      if (/^\{\{\s*GAMBAR/i.test(part)) result += makeImg(imgs[gIdx++] || {});
+      else result += processSegment(part, renderMath);
+    }
+    if (gIdx === 0 && imgs.some(g => g.dataUrl || g.url)) imgs.forEach(g => { result += makeImg(g); });
+    return result;
+  }, [text, gambar, mathReady]);
+
+  return <div className="text-sm text-gray-700 leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: html }} />;
+}
 
 /* ============================================================
    KONSTANTA
@@ -189,7 +265,8 @@ function buildDoc(q, meta) {
 ============================================================ */
 
 export default function ImportHasilScanPage() {
-  useTailwind(); // ← load Tailwind CSS otomatis
+  useTailwind();
+  const mathReady = useKaTeX();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -462,15 +539,18 @@ export default function ImportHasilScanPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-700 line-clamp-2">
-                      {q.teks_soal?.replace(/\$[^$]+\$/g,'[rumus]').replace(/\{\{GAMBAR[^}]*\}\}/gi,'[gambar]') || '(kosong)'}
-                    </p>
+
+                    {/* Teks soal dengan LaTeX dan gambar */}
+                    <RichText text={q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
+
+                    {/* Opsi jawaban */}
                     {(q.opsi_jawaban||[]).length > 0 && (
-                      <div className="mt-1 flex flex-wrap gap-1">
+                      <div className="mt-2 flex flex-wrap gap-1">
                         {q.opsi_jawaban.slice(0,5).map((opt, oi) => (
-                          <span key={oi} className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded">
-                            {String.fromCharCode(65+oi)}. {opt.replace(/\$[^$]+\$/g,'[rumus]').slice(0,30)}
-                          </span>
+                          <div key={oi} className="text-xs text-gray-600 bg-white border border-gray-200 px-2 py-1 rounded flex items-start gap-1">
+                            <span className="font-bold text-blue-600 flex-shrink-0">{String.fromCharCode(65+oi)}.</span>
+                            <RichText text={opt} gambar={[]} mathReady={mathReady} />
+                          </div>
                         ))}
                       </div>
                     )}
