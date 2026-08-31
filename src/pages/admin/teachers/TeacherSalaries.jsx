@@ -505,55 +505,100 @@ const TeacherSalaries = () => {
   };
 
   // ============================================================
-  // 🔥 BARU: HANDLE: DOWNLOAD SEMUA RIWAYAT (CSV) -- gabungan semua
-  // guru dalam satu file, buat cross-check cepat (bisa dibuka & di-
-  // filter/sort di Excel/Sheets) tanpa perlu buka slip satu-satu.
+  // 🔥 BARU: HANDLE: DOWNLOAD SEMUA RIWAYAT (PDF) -- gabungan SEMUA
+  // guru dalam satu dokumen yang bisa disimpan sebagai PDF (Cetak >
+  // Simpan sebagai PDF di browser), lengkap dengan nominal per sesi,
+  // subtotal per guru, dan grand total di paling bawah -- fokus buat
+  // audit/cross-check, bukan sekadar daftar tanpa angka.
   // Ngikutin filter tanggal (startDate-endDate) yang lagi aktif.
   // ============================================================
-  const handleDownloadAllCSV = () => {
+  const handleDownloadAllPDF = () => {
     if (rekap.length === 0) return showAlert("⚠️ Tidak ada data untuk diunduh!");
 
-    const rows = [
-      ['Nama Guru', 'Tanggal', 'Waktu', 'Program', 'Detail', 'Kelas', 'Tipe Kelas', 'Siswa Hadir', 'Nominal', 'Status']
-    ];
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return showAlert("⚠️ Pop-up diblokir browser!");
 
-    rekap.forEach(g => {
-      g.rincian
+    const sortedRekap = rekap
+      .slice()
+      .sort((a, b) => a.nama.localeCompare(b.nama));
+
+    const guruSections = sortedRekap.map(g => {
+      const rincianSorted = g.rincian
         .slice()
-        .sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''))
-        .forEach(log => {
-          rows.push([
-            g.nama,
-            log.tanggal || '',
-            log.waktu || '',
-            log.program || '',
-            (log.detail || '').replace(/[\r\n]+/g, ' '),
-            log.kelasNama || '',
-            log.tipeKelas || '',
-            log.siswaHadir ?? '',
-            log.nominal || 0,
-            log.status || ''
-          ]);
-        });
-    });
+        .sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''));
 
-    const csvContent = rows
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
+      const rowsHtml = rincianSorted.length > 0
+        ? rincianSorted.map(log => {
+            const isValid = log.status === "Valid / Sudah Terekap";
+            return `
+              <tr>
+                <td>${log.tanggal || '-'}${log.waktu ? `<br/><small>${log.waktu}</small>` : ''}</td>
+                <td>${log.program || 'Kegiatan'}</td>
+                <td><small>${log.detail || '-'}</small></td>
+                <td>${log.kelasNama || '-'}</td>
+                <td>${log.siswaHadir != null ? log.siswaHadir : '-'}</td>
+                <td class="text-right">Rp ${parseInt(log.nominal || 0).toLocaleString('id-ID')}</td>
+                <td>${isValid ? '✅ Valid' : '⏳ Pending'}</td>
+              </tr>
+            `;
+          }).join('')
+        : `<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:10px">Belum ada sesi tercatat pada periode ini${g.akunStatus ? ` · status akun: ${g.akunStatus}` : ''}</td></tr>`;
 
-    // BOM di depan biar Excel baca UTF-8 dengan benar (biar gak aneh
-    // waktu ada karakter/emoji di detail atau nama)
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Riwayat_Gaji_Semua_Guru_${startDate}_sd_${endDate}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      return `
+        <div class="guru-block">
+          <h3>${g.nama} <span class="sesi-count">(${g.totalSesi} sesi${g.pendingCount > 0 ? ` · ${g.pendingCount} pending` : ''})</span></h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Program</th>
+                <th>Detail</th>
+                <th>Kelas</th>
+                <th>Siswa Hadir</th>
+                <th class="text-right">Nominal</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+            <tfoot>
+              <tr class="subtotal-row">
+                <td colspan="5" class="text-right">SUBTOTAL:</td>
+                <td class="text-right">Rp ${g.totalGaji.toLocaleString('id-ID')}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    }).join('');
 
-    showAlert("✅ Riwayat semua guru berhasil diunduh!");
+    printWindow.document.write(`
+      <html><head><title>Rekap Gaji Semua Guru - ${startDate} s.d ${endDate}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; color: #1e293b; }
+        h1 { text-align: center; margin-bottom: 4px; }
+        .periode { text-align: center; color: #64748b; margin-bottom: 20px; font-size: 13px; }
+        .guru-block { margin-bottom: 26px; page-break-inside: avoid; }
+        .guru-block h3 { background: #1e293b; color: white; padding: 8px 12px; margin: 0 0 6px; border-radius: 6px 6px 0 0; font-size: 14px; }
+        .sesi-count { font-weight: normal; font-size: 12px; color: #cbd5e1; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 6px 8px; border: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; text-align: left; }
+        .text-right { text-align: right; }
+        .subtotal-row { background: #f0fdf4; font-weight: bold; }
+        .grand-total { margin-top: 24px; padding: 14px 18px; background: #ecfdf5; border: 2px solid #10b981; border-radius: 10px; text-align: right; font-size: 16px; font-weight: bold; }
+        @media print { .guru-block { page-break-inside: avoid; } }
+      </style>
+      </head>
+      <body>
+        <h1>REKAP GAJI SEMUA GURU</h1>
+        <p class="periode">Periode: ${startDate} s.d ${endDate} &nbsp;|&nbsp; Dicetak: ${new Date().toLocaleString('id-ID')}</p>
+        ${guruSections}
+        <div class="grand-total">TOTAL SELURUH GURU: Rp ${totalPengeluaran.toLocaleString('id-ID')}</div>
+      </body>
+    </html>`);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
   };
 
   // ============================================================
@@ -585,14 +630,16 @@ const TeacherSalaries = () => {
             <p style={styles.subtitle(isMobile)}>Kelola honor berdasarkan jenjang dan durasi mengajar.</p>
           </div>
           <div style={{display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap'}}>
-            {/* 🔥 BARU: tombol unduh SEMUA riwayat (semua guru) dalam
-                satu file CSV -- buat cross-check cepat, gak perlu buka
-                slip per-guru satu-satu. Ngikutin filter tanggal aktif. */}
+            {/* 🔥 BARU: tombol unduh SEMUA riwayat (semua guru) jadi satu
+                dokumen PDF (lewat print dialog browser) -- lengkap
+                dengan nominal per sesi, subtotal per guru, dan grand
+                total, buat cross-check/audit cepat tanpa buka slip
+                per-guru satu-satu. Ngikutin filter tanggal aktif. */}
             <button 
-              onClick={handleDownloadAllCSV} 
+              onClick={handleDownloadAllPDF} 
               style={styles.btnDownloadAll(isMobile)}
             >
-              <Download size={14} /> {isMobile ? 'Semua' : 'Unduh Semua (CSV)'}
+              <Download size={14} /> {isMobile ? 'Semua' : 'Unduh Semua (PDF)'}
             </button>
             {/* 🔥 BARU: tombol ini SELALU tampil (siapa pun boleh coba),
                 tapi klik akan memicu verifikasi PIN Owner dulu sebelum
