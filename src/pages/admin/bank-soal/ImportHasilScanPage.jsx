@@ -844,116 +844,197 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
   }
   
   // ============================================================
-  // LATEX (.tex) PARSER
+  // LATEX (.tex) PARSER v2
   // ------------------------------------------------------------
-  // Best-effort parser untuk file .tex hasil scan/convert soal ujian.
-  // TIDAK butuh kompiler LaTeX -- cukup teks .tex biasa. Rumus/matematika
-  // ($...$, \\(...\\), \\[...\\]) DIBIARKAN APA ADANYA di teks_soal karena
-  // sistem sudah bisa merender LaTeX inline lewat RichText/KaTeX.
-  //
-  // Format .tex yang didukung (pilih salah satu gaya, boleh campur):
-  //
-  // 1) Daftar soal pakai \\begin{enumerate} ... \\end{enumerate}, tiap
-  //    soal = satu \\item. Kalau ada pilihan ganda, taruh pilihan sebagai
-  //    \\begin{enumerate}[label=\\Alph*.] ... \\end{enumerate} (atau
-  //    \\begin{itemize}) BERSARANG di dalam \\item soal tsb -- tiap opsi
-  //    juga satu \\item.
-  //
-  // 2) Kalau tidak pakai environment enumerate sama sekali, boleh angka
-  //    biasa di awal baris untuk soal ("1.", "2)", dst) dan huruf di
-  //    awal baris untuk opsi ("A.", "B)", dst) -- parser fallback ke
-  //    mode ini otomatis kalau tidak ada \\begin{enumerate}/{itemize}.
-  //
-  // 3) Kunci jawaban & pembahasan bisa ditulis dengan salah satu cara:
-  //    - Command per-soal: \\kunci{B} atau \\jawaban{B} atau \\answer{B},
-  //      dan \\pembahasan{...} -- ditulis di dalam \\item soal tsb.
-  //    - Untuk paket exam class: \\correctchoice{...} otomatis dikenali
-  //      sebagai opsi yang benar (tidak perlu \\kunci lagi).
-  //    - ATAU satu blok "KUNCI JAWABAN" di akhir dokumen (BUKAN di
-  //      dalam komentar %, karena komentar dibuang sebelum diparse)
-  //      berisi daftar "1. B", "2. D", dst -- dipetakan balik ke nomor.
+  // Parser struktural berbasis scanner karakter. Bagian yang memakai
+  // argumen {...} TIDAK diparse dengan regex non-greedy, karena LaTeX
+  // dapat memiliki kurung kurawal bersarang.
   // ============================================================
 
-  function stripTexComments(text) {
-    return text
-      .split('\n')
-      .map(line => {
-        let result = '';
-        for (let i = 0; i < line.length; i++) {
-          if (line[i] === '%' && line[i - 1] !== '\\\\') break;
-          result += line[i];
-        }
-        return result;
-      })
-      .join('\n');
+  function isEscapedTexChar(text, index) {
+    let slashCount = 0;
+    for (let i = index - 1; i >= 0 && text[i] === '\\'; i--) slashCount++;
+    return slashCount % 2 === 1;
   }
 
-  function splitTopLevelTexItems(content) {
-    const beginRe = /\\begin\{(enumerate|itemize)\}(\[[^\]\n]*\])?/;
-    const match = beginRe.exec(content);
-    if (!match) return null;
-
-    let i = match.index + match[0].length;
-    let depth = 1;
-    const items = [];
-    let current = '';
-
-    while (i < content.length && depth > 0) {
-      if (content.startsWith('\\begin{', i)) {
-        const close = content.indexOf('}', i);
-        if (close === -1) break;
-        depth++;
-        current += content.slice(i, close + 1);
-        i = close + 1;
-        continue;
+  function stripTexComments(text) {
+    return safeString(text).split('\n').map(line => {
+      let out = '';
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] === '%' && !isEscapedTexChar(line, i)) break;
+        out += line[i];
       }
+      return out;
+    }).join('\n');
+  }
 
-      if (content.startsWith('\\end{', i)) {
-        const close = content.indexOf('}', i);
-        if (close === -1) break;
+  function skipTexSpaces(text, index) {
+    let i = index;
+    while (i < text.length && /\s/.test(text[i])) i++;
+    return i;
+  }
+
+  function readBalancedTex(text, openIndex, openChar = '{', closeChar = '}') {
+    if (text[openIndex] !== openChar) return null;
+    let depth = 0;
+    for (let i = openIndex; i < text.length; i++) {
+      if (text[i] === openChar && !isEscapedTexChar(text, i)) depth++;
+      else if (text[i] === closeChar && !isEscapedTexChar(text, i)) {
         depth--;
-        if (depth === 0) { i = close + 1; break; }
-        current += content.slice(i, close + 1);
-        i = close + 1;
-        continue;
-      }
-
-      if (depth === 1 && content.startsWith('\\item', i)) {
-        if (current.trim()) items.push(current.trim());
-        current = '';
-        i += 5;
-        if (content[i] === '[') {
-          const close = content.indexOf(']', i);
-          i = close === -1 ? i + 1 : close + 1;
+        if (depth === 0) {
+          return { value: text.slice(openIndex + 1, i), start: openIndex, end: i + 1 };
         }
+      }
+    }
+    return null;
+  }
+
+  function readTexCommandAt(text, index) {
+    if (text[index] !== '\\') return null;
+    const match = /^\\([A-Za-z@]+|.)/.exec(text.slice(index));
+    if (!match) return null;
+    return { name: match[1], start: index, end: index + match[0].length };
+  }
+
+  function readTexCommandWithArgs(text, index) {
+    const command = readTexCommandAt(text, index);
+    if (!command) return null;
+    let i = command.end;
+    const optionalArgs = [];
+    const requiredArgs = [];
+
+    while (true) {
+      i = skipTexSpaces(text, i);
+      if (text[i] === '[') {
+        const arg = readBalancedTex(text, i, '[', ']');
+        if (!arg) break;
+        optionalArgs.push(arg.value);
+        i = arg.end;
         continue;
       }
+      if (text[i] === '{') {
+        const arg = readBalancedTex(text, i, '{', '}');
+        if (!arg) break;
+        requiredArgs.push(arg.value);
+        i = arg.end;
+        continue;
+      }
+      break;
+    }
 
-      current += content[i];
+    return { ...command, end: i, optionalArgs, requiredArgs, full: text.slice(index, i) };
+  }
+
+  function findTexCommand(content, names, fromIndex = 0) {
+    const wanted = new Set(names.map(name => name.toLowerCase()));
+    for (let i = fromIndex; i < content.length; i++) {
+      if (content[i] !== '\\' || isEscapedTexChar(content, i)) continue;
+      const command = readTexCommandWithArgs(content, i);
+      if (command && wanted.has(command.name.toLowerCase())) return command;
+    }
+    return null;
+  }
+
+  function findTexEnvironment(content, envNames, fromIndex = 0) {
+    const wanted = new Set(envNames.map(name => name.toLowerCase()));
+    for (let i = fromIndex; i < content.length; i++) {
+      if (!content.startsWith('\\begin', i)) continue;
+      const begin = readTexCommandWithArgs(content, i);
+      const envName = safeString(begin?.requiredArgs?.[0]).trim();
+      if (!begin || !wanted.has(envName.toLowerCase())) continue;
+
+      let depth = 1;
+      let cursor = begin.end;
+      while (cursor < content.length) {
+        const nextBegin = findTexCommand(content, ['begin'], cursor);
+        const nextEnd = findTexCommand(content, ['end'], cursor);
+        const next = [nextBegin, nextEnd].filter(Boolean).sort((a, b) => a.start - b.start)[0];
+        if (!next) break;
+        const nextName = safeString(next.requiredArgs?.[0]).trim().toLowerCase();
+        if (nextName === envName.toLowerCase()) {
+          if (next.name.toLowerCase() === 'begin') depth++;
+          else depth--;
+          if (depth === 0) {
+            return {
+              name: envName,
+              start: begin.start,
+              bodyStart: begin.end,
+              bodyEnd: next.start,
+              end: next.end,
+              value: content.slice(begin.end, next.start),
+              full: content.slice(begin.start, next.end),
+              begin,
+              endCommand: next,
+            };
+          }
+        }
+        cursor = next.end;
+      }
+    }
+    return null;
+  }
+
+  function removeRanges(text, ranges) {
+    return [...ranges].filter(Boolean).sort((a, b) => b.start - a.start)
+      .reduce((result, range) => result.slice(0, range.start) + result.slice(range.end), text);
+  }
+
+  // Helper pemecah item pada satu environment. `source` dipisahkan dari env
+  // agar scanner tetap mengetahui batas absolut dan depth environment.
+  function splitTexEnvironmentItems(source, env) {
+    if (!env) return [];
+    const items = [];
+    let current = null;
+    let depth = 0;
+    let i = env.bodyStart;
+
+    while (i < env.bodyEnd) {
+      if (source.startsWith('\\begin', i)) {
+        const cmd = readTexCommandWithArgs(source, i);
+        if (cmd) { depth++; i = cmd.end; continue; }
+      }
+      if (source.startsWith('\\end', i)) {
+        const cmd = readTexCommandWithArgs(source, i);
+        if (cmd) { depth = Math.max(0, depth - 1); i = cmd.end; continue; }
+      }
+      if (depth === 0 && source.startsWith('\\item', i)) {
+        const cmd = readTexCommandWithArgs(source, i);
+        if (current) items.push({ raw: source.slice(current.contentStart, i).trim(), start: current.start, end: i });
+        current = { start: i, contentStart: cmd ? cmd.end : i + 5 };
+        i = current.contentStart;
+        continue;
+      }
       i++;
     }
 
-    if (current.trim()) items.push(current.trim());
-    return items.length > 0 ? items : null;
+    if (current) items.push({ raw: source.slice(current.contentStart, env.bodyEnd).trim(), start: current.start, end: env.bodyEnd });
+    return items;
+  }
+
+  function findTopLevelQuestionEnvironment(source) {
+    const candidates = ['enumerate', 'questions'];
+    for (const name of candidates) {
+      const env = findTexEnvironment(source, [name]);
+      if (env) {
+        const items = splitTexEnvironmentItems(source, env);
+        if (items.length > 0) return { env, items };
+      }
+    }
+    return null;
   }
 
   function splitByPlainNumbering(content) {
     const lines = content.split('\n');
     const blocks = [];
     let current = null;
-
-    const numberRe = /^\s*(?:soal\s*)?(\d{1,3})\s*[.)]\s*(.*)$/i;
-
+    const numberRe = /^\s*(?:soal\s*)?(\d{1,4})\s*[.)]\s*(.*)$/i;
     lines.forEach(line => {
       const m = numberRe.exec(line);
       if (m) {
         if (current) blocks.push(current);
         current = { nomor: Number(m[1]), lines: [m[2]] };
-      } else if (current) {
-        current.lines.push(line);
-      }
+      } else if (current) current.lines.push(line);
     });
-
     if (current) blocks.push(current);
     return blocks.map(block => ({ nomor: block.nomor, raw: block.lines.join('\n').trim() }));
   }
@@ -962,155 +1043,180 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
     const optionRe = /(?:^|\n)\s*([A-Fa-f])[.)]\s+/g;
     const matches = [...content.matchAll(optionRe)];
     if (matches.length < 2) return { teksSoal: content, opsi: [] };
-
-    const teksSoal = content.slice(0, matches[0].index).trim();
-    const opsi = [];
-
-    for (let k = 0; k < matches.length; k++) {
-      const start = matches[k].index + matches[k][0].length;
-      const end = k + 1 < matches.length ? matches[k + 1].index : content.length;
-      opsi.push(content.slice(start, end).trim());
-    }
-
-    return { teksSoal, opsi };
-  }
-
-  function extractTexCommandValue(content, ...commandNames) {
-    for (const name of commandNames) {
-      const re = new RegExp(`\\\\${name}\\{([\\s\\S]*?)\\}`, 'i');
-      const m = re.exec(content);
-      if (m) return { value: m[1].trim(), full: m[0] };
-    }
-    return null;
-  }
-
-  function extractTexEnvironmentValue(content, ...envNames) {
-    for (const name of envNames) {
-      const re = new RegExp(`\\\\begin\\{${name}\\}([\\s\\S]*?)\\\\end\\{${name}\\}`, 'i');
-      const m = re.exec(content);
-      if (m) return { value: m[1].trim(), full: m[0] };
-    }
-    return null;
+    const opsi = matches.map((m, index) => {
+      const start = m.index + m[0].length;
+      const end = index + 1 < matches.length ? matches[index + 1].index : content.length;
+      return content.slice(start, end).trim();
+    });
+    return { teksSoal: content.slice(0, matches[0].index).trim(), opsi };
   }
 
   function cleanTexText(text) {
     return safeString(text)
-      .replace(/\\label\{[^}]*\}/g, '')
-      .replace(/\\noindent/g, '')
-      .replace(/\\vspace\*?\{[^}]*\}/g, '')
-      .replace(/\\newpage/g, '')
-      .replace(/\\bigskip|\\medskip|\\smallskip/g, '')
+      .replace(/\\label\{[^{}]*\}/g, '')
+      .replace(/\\(?:noindent|newpage|bigskip|medskip|smallskip)\b/g, '')
+      .replace(/\\vspace\*?\{[^{}]*\}/g, '')
       .replace(/[ \t]+\n/g, '\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
   }
 
+  function extractTexCommandValue(content, ...commandNames) {
+    const cmd = findTexCommand(content, commandNames);
+    if (!cmd || !cmd.requiredArgs.length) return null;
+    return { value: cmd.requiredArgs[0].trim(), full: cmd.full, start: cmd.start, end: cmd.end };
+  }
+
+  function extractTexEnvironmentValue(content, ...envNames) {
+    const env = findTexEnvironment(content, envNames);
+    if (!env) return null;
+    return { value: env.value.trim(), full: env.full, start: env.start, end: env.end };
+  }
+
   function extractAnswerKeyBlock(content) {
     const headingRe = /(kunci\s*jawaban|jawaban\s*benar|answer\s*key)/i;
-    const headingMatch = headingRe.exec(content);
-    if (!headingMatch) return {};
-
-    const blockText = content.slice(headingMatch.index);
-    const pairRe = /(\d{1,3})\s*[.\-:)]\s*([A-Fa-f])\b/g;
+    const match = headingRe.exec(content);
+    if (!match) return {};
+    const block = content.slice(match.index);
     const map = {};
+    const pairRe = /(\d{1,4})\s*[.\-:)]\s*([A-Fa-f](?:\s*[,/+]\s*[A-Fa-f])*)\b/g;
     let m;
-    while ((m = pairRe.exec(blockText)) !== null) {
-      map[Number(m[1])] = m[2].toUpperCase();
+    while ((m = pairRe.exec(block)) !== null) {
+      const keys = m[2].match(/[A-Fa-f]/g) || [];
+      map[Number(m[1])] = keys.map(x => x.toUpperCase());
+      if (map[Number(m[1])].length === 1) map[Number(m[1])] = map[Number(m[1])][0];
     }
     return map;
+  }
+
+  function extractTexImages(content) {
+    const images = [];
+    let cursor = 0;
+    while (cursor < content.length) {
+      const cmd = findTexCommand(content, ['includegraphics'], cursor);
+      if (!cmd) break;
+      const src = safeString(cmd.requiredArgs?.[0]).trim();
+      if (src) images.push({ url: src, dataUrl: '', deskripsi: `Sumber gambar LaTeX: ${src}` });
+      cursor = cmd.end;
+    }
+    return images;
+  }
+
+  function normalizeChoiceCommand(item) {
+    const correct = findTexCommand(item, ['correctchoice']);
+    if (correct?.requiredArgs?.length) return { text: correct.requiredArgs[0], correct: true };
+    const choice = findTexCommand(item, ['choice']);
+    if (choice?.requiredArgs?.length) return { text: choice.requiredArgs[0], correct: false };
+    return { text: item, correct: false };
+  }
+
+  function parseTrueFalseStatements(content) {
+    const env = findTexEnvironment(content, ['benarsalah', 'truefalse', 'statements']);
+    if (!env) return [];
+    return splitTexEnvironmentItems(content, env).map(item => ({ teks: cleanTexText(item.raw), jawaban: '' })).filter(x => x.teks);
+  }
+
+  function parseMatchingPairs(content) {
+    const env = findTexEnvironment(content, ['menjodohkan', 'matching', 'pairs']);
+    if (!env) return [];
+    return splitTexEnvironmentItems(content, env).map(item => {
+      const sep = item.raw.split(/(?:\||&|\\to|:)/, 2);
+      return { kiri: cleanTexText(sep[0]), kanan: cleanTexText(sep[1] || '') };
+    }).filter(x => x.kiri || x.kanan);
+  }
+
+  function detectQuestionType(content, opsi, pernyataan, pasangan, kunci) {
+    const typeCmd = extractTexCommandValue(content, 'tipe', 'type', 'jenissoal');
+    if (typeCmd?.value) return normalizeTipe(typeCmd.value);
+    if (pasangan.length) return 'menjodohkan';
+    if (pernyataan.length) return 'benar_salah';
+    if (Array.isArray(kunci) && kunci.length > 1) return 'pg_kompleks';
+    if (opsi.length >= 2) return 'pg_sederhana';
+    if (/\\(?:isian|shortanswer)\b/i.test(content)) return 'isian_singkat';
+    return 'uraian';
   }
 
   function parseTeX(raw) {
     const text = safeString(raw);
     if (!text.trim()) throw new Error('File .tex kosong.');
 
-    const withoutComments = stripTexComments(text);
-    const answerKeyMap = extractAnswerKeyBlock(withoutComments);
+    const source = stripTexComments(text);
+    const answerKeyMap = extractAnswerKeyBlock(source);
+    const docEnv = findTexEnvironment(source, ['document']);
+    const body = docEnv ? docEnv.value : source;
 
-    const docMatch = /\\begin\{document\}([\s\S]*?)\\end\{document\}/i.exec(withoutComments);
-    const body = docMatch ? docMatch[1] : withoutComments;
+    const questionList = findTopLevelQuestionEnvironment(body);
+    let rawBlocks = questionList
+      ? questionList.items.map((item, index) => ({ nomor: index + 1, raw: item.raw }))
+      : splitByPlainNumbering(body);
 
-    let rawBlocks = [];
-
-    const topItems = splitTopLevelTexItems(body);
-    if (topItems) {
-      rawBlocks = topItems.map((raw, idx) => ({ nomor: idx + 1, raw }));
-    } else {
-      rawBlocks = splitByPlainNumbering(body);
+    if (!rawBlocks.length) {
+      throw new Error('Tidak ditemukan struktur soal di file .tex. Gunakan enumerate/questions dengan \\item atau penomoran biasa seperti "1.".');
     }
 
-    if (rawBlocks.length === 0) {
-      throw new Error(
-        'Tidak ditemukan struktur soal di file .tex. Gunakan \\begin{enumerate}...\\item ' +
-        'per soal, atau penomoran biasa ("1.", "2." dst) di awal baris.',
-      );
-    }
-
-    return rawBlocks.map(block => {
+    return rawBlocks.map((block, index) => {
       let content = block.raw;
+      const remove = [];
 
-      let pembahasan = '';
-      const pembahasanCmd = extractTexCommandValue(content, 'pembahasan', 'penjelasan', 'solusi');
-      const pembahasanEnv = extractTexEnvironmentValue(content, 'pembahasan', 'solution');
-      if (pembahasanCmd) { pembahasan = pembahasanCmd.value; content = content.replace(pembahasanCmd.full, ''); }
-      else if (pembahasanEnv) { pembahasan = pembahasanEnv.value; content = content.replace(pembahasanEnv.full, ''); }
+      const pembahasanCmd = extractTexCommandValue(content, 'pembahasan', 'penjelasan', 'solusi', 'solution');
+      const pembahasanEnv = extractTexEnvironmentValue(content, 'pembahasan', 'penjelasan', 'solusi', 'solution');
+      const pembahasanHit = pembahasanEnv || pembahasanCmd;
+      const pembahasan = pembahasanHit ? pembahasanHit.value : '';
+      if (pembahasanHit) remove.push(pembahasanHit);
 
-      let kunciJawaban = '';
-      const kunciCmd = extractTexCommandValue(content, 'kunci', 'jawaban', 'answer');
-      if (kunciCmd) { kunciJawaban = kunciCmd.value; content = content.replace(kunciCmd.full, ''); }
+      const kunciCmd = extractTexCommandValue(content, 'kunci', 'jawaban', 'answer', 'correctanswer');
+      let kunciJawaban = kunciCmd ? normalizeAnswerKey(kunciCmd.value) : '';
+      if (kunciCmd) remove.push(kunciCmd);
 
-      let teksSoal = content;
+      const trueFalse = parseTrueFalseStatements(content);
+      const matching = parseMatchingPairs(content);
+      const optionEnv = findTexEnvironment(content, ['choices', 'options', 'enumerate', 'itemize']);
       let opsiRaw = [];
-      let correctFromExam = -1;
+      let correctIndexes = [];
 
-      const nestedBeginIdx = /\\begin\{(enumerate|itemize)\}/.exec(content);
-      if (nestedBeginIdx) {
-        teksSoal = content.slice(0, nestedBeginIdx.index);
-        const optionsBlock = content.slice(nestedBeginIdx.index);
-        const nestedItems = splitTopLevelTexItems(optionsBlock);
-        if (nestedItems) {
-          opsiRaw = nestedItems.map(item => {
-            const correctMatch = /\\correctchoice\{([\s\S]*?)\}/.exec(item);
-            if (correctMatch) return correctMatch[1];
-            return item.replace(/\\choice\{([\s\S]*?)\}/, '$1');
-          });
-          correctFromExam = nestedItems.findIndex(item => /\\correctchoice\{/.test(item));
+      if (optionEnv) {
+        const nested = splitTexEnvironmentItems(content, optionEnv);
+        if (nested.length >= 2) {
+          opsiRaw = nested.map(item => normalizeChoiceCommand(item.raw));
+          correctIndexes = opsiRaw.map((x, i) => x.correct ? i : -1).filter(i => i >= 0);
+          remove.push(optionEnv);
         }
       }
 
-      if (opsiRaw.length === 0) {
-        const plain = extractPlainOptions(content);
+      let remaining = removeRanges(content, remove);
+      if (!opsiRaw.length) {
+        const plain = extractPlainOptions(remaining);
         if (plain.opsi.length >= 2) {
-          teksSoal = plain.teksSoal;
-          opsiRaw = plain.opsi;
+          remaining = plain.teksSoal;
+          opsiRaw = plain.opsi.map(text => ({ text, correct: false }));
         }
       }
 
-      teksSoal = cleanTexText(teksSoal);
-      const opsiJawaban = opsiRaw.map(opt => cleanTexText(opt)).filter(Boolean);
+      if (!kunciJawaban && correctIndexes.length) {
+        kunciJawaban = correctIndexes.map(i => String.fromCharCode(65 + i));
+        if (kunciJawaban.length === 1) kunciJawaban = kunciJawaban[0];
+      }
+      if (!kunciJawaban && answerKeyMap[block.nomor]) kunciJawaban = answerKeyMap[block.nomor];
 
-      if (!kunciJawaban && correctFromExam >= 0) {
-        kunciJawaban = String.fromCharCode(65 + correctFromExam);
-      }
-      if (!kunciJawaban && answerKeyMap[block.nomor]) {
-        kunciJawaban = answerKeyMap[block.nomor];
-      }
+      const opsiJawaban = opsiRaw.map(item => cleanTexText(item.text || item)).filter(Boolean);
+      const gambar = extractTexImages(content);
+      const tipe = detectQuestionType(content, opsiJawaban, trueFalse, matching, kunciJawaban);
 
       return {
-        nomor: block.nomor,
-        tipe: opsiJawaban.length >= 2 ? 'pg_sederhana' : 'uraian',
-        teks_soal: teksSoal,
+        nomor: block.nomor || index + 1,
+        tipe,
+        teks_soal: cleanTexText(remaining),
         opsi_jawaban: opsiJawaban,
         kunci_jawaban: kunciJawaban,
         pembahasan: cleanTexText(pembahasan),
-        gambar: [],
+        gambar,
+        pernyataan: trueFalse,
         tabel_benar_salah: [],
-        pasangan: [],
+        pasangan: matching,
       };
     });
   }
 
-  // ============================================================
   // IMAGE SRC
   // ============================================================
   
