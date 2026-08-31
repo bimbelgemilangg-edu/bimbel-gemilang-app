@@ -448,7 +448,7 @@ const TeacherSalaries = () => {
   };
 
   // ============================================================
-  // 🔥 HANDLE: DOWNLOAD SLIP GAJI
+  // 🔥 HANDLE: DOWNLOAD SLIP GAJI (per guru)
   // ============================================================
   const handleDownload = (guru) => {
     const printWindow = window.open('', '_blank');
@@ -505,7 +505,59 @@ const TeacherSalaries = () => {
   };
 
   // ============================================================
-  // RENDER (SAMA SEPERTI SEBELUMNYA)
+  // 🔥 BARU: HANDLE: DOWNLOAD SEMUA RIWAYAT (CSV) -- gabungan semua
+  // guru dalam satu file, buat cross-check cepat (bisa dibuka & di-
+  // filter/sort di Excel/Sheets) tanpa perlu buka slip satu-satu.
+  // Ngikutin filter tanggal (startDate-endDate) yang lagi aktif.
+  // ============================================================
+  const handleDownloadAllCSV = () => {
+    if (rekap.length === 0) return showAlert("⚠️ Tidak ada data untuk diunduh!");
+
+    const rows = [
+      ['Nama Guru', 'Tanggal', 'Waktu', 'Program', 'Detail', 'Kelas', 'Tipe Kelas', 'Siswa Hadir', 'Nominal', 'Status']
+    ];
+
+    rekap.forEach(g => {
+      g.rincian
+        .slice()
+        .sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''))
+        .forEach(log => {
+          rows.push([
+            g.nama,
+            log.tanggal || '',
+            log.waktu || '',
+            log.program || '',
+            (log.detail || '').replace(/[\r\n]+/g, ' '),
+            log.kelasNama || '',
+            log.tipeKelas || '',
+            log.siswaHadir ?? '',
+            log.nominal || 0,
+            log.status || ''
+          ]);
+        });
+    });
+
+    const csvContent = rows
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    // BOM di depan biar Excel baca UTF-8 dengan benar (biar gak aneh
+    // waktu ada karakter/emoji di detail atau nama)
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Riwayat_Gaji_Semua_Guru_${startDate}_sd_${endDate}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showAlert("✅ Riwayat semua guru berhasil diunduh!");
+  };
+
+  // ============================================================
+  // RENDER
   // ============================================================
   return (
     <div style={styles.wrapper}>
@@ -533,6 +585,15 @@ const TeacherSalaries = () => {
             <p style={styles.subtitle(isMobile)}>Kelola honor berdasarkan jenjang dan durasi mengajar.</p>
           </div>
           <div style={{display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap'}}>
+            {/* 🔥 BARU: tombol unduh SEMUA riwayat (semua guru) dalam
+                satu file CSV -- buat cross-check cepat, gak perlu buka
+                slip per-guru satu-satu. Ngikutin filter tanggal aktif. */}
+            <button 
+              onClick={handleDownloadAllCSV} 
+              style={styles.btnDownloadAll(isMobile)}
+            >
+              <Download size={14} /> {isMobile ? 'Semua' : 'Unduh Semua (CSV)'}
+            </button>
             {/* 🔥 BARU: tombol ini SELALU tampil (siapa pun boleh coba),
                 tapi klik akan memicu verifikasi PIN Owner dulu sebelum
                 panelnya kebuka -- konsisten sama pola PIN Owner yang
@@ -981,7 +1042,7 @@ const TeacherSalaries = () => {
 };
 
 // ============================================================
-// STYLES (TETAP SAMA)
+// STYLES
 // ============================================================
 const styles = {
   wrapper: { display: 'flex', minHeight: '100vh', background: '#f8fafc' },
@@ -1012,6 +1073,21 @@ const styles = {
   // 🔥 BARU
   btnKomisiSettings: (m) => ({
     background: '#0f172a',
+    color: 'white',
+    border: 'none',
+    padding: m ? '8px 12px' : '10px 16px',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: m ? 11 : 12,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4
+  }),
+
+  // 🔥 BARU: tombol unduh semua riwayat (CSV, gabungan semua guru)
+  btnDownloadAll: (m) => ({
+    background: '#059669',
     color: 'white',
     border: 'none',
     padding: m ? '8px 12px' : '10px 16px',
