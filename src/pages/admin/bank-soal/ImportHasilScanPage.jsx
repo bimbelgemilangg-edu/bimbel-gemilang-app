@@ -62,8 +62,10 @@ import React, {
   const TIPE_LABELS = {
     pg_sederhana: 'PG Sederhana',
     pg_kompleks: 'PG Kompleks (jawaban lebih dari satu)',
+    pg_kategori: 'PG Kompleks Kategori',
     benar_salah: 'Benar / Salah (pernyataan majemuk)',
     isian_singkat: 'Isian Singkat',
+    numerik: 'Jawaban Numerik + Satuan',
     menjodohkan: 'Menjodohkan',
     uraian: 'Uraian / Esai',
   };
@@ -186,6 +188,17 @@ Kunci pembungkus yang juga dikenali sistem: "tryout", "paket_list" (isi soal di 
 | isian_singkat | Jawaban angka/kata singkat tanpa pilihan. \`opsi_jawaban\` dikosongkan []. |
 | menjodohkan | Mencocokkan 2 kolom. Pakai field \`pasangan\`. |
 | uraian | Esai/uraian. \`opsi_jawaban\` dikosongkan, \`kunci_jawaban\` diisi kriteria jawaban model. |
+| pg_kategori | Model kategori TKA: tiap pernyataan dinilai pada kategori tertentu (mis. Benar/Salah atau Sesuai/Tidak Sesuai). Pakai \`tabel_benar_salah\`. |
+| numerik | Jawaban bilangan yang dapat memiliki satuan, toleransi, dan bentuk ekuivalen. |
+
+Untuk soal numerik, gunakan format berikut agar pemeriksaan jawaban tidak bergantung pada satu penulisan saja:
+\`\`\`json
+"tipe": "numerik",
+"kunci_jawaban": "9.8",
+"jawaban_ekuivalen": ["9,8", "9.80"],
+"satuan_jawaban": "m/s^2",
+"toleransi_jawaban": 0.01
+\`\`\`
 
 Untuk "benar_salah" tambahkan:
 \`\`\`json
@@ -233,6 +246,16 @@ Tulis semua rumus dalam LaTeX. Ada 2 mode, PILIH SESUAI BENTUK RUMUSNYA — ini 
 - Display \`$$...$$\` — WAJIB dipakai untuk rumus LEBAR atau multi-baris: matriks (\\begin{pmatrix}, \\begin{bmatrix}), vektor kolom, pecahan besar bersusun, sistem persamaan, integral dengan batas, limit kompleks. JANGAN taruh matriks/vektor kolom di dalam inline \`$...$\` karena akan tampil terhimpit/rusak di tengah teks kalimat — pisahkan jadi baris sendiri pakai \`$$...$$\`.
 
 Sistem merender LaTeX ini otomatis (KaTeX) — jangan biarkan karakter rusak hasil OCR, tulis ulang jadi LaTeX bersih.
+
+Untuk FISIKA/KIMIA, tulis besaran dan satuan secara profesional: gunakan \`$v=5\\,\\mathrm{m\\,s^{-1}}$\`, \`$F=20\\,\\mathrm{N}$\`, \`$I=2\\,\\mathrm{A}$\`, dan \`$\\mu_0=4\\pi\\times10^{-7}\\,\\mathrm{T\,m\,A^{-1}}$\`. Jangan memakai karakter OCR seperti \`m.s-1\`, \`oC\`, atau \`x 105\`; normalisasikan menjadi LaTeX yang benar.
+
+## 7A. JENIS STIMULUS, GRAFIK, TABEL, DAN DIAGRAM
+
+- Pertahankan jenis soal asli: PG tunggal, PG multi-jawaban, kategori, benar/salah, numerik bersatuan, menjodohkan, uraian, dan soal dengan stimulus bersama.
+- Untuk grafik, rangkaian listrik, vektor, alat ukur, diagram gaya, diagram sinar, tabel eksperimen, serta opsi yang berupa gambar, gunakan \`gambar\` atau \`opsi_jawaban[].gambar\` dan tulis \`deskripsi\` yang menyebutkan semua label, arah, skala, satuan, dan angka penting.
+- Tambahkan \`referensi_sumber\` bila diketahui, misalnya \`{ "halaman_pdf": 4, "label_gambar": "grafik v-t" }\`. Ini membantu admin menemukan ulang gambar yang perlu dicek.
+- Untuk tabel di dalam soal, gunakan \`tabel_soal\`: \`{ "header": ["Gaya (N)", "Pertambahan panjang (m)"], "baris": [["7", "$3.5\\times10^{-2}$"]] }\`. Jangan mengubah tabel eksperimen menjadi kalimat yang kehilangan pasangan kolomnya.
+- Untuk soal yang jawabannya bergantung pada diagram yang tidak terbaca, jangan mengarang angka atau kunci. Isi \`kunci_terverifikasi: false\` dan \`catatan_admin\` dengan halaman yang harus diperiksa.
 
 ## 8. BACAAN/STIMULUS BERSAMA (soal berkelompok)
 
@@ -431,11 +454,22 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
       pg_kompleks: 'pg_kompleks',
       multiple_select: 'pg_kompleks',
       multiple_answers: 'pg_kompleks',
+      multiple_response: 'pg_kompleks',
+      multiple_choice_multiple_response: 'pg_kompleks',
+      mcma: 'pg_kompleks',
+      pg_kategori: 'pg_kategori',
+      pilihan_ganda_kompleks_kategori: 'pg_kategori',
+      kategori: 'pg_kategori',
       benar_salah: 'benar_salah',
       true_false: 'benar_salah',
+      truefalse: 'benar_salah',
+      bs: 'benar_salah',
       isian: 'isian_singkat',
       isian_singkat: 'isian_singkat',
       short_answer: 'isian_singkat',
+      numerik: 'numerik',
+      numerical: 'numerik',
+      numeric: 'numerik',
       menjodohkan: 'menjodohkan',
       matching: 'menjodohkan',
       uraian: 'uraian',
@@ -730,6 +764,14 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
     if (['pg_sederhana', 'pg_kompleks'].includes(tipe) && !kunciJawaban) {
       errors.push('Kunci jawaban belum ditemukan.');
     }
+
+    if (['benar_salah', 'pg_kategori'].includes(tipe) && !pernyataan.length && !tabelBenarSalah.length) {
+      errors.push('Pernyataan kategori/Benar-Salah belum ditemukan.');
+    }
+
+    if (['isian_singkat', 'numerik', 'uraian'].includes(tipe) && !kunciJawaban) {
+      errors.push('Jawaban model atau kunci belum ditemukan.');
+    }
   
     return {
       nomor,
@@ -744,12 +786,18 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
       tabel_benar_salah: tabelBenarSalah,
       pasangan,
       kunci_jawaban: kunciJawaban,
+      jawaban_ekuivalen: safeArray(q.jawaban_ekuivalen || q.jawabanEkuivalen || q.accepted_answers)
+        .map(value => safeString(value).trim()).filter(Boolean),
+      satuan_jawaban: safeString(q.satuan_jawaban || q.satuanJawaban || q.unit || ''),
+      toleransi_jawaban: Number(q.toleransi_jawaban ?? q.toleransiJawaban ?? q.tolerance) || null,
       kunci_terverifikasi: safeBoolean(
         q.kunci_terverifikasi ?? q.kunciTerverifikasi ?? q.verifiedAnswer ?? false,
       ),
       pembahasan: safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || ''),
       catatan_admin: safeString(q.catatan_admin || q.catatanAdmin || q.admin_note || ''),
       gambar,
+      tabel_soal: q.tabel_soal || q.tabelSoal || null,
+      referensi_sumber: q.referensi_sumber || q.referensiSumber || q.source_reference || null,
       materi: safeString(q.materi || q.meta_materi || ''),
       capaian_pembelajaran: safeString(q.capaian_pembelajaran || q.meta_capaian_pembelajaran || ''),
       valid: errors.length === 0,
@@ -997,10 +1045,12 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
         const cmd = readTexCommandWithArgs(source, i);
         if (cmd) { depth = Math.max(0, depth - 1); i = cmd.end; continue; }
       }
-      if (depth === 0 && source.startsWith('\\item', i)) {
-        const cmd = readTexCommandWithArgs(source, i);
+      const cmdAtCursor = source[i] === '\\' ? readTexCommandWithArgs(source, i) : null;
+      if (depth === 0 && cmdAtCursor && ['item', 'question', 'choice', 'correctchoice'].includes(cmdAtCursor.name.toLowerCase())) {
+        const cmd = cmdAtCursor;
         if (current) items.push({ raw: source.slice(current.contentStart, i).trim(), start: current.start, end: i });
-        current = { start: i, contentStart: cmd ? cmd.end : i + 5 };
+        const keepChoiceCommand = ['choice', 'correctchoice'].includes(cmd.name.toLowerCase());
+        current = { start: i, contentStart: keepChoiceCommand ? i : cmd.end };
         i = current.contentStart;
         continue;
       }
@@ -1102,11 +1152,36 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
     return images;
   }
 
+  function extractTexMetadata(content) {
+    const materi = extractTexCommandValue(content, 'materi', 'topic', 'topik');
+    const capaian = extractTexCommandValue(content, 'capaian', 'capaianpembelajaran', 'cp', 'learningoutcome');
+    const sumber = extractTexCommandValue(content, 'sumber', 'source', 'referensi', 'halamanpdf');
+    const customMeta = findTexCommand(content, ['meta']);
+
+    const result = {
+      materi: materi?.value || '',
+      capaian_pembelajaran: capaian?.value || '',
+      referensi_sumber: sumber?.value ? { keterangan: sumber.value } : null,
+      ranges: [materi, capaian, sumber].filter(Boolean),
+    };
+
+    // Mendukung makro ringkas \meta{Materi}{Capaian}{CP resmi}.
+    if (customMeta?.requiredArgs?.length >= 2) {
+      result.materi = result.materi || safeString(customMeta.requiredArgs[0]).trim();
+      result.capaian_pembelajaran = result.capaian_pembelajaran || safeString(customMeta.requiredArgs[1]).trim();
+      if (customMeta.requiredArgs[2] && !result.referensi_sumber) {
+        result.referensi_sumber = { keterangan: safeString(customMeta.requiredArgs[2]).trim() };
+      }
+      result.ranges.push(customMeta);
+    }
+    return result;
+  }
+
   function normalizeChoiceCommand(item) {
     const correct = findTexCommand(item, ['correctchoice']);
-    if (correct?.requiredArgs?.length) return { text: correct.requiredArgs[0], correct: true };
+    if (correct) return { text: correct.requiredArgs?.[0] || item.slice(correct.end).trim(), correct: true };
     const choice = findTexCommand(item, ['choice']);
-    if (choice?.requiredArgs?.length) return { text: choice.requiredArgs[0], correct: false };
+    if (choice) return { text: choice.requiredArgs?.[0] || item.slice(choice.end).trim(), correct: false };
     return { text: item, correct: false };
   }
 
@@ -1157,6 +1232,8 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
     return rawBlocks.map((block, index) => {
       let content = block.raw;
       const remove = [];
+      const metadata = extractTexMetadata(content);
+      remove.push(...metadata.ranges);
 
       const pembahasanCmd = extractTexCommandValue(content, 'pembahasan', 'penjelasan', 'solusi', 'solution');
       const pembahasanEnv = extractTexEnvironmentValue(content, 'pembahasan', 'penjelasan', 'solusi', 'solution');
@@ -1170,7 +1247,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
 
       const trueFalse = parseTrueFalseStatements(content);
       const matching = parseMatchingPairs(content);
-      const optionEnv = findTexEnvironment(content, ['choices', 'options', 'enumerate', 'itemize']);
+      const optionEnv = findTexEnvironment(content, ['choices', 'oneparchoices', 'checkboxes', 'options', 'enumerate', 'itemize']);
       let opsiRaw = [];
       let correctIndexes = [];
 
@@ -1213,6 +1290,9 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
         pernyataan: trueFalse,
         tabel_benar_salah: [],
         pasangan: matching,
+        materi: metadata.materi,
+        capaian_pembelajaran: metadata.capaian_pembelajaran,
+        referensi_sumber: metadata.referensi_sumber,
       };
     });
   }
@@ -1437,6 +1517,30 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
             <div style={{ paddingLeft: '8px', paddingRight: '8px', paddingTop: '6px', paddingBottom: '6px', color: '#374151' }}>{row.isi}</div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  function QuestionTable({ table, mathReady }) {
+    const header = safeArray(table?.header || table?.headers || table?.kolom);
+    const rows = safeArray(table?.baris || table?.rows || table?.data);
+    if (!header.length && !rows.length) return null;
+
+    return (
+      <div style={{ marginTop: '12px', overflowX: 'auto', border: '1px solid #d1d5db', borderRadius: '10px', background: '#fff' }}>
+        <table style={{ width: '100%', minWidth: '360px', borderCollapse: 'collapse', fontSize: '13px' }}>
+          {header.length > 0 && (
+            <thead>
+              <tr>{header.map((cell, index) => <th key={index} style={{ padding: '9px 10px', textAlign: 'left', background: '#f3f4f6', borderBottom: '1px solid #d1d5db' }}><RichText text={safeString(cell)} gambar={[]} mathReady={mathReady} /></th>)}</tr>
+            </thead>
+          )}
+          <tbody>
+            {rows.map((row, rowIndex) => {
+              const cells = Array.isArray(row) ? row : Object.values(row || {});
+              return <tr key={rowIndex}>{cells.map((cell, cellIndex) => <td key={cellIndex} style={{ padding: '8px 10px', verticalAlign: 'top', borderTop: rowIndex > 0 ? '1px solid #e5e7eb' : 'none' }}><RichText text={safeString(cell)} gambar={[]} mathReady={mathReady} /></td>)}</tr>;
+            })}
+          </tbody>
+        </table>
       </div>
     );
   }
@@ -1668,10 +1772,15 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
       tabelBenarSalah: q.tabel_benar_salah,
       pasangan: q.pasangan,
       kunciJawaban: q.kunci_jawaban,
+      jawabanEkuivalen: q.jawaban_ekuivalen || [],
+      satuanJawaban: q.satuan_jawaban || '',
+      toleransiJawaban: q.toleransi_jawaban ?? null,
       kunciTerverifikasi: q.kunci_terverifikasi,
       pembahasan: q.pembahasan,
       catatanAdmin: q.catatan_admin || '',
       gambarUrls,
+      tabelSoal: q.tabel_soal || null,
+      referensiSumber: q.referensi_sumber || null,
       materi: q.materi || '',
       capaianPembelajaran: q.capaian_pembelajaran || '',
       mataPelajaran: meta.mataPelajaran,
@@ -1703,6 +1812,9 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
         opsi_jawaban: q.opsi_jawaban,
         opsi_benar: q.opsi_benar,
         kunci_jawaban: q.kunci_jawaban,
+        jawaban_ekuivalen: q.jawaban_ekuivalen || [],
+        satuan_jawaban: q.satuan_jawaban || '',
+        toleransi_jawaban: q.toleransi_jawaban ?? null,
         kunci_terverifikasi: q.kunci_terverifikasi,
         pembahasan: q.pembahasan,
         pernyataan: q.pernyataan,
@@ -1718,6 +1830,8 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
           deskripsi: image.deskripsi,
           nomor: image.nomor,
         })),
+        tabel_soal: q.tabel_soal || null,
+        referensi_sumber: q.referensi_sumber || null,
       }));
   
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -2805,6 +2919,16 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
   
         {/* QUESTION */}
         <RichText text={q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
+
+        {q.tabel_soal && <QuestionTable table={q.tabel_soal} mathReady={mathReady} />}
+
+        {(q.satuan_jawaban || q.toleransi_jawaban !== null || safeArray(q.jawaban_ekuivalen).length > 0) && (
+          <div style={{ marginTop: '12px', borderRadius: '10px', padding: '10px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>
+            {q.satuan_jawaban && <span style={{ marginRight: '14px' }}>Satuan jawaban: <strong>{q.satuan_jawaban}</strong></span>}
+            {q.toleransi_jawaban !== null && <span style={{ marginRight: '14px' }}>Toleransi: <strong>{q.toleransi_jawaban}</strong></span>}
+            {safeArray(q.jawaban_ekuivalen).length > 0 && <span>Jawaban ekuivalen: <strong>{q.jawaban_ekuivalen.join(', ')}</strong></span>}
+          </div>
+        )}
   
         {/* OPTIONS (teks / gambar / tabel per opsi) */}
         {q.opsi_jawaban?.length > 0 && (
@@ -2864,14 +2988,14 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
         )}
   
         {/* TRUE FALSE */}
-        {q.tabel_benar_salah?.length > 0 && (
+        {(q.tabel_benar_salah?.length > 0 || q.pernyataan?.length > 0) && (
           <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', backgroundColor: '#ffffff', overflow: 'hidden' }}>
-            <div style={{ paddingLeft: '12px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', backgroundColor: '#f3f4f6', fontSize: '12px', fontWeight: '700', color: '#374151' }}>Pernyataan</div>
-            {q.tabel_benar_salah.map((item, index) => (
-              <div key={index} style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', borderTop: '1px solid #e5e7eb', borderColor: '#e5e7eb' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', padding: '8px 12px', backgroundColor: '#f3f4f6', fontSize: '12px', fontWeight: '700', color: '#374151' }}><span>Pernyataan</span><span style={{ textAlign: 'center' }}>Jawaban</span></div>
+            {(q.tabel_benar_salah?.length ? q.tabel_benar_salah : q.pernyataan).map((item, index) => (
+              <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 120px', borderTop: '1px solid #e5e7eb', borderColor: '#e5e7eb' }}>
                 <div style={{ padding: '12px', fontSize: '14px' }}>
                   {typeof item === 'object'
-                    ? <RichText text={item.pernyataan} gambar={[]} mathReady={mathReady} />
+                    ? <RichText text={item.pernyataan || item.teks} gambar={[]} mathReady={mathReady} />
                     : item}
                 </div>
                 <div style={{ padding: '12px', fontSize: '14px', fontWeight: '700', textAlign: 'center' }}>
