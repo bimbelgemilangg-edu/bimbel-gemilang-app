@@ -191,11 +191,43 @@ const TransactionHistory = () => {
     if (!item.studentId || !item.durasiTambah) {
       // Transaksi "Perpanjangan Paket" versi LAMA (dibuat sebelum field
       // durasiTambah ditambahkan) -- gak ada info pasti berapa bulan yang
-      // harus dibalikin, jadi gak bisa dibalikin otomatis. Fallback ke
-      // penyesuaian totalBayar doang (perilaku lama), sambil kasih tau
-      // admin biar cek manual sisanya.
-      await adjustStudentTotalBayar(item.studentId, -parseInt(item.amount || 0));
-      alert('⚠️ Transaksi perpanjangan ini dibuat sebelum sistem bisa membalikkan otomatis. Total dibayar sudah disesuaikan, tapi CEK MANUAL tanggal selesai & durasi paket siswa ini di halaman Edit Siswa.');
+      // harus dibalikin (tanggal selesai & durasi), jadi bagian ITU gak
+      // bisa dibalikin otomatis. Admin tetap perlu cek manual buat itu.
+      //
+      // 🔥 FIX BUG NYATA (laporan langsung: "sudah dihapus tapi transaksi
+      // gak hilang dari Riwayat, saldo juga gak berubah"): sebelumnya
+      // jalur ini CUMA menyesuaikan totalBayar siswa lewat
+      // adjustStudentTotalBayar() -- dokumen transaksinya sendiri di
+      // finance_logs TIDAK PERNAH ikut dihapus. Akibatnya baris transaksi
+      // ini nyangkut selamanya di Riwayat, dan Saldo Tunai/Bank (yang
+      // dihitung dari SELURUH finance_logs) tetap menghitungnya sebagai
+      // uang yang masih ada -- padahal dari sisi siswa sudah dianggap
+      // "belum bayar" lagi. Dua sumber data jadi gak sinkron.
+      // Sekarang penghapusan dokumen & penyesuaian totalBayar digabung
+      // dalam SATU writeBatch (atomik, sama seperti jalur transaksi
+      // modern) -- baris ini akan BENAR-BENAR hilang dari Riwayat, dan
+      // Saldo langsung ikut menyesuaikan begitu diproses.
+      const amountLama = parseInt(item.amount || 0);
+      const isTunaiTransferLama = item.method === 'Tunai' || item.method === 'Transfer';
+      const batchLama = writeBatch(db);
+
+      if (isTunaiTransferLama && amountLama) {
+        const qStudentLama = query(collection(db, "students"), where("studentId", "==", item.studentId));
+        const snapLama = await getDocs(qStudentLama);
+        if (!snapLama.empty) {
+          const studentDocLama = snapLama.docs[0];
+          const currentLama = parseInt(studentDocLama.data().totalBayar || 0);
+          const totalTagihanLama = parseInt(studentDocLama.data().totalTagihan || 0);
+          let newValueLama = currentLama - amountLama;
+          if (newValueLama < 0) newValueLama = 0;
+          if (totalTagihanLama > 0 && newValueLama > totalTagihanLama) newValueLama = totalTagihanLama;
+          batchLama.update(doc(db, "students", studentDocLama.id), { totalBayar: newValueLama });
+        }
+      }
+      batchLama.delete(doc(db, "finance_logs", item.id));
+      await batchLama.commit();
+
+      alert('⚠️ Transaksi lama ini sudah dihapus & total dibayar sudah disesuaikan. TAPI tetap CEK MANUAL tanggal selesai & durasi paket siswa ini di halaman Koreksi Data -- dua field itu TIDAK ikut dibalikkan otomatis untuk transaksi model lama seperti ini.');
       return;
     }
 
