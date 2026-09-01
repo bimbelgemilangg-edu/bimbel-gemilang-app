@@ -36,8 +36,17 @@ const TransactionHistory = () => {
   const [pinInput, setPinInput] = useState('');
   const [showPinModal, setShowPinModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  // 🔥 BARU: penanda kalau PIN belum pernah diatur admin sama sekali
-  const [pinBelumDiatur, setPinBelumDiatur] = useState(false);
+  // 🔥 FIX KEAMANAN (race condition): defaultnya sekarang TRUE (dianggap
+  // "PIN belum siap/belum terbukti ada") sampai getDoc() di bawah selesai
+  // dan benar-benar mengonfirmasi ada PIN tersimpan. Sebelumnya default-nya
+  // `false`, artinya selama getDoc() masih loading (async, walau cuma
+  // sepersekian detik), sistem sempat "menganggap" PIN sudah diatur padahal
+  // ownerPin masih '' -- kalau di jendela waktu itu ada yang buka modal
+  // hapus/edit dan submit PIN kosong, pinInput ('') === ownerPin ('') jadi
+  // COCOK dan aksi hapus/edit LOLOS tanpa PIN asli. Sekarang aman karena
+  // defaultnya "belum diatur" dulu (tombol hapus/edit akan menolak & minta
+  // atur PIN dulu) sampai konfirmasi dari Firestore datang.
+  const [pinBelumDiatur, setPinBelumDiatur] = useState(true);
 
   useEffect(() => {
     getDoc(doc(db, "settings", "global_config")).then(snap => {
@@ -56,6 +65,11 @@ const TransactionHistory = () => {
         setOwnerPin('');
         setPinBelumDiatur(true);
       }
+    }).catch(() => {
+      // 🔥 Kalau getDoc gagal (misal offline), JANGAN diam-diam anggap PIN
+      // sudah siap -- tetap kunci hapus/edit demi keamanan.
+      setOwnerPin('');
+      setPinBelumDiatur(true);
     });
 
     // 🔥 FIX BUG NYATA (kelas yang sama dengan StudentFinance.jsx admin):
@@ -243,6 +257,20 @@ const TransactionHistory = () => {
   };
 
   const handleDelete = async () => {
+    // 🔥 FIX BUG KEAMANAN: PIN kosong TIDAK BOLEH dianggap valid, apapun
+    // kondisinya. Tanpa guard ini, kalau ownerPin kebetulan belum termuat
+    // (masih '') dan admin submit form tanpa isi PIN, pinInput ('') ===
+    // ownerPin ('') akan LOLOS sebagai "PIN benar" padahal tidak ada PIN
+    // yang benar-benar dicocokkan. Sekarang PIN kosong SELALU ditolak
+    // duluan, sebelum sempat dibandingkan ke ownerPin.
+    if (!pinInput) {
+      alert('⛔ PIN harus diisi!');
+      return;
+    }
+    if (pinBelumDiatur || !ownerPin) {
+      alert('⚠️ PIN Owner belum diatur. Atur PIN dulu di halaman Pengaturan.');
+      return;
+    }
     if (pinInput !== ownerPin) {
       alert('⛔ PIN SALAH! Transaksi tidak bisa dihapus.');
       return;
@@ -311,12 +339,22 @@ const TransactionHistory = () => {
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    // 🔥 FIX BUG KEAMANAN (sama seperti handleDelete): PIN kosong tidak
+    // boleh lolos hanya karena ownerPin belum termuat.
+    if (!pinInput) {
+      alert('⛔ PIN harus diisi!');
+      return;
+    }
+    if (pinBelumDiatur || !ownerPin) {
+      alert('⚠️ PIN Owner belum diatur. Atur PIN dulu di halaman Pengaturan.');
+      return;
+    }
     if (pinInput !== ownerPin) {
       alert('⛔ PIN SALAH! Tidak bisa mengedit transaksi.');
       return;
     }
     try {
-      const newAmount = parseInt(editData.amount);
+      const newAmount = parseInt(editData.amount) || 0;
       await updateDoc(doc(db, "finance_logs", editData.id), {
         date: editData.date,
         type: editData.type,
@@ -411,26 +449,41 @@ const TransactionHistory = () => {
     doc.text(`Periode: ${filterMode === 'range' ? `${dateRange.start} s/d ${dateRange.end}` : filterMode === 'bulan' ? filterMonth : 'Semua'}`, 14, 21);
     doc.text(`Total Masuk: Rp ${totalMasuk.toLocaleString()} | Keluar: Rp ${totalKeluar.toLocaleString()} | Saldo: Rp ${(totalMasuk - totalKeluar).toLocaleString()}`, 14, 27);
 
+    // 🔥 FIX BUG: kolom "Keterangan" SEBELUMNYA dipotong paksa ke 25
+    // karakter (`.substring(0, 25)`) sebelum masuk tabel PDF -- kalau
+    // catatan transaksi lebih panjang dari itu, sisanya HILANG SAMA SEKALI
+    // dari laporan (bukan cuma tampilan visual yang kepotong, tapi datanya
+    // memang sudah dipangkas sebelum ditulis ke PDF). Sekarang teks penuh
+    // dikirim apa adanya ke autoTable, dan tabelnya di-setting supaya
+    // baris otomatis bertambah tinggi (word-wrap) kalau catatannya panjang
+    // -- jadi tidak ada lagi bagian keterangan yang hilang di laporan.
     const body = filtered.map(t => [
       t.date || '-',
       formatTimestamp(t.createdAt),
       t.type,
       t.method,
-      t.category,
-      (t.note || '-').substring(0, 25),
-      t.type === 'Pemasukan' ? `Rp ${parseInt(t.amount).toLocaleString()}` : '-',
-      t.type === 'Pengeluaran' ? `Rp ${parseInt(t.amount).toLocaleString()}` : '-'
+      t.category || '-',
+      t.note || '-',
+      t.type === 'Pemasukan' ? `Rp ${(parseInt(t.amount) || 0).toLocaleString()}` : '-',
+      t.type === 'Pengeluaran' ? `Rp ${(parseInt(t.amount) || 0).toLocaleString()}` : '-'
     ]);
 
     autoTable(doc, {
       head: [['Tanggal', 'Jam', 'Tipe', 'Metode', 'Kategori', 'Keterangan', 'Masuk', 'Keluar']],
       body, startY: 32,
       headStyles: { fillColor: [30, 41, 59], fontSize: 7 },
+      // overflow: 'linebreak' -> teks panjang TURUN BARIS, tidak dipotong/dibuang
+      styles: { fontSize: 6, overflow: 'linebreak', valign: 'top' },
       columnStyles: {
-        6: { halign: 'right', textColor: [16, 185, 129] },
-        7: { halign: 'right', textColor: [239, 68, 68] }
+        0: { cellWidth: 22 },              // Tanggal
+        1: { cellWidth: 16 },              // Jam
+        2: { cellWidth: 18 },              // Tipe
+        3: { cellWidth: 18 },              // Metode
+        4: { cellWidth: 30 },              // Kategori
+        5: { cellWidth: 'auto' },          // Keterangan -- dapat sisa lebar halaman, boleh wrap
+        6: { cellWidth: 28, halign: 'right', textColor: [16, 185, 129] },
+        7: { cellWidth: 28, halign: 'right', textColor: [239, 68, 68] }
       },
-      styles: { fontSize: 6 }
     });
     doc.save(`Keuangan_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
@@ -444,15 +497,15 @@ const TransactionHistory = () => {
       'Jam': formatTimestamp(t.createdAt),
       'Tipe': t.type,
       'Metode': t.method,
-      'Kategori': t.category,
+      'Kategori': t.category || '-',
       'Keterangan': t.note || '',
-      'Masuk (Rp)': t.type === 'Pemasukan' ? parseInt(t.amount) : 0,
-      'Keluar (Rp)': t.type === 'Pengeluaran' ? parseInt(t.amount) : 0
+      'Masuk (Rp)': t.type === 'Pemasukan' ? (parseInt(t.amount) || 0) : 0,
+      'Keluar (Rp)': t.type === 'Pengeluaran' ? (parseInt(t.amount) || 0) : 0
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     ws['!cols'] = [
       {wch:5}, {wch:12}, {wch:10}, {wch:12}, 
-      {wch:10}, {wch:20}, {wch:25}, {wch:15}, {wch:15}
+      {wch:10}, {wch:20}, {wch:30}, {wch:15}, {wch:15}
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Transaksi');
@@ -596,7 +649,7 @@ const TransactionHistory = () => {
                       ...styles.td, textAlign: 'right', fontWeight: 'bold',
                       color: t.type === 'Pemasukan' ? '#10b981' : '#ef4444'
                     }}>
-                      {t.type === 'Pengeluaran' ? '- ' : '+ '}Rp {parseInt(t.amount).toLocaleString()}
+                      {t.type === 'Pengeluaran' ? '- ' : '+ '}Rp {(parseInt(t.amount) || 0).toLocaleString()}
                     </td>
                     <td style={{...styles.td, textAlign: 'center'}}>
                       <div style={{display: 'flex', gap: 4, justifyContent: 'center'}}>
