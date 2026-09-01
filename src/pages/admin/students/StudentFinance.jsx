@@ -36,10 +36,10 @@ const StudentFinance = () => {
   const [showPerpanjangModal, setShowPerpanjangModal] = useState(false);
   // 🔥 BARU: panel "Koreksi Data Paket" -- buat admin betulin LANGSUNG
   // kalau ada kesalahan input yang mengakibatkan salah satu field paket
-  // (tagihan/dibayar/tanggal mulai/tanggal selesai/durasi) jadi keliru.
-  // BEDA dari "Perpanjang Paket" (yang selalu MENAMBAH ke posisi
-  // sekarang) -- ini buat MENIMPA LANGSUNG ke nilai yang benar, gak
-  // ngotak-ngatik riwayat transaksi sama sekali (lebih aman daripada
+  // (tagihan/dibayar/tanggal mulai/tanggal selesai/durasi/METODE BAYAR)
+  // jadi keliru. BEDA dari "Perpanjang Paket" (yang selalu MENAMBAH ke
+  // posisi sekarang) -- ini buat MENIMPA LANGSUNG ke nilai yang benar,
+  // gak ngotak-ngatik riwayat transaksi sama sekali (lebih aman daripada
   // hapus-tambah transaksi lama yang bisa bikin runtut sejarah
   // pembayaran jadi kacau -- lihat penjelasan lengkap di tombol buka
   // panel ini).
@@ -244,7 +244,14 @@ const StudentFinance = () => {
 
   // ===== PERPANJANGAN =====
   // 🔥 BARU: buka panel koreksi, diisi otomatis dengan nilai SAAT INI
-  // (biar admin cuma perlu ubah yang salah, bukan ngetik ulang semua dari nol).
+  // (biar admin cuma perlu ubah yang salah, bukan ngetik ulang semua dari
+  // nol). 🔥 DITAMBAH: `metodeBayar` sekarang IKUT dimasukkan ke panel
+  // koreksi -- sebelumnya panel ini cuma bisa koreksi nominal/tanggal/
+  // durasi, TAPI kalau yang salah input justru METODE BAYAR-nya (misal
+  // kepencet "Cicilan" padahal seharusnya "Tunai"/"Transfer", atau
+  // sebaliknya), admin gak ada cara buat betulin -- padahal `metodeBayar`
+  // ini yang menentukan status "Pendaftaran Lunas" (lihat
+  // isPendaftaranLunas()) dan tombol "Bayar Lunas" muncul/tidaknya.
   const openKoreksiModal = () => {
     setKoreksiData({
       totalTagihan: student.totalTagihan || 0,
@@ -252,6 +259,7 @@ const StudentFinance = () => {
       tanggalMulai: student.tanggalMulai || '',
       tanggalSelesai: student.tanggalSelesai || '',
       durasiBulan: student.durasiBulan || 0,
+      metodeBayar: student.metodeBayar || 'Tunai',
       alasan: '',
     });
     setShowKoreksiModal(true);
@@ -263,8 +271,8 @@ const StudentFinance = () => {
   // Riwayat lalu berharap semuanya otomatis kebalikin" -- pendekatan itu
   // rapuh buat transaksi PENDAFTARAN (beda dari Perpanjangan Paket yang
   // udah punya mekanisme baliknya sendiri), karena satu transaksi
-  // pendaftaran itu ngatur 5 field sekaligus dan gak selalu jelas "harus
-  // dibalikin ke apa" kalau udah ada transaksi LAIN yang numpuk di
+  // pendaftaran itu ngatur beberapa field sekaligus dan gak selalu jelas
+  // "harus dibalikin ke apa" kalau udah ada transaksi LAIN yang numpuk di
   // atasnya. Koreksi langsung itu lebih jujur & transparan: admin lihat
   // sendiri semua field, tentuin nilai yang BENAR, dan sistem cuma
   // nyimpen itu -- gak nebak-nebak.
@@ -280,6 +288,13 @@ const StudentFinance = () => {
         tanggalMulai: koreksiData.tanggalMulai,
         tanggalSelesai: koreksiData.tanggalSelesai,
         durasiBulan: parseInt(koreksiData.durasiBulan) || 0,
+        // 🔥 BARU: metode pembayaran ikut ditimpa ke nilai yang dikoreksi
+        // admin. Field ini yang dipakai isPendaftaranLunas() buat
+        // menentukan apakah pendaftaran dianggap lunas langsung (Tunai/
+        // Transfer) atau masih berjalan (Cicilan) -- jadi kalau ini salah
+        // dari awal, tombol "Bayar Lunas" & status LUNAS/BELUM bisa ikut
+        // salah tampil sampai dikoreksi di sini.
+        metodeBayar: koreksiData.metodeBayar,
       };
       await updateDoc(doc(db, "students", id), payload);
 
@@ -296,6 +311,7 @@ const StudentFinance = () => {
           tanggalMulai: student.tanggalMulai || '',
           tanggalSelesai: student.tanggalSelesai || '',
           durasiBulan: student.durasiBulan || 0,
+          metodeBayar: student.metodeBayar || 'Tunai',
         },
         sesudah: payload,
         alasan: koreksiData.alasan.trim(),
@@ -652,6 +668,19 @@ const StudentFinance = () => {
                   </strong>
                 </div>
               </div>
+              {/* 🔥 BARU: metode bayar pendaftaran ikut ditampilkan di
+                  ringkasan, biar admin gampang lihat & sadar kalau ini
+                  yang perlu dikoreksi (sebelumnya gak ada indikator
+                  metode bayar sama sekali di halaman ini). */}
+              <div style={styles.financeItem}>
+                <CreditCard size={16} color="#f59e0b" />
+                <div>
+                  <span style={styles.financeLabel}>Metode Bayar</span>
+                  <strong style={{...styles.financeValue, fontSize: 11}}>
+                    {student.metodeBayar || '-'}
+                  </strong>
+                </div>
+              </div>
             </div>
 
             {!isLunas && !isPendaftaranLunas() && (
@@ -687,8 +716,9 @@ const StudentFinance = () => {
 
             {/* 🔥 BARU: tombol koreksi -- KHUSUS buat kasus SALAH INPUT (bukan
                 perpanjangan beneran), mis. pendaftaran salah masukin tanggal/
-                nominal. Bedanya ditegasin lewat warna & label, biar admin gak
-                ketuker sama "Perpanjang Paket" (yang selalu NAMBAH). */}
+                nominal/METODE BAYAR. Bedanya ditegasin lewat warna & label,
+                biar admin gak ketuker sama "Perpanjang Paket" (yang selalu
+                NAMBAH). */}
             <button onClick={openKoreksiModal} style={styles.btnKoreksi}>
               <Edit3 size={14} /> Koreksi Data (kalau salah input)
             </button>
@@ -896,6 +926,30 @@ const StudentFinance = () => {
                   <label style={styles.label}>Total Dibayar (Rp)</label>
                   <input type="number" value={koreksiData.totalBayar} onChange={e => setKoreksiData(p => ({ ...p, totalBayar: e.target.value }))} style={styles.input} />
                 </div>
+
+                {/* 🔥 BARU: koreksi Metode Pembayaran. Field ini sebelumnya
+                    TIDAK BISA dikoreksi sama sekali dari panel ini -- padahal
+                    `metodeBayar` menentukan apakah pendaftaran dianggap lunas
+                    otomatis (Tunai/Transfer) atau masih berjalan (Cicilan),
+                    lihat isPendaftaranLunas(). Kalau ini salah input dari
+                    awal (misal admin pencet "Cicilan" padahal siswa bayar
+                    "Tunai" penuh, atau sebaliknya), status "Bayar Lunas" /
+                    tombol yang muncul di ringkasan bisa ikut salah sampai
+                    dibetulkan di sini. */}
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Metode Pembayaran</label>
+                  <div style={styles.tabRow3}>
+                    <button type="button" onClick={() => setKoreksiData(p => ({ ...p, metodeBayar: 'Tunai' }))} style={styles.methodBtn(koreksiData.metodeBayar === 'Tunai')}>💵 Tunai</button>
+                    <button type="button" onClick={() => setKoreksiData(p => ({ ...p, metodeBayar: 'Transfer' }))} style={styles.methodBtn(koreksiData.metodeBayar === 'Transfer')}>💳 Transfer</button>
+                    <button type="button" onClick={() => setKoreksiData(p => ({ ...p, metodeBayar: 'Cicilan' }))} style={styles.methodBtn(koreksiData.metodeBayar === 'Cicilan')}>📋 Cicilan</button>
+                  </div>
+                  {koreksiData.metodeBayar === 'Cicilan' && parseInt(koreksiData.totalBayar || 0) >= parseInt(koreksiData.totalTagihan || 0) && parseInt(koreksiData.totalTagihan || 0) > 0 && (
+                    <p style={{ fontSize: 10, color: '#b45309', marginTop: 6, marginBottom: 0 }}>
+                      ⚠️ Total Dibayar sudah sama/lebih dari Total Tagihan, tapi metode diset "Cicilan" -- cek lagi apakah ini memang benar.
+                    </p>
+                  )}
+                </div>
+
                 <div style={{ display: 'flex', gap: 10 }}>
                   <div style={{ ...styles.inputGroup, flex: 1 }}>
                     <label style={styles.label}>Tanggal Mulai</label>
@@ -915,7 +969,7 @@ const StudentFinance = () => {
                   <textarea
                     value={koreksiData.alasan}
                     onChange={e => setKoreksiData(p => ({ ...p, alasan: e.target.value }))}
-                    placeholder="Contoh: salah input durasi pas pendaftaran, seharusnya 1 bulan bukan 3 bulan"
+                    placeholder="Contoh: salah pilih metode bayar pas pendaftaran, seharusnya Tunai bukan Cicilan"
                     style={{ ...styles.input, minHeight: 60, resize: 'vertical', fontFamily: 'inherit' }}
                   />
                 </div>
