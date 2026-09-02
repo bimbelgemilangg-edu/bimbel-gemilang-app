@@ -322,6 +322,17 @@ function buildMasterHTMLPrompt(meta = {}) {
     catatanTambahan = '',
   } = meta;
 
+  // Contoh di bagian akhir prompt HARUS ikut nilai form yang sebenarnya --
+  // kalau kelas form "Semua" (mis. scan UTBK/TKA lintas kelas), atribut
+  // data-kelas di contoh DIHILANGKAN, supaya AI tidak meniru pola "isi
+  // asal angka" untuk kasus yang aslinya harus dikosongkan.
+  const contohKelasAttr = (tingkatKelas && tingkatKelas !== 'Semua')
+    ? ` data-kelas="${tingkatKelas}"`
+    : '';
+  const contohKesulitan = ['mudah', 'sedang', 'sulit'].includes(tingkatKesulitan)
+    ? tingkatKesulitan
+    : 'sedang';
+
   return `Kamu adalah asisten ekstraksi dokumen untuk Bank Soal Gemilang. Baca SELURUH PDF/gambar sumber, termasuk semua nomor, gambar, grafik, tabel, rumus, dan pembahasan. Jangan mengarang informasi yang tidak terbaca.
 
 KONTEKS:
@@ -336,7 +347,7 @@ TUJUAN: keluarkan SATU dokumen HTML Master yang dapat langsung di-upload ke Bank
 ATURAN WAJIB:
 1. Setiap soal wajib berada di <article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1">.
 2. Pertanyaan utama berada di <div data-field="teks_soal">...</div>.
-3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Jika gambar benar-benar tersedia, pertahankan. Jangan mengarang URL.
+3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Kalau kamu bisa mengisolasi persis gambar/grafik/diagram soal itu saja, embed itu. KALAU TIDAK BISA mengisolasi dengan presisi (mis. grafik menyatu dengan teks di layout PDF), JANGAN dilewatkan/dikosongkan begitu saja -- sertakan screenshot SATU HALAMAN PENUH tempat gambar itu berada sebagai fallback, dan tulis di alt/deskripsi: "Perlu di-crop admin, gambar asli ada di halaman ini". Sistem punya fitur crop bawaan (drag-pilih area), jadi admin bisa memotong sendiri dari screenshot halaman penuh itu -- jangan pernah mengarang gambar atau URL yang tidak benar-benar ada.
 4. Rumus harus dipertahankan sebagai LaTeX, misalnya $x^2+1$, \\(x^2+1\\), atau <span data-latex="x^2+1">...</span>.
 5. Pilihan jawaban berada di <ol data-field="opsi_jawaban"><li>...</li></ol>. Setiap <li> boleh berisi gambar dan tabel.
 6. Kunci ditulis di <meta data-field="kunci_jawaban" data-value="B" />. Jangan menebak kunci yang tidak tersedia.
@@ -359,7 +370,7 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
    - "sulit": HOTS, banyak langkah, atau butuh analisis/manipulasi aljabar rumit.
    Field ini WAJIB diisi untuk setiap soal, jangan dikosongkan.
 
-16. \`data-kelas="7|8|9|10|11|12"\` — HANYA isi kalau kamu YAKIN materinya spesifik untuk kelas tertentu berdasarkan kurikulum umum Indonesia (mis. "Barisan dan Deret" = kelas 11, "Trigonometri Dasar" = kelas 10, "Turunan/Integral" = kelas 12). Kalau materinya bisa muncul di lintas kelas atau kamu tidak yakin, JANGAN isi atribut ini sama sekali (jangan menebak/default ke satu angka) — sistem akan otomatis memakai kelas yang dipilih admin di form sebagai gantinya.
+16. \`data-kelas="1-12"\` (angka 1 sampai 12, sesuai jenjang: SD/MI = 1-6, SMP/MTs = 7-9, SMA/MA/SMK = 10-12) — HANYA isi kalau kamu YAKIN materinya spesifik untuk kelas tertentu berdasarkan kurikulum umum Indonesia (mis. "Barisan dan Deret" = kelas 11, "Trigonometri Dasar" = kelas 10, "Turunan/Integral" = kelas 12, "Pecahan" = kelas 4-5). Kalau materinya bisa muncul di lintas kelas, dokumennya memang untuk banyak kelas sekaligus (mis. UTBK/TKA), atau kamu tidak yakin, JANGAN isi atribut ini sama sekali (jangan menebak/default ke satu angka) — sistem akan otomatis memakai kelas yang dipilih admin di form sebagai gantinya.
 
 ## KONSISTENSI STRUKTUR (PENTING — supaya hasil parsing tidak meleset)
 
@@ -367,10 +378,10 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
 18. Satu <article> = satu soal. Jangan menaruh dua nomor soal dalam satu <article>, dan jangan memecah satu soal jadi dua <article>.
 19. Jangan menambahkan komentar, penjelasan, atau teks apa pun di luar blok HTML.
 
-CONTOH:
+CONTOH (perhatikan: angka/nilai di bawah ini cuma ilustrasi STRUKTUR tag. Materi, kesulitan, dan kelas yang kamu isi harus hasil analisismu sendiri terhadap SETIAP soal asli, bukan disalin dari contoh ini):
 <!doctype html>
 <html lang="id"><body>
-<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="10">
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="${contohKesulitan}"${contohKelasAttr}>
 <div data-field="materi">Persamaan Kuadrat</div>
 <div data-field="teks_soal">Jika $x^2-5x+6=0$, nilai x adalah .... {{GAMBAR}}</div>
 <div data-field="gambar"><img src="data:image/png;base64,..." alt="Diagram soal" /></div>
