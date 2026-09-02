@@ -856,6 +856,55 @@ function normalizeSoal(q, idx) {
     errors.push('Jawaban model atau kunci belum ditemukan.');
   }
 
+  // ----------------------------------------------------------
+  // DETEKSI teks_soal TERCAMPUR/RUSAK
+  // ------------------------------------------------------------
+  // Ditemukan kasus nyata: AI menggabungkan teks_soal + pembahasan +
+  // bahkan NAMA FILE SUMBER jadi satu string panjang, dengan sebagian
+  // LaTeX ke-render (di dalam $...$) dan salinan mentahnya lagi di luar
+  // delimiter (muncul sebagai "\frac12\pi" apa adanya di layar), plus
+  // kalimat pembahasan yang kehilangan semua spasi antar kata. Sebelum
+  // ini, soal seperti ini tetap lolos sebagai "✓ Valid" karena tidak ada
+  // satu pun pengecekan yang menyentuh ISI teks_soal, cuma mengecek ada/
+  // tidaknya field. Empat sinyal di bawah menangkap pola kerusakan itu.
+  // ----------------------------------------------------------
+
+  // Sinyal 1: nama file sumber ikut nyangkut ke teks_soal
+  if (/\.(pdf|docx?|xlsx?|pptx?)\b/i.test(teksSoal)) {
+    errors.push('teks_soal mengandung nama file sumber (mis. ".pdf") -- kemungkinan tercampur dengan metadata, cek manual.');
+  }
+
+  // Sinyal 2: perintah LaTeX mentah (\frac, \pi, dst) yang berada DI LUAR
+  // delimiter $...$/$$...$$/\(...\)/\[...\]. LaTeX yang benar SELALU ada
+  // di dalam salah satu delimiter itu (lihat aturan #4 prompt) -- kalau
+  // ketemu di luar situ, hampir pasti duplikat mentah yang gagal ke-render.
+  {
+    const tanpaMathBlock = teksSoal
+      .replace(/\$\$[\s\S]*?\$\$/g, ' ')
+      .replace(/\\\([\s\S]*?\\\)/g, ' ')
+      .replace(/\\\[[\s\S]*?\\\]/g, ' ')
+      .replace(/\$[^$]*?\$/g, ' ');
+    if (/\\[a-zA-Z]{2,}/.test(tanpaMathBlock)) {
+      errors.push('Ada kode LaTeX mentah (mis. "\\\\frac", "\\\\pi") di luar tanda $...$ -- kemungkinan duplikat teks yang gagal dirender, cek manual.');
+    }
+  }
+
+  // Sinyal 3: rentetan huruf tanpa spasi sepanjang >=25 karakter (mis.
+  // "Gunakancos2x=2cos^2x-1.Diperoleh...") -- tidak wajar untuk kalimat
+  // soal biasa, biasanya terjadi kalau teks pembahasan ikut tergabung
+  // tanpa spasi pemisah antar kata/kalimat.
+  if (/[A-Za-z]{25,}/.test(teksSoal)) {
+    errors.push('Ada rentetan huruf tanpa spasi yang sangat panjang -- kemungkinan teks tergabung tanpa pemisah, cek manual.');
+  }
+
+  // Sinyal 4: panjang teks_soal jauh di luar wajar untuk satu butir soal
+  // pilihan ganda biasa. Ambang digenerouskan supaya soal dengan bacaan
+  // panjang yang memang legit (ditulis di teks_soal, bukan field bacaan)
+  // tidak salah kena flag -- ini SINYAL TAMBAHAN, bukan penentu tunggal.
+  if (teksSoal.length > 700 && !bacaan) {
+    errors.push(`teks_soal sangat panjang (${teksSoal.length} karakter) untuk soal tanpa bacaan -- kemungkinan tercampur field lain, cek manual.`);
+  }
+
   return {
     nomor,
     paket,
