@@ -2116,7 +2116,7 @@ export default function ImportHasilScanPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const [format, setFormat] = useState('json');
+  const [format, setFormat] = useState('html'); // default HTML Master -- lihat catatan di bawah
   const [rawInput, setRawInput] = useState('');
   const [sumberAI, setSumberAI] = useState('Gemini Canvas');
 
