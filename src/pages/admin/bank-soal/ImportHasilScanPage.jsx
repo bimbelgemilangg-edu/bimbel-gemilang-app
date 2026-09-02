@@ -838,6 +838,9 @@ function normalizeSoal(q, idx) {
   // ----------------------------------------------------------
 
   const errors = [];
+  // 🔥 BARU: peringatan yang TIDAK memblokir valid (beda dari errors) --
+  // lihat penjelasan lengkap di Sinyal 4 bawah.
+  const peringatanLunak = [];
 
   if (!teksSoal.trim()) errors.push('Teks soal kosong.');
 
@@ -899,11 +902,31 @@ function normalizeSoal(q, idx) {
   }
 
   // Sinyal 4: panjang teks_soal jauh di luar wajar untuk satu butir soal
-  // pilihan ganda biasa. Ambang digenerouskan supaya soal dengan bacaan
-  // panjang yang memang legit (ditulis di teks_soal, bukan field bacaan)
-  // tidak salah kena flag -- ini SINYAL TAMBAHAN, bukan penentu tunggal.
+  // pilihan ganda biasa BIASA. TAPI (bug nyata ditemukan): soal literasi
+  // (mis. TKA Bahasa Indonesia) SERING memang menulis bacaan panjang
+  // langsung di teks_soal alih-alih field "bacaan" terpisah -- itu WAJAR,
+  // bukan kerusakan. Sebelumnya sinyal ini langsung masuk `errors` yang
+  // otomatis bikin soal INVALID (lihat `valid: errors.length===0` di
+  // bawah) walau komentar aslinya bilang "sinyal tambahan, bukan penentu
+  // tunggal" -- niat itu TIDAK PERNAH benar-benar diterapkan di kode.
+  // Sekarang: kalau ada tanda-tanda kuat ini memang bacaan literasi asli
+  // (kutipan "Sumber:", instruksi "Perhatikan teks berikut", atau
+  // berparagraf jelas), turunkan jadi PERINGATAN LUNAK (tetap kelihatan
+  // ke admin, TIDAK memblokir penyimpanan). Baru kalau tidak ada
+  // tanda-tanda itu sama sekali, tetap dianggap error asli (lebih
+  // mencurigakan, kemungkinan besar memang tercampur field lain).
+  const adaTandaBacaanLiterasi = /sumber\s*:/i.test(teksSoal)
+    || /perhatikan\s+(teks|bacaan|kutipan|paragraf|puisi)\s+(berikut|di atas|ini)/i.test(teksSoal)
+    || (teksSoal.match(/\n\s*\n/g) || []).length >= 2;
+
   if (teksSoal.length > 700 && !bacaan) {
-    errors.push(`teks_soal sangat panjang (${teksSoal.length} karakter) untuk soal tanpa bacaan -- kemungkinan tercampur field lain, cek manual.`);
+    if (adaTandaBacaanLiterasi) {
+      peringatanLunak.push(
+        `teks_soal panjang (${teksSoal.length} karakter) -- kemungkinan bacaan literasi ditulis langsung di sini (bukan field bacaan terpisah). Ini WAJAR untuk soal Bahasa/literasi, TIDAK menghalangi penyimpanan. Kalau mau lebih rapi, bisa dipisah manual ke field bacaan nanti.`,
+      );
+    } else {
+      errors.push(`teks_soal sangat panjang (${teksSoal.length} karakter) untuk soal tanpa bacaan -- kemungkinan tercampur field lain, cek manual.`);
+    }
   }
 
   return {
@@ -951,6 +974,10 @@ function normalizeSoal(q, idx) {
     kelas_soal: safeString(q.kelas || q.tingkat_kelas || q.tingkatKelas || q.grade || '').trim(),
     valid: errors.length === 0,
     errors,
+    // 🔥 BARU: peringatan yang TIDAK menghalangi penyimpanan -- beda
+    // dari `errors` yang bikin soal invalid. Ditampilkan ke admin biar
+    // tetap transparan, tapi soal ini tetap bisa masuk Bank Soal.
+    peringatan: peringatanLunak,
   };
 }
 
@@ -3670,6 +3697,12 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
       {q.errors?.length > 0 && (
         <div style={{ marginBottom: '12px', borderRadius: '8px', backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderColor: '#fde68a', padding: '12px', fontSize: '12px', color: '#b45309' }}>
           {q.errors.map((error, index) => <div key={index}>⚠️ {error}</div>)}
+        </div>
+      )}
+
+      {q.peringatan?.length > 0 && (
+        <div style={{ marginBottom: '12px', borderRadius: '8px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '12px', fontSize: '12px', color: '#1d4ed8' }}>
+          {q.peringatan.map((p, index) => <div key={index}>ℹ️ {p}</div>)}
         </div>
       )}
 
