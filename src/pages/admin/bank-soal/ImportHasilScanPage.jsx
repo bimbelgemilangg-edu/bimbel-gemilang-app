@@ -349,10 +349,28 @@ ATURAN WAJIB:
 13. Proses SEMUA nomor dan SEMUA paket sampai selesai.
 14. Jangan menyisipkan JavaScript di output HTML.
 
+## ANALISIS PER SOAL: KESULITAN & KELAS (WAJIB DIKERJAKAN PER NOMOR, BUKAN DISERAGAMKAN)
+
+Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tambahkan dua atribut ini langsung di tag <article> pembuka tiap soal:
+
+15. \`data-kesulitan="mudah|sedang|sulit"\` — nilai berdasarkan soal ITU SENDIRI, bukan asumsi umum jenjangnya:
+   - "mudah": penerapan rumus/konsep langsung, 1 langkah.
+   - "sedang": butuh 2-3 langkah, kombinasi beberapa konsep.
+   - "sulit": HOTS, banyak langkah, atau butuh analisis/manipulasi aljabar rumit.
+   Field ini WAJIB diisi untuk setiap soal, jangan dikosongkan.
+
+16. \`data-kelas="7|8|9|10|11|12"\` — HANYA isi kalau kamu YAKIN materinya spesifik untuk kelas tertentu berdasarkan kurikulum umum Indonesia (mis. "Barisan dan Deret" = kelas 11, "Trigonometri Dasar" = kelas 10, "Turunan/Integral" = kelas 12). Kalau materinya bisa muncul di lintas kelas atau kamu tidak yakin, JANGAN isi atribut ini sama sekali (jangan menebak/default ke satu angka) — sistem akan otomatis memakai kelas yang dipilih admin di form sebagai gantinya.
+
+## KONSISTENSI STRUKTUR (PENTING — supaya hasil parsing tidak meleset)
+
+17. Nama atribut \`data-field\` dan \`data-gemilang-question\` HARUS ditulis PERSIS seperti contoh, huruf kecil semua, tanpa spasi tambahan. Jangan mengganti "teks_soal" jadi "teksSoal"/"soal"/nama lain.
+18. Satu <article> = satu soal. Jangan menaruh dua nomor soal dalam satu <article>, dan jangan memecah satu soal jadi dua <article>.
+19. Jangan menambahkan komentar, penjelasan, atau teks apa pun di luar blok HTML.
+
 CONTOH:
 <!doctype html>
 <html lang="id"><body>
-<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1">
+<article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1" data-kesulitan="sedang" data-kelas="10">
 <div data-field="materi">Persamaan Kuadrat</div>
 <div data-field="teks_soal">Jika $x^2-5x+6=0$, nilai x adalah .... {{GAMBAR}}</div>
 <div data-field="gambar"><img src="data:image/png;base64,..." alt="Diagram soal" /></div>
@@ -854,6 +872,14 @@ function normalizeSoal(q, idx) {
     referensi_sumber: q.referensi_sumber || q.referensiSumber || q.source_reference || null,
     materi: safeString(q.materi || q.meta_materi || ''),
     capaian_pembelajaran: safeString(q.capaian_pembelajaran || q.meta_capaian_pembelajaran || ''),
+    // Analisis per-soal (bukan diseragamkan per-file). Kalau AI tidak
+    // mengisi/tidak yakin, dikosongkan di sini -- buildDoc() yang akan
+    // memutuskan fallback ke pilihan form admin (lihat komentar di buildDoc).
+    tingkat_kesulitan_soal: (() => {
+      const rawKesulitan = safeString(q.tingkat_kesulitan || q.tingkatKesulitan || q.kesulitan || q.difficulty || '').toLowerCase().trim();
+      return DAFTAR_KESULITAN.includes(rawKesulitan) ? rawKesulitan : '';
+    })(),
+    kelas_soal: safeString(q.kelas || q.tingkat_kelas || q.tingkatKelas || q.grade || '').trim(),
     valid: errors.length === 0,
     errors,
   };
@@ -1077,6 +1103,12 @@ function parseHTMLMaster(raw) {
     const tableSoal = tableQuestionNode ? parseHTMLTableElement(tableQuestionNode.querySelector('table') || tableQuestionNode) : null;
     const paketRaw = node.getAttribute('data-paket');
 
+    // Analisis per-soal (bukan per-file): kesulitan WAJIB diisi AI per soal,
+    // kelas OPSIONAL -- kalau AI tidak yakin, dibiarkan kosong di sini dan
+    // buildDoc() akan otomatis pakai nilai dari form admin sebagai fallback.
+    const kesulitanRaw = safeString(node.getAttribute('data-kesulitan') || node.getAttribute('data-tingkat-kesulitan')).toLowerCase().trim();
+    const kelasRaw = safeString(node.getAttribute('data-kelas')).trim();
+
     return {
       nomor,
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
@@ -1093,6 +1125,8 @@ function parseHTMLMaster(raw) {
       tabel_soal: tableSoal,
       materi: htmlNodeText(materialNode),
       capaian_pembelajaran: htmlNodeText(capaianNode),
+      tingkat_kesulitan: kesulitanRaw,
+      kelas: kelasRaw,
       referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || undefined } : null,
     };
   });
@@ -1991,11 +2025,18 @@ function buildDoc(q, meta) {
     materi: q.materi || '',
     capaianPembelajaran: q.capaian_pembelajaran || '',
     mataPelajaran: meta.mataPelajaran,
-    tingkatKelas: meta.tingkatKelas,
+    // Kelas & kesulitan: pakai hasil analisis AI PER SOAL kalau ada dan
+    // valid; kalau AI tidak mengisi/tidak yakin (dikosongkan di
+    // normalizeSoal), baru pakai nilai form admin sebagai fallback. Ini
+    // supaya kelas/kesulitan tidak sekadar diseragamkan 1 nilai untuk
+    // semua soal dalam satu file yang diupload.
+    tingkatKelas: q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal) ? q.kelas_soal : meta.tingkatKelas,
     jenjang: meta.jenjang,
     kategori: meta.kategori,
     tags: meta.tags,
-    tingkatKesulitan: meta.tingkatKesulitan,
+    tingkatKesulitan: q.tingkat_kesulitan_soal || meta.tingkatKesulitan,
+    tingkatKesulitanSumber: q.tingkat_kesulitan_soal ? 'ai_per_soal' : 'form_admin',
+    tingkatKelasSumber: (q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal)) ? 'ai_per_soal' : 'form_admin',
     sumberFile: meta.sumberFile,
     sumberAI: meta.sumberAI,
     createdAt: serverTimestamp(),
@@ -3165,6 +3206,18 @@ function QuestionPreview({ question, mathReady, onCropImage }) {
         {q.materi && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#c2410c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             📘 {q.materi}
+          </span>
+        )}
+
+        {q.tingkat_kesulitan_soal && (
+          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#e0e7ff', color: '#4338ca', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
+            🎯 {q.tingkat_kesulitan_soal.charAt(0).toUpperCase() + q.tingkat_kesulitan_soal.slice(1)} <span style={{ opacity: 0.6, fontWeight: 500 }}>(AI)</span>
+          </span>
+        )}
+
+        {q.kelas_soal && (
+          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#e0e7ff', color: '#4338ca', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
+            🎓 Kelas {q.kelas_soal} <span style={{ opacity: 0.6, fontWeight: 500 }}>(AI)</span>
           </span>
         )}
       </div>
