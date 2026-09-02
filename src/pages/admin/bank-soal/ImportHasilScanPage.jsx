@@ -1883,41 +1883,61 @@ function ImageCropModal({ src, onCancel, onSave }) {
       style={{
         position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+        padding: '20px', boxSizing: 'border-box',
       }}
     >
-      <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '20px', maxWidth: '90vw' }}>
-        <div style={{ fontWeight: '700', marginBottom: '4px', color: '#1f2937' }}>✂️ Crop Gambar</div>
-        <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
-          Tarik (drag) mouse di atas gambar untuk memilih area yang mau dipakai.
+      {/* Kartu modal: tinggi DIBATASI ke viewport (maxHeight 90vh) supaya
+          gambar hasil crop (mis. screenshot 1 halaman PDF yang tinggi)
+          tidak bikin modal lebih panjang dari layar. Dibagi 2 bagian
+          pakai flex column: (1) area scroll berisi gambar, (2) footer
+          tombol yang TIDAK ikut scroll -- selalu kelihatan di bawah,
+          seberapa pun tinggi gambarnya. */}
+      <div style={{
+        backgroundColor: '#ffffff', borderRadius: '16px', maxWidth: '90vw',
+        maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      }}>
+        {/* Area scroll: judul + instruksi + kotak crop gambar */}
+        <div style={{ padding: '20px 20px 0 20px', overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+          <div style={{ fontWeight: '700', marginBottom: '4px', color: '#1f2937' }}>✂️ Crop Gambar</div>
+          <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
+            Tarik (drag) mouse di atas gambar untuk memilih area yang mau dipakai.
+          </div>
+
+          {!imgEl && <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Memuat gambar...</div>}
+
+          {imgEl && (
+            <div
+              ref={containerRef}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              style={{
+                position: 'relative', width: displaySize.w, height: displaySize.h,
+                backgroundImage: `url(${src})`, backgroundSize: 'cover',
+                cursor: 'crosshair', userSelect: 'none', border: '1px solid #e5e7eb',
+                marginBottom: '20px',
+              }}
+            >
+              {rect && (
+                <div
+                  style={{
+                    position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h,
+                    border: '2px dashed #2563eb', backgroundColor: 'rgba(37,99,235,0.15)',
+                  }}
+                />
+              )}
+            </div>
+          )}
         </div>
 
-        {!imgEl && <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Memuat gambar...</div>}
-
-        {imgEl && (
-          <div
-            ref={containerRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            style={{
-              position: 'relative', width: displaySize.w, height: displaySize.h,
-              backgroundImage: `url(${src})`, backgroundSize: 'cover',
-              cursor: 'crosshair', userSelect: 'none', border: '1px solid #e5e7eb',
-            }}
-          >
-            {rect && (
-              <div
-                style={{
-                  position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h,
-                  border: '2px dashed #2563eb', backgroundColor: 'rgba(37,99,235,0.15)',
-                }}
-              />
-            )}
-          </div>
-        )}
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+        {/* Footer tombol -- di LUAR area scroll, jadi selalu nempel di
+            bawah kartu modal, tidak peduli seberapa tinggi gambarnya. */}
+        <div style={{
+          display: 'flex', justifyContent: 'flex-end', gap: '8px',
+          padding: '14px 20px', borderTop: '1px solid #e5e7eb',
+          backgroundColor: '#ffffff', flexShrink: 0,
+        }}>
           <button
             type="button"
             onClick={onCancel}
