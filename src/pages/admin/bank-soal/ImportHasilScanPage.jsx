@@ -371,6 +371,7 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
    Field ini WAJIB diisi untuk setiap soal, jangan dikosongkan.
 
 16. \`data-kelas="1-12"\` (angka 1 sampai 12, sesuai jenjang: SD/MI = 1-6, SMP/MTs = 7-9, SMA/MA/SMK = 10-12) — HANYA isi kalau kamu YAKIN materinya spesifik untuk kelas tertentu berdasarkan kurikulum umum Indonesia (mis. "Barisan dan Deret" = kelas 11, "Trigonometri Dasar" = kelas 10, "Turunan/Integral" = kelas 12, "Pecahan" = kelas 4-5). Kalau materinya bisa muncul di lintas kelas, dokumennya memang untuk banyak kelas sekaligus (mis. UTBK/TKA), atau kamu tidak yakin, JANGAN isi atribut ini sama sekali (jangan menebak/default ke satu angka) — sistem akan otomatis memakai kelas yang dipilih admin di form sebagai gantinya.
+16b. \`<div data-field="tags">kata1, kata2, kata3</div>\` (OPSIONAL, per soal) — label bebas untuk soal ITU SAJA (mis. "hots", "aljabar", "utbk", "operasi hitung"), dipisah koma. Ini BEDA dari \`data-field="materi"\` (topik/bab formal) — tags boleh lebih bebas dan lintas-topik. Isi HANYA kalau memang relevan; kalau tidak ada label yang jelas, jangan isi atribut ini sama sekali (jangan mengarang-ngarang tag generik).
 
 ## KONSISTENSI STRUKTUR (PENTING — supaya hasil parsing tidak meleset)
 
@@ -931,6 +932,14 @@ function normalizeSoal(q, idx) {
     tabel_soal: q.tabel_soal || q.tabelSoal || null,
     referensi_sumber: q.referensi_sumber || q.referensiSumber || q.source_reference || null,
     materi: safeString(q.materi || q.meta_materi || ''),
+    // 🔥 BARU: tags per soal -- terima dari HTML Master (field
+    // tags_soal, array hasil split koma) ATAU dari format JSON/CSV
+    // (field "tags" langsung, bisa string koma atau array).
+    tags_soal: (() => {
+      const mentah = q.tags_soal ?? q.tags ?? [];
+      const arr = Array.isArray(mentah) ? mentah : safeString(mentah).split(',');
+      return arr.map(t => safeString(t).trim()).filter(Boolean);
+    })(),
     capaian_pembelajaran: safeString(q.capaian_pembelajaran || q.meta_capaian_pembelajaran || ''),
     // Analisis per-soal (bukan diseragamkan per-file). Kalau AI tidak
     // mengisi/tidak yakin, dikosongkan di sini -- buildDoc() yang akan
@@ -1232,6 +1241,13 @@ function parseHTMLMaster(raw) {
     const explanationNode = getField(node, 'pembahasan', 'penjelasan', 'explanation');
     const keyNode = getField(node, 'kunci_jawaban', 'kunci', 'answer', 'correct-answer');
     const materialNode = getField(node, 'materi', 'topic', 'topik');
+    // 🔥 BARU: tags per soal (opsional). Dulu Tags cuma bisa diisi lewat
+    // form admin (1 nilai, diterapkan SAMA ke SEMUA soal dalam 1 batch
+    // import) -- tidak konsisten dengan materi/kesulitan/kelas yang
+    // sudah bisa beda-beda per soal lewat AI. Sekarang AI boleh isi
+    // <div data-field="tags">hots, aljabar</div> per soal; nanti di
+    // buildDoc digabung (bukan menimpa) dengan tags form admin.
+    const tagsNode = getField(node, 'tags', 'tag', 'label');
     const capaianNode = getField(node, 'capaian_pembelajaran', 'capaian', 'learning-outcome');
     const sourceNode = getField(node, 'referensi_sumber', 'sumber', 'source');
     const tableQuestionNode = getField(node, 'tabel_soal', 'question-table', 'data-table');
@@ -1280,6 +1296,7 @@ function parseHTMLMaster(raw) {
       gambar: parseHTMLImages(imageNode),
       tabel_soal: tableSoal,
       materi: htmlNodeText(materialNode),
+      tags_soal: tagsNode ? htmlNodeText(tagsNode).split(',').map(t => t.trim()).filter(Boolean) : [],
       capaian_pembelajaran: htmlNodeText(capaianNode),
       tingkat_kesulitan: kesulitanRaw,
       kelas: kelasRaw,
@@ -2351,7 +2368,12 @@ function buildDoc(q, meta) {
     tingkatKelas: q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal) ? q.kelas_soal : meta.tingkatKelas,
     jenjang: meta.jenjang,
     kategori: meta.kategori,
-    tags: meta.tags,
+    // 🔥 BERUBAH: dulu tags = meta.tags doang (1 nilai form, sama rata
+    // ke semua soal). Sekarang DIGABUNG dengan tags_soal (per soal,
+    // opsional dari AI) -- union, bukan override, karena tags sifatnya
+    // boleh banyak & saling melengkapi (mis. tags form "TKA, 2026" +
+    // tags soal "hots, aljabar" -> soal itu punya keempat-empatnya).
+    tags: [...new Set([...(meta.tags || []), ...(q.tags_soal || [])])],
     tingkatKesulitan: q.tingkat_kesulitan_soal || meta.tingkatKesulitan,
     tingkatKesulitanSumber: q.tingkat_kesulitan_soal ? 'ai_per_soal' : 'form_admin',
     tingkatKelasSumber: (q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal)) ? 'ai_per_soal' : 'form_admin',
@@ -3626,6 +3648,12 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
             🎓 Kelas {q.kelas_soal} <span style={{ opacity: 0.6, fontWeight: 500 }}>(AI)</span>
           </span>
         )}
+
+        {safeArray(q.tags_soal).map((tag, ti) => (
+          <span key={ti} style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fce7f3', color: '#9d174d', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
+            🏷️ {tag}
+          </span>
+        ))}
 
         {jumlahRusak > 0 && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fee2e2', color: '#b91c1c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
