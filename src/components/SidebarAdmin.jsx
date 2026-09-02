@@ -9,7 +9,7 @@ import {
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, Bell, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
-  FileUp, Briefcase, Brain, Rocket
+  FileUp, Briefcase, Brain, Rocket, ClipboardCheck
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -125,6 +125,7 @@ const SidebarAdmin = () => {
         { name: 'Import Hasil Scan AI', path: '/admin/bank-soal/import', icon: <Brain size={18} /> },
         // ── pilih soal dari gudang, terbitkan sebagai kuis ke siswa
         { name: 'Terbitkan Kuis',       path: '/admin/bank-soal/terbitkan', icon: <Rocket size={18} /> },
+        { name: 'Hasil Kuis',           path: '/admin/bank-soal/hasil',     icon: <ClipboardCheck size={18} /> },
       ]
     },
     {
