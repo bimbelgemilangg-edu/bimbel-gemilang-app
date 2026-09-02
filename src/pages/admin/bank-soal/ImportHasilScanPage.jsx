@@ -1621,6 +1621,61 @@ function getImageSrc(gambar) {
 }
 
 // ============================================================
+// VALIDASI GAMBAR BENERAN (bukan cuma cek "ada isinya")
+// ------------------------------------------------------------
+// Ditemukan kasus nyata: AI (DeepSeek) kadang menempelkan base64 yang
+// KELIHATAN valid (signature PNG benar, panjang wajar) tapi datanya di
+// tengah rusak/palsu -- gagal dimuat browser sama sekali. Fungsi di
+// bawah ini benar-benar MENCOBA MEMUAT gambarnya lewat Image(), bukan
+// cuma mengecek field-nya terisi atau tidak.
+// ============================================================
+
+function kunciGambar(soalIdx, location, imageIndex) {
+  const lokasiStr = typeof location === 'string' ? location : `opsi-${location.opsi}`;
+  return `${soalIdx}|${lokasiStr}|${imageIndex}`;
+}
+
+// Kumpulkan SEMUA referensi gambar dari SELURUH daftar soal (bukan cuma
+// 1 soal) -- dipakai untuk validasi massal sekali jalan setelah parse.
+function kumpulkanSemuaGambar(soalList) {
+  const hasil = [];
+  soalList.forEach((q) => {
+    safeArray(q.gambar).forEach((img, i) => {
+      hasil.push({ key: kunciGambar(q._idx, 'soal', i), src: getImageSrc(img) });
+    });
+    if (q.bacaan) {
+      safeArray(q.bacaan.gambar).forEach((img, i) => {
+        hasil.push({ key: kunciGambar(q._idx, 'bacaan', i), src: getImageSrc(img) });
+      });
+    }
+    safeArray(q.opsi_jawaban).forEach((opt, oi) => {
+      safeArray(opt.gambar).forEach((img, i) => {
+        hasil.push({ key: kunciGambar(q._idx, { opsi: oi }, i), src: getImageSrc(img) });
+      });
+    });
+  });
+  return hasil;
+}
+
+// Coba muat 1 gambar lewat elemen Image() asli -- ini satu-satunya cara
+// yang benar-benar diandalkan untuk tahu apakah data base64/URL-nya
+// bisa ditampilkan browser atau tidak (bukan sekadar tebak-tebakan dari
+// panjang string atau format header).
+function cobaMuatGambar(src, timeoutMs = 6000) {
+  return new Promise((resolve) => {
+    if (!src) { resolve(false); return; }
+    const img = new Image();
+    let selesai = false;
+    const finish = (ok) => { if (!selesai) { selesai = true; resolve(ok); } };
+    if (!src.startsWith('data:')) img.crossOrigin = 'anonymous';
+    img.onload = () => finish(true);
+    img.onerror = () => finish(false);
+    img.src = src;
+    setTimeout(() => finish(false), timeoutMs);
+  });
+}
+
+// ============================================================
 // SAFE LATEX LOADER
 // ============================================================
 
@@ -1881,7 +1936,11 @@ function ImageCropModal({ src, onCancel, onSave }) {
 
   useEffect(() => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // Skip crossOrigin untuk data: URI (base64) -- tidak perlu dan
+    // pada beberapa kasus base64 hasil AI yang datanya korup, pesan
+    // error CORS jadi membingungkan padahal masalah sebenarnya adalah
+    // datanya sendiri rusak/palsu, bukan soal CORS sama sekali.
+    if (!src.startsWith('data:')) img.crossOrigin = 'anonymous';
     img.onload = () => {
       const maxW = 640;
       const scale = img.naturalWidth > maxW ? maxW / img.naturalWidth : 1;
@@ -1889,7 +1948,15 @@ function ImageCropModal({ src, onCancel, onSave }) {
       setImgEl(img);
     };
     img.onerror = () => {
-      alert('Gambar gagal dimuat untuk di-crop (kemungkinan URL belum diupload / CORS diblokir).');
+      // 🔥 BARU: pesan diperjelas -- kasus paling sering ternyata BUKAN
+      // CORS, tapi data base64 dari AI yang kelihatan valid (signature
+      // benar) tapi isinya korup/palsu di tengah, jadi browser menolak
+      // memuatnya sama sekali. Sarankan langsung ke solusi: upload manual.
+      alert(
+        'Gambar ini gagal dimuat browser -- kemungkinan besar data gambar dari hasil scan AI rusak/palsu ' +
+        '(bukan gambar asli), bukan soal CORS. Gunakan tombol "Upload Gambar Manual" di bawah untuk ' +
+        'mengganti dengan file gambar asli dari komputer kamu.'
+      );
       onCancel();
     };
     img.src = src;
@@ -2025,29 +2092,104 @@ function ImageCropModal({ src, onCancel, onSave }) {
 // IMAGE WITH CROP (thumbnail + tombol crop, dipakai di panel "Kelola Gambar")
 // ============================================================
 
-function ImageWithCrop({ image, onCropped }) {
+// 🔥 BARU: upload gambar manual dari komputer admin (bukan dari AI).
+// Dipakai sebagai jalan keluar utama waktu AI (DeepSeek dkk) gagal
+// menyertakan gambar asli -- baik yang kosong (dummy 1x1) maupun yang
+// base64-nya kelihatan valid tapi ternyata korup/palsu.
+function TombolUploadManual({ onUploaded, label = '📤 Upload Manual' }) {
+  const inputRef = React.useRef(null);
+  const [busy, setBusy] = useState(false);
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('File harus berupa gambar (PNG/JPG/dll).');
+      return;
+    }
+    setBusy(true);
+    const reader = new FileReader();
+    reader.onload = () => { setBusy(false); onUploaded(reader.result); };
+    reader.onerror = () => { setBusy(false); alert('Gagal membaca file gambar.'); };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={busy}
+        style={{
+          fontSize: '11px', padding: '4px 8px', borderRadius: '6px',
+          border: '1px solid #2563eb', backgroundColor: '#eff6ff', color: '#1d4ed8',
+          cursor: busy ? 'default' : 'pointer', fontWeight: '700',
+        }}
+      >
+        {busy ? '⏳...' : label}
+      </button>
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+    </>
+  );
+}
+
+function ImageWithCrop({ image, onCropped, status }) {
   const [cropping, setCropping] = useState(false);
   const src = getImageSrc(image);
 
-  if (!src) return null;
+  // status: 'checking' | 'ok' | 'broken' | undefined (belum divalidasi)
+  const rusak = status === 'broken';
 
   return (
-    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '4px', marginRight: '10px', marginBottom: '10px' }}>
-      <img
-        src={src}
-        alt={image.deskripsi || 'Gambar'}
-        style={{ width: '120px', height: '90px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e5e7eb' }}
-      />
-      <button
-        type="button"
-        onClick={() => setCropping(true)}
-        style={{
-          fontSize: '11px', padding: '4px 8px', borderRadius: '6px',
-          border: '1px solid #d1d5db', backgroundColor: '#ffffff', cursor: 'pointer',
-        }}
-      >
-        ✂️ Crop
-      </button>
+    <div style={{
+      display: 'inline-flex', flexDirection: 'column', gap: '4px',
+      marginRight: '10px', marginBottom: '10px', padding: '6px',
+      borderRadius: '10px', border: rusak ? '2px solid #ef4444' : '1px solid transparent',
+      backgroundColor: rusak ? '#fef2f2' : 'transparent',
+    }}>
+      {rusak ? (
+        <div style={{
+          width: '120px', height: '90px', borderRadius: '8px', border: '1px dashed #ef4444',
+          backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          textAlign: 'center', padding: '4px', fontSize: '10px', color: '#b91c1c', fontWeight: '700',
+        }}>
+          ❌ Gambar rusak/palsu dari AI
+        </div>
+      ) : src ? (
+        <img
+          src={src}
+          alt={image.deskripsi || 'Gambar'}
+          style={{ width: '120px', height: '90px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e5e7eb' }}
+        />
+      ) : (
+        <div style={{
+          width: '120px', height: '90px', borderRadius: '8px', border: '1px dashed #d1d5db',
+          backgroundColor: '#f9fafb', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          textAlign: 'center', padding: '4px', fontSize: '10px', color: '#9ca3af', fontWeight: '700',
+        }}>
+          ⬜ Belum ada gambar
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+        {!rusak && src && (
+          <button
+            type="button"
+            onClick={() => setCropping(true)}
+            style={{
+              fontSize: '11px', padding: '4px 8px', borderRadius: '6px',
+              border: '1px solid #d1d5db', backgroundColor: '#ffffff', cursor: 'pointer',
+            }}
+          >
+            ✂️ Crop
+          </button>
+        )}
+        <TombolUploadManual
+          onUploaded={onCropped}
+          label={rusak || !src ? '📤 Upload Gambar Asli' : '📤 Ganti'}
+        />
+      </div>
 
       {cropping && (
         <ImageCropModal
@@ -2259,6 +2401,15 @@ export default function ImportHasilScanPage() {
   const [parseError, setParseError] = useState('');
   const [warnings, setWarnings] = useState([]);
 
+  // 🔥 BARU: status validasi gambar -- key unik per gambar (lihat
+  // buatKunciGambar()), value: 'checking' | 'ok' | 'broken'. Diisi
+  // otomatis lewat validasiSemuaGambar() setiap kali soalList berubah
+  // (habis parse, habis crop, habis upload manual). INI YANG MENJAWAB
+  // masalah "gambar dari AI kelihatan ada tapi ternyata rusak/palsu" --
+  // sekarang dicek beneran bisa dimuat browser atau tidak, bukan cuma
+  // dicek "ada isinya atau kosong".
+  const [imageStatus, setImageStatus] = useState({});
+
   const [mataPelajaran, setMataPelajaran] = useState('Matematika');
   const [tingkatKelas, setTingkatKelas] = useState('10');
   const [jenjang, setJenjang] = useState('SMA/MA');
@@ -2342,34 +2493,69 @@ export default function ImportHasilScanPage() {
   // location: 'soal' | 'bacaan' | { opsi: optionIndex }
   // ----------------------------------------------------------
 
-  const handleCropImage = useCallback((idx, location, imageIndex, newDataUrl) => {
-    setSoalList(prev => prev.map(q => {
-      if (q._idx !== idx) return q;
+  // 🔥 BARU: validasi SEMUA gambar di seluruh daftar soal dengan
+  // benar-benar mencoba memuatnya lewat Image() -- bukan cuma cek field
+  // terisi atau tidak. Dipanggil otomatis setelah parse, dan setelah
+  // admin crop/upload manual gambar mana pun (supaya status ✅/❌ selalu
+  // sinkron dengan kondisi terbaru). Didefinisikan SEBELUM
+  // handleCropImage karena handleCropImage memakainya di dependency
+  // array useCallback -- kalau dibalik urutannya akan error TDZ.
+  const runValidasiGambar = useCallback(async (list) => {
+    const semuaGambar = kumpulkanSemuaGambar(list).filter(g => g.src);
+    if (semuaGambar.length === 0) { setImageStatus({}); return; }
 
-      if (location === 'soal') {
-        const images = [...safeArray(q.gambar)];
-        images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
-        return { ...q, gambar: images };
-      }
+    setImageStatus(prev => {
+      const next = { ...prev };
+      semuaGambar.forEach(g => { next[g.key] = 'checking'; });
+      return next;
+    });
 
-      if (location === 'bacaan' && q.bacaan) {
-        const images = [...safeArray(q.bacaan.gambar)];
-        images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
-        return { ...q, bacaan: { ...q.bacaan, gambar: images } };
-      }
+    const hasil = await Promise.all(
+      semuaGambar.map(async (g) => ({ key: g.key, ok: await cobaMuatGambar(g.src) })),
+    );
 
-      if (location && typeof location === 'object' && typeof location.opsi === 'number') {
-        const opsi = [...safeArray(q.opsi_jawaban)];
-        const opt = opsi[location.opsi];
-        const images = [...safeArray(opt.gambar)];
-        images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
-        opsi[location.opsi] = { ...opt, gambar: images };
-        return { ...q, opsi_jawaban: opsi };
-      }
-
-      return q;
-    }));
+    setImageStatus(prev => {
+      const next = { ...prev };
+      hasil.forEach(h => { next[h.key] = h.ok ? 'ok' : 'broken'; });
+      return next;
+    });
   }, []);
+
+  const handleCropImage = useCallback((idx, location, imageIndex, newDataUrl) => {
+    setSoalList(prev => {
+      const updated = prev.map(q => {
+        if (q._idx !== idx) return q;
+
+        if (location === 'soal') {
+          const images = [...safeArray(q.gambar)];
+          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          return { ...q, gambar: images };
+        }
+
+        if (location === 'bacaan' && q.bacaan) {
+          const images = [...safeArray(q.bacaan.gambar)];
+          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          return { ...q, bacaan: { ...q.bacaan, gambar: images } };
+        }
+
+        if (location && typeof location === 'object' && typeof location.opsi === 'number') {
+          const opsi = [...safeArray(q.opsi_jawaban)];
+          const opt = opsi[location.opsi];
+          const images = [...safeArray(opt.gambar)];
+          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          opsi[location.opsi] = { ...opt, gambar: images };
+          return { ...q, opsi_jawaban: opsi };
+        }
+
+        return q;
+      });
+      // 🔥 BARU: validasi ulang gambar yang baru saja diganti (crop
+      // ATAU upload manual) -- supaya status ✅/❌ langsung update begitu
+      // admin selesai, tidak perlu tunggu parse ulang.
+      runValidasiGambar(updated);
+      return updated;
+    });
+  }, [runValidasiGambar]);
 
   // ----------------------------------------------------------
   // PARSE (dipakai bareng oleh tombol Parse & oleh auto-parse setelah upload file)
@@ -2379,6 +2565,7 @@ export default function ImportHasilScanPage() {
     setParseError('');
     setWarnings([]);
     setSoalList([]);
+    setImageStatus({});
     setSaveResult(null);
     setSaveLog([]);
 
@@ -2405,11 +2592,12 @@ export default function ImportHasilScanPage() {
 
       setWarnings(warningList);
       setSoalList(normalized);
+      runValidasiGambar(normalized); // fire-and-forget, hasil masuk lewat setImageStatus
     } catch (error) {
       console.error('Parse error:', error);
       setParseError(error?.message || 'Gagal membaca data.');
     }
-  }, [format]);
+  }, [format, runValidasiGambar]);
 
   const handleParse = useCallback(() => {
     runParse(rawInput, format);
@@ -2456,6 +2644,36 @@ export default function ImportHasilScanPage() {
 
   const handleSave = useCallback(async () => {
     if (!soalList.length) return;
+
+    // 🔥 BARU: GERBANG WAJIB -- tolak simpan kalau masih ada gambar
+    // yang terdeteksi rusak/palsu (hasil validasi Image() beneran, lihat
+    // runValidasiGambar) atau masih dalam proses pengecekan. Ini yang
+    // memastikan soal dengan gambar bohongan dari AI (base64 kelihatan
+    // valid tapi datanya korup) TIDAK BISA lolos ke Bank Soal begitu
+    // saja -- admin wajib upload gambar asli manual dulu.
+    const cekKunciSoal = (q) => [
+      ...safeArray(q.gambar).map((_, i) => kunciGambar(q._idx, 'soal', i)),
+      ...(q.bacaan ? safeArray(q.bacaan.gambar).map((_, i) => kunciGambar(q._idx, 'bacaan', i)) : []),
+      ...safeArray(q.opsi_jawaban).flatMap((opt, oi) => safeArray(opt.gambar).map((_, i) => kunciGambar(q._idx, { opsi: oi }, i))),
+    ];
+
+    const soalMasihDicek = soalList.filter(q => cekKunciSoal(q).some(k => imageStatus[k] === 'checking'));
+    if (soalMasihDicek.length > 0) {
+      alert('Masih memeriksa validitas gambar, tunggu beberapa detik lagi lalu coba simpan ulang.');
+      return;
+    }
+
+    const soalGambarRusak = soalList.filter(q => cekKunciSoal(q).some(k => imageStatus[k] === 'broken'));
+    if (soalGambarRusak.length > 0) {
+      const daftar = soalGambarRusak
+        .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}`)
+        .join(', ');
+      alert(
+        `Tidak bisa disimpan -- ${soalGambarRusak.length} soal punya gambar RUSAK/PALSU dari hasil scan AI:\n\n${daftar}\n\n` +
+        'Buka panel "KELOLA GAMBAR" di tiap soal itu dan klik "Upload Gambar Manual" untuk mengganti dengan gambar asli, baru simpan lagi.',
+      );
+      return;
+    }
 
     const invalid = soalList.filter(q => !q.valid);
     if (invalid.length > 0) {
@@ -2645,7 +2863,7 @@ export default function ImportHasilScanPage() {
     } finally {
       setSaving(false);
     }
-  }, [soalList, mataPelajaran, tingkatKelas, jenjang, kategori, tags, tingkatKesulitan, sumberFile, sumberAI]);
+  }, [soalList, mataPelajaran, tingkatKelas, jenjang, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus]);
 
   // ==========================================================
   // RENDER
@@ -3022,6 +3240,7 @@ export default function ImportHasilScanPage() {
                             question={q}
                             mathReady={mathReady}
                             onCropImage={handleCropImage}
+                            imageStatus={imageStatus}
                           />
                         ))}
                       </div>
@@ -3244,17 +3463,28 @@ function Field({ label, children }) {
 // QUESTION PREVIEW
 // ============================================================
 
-function QuestionPreview({ question, mathReady, onCropImage }) {
+function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} }) {
   const q = question;
   const correctIndexes = safeArray(q.opsi_benar);
 
+  // 🔥 BERUBAH: dulu di-filter cuma yang SUDAH punya src (jadi kalau
+  // AI sama sekali tidak menyertakan gambar, admin tidak punya cara
+  // menambahkannya manual). Sekarang SEMUA entri gambar ditampilkan
+  // apa adanya -- termasuk yang kosong/rusak -- supaya slot "Upload
+  // Gambar Manual" selalu kelihatan dan bisa diisi admin.
   const semuaGambar = [
     ...safeArray(q.gambar).map((img, i) => ({ img, location: 'soal', imageIndex: i, label: `Gambar soal #${i + 1}` })),
     ...(q.bacaan ? safeArray(q.bacaan.gambar).map((img, i) => ({ img, location: 'bacaan', imageIndex: i, label: `Gambar bacaan #${i + 1}` })) : []),
     ...safeArray(q.opsi_jawaban).flatMap((opt, oi) =>
       safeArray(opt.gambar).map((img, i) => ({ img, location: { opsi: oi }, imageIndex: i, label: `Gambar opsi ${optionLetter(oi)} #${i + 1}` })),
     ),
-  ].filter(item => getImageSrc(item.img));
+  ];
+
+  // Ringkasan status gambar soal ini -- dipakai buat badge peringatan
+  // di header kartu soal.
+  const statusPerGambar = semuaGambar.map(item => imageStatus[kunciGambar(q._idx, item.location, item.imageIndex)]);
+  const jumlahRusak = statusPerGambar.filter(s => s === 'broken').length;
+  const jumlahDicek = statusPerGambar.filter(s => s === 'checking').length;
 
   return (
     <div
@@ -3312,6 +3542,17 @@ function QuestionPreview({ question, mathReady, onCropImage }) {
         {q.kelas_soal && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#e0e7ff', color: '#4338ca', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             🎓 Kelas {q.kelas_soal} <span style={{ opacity: 0.6, fontWeight: 500 }}>(AI)</span>
+          </span>
+        )}
+
+        {jumlahRusak > 0 && (
+          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fee2e2', color: '#b91c1c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
+            ❌ {jumlahRusak} gambar rusak -- perlu upload manual
+          </span>
+        )}
+        {jumlahRusak === 0 && jumlahDicek > 0 && (
+          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#f3f4f6', color: '#6b7280', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
+            ⏳ Memeriksa gambar...
           </span>
         )}
       </div>
@@ -3520,11 +3761,11 @@ function QuestionPreview({ question, mathReady, onCropImage }) {
         </div>
       )}
 
-      {/* PANEL KELOLA & CROP GAMBAR */}
+      {/* PANEL KELOLA GAMBAR: crop / upload manual / lihat status validasi */}
       {semuaGambar.length > 0 && onCropImage && (
         <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px dashed #d1d5db' }}>
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', marginBottom: '8px' }}>
-            🖼️ KELOLA & CROP GAMBAR ({semuaGambar.length})
+            🖼️ KELOLA GAMBAR ({semuaGambar.length}){jumlahRusak > 0 ? ` -- ${jumlahRusak} PERLU DIPERBAIKI` : ''}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
             {semuaGambar.map((item, i) => (
@@ -3532,6 +3773,7 @@ function QuestionPreview({ question, mathReady, onCropImage }) {
                 <div style={{ fontSize: '10px', color: '#9ca3af', marginBottom: '2px' }}>{item.label}</div>
                 <ImageWithCrop
                   image={item.img}
+                  status={imageStatus[kunciGambar(q._idx, item.location, item.imageIndex)]}
                   onCropped={newDataUrl => onCropImage(q._idx, item.location, item.imageIndex, newDataUrl)}
                 />
               </div>
