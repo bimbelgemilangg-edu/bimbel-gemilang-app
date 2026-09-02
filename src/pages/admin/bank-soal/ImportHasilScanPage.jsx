@@ -1126,10 +1126,24 @@ function parseHTMLMaster(raw) {
     return null;
   };
 
+  // Beberapa AI (mis. saat soal dipisah tabel/gambar di tengah kalimat)
+  // menulis LEBIH DARI SATU <div data-field="teks_soal"> dalam satu
+  // <article> -- satu sebelum tabel/gambar, satu lagi sesudahnya berisi
+  // kalimat pertanyaan yang sebenarnya. getField() di atas cuma ambil
+  // yang PERTAMA lewat querySelector, jadi bagian pertanyaan setelah
+  // tabel/gambar HILANG TOTAL tanpa pesan error apa pun. Fungsi ini
+  // mengambil SEMUA elemen dengan nama field itu (bisa lintas alias
+  // nama), lalu digabung urut sesuai posisi aslinya di dokumen.
+  const getAllFieldsText = (node, ...names) => {
+    const selector = names.map(name => `[data-field="${name}"]`).join(', ');
+    const hits = Array.from(node.querySelectorAll(selector));
+    return hits.map(el => htmlNodeText(el)).filter(Boolean).join(' ');
+  };
+
   return nodes.map((node, index) => {
     const nomor = Number(node.getAttribute('data-nomor') || node.getAttribute('data-number')) || index + 1;
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
-    const textNode = getField(node, 'teks_soal', 'soal', 'question');
+    const teksSoalGabungan = getAllFieldsText(node, 'teks_soal', 'soal', 'question');
     const imageNode = getField(node, 'gambar', 'images', 'image');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
@@ -1174,7 +1188,7 @@ function parseHTMLMaster(raw) {
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
       tipe,
       bacaan,
-      teks_soal: htmlNodeText(textNode),
+      teks_soal: teksSoalGabungan,
       opsi_jawaban,
       kunci_jawaban: normalizeAnswerKey(keyRaw),
       pembahasan: htmlNodeText(explanationNode),
