@@ -3327,24 +3327,76 @@ function QuestionPreview({ question, mathReady, onCropImage }) {
         </div>
       )}
 
-      {/* TRUE FALSE */}
-      {(q.tabel_benar_salah?.length > 0 || q.pernyataan?.length > 0) && (
-        <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', borderColor: '#e5e7eb', backgroundColor: '#ffffff', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', padding: '8px 12px', backgroundColor: '#f3f4f6', fontSize: '12px', fontWeight: '700', color: '#374151' }}><span>Pernyataan</span><span style={{ textAlign: 'center' }}>Jawaban</span></div>
-          {(q.tabel_benar_salah?.length ? q.tabel_benar_salah : q.pernyataan).map((item, index) => (
-            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 120px', borderTop: '1px solid #e5e7eb', borderColor: '#e5e7eb' }}>
-              <div style={{ padding: '12px', fontSize: '14px' }}>
-                {typeof item === 'object'
-                  ? <RichText text={item.pernyataan || item.teks} gambar={[]} mathReady={mathReady} />
-                  : item}
+      {/* PERNYATAAN BENAR/SALAH -- didesain menyerupai lembar jawaban CBT resmi:
+          bernomor, kolom Benar/Salah eksplisit dengan tanda centang di kolom
+          yang benar, warna netral (bukan warna-warni), tanpa animasi. Dipakai
+          bersama untuk tipe "benar_salah" (field pernyataan) maupun
+          "pg_kategori" (field tabel_benar_salah) -- bentuknya sama. */}
+      {(q.tabel_benar_salah?.length > 0 || q.pernyataan?.length > 0) && (() => {
+        const baris = q.tabel_benar_salah?.length ? q.tabel_benar_salah : q.pernyataan;
+        return (
+          <div style={{ marginTop: '16px', borderRadius: '10px', border: '1px solid #cbd5e1', overflow: 'hidden', backgroundColor: '#ffffff' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#1e293b' }}>
+                  <th style={{ width: '36px', padding: '10px 8px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderRight: '1px solid #334155' }}>No</th>
+                  <th style={{ padding: '10px 14px', textAlign: 'left', color: '#e2e8f0', fontWeight: '600', fontSize: '12px' }}>Pernyataan</th>
+                  <th style={{ width: '76px', padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderLeft: '1px solid #334155' }}>Benar</th>
+                  <th style={{ width: '76px', padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: '600', fontSize: '12px', borderLeft: '1px solid #334155' }}>Salah</th>
+                </tr>
+              </thead>
+              <tbody>
+                {baris.map((item, index) => {
+                  const teks = typeof item === 'object' ? (item.pernyataan || item.teks || '') : String(item);
+                  const jawabanRaw = typeof item === 'object' ? safeString(item.jawaban) : '';
+                  const jawabanNorm = jawabanRaw.trim().toLowerCase();
+                  const isBenar = ['benar', 'true', 'ya', 'b'].includes(jawabanNorm);
+                  const isSalah = ['salah', 'false', 'tidak', 's'].includes(jawabanNorm);
+
+                  return (
+                    <tr key={index} style={{ borderTop: index > 0 ? '1px solid #e2e8f0' : 'none', backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
+                      <td style={{ padding: '10px 8px', textAlign: 'center', color: '#64748b', fontWeight: '600', borderRight: '1px solid #e2e8f0', verticalAlign: 'top' }}>
+                        {index + 1}
+                      </td>
+                      <td style={{ padding: '10px 14px', color: '#1e293b', verticalAlign: 'top' }}>
+                        <RichText text={teks} gambar={[]} mathReady={mathReady} />
+                      </td>
+                      <td style={{ padding: '10px 6px', textAlign: 'center', borderLeft: '1px solid #e2e8f0', verticalAlign: 'middle' }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          width: '22px', height: '22px', borderRadius: '4px',
+                          border: isBenar ? '2px solid #15803d' : '1.5px solid #cbd5e1',
+                          backgroundColor: isBenar ? '#15803d' : 'transparent',
+                          color: isBenar ? '#ffffff' : 'transparent',
+                          fontSize: '13px', fontWeight: '700', lineHeight: 1,
+                        }}>✓</span>
+                      </td>
+                      <td style={{ padding: '10px 6px', textAlign: 'center', borderLeft: '1px solid #e2e8f0', verticalAlign: 'middle' }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          width: '22px', height: '22px', borderRadius: '4px',
+                          border: isSalah ? '2px solid #b91c1c' : '1.5px solid #cbd5e1',
+                          backgroundColor: isSalah ? '#b91c1c' : 'transparent',
+                          color: isSalah ? '#ffffff' : 'transparent',
+                          fontSize: '13px', fontWeight: '700', lineHeight: 1,
+                        }}>✓</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {baris.some(item => {
+              const j = (typeof item === 'object' ? safeString(item.jawaban) : '').trim().toLowerCase();
+              return !['benar', 'true', 'ya', 'b', 'salah', 'false', 'tidak', 's'].includes(j);
+            }) && (
+              <div style={{ padding: '8px 14px', fontSize: '11.5px', color: '#b45309', backgroundColor: '#fffbeb', borderTop: '1px solid #fde68a' }}>
+                ⚠️ Ada pernyataan yang jawabannya belum jelas Benar/Salah — kolom dikosongkan, cek manual sebelum simpan.
               </div>
-              <div style={{ padding: '12px', fontSize: '14px', fontWeight: '700', textAlign: 'center' }}>
-                {typeof item === 'object' ? item.jawaban : ''}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            )}
+          </div>
+        );
+      })()}
 
       {/* MATCHING */}
       {q.pasangan?.length > 0 && (
