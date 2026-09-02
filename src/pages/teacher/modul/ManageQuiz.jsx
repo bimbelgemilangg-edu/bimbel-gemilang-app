@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { collection, addDoc, doc, getDoc, getDocs, updateDoc, serverTimestamp, query, orderBy, where } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, getDocs, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where } from "firebase/firestore";
 import { 
   Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
   Calculator, Target, BookOpen, Users, Send, Settings, 
@@ -477,7 +477,27 @@ const ManageQuiz = () => {
   // dibuka lagi" — lihat penjelasan di useEffect pemuatan data di bawah.
   const linkedQuizIdParam = searchParams.get('quizId');
   const isFromModul = !!modulId && !!sectionId;
-  
+
+  // 🔥 BARU: "Kelola Percobaan Siswa" — ID dokumen kuis yang SEBENARNYA
+  // dipakai buat mencocokkan submission siswa di collection `jawaban_kuis`
+  // (field `modulId` di sana selalu diisi ID DOKUMEN KUIS itu sendiri,
+  // BUKAN id modul materi induk). Untuk kuis mandiri (Kasus A di
+  // fetchQuiz), itu sama dengan `modulId` di URL. Untuk kuis yang
+  // ditautkan ke sebuah modul materi (Kasus B), id kuis aslinya beda
+  // (`quizIdToLoad`) — jadi WAJIB disimpan terpisah di state ini supaya
+  // panel reset attempt di bawah nunjuk ke dokumen yang benar.
+  const [actualQuizId, setActualQuizId] = useState(null);
+
+  // 🔥 BARU: state buat panel "Kelola Percobaan Siswa" — daftar siswa yang
+  // sudah punya submission buat kuis ini, plus status loading & proses
+  // reset per-siswa. Ini yang menggantikan kebutuhan guru buka Firebase
+  // Console manual cuma buat ngizinin satu siswa ngulang kuis.
+  const [showAttemptsPanel, setShowAttemptsPanel] = useState(false);
+  const [attemptsLoading, setAttemptsLoading] = useState(false);
+  const [attemptsList, setAttemptsList] = useState([]); // [{ studentNim, studentName, studentClass, count, bestScore, lastSubmittedAt, docs: [ids] }]
+  const [resettingNim, setResettingNim] = useState(null);
+  const [attemptSearch, setAttemptSearch] = useState('');
+
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [loading, setLoading] = useState(false);
   // 🔥 BARU: status terpisah buat tombol download PDF soal+jawaban --
@@ -979,6 +999,7 @@ const ManageQuiz = () => {
 
         setPublishTarget('mandiri'); // nilai sementara, langsung ditimpa populateQuizFromDoc() di bawah kalau datanya sudah punya target lain
         setIsEditingExistingQuiz(true);
+        setActualQuizId(modulId); // 🔥 Kasus A: modulId di URL = ID dokumen kuis itu sendiri
         populateQuizFromDoc(data);
         return;
       }
@@ -1035,6 +1056,7 @@ const ManageQuiz = () => {
         const quizSnap = await getDoc(doc(db, "bimbel_modul", quizIdToLoad));
         if (quizSnap.exists()) {
           setIsEditingExistingQuiz(true);
+          setActualQuizId(quizIdToLoad); // 🔥 Kasus B: id kuis asli, beda dari modulId (modul induk) di URL
           populateQuizFromDoc(quizSnap.data());
         }
       } else {
@@ -1194,6 +1216,114 @@ const ManageQuiz = () => {
     setIsAIGenerated(true);
     showToast(`✨ ${generatedQuestions.length} soal berhasil dibuat Astro Gemilang! Cek dulu sebelum diterbitkan.`);
   };
+
+  // ============================================================
+  // 🔥 BARU: KELOLA PERCOBAAN SISWA (RESET ATTEMPT)
+  // ============================================================
+  // KENAPA DITAMBAHKAN: sebelum ini, kalau siswa udah keburu ngerjain kuis
+  // (dan menghabiskan batas pengulangan / kuis-nya cuma sekali kesempatan),
+  // satu-satunya cara guru bisa ngizinin dia ngulang adalah minta admin
+  // internal buka Firebase Console dan hapus dokumen submission-nya
+  // manual -- padahal guru itu BUKAN orang internal Bimbel dan gak punya
+  // (dan gak seharusnya punya) akses ke Firebase Console sama sekali.
+  //
+  // Sekarang guru bisa lakuin ini sendiri langsung dari halaman kelola
+  // kuis: lihat daftar siswa yang udah submit + berapa kali, lalu klik
+  // "Reset" buat siswa tertentu -- yang secara teknis menghapus SEMUA
+  // dokumen submission siswa itu untuk kuis ini di collection
+  // `jawaban_kuis`, jadi attemptCount dia balik ke 0 dan dia dianggap
+  // belum pernah mengerjakan (StudentQuizView.jsx menghitung attemptCount
+  // persis dari jumlah dokumen ini, lihat query di sana).
+  //
+  // Load daftar cuma dipanggil sesuai kebutuhan (saat panel dibuka), BUKAN
+  // otomatis tiap render, karena ini butuh baca semua dokumen jawaban_kuis
+  // buat kuis ini -- gak perlu dibebankan tiap kali guru buka halaman edit
+  // kuis kalau dia gak lagi butuh fitur ini.
+  const loadStudentAttempts = async () => {
+    if (!actualQuizId) return;
+    setAttemptsLoading(true);
+    try {
+      const q = query(
+        collection(db, "jawaban_kuis"),
+        where("modulId", "==", actualQuizId)
+      );
+      const snap = await getDocs(q);
+
+      // Kelompokkan per siswa (studentNim) -- satu siswa bisa punya
+      // beberapa dokumen kalau maxAttempts kuis ini > 1.
+      const byNim = {};
+      snap.docs.forEach(d => {
+        const data = d.data();
+        const nim = data.studentNim || '(tanpa NIM)';
+        if (!byNim[nim]) {
+          byNim[nim] = {
+            studentNim: nim,
+            studentName: data.studentName || '(tanpa nama)',
+            studentClass: data.studentClass || '-',
+            count: 0,
+            bestScore: null,
+            lastSubmittedAt: null,
+            docIds: [],
+          };
+        }
+        byNim[nim].count += 1;
+        byNim[nim].docIds.push(d.id);
+        if (typeof data.score === 'number') {
+          byNim[nim].bestScore = byNim[nim].bestScore === null
+            ? data.score
+            : Math.max(byNim[nim].bestScore, data.score);
+        }
+        const submittedMs = data.submittedAt?.toMillis ? data.submittedAt.toMillis() : 0;
+        if (!byNim[nim].lastSubmittedAt || submittedMs > byNim[nim].lastSubmittedAt) {
+          byNim[nim].lastSubmittedAt = submittedMs;
+        }
+      });
+
+      const list = Object.values(byNim).sort((a, b) => (b.lastSubmittedAt || 0) - (a.lastSubmittedAt || 0));
+      setAttemptsList(list);
+    } catch (err) {
+      console.error("Gagal memuat daftar percobaan siswa:", err);
+      showToast("⚠️ Gagal memuat daftar siswa yang sudah mengerjakan.", 'error');
+    } finally {
+      setAttemptsLoading(false);
+    }
+  };
+
+  const handleToggleAttemptsPanel = () => {
+    const next = !showAttemptsPanel;
+    setShowAttemptsPanel(next);
+    if (next) loadStudentAttempts();
+  };
+
+  // Hapus SEMUA dokumen submission milik satu siswa untuk kuis ini --
+  // jadi dia dianggap belum pernah mengerjakan (bebas dari batas
+  // pengulangan yang sudah kepakai) dan bisa mulai ulang dari nol.
+  const handleResetAttempt = async (student) => {
+    const confirmMsg = `Reset percobaan "${student.studentName}" (NIM ${student.studentNim})?\n\n` +
+      `Ini akan MENGHAPUS ${student.count} jawaban tersimpan siswa ini untuk kuis "${quizTitle || 'ini'}" ` +
+      `(termasuk nilai & pembahasan yang sudah tercatat). Siswa akan bisa mengerjakan lagi dari awal seolah belum pernah ngerjain.\n\n` +
+      `Tindakan ini TIDAK BISA dibatalkan. Lanjutkan?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setResettingNim(student.studentNim);
+    try {
+      await Promise.all(student.docIds.map(id => deleteDoc(doc(db, "jawaban_kuis", id))));
+      setAttemptsList(prev => prev.filter(s => s.studentNim !== student.studentNim));
+      showToast(`✅ Percobaan "${student.studentName}" berhasil di-reset. Dia bisa mengerjakan lagi.`);
+    } catch (err) {
+      console.error("Gagal reset percobaan siswa:", err);
+      showToast("❌ Gagal reset percobaan siswa. Coba lagi.", 'error');
+    } finally {
+      setResettingNim(null);
+    }
+  };
+
+  const filteredAttemptsList = attemptSearch.trim()
+    ? attemptsList.filter(s =>
+        s.studentName.toLowerCase().includes(attemptSearch.toLowerCase()) ||
+        s.studentNim.toLowerCase().includes(attemptSearch.toLowerCase())
+      )
+    : attemptsList;
 
   // ============================================================
   // 🔥 GET QUIZ STATUS
@@ -2896,6 +3026,102 @@ const ManageQuiz = () => {
                 berbasis web — gak ada yang bisa deteksi itu.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* 🔥 BARU: KELOLA PERCOBAAN SISWA (RESET ATTEMPT) */}
+        {/* ============================================================ */}
+        {/* Cuma muncul kalau ini kuis yang SUDAH pernah disimpan (punya id
+            dokumen kuis asli) -- kuis yang belum pernah disimpan jelas
+            belum mungkin punya submission siswa. */}
+        {isEditingExistingQuiz && actualQuizId && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #e2e8f0' }}>
+            <button
+              type="button"
+              onClick={handleToggleAttemptsPanel}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+                background: showAttemptsPanel ? '#fef3c7' : '#f8fafc', border: '1px solid #e2e8f0',
+                borderRadius: 8, padding: '10px 12px', cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
+                🔓 Kelola Percobaan Siswa
+              </span>
+              <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>{showAttemptsPanel ? 'Tutup ▲' : 'Buka ▼'}</span>
+            </button>
+            <p style={{ fontSize: 10, color: '#94a3b8', margin: '6px 2px 0', lineHeight: 1.6 }}>
+              Siswa yang jawabannya sudah tersimpan tapi mau diizinkan mengerjakan ulang dari awal (misal:
+              kuis dibuka lagi, ada kendala teknis, atau salah klik submit) bisa di-<b>reset</b> di sini —
+              tanpa perlu minta bantuan admin buka database.
+            </p>
+
+            {showAttemptsPanel && (
+              <div style={{ marginTop: 10 }}>
+                {attemptsLoading ? (
+                  <p style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', padding: 16, margin: 0 }}>
+                    <Loader2 size={14} className="spin" style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                    Memuat daftar siswa...
+                  </p>
+                ) : attemptsList.length === 0 ? (
+                  <p style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', padding: 16, margin: 0, background: '#f8fafc', borderRadius: 8 }}>
+                    Belum ada siswa yang mengerjakan kuis ini.
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ position: 'relative', marginBottom: 8 }}>
+                      <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                      <input
+                        value={attemptSearch}
+                        onChange={e => setAttemptSearch(e.target.value)}
+                        placeholder="Cari nama atau NIM siswa..."
+                        style={{ width: '100%', padding: '8px 10px 8px 28px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                      {filteredAttemptsList.length === 0 ? (
+                        <p style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', padding: 14, margin: 0 }}>Siswa tidak ditemukan.</p>
+                      ) : (
+                        filteredAttemptsList.map(s => (
+                          <div
+                            key={s.studentNim}
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                              padding: '10px 12px', borderBottom: '1px solid #f1f5f9', fontSize: 12,
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontWeight: 700, color: '#1e293b' }}>{s.studentName}</div>
+                              <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                                NIM {s.studentNim} · {s.studentClass} · sudah {s.count}x mengerjakan
+                                {s.bestScore !== null && <> · nilai tertinggi {s.bestScore}</>}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleResetAttempt(s)}
+                              disabled={resettingNim === s.studentNim}
+                              style={{
+                                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
+                                background: resettingNim === s.studentNim ? '#f1f5f9' : '#fee2e2',
+                                color: resettingNim === s.studentNim ? '#94a3b8' : '#dc2626',
+                                border: 'none', borderRadius: 6, padding: '6px 12px',
+                                fontSize: 11, fontWeight: 700, cursor: resettingNim === s.studentNim ? 'default' : 'pointer',
+                              }}
+                            >
+                              {resettingNim === s.studentNim
+                                ? <><Loader2 size={12} className="spin" /> Mereset...</>
+                                : <><Unlock size={12} /> Reset</>}
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
