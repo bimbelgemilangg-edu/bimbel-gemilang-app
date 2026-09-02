@@ -67,6 +67,7 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 // ============================================================
 import BankSoalPage from './pages/admin/banksoal/BankSoalPage';
 import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
+import TerbitkanKuisPage from './pages/admin/bank-soal/TerbitkanKuisPage';
 
 // ============================================================
 // GURU
@@ -303,6 +304,7 @@ function App() {
             ==================================================== */}
         <Route path="/admin/bank-soal" element={<AdminRoute><BankSoalPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/import" element={<AdminRoute><ImportHasilScanPage /></AdminRoute>} />
+        <Route path="/admin/bank-soal/terbitkan" element={<AdminRoute><TerbitkanKuisPage /></AdminRoute>} />
 
         {/* OWNER / SETTINGS */}
         <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
