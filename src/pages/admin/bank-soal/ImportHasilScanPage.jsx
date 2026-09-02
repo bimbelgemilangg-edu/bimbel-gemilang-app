@@ -1109,8 +1109,90 @@ function parseHTMLPairs(container) {
   }).filter(Boolean);
 }
 
+// ============================================================
+// PERBAIKI TANDA < DAN > LIAR DARI LATEX SEBELUM DI-PARSE BROWSER
+// ------------------------------------------------------------
+// TEMUAN NYATA (soal pertidaksamaan/interval, mis. "$\{x|-1<x<4\}$"):
+// tanda "<" dari LaTeX (bukan tag HTML) bikin DOMParser SALAH SANGKA
+// itu awal tag baru -- sisa teks setelah "<" sampai ">" pertama yang
+// ketemu TERTELAN DIAM-DIAM tanpa error. Terbukti lewat tes nyata:
+// <li>$\{x|-1<x<4\}$</li> -> textContent cuma jadi "$\{x|-1", sisanya
+// hilang. Ini genuinely soal < atau > mana yang BENERAN tag HTML dan
+// mana yang cuma simbol matematika -- browser sendiri tidak bisa
+// membedakan tanpa bantuan.
+//
+// Solusi: sebelum diserahkan ke DOMParser, pindai teks mentahnya
+// sendiri -- "<" HANYA dibiarkan apa adanya kalau diikuti nama tag
+// yang memang kita kenal (article, div, li, dst). Selain itu (termasuk
+// "<x", "<4", "<-1") di-escape jadi "&lt;" supaya DOMParser membacanya
+// sebagai teks biasa, bukan awal tag.
+// ============================================================
+
+const TAG_HTML_DIKENAL = [
+  '!doctype', 'html', 'head', 'body', 'title', 'meta', 'article', 'div', 'span',
+  'ol', 'ul', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img',
+  'p', 'br', 'b', 'i', 'em', 'strong', 'sub', 'sup', 'a',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+];
+
+function escapeTandaKurungLiar(rawHtml) {
+  const teks = safeString(rawHtml);
+  const n = teks.length;
+  let out = '';
+  let i = 0;
+
+  while (i < n) {
+    const ch = teks[i];
+
+    if (ch !== '<') { out += ch; i++; continue; }
+
+    // Komentar HTML <!-- ... --> -- biarkan apa adanya
+    if (teks.startsWith('<!--', i)) {
+      const akhir = teks.indexOf('-->', i + 4);
+      const berhenti = akhir === -1 ? n : akhir + 3;
+      out += teks.slice(i, berhenti);
+      i = berhenti;
+      continue;
+    }
+
+    // Cek apakah ini AWALAN tag yang kita kenal: < atau </ + nama tag
+    const cocok = /^<\/?([a-zA-Z!][a-zA-Z0-9]*)/.exec(teks.slice(i));
+    const namaTag = cocok ? cocok[1].toLowerCase() : null;
+    const tagDikenal = namaTag && TAG_HTML_DIKENAL.includes(namaTag);
+
+    if (tagDikenal) {
+      // Ini tag HTML asli -- salin utuh sampai '>' penutup tag,
+      // hormati atribut dalam tanda kutip yang mungkin memuat '>'
+      let j = i;
+      let dalamKutip = null;
+      while (j < n) {
+        const c = teks[j];
+        if (dalamKutip) {
+          if (c === dalamKutip) dalamKutip = null;
+        } else if (c === '"' || c === "'") {
+          dalamKutip = c;
+        } else if (c === '>') {
+          j++;
+          break;
+        }
+        j++;
+      }
+      out += teks.slice(i, j);
+      i = j;
+      continue;
+    }
+
+    // BUKAN tag dikenal -- ini "<" liar dari LaTeX (pertidaksamaan,
+    // interval, dsb) -- escape supaya tidak dianggap awal tag.
+    out += '&lt;';
+    i++;
+  }
+
+  return out;
+}
+
 function parseHTMLMaster(raw) {
-  const source = safeString(raw);
+  const source = escapeTandaKurungLiar(safeString(raw));
   if (!source.trim()) throw new Error('File HTML Master kosong.');
   if (typeof DOMParser === 'undefined') throw new Error('Browser tidak mendukung pembacaan HTML Master.');
 
