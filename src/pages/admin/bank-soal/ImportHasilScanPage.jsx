@@ -1048,6 +1048,36 @@ function normalizeSoal(q, idx) {
     );
   }
 
+  // 🔥 BARU: Sinyal 6 -- BAHASA RAGU DARI AI SENDIRI. Ditemukan kasus
+  // nyata: AI (DeepSeek) kadang menyisipkan penanda ragu LANGSUNG di
+  // teks soal yang di-generate, mis. "Perhatikan gambar (perlu dicek)!"
+  // -- ini AI-nya SENDIRI yang "mengaku" tidak yakin hasil generate-nya
+  // benar. Ini sinyal yang JAUH lebih kuat & dipercaya dibanding
+  // heuristik tebak-tebak lainnya -- kalau AI sendiri ragu, otomatis
+  // WAJIB dicek manual, tidak boleh lolos diam-diam. Ini penting
+  // khususnya karena admin tidak mungkin baca 50 soal satu-satu tiap
+  // generate -- sinyal seperti ini yang bikin soal bermasalah "menonjol"
+  // otomatis dari yang lain, tanpa perlu baca semuanya.
+  const adaBahasaRaguAI = /\(\s*(perlu\s+dicek|perlu\s+verifikasi|cek\s+ulang|belum\s+jelas|belum\s+pasti|tidak\s+dapat\s+dipastikan)\s*\)/i.test(teksSoal)
+    || /(gambar|grafik|diagram|tabel)\s+(tidak\s+tersedia|tidak\s+dapat\s+ditampilkan|belum\s+tersedia)/i.test(teksSoal);
+  if (adaBahasaRaguAI) {
+    errors.push(
+      'Teks soal mengandung bahasa keraguan dari AI SENDIRI (mis. "perlu dicek", "gambar tidak tersedia"). Ini tanda kuat AI tidak yakin dengan hasil generate-nya sendiri -- WAJIB dicek manual sebelum dipublikasikan.',
+    );
+  }
+
+  // 🔥 BARU: Sinyal 7 -- soal MENUNJUK gambar/grafik/diagram di
+  // teksnya ("Perhatikan gambar berikut", dst) TAPI TIDAK ADA gambar
+  // terlampir sama sekali. Sama semangatnya dengan Sinyal 5 (soal
+  // yatim bacaan) tapi buat gambar -- soal yang butuh visual buat
+  // dijawab, tapi visualnya hilang, otomatis tidak bisa dijawab siswa.
+  const menunjukGambarDiTeks = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i.test(teksSoal);
+  if (menunjukGambarDiTeks && gambar.length === 0) {
+    errors.push(
+      'Soal ini menunjuk "gambar/grafik/diagram" di teksnya, tapi TIDAK ADA gambar terlampir sama sekali. Upload gambar manual dulu di panel "Kelola Gambar", atau soal ini tidak akan bisa dijawab siswa.',
+    );
+  }
+
   return {
     nomor,
     paket,
@@ -2728,6 +2758,10 @@ export default function ImportHasilScanPage() {
   const [sumberAI, setSumberAI] = useState('Gemini Canvas');
 
   const [soalList, setSoalList] = useState([]);
+  // 🔥 BARU: Upload Gambar Massal -- kumpulkan banyak gambar sekaligus,
+  // lalu cocokkan ke soal yang butuh, daripada scroll cari satu-satu.
+  const [showModalGambarMassal, setShowModalGambarMassal] = useState(false);
+  const [daftarUploadMassal, setDaftarUploadMassal] = useState([]); // [{id, dataUrl, namaFile, soalIdxTerpilih}]
   const [parseError, setParseError] = useState('');
   const [warnings, setWarnings] = useState([]);
 
@@ -2951,6 +2985,74 @@ export default function ImportHasilScanPage() {
   }, [soalList]);
 
   const adaPengelompokan = groupedByPaket.length > 1 || (groupedByPaket.length === 1 && groupedByPaket[0].paket !== null);
+
+  // 🔥 BARU: daftar soal yang "butuh gambar" -- pakai logika PERSIS SAMA
+  // dengan Sinyal 7 di normalizeSoal (menunjuk gambar/grafik/diagram di
+  // teksnya, tapi gambar-nya kosong). Ini yang jadi daftar pilihan pas
+  // mencocokkan gambar hasil Upload Massal ke soal yang tepat.
+  const soalButuhGambar = useMemo(() => {
+    const pola = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i;
+    return soalList.filter(q => pola.test(q.teks_soal || '') && safeArray(q.gambar).length === 0);
+  }, [soalList]);
+
+  // Baca banyak file gambar sekaligus jadi dataUrl, ditambahkan ke daftar
+  // yang mau dicocokkan (belum langsung ditempel ke soal mana pun).
+  const handlePilihFileMassal = (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    files.forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        setDaftarUploadMassal(prev => [...prev, {
+          id: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          dataUrl: reader.result,
+          namaFile: file.name,
+          soalIdxTerpilih: '',
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const pilihSoalUntukGambar = (uploadId, soalIdx) => {
+    setDaftarUploadMassal(prev => prev.map(u => (u.id === uploadId ? { ...u, soalIdxTerpilih: soalIdx } : u)));
+  };
+
+  const hapusDariDaftarMassal = (uploadId) => {
+    setDaftarUploadMassal(prev => prev.filter(u => u.id !== uploadId));
+  };
+
+  // Tempel semua gambar yang SUDAH dicocokkan (punya soalIdxTerpilih)
+  // ke soal masing-masing di soalList, lalu bersihkan daftar & tutup modal.
+  const terapkanUploadMassal = () => {
+    const sudahDicocokkan = daftarUploadMassal.filter(u => u.soalIdxTerpilih !== '');
+    if (sudahDicocokkan.length === 0) {
+      alert('Belum ada gambar yang dicocokkan ke soal manapun.');
+      return;
+    }
+    setSoalList(prev => {
+      const updated = prev.map((q, i) => {
+        const cocok = sudahDicocokkan.filter(u => Number(u.soalIdxTerpilih) === i);
+        if (cocok.length === 0) return q;
+        const gambarBaru = cocok.map((u, gi) => ({
+          id: `manual-massal-${Date.now()}-${gi}`,
+          dataUrl: u.dataUrl,
+          uploadedUrl: '',
+          deskripsi: u.namaFile,
+          nomor: (safeArray(q.gambar).length) + gi + 1,
+        }));
+        return { ...q, gambar: [...safeArray(q.gambar), ...gambarBaru] };
+      });
+      // 🔥 Sama seperti crop/upload manual per-soal -- gambar baru harus
+      // divalidasi (asli/rusak) begitu ditempel, bukan dianggap otomatis OK.
+      runValidasiGambar(updated);
+      return updated;
+    });
+    // Sisakan yang BELUM dicocokkan di daftar (biar gak hilang), buang yang sudah ditempel.
+    setDaftarUploadMassal(prev => prev.filter(u => u.soalIdxTerpilih === ''));
+    alert(`${sudahDicocokkan.length} gambar berhasil ditempel ke soal yang dipilih.`);
+  };
 
   // ----------------------------------------------------------
   // CROP GAMBAR — update dataUrl gambar tertentu di soalList (identitas via _idx)
@@ -3788,14 +3890,95 @@ export default function ImportHasilScanPage() {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => downloadJSON(soalList)}
-                    style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px', backgroundColor: '#f3f4f6', color: '#374151', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}
-                  >
-                    ⬇️ Export JSON
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {soalButuhGambar.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowModalGambarMassal(true)}
+                        style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px', backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '8px', fontSize: '12px', fontWeight: '700', border: '1px solid #fbbf24' }}
+                      >
+                        📤 Upload Gambar Massal ({soalButuhGambar.length} soal butuh gambar)
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => downloadJSON(soalList)}
+                      style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px', backgroundColor: '#f3f4f6', color: '#374151', borderRadius: '8px', fontSize: '12px', fontWeight: '700' }}
+                    >
+                      ⬇️ Export JSON
+                    </button>
+                  </div>
                 </div>
+
+                {/* 🔥 BARU: MODAL UPLOAD GAMBAR MASSAL */}
+                {showModalGambarMassal && (
+                  <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                    <div style={{ backgroundColor: 'white', borderRadius: '16px', width: '100%', maxWidth: '900px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                      <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <h3 style={{ fontWeight: '800', fontSize: '15px', color: '#1f2937' }}>📤 Upload Gambar Massal</h3>
+                          <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
+                            Pilih banyak gambar sekaligus (hasil crop/screenshot dari PDF asli), lalu cocokkan tiap gambar ke soal yang membutuhkannya.
+                          </p>
+                        </div>
+                        <button onClick={() => setShowModalGambarMassal(false)} style={{ fontSize: '20px', color: '#9ca3af', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                      </div>
+
+                      <div style={{ padding: '16px 20px', borderBottom: '1px solid #f3f4f6' }}>
+                        <label style={{ display: 'inline-block', fontSize: '12px', padding: '8px 16px', borderRadius: '8px', border: '1px dashed #a5b4fc', backgroundColor: '#eef2ff', color: '#4338ca', fontWeight: '700', cursor: 'pointer' }}>
+                          📁 Pilih Banyak File Gambar Sekaligus
+                          <input type="file" accept="image/*" multiple onChange={handlePilihFileMassal} style={{ display: 'none' }} />
+                        </label>
+                        <span style={{ fontSize: '11px', color: '#9ca3af', marginLeft: '10px' }}>
+                          {soalButuhGambar.length} soal masih butuh gambar
+                        </span>
+                      </div>
+
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+                        {daftarUploadMassal.length === 0 ? (
+                          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#9ca3af', fontSize: '13px' }}>
+                            Belum ada gambar dipilih. Klik tombol di atas untuk mulai.
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {daftarUploadMassal.map((u) => (
+                              <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
+                                <img src={u.dataUrl} alt="" style={{ width: '70px', height: '52px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.namaFile}</div>
+                                  <select
+                                    value={u.soalIdxTerpilih}
+                                    onChange={(e) => pilihSoalUntukGambar(u.id, e.target.value)}
+                                    style={{ width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #d1d5db' }}
+                                  >
+                                    <option value="">-- Pilih soal ini gambar untuk soal nomor berapa --</option>
+                                    {soalButuhGambar.map((q) => (
+                                      <option key={q._idx} value={q._idx}>
+                                        Soal {q.nomor}{q.paket ? ` (Paket ${q.paket})` : ''} — {(q.teks_soal || '').slice(0, 60)}...
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <button onClick={() => hapusDariDaftarMassal(u.id)} style={{ fontSize: '11px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+                                  🗑️
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ padding: '14px 20px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        <button onClick={() => setShowModalGambarMassal(false)} style={{ fontSize: '12px', padding: '9px 16px', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: 'white', cursor: 'pointer' }}>
+                          Tutup
+                        </button>
+                        <button onClick={terapkanUploadMassal} style={{ fontSize: '12px', padding: '9px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#4f46e5', color: 'white', fontWeight: '700', cursor: 'pointer' }}>
+                          ✓ Terapkan Semua Kecocokan
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ maxHeight: '700px', overflowY: 'auto', paddingRight: '4px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   {groupedByPaket.map((group, gIdx) => (
