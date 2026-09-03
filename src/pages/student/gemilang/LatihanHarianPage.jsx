@@ -17,7 +17,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import {
-  collection, query, where, getDocs, doc, getDoc, setDoc, serverTimestamp,
+  collection, query, where, getDocs, doc, getDoc, setDoc, serverTimestamp, limit,
 } from 'firebase/firestore';
 import { ArrowLeft, CheckCircle2, XCircle, Flame, Sparkles, BookOpen } from 'lucide-react';
 import 'katex/dist/katex.min.css';
@@ -177,6 +177,28 @@ function hitungStreakBaru(lastActiveDateStr, hariIniStr) {
 const XP_PER_BENAR = 10;
 const XP_PER_SALAH = 2; // tetap dapat sedikit XP -- menghargai usaha, bukan cuma hasil (lihat diskusi SDT sebelumnya)
 
+// 🔥 BARU (BUG KEAMANAN KONTEN DITEMUKAN): filter sebelumnya CUMA cek
+// `tingkatKelas`, sama sekali TIDAK cek `jenjang` -- soal UTBK/SNBT atau
+// SMA yang kelasnya sengaja dikosongkan (memang begitu desainnya untuk
+// TKA lintas kelas, lihat diskusi sebelumnya) bisa LOLOS ke siswa SMP
+// atau SD, karena syarat "kelas kosong = boleh lewat" tidak
+// mempertimbangkan jenjang sama sekali. Ini serius -- siswa SMP bisa
+// kena soal UTBK Kimia kelas 12 yang jauh di luar levelnya.
+//
+// PRINSIP PERBAIKAN: default HARUS AMAN (tolak) kalau jenjang tidak
+// jelas cocok -- bukan longgar (terima) seperti kesalahan sebelumnya.
+function cocokkanJenjang(jenjangSoal, jenjangSiswa) {
+  if (!jenjangSoal) return false; // 🔒 soal tanpa jenjang ditolak, BUKAN diloloskan
+  const soal = jenjangSoal.toLowerCase();
+  const siswa = (jenjangSiswa || '').toLowerCase();
+  if (siswa === 'smp') return soal.includes('smp');
+  if (siswa === 'sd') return soal.includes('sd');
+  // UTBK/SNBT sengaja DIIKUTKAN buat siswa SMA -- itu memang relevan
+  // buat persiapan mereka (bukan celah, tapi kesesuaian yang disengaja).
+  if (siswa === 'sma') return soal.includes('sma') || soal.includes('utbk') || soal.includes('snbt');
+  return false; // jenjang siswa tidak dikenali -- tolak, jangan tebak
+}
+
 // ============================================================
 // KOMPONEN UTAMA
 // ============================================================
@@ -185,6 +207,9 @@ export default function LatihanHarianPage() {
   const navigate = useNavigate();
   const studentId = localStorage.getItem('studentId') || '';
   const studentKelas = localStorage.getItem('studentKelas') || '';
+  // 🔥 BARU: jenjang TIDAK ada di localStorage -- harus diambil dari
+  // dokumen siswa di Firestore (lihat useEffect di bawah).
+  const [studentJenjang, setStudentJenjang] = useState(null); // null = belum siap, JANGAN mulai fetch soal dulu
 
   const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mode | mengerjakan | selesai
   const [semuaSoal, setSemuaSoal] = useState([]);
@@ -205,11 +230,41 @@ export default function LatihanHarianPage() {
     if (!studentId) { setTahap('pilih-mode'); return; }
     (async () => {
       try {
+        // 🔥 BARU: ambil jenjang siswa DULU dari dokumen Firestore-nya
+        // (bukan localStorage -- jenjang tidak pernah disimpan di situ).
+        // WAJIB tahu jenjang siswa SEBELUM narik soal apa pun -- kalau
+        // gagal/tidak ketemu, JANGAN lanjut narik semua soal tanpa
+        // pagar (itu akar bug yang dilaporkan: soal SMA/UTBK bisa lolos
+        // ke siswa SMP kalau jenjangnya tidak dicek).
+        let jenjangSiswa = null;
+        try {
+          const snapSiswa = await getDocs(query(collection(db, 'students'), where('studentId', '==', studentId), limit(1)));
+          if (!snapSiswa.empty) jenjangSiswa = snapSiswa.docs[0].data().jenjang || null;
+        } catch (e) {
+          console.error('Gagal ambil jenjang siswa:', e);
+        }
+        setStudentJenjang(jenjangSiswa);
+
+        if (!jenjangSiswa) {
+          // 🔒 Jenjang tidak ketemu -- JANGAN tampilkan soal apa pun,
+          // lebih aman kosong daripada salah kirim materi di luar level
+          // siswa. Admin/wali kelas perlu melengkapi data jenjang siswa.
+          console.error('Jenjang siswa tidak ditemukan -- Latihan Harian dikosongkan demi keamanan konten.');
+          setSemuaSoal([]);
+          setDaftarMateri([]);
+          setTahap('pilih-mode');
+          return;
+        }
+
         const constraints = [where('status', '==', 'aktif')];
         const snap = await getDocs(query(collection(db, 'bank_soal'), ...constraints));
         let soal = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        // Filter kelas: cocok kalau kelas soal kosong (lintas kelas, mis.
-        // TKA) ATAU sama persis dengan kelas siswa.
+
+        // 🔥 PAGAR UTAMA: jenjang WAJIB cocok (default menolak kalau
+        // tidak jelas -- lihat cocokkanJenjang()). Kelas baru dicek
+        // SETELAH jenjang cocok, dan cuma sebagai penyaring tambahan
+        // dalam jenjang yang SAMA (bukan pengganti jenjang).
+        soal = soal.filter((s) => cocokkanJenjang(s.jenjang, jenjangSiswa));
         if (studentKelas) {
           soal = soal.filter((s) => !s.tingkatKelas || s.tingkatKelas === studentKelas);
         }
@@ -362,7 +417,11 @@ export default function LatihanHarianPage() {
 
           <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', margin: '20px 0 10px' }}>Atau pilih materi sendiri:</div>
           {daftarMateri.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 30, fontSize: 13 }}>Belum ada soal tersedia untuk kelasmu.</div>
+            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 30, fontSize: 13 }}>
+              {studentJenjang
+                ? 'Belum ada soal tersedia untuk jenjang/kelasmu.'
+                : '⚠️ Data jenjang di profilmu belum lengkap. Hubungi admin untuk melengkapi data supaya Latihan Harian bisa menampilkan soal yang sesuai levelmu.'}
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {daftarMateri.map((m) => (
