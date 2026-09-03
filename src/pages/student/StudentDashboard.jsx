@@ -12,7 +12,7 @@ import {
   BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
   Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
-  Megaphone, RefreshCw, IdCard
+  Megaphone, RefreshCw, IdCard, Search
 } from 'lucide-react';
 
 // ============================================================
@@ -49,6 +49,20 @@ const getGreeting = () => {
   if (h < 15) return { text: 'Selamat siang', icon: '🌤️' };
   if (h < 18) return { text: 'Selamat sore', icon: '🌇' };
   return { text: 'Selamat malam', icon: '🌙' };
+};
+
+// 🔥 BARU: formula level dari total XP -- makin berat tiap naik level
+// (level N->N+1 butuh N*100 XP). Bagian dari sistem gamifikasi baru.
+const hitungLevelDariXp = (xpTotal) => {
+  let level = 1;
+  let sisaXp = xpTotal;
+  let kebutuhanLevelIni = 100;
+  while (sisaXp >= kebutuhanLevelIni) {
+    sisaXp -= kebutuhanLevelIni;
+    level += 1;
+    kebutuhanLevelIni = level * 100;
+  }
+  return { level, xpProgress: sisaXp, xpKebutuhan: kebutuhanLevelIni };
 };
 
 // Skeleton loading sederhana
@@ -247,6 +261,13 @@ const StudentDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
+  // 🔥 BARU: XP & streak buat header gaya baru (gamifikasi). Kalau
+  // dokumen `siswa_progress` belum ada (siswa belum pernah pakai sistem
+  // baru ini), dianggap mulai dari nol -- BUKAN error, itu wajar.
+  const [progresXp, setProgresXp] = useState(0);
+  const [progresStreak, setProgresStreak] = useState(0);
+  const attendanceRef = React.useRef(null);
+
   const [wajibSurveys, setWajibSurveys] = useState([]);
   // 🔥 BARU: ringkasan kehadiran buat bagan bundar di dashboard
   const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, izin: 0, alpha: 0, total: 0 });
@@ -312,6 +333,25 @@ const StudentDashboard = () => {
     window.addEventListener('resize', h);
     return () => window.removeEventListener('resize', h);
   }, []);
+
+  // 🔥 BARU: ambil XP & streak dari koleksi `siswa_progress` (fondasi
+  // sistem gamifikasi baru). Kalau dokumennya belum ada, tetap 0/0 --
+  // itu keadaan awal yang wajar, bukan error.
+  useEffect(() => {
+    if (!studentId) return;
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'siswa_progress', studentId));
+        if (snap.exists()) {
+          const d = snap.data();
+          setProgresXp(Number(d.xp) || 0);
+          setProgresStreak(Number(d.streak) || 0);
+        }
+      } catch (e) {
+        console.error('Gagal ambil progres XP/streak:', e);
+      }
+    })();
+  }, [studentId]);
 
   const isMobile = windowWidth <= 768;
   const greeting = getGreeting();
@@ -824,6 +864,93 @@ const StudentDashboard = () => {
           </div>
         </div>
 
+        {/* ============================================================
+            🔥 BARU: BLOK GAMIFIKASI (header ala Pahamify) -- SENGAJA
+            ditambahkan sebagai blok baru SETELAH header lama, BUKAN
+            menggantikan/menghapusnya -- notifikasi, scan absen, dan semua
+            fitur di atas tetap utuh persis seperti sebelumnya.
+            ============================================================ */}
+        {(() => {
+          const { level, xpProgress, xpKebutuhan } = hitungLevelDariXp(progresXp);
+          const menuBaru = [
+            { key: 'latihan', label: 'Latihan Harian', emoji: '📝', segeraHadir: true },
+            { key: 'tryout', label: 'TryOut', emoji: '🎯', segeraHadir: true },
+            { key: 'banksoal', label: 'Bank Soal', emoji: '📚', segeraHadir: true },
+            { key: 'progres', label: 'Progres Saya', emoji: '📊', segeraHadir: true },
+            { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', segeraHadir: true },
+            { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', segeraHadir: false },
+          ];
+          return (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #4f46e5, #673ab7)', borderRadius: 20,
+                padding: isMobile ? 16 : 20, marginBottom: 16,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 26 }}>
+                    🧑‍🚀
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: 20 }}>
+                      <span style={{ fontSize: 14 }}>🔥</span>
+                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12.5 }}>{progresStreak} hari</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: 20 }}>
+                      <span style={{ fontSize: 14 }}>🚀</span>
+                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12.5 }}>{progresXp} XP</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>Level {level}</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{xpProgress} / {xpKebutuhan} XP</span>
+                </div>
+                <div style={{ height: 6, background: 'rgba(255,255,255,0.25)', borderRadius: 10, overflow: 'hidden', marginBottom: 14 }}>
+                  <div style={{ height: '100%', width: `${Math.min(100, (xpProgress / xpKebutuhan) * 100)}%`, background: '#4ade80', borderRadius: 10, transition: 'width 0.4s ease' }} />
+                </div>
+
+                <div style={{ background: 'white', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#94a3b8', fontSize: 13 }}>Mau latihan apa hari ini?</span>
+                  <Search size={18} color="#94a3b8" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 16 }}>
+                {menuBaru.map((m) => (
+                  <button
+                    key={m.key}
+                    onClick={() => {
+                      if (m.key === 'kehadiran') {
+                        attendanceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      } else if (m.segeraHadir) {
+                        alert(`✨ ${m.label} segera hadir!`);
+                      }
+                    }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    <div style={{ width: isMobile ? 52 : 60, height: isMobile ? 52 : 60, borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, position: 'relative' }}>
+                      {m.emoji}
+                      {m.segeraHadir && (
+                        <span style={{ position: 'absolute', bottom: -6, fontSize: 8, background: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: 8, fontWeight: 700, whiteSpace: 'nowrap' }}>Segera</span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 10.5, color: '#334155', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>{m.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ background: 'white', borderRadius: 16, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#4f46e5', marginBottom: 6 }}>Ayo {studentName.split(' ')[0]}, Semangat! 🔥</div>
+                <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
+                  &ldquo;Tidak pernah ada hari yang sama dalam kehidupan kita. Hari ini berbeda dengan kemarin. Mari kita jadikan hari ini lebih baik.&rdquo;
+                </p>
+                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>- Susilo Bambang Yudhoyono</div>
+              </div>
+            </div>
+          );
+        })()}
+
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 8 : 14, marginBottom: 16 }}>
           {[
             { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#3b82f6', bg: '#eff6ff' },
@@ -1050,7 +1177,7 @@ const StudentDashboard = () => {
         {/* 🔥 KEHADIRAN — BARU, sesuai permintaan (bagan bundar), sekaligus
             jadi jalan pintas karena menu "Kehadiran" di sidebar tadinya
             gak pernah ada. */}
-        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <div ref={attendanceRef} className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
               <ClipboardList size={17} color="#14b8a6" /> Kehadiran
