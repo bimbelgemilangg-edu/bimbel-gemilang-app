@@ -211,9 +211,11 @@ export default function LatihanHarianPage() {
   // dokumen siswa di Firestore (lihat useEffect di bawah).
   const [studentJenjang, setStudentJenjang] = useState(null); // null = belum siap, JANGAN mulai fetch soal dulu
 
-  const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mode | mengerjakan | selesai
+  const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mapel | pilih-mode | mengerjakan | selesai
   const [semuaSoal, setSemuaSoal] = useState([]);
   const [progressMap, setProgressMap] = useState({});
+  const [daftarMapel, setDaftarMapel] = useState([]); // 🔥 BARU: [{mapel, jumlahSoal}]
+  const [mapelDipilih, setMapelDipilih] = useState(null);
   const [daftarMateri, setDaftarMateri] = useState([]);
 
   const [soalSesi, setSoalSesi] = useState([]);
@@ -227,7 +229,7 @@ export default function LatihanHarianPage() {
 
   // ---------------- MUAT DATA AWAL ----------------
   useEffect(() => {
-    if (!studentId) { setTahap('pilih-mode'); return; }
+    if (!studentId) { setTahap('pilih-mapel'); return; }
     (async () => {
       try {
         // 🔥 BARU: ambil jenjang siswa DULU dari dokumen Firestore-nya
@@ -251,8 +253,8 @@ export default function LatihanHarianPage() {
           // siswa. Admin/wali kelas perlu melengkapi data jenjang siswa.
           console.error('Jenjang siswa tidak ditemukan -- Latihan Harian dikosongkan demi keamanan konten.');
           setSemuaSoal([]);
-          setDaftarMateri([]);
-          setTahap('pilih-mode');
+          setDaftarMapel([]);
+          setTahap('pilih-mapel');
           return;
         }
 
@@ -278,29 +280,52 @@ export default function LatihanHarianPage() {
         progSnap.forEach((d) => { pMap[d.data().soalId] = d.data(); });
         setProgressMap(pMap);
 
-        setDaftarMateri(hitungPenguasaanPerMateri(soal, pMap).sort((a, b) => (a.persentase ?? -1) - (b.persentase ?? -1)));
-        setTahap('pilih-mode');
+        // 🔥 BARU: kelompokkan per MAPEL dulu (jenjang+kelas mungkin
+        // cocok buat banyak mapel sekaligus -- Matematika, Bahasa
+        // Indonesia, dst -- jangan dicampur jadi 1 daftar materi datar).
+        const perMapel = {};
+        soal.forEach((s) => {
+          const mapel = s.mataPelajaran || 'Lainnya';
+          perMapel[mapel] = (perMapel[mapel] || 0) + 1;
+        });
+        setDaftarMapel(Object.entries(perMapel).map(([mapel, jumlahSoal]) => ({ mapel, jumlahSoal })).sort((a, b) => a.mapel.localeCompare(b.mapel)));
+
+        setTahap('pilih-mapel');
       } catch (e) {
         console.error('Gagal memuat data latihan harian:', e);
-        setTahap('pilih-mode');
+        setTahap('pilih-mapel');
       }
     })();
   }, [studentId, studentKelas]);
 
+  // 🔥 BARU: begitu mapel dipilih, hitung daftar materi/bab HANYA dari
+  // mapel itu (bukan campuran semua mapel seperti sebelumnya).
+  const pilihMapel = useCallback((mapel) => {
+    setMapelDipilih(mapel);
+    const soalMapelIni = semuaSoal.filter((s) => (s.mataPelajaran || 'Lainnya') === mapel);
+    setDaftarMateri(hitungPenguasaanPerMateri(soalMapelIni, progressMap).sort((a, b) => (a.persentase ?? -1) - (b.persentase ?? -1)));
+    setTahap('pilih-mode');
+  }, [semuaSoal, progressMap]);
+
   // ---------------- MULAI SESI ----------------
+  // 🔥 BARU: sesi SELALU dibatasi ke mapel yang sedang dipilih -- tidak
+  // ada lagi campuran lintas mapel dalam 1 sesi latihan (1 sesi = 1
+  // mapel, biar fokus & masuk akal secara pedagogis).
+  const soalMapelDipilih = mapelDipilih ? semuaSoal.filter((s) => (s.mataPelajaran || 'Lainnya') === mapelDipilih) : [];
+
   const mulaiSesiRekomendasi = useCallback(() => {
-    const terpilih = pilihSoalRekomendasi(semuaSoal, progressMap, Date.now(), 10);
-    if (terpilih.length === 0) return alert('Belum ada soal yang cocok untuk kelasmu. Coba lagi nanti.');
+    const terpilih = pilihSoalRekomendasi(soalMapelDipilih, progressMap, Date.now(), 10);
+    if (terpilih.length === 0) return alert('Belum ada soal yang cocok untuk mapel/kelasmu. Coba lagi nanti.');
     setSoalSesi(terpilih);
     setIndexSekarang(0);
     setJawabanDipilih(null);
     setSudahDicek(false);
     setHasilSesi({ benar: 0, salah: 0 });
     setTahap('mengerjakan');
-  }, [semuaSoal, progressMap]);
+  }, [soalMapelDipilih, progressMap]);
 
   const mulaiSesiManual = useCallback((materi) => {
-    const terpilih = pilihSoalManual(semuaSoal, progressMap, materi, Date.now(), 10);
+    const terpilih = pilihSoalManual(soalMapelDipilih, progressMap, materi, Date.now(), 10);
     if (terpilih.length === 0) return alert('Belum ada soal di materi ini.');
     setSoalSesi(terpilih);
     setIndexSekarang(0);
@@ -308,7 +333,7 @@ export default function LatihanHarianPage() {
     setSudahDicek(false);
     setHasilSesi({ benar: 0, salah: 0 });
     setTahap('mengerjakan');
-  }, [semuaSoal, progressMap]);
+  }, [soalMapelDipilih, progressMap]);
 
   // ---------------- JAWAB SOAL ----------------
   const soalAktif = soalSesi[indexSekarang];
@@ -398,12 +423,45 @@ export default function LatihanHarianPage() {
     return <div style={st.pusat}>Memuat soal...</div>;
   }
 
-  if (tahap === 'pilih-mode') {
+  if (tahap === 'pilih-mapel') {
     return (
       <div style={st.page}>
         <div style={st.headerBar}>
           <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtn}><ArrowLeft size={20} /></button>
           <span style={st.headerTitle}>Latihan Harian</span>
+        </div>
+        <div style={{ padding: 18 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 10 }}>Mau latihan mapel apa hari ini?</div>
+          {daftarMapel.length === 0 ? (
+            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 30, fontSize: 13 }}>
+              {studentJenjang
+                ? 'Belum ada soal tersedia untuk jenjang/kelasmu.'
+                : '⚠️ Data jenjang di profilmu belum lengkap. Hubungi admin untuk melengkapi data supaya Latihan Harian bisa menampilkan soal yang sesuai levelmu.'}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {daftarMapel.map((m) => (
+                <button key={m.mapel} onClick={() => pilihMapel(m.mapel)} style={st.kartuMateri}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <BookOpen size={18} color="#4f46e5" />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{m.mapel}</span>
+                  </div>
+                  <span style={{ fontSize: 11, color: '#94a3b8' }}>{m.jumlahSoal} soal</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (tahap === 'pilih-mode') {
+    return (
+      <div style={st.page}>
+        <div style={st.headerBar}>
+          <button onClick={() => setTahap('pilih-mapel')} style={st.backBtn}><ArrowLeft size={20} /></button>
+          <span style={st.headerTitle}>{mapelDipilih}</span>
         </div>
 
         <div style={{ padding: 18 }}>
@@ -411,17 +469,13 @@ export default function LatihanHarianPage() {
             <Sparkles size={22} />
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 800, fontSize: 15 }}>Rekomendasi Otomatis</div>
-              <div style={{ fontSize: 11.5, opacity: 0.9 }}>10 soal disesuaikan kelemahanmu</div>
+              <div style={{ fontSize: 11.5, opacity: 0.9 }}>10 soal {mapelDipilih} disesuaikan kelemahanmu</div>
             </div>
           </button>
 
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', margin: '20px 0 10px' }}>Atau pilih materi sendiri:</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', margin: '20px 0 10px' }}>Atau pilih bab sendiri:</div>
           {daftarMateri.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 30, fontSize: 13 }}>
-              {studentJenjang
-                ? 'Belum ada soal tersedia untuk jenjang/kelasmu.'
-                : '⚠️ Data jenjang di profilmu belum lengkap. Hubungi admin untuk melengkapi data supaya Latihan Harian bisa menampilkan soal yang sesuai levelmu.'}
-            </div>
+            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 30, fontSize: 13 }}>Belum ada soal di mapel ini.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {daftarMateri.map((m) => (
