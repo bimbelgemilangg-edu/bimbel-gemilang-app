@@ -199,6 +199,20 @@ function cocokkanJenjang(jenjangSoal, jenjangSiswa) {
   return false; // jenjang siswa tidak dikenali -- tolak, jangan tebak
 }
 
+// 🔥 BARU (BUG NYATA DITEMUKAN): perbandingan kelas sebelumnya pakai
+// `===` LANGSUNG antara `tingkatKelas` di Bank Soal (format angka
+// polos, mis. "7") dengan `kelasSekolah` siswa (format gabungan, mis.
+// "7 SMP") -- dua format ini TIDAK PERNAH sama persis, jadi SEMUA soal
+// yang py tingkatKelas terisi otomatis gagal cocok ke SEMUA siswa,
+// berapa pun kelasnya. Ini yang bikin "tidak ada soal sama sekali"
+// muncul ke semua siswa kelas 7-9 padahal soalnya sudah ada. Sekarang
+// dibandingkan angkanya SAJA (diekstrak dari kedua sisi), bukan
+// string-nya utuh.
+function ekstrakAngkaKelas(str) {
+  const m = String(str || '').match(/\d+/);
+  return m ? m[0] : '';
+}
+
 // ============================================================
 // KOMPONEN UTAMA
 // ============================================================
@@ -268,7 +282,8 @@ export default function LatihanHarianPage() {
         // dalam jenjang yang SAMA (bukan pengganti jenjang).
         soal = soal.filter((s) => cocokkanJenjang(s.jenjang, jenjangSiswa));
         if (studentKelas) {
-          soal = soal.filter((s) => !s.tingkatKelas || s.tingkatKelas === studentKelas);
+          const angkaKelasSiswa = ekstrakAngkaKelas(studentKelas);
+          soal = soal.filter((s) => !s.tingkatKelas || ekstrakAngkaKelas(s.tingkatKelas) === angkaKelasSiswa);
         }
         // Hanya dukung pg_sederhana dulu di v1 -- tipe lain (kompleks,
         // kategori, isian) menyusul setelah UI jawabnya dibuat.
