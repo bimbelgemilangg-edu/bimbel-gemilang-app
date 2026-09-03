@@ -639,6 +639,26 @@ export default function LatihanHarianPage() {
               <span>{ikonMapel.emoji}</span>
               <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>{soalAktif.materi}</span>
             </div>
+
+            {/* 🔥 BARU (BUG SERIUS DITEMUKAN): field `bacaan` sebelumnya
+                TIDAK PERNAH dirender di halaman ini sama sekali --
+                padahal sistem penyimpanan bacaan/stimulus sudah dibangun
+                matang di sisi Import. Akibatnya soal yang menunjuk "teks
+                tersebut" (mis. soal pemahaman bacaan) tampil TANPA
+                bacaannya sama sekali -- literally tidak bisa dijawab.
+                Sekarang bacaan ditampilkan dulu, dalam kotak terpisah,
+                SEBELUM pertanyaannya -- persis urutan yang wajar
+                dibaca siswa. */}
+            {soalAktif.bacaan?.teks && (
+              <div style={st.boxBacaan}>
+                <div style={st.labelBacaan}>📖 Bacaan</div>
+                <div style={{ lineHeight: 1.7 }}>{renderMath(soalAktif.bacaan.teks)}</div>
+                {(soalAktif.bacaan.gambar || []).map((g, i) => (
+                  <img key={i} src={g.uploadedUrl || g.dataUrl || g.url} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginTop: 10 }} />
+                ))}
+              </div>
+            )}
+
             <div style={{ fontSize: 14.5, color: '#1e293b', lineHeight: 1.6, marginBottom: 18 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
 
             {(soalAktif.opsiJawaban || []).map((opsi, i) => {
@@ -849,6 +869,8 @@ const st = {
   fillMini: { height: '100%', borderRadius: 10, transition: 'width 0.3s ease' },
 
   kartuSoal: { background: 'white', borderRadius: 18, padding: 18, marginBottom: 16, boxShadow: '0 4px 16px rgba(30,27,75,0.06)' },
+  boxBacaan: { background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 12, padding: 14, marginBottom: 16, fontSize: 13, color: '#78350F' },
+  labelBacaan: { fontSize: 11, fontWeight: 800, color: '#B45309', marginBottom: 8, textTransform: 'none' },
   boxPembahasan: { marginTop: 14, padding: 14, borderRadius: 12, background: '#F4F2FF', fontSize: 12.5, color: '#4C1D95', lineHeight: 1.6 },
 
   tombolUtama: { width: '100%', padding: '15px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: 16, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 6px 16px rgba(124,58,237,0.25)' },
