@@ -406,6 +406,20 @@ CONTOH (perhatikan: angka/nilai di bawah ini cuma ilustrasi STRUKTUR tag. Materi
 // SAFE HELPERS
 // ============================================================
 
+// 🔥 BARU: normalisasi teks buat deteksi soal duplikat -- dibuat tahan
+// terhadap variasi kecil yang WAJAR terjadi antar hasil scan AI (spasi
+// beda, huruf besar/kecil, simbol kali "×" vs huruf "x", tanda baca
+// beda gaya) tapi TETAP ketat mendeteksi isi yang SEBENARNYA sama.
+function normalisasiTeksDuplikat(t) {
+  return String(t || '')
+    .toLowerCase()
+    .replace(/[×✕]/g, 'x')
+    .replace(/[÷]/g, ':')
+    .replace(/[^a-z0-9:]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
 function safeString(value, fallback = '') {
   if (value === null || value === undefined) return fallback;
   if (typeof value === 'string') return value;
@@ -3192,6 +3206,49 @@ export default function ImportHasilScanPage() {
     if (validSoal.length === 0) {
       setSaveResult({ success: false, error: 'Tidak ada soal valid untuk disimpan.' });
       return;
+    }
+
+    // 🔥 BARU: DETEKSI DUPLIKAT -- ditemukan kasus nyata: kalau PDF yang
+    // sama diimpor 2x (sengaja atau lupa sudah pernah), sistem sebelum
+    // ini diam-diam menyimpan 2 dokumen terpisah untuk soal yang
+    // ISINYA SAMA PERSIS -- siswa bisa ketemu "soal yang sama" 2x, dan
+    // progres Leitner Box-nya kepecah jadi 2 record padahal seharusnya
+    // 1. Sekarang dicek DUA arah sebelum benar-benar menulis:
+    // (1) terhadap SELURUH Bank Soal yang sudah ada, (2) sesama soal
+    // di DALAM batch yang mau disimpan ini (jaga-jaga kalau admin gak
+    // sadar menempel konten yang sama 2x dalam 1 sesi import).
+    let peringatanDuplikat = [];
+    try {
+      const existingSnap = await getDocs(collection(db, 'bank_soal'));
+      const existingSet = new Map(); // teks ternormalisasi -> nomor soal lama (buat pesan)
+      existingSnap.forEach(d => {
+        const data = d.data();
+        const teks = normalisasiTeksDuplikat(data.soal || data.teksSoal || '');
+        if (teks) existingSet.set(teks, data.nomor || '?');
+      });
+
+      const dalamBatchSet = new Set();
+      validSoal.forEach(q => {
+        const teks = normalisasiTeksDuplikat(q.teks_soal);
+        if (!teks) return;
+        if (existingSet.has(teks)) {
+          peringatanDuplikat.push(`Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: mirip/sama dengan soal yang SUDAH ADA di Bank Soal (nomor ${existingSet.get(teks)}).`);
+        } else if (dalamBatchSet.has(teks)) {
+          peringatanDuplikat.push(`Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: sama dengan soal LAIN di batch import ini juga -- kemungkinan tempel dobel.`);
+        }
+        dalamBatchSet.add(teks);
+      });
+    } catch (e) {
+      console.error('Gagal cek duplikat (dilewati, tidak menghalangi simpan):', e);
+    }
+
+    if (peringatanDuplikat.length > 0) {
+      const proceed = window.confirm(
+        `⚠️ Terdeteksi ${peringatanDuplikat.length} kemungkinan soal DUPLIKAT:\n\n${peringatanDuplikat.slice(0, 8).join('\n')}` +
+        (peringatanDuplikat.length > 8 ? `\n...dan ${peringatanDuplikat.length - 8} lainnya.` : '') +
+        `\n\nKlik OK untuk TETAP simpan semua (termasuk yang mirip di atas), atau Cancel untuk batal dan cek manual dulu.`,
+      );
+      if (!proceed) return;
     }
 
     setSaving(true);
