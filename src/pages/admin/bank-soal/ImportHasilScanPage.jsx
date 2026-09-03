@@ -378,7 +378,7 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
 17. Nama atribut \`data-field\` dan \`data-gemilang-question\` HARUS ditulis PERSIS seperti contoh, huruf kecil semua, tanpa spasi tambahan. Jangan mengganti "teks_soal" jadi "teksSoal"/"soal"/nama lain.
 18. Satu <article> = satu soal. Jangan menaruh dua nomor soal dalam satu <article>, dan jangan memecah satu soal jadi dua <article>.
 19. Jangan menambahkan komentar, penjelasan, atau teks apa pun di luar blok HTML.
-20. 🔥 WAJIB — BACAAN YANG DIPAKAI BERSAMA BEBERAPA SOAL (mis. "Perhatikan teks berikut untuk soal nomor 1-2!"): setiap soal itu adalah DOKUMEN MANDIRI yang nantinya bisa dipakai SENDIRI-SENDIRI tanpa soal lain di sebelahnya. Karena itu, bacaan/teks/puisi/tabel bersama itu HARUS DISALIN UTUH ke field \`data-field="bacaan"\` di SETIAP soal yang terkait — BUKAN cuma ditulis sekali di soal pertama lalu soal berikutnya dibiarkan kosong tanpa bacaan. Contoh SALAH: soal 1 punya bacaan lengkap, soal 2 cuma "Ciri Komodo yang tepat sesuai teks tersebut adalah..." tanpa bacaan sama sekali -- ini bikin soal 2 TIDAK BISA DIJAWAB kalau dipakai sendirian. Contoh BENAR: soal 1 DAN soal 2 sama-sama punya \`<div data-field="bacaan">...teks Taman Nasional Komodo lengkap...</div>\`, isinya identik persis di keduanya. \`data-field="teks_soal"\` cukup berisi PERTANYAANNYA SAJA (tanpa bacaan), \`data-field="bacaan"\` berisi bacaannya (boleh sama persis berulang di beberapa soal, itu memang disengaja).
+20. 🔥 WAJIB — BACAAN YANG DIPAKAI BERSAMA BEBERAPA SOAL (mis. "Perhatikan teks berikut untuk soal nomor 1-2!"): setiap soal itu adalah DOKUMEN MANDIRI yang nantinya bisa dipakai SENDIRI-SENDIRI tanpa soal lain di sebelahnya. Karena itu, bacaan/teks/puisi/tabel bersama itu HARUS DISALIN UTUH ke field \`data-field="bacaan"\` di SETIAP soal yang terkait — BUKAN cuma ditulis sekali di soal pertama lalu soal berikutnya dibiarkan kosong tanpa bacaan. Contoh SALAH: soal 1 punya bacaan lengkap, soal 2 cuma "Ciri Komodo yang tepat sesuai teks tersebut adalah..." tanpa bacaan sama sekali -- ini bikin soal 2 TIDAK BISA DIJAWAB kalau dipakai sendirian. Contoh BENAR: soal 1 DAN soal 2 sama-sama punya \`<div data-field="bacaan" data-grup="bacaan_1">...teks Taman Nasional Komodo lengkap, PERSIS SAMA di kedua soal, tidak diringkas sedikit pun...</div>\`, isinya identik persis di keduanya. Tambahkan atribut \`data-grup="bacaan_N"\` (N = nomor urut grup bacaan dalam dokumen ini) di elemen bacaan itu — WAJIB SAMA PERSIS untuk semua soal yang memakai bacaan yang sama, supaya sistem bisa otomatis mendeteksi kalau kamu tidak sengaja meringkas/memotong bacaan di salah satu soal (dibandingkan panjangnya antar soal segrup). \`data-field="teks_soal"\` cukup berisi PERTANYAANNYA SAJA (tanpa bacaan), \`data-field="bacaan"\` berisi bacaannya (boleh sama persis berulang di beberapa soal, itu memang disengaja).
 
 CONTOH (perhatikan: angka/nilai di bawah ini cuma ilustrasi STRUKTUR tag. Materi, kesulitan, dan kelas yang kamu isi harus hasil analisismu sendiri terhadap SETIAP soal asli, bukan disalin dari contoh ini):
 <!doctype html>
@@ -1317,7 +1317,16 @@ function parseHTMLMaster(raw) {
       };
     }).filter(opt => !optionIsEmpty(opt));
 
-    const bacaan = bacaanNode ? { teks: htmlNodeText(bacaanNode), gambar: parseHTMLImages(bacaanNode) } : null;
+    const bacaan = bacaanNode ? {
+      teks: htmlNodeText(bacaanNode),
+      gambar: parseHTMLImages(bacaanNode),
+      // 🔥 BARU: penanda grup bacaan (mis. "bacaan_1") -- kalau beberapa
+      // soal berbagi bacaan yang sama, mereka wajib punya nilai grup
+      // yang SAMA. Ambil dari data-grup di elemen bacaan sendiri, atau
+      // fallback ke data-grup di <article>-nya (2 tempat wajar untuk AI
+      // menaruh atribut ini).
+      grup: bacaanNode.getAttribute('data-grup') || node.getAttribute('data-grup') || '',
+    } : null;
     const keyRaw = node.getAttribute('data-kunci') || keyNode?.getAttribute?.('data-value') || keyNode?.textContent || '';
     const tableSoal = tableQuestionNode ? parseHTMLTableElement(tableQuestionNode.querySelector('table') || tableQuestionNode) : null;
     const paketRaw = node.getAttribute('data-paket');
@@ -2737,6 +2746,36 @@ export default function ImportHasilScanPage() {
         .map((question, index) => normalizeSoal(question, index))
         .map((q, index) => ({ ...q, _idx: index }));
 
+      // 🔥 BARU: deteksi lintas-soal -- kalau beberapa soal berbagi grup
+      // bacaan yang sama (field bacaan.grup identik, mis. "bacaan_1"),
+      // tapi bacaan salah satu soal jauh lebih pendek dari yang lain di
+      // grup sama, itu sinyal kuat AI meringkas/lupa menyalin utuh ke
+      // soal itu -- lebih pintar dari sekadar cek 1 soal sendirian,
+      // karena bisa nangkap kasus yang bahasanya tidak eksplisit
+      // menunjuk "teks tersebut" (lolos dari detektor per-soal biasa).
+      // Ini TIDAK BISA dilakukan di dalam normalizeSoal() sendiri
+      // (yang cuma lihat 1 soal), makanya dijalankan di sini sebagai
+      // langkah tambahan setelah semua soal selesai dinormalisasi.
+      const grupBacaan = new Map();
+      normalized.forEach(q => {
+        const grup = q.bacaan?.grup;
+        if (!grup) return;
+        if (!grupBacaan.has(grup)) grupBacaan.set(grup, []);
+        grupBacaan.get(grup).push(q);
+      });
+      grupBacaan.forEach((anggota, grup) => {
+        if (anggota.length < 2) return; // grup cuma 1 soal, tidak ada pembanding
+        const panjangMax = Math.max(...anggota.map(s => s.bacaan?.teks?.length || 0));
+        anggota.forEach(q => {
+          const panjangIni = q.bacaan?.teks?.length || 0;
+          if (panjangMax > 0 && panjangIni < panjangMax * 0.9) {
+            q.peringatan.push(
+              `Bacaan soal ini (${panjangIni} karakter) lebih pendek dari soal lain di grup bacaan "${grup}" (sampai ${panjangMax} karakter) -- kemungkinan AI tidak menyalin bacaan secara utuh ke soal ini. Bandingkan manual dengan soal segrup.`,
+            );
+          }
+        });
+      });
+
       const warningList = normalized
         .filter(q => !q.valid)
         .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${q.errors.join(' ')}`);
@@ -3738,7 +3777,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
           }}
         >
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#4338ca', marginBottom: '6px' }}>
-            📖 BACAAN / DATA (dipakai untuk soal ini)
+            📖 BACAAN / DATA (dipakai untuk soal ini){q.bacaan.grup ? ` — grup: ${q.bacaan.grup}` : ''}
           </div>
           <RichText text={q.bacaan.teks} gambar={q.bacaan.gambar} mathReady={mathReady} />
         </div>
