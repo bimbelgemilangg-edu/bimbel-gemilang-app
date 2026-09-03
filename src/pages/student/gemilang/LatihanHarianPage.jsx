@@ -20,6 +20,35 @@ import {
   collection, query, where, getDocs, doc, getDoc, setDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { ArrowLeft, CheckCircle2, XCircle, Flame, Sparkles, BookOpen } from 'lucide-react';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
+
+// 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
+// DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
+// LaTeX) DAN $...$ / $$...$$ (gaya dolar). renderMath() yang lama (di
+// StudentQuizView.jsx) cuma kenal gaya dolar -- kalau dipakai apa
+// adanya di sini, soal Kimia (yang pakai \(...\)) bakal tampil mentah
+// tanpa dirender ("berantakan", persis yang dilaporkan). Sekarang
+// regex-nya kenal KEDUA gaya sekaligus.
+const renderMath = (text) => {
+  if (!text) return null;
+  const parts = String(text).split(/(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\))/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+    }
+    if (part.startsWith('$') && part.endsWith('$')) {
+      try { return <InlineMath key={i} math={part.slice(1, -1)} />; } catch (e) { return <span key={i}>{part}</span>; }
+    }
+    if (part.startsWith('\\[') && part.endsWith('\\]')) {
+      try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+    }
+    if (part.startsWith('\\(') && part.endsWith('\\)')) {
+      try { return <InlineMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>;
+  });
+};
 
 // ============================================================
 // ALGORITMA (identik dengan yang sudah diuji terpisah)
@@ -369,7 +398,7 @@ export default function LatihanHarianPage() {
         <div style={{ padding: 18 }}>
           <div style={st.kartuSoal}>
             <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{soalAktif.materi}</div>
-            <div style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.6, marginBottom: 16 }}>{soalAktif.soal || soalAktif.teks_soal}</div>
+            <div style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.6, marginBottom: 16 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
 
             {(soalAktif.opsiJawaban || []).map((opsi, i) => {
               const teksOpsi = typeof opsi === 'string' ? opsi : (opsi?.teks || '');
@@ -395,7 +424,7 @@ export default function LatihanHarianPage() {
                   <span style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${warna}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                     {String.fromCharCode(65 + i)}
                   </span>
-                  {teksOpsi}
+                  {renderMath(teksOpsi)}
                   {sudahDicek && i === indexBenar && <CheckCircle2 size={16} color="#16a34a" style={{ marginLeft: 'auto' }} />}
                   {sudahDicek && dipilih && i !== indexBenar && <XCircle size={16} color="#dc2626" style={{ marginLeft: 'auto' }} />}
                 </button>
@@ -404,7 +433,7 @@ export default function LatihanHarianPage() {
 
             {sudahDicek && soalAktif.pembahasan && (
               <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: '#eff6ff', fontSize: 12.5, color: '#1e3a8a', lineHeight: 1.6 }}>
-                <b>💡 Pembahasan:</b> {soalAktif.pembahasan}
+                <b>💡 Pembahasan:</b> {renderMath(soalAktif.pembahasan)}
               </div>
             )}
           </div>
