@@ -2762,6 +2762,7 @@ export default function ImportHasilScanPage() {
   // lalu cocokkan ke soal yang butuh, daripada scroll cari satu-satu.
   const [showModalGambarMassal, setShowModalGambarMassal] = useState(false);
   const [daftarUploadMassal, setDaftarUploadMassal] = useState([]); // [{id, dataUrl, namaFile, soalIdxTerpilih}]
+  const [cropTargetMassal, setCropTargetMassal] = useState(null); // id item yang sedang di-crop, atau null
   const [parseError, setParseError] = useState('');
   const [warnings, setWarnings] = useState([]);
 
@@ -3021,6 +3022,13 @@ export default function ImportHasilScanPage() {
 
   const hapusDariDaftarMassal = (uploadId) => {
     setDaftarUploadMassal(prev => prev.filter(u => u.id !== uploadId));
+  };
+
+  // 🔥 BARU: hasil crop nimpa dataUrl item yang sama di daftar (belum
+  // ditempel ke soal manapun -- itu baru terjadi pas "Terapkan").
+  const simpanHasilCropMassal = (uploadId, dataUrlBaru) => {
+    setDaftarUploadMassal(prev => prev.map(u => (u.id === uploadId ? { ...u, dataUrl: dataUrlBaru } : u)));
+    setCropTargetMassal(null);
   };
 
   // Tempel semua gambar yang SUDAH dicocokkan (punya soalIdxTerpilih)
@@ -3959,6 +3967,13 @@ export default function ImportHasilScanPage() {
                                     ))}
                                   </select>
                                 </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setCropTargetMassal(u.id)}
+                                  style={{ fontSize: '11px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: 'white', cursor: 'pointer', flexShrink: 0 }}
+                                >
+                                  ✂️ Crop
+                                </button>
                                 <button onClick={() => hapusDariDaftarMassal(u.id)} style={{ fontSize: '11px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
                                   🗑️
                                 </button>
@@ -3976,6 +3991,22 @@ export default function ImportHasilScanPage() {
                           ✓ Terapkan Semua Kecocokan
                         </button>
                       </div>
+
+                      {/* 🔥 BARU: crop dipakai SEBELUM gambar ditempel ke
+                          soal manapun -- pakai komponen ImageCropModal
+                          yang sama dengan upload satuan, jadi perilakunya
+                          konsisten di seluruh halaman ini. */}
+                      {cropTargetMassal && (() => {
+                        const target = daftarUploadMassal.find(u => u.id === cropTargetMassal);
+                        if (!target) return null;
+                        return (
+                          <ImageCropModal
+                            src={target.dataUrl}
+                            onCancel={() => setCropTargetMassal(null)}
+                            onSave={(dataUrlBaru) => simpanHasilCropMassal(cropTargetMassal, dataUrlBaru)}
+                          />
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
