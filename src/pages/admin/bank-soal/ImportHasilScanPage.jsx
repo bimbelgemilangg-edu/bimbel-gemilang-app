@@ -431,6 +431,28 @@ function safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+// 🔥 BARU (BUG NYATA DITEMUKAN): `valid` dan `errors` dihitung SEKALI
+// saat parsing awal (di normalizeSoal) dan disimpan sebagai field
+// statis. Kalau admin upload gambar BELAKANGAN (lewat crop, upload
+// manual satuan, ATAU Upload Gambar Massal), field `gambar` soal itu
+// berubah, tapi `valid`/`errors` TIDAK PERNAH dihitung ulang -- pesan
+// error "gambar tidak ada" yang lama tetap nyangkut walau gambarnya
+// sekarang sudah ada. Ini yang bikin soal tetap kelihatan "belum
+// lengkap/valid" padahal admin sudah benerin. Fungsi ini dipanggil
+// SETIAP KALI field gambar sebuah soal berubah (bukan cuma hitung
+// ulang semuanya dari nol) -- cukup buang pesan error gambar-kosong
+// yang lama kalau sekarang sudah ada gambar, atau pasang lagi kalau
+// gambar dihapus lagi, lalu hitung ulang `valid` dari sisa error.
+const POLA_MENUNJUK_GAMBAR = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i;
+const PESAN_ERROR_GAMBAR_KOSONG = 'Soal ini menunjuk "gambar/grafik/diagram" di teksnya, tapi TIDAK ADA gambar terlampir sama sekali. Upload gambar manual dulu di panel "Kelola Gambar", atau soal ini tidak akan bisa dijawab siswa.';
+
+function perbaruiValidasiSetelahGambarBerubah(q) {
+  const errorsTanpaPesanGambar = safeArray(q.errors).filter(e => e !== PESAN_ERROR_GAMBAR_KOSONG);
+  const masihMenunjukTapiKosong = POLA_MENUNJUK_GAMBAR.test(q.teks_soal || '') && safeArray(q.gambar).length === 0;
+  const errorsBaru = masihMenunjukTapiKosong ? [...errorsTanpaPesanGambar, PESAN_ERROR_GAMBAR_KOSONG] : errorsTanpaPesanGambar;
+  return { ...q, errors: errorsBaru, valid: errorsBaru.length === 0 };
+}
+
 // 🔥 BARU: Firestore TIDAK MENDUKUNG array di dalam array (nested
 // array) sebagai nilai field -- error nyata yang ditemukan: "Function
 // WriteBatch.set() called with invalid data. Nested arrays are not
@@ -3050,7 +3072,7 @@ export default function ImportHasilScanPage() {
           deskripsi: u.namaFile,
           nomor: (safeArray(q.gambar).length) + gi + 1,
         }));
-        return { ...q, gambar: [...safeArray(q.gambar), ...gambarBaru] };
+        return perbaruiValidasiSetelahGambarBerubah({ ...q, gambar: [...safeArray(q.gambar), ...gambarBaru] });
       });
       // 🔥 Sama seperti crop/upload manual per-soal -- gambar baru harus
       // divalidasi (asli/rusak) begitu ditempel, bukan dianggap otomatis OK.
@@ -3103,7 +3125,12 @@ export default function ImportHasilScanPage() {
         if (location === 'soal') {
           const images = [...safeArray(q.gambar)];
           images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
-          return { ...q, gambar: images };
+          // 🔥 BARU: sama seperti Upload Massal -- valid/errors harus
+          // dihitung ulang di sini juga, bukan cuma di jalur massal.
+          // Tanpa ini, soal yang gambarnya diganti/ditambah lewat
+          // crop/upload manual satuan TETAP kelihatan "belum valid"
+          // walau gambarnya sudah benar.
+          return perbaruiValidasiSetelahGambarBerubah({ ...q, gambar: images });
         }
 
         if (location === 'bacaan' && q.bacaan) {
