@@ -37,6 +37,12 @@ import {
   doc,
   writeBatch,
   serverTimestamp,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  updateDoc,
+  increment,
 } from 'firebase/firestore';
 
 import { db, auth } from '../../../firebase';
@@ -2424,6 +2430,7 @@ function buildDoc(q, meta) {
     tingkatKelas: q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal) ? q.kelas_soal : meta.tingkatKelas,
     jenjang: meta.jenjang,
     jenisUjian: meta.jenisUjian || '',
+    sumberSoalId: meta.folderId || null,
     kategori: meta.kategori,
     // 🔥 BERUBAH: dulu tags = meta.tags doang (1 nilai form, sama rata
     // ke semua soal). Sekarang DIGABUNG dengan tags_soal (per soal,
@@ -2583,6 +2590,86 @@ export default function ImportHasilScanPage() {
   const [tags, setTags] = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
   const [sumberFile, setSumberFile] = useState('');
+
+  // 🔥 BARU: FOLDER SUMBER (sumber_soal) -- 1 folder = 1 buku/PDF asal.
+  // Kenapa ini penting: (1) jenjang/kelas TIDAK VALID sebagai pengelompok
+  // utama untuk SNBT/TKA (soalnya lintas kelas/jenjang), lebih masuk
+  // akal dikelompokkan per BUKU SUMBER + bab/materi di dalamnya; (2)
+  // kalau besok admin lanjut scan halaman lain dari PDF YANG SAMA,
+  // tinggal pilih folder yang sudah ada (bukan bikin baru / isi ulang
+  // metadata dari nol) -- soal baru otomatis "menyambung" ke folder
+  // yang sama; (3) metadata (mapel/jenisUjian/jenjang) nempel di
+  // FOLDER, diwariskan ke semua soal di dalamnya -- akar penyebab bug
+  // "Kelas 10 nyangkut" (metadata diketik ulang tiap sesi, gampang lupa
+  // diganti) jadi hilang karena cukup diisi SEKALI saat folder dibuat.
+  const [daftarFolder, setDaftarFolder] = useState([]);
+  const [folderAktif, setFolderAktif] = useState(null); // { id, judul, coverUrl, mataPelajaran, jenisUjian, jenjang }
+  const [modeFolder, setModeFolder] = useState('pilih'); // 'pilih' | 'baru'
+  const [judulFolderBaru, setJudulFolderBaru] = useState('');
+  const [coverFolderBaru, setCoverFolderBaru] = useState('');
+  const [membuatFolder, setMembuatFolder] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'sumber_soal'), orderBy('createdAt', 'desc')));
+        setDaftarFolder(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error('Gagal ambil daftar folder sumber:', e);
+      }
+    })();
+  }, []);
+
+  const pilihFolder = useCallback((folder) => {
+    setFolderAktif(folder);
+    // Metadata IKUT folder -- ini yang mencegah admin lupa ganti/isi
+    // ulang tiap sesi import (akar bug "Kelas 10 nyangkut" kemarin).
+    setMataPelajaran(folder.mataPelajaran || '');
+    setJenisUjian(folder.jenisUjian || '');
+    setJenjang(folder.jenjang || '');
+  }, []);
+
+  const buatFolderBaru = useCallback(async () => {
+    if (!judulFolderBaru.trim()) return alert('Judul folder (nama buku/PDF sumber) wajib diisi.');
+    if (!mataPelajaran) return alert('Isi dulu Mata Pelajaran di bawah -- ini akan disimpan sebagai metadata folder baru.');
+    if (!jenisUjian) return alert('Isi dulu Jenis Ujian di bawah -- ini akan disimpan sebagai metadata folder baru.');
+    if (!jenjang) return alert('Isi dulu Jenjang di bawah -- ini akan disimpan sebagai metadata folder baru.');
+
+    setMembuatFolder(true);
+    try {
+      const payload = {
+        judul: judulFolderBaru.trim(),
+        coverUrl: coverFolderBaru || '',
+        mataPelajaran,
+        jenisUjian,
+        jenjang,
+        jumlahSoal: 0,
+        createdAt: serverTimestamp(),
+        createdBy: 'admin',
+      };
+      const docRef = await addDoc(collection(db, 'sumber_soal'), payload);
+      const folderBaru = { id: docRef.id, ...payload };
+      setDaftarFolder(prev => [folderBaru, ...prev]);
+      setFolderAktif(folderBaru);
+      setModeFolder('pilih');
+      setJudulFolderBaru('');
+      setCoverFolderBaru('');
+    } catch (e) {
+      console.error('Gagal membuat folder:', e);
+      alert('Gagal membuat folder: ' + e.message);
+    }
+    setMembuatFolder(false);
+  }, [judulFolderBaru, coverFolderBaru, mataPelajaran, jenisUjian, jenjang]);
+
+  const handleCoverFolderUpload = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return alert('Cover harus berupa gambar.');
+    const reader = new FileReader();
+    reader.onload = () => setCoverFolderBaru(reader.result);
+    reader.readAsDataURL(file);
+  };
 
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState(null);
@@ -2857,6 +2944,15 @@ export default function ImportHasilScanPage() {
       return;
     }
 
+    // 🔥 BARU: GERBANG WAJIB -- Folder Sumber wajib dipilih/dibuat.
+    // Tanpa ini, soal tidak punya "rumah" (buku/PDF asal) yang jelas,
+    // dan tidak bisa dikelompokkan/dijelajahi per folder+bab nanti di
+    // Terbitkan Kuis (keranjang lintas-folder).
+    if (!folderAktif) {
+      alert('Pilih atau buat Folder Sumber (buku/PDF) dulu di panel "📁 Folder Sumber" sebelum menyimpan.');
+      return;
+    }
+
     // 🔥 BARU: GERBANG WAJIB -- tolak simpan kalau masih ada gambar
     // yang terdeteksi rusak/palsu (hasil validasi Image() beneran, lihat
     // runValidasiGambar) atau masih dalam proses pengecekan. Ini yang
@@ -2913,6 +3009,7 @@ export default function ImportHasilScanPage() {
       tingkatKelas,
       jenjang,
       jenisUjian,
+      folderId: folderAktif?.id || null,
       kategori,
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       tingkatKesulitan,
@@ -3064,6 +3161,18 @@ export default function ImportHasilScanPage() {
 
       addLog(`🎉 Selesai! ${saved} soal berhasil masuk Bank Soal.`);
 
+      // 🔥 BARU: catat berapa soal masuk ke folder ini -- dipakai
+      // TerbitkanKuisPage buat tampilkan "X soal" per folder tanpa perlu
+      // query bank_soal setiap kali buka daftar folder.
+      if (folderAktif?.id && saved > 0) {
+        try {
+          await updateDoc(doc(db, 'sumber_soal', folderAktif.id), { jumlahSoal: increment(saved) });
+          setFolderAktif(prev => prev ? { ...prev, jumlahSoal: (prev.jumlahSoal || 0) + saved } : prev);
+        } catch (e) {
+          console.error('Gagal update jumlahSoal folder:', e);
+        }
+      }
+
       setSaveResult({
         success: true,
         count: saved,
@@ -3076,7 +3185,7 @@ export default function ImportHasilScanPage() {
     } finally {
       setSaving(false);
     }
-  }, [soalList, mataPelajaran, tingkatKelas, jenjang, jenisUjian, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus]);
+  }, [soalList, mataPelajaran, tingkatKelas, jenjang, jenisUjian, folderAktif, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus]);
 
   // ==========================================================
   // RENDER
@@ -3467,16 +3576,103 @@ export default function ImportHasilScanPage() {
                   )}
                 </div>
 
+                {/* 🔥 BARU: FOLDER SUMBER (sumber_soal) -- pilih buku/PDF yang
+                    sedang di-scan, atau buat baru. Metadata (mapel/jenis
+                    ujian/jenjang) nempel di folder, bukan diketik ulang
+                    tiap sesi import. */}
+                <div style={{ borderTop: '1px solid #e5e7eb', borderColor: '#f3f4f6', paddingTop: '20px', marginBottom: '20px' }}>
+                  <h3 style={{ fontWeight: '700', color: '#374151', marginBottom: '4px' }}>📁 Folder Sumber (Buku/PDF)</h3>
+                  <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '12px' }}>
+                    Satu folder = satu buku/PDF sumber soal. Pilih folder yang sama kalau ini lanjutan scan PDF yang sudah pernah diimport sebelumnya.
+                  </p>
+
+                  {folderAktif ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '10px', border: '1px solid #a5f3fc', backgroundColor: '#ecfeff' }}>
+                      {folderAktif.coverUrl ? (
+                        <img src={folderAktif.coverUrl} alt="cover" style={{ width: '40px', height: '52px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #67e8f9' }} />
+                      ) : (
+                        <div style={{ width: '40px', height: '52px', borderRadius: '4px', backgroundColor: '#a5f3fc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>📘</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '700', color: '#0e7490', fontSize: '14px' }}>{folderAktif.judul}</div>
+                        <div style={{ fontSize: '11px', color: '#0891b2' }}>{folderAktif.mataPelajaran} · {folderAktif.jenisUjian} · {folderAktif.jenjang} · {folderAktif.jumlahSoal || 0} soal tersimpan</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setFolderAktif(null); }}
+                        style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: 'white', cursor: 'pointer' }}
+                      >
+                        Ganti Folder
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ border: '1px dashed #d1d5db', borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                        <button type="button" onClick={() => setModeFolder('pilih')} style={{ ...(modeFolder === 'pilih' ? tabAktifStyle : tabPasifStyle) }}>Pilih Folder Ada</button>
+                        <button type="button" onClick={() => setModeFolder('baru')} style={{ ...(modeFolder === 'baru' ? tabAktifStyle : tabPasifStyle) }}>+ Folder Baru</button>
+                      </div>
+
+                      {modeFolder === 'pilih' ? (
+                        daftarFolder.length === 0 ? (
+                          <div style={{ fontSize: '13px', color: '#9ca3af' }}>Belum ada folder. Klik "+ Folder Baru" untuk membuat yang pertama.</div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
+                            {daftarFolder.map(f => (
+                              <div
+                                key={f.id}
+                                onClick={() => pilihFolder(f)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '8px', border: '1px solid #e5e7eb', cursor: 'pointer', backgroundColor: 'white' }}
+                              >
+                                {f.coverUrl ? (
+                                  <img src={f.coverUrl} alt="" style={{ width: '28px', height: '36px', objectFit: 'cover', borderRadius: '3px' }} />
+                                ) : <span style={{ fontSize: '16px' }}>📘</span>}
+                                <div>
+                                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{f.judul}</div>
+                                  <div style={{ fontSize: '11px', color: '#9ca3af' }}>{f.mataPelajaran} · {f.jenisUjian} · {f.jenjang} · {f.jumlahSoal || 0} soal</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      ) : (
+                        <div>
+                          <input
+                            placeholder="Judul buku/PDF sumber (mis. E-Book TKA Bahasa Indonesia SMP/MTs)"
+                            value={judulFolderBaru}
+                            onChange={e => setJudulFolderBaru(e.target.value)}
+                            className="input"
+                            style={{ width: '100%', marginBottom: '8px' }}
+                          />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                            {coverFolderBaru && <img src={coverFolderBaru} alt="" style={{ width: '32px', height: '42px', objectFit: 'cover', borderRadius: '4px' }} />}
+                            <label style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: 'white', cursor: 'pointer' }}>
+                              📤 Upload Cover (opsional)
+                              <input type="file" accept="image/*" onChange={handleCoverFolderUpload} style={{ display: 'none' }} />
+                            </label>
+                          </div>
+                          <p style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '10px' }}>
+                            Isi dulu Mata Pelajaran, Jenis Ujian, dan Jenjang di panel "Metadata Soal" di bawah -- nilai itu akan disimpan sebagai metadata folder baru ini.
+                          </p>
+                          <button type="button" onClick={buatFolderBaru} disabled={membuatFolder} style={btnBiruKecil}>
+                            {membuatFolder ? 'Membuat...' : '✓ Buat & Pakai Folder Ini'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* METADATA */}
                 <div style={{ borderTop: '1px solid #e5e7eb', borderColor: '#f3f4f6', paddingTop: '20px' }}>
                   <h3 style={{ fontWeight: '700', color: '#374151', marginBottom: '12px' }}>Metadata Soal</h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', gap: '12px' }}>
                     <Field label="Mata Pelajaran *">
-                      <select value={mataPelajaran} onChange={e => setMataPelajaran(e.target.value)} className="input" style={{ color: mataPelajaran ? undefined : '#9ca3af' }}>
+                      <select value={mataPelajaran} onChange={e => setMataPelajaran(e.target.value)} disabled={!!folderAktif} className="input" style={{ color: mataPelajaran ? undefined : '#9ca3af' }}>
                         <option value="">-- Pilih mata pelajaran --</option>
                         {DAFTAR_MAPEL.map(mapel => <option key={mapel} value={mapel}>{mapel}</option>)}
                       </select>
+                      {folderAktif && <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Terkunci oleh folder aktif. Klik "Ganti Folder" untuk mengubah.</div>}
                     </Field>
 
                     <Field label="Jenis Ujian *">
@@ -3484,7 +3680,7 @@ export default function ImportHasilScanPage() {
                           biasa" -- tanpa ini, soal TKA dan soal reguler
                           untuk mapel+jenjang yang sama tidak bisa
                           dibedakan sama sekali di database. */}
-                      <select value={jenisUjian} onChange={e => setJenisUjian(e.target.value)} className="input" style={{ color: jenisUjian ? undefined : '#9ca3af' }}>
+                      <select value={jenisUjian} onChange={e => setJenisUjian(e.target.value)} disabled={!!folderAktif} className="input" style={{ color: jenisUjian ? undefined : '#9ca3af' }}>
                         <option value="">-- Pilih jenis ujian --</option>
                         <option value="TKA">TKA (Tes Kemampuan Akademik)</option>
                         <option value="SNBT/UTBK">SNBT/UTBK</option>
@@ -3494,7 +3690,7 @@ export default function ImportHasilScanPage() {
                     </Field>
 
                     <Field label="Jenjang *">
-                      <select value={jenjang} onChange={e => setJenjang(e.target.value)} className="input" style={{ color: jenjang ? undefined : '#9ca3af' }}>
+                      <select value={jenjang} onChange={e => setJenjang(e.target.value)} disabled={!!folderAktif} className="input" style={{ color: jenjang ? undefined : '#9ca3af' }}>
                         <option value="">-- Pilih jenjang --</option>
                         {DAFTAR_JENJANG.map(item => <option key={item} value={item}>{item}</option>)}
                       </select>
@@ -3693,6 +3889,10 @@ function Field({ label, children }) {
     </div>
   );
 }
+
+const tabAktifStyle = { fontSize: '12px', padding: '6px 14px', borderRadius: '6px', border: '1px solid #06b6d4', backgroundColor: '#ecfeff', color: '#0e7490', fontWeight: '700', cursor: 'pointer' };
+const tabPasifStyle = { fontSize: '12px', padding: '6px 14px', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: 'white', color: '#6b7280', cursor: 'pointer' };
+const btnBiruKecil = { fontSize: '13px', padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#06b6d4', color: 'white', fontWeight: '700', cursor: 'pointer' };
 
 // ============================================================
 // QUESTION PREVIEW
