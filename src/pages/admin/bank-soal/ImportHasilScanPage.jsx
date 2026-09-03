@@ -3217,6 +3217,71 @@ export default function ImportHasilScanPage() {
         });
       });
 
+      // 🔥 BARU: deteksi lintas-soal -- GAMBAR PERSIS SAMA dipakai ulang
+      // di banyak soal yang beda konteks (mis. jangka sorong, mikrometer,
+      // dan diagram vektor semuanya "punya" file gambar yang byte-nya
+      // 100% identik). Ini TIDAK MUNGKIN terjadi secara wajar dari hasil
+      // scan PDF asli -- setiap soal harusnya punya gambar/screenshot
+      // sendiri-sendiri sesuai halaman aslinya masing-masing. Kalau
+      // ketemu identik persis di ≥2 soal berbeda, itu tanda kuat AI
+      // (terutama model non-vision seperti DeepSeek versi teks) TIDAK
+      // benar-benar membaca gambar sumber, dan hanya menaruh satu
+      // placeholder/contoh generik berulang-ulang sambil mengarang
+      // deskripsi teksnya sendiri -- persis pelanggaran instruksi
+      // "jangan pernah mengarang gambar yang tidak benar-benar ada" di
+      // master prompt. Ini HARD ERROR (bukan cuma peringatan) karena
+      // gambar yang salah total (mis. jangka sorong dipakai sebagai
+      // "diagram vektor") akan langsung menyesatkan siswa kalau lolos
+      // ke Bank Soal tanpa dicek dulu.
+      //
+      // Sama seperti grupBacaan di atas, ini TIDAK BISA dideteksi di
+      // dalam normalizeSoal() sendiri (yang cuma lihat 1 soal), makanya
+      // dijalankan di sini sebagai langkah tambahan lintas-soal setelah
+      // semua soal selesai dinormalisasi.
+      const AMBANG_MIN_PANJANG_DATA_URL = 200; // hindari false-positive utk ikon kecil yang wajar dipakai ulang (mis. logo)
+      const gambarPerHash = new Map(); // dataUrl -> [{ q, lokasi }]
+
+      const daftarkanGambar = (q, list, labelLokasi) => {
+        safeArray(list).forEach(img => {
+          const dataUrl = img?.dataUrl;
+          if (!dataUrl || dataUrl.length < AMBANG_MIN_PANJANG_DATA_URL) return;
+          if (!gambarPerHash.has(dataUrl)) gambarPerHash.set(dataUrl, []);
+          gambarPerHash.get(dataUrl).push({ q, lokasi: labelLokasi });
+        });
+      };
+
+      normalized.forEach(q => {
+        daftarkanGambar(q, q.gambar, 'gambar utama soal');
+        daftarkanGambar(q, q.bacaan?.gambar, 'gambar bacaan');
+        safeArray(q.opsi_jawaban).forEach((opt, i) => {
+          daftarkanGambar(q, opt?.gambar, `gambar opsi ${String.fromCharCode(65 + i)}`);
+        });
+      });
+
+      gambarPerHash.forEach(pemakai => {
+        // Hitung soal BERBEDA yang memakai gambar identik ini (bukan
+        // cuma dalam 1 soal yang sama, itu wajar). Pakai _idx sebagai
+        // penanda soal unik.
+        const soalBerbedaUnik = new Set(pemakai.map(p => p.q._idx));
+        if (soalBerbedaUnik.size < 2) return; // cuma dipakai di 1 soal, tidak mencurigakan
+
+        const daftarNomor = [...soalBerbedaUnik]
+          .map(idx => normalized.find(n => n._idx === idx))
+          .map(n => `Soal ${n.nomor}${n.paket ? ` (Paket ${n.paket})` : ''}`)
+          .join(', ');
+
+        pemakai.forEach(({ q, lokasi }) => {
+          const pesan = `Gambar pada ${lokasi} soal ini PERSIS SAMA (identik byte-per-byte) dengan gambar di ${soalBerbedaUnik.size} soal berbeda: ${daftarNomor}. Ini TIDAK WAJAR untuk gambar hasil scan PDF asli -- kemungkinan besar AI tidak benar-benar membaca gambar sumber dan menaruh placeholder generik berulang sambil mengarang deskripsinya. WAJIB diverifikasi manual terhadap PDF asli sebelum dipublikasikan; jangan percaya gambar ini sampai dicek.`;
+          if (!q.errors.includes(pesan)) q.errors.push(pesan);
+        });
+      });
+      // Setelah menambah error baru dari deteksi gambar duplikat di atas,
+      // status `valid` tiap soal harus dihitung ulang -- kalau tidak,
+      // soal dengan gambar bermasalah masih akan lolos ditandai "✓ Valid".
+      normalized.forEach(q => {
+        q.valid = q.errors.length === 0;
+      });
+
       const warningList = normalized
         .filter(q => !q.valid)
         .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${q.errors.join(' ')}`);
