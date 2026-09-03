@@ -107,6 +107,7 @@ import StudentSmartReport from './pages/student/raport/StudentSmartReport';
 import SidebarSiswa from './components/SidebarSiswa';
 
 import StudentDashboard from './pages/student/StudentDashboard';
+import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
 import StudentGrades from './pages/student/StudentGrades';
@@ -346,6 +347,10 @@ function App() {
         <Route path="/siswa/modul/:id" element={<SiswaRoute><SiswaLayout><ModulSiswaWrapper /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/kuis/:id" element={<SiswaRoute><SiswaLayout><KuisSiswaWrapper /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/survei/:id" element={<SiswaRoute><SiswaLayout><StudentSurveyView /></SiswaLayout></SiswaRoute>} />
+
+        {/* 🔥 BARU: Latihan Harian -- bagian dari sistem gamifikasi baru,
+            SENGAJA tanpa SiswaLayout (gaya app mobile, bukan sidebar). */}
+        <Route path="/siswa/latihan-harian" element={<SiswaRoute><LatihanHarianPage /></SiswaRoute>} />
 
         {/* REDIRECT */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
