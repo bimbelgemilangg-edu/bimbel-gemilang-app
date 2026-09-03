@@ -1,6 +1,26 @@
 // src/pages/admin/bank-soal/ImportHasilScanPage.jsx
 // ============================================================
 // IMPORT HASIL SCAN AI -> BANK SOAL GEMILANG (v2)
+//
+// PERUBAHAN UTAMA DARI v1:
+// - Opsi jawaban sekarang bisa berupa OBJEK kaya:
+//     { teks, gambar: [...], tabel: [{kolom, isi}, ...] }
+//   (bukan cuma string). String tetap didukung penuh (backward compatible).
+// - Mendukung soal & PILIHAN yang jawabannya berupa GAMBAR/GRAFIK
+//   (mis. opsi berupa 5 grafik) maupun TABEL per-opsi (mis. tabel
+//   perbandingan 2 kolom seperti soal model atom).
+// - Upload 1 file JSON GABUNGAN berisi banyak paket/tryout sekaligus.
+//   Sistem otomatis MEM-FLATTEN & MENGELOMPOKKAN per paket (field
+//   `paket` di tiap soal + tampilan preview dikelompokkan per paket).
+//   Format yang didukung untuk pengelompokan (semua opsional, pilih salah satu):
+//     { "tryout": [ { "paket": 1, "soal": [...] }, { "paket": 2, "soal": [...] } ] }
+//     { "paket_list": [ { "nomor_paket": 1, "questions": [...] } ] }
+//     { "packages": [ { "id": 1, "items": [...] } ] }
+//   Atau tetap array datar biasa: [ {...}, {...} ] (tanpa pengelompokan).
+// - Gambar per-opsi ikut diupload ke Supabase saat simpan (bukan cuma
+//   gambar soal utama).
+// - Field meta_materi / meta_capaian_pembelajaran (opsional, dari hasil
+//   scan AI) ikut disimpan sebagai `materi` & `capaianPembelajaran`.
 // ============================================================
 
 import React, {
@@ -52,10 +72,21 @@ const TIPE_LABELS = {
 
 // Kunci-kunci yang dikenali sebagai "grup paket" di level JSON teratas.
 const GROUP_KEYS = ['tryout', 'paket_list', 'packages', 'paketSoal', 'paket_soal'];
+
+// Kunci-kunci di dalam satu grup yang dianggap sebagai daftar soalnya.
 const GROUP_ITEM_KEYS = ['soal', 'soals', 'questions', 'items', 'data'];
 
 // ============================================================
-// PROMPT AI GENERATOR
+// PROMPT AI GENERATOR — SUMBER KEBENARAN TUNGGAL
+// ------------------------------------------------------------
+// Prompt di bawah ini SENGAJA dibangun langsung dari skema yang
+// benar-benar dipakai oleh normalizeSoal / normalizeOptionRich /
+// normalizeImage / normalizeTabel / normalizeAnswerKey di atas.
+// Tujuannya: AI manapun (Claude, ChatGPT, Gemini, dll) yang diberi
+// prompt ini akan menghasilkan JSON yang mengikuti STRUKTUR SISTEM,
+// bukan mengikuti bentuk asli PDF/soal sumber. Kalau skema di
+// normalizeSoal() dkk berubah di kemudian hari, prompt ini WAJIB
+// diperbarui juga supaya tetap sinkron (satu sumber kebenaran).
 // ============================================================
 
 function buildMasterPrompt(meta = {}) {
@@ -279,7 +310,7 @@ Keluarkan HANYA satu blok kode JSON valid (tanpa teks pembuka/penutup di luar bl
 }
 
 // ============================================================
-// MASTER HTML PROMPT
+// MASTER HTML PROMPT — format output untuk soal kompleks
 // ============================================================
 
 function buildMasterHTMLPrompt(meta = {}) {
@@ -291,6 +322,10 @@ function buildMasterHTMLPrompt(meta = {}) {
     catatanTambahan = '',
   } = meta;
 
+  // Contoh di bagian akhir prompt HARUS ikut nilai form yang sebenarnya --
+  // kalau kelas form "Semua" (mis. scan UTBK/TKA lintas kelas), atribut
+  // data-kelas di contoh DIHILANGKAN, supaya AI tidak meniru pola "isi
+  // asal angka" untuk kasus yang aslinya harus dikosongkan.
   const contohKelasAttr = (tingkatKelas && tingkatKelas !== 'Semua')
     ? ` data-kelas="${tingkatKelas}"`
     : '';
@@ -343,6 +378,7 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
 17. Nama atribut \`data-field\` dan \`data-gemilang-question\` HARUS ditulis PERSIS seperti contoh, huruf kecil semua, tanpa spasi tambahan. Jangan mengganti "teks_soal" jadi "teksSoal"/"soal"/nama lain.
 18. Satu <article> = satu soal. Jangan menaruh dua nomor soal dalam satu <article>, dan jangan memecah satu soal jadi dua <article>.
 19. Jangan menambahkan komentar, penjelasan, atau teks apa pun di luar blok HTML.
+20. 🔥 WAJIB — BACAAN YANG DIPAKAI BERSAMA BEBERAPA SOAL (mis. "Perhatikan teks berikut untuk soal nomor 1-2!"): setiap soal itu adalah DOKUMEN MANDIRI yang nantinya bisa dipakai SENDIRI-SENDIRI tanpa soal lain di sebelahnya. Karena itu, bacaan/teks/puisi/tabel bersama itu HARUS DISALIN UTUH ke field \`data-field="bacaan"\` di SETIAP soal yang terkait — BUKAN cuma ditulis sekali di soal pertama lalu soal berikutnya dibiarkan kosong tanpa bacaan. Contoh SALAH: soal 1 punya bacaan lengkap, soal 2 cuma "Ciri Komodo yang tepat sesuai teks tersebut adalah..." tanpa bacaan sama sekali -- ini bikin soal 2 TIDAK BISA DIJAWAB kalau dipakai sendirian. Contoh BENAR: soal 1 DAN soal 2 sama-sama punya \`<div data-field="bacaan">...teks Taman Nasional Komodo lengkap...</div>\`, isinya identik persis di keduanya. \`data-field="teks_soal"\` cukup berisi PERTANYAANNYA SAJA (tanpa bacaan), \`data-field="bacaan"\` berisi bacaannya (boleh sama persis berulang di beberapa soal, itu memang disengaja).
 
 CONTOH (perhatikan: angka/nilai di bawah ini cuma ilustrasi STRUKTUR tag. Materi, kesulitan, dan kelas yang kamu isi harus hasil analisismu sendiri terhadap SETIAP soal asli, bukan disalin dari contoh ini):
 <!doctype html>
@@ -412,7 +448,7 @@ function tryParseJSON(text) {
 }
 
 // ============================================================
-// EXTRACT & FLATTEN
+// EXTRACT & FLATTEN (mendukung 1 file berisi banyak paket)
 // ============================================================
 
 function findArrayByKeys(obj, keys) {
@@ -465,14 +501,17 @@ function extractQuestionArray(parsed) {
     throw new Error('Format JSON tidak dikenali. JSON harus berupa array soal atau object yang berisi array soal.');
   }
 
+  // 1) Coba deteksi struktur ber-grup (banyak paket dalam 1 file).
   const grouped = extractGroupedQuestions(parsed);
   if (grouped) return grouped;
 
+  // 2) Struktur datar biasa: { questions: [...] } dst.
   const candidates = ['questions', 'question', 'soal', 'soals', 'items', 'data', 'results', 'bankSoal', 'bank_soal'];
   for (const key of candidates) {
     if (Array.isArray(parsed[key])) return parsed[key];
   }
 
+  // 3) Object of objects yang tiap valuenya terlihat seperti soal.
   const objectValues = Object.values(parsed);
   if (objectValues.length > 0 && objectValues.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
     const looksLikeQuestions = objectValues.some(item => item.soal || item.teks_soal || item.question || item.pertanyaan);
@@ -566,12 +605,13 @@ function normalizeImageArray(source) {
 }
 
 // ============================================================
-// NORMALIZE TABLE
+// NORMALIZE TABLE (untuk opsi berbentuk tabel, mis. perbandingan 2 kolom)
 // ============================================================
 
 function normalizeTabel(source) {
   if (!source) return [];
 
+  // Sudah array of {kolom, isi} atau array of {label, value} dsb.
   if (Array.isArray(source)) {
     return source.map(row => {
       if (row && typeof row === 'object') {
@@ -584,6 +624,7 @@ function normalizeTabel(source) {
     });
   }
 
+  // Object bebas: { Rutherford: "...", Bohr: "..." } -> jadi baris per key.
   if (typeof source === 'object') {
     return Object.entries(source).map(([kolom, isi]) => ({
       kolom: safeString(kolom),
@@ -595,7 +636,7 @@ function normalizeTabel(source) {
 }
 
 // ============================================================
-// NORMALIZE OPTION (RICH)
+// NORMALIZE OPTION (RICH: teks + gambar + tabel)
 // ============================================================
 
 function normalizeOptionRich(option) {
@@ -646,30 +687,6 @@ function getCorrectAnswerIndexes(opsi, kunci) {
 }
 
 // ============================================================
-// 🔥 FUNGSI BARU: EXTRACT BACAAN DARI TEKS SOAL
-// ============================================================
-
-function extractBacaanDariTeksSoal(teks) {
-  const pola = /(perhatikan\s+(teks|bacaan|kutipan|paragraf|puisi|cerita|data|tabel|grafik)\s+(berikut|di atas|ini))/i;
-  const match = teks.match(pola);
-  if (!match) return { bacaan: '', pertanyaan: teks };
-
-  const start = match.index;
-  let end = teks.indexOf('\n\n', start);
-  if (end === -1) end = teks.indexOf('.', start + 50);
-  if (end === -1) end = teks.length;
-
-  const bacaan = teks.slice(0, end + 1).trim();
-  const sisa = teks.slice(end + 1).trim();
-
-  if (sisa && !/[?？]/.test(sisa) && !/soal|pertanyaan/i.test(sisa)) {
-    return { bacaan: teks, pertanyaan: '' };
-  }
-
-  return { bacaan, pertanyaan: sisa };
-}
-
-// ============================================================
 // NORMALIZE SOAL
 // ============================================================
 
@@ -700,42 +717,41 @@ function normalizeSoal(q, idx) {
   }
 
   const nomor = Number(q.nomor ?? q.no ?? q.number) || idx + 1;
+
   const paket = q.__paket ?? q.paket ?? null;
   const paketMeta = q.__paketMeta ?? q.paketMeta ?? null;
+
   const tipe = normalizeTipe(q.tipe || q.type || q.jenis || q.jenis_soal);
 
   const teksSoal = safeString(
     q.teks_soal || q.soal || q.question || q.pertanyaan || '',
   );
 
-  // BACAAN / STIMULUS
+  // ----------------------------------------------------------
+  // BACAAN / STIMULUS (mis. teks panjang, data, atau ilustrasi yang
+  // dipakai bersama oleh sekelompok soal). SENGAJA disalin utuh ke
+  // tiap soal (bukan direferensikan via id) supaya tiap soal tetap
+  // jadi satu kesatuan lengkap saat ditarik terpisah / dicampur
+  // dengan soal lain, tanpa bergantung pada folder/objek lain.
+  // ----------------------------------------------------------
+
   const bacaanSource = q.bacaan ?? q.stimulus ?? q.wacana ?? null;
   let bacaan = null;
-  let teksSoalFinal = teksSoal;
 
-  // 🔥 Auto-pindah bacaan dari teks_soal ke field bacaan jika diperlukan
-  if (!bacaanSource && teksSoal.length > 150 && /perhatikan\s+(teks|bacaan|kutipan|paragraf|puisi|cerita|data|tabel|grafik)/i.test(teksSoal)) {
-    const hasil = extractBacaanDariTeksSoal(teksSoal);
-    if (hasil.bacaan) {
-      bacaan = { teks: hasil.bacaan, gambar: [] };
-      teksSoalFinal = hasil.pertanyaan || teksSoal;
+  if (typeof bacaanSource === 'string' && bacaanSource.trim()) {
+    bacaan = { teks: bacaanSource.trim(), gambar: [] };
+  } else if (bacaanSource && typeof bacaanSource === 'object') {
+    const teksBacaan = safeString(bacaanSource.teks || bacaanSource.text || '');
+    const gambarBacaan = normalizeImageArray(bacaanSource.gambar ?? bacaanSource.images ?? []);
+    if (teksBacaan || gambarBacaan.length > 0) {
+      bacaan = { teks: teksBacaan, gambar: gambarBacaan };
     }
   }
 
-  // Jika masih ada bacaan dari source (JSON/HTML), pakai itu
-  if (!bacaan && bacaanSource) {
-    if (typeof bacaanSource === 'string' && bacaanSource.trim()) {
-      bacaan = { teks: bacaanSource.trim(), gambar: [] };
-    } else if (bacaanSource && typeof bacaanSource === 'object') {
-      const teksBacaan = safeString(bacaanSource.teks || bacaanSource.text || '');
-      const gambarBacaan = normalizeImageArray(bacaanSource.gambar ?? bacaanSource.images ?? []);
-      if (teksBacaan || gambarBacaan.length > 0) {
-        bacaan = { teks: teksBacaan, gambar: gambarBacaan };
-      }
-    }
-  }
+  // ----------------------------------------------------------
+  // OPTIONS (rich: teks + gambar + tabel per opsi)
+  // ----------------------------------------------------------
 
-  // OPTIONS
   let opsiSource = q.opsi_jawaban ?? q.opsiJawaban ?? q.options ?? q.pilihan ?? q.choices ?? [];
   let opsiJawaban = [];
 
@@ -748,7 +764,10 @@ function normalizeSoal(q, idx) {
       .filter(opt => !optionIsEmpty(opt));
   }
 
+  // ----------------------------------------------------------
   // ANSWER KEY
+  // ----------------------------------------------------------
+
   const rawKey =
     q.kunci_jawaban ?? q.kunciJawaban ?? q.kunci ?? q.jawaban_benar ?? q.jawabanBenar ??
     q.correctAnswer ?? q.correct_answer ?? q.answer ?? '';
@@ -756,7 +775,10 @@ function normalizeSoal(q, idx) {
   const kunciJawaban = normalizeAnswerKey(rawKey);
   const opsiBenar = getCorrectAnswerIndexes(opsiJawaban, kunciJawaban);
 
-  // PERNYATAAN
+  // ----------------------------------------------------------
+  // PERNYATAAN (benar/salah kompleks lama, tetap didukung)
+  // ----------------------------------------------------------
+
   const pernyataan = safeArray(q.pernyataan || q.statements)
     .map(item => {
       if (item && typeof item === 'object') {
@@ -788,11 +810,17 @@ function normalizeSoal(q, idx) {
     }))
     .filter(pair => pair.kiri || pair.kanan);
 
-  // IMAGES
+  // ----------------------------------------------------------
+  // IMAGES (gambar utama soal)
+  // ----------------------------------------------------------
+
   const imageSource = q.gambar ?? q.images ?? q.image ?? q.gambar_soal ?? [];
   const gambar = normalizeImageArray(imageSource);
 
+  // ----------------------------------------------------------
   // EXPLICIT CORRECT FLAGS
+  // ----------------------------------------------------------
+
   const explicitCorrect = safeArray(q.opsi_benar || q.opsiBenar || q.correctOptions);
   let finalOpsiBenar = opsiBenar;
 
@@ -806,11 +834,16 @@ function normalizeSoal(q, idx) {
     });
   }
 
+  // ----------------------------------------------------------
   // VALIDATION
+  // ----------------------------------------------------------
+
   const errors = [];
+  // 🔥 BARU: peringatan yang TIDAK memblokir valid (beda dari errors) --
+  // lihat penjelasan lengkap di Sinyal 4 bawah.
   const peringatanLunak = [];
 
-  if (!teksSoalFinal.trim()) errors.push('Teks soal kosong.');
+  if (!teksSoal.trim()) errors.push('Teks soal kosong.');
 
   if (['pg_sederhana', 'pg_kompleks'].includes(tipe) && opsiJawaban.length < 2) {
     errors.push('Pilihan jawaban kurang dari 2.');
@@ -828,13 +861,30 @@ function normalizeSoal(q, idx) {
     errors.push('Jawaban model atau kunci belum ditemukan.');
   }
 
-  // Deteksi teks_soal tercampur/rusak
-  if (/\.(pdf|docx?|xlsx?|pptx?)\b/i.test(teksSoalFinal)) {
+  // ----------------------------------------------------------
+  // DETEKSI teks_soal TERCAMPUR/RUSAK
+  // ------------------------------------------------------------
+  // Ditemukan kasus nyata: AI menggabungkan teks_soal + pembahasan +
+  // bahkan NAMA FILE SUMBER jadi satu string panjang, dengan sebagian
+  // LaTeX ke-render (di dalam $...$) dan salinan mentahnya lagi di luar
+  // delimiter (muncul sebagai "\frac12\pi" apa adanya di layar), plus
+  // kalimat pembahasan yang kehilangan semua spasi antar kata. Sebelum
+  // ini, soal seperti ini tetap lolos sebagai "✓ Valid" karena tidak ada
+  // satu pun pengecekan yang menyentuh ISI teks_soal, cuma mengecek ada/
+  // tidaknya field. Empat sinyal di bawah menangkap pola kerusakan itu.
+  // ----------------------------------------------------------
+
+  // Sinyal 1: nama file sumber ikut nyangkut ke teks_soal
+  if (/\.(pdf|docx?|xlsx?|pptx?)\b/i.test(teksSoal)) {
     errors.push('teks_soal mengandung nama file sumber (mis. ".pdf") -- kemungkinan tercampur dengan metadata, cek manual.');
   }
 
+  // Sinyal 2: perintah LaTeX mentah (\frac, \pi, dst) yang berada DI LUAR
+  // delimiter $...$/$$...$$/\(...\)/\[...\]. LaTeX yang benar SELALU ada
+  // di dalam salah satu delimiter itu (lihat aturan #4 prompt) -- kalau
+  // ketemu di luar situ, hampir pasti duplikat mentah yang gagal ke-render.
   {
-    const tanpaMathBlock = teksSoalFinal
+    const tanpaMathBlock = teksSoal
       .replace(/\$\$[\s\S]*?\$\$/g, ' ')
       .replace(/\\\([\s\S]*?\\\)/g, ' ')
       .replace(/\\\[[\s\S]*?\\\]/g, ' ')
@@ -844,22 +894,59 @@ function normalizeSoal(q, idx) {
     }
   }
 
-  if (/[A-Za-z]{25,}/.test(teksSoalFinal)) {
+  // Sinyal 3: rentetan huruf tanpa spasi sepanjang >=25 karakter (mis.
+  // "Gunakancos2x=2cos^2x-1.Diperoleh...") -- tidak wajar untuk kalimat
+  // soal biasa, biasanya terjadi kalau teks pembahasan ikut tergabung
+  // tanpa spasi pemisah antar kata/kalimat.
+  if (/[A-Za-z]{25,}/.test(teksSoal)) {
     errors.push('Ada rentetan huruf tanpa spasi yang sangat panjang -- kemungkinan teks tergabung tanpa pemisah, cek manual.');
   }
 
-  const adaTandaBacaanLiterasi = /sumber\s*:/i.test(teksSoalFinal)
-    || /perhatikan\s+(teks|bacaan|kutipan|paragraf|puisi)\s+(berikut|di atas|ini)/i.test(teksSoalFinal)
-    || (teksSoalFinal.match(/\n\s*\n/g) || []).length >= 2;
+  // Sinyal 4: panjang teks_soal jauh di luar wajar untuk satu butir soal
+  // pilihan ganda biasa BIASA. TAPI (bug nyata ditemukan): soal literasi
+  // (mis. TKA Bahasa Indonesia) SERING memang menulis bacaan panjang
+  // langsung di teks_soal alih-alih field "bacaan" terpisah -- itu WAJAR,
+  // bukan kerusakan. Sebelumnya sinyal ini langsung masuk `errors` yang
+  // otomatis bikin soal INVALID (lihat `valid: errors.length===0` di
+  // bawah) walau komentar aslinya bilang "sinyal tambahan, bukan penentu
+  // tunggal" -- niat itu TIDAK PERNAH benar-benar diterapkan di kode.
+  // Sekarang: kalau ada tanda-tanda kuat ini memang bacaan literasi asli
+  // (kutipan "Sumber:", instruksi "Perhatikan teks berikut", atau
+  // berparagraf jelas), turunkan jadi PERINGATAN LUNAK (tetap kelihatan
+  // ke admin, TIDAK memblokir penyimpanan). Baru kalau tidak ada
+  // tanda-tanda itu sama sekali, tetap dianggap error asli (lebih
+  // mencurigakan, kemungkinan besar memang tercampur field lain).
+  const adaTandaBacaanLiterasi = /sumber\s*:/i.test(teksSoal)
+    || /perhatikan\s+(teks|bacaan|kutipan|paragraf|puisi)\s+(berikut|di atas|ini)/i.test(teksSoal)
+    || (teksSoal.match(/\n\s*\n/g) || []).length >= 2;
 
-  if (teksSoalFinal.length > 700 && !bacaan) {
+  if (teksSoal.length > 700 && !bacaan) {
     if (adaTandaBacaanLiterasi) {
       peringatanLunak.push(
-        `teks_soal panjang (${teksSoalFinal.length} karakter) -- kemungkinan bacaan literasi ditulis langsung di sini (bukan field bacaan terpisah). Ini WAJAR untuk soal Bahasa/literasi, TIDAK menghalangi penyimpanan. Kalau mau lebih rapi, bisa dipisah manual ke field bacaan nanti.`,
+        `teks_soal panjang (${teksSoal.length} karakter) -- kemungkinan bacaan literasi ditulis langsung di sini (bukan field bacaan terpisah). Ini WAJAR untuk soal Bahasa/literasi, TIDAK menghalangi penyimpanan. Kalau mau lebih rapi, bisa dipisah manual ke field bacaan nanti.`,
       );
     } else {
-      errors.push(`teks_soal sangat panjang (${teksSoalFinal.length} karakter) untuk soal tanpa bacaan -- kemungkinan tercampur field lain, cek manual.`);
+      errors.push(`teks_soal sangat panjang (${teksSoal.length} karakter) untuk soal tanpa bacaan -- kemungkinan tercampur field lain, cek manual.`);
     }
+  }
+
+  // Sinyal 5: soal "YATIM" -- menunjuk ke bacaan/teks yang TIDAK ADA di
+  // soal ini sama sekali. Ditemukan kasus nyata: soal literasi yang
+  // berbagi 1 bacaan untuk beberapa nomor (mis. "untuk soal nomor 1-2"),
+  // tapi AI cuma nulis bacaannya SEKALI di soal pertama -- soal
+  // berikutnya cuma berisi pertanyaan pendek yang menunjuk "teks
+  // tersebut"/"bacaan di atas" TANPA bacaan itu sendiri. Kalau soal itu
+  // nanti dipakai SENDIRIAN (mis. lewat Terbitkan Kuis, tanpa soal
+  // pasangannya), siswa lihat pertanyaan yang TIDAK BISA DIJAWAB karena
+  // konteksnya hilang. Ini HARD ERROR (bukan cuma peringatan) karena
+  // soal seperti ini genuinely tidak lengkap, beda dari Sinyal 4 di atas
+  // yang soal-nya justru sudah lengkap (cuma strukturnya kurang rapi).
+  const menunjukTeksLain = /\b(teks|bacaan|paragraf|puisi|artikel|kutipan)\s+(tersebut|di atas|di depan|itu)\b/i.test(teksSoal)
+    || /\bberdasarkan\s+(teks|bacaan|paragraf)\s+\d/i.test(teksSoal);
+  if (menunjukTeksLain && !bacaan && teksSoal.length < 400) {
+    errors.push(
+      'Soal ini menunjuk "teks/bacaan tersebut" tapi TIDAK punya bacaan sama sekali (field bacaan kosong, teks_soal pendek) -- kemungkinan bacaan cuma ditulis di soal SEBELUMNYA dan tidak disalin ke soal ini. Kalau soal ini nanti dipakai sendirian, siswa tidak akan bisa menjawab. Cek soal-soal di sekitarnya untuk bacaan yang seharusnya disalin ke sini.',
+    );
   }
 
   return {
@@ -868,7 +955,7 @@ function normalizeSoal(q, idx) {
     paketMeta,
     tipe,
     bacaan,
-    teks_soal: teksSoalFinal,
+    teks_soal: teksSoal,
     opsi_jawaban: opsiJawaban,
     opsi_benar: finalOpsiBenar,
     pernyataan,
@@ -888,12 +975,18 @@ function normalizeSoal(q, idx) {
     tabel_soal: q.tabel_soal || q.tabelSoal || null,
     referensi_sumber: q.referensi_sumber || q.referensiSumber || q.source_reference || null,
     materi: safeString(q.materi || q.meta_materi || ''),
+    // 🔥 BARU: tags per soal -- terima dari HTML Master (field
+    // tags_soal, array hasil split koma) ATAU dari format JSON/CSV
+    // (field "tags" langsung, bisa string koma atau array).
     tags_soal: (() => {
       const mentah = q.tags_soal ?? q.tags ?? [];
       const arr = Array.isArray(mentah) ? mentah : safeString(mentah).split(',');
       return arr.map(t => safeString(t).trim()).filter(Boolean);
     })(),
     capaian_pembelajaran: safeString(q.capaian_pembelajaran || q.meta_capaian_pembelajaran || ''),
+    // Analisis per-soal (bukan diseragamkan per-file). Kalau AI tidak
+    // mengisi/tidak yakin, dikosongkan di sini -- buildDoc() yang akan
+    // memutuskan fallback ke pilihan form admin (lihat komentar di buildDoc).
     tingkat_kesulitan_soal: (() => {
       const rawKesulitan = safeString(q.tingkat_kesulitan || q.tingkatKesulitan || q.kesulitan || q.difficulty || '').toLowerCase().trim();
       return DAFTAR_KESULITAN.includes(rawKesulitan) ? rawKesulitan : '';
@@ -901,6 +994,9 @@ function normalizeSoal(q, idx) {
     kelas_soal: safeString(q.kelas || q.tingkat_kelas || q.tingkatKelas || q.grade || '').trim(),
     valid: errors.length === 0,
     errors,
+    // 🔥 BARU: peringatan yang TIDAK menghalangi penyimpanan -- beda
+    // dari `errors` yang bikin soal invalid. Ditampilkan ke admin biar
+    // tetap transparan, tapi soal ini tetap bisa masuk Bank Soal.
     peringatan: peringatanLunak,
   };
 }
@@ -921,7 +1017,7 @@ function parseJSON(raw) {
 }
 
 // ============================================================
-// CSV PARSER
+// CSV PARSER (tetap mendukung opsi teks sederhana)
 // ============================================================
 
 function parseCSV(raw) {
@@ -993,6 +1089,10 @@ function parseCSV(raw) {
 
 // ============================================================
 // HTML MASTER PARSER
+// ------------------------------------------------------------
+// Format master untuk soal kompleks: teks + LaTeX + gambar + tabel.
+// Gambar dapat ditanam langsung sebagai data URL sehingga tetap ikut
+// terbawa dalam satu file HTML dan selanjutnya bisa diupload ke storage.
 // ============================================================
 
 function htmlNodeText(node) {
@@ -1066,7 +1166,22 @@ function parseHTMLPairs(container) {
 }
 
 // ============================================================
-// PERBAIKI TANDA < DAN > LIAR DARI LATEX
+// PERBAIKI TANDA < DAN > LIAR DARI LATEX SEBELUM DI-PARSE BROWSER
+// ------------------------------------------------------------
+// TEMUAN NYATA (soal pertidaksamaan/interval, mis. "$\{x|-1<x<4\}$"):
+// tanda "<" dari LaTeX (bukan tag HTML) bikin DOMParser SALAH SANGKA
+// itu awal tag baru -- sisa teks setelah "<" sampai ">" pertama yang
+// ketemu TERTELAN DIAM-DIAM tanpa error. Terbukti lewat tes nyata:
+// <li>$\{x|-1<x<4\}$</li> -> textContent cuma jadi "$\{x|-1", sisanya
+// hilang. Ini genuinely soal < atau > mana yang BENERAN tag HTML dan
+// mana yang cuma simbol matematika -- browser sendiri tidak bisa
+// membedakan tanpa bantuan.
+//
+// Solusi: sebelum diserahkan ke DOMParser, pindai teks mentahnya
+// sendiri -- "<" HANYA dibiarkan apa adanya kalau diikuti nama tag
+// yang memang kita kenal (article, div, li, dst). Selain itu (termasuk
+// "<x", "<4", "<-1") di-escape jadi "&lt;" supaya DOMParser membacanya
+// sebagai teks biasa, bukan awal tag.
 // ============================================================
 
 const TAG_HTML_DIKENAL = [
@@ -1087,6 +1202,7 @@ function escapeTandaKurungLiar(rawHtml) {
 
     if (ch !== '<') { out += ch; i++; continue; }
 
+    // Komentar HTML <!-- ... --> -- biarkan apa adanya
     if (teks.startsWith('<!--', i)) {
       const akhir = teks.indexOf('-->', i + 4);
       const berhenti = akhir === -1 ? n : akhir + 3;
@@ -1095,11 +1211,14 @@ function escapeTandaKurungLiar(rawHtml) {
       continue;
     }
 
+    // Cek apakah ini AWALAN tag yang kita kenal: < atau </ + nama tag
     const cocok = /^<\/?([a-zA-Z!][a-zA-Z0-9]*)/.exec(teks.slice(i));
     const namaTag = cocok ? cocok[1].toLowerCase() : null;
     const tagDikenal = namaTag && TAG_HTML_DIKENAL.includes(namaTag);
 
     if (tagDikenal) {
+      // Ini tag HTML asli -- salin utuh sampai '>' penutup tag,
+      // hormati atribut dalam tanda kutip yang mungkin memuat '>'
       let j = i;
       let dalamKutip = null;
       while (j < n) {
@@ -1119,6 +1238,8 @@ function escapeTandaKurungLiar(rawHtml) {
       continue;
     }
 
+    // BUKAN tag dikenal -- ini "<" liar dari LaTeX (pertidaksamaan,
+    // interval, dsb) -- escape supaya tidak dianggap awal tag.
     out += '&lt;';
     i++;
   }
@@ -1143,6 +1264,14 @@ function parseHTMLMaster(raw) {
     return null;
   };
 
+  // Beberapa AI (mis. saat soal dipisah tabel/gambar di tengah kalimat)
+  // menulis LEBIH DARI SATU <div data-field="teks_soal"> dalam satu
+  // <article> -- satu sebelum tabel/gambar, satu lagi sesudahnya berisi
+  // kalimat pertanyaan yang sebenarnya. getField() di atas cuma ambil
+  // yang PERTAMA lewat querySelector, jadi bagian pertanyaan setelah
+  // tabel/gambar HILANG TOTAL tanpa pesan error apa pun. Fungsi ini
+  // mengambil SEMUA elemen dengan nama field itu (bisa lintas alias
+  // nama), lalu digabung urut sesuai posisi aslinya di dokumen.
   const getAllFieldsText = (node, ...names) => {
     const selector = names.map(name => `[data-field="${name}"]`).join(', ');
     const hits = Array.from(node.querySelectorAll(selector));
@@ -1159,6 +1288,12 @@ function parseHTMLMaster(raw) {
     const explanationNode = getField(node, 'pembahasan', 'penjelasan', 'explanation');
     const keyNode = getField(node, 'kunci_jawaban', 'kunci', 'answer', 'correct-answer');
     const materialNode = getField(node, 'materi', 'topic', 'topik');
+    // 🔥 BARU: tags per soal (opsional). Dulu Tags cuma bisa diisi lewat
+    // form admin (1 nilai, diterapkan SAMA ke SEMUA soal dalam 1 batch
+    // import) -- tidak konsisten dengan materi/kesulitan/kelas yang
+    // sudah bisa beda-beda per soal lewat AI. Sekarang AI boleh isi
+    // <div data-field="tags">hots, aljabar</div> per soal; nanti di
+    // buildDoc digabung (bukan menimpa) dengan tags form admin.
     const tagsNode = getField(node, 'tags', 'tag', 'label');
     const capaianNode = getField(node, 'capaian_pembelajaran', 'capaian', 'learning-outcome');
     const sourceNode = getField(node, 'referensi_sumber', 'sumber', 'source');
@@ -1166,16 +1301,6 @@ function parseHTMLMaster(raw) {
     const tfNode = getField(node, 'pernyataan', 'true-false', 'benar-salah');
     const categoryNode = getField(node, 'tabel_benar_salah', 'category-table');
     const matchingNode = getField(node, 'pasangan', 'matching', 'pairs');
-
-    let bacaan = bacaanNode ? { teks: htmlNodeText(bacaanNode), gambar: parseHTMLImages(bacaanNode) } : null;
-
-    // 🔥 Jika tidak ada field bacaan, cek apakah teks soal panjang dan mengandung kata kunci
-    if (!bacaan && teksSoalGabungan.length > 200 && /perhatikan\s+(teks|bacaan|kutipan|paragraf|puisi)/i.test(teksSoalGabungan)) {
-      const hasil = extractBacaanDariTeksSoal(teksSoalGabungan);
-      if (hasil.bacaan) {
-        bacaan = { teks: hasil.bacaan, gambar: [] };
-      }
-    }
 
     const optionNodes = optionsNode
       ? Array.from(optionsNode.querySelectorAll(':scope > li, :scope > [data-option]'))
@@ -1192,10 +1317,14 @@ function parseHTMLMaster(raw) {
       };
     }).filter(opt => !optionIsEmpty(opt));
 
+    const bacaan = bacaanNode ? { teks: htmlNodeText(bacaanNode), gambar: parseHTMLImages(bacaanNode) } : null;
     const keyRaw = node.getAttribute('data-kunci') || keyNode?.getAttribute?.('data-value') || keyNode?.textContent || '';
     const tableSoal = tableQuestionNode ? parseHTMLTableElement(tableQuestionNode.querySelector('table') || tableQuestionNode) : null;
     const paketRaw = node.getAttribute('data-paket');
 
+    // Analisis per-soal (bukan per-file): kesulitan WAJIB diisi AI per soal,
+    // kelas OPSIONAL -- kalau AI tidak yakin, dibiarkan kosong di sini dan
+    // buildDoc() akan otomatis pakai nilai dari form admin sebagai fallback.
     const kesulitanRaw = safeString(node.getAttribute('data-kesulitan') || node.getAttribute('data-tingkat-kesulitan')).toLowerCase().trim();
     const kelasRaw = safeString(node.getAttribute('data-kelas')).trim();
 
@@ -1225,6 +1354,10 @@ function parseHTMLMaster(raw) {
 
 // ============================================================
 // LATEX (.tex) PARSER v2
+// ------------------------------------------------------------
+// Parser struktural berbasis scanner karakter. Bagian yang memakai
+// argumen {...} TIDAK diparse dengan regex non-greedy, karena LaTeX
+// dapat memiliki kurung kurawal bersarang.
 // ============================================================
 
 function isEscapedTexChar(text, index) {
@@ -1355,6 +1488,8 @@ function removeRanges(text, ranges) {
     .reduce((result, range) => result.slice(0, range.start) + result.slice(range.end), text);
 }
 
+// Helper pemecah item pada satu environment. `source` dipisahkan dari env
+// agar scanner tetap mengetahui batas absolut dan depth environment.
 function splitTexEnvironmentItems(source, env) {
   if (!env) return [];
   const items = [];
@@ -1491,6 +1626,7 @@ function extractTexMetadata(content) {
     ranges: [materi, capaian, sumber].filter(Boolean),
   };
 
+  // Mendukung makro ringkas \meta{Materi}{Capaian}{CP resmi}.
   if (customMeta?.requiredArgs?.length >= 2) {
     result.materi = result.materi || safeString(customMeta.requiredArgs[0]).trim();
     result.capaian_pembelajaran = result.capaian_pembelajaran || safeString(customMeta.requiredArgs[1]).trim();
@@ -1631,7 +1767,13 @@ function getImageSrc(gambar) {
 }
 
 // ============================================================
-// VALIDASI GAMBAR BENERAN
+// VALIDASI GAMBAR BENERAN (bukan cuma cek "ada isinya")
+// ------------------------------------------------------------
+// Ditemukan kasus nyata: AI (DeepSeek) kadang menempelkan base64 yang
+// KELIHATAN valid (signature PNG benar, panjang wajar) tapi datanya di
+// tengah rusak/palsu -- gagal dimuat browser sama sekali. Fungsi di
+// bawah ini benar-benar MENCOBA MEMUAT gambarnya lewat Image(), bukan
+// cuma mengecek field-nya terisi atau tidak.
 // ============================================================
 
 function kunciGambar(soalIdx, location, imageIndex) {
@@ -1639,6 +1781,8 @@ function kunciGambar(soalIdx, location, imageIndex) {
   return `${soalIdx}|${lokasiStr}|${imageIndex}`;
 }
 
+// Kumpulkan SEMUA referensi gambar dari SELURUH daftar soal (bukan cuma
+// 1 soal) -- dipakai untuk validasi massal sekali jalan setelah parse.
 function kumpulkanSemuaGambar(soalList) {
   const hasil = [];
   soalList.forEach((q) => {
@@ -1659,6 +1803,10 @@ function kumpulkanSemuaGambar(soalList) {
   return hasil;
 }
 
+// Coba muat 1 gambar lewat elemen Image() asli -- ini satu-satunya cara
+// yang benar-benar diandalkan untuk tahu apakah data base64/URL-nya
+// bisa ditampilkan browser atau tidak (bukan sekadar tebak-tebakan dari
+// panjang string atau format header).
 function cobaMuatGambar(src, timeoutMs = 6000) {
   return new Promise((resolve) => {
     if (!src) { resolve(false); return; }
@@ -1789,7 +1937,7 @@ function renderTextWithMath(text, mathReady) {
 }
 
 // ============================================================
-// IMAGE BLOCK
+// IMAGE BLOCK (dipakai di RichText & opsi)
 // ============================================================
 
 function imageFigureHtml(image) {
@@ -1840,6 +1988,7 @@ function RichText({ text, gambar = [], mathReady }) {
       }
     }
 
+    // Jika ada gambar tapi tidak ada placeholder sama sekali, tampilkan di akhir.
     if (imageIndex === 0 && images.some(image => getImageSrc(image))) {
       result += '<div style="margin-top:10px;">';
       images.forEach(image => {
@@ -1860,7 +2009,7 @@ function RichText({ text, gambar = [], mathReady }) {
 }
 
 // ============================================================
-// OPTION TABLE
+// OPTION TABLE (untuk opsi berbentuk tabel, mis. perbandingan 2 kolom)
 // ============================================================
 
 function OptionTable({ rows }) {
@@ -1921,18 +2070,22 @@ function optionLetter(index) {
 }
 
 // ============================================================
-// IMAGE CROP MODAL
+// IMAGE CROP MODAL (crop manual pakai canvas, tanpa library tambahan)
 // ============================================================
 
 function ImageCropModal({ src, onCancel, onSave }) {
   const [imgEl, setImgEl] = useState(null);
   const [displaySize, setDisplaySize] = useState({ w: 0, h: 0 });
-  const [rect, setRect] = useState(null);
+  const [rect, setRect] = useState(null); // {x,y,w,h} dalam koordinat tampilan
   const [dragStart, setDragStart] = useState(null);
   const containerRef = React.useRef(null);
 
   useEffect(() => {
     const img = new Image();
+    // Skip crossOrigin untuk data: URI (base64) -- tidak perlu dan
+    // pada beberapa kasus base64 hasil AI yang datanya korup, pesan
+    // error CORS jadi membingungkan padahal masalah sebenarnya adalah
+    // datanya sendiri rusak/palsu, bukan soal CORS sama sekali.
     if (!src.startsWith('data:')) img.crossOrigin = 'anonymous';
     img.onload = () => {
       const maxW = 640;
@@ -1941,6 +2094,10 @@ function ImageCropModal({ src, onCancel, onSave }) {
       setImgEl(img);
     };
     img.onerror = () => {
+      // 🔥 BARU: pesan diperjelas -- kasus paling sering ternyata BUKAN
+      // CORS, tapi data base64 dari AI yang kelihatan valid (signature
+      // benar) tapi isinya korup/palsu di tengah, jadi browser menolak
+      // memuatnya sama sekali. Sarankan langsung ke solusi: upload manual.
       alert(
         'Gambar ini gagal dimuat browser -- kemungkinan besar data gambar dari hasil scan AI rusak/palsu ' +
         '(bukan gambar asli), bukan soal CORS. Gunakan tombol "Upload Gambar Manual" di bawah untuk ' +
@@ -2005,10 +2162,17 @@ function ImageCropModal({ src, onCancel, onSave }) {
         padding: '20px', boxSizing: 'border-box',
       }}
     >
+      {/* Kartu modal: tinggi DIBATASI ke viewport (maxHeight 90vh) supaya
+          gambar hasil crop (mis. screenshot 1 halaman PDF yang tinggi)
+          tidak bikin modal lebih panjang dari layar. Dibagi 2 bagian
+          pakai flex column: (1) area scroll berisi gambar, (2) footer
+          tombol yang TIDAK ikut scroll -- selalu kelihatan di bawah,
+          seberapa pun tinggi gambarnya. */}
       <div style={{
         backgroundColor: '#ffffff', borderRadius: '16px', maxWidth: '90vw',
         maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
+        {/* Area scroll: judul + instruksi + kotak crop gambar */}
         <div style={{ padding: '20px 20px 0 20px', overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
           <div style={{ fontWeight: '700', marginBottom: '4px', color: '#1f2937' }}>✂️ Crop Gambar</div>
           <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
@@ -2043,6 +2207,8 @@ function ImageCropModal({ src, onCancel, onSave }) {
           )}
         </div>
 
+        {/* Footer tombol -- di LUAR area scroll, jadi selalu nempel di
+            bawah kartu modal, tidak peduli seberapa tinggi gambarnya. */}
         <div style={{
           display: 'flex', justifyContent: 'flex-end', gap: '8px',
           padding: '14px 20px', borderTop: '1px solid #e5e7eb',
@@ -2069,9 +2235,13 @@ function ImageCropModal({ src, onCancel, onSave }) {
 }
 
 // ============================================================
-// IMAGE WITH CROP
+// IMAGE WITH CROP (thumbnail + tombol crop, dipakai di panel "Kelola Gambar")
 // ============================================================
 
+// 🔥 BARU: upload gambar manual dari komputer admin (bukan dari AI).
+// Dipakai sebagai jalan keluar utama waktu AI (DeepSeek dkk) gagal
+// menyertakan gambar asli -- baik yang kosong (dummy 1x1) maupun yang
+// base64-nya kelihatan valid tapi ternyata korup/palsu.
 function TombolUploadManual({ onUploaded, label = '📤 Upload Manual' }) {
   const inputRef = React.useRef(null);
   const [busy, setBusy] = useState(false);
@@ -2114,6 +2284,7 @@ function ImageWithCrop({ image, onCropped, status }) {
   const [cropping, setCropping] = useState(false);
   const src = getImageSrc(image);
 
+  // status: 'checking' | 'ok' | 'broken' | undefined (belum divalidasi)
   const rusak = status === 'broken';
 
   return (
@@ -2236,9 +2407,19 @@ function buildDoc(q, meta) {
     materi: q.materi || '',
     capaianPembelajaran: q.capaian_pembelajaran || '',
     mataPelajaran: meta.mataPelajaran,
+    // Kelas & kesulitan: pakai hasil analisis AI PER SOAL kalau ada dan
+    // valid; kalau AI tidak mengisi/tidak yakin (dikosongkan di
+    // normalizeSoal), baru pakai nilai form admin sebagai fallback. Ini
+    // supaya kelas/kesulitan tidak sekadar diseragamkan 1 nilai untuk
+    // semua soal dalam satu file yang diupload.
     tingkatKelas: q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal) ? q.kelas_soal : meta.tingkatKelas,
     jenjang: meta.jenjang,
     kategori: meta.kategori,
+    // 🔥 BERUBAH: dulu tags = meta.tags doang (1 nilai form, sama rata
+    // ke semua soal). Sekarang DIGABUNG dengan tags_soal (per soal,
+    // opsional dari AI) -- union, bukan override, karena tags sifatnya
+    // boleh banyak & saling melengkapi (mis. tags form "TKA, 2026" +
+    // tags soal "hots, aljabar" -> soal itu punya keempat-empatnya).
     tags: [...new Set([...(meta.tags || []), ...(q.tags_soal || [])])],
     tingkatKesulitan: q.tingkat_kesulitan_soal || meta.tingkatKesulitan,
     tingkatKesulitanSumber: q.tingkat_kesulitan_soal ? 'ai_per_soal' : 'form_admin',
@@ -2304,7 +2485,7 @@ function downloadJSON(soalList) {
 }
 
 // ============================================================
-// DOWNLOAD HTML MASTER
+// DOWNLOAD HTML MASTER — backup portable dengan gambar embedded
 // ============================================================
 
 function downloadHTMLMaster(soalList) {
@@ -2363,13 +2544,21 @@ export default function ImportHasilScanPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const [format, setFormat] = useState('html');
+  const [format, setFormat] = useState('html'); // default HTML Master -- lihat catatan di bawah
   const [rawInput, setRawInput] = useState('');
   const [sumberAI, setSumberAI] = useState('Gemini Canvas');
 
   const [soalList, setSoalList] = useState([]);
   const [parseError, setParseError] = useState('');
   const [warnings, setWarnings] = useState([]);
+
+  // 🔥 BARU: status validasi gambar -- key unik per gambar (lihat
+  // buatKunciGambar()), value: 'checking' | 'ok' | 'broken'. Diisi
+  // otomatis lewat validasiSemuaGambar() setiap kali soalList berubah
+  // (habis parse, habis crop, habis upload manual). INI YANG MENJAWAB
+  // masalah "gambar dari AI kelihatan ada tapi ternyata rusak/palsu" --
+  // sekarang dicek beneran bisa dimuat browser atau tidak, bukan cuma
+  // dicek "ada isinya atau kosong".
   const [imageStatus, setImageStatus] = useState({});
 
   const [mataPelajaran, setMataPelajaran] = useState('Matematika');
@@ -2384,6 +2573,7 @@ export default function ImportHasilScanPage() {
   const [saveResult, setSaveResult] = useState(null);
   const [saveLog, setSaveLog] = useState([]);
 
+  // -------- Prompt AI khusus (generate prompt sinkron dengan skema sistem) --------
   const [showPromptPanel, setShowPromptPanel] = useState(false);
   const [promptMode, setPromptMode] = useState('html');
   const [catatanPrompt, setCatatanPrompt] = useState('');
@@ -2413,6 +2603,10 @@ export default function ImportHasilScanPage() {
     }
   }, [generatedPrompt]);
 
+  // ----------------------------------------------------------
+  // STATS
+  // ----------------------------------------------------------
+
   const statistik = useMemo(() => {
     const total = soalList.length;
     const valid = soalList.filter(q => q.valid).length;
@@ -2431,6 +2625,8 @@ export default function ImportHasilScanPage() {
     return { total, valid, invalid, denganGambar, denganPembahasan, denganKunci, jumlahPaket: paketSet.size };
   }, [soalList]);
 
+  // Soal dikelompokkan per paket untuk ditampilkan di preview.
+  // Jika tidak ada info paket sama sekali, semua masuk grup "null" (tampil polos, tanpa header grup).
   const groupedByPaket = useMemo(() => {
     const map = new Map();
     soalList.forEach(q => {
@@ -2443,7 +2639,18 @@ export default function ImportHasilScanPage() {
 
   const adaPengelompokan = groupedByPaket.length > 1 || (groupedByPaket.length === 1 && groupedByPaket[0].paket !== null);
 
-  // VALIDASI GAMBAR
+  // ----------------------------------------------------------
+  // CROP GAMBAR — update dataUrl gambar tertentu di soalList (identitas via _idx)
+  // location: 'soal' | 'bacaan' | { opsi: optionIndex }
+  // ----------------------------------------------------------
+
+  // 🔥 BARU: validasi SEMUA gambar di seluruh daftar soal dengan
+  // benar-benar mencoba memuatnya lewat Image() -- bukan cuma cek field
+  // terisi atau tidak. Dipanggil otomatis setelah parse, dan setelah
+  // admin crop/upload manual gambar mana pun (supaya status ✅/❌ selalu
+  // sinkron dengan kondisi terbaru). Didefinisikan SEBELUM
+  // handleCropImage karena handleCropImage memakainya di dependency
+  // array useCallback -- kalau dibalik urutannya akan error TDZ.
   const runValidasiGambar = useCallback(async (list) => {
     const semuaGambar = kumpulkanSemuaGambar(list).filter(g => g.src);
     if (semuaGambar.length === 0) { setImageStatus({}); return; }
@@ -2493,12 +2700,18 @@ export default function ImportHasilScanPage() {
 
         return q;
       });
+      // 🔥 BARU: validasi ulang gambar yang baru saja diganti (crop
+      // ATAU upload manual) -- supaya status ✅/❌ langsung update begitu
+      // admin selesai, tidak perlu tunggu parse ulang.
       runValidasiGambar(updated);
       return updated;
     });
   }, [runValidasiGambar]);
 
-  // PARSE
+  // ----------------------------------------------------------
+  // PARSE (dipakai bareng oleh tombol Parse & oleh auto-parse setelah upload file)
+  // ----------------------------------------------------------
+
   const runParse = useCallback((content, formatOverride) => {
     setParseError('');
     setWarnings([]);
@@ -2530,7 +2743,7 @@ export default function ImportHasilScanPage() {
 
       setWarnings(warningList);
       setSoalList(normalized);
-      runValidasiGambar(normalized);
+      runValidasiGambar(normalized); // fire-and-forget, hasil masuk lewat setImageStatus
     } catch (error) {
       console.error('Parse error:', error);
       setParseError(error?.message || 'Gagal membaca data.');
@@ -2541,7 +2754,11 @@ export default function ImportHasilScanPage() {
     runParse(rawInput, format);
   }, [rawInput, format, runParse]);
 
-  // FILE HANDLER
+  // ----------------------------------------------------------
+  // FILE HANDLER — satu-satunya jalur upload utama.
+  // Begitu file dipilih, otomatis langsung di-parse (tidak perlu klik tombol lagi).
+  // ----------------------------------------------------------
+
   const handleFile = useCallback(event => {
     try {
       const file = event.target.files?.[0];
@@ -2572,10 +2789,19 @@ export default function ImportHasilScanPage() {
     }
   }, [runParse]);
 
+  // ----------------------------------------------------------
   // SAVE
+  // ----------------------------------------------------------
+
   const handleSave = useCallback(async () => {
     if (!soalList.length) return;
 
+    // 🔥 BARU: GERBANG WAJIB -- tolak simpan kalau masih ada gambar
+    // yang terdeteksi rusak/palsu (hasil validasi Image() beneran, lihat
+    // runValidasiGambar) atau masih dalam proses pengecekan. Ini yang
+    // memastikan soal dengan gambar bohongan dari AI (base64 kelihatan
+    // valid tapi datanya korup) TIDAK BISA lolos ke Bank Soal begitu
+    // saja -- admin wajib upload gambar asli manual dulu.
     const cekKunciSoal = (q) => [
       ...safeArray(q.gambar).map((_, i) => kunciGambar(q._idx, 'soal', i)),
       ...(q.bacaan ? safeArray(q.bacaan.gambar).map((_, i) => kunciGambar(q._idx, 'bacaan', i)) : []),
@@ -2632,6 +2858,7 @@ export default function ImportHasilScanPage() {
       sumberAI,
     };
 
+    // Clone dalam (soal + gambar soal + gambar tiap opsi).
     const soalProcessed = validSoal.map(q => ({
       ...q,
       gambar: safeArray(q.gambar).map(image => ({ ...image })),
@@ -2642,7 +2869,10 @@ export default function ImportHasilScanPage() {
       })),
     }));
 
-    // Upload images
+    // ------------------------------------------------------
+    // KUMPULKAN SEMUA GAMBAR BASE64 (gambar soal + gambar tiap opsi)
+    // ------------------------------------------------------
+
     const toUpload = [];
 
     soalProcessed.forEach((question, qi) => {
@@ -2746,7 +2976,10 @@ export default function ImportHasilScanPage() {
       }
     }
 
-    // Firestore
+    // ------------------------------------------------------
+    // FIRESTORE
+    // ------------------------------------------------------
+
     try {
       addLog(`📝 Menyimpan ${soalProcessed.length} soal valid ke Firestore...`);
 
@@ -2783,7 +3016,10 @@ export default function ImportHasilScanPage() {
     }
   }, [soalList, mataPelajaran, tingkatKelas, jenjang, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus]);
 
+  // ==========================================================
   // RENDER
+  // ==========================================================
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
@@ -3382,6 +3618,11 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
   const q = question;
   const correctIndexes = safeArray(q.opsi_benar);
 
+  // 🔥 BERUBAH: dulu di-filter cuma yang SUDAH punya src (jadi kalau
+  // AI sama sekali tidak menyertakan gambar, admin tidak punya cara
+  // menambahkannya manual). Sekarang SEMUA entri gambar ditampilkan
+  // apa adanya -- termasuk yang kosong/rusak -- supaya slot "Upload
+  // Gambar Manual" selalu kelihatan dan bisa diisi admin.
   const semuaGambar = [
     ...safeArray(q.gambar).map((img, i) => ({ img, location: 'soal', imageIndex: i, label: `Gambar soal #${i + 1}` })),
     ...(q.bacaan ? safeArray(q.bacaan.gambar).map((img, i) => ({ img, location: 'bacaan', imageIndex: i, label: `Gambar bacaan #${i + 1}` })) : []),
@@ -3390,6 +3631,8 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
     ),
   ];
 
+  // Ringkasan status gambar soal ini -- dipakai buat badge peringatan
+  // di header kartu soal.
   const statusPerGambar = semuaGambar.map(item => imageStatus[kunciGambar(q._idx, item.location, item.imageIndex)]);
   const jumlahRusak = statusPerGambar.filter(s => s === 'broken').length;
   const jumlahDicek = statusPerGambar.filter(s => s === 'checking').length;
@@ -3514,7 +3757,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
         </div>
       )}
 
-      {/* OPTIONS */}
+      {/* OPTIONS (teks / gambar / tabel per opsi) */}
       {q.opsi_jawaban?.length > 0 && (
         <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {q.opsi_jawaban.map((option, optionIndex) => {
@@ -3571,7 +3814,11 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
         </div>
       )}
 
-      {/* PERNYATAAN BENAR/SALAH */}
+      {/* PERNYATAAN BENAR/SALAH -- didesain menyerupai lembar jawaban CBT resmi:
+          bernomor, kolom Benar/Salah eksplisit dengan tanda centang di kolom
+          yang benar, warna netral (bukan warna-warni), tanpa animasi. Dipakai
+          bersama untuk tipe "benar_salah" (field pernyataan) maupun
+          "pg_kategori" (field tabel_benar_salah) -- bentuknya sama. */}
       {(q.tabel_benar_salah?.length > 0 || q.pernyataan?.length > 0) && (() => {
         const baris = q.tabel_benar_salah?.length ? q.tabel_benar_salah : q.pernyataan;
         return (
@@ -3667,7 +3914,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
         <div style={{ marginTop: '12px', fontSize: '12px', color: '#b45309', fontWeight: '600' }}>⚠️ Kunci jawaban BELUM terverifikasi — cek ulang sebelum dipublikasi.</div>
       )}
 
-      {/* CATATAN ADMIN */}
+      {/* CATATAN ADMIN — hanya tampil di panel review ini, TIDAK disimpan sebagai bagian pembahasan yang dibaca siswa */}
       {q.catatan_admin && (
         <div style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid #fde68a', backgroundColor: '#fffbeb', padding: '12px 14px' }}>
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#92400e', marginBottom: '4px' }}>
@@ -3677,7 +3924,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
         </div>
       )}
 
-      {/* KELOLA GAMBAR */}
+      {/* PANEL KELOLA GAMBAR: crop / upload manual / lihat status validasi */}
       {semuaGambar.length > 0 && onCropImage && (
         <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px dashed #d1d5db' }}>
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', marginBottom: '8px' }}>
