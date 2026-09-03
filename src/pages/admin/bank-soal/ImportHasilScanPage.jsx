@@ -835,6 +835,39 @@ function normalizeSoal(q, idx) {
     })
     .filter(Boolean);
 
+  // 🔥 BARU (bug nyata ditemukan): kadang tabel Benar/Salah di dokumen
+  // sumber itu LEMBAR KERJA KOSONG (kolom checkbox Benar/Salah memang
+  // belum dicentang sama sekali di PDF asli -- itu format soal yang
+  // wajar, bukan kerusakan). Tapi AI biasanya TETAP menghitung kunci
+  // jawabannya sendiri dan menuliskannya terpisah di kunci_jawaban
+  // sebagai gabungan (mis. "BENAR-BENAR-SALAH"). Kalau per-pernyataan
+  // jawabannya kosong TAPI ada kunci gabungan begini dengan jumlah token
+  // PERSIS SAMA dengan jumlah pernyataan, pulihkan jawaban tiap
+  // pernyataan dari situ -- daripada dibiarkan kosong semua padahal
+  // kuncinya sebenarnya sudah ada.
+  function pulihkanJawabanDariKunciGabungan(daftarPernyataan, kunciMentah) {
+    if (!daftarPernyataan.length) return daftarPernyataan;
+    const adaYangKosong = daftarPernyataan.some(p => !safeString(p.jawaban).trim());
+    if (!adaYangKosong) return daftarPernyataan;
+
+    const token = safeString(kunciMentah).split(/[-,;/]+/).map(t => t.trim()).filter(Boolean);
+    if (token.length !== daftarPernyataan.length) return daftarPernyataan;
+
+    const normalisasi = (t) => {
+      const low = t.toLowerCase();
+      if (/^(benar|b|true|1)$/.test(low)) return 'Benar';
+      if (/^(salah|s|false|0)$/.test(low)) return 'Salah';
+      return '';
+    };
+    const tokenValid = token.map(normalisasi);
+    if (tokenValid.some((t) => !t)) return daftarPernyataan; // ada token gak dikenali, jangan menebak
+
+    return daftarPernyataan.map((p, i) => (safeString(p.jawaban).trim() ? p : { ...p, jawaban: tokenValid[i] }));
+  }
+
+  const pernyataanTerpulihkan = pulihkanJawabanDariKunciGabungan(pernyataan, rawKey);
+  const tabelBenarSalahTerpulihkan = pulihkanJawabanDariKunciGabungan(tabelBenarSalah, rawKey);
+
   const pasangan = safeArray(q.pasangan || q.matching || q.pairs)
     .map(pair => ({
       kiri: safeString(pair?.kiri || pair?.left || pair?.pertanyaan || ''),
@@ -1008,8 +1041,8 @@ function normalizeSoal(q, idx) {
     teks_soal: teksSoal,
     opsi_jawaban: opsiJawaban,
     opsi_benar: finalOpsiBenar,
-    pernyataan,
-    tabel_benar_salah: tabelBenarSalah,
+    pernyataan: pernyataanTerpulihkan,
+    tabel_benar_salah: tabelBenarSalahTerpulihkan,
     pasangan,
     kunci_jawaban: kunciJawaban,
     jawaban_ekuivalen: safeArray(q.jawaban_ekuivalen || q.jawabanEkuivalen || q.accepted_answers)
@@ -1207,14 +1240,66 @@ function parseHTMLTableElement(table) {
   return { header: hasHeader ? header : [], baris };
 }
 
+// 🔥 BARU: cek apakah 1 sel tabel "dicentang" (menandakan jawaban Benar
+// atau Salah pada tabel kolom checkbox) -- dipakai parseHTMLStatements.
+function selBerisiCentang(cell) {
+  const t = htmlNodeText(cell).trim();
+  return /^(✓|√|v|x|✔|ya|benar|salah|true|1)$/i.test(t);
+}
+
 function parseHTMLStatements(container) {
   if (!container) return [];
   return Array.from(container.querySelectorAll('tr')).map(row => {
     const cells = Array.from(row.querySelectorAll(':scope > th, :scope > td'));
     if (cells.length < 2) return null;
-    const text = htmlNodeText(cells[0]);
-    const answer = safeString(row.getAttribute('data-jawaban') || htmlNodeText(cells[1])).trim();
-    if (!text || /^(pernyataan|statement|keterangan)$/i.test(text)) return null;
+
+    const teksSel = cells.map(c => htmlNodeText(c).trim());
+
+    // 🔥 BARU (bug nyata ditemukan): deteksi baris header DIPERKUAT.
+    // Sebelumnya cuma cek cells[0] cocok "pernyataan/statement/keterangan"
+    // -- GAGAL untuk tabel format "No | Pernyataan | Benar | Salah" karena
+    // sel pertama header-nya "No", bukan "Pernyataan". Akibatnya baris
+    // header ikut kebaca sebagai data (pernyataan #1 palsu berisi teks
+    // "No"). Sekarang dicek SEMUA sel dalam baris, bukan cuma sel pertama.
+    const adaSelHeader = teksSel.some(t => /^(no\.?|pernyataan|statement|keterangan|benar|salah)$/i.test(t));
+    if (adaSelHeader) return null;
+
+    let text, answer;
+
+    if (cells.length >= 4) {
+      // 🔥 BARU: format "No | Pernyataan | Benar (centang) | Salah (centang)"
+      // -- BUKAN 2 kolom seperti asumsi lama. Sebelumnya cells[0] (kolom
+      // "No", isinya cuma angka urut 1/2/3) SALAH dibaca sebagai teks
+      // pernyataan, dan cells[1] (pernyataan ASLI) malah dibaca sebagai
+      // jawaban -- pernyataan yang tampil jadi "1", "2", "3" alih-alih
+      // teks soal sungguhan. Sekarang: kolom ke-2 (index 1) yang dipakai
+      // sebagai teks pernyataan, kolom ke-3 & ke-4 dicek centangnya untuk
+      // tentukan jawaban Benar/Salah.
+      text = teksSel[1];
+      const benarDicentang = selBerisiCentang(cells[2]);
+      const salahDicentang = selBerisiCentang(cells[3]);
+      if (benarDicentang && !salahDicentang) answer = 'Benar';
+      else if (salahDicentang && !benarDicentang) answer = 'Salah';
+      // Kalau tabel checkbox-nya KOSONG (mis. lembar kerja siswa yang
+      // belum diisi) -- coba data-jawaban di baris; kalau tetap tidak
+      // ada, biarkan kosong (nanti bisa diisi dari kunci_jawaban gabungan
+      // di normalizeSoal, lihat catatan di sana).
+      else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
+    } else if (cells.length === 3) {
+      // Format "Pernyataan | Benar (centang) | Salah (centang)" tanpa kolom No.
+      text = teksSel[0];
+      const benarDicentang = selBerisiCentang(cells[1]);
+      const salahDicentang = selBerisiCentang(cells[2]);
+      if (benarDicentang && !salahDicentang) answer = 'Benar';
+      else if (salahDicentang && !benarDicentang) answer = 'Salah';
+      else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
+    } else {
+      // Format lama (2 kolom): Pernyataan | Jawaban langsung sebagai teks.
+      text = teksSel[0];
+      answer = safeString(row.getAttribute('data-jawaban') || teksSel[1]).trim();
+    }
+
+    if (!text) return null;
     return { teks: text, jawaban: answer };
   }).filter(Boolean);
 }
