@@ -935,31 +935,32 @@ function normalizeSoal(q, idx) {
   }
 
   // Sinyal 4: panjang teks_soal jauh di luar wajar untuk satu butir soal
-  // pilihan ganda biasa BIASA. TAPI (bug nyata ditemukan): soal literasi
-  // (mis. TKA Bahasa Indonesia) SERING memang menulis bacaan panjang
-  // langsung di teks_soal alih-alih field "bacaan" terpisah -- itu WAJAR,
-  // bukan kerusakan. Sebelumnya sinyal ini langsung masuk `errors` yang
-  // otomatis bikin soal INVALID (lihat `valid: errors.length===0` di
-  // bawah) walau komentar aslinya bilang "sinyal tambahan, bukan penentu
-  // tunggal" -- niat itu TIDAK PERNAH benar-benar diterapkan di kode.
-  // Sekarang: kalau ada tanda-tanda kuat ini memang bacaan literasi asli
-  // (kutipan "Sumber:", instruksi "Perhatikan teks berikut", atau
-  // berparagraf jelas), turunkan jadi PERINGATAN LUNAK (tetap kelihatan
-  // ke admin, TIDAK memblokir penyimpanan). Baru kalau tidak ada
-  // tanda-tanda itu sama sekali, tetap dianggap error asli (lebih
-  // mencurigakan, kemungkinan besar memang tercampur field lain).
-  const adaTandaBacaanLiterasi = /sumber\s*:/i.test(teksSoal)
-    || /perhatikan\s+(teks|bacaan|kutipan|paragraf|puisi)\s+(berikut|di atas|ini)/i.test(teksSoal)
-    || (teksSoal.match(/\n\s*\n/g) || []).length >= 2;
-
+  // pilihan ganda biasa. RIWAYAT PERBAIKAN (penting dibaca sebelum
+  // mengubah lagi):
+  // v1: langsung masuk `errors` (blokir simpan) kalau >700 karakter --
+  //     ternyata soal literasi (bacaan panjang wajar) ikut ke-blokir.
+  // v2: dibedakan lewat "tanda bacaan literasi" (kutipan "Sumber:",
+  //     "Perhatikan teks berikut", atau berparagraf) -- kalau ada,
+  //     jadi peringatan lunak; kalau tidak ada, tetap error.
+  //     TERNYATA GAGAL LAGI: soal TKA Kimia/HOTS mata pelajaran lain
+  //     punya stimulus panjang (penjelasan konfigurasi elektron, data
+  //     tabel, dst) TANPA kutipan "Sumber:" ataupun frasa "Perhatikan
+  //     teks berikut" -- soal yang justru VALID malah ke-blokir lagi
+  //     (8 dari 10 soal Kimia TKA salah tertolak, padahal semuanya
+  //     lengkap dan benar).
+  // v3 (SEKARANG): heuristik tebak-dari-kata-kunci TERBUKTI RAPUH --
+  //     beda mapel/gaya penulisan, jebol lagi dengan pola berbeda.
+  //     Panjang teks SENDIRIAN bukan bukti kerusakan yang kuat --
+  //     kerusakan ASLI (teks_soal tercampur pembahasan/nama file) sudah
+  //     ditangkap Sinyal 1-3 di atas (jauh lebih pasti: nama file
+  //     nyangkut, kode LaTeX mentah di luar $...$, huruf gabung tanpa
+  //     spasi >=25 karakter). Sinyal 4 SEKARANG SELALU jadi peringatan
+  //     lunak (tidak pernah blokir penyimpanan) -- cukup mengingatkan
+  //     admin untuk cek sekilas, tanpa risiko menolak soal yang valid.
   if (teksSoal.length > 700 && !bacaan) {
-    if (adaTandaBacaanLiterasi) {
-      peringatanLunak.push(
-        `teks_soal panjang (${teksSoal.length} karakter) -- kemungkinan bacaan literasi ditulis langsung di sini (bukan field bacaan terpisah). Ini WAJAR untuk soal Bahasa/literasi, TIDAK menghalangi penyimpanan. Kalau mau lebih rapi, bisa dipisah manual ke field bacaan nanti.`,
-      );
-    } else {
-      errors.push(`teks_soal sangat panjang (${teksSoal.length} karakter) untuk soal tanpa bacaan -- kemungkinan tercampur field lain, cek manual.`);
-    }
+    peringatanLunak.push(
+      `teks_soal panjang (${teksSoal.length} karakter) tanpa field bacaan terpisah. Ini WAJAR untuk soal dengan stimulus/wacana panjang (literasi, TKA/HOTS sains, dst) -- TIDAK menghalangi penyimpanan. Cek sekilas kalau ragu; kalau mau lebih rapi, bisa dipisah manual ke field bacaan nanti.`,
+    );
   }
 
   // Sinyal 5: soal "YATIM" -- menunjuk ke bacaan/teks yang TIDAK ADA di
