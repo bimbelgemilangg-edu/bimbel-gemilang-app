@@ -37,7 +37,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import {
-  collection, getDocs, addDoc, query, where, serverTimestamp,
+  collection, getDocs, addDoc, query, where, serverTimestamp, deleteDoc, doc, writeBatch,
 } from 'firebase/firestore';
 import { notifyStudents } from '../../../utils/notifications';
 import {
@@ -217,6 +217,86 @@ export default function TerbitkanKuisPage() {
     });
     return Array.from(map.entries()).map(([bab, soal]) => ({ bab, soal }));
   }, [folderDibuka, cacheSoalFolder]);
+
+  // 🔥 BARU: hapus folder -- 2 mode. "Cuma folder" (aman, default): soal
+  // di dalamnya TETAP ADA di Bank Soal, cuma lepas kaitan ke folder ini
+  // (sumberSoalId dikosongkan). "Folder + semua soalnya": beneran hapus
+  // soal juga -- dipakai kalau folder itu memang salah/percobaan/duplikat
+  // dan mau dibersihkan total.
+  const [menghapusFolder, setMenghapusFolder] = useState(null); // id folder yang lagi diproses
+
+  const hapusFolder = useCallback(async (folder, ikutHapusSoal) => {
+    setMenghapusFolder(folder.id);
+    try {
+      // Ambil semua soal yang terkait folder ini (pakai cache kalau ada,
+      // supaya tidak query ulang kalau folder itu sudah pernah dibuka).
+      let soalTerkait = cacheSoalFolder[folder.id];
+      if (!soalTerkait) {
+        const snap = await getDocs(query(collection(db, 'bank_soal'), where('sumberSoalId', '==', folder.id)));
+        soalTerkait = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      }
+
+      if (soalTerkait.length > 0) {
+        // Firestore batch maksimal 500 operasi -- pecah per 400 biar aman.
+        for (let i = 0; i < soalTerkait.length; i += 400) {
+          const potongan = soalTerkait.slice(i, i + 400);
+          const batch = writeBatch(db);
+          potongan.forEach((s) => {
+            if (ikutHapusSoal) {
+              batch.delete(doc(db, 'bank_soal', s.id));
+            } else {
+              batch.update(doc(db, 'bank_soal', s.id), { sumberSoalId: null });
+            }
+          });
+          await batch.commit();
+        }
+      }
+
+      await deleteDoc(doc(db, 'sumber_soal', folder.id));
+
+      setDaftarFolder((prev) => prev.filter((f) => f.id !== folder.id));
+      setCacheSoalFolder((prev) => {
+        const next = { ...prev };
+        delete next[folder.id];
+        return next;
+      });
+      if (folderDibuka === folder.id) setFolderDibuka(null);
+      // Kalau ada soal dari folder ini yang kebetulan lagi ada di
+      // keranjang, dan soalnya beneran dihapus, keluarkan juga dari
+      // keranjang -- daripada nyangkut jadi referensi ke dokumen yang
+      // sudah tidak ada.
+      if (ikutHapusSoal) {
+        setKeranjang((prev) => {
+          const next = new Map(prev);
+          soalTerkait.forEach((s) => next.delete(s.id));
+          return next;
+        });
+      }
+    } catch (e) {
+      console.error('Gagal menghapus folder:', e);
+      alert('Gagal menghapus folder: ' + e.message);
+    }
+    setMenghapusFolder(null);
+  }, [cacheSoalFolder, folderDibuka]);
+
+  const konfirmasiHapusFolder = useCallback((folder) => {
+    const jumlahSoal = cacheSoalFolder[folder.id]?.length ?? folder.jumlahSoal ?? 0;
+    const pesan = `Hapus folder "${folder.judul}"?\n\n` +
+      `Folder ini punya ${jumlahSoal} soal. Pilih OK untuk HAPUS FOLDER + SEMUA SOALNYA (permanen, tidak bisa dibatalkan), atau Cancel untuk batal.\n\n` +
+      `(Kalau cuma mau hapus foldernya saja dan soalnya tetap disimpan di Bank Soal, gunakan tombol "Lepas Folder Saja".)`;
+    if (window.confirm(pesan)) {
+      hapusFolder(folder, true);
+    }
+  }, [cacheSoalFolder, hapusFolder]);
+
+  const konfirmasiLepasFolder = useCallback((folder) => {
+    const jumlahSoal = cacheSoalFolder[folder.id]?.length ?? folder.jumlahSoal ?? 0;
+    const pesan = `Lepas folder "${folder.judul}"?\n\n` +
+      `Folder ini akan dihapus, tapi ${jumlahSoal} soal di dalamnya TETAP TERSIMPAN di Bank Soal (cuma tidak lagi tergabung ke folder mana pun).`;
+    if (window.confirm(pesan)) {
+      hapusFolder(folder, false);
+    }
+  }, [cacheSoalFolder, hapusFolder]);
 
   // ---------------- TAB: CARI BEBAS ----------------
   const [filterMapel, setFilterMapel] = useState('');
@@ -493,6 +573,26 @@ export default function TerbitkanKuisPage() {
                       <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{f.judul}</div>
                       <div style={{ fontSize: 11, color: '#9ca3af' }}>{f.mataPelajaran} · {f.jenisUjian} · {f.jenjang} · {f.jumlahSoal || 0} soal</div>
                     </div>
+                    {menghapusFolder === f.id ? (
+                      <Loader2 size={16} className="spin" />
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); konfirmasiLepasFolder(f); }}
+                          title="Hapus folder saja, soal di dalamnya tetap disimpan"
+                          style={{ fontSize: 10, padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', backgroundColor: 'white', color: '#6b7280', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                        >
+                          Lepas Folder Saja
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); konfirmasiHapusFolder(f); }}
+                          title="Hapus folder + semua soal di dalamnya (permanen)"
+                          style={{ padding: '6px', borderRadius: 6, border: '1px solid #fecaca', backgroundColor: '#fef2f2', color: '#dc2626', cursor: 'pointer', display: 'flex' }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
                     {folderDibuka === f.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                   </div>
 

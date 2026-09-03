@@ -41,8 +41,10 @@ import {
   getDocs,
   query,
   orderBy,
+  where,
   updateDoc,
   increment,
+  deleteDoc,
 } from 'firebase/firestore';
 
 import { db, auth } from '../../../firebase';
@@ -2775,6 +2777,55 @@ export default function ImportHasilScanPage() {
     setJenjang(folder.jenjang || '');
   }, []);
 
+  // 🔥 BARU: hapus folder langsung dari panel ini -- supaya folder
+  // percobaan/salah tidak numpuk terus. Sama seperti di TerbitkanKuisPage:
+  // admin pilih mau ikut hapus soal di dalamnya atau cuma lepas foldernya
+  // (soal tetap disimpan, cuma lepas kaitan sumberSoalId).
+  const [menghapusFolder, setMenghapusFolder] = useState(null);
+
+  const hapusFolderDariImport = useCallback(async (folder, ikutHapusSoal) => {
+    setMenghapusFolder(folder.id);
+    try {
+      const snap = await getDocs(query(collection(db, 'bank_soal'), where('sumberSoalId', '==', folder.id)));
+      const soalTerkait = snap.docs;
+      if (soalTerkait.length > 0) {
+        for (let i = 0; i < soalTerkait.length; i += 400) {
+          const potongan = soalTerkait.slice(i, i + 400);
+          const batch = writeBatch(db);
+          potongan.forEach((d) => {
+            if (ikutHapusSoal) batch.delete(doc(db, 'bank_soal', d.id));
+            else batch.update(doc(db, 'bank_soal', d.id), { sumberSoalId: null });
+          });
+          await batch.commit();
+        }
+      }
+      await deleteDoc(doc(db, 'sumber_soal', folder.id));
+      setDaftarFolder((prev) => prev.filter((f) => f.id !== folder.id));
+      if (folderAktif?.id === folder.id) setFolderAktif(null);
+    } catch (e) {
+      console.error('Gagal menghapus folder:', e);
+      alert('Gagal menghapus folder: ' + e.message);
+    }
+    setMenghapusFolder(null);
+  }, [folderAktif]);
+
+  const konfirmasiHapusFolderImport = useCallback((folder, e) => {
+    e.stopPropagation();
+    const ikutHapusSoal = window.confirm(
+      `Hapus folder "${folder.judul}"?\n\n` +
+      `Folder ini punya ${folder.jumlahSoal || 0} soal.\n\n` +
+      `OK = hapus folder + SEMUA soalnya (permanen).\nCancel akan menawarkan opsi lebih aman.`,
+    );
+    if (ikutHapusSoal) {
+      hapusFolderDariImport(folder, true);
+      return;
+    }
+    const lepasSaja = window.confirm(
+      `Lepas folder "${folder.judul}" saja? Folder dihapus, tapi ${folder.jumlahSoal || 0} soal di dalamnya TETAP TERSIMPAN di Bank Soal (cuma lepas kaitan folder).`,
+    );
+    if (lepasSaja) hapusFolderDariImport(folder, false);
+  }, [hapusFolderDariImport]);
+
   const buatFolderBaru = useCallback(async () => {
     if (!judulFolderBaru.trim()) return alert('Judul folder (nama buku/PDF sumber) wajib diisi.');
     if (!mataPelajaran) return alert('Isi dulu Mata Pelajaran di bawah -- ini akan disimpan sebagai metadata folder baru.');
@@ -3772,10 +3823,21 @@ export default function ImportHasilScanPage() {
                                 {f.coverUrl ? (
                                   <img src={f.coverUrl} alt="" style={{ width: '28px', height: '36px', objectFit: 'cover', borderRadius: '3px' }} />
                                 ) : <span style={{ fontSize: '16px' }}>📘</span>}
-                                <div>
+                                <div style={{ flex: 1 }}>
                                   <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{f.judul}</div>
                                   <div style={{ fontSize: '11px', color: '#9ca3af' }}>{f.mataPelajaran} · {f.jenisUjian} · {f.jenjang} · {f.jumlahSoal || 0} soal</div>
                                 </div>
+                                {menghapusFolder === f.id ? (
+                                  <span style={{ fontSize: '11px', color: '#9ca3af' }}>Menghapus...</span>
+                                ) : (
+                                  <button
+                                    onClick={(e) => konfirmasiHapusFolderImport(f, e)}
+                                    title="Hapus folder ini"
+                                    style={{ padding: '5px', borderRadius: '6px', border: '1px solid #fecaca', backgroundColor: '#fef2f2', color: '#dc2626', cursor: 'pointer', flexShrink: 0 }}
+                                  >
+                                    🗑️
+                                  </button>
+                                )}
                               </div>
                             ))}
                           </div>
