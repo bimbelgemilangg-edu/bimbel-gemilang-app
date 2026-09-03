@@ -887,8 +887,12 @@ const StudentDashboard = () => {
                 padding: isMobile ? 16 : 20, marginBottom: 16,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 26 }}>
-                    🧑‍🚀
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 26, overflow: 'hidden' }}>
+                    {studentProfile?.fotoUrl ? (
+                      <img src={studentProfile.fotoUrl} alt={studentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      '🧑‍🚀' // fallback maskot astronot kalau siswa belum pernah upload foto
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: 20 }}>
