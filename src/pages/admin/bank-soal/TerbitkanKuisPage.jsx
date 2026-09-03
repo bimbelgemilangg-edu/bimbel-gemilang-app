@@ -128,6 +128,7 @@ export default function TerbitkanKuisPage() {
   const navigate = useNavigate();
 
   const [filterMapel, setFilterMapel] = useState('');
+  const [filterJenisUjian, setFilterJenisUjian] = useState('');
   const [filterKelas, setFilterKelas] = useState('');
   const [filterKesulitan, setFilterKesulitan] = useState('');
   const [filterMateri, setFilterMateri] = useState('');
@@ -175,6 +176,7 @@ export default function TerbitkanKuisPage() {
       // tiap kombinasi filter berubah.
       const constraints = [where('status', '==', 'aktif')];
       if (filterMapel.trim()) constraints.push(where('mataPelajaran', '==', filterMapel.trim()));
+      if (filterJenisUjian.trim()) constraints.push(where('jenisUjian', '==', filterJenisUjian.trim()));
       const q = query(collection(db, 'bank_soal'), ...constraints);
       const snap = await getDocs(q);
       let list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -197,7 +199,7 @@ export default function TerbitkanKuisPage() {
       alert('Gagal mengambil soal dari Bank Soal: ' + e.message);
     }
     setLoadingSoal(false);
-  }, [filterMapel, filterKelas, filterKesulitan, filterMateri, filterTag]);
+  }, [filterMapel, filterJenisUjian, filterKelas, filterKesulitan, filterMateri, filterTag]);
 
   const toggleSoal = (id) => {
     setTerpilih((prev) => {
@@ -313,6 +315,13 @@ export default function TerbitkanKuisPage() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
           <input placeholder="Mapel (mis. Matematika)" value={filterMapel} onChange={(e) => setFilterMapel(e.target.value)} style={inputStyle} />
+          <select value={filterJenisUjian} onChange={(e) => setFilterJenisUjian(e.target.value)} style={inputStyle}>
+            <option value="">Semua jenis ujian</option>
+            <option value="TKA">TKA</option>
+            <option value="SNBT/UTBK">SNBT/UTBK</option>
+            <option value="Reguler">Reguler</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
           <input placeholder="Tingkat kelas (mis. 10)" value={filterKelas} onChange={(e) => setFilterKelas(e.target.value)} style={inputStyle} />
           <select value={filterKesulitan} onChange={(e) => setFilterKesulitan(e.target.value)} style={inputStyle}>
             <option value="">Semua kesulitan</option>
@@ -359,7 +368,7 @@ export default function TerbitkanKuisPage() {
                   {terpilih.has(s.id) ? <CheckSquare size={18} color="#06b6d4" style={{ flexShrink: 0, marginTop: 2 }} /> : <Square size={18} color="#cbd5e1" style={{ flexShrink: 0, marginTop: 2 }} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 2 }}>
-                      #{s.nomor} · {s.tipe} · {s.materi || '-'} · {s.tingkatKesulitan || '-'}
+                      #{s.nomor} · {s.tipe} · {s.jenisUjian || '-'} · {s.materi || '-'} · {s.tingkatKesulitan || '-'}
                     </div>
                     <div style={{ fontSize: 13, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {s.soal || s.teks_soal || '(tanpa teks)'}

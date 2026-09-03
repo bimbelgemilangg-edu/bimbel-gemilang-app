@@ -2423,6 +2423,7 @@ function buildDoc(q, meta) {
     // semua soal dalam satu file yang diupload.
     tingkatKelas: q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal) ? q.kelas_soal : meta.tingkatKelas,
     jenjang: meta.jenjang,
+    jenisUjian: meta.jenisUjian || '',
     kategori: meta.kategori,
     // 🔥 BERUBAH: dulu tags = meta.tags doang (1 nilai form, sama rata
     // ke semua soal). Sekarang DIGABUNG dengan tags_soal (per soal,
@@ -2570,9 +2571,14 @@ export default function ImportHasilScanPage() {
   // dicek "ada isinya atau kosong".
   const [imageStatus, setImageStatus] = useState({});
 
-  const [mataPelajaran, setMataPelajaran] = useState('Matematika');
-  const [tingkatKelas, setTingkatKelas] = useState('10');
-  const [jenjang, setJenjang] = useState('SMA/MA');
+  const [mataPelajaran, setMataPelajaran] = useState('');
+  const [tingkatKelas, setTingkatKelas] = useState('');
+  const [jenjang, setJenjang] = useState('');
+  // 🔥 BARU: pembeda jenis ujian -- TANPA ini, "TKA Bahasa Indonesia
+  // SMP kelas 8" dan "Ulangan Harian Bahasa Indonesia SMP kelas 8"
+  // punya metadata IDENTIK di database, tidak bisa dibedakan sama
+  // sekali saat nanti dicari/difilter di TerbitkanKuisPage.
+  const [jenisUjian, setJenisUjian] = useState('');
   const [kategori, setKategori] = useState('');
   const [tags, setTags] = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
@@ -2835,6 +2841,22 @@ export default function ImportHasilScanPage() {
   const handleSave = useCallback(async () => {
     if (!soalList.length) return;
 
+    // 🔥 BARU: GERBANG WAJIB -- Mata Pelajaran, Jenis Ujian, dan Jenjang
+    // TIDAK BOLEH kosong. Ditemukan kasus nyata: dulu field-field ini
+    // punya nilai default (Matematika/SMA-MA/Kelas 10) yang diam-diam
+    // ke-pakai kalau admin lupa ganti -- soal TKA Bahasa Indonesia SMP
+    // hampir tersimpan dengan label Matematika/SMA/Kelas 10 tanpa
+    // disadari. Sekarang field-field ini KOSONG by default (memaksa
+    // pilihan sadar), dan di sini ditolak keras kalau masih kosong.
+    const metadataKurang = [];
+    if (!mataPelajaran) metadataKurang.push('Mata Pelajaran');
+    if (!jenisUjian) metadataKurang.push('Jenis Ujian');
+    if (!jenjang) metadataKurang.push('Jenjang');
+    if (metadataKurang.length > 0) {
+      alert(`Lengkapi dulu di Metadata Soal: ${metadataKurang.join(', ')}. Ini wajib diisi supaya soal tidak salah label saat disimpan.`);
+      return;
+    }
+
     // 🔥 BARU: GERBANG WAJIB -- tolak simpan kalau masih ada gambar
     // yang terdeteksi rusak/palsu (hasil validasi Image() beneran, lihat
     // runValidasiGambar) atau masih dalam proses pengecekan. Ini yang
@@ -2890,6 +2912,7 @@ export default function ImportHasilScanPage() {
       mataPelajaran,
       tingkatKelas,
       jenjang,
+      jenisUjian,
       kategori,
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       tingkatKesulitan,
@@ -3053,7 +3076,7 @@ export default function ImportHasilScanPage() {
     } finally {
       setSaving(false);
     }
-  }, [soalList, mataPelajaran, tingkatKelas, jenjang, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus]);
+  }, [soalList, mataPelajaran, tingkatKelas, jenjang, jenisUjian, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus]);
 
   // ==========================================================
   // RENDER
@@ -3449,21 +3472,43 @@ export default function ImportHasilScanPage() {
                   <h3 style={{ fontWeight: '700', color: '#374151', marginBottom: '12px' }}>Metadata Soal</h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', gap: '12px' }}>
-                    <Field label="Mata Pelajaran">
-                      <select value={mataPelajaran} onChange={e => setMataPelajaran(e.target.value)} className="input">
+                    <Field label="Mata Pelajaran *">
+                      <select value={mataPelajaran} onChange={e => setMataPelajaran(e.target.value)} className="input" style={{ color: mataPelajaran ? undefined : '#9ca3af' }}>
+                        <option value="">-- Pilih mata pelajaran --</option>
                         {DAFTAR_MAPEL.map(mapel => <option key={mapel} value={mapel}>{mapel}</option>)}
                       </select>
                     </Field>
 
-                    <Field label="Jenjang">
-                      <select value={jenjang} onChange={e => setJenjang(e.target.value)} className="input">
+                    <Field label="Jenis Ujian *">
+                      {/* 🔥 BARU: pembeda "ini soal TKA / SNBT / ulangan
+                          biasa" -- tanpa ini, soal TKA dan soal reguler
+                          untuk mapel+jenjang yang sama tidak bisa
+                          dibedakan sama sekali di database. */}
+                      <select value={jenisUjian} onChange={e => setJenisUjian(e.target.value)} className="input" style={{ color: jenisUjian ? undefined : '#9ca3af' }}>
+                        <option value="">-- Pilih jenis ujian --</option>
+                        <option value="TKA">TKA (Tes Kemampuan Akademik)</option>
+                        <option value="SNBT/UTBK">SNBT/UTBK</option>
+                        <option value="Reguler">Reguler (Ulangan/Kurikulum Sekolah)</option>
+                        <option value="Lainnya">Lainnya</option>
+                      </select>
+                    </Field>
+
+                    <Field label="Jenjang *">
+                      <select value={jenjang} onChange={e => setJenjang(e.target.value)} className="input" style={{ color: jenjang ? undefined : '#9ca3af' }}>
+                        <option value="">-- Pilih jenjang --</option>
                         {DAFTAR_JENJANG.map(item => <option key={item} value={item}>{item}</option>)}
                       </select>
                     </Field>
 
                     <Field label="Kelas">
-                      <select value={tingkatKelas} onChange={e => setTingkatKelas(e.target.value)} className="input">
-                        {DAFTAR_KELAS.map(item => <option key={item} value={item}>Kelas {item}</option>)}
+                      {/* 🔥 CATATAN: untuk soal TKA (kompetensi lintas
+                          kelas dalam 1 jenjang), "Semua" biasanya yang
+                          PALING BENAR -- bukan kelas spesifik. Kelas
+                          spesifik cuma cocok untuk soal reguler yang
+                          memang terikat 1 topik kurikulum 1 kelas. */}
+                      <select value={tingkatKelas} onChange={e => setTingkatKelas(e.target.value)} className="input" style={{ color: tingkatKelas ? undefined : '#9ca3af' }}>
+                        <option value="">-- Pilih kelas (kosongkan = ikut per-soal AI) --</option>
+                        {DAFTAR_KELAS.map(item => <option key={item} value={item}>{item === 'Semua' ? 'Semua Kelas' : `Kelas ${item}`}</option>)}
                       </select>
                     </Field>
 
