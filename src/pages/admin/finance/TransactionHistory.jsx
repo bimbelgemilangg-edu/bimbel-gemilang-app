@@ -5,11 +5,8 @@ import {
   collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs, writeBatch
 } from "firebase/firestore";
 import { 
-  Download, Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock
+  Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -19,12 +16,6 @@ const TransactionHistory = () => {
   // === FILTER ===
   const [filterType, setFilterType] = useState('Semua');
   const [filterMethod, setFilterMethod] = useState('Semua');
-  const [filterMode, setFilterMode] = useState('bulan');
-  const [filterMonth, setFilterMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [dateRange, setDateRange] = useState({
-    start: new Date().toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0]
-  });
   const [searchTerm, setSearchTerm] = useState('');
 
   // === EDIT ===
@@ -82,7 +73,31 @@ const TransactionHistory = () => {
     // dokumen apa adanya) -- pengurutan "tanggal terbaru dulu, lalu jam
     // dibuat terbaru dulu" dipindah ke sisi JavaScript setelah data
     // berhasil diambil.
-    const q = query(collection(db, "finance_logs"));
+    // 🔥 BARU (KUNCI AKSES ADMIN): sebelumnya query ini narik SELURUH
+    // finance_logs sejak awal berdirinya bisnis -- cuma disembunyikan di
+    // UI lewat filter "bulan ini". Itu berarti data lengkapnya TETAP
+    // terkirim ke browser admin (kelihatan kalau buka Network tab), dan
+    // kalau ada yang paham cara buka DevTools, filter UI bisa gampang
+    // diubah manual buat lihat bulan lain / semua data.
+    // SEKARANG: query itu sendiri DIBATASI cuma bulan berjalan -- data
+    // bulan lain TIDAK PERNAH dikirim ke halaman ini sama sekali, apa pun
+    // yang diutak-atik di sisi client. Riwayat penuh cuma ada di Portal
+    // Owner (OwnerFinance.jsx), yang punya jalur login terpisah.
+    // (Catatan: ini baru "kunci praktis" di level kode. Penguncian
+    // sungguhan di level Firestore Security Rules -- yang tidak bisa
+    // ditembus sama sekali walau lewat DevTools -- baru bisa dipasang
+    // setelah Admin & Owner login pakai Firebase Auth beneran, bukan PIN/
+    // password yang dicocokkan manual seperti sekarang. Itu langkah
+    // berikutnya yang sudah disepakati.)
+    const now = new Date();
+    const bulanIniAwal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const bulanDepan = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const bulanDepanAwal = `${bulanDepan.getFullYear()}-${String(bulanDepan.getMonth() + 1).padStart(2, '0')}-01`;
+    const q = query(
+      collection(db, "finance_logs"),
+      where('date', '>=', bulanIniAwal),
+      where('date', '<', bulanDepanAwal),
+    );
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
@@ -106,15 +121,6 @@ const TransactionHistory = () => {
     if (filterType !== 'Semua') result = result.filter(t => t.type === filterType);
     if (filterMethod !== 'Semua') result = result.filter(t => t.method === filterMethod);
 
-    if (filterMode === 'bulan' && filterMonth) {
-      result = result.filter(t => (t.date || '').startsWith(filterMonth));
-    } else if (filterMode === 'range') {
-      result = result.filter(t => {
-        if (!t.date) return false;
-        return t.date >= dateRange.start && t.date <= dateRange.end;
-      });
-    }
-
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(t => 
@@ -126,32 +132,20 @@ const TransactionHistory = () => {
     }
 
     setFiltered(result);
-  }, [transactions, filterType, filterMethod, filterMode, filterMonth, dateRange, searchTerm]);
+  }, [transactions, filterType, filterMethod, searchTerm]);
 
   // === TOTALS (mengikuti filter -- ini memang seharusnya per-periode) ===
   const totalMasuk = filtered.filter(t => t.type === 'Pemasukan').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
   const totalKeluar = filtered.filter(t => t.type === 'Pengeluaran').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
 
-  // 🔥 FIX BUG PENTING: "Saldo Tunai/Bank" SEBELUMNYA dihitung dari data
-  // yang SUDAH KEFILTER (bulan/rentang tanggal yang lagi dipilih admin).
-  // Padahal kata "Saldo" secara alami berarti "sisa kas yang BENERAN ADA
-  // sekarang" -- bukan "jumlah bersih transaksi dalam periode yang
-  // kebetulan lagi difilter". Kalau admin filter "bulan ini" doang, angka
-  // yang muncul cuma arus kas bulan itu, BUKAN kas fisik yang sesungguhnya
-  // ada -- bisa bikin admin salah kira jumlah uang kas/bank yang dimiliki.
-  // Sekarang "Saldo" SELALU dihitung dari SELURUH riwayat transaksi sejak
-  // awal (`transactions`, bukan `filtered`), supaya angkanya selalu
-  // mencerminkan kas yang beneran ada, apapun filter yang sedang aktif.
-  const saldoTunai = transactions.reduce((s, t) => {
-    if (t.method !== 'Tunai') return s;
-    return t.type === 'Pemasukan' ? s + (parseInt(t.amount) || 0) : s - (parseInt(t.amount) || 0);
-  }, 0);
-  const saldoBank = transactions.reduce((s, t) => {
-    if (t.method !== 'Transfer') return s;
-    return t.type === 'Pemasukan' ? s + (parseInt(t.amount) || 0) : s - (parseInt(t.amount) || 0);
-  }, 0);
-  // Filter sedang aktif atau tidak, dipakai untuk memberi keterangan di UI
-  const sedangDifilter = filterMode !== 'semua' || filterType !== 'Semua' || filterMethod !== 'Semua' || !!searchTerm;
+  // 🔥 BARU (KUNCI AKSES ADMIN): "Saldo Tunai/Bank (keseluruhan)" DIHAPUS
+  // dari halaman admin ini -- itu sama persis dengan "Total Aset" yang
+  // sengaja disembunyikan dari Admin (cuma Owner yang boleh lihat saldo
+  // kas/bank kumulatif sejak awal). Karena query di atas sekarang cuma
+  // ambil bulan berjalan, `transactions` juga otomatis cuma berisi bulan
+  // ini -- jadi TIDAK ADA cara lagi buat halaman ini menghitung/menampilkan
+  // saldo keseluruhan, bahkan secara tidak sengaja.
+  const sedangDifilter = filterType !== 'Semua' || filterMethod !== 'Semua' || !!searchTerm;
 
   // 🔥 BARU: fungsi ini yang bikin finance_logs & data siswa TETAP NYAMBUNG
   // walau transaksinya diedit/dihapus belakangan. Sebelumnya, edit/hapus di
@@ -471,111 +465,27 @@ const TransactionHistory = () => {
     return `${parseInt(parts[2])} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
   };
 
-  // === EXPORT PDF ===
-  const exportPDF = () => {
-    if (filtered.length === 0) return alert('⚠️ Data kosong!');
-    const doc = new jsPDF({ orientation: 'landscape' });
-    doc.setFontSize(13);
-    doc.text('BIMBEL GEMILANG - LAPORAN KEUANGAN', 14, 15);
-    doc.setFontSize(9);
-    doc.text(`Periode: ${filterMode === 'range' ? `${dateRange.start} s/d ${dateRange.end}` : filterMode === 'bulan' ? filterMonth : 'Semua'}`, 14, 21);
-    doc.text(`Total Masuk: Rp ${totalMasuk.toLocaleString()} | Keluar: Rp ${totalKeluar.toLocaleString()} | Saldo: Rp ${(totalMasuk - totalKeluar).toLocaleString()}`, 14, 27);
-
-    // 🔥 FIX BUG: kolom "Keterangan" SEBELUMNYA dipotong paksa ke 25
-    // karakter (`.substring(0, 25)`) sebelum masuk tabel PDF -- kalau
-    // catatan transaksi lebih panjang dari itu, sisanya HILANG SAMA SEKALI
-    // dari laporan (bukan cuma tampilan visual yang kepotong, tapi datanya
-    // memang sudah dipangkas sebelum ditulis ke PDF). Sekarang teks penuh
-    // dikirim apa adanya ke autoTable, dan tabelnya di-setting supaya
-    // baris otomatis bertambah tinggi (word-wrap) kalau catatannya panjang
-    // -- jadi tidak ada lagi bagian keterangan yang hilang di laporan.
-    const body = filtered.map(t => [
-      t.date || '-',
-      formatTimestamp(t.createdAt),
-      t.type,
-      t.method,
-      t.category || '-',
-      t.note || '-',
-      t.type === 'Pemasukan' ? `Rp ${(parseInt(t.amount) || 0).toLocaleString()}` : '-',
-      t.type === 'Pengeluaran' ? `Rp ${(parseInt(t.amount) || 0).toLocaleString()}` : '-'
-    ]);
-
-    autoTable(doc, {
-      head: [['Tanggal', 'Jam', 'Tipe', 'Metode', 'Kategori', 'Keterangan', 'Masuk', 'Keluar']],
-      body, startY: 32,
-      headStyles: { fillColor: [30, 41, 59], fontSize: 7 },
-      // overflow: 'linebreak' -> teks panjang TURUN BARIS, tidak dipotong/dibuang
-      styles: { fontSize: 6, overflow: 'linebreak', valign: 'top' },
-      columnStyles: {
-        0: { cellWidth: 22 },              // Tanggal
-        1: { cellWidth: 16 },              // Jam
-        2: { cellWidth: 18 },              // Tipe
-        3: { cellWidth: 18 },              // Metode
-        4: { cellWidth: 30 },              // Kategori
-        5: { cellWidth: 'auto' },          // Keterangan -- dapat sisa lebar halaman, boleh wrap
-        6: { cellWidth: 28, halign: 'right', textColor: [16, 185, 129] },
-        7: { cellWidth: 28, halign: 'right', textColor: [239, 68, 68] }
-      },
-    });
-    doc.save(`Keuangan_${new Date().toISOString().slice(0, 10)}.pdf`);
-  };
-
-  // === EXPORT EXCEL ===
-  const exportExcel = () => {
-    if (filtered.length === 0) return alert('⚠️ Data kosong!');
-    const data = filtered.map((t, i) => ({
-      'No': i + 1,
-      'Tanggal': t.date || '-',
-      'Jam': formatTimestamp(t.createdAt),
-      'Tipe': t.type,
-      'Metode': t.method,
-      'Kategori': t.category || '-',
-      'Keterangan': t.note || '',
-      'Masuk (Rp)': t.type === 'Pemasukan' ? (parseInt(t.amount) || 0) : 0,
-      'Keluar (Rp)': t.type === 'Pengeluaran' ? (parseInt(t.amount) || 0) : 0
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [
-      {wch:5}, {wch:12}, {wch:10}, {wch:12}, 
-      {wch:10}, {wch:20}, {wch:30}, {wch:15}, {wch:15}
-    ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Transaksi');
-    XLSX.writeFile(wb, `Keuangan_${new Date().toISOString().slice(0, 10)}.xlsx`);
-  };
+  // 🔥 BARU (KUNCI AKSES ADMIN): fungsi exportPDF & exportExcel DIHAPUS
+  // dari halaman admin ini sesuai permintaan -- admin tidak boleh
+  // mengunduh laporan keuangan dalam bentuk apa pun (PDF/Excel), baik
+  // riwayat bulan berjalan maupun lainnya. Kalau nanti Owner butuh fitur
+  // export, itu ditambahkan terpisah di OwnerFinance.jsx (portal Owner),
+  // bukan di sini.
 
   if (loading) return <div style={{textAlign: 'center', padding: 50, color: '#94a3b8'}}>Memuat data transaksi...</div>;
 
   return (
     <div>
       {/* === FILTER BAR === */}
+      {/* 🔥 BARU (KUNCI AKSES ADMIN): dropdown pilih bulan/rentang tanggal
+          bebas DIHAPUS -- data yang bisa dilihat di sini memang sudah
+          dikunci cuma bulan berjalan sejak dari query-nya (lihat useEffect
+          di atas), jadi tidak ada lagi yang perlu "dipilih". Tombol Export
+          PDF/Excel juga dihapus total. */}
+      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '10px 14px', borderRadius: 10, marginBottom: 12, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Lock size={14} /> Menampilkan riwayat bulan berjalan saja. Untuk riwayat lengkap & unduh laporan, hubungi Owner.
+      </div>
       <div style={styles.filterBar}>
-        <div style={styles.filterGroup}>
-          <select value={filterMode} onChange={e => setFilterMode(e.target.value)} style={styles.filterSelect}>
-            <option value="bulan">📅 Per Bulan</option>
-            <option value="range">📆 Rentang Tanggal</option>
-            <option value="semua">📂 Semua Data</option>
-          </select>
-        </div>
-
-        {filterMode === 'bulan' && (
-          <div style={styles.filterGroup}>
-            <input type="month" value={filterMonth} onChange={e => setFilterMonth(e.target.value)} style={styles.filterSelect} />
-          </div>
-        )}
-        {filterMode === 'range' && (
-          <>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Dari</label>
-              <input type="date" value={dateRange.start} onChange={e => setDateRange(prev => ({...prev, start: e.target.value}))} style={styles.filterSelect} />
-            </div>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Sampai</label>
-              <input type="date" value={dateRange.end} onChange={e => setDateRange(prev => ({...prev, end: e.target.value}))} style={styles.filterSelect} />
-            </div>
-          </>
-        )}
-
         <div style={styles.filterGroup}>
           <select value={filterType} onChange={e => setFilterType(e.target.value)} style={styles.filterSelect}>
             <option value="Semua">Semua Tipe</option>
@@ -599,9 +509,6 @@ const TransactionHistory = () => {
             {searchTerm && <button onClick={() => setSearchTerm('')} style={styles.clearBtn}>✕</button>}
           </div>
         </div>
-
-        <button onClick={exportPDF} style={styles.btnExport('#ef4444')}>📄 PDF</button>
-        <button onClick={exportExcel} style={styles.btnExport('#10b981')}>📊 Excel</button>
       </div>
 
       {/* === SUMMARY === */}
@@ -618,14 +525,6 @@ const TransactionHistory = () => {
         <div style={styles.summaryCard('#fef2f2', '#ef4444')}>
           <span>Total Keluar {sedangDifilter && '(periode ini)'}</span>
           <strong>Rp {totalKeluar.toLocaleString()}</strong>
-        </div>
-        <div style={styles.summaryCard('#fff7ed', '#f97316')}>
-          <span>💵 Saldo Tunai (keseluruhan)</span>
-          <strong>Rp {saldoTunai.toLocaleString()}</strong>
-        </div>
-        <div style={styles.summaryCard('#e0e7ff', '#3b82f6')}>
-          <span>💳 Saldo Bank (keseluruhan)</span>
-          <strong>Rp {saldoBank.toLocaleString()}</strong>
         </div>
       </div>
 

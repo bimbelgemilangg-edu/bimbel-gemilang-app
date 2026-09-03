@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, query, onSnapshot, getDocs, where, orderBy, limit } from "firebase/firestore";
 import { 
-  Eye, EyeOff, TrendingUp, TrendingDown, Wallet, 
+  Eye, EyeOff, TrendingUp, TrendingDown,
   CreditCard, AlertCircle, Users, ArrowRight, DollarSign,
   Calendar, RefreshCw, MessageCircle
 } from 'lucide-react';
@@ -12,9 +12,6 @@ const FinanceDashboard = () => {
   const navigate = useNavigate();
   const [privacyMode, setPrivacyMode] = useState(true);
   const [loading, setLoading] = useState(true);
-  
-  // Saldo
-  const [balance, setBalance] = useState({ tunai: 0, bank: 0, total: 0 });
   
   // Statistik bulan ini
   const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0 });
@@ -30,33 +27,30 @@ const FinanceDashboard = () => {
   const [expiringStudents, setExpiringStudents] = useState([]);
 
   useEffect(() => {
-    const qLogs = query(collection(db, "finance_logs"));
+    // 🔥 BARU (KUNCI AKSES ADMIN): sama seperti TransactionHistory.jsx --
+    // query ini sekarang DIBATASI cuma bulan berjalan di sumbernya,
+    // bukan cuma disembunyikan di tampilan. "Total Aset" (saldo tunai+bank
+    // keseluruhan sejak awal) DIHAPUS dari dashboard ini -- itu cuma
+    // boleh dilihat Owner lewat portalnya sendiri.
+    const now = new Date();
+    const bulanIniAwal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const bulanDepan = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const bulanDepanAwal = `${bulanDepan.getFullYear()}-${String(bulanDepan.getMonth() + 1).padStart(2, '0')}-01`;
+    const qLogs = query(
+      collection(db, "finance_logs"),
+      where('date', '>=', bulanIniAwal),
+      where('date', '<', bulanDepanAwal),
+    );
     const unsubLogs = onSnapshot(qLogs, (snap) => {
-      let tunai = 0, bank = 0;
       let pemasukanBulanIni = 0, pengeluaranBulanIni = 0;
-      const thisMonth = new Date().toISOString().slice(0, 7);
-      
+
       snap.forEach(doc => {
         const data = doc.data();
         const amt = parseInt(data.amount || 0);
-        
-        // Hitung saldo total
-        if (data.type === 'Pemasukan') {
-          if (data.method === 'Tunai') tunai += amt; 
-          else bank += amt;
-        } else {
-          if (data.method === 'Tunai') tunai -= amt; 
-          else bank -= amt;
-        }
-
-        // Hitung statistik bulan ini
-        if ((data.date || '').startsWith(thisMonth)) {
-          if (data.type === 'Pemasukan') pemasukanBulanIni += amt;
-          else pengeluaranBulanIni += amt;
-        }
+        if (data.type === 'Pemasukan') pemasukanBulanIni += amt;
+        else pengeluaranBulanIni += amt;
       });
-      
-      setBalance({ tunai, bank, total: tunai + bank });
+
       setMonthStats({ pemasukan: pemasukanBulanIni, pengeluaran: pengeluaranBulanIni });
     });
 
@@ -198,18 +192,13 @@ const FinanceDashboard = () => {
       </div>
 
       {/* === SMART CARDS === */}
+      {/* 🔥 BARU (KUNCI AKSES ADMIN): kartu "Total Aset" (saldo tunai+bank
+          keseluruhan sejak awal) DIHAPUS dari dashboard admin -- cuma
+          boleh dilihat lewat Portal Owner. */}
+      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '10px 14px', borderRadius: 10, marginBottom: 16, fontSize: 12, fontWeight: 600 }}>
+        🔒 Menampilkan statistik bulan berjalan saja. Saldo/aset keseluruhan hanya tersedia di Portal Owner.
+      </div>
       <div style={styles.cardGrid}>
-        {/* Total Aset */}
-        <div style={styles.bigCard('#1e293b')}>
-          <Wallet size={24} color="rgba(255,255,255,0.7)" />
-          <span style={styles.bigLabel}>Total Aset</span>
-          <h1 style={styles.bigValue}>{rp(balance.total)}</h1>
-          <div style={styles.bigDetail}>
-            <span>💵 Tunai: {rp(balance.tunai)}</span>
-            <span>💳 Bank: {rp(balance.bank)}</span>
-          </div>
-        </div>
-
         {/* Pemasukan Bulan Ini */}
         <div style={styles.mediumCard('#f0fdf4', '#10b981')}>
           <TrendingUp size={20} color="#10b981" />
