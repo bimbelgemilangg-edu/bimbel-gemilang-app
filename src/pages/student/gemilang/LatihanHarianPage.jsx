@@ -177,6 +177,26 @@ function hitungStreakBaru(lastActiveDateStr, hariIniStr) {
 const XP_PER_BENAR = 10;
 const XP_PER_SALAH = 2; // tetap dapat sedikit XP -- menghargai usaha, bukan cuma hasil (lihat diskusi SDT sebelumnya)
 
+// 🔥 BARU: JATAH HARIAN -- tanpa ini, siswa bisa gasak SEMUA soal 1
+// materi (bahkan 1 buku) dalam sekali duduk, karena sesi bisa diulang
+// terus tanpa batas. Ini masalah nyata: (1) produksi soal itu proses
+// pelan & kadang error, jadi bank soal harus dijaga tidak "habis"
+// cuma dalam sehari; (2) secara pedagogis, latihan tersebar tiap hari
+// (spaced practice) jauh lebih efektif daripada belajar maraton sekali
+// lalu berhenti; (3) ini juga yang membangun "tanggung jawab harian"
+// yang jadi salah satu tujuan gamifikasi ini dari awal -- ada jatah,
+// ada batas, besok lagi, bukan sekali habis semua.
+const JATAH_SOAL_PER_HARI = 20; // setara 2 sesi penuh (10 soal/sesi)
+
+function hitungSisaJatah(progress, hariIniStr, batasHarian) {
+  // Kalau belum pernah ada progres, ATAU progres terakhir itu bukan
+  // HARI INI (hari sudah berganti) -- jatah kembali penuh. Kalau
+  // progres itu memang dari hari ini, sisa jatah = batas dikurangi
+  // yang sudah dipakai (tidak pernah minus).
+  if (!progress || progress.soalHariIniTanggal !== hariIniStr) return batasHarian;
+  return Math.max(0, batasHarian - (progress.soalHariIniCount || 0));
+}
+
 // 🔥 BARU (BUG KEAMANAN KONTEN DITEMUKAN): filter sebelumnya CUMA cek
 // `tingkatKelas`, sama sekali TIDAK cek `jenjang` -- soal UTBK/SNBT atau
 // SMA yang kelasnya sengaja dikosongkan (memang begitu desainnya untuk
@@ -224,8 +244,13 @@ export default function LatihanHarianPage() {
   // 🔥 BARU: jenjang TIDAK ada di localStorage -- harus diambil dari
   // dokumen siswa di Firestore (lihat useEffect di bawah).
   const [studentJenjang, setStudentJenjang] = useState(null); // null = belum siap, JANGAN mulai fetch soal dulu
+  // 🔥 BARU: sisa jatah soal hari ini. null = belum dihitung (masih
+  // memuat), angka >= 0 setelahnya. Dicek SEBELUM tahap pilih-mapel
+  // ditampilkan -- kalau 0, tampilkan layar "jatah habis" alih-alih
+  // daftar mapel.
+  const [sisaJatah, setSisaJatah] = useState(null);
 
-  const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mapel | pilih-mode | mengerjakan | selesai
+  const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mapel | pilih-mode | mengerjakan | selesai | jatah-habis
   const [semuaSoal, setSemuaSoal] = useState([]);
   const [progressMap, setProgressMap] = useState({});
   const [daftarMapel, setDaftarMapel] = useState([]); // 🔥 BARU: [{mapel, jumlahSoal}]
@@ -269,6 +294,25 @@ export default function LatihanHarianPage() {
           setSemuaSoal([]);
           setDaftarMapel([]);
           setTahap('pilih-mapel');
+          return;
+        }
+
+        // 🔥 BARU: cek jatah harian SEBELUM narik semua soal -- kalau
+        // jatah sudah habis, gak perlu tarik data Bank Soal sama sekali
+        // (hemat baca Firestore), langsung tampilkan layar "sampai besok".
+        const hariIniStr = new Date().toISOString().slice(0, 10);
+        let progresSiswa = null;
+        try {
+          const snapProgres = await getDoc(doc(db, 'siswa_progress', studentId));
+          if (snapProgres.exists()) progresSiswa = snapProgres.data();
+        } catch (e) {
+          console.error('Gagal ambil progres harian:', e);
+        }
+        const jatahTersisa = hitungSisaJatah(progresSiswa, hariIniStr, JATAH_SOAL_PER_HARI);
+        setSisaJatah(jatahTersisa);
+
+        if (jatahTersisa <= 0) {
+          setTahap('jatah-habis');
           return;
         }
 
@@ -343,7 +387,11 @@ export default function LatihanHarianPage() {
   const soalMapelDipilih = mapelDipilih ? semuaSoal.filter((s) => (s.mataPelajaran || 'Lainnya') === mapelDipilih) : [];
 
   const mulaiSesiRekomendasi = useCallback(() => {
-    const terpilih = pilihSoalRekomendasi(soalMapelDipilih, progressMap, Date.now(), 10);
+    // 🔥 BARU: target sesi dipotong sesuai sisa jatah harian -- kalau
+    // sisa jatah cuma 5, sesi ini cuma 5 soal (bukan tetap maksa 10),
+    // biar pas habis sesi ini jatah beneran habis, bukan lewat batas.
+    const targetSesi = Math.max(1, Math.min(10, sisaJatah ?? 10));
+    const terpilih = pilihSoalRekomendasi(soalMapelDipilih, progressMap, Date.now(), targetSesi);
     if (terpilih.length === 0) return alert('Belum ada soal yang cocok untuk mapel/kelasmu. Coba lagi nanti.');
     setSoalSesi(terpilih);
     setIndexSekarang(0);
@@ -351,10 +399,11 @@ export default function LatihanHarianPage() {
     setSudahDicek(false);
     setHasilSesi({ benar: 0, salah: 0 });
     setTahap('mengerjakan');
-  }, [soalMapelDipilih, progressMap]);
+  }, [soalMapelDipilih, progressMap, sisaJatah]);
 
   const mulaiSesiManual = useCallback((materi) => {
-    const terpilih = pilihSoalManual(soalMapelDipilih, progressMap, materi, Date.now(), 10);
+    const targetSesi = Math.max(1, Math.min(10, sisaJatah ?? 10));
+    const terpilih = pilihSoalManual(soalMapelDipilih, progressMap, materi, Date.now(), targetSesi);
     if (terpilih.length === 0) return alert('Belum ada soal di materi ini.');
     setSoalSesi(terpilih);
     setIndexSekarang(0);
@@ -362,7 +411,7 @@ export default function LatihanHarianPage() {
     setSudahDicek(false);
     setHasilSesi({ benar: 0, salah: 0 });
     setTahap('mengerjakan');
-  }, [soalMapelDipilih, progressMap]);
+  }, [soalMapelDipilih, progressMap, sisaJatah]);
 
   // ---------------- JAWAB SOAL ----------------
   const soalAktif = soalSesi[indexSekarang];
@@ -411,7 +460,7 @@ export default function LatihanHarianPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indexSekarang, soalSesi.length]);
 
-  // ---------------- SELESAI SESI: XP + STREAK ----------------
+  // ---------------- SELESAI SESI: XP + STREAK + JATAH HARIAN ----------------
   const selesaikanSesi = useCallback(async () => {
     const xp = hasilSesi.benar * XP_PER_BENAR + hasilSesi.salah * XP_PER_SALAH;
     setXpDidapat(xp);
@@ -429,20 +478,30 @@ export default function LatihanHarianPage() {
         else if (hasilStreak === 1) streakBaru = 1;
         // hasilStreak === null -> sudah latihan hari ini, streak tidak berubah
 
+        // 🔥 BARU: catat pemakaian jatah harian. Kalau catatan terakhir
+        // BUKAN hari ini (hari baru), hitungan dimulai dari 0 lagi --
+        // BUKAN ditambah ke sisa catatan kemarin.
+        const soalHariIniSebelumnya = existing.soalHariIniTanggal === hariIniStr ? (existing.soalHariIniCount || 0) : 0;
+        const soalHariIniBaru = soalHariIniSebelumnya + soalSesi.length;
+
         await setDoc(progRef, {
           xp: (existing.xp || 0) + xp,
           streak: streakBaru,
           lastActiveDate: hariIniStr,
+          soalHariIniCount: soalHariIniBaru,
+          soalHariIniTanggal: hariIniStr,
           updatedAt: serverTimestamp(),
         }, { merge: true });
 
         setStreakInfo({ streakBaru, naik: hasilStreak === 'NAIK' || hasilStreak === 1 });
+        // Perbarui sisa jatah di layar (dipakai buat pesan di layar Selesai).
+        setSisaJatah(Math.max(0, JATAH_SOAL_PER_HARI - soalHariIniBaru));
       } catch (e) {
-        console.error('Gagal update XP/streak:', e);
+        console.error('Gagal update XP/streak/jatah:', e);
       }
     }
     setTahap('selesai');
-  }, [hasilSesi, studentId]);
+  }, [hasilSesi, studentId, soalSesi.length]);
 
   // ============================================================
   // RENDER
@@ -658,7 +717,7 @@ export default function LatihanHarianPage() {
             {hasilSesi.benar} benar, {hasilSesi.salah} salah dari {soalSesi.length} soal
           </p>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 28 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
             <div style={st.statBesar}>
               <span style={{ fontSize: 22 }}>🚀</span>
               <div style={st.statAngka}>+{xpDidapat}</div>
@@ -673,6 +732,49 @@ export default function LatihanHarianPage() {
             )}
           </div>
 
+          {/* 🔥 BARU: info jatah harian -- kalau masih ada sisa, tawarkan
+              lanjut mapel lain (BUKAN materi yang sama, biar bervariasi);
+              kalau sudah habis, kasih tahu jelas + arahkan pulang. */}
+          {sisaJatah !== null && (
+            <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 16 }}>
+              {sisaJatah > 0
+                ? `Jatah latihan hari ini masih tersisa ${sisaJatah} soal.`
+                : 'Jatah latihan hari ini sudah habis. Sampai jumpa besok, Siswa Gemilang! 🎉'}
+            </p>
+          )}
+
+          {sisaJatah > 0 ? (
+            <button onClick={() => setTahap('pilih-mapel')} style={st.tombolUtama}>Lanjut Mapel Lain</button>
+          ) : (
+            <button onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>Kembali ke Markas</button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 🔥 BARU: layar ini muncul kalau siswa BUKA HALAMAN Latihan Harian
+  // (bukan baru selesai sesi) tapi jatah hari itu ternyata sudah habis
+  // dari sesi-sesi sebelumnya. Dibingkai positif ("sudah menyelesaikan
+  // tanggung jawab hari ini"), bukan menghukum -- sesuai semangat
+  // "tanggung jawab harian" yang jadi tujuan gamifikasi ini dari awal.
+  if (tahap === 'jatah-habis') {
+    return (
+      <div style={st.page}>
+        <style>{`@keyframes gemilangTwinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }`}</style>
+        <div style={{ ...st.hero, minHeight: 240, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={st.heroStars} />
+          {['⭐','✨','⭐'].map((s, i) => (
+            <span key={i} style={{ position: 'absolute', fontSize: 14 + (i % 2) * 6, top: `${18 + i * 20}%`, left: `${14 + i * 30}%`, animation: `gemilangTwinkle ${1.4 + i * 0.3}s ease-in-out infinite` }}>{s}</span>
+          ))}
+          <div style={{ fontSize: 56 }}>🧑‍🚀</div>
+          <h1 style={{ ...st.heroTitle, fontSize: 19, marginTop: 8, textAlign: 'center', padding: '0 20px' }}>Kamu sudah menyelesaikan misi hari ini!</h1>
+        </div>
+        <div style={{ padding: '24px 28px', textAlign: 'center' }}>
+          <p style={{ color: '#64748b', fontSize: 13.5, lineHeight: 1.7, marginBottom: 24 }}>
+            Kerja bagus, Siswa Gemilang! Jatah latihan hari ini ({JATAH_SOAL_PER_HARI} soal) sudah tuntas.
+            Bank soal butuh dijaga supaya tetap segar buat besok juga -- yuk balik lagi besok buat lanjut misi berikutnya. 🚀
+          </p>
           <button onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>Kembali ke Markas</button>
         </div>
       </div>
