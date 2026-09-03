@@ -753,7 +753,7 @@ function normalizeSoal(q, idx) {
   const paket = q.__paket ?? q.paket ?? null;
   const paketMeta = q.__paketMeta ?? q.paketMeta ?? null;
 
-  const tipe = normalizeTipe(q.tipe || q.type || q.jenis || q.jenis_soal);
+  let tipe = normalizeTipe(q.tipe || q.type || q.jenis || q.jenis_soal);
 
   const teksSoal = safeString(
     q.teks_soal || q.soal || q.question || q.pertanyaan || '',
@@ -874,6 +874,23 @@ function normalizeSoal(q, idx) {
   // 🔥 BARU: peringatan yang TIDAK memblokir valid (beda dari errors) --
   // lihat penjelasan lengkap di Sinyal 4 bawah.
   const peringatanLunak = [];
+
+  // 🔥 BARU (bug nyata ditemukan): AI kadang menandai
+  // data-tipe="pg_sederhana"/"pg_kompleks" padahal soal itu SEBENARNYA
+  // pakai format tabel Benar/Salah (data-field="pernyataan" atau
+  // "tabel_benar_salah"), bukan opsi pilihan ganda -- soal seperti ini
+  // SEBENARNYA LENGKAP dan VALID, cuma label tipenya yang salah dari AI.
+  // Sebelumnya soal seperti ini ditolak keras ("Pilihan jawaban kurang
+  // dari 2") padahal datanya utuh. Sekarang: kalau polanya jelas (tidak
+  // ada opsi_jawaban SAMA SEKALI, tapi ADA tabel pernyataan Benar/Salah),
+  // label tipenya diperbaiki otomatis jadi "pg_kategori" -- soal tetap
+  // masuk sebagai valid, bukan ditolak gara-gara salah label AI.
+  if (['pg_sederhana', 'pg_kompleks'].includes(tipe) && opsiJawaban.length === 0 && (pernyataan.length > 0 || tabelBenarSalah.length > 0)) {
+    peringatanLunak.push(
+      `Tipe soal otomatis dikoreksi dari "${tipe}" jadi "pg_kategori" -- soal ini pakai format tabel Benar/Salah (bukan opsi pilihan ganda), tapi AI salah menandai tipenya. Datanya sendiri lengkap, cuma labelnya yang diperbaiki.`,
+    );
+    tipe = 'pg_kategori';
+  }
 
   if (!teksSoal.trim()) errors.push('Teks soal kosong.');
 
