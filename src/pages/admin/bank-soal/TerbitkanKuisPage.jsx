@@ -43,7 +43,7 @@ import { notifyStudents } from '../../../utils/notifications';
 import {
   Rocket, Filter, CheckSquare, Square, Loader2, Send, ArrowLeft,
   AlertTriangle, CheckCircle2, BookOpen, Folder, FolderOpen, ChevronDown,
-  ChevronRight, ShoppingCart, Trash2,
+  ChevronRight, ShoppingCart, Trash2, Sparkles, Timer, Shuffle, ShieldAlert,
 } from 'lucide-react';
 
 function hurufKeIndex(huruf) {
@@ -120,10 +120,29 @@ function konversiBanyakSoalKeQuiz(daftarSoal) {
   return { quizData: hasil, peringatan };
 }
 
+// 🔥 BARU: Bucket Otomatis -- admin tinggal COPAS daftar bab/materi dari
+// kisi-kisi resmi (mis. dari dokumen TKA), 1 topik per baris. Kisi-kisi
+// asli sering ditempel dengan anotasi frekuensi nempel tanpa spasi,
+// contoh: "Bilangan bulat, pecahan, desimal, dan persenSering muncul"
+// -- fungsi ini memisahkan topik dari anotasi itu SEBELUM dipakai buat
+// mencari soal (biar tidak ikut ke pencarian materi, yang bikin
+// pencarian gagal cocok).
+function bersihkanBarisMateri(baris) {
+  const dipisah = baris.replace(/([a-z0-9)])(Sering|Jarang|Prediksi)/g, '$1|$2');
+  return dipisah.split('|')[0].trim();
+}
+
+function parseTeksKisiKisi(teks) {
+  return teks
+    .split('\n')
+    .map((baris) => bersihkanBarisMateri(baris))
+    .filter(Boolean);
+}
+
 export default function TerbitkanKuisPage() {
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState('folder'); // 'folder' | 'cari'
+  const [tab, setTab] = useState('folder'); // 'folder' | 'cari' | 'bucket'
 
   // 🔥 KERANJANG -- Map(soalId -> soalObject). Ini SATU-SATUNYA sumber
   // kebenaran soal yang mau diterbitkan, diisi dari tab MANA PUN
@@ -242,6 +261,67 @@ export default function TerbitkanKuisPage() {
     setLoadingSoal(false);
   }, [filterMapel, filterJenisUjian, filterKelas, filterKesulitan, filterMateri, filterTag]);
 
+  // ---------------- TAB: BUCKET OTOMATIS ----------------
+  // Admin cukup: pilih kelas, TEMPEL daftar bab/materi dari kisi-kisi
+  // resmi (1 topik per baris), isi target jumlah soal -> sistem cari
+  // LINTAS SEMUA FOLDER otomatis dan isi keranjang, distribusi merata
+  // per topik supaya tidak numpuk di 1 topik saja.
+  const [bucketKelas, setBucketKelas] = useState('');
+  const [bucketMateriTeks, setBucketMateriTeks] = useState('');
+  const [bucketJumlah, setBucketJumlah] = useState(30);
+  const [loadingBucket, setLoadingBucket] = useState(false);
+  const [hasilBucket, setHasilBucket] = useState(null); // [{topik, ditemukan, diambil}]
+
+  const cariBucketOtomatis = useCallback(async () => {
+    const daftarTopik = parseTeksKisiKisi(bucketMateriTeks);
+    if (daftarTopik.length === 0) return alert('Tempel dulu daftar bab/materi (1 topik per baris).');
+    const target = Number(bucketJumlah) || 30;
+
+    setLoadingBucket(true);
+    setHasilBucket(null);
+    try {
+      const constraints = [where('status', '==', 'aktif')];
+      if (bucketKelas.trim()) constraints.push(where('tingkatKelas', '==', bucketKelas.trim()));
+      const snap = await getDocs(query(collection(db, 'bank_soal'), ...constraints));
+      const semuaSoal = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      // Kelompokkan soal yang cocok per topik (1 soal bisa cocok >1 topik
+      // kalau materinya memuat >1 kata kunci -- itu tidak masalah, nanti
+      // dedup pas dimasukkan ke keranjang lewat Map).
+      const perTopik = daftarTopik.map((topik) => {
+        const kw = topik.toLowerCase();
+        const cocok = semuaSoal.filter((s) => String(s.materi || '').toLowerCase().includes(kw));
+        return { topik, soal: cocok };
+      });
+
+      // Distribusi merata: ambil bergiliran 1 soal dari tiap topik yang
+      // masih py sisa, sampai target tercapai atau semua topik habis.
+      const terpilih = new Map();
+      let masihAda = true;
+      const indexPerTopik = perTopik.map(() => 0);
+      while (masihAda && terpilih.size < target) {
+        masihAda = false;
+        for (let i = 0; i < perTopik.length; i++) {
+          if (terpilih.size >= target) break;
+          const { soal } = perTopik[i];
+          if (indexPerTopik[i] < soal.length) {
+            const s = soal[indexPerTopik[i]];
+            if (!terpilih.has(s.id)) terpilih.set(s.id, s);
+            indexPerTopik[i]++;
+            masihAda = true;
+          }
+        }
+      }
+
+      tambahBanyakKeKeranjang(Array.from(terpilih.values()));
+      setHasilBucket(perTopik.map((p) => ({ topik: p.topik, ditemukan: p.soal.length })));
+    } catch (e) {
+      console.error('Gagal cari bucket otomatis:', e);
+      alert('Gagal mengambil soal: ' + e.message);
+    }
+    setLoadingBucket(false);
+  }, [bucketKelas, bucketMateriTeks, bucketJumlah, tambahBanyakKeKeranjang]);
+
   // ---------------- FORM TERBITKAN ----------------
   const [judulKuis, setJudulKuis] = useState('');
   const [targetKelas, setTargetKelas] = useState('Semua');
@@ -249,6 +329,15 @@ export default function TerbitkanKuisPage() {
   const [availableClasses, setAvailableClasses] = useState(['Semua']);
   const [pakaiDeadline, setPakaiDeadline] = useState(false);
   const [deadlineTanggal, setDeadlineTanggal] = useState('');
+
+  // 🔥 BARU: Mode Ujian -- Timer, Soal Acak, dan Anti-Cheat SUDAH ADA
+  // dan JALAN di StudentQuizView.jsx (field timeLimit, randomOrder,
+  // antiCheatEnabled) -- sebelumnya cuma belum ada tombolnya di sini.
+  // Tinggal disambungkan, tidak perlu bikin logika baru di sisi siswa.
+  const [pakaiTimer, setPakaiTimer] = useState(false);
+  const [durasiMenit, setDurasiMenit] = useState(60);
+  const [soalAcak, setSoalAcak] = useState(false);
+  const [antiCheat, setAntiCheat] = useState(false);
 
   const [menerbitkan, setMenerbitkan] = useState(false);
   const [hasil, setHasil] = useState(null);
@@ -299,6 +388,12 @@ export default function TerbitkanKuisPage() {
         useSchedule: pakaiDeadline,
         quizOpenDate: null,
         quizCloseDate: pakaiDeadline ? deadlineTanggal : null,
+        // 🔥 BARU: Mode Ujian -- field ini SUDAH dibaca StudentQuizView.jsx
+        // (timer countdown, shuffle soal, deteksi pindah tab/keluar
+        // fullscreen). timeLimit dalam MENIT, 0 = tanpa batas waktu.
+        timeLimit: pakaiTimer ? (Number(durasiMenit) || 0) : 0,
+        randomOrder: soalAcak,
+        antiCheatEnabled: antiCheat,
         guruId: 'admin',
         guruName: 'Admin Bimbel Gemilang',
         authorName: 'Admin Bimbel Gemilang',
@@ -370,6 +465,9 @@ export default function TerbitkanKuisPage() {
         </button>
         <button onClick={() => setTab('cari')} style={tab === 'cari' ? tabAktif : tabPasif}>
           <Filter size={14} style={{ marginRight: 6 }} /> Cari Bebas
+        </button>
+        <button onClick={() => setTab('bucket')} style={tab === 'bucket' ? tabAktif : tabPasif}>
+          <Sparkles size={14} style={{ marginRight: 6 }} /> Bucket Otomatis
         </button>
       </div>
 
@@ -514,6 +612,51 @@ export default function TerbitkanKuisPage() {
         </div>
       )}
 
+      {tab === 'bucket' && (
+        <div>
+          <div style={{ background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 13, color: '#6b21a8', marginBottom: 4 }}>
+              <Sparkles size={15} /> Bucket Otomatis
+            </div>
+            <p style={{ fontSize: 12, color: '#7e22ce', marginBottom: 12 }}>
+              Pilih kelas, tempel daftar bab/materi dari kisi-kisi resmi (1 topik per baris -- boleh langsung copas, anotasi seperti "Sering muncul" otomatis dibuang), lalu isi target jumlah soal.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 10, marginBottom: 10 }}>
+              <input placeholder="Kelas (mis. 9)" value={bucketKelas} onChange={(e) => setBucketKelas(e.target.value)} style={inputStyle} />
+              <input type="number" min={1} placeholder="Target jumlah soal (mis. 30)" value={bucketJumlah} onChange={(e) => setBucketJumlah(e.target.value)} style={inputStyle} />
+            </div>
+            <textarea
+              placeholder={'Tempel daftar bab/materi di sini, 1 topik per baris. Contoh:\nBilangan bulat, pecahan, desimal, dan persen\nBilangan berpangkat (eksponen) dan bentuk akar\nPola dan barisan bilangan'}
+              value={bucketMateriTeks}
+              onChange={(e) => setBucketMateriTeks(e.target.value)}
+              rows={6}
+              style={{ ...inputStyle, width: '100%', fontFamily: 'monospace', fontSize: 12, resize: 'vertical' }}
+            />
+            <button onClick={cariBucketOtomatis} disabled={loadingBucket} style={{ ...btnPrimary, marginTop: 10, backgroundColor: '#7e22ce' }}>
+              {loadingBucket ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
+              {loadingBucket ? 'Mencari...' : 'Cari & Isi Keranjang Otomatis'}
+            </button>
+          </div>
+
+          {hasilBucket && (
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Hasil pencarian per topik:</div>
+              {hasilBucket.map((h, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: i < hasilBucket.length - 1 ? '1px dashed #f1f5f9' : 'none' }}>
+                  <span style={{ color: '#374151' }}>{h.topik}</span>
+                  <span style={{ color: h.ditemukan === 0 ? '#dc2626' : '#16a34a', fontWeight: 600 }}>{h.ditemukan} soal ditemukan</span>
+                </div>
+              ))}
+              {hasilBucket.some((h) => h.ditemukan === 0) && (
+                <div style={{ marginTop: 8, fontSize: 11, color: '#dc2626' }}>
+                  ⚠️ Ada topik yang belum punya soal sama sekali di Bank Soal -- perlu diimport dulu.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {keranjang.size > 0 && (
         <div style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white',
@@ -554,6 +697,33 @@ export default function TerbitkanKuisPage() {
               {pakaiDeadline && (
                 <input type="datetime-local" value={deadlineTanggal} onChange={(e) => setDeadlineTanggal(e.target.value)} style={inputStyle} />
               )}
+            </div>
+
+            {/* 🔥 BARU: Mode Ujian -- Timer/Acak/Anti-Cheat, tersambung
+                langsung ke fitur yang sudah ada & jalan di
+                StudentQuizView.jsx, bukan bikin baru. */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', padding: '8px 10px', backgroundColor: '#f9fafb', borderRadius: 8, marginBottom: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                <input type="checkbox" checked={pakaiTimer} onChange={(e) => setPakaiTimer(e.target.checked)} />
+                <Timer size={13} /> Batas waktu
+              </label>
+              {pakaiTimer && (
+                <input
+                  type="number" min={1} value={durasiMenit} onChange={(e) => setDurasiMenit(e.target.value)}
+                  style={{ ...inputStyle, width: 90, padding: '5px 8px' }}
+                />
+              )}
+              {pakaiTimer && <span style={{ fontSize: 11, color: '#9ca3af', marginLeft: -8 }}>menit</span>}
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                <input type="checkbox" checked={soalAcak} onChange={(e) => setSoalAcak(e.target.checked)} />
+                <Shuffle size={13} /> Acak urutan soal
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                <input type="checkbox" checked={antiCheat} onChange={(e) => setAntiCheat(e.target.checked)} />
+                <ShieldAlert size={13} /> Deteksi kecurangan (pindah tab/keluar fullscreen)
+              </label>
             </div>
 
             <button onClick={handleTerbitkan} disabled={menerbitkan} style={btnPrimary}>
