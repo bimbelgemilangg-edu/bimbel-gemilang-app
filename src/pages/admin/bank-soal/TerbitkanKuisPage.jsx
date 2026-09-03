@@ -7,27 +7,33 @@
 // atau alur baru -- soal dikonversi ke bentuk quizData lalu disimpan
 // sebagai dokumen bimbel_modul (type: 'kuis_mandiri'), PERSIS skema
 // yang sudah dipakai & terbukti jalan di ManageQuiz.jsx dan dibaca
-// StudentQuizView.jsx. Jadi semua infrastruktur (halaman kerjakan
-// soal, penilaian otomatis, riwayat, dst) langsung kepakai tanpa
-// dibangun ulang.
+// StudentQuizView.jsx.
+//
+// 🔥 BERUBAH (v2 -- mode KERANJANG): dulu cuma 1 cara pilih soal (cari
+// pakai filter datar). Sekarang ada 2 tab yang mengisi KERANJANG YANG
+// SAMA:
+//   1. "Jelajah per Folder" -- browse Folder Sumber (buku/PDF) ->
+//      bab/materi di dalamnya -> soal. Bisa campur soal dari BEBERAPA
+//      folder sekaligus ke 1 keranjang (mis. gabung folder TKA Bahasa
+//      Indonesia + folder SNBT Matematika jadi 1 kuis campuran).
+//   2. "Cari Bebas" -- filter datar seperti sebelumnya (mapel/jenis
+//      ujian/kesulitan/materi/tag), untuk kasus admin sudah tahu
+//      persis mau cari apa tanpa perlu buka folder.
+// Keranjang bertahan lintas-tab dan lintas-folder -- browsing folder
+// lain TIDAK menghapus soal yang sudah masuk keranjang dari folder
+// sebelumnya.
 //
 // KEPUTUSAN PENTING (dikonfirmasi ke admin sebelum dibangun):
-// - Ini murni fitur ADMIN, TIDAK terikat guru/kodeMapel. Supaya kuis
-//   ini bisa dibuka SEMUA siswa apa pun mapel yang mereka ikuti,
-//   subject sengaja diisi 'Umum' -- ada jalur bypass eksplisit untuk
-//   ini di hasSubjectAccess() (dipakai StudentDashboard.jsx DAN
-//   StudentModuleView.jsx): `if (modulSubject.toLowerCase()==='umum')
-//   return true`. Targeting yang BENERAN dipakai untuk membatasi siapa
-//   yang bisa buka adalah `targetKelas` (dicocokkan persis ke
-//   `kelasSekolah` siswa, mis. "10 SMA") -- bukan mapel.
-// - notifyStudents() versi terbaru WAJIB kodeMapel ATAU
-//   specificStudentIds (menolak kirim kalau kosong, supaya notif tidak
-//   nyasar). Karena ini lintas-mapel, kita pakai specificStudentIds:
-//   hitung sendiri siapa yang match targetKelas/targetKategori dari
-//   collection "students", baru kirim ke ID-ID itu secara eksplisit.
+// - Ini murni fitur ADMIN, TIDAK terikat guru/kodeMapel. subject
+//   sengaja diisi 'Umum' -- jalur bypass eksplisit di hasSubjectAccess()
+//   (StudentDashboard.jsx & StudentModuleView.jsx). Targeting asli
+//   pakai targetKelas (cocok persis ke kelasSekolah siswa).
+// - notifyStudents() wajib kodeMapel ATAU specificStudentIds -- kita
+//   pakai specificStudentIds (hitung manual dari targetKelas/targetKategori)
+//   karena kuis ini sengaja lintas-mapel.
 // ============================================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import {
@@ -36,15 +42,9 @@ import {
 import { notifyStudents } from '../../../utils/notifications';
 import {
   Rocket, Filter, CheckSquare, Square, Loader2, Send, ArrowLeft,
-  AlertTriangle, CheckCircle2, BookOpen,
+  AlertTriangle, CheckCircle2, BookOpen, Folder, FolderOpen, ChevronDown,
+  ChevronRight, ShoppingCart, Trash2,
 } from 'lucide-react';
-
-// ============================================================
-// KONVERSI bank_soal -> quizData (lihat penjelasan lengkap & bukti
-// tes di konversiBankSoalKeQuiz.js yang sudah diverifikasi sebelumnya
-// -- logika di bawah ini PERSIS SAMA, cuma ditempel langsung di sini
-// supaya halaman ini satu file mandiri).
-// ============================================================
 
 function hurufKeIndex(huruf) {
   if (!huruf) return -1;
@@ -120,13 +120,86 @@ function konversiBanyakSoalKeQuiz(daftarSoal) {
   return { quizData: hasil, peringatan };
 }
 
-// ============================================================
-// KOMPONEN UTAMA
-// ============================================================
-
 export default function TerbitkanKuisPage() {
   const navigate = useNavigate();
 
+  const [tab, setTab] = useState('folder'); // 'folder' | 'cari'
+
+  // 🔥 KERANJANG -- Map(soalId -> soalObject). Ini SATU-SATUNYA sumber
+  // kebenaran soal yang mau diterbitkan, diisi dari tab MANA PUN
+  // (folder atau cari bebas), bertahan lintas navigasi folder/tab.
+  const [keranjang, setKeranjang] = useState(new Map());
+
+  const toggleKeranjang = useCallback((soal) => {
+    setKeranjang((prev) => {
+      const next = new Map(prev);
+      if (next.has(soal.id)) next.delete(soal.id); else next.set(soal.id, soal);
+      return next;
+    });
+  }, []);
+
+  const tambahBanyakKeKeranjang = useCallback((daftarSoal) => {
+    setKeranjang((prev) => {
+      const next = new Map(prev);
+      daftarSoal.forEach((s) => next.set(s.id, s));
+      return next;
+    });
+  }, []);
+
+  const kosongkanKeranjang = () => setKeranjang(new Map());
+
+  // ---------------- TAB: JELAJAH PER FOLDER ----------------
+  const [daftarFolder, setDaftarFolder] = useState([]);
+  const [loadingFolder, setLoadingFolder] = useState(true);
+  const [folderDibuka, setFolderDibuka] = useState(null);
+  const [cacheSoalFolder, setCacheSoalFolder] = useState({});
+  const [loadingSoalFolder, setLoadingSoalFolder] = useState(false);
+  const [babDibuka, setBabDibuka] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      setLoadingFolder(true);
+      try {
+        const snap = await getDocs(collection(db, 'sumber_soal'));
+        setDaftarFolder(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error('Gagal ambil daftar folder:', e);
+      }
+      setLoadingFolder(false);
+    })();
+  }, []);
+
+  const bukaFolder = useCallback(async (folderId) => {
+    if (folderDibuka === folderId) { setFolderDibuka(null); return; }
+    setFolderDibuka(folderId);
+    setBabDibuka(null);
+    if (cacheSoalFolder[folderId]) return;
+    setLoadingSoalFolder(true);
+    try {
+      const q = query(collection(db, 'bank_soal'), where('sumberSoalId', '==', folderId), where('status', '==', 'aktif'));
+      const snap = await getDocs(q);
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (Number(a.nomor) || 0) - (Number(b.nomor) || 0));
+      setCacheSoalFolder((prev) => ({ ...prev, [folderId]: list }));
+    } catch (e) {
+      console.error('Gagal ambil soal folder:', e);
+      alert('Gagal mengambil soal folder: ' + e.message);
+    }
+    setLoadingSoalFolder(false);
+  }, [folderDibuka, cacheSoalFolder]);
+
+  const babDalamFolder = useMemo(() => {
+    if (!folderDibuka || !cacheSoalFolder[folderDibuka]) return [];
+    const map = new Map();
+    cacheSoalFolder[folderDibuka].forEach((s) => {
+      const bab = s.materi || '(Tanpa bab/materi)';
+      if (!map.has(bab)) map.set(bab, []);
+      map.get(bab).push(s);
+    });
+    return Array.from(map.entries()).map(([bab, soal]) => ({ bab, soal }));
+  }, [folderDibuka, cacheSoalFolder]);
+
+  // ---------------- TAB: CARI BEBAS ----------------
   const [filterMapel, setFilterMapel] = useState('');
   const [filterJenisUjian, setFilterJenisUjian] = useState('');
   const [filterKelas, setFilterKelas] = useState('');
@@ -136,44 +209,12 @@ export default function TerbitkanKuisPage() {
 
   const [loadingSoal, setLoadingSoal] = useState(false);
   const [daftarSoal, setDaftarSoal] = useState([]);
-  const [terpilih, setTerpilih] = useState(new Set());
   const [sudahCari, setSudahCari] = useState(false);
-
-  const [judulKuis, setJudulKuis] = useState('');
-  const [targetKelas, setTargetKelas] = useState('Semua');
-  const [targetKategori, setTargetKategori] = useState('Semua');
-  const [availableClasses, setAvailableClasses] = useState(['Semua']);
-  const [pakaiDeadline, setPakaiDeadline] = useState(false);
-  const [deadlineTanggal, setDeadlineTanggal] = useState('');
-
-  const [menerbitkan, setMenerbitkan] = useState(false);
-  const [hasil, setHasil] = useState(null); // { success, message }
-
-  // Ambil daftar kelas yang benar-benar ada dari data siswa (persis
-  // pola ManageTugas.jsx) -- supaya dropdown target selalu sinkron
-  // dengan format kelasSekolah yang dipakai beneran, bukan hardcode.
-  useEffect(() => {
-    (async () => {
-      try {
-        const snap = await getDocs(collection(db, 'students'));
-        const kelasList = [...new Set(snap.docs.map((d) => d.data().kelasSekolah).filter(Boolean))];
-        kelasList.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-        setAvailableClasses(['Semua', ...kelasList]);
-      } catch (e) {
-        console.error('Gagal ambil daftar kelas:', e);
-      }
-    })();
-  }, []);
 
   const cariSoal = useCallback(async () => {
     setLoadingSoal(true);
     setSudahCari(true);
-    setTerpilih(new Set());
     try {
-      // Firestore where() equality dulu buat mapel (paling selektif +
-      // gak butuh index gabungan) -- sisanya (kelas/kesulitan/materi)
-      // disaring di sisi klien supaya tidak butuh composite index baru
-      // tiap kombinasi filter berubah.
       const constraints = [where('status', '==', 'aktif')];
       if (filterMapel.trim()) constraints.push(where('mataPelajaran', '==', filterMapel.trim()));
       if (filterJenisUjian.trim()) constraints.push(where('jenisUjian', '==', filterJenisUjian.trim()));
@@ -201,23 +242,36 @@ export default function TerbitkanKuisPage() {
     setLoadingSoal(false);
   }, [filterMapel, filterJenisUjian, filterKelas, filterKesulitan, filterMateri, filterTag]);
 
-  const toggleSoal = (id) => {
-    setTerpilih((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
+  // ---------------- FORM TERBITKAN ----------------
+  const [judulKuis, setJudulKuis] = useState('');
+  const [targetKelas, setTargetKelas] = useState('Semua');
+  const [targetKategori, setTargetKategori] = useState('Semua');
+  const [availableClasses, setAvailableClasses] = useState(['Semua']);
+  const [pakaiDeadline, setPakaiDeadline] = useState(false);
+  const [deadlineTanggal, setDeadlineTanggal] = useState('');
 
-  const pilihSemua = () => setTerpilih(new Set(daftarSoal.map((s) => s.id)));
-  const batalkanSemua = () => setTerpilih(new Set());
+  const [menerbitkan, setMenerbitkan] = useState(false);
+  const [hasil, setHasil] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const snap = await getDocs(collection(db, 'students'));
+        const kelasList = [...new Set(snap.docs.map((d) => d.data().kelasSekolah).filter(Boolean))];
+        kelasList.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        setAvailableClasses(['Semua', ...kelasList]);
+      } catch (e) {
+        console.error('Gagal ambil daftar kelas:', e);
+      }
+    })();
+  }, []);
 
   const handleTerbitkan = async () => {
     if (!judulKuis.trim()) return alert('Judul kuis wajib diisi.');
-    if (terpilih.size === 0) return alert('Pilih minimal 1 soal dulu.');
+    if (keranjang.size === 0) return alert('Keranjang masih kosong -- pilih minimal 1 soal dulu.');
     if (pakaiDeadline && !deadlineTanggal) return alert('Isi tanggal deadline, atau matikan opsi deadline.');
 
-    const soalDipilih = daftarSoal.filter((s) => terpilih.has(s.id));
+    const soalDipilih = Array.from(keranjang.values());
     const { quizData, peringatan } = konversiBanyakSoalKeQuiz(soalDipilih);
 
     if (peringatan.length > 0) {
@@ -234,7 +288,7 @@ export default function TerbitkanKuisPage() {
     try {
       const payload = {
         title: judulKuis.toUpperCase(),
-        subject: 'Umum', // 🔥 kunci utama: bypass gerbang mapel, lihat catatan di atas file
+        subject: 'Umum',
         kodeMapel: '',
         type: 'kuis_mandiri',
         status: 'aktif',
@@ -255,10 +309,6 @@ export default function TerbitkanKuisPage() {
 
       await addDoc(collection(db, 'bimbel_modul'), payload);
 
-      // Hitung penerima notifikasi sendiri (cocokkan targetKelas &
-      // targetKategori ke data siswa) -- karena notifyStudents() sekarang
-      // wajib kodeMapel ATAU specificStudentIds, dan kuis ini sengaja
-      // lintas-mapel jadi tidak punya kodeMapel yang relevan.
       const snapSiswa = await getDocs(collection(db, 'students'));
       const penerimaIds = snapSiswa.docs
         .map((d) => ({ id: d.id, ...d.data() }))
@@ -284,7 +334,7 @@ export default function TerbitkanKuisPage() {
         message: `Kuis "${judulKuis}" berhasil diterbitkan (${quizData.length} soal) ke ${penerimaIds.length} siswa.`,
       });
       setJudulKuis('');
-      setTerpilih(new Set());
+      kosongkanKeranjang();
     } catch (e) {
       console.error('Gagal menerbitkan kuis:', e);
       setHasil({ success: false, message: 'Gagal menerbitkan: ' + e.message });
@@ -292,91 +342,104 @@ export default function TerbitkanKuisPage() {
     setMenerbitkan(false);
   };
 
+  const ringkasanKeranjang = useMemo(() => {
+    const map = new Map();
+    Array.from(keranjang.values()).forEach((s) => {
+      const label = s.mataPelajaran ? `${s.mataPelajaran}${s.jenisUjian ? ` (${s.jenisUjian})` : ''}` : 'Tanpa label';
+      map.set(label, (map.get(label) || 0) + 1);
+    });
+    return Array.from(map.entries());
+  }, [keranjang]);
+
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px', fontFamily: 'sans-serif' }}>
-      <button
-        onClick={() => navigate('/admin/bank-soal')}
-        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontSize: 13 }}
-      >
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px', fontFamily: 'sans-serif', paddingBottom: keranjang.size > 0 ? 320 : 24 }}>
+      <button onClick={() => navigate('/admin/bank-soal')} style={backBtn}>
         <ArrowLeft size={16} /> Kembali ke Bank Soal
       </button>
 
       <h1 style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 22, fontWeight: 800, color: '#1e293b', marginBottom: 4 }}>
         <Rocket size={24} color="#06b6d4" /> Terbitkan Kuis dari Bank Soal
       </h1>
-      <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 24 }}>
-        Pilih soal dari gudang (Bank Soal), lalu terbitkan sebagai kuis yang bisa langsung dikerjakan siswa. Tidak terikat guru/mapel tertentu.
+      <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 20 }}>
+        Kumpulkan soal ke keranjang (bisa campur dari beberapa folder/pencarian), lalu terbitkan sekaligus jadi 1 kuis.
       </p>
 
-      {/* FILTER PENCARIAN SOAL */}
-      <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 13, color: '#374151', marginBottom: 12 }}>
-          <Filter size={15} /> Filter Soal
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
-          <input placeholder="Mapel (mis. Matematika)" value={filterMapel} onChange={(e) => setFilterMapel(e.target.value)} style={inputStyle} />
-          <select value={filterJenisUjian} onChange={(e) => setFilterJenisUjian(e.target.value)} style={inputStyle}>
-            <option value="">Semua jenis ujian</option>
-            <option value="TKA">TKA</option>
-            <option value="SNBT/UTBK">SNBT/UTBK</option>
-            <option value="Reguler">Reguler</option>
-            <option value="Lainnya">Lainnya</option>
-          </select>
-          <input placeholder="Tingkat kelas (mis. 10)" value={filterKelas} onChange={(e) => setFilterKelas(e.target.value)} style={inputStyle} />
-          <select value={filterKesulitan} onChange={(e) => setFilterKesulitan(e.target.value)} style={inputStyle}>
-            <option value="">Semua kesulitan</option>
-            <option value="mudah">Mudah</option>
-            <option value="sedang">Sedang</option>
-            <option value="sulit">Sulit</option>
-          </select>
-          <input placeholder="Cari materi (mis. Logaritma)" value={filterMateri} onChange={(e) => setFilterMateri(e.target.value)} style={inputStyle} />
-          <input placeholder="Cari tag (mis. hots, utbk)" value={filterTag} onChange={(e) => setFilterTag(e.target.value)} style={inputStyle} />
-        </div>
-        <button onClick={cariSoal} disabled={loadingSoal} style={{ ...btnPrimary, marginTop: 12 }}>
-          {loadingSoal ? <Loader2 size={15} className="spin" /> : <BookOpen size={15} />}
-          {loadingSoal ? 'Mencari...' : 'Cari Soal'}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, borderBottom: '1px solid #e5e7eb' }}>
+        <button onClick={() => setTab('folder')} style={tab === 'folder' ? tabAktif : tabPasif}>
+          <Folder size={14} style={{ marginRight: 6 }} /> Jelajah per Folder
+        </button>
+        <button onClick={() => setTab('cari')} style={tab === 'cari' ? tabAktif : tabPasif}>
+          <Filter size={14} style={{ marginRight: 6 }} /> Cari Bebas
         </button>
       </div>
 
-      {/* HASIL PENCARIAN */}
-      {sudahCari && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
-              {daftarSoal.length} soal ditemukan · {terpilih.size} dipilih
-            </span>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={pilihSemua} style={btnSecondary}>Pilih Semua</button>
-              <button onClick={batalkanSemua} style={btnSecondary}>Batalkan Semua</button>
+      {tab === 'folder' && (
+        <div>
+          {loadingFolder ? (
+            <Loader2 size={18} className="spin" />
+          ) : daftarFolder.length === 0 ? (
+            <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13, border: '1px dashed #d1d5db', borderRadius: 10 }}>
+              Belum ada Folder Sumber. Buat dulu lewat halaman "Import Hasil Scan AI" (panel 📁 Folder Sumber).
             </div>
-          </div>
-
-          {daftarSoal.length === 0 ? (
-            <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>Tidak ada soal cocok dengan filter.</div>
           ) : (
-            <div style={{ maxHeight: 420, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 10 }}>
-              {daftarSoal.map((s) => (
-                <div
-                  key={s.id}
-                  onClick={() => toggleSoal(s.id)}
-                  style={{
-                    display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 14px',
-                    borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
-                    backgroundColor: terpilih.has(s.id) ? '#ecfeff' : 'white',
-                  }}
-                >
-                  {terpilih.has(s.id) ? <CheckSquare size={18} color="#06b6d4" style={{ flexShrink: 0, marginTop: 2 }} /> : <Square size={18} color="#cbd5e1" style={{ flexShrink: 0, marginTop: 2 }} />}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 2 }}>
-                      #{s.nomor} · {s.tipe} · {s.jenisUjian || '-'} · {s.materi || '-'} · {s.tingkatKesulitan || '-'}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {daftarFolder.map((f) => (
+                <div key={f.id} style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+                  <div
+                    onClick={() => bukaFolder(f.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', cursor: 'pointer', backgroundColor: folderDibuka === f.id ? '#ecfeff' : 'white' }}
+                  >
+                    {folderDibuka === f.id ? <FolderOpen size={18} color="#06b6d4" /> : <Folder size={18} color="#9ca3af" />}
+                    {f.coverUrl && <img src={f.coverUrl} alt="" style={{ width: 28, height: 36, objectFit: 'cover', borderRadius: 3 }} />}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{f.judul}</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>{f.mataPelajaran} · {f.jenisUjian} · {f.jenjang} · {f.jumlahSoal || 0} soal</div>
                     </div>
-                    <div style={{ fontSize: 13, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {s.soal || s.teks_soal || '(tanpa teks)'}
-                    </div>
-                    {Array.isArray(s.tags) && s.tags.length > 0 && (
-                      <div style={{ fontSize: 10, color: '#9d174d', marginTop: 2 }}>🏷️ {s.tags.join(', ')}</div>
-                    )}
+                    {folderDibuka === f.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                   </div>
+
+                  {folderDibuka === f.id && (
+                    <div style={{ padding: '10px 14px 14px 40px', borderTop: '1px solid #f1f5f9' }}>
+                      {loadingSoalFolder && !cacheSoalFolder[f.id] ? (
+                        <Loader2 size={16} className="spin" />
+                      ) : babDalamFolder.length === 0 ? (
+                        <div style={{ fontSize: 12, color: '#9ca3af' }}>Belum ada soal di folder ini.</div>
+                      ) : (
+                        babDalamFolder.map(({ bab, soal }) => (
+                          <div key={bab} style={{ marginBottom: 6 }}>
+                            <div
+                              onClick={() => setBabDibuka(babDibuka === bab ? null : bab)}
+                              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', backgroundColor: '#f9fafb' }}
+                            >
+                              {babDibuka === bab ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              <span style={{ fontSize: 13, fontWeight: 600, color: '#374151', flex: 1 }}>{bab}</span>
+                              <span style={{ fontSize: 11, color: '#9ca3af' }}>{soal.length} soal</span>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); tambahBanyakKeKeranjang(soal); }}
+                                style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #06b6d4', backgroundColor: 'white', color: '#0e7490', fontWeight: 700, cursor: 'pointer' }}
+                              >
+                                + Tambah Semua
+                              </button>
+                            </div>
+                            {babDibuka === bab && (
+                              <div style={{ marginLeft: 20, marginTop: 4 }}>
+                                {soal.map((s) => (
+                                  <div
+                                    key={s.id}
+                                    onClick={() => toggleKeranjang(s)}
+                                    style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 8px', cursor: 'pointer', borderRadius: 6, backgroundColor: keranjang.has(s.id) ? '#ecfeff' : 'transparent' }}
+                                  >
+                                    {keranjang.has(s.id) ? <CheckSquare size={15} color="#06b6d4" style={{ flexShrink: 0, marginTop: 2 }} /> : <Square size={15} color="#cbd5e1" style={{ flexShrink: 0, marginTop: 2 }} />}
+                                    <span style={{ fontSize: 12, color: '#374151' }}>#{s.nomor} — {(s.soal || s.teks_soal || '').slice(0, 80)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -384,45 +447,120 @@ export default function TerbitkanKuisPage() {
         </div>
       )}
 
-      {/* FORM TERBITKAN */}
-      {terpilih.size > 0 && (
-        <div style={{ background: '#ecfeff', border: '1px solid #a5f3fc', borderRadius: 12, padding: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 13, color: '#0e7490', marginBottom: 12 }}>
-            📤 Terbitkan {terpilih.size} Soal Terpilih
+      {tab === 'cari' && (
+        <div>
+          <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+              <input placeholder="Mapel (mis. Matematika)" value={filterMapel} onChange={(e) => setFilterMapel(e.target.value)} style={inputStyle} />
+              <select value={filterJenisUjian} onChange={(e) => setFilterJenisUjian(e.target.value)} style={inputStyle}>
+                <option value="">Semua jenis ujian</option>
+                <option value="TKA">TKA</option>
+                <option value="SNBT/UTBK">SNBT/UTBK</option>
+                <option value="Reguler">Reguler</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+              <input placeholder="Tingkat kelas (mis. 10)" value={filterKelas} onChange={(e) => setFilterKelas(e.target.value)} style={inputStyle} />
+              <select value={filterKesulitan} onChange={(e) => setFilterKesulitan(e.target.value)} style={inputStyle}>
+                <option value="">Semua kesulitan</option>
+                <option value="mudah">Mudah</option>
+                <option value="sedang">Sedang</option>
+                <option value="sulit">Sulit</option>
+              </select>
+              <input placeholder="Cari materi (mis. Logaritma)" value={filterMateri} onChange={(e) => setFilterMateri(e.target.value)} style={inputStyle} />
+              <input placeholder="Cari tag (mis. hots, utbk)" value={filterTag} onChange={(e) => setFilterTag(e.target.value)} style={inputStyle} />
+            </div>
+            <button onClick={cariSoal} disabled={loadingSoal} style={{ ...btnPrimary, marginTop: 12 }}>
+              {loadingSoal ? <Loader2 size={15} className="spin" /> : <BookOpen size={15} />}
+              {loadingSoal ? 'Mencari...' : 'Cari Soal'}
+            </button>
           </div>
-          <input
-            placeholder="Judul kuis (mis. Tryout TKA Matematika Paket 1)"
-            value={judulKuis}
-            onChange={(e) => setJudulKuis(e.target.value)}
-            style={{ ...inputStyle, width: '100%', marginBottom: 10, backgroundColor: 'white' }}
-          />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 10 }}>
-            <select value={targetKelas} onChange={(e) => setTargetKelas(e.target.value)} style={{ ...inputStyle, backgroundColor: 'white' }}>
-              {availableClasses.map((k) => <option key={k} value={k}>{k === 'Semua' ? 'Semua Kelas' : k}</option>)}
-            </select>
-            <select value={targetKategori} onChange={(e) => setTargetKategori(e.target.value)} style={{ ...inputStyle, backgroundColor: 'white' }}>
-              <option value="Semua">Semua Program</option>
-              <option value="Reguler">Reguler</option>
-              <option value="English">English</option>
-            </select>
-          </div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151', marginBottom: 10 }}>
-            <input type="checkbox" checked={pakaiDeadline} onChange={(e) => setPakaiDeadline(e.target.checked)} />
-            Pakai batas waktu pengerjaan
-          </label>
-          {pakaiDeadline && (
-            <input
-              type="datetime-local"
-              value={deadlineTanggal}
-              onChange={(e) => setDeadlineTanggal(e.target.value)}
-              style={{ ...inputStyle, marginBottom: 10, backgroundColor: 'white' }}
-            />
-          )}
 
-          <button onClick={handleTerbitkan} disabled={menerbitkan} style={btnPrimary}>
-            {menerbitkan ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
-            {menerbitkan ? 'Menerbitkan...' : 'Terbitkan Kuis ke Siswa'}
-          </button>
+          {sudahCari && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>{daftarSoal.length} soal ditemukan</span>
+                <button onClick={() => tambahBanyakKeKeranjang(daftarSoal)} style={btnSecondary}>+ Tambah Semua ke Keranjang</button>
+              </div>
+
+              {daftarSoal.length === 0 ? (
+                <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>Tidak ada soal cocok dengan filter.</div>
+              ) : (
+                <div style={{ maxHeight: 420, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 10 }}>
+                  {daftarSoal.map((s) => (
+                    <div
+                      key={s.id}
+                      onClick={() => toggleKeranjang(s)}
+                      style={{
+                        display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 14px',
+                        borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
+                        backgroundColor: keranjang.has(s.id) ? '#ecfeff' : 'white',
+                      }}
+                    >
+                      {keranjang.has(s.id) ? <CheckSquare size={18} color="#06b6d4" style={{ flexShrink: 0, marginTop: 2 }} /> : <Square size={18} color="#cbd5e1" style={{ flexShrink: 0, marginTop: 2 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 2 }}>
+                          #{s.nomor} · {s.tipe} · {s.jenisUjian || '-'} · {s.materi || '-'} · {s.tingkatKesulitan || '-'}
+                        </div>
+                        <div style={{ fontSize: 13, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {s.soal || s.teks_soal || '(tanpa teks)'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {keranjang.size > 0 && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white',
+          borderTop: '2px solid #06b6d4', boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+          padding: '16px 24px', zIndex: 50, maxHeight: 300, overflowY: 'auto',
+        }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <ShoppingCart size={18} color="#06b6d4" />
+              <span style={{ fontWeight: 800, fontSize: 14, color: '#0e7490' }}>Keranjang: {keranjang.size} soal</span>
+              <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                ({ringkasanKeranjang.map(([label, n]) => `${label}: ${n}`).join(' · ')})
+              </span>
+              <button onClick={kosongkanKeranjang} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }}>
+                <Trash2 size={14} /> Kosongkan
+              </button>
+            </div>
+
+            <input
+              placeholder="Judul kuis (mis. Tryout TKA Bahasa Indonesia Paket 1)"
+              value={judulKuis}
+              onChange={(e) => setJudulKuis(e.target.value)}
+              style={{ ...inputStyle, width: '100%', marginBottom: 8 }}
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 8 }}>
+              <select value={targetKelas} onChange={(e) => setTargetKelas(e.target.value)} style={inputStyle}>
+                {availableClasses.map((k) => <option key={k} value={k}>{k === 'Semua' ? 'Semua Kelas' : k}</option>)}
+              </select>
+              <select value={targetKategori} onChange={(e) => setTargetKategori(e.target.value)} style={inputStyle}>
+                <option value="Semua">Semua Program</option>
+                <option value="Reguler">Reguler</option>
+                <option value="English">English</option>
+              </select>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                <input type="checkbox" checked={pakaiDeadline} onChange={(e) => setPakaiDeadline(e.target.checked)} />
+                Pakai deadline
+              </label>
+              {pakaiDeadline && (
+                <input type="datetime-local" value={deadlineTanggal} onChange={(e) => setDeadlineTanggal(e.target.value)} style={inputStyle} />
+              )}
+            </div>
+
+            <button onClick={handleTerbitkan} disabled={menerbitkan} style={btnPrimary}>
+              {menerbitkan ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
+              {menerbitkan ? 'Menerbitkan...' : `Terbitkan ${keranjang.size} Soal ke Siswa`}
+            </button>
+          </div>
         </div>
       )}
 
@@ -441,9 +579,8 @@ export default function TerbitkanKuisPage() {
   );
 }
 
-const inputStyle = {
-  padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none',
-};
+const backBtn = { display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontSize: 13 };
+const inputStyle = { padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none' };
 const btnPrimary = {
   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 8,
   border: 'none', backgroundColor: '#06b6d4', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer',
@@ -452,3 +589,5 @@ const btnSecondary = {
   padding: '6px 12px', borderRadius: 6, border: '1px solid #d1d5db', backgroundColor: 'white',
   fontSize: 12, cursor: 'pointer', color: '#374151',
 };
+const tabAktif = { padding: '10px 16px', border: 'none', borderBottom: '2px solid #06b6d4', backgroundColor: 'transparent', color: '#0e7490', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
+const tabPasif = { padding: '10px 16px', border: 'none', borderBottom: '2px solid transparent', backgroundColor: 'transparent', color: '#9ca3af', fontWeight: 600, fontSize: 13, cursor: 'pointer' };
