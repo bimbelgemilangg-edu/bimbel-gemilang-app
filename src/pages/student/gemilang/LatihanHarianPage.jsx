@@ -19,7 +19,7 @@ import { db } from '../../../firebase';
 import {
   collection, query, where, getDocs, doc, getDoc, setDoc, serverTimestamp, limit,
 } from 'firebase/firestore';
-import { ArrowLeft, CheckCircle2, XCircle, Flame, Sparkles, BookOpen } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
@@ -283,7 +283,21 @@ export default function LatihanHarianPage() {
         soal = soal.filter((s) => cocokkanJenjang(s.jenjang, jenjangSiswa));
         if (studentKelas) {
           const angkaKelasSiswa = ekstrakAngkaKelas(studentKelas);
-          soal = soal.filter((s) => !s.tingkatKelas || ekstrakAngkaKelas(s.tingkatKelas) === angkaKelasSiswa);
+          soal = soal.filter((s) => {
+            // 🔥 BARU: soal TKA/SNBT/UTBK dianggap LINTAS KELAS dalam 1
+            // jenjang -- gak peduli kelas berapa yang kebetulan ke-tag
+            // pas import (mis. materi kelas 7 dipakai buat latihan TKA
+            // kelas 9). Ini penting karena TKA/UTBK memang soal
+            // kompetensi kumulatif seluruh jenjang, bukan kurikulum 1
+            // kelas spesifik -- kalau dipaksa cocok kelas persis, kelas
+            // 9 (yang justru paling butuh latihan TKA) malah gak
+            // kebagian soal yang materinya "ketagnya" kelas 7/8.
+            if (s.jenisUjian && ['tka', 'snbt', 'utbk'].includes(s.jenisUjian.toLowerCase())) return true;
+            // Soal REGULER (bukan TKA) tetap ketat per kelas -- gak mau
+            // siswa kelas 7 kebagian materi Aljabar kelas 9 yang belum
+            // dipelajari, atau sebaliknya.
+            return !s.tingkatKelas || ekstrakAngkaKelas(s.tingkatKelas) === angkaKelasSiswa;
+          });
         }
         // Hanya dukung pg_sederhana dulu di v1 -- tipe lain (kompleks,
         // kategori, isian) menyusul setelah UI jawabnya dibuat.
@@ -433,37 +447,55 @@ export default function LatihanHarianPage() {
   // ============================================================
   // RENDER
   // ============================================================
+  // 🔥 DESAIN BARU: tema "Misi Harian" -- dijahit ke identitas Gemilang
+  // sendiri (maskot astronot), bukan contekan template generik. Header
+  // gelap starfield dipakai konsisten di semua layar (jadi elemen
+  // "berani" satu-satunya), sisanya sengaja tenang & bersih supaya
+  // gak berebut perhatian. Semua fungsi logika (pilihMapel, cekJawaban,
+  // dst) TIDAK diubah sama sekali -- ini murni tampilan.
 
   if (tahap === 'memuat') {
-    return <div style={st.pusat}>Memuat soal...</div>;
+    return (
+      <div style={st.pusat}>
+        <div style={{ fontSize: 40, marginBottom: 10 }}>🧑‍🚀</div>
+        <div>Menyiapkan misi harianmu...</div>
+      </div>
+    );
   }
 
   if (tahap === 'pilih-mapel') {
     return (
       <div style={st.page}>
-        <div style={st.headerBar}>
-          <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtn}><ArrowLeft size={20} /></button>
-          <span style={st.headerTitle}>Latihan Harian</span>
+        <div style={st.hero}>
+          <div style={st.heroStars} />
+          <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtnDark}><ArrowLeft size={20} /></button>
+          <div style={{ textAlign: 'center', paddingBottom: 8 }}>
+            <div style={{ fontSize: 40 }}>🧑‍🚀</div>
+            <h1 style={st.heroTitle}>Misi Harian</h1>
+            <p style={st.heroSub}>Mau menjelajah planet mapel yang mana?</p>
+          </div>
         </div>
-        <div style={{ padding: 18 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 10 }}>Mau latihan mapel apa hari ini?</div>
+
+        <div style={{ padding: '20px 18px' }}>
           {daftarMapel.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 30, fontSize: 13 }}>
+            <div style={st.kosongBox}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🛰️</div>
               {studentJenjang
-                ? 'Belum ada soal tersedia untuk jenjang/kelasmu.'
+                ? 'Belum ada soal tersedia untuk jenjang/kelasmu. Coba lagi nanti, ya.'
                 : '⚠️ Data jenjang di profilmu belum lengkap. Hubungi admin untuk melengkapi data supaya Latihan Harian bisa menampilkan soal yang sesuai levelmu.'}
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {daftarMapel.map((m) => (
-                <button key={m.mapel} onClick={() => pilihMapel(m.mapel)} style={st.kartuMateri}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <BookOpen size={18} color="#4f46e5" />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{m.mapel}</span>
-                  </div>
-                  <span style={{ fontSize: 11, color: '#94a3b8' }}>{m.jumlahSoal} soal</span>
-                </button>
-              ))}
+            <div style={st.gridMapel}>
+              {daftarMapel.map((m) => {
+                const ikon = getIkonMapel(m.mapel);
+                return (
+                  <button key={m.mapel} onClick={() => pilihMapel(m.mapel)} style={{ ...st.kartuPlanet, borderColor: ikon.warna }}>
+                    <div style={{ ...st.lingkaranIkon, background: `${ikon.warna}1a`, color: ikon.warna }}>{ikon.emoji}</div>
+                    <span style={st.namaPlanet}>{m.mapel}</span>
+                    <span style={st.jumlahSoalPlanet}>{m.jumlahSoal} soal</span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -472,38 +504,51 @@ export default function LatihanHarianPage() {
   }
 
   if (tahap === 'pilih-mode') {
+    const ikonMapel = getIkonMapel(mapelDipilih);
     return (
       <div style={st.page}>
-        <div style={st.headerBar}>
-          <button onClick={() => setTahap('pilih-mapel')} style={st.backBtn}><ArrowLeft size={20} /></button>
-          <span style={st.headerTitle}>{mapelDipilih}</span>
+        <div style={{ ...st.hero, paddingBottom: 24 }}>
+          <div style={st.heroStars} />
+          <button onClick={() => setTahap('pilih-mapel')} style={st.backBtnDark}><ArrowLeft size={20} /></button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+            <span style={{ fontSize: 26 }}>{ikonMapel.emoji}</span>
+            <h1 style={{ ...st.heroTitle, fontSize: 20, textAlign: 'left' }}>{mapelDipilih}</h1>
+          </div>
         </div>
 
-        <div style={{ padding: 18 }}>
+        <div style={{ padding: '18px', marginTop: -14 }}>
           <button onClick={mulaiSesiRekomendasi} style={st.kartuRekomendasi}>
-            <Sparkles size={22} />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 800, fontSize: 15 }}>Rekomendasi Otomatis</div>
-              <div style={{ fontSize: 11.5, opacity: 0.9 }}>10 soal {mapelDipilih} disesuaikan kelemahanmu</div>
+            <span style={{ fontSize: 30 }}>🚀</span>
+            <div style={{ textAlign: 'left', flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 15 }}>Luncurkan Rekomendasi</div>
+              <div style={{ fontSize: 11.5, opacity: 0.9 }}>10 soal disesuaikan titik lemahmu</div>
             </div>
+            <ChevronRightIcon />
           </button>
 
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', margin: '20px 0 10px' }}>Atau pilih bab sendiri:</div>
+          <div style={st.subJudulSeksi}>Atau pilih bab sendiri</div>
           {daftarMateri.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#94a3b8', padding: 30, fontSize: 13 }}>Belum ada soal di mapel ini.</div>
+            <div style={st.kosongBox}>Belum ada soal di mapel ini.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {daftarMateri.map((m) => (
-                <button key={m.materi} onClick={() => mulaiSesiManual(m.materi)} style={st.kartuMateri}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <BookOpen size={18} color="#4f46e5" />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{m.materi}</span>
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: m.persentase === null ? '#94a3b8' : m.persentase < 60 ? '#dc2626' : '#16a34a' }}>
-                    {m.persentase === null ? 'Belum dicoba' : `${m.persentase}%`}
-                  </span>
-                </button>
-              ))}
+              {daftarMateri.map((m) => {
+                const belumDicoba = m.persentase === null;
+                const lemah = !belumDicoba && m.persentase < 60;
+                const warnaBar = belumDicoba ? '#cbd5e1' : lemah ? '#f97316' : '#22c55e';
+                return (
+                  <button key={m.materi} onClick={() => mulaiSesiManual(m.materi)} style={st.kartuBab}>
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <div style={st.namaBab}>{m.materi}</div>
+                      <div style={st.trackMini}>
+                        <div style={{ ...st.fillMini, width: belumDicoba ? '0%' : `${m.persentase}%`, background: warnaBar }} />
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: warnaBar, minWidth: 70, textAlign: 'right' }}>
+                      {belumDicoba ? 'Baru' : `${m.persentase}%`}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -513,29 +558,38 @@ export default function LatihanHarianPage() {
 
   if (tahap === 'mengerjakan' && soalAktif) {
     const indexBenar = hurufKeIndex(soalAktif.kunciJawaban);
+    const progresPersen = (indexSekarang / soalSesi.length) * 100;
+    const ikonMapel = getIkonMapel(mapelDipilih);
     return (
       <div style={st.page}>
-        <div style={st.headerBar}>
-          <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtn}><ArrowLeft size={20} /></button>
-          <span style={st.headerTitle}>Soal {indexSekarang + 1} / {soalSesi.length}</span>
-        </div>
-        <div style={st.progressBarBg}>
-          <div style={{ ...st.progressBarFill, width: `${((indexSekarang) / soalSesi.length) * 100}%` }} />
+        <div style={{ ...st.hero, paddingBottom: 20 }}>
+          <div style={st.heroStars} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtnDark}><ArrowLeft size={20} /></button>
+            <span style={{ color: 'white', fontWeight: 700, fontSize: 13 }}>Soal {indexSekarang + 1} dari {soalSesi.length}</span>
+          </div>
+          <div style={st.jalurRoket}>
+            <div style={{ ...st.jalurRoketFill, width: `${progresPersen}%` }} />
+            <span style={{ ...st.rocketMarker, left: `calc(${progresPersen}% - 10px)` }}>🚀</span>
+          </div>
         </div>
 
-        <div style={{ padding: 18 }}>
-          <div style={st.kartuSoal}>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{soalAktif.materi}</div>
-            <div style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.6, marginBottom: 16 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
+        <div style={{ padding: 18, marginTop: -6 }}>
+          <div style={{ ...st.kartuSoal, borderTop: `4px solid ${ikonMapel.warna}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <span>{ikonMapel.emoji}</span>
+              <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>{soalAktif.materi}</span>
+            </div>
+            <div style={{ fontSize: 14.5, color: '#1e293b', lineHeight: 1.6, marginBottom: 18 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
 
             {(soalAktif.opsiJawaban || []).map((opsi, i) => {
               const teksOpsi = typeof opsi === 'string' ? opsi : (opsi?.teks || '');
               const dipilih = jawabanDipilih === i;
               let warna = '#e2e8f0';
               if (sudahDicek) {
-                if (i === indexBenar) warna = '#16a34a';
-                else if (dipilih) warna = '#dc2626';
-              } else if (dipilih) warna = '#4f46e5';
+                if (i === indexBenar) warna = '#22c55e';
+                else if (dipilih) warna = '#ef4444';
+              } else if (dipilih) warna = '#7c3aed';
 
               return (
                 <button
@@ -544,35 +598,37 @@ export default function LatihanHarianPage() {
                   onClick={() => setJawabanDipilih(i)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
-                    padding: '12px 14px', borderRadius: 12, border: `2px solid ${warna}`, marginBottom: 8,
-                    background: sudahDicek && i === indexBenar ? '#f0fdf4' : sudahDicek && dipilih ? '#fef2f2' : dipilih ? '#eef2ff' : 'white',
-                    cursor: sudahDicek ? 'default' : 'pointer', fontSize: 13, color: '#1e293b',
+                    padding: '13px 14px', borderRadius: 14, border: `2px solid ${warna}`, marginBottom: 9,
+                    background: sudahDicek && i === indexBenar ? '#f0fdf4' : sudahDicek && dipilih ? '#fef2f2' : dipilih ? '#f5f3ff' : 'white',
+                    cursor: sudahDicek ? 'default' : 'pointer', fontSize: 13.5, color: '#1e293b',
+                    transform: dipilih && !sudahDicek ? 'scale(1.01)' : 'scale(1)', transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${warna}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                  <span style={{ width: 26, height: 26, borderRadius: '50%', border: `2px solid ${warna}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0, color: warna }}>
                     {String.fromCharCode(65 + i)}
                   </span>
-                  {renderMath(teksOpsi)}
-                  {sudahDicek && i === indexBenar && <CheckCircle2 size={16} color="#16a34a" style={{ marginLeft: 'auto' }} />}
-                  {sudahDicek && dipilih && i !== indexBenar && <XCircle size={16} color="#dc2626" style={{ marginLeft: 'auto' }} />}
+                  <span style={{ flex: 1 }}>{renderMath(teksOpsi)}</span>
+                  {sudahDicek && i === indexBenar && <CheckCircle2 size={18} color="#22c55e" />}
+                  {sudahDicek && dipilih && i !== indexBenar && <XCircle size={18} color="#ef4444" />}
                 </button>
               );
             })}
 
             {sudahDicek && soalAktif.pembahasan && (
-              <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: '#eff6ff', fontSize: 12.5, color: '#1e3a8a', lineHeight: 1.6 }}>
-                <b>💡 Pembahasan:</b> {renderMath(soalAktif.pembahasan)}
+              <div style={st.boxPembahasan}>
+                <b>💡 Pembahasan</b>
+                <div style={{ marginTop: 4 }}>{renderMath(soalAktif.pembahasan)}</div>
               </div>
             )}
           </div>
 
           {!sudahDicek ? (
-            <button onClick={cekJawaban} disabled={jawabanDipilih === null} style={{ ...st.tombolUtama, opacity: jawabanDipilih === null ? 0.5 : 1 }}>
+            <button onClick={cekJawaban} disabled={jawabanDipilih === null} style={{ ...st.tombolUtama, opacity: jawabanDipilih === null ? 0.4 : 1 }}>
               Cek Jawaban
             </button>
           ) : (
             <button onClick={lanjutSoal} style={st.tombolUtama}>
-              {indexSekarang + 1 < soalSesi.length ? 'Lanjut Soal Berikutnya' : 'Lihat Hasil'}
+              {indexSekarang + 1 < soalSesi.length ? 'Lanjut Soal Berikutnya' : 'Lihat Hasil Misi'}
             </button>
           )}
         </div>
@@ -581,31 +637,43 @@ export default function LatihanHarianPage() {
   }
 
   if (tahap === 'selesai') {
+    const semuaBenar = hasilSesi.salah === 0;
     return (
       <div style={st.page}>
-        <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 56, marginBottom: 12 }}>🎉</div>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1e293b', marginBottom: 6 }}>Sesi Selesai!</h2>
-          <p style={{ color: '#64748b', fontSize: 13, marginBottom: 24 }}>
+        <style>{`
+          @keyframes gemilangFloatUp { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+          @keyframes gemilangTwinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        `}</style>
+        <div style={{ ...st.hero, minHeight: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={st.heroStars} />
+          {['⭐','✨','⭐','✨'].map((s, i) => (
+            <span key={i} style={{ position: 'absolute', fontSize: 14 + (i % 2) * 6, top: `${15 + i * 18}%`, left: `${10 + i * 24}%`, animation: `gemilangTwinkle ${1.4 + i * 0.3}s ease-in-out infinite` }}>{s}</span>
+          ))}
+          <div style={{ fontSize: 56, animation: 'gemilangFloatUp 0.5s ease-out' }}>{semuaBenar ? '🧑‍🚀' : '🛰️'}</div>
+          <h1 style={{ ...st.heroTitle, fontSize: 20, marginTop: 6 }}>Misi Selesai!</h1>
+        </div>
+
+        <div style={{ padding: '20px 24px', textAlign: 'center', marginTop: -10 }}>
+          <p style={{ color: '#64748b', fontSize: 13.5, marginBottom: 22 }}>
             {hasilSesi.benar} benar, {hasilSesi.salah} salah dari {soalSesi.length} soal
           </p>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 28 }}>
             <div style={st.statBesar}>
-              <Sparkles size={20} color="#673ab7" />
-              <div style={{ fontWeight: 800, fontSize: 18, color: '#1e293b' }}>+{xpDidapat}</div>
-              <div style={{ fontSize: 10, color: '#94a3b8' }}>XP</div>
+              <span style={{ fontSize: 22 }}>🚀</span>
+              <div style={st.statAngka}>+{xpDidapat}</div>
+              <div style={st.statLabel}>XP didapat</div>
             </div>
             {streakInfo && (
               <div style={st.statBesar}>
-                <Flame size={20} color="#f97316" />
-                <div style={{ fontWeight: 800, fontSize: 18, color: '#1e293b' }}>{streakInfo.streakBaru}</div>
-                <div style={{ fontSize: 10, color: '#94a3b8' }}>Hari Streak</div>
+                <Flame size={22} color="#f97316" />
+                <div style={st.statAngka}>{streakInfo.streakBaru}</div>
+                <div style={st.statLabel}>Hari Beruntun</div>
               </div>
             )}
           </div>
 
-          <button onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>Kembali ke Beranda</button>
+          <button onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>Kembali ke Markas</button>
         </div>
       </div>
     );
@@ -614,17 +682,75 @@ export default function LatihanHarianPage() {
   return null;
 }
 
+// 🔥 BARU: ikon & warna per mapel, biar tiap "planet" gampang dibedain
+// sekilas mata -- bukan kartu abu-abu identik semua.
+const IKON_MAPEL = {
+  matematika: { emoji: '🔢', warna: '#4C6EF5' },
+  'bahasa indonesia': { emoji: '📖', warna: '#F0447D' },
+  'bahasa inggris': { emoji: '🌍', warna: '#0EA5E9' },
+  kimia: { emoji: '🧪', warna: '#22C55E' },
+  fisika: { emoji: '⚡', warna: '#F59E0B' },
+  biologi: { emoji: '🌿', warna: '#16A34A' },
+  ekonomi: { emoji: '💹', warna: '#0891B2' },
+  sejarah: { emoji: '🏛️', warna: '#A16207' },
+  geografi: { emoji: '🗺️', warna: '#0D9488' },
+};
+function getIkonMapel(nama) {
+  const key = (nama || '').toLowerCase();
+  for (const k in IKON_MAPEL) { if (key.includes(k)) return IKON_MAPEL[k]; }
+  return { emoji: '📚', warna: '#7C3AED' };
+}
+
+function ChevronRightIcon() {
+  return <span style={{ fontSize: 18, opacity: 0.85 }}>›</span>;
+}
+
+// ============================================================
+// STYLE TOKENS -- tema "Misi Harian" (astronot/luar angkasa)
+// ============================================================
+// Warna inti: #1E1B4B (langit malam), #7C3AED (nebula/brand),
+// #FB923C (dorongan roket/energi), #FBBF24 (bintang), #F4F2FF (orbit/bg).
 const st = {
-  page: { minHeight: '100vh', background: '#f1f5f9', fontFamily: 'sans-serif', maxWidth: 480, margin: '0 auto' },
-  pusat: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontFamily: 'sans-serif' },
-  headerBar: { display: 'flex', alignItems: 'center', gap: 12, padding: '16px 18px', background: 'white', borderBottom: '1px solid #e2e8f0' },
-  backBtn: { background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
-  headerTitle: { fontSize: 15, fontWeight: 800, color: '#1e293b' },
-  progressBarBg: { height: 5, background: '#e2e8f0' },
-  progressBarFill: { height: '100%', background: '#4f46e5', transition: 'width 0.3s ease' },
-  kartuRekomendasi: { display: 'flex', alignItems: 'center', gap: 14, width: '100%', background: 'linear-gradient(135deg, #4f46e5, #673ab7)', color: 'white', border: 'none', borderRadius: 16, padding: 18, cursor: 'pointer' },
-  kartuMateri: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 14px', cursor: 'pointer' },
-  kartuSoal: { background: 'white', borderRadius: 16, padding: 18, marginBottom: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-  tombolUtama: { width: '100%', padding: '14px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: 'pointer' },
-  statBesar: { background: 'white', borderRadius: 14, padding: '14px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' },
+  page: { minHeight: '100vh', background: '#F4F2FF', fontFamily: 'sans-serif', maxWidth: 480, margin: '0 auto' },
+  pusat: { minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontFamily: 'sans-serif', background: '#F4F2FF' },
+
+  hero: {
+    position: 'relative', overflow: 'hidden', padding: '18px 18px 30px',
+    background: 'linear-gradient(160deg, #1E1B4B 0%, #4C1D95 100%)',
+  },
+  heroStars: {
+    position: 'absolute', inset: 0,
+    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px)',
+    backgroundSize: '18px 18px', opacity: 0.5, pointerEvents: 'none',
+  },
+  heroTitle: { color: 'white', fontSize: 22, fontWeight: 800, margin: '6px 0 2px' },
+  heroSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12.5, margin: 0 },
+  backBtnDark: { position: 'relative', zIndex: 1, background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' },
+
+  jalurRoket: { position: 'relative', height: 6, background: 'rgba(255,255,255,0.2)', borderRadius: 10, marginTop: 16 },
+  jalurRoketFill: { position: 'absolute', top: 0, left: 0, height: '100%', background: 'linear-gradient(90deg, #FB923C, #FBBF24)', borderRadius: 10, transition: 'width 0.4s ease' },
+  rocketMarker: { position: 'absolute', top: -9, fontSize: 16, transition: 'left 0.4s ease' },
+
+  kosongBox: { textAlign: 'center', color: '#8b8398', padding: '36px 20px', fontSize: 13, background: 'white', borderRadius: 16 },
+
+  gridMapel: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 },
+  kartuPlanet: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, background: 'white', border: '2px solid', borderRadius: 18, padding: 16, cursor: 'pointer', textAlign: 'left' },
+  lingkaranIkon: { width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 2 },
+  namaPlanet: { fontSize: 13.5, fontWeight: 700, color: '#1e293b' },
+  jumlahSoalPlanet: { fontSize: 11, color: '#94a3b8' },
+
+  kartuRekomendasi: { display: 'flex', alignItems: 'center', gap: 14, width: '100%', background: 'linear-gradient(135deg, #7C3AED, #4C1D95)', color: 'white', border: 'none', borderRadius: 18, padding: 18, cursor: 'pointer', boxShadow: '0 8px 20px rgba(124,58,237,0.3)' },
+  subJudulSeksi: { fontSize: 12.5, fontWeight: 700, color: '#64748b', margin: '22px 0 10px' },
+  kartuBab: { display: 'flex', alignItems: 'center', gap: 12, background: 'white', border: '1px solid #ece7fb', borderRadius: 14, padding: '13px 16px', cursor: 'pointer' },
+  namaBab: { fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 6 },
+  trackMini: { height: 5, background: '#f1f0f9', borderRadius: 10, overflow: 'hidden' },
+  fillMini: { height: '100%', borderRadius: 10, transition: 'width 0.3s ease' },
+
+  kartuSoal: { background: 'white', borderRadius: 18, padding: 18, marginBottom: 16, boxShadow: '0 4px 16px rgba(30,27,75,0.06)' },
+  boxPembahasan: { marginTop: 14, padding: 14, borderRadius: 12, background: '#F4F2FF', fontSize: 12.5, color: '#4C1D95', lineHeight: 1.6 },
+
+  tombolUtama: { width: '100%', padding: '15px', background: '#7C3AED', color: 'white', border: 'none', borderRadius: 16, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 6px 16px rgba(124,58,237,0.25)' },
+  statBesar: { background: 'white', borderRadius: 16, padding: '16px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, boxShadow: '0 4px 14px rgba(30,27,75,0.06)', minWidth: 100 },
+  statAngka: { fontWeight: 800, fontSize: 19, color: '#1e293b', fontVariantNumeric: 'tabular-nums' },
+  statLabel: { fontSize: 10.5, color: '#94a3b8' },
 };
