@@ -415,6 +415,32 @@ function safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+// 🔥 BARU: Firestore TIDAK MENDUKUNG array di dalam array (nested
+// array) sebagai nilai field -- error nyata yang ditemukan: "Function
+// WriteBatch.set() called with invalid data. Nested arrays are not
+// supported". Ini bukan cuma bug di parser HTML (tabel_soal dari HTML
+// Master) -- kalau admin paste JSON/CSV yang tabel_soal.baris-nya JUGA
+// array-of-array (cara natural nulis tabel di JSON), bug yang sama
+// bakal muncul lagi. Sanitizer ini dipasang UNIVERSAL di buildDoc()
+// (bukan cuma di parser HTML) supaya menjaga SEMUA jalur input
+// sekaligus -- baris array diubah jadi objek {0:sel1,1:sel2,...},
+// yang tetap dirender identik oleh QuestionTable (sudah punya fallback
+// Object.values(row)).
+function amankanTabelDariNestedArray(tabel) {
+  if (!tabel || !Array.isArray(tabel.baris)) return tabel;
+  const adaBarisArray = tabel.baris.some(row => Array.isArray(row));
+  if (!adaBarisArray) return tabel; // sudah aman, tidak perlu diubah
+  return {
+    ...tabel,
+    baris: tabel.baris.map(row => {
+      if (!Array.isArray(row)) return row; // sudah objek, biarkan
+      const objBaris = {};
+      row.forEach((sel, i) => { objBaris[i] = sel; });
+      return objBaris;
+    }),
+  };
+}
+
 function safeBoolean(value) {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
@@ -1139,11 +1165,28 @@ function parseHTMLTableElement(table) {
   if (!rows.length) return null;
   const firstCells = Array.from(rows[0].querySelectorAll(':scope > th, :scope > td'));
   const header = firstCells.map(cell => htmlNodeText(cell));
-  const bodyRows = rows.slice(1).map(row =>
+  const bodyRowsMentah = rows.slice(1).map(row =>
     Array.from(row.querySelectorAll(':scope > th, :scope > td')).map(cell => htmlNodeText(cell)),
   );
   const hasHeader = Boolean(rows[0].querySelector(':scope > th')) || table.getAttribute('data-has-header') === 'true';
-  return { header: hasHeader ? header : [], baris: hasHeader ? bodyRows : [header, ...bodyRows] };
+  const bodyRowsArray = hasHeader ? bodyRowsMentah : [header, ...bodyRowsMentah];
+
+  // 🔥 PENTING (bug nyata ditemukan): Firestore TIDAK MENDUKUNG array di
+  // dalam array (nested array) sebagai nilai field -- error asli:
+  // "Function WriteBatch.set() called with invalid data. Nested arrays
+  // are not supported". Sebelumnya `baris` di sini adalah array-of-array
+  // (tiap baris tabel = array sel mentah), lolos di preview (browser
+  // gak masalah) tapi GAGAL DIAM-DIAM pas disimpan ke Firestore.
+  // Dikonversi ke array-of-OBJEK di sini (tiap baris = {0:sel1,
+  // 1:sel2, ...}) -- QuestionTable SUDAH otomatis mendukung bentuk ini
+  // lewat `Object.values(row)`, jadi tampilan tidak berubah sama sekali.
+  const baris = bodyRowsArray.map(row => {
+    const objBaris = {};
+    row.forEach((sel, i) => { objBaris[i] = sel; });
+    return objBaris;
+  });
+
+  return { header: hasHeader ? header : [], baris };
 }
 
 function parseHTMLStatements(container) {
@@ -2417,7 +2460,7 @@ function buildDoc(q, meta) {
     pembahasan: q.pembahasan,
     catatanAdmin: q.catatan_admin || '',
     gambarUrls,
-    tabelSoal: q.tabel_soal || null,
+    tabelSoal: amankanTabelDariNestedArray(q.tabel_soal) || null,
     referensiSumber: q.referensi_sumber || null,
     materi: q.materi || '',
     capaianPembelajaran: q.capaian_pembelajaran || '',
