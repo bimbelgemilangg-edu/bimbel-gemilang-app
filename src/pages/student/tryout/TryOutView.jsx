@@ -39,7 +39,7 @@ import RendererPgSederhana from './RendererPgSederhana';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
-import { hitungSkorPgKompleks, hitungSkorBenarSalah } from '../../../utils/skoringSoalKompleks';
+import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from '../../../utils/skoringSoalKompleks';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -96,7 +96,7 @@ function skorSatuSoal(soal, jawaban) {
       const baris = soal.tabel_benar_salah?.length ? soal.tabel_benar_salah : soal.pernyataan || [];
       return hitungSkorBenarSalah(baris, jawaban);
     }
-    const indexBenar = String(soal.kunciJawaban || '').trim().toUpperCase().charCodeAt(0) - 65;
+    const indexBenar = cariIndexBenar(soal);
     return jawaban === indexBenar ? 1 : 0;
   } catch (e) {
     // 🔥 BARU: kalau soal ini datanya rusak, jangan sampai proses

@@ -7,13 +7,11 @@
 // ============================================================
 
 import React from 'react';
+import { cariIndexBenar } from '../../../utils/skoringSoalKompleks';
 
 export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false }) {
   const opsi = soal.opsiJawaban || [];
-  const indexBenar = (() => {
-    const h = String(soal.kunciJawaban || '').trim().toUpperCase();
-    return h ? h.charCodeAt(0) - 65 : -1;
-  })();
+  const indexBenar = cariIndexBenar(soal);
 
   return (
     <div>

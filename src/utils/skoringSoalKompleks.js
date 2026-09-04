@@ -73,3 +73,35 @@ export function hitungSkorBenarSalah(baris, jawabanSiswaPerBaris) {
 
   return jumlahBenar / daftar.length;
 }
+
+// 🔥 BARU (BUG SERIUS DITEMUKAN): sebelumnya kode di 2 tempat beda
+// (TryOutView.jsx & RendererPgSederhana.jsx) masing-masing nganggep
+// kunciJawaban PASTI 1 huruf tunggal (mis. "B") -- kalau ternyata
+// ke-simpen dalam format lain (angka index, atau teks jawaban
+// langsung), hasil `charCodeAt(0) - 65` jadi angka aneh yang GAK AKAN
+// PERNAH cocok index opsi manapun. Akibatnya siswa yang jawabannya
+// BENAR tetap disalahkan sistem terus-terusan -- kalau kejadian di
+// banyak soal, skor try out bisa 0% walau siswa jawab benar semua.
+// SEKARANG dipindah jadi 1 fungsi bersama (dipakai TryOutView.jsx
+// buat menghitung skor & RendererPgSederhana.jsx buat highlight
+// hijau/merah), toleran ke 3 kemungkinan format kunci jawaban.
+export function cariIndexBenar(soal) {
+  const kunci = String(soal.kunciJawaban ?? '').trim();
+  if (!kunci) return -1;
+  const opsi = soal.opsiJawaban || [];
+  // Format 1: huruf tunggal A-Z (paling umum & yang seharusnya dipakai)
+  if (/^[A-Za-z]$/.test(kunci)) return kunci.toUpperCase().charCodeAt(0) - 65;
+  // Format 2: angka index -- coba 0-based dulu, fallback ke 1-based
+  if (/^\d+$/.test(kunci)) {
+    const n = parseInt(kunci, 10);
+    if (n >= 0 && n < opsi.length) return n;
+    if (n - 1 >= 0 && n - 1 < opsi.length) return n - 1;
+  }
+  // Format 3: kunci berisi TEKS JAWABAN langsung (bukan huruf/angka) --
+  // cocokkan ke isi opsi jawabannya.
+  const idxTeks = opsi.findIndex((o) => {
+    const teks = typeof o === 'string' ? o : (o?.teks || '');
+    return teks.trim().toLowerCase() === kunci.toLowerCase();
+  });
+  return idxTeks >= 0 ? idxTeks : -1;
+}
