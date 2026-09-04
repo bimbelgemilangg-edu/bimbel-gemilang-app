@@ -8,16 +8,12 @@
 
 import React from 'react';
 import { cariIndexBenar } from '../../../utils/skoringSoalKompleks';
+import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 
 export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false }) {
   const opsi = soal.opsiJawaban || [];
   const indexBenar = cariIndexBenar(soal);
-  // 🔥 BARU (bug UX ditemukan): sebelumnya kalau siswa SKIP soal ini
-  // (gak milih apa-apa sama sekali), gak ada opsi yang ke-highlight
-  // merah -- cuma jawaban benar yang ijo. Tampilannya jadi AMBIGU:
-  // gak kelihatan beda antara "siswa emang skip" vs "ada yang salah
-  // nampilin jawaban dia". Sekarang dikasih tanda eksplisit.
-  const tidakDijawab = modeTinjau && (jawabanTerpilih === null || jawabanTerpilih === undefined);
+  const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
 
   return (
     <div>

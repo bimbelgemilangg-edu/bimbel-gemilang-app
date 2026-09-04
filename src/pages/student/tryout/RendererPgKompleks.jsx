@@ -17,6 +17,7 @@
 // ============================================================
 
 import React from 'react';
+import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 
 // 🔥 BARU (bug freeze/blank putih ditemukan): jangan percaya
 // kunciJawaban PASTI array -- kalau ada data soal yang formatnya
@@ -34,7 +35,7 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
   const dipilih = new Set(safeArray(jawabanTerpilih).map((h) => String(h).toUpperCase().trim()));
   // 🔥 BARU: sama kayak RendererPgSederhana.jsx -- biar jelas beda
   // antara "siswa skip" vs "salah pilih semua".
-  const tidakDijawab = modeTinjau && safeArray(jawabanTerpilih).length === 0;
+  const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
 
   const toggle = (huruf) => {
     if (disabled || modeTinjau) return;

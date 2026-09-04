@@ -13,6 +13,7 @@
 // ============================================================
 
 import React from 'react';
+import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 
 // 🔥 BARU (bug freeze/blank putih ditemukan): lihat penjelasan lengkap
 // di skoringSoalKompleks.js -- jangan percaya tabel_benar_salah/
@@ -27,7 +28,7 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
   const baris = safeArray(barisMentah);
   // 🔥 BARU: sama kayak 2 renderer lain -- biar jelas beda antara
   // "siswa skip semua baris" vs "salah jawab semua baris".
-  const tidakDijawab = modeTinjau && safeArray(jawabanTerpilih).filter(Boolean).length === 0;
+  const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
 
   const pilihBaris = (index, nilai) => {
     if (disabled || modeTinjau) return;

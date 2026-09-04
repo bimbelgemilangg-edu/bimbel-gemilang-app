@@ -40,7 +40,7 @@ import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
-import { skorSatuSoal, hitungTotalSkor } from '../../../utils/skorSoalTryOut';
+import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -484,12 +484,7 @@ export default function TryOutView() {
         <div style={{ fontSize: 12.5, fontWeight: 700, color: '#64748b', margin: '20px 0 10px' }}>📋 TINJAU JAWABAN</div>
         {paket.daftarSoal.map((s, i) => {
           const skor = skorSatuSoal(s, jawaban[s.id]);
-          // 🔥 BARU: biar keliatan sekilas tanpa perlu buka detail opsi --
-          // "belum dijawab" itu beda kondisi sama "salah jawab", walau
-          // dua-duanya sama-sama bikin skor 0%.
-          const jwbSoalIni = jawaban[s.id];
-          const belumDijawab = jwbSoalIni === undefined || jwbSoalIni === null
-            || (Array.isArray(jwbSoalIni) && jwbSoalIni.filter(Boolean).length === 0);
+          const belumDijawab = soalBelumDijawab(s, jawaban[s.id]);
           return (
             <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>

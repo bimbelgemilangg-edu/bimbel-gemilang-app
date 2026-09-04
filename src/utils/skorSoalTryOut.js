@@ -16,6 +16,26 @@
 
 import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from './skoringSoalKompleks';
 
+// 🔥 BARU: 1 fungsi bersama buat "apa soal ini beneran tidak dijawab
+// sama sekali" -- dipakai BARENG oleh RendererPgSederhana/PgKompleks/
+// BenarSalah.jsx (buat nampilin tanda "⚠️ Tidak dijawab") DAN oleh
+// TryOutView.jsx & HasilTryOutAdminPage.jsx (buat ringkasan di header
+// tiap soal). Sebelumnya logika ini KETULIS ULANG beda-beda tipis di
+// 4 tempat -- SEKARANG cuma 1 sumber, biar siswa & admin selalu lihat
+// kesimpulan yang PERSIS sama soal mana yang beneran di-skip.
+export function soalBelumDijawab(soal, jawaban) {
+  const tipe = soal.tipe || 'pg_sederhana';
+  if (tipe === 'pg_kompleks') return safeArrayLokal(jawaban).length === 0;
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') return safeArrayLokal(jawaban).filter(Boolean).length === 0;
+  // pg_sederhana: jawabannya berupa INDEX ANGKA (termasuk 0 buat opsi
+  // A) -- jangan sampai index 0 dianggap "kosong" cuma karena falsy.
+  return jawaban === undefined || jawaban === null;
+}
+
+function safeArrayLokal(v) {
+  return Array.isArray(v) ? v : [];
+}
+
 export function skorSatuSoal(soal, jawaban) {
   const tipe = soal.tipe || 'pg_sederhana';
   if (jawaban === undefined || jawaban === null) return 0;

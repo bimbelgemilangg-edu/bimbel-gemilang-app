@@ -14,9 +14,19 @@ import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimest
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw,
 } from 'lucide-react';
-import { hitungTotalSkor } from '../../../utils/skorSoalTryOut';
+import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
 import { tambahXpMingguan, kunciMingguIni } from '../../../utils/mingguIni';
+import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
+import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
+import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
+
+function RendererSoalAdmin(props) {
+  const tipe = props.soal.tipe || 'pg_sederhana';
+  if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
+  return <RendererPgSederhana {...props} />;
+}
 
 export default function HasilTryOutAdminPage() {
   const navigate = useNavigate();
@@ -90,6 +100,10 @@ export default function HasilTryOutAdminPage() {
   // sebelumnya belum ada tempat buat admin BENERAN lihat isinya, cuma
   // angka jumlahnya doang. Ini nyambungin ke data yang udah ada.
   const [siswaFotoDibuka, setSiswaFotoDibuka] = useState(null); // { nama, foto: [] }
+  // 🔥 BARU: detail jawaban siswa -- biar admin bisa lihat PERSIS apa
+  // yang dijawab siswa (termasuk mana yang beneran skip vs salah
+  // pilih), TANPA perlu pinjam akun/login sebagai siswa itu.
+  const [siswaDetailDibuka, setSiswaDetailDibuka] = useState(null); // item baris (student + sesi)
 
   const jumlahSelesai = baris.filter((b) => b.sesi?.status === 'selesai').length;
   const jumlahBerjalan = baris.filter((b) => b.sesi?.status === 'berjalan').length;
@@ -268,15 +282,24 @@ export default function HasilTryOutAdminPage() {
                             </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               {selesai && (
-                                <button
-                                  onClick={() => hitungUlangSatuSiswa(b)}
-                                  disabled={sedangHitungUlang === idSiswa}
-                                  title="Hitung ulang skor & XP pakai logika penilaian terbaru, tanpa siswa perlu ngerjain ulang"
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white', cursor: 'pointer', color: '#6b7280' }}
-                                >
-                                  {sedangHitungUlang === idSiswa ? <Loader2 size={11} className="spin" /> : <RotateCcw size={11} />}
-                                  Hitung Ulang
-                                </button>
+                                <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+                                  <button
+                                    onClick={() => setSiswaDetailDibuka(b)}
+                                    title="Lihat semua jawaban siswa ini, persis kayak yang dia lihat"
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, padding: '4px 8px', borderRadius: 6, border: '1px solid #c4b5fd', background: '#f5f3ff', cursor: 'pointer', color: '#6d28d9' }}
+                                  >
+                                    👁️ Jawaban
+                                  </button>
+                                  <button
+                                    onClick={() => hitungUlangSatuSiswa(b)}
+                                    disabled={sedangHitungUlang === idSiswa}
+                                    title="Hitung ulang skor & XP pakai logika penilaian terbaru, tanpa siswa perlu ngerjain ulang"
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white', cursor: 'pointer', color: '#6b7280' }}
+                                  >
+                                    {sedangHitungUlang === idSiswa ? <Loader2 size={11} className="spin" /> : <RotateCcw size={11} />}
+                                    Ulang
+                                  </button>
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -349,6 +372,50 @@ export default function HasilTryOutAdminPage() {
                 Gak ada foto pengawasan buat try out ini -- kemungkinan paketnya emang gak mewajibkan kamera saat diterbitkan.
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 BARU: modal "Lihat Jawaban" -- persis tampilan yang dilihat
+          siswa sendiri di layar hasilnya (RendererPgSederhana/PgKompleks/
+          BenarSalah, mode tinjau), tapi bisa diakses admin TANPA perlu
+          pinjam akun siswa. Termasuk tanda "Tidak dijawab" yang sama
+          persis, biar gak salah kira soal yang di-skip sebagai bug. */}
+      {siswaDetailDibuka && paketTerpilih && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '24px 16px', overflowY: 'auto' }}>
+          <div style={{ background: 'white', borderRadius: 16, maxWidth: 720, width: '100%', padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#1e293b' }}>👁️ Jawaban {siswaDetailDibuka.student.nama}</div>
+              <button onClick={() => setSiswaDetailDibuka(null)} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Tutup</button>
+            </div>
+            <p style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 16 }}>
+              Skor {siswaDetailDibuka.sesi.totalSkorPersen}% · {siswaDetailDibuka.sesi.xpFinal} XP -- ini persis tampilan yang dilihat siswa di layar hasilnya sendiri.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {paketTerpilih.daftarSoal.map((s, i) => {
+                const jwb = siswaDetailDibuka.sesi.jawaban?.[s.id];
+                const skor = skorSatuSoal(s, jwb);
+                const belumDijawab = soalBelumDijawab(s, jwb);
+                return (
+                  <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 14 }}>
+                    <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
+                      Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
+                    </div>
+                    {s.bacaan?.teks && (
+                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>{s.bacaan.teks}</div>
+                    )}
+                    <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}>{s.soal || s.teks_soal}</div>
+                    <RendererSoalAdmin soal={s} jawabanTerpilih={jwb} modeTinjau />
+                    {s.pembahasan && (
+                      <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
+                        <b>💡 Pembahasan:</b> {s.pembahasan}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
