@@ -62,6 +62,18 @@ function parseTeksKisiKisi(teks) {
     .filter(Boolean);
 }
 
+// 🔥 BARU (mencegah, bukan cuma nambal): daftar tipe soal yang Try Out
+// BENERAN bisa render dengan benar. Kalau ada tipe di luar ini
+// (menjodohkan, isian_singkat, uraian, numerik dst), soal itu TIDAK
+// BOLEH masuk keranjang sama sekali -- lebih aman "gak bisa dipilih"
+// (jelas kelihatan kenapa) daripada "kepilih tapi tampil rusak diam-
+// diam" pas siswa asli ngerjain. Kalau nanti tipe baru mau didukung,
+// tinggal bikin Renderer-nya + tambahin nama tipe-nya ke daftar ini.
+const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori'];
+function tipeDidukung(soal) {
+  return TIPE_TERDUKUNG.includes(soal.tipe || 'pg_sederhana');
+}
+
 // Pemilih renderer sesuai tipe soal -- SAMA PERSIS logikanya dengan
 // TryOutView.jsx, biar preview admin nunjukin persis tampilan yang
 // bakal dilihat siswa (bukan versi beda yang bisa aja ternyata beda
@@ -80,6 +92,7 @@ export default function TerbitkanTryOutPage() {
   const [keranjang, setKeranjang] = useState(new Map()); // soalId -> soal
 
   const toggleKeranjang = useCallback((soal) => {
+    if (!tipeDidukung(soal)) return; // 🔒 pagar -- tipe belum didukung, jangan masuk keranjang
     setKeranjang((prev) => {
       const next = new Map(prev);
       if (next.has(soal.id)) next.delete(soal.id); else next.set(soal.id, soal);
@@ -90,10 +103,13 @@ export default function TerbitkanTryOutPage() {
   const tambahBanyakKeKeranjang = useCallback((daftarSoal) => {
     setKeranjang((prev) => {
       const next = new Map(prev);
-      daftarSoal.forEach((s) => next.set(s.id, s));
+      // 🔒 pagar yang sama -- "+ Tambah Semua" per bab TIDAK ikut
+      // nyeret soal bertipe belum didukung.
+      daftarSoal.filter(tipeDidukung).forEach((s) => next.set(s.id, s));
       return next;
     });
   }, []);
+
 
   const kosongkanKeranjang = () => setKeranjang(new Map());
 
@@ -600,10 +616,14 @@ export default function TerbitkanTryOutPage() {
                             <div style={{ padding: '6px 10px 6px 24px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                               {soal.map((s) => {
                                 const dipilih = keranjang.has(s.id);
+                                const didukung = tipeDidukung(s);
                                 return (
-                                  <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={dipilih} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
-                                    <span style={{ color: '#374151' }}>{(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}</span>
+                                  <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: didukung ? 'pointer' : 'not-allowed', opacity: didukung ? 1 : 0.55 }}>
+                                    <input type="checkbox" checked={dipilih} disabled={!didukung} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
+                                    <span style={{ color: didukung ? '#374151' : '#dc2626' }}>
+                                      {(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}
+                                      {!didukung && ' — ⚠️ tipe belum didukung'}
+                                    </span>
                                   </label>
                                 );
                               })}
@@ -663,10 +683,14 @@ export default function TerbitkanTryOutPage() {
                               <div style={{ padding: '6px 10px 6px 24px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 {soal.map((s) => {
                                   const dipilih = keranjang.has(s.id);
+                                  const didukung = tipeDidukung(s);
                                   return (
-                                    <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: 'pointer' }}>
-                                      <input type="checkbox" checked={dipilih} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
-                                      <span style={{ color: '#374151' }}>{(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}</span>
+                                    <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: didukung ? 'pointer' : 'not-allowed', opacity: didukung ? 1 : 0.55 }}>
+                                      <input type="checkbox" checked={dipilih} disabled={!didukung} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
+                                      <span style={{ color: didukung ? '#374151' : '#dc2626' }}>
+                                        {(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}
+                                        {!didukung && ' — ⚠️ tipe belum didukung'}
+                                      </span>
                                     </label>
                                   );
                                 })}
@@ -752,12 +776,14 @@ export default function TerbitkanTryOutPage() {
             ) : (
               daftarSoal.map((s) => {
                 const dipilih = keranjang.has(s.id);
+                const didukung = tipeDidukung(s);
                 return (
-                  <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 10px', borderRadius: 8, background: dipilih ? '#f5f3ff' : '#f9fafb', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={dipilih} onChange={() => toggleKeranjang(s)} style={{ marginTop: 3 }} />
+                  <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 10px', borderRadius: 8, background: !didukung ? '#f1f5f9' : dipilih ? '#f5f3ff' : '#f9fafb', cursor: didukung ? 'pointer' : 'not-allowed', opacity: didukung ? 1 : 0.6 }}>
+                    <input type="checkbox" checked={dipilih} disabled={!didukung} onChange={() => toggleKeranjang(s)} style={{ marginTop: 3 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 2 }}>
+                      <div style={{ fontSize: 11, color: didukung ? '#9ca3af' : '#dc2626', marginBottom: 2, fontWeight: didukung ? 400 : 700 }}>
                         {s.mataPelajaran} · {s.tipe || 'pg_sederhana'} · {s.materi || '-'}
+                        {!didukung && ' · ⚠️ Tipe ini belum didukung di Try Out'}
                       </div>
                       <div style={{ fontSize: 12.5, color: '#1e293b' }}>{(s.soal || s.teks_soal || '').slice(0, 140)}{(s.soal || s.teks_soal || '').length > 140 ? '...' : ''}</div>
                     </div>
