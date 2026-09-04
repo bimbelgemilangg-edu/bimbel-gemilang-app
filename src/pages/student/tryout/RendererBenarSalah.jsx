@@ -14,8 +14,17 @@
 
 import React from 'react';
 
+// 🔥 BARU (bug freeze/blank putih ditemukan): lihat penjelasan lengkap
+// di skoringSoalKompleks.js -- jangan percaya tabel_benar_salah/
+// pernyataan PASTI array.
+function safeArray(v) {
+  if (Array.isArray(v)) return v;
+  return [];
+}
+
 export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false }) {
-  const baris = (soal.tabel_benar_salah?.length ? soal.tabel_benar_salah : soal.pernyataan) || [];
+  const barisMentah = safeArray(soal.tabel_benar_salah).length ? soal.tabel_benar_salah : soal.pernyataan;
+  const baris = safeArray(barisMentah);
 
   const pilihBaris = (index, nilai) => {
     if (disabled || modeTinjau) return;

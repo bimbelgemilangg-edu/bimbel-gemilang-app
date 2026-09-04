@@ -18,10 +18,20 @@
 
 import React from 'react';
 
+// 🔥 BARU (bug freeze/blank putih ditemukan): jangan percaya
+// kunciJawaban PASTI array -- kalau ada data soal yang formatnya
+// beda (string polos, bukan array), .map() langsung crash React
+// TOTAL. Lihat penjelasan lengkap di skoringSoalKompleks.js.
+function safeArray(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string' && v.trim()) return v.split('').map((c) => c.trim()).filter(Boolean);
+  return [];
+}
+
 export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false }) {
   const opsi = soal.opsiJawaban || [];
-  const kunci = (soal.kunciJawaban || []).map((h) => String(h).toUpperCase().trim());
-  const dipilih = new Set((jawabanTerpilih || []).map((h) => String(h).toUpperCase().trim()));
+  const kunci = safeArray(soal.kunciJawaban).map((h) => String(h).toUpperCase().trim());
+  const dipilih = new Set(safeArray(jawabanTerpilih).map((h) => String(h).toUpperCase().trim()));
 
   const toggle = (huruf) => {
     if (disabled || modeTinjau) return;

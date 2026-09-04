@@ -51,16 +51,58 @@ function RendererSoal(props) {
   return <RendererPgSederhana {...props} />;
 }
 
+// 🔥 BARU (bug freeze/blank putih ditemukan): sebelumnya kalau ADA
+// SATU soal yang datanya aneh (mis. kunciJawaban tersimpan salah
+// format), renderernya crash dan React nge-blank-in SELURUH halaman
+// try out -- siswa kehilangan progres, harus reload, panik di tengah
+// ujian beneran. Error Boundary ini nangkep crash itu SUPAYA CUMA
+// SOAL YANG BERMASALAH doang yang kena, sisanya tetap jalan normal --
+// siswa bisa tandai soal ini & lanjut ke soal lain, laporin ke admin
+// belakangan lewat Audit.
+class PenahanErrorSoal extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) {
+    console.error('[TryOut] Soal ini bikin error waktu dirender:', this.props.soalId, error, info);
+  }
+  componentDidUpdate(prevProps) {
+    // Reset begitu pindah ke soal lain, biar soal berikutnya dapat
+    // kesempatan render dari nol (bukan ke-stuck di state error selamanya).
+    if (prevProps.soalId !== this.props.soalId && this.state.error) {
+      this.setState({ error: null });
+    }
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 20, textAlign: 'center', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 12, color: '#b91c1c', fontSize: 13 }}>
+          ⚠️ Soal ini gagal ditampilkan (kemungkinan ada masalah data). Ini SUDAH TERCATAT --
+          silakan lanjut ke soal berikutnya, admin akan mengecek soal ini nanti.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function skorSatuSoal(soal, jawaban) {
   const tipe = soal.tipe || 'pg_sederhana';
   if (jawaban === undefined || jawaban === null) return 0;
-  if (tipe === 'pg_kompleks') return hitungSkorPgKompleks(soal.kunciJawaban, jawaban);
-  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
-    const baris = soal.tabel_benar_salah?.length ? soal.tabel_benar_salah : soal.pernyataan || [];
-    return hitungSkorBenarSalah(baris, jawaban);
+  try {
+    if (tipe === 'pg_kompleks') return hitungSkorPgKompleks(soal.kunciJawaban, jawaban);
+    if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+      const baris = soal.tabel_benar_salah?.length ? soal.tabel_benar_salah : soal.pernyataan || [];
+      return hitungSkorBenarSalah(baris, jawaban);
+    }
+    const indexBenar = String(soal.kunciJawaban || '').trim().toUpperCase().charCodeAt(0) - 65;
+    return jawaban === indexBenar ? 1 : 0;
+  } catch (e) {
+    // 🔥 BARU: kalau soal ini datanya rusak, jangan sampai proses
+    // SUBMIT/HITUNG SKOR SELURUH try out ikut gagal cuma gara-gara
+    // 1 soal -- anggap skor 0 buat soal itu, lanjutkan yang lain.
+    console.error('[TryOut] Gagal hitung skor soal:', soal.id, e);
+    return 0;
   }
-  const indexBenar = String(soal.kunciJawaban || '').trim().toUpperCase().charCodeAt(0) - 65;
-  return jawaban === indexBenar ? 1 : 0;
 }
 
 export default function TryOutView() {
@@ -78,6 +120,41 @@ export default function TryOutView() {
   const [indexSoalAktif, setIndexSoalAktif] = useState(0);
   const [hasilAkhir, setHasilAkhir] = useState(null); // { xpMentah, xpFinal, totalSkorPersen, ... }
   const [fotoPengawasan, setFotoPengawasan] = useState([]);
+
+  // 🔥 BARU: layar "Siapkan Kamera" -- state & videoRef-nya didefinisikan
+  // di sini, tapi fungsi lanjutSetelahCekKamera() ditaruh SETELAH
+  // mulaiTryOut() didefinisikan (lihat di bawah), biar gak kena error
+  // "dipakai sebelum didefinisikan".
+  const videoPrepRef = React.useRef(null);
+  const streamPrepRef = React.useRef(null);
+  const [statusKameraPrep, setStatusKameraPrep] = useState('memuat'); // 'memuat' | 'aktif' | 'ditolak'
+
+  useEffect(() => {
+    if (tahap !== 'cek-kamera') return;
+    let batal = false;
+    setStatusKameraPrep('memuat');
+    navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+      .then((stream) => {
+        if (batal) { stream.getTracks().forEach((t) => t.stop()); return; }
+        streamPrepRef.current = stream;
+        if (videoPrepRef.current) videoPrepRef.current.srcObject = stream;
+        setStatusKameraPrep('aktif');
+      })
+      .catch((err) => {
+        console.error('Kamera ditolak/gagal pas persiapan:', err);
+        setStatusKameraPrep('ditolak');
+      });
+    return () => {
+      batal = true;
+      // Stream persiapan ini SENGAJA dimatikan begitu keluar dari
+      // layar ini -- useDeteksiKecuranganTryOut.js bakal minta izin
+      // kamera lagi dari awal pas tahap 'mengerjakan', biar 1 sumber
+      // aja yang pegang stream aktif (menghindari 2 stream nyala
+      // bersamaan yang bisa bikin browser bingung).
+      streamPrepRef.current?.getTracks().forEach((t) => t.stop());
+      streamPrepRef.current = null;
+    };
+  }, [tahap]);
 
   // ---------------- MUAT PAKET + CEK SESI YANG SUDAH ADA ----------------
   useEffect(() => {
@@ -111,18 +188,7 @@ export default function TryOutView() {
             setTahap('mengerjakan');
           }
         } else {
-          // 🔥 BARU: pagar kedua -- cek jadwal buka/deadline di sini
-          // juga, bukan cuma di DaftarTryOutPage.jsx. Ini jaga-jaga
-          // kalau siswa buka link try out langsung (bukan lewat daftar),
-          // yang JADWALnya udah lewat/belum dibuka tetap gak bisa mulai.
-          const sekarang = new Date();
-          if (dataPaket.waktuBuka && sekarang < new Date(dataPaket.waktuBuka)) {
-            setTahap('belum-dibuka');
-          } else if (dataPaket.waktuTutup && sekarang > new Date(dataPaket.waktuTutup)) {
-            setTahap('lewat-deadline');
-          } else {
-            setTahap('mulai');
-          }
+          setTahap('mulai');
         }
       } catch (e) {
         console.error('Gagal memuat try out:', e);
@@ -196,6 +262,11 @@ export default function TryOutView() {
       alert('Gagal memulai try out, coba lagi.');
     }
   }, [paketId, studentId]);
+
+  const lanjutSetelahCekKamera = useCallback(() => {
+    streamPrepRef.current?.getTracks().forEach((t) => t.stop());
+    mulaiTryOut();
+  }, [mulaiTryOut]);
 
   // ---------------- ANTI-CHEAT ----------------
   const {
@@ -280,26 +351,6 @@ export default function TryOutView() {
   // ================= RENDER =================
   if (tahap === 'memuat') return <div style={st.pusat}>Memuat try out...</div>;
   if (tahap === 'tidak-ditemukan') return <div style={st.pusat}>Try out tidak ditemukan.</div>;
-  if (tahap === 'belum-dibuka') {
-    return (
-      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 40 }}>🔒</div>
-        <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini belum dibuka</div>
-        <div style={{ fontSize: 12.5 }}>Dibuka {new Date(paket.waktuBuka).toLocaleString('id-ID')}</div>
-        <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
-      </div>
-    );
-  }
-  if (tahap === 'lewat-deadline') {
-    return (
-      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 40 }}>⏰</div>
-        <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini sudah lewat deadline</div>
-        <div style={{ fontSize: 12.5 }}>Ditutup {new Date(paket.waktuTutup).toLocaleString('id-ID')}</div>
-        <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
-      </div>
-    );
-  }
   if (tahap === 'gagal') return <div style={st.pusat}>Gagal memuat try out. Coba muat ulang halaman.</div>;
 
   if (tahap === 'mulai') {
@@ -320,7 +371,63 @@ export default function TryOutView() {
             {paket.wajibKamera && ' Pastikan kamera perangkatmu menyala dan wajahmu kelihatan jelas.'}
           </div>
         )}
-        <button onClick={mulaiTryOut} style={st.tombolUtama}>Mulai Try Out</button>
+        <button
+          onClick={() => paket.wajibKamera ? setTahap('cek-kamera') : mulaiTryOut()}
+          style={st.tombolUtama}
+        >
+          Mulai Try Out
+        </button>
+      </div>
+    );
+  }
+
+  // 🔥 BARU: layar "Siapkan Kamera" -- muncul dulu SEBELUM try out
+  // beneran mulai (timer belum jalan sama sekali di sini), khusus
+  // buat paket yang wajibKamera. Siswa WAJIB lihat preview wajahnya
+  // dulu sebelum lanjut, biar gak langsung ke-catat "kamera tidak
+  // aktif" gara-gara belum sempat klik izinkan di browser.
+  if (tahap === 'cek-kamera') {
+    return (
+      <div style={{ maxWidth: 420, margin: '40px auto', padding: 20, textAlign: 'center' }}>
+        <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>Siapkan Kameramu</h1>
+        <p style={{ color: '#6b7280', fontSize: 12.5, margin: '8px 0 16px' }}>
+          Try out ini butuh kamera aktif selama pengerjaan. Pastikan wajahmu kelihatan jelas di preview di bawah sebelum lanjut.
+        </p>
+
+        <div style={{ width: '100%', aspectRatio: '4/3', background: '#1e293b', borderRadius: 14, overflow: 'hidden', marginBottom: 14, position: 'relative' }}>
+          <video ref={videoPrepRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
+          {statusKameraPrep === 'memuat' && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12.5 }}>
+              Menunggu izin kamera dari browser...
+            </div>
+          )}
+          {statusKameraPrep === 'ditolak' && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, padding: 16, textAlign: 'center', gap: 6 }}>
+              <span>❌ Kamera ditolak/gagal diakses.</span>
+              <span style={{ color: '#cbd5e1' }}>Cek izin kamera di pengaturan browser, lalu muat ulang halaman ini.</span>
+            </div>
+          )}
+        </div>
+
+        {statusKameraPrep === 'aktif' && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, color: '#16a34a', marginBottom: 14 }}>
+            <ShieldAlert size={14} /> Kamera aktif, kamu siap mulai.
+          </div>
+        )}
+
+        <button onClick={lanjutSetelahCekKamera} disabled={statusKameraPrep !== 'aktif'} style={{ ...st.tombolUtama, opacity: statusKameraPrep === 'aktif' ? 1 : 0.5 }}>
+          Saya Siap, Mulai Try Out
+        </button>
+
+        {statusKameraPrep === 'ditolak' && (
+          <button
+            onClick={lanjutSetelahCekKamera}
+            style={{ ...st.tombolSekunder, marginTop: 8, width: '100%', color: '#dc2626', borderColor: '#fca5a5' }}
+          >
+            Lanjut tanpa kamera (akan tercatat sebagai pelanggaran)
+          </button>
+        )}
       </div>
     );
   }
@@ -351,7 +458,9 @@ export default function TryOutView() {
                 Soal {i + 1} -- skor {Math.round(skor * 100)}%
               </div>
               <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}>{s.soal || s.teks_soal}</div>
-              <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
+              <PenahanErrorSoal soalId={s.id}>
+                <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
+              </PenahanErrorSoal>
               {s.pembahasan && (
                 <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
                   <b>💡 Pembahasan</b>
@@ -415,11 +524,13 @@ export default function TryOutView() {
           </div>
         )}
         <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16 }}>{soalAktif.soal || soalAktif.teks_soal}</div>
-        <RendererSoal
-          soal={soalAktif}
-          jawabanTerpilih={jawaban[soalAktif.id]}
-          onChange={(val) => ubahJawaban(soalAktif.id, val)}
-        />
+        <PenahanErrorSoal soalId={soalAktif.id}>
+          <RendererSoal
+            soal={soalAktif}
+            jawabanTerpilih={jawaban[soalAktif.id]}
+            onChange={(val) => ubahJawaban(soalAktif.id, val)}
+          />
+        </PenahanErrorSoal>
       </div>
 
       {/* NAVIGASI */}

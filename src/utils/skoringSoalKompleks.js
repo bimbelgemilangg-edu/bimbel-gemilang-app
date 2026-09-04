@@ -12,6 +12,21 @@
 //   dipakai di Latihan Harian (XP gak pernah minus).
 // ============================================================
 
+// 🔥 BARU (bug freeze/blank putih ditemukan): sebelumnya kode ini
+// nganggep `kunciJawaban` PASTI array (`kunciJawaban || []` cuma
+// nangkep kalau nilainya falsy/kosong, BUKAN kalau nilainya string
+// biasa). Kalau ada 1 soal pg_kompleks yang kunciJawaban-nya
+// ke-simpen sebagai teks polos (mis. "AC" bukan ["A","C"]), .map()
+// dipanggil ke string dan React CRASH TOTAL (blank putih, harus
+// reload) -- bukan cuma soal itu doang yang gagal, SELURUH try out
+// ikut mati. safeArray() mastiin kita SELALU dapat array beneran,
+// apapun bentuk data aslinya.
+function safeArray(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string' && v.trim()) return v.split('').map((c) => c.trim()).filter(Boolean); // "AC" -> ["A","C"]
+  return [];
+}
+
 /**
  * Skor buat tipe "pg_kompleks" (checkbox, jawaban benar > 1).
  * Centang yang BENAR nambah skor, centang yang SALAH mengurangi --
@@ -22,39 +37,39 @@
  * @returns {number} skor 0..1
  */
 export function hitungSkorPgKompleks(kunciJawaban, jawabanSiswa) {
-    const kunci = new Set((kunciJawaban || []).map((h) => String(h).toUpperCase().trim()));
-    const dipilih = new Set((jawabanSiswa || []).map((h) => String(h).toUpperCase().trim()));
-    if (kunci.size === 0) return 0;
-  
-    let benarDicentang = 0;
-    let salahDicentang = 0;
-    dipilih.forEach((huruf) => {
-      if (kunci.has(huruf)) benarDicentang += 1;
-      else salahDicentang += 1;
-    });
-  
-    const skor = (benarDicentang - salahDicentang) / kunci.size;
-    return Math.max(0, Math.min(1, skor));
-  }
-  
-  /**
-   * Skor buat tipe "benar_salah" / "pg_kategori" (tabel per-baris).
-   * Tiap baris/pernyataan dinilai SENDIRI-SENDIRI dan berbobot sama.
-   *
-   * @param {Array<{jawaban:string}>} baris - baris asli dari Bank Soal (field `jawaban` = kunci)
-   * @param {string[]} jawabanSiswaPerBaris - jawaban siswa per baris, indeks sejajar dengan `baris`
-   * @returns {number} skor 0..1
-   */
-  export function hitungSkorBenarSalah(baris, jawabanSiswaPerBaris) {
-    const daftar = baris || [];
-    if (daftar.length === 0) return 0;
-  
-    let jumlahBenar = 0;
-    daftar.forEach((b, i) => {
-      const kunci = String(b.jawaban || '').toLowerCase().trim();
-      const jawabanSiswa = String(jawabanSiswaPerBaris?.[i] || '').toLowerCase().trim();
-      if (kunci && jawabanSiswa && kunci === jawabanSiswa) jumlahBenar += 1;
-    });
-  
-    return jumlahBenar / daftar.length;
-  }
+  const kunci = new Set(safeArray(kunciJawaban).map((h) => String(h).toUpperCase().trim()));
+  const dipilih = new Set(safeArray(jawabanSiswa).map((h) => String(h).toUpperCase().trim()));
+  if (kunci.size === 0) return 0;
+
+  let benarDicentang = 0;
+  let salahDicentang = 0;
+  dipilih.forEach((huruf) => {
+    if (kunci.has(huruf)) benarDicentang += 1;
+    else salahDicentang += 1;
+  });
+
+  const skor = (benarDicentang - salahDicentang) / kunci.size;
+  return Math.max(0, Math.min(1, skor));
+}
+
+/**
+ * Skor buat tipe "benar_salah" / "pg_kategori" (tabel per-baris).
+ * Tiap baris/pernyataan dinilai SENDIRI-SENDIRI dan berbobot sama.
+ *
+ * @param {Array<{jawaban:string}>} baris - baris asli dari Bank Soal (field `jawaban` = kunci)
+ * @param {string[]} jawabanSiswaPerBaris - jawaban siswa per baris, indeks sejajar dengan `baris`
+ * @returns {number} skor 0..1
+ */
+export function hitungSkorBenarSalah(baris, jawabanSiswaPerBaris) {
+  const daftar = safeArray(baris);
+  if (daftar.length === 0) return 0;
+
+  let jumlahBenar = 0;
+  daftar.forEach((b, i) => {
+    const kunci = String(b?.jawaban || '').toLowerCase().trim();
+    const jawabanSiswa = String(safeArray(jawabanSiswaPerBaris)[i] || '').toLowerCase().trim();
+    if (kunci && jawabanSiswa && kunci === jawabanSiswa) jumlahBenar += 1;
+  });
+
+  return jumlahBenar / daftar.length;
+}
