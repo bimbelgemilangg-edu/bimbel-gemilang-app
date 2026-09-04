@@ -4670,6 +4670,23 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
                   )}
 
                   {safeArray(option.tabel).length > 0 && <OptionTable rows={option.tabel} />}
+
+                  {/* 🔥 BARU: dulu opsi yang gambarnya GAGAL diekstrak AI
+                      (mis. opsi B, C, E di soal 5-opsi-semuanya-diagram)
+                      tidak punya cara ditambahkan gambar manual sama
+                      sekali -- bahaya yang sama seperti kasus "Soal 23"
+                      tapi di level opsi jawaban. Tombol kecil ini SELALU
+                      ada di tiap opsi (tidak mengandalkan tebakan AI),
+                      tapi bentuknya cuma link kecil biar tidak bikin
+                      penuh tampilan buat soal pilihan ganda teks biasa. */}
+                  {onCropImage && (
+                    <div style={{ marginTop: '6px' }}>
+                      <TombolUploadManual
+                        label={safeArray(option.gambar).length > 0 ? '📤 Tambah gambar lain ke opsi ini' : '🖼️ + Tambah gambar ke opsi ini'}
+                        onUploaded={(dataUrl) => onCropImage(q._idx, { opsi: optionIndex }, safeArray(option.gambar).length, dataUrl)}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {isCorrect && (
