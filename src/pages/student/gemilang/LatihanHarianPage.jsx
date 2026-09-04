@@ -280,6 +280,15 @@ export default function LatihanHarianPage() {
   const [hasilPerSoal, setHasilPerSoal] = useState([]); // [{soal, jawabanIndex, indexBenar, benar}]
   const [koreksiIndex, setKoreksiIndex] = useState(0);
   const [xpAnimasi, setXpAnimasi] = useState(0);
+  // 🔥 BARU (bug nyata ditemukan): animasi "Memeriksa soal 10 dari 10"
+  // yang penuh itu SELESAI duluan sebelum data beneran ke-simpan ke
+  // Firestore (selesaikanSesi masih nunggu jaringan) -- akibatnya layar
+  // kelihatan "diem" tanpa penanda apa pun, siswa gak tau itu masih
+  // proses atau macet. State ini nandain fase "nunggu jaringan" itu
+  // SECARA TERPISAH, biar teksnya berubah jadi jelas ("Menyimpan hasil
+  // akhir...") -- bukan diem di angka yang sama.
+  const [sedangFinalisasi, setSedangFinalisasi] = useState(false);
+  const [gagalFinalisasi, setGagalFinalisasi] = useState(false);
 
   const [xpDidapat, setXpDidapat] = useState(0);
   const [streakInfo, setStreakInfo] = useState(null);
@@ -336,8 +345,17 @@ export default function LatihanHarianPage() {
           return;
         }
 
+        // 🔥 BARU: pengukuran waktu -- biar KELIATAN ANGKA ASLINYA di mana
+        // waktu paling banyak kehabis (nge-download data dari server, atau
+        // nyaring datanya di browser), bukan cuma nebak. Buka Console
+        // browser (klik kanan -> Inspect -> tab Console) buat lihat hasilnya.
+        console.time('[Latihan Harian] Ambil Bank Soal dari server');
         const constraints = [where('status', '==', 'aktif')];
         const snap = await getDocs(query(collection(db, 'bank_soal'), ...constraints));
+        console.timeEnd('[Latihan Harian] Ambil Bank Soal dari server');
+        console.log(`[Latihan Harian] Total soal aktif ke-download: ${snap.size}`);
+
+        console.time('[Latihan Harian] Saring soal (jenjang/kelas/tipe)');
         let soal = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
         // 🔥 PAGAR UTAMA: jenjang WAJIB cocok (default menolak kalau
@@ -356,6 +374,8 @@ export default function LatihanHarianPage() {
         // Hanya dukung pg_sederhana dulu di v1 -- tipe lain (kompleks,
         // kategori, isian) menyusul setelah UI jawabnya dibuat.
         soal = soal.filter((s) => (s.tipe || 'pg_sederhana') === 'pg_sederhana' && (s.opsiJawaban || []).length >= 2);
+        console.timeEnd('[Latihan Harian] Saring soal (jenjang/kelas/tipe)');
+        console.log(`[Latihan Harian] Soal yang lolos buat siswa ini: ${soal.length} dari ${snap.size} total`);
         setSemuaSoal(soal);
 
         const progSnap = await getDocs(query(collection(db, 'siswa_soal_progress'), where('studentId', '==', studentId)));
@@ -411,6 +431,8 @@ export default function LatihanHarianPage() {
     setHasilPerSoal([]);
     setKoreksiIndex(0);
     setXpAnimasi(0);
+    setSedangFinalisasi(false);
+    setGagalFinalisasi(false);
     setTahap('mengerjakan');
   }, [soalMapelDipilih, progressMap, sisaJatah]);
 
@@ -426,6 +448,8 @@ export default function LatihanHarianPage() {
     setHasilPerSoal([]);
     setKoreksiIndex(0);
     setXpAnimasi(0);
+    setSedangFinalisasi(false);
+    setGagalFinalisasi(false);
     setTahap('mengerjakan');
   }, [soalMapelDipilih, progressMap, sisaJatah]);
 
@@ -504,8 +528,8 @@ export default function LatihanHarianPage() {
   // Firestore, PERSIS seperti sebelumnya).
   useEffect(() => {
     if (tahap !== 'mengoreksi') return;
-    if (hasilPerSoal.length === 0) { selesaikanSesi(); return; }
-    if (koreksiIndex >= hasilPerSoal.length) { selesaikanSesi(); return; }
+    if (hasilPerSoal.length === 0) { setSedangFinalisasi(true); selesaikanSesi(); return; }
+    if (koreksiIndex >= hasilPerSoal.length) { setSedangFinalisasi(true); selesaikanSesi(); return; }
 
     const timer = setTimeout(() => {
       const item = hasilPerSoal[koreksiIndex];
@@ -526,7 +550,17 @@ export default function LatihanHarianPage() {
       try {
         const hariIniStr = new Date().toISOString().slice(0, 10);
         const progRef = doc(db, 'siswa_progress', studentId);
-        const snap = await getDoc(progRef);
+
+        // 🔥 BARU: batas waktu 8 detik buat panggilan ke Firestore --
+        // sebelumnya kalau koneksi lambat/putus, layar bisa nunggu TANPA
+        // BATAS tanpa siswa tahu itu masih proses atau macet total. Kalau
+        // lewat 8 detik, tetap lanjut tampilkan hasil (dihitung dari data
+        // lokal yang sudah ada), tapi kasih tanda "gagal tersimpan" biar
+        // admin/siswa tahu perlu cek lagi nanti -- bukan diam-diam
+        // kehilangan XP tanpa penjelasan.
+        const jedaWaktu = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
+
+        const snap = await Promise.race([getDoc(progRef), jedaWaktu(8000)]);
         const existing = snap.exists() ? snap.data() : { xp: 0, streak: 0, lastActiveDate: null };
 
         const hasilStreak = hitungStreakBaru(existing.lastActiveDate, hariIniStr);
@@ -541,22 +575,29 @@ export default function LatihanHarianPage() {
         const soalHariIniSebelumnya = existing.soalHariIniTanggal === hariIniStr ? (existing.soalHariIniCount || 0) : 0;
         const soalHariIniBaru = soalHariIniSebelumnya + soalSesi.length;
 
-        await setDoc(progRef, {
+        await Promise.race([setDoc(progRef, {
           xp: (existing.xp || 0) + xp,
           streak: streakBaru,
           lastActiveDate: hariIniStr,
           soalHariIniCount: soalHariIniBaru,
           soalHariIniTanggal: hariIniStr,
           updatedAt: serverTimestamp(),
-        }, { merge: true });
+        }, { merge: true }), jedaWaktu(8000)]);
 
         setStreakInfo({ streakBaru, naik: hasilStreak === 'NAIK' || hasilStreak === 1 });
         // Perbarui sisa jatah di layar (dipakai buat pesan di layar Selesai).
         setSisaJatah(Math.max(0, JATAH_SOAL_PER_HARI - soalHariIniBaru));
+        setGagalFinalisasi(false);
       } catch (e) {
         console.error('Gagal update XP/streak/jatah:', e);
+        // 🔥 BARU: dulu error di sini cuma di-log ke console, siswa sama
+        // sekali tidak tahu XP/streak-nya gagal tersimpan. Sekarang
+        // ditandai jelas -- muncul peringatan di layar hasil (lihat
+        // render tahap 'selesai').
+        setGagalFinalisasi(true);
       }
     }
+    setSedangFinalisasi(false);
     setTahap('selesai');
   }, [hasilSesi, studentId, soalSesi.length]);
 
@@ -816,18 +857,32 @@ export default function LatihanHarianPage() {
       <div style={st.pusat}>
         <style>{`
           @keyframes gemilangAngkaNaik { from { transform: translateY(6px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+          @keyframes gemilangSpin { to { transform: rotate(360deg); } }
         `}</style>
         <div style={{ fontSize: 40, marginBottom: 6 }}>🧑‍🚀</div>
-        <div style={{ fontWeight: 700, color: '#4C1D95', marginBottom: 18 }}>Sedang dikoreksi...</div>
+        {/* 🔥 BARU: begitu semua soal "selesai diperiksa" (animasi sudah
+            sampai 100%) tapi masih nunggu Firestore selesai simpan,
+            teksnya GANTI jadi "Menyimpan hasil akhir..." + spinner --
+            supaya siswa tahu ini MASIH PROSES (jaringan), bukan macet
+            diam-diam kayak sebelumnya. */}
+        <div style={{ fontWeight: 700, color: '#4C1D95', marginBottom: 18 }}>
+          {sedangFinalisasi ? 'Menyimpan hasil akhir...' : 'Sedang dikoreksi...'}
+        </div>
         <div key={xpAnimasi} style={{ fontSize: 40, fontWeight: 800, color: '#7C3AED', fontVariantNumeric: 'tabular-nums', animation: 'gemilangAngkaNaik 0.35s ease-out' }}>
           +{xpAnimasi} XP
         </div>
-        <div style={{ marginTop: 14, fontSize: 12.5, color: '#94a3b8' }}>
-          Memeriksa soal {Math.min(koreksiIndex + 1, totalSoal)} dari {totalSoal}
-        </div>
-        <div style={{ width: 160, height: 6, background: '#e9e5fb', borderRadius: 10, marginTop: 12, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${totalSoal ? (koreksiIndex / totalSoal) * 100 : 0}%`, background: 'linear-gradient(90deg, #7C3AED, #FB923C)', borderRadius: 10, transition: 'width 0.35s ease' }} />
-        </div>
+        {sedangFinalisasi ? (
+          <div style={{ width: 22, height: 22, border: '3px solid #e9e5fb', borderTopColor: '#7C3AED', borderRadius: '50%', marginTop: 16, animation: 'gemilangSpin 0.7s linear infinite' }} />
+        ) : (
+          <>
+            <div style={{ marginTop: 14, fontSize: 12.5, color: '#94a3b8' }}>
+              Memeriksa soal {Math.min(koreksiIndex + 1, totalSoal)} dari {totalSoal}
+            </div>
+            <div style={{ width: 160, height: 6, background: '#e9e5fb', borderRadius: 10, marginTop: 12, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${totalSoal ? (koreksiIndex / totalSoal) * 100 : 0}%`, background: 'linear-gradient(90deg, #7C3AED, #FB923C)', borderRadius: 10, transition: 'width 0.35s ease' }} />
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -853,6 +908,17 @@ export default function LatihanHarianPage() {
           <p style={{ color: '#64748b', fontSize: 13.5, marginBottom: 22 }}>
             {hasilSesi.benar} benar, {hasilSesi.salah} salah dari {soalSesi.length} soal
           </p>
+
+          {/* 🔥 BARU: dulu kalau simpan XP/streak gagal (jaringan lambat/
+              putus), siswa sama sekali tidak diberitahu -- XP kelihatan
+              didapat di layar ini tapi diam-diam TIDAK ketambah di
+              database. Sekarang ada peringatan jelas + saran konkret. */}
+          {gagalFinalisasi && (
+            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 14px', marginBottom: 18, fontSize: 12, color: '#92400e', textAlign: 'left' }}>
+              ⚠️ Koneksi kamu sepertinya lambat -- XP & streak di atas <strong>mungkin belum tersimpan</strong> ke akunmu.
+              Soal yang sudah kamu jawab tetap aman, tapi coba buka lagi halaman Latihan Harian sebentar lagi buat mastiin XP-nya sudah masuk.
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
             <div style={st.statBesar}>

@@ -70,6 +70,7 @@ import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
 import TerbitkanKuisPage from './pages/admin/bank-soal/TerbitkanKuisPage';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
 import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
+import BatalkanUjiCobaPage from './pages/admin/bank-soal/BatalkanUjiCobaPage';
 
 // ============================================================
 // GURU
@@ -310,6 +311,7 @@ function App() {
         <Route path="/admin/bank-soal/terbitkan" element={<AdminRoute><TerbitkanKuisPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/hasil" element={<AdminRoute><HasilKuisAdminPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/aktivitas-latihan" element={<AdminRoute><LatihanAktivitasPage /></AdminRoute>} />
+        <Route path="/admin/bank-soal/batalkan-uji-coba" element={<AdminRoute><BatalkanUjiCobaPage /></AdminRoute>} />
 
         {/* OWNER / SETTINGS */}
         <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />

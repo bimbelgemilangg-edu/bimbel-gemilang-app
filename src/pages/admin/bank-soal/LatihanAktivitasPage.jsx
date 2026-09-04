@@ -225,6 +225,12 @@ export default function LatihanAktivitasPage() {
         </h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
+            onClick={() => navigate('/admin/bank-soal/batalkan-uji-coba')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #fde68a', background: '#fffbeb', color: '#92400e', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}
+          >
+            🧪 Batalkan Uji Coba Admin
+          </button>
+          <button
             onClick={jalankanAuditSemua}
             disabled={sedangAudit || loading}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fef2f2', color: '#b91c1c', cursor: sedangAudit ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, opacity: sedangAudit ? 0.6 : 1 }}
