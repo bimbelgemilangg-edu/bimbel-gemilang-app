@@ -877,7 +877,7 @@ const StudentDashboard = () => {
             { key: 'tryout', label: 'TryOut', emoji: '🎯', segeraHadir: false },
             { key: 'banksoal', label: 'Bank Soal', emoji: '📚', segeraHadir: true },
             { key: 'progres', label: 'Progres Saya', emoji: '📊', segeraHadir: true },
-            { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', segeraHadir: true },
+            { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', segeraHadir: false },
             { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', segeraHadir: false },
           ];
           return (
@@ -931,6 +931,8 @@ const StudentDashboard = () => {
                         navigate('/siswa/latihan-harian');
                       } else if (m.key === 'tryout') {
                         navigate('/siswa/tryout');
+                      } else if (m.key === 'leaderboard') {
+                        navigate('/siswa/leaderboard');
                       } else if (m.segeraHadir) {
                         alert(`✨ ${m.label} segera hadir!`);
                       }

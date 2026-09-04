@@ -23,6 +23,7 @@ import { ArrowLeft, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel } from '../../../utils/aksesKontenSiswa';
+import { tambahXpMingguan } from '../../../utils/mingguIni';
 
 // 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
 // DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
@@ -628,8 +629,18 @@ export default function LatihanHarianPage() {
         const soalHariIniSebelumnya = existing.soalHariIniTanggal === hariIniStr ? (existing.soalHariIniCount || 0) : 0;
         const soalHariIniBaru = soalHariIniSebelumnya + soalSesi.length;
 
+        // 🔥 BARU: XP MINGGUAN -- dasar buat Leaderboard, TERPISAH dari
+        // XP total (yang gak pernah direset, itu progres pribadi
+        // selamanya). Kenapa dipisah: kalau Leaderboard pakai XP total,
+        // siswa yang baru gabung gak akan PERNAH bisa ngejar siswa lama
+        // -- gak adil, bikin nyerah duluan. Dengan XP mingguan yang
+        // reset tiap Senin, semua orang mulai dari 0 lagi tiap minggu.
+        const { xpMingguIni, xpMingguIniKunci } = tambahXpMingguan(existing.xpMingguIni, existing.xpMingguIniKunci, xp);
+
         await Promise.race([setDoc(progRef, {
           xp: (existing.xp || 0) + xp,
+          xpMingguIni,
+          xpMingguIniKunci,
           streak: streakBaru,
           lastActiveDate: hariIniStr,
           soalHariIniCount: soalHariIniBaru,

@@ -72,6 +72,7 @@ import TerbitkanTryOutPage from './pages/admin/bank-soal/TerbitkanTryOutPage';
 import HasilTryOutAdminPage from './pages/admin/bank-soal/HasilTryOutAdminPage';
 import DaftarTryOutPage from './pages/student/tryout/DaftarTryOutPage';
 import TryOutView from './pages/student/tryout/TryOutView';
+import LeaderboardPage from './pages/student/LeaderboardPage';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
 import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
 import BatalkanUjiCobaPage from './pages/admin/bank-soal/BatalkanUjiCobaPage';
@@ -349,6 +350,7 @@ function App() {
         <Route path="/siswa/dashboard" element={<SiswaRoute><SiswaLayout><StudentDashboard /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/tryout" element={<SiswaRoute><SiswaLayout><DaftarTryOutPage /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaRoute><TryOutView /></SiswaRoute>} />
+        <Route path="/siswa/leaderboard" element={<SiswaRoute><SiswaLayout><LeaderboardPage /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/materi" element={<SiswaRoute><SiswaLayout><StudentElearning /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><SiswaLayout><StudentSchedule /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/keuangan" element={<SiswaRoute><SiswaLayout><StudentFinanceSiswa /></SiswaLayout></SiswaRoute>} />

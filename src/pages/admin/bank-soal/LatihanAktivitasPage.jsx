@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import {
-  ArrowLeft, Flame, Sparkles, ChevronDown, ChevronRight, Loader2, RefreshCw, ShieldAlert, AlertTriangle,
+  ArrowLeft, Flame, Sparkles, ChevronDown, ChevronRight, Loader2, RefreshCw, ShieldAlert, AlertTriangle, TrendingDown,
 } from 'lucide-react';
 import { auditKecocokanSoal } from '../../../utils/aksesKontenSiswa';
 
@@ -176,6 +176,38 @@ export default function LatihanAktivitasPage() {
   const [sedangAudit, setSedangAudit] = useState(false);
   const [progresAudit, setProgresAudit] = useState({ sudah: 0, total: 0 });
 
+  // 🔥 BARU: cek Bank Soal yang mulai TIPIS per kombinasi mapel +
+  // jenjang + kelas. Kenapa penting: siswa bisa cepet "kehabisan"
+  // soal baru buat 1 kombinasi spesifik (mis. Matematika kelas 9 SMP)
+  // walau total Bank Soal keliatan banyak -- karena soal itu tersebar
+  // ke banyak kombinasi beda-beda. Ini kasih peringatan DINI sebelum
+  // siswa beneran ngerasa "kok gini-gini aja soalnya".
+  const [sedangCekBankSoal, setSedangCekBankSoal] = useState(false);
+  const [hasilCekBankSoal, setHasilCekBankSoal] = useState(null);
+  const BATAS_TIPIS = 15; // di bawah ini dianggap "tipis", perlu ditambah
+
+  const cekBankSoalMenipis = useCallback(async () => {
+    setSedangCekBankSoal(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'bank_soal'), where('status', '==', 'aktif')));
+      const hitung = {};
+      snap.forEach((d) => {
+        const s = d.data();
+        const kunci = `${s.mataPelajaran || '(kosong)'} · ${s.jenjang || '(kosong)'} · Kelas ${s.tingkatKelas || 'Semua'}`;
+        hitung[kunci] = (hitung[kunci] || 0) + 1;
+      });
+      const daftar = Object.entries(hitung)
+        .map(([kombinasi, jumlah]) => ({ kombinasi, jumlah }))
+        .filter((x) => x.jumlah < BATAS_TIPIS)
+        .sort((a, b) => a.jumlah - b.jumlah);
+      setHasilCekBankSoal(daftar);
+    } catch (e) {
+      console.error('Gagal cek bank soal:', e);
+      alert('Gagal mengecek Bank Soal.');
+    }
+    setSedangCekBankSoal(false);
+  }, []);
+
   const jalankanAuditSemua = useCallback(async () => {
     const target = daftarSiswa.filter((s) => s.sudahPernahLatihan);
     setSedangAudit(true);
@@ -238,6 +270,14 @@ export default function LatihanAktivitasPage() {
             {sedangAudit ? <Loader2 size={14} className="spin" /> : <ShieldAlert size={14} />}
             {sedangAudit ? `Mengaudit... (${progresAudit.sudah}/${progresAudit.total})` : 'Audit Cepat Semua Siswa'}
           </button>
+          <button
+            onClick={cekBankSoalMenipis}
+            disabled={sedangCekBankSoal}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #fdba74', background: '#fff7ed', color: '#c2410c', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}
+          >
+            {sedangCekBankSoal ? <Loader2 size={14} className="spin" /> : <TrendingDown size={14} />}
+            {sedangCekBankSoal ? 'Mengecek...' : 'Cek Bank Soal Menipis'}
+          </button>
           <button onClick={muatData} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 12 }}>
             <RefreshCw size={14} /> Muat Ulang
           </button>
@@ -247,6 +287,32 @@ export default function LatihanAktivitasPage() {
         Pantau siapa yang aktif latihan, XP/streak, dan materi mana yang masih perlu diperkuat.
         Klik <strong>Audit Cepat Semua Siswa</strong> buat mengecek soal yang mungkin nyasar jenjang/kelas dan sesi yang kepotong di tengah jalan.
       </p>
+
+      {/* 🔥 BARU: hasil cek Bank Soal menipis -- per kombinasi mapel +
+          jenjang + kelas yang jumlah soalnya di bawah ambang batas. */}
+      {hasilCekBankSoal && (
+        <div style={{ marginBottom: 16, borderRadius: 12, padding: 14, border: `1px solid ${hasilCekBankSoal.length > 0 ? '#fdba74' : '#86efac'}`, background: hasilCekBankSoal.length > 0 ? '#fff7ed' : '#f0fdf4' }}>
+          {hasilCekBankSoal.length === 0 ? (
+            <div style={{ fontSize: 13, color: '#15803d', fontWeight: 700 }}>
+              ✅ Aman -- semua kombinasi mapel/jenjang/kelas punya minimal {BATAS_TIPIS} soal.
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: '#c2410c', marginBottom: 8 }}>
+                <TrendingDown size={16} /> {hasilCekBankSoal.length} kombinasi mulai tipis (di bawah {BATAS_TIPIS} soal) -- siswa bisa cepat kehabisan soal baru
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
+                {hasilCekBankSoal.map((h, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, background: 'white', borderRadius: 6, padding: '5px 10px' }}>
+                    <span style={{ color: '#7c2d12' }}>{h.kombinasi}</span>
+                    <span style={{ fontWeight: 700, color: h.jumlah < 5 ? '#dc2626' : '#d97706' }}>{h.jumlah} soal</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* 🔥 BARU: ringkasan hasil audit -- cuma muncul SETELAH tombol
           "Audit Cepat" ditekan (bukan otomatis, biar tidak boros baca

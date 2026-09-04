@@ -42,6 +42,7 @@ import RingkasanPelanggaran from './RingkasanPelanggaran';
 import { hitungSkorPgKompleks, hitungSkorBenarSalah } from '../../../utils/skoringSoalKompleks';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
+import { tambahXpMingguan } from '../../../utils/mingguIni';
 
 const XP_PER_SOAL = 10; // konsisten sama XP_PER_BENAR di Latihan Harian
 
@@ -320,11 +321,18 @@ export default function TryOutView() {
       if (studentId) {
         const progRef = doc(db, 'siswa_progress', studentId);
         const snap = await getDoc(progRef);
-        const xpSekarang = snap.exists() ? (snap.data().xp || 0) : 0;
-        await updateDoc(progRef, { xp: xpSekarang + xpFinal, updatedAt: serverTimestamp() }).catch(async () => {
+        const existing = snap.exists() ? snap.data() : {};
+        // 🔥 BARU: XP dari Try Out JUGA nyumbang ke XP mingguan (dasar
+        // Leaderboard) -- konsisten sama Latihan Harian, biar
+        // Leaderboard-nya adil ngitung SEMUA usaha belajar siswa, bukan
+        // cuma dari 1 fitur doang.
+        const { xpMingguIni, xpMingguIniKunci } = tambahXpMingguan(existing.xpMingguIni, existing.xpMingguIniKunci, xpFinal);
+        await updateDoc(progRef, {
+          xp: (existing.xp || 0) + xpFinal, xpMingguIni, xpMingguIniKunci, updatedAt: serverTimestamp(),
+        }).catch(async () => {
           // dokumen belum ada -- buat baru
           const { setDoc } = await import('firebase/firestore');
-          await setDoc(progRef, { xp: xpFinal, updatedAt: serverTimestamp() }, { merge: true });
+          await setDoc(progRef, { xp: xpFinal, xpMingguIni, xpMingguIniKunci, updatedAt: serverTimestamp() }, { merge: true });
         });
       }
     } catch (e) {
