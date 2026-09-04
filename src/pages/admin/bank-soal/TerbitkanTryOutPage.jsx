@@ -26,8 +26,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, addDoc, query, where, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { notifyStudents } from '../../../utils/notifications';
+import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
+import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
+import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronRight, Sparkles,
@@ -57,6 +60,17 @@ function parseTeksKisiKisi(teks) {
     .split('\n')
     .map((baris) => bersihkanBarisMateri(baris))
     .filter(Boolean);
+}
+
+// Pemilih renderer sesuai tipe soal -- SAMA PERSIS logikanya dengan
+// TryOutView.jsx, biar preview admin nunjukin persis tampilan yang
+// bakal dilihat siswa (bukan versi beda yang bisa aja ternyata beda
+// pas siswa asli ngerjain).
+function RendererSoalPreview({ soal }) {
+  const tipe = soal.tipe || 'pg_sederhana';
+  if (tipe === 'pg_kompleks') return <RendererPgKompleks soal={soal} disabled modeTinjau />;
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah soal={soal} disabled modeTinjau />;
+  return <RendererPgSederhana soal={soal} disabled modeTinjau />;
 }
 
 export default function TerbitkanTryOutPage() {
@@ -116,9 +130,20 @@ export default function TerbitkanTryOutPage() {
     if (cacheSoalFolder[folderId]) return;
     setLoadingSoalFolder(true);
     try {
-      const q = query(collection(db, 'bank_soal'), where('sumberSoalId', '==', folderId), where('status', '==', 'aktif'));
-      const snap = await getDocs(q);
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      let list;
+      if (folderId === '__tanpa_folder__') {
+        // 🔥 BARU: soal lama dari SEBELUM sistem Folder Sumber ada --
+        // dulu gak kesimpen di folder mana pun, jadi gak pernah
+        // kelihatan lagi di tab "Jelajah per Folder" (yang cuma baca
+        // per sumberSoalId). Di sini ambil SEMUA soal aktif, terus
+        // saring sendiri yang sumberSoalId-nya kosong/gak ada.
+        const snap = await getDocs(query(collection(db, 'bank_soal'), where('status', '==', 'aktif')));
+        list = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((s) => !s.sumberSoalId);
+      } else {
+        const q = query(collection(db, 'bank_soal'), where('sumberSoalId', '==', folderId), where('status', '==', 'aktif'));
+        const snap = await getDocs(q);
+        list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      }
       list.sort((a, b) => (Number(a.nomor) || 0) - (Number(b.nomor) || 0));
       setCacheSoalFolder((prev) => ({ ...prev, [folderId]: list }));
     } catch (e) {
@@ -280,6 +305,11 @@ export default function TerbitkanTryOutPage() {
 
   const [menerbitkan, setMenerbitkan] = useState(false);
   const [hasil, setHasil] = useState(null);
+  // 🔥 BARU: preview soal SEBELUM diterbitkan -- render pakai
+  // komponen yang SAMA PERSIS dipakai siswa (RendererPgSederhana/
+  // PgKompleks/BenarSalah), biar admin lihat PERSIS gimana tampilan
+  // yang bakal dilihat siswa, bukan cuma potongan teks.
+  const [showPreview, setShowPreview] = useState(false);
 
   // 🔥 BARU: daftar try out yang UDAH diterbitkan -- sebelumnya gak ada
   // sama sekali cara buat admin lihat "yang tadi udah diterbitkan
@@ -306,14 +336,39 @@ export default function TerbitkanTryOutPage() {
     const aksi = paket.status === 'aktif' ? 'nonaktifkan' : 'aktifkan';
     if (!window.confirm(`${aksi === 'nonaktifkan' ? 'Nonaktifkan' : 'Aktifkan lagi'} try out "${paket.judul}"?`)) return;
     try {
-      const { updateDoc, doc: docRef } = await import('firebase/firestore');
-      await updateDoc(docRef(db, 'tryout_paket', paket.id), { status: aksi === 'nonaktifkan' ? 'nonaktif' : 'aktif' });
+      await updateDoc(doc(db, 'tryout_paket', paket.id), { status: aksi === 'nonaktifkan' ? 'nonaktif' : 'aktif' });
       muatDaftarTerbit();
     } catch (e) {
       console.error('Gagal ubah status try out:', e);
       alert('Gagal mengubah status.');
     }
   }, [muatDaftarTerbit]);
+
+  // 🔥 BARU: hapus PERMANEN (beda dari nonaktifkan). Begitu dihapus,
+  // dokumennya beneran lenyap dari koleksi tryout_paket -- otomatis
+  // gak akan muncul lagi di DaftarTryOutPage.jsx (siswa), karena
+  // halaman itu baca LANGSUNG dari koleksi ini, bukan dari cache.
+  // Sesi (tryout_sesi) yang SUDAH ADA punya siswa TETAP DIBIARKAN
+  // (bukan ikut dihapus) -- itu riwayat hasil beneran, jangan sampai
+  // hasil siswa yang udah selesai ngerjain jadi hilang cuma gara-gara
+  // paketnya diberesin admin.
+  const hapusTryOut = useCallback(async (paket) => {
+    const konfirmasi = window.prompt(
+      `Ketik ulang judul persis buat hapus PERMANEN "${paket.judul}":\n\n` +
+      `(Soal-soal & jadwalnya akan hilang. Hasil siswa yang SUDAH SELESAI ngerjain tetap aman tersimpan, cuma gak akan muncul lagi soalnya buat siswa yang belum mulai.)`
+    );
+    if (konfirmasi !== paket.judul) {
+      if (konfirmasi !== null) alert('Judul yang diketik tidak cocok persis -- dibatalkan.');
+      return;
+    }
+    try {
+      await deleteDoc(doc(db, 'tryout_paket', paket.id));
+      setDaftarTerbit((prev) => prev.filter((p) => p.id !== paket.id));
+    } catch (e) {
+      console.error('Gagal hapus try out:', e);
+      alert('Gagal menghapus.');
+    }
+  }, []);
 
   function statusJadwal(paket) {
     const sekarang = new Date();
@@ -475,6 +530,12 @@ export default function TerbitkanTryOutPage() {
                   >
                     {p.status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'}
                   </button>
+                  <button
+                    onClick={() => hapusTryOut(p)}
+                    style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fef2f2', cursor: 'pointer', color: '#b91c1c', whiteSpace: 'nowrap' }}
+                  >
+                    Hapus
+                  </button>
                 </div>
               );
             })}
@@ -494,13 +555,73 @@ export default function TerbitkanTryOutPage() {
         <div style={{ marginBottom: 16 }}>
           {loadingFolder ? (
             <Loader2 size={18} className="spin" />
-          ) : daftarFolder.length === 0 ? (
-            <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13, border: '1px dashed #d1d5db', borderRadius: 10 }}>
-              Belum ada Folder Sumber. Buat dulu lewat halaman "Import Hasil Scan AI" (panel 📁 Folder Sumber).
-            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {daftarFolder.map((f) => (
+              {/* 🔥 BARU: "folder virtual" buat soal lama dari SEBELUM
+                  sistem Folder Sumber ada -- biar bisa ketemu lagi,
+                  bukan ngilang selamanya cuma karena gak kesimpen di
+                  folder mana pun. */}
+              <div style={{ border: '1px dashed #a78bfa', borderRadius: 10, overflow: 'hidden', background: '#faf5ff' }}>
+                <div
+                  onClick={() => bukaFolder('__tanpa_folder__')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', cursor: 'pointer' }}
+                >
+                  {folderDibuka === '__tanpa_folder__' ? <FolderOpen size={18} color="#7c3aed" /> : <Folder size={18} color="#a78bfa" />}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#6d28d9' }}>📄 Soal Tanpa Folder</div>
+                    <div style={{ fontSize: 11, color: '#9ca3af' }}>Soal lama dari sebelum sistem Folder Sumber ada</div>
+                  </div>
+                  {folderDibuka === '__tanpa_folder__' ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </div>
+                {folderDibuka === '__tanpa_folder__' && (
+                  <div style={{ padding: '10px 14px 14px 40px', borderTop: '1px solid #ede9fe' }}>
+                    {loadingSoalFolder && !cacheSoalFolder['__tanpa_folder__'] ? (
+                      <Loader2 size={16} className="spin" />
+                    ) : babDalamFolder.length === 0 ? (
+                      <div style={{ fontSize: 12, color: '#9ca3af' }}>Gak ada soal tanpa folder -- semua soal udah kesimpen rapi di folder masing-masing.</div>
+                    ) : (
+                      babDalamFolder.map(({ bab, soal }) => (
+                        <div key={bab} style={{ marginBottom: 6 }}>
+                          <div
+                            onClick={() => setBabDibuka(babDibuka === bab ? null : bab)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', backgroundColor: '#f9fafb' }}
+                          >
+                            {babDibuka === bab ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#374151', flex: 1 }}>{bab}</span>
+                            <span style={{ fontSize: 11, color: '#9ca3af' }}>{soal.length} soal</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); tambahBanyakKeKeranjang(soal); }}
+                              style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #7c3aed', backgroundColor: 'white', color: '#6d28d9', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                              + Tambah Semua
+                            </button>
+                          </div>
+                          {babDibuka === bab && (
+                            <div style={{ padding: '6px 10px 6px 24px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                              {soal.map((s) => {
+                                const dipilih = keranjang.has(s.id);
+                                return (
+                                  <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: 'pointer' }}>
+                                    <input type="checkbox" checked={dipilih} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
+                                    <span style={{ color: '#374151' }}>{(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {daftarFolder.length === 0 ? (
+                <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13, border: '1px dashed #d1d5db', borderRadius: 10 }}>
+                  Belum ada Folder Sumber lain. Buat lewat halaman "Import Hasil Scan AI" (panel 📁 Folder Sumber).
+                </div>
+              ) : (
+              daftarFolder.map((f) => (
                 <div key={f.id} style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
                   <div
                     onClick={() => bukaFolder(f.id)}
@@ -557,7 +678,8 @@ export default function TerbitkanTryOutPage() {
                     </div>
                   )}
                 </div>
-              ))}
+              ))
+              )}
             </div>
           )}
         </div>
@@ -659,7 +781,10 @@ export default function TerbitkanTryOutPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <ShoppingCart size={18} color="#7c3aed" />
               <span style={{ fontWeight: 800, fontSize: 14, color: '#6d28d9' }}>Keranjang: {keranjang.size} soal</span>
-              <button onClick={kosongkanKeranjang} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <button onClick={() => setShowPreview(true)} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#0e7490', background: 'none', border: 'none', cursor: 'pointer' }}>
+                👁️ Preview
+              </button>
+              <button onClick={kosongkanKeranjang} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Trash2 size={14} /> Kosongkan
               </button>
             </div>
@@ -778,6 +903,46 @@ export default function TerbitkanTryOutPage() {
         }}>
           {hasil.success ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
           {hasil.message}
+        </div>
+      )}
+
+      {/* 🔥 BARU: modal preview -- render SEMUA soal di keranjang pakai
+          komponen yang sama persis dipakai siswa. Kunci jawaban yang
+          benar ikut ditandai hijau (mode tinjau), jadi sekalian bisa
+          dipakai buat CEK ULANG kunci jawabannya bener sebelum
+          diterbitkan ke siswa asli. */}
+      {showPreview && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', justifyContent: 'center', padding: '24px 16px', overflowY: 'auto' }}>
+          <div style={{ background: 'white', borderRadius: 16, maxWidth: 720, width: '100%', height: 'fit-content', padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#1e293b' }}>👁️ Preview {keranjang.size} Soal</div>
+              <button onClick={() => setShowPreview(false)} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Tutup</button>
+            </div>
+            <p style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 16 }}>
+              Ini persis tampilan yang bakal dilihat siswa. Kunci jawaban yang benar ditandai hijau -- cek dulu apa sudah sesuai sebelum diterbitkan.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {Array.from(keranjang.values()).map((s, i) => (
+                <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16 }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>
+                    Soal {i + 1} · {s.mataPelajaran} · {s.tipe || 'pg_sederhana'} · {s.materi || '-'}
+                  </div>
+                  {s.bacaan?.teks && (
+                    <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>
+                      {s.bacaan.teks}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 13.5, color: '#1e293b', marginBottom: 12 }}>{s.soal || s.teks_soal}</div>
+                  <RendererSoalPreview soal={s} />
+                  {s.pembahasan && (
+                    <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
+                      <b>💡 Pembahasan:</b> {s.pembahasan}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
