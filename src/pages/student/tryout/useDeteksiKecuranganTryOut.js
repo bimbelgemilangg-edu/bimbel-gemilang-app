@@ -128,18 +128,28 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(async (blob) => {
           if (!blob) return;
-          try {
-            const file = new File([blob], `pengawasan_${Date.now()}.jpg`, { type: 'image/jpeg' });
-            const hasil = await uploadElearningFile(file, 'tryout-pengawasan');
-            if (hasil.success) {
-              setJumlahFotoTersimpan((n) => n + 1);
-              onFotoTersimpan?.(hasil.downloadURL);
-            } else {
-              console.error('Gagal upload foto pengawasan:', hasil.error);
+          const file = new File([blob], `pengawasan_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const cobaUpload = async (percobaanKe = 1) => {
+            try {
+              const hasil = await uploadElearningFile(file, 'tryout-pengawasan');
+              if (hasil.success) {
+                setJumlahFotoTersimpan((n) => n + 1);
+                onFotoTersimpan?.(hasil.downloadURL);
+              } else if (percobaanKe < 2) {
+                // 🔥 BARU: coba sekali lagi kalau gagal -- ini foto bukti
+                // pengawasan, bukan data skor, jadi 1x retry ringan aja
+                // cukup, gak perlu peringatan ke siswa kalau tetap gagal
+                // (gak mempengaruhi kejujuran skor/XP-nya sama sekali).
+                setTimeout(() => cobaUpload(percobaanKe + 1), 2000);
+              } else {
+                console.error('Gagal upload foto pengawasan (2x percobaan):', hasil.error);
+              }
+            } catch (e) {
+              if (percobaanKe < 2) setTimeout(() => cobaUpload(percobaanKe + 1), 2000);
+              else console.error('Gagal ambil/upload foto pengawasan (2x percobaan):', e);
             }
-          } catch (e) {
-            console.error('Gagal ambil/upload foto pengawasan:', e);
-          }
+          };
+          cobaUpload();
         }, 'image/jpeg', 0.6);
       }
       // Jadwalkan foto berikutnya di jeda acak lagi -- BUKAN interval

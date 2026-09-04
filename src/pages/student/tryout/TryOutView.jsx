@@ -149,44 +149,76 @@ export default function TryOutView() {
   }, [tahap, percobaanKeKamera]);
 
   // ---------------- MUAT PAKET + CEK SESI YANG SUDAH ADA ----------------
-  useEffect(() => {
-    (async () => {
-      try {
-        const snapPaket = await getDoc(doc(db, 'tryout_paket', paketId));
-        if (!snapPaket.exists()) { setTahap('tidak-ditemukan'); return; }
-        const dataPaket = { id: snapPaket.id, ...snapPaket.data() };
-        setPaket(dataPaket);
+  // 🔥 BARU: dulu ini nyaris inline di dalam useEffect doang -- kalau
+  // gagal (jaringan lambat waktu pertama buka halaman), siswa cuma
+  // dikasih pesan "Coba muat ulang halaman" (dead-end, harus refresh
+  // manual browser). Sekarang dibungkus jadi fungsi yang bisa DIPANGGIL
+  // ULANG dari tombol, plus dicoba otomatis 2x sebelum nyerah.
+  const muatPaketDanSesi = useCallback(async (percobaanKe = 1) => {
+    try {
+      const snapPaket = await getDoc(doc(db, 'tryout_paket', paketId));
+      if (!snapPaket.exists()) { setTahap('tidak-ditemukan'); return; }
+      const dataPaket = { id: snapPaket.id, ...snapPaket.data() };
+      setPaket(dataPaket);
 
-        const snapSesi = await getDocs(query(
-          collection(db, 'tryout_sesi'),
-          where('paketId', '==', paketId),
-          where('studentId', '==', studentId),
-        ));
+      const snapSesi = await getDocs(query(
+        collection(db, 'tryout_sesi'),
+        where('paketId', '==', paketId),
+        where('studentId', '==', studentId),
+      ));
 
-        if (!snapSesi.empty) {
-          const sesi = { id: snapSesi.docs[0].id, ...snapSesi.docs[0].data() };
-          setSesiId(sesi.id);
-          setJawaban(sesi.jawaban || {});
-          setFotoPengawasan(sesi.fotoPengawasan || []);
-          if (sesi.status === 'selesai') {
-            setHasilAkhir({
-              xpMentah: sesi.xpMentah, xpFinal: sesi.xpFinal, totalSkorPersen: sesi.totalSkorPersen, pelanggaran: sesi.pelanggaran || [],
-            });
-            setTahap('selesai');
-          } else {
-            setSubtesAktifIndex(sesi.subtesAktifIndex || 0);
-            setWaktuMulaiMs(sesi.waktuMulaiMs || Date.now());
-            setWaktuMulaiSubtesMs(sesi.waktuMulaiSubtesMs || Date.now());
-            setTahap('mengerjakan');
-          }
+      if (!snapSesi.empty) {
+        const sesi = { id: snapSesi.docs[0].id, ...snapSesi.docs[0].data() };
+        setSesiId(sesi.id);
+        setJawaban(sesi.jawaban || {});
+        setFotoPengawasan(sesi.fotoPengawasan || []);
+        if (sesi.status === 'selesai') {
+          setHasilAkhir({
+            xpMentah: sesi.xpMentah, xpFinal: sesi.xpFinal, totalSkorPersen: sesi.totalSkorPersen, pelanggaran: sesi.pelanggaran || [],
+          });
+          setTahap('selesai');
         } else {
-          setTahap('mulai');
+          setSubtesAktifIndex(sesi.subtesAktifIndex || 0);
+          setWaktuMulaiMs(sesi.waktuMulaiMs || Date.now());
+          setWaktuMulaiSubtesMs(sesi.waktuMulaiSubtesMs || Date.now());
+          setTahap('mengerjakan');
         }
-      } catch (e) {
-        console.error('Gagal memuat try out:', e);
-        setTahap('gagal');
+      } else {
+        // Cek jadwal buka/deadline SEBELUM kasih tahap 'mulai'. Jaga-
+        // jaga kalau siswa buka link try out langsung (bukan lewat
+        // daftar yang udah nge-filter duluan).
+        const sekarang = new Date();
+        const belumDibuka = dataPaket.waktuBuka && sekarang < new Date(dataPaket.waktuBuka);
+        const sudahLewatDeadline = dataPaket.waktuTutup && sekarang > new Date(dataPaket.waktuTutup);
+
+        if (sudahLewatDeadline) {
+          // "Izin Ulang Khusus" -- admin bisa kasih 1 siswa izin buat
+          // ngerjain LAGI walau deadline PAKET-nya udah lewat, TANPA
+          // harus buka deadline itu buat semua orang.
+          const snapIzin = await getDoc(doc(db, 'tryout_izin_ulang', `${paketId}_${studentId}`));
+          const izinMasihBerlaku = snapIzin.exists() && sekarang < new Date(snapIzin.data().waktuBerlakuSampai);
+          if (!izinMasihBerlaku) {
+            setTahap('lewat-deadline');
+            return;
+          }
+        } else if (belumDibuka) {
+          setTahap('belum-dibuka');
+          return;
+        }
+        setTahap('mulai');
       }
-    })();
+    } catch (e) {
+      console.error(`Gagal memuat try out (percobaan ke-${percobaanKe}):`, e);
+      if (percobaanKe < 2) {
+        setTimeout(() => muatPaketDanSesi(percobaanKe + 1), 1500);
+        return;
+      }
+      setTahap('gagal');
+    }
+  }, [paketId, studentId]);
+
+  useEffect(() => {
+    muatPaketDanSesi();
   }, [paketId, studentId]);
 
   // Daftar soal yang SEDANG BOLEH dikerjakan -- kalau mode per-subtes,
@@ -218,8 +250,19 @@ export default function TryOutView() {
 
   const soalAktif = daftarSoalAktif[indexSoalAktif];
 
-  // ---------------- SIMPAN JAWABAN (per-soal, gak nunggu submit akhir) ----------------
-  const simpanProgres = useCallback(async (jawabanBaru, subtesIndexBaru, waktuSubtesBaru) => {
+  // 🔥 BARU (BUG SERIUS DITEMUKAN): sebelumnya kalau updateDoc gagal
+  // (mis. koneksi lemot/padat -- WAJAR kejadian pas banyak siswa
+  // ngerjain try out BARENGAN), errornya cuma di-log ke console
+  // browser (gak keliatan siswa sama sekali). Kalau abis itu siswa
+  // reload halaman, TryOutView narik ulang jawaban dari Firestore --
+  // yang ternyata KOSONG karena gagal kesimpen -- dan siswa keliatan
+  // "gak jawab apa-apa" padahal dia BENERAN udah jawab. Sekarang: 1x
+  // dicoba ulang otomatis, dan kalau tetap gagal, muncul PERINGATAN
+  // JELAS di layar (bukan diam-diam) -- siswa jadi TAHU harus cek
+  // koneksi & gak boleh reload sampai itu ilang.
+  const [gagalSimpanProgres, setGagalSimpanProgres] = useState(false);
+
+  const simpanProgres = useCallback(async (jawabanBaru, subtesIndexBaru, waktuSubtesBaru, sudahDicoba = false) => {
     if (!sesiId) return;
     try {
       await updateDoc(doc(db, 'tryout_sesi', sesiId), {
@@ -228,8 +271,16 @@ export default function TryOutView() {
         waktuMulaiSubtesMs: waktuSubtesBaru,
         updatedAt: serverTimestamp(),
       });
+      setGagalSimpanProgres(false);
     } catch (e) {
       console.error('Gagal menyimpan progres try out:', e);
+      if (!sudahDicoba) {
+        // Coba sekali lagi setelah jeda singkat -- banyak kegagalan
+        // jaringan itu cuma sesaat (macet 1-2 detik), bukan putus total.
+        setTimeout(() => simpanProgres(jawabanBaru, subtesIndexBaru, waktuSubtesBaru, true), 1500);
+      } else {
+        setGagalSimpanProgres(true);
+      }
     }
   }, [sesiId]);
 
@@ -283,13 +334,29 @@ export default function TryOutView() {
   });
 
   // ---------------- SUBMIT / SELESAIKAN ----------------
-  const selesaikanTryOut = useCallback(async () => {
+  // 🔥 BARU (BUG SERIUS DITEMUKAN): sebelumnya kalau penyimpanan HASIL
+  // FINAL gagal (bukan cuma jawaban per-soal, tapi status:'selesai' +
+  // skor + XP-nya), errornya cuma di-log ke console -- SISTEM TETAP
+  // NAMPILIN "Selesai!" ke siswa PADAHAL DATANYA GAK PERNAH BENERAN
+  // KESIMPEN. Siswa ngerasa udah kelar, tapi di database tryout_sesi-
+  // nya masih 'berjalan'/kosong -- persis kejadian yang bikin siswa
+  // komplain "aku udah jawab kok hasilnya 0%". Sekarang: dicoba
+  // beberapa kali, dan kalau BENERAN gagal terus, siswa DIKASIH TAU
+  // JELAS + tombol coba lagi -- BUKAN diam-diam dianggap selesai.
+  const [gagalKirimAkhir, setGagalKirimAkhir] = useState(false);
+  const [sedangMengirimAkhir, setSedangMengirimAkhir] = useState(false);
+
+  const selesaikanTryOut = useCallback(async (percobaanKe = 1) => {
     if (!paket) return;
+    setSedangMengirimAkhir(true);
+    setGagalKirimAkhir(false);
     const { totalSkor, totalSkorPersen } = hitungTotalSkor(paket.daftarSoal, jawaban);
     const xpMentah = Math.round(totalSkor * XP_PER_SOAL);
     const { xpFinal } = terapkanPotonganXP(xpMentah, pelanggaran);
 
     try {
+      // Penyimpanan yang BENERAN kritis (jawaban + skor final) --
+      // ini yang WAJIB berhasil sebelum siswa dikasih tau "selesai".
       if (sesiId) {
         await updateDoc(doc(db, 'tryout_sesi', sesiId), {
           status: 'selesai',
@@ -303,32 +370,38 @@ export default function TryOutView() {
         });
       }
 
-      // Tambahkan XP ke siswa_progress -- HANYA nambah XP, TIDAK
-      // menyentuh streak/jatah harian (itu urusan Latihan Harian,
-      // Try Out sistem terpisah).
+      // Nambah XP -- kalau ini gagal, gak apa-apa dilanjut (bisa
+      // dikoreksi belakangan lewat "Hitung Ulang" di admin), karena
+      // data JAWABAN & SKOR-nya sendiri udah pasti aman tersimpan
+      // (baris di atas udah berhasil kalau sampai sini).
       if (studentId) {
         const progRef = doc(db, 'siswa_progress', studentId);
         const snap = await getDoc(progRef);
         const existing = snap.exists() ? snap.data() : {};
-        // 🔥 BARU: XP dari Try Out JUGA nyumbang ke XP mingguan (dasar
-        // Leaderboard) -- konsisten sama Latihan Harian, biar
-        // Leaderboard-nya adil ngitung SEMUA usaha belajar siswa, bukan
-        // cuma dari 1 fitur doang.
         const { xpMingguIni, xpMingguIniKunci } = tambahXpMingguan(existing.xpMingguIni, existing.xpMingguIniKunci, xpFinal);
         await updateDoc(progRef, {
           xp: (existing.xp || 0) + xpFinal, xpMingguIni, xpMingguIniKunci, updatedAt: serverTimestamp(),
         }).catch(async () => {
-          // dokumen belum ada -- buat baru
           const { setDoc } = await import('firebase/firestore');
           await setDoc(progRef, { xp: xpFinal, xpMingguIni, xpMingguIniKunci, updatedAt: serverTimestamp() }, { merge: true });
         });
       }
-    } catch (e) {
-      console.error('Gagal menyimpan hasil try out:', e);
-    }
 
-    setHasilAkhir({ xpMentah, xpFinal, totalSkorPersen, pelanggaran });
-    setTahap('selesai');
+      setHasilAkhir({ xpMentah, xpFinal, totalSkorPersen, pelanggaran });
+      setTahap('selesai');
+    } catch (e) {
+      console.error(`Gagal menyimpan hasil try out (percobaan ke-${percobaanKe}):`, e);
+      if (percobaanKe < 3) {
+        // Coba lagi otomatis, jeda makin lama tiap gagal (1.5s, 3s).
+        setTimeout(() => selesaikanTryOut(percobaanKe + 1), percobaanKe * 1500);
+        return;
+      }
+      // 🔒 Udah dicoba 3x tetap gagal -- JANGAN klaim selesai. Kasih
+      // tau siswa jelas + tombol coba lagi manual, biar dia gak
+      // ninggalin halaman ini dalam keadaan salah kira udah kelar.
+      setGagalKirimAkhir(true);
+    }
+    setSedangMengirimAkhir(false);
   }, [paket, jawaban, pelanggaran, sesiId, fotoPengawasan, studentId]);
 
   // ---------------- TIMER ----------------
@@ -361,7 +434,39 @@ export default function TryOutView() {
   // ================= RENDER =================
   if (tahap === 'memuat') return <div style={st.pusat}>Memuat try out...</div>;
   if (tahap === 'tidak-ditemukan') return <div style={st.pusat}>Try out tidak ditemukan.</div>;
-  if (tahap === 'gagal') return <div style={st.pusat}>Gagal memuat try out. Coba muat ulang halaman.</div>;
+  if (tahap === 'belum-dibuka') {
+    return (
+      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
+        <div style={{ fontSize: 40 }}>🔒</div>
+        <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini belum dibuka</div>
+        <div style={{ fontSize: 12.5 }}>Dibuka {new Date(paket.waktuBuka).toLocaleString('id-ID')}</div>
+        <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
+      </div>
+    );
+  }
+  if (tahap === 'lewat-deadline') {
+    return (
+      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
+        <div style={{ fontSize: 40 }}>⏰</div>
+        <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini sudah lewat deadline</div>
+        <div style={{ fontSize: 12.5 }}>Ditutup {new Date(paket.waktuTutup).toLocaleString('id-ID')}</div>
+        <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>Kalau kamu merasa ini keliru, minta admin/gurumu buat cek ulang.</div>
+        <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
+      </div>
+    );
+  }
+  if (tahap === 'gagal') {
+    return (
+      <div style={{ ...st.pusat, flexDirection: 'column', gap: 10 }}>
+        <div style={{ fontSize: 40 }}>📡</div>
+        <div style={{ fontWeight: 700, color: '#1e293b' }}>Gagal memuat try out</div>
+        <div style={{ fontSize: 12.5, color: '#94a3b8' }}>Kemungkinan koneksi internetmu lagi lambat/putus.</div>
+        <button onClick={() => { setTahap('memuat'); muatPaketDanSesi(); }} style={{ ...st.tombolUtama, width: 'auto', padding: '10px 24px' }}>
+          🔄 Coba Lagi
+        </button>
+      </div>
+    );
+  }
 
   if (tahap === 'mulai') {
     return (
@@ -531,6 +636,14 @@ export default function TryOutView() {
         </div>
       </div>
 
+      {/* 🔥 BARU: peringatan JELAS kalau progres gagal kesimpen -- jangan
+          reload/tutup app sampai ini ilang, biar jawaban gak "kelewat" */}
+      {gagalSimpanProgres && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 10, padding: '10px 14px', marginBottom: 12, fontSize: 12, color: '#b91c1c', fontWeight: 700 }}>
+          ⚠️ Jawaban terakhir belum berhasil tersimpan -- cek koneksi internetmu. JANGAN tutup/reload halaman ini dulu.
+        </div>
+      )}
+
       {/* PALET NOMOR SOAL */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
         {daftarSoalAktif.map((s, i) => (
@@ -578,11 +691,34 @@ export default function TryOutView() {
         {indexSoalAktif < daftarSoalAktif.length - 1 ? (
           <button onClick={() => setIndexSoalAktif((i) => i + 1)} style={{ ...st.tombolUtama, flex: 1 }}>Selanjutnya</button>
         ) : (
-          <button onClick={selesaikanTryOut} style={{ ...st.tombolUtama, flex: 1, background: '#16a34a' }}>
-            <CheckCircle2 size={16} /> {paket.modeTimer === 'per-subtes' && subtesAktifIndex < paket.subtes.length - 1 ? 'Selesai Subtes Ini' : 'Kumpulkan Try Out'}
+          <button onClick={() => selesaikanTryOut()} disabled={sedangMengirimAkhir} style={{ ...st.tombolUtama, flex: 1, background: '#16a34a', opacity: sedangMengirimAkhir ? 0.6 : 1 }}>
+            {sedangMengirimAkhir ? 'Mengirim...' : (
+              <>
+                <CheckCircle2 size={16} /> {paket.modeTimer === 'per-subtes' && subtesAktifIndex < paket.subtes.length - 1 ? 'Selesai Subtes Ini' : 'Kumpulkan Try Out'}
+              </>
+            )}
           </button>
         )}
       </div>
+
+      {/* 🔥 BARU: layar gagal kirim -- muncul TIMPA semua kalau
+          penyimpanan hasil final beneran gagal terus setelah 3x
+          dicoba. Siswa TIDAK dianggap selesai, jawabannya tetap aman
+          di memori, tinggal klik coba lagi begitu koneksi membaik. */}
+      {gagalKirimAkhir && (
+        <div style={st.overlay}>
+          <div style={st.modal}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>📡</div>
+            <div style={{ fontWeight: 800, color: '#b91c1c', marginBottom: 6 }}>Gagal Mengirim Hasil</div>
+            <div style={{ fontSize: 12.5, color: '#7f1d1d', marginBottom: 14 }}>
+              Jawabanmu AMAN, belum hilang -- cuma belum berhasil terkirim ke server. Cek koneksi internetmu, lalu coba lagi.
+            </div>
+            <button onClick={() => selesaikanTryOut()} disabled={sedangMengirimAkhir} style={st.tombolUtama}>
+              {sedangMengirimAkhir ? 'Mengirim...' : '🔄 Coba Kirim Lagi'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* PERINGATAN KECURANGAN */}
       {showPeringatan && (

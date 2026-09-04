@@ -10,9 +10,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import {
-  ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw,
+  ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
 } from 'lucide-react';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
@@ -116,6 +116,91 @@ export default function HasilTryOutAdminPage() {
   // tryout_sesi.jawaban) TETAP DIPAKAI -- cuma cara MENILAINYA yang
   // diulang pakai kode yang sudah benar.
   const [sedangHitungUlang, setSedangHitungUlang] = useState(null); // studentId yang lagi diproses
+
+  // 🔥 BARU: "Izinkan Ulang" -- buat siswa yang KOMPLAIN hasilnya gak
+  // masuk akal (mis. semua 0% padahal dia yakin udah jawab -- bisa
+  // jadi progresnya gagal tersimpan gara-gara koneksi putus-putus pas
+  // ngerjain). Ini: (1) HAPUS sesi lamanya yang bermasalah, (2) kasih
+  // "izin ulang khusus" yang nembus deadline paket (walau deadline-nya
+  // udah lewat), TAPI cuma buat siswa ini doang -- siswa lain yang
+  // udah selesai sesuai jadwal TETAP gak kesenggol, tetap adil.
+  // 🔥 BARU: "Izinkan Ulang" -- buat siswa yang KOMPLAIN hasilnya gak
+  // masuk akal (mis. semua "Tidak dijawab" padahal dia yakin udah
+  // jawab -- kemungkinan besar progresnya gagal kesimpen gara-gara
+  // koneksi putus-putus pas ngerjain, apalagi kalau try out dikerjain
+  // serentak rame-rame). Fungsi ini melakukan SEMUA yang perlu
+  // sekaligus, biar gak ada langkah yang kelewat:
+  //   1. Tarik balik XP dari hasil lama (biar gak dobel pas dia
+  //      ngerjain ulang nanti dan dapat XP baru lagi)
+  //   2. Hapus dokumen sesi lamanya PERMANEN
+  //   3. Kasih "izin ulang khusus" yang NEMBUS deadline paket -- PENTING
+  //      terutama kalau deadline try out ini UDAH LEWAT, karena tanpa
+  //      ini, begitu sesi lamanya dihapus, TryOutView.jsx tetap akan
+  //      nolak dia mulai lagi (dianggap "lewat deadline"). Izin ini
+  //      CUMA berlaku buat siswa ini -- siswa lain yang udah selesai
+  //      sesuai jadwal asli TIDAK ikut kesenggol / TIDAK dibukakan
+  //      deadline-nya, tetap adil.
+  const [sedangIzinkanUlang, setSedangIzinkanUlang] = useState(null);
+
+  const izinkanUlangSatuSiswa = useCallback(async (item) => {
+    if (!item.sesi) return;
+    const studentId = item.student.studentId || item.student.id;
+    const konfirmasi = window.prompt(
+      `Ketik ulang nama PERSIS "${item.student.nama}" buat izinkan dia ngerjain ULANG dari NOL:\n\n` +
+      `- Hasil lama (skor ${item.sesi.totalSkorPersen}%, ${item.sesi.xpFinal || 0} XP) akan DIHAPUS PERMANEN.\n` +
+      `- XP yang sempat masuk dari sesi lama akan ditarik balik (biar gak dobel).\n` +
+      `- Dia akan bisa mulai lagi dari nol selama 3 jam ke depan, WALAU deadline try out ini udah lewat -- ` +
+      `siswa lain TIDAK ikut kesenggol/TIDAK dibukakan deadline-nya.`
+    );
+    if (konfirmasi !== item.student.nama) {
+      if (konfirmasi !== null) alert('Nama yang diketik tidak cocok persis -- dibatalkan.');
+      return;
+    }
+
+    setSedangIzinkanUlang(studentId);
+    try {
+      // 1. Tarik balik XP dari hasil lama (kalau ada) -- SELISIHNYA
+      //    doang, bukan reset ke 0, biar aktivitas lain siswa gak
+      //    ikut kesenggol.
+      const xpLama = item.sesi.xpFinal || 0;
+      if (xpLama !== 0) {
+        const progRef = doc(db, 'siswa_progress', studentId);
+        const snapProg = await getDoc(progRef);
+        const existing = snapProg.exists() ? snapProg.data() : {};
+        const { xpMingguIni, xpMingguIniKunci } = tambahXpMingguan(existing.xpMingguIni, existing.xpMingguIniKunci, -xpLama);
+        await updateDoc(progRef, {
+          xp: Math.max(0, (existing.xp || 0) - xpLama),
+          xpMingguIni: Math.max(0, xpMingguIni),
+          xpMingguIniKunci,
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      // 2. Hapus sesi lama yang bermasalah -- PERMANEN.
+      await deleteDoc(doc(db, 'tryout_sesi', item.sesi.id));
+
+      // 3. Kasih izin ulang khusus, 3 jam dari sekarang -- ini yang
+      //    bikin TryOutView.jsx ngizinin dia mulai lagi walau deadline
+      //    paket udah lewat (lihat pengecekan di TryOutView.jsx).
+      const waktuBerlakuSampai = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+      await setDoc(doc(db, 'tryout_izin_ulang', `${paketTerpilih.id}_${studentId}`), {
+        paketId: paketTerpilih.id,
+        studentId,
+        waktuBerlakuSampai,
+        diberikanOleh: 'admin',
+        createdAt: serverTimestamp(),
+      });
+
+      setBaris((prev) => prev.map((b) => (
+        b.student.id === item.student.id ? { ...b, sesi: null, izinUlang: { waktuBerlakuSampai } } : b
+      )));
+      alert(`${item.student.nama} sekarang bisa mulai ulang try out ini dari nol, sampai ${new Date(waktuBerlakuSampai).toLocaleString('id-ID')}.`);
+    } catch (e) {
+      console.error('Gagal izinkan ulang:', e);
+      alert('Gagal memproses: ' + e.message);
+    }
+    setSedangIzinkanUlang(null);
+  }, [paketTerpilih]);
 
   const hitungUlangSatuSiswa = useCallback(async (item) => {
     if (!paketTerpilih || !item.sesi || item.sesi.status !== 'selesai') return;
@@ -298,6 +383,15 @@ export default function HasilTryOutAdminPage() {
                                   >
                                     {sedangHitungUlang === idSiswa ? <Loader2 size={11} className="spin" /> : <RotateCcw size={11} />}
                                     Ulang
+                                  </button>
+                                  <button
+                                    onClick={() => izinkanUlangSatuSiswa(b)}
+                                    disabled={sedangIzinkanUlang === idSiswa}
+                                    title="Hapus sesi lama, izinkan siswa ini mulai dari NOL lagi (dipakai kalau curiga jawabannya gak beneran kesimpen)"
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, padding: '4px 8px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fef2f2', cursor: 'pointer', color: '#b91c1c' }}
+                                  >
+                                    {sedangIzinkanUlang === idSiswa ? <Loader2 size={11} className="spin" /> : '🔁'}
+                                    Ulang dari 0
                                   </button>
                                 </div>
                               )}

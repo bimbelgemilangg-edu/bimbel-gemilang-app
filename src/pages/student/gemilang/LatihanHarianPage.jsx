@@ -280,6 +280,16 @@ export default function LatihanHarianPage() {
   // di selesaikanSesi(), SAMA seperti sebelumnya, supaya tidak ada
   // 2 sumber kebenaran yang bisa beda angka.
   const [hasilPerSoal, setHasilPerSoal] = useState([]); // [{soal, jawabanIndex, indexBenar, benar}]
+  // 🔥 BARU (audit koneksi menyeluruh): sebelumnya penyimpanan progres
+  // Leitner Box per-soal itu FIRE-AND-FORGET tanpa retry -- kalau
+  // gagal, cuma di-log ke console, siswa gak pernah tau. Beda sama
+  // bug Try Out (yang bikin skor 0% karena jawaban itu sendiri sumber
+  // kebenaran skornya), di sini skor sesi TETAP AKURAT (sudah kesimpen
+  // di hasilSesi/hasilPerSoal di memori) -- tapi jadwal pengulangan
+  // soal (Leitner Box)-nya bisa diam-diam gak ter-update dengan benar
+  // kalau koneksi putus-putus. Ditambah retry + pencatatan biar gak
+  // kejadian diam-diam lagi.
+  const [soalGagalSimpan, setSoalGagalSimpan] = useState([]); // [{soalId, materi}]
   const [koreksiIndex, setKoreksiIndex] = useState(0);
   const [xpAnimasi, setXpAnimasi] = useState(0);
   // 🔥 BARU (bug nyata ditemukan): animasi "Memeriksa soal 10 dari 10"
@@ -484,6 +494,7 @@ export default function LatihanHarianPage() {
     setSedangMenyimpan(false);
     setHasilSesi({ benar: 0, salah: 0 });
     setHasilPerSoal([]);
+    setSoalGagalSimpan([]);
     setKoreksiIndex(0);
     setXpAnimasi(0);
     setSedangFinalisasi(false);
@@ -501,6 +512,7 @@ export default function LatihanHarianPage() {
     setSedangMenyimpan(false);
     setHasilSesi({ benar: 0, salah: 0 });
     setHasilPerSoal([]);
+    setSoalGagalSimpan([]);
     setKoreksiIndex(0);
     setXpAnimasi(0);
     setSedangFinalisasi(false);
@@ -550,7 +562,21 @@ export default function LatihanHarianPage() {
         salahCount: (existing?.salahCount || 0) + (benar ? 0 : 1),
         updatedAt: serverTimestamp(),
       };
-      setDoc(doc(db, 'siswa_soal_progress', progKey), dataBaru).catch((e) => console.error('Gagal simpan progres soal:', e));
+      setDoc(doc(db, 'siswa_soal_progress', progKey), dataBaru)
+        .catch((e) => {
+          console.error('Gagal simpan progres soal, coba lagi sekali:', e);
+          // Coba sekali lagi setelah jeda singkat -- banyak kegagalan
+          // jaringan itu cuma macet 1-2 detik, bukan putus total.
+          return new Promise((resolve) => setTimeout(resolve, 1500))
+            .then(() => setDoc(doc(db, 'siswa_soal_progress', progKey), dataBaru))
+            .catch((e2) => {
+              console.error('Gagal simpan progres soal walau udah dicoba ulang:', e2);
+              // 🔒 Tetap gagal setelah retry -- catat biar KELIHATAN
+              // (bukan cuma hilang di console), termasuk kalau nanti
+              // mau dicek admin lewat log.
+              setSoalGagalSimpan((prev) => [...prev, { soalId: soalAktif.id, materi: soalAktif.materi }]);
+            });
+        });
       setProgressMap((prev) => ({ ...prev, [soalAktif.id]: dataBaru }));
     }
 
@@ -993,6 +1019,18 @@ export default function LatihanHarianPage() {
             <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 14px', marginBottom: 18, fontSize: 12, color: '#92400e', textAlign: 'left' }}>
               ⚠️ Koneksi kamu sepertinya lambat -- XP & streak di atas <strong>mungkin belum tersimpan</strong> ke akunmu.
               Soal yang sudah kamu jawab tetap aman, tapi coba buka lagi halaman Latihan Harian sebentar lagi buat mastiin XP-nya sudah masuk.
+            </div>
+          )}
+
+          {/* 🔥 BARU: peringatan kalau ADA soal yang progres pengulangannya
+              (Leitner Box) gagal kesimpen walau udah dicoba 2x. XP & skor
+              sesi ini TETAP AKURAT (itu udah dihitung dari data lokal),
+              cuma jadwal "kapan soal ini muncul lagi" yang mungkin meleset
+              buat soal-soal yang disebut di sini. */}
+          {soalGagalSimpan.length > 0 && (
+            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 14px', marginBottom: 18, fontSize: 12, color: '#92400e', textAlign: 'left' }}>
+              ⚠️ Koneksi sempat putus pas {soalGagalSimpan.length} soal ({[...new Set(soalGagalSimpan.map((s) => s.materi))].join(', ')}) --
+              XP kamu di atas tetap benar, cuma jadwal latihan ulang buat soal itu mungkin sedikit meleset.
             </div>
           )}
 

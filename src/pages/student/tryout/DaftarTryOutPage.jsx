@@ -38,7 +38,14 @@ export default function DaftarTryOutPage() {
         const sesiPerPaket = {};
         snapSesi.forEach((d) => { sesiPerPaket[d.data().paketId] = d.data(); });
 
-        setDaftar(paketList.map((p) => ({ ...p, sesi: sesiPerPaket[p.id] || null })));
+        // 🔥 BARU: "Izin Ulang Khusus" -- admin bisa kasih siswa TERTENTU
+        // izin ngerjain lagi walau deadline PAKET-nya udah lewat, tanpa
+        // buka deadline itu buat semua siswa lain.
+        const snapIzin = await getDocs(query(collection(db, 'tryout_izin_ulang'), where('studentId', '==', studentId)));
+        const izinPerPaket = {};
+        snapIzin.forEach((d) => { izinPerPaket[d.data().paketId] = d.data(); });
+
+        setDaftar(paketList.map((p) => ({ ...p, sesi: sesiPerPaket[p.id] || null, izinUlang: izinPerPaket[p.id] || null })));
       } catch (e) {
         console.error('Gagal memuat daftar try out:', e);
       }
@@ -73,7 +80,8 @@ export default function DaftarTryOutPage() {
             // dikunci itu MULAI BARU, bukan akses ke sesi yang udah ada.
             const sekarang = new Date();
             const belumDibuka = status === 'belum' && p.waktuBuka && sekarang < new Date(p.waktuBuka);
-            const sudahLewatDeadline = status === 'belum' && p.waktuTutup && sekarang > new Date(p.waktuTutup);
+            const izinUlangMasihBerlaku = p.izinUlang && sekarang < new Date(p.izinUlang.waktuBerlakuSampai);
+            const sudahLewatDeadline = status === 'belum' && p.waktuTutup && sekarang > new Date(p.waktuTutup) && !izinUlangMasihBerlaku;
             const terkunci = belumDibuka || sudahLewatDeadline;
 
             return (
@@ -89,6 +97,7 @@ export default function DaftarTryOutPage() {
                   <div style={{ fontSize: 11.5, color: '#94a3b8' }}>{p.totalSoal} soal · {p.modeTimer === 'total' ? `${p.durasiTotalMenit} menit` : `${p.subtes?.length || 0} subtes`}</div>
                   {belumDibuka && <div style={{ fontSize: 11, color: '#d97706', marginTop: 2 }}>Dibuka {new Date(p.waktuBuka).toLocaleString('id-ID')}</div>}
                   {sudahLewatDeadline && <div style={{ fontSize: 11, color: '#dc2626', marginTop: 2 }}>Sudah lewat deadline ({new Date(p.waktuTutup).toLocaleString('id-ID')})</div>}
+                  {izinUlangMasihBerlaku && <div style={{ fontSize: 11, color: '#7c3aed', marginTop: 2 }}>🎟️ Izin ulang khusus sampai {new Date(p.izinUlang.waktuBerlakuSampai).toLocaleString('id-ID')}</div>}
                 </div>
                 {status === 'selesai' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: '#16a34a' }}>
