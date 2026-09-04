@@ -41,6 +41,7 @@ import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import { hitungSkorPgKompleks, hitungSkorBenarSalah } from '../../../utils/skoringSoalKompleks';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
+import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 
 const XP_PER_SOAL = 10; // konsisten sama XP_PER_BENAR di Latihan Harian
 
@@ -202,14 +203,27 @@ export default function TryOutView() {
   // ditampilkan lagi -- sesuai aturan "gak bisa balik").
   const daftarSoalAktif = useMemo(() => {
     if (!paket) return [];
+    let hasil;
     if (paket.modeTimer === 'per-subtes') {
       const subtesIni = paket.subtes?.[subtesAktifIndex];
       if (!subtesIni) return [];
       const idSet = new Set(subtesIni.soalIds);
-      return paket.daftarSoal.filter((s) => idSet.has(s.id));
+      hasil = paket.daftarSoal.filter((s) => idSet.has(s.id));
+    } else {
+      hasil = paket.daftarSoal || [];
     }
-    return paket.daftarSoal || [];
-  }, [paket, subtesAktifIndex]);
+
+    // 🔥 BARU: acak urutan -- beda siswa beda urutan nomor (anti-nyontek
+    // liat jawaban nomor sekian dari teman sebelah), TAPI konsisten
+    // buat siswa yang sama (gak acak ulang tiap reload halaman, biar
+    // gak bingung nomor loncat-loncat pas lagi ngerjain). `garam`
+    // dibedain per subtes, biar urutan tiap subtes gak "ngikutin pola"
+    // yang sama persis satu sama lain buat siswa yang sama.
+    if (paket.soalAcak && studentId) {
+      hasil = acakSoalPerSiswa(hasil, studentId, paketId, String(subtesAktifIndex));
+    }
+    return hasil;
+  }, [paket, subtesAktifIndex, studentId, paketId]);
 
   const soalAktif = daftarSoalAktif[indexSoalAktif];
 

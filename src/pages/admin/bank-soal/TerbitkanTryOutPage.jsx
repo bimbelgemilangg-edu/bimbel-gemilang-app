@@ -274,6 +274,9 @@ export default function TerbitkanTryOutPage() {
   // 🔥 Anti-cheat -- nyambung ke useDeteksiKecuranganTryOut.js
   const [antiCheatAktif, setAntiCheatAktif] = useState(true);
   const [wajibKamera, setWajibKamera] = useState(true);
+  // 🔥 BARU: acak urutan soal per siswa -- beda siswa beda urutan
+  // nomor (anti-nyontek liat jawaban nomor sekian dari teman sebelah).
+  const [soalAcak, setSoalAcak] = useState(true);
 
   const [menerbitkan, setMenerbitkan] = useState(false);
   const [hasil, setHasil] = useState(null);
@@ -375,6 +378,7 @@ export default function TerbitkanTryOutPage() {
         subtes, // dipakai kalau modeTimer === 'per-subtes'
         antiCheatAktif,
         wajibKamera: antiCheatAktif ? wajibKamera : false,
+        soalAcak,
         // 🔥 BARU: jadwal buka & deadline -- disimpan sebagai ISO string
         // (bukan Firestore Timestamp) biar gampang dibandingkan langsung
         // pakai `new Date()` di sisi siswa tanpa nunggu resolve dulu.
@@ -750,6 +754,10 @@ export default function TerbitkanTryOutPage() {
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: antiCheatAktif ? '#374151' : '#cbd5e1' }}>
                 <input type="checkbox" checked={wajibKamera} disabled={!antiCheatAktif} onChange={(e) => setWajibKamera(e.target.checked)} />
                 <Camera size={13} /> Wajib kamera (foto acak selama try out)
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                <input type="checkbox" checked={soalAcak} onChange={(e) => setSoalAcak(e.target.checked)} />
+                <ListChecks size={13} /> Acak urutan soal (beda tiap siswa)
               </label>
             </div>
 
