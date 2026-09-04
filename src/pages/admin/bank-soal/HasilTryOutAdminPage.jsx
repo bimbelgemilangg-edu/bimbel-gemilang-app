@@ -15,7 +15,7 @@ import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw,
 } from 'lucide-react';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut';
-import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
+import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
 import { tambahXpMingguan, kunciMingguIni } from '../../../utils/mingguIni';
 
 export default function HasilTryOutAdminPage() {
@@ -254,19 +254,16 @@ export default function HasilTryOutAdminPage() {
                               {selesai ? b.sesi.xpFinal : '-'}
                             </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
-                              {(b.sesi?.fotoPengawasan?.length || 0) > 0 ? (
+                              {((b.sesi?.pelanggaran?.length || 0) > 0 || (b.sesi?.fotoPengawasan?.length || 0) > 0) ? (
                                 <button
-                                  onClick={() => setSiswaFotoDibuka({ nama: b.student.nama, foto: b.sesi.fotoPengawasan, pelanggaran: b.sesi.pelanggaran || [] })}
+                                  onClick={() => setSiswaFotoDibuka({ nama: b.student.nama, foto: b.sesi.fotoPengawasan || [], pelanggaran: b.sesi.pelanggaran || [] })}
                                   style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: (b.sesi?.pelanggaran?.length || 0) > 0 ? '#dc2626' : '#9ca3af', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline' }}
                                 >
                                   {b.sesi?.pelanggaran?.length > 0 && <ShieldAlert size={12} />}
                                   {b.sesi?.pelanggaran?.length || 0}
                                 </button>
                               ) : (
-                                <span style={{ color: (b.sesi?.pelanggaran?.length || 0) > 0 ? '#dc2626' : '#9ca3af' }}>
-                                  {b.sesi?.pelanggaran?.length > 0 && <ShieldAlert size={12} style={{ display: 'inline', marginRight: 3 }} />}
-                                  {b.sesi?.pelanggaran?.length || 0}
-                                </span>
+                                <span style={{ color: '#9ca3af' }}>0</span>
                               )}
                             </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
@@ -303,27 +300,55 @@ export default function HasilTryOutAdminPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '24px 16px', overflowY: 'auto' }}>
           <div style={{ background: 'white', borderRadius: 16, maxWidth: 640, width: '100%', padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: '#1e293b' }}>📷 Foto Pengawasan -- {siswaFotoDibuka.nama}</div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#1e293b' }}>🛡️ Detail Pelanggaran -- {siswaFotoDibuka.nama}</div>
               <button onClick={() => setSiswaFotoDibuka(null)} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Tutup</button>
             </div>
-            <p style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 14 }}>
-              Diambil ACAK selama pengerjaan (bukan tiap detik) -- ini bukti visual buat ditinjau MANUAL, bukan hasil verifikasi otomatis.
-            </p>
 
-            {siswaFotoDibuka.pelanggaran.length > 0 && (
-              <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: 10, marginBottom: 14, fontSize: 12, color: '#b91c1c' }}>
-                <b>{siswaFotoDibuka.pelanggaran.length} pelanggaran tercatat:</b>{' '}
-                {siswaFotoDibuka.pelanggaran.map((p) => p.type).join(', ')}
+            {/* Rincian JENIS pelanggaran, dikelompokkan -- ini yang bisa
+                selalu ditampilkan walau fotonya kosong (mis. paket try
+                out ini gak mewajibkan kamera, pelanggarannya cuma dari
+                pindah tab/keluar fullscreen). */}
+            {siswaFotoDibuka.pelanggaran.length === 0 ? (
+              <div style={{ fontSize: 13, color: '#16a34a', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: 12, marginTop: 10 }}>
+                ✅ Gak ada pelanggaran tercatat buat siswa ini.
+              </div>
+            ) : (
+              <div style={{ marginTop: 10, marginBottom: 14 }}>
+                {(() => {
+                  const kelompok = {};
+                  siswaFotoDibuka.pelanggaran.forEach((p) => { kelompok[p.type] = (kelompok[p.type] || 0) + 1; });
+                  return Object.entries(kelompok).map(([type, jumlah]) => (
+                    <div key={type} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, padding: '6px 10px', background: '#fef2f2', borderRadius: 8, marginBottom: 4, color: '#7f1d1d' }}>
+                      <span>{LABEL_PELANGGARAN[type] || type}</span>
+                      <span style={{ fontWeight: 700 }}>{jumlah}x</span>
+                    </div>
+                  ));
+                })()}
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
-              {siswaFotoDibuka.foto.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noreferrer">
-                  <img src={url} alt={`Foto pengawasan ${i + 1}`} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }} />
-                </a>
-              ))}
-            </div>
+            {/* Galeri foto -- CUMA muncul kalau ada fotonya. Kalau
+                pelanggarannya dari pindah tab/fullscreen doang (bukan
+                kamera), sengaja gak ada foto sama sekali -- itu wajar,
+                bukan kesalahan. */}
+            {siswaFotoDibuka.foto.length > 0 ? (
+              <>
+                <p style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>
+                  📷 Foto diambil ACAK selama pengerjaan (bukan tiap detik) -- ini bukti visual buat ditinjau MANUAL, bukan hasil verifikasi otomatis.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+                  {siswaFotoDibuka.foto.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noreferrer">
+                      <img src={url} alt={`Foto pengawasan ${i + 1}`} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }} />
+                    </a>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 12, color: '#9ca3af', fontStyle: 'italic' }}>
+                Gak ada foto pengawasan buat try out ini -- kemungkinan paketnya emang gak mewajibkan kamera saat diterbitkan.
+              </div>
+            )}
           </div>
         </div>
       )}
