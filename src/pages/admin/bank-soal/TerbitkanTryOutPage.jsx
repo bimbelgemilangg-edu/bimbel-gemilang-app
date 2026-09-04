@@ -30,7 +30,7 @@ import { collection, getDocs, addDoc, query, where, serverTimestamp } from 'fire
 import { notifyStudents } from '../../../utils/notifications';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
-  Timer, ShieldAlert, Camera, ListChecks, Layers,
+  Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronRight, Sparkles,
 } from 'lucide-react';
 
 const inputStyle = { padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none' };
@@ -38,6 +38,26 @@ const btnPrimary = {
   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 8,
   border: 'none', backgroundColor: '#7c3aed', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer',
 };
+const tabAktif = { padding: '10px 16px', border: 'none', borderBottom: '2px solid #7c3aed', backgroundColor: 'transparent', color: '#6d28d9', fontWeight: 700, fontSize: 13, cursor: 'pointer' };
+const tabPasif = { padding: '10px 16px', border: 'none', borderBottom: '2px solid transparent', backgroundColor: 'transparent', color: '#9ca3af', fontWeight: 600, fontSize: 13, cursor: 'pointer' };
+
+// 🔥 BARU: dipindah dari TerbitkanKuisPage.jsx -- admin sering gak
+// hafal nama materi persis, apalagi TKA butuh cakupan kisi-kisi yang
+// banyak. Kisi-kisi asli sering ditempel dengan anotasi frekuensi
+// nempel tanpa spasi, contoh: "Bilangan bulat, pecahan, desimal, dan
+// persenSering muncul" -- fungsi ini pisahkan topik dari anotasi itu
+// SEBELUM dipakai buat mencari soal.
+function bersihkanBarisMateri(baris) {
+  const dipisah = baris.replace(/([a-z0-9)])(Sering|Jarang|Prediksi)/g, '$1|$2');
+  return dipisah.split('|')[0].trim();
+}
+
+function parseTeksKisiKisi(teks) {
+  return teks
+    .split('\n')
+    .map((baris) => bersihkanBarisMateri(baris))
+    .filter(Boolean);
+}
 
 export default function TerbitkanTryOutPage() {
   const navigate = useNavigate();
@@ -53,7 +73,133 @@ export default function TerbitkanTryOutPage() {
     });
   }, []);
 
+  const tambahBanyakKeKeranjang = useCallback((daftarSoal) => {
+    setKeranjang((prev) => {
+      const next = new Map(prev);
+      daftarSoal.forEach((s) => next.set(s.id, s));
+      return next;
+    });
+  }, []);
+
   const kosongkanKeranjang = () => setKeranjang(new Map());
+
+  // 🔥 BARU: 3 tab, sama pola kayak TerbitkanKuisPage.jsx -- keranjang
+  // yang SAMA dipakai lintas tab, biar bisa campur soal dari folder +
+  // bucket + cari bebas sekaligus.
+  const [tab, setTab] = useState('folder'); // 'folder' | 'cari' | 'bucket'
+
+  // ---------------- TAB: JELAJAH PER FOLDER ----------------
+  const [daftarFolder, setDaftarFolder] = useState([]);
+  const [loadingFolder, setLoadingFolder] = useState(true);
+  const [folderDibuka, setFolderDibuka] = useState(null);
+  const [cacheSoalFolder, setCacheSoalFolder] = useState({});
+  const [loadingSoalFolder, setLoadingSoalFolder] = useState(false);
+  const [babDibuka, setBabDibuka] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      setLoadingFolder(true);
+      try {
+        const snap = await getDocs(collection(db, 'sumber_soal'));
+        setDaftarFolder(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error('Gagal ambil daftar folder:', e);
+      }
+      setLoadingFolder(false);
+    })();
+  }, []);
+
+  const bukaFolder = useCallback(async (folderId) => {
+    if (folderDibuka === folderId) { setFolderDibuka(null); return; }
+    setFolderDibuka(folderId);
+    setBabDibuka(null);
+    if (cacheSoalFolder[folderId]) return;
+    setLoadingSoalFolder(true);
+    try {
+      const q = query(collection(db, 'bank_soal'), where('sumberSoalId', '==', folderId), where('status', '==', 'aktif'));
+      const snap = await getDocs(q);
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (Number(a.nomor) || 0) - (Number(b.nomor) || 0));
+      setCacheSoalFolder((prev) => ({ ...prev, [folderId]: list }));
+    } catch (e) {
+      console.error('Gagal ambil soal folder:', e);
+      alert('Gagal mengambil soal folder: ' + e.message);
+    }
+    setLoadingSoalFolder(false);
+  }, [folderDibuka, cacheSoalFolder]);
+
+  const babDalamFolder = useMemo(() => {
+    if (!folderDibuka || !cacheSoalFolder[folderDibuka]) return [];
+    const map = new Map();
+    cacheSoalFolder[folderDibuka].forEach((s) => {
+      const bab = s.materi || '(Tanpa bab/materi)';
+      if (!map.has(bab)) map.set(bab, []);
+      map.get(bab).push(s);
+    });
+    return Array.from(map.entries()).map(([bab, soal]) => ({ bab, soal }));
+  }, [folderDibuka, cacheSoalFolder]);
+
+  // ---------------- TAB: BUCKET OTOMATIS ----------------
+  // Admin cukup: pilih kelas, TEMPEL daftar bab/materi dari kisi-kisi
+  // resmi (1 topik per baris), isi target jumlah soal -> sistem cari
+  // LINTAS SEMUA FOLDER otomatis dan isi keranjang, distribusi merata
+  // per topik supaya tidak numpuk di 1 topik saja.
+  const [bucketKelas, setBucketKelas] = useState('');
+  const [bucketMateriTeks, setBucketMateriTeks] = useState('');
+  const [bucketJumlah, setBucketJumlah] = useState(30);
+  const [loadingBucket, setLoadingBucket] = useState(false);
+  const [hasilBucket, setHasilBucket] = useState(null);
+
+  const cariBucketOtomatis = useCallback(async () => {
+    const daftarTopik = parseTeksKisiKisi(bucketMateriTeks);
+    if (daftarTopik.length === 0) return alert('Tempel dulu daftar bab/materi (1 topik per baris).');
+    const target = Number(bucketJumlah) || 30;
+
+    setLoadingBucket(true);
+    setHasilBucket(null);
+    try {
+      const constraints = [where('status', '==', 'aktif')];
+      if (bucketKelas.trim()) constraints.push(where('tingkatKelas', '==', bucketKelas.trim()));
+      const snap = await getDocs(query(collection(db, 'bank_soal'), ...constraints));
+      const semuaSoal = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      const perTopik = daftarTopik.map((topik) => {
+        const kw = topik.toLowerCase();
+        const cocok = semuaSoal.filter((s) => String(s.materi || '').toLowerCase().includes(kw));
+        return { topik, soal: cocok };
+      });
+
+      // Distribusi merata: ambil bergiliran 1 soal dari tiap topik yang
+      // masih ada sisa, sampai target tercapai atau semua topik habis.
+      const terpilih = new Map();
+      let masihAda = true;
+      const indexPerTopik = perTopik.map(() => 0);
+      while (masihAda && terpilih.size < target) {
+        masihAda = false;
+        for (let i = 0; i < perTopik.length; i++) {
+          if (terpilih.size >= target) break;
+          const { soal } = perTopik[i];
+          if (indexPerTopik[i] < soal.length) {
+            const s = soal[indexPerTopik[i]];
+            if (!terpilih.has(s.id)) terpilih.set(s.id, s);
+            indexPerTopik[i]++;
+            masihAda = true;
+          }
+        }
+      }
+
+      setKeranjang((prev) => {
+        const next = new Map(prev);
+        terpilih.forEach((s, id) => next.set(id, s));
+        return next;
+      });
+      setHasilBucket(perTopik.map((p) => ({ topik: p.topik, ditemukan: p.soal.length })));
+    } catch (e) {
+      console.error('Gagal cari bucket otomatis:', e);
+      alert('Gagal mengambil soal: ' + e.message);
+    }
+    setLoadingBucket(false);
+  }, [bucketKelas, bucketMateriTeks, bucketJumlah]);
 
   // ---------------- CARI BEBAS ----------------
   const [filterMapel, setFilterMapel] = useState('');
@@ -220,7 +366,135 @@ export default function TerbitkanTryOutPage() {
         Try out formal -- timer ketat, anti-cheat kamera, skor proporsional buat PG Kompleks & Benar/Salah. Terpisah dari sistem Kuis guru.
       </p>
 
-      {/* ---------------- CARI BEBAS ---------------- */}
+      {/* ---------------- TAB SWITCHER ---------------- */}
+      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #e5e7eb', marginBottom: 16 }}>
+        <button onClick={() => setTab('folder')} style={tab === 'folder' ? tabAktif : tabPasif}>📁 Jelajah per Folder</button>
+        <button onClick={() => setTab('cari')} style={tab === 'cari' ? tabAktif : tabPasif}>🔍 Cari Bebas</button>
+        <button onClick={() => setTab('bucket')} style={tab === 'bucket' ? tabAktif : tabPasif}>✨ Bucket Otomatis (Kisi-Kisi)</button>
+      </div>
+
+      {/* ---------------- TAB: JELAJAH PER FOLDER ---------------- */}
+      {tab === 'folder' && (
+        <div style={{ marginBottom: 16 }}>
+          {loadingFolder ? (
+            <Loader2 size={18} className="spin" />
+          ) : daftarFolder.length === 0 ? (
+            <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13, border: '1px dashed #d1d5db', borderRadius: 10 }}>
+              Belum ada Folder Sumber. Buat dulu lewat halaman "Import Hasil Scan AI" (panel 📁 Folder Sumber).
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {daftarFolder.map((f) => (
+                <div key={f.id} style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+                  <div
+                    onClick={() => bukaFolder(f.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', cursor: 'pointer', backgroundColor: folderDibuka === f.id ? '#f5f3ff' : 'white' }}
+                  >
+                    {folderDibuka === f.id ? <FolderOpen size={18} color="#7c3aed" /> : <Folder size={18} color="#9ca3af" />}
+                    {f.coverUrl && <img src={f.coverUrl} alt="" style={{ width: 28, height: 36, objectFit: 'cover', borderRadius: 3 }} />}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{f.judul}</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>{f.mataPelajaran} · {f.jenisUjian} · {f.jenjang} · {f.jumlahSoal || 0} soal</div>
+                    </div>
+                    {folderDibuka === f.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  </div>
+
+                  {folderDibuka === f.id && (
+                    <div style={{ padding: '10px 14px 14px 40px', borderTop: '1px solid #f1f5f9' }}>
+                      {loadingSoalFolder && !cacheSoalFolder[f.id] ? (
+                        <Loader2 size={16} className="spin" />
+                      ) : babDalamFolder.length === 0 ? (
+                        <div style={{ fontSize: 12, color: '#9ca3af' }}>Belum ada soal di folder ini.</div>
+                      ) : (
+                        babDalamFolder.map(({ bab, soal }) => (
+                          <div key={bab} style={{ marginBottom: 6 }}>
+                            <div
+                              onClick={() => setBabDibuka(babDibuka === bab ? null : bab)}
+                              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', backgroundColor: '#f9fafb' }}
+                            >
+                              {babDibuka === bab ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              <span style={{ fontSize: 13, fontWeight: 600, color: '#374151', flex: 1 }}>{bab}</span>
+                              <span style={{ fontSize: 11, color: '#9ca3af' }}>{soal.length} soal</span>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); tambahBanyakKeKeranjang(soal); }}
+                                style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #7c3aed', backgroundColor: 'white', color: '#6d28d9', fontWeight: 700, cursor: 'pointer' }}
+                              >
+                                + Tambah Semua
+                              </button>
+                            </div>
+                            {babDibuka === bab && (
+                              <div style={{ padding: '6px 10px 6px 24px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                {soal.map((s) => {
+                                  const dipilih = keranjang.has(s.id);
+                                  return (
+                                    <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: 'pointer' }}>
+                                      <input type="checkbox" checked={dipilih} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
+                                      <span style={{ color: '#374151' }}>{(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ---------------- TAB: BUCKET OTOMATIS ---------------- */}
+      {tab === 'bucket' && (
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ backgroundColor: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 10, padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 13, color: '#6b21a8', marginBottom: 4 }}>
+              <Sparkles size={15} /> Bucket Otomatis
+            </div>
+            <p style={{ fontSize: 12, color: '#7e22ce', marginBottom: 12 }}>
+              Gak perlu hafal nama materi satu-satu -- pilih kelas, tempel daftar bab/materi dari kisi-kisi resmi TKA (1 topik per baris, boleh langsung copas, anotasi seperti "Sering muncul" otomatis dibuang), lalu isi target jumlah soal. Sistem cari sendiri lintas semua folder & bagi rata per topik.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 10, marginBottom: 10 }}>
+              <input placeholder="Kelas (mis. 9)" value={bucketKelas} onChange={(e) => setBucketKelas(e.target.value)} style={inputStyle} />
+              <input type="number" min={1} placeholder="Target jumlah soal (mis. 30)" value={bucketJumlah} onChange={(e) => setBucketJumlah(e.target.value)} style={inputStyle} />
+            </div>
+            <textarea
+              placeholder={'Tempel daftar bab/materi di sini, 1 topik per baris. Contoh:\nBilangan bulat, pecahan, desimal, dan persen\nBilangan berpangkat (eksponen) dan bentuk akar\nPola dan barisan bilangan'}
+              value={bucketMateriTeks}
+              onChange={(e) => setBucketMateriTeks(e.target.value)}
+              rows={6}
+              style={{ ...inputStyle, width: '100%', fontFamily: 'monospace', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }}
+            />
+            <button onClick={cariBucketOtomatis} disabled={loadingBucket} style={{ ...btnPrimary, marginTop: 10 }}>
+              {loadingBucket ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}
+              {loadingBucket ? 'Mencari...' : 'Cari & Isi Keranjang Otomatis'}
+            </button>
+          </div>
+
+          {hasilBucket && (
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Hasil pencarian per topik:</div>
+              {hasilBucket.map((h, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: i < hasilBucket.length - 1 ? '1px dashed #f1f5f9' : 'none' }}>
+                  <span style={{ color: '#374151' }}>{h.topik}</span>
+                  <span style={{ color: h.ditemukan === 0 ? '#dc2626' : '#16a34a', fontWeight: 600 }}>{h.ditemukan} soal ditemukan</span>
+                </div>
+              ))}
+              {hasilBucket.some((h) => h.ditemukan === 0) && (
+                <div style={{ marginTop: 8, fontSize: 11, color: '#dc2626' }}>
+                  ⚠️ Ada topik yang belum punya soal sama sekali di Bank Soal -- perlu diimport dulu.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ---------------- TAB: CARI BEBAS ---------------- */}
+      {tab === 'cari' && (
       <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, padding: 14, marginBottom: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 10 }}>
           <input placeholder="Mata pelajaran" value={filterMapel} onChange={(e) => setFilterMapel(e.target.value)} style={inputStyle} />
@@ -256,6 +530,7 @@ export default function TerbitkanTryOutPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* ---------------- KERANJANG + KONFIG ---------------- */}
       {keranjang.size > 0 && (
