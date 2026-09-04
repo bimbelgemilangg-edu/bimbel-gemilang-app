@@ -42,6 +42,20 @@ export function cocokkanJenjang(jenjangSoal, jenjangSiswa) {
     return !soal.tingkatKelas || ekstrakAngkaKelas(soal.tingkatKelas) === angkaKelasSiswa;
   }
   
+  // Cek akses mapel siswa terhadap suatu kodeMapel -- LOGIKA & SEMANTIK
+  // SAMA PERSIS dengan hasSubjectAccess() yang sudah dipakai di
+  // StudentDashboard.jsx & StudentElearning.jsx (materi/kuis), supaya
+  // Latihan Harian konsisten dengan aturan akses mapel yang sudah ada:
+  // - enrolledSubjects KOSONG/tidak diisi = BLOKIR SEMUA (bukan diloloskan)
+  // - enrolledSubjects berisi "semua" = akses ke semua mapel
+  // - selain itu, cuma kodeMapel yang ADA di daftar enrolledSubjects yang boleh
+  export function cocokkanAksesMapel(enrolledSubjects, kodeMapelSoal) {
+    if (!kodeMapelSoal) return true; // soal ini gak punya kodeMapel yang bisa dicocokkan -- masalah data di sisi mapel, bukan siswa, jangan blokir gara-gara ini
+    if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔒 kosong = BLOKIR
+    const norm = (s) => String(s || '').toLowerCase().trim();
+    if (enrolledSubjects.some((s) => norm(s) === 'semua')) return true;
+    return enrolledSubjects.some((s) => norm(s) === norm(kodeMapelSoal));
+  }
   // Cek gabungan jenjang + kelas sekaligus -- dipakai admin buat AUDIT
   // (soal yang SUDAH dikerjakan siswa, cek ulang apa harusnya boleh atau
   // tidak). Mengembalikan { cocok, alasan } supaya admin tahu PERSIS

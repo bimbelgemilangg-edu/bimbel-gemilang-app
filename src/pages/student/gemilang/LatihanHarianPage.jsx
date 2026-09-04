@@ -22,7 +22,7 @@ import {
 import { ArrowLeft, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
-import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas } from '../../../utils/aksesKontenSiswa';
+import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel } from '../../../utils/aksesKontenSiswa';
 
 // 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
 // DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
@@ -305,13 +305,38 @@ export default function LatihanHarianPage() {
         // pagar (itu akar bug yang dilaporkan: soal SMA/UTBK bisa lolos
         // ke siswa SMP kalau jenjangnya tidak dicek).
         let jenjangSiswa = null;
+        // 🔥 BARU: ambil enrolledSubjects DARI QUERY YANG SAMA -- gak
+        // nambah baca Firestore. Ini field "Akses Mapel" yang SUDAH
+        // dipakai KETAT di menu Materi/Kuis (kosong = blokir semua),
+        // tapi sebelumnya belum pernah dicek sama sekali di Latihan
+        // Harian -- akibatnya siswa paket fokus 1 mapel (mis. cuma
+        // Matematika) masih bisa lihat SEMUA mapel di Misi Harian.
+        let enrolledSubjectsSiswa = null;
         try {
           const snapSiswa = await getDocs(query(collection(db, 'students'), where('studentId', '==', studentId), limit(1)));
-          if (!snapSiswa.empty) jenjangSiswa = snapSiswa.docs[0].data().jenjang || null;
+          if (!snapSiswa.empty) {
+            const dataSiswa = snapSiswa.docs[0].data();
+            jenjangSiswa = dataSiswa.jenjang || null;
+            enrolledSubjectsSiswa = Array.isArray(dataSiswa.enrolledSubjects) ? dataSiswa.enrolledSubjects : [];
+          }
         } catch (e) {
           console.error('Gagal ambil jenjang siswa:', e);
         }
         setStudentJenjang(jenjangSiswa);
+
+        // 🔥 BARU: siswa program English Course jenjangnya tersimpan
+        // sebagai teks "English" (bukan SD/SMP/SMA) -- lihat AddStudent.jsx.
+        // Bank Soal MEMANG cuma punya kategori SD/MI, SMP/MTs, SMA/MA,
+        // SMK, UTBK/SNBT -- belum ada soal khusus English sama sekali.
+        // Jadi ini BUKAN data yang belum lengkap/bug, tapi memang belum
+        // tersedia buat program ini. Kasih pesan yang jujur & jelas,
+        // bukan pesan generik "data belum lengkap" yang kesannya kayak
+        // error -- dan langsung berhenti di sini, gak perlu buang waktu
+        // narik jatah harian/Bank Soal yang sudah pasti kosong buat siswa ini.
+        if (jenjangSiswa && jenjangSiswa.toLowerCase() === 'english') {
+          setTahap('khusus-reguler');
+          return;
+        }
 
         if (!jenjangSiswa) {
           // 🔒 Jenjang tidak ketemu -- JANGAN tampilkan soal apa pun,
@@ -374,6 +399,34 @@ export default function LatihanHarianPage() {
         // Hanya dukung pg_sederhana dulu di v1 -- tipe lain (kompleks,
         // kategori, isian) menyusul setelah UI jawabnya dibuat.
         soal = soal.filter((s) => (s.tipe || 'pg_sederhana') === 'pg_sederhana' && (s.opsiJawaban || []).length >= 2);
+
+        // 🔥 BARU: PAGAR KEDUA -- Akses Mapel (enrolledSubjects). Bank
+        // Soal cuma simpan NAMA mapel (mis. "Matematika"), sedangkan
+        // enrolledSubjects simpan KODE mapel (mis. "MAPEL0003") -- jadi
+        // perlu 1 kali ambil koleksi "mapel" buat nyocokin nama -> kode,
+        // baru difilter. Kalau nama mapel di soal gak ketemu padanan
+        // kode-nya di koleksi "mapel" (data mapel dihapus/berubah nama),
+        // soal itu DILOLOSKAN sementara -- itu masalah data di sisi
+        // mapel, bukan alasan buat blokir siswa yang gak salah apa-apa.
+        try {
+          const snapMapel = await getDocs(collection(db, 'mapel'));
+          const namaKeKode = {};
+          snapMapel.forEach((d) => {
+            const m = d.data();
+            if (m.namaMapel) namaKeKode[m.namaMapel.toLowerCase().trim()] = m.kodeMapel;
+          });
+          soal = soal.filter((s) => {
+            const kodeMapelSoal = namaKeKode[(s.mataPelajaran || '').toLowerCase().trim()];
+            return cocokkanAksesMapel(enrolledSubjectsSiswa, kodeMapelSoal);
+          });
+        } catch (e) {
+          console.error('Gagal cek Akses Mapel:', e);
+          // Gagal ambil data mapel (mis. koneksi putus) -- JANGAN tampilkan
+          // semua soal tanpa pagar; lebih aman kosongkan semua daripada
+          // siswa paket fokus tetap kelihatan semua mapel gara-gara error.
+          soal = [];
+        }
+
         console.timeEnd('[Latihan Harian] Saring soal (jenjang/kelas/tipe)');
         console.log(`[Latihan Harian] Soal yang lolos buat siswa ini: ${soal.length} dari ${snap.size} total`);
         setSemuaSoal(soal);
@@ -1005,6 +1058,30 @@ export default function LatihanHarianPage() {
   // dari sesi-sesi sebelumnya. Dibingkai positif ("sudah menyelesaikan
   // tanggung jawab hari ini"), bukan menghukum -- sesuai semangat
   // "tanggung jawab harian" yang jadi tujuan gamifikasi ini dari awal.
+  // 🔥 BARU: layar khusus buat siswa program English Course -- pesan
+  // JUJUR & JELAS ("belum tersedia buat program ini"), bukan pesan
+  // generik "data belum lengkap" yang kesannya kayak error/bug padahal
+  // ini memang belum dibangun buat program mereka.
+  if (tahap === 'khusus-reguler') {
+    return (
+      <div style={st.page}>
+        <div style={{ ...st.hero, minHeight: 240, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={st.heroStars} />
+          <button onClick={() => navigate('/siswa/dashboard')} style={{ ...st.backBtnDark, position: 'absolute', top: 16, left: 16 }}><ArrowLeft size={20} /></button>
+          <div style={{ fontSize: 56 }}>🇬🇧</div>
+          <h1 style={{ ...st.heroTitle, fontSize: 19, marginTop: 8, textAlign: 'center', padding: '0 20px' }}>Misi Harian belum tersedia buat kamu</h1>
+        </div>
+        <div style={{ padding: '24px 28px', textAlign: 'center' }}>
+          <p style={{ color: '#64748b', fontSize: 13.5, lineHeight: 1.7, marginBottom: 24 }}>
+            Fitur Misi Harian ini baru tersedia untuk siswa <strong>paket Reguler</strong> (Matematika, Bahasa Indonesia, IPA, dsb).
+            Untuk program <strong>English Course</strong>, latihan soal seperti ini belum dibuat -- bukan karena datamu bermasalah, cuma memang belum tersedia.
+          </p>
+          <button onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>Kembali ke Markas</button>
+        </div>
+      </div>
+    );
+  }
+
   if (tahap === 'jatah-habis') {
     return (
       <div style={st.page}>
