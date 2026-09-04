@@ -874,7 +874,7 @@ const StudentDashboard = () => {
           const { level, xpProgress, xpKebutuhan } = hitungLevelDariXp(progresXp);
           const menuBaru = [
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', segeraHadir: false },
-            { key: 'tryout', label: 'TryOut', emoji: '🎯', segeraHadir: true },
+            { key: 'tryout', label: 'TryOut', emoji: '🎯', segeraHadir: false },
             { key: 'banksoal', label: 'Bank Soal', emoji: '📚', segeraHadir: true },
             { key: 'progres', label: 'Progres Saya', emoji: '📊', segeraHadir: true },
             { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', segeraHadir: true },
@@ -929,6 +929,8 @@ const StudentDashboard = () => {
                         attendanceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       } else if (m.key === 'latihan') {
                         navigate('/siswa/latihan-harian');
+                      } else if (m.key === 'tryout') {
+                        navigate('/siswa/tryout');
                       } else if (m.segeraHadir) {
                         alert(`✨ ${m.label} segera hadir!`);
                       }
