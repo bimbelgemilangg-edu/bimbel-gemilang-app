@@ -65,16 +65,30 @@ export default function DaftarTryOutPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {daftar.map((p) => {
             const status = p.sesi?.status === 'selesai' ? 'selesai' : p.sesi?.status === 'berjalan' ? 'berjalan' : 'belum';
+
+            // 🔥 BARU: cek jadwal buka & deadline. PENTING -- kuncinya
+            // cuma buat yang BELUM MULAI. Kalau siswa udah pernah mulai
+            // (status berjalan/selesai), dia TETAP boleh masuk buat
+            // lanjutin/lihat hasil walau udah lewat deadline -- yang
+            // dikunci itu MULAI BARU, bukan akses ke sesi yang udah ada.
+            const sekarang = new Date();
+            const belumDibuka = status === 'belum' && p.waktuBuka && sekarang < new Date(p.waktuBuka);
+            const sudahLewatDeadline = status === 'belum' && p.waktuTutup && sekarang > new Date(p.waktuTutup);
+            const terkunci = belumDibuka || sudahLewatDeadline;
+
             return (
               <button
                 key={p.id}
-                onClick={() => navigate(`/siswa/tryout/${p.id}`)}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer', textAlign: 'left' }}
+                onClick={() => !terkunci && navigate(`/siswa/tryout/${p.id}`)}
+                disabled={terkunci}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, border: '1px solid #e2e8f0', background: terkunci ? '#f8fafc' : 'white', cursor: terkunci ? 'default' : 'pointer', textAlign: 'left', opacity: terkunci ? 0.7 : 1 }}
               >
-                <div style={{ fontSize: 26 }}>{status === 'selesai' ? '🏁' : status === 'berjalan' ? '⏳' : '🎯'}</div>
+                <div style={{ fontSize: 26 }}>{terkunci ? '🔒' : status === 'selesai' ? '🏁' : status === 'berjalan' ? '⏳' : '🎯'}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{p.judul}</div>
                   <div style={{ fontSize: 11.5, color: '#94a3b8' }}>{p.totalSoal} soal · {p.modeTimer === 'total' ? `${p.durasiTotalMenit} menit` : `${p.subtes?.length || 0} subtes`}</div>
+                  {belumDibuka && <div style={{ fontSize: 11, color: '#d97706', marginTop: 2 }}>Dibuka {new Date(p.waktuBuka).toLocaleString('id-ID')}</div>}
+                  {sudahLewatDeadline && <div style={{ fontSize: 11, color: '#dc2626', marginTop: 2 }}>Sudah lewat deadline ({new Date(p.waktuTutup).toLocaleString('id-ID')})</div>}
                 </div>
                 {status === 'selesai' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: '#16a34a' }}>
@@ -86,7 +100,7 @@ export default function DaftarTryOutPage() {
                     <Clock size={14} /> Lanjutkan
                   </div>
                 )}
-                {status === 'belum' && (
+                {status === 'belum' && !terkunci && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>
                     <PlayCircle size={14} /> Mulai
                   </div>

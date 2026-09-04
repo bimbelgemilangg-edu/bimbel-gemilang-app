@@ -239,6 +239,16 @@ export default function TerbitkanTryOutPage() {
   const [targetKategori, setTargetKategori] = useState('Semua');
   const [availableClasses, setAvailableClasses] = useState(['Semua']);
 
+  // 🔥 BARU: jadwal buka & deadline -- sebelumnya gak ada sama sekali,
+  // jadi try out langsung "kebuka" begitu diterbitkan dan gak pernah
+  // "ditutup" otomatis. Sekarang keduanya OPSIONAL:
+  // - waktuBuka kosong = langsung bisa dikerjakan begitu diterbitkan
+  // - waktuTutup kosong = gak ada batas akhir, kapan aja boleh mulai
+  const [pakaiJadwalBuka, setPakaiJadwalBuka] = useState(false);
+  const [waktuBuka, setWaktuBuka] = useState('');
+  const [pakaiDeadline, setPakaiDeadline] = useState(false);
+  const [waktuTutup, setWaktuTutup] = useState('');
+
   // 🔥 2 MODE TIMER -- ini beda utama dari sistem kuis lama.
   const [modeTimer, setModeTimer] = useState('total'); // 'total' | 'per-subtes'
   const [durasiTotalMenit, setDurasiTotalMenit] = useState(90);
@@ -268,6 +278,52 @@ export default function TerbitkanTryOutPage() {
   const [menerbitkan, setMenerbitkan] = useState(false);
   const [hasil, setHasil] = useState(null);
 
+  // 🔥 BARU: daftar try out yang UDAH diterbitkan -- sebelumnya gak ada
+  // sama sekali cara buat admin lihat "yang tadi udah diterbitkan
+  // kemana". Muat ulang tiap kali habis terbitkan yang baru juga.
+  const [daftarTerbit, setDaftarTerbit] = useState([]);
+  const [loadingDaftarTerbit, setLoadingDaftarTerbit] = useState(true);
+
+  const muatDaftarTerbit = useCallback(async () => {
+    setLoadingDaftarTerbit(true);
+    try {
+      const snap = await getDocs(collection(db, 'tryout_paket'));
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+      setDaftarTerbit(list);
+    } catch (e) {
+      console.error('Gagal ambil daftar try out terbit:', e);
+    }
+    setLoadingDaftarTerbit(false);
+  }, []);
+
+  useEffect(() => { muatDaftarTerbit(); }, [muatDaftarTerbit]);
+
+  const nonaktifkanTryOut = useCallback(async (paket) => {
+    const aksi = paket.status === 'aktif' ? 'nonaktifkan' : 'aktifkan';
+    if (!window.confirm(`${aksi === 'nonaktifkan' ? 'Nonaktifkan' : 'Aktifkan lagi'} try out "${paket.judul}"?`)) return;
+    try {
+      const { updateDoc, doc: docRef } = await import('firebase/firestore');
+      await updateDoc(docRef(db, 'tryout_paket', paket.id), { status: aksi === 'nonaktifkan' ? 'nonaktif' : 'aktif' });
+      muatDaftarTerbit();
+    } catch (e) {
+      console.error('Gagal ubah status try out:', e);
+      alert('Gagal mengubah status.');
+    }
+  }, [muatDaftarTerbit]);
+
+  function statusJadwal(paket) {
+    const sekarang = new Date();
+    if (paket.status !== 'aktif') return { label: '⏸️ Nonaktif', warna: '#9ca3af' };
+    if (paket.waktuBuka && sekarang < new Date(paket.waktuBuka)) {
+      return { label: `🔒 Belum dibuka (${new Date(paket.waktuBuka).toLocaleString('id-ID')})`, warna: '#d97706' };
+    }
+    if (paket.waktuTutup && sekarang > new Date(paket.waktuTutup)) {
+      return { label: `⏰ Sudah lewat deadline (${new Date(paket.waktuTutup).toLocaleString('id-ID')})`, warna: '#dc2626' };
+    }
+    return { label: '✅ Aktif, bisa dikerjakan', warna: '#16a34a' };
+  }
+
   useEffect(() => {
     (async () => {
       try {
@@ -284,6 +340,11 @@ export default function TerbitkanTryOutPage() {
   const handleTerbitkan = async () => {
     if (!judulTryOut.trim()) return alert('Judul try out wajib diisi.');
     if (keranjang.size === 0) return alert('Keranjang masih kosong -- pilih minimal 1 soal dulu.');
+    if (pakaiJadwalBuka && !waktuBuka) return alert('Isi tanggal/jam buka, atau matikan opsi jadwal buka.');
+    if (pakaiDeadline && !waktuTutup) return alert('Isi tanggal/jam deadline, atau matikan opsi deadline.');
+    if (pakaiJadwalBuka && pakaiDeadline && new Date(waktuTutup) <= new Date(waktuBuka)) {
+      return alert('Deadline harus SETELAH waktu buka.');
+    }
 
     const soalDipilih = Array.from(keranjang.values());
 
@@ -314,6 +375,12 @@ export default function TerbitkanTryOutPage() {
         subtes, // dipakai kalau modeTimer === 'per-subtes'
         antiCheatAktif,
         wajibKamera: antiCheatAktif ? wajibKamera : false,
+        // 🔥 BARU: jadwal buka & deadline -- disimpan sebagai ISO string
+        // (bukan Firestore Timestamp) biar gampang dibandingkan langsung
+        // pakai `new Date()` di sisi siswa tanpa nunggu resolve dulu.
+        // null = gak ada batasan (langsung bisa dikerjakan / gak ada deadline).
+        waktuBuka: pakaiJadwalBuka ? new Date(waktuBuka).toISOString() : null,
+        waktuTutup: pakaiDeadline ? new Date(waktuTutup).toISOString() : null,
         dibuatOleh: 'admin',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -346,7 +413,12 @@ export default function TerbitkanTryOutPage() {
         message: `Try Out "${judulTryOut}" berhasil diterbitkan (${soalDipilih.length} soal, ${modeTimer === 'total' ? `${durasiTotalMenit} menit total` : `${subtes.length} subtes`}) ke ${penerimaIds.length} siswa.`,
       });
       setJudulTryOut('');
+      setPakaiJadwalBuka(false);
+      setWaktuBuka('');
+      setPakaiDeadline(false);
+      setWaktuTutup('');
       kosongkanKeranjang();
+      muatDaftarTerbit();
       console.log('[TryOut] Paket diterbitkan:', docRef.id);
     } catch (e) {
       console.error('Gagal menerbitkan try out:', e);
@@ -365,6 +437,46 @@ export default function TerbitkanTryOutPage() {
       <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 20 }}>
         Try out formal -- timer ketat, anti-cheat kamera, skor proporsional buat PG Kompleks & Benar/Salah. Terpisah dari sistem Kuis guru.
       </p>
+
+      {/* 🔥 BARU: daftar try out yang udah diterbitkan -- jawaban buat
+          "abis diterbitkan gak tau kemana". Bisa lihat status jadwalnya
+          (belum dibuka/aktif/lewat deadline) & nonaktifkan kalau perlu. */}
+      <div style={{ marginBottom: 24, border: '1px solid #e5e7eb', borderRadius: 10, padding: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#374151' }}>📋 Try Out yang Sudah Diterbitkan</div>
+          <button onClick={muatDaftarTerbit} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#6b7280' }}>
+            Muat Ulang
+          </button>
+        </div>
+        {loadingDaftarTerbit ? (
+          <Loader2 size={16} className="spin" />
+        ) : daftarTerbit.length === 0 ? (
+          <div style={{ fontSize: 12, color: '#9ca3af' }}>Belum ada try out yang diterbitkan.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 260, overflowY: 'auto' }}>
+            {daftarTerbit.map((p) => {
+              const st = statusJadwal(p);
+              return (
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: '#f9fafb' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{p.judul}</div>
+                    <div style={{ fontSize: 11, color: '#9ca3af' }}>
+                      {p.totalSoal} soal · {p.targetKelas} · {p.targetKategori} · {p.modeTimer === 'total' ? `${p.durasiTotalMenit} menit` : `${p.subtes?.length || 0} subtes`}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: st.warna, whiteSpace: 'nowrap' }}>{st.label}</span>
+                  <button
+                    onClick={() => nonaktifkanTryOut(p)}
+                    style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: p.status === 'aktif' ? '#dc2626' : '#16a34a', whiteSpace: 'nowrap' }}
+                  >
+                    {p.status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ---------------- TAB SWITCHER ---------------- */}
       <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #e5e7eb', marginBottom: 16 }}>
@@ -564,6 +676,29 @@ export default function TerbitkanTryOutPage() {
                 <option value="Reguler">Reguler</option>
                 <option value="English">English</option>
               </select>
+            </div>
+
+            {/* 🔥 BARU: jadwal buka & deadline -- sebelumnya gak ada sama
+                sekali, jadi try out langsung kebuka begitu diterbitkan
+                dan gak pernah tertutup otomatis. */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', padding: '8px 10px', backgroundColor: '#f9fafb', borderRadius: 8, marginBottom: 10 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                <input type="checkbox" checked={pakaiJadwalBuka} onChange={(e) => setPakaiJadwalBuka(e.target.checked)} />
+                🔓 Jadwal buka
+              </label>
+              {pakaiJadwalBuka && (
+                <input type="datetime-local" value={waktuBuka} onChange={(e) => setWaktuBuka(e.target.value)} style={inputStyle} />
+              )}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#374151' }}>
+                <input type="checkbox" checked={pakaiDeadline} onChange={(e) => setPakaiDeadline(e.target.checked)} />
+                ⏰ Deadline
+              </label>
+              {pakaiDeadline && (
+                <input type="datetime-local" value={waktuTutup} onChange={(e) => setWaktuTutup(e.target.value)} style={inputStyle} />
+              )}
+              {!pakaiJadwalBuka && !pakaiDeadline && (
+                <span style={{ fontSize: 11, color: '#9ca3af' }}>Kosong = langsung bisa dikerjakan kapan aja, gak ada batas akhir.</span>
+              )}
             </div>
 
             {/* 🔥 MODE TIMER -- 2 pilihan sesuai keputusan yang sudah dikonfirmasi */}

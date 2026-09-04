@@ -111,7 +111,18 @@ export default function TryOutView() {
             setTahap('mengerjakan');
           }
         } else {
-          setTahap('mulai');
+          // 🔥 BARU: pagar kedua -- cek jadwal buka/deadline di sini
+          // juga, bukan cuma di DaftarTryOutPage.jsx. Ini jaga-jaga
+          // kalau siswa buka link try out langsung (bukan lewat daftar),
+          // yang JADWALnya udah lewat/belum dibuka tetap gak bisa mulai.
+          const sekarang = new Date();
+          if (dataPaket.waktuBuka && sekarang < new Date(dataPaket.waktuBuka)) {
+            setTahap('belum-dibuka');
+          } else if (dataPaket.waktuTutup && sekarang > new Date(dataPaket.waktuTutup)) {
+            setTahap('lewat-deadline');
+          } else {
+            setTahap('mulai');
+          }
         }
       } catch (e) {
         console.error('Gagal memuat try out:', e);
@@ -269,6 +280,26 @@ export default function TryOutView() {
   // ================= RENDER =================
   if (tahap === 'memuat') return <div style={st.pusat}>Memuat try out...</div>;
   if (tahap === 'tidak-ditemukan') return <div style={st.pusat}>Try out tidak ditemukan.</div>;
+  if (tahap === 'belum-dibuka') {
+    return (
+      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
+        <div style={{ fontSize: 40 }}>🔒</div>
+        <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini belum dibuka</div>
+        <div style={{ fontSize: 12.5 }}>Dibuka {new Date(paket.waktuBuka).toLocaleString('id-ID')}</div>
+        <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
+      </div>
+    );
+  }
+  if (tahap === 'lewat-deadline') {
+    return (
+      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
+        <div style={{ fontSize: 40 }}>⏰</div>
+        <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini sudah lewat deadline</div>
+        <div style={{ fontSize: 12.5 }}>Ditutup {new Date(paket.waktuTutup).toLocaleString('id-ID')}</div>
+        <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
+      </div>
+    );
+  }
   if (tahap === 'gagal') return <div style={st.pusat}>Gagal memuat try out. Coba muat ulang halaman.</div>;
 
   if (tahap === 'mulai') {
