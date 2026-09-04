@@ -1,0 +1,55 @@
+// src/pages/student/tryout/RingkasanPelanggaran.jsx
+// ============================================================
+// Ditampilkan di layar HASIL Try Out -- daftar pelanggaran yang
+// kedeteksi selama pengerjaan + berapa XP yang kepotong gara-gara itu.
+// Transparan ke siswa (bukan cuma potongan diam-diam) supaya dia tahu
+// PERSIS kenapa XP-nya lebih kecil dari yang diharapkan.
+// ============================================================
+
+import React from 'react';
+import { ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { LABEL_PELANGGARAN, hitungPotonganXP } from '../../../utils/potonganXPTryOut';
+
+export default function RingkasanPelanggaran({ pelanggaran, jumlahFotoTersimpan, xpMentah, xpFinal }) {
+  const { totalPoin, persenPotongan } = hitungPotonganXP(pelanggaran);
+
+  if (pelanggaran.length === 0) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 12, padding: '12px 14px', fontSize: 12.5, color: '#166534', marginBottom: 16 }}>
+        <CheckCircle2 size={18} />
+        <span>Tidak ada pelanggaran terdeteksi selama try out ini. XP penuh, kerja bagus!</span>
+      </div>
+    );
+  }
+
+  // Kelompokkan per jenis, biar gak nampilin 5 baris "Pindah tab" satu-satu.
+  const kelompok = {};
+  pelanggaran.forEach((p) => { kelompok[p.type] = (kelompok[p.type] || 0) + 1; });
+
+  return (
+    <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 12, padding: '14px 16px', marginBottom: 16, textAlign: 'left' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: 13, color: '#b91c1c', marginBottom: 8 }}>
+        <ShieldAlert size={18} /> {pelanggaran.length} pelanggaran terdeteksi
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+        {Object.entries(kelompok).map(([type, jumlah]) => (
+          <div key={type} style={{ fontSize: 12, color: '#7f1d1d', display: 'flex', justifyContent: 'space-between' }}>
+            <span>{LABEL_PELANGGARAN[type] || type}</span>
+            <span style={{ fontWeight: 700 }}>{jumlah}x</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 12, color: '#7f1d1d', borderTop: '1px solid #fca5a5', paddingTop: 8 }}>
+        Total {totalPoin} poin pelanggaran → XP dipotong <strong>{Math.round(persenPotongan * 100)}%</strong>
+        {typeof xpMentah === 'number' && typeof xpFinal === 'number' && (
+          <> ({xpMentah} XP → <strong>{xpFinal} XP</strong>)</>
+        )}
+      </div>
+      {jumlahFotoTersimpan > 0 && (
+        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
+          📷 {jumlahFotoTersimpan} foto pengawasan tersimpan, bisa ditinjau admin/wali kelas.
+        </div>
+      )}
+    </div>
+  );
+}
