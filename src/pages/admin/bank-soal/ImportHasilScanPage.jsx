@@ -2994,13 +2994,17 @@ export default function ImportHasilScanPage() {
 
   const adaPengelompokan = groupedByPaket.length > 1 || (groupedByPaket.length === 1 && groupedByPaket[0].paket !== null);
 
-  // 🔥 BARU: daftar soal yang "butuh gambar" -- pakai logika PERSIS SAMA
-  // dengan Sinyal 7 di normalizeSoal (menunjuk gambar/grafik/diagram di
-  // teksnya, tapi gambar-nya kosong). Ini yang jadi daftar pilihan pas
-  // mencocokkan gambar hasil Upload Massal ke soal yang tepat.
+  // 🔥 BERUBAH (bug bahaya nyata ditemukan): dulu daftar ini cuma isi
+  // soal yang teksnya SECARA EKSPLISIT menyebut kata "gambar/grafik/
+  // diagram". Ternyata banyak soal (mis. soal vektor "F1 dan F2
+  // mengapit sudut 120°...") butuh gambar TANPA menyebut kata itu sama
+  // sekali -- soal itu jadi tidak pernah muncul di dropdown pencocokan
+  // ini, padahal butuh gambar. Sekarang: SEMUA soal yang gambarnya
+  // masih kosong ditampilkan di sini, biar admin yang menilai sendiri
+  // per soal (dibandingkan ke dokumen sumber), bukan mengandalkan
+  // tebakan kata kunci yang gampang kelewat.
   const soalButuhGambar = useMemo(() => {
-    const pola = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i;
-    return soalList.filter(q => pola.test(q.teks_soal || '') && safeArray(q.gambar).length === 0);
+    return soalList.filter(q => safeArray(q.gambar).length === 0);
   }, [soalList]);
 
   // Baca banyak file gambar sekaligus jadi dataUrl, ditambahkan ke daftar
@@ -3107,15 +3111,29 @@ export default function ImportHasilScanPage() {
       const updated = prev.map(q => {
         if (q._idx !== idx) return q;
 
+        // 🔥 BARU: dulu cuma nimpa dataUrl -- kalau slot-nya masih
+        // kosong (belum ada objek gambar sama sekali di array, kasus
+        // slot placeholder baru), field id/nomor jadi hilang/undefined.
+        // Fungsi ini melengkapinya biar gambar baru dari slot kosong
+        // tetap punya bentuk yang sama persis dengan gambar dari AI.
+        const lengkapiGambarBaru = (existing, i) => ({
+          id: existing?.id || `gambar-manual-${Date.now()}-${i}`,
+          dataUrl: newDataUrl,
+          uploadedUrl: '',
+          url: '',
+          deskripsi: existing?.deskripsi || '',
+          nomor: existing?.nomor || i + 1,
+        });
+
         if (location === 'soal') {
           const images = [...safeArray(q.gambar)];
-          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          images[imageIndex] = lengkapiGambarBaru(images[imageIndex], imageIndex);
           return { ...q, gambar: images };
         }
 
         if (location === 'bacaan' && q.bacaan) {
           const images = [...safeArray(q.bacaan.gambar)];
-          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          images[imageIndex] = lengkapiGambarBaru(images[imageIndex], imageIndex);
           return { ...q, bacaan: { ...q.bacaan, gambar: images } };
         }
 
@@ -3123,7 +3141,7 @@ export default function ImportHasilScanPage() {
           const opsi = [...safeArray(q.opsi_jawaban)];
           const opt = opsi[location.opsi];
           const images = [...safeArray(opt.gambar)];
-          images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
+          images[imageIndex] = lengkapiGambarBaru(images[imageIndex], imageIndex);
           opsi[location.opsi] = { ...opt, gambar: images };
           return { ...q, opsi_jawaban: opsi };
         }
@@ -4458,8 +4476,22 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
   // menambahkannya manual). Sekarang SEMUA entri gambar ditampilkan
   // apa adanya -- termasuk yang kosong/rusak -- supaya slot "Upload
   // Gambar Manual" selalu kelihatan dan bisa diisi admin.
+  //
+  // 🔥 BARU (bug bahaya nyata ditemukan): soal yang butuh gambar TAPI
+  // teksnya tidak menyebut kata "gambar/grafik/diagram" sama sekali
+  // (mis. soal vektor "F1 dan F2 mengapit sudut 120°...") tidak pernah
+  // ke-deteksi Sinyal 7, dan karena q.gambar-nya KOSONG TOTAL (bukan
+  // cuma rusak), soal itu dulu TIDAK PUNYA slot gambar sama sekali di
+  // panel ini -- admin tidak punya cara menambahkan gambar manual dari
+  // kartu soal itu. Sekarang: kalau q.gambar kosong, selalu sisipkan
+  // SATU slot kosong ("placeholder") untuk soal itu, supaya admin BISA
+  // menambahkan gambar ke SOAL APA PUN, bukan cuma yang kebetulan lolos
+  // deteksi kata kunci AI.
+  const gambarSoal = safeArray(q.gambar);
   const semuaGambar = [
-    ...safeArray(q.gambar).map((img, i) => ({ img, location: 'soal', imageIndex: i, label: `Gambar soal #${i + 1}` })),
+    ...(gambarSoal.length > 0
+      ? gambarSoal.map((img, i) => ({ img, location: 'soal', imageIndex: i, label: `Gambar soal #${i + 1}` }))
+      : [{ img: {}, location: 'soal', imageIndex: 0, label: 'Gambar soal (belum ada)' }]),
     ...(q.bacaan ? safeArray(q.bacaan.gambar).map((img, i) => ({ img, location: 'bacaan', imageIndex: i, label: `Gambar bacaan #${i + 1}` })) : []),
     ...safeArray(q.opsi_jawaban).flatMap((opt, oi) =>
       safeArray(opt.gambar).map((img, i) => ({ img, location: { opsi: oi }, imageIndex: i, label: `Gambar opsi ${optionLetter(oi)} #${i + 1}` })),
@@ -4759,11 +4791,16 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
         </div>
       )}
 
-      {/* PANEL KELOLA GAMBAR: crop / upload manual / lihat status validasi */}
-      {semuaGambar.length > 0 && onCropImage && (
+      {/* PANEL KELOLA GAMBAR: crop / upload manual / lihat status validasi.
+          🔥 BARU: dulu panel ini SEMBUNYI TOTAL kalau soal belum punya
+          gambar sama sekali -- itu yang bikin soal seperti "vektor F1 F2"
+          tidak punya cara ditambahkan gambar manual. Sekarang panel ini
+          SELALU tampil untuk setiap soal (semuaGambar minimal berisi 1
+          slot kosong, lihat perhitungan semuaGambar di atas). */}
+      {onCropImage && (
         <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px dashed #d1d5db' }}>
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', marginBottom: '8px' }}>
-            🖼️ KELOLA GAMBAR ({semuaGambar.length}){jumlahRusak > 0 ? ` -- ${jumlahRusak} PERLU DIPERBAIKI` : ''}
+            🖼️ KELOLA GAMBAR ({gambarSoal.length}){jumlahRusak > 0 ? ` -- ${jumlahRusak} PERLU DIPERBAIKI` : ''}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
             {semuaGambar.map((item, i) => (
