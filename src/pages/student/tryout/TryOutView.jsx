@@ -39,7 +39,7 @@ import RendererPgSederhana from './RendererPgSederhana';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
-import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from '../../../utils/skoringSoalKompleks';
+import { skorSatuSoal, hitungTotalSkor } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -84,26 +84,6 @@ class PenahanErrorSoal extends React.Component {
       );
     }
     return this.props.children;
-  }
-}
-
-function skorSatuSoal(soal, jawaban) {
-  const tipe = soal.tipe || 'pg_sederhana';
-  if (jawaban === undefined || jawaban === null) return 0;
-  try {
-    if (tipe === 'pg_kompleks') return hitungSkorPgKompleks(soal.kunciJawaban, jawaban);
-    if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
-      const baris = soal.tabel_benar_salah?.length ? soal.tabel_benar_salah : soal.pernyataan || [];
-      return hitungSkorBenarSalah(baris, jawaban);
-    }
-    const indexBenar = cariIndexBenar(soal);
-    return jawaban === indexBenar ? 1 : 0;
-  } catch (e) {
-    // 🔥 BARU: kalau soal ini datanya rusak, jangan sampai proses
-    // SUBMIT/HITUNG SKOR SELURUH try out ikut gagal cuma gara-gara
-    // 1 soal -- anggap skor 0 buat soal itu, lanjutkan yang lain.
-    console.error('[TryOut] Gagal hitung skor soal:', soal.id, e);
-    return 0;
   }
 }
 
@@ -295,9 +275,7 @@ export default function TryOutView() {
   // ---------------- SUBMIT / SELESAIKAN ----------------
   const selesaikanTryOut = useCallback(async () => {
     if (!paket) return;
-    let totalSkor = 0;
-    paket.daftarSoal.forEach((s) => { totalSkor += skorSatuSoal(s, jawaban[s.id]); });
-    const totalSkorPersen = Math.round((totalSkor / paket.daftarSoal.length) * 100);
+    const { totalSkor, totalSkorPersen } = hitungTotalSkor(paket.daftarSoal, jawaban);
     const xpMentah = Math.round(totalSkor * XP_PER_SOAL);
     const { xpFinal } = terapkanPotonganXP(xpMentah, pelanggaran);
 
