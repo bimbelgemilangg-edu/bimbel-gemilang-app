@@ -31,6 +31,7 @@ import React, {
 } from 'react';
 
 import SidebarAdmin from '../../../components/SidebarAdmin';
+import { sisipkanGambarOtomatis } from './sisipkanGambarPdf24';
 
 import {
   collection,
@@ -429,28 +430,6 @@ function safeString(value, fallback = '') {
 
 function safeArray(value) {
   return Array.isArray(value) ? value : [];
-}
-
-// 🔥 BARU (BUG NYATA DITEMUKAN): `valid` dan `errors` dihitung SEKALI
-// saat parsing awal (di normalizeSoal) dan disimpan sebagai field
-// statis. Kalau admin upload gambar BELAKANGAN (lewat crop, upload
-// manual satuan, ATAU Upload Gambar Massal), field `gambar` soal itu
-// berubah, tapi `valid`/`errors` TIDAK PERNAH dihitung ulang -- pesan
-// error "gambar tidak ada" yang lama tetap nyangkut walau gambarnya
-// sekarang sudah ada. Ini yang bikin soal tetap kelihatan "belum
-// lengkap/valid" padahal admin sudah benerin. Fungsi ini dipanggil
-// SETIAP KALI field gambar sebuah soal berubah (bukan cuma hitung
-// ulang semuanya dari nol) -- cukup buang pesan error gambar-kosong
-// yang lama kalau sekarang sudah ada gambar, atau pasang lagi kalau
-// gambar dihapus lagi, lalu hitung ulang `valid` dari sisa error.
-const POLA_MENUNJUK_GAMBAR = /\b(perhatikan|lihat|sesuai|berdasarkan)\s+(gambar|grafik|diagram)\b/i;
-const PESAN_ERROR_GAMBAR_KOSONG = 'Soal ini menunjuk "gambar/grafik/diagram" di teksnya, tapi TIDAK ADA gambar terlampir sama sekali. Upload gambar manual dulu di panel "Kelola Gambar", atau soal ini tidak akan bisa dijawab siswa.';
-
-function perbaruiValidasiSetelahGambarBerubah(q) {
-  const errorsTanpaPesanGambar = safeArray(q.errors).filter(e => e !== PESAN_ERROR_GAMBAR_KOSONG);
-  const masihMenunjukTapiKosong = POLA_MENUNJUK_GAMBAR.test(q.teks_soal || '') && safeArray(q.gambar).length === 0;
-  const errorsBaru = masihMenunjukTapiKosong ? [...errorsTanpaPesanGambar, PESAN_ERROR_GAMBAR_KOSONG] : errorsTanpaPesanGambar;
-  return { ...q, errors: errorsBaru, valid: errorsBaru.length === 0 };
 }
 
 // 🔥 BARU: Firestore TIDAK MENDUKUNG array di dalam array (nested
@@ -2809,6 +2788,12 @@ export default function ImportHasilScanPage() {
   const [tags, setTags] = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
   const [sumberFile, setSumberFile] = useState('');
+  // 🔥 BARU (pdf24): file HTML kedua (opsional) hasil convert PDF asli
+  // di tools.pdf24.org -- dipakai HANYA sebagai sumber gambar tambahan,
+  // gambar/soal hasil AI (HTML Master/JSON) tetap sumber utama teks.
+  const [htmlPdf24, setHtmlPdf24] = useState('');
+  const [namaFilePdf24, setNamaFilePdf24] = useState('');
+  const [ringkasanGambarPdf24, setRingkasanGambarPdf24] = useState(null);
 
   // 🔥 BARU: FOLDER SUMBER (sumber_soal) -- 1 folder = 1 buku/PDF asal.
   // Kenapa ini penting: (1) jenjang/kelas TIDAK VALID sebagai pengelompok
@@ -3072,7 +3057,7 @@ export default function ImportHasilScanPage() {
           deskripsi: u.namaFile,
           nomor: (safeArray(q.gambar).length) + gi + 1,
         }));
-        return perbaruiValidasiSetelahGambarBerubah({ ...q, gambar: [...safeArray(q.gambar), ...gambarBaru] });
+        return { ...q, gambar: [...safeArray(q.gambar), ...gambarBaru] };
       });
       // 🔥 Sama seperti crop/upload manual per-soal -- gambar baru harus
       // divalidasi (asli/rusak) begitu ditempel, bukan dianggap otomatis OK.
@@ -3125,12 +3110,7 @@ export default function ImportHasilScanPage() {
         if (location === 'soal') {
           const images = [...safeArray(q.gambar)];
           images[imageIndex] = { ...images[imageIndex], dataUrl: newDataUrl, uploadedUrl: '', url: '' };
-          // 🔥 BARU: sama seperti Upload Massal -- valid/errors harus
-          // dihitung ulang di sini juga, bukan cuma di jalur massal.
-          // Tanpa ini, soal yang gambarnya diganti/ditambah lewat
-          // crop/upload manual satuan TETAP kelihatan "belum valid"
-          // walau gambarnya sudah benar.
-          return perbaruiValidasiSetelahGambarBerubah({ ...q, gambar: images });
+          return { ...q, gambar: images };
         }
 
         if (location === 'bacaan' && q.bacaan) {
@@ -3183,9 +3163,29 @@ export default function ImportHasilScanPage() {
         : activeFormat === 'html' ? parseHTMLMaster(content)
         : activeFormat === 'tex' ? parseTeX(content)
         : parseCSV(content);
-      const normalized = raw
+      let normalized = raw
         .map((question, index) => normalizeSoal(question, index))
         .map((q, index) => ({ ...q, _idx: index }));
+
+      // 🔥 BARU (pdf24): kalau admin juga upload file HTML hasil convert
+      // PDF asli, coba isi gambar soal/bacaan yang MASIH KOSONG dari situ.
+      // Soal yang gambarnya SUDAH ADA dari AI tidak pernah ditimpa --
+      // ini hanya jaring pengaman untuk soal yang AI-nya gagal
+      // mengekstrak gambar sendiri.
+      if (safeString(htmlPdf24).trim()) {
+        try {
+          const hasilGambarPdf24 = sisipkanGambarOtomatis(normalized, htmlPdf24);
+          normalized = hasilGambarPdf24.soal;
+          setRingkasanGambarPdf24(hasilGambarPdf24.ringkasan);
+          console.log('[pdf24] Ringkasan penyisipan gambar otomatis:', hasilGambarPdf24.ringkasan);
+          hasilGambarPdf24.catatan.forEach((c) => console.log('[pdf24]', c));
+        } catch (error) {
+          console.error('[pdf24] Gagal membaca file HTML sumber gambar:', error);
+          setRingkasanGambarPdf24(null);
+        }
+      } else {
+        setRingkasanGambarPdf24(null);
+      }
 
       // 🔥 BARU: deteksi lintas-soal -- kalau beberapa soal berbagi grup
       // bacaan yang sama (field bacaan.grup identik, mis. "bacaan_1"),
@@ -3217,71 +3217,6 @@ export default function ImportHasilScanPage() {
         });
       });
 
-      // 🔥 BARU: deteksi lintas-soal -- GAMBAR PERSIS SAMA dipakai ulang
-      // di banyak soal yang beda konteks (mis. jangka sorong, mikrometer,
-      // dan diagram vektor semuanya "punya" file gambar yang byte-nya
-      // 100% identik). Ini TIDAK MUNGKIN terjadi secara wajar dari hasil
-      // scan PDF asli -- setiap soal harusnya punya gambar/screenshot
-      // sendiri-sendiri sesuai halaman aslinya masing-masing. Kalau
-      // ketemu identik persis di ≥2 soal berbeda, itu tanda kuat AI
-      // (terutama model non-vision seperti DeepSeek versi teks) TIDAK
-      // benar-benar membaca gambar sumber, dan hanya menaruh satu
-      // placeholder/contoh generik berulang-ulang sambil mengarang
-      // deskripsi teksnya sendiri -- persis pelanggaran instruksi
-      // "jangan pernah mengarang gambar yang tidak benar-benar ada" di
-      // master prompt. Ini HARD ERROR (bukan cuma peringatan) karena
-      // gambar yang salah total (mis. jangka sorong dipakai sebagai
-      // "diagram vektor") akan langsung menyesatkan siswa kalau lolos
-      // ke Bank Soal tanpa dicek dulu.
-      //
-      // Sama seperti grupBacaan di atas, ini TIDAK BISA dideteksi di
-      // dalam normalizeSoal() sendiri (yang cuma lihat 1 soal), makanya
-      // dijalankan di sini sebagai langkah tambahan lintas-soal setelah
-      // semua soal selesai dinormalisasi.
-      const AMBANG_MIN_PANJANG_DATA_URL = 200; // hindari false-positive utk ikon kecil yang wajar dipakai ulang (mis. logo)
-      const gambarPerHash = new Map(); // dataUrl -> [{ q, lokasi }]
-
-      const daftarkanGambar = (q, list, labelLokasi) => {
-        safeArray(list).forEach(img => {
-          const dataUrl = img?.dataUrl;
-          if (!dataUrl || dataUrl.length < AMBANG_MIN_PANJANG_DATA_URL) return;
-          if (!gambarPerHash.has(dataUrl)) gambarPerHash.set(dataUrl, []);
-          gambarPerHash.get(dataUrl).push({ q, lokasi: labelLokasi });
-        });
-      };
-
-      normalized.forEach(q => {
-        daftarkanGambar(q, q.gambar, 'gambar utama soal');
-        daftarkanGambar(q, q.bacaan?.gambar, 'gambar bacaan');
-        safeArray(q.opsi_jawaban).forEach((opt, i) => {
-          daftarkanGambar(q, opt?.gambar, `gambar opsi ${String.fromCharCode(65 + i)}`);
-        });
-      });
-
-      gambarPerHash.forEach(pemakai => {
-        // Hitung soal BERBEDA yang memakai gambar identik ini (bukan
-        // cuma dalam 1 soal yang sama, itu wajar). Pakai _idx sebagai
-        // penanda soal unik.
-        const soalBerbedaUnik = new Set(pemakai.map(p => p.q._idx));
-        if (soalBerbedaUnik.size < 2) return; // cuma dipakai di 1 soal, tidak mencurigakan
-
-        const daftarNomor = [...soalBerbedaUnik]
-          .map(idx => normalized.find(n => n._idx === idx))
-          .map(n => `Soal ${n.nomor}${n.paket ? ` (Paket ${n.paket})` : ''}`)
-          .join(', ');
-
-        pemakai.forEach(({ q, lokasi }) => {
-          const pesan = `Gambar pada ${lokasi} soal ini PERSIS SAMA (identik byte-per-byte) dengan gambar di ${soalBerbedaUnik.size} soal berbeda: ${daftarNomor}. Ini TIDAK WAJAR untuk gambar hasil scan PDF asli -- kemungkinan besar AI tidak benar-benar membaca gambar sumber dan menaruh placeholder generik berulang sambil mengarang deskripsinya. WAJIB diverifikasi manual terhadap PDF asli sebelum dipublikasikan; jangan percaya gambar ini sampai dicek.`;
-          if (!q.errors.includes(pesan)) q.errors.push(pesan);
-        });
-      });
-      // Setelah menambah error baru dari deteksi gambar duplikat di atas,
-      // status `valid` tiap soal harus dihitung ulang -- kalau tidak,
-      // soal dengan gambar bermasalah masih akan lolos ditandai "✓ Valid".
-      normalized.forEach(q => {
-        q.valid = q.errors.length === 0;
-      });
-
       const warningList = normalized
         .filter(q => !q.valid)
         .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${q.errors.join(' ')}`);
@@ -3293,7 +3228,7 @@ export default function ImportHasilScanPage() {
       console.error('Parse error:', error);
       setParseError(error?.message || 'Gagal membaca data.');
     }
-  }, [format, runValidasiGambar]);
+  }, [format, runValidasiGambar, htmlPdf24]);
 
   const handleParse = useCallback(() => {
     runParse(rawInput, format);
@@ -3818,6 +3753,51 @@ export default function ImportHasilScanPage() {
               <strong>Alur baru:</strong> PDF/gambar → AI → <strong>HTML Master</strong> → preview & validasi → Firebase.
               HTML Master menjaga gambar, tabel, dan LaTeX tetap terstruktur. JSON tetap tersedia untuk kompatibilitas lama.
             </p>
+
+            {/* 🔥 BARU (pdf24): upload OPSIONAL file HTML hasil convert PDF asli
+                (tools.pdf24.org) khusus sebagai sumber gambar tambahan. Teks/jawaban/
+                pembahasan TETAP dari AI di atas -- ini cuma nolongin soal yang
+                gambarnya kosong karena AI gagal mengekstrak sendiri. */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', background: '#fffbeb', border: '1px dashed #f59e0b', borderRadius: '10px', padding: '10px 12px' }}>
+              <label style={{ cursor: 'pointer', paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px', borderRadius: '8px', border: '2px dashed #f59e0b', fontSize: '13px', fontWeight: '700', color: '#b45309', backgroundColor: '#ffffff' }}>
+                🖼️ (Opsional) Upload HTML pdf24 — sumber gambar tambahan
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) { setHtmlPdf24(''); setNamaFilePdf24(''); return; }
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setHtmlPdf24(String(ev.target?.result || ''));
+                    reader.readAsText(file);
+                    setNamaFilePdf24(file.name);
+                  }}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              {namaFilePdf24 ? (
+                <>
+                  <span style={{ fontSize: '12px', color: '#92400e' }}>📄 {namaFilePdf24}</span>
+                  <button
+                    type="button"
+                    onClick={() => { setHtmlPdf24(''); setNamaFilePdf24(''); setRingkasanGambarPdf24(null); }}
+                    style={{ fontSize: '12px', color: '#b91c1c', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Hapus
+                  </button>
+                </>
+              ) : (
+                <span style={{ fontSize: '12px', color: '#92400e' }}>
+                  Kalau diisi: gambar yang KOSONG di soal hasil AI akan otomatis diisi dari sini (dicocokkan per nomor soal). Soal yang sudah punya gambar dari AI tidak akan ditimpa.
+                </span>
+              )}
+              {ringkasanGambarPdf24 && (
+                <span style={{ fontSize: '12px', color: '#166534', background: '#dcfce7', borderRadius: '6px', padding: '4px 8px' }}>
+                  ✅ {ringkasanGambarPdf24.jumlahSoalTerisiOtomatis} soal + {ringkasanGambarPdf24.jumlahBacaanTerisiOtomatis} bacaan
+                  keisi otomatis ({ringkasanGambarPdf24.jumlahGambarTanpaKonteks} gambar tidak ketemu konteksnya)
+                </span>
+              )}
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', gap: '12px' }}>
               <div>
