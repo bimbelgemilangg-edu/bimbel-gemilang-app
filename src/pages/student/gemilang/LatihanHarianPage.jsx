@@ -24,6 +24,7 @@ import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel } from '../../../utils/aksesKontenSiswa';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
+import LencanaPencapaian from '../../../components/LencanaPencapaian';
 
 // 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
 // DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
@@ -969,6 +970,17 @@ export default function LatihanHarianPage() {
         </div>
 
         <div style={{ padding: '20px 24px', textAlign: 'center', marginTop: -10 }}>
+          {streakInfo && streakInfo.streakBaru > 0 && (
+            <div style={{ marginBottom: 18 }}>
+              <LencanaPencapaian
+                tipe="streak"
+                nilai={streakInfo.streakBaru}
+                keterangan="Latihan Harian"
+                xp={xpDidapat}
+              />
+              <p style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 10 }}>📸 Screenshot lencana ini buat status kamu!</p>
+            </div>
+          )}
           <p style={{ color: '#64748b', fontSize: 13.5, marginBottom: 22 }}>
             {hasilSesi.benar} benar, {hasilSesi.salah} salah dari {soalSesi.length} soal
           </p>

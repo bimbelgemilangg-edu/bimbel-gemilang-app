@@ -39,6 +39,7 @@ import RendererPgSederhana from './RendererPgSederhana';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
+import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
@@ -110,11 +111,19 @@ export default function TryOutView() {
   const videoPrepRef = React.useRef(null);
   const streamPrepRef = React.useRef(null);
   const [statusKameraPrep, setStatusKameraPrep] = useState('memuat'); // 'memuat' | 'aktif' | 'ditolak'
+  const [errorKameraPrep, setErrorKameraPrep] = useState(null); // nama error asli dari browser
+  // 🔥 BARU: counter percobaan -- setiap admin/siswa klik "Coba Lagi",
+  // angka ini naik, effect di bawah otomatis jalan ulang (minta izin
+  // kamera dari nol lagi). Ini buat kasus siswa TADINYA klik "Block"
+  // gak sengaja, terus dia benerin izinnya lewat setting browser --
+  // tanpa tombol ini, satu-satunya cara ngulang adalah reload manual.
+  const [percobaanKeKamera, setPercobaanKeKamera] = useState(0);
 
   useEffect(() => {
     if (tahap !== 'cek-kamera') return;
     let batal = false;
     setStatusKameraPrep('memuat');
+    setErrorKameraPrep(null);
     navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'user' }, audio: false })
       .then((stream) => {
         if (batal) { stream.getTracks().forEach((t) => t.stop()); return; }
@@ -125,6 +134,7 @@ export default function TryOutView() {
       .catch((err) => {
         console.error('Kamera ditolak/gagal pas persiapan:', err);
         setStatusKameraPrep('ditolak');
+        setErrorKameraPrep(err?.name || 'Unknown');
       });
     return () => {
       batal = true;
@@ -136,7 +146,7 @@ export default function TryOutView() {
       streamPrepRef.current?.getTracks().forEach((t) => t.stop());
       streamPrepRef.current = null;
     };
-  }, [tahap]);
+  }, [tahap, percobaanKeKamera]);
 
   // ---------------- MUAT PAKET + CEK SESI YANG SUDAH ADA ----------------
   useEffect(() => {
@@ -392,7 +402,7 @@ export default function TryOutView() {
         <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
         <h1 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>Siapkan Kameramu</h1>
         <p style={{ color: '#6b7280', fontSize: 12.5, margin: '8px 0 16px' }}>
-          Try out ini butuh kamera aktif selama pengerjaan. Pastikan wajahmu kelihatan jelas di preview di bawah sebelum lanjut.
+          Try out ini WAJIB kamera aktif selama pengerjaan -- gak bisa dimulai tanpa itu. Pastikan wajahmu kelihatan jelas di preview di bawah.
         </p>
 
         <div style={{ width: '100%', aspectRatio: '4/3', background: '#1e293b', borderRadius: 14, overflow: 'hidden', marginBottom: 14, position: 'relative' }}>
@@ -403,9 +413,9 @@ export default function TryOutView() {
             </div>
           )}
           {statusKameraPrep === 'ditolak' && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, padding: 16, textAlign: 'center', gap: 6 }}>
-              <span>❌ Kamera ditolak/gagal diakses.</span>
-              <span style={{ color: '#cbd5e1' }}>Cek izin kamera di pengaturan browser, lalu muat ulang halaman ini.</span>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12, padding: 16, textAlign: 'center', gap: 4 }}>
+              <span style={{ fontSize: 22 }}>🚫</span>
+              <span style={{ fontWeight: 700 }}>Kamera belum diizinkan</span>
             </div>
           )}
         </div>
@@ -416,16 +426,33 @@ export default function TryOutView() {
           </div>
         )}
 
+        {/* 🔥 BARU: kalau kamera WAJIB (soal ini), TIDAK ADA jalan
+            pintas buat "lanjut tanpa kamera" -- try out beneran gak
+            bisa dimulai sampai kameranya nyala. Yang ada cuma tombol
+            resmi buat COBA LAGI (buat kasus siswa gak sengaja klik
+            "Block", atau baru aja benerin izinnya lewat setting
+            browser). */}
+        {statusKameraPrep === 'ditolak' && (
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12, marginBottom: 14, fontSize: 11.5, color: '#92400e', textAlign: 'left' }}>
+            <b>Cara mengizinkan kamera:</b>
+            <ol style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.7 }}>
+              <li>Klik ikon 🔒 / kamera di pojok kiri address bar browser</li>
+              <li>Pilih "Izinkan" (Allow) untuk kamera</li>
+              <li>Klik tombol "Coba Izinkan Lagi" di bawah ini</li>
+            </ol>
+          </div>
+        )}
+
         <button onClick={lanjutSetelahCekKamera} disabled={statusKameraPrep !== 'aktif'} style={{ ...st.tombolUtama, opacity: statusKameraPrep === 'aktif' ? 1 : 0.5 }}>
           Saya Siap, Mulai Try Out
         </button>
 
         {statusKameraPrep === 'ditolak' && (
           <button
-            onClick={lanjutSetelahCekKamera}
-            style={{ ...st.tombolSekunder, marginTop: 8, width: '100%', color: '#dc2626', borderColor: '#fca5a5' }}
+            onClick={() => setPercobaanKeKamera((n) => n + 1)}
+            style={{ ...st.tombolSekunder, marginTop: 8, width: '100%', color: '#7c3aed', borderColor: '#c4b5fd' }}
           >
-            Lanjut tanpa kamera (akan tercatat sebagai pelanggaran)
+            🔄 Coba Izinkan Lagi
           </button>
         )}
       </div>
@@ -436,10 +463,15 @@ export default function TryOutView() {
     return (
       <div style={{ maxWidth: 640, margin: '0 auto', padding: 20 }}>
         <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtn}><ArrowLeft size={16} /> Kembali ke Dashboard</button>
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ fontSize: 44 }}>🏁</div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1e293b' }}>Try Out Selesai</h1>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#7c3aed', margin: '10px 0' }}>{hasilAkhir?.totalSkorPersen}%</div>
+
+        <div style={{ marginBottom: 20 }}>
+          <LencanaPencapaian
+            tipe="skor"
+            nilai={hasilAkhir?.totalSkorPersen}
+            keterangan={paket.judul}
+            xp={hasilAkhir?.xpFinal}
+          />
+          <p style={{ textAlign: 'center', fontSize: 11.5, color: '#94a3b8', marginTop: 10 }}>📸 Screenshot lencana ini buat status kamu!</p>
         </div>
 
         <RingkasanPelanggaran
