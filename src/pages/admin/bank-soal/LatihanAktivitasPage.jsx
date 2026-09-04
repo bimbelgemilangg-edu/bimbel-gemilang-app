@@ -15,8 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import {
-  ArrowLeft, Flame, Sparkles, ChevronDown, ChevronRight, Loader2, RefreshCw,
+  ArrowLeft, Flame, Sparkles, ChevronDown, ChevronRight, Loader2, RefreshCw, ShieldAlert, AlertTriangle,
 } from 'lucide-react';
+import { auditKecocokanSoal } from '../../../utils/aksesKontenSiswa';
 
 export default function LatihanAktivitasPage() {
   const navigate = useNavigate();
@@ -50,6 +51,14 @@ export default function LatihanAktivitasPage() {
           xp: prog.xp || 0,
           streak: prog.streak || 0,
           lastActiveDate: prog.lastActiveDate || null,
+          // 🔥 BARU: dipakai buat deteksi "sesi kepotong" -- soalHariIniCount
+          // cuma di-update di AKHIR sesi (selesaikanSesi di LatihanHarianPage),
+          // jadi kalau ada soal yang kejawab (siswa_soal_progress) tapi
+          // jumlahnya lebih banyak dari yang tercatat di sini buat tanggal
+          // yang sama, artinya sesi terakhir siswa ini KEPOTONG di tengah
+          // jalan (mis. app ketutup pas lagi animasi mengirim/dikoreksi).
+          soalHariIniCount: prog.soalHariIniCount || 0,
+          soalHariIniTanggal: prog.soalHariIniTanggal || null,
           sudahPernahLatihan: !!progressMap[s.studentId],
         };
       });
@@ -70,6 +79,78 @@ export default function LatihanAktivitasPage() {
 
   useEffect(() => { muatData(); }, [muatData]);
 
+  // 🔥 BARU: 1 fungsi audit dipakai BARENG buat 2 kebutuhan --
+  // (1) buka detail 1 siswa (klik baris), (2) tombol "Audit Cepat Semua
+  // Siswa" (scan semua sekaligus). Supaya logikanya cuma ada 1 tempat.
+  const auditSatuSiswa = useCallback(async (siswa) => {
+    const snapProg = await getDocs(query(collection(db, 'siswa_soal_progress'), where('studentId', '==', siswa.studentId)));
+    const daftarProg = snapProg.docs.map((d) => d.data());
+
+    if (daftarProg.length === 0) {
+      return { perMateri: [], soalNyasar: [], sesiKepotong: null };
+    }
+
+    // Ambil data soal terkait (jenjang, kelas, materi) -- Firestore 'in'
+    // dibatasi 30 ID per query, jadi dipecah kalau lebih dari itu.
+    const soalIds = daftarProg.map((p) => p.soalId);
+    const soalMap = {};
+    for (let i = 0; i < soalIds.length; i += 30) {
+      const potongan = soalIds.slice(i, i + 30);
+      const snapSoal = await getDocs(query(collection(db, 'bank_soal'), where('__name__', 'in', potongan)));
+      snapSoal.forEach((d) => { soalMap[d.id] = d.data(); });
+    }
+
+    const perMateri = {};
+    // 🔒 SOAL NYASAR: buat SETIAP soal yang PERNAH dikerjakan siswa ini,
+    // cek ulang pakai aturan yang PERSIS SAMA dengan yang menyaring soal
+    // di LatihanHarianPage (auditKecocokanSoal, dari file bersama). Kalau
+    // ada yang tidak lolos, berarti soal itu SEHARUSNYA tidak pernah
+    // sampai ke siswa ini -- baik karena bug lama sebelum perbaikan
+    // jenjang/kelas, data soal diedit belakangan (mis. jenjang diubah
+    // admin setelah siswa terlanjur mengerjakan), atau ada celah baru
+    // yang belum ketahuan.
+    const soalNyasar = [];
+
+    daftarProg.forEach((p) => {
+      const soal = soalMap[p.soalId];
+      const materi = soal?.materi || 'Tidak diketahui';
+      if (!perMateri[materi]) perMateri[materi] = { dicoba: 0, benar: 0, kuasai: 0 };
+      perMateri[materi].dicoba += 1;
+      perMateri[materi].benar += (p.benarCount || 0) > 0 ? 1 : 0;
+      if ((p.kotak || 0) >= 3) perMateri[materi].kuasai += 1;
+
+      if (soal) {
+        const hasilAudit = auditKecocokanSoal(soal, siswa.jenjang, siswa.kelas);
+        if (!hasilAudit.cocok) {
+          soalNyasar.push({ soalId: p.soalId, materi, alasan: hasilAudit.alasan });
+        }
+      }
+    });
+
+    const hasilMateri = Object.entries(perMateri).map(([materi, d]) => ({
+      materi,
+      jumlahSoalDicoba: d.dicoba,
+      persentaseKuasai: Math.round((d.kuasai / d.dicoba) * 100),
+    })).sort((a, b) => a.persentaseKuasai - b.persentaseKuasai);
+
+    // 🔒 SESI KEPOTONG: hitung berapa soal yang KEJAWAB hari ini
+    // (siswa_soal_progress, disimpan LANGSUNG per-soal, jadi datanya
+    // pasti akurat) vs berapa yang TERCATAT di siswa_progress
+    // (soalHariIniCount, yang HANYA di-update di akhir sesi). Kalau
+    // yang kejawab lebih banyak dari yang tercatat, berarti sesi
+    // terakhir hari ini terputus SEBELUM sempat "final" -- XP/streak
+    // dari sesi itu kemungkinan belum ketambah, walau soal per-soalnya
+    // sendiri sudah aman tersimpan.
+    const hariIniStr = new Date().toISOString().slice(0, 10);
+    const soalDijawabHariIni = daftarProg.filter((p) => p.terakhirDicoba === hariIniStr).length;
+    const tercatatHariIni = siswa.soalHariIniTanggal === hariIniStr ? siswa.soalHariIniCount : 0;
+    const sesiKepotong = soalDijawabHariIni > tercatatHariIni
+      ? { soalDijawabHariIni, tercatatHariIni, selisih: soalDijawabHariIni - tercatatHariIni }
+      : null;
+
+    return { perMateri: hasilMateri, soalNyasar, sesiKepotong };
+  }, []);
+
   const bukaDetail = useCallback(async (siswa) => {
     if (expandedId === siswa.studentId) { setExpandedId(null); return; }
     setExpandedId(siswa.studentId);
@@ -78,47 +159,48 @@ export default function LatihanAktivitasPage() {
 
     setLoadingDetail(siswa.studentId);
     try {
-      const snapProg = await getDocs(query(collection(db, 'siswa_soal_progress'), where('studentId', '==', siswa.studentId)));
-      const daftarProg = snapProg.docs.map((d) => d.data());
-
-      if (daftarProg.length === 0) {
-        setDetailPerMateri((prev) => ({ ...prev, [siswa.studentId]: [] }));
-        setLoadingDetail(null);
-        return;
-      }
-
-      // Ambil data soal terkait (buat tahu materinya) -- Firestore 'in'
-      // dibatasi 30 ID per query, jadi dipecah kalau lebih dari itu.
-      const soalIds = daftarProg.map((p) => p.soalId);
-      const soalMap = {};
-      for (let i = 0; i < soalIds.length; i += 30) {
-        const potongan = soalIds.slice(i, i + 30);
-        const snapSoal = await getDocs(query(collection(db, 'bank_soal'), where('__name__', 'in', potongan)));
-        snapSoal.forEach((d) => { soalMap[d.id] = d.data(); });
-      }
-
-      const perMateri = {};
-      daftarProg.forEach((p) => {
-        const materi = soalMap[p.soalId]?.materi || 'Tidak diketahui';
-        if (!perMateri[materi]) perMateri[materi] = { dicoba: 0, benar: 0, kuasai: 0 };
-        perMateri[materi].dicoba += 1;
-        perMateri[materi].benar += (p.benarCount || 0) > 0 ? 1 : 0;
-        if ((p.kotak || 0) >= 3) perMateri[materi].kuasai += 1;
-      });
-
-      const hasil = Object.entries(perMateri).map(([materi, d]) => ({
-        materi,
-        jumlahSoalDicoba: d.dicoba,
-        persentaseKuasai: Math.round((d.kuasai / d.dicoba) * 100),
-      })).sort((a, b) => a.persentaseKuasai - b.persentaseKuasai);
-
+      const hasil = await auditSatuSiswa(siswa);
       setDetailPerMateri((prev) => ({ ...prev, [siswa.studentId]: hasil }));
     } catch (e) {
-      console.error('Gagal ambil detail materi siswa:', e);
-      setDetailPerMateri((prev) => ({ ...prev, [siswa.studentId]: [] }));
+      console.error('Gagal ambil detail/audit siswa:', e);
+      setDetailPerMateri((prev) => ({ ...prev, [siswa.studentId]: { perMateri: [], soalNyasar: [], sesiKepotong: null } }));
     }
     setLoadingDetail(null);
-  }, [expandedId, detailPerMateri]);
+  }, [expandedId, detailPerMateri, auditSatuSiswa]);
+
+  // 🔥 BARU: audit SEMUA siswa yang pernah latihan sekaligus (manual,
+  // ditekan sendiri oleh admin -- BUKAN otomatis tiap buka halaman,
+  // supaya tidak boros baca Firestore tiap kali admin cuma mau lihat
+  // daftar biasa). Hasilnya dikumpulkan jadi 1 ringkasan di atas.
+  const [audit, setAudit] = useState(null); // null = belum dijalankan
+  const [sedangAudit, setSedangAudit] = useState(false);
+  const [progresAudit, setProgresAudit] = useState({ sudah: 0, total: 0 });
+
+  const jalankanAuditSemua = useCallback(async () => {
+    const target = daftarSiswa.filter((s) => s.sudahPernahLatihan);
+    setSedangAudit(true);
+    setProgresAudit({ sudah: 0, total: target.length });
+
+    const semuaSoalNyasar = []; // [{studentId, nama, soalId, materi, alasan}]
+    const semuaSesiKepotong = []; // [{studentId, nama, ...}]
+
+    for (const siswa of target) {
+      try {
+        const hasil = await auditSatuSiswa(siswa);
+        hasil.soalNyasar.forEach((sn) => semuaSoalNyasar.push({ studentId: siswa.studentId, nama: siswa.nama, ...sn }));
+        if (hasil.sesiKepotong) semuaSesiKepotong.push({ studentId: siswa.studentId, nama: siswa.nama, ...hasil.sesiKepotong });
+        // Simpan juga ke cache detail per-siswa, biar kalau admin expand
+        // manual setelah ini tidak perlu fetch ulang.
+        setDetailPerMateri((prev) => ({ ...prev, [siswa.studentId]: hasil }));
+      } catch (e) {
+        console.error(`Gagal audit siswa ${siswa.studentId}:`, e);
+      }
+      setProgresAudit((prev) => ({ ...prev, sudah: prev.sudah + 1 }));
+    }
+
+    setAudit({ soalNyasar: semuaSoalNyasar, sesiKepotong: semuaSesiKepotong, waktuAudit: new Date() });
+    setSedangAudit(false);
+  }, [daftarSiswa, auditSatuSiswa]);
 
   const daftarTerfilter = filterKelas.trim()
     ? daftarSiswa.filter((s) => s.kelas.toLowerCase().includes(filterKelas.trim().toLowerCase()))
@@ -137,17 +219,79 @@ export default function LatihanAktivitasPage() {
         <ArrowLeft size={16} /> Kembali ke Bank Soal
       </button>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, flexWrap: 'wrap', gap: 8 }}>
         <h1 style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 22, fontWeight: 800, color: '#1e293b', margin: 0 }}>
           <Sparkles size={24} color="#673ab7" /> Aktivitas Latihan Harian
         </h1>
-        <button onClick={muatData} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 12 }}>
-          <RefreshCw size={14} /> Muat Ulang
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={jalankanAuditSemua}
+            disabled={sedangAudit || loading}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fef2f2', color: '#b91c1c', cursor: sedangAudit ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, opacity: sedangAudit ? 0.6 : 1 }}
+          >
+            {sedangAudit ? <Loader2 size={14} className="spin" /> : <ShieldAlert size={14} />}
+            {sedangAudit ? `Mengaudit... (${progresAudit.sudah}/${progresAudit.total})` : 'Audit Cepat Semua Siswa'}
+          </button>
+          <button onClick={muatData} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', fontSize: 12 }}>
+            <RefreshCw size={14} /> Muat Ulang
+          </button>
+        </div>
       </div>
       <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 16 }}>
         Pantau siapa yang aktif latihan, XP/streak, dan materi mana yang masih perlu diperkuat.
+        Klik <strong>Audit Cepat Semua Siswa</strong> buat mengecek soal yang mungkin nyasar jenjang/kelas dan sesi yang kepotong di tengah jalan.
       </p>
+
+      {/* 🔥 BARU: ringkasan hasil audit -- cuma muncul SETELAH tombol
+          "Audit Cepat" ditekan (bukan otomatis, biar tidak boros baca
+          Firestore tiap buka halaman ini). */}
+      {audit && (
+        <div style={{
+          marginBottom: 16, borderRadius: 12, padding: 14,
+          border: `1px solid ${audit.soalNyasar.length > 0 || audit.sesiKepotong.length > 0 ? '#fca5a5' : '#86efac'}`,
+          background: audit.soalNyasar.length > 0 || audit.sesiKepotong.length > 0 ? '#fef2f2' : '#f0fdf4',
+        }}>
+          {audit.soalNyasar.length === 0 && audit.sesiKepotong.length === 0 ? (
+            <div style={{ fontSize: 13, color: '#15803d', fontWeight: 700 }}>
+              ✅ Aman -- tidak ada soal nyasar jenjang/kelas, dan tidak ada sesi yang kepotong hari ini.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {audit.soalNyasar.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: '#b91c1c', marginBottom: 6 }}>
+                    <ShieldAlert size={16} /> {audit.soalNyasar.length} soal ketahuan NYASAR (dikerjakan siswa di luar jenjang/kelasnya)
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto' }}>
+                    {audit.soalNyasar.map((sn, i) => (
+                      <div key={i} style={{ fontSize: 11.5, color: '#7f1d1d', background: 'white', borderRadius: 6, padding: '6px 8px' }}>
+                        <strong>{sn.nama}</strong> ({sn.studentId}) — soal materi <em>{sn.materi}</em>: {sn.alasan}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {audit.sesiKepotong.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: '#b45309', marginBottom: 6 }}>
+                    <AlertTriangle size={16} /> {audit.sesiKepotong.length} siswa keliatan sesinya kepotong hari ini
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto' }}>
+                    {audit.sesiKepotong.map((sk, i) => (
+                      <div key={i} style={{ fontSize: 11.5, color: '#78350f', background: 'white', borderRadius: 6, padding: '6px 8px' }}>
+                        <strong>{sk.nama}</strong> ({sk.studentId}) — {sk.soalDijawabHariIni} soal kejawab, tapi cuma {sk.tercatatHariIni} yang tercatat final (XP sesi terakhirnya kemungkinan belum ketambah)
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 8 }}>
+            Audit terakhir: {audit.waktuAudit.toLocaleString('id-ID')}
+          </div>
+        </div>
+      )}
 
       <input
         placeholder="Filter kelas (mis. 9, 7 SMP)"
@@ -195,16 +339,40 @@ export default function LatihanAktivitasPage() {
                 <div style={{ padding: '10px 16px 16px 40px', backgroundColor: '#fafafa' }}>
                   {loadingDetail === s.studentId ? (
                     <Loader2 size={16} className="spin" />
-                  ) : (detailPerMateri[s.studentId] || []).length === 0 ? (
-                    <div style={{ fontSize: 12, color: '#9ca3af' }}>Belum ada data materi.</div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {detailPerMateri[s.studentId].map((m) => (
-                        <div key={m.materi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                          <span style={{ color: '#374151' }}>{m.materi} <span style={{ color: '#9ca3af' }}>({m.jumlahSoalDicoba} soal dicoba)</span></span>
-                          <span style={{ fontWeight: 700, color: m.persentaseKuasai < 60 ? '#dc2626' : '#16a34a' }}>{m.persentaseKuasai}% kuasai</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {/* 🔒 Hasil audit per-siswa ini -- soal nyasar & sesi kepotong */}
+                      {(detailPerMateri[s.studentId]?.soalNyasar?.length || 0) > 0 && (
+                        <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: 10 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 800, color: '#b91c1c', marginBottom: 6 }}>
+                            <ShieldAlert size={14} /> {detailPerMateri[s.studentId].soalNyasar.length} soal nyasar ke siswa ini
+                          </div>
+                          {detailPerMateri[s.studentId].soalNyasar.map((sn, i) => (
+                            <div key={i} style={{ fontSize: 11, color: '#7f1d1d' }}>• Materi {sn.materi}: {sn.alasan}</div>
+                          ))}
                         </div>
-                      ))}
+                      )}
+                      {detailPerMateri[s.studentId]?.sesiKepotong && (
+                        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10, fontSize: 11.5, color: '#78350f' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, marginBottom: 4 }}>
+                            <AlertTriangle size={14} /> Sesi hari ini keliatan kepotong
+                          </div>
+                          {detailPerMateri[s.studentId].sesiKepotong.soalDijawabHariIni} soal kejawab, tapi cuma {detailPerMateri[s.studentId].sesiKepotong.tercatatHariIni} yang tercatat final.
+                        </div>
+                      )}
+
+                      {(detailPerMateri[s.studentId]?.perMateri?.length || 0) === 0 ? (
+                        <div style={{ fontSize: 12, color: '#9ca3af' }}>Belum ada data materi.</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {detailPerMateri[s.studentId].perMateri.map((m) => (
+                            <div key={m.materi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                              <span style={{ color: '#374151' }}>{m.materi} <span style={{ color: '#9ca3af' }}>({m.jumlahSoalDicoba} soal dicoba)</span></span>
+                              <span style={{ fontWeight: 700, color: m.persentaseKuasai < 60 ? '#dc2626' : '#16a34a' }}>{m.persentaseKuasai}% kuasai</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

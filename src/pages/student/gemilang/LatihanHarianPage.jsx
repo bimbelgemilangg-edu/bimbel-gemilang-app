@@ -22,6 +22,7 @@ import {
 import { ArrowLeft, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
+import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas } from '../../../utils/aksesKontenSiswa';
 
 // 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
 // DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
@@ -225,41 +226,11 @@ function hitungSisaJatah(progress, hariIniStr, batasHarian) {
   return Math.max(0, batasHarian - (progress.soalHariIniCount || 0));
 }
 
-// 🔥 BARU (BUG KEAMANAN KONTEN DITEMUKAN): filter sebelumnya CUMA cek
-// `tingkatKelas`, sama sekali TIDAK cek `jenjang` -- soal UTBK/SNBT atau
-// SMA yang kelasnya sengaja dikosongkan (memang begitu desainnya untuk
-// TKA lintas kelas, lihat diskusi sebelumnya) bisa LOLOS ke siswa SMP
-// atau SD, karena syarat "kelas kosong = boleh lewat" tidak
-// mempertimbangkan jenjang sama sekali. Ini serius -- siswa SMP bisa
-// kena soal UTBK Kimia kelas 12 yang jauh di luar levelnya.
-//
-// PRINSIP PERBAIKAN: default HARUS AMAN (tolak) kalau jenjang tidak
-// jelas cocok -- bukan longgar (terima) seperti kesalahan sebelumnya.
-function cocokkanJenjang(jenjangSoal, jenjangSiswa) {
-  if (!jenjangSoal) return false; // 🔒 soal tanpa jenjang ditolak, BUKAN diloloskan
-  const soal = jenjangSoal.toLowerCase();
-  const siswa = (jenjangSiswa || '').toLowerCase();
-  if (siswa === 'smp') return soal.includes('smp');
-  if (siswa === 'sd') return soal.includes('sd');
-  // UTBK/SNBT sengaja DIIKUTKAN buat siswa SMA -- itu memang relevan
-  // buat persiapan mereka (bukan celah, tapi kesesuaian yang disengaja).
-  if (siswa === 'sma') return soal.includes('sma') || soal.includes('utbk') || soal.includes('snbt');
-  return false; // jenjang siswa tidak dikenali -- tolak, jangan tebak
-}
-
-// 🔥 BARU (BUG NYATA DITEMUKAN): perbandingan kelas sebelumnya pakai
-// `===` LANGSUNG antara `tingkatKelas` di Bank Soal (format angka
-// polos, mis. "7") dengan `kelasSekolah` siswa (format gabungan, mis.
-// "7 SMP") -- dua format ini TIDAK PERNAH sama persis, jadi SEMUA soal
-// yang py tingkatKelas terisi otomatis gagal cocok ke SEMUA siswa,
-// berapa pun kelasnya. Ini yang bikin "tidak ada soal sama sekali"
-// muncul ke semua siswa kelas 7-9 padahal soalnya sudah ada. Sekarang
-// dibandingkan angkanya SAJA (diekstrak dari kedua sisi), bukan
-// string-nya utuh.
-function ekstrakAngkaKelas(str) {
-  const m = String(str || '').match(/\d+/);
-  return m ? m[0] : '';
-}
+// 🔥 PINDAH: cocokkanJenjang() & ekstrakAngkaKelas() sekarang di
+// src/utils/aksesKontenSiswa.js -- dipakai BARENG oleh halaman ini
+// (buat menyaring) dan LatihanAktivitasPage.jsx punya admin (buat
+// mengaudit soal yang sudah terlanjur dikerjakan siswa). Lihat
+// penjelasan lengkap kenapa dipindah di file itu.
 
 // ============================================================
 // KOMPONEN UTAMA
@@ -376,21 +347,11 @@ export default function LatihanHarianPage() {
         soal = soal.filter((s) => cocokkanJenjang(s.jenjang, jenjangSiswa));
         if (studentKelas) {
           const angkaKelasSiswa = ekstrakAngkaKelas(studentKelas);
-          soal = soal.filter((s) => {
-            // 🔥 BARU: soal TKA/SNBT/UTBK dianggap LINTAS KELAS dalam 1
-            // jenjang -- gak peduli kelas berapa yang kebetulan ke-tag
-            // pas import (mis. materi kelas 7 dipakai buat latihan TKA
-            // kelas 9). Ini penting karena TKA/UTBK memang soal
-            // kompetensi kumulatif seluruh jenjang, bukan kurikulum 1
-            // kelas spesifik -- kalau dipaksa cocok kelas persis, kelas
-            // 9 (yang justru paling butuh latihan TKA) malah gak
-            // kebagian soal yang materinya "ketagnya" kelas 7/8.
-            if (s.jenisUjian && ['tka', 'snbt', 'utbk'].includes(s.jenisUjian.toLowerCase())) return true;
-            // Soal REGULER (bukan TKA) tetap ketat per kelas -- gak mau
-            // siswa kelas 7 kebagian materi Aljabar kelas 9 yang belum
-            // dipelajari, atau sebaliknya.
-            return !s.tingkatKelas || ekstrakAngkaKelas(s.tingkatKelas) === angkaKelasSiswa;
-          });
+          // 🔥 BARU: pakai cocokkanKelas() dari utils/aksesKontenSiswa.js
+          // (termasuk pengecualian TKA/SNBT/UTBK lintas kelas di
+          // dalamnya) -- SATU-SATUNYA sumber logika ini, dipakai bareng
+          // dengan audit admin di LatihanAktivitasPage.jsx.
+          soal = soal.filter((s) => cocokkanKelas(s, angkaKelasSiswa));
         }
         // Hanya dukung pg_sederhana dulu di v1 -- tipe lain (kompleks,
         // kategori, isian) menyusul setelah UI jawabnya dibuat.
