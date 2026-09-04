@@ -484,10 +484,16 @@ export default function TryOutView() {
         <div style={{ fontSize: 12.5, fontWeight: 700, color: '#64748b', margin: '20px 0 10px' }}>📋 TINJAU JAWABAN</div>
         {paket.daftarSoal.map((s, i) => {
           const skor = skorSatuSoal(s, jawaban[s.id]);
+          // 🔥 BARU: biar keliatan sekilas tanpa perlu buka detail opsi --
+          // "belum dijawab" itu beda kondisi sama "salah jawab", walau
+          // dua-duanya sama-sama bikin skor 0%.
+          const jwbSoalIni = jawaban[s.id];
+          const belumDijawab = jwbSoalIni === undefined || jwbSoalIni === null
+            || (Array.isArray(jwbSoalIni) && jwbSoalIni.filter(Boolean).length === 0);
           return (
             <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
-                Soal {i + 1} -- skor {Math.round(skor * 100)}%
+                Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
               </div>
               <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}>{s.soal || s.teks_soal}</div>
               <PenahanErrorSoal soalId={s.id}>

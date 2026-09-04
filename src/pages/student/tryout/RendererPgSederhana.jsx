@@ -12,9 +12,20 @@ import { cariIndexBenar } from '../../../utils/skoringSoalKompleks';
 export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false }) {
   const opsi = soal.opsiJawaban || [];
   const indexBenar = cariIndexBenar(soal);
+  // 🔥 BARU (bug UX ditemukan): sebelumnya kalau siswa SKIP soal ini
+  // (gak milih apa-apa sama sekali), gak ada opsi yang ke-highlight
+  // merah -- cuma jawaban benar yang ijo. Tampilannya jadi AMBIGU:
+  // gak kelihatan beda antara "siswa emang skip" vs "ada yang salah
+  // nampilin jawaban dia". Sekarang dikasih tanda eksplisit.
+  const tidakDijawab = modeTinjau && (jawabanTerpilih === null || jawabanTerpilih === undefined);
 
   return (
     <div>
+      {tidakDijawab && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#92400e', fontWeight: 700 }}>
+          ⚠️ Soal ini tidak dijawab
+        </div>
+      )}
       {opsi.map((opt, i) => {
         const huruf = String.fromCharCode(65 + i);
         const teksOpsi = typeof opt === 'string' ? opt : (opt?.teks || '');

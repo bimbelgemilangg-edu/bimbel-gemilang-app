@@ -25,6 +25,9 @@ function safeArray(v) {
 export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false }) {
   const barisMentah = safeArray(soal.tabel_benar_salah).length ? soal.tabel_benar_salah : soal.pernyataan;
   const baris = safeArray(barisMentah);
+  // 🔥 BARU: sama kayak 2 renderer lain -- biar jelas beda antara
+  // "siswa skip semua baris" vs "salah jawab semua baris".
+  const tidakDijawab = modeTinjau && safeArray(jawabanTerpilih).filter(Boolean).length === 0;
 
   const pilihBaris = (index, nilai) => {
     if (disabled || modeTinjau) return;
@@ -34,8 +37,14 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
   };
 
   return (
-    <div style={{ borderRadius: 10, border: '1px solid #cbd5e1', overflow: 'hidden' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+    <>
+      {tidakDijawab && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#92400e', fontWeight: 700 }}>
+          ⚠️ Soal ini tidak dijawab
+        </div>
+      )}
+      <div style={{ borderRadius: 10, border: '1px solid #cbd5e1', overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
         <thead>
           <tr style={{ background: '#1e293b' }}>
             <th style={{ width: 36, padding: '10px 8px', textAlign: 'center', color: '#e2e8f0', fontWeight: 600, fontSize: 12, borderRight: '1px solid #334155' }}>No</th>
@@ -96,7 +105,8 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
             );
           })}
         </tbody>
-      </table>
-    </div>
+        </table>
+      </div>
+    </>
   );
 }

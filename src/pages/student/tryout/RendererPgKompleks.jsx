@@ -32,6 +32,9 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
   const opsi = soal.opsiJawaban || [];
   const kunci = safeArray(soal.kunciJawaban).map((h) => String(h).toUpperCase().trim());
   const dipilih = new Set(safeArray(jawabanTerpilih).map((h) => String(h).toUpperCase().trim()));
+  // 🔥 BARU: sama kayak RendererPgSederhana.jsx -- biar jelas beda
+  // antara "siswa skip" vs "salah pilih semua".
+  const tidakDijawab = modeTinjau && safeArray(jawabanTerpilih).length === 0;
 
   const toggle = (huruf) => {
     if (disabled || modeTinjau) return;
@@ -42,6 +45,11 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
 
   return (
     <div>
+      {tidakDijawab && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#92400e', fontWeight: 700 }}>
+          ⚠️ Soal ini tidak dijawab
+        </div>
+      )}
       <div style={{ fontSize: 11.5, fontWeight: 700, color: '#7c3aed', background: '#f5f3ff', display: 'inline-block', padding: '4px 10px', borderRadius: 999, marginBottom: 10 }}>
         ☑️ Pilih SEMUA jawaban yang benar (bisa lebih dari satu)
       </div>
