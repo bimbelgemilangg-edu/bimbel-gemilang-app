@@ -85,6 +85,12 @@ export default function HasilTryOutAdminPage() {
     setLoadingHasil(false);
   }, []);
 
+  // 🔥 BARU: modal galeri foto pengawasan -- fotonya SUDAH kesimpen
+  // sejak awal (lewat useDeteksiKecuranganTryOut.js -> Supabase), tapi
+  // sebelumnya belum ada tempat buat admin BENERAN lihat isinya, cuma
+  // angka jumlahnya doang. Ini nyambungin ke data yang udah ada.
+  const [siswaFotoDibuka, setSiswaFotoDibuka] = useState(null); // { nama, foto: [] }
+
   const jumlahSelesai = baris.filter((b) => b.sesi?.status === 'selesai').length;
   const jumlahBerjalan = baris.filter((b) => b.sesi?.status === 'berjalan').length;
 
@@ -247,9 +253,21 @@ export default function HasilTryOutAdminPage() {
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               {selesai ? b.sesi.xpFinal : '-'}
                             </td>
-                            <td style={{ padding: '8px 10px', textAlign: 'center', color: (b.sesi?.pelanggaran?.length || 0) > 0 ? '#dc2626' : '#9ca3af' }}>
-                              {b.sesi?.pelanggaran?.length > 0 && <ShieldAlert size={12} style={{ display: 'inline', marginRight: 3 }} />}
-                              {b.sesi?.pelanggaran?.length || 0}
+                            <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                              {(b.sesi?.fotoPengawasan?.length || 0) > 0 ? (
+                                <button
+                                  onClick={() => setSiswaFotoDibuka({ nama: b.student.nama, foto: b.sesi.fotoPengawasan, pelanggaran: b.sesi.pelanggaran || [] })}
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: (b.sesi?.pelanggaran?.length || 0) > 0 ? '#dc2626' : '#9ca3af', fontWeight: 700, fontSize: 12.5, textDecoration: 'underline' }}
+                                >
+                                  {b.sesi?.pelanggaran?.length > 0 && <ShieldAlert size={12} />}
+                                  {b.sesi?.pelanggaran?.length || 0}
+                                </button>
+                              ) : (
+                                <span style={{ color: (b.sesi?.pelanggaran?.length || 0) > 0 ? '#dc2626' : '#9ca3af' }}>
+                                  {b.sesi?.pelanggaran?.length > 0 && <ShieldAlert size={12} style={{ display: 'inline', marginRight: 3 }} />}
+                                  {b.sesi?.pelanggaran?.length || 0}
+                                </span>
+                              )}
                             </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               {selesai && (
@@ -272,6 +290,40 @@ export default function HasilTryOutAdminPage() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 BARU: modal galeri foto pengawasan -- foto acak yang diambil
+          selama try out (lihat useDeteksiKecuranganTryOut.js), buat
+          admin/wali kelas tinjau MANUAL kalau ada yang dicurigai --
+          BUKAN diverifikasi AI otomatis (lihat catatan lengkap soal
+          batasan ini di file hook-nya). */}
+      {siswaFotoDibuka && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '24px 16px', overflowY: 'auto' }}>
+          <div style={{ background: 'white', borderRadius: 16, maxWidth: 640, width: '100%', padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#1e293b' }}>📷 Foto Pengawasan -- {siswaFotoDibuka.nama}</div>
+              <button onClick={() => setSiswaFotoDibuka(null)} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Tutup</button>
+            </div>
+            <p style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 14 }}>
+              Diambil ACAK selama pengerjaan (bukan tiap detik) -- ini bukti visual buat ditinjau MANUAL, bukan hasil verifikasi otomatis.
+            </p>
+
+            {siswaFotoDibuka.pelanggaran.length > 0 && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: 10, marginBottom: 14, fontSize: 12, color: '#b91c1c' }}>
+                <b>{siswaFotoDibuka.pelanggaran.length} pelanggaran tercatat:</b>{' '}
+                {siswaFotoDibuka.pelanggaran.map((p) => p.type).join(', ')}
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+              {siswaFotoDibuka.foto.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noreferrer">
+                  <img src={url} alt={`Foto pengawasan ${i + 1}`} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' }} />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       )}
