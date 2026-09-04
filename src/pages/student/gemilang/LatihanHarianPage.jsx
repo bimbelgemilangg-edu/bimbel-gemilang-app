@@ -174,6 +174,34 @@ function hitungStreakBaru(lastActiveDateStr, hariIniStr) {
   return lastActiveDateStr === kemarinStr ? 'NAIK' : 1;
 }
 
+// 🔥 BARU (inspirasi UI check-in mingguan): tampilkan 7 hari terakhir
+// (Sen-Min, berakhir hari ini) sebagai strip kecil "hari mana aja yang
+// sudah latihan". CATATAN JUJUR soal keterbatasannya: sistem cuma
+// menyimpan 1 ANGKA streak + tanggal terakhir aktif (bukan histori
+// per-hari lengkap), jadi "sudah latihan" di sini adalah HASIL TEBAKAN
+// mundur dari tanggal terakhir aktif sepanjang nilai streak -- bukan
+// data historis asli per hari. Kalau nanti mau akurat 100%, perlu
+// koleksi log harian terpisah (lihat "PENDING" di instruksi project).
+function buatStrikMingguan(streak, lastActiveDateStr, hariIniStr) {
+  const hariIni = new Date(hariIniStr);
+  const namaHari = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const hasilnya = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(hariIni);
+    d.setDate(d.getDate() - i);
+    let done = false;
+    if (lastActiveDateStr && streak > 0) {
+      const lastMs = new Date(lastActiveDateStr).getTime();
+      const iniMs = new Date(hariIniStr).getTime();
+      const selisihLastKeIni = Math.round((iniMs - lastMs) / (1000 * 60 * 60 * 24));
+      const offsetDariLast = i - selisihLastKeIni;
+      done = offsetDariLast >= 0 && offsetDariLast < streak;
+    }
+    hasilnya.push({ label: namaHari[d.getDay()], done, isToday: i === 0 });
+  }
+  return hasilnya;
+}
+
 const XP_PER_BENAR = 10;
 const XP_PER_SALAH = 2; // tetap dapat sedikit XP -- menghargai usaha, bukan cuma hasil (lihat diskusi SDT sebelumnya)
 
@@ -249,6 +277,12 @@ export default function LatihanHarianPage() {
   // ditampilkan -- kalau 0, tampilkan layar "jatah habis" alih-alih
   // daftar mapel.
   const [sisaJatah, setSisaJatah] = useState(null);
+  // 🔥 BARU: streak & tanggal terakhir aktif -- dipakai buat strip
+  // "hari mana aja sudah latihan" di layar pilih mapel. Diisi dari data
+  // yang SUDAH di-fetch buat hitung jatah harian (siswa_progress),
+  // BUKAN query baru -- jadi tidak menambah baca Firestore sama sekali.
+  const [streakSaatIni, setStreakSaatIni] = useState(0);
+  const [lastActiveDateSaatIni, setLastActiveDateSaatIni] = useState(null);
 
   const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mapel | pilih-mode | mengerjakan | selesai | jatah-habis
   const [semuaSoal, setSemuaSoal] = useState([]);
@@ -260,8 +294,21 @@ export default function LatihanHarianPage() {
   const [soalSesi, setSoalSesi] = useState([]);
   const [indexSekarang, setIndexSekarang] = useState(0);
   const [jawabanDipilih, setJawabanDipilih] = useState(null);
-  const [sudahDicek, setSudahDicek] = useState(false);
+  const [sedangMenyimpan, setSedangMenyimpan] = useState(false);
   const [hasilSesi, setHasilSesi] = useState({ benar: 0, salah: 0 });
+
+  // 🔥 BARU (rombak alur "kerjakan dulu, baru dikoreksi semua di
+  // akhir"): setiap soal yang sudah dijawab ditampung di sini
+  // (bukan langsung ditampilkan benar/salahnya) -- dipakai NANTI di
+  // tahap 'mengoreksi' & 'selesai' buat animasi XP dan daftar tinjau
+  // jawaban + pembahasan. `koreksiIndex` & `xpAnimasi` cuma dipakai
+  // buat ANIMASI VISUAL (angka XP berjalan naik) -- total XP asli yang
+  // benar-benar disimpan ke Firestore tetap dihitung dari `hasilSesi`
+  // di selesaikanSesi(), SAMA seperti sebelumnya, supaya tidak ada
+  // 2 sumber kebenaran yang bisa beda angka.
+  const [hasilPerSoal, setHasilPerSoal] = useState([]); // [{soal, jawabanIndex, indexBenar, benar}]
+  const [koreksiIndex, setKoreksiIndex] = useState(0);
+  const [xpAnimasi, setXpAnimasi] = useState(0);
 
   const [xpDidapat, setXpDidapat] = useState(0);
   const [streakInfo, setStreakInfo] = useState(null);
@@ -310,6 +357,8 @@ export default function LatihanHarianPage() {
         }
         const jatahTersisa = hitungSisaJatah(progresSiswa, hariIniStr, JATAH_SOAL_PER_HARI);
         setSisaJatah(jatahTersisa);
+        setStreakSaatIni(progresSiswa?.streak || 0);
+        setLastActiveDateSaatIni(progresSiswa?.lastActiveDate || null);
 
         if (jatahTersisa <= 0) {
           setTahap('jatah-habis');
@@ -396,8 +445,11 @@ export default function LatihanHarianPage() {
     setSoalSesi(terpilih);
     setIndexSekarang(0);
     setJawabanDipilih(null);
-    setSudahDicek(false);
+    setSedangMenyimpan(false);
     setHasilSesi({ benar: 0, salah: 0 });
+    setHasilPerSoal([]);
+    setKoreksiIndex(0);
+    setXpAnimasi(0);
     setTahap('mengerjakan');
   }, [soalMapelDipilih, progressMap, sisaJatah]);
 
@@ -408,8 +460,11 @@ export default function LatihanHarianPage() {
     setSoalSesi(terpilih);
     setIndexSekarang(0);
     setJawabanDipilih(null);
-    setSudahDicek(false);
+    setSedangMenyimpan(false);
     setHasilSesi({ benar: 0, salah: 0 });
+    setHasilPerSoal([]);
+    setKoreksiIndex(0);
+    setXpAnimasi(0);
     setTahap('mengerjakan');
   }, [soalMapelDipilih, progressMap, sisaJatah]);
 
@@ -418,17 +473,28 @@ export default function LatihanHarianPage() {
 
   const hurufKeIndex = (h) => (h ? h.toString().trim().toUpperCase().charCodeAt(0) - 65 : -1);
 
-  const cekJawaban = useCallback(async () => {
-    if (jawabanDipilih === null || !soalAktif) return;
+  // 🔥 ROMBAK ALUR: dulu 2 langkah ("Cek Jawaban" -> lihat benar/salah -> "Lanjut").
+  // Sekarang 1 langkah -- begitu klik lanjut, jawaban LANGSUNG disimpan
+  // (sama seperti sebelumnya, per-soal, biar aman kalau app ditutup di
+  // tengah jalan), tapi benar/salahnya TIDAK ditampilkan ke siswa sama
+  // sekali di sini -- cuma ditampung ke `hasilPerSoal`. Siswa baru lihat
+  // hasilnya nanti di tahap 'mengoreksi' & 'selesai', setelah SEMUA soal
+  // di sesi ini selesai dijawab.
+  const jawabDanLanjut = useCallback(() => {
+    if (jawabanDipilih === null || !soalAktif || sedangMenyimpan) return;
+    setSedangMenyimpan(true);
+
     const indexBenar = hurufKeIndex(soalAktif.kunciJawaban);
     const benar = jawabanDipilih === indexBenar;
-    setSudahDicek(true);
-    setHasilSesi((prev) => ({ benar: prev.benar + (benar ? 1 : 0), salah: prev.salah + (benar ? 0 : 1) }));
 
-    // 🔥 Update Leitner Box untuk soal ini -- disimpan langsung ke
-    // Firestore per-soal (bukan ditunda sampai akhir sesi), supaya kalau
-    // siswa menutup app di tengah jalan, progres yang sudah dikerjakan
-    // TETAP TERSIMPAN, tidak hilang percuma.
+    setHasilSesi((prev) => ({ benar: prev.benar + (benar ? 1 : 0), salah: prev.salah + (benar ? 0 : 1) }));
+    setHasilPerSoal((prev) => [...prev, { soal: soalAktif, jawabanIndex: jawabanDipilih, indexBenar, benar }]);
+
+    // Update Leitner Box -- LOGIKA & WAKTU PENYIMPANAN SAMA PERSIS seperti
+    // sebelumnya (langsung per-soal, fire-and-forget), TIDAK ditunda
+    // sampai akhir sesi. Ini sengaja dipertahankan supaya progres tidak
+    // hilang kalau siswa menutup app di tengah sesi -- yang berubah cuma
+    // KAPAN hasilnya DITAMPILKAN ke siswa, bukan kapan datanya disimpan.
     if (studentId) {
       const progKey = `${studentId}_${soalAktif.id}`;
       const existing = progressMap[soalAktif.id];
@@ -447,18 +513,48 @@ export default function LatihanHarianPage() {
       setDoc(doc(db, 'siswa_soal_progress', progKey), dataBaru).catch((e) => console.error('Gagal simpan progres soal:', e));
       setProgressMap((prev) => ({ ...prev, [soalAktif.id]: dataBaru }));
     }
-  }, [jawabanDipilih, soalAktif, studentId, progressMap]);
 
-  const lanjutSoal = useCallback(() => {
+    setJawabanDipilih(null);
+    setSedangMenyimpan(false);
+
     if (indexSekarang + 1 < soalSesi.length) {
       setIndexSekarang((i) => i + 1);
-      setJawabanDipilih(null);
-      setSudahDicek(false);
     } else {
-      selesaikanSesi();
+      // Semua soal di sesi ini sudah dijawab -- masuk ke animasi
+      // "mengirim" dulu, baru "mengoreksi" (lihat useEffect di bawah).
+      setTahap('mengirim');
     }
+  }, [jawabanDipilih, soalAktif, studentId, progressMap, indexSekarang, soalSesi.length, sedangMenyimpan]);
+
+  // ---------------- ANIMASI "MENGIRIM" -> "MENGOREKSI" ----------------
+  // Layar "mengirim" cuma jeda sebentar (kesan dikirim ke server),
+  // lalu otomatis pindah ke "mengoreksi" yang animasinya dijalankan
+  // oleh useEffect kedua di bawah.
+  useEffect(() => {
+    if (tahap !== 'mengirim') return;
+    const timer = setTimeout(() => setTahap('mengoreksi'), 1300);
+    return () => clearTimeout(timer);
+  }, [tahap]);
+
+  // Animasi "mengoreksi": ungkap hasil SATU SOAL PER LANGKAH, XP
+  // berjalan naik dikit-dikit (dramatis, kayak lagi dikoreksi beneran)
+  // -- begitu semua soal sudah "diperiksa" di animasi ini, baru panggil
+  // selesaikanSesi() (hitung XP/streak/jatah FINAL & simpan ke
+  // Firestore, PERSIS seperti sebelumnya).
+  useEffect(() => {
+    if (tahap !== 'mengoreksi') return;
+    if (hasilPerSoal.length === 0) { selesaikanSesi(); return; }
+    if (koreksiIndex >= hasilPerSoal.length) { selesaikanSesi(); return; }
+
+    const timer = setTimeout(() => {
+      const item = hasilPerSoal[koreksiIndex];
+      const tambahanXp = item.benar ? XP_PER_BENAR : XP_PER_SALAH;
+      setXpAnimasi((x) => x + tambahanXp);
+      setKoreksiIndex((i) => i + 1);
+    }, 550);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [indexSekarang, soalSesi.length]);
+  }, [tahap, koreksiIndex, hasilPerSoal]);
 
   // ---------------- SELESAI SESI: XP + STREAK + JATAH HARIAN ----------------
   const selesaikanSesi = useCallback(async () => {
@@ -506,12 +602,15 @@ export default function LatihanHarianPage() {
   // ============================================================
   // RENDER
   // ============================================================
-  // 🔥 DESAIN BARU: tema "Misi Harian" -- dijahit ke identitas Gemilang
+  // 🔥 DESAIN v1: tema "Misi Harian" -- dijahit ke identitas Gemilang
   // sendiri (maskot astronot), bukan contekan template generik. Header
-  // gelap starfield dipakai konsisten di semua layar (jadi elemen
-  // "berani" satu-satunya), sisanya sengaja tenang & bersih supaya
-  // gak berebut perhatian. Semua fungsi logika (pilihMapel, cekJawaban,
-  // dst) TIDAK diubah sama sekali -- ini murni tampilan.
+  // gelap starfield dipakai konsisten di semua layar.
+  // 🔥 ROMBAK v2 (permintaan: "kerjakan dulu semua, baru dikoreksi"):
+  // alur pengerjaan diubah dari "cek per soal instan" jadi "kumpulkan
+  // semua dulu -> animasi mengirim -> animasi dikoreksi (XP jalan naik)
+  // -> hasil akhir + tinjau jawaban". Logika inti (Leitner Box, XP,
+  // streak, jatah harian, filter jenjang/kelas) TIDAK diubah sama
+  // sekali -- murni alur & tampilan.
 
   if (tahap === 'memuat') {
     return (
@@ -523,6 +622,8 @@ export default function LatihanHarianPage() {
   }
 
   if (tahap === 'pilih-mapel') {
+    const hariIniStr = new Date().toISOString().slice(0, 10);
+    const strikMingguan = buatStrikMingguan(streakSaatIni, lastActiveDateSaatIni, hariIniStr);
     return (
       <div style={st.page}>
         <div style={st.hero}>
@@ -533,6 +634,32 @@ export default function LatihanHarianPage() {
             <h1 style={st.heroTitle}>Misi Harian</h1>
             <p style={st.heroSub}>Mau menjelajah planet mapel yang mana?</p>
           </div>
+
+          {/* 🔥 BARU: strip streak mingguan, terinspirasi dari referensi
+              kalender check-in -- 7 titik hari (Sen-Min), hari yang
+              sudah latihan ditandai flame oranye menyala. */}
+          {streakSaatIni > 0 && (
+            <div style={{ position: 'relative', zIndex: 1, marginTop: 14, background: 'rgba(255,255,255,0.08)', borderRadius: 16, padding: '12px 10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
+                <Flame size={16} color="#FB923C" />
+                <span style={{ color: 'white', fontWeight: 800, fontSize: 13 }}>{streakSaatIni} Hari Beruntun</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                {strikMingguan.map((h, i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>{h.label}</span>
+                    <div style={{
+                      width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, background: h.done ? 'linear-gradient(135deg, #FB923C, #FBBF24)' : 'rgba(255,255,255,0.12)',
+                      border: h.isToday ? '2px solid white' : '2px solid transparent',
+                    }}>
+                      {h.done ? '🔥' : ''}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ padding: '20px 18px' }}>
@@ -616,7 +743,6 @@ export default function LatihanHarianPage() {
   }
 
   if (tahap === 'mengerjakan' && soalAktif) {
-    const indexBenar = hurufKeIndex(soalAktif.kunciJawaban);
     const progresPersen = (indexSekarang / soalSesi.length) * 100;
     const ikonMapel = getIkonMapel(mapelDipilih);
     return (
@@ -661,55 +787,85 @@ export default function LatihanHarianPage() {
 
             <div style={{ fontSize: 14.5, color: '#1e293b', lineHeight: 1.6, marginBottom: 18 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
 
+            {/* 🔥 ROMBAK: dulu begitu klik "Cek Jawaban", opsi langsung
+                berubah hijau/merah + muncul pembahasan di sini juga.
+                SEKARANG SENGAJA TIDAK ADA reveal benar/salah sama sekali
+                di layar ini -- opsi cuma berubah warna waktu DIPILIH
+                (ungu), bukan waktu DIPERIKSA. Hasil & pembahasan baru
+                muncul nanti di tahap 'mengoreksi' & 'selesai', setelah
+                SEMUA soal di sesi ini selesai dijawab. */}
             {(soalAktif.opsiJawaban || []).map((opsi, i) => {
               const teksOpsi = typeof opsi === 'string' ? opsi : (opsi?.teks || '');
               const dipilih = jawabanDipilih === i;
-              let warna = '#e2e8f0';
-              if (sudahDicek) {
-                if (i === indexBenar) warna = '#22c55e';
-                else if (dipilih) warna = '#ef4444';
-              } else if (dipilih) warna = '#7c3aed';
+              const warna = dipilih ? '#7c3aed' : '#e2e8f0';
 
               return (
                 <button
                   key={i}
-                  disabled={sudahDicek}
+                  disabled={sedangMenyimpan}
                   onClick={() => setJawabanDipilih(i)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
                     padding: '13px 14px', borderRadius: 14, border: `2px solid ${warna}`, marginBottom: 9,
-                    background: sudahDicek && i === indexBenar ? '#f0fdf4' : sudahDicek && dipilih ? '#fef2f2' : dipilih ? '#f5f3ff' : 'white',
-                    cursor: sudahDicek ? 'default' : 'pointer', fontSize: 13.5, color: '#1e293b',
-                    transform: dipilih && !sudahDicek ? 'scale(1.01)' : 'scale(1)', transition: 'all 0.15s ease',
+                    background: dipilih ? '#f5f3ff' : 'white',
+                    cursor: sedangMenyimpan ? 'default' : 'pointer', fontSize: 13.5, color: '#1e293b',
+                    transform: dipilih ? 'scale(1.01)' : 'scale(1)', transition: 'all 0.15s ease',
+                    opacity: sedangMenyimpan ? 0.6 : 1,
                   }}
                 >
                   <span style={{ width: 26, height: 26, borderRadius: '50%', border: `2px solid ${warna}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0, color: warna }}>
                     {String.fromCharCode(65 + i)}
                   </span>
                   <span style={{ flex: 1 }}>{renderMath(teksOpsi)}</span>
-                  {sudahDicek && i === indexBenar && <CheckCircle2 size={18} color="#22c55e" />}
-                  {sudahDicek && dipilih && i !== indexBenar && <XCircle size={18} color="#ef4444" />}
                 </button>
               );
             })}
-
-            {sudahDicek && soalAktif.pembahasan && (
-              <div style={st.boxPembahasan}>
-                <b>💡 Pembahasan</b>
-                <div style={{ marginTop: 4 }}>{renderMath(soalAktif.pembahasan)}</div>
-              </div>
-            )}
           </div>
 
-          {!sudahDicek ? (
-            <button onClick={cekJawaban} disabled={jawabanDipilih === null} style={{ ...st.tombolUtama, opacity: jawabanDipilih === null ? 0.4 : 1 }}>
-              Cek Jawaban
-            </button>
-          ) : (
-            <button onClick={lanjutSoal} style={st.tombolUtama}>
-              {indexSekarang + 1 < soalSesi.length ? 'Lanjut Soal Berikutnya' : 'Lihat Hasil Misi'}
-            </button>
-          )}
+          <button onClick={jawabDanLanjut} disabled={jawabanDipilih === null || sedangMenyimpan} style={{ ...st.tombolUtama, opacity: jawabanDipilih === null ? 0.4 : 1 }}>
+            {indexSekarang + 1 < soalSesi.length ? 'Lanjut Soal Berikutnya' : 'Kumpulkan Jawaban'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 🔥 BARU: layar transisi singkat, kesan jawaban "dikirim" buat
+  // dikoreksi -- murni animasi, otomatis lanjut ke 'mengoreksi'
+  // (lihat useEffect di atas).
+  if (tahap === 'mengirim') {
+    return (
+      <div style={st.pusat}>
+        <style>{`
+          @keyframes gemilangKirimPulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.15); opacity: 1; } }
+        `}</style>
+        <div style={{ fontSize: 48, marginBottom: 14, animation: 'gemilangKirimPulse 1s ease-in-out infinite' }}>📡</div>
+        <div style={{ fontWeight: 700, color: '#4C1D95' }}>Mengirim jawabanmu...</div>
+      </div>
+    );
+  }
+
+  // 🔥 BARU: layar "dikoreksi" -- ini yang bikin dramatis. Angka XP
+  // berjalan naik dikit-dikit (bukan langsung muncul jadi), sambil
+  // nampilin sudah berapa soal yang "diperiksa" -- ngasih kesan siswa
+  // sungguhan lagi dikoreksi satu-satu, bukan cuma dihitung instan.
+  if (tahap === 'mengoreksi') {
+    const totalSoal = hasilPerSoal.length;
+    return (
+      <div style={st.pusat}>
+        <style>{`
+          @keyframes gemilangAngkaNaik { from { transform: translateY(6px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+        `}</style>
+        <div style={{ fontSize: 40, marginBottom: 6 }}>🧑‍🚀</div>
+        <div style={{ fontWeight: 700, color: '#4C1D95', marginBottom: 18 }}>Sedang dikoreksi...</div>
+        <div key={xpAnimasi} style={{ fontSize: 40, fontWeight: 800, color: '#7C3AED', fontVariantNumeric: 'tabular-nums', animation: 'gemilangAngkaNaik 0.35s ease-out' }}>
+          +{xpAnimasi} XP
+        </div>
+        <div style={{ marginTop: 14, fontSize: 12.5, color: '#94a3b8' }}>
+          Memeriksa soal {Math.min(koreksiIndex + 1, totalSoal)} dari {totalSoal}
+        </div>
+        <div style={{ width: 160, height: 6, background: '#e9e5fb', borderRadius: 10, marginTop: 12, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${totalSoal ? (koreksiIndex / totalSoal) * 100 : 0}%`, background: 'linear-gradient(90deg, #7C3AED, #FB923C)', borderRadius: 10, transition: 'width 0.35s ease' }} />
         </div>
       </div>
     );
@@ -761,6 +917,50 @@ export default function LatihanHarianPage() {
                 ? `Jatah latihan hari ini masih tersisa ${sisaJatah} soal.`
                 : 'Jatah latihan hari ini sudah habis. Sampai jumpa besok, Siswa Gemilang! 🎉'}
             </p>
+          )}
+
+          {/* 🔥 BARU: dulu pembahasan & benar/salah tampil LANGSUNG per
+              soal waktu ngerjain. Sekarang semuanya baru diungkap DI
+              SINI, setelah sesi selesai -- siswa scroll lihat satu-satu,
+              lengkap sama pembahasannya. */}
+          {hasilPerSoal.length > 0 && (
+            <div style={{ textAlign: 'left', marginBottom: 20 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: '#64748b', marginBottom: 10 }}>📋 TINJAU JAWABAN</div>
+              {hasilPerSoal.map((item, idx) => {
+                const opsi = item.soal.opsiJawaban || [];
+                const teksOpsi = (i) => {
+                  const o = opsi[i];
+                  return typeof o === 'string' ? o : (o?.teks || '');
+                };
+                return (
+                  <div key={idx} style={{ ...st.kartuSoal, marginBottom: 12, textAlign: 'left', borderLeft: `4px solid ${item.benar ? '#22c55e' : '#ef4444'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      {item.benar ? <CheckCircle2 size={16} color="#22c55e" /> : <XCircle size={16} color="#ef4444" />}
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: item.benar ? '#16a34a' : '#dc2626' }}>
+                        Soal {idx + 1} — {item.benar ? 'Benar' : 'Kurang Tepat'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, marginBottom: 10 }}>
+                      {renderMath(item.soal.soal || item.soal.teks_soal)}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: '#475569', marginBottom: 4 }}>
+                      Jawabanmu: <strong>{String.fromCharCode(65 + item.jawabanIndex)}. {renderMath(teksOpsi(item.jawabanIndex))}</strong>
+                    </div>
+                    {!item.benar && (
+                      <div style={{ fontSize: 12.5, color: '#16a34a', marginBottom: 4 }}>
+                        Kunci: <strong>{String.fromCharCode(65 + item.indexBenar)}. {renderMath(teksOpsi(item.indexBenar))}</strong>
+                      </div>
+                    )}
+                    {item.soal.pembahasan && (
+                      <div style={{ ...st.boxPembahasan, marginTop: 10 }}>
+                        <b>💡 Pembahasan</b>
+                        <div style={{ marginTop: 4 }}>{renderMath(item.soal.pembahasan)}</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           {sisaJatah > 0 ? (
