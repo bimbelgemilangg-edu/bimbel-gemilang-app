@@ -1555,7 +1555,14 @@ function parseHTMLMaster(raw) {
       capaian_pembelajaran: htmlNodeText(capaianNode),
       tingkat_kesulitan: kesulitanRaw,
       kelas: kelasRaw,
-      referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || undefined } : null,
+      // 🔥 BARU (bug nyata ditemukan): dulu pakai `|| undefined` --
+      // begitu nomor halaman PDF-nya gak ketemu/gak valid (NaN atau
+      // 0), field ini jadi literally `undefined`. Firestore MENOLAK
+      // KERAS nilai `undefined` di dalam objek (beda sama `null` yang
+      // boleh) -- akibatnya SELURUH BATCH gagal simpan (bukan cuma 1
+      // soal, tapi SEMUA soal dalam 1 kali proses import), walau
+      // tampilannya sempat kelihatan "berhasil" di preview sebelumnya.
+      referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || null } : null,
     };
   });
 }
@@ -2574,6 +2581,30 @@ function opsiToPlainForFirestore(opsi) {
   }));
 }
 
+// 🔥 BARU (jaring pengaman): Firestore MENOLAK KERAS nilai `undefined`
+// di dalam field manapun (beda sama `null` yang boleh) -- kalau ada 1
+// aja field yang ke-undefined (misalnya dari `angka || undefined`,
+// atau properti yang kelupaan diisi default), SELURUH BATCH gagal
+// simpan, bukan cuma 1 soal itu. Fungsi ini bersihin SEMUA nilai
+// undefined jadi null, di level manapun (nested object/array), tepat
+// sebelum dikirim ke Firestore -- jadi kesalahan kecil di satu tempat
+// gak bisa lagi menggagalkan import 50 soal sekaligus.
+//
+// PENTING: sengaja CUMA masuk ke object literal biasa ({} polos) dan
+// array -- BUKAN ke objek spesial Firestore kayak serverTimestamp(),
+// biar sentinel value itu gak ikut "dibongkar" dan rusak jadi objek
+// biasa yang gak dikenali Firestore.
+function bersihkanUndefined(nilai) {
+  if (nilai === undefined) return null;
+  if (Array.isArray(nilai)) return nilai.map(bersihkanUndefined);
+  if (nilai !== null && typeof nilai === 'object' && nilai.constructor === Object) {
+    const hasil = {};
+    for (const k of Object.keys(nilai)) hasil[k] = bersihkanUndefined(nilai[k]);
+    return hasil;
+  }
+  return nilai;
+}
+
 function buildDoc(q, meta) {
   const gambarUrls = safeArray(q.gambar).map(image => image.uploadedUrl || image.url || '').filter(Boolean);
 
@@ -2590,7 +2621,7 @@ function buildDoc(q, meta) {
       }
     : null;
 
-  return {
+  return bersihkanUndefined({
     nomor: q.nomor,
     paket: q.paket ?? null,
     paketNama: q.paketMeta?.nama || null,
@@ -2639,7 +2670,7 @@ function buildDoc(q, meta) {
     createdAt: serverTimestamp(),
     createdBy: auth.currentUser?.uid || null,
     status: 'aktif',
-  };
+  });
 }
 
 // ============================================================
