@@ -130,6 +130,17 @@ export default function LatihanAktivitasPage() {
     const hasilMateri = Object.entries(perMateri).map(([materi, d]) => ({
       materi,
       jumlahSoalDicoba: d.dicoba,
+      // 🔥 BARU (kebingungan nyata ditemukan): "kuasai" itu ngukur soal
+      // yang udah dijawab BENAR BERKALI-KALI di hari/sesi TERPISAH
+      // (Leitner Box level 3+) -- BUKAN "jawaban hari ini benar". Kalau
+      // siswa baru mulai latihan, 0% kuasai itu WAJAR walau jawabannya
+      // hari ini benar semua -- karena mastery butuh WAKTU & PENGULANGAN,
+      // bukan cuma 1x jawab benar. Sebelumnya angka "persen benar" ini
+      // udah DIHITUNG tapi TIDAK PERNAH DITAMPILKAN -- cuma "kuasai"
+      // doang yang muncul, jadi keliatan kayak semua salah padahal
+      // belum tentu. Sekarang dua-duanya ditampilkan sebelahan, biar
+      // admin gak salah kira "0% kuasai" = "semua jawabannya salah".
+      persentaseBenar: Math.round((d.benar / d.dicoba) * 100),
       persentaseKuasai: Math.round((d.kuasai / d.dicoba) * 100),
     })).sort((a, b) => a.persentaseKuasai - b.persentaseKuasai);
 
@@ -437,10 +448,16 @@ export default function LatihanAktivitasPage() {
                         <div style={{ fontSize: 12, color: '#9ca3af' }}>Belum ada data materi.</div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 10.5, color: '#9ca3af', marginBottom: 2 }}>
+                            "Benar" = jawaban hari ini. "Kuasai" = udah bener berkali-kali di hari terpisah (butuh waktu, wajar rendah di awal).
+                          </div>
                           {detailPerMateri[s.studentId].perMateri.map((m) => (
                             <div key={m.materi} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                               <span style={{ color: '#374151' }}>{m.materi} <span style={{ color: '#9ca3af' }}>({m.jumlahSoalDicoba} soal dicoba)</span></span>
-                              <span style={{ fontWeight: 700, color: m.persentaseKuasai < 60 ? '#dc2626' : '#16a34a' }}>{m.persentaseKuasai}% kuasai</span>
+                              <span>
+                                <span style={{ fontWeight: 700, color: m.persentaseBenar < 60 ? '#dc2626' : '#16a34a', marginRight: 10 }}>{m.persentaseBenar}% benar</span>
+                                <span style={{ fontWeight: 700, color: '#7c3aed' }}>{m.persentaseKuasai}% kuasai</span>
+                              </span>
                             </div>
                           ))}
                         </div>
