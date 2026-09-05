@@ -264,7 +264,7 @@ Untuk FISIKA/KIMIA, tulis besaran dan satuan secara profesional: gunakan \`$v=5\
 - Untuk grafik, rangkaian listrik, vektor, alat ukur, diagram gaya, diagram sinar, tabel eksperimen, serta opsi yang berupa gambar, gunakan \`gambar\` atau \`opsi_jawaban[].gambar\` dan tulis \`deskripsi\` yang menyebutkan semua label, arah, skala, satuan, dan angka penting.
 - Tambahkan \`referensi_sumber\` bila diketahui, misalnya \`{ "halaman_pdf": 4, "label_gambar": "grafik v-t" }\`. Ini membantu admin menemukan ulang gambar yang perlu dicek.
 - Untuk tabel di dalam soal, gunakan \`tabel_soal\`: \`{ "header": ["Gaya (N)", "Pertambahan panjang (m)"], "baris": [["7", "$3.5\\times10^{-2}$"]] }\`. Jangan mengubah tabel eksperimen menjadi kalimat yang kehilangan pasangan kolomnya.
-- Untuk soal yang jawabannya bergantung pada diagram yang tidak terbaca, jangan mengarang angka atau kunci. Isi \`kunci_terverifikasi: false\` dan \`catatan_admin\` dengan halaman yang harus diperiksa.
+- Untuk soal yang jawabannya bergantung pada diagram yang tidak terbaca (poin 12 di atas), jangan mengarang angka atau kunci. Isi \`kunci_terverifikasi: false\` dan \`catatan_admin\` dengan halaman yang harus diperiksa. Ini BEDA dari soal teks biasa yang kuncinya cuma hilang/salah di sumber -- itu WAJIB diselesaikan sendiri (lihat poin 6).
 
 ## 8. BACAAN/STIMULUS BERSAMA (soal berkelompok)
 
@@ -359,13 +359,13 @@ ATURAN WAJIB:
 3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Kalau kamu bisa mengisolasi persis gambar/grafik/diagram soal itu saja, embed itu. KALAU TIDAK BISA mengisolasi dengan presisi (mis. grafik menyatu dengan teks di layout PDF), JANGAN dilewatkan/dikosongkan begitu saja -- sertakan screenshot SATU HALAMAN PENUH tempat gambar itu berada sebagai fallback, dan tulis di alt/deskripsi: "Perlu di-crop admin, gambar asli ada di halaman ini". Sistem punya fitur crop bawaan (drag-pilih area), jadi admin bisa memotong sendiri dari screenshot halaman penuh itu -- jangan pernah mengarang gambar atau URL yang tidak benar-benar ada.
 4. Rumus harus dipertahankan sebagai LaTeX, misalnya $x^2+1$, \\(x^2+1\\), atau <span data-latex="x^2+1">...</span>.
 5. Pilihan jawaban berada di <ol data-field="opsi_jawaban"><li>...</li></ol>. Setiap <li> boleh berisi gambar dan tabel.
-6. Kunci ditulis di <meta data-field="kunci_jawaban" data-value="B" />. Jangan menebak kunci yang tidak tersedia.
+6. Kunci ditulis di <meta data-field="kunci_jawaban" data-value="B" />. 🔥 KEBIJAKAN BARU: kalau dokumen sumber menyertakan kunci resmi, SELALU pakai itu. TAPI kalau kunci tidak ditemukan di sumber ATAU kunci sumber tampak salah (bertentangan dengan hasil analisismu sendiri terhadap soal itu), JANGAN dikosongkan — SELESAIKAN soal itu sendiri langkah demi langkah (persis seperti guru mengerjakan soal), tulis kunci hasil analisismu di data-value, lalu tandai dengan <meta data-field="kunci_terverifikasi" data-value="false" />, dan jelaskan proses & keraguannya di data-field="pembahasan" (mis. "Kunci di dokumen sumber tertulis A, tapi berdasarkan perhitungan ulang: ..., jawaban yang benar adalah C"). Kalau kunci dari sumber dipakai apa adanya tanpa keraguan, tulis <meta data-field="kunci_terverifikasi" data-value="true" /> (atau boleh tidak ditulis sama sekali, true adalah default).
 7. Pembahasan berada di <div data-field="pembahasan">...</div>.
 8. Materi, capaian, dan sumber boleh ditulis pada field data yang sesuai.
 9. Tabel data gunakan <div data-field="tabel_soal"><table>...</table></div>.
 10. Benar/Salah gunakan <table data-field="pernyataan">. Menjodohkan gunakan <table data-field="pasangan">.
 11. Salin teks, angka, simbol, label grafik, serta isi tabel apa adanya. Jangan meringkas atau memperbaiki isi sumber secara kreatif.
-12. Jika soal membutuhkan gambar tetapi gambar tidak terbaca/tersedia, jangan menebak. Kosongkan kunci dan tambahkan <div data-field="catatan_admin">Perlu pemeriksaan manual...</div>.
+12. 🔒 PENGECUALIAN (beda dari poin 6 di atas): kalau soal MEMBUTUHKAN MELIHAT gambar/grafik/diagram untuk dijawab (misalnya angka pada grafik, arah vektor, bentuk rangkaian) TAPI gambar itu sendiri tidak terbaca/tidak tersedia buatmu, jangan mengarang angka yang kamu tidak benar-benar lihat — ini beda dengan poin 6 (yang soal TEKS-nya lengkap terbaca, cuma kuncinya yang hilang/salah, itu WAJIB kamu selesaikan sendiri). Untuk kasus gambar tidak terbaca ini saja: kosongkan kunci_jawaban, isi kunci_terverifikasi: false, dan tambahkan <div data-field="catatan_admin">Perlu pemeriksaan manual, gambar/grafik tidak terbaca...</div>.
 13. Proses SEMUA nomor dan SEMUA paket sampai selesai.
 14. Jangan menyisipkan JavaScript di output HTML.
 
@@ -398,6 +398,7 @@ CONTOH (perhatikan: angka/nilai di bawah ini cuma ilustrasi STRUKTUR tag. Materi
 <div data-field="gambar"><img src="data:image/png;base64,..." alt="Diagram soal" /></div>
 <ol data-field="opsi_jawaban"><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ol>
 <meta data-field="kunci_jawaban" data-value="C" />
+<meta data-field="kunci_terverifikasi" data-value="true" />
 <div data-field="pembahasan">$(x-2)(x-3)=0$.</div>
 </article>
 </body></html>`;
@@ -722,7 +723,22 @@ function normalizeAnswerKey(value) {
   if (Array.isArray(value)) {
     return value.map(item => safeString(item).trim().toUpperCase()).filter(Boolean);
   }
-  return safeString(value).trim().toUpperCase();
+  const str = safeString(value).trim().toUpperCase();
+  // 🔥 BARU (BUG SERIUS DITEMUKAN): kunci PG Kompleks dari HTML ditulis
+  // sebagai string "A,C" (satu string, koma sebagai pemisah). Dulu
+  // string ini DIBIARKAN UTUH (gak dipecah di sini) -- akibatnya di
+  // tempat lain (skoring Try Out), string itu terpaksa dipecah PER
+  // KARAKTER sebagai jaring pengaman, dan koma/spasi ikut kehitung
+  // sebagai "huruf jawaban palsu". Ini bikin siswa yang jawabannya
+  // PERSIS BENAR tetap dapat skor di bawah 100% (koma jadi pembagi
+  // ekstra yang gak seharusnya ada). SEKARANG: kalau string ini
+  // polanya "huruf dipisah koma/spasi" (mis. "A,C" atau "A, C, D"),
+  // pecah jadi ARRAY YANG BENAR di sini juga -- sumbernya, bukan
+  // nunggu ketauan pas skoring.
+  if (/^[A-Z](\s*[,\s]\s*[A-Z])+$/.test(str)) {
+    return str.split(/[,\s]+/).filter(Boolean);
+  }
+  return str;
 }
 
 function getCorrectAnswerIndexes(opsi, kunci) {
@@ -738,6 +754,57 @@ function getCorrectAnswerIndexes(opsi, kunci) {
 // ============================================================
 // NORMALIZE SOAL
 // ============================================================
+
+// 🔥 BARU: "isi ulang otomatis" bacaan segrup -- dipanggil SETELAH
+// semua soal dalam 1 batch di-normalize. Kenapa perlu: AI (Qwen)
+// kadang nulis bacaan lengkap cuma di soal PERTAMA 1 grup, soal-soal
+// berikutnya cuma nyimpen `data-grup="bacaan_X"` (kosong) sebagai
+// penanda "pakai bacaan yang sama". Ini pola yang SAH (hemat, gak
+// maksa AI nulis ulang teks panjang berkali-kali -- makin sering
+// disalin ulang, makin besar resiko typo/kepotong), TAPI setiap soal
+// yang akan DISIMPAN & DIPAKAI (Latihan Harian, Try Out) tetap harus
+// jadi "dokumen mandiri" (bacaan lengkap ada di soal itu sendiri,
+// bukan cuma di soal tetangganya). Fungsi ini yang menjembatani dua
+// kebutuhan itu: AI boleh irit nulis, tapi hasil akhirnya tetap
+// lengkap di setiap soal.
+function isiUlangBacaanSegrup(daftarSoal) {
+  // 1. Cari "master" tiap grup -- bacaan paling lengkap (teks
+  //    terpanjang) yang ditemukan di grup itu, dari soal manapun.
+  const masterPerGrup = {};
+  daftarSoal.forEach((s) => {
+    const grup = s.bacaan?.grup;
+    if (!grup) return;
+    const panjangSekarang = (s.bacaan.teks || '').length;
+    if (!masterPerGrup[grup] || panjangSekarang > masterPerGrup[grup].teks.length) {
+      masterPerGrup[grup] = { teks: s.bacaan.teks || '', gambar: s.bacaan.gambar || [] };
+    }
+  });
+
+  // 2. Isi ulang soal yang bacaannya masih kosong tapi punya grup.
+  return daftarSoal.map((s) => {
+    const grup = s.bacaan?.grup;
+    if (!grup) return s;
+    const sudahAda = (s.bacaan.teks || '').length > 0;
+    if (sudahAda) return s;
+    const master = masterPerGrup[grup];
+    if (!master || !master.teks) return s; // gak ketemu 'master' -- biarkan apa adanya, biar validasi tetap menandai buat dicek manual
+
+    // 🔥 BARU (mencegah bug "errors dihitung sekali, gak update lagi" --
+    // ini persis pola yang pernah kejadian & dicatet di instruksi
+    // project): peringatan "bacaan kosong" dihitung SEBELUM backfill
+    // ini jalan, jadi kalau gak dibersihin, pesannya bakal NEMPEL terus
+    // walau datanya udah kebenerin barusan. Buang PERSIS peringatan itu
+    // (bukan semua errors -- soal lain yang beneran ada masalah lain
+    // tetap harus ke-flag), lalu hitung ulang `valid`.
+    const errorsBaru = (s.errors || []).filter((e) => !e.includes('TIDAK punya bacaan sama sekali'));
+    return {
+      ...s,
+      bacaan: { ...s.bacaan, teks: master.teks, gambar: master.gambar },
+      errors: errorsBaru,
+      valid: errorsBaru.length === 0,
+    };
+  });
+}
 
 function normalizeSoal(q, idx) {
   if (!q || typeof q !== 'object') {
@@ -788,12 +855,24 @@ function normalizeSoal(q, idx) {
   let bacaan = null;
 
   if (typeof bacaanSource === 'string' && bacaanSource.trim()) {
-    bacaan = { teks: bacaanSource.trim(), gambar: [] };
+    bacaan = { teks: bacaanSource.trim(), gambar: [], grup: '' };
   } else if (bacaanSource && typeof bacaanSource === 'object') {
     const teksBacaan = safeString(bacaanSource.teks || bacaanSource.text || '');
     const gambarBacaan = normalizeImageArray(bacaanSource.gambar ?? bacaanSource.images ?? []);
-    if (teksBacaan || gambarBacaan.length > 0) {
-      bacaan = { teks: teksBacaan, gambar: gambarBacaan };
+    const grupBacaan = safeString(bacaanSource.grup || bacaanSource.group || '');
+    // 🔥 BARU (bug nyata ditemukan): dulu kalau teks & gambar bacaan
+    // KOSONG, seluruh objek `bacaan` dianggap `null` -- termasuk field
+    // `grup`-nya ikut kebuang. Padahal ini pola yang SAH & MEMANG
+    // TERJADI: AI (Qwen) kadang nulis bacaan lengkap cuma di soal
+    // PERTAMA 1 grup, soal-soal berikutnya cuma nyimpen
+    // `data-grup="bacaan_X"` doang (kosong) buat "nunjuk balik" ke
+    // bacaan itu. Kalau `grup`-nya ikut kebuang di sini, sistem gak
+    // akan pernah bisa "isi ulang" bacaannya nanti (lihat
+    // isiUlangBacaanSegrup() di bawah) -- makanya validasi keliru
+    // teriak "bacaan kosong" padahal datanya sebenarnya ADA, cuma
+    // belum disambungkan.
+    if (teksBacaan || gambarBacaan.length > 0 || grupBacaan) {
+      bacaan = { teks: teksBacaan, gambar: gambarBacaan, grup: grupBacaan };
     }
   }
 
@@ -1486,6 +1565,14 @@ function parseHTMLMaster(raw) {
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
     const explanationNode = getField(node, 'pembahasan', 'penjelasan', 'explanation');
     const keyNode = getField(node, 'kunci_jawaban', 'kunci', 'answer', 'correct-answer');
+    // 🔥 BARU: baca <meta data-field="kunci_terverifikasi" data-value="false" />
+    // -- dulu parser HTML SAMA SEKALI TIDAK MEMBACA field ini (beda dari
+    // mode JSON yang sudah bisa), padahal promptnya udah dibenerin buat
+    // minta AI mengisinya waktu dia hitung kunci sendiri (kunci sumber
+    // hilang/salah). Tanpa ini, penanda "AI yang menghitung sendiri,
+    // belum diverifikasi manual" itu ke-generate AI tapi kebuang begitu
+    // aja, gak pernah nyampe ke tampilan admin.
+    const verifNode = getField(node, 'kunci_terverifikasi', 'terverifikasi', 'verified');
     const materialNode = getField(node, 'materi', 'topic', 'topik');
     // 🔥 BARU: tags per soal (opsional). Dulu Tags cuma bisa diisi lewat
     // form admin (1 nilai, diterapkan SAMA ke SEMUA soal dalam 1 batch
@@ -1544,6 +1631,10 @@ function parseHTMLMaster(raw) {
       teks_soal: teksSoalGabungan,
       opsi_jawaban,
       kunci_jawaban: normalizeAnswerKey(keyRaw),
+      // 🔥 BARU: default TRUE kalau AI gak nulis field ini sama sekali
+      // (konsisten sama instruksi prompt: "true adalah default"). Cuma
+      // jadi false kalau AI eksplisit nulis data-value="false".
+      kunci_terverifikasi: verifNode ? safeString(verifNode.getAttribute?.('data-value') || verifNode.textContent || '').toLowerCase().trim() !== 'false' : true,
       pembahasan: htmlNodeText(explanationNode),
       pernyataan: parseHTMLStatements(tfNode),
       tabel_benar_salah: parseHTMLStatements(categoryNode),
@@ -1555,14 +1646,7 @@ function parseHTMLMaster(raw) {
       capaian_pembelajaran: htmlNodeText(capaianNode),
       tingkat_kesulitan: kesulitanRaw,
       kelas: kelasRaw,
-      // 🔥 BARU (bug nyata ditemukan): dulu pakai `|| undefined` --
-      // begitu nomor halaman PDF-nya gak ketemu/gak valid (NaN atau
-      // 0), field ini jadi literally `undefined`. Firestore MENOLAK
-      // KERAS nilai `undefined` di dalam objek (beda sama `null` yang
-      // boleh) -- akibatnya SELURUH BATCH gagal simpan (bukan cuma 1
-      // soal, tapi SEMUA soal dalam 1 kali proses import), walau
-      // tampilannya sempat kelihatan "berhasil" di preview sebelumnya.
-      referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || null } : null,
+      referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || undefined } : null,
     };
   });
 }
@@ -2581,30 +2665,6 @@ function opsiToPlainForFirestore(opsi) {
   }));
 }
 
-// 🔥 BARU (jaring pengaman): Firestore MENOLAK KERAS nilai `undefined`
-// di dalam field manapun (beda sama `null` yang boleh) -- kalau ada 1
-// aja field yang ke-undefined (misalnya dari `angka || undefined`,
-// atau properti yang kelupaan diisi default), SELURUH BATCH gagal
-// simpan, bukan cuma 1 soal itu. Fungsi ini bersihin SEMUA nilai
-// undefined jadi null, di level manapun (nested object/array), tepat
-// sebelum dikirim ke Firestore -- jadi kesalahan kecil di satu tempat
-// gak bisa lagi menggagalkan import 50 soal sekaligus.
-//
-// PENTING: sengaja CUMA masuk ke object literal biasa ({} polos) dan
-// array -- BUKAN ke objek spesial Firestore kayak serverTimestamp(),
-// biar sentinel value itu gak ikut "dibongkar" dan rusak jadi objek
-// biasa yang gak dikenali Firestore.
-function bersihkanUndefined(nilai) {
-  if (nilai === undefined) return null;
-  if (Array.isArray(nilai)) return nilai.map(bersihkanUndefined);
-  if (nilai !== null && typeof nilai === 'object' && nilai.constructor === Object) {
-    const hasil = {};
-    for (const k of Object.keys(nilai)) hasil[k] = bersihkanUndefined(nilai[k]);
-    return hasil;
-  }
-  return nilai;
-}
-
 function buildDoc(q, meta) {
   const gambarUrls = safeArray(q.gambar).map(image => image.uploadedUrl || image.url || '').filter(Boolean);
 
@@ -2621,7 +2681,7 @@ function buildDoc(q, meta) {
       }
     : null;
 
-  return bersihkanUndefined({
+  return {
     nomor: q.nomor,
     paket: q.paket ?? null,
     paketNama: q.paketMeta?.nama || null,
@@ -2670,7 +2730,7 @@ function buildDoc(q, meta) {
     createdAt: serverTimestamp(),
     createdBy: auth.currentUser?.uid || null,
     status: 'aktif',
-  });
+  };
 }
 
 // ============================================================
@@ -3215,6 +3275,13 @@ export default function ImportHasilScanPage() {
       let normalized = raw
         .map((question, index) => normalizeSoal(question, index))
         .map((q, index) => ({ ...q, _idx: index }));
+
+      // 🔥 BARU: isi ulang otomatis bacaan segrup -- lihat penjelasan
+      // lengkap di isiUlangBacaanSegrup(). Dijalankan SEBELUM validasi
+      // sinyal, biar soal yang bacaannya "kosong tapi ada grup" gak
+      // salah ke-flag "bacaan kosong" kalau sebenarnya bisa diisi
+      // otomatis dari soal segrup lainnya.
+      normalized = isiUlangBacaanSegrup(normalized);
 
       // 🔥 BARU (pdf24): kalau admin juga upload file HTML hasil convert
       // PDF asli, coba isi gambar soal/bacaan yang MASIH KOSONG dari situ.
