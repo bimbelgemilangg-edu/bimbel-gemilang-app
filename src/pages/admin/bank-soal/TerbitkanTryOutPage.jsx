@@ -31,6 +31,7 @@ import { notifyStudents } from '../../../utils/notifications';
 import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
+import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronRight, Sparkles,
@@ -64,12 +65,18 @@ function parseTeksKisiKisi(teks) {
 
 // 🔥 BARU (mencegah, bukan cuma nambal): daftar tipe soal yang Try Out
 // BENERAN bisa render dengan benar. Kalau ada tipe di luar ini
-// (menjodohkan, isian_singkat, uraian, numerik dst), soal itu TIDAK
-// BOLEH masuk keranjang sama sekali -- lebih aman "gak bisa dipilih"
-// (jelas kelihatan kenapa) daripada "kepilih tapi tampil rusak diam-
-// diam" pas siswa asli ngerjain. Kalau nanti tipe baru mau didukung,
-// tinggal bikin Renderer-nya + tambahin nama tipe-nya ke daftar ini.
-const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori'];
+// (menjodohkan, uraian dst), soal itu TIDAK BOLEH masuk keranjang
+// sama sekali -- lebih aman "gak bisa dipilih" (jelas kelihatan
+// kenapa) daripada "kepilih tapi tampil rusak diam-diam" pas siswa
+// asli ngerjain. Kalau nanti tipe baru mau didukung, tinggal bikin
+// Renderer-nya + tambahin nama tipe-nya ke daftar ini.
+//
+// 🔥 isian_singkat & numerik BARU DITAMBAHKAN ke daftar ini -- udah
+// punya RendererIsianSingkat.jsx + logika penilaian di
+// skorSoalTryOut.js. menjodohkan & uraian MASIH belum, sengaja tetap
+// diblokir (menjodohkan butuh UI pasangan yang beda total, uraian itu
+// esai yang gak bisa dinilai otomatis -- keduanya nunggu giliran).
+const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik'];
 function tipeDidukung(soal) {
   return TIPE_TERDUKUNG.includes(soal.tipe || 'pg_sederhana');
 }
@@ -82,6 +89,7 @@ function RendererSoalPreview({ soal }) {
   const tipe = soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return <RendererPgKompleks soal={soal} disabled modeTinjau />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah soal={soal} disabled modeTinjau />;
+  if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat soal={soal} disabled modeTinjau />;
   return <RendererPgSederhana soal={soal} disabled modeTinjau />;
 }
 
@@ -646,6 +654,7 @@ export default function TerbitkanTryOutPage() {
                                     <span style={{ color: didukung ? '#374151' : '#dc2626' }}>
                                       {(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}
                                       {!didukung && ' — ⚠️ tipe belum didukung'}
+                                      {didukung && s.kunciTerverifikasi === false && ' — ⚠️ kunci hasil AI, belum diverifikasi'}
                                     </span>
                                   </label>
                                 );
@@ -713,6 +722,7 @@ export default function TerbitkanTryOutPage() {
                                       <span style={{ color: didukung ? '#374151' : '#dc2626' }}>
                                         {(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}
                                         {!didukung && ' — ⚠️ tipe belum didukung'}
+                                      {didukung && s.kunciTerverifikasi === false && ' — ⚠️ kunci hasil AI, belum diverifikasi'}
                                       </span>
                                     </label>
                                   );
@@ -807,6 +817,7 @@ export default function TerbitkanTryOutPage() {
                       <div style={{ fontSize: 11, color: didukung ? '#9ca3af' : '#dc2626', marginBottom: 2, fontWeight: didukung ? 400 : 700 }}>
                         {s.mataPelajaran} · {s.tipe || 'pg_sederhana'} · {s.materi || '-'}
                         {!didukung && ' · ⚠️ Tipe ini belum didukung di Try Out'}
+                                {didukung && s.kunciTerverifikasi === false && ' · ⚠️ Kunci hasil AI, belum diverifikasi'}
                       </div>
                       <div style={{ fontSize: 12.5, color: '#1e293b' }}>{(s.soal || s.teks_soal || '').slice(0, 140)}{(s.soal || s.teks_soal || '').length > 140 ? '...' : ''}</div>
                     </div>
@@ -975,6 +986,9 @@ export default function TerbitkanTryOutPage() {
                 <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16 }}>
                   <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>
                     Soal {i + 1} · {s.mataPelajaran} · {s.tipe || 'pg_sederhana'} · {s.materi || '-'}
+                    {s.kunciTerverifikasi === false && (
+                      <span style={{ color: '#b45309', fontWeight: 700 }}> · ⚠️ Kunci hasil AI, belum diverifikasi manual</span>
+                    )}
                   </div>
                   {s.bacaan?.teks && (
                     <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>

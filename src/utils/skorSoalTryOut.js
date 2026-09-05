@@ -27,6 +27,10 @@ export function soalBelumDijawab(soal, jawaban) {
   const tipe = soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return safeArrayLokal(jawaban).length === 0;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return safeArrayLokal(jawaban).filter(Boolean).length === 0;
+  // 🔥 BARU: isian_singkat & numerik -- jawabannya teks bebas, dianggap
+  // "belum dijawab" kalau kosong/cuma spasi (bukan soal jawaban 0 di
+  // pg_sederhana, di sini jawaban SELALU string jadi aman dicek trim).
+  if (tipe === 'isian_singkat' || tipe === 'numerik') return !String(jawaban ?? '').trim();
   // pg_sederhana: jawabannya berupa INDEX ANGKA (termasuk 0 buat opsi
   // A) -- jangan sampai index 0 dianggap "kosong" cuma karena falsy.
   return jawaban === undefined || jawaban === null;
@@ -34,6 +38,33 @@ export function soalBelumDijawab(soal, jawaban) {
 
 function safeArrayLokal(v) {
   return Array.isArray(v) ? v : [];
+}
+
+// 🔥 BARU: cocokkan jawaban isian_singkat/numerik -- 2 tipe soal yang
+// tadinya SAMA SEKALI TIDAK BISA dikerjain di Try Out (cuma diblokir
+// dari keranjang admin, lihat tipeDidukung() di TerbitkanTryOutPage).
+function cocokJawabanSingkat(soal, jawabanSiswa) {
+  const jawaban = String(jawabanSiswa ?? '').trim();
+  if (!jawaban) return 0;
+  const kandidat = [soal.kunciJawaban, ...(soal.jawabanEkuivalen || [])]
+    .filter(Boolean)
+    .map((k) => String(k).trim());
+
+  if (soal.tipe === 'numerik') {
+    // Koma dianggap titik desimal (kebiasaan nulis angka Indonesia),
+    // dan boleh meleset dikit sesuai toleransiJawaban (mis. hasil
+    // pembulatan/pecahan yang berbeda cara nulis).
+    const angkaSiswa = parseFloat(jawaban.replace(',', '.'));
+    if (isNaN(angkaSiswa)) return 0;
+    const toleransi = soal.toleransiJawaban ?? 0;
+    return kandidat.some((k) => {
+      const angkaKunci = parseFloat(String(k).replace(',', '.'));
+      return !isNaN(angkaKunci) && Math.abs(angkaSiswa - angkaKunci) <= toleransi;
+    }) ? 1 : 0;
+  }
+  // isian_singkat: case-insensitive, spasi ganda dirapikan jadi 1
+  const rapikan = (s) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+  return kandidat.some((k) => rapikan(k) === rapikan(jawaban)) ? 1 : 0;
 }
 
 export function skorSatuSoal(soal, jawaban) {
@@ -45,6 +76,7 @@ export function skorSatuSoal(soal, jawaban) {
       const baris = soal.tabel_benar_salah?.length ? soal.tabel_benar_salah : soal.pernyataan || [];
       return hitungSkorBenarSalah(baris, jawaban);
     }
+    if (tipe === 'isian_singkat' || tipe === 'numerik') return cocokJawabanSingkat(soal, jawaban);
     const indexBenar = cariIndexBenar(soal);
     return jawaban === indexBenar ? 1 : 0;
   } catch (e) {

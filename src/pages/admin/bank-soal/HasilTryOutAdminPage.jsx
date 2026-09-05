@@ -20,11 +20,13 @@ import { tambahXpMingguan, kunciMingguIni } from '../../../utils/mingguIni';
 import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
+import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
 
 function RendererSoalAdmin(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
+  if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat {...props} />;
   return <RendererPgSederhana {...props} />;
 }
 

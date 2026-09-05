@@ -359,7 +359,8 @@ ATURAN WAJIB:
 3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Kalau kamu bisa mengisolasi persis gambar/grafik/diagram soal itu saja, embed itu. KALAU TIDAK BISA mengisolasi dengan presisi (mis. grafik menyatu dengan teks di layout PDF), JANGAN dilewatkan/dikosongkan begitu saja -- sertakan screenshot SATU HALAMAN PENUH tempat gambar itu berada sebagai fallback, dan tulis di alt/deskripsi: "Perlu di-crop admin, gambar asli ada di halaman ini". Sistem punya fitur crop bawaan (drag-pilih area), jadi admin bisa memotong sendiri dari screenshot halaman penuh itu -- jangan pernah mengarang gambar atau URL yang tidak benar-benar ada.
 4. Rumus harus dipertahankan sebagai LaTeX, misalnya $x^2+1$, \\(x^2+1\\), atau <span data-latex="x^2+1">...</span>.
 5. Pilihan jawaban berada di <ol data-field="opsi_jawaban"><li>...</li></ol>. Setiap <li> boleh berisi gambar dan tabel.
-6. Kunci ditulis di <meta data-field="kunci_jawaban" data-value="B" />. 🔥 KEBIJAKAN BARU: kalau dokumen sumber menyertakan kunci resmi, SELALU pakai itu. TAPI kalau kunci tidak ditemukan di sumber ATAU kunci sumber tampak salah (bertentangan dengan hasil analisismu sendiri terhadap soal itu), JANGAN dikosongkan — SELESAIKAN soal itu sendiri langkah demi langkah (persis seperti guru mengerjakan soal), tulis kunci hasil analisismu di data-value, lalu tandai dengan <meta data-field="kunci_terverifikasi" data-value="false" />, dan jelaskan proses & keraguannya di data-field="pembahasan" (mis. "Kunci di dokumen sumber tertulis A, tapi berdasarkan perhitungan ulang: ..., jawaban yang benar adalah C"). Kalau kunci dari sumber dipakai apa adanya tanpa keraguan, tulis <meta data-field="kunci_terverifikasi" data-value="true" /> (atau boleh tidak ditulis sama sekali, true adalah default).
+6. Kunci ditulis di <meta data-field="kunci_jawaban" data-value="B" />. 🔥 KEBIJAKAN BARU: kalau dokumen sumber menyertakan kunci resmi, SELALU pakai itu. TAPI kalau kunci tidak ditemukan di sumber ATAU kunci sumber tampak salah (bertentangan dengan hasil analisismu sendiri terhadap soal itu), JANGAN dikosongkan — SELESAIKAN soal itu sendiri langkah demi langkah (persis seperti guru mengerjakan soal), tulis kunci hasil analisismu di data-value, lalu tandai dengan <meta data-field="kunci_terverifikasi" data-value="false" />. Kalau kunci dari sumber dipakai apa adanya tanpa keraguan, tulis <meta data-field="kunci_terverifikasi" data-value="true" /> (atau boleh tidak ditulis sama sekali, true adalah default).
+   ⚠️ PENTING soal data-field="pembahasan": ini akan DIBACA LANGSUNG OLEH SISWA, jadi HARUS murni penjelasan cara mengerjakan soal seperti guru menjelaskan ke murid -- JANGAN PERNAH menyebut hal-hal teknis/internal seperti "tidak ada kunci resmi", "kunci_terverifikasi", "dokumen sumber", "AI", "hasil analisis ulang", dsb. Cukup jelaskan penyelesaiannya secara langsung, seolah itu memang kunci yang benar (mis. "$4^2=16$; $225^{\frac12}=15$; ... Maka hasilnya $\frac{10}{3}$." -- BUKAN "Tidak ada kunci resmi... kunci di bawah hasil penyelesaian ulang penulis (kunci_terverifikasi=false). $4^2=16$...").
 7. Pembahasan berada di <div data-field="pembahasan">...</div>.
 8. Materi, capaian, dan sumber boleh ditulis pada field data yang sesuai.
 9. Tabel data gunakan <div data-field="tabel_soal"><table>...</table></div>.
@@ -2665,6 +2666,26 @@ function opsiToPlainForFirestore(opsi) {
   }));
 }
 
+// 🔥 BARU: pembahasan itu DIBACA LANGSUNG oleh siswa (di layar tinjau
+// jawaban Try Out & Latihan Harian) -- jangan pernah biarkan istilah
+// teknis/internal ikut ke sana. Ini jaring pengaman buat soal yang
+// SUDAH TERLANJUR diimport dengan format lama (sebelum promptnya
+// dibenerin) yang nulis kalimat kayak "Tidak ada kunci resmi pada
+// dokumen sumber; kunci di bawah hasil penyelesaian ulang penulis
+// (kunci_terverifikasi=false)." -- dibuang otomatis di sini, apapun
+// bentuk kalimatnya persis, biar siswa cuma baca penjelasan soalnya
+// doang, bukan "curhat" AI soal keraguannya.
+function bersihkanJejakTeknis(teks) {
+  if (!teks) return teks;
+  return String(teks)
+    .replace(/Tidak ada kunci (resmi )?(pada|di) dokumen sumber[^.]*\.\s*/gi, '')
+    .replace(/Kunci (di bawah|ini) (adalah )?hasil (penyelesaian|perhitungan) ulang[^.]*\.\s*/gi, '')
+    .replace(/\(kunci_terverifikasi\s*=\s*(true|false)\)\s*/gi, '')
+    .replace(/kunci_terverifikasi\s*:\s*(true|false)\s*/gi, '')
+    .replace(/\b(dihitung|dianalisis|diselesaikan) (ulang )?oleh AI\b/gi, '')
+    .trim();
+}
+
 function buildDoc(q, meta) {
   const gambarUrls = safeArray(q.gambar).map(image => image.uploadedUrl || image.url || '').filter(Boolean);
 
@@ -2698,7 +2719,7 @@ function buildDoc(q, meta) {
     satuanJawaban: q.satuan_jawaban || '',
     toleransiJawaban: q.toleransi_jawaban ?? null,
     kunciTerverifikasi: q.kunci_terverifikasi,
-    pembahasan: q.pembahasan,
+    pembahasan: bersihkanJejakTeknis(q.pembahasan),
     catatanAdmin: q.catatan_admin || '',
     gambarUrls,
     tabelSoal: amankanTabelDariNestedArray(q.tabel_soal) || null,

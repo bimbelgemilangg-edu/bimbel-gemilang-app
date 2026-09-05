@@ -38,6 +38,7 @@ import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
+import RendererIsianSingkat from './RendererIsianSingkat';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
@@ -51,6 +52,10 @@ function RendererSoal(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
+  // 🔥 BARU: isian_singkat & numerik -- 2 tipe soal yang sebelumnya
+  // TIDAK BISA dikerjain sama sekali di Try Out (cuma diblokir dari
+  // keranjang admin). Sekarang punya renderer sendiri.
+  if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat {...props} />;
   return <RendererPgSederhana {...props} />;
 }
 
