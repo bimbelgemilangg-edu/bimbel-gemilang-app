@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import RenderMath from '../../../components/RenderMath';
 
 // 🔥 BARU (bug freeze/blank putih ditemukan): lihat penjelasan lengkap
 // di skoringSoalKompleks.js -- jangan percaya tabel_benar_salah/
@@ -118,7 +119,7 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
                 <td style={{ padding: '10px 8px', textAlign: 'center', color: '#64748b', fontWeight: 600, borderRight: '1px solid #e2e8f0', verticalAlign: 'top' }}>
                   {i + 1}
                 </td>
-                <td style={{ padding: '10px 14px', color: '#1e293b', verticalAlign: 'top' }}>{teks}</td>
+                <td style={{ padding: '10px 14px', color: '#1e293b', verticalAlign: 'top' }}><RenderMath text={teks} /></td>
                 {kolom.map((k) => renderSel(k))}
               </tr>
             );

@@ -36,6 +36,7 @@ import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2 } from 'lucide-reac
 import { useTimerTryOut } from './useTimerTryOut';
 import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
+import RenderMath from '../../../components/RenderMath';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
@@ -603,7 +604,6 @@ export default function TryOutView() {
             keterangan={paket.judul}
             xp={hasilAkhir?.xpFinal}
           />
-          <p style={{ textAlign: 'center', fontSize: 11.5, color: '#94a3b8', marginTop: 10 }}>📸 Screenshot lencana ini buat status kamu!</p>
         </div>
 
         <RingkasanPelanggaran
@@ -623,14 +623,19 @@ export default function TryOutView() {
               <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
                 Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
               </div>
-              <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}>{s.soal || s.teks_soal}</div>
+              {s.bacaan?.teks && (
+                <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>
+                  <RenderMath text={s.bacaan.teks} />
+                </div>
+              )}
+              <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
               <PenahanErrorSoal soalId={s.id}>
                 <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
               </PenahanErrorSoal>
               {s.pembahasan && (
                 <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
                   <b>💡 Pembahasan</b>
-                  <div style={{ marginTop: 4 }}>{s.pembahasan}</div>
+                  <div style={{ marginTop: 4 }}><RenderMath text={s.pembahasan} /></div>
                 </div>
               )}
             </div>
@@ -694,10 +699,10 @@ export default function TryOutView() {
         <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{soalAktif.materi}</div>
         {soalAktif.bacaan?.teks && (
           <div style={{ background: '#f8fafc', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: '#334155' }}>
-            {soalAktif.bacaan.teks}
+            <RenderMath text={soalAktif.bacaan.teks} />
           </div>
         )}
-        <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16 }}>{soalAktif.soal || soalAktif.teks_soal}</div>
+        <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16 }}><RenderMath text={soalAktif.soal || soalAktif.teks_soal} /></div>
         <PenahanErrorSoal soalId={soalAktif.id}>
           <RendererSoal
             soal={soalAktif}

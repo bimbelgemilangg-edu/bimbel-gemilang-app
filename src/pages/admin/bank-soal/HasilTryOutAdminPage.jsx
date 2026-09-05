@@ -21,6 +21,7 @@ import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
+import RenderMath from '../../../components/RenderMath';
 
 function RendererSoalAdmin(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
@@ -499,13 +500,13 @@ export default function HasilTryOutAdminPage() {
                       Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
                     </div>
                     {s.bacaan?.teks && (
-                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>{s.bacaan.teks}</div>
+                      <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}><RenderMath text={s.bacaan.teks} /></div>
                     )}
-                    <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}>{s.soal || s.teks_soal}</div>
+                    <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
                     <RendererSoalAdmin soal={s} jawabanTerpilih={jwb} modeTinjau />
                     {s.pembahasan && (
                       <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
-                        <b>💡 Pembahasan:</b> {s.pembahasan}
+                        <b>💡 Pembahasan:</b> <RenderMath text={s.pembahasan} />
                       </div>
                     )}
                   </div>

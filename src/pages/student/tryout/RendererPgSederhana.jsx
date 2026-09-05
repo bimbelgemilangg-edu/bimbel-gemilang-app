@@ -9,6 +9,7 @@
 import React from 'react';
 import { cariIndexBenar } from '../../../utils/skoringSoalKompleks';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import RenderMath from '../../../components/RenderMath';
 
 export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false }) {
   const opsi = soal.opsiJawaban || [];
@@ -57,7 +58,7 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
             }}>
               {huruf}
             </span>
-            <span style={{ flex: 1 }}>{teksOpsi}</span>
+            <span style={{ flex: 1 }}><RenderMath text={teksOpsi} /></span>
             {modeTinjau && ikon && <span style={{ fontSize: 14 }}>{ikon}</span>}
           </button>
         );

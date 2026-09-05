@@ -18,6 +18,7 @@
 
 import React from 'react';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import RenderMath from '../../../components/RenderMath';
 
 // 🔥 BARU (bug freeze/blank putih ditemukan): jangan percaya
 // kunciJawaban PASTI array -- kalau ada data soal yang formatnya
@@ -95,7 +96,7 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
               {!modeTinjau && siswaCentang ? '✓' : ''}
             </span>
             <span style={{ fontWeight: 700, color: '#64748b', width: 18, flexShrink: 0 }}>{huruf}.</span>
-            <span style={{ flex: 1 }}>{teksOpsi}</span>
+            <span style={{ flex: 1 }}><RenderMath text={teksOpsi} /></span>
             {modeTinjau && ikon && <span style={{ fontSize: 14 }}>{ikon}</span>}
           </button>
         );

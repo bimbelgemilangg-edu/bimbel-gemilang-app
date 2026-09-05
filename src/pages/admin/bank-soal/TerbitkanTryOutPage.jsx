@@ -32,6 +32,7 @@ import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
+import RenderMath from '../../../components/RenderMath';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronRight, Sparkles,
@@ -992,14 +993,14 @@ export default function TerbitkanTryOutPage() {
                   </div>
                   {s.bacaan?.teks && (
                     <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>
-                      {s.bacaan.teks}
+                      <RenderMath text={s.bacaan.teks} />
                     </div>
                   )}
-                  <div style={{ fontSize: 13.5, color: '#1e293b', marginBottom: 12 }}>{s.soal || s.teks_soal}</div>
+                  <div style={{ fontSize: 13.5, color: '#1e293b', marginBottom: 12 }}><RenderMath text={s.soal || s.teks_soal} /></div>
                   <RendererSoalPreview soal={s} />
                   {s.pembahasan && (
                     <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
-                      <b>💡 Pembahasan:</b> {s.pembahasan}
+                      <b>💡 Pembahasan:</b> <RenderMath text={s.pembahasan} />
                     </div>
                   )}
                 </div>

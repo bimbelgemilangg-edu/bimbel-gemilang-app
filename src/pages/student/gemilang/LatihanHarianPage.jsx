@@ -1004,7 +1004,6 @@ export default function LatihanHarianPage() {
                 keterangan="Latihan Harian"
                 xp={xpDidapat}
               />
-              <p style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 10 }}>📸 Screenshot lencana ini buat status kamu!</p>
             </div>
           )}
           <p style={{ color: '#64748b', fontSize: 13.5, marginBottom: 22 }}>
