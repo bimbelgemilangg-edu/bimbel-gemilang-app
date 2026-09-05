@@ -26,8 +26,25 @@ function safeArray(v) {
 export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false }) {
   const barisMentah = safeArray(soal.tabel_benar_salah).length ? soal.tabel_benar_salah : soal.pernyataan;
   const baris = safeArray(barisMentah);
-  // 🔥 BARU: sama kayak 2 renderer lain -- biar jelas beda antara
-  // "siswa skip semua baris" vs "salah jawab semua baris".
+  // 🔥 BARU (bug ditemukan): dulu kolomnya HARDCODE cuma "Benar"/"Salah"
+  // -- soal yang beneran kategorinya lebih dari 2 (mis. "Proses/
+  // Manfaat/Dampak", atau "Penglihatan/Pendengaran/Perabaan/Gerak")
+  // gak bisa ditampilin dengan benar walau LOGIKA SKORNYA sendiri
+  // udah general (baca kategori apa aja, gak peduli nama labelnya).
+  // Sekarang kolomnya diambil dari KATEGORI UNIK yang beneran dipakai
+  // di jawaban baris-baris ini -- kalau cuma ada "benar"/"salah",
+  // otomatis balik ke tampilan 2 kolom kayak biasa; kalau ada 3-4
+  // kategori beda, otomatis nambah kolomnya.
+  const kategoriUnik = [...new Set(
+    baris.map((item) => String(item?.jawaban || '').trim()).filter(Boolean)
+  )];
+  // Urutan tampil: kalau kategorinya PERSIS "benar"/"salah" (case-
+  // insensitive), taruh "Benar" duluan -- biar konsisten kayak sebelum-
+  // nya. Kategori custom lain dipertahankan urutan kemunculan aslinya.
+  const kolom = kategoriUnik.some((k) => k.toLowerCase() === 'benar')
+    ? [...kategoriUnik].sort((a, b) => (a.toLowerCase() === 'benar' ? -1 : b.toLowerCase() === 'benar' ? 1 : 0))
+    : kategoriUnik;
+
   const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
 
   const pilihBaris = (index, nilai) => {
@@ -44,14 +61,15 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
           ⚠️ Soal ini tidak dijawab
         </div>
       )}
-      <div style={{ borderRadius: 10, border: '1px solid #cbd5e1', overflow: 'hidden' }}>
+      <div style={{ borderRadius: 10, border: '1px solid #cbd5e1', overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
         <thead>
           <tr style={{ background: '#1e293b' }}>
             <th style={{ width: 36, padding: '10px 8px', textAlign: 'center', color: '#e2e8f0', fontWeight: 600, fontSize: 12, borderRight: '1px solid #334155' }}>No</th>
             <th style={{ padding: '10px 14px', textAlign: 'left', color: '#e2e8f0', fontWeight: 600, fontSize: 12 }}>Pernyataan</th>
-            <th style={{ width: 76, padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: 600, fontSize: 12, borderLeft: '1px solid #334155' }}>Benar</th>
-            <th style={{ width: 76, padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: 600, fontSize: 12, borderLeft: '1px solid #334155' }}>Salah</th>
+            {kolom.map((k) => (
+              <th key={k} style={{ width: 76, padding: '10px 6px', textAlign: 'center', color: '#e2e8f0', fontWeight: 600, fontSize: 12, borderLeft: '1px solid #334155' }}>{k}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -77,6 +95,7 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
 
               return (
                 <td
+                  key={labelSel}
                   onClick={() => pilihBaris(i, labelSel)}
                   style={{
                     padding: '10px 6px', textAlign: 'center', borderLeft: '1px solid #e2e8f0', verticalAlign: 'middle',
@@ -100,8 +119,7 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
                   {i + 1}
                 </td>
                 <td style={{ padding: '10px 14px', color: '#1e293b', verticalAlign: 'top' }}>{teks}</td>
-                {renderSel('Benar')}
-                {renderSel('Salah')}
+                {kolom.map((k) => renderSel(k))}
               </tr>
             );
           })}

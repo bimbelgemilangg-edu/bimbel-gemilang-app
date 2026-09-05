@@ -381,6 +381,7 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
    Field ini WAJIB diisi untuk setiap soal, jangan dikosongkan.
 
 16. \`data-kelas="1-12"\` (angka 1 sampai 12, sesuai jenjang: SD/MI = 1-6, SMP/MTs = 7-9, SMA/MA/SMK = 10-12) — HANYA isi kalau kamu YAKIN materinya spesifik untuk kelas tertentu berdasarkan kurikulum umum Indonesia (mis. "Barisan dan Deret" = kelas 11, "Trigonometri Dasar" = kelas 10, "Turunan/Integral" = kelas 12, "Pecahan" = kelas 4-5). Kalau materinya bisa muncul di lintas kelas, dokumennya memang untuk banyak kelas sekaligus (mis. UTBK/TKA), atau kamu tidak yakin, JANGAN isi atribut ini sama sekali (jangan menebak/default ke satu angka) — sistem akan otomatis memakai kelas yang dipilih admin di form sebagai gantinya.
+16a. \`data-mapel="Matematika|Fisika|Kimia|Biologi|Bahasa Indonesia|Bahasa Inggris|Ekonomi|Geografi|Sosiologi|Sejarah|PKN|TPS/Penalaran Umum"\` — HANYA isi kalau dokumen ini berisi CAMPURAN BEBERAPA MAPEL BERBEDA dalam satu file yang sama (mis. 1 file tryout gabungan TKA yang isinya sebagian soal Matematika, sebagian Bahasa Indonesia, sebagian Bahasa Inggris tercampur). Kalau SELURUH dokumen ini memang cuma 1 mapel yang sama dari awal sampai akhir (kasus paling umum), JANGAN isi atribut ini sama sekali di soal manapun — biarkan sistem pakai mapel yang dipilih admin di form untuk semua soal. Nilai HARUS PERSIS salah satu dari daftar di atas, jangan menulis nama mapel lain/singkatan yang tidak ada di daftar itu.
 16b. \`<div data-field="tags">kata1, kata2, kata3</div>\` (OPSIONAL, per soal) — label bebas untuk soal ITU SAJA (mis. "hots", "aljabar", "utbk", "operasi hitung"), dipisah koma. Ini BEDA dari \`data-field="materi"\` (topik/bab formal) — tags boleh lebih bebas dan lintas-topik. Isi HANYA kalau memang relevan; kalau tidak ada label yang jelas, jangan isi atribut ini sama sekali (jangan mengarang-ngarang tag generik).
 
 ## KONSISTENSI STRUKTUR (PENTING — supaya hasil parsing tidak meleset)
@@ -1202,6 +1203,15 @@ function normalizeSoal(q, idx) {
       return DAFTAR_KESULITAN.includes(rawKesulitan) ? rawKesulitan : '';
     })(),
     kelas_soal: safeString(q.kelas || q.tingkat_kelas || q.tingkatKelas || q.grade || '').trim(),
+    // 🔥 BARU: mata pelajaran per-soal -- sama pola kayak kelas_soal di
+    // atas. Kalau AI gak isi/hasilnya bukan mapel yang dikenal, biarin
+    // kosong di sini -- buildDoc() yang mutusin fallback ke mapel form
+    // admin. Divalidasi ke DAFTAR_MAPEL biar gak ada mapel "ngarang"
+    // (typo AI) yang nyelip jadi kategori baru di Bank Soal.
+    mapel_soal: (() => {
+      const rawMapel = safeString(q.mapel || q.mata_pelajaran || q.mataPelajaran || q.subject || '').trim();
+      return DAFTAR_MAPEL.includes(rawMapel) ? rawMapel : '';
+    })(),
     valid: errors.length === 0,
     errors,
     // 🔥 BARU: peringatan yang TIDAK menghalangi penyimpanan -- beda
@@ -1623,6 +1633,13 @@ function parseHTMLMaster(raw) {
     // buildDoc() akan otomatis pakai nilai dari form admin sebagai fallback.
     const kesulitanRaw = safeString(node.getAttribute('data-kesulitan') || node.getAttribute('data-tingkat-kesulitan')).toLowerCase().trim();
     const kelasRaw = safeString(node.getAttribute('data-kelas')).trim();
+    // 🔥 BARU: mata pelajaran per-soal -- OPSIONAL, sama kayak kelas.
+    // Ini buat kasus 1 file hasil scan berisi CAMPURAN beberapa mapel
+    // berbeda (mis. tryout gabungan TKA yang isinya Matematika +
+    // Bahasa Indonesia + Bahasa Inggris jadi 1 dokumen) -- AI tandai
+    // mapel tiap soal sendiri-sendiri, admin gak perlu pisah manual
+    // per mapel dulu sebelum import atau import ulang berkali-kali.
+    const mapelRaw = safeString(node.getAttribute('data-mapel') || node.getAttribute('data-mata-pelajaran')).trim();
 
     return {
       nomor,
@@ -1647,6 +1664,7 @@ function parseHTMLMaster(raw) {
       capaian_pembelajaran: htmlNodeText(capaianNode),
       tingkat_kesulitan: kesulitanRaw,
       kelas: kelasRaw,
+      mapel: mapelRaw,
       referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || undefined } : null,
     };
   });
@@ -2726,7 +2744,11 @@ function buildDoc(q, meta) {
     referensiSumber: q.referensi_sumber || null,
     materi: q.materi || '',
     capaianPembelajaran: q.capaian_pembelajaran || '',
-    mataPelajaran: meta.mataPelajaran,
+    // 🔥 BARU: pakai hasil deteksi AI PER SOAL kalau ada dan valid
+    // (buat kasus 1 file scan berisi campuran beberapa mapel), kalau
+    // AI gak isi/gak yakin baru pakai mapel form admin sebagai
+    // fallback -- persis pola yang sama kayak tingkatKelas di bawah.
+    mataPelajaran: q.mapel_soal || meta.mataPelajaran,
     // Kelas & kesulitan: pakai hasil analisis AI PER SOAL kalau ada dan
     // valid; kalau AI tidak mengisi/tidak yakin (dikosongkan di
     // normalizeSoal), baru pakai nilai form admin sebagai fallback. Ini
@@ -2746,6 +2768,7 @@ function buildDoc(q, meta) {
     tingkatKesulitan: q.tingkat_kesulitan_soal || meta.tingkatKesulitan,
     tingkatKesulitanSumber: q.tingkat_kesulitan_soal ? 'ai_per_soal' : 'form_admin',
     tingkatKelasSumber: (q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal)) ? 'ai_per_soal' : 'form_admin',
+    mataPelajaranSumber: q.mapel_soal ? 'ai_per_soal' : 'form_admin',
     sumberFile: meta.sumberFile,
     sumberAI: meta.sumberAI,
     createdAt: serverTimestamp(),
@@ -4679,6 +4702,12 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
         {q.kelas_soal && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#e0e7ff', color: '#4338ca', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             🎓 Kelas {q.kelas_soal} <span style={{ opacity: 0.6, fontWeight: 500 }}>(AI)</span>
+          </span>
+        )}
+
+        {q.mapel_soal && (
+          <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fef3c7', color: '#92400e', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
+            📚 {q.mapel_soal} <span style={{ opacity: 0.6, fontWeight: 500 }}>(AI, beda dari mapel form)</span>
           </span>
         )}
 
