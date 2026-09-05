@@ -38,7 +38,6 @@ import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
-import RendererIsianSingkat from './RendererIsianSingkat';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
@@ -52,10 +51,6 @@ function RendererSoal(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
-  // 🔥 BARU: isian_singkat & numerik -- 2 tipe soal yang sebelumnya
-  // TIDAK BISA dikerjain sama sekali di Try Out (cuma diblokir dari
-  // keranjang admin). Sekarang punya renderer sendiri.
-  if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat {...props} />;
   return <RendererPgSederhana {...props} />;
 }
 
@@ -289,13 +284,49 @@ export default function TryOutView() {
     }
   }, [sesiId]);
 
+  // 🔥 BUG SERIUS DITEMUKAN & DIBENERIN: sebelumnya onFotoTersimpan
+  // ditulis sebagai fungsi arrow INLINE langsung di dalam pemanggilan
+  // hook di bawah -- itu artinya fungsi ini DIBUAT ULANG (referensi
+  // baru) SETIAP KALI TryOutView re-render. Karena timer hitung mundur
+  // (useTimerTryOut.js) update tiap 1 DETIK, komponen ini re-render
+  // tiap detik juga -- dan setiap re-render, jadwal "ambil foto acak"
+  // yang LAMA (berbasis setTimeout) ke-RESET dari nol. Foto TIDAK
+  // PERNAH BENERAN DIAMBIL sama sekali, walau "Wajib Kamera" aktif.
+  //
+  // SEKARANG dirombak total: gak ada lagi timer/setTimeout buat foto
+  // sama sekali. Fotonya dipicu manual lewat `cobaAmbilFoto()` di
+  // titik AKSI SISWA (jawab soal / pindah soal) -- lihat pemanggilannya
+  // di ubahJawaban & tombol "Selanjutnya" di bawah. Blok ini SENGAJA
+  // ditaruh SEBELUM ubahJawaban (bukan di bawahnya kayak sebelumnya),
+  // biar closure yang dipegang ubahJawaban selalu dapat versi
+  // `cobaAmbilFoto` yang TERBARU (gak basi), bukan versi lama yang
+  // mungkin masih mikir kamera belum aktif.
+  const handleFotoTersimpan = useCallback((url) => {
+    setFotoPengawasan((prev) => [...prev, url]);
+  }, []);
+
+  // ---------------- ANTI-CHEAT ----------------
+  const {
+    pelanggaran, showPeringatan, tutupPeringatan, statusKamera, jumlahFotoTersimpan, videoRef, cobaAmbilFoto,
+  } = useDeteksiKecuranganTryOut({
+    aktif: tahap === 'mengerjakan',
+    wajibKamera: !!paket?.wajibKamera,
+    onFotoTersimpan: handleFotoTersimpan,
+  });
+
   const ubahJawaban = useCallback((soalId, value) => {
     setJawaban((prev) => {
       const next = { ...prev, [soalId]: value };
       simpanProgres(next, subtesAktifIndex, waktuMulaiSubtesMs);
       return next;
     });
-  }, [simpanProgres, subtesAktifIndex, waktuMulaiSubtesMs]);
+    // 🔥 BARU: coba ambil foto pengawasan di titik "siswa menjawab".
+    // Aman dipanggil di sini -- cobaAmbilFoto() sendiri yang mutusin
+    // apa udah waktunya foto atau belum (lihat penjelasan lengkap di
+    // useDeteksiKecuranganTryOut.js), dan dibungkus try/catch di
+    // dalamnya sendiri jadi gak akan pernah melempar error ke sini.
+    cobaAmbilFoto();
+  }, [simpanProgres, subtesAktifIndex, waktuMulaiSubtesMs, cobaAmbilFoto]);
 
   // ---------------- MULAI TRY OUT ----------------
   const mulaiTryOut = useCallback(async () => {
@@ -328,15 +359,6 @@ export default function TryOutView() {
     streamPrepRef.current?.getTracks().forEach((t) => t.stop());
     mulaiTryOut();
   }, [mulaiTryOut]);
-
-  // ---------------- ANTI-CHEAT ----------------
-  const {
-    pelanggaran, showPeringatan, tutupPeringatan, statusKamera, jumlahFotoTersimpan, videoRef,
-  } = useDeteksiKecuranganTryOut({
-    aktif: tahap === 'mengerjakan',
-    wajibKamera: !!paket?.wajibKamera,
-    onFotoTersimpan: (url) => setFotoPengawasan((prev) => [...prev, url]),
-  });
 
   // ---------------- SUBMIT / SELESAIKAN ----------------
   // 🔥 BARU (BUG SERIUS DITEMUKAN): sebelumnya kalau penyimpanan HASIL
@@ -587,6 +609,7 @@ export default function TryOutView() {
         <RingkasanPelanggaran
           pelanggaran={hasilAkhir?.pelanggaran || []}
           jumlahFotoTersimpan={fotoPengawasan.length}
+          fotoPengawasan={fotoPengawasan}
           xpMentah={hasilAkhir?.xpMentah}
           xpFinal={hasilAkhir?.xpFinal}
         />
@@ -694,7 +717,7 @@ export default function TryOutView() {
           Sebelumnya
         </button>
         {indexSoalAktif < daftarSoalAktif.length - 1 ? (
-          <button onClick={() => setIndexSoalAktif((i) => i + 1)} style={{ ...st.tombolUtama, flex: 1 }}>Selanjutnya</button>
+          <button onClick={() => { cobaAmbilFoto(); setIndexSoalAktif((i) => i + 1); }} style={{ ...st.tombolUtama, flex: 1 }}>Selanjutnya</button>
         ) : (
           <button onClick={() => selesaikanTryOut()} disabled={sedangMengirimAkhir} style={{ ...st.tombolUtama, flex: 1, background: '#16a34a', opacity: sedangMengirimAkhir ? 0.6 : 1 }}>
             {sedangMengirimAkhir ? 'Mengirim...' : (

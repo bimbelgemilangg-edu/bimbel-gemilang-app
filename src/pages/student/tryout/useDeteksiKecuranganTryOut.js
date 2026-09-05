@@ -111,55 +111,83 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
     };
   }, [aktif, wajibKamera, catatPelanggaran]);
 
-  // ---------------- 2b. BARU: ambil foto di jeda ACAK ----------------
-  useEffect(() => {
-    if (!aktif || !wajibKamera || statusKamera !== 'aktif') return;
-    let timer;
+  // ---------------- 2b. DIROMBAK TOTAL: ambil foto dipicu AKSI SISWA ----------------
+  // 🔥 BUG SERIUS yang KEMARIN kejadian: versi lama pakai setTimeout di
+  // dalam useEffect dengan jeda 45detik-4menit. Masalahnya, TryOutView
+  // re-render TIAP DETIK (gara-gara timer hitung mundur), dan setiap
+  // re-render bikin useEffect ini jalan ulang (cleanup + jadwal baru)
+  // -- jadwal fotonya KETERUSAN DIRESET SEBELUM SEMPAT KESAMPAIAN.
+  // Foto TIDAK PERNAH kejepret sama sekali walau kamera nyala terus.
+  //
+  // SEKARANG: gak ada timer/interval/useEffect sama sekali buat bagian
+  // ini. Sebagai gantinya, caller (TryOutView.jsx) MANGGIL fungsi
+  // `cobaAmbilFoto()` di titik-titik AKSI SISWA (pas jawab soal, pas
+  // pindah ke soal berikutnya). Fungsi ini pakai `useRef` (BUKAN
+  // useState) buat nyimpen "kapan terakhir foto diambil" dan "berapa
+  // lama jeda berikutnya" -- ref TIDAK memicu re-render dan TIDAK
+  // pernah "direset" oleh render, jadi kapanpun & sesering apapun
+  // TryOutView re-render, jadwal foto TETAP UTUH, gak akan pernah
+  // ke-cancel di tengah jalan.
+  //
+  // Ini juga JAUH lebih aman dari resiko "tiba-tiba error/blank putih"
+  // -- gak ada lagi useEffect dengan cleanup yang bisa kepicu di waktu
+  // gak terduga; ini murni pemanggilan fungsi biasa, dibungkus try/catch
+  // sendiri, dan KALAU GAGAL cuma di-log ke console -- TIDAK PERNAH
+  // melempar error yang bisa mengganggu alur ngerjain soal siswa.
+  const waktuTerakhirFotoRef = useRef(0);
+  const jedaBerikutnyaRef = useRef(jedaAcak());
 
-    const ambilFoto = () => {
+  const ambilSatuFoto = useCallback(() => {
+    try {
       const video = videoRef.current;
-      if (video && video.videoWidth > 0) {
-        const canvas = document.createElement('canvas');
-        // Ukuran kecil sengaja -- ini cuma buat bukti visual, bukan
-        // butuh resolusi tinggi, biar upload cepat & hemat storage.
-        canvas.width = 320;
-        canvas.height = Math.round(320 * (video.videoHeight / video.videoWidth));
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(async (blob) => {
-          if (!blob) return;
-          const file = new File([blob], `pengawasan_${Date.now()}.jpg`, { type: 'image/jpeg' });
-          const cobaUpload = async (percobaanKe = 1) => {
-            try {
-              const hasil = await uploadElearningFile(file, 'tryout-pengawasan');
-              if (hasil.success) {
-                setJumlahFotoTersimpan((n) => n + 1);
-                onFotoTersimpan?.(hasil.downloadURL);
-              } else if (percobaanKe < 2) {
-                // 🔥 BARU: coba sekali lagi kalau gagal -- ini foto bukti
-                // pengawasan, bukan data skor, jadi 1x retry ringan aja
-                // cukup, gak perlu peringatan ke siswa kalau tetap gagal
-                // (gak mempengaruhi kejujuran skor/XP-nya sama sekali).
-                setTimeout(() => cobaUpload(percobaanKe + 1), 2000);
-              } else {
-                console.error('Gagal upload foto pengawasan (2x percobaan):', hasil.error);
-              }
-            } catch (e) {
-              if (percobaanKe < 2) setTimeout(() => cobaUpload(percobaanKe + 1), 2000);
-              else console.error('Gagal ambil/upload foto pengawasan (2x percobaan):', e);
+      if (!video || video.videoWidth === 0) return;
+      const canvas = document.createElement('canvas');
+      // Ukuran kecil sengaja -- ini cuma buat bukti visual, bukan
+      // butuh resolusi tinggi, biar upload cepat & hemat storage.
+      canvas.width = 320;
+      canvas.height = Math.round(320 * (video.videoHeight / video.videoWidth));
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `pengawasan_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const cobaUpload = async (percobaanKe = 1) => {
+          try {
+            const hasil = await uploadElearningFile(file, 'tryout-pengawasan');
+            if (hasil.success) {
+              setJumlahFotoTersimpan((n) => n + 1);
+              onFotoTersimpan?.(hasil.downloadURL);
+            } else if (percobaanKe < 2) {
+              setTimeout(() => cobaUpload(percobaanKe + 1), 2000);
+            } else {
+              console.error('Gagal upload foto pengawasan (2x percobaan):', hasil.error);
             }
-          };
-          cobaUpload();
-        }, 'image/jpeg', 0.6);
-      }
-      // Jadwalkan foto berikutnya di jeda acak lagi -- BUKAN interval
-      // tetap, biar siswa gak bisa "nebak" kapan aman buat nyontek.
-      timer = setTimeout(ambilFoto, jedaAcak());
-    };
+          } catch (e) {
+            if (percobaanKe < 2) setTimeout(() => cobaUpload(percobaanKe + 1), 2000);
+            else console.error('Gagal ambil/upload foto pengawasan (2x percobaan):', e);
+          }
+        };
+        cobaUpload();
+      }, 'image/jpeg', 0.6);
+    } catch (e) {
+      // 🔒 PENTING: gagal ambil foto TIDAK BOLEH PERNAH mengganggu
+      // siswa yang lagi ngerjain soal -- cukup dicatat, jangan sampai
+      // melempar error yang bisa bikin layar nge-blank/nge-freeze.
+      console.error('Gagal ambil foto pengawasan (diabaikan, gak ganggu try out):', e);
+    }
+  }, [onFotoTersimpan]);
 
-    timer = setTimeout(ambilFoto, jedaAcak());
-    return () => clearTimeout(timer);
-  }, [aktif, wajibKamera, statusKamera, onFotoTersimpan]);
+  // Dipanggil caller di titik AKSI SISWA (jawab soal / pindah soal).
+  // Aman dipanggil sesering apapun -- kalau belum waktunya (masih
+  // dalam jeda acak), fungsi ini cuma diam, gak ngapa-ngapain.
+  const cobaAmbilFoto = useCallback(() => {
+    if (!aktif || !wajibKamera || statusKamera !== 'aktif') return;
+    const sekarang = Date.now();
+    if (sekarang - waktuTerakhirFotoRef.current < jedaBerikutnyaRef.current) return;
+    waktuTerakhirFotoRef.current = sekarang;
+    jedaBerikutnyaRef.current = jedaAcak(); // acak ulang buat jeda berikutnya
+    ambilSatuFoto();
+  }, [aktif, wajibKamera, statusKamera, ambilSatuFoto]);
 
   return {
     pelanggaran,
@@ -168,5 +196,6 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
     statusKamera,
     jumlahFotoTersimpan,
     videoRef, // caller WAJIB render <video ref={videoRef} autoPlay muted playsInline style={{display:'none'}} />
+    cobaAmbilFoto, // 🔥 BARU: panggil ini di titik aksi siswa (jawab/pindah soal)
   };
 }
