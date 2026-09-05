@@ -82,6 +82,37 @@ function tipeDidukung(soal) {
   return TIPE_TERDUKUNG.includes(soal.tipe || 'pg_sederhana');
 }
 
+// 🔥 BARU: warna badge per mapel -- biar di folder yang campur mapel,
+// admin bisa sekali lirik tau soal ini mapel apa, gak perlu baca teks
+// soal dulu buat nebak (biar gak takut salah pilih pas folder campur).
+const WARNA_MAPEL = {
+  'Matematika': { bg: '#dbeafe', text: '#1e40af' },
+  'Fisika': { bg: '#e0e7ff', text: '#4338ca' },
+  'Kimia': { bg: '#fce7f3', text: '#9d174d' },
+  'Biologi': { bg: '#dcfce7', text: '#166534' },
+  'Bahasa Indonesia': { bg: '#fef3c7', text: '#92400e' },
+  'Bahasa Inggris': { bg: '#ffedd5', text: '#9a3412' },
+  'Ekonomi': { bg: '#f3e8ff', text: '#6b21a8' },
+  'Geografi': { bg: '#d1fae5', text: '#065f46' },
+  'Sosiologi': { bg: '#fee2e2', text: '#991b1b' },
+  'Sejarah': { bg: '#e7e5e4', text: '#44403c' },
+  'PKN': { bg: '#cffafe', text: '#155e75' },
+  'TPS/Penalaran Umum': { bg: '#ede9fe', text: '#5b21b6' },
+};
+function warnaMapel(mapel) {
+  return WARNA_MAPEL[mapel] || { bg: '#f1f5f9', text: '#475569' };
+}
+
+function BadgeMapel({ mapel }) {
+  if (!mapel) return null;
+  const w = warnaMapel(mapel);
+  return (
+    <span style={{ display: 'inline-block', padding: '1px 7px', borderRadius: 999, fontSize: 10, fontWeight: 700, background: w.bg, color: w.text, marginRight: 6, whiteSpace: 'nowrap' }}>
+      {mapel}
+    </span>
+  );
+}
+
 // Pemilih renderer sesuai tipe soal -- SAMA PERSIS logikanya dengan
 // TryOutView.jsx, biar preview admin nunjukin persis tampilan yang
 // bakal dilihat siswa (bukan versi beda yang bisa aja ternyata beda
@@ -122,10 +153,24 @@ export default function TerbitkanTryOutPage() {
 
   const kosongkanKeranjang = () => setKeranjang(new Map());
 
-  // 🔥 BARU: 3 tab, sama pola kayak TerbitkanKuisPage.jsx -- keranjang
+  // 🔥 BARU: 4 tab, sama pola kayak TerbitkanKuisPage.jsx -- keranjang
   // yang SAMA dipakai lintas tab, biar bisa campur soal dari folder +
-  // bucket + cari bebas sekaligus.
-  const [tab, setTab] = useState('folder'); // 'folder' | 'cari' | 'bucket'
+  // bucket + cari bebas + kelemahan kelas sekaligus.
+  const [tab, setTab] = useState('folder'); // 'folder' | 'cari' | 'bucket' | 'kelemahan'
+
+  // ---------------- TAB: KELEMAHAN KELAS ----------------
+  // 🔥 BARU: rekomendasi materi yang PALING LEMAH buat target kelas
+  // yang SAMA kayak dipilih di "Target Kelas/Kategori" -- dihitung
+  // dari data Latihan Harian (siswa_soal_progress) SEMUA siswa yang
+  // cocok, bukan cuma 1 siswa. Kenapa pool bareng (bukan rata-rata per
+  // siswa dulu baru dirata-rata lagi): lebih simpel & gak bias sama
+  // siswa yang baru nyoba dikit soal.
+  const [sedangMuatKelemahan, setSedangMuatKelemahan] = useState(false);
+  const [daftarKelemahan, setDaftarKelemahan] = useState(null); // null = belum pernah dicek
+  const [sedangTambahMateri, setSedangTambahMateri] = useState(null); // materi yang lagi diproses
+  // 🔥 Fungsi cekKelemahanKelas & tambahSoalMateriLemah ditaruh SETELAH
+  // targetKelas/targetKategori dideklarasi (lihat di bawah), biar gak
+  // kena error "dipakai sebelum didefinisikan".
 
   // ---------------- TAB: JELAJAH PER FOLDER ----------------
   const [daftarFolder, setDaftarFolder] = useState([]);
@@ -288,6 +333,122 @@ export default function TerbitkanTryOutPage() {
   const [targetKelas, setTargetKelas] = useState('Semua');
   const [targetKategori, setTargetKategori] = useState('Semua');
   const [availableClasses, setAvailableClasses] = useState(['Semua']);
+
+  // ---------------- TAB: KELEMAHAN KELAS ----------------
+  // 🔥 BARU: rekomendasi materi yang PALING LEMAH buat target kelas
+  // yang SAMA kayak dipilih di "Target Kelas/Kategori" di atas --
+  // dihitung dari data Latihan Harian (siswa_soal_progress) SEMUA
+  // siswa yang cocok, bukan cuma 1 siswa. Kenapa pool bareng (bukan
+  // rata-rata per siswa dulu baru dirata-rata lagi): lebih simpel &
+  // gak bias sama siswa yang baru nyoba dikit soal.
+  const cekKelemahanKelas = useCallback(async () => {
+    setSedangMuatKelemahan(true);
+    setDaftarKelemahan(null);
+    try {
+      // 1. Cari siswa yang cocok target kelas/kategori (SAMA PERSIS
+      //    logika yang dipakai buat filter penerima try out ini).
+      const snapSiswa = await getDocs(collection(db, 'students'));
+      const siswaCocok = snapSiswa.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((s) => {
+          const cocokKelas = targetKelas === 'Semua' || s.kelasSekolah === targetKelas;
+          const cocokKategori = targetKategori === 'Semua' || s.kategori === targetKategori;
+          return cocokKelas && cocokKategori && !s.isBlocked;
+        });
+
+      if (siswaCocok.length === 0) {
+        setDaftarKelemahan([]);
+        setSedangMuatKelemahan(false);
+        return;
+      }
+
+      // 2. Ambil semua progres Latihan Harian siswa-siswa itu --
+      //    dipecah per 30 ID (batas Firestore buat query 'in').
+      const studentIds = siswaCocok.map((s) => s.studentId).filter(Boolean);
+      const semuaProgres = [];
+      for (let i = 0; i < studentIds.length; i += 30) {
+        const potongan = studentIds.slice(i, i + 30);
+        const snap = await getDocs(query(collection(db, 'siswa_soal_progress'), where('studentId', 'in', potongan)));
+        snap.forEach((d) => semuaProgres.push(d.data()));
+      }
+
+      if (semuaProgres.length === 0) {
+        setDaftarKelemahan([]);
+        setSedangMuatKelemahan(false);
+        return;
+      }
+
+      // 3. Ambil materi tiap soal yang pernah dicoba -- dipecah per 30
+      //    ID juga.
+      const soalIds = [...new Set(semuaProgres.map((p) => p.soalId))];
+      const soalMap = {};
+      for (let i = 0; i < soalIds.length; i += 30) {
+        const potongan = soalIds.slice(i, i + 30);
+        const snap = await getDocs(query(collection(db, 'bank_soal'), where('__name__', 'in', potongan)));
+        snap.forEach((d) => { soalMap[d.id] = d.data(); });
+      }
+
+      // 4. Gabungkan jadi 1 kolam per materi (BUKAN dirata-rata per
+      //    siswa dulu) -- persentase benar dari SELURUH percobaan
+      //    siswa yang cocok kelas/kategori ini.
+      const perMateri = {};
+      semuaProgres.forEach((p) => {
+        const soal = soalMap[p.soalId];
+        if (!soal) return;
+        const materi = soal.materi || 'Tidak diketahui';
+        const mapel = soal.mataPelajaran || '';
+        const kunci = `${mapel}||${materi}`;
+        if (!perMateri[kunci]) perMateri[kunci] = { mapel, materi, dicoba: 0, benar: 0 };
+        perMateri[kunci].dicoba += 1;
+        perMateri[kunci].benar += (p.benarCount || 0) > 0 ? 1 : 0;
+      });
+
+      const hasil = Object.values(perMateri)
+        .map((d) => ({ ...d, persentaseBenar: Math.round((d.benar / d.dicoba) * 100) }))
+        // Minimal 5x dicoba -- biar gak berisik dari materi yang baru
+        // disentuh 1-2 kali doang (belum cukup buat disimpulkan "lemah").
+        .filter((d) => d.dicoba >= 5)
+        .sort((a, b) => a.persentaseBenar - b.persentaseBenar);
+
+      setDaftarKelemahan(hasil);
+    } catch (e) {
+      console.error('Gagal cek kelemahan kelas:', e);
+      alert('Gagal mengecek kelemahan kelas: ' + e.message);
+      setDaftarKelemahan([]);
+    }
+    setSedangMuatKelemahan(false);
+  }, [targetKelas, targetKategori]);
+
+  // Tambahin ~6 soal dari 1 materi lemah langsung ke keranjang --
+  // sesuai permintaan: "otomatis tambahin, tinggal dicek ulang" (bukan
+  // cuma kasih tau doang).
+  const tambahSoalMateriLemah = useCallback(async (item) => {
+    setSedangTambahMateri(item.materi);
+    try {
+      const q = query(
+        collection(db, 'bank_soal'),
+        where('mataPelajaran', '==', item.mapel),
+        where('materi', '==', item.materi),
+        where('status', '==', 'aktif'),
+      );
+      const snap = await getDocs(q);
+      const daftarSoal = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter(tipeDidukung) // 🔒 pagar yang sama -- jangan tambahin tipe yang belum didukung
+        .slice(0, 6); // secukupnya buat 1 materi, bukan seluruh bank soal-nya
+
+      if (daftarSoal.length === 0) {
+        alert(`Gak ketemu soal aktif buat materi "${item.materi}" (${item.mapel}) yang tipe-nya didukung Try Out.`);
+      } else {
+        tambahBanyakKeKeranjang(daftarSoal);
+        alert(`${daftarSoal.length} soal dari materi "${item.materi}" ditambahkan ke keranjang -- cek ulang di panel keranjang sebelum diterbitkan.`);
+      }
+    } catch (e) {
+      console.error('Gagal tambah soal materi lemah:', e);
+      alert('Gagal: ' + e.message);
+    }
+    setSedangTambahMateri(null);
+  }, [tambahBanyakKeKeranjang]);
 
   // 🔥 BARU: jadwal buka & deadline -- sebelumnya gak ada sama sekali,
   // jadi try out langsung "kebuka" begitu diterbitkan dan gak pernah
@@ -596,6 +757,7 @@ export default function TerbitkanTryOutPage() {
         <button onClick={() => setTab('folder')} style={tab === 'folder' ? tabAktif : tabPasif}>📁 Jelajah per Folder</button>
         <button onClick={() => setTab('cari')} style={tab === 'cari' ? tabAktif : tabPasif}>🔍 Cari Bebas</button>
         <button onClick={() => setTab('bucket')} style={tab === 'bucket' ? tabAktif : tabPasif}>✨ Bucket Otomatis (Kisi-Kisi)</button>
+        <button onClick={() => setTab('kelemahan')} style={tab === 'kelemahan' ? tabAktif : tabPasif}>🎯 Kelemahan Kelas</button>
       </div>
 
       {/* ---------------- TAB: JELAJAH PER FOLDER ---------------- */}
@@ -653,6 +815,7 @@ export default function TerbitkanTryOutPage() {
                                   <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: didukung ? 'pointer' : 'not-allowed', opacity: didukung ? 1 : 0.55 }}>
                                     <input type="checkbox" checked={dipilih} disabled={!didukung} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
                                     <span style={{ color: didukung ? '#374151' : '#dc2626' }}>
+                                      <BadgeMapel mapel={s.mataPelajaran} />
                                       {(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}
                                       {!didukung && ' — ⚠️ tipe belum didukung'}
                                       {didukung && s.kunciTerverifikasi === false && ' — ⚠️ kunci hasil AI, belum diverifikasi'}
@@ -721,6 +884,7 @@ export default function TerbitkanTryOutPage() {
                                     <label key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, cursor: didukung ? 'pointer' : 'not-allowed', opacity: didukung ? 1 : 0.55 }}>
                                       <input type="checkbox" checked={dipilih} disabled={!didukung} onChange={() => toggleKeranjang(s)} style={{ marginTop: 2 }} />
                                       <span style={{ color: didukung ? '#374151' : '#dc2626' }}>
+                                        <BadgeMapel mapel={s.mataPelajaran} />
                                         {(s.soal || s.teks_soal || '').slice(0, 100)}{(s.soal || s.teks_soal || '').length > 100 ? '...' : ''}
                                         {!didukung && ' — ⚠️ tipe belum didukung'}
                                       {didukung && s.kunciTerverifikasi === false && ' — ⚠️ kunci hasil AI, belum diverifikasi'}
@@ -785,6 +949,57 @@ export default function TerbitkanTryOutPage() {
                 </div>
               )}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ---------------- TAB: KELEMAHAN KELAS ---------------- */}
+      {tab === 'kelemahan' && (
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ backgroundColor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 13, color: '#9a3412', marginBottom: 4 }}>
+              🎯 Kelemahan Kelas
+            </div>
+            <p style={{ fontSize: 12, color: '#c2410c', marginBottom: 12 }}>
+              Dihitung dari data Latihan Harian SEMUA siswa yang cocok "Target Kelas: <b>{targetKelas}</b>" & "Target Kategori: <b>{targetKategori}</b>" di bawah -- ganti dulu di situ kalau mau ngecek kelas lain.
+            </p>
+            <button
+              onClick={cekKelemahanKelas}
+              disabled={sedangMuatKelemahan}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: 'none', background: '#ea580c', color: 'white', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' }}
+            >
+              {sedangMuatKelemahan ? 'Menghitung...' : '🔎 Cek Kelemahan Kelas Ini'}
+            </button>
+          </div>
+
+          {daftarKelemahan !== null && (
+            daftarKelemahan.length === 0 ? (
+              <div style={{ padding: 20, textAlign: 'center', color: '#9ca3af', fontSize: 13, border: '1px dashed #d1d5db', borderRadius: 10 }}>
+                Belum ada data Latihan Harian yang cukup buat kelas/kategori ini (atau belum ada siswa yang cocok). Coba lagi nanti setelah siswa lebih banyak latihan.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {daftarKelemahan.map((item) => (
+                  <div key={`${item.mapel}-${item.materi}`} style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 14px' }}>
+                    <BadgeMapel mapel={item.mapel} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{item.materi}</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>{item.dicoba} kali dicoba (gabungan seluruh siswa)</div>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: item.persentaseBenar < 40 ? '#dc2626' : item.persentaseBenar < 65 ? '#d97706' : '#16a34a' }}>
+                      {item.persentaseBenar}% benar
+                    </div>
+                    <button
+                      onClick={() => tambahSoalMateriLemah(item)}
+                      disabled={sedangTambahMateri === item.materi}
+                      style={{ fontSize: 11.5, padding: '6px 12px', borderRadius: 8, border: '1px solid #ea580c', background: '#fff7ed', color: '#9a3412', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      {sedangTambahMateri === item.materi ? 'Menambah...' : '+ Tambah ke Keranjang'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       )}
