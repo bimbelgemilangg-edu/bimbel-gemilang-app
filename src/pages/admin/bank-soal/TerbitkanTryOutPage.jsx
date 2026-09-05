@@ -369,9 +369,32 @@ export default function TerbitkanTryOutPage() {
   // hasil siswa yang udah selesai ngerjain jadi hilang cuma gara-gara
   // paketnya diberesin admin.
   const hapusTryOut = useCallback(async (paket) => {
+    // 🔥 BARU (resiko nyata ditemukan): kalau ada siswa yang LAGI
+    // NGERJAIN try out ini pas paketnya dihapus, dia bakal ke-lock di
+    // tengah jalan ("Try out tidak ditemukan") -- gak bisa nyelesain,
+    // XP-nya gak akan pernah masuk, sesinya nyangkut selamanya.
+    // Sekarang dicek dulu SEBELUM konfirmasi hapus, biar admin tau
+    // resikonya persis sebelum ngeklik.
+    let jumlahSedangBerjalan = 0;
+    try {
+      const snapBerjalan = await getDocs(query(
+        collection(db, 'tryout_sesi'),
+        where('paketId', '==', paket.id),
+        where('status', '==', 'berjalan'),
+      ));
+      jumlahSedangBerjalan = snapBerjalan.size;
+    } catch (e) {
+      console.error('Gagal cek siswa yang lagi ngerjain:', e);
+    }
+
+    const peringatanBerjalan = jumlahSedangBerjalan > 0
+      ? `\n\n⚠️ PERINGATAN: ${jumlahSedangBerjalan} siswa SEDANG NGERJAIN try out ini sekarang. Kalau dihapus, mereka bakal KE-LOCK di tengah jalan, gak bisa nyelesain, dan XP-nya gak akan masuk. Pertimbangkan tunggu sampai mereka selesai, atau pakai "Nonaktifkan" aja (bukan hapus).`
+      : '';
+
     const konfirmasi = window.prompt(
       `Ketik ulang judul persis buat hapus PERMANEN "${paket.judul}":\n\n` +
-      `(Soal-soal & jadwalnya akan hilang. Hasil siswa yang SUDAH SELESAI ngerjain tetap aman tersimpan, cuma gak akan muncul lagi soalnya buat siswa yang belum mulai.)`
+      `(Soal-soal & jadwalnya akan hilang. Hasil siswa yang SUDAH SELESAI ngerjain tetap aman tersimpan, cuma gak akan muncul lagi soalnya buat siswa yang belum mulai.)` +
+      peringatanBerjalan
     );
     if (konfirmasi !== paket.judul) {
       if (konfirmasi !== null) alert('Judul yang diketik tidak cocok persis -- dibatalkan.');
