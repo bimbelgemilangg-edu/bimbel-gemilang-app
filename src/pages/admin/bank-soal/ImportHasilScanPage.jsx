@@ -382,6 +382,7 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
 
 16. \`data-kelas="1-12"\` (angka 1 sampai 12, sesuai jenjang: SD/MI = 1-6, SMP/MTs = 7-9, SMA/MA/SMK = 10-12) — HANYA isi kalau kamu YAKIN materinya spesifik untuk kelas tertentu berdasarkan kurikulum umum Indonesia (mis. "Barisan dan Deret" = kelas 11, "Trigonometri Dasar" = kelas 10, "Turunan/Integral" = kelas 12, "Pecahan" = kelas 4-5). Kalau materinya bisa muncul di lintas kelas, dokumennya memang untuk banyak kelas sekaligus (mis. UTBK/TKA), atau kamu tidak yakin, JANGAN isi atribut ini sama sekali (jangan menebak/default ke satu angka) — sistem akan otomatis memakai kelas yang dipilih admin di form sebagai gantinya.
 16a. \`data-mapel="Matematika|Fisika|Kimia|Biologi|Bahasa Indonesia|Bahasa Inggris|Ekonomi|Geografi|Sosiologi|Sejarah|PKN|TPS/Penalaran Umum"\` — HANYA isi kalau dokumen ini berisi CAMPURAN BEBERAPA MAPEL BERBEDA dalam satu file yang sama (mis. 1 file tryout gabungan TKA yang isinya sebagian soal Matematika, sebagian Bahasa Indonesia, sebagian Bahasa Inggris tercampur). Kalau SELURUH dokumen ini memang cuma 1 mapel yang sama dari awal sampai akhir (kasus paling umum), JANGAN isi atribut ini sama sekali di soal manapun — biarkan sistem pakai mapel yang dipilih admin di form untuk semua soal. Nilai HARUS PERSIS salah satu dari daftar di atas, jangan menulis nama mapel lain/singkatan yang tidak ada di daftar itu.
+   ⚠️ KALAU dokumen ini SUDAH kamu tentukan campuran (ada 2+ mapel berbeda di dalamnya): \`data-mapel\` WAJIB diisi di SETIAP SATU soal tanpa kecuali, termasuk soal-soal yang mapelnya kebetulan SAMA dengan mapel form admin. JANGAN ada 1 soal pun yang dibiarkan kosong dengan asumsi "nanti ikut form admin" — kalau kamu lupa mengisi walau cuma 1 soal, soal itu akan diam-diam salah kategori tanpa ada yang tahu. Lebih baik isi semua secara eksplisit daripada mengandalkan bawaan form.
 16b. \`<div data-field="tags">kata1, kata2, kata3</div>\` (OPSIONAL, per soal) — label bebas untuk soal ITU SAJA (mis. "hots", "aljabar", "utbk", "operasi hitung"), dipisah koma. Ini BEDA dari \`data-field="materi"\` (topik/bab formal) — tags boleh lebih bebas dan lintas-topik. Isi HANYA kalau memang relevan; kalau tidak ada label yang jelas, jangan isi atribut ini sama sekali (jangan mengarang-ngarang tag generik).
 
 ## KONSISTENSI STRUKTUR (PENTING — supaya hasil parsing tidak meleset)
@@ -3326,6 +3327,26 @@ export default function ImportHasilScanPage() {
       // salah ke-flag "bacaan kosong" kalau sebenarnya bisa diisi
       // otomatis dari soal segrup lainnya.
       normalized = isiUlangBacaanSegrup(normalized);
+
+      // 🔥 BARU: kalau SEBAGIAN soal di batch ini punya data-mapel
+      // (berarti AI sudah nganggep filenya campuran), tapi ADA soal
+      // lain yang gak ditandain sama sekali -- itu tanda AI mungkin
+      // "kelewat" nge-tag soal itu (bukan berarti soal itu memang
+      // sama mapelnya sama form). Kasih peringatan lunak biar admin
+      // cek manual, bukan diam-diam ikut mapel form begitu saja.
+      const jumlahSoalBertandaMapel = normalized.filter((q) => q.mapel_soal).length;
+      if (jumlahSoalBertandaMapel > 0 && jumlahSoalBertandaMapel < normalized.length) {
+        normalized = normalized.map((q) => {
+          if (q.mapel_soal) return q;
+          return {
+            ...q,
+            peringatan: [
+              ...(q.peringatan || []),
+              `File ini kelihatan campuran mapel (${jumlahSoalBertandaMapel} soal lain di batch ini punya tag mapel beda), tapi soal ini TIDAK ditandai data-mapel -- cek manual apakah soal ini memang sesuai mapel form (${meta.mataPelajaran}) atau AI-nya kelewat nge-tag.`,
+            ],
+          };
+        });
+      }
 
       // 🔥 BARU (pdf24): kalau admin juga upload file HTML hasil convert
       // PDF asli, coba isi gambar soal/bacaan yang MASIH KOSONG dari situ.
