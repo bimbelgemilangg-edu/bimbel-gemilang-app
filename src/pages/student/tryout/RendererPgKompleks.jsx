@@ -59,6 +59,7 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
       {opsi.map((opt, i) => {
         const huruf = String.fromCharCode(65 + i);
         const teksOpsi = typeof opt === 'string' ? opt : (opt?.teks || '');
+        const gambarOpsi = typeof opt === 'object' ? (opt?.gambar || []) : [];
         const siswaCentang = dipilih.has(huruf);
         const iniKunci = kunci.includes(huruf);
 
@@ -96,7 +97,18 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
               {!modeTinjau && siswaCentang ? '✓' : ''}
             </span>
             <span style={{ fontWeight: 700, color: '#64748b', width: 18, flexShrink: 0 }}>{huruf}.</span>
-            <span style={{ flex: 1 }}><RenderMath text={teksOpsi} /></span>
+            <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {teksOpsi && <RenderMath text={teksOpsi} />}
+              {gambarOpsi.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {gambarOpsi.map((g, gi) => {
+                    const src = g.uploadedUrl || g.url || '';
+                    if (!src) return null;
+                    return <img key={gi} src={src} alt={`Gambar opsi ${huruf}`} style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                  })}
+                </div>
+              )}
+            </span>
             {modeTinjau && ikon && <span style={{ fontSize: 14 }}>{ikon}</span>}
           </button>
         );

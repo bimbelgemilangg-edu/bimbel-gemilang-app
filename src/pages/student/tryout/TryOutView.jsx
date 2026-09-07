@@ -629,6 +629,13 @@ export default function TryOutView() {
                 </div>
               )}
               <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
+              {(s.gambarUrls || []).length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
+                  {s.gambarUrls.map((url, i) => (
+                    <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 280, borderRadius: 10, border: '1px solid #e2e8f0' }} />
+                  ))}
+                </div>
+              )}
               <PenahanErrorSoal soalId={s.id}>
                 <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
               </PenahanErrorSoal>
@@ -703,6 +710,18 @@ export default function TryOutView() {
           </div>
         )}
         <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16 }}><RenderMath text={soalAktif.soal || soalAktif.teks_soal} /></div>
+        {/* 🔥 BARU (celah serius ditemukan): gambar yang nempel LANGSUNG
+            di soal (bukan di bacaan) -- mis. diagram, grafik, gambar
+            gunung dll -- SEBELUMNYA GAK PERNAH DIRENDER SAMA SEKALI di
+            Try Out. Kalau soalnya butuh liat gambar buat jawab, siswa
+            gak akan pernah bisa jawab tanpa ini. */}
+        {(soalAktif.gambarUrls || []).length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+            {soalAktif.gambarUrls.map((url, i) => (
+              <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
+            ))}
+          </div>
+        )}
         <PenahanErrorSoal soalId={soalAktif.id}>
           <RendererSoal
             soal={soalAktif}

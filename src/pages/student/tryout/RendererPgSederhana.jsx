@@ -26,6 +26,12 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
       {opsi.map((opt, i) => {
         const huruf = String.fromCharCode(65 + i);
         const teksOpsi = typeof opt === 'string' ? opt : (opt?.teks || '');
+        // 🔥 BARU (celah serius ditemukan): opsi jawaban BISA punya
+        // gambar sendiri (bukan cuma teks) -- mis. opsi berupa diagram/
+        // grafik berbeda-beda. SEBELUMNYA gambar ini gak pernah
+        // dirender sama sekali, cuma teksnya doang -- kalau opsi itu
+        // MURNI gambar tanpa teks, siswa liat opsi kosong.
+        const gambarOpsi = typeof opt === 'object' ? (opt?.gambar || []) : [];
         const dipilih = jawabanTerpilih === i;
 
         let border = '#e2e8f0';
@@ -58,7 +64,18 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
             }}>
               {huruf}
             </span>
-            <span style={{ flex: 1 }}><RenderMath text={teksOpsi} /></span>
+            <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {teksOpsi && <RenderMath text={teksOpsi} />}
+              {gambarOpsi.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {gambarOpsi.map((g, gi) => {
+                    const src = g.uploadedUrl || g.url || '';
+                    if (!src) return null;
+                    return <img key={gi} src={src} alt={`Gambar opsi ${huruf}`} style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                  })}
+                </div>
+              )}
+            </span>
             {modeTinjau && ikon && <span style={{ fontSize: 14 }}>{ikon}</span>}
           </button>
         );

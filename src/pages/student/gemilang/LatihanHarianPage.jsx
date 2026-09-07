@@ -879,6 +879,17 @@ export default function LatihanHarianPage() {
             )}
 
             <div style={{ fontSize: 14.5, color: '#1e293b', lineHeight: 1.6, marginBottom: 18 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
+            {/* 🔥 BARU (celah serius ditemukan): gambar yang nempel
+                LANGSUNG di soal (bukan di bacaan) -- SEBELUMNYA GAK
+                PERNAH DIRENDER SAMA SEKALI di Latihan Harian juga,
+                persis kayak yang ketemu di Try Out. */}
+            {(soalAktif.gambarUrls || []).length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18, marginTop: -8 }}>
+                {soalAktif.gambarUrls.map((url, i) => (
+                  <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
+                ))}
+              </div>
+            )}
 
             {/* 🔥 ROMBAK: dulu begitu klik "Cek Jawaban", opsi langsung
                 berubah hijau/merah + muncul pembahasan di sini juga.
@@ -889,6 +900,7 @@ export default function LatihanHarianPage() {
                 SEMUA soal di sesi ini selesai dijawab. */}
             {(soalAktif.opsiJawaban || []).map((opsi, i) => {
               const teksOpsi = typeof opsi === 'string' ? opsi : (opsi?.teks || '');
+              const gambarOpsi = typeof opsi === 'object' ? (opsi?.gambar || []) : [];
               const dipilih = jawabanDipilih === i;
               const warna = dipilih ? '#7c3aed' : '#e2e8f0';
 
@@ -909,7 +921,18 @@ export default function LatihanHarianPage() {
                   <span style={{ width: 26, height: 26, borderRadius: '50%', border: `2px solid ${warna}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0, color: warna }}>
                     {String.fromCharCode(65 + i)}
                   </span>
-                  <span style={{ flex: 1 }}>{renderMath(teksOpsi)}</span>
+                  <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {teksOpsi && renderMath(teksOpsi)}
+                    {gambarOpsi.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {gambarOpsi.map((g, gi) => {
+                          const src = g.uploadedUrl || g.dataUrl || g.url || '';
+                          if (!src) return null;
+                          return <img key={gi} src={src} alt={`Gambar opsi ${String.fromCharCode(65 + i)}`} style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                        })}
+                      </div>
+                    )}
+                  </span>
                 </button>
               );
             })}
@@ -1083,6 +1106,13 @@ export default function LatihanHarianPage() {
                     <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, marginBottom: 10 }}>
                       {renderMath(item.soal.soal || item.soal.teks_soal)}
                     </div>
+                    {(item.soal.gambarUrls || []).length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+                        {item.soal.gambarUrls.map((url, gi) => (
+                          <img key={gi} src={url} alt={`Gambar soal ${idx + 1}`} style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                        ))}
+                      </div>
+                    )}
                     <div style={{ fontSize: 12.5, color: '#475569', marginBottom: 4 }}>
                       Jawabanmu: <strong>{String.fromCharCode(65 + item.jawabanIndex)}. {renderMath(teksOpsi(item.jawabanIndex))}</strong>
                     </div>
