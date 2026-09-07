@@ -35,7 +35,7 @@ import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
 import RenderMath from '../../../components/RenderMath';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
-  Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronRight, Sparkles,
+  Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
 } from 'lucide-react';
 
 const inputStyle = { padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none' };
@@ -466,6 +466,19 @@ export default function TerbitkanTryOutPage() {
   // subtes: dibuat OTOMATIS dari mataPelajaran yang ada di keranjang,
   // admin tinggal atur durasi & nama tiap subtes (bisa diedit).
   const [durasiSubtes, setDurasiSubtes] = useState({}); // { [mataPelajaran]: menit }
+  // 🔥 BARU (bug nyata ditemukan): sebelumnya "per-subtes" SELALU
+  // ngelompokin per MATA PELAJARAN -- kalau semua soal 1 mapel yang
+  // sama, jadinya cuma 1 subtes buat SEMUA soal, dengan 1 kotak durasi
+  // doang. Admin yang maksudnya "3 menit PER SOAL" (20 soal @ 3 menit)
+  // kalau isi "3" di kotak itu, yang kejadian malah "3 menit buat
+  // SEMUA 20 soal sekaligus" -- abis 3 menit langsung submit
+  // semuanya, bukan pindah soal. Sekarang ada pilihan granularitas:
+  // "per mapel" (yang lama, cocok gaya UTBK -- 1 waktu bareng buat 1
+  // mapel) ATAU "per soal individual" (BARU -- tiap soal py subtes &
+  // durasi sendiri, abis waktu OTOMATIS lanjut soal berikutnya, GAK
+  // BISA balik -- persis yang diminta).
+  const [granularitasSubtes, setGranularitasSubtes] = useState('mapel'); // 'mapel' | 'soal'
+  const [durasiPerSoal, setDurasiPerSoal] = useState(3); // menit, dipakai kalau granularitasSubtes === 'soal'
 
   const daftarMapelDiKeranjang = useMemo(() => {
     const set = new Set();
@@ -496,6 +509,12 @@ export default function TerbitkanTryOutPage() {
   // PgKompleks/BenarSalah), biar admin lihat PERSIS gimana tampilan
   // yang bakal dilihat siswa, bukan cuma potongan teks.
   const [showPreview, setShowPreview] = useState(false);
+  // 🔥 BARU (masalah nyata ditemukan): panel keranjang dulu SELALU
+  // full terbuka (position fixed, isi semua form) begitu ada 1 soal
+  // aja di keranjang -- nutup sebagian besar layar, bikin susah lanjut
+  // milih soal lain di folder atas. Sekarang defaultnya DILIPAT (cuma
+  // 1 baris tipis), meluas cuma pas diklik.
+  const [keranjangDibuka, setKeranjangDibuka] = useState(false);
 
   // 🔥 BARU: daftar try out yang UDAH diterbitkan -- sebelumnya gak ada
   // sama sekali cara buat admin lihat "yang tadi udah diterbitkan
@@ -618,14 +637,22 @@ export default function TerbitkanTryOutPage() {
     setMenerbitkan(true);
     setHasil(null);
     try {
-      // Susun struktur subtes kalau mode 'per-subtes' -- kelompokkan
-      // soal-soal di keranjang berdasarkan mataPelajaran-nya.
+      // Susun struktur subtes kalau mode 'per-subtes' -- 2 granularitas:
+      // 'mapel' (lama, kelompokkan per mataPelajaran, cocok gaya UTBK)
+      // atau 'soal' (BARU, 1 subtes = 1 soal, buat kasus "X menit per
+      // soal" yang gak bisa direpresentasikan lewat granularitas mapel).
       const subtes = modeTimer === 'per-subtes'
-        ? daftarMapelDiKeranjang.map((mapel) => ({
-            nama: mapel,
-            durasiMenit: Number(durasiSubtes[mapel]) || 30,
-            soalIds: soalDipilih.filter((s) => (s.mataPelajaran || 'Umum') === mapel).map((s) => s.id),
-          }))
+        ? (granularitasSubtes === 'soal'
+            ? soalDipilih.map((s, i) => ({
+                nama: `Soal ${i + 1}`,
+                durasiMenit: Number(durasiPerSoal) || 3,
+                soalIds: [s.id],
+              }))
+            : daftarMapelDiKeranjang.map((mapel) => ({
+                nama: mapel,
+                durasiMenit: Number(durasiSubtes[mapel]) || 30,
+                soalIds: soalDipilih.filter((s) => (s.mataPelajaran || 'Umum') === mapel).map((s) => s.id),
+              })))
         : [];
 
       const payload = {
@@ -696,7 +723,7 @@ export default function TerbitkanTryOutPage() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px 200px', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: `24px 16px ${keranjang.size === 0 ? 24 : keranjangDibuka ? 200 : 70}px`, fontFamily: 'sans-serif' }}>
       <button onClick={() => navigate('/admin/bank-soal')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontSize: 13 }}>
         <ArrowLeft size={16} /> Kembali ke Bank Soal
       </button>
@@ -1051,20 +1078,30 @@ export default function TerbitkanTryOutPage() {
         <div style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white',
           borderTop: '2px solid #7c3aed', boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
-          padding: '16px 24px', zIndex: 50, maxHeight: '70vh', overflowY: 'auto',
+          padding: keranjangDibuka ? '16px 24px' : '10px 24px', zIndex: 50,
+          maxHeight: keranjangDibuka ? '70vh' : 'auto', overflowY: keranjangDibuka ? 'auto' : 'visible',
         }}>
           <div style={{ maxWidth: 900, margin: '0 auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div
+              onClick={() => setKeranjangDibuka((v) => !v)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: keranjangDibuka ? 10 : 0, cursor: 'pointer' }}
+            >
               <ShoppingCart size={18} color="#7c3aed" />
               <span style={{ fontWeight: 800, fontSize: 14, color: '#6d28d9' }}>Keranjang: {keranjang.size} soal</span>
-              <button onClick={() => setShowPreview(true)} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#0e7490', background: 'none', border: 'none', cursor: 'pointer' }}>
+              {!keranjangDibuka && (
+                <span style={{ fontSize: 11.5, color: '#9ca3af' }}>-- klik buat atur & terbitkan</span>
+              )}
+              <button onClick={(e) => { e.stopPropagation(); setShowPreview(true); }} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#0e7490', background: 'none', border: 'none', cursor: 'pointer' }}>
                 👁️ Preview
               </button>
-              <button onClick={kosongkanKeranjang} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <button onClick={(e) => { e.stopPropagation(); kosongkanKeranjang(); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Trash2 size={14} /> Kosongkan
               </button>
+              {keranjangDibuka ? <ChevronDown size={16} color="#9ca3af" /> : <ChevronUp size={16} color="#9ca3af" />}
             </div>
 
+            {keranjangDibuka && (
+              <>
             <input
               placeholder="Judul try out (mis. Try Out TKA Matematika Paket 1)"
               value={judulTryOut}
@@ -1123,25 +1160,52 @@ export default function TerbitkanTryOutPage() {
               {modeTimer === 'total' ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <input type="number" min={1} value={durasiTotalMenit} onChange={(e) => setDurasiTotalMenit(e.target.value)} style={{ ...inputStyle, width: 90 }} />
-                  <span style={{ fontSize: 12, color: '#6b7280' }}>menit, buat semua {keranjang.size} soal</span>
+                  <span style={{ fontSize: 12, color: '#6b7280' }}>menit, buat semua {keranjang.size} soal <b>SEKALIGUS</b> (bukan per soal)</span>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>
-                    <Layers size={13} /> Subtes otomatis dikelompokkan per mata pelajaran -- atur durasinya:
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {/* 🔥 BARU: pilih granularitas dulu -- ini yang bikin
+                      bug "waktu habis malah semua ke-submit" kemarin
+                      kejadian, karena admin pengen "per soal" tapi UI-nya
+                      cuma nyediain "per mapel". */}
+                  <div style={{ display: 'flex', gap: 14 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                      <input type="radio" checked={granularitasSubtes === 'mapel'} onChange={() => setGranularitasSubtes('mapel')} /> Per mata pelajaran (gaya UTBK)
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                      <input type="radio" checked={granularitasSubtes === 'soal'} onChange={() => setGranularitasSubtes('soal')} /> Per soal individual
+                    </label>
                   </div>
-                  {daftarMapelDiKeranjang.map((mapel) => (
-                    <div key={mapel} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 12.5, color: '#374151', width: 140, flexShrink: 0 }}>{mapel}</span>
-                      <input
-                        type="number" min={1}
-                        value={durasiSubtes[mapel] ?? 30}
-                        onChange={(e) => setDurasiSubtes((prev) => ({ ...prev, [mapel]: e.target.value }))}
-                        style={{ ...inputStyle, width: 80 }}
-                      />
-                      <span style={{ fontSize: 11.5, color: '#9ca3af' }}>menit</span>
+
+                  {granularitasSubtes === 'soal' ? (
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <input type="number" min={1} value={durasiPerSoal} onChange={(e) => setDurasiPerSoal(e.target.value)} style={{ ...inputStyle, width: 80 }} />
+                        <span style={{ fontSize: 12, color: '#92400e' }}>menit <b>PER SOAL</b> -- berlaku sama rata ke semua {keranjang.size} soal</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#b45309' }}>
+                        ⏱️ Abis waktu di 1 soal, OTOMATIS lanjut ke soal berikutnya -- siswa TIDAK BISA balik ke soal sebelumnya. Total waktu try out ini: {(Number(durasiPerSoal) || 0) * keranjang.size} menit.
+                      </div>
                     </div>
-                  ))}
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: '#9ca3af', marginBottom: 2 }}>
+                        <Layers size={13} /> Subtes otomatis dikelompokkan per mata pelajaran -- atur durasinya:
+                      </div>
+                      {daftarMapelDiKeranjang.map((mapel) => (
+                        <div key={mapel} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 12.5, color: '#374151', width: 140, flexShrink: 0 }}>{mapel}</span>
+                          <input
+                            type="number" min={1}
+                            value={durasiSubtes[mapel] ?? 30}
+                            onChange={(e) => setDurasiSubtes((prev) => ({ ...prev, [mapel]: e.target.value }))}
+                            style={{ ...inputStyle, width: 80 }}
+                          />
+                          <span style={{ fontSize: 11.5, color: '#9ca3af' }}>menit, buat SEMUA soal {mapel} sekaligus (bukan per soal)</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1166,6 +1230,8 @@ export default function TerbitkanTryOutPage() {
               {menerbitkan ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
               {menerbitkan ? 'Menerbitkan...' : `Terbitkan ${keranjang.size} Soal ke Siswa`}
             </button>
+              </>
+            )}
           </div>
         </div>
       )}
