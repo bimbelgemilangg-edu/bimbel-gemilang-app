@@ -25,6 +25,7 @@ import { InlineMath, BlockMath } from 'react-katex';
 import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel } from '../../../utils/aksesKontenSiswa';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
+import RenderTable from '../../../components/RenderTable';
 
 // 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
 // DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
@@ -890,6 +891,11 @@ export default function LatihanHarianPage() {
                 ))}
               </div>
             )}
+            {/* 🔥 BARU (celah serius lain ditemukan): tabel yang nempel
+                di soal (mis. kunci determinasi biologi) -- SAMA SEKALI
+                GAK PERNAH DIRENDER, padahal komponennya udah lama ada,
+                cuma kepakai di preview admin doang. */}
+            {soalAktif.tabelSoal && <RenderTable table={soalAktif.tabelSoal} />}
 
             {/* 🔥 ROMBAK: dulu begitu klik "Cek Jawaban", opsi langsung
                 berubah hijau/merah + muncul pembahasan di sini juga.
@@ -1113,6 +1119,7 @@ export default function LatihanHarianPage() {
                         ))}
                       </div>
                     )}
+                    {item.soal.tabelSoal && <RenderTable table={item.soal.tabelSoal} />}
                     <div style={{ fontSize: 12.5, color: '#475569', marginBottom: 4 }}>
                       Jawabanmu: <strong>{String.fromCharCode(65 + item.jawabanIndex)}. {renderMath(teksOpsi(item.jawabanIndex))}</strong>
                     </div>

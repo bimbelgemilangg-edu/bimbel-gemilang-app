@@ -22,6 +22,7 @@ import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
 import RenderMath from '../../../components/RenderMath';
+import RenderTable from '../../../components/RenderTable';
 
 function RendererSoalAdmin(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
@@ -510,6 +511,7 @@ export default function HasilTryOutAdminPage() {
                         ))}
                       </div>
                     )}
+                    {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                     <RendererSoalAdmin soal={s} jawabanTerpilih={jwb} modeTinjau />
                     {s.pembahasan && (
                       <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>

@@ -37,6 +37,7 @@ import { useTimerTryOut } from './useTimerTryOut';
 import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
 import RenderMath from '../../../components/RenderMath';
+import RenderTable from '../../../components/RenderTable';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
@@ -636,6 +637,7 @@ export default function TryOutView() {
                   ))}
                 </div>
               )}
+              {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
               <PenahanErrorSoal soalId={s.id}>
                 <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
               </PenahanErrorSoal>
@@ -722,6 +724,11 @@ export default function TryOutView() {
             ))}
           </div>
         )}
+        {/* 🔥 BARU (celah serius lain ditemukan): tabel yang nempel di
+            soal (mis. kunci determinasi biologi) -- SAMA SEKALI GAK
+            PERNAH DIRENDER, padahal komponennya udah lama ada, cuma
+            kepakai di preview admin doang. */}
+        {soalAktif.tabelSoal && <RenderTable table={soalAktif.tabelSoal} />}
         <PenahanErrorSoal soalId={soalAktif.id}>
           <RendererSoal
             soal={soalAktif}

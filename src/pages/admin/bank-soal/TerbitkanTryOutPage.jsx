@@ -33,6 +33,7 @@ import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
 import RenderMath from '../../../components/RenderMath';
+import RenderTable from '../../../components/RenderTable';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
@@ -1285,6 +1286,7 @@ export default function TerbitkanTryOutPage() {
                       ))}
                     </div>
                   )}
+                  {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                   <RendererSoalPreview soal={s} />
                   {s.pembahasan && (
                     <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
