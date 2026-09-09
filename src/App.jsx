@@ -105,6 +105,7 @@ import TeacherLearningAid from './pages/teacher/TeacherLearningAid';
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
 
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
+import LeaderboardPage from './pages/student/LeaderboardPage'; // 🔥 BARU: leaderboard ala Duolingo (mingguan, streak, liga) -- yang lama (raport-based) dibiarkan tetap ada filenya, cuma gak dipakai lagi di menu utama
 import StudentSmartReport from './pages/student/raport/StudentSmartReport';
 
 // ============================================================
@@ -354,7 +355,8 @@ function App() {
         <Route path="/siswa/keuangan" element={<SiswaRoute><SiswaLayout><StudentFinanceSiswa /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/rapor" element={<SiswaRoute><SiswaLayout><StudentGrades /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/smart-rapor" element={<SiswaRoute><SiswaLayout><StudentSmartReport /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/leaderboard" element={<SiswaRoute><SiswaLayout><StudentLeaderboard /></SiswaLayout></SiswaRoute>} />
+        <Route path="/siswa/leaderboard" element={<SiswaRoute><LeaderboardPage /></SiswaRoute>} />
+        <Route path="/siswa/leaderboard-raport" element={<SiswaRoute><SiswaLayout><StudentLeaderboard /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/absensi" element={<SiswaRoute><SiswaLayout><StudentAttendanceSiswa /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/modul/:id" element={<SiswaRoute><SiswaLayout><ModulSiswaWrapper /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/kuis/:id" element={<SiswaRoute><SiswaLayout><KuisSiswaWrapper /></SiswaLayout></SiswaRoute>} />
