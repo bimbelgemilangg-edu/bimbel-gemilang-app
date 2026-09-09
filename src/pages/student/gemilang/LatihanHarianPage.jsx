@@ -210,24 +210,64 @@ const PILIHAN_TARGET_HARIAN = [
 // mundur dari tanggal terakhir aktif sepanjang nilai streak -- bukan
 // data historis asli per hari. Kalau nanti mau akurat 100%, perlu
 // koleksi log harian terpisah (lihat "PENDING" di instruksi project).
-function buatStrikMingguan(streak, lastActiveDateStr, hariIniStr) {
+// 🔥 ROMBAK: dari strip 7 hari generik (cuma nama hari) jadi kalender
+// BERTANGGAL, plus BEDAIN 3 status: "done" (udah capai target hari
+// itu), "terlewat" (hari itu ADA DI DALAM rentang yang harusnya jadi
+// bagian streak tapi gak dicapai -- ini yang dapet efek merah/nangis),
+// dan "masa depan/belum ada data". Ini juga yang dipakai buat deteksi
+// "streak baru aja putus" pas siswa balik ke app.
+function buatKalenderStreak(streak, lastActiveDateStr, hariIniStr, jumlahHari = 7) {
   const hariIni = new Date(hariIniStr);
   const namaHari = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
   const hasilnya = [];
-  for (let i = 6; i >= 0; i--) {
+
+  // Selisih dari lastActiveDate ke hari ini -- kalau > 1, artinya ada
+  // hari yang KELEWAT di antaranya (streak beneran udah putus, bukan
+  // cuma "belum sempat hari ini").
+  let selisihLastKeIni = null;
+  if (lastActiveDateStr) {
+    const lastMs = new Date(lastActiveDateStr).getTime();
+    const iniMs = new Date(hariIniStr).getTime();
+    selisihLastKeIni = Math.round((iniMs - lastMs) / (1000 * 60 * 60 * 24));
+  }
+
+  for (let i = jumlahHari - 1; i >= 0; i--) {
     const d = new Date(hariIni);
     d.setDate(d.getDate() - i);
+    const tanggalStr = d.toISOString().slice(0, 10);
+
     let done = false;
-    if (lastActiveDateStr && streak > 0) {
-      const lastMs = new Date(lastActiveDateStr).getTime();
-      const iniMs = new Date(hariIniStr).getTime();
-      const selisihLastKeIni = Math.round((iniMs - lastMs) / (1000 * 60 * 60 * 24));
+    if (lastActiveDateStr && streak > 0 && selisihLastKeIni !== null) {
       const offsetDariLast = i - selisihLastKeIni;
       done = offsetDariLast >= 0 && offsetDariLast < streak;
     }
-    hasilnya.push({ label: namaHari[d.getDay()], done, isToday: i === 0 });
+
+    // "Terlewat" -- hari itu PERSIS 1 hari sebelum lastActiveDate
+    // (artinya itu titik dimana rangkaian putus), DAN bukan hari ini/
+    // masa depan, DAN streak lama beneran udah putus (selisih > 1).
+    const terlewat = !done && selisihLastKeIni !== null && selisihLastKeIni > 1 && i === selisihLastKeIni - 1;
+
+    hasilnya.push({
+      tanggal: d.getDate(),
+      tanggalPenuh: tanggalStr,
+      label: namaHari[d.getDay()],
+      done,
+      terlewat,
+      isToday: i === 0,
+    });
   }
   return hasilnya;
+}
+
+// Deteksi "streak BARU AJA putus" -- dipanggil sekali pas data
+// progres pertama kali dimuat, buat kasih tau siswa lewat notifikasi
+// 😢 (bukan cuma diam-diam ke-reset tanpa penjelasan).
+function cekStreakBaruPutus(streakLama, lastActiveDateStr, hariIniStr) {
+  if (!lastActiveDateStr || streakLama <= 0) return false;
+  const lastMs = new Date(lastActiveDateStr).getTime();
+  const iniMs = new Date(hariIniStr).getTime();
+  const selisih = Math.round((iniMs - lastMs) / (1000 * 60 * 60 * 24));
+  return selisih > 1; // lebih dari 1 hari sejak terakhir aktif -> beneran putus
 }
 
 const XP_PER_BENAR = 10;
@@ -846,7 +886,13 @@ export default function LatihanHarianPage() {
 
   if (tahap === 'pilih-mapel') {
     const hariIniStr = new Date().toISOString().slice(0, 10);
-    const strikMingguan = buatStrikMingguan(streakSaatIni, lastActiveDateSaatIni, hariIniStr);
+    const kalenderStreak = buatKalenderStreak(streakSaatIni, lastActiveDateSaatIni, hariIniStr, 7);
+    // 🔥 BARU: deteksi "streak baru aja putus" -- dicek dari data
+    // MENTAH sebelum di-reset (makanya butuh streakSaatIni tersimpan
+    // dulu SEBELUM di-nol-in; kalau streakSaatIni sudah 0 di server,
+    // kita masih bisa lihat jejaknya dari kalenderStreak.terlewat).
+    const adaHariTerlewat = kalenderStreak.some((h) => h.terlewat);
+    const belumCapaiTargetHariIni = targetHarianSaatIni && soalHariIniCountSaatIni < targetHarianSaatIni;
     return (
       <div style={st.page}>
         <div style={st.hero}>
@@ -860,27 +906,59 @@ export default function LatihanHarianPage() {
             </div>
           </div>
 
-          {/* Strip streak mingguan -- 7 titik hari (Sen-Min), hari yang
-              sudah latihan ditandai flame oranye menyala. Palet
-              disamakan sama Leaderboard (teal + putih transparan),
-              bukan ungu-starfield lagi. */}
-          {streakSaatIni > 0 && (
+          {/* 🔥 BARU: banner "streak berakhir" -- muncul HANYA sekali di
+              momen jejaknya masih kelihatan (hari abis putus), biar
+              siswa TAU kenapa streak-nya balik ke 0, bukan diam-diam
+              ke-reset tanpa penjelasan. */}
+          {adaHariTerlewat && streakSaatIni === 0 && (
+            <div style={{ position: 'relative', zIndex: 1, marginTop: 14, background: 'rgba(220,38,38,0.25)', border: '1px solid rgba(248,113,113,0.4)', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 24 }}>😢</span>
+              <div>
+                <div style={{ color: 'white', fontWeight: 800, fontSize: 12.5 }}>Streak-mu berakhir</div>
+                <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }}>Ada hari yang kelewat. Gapapa, ayo mulai lagi dari hari ini!</div>
+              </div>
+            </div>
+          )}
+
+          {/* 🔥 BARU: peringatan "akan berakhir" -- kalau streak-nya
+              masih hidup TAPI target hari ini belum tercapai, ingetin
+              biar gak putus. */}
+          {streakSaatIni > 0 && belumCapaiTargetHariIni && (
+            <div style={{ position: 'relative', zIndex: 1, marginTop: 14, background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 18 }}>⚠️</span>
+              <div style={{ color: 'white', fontSize: 11.5, fontWeight: 600 }}>
+                Streak {streakSaatIni} harimu bisa berakhir kalau hari ini belum capai target ({soalHariIniCountSaatIni}/{targetHarianSaatIni} soal). Yuk lanjutin!
+              </div>
+            </div>
+          )}
+
+          {/* Kalender streak BERTANGGAL -- beda dari strip generik
+              sebelumnya (cuma nama hari), sekarang ada tanggal jelas +
+              hari yang KELEWAT ditandai merah dengan efek nangis (bukan
+              cuma dibiarkan kosong diam-diam kayak sebelumnya). */}
+          {(streakSaatIni > 0 || adaHariTerlewat) && (
             <div style={{ position: 'relative', zIndex: 1, marginTop: 14, background: 'rgba(255,255,255,0.12)', borderRadius: 16, padding: '12px 10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
                 <Flame size={16} color="#FB923C" />
                 <span style={{ color: 'white', fontWeight: 800, fontSize: 13 }}>{streakSaatIni} Hari Beruntun</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {strikMingguan.map((h, i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                {kalenderStreak.map((h, i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                     <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>{h.label}</span>
                     <div style={{
-                      width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 13, background: h.done ? 'linear-gradient(135deg, #FB923C, #FBBF24)' : 'rgba(255,255,255,0.14)',
+                      width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13,
+                      background: h.done
+                        ? 'linear-gradient(135deg, #FB923C, #FBBF24)'
+                        : h.terlewat
+                          ? 'rgba(220,38,38,0.85)'
+                          : 'rgba(255,255,255,0.14)',
                       border: h.isToday ? '2px solid white' : '2px solid transparent',
                     }}>
-                      {h.done ? '🔥' : ''}
+                      {h.done ? '🔥' : h.terlewat ? '😢' : ''}
                     </div>
+                    <span style={{ fontSize: 8.5, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{h.tanggal}</span>
                   </div>
                 ))}
               </div>
