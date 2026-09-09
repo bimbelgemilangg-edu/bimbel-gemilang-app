@@ -7,6 +7,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import StudentDigitalCard from '../../components/StudentDigitalCard';
+import MaskotAstronot from '../../components/MaskotAstronot';
 
 import {
   BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
@@ -865,61 +866,74 @@ const StudentDashboard = () => {
         </div>
 
         {/* ============================================================
-            🔥 BARU: BLOK GAMIFIKASI (header ala Pahamify) -- SENGAJA
-            ditambahkan sebagai blok baru SETELAH header lama, BUKAN
-            menggantikan/menghapusnya -- notifikasi, scan absen, dan semua
-            fitur di atas tetap utuh persis seperti sebelumnya.
+            🔥 ROMBAK TOTAL (bukan tempel-tempel): palet disamakan ke
+            teal di seluruh app (Leaderboard, Latihan Harian, Dashboard
+            sekarang 1 identitas visual), maskot astronot jadi ilustrasi
+            SVG beneran (bukan emoji), menu grid gaya kartu warna-warni
+            terinspirasi referensi dashboard belajar modern. SEMUA
+            LOGIKA (navigate, onClick, hitungLevelDariXp, dll) TETAP
+            SAMA PERSIS -- yang berubah murni tampilannya.
             ============================================================ */}
         {(() => {
           const { level, xpProgress, xpKebutuhan } = hitungLevelDariXp(progresXp);
           const menuBaru = [
-            { key: 'latihan', label: 'Latihan Harian', emoji: '📝', segeraHadir: false },
-            { key: 'tryout', label: 'TryOut', emoji: '🎯', segeraHadir: false },
-            { key: 'banksoal', label: 'Bank Soal', emoji: '📚', segeraHadir: true },
-            { key: 'progres', label: 'Progres Saya', emoji: '📊', segeraHadir: true },
-            { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', segeraHadir: false },
-            { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', segeraHadir: false },
+            { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
+            { key: 'tryout', label: 'TryOut', emoji: '🎯', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
+            { key: 'banksoal', label: 'Bank Soal', emoji: '📚', warna: '#ede9fe', warnaTeks: '#5b21b6', segeraHadir: true },
+            { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
+            { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
+            { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', warna: '#dbeafe', warnaTeks: '#1e40af', segeraHadir: false },
           ];
           return (
             <div style={{ marginBottom: 20 }}>
               <div style={{
-                background: 'linear-gradient(135deg, #4f46e5, #673ab7)', borderRadius: 20,
-                padding: isMobile ? 16 : 20, marginBottom: 16,
+                background: 'linear-gradient(160deg, #0d9488 0%, #134e4a 100%)', borderRadius: 24,
+                padding: isMobile ? 18 : 22, marginBottom: 16, position: 'relative', overflow: 'hidden',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 26, overflow: 'hidden' }}>
+                {/* Bintik dekoratif */}
+                <div style={{ position: 'absolute', top: -24, right: -24, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+                <div style={{ position: 'absolute', bottom: -34, left: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative' }}>
+                  <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                     {studentProfile?.fotoUrl ? (
                       <img src={studentProfile.fotoUrl} alt={studentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      '🧑‍🚀' // fallback maskot astronot kalau siswa belum pernah upload foto
+                      <MaskotAstronot size={52} />
                     )}
                   </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>{greeting.icon} {greeting.text}, {studentName?.split(' ')[0]}</div>
+                    <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>Semangat belajar hari ini!</div>
+                  </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: 20 }}>
-                      <span style={{ fontSize: 14 }}>🔥</span>
-                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12.5 }}>{progresStreak} hari</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
+                      <span style={{ fontSize: 13 }}>🔥</span>
+                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresStreak}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: 20 }}>
-                      <span style={{ fontSize: 14 }}>🚀</span>
-                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12.5 }}>{progresXp} XP</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
+                      <span style={{ fontSize: 13 }}>🚀</span>
+                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresXp}</span>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, position: 'relative' }}>
                   <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>Level {level}</span>
                   <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{xpProgress} / {xpKebutuhan} XP</span>
                 </div>
-                <div style={{ height: 6, background: 'rgba(255,255,255,0.25)', borderRadius: 10, overflow: 'hidden', marginBottom: 14 }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, (xpProgress / xpKebutuhan) * 100)}%`, background: '#4ade80', borderRadius: 10, transition: 'width 0.4s ease' }} />
+                <div style={{ height: 7, background: 'rgba(255,255,255,0.2)', borderRadius: 10, overflow: 'hidden', marginBottom: 16, position: 'relative' }}>
+                  <div style={{ height: '100%', width: `${Math.min(100, (xpProgress / xpKebutuhan) * 100)}%`, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)', borderRadius: 10, transition: 'width 0.4s ease' }} />
                 </div>
 
-                <div style={{ background: 'white', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ background: 'white', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
                   <span style={{ color: '#94a3b8', fontSize: 13 }}>Mau latihan apa hari ini?</span>
                   <Search size={18} color="#94a3b8" />
                 </div>
               </div>
 
+              {/* Menu grid -- ikon dalam kartu bulat warna-warni, terinspirasi
+                  gaya "subject chips" dashboard belajar modern. */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 16 }}>
                 {menuBaru.map((m) => (
                   <button
@@ -939,19 +953,23 @@ const StudentDashboard = () => {
                     }}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer' }}
                   >
-                    <div style={{ width: isMobile ? 52 : 60, height: isMobile ? 52 : 60, borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, position: 'relative' }}>
+                    <div style={{
+                      width: isMobile ? 54 : 62, height: isMobile ? 54 : 62, borderRadius: 18, background: m.warna,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, position: 'relative',
+                      boxShadow: `0 4px 12px ${m.warna}88`,
+                    }}>
                       {m.emoji}
                       {m.segeraHadir && (
                         <span style={{ position: 'absolute', bottom: -6, fontSize: 8, background: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: 8, fontWeight: 700, whiteSpace: 'nowrap' }}>Segera</span>
                       )}
                     </div>
-                    <span style={{ fontSize: 10.5, color: '#334155', fontWeight: 600, textAlign: 'center', lineHeight: 1.3 }}>{m.label}</span>
+                    <span style={{ fontSize: 10.5, color: m.warnaTeks, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>{m.label}</span>
                   </button>
                 ))}
               </div>
 
-              <div style={{ background: 'white', borderRadius: 16, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#4f46e5', marginBottom: 6 }}>Ayo {studentName.split(' ')[0]}, Semangat! 🔥</div>
+              <div style={{ background: 'white', borderRadius: 16, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderLeft: '3px solid #0d9488' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#0d9488', marginBottom: 6 }}>Ayo {studentName.split(' ')[0]}, Semangat! 🔥</div>
                 <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
                   &ldquo;Tidak pernah ada hari yang sama dalam kehidupan kita. Hari ini berbeda dengan kemarin. Mari kita jadikan hari ini lebih baik.&rdquo;
                 </p>
@@ -963,9 +981,9 @@ const StudentDashboard = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 8 : 14, marginBottom: 16 }}>
           {[
-            { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#3b82f6', bg: '#eff6ff' },
-            { label: 'Tugas & Kuis', value: tasks.length, color: '#9b59b6', bg: '#f5f3ff' },
-            { label: 'Notifikasi Baru', value: unreadCount, color: '#ef4444', bg: '#fef2f2' },
+            { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#0d9488', bg: '#f0fdfa' },
+            { label: 'Tugas & Kuis', value: tasks.length, color: '#5B2ECC', bg: '#f5f3ff' },
+            { label: 'Notifikasi Baru', value: unreadCount, color: '#d97706', bg: '#fffbeb' },
           ].map((stat, i) => (
             <div key={i} className="sd-card" style={{ background: stat.bg, borderRadius: 16, padding: isMobile ? '12px 10px' : '16px 18px' }}>
               <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color, lineHeight: 1 }}>
@@ -1018,7 +1036,7 @@ const StudentDashboard = () => {
         ))}
 
         {raportSummary && (
-          <div className="sd-card" onClick={() => navigate('/siswa/smart-rapor')} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: 18, padding: 20, color: 'white', cursor: 'pointer', marginBottom: 16, boxShadow: '0 10px 24px rgba(102,126,234,0.25)' }}>
+          <div className="sd-card" onClick={() => navigate('/siswa/smart-rapor')} style={{ background: 'linear-gradient(135deg, #5B2ECC 0%, #1E3A8A 100%)', borderRadius: 18, padding: 20, color: 'white', cursor: 'pointer', marginBottom: 16, boxShadow: '0 10px 24px rgba(102,126,234,0.25)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Trophy size={26} color="#fbbf24" />
@@ -1048,7 +1066,7 @@ const StudentDashboard = () => {
 
           <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
             <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Calendar size={17} color="#3b82f6" /> Jadwal Hari Ini
+              <Calendar size={17} color="#0d9488" /> Jadwal Hari Ini
             </h3>
             {dataLoading ? (
               <SkeletonLines count={2} />
@@ -1056,7 +1074,7 @@ const StudentDashboard = () => {
               <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>📭 Tidak ada jadwal hari ini</div>
             ) : todaySchedules.map((sch, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: i < todaySchedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                <div style={{ minWidth: 48, textAlign: 'center', fontWeight: 700, fontSize: 12, color: '#3b82f6' }}>{sch.start}</div>
+                <div style={{ minWidth: 48, textAlign: 'center', fontWeight: 700, fontSize: 12, color: '#0d9488' }}>{sch.start}</div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{sch.title || "Kelas"}</div>
                   <div style={{ fontSize: 10, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
@@ -1070,9 +1088,9 @@ const StudentDashboard = () => {
           <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ClipboardList size={17} color="#9b59b6" /> Tugas & Kuis
+                <ClipboardList size={17} color="#5B2ECC" /> Tugas & Kuis
               </h3>
-              <button onClick={() => navigate('/siswa/materi')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              <button onClick={() => navigate('/siswa/materi')} style={{ background: 'none', border: 'none', color: '#5B2ECC', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                 Lihat Semua →
               </button>
             </div>
@@ -1114,7 +1132,7 @@ const StudentDashboard = () => {
                   className="sd-task-item"
                   style={{
                     padding: '10px 12px', background: task.__isUpcoming ? '#f0fdfa' : '#f8fafc', borderRadius: 12, marginBottom: 6,
-                    borderLeft: `3px solid ${task.__isUpcoming ? '#0891b2' : (hasQuiz ? '#673ab7' : '#f59e0b')}`,
+                    borderLeft: `3px solid ${task.__isUpcoming ? '#0891b2' : (hasQuiz ? '#5B2ECC' : '#f59e0b')}`,
                     cursor: task.__isUpcoming ? 'default' : 'pointer', transition: 'filter 0.15s',
                     opacity: task.__isUpcoming ? 0.85 : 1,
                   }}
@@ -1151,7 +1169,7 @@ const StudentDashboard = () => {
                     <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{task.title}</div>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {hasQuiz && (
-                        <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#673ab7', color: 'white', fontWeight: 700 }}>Kuis</span>
+                        <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#5B2ECC', color: 'white', fontWeight: 700 }}>Kuis</span>
                       )}
                       {hasAssignment && !hasQuiz && (
                         <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#f59e0b', color: 'white', fontWeight: 700 }}>Tugas</span>
@@ -1190,9 +1208,9 @@ const StudentDashboard = () => {
         <div ref={attendanceRef} className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ClipboardList size={17} color="#14b8a6" /> Kehadiran
+              <ClipboardList size={17} color="#0d9488" /> Kehadiran
             </h3>
-            <button onClick={() => navigate('/siswa/absensi')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+            <button onClick={() => navigate('/siswa/absensi')} style={{ background: 'none', border: 'none', color: '#5B2ECC', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
               Riwayat Lengkap →
             </button>
           </div>
@@ -1204,7 +1222,7 @@ const StudentDashboard = () => {
 
         <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 17, flexShrink: 0 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,#5B2ECC,#1E3A8A)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 17, flexShrink: 0 }}>
               {studentName?.charAt(0) || 'S'}
             </div>
             <div style={{ flex: 1, minWidth: 120 }}>
@@ -1212,7 +1230,7 @@ const StudentDashboard = () => {
               <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || studentKelas || '-'} • {studentProfile?.kategori || studentProgram || 'Reguler'}</div>
               {studentNim && <div style={{ fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' }}>ID: {studentNim}</div>}
             </div>
-            <button onClick={() => navigate('/siswa/materi')} style={{ padding: '9px 16px', background: '#1e293b', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <button onClick={() => navigate('/siswa/materi')} style={{ padding: '9px 16px', background: '#1E3A8A', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
               <BookOpen size={14} /> Materi Belajar
             </button>
           </div>
@@ -1221,7 +1239,7 @@ const StudentDashboard = () => {
         {/* 🔥 KARTU IDENTITAS SISWA DIGITAL */}
         <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <IdCard size={17} color="#673ab7" /> Kartu Identitas Siswa
+            <IdCard size={17} color="#5B2ECC" /> Kartu Identitas Siswa
           </h3>
           <StudentDigitalCard
             studentId={studentDocId || studentId}

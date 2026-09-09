@@ -38,6 +38,7 @@ import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
+import MaskotAstronot from '../../../components/MaskotAstronot';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
@@ -501,7 +502,9 @@ export default function TryOutView() {
     return (
       <div style={{ maxWidth: 560, margin: '40px auto', padding: 20, textAlign: 'center' }}>
         <button onClick={() => navigate(-1)} style={st.backBtn}><ArrowLeft size={16} /> Kembali</button>
-        <div style={{ fontSize: 44, marginBottom: 10 }}>🎯</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+          <MaskotAstronot size={84} />
+        </div>
         <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1e293b' }}>{paket.judul}</h1>
         <p style={{ color: '#6b7280', fontSize: 13, margin: '10px 0 20px' }}>
           {paket.totalSoal} soal · {paket.modeTimer === 'total' ? `${paket.durasiTotalMenit} menit total` : `${paket.subtes.length} subtes, tiap subtes ada batas waktu sendiri`}
@@ -584,7 +587,7 @@ export default function TryOutView() {
         {statusKameraPrep === 'ditolak' && (
           <button
             onClick={() => setPercobaanKeKamera((n) => n + 1)}
-            style={{ ...st.tombolSekunder, marginTop: 8, width: '100%', color: '#7c3aed', borderColor: '#c4b5fd' }}
+            style={{ ...st.tombolSekunder, marginTop: 8, width: '100%', color: '#5B2ECC', borderColor: '#c4b5fd' }}
           >
             🔄 Coba Izinkan Lagi
           </button>
@@ -662,7 +665,7 @@ export default function TryOutView() {
       <video ref={videoRef} autoPlay muted playsInline style={{ display: 'none' }} />
 
       {/* HEADER: timer + status kamera */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#1e293b', borderRadius: 10, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#1E3A8A', borderRadius: 10, marginBottom: 12 }}>
         <div style={{ color: 'white', fontSize: 12.5 }}>
           {paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : paket.judul}
         </div>
@@ -693,9 +696,9 @@ export default function TryOutView() {
             key={s.id}
             onClick={() => setIndexSoalAktif(i)}
             style={{
-              width: 30, height: 30, borderRadius: 6, border: i === indexSoalAktif ? '2px solid #7c3aed' : '1px solid #e2e8f0',
+              width: 30, height: 30, borderRadius: 6, border: i === indexSoalAktif ? '2px solid #5B2ECC' : '1px solid #e2e8f0',
               background: jawaban[s.id] !== undefined ? '#ede9fe' : 'white', fontSize: 11.5, fontWeight: 700,
-              color: i === indexSoalAktif ? '#7c3aed' : '#64748b', cursor: 'pointer',
+              color: i === indexSoalAktif ? '#5B2ECC' : '#64748b', cursor: 'pointer',
             }}
           >
             {i + 1}
@@ -799,7 +802,7 @@ export default function TryOutView() {
 const st = {
   pusat: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: '#64748b', fontSize: 13 },
   backBtn: { display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontSize: 13 },
-  tombolUtama: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 20px', borderRadius: 12, border: 'none', background: '#7c3aed', color: 'white', fontWeight: 800, fontSize: 14, cursor: 'pointer', width: '100%' },
+  tombolUtama: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 20px', borderRadius: 12, border: 'none', background: '#5B2ECC', color: 'white', fontWeight: 800, fontSize: 14, cursor: 'pointer', width: '100%' },
   tombolSekunder: { padding: '13px 20px', borderRadius: 12, border: '1px solid #e2e8f0', background: 'white', color: '#374151', fontWeight: 700, fontSize: 13, cursor: 'pointer' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 },
   modal: { background: 'white', borderRadius: 16, padding: 24, maxWidth: 340, textAlign: 'center' },
