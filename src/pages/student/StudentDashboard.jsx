@@ -894,27 +894,38 @@ const StudentDashboard = () => {
                 <div style={{ position: 'absolute', top: -24, right: -24, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
                 <div style={{ position: 'absolute', bottom: -34, left: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
 
+                {/* 🔥 BARU: Master G sekarang SELALU tampil sebagai maskot
+                    brand (nempel gede di pojok kartu), TERPISAH dari
+                    avatar foto profil siswa. Sebelumnya maskot cuma
+                    nongol KALAU siswa belum upload foto -- itu salah,
+                    maskot brand harusnya selalu ada, bukan digantikan
+                    foto profil. */}
+                <div style={{ position: 'absolute', top: -6, right: 10, zIndex: 2 }}>
+                  <MaskotAstronot size={78} />
+                </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative' }}>
-                  <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)' }}>
                     {studentProfile?.fotoUrl ? (
                       <img src={studentProfile.fotoUrl} alt={studentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <MaskotAstronot size={52} />
+                      <span style={{ color: 'white', fontWeight: 800, fontSize: 20 }}>{(studentName || 'S').charAt(0).toUpperCase()}</span>
                     )}
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, maxWidth: '55%' }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>{greeting.icon} {greeting.text}, {studentName?.split(' ')[0]}</div>
                     <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>Semangat belajar hari ini!</div>
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
-                      <span style={{ fontSize: 13 }}>🔥</span>
-                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresStreak}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
-                      <span style={{ fontSize: 13 }}>🚀</span>
-                      <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresXp}</span>
-                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16, position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
+                    <span style={{ fontSize: 13 }}>🔥</span>
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresStreak} hari</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
+                    <span style={{ fontSize: 13 }}>🚀</span>
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresXp} XP</span>
                   </div>
                 </div>
 
@@ -926,10 +937,17 @@ const StudentDashboard = () => {
                   <div style={{ height: '100%', width: `${Math.min(100, (xpProgress / xpKebutuhan) * 100)}%`, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)', borderRadius: 10, transition: 'width 0.4s ease' }} />
                 </div>
 
-                <div style={{ background: 'white', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+                {/* 🔥 BARU: search bar ini SEBELUMNYA cuma dekorasi, gak
+                    bisa diklik sama sekali -- sekarang beneran nge-klik
+                    langsung ke Latihan Harian (paling masuk akal buat
+                    "mau latihan apa hari ini?"). */}
+                <button
+                  onClick={() => navigate('/siswa/latihan-harian')}
+                  style={{ background: 'white', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', width: '100%', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                >
                   <span style={{ color: '#94a3b8', fontSize: 13 }}>Mau latihan apa hari ini?</span>
                   <Search size={18} color="#94a3b8" />
-                </div>
+                </button>
               </div>
 
               {/* Menu grid -- ikon dalam kartu bulat warna-warni, terinspirasi
