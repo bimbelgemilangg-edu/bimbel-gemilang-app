@@ -26,6 +26,7 @@ import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel }
 import { tambahXpMingguan } from '../../../utils/mingguIni';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import RenderTable from '../../../components/RenderTable';
+import MaskotAstronot from '../../../components/MaskotAstronot';
 
 // 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
 // DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
@@ -178,6 +179,29 @@ function hitungStreakBaru(lastActiveDateStr, hariIniStr) {
   return lastActiveDateStr === kemarinStr ? 'NAIK' : 1;
 }
 
+// 🔥 BARU: api yang "membesar" sesuai panjang streak -- terinspirasi
+// pola aplikasi yang berhasil bikin orang balik terus (Duolingo,
+// Snapchat streak). Efeknya psikologis: makin panjang streak, makin
+// "sayang" kalau diputus (loss aversion) -- dan ada milestone yang
+// kerasa levelnya naik, bukan cuma angka doang.
+function tingkatApi(streak) {
+  if (streak >= 30) return { emoji: '🔥', ukuran: 26, label: 'Legendaris', warna: '#a855f7' };
+  if (streak >= 14) return { emoji: '🔥', ukuran: 23, label: 'Membara', warna: '#dc2626' };
+  if (streak >= 7) return { emoji: '🔥', ukuran: 20, label: 'Menyala', warna: '#ea580c' };
+  if (streak >= 3) return { emoji: '🔥', ukuran: 17, label: 'Mulai Panas', warna: '#f59e0b' };
+  return { emoji: '🔥', ukuran: 15, label: 'Baru Mulai', warna: '#fb923c' };
+}
+
+// Pilihan target komitmen harian -- siswa pilih sendiri levelnya
+// (bukan dipaksa 1 angka buat semua), biar rasanya "achievable" dan
+// gak berasa beban -- ini yang bikin orang betah balik tiap hari,
+// bukan target yang kegedean bikin nyerah duluan.
+const PILIHAN_TARGET_HARIAN = [
+  { nilai: 5, label: 'Santai', deskripsi: '5 soal/hari' },
+  { nilai: 10, label: 'Sedang', deskripsi: '10 soal/hari' },
+  { nilai: 20, label: 'Niat Banget', deskripsi: '20 soal/hari' },
+];
+
 // 🔥 BARU (inspirasi UI check-in mingguan): tampilkan 7 hari terakhir
 // (Sen-Min, berakhir hari ini) sebagai strip kecil "hari mana aja yang
 // sudah latihan". CATATAN JUJUR soal keterbatasannya: sistem cuma
@@ -257,6 +281,12 @@ export default function LatihanHarianPage() {
   // BUKAN query baru -- jadi tidak menambah baca Firestore sama sekali.
   const [streakSaatIni, setStreakSaatIni] = useState(0);
   const [lastActiveDateSaatIni, setLastActiveDateSaatIni] = useState(null);
+  // 🔥 BARU: target harian -- null berarti siswa BELUM PERNAH pilih,
+  // bakal ditawarin milih dulu (lihat render di bawah). soalHariIniCount
+  // dari server dipakai buat progress bar "X/target soal hari ini".
+  const [targetHarianSaatIni, setTargetHarianSaatIni] = useState(null);
+  const [soalHariIniCountSaatIni, setSoalHariIniCountSaatIni] = useState(0);
+  const [sedangSimpanTarget, setSedangSimpanTarget] = useState(false);
 
   const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mapel | pilih-mode | mengerjakan | selesai | jatah-habis
   const [semuaSoal, setSemuaSoal] = useState([]);
@@ -377,6 +407,8 @@ export default function LatihanHarianPage() {
         setSisaJatah(jatahTersisa);
         setStreakSaatIni(progresSiswa?.streak || 0);
         setLastActiveDateSaatIni(progresSiswa?.lastActiveDate || null);
+        setTargetHarianSaatIni(progresSiswa?.targetHarian || null);
+        setSoalHariIniCountSaatIni(progresSiswa?.soalHariIniTanggal === hariIniStr ? (progresSiswa?.soalHariIniCount || 0) : 0);
 
         if (jatahTersisa <= 0) {
           setTahap('jatah-habis');
@@ -521,6 +553,71 @@ export default function LatihanHarianPage() {
     setTahap('mengerjakan');
   }, [soalMapelDipilih, progressMap, sisaJatah]);
 
+  // 🔥 BARU: mulai sesi OTOMATIS -- 100% dikontrol sistem, gak lagi
+  // nyuruh siswa pilih mapel dulu. Pool-nya diambil dari SEMUA mapel
+  // sekaligus (bukan cuma 1 mapel yang dipilih) -- pilihSoalRekomendasi
+  // yang sudah ada SEBENARNYA sudah otomatis ngutamain soal yang paling
+  // lemah/paling perlu diulang (Leitner box) dari pool yang dikasih;
+  // jadi cukup kasih pool SEMUA soal, fungsi yang sama otomatis bikin
+  // sesi "campuran, kelemahan dulu" tanpa perlu logika baru dari nol.
+  const mulaiSesiOtomatis = useCallback(() => {
+    const targetSesi = Math.max(1, Math.min(10, sisaJatah ?? 10));
+    const terpilih = pilihSoalRekomendasi(semuaSoal, progressMap, Date.now(), targetSesi);
+    if (terpilih.length === 0) return alert('Belum ada soal yang cocok buat kelas/jenjangmu. Coba lagi nanti ya.');
+    setSoalSesi(terpilih);
+    setIndexSekarang(0);
+    setJawabanDipilih(null);
+    setSedangMenyimpan(false);
+    setHasilSesi({ benar: 0, salah: 0 });
+    setHasilPerSoal([]);
+    setSoalGagalSimpan([]);
+    setKoreksiIndex(0);
+    setXpAnimasi(0);
+    setSedangFinalisasi(false);
+    setGagalFinalisasi(false);
+    setTahap('mengerjakan');
+  }, [semuaSoal, progressMap, sisaJatah]);
+
+  // 🔥 BARU: "Minta ke Mr Gemilang" -- kotak request bebas teks. Versi
+  // pertama ini CUMA nyari dari soal yang UDAH ADA di Bank Soal (belum
+  // generate AI baru saat itu juga -- itu proyek terpisah yang butuh
+  // koneksi ke AI dari server, bukan sekadar cari data). Dicocokkan ke
+  // materi, mata pelajaran, DAN teks soal itu sendiri, biar permintaan
+  // kayak "pemahaman numerisasi" atau "teks deskripsi" bisa ketemu.
+  const [kataKunciGemilang, setKataKunciGemilang] = useState('');
+  const [gemilangTidakKetemu, setGemilangTidakKetemu] = useState(false);
+
+  const mintaKeGemilang = useCallback(() => {
+    const kunci = kataKunciGemilang.trim().toLowerCase();
+    if (!kunci) return;
+    setGemilangTidakKetemu(false);
+
+    const cocok = semuaSoal.filter((s) => {
+      const gabungan = `${s.materi || ''} ${s.mataPelajaran || ''} ${s.soal || s.teks_soal || ''}`.toLowerCase();
+      return gabungan.includes(kunci);
+    });
+
+    if (cocok.length === 0) {
+      setGemilangTidakKetemu(true);
+      return;
+    }
+
+    const targetSesi = Math.max(1, Math.min(10, sisaJatah ?? 10));
+    const terpilih = pilihSoalRekomendasi(cocok, progressMap, Date.now(), targetSesi);
+    setSoalSesi(terpilih.length > 0 ? terpilih : cocok.slice(0, targetSesi));
+    setIndexSekarang(0);
+    setJawabanDipilih(null);
+    setSedangMenyimpan(false);
+    setHasilSesi({ benar: 0, salah: 0 });
+    setHasilPerSoal([]);
+    setSoalGagalSimpan([]);
+    setKoreksiIndex(0);
+    setXpAnimasi(0);
+    setSedangFinalisasi(false);
+    setGagalFinalisasi(false);
+    setTahap('mengerjakan');
+  }, [kataKunciGemilang, semuaSoal, progressMap, sisaJatah]);
+
   // ---------------- JAWAB SOAL ----------------
   const soalAktif = soalSesi[indexSekarang];
 
@@ -624,6 +721,20 @@ export default function LatihanHarianPage() {
   }, [tahap, koreksiIndex, hasilPerSoal]);
 
   // ---------------- SELESAI SESI: XP + STREAK + JATAH HARIAN ----------------
+  // Simpan pilihan target komitmen harian siswa -- sekali pilih, bisa
+  // diganti kapan aja lewat tombol kecil di strip streak.
+  const pilihTargetHarian = useCallback(async (nilai) => {
+    setSedangSimpanTarget(true);
+    try {
+      await setDoc(doc(db, 'siswa_progress', studentId), { targetHarian: nilai }, { merge: true });
+      setTargetHarianSaatIni(nilai);
+    } catch (e) {
+      console.error('Gagal simpan target harian:', e);
+      alert('Gagal menyimpan pilihan, coba lagi.');
+    }
+    setSedangSimpanTarget(false);
+  }, [studentId]);
+
   const selesaikanSesi = useCallback(async () => {
     const xp = hasilSesi.benar * XP_PER_BENAR + hasilSesi.salah * XP_PER_SALAH;
     setXpDidapat(xp);
@@ -644,18 +755,31 @@ export default function LatihanHarianPage() {
 
         const snap = await Promise.race([getDoc(progRef), jedaWaktu(8000)]);
         const existing = snap.exists() ? snap.data() : { xp: 0, streak: 0, lastActiveDate: null };
+        const targetHarian = existing.targetHarian || targetHarianSaatIni || 10;
 
-        const hasilStreak = hitungStreakBaru(existing.lastActiveDate, hariIniStr);
-        let streakBaru = existing.streak || 0;
-        if (hasilStreak === 'NAIK') streakBaru += 1;
-        else if (hasilStreak === 1) streakBaru = 1;
-        // hasilStreak === null -> sudah latihan hari ini, streak tidak berubah
-
-        // 🔥 BARU: catat pemakaian jatah harian. Kalau catatan terakhir
-        // BUKAN hari ini (hari baru), hitungan dimulai dari 0 lagi --
-        // BUKAN ditambah ke sisa catatan kemarin.
+        // 🔥 ROMBAK: dulu streak naik cuma karena ngerjain 1 sesi apapun
+        // (walau cuma 1 soal) -- kerasa "gampang dapet", gak nge-push.
+        // Sekarang streak CUMA naik kalau target harian BENERAN
+        // tercapai (dihitung dari total soal hari ini, bukan per sesi).
         const soalHariIniSebelumnya = existing.soalHariIniTanggal === hariIniStr ? (existing.soalHariIniCount || 0) : 0;
         const soalHariIniBaru = soalHariIniSebelumnya + soalSesi.length;
+        const sudahCapaiSebelumnya = soalHariIniSebelumnya >= targetHarian;
+        const sudahCapaiSekarang = soalHariIniBaru >= targetHarian;
+
+        let streakBaru = existing.streak || 0;
+        let naikStreak = false;
+        if (!sudahCapaiSebelumnya && sudahCapaiSekarang) {
+          // Baru PERTAMA KALI capai target hari ini -- ini titik yang
+          // nentuin streak, bukan tiap sesi selesai.
+          const hasilStreak = hitungStreakBaru(existing.lastActiveDate, hariIniStr);
+          if (hasilStreak === 'NAIK') { streakBaru += 1; naikStreak = true; }
+          else if (hasilStreak === 1) { streakBaru = 1; naikStreak = true; }
+        }
+        // lastActiveDate cuma "dikunci" ke hari ini kalau target udah
+        // tercapai -- kalau belum, dibiarkan apa adanya, biar sesi
+        // BERIKUTNYA di hari yang sama masih bisa nyambung ngumpulin
+        // ke target yang sama (bukan dianggap "hari baru" tiap sesi).
+        const lastActiveDateBaru = sudahCapaiSekarang ? hariIniStr : (existing.lastActiveDate || null);
 
         // 🔥 BARU: XP MINGGUAN -- dasar buat Leaderboard, TERPISAH dari
         // XP total (yang gak pernah direset, itu progres pribadi
@@ -670,13 +794,18 @@ export default function LatihanHarianPage() {
           xpMingguIni,
           xpMingguIniKunci,
           streak: streakBaru,
-          lastActiveDate: hariIniStr,
+          lastActiveDate: lastActiveDateBaru,
           soalHariIniCount: soalHariIniBaru,
           soalHariIniTanggal: hariIniStr,
           updatedAt: serverTimestamp(),
         }, { merge: true }), jedaWaktu(8000)]);
 
-        setStreakInfo({ streakBaru, naik: hasilStreak === 'NAIK' || hasilStreak === 1 });
+        setSoalHariIniCountSaatIni(soalHariIniBaru);
+        // Lencana cuma ditampilkan kalau HARI INI beneran udah nyentuh
+        // target (baik baru capai barusan atau nambah/udah tercapai
+        // sebelumnya) -- jangan tampilkan lencana "streak naik" padahal
+        // targetnya belum tercapai sama sekali.
+        setStreakInfo(sudahCapaiSekarang ? { streakBaru, naik: naikStreak } : null);
         // Perbarui sisa jatah di layar (dipakai buat pesan di layar Selesai).
         setSisaJatah(Math.max(0, JATAH_SOAL_PER_HARI - soalHariIniBaru));
         setGagalFinalisasi(false);
@@ -723,17 +852,20 @@ export default function LatihanHarianPage() {
         <div style={st.hero}>
           <div style={st.heroStars} />
           <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtnDark}><ArrowLeft size={20} /></button>
-          <div style={{ textAlign: 'center', paddingBottom: 8 }}>
-            <div style={{ fontSize: 40 }}>🧑‍🚀</div>
-            <h1 style={st.heroTitle}>Misi Harian</h1>
-            <p style={st.heroSub}>Mau menjelajah planet mapel yang mana?</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
+            <MaskotAstronot size={72} />
+            <div>
+              <h1 style={{ ...st.heroTitle, textAlign: 'left', margin: 0 }}>Misi Harian</h1>
+              <p style={{ ...st.heroSub, textAlign: 'left' }}>Mau menjelajah planet mapel yang mana?</p>
+            </div>
           </div>
 
-          {/* 🔥 BARU: strip streak mingguan, terinspirasi dari referensi
-              kalender check-in -- 7 titik hari (Sen-Min), hari yang
-              sudah latihan ditandai flame oranye menyala. */}
+          {/* Strip streak mingguan -- 7 titik hari (Sen-Min), hari yang
+              sudah latihan ditandai flame oranye menyala. Palet
+              disamakan sama Leaderboard (teal + putih transparan),
+              bukan ungu-starfield lagi. */}
           {streakSaatIni > 0 && (
-            <div style={{ position: 'relative', zIndex: 1, marginTop: 14, background: 'rgba(255,255,255,0.08)', borderRadius: 16, padding: '12px 10px' }}>
+            <div style={{ position: 'relative', zIndex: 1, marginTop: 14, background: 'rgba(255,255,255,0.12)', borderRadius: 16, padding: '12px 10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
                 <Flame size={16} color="#FB923C" />
                 <span style={{ color: 'white', fontWeight: 800, fontSize: 13 }}>{streakSaatIni} Hari Beruntun</span>
@@ -741,10 +873,10 @@ export default function LatihanHarianPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 {strikMingguan.map((h, i) => (
                   <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>{h.label}</span>
+                    <span style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>{h.label}</span>
                     <div style={{
                       width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 13, background: h.done ? 'linear-gradient(135deg, #FB923C, #FBBF24)' : 'rgba(255,255,255,0.12)',
+                      fontSize: 13, background: h.done ? 'linear-gradient(135deg, #FB923C, #FBBF24)' : 'rgba(255,255,255,0.14)',
                       border: h.isToday ? '2px solid white' : '2px solid transparent',
                     }}>
                       {h.done ? '🔥' : ''}
@@ -765,17 +897,76 @@ export default function LatihanHarianPage() {
                 : '⚠️ Data jenjang di profilmu belum lengkap. Hubungi admin untuk melengkapi data supaya Latihan Harian bisa menampilkan soal yang sesuai levelmu.'}
             </div>
           ) : (
-            <div style={st.gridMapel}>
-              {daftarMapel.map((m) => {
-                const ikon = getIkonMapel(m.mapel);
-                return (
-                  <button key={m.mapel} onClick={() => pilihMapel(m.mapel)} style={{ ...st.kartuPlanet, borderColor: ikon.warna }}>
-                    <div style={{ ...st.lingkaranIkon, background: `${ikon.warna}1a`, color: ikon.warna }}>{ikon.emoji}</div>
-                    <span style={st.namaPlanet}>{m.mapel}</span>
-                    <span style={st.jumlahSoalPlanet}>{m.jumlahSoal} soal</span>
+            // 🔥 ROMBAK TOTAL: dulu di sini siswa harus pilih mapel dulu
+            // manual (grid planet), baru pilih mode. Sekarang sistem
+            // yang nentuin 100% -- 1 tombol besar "Mulai Latihan" yang
+            // otomatis nge-mix soal dari SEMUA mapel, ngutamain yang
+            // paling lemah dulu (pakai logika Leitner box yang sama
+            // kayak sebelumnya, cuma pool-nya sekarang lintas mapel).
+            // Ditambah kotak "Minta ke Mr Gemilang" buat siswa yang mau
+            // fokus ke topik tertentu.
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <button onClick={mulaiSesiOtomatis} style={{ ...st.kartuRekomendasi, padding: '20px 18px' }}>
+                <span style={{ fontSize: 34 }}>🚀</span>
+                <div style={{ textAlign: 'left', flex: 1 }}>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>Mulai Latihan Hari Ini</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Sistem otomatis pilihin soal campuran, fokus ke bagian yang masih lemah dulu.</div>
+                </div>
+              </button>
+
+              <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 16, padding: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontSize: 18 }}>💡</span>
+                  <span style={{ fontWeight: 800, fontSize: 13.5, color: '#1e293b' }}>Minta ke Mr Gemilang</span>
+                </div>
+                <p style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 10 }}>
+                  Mau fokus topik tertentu? Ketik aja, mis. "pemahaman numerisasi", "teks deskripsi", "bahasa inggris tenses".
+                </p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="text"
+                    value={kataKunciGemilang}
+                    onChange={(e) => { setKataKunciGemilang(e.target.value); setGemilangTidakKetemu(false); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') mintaKeGemilang(); }}
+                    placeholder="Ketik topik yang kamu mau..."
+                    style={{ flex: 1, border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 13 }}
+                  />
+                  <button onClick={mintaKeGemilang} style={{ background: '#5B2ECC', color: 'white', border: 'none', borderRadius: 10, padding: '0 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                    Cari
                   </button>
-                );
-              })}
+                </div>
+                {gemilangTidakKetemu && (
+                  <div style={{ marginTop: 10, fontSize: 12, color: '#dc2626', background: '#fef2f2', borderRadius: 8, padding: '8px 12px' }}>
+                    Belum ada soal yang cocok buat "{kataKunciGemilang}" di Bank Soal. Coba kata lain, atau minta admin nambahin materi ini ya.
+                  </div>
+                )}
+              </div>
+
+              {/* Capaian per aspek -- walau sesinya sekarang campuran,
+                  progres tetap keukur per mapel/aspek masing-masing,
+                  gak jadi 1 angka gado-gado doang. */}
+              <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 16, padding: 16 }}>
+                <div style={{ fontWeight: 800, fontSize: 13.5, color: '#1e293b', marginBottom: 10 }}>📊 Capaianmu per Aspek</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {daftarMapel.map((m) => {
+                    const soalMapelIni = semuaSoal.filter((s) => (s.mataPelajaran || 'Lainnya') === m.mapel);
+                    const dicoba = soalMapelIni.filter((s) => progressMap[s.id]).length;
+                    const benar = soalMapelIni.filter((s) => (progressMap[s.id]?.benarCount || 0) > 0).length;
+                    const persen = dicoba > 0 ? Math.round((benar / dicoba) * 100) : null;
+                    return (
+                      <div key={m.mapel}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 3 }}>
+                          <span style={{ color: '#374151', fontWeight: 600 }}>{m.mapel}</span>
+                          <span style={{ color: '#9ca3af' }}>{persen === null ? 'Belum dicoba' : `${persen}%`}</span>
+                        </div>
+                        <div style={{ height: 6, background: '#f1f5f9', borderRadius: 10, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${persen ?? 0}%`, background: persen === null ? 'transparent' : persen < 50 ? '#f59e0b' : '#22c55e', borderRadius: 10 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -1239,12 +1430,12 @@ const st = {
 
   hero: {
     position: 'relative', overflow: 'hidden', padding: '18px 18px 30px',
-    background: 'linear-gradient(160deg, #1E1B4B 0%, #4C1D95 100%)',
+    background: 'linear-gradient(160deg, #0d9488 0%, #134e4a 100%)',
   },
   heroStars: {
     position: 'absolute', inset: 0,
-    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px)',
-    backgroundSize: '18px 18px', opacity: 0.5, pointerEvents: 'none',
+    background: 'radial-gradient(circle at 15% 20%, rgba(255,255,255,0.08), transparent 45%), radial-gradient(circle at 85% 75%, rgba(255,255,255,0.06), transparent 40%)',
+    pointerEvents: 'none',
   },
   heroTitle: { color: 'white', fontSize: 22, fontWeight: 800, margin: '6px 0 2px' },
   heroSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12.5, margin: 0 },
