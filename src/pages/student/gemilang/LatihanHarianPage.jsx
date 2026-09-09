@@ -1046,9 +1046,9 @@ export default function LatihanHarianPage() {
 
         <div style={{ padding: 18, marginTop: -6 }}>
           <div style={{ ...st.kartuSoal, borderTop: `4px solid ${ikonMapel.warna}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
               <span>{ikonMapel.emoji}</span>
-              <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>{soalAktif.materi}</span>
+              <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.3 }}>{soalAktif.materi}</span>
             </div>
 
             {/* 🔥 BARU (BUG SERIUS DITEMUKAN): field `bacaan` sebelumnya
@@ -1063,22 +1063,30 @@ export default function LatihanHarianPage() {
             {soalAktif.bacaan?.teks && (
               <div style={st.boxBacaan}>
                 <div style={st.labelBacaan}>📖 Bacaan</div>
-                <div style={{ lineHeight: 1.7 }}>{renderMath(soalAktif.bacaan.teks)}</div>
+                {/* 🔥 BUG DITEMUKAN & DIBENERIN: teks panjang sebelumnya
+                    gak pakai whiteSpace: 'pre-wrap' -- baris baru/paragraf
+                    di data sumber (\n\n) KE-COLLAPSE jadi 1 paragraf
+                    gepeng panjang oleh HTML (perilaku default browser),
+                    keliatan "berantakan" & susah dibaca. Sekarang paragraf
+                    di sumber data tetap kepisah rapi kayak aslinya. */}
+                <div style={{ lineHeight: 1.7, whiteSpace: 'pre-wrap', textAlign: 'left' }}>{renderMath(soalAktif.bacaan.teks)}</div>
                 {(soalAktif.bacaan.gambar || []).map((g, i) => (
-                  <img key={i} src={g.uploadedUrl || g.dataUrl || g.url} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginTop: 10 }} />
+                  <img key={i} src={g.uploadedUrl || g.dataUrl || g.url} alt="" style={{ display: 'block', maxWidth: '100%', borderRadius: 8, marginTop: 12 }} />
                 ))}
               </div>
             )}
 
-            <div style={{ fontSize: 14.5, color: '#1e293b', lineHeight: 1.6, marginBottom: 18 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
+            <div style={{ fontSize: 14.5, color: '#1e293b', lineHeight: 1.6, marginBottom: 16, whiteSpace: 'pre-wrap', textAlign: 'left' }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
             {/* 🔥 BARU (celah serius ditemukan): gambar yang nempel
                 LANGSUNG di soal (bukan di bacaan) -- SEBELUMNYA GAK
                 PERNAH DIRENDER SAMA SEKALI di Latihan Harian juga,
-                persis kayak yang ketemu di Try Out. */}
+                persis kayak yang ketemu di Try Out. Margin negatif yang
+                lama DIBUANG -- itu yang bikin gambar numpuk/gak rapi
+                sama teks di atasnya. */}
             {(soalAktif.gambarUrls || []).length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18, marginTop: -8 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginBottom: 18 }}>
                 {soalAktif.gambarUrls.map((url, i) => (
-                  <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
+                  <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ display: 'block', maxWidth: '100%', maxHeight: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
                 ))}
               </div>
             )}
@@ -1300,7 +1308,7 @@ export default function LatihanHarianPage() {
                         Soal {idx + 1} — {item.benar ? 'Benar' : 'Kurang Tepat'}
                       </span>
                     </div>
-                    <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, marginBottom: 10 }}>
+                    <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, marginBottom: 10, whiteSpace: 'pre-wrap', textAlign: 'left' }}>
                       {renderMath(item.soal.soal || item.soal.teks_soal)}
                     </div>
                     {(item.soal.gambarUrls || []).length > 0 && (

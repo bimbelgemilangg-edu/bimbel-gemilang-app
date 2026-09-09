@@ -628,11 +628,11 @@ export default function TryOutView() {
                 Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
               </div>
               {s.bacaan?.teks && (
-                <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>
+                <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}>
                   <RenderMath text={s.bacaan.teks} />
                 </div>
               )}
-              <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
+              <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10, lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}><RenderMath text={s.soal || s.teks_soal} /></div>
               {(s.gambarUrls || []).length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
                   {s.gambarUrls.map((url, i) => (
@@ -708,22 +708,22 @@ export default function TryOutView() {
 
       {/* SOAL */}
       <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-        <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 8 }}>{soalAktif.materi}</div>
+        <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 700 }}>{soalAktif.materi}</div>
         {soalAktif.bacaan?.teks && (
-          <div style={{ background: '#f8fafc', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: '#334155' }}>
+          <div style={{ background: '#f8fafc', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: '#334155', lineHeight: 1.7, whiteSpace: 'pre-wrap', textAlign: 'left' }}>
             <RenderMath text={soalAktif.bacaan.teks} />
           </div>
         )}
-        <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16 }}><RenderMath text={soalAktif.soal || soalAktif.teks_soal} /></div>
+        <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16, lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}><RenderMath text={soalAktif.soal || soalAktif.teks_soal} /></div>
         {/* 🔥 BARU (celah serius ditemukan): gambar yang nempel LANGSUNG
             di soal (bukan di bacaan) -- mis. diagram, grafik, gambar
             gunung dll -- SEBELUMNYA GAK PERNAH DIRENDER SAMA SEKALI di
             Try Out. Kalau soalnya butuh liat gambar buat jawab, siswa
             gak akan pernah bisa jawab tanpa ini. */}
         {(soalAktif.gambarUrls || []).length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
             {soalAktif.gambarUrls.map((url, i) => (
-              <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
+              <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ display: 'block', maxWidth: '100%', maxHeight: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
             ))}
           </div>
         )}
