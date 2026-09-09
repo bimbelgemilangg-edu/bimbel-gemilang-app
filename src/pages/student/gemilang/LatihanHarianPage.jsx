@@ -512,6 +512,19 @@ export default function LatihanHarianPage() {
           soal = [];
         }
 
+        // 🔥 BUG SERIUS DITEMUKAN & DIBENERIN: Latihan Harian SEBELUMNYA
+        // TIDAK PUNYA PAGAR tipe soal sama sekali -- beda dari Try Out
+        // yang udah lama dipagerin (TIPE_TERDUKUNG di
+        // TerbitkanTryOutPage.jsx). Akibatnya soal tipe "menjodohkan"
+        // atau "uraian" (yang emang belum ada renderer-nya di halaman
+        // ini -- cuma ngerti opsiJawaban pilihan ganda) bisa KEBOBOLAN
+        // kepilih ke sesi latihan, dan siswa bakal lihat pertanyaan
+        // TANPA ADA cara buat jawab sama sekali (kosong/rusak). Pagar
+        // ini SENGAJA disamakan persis daftarnya sama TIPE_TERDUKUNG
+        // di TerbitkanTryOutPage.jsx, biar 2 sisi konsisten.
+        const TIPE_TERDUKUNG_LATIHAN = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik'];
+        soal = soal.filter((s) => TIPE_TERDUKUNG_LATIHAN.includes(s.tipe || 'pg_sederhana'));
+
         console.timeEnd('[Latihan Harian] Saring soal (jenjang/kelas/tipe)');
         console.log(`[Latihan Harian] Soal yang lolos buat siswa ini: ${soal.length} dari ${snap.size} total`);
         setSemuaSoal(soal);
