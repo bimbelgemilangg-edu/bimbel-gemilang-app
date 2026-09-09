@@ -9,7 +9,7 @@ import {
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, Bell, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
-  FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, Target, Trophy
+  FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -88,6 +88,7 @@ const SidebarAdmin = () => {
       label: 'UTAMA',
       items: [
         { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
+        { name: 'Dashboard Analisis', path: '/admin/analisis', icon: <BarChart3 size={18} /> },
         { name: 'Jadwal Harian',path: '/admin/schedule',   icon: <Calendar size={18} /> },
         { name: 'Log Harian',   path: '/admin/daily-log',  icon: <ClipboardList size={18} /> },
       ]
@@ -125,9 +126,6 @@ const SidebarAdmin = () => {
         { name: 'Import Hasil Scan AI', path: '/admin/bank-soal/import', icon: <Brain size={18} /> },
         // ── pilih soal dari gudang, terbitkan sebagai kuis ke siswa
         { name: 'Terbitkan Kuis',       path: '/admin/bank-soal/terbitkan', icon: <Rocket size={18} /> },
-        // ── try out formal: timer 2 mode, anti-cheat kamera, skor proporsional
-        { name: 'Terbitkan Try Out',    path: '/admin/bank-soal/terbitkan-tryout', icon: <Target size={18} /> },
-        { name: 'Hasil Try Out',        path: '/admin/bank-soal/hasil-tryout', icon: <Trophy size={18} /> },
         { name: 'Hasil Kuis',           path: '/admin/bank-soal/hasil',     icon: <ClipboardCheck size={18} /> },
         { name: 'Aktivitas Latihan',    path: '/admin/bank-soal/aktivitas-latihan', icon: <Sparkles size={18} /> },
       ]

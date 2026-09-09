@@ -3109,6 +3109,20 @@ export default function ImportHasilScanPage() {
   // sendiri dari pengetahuannya, langsung dari topik yang diketik admin,
   // JAUH lebih cepat daripada proses cari-buku-scan-ekstrak yang lama.
   const [sumberSoal, setSumberSoal] = useState('ekstrak'); // 'ekstrak' | 'generate'
+  // 🔥 BARU: peta Fase Kurikulum Merdeka -- sistem SEBELUMNYA sama
+  // sekali gak ngerti konsep ini (cuma kenal angka kelas 1-12 lepas).
+  // Ini SPESIFIK dipakai di mode "Generate Langsung" karena paling
+  // relevan buat soal Penguatan Dasar yang emang biasa disusun per
+  // Fase, bukan per kelas tunggal.
+  const PETA_FASE = {
+    'A (kelas 1-2 SD)': { jenjang: 'SD/MI', kelasAwal: '1', kelasAkhir: '2' },
+    'B (kelas 3-4 SD)': { jenjang: 'SD/MI', kelasAwal: '3', kelasAkhir: '4' },
+    'C (kelas 5-6 SD)': { jenjang: 'SD/MI', kelasAwal: '5', kelasAkhir: '6' },
+    'D (kelas 7-9 SMP)': { jenjang: 'SMP/MTs', kelasAwal: '7', kelasAkhir: '9' },
+    'E (kelas 10 SMA)': { jenjang: 'SMA/MA', kelasAwal: '10', kelasAkhir: '10' },
+    'F (kelas 11-12 SMA)': { jenjang: 'SMA/MA', kelasAwal: '11', kelasAkhir: '12' },
+  };
+  const [fasePilihan, setFasePilihan] = useState('');
   const [topikGenerate, setTopikGenerate] = useState('');
   const [jumlahSoalGenerate, setJumlahSoalGenerate] = useState(10);
 
@@ -3118,6 +3132,10 @@ export default function ImportHasilScanPage() {
 
     if (sumberSoal !== 'generate') return promptDasar;
 
+    const infoFase = fasePilihan && PETA_FASE[fasePilihan]
+      ? `\n🎓 FASE KURIKULUM MERDEKA: Fase ${fasePilihan} = mencakup kelas ${PETA_FASE[fasePilihan].kelasAwal} SAMPAI kelas ${PETA_FASE[fasePilihan].kelasAkhir} sekaligus (bukan cuma 1 kelas). Sebar soal-soal yang kamu buat ke KEDUA kelas itu (campuran, gak harus rata 50-50) -- WAJIB tandai SETIAP soal dengan <meta data-field="kelas_soal" data-value="${PETA_FASE[fasePilihan].kelasAwal}" /> ATAU <meta data-field="kelas_soal" data-value="${PETA_FASE[fasePilihan].kelasAkhir}" /> sesuai tingkat kesulitan soal itu (yang lebih dasar → kelas ${PETA_FASE[fasePilihan].kelasAwal}, yang lebih lanjut → kelas ${PETA_FASE[fasePilihan].kelasAkhir}) -- JANGAN dibiarkan kosong untuk kasus Fase ini, karena kalau kosong sistem cuma akan pakai 1 kelas form (bukan mencakup seluruh Fase).\n`
+      : '';
+
     // Preamble ini SENGAJA ditaruh PALING ATAS, sebelum instruksi skema
     // yang panjang -- biar AI baca ini duluan dan gak salah kira masih
     // harus nunggu/nyari dokumen sumber yang gak akan pernah dikasih.
@@ -3126,7 +3144,7 @@ Kamu TIDAK diberi dokumen/buku/PDF sumber apapun untuk soal ini. Tugasmu adalah 
 
 Topik/fokus yang diminta: "${topikGenerate || 'sesuai mata pelajaran & jenjang di bawah'}"
 Jenjang: ${jenjang} · Kelas: ${tingkatKelas} · Mata pelajaran: ${mataPelajaran} · Tingkat kesulitan: ${tingkatKesulitan}
-
+${infoFase}
 Karena ini BUKAN hasil ekstraksi dari sumber, WAJIB tandai setiap soal dengan <meta data-field="kunci_terverifikasi" data-value="false" /> (soal buatanmu sendiri, bukan dari sumber resmi manapun) -- ini konsisten sama aturan yang sudah ada di instruksi skema di bawah.
 
 Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur data-field, tipe soal, dst) -- HANYA bagian "harus ekstrak dari dokumen sumber" yang TIDAK BERLAKU buat mode ini, karena memang tidak ada dokumen sumbernya.
@@ -3135,7 +3153,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
 
 `;
     return preambleGenerate + promptDasar;
-  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanPrompt, promptMode, sumberSoal, topikGenerate, jumlahSoalGenerate]);
+  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanPrompt, promptMode, sumberSoal, topikGenerate, jumlahSoalGenerate, fasePilihan]);
 
   const handleCopyPrompt = useCallback(async () => {
     try {
@@ -3913,6 +3931,20 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                 {sumberSoal === 'generate' && (
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: '10px', background: '#0c4a6e', borderRadius: 8, padding: '10px 12px' }}>
                     <div>
+                      <label style={{ fontSize: '11px', color: '#bae6fd', marginBottom: '4px', display: 'block' }}>Fase Kurikulum Merdeka (opsional)</label>
+                      <select
+                        value={fasePilihan}
+                        onChange={(e) => {
+                          setFasePilihan(e.target.value);
+                          if (e.target.value && PETA_FASE[e.target.value]) setJenjang(PETA_FASE[e.target.value].jenjang);
+                        }}
+                        style={{ width: '100%', border: '1px solid #0284c7', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', backgroundColor: '#082f49', color: '#e0f2fe' }}
+                      >
+                        <option value="">-- Gak pakai Fase, pakai kelas biasa --</option>
+                        {Object.keys(PETA_FASE).map((f) => <option key={f} value={f}>Fase {f}</option>)}
+                      </select>
+                    </div>
+                    <div>
                       <label style={{ fontSize: '11px', color: '#bae6fd', marginBottom: '4px', display: 'block' }}>Topik/fokus (mis. "membaca cepat & pemahaman", "perbandingan & skala")</label>
                       <input
                         type="text" value={topikGenerate} onChange={(e) => setTopikGenerate(e.target.value)}
@@ -3929,6 +3961,9 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                     </div>
                     <div style={{ gridColumn: isMobile ? 'auto' : '1 / -1', fontSize: 11, color: '#7dd3fc' }}>
                       💡 Pilih mapel "Literasi", "Numerasi", atau "Logika/Berpikir Kritis" di form bawah biar soalnya otomatis masuk kategori Penguatan Dasar di Latihan Harian siswa.
+                      {fasePilihan && PETA_FASE[fasePilihan] && (
+                        <> Fase {fasePilihan} = kelas {PETA_FASE[fasePilihan].kelasAwal}-{PETA_FASE[fasePilihan].kelasAkhir}, AI bakal nyebar tandain tiap soal ke salah satu kelas itu (dijelasin di prompt).</>
+                      )}
                     </div>
                   </div>
                 )}

@@ -67,12 +67,11 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 // ============================================================
 import BankSoalPage from './pages/admin/banksoal/BankSoalPage';
 import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
+import DashboardAnalisis from './pages/admin/DashboardAnalisis';
 import TerbitkanKuisPage from './pages/admin/bank-soal/TerbitkanKuisPage';
 import TerbitkanTryOutPage from './pages/admin/bank-soal/TerbitkanTryOutPage';
-import HasilTryOutAdminPage from './pages/admin/bank-soal/HasilTryOutAdminPage';
 import DaftarTryOutPage from './pages/student/tryout/DaftarTryOutPage';
 import TryOutView from './pages/student/tryout/TryOutView';
-import LeaderboardPage from './pages/student/LeaderboardPage';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
 import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
 import BatalkanUjiCobaPage from './pages/admin/bank-soal/BatalkanUjiCobaPage';
@@ -271,6 +270,7 @@ function App() {
             ==================================================== */}
 
         <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+        <Route path="/admin/analisis" element={<AdminRoute><DashboardAnalisis /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
         <Route path="/admin/students/edit/:id" element={<AdminRoute><EditStudent /></AdminRoute>} />
@@ -315,7 +315,6 @@ function App() {
         <Route path="/admin/bank-soal/import" element={<AdminRoute><ImportHasilScanPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/terbitkan" element={<AdminRoute><TerbitkanKuisPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/terbitkan-tryout" element={<AdminRoute><TerbitkanTryOutPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/hasil-tryout" element={<AdminRoute><HasilTryOutAdminPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/hasil" element={<AdminRoute><HasilKuisAdminPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/aktivitas-latihan" element={<AdminRoute><LatihanAktivitasPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/batalkan-uji-coba" element={<AdminRoute><BatalkanUjiCobaPage /></AdminRoute>} />
@@ -350,7 +349,6 @@ function App() {
         <Route path="/siswa/dashboard" element={<SiswaRoute><SiswaLayout><StudentDashboard /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/tryout" element={<SiswaRoute><SiswaLayout><DaftarTryOutPage /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaRoute><TryOutView /></SiswaRoute>} />
-        <Route path="/siswa/leaderboard" element={<SiswaRoute><SiswaLayout><LeaderboardPage /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/materi" element={<SiswaRoute><SiswaLayout><StudentElearning /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/jadwal" element={<SiswaRoute><SiswaLayout><StudentSchedule /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/keuangan" element={<SiswaRoute><SiswaLayout><StudentFinanceSiswa /></SiswaLayout></SiswaRoute>} />
