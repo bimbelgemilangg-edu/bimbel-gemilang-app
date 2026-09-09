@@ -610,8 +610,38 @@ const StudentDashboard = () => {
         };
 
         const nowTs = new Date();
+
+        // 🔥 BARU: cek modul mana yang SUDAH DIKERJAKAN siswa ini --
+        // sebelumnya SAMA SEKALI gak dicek, jadi tugas/kuis yang udah
+        // beres tetap numpuk di widget ini selamanya (atau sampai
+        // deadline lewat, padahal harusnya ilang begitu dikerjain).
+        const modulSudahDikerjakan = new Set();
+        if (studentNim) {
+          try {
+            const [snapKuis, snapTugas] = await Promise.all([
+              getDocs(query(collection(db, 'jawaban_kuis'), where('studentNim', '==', studentNim))),
+              getDocs(query(collection(db, 'jawaban_tugas'), where('studentNim', '==', studentNim))),
+            ]);
+            snapKuis.forEach((d) => { if (d.data().modulId) modulSudahDikerjakan.add(d.data().modulId); });
+            snapTugas.forEach((d) => { if (d.data().modulId) modulSudahDikerjakan.add(d.data().modulId); });
+          } catch (e) {
+            console.error('Gagal cek status pengerjaan tugas/kuis:', e);
+          }
+        }
+
+        // 🔥 BARU: masa tenggang -- deadline yang BARU lewat (<= 3 hari)
+        // masih ditampilkan (ditandai __terlewat, dikasih warna merah di
+        // tampilan) biar siswa masih sempat lihat & kejar telat. Lewat
+        // dari itu baru bener-bener disingkirkan -- biar gak numpuk
+        // selamanya di widget ini.
+        const MASA_TENGGANG_HARI = 3;
+        const batasTenggangMs = MASA_TENGGANG_HARI * 24 * 60 * 60 * 1000;
+
         const fetchedTasks = accessibleModuls
           .filter(m => {
+            // Modul yang udah dikerjakan LANGSUNG disingkirkan dari
+            // widget pengingat ini, apapun status deadline-nya.
+            if (modulSudahDikerjakan.has(m.id)) return false;
             // 🔥 hasQuiz sekarang mengecek DUA model kuis: model lama
             // (quizData langsung di modul) DAN model baru (blok 'quiz'
             // yang menunjuk ke dokumen kuis terpisah).
@@ -624,7 +654,12 @@ const StudentDashboard = () => {
           // tugas/kuis yang udah kadaluarsa sebagai "aktif") -- item
           // __isUpcoming SELALU lolos di sini (deadline-nya null, belum
           // relevan sampai tanggalMulai-nya tiba).
-          .filter(m => !m.__deadline || m.__deadline >= nowTs)
+          // Buang yang deadline-nya udah lewat LEBIH DARI masa tenggang
+          // (3 hari) -- dalam masa tenggang itu tetap tampil, ditandai
+          // __terlewat=true buat dikasih warna merah di tampilan, biar
+          // siswa masih sempat kejar telat sebelum bener-bener hilang.
+          .map(m => ({ ...m, __terlewat: !!(m.__deadline && m.__deadline < nowTs) }))
+          .filter(m => !m.__deadline || (nowTs - m.__deadline) <= batasTenggangMs)
           // 🔥 URUTKAN: item AKTIF dengan deadline paling dekat dulu, baru
           // item "AKAN DATANG" (belum waktunya tapi tetap jadi pengingat,
           // diurutkan berdasar tanggalMulai paling dekat), baru yang gak
@@ -1187,8 +1222,12 @@ const StudentDashboard = () => {
 
               // 🔥 BARU: badge deadline paling dekat, biar keliatan mana yang
               // paling urgent (bukan cuma ngandelin urutan list aja).
+              // Kalau udah __terlewat (dalam masa tenggang 3 hari), badge-nya
+              // ditandai "Terlambat" merah -- bukan hitung mundur biasa.
               let deadlineBadge = null;
-              if (task.__deadline) {
+              if (task.__terlewat) {
+                deadlineBadge = { text: '⚠️ Terlambat', color: '#dc2626' };
+              } else if (task.__deadline) {
                 const diffH = Math.floor((task.__deadline - new Date()) / 3600000);
                 if (diffH < 24) deadlineBadge = { text: `⏰ ${Math.max(diffH, 0)} jam lagi`, color: '#ef4444' };
                 else deadlineBadge = { text: `📅 ${Math.floor(diffH / 24)} hari lagi`, color: '#f59e0b' };
