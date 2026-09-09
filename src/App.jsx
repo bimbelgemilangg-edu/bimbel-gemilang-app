@@ -70,6 +70,7 @@ import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
 import DashboardAnalisis from './pages/admin/DashboardAnalisis';
 import TerbitkanKuisPage from './pages/admin/bank-soal/TerbitkanKuisPage';
 import TerbitkanTryOutPage from './pages/admin/bank-soal/TerbitkanTryOutPage';
+import HasilTryOutAdminPage from './pages/admin/bank-soal/HasilTryOutAdminPage';
 import DaftarTryOutPage from './pages/student/tryout/DaftarTryOutPage';
 import TryOutView from './pages/student/tryout/TryOutView';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
@@ -316,6 +317,7 @@ function App() {
         <Route path="/admin/bank-soal/import" element={<AdminRoute><ImportHasilScanPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/terbitkan" element={<AdminRoute><TerbitkanKuisPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/terbitkan-tryout" element={<AdminRoute><TerbitkanTryOutPage /></AdminRoute>} />
+        <Route path="/admin/bank-soal/hasil-tryout" element={<AdminRoute><HasilTryOutAdminPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/hasil" element={<AdminRoute><HasilKuisAdminPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/aktivitas-latihan" element={<AdminRoute><LatihanAktivitasPage /></AdminRoute>} />
         <Route path="/admin/bank-soal/batalkan-uji-coba" element={<AdminRoute><BatalkanUjiCobaPage /></AdminRoute>} />

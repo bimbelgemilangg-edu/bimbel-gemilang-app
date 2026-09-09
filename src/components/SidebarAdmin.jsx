@@ -9,7 +9,7 @@ import {
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, Bell, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
-  FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3
+  FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -127,6 +127,12 @@ const SidebarAdmin = () => {
         // ── pilih soal dari gudang, terbitkan sebagai kuis ke siswa
         { name: 'Terbitkan Kuis',       path: '/admin/bank-soal/terbitkan', icon: <Rocket size={18} /> },
         { name: 'Hasil Kuis',           path: '/admin/bank-soal/hasil',     icon: <ClipboardCheck size={18} /> },
+        // 🔥 BARU: 2 halaman ini SEBELUMNYA udah ada file & routing-nya
+        // (TerbitkanTryOutPage.jsx, HasilTryOutAdminPage.jsx) tapi TIDAK
+        // PERNAH kedaftar di menu sidebar -- makanya admin gak bisa
+        // nemuin jalan ke situ sama sekali walau halamannya beneran ada.
+        { name: 'Terbitkan Try Out',    path: '/admin/bank-soal/terbitkan-tryout', icon: <Trophy size={18} /> },
+        { name: 'Hasil Try Out',        path: '/admin/bank-soal/hasil-tryout',     icon: <Trophy size={18} /> },
         { name: 'Aktivitas Latihan',    path: '/admin/bank-soal/aktivitas-latihan', icon: <Sparkles size={18} /> },
       ]
     },
