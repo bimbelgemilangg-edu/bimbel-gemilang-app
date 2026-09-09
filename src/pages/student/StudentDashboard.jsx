@@ -256,6 +256,7 @@ const StudentDashboard = () => {
 
   const [dataLoading, setDataLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
+  const [teksCariMateri, setTeksCariMateri] = useState('');
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState(false);
 
@@ -938,16 +939,26 @@ const StudentDashboard = () => {
                 </div>
 
                 {/* 🔥 BARU: search bar ini SEBELUMNYA cuma dekorasi, gak
-                    bisa diklik sama sekali -- sekarang beneran nge-klik
-                    langsung ke Latihan Harian (paling masuk akal buat
-                    "mau latihan apa hari ini?"). */}
-                <button
-                  onClick={() => navigate('/siswa/latihan-harian')}
-                  style={{ background: 'white', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', width: '100%', border: 'none', cursor: 'pointer', textAlign: 'left' }}
-                >
-                  <span style={{ color: '#94a3b8', fontSize: 13 }}>Mau latihan apa hari ini?</span>
-                  <Search size={18} color="#94a3b8" />
-                </button>
+                    bisa diklik & gak nyambung ke apa-apa. Sekarang
+                    beneran jadi kotak ketik yang nyambung ke pencarian
+                    materi (StudentElearning.jsx sekarang baca ?cari=
+                    dari URL, lihat perubahannya di file itu). */}
+                <div style={{ background: 'white', borderRadius: 14, padding: '4px 6px 4px 16px', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', width: '100%' }}>
+                  <input
+                    type="text"
+                    value={teksCariMateri}
+                    onChange={(e) => setTeksCariMateri(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && teksCariMateri.trim()) navigate(`/siswa/materi?cari=${encodeURIComponent(teksCariMateri.trim())}`); }}
+                    placeholder="Cari materi, mis. Aljabar, Teks Deskripsi..."
+                    style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13, color: '#334155', background: 'transparent' }}
+                  />
+                  <button
+                    onClick={() => teksCariMateri.trim() ? navigate(`/siswa/materi?cari=${encodeURIComponent(teksCariMateri.trim())}`) : navigate('/siswa/materi')}
+                    style={{ background: '#5B2ECC', border: 'none', borderRadius: 10, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    <Search size={16} color="white" />
+                  </button>
+                </div>
               </div>
 
               {/* Menu grid -- ikon dalam kartu bulat warna-warni, terinspirasi

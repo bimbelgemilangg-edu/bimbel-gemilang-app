@@ -1,6 +1,6 @@
 // src/pages/student/StudentElearning.jsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   collection, getDocs, doc, getDoc, query, orderBy, where 
@@ -75,13 +75,19 @@ const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
 // ============================================================
 const StudentElearning = () => {
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
   // ===== STATES =====
   const [modules, setModules] = useState([]);
   const [filteredModules, setFilteredModules] = useState([]);
   const [selectedModuleId, setSelectedModuleId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  // 🔥 BARU: kalau halaman ini dibuka lewat link yang punya
+  // ?cari=... (mis. dari kotak "Mau latihan apa hari ini?" di
+  // Dashboard), langsung isi kotak pencarian di sini otomatis --
+  // SEBELUMNYA kotak pencarian di Dashboard cuma dekorasi doang, gak
+  // beneran nyambung ke pencarian materi ini.
+  const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(location.search).get('cari') || '');
   const [filterMapel, setFilterMapel] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
