@@ -59,7 +59,15 @@ const BANK_SOAL_COLLECTION = 'bank_soal';
 const DAFTAR_MAPEL = [
   'Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Indonesia',
   'Bahasa Inggris', 'Ekonomi', 'Geografi', 'Sosiologi', 'Sejarah',
-  'PKN', 'TPS/Penalaran Umum', 'Lainnya',
+  'PKN', 'TPS/Penalaran Umum',
+  // 🔥 BARU: "Penguatan Dasar" -- BUKAN mapel kurikulum spesifik, tapi
+  // latihan kemampuan dasar (baca, hitung, nalar) yang bisa di-generate
+  // AI LANGSUNG (gak perlu buku sumber sama sekali, beda dari mapel di
+  // atas yang butuh scan buku dulu). Otomatis muncul jadi pilihan baru
+  // di Latihan Harian begitu ada soal ke-tag ini -- daftar mapel di
+  // sana emang dinamis ngikutin data, bukan hardcode.
+  'Literasi', 'Numerasi', 'Logika/Berpikir Kritis',
+  'Lainnya',
 ];
 
 const DAFTAR_JENJANG = ['SD/MI', 'SMP/MTs', 'SMA/MA', 'SMK', 'UTBK/SNBT'];
@@ -3094,11 +3102,40 @@ export default function ImportHasilScanPage() {
   const [promptMode, setPromptMode] = useState('html');
   const [catatanPrompt, setCatatanPrompt] = useState('');
   const [promptCopied, setPromptCopied] = useState(false);
+  // 🔥 BARU: "Generate Langsung" -- BEDA dari mode biasa (yang selalu
+  // nganggep AI lagi NGEKSTRAK dari buku/PDF yang dilampirkan). Mode
+  // ini buat kasus "Penguatan Dasar" (Literasi/Numerasi/Logika) yang
+  // gak butuh sumber buku sama sekali -- AI diminta bikin soal ORISINAL
+  // sendiri dari pengetahuannya, langsung dari topik yang diketik admin,
+  // JAUH lebih cepat daripada proses cari-buku-scan-ekstrak yang lama.
+  const [sumberSoal, setSumberSoal] = useState('ekstrak'); // 'ekstrak' | 'generate'
+  const [topikGenerate, setTopikGenerate] = useState('');
+  const [jumlahSoalGenerate, setJumlahSoalGenerate] = useState(10);
 
   const generatedPrompt = useMemo(() => {
     const meta = { mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanTambahan: catatanPrompt };
-    return promptMode === 'html' ? buildMasterHTMLPrompt(meta) : buildMasterPrompt(meta);
-  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanPrompt, promptMode]);
+    const promptDasar = promptMode === 'html' ? buildMasterHTMLPrompt(meta) : buildMasterPrompt(meta);
+
+    if (sumberSoal !== 'generate') return promptDasar;
+
+    // Preamble ini SENGAJA ditaruh PALING ATAS, sebelum instruksi skema
+    // yang panjang -- biar AI baca ini duluan dan gak salah kira masih
+    // harus nunggu/nyari dokumen sumber yang gak akan pernah dikasih.
+    const preambleGenerate = `🔥 MODE GENERATE LANGSUNG -- BACA INI DULU SEBELUM LANJUT:
+Kamu TIDAK diberi dokumen/buku/PDF sumber apapun untuk soal ini. Tugasmu adalah MEMBUAT ${jumlahSoalGenerate} soal ORISINAL sendiri dari pengetahuanmu, untuk melatih kemampuan dasar siswa (bukan materi kurikulum spesifik dari 1 buku tertentu).
+
+Topik/fokus yang diminta: "${topikGenerate || 'sesuai mata pelajaran & jenjang di bawah'}"
+Jenjang: ${jenjang} · Kelas: ${tingkatKelas} · Mata pelajaran: ${mataPelajaran} · Tingkat kesulitan: ${tingkatKesulitan}
+
+Karena ini BUKAN hasil ekstraksi dari sumber, WAJIB tandai setiap soal dengan <meta data-field="kunci_terverifikasi" data-value="false" /> (soal buatanmu sendiri, bukan dari sumber resmi manapun) -- ini konsisten sama aturan yang sudah ada di instruksi skema di bawah.
+
+Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur data-field, tipe soal, dst) -- HANYA bagian "harus ekstrak dari dokumen sumber" yang TIDAK BERLAKU buat mode ini, karena memang tidak ada dokumen sumbernya.
+
+============================================================
+
+`;
+    return preambleGenerate + promptDasar;
+  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanPrompt, promptMode, sumberSoal, topikGenerate, jumlahSoalGenerate]);
 
   const handleCopyPrompt = useCallback(async () => {
     try {
@@ -3860,6 +3897,42 @@ export default function ImportHasilScanPage() {
 
             {showPromptPanel && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
+                {/* 🔥 BARU: pilih sumber soalnya dulu -- ekstrak dari
+                    buku (lama, butuh lampirkan PDF/gambar) atau generate
+                    langsung (baru, gak butuh sumber sama sekali, cocok
+                    buat "Penguatan Dasar" -- Literasi/Numerasi/Logika). */}
+                <div style={{ display: 'flex', gap: 14, background: '#1e293b', borderRadius: 8, padding: '10px 12px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: '#e2e8f0', cursor: 'pointer' }}>
+                    <input type="radio" checked={sumberSoal === 'ekstrak'} onChange={() => setSumberSoal('ekstrak')} /> 📄 Ekstrak dari Buku/PDF (kurikulum)
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: '#e2e8f0', cursor: 'pointer' }}>
+                    <input type="radio" checked={sumberSoal === 'generate'} onChange={() => setSumberSoal('generate')} /> ⚡ Generate Langsung (Penguatan Dasar, tanpa buku)
+                  </label>
+                </div>
+
+                {sumberSoal === 'generate' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: '10px', background: '#0c4a6e', borderRadius: 8, padding: '10px 12px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', color: '#bae6fd', marginBottom: '4px', display: 'block' }}>Topik/fokus (mis. "membaca cepat & pemahaman", "perbandingan & skala")</label>
+                      <input
+                        type="text" value={topikGenerate} onChange={(e) => setTopikGenerate(e.target.value)}
+                        placeholder="Kosongkan = ikut mapel yang dipilih di form bawah"
+                        style={{ width: '100%', border: '1px solid #0284c7', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', backgroundColor: '#082f49', color: '#e0f2fe' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '11px', color: '#bae6fd', marginBottom: '4px', display: 'block' }}>Jumlah soal diminta</label>
+                      <input
+                        type="number" min={1} max={50} value={jumlahSoalGenerate} onChange={(e) => setJumlahSoalGenerate(e.target.value)}
+                        style={{ width: '100%', border: '1px solid #0284c7', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', backgroundColor: '#082f49', color: '#e0f2fe' }}
+                      />
+                    </div>
+                    <div style={{ gridColumn: isMobile ? 'auto' : '1 / -1', fontSize: 11, color: '#7dd3fc' }}>
+                      💡 Pilih mapel "Literasi", "Numerasi", atau "Logika/Berpikir Kritis" di form bawah biar soalnya otomatis masuk kategori Penguatan Dasar di Latihan Harian siswa.
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
                   <div style={{ backgroundColor: '#1e293b', borderRadius: '8px', padding: '10px 12px' }}>
                     <div style={{ fontSize: '11px', color: '#64748b' }}>Mapel / Jenjang / Kelas dipakai otomatis dari form di bawah</div>
