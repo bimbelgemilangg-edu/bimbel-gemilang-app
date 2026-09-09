@@ -339,6 +339,7 @@ const StudentDashboard = () => {
   // 🔥 BARU: ambil XP & streak dari koleksi `siswa_progress` (fondasi
   // sistem gamifikasi baru). Kalau dokumennya belum ada, tetap 0/0 --
   // itu keadaan awal yang wajar, bukan error.
+  const [statusStreak, setStatusStreak] = useState('belum-pernah'); // 'belum-pernah' | 'berakhir' | 'berisiko' | 'aman'
   useEffect(() => {
     if (!studentId) return;
     (async () => {
@@ -348,6 +349,26 @@ const StudentDashboard = () => {
           const d = snap.data();
           setProgresXp(Number(d.xp) || 0);
           setProgresStreak(Number(d.streak) || 0);
+
+          // 🔥 BARU: deteksi status streak buat banner ala Duolingo --
+          // (1) belum pernah latihan sama sekali, (2) streak udah putus
+          // (ada hari kelewat sejak terakhir aktif), (3) streak masih
+          // hidup tapi target hari ini belum tercapai (beresiko putus),
+          // (4) aman (target hari ini udah tercapai).
+          const hariIniStr = new Date().toISOString().slice(0, 10);
+          const lastActiveDateStr = d.lastActiveDate || null;
+          const streak = Number(d.streak) || 0;
+          const target = d.targetHarian || 10;
+          const soalHariIni = d.soalHariIniTanggal === hariIniStr ? (d.soalHariIniCount || 0) : 0;
+
+          if (!lastActiveDateStr) {
+            setStatusStreak('belum-pernah');
+          } else {
+            const selisihHari = Math.round((new Date(hariIniStr).getTime() - new Date(lastActiveDateStr).getTime()) / (1000 * 60 * 60 * 24));
+            if (streak === 0 && selisihHari > 1) setStatusStreak('berakhir');
+            else if (soalHariIni < target) setStatusStreak('berisiko');
+            else setStatusStreak('aman');
+          }
         }
       } catch (e) {
         console.error('Gagal ambil progres XP/streak:', e);
@@ -887,6 +908,45 @@ const StudentDashboard = () => {
           ];
           return (
             <div style={{ marginBottom: 20 }}>
+              {/* 🔥 BARU: banner status streak ala Duolingo -- muncul
+                  paling atas, sebelum kartu hero, biar gak kelewat.
+                  4 status: belum pernah latihan, streak berakhir,
+                  streak beresiko (belum ngerjain hari ini), atau aman. */}
+              {statusStreak === 'belum-pernah' && (
+                <button onClick={() => navigate('/siswa/latihan-harian')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: '#eff6ff', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
+                  <span style={{ fontSize: 30 }}>🙂</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: '#1e40af' }}>Kamu belum pernah Latihan Harian!</div>
+                    <div style={{ fontSize: 11.5, color: '#3b82f6', marginTop: 2 }}>Master G nungguin kamu mulai. Yuk coba sekarang, gratis kok!</div>
+                  </div>
+                </button>
+              )}
+              {statusStreak === 'berakhir' && (
+                <button onClick={() => navigate('/siswa/latihan-harian')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: '#fef2f2', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
+                  <span style={{ fontSize: 30 }}>😢</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: '#b91c1c' }}>Streak-mu berakhir!</div>
+                    <div style={{ fontSize: 11.5, color: '#dc2626', marginTop: 2 }}>Gapapa, semua orang pernah kelewat. Ayo mulai lagi dari 0 hari ini!</div>
+                  </div>
+                </button>
+              )}
+              {statusStreak === 'berisiko' && (
+                <button onClick={() => navigate('/siswa/latihan-harian')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: '#fffbeb', borderRadius: 16, padding: '14px 16px', marginBottom: 14, animation: 'goyangPeringatan 1.8s ease-in-out infinite' }}>
+                  <style>{`@keyframes goyangPeringatan { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-4deg);} 75%{transform:rotate(4deg);} }`}</style>
+                  <span style={{ fontSize: 30 }}>😰</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: '#92400e' }}>Streak {progresStreak} harimu bisa hilang!</div>
+                    <div style={{ fontSize: 11.5, color: '#b45309', marginTop: 2 }}>Belum kerjain target hari ini. Buruan, jangan sampai putus di sini!</div>
+                  </div>
+                </button>
+              )}
+              {statusStreak === 'aman' && progresStreak > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#f0fdf4', borderRadius: 16, padding: '12px 16px', marginBottom: 14 }}>
+                  <span style={{ fontSize: 26 }}>🔥</span>
+                  <div style={{ fontWeight: 700, fontSize: 12.5, color: '#166534' }}>Mantap! Streak {progresStreak} hari aman, target hari ini udah tercapai.</div>
+                </div>
+              )}
+
               <div style={{
                 background: 'linear-gradient(160deg, #0d9488 0%, #134e4a 100%)', borderRadius: 24,
                 padding: isMobile ? 18 : 22, marginBottom: 16, position: 'relative', overflow: 'hidden',
