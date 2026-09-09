@@ -936,7 +936,14 @@ export default function LatihanHarianPage() {
               sebelumnya (cuma nama hari), sekarang ada tanggal jelas +
               hari yang KELEWAT ditandai merah dengan efek nangis (bukan
               cuma dibiarkan kosong diam-diam kayak sebelumnya). */}
-          {(streakSaatIni > 0 || adaHariTerlewat) && (
+          {/* 🔥 BARU: dulu kalender ini CUMA muncul kalau streak > 0
+              atau ada hari kelewat -- siswa yang belum pernah latihan
+              sama sekali (streak masih 0 dari awal) jadi gak pernah
+              lihat kalender ini sama sekali, susah ketemu fiturnya.
+              Sekarang SELALU ditampilkan (hari yang belum ada data
+              cuma tampil kosong/abu-abu), biar gampang ditemuin dari
+              awal pemakaian. */}
+          {(
             <div style={{ position: 'relative', zIndex: 1, marginTop: 14, background: 'rgba(255,255,255,0.12)', borderRadius: 16, padding: '12px 10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
                 <Flame size={16} color="#FB923C" />
