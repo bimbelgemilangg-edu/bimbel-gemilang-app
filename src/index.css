@@ -9,14 +9,28 @@
    (PWA), jadi ekspektasinya emang harus berasa kayak app asli.
    ============================================================ */
 
+/* ============================================================
+   🔥 DIPERBAIKI: aturan anti-zoom di bawah ini SEBELUMNYA berlaku
+   GLOBAL ke semua device -- termasuk LAPTOP admin/guru yang pakai
+   trackpad. `touch-action: pan-x pan-y` itu ditujukan buat cegah
+   pinch-zoom di HP siswa, tapi browser di laptop (terutama macOS)
+   kadang salah nangkep gestur 2-jari scroll trackpad sebagai gestur
+   yang kena batasi juga -- bikin scroll jadi susah/patah-patah.
+   Sekarang dibungkus media query `pointer: coarse` -- itu KHUSUS
+   nyasar device yang inputnya "kasar" kayak jari di layar sentuh
+   (HP/tablet), BUKAN mouse/trackpad presisi laptop. Jadi admin/guru
+   di laptop scroll normal kayak biasa, siswa di HP tetap dapat efek
+   anti-zoom-nya. */
+@media (pointer: coarse) {
+  html, body {
+    touch-action: pan-x pan-y;
+    overscroll-behavior-y: contain; /* cegah efek "pantul" pull-to-refresh ala browser biasa */
+  }
+}
+
 html, body {
-  /* Cegah pinch-zoom manual & double-tap zoom di semua browser --
-     pelengkap dari <meta viewport> di index.html (viewport doang
-     kadang gak cukup ngeblok double-tap zoom di sebagian browser). */
-  touch-action: pan-x pan-y;
-  overscroll-behavior-y: contain; /* cegah efek "pantul" pull-to-refresh ala browser biasa */
-  -webkit-text-size-adjust: 100%; /* cegah teks tiba-tiba membesar sendiri pas rotate HP */
-  overflow-x: hidden; /* cegah geser horizontal gak sengaja */
+  -webkit-text-size-adjust: 100%; /* cegah teks tiba-tiba membesar sendiri pas rotate HP -- aman buat semua device */
+  overflow-x: hidden; /* cegah geser horizontal gak sengaja -- aman buat semua device */
 }
 
 /* 🔥 PENTING: ini akar masalah "zoom otomatis pas ngetik" di iPhone/
