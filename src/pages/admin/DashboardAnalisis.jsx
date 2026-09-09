@@ -16,10 +16,11 @@
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { TrendingUp, Users, Trophy, RefreshCw, Flame } from 'lucide-react';
+import { TrendingUp, Users, Trophy, RefreshCw, Flame, ShieldAlert } from 'lucide-react';
 import SidebarAdmin from '../../components/SidebarAdmin';
 
 const WARNA_BAR = ['#5B2ECC', '#0d9488', '#f59e0b', '#dc2626', '#0891b2', '#16a34a', '#9333ea', '#e11d48'];
@@ -38,6 +39,7 @@ const KELOMPOK_STREAK = [
 ];
 
 export default function DashboardAnalisis() {
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [loading, setLoading] = useState(true);
   const [dataKelas, setDataKelas] = useState([]);
@@ -154,6 +156,29 @@ export default function DashboardAnalisis() {
             <RefreshCw size={14} /> Muat Ulang
           </button>
         </div>
+
+        {/* 🔥 BARU: jalan pintas ke fitur "Cek Soal Nyasar" -- ini yang
+            jawab kekhawatiran "gimana caranya tau soal yang dikirim ke
+            siswa itu bener/gak nyasar jenjang-kelas". Fiturnya udah ada
+            & lengkap di LatihanAktivitasPage.jsx (per-siswa, dikasih
+            alasan kenapa dianggap nyasar) -- ini cuma jalan pintas
+            biar gampang ketemu dari Dashboard Analisis, gak bikin
+            ulang logikanya (biar gak dobel & gak resiko beda hasil). */}
+        <button
+          onClick={() => navigate('/admin/bank-soal/aktivitas-latihan')}
+          style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #fff7ed, #ffedd5)', borderRadius: 16, padding: '16px 18px', marginBottom: 20 }}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <ShieldAlert size={22} color="white" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 13.5, color: '#92400e' }}>🔍 Cek Soal Nyasar per Siswa</div>
+            <div style={{ fontSize: 11.5, color: '#b45309', marginTop: 2 }}>
+              Lihat soal yang PERNAH dikerjakan/dikirim ke siswa tertentu, lengkap sama alasan kalau ada yang gak sesuai jenjang/kelasnya. Sistem kelemahan tetap kerja diam-diam di sisi siswa -- ini murni buat kamu ngecek, siswa gak pernah lihat alasan ini.
+            </div>
+          </div>
+          <span style={{ fontSize: 20, color: '#f59e0b' }}>→</span>
+        </button>
 
         {/* Ringkasan angka */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 24 }}>
