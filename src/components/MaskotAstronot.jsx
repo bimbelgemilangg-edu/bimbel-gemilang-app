@@ -2,18 +2,26 @@
 // ============================================================
 // "Master G" -- maskot resmi Bimbel Gemilang.
 //
-// 🔥 BUG SERIUS DITEMUKAN & DIBENERIN: sebelumnya kalau file gambar
-// `src/assets/master-g.png` BELUM DITARUH di project (atau gagal
-// dimuat karena alasan apapun -- koneksi lambat, dll), yang muncul ke
-// siswa itu ICON GAMBAR RUSAK bawaan browser -- keliatan berantakan,
-// dan di HP jadul bisa nge-lag nunggu proses gagal-muatnya. Sekarang
-// ada fallback: kalau gambar gagal dimuat, otomatis ganti ke maskot
-// darurat berbasis emoji (ringan banget, gak pernah gagal muat sama
-// sekali) -- SISWA GAK AKAN PERNAH LIHAT GAMBAR RUSAK LAGI.
+// 🔥 BUG PALING SERIUS DITEMUKAN & DIBENERIN: sebelumnya file gambar
+// di-`import` dari src/assets/master-g.png. Cara import kayak gitu
+// diproses sama Vite SAAT BUILD -- kalau filenya gak ketemu, BUKAN
+// cuma gambarnya doang yang rusak, tapi SELURUH BUILD APLIKASI GAGAL
+// TOTAL (persis error yang berkali-kali kejadian kemarin). Sekarang
+// gambarnya dipindah ke folder `public/` dan dipanggil pakai PATH
+// STRING BIASA (bukan import) -- file di public/ TIDAK diproses Vite
+// sama sekali, jadi kalaupun filenya kelewat/gak ada, BUILD TETAP
+// JALAN NORMAL (cuma gambar itu doang yang gak muncul, ketangkep
+// sama fallback emoji di bawah -- gak akan pernah bikin APLIKASI
+// GAGAL DEPLOY lagi).
+//
+// PENTING: taruh file gambarnya di public/master-g.png (BUKAN lagi
+// di src/assets/) -- persis di folder `public` yang sejajar sama
+// `src`, bukan di dalam src sama sekali.
 // ============================================================
 
 import React, { useState } from 'react';
-import MasterG from '../assets/master-g.png';
+
+const MasterG = '/master-g.png'; // path public -- BUKAN import dari src/assets
 
 export default function MaskotAstronot({ size = 100, mengambang = true }) {
   // Kalau <img> gagal dimuat (file gak ada di server, koneksi
