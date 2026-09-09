@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   🔥 BARU: bikin aplikasi kerasa kayak APP NATIVE (fixed, gak bisa
+   di-zoom/geser bebas), bukan kayak buka website biasa -- terutama
+   penting karena app ini di-"install" ke homescreen lewat Chrome
+   (PWA), jadi ekspektasinya emang harus berasa kayak app asli.
+   ============================================================ */
+
+html, body {
+  /* Cegah pinch-zoom manual & double-tap zoom di semua browser --
+     pelengkap dari <meta viewport> di index.html (viewport doang
+     kadang gak cukup ngeblok double-tap zoom di sebagian browser). */
+  touch-action: pan-x pan-y;
+  overscroll-behavior-y: contain; /* cegah efek "pantul" pull-to-refresh ala browser biasa */
+  -webkit-text-size-adjust: 100%; /* cegah teks tiba-tiba membesar sendiri pas rotate HP */
+  overflow-x: hidden; /* cegah geser horizontal gak sengaja */
+}
+
+/* 🔥 PENTING: ini akar masalah "zoom otomatis pas ngetik" di iPhone/
+   Safari -- browser iOS OTOMATIS ngezoom in kalau font-size input
+   yang difokus KURANG DARI 16px. Aturan ini mastiin SEMUA kotak
+   ketik di seluruh app minimal 16px, apapun style lokal yang
+   dipasang di komponen masing-masing (override lewat !important
+   sengaja, karena ini soal konsistensi keseluruhan app, bukan
+   preferensi 1 komponen). */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
 /* CSS tambahan untuk smooth scroll */
 html {
   scroll-behavior: smooth;
