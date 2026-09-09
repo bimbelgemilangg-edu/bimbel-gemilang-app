@@ -908,45 +908,6 @@ const StudentDashboard = () => {
           ];
           return (
             <div style={{ marginBottom: 20 }}>
-              {/* 🔥 BARU: banner status streak ala Duolingo -- muncul
-                  paling atas, sebelum kartu hero, biar gak kelewat.
-                  4 status: belum pernah latihan, streak berakhir,
-                  streak beresiko (belum ngerjain hari ini), atau aman. */}
-              {statusStreak === 'belum-pernah' && (
-                <button onClick={() => navigate('/siswa/latihan-harian')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: '#eff6ff', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
-                  <span style={{ fontSize: 30 }}>🙂</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13, color: '#1e40af' }}>Kamu belum pernah Latihan Harian!</div>
-                    <div style={{ fontSize: 11.5, color: '#3b82f6', marginTop: 2 }}>Master G nungguin kamu mulai. Yuk coba sekarang, gratis kok!</div>
-                  </div>
-                </button>
-              )}
-              {statusStreak === 'berakhir' && (
-                <button onClick={() => navigate('/siswa/latihan-harian')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: '#fef2f2', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
-                  <span style={{ fontSize: 30 }}>😢</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13, color: '#b91c1c' }}>Streak-mu berakhir!</div>
-                    <div style={{ fontSize: 11.5, color: '#dc2626', marginTop: 2 }}>Gapapa, semua orang pernah kelewat. Ayo mulai lagi dari 0 hari ini!</div>
-                  </div>
-                </button>
-              )}
-              {statusStreak === 'berisiko' && (
-                <button onClick={() => navigate('/siswa/latihan-harian')} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: '#fffbeb', borderRadius: 16, padding: '14px 16px', marginBottom: 14, animation: 'goyangPeringatan 1.8s ease-in-out infinite' }}>
-                  <style>{`@keyframes goyangPeringatan { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-4deg);} 75%{transform:rotate(4deg);} }`}</style>
-                  <span style={{ fontSize: 30 }}>😰</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 13, color: '#92400e' }}>Streak {progresStreak} harimu bisa hilang!</div>
-                    <div style={{ fontSize: 11.5, color: '#b45309', marginTop: 2 }}>Belum kerjain target hari ini. Buruan, jangan sampai putus di sini!</div>
-                  </div>
-                </button>
-              )}
-              {statusStreak === 'aman' && progresStreak > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#f0fdf4', borderRadius: 16, padding: '12px 16px', marginBottom: 14 }}>
-                  <span style={{ fontSize: 26 }}>🔥</span>
-                  <div style={{ fontWeight: 700, fontSize: 12.5, color: '#166534' }}>Mantap! Streak {progresStreak} hari aman, target hari ini udah tercapai.</div>
-                </div>
-              )}
-
               <div style={{
                 background: 'linear-gradient(160deg, #0d9488 0%, #134e4a 100%)', borderRadius: 24,
                 padding: isMobile ? 18 : 22, marginBottom: 16, position: 'relative', overflow: 'hidden',
@@ -1023,6 +984,7 @@ const StudentDashboard = () => {
 
               {/* Menu grid -- ikon dalam kartu bulat warna-warni, terinspirasi
                   gaya "subject chips" dashboard belajar modern. */}
+              <style>{`@keyframes goyangPeringatan { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-15deg);} 75%{transform:rotate(15deg);} }`}</style>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 16 }}>
                 {menuBaru.map((m) => (
                   <button
@@ -1051,7 +1013,35 @@ const StudentDashboard = () => {
                       {m.segeraHadir && (
                         <span style={{ position: 'absolute', bottom: -6, fontSize: 8, background: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: 8, fontWeight: 700, whiteSpace: 'nowrap' }}>Segera</span>
                       )}
+                      {/* 🔥 BARU: sesuai permintaan -- ganti banner besar
+                          jadi emot kecil NEMPEL di ikon menu Latihan
+                          Harian aja, gak nambah elemen baru yang bikin
+                          dashboard makin penuh. */}
+                      {m.key === 'latihan' && (
+                        <span style={{
+                          position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: '50%',
+                          background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                          animation: statusStreak === 'berisiko' ? 'goyangPeringatan 1.8s ease-in-out infinite' : 'none',
+                        }}>
+                          {statusStreak === 'belum-pernah' && '🙂'}
+                          {statusStreak === 'berakhir' && '😢'}
+                          {statusStreak === 'berisiko' && '😰'}
+                          {statusStreak === 'aman' && '🔥'}
+                        </span>
+                      )}
                     </div>
+                    {m.key === 'latihan' && (
+                      <span style={{
+                        fontSize: 8.5, fontWeight: 700, textAlign: 'center', lineHeight: 1.2,
+                        color: statusStreak === 'berakhir' ? '#dc2626' : statusStreak === 'berisiko' ? '#d97706' : statusStreak === 'aman' ? '#16a34a' : '#3b82f6',
+                      }}>
+                        {statusStreak === 'belum-pernah' && 'Yuk mulai!'}
+                        {statusStreak === 'berakhir' && 'Streak berakhir'}
+                        {statusStreak === 'berisiko' && 'Streak beresiko!'}
+                        {statusStreak === 'aman' && `${progresStreak} hari aman`}
+                      </span>
+                    )}
                     <span style={{ fontSize: 10.5, color: m.warnaTeks, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>{m.label}</span>
                   </button>
                 ))}
