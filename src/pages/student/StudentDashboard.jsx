@@ -786,12 +786,12 @@ const StudentDashboard = () => {
 
   if (authError) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc', flexDirection: 'column', gap: 16 }}>
-        <AlertCircle size={48} color="#ef4444" />
-        <h3 style={{ color: '#1e293b' }}>Sesi Berakhir</h3>
-        <p style={{ color: '#64748b', fontSize: 14 }}>Silakan login kembali</p>
-        <button onClick={() => { localStorage.clear(); navigate('/login-siswa'); }} style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
-          Login
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', flexDirection: 'column', gap: 16 }}>
+        <div style={{ animation: 'bounce 1s infinite' }}><AlertCircle size={56} color="#ef4444" /></div>
+        <h3 style={{ color: '#1e293b', fontSize: 18, fontWeight: 800 }}>Sesi Berakhir</h3>
+        <p style={{ color: '#64748b', fontSize: 14, textAlign: 'center', maxWidth: 280 }}>Silakan login kembali untuk melanjutkan aktivitas belajar Anda</p>
+        <button onClick={() => { localStorage.clear(); navigate('/login-siswa'); }} style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #0d9488 0%, #134e4a 100%)', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(13,148,136,0.3)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+          Login Sekarang
         </button>
       </div>
     );
@@ -815,19 +815,24 @@ const StudentDashboard = () => {
       <style>{`
         @keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
         @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         .sd-card { animation: fadeSlideIn 0.25s ease-out; }
-        .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); }
+        .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); transform: translateY(-1px); transition: all 0.2s ease; }
       `}</style>
 
       <div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>{greeting.icon} {greeting.text}</p>
-            <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 20 : 25, fontWeight: 800, color: '#1e293b' }}>{studentName}!</h1>
-            <p style={{ color: '#64748b', marginTop: 5, fontSize: 12 }}>
-              {(studentProfile?.kategori || studentProgram || 'Reguler')} • Kelas {studentProfile?.kelasSekolah || studentKelas || '-'}
-              {studentNim && <span style={{ marginLeft: 8, fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>🆔 {studentNim}</span>}
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+              {greeting.icon} <span>{greeting.text}</span>
+            </p>
+            <h1 style={{ margin: '4px 0 0', fontSize: isMobile ? 22 : 28, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.5px' }}>{studentName}!</h1>
+            <p style={{ color: '#64748b', marginTop: 6, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ background: 'linear-gradient(135deg, #0d9488 0%, #134e4a 100%)', color: 'white', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{studentProfile?.kategori || studentProgram || 'Reguler'}</span>
+              <span>•</span>
+              <span>Kelas {studentProfile?.kelasSekolah || studentKelas || '-'}</span>
+              {studentNim && <span style={{ fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>🆔 {studentNim}</span>}
             </p>
           </div>
 
@@ -835,19 +840,21 @@ const StudentDashboard = () => {
             <button
               onClick={() => setShowNotifPanel(v => !v)}
               style={{
-                position: 'relative', width: 42, height: 42, borderRadius: 14,
+                position: 'relative', width: 44, height: 44, borderRadius: 14,
                 background: 'white', border: '1px solid #e2e8f0', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)', transition: 'all 0.2s ease',
               }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'}
             >
               <Bell size={18} />
               {unreadCount > 0 && (
                 <span style={{
-                  position: 'absolute', top: -3, right: -3, background: '#ef4444', color: 'white',
-                  fontSize: 9, fontWeight: 800, minWidth: 16, height: 16, borderRadius: 8,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px',
-                  border: '2px solid #f4f6fb',
+                  position: 'absolute', top: -4, right: -4, background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: 'white',
+                  fontSize: 9, fontWeight: 800, minWidth: 18, height: 18, borderRadius: 9,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
+                  border: '2px solid #f4f6fb', boxShadow: '0 2px 6px rgba(239,68,68,0.3)',
                 }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
@@ -862,10 +869,11 @@ const StudentDashboard = () => {
                   width: isMobile ? 'calc(100vw - 32px)' : 360, maxWidth: 380, maxHeight: 440,
                   background: 'white', borderRadius: 16, boxShadow: '0 16px 40px rgba(0,0,0,0.18)',
                   border: '1px solid #e2e8f0', zIndex: 999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
+                  animation: 'fadeSlideIn 0.2s ease-out',
                 }}>
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
                     <span style={{ fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}><Inbox size={15} /> Kotak Masuk</span>
-                    {unreadCount > 0 && <span style={{ fontSize: 10, color: '#94a3b8' }}>{unreadCount} belum dibaca</span>}
+                    {unreadCount > 0 && <span style={{ fontSize: 10, color: '#0d9488', fontWeight: 700, background: '#ecfdf5', padding: '2px 8px', borderRadius: 10 }}>{unreadCount} belum dibaca</span>}
                   </div>
                   <div style={{ overflowY: 'auto', flex: 1 }}>
                     {notifications.length === 0 ? (
@@ -915,7 +923,10 @@ const StudentDashboard = () => {
             )}
 
             {!isMobile && (
-              <button onClick={() => setIsScanning(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1e293b', color: 'white', border: 'none', padding: '11px 20px', borderRadius: 14, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(30,41,59,0.2)' }}>
+              <button onClick={() => setIsScanning(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, #0d9488 0%, #134e4a 100%)', color: 'white', border: 'none', padding: '11px 20px', borderRadius: 14, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(13,148,136,0.3)', transition: 'all 0.2s ease' }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(13,148,136,0.4)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(13,148,136,0.3)'; }}
+              >
                 <Camera size={17} /> Scan Absen
               </button>
             )}
@@ -946,6 +957,7 @@ const StudentDashboard = () => {
               <div style={{
                 background: 'linear-gradient(160deg, #0d9488 0%, #134e4a 100%)', borderRadius: 24,
                 padding: isMobile ? 18 : 22, marginBottom: 16, position: 'relative', overflow: 'hidden',
+                boxShadow: '0 8px 24px rgba(13,148,136,0.25)',
               }}>
                 {/* Bintik dekoratif */}
                 <div style={{ position: 'absolute', top: -24, right: -24, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
@@ -999,7 +1011,7 @@ const StudentDashboard = () => {
                     beneran jadi kotak ketik yang nyambung ke pencarian
                     materi (StudentElearning.jsx sekarang baca ?cari=
                     dari URL, lihat perubahannya di file itu). */}
-                <div style={{ background: 'white', borderRadius: 14, padding: '4px 6px 4px 16px', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', width: '100%' }}>
+                <div style={{ background: 'white', borderRadius: 14, padding: '4px 6px 4px 16px', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', width: '100%', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
                   <input
                     type="text"
                     value={teksCariMateri}
@@ -1010,7 +1022,9 @@ const StudentDashboard = () => {
                   />
                   <button
                     onClick={() => teksCariMateri.trim() ? navigate(`/siswa/materi?cari=${encodeURIComponent(teksCariMateri.trim())}`) : navigate('/siswa/materi')}
-                    style={{ background: '#5B2ECC', border: 'none', borderRadius: 10, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                    style={{ background: 'linear-gradient(135deg, #5B2ECC 0%, #1E3A8A 100%)', border: 'none', borderRadius: 10, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s ease' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
                   >
                     <Search size={16} color="white" />
                   </button>
@@ -1095,12 +1109,22 @@ const StudentDashboard = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 8 : 14, marginBottom: 16 }}>
           {[
-            { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#0d9488', bg: '#f0fdfa' },
-            { label: 'Tugas & Kuis', value: tasks.length, color: '#5B2ECC', bg: '#f5f3ff' },
-            { label: 'Notifikasi Baru', value: unreadCount, color: '#d97706', bg: '#fffbeb' },
+            { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#0d9488', bg: '#f0fdfa', icon: '📅' },
+            { label: 'Tugas & Kuis', value: tasks.length, color: '#5B2ECC', bg: '#f5f3ff', icon: '📝' },
+            { label: 'Notifikasi Baru', value: unreadCount, color: '#d97706', bg: '#fffbeb', icon: '🔔' },
           ].map((stat, i) => (
-            <div key={i} className="sd-card" style={{ background: stat.bg, borderRadius: 16, padding: isMobile ? '12px 10px' : '16px 18px' }}>
-              <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color, lineHeight: 1 }}>
+            <div key={i} className="sd-card" style={{ 
+              background: `linear-gradient(135deg, ${stat.bg} 0%, ${stat.bg.replace('f', 'e')} 100%)`, 
+              borderRadius: 16, 
+              padding: isMobile ? '12px 10px' : '16px 18px',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
+            >
+              <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.icon}</div>
+              <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color, lineHeight: 1, marginTop: 4 }}>
                 {dataLoading ? '–' : stat.value}
               </div>
               <div style={{ fontSize: isMobile ? 9 : 11, color: '#64748b', fontWeight: 700, marginTop: 4 }}>{stat.label}</div>
@@ -1110,9 +1134,10 @@ const StudentDashboard = () => {
 
         {wajibSurveys.map(sv => (
           <div key={sv.id} className="sd-card" style={{
-            background: 'linear-gradient(135deg, #f59e0b, #dc2626)', borderRadius: 18, padding: 18, color: 'white',
+            background: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)', borderRadius: 18, padding: 18, color: 'white',
             marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
             boxShadow: '0 10px 24px rgba(220,38,38,0.28)',
+            animation: 'goyangPeringatan 2s ease-in-out infinite',
           }}>
             {sv.coverImage && (
               <img src={sv.coverImage} alt={sv.title} style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
@@ -1122,7 +1147,14 @@ const StudentDashboard = () => {
               <h3 style={{ margin: '6px 0 2px', fontSize: 15, fontWeight: 800 }}>{sv.title}</h3>
               <p style={{ margin: 0, fontSize: 11, opacity: 0.9 }}>Wajib diisi{sv.deadline ? ` — batas ${new Date(sv.deadline).toLocaleDateString('id-ID')}` : ''}.</p>
             </div>
-            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ background: 'white', color: '#dc2626', border: 'none', padding: '10px 18px', borderRadius: 12, fontWeight: 800, fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>
+            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ 
+              background: 'white', color: '#dc2626', border: 'none', padding: '10px 18px', borderRadius: 12, 
+              fontWeight: 800, fontSize: 12, cursor: 'pointer', flexShrink: 0,
+              transition: 'all 0.2s ease',
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(220,38,38,0.3)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
               Isi Sekarang →
             </button>
           </div>
@@ -1132,7 +1164,12 @@ const StudentDashboard = () => {
           <div key={sv.id} className="sd-card" style={{
             background: 'white', border: '1px solid #bae6fd', borderRadius: 16, padding: 14,
             marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', position: 'relative',
-          }}>
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(8,145,178,0.15)'; e.currentTarget.style.borderColor = '#0891b2'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = '#bae6fd'; }}
+          >
             {sv.coverImage && (
               <img src={sv.coverImage} alt={sv.title} style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
             )}
@@ -1140,10 +1177,24 @@ const StudentDashboard = () => {
               <span style={{ fontSize: 9, fontWeight: 700, color: '#0891b2' }}>🔵 SURVEI OPSIONAL</span>
               <h4 style={{ margin: '2px 0', fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{sv.title}</h4>
             </div>
-            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ background: '#ecfeff', color: '#0891b2', border: 'none', padding: '7px 14px', borderRadius: 10, fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ 
+              background: '#ecfeff', color: '#0891b2', border: 'none', padding: '7px 14px', borderRadius: 10, 
+              fontWeight: 700, fontSize: 11, cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#cffafe'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#ecfeff'; e.currentTarget.style.transform = 'scale(1)'; }}
+            >
               Isi
             </button>
-            <button onClick={() => dismissOptionalSurvey(sv.id)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }} title="Tutup">
+            <button onClick={() => dismissOptionalSurvey(sv.id)} style={{ 
+              background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4,
+              transition: 'all 0.2s ease',
+            }} 
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.transform = 'scale(1)'; }}
+              title="Tutup"
+            >
               <X size={16} />
             </button>
           </div>
