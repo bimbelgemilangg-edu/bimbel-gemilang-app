@@ -392,6 +392,10 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
 16a. \`data-mapel="Matematika|Fisika|Kimia|Biologi|Bahasa Indonesia|Bahasa Inggris|Ekonomi|Geografi|Sosiologi|Sejarah|PKN|TPS/Penalaran Umum"\` — HANYA isi kalau dokumen ini berisi CAMPURAN BEBERAPA MAPEL BERBEDA dalam satu file yang sama (mis. 1 file tryout gabungan TKA yang isinya sebagian soal Matematika, sebagian Bahasa Indonesia, sebagian Bahasa Inggris tercampur). Kalau SELURUH dokumen ini memang cuma 1 mapel yang sama dari awal sampai akhir (kasus paling umum), JANGAN isi atribut ini sama sekali di soal manapun — biarkan sistem pakai mapel yang dipilih admin di form untuk semua soal. Nilai HARUS PERSIS salah satu dari daftar di atas, jangan menulis nama mapel lain/singkatan yang tidak ada di daftar itu.
    ⚠️ KALAU dokumen ini SUDAH kamu tentukan campuran (ada 2+ mapel berbeda di dalamnya): \`data-mapel\` WAJIB diisi di SETIAP SATU soal tanpa kecuali, termasuk soal-soal yang mapelnya kebetulan SAMA dengan mapel form admin. JANGAN ada 1 soal pun yang dibiarkan kosong dengan asumsi "nanti ikut form admin" — kalau kamu lupa mengisi walau cuma 1 soal, soal itu akan diam-diam salah kategori tanpa ada yang tahu. Lebih baik isi semua secara eksplisit daripada mengandalkan bawaan form.
 16b. \`<div data-field="tags">kata1, kata2, kata3</div>\` (OPSIONAL, per soal) — label bebas untuk soal ITU SAJA (mis. "hots", "aljabar", "utbk", "operasi hitung"), dipisah koma. Ini BEDA dari \`data-field="materi"\` (topik/bab formal) — tags boleh lebih bebas dan lintas-topik. Isi HANYA kalau memang relevan; kalau tidak ada label yang jelas, jangan isi atribut ini sama sekali (jangan mengarang-ngarang tag generik).
+16c. 🔥 RANGKUMAN MATERI (OPSIONAL, SEKALI PER FILE, BUKAN per soal) -- kalau dokumen sumber ini punya bagian rangkuman teori/penjelasan konsep SEBELUM soal-soalnya (bukan cuma kumpulan soal doang), tulis rangkuman itu di LUAR semua <article data-gemilang-question> (taruh di PALING ATAS dokumen, sebelum soal pertama), dibungkus persis begini:
+    \`<div data-field="rangkuman_materi" data-judul-bab="Bab 1 - Bilangan Bulat dan Pecahan">...rangkuman lengkap di sini, boleh pakai <h3>, <p>, <ul><li>, <b> apa adanya persis sesuai struktur dokumen sumber (jangan diringkas ulang, salin utuh)...</div>\`
+    data-judul-bab diisi PERSIS judul bab dari dokumen sumber (dipakai jadi judul modul materi). Kalau dokumen ini MEMANG cuma kumpulan soal tanpa rangkuman teori sama sekali, JANGAN tulis blok ini sama sekali -- jangan mengarang rangkuman sendiri.
+
 
 ## KONSISTENSI STRUKTUR (PENTING — supaya hasil parsing tidak meleset)
 
@@ -1543,6 +1547,30 @@ function escapeTandaKurungLiar(rawHtml) {
   }
 
   return out;
+}
+
+// 🔥 BARU: ekstraksi rangkuman materi -- TERPISAH TOTAL dari parser
+// soal (parseHTMLMaster di bawah). Sengaja pakai DOMParser sendiri &
+// selector yang beda (`[data-field="rangkuman_materi"]`, di LUAR
+// <article data-gemilang-question>), jadi 2 fungsi ini gak akan
+// pernah rebutan/salah tangkep punya satu sama lain -- kalau AI cuma
+// nulis soal doang (gak ada rangkuman), fungsi ini otomatis balikin
+// kosong, gak bikin error apapun.
+function ekstrakRangkumanMateri(raw) {
+  try {
+    const source = escapeTandaKurungLiar(safeString(raw));
+    if (!source.trim() || typeof DOMParser === 'undefined') return { html: '', judul: '' };
+    const doc = new DOMParser().parseFromString(source, 'text/html');
+    const node = doc.querySelector('[data-field="rangkuman_materi"]');
+    if (!node) return { html: '', judul: '' };
+    return {
+      html: node.innerHTML || '',
+      judul: safeString(node.getAttribute('data-judul-bab')).trim(),
+    };
+  } catch (e) {
+    console.error('Gagal ekstrak rangkuman materi (diabaikan, gak ganggu proses soal):', e);
+    return { html: '', judul: '' };
+  }
 }
 
 function parseHTMLMaster(raw) {
@@ -2934,6 +2962,12 @@ export default function ImportHasilScanPage() {
   const [daftarUploadMassal, setDaftarUploadMassal] = useState([]); // [{id, dataUrl, namaFile, soalIdxTerpilih}]
   const [cropTargetMassal, setCropTargetMassal] = useState(null); // id item yang sedang di-crop, atau null
   const [parseError, setParseError] = useState('');
+  // 🔥 BARU: rangkuman materi -- kalau kedetek di HTML yang dipaste,
+  // admin bisa pilih mau ikut dibikinin Modul Materi otomatis atau
+  // enggak (default: iya, kalau kedetek).
+  const [rangkumanTerdeteksi, setRangkumanTerdeteksi] = useState('');
+  const [judulBabInput, setJudulBabInput] = useState('');
+  const [buatJugaModul, setBuatJugaModul] = useState(true);
   const [warnings, setWarnings] = useState([]);
 
   // 🔥 BARU: status validasi gambar -- key unik per gambar (lihat
@@ -3397,6 +3431,18 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         : activeFormat === 'html' ? parseHTMLMaster(content)
         : activeFormat === 'tex' ? parseTeX(content)
         : parseCSV(content);
+
+      // 🔥 BARU: ekstrak rangkuman materi (kalau ada) -- terpisah total
+      // dari parsing soal di atas, gak akan pernah bikin proses soal
+      // gagal walau rangkumannya gak ada/formatnya aneh.
+      if (activeFormat === 'html') {
+        const hasilRangkuman = ekstrakRangkumanMateri(content);
+        setRangkumanTerdeteksi(hasilRangkuman.html);
+        if (hasilRangkuman.judul) setJudulBabInput(hasilRangkuman.judul);
+      } else {
+        setRangkumanTerdeteksi('');
+      }
+
       let normalized = raw
         .map((question, index) => normalizeSoal(question, index))
         .map((q, index) => ({ ...q, _idx: index }));
@@ -3825,6 +3871,55 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         }
       }
 
+      // 🔥 BARU: kalau rangkuman materi kedeteksi & admin centang
+      // "buat juga jadi Modul Materi", bikin 1 dokumen di koleksi yang
+      // SAMA PERSIS dipakai halaman Kelola Materi (bimbel_modul) --
+      // formatnya disamain PERSIS (field & tipe block "text") biar
+      // hasilnya BISA DIBUKA & DIEDIT ULANG normal lewat halaman itu,
+      // bukan data "asing" yang beda skema.
+      if (buatJugaModul && rangkumanTerdeteksi && saved > 0) {
+        try {
+          const judulModul = (judulBabInput || 'Materi Tanpa Judul').toUpperCase();
+          await addDoc(collection(db, 'bimbel_modul'), {
+            title: judulModul,
+            subject: (mataPelajaran || 'Umum').toUpperCase(),
+            guruId: 'admin', // dibuat admin, bukan guru spesifik -- guru manapun yang ngajar kelas terkait tetap bisa pakai
+            guruName: 'Admin (Import Otomatis)',
+            kodeMapel: '',
+            coverImage: '', coverFilePath: '', description: '',
+            blocks: [{
+              id: Date.now(),
+              type: 'text',
+              title: '📄 Rangkuman Materi',
+              content: rangkumanTerdeteksi,
+              fileName: '', mimeType: '', fileSize: 0, filePath: '', endTime: '',
+              allowedFileType: 'all', quizId: null, quizTitle: '', quizQuestions: 0, quizDraft: null,
+            }],
+            quizData: [],
+            // 🔥 "Semua" -- aman & luas dulu, admin bisa persempit lewat
+            // halaman Kelola Materi kalau mau kunci ke kelas tertentu.
+            targetKategori: 'Semua',
+            targetKelas: 'Semua',
+            mingguKe: 1,
+            tahunAjaran: new Date().getFullYear().toString(),
+            status: 'aktif',
+            sendToSpecificStudents: false,
+            selectedStudents: [],
+            studentIds: [],
+            totalKonten: 1,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            updatedBy: 'Admin (Import Otomatis)',
+          });
+          addLog(`📖 Modul Materi "${judulModul}" berhasil dibuat sekaligus.`);
+        } catch (e) {
+          // Kegagalan bikin modul TIDAK BOLEH bikin soal yang udah
+          // kesimpen jadi ke-anggap gagal juga -- itu 2 hal terpisah.
+          console.error('Gagal bikin Modul Materi otomatis:', e);
+          addLog(`⚠️ Soal berhasil tersimpan, TAPI modul materi gagal dibuat: ${e.message}`);
+        }
+      }
+
       setSaveResult({
         success: true,
         count: saved,
@@ -3837,7 +3932,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
     } finally {
       setSaving(false);
     }
-  }, [soalList, mataPelajaran, tingkatKelas, jenjang, jenisUjian, folderAktif, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus]);
+  }, [soalList, mataPelajaran, tingkatKelas, jenjang, jenisUjian, folderAktif, kategori, tags, tingkatKesulitan, sumberFile, sumberAI, imageStatus, buatJugaModul, rangkumanTerdeteksi, judulBabInput]);
 
   // ==========================================================
   // RENDER
@@ -4631,6 +4726,34 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                       <>
                         <div style={{ fontWeight: '700' }}>❌ Gagal</div>
                         <div style={{ marginTop: '4px' }}>{saveResult.error}</div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* 🔥 BARU: panel rangkuman materi -- cuma muncul kalau
+                    kedetek. Admin bisa cek isi & sunting judul bab
+                    sebelum diproses jadi Modul Materi otomatis
+                    bareng soal-soalnya. */}
+                {rangkumanTerdeteksi && (
+                  <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={buatJugaModul} onChange={(e) => setBuatJugaModul(e.target.checked)} />
+                      <span style={{ fontWeight: 700, fontSize: 13, color: '#5b21b6' }}>📖 Rangkuman materi kedeteksi -- buat juga jadi Modul Materi?</span>
+                    </label>
+                    {buatJugaModul && (
+                      <>
+                        <label style={{ fontSize: 11, color: '#7c3aed', display: 'block', marginBottom: 4 }}>Judul Bab (buat judul modul)</label>
+                        <input
+                          type="text" value={judulBabInput} onChange={(e) => setJudulBabInput(e.target.value)}
+                          placeholder="mis. Bab 1 - Bilangan Bulat dan Pecahan"
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #c4b5fd', fontSize: 13, marginBottom: 10, boxSizing: 'border-box' }}
+                        />
+                        <div style={{ fontSize: 11, color: '#8b5cf6', marginBottom: 6 }}>Pratinjau isi rangkuman (dibaca apa adanya, gak diedit di sini):</div>
+                        <div
+                          style={{ maxHeight: 200, overflowY: 'auto', background: 'white', borderRadius: 8, padding: 12, fontSize: 12.5, border: '1px solid #e5e7eb' }}
+                          dangerouslySetInnerHTML={{ __html: rangkumanTerdeteksi }}
+                        />
                       </>
                     )}
                   </div>
