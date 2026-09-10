@@ -143,97 +143,15 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
 // ============================================================
 // 🔥 CEK AKSES MAPEL (paket 1 mapel / 2 mapel / paket lengkap)
 // ============================================================
-// Pola & alasan sama persis dengan StudentModuleView.jsx (halaman baca
-// materi) -- ditaruh di sini juga supaya daftar modul yang tampil di
-// dashboard SUDAH tersaring dari awal (siswa gak perlu lihat modul yang
-// nanti bakal ditolak aksesnya pas diklik). `enrolledSubjects` diisi lewat
-// halaman administrasi siswa: `["Matematika"]` buat siswa 1 mapel, atau
-// `["Semua"]` buat paket lengkap. Kalau belum diisi (siswa lama), akses
-// TETAP PENUH -- gak ada yang tiba-tiba keblokir.
-// 🔥 FIX BUG: sebelumnya perbandingan mapel ini case-sensitive (persis
-// sama besar-kecil hurufnya) -- jadi "Matematika SD" (dari nama mapel di
-// jadwal) dianggap BEDA dari "MATEMATIKA SD" (dari field subject modul,
-// yang kebetulan disimpan huruf besar semua) walau maksudnya mapel yang
-// SAMA PERSIS. Siswa yang udah jelas terjadwal ke mapel itu malah kena
-// tolak akses gara-gara beda kapitalisasi doang.
-//
-// 🔥 BARU: sekarang COBA COCOKIN LEWAT KODE MAPEL DULU (mis. "MAPEL-004")
-// sebelum jatuh ke pencocokan nama. Kode itu ID TETAP yang gak pernah
-// berubah -- jauh lebih bisa diandalkan daripada nama, yang teksnya bisa
-// beda-beda tiap kali diketik/dipilih (lihat data mapel yang berantakan:
-// "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", dst). `modulKodeMapel`
-// kadang berisi BEBERAPA kode dipisah koma (guru yang ngampu multi-mapel),
-// jadi dipecah dulu satu-satu sebelum dibandingkan.
-// 🔥 FIX BUG (revisi terbaru): pencadangan lewat NAMA mapel yang tadinya
-// ada di sini SUDAH DIHAPUS TOTAL. Nama sering beda ejaan/gaya penulisan
-// antar guru (mis. "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", atau ada
-// mapel duplikat kayak "IPS (Pengganti)") -- itu jadi sumber bug paling
-// sering ("siswa gak bisa akses padahal harusnya bisa"). Sekarang HANYA
-// kode mapel (mapelId, mis. "MAPEL-004") yang dipakai buat mencocokkan,
-// karena kode dipilih dari dropdown baku dan gak pernah berubah/typo.
-// `modulKodeMapel` kadang berisi BEBERAPA kode dipisah koma (guru yang
-// ngampu multi-mapel), jadi dipecah dulu satu-satu sebelum dibandingkan.
-// ⚠️ KONSEKUENSI PENTING: kalau field manual `enrolledSubjects` di data
-// siswa (yang admin isi manual lewat halaman siswa, buat kasus khusus)
-// berisi NAMA mapel, itu SEKARANG TIDAK AKAN COCOK LAGI -- field itu
-// harus diisi KODE mapel (mis. "MAPEL-004"), bukan nama seperti dulu.
-// Kalau ada data lama yang masih berisi nama, perlu diupdate manual satu
-// kali ke kode yang sesuai supaya override-nya tetap jalan.
-// 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): sistem sebelumnya
-// menurunkan akses OTOMATIS dari jadwal (jadwal_bimbel), dengan fallback
-// PERMISIF (izinkan) kalau data kosong -- supaya siswa lama gak keblokir
-// tiba-tiba. Sekarang DIBALIK TOTAL jadi PENGECEKAN KETAT: satu-satunya
-// sumber akses adalah field `enrolledSubjects` yang diisi MANUAL admin
-// lewat halaman Edit Siswa. Kalau field itu KOSONG/belum diisi, siswa
-// TIDAK dapat akses ke modul/kuis mapel apa pun (kecuali konten "Umum").
-// Ini keputusan sadar: turunan otomatis dari jadwal punya celah -- siswa
-// bisa "kelepasan" dapat akses ke SEMUA mapel padahal cuma bayar paket 1
-// mapel, kalau data jadwalnya kebetulan permisif/gak lengkap. Kontrol
-// ketat ini nutup celah itu, dengan konsekuensi: ADMIN WAJIB isi mapel
-// tiap siswa secara manual lewat halaman Edit Siswa setelah pendaftaran.
 const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
   if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
   const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
-  if (modulCodes.length === 0) return true; // modul/kuis ini gak punya kode mapel -> gak ada dasar buat blokir (masalah data di sisi materi, bukan siswa)
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔥 DIBALIK: kosong = BLOKIR, bukan lagi izinkan
+  if (modulCodes.length === 0) return true;
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false;
   const norm = (s) => String(s || '').toLowerCase().trim();
   if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
   return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
 };
-
-// ============================================================
-// 🔥 BARU: TURUNKAN "MAPEL YANG DIAMBIL SISWA" DARI JADWAL BESAR
-// (jadwal_bimbel), BUKAN DARI FIELD TERPISAH YANG HARUS DIISI MANUAL
-// ============================================================
-// KENAPA BEGINI: begitu admin bikin jadwal "Guru Matematika + pilih siswa
-// ini" di halaman Manajemen Jadwal, itu SUDAH MEMBUKTIKAN siswa ini ambil
-// mapel Matematika -- gak perlu dicatat ULANG di tempat terpisah (field
-// enrolledSubjects manual). `jadwal_bimbel` dijadikan SATU-SATUNYA sumber
-// kebenaran (single source of truth) buat "siswa ini ambil mapel apa".
-// Admin tetap bikin jadwal seperti biasa, TIDAK ADA kerjaan tambahan.
-//
-// PENTING -- ini nyari SEMUA jadwal siswa itu SEPANJANG WAKTU (bukan cuma
-// jadwal HARI INI). Kalau cuma dicek "jadwal hari ini", modul Matematika
-// bakal ketutup di hari-hari siswa gak ada kelas Matematika -- padahal dia
-// tetap siswa Matematika, cuma kebetulan gak ada sesi hari itu. "Pernah
-// terjadwal di mapel X" itu yang jadi patokan akses, bukan "ada jadwal
-// mapel X HARI INI".
-//
-// ATURAN AMAN buat siswa baru: kalau siswa BELUM PERNAH SAMA SEKALI masuk
-// jadwal apa pun (baru daftar, belum sempat dijadwalin gurunya), dianggap
-// `null` (belum "terverifikasi" ke mapel manapun) -- yang berarti TETAP
-// akses penuh dulu, sampai jadwal pertamanya dibuat. Begitu jadwal pertama
-// dibuat, pembatasan mapel baru mulai berlaku berdasarkan mapel-mapel yang
-// pernah dia ikuti.
-// ============================================================
-// 🔥 DIHAPUS: deriveEnrolledSubjectsFromSchedule()
-// ============================================================
-// Fungsi ini dulu menurunkan akses mapel siswa dari jadwal_bimbel secara
-// otomatis. Sekarang DIHAPUS TOTAL sesuai keputusan sadar: satu-satunya
-// sumber akses adalah field `enrolledSubjects` yang diisi manual admin
-// lewat halaman Edit Siswa -- lihat penjelasan lengkap di hasSubjectAccess()
-// di atas. Kalau butuh melihat versi lama fungsi ini, cek riwayat/backup
-// sebelum perubahan ini.
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -241,9 +159,6 @@ const StudentDashboard = () => {
 
   const [studentName, setStudentName] = useState(() => localStorage.getItem('studentName') || 'Siswa');
   const [studentId, setStudentId] = useState(null);
-  // 🔥 BARU: docId Firestore yang ASLI (beda dari studentId/NIS di atas).
-  // Ini yang dipakai buat getDoc/setDoc ke collection "students" supaya
-  // nyambung ke dokumen yang sama persis dengan yang dibuka admin.
   const [studentDocId, setStudentDocId] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
   const [studentKelas, setStudentKelas] = useState(() => localStorage.getItem('studentKelas') || '');
@@ -263,15 +178,11 @@ const StudentDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
-  // 🔥 BARU: XP & streak buat header gaya baru (gamifikasi). Kalau
-  // dokumen `siswa_progress` belum ada (siswa belum pernah pakai sistem
-  // baru ini), dianggap mulai dari nol -- BUKAN error, itu wajar.
   const [progresXp, setProgresXp] = useState(0);
   const [progresStreak, setProgresStreak] = useState(0);
   const attendanceRef = React.useRef(null);
 
   const [wajibSurveys, setWajibSurveys] = useState([]);
-  // 🔥 BARU: ringkasan kehadiran buat bagan bundar di dashboard
   const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, izin: 0, alpha: 0, total: 0 });
   const [optionalSurveys, setOptionalSurveys] = useState([]);
   const [dismissedSurveyIds, setDismissedSurveyIds] = useState(() => {
@@ -286,16 +197,6 @@ const StudentDashboard = () => {
     return year + '-' + month + '-' + day;
   };
 
-  // 🔥 BARU: parameter `studentEnrolledSubjects` -- daftar mapel yang
-  // beneran diambil/dibayar siswa (buat strategi harga "1 mapel / 2 mapel /
-  // paket lengkap" yang baru). Cek detailnya di hasSubjectAccess() di atas.
-  //
-  // PENTING: pengecekan mapel ini SENGAJA cuma jalan buat targeting umum
-  // (kelas/kategori) -- kalau modul secara eksplisit ditarget ke SISWA
-  // TERTENTU (`sendToSpecificStudents`), itu berarti guru MEMILIH siswa
-  // ini secara sadar satu-satu, jadi keputusan guru itu diprioritaskan
-  // (gak ditimpa pembatasan mapel otomatis) -- guru mungkin sengaja mau
-  // kasih akses bonus ke luar mapel yang diambil siswa.
   const checkStudentAccess = (modul, studentId, studentKelas, studentProgram, studentEnrolledSubjects) => {
     if (modul.sendToSpecificStudents) {
       const studentIds = modul.studentIds || [];
@@ -303,28 +204,6 @@ const StudentDashboard = () => {
       const allTargetIds = [...studentIds, ...selectedStudentIds];
       return allTargetIds.includes(studentId) || allTargetIds.includes(studentNim);
     }
-    // 🔥 FIX BUG NYATA (laporan langsung: modul "Asisten TKA" ke-set ke
-    // jenjang "9 SMP" tapi TETAP muncul di siswa SD): sesi sebelumnya
-    // pengecekan kelas/jenjang DIHAPUS TOTAL dengan asumsi kode mapel itu
-    // SENDIRI udah spesifik per jenjang (mis. "Bahasa Indonesia SD" vs
-    // "...SMP" punya kode BEDA) -- asumsi itu BENAR buat mapel biasa, tapi
-    // SALAH buat kasus mapel seperti "Asisten TKA" yang SENGAJA dipakai
-    // SATU guru buat nangani SD-SMP-SMA SEKALIGUS di bawah SATU kode mapel
-    // yang SAMA. Buat kasus itu, kode mapel doang GAK CUKUP buat
-    // membedakan "materi ini buat SD" vs "buat SMP" -- satu-satunya
-    // pembeda yang tersisa adalah target jenjang yang guru pilih manual,
-    // dan itu KEMARIN GAK DICEK SAMA SEKALI (cuma dekorasi), jadi berapa
-    // pun guru ganti target jenjangnya, TETAP muncul ke semua siswa yang
-    // punya kode mapel itu di enrolledSubjects-nya.
-    //
-    // Sekarang jenjang (`targetKelas`) dicek LAGI, TAPI SEBAGAI SYARAT
-    // TAMBAHAN (AND), bukan gantiin kode mapel: modul harus LOLOS
-    // DUA-DUANYA (kode mapel siswa cocok DAN kelasnya cocok kalau target
-    // jenjangnya bukan "Semua"). Buat mapel biasa yang targetKelas-nya
-    // dibiarkan "Semua" (karena kode mapelnya udah unik per jenjang),
-    // syarat kelas ini otomatis lolos, gak ada dampak sama sekali --
-    // cuma berlaku nyata di kasus kayak Asisten TKA yang butuh
-    // pembeda tambahan itu.
     const targetKelas = modul.targetKelas || 'Semua';
     const matchKelas = targetKelas === 'Semua' || targetKelas === studentKelas;
     return matchKelas && hasSubjectAccess(studentEnrolledSubjects, modul.subject || '', modul.kodeMapel || '');
@@ -336,10 +215,7 @@ const StudentDashboard = () => {
     return () => window.removeEventListener('resize', h);
   }, []);
 
-  // 🔥 BARU: ambil XP & streak dari koleksi `siswa_progress` (fondasi
-  // sistem gamifikasi baru). Kalau dokumennya belum ada, tetap 0/0 --
-  // itu keadaan awal yang wajar, bukan error.
-  const [statusStreak, setStatusStreak] = useState('belum-pernah'); // 'belum-pernah' | 'berakhir' | 'berisiko' | 'aman'
+  const [statusStreak, setStatusStreak] = useState('belum-pernah');
   useEffect(() => {
     if (!studentId) return;
     (async () => {
@@ -349,18 +225,11 @@ const StudentDashboard = () => {
           const d = snap.data();
           setProgresXp(Number(d.xp) || 0);
           setProgresStreak(Number(d.streak) || 0);
-
-          // 🔥 BARU: deteksi status streak buat banner ala Duolingo --
-          // (1) belum pernah latihan sama sekali, (2) streak udah putus
-          // (ada hari kelewat sejak terakhir aktif), (3) streak masih
-          // hidup tapi target hari ini belum tercapai (beresiko putus),
-          // (4) aman (target hari ini udah tercapai).
           const hariIniStr = new Date().toISOString().slice(0, 10);
           const lastActiveDateStr = d.lastActiveDate || null;
           const streak = Number(d.streak) || 0;
           const target = d.targetHarian || 10;
-          const soalHariIni = d.soalHariIniTanggal === hariIniStr ? (d.soalHariIniCount || 0) : 0;
-
+          const soalHariIni = d.soalHariTanggal === hariIniStr ? (d.soalHariIniCount || 0) : 0;
           if (!lastActiveDateStr) {
             setStatusStreak('belum-pernah');
           } else {
@@ -382,12 +251,12 @@ const StudentDashboard = () => {
   useEffect(() => {
     const storedId = localStorage.getItem('studentId');
     const storedName = localStorage.getItem('studentName');
-    const storedDocId = localStorage.getItem('studentDocId'); // 🔥 BARU
+    const storedDocId = localStorage.getItem('studentDocId');
     const isLoggedIn = localStorage.getItem('isSiswaLoggedIn') === 'true';
 
     if (isLoggedIn && storedId) {
       setStudentId(storedId);
-      setStudentDocId(storedDocId || null); // kosong kalau login sebelum fix ini
+      setStudentDocId(storedDocId || null);
       setStudentName(storedName || "Siswa");
       setAuthReady(true);
       return;
@@ -416,11 +285,6 @@ const StudentDashboard = () => {
         const todayStr = getSmartDateString(new Date());
         const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
 
-        // 🔥 FIX UTAMA: tentukan docId Firestore yang BENAR sebelum fetch.
-        // Kalau sesi login sudah simpan studentDocId (login setelah fix ini),
-        // langsung pakai itu. Kalau belum (sesi lama), cari dulu docId-nya
-        // dengan query field `studentId` (NIS) -- lalu simpan biar gak perlu
-        // query ulang tiap buka dashboard.
         let resolvedDocId = studentDocId;
         if (!resolvedDocId) {
           const found = await getDocs(
@@ -431,17 +295,12 @@ const StudentDashboard = () => {
             setStudentDocId(resolvedDocId);
             localStorage.setItem('studentDocId', resolvedDocId);
           } else {
-            resolvedDocId = studentId; // fallback terakhir, kemungkinan doc ID == NIS
+            resolvedDocId = studentId;
           }
         }
 
         const sSnap = await getDoc(doc(db, "students", resolvedDocId)).catch(() => null);
         let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
-        // 🔥 BERUBAH: mapel yang beneran diambil siswa (buat strategi harga 1
-        // mapel / 2 mapel / paket lengkap) sekarang HANYA dari field manual
-        // `enrolledSubjects` -- lihat penjelasan lengkap di hasSubjectAccess()
-        // di atas. Kalau field ini kosong, siswa dianggap BELUM diisi
-        // mapelnya sama sekali (bukan lagi "akses penuh sementara").
         let enrolledSubjectsVal = null;
         if (sSnap?.exists()) {
           const data = sSnap.data();
@@ -456,8 +315,6 @@ const StudentDashboard = () => {
           localStorage.setItem('studentKelas', kelasVal);
           localStorage.setItem('studentProgram', programVal);
           localStorage.setItem('studentNim', nimVal);
-          // 🔥 Disimpan juga di localStorage supaya StudentModuleView.jsx
-          // (halaman baca materi) bisa langsung pakai tanpa fetch ulang.
           try {
             if (enrolledSubjectsVal) localStorage.setItem('studentEnrolledSubjects', JSON.stringify(enrolledSubjectsVal));
             else localStorage.removeItem('studentEnrolledSubjects');
@@ -470,13 +327,6 @@ const StudentDashboard = () => {
           attByDocId, attByKodeUnik, attByName, attByNamaSiswa,
         ] = await Promise.all([
           getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))).catch(() => ({ docs: [] })),
-          // 🔥 FIX BUG: sebelumnya limit(20) di sini itu 20 modul TERBARU
-          // SE-SISTEM (bukan per siswa) -- kalau bimbel punya banyak guru
-          // yang sering update modul/kuis, modul yang BENERAN ditargetkan
-          // ke siswa ini bisa kegeser keluar dari 20-besar-terbaru itu dan
-          // gak pernah kelihatan di widget ini, walau targetnya udah benar
-          // dari awal. Limit dinaikkan jauh (200) biar hampir gak mungkin
-          // ke-truncate untuk skala bimbel manapun.
           getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(200))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", periode), limit(1))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "notifications"), where("recipientId", "==", nimVal), limit(30))).catch(() => ({ docs: [] })),
@@ -485,29 +335,12 @@ const StudentDashboard = () => {
           getDocs(query(collection(db, "survey_responses"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("respondentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("nim", "==", nimVal))).catch(() => ({ docs: [] })),
-          // 🔥 BARU: ringkasan kehadiran buat bagan bundar. Dicari pakai DUA
-          // skema identitas sekaligus (ID dokumen — dipakai scan QR & guru
-          // di ClassSession.jsx — DAN kode unik — dipakai kalau admin input
-          // manual), persis fix yang sama kayak di halaman admin kemarin.
-          // Kalau cuma satu skema dicek, sebagian data kehadiran bisa gak
-          // kehitung di bagannya.
           getDocs(query(collection(db, "attendance"), where("studentId", "==", studentId))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "attendance"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
-          // 🔥 SEMENTARA (diagnosa): cari absensi berdasarkan NAMA siswa
-          // (bukan ID). Kalau ini nemu data tapi dua query di atas nggak,
-          // berarti data absensinya BENERAN ADA tapi skema ID yang dipakai
-          // nulisnya beda dari yang diduga -- dan ini bakal nunjukkin
-          // persis skema ID yang sebenarnya dipakai.
           getDocs(query(collection(db, "attendance"), where("studentName", "==", studentName))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "attendance"), where("namaSiswa", "==", studentName))).catch(() => ({ docs: [] })),
         ]);
 
-        // --- Ringkasan kehadiran ---
-        // 🔥 FIX: sebelumnya panel diagnosa nyari lewat NAMA dan BERHASIL
-        // nemuin datanya, tapi hasil pencarian nama itu cuma dipakai buat
-        // laporan diagnosa -- gak pernah ikut digabung ke data yang
-        // BENERAN dipakai nampilin bagan. Sekarang hasil nama ikut
-        // digabung juga, jadi bagan bener-bener nunjukkin data yang ada.
         const attMerged = new Map();
         [...attByDocId.docs, ...attByKodeUnik.docs, ...attByName.docs, ...attByNamaSiswa.docs].forEach(d => attMerged.set(d.id, d.data()));
         const attList = Array.from(attMerged.values());
@@ -537,30 +370,12 @@ const StudentDashboard = () => {
         const nowTsForFilter = new Date();
         const accessibleModuls = allModulsData.filter(modul => {
           if (modul.status === 'arsip') return false;
-          // 🔥 FIX BUG NYATA: sebelumnya modul/kuis yang statusnya
-          // "terjadwal" dengan tanggalMulai di MASA DEPAN langsung DIBUANG
-          // TOTAL dari daftar (`return false`) -- jadi siswa gak pernah
-          // lihat "eh ada kuis yang bakal kebuka minggu depan" sama
-          // sekali, padahal itu berguna sebagai PENGINGAT. Sekarang item
-          // yang belum waktunya TETAP masuk daftar (ditandai `isUpcoming`
-          // di bawah), cuma gak dianggap "aktif sekarang" -- biar tetap
-          // kelihatan di dashboard sebagai pengingat "akan datang", bukan
-          // hilang sama sekali sampai tanggalnya tiba.
           return checkStudentAccess(modul, studentId, kelasVal, programVal, enrolledSubjectsVal);
         }).map(modul => {
           const isUpcoming = modul.status === 'terjadwal' && modul.tanggalMulai && new Date(modul.tanggalMulai) > nowTsForFilter;
           return { ...modul, __isUpcoming: isUpcoming };
         });
 
-        // 🔥 FIX BUG "kuis gak muncul di dashboard": sejak kuis "ditautkan
-        // ke modul" disimpan sebagai BLOK TERPISAH (block.type === 'quiz'
-        // + block.quizId menunjuk ke dokumen kuis lain), modul induknya
-        // sendiri TIDAK PUNYA field `quizData` — jadi cek lama
-        // `(m.quizData || []).length > 0` selalu `false` buat kuis model
-        // ini dan kuis itu gak pernah dianggap "ada tugas" oleh dashboard.
-        // Di bawah ini kita kumpulkan quizId dari blok-blok itu, ambil
-        // dokumen kuisnya (buat tau deadline-nya juga), lalu dipakai baik
-        // buat DETEKSI (hasQuiz) maupun buat SORTING deadline di bawah.
         const quizIdsToCheck = new Set();
         accessibleModuls.forEach(m => {
           (m.blocks || []).forEach(b => {
@@ -576,866 +391,701 @@ const StudentDashboard = () => {
           quizSnaps.forEach(snap => {
             if (snap?.exists()) {
               const d = snap.data();
-              quizDeadlineMap[snap.id] = {
-                useSchedule: d.useSchedule || false,
-                quizCloseDate: d.quizCloseDate || null,
-              };
+              quizDeadlineMap[snap.id] = d.deadline ? new Date(d.deadline) : null;
             }
           });
         }
 
-        // 🔥 Cari deadline PALING DEKAT dari semua blok tugas & kuis di
-        // dalam satu modul (dipakai buat ngurutin mana yang paling urgent).
-        const getEarliestDeadline = (m) => {
-          const deadlines = [];
-          (m.blocks || []).forEach(b => {
-            if (b.type === 'assignment' && b.endTime) {
-              const t = new Date(b.endTime);
-              if (!isNaN(t)) deadlines.push(t);
-            }
-            if (b.type === 'quiz' && b.quizId) {
-              const qd = quizDeadlineMap[b.quizId];
-              if (qd?.useSchedule && qd.quizCloseDate) {
-                const t = new Date(qd.quizCloseDate);
-                if (!isNaN(t)) deadlines.push(t);
+        const processedTasks = [];
+        for (const m of accessibleModuls) {
+          const hasQuiz = (m.quizData || []).length > 0 || (m.blocks || []).some(b => b.type === 'quiz' && b.quizId);
+          const hasAssignment = (m.blocks || []).some(b => b.type === 'assignment');
+          if (!hasQuiz && !hasAssignment) continue;
+
+          // 🔥 Cek jawaban siswa untuk kuis dan assignment
+          let hasSubmittedValue = false;
+          if (hasQuiz) {
+            const quizBlock = (m.blocks || []).find(b => b.type === 'quiz' && b.quizId);
+            const quizId = quizBlock?.quizId || (m.quizData?.length > 0 ? m.id : null);
+            if (quizId) {
+              const jawabSnap = await getDocs(
+                query(collection(db, "quiz_answers"), where("quizId", "==", quizId), where("studentId", "==", nimVal), limit(1))
+              ).catch(() => ({ empty: true, docs: [] }));
+              if (!jawabSnap.empty) {
+                const jDoc = jawabSnap.docs[0].data();
+                if (jDoc.nilai !== null && jDoc.nilai !== undefined) hasSubmittedValue = true;
               }
             }
-          });
-          // Kuis lama (model quizData langsung di modul) juga dicek
-          if ((m.quizData || []).length > 0 && m.useSchedule && m.quizCloseDate) {
-            const t = new Date(m.quizCloseDate);
-            if (!isNaN(t)) deadlines.push(t);
           }
-          return deadlines.length ? deadlines.reduce((a, b) => (a < b ? a : b)) : null;
-        };
-
-        const nowTs = new Date();
-
-        // 🔥 BARU: cek modul mana yang SUDAH DIKERJAKAN siswa ini --
-        // sebelumnya SAMA SEKALI gak dicek, jadi tugas/kuis yang udah
-        // beres tetap numpuk di widget ini selamanya (atau sampai
-        // deadline lewat, padahal harusnya ilang begitu dikerjain).
-        const modulSudahDikerjakan = new Set();
-        if (studentNim) {
-          try {
-            const [snapKuis, snapTugas] = await Promise.all([
-              getDocs(query(collection(db, 'jawaban_kuis'), where('studentNim', '==', studentNim))),
-              getDocs(query(collection(db, 'jawaban_tugas'), where('studentNim', '==', studentNim))),
-            ]);
-            snapKuis.forEach((d) => { 
-              const data = d.data();
-              // Hanya masukkan ke set jika sudah ada nilai (sudah dinilai/dikerjakan)
-              if (data.modulId && (data.nilai !== undefined && data.nilai !== null)) {
-                modulSudahDikerjakan.add(data.modulId);
-              }
-            });
-            snapTugas.forEach((d) => { 
-              const data = d.data();
-              // Hanya masukkan ke set jika sudah ada nilai (sudah dinilai/dikerjakan)
-              if (data.modulId && (data.nilai !== undefined && data.nilai !== null)) {
-                modulSudahDikerjakan.add(data.modulId);
-              }
-            });
-          } catch (e) {
-            console.error('Gagal cek status pengerjaan tugas/kuis:', e);
+          if (!hasSubmittedValue && hasAssignment) {
+            const jawabSnap = await getDocs(
+              query(collection(db, "assignment_answers"), where("moduleId", "==", m.id), where("studentId", "==", nimVal), limit(1))
+            ).catch(() => ({ empty: true, docs: [] }));
+            if (!jawabSnap.empty) {
+              const jDoc = jawabSnap.docs[0].data();
+              if (jDoc.nilai !== null && jDoc.nilai !== undefined) hasSubmittedValue = true;
+            }
           }
+          if (hasSubmittedValue) continue;
+
+          // 🔥 Tentukan deadline terdekat (kuis atau tugas)
+          let deadlineTs = null;
+          if (hasQuiz) {
+            const quizBlock = (m.blocks || []).find(b => b.type === 'quiz' && b.quizId);
+            const quizId = quizBlock?.quizId || (m.quizData?.length > 0 ? m.id : null);
+            if (quizId && quizDeadlineMap[quizId]) deadlineTs = quizDeadlineMap[quizId];
+            else if (m.deadline) deadlineTs = new Date(m.deadline);
+          } else if (m.deadline) {
+            deadlineTs = new Date(m.deadline);
+          }
+
+          // 🔥 Filter: kalau terlewat lebih dari 7 hari, hapus dari daftar
+          const nowTs = Date.now();
+          let isTerlewat = false;
+          if (deadlineTs) {
+            const diffMs = nowTs - deadlineTs.getTime();
+            if (diffMs > 0) {
+              isTerlewat = true;
+              const diffDays = diffMs / (1000 * 60 * 60 * 24);
+              if (diffDays > 7) continue; // 🔥 Hapus setelah 7 hari terlewat
+            }
+          }
+
+          processedTasks.push({ ...m, __deadline: deadlineTs, __terlewat: isTerlewat });
         }
 
-        // 🔥 BARU: masa tenggang -- deadline yang BARU lewat (<= 7 hari)
-        // masih ditampilkan (ditandai __terlewat, dikasih warna merah di
-        // tampilan) biar siswa masih sempat lihat & kejar telat. Lewat
-        // dari 7 hari baru bener-bener disingkirkan -- biar gak numpuk
-        // selamanya di widget ini.
-        const MASA_TENGGANG_HARI = 7;
-        const batasTenggangMs = MASA_TENGGANG_HARI * 24 * 60 * 60 * 1000;
-
-        const fetchedTasks = accessibleModuls
-          .filter(m => {
-            // Modul yang udah dikerjakan LANGSUNG disingkirkan dari
-            // widget pengingat ini, apapun status deadline-nya.
-            if (modulSudahDikerjakan.has(m.id)) return false;
-            // 🔥 hasQuiz sekarang mengecek DUA model kuis: model lama
-            // (quizData langsung di modul) DAN model baru (blok 'quiz'
-            // yang menunjuk ke dokumen kuis terpisah).
-            const hasQuiz = (m.quizData || []).length > 0 || (m.blocks || []).some(b => b.type === 'quiz' && b.quizId);
-            const hasAssignment = (m.blocks || []).some(b => b.type === 'assignment');
-            return hasQuiz || hasAssignment;
-          })
-          .map(m => ({ ...m, __deadline: m.__isUpcoming ? null : getEarliestDeadline(m) }))
-          // Buang yang deadline-nya sudah lewat semua (biar gak nampilin
-          // tugas/kuis yang udah kadaluarsa sebagai "aktif") -- item
-          // __isUpcoming SELALU lolos di sini (deadline-nya null, belum
-          // relevan sampai tanggalMulai-nya tiba).
-          // Buang yang deadline-nya udah lewat LEBIH DARI masa tenggang
-          // (7 hari) -- dalam masa tenggang itu tetap tampil, ditandai
-          // __terlewat=true buat dikasih warna merah di tampilan, biar
-          // siswa masih sempat kejar telat sebelum bener-bener hilang.
-          .map(m => ({ ...m, __terlewat: !!(m.__deadline && m.__deadline < nowTs) }))
-          .filter(m => !m.__deadline || (nowTs - m.__deadline) <= batasTenggangMs)
-          // 🔥 URUTKAN: item AKTIF dengan deadline paling dekat dulu, baru
-          // item "AKAN DATANG" (belum waktunya tapi tetap jadi pengingat,
-          // diurutkan berdasar tanggalMulai paling dekat), baru yang gak
-          // punya deadline sama sekali. Item yang SUDAH TERLEWAT deadline
-          // (tapi masih dalam masa tenggang 7 hari) ditaruh paling akhir.
-          .sort((a, b) => {
-            // Prioritas utama: yang sudah terlewat (__terlewat=true) taruh di belakang
-            if (a.__terlewat && !b.__terlewat) return 1;
-            if (!a.__terlewat && b.__terlewat) return -1;
-            // Jika sama-sama terlewat atau sama-sama tidak, urutkan berdasarkan deadline
-            if (a.__deadline && b.__deadline) return a.__deadline - b.__deadline;
-            if (a.__deadline && !b.__isUpcoming) return -1;
-            if (b.__deadline && !a.__isUpcoming) return 1;
-            if (a.__isUpcoming && b.__isUpcoming) return new Date(a.tanggalMulai) - new Date(b.tanggalMulai);
-            if (a.__isUpcoming) return a.__deadline ? -1 : 1;
-            if (b.__isUpcoming) return b.__deadline ? 1 : -1;
-            return 0;
-          })
-          .slice(0, 8); // 🔥 naik dari 5 -> 8: tugas/kuis TANPA deadline (jadwal bebas) selalu ditaruh di bawah yang punya deadline -- kalau bimbel sudah punya 5+ tugas berdeadline aktif, kuis/tugas BARU yang gak berdeadline bisa ketutup dari widget ringkasan ini padahal aksesnya udah benar (bisa dibuka normal lewat E-Learning). Batas dinaikkan supaya lebih jarang kejadian.
-        setTasks(fetchedTasks);
-
-        if (!raportSnap.empty) {
-          const data = raportSnap.docs[0].data();
-          setRaportSummary({
-            nilaiAkhir: data.nilai_akhir,
-            komponenDipake: data.komponen_dipakai || [],
-            periode: periode
-          });
-        }
-
-        const notifList = notifSnap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
-        setNotifications(notifList);
-
-        const activeSurveys = surveySnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        const respondedIds = new Set(
-          [respByUserId, respByStudentId, respByRespondentId, respByNim]
-            .flatMap(snap => snap.docs)
-            .map(d => d.data().surveyId)
-        );
-
-        const relevantSurveys = activeSurveys.filter(sv => {
-          if (respondedIds.has(sv.id)) return false;
-          if (sv.targetType === 'semua_guru') return false;
-          if (sv.deadline && new Date(sv.deadline) < new Date()) return false;
-          if (sv.targetType === 'jenjang') {
-            return !sv.targetKelas || sv.targetKelas === 'Semua' || sv.targetKelas === kelasVal;
-          }
-          return true;
+        // 🔥 Urutkan berdasarkan deadline terdekat
+        processedTasks.sort((a, b) => {
+          if (!a.__deadline && !b.__deadline) return 0;
+          if (!a.__deadline) return 1;
+          if (!b.__deadline) return -1;
+          return a.__deadline.getTime() - b.__deadline.getTime();
         });
 
-        setWajibSurveys(relevantSurveys.filter(sv => sv.isRequired));
-        setOptionalSurveys(relevantSurveys.filter(sv => !sv.isRequired));
+        setTasks(processedTasks);
 
-      } catch (err) { console.error('Error:', err); }
-      finally { setDataLoading(false); }
+        if (raportSnap && !raportSnap.empty) {
+          const rData = raportSnap.docs[0].data();
+          setRaportSummary({ ...rData, periode });
+        }
+
+        const notifs = notifSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
+          const aTs = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTs = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTs - aTs;
+        });
+        setNotifications(notifs);
+
+        const activeSurveys = surveySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const answeredSurveyIds = new Set([
+          ...respByUserId.docs.map(d => d.data().surveyId),
+          ...respByStudentId.docs.map(d => d.data().surveyId),
+          ...respByRespondentId.docs.map(d => d.data().surveyId),
+          ...respByNim.docs.map(d => d.data().surveyId),
+        ]);
+        const wajib = activeSurveys.filter(s => s.wajib && !answeredSurveyIds.has(s.id) && !dismissedSurveyIds.includes(s.id));
+        const optional = activeSurveys.filter(s => !s.wajib && !answeredSurveyIds.has(s.id) && !dismissedSurveyIds.includes(s.id));
+        setWajibSurveys(wajib);
+        setOptionalSurveys(optional);
+
+      } catch (error) {
+        console.error("Gagal fetch data dashboard:", error);
+      } finally {
+        setDataLoading(false);
+      }
     };
 
     fetchData();
-  }, [authReady, studentId]);
+  }, [authReady, studentId, studentDocId, studentKelas, studentProgram, studentNim, dismissedSurveyIds]);
 
-  const markNotifRead = async (notif) => {
-    if (!notif.isRead) {
-      setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
-      try { await setDoc(doc(db, "notifications", notif.id), { isRead: true }, { merge: true }); } catch (e) {}
-    }
-    if (notif.link) navigate(notif.link);
-    setShowNotifPanel(false);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const menuBaru = [
+    { key: 'kehadiran', emoji: '📊', label: 'Kehadiran', warna: 'linear-gradient(135deg, #FF9E67 0%, #FFB88C 100%)', warnaTeks: '#C2410C' },
+    { key: 'latihan', emoji: '🔥', label: 'Latihan Harian', warna: 'linear-gradient(135deg, #FDE68A 0%, #FCD34D 100%)', warnaTeks: '#92400E' },
+    { key: 'tryout', emoji: '🎯', label: 'Tryout', warna: 'linear-gradient(135deg, #B4B3FF 0%, #9FA8DA 100%)', warnaTeks: '#3730A3', segeraHadir: true },
+    { key: 'leaderboard', emoji: '🏆', label: 'Leaderboard', warna: 'linear-gradient(135deg, #A7F3D0 0%, #6EE7B7 100%)', warnaTeks: '#065F46', segeraHadir: true },
+  ];
+
+  const visibleOptionalSurveys = optionalSurveys.slice(0, 3);
+
+  const dismissOptionalSurvey = (id) => {
+    const updated = [...dismissedSurveyIds, id];
+    setDismissedSurveyIds(updated);
+    try { localStorage.setItem('dismissedSurveys', JSON.stringify(updated)); } catch (e) { }
+    setOptionalSurveys(prev => prev.filter(s => s.id !== id));
   };
 
-  const deleteNotification = async (e, notifId) => {
-    e.stopPropagation();
-    setNotifications(prev => prev.filter(n => n.id !== notifId));
-    try { await deleteDoc(doc(db, "notifications", notifId)); } catch (e) {}
-  };
-
-  const dismissOptionalSurvey = (surveyId) => {
-    const next = [...dismissedSurveyIds, surveyId];
-    setDismissedSurveyIds(next);
-    localStorage.setItem('dismissedSurveys', JSON.stringify(next));
-  };
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  const visibleOptionalSurveys = optionalSurveys.filter(sv => !dismissedSurveyIds.includes(sv.id));
-
-  useEffect(() => {
-    let qr = null;
-    if (!isScanning || !studentId) return;
-
-    const start = async () => {
-      try {
-        qr = new Html5Qrcode("reader");
-        await qr.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          async (text) => {
-            try {
-              const d = JSON.parse(text);
-              if (d.type !== "ABSENSI_BIMBEL") return;
-
-              const matchedSchedule = todaySchedules.find(sch => sch.id === d.scheduleId);
-              if (!matchedSchedule) {
-                alert('❌ QR ini bukan untuk jadwal kelasmu hari ini. Absen tidak tercatat.\n\nKalau ini keliru, hubungi tentor/admin.');
-                return;
-              }
-
-              const today = getSmartDateString(new Date());
-              await setDoc(doc(db, "attendance", studentId + '_' + today + '_' + (d.scheduleId || '')), {
-                studentId, studentName, teacherName: d.teacher, date: today,
-                tanggal: today, timestamp: serverTimestamp(), status: "Hadir",
-                mapel: d.mapel, scheduleId: d.scheduleId || '', keterangan: "Scan QR"
-              }, { merge: true });
-              alert('✅ Absen: ' + d.mapel);
-              stop();
-            } catch (e) {}
-          },
-          (err) => {}
-        );
-      } catch (e) {}
-    };
-    const stop = async () => {
-      if (qr && qr.isScanning) { try { await qr.stop(); qr.clear(); } catch (e) {} }
-      setIsScanning(false);
-    };
-    start();
-    return () => { if (qr) stop(); };
-  }, [isScanning, studentId, todaySchedules, studentName]);
-
-  if (authError) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', flexDirection: 'column', gap: 16 }}>
-        <div style={{ animation: 'bounce 1s infinite' }}><AlertCircle size={56} color="#ef4444" /></div>
-        <h3 style={{ color: '#1e293b', fontSize: 18, fontWeight: 800 }}>Sesi Berakhir</h3>
-        <p style={{ color: '#64748b', fontSize: 14, textAlign: 'center', maxWidth: 280 }}>Silakan login kembali untuk melanjutkan aktivitas belajar Anda</p>
-        <button onClick={() => { localStorage.clear(); navigate('/login-siswa'); }} style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #0d9488 0%, #134e4a 100%)', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(13,148,136,0.3)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
-          Login Sekarang
-        </button>
-      </div>
-    );
-  }
-
-  // 🔥 FIX BUG ARSITEKTUR BESAR: sebelumnya komponen ini render SIDEBAR-nya
-  // SENDIRI (<SidebarSiswa>, tombol hamburger, offset marginLeft:260) —
-  // padahal di App.jsx, route "/siswa/dashboard" SUDAH dibungkus <SiswaLayout>
-  // yang JUGA render sidebar + header + offset yang SAMA. Akibatnya: sidebar
-  // ke-render 2 kali dobel (numpuk persis di posisi yang sama, jadi gak
-  // "kelihatan" pecah tapi boros & 2x event listener), dan konten dashboard
-  // ke-geser marginLeft:260 DUA KALI (jadi ~520px kosong di desktop).
-  // Ditambah lagi breakpoint mobile-nya beda (SiswaLayout ≤1024px vs
-  // komponen ini ≤768px), jadi di lebar 769-1024px dua-duanya "gak sepakat"
-  // — ini kemungkinan besar akar dari keluhan "tampilan berantakan di HP".
-  // Sekarang komponen ini HANYA render kontennya sendiri; sidebar & page
-  // shell sepenuhnya diserahkan ke SiswaLayout (persis seperti halaman siswa
-  // lain — StudentElearning, dst — yang sudah benar dari awal).
   return (
-    <div style={{ paddingBottom: isMobile ? 70 : 0 }}>
-      <style>{`
-        @keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
-        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        .sd-card { animation: fadeSlideIn 0.25s ease-out; }
-        .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); transform: translateY(-1px); transition: all 0.2s ease; }
-      `}</style>
-
-      <div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-              {greeting.icon} <span>{greeting.text}</span>
-            </p>
-            <h1 style={{ margin: '4px 0 0', fontSize: isMobile ? 22 : 28, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.5px' }}>{studentName}!</h1>
-            <p style={{ color: '#64748b', marginTop: 6, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ background: 'linear-gradient(135deg, #0d9488 0%, #134e4a 100%)', color: 'white', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{studentProfile?.kategori || studentProgram || 'Reguler'}</span>
-              <span>•</span>
-              <span>Kelas {studentProfile?.kelasSekolah || studentKelas || '-'}</span>
-              {studentNim && <span style={{ fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>🆔 {studentNim}</span>}
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
-            <button
-              onClick={() => setShowNotifPanel(v => !v)}
-              style={{
-                position: 'relative', width: 44, height: 44, borderRadius: 14,
-                background: 'white', border: '1px solid #e2e8f0', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)', transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)'}
-              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'}
-            >
-              <Bell size={18} />
-              {unreadCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: -4, right: -4, background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: 'white',
-                  fontSize: 9, fontWeight: 800, minWidth: 18, height: 18, borderRadius: 9,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
-                  border: '2px solid #f4f6fb', boxShadow: '0 2px 6px rgba(239,68,68,0.3)',
-                }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-
-            {showNotifPanel && (
-              <>
-                <div onClick={() => setShowNotifPanel(false)} style={{ position: 'fixed', inset: 0, zIndex: 998 }} />
-                <div style={{
-                  position: 'absolute', top: 50, right: 0,
-                  width: isMobile ? 'calc(100vw - 32px)' : 360, maxWidth: 380, maxHeight: 440,
-                  background: 'white', borderRadius: 16, boxShadow: '0 16px 40px rgba(0,0,0,0.18)',
-                  border: '1px solid #e2e8f0', zIndex: 999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
-                  animation: 'fadeSlideIn 0.2s ease-out',
-                }}>
-                  <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
-                    <span style={{ fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}><Inbox size={15} /> Kotak Masuk</span>
-                    {unreadCount > 0 && <span style={{ fontSize: 10, color: '#0d9488', fontWeight: 700, background: '#ecfdf5', padding: '2px 8px', borderRadius: 10 }}>{unreadCount} belum dibaca</span>}
-                  </div>
-                  <div style={{ overflowY: 'auto', flex: 1 }}>
-                    {notifications.length === 0 ? (
-                      <div style={{ padding: 30, textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>
-                        <Inbox size={28} style={{ marginBottom: 6, opacity: 0.4 }} /><br />Belum ada notifikasi
-                      </div>
-                    ) : notifications.map(notif => {
-                      const meta = NOTIF_META[notif.type] || NOTIF_META.pengumuman;
-                      return (
-                        <div
-                          key={notif.id}
-                          onClick={() => markNotifRead(notif)}
-                          style={{
-                            display: 'flex', gap: 10, padding: '12px 16px', cursor: 'pointer',
-                            borderBottom: '1px solid #f8fafc', background: notif.isRead ? 'white' : '#f8fafc',
-                          }}
-                        >
-                          <div style={{ width: 32, height: 32, borderRadius: 8, background: meta.bg, color: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            {meta.icon}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6 }}>
-                              <span style={{ fontSize: 12, fontWeight: notif.isRead ? 600 : 800, color: '#1e293b' }}>{notif.title}</span>
-                              {!notif.isRead && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3b82f6', flexShrink: 0, marginTop: 4 }} />}
-                            </div>
-                            <p style={{ margin: '2px 0 0', fontSize: 11, color: '#64748b', lineHeight: 1.4 }}>{notif.message}</p>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
-                              <span style={{ fontSize: 9, color: '#94a3b8' }}>{timeAgo(notif.createdAt)}</span>
-                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                {notif.fileUrl && (
-                                  <a href={notif.fileUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: 9, color: '#3b82f6', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <Download size={10} /> Unduh
-                                  </a>
-                                )}
-                                <button onClick={(e) => deleteNotification(e, notif.id)} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', display: 'flex' }}>
-                                  <Trash2 size={12} />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {!isMobile && (
-              <button onClick={() => setIsScanning(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, #0d9488 0%, #134e4a 100%)', color: 'white', border: 'none', padding: '11px 20px', borderRadius: 14, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(13,148,136,0.3)', transition: 'all 0.2s ease' }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(13,148,136,0.4)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(13,148,136,0.3)'; }}
-              >
-                <Camera size={17} /> Scan Absen
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* ============================================================
-            🔥 ROMBAK TOTAL (bukan tempel-tempel): palet disamakan ke
-            teal di seluruh app (Leaderboard, Latihan Harian, Dashboard
-            sekarang 1 identitas visual), maskot astronot jadi ilustrasi
-            SVG beneran (bukan emoji), menu grid gaya kartu warna-warni
-            terinspirasi referensi dashboard belajar modern. SEMUA
-            LOGIKA (navigate, onClick, hitungLevelDariXp, dll) TETAP
-            SAMA PERSIS -- yang berubah murni tampilannya.
-            ============================================================ */}
+    <div style={{
+      minHeight: '100vh',
+      background: '#F5F5F0',
+      fontFamily: "'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      padding: isMobile ? '16px' : '24px 32px',
+    }}>
+      {/* Header dengan sapaan user */}
+      <div style={{ marginBottom: 28 }}>
         {(() => {
           const { level, xpProgress, xpKebutuhan } = hitungLevelDariXp(progresXp);
-          const menuBaru = [
-            { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
-            { key: 'tryout', label: 'TryOut', emoji: '🎯', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            { key: 'banksoal', label: 'Bank Soal', emoji: '📚', warna: '#ede9fe', warnaTeks: '#5b21b6', segeraHadir: true },
-            { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
-            { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
-            { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', warna: '#dbeafe', warnaTeks: '#1e40af', segeraHadir: false },
-          ];
+          const progressPercent = Math.min(100, Math.round((xpProgress / xpKebutuhan) * 100));
           return (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{
-                background: 'linear-gradient(160deg, #0d9488 0%, #134e4a 100%)', borderRadius: 24,
-                padding: isMobile ? 18 : 22, marginBottom: 16, position: 'relative', overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(13,148,136,0.25)',
-              }}>
-                {/* Bintik dekoratif */}
-                <div style={{ position: 'absolute', top: -24, right: -24, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
-                <div style={{ position: 'absolute', bottom: -34, left: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-
-                {/* 🔥 BARU: Master G sekarang SELALU tampil sebagai maskot
-                    brand (nempel gede di pojok kartu), TERPISAH dari
-                    avatar foto profil siswa. Sebelumnya maskot cuma
-                    nongol KALAU siswa belum upload foto -- itu salah,
-                    maskot brand harusnya selalu ada, bukan digantikan
-                    foto profil. */}
-                <div style={{ position: 'absolute', top: -6, right: 10, zIndex: 2 }}>
-                  <MaskotAstronot size={78} />
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative' }}>
-                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)' }}>
-                    {studentProfile?.fotoUrl ? (
-                      <img src={studentProfile.fotoUrl} alt={studentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <span style={{ color: 'white', fontWeight: 800, fontSize: 20 }}>{(studentName || 'S').charAt(0).toUpperCase()}</span>
-                    )}
+            <div style={{
+              background: 'linear-gradient(135deg, #FF9E67 0%, #FFB88C 50%, #FDE68A 100%)',
+              borderRadius: 24,
+              padding: isMobile ? '20px 18px' : '28px 24px',
+              boxShadow: '0 8px 24px rgba(255, 158, 103, 0.25)',
+              position: 'relative',
+              overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.5)',
+            }}>
+              <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, background: 'rgba(255,255,255,0.15)', borderRadius: '50%', blur: '20px' }} />
+              <div style={{ position: 'absolute', bottom: -20, left: -10, width: 80, height: 80, background: 'rgba(255,255,255,0.1)', borderRadius: '50%', blur: '15px' }} />
+              
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 800, color: '#7C3AED', marginBottom: 6, letterSpacing: '-0.02em' }}>
+                      {greeting.icon} {greeting.text}, {studentName.split(' ')[0]}!
+                    </div>
+                    <div style={{ fontSize: isMobile ? 12 : 14, color: '#6B58A8', fontWeight: 600, opacity: 0.9 }}>
+                      🚀 Level {level} • {progresStreak} hari streak
+                    </div>
                   </div>
-                  <div style={{ flex: 1, maxWidth: '55%' }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>{greeting.icon} {greeting.text}, {studentName?.split(' ')[0]}</div>
-                    <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>Semangat belajar hari ini!</div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: 8, marginBottom: 16, position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
-                    <span style={{ fontSize: 13 }}>🔥</span>
-                    <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresStreak} hari</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
-                    <span style={{ fontSize: 13 }}>🚀</span>
-                    <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresXp} XP</span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, position: 'relative' }}>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>Level {level}</span>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{xpProgress} / {xpKebutuhan} XP</span>
-                </div>
-                <div style={{ height: 7, background: 'rgba(255,255,255,0.2)', borderRadius: 10, overflow: 'hidden', marginBottom: 16, position: 'relative' }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, (xpProgress / xpKebutuhan) * 100)}%`, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)', borderRadius: 10, transition: 'width 0.4s ease' }} />
-                </div>
-
-                {/* 🔥 BARU: search bar ini SEBELUMNYA cuma dekorasi, gak
-                    bisa diklik & gak nyambung ke apa-apa. Sekarang
-                    beneran jadi kotak ketik yang nyambung ke pencarian
-                    materi (StudentElearning.jsx sekarang baca ?cari=
-                    dari URL, lihat perubahannya di file itu). */}
-                <div style={{ background: 'white', borderRadius: 14, padding: '4px 6px 4px 16px', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', width: '100%', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                  <input
-                    type="text"
-                    value={teksCariMateri}
-                    onChange={(e) => setTeksCariMateri(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && teksCariMateri.trim()) navigate(`/siswa/materi?cari=${encodeURIComponent(teksCariMateri.trim())}`); }}
-                    placeholder="Cari materi, mis. Aljabar, Teks Deskripsi..."
-                    style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13, color: '#334155', background: 'transparent' }}
-                  />
-                  <button
-                    onClick={() => teksCariMateri.trim() ? navigate(`/siswa/materi?cari=${encodeURIComponent(teksCariMateri.trim())}`) : navigate('/siswa/materi')}
-                    style={{ background: 'linear-gradient(135deg, #5B2ECC 0%, #1E3A8A 100%)', border: 'none', borderRadius: 10, width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s ease' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                  <button onClick={() => setShowNotifPanel(!showNotifPanel)} style={{
+                    background: 'rgba(255,255,255,0.9)',
+                    border: 'none',
+                    borderRadius: 16,
+                    width: 44,
+                    height: 44,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    transition: 'all 0.2s ease',
+                  }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.08)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
                   >
-                    <Search size={16} color="white" />
+                    <Bell size={20} color="#7C3AED" />
+                    {unreadCount > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -4,
+                        background: '#EF4444',
+                        color: 'white',
+                        borderRadius: '50%',
+                        minWidth: 20,
+                        height: 20,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 10,
+                        fontWeight: 800,
+                        border: '2px solid white',
+                      }}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                    )}
                   </button>
                 </div>
-              </div>
 
-              {/* Menu grid -- ikon dalam kartu bulat warna-warni, terinspirasi
-                  gaya "subject chips" dashboard belajar modern. */}
-              <style>{`@keyframes goyangPeringatan { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-15deg);} 75%{transform:rotate(15deg);} }`}</style>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 16 }}>
-                {menuBaru.map((m) => (
-                  <button
-                    key={m.key}
-                    onClick={() => {
-                      if (m.key === 'kehadiran') {
-                        attendanceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      } else if (m.key === 'latihan') {
-                        navigate('/siswa/latihan-harian');
-                      } else if (m.key === 'tryout') {
-                        navigate('/siswa/tryout');
-                      } else if (m.key === 'leaderboard') {
-                        navigate('/siswa/leaderboard');
-                      } else if (m.segeraHadir) {
-                        alert(`✨ ${m.label} segera hadir!`);
-                      }
-                    }}
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer' }}
-                  >
+                <div style={{ background: 'rgba(255,255,255,0.6)', borderRadius: 16, padding: '14px 18px', backdropFilter: 'blur(10px)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#7C3AED' }}>XP Progress</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#7C3AED' }}>{xpProgress}/{xpKebutuhan} XP</span>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.8)', borderRadius: 10, height: 10, overflow: 'hidden' }}>
                     <div style={{
-                      width: isMobile ? 54 : 62, height: isMobile ? 54 : 62, borderRadius: 18, background: m.warna,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, position: 'relative',
-                      boxShadow: `0 4px 12px ${m.warna}88`,
-                    }}>
-                      {m.emoji}
-                      {m.segeraHadir && (
-                        <span style={{ position: 'absolute', bottom: -6, fontSize: 8, background: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: 8, fontWeight: 700, whiteSpace: 'nowrap' }}>Segera</span>
-                      )}
-                      {/* 🔥 BARU: sesuai permintaan -- ganti banner besar
-                          jadi emot kecil NEMPEL di ikon menu Latihan
-                          Harian aja, gak nambah elemen baru yang bikin
-                          dashboard makin penuh. */}
-                      {m.key === 'latihan' && (
-                        <span style={{
-                          position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: '50%',
-                          background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                          animation: statusStreak === 'berisiko' ? 'goyangPeringatan 1.8s ease-in-out infinite' : 'none',
-                        }}>
-                          {statusStreak === 'belum-pernah' && '🙂'}
-                          {statusStreak === 'berakhir' && '😢'}
-                          {statusStreak === 'berisiko' && '😰'}
-                          {statusStreak === 'aman' && '🔥'}
-                        </span>
-                      )}
-                    </div>
-                    {m.key === 'latihan' && (
-                      <span style={{
-                        fontSize: 8.5, fontWeight: 700, textAlign: 'center', lineHeight: 1.2,
-                        color: statusStreak === 'berakhir' ? '#dc2626' : statusStreak === 'berisiko' ? '#d97706' : statusStreak === 'aman' ? '#16a34a' : '#3b82f6',
-                      }}>
-                        {statusStreak === 'belum-pernah' && 'Yuk mulai!'}
-                        {statusStreak === 'berakhir' && 'Streak berakhir'}
-                        {statusStreak === 'berisiko' && 'Streak beresiko!'}
-                        {statusStreak === 'aman' && `${progresStreak} hari aman`}
-                      </span>
-                    )}
-                    <span style={{ fontSize: 10.5, color: m.warnaTeks, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>{m.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ background: 'white', borderRadius: 16, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderLeft: '3px solid #0d9488' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#0d9488', marginBottom: 6 }}>Ayo {studentName.split(' ')[0]}, Semangat! 🔥</div>
-                <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
-                  &ldquo;Tidak pernah ada hari yang sama dalam kehidupan kita. Hari ini berbeda dengan kemarin. Mari kita jadikan hari ini lebih baik.&rdquo;
-                </p>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>- Susilo Bambang Yudhoyono</div>
+                      width: `${progressPercent}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #7C3AED 0%, #A78BFA 100%)',
+                      borderRadius: 10,
+                      transition: 'width 0.5s ease',
+                    }} />
+                  </div>
+                </div>
               </div>
             </div>
           );
         })()}
+      </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? 8 : 14, marginBottom: 16 }}>
-          {[
-            { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#0d9488', bg: '#f0fdfa', icon: '📅' },
-            { label: 'Tugas & Kuis', value: tasks.length, color: '#5B2ECC', bg: '#f5f3ff', icon: '📝' },
-            { label: 'Notifikasi Baru', value: unreadCount, color: '#d97706', bg: '#fffbeb', icon: '🔔' },
-          ].map((stat, i) => (
-            <div key={i} className="sd-card" style={{ 
-              background: `linear-gradient(135deg, ${stat.bg} 0%, ${stat.bg.replace('f', 'e')} 100%)`, 
-              borderRadius: 16, 
-              padding: isMobile ? '12px 10px' : '16px 18px',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+      {/* Search bar dengan styling modern */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{
+          background: 'white',
+          borderRadius: 24,
+          padding: '6px 8px 6px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          position: 'relative',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+          border: '1px solid #F3F4F6',
+        }}>
+          <input
+            type="text"
+            value={teksCariMateri}
+            onChange={(e) => setTeksCariMateri(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && teksCariMateri.trim()) navigate(`/siswa/materi?cari=${encodeURIComponent(teksCariMateri.trim())}`); }}
+            placeholder="Cari materi, mis. Aljabar, Teks Deskripsi..."
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: '#374151', background: 'transparent', fontWeight: 500 }}
+          />
+          <button
+            onClick={() => teksCariMateri.trim() ? navigate(`/siswa/materi?cari=${encodeURIComponent(teksCariMateri.trim())}`) : navigate('/siswa/materi')}
+            style={{
+              background: 'linear-gradient(135deg, #FF9E67 0%, #FFB88C 100%)',
+              border: 'none',
+              borderRadius: 12,
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 4px 12px rgba(255, 158, 103, 0.3)',
             }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
-            >
-              <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.icon}</div>
-              <div style={{ fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color, lineHeight: 1, marginTop: 4 }}>
-                {dataLoading ? '–' : stat.value}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 158, 103, 0.4)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 158, 103, 0.3)'; }}
+          >
+            <Search size={18} color="white" />
+          </button>
+        </div>
+      </div>
+
+      {/* Menu grid dengan cards rounded */}
+      <style>{`@keyframes goyangPeringatan { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-15deg);} 75%{transform:rotate(15deg);} }`}</style>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 12 : 16, marginBottom: 20 }}>
+        {menuBaru.map((m) => (
+          <button
+            key={m.key}
+            onClick={() => {
+              if (m.key === 'kehadiran') {
+                attendanceRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              } else if (m.key === 'latihan') {
+                navigate('/siswa/latihan-harian');
+              } else if (m.key === 'tryout') {
+                navigate('/siswa/tryout');
+              } else if (m.key === 'leaderboard') {
+                navigate('/siswa/leaderboard');
+              } else if (m.segeraHadir) {
+                alert(`✨ ${m.label} segera hadir!`);
+              }
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <div style={{
+              width: isMobile ? 58 : 68,
+              height: isMobile ? 58 : 68,
+              borderRadius: 24,
+              background: m.warna,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 28,
+              position: 'relative',
+              boxShadow: `0 6px 16px ${m.warna}CC`,
+              border: '2px solid white',
+            }}>
+              {m.emoji}
+              {m.segeraHadir && (
+                <span style={{
+                  position: 'absolute',
+                  bottom: -8,
+                  fontSize: 9,
+                  background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                  color: 'white',
+                  padding: '3px 8px',
+                  borderRadius: 10,
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)',
+                }}>Segera</span>
+              )}
+              {m.key === 'latihan' && (
+                <span style={{
+                  position: 'absolute',
+                  top: -8,
+                  right: -8,
+                  width: 26,
+                  height: 26,
+                  borderRadius: '50%',
+                  background: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 15,
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.15)',
+                  border: '2px solid #FEF3C7',
+                  animation: statusStreak === 'berisiko' ? 'goyangPeringatan 1.8s ease-in-out infinite' : 'none',
+                }}>
+                  {statusStreak === 'belum-pernah' && '🙂'}
+                  {statusStreak === 'berakhir' && '😢'}
+                  {statusStreak === 'berisiko' && '😰'}
+                  {statusStreak === 'aman' && '🔥'}
+                </span>
+              )}
+            </div>
+            {m.key === 'latihan' && (
+              <span style={{
+                fontSize: 9.5,
+                fontWeight: 700,
+                textAlign: 'center',
+                lineHeight: 1.2,
+                color: statusStreak === 'berakhir' ? '#DC2626' : statusStreak === 'berisiko' ? '#D97706' : statusStreak === 'aman' ? '#16A34A' : '#3B82F6',
+                maxWidth: 80,
+              }}>
+                {statusStreak === 'belum-pernah' && 'Yuk mulai!'}
+                {statusStreak === 'berakhir' && 'Streak berakhir'}
+                {statusStreak === 'berisiko' && 'Streak beresiko!'}
+                {statusStreak === 'aman' && `${progresStreak} hari aman`}
+              </span>
+            )}
+            <span style={{
+              fontSize: 11.5,
+              color: m.warnaTeks,
+              fontWeight: 700,
+              textAlign: 'center',
+              lineHeight: 1.3,
+              letterSpacing: '-0.01em',
+            }}>{m.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Quote card */}
+      <div style={{
+        background: 'white',
+        borderRadius: 20,
+        padding: 18,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+        borderLeft: '4px solid #FF9E67',
+        border: '1px solid #F3F4F6',
+        marginBottom: 24,
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#C2410C', marginBottom: 8 }}>
+          Ayo {studentName.split(' ')[0]}, Semangat! 🔥
+        </div>
+        <p style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
+          "Tidak pernah ada hari yang sama dalam kehidupan kita. Hari ini berbeda dengan kemarin. Mari kita jadikan hari ini lebih baik."
+        </p>
+        <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8, fontWeight: 600 }}>- Susilo Bambang Yudhoyono</div>
+      </div>
+
+      {/* Statistik cards dengan warna pastel oranye/ungu */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? 12 : 16, marginBottom: 24 }}>
+        {[
+          { label: 'Jadwal Hari Ini', value: todaySchedules.length, color: '#FF9E67', bg: '#FFF7ED', icon: '📅' },
+          { label: 'Tugas & Kuis', value: tasks.length, color: '#B4B3FF', bg: '#F5F3FF', icon: '📝' },
+          { label: 'Notifikasi Baru', value: unreadCount, color: '#FFB88C', bg: '#FFEDD5', icon: '🔔' },
+        ].map((stat, i) => (
+          <div key={i} className="sd-card" style={{
+            background: `linear-gradient(135deg, ${stat.bg} 0%, white 100%)`,
+            borderRadius: 24,
+            padding: isMobile ? '16px 14px' : '20px 22px',
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            border: '1px solid rgba(255,255,255,0.8)',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'; }}
+          >
+            <div style={{ fontSize: isMobile ? 28 : 36, fontWeight: 900, color: stat.color, lineHeight: 1, marginBottom: 8 }}>{stat.icon}</div>
+            <div style={{ fontSize: isMobile ? 28 : 36, fontWeight: 900, color: '#1F2937', lineHeight: 1 }}>
+              {dataLoading ? '–' : stat.value}
+            </div>
+            <div style={{ fontSize: isMobile ? 11 : 12, color: '#6B7280', fontWeight: 600, marginTop: 6, letterSpacing: '-0.01em' }}>{stat.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Survey wajib dengan gradient oranye-merah pastel */}
+      {wajibSurveys.map(sv => (
+        <div key={sv.id} className="sd-card" style={{
+          background: 'linear-gradient(135deg, #FFEDD5 0%, #FEE2E2 100%)', borderRadius: 24, padding: 20, color: '#991B1B',
+          marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+          boxShadow: '0 6px 20px rgba(255, 158, 103, 0.2)',
+          border: '1px solid #FED7AA',
+          animation: 'goyangPeringatan 2s ease-in-out infinite',
+        }}>
+          {sv.coverImage && (
+            <img src={sv.coverImage} alt={sv.title} style={{ width: 72, height: 72, borderRadius: 16, objectFit: 'cover', flexShrink: 0, border: '2px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
+          )}
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, background: 'rgba(255,255,255,0.6)', color: '#DC2626', padding: '4px 12px', borderRadius: 12 }}>🔴 SURVEI WAJIB</span>
+            <h3 style={{ margin: '8px 0 4px', fontSize: 16, fontWeight: 800, color: '#991B1B' }}>{sv.title}</h3>
+            <p style={{ margin: 0, fontSize: 12, color: '#7F1D1D', opacity: 0.9 }}>Wajib diisi{sv.deadline ? ` — batas ${new Date(sv.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}.</p>
+          </div>
+          <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{
+            background: 'linear-gradient(135deg, #FF9E67 0%, #FFB88C 100%)', color: 'white', border: 'none', padding: '12px 22px', borderRadius: 14,
+            fontWeight: 800, fontSize: 13, cursor: 'pointer', flexShrink: 0,
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 4px 12px rgba(255, 158, 103, 0.35)',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 158, 103, 0.45)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 158, 103, 0.35)'; }}
+          >
+            Isi Sekarang →
+          </button>
+        </div>
+      ))}
+
+      {/* Survey opsional dengan gaya clean */}
+      {visibleOptionalSurveys.map(sv => (
+        <div key={sv.id} className="sd-card" style={{
+          background: 'white', border: '1px solid #E0E7FF', borderRadius: 20, padding: 16,
+          marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', position: 'relative',
+          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+        }}
+          onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(180, 179, 255, 0.2)'; e.currentTarget.style.borderColor = '#B4B3FF'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = '#E0E7FF'; e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          {sv.coverImage && (
+            <img src={sv.coverImage} alt={sv.title} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0, border: '2px solid #F5F3FF' }} />
+          )}
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#6366F1', background: '#EEF2FF', padding: '3px 10px', borderRadius: 10 }}>🔵 SURVEI OPSIONAL</span>
+            <h4 style={{ margin: '4px 0', fontSize: 14, fontWeight: 700, color: '#1F2937' }}>{sv.title}</h4>
+          </div>
+          <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{
+            background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)', color: '#4F46E5', border: 'none', padding: '9px 18px', borderRadius: 12,
+            fontWeight: 700, fontSize: 12, cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)'; e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            Isi
+          </button>
+          <button onClick={() => dismissOptionalSurvey(sv.id)} style={{
+            background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: 6,
+            transition: 'all 0.2s ease', borderRadius: 8,
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = '#FEF2F2'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#9CA3AF'; e.currentTarget.style.background = 'transparent'; }}
+            title="Tutup"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      ))}
+
+      {/* Smart Raport card dengan gradient ungu */}
+      {raportSummary && (
+        <div className="sd-card" onClick={() => navigate('/siswa/smart-rapor')} style={{
+          background: 'linear-gradient(135deg, #B4B3FF 0%, #7C7DFF 100%)',
+          borderRadius: 24,
+          padding: 22,
+          color: 'white',
+          cursor: 'pointer',
+          marginBottom: 20,
+          boxShadow: '0 8px 24px rgba(180, 179, 255, 0.35)',
+          border: '1px solid rgba(255,255,255,0.3)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Trophy size={24} color="#FEF3C7" />
               </div>
-              <div style={{ fontSize: isMobile ? 9 : 11, color: '#64748b', fontWeight: 700, marginTop: 4 }}>{stat.label}</div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>📊 Ringkasan Raport</h3>
+                <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.9 }}>Periode {raportSummary.periode?.replace('-', ' / ')}</p>
+              </div>
+            </div>
+            <ArrowRight size={22} strokeWidth={2.5} />
+          </div>
+          <div style={{ display: 'flex', gap: 24, marginTop: 18, flexWrap: 'wrap' }}>
+            <div style={{ textAlign: 'center', background: 'rgba(255,255,255,0.15)', padding: '12px 20px', borderRadius: 16 }}>
+              <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-0.02em' }}>{raportSummary.nilaiAkhir ?? '?'}</div>
+              <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600, marginTop: 4 }}>Nilai Akhir</div>
+            </div>
+            {raportSummary.komponenDipake && (
+              <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 24, background: 'rgba(255,255,255,0.15)', padding: '12px 20px', borderRadius: 16 }}>
+                <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-0.02em' }}>{raportSummary.komponenDipake.length}/4</div>
+                <div style={{ fontSize: 11, opacity: 0.9, fontWeight: 600, marginTop: 4 }}>Komponen Dinilai</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+
+        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Calendar size={17} color="#0d9488" /> Jadwal Hari Ini
+          </h3>
+          {dataLoading ? (
+            <SkeletonLines count={2} />
+          ) : todaySchedules.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>📭 Tidak ada jadwal hari ini</div>
+          ) : todaySchedules.map((sch, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: i < todaySchedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+              <div style={{ minWidth: 48, textAlign: 'center', fontWeight: 700, fontSize: 12, color: '#0d9488' }}>{sch.start}</div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{sch.title || "Kelas"}</div>
+                <div style={{ fontSize: 10, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                  <MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.teacherName || sch.booker || '-'}
+                </div>
+              </div>
             </div>
           ))}
         </div>
 
-        {wajibSurveys.map(sv => (
-          <div key={sv.id} className="sd-card" style={{
-            background: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)', borderRadius: 18, padding: 18, color: 'white',
-            marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-            boxShadow: '0 10px 24px rgba(220,38,38,0.28)',
-            animation: 'goyangPeringatan 2s ease-in-out infinite',
-          }}>
-            {sv.coverImage && (
-              <img src={sv.coverImage} alt={sv.title} style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
-            )}
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <span style={{ fontSize: 9, fontWeight: 800, background: 'rgba(255,255,255,0.25)', padding: '3px 9px', borderRadius: 10 }}>🔴 SURVEI WAJIB</span>
-              <h3 style={{ margin: '6px 0 2px', fontSize: 15, fontWeight: 800 }}>{sv.title}</h3>
-              <p style={{ margin: 0, fontSize: 11, opacity: 0.9 }}>Wajib diisi{sv.deadline ? ` — batas ${new Date(sv.deadline).toLocaleDateString('id-ID')}` : ''}.</p>
-            </div>
-            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ 
-              background: 'white', color: '#dc2626', border: 'none', padding: '10px 18px', borderRadius: 12, 
-              fontWeight: 800, fontSize: 12, cursor: 'pointer', flexShrink: 0,
-              transition: 'all 0.2s ease',
-            }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(220,38,38,0.3)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              Isi Sekarang →
-            </button>
-          </div>
-        ))}
-
-        {visibleOptionalSurveys.map(sv => (
-          <div key={sv.id} className="sd-card" style={{
-            background: 'white', border: '1px solid #bae6fd', borderRadius: 16, padding: 14,
-            marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', position: 'relative',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(8,145,178,0.15)'; e.currentTarget.style.borderColor = '#0891b2'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = '#bae6fd'; }}
-          >
-            {sv.coverImage && (
-              <img src={sv.coverImage} alt={sv.title} style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
-            )}
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <span style={{ fontSize: 9, fontWeight: 700, color: '#0891b2' }}>🔵 SURVEI OPSIONAL</span>
-              <h4 style={{ margin: '2px 0', fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{sv.title}</h4>
-            </div>
-            <button className="sd-survey-btn" onClick={() => navigate('/siswa/survei/' + sv.id)} style={{ 
-              background: '#ecfeff', color: '#0891b2', border: 'none', padding: '7px 14px', borderRadius: 10, 
-              fontWeight: 700, fontSize: 11, cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#cffafe'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#ecfeff'; e.currentTarget.style.transform = 'scale(1)'; }}
-            >
-              Isi
-            </button>
-            <button onClick={() => dismissOptionalSurvey(sv.id)} style={{ 
-              background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4,
-              transition: 'all 0.2s ease',
-            }} 
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.transform = 'scale(1)'; }}
-              title="Tutup"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        ))}
-
-        {raportSummary && (
-          <div className="sd-card" onClick={() => navigate('/siswa/smart-rapor')} style={{ background: 'linear-gradient(135deg, #5B2ECC 0%, #1E3A8A 100%)', borderRadius: 18, padding: 20, color: 'white', cursor: 'pointer', marginBottom: 16, boxShadow: '0 10px 24px rgba(102,126,234,0.25)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Trophy size={26} color="#fbbf24" />
-                <div>
-                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800 }}>📊 Ringkasan Raport</h3>
-                  <p style={{ margin: '4px 0 0', fontSize: 11, opacity: 0.85 }}>Periode {raportSummary.periode?.replace('-', ' / ')}</p>
-                </div>
-              </div>
-              <ArrowRight size={20} />
-            </div>
-            <div style={{ display: 'flex', gap: 20, marginTop: 16, flexWrap: 'wrap' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 30, fontWeight: 900 }}>{raportSummary.nilaiAkhir ?? '?'}</div>
-                <div style={{ fontSize: 10, opacity: 0.8 }}>Nilai Akhir</div>
-              </div>
-              {raportSummary.komponenDipake && (
-                <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: 20 }}>
-                  <div style={{ fontSize: 30, fontWeight: 900 }}>{raportSummary.komponenDipake.length}/4</div>
-                  <div style={{ fontSize: 10, opacity: 0.8 }}>Komponen Dinilai</div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
-
-          <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-            <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Calendar size={17} color="#0d9488" /> Jadwal Hari Ini
-            </h3>
-            {dataLoading ? (
-              <SkeletonLines count={2} />
-            ) : todaySchedules.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>📭 Tidak ada jadwal hari ini</div>
-            ) : todaySchedules.map((sch, i) => (
-              <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: i < todaySchedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                <div style={{ minWidth: 48, textAlign: 'center', fontWeight: 700, fontSize: 12, color: '#0d9488' }}>{sch.start}</div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{sch.title || "Kelas"}</div>
-                  <div style={{ fontSize: 10, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                    <MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.teacherName || sch.booker || '-'}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <ClipboardList size={17} color="#5B2ECC" /> Tugas & Kuis
-              </h3>
-              <button onClick={() => navigate('/siswa/materi')} style={{ background: 'none', border: 'none', color: '#5B2ECC', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
-                Lihat Semua →
-              </button>
-            </div>
-            {dataLoading ? (
-              <SkeletonLines count={2} />
-            ) : tasks.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>
-                📭 Belum ada tugas atau kuis untuk Anda
-              </div>
-            ) : tasks.map((task, i) => {
-              const hasQuiz = (task.quizData || []).length > 0 || (task.blocks || []).some(b => b.type === 'quiz' && b.quizId);
-              const hasAssignment = (task.blocks || []).some(b => b.type === 'assignment');
-              const isTargeted = task.sendToSpecificStudents;
-              const targetInfo = isTargeted ? '🔒 Khusus' : `${task.targetKelas || 'Semua'} • ${task.targetKategori || 'Semua'}`;
-
-              // 🔥 BARU: badge deadline paling dekat, biar keliatan mana yang
-              // paling urgent (bukan cuma ngandelin urutan list aja).
-              // Kalau udah __terlewat (dalam masa tenggang 7 hari), badge-nya
-              // ditandai "Terlambat" merah -- bukan hitung mundur biasa.
-              let deadlineBadge = null;
-              if (task.__terlewat) {
-                const diffDays = Math.floor((new Date() - task.__deadline) / (24 * 60 * 60 * 1000));
-                deadlineBadge = { text: `⚠️ Terlambat ${diffDays} hari`, color: '#dc2626' };
-              } else if (task.__deadline) {
-                const diffH = Math.floor((task.__deadline - new Date()) / 3600000);
-                if (diffH < 24) deadlineBadge = { text: `⏰ ${Math.max(diffH, 0)} jam lagi`, color: '#ef4444' };
-                else deadlineBadge = { text: `📅 ${Math.floor(diffH / 24)} hari lagi`, color: '#f59e0b' };
-              }
-
-              // 🔥 BARU: badge "Akan Datang" -- item yang tanggalMulai-nya
-              // masih di masa depan (lihat penjelasan lengkap di fetchData()
-              // soal kenapa ini sekarang TETAP masuk daftar, bukan
-              // disembunyikan total). Ditampilkan sebagai pengingat, TAPI
-              // gak bisa diklik buat dibuka -- soalnya kontennya beneran
-              // belum kebuka sampai tanggalnya tiba, klik ke sana cuma
-              // bakal berujung error/kosong.
-              const upcomingBadge = task.__isUpcoming && task.tanggalMulai
-                ? { text: `🔜 Dibuka ${new Date(task.tanggalMulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`, color: '#0891b2' }
-                : null;
-
-              return (
-                <div
-                  key={i}
-                  className="sd-task-item"
-                  style={{
-                    padding: '10px 12px', background: task.__isUpcoming ? '#f0fdfa' : '#f8fafc', borderRadius: 12, marginBottom: 6,
-                    borderLeft: `3px solid ${task.__isUpcoming ? '#0891b2' : (hasQuiz ? '#5B2ECC' : '#f59e0b')}`,
-                    cursor: task.__isUpcoming ? 'default' : 'pointer', transition: 'filter 0.15s',
-                    opacity: task.__isUpcoming ? 0.85 : 1,
-                  }}
-                  onClick={() => {
-                    // 🔥 Item "akan datang" SENGAJA gak bisa diklik -- kontennya
-                    // beneran belum kebuka, biar gak nyasar ke halaman error.
-                    if (task.__isUpcoming) return;
-                    // 🔥 FIX BUG: sebelumnya SEMUA kartu di sini (kuis maupun
-                    // tugas) cuma nyimpen `selectedModuleId` ke localStorage
-                    // lalu lempar ke halaman daftar "Pilih Guru/Mapel"
-                    // (`/siswa/materi`) -- padahal halaman itu TIDAK PERNAH
-                    // membaca localStorage tsb buat langsung loncat ke
-                    // modul/kuisnya. Efeknya siswa klik "Mulai Kuis" tapi
-                    // malah nyasar ke layar pilihan tentor, harus cari-cari
-                    // modulnya lagi secara manual. Sekarang: kalau kartunya
-                    // KUIS, langsung diarahkan ke halaman pengerjaan kuis;
-                    // kalau TUGAS/modul biasa, langsung ke halaman detail
-                    // modulnya -- tanpa mampir ke halaman pilihan sama sekali.
-                    if (hasQuiz) {
-                      const quizBlock = (task.blocks || []).find(b => b.type === 'quiz' && b.quizId);
-                      // Kuis "model lama" (quizData langsung nempel di modul,
-                      // bukan blok terpisah) -- id kuisnya adalah id modul itu
-                      // sendiri.
-                      const quizId = quizBlock?.quizId || (task.quizData?.length > 0 ? task.id : null);
-                      if (quizId) {
-                        navigate(`/siswa/kuis/${quizId}`);
-                        return;
-                      }
-                    }
-                    navigate(`/siswa/modul/${task.id}`);
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{task.title}</div>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {hasQuiz && (
-                        <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#5B2ECC', color: 'white', fontWeight: 700 }}>Kuis</span>
-                      )}
-                      {hasAssignment && !hasQuiz && (
-                        <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#f59e0b', color: 'white', fontWeight: 700 }}>Tugas</span>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 10, color: '#64748b', display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
-                    <span>{task.subject || 'Umum'}</span>
-                    <span>•</span>
-                    <span>{targetInfo}</span>
-                    {hasQuiz && (task.quizData?.length > 0) && <span>• 📝 {task.quizData.length} soal</span>}
-                  </div>
-                  {isTargeted && (
-                    <div style={{ fontSize: 8, color: '#f59e0b', background: '#fef3c7', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4 }}>
-                      🔒 Dikirim khusus
-                    </div>
-                  )}
-                  {upcomingBadge ? (
-                    <div style={{ fontSize: 9, color: upcomingBadge.color, fontWeight: 700, marginTop: 4 }}>
-                      {upcomingBadge.text}
-                    </div>
-                  ) : deadlineBadge && (
-                    <div style={{ fontSize: 9, color: deadlineBadge.color, fontWeight: 700, marginTop: 4 }}>
-                      {deadlineBadge.text}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 🔥 KEHADIRAN — BARU, sesuai permintaan (bagan bundar), sekaligus
-            jadi jalan pintas karena menu "Kehadiran" di sidebar tadinya
-            gak pernah ada. */}
-        <div ref={attendanceRef} className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ClipboardList size={17} color="#0d9488" /> Kehadiran
+              <ClipboardList size={17} color="#5B2ECC" /> Tugas & Kuis
             </h3>
-            <button onClick={() => navigate('/siswa/absensi')} style={{ background: 'none', border: 'none', color: '#5B2ECC', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
-              Riwayat Lengkap →
+            <button onClick={() => navigate('/siswa/materi')} style={{ background: 'none', border: 'none', color: '#5B2ECC', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              Lihat Semua →
             </button>
           </div>
-          {dataLoading ? <SkeletonLines count={2} /> : (
-            <AttendanceDonut hadir={attendanceSummary.hadir} izin={attendanceSummary.izin} alpha={attendanceSummary.alpha} total={attendanceSummary.total} />
-          )}
-
-        </div>
-
-        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,#5B2ECC,#1E3A8A)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 17, flexShrink: 0 }}>
-              {studentName?.charAt(0) || 'S'}
+          {dataLoading ? (
+            <SkeletonLines count={2} />
+          ) : tasks.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>
+              📭 Belum ada tugas atau kuis untuk Anda
             </div>
-            <div style={{ flex: 1, minWidth: 120 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{studentName}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || studentKelas || '-'} • {studentProfile?.kategori || studentProgram || 'Reguler'}</div>
-              {studentNim && <div style={{ fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' }}>ID: {studentNim}</div>}
-            </div>
-            <button onClick={() => navigate('/siswa/materi')} style={{ padding: '9px 16px', background: '#1E3A8A', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <BookOpen size={14} /> Materi Belajar
-            </button>
-          </div>
-        </div>
+          ) : tasks.map((task, i) => {
+            const hasQuiz = (task.quizData || []).length > 0 || (task.blocks || []).some(b => b.type === 'quiz' && b.quizId);
+            const hasAssignment = (task.blocks || []).some(b => b.type === 'assignment');
+            const isTargeted = task.sendToSpecificStudents;
+            const targetInfo = isTargeted ? '🔒 Khusus' : `${task.targetKelas || 'Semua'} • ${task.targetKategori || 'Semua'}`;
 
-        {/* 🔥 KARTU IDENTITAS SISWA DIGITAL */}
-        <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-          <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <IdCard size={17} color="#5B2ECC" /> Kartu Identitas Siswa
+            let deadlineBadge = null;
+            if (task.__terlewat) {
+              const diffDays = Math.floor((new Date() - task.__deadline) / (24 * 60 * 60 * 1000));
+              deadlineBadge = { text: `⚠️ Terlambat ${diffDays} hari`, color: '#dc2626' };
+            } else if (task.__deadline) {
+              const diffH = Math.floor((task.__deadline - new Date()) / 3600000);
+              if (diffH < 24) deadlineBadge = { text: `⏰ ${Math.max(diffH, 0)} jam lagi`, color: '#ef4444' };
+              else deadlineBadge = { text: `📅 ${Math.floor(diffH / 24)} hari lagi`, color: '#f59e0b' };
+            }
+
+            const upcomingBadge = task.__isUpcoming && task.tanggalMulai
+              ? { text: `🔜 Dibuka ${new Date(task.tanggalMulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`, color: '#0891b2' }
+              : null;
+
+            return (
+              <div
+                key={i}
+                className="sd-task-item"
+                style={{
+                  padding: '10px 12px', background: task.__isUpcoming ? '#f0fdfa' : '#f8fafc', borderRadius: 12, marginBottom: 6,
+                  borderLeft: `3px solid ${task.__isUpcoming ? '#0891b2' : (hasQuiz ? '#5B2ECC' : '#f59e0b')}`,
+                  cursor: task.__isUpcoming ? 'default' : 'pointer', transition: 'filter 0.15s',
+                  opacity: task.__isUpcoming ? 0.85 : 1,
+                }}
+                onClick={() => {
+                  if (task.__isUpcoming) return;
+                  if (hasQuiz) {
+                    const quizBlock = (task.blocks || []).find(b => b.type === 'quiz' && b.quizId);
+                    const quizId = quizBlock?.quizId || (task.quizData?.length > 0 ? task.id : null);
+                    if (quizId) {
+                      navigate(`/siswa/kuis/${quizId}`);
+                      return;
+                    }
+                  }
+                  navigate(`/siswa/modul/${task.id}`);
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{task.title}</div>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {hasQuiz && (
+                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#5B2ECC', color: 'white', fontWeight: 700 }}>Kuis</span>
+                    )}
+                    {hasAssignment && !hasQuiz && (
+                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: '#f59e0b', color: 'white', fontWeight: 700 }}>Tugas</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ fontSize: 10, color: '#64748b', display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
+                  <span>{task.subject || 'Umum'}</span>
+                  <span>•</span>
+                  <span>{targetInfo}</span>
+                  {hasQuiz && (task.quizData?.length > 0) && <span>• 📝 {task.quizData.length} soal</span>}
+                </div>
+                {isTargeted && (
+                  <div style={{ fontSize: 8, color: '#f59e0b', background: '#fef3c7', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4 }}>
+                    🔒 Dikirim khusus
+                  </div>
+                )}
+                {upcomingBadge ? (
+                  <div style={{ fontSize: 9, color: upcomingBadge.color, fontWeight: 700, marginTop: 4 }}>
+                    {upcomingBadge.text}
+                  </div>
+                ) : deadlineBadge && (
+                  <div style={{ fontSize: 9, color: deadlineBadge.color, fontWeight: 700, marginTop: 4 }}>
+                    {deadlineBadge.text}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* KEHADIRAN */}
+      <div ref={attendanceRef} className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ClipboardList size={17} color="#0d9488" /> Kehadiran
           </h3>
-          <StudentDigitalCard
-            studentId={studentDocId || studentId}
-            nama={studentName}
-            nim={studentNim}
-            student={studentProfile}
-            onUpdated={(patch) => setStudentProfile((prev) => ({ ...(prev || {}), ...patch }))}
-          />
+          <button onClick={() => navigate('/siswa/absensi')} style={{ background: 'none', border: 'none', color: '#5B2ECC', fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+            Riwayat Lengkap →
+          </button>
         </div>
+        {dataLoading ? <SkeletonLines count={2} /> : (
+          <AttendanceDonut hadir={attendanceSummary.hadir} izin={attendanceSummary.izin} alpha={attendanceSummary.alpha} total={attendanceSummary.total} />
+        )}
+      </div>
+
+      {/* Profile card */}
+      <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg,#5B2ECC,#1E3A8A)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 17, flexShrink: 0 }}>
+            {studentName?.charAt(0) || 'S'}
+          </div>
+          <div style={{ flex: 1, minWidth: 120 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{studentName}</div>
+            <div style={{ fontSize: 11, color: '#64748b' }}>{studentProfile?.kelasSekolah || studentKelas || '-'} • {studentProfile?.kategori || studentProgram || 'Reguler'}</div>
+            {studentNim && <div style={{ fontSize: 9, color: '#94a3b8', fontFamily: 'monospace' }}>ID: {studentNim}</div>}
+          </div>
+          <button onClick={() => navigate('/siswa/materi')} style={{ padding: '9px 16px', background: '#1E3A8A', color: 'white', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <BookOpen size={14} /> Materi Belajar
+          </button>
+        </div>
+      </div>
+
+      {/* Kartu Identitas Siswa Digital */}
+      <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <IdCard size={17} color="#5B2ECC" /> Kartu Identitas Siswa
+        </h3>
+        <StudentDigitalCard
+          studentId={studentDocId || studentId}
+          nama={studentName}
+          nim={studentNim}
+          student={studentProfile}
+          onUpdated={(patch) => setStudentProfile((prev) => ({ ...(prev || {}), ...patch }))}
+        />
       </div>
 
       {isScanning && (
