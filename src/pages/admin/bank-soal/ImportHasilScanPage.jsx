@@ -2831,6 +2831,7 @@ function buildDoc(q, meta) {
     tingkatKesulitanSumber: q.tingkat_kesulitan_soal ? 'ai_per_soal' : 'form_admin',
     tingkatKelasSumber: (q.kelas_soal && DAFTAR_KELAS.includes(q.kelas_soal)) ? 'ai_per_soal' : 'form_admin',
     mataPelajaranSumber: q.mapel_soal ? 'ai_per_soal' : 'form_admin',
+    babBuku: meta.babBuku || null,
     sumberFile: meta.sumberFile,
     sumberAI: meta.sumberAI,
     createdAt: serverTimestamp(),
@@ -3713,6 +3714,16 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       tingkatKesulitan,
       sumberFile,
       sumberAI,
+      // 🔥 BARU (bug nyata ditemukan): soal per-bab biasanya ditandai
+      // `materi` yang SPESIFIK per sub-topik (mis. "Operasi Bilangan
+      // Bulat (soal cerita suhu)"), BUKAN nama bab besar ("Bilangan
+      // Bulat dan Pecahan") -- jadi pencocokan teks longgar ke judul
+      // Modul Materi GAGAL buat sebagian besar soal. Sekarang setiap
+      // soal dalam 1x import yang PUNYA rangkuman materi langsung
+      // ditandai EKSPLISIT `babBuku` = judul bab yang sama persis
+      // kayak judul Modul Materi-nya -- gak nebak dari teks lagi,
+      // jadi PASTI ketemu di sisi siswa (LatihanTKA.jsx dkk).
+      babBuku: (buatJugaModul && rangkumanTerdeteksi && judulBabInput) ? judulBabInput.trim() : null,
     };
 
     // Clone dalam (soal + gambar soal + gambar tiap opsi).
@@ -3882,6 +3893,10 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
           const judulModul = (judulBabInput || 'Materi Tanpa Judul').toUpperCase();
           await addDoc(collection(db, 'bimbel_modul'), {
             title: judulModul,
+            // 🔥 BARU: field pencocokan EKSAK (bukan tebak dari teks
+            // judul lagi) -- persis sama isinya kayak `babBuku` yang
+            // ditempel ke tiap soal di batch ini.
+            babBuku: judulBabInput.trim(),
             subject: (mataPelajaran || 'Umum').toUpperCase(),
             guruId: 'admin', // dibuat admin, bukan guru spesifik -- guru manapun yang ngajar kelas terkait tetap bisa pakai
             guruName: 'Admin (Import Otomatis)',

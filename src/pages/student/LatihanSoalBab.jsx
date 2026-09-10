@@ -29,15 +29,20 @@ function ambilKataKunciJudul(judul) {
     .trim();
 }
 
-export default function LatihanSoalBab({ judulModul, mataPelajaran }) {
+export default function LatihanSoalBab({ judulModul, mataPelajaran, babBuku }) {
   const [loading, setLoading] = useState(true);
   const [daftarSoal, setDaftarSoal] = useState([]);
   const [dibuka, setDibuka] = useState({}); // soalId -> jawaban terpilih
   const [terjawab, setTerjawab] = useState({}); // soalId -> true kalau udah cek jawaban
 
   useEffect(() => {
+    // 🔥 BARU: kalau modul ini punya field `babBuku` (dibuat dari alur
+    // import buku otomatis), itu dipakai buat pencocokan EKSAK ke soal
+    // -- gak perlu nebak dari teks judul lagi (yang gampang meleset
+    // kalau soal ditandai materi spesifik per sub-topik). Modul yang
+    // dibuat manual (belum punya babBuku) tetap jalan lewat cara lama.
     const kataKunci = ambilKataKunciJudul(judulModul);
-    if (!kataKunci) { setLoading(false); return; }
+    if (!kataKunci && !babBuku) { setLoading(false); return; }
 
     (async () => {
       try {
@@ -51,7 +56,10 @@ export default function LatihanSoalBab({ judulModul, mataPelajaran }) {
         const kunciLower = kataKunci.toLowerCase();
         const hasil = snap.docs
           .map((d) => ({ id: d.id, ...d.data() }))
-          .filter((s) => (s.materi || '').toLowerCase().includes(kunciLower) || kunciLower.includes((s.materi || '').toLowerCase()))
+          .filter((s) => {
+            if (babBuku) return s.babBuku === babBuku; // pencocokan eksak, prioritas utama
+            return (s.materi || '').toLowerCase().includes(kunciLower) || kunciLower.includes((s.materi || '').toLowerCase());
+          })
           .filter((s) => ['pg_sederhana', 'pg_kompleks'].includes(s.tipe || 'pg_sederhana')) // tipe paling aman buat widget ringkas ini
           .slice(0, 20);
         setDaftarSoal(hasil);
@@ -60,7 +68,7 @@ export default function LatihanSoalBab({ judulModul, mataPelajaran }) {
       }
       setLoading(false);
     })();
-  }, [judulModul, mataPelajaran]);
+  }, [judulModul, mataPelajaran, babBuku]);
 
   if (loading) return <div style={{ padding: 20, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Memuat latihan soal...</div>;
   if (daftarSoal.length === 0) return null; // diam-diam gak nampilin apa-apa kalau emang belum ada soal terhubung -- bukan error
