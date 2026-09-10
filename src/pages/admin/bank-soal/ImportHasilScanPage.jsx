@@ -3954,7 +3954,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
           {/* HEADER */}
           <div>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>Import Hasil Scan AI</h1>
+              <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>Import Buku & Soal (AI)</h1>
               <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', borderRadius: '9999px', backgroundColor: '#d1fae5', color: '#047857', fontSize: '12px', fontWeight: '700' }}>
                 SAFE IMPORT
               </span>
