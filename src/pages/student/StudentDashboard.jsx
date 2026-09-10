@@ -622,19 +622,31 @@ const StudentDashboard = () => {
               getDocs(query(collection(db, 'jawaban_kuis'), where('studentNim', '==', studentNim))),
               getDocs(query(collection(db, 'jawaban_tugas'), where('studentNim', '==', studentNim))),
             ]);
-            snapKuis.forEach((d) => { if (d.data().modulId) modulSudahDikerjakan.add(d.data().modulId); });
-            snapTugas.forEach((d) => { if (d.data().modulId) modulSudahDikerjakan.add(d.data().modulId); });
+            snapKuis.forEach((d) => { 
+              const data = d.data();
+              // Hanya masukkan ke set jika sudah ada nilai (sudah dinilai/dikerjakan)
+              if (data.modulId && (data.nilai !== undefined && data.nilai !== null)) {
+                modulSudahDikerjakan.add(data.modulId);
+              }
+            });
+            snapTugas.forEach((d) => { 
+              const data = d.data();
+              // Hanya masukkan ke set jika sudah ada nilai (sudah dinilai/dikerjakan)
+              if (data.modulId && (data.nilai !== undefined && data.nilai !== null)) {
+                modulSudahDikerjakan.add(data.modulId);
+              }
+            });
           } catch (e) {
             console.error('Gagal cek status pengerjaan tugas/kuis:', e);
           }
         }
 
-        // 🔥 BARU: masa tenggang -- deadline yang BARU lewat (<= 3 hari)
+        // 🔥 BARU: masa tenggang -- deadline yang BARU lewat (<= 7 hari)
         // masih ditampilkan (ditandai __terlewat, dikasih warna merah di
         // tampilan) biar siswa masih sempat lihat & kejar telat. Lewat
-        // dari itu baru bener-bener disingkirkan -- biar gak numpuk
+        // dari 7 hari baru bener-bener disingkirkan -- biar gak numpuk
         // selamanya di widget ini.
-        const MASA_TENGGANG_HARI = 3;
+        const MASA_TENGGANG_HARI = 7;
         const batasTenggangMs = MASA_TENGGANG_HARI * 24 * 60 * 60 * 1000;
 
         const fetchedTasks = accessibleModuls
@@ -655,7 +667,7 @@ const StudentDashboard = () => {
           // __isUpcoming SELALU lolos di sini (deadline-nya null, belum
           // relevan sampai tanggalMulai-nya tiba).
           // Buang yang deadline-nya udah lewat LEBIH DARI masa tenggang
-          // (3 hari) -- dalam masa tenggang itu tetap tampil, ditandai
+          // (7 hari) -- dalam masa tenggang itu tetap tampil, ditandai
           // __terlewat=true buat dikasih warna merah di tampilan, biar
           // siswa masih sempat kejar telat sebelum bener-bener hilang.
           .map(m => ({ ...m, __terlewat: !!(m.__deadline && m.__deadline < nowTs) }))
@@ -663,8 +675,13 @@ const StudentDashboard = () => {
           // 🔥 URUTKAN: item AKTIF dengan deadline paling dekat dulu, baru
           // item "AKAN DATANG" (belum waktunya tapi tetap jadi pengingat,
           // diurutkan berdasar tanggalMulai paling dekat), baru yang gak
-          // punya deadline sama sekali.
+          // punya deadline sama sekali. Item yang SUDAH TERLEWAT deadline
+          // (tapi masih dalam masa tenggang 7 hari) ditaruh paling akhir.
           .sort((a, b) => {
+            // Prioritas utama: yang sudah terlewat (__terlewat=true) taruh di belakang
+            if (a.__terlewat && !b.__terlewat) return 1;
+            if (!a.__terlewat && b.__terlewat) return -1;
+            // Jika sama-sama terlewat atau sama-sama tidak, urutkan berdasarkan deadline
             if (a.__deadline && b.__deadline) return a.__deadline - b.__deadline;
             if (a.__deadline && !b.__isUpcoming) return -1;
             if (b.__deadline && !a.__isUpcoming) return 1;
@@ -1273,11 +1290,12 @@ const StudentDashboard = () => {
 
               // 🔥 BARU: badge deadline paling dekat, biar keliatan mana yang
               // paling urgent (bukan cuma ngandelin urutan list aja).
-              // Kalau udah __terlewat (dalam masa tenggang 3 hari), badge-nya
+              // Kalau udah __terlewat (dalam masa tenggang 7 hari), badge-nya
               // ditandai "Terlambat" merah -- bukan hitung mundur biasa.
               let deadlineBadge = null;
               if (task.__terlewat) {
-                deadlineBadge = { text: '⚠️ Terlambat', color: '#dc2626' };
+                const diffDays = Math.floor((new Date() - task.__deadline) / (24 * 60 * 60 * 1000));
+                deadlineBadge = { text: `⚠️ Terlambat ${diffDays} hari`, color: '#dc2626' };
               } else if (task.__deadline) {
                 const diffH = Math.floor((task.__deadline - new Date()) / 3600000);
                 if (diffH < 24) deadlineBadge = { text: `⏰ ${Math.max(diffH, 0)} jam lagi`, color: '#ef4444' };
