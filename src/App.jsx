@@ -99,6 +99,8 @@ import ManageTugas from './pages/teacher/modul/ManageTugas';
 import ClassSession from './pages/teacher/ClassSession';
 
 import TeacherLearningAid from './pages/teacher/TeacherLearningAid';
+import LiveSessionTeacher from './pages/teacher/LiveSessionTeacher';
+import LiveSessionStudent from './pages/student/LiveSessionStudent';
 
 // ============================================================
 // SMART RAPORT
@@ -345,6 +347,9 @@ function App() {
         <Route path="/guru/modul/quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/alat-bantu" element={<GuruRoute><TeacherLayout><TeacherLearningAid /></TeacherLayout></GuruRoute>} />
+        {/* 🔥 BARU: Sesi Kelas Live -- SENGAJA gak dibungkus TeacherLayout/SiswaLayout, komponennya full-page sendiri (ada header/back-button sendiri) */}
+        <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
+        <Route path="/siswa/sesi-live" element={<SiswaRoute><LiveSessionStudent /></SiswaRoute>} />
 
         {/* ====================================================
             SISWA

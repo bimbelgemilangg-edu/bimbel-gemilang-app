@@ -118,6 +118,16 @@ const SidebarAdmin = () => {
       ]
     },
     {
+      // 🔥 BARU: grup ini SEBELUMNYA gak ada sama sekali di sidebar --
+      // halamannya (ManageMateriPortal di /admin/portal/materi) udah
+      // lama ada & bisa diakses lewat URL langsung, tapi gak kedaftar
+      // ke menu jadi admin gak pernah nemuin jalan ke situ.
+      label: '📖 MATERI (BUKU DIGITAL)',
+      items: [
+        { name: 'Kelola Materi/Modul', path: '/admin/portal/materi', icon: <BookOpen size={18} /> },
+      ]
+    },
+    {
       label: 'BANK SOAL',
       items: [
         // ── scan langsung dari PDF via AI

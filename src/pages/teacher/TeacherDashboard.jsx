@@ -17,7 +17,7 @@ import {
   Video, ExternalLink, Copy, Hash, Tag, Link2,
   CalendarDays, Clock4, User, GraduationCap,
   Briefcase, BarChart3, Activity, PieChart,
-  RefreshCw, Loader2, Eye, EyeOff
+  RefreshCw, Loader2, Eye, EyeOff, Radio
 } from 'lucide-react';
 
 // ============================================================
@@ -787,6 +787,16 @@ const TeacherDashboard = () => {
                 </div>
                 <span style={styles.quickLabel}>E-Learning</span>
                 <span style={styles.quickDesc}>Materi & tugas</span>
+              </button>
+
+              {/* 🔥 BARU: Sesi Kelas Live -- fitur "buku interaktif" baru,
+                  sebelumnya gak ada jalan buat guru nemuin halaman ini. */}
+              <button onClick={() => navigate('/guru/sesi-live')} style={styles.quickAction}>
+                <div style={{...styles.quickIcon, background: '#fee2e2', color: '#dc2626'}}>
+                  <Radio size={18} />
+                </div>
+                <span style={styles.quickLabel}>Sesi Kelas Live</span>
+                <span style={styles.quickDesc}>Latihan bareng siswa</span>
               </button>
               
               <button onClick={() => navigate('/guru/profile')} style={styles.quickAction}>
