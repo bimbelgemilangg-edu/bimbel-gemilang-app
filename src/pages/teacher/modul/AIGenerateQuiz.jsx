@@ -347,15 +347,27 @@ const normalizeQuestion = (
     q?.visualKind ||
     'none',
 
-  researchBacked:
-    true,
-
+  // 🔥 BUG SERIUS DITEMUKAN & DIBENERIN: sebelumnya `researchBacked`
+  // di-hardcode `true` buat SEMUA soal yang lewat sini, TIDAK PEDULI
+  // apakah riset internet (Tavily) beneran berhasil nemuin sumber
+  // buat soal itu atau enggak. Kalau riset gagal/gak nemu apa-apa
+  // buat 1 soal tertentu, soal itu tetap "diklaim" berbasis riset
+  // padahal `researchSources`-nya KOSONG -- persis kombinasi yang
+  // ditolak sama gerbang kualitas di ManageQuiz.jsx ("Ada soal
+  // bertanda RISET INTERNET tapi sumbernya hilang"), bikin GURU GAK
+  // BISA SIMPAN KUIS SAMA SEKALI. Sekarang `researchBacked` CUMA true
+  // kalau soal itu BENERAN punya sumber riset -- konsisten sama
+  // semangat perbaikan jujur yang udah ada di label RESEARCH_MODES
+  // di atas (gak boleh ngeklaim sesuatu yang gak bisa dibuktikan).
   researchSources:
     Array.isArray(
       q?.researchSources
     )
       ? q.researchSources
       : [],
+
+  researchBacked:
+    Array.isArray(q?.researchSources) && q.researchSources.length > 0,
 
   sourceMode:
     q?.sourceMode ||
