@@ -21,6 +21,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, CheckCircle2, XCircle, PenLine } from 'lucide-react';
 import { DAFTAR_BAB } from '../../../data/bukuInteraktif';
 import { MathText, MathBlock } from '../../../components/MathText';
+import VisualBuku from '../../../components/buku/VisualBuku';
 
 const XP_SEKSI = 5;    // reward perilaku membaca (kecil tapi rutin)
 const XP_BENAR = 10;   // sama dengan XP_PER_BENAR di Latihan Harian
@@ -211,6 +212,8 @@ export default function BukuBacaPage() {
                   <MathText text={q.soal} />
                 </div>
               </div>
+              {/* 🔥 BARU: visual soal (termometer/tabel/gambar) -- bagian yang sebelumnya hilang dari PDF */}
+              {q.visual && <VisualBuku visual={q.visual} />}
               {q.tipe === 'pg' && <InputPg q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
               {q.tipe === 'multi' && <InputMulti q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
               {q.tipe === 'bs' && <InputBs q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
@@ -223,7 +226,7 @@ export default function BukuBacaPage() {
       {mode === 'hasil' && hasil && (
         <div style={{ padding: '16px 16px 40px' }}>
           <div style={{ ...st.kartuSeksi, textAlign: 'center' }}>
-            <div style={{ fontSize: 40 }}>{hasil.persen >= 70 ? '🧑‍🚀' : '🛰️'}</div>
+            <div style={{ fontSize: 40 }}>{hasil.persen >= 70 ? '🧑‍' : '️'}</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: '#7C3AED' }}>{hasil.persen}%</div>
             <div style={{ fontSize: 12.5, color: '#64748b', margin: '4px 0 10px' }}>
               {hasil.benarCount} benar dari {hasil.daftar.length} soal • +{hasil.xp} XP
@@ -248,6 +251,7 @@ export default function BukuBacaPage() {
               <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, marginBottom: 8, whiteSpace: 'pre-wrap' }}>
                 <MathText text={item.q.soal} />
               </div>
+              {item.q.visual && <VisualBuku visual={item.q.visual} />}
               <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 3 }}>Jawabanmu: <b>{teksJawaban(item.q, item.j)}</b></div>
               {!item.benar && <div style={{ fontSize: 11.5, color: '#16a34a', marginBottom: 3 }}>Kunci: <b>{teksKunci(item.q)}</b></div>}
               <div style={st.boxPembahasan}>
