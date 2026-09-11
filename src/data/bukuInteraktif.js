@@ -2,7 +2,7 @@
 // KONTEN BUKU INTERAKTIF DIGITAL -- v1 statis.
 // Tipe blok: 'p' | 'list' | 'math' | 'contoh' | 'tips'
 // Tipe soal: 'pg' | 'multi' | 'bs'
-// Field `visual` (opsional): 'termometer' | 'tabel' | 'gambar'
+// Field `visual` (opsional): 'termometer' | 'tabel' | 'garis' | 'gambar'
 
 export const DAFTAR_BAB = [
     {
@@ -10,7 +10,7 @@ export const DAFTAR_BAB = [
       judul: 'Bilangan Bulat dan Pecahan',
       mapel: 'Matematika',
       jenjang: 'SMP/MTs',
-      kelas: 9, // buku TKA khusus kelas 9 SMP: cuma kelas 9 yang lihat
+      kelas: 9,
       emoji: '🔢',
       warna: '#4C6EF5',
       deskripsi: 'Hierarki operasi, sifat-sifat bilangan, dan operasi pecahan.',
@@ -57,7 +57,7 @@ export const DAFTAR_BAB = [
           id: 'bab-1-c',
           judul: 'C. Bilangan Pecahan',
           blocks: [
-            { tipe: 'p', teks: 'Bilangan pecahan adalah bilangan yang dinyatakan dalam bentuk $\\frac{a}{b}$ atau $a/b$ dengan $b \\neq 0$.' },
+            { tipe: 'p', teks: 'Bilangan pecahan adalah bilangan yang dinyatakan dalam bentuk $\\frac{a}{b}$ atau a/b dengan $b \\neq 0$.' },
             { tipe: 'p', teks: '$a$ disebut pembilang dan $b$ disebut penyebut. Penyebut tidak boleh sama dengan nol karena pembagian dengan nol tidak terdefinisi.' },
           ],
         },
@@ -97,6 +97,105 @@ export const DAFTAR_BAB = [
         { id: 'u15', tipe: 'pg', level: 'mudah', soal: 'Suhu kamar ber-AC 18 °C. Setelah AC dimatikan suhu naik 2 °C setiap menit. Suhu kamar setelah 4 menit adalah....', pilihan: ['24 °C', '26 °C', '29 °C', '31 °C'], benar: 1, pembahasan: '18 + (4 × 2) = 26 °C.' },
         { id: 'u16', tipe: 'pg', level: 'mudah', soal: 'Ibu membeli 30 kg gula; 1/3 bagian untuk nenek, 1/4 bagian untuk kue, sisanya dibungkus plastik @ ½ kg. Banyak plastik yang diperlukan....', pilihan: ['20 biji', '25 biji', '30 biji', '35 biji'], benar: 1, pembahasan: 'Sisa = (1 − 1/3 − 1/4) × 30 = 5/12 × 30 = 12,5 kg; plastik = 12,5 : 0,5 = 25 biji.' },
         { id: 'u17', tipe: 'pg', level: 'sulit', soal: 'Pukul 07.00 suhu Semarang = Surabaya = 24 °C. Semarang naik 1 °C tiap 20 menit; Surabaya naik 2 °C tiap 30 menit. Selisih suhu keduanya pukul 09.00 adalah....', pilihan: ['0 °C', '1 °C', '2 °C', '3 °C'], benar: 2, pembahasan: 'Semarang: 120/20 = 6 kali × 1 = +6 → 30 °C; Surabaya: 120/30 = 4 kali × 2 = +8 → 32 °C; selisih = 2 °C.' },
+      ],
+    },
+    {
+      id: 'bab-2',
+      judul: 'Bilangan Berpangkat dan Bentuk Akar',
+      mapel: 'Matematika',
+      jenjang: 'SMP/MTs',
+      kelas: 9,
+      emoji: '📐',
+      warna: '#0D9488',
+      deskripsi: 'Eksponen, sifat-sifat pangkat, bentuk akar, dan merasionalkan penyebut.',
+      sections: [
+        {
+          id: 'bab-2-a',
+          judul: 'A. Bilangan Berpangkat',
+          blocks: [
+            { tipe: 'p', teks: 'Perpangkatan merupakan perkalian berulang dari sebuah bilangan dengan bilangan itu sendiri.' },
+            { tipe: 'p', teks: 'Definisi: "$a^n$" ("a pangkat n") didefinisikan sebagai $a \\times a \\times \\cdots \\times a$ sebanyak n faktor.' },
+            { tipe: 'list', items: [
+              '$a$ disebut basis.',
+              '$n$ disebut pangkat atau eksponen.',
+            ] },
+            { tipe: 'contoh', teks: '$3^5 = 3 \\times 3 \\times 3 \\times 3 \\times 3$ ; $(a+b)^2 = (a+b)(a+b)$.' },
+          ],
+        },
+        {
+          id: 'bab-2-b',
+          judul: 'B. Sifat-sifat Bilangan Berpangkat',
+          blocks: [
+            { tipe: 'list', items: [
+              '$a^m \\times a^n = a^{m+n}$',
+              '$a^m : a^n = a^{m-n}$',
+              '$(a^m)^n = a^{m \\cdot n}$',
+              '$(a \\times b)^m = a^m \\times b^m$',
+              '$(a : b)^m = a^m : b^m$',
+              '$a^0 = 1$, untuk $a \\neq 0$',
+              '$a^{-n} = \\frac{1}{a^n}$, untuk $a \\neq 0$',
+            ] },
+            { tipe: 'tips', teks: 'Pangkat negatif berarti "pindahkan ke sisi lain pecahan": $\\frac{1}{a^{-n}} = a^n$.' },
+          ],
+        },
+        {
+          id: 'bab-2-c',
+          judul: 'C. Bentuk Akar',
+          blocks: [
+            { tipe: 'p', teks: 'Akar adalah bentuk invers dari pangkat. Simbol "√" disebut tanda akar, digunakan untuk menyimbolkan akar pangkat 2. Bilangan yang berada di dalam tanda akar tidak boleh negatif.' },
+            { tipe: 'p', teks: 'Bentuk akar adalah akar dari suatu bilangan yang hasilnya bukan bilangan rasional. Contoh: $\\sqrt{2}, \\sqrt{5}, \\sqrt{7}, \\dots$' },
+          ],
+        },
+        {
+          id: 'bab-2-d',
+          judul: 'D. Sifat-sifat Bentuk Akar',
+          blocks: [
+            { tipe: 'list', items: [
+              '$\\sqrt{a} = a^{1/2}$',
+              '$\\sqrt{a^m} = a^{m/2}$',
+              '$\\sqrt{a \\times b} = \\sqrt{a} \\times \\sqrt{b}$',
+              '$\\sqrt{a : b} = \\sqrt{a} : \\sqrt{b}$',
+              'Jika $b^n = a$, maka $b = \\sqrt[n]{a}$',
+            ] },
+          ],
+        },
+        {
+          id: 'bab-2-e',
+          judul: 'E. Operasi Bilangan pada Bentuk Akar',
+          blocks: [
+            { tipe: 'p', teks: 'Mengubah bentuk akar ke bentuk akar campuran: faktorkan menjadi bentuk perkalian antara bilangan kuadrat dengan suatu bilangan tertentu.' },
+            { tipe: 'contoh', teks: '$\\sqrt{32} = \\sqrt{16 \\times 2} = 4\\sqrt{2}$ ; $\\sqrt{75} = \\sqrt{25 \\times 3} = 5\\sqrt{3}$.' },
+            { tipe: 'p', teks: 'Penjumlahan dan pengurangan bentuk akar hanya dapat dioperasikan jika bentuk akarnya sama: $a\\sqrt{p} \\pm b\\sqrt{p} = (a \\pm b)\\sqrt{p}$.' },
+            { tipe: 'contoh', teks: '$2\\sqrt{3} + 3\\sqrt{3} = 5\\sqrt{3}$ ; sedangkan $2\\sqrt{3} + 3\\sqrt{5}$ tidak dapat dikerjakan karena bentuk akar berbeda.' },
+            { tipe: 'p', teks: 'Perkalian dan pembagian bentuk akar: $\\sqrt{a} \\times \\sqrt{b} = \\sqrt{a \\times b}$ dan $\\sqrt{a} : \\sqrt{b} = \\sqrt{a : b}$.' },
+            { tipe: 'contoh', teks: '$2\\sqrt{3} \\times 4\\sqrt{2} = 8\\sqrt{6}$.' },
+            { tipe: 'p', teks: 'Merasionalkan penyebut (menghilangkan akar dari penyebut dengan mengalikan sekawan):' },
+            { tipe: 'list', items: [
+              '$\\frac{a}{\\sqrt{b}} = \\frac{a\\sqrt{b}}{b}$',
+              '$\\frac{a}{b - \\sqrt{c}}$ dikalikan sekawan $(b + \\sqrt{c})$ menjadi $\\frac{a(b + \\sqrt{c})}{b^2 - c}$',
+              '$\\frac{a}{\\sqrt{b} + \\sqrt{c}}$ dikalikan sekawan $(\\sqrt{b} - \\sqrt{c})$ menjadi $\\frac{a(\\sqrt{b} - \\sqrt{c})}{b - c}$',
+            ] },
+            { tipe: 'tips', teks: 'Bentuk sekawan dari $\\sqrt{a} + \\sqrt{b}$ adalah $\\sqrt{a} - \\sqrt{b}$, dan sebaliknya.' },
+          ],
+        },
+      ],
+      ujiPemahaman: [
+        { id: 'u1', tipe: 'pg', level: 'mudah', soal: 'Hasil dari $\\frac{3^5 \\times 3^{-2}}{3^4}$ adalah....', pilihan: ['9', '3', '1/3', '1/9'], benar: 2, pembahasan: 'Pembilang: $3^{5+(-2)} = 3^3$; pembagian: $3^{3-4} = 3^{-1} = \\frac{1}{3}$.' },
+        { id: 'u2', tipe: 'pg', level: 'mudah', soal: 'Hasil dari operasi perpangkatan $(8^5 \\times 8^6) : 8^3$ adalah....', pilihan: ['8²', '8⁸', '8¹¹', '8¹⁴'], benar: 1, pembahasan: '$8^{5+6} : 8^3 = 8^{11-3} = 8^8$.' },
+        { id: 'u3', tipe: 'pg', level: 'sedang', soal: 'Perhatikan gambar berikut! Diketahui panjang $AI = 3\\sqrt{32}$ cm, $AC = 2\\sqrt{18}$ cm, dan $CF = 2\\sqrt{8}$ cm. Panjang $FI$ adalah....', visual: { tipe: 'garis', titik: ['A', 'C', 'F', 'I'], keterangan: 'Titik-titik terletak pada satu garis lurus' }, pilihan: ['2√2 cm', '2√3 cm', '3√2 cm', '3√3 cm'], benar: 0, pembahasan: 'Sederhanakan: $AI = 12\\sqrt{2}$, $AC = 6\\sqrt{2}$, $CF = 4\\sqrt{2}$; $FI = AI - AC - CF = 12\\sqrt{2} - 6\\sqrt{2} - 4\\sqrt{2} = 2\\sqrt{2}$ cm.' },
+        { id: 'u4', tipe: 'pg', level: 'mudah', soal: 'Bentuk sederhana dari $\\sqrt{32} - \\sqrt{50} + 2\\sqrt{2}$ adalah....', pilihan: ['√2', '2√2', '3√2', '4√2'], benar: 0, pembahasan: '$4\\sqrt{2} - 5\\sqrt{2} + 2\\sqrt{2} = (4 - 5 + 2)\\sqrt{2} = \\sqrt{2}$.' },
+        { id: 'u5', tipe: 'pg', level: 'sedang', soal: 'Jika $4^x : 2^x = 128$, maka nilai $x - 5$ adalah....', pilihan: ['−4', '−2', '2', '4'], benar: 2, pembahasan: 'CATATAN: kunci pembahasan cetak di modul tertulis A, namun secara matematika $(2^2)^x : 2^x = 2^{2x-x} = 2^x = 128 = 2^7 \\Rightarrow x = 7$, sehingga $x - 5 = 2$ (C). Sistem memakai kunci yang benar secara matematika.' },
+        { id: 'u6', tipe: 'multi', level: 'sedang', soal: 'Manakah pernyataan mengenai operasi bilangan berpangkat berikut yang benar? (pilih lebih dari satu)', pilihan: ['Nilai dari 27^(1/3) adalah 3.', 'Nilai dari 16^(3/4) adalah 8.', 'Nilai dari 125^(1/3) adalah 5.', 'Hasil dari 27^(1/3) + 16^(3/4) − 125^(1/3) adalah 12.'], benar: [0, 1, 2], pembahasan: 'P1: $(3^3)^{1/3} = 3$ ✓; P2: $(2^4)^{3/4} = 2^3 = 8$ ✓; P3: $(5^3)^{1/3} = 5$ ✓; P4: $3 + 8 - 5 = 6$, bukan 12 ✗.' },
+        { id: 'u7', tipe: 'multi', level: 'sedang', soal: 'Manakah pernyataan penyederhanaan bentuk akar berikut yang benar? (pilih lebih dari satu)', pilihan: ['√75 = 5√3', '2√27 = 6√3', 'Hasil dari √75 − 2√27 adalah −√3.', 'Hasil dari √75 − 2√27 adalah 3√3.'], benar: [0, 1, 2], pembahasan: 'P1: $\\sqrt{25 \\times 3} = 5\\sqrt{3}$ ✓; P2: $2 \\times 3\\sqrt{3} = 6\\sqrt{3}$ ✓; P3: $5\\sqrt{3} - 6\\sqrt{3} = -\\sqrt{3}$ ✓; P4 salah karena hasilnya $-\\sqrt{3}$.' },
+        { id: 'u8', tipe: 'multi', level: 'sedang', soal: 'Manakah pernyataan yang benar mengenai penyederhanaan operasi $\\frac{3\\sqrt{12} + 2\\sqrt{27}}{2\\sqrt{3}}$? (pilih lebih dari satu)', pilihan: ['Nilai dari 3√12 adalah 6√3.', 'Nilai dari 2√27 adalah 6√3.', 'Pembilang dapat disederhanakan menjadi 12√3.', 'Hasil akhir pembagian tersebut adalah 6.'], benar: [0, 1, 2, 3], pembahasan: 'P1: $3 \\times 2\\sqrt{3} = 6\\sqrt{3}$ ✓; P2: $2 \\times 3\\sqrt{3} = 6\\sqrt{3}$ ✓; P3: $6\\sqrt{3} + 6\\sqrt{3} = 12\\sqrt{3}$ ✓; P4: $12\\sqrt{3} : 2\\sqrt{3} = 6$ ✓.' },
+        { id: 'u9', tipe: 'bs', level: 'sedang', soal: 'Seorang ilmuwan menulis massa sebuah partikel sebagai 0,0000000000025 kg dan editor menyarankan notasi ilmiah. Tentukan benar/salah:', pernyataan: ['Saran editor untuk menggunakan notasi ilmiah adalah tepat dan efektif.', 'Bentuk notasi ilmiah yang benar adalah 2,5 × 10⁻¹² kg.', 'Bentuk 25 × 10⁻¹³ kg juga merupakan cara penulisan yang valid meskipun bukan bentuk baku.'], benar: [true, true, true], pembahasan: 'P1: notasi ilmiah menghindari kesalahan penulisan nol terlalu banyak ✓; P2: ada 11 nol di belakang koma sebelum angka 25, desimal digeser 12 kali → $2,5 \\times 10^{-12}$ ✓; P3: $25 \\times 10^{-13} = 2,5 \\times 10^{-12}$, valid tapi tidak memenuhi syarat bentuk baku $1 \\le a < 10$ ✓.' },
+        { id: 'u10', tipe: 'bs', level: 'sulit', soal: 'Diketahui $AF = 2\\sqrt{98}$ cm; $AB = 3\\sqrt{18}$ cm; $BC = 3\\sqrt{8}$ cm; $EF = 2\\sqrt{8}$ cm. Tentukan benar atau salah setiap pernyataan berikut!', pernyataan: ['Panjang DC = 5√2 cm.', 'Panjang ED = 6√2 cm.', 'Luas BCDG = 60 cm².'], benar: [true, false, true], pembahasan: 'Sederhanakan: $AF = 14\\sqrt{2}$, $AB = 9\\sqrt{2}$, $BC = 6\\sqrt{2}$, $EF = 4\\sqrt{2}$. P1: $DC = AB - EF = 9\\sqrt{2} - 4\\sqrt{2} = 5\\sqrt{2}$ ✓; P2: $ED = AF - BC = 14\\sqrt{2} - 6\\sqrt{2} = 8\\sqrt{2}$ (bukan 6√2) ✗; P3: luas $= DC \\times BC = 5\\sqrt{2} \\times 6\\sqrt{2} = 60$ ✓.' },
+        { id: 'u11', tipe: 'bs', level: 'sulit', soal: 'Lapangan persegi berluas 400 m²; di tengahnya dipasang tiang lampu dan kabel ditarik ke salah satu pojok mengikuti garis diagonal. Informasi tambahan: $\\sqrt{2} = 1,4$. Tentukan benar/salah:', pernyataan: ['Panjang sisi lapangan tersebut adalah 20 m.', 'Panjang diagonal lapangan tersebut adalah 20√2 m.', 'Panjang kabel minimal yang dibutuhkan adalah 28 m.', 'Panjang kabel minimal yang dibutuhkan adalah 14 m.'], benar: [true, true, false, true], pembahasan: 'P1: sisi $= \\sqrt{400} = 20$ m ✓; P2: diagonal $= 20\\sqrt{2}$ m ✓; kabel = setengah diagonal $= 10\\sqrt{2} = 10 \\times 1,4 = 14$ m → P3 ✗, P4 ✓.' },
+        { id: 'u12', tipe: 'multi', level: 'sulit', soal: 'Bentuk $\\sqrt[4]{\\frac{q^2}{8p^9 r^{15}}}$ disederhanakan menjadi bentuk pangkat. Sifat-sifat bilangan berpangkat apa saja yang digunakan dalam penyederhanaan tersebut? (pilih lebih dari satu)', pilihan: ['a^m : a^n = a^(m−n)', '(a^m)^n = a^(m·n)', 'a^m × a^n = a^(m+n)'], benar: [0, 1], pembahasan: 'Sifat pembagian dipakai saat menyatukan pangkat pembilang/penyebut; sifat $(a^m)^n$ dipakai saat mengubah akar keempat menjadi pangkat 1/4; sifat $a^{-n} = 1/a^n$ dipakai saat menuliskan pangkat negatif (tidak ada di pilihan). Sifat perkalian $a^m \\times a^n$ TIDAK dipakai.' },
+        { id: 'u13', tipe: 'bs', level: 'sedang', soal: 'Hasil dari $\\frac{\\sqrt{3} \\times \\sqrt{12}}{\\sqrt{6}}$ adalah M. Tentukan benar atau salah untuk setiap pernyataan berikut terkait nilai M!', pernyataan: ['M merupakan bilangan genap.', 'M dikuadratkan hasilnya lebih besar daripada nol.', 'M × 3 + 7√6 = 10√6.'], benar: [false, true, true], pembahasan: '$M = \\frac{\\sqrt{36}}{\\sqrt{6}} = \\frac{6}{\\sqrt{6}} = \\sqrt{6}$. P1: $\\sqrt{6}$ bukan bilangan genap ✗; P2: $M^2 = 6 > 0$ ✓; P3: $3\\sqrt{6} + 7\\sqrt{6} = 10\\sqrt{6}$ ✓.' },
+        { id: 'u14', tipe: 'pg', level: 'mudah', soal: 'Hasil dari $27^{2/3} + 4^{3/2}$ adalah....', pilihan: ['9', '8', '17', '31'], benar: 2, pembahasan: '$(3^3)^{2/3} + (2^2)^{3/2} = 3^2 + 2^3 = 9 + 8 = 17$.' },
+        { id: 'u15', tipe: 'pg', level: 'mudah', soal: 'Bentuk sederhana dari $\\sqrt{27} - \\sqrt{12} + 2\\sqrt{3}$ adalah....', pilihan: ['11√3', '10√3', '7√3', '3√3'], benar: 3, pembahasan: '$3\\sqrt{3} - 2\\sqrt{3} + 2\\sqrt{3} = 3\\sqrt{3}$.' },
+        { id: 'u16', tipe: 'pg', level: 'mudah', soal: 'Bentuk sederhana dari $\\frac{2}{\\sqrt{3} + \\sqrt{5}}$ adalah....', pilihan: ['√5 − √3', '√3 − √5', '2√5 − 2√3', '2√3 − 2√5'], benar: 0, pembahasan: 'Kalikan sekawan: $\\frac{2(\\sqrt{3} - \\sqrt{5})}{(\\sqrt{3} + \\sqrt{5})(\\sqrt{3} - \\sqrt{5})} = \\frac{2(\\sqrt{3} - \\sqrt{5})}{3 - 5} = -(\\sqrt{3} - \\sqrt{5}) = \\sqrt{5} - \\sqrt{3}$.' },
       ],
     },
     // Bab berikutnya: tambah object baru ke array ini.

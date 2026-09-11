@@ -1,17 +1,19 @@
 // src/components/buku/VisualBuku.jsx
 // VISUAL BUKU -- pengganti gambar statis dari PDF/modul cetak.
-// SVG interaktif: tajam di zoom berapa pun & bisa diketuk
-// (termometer menyembunyikan nilainya sampai siswa mengetuk).
+// SVG interaktif: tajam di zoom berapa pun & bisa diketuk.
+// Tipe didukung: 'termometer' | 'tabel' | 'garis' | 'gambar'
 import React, { useState } from 'react';
 
 export default function VisualBuku({ visual }) {
   if (!visual) return null;
   if (visual.tipe === 'termometer') return <TermometerInteraktif data={visual.data} satuan={visual.satuan} />;
   if (visual.tipe === 'tabel') return <TabelBuku caption={visual.caption} kepala={visual.kepala} baris={visual.baris} />;
+  if (visual.tipe === 'garis') return <GarisBuku titik={visual.titik} keterangan={visual.keterangan} />;
   if (visual.tipe === 'gambar') return <GambarBuku src={visual.src} alt={visual.alt} />;
   return null;
 }
 
+// 🔥 TERMOMETER INTERAKTIF -- nilai disembunyikan ('?'), siswa ketuk untuk membaca.
 export function TermometerInteraktif({ data = [], satuan = '°C' }) {
   const [buka, setBuka] = useState({});
   const MAX = 10, MIN = -20;
@@ -53,6 +55,29 @@ export function TermometerInteraktif({ data = [], satuan = '°C' }) {
   );
 }
 
+// 🔥 BARU (BAB 2): GARIS BERTITIK -- pengganti gambar garis lurus dengan
+// titik-titik berlabel (mis. soal panjang ruas garis A-C-F-I).
+export function GarisBuku({ titik = [], keterangan = '' }) {
+  const n = titik.length;
+  const W = 260, H = 64, x0 = 24, x1 = W - 24, y = 24;
+  const xs = titik.map((_, i) => x0 + (i * (x1 - x0)) / Math.max(1, n - 1));
+  return (
+    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '10px 8px 8px', marginBottom: 12 }}>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
+        <line x1={x0} y1={y} x2={x1} y2={y} stroke="#334155" strokeWidth={2} />
+        {xs.map((x, i) => (
+          <g key={i}>
+            <circle cx={x} cy={y} r={4.5} fill="#4C6EF5" stroke="white" strokeWidth={1.5} />
+            <text x={x} y={y + 24} fontSize={12} fontWeight={800} fill="#334155" textAnchor="middle">{titik[i]}</text>
+          </g>
+        ))}
+      </svg>
+      {keterangan && <div style={{ textAlign: 'center', fontSize: 9.5, color: '#94a3b8', marginTop: 2 }}>{keterangan}</div>}
+    </div>
+  );
+}
+
+// Tabel data sederhana (pengganti tabel cetak di modul).
 export function TabelBuku({ caption, kepala = [], baris = [] }) {
   return (
     <div style={{ overflowX: 'auto', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 10, marginBottom: 12 }}>
@@ -79,6 +104,7 @@ export function TabelBuku({ caption, kepala = [], baris = [] }) {
   );
 }
 
+// Gambar asli (URL) dengan fallback sopan kalau gagal dimuat.
 export function GambarBuku({ src, alt = '' }) {
   const [gagal, setGagal] = useState(false);
   if (!src || gagal) {
