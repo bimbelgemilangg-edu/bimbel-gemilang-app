@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import StudentDigitalCard from '../../components/StudentDigitalCard';
 import MaskotAstronot from '../../components/MaskotAstronot';
-
 import {
   BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
@@ -83,7 +82,6 @@ const SkeletonLines = ({ count = 3 }) => (
 // 🔥 Bagan bundar kehadiran — pakai SVG murni, gak perlu library tambahan
 const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
   const size = 110, stroke = 14, radius = (size - stroke) / 2, circumference = 2 * Math.PI * radius;
-
   if (total === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '20px 0', color: '#94a3b8', fontSize: 12 }}>
@@ -91,14 +89,12 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
       </div>
     );
   }
-
   const segments = [
     { value: hadir, color: '#10b981' },
     { value: izin, color: '#f59e0b' },
     { value: alpha, color: '#ef4444' },
   ];
   let offsetAcc = 0;
-
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
       <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
@@ -143,135 +139,40 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
 // ============================================================
 // 🔥 CEK AKSES MAPEL (paket 1 mapel / 2 mapel / paket lengkap)
 // ============================================================
-// Pola & alasan sama persis dengan StudentModuleView.jsx (halaman baca
-// materi) -- ditaruh di sini juga supaya daftar modul yang tampil di
-// dashboard SUDAH tersaring dari awal (siswa gak perlu lihat modul yang
-// nanti bakal ditolak aksesnya pas diklik). `enrolledSubjects` diisi lewat
-// halaman administrasi siswa: `["Matematika"]` buat siswa 1 mapel, atau
-// `["Semua"]` buat paket lengkap. Kalau belum diisi (siswa lama), akses
-// TETAP PENUH -- gak ada yang tiba-tiba keblokir.
-// 🔥 FIX BUG: sebelumnya perbandingan mapel ini case-sensitive (persis
-// sama besar-kecil hurufnya) -- jadi "Matematika SD" (dari nama mapel di
-// jadwal) dianggap BEDA dari "MATEMATIKA SD" (dari field subject modul,
-// yang kebetulan disimpan huruf besar semua) walau maksudnya mapel yang
-// SAMA PERSIS. Siswa yang udah jelas terjadwal ke mapel itu malah kena
-// tolak akses gara-gara beda kapitalisasi doang.
-//
-// 🔥 BARU: sekarang COBA COCOKIN LEWAT KODE MAPEL DULU (mis. "MAPEL-004")
-// sebelum jatuh ke pencocokan nama. Kode itu ID TETAP yang gak pernah
-// berubah -- jauh lebih bisa diandalkan daripada nama, yang teksnya bisa
-// beda-beda tiap kali diketik/dipilih (lihat data mapel yang berantakan:
-// "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", dst). `modulKodeMapel`
-// kadang berisi BEBERAPA kode dipisah koma (guru yang ngampu multi-mapel),
-// jadi dipecah dulu satu-satu sebelum dibandingkan.
-// 🔥 FIX BUG (revisi terbaru): pencadangan lewat NAMA mapel yang tadinya
-// ada di sini SUDAH DIHAPUS TOTAL. Nama sering beda ejaan/gaya penulisan
-// antar guru (mis. "BAHASA INGGRIS SD" vs "Bahasa Inggris SMP", atau ada
-// mapel duplikat kayak "IPS (Pengganti)") -- itu jadi sumber bug paling
-// sering ("siswa gak bisa akses padahal harusnya bisa"). Sekarang HANYA
-// kode mapel (mapelId, mis. "MAPEL-004") yang dipakai buat mencocokkan,
-// karena kode dipilih dari dropdown baku dan gak pernah berubah/typo.
-// `modulKodeMapel` kadang berisi BEBERAPA kode dipisah koma (guru yang
-// ngampu multi-mapel), jadi dipecah dulu satu-satu sebelum dibandingkan.
-// ⚠️ KONSEKUENSI PENTING: kalau field manual `enrolledSubjects` di data
-// siswa (yang admin isi manual lewat halaman siswa, buat kasus khusus)
-// berisi NAMA mapel, itu SEKARANG TIDAK AKAN COCOK LAGI -- field itu
-// harus diisi KODE mapel (mis. "MAPEL-004"), bukan nama seperti dulu.
-// Kalau ada data lama yang masih berisi nama, perlu diupdate manual satu
-// kali ke kode yang sesuai supaya override-nya tetap jalan.
-// 🔥 PERUBAHAN BESAR (atas permintaan eksplisit): sistem sebelumnya
-// menurunkan akses OTOMATIS dari jadwal (jadwal_bimbel), dengan fallback
-// PERMISIF (izinkan) kalau data kosong -- supaya siswa lama gak keblokir
-// tiba-tiba. Sekarang DIBALIK TOTAL jadi PENGECEKAN KETAT: satu-satunya
-// sumber akses adalah field `enrolledSubjects` yang diisi MANUAL admin
-// lewat halaman Edit Siswa. Kalau field itu KOSONG/belum diisi, siswa
-// TIDAK dapat akses ke modul/kuis mapel apa pun (kecuali konten "Umum").
-// Ini keputusan sadar: turunan otomatis dari jadwal punya celah -- siswa
-// bisa "kelepasan" dapat akses ke SEMUA mapel padahal cuma bayar paket 1
-// mapel, kalau data jadwalnya kebetulan permisif/gak lengkap. Kontrol
-// ketat ini nutup celah itu, dengan konsekuensi: ADMIN WAJIB isi mapel
-// tiap siswa secara manual lewat halaman Edit Siswa setelah pendaftaran.
 const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
   if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
   const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
-  if (modulCodes.length === 0) return true; // modul/kuis ini gak punya kode mapel -> gak ada dasar buat blokir (masalah data di sisi materi, bukan siswa)
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔥 DIBALIK: kosong = BLOKIR, bukan lagi izinkan
+  if (modulCodes.length === 0) return true;
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false;
   const norm = (s) => String(s || '').toLowerCase().trim();
   if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
   return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
 };
 
-// ============================================================
-// 🔥 BARU: TURUNKAN "MAPEL YANG DIAMBIL SISWA" DARI JADWAL BESAR
-// (jadwal_bimbel), BUKAN DARI FIELD TERPISAH YANG HARUS DIISI MANUAL
-// ============================================================
-// KENAPA BEGINI: begitu admin bikin jadwal "Guru Matematika + pilih siswa
-// ini" di halaman Manajemen Jadwal, itu SUDAH MEMBUKTIKAN siswa ini ambil
-// mapel Matematika -- gak perlu dicatat ULANG di tempat terpisah (field
-// enrolledSubjects manual). `jadwal_bimbel` dijadikan SATU-SATUNYA sumber
-// kebenaran (single source of truth) buat "siswa ini ambil mapel apa".
-// Admin tetap bikin jadwal seperti biasa, TIDAK ADA kerjaan tambahan.
-//
-// PENTING -- ini nyari SEMUA jadwal siswa itu SEPANJANG WAKTU (bukan cuma
-// jadwal HARI INI). Kalau cuma dicek "jadwal hari ini", modul Matematika
-// bakal ketutup di hari-hari siswa gak ada kelas Matematika -- padahal dia
-// tetap siswa Matematika, cuma kebetulan gak ada sesi hari itu. "Pernah
-// terjadwal di mapel X" itu yang jadi patokan akses, bukan "ada jadwal
-// mapel X HARI INI".
-//
-// ATURAN AMAN buat siswa baru: kalau siswa BELUM PERNAH SAMA SEKALI masuk
-// jadwal apa pun (baru daftar, belum sempat dijadwalin gurunya), dianggap
-// `null` (belum "terverifikasi" ke mapel manapun) -- yang berarti TETAP
-// akses penuh dulu, sampai jadwal pertamanya dibuat. Begitu jadwal pertama
-// dibuat, pembatasan mapel baru mulai berlaku berdasarkan mapel-mapel yang
-// pernah dia ikuti.
-// ============================================================
-// 🔥 DIHAPUS: deriveEnrolledSubjectsFromSchedule()
-// ============================================================
-// Fungsi ini dulu menurunkan akses mapel siswa dari jadwal_bimbel secara
-// otomatis. Sekarang DIHAPUS TOTAL sesuai keputusan sadar: satu-satunya
-// sumber akses adalah field `enrolledSubjects` yang diisi manual admin
-// lewat halaman Edit Siswa -- lihat penjelasan lengkap di hasSubjectAccess()
-// di atas. Kalau butuh melihat versi lama fungsi ini, cek riwayat/backup
-// sebelum perubahan ini.
-
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
   const [studentName, setStudentName] = useState(() => localStorage.getItem('studentName') || 'Siswa');
   const [studentId, setStudentId] = useState(null);
-  // 🔥 BARU: docId Firestore yang ASLI (beda dari studentId/NIS di atas).
-  // Ini yang dipakai buat getDoc/setDoc ke collection "students" supaya
-  // nyambung ke dokumen yang sama persis dengan yang dibuka admin.
   const [studentDocId, setStudentDocId] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
   const [studentKelas, setStudentKelas] = useState(() => localStorage.getItem('studentKelas') || '');
   const [studentProgram, setStudentProgram] = useState(() => localStorage.getItem('studentProgram') || 'Reguler');
   const [studentNim, setStudentNim] = useState(() => localStorage.getItem('studentNim') || '');
-
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [raportSummary, setRaportSummary] = useState(null);
-
   const [dataLoading, setDataLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [teksCariMateri, setTeksCariMateri] = useState('');
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState(false);
-
   const [notifications, setNotifications] = useState([]);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
-
-  // 🔥 BARU: XP & streak buat header gaya baru (gamifikasi). Kalau
-  // dokumen `siswa_progress` belum ada (siswa belum pernah pakai sistem
-  // baru ini), dianggap mulai dari nol -- BUKAN error, itu wajar.
   const [progresXp, setProgresXp] = useState(0);
   const [progresStreak, setProgresStreak] = useState(0);
   const attendanceRef = React.useRef(null);
-
   const [wajibSurveys, setWajibSurveys] = useState([]);
-  // 🔥 BARU: ringkasan kehadiran buat bagan bundar di dashboard
   const [attendanceSummary, setAttendanceSummary] = useState({ hadir: 0, izin: 0, alpha: 0, total: 0 });
   const [optionalSurveys, setOptionalSurveys] = useState([]);
   const [dismissedSurveyIds, setDismissedSurveyIds] = useState(() => {
@@ -286,16 +187,6 @@ const StudentDashboard = () => {
     return year + '-' + month + '-' + day;
   };
 
-  // 🔥 BARU: parameter `studentEnrolledSubjects` -- daftar mapel yang
-  // beneran diambil/dibayar siswa (buat strategi harga "1 mapel / 2 mapel /
-  // paket lengkap" yang baru). Cek detailnya di hasSubjectAccess() di atas.
-  //
-  // PENTING: pengecekan mapel ini SENGAJA cuma jalan buat targeting umum
-  // (kelas/kategori) -- kalau modul secara eksplisit ditarget ke SISWA
-  // TERTENTU (`sendToSpecificStudents`), itu berarti guru MEMILIH siswa
-  // ini secara sadar satu-satu, jadi keputusan guru itu diprioritaskan
-  // (gak ditimpa pembatasan mapel otomatis) -- guru mungkin sengaja mau
-  // kasih akses bonus ke luar mapel yang diambil siswa.
   const checkStudentAccess = (modul, studentId, studentKelas, studentProgram, studentEnrolledSubjects) => {
     if (modul.sendToSpecificStudents) {
       const studentIds = modul.studentIds || [];
@@ -303,28 +194,6 @@ const StudentDashboard = () => {
       const allTargetIds = [...studentIds, ...selectedStudentIds];
       return allTargetIds.includes(studentId) || allTargetIds.includes(studentNim);
     }
-    // 🔥 FIX BUG NYATA (laporan langsung: modul "Asisten TKA" ke-set ke
-    // jenjang "9 SMP" tapi TETAP muncul di siswa SD): sesi sebelumnya
-    // pengecekan kelas/jenjang DIHAPUS TOTAL dengan asumsi kode mapel itu
-    // SENDIRI udah spesifik per jenjang (mis. "Bahasa Indonesia SD" vs
-    // "...SMP" punya kode BEDA) -- asumsi itu BENAR buat mapel biasa, tapi
-    // SALAH buat kasus mapel seperti "Asisten TKA" yang SENGAJA dipakai
-    // SATU guru buat nangani SD-SMP-SMA SEKALIGUS di bawah SATU kode mapel
-    // yang SAMA. Buat kasus itu, kode mapel doang GAK CUKUP buat
-    // membedakan "materi ini buat SD" vs "buat SMP" -- satu-satunya
-    // pembeda yang tersisa adalah target jenjang yang guru pilih manual,
-    // dan itu KEMARIN GAK DICEK SAMA SEKALI (cuma dekorasi), jadi berapa
-    // pun guru ganti target jenjangnya, TETAP muncul ke semua siswa yang
-    // punya kode mapel itu di enrolledSubjects-nya.
-    //
-    // Sekarang jenjang (`targetKelas`) dicek LAGI, TAPI SEBAGAI SYARAT
-    // TAMBAHAN (AND), bukan gantiin kode mapel: modul harus LOLOS
-    // DUA-DUANYA (kode mapel siswa cocok DAN kelasnya cocok kalau target
-    // jenjangnya bukan "Semua"). Buat mapel biasa yang targetKelas-nya
-    // dibiarkan "Semua" (karena kode mapelnya udah unik per jenjang),
-    // syarat kelas ini otomatis lolos, gak ada dampak sama sekali --
-    // cuma berlaku nyata di kasus kayak Asisten TKA yang butuh
-    // pembeda tambahan itu.
     const targetKelas = modul.targetKelas || 'Semua';
     const matchKelas = targetKelas === 'Semua' || targetKelas === studentKelas;
     return matchKelas && hasSubjectAccess(studentEnrolledSubjects, modul.subject || '', modul.kodeMapel || '');
@@ -336,10 +205,7 @@ const StudentDashboard = () => {
     return () => window.removeEventListener('resize', h);
   }, []);
 
-  // 🔥 BARU: ambil XP & streak dari koleksi `siswa_progress` (fondasi
-  // sistem gamifikasi baru). Kalau dokumennya belum ada, tetap 0/0 --
-  // itu keadaan awal yang wajar, bukan error.
-  const [statusStreak, setStatusStreak] = useState('belum-pernah'); // 'belum-pernah' | 'berakhir' | 'berisiko' | 'aman'
+  const [statusStreak, setStatusStreak] = useState('belum-pernah');
   useEffect(() => {
     if (!studentId) return;
     (async () => {
@@ -349,18 +215,11 @@ const StudentDashboard = () => {
           const d = snap.data();
           setProgresXp(Number(d.xp) || 0);
           setProgresStreak(Number(d.streak) || 0);
-
-          // 🔥 BARU: deteksi status streak buat banner ala Duolingo --
-          // (1) belum pernah latihan sama sekali, (2) streak udah putus
-          // (ada hari kelewat sejak terakhir aktif), (3) streak masih
-          // hidup tapi target hari ini belum tercapai (beresiko putus),
-          // (4) aman (target hari ini udah tercapai).
           const hariIniStr = new Date().toISOString().slice(0, 10);
           const lastActiveDateStr = d.lastActiveDate || null;
           const streak = Number(d.streak) || 0;
           const target = d.targetHarian || 10;
           const soalHariIni = d.soalHariIniTanggal === hariIniStr ? (d.soalHariIniCount || 0) : 0;
-
           if (!lastActiveDateStr) {
             setStatusStreak('belum-pernah');
           } else {
@@ -382,17 +241,15 @@ const StudentDashboard = () => {
   useEffect(() => {
     const storedId = localStorage.getItem('studentId');
     const storedName = localStorage.getItem('studentName');
-    const storedDocId = localStorage.getItem('studentDocId'); // 🔥 BARU
+    const storedDocId = localStorage.getItem('studentDocId');
     const isLoggedIn = localStorage.getItem('isSiswaLoggedIn') === 'true';
-
     if (isLoggedIn && storedId) {
       setStudentId(storedId);
-      setStudentDocId(storedDocId || null); // kosong kalau login sebelum fix ini
+      setStudentDocId(storedDocId || null);
       setStudentName(storedName || "Siswa");
       setAuthReady(true);
       return;
     }
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setStudentName(storedName || user.email || "Siswa");
@@ -410,17 +267,11 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     if (!authReady || !studentId) return;
-
     const fetchData = async () => {
       try {
         const todayStr = getSmartDateString(new Date());
         const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
 
-        // 🔥 FIX UTAMA: tentukan docId Firestore yang BENAR sebelum fetch.
-        // Kalau sesi login sudah simpan studentDocId (login setelah fix ini),
-        // langsung pakai itu. Kalau belum (sesi lama), cari dulu docId-nya
-        // dengan query field `studentId` (NIS) -- lalu simpan biar gak perlu
-        // query ulang tiap buka dashboard.
         let resolvedDocId = studentDocId;
         if (!resolvedDocId) {
           const found = await getDocs(
@@ -431,17 +282,12 @@ const StudentDashboard = () => {
             setStudentDocId(resolvedDocId);
             localStorage.setItem('studentDocId', resolvedDocId);
           } else {
-            resolvedDocId = studentId; // fallback terakhir, kemungkinan doc ID == NIS
+            resolvedDocId = studentId;
           }
         }
 
         const sSnap = await getDoc(doc(db, "students", resolvedDocId)).catch(() => null);
         let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
-        // 🔥 BERUBAH: mapel yang beneran diambil siswa (buat strategi harga 1
-        // mapel / 2 mapel / paket lengkap) sekarang HANYA dari field manual
-        // `enrolledSubjects` -- lihat penjelasan lengkap di hasSubjectAccess()
-        // di atas. Kalau field ini kosong, siswa dianggap BELUM diisi
-        // mapelnya sama sekali (bukan lagi "akses penuh sementara").
         let enrolledSubjectsVal = null;
         if (sSnap?.exists()) {
           const data = sSnap.data();
@@ -456,8 +302,6 @@ const StudentDashboard = () => {
           localStorage.setItem('studentKelas', kelasVal);
           localStorage.setItem('studentProgram', programVal);
           localStorage.setItem('studentNim', nimVal);
-          // 🔥 Disimpan juga di localStorage supaya StudentModuleView.jsx
-          // (halaman baca materi) bisa langsung pakai tanpa fetch ulang.
           try {
             if (enrolledSubjectsVal) localStorage.setItem('studentEnrolledSubjects', JSON.stringify(enrolledSubjectsVal));
             else localStorage.removeItem('studentEnrolledSubjects');
@@ -470,13 +314,6 @@ const StudentDashboard = () => {
           attByDocId, attByKodeUnik, attByName, attByNamaSiswa,
         ] = await Promise.all([
           getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))).catch(() => ({ docs: [] })),
-          // 🔥 FIX BUG: sebelumnya limit(20) di sini itu 20 modul TERBARU
-          // SE-SISTEM (bukan per siswa) -- kalau bimbel punya banyak guru
-          // yang sering update modul/kuis, modul yang BENERAN ditargetkan
-          // ke siswa ini bisa kegeser keluar dari 20-besar-terbaru itu dan
-          // gak pernah kelihatan di widget ini, walau targetnya udah benar
-          // dari awal. Limit dinaikkan jauh (200) biar hampir gak mungkin
-          // ke-truncate untuk skala bimbel manapun.
           getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(200))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where("studentId", "==", studentId), where("periode", "==", periode), limit(1))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "notifications"), where("recipientId", "==", nimVal), limit(30))).catch(() => ({ docs: [] })),
@@ -485,29 +322,12 @@ const StudentDashboard = () => {
           getDocs(query(collection(db, "survey_responses"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("respondentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("nim", "==", nimVal))).catch(() => ({ docs: [] })),
-          // 🔥 BARU: ringkasan kehadiran buat bagan bundar. Dicari pakai DUA
-          // skema identitas sekaligus (ID dokumen — dipakai scan QR & guru
-          // di ClassSession.jsx — DAN kode unik — dipakai kalau admin input
-          // manual), persis fix yang sama kayak di halaman admin kemarin.
-          // Kalau cuma satu skema dicek, sebagian data kehadiran bisa gak
-          // kehitung di bagannya.
           getDocs(query(collection(db, "attendance"), where("studentId", "==", studentId))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "attendance"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
-          // 🔥 SEMENTARA (diagnosa): cari absensi berdasarkan NAMA siswa
-          // (bukan ID). Kalau ini nemu data tapi dua query di atas nggak,
-          // berarti data absensinya BENERAN ADA tapi skema ID yang dipakai
-          // nulisnya beda dari yang diduga -- dan ini bakal nunjukkin
-          // persis skema ID yang sebenarnya dipakai.
           getDocs(query(collection(db, "attendance"), where("studentName", "==", studentName))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "attendance"), where("namaSiswa", "==", studentName))).catch(() => ({ docs: [] })),
         ]);
 
-        // --- Ringkasan kehadiran ---
-        // 🔥 FIX: sebelumnya panel diagnosa nyari lewat NAMA dan BERHASIL
-        // nemuin datanya, tapi hasil pencarian nama itu cuma dipakai buat
-        // laporan diagnosa -- gak pernah ikut digabung ke data yang
-        // BENERAN dipakai nampilin bagan. Sekarang hasil nama ikut
-        // digabung juga, jadi bagan bener-bener nunjukkin data yang ada.
         const attMerged = new Map();
         [...attByDocId.docs, ...attByKodeUnik.docs, ...attByName.docs, ...attByNamaSiswa.docs].forEach(d => attMerged.set(d.id, d.data()));
         const attList = Array.from(attMerged.values());
@@ -533,41 +353,21 @@ const StudentDashboard = () => {
           });
         });
         const allModulsData = rawModulsData.filter(m => !embeddedQuizIds.has(m.id) && !m.parentModulId);
-
         const nowTsForFilter = new Date();
         const accessibleModuls = allModulsData.filter(modul => {
           if (modul.status === 'arsip') return false;
-          // 🔥 FIX BUG NYATA: sebelumnya modul/kuis yang statusnya
-          // "terjadwal" dengan tanggalMulai di MASA DEPAN langsung DIBUANG
-          // TOTAL dari daftar (`return false`) -- jadi siswa gak pernah
-          // lihat "eh ada kuis yang bakal kebuka minggu depan" sama
-          // sekali, padahal itu berguna sebagai PENGINGAT. Sekarang item
-          // yang belum waktunya TETAP masuk daftar (ditandai `isUpcoming`
-          // di bawah), cuma gak dianggap "aktif sekarang" -- biar tetap
-          // kelihatan di dashboard sebagai pengingat "akan datang", bukan
-          // hilang sama sekali sampai tanggalnya tiba.
           return checkStudentAccess(modul, studentId, kelasVal, programVal, enrolledSubjectsVal);
         }).map(modul => {
           const isUpcoming = modul.status === 'terjadwal' && modul.tanggalMulai && new Date(modul.tanggalMulai) > nowTsForFilter;
           return { ...modul, __isUpcoming: isUpcoming };
         });
 
-        // 🔥 FIX BUG "kuis gak muncul di dashboard": sejak kuis "ditautkan
-        // ke modul" disimpan sebagai BLOK TERPISAH (block.type === 'quiz'
-        // + block.quizId menunjuk ke dokumen kuis lain), modul induknya
-        // sendiri TIDAK PUNYA field `quizData` — jadi cek lama
-        // `(m.quizData || []).length > 0` selalu `false` buat kuis model
-        // ini dan kuis itu gak pernah dianggap "ada tugas" oleh dashboard.
-        // Di bawah ini kita kumpulkan quizId dari blok-blok itu, ambil
-        // dokumen kuisnya (buat tau deadline-nya juga), lalu dipakai baik
-        // buat DETEKSI (hasQuiz) maupun buat SORTING deadline di bawah.
         const quizIdsToCheck = new Set();
         accessibleModuls.forEach(m => {
           (m.blocks || []).forEach(b => {
             if (b.type === 'quiz' && b.quizId) quizIdsToCheck.add(b.quizId);
           });
         });
-
         const quizDeadlineMap = {};
         if (quizIdsToCheck.size > 0) {
           const quizSnaps = await Promise.all(
@@ -584,8 +384,6 @@ const StudentDashboard = () => {
           });
         }
 
-        // 🔥 Cari deadline PALING DEKAT dari semua blok tugas & kuis di
-        // dalam satu modul (dipakai buat ngurutin mana yang paling urgent).
         const getEarliestDeadline = (m) => {
           const deadlines = [];
           (m.blocks || []).forEach(b => {
@@ -601,7 +399,6 @@ const StudentDashboard = () => {
               }
             }
           });
-          // Kuis lama (model quizData langsung di modul) juga dicek
           if ((m.quizData || []).length > 0 && m.useSchedule && m.quizCloseDate) {
             const t = new Date(m.quizCloseDate);
             if (!isNaN(t)) deadlines.push(t);
@@ -610,11 +407,6 @@ const StudentDashboard = () => {
         };
 
         const nowTs = new Date();
-
-        // 🔥 BARU: cek modul mana yang SUDAH DIKERJAKAN siswa ini --
-        // sebelumnya SAMA SEKALI gak dicek, jadi tugas/kuis yang udah
-        // beres tetap numpuk di widget ini selamanya (atau sampai
-        // deadline lewat, padahal harusnya ilang begitu dikerjain).
         const modulSudahDikerjakan = new Set();
         if (studentNim) {
           try {
@@ -629,41 +421,18 @@ const StudentDashboard = () => {
           }
         }
 
-        // 🔥 BARU: masa tenggang -- deadline yang BARU lewat (<= 3 hari)
-        // masih ditampilkan (ditandai __terlewat, dikasih warna merah di
-        // tampilan) biar siswa masih sempat lihat & kejar telat. Lewat
-        // dari itu baru bener-bener disingkirkan -- biar gak numpuk
-        // selamanya di widget ini.
         const MASA_TENGGANG_HARI = 3;
         const batasTenggangMs = MASA_TENGGANG_HARI * 24 * 60 * 60 * 1000;
-
         const fetchedTasks = accessibleModuls
           .filter(m => {
-            // Modul yang udah dikerjakan LANGSUNG disingkirkan dari
-            // widget pengingat ini, apapun status deadline-nya.
             if (modulSudahDikerjakan.has(m.id)) return false;
-            // 🔥 hasQuiz sekarang mengecek DUA model kuis: model lama
-            // (quizData langsung di modul) DAN model baru (blok 'quiz'
-            // yang menunjuk ke dokumen kuis terpisah).
             const hasQuiz = (m.quizData || []).length > 0 || (m.blocks || []).some(b => b.type === 'quiz' && b.quizId);
             const hasAssignment = (m.blocks || []).some(b => b.type === 'assignment');
             return hasQuiz || hasAssignment;
           })
           .map(m => ({ ...m, __deadline: m.__isUpcoming ? null : getEarliestDeadline(m) }))
-          // Buang yang deadline-nya sudah lewat semua (biar gak nampilin
-          // tugas/kuis yang udah kadaluarsa sebagai "aktif") -- item
-          // __isUpcoming SELALU lolos di sini (deadline-nya null, belum
-          // relevan sampai tanggalMulai-nya tiba).
-          // Buang yang deadline-nya udah lewat LEBIH DARI masa tenggang
-          // (3 hari) -- dalam masa tenggang itu tetap tampil, ditandai
-          // __terlewat=true buat dikasih warna merah di tampilan, biar
-          // siswa masih sempat kejar telat sebelum bener-bener hilang.
           .map(m => ({ ...m, __terlewat: !!(m.__deadline && m.__deadline < nowTs) }))
           .filter(m => !m.__deadline || (nowTs - m.__deadline) <= batasTenggangMs)
-          // 🔥 URUTKAN: item AKTIF dengan deadline paling dekat dulu, baru
-          // item "AKAN DATANG" (belum waktunya tapi tetap jadi pengingat,
-          // diurutkan berdasar tanggalMulai paling dekat), baru yang gak
-          // punya deadline sama sekali.
           .sort((a, b) => {
             if (a.__deadline && b.__deadline) return a.__deadline - b.__deadline;
             if (a.__deadline && !b.__isUpcoming) return -1;
@@ -673,7 +442,7 @@ const StudentDashboard = () => {
             if (b.__isUpcoming) return b.__deadline ? 1 : -1;
             return 0;
           })
-          .slice(0, 8); // 🔥 naik dari 5 -> 8: tugas/kuis TANPA deadline (jadwal bebas) selalu ditaruh di bawah yang punya deadline -- kalau bimbel sudah punya 5+ tugas berdeadline aktif, kuis/tugas BARU yang gak berdeadline bisa ketutup dari widget ringkasan ini padahal aksesnya udah benar (bisa dibuka normal lewat E-Learning). Batas dinaikkan supaya lebih jarang kejadian.
+          .slice(0, 8);
         setTasks(fetchedTasks);
 
         if (!raportSnap.empty) {
@@ -696,7 +465,6 @@ const StudentDashboard = () => {
             .flatMap(snap => snap.docs)
             .map(d => d.data().surveyId)
         );
-
         const relevantSurveys = activeSurveys.filter(sv => {
           if (respondedIds.has(sv.id)) return false;
           if (sv.targetType === 'semua_guru') return false;
@@ -706,14 +474,11 @@ const StudentDashboard = () => {
           }
           return true;
         });
-
         setWajibSurveys(relevantSurveys.filter(sv => sv.isRequired));
         setOptionalSurveys(relevantSurveys.filter(sv => !sv.isRequired));
-
       } catch (err) { console.error('Error:', err); }
       finally { setDataLoading(false); }
     };
-
     fetchData();
   }, [authReady, studentId]);
 
@@ -744,7 +509,6 @@ const StudentDashboard = () => {
   useEffect(() => {
     let qr = null;
     if (!isScanning || !studentId) return;
-
     const start = async () => {
       try {
         qr = new Html5Qrcode("reader");
@@ -755,13 +519,11 @@ const StudentDashboard = () => {
             try {
               const d = JSON.parse(text);
               if (d.type !== "ABSENSI_BIMBEL") return;
-
               const matchedSchedule = todaySchedules.find(sch => sch.id === d.scheduleId);
               if (!matchedSchedule) {
                 alert('❌ QR ini bukan untuk jadwal kelasmu hari ini. Absen tidak tercatat.\n\nKalau ini keliru, hubungi tentor/admin.');
                 return;
               }
-
               const today = getSmartDateString(new Date());
               await setDoc(doc(db, "attendance", studentId + '_' + today + '_' + (d.scheduleId || '')), {
                 studentId, studentName, teacherName: d.teacher, date: today,
@@ -797,30 +559,11 @@ const StudentDashboard = () => {
     );
   }
 
-  // 🔥 FIX BUG ARSITEKTUR BESAR: sebelumnya komponen ini render SIDEBAR-nya
-  // SENDIRI (<SidebarSiswa>, tombol hamburger, offset marginLeft:260) —
-  // padahal di App.jsx, route "/siswa/dashboard" SUDAH dibungkus <SiswaLayout>
-  // yang JUGA render sidebar + header + offset yang SAMA. Akibatnya: sidebar
-  // ke-render 2 kali dobel (numpuk persis di posisi yang sama, jadi gak
-  // "kelihatan" pecah tapi boros & 2x event listener), dan konten dashboard
-  // ke-geser marginLeft:260 DUA KALI (jadi ~520px kosong di desktop).
-  // Ditambah lagi breakpoint mobile-nya beda (SiswaLayout ≤1024px vs
-  // komponen ini ≤768px), jadi di lebar 769-1024px dua-duanya "gak sepakat"
-  // — ini kemungkinan besar akar dari keluhan "tampilan berantakan di HP".
-  // Sekarang komponen ini HANYA render kontennya sendiri; sidebar & page
-  // shell sepenuhnya diserahkan ke SiswaLayout (persis seperti halaman siswa
-  // lain — StudentElearning, dst — yang sudah benar dari awal).
   return (
     <div style={{ paddingBottom: isMobile ? 70 : 0 }}>
-      <style>{`
-        @keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
-        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-        .sd-card { animation: fadeSlideIn 0.25s ease-out; }
-        .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); }
-      `}</style>
+      <style>{`@keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} } @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} } .sd-card { animation: fadeSlideIn 0.25s ease-out; } .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); }`}</style>
 
       <div>
-
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
           <div>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>{greeting.icon} {greeting.text}</p>
@@ -830,7 +573,6 @@ const StudentDashboard = () => {
               {studentNim && <span style={{ marginLeft: 8, fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>🆔 {studentNim}</span>}
             </p>
           </div>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
             <button
               onClick={() => setShowNotifPanel(v => !v)}
@@ -853,7 +595,6 @@ const StudentDashboard = () => {
                 </span>
               )}
             </button>
-
             {showNotifPanel && (
               <>
                 <div onClick={() => setShowNotifPanel(false)} style={{ position: 'fixed', inset: 0, zIndex: 998 }} />
@@ -913,7 +654,6 @@ const StudentDashboard = () => {
                 </div>
               </>
             )}
-
             {!isMobile && (
               <button onClick={() => setIsScanning(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1e293b', color: 'white', border: 'none', padding: '11px 20px', borderRadius: 14, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(30,41,59,0.2)' }}>
                 <Camera size={17} /> Scan Absen
@@ -922,21 +662,16 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* ============================================================
-            🔥 ROMBAK TOTAL (bukan tempel-tempel): palet disamakan ke
-            teal di seluruh app (Leaderboard, Latihan Harian, Dashboard
-            sekarang 1 identitas visual), maskot astronot jadi ilustrasi
-            SVG beneran (bukan emoji), menu grid gaya kartu warna-warni
-            terinspirasi referensi dashboard belajar modern. SEMUA
-            LOGIKA (navigate, onClick, hitungLevelDariXp, dll) TETAP
-            SAMA PERSIS -- yang berubah murni tampilannya.
-            ============================================================ */}
         {(() => {
           const { level, xpProgress, xpKebutuhan } = hitungLevelDariXp(progresXp);
           const menuBaru = [
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut', emoji: '🎯', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            { key: 'banksoal', label: 'Bank Soal', emoji: '📚', warna: '#ede9fe', warnaTeks: '#5b21b6', segeraHadir: true },
+            // 🔥 BARU: tile "Bank Soal" (dulu placeholder ber-badge "Segera")
+            // diganti jadi pintu masuk Buku Interaktif Digital -- sesuai visi
+            // "belajar menyenangkan di genggaman tangan": buku dibaca siswa
+            // di HP, dipakai juga oleh guru saat menerangkan di kelas.
+            { key: 'buku', label: 'Buku Digital', emoji: '📖', warna: '#ede9fe', warnaTeks: '#5b21b6', segeraHadir: false },
             { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
             { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
             { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', warna: '#dbeafe', warnaTeks: '#1e40af', segeraHadir: false },
@@ -947,20 +682,11 @@ const StudentDashboard = () => {
                 background: 'linear-gradient(160deg, #0d9488 0%, #134e4a 100%)', borderRadius: 24,
                 padding: isMobile ? 18 : 22, marginBottom: 16, position: 'relative', overflow: 'hidden',
               }}>
-                {/* Bintik dekoratif */}
                 <div style={{ position: 'absolute', top: -24, right: -24, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
                 <div style={{ position: 'absolute', bottom: -34, left: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-
-                {/* 🔥 BARU: Master G sekarang SELALU tampil sebagai maskot
-                    brand (nempel gede di pojok kartu), TERPISAH dari
-                    avatar foto profil siswa. Sebelumnya maskot cuma
-                    nongol KALAU siswa belum upload foto -- itu salah,
-                    maskot brand harusnya selalu ada, bukan digantikan
-                    foto profil. */}
                 <div style={{ position: 'absolute', top: -6, right: 10, zIndex: 2 }}>
                   <MaskotAstronot size={78} />
                 </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, position: 'relative' }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)' }}>
                     {studentProfile?.fotoUrl ? (
@@ -974,7 +700,6 @@ const StudentDashboard = () => {
                     <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>Semangat belajar hari ini!</div>
                   </div>
                 </div>
-
                 <div style={{ display: 'flex', gap: 8, marginBottom: 16, position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.15)', padding: '6px 11px', borderRadius: 20 }}>
                     <span style={{ fontSize: 13 }}>🔥</span>
@@ -985,7 +710,6 @@ const StudentDashboard = () => {
                     <span style={{ color: 'white', fontWeight: 700, fontSize: 12 }}>{progresXp} XP</span>
                   </div>
                 </div>
-
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, position: 'relative' }}>
                   <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>Level {level}</span>
                   <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>{xpProgress} / {xpKebutuhan} XP</span>
@@ -993,12 +717,6 @@ const StudentDashboard = () => {
                 <div style={{ height: 7, background: 'rgba(255,255,255,0.2)', borderRadius: 10, overflow: 'hidden', marginBottom: 16, position: 'relative' }}>
                   <div style={{ height: '100%', width: `${Math.min(100, (xpProgress / xpKebutuhan) * 100)}%`, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)', borderRadius: 10, transition: 'width 0.4s ease' }} />
                 </div>
-
-                {/* 🔥 BARU: search bar ini SEBELUMNYA cuma dekorasi, gak
-                    bisa diklik & gak nyambung ke apa-apa. Sekarang
-                    beneran jadi kotak ketik yang nyambung ke pencarian
-                    materi (StudentElearning.jsx sekarang baca ?cari=
-                    dari URL, lihat perubahannya di file itu). */}
                 <div style={{ background: 'white', borderRadius: 14, padding: '4px 6px 4px 16px', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', width: '100%' }}>
                   <input
                     type="text"
@@ -1016,9 +734,6 @@ const StudentDashboard = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Menu grid -- ikon dalam kartu bulat warna-warni, terinspirasi
-                  gaya "subject chips" dashboard belajar modern. */}
               <style>{`@keyframes goyangPeringatan { 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-15deg);} 75%{transform:rotate(15deg);} }`}</style>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 16 }}>
                 {menuBaru.map((m) => (
@@ -1033,6 +748,9 @@ const StudentDashboard = () => {
                         navigate('/siswa/tryout');
                       } else if (m.key === 'leaderboard') {
                         navigate('/siswa/leaderboard');
+                      } else if (m.key === 'buku') {
+                        // 🔥 BARU: arahin tile Buku Digital ke rak buku
+                        navigate('/siswa/buku');
                       } else if (m.segeraHadir) {
                         alert(`✨ ${m.label} segera hadir!`);
                       }
@@ -1048,10 +766,6 @@ const StudentDashboard = () => {
                       {m.segeraHadir && (
                         <span style={{ position: 'absolute', bottom: -6, fontSize: 8, background: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: 8, fontWeight: 700, whiteSpace: 'nowrap' }}>Segera</span>
                       )}
-                      {/* 🔥 BARU: sesuai permintaan -- ganti banner besar
-                          jadi emot kecil NEMPEL di ikon menu Latihan
-                          Harian aja, gak nambah elemen baru yang bikin
-                          dashboard makin penuh. */}
                       {m.key === 'latihan' && (
                         <span style={{
                           position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: '50%',
@@ -1081,7 +795,6 @@ const StudentDashboard = () => {
                   </button>
                 ))}
               </div>
-
               <div style={{ background: 'white', borderRadius: 16, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderLeft: '3px solid #0d9488' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#0d9488', marginBottom: 6 }}>Ayo {studentName.split(' ')[0]}, Semangat! 🔥</div>
                 <p style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
@@ -1177,7 +890,6 @@ const StudentDashboard = () => {
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
-
           <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
             <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Calendar size={17} color="#0d9488" /> Jadwal Hari Ini
@@ -1219,11 +931,6 @@ const StudentDashboard = () => {
               const hasAssignment = (task.blocks || []).some(b => b.type === 'assignment');
               const isTargeted = task.sendToSpecificStudents;
               const targetInfo = isTargeted ? '🔒 Khusus' : `${task.targetKelas || 'Semua'} • ${task.targetKategori || 'Semua'}`;
-
-              // 🔥 BARU: badge deadline paling dekat, biar keliatan mana yang
-              // paling urgent (bukan cuma ngandelin urutan list aja).
-              // Kalau udah __terlewat (dalam masa tenggang 3 hari), badge-nya
-              // ditandai "Terlambat" merah -- bukan hitung mundur biasa.
               let deadlineBadge = null;
               if (task.__terlewat) {
                 deadlineBadge = { text: '⚠️ Terlambat', color: '#dc2626' };
@@ -1232,18 +939,9 @@ const StudentDashboard = () => {
                 if (diffH < 24) deadlineBadge = { text: `⏰ ${Math.max(diffH, 0)} jam lagi`, color: '#ef4444' };
                 else deadlineBadge = { text: `📅 ${Math.floor(diffH / 24)} hari lagi`, color: '#f59e0b' };
               }
-
-              // 🔥 BARU: badge "Akan Datang" -- item yang tanggalMulai-nya
-              // masih di masa depan (lihat penjelasan lengkap di fetchData()
-              // soal kenapa ini sekarang TETAP masuk daftar, bukan
-              // disembunyikan total). Ditampilkan sebagai pengingat, TAPI
-              // gak bisa diklik buat dibuka -- soalnya kontennya beneran
-              // belum kebuka sampai tanggalnya tiba, klik ke sana cuma
-              // bakal berujung error/kosong.
               const upcomingBadge = task.__isUpcoming && task.tanggalMulai
                 ? { text: `🔜 Dibuka ${new Date(task.tanggalMulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`, color: '#0891b2' }
                 : null;
-
               return (
                 <div
                   key={i}
@@ -1255,25 +953,9 @@ const StudentDashboard = () => {
                     opacity: task.__isUpcoming ? 0.85 : 1,
                   }}
                   onClick={() => {
-                    // 🔥 Item "akan datang" SENGAJA gak bisa diklik -- kontennya
-                    // beneran belum kebuka, biar gak nyasar ke halaman error.
                     if (task.__isUpcoming) return;
-                    // 🔥 FIX BUG: sebelumnya SEMUA kartu di sini (kuis maupun
-                    // tugas) cuma nyimpen `selectedModuleId` ke localStorage
-                    // lalu lempar ke halaman daftar "Pilih Guru/Mapel"
-                    // (`/siswa/materi`) -- padahal halaman itu TIDAK PERNAH
-                    // membaca localStorage tsb buat langsung loncat ke
-                    // modul/kuisnya. Efeknya siswa klik "Mulai Kuis" tapi
-                    // malah nyasar ke layar pilihan tentor, harus cari-cari
-                    // modulnya lagi secara manual. Sekarang: kalau kartunya
-                    // KUIS, langsung diarahkan ke halaman pengerjaan kuis;
-                    // kalau TUGAS/modul biasa, langsung ke halaman detail
-                    // modulnya -- tanpa mampir ke halaman pilihan sama sekali.
                     if (hasQuiz) {
                       const quizBlock = (task.blocks || []).find(b => b.type === 'quiz' && b.quizId);
-                      // Kuis "model lama" (quizData langsung nempel di modul,
-                      // bukan blok terpisah) -- id kuisnya adalah id modul itu
-                      // sendiri.
                       const quizId = quizBlock?.quizId || (task.quizData?.length > 0 ? task.id : null);
                       if (quizId) {
                         navigate(`/siswa/kuis/${quizId}`);
@@ -1320,9 +1002,6 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* 🔥 KEHADIRAN — BARU, sesuai permintaan (bagan bundar), sekaligus
-            jadi jalan pintas karena menu "Kehadiran" di sidebar tadinya
-            gak pernah ada. */}
         <div ref={attendanceRef} className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1335,7 +1014,6 @@ const StudentDashboard = () => {
           {dataLoading ? <SkeletonLines count={2} /> : (
             <AttendanceDonut hadir={attendanceSummary.hadir} izin={attendanceSummary.izin} alpha={attendanceSummary.alpha} total={attendanceSummary.total} />
           )}
-
         </div>
 
         <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
@@ -1354,7 +1032,6 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* 🔥 KARTU IDENTITAS SISWA DIGITAL */}
         <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', marginTop: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
             <IdCard size={17} color="#5B2ECC" /> Kartu Identitas Siswa
