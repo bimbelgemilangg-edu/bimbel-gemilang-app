@@ -118,6 +118,9 @@ import SidebarSiswa from './components/SidebarSiswa';
 
 import StudentDashboard from './pages/student/StudentDashboard';
 import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
+// 🔥 BARU: Buku Interaktif Digital -- rak buku + reader + uji pemahaman
+import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
+import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
 import StudentGrades from './pages/student/StudentGrades';
@@ -372,6 +375,12 @@ function App() {
         {/* 🔥 BARU: Latihan Harian -- bagian dari sistem gamifikasi baru,
             SENGAJA tanpa SiswaLayout (gaya app mobile, bukan sidebar). */}
         <Route path="/siswa/latihan-harian" element={<SiswaRoute><LatihanHarianPage /></SiswaRoute>} />
+
+        {/* 🔥 BARU: Buku Interaktif Digital -- rak buku + reader + uji
+            pemahaman. SENGAJA tanpa SiswaLayout (gaya mobile, sama
+            seperti Latihan Harian) supaya UX-nya mulus di HP. */}
+        <Route path="/siswa/buku" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
+        <Route path="/siswa/buku/:babId" element={<SiswaRoute><BukuBacaPage /></SiswaRoute>} />
 
         {/* REDIRECT */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
