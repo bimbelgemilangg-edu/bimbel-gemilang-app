@@ -1,19 +1,7 @@
 // src/pages/student/gemilang/BukuBacaPage.jsx
-// ============================================================
-// READER BUKU DIGITAL -- jantung fitur buku interaktif.
-//
-// Alur (sesuai visi hybrid dua arah): siswa BACA per seksi di HP ->
-// tandai selesai (+5 XP) -> UJI PEMAHAMAN BAB (+10 XP per benar,
-// ekonomi XP SAMA dengan Misi Harian biar konsisten) -> hasil +
-// pembahasan lengkap (ini yang nanti juga jadi "papan tulis" versi
-// digital: guru bisa membahas soal yang sama di kelas).
-//
-// Penyimpanan:
-// - progres baca & skor quiz -> siswa_buku_progress/{studentId_babId}
-// - XP -> siswa_progress (field xp), pakai pola timeout 8 detik yang
-//   SAMA dengan LatihanHarianPage: kalau koneksi putus, siswa
-//   DIBERITAHU lewat banner, bukan didiemin kehilangan XP.
-// ============================================================
+// READER BUKU DIGITAL -- baca per seksi (+5 XP), Uji Pemahaman Bab
+// (+10 XP/benar), hasil + pembahasan lengkap. Progres di
+// siswa_buku_progress/{studentId_babId}; XP ke siswa_progress (field xp).
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
@@ -23,8 +11,8 @@ import { DAFTAR_BAB } from '../../../data/bukuInteraktif';
 import { MathText, MathBlock } from '../../../components/MathText';
 import VisualBuku from '../../../components/buku/VisualBuku';
 
-const XP_SEKSI = 5;    // reward perilaku membaca (kecil tapi rutin)
-const XP_BENAR = 10;   // sama dengan XP_PER_BENAR di Latihan Harian
+const XP_SEKSI = 5;
+const XP_BENAR = 10;
 
 export default function BukuBacaPage() {
   const { babId } = useParams();
@@ -41,7 +29,6 @@ export default function BukuBacaPage() {
   const [peringatan, setPeringatan] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // Muat progres buku sekali saat masuk (boleh gagal -> mulai dari 0).
   useEffect(() => {
     if (!bab || !studentId) { setSiap(true); return; }
     (async () => {
@@ -102,8 +89,6 @@ export default function BukuBacaPage() {
     setTimeout(() => setToast(null), 1600);
   };
 
-  // Tombol kumpul dikunci sampai SEMUA soal terjawab -- filosofi yang
-  // sama dengan Misi Harian: gak ada jawaban "kosong" yang lolos.
   const semuaTerjawab = bab.ujiPemahaman.every((q) => {
     const j = jawaban[q.id];
     if (q.tipe === 'pg') return typeof j === 'number';
@@ -133,7 +118,6 @@ export default function BukuBacaPage() {
     window.scrollTo(0, 0);
   };
 
-  // Render satu blok konten sesuai tipenya.
   const renderBlok = (blok, i) => {
     if (blok.tipe === 'p') return <p key={i} style={st.paragraf}><MathText text={blok.teks} /></p>;
     if (blok.tipe === 'list') return <ul key={i} style={st.list}>{blok.items.map((it, j) => <li key={j} style={{ marginBottom: 6 }}><MathText text={it} /></li>)}</ul>;
@@ -154,7 +138,6 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* HEADER + PROGRES BACA */}
       <div style={{ ...st.hero, background: `linear-gradient(160deg, ${bab.warna} 0%, #1E1B4B 100%)` }}>
         <div style={st.heroStars} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
@@ -173,7 +156,6 @@ export default function BukuBacaPage() {
         </div>
       </div>
 
-      {/* ============ MODE BACA ============ */}
       {mode === 'baca' && (
         <div style={{ padding: '16px 16px 90px' }}>
           {bab.sections.map((sec, idx) => {
@@ -201,7 +183,6 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ============ MODE QUIZ ============ */}
       {mode === 'quiz' && (
         <div style={{ padding: '16px 16px 90px' }}>
           {bab.ujiPemahaman.map((q, i) => (
@@ -212,7 +193,6 @@ export default function BukuBacaPage() {
                   <MathText text={q.soal} />
                 </div>
               </div>
-              {/* 🔥 BARU: visual soal (termometer/tabel/gambar) -- bagian yang sebelumnya hilang dari PDF */}
               {q.visual && <VisualBuku visual={q.visual} />}
               {q.tipe === 'pg' && <InputPg q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
               {q.tipe === 'multi' && <InputMulti q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
@@ -222,11 +202,10 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ============ MODE HASIL + PEMBAHASAN ============ */}
       {mode === 'hasil' && hasil && (
         <div style={{ padding: '16px 16px 40px' }}>
           <div style={{ ...st.kartuSeksi, textAlign: 'center' }}>
-            <div style={{ fontSize: 40 }}>{hasil.persen >= 70 ? '🧑‍' : '️'}</div>
+            <div style={{ fontSize: 40 }}>{hasil.persen >= 70 ? '🧑‍🚀' : '🛰️'}</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: '#7C3AED' }}>{hasil.persen}%</div>
             <div style={{ fontSize: 12.5, color: '#64748b', margin: '4px 0 10px' }}>
               {hasil.benarCount} benar dari {hasil.daftar.length} soal • +{hasil.xp} XP
@@ -263,7 +242,6 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ============ BAR BAWAH (sticky) ============ */}
       {mode !== 'hasil' && (
         <div style={st.barBawah}>
           {mode === 'baca' ? (
@@ -283,9 +261,6 @@ export default function BukuBacaPage() {
   );
 }
 
-// ============================================================
-// INPUT SOAL -- 3 tipe sesuai format TKA di modul aslinya
-// ============================================================
 function InputPg({ q, nilai, set }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -333,9 +308,6 @@ function InputBs({ q, nilai, set }) {
   );
 }
 
-// ============================================================
-// TEKS JAWABAN SISWA & KUNCI (buat kartu hasil)
-// ============================================================
 const teksJawaban = (q, j) => {
   if (q.tipe === 'pg') return typeof j === 'number' ? q.pilihan[j] : '(kosong)';
   if (q.tipe === 'multi') return Array.isArray(j) && j.length ? j.slice().sort((a, b) => a - b).map((i) => q.pilihan[i]).join(' | ') : '(kosong)';
@@ -347,9 +319,6 @@ const teksKunci = (q) => {
   return q.benar.map((v, i) => `${i + 1}) ${v ? 'Benar' : 'Salah'}`).join(', ');
 };
 
-// ============================================================
-// STYLE TOKENS -- identitas visual sama dengan Rak Buku & Misi Harian
-// ============================================================
 const st = {
   page: { minHeight: '100vh', background: '#F4F2FF', fontFamily: 'sans-serif', maxWidth: 480, margin: '0 auto' },
   pusat: { minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', background: '#F4F2FF', fontFamily: 'sans-serif', textAlign: 'center', padding: 20 },

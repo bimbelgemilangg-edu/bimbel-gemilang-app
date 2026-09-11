@@ -1,12 +1,8 @@
 // src/data/bukuInteraktif.js
-// ============================================================
-// KONTEN BUKU INTERAKTIF DIGITAL -- v1 statis (jujur: paling cepat
-// & nol risiko pipeline import; v2 bisa dipindah ke koleksi Firestore
-// `buku_digital` + editor admin, strukturnya sudah siap).
-// Sumber: modul BAB 1 - Bilangan Bulat dan Pecahan (Matematika).
+// KONTEN BUKU INTERAKTIF DIGITAL -- v1 statis.
 // Tipe blok: 'p' | 'list' | 'math' | 'contoh' | 'tips'
-// Tipe soal: 'pg' | 'multi' | 'bs'  (bs = benar/salah per pernyataan)
-// ============================================================
+// Tipe soal: 'pg' | 'multi' | 'bs'
+// Field `visual` (opsional): 'termometer' | 'tabel' | 'gambar'
 
 export const DAFTAR_BAB = [
     {
@@ -14,7 +10,7 @@ export const DAFTAR_BAB = [
       judul: 'Bilangan Bulat dan Pecahan',
       mapel: 'Matematika',
       jenjang: 'SMP/MTs',
-      kelas: 7,
+      kelas: 9, // buku TKA khusus kelas 9 SMP: cuma kelas 9 yang lihat
       emoji: '🔢',
       warna: '#4C6EF5',
       deskripsi: 'Hierarki operasi, sifat-sifat bilangan, dan operasi pecahan.',
@@ -86,12 +82,12 @@ export const DAFTAR_BAB = [
       ujiPemahaman: [
         { id: 'u1', tipe: 'pg', level: 'sedang', soal: 'Suhu di kaki gunung X (ketinggian 1.200 mdpl) adalah 14 °C. Suhu menurun 2 °C setiap ketinggian naik 300 m. Jika puncak gunung X berada di 3.900 mdpl, maka suhu di puncak adalah....', pilihan: ['2 °C', '0 °C', '−2 °C', '−4 °C'], benar: 3, pembahasan: 'Selisih ketinggian = 3.900 − 1.200 = 2.700 m; frekuensi penurunan = 2.700 : 300 = 9 kali; total penurunan = 9 × 2 = 18 °C; suhu puncak = 14 − 18 = −4 °C.' },
         { id: 'u2', tipe: 'pg', level: 'mudah', soal: 'Harga setengah kilogram cabe rawit hari ini Rp35.000,00. Jika Ibu membeli 2¼ kg, total harga yang harus dibayar adalah....', pilihan: ['Rp175.000,00', 'Rp157.500,00', 'Rp140.000,00', 'Rp87.500,00'], benar: 1, pembahasan: 'Harga 1 kg = 2 × 35.000 = 70.000; total = 9/4 × 70.000 = 157.500.' },
-        { id: 'u3', tipe: 'pg', level: 'sedang', soal: 'Titik beku empat cairan: A = −5 °C, B = −12 °C, C = 2 °C, D = −8 °C. Cairan dengan titik beku paling rendah adalah....', pilihan: ['Cairan A', 'Cairan B', 'Cairan C', 'Cairan D'], benar: 1, pembahasan: '−12 < −8 < −5 < 2; titik beku paling rendah = Cairan B (−12 °C).' },
+        { id: 'u3', tipe: 'pg', level: 'sedang', soal: 'Perhatikan data titik beku empat jenis cairan pada termometer berikut! Cairan yang memiliki titik beku paling rendah adalah....', visual: { tipe: 'termometer', data: [{ nama: 'Cairan A', nilai: -5 }, { nama: 'Cairan B', nilai: -12 }, { nama: 'Cairan C', nilai: 2 }, { nama: 'Cairan D', nilai: -8 }] }, pilihan: ['Cairan A', 'Cairan B', 'Cairan C', 'Cairan D'], benar: 1, pembahasan: '−12 < −8 < −5 < 2; titik beku paling rendah = Cairan B (−12 °C).' },
         { id: 'u4', tipe: 'pg', level: 'sedang', soal: 'Urutan dari terbesar ke terkecil untuk $1\\frac{1}{4}$; 1,3; 128%; $\\frac{6}{5}$ adalah....', pilihan: ['1,3; 128%; 6/5; 1¼', '1,3; 128%; 1¼; 6/5', '128%; 6/5; 1¼; 1,3', '128%; 1,3; 6/5; 1¼'], benar: 1, pembahasan: 'Desimal: 1,30 > 1,28 > 1,25 > 1,20.' },
         { id: 'u5', tipe: 'multi', level: 'sedang', soal: 'Manakah pernyataan operasi hitung berikut yang hasilnya benar? (pilih lebih dari satu)', pilihan: ['−12 + 15 : 0,5 − 10 = 8', '25 + (−20) × ¼ − 10 = 10', '18 + ((−12) : (−3)) − 15 = 7', '−20 − 10 × 10% + 15 = −4'], benar: [0, 1, 2], pembahasan: 'Pernyataan 4: −20 − 1 + 15 = −6, bukan −4. Pernyataan 1: −12 + 30 − 10 = 8 ✓; pernyataan 2: 25 − 5 − 10 = 10 ✓; pernyataan 3: 18 + 4 − 15 = 7 ✓.' },
         { id: 'u6', tipe: 'bs', level: 'sulit', soal: 'Peternakan ayam "Makmur" memiliki 500 ekor ayam; setiap hari satu ekor menghabiskan 120 gram pakan; pakan dikemas 50 kg per karung. Tentukan benar/salah:', pernyataan: ['Kebutuhan pakan untuk 1 ekor ayam selama 30 hari adalah 3,6 kg.', 'Seluruh ayam menghabiskan 60 kg pakan dalam satu hari.', 'Total pakan untuk 500 ekor selama 30 hari adalah 1,5 ton.', 'Peternak perlu membeli minimal 36 karung untuk persediaan 30 hari.'], benar: [true, true, false, true], pembahasan: 'P1: 120 × 30 = 3.600 g = 3,6 kg ✓. P2: 500 × 0,12 = 60 kg ✓. P3: 60 × 30 = 1.800 kg = 1,8 ton (bukan 1,5 ton) ✗. P4: 1.800 : 50 = 36 karung ✓.' },
         { id: 'u7', tipe: 'bs', level: 'sulit', soal: 'Kompetisi sains: 50 soal; benar +4, salah −1, tidak dijawab 0. Raka benar 38 dan salah 8. Tentukan benar/salah:', pernyataan: ['Banyak soal yang tidak dijawab Raka adalah 4 soal.', 'Skor yang diperoleh Raka dari jawaban benar adalah 152.', 'Total pengurangan skor akibat jawaban salah adalah 8 poin.', 'Total skor akhir Raka adalah 140.'], benar: [true, true, true, false], pembahasan: 'Tidak dijawab = 50 − 46 = 4 ✓; skor benar = 38 × 4 = 152 ✓; pengurangan = 8 × 1 = 8 ✓; skor akhir = 152 − 8 = 144 (bukan 140) ✗.' },
-        { id: 'u8', tipe: 'bs', level: 'sulit', soal: 'Skor final lomba Sains (dari nilai sempurna): Andi 0,6; Budi 55%; Candra 2/3; Dewi 0,54. Tentukan benar/salah:', pernyataan: ['Candra menempati urutan pertama karena memiliki skor tertinggi.', 'Skor yang diperoleh Budi lebih besar daripada skor Andi.', 'Urutan juara 1–4: Candra – Andi – Budi – Dewi.', 'Selisih skor antara Andi dan Dewi adalah 0,06.'], benar: [true, false, true, true], pembahasan: 'Desimal: 0,667 > 0,600 > 0,550 > 0,540. Budi (0,55) < Andi (0,60) jadi pernyataan 2 salah; selisih Andi−Dewi = 0,06 ✓.' },
+        { id: 'u8', tipe: 'bs', level: 'sulit', soal: 'Final lomba Sains diikuti empat siswa: Andi, Budi, Candra, dan Dewi. Perhatikan tabel skor berikut, lalu tentukan benar/salah setiap pernyataan:', visual: { tipe: 'tabel', caption: 'Hasil akhir skor (dari nilai sempurna)', kepala: ['Nama', 'Skor'], baris: [['Andi', '0,6'], ['Budi', '55%'], ['Candra', '2/3'], ['Dewi', '0,54']] }, pernyataan: ['Candra menempati urutan pertama karena memiliki skor tertinggi.', 'Skor yang diperoleh Budi lebih besar daripada skor Andi.', 'Urutan juara 1–4: Candra – Andi – Budi – Dewi.', 'Selisih skor antara Andi dan Dewi adalah 0,06.'], benar: [true, false, true, true], pembahasan: 'Desimal: 0,667 > 0,600 > 0,550 > 0,540. Budi (0,55) < Andi (0,60) jadi pernyataan 2 salah; selisih Andi−Dewi = 0,06 ✓.' },
         { id: 'u9', tipe: 'multi', level: 'mudah', soal: 'Manakah pembulatan ke puluhan terdekat yang benar? (pilih lebih dari satu)', pilihan: ['Perkiraan 512 + 376 adalah 890.', 'Perkiraan 943 − 218 adalah 720.', 'Perkiraan 1.267 + 511 adalah 1.770.', 'Perkiraan 854 − 322 adalah 530.'], benar: [0, 1, 3], pembahasan: '510 + 380 = 890 ✓; 940 − 220 = 720 ✓; 1.270 + 510 = 1.780 (bukan 1.770) ✗; 850 − 320 = 530 ✓.' },
         { id: 'u10', tipe: 'pg', level: 'mudah', soal: 'Suhu di dalam kulkas sebelum dihidupkan 22 °C. Setelah dinyalakan 4 jam suhunya menjadi −5 °C. Perbedaan suhu sebelum dan sesudah adalah....', pilihan: ['−27 °C', '−17 °C', '17 °C', '27 °C'], benar: 3, pembahasan: 'Perbedaan = 22 − (−5) = 27 °C.' },
         { id: 'u11', tipe: 'multi', level: 'sulit', soal: 'Suhu daging saat keluar kulkas −18 °C; setiap 2 menit direbus suhunya naik 3 °C. Pilih SEMUA pernyataan yang benar:', pilihan: ['Setelah 10 menit direbus, suhu daging sudah di atas 0 °C.', 'Total kenaikan suhu setelah 30 menit direbus adalah 45 °C.', 'Suhu akhir daging setelah 30 menit direbus adalah 27 °C.', 'Laju kenaikan suhu daging adalah 1,5 °C per menit.'], benar: [1, 2, 3], pembahasan: '10 menit: −18 + 15 = −3 °C (masih di bawah 0) ✗; 30 menit: 15 interval × 3 = 45 °C ✓; suhu akhir = −18 + 45 = 27 °C ✓; laju = 3 : 2 = 1,5 °C/menit ✓.' },

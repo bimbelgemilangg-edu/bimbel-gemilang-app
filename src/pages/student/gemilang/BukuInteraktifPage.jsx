@@ -1,14 +1,6 @@
 // src/pages/student/gemilang/BukuInteraktifPage.jsx
-// ============================================================
-// RAK BUKU -- daftar buku interaktif digital untuk siswa +
-// progres bacanya. Gaya mobile (tanpa SiswaLayout), sama seperti
-// Latihan Harian, sesuai visi "belajar di genggaman".
-//
-// Pagar akses TIDAK ditulis ulang: REUSE utils/aksesKontenSiswa.js
-// (jenjang dulu, baru kelas -- aturan searah "kelas sendiri atau
-// di bawahnya") -- sumber kebenaran yang SAMA dengan Misi Harian,
-// biar tidak mungkin beda aturan antara dua fitur.
-// ============================================================
+// RAK BUKU -- daftar buku interaktif + progres baca.
+// Pagar akses REUSE utils/aksesKontenSiswa.js (jenjang dulu, baru kelas).
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
@@ -24,21 +16,16 @@ export default function BukuInteraktifPage() {
   const studentKelas = localStorage.getItem('studentKelas') || localStorage.getItem('studentGrade') || '';
   const [jenjang, setJenjang] = useState(null);
   const [dimuat, setDimuat] = useState(false);
-  const [progresMap, setProgresMap] = useState({}); // { babId: dataProgres }
+  const [progresMap, setProgresMap] = useState({});
 
   useEffect(() => {
     (async () => {
-      // Jenjang TIDAK ada di localStorage -- ambil dari dokumen siswa,
-      // pola yang sama persis dengan LatihanHarianPage.
       let jenjangSiswa = null;
       try {
         const snap = await getDocs(query(collection(db, 'students'), where('studentId', '==', studentId), limit(1)));
         if (!snap.empty) jenjangSiswa = snap.docs[0].data().jenjang || null;
       } catch (e) { console.error('Gagal ambil jenjang siswa:', e); }
       setJenjang(jenjangSiswa);
-
-      // Progres baca per buku (boleh gagal -- rak tetap tampil,
-      // cuma tanpa persen progres).
       try {
         const snapP = await getDocs(query(collection(db, 'siswa_buku_progress'), where('studentId', '==', studentId)));
         const m = {};
@@ -49,9 +36,6 @@ export default function BukuInteraktifPage() {
     })();
   }, [studentId]);
 
-  // Pagar: jenjang WAJIB cocok (default menolak), kelas = buku untuk
-  // kelas siswa ATAU DI BAWAHNYA. Bentuk objek disesuaikan dengan
-  // cocokkanKelas() (field tingkatKelas).
   const bukuTerlihat = DAFTAR_BAB.filter((b) => {
     if (!jenjang) return false;
     if (!cocokkanJenjang(b.jenjang, jenjang)) return false;
@@ -59,7 +43,6 @@ export default function BukuInteraktifPage() {
     return true;
   });
 
-  // Persen progres = seksi selesai + 1 unit untuk uji pemahaman.
   const persenBab = (bab) => {
     const p = progresMap[bab.id];
     if (!p) return 0;
@@ -120,10 +103,6 @@ export default function BukuInteraktifPage() {
   );
 }
 
-// ============================================================
-// STYLE TOKENS -- satu identitas visual dengan Misi Harian
-// (langit malam #1E1B4B / nebula #7C3AED / orbit #F4F2FF)
-// ============================================================
 const st = {
   page: { minHeight: '100vh', background: '#F4F2FF', fontFamily: 'sans-serif', maxWidth: 480, margin: '0 auto' },
   hero: { position: 'relative', overflow: 'hidden', padding: '18px 16px 26px', background: 'linear-gradient(160deg, #4C1D95 0%, #1E1B4B 100%)' },

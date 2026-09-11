@@ -1,26 +1,13 @@
 // src/components/MathText.jsx
-// ============================================================
-// MATHTEXT -- renderer LaTeX di dalam teks, SATU sumber.
-// Logika sama dengan renderMath() di LatihanHarianPage.jsx,
-// diekstrak biar Buku Digital & halaman masa depan pakai logika
-// yang sama tanpa copy-paste. Kenal DUA gaya delimiter sekaligus:
-// $...$ / $$...$$  dan  \(...\) / \[...\].
-//
-// Dependensi: katex & react-katex -- SUDAH ada di package.json
-// (LatihanHarianPage sejak lama memakainya), jadi TIDAK perlu
-// install apa pun lagi.
-//
-// 🔥 BONUS KEAMANAN: MathSafe (error boundary kecil) -- kalau ada
-// satu rumus yang LaTeX-nya rusak, cuma rumus itu yang tampil
-// mentah (merah), BUKAN seluruh halaman reader yang crash putih.
-// ============================================================
+// Renderer LaTeX dalam teks, SATU sumber. Kenal dua gaya delimiter:
+// $...$ / $$...$$ dan \(...\) / \[...\]. MathSafe = error boundary
+// kecil: rumus rusak cuma tampil mentah, bukan crash satu halaman.
 import React from 'react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
 const REGEX_MATH = /(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\))/g;
 
-// Error boundary minimal khusus rumus -- jatuh per-rumus, bukan per-halaman.
 class MathSafe extends React.Component {
   constructor(props) {
     super(props);
@@ -37,7 +24,6 @@ class MathSafe extends React.Component {
   }
 }
 
-// Render LaTeX yang MENYATU di dalam paragraf (inline).
 export function MathText({ text }) {
   if (!text) return null;
   const parts = String(text).split(REGEX_MATH);
@@ -67,8 +53,6 @@ export function MathText({ text }) {
   );
 }
 
-// Render satu rumus sebagai BLOK terpisah (di tengah, bisa scroll
-// horizontal kalau rumusnya panjang).
 export function MathBlock({ text }) {
   if (!text) return null;
   return (

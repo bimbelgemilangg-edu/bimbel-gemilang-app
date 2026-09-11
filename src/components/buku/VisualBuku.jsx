@@ -1,17 +1,9 @@
 // src/components/buku/VisualBuku.jsx
-// ============================================================
 // VISUAL BUKU -- pengganti gambar statis dari PDF/modul cetak.
-// Kenapa SVG interaktif, bukan gambar tempelan:
-// 1. Tajam di zoom berapa pun (penting buat proyektor kelas).
-// 2. Bisa INTERAKTIF: termometer disembunyikan nilainya, siswa
-//    mengetuk untuk membaca -- latihan membaca alat ukur, bukan
-//    cuma menerima angka jadi.
-// 3. Skema `visual` siap buat masa depan: { tipe: 'gambar', src }
-//    untuk foto/diagram asli yang di-upload admin.
-// ============================================================
+// SVG interaktif: tajam di zoom berapa pun & bisa diketuk
+// (termometer menyembunyikan nilainya sampai siswa mengetuk).
 import React, { useState } from 'react';
 
-// Satu pintu masuk semua visual buku.
 export default function VisualBuku({ visual }) {
   if (!visual) return null;
   if (visual.tipe === 'termometer') return <TermometerInteraktif data={visual.data} satuan={visual.satuan} />;
@@ -20,8 +12,6 @@ export default function VisualBuku({ visual }) {
   return null;
 }
 
-// 🔥 TERMOMETER INTERAKTIF -- nilai DISEMBUNYIKAN ('?'), siswa ketuk
-// tiap termometer untuk membacanya. Skala -20 s.d. 10 seperti di modul.
 export function TermometerInteraktif({ data = [], satuan = '°C' }) {
   const [buka, setBuka] = useState({});
   const MAX = 10, MIN = -20;
@@ -63,7 +53,6 @@ export function TermometerInteraktif({ data = [], satuan = '°C' }) {
   );
 }
 
-// Tabel data sederhana (pengganti tabel cetak di modul).
 export function TabelBuku({ caption, kepala = [], baris = [] }) {
   return (
     <div style={{ overflowX: 'auto', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 10, marginBottom: 12 }}>
@@ -90,7 +79,6 @@ export function TabelBuku({ caption, kepala = [], baris = [] }) {
   );
 }
 
-// Gambar asli (URL) dengan fallback sopan kalau gagal dimuat.
 export function GambarBuku({ src, alt = '' }) {
   const [gagal, setGagal] = useState(false);
   if (!src || gagal) {
