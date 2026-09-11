@@ -3,6 +3,7 @@
 // READER BUKU DIGITAL -- baca per seksi (+5 XP), Uji Pemahaman Bab
 // (+10 XP/benar), hasil + pembahasan + visual interaktif.
 // Sumber data: Firestore buku_digital/{bukuId}/bab/{babId}.
+// TIDAK meng-import file data statis sama sekali.
 // Progres: siswa_buku_progress/{studentId_babId}; XP: siswa_progress.
 // ============================================================
 import React, { useState, useEffect } from 'react';
