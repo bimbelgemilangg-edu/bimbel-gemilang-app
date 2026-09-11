@@ -108,7 +108,7 @@ import LiveSessionStudent from './pages/student/LiveSessionStudent';
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
 
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
-import LeaderboardPage from './pages/student/LeaderboardPage'; // 🔥 BARU: leaderboard ala Duolingo (mingguan, streak, liga) -- yang lama (raport-based) dibiarkan tetap ada filenya, cuma gak dipakai lagi di menu utama
+import LeaderboardPage from './pages/student/LeaderboardPage';
 import StudentSmartReport from './pages/student/raport/StudentSmartReport';
 
 // ============================================================
@@ -118,7 +118,7 @@ import SidebarSiswa from './components/SidebarSiswa';
 
 import StudentDashboard from './pages/student/StudentDashboard';
 import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
-// 🔥 BARU: Buku Interaktif Digital -- rak buku + reader + uji pemahaman
+// 🔥 BUKU INTERAKTIF DIGITAL -- rak+daftar isi & reader per bab
 import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
 import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
 import StudentSchedule from './pages/student/StudentSchedule';
@@ -350,7 +350,6 @@ function App() {
         <Route path="/guru/modul/quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
         <Route path="/guru/alat-bantu" element={<GuruRoute><TeacherLayout><TeacherLearningAid /></TeacherLayout></GuruRoute>} />
-        {/* 🔥 BARU: Sesi Kelas Live -- SENGAJA gak dibungkus TeacherLayout/SiswaLayout, komponennya full-page sendiri (ada header/back-button sendiri) */}
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
         <Route path="/siswa/sesi-live" element={<SiswaRoute><LiveSessionStudent /></SiswaRoute>} />
 
@@ -372,15 +371,15 @@ function App() {
         <Route path="/siswa/kuis/:id" element={<SiswaRoute><SiswaLayout><KuisSiswaWrapper /></SiswaLayout></SiswaRoute>} />
         <Route path="/siswa/survei/:id" element={<SiswaRoute><SiswaLayout><StudentSurveyView /></SiswaLayout></SiswaRoute>} />
 
-        {/* 🔥 BARU: Latihan Harian -- bagian dari sistem gamifikasi baru,
-            SENGAJA tanpa SiswaLayout (gaya app mobile, bukan sidebar). */}
+        {/* 🔥 Latihan Harian -- SENGAJA tanpa SiswaLayout (gaya app mobile) */}
         <Route path="/siswa/latihan-harian" element={<SiswaRoute><LatihanHarianPage /></SiswaRoute>} />
 
-        {/* 🔥 BARU: Buku Interaktif Digital -- rak buku + reader + uji
-            pemahaman. SENGAJA tanpa SiswaLayout (gaya mobile, sama
-            seperti Latihan Harian) supaya UX-nya mulus di HP. */}
+        {/* 🔥 BUKU INTERAKTIF DIGITAL -- 3 route: rak buku, daftar isi
+            bab, dan reader per bab. Semuanya tanpa SiswaLayout (gaya
+            mobile) supaya nyaman dibaca di HP siswa & proyektor guru. */}
         <Route path="/siswa/buku" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
-        <Route path="/siswa/buku/:babId" element={<SiswaRoute><BukuBacaPage /></SiswaRoute>} />
+        <Route path="/siswa/buku/:bukuId" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
+        <Route path="/siswa/buku/:bukuId/:babId" element={<SiswaRoute><BukuBacaPage /></SiswaRoute>} />
 
         {/* REDIRECT */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />

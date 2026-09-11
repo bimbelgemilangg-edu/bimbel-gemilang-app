@@ -51,8 +51,7 @@ const getGreeting = () => {
   return { text: 'Selamat malam', icon: '🌙' };
 };
 
-// 🔥 BARU: formula level dari total XP -- makin berat tiap naik level
-// (level N->N+1 butuh N*100 XP). Bagian dari sistem gamifikasi baru.
+// 🔥 formula level dari total XP (level N->N+1 butuh N*100 XP)
 const hitungLevelDariXp = (xpTotal) => {
   let level = 1;
   let sisaXp = xpTotal;
@@ -79,7 +78,7 @@ const SkeletonLines = ({ count = 3 }) => (
   </div>
 );
 
-// 🔥 Bagan bundar kehadiran — pakai SVG murni, gak perlu library tambahan
+// 🔥 Bagan bundar kehadiran — SVG murni, tanpa library tambahan
 const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
   const size = 110, stroke = 14, radius = (size - stroke) / 2, circumference = 2 * Math.PI * radius;
   if (total === 0) {
@@ -138,12 +137,16 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
 
 // ============================================================
 // 🔥 CEK AKSES MAPEL (paket 1 mapel / 2 mapel / paket lengkap)
+// Satu-satunya sumber akses = field `enrolledSubjects` (isi KODE
+// mapel, mis. "MAPEL-004") yang diisi admin lewat Edit Siswa.
+// KOSONG = BLOKIR (kecuali konten "Umum"). Pencocokan lewat kode
+// (bukan nama) karena kode tidak pernah typo/beda ejaan.
 // ============================================================
 const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
   if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
   const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
-  if (modulCodes.length === 0) return true;
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false;
+  if (modulCodes.length === 0) return true; // modul gak punya kode mapel -> gak ada dasar buat blokir
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // kosong = BLOKIR
   const norm = (s) => String(s || '').toLowerCase().trim();
   if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
   return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
@@ -154,7 +157,7 @@ const StudentDashboard = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [studentName, setStudentName] = useState(() => localStorage.getItem('studentName') || 'Siswa');
   const [studentId, setStudentId] = useState(null);
-  const [studentDocId, setStudentDocId] = useState(null);
+  const [studentDocId, setStudentDocId] = useState(null); // docId Firestore asli (beda dari NIS)
   const [studentProfile, setStudentProfile] = useState(null);
   const [studentKelas, setStudentKelas] = useState(() => localStorage.getItem('studentKelas') || '');
   const [studentProgram, setStudentProgram] = useState(() => localStorage.getItem('studentProgram') || 'Reguler');
@@ -187,6 +190,9 @@ const StudentDashboard = () => {
     return year + '-' + month + '-' + day;
   };
 
+  // 🔥 Akses modul: modul target siswa tertentu = keputusan guru menang;
+  // selain itu harus LOLOS DUA-DUANYA: kelas cocok (targetKelas) DAN
+  // kode mapel cocok (enrolledSubjects).
   const checkStudentAccess = (modul, studentId, studentKelas, studentProgram, studentEnrolledSubjects) => {
     if (modul.sendToSpecificStudents) {
       const studentIds = modul.studentIds || [];
@@ -205,7 +211,8 @@ const StudentDashboard = () => {
     return () => window.removeEventListener('resize', h);
   }, []);
 
-  const [statusStreak, setStatusStreak] = useState('belum-pernah');
+  // 🔥 XP & streak dari `siswa_progress` + status streak ala Duolingo
+  const [statusStreak, setStatusStreak] = useState('belum-pernah'); // 'belum-pernah' | 'berakhir' | 'berisiko' | 'aman'
   useEffect(() => {
     if (!studentId) return;
     (async () => {
@@ -272,6 +279,7 @@ const StudentDashboard = () => {
         const todayStr = getSmartDateString(new Date());
         const periode = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
 
+        // Tentukan docId Firestore yang BENAR sebelum fetch
         let resolvedDocId = studentDocId;
         if (!resolvedDocId) {
           const found = await getDocs(
@@ -328,6 +336,7 @@ const StudentDashboard = () => {
           getDocs(query(collection(db, "attendance"), where("namaSiswa", "==", studentName))).catch(() => ({ docs: [] })),
         ]);
 
+        // Ringkasan kehadiran (gabungkan semua skema identitas)
         const attMerged = new Map();
         [...attByDocId.docs, ...attByKodeUnik.docs, ...attByName.docs, ...attByNamaSiswa.docs].forEach(d => attMerged.set(d.id, d.data()));
         const attList = Array.from(attMerged.values());
@@ -362,6 +371,7 @@ const StudentDashboard = () => {
           return { ...modul, __isUpcoming: isUpcoming };
         });
 
+        // Kuis model baru (blok 'quiz' + quizId) -- ambil deadline-nya
         const quizIdsToCheck = new Set();
         accessibleModuls.forEach(m => {
           (m.blocks || []).forEach(b => {
@@ -384,6 +394,7 @@ const StudentDashboard = () => {
           });
         }
 
+        // Deadline paling dekat dari semua blok tugas & kuis dalam modul
         const getEarliestDeadline = (m) => {
           const deadlines = [];
           (m.blocks || []).forEach(b => {
@@ -407,6 +418,7 @@ const StudentDashboard = () => {
         };
 
         const nowTs = new Date();
+        // Modul yang sudah dikerjakan -> tidak menumpuk di widget
         const modulSudahDikerjakan = new Set();
         if (studentNim) {
           try {
@@ -421,6 +433,7 @@ const StudentDashboard = () => {
           }
         }
 
+        // Masa tenggang 3 hari: deadline baru lewat masih tampil (merah)
         const MASA_TENGGANG_HARI = 3;
         const batasTenggangMs = MASA_TENGGANG_HARI * 24 * 60 * 60 * 1000;
         const fetchedTasks = accessibleModuls
@@ -506,6 +519,7 @@ const StudentDashboard = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
   const visibleOptionalSurveys = optionalSurveys.filter(sv => !dismissedSurveyIds.includes(sv.id));
 
+  // Scanner QR absensi
   useEffect(() => {
     let qr = null;
     if (!isScanning || !studentId) return;
@@ -559,10 +573,11 @@ const StudentDashboard = () => {
     );
   }
 
+  // Catatan: sidebar & page shell diserahkan ke SiswaLayout di App.jsx
+  // (komponen ini hanya render kontennya sendiri).
   return (
     <div style={{ paddingBottom: isMobile ? 70 : 0 }}>
       <style>{`@keyframes skeletonShine { 0%{background-position:100% 50%} 100%{background-position:0 50%} } @keyframes fadeSlideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} } .sd-card { animation: fadeSlideIn 0.25s ease-out; } .sd-task-item:hover, .sd-survey-btn:hover { filter: brightness(0.97); }`}</style>
-
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
           <div>
@@ -667,10 +682,8 @@ const StudentDashboard = () => {
           const menuBaru = [
             { key: 'latihan', label: 'Latihan Harian', emoji: '📝', warna: '#ecfeff', warnaTeks: '#155e75', segeraHadir: false },
             { key: 'tryout', label: 'TryOut', emoji: '🎯', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
-            // 🔥 BARU: tile "Bank Soal" (dulu placeholder ber-badge "Segera")
-            // diganti jadi pintu masuk Buku Interaktif Digital -- sesuai visi
-            // "belajar menyenangkan di genggaman tangan": buku dibaca siswa
-            // di HP, dipakai juga oleh guru saat menerangkan di kelas.
+            // 🔥 BARU: tile "Bank Soal" (placeholder "Segera") diganti jadi
+            // pintu masuk Buku Interaktif Digital (rak -> daftar isi -> reader).
             { key: 'buku', label: 'Buku Digital', emoji: '📖', warna: '#ede9fe', warnaTeks: '#5b21b6', segeraHadir: false },
             { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
             { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
@@ -749,7 +762,6 @@ const StudentDashboard = () => {
                       } else if (m.key === 'leaderboard') {
                         navigate('/siswa/leaderboard');
                       } else if (m.key === 'buku') {
-                        // 🔥 BARU: arahin tile Buku Digital ke rak buku
                         navigate('/siswa/buku');
                       } else if (m.segeraHadir) {
                         alert(`✨ ${m.label} segera hadir!`);
