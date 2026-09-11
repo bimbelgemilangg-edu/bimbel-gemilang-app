@@ -205,7 +205,7 @@ export default function BukuBacaPage() {
       {mode === 'quiz' && (
         <div style={{ padding: '16px 16px 90px' }}>
           {ujiPemahaman.length === 0 ? (
-            <div style={st.kartuSeksi} >Belum ada soal pemantapan di bab ini.</div>
+            <div style={st.kartuSeksi}>Belum ada soal pemantapan di bab ini.</div>
           ) : ujiPemahaman.map((q, i) => (
             <div key={q.id} style={st.kartuSeksi}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 10 }}>
