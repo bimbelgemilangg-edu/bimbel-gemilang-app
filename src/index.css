@@ -10,23 +10,19 @@
    ============================================================ */
 
 /* ============================================================
-   🔥 DIPERBAIKI: aturan anti-zoom di bawah ini SEBELUMNYA berlaku
-   GLOBAL ke semua device -- termasuk LAPTOP admin/guru yang pakai
-   trackpad. `touch-action: pan-x pan-y` itu ditujukan buat cegah
-   pinch-zoom di HP siswa, tapi browser di laptop (terutama macOS)
-   kadang salah nangkep gestur 2-jari scroll trackpad sebagai gestur
-   yang kena batasi juga -- bikin scroll jadi susah/patah-patah.
-   Sekarang dibungkus media query `pointer: coarse` -- itu KHUSUS
-   nyasar device yang inputnya "kasar" kayak jari di layar sentuh
-   (HP/tablet), BUKAN mouse/trackpad presisi laptop. Jadi admin/guru
-   di laptop scroll normal kayak biasa, siswa di HP tetap dapat efek
-   anti-zoom-nya. */
-@media (pointer: coarse) {
-  html, body {
-    touch-action: pan-x pan-y;
-    overscroll-behavior-y: contain; /* cegah efek "pantul" pull-to-refresh ala browser biasa */
-  }
-}
+   🔥 DICABUT TOTAL: aturan `touch-action: pan-x pan-y` +
+   `overscroll-behavior` yang sebelumnya di sini (dibungkus media
+   query pointer:coarse) TERNYATA bikin SCROLL GAK JALAN SAMA SEKALI
+   di banyak HP Android (Chrome/WebView Android beda cara nanganin
+   touch-action dibanding Safari iOS -- variasi antar merk HP/versi
+   Android juga bikin efeknya gak konsisten). Karena mayoritas siswa
+   & guru pakai Android, dan "gak bisa scroll" itu BUKAN cuma
+   gangguan kecil (bikin app GAK BISA DIPAKAI sama sekali), CSS ini
+   dicabut total -- manfaatnya (nyegah pinch-zoom) gak sebanding sama
+   resikonya. Perlindungan anti-zoom TETAP ada, cukup lewat
+   <meta name="viewport" ... user-scalable=no> di index.html, itu
+   udah cukup aman di iOS MAUPUN Android tanpa perlu CSS tambahan
+   yang beresiko ini. */
 
 html, body {
   -webkit-text-size-adjust: 100%; /* cegah teks tiba-tiba membesar sendiri pas rotate HP -- aman buat semua device */
