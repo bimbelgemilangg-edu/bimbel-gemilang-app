@@ -1,7 +1,7 @@
 // src/components/SidebarAdmin.jsx
 // ============================================================
-// PERUBAHAN: tambah "Import Buku & Soal (AI)" di section BANK SOAL
-// + kelompok "MATERI (BUKU DIGITAL)" untuk kelola buku interaktif
+// Sidebar admin -- termasuk menu BARU "Manajer Buku Digital"
+// (/admin/buku) di grup MATERI (BUKU DIGITAL).
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -60,6 +60,7 @@ const SidebarAdmin = () => {
         const lamaranBaruQuery = query(collection(db, "tutor_applications"), where("status", "==", "baru"));
         const lamaranCountSnap = await getCountFromServer(lamaranBaruQuery);
         setBadgeLamaranTentor(lamaranCountSnap.data().count);
+
       } catch (e) { /* silent */ }
     };
     fetchBadges();
@@ -87,64 +88,54 @@ const SidebarAdmin = () => {
     {
       label: 'UTAMA',
       items: [
-        { name: 'Dashboard',          path: '/admin',            icon: <LayoutDashboard size={18} /> },
-        { name: 'Dashboard Analisis', path: '/admin/analisis',   icon: <BarChart3 size={18} /> },
-        { name: 'Jadwal Harian',      path: '/admin/schedule',   icon: <Calendar size={18} /> },
-        { name: 'Log Harian',         path: '/admin/daily-log',  icon: <ClipboardList size={18} /> },
+        { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
+        { name: 'Dashboard Analisis', path: '/admin/analisis', icon: <BarChart3 size={18} /> },
+        { name: 'Jadwal Harian',path: '/admin/schedule',   icon: <Calendar size={18} /> },
+        { name: 'Log Harian',   path: '/admin/daily-log',  icon: <ClipboardList size={18} /> },
       ]
     },
     {
       label: 'AKADEMIK',
       items: [
-        { name: 'Kelola Siswa', path: '/admin/students',  icon: <Users size={18} />,         badge: badgeSiswaBaru > 0 ? badgeSiswaBaru : null, badgeColor: '#3b82f6' },
-        { name: 'Kelola Guru',  path: '/admin/teachers',  icon: <GraduationCap size={18} /> },
-        { name: 'Rapor & Nilai',path: '/admin/grades',    icon: <TrendingUp size={18} /> },
-        { name: 'Portal Siswa', path: '/admin/portal',    icon: <Globe size={18} /> },
+        { name: 'Kelola Siswa', path: '/admin/students',         icon: <Users size={18} />,        badge: badgeSiswaBaru > 0 ? badgeSiswaBaru : null, badgeColor: '#3b82f6' },
+        { name: 'Kelola Guru',  path: '/admin/teachers',         icon: <GraduationCap size={18} /> },
+        { name: 'Rapor & Nilai',path: '/admin/grades',           icon: <TrendingUp size={18} /> },
+        { name: 'Portal Siswa', path: '/admin/portal',           icon: <Globe size={18} /> },
       ]
     },
     {
       label: 'KEUANGAN',
       items: [
-        { name: 'Keuangan',  path: '/admin/finance',           icon: <CreditCard size={18} />, badge: badgePiutang > 0 ? badgePiutang : null, badgeColor: '#ef4444' },
-        { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: <FileText size={18} /> },
+        { name: 'Keuangan',  path: '/admin/finance',            icon: <CreditCard size={18} />, badge: badgePiutang > 0 ? badgePiutang : null, badgeColor: '#ef4444' },
+        { name: 'Gaji Guru', path: '/admin/teachers/salaries',  icon: <FileText size={18} /> },
       ]
     },
     {
       label: '📋 PENDAFTARAN',
       items: [
-        { name: 'Pendaftaran Online',   path: '/admin/pendaftaran',        icon: <UserPlus size={18} />,  badge: badgePendaftaran > 0 ? badgePendaftaran : null, badgeColor: '#f59e0b' },
-        { name: 'Manajemen Harga',      path: '/admin/pendaftaran/harga',  icon: <DollarSign size={18} /> },
-        { name: 'Lamaran Tentor/Staff', path: '/admin/pendaftaran/tentor', icon: <Briefcase size={18} />, badge: badgeLamaranTentor > 0 ? badgeLamaranTentor : null, badgeColor: '#8b5cf6' },
+        { name: 'Pendaftaran Online',  path: '/admin/pendaftaran',         icon: <UserPlus size={18} />,  badge: badgePendaftaran > 0 ? badgePendaftaran : null, badgeColor: '#f59e0b' },
+        { name: 'Manajemen Harga',     path: '/admin/pendaftaran/harga',   icon: <DollarSign size={18} /> },
+        { name: 'Lamaran Tentor/Staff',path: '/admin/pendaftaran/tentor',  icon: <Briefcase size={18} />, badge: badgeLamaranTentor > 0 ? badgeLamaranTentor : null, badgeColor: '#8b5cf6' },
       ]
     },
     {
-      // 🔥 BARU: grup ini SEBELUMNYA gak ada sama sekali di sidebar --
-      // halamannya (ManageMateriPortal di /admin/portal/materi) udah
-      // lama ada & bisa diakses lewat URL langsung, tapi gak kedaftar
-      // ke menu jadi admin gak pernah nemuin jalan ke situ.
       label: '📖 MATERI (BUKU DIGITAL)',
       items: [
         { name: 'Kelola Materi/Modul', path: '/admin/portal/materi', icon: <BookOpen size={18} /> },
+        // 🔥 BARU: pintu operasional Buku Interaktif Digital
+        { name: 'Manajer Buku Digital', path: '/admin/buku', icon: <BookOpen size={18} /> },
       ]
     },
     {
       label: 'BANK SOAL',
       items: [
-        // ── scan langsung dari PDF via AI
-        { name: 'Import dari PDF',           path: '/admin/bank-soal',                icon: <FileUp size={18} /> },
-        // ── paste hasil scan dari Gemini / AI lain (JSON/CSV) -- dipakai
-        // baik untuk soal MAUPUN isi buku interaktif digital
-        { name: 'Import Buku & Soal (AI)',   path: '/admin/bank-soal/import',         icon: <Brain size={18} /> },
-        // ── pilih soal dari gudang, terbitkan sebagai kuis ke siswa
-        { name: 'Terbitkan Kuis',            path: '/admin/bank-soal/terbitkan',      icon: <Rocket size={18} /> },
-        { name: 'Hasil Kuis',                path: '/admin/bank-soal/hasil',          icon: <ClipboardCheck size={18} /> },
-        // 🔥 BARU: 2 halaman ini SEBELUMNYA udah ada file & routing-nya
-        // (TerbitkanTryOutPage.jsx, HasilTryOutAdminPage.jsx) tapi TIDAK
-        // PERNAH kedaftar di menu sidebar -- makanya admin gak bisa
-        // nemuin jalan ke situ sama sekali walau halamannya beneran ada.
-        { name: 'Terbitkan Try Out',         path: '/admin/bank-soal/terbitkan-tryout', icon: <Trophy size={18} /> },
-        { name: 'Hasil Try Out',             path: '/admin/bank-soal/hasil-tryout',     icon: <Trophy size={18} /> },
-        { name: 'Aktivitas Latihan',         path: '/admin/bank-soal/aktivitas-latihan',icon: <Sparkles size={18} /> },
+        { name: 'Import dari PDF',      path: '/admin/bank-soal',        icon: <FileUp size={18} /> },
+        { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={18} /> },
+        { name: 'Terbitkan Kuis',       path: '/admin/bank-soal/terbitkan', icon: <Rocket size={18} /> },
+        { name: 'Hasil Kuis',           path: '/admin/bank-soal/hasil',     icon: <ClipboardCheck size={18} /> },
+        { name: 'Terbitkan Try Out',    path: '/admin/bank-soal/terbitkan-tryout', icon: <Trophy size={18} /> },
+        { name: 'Hasil Try Out',        path: '/admin/bank-soal/hasil-tryout',     icon: <Trophy size={18} /> },
+        { name: 'Aktivitas Latihan',    path: '/admin/bank-soal/aktivitas-latihan', icon: <Sparkles size={18} /> },
       ]
     },
     {

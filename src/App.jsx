@@ -62,6 +62,9 @@ import PortalSiswaHome from './pages/admin/portal-siswa/PortalSiswaHome';
 import ManagePoster from './pages/admin/portal-siswa/ManagePoster';
 import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 
+// 🔥 BARU: Manajer Buku Digital (CRUD buku + bab, paste JSON, validasi)
+import ManajerBuku from './pages/admin/buku/ManajerBuku';
+
 // ============================================================
 // 🔥 BANK SOAL
 // ============================================================
@@ -118,7 +121,7 @@ import SidebarSiswa from './components/SidebarSiswa';
 
 import StudentDashboard from './pages/student/StudentDashboard';
 import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
-// 🔥 BUKU INTERAKTIF DIGITAL -- rak+daftar isi & reader per bab
+// 🔥 BUKU INTERAKTIF DIGITAL -- rak buku + reader per bab
 import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
 import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
 import StudentSchedule from './pages/student/StudentSchedule';
@@ -290,6 +293,9 @@ function App() {
         <Route path="/admin/portal/materi" element={<AdminRoute><ManageMateriPortal /></AdminRoute>} />
         <Route path="/admin/portal/survey" element={<AdminRoute><ManageSurvey /></AdminRoute>} />
 
+        {/* 🔥 BARU: MANAJER BUKU DIGITAL */}
+        <Route path="/admin/buku" element={<AdminRoute><ManajerBuku /></AdminRoute>} />
+
         {/* PENDAFTARAN */}
         <Route path="/admin/pendaftaran" element={<AdminRoute><ManageOnlineRegistration /></AdminRoute>} />
         <Route path="/admin/pendaftaran/harga" element={<AdminRoute><ManagePaketHarga /></AdminRoute>} />
@@ -374,9 +380,7 @@ function App() {
         {/* 🔥 Latihan Harian -- SENGAJA tanpa SiswaLayout (gaya app mobile) */}
         <Route path="/siswa/latihan-harian" element={<SiswaRoute><LatihanHarianPage /></SiswaRoute>} />
 
-        {/* 🔥 BUKU INTERAKTIF DIGITAL -- 3 route: rak buku, daftar isi
-            bab, dan reader per bab. Semuanya tanpa SiswaLayout (gaya
-            mobile) supaya nyaman dibaca di HP siswa & proyektor guru. */}
+        {/* 🔥 BUKU INTERAKTIF DIGITAL -- rak buku, daftar isi, reader per bab */}
         <Route path="/siswa/buku" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
         <Route path="/siswa/buku/:bukuId" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
         <Route path="/siswa/buku/:bukuId/:babId" element={<SiswaRoute><BukuBacaPage /></SiswaRoute>} />
