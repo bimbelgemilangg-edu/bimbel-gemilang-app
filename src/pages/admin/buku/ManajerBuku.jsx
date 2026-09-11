@@ -1,10 +1,16 @@
 // src/pages/admin/buku/ManajerBuku.jsx
 // ============================================================
-// MANAJER BUKU DIGITAL -- satu-satunya pintu operasional konten
-// buku. SEMUA isi buku hidup di Firestore (buku_digital +
-// subkoleksi bab), TIDAK ADA lagi file statis di bundle aplikasi.
-// Tambah/ubah buku & bab = kerjaan di halaman ini, langsung
-// terbit ke siswa TANPA deploy, TANPA sentuh kode.
+// MANAJER BUKU DIGITAL v2 -- BULK IMPORT
+// Satu-satunya pintu operasional konten buku. Semua isi buku hidup
+// di Firestore (buku_digital + subkoleksi bab), TIDAK ADA file
+// statis di bundle. Tambah/ubah buku & bab = kerjaan di halaman
+// ini, langsung terbit ke siswa TANPA deploy.
+//
+// v2: tempelan JSON boleh BERUPA:
+//   - 1 object bab          -> { "id": "bab-1", ... }
+//   - array beberapa bab    -> [ { "id": "bab-1", ... }, { "id": "bab-2", ... } ]
+// Semua divalidasi satu per satu; yang lolos disimpan batch,
+// yang gagal ditolak dengan daftar error bernomor input.
 //
 // Skema Firestore:
 //   buku_digital/{bookId}              -> metadata buku
@@ -14,40 +20,43 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { ArrowLeft, Plus, Pencil, Trash2, Save, X, BookOpen, Layers, Eye } from 'lucide-react';
 
 const JENJANG_OPSI = ['SD/MI', 'SMP/MTs', 'SMA/MA', 'SMK', 'UTBK/SNBT'];
 const TIPE_BLOK = ['p', 'list', 'math', 'contoh', 'tips'];
 const TIPE_SOAL = ['pg', 'multi', 'bs'];
-const TIPE_VISUAL = ['termometer', 'tabel', 'bangun', 'gambar'];
+const TIPE_VISUAL = ['termometer', 'tabel', 'bangun', 'garis', 'gambar'];
 
-const CONTOH_JSON_BAB = `{
-  "id": "bab-7",
-  "judul": "Statistika",
-  "sections": [
-    {
-      "id": "bab-7-a",
-      "judul": "A. Menyajikan Data",
-      "blocks": [
-        { "tipe": "p", "teks": "Paragraf materi. LaTeX inline boleh dipakai: $...$" },
-        { "tipe": "list", "items": ["poin pertama", "poin kedua"] },
-        { "tipe": "contoh", "teks": "Contoh soal beserta langkahnya." },
-        { "tipe": "tips", "teks": "Tips cepat mengerjakan." }
-      ]
-    }
-  ],
-  "ujiPemahaman": [
-    { "id": "u1", "tipe": "pg", "level": "mudah", "soal": "Teks soal...", "pilihan": ["A", "B", "C", "D"], "benar": 0, "pembahasan": "Langkah pembahasan..." },
-    { "id": "u2", "tipe": "multi", "level": "sedang", "soal": "Teks soal...", "pilihan": ["opsi1", "opsi2", "opsi3"], "benar": [0, 2], "pembahasan": "..." },
-    { "id": "u3", "tipe": "bs", "level": "sulit", "soal": "Teks soal...", "pernyataan": ["pernyataan 1", "pernyataan 2"], "benar": [true, false], "pembahasan": "..." }
-  ]
-}`;
+const CONTOH_JSON_BAB = `[
+  {
+    "id": "bab-7",
+    "judul": "Statistika",
+    "urutan": 7,
+    "sections": [
+      {
+        "id": "bab-7-a",
+        "judul": "A. Menyajikan Data",
+        "blocks": [
+          { "tipe": "p", "teks": "Paragraf materi. LaTeX inline boleh: $...$" },
+          { "tipe": "list", "items": ["poin pertama", "poin kedua"] },
+          { "tipe": "contoh", "teks": "Contoh soal beserta langkahnya." },
+          { "tipe": "tips", "teks": "Tips cepat mengerjakan." }
+        ]
+      }
+    ],
+    "ujiPemahaman": [
+      { "id": "u1", "tipe": "pg", "level": "mudah", "soal": "Teks soal...", "pilihan": ["A", "B", "C", "D"], "benar": 0, "pembahasan": "Langkah pembahasan..." },
+      { "id": "u2", "tipe": "multi", "level": "sedang", "soal": "Teks soal...", "pilihan": ["opsi1", "opsi2", "opsi3"], "benar": [0, 2], "pembahasan": "..." },
+      { "id": "u3", "tipe": "bs", "level": "sulit", "soal": "Teks soal...", "pernyataan": ["pernyataan 1", "pernyataan 2"], "benar": [true, false], "pembahasan": "..." }
+    ]
+  }
+]`;
 
 // ============================================================
 // VALIDASI KETAT -- penjaga akurasi konten: kunci jawaban di luar
-// range, blok aneh, visual tidak lengkap = DITOLAK dengan pesan
-// jelas, bukan lolos lalu membingungkan siswa di reader.
+// range, blok aneh, visual cacat = DITOLAK dengan pesan jelas,
+// bukan lolos lalu membingungkan siswa di reader.
 // ============================================================
 function validasiBab(obj) {
   const err = [];
@@ -93,6 +102,7 @@ function validasiBab(obj) {
     if (q.visual?.tipe === 'tabel' && (!Array.isArray(q.visual.kepala) || !Array.isArray(q.visual.baris))) err.push(`${t}.visual tabel butuh "kepala" & "baris".`);
     if (q.visual?.tipe === 'termometer' && !Array.isArray(q.visual.data)) err.push(`${t}.visual termometer butuh "data".`);
     if (q.visual?.tipe === 'bangun' && (!Array.isArray(q.visual.titik) || !Array.isArray(q.visual.sisi))) err.push(`${t}.visual bangun butuh "titik" & "sisi".`);
+    if (q.visual?.tipe === 'garis' && !Array.isArray(q.visual.titik)) err.push(`${t}.visual garis butuh "titik".`);
     if (q.visual?.tipe === 'gambar' && !q.visual.src) err.push(`${t}.visual gambar butuh "src" (URL gambar).`);
   });
   return err;
@@ -168,22 +178,36 @@ export default function ManajerBuku() {
     } catch (e) { alert('Gagal hapus buku: ' + e.message); }
   };
 
+  // 🔥 BULK: terima 1 object bab ATAU array banyak bab sekaligus.
+  // Validasi per input; yang lolos disimpan semua, yang gagal
+  // dilaporkan bernomor supaya gampang dilacak & diperbaiki.
   const simpanBab = async () => {
-    let obj;
-    try { obj = JSON.parse(teksJson); } catch (e) { setErrValidasi(['JSON tidak bisa diparse: ' + e.message]); return; }
-    const errs = validasiBab(obj);
-    setErrValidasi(errs);
-    if (errs.length) return;
-    const urutan = obj.urutan != null ? Number(obj.urutan) : babList.length;
+    let parsed;
+    try { parsed = JSON.parse(teksJson); } catch (e) { setErrValidasi(['JSON tidak bisa diparse: ' + e.message]); return; }
+    const list = Array.isArray(parsed) ? parsed : [parsed];
+    const allErr = [];
+    const valid = [];
+    list.forEach((obj, idx) => {
+      const errs = validasiBab(obj);
+      if (errs.length) allErr.push(...errs.map((e) => `[input #${idx + 1}${obj?.id ? ' (' + obj.id + ')' : ''}] ${e}`));
+      else valid.push(obj);
+    });
+    setErrValidasi(allErr);
+    if (allErr.length) return;
     try {
-      await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', obj.id), {
-        id: obj.id, judul: obj.judul, urutan,
-        sections: obj.sections, ujiPemahaman: obj.ujiPemahaman,
-        sumber: obj.sumber || 'admin', updatedAt: Date.now(),
-      }, { merge: true });
+      for (let i = 0; i < valid.length; i++) {
+        const obj = valid[i];
+        const urutan = obj.urutan != null ? Number(obj.urutan) : babList.length + i;
+        await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', obj.id), {
+          id: obj.id, judul: obj.judul, urutan,
+          sections: obj.sections, ujiPemahaman: obj.ujiPemahaman,
+          sumber: obj.sumber || 'admin', updatedAt: Date.now(),
+        }, { merge: true });
+      }
       setModeBab(null); setTeksJson(''); setErrValidasi([]);
       muatBab(bukuDipilih.id);
-    } catch (e) { alert('Gagal simpan bab: ' + e.message); }
+      alert(`✅ ${valid.length} bab tersimpan ke Firestore & langsung terbit ke siswa.`);
+    } catch (e) { alert('Gagal simpan: ' + e.message); }
   };
 
   const hapusBab = async (bab) => {
@@ -256,7 +280,7 @@ export default function ManajerBuku() {
         {loading ? <div style={st.kosong}>Memuat daftar buku...</div> : daftarBuku.length === 0 ? (
           <div style={st.kosong}>
             Belum ada buku di Firestore.<br />
-            Klik <b>Buku Baru</b> untuk membuat buku pertama, lalu tambah bab lewat tombol <b>Bab (Paste JSON)</b>.
+            Klik <b>Buku Baru</b> untuk membuat buku pertama, lalu tambah bab lewat tombol <b>Bab (Paste JSON)</b> — bisa banyak bab sekaligus dalam satu tempelan.
           </div>
         ) : daftarBuku.map((b) => (
           <div key={b.id} style={{ ...st.card, marginBottom: 0, borderLeft: `5px solid ${b.warna || '#4C6EF5'}` }}>
@@ -298,7 +322,7 @@ export default function ManajerBuku() {
                   {(bab.sections || []).length} seksi • {(bab.ujiPemahaman || []).length} soal • sumber: {bab.sumber || '-'}
                 </div>
               </div>
-              <button onClick={() => window.open(`/siswa/buku/${bukuDipilih.id}/${bab.id}`, '_blank')} style={st.iconBtn} title="Buka di reader siswa (tab baru; login sebagai siswa tes)"><Eye size={14} /></button>
+              <button onClick={() => window.open(`/siswa/buku/${bukuDipilih.id}/${bab.id}`, '_blank')} style={st.iconBtn} title="Buka di reader siswa (tab baru)"><Eye size={14} /></button>
               <button onClick={() => { setModeBab(bab); setTeksJson(JSON.stringify({ id: bab.id, judul: bab.judul, urutan: bab.urutan, sections: bab.sections, ujiPemahaman: bab.ujiPemahaman }, null, 2)); setErrValidasi([]); }} style={st.iconBtn} title="Edit JSON"><Pencil size={14} /></button>
               <button onClick={() => hapusBab(bab)} style={{ ...st.iconBtn, color: '#dc2626' }} title="Hapus bab"><Trash2 size={14} /></button>
             </div>
@@ -306,6 +330,9 @@ export default function ManajerBuku() {
 
           {modeBab && (
             <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 11, color: '#475569', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 8, padding: '8px 10px', marginBottom: 8, lineHeight: 1.6 }}>
+                📥 <b>Bulk import:</b> tempel <b>1 object bab</b> atau <b>array beberapa bab</b> sekaligus — contoh: <code>[ {"{...bab1}"}, {"{...bab2}"} ]</code>. Field <code>urutan</code> opsional (otomatis kalau kosong). Semua divalidasi dulu; yang gagal ditolak dengan daftar error bernomor.
+              </div>
               <details style={{ marginBottom: 8 }}>
                 <summary style={{ fontSize: 11, color: '#4C6EF5', cursor: 'pointer', fontWeight: 700 }}>Lihat contoh format JSON bab</summary>
                 <pre style={{ background: '#0f172a', color: '#e2e8f0', padding: 10, borderRadius: 8, fontSize: 10, overflowX: 'auto', marginTop: 6 }}>{CONTOH_JSON_BAB}</pre>
@@ -317,13 +344,13 @@ export default function ManajerBuku() {
                 style={st.textarea}
               />
               {errValidasi.length > 0 && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: 10, marginTop: 8 }}>
+                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: 10, marginTop: 8, maxHeight: 200, overflowY: 'auto' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: '#991b1b', marginBottom: 4 }}>Perbaiki {errValidasi.length} masalah:</div>
                   {errValidasi.map((e, i) => <div key={i} style={{ fontSize: 11, color: '#b91c1c' }}>• {e}</div>)}
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                <button onClick={simpanBab} style={st.btnPrimary}><Save size={14} /> Validasi & Simpan Bab</button>
+                <button onClick={simpanBab} style={st.btnPrimary}><Save size={14} /> Validasi & Simpan (1 atau banyak bab)</button>
                 <button onClick={() => { setModeBab(null); setErrValidasi([]); }} style={st.btnSecondary}>Batal</button>
               </div>
             </div>
@@ -346,7 +373,7 @@ const st = {
   kosong: { textAlign: 'center', color: '#64748b', padding: '30px 16px', fontSize: 12.5, background: 'white', borderRadius: 12, border: '1px dashed #cbd5e1', lineHeight: 1.7 },
   label: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, fontWeight: 700, color: '#475569' },
   input: { border: '1px solid #cbd5e1', borderRadius: 8, padding: '8px 10px', fontSize: 12, color: '#1e293b', background: 'white' },
-  textarea: { width: '100%', minHeight: 260, border: '1px solid #cbd5e1', borderRadius: 8, padding: 10, fontSize: 11, fontFamily: 'monospace', color: '#1e293b', background: 'white', boxSizing: 'border-box' },
+  textarea: { width: '100%', minHeight: 300, border: '1px solid #cbd5e1', borderRadius: 8, padding: 10, fontSize: 11, fontFamily: 'monospace', color: '#1e293b', background: 'white', boxSizing: 'border-box' },
   panel: { margin: '0 16px', background: 'white', borderRadius: 12, border: '1px solid #e2e8f0', padding: 14 },
   babRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, border: '1px solid #eef2ff', background: '#f8fafc', marginBottom: 6 },
 };
