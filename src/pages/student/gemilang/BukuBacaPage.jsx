@@ -1,13 +1,15 @@
 // src/pages/student/gemilang/BukuBacaPage.jsx
+// ============================================================
 // READER BUKU DIGITAL -- baca per seksi (+5 XP), Uji Pemahaman Bab
-// (+10 XP/benar), hasil + pembahasan lengkap. Progres di
-// siswa_buku_progress/{studentId_babId}; XP ke siswa_progress (field xp).
+// (+10 XP/benar), hasil + pembahasan + visual interaktif.
+// Sumber data: Firestore buku_digital/{bukuId}/bab/{babId}.
+// Progres: siswa_buku_progress/{studentId_babId}; XP: siswa_progress.
+// ============================================================
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, CheckCircle2, XCircle, PenLine } from 'lucide-react';
-import { DAFTAR_BAB } from '../../../data/bukuInteraktif';
 import { MathText, MathBlock } from '../../../components/MathText';
 import VisualBuku from '../../../components/buku/VisualBuku';
 
@@ -15,11 +17,11 @@ const XP_SEKSI = 5;
 const XP_BENAR = 10;
 
 export default function BukuBacaPage() {
-  const { babId } = useParams();
+  const { bukuId, babId } = useParams();
   const navigate = useNavigate();
   const studentId = localStorage.getItem('studentId') || '';
-  const bab = DAFTAR_BAB.find((b) => b.id === babId);
-
+  const [buku, setBuku] = useState(null);
+  const [bab, setBab] = useState(null);
   const [siap, setSiap] = useState(false);
   const [selesaiSections, setSelesaiSections] = useState([]);
   const [quizTerbaik, setQuizTerbaik] = useState(null);
@@ -30,7 +32,21 @@ export default function BukuBacaPage() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    if (!bab || !studentId) { setSiap(true); return; }
+    (async () => {
+      try {
+        const [bSnap, babSnap] = await Promise.all([
+          getDoc(doc(db, 'buku_digital', bukuId)),
+          getDoc(doc(db, 'buku_digital', bukuId, 'bab', babId)),
+        ]);
+        if (bSnap.exists()) setBuku({ id: bSnap.id, ...bSnap.data() });
+        if (babSnap.exists()) setBab({ id: babSnap.id, ...babSnap.data() });
+      } catch (e) { console.error('Gagal muat bab:', e); }
+      setSiap(true);
+    })();
+  }, [bukuId, babId]);
+
+  useEffect(() => {
+    if (!bab || !studentId) return;
     (async () => {
       try {
         const snap = await getDoc(doc(db, 'siswa_buku_progress', `${studentId}_${bab.id}`));
@@ -39,21 +55,25 @@ export default function BukuBacaPage() {
           setQuizTerbaik(snap.data().quizTerbaik ?? null);
         }
       } catch (e) { console.error('Gagal muat progres buku:', e); }
-      setSiap(true);
     })();
   }, [bab, studentId]);
 
+  if (!siap) {
+    return <div style={st.pusat}><div style={{ fontSize: 32 }}>📖</div><div style={{ marginTop: 8 }}>Memuat bab...</div></div>;
+  }
   if (!bab) {
     return (
       <div style={st.pusat}>
         <div style={{ fontSize: 40, marginBottom: 10 }}>📚</div>
-        <div>Buku tidak ditemukan.</div>
-        <button onClick={() => navigate('/siswa/buku')} style={{ ...st.tombolUtama, width: 'auto', marginTop: 16, padding: '10px 18px' }}>
-          Kembali ke Rak Buku
-        </button>
+        <div>Bab tidak ditemukan di database.</div>
+        <button onClick={() => navigate('/siswa/buku')} style={{ ...st.tombolUtama, width: 'auto', marginTop: 16, padding: '10px 18px' }}>Kembali ke Rak Buku</button>
       </div>
     );
   }
+
+  const sections = bab.sections || [];
+  const ujiPemahaman = bab.ujiPemahaman || [];
+  const warna = buku?.warna || '#4C6EF5';
 
   const simpanProgres = (patch) => {
     if (!studentId) return;
@@ -89,25 +109,25 @@ export default function BukuBacaPage() {
     setTimeout(() => setToast(null), 1600);
   };
 
-  const semuaTerjawab = bab.ujiPemahaman.every((q) => {
+  const semuaTerjawab = ujiPemahaman.every((q) => {
     const j = jawaban[q.id];
     if (q.tipe === 'pg') return typeof j === 'number';
     if (q.tipe === 'multi') return Array.isArray(j) && j.length > 0;
-    return Array.isArray(j) && j.length === q.pernyataan.length && j.every((v) => typeof v === 'boolean');
+    return Array.isArray(j) && j.length === (q.pernyataan || []).length && j.every((v) => typeof v === 'boolean');
   });
 
   const kumpulkanQuiz = () => {
     if (!semuaTerjawab) return;
-    const daftar = bab.ujiPemahaman.map((q) => {
+    const daftar = ujiPemahaman.map((q) => {
       const j = jawaban[q.id];
       let benar = false;
       if (q.tipe === 'pg') benar = j === q.benar;
-      else if (q.tipe === 'multi') benar = Array.isArray(j) && j.length === q.benar.length && q.benar.every((i) => j.includes(i));
-      else benar = Array.isArray(j) && j.length === q.benar.length && j.every((v, i) => v === q.benar[i]);
+      else if (q.tipe === 'multi') benar = Array.isArray(j) && j.length === (q.benar || []).length && (q.benar || []).every((i) => j.includes(i));
+      else benar = Array.isArray(j) && j.length === (q.benar || []).length && j.every((v, i) => v === q.benar[i]);
       return { q, j, benar };
     });
     const benarCount = daftar.filter((x) => x.benar).length;
-    const persen = Math.round((benarCount / daftar.length) * 100);
+    const persen = daftar.length ? Math.round((benarCount / daftar.length) * 100) : 0;
     const xp = benarCount * XP_BENAR;
     const terbaik = Math.max(quizTerbaik || 0, persen);
     setHasil({ daftar, benarCount, persen, xp });
@@ -120,34 +140,33 @@ export default function BukuBacaPage() {
 
   const renderBlok = (blok, i) => {
     if (blok.tipe === 'p') return <p key={i} style={st.paragraf}><MathText text={blok.teks} /></p>;
-    if (blok.tipe === 'list') return <ul key={i} style={st.list}>{blok.items.map((it, j) => <li key={j} style={{ marginBottom: 6 }}><MathText text={it} /></li>)}</ul>;
+    if (blok.tipe === 'list') return <ul key={i} style={st.list}>{(blok.items || []).map((it, j) => <li key={j} style={{ marginBottom: 6 }}><MathText text={it} /></li>)}</ul>;
     if (blok.tipe === 'math') return <div key={i} style={st.boxMath}><MathBlock text={blok.teks} /></div>;
     if (blok.tipe === 'contoh') return <div key={i} style={st.boxContoh}><b>✏️ Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     if (blok.tipe === 'tips') return <div key={i} style={st.boxTips}><b>💡 Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     return null;
   };
 
-  const persenBaca = Math.round((selesaiSections.length / bab.sections.length) * 100);
+  const persenBaca = sections.length ? Math.round((selesaiSections.length / sections.length) * 100) : 0;
 
   return (
     <div style={st.page}>
       {toast && <div style={st.toast}>{toast}</div>}
       {peringatan && (
-        <div style={{ background: '#fffbeb', borderBottom: '1px solid #fde68a', padding: '10px 16px', fontSize: 11.5, color: '#92400e' }}>
-          ⚠️ {peringatan}
-        </div>
+        <div style={{ background: '#fffbeb', borderBottom: '1px solid #fde68a', padding: '10px 16px', fontSize: 11.5, color: '#92400e' }}>⚠️ {peringatan}</div>
       )}
 
-      <div style={{ ...st.hero, background: `linear-gradient(160deg, ${bab.warna} 0%, #1E1B4B 100%)` }}>
+      <div style={{ ...st.hero, background: `linear-gradient(160deg, ${warna} 0%, #1E1B4B 100%)` }}>
         <div style={st.heroStars} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
-          <button onClick={() => (mode === 'baca' ? navigate('/siswa/buku') : setMode('baca'))} style={st.backBtn}>
+          <button onClick={() => (mode === 'baca' ? navigate(`/siswa/buku/${bukuId}`) : setMode('baca'))} style={st.backBtn}>
             <ArrowLeft size={20} />
           </button>
           <div style={{ flex: 1 }}>
-            <div style={{ color: 'white', fontWeight: 800, fontSize: 15 }}>{bab.emoji} {bab.judul}</div>
+            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10 }}>{buku?.emoji || '📘'} {buku?.judul || ''}</div>
+            <div style={{ color: 'white', fontWeight: 800, fontSize: 15 }}>{bab.judul}</div>
             <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 2 }}>
-              {selesaiSections.length}/{bab.sections.length} seksi selesai{quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}
+              {selesaiSections.length}/{sections.length} seksi selesai{quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}
             </div>
           </div>
         </div>
@@ -158,7 +177,7 @@ export default function BukuBacaPage() {
 
       {mode === 'baca' && (
         <div style={{ padding: '16px 16px 90px' }}>
-          {bab.sections.map((sec, idx) => {
+          {sections.map((sec, idx) => {
             const sudah = selesaiSections.includes(sec.id);
             return (
               <div key={sec.id} style={st.kartuSeksi}>
@@ -166,7 +185,7 @@ export default function BukuBacaPage() {
                   <div style={{ fontSize: 15, fontWeight: 800, color: '#1e293b' }}>{sec.judul}</div>
                   {sudah && <CheckCircle2 size={18} color="#22c55e" />}
                 </div>
-                {sec.blocks.map(renderBlok)}
+                {(sec.blocks || []).map(renderBlok)}
                 <button
                   onClick={() => tandaiSelesai(sec.id)}
                   disabled={sudah}
@@ -174,8 +193,8 @@ export default function BukuBacaPage() {
                 >
                   {sudah ? '✓ Selesai dibaca' : 'Tandai selesai & lanjut'}
                 </button>
-                {idx < bab.sections.length - 1 && (
-                  <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 6 }}>Lanjut: {bab.sections[idx + 1].judul}</div>
+                {idx < sections.length - 1 && (
+                  <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 6 }}>Lanjut: {sections[idx + 1].judul}</div>
                 )}
               </div>
             );
@@ -185,7 +204,9 @@ export default function BukuBacaPage() {
 
       {mode === 'quiz' && (
         <div style={{ padding: '16px 16px 90px' }}>
-          {bab.ujiPemahaman.map((q, i) => (
+          {ujiPemahaman.length === 0 ? (
+            <div style={st.kartuSeksi} >Belum ada soal pemantapan di bab ini.</div>
+          ) : ujiPemahaman.map((q, i) => (
             <div key={q.id} style={st.kartuSeksi}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 10 }}>
                 <span style={st.nomorSoal}>{i + 1}</span>
@@ -207,25 +228,17 @@ export default function BukuBacaPage() {
           <div style={{ ...st.kartuSeksi, textAlign: 'center' }}>
             <div style={{ fontSize: 40 }}>{hasil.persen >= 70 ? '🧑‍🚀' : '🛰️'}</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: '#7C3AED' }}>{hasil.persen}%</div>
-            <div style={{ fontSize: 12.5, color: '#64748b', margin: '4px 0 10px' }}>
-              {hasil.benarCount} benar dari {hasil.daftar.length} soal • +{hasil.xp} XP
-            </div>
+            <div style={{ fontSize: 12.5, color: '#64748b', margin: '4px 0 10px' }}>{hasil.benarCount} benar dari {hasil.daftar.length} soal • +{hasil.xp} XP</div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-              <button onClick={() => { setJawaban({}); setHasil(null); setMode('quiz'); window.scrollTo(0, 0); }} style={{ ...st.tombolKecil, background: '#f1f5f9', color: '#334155' }}>
-                Ulangi Quiz
-              </button>
-              <button onClick={() => setMode('baca')} style={{ ...st.tombolKecil, background: '#7C3AED', color: 'white' }}>
-                Kembali ke Bacaan
-              </button>
+              <button onClick={() => { setJawaban({}); setHasil(null); setMode('quiz'); window.scrollTo(0, 0); }} style={{ ...st.tombolKecil, background: '#f1f5f9', color: '#334155' }}>Ulangi Quiz</button>
+              <button onClick={() => setMode('baca')} style={{ ...st.tombolKecil, background: '#7C3AED', color: 'white' }}>Kembali ke Bacaan</button>
             </div>
           </div>
           {hasil.daftar.map((item, i) => (
             <div key={i} style={{ ...st.kartuSeksi, borderLeft: `4px solid ${item.benar ? '#22c55e' : '#ef4444'}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 {item.benar ? <CheckCircle2 size={16} color="#22c55e" /> : <XCircle size={16} color="#ef4444" />}
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: item.benar ? '#16a34a' : '#dc2626' }}>
-                  Soal {i + 1} — {item.benar ? 'Benar' : 'Kurang Tepat'}
-                </span>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: item.benar ? '#16a34a' : '#dc2626' }}>Soal {i + 1} — {item.benar ? 'Benar' : 'Kurang Tepat'}</span>
               </div>
               <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, marginBottom: 8, whiteSpace: 'pre-wrap' }}>
                 <MathText text={item.q.soal} />
@@ -233,10 +246,12 @@ export default function BukuBacaPage() {
               {item.q.visual && <VisualBuku visual={item.q.visual} />}
               <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 3 }}>Jawabanmu: <b>{teksJawaban(item.q, item.j)}</b></div>
               {!item.benar && <div style={{ fontSize: 11.5, color: '#16a34a', marginBottom: 3 }}>Kunci: <b>{teksKunci(item.q)}</b></div>}
-              <div style={st.boxPembahasan}>
-                <b>💡 Pembahasan</b>
-                <div style={{ marginTop: 4 }}><MathText text={item.q.pembahasan} /></div>
-              </div>
+              {item.q.pembahasan && (
+                <div style={st.boxPembahasan}>
+                  <b>💡 Pembahasan</b>
+                  <div style={{ marginTop: 4 }}><MathText text={item.q.pembahasan} /></div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -247,7 +262,7 @@ export default function BukuBacaPage() {
           {mode === 'baca' ? (
             <button onClick={() => { setMode('quiz'); window.scrollTo(0, 0); }} style={st.tombolUtama}>
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                <PenLine size={16} /> Uji Pemahaman Bab ({bab.ujiPemahaman.length} soal)
+                <PenLine size={16} /> Uji Pemahaman Bab ({ujiPemahaman.length} soal)
               </span>
             </button>
           ) : (
@@ -264,7 +279,7 @@ export default function BukuBacaPage() {
 function InputPg({ q, nilai, set }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {q.pilihan.map((p, i) => (
+      {(q.pilihan || []).map((p, i) => (
         <button key={i} onClick={() => set(i)} style={{ ...st.opsi, ...(nilai === i ? st.opsiAktif : {}) }}>
           <span style={st.huruf}>{String.fromCharCode(65 + i)}</span>
           <span style={{ flex: 1, textAlign: 'left' }}><MathText text={p} /></span>
@@ -279,7 +294,7 @@ function InputMulti({ q, nilai, set }) {
   const toggle = (i) => set(arr.includes(i) ? arr.filter((x) => x !== i) : [...arr, i]);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {q.pilihan.map((p, i) => (
+      {(q.pilihan || []).map((p, i) => (
         <button key={i} onClick={() => toggle(i)} style={{ ...st.opsi, ...(arr.includes(i) ? st.opsiAktif : {}) }}>
           <span style={{ ...st.huruf, borderRadius: 6 }}>{arr.includes(i) ? '✓' : ''}</span>
           <span style={{ flex: 1, textAlign: 'left' }}><MathText text={p} /></span>
@@ -291,11 +306,11 @@ function InputMulti({ q, nilai, set }) {
 }
 
 function InputBs({ q, nilai, set }) {
-  const arr = Array.isArray(nilai) ? nilai : Array(q.pernyataan.length).fill(null);
+  const arr = Array.isArray(nilai) ? nilai : Array((q.pernyataan || []).length).fill(null);
   const pilih = (i, v) => { const baru = [...arr]; baru[i] = v; set(baru); };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {q.pernyataan.map((p, i) => (
+      {(q.pernyataan || []).map((p, i) => (
         <div key={i} style={st.barisBs}>
           <div style={{ flex: 1, fontSize: 12.5, color: '#1e293b' }}><MathText text={p} /></div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -309,14 +324,14 @@ function InputBs({ q, nilai, set }) {
 }
 
 const teksJawaban = (q, j) => {
-  if (q.tipe === 'pg') return typeof j === 'number' ? q.pilihan[j] : '(kosong)';
-  if (q.tipe === 'multi') return Array.isArray(j) && j.length ? j.slice().sort((a, b) => a - b).map((i) => q.pilihan[i]).join(' | ') : '(kosong)';
+  if (q.tipe === 'pg') return typeof j === 'number' ? (q.pilihan || [])[j] : '(kosong)';
+  if (q.tipe === 'multi') return Array.isArray(j) && j.length ? j.slice().sort((a, b) => a - b).map((i) => (q.pilihan || [])[i]).join(' | ') : '(kosong)';
   return Array.isArray(j) ? j.map((v, i) => `${i + 1}) ${v ? 'Benar' : 'Salah'}`).join(', ') : '(kosong)';
 };
 const teksKunci = (q) => {
-  if (q.tipe === 'pg') return q.pilihan[q.benar];
-  if (q.tipe === 'multi') return q.benar.map((i) => q.pilihan[i]).join(' | ');
-  return q.benar.map((v, i) => `${i + 1}) ${v ? 'Benar' : 'Salah'}`).join(', ');
+  if (q.tipe === 'pg') return (q.pilihan || [])[q.benar];
+  if (q.tipe === 'multi') return (q.benar || []).map((i) => (q.pilihan || [])[i]).join(' | ');
+  return (q.benar || []).map((v, i) => `${i + 1}) ${v ? 'Benar' : 'Salah'}`).join(', ');
 };
 
 const st = {
