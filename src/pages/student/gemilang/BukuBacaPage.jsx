@@ -1,10 +1,16 @@
 // src/pages/student/gemilang/BukuBacaPage.jsx
 // ============================================================
-// READER BUKU DIGITAL -- baca per seksi (+5 XP), Uji Pemahaman Bab
-// (+10 XP/benar), hasil + pembahasan + visual interaktif.
+// READER BUKU DIGITAL v2 -- baca per seksi (+5 XP), Uji Pemahaman
+// Bab (+10 XP/benar), hasil + pembahasan + visual interaktif.
 // Sumber data: Firestore buku_digital/{bukuId}/bab/{babId}.
 // TIDAK meng-import file data statis sama sekali.
 // Progres: siswa_buku_progress/{studentId_babId}; XP: siswa_progress.
+//
+// v2 (BARU): blok materi di sections sekarang mendukung GAMBAR &
+// VISUAL INTERAKTIF, bukan cuma soal:
+//   1. blok { "tipe": "gambar", "src": ..., "alt": ..., "caption": ... }
+//   2. SEMUA tipe blok boleh punya field opsional "visual" (termometer /
+//      tabel / bangun / garis / gambar) yang dirender di bawah teksnya.
 // ============================================================
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -12,7 +18,7 @@ import { db } from '../../../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, CheckCircle2, XCircle, PenLine } from 'lucide-react';
 import { MathText, MathBlock } from '../../../components/MathText';
-import VisualBuku from '../../../components/buku/VisualBuku';
+import VisualBuku, { GambarBuku } from '../../../components/buku/VisualBuku';
 
 const XP_SEKSI = 5;
 const XP_BENAR = 10;
@@ -124,7 +130,7 @@ export default function BukuBacaPage() {
       let benar = false;
       if (q.tipe === 'pg') benar = j === q.benar;
       else if (q.tipe === 'multi') benar = Array.isArray(j) && j.length === (q.benar || []).length && (q.benar || []).every((i) => j.includes(i));
-      else benar = Array.isArray(j) && j.length === (q.benar || []).length && j.every((v, i) => v === q.benar[i]);
+      else benar = Array.isArray(j) && j.length === q.benar.length && j.every((v, i) => v === q.benar[i]);
       return { q, j, benar };
     });
     const benarCount = daftar.filter((x) => x.benar).length;
@@ -139,13 +145,26 @@ export default function BukuBacaPage() {
     window.scrollTo(0, 0);
   };
 
+  // ============================================================
+  // RENDER BLOK MATERI (v2)
+  //  - tipe lama tetap jalan persis seperti sebelumnya (backward
+  //    compatible: bab yang sudah tersimpan di Firestore tidak berubah).
+  //  - BARU: tipe "gambar" -> gambar HD + caption di tengah materi.
+  //  - BARU: blok apa pun boleh membawa field "visual" (termometer /
+  //    tabel / bangun / garis / gambar) -> dirender di bawah teksnya.
+  //  - Blok tanpa teks TAPI punya visual tetap dirender (visual murni).
+  // ============================================================
   const renderBlok = (blok, i) => {
-    if (blok.tipe === 'p') return <p key={i} style={st.paragraf}><MathText text={blok.teks} /></p>;
-    if (blok.tipe === 'list') return <ul key={i} style={st.list}>{(blok.items || []).map((it, j) => <li key={j} style={{ marginBottom: 6 }}><MathText text={it} /></li>)}</ul>;
-    if (blok.tipe === 'math') return <div key={i} style={st.boxMath}><MathBlock text={blok.teks} /></div>;
-    if (blok.tipe === 'contoh') return <div key={i} style={st.boxContoh}><b>✏️ Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
-    if (blok.tipe === 'tips') return <div key={i} style={st.boxTips}><b>💡 Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
-    return null;
+    let inti = null;
+    if (blok.tipe === 'p' && blok.teks) inti = <p style={st.paragraf}><MathText text={blok.teks} /></p>;
+    else if (blok.tipe === 'list' && Array.isArray(blok.items) && blok.items.length) inti = <ul style={st.list}>{blok.items.map((it, j) => <li key={j} style={{ marginBottom: 6 }}><MathText text={it} /></li>)}</ul>;
+    else if (blok.tipe === 'math' && blok.teks) inti = <div style={st.boxMath}><MathBlock text={blok.teks} /></div>;
+    else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>✏️ Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
+    else if (blok.tipe === 'tips' && blok.teks) inti = <div style={st.boxTips}><b>💡 Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
+    else if (blok.tipe === 'gambar' && blok.src) inti = <GambarBuku src={blok.src} alt={blok.alt} caption={blok.caption} />;
+    const visual = blok.visual ? <VisualBuku visual={blok.visual} /> : null;
+    if (!inti && !visual) return null;
+    return <React.Fragment key={i}>{inti}{visual}</React.Fragment>;
   };
 
   const persenBaca = sections.length ? Math.round((selesaiSections.length / sections.length) * 100) : 0;
@@ -216,6 +235,7 @@ export default function BukuBacaPage() {
                 </div>
               </div>
               {q.visual && <VisualBuku visual={q.visual} />}
+              {q.gambar && <GambarBuku src={q.gambar.src} alt={q.gambar.alt} caption={q.gambar.caption} />}
               {q.tipe === 'pg' && <InputPg q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
               {q.tipe === 'multi' && <InputMulti q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
               {q.tipe === 'bs' && <InputBs q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
@@ -227,7 +247,7 @@ export default function BukuBacaPage() {
       {mode === 'hasil' && hasil && (
         <div style={{ padding: '16px 16px 40px' }}>
           <div style={{ ...st.kartuSeksi, textAlign: 'center' }}>
-            <div style={{ fontSize: 40 }}>{hasil.persen >= 70 ? '🧑‍🚀' : '🛰️'}</div>
+            <div style={{ fontSize: 40 }}>{hasil.persen >= 70 ? '🧑‍' : '️'}</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: '#7C3AED' }}>{hasil.persen}%</div>
             <div style={{ fontSize: 12.5, color: '#64748b', margin: '4px 0 10px' }}>{hasil.benarCount} benar dari {hasil.daftar.length} soal • +{hasil.xp} XP</div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
@@ -245,6 +265,7 @@ export default function BukuBacaPage() {
                 <MathText text={item.q.soal} />
               </div>
               {item.q.visual && <VisualBuku visual={item.q.visual} />}
+              {item.q.gambar && <GambarBuku src={item.q.gambar.src} alt={item.q.gambar.alt} caption={item.q.gambar.caption} />}
               <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 3 }}>Jawabanmu: <b>{teksJawaban(item.q, item.j)}</b></div>
               {!item.benar && <div style={{ fontSize: 11.5, color: '#16a34a', marginBottom: 3 }}>Kunci: <b>{teksKunci(item.q)}</b></div>}
               {item.q.pembahasan && (

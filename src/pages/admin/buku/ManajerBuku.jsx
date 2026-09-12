@@ -133,6 +133,7 @@ function validasiBab(obj) {
       else if (q.benar.some((x) => typeof x !== 'boolean')) err.push(`${t}.benar hanya boleh berisi true/false.`);
     }
     validasiVisual(q.visual, `${t}.visual`, err);
+    if (q.gambar && (!q.gambar.src || typeof q.gambar.src !== 'string')) err.push(`${t}.gambar butuh "src" (URL gambar asli modul).`);
   });
   return err;
 }
@@ -160,6 +161,10 @@ export default function ManajerBuku() {
   const jsonFileRef = useRef(null);
   const pdfFileRef = useRef(null);
   const [konversiInfo, setKonversiInfo] = useState('');
+
+  // ===== STATE v4.1: PAKET GAMBAR (upload banyak + pasang otomatis) =====
+  const paketRef = useRef(null);
+  const [pesanPaket, setPesanPaket] = useState('');
 
   // ===== STATE MANAJER GAMBAR =====
   const [images, setImages] = useState([]);          // [{ url, name }]
@@ -384,6 +389,49 @@ export default function ManajerBuku() {
   };
 
   // ============================================================
+  // v4.1: PAKET GAMBAR -- pilih BANYAK file sekaligus; nama file
+  // menentukan tujuan: "u10.png" -> soal id u10 (field "gambar"),
+  // "bab-5-a.png" -> seksi id bab-5-a (blok gambar di materi).
+  // Sistem upload ke Storage + suntik ke JSON di kolom otomatis.
+  // Admin tetap tekan Validasi & Simpan sesudahnya (satu tulisan).
+  // ============================================================
+  const imporPaketGambar = async (files) => {
+    if (!files || !files.length) return;
+    let parsed;
+    try { parsed = JSON.parse(teksJson); } catch { setPesanPaket('❌ Kolom JSON kosong/rusak. Muat dulu bab-nya: klik ✏️ pada baris bab, atau Impor File JSON / Impor PDF dulu.'); return; }
+    const tunggal = !Array.isArray(parsed);
+    const list = tunggal ? [parsed] : parsed;
+    const log = [];
+    const storage = getStorage();
+    for (const f of Array.from(files)) {
+      const kunci = f.name.replace(/\.(png|jpe?g|webp|gif)$/i, '').trim().toLowerCase();
+      try {
+        const path = `buku-digital/${bukuDipilih.id}/${Date.now()}_${f.name}`;
+        const r = sRef(storage, path);
+        await uploadBytes(r, f);
+        const url = await getDownloadURL(r);
+        let kena = null;
+        for (const bab of list) {
+          for (const q of (bab.ujiPemahaman || [])) if (String(q.id).toLowerCase() === kunci) kena = { jenis: 'soal', obj: q };
+          for (const s of (bab.sections || [])) if (String(s.id).toLowerCase() === kunci) kena = { jenis: 'seksi', obj: s };
+        }
+        if (!kena) { log.push(`⚠️ ${f.name}: tidak ditemukan soal/seksi ber-id "${kunci}" — dilewati.`); continue; }
+        if (kena.jenis === 'soal') {
+          kena.obj.gambar = { src: url, alt: kena.obj.id, caption: 'Gambar soal dari modul' };
+        } else {
+          kena.obj.blocks = [...(kena.obj.blocks || []), { tipe: 'gambar', src: url, alt: kunci, caption: 'Gambar materi dari modul' }];
+        }
+        log.push(`✅ ${f.name} → terpasang di ${kena.jenis} "${kunci}".`);
+      } catch (e) {
+        log.push(`❌ ${f.name}: ${e?.message || e}`);
+      }
+    }
+    setTeksJson(JSON.stringify(tunggal ? list[0] : list, null, 2));
+    setPesanPaket(log.join('\n') + '\n→ JSON sudah diperbarui otomatis. Tekan "Validasi & Simpan" untuk menerbitkan.');
+    if (paketRef.current) paketRef.current.value = '';
+  };
+
+  // ============================================================
   // RENDER
   // ============================================================
   return (
@@ -544,6 +592,23 @@ export default function ManajerBuku() {
                   • <b>Soal</b> → tempel di DALAM object soal pada <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>ujiPemahaman</code>: <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>{`{ "id": "u1", "tipe": "pg", "soal": "Perhatikan gambar!", "visual": { "tipe": "gambar", "src": "URL_DISINI", "alt": "", "caption": "" }, "pilihan": [...], "benar": 0, "pembahasan": "..." }`}</code><br />
                   • <b>Blok</b> → tempel sebagai satu blok di <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>sections[].blocks</code> (gambar tampil di tengah materi): <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>{`{ "tipe": "gambar", "src": "URL_DISINI", "alt": "", "caption": "Gambar 1.1 — ..." }`}</code>
                 </div>
+              </div>
+
+              {/* ===== v4.1 PAKET GAMBAR ===== */}
+              <div style={st.imgCard}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <Upload size={16} color="#16a34a" />
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#1e293b' }}>Paket Gambar (sekali klik)</span>
+                  <span style={{ fontSize: 10, color: '#64748b' }}>— pilih banyak file sekaligus; nama file = id tujuan.</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: '#475569', lineHeight: 1.6, marginBottom: 8 }}>
+                  Muat dulu bab ke kolom JSON (klik ✏️ pada baris bab). Lalu pilih file-file gambar: nama <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>u10.png</code> memasang gambar asli ke <b>soal u10</b>; nama <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>bab-5-a.png</code> memasang blok gambar di <b>seksi bab-5-a</b>. Semua file terupload otomatis ke Storage & masuk JSON — tinggal Validasi & Simpan.
+                </div>
+                <input ref={paketRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => imporPaketGambar(e.target.files)} />
+                <button onClick={() => paketRef.current?.click()} style={st.btnSecondary}><ImageIcon size={14} /> Pilih Paket Gambar</button>
+                {pesanPaket && (
+                  <pre style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: 8, marginTop: 8, fontSize: 10.5, color: '#334155', whiteSpace: 'pre-wrap', maxHeight: 160, overflowY: 'auto' }}>{pesanPaket}</pre>
+                )}
               </div>
 
               <details style={{ marginBottom: 8 }}>
