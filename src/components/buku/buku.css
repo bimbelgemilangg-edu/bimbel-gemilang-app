@@ -1,0 +1,48 @@
+/* src/components/buku/buku.css
+   Utilitas kecil khusus fitur Buku Digital (impor modul, pemotong
+   gambar, reader). Dipisah dari CSS global supaya tidak bentrok. */
+
+   @keyframes bukuSpin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .spin {
+    animation: bukuSpin 1s linear infinite;
+  }
+  
+  /* Area seret-file di halaman Impor Modul */
+  .drop-modul:hover {
+    border-color: #4C6EF5 !important;
+    background: #f5f7ff !important;
+  }
+  
+  /* Slider halaman reader */
+  input[type="range"].slider-modul {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 5px;
+    border-radius: 999px;
+    background: #e9e5fb;
+    outline: none;
+  }
+  
+  input[type="range"].slider-modul::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #7C3AED;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 5px rgba(124, 58, 237, .45);
+  }
+  
+  input[type="range"].slider-modul::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #7C3AED;
+    cursor: pointer;
+    border: 2px solid white;
+  }

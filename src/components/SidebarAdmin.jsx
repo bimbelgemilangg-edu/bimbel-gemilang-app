@@ -10,7 +10,8 @@ import {
   Menu, X, LayoutDashboard, Users, GraduationCap, Calendar,
   CreditCard, FileText, Settings, LogOut, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
-  FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy
+  FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
+  UploadCloud
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -124,6 +125,8 @@ const SidebarAdmin = () => {
         { name: 'Kelola Materi/Modul', path: '/admin/portal/materi', icon: <BookOpen size={18} /> },
         // 🔥 BARU: pintu operasional Buku Interaktif Digital
         { name: 'Manajer Buku Digital', path: '/admin/buku', icon: <BookOpen size={18} /> },
+        // 🔥 v5: unggah banyak modul PDF sekaligus -> otomatis jadi bab
+        { name: 'Impor Modul (PDF)', path: '/admin/buku/impor', icon: <UploadCloud size={18} /> },
       ]
     },
     {

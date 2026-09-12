@@ -1,4 +1,11 @@
 // src/App.jsx
+// ============================================================
+// v5-catatan: semua baris sengaja PENDEK (maks ~90 karakter).
+// Baris super-panjang terbukti rawan korup saat copy-paste di
+// editor StackBlitz (kehilangan potongan awal baris). Isi route
+// TIDAK berubah dari versi sebelumnya -- hanya format & helper
+// SiswaPage/GuruPage untuk memangkas panjang baris.
+// ============================================================
 import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter,
@@ -64,6 +71,8 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 
 // 🔥 BARU: Manajer Buku Digital (CRUD buku + bab, paste JSON, validasi)
 import ManajerBuku from './pages/admin/buku/ManajerBuku';
+// 🔥 v5: Impor Modul massal (banyak PDF sekaligus -> bab terbit otomatis)
+import ImporModul from './pages/admin/buku/ImporModul';
 
 // ============================================================
 // 🔥 BANK SOAL
@@ -154,7 +163,9 @@ const GuruRoute = ({ children }) => {
     localStorage.getItem('isGuruLoggedIn') === 'true' ||
     !!localStorage.getItem('teacherData');
   const role = localStorage.getItem('role');
-  if (!isAuth || (role !== 'guru' && role !== 'teacher')) return <Navigate to="/login-guru" replace />;
+  if (!isAuth || (role !== 'guru' && role !== 'teacher')) {
+    return <Navigate to="/login-guru" replace />;
+  }
   return children;
 };
 
@@ -193,22 +204,22 @@ const SiswaLayout = ({ children }) => {
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
       />
-      <main style={{ flex: 1, marginLeft: isMobile ? 0 : '260px', transition: 'margin-left 0.3s ease', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
-        <header style={{ background: 'white', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 99 }}>
+      <main style={gayaMainSiswa(isMobile)}>
+        <header style={gayaHeaderSiswa}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {isMobile && (
-              <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20 }}>☰</button>
+              <button onClick={() => setSidebarOpen(true)} style={gayaTombolMenu}>☰</button>
             )}
             <div>
               <h4 style={{ margin: 0, fontSize: 13, color: '#1e293b' }}>Bimbel Gemilang</h4>
               <small style={{ color: '#7f8c8d', fontSize: 10 }}>Portal Siswa</small>
             </div>
           </div>
-          <div style={{ width: 32, height: 32, background: '#10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white', fontSize: 12 }}>
+          <div style={gayaAvatarSiswa}>
             {localStorage.getItem('studentName')?.charAt(0) || 'S'}
           </div>
         </header>
-        <div style={{ padding: isMobile ? 10 : 20, width: '100%', boxSizing: 'border-box', minHeight: 'calc(100vh - 60px)' }}>
+        <div style={gayaIsiSiswa(isMobile)}>
           {children}
         </div>
       </main>
@@ -217,20 +228,94 @@ const SiswaLayout = ({ children }) => {
 };
 
 // ============================================================
+// GAYA LAYOUT SISWA (dipisah biar tidak ada baris raksasa)
+// ============================================================
+const gayaHeaderSiswa = {
+  background: 'white',
+  padding: '12px 20px',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  borderBottom: '1px solid #eee',
+  position: 'sticky',
+  top: 0,
+  zIndex: 99,
+};
+
+const gayaMainSiswa = (isMobile) => ({
+  flex: 1,
+  marginLeft: isMobile ? 0 : '260px',
+  transition: 'margin-left 0.3s ease',
+  width: '100%',
+  maxWidth: '100vw',
+  overflowX: 'hidden',
+});
+
+const gayaTombolMenu = {
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  fontSize: 20,
+};
+
+const gayaIsiSiswa = (isMobile) => ({
+  padding: isMobile ? 10 : 20,
+  width: '100%',
+  boxSizing: 'border-box',
+  minHeight: 'calc(100vh - 60px)',
+});
+
+const gayaAvatarSiswa = {
+  width: 32,
+  height: 32,
+  background: '#10b981',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'bold',
+  color: 'white',
+  fontSize: 12,
+};
+
+// ============================================================
+// HELPER PEMBUNGKUS ROUTE (biar baris route tetap pendek)
+// ============================================================
+
+const GuruPage = ({ children }) => (
+  <GuruRoute>
+    <TeacherLayout>{children}</TeacherLayout>
+  </GuruRoute>
+);
+
+const SiswaPage = ({ children }) => (
+  <SiswaRoute>
+    <SiswaLayout>{children}</SiswaLayout>
+  </SiswaRoute>
+);
+
+// ============================================================
 // KUIS SISWA WRAPPER
 // ============================================================
 
+const bacaSiswa = () => ({
+  uid: localStorage.getItem('studentId'),
+  id: localStorage.getItem('studentId'),
+  nama: localStorage.getItem('studentName'),
+  kelasSekolah: localStorage.getItem('studentGrade') || '',
+  studentId: localStorage.getItem('studentId'),
+  nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId')
+});
+
 const KuisSiswaWrapper = () => {
   const { id } = useParams();
-  const studentData = {
-    uid: localStorage.getItem('studentId'),
-    id: localStorage.getItem('studentId'),
-    nama: localStorage.getItem('studentName'),
-    kelasSekolah: localStorage.getItem('studentGrade') || '',
-    studentId: localStorage.getItem('studentId'),
-    nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId')
-  };
-  return <StudentQuizView modulId={id} studentData={studentData} onBack={() => window.history.back()} />;
+  return (
+    <StudentQuizView
+      modulId={id}
+      studentData={bacaSiswa()}
+      onBack={() => window.history.back()}
+    />
+  );
 };
 
 // ============================================================
@@ -239,15 +324,13 @@ const KuisSiswaWrapper = () => {
 
 const ModulSiswaWrapper = () => {
   const { id } = useParams();
-  const studentData = {
-    uid: localStorage.getItem('studentId'),
-    id: localStorage.getItem('studentId'),
-    nama: localStorage.getItem('studentName'),
-    kelasSekolah: localStorage.getItem('studentGrade') || '',
-    studentId: localStorage.getItem('studentId'),
-    nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId')
-  };
-  return <StudentModuleView modulId={id} onBack={() => window.history.back()} studentData={studentData} />;
+  return (
+    <StudentModuleView
+      modulId={id}
+      onBack={() => window.history.back()}
+      studentData={bacaSiswa()}
+    />
+  );
 };
 
 // ============================================================
@@ -256,7 +339,8 @@ const ModulSiswaWrapper = () => {
 
 function App() {
   useEffect(() => {
-    if (window.matchMedia('(display-mode: standalone)').matches && window.location.pathname === '/') {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (standalone && window.location.pathname === '/') {
       const sudahLoginSiswa = localStorage.getItem('isSiswaLoggedIn') === 'true';
       window.location.href = sudahLoginSiswa ? '/siswa/dashboard' : '/login-siswa';
     }
@@ -283,23 +367,49 @@ function App() {
         <Route path="/admin/analisis" element={<AdminRoute><DashboardAnalisis /></AdminRoute>} />
         <Route path="/admin/students" element={<AdminRoute><StudentList /></AdminRoute>} />
         <Route path="/admin/students/add" element={<AdminRoute><AddStudent /></AdminRoute>} />
-        <Route path="/admin/students/edit/:id" element={<AdminRoute><EditStudent /></AdminRoute>} />
-        <Route path="/admin/students/attendance/:id" element={<AdminRoute><StudentAttendance /></AdminRoute>} />
-        <Route path="/admin/students/finance/:id" element={<AdminRoute><StudentFinance /></AdminRoute>} />
+        <Route
+          path="/admin/students/edit/:id"
+          element={<AdminRoute><EditStudent /></AdminRoute>}
+        />
+        <Route
+          path="/admin/students/attendance/:id"
+          element={<AdminRoute><StudentAttendance /></AdminRoute>}
+        />
+        <Route
+          path="/admin/students/finance/:id"
+          element={<AdminRoute><StudentFinance /></AdminRoute>}
+        />
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
-        <Route path="/admin/teachers/salaries" element={<AdminRoute><TeacherSalaries /></AdminRoute>} />
+        <Route
+          path="/admin/teachers/salaries"
+          element={<AdminRoute><TeacherSalaries /></AdminRoute>}
+        />
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />
-        <Route path="/admin/portal/materi" element={<AdminRoute><ManageMateriPortal /></AdminRoute>} />
+        <Route
+          path="/admin/portal/materi"
+          element={<AdminRoute><ManageMateriPortal /></AdminRoute>}
+        />
         <Route path="/admin/portal/survey" element={<AdminRoute><ManageSurvey /></AdminRoute>} />
 
         {/* 🔥 BARU: MANAJER BUKU DIGITAL */}
         <Route path="/admin/buku" element={<AdminRoute><ManajerBuku /></AdminRoute>} />
+        {/* 🔥 v5: IMPOR MODUL MASSAL (PDF -> bab) */}
+        <Route path="/admin/buku/impor" element={<AdminRoute><ImporModul /></AdminRoute>} />
 
         {/* PENDAFTARAN */}
-        <Route path="/admin/pendaftaran" element={<AdminRoute><ManageOnlineRegistration /></AdminRoute>} />
-        <Route path="/admin/pendaftaran/harga" element={<AdminRoute><ManagePaketHarga /></AdminRoute>} />
-        <Route path="/admin/pendaftaran/tentor" element={<AdminRoute><ManageTentorRegistration /></AdminRoute>} />
+        <Route
+          path="/admin/pendaftaran"
+          element={<AdminRoute><ManageOnlineRegistration /></AdminRoute>}
+        />
+        <Route
+          path="/admin/pendaftaran/harga"
+          element={<AdminRoute><ManagePaketHarga /></AdminRoute>}
+        />
+        <Route
+          path="/admin/pendaftaran/tentor"
+          element={<AdminRoute><ManageTentorRegistration /></AdminRoute>}
+        />
 
         {/* KEUANGAN */}
         <Route path="/admin/finance" element={<AdminRoute><FinanceLayout /></AdminRoute>} />
@@ -325,13 +435,34 @@ function App() {
             🔥 BANK SOAL
             ==================================================== */}
         <Route path="/admin/bank-soal" element={<AdminRoute><BankSoalPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/import" element={<AdminRoute><ImportHasilScanPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/terbitkan" element={<AdminRoute><TerbitkanKuisPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/terbitkan-tryout" element={<AdminRoute><TerbitkanTryOutPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/hasil-tryout" element={<AdminRoute><HasilTryOutAdminPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/hasil" element={<AdminRoute><HasilKuisAdminPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/aktivitas-latihan" element={<AdminRoute><LatihanAktivitasPage /></AdminRoute>} />
-        <Route path="/admin/bank-soal/batalkan-uji-coba" element={<AdminRoute><BatalkanUjiCobaPage /></AdminRoute>} />
+        <Route
+          path="/admin/bank-soal/import"
+          element={<AdminRoute><ImportHasilScanPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/terbitkan"
+          element={<AdminRoute><TerbitkanKuisPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/terbitkan-tryout"
+          element={<AdminRoute><TerbitkanTryOutPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/hasil-tryout"
+          element={<AdminRoute><HasilTryOutAdminPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/hasil"
+          element={<AdminRoute><HasilKuisAdminPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/aktivitas-latihan"
+          element={<AdminRoute><LatihanAktivitasPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/batalkan-uji-coba"
+          element={<AdminRoute><BatalkanUjiCobaPage /></AdminRoute>}
+        />
 
         {/* OWNER / SETTINGS */}
         <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
@@ -341,55 +472,67 @@ function App() {
         {/* ====================================================
             GURU
             ==================================================== */}
-        <Route path="/guru/dashboard" element={<GuruRoute><TeacherLayout><TeacherDashboard /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/profile" element={<GuruRoute><TeacherLayout><TeacherProfile /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/schedule" element={<GuruRoute><TeacherLayout><TeacherSchedule /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/attendance" element={<GuruRoute><TeacherLayout><TeacherAttendance /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/history" element={<GuruRoute><TeacherLayout><TeacherHistory /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/class-session/:id" element={<GuruRoute><TeacherLayout><ClassSession /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/grades/input" element={<GuruRoute><TeacherLayout><TeacherInputGrade /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/grades/manage" element={<GuruRoute><TeacherLayout><TeacherGradeManager /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/grades/generate" element={<GuruRoute><TeacherLayout><GenerateRaport /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/modul" element={<GuruRoute><TeacherLayout><ModulManager /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/modul/materi" element={<GuruRoute><TeacherLayout><ManageMateriGuru /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/modul/tugas" element={<GuruRoute><TeacherLayout><ManageTugas /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/modul/quiz" element={<GuruRoute><TeacherLayout><ManageQuiz /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/cek-tugas" element={<GuruRoute><TeacherLayout><CekTugasSiswa /></TeacherLayout></GuruRoute>} />
-        <Route path="/guru/alat-bantu" element={<GuruRoute><TeacherLayout><TeacherLearningAid /></TeacherLayout></GuruRoute>} />
+        <Route path="/guru/dashboard" element={<GuruPage><TeacherDashboard /></GuruPage>} />
+        <Route path="/guru/profile" element={<GuruPage><TeacherProfile /></GuruPage>} />
+        <Route path="/guru/schedule" element={<GuruPage><TeacherSchedule /></GuruPage>} />
+        <Route path="/guru/attendance" element={<GuruPage><TeacherAttendance /></GuruPage>} />
+        <Route path="/guru/history" element={<GuruPage><TeacherHistory /></GuruPage>} />
+        <Route path="/guru/class-session/:id" element={<GuruPage><ClassSession /></GuruPage>} />
+        <Route path="/guru/grades/input" element={<GuruPage><TeacherInputGrade /></GuruPage>} />
+        <Route path="/guru/grades/manage" element={<GuruPage><TeacherGradeManager /></GuruPage>} />
+        <Route path="/guru/grades/generate" element={<GuruPage><GenerateRaport /></GuruPage>} />
+        <Route path="/guru/modul" element={<GuruPage><ModulManager /></GuruPage>} />
+        <Route path="/guru/modul/materi" element={<GuruPage><ManageMateriGuru /></GuruPage>} />
+        <Route path="/guru/modul/tugas" element={<GuruPage><ManageTugas /></GuruPage>} />
+        <Route path="/guru/modul/quiz" element={<GuruPage><ManageQuiz /></GuruPage>} />
+        <Route path="/guru/cek-tugas" element={<GuruPage><CekTugasSiswa /></GuruPage>} />
+        <Route path="/guru/alat-bantu" element={<GuruPage><TeacherLearningAid /></GuruPage>} />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
         <Route path="/siswa/sesi-live" element={<SiswaRoute><LiveSessionStudent /></SiswaRoute>} />
 
         {/* ====================================================
             SISWA
             ==================================================== */}
-        <Route path="/siswa/dashboard" element={<SiswaRoute><SiswaLayout><StudentDashboard /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/tryout" element={<SiswaRoute><SiswaLayout><DaftarTryOutPage /></SiswaLayout></SiswaRoute>} />
+        <Route path="/siswa/dashboard" element={<SiswaPage><StudentDashboard /></SiswaPage>} />
+        <Route path="/siswa/tryout" element={<SiswaPage><DaftarTryOutPage /></SiswaPage>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaRoute><TryOutView /></SiswaRoute>} />
-        <Route path="/siswa/materi" element={<SiswaRoute><SiswaLayout><StudentElearning /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/jadwal" element={<SiswaRoute><SiswaLayout><StudentSchedule /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/keuangan" element={<SiswaRoute><SiswaLayout><StudentFinanceSiswa /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/rapor" element={<SiswaRoute><SiswaLayout><StudentGrades /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/smart-rapor" element={<SiswaRoute><SiswaLayout><StudentSmartReport /></SiswaLayout></SiswaRoute>} />
+        <Route path="/siswa/materi" element={<SiswaPage><StudentElearning /></SiswaPage>} />
+        <Route path="/siswa/jadwal" element={<SiswaPage><StudentSchedule /></SiswaPage>} />
+        <Route path="/siswa/keuangan" element={<SiswaPage><StudentFinanceSiswa /></SiswaPage>} />
+        <Route path="/siswa/rapor" element={<SiswaPage><StudentGrades /></SiswaPage>} />
+        <Route path="/siswa/smart-rapor" element={<SiswaPage><StudentSmartReport /></SiswaPage>} />
         <Route path="/siswa/leaderboard" element={<SiswaRoute><LeaderboardPage /></SiswaRoute>} />
-        <Route path="/siswa/leaderboard-raport" element={<SiswaRoute><SiswaLayout><StudentLeaderboard /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/absensi" element={<SiswaRoute><SiswaLayout><StudentAttendanceSiswa /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/modul/:id" element={<SiswaRoute><SiswaLayout><ModulSiswaWrapper /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/kuis/:id" element={<SiswaRoute><SiswaLayout><KuisSiswaWrapper /></SiswaLayout></SiswaRoute>} />
-        <Route path="/siswa/survei/:id" element={<SiswaRoute><SiswaLayout><StudentSurveyView /></SiswaLayout></SiswaRoute>} />
+        <Route
+          path="/siswa/leaderboard-raport"
+          element={<SiswaPage><StudentLeaderboard /></SiswaPage>}
+        />
+        <Route path="/siswa/absensi" element={<SiswaPage><StudentAttendanceSiswa /></SiswaPage>} />
+        <Route path="/siswa/modul/:id" element={<SiswaPage><ModulSiswaWrapper /></SiswaPage>} />
+        <Route path="/siswa/kuis/:id" element={<SiswaPage><KuisSiswaWrapper /></SiswaPage>} />
+        <Route path="/siswa/survei/:id" element={<SiswaPage><StudentSurveyView /></SiswaPage>} />
 
         {/* 🔥 Latihan Harian -- SENGAJA tanpa SiswaLayout (gaya app mobile) */}
-        <Route path="/siswa/latihan-harian" element={<SiswaRoute><LatihanHarianPage /></SiswaRoute>} />
+        <Route
+          path="/siswa/latihan-harian"
+          element={<SiswaRoute><LatihanHarianPage /></SiswaRoute>}
+        />
 
         {/* 🔥 BUKU INTERAKTIF DIGITAL -- rak buku, daftar isi, reader per bab */}
         <Route path="/siswa/buku" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
         <Route path="/siswa/buku/:bukuId" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
-        <Route path="/siswa/buku/:bukuId/:babId" element={<SiswaRoute><BukuBacaPage /></SiswaRoute>} />
+        <Route
+          path="/siswa/buku/:bukuId/:babId"
+          element={<SiswaRoute><BukuBacaPage /></SiswaRoute>}
+        />
 
         {/* REDIRECT */}
         <Route path="/teacher/*" element={<Navigate to="/guru/dashboard" replace />} />
         <Route path="/guru/manual-input" element={<Navigate to="/guru/attendance" replace />} />
         <Route path="/guru/manage-quiz" element={<Navigate to="/guru/modul/quiz" replace />} />
-        <Route path="/guru/generate-raport" element={<Navigate to="/guru/grades/generate" replace />} />
+        <Route
+          path="/guru/generate-raport"
+          element={<Navigate to="/guru/grades/generate" replace />}
+        />
         <Route path="/guru/modul/cek-tugas" element={<Navigate to="/guru/cek-tugas" replace />} />
         <Route path="/siswa/raport" element={<Navigate to="/siswa/rapor" replace />} />
 

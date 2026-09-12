@@ -79,14 +79,26 @@ export default function BukuInteraktifPage() {
     return true;
   });
 
+  // v3: bab bisa berupa MODUL ASLI (PDF) atau MATERI TERSTRUKTUR.
+  // Progresnya dihitung setara: 1 modul selesai = 1 unit (sama seperti 1 seksi).
+  const babModul = (bab) => bab?.tipe === 'pdf' || (!(bab?.sections || []).length && !!bab?.pdfUrl);
   const unitBab = (bab) => {
     const p = progresMap[bab.id];
     if (!p) return 0;
-    return (p.selesaiSections || []).length + (p.quizTerbaik != null ? 1 : 0);
+    const baca = babModul(bab) ? (p.selesaiModul ? 1 : 0) : (p.selesaiSections || []).length;
+    return baca + (p.quizTerbaik != null ? 1 : 0);
   };
   const persenBab = (bab) => {
-    const total = (bab.sections || []).length + 1;
+    const total = (babModul(bab) ? 1 : (bab.sections || []).length) + 1;
     return total > 0 ? Math.min(100, Math.round((unitBab(bab) / total) * 100)) : 0;
+  };
+  const keteranganBab = (bab) => {
+    const soal = (bab.ujiPemahaman || []).length;
+    if (babModul(bab)) {
+      const hal = (bab.halamanSelesai || bab.jumlahHalaman || 0) - (bab.halamanMulai || 1) + 1;
+      return `📄 modul ${hal > 0 ? hal : (bab.jumlahHalaman || 0)} halaman • ${soal} soal pemantapan`;
+    }
+    return `${(bab.sections || []).length} seksi • ${soal} soal pemantapan`;
   };
 
   // ---------------- MODE DAFTAR ISI (:bukuId) ----------------
@@ -124,7 +136,7 @@ export default function BukuInteraktifPage() {
                     <div style={{ flex: 1, textAlign: 'left' }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{bab.judul}</div>
                       <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 2 }}>
-                        {(bab.sections || []).length} seksi • {(bab.ujiPemahaman || []).length} soal pemantapan
+                        {keteranganBab(bab)}
                       </div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 800, color: persen === 100 ? '#22c55e' : warna, minWidth: 38, textAlign: 'right' }}>
