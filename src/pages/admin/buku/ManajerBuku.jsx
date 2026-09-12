@@ -31,8 +31,13 @@ import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'firebase/s
 import { sanitasiFirestore, ekstrakPdf, konversiTeksKeBab } from '../../../utils/konversiPdfBuku';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Save, X, BookOpen, Layers, Eye,
-  ImageIcon, Upload, Copy, Link2, FileCode, FileJson, FileText, Loader2
+  ImageIcon, Upload, Copy, Link2, FileCode, FileJson, FileText, Loader2,
+  UploadCloud, Scissors, ToggleLeft
 } from 'lucide-react';
+// 🔥 v5: alat potong gambar langsung dari halaman modul (pengganti
+// upload gambar manual) + halaman impor modul massal.
+import PemotongGambar from '../../../components/buku/PemotongGambar';
+import '../../../components/buku/buku.css';
 
 const JENJANG_OPSI = ['SD/MI', 'SMP/MTs', 'SMA/MA', 'SMK', 'UTBK/SNBT'];
 const TIPE_BLOK = ['p', 'list', 'math', 'contoh', 'tips', 'gambar'];
@@ -138,6 +143,10 @@ function validasiBab(obj) {
   return err;
 }
 
+// Penanda waktu numerik (skema lama buku_digital memakai angka, bukan
+// serverTimestamp, jadi tetap konsisten & bisa diurutkan).
+const waktuSekarang = () => Date.now();
+
 const slugify = (s) => String(s || '').toLowerCase().trim()
   .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -165,6 +174,11 @@ export default function ManajerBuku() {
   // ===== STATE v4.1: PAKET GAMBAR (upload banyak + pasang otomatis) =====
   const paketRef = useRef(null);
   const [pesanPaket, setPesanPaket] = useState('');
+
+  // ===== STATE v5: IMPOR MODUL & PEMOTONG GAMBAR =====
+  const textareaRef = useRef(null);
+  const [potong, setPotong] = useState(null);   // { bab } saat alat potong dibuka
+  const [hasilPotong, setHasilPotong] = useState([]);
 
   // ===== STATE MANAJER GAMBAR =====
   const [images, setImages] = useState([]);          // [{ url, name }]
@@ -246,7 +260,9 @@ export default function ManajerBuku() {
       for (let i = 0; i < valid.length; i++) {
         const obj = valid[i];
         const urutan = obj.urutan != null ? Number(obj.urutan) : babList.length + i;
-        await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', obj.id), {
+        // merge:true -> field modul (pdfUrl, jumlahHalaman, pdfHash, ...)
+        // yang sudah ada TIDAK hilang saat admin hanya mengubah soal.
+        const payload = {
           id: obj.id, judul: obj.judul, urutan,
           // 🔥 v4: SANITASI FIRESTORE otomatis -- array bersarang
           // (tabel baris, bangun isi) dibungkus { s: [...] } dulu.
@@ -254,7 +270,10 @@ export default function ManajerBuku() {
           sections: sanitasiFirestore(obj.sections),
           ujiPemahaman: sanitasiFirestore(obj.ujiPemahaman),
           sumber: obj.sumber || 'admin', updatedAt: Date.now(),
-        }, { merge: true });
+        };
+        // v5: mode tampilan boleh diatur dari JSON ("tipe": "pdf" | "terstruktur")
+        if (obj.tipe === 'pdf' || obj.tipe === 'terstruktur') payload.tipe = obj.tipe;
+        await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', obj.id), payload, { merge: true });
       }
       setModeBab(null); setTeksJson(''); setErrValidasi([]);
       muatBab(bukuDipilih.id);
@@ -277,7 +296,7 @@ export default function ManajerBuku() {
     try {
       await navigator.clipboard.writeText(teks);
       setPesanGambar(`✅ ${label} disalin ke clipboard.`);
-    } catch (e) {
+    } catch {
       // Fallback kalau clipboard API tidak tersedia
       window.prompt('Salin manual teks di bawah ini:', teks);
     }
@@ -432,6 +451,58 @@ export default function ManajerBuku() {
   };
 
   // ============================================================
+  // v5: HASIL POTONGAN GAMBAR DARI MODUL
+  // Gambar dipotong langsung dari halaman PDF modul (tidak ada
+  // upload manual, tidak ada rename file). Setelah terupload:
+  //   - URL-nya masuk daftar "Gambar dari modul" di bawah
+  //   - sekali klik = tersisip ke kolom JSON di posisi kursor
+  //     (sebagai blok materi, atau sebagai "gambar" soal)
+  // ============================================================
+  const padaPotongSelesai = (hasil) => {
+    setHasilPotong((prev) => [hasil, ...prev.filter((x) => x.url !== hasil.url)]);
+    setImages((prev) => [{ url: hasil.url, name: `modul hal ${hasil.halaman}` }, ...prev]);
+  };
+
+  const sisipkanKeJson = (teks, label) => {
+    const ta = textareaRef.current;
+    if (!ta) { salin(teks, label); return; }
+    const awal = ta.selectionStart ?? teksJson.length;
+    const akhir = ta.selectionEnd ?? awal;
+    const baru = teksJson.slice(0, awal) + teks + teksJson.slice(akhir);
+    setTeksJson(baru);
+    setErrValidasi([]);
+    requestAnimationFrame(() => {
+      try { ta.focus(); ta.setSelectionRange(awal + teks.length, awal + teks.length); } catch { /* abaikan */ }
+    });
+    setPesanGambar(`✅ ${label} disisipkan ke kolom JSON di posisi kursor. Jangan lupa "Validasi & Simpan".`);
+    setTimeout(() => setPesanGambar(''), 4000);
+  };
+
+  const sisipBlokGambar = (url, caption) =>
+    sisipkanKeJson(`{ "tipe": "gambar", "src": "${url}", "alt": "${caption || ''}", "caption": "${caption || ''}" },\n`, 'Blok gambar materi');
+
+  const sisipGambarSoal = (url, caption) =>
+    sisipkanKeJson(`"gambar": { "src": "${url}", "alt": "${caption || ''}", "caption": "${caption || ''}" },\n`, 'Gambar soal');
+
+  // Ganti mode tampilan bab: modul PDF asli <-> bab terstruktur
+  const gantiModeBab = async (bab) => {
+    const punyaPdf = !!bab.pdfUrl;
+    const punyaSections = (bab.sections || []).length > 0;
+    if (!punyaPdf && !punyaSections) { alert('Bab ini tidak punya modul PDF maupun seksi materi — belum ada yang bisa diganti.'); return; }
+    const sekarang = bab.tipe === 'pdf' || (!bab.tipe && punyaPdf && !punyaSections) ? 'pdf' : 'terstruktur';
+    const target = sekarang === 'pdf' ? 'terstruktur' : 'pdf';
+    if (target === 'terstruktur' && !punyaSections) { alert('Bab ini belum punya materi terstruktur (sections kosong). Tambahkan dulu lewat Edit JSON, atau tetap pakai mode Modul Asli.'); return; }
+    if (target === 'pdf' && !punyaPdf) { alert('Bab ini tidak punya file modul PDF. Impor dulu lewat "Impor Modul".'); return; }
+    if (!window.confirm(`Ubah tampilan bab "${bab.judul}" di sisi siswa menjadi ${target === 'pdf' ? 'MODUL ASLI (halaman PDF)' : 'TERSTRUKTUR (blok materi)'}?`)) return;
+    try {
+      await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', bab.id), { tipe: target, updatedAt: waktuSekarang() }, { merge: true });
+      muatBab(bukuDipilih.id);
+    } catch (e) { alert('Gagal mengubah mode: ' + e.message); }
+  };
+
+  const modeBabSekarang = (bab) => (bab.tipe === 'pdf' || (!bab.tipe && bab.pdfUrl && !(bab.sections || []).length)) ? 'pdf' : 'terstruktur';
+
+  // ============================================================
   // RENDER
   // ============================================================
   return (
@@ -446,6 +517,9 @@ export default function ManajerBuku() {
             Tambah buku/bab + upload gambar — terbit ke siswa tanpa deploy.
           </div>
         </div>
+        <button onClick={() => navigate('/admin/buku/impor')} style={st.btnImport} title="Impor banyak PDF modul sekaligus — otomatis jadi bab yang terbit ke siswa">
+          <UploadCloud size={15} /> Impor Modul
+        </button>
         <button onClick={() => { setModeFormBuku('baru'); setFormBuku({ judul: '', mapel: 'Matematika', jenjang: 'SMP/MTs', kelas: 9, emoji: '📘', warna: '#4C6EF5', deskripsi: '', status: 'aktif' }); }} style={st.btnPrimary}>
           <Plus size={15} /> Buku Baru
         </button>
@@ -533,23 +607,83 @@ export default function ManajerBuku() {
             </div>
           </div>
 
-          {babList.map((bab, i) => (
-            <div key={bab.id} style={st.babRow}>
-              <div style={{ width: 26, height: 26, borderRadius: 8, background: '#eef2ff', color: '#4338ca', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{bab.judul}</div>
-                <div style={{ fontSize: 10.5, color: '#64748b' }}>
-                  {(bab.sections || []).length} seksi • {(bab.ujiPemahaman || []).length} soal • sumber: {bab.sumber || '-'}
+          {babList.map((bab, i) => {
+            const modeBab = modeBabSekarang(bab);
+            return (
+              <div key={bab.id} style={st.babRow}>
+                <div style={{ width: 26, height: 26, borderRadius: 8, background: '#eef2ff', color: '#4338ca', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    {bab.judul}
+                    <span style={{ ...st.badgeMode, background: modeBab === 'pdf' ? '#fef3c7' : '#dcfce7', color: modeBab === 'pdf' ? '#92400e' : '#166534' }}
+                      title={modeBab === 'pdf' ? 'Siswa membaca halaman modul aslinya (rumus & gambar 100% utuh)' : 'Siswa membaca blok materi terstruktur'}>
+                      {modeBab === 'pdf'
+                        ? `MODUL PDF${bab.jumlahHalaman ? ` • hal ${bab.halamanMulai || 1}–${bab.halamanSelesai || bab.jumlahHalaman}` : ''}`
+                        : 'TERSTRUKTUR'}
+                    </span>
+                    {bab.status === 'draft' && <span style={{ ...st.badgeMode, background: '#f1f5f9', color: '#64748b' }}>DRAFT</span>}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {(bab.sections || []).length} seksi • {(bab.ujiPemahaman || []).length} soal • sumber: {bab.sumber || '-'}
+                    {bab.namaFile ? ` • ${bab.namaFile}` : ''}
+                  </div>
                 </div>
+                {bab.pdfUrl && (
+                  <button onClick={() => { setPotong({ bab }); setHasilPotong([]); }} style={st.btnSmall2}
+                    title="Potong gambar/diagram/tabel langsung dari halaman modul — tanpa upload manual">
+                    <Scissors size={13} /> Gambar dari Modul
+                  </button>
+                )}
+                <button onClick={() => gantiModeBab(bab)} style={st.iconBtn}
+                  title={`Tampilan siswa sekarang: ${modeBab === 'pdf' ? 'Modul Asli (PDF)' : 'Terstruktur'}. Klik untuk menukar.`}>
+                  <ToggleLeft size={16} />
+                </button>
+                <button onClick={() => window.open(`/siswa/buku/${bukuDipilih.id}/${bab.id}`, '_blank')} style={st.iconBtn} title="Buka di reader siswa (tab baru)"><Eye size={14} /></button>
+                <button onClick={() => { setModeBab(bab); setTeksJson(JSON.stringify({ id: bab.id, judul: bab.judul, urutan: bab.urutan, tipe: modeBab, sections: bab.sections || [], ujiPemahaman: bab.ujiPemahaman || [] }, null, 2)); setErrValidasi([]); setImages([]); setPesanGambar(''); setHasilPotong([]); }} style={st.iconBtn} title="Edit JSON"><Pencil size={14} /></button>
+                <button onClick={() => hapusBab(bab)} style={{ ...st.iconBtn, color: '#dc2626' }} title="Hapus bab"><Trash2 size={14} /></button>
               </div>
-              <button onClick={() => window.open(`/siswa/buku/${bukuDipilih.id}/${bab.id}`, '_blank')} style={st.iconBtn} title="Buka di reader siswa (tab baru)"><Eye size={14} /></button>
-              <button onClick={() => { setModeBab(bab); setTeksJson(JSON.stringify({ id: bab.id, judul: bab.judul, urutan: bab.urutan, sections: bab.sections, ujiPemahaman: bab.ujiPemahaman }, null, 2)); setErrValidasi([]); setImages([]); setPesanGambar(''); }} style={st.iconBtn} title="Edit JSON"><Pencil size={14} /></button>
-              <button onClick={() => hapusBab(bab)} style={{ ...st.iconBtn, color: '#dc2626' }} title="Hapus bab"><Trash2 size={14} /></button>
-            </div>
-          ))}
+            );
+          })}
 
           {modeBab && (
             <div style={{ marginTop: 12 }}>
+              {/* ===== v5: GAMBAR HASIL POTONGAN DARI MODUL ===== */}
+              {modeBab?.pdfUrl && (
+                <div style={{ ...st.imgCard, borderColor: '#bbf7d0', background: '#f0fdf4' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                    <Scissors size={16} color="#16a34a" />
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#166534' }}>Gambar dari Modul</span>
+                    <span style={{ fontSize: 10, color: '#15803d' }}>— potong diagram/tabel/foto langsung dari halaman modul. Tidak ada upload manual, tidak ada rename file.</span>
+                    <button onClick={() => { setPotong({ bab: modeBab }); setHasilPotong([]); }} style={{ ...st.btnSecondary, marginLeft: 'auto', background: '#16a34a', color: 'white' }}>
+                      <Scissors size={13} /> Buka alat potong
+                    </button>
+                  </div>
+
+                  {hasilPotong.length === 0 ? (
+                    <div style={{ fontSize: 10.5, color: '#166534', lineHeight: 1.65 }}>
+                      Alur cepat: <b>Buka alat potong</b> → pilih halaman → <b>Deteksi bagian otomatis</b> → ketuk gambarnya
+                      (atau tarik kotak sendiri) → <b>Potong & Upload</b>. Setelah itu kembali ke sini: hasilnya muncul di bawah,
+                      taruh kursor di kolom JSON pada posisi yang diinginkan, lalu klik <b>sisipkan</b>.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {hasilPotong.map((g, idx) => (
+                        <div key={idx} style={st.imgRow}>
+                          {g.thumb ? <img src={g.thumb} alt="" style={st.imgThumb} /> : <ImageIcon size={16} color="#cbd5e1" />}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#166534' }}>Halaman {g.halaman} • {g.lebar}×{g.tinggi}px</div>
+                            <div style={{ fontSize: 9, color: '#4ade80', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.url}</div>
+                          </div>
+                          <button onClick={() => sisipBlokGambar(g.url, `Gambar modul halaman ${g.halaman}`)} style={st.btnTiny} title="Sisipkan sebagai blok gambar di MATERI (posisi kursor)"><Layers size={12} /> Blok</button>
+                          <button onClick={() => sisipGambarSoal(g.url, `Gambar soal dari modul halaman ${g.halaman}`)} style={st.btnTiny} title="Sisipkan sebagai field gambar SOAL (posisi kursor)"><FileCode size={12} /> Soal</button>
+                          <button onClick={() => salin(g.url, 'URL')} style={st.btnTiny}><Copy size={12} /> URL</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* ===== MANAJER GAMBAR ===== */}
               <div style={st.imgCard}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -617,6 +751,7 @@ export default function ManajerBuku() {
               </details>
 
               <textarea
+                ref={textareaRef}
                 value={teksJson}
                 onChange={(e) => setTeksJson(e.target.value)}
                 placeholder={CONTOH_JSON_BAB}
@@ -644,6 +779,19 @@ export default function ManajerBuku() {
           )}
         </div>
       )}
+
+      {/* ===== v5: ALAT POTONG GAMBAR MODUL ===== */}
+      <PemotongGambar
+        terbuka={!!potong}
+        tutup={() => setPotong(null)}
+        sumber={potong?.bab?.pdfUrl ? { pdfUrl: potong.bab.pdfUrl } : null}
+        bukuId={bukuDipilih?.id || 'umum'}
+        judul={potong?.bab?.judul || 'Modul'}
+        halamanAwal={Math.max(1, Number(potong?.bab?.halamanMulai) || 1)}
+        halamanMin={Math.max(1, Number(potong?.bab?.halamanMulai) || 1)}
+        halamanMax={Number(potong?.bab?.halamanSelesai) || Number(potong?.bab?.jumlahHalaman) || null}
+        onSelesai={padaPotongSelesai}
+      />
     </div>
   );
 }
@@ -655,6 +803,9 @@ const st = {
   btnPrimary: { display: 'flex', alignItems: 'center', gap: 6, background: '#4C6EF5', color: 'white', border: 'none', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   btnSecondary: { display: 'flex', alignItems: 'center', gap: 6, background: '#f1f5f9', color: '#334155', border: 'none', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
   btnSmall: { display: 'flex', alignItems: 'center', gap: 5, background: '#eef2ff', color: '#4338ca', border: 'none', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' },
+  btnSmall2: { display: 'flex', alignItems: 'center', gap: 5, background: '#dcfce7', color: '#166534', border: 'none', borderRadius: 8, padding: '6px 10px', fontSize: 10.5, fontWeight: 800, cursor: 'pointer', flexShrink: 0 },
+  btnImport: { display: 'flex', alignItems: 'center', gap: 6, background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer', marginRight: 6 },
+  badgeMode: { fontSize: 9, fontWeight: 800, borderRadius: 999, padding: '2px 7px', letterSpacing: 0.3, textTransform: 'uppercase', whiteSpace: 'nowrap' },
   btnTiny: { display: 'flex', alignItems: 'center', gap: 4, background: '#eef2ff', color: '#4338ca', border: 'none', borderRadius: 6, padding: '4px 8px', fontSize: 10, fontWeight: 700, cursor: 'pointer', flexShrink: 0 },
   iconBtn: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   card: { background: 'white', borderRadius: 12, padding: 14, border: '1px solid #e2e8f0', marginBottom: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
