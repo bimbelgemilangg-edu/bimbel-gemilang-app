@@ -1,19 +1,21 @@
 // src/pages/admin/buku/ManajerBuku.jsx
 // ============================================================
-// MANAJER BUKU DIGITAL v3 -- DENGAN DUKUNGAN GAMBAR
+// MANAJER BUKU DIGITAL v4 -- OPERASIONAL PENUH, MINIM KLIK
 // Satu-satunya pintu operasional konten buku. Semua isi buku
 // hidup di Firestore (buku_digital + subkoleksi bab), TIDAK ADA
 // file statis di bundle. Tambah/ubah buku & bab = kerjaan di
 // halaman ini, langsung terbit ke siswa TANPA deploy.
 //
-// DUKUNGAN GAMBAR (baru):
-//  - Upload file gambar ke Firebase Storage -> dapat URL publik.
-//  - Atau tempel URL gambar eksternal mana pun.
-//  - Setiap gambar punya tombol "Salin URL" dan "Salin snippet
-//    visual" berupa potongan JSON  "visual": { tipe: "gambar", ... }
-//    yang tinggal ditempel ke dalam object soal di JSON bab.
-//  - Reader siswa (VisualBuku.jsx) sudah bisa merender visual
-//    tipe "gambar", jadi alurnya end-to-end tanpa kode tambahan.
+// v4 (BARU):
+//  - FIX BUG FIRESTORE "Nested arrays are not supported":
+//    sections & ujiPemahaman disanitasi otomatis sebelum setDoc
+//    (array bersarang tabel/bangun dibungkus { s: [...] }).
+//  - IMPOR FILE JSON sekali klik (tidak ada lagi copy-paste).
+//  - IMPOR PDF OTOMATIS: teks + gambar tersemat diekstrak,
+//    draf bab (materi + soal pg/multi/bs + kunci dari pembahasan)
+//    disusun mesin konversi; gambar auto-upload ke Storage dan
+//    dipasang sebagai blok. Hasil = DRAF untuk direview admin.
+//  - Manajer Gambar tetap ada untuk kasus manual (URL eksternal).
 //
 // Skema Firestore:
 //   buku_digital/{bookId}              -> metadata buku
@@ -26,13 +28,14 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { sanitasiFirestore, ekstrakPdf, konversiTeksKeBab } from '../../../utils/konversiPdfBuku';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Save, X, BookOpen, Layers, Eye,
-  ImageIcon, Upload, Copy, Link2, FileCode
+  ImageIcon, Upload, Copy, Link2, FileCode, FileJson, FileText, Loader2
 } from 'lucide-react';
 
 const JENJANG_OPSI = ['SD/MI', 'SMP/MTs', 'SMA/MA', 'SMK', 'UTBK/SNBT'];
-const TIPE_BLOK = ['p', 'list', 'math', 'contoh', 'tips'];
+const TIPE_BLOK = ['p', 'list', 'math', 'contoh', 'tips', 'gambar'];
 const TIPE_SOAL = ['pg', 'multi', 'bs'];
 const TIPE_VISUAL = ['termometer', 'tabel', 'bangun', 'garis', 'gambar'];
 
@@ -47,7 +50,10 @@ const CONTOH_JSON_BAB = `[
         "judul": "A. Menyajikan Data",
         "blocks": [
           { "tipe": "p", "teks": "Paragraf materi. LaTeX inline boleh: $...$" },
+          { "tipe": "gambar", "src": "https://.../diagram.png", "alt": "Diagram materi", "caption": "Gambar 7.1 — keterangan singkat di bawah gambar" },
           { "tipe": "list", "items": ["poin pertama", "poin kedua"] },
+          { "tipe": "math", "teks": "x^2 + y^2 = r^2" },
+          { "tipe": "p", "teks": "Blok apa pun boleh punya visual interaktif:", "visual": { "tipe": "tabel", "caption": "Tabel di dalam MATERI (bukan cuma soal)", "kepala": ["Data", "Frekuensi"], "baris": [["A", "5"], ["B", "8"]] } },
           { "tipe": "contoh", "teks": "Contoh soal beserta langkahnya." },
           { "tipe": "tips", "teks": "Tips cepat mengerjakan." }
         ]
@@ -66,6 +72,22 @@ const CONTOH_JSON_BAB = `[
 // range, blok aneh, visual cacat = DITOLAK dengan pesan jelas,
 // bukan lolos lalu membingungkan siswa di reader.
 // ============================================================
+
+// Satu gerbang validasi visual, dipakai bersama oleh SOAL dan BLOK
+// MATERI -- aturannya identik di mana pun visual itu dipasang.
+function validasiVisual(v, label, err) {
+  if (!v) return;
+  if (typeof v !== 'object' || !TIPE_VISUAL.includes(v.tipe)) {
+    err.push(`${label}.tipe harus: ${TIPE_VISUAL.join(' / ')}.`);
+    return;
+  }
+  if (v.tipe === 'tabel' && (!Array.isArray(v.kepala) || !Array.isArray(v.baris))) err.push(`${label} tabel butuh "kepala" & "baris".`);
+  if (v.tipe === 'termometer' && !Array.isArray(v.data)) err.push(`${label} termometer butuh "data".`);
+  if (v.tipe === 'bangun' && (!Array.isArray(v.titik) || !Array.isArray(v.sisi))) err.push(`${label} bangun butuh "titik" & "sisi".`);
+  if (v.tipe === 'garis' && !Array.isArray(v.titik)) err.push(`${label} garis butuh "titik".`);
+  if (v.tipe === 'gambar' && (!v.src || typeof v.src !== 'string')) err.push(`${label} gambar butuh "src" (URL gambar).`);
+}
+
 function validasiBab(obj) {
   const err = [];
   if (!obj || typeof obj !== 'object') return ['JSON tidak valid / bukan object.'];
@@ -77,12 +99,16 @@ function validasiBab(obj) {
     if (!s.judul) err.push(`sections[${i}].judul wajib.`);
     if (!Array.isArray(s.blocks) || s.blocks.length === 0) err.push(`sections[${i}].blocks wajib array minimal 1 isi.`);
     (s.blocks || []).forEach((b, j) => {
-      if (!TIPE_BLOK.includes(b.tipe)) err.push(`sections[${i}].blocks[${j}].tipe harus salah satu: ${TIPE_BLOK.join(', ')}.`);
+      const t = `sections[${i}].blocks[${j}]`;
+      if (!TIPE_BLOK.includes(b.tipe)) err.push(`${t}.tipe harus salah satu: ${TIPE_BLOK.join(', ')}.`);
       if (b.tipe === 'list') {
-        if (!Array.isArray(b.items) || !b.items.length) err.push(`sections[${i}].blocks[${j}] tipe "list" butuh "items" array.`);
-      } else if (!b.teks) {
-        err.push(`sections[${i}].blocks[${j}] butuh "teks".`);
+        if (!Array.isArray(b.items) || !b.items.length) err.push(`${t} tipe "list" butuh "items" array.`);
+      } else if (b.tipe === 'gambar') {
+        if (!b.src || typeof b.src !== 'string') err.push(`${t} tipe "gambar" butuh "src" (URL gambar).`);
+      } else if (!b.teks && !b.visual) {
+        err.push(`${t} butuh "teks" (atau field "visual" kalau memang blok visual murni).`);
       }
+      validasiVisual(b.visual, `${t}.visual`, err);
     });
   });
   if (!Array.isArray(obj.ujiPemahaman)) err.push('"ujiPemahaman" wajib array (boleh [] kalau memang belum ada soal).');
@@ -106,12 +132,7 @@ function validasiBab(obj) {
       if (!Array.isArray(q.benar) || q.benar.length !== (q.pernyataan || []).length) err.push(`${t}.benar harus array boolean sepanjang pernyataan.`);
       else if (q.benar.some((x) => typeof x !== 'boolean')) err.push(`${t}.benar hanya boleh berisi true/false.`);
     }
-    if (q.visual && !TIPE_VISUAL.includes(q.visual.tipe)) err.push(`${t}.visual.tipe harus: ${TIPE_VISUAL.join(' / ')}.`);
-    if (q.visual?.tipe === 'tabel' && (!Array.isArray(q.visual.kepala) || !Array.isArray(q.visual.baris))) err.push(`${t}.visual tabel butuh "kepala" & "baris".`);
-    if (q.visual?.tipe === 'termometer' && !Array.isArray(q.visual.data)) err.push(`${t}.visual termometer butuh "data".`);
-    if (q.visual?.tipe === 'bangun' && (!Array.isArray(q.visual.titik) || !Array.isArray(q.visual.sisi))) err.push(`${t}.visual bangun butuh "titik" & "sisi".`);
-    if (q.visual?.tipe === 'garis' && !Array.isArray(q.visual.titik)) err.push(`${t}.visual garis butuh "titik".`);
-    if (q.visual?.tipe === 'gambar' && !q.visual.src) err.push(`${t}.visual gambar butuh "src" (URL gambar).`);
+    validasiVisual(q.visual, `${t}.visual`, err);
   });
   return err;
 }
@@ -134,6 +155,11 @@ export default function ManajerBuku() {
   const [modeBab, setModeBab] = useState(null); // null | 'baru' | object bab
   const [teksJson, setTeksJson] = useState('');
   const [errValidasi, setErrValidasi] = useState([]);
+
+  // ===== STATE v4: impor file JSON & konversi PDF otomatis =====
+  const jsonFileRef = useRef(null);
+  const pdfFileRef = useRef(null);
+  const [konversiInfo, setKonversiInfo] = useState('');
 
   // ===== STATE MANAJER GAMBAR =====
   const [images, setImages] = useState([]);          // [{ url, name }]
@@ -217,7 +243,11 @@ export default function ManajerBuku() {
         const urutan = obj.urutan != null ? Number(obj.urutan) : babList.length + i;
         await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', obj.id), {
           id: obj.id, judul: obj.judul, urutan,
-          sections: obj.sections, ujiPemahaman: obj.ujiPemahaman,
+          // 🔥 v4: SANITASI FIRESTORE otomatis -- array bersarang
+          // (tabel baris, bangun isi) dibungkus { s: [...] } dulu.
+          // Penyebab error lama "Nested arrays are not supported".
+          sections: sanitasiFirestore(obj.sections),
+          ujiPemahaman: sanitasiFirestore(obj.ujiPemahaman),
           sumber: obj.sumber || 'admin', updatedAt: Date.now(),
         }, { merge: true });
       }
@@ -283,7 +313,75 @@ export default function ManajerBuku() {
     setTimeout(() => setPesanGambar(''), 2500);
   };
 
-  const snippetVisual = (url) => `"visual": { "tipe": "gambar", "src": "${url}", "alt": "" }`;
+  const snippetVisual = (url) => `"visual": { "tipe": "gambar", "src": "${url}", "alt": "", "caption": "" }`;
+  const snippetBlok = (url) => `{ "tipe": "gambar", "src": "${url}", "alt": "", "caption": "" }`;
+
+  // ============================================================
+  // v4: IMPOR FILE JSON -- pilih file / hasil konversi, sekali
+  // klik masuk ke textarea. Tidak ada lagi copy-paste manual.
+  // ============================================================
+  const imporFileJson = async (file) => {
+    if (!file) return;
+    try {
+      const teks = await file.text();
+      const parsed = JSON.parse(teks);
+      setTeksJson(JSON.stringify(parsed, null, 2));
+      setErrValidasi([]);
+      setKonversiInfo(`✅ File "${file.name}" dimuat ke kolom JSON — tekan "Validasi & Simpan".`);
+    } catch (e) {
+      setKonversiInfo(`❌ File bukan JSON valid: ${e.message}`);
+    }
+    if (jsonFileRef.current) jsonFileRef.current.value = '';
+  };
+
+  // ============================================================
+  // v4: IMPOR PDF OTOMATIS -- ekstrak teks + gambar tersemat,
+  // susun draf bab (seksi materi + soal + pembahasan), gambar
+  // otomatis terupload ke Storage & terpasang sebagai blok.
+  // Hasil = DRAF: admin tetap review sebelum simpan.
+  // ============================================================
+  const imporPdf = async (file) => {
+    if (!file) return;
+    setKonversiInfo('📄 Membaca PDF...');
+    try {
+      const halaman = await ekstrakPdf(file, (i, n) => setKonversiInfo(`📄 Mengekstrak halaman ${i}/${n}...`));
+      const totalTeks = halaman.reduce((a, h) => a + h.baris.join(' ').length, 0);
+      if (totalTeks < 200) {
+        setKonversiInfo('❌ PDF ini hasil scan (tidak ada lapisan teks) sehingga tidak bisa dikonversi otomatis. Gunakan PDF berlapis teks, atau kirim file-nya untuk konversi terbimbing.');
+        if (pdfFileRef.current) pdfFileRef.current.value = '';
+        return;
+      }
+      const base = file.name.replace(/\.pdf$/i, '').replace(/^\d+\s*/, '').trim();
+      const draf = konversiTeksKeBab(halaman, { id: 'bab-' + (slugify(base) || 'baru').slice(0, 24), judul: base || 'Bab Baru', urutan: babList.length + 1 });
+      const gambarList = [];
+      for (const h of halaman) for (const blob of h.gambar) gambarList.push({ page: h.nomor, blob });
+      let gambarOk = 0;
+      if (gambarList.length) {
+        setKonversiInfo(`🖼️ Mengupload ${gambarList.length} gambar dari PDF ke Storage...`);
+        const storage = getStorage();
+        for (let gi = 0; gi < gambarList.length; gi++) {
+          const g = gambarList[gi];
+          try {
+            const path = `buku-digital/${bukuDipilih.id}/${Date.now()}_hal${g.page}_${gi}.png`;
+            const r = sRef(storage, path);
+            await uploadBytes(r, g.blob);
+            const url = await getDownloadURL(r);
+            const sek = [...draf.sections].reverse().find((s) => (s._hal || 1) <= g.page) || draf.sections[0];
+            sek.blocks.push({ tipe: 'gambar', src: url, alt: `Gambar halaman ${g.page}`, caption: `Gambar dari PDF halaman ${g.page}` });
+            gambarOk++;
+          } catch { /* gambar gagal = dilewati, draf jalan terus */ }
+        }
+      }
+      draf.sections.forEach((s) => delete s._hal);
+      setTeksJson(JSON.stringify(draf, null, 2));
+      setErrValidasi([]);
+      setKonversiInfo(`✅ Draf otomatis siap: ${draf.sections.length} seksi • ${draf.ujiPemahaman.length} soal • ${gambarOk} gambar terpasang. Periksa/edit seperlunya, lalu Validasi & Simpan.`);
+    } catch (e) {
+      console.error('Konversi PDF gagal:', e);
+      setKonversiInfo('❌ Konversi PDF gagal: ' + (e?.message || e));
+    }
+    if (pdfFileRef.current) pdfFileRef.current.value = '';
+  };
 
   // ============================================================
   // RENDER
@@ -377,8 +475,12 @@ export default function ManajerBuku() {
             <div style={{ fontSize: 13, fontWeight: 800, color: '#1e293b' }}>
               {bukuDipilih.emoji} {bukuDipilih.judul} — Daftar Bab ({babList.length})
             </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); }} style={st.btnPrimary}><Plus size={14} /> Bab (Paste JSON)</button>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <input ref={jsonFileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={(e) => { setModeBab('baru'); setErrValidasi([]); setKonversiInfo(''); imporFileJson(e.target.files[0]); }} />
+              <input ref={pdfFileRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={(e) => { setModeBab('baru'); setErrValidasi([]); setKonversiInfo(''); imporPdf(e.target.files[0]); }} />
+              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); setKonversiInfo(''); pdfFileRef.current?.click(); }} style={st.btnSecondary} title="Sistem membaca PDF & menyusun draf bab otomatis (teks + gambar)"><FileText size={14} /> Impor PDF (otomatis)</button>
+              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); setKonversiInfo(''); jsonFileRef.current?.click(); }} style={st.btnSecondary} title="Muat file .json siap-paste sekali klik"><FileJson size={14} /> Impor File JSON</button>
+              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); setKonversiInfo(''); }} style={st.btnPrimary}><Plus size={14} /> Bab (Paste JSON)</button>
               <button onClick={() => setBukuDipilih(null)} style={st.iconBtn}><X size={15} /></button>
             </div>
           </div>
@@ -429,7 +531,8 @@ export default function ManajerBuku() {
                           <div style={{ fontSize: 9, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{img.url}</div>
                         </div>
                         <button onClick={() => salin(img.url, 'URL')} style={st.btnTiny} title="Salin URL mentah"><Copy size={12} /> URL</button>
-                        <button onClick={() => salin(snippetVisual(img.url), 'Snippet visual')} style={st.btnTiny} title="Salin snippet JSON visual gambar"><FileCode size={12} /> Snippet</button>
+                        <button onClick={() => salin(snippetVisual(img.url), 'Snippet visual soal')} style={st.btnTiny} title="Salin snippet visual utk DI DALAM object soal (ujiPemahaman)"><FileCode size={12} /> Soal</button>
+                        <button onClick={() => salin(snippetBlok(img.url), 'Snippet blok materi')} style={st.btnTiny} title="Salin snippet blok gambar utk MATERI (sections[].blocks)"><Layers size={12} /> Blok</button>
                         <button onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))} style={{ ...st.iconBtn, color: '#dc2626' }} title="Hapus dari daftar"><X size={13} /></button>
                       </div>
                     ))}
@@ -437,8 +540,9 @@ export default function ManajerBuku() {
                 )}
 
                 <div style={{ fontSize: 10, color: '#64748b', marginTop: 8, lineHeight: 1.6 }}>
-                  Cara pakai: klik <b>Snippet</b> pada gambar → tempel hasilnya DI DALAM object soal pada JSON di bawah, contoh:<br />
-                  <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>{`{ "id": "u1", "tipe": "pg", "soal": "Perhatikan gambar!", "visual": { "tipe": "gambar", "src": "URL_DISINI", "alt": "" }, "pilihan": [...], "benar": 0, "pembahasan": "..." }`}</code>
+                  Cara pakai:<br />
+                  • <b>Soal</b> → tempel di DALAM object soal pada <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>ujiPemahaman</code>: <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>{`{ "id": "u1", "tipe": "pg", "soal": "Perhatikan gambar!", "visual": { "tipe": "gambar", "src": "URL_DISINI", "alt": "", "caption": "" }, "pilihan": [...], "benar": 0, "pembahasan": "..." }`}</code><br />
+                  • <b>Blok</b> → tempel sebagai satu blok di <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>sections[].blocks</code> (gambar tampil di tengah materi): <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>{`{ "tipe": "gambar", "src": "URL_DISINI", "alt": "", "caption": "Gambar 1.1 — ..." }`}</code>
                 </div>
               </div>
 
@@ -453,6 +557,12 @@ export default function ManajerBuku() {
                 placeholder={CONTOH_JSON_BAB}
                 style={st.textarea}
               />
+
+              {konversiInfo && (
+                <div style={{ background: konversiInfo.startsWith('❌') ? '#fef2f2' : '#f0fdf4', border: `1px solid ${konversiInfo.startsWith('❌') ? '#fecaca' : '#bbf7d0'}`, borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 11.5, color: konversiInfo.startsWith('❌') ? '#991b1b' : '#166534', whiteSpace: 'pre-wrap' }}>
+                  {konversiInfo}
+                </div>
+              )}
 
               {errValidasi.length > 0 && (
                 <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: 10, marginTop: 8, maxHeight: 200, overflowY: 'auto' }}>
