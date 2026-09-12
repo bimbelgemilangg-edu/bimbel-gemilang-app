@@ -1,11 +1,11 @@
 // api/konversiModulScan.js
 // ============================================================
 // 🔥 MESIN TULIS ULANG MODUL SCAN -> BAB INTERAKTIF (0 RUPIAH)
-// Scan modul (gambar halaman) dikirim ke AI VISION pihak ketiga,
-// lalu DITULIS ULANG jadi bab terstruktur skema buku digital kita:
-// sections + blocks (p/list/math/contoh/tips/gambar) + visual
-// interaktif (tabel/bangun/garis/termometer) + ujiPemahaman
-// (pg/multi/bs) lengkap dengan kunci & pembahasan.
+// Scan modul (gambar halaman) dikirim ke Gemini Vision (kuota
+// gratis), lalu DITULIS ULANG jadi bab terstruktur skema buku
+// digital kita: sections + blocks (p/list/math/contoh/tips/gambar)
+// + visual interaktif (tabel/bangun/garis/termometer) +
+// ujiPemahaman (pg/multi/bs) lengkap dengan kunci & pembahasan.
 //
 // PROVIDER (semua gratis, rantai cadangan otomatis):
 //   1) Groq      -> GROQ_API_KEY      (tercepat, llama-4-scout vision)
@@ -22,7 +22,6 @@
 
 export const config = {
     maxDuration: 60,
-    api: { bodyParser: { sizeLimit: '20mb' } },
   };
   
   // Rantai provider: base url OpenAI-compatible + model vision andalan.
@@ -181,6 +180,7 @@ export const config = {
       return res.status(400).json({ error: 'Maksimal 14 halaman per panggilan. Pecah bab menjadi dua bagian di sisi klien.' });
     }
   
+    // Susun parts: instruksi + daftar placeholder + gambar berurutan
     const daftarPlaceholder = Array.isArray(placeholders) && placeholders.length
       ? placeholders.map((p) => `- {{GAMBAR_${p.n}}} = potongan gambar halaman ${p.halaman}${p.ket ? ` (${p.ket})` : ''}`).join('\n')
       : '- (tidak ada potongan gambar tersedia; jangan memakai blok gambar)';

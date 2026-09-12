@@ -8,7 +8,6 @@
 
 export const config = {
   maxDuration: 60,
-  api: { bodyParser: { sizeLimit: '15mb' } },
 };
 
 // ============================================================
@@ -24,13 +23,13 @@ DUKUNGAN TIPE SOAL:
 2. pg_kompleks    : Pilihan ganda kompleks, lebih dari satu jawaban benar.
 3. benar_salah    : Pernyataan dengan pilihan Benar/Salah, Ya/Tidak (termasuk format tabel).
 4. isian_singkat  : Isian angka UTBK (0-999), isian singkat, atau isian kata/frasa.
-5. menjodohkan    : Memasangkan item Kolom Kiri dengan Kolom Kanan.
+5. menjodohkan    : Memasangkan item Kolom Kiri dan Kolom Kanan.
 
 ATURAN WAJIB:
 1. Pertahankan teks soal sedekat mungkin dengan sumber. Jangan meringkas, mengarang, atau mengubah angka.
 2. Pertahankan semua simbol sains dan matematika dengan LaTeX bersih:
-   - Inline: $...$ — contoh: $x^2$, $\\frac{a}{b}$, $\\sqrt{2}$
-   - Display: $$...$$ — contoh: $$\\int_0^\\infty f(x)dx$$
+   - Inline: $...$ — contoh $x^2$, $\\frac{a}{b}$, $\\sqrt{2}$
+   - Display: $$...$$ — contoh $$\\int_0^\\infty f(x)dx$$
    - Pecahan: \\frac{pembilang}{penyebut}
    - Akar: \\sqrt{n}, \\sqrt[n]{x}
    - Pangkat/indeks: x^{n}, x_{i}
@@ -41,7 +40,7 @@ ATURAN WAJIB:
 3. Jika soal punya gambar/diagram/grafik/tabel visual, sisipkan {{GAMBAR_1}}, {{GAMBAR_2}} dst di teks_soal. Isi array gambar dengan id dan deskripsi visual.
 4. Jangan membuat gambar baru. Jangan menebak gambar yang tidak terlihat.
 5. Untuk menjodohkan: isi pasangan kiri-kanan di array "pasangan". Jika tidak ada, kosongkan [].
-6. Untuk isian_singkat: isi kunci_jawaban dengan angka/kata jika tertera. Jika tidak, kosongkan "".
+6. Untuk isian_singkat: isi kunci_jawaban dengan angka/kata jika tertera. Jika tidak ada, kosongkan "".
 7. kunci_jawaban hanya diisi jika JELAS tertulis di halaman. Jika tidak ada, isi string kosong.
 8. JANGAN menganggap opsi jawaban A/B/C/D/E sebagai kunci jawaban.
 9. JANGAN menggabungkan dua soal berbeda menjadi satu.
@@ -100,7 +99,7 @@ function salvagePartialJsonArray(text) {
   if (lastGoodEnd === -1) return [];
   try {
     const parsed = JSON.parse(text.slice(start, lastGoodEnd + 1) + ']');
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed : [] ;
   } catch { return []; }
 }
 
