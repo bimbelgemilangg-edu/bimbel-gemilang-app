@@ -15,14 +15,13 @@
 //   4. Koreksi seperlunya (judul/urutan/mode/rentang halaman).
 //   5. "Unggah & Terbitkan" -> file masuk Storage, bab masuk
 //      Firestore, langsung terlihat siswa. Tanpa deploy.
+//      ATAU tombol "✨ AI" -> scan DITULIS ULANG jadi bab
+//      terstruktur interaktif (rumus LaTeX + visual + soal).
 //
 // Kenapa modul scan TIDAK dipaksa jadi teks?
 //   Modul bimbel umumnya PDF hasil scan (1 halaman = 1 gambar).
-//   Dipaksa OCR = rumus & gambar rusak. Disimpan apa adanya =
-//   fidelity 100% (rumus, diagram, tabel, warna semua HD) dan
-//   siswa tetap dapat lapisan interaktif (Uji Pemahaman + XP).
-//   Gambar untuk soal diambil dengan "Ambil Gambar dari Modul"
-//   di Manajer Buku -- bukan upload manual.
+//   Dipaksa OCR merusak rumus & diagram. Sekarang ada dua jalan:
+//   Modul Asli (fidelity 100%) atau Tulis Ulang AI (interaktif).
 // ============================================================
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -35,8 +34,10 @@ import {
 import { uploadElearningFile } from '../../../services/uploadService';
 import {
   ArrowLeft, UploadCloud, FileText, Loader2, Trash2, Plus, Save, CheckCircle2,
-  AlertTriangle, Layers, Eye, Scissors, Copy, Split,
+  AlertTriangle, Layers, Eye, Scissors, Copy, Split, Sparkles,
 } from 'lucide-react';
+// v5.2: mesin tulis-ulang scan -> bab interaktif (AI gratis: Groq/OpenRouter/Mistral)
+import { konversiModulKeBab } from '../../../utils/konversiAiClient';
 import {
   bukaPdf, infoModul, thumbnailHalaman, deteksiBabDalamPdf, judulDariNamaFile,
   babIdDari, ukuranTerbaca, hashFile, susunUrutan, cariBentrokId,
@@ -146,7 +147,7 @@ export default function ImporModul() {
           halSampai: info.jumlahHalaman,
           mode: info.adaLapisanTeks ? 'konversi' : 'pdf',
           pesan: info.hasilPindai
-            ? `Modul scan (${info.jumlahHalaman} hal, tanpa lapisan teks) → disimpan sebagai Modul Asli.`
+            ? `Modul scan (${info.jumlahHalaman} hal, tanpa lapisan teks) → siap Modul Asli atau ✨ AI.`
             : info.adaLapisanTeks
               ? `Ada lapisan teks (${info.karakterPerHalaman} karakter/hal) → boleh dikonversi jadi bab terstruktur.`
               : `${info.jumlahHalaman} halaman.`,
@@ -362,6 +363,79 @@ export default function ImporModul() {
   };
 
   // ============================================================
+  // v5.2: TULIS ULANG DENGAN AI (scan -> bab terstruktur interaktif)
+  // 1) PDF tetap diupload ke Supabase (cadangan mode "Modul Asli")
+  // 2) AI menulis ulang isi: materi LaTeX + visual + soal + kunci
+  // 3) Disimpan sebagai bab TERSTRUKTUR, langsung terbit
+  // ============================================================
+  const jalankanAi = async (it) => {
+    if (it.status === 'ai') return;
+    const statusSemula = it.status;
+    ubah(it.kunci, { status: 'ai', progres: 0, pesan: 'Mengupload modul ke Supabase (cadangan Modul Asli)...' });
+    try {
+      let url = '';
+      let path = '';
+      const up = await unggahSatu(it.file, (p) => ubah(it.kunci, { progres: Math.round(p * 0.15) }));
+      url = up.url;
+      path = up.path;
+
+      const hasil = await konversiModulKeBab({
+        sumber: it.file,
+        bukuId: bukuId || 'umum',
+        halamanMulai: it.halMulai || 1,
+        halamanSampai: it.halSampai || null,
+        meta: { judul: it.judul, nomor: it.nomor, urutan: it.urutan },
+        onProgres: (tahap, pesan) => ubah(it.kunci, { pesan: `[AI] ${pesan}` }),
+      });
+
+      let buku = bukuSiap;
+      if (!buku) {
+        buku = await pastikanBuku();
+        setBukuSiap(buku);
+      }
+
+      const halSampai = Math.min(it.halSampai || it.info?.jumlahHalaman || 1, it.info?.jumlahHalaman || 9999);
+      const halMulai = Math.max(1, Math.min(it.halMulai || 1, halSampai));
+      const dokumen = {
+        id: it.babId,
+        judul: it.judul,
+        urutan: Number(it.urutan) || 1,
+        tipe: 'terstruktur',
+        pdfUrl: url,
+        pdfPath: path,
+        pdfHash: it.hash || '',
+        namaFile: it.nama,
+        ukuranByte: it.ukuran,
+        jumlahHalaman: it.info?.jumlahHalaman || 0,
+        halamanMulai: halMulai,
+        halamanSelesai: halSampai,
+        adaLapisanTeks: !!it.info?.adaLapisanTeks,
+        hasilPindai: !!it.info?.hasilPindai,
+        sumber: `ai:${hasil.model}`,
+        status: it.aktif ? 'aktif' : 'draft',
+        sections: hasil.bab.sections,
+        ujiPemahaman: hasil.bab.ujiPemahaman,
+        updatedAt: Date.now(),
+      };
+      await setDoc(doc(db, 'buku_digital', buku.id, 'bab', it.babId), dokumen, { merge: true });
+      tambahLog(`✨ ${it.nama}: AI (${hasil.model}) menulis ulang → ${(hasil.bab.sections || []).length} seksi, ${(hasil.bab.ujiPemahaman || []).length} soal. Bab terbit.`);
+      ubah(it.kunci, {
+        status: 'terbit',
+        progres: 100,
+        hasilUrl: url,
+        pesan: `✨ Terstruktur hasil AI (${hasil.model}) • ${(hasil.bab.sections || []).length} seksi, ${(hasil.bab.ujiPemahaman || []).length} soal.`,
+      });
+    } catch (e) {
+      console.error('Gagal konversi AI', it.nama, e);
+      tambahLog(`❌ AI ${it.nama}: ${e?.message || e}`);
+      ubah(it.kunci, {
+        status: statusSemula === 'terbit' ? 'terbit' : 'siap',
+        pesan: '❌ AI gagal: ' + (e?.message || e) + ' — tombol Unggah & Terbitkan (Modul Asli) tetap tersedia.',
+      });
+    }
+  };
+
+  // ============================================================
   // RENDER
   // ============================================================
   const siapHitung = items.filter((x) => x.status === 'siap' || x.status === 'terbit').length;
@@ -527,12 +601,20 @@ export default function ImporModul() {
                       <span style={{ color: '#94a3b8' }}> • id: <code style={st.code}>{it.babId}</code> • urutan {it.urutan || '-'}</span>
                     </div>
 
-                    {(it.status === 'unggah' || it.status === 'terbit') && (
-                      <div style={st.barProgres}><div style={{ ...st.barProgresIsi, width: `${it.progres || 0}%`, background: it.status === 'terbit' ? '#22c55e' : '#4C6EF5' }} /></div>
+                    {(it.status === 'unggah' || it.status === 'terbit' || it.status === 'ai') && (
+                      <div style={st.barProgres}><div style={{ ...st.barProgresIsi, width: `${it.progres || 0}%`, background: it.status === 'terbit' ? '#22c55e' : it.status === 'ai' ? '#7c3aed' : '#4C6EF5' }} /></div>
                     )}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                    <button
+                      onClick={() => jalankanAi(it)}
+                      disabled={it.status === 'ai' || it.status === 'analisis' || !it.info}
+                      style={{ ...st.btnKecil, color: '#7c3aed', borderColor: '#e9d5ff' }}
+                      title="Tulis ulang scan jadi bab interaktif (rumus LaTeX + visual + soal + kunci) lewat AI gratis"
+                    >
+                      {it.status === 'ai' ? <Loader2 size={12} className="spin" /> : <Sparkles size={12} />} AI
+                    </button>
                     {it.status === 'terbit' && bukuSiap ? (
                       <button onClick={() => window.open(`/siswa/buku/${bukuSiap.id}/${it.babId}`, '_blank')} style={st.btnKecil} title="Lihat di reader siswa"><Eye size={12} /> Lihat</button>
                     ) : (
@@ -610,6 +692,10 @@ export default function ImporModul() {
             <p><b>Satu PDF bisa jadi banyak bab.</b> Pakai <b>Pecah</b> (rentang halaman) atau <b>Deteksi bab</b> (kalau PDF-nya punya lapisan teks
               dengan penanda "BAB n").</p>
             <p><b>Skala.</b> Tambah buku baru untuk kelas/jenjang lain = buat buku baru di langkah 1, lalu impor modulnya. Nol perubahan kode, nol deploy.</p>
+            <p><b>✨ Tombol AI per file</b> = tulis ulang scan menjadi bab TERSTRUKTUR interaktif (materi LaTeX, visual vektor/tabel, soal + kunci + pembahasan)
+              memakai AI gratis (Groq → OpenRouter → Mistral, otomatis memilih yang tersedia). PDF asli tetap tersimpan di Supabase sehingga mode
+              "Modul Asli" tetap bisa dipakai sebagai cadangan/pembanding lewat tombol tukar mode di Manajer Buku. Hasil AI selalu melewati
+              pembersihan struktur sebelum disimpan: soal cacat dibuang, placeholder gambar diganti URL potongan asli.</p>
           </div>
         </details>
       </div>
@@ -618,6 +704,7 @@ export default function ImporModul() {
 }
 
 function warnaStatus(s) {
+  if (s === 'ai') return '#7c3aed';
   if (s === 'terbit') return '#22c55e';
   if (s === 'error' || s === 'gagal') return '#ef4444';
   if (s === 'unggah' || s === 'analisis') return '#4C6EF5';

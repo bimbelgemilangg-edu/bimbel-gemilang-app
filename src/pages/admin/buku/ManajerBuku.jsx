@@ -33,8 +33,10 @@ import { sanitasiFirestore } from '../../../utils/konversiPdfBuku';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Save, X, BookOpen, Layers, Eye,
   ImageIcon, Upload, Copy, Link2, FileCode, FileJson,
-  UploadCloud, Scissors, ToggleLeft
+  UploadCloud, Scissors, ToggleLeft, Sparkles
 } from 'lucide-react';
+// v5.2: tulis ulang scan tersimpan -> bab terstruktur interaktif (AI gratis)
+import { konversiModulKeBab } from '../../../utils/konversiAiClient';
 // 🔥 v5: alat potong gambar langsung dari halaman modul (pengganti
 // upload gambar manual) + halaman impor modul massal.
 import PemotongGambar from '../../../components/buku/PemotongGambar';
@@ -90,7 +92,7 @@ function validasiVisual(v, label, err) {
   if (v.tipe === 'tabel' && (!Array.isArray(v.kepala) || !Array.isArray(v.baris))) err.push(`${label} tabel butuh "kepala" & "baris".`);
   if (v.tipe === 'termometer' && !Array.isArray(v.data)) err.push(`${label} termometer butuh "data".`);
   if (v.tipe === 'bangun' && (!Array.isArray(v.titik) || !Array.isArray(v.sisi))) err.push(`${label} bangun butuh "titik" & "sisi".`);
-  if (v.tipe === 'garis' && !Array.isArray(v.titik)) err.push(`${label} garis butuh "titik".`);
+  if (v.tipe === 'garis' && (!Array.isArray(v.titik))) err.push(`${label} garis butuh "titik".`);
   if (v.tipe === 'gambar' && (!v.src || typeof v.src !== 'string')) err.push(`${label} gambar butuh "src" (URL gambar).`);
 }
 
@@ -174,6 +176,8 @@ export default function ManajerBuku() {
   const textareaRef = useRef(null);
   const [potong, setPotong] = useState(null);   // { bab } saat alat potong dibuka
   const [hasilPotong, setHasilPotong] = useState([]);
+  const [aiJalan, setAiJalan] = useState(null);   // babId yang sedang diproses AI
+  const [aiPesan, setAiPesan] = useState('');
 
   // ===== STATE MANAJER GAMBAR =====
   const [images, setImages] = useState([]);          // [{ url, name }]
@@ -410,6 +414,44 @@ export default function ManajerBuku() {
   const modeBabSekarang = (bab) => (bab.tipe === 'pdf' || (!bab.tipe && bab.pdfUrl && !(bab.sections || []).length)) ? 'pdf' : 'terstruktur';
 
   // ============================================================
+  // v5.2: TULIS ULANG AI untuk bab yang PDF-nya sudah tersimpan.
+  // Tidak upload ulang apa pun: pdfUrl lama dipakai sebagai sumber.
+  // Hasil = bab TERSTRUKTUR baru (sections + soal), mode bisa
+  // ditukar balik ke Modul Asli lewat tombol toggle.
+  // ============================================================
+  const tulisUlangAi = async (bab) => {
+    if (!bab.pdfUrl) { alert('Bab ini tidak punya file modul tersimpan. Impor dulu lewat Impor Modul.'); return; }
+    if (aiJalan) return;
+    if (!window.confirm(`Tulis ulang "${bab.judul}" dengan AI?\nSections/soal lama bab ini akan DITIMPA hasil AI (mode bisa ditukar balik ke Modul Asli).`)) return;
+    setAiJalan(bab.id);
+    setAiPesan(`✨ AI menulis ulang "${bab.judul}"... (render halaman + potong figur + tulis ulang, bisa 1-3 menit)`);
+    try {
+      const hasil = await konversiModulKeBab({
+        sumber: bab.pdfUrl,
+        bukuId: bukuDipilih.id,
+        halamanMulai: bab.halamanMulai || 1,
+        halamanSampai: bab.halamanSelesai || bab.jumlahHalaman || null,
+        meta: { judul: bab.judul, nomor: bab.urutan, urutan: bab.urutan },
+        onProgres: (tahap, pesan) => setAiPesan(`✨ [AI] ${pesan}`),
+      });
+      await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', bab.id), {
+        tipe: 'terstruktur',
+        sections: hasil.bab.sections,
+        ujiPemahaman: hasil.bab.ujiPemahaman,
+        sumber: `ai:${hasil.model}`,
+        updatedAt: Date.now(),
+      }, { merge: true });
+      setAiPesan(`✅ Selesai: ${(hasil.bab.sections || []).length} seksi, ${(hasil.bab.ujiPemahaman || []).length} soal (${hasil.model}).`);
+      muatBab(bukuDipilih.id);
+    } catch (e) {
+      console.error('Gagal tulis ulang AI:', e);
+      setAiPesan('❌ AI gagal: ' + (e?.message || e));
+    }
+    setAiJalan(null);
+    setTimeout(() => setAiPesan(''), 8000);
+  };
+
+  // ============================================================
   // RENDER
   // ============================================================
   return (
@@ -539,6 +581,12 @@ export default function ManajerBuku() {
                     <Scissors size={13} /> Gambar dari Modul
                   </button>
                 )}
+                {bab.pdfUrl && (
+                  <button onClick={() => tulisUlangAi(bab)} disabled={aiJalan === bab.id} style={{ ...st.btnSmall2, background: '#f3e8ff', color: '#7c3aed' }}
+                    title="Tulis ulang scan jadi bab interaktif (rumus LaTeX + visual + soal + kunci) lewat AI gratis">
+                    {aiJalan === bab.id ? <Loader2 size={13} className="spin" /> : <Sparkles size={13} />} Tulis Ulang AI
+                  </button>
+                )}
                 <button onClick={() => gantiModeBab(bab)} style={st.iconBtn}
                   title={`Tampilan siswa sekarang: ${modeBab === 'pdf' ? 'Modul Asli (PDF)' : 'Terstruktur'}. Klik untuk menukar.`}>
                   <ToggleLeft size={16} />
@@ -549,6 +597,12 @@ export default function ManajerBuku() {
               </div>
             );
           })}
+
+          {aiPesan && (
+            <div style={{ background: aiPesan.startsWith('❌') ? '#fef2f2' : '#f5f3ff', border: `1px solid ${aiPesan.startsWith('❌') ? '#fecaca' : '#ddd6fe'}`, borderRadius: 8, padding: '8px 10px', marginTop: 10, fontSize: 11, color: aiPesan.startsWith('❌') ? '#991b1b' : '#6d28d9' }}>
+              {aiPesan}
+            </div>
+          )}
 
           {modeBab && (
             <div style={{ marginTop: 12 }}>
