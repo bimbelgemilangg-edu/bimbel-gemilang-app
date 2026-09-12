@@ -499,8 +499,8 @@ export function deteksiBagianHalaman(piksel, opsi = {}) {
   const kotakTeks = (opsi.kotakTeks || []).map((t) => ({
     x0: Math.floor((t.x * rasio) / sel) - 1,
     y0: Math.floor((t.y * rasio) / sel) - 1,
-    x1: Math.ceil(((t.x + t.w) * rasio) / sel) + 1,
-    y1: Math.ceil(((t.y + t.h) * rasio) / sel) + 1,
+    x1: Math.ceil(((t.x + t.w) / rasio) / sel) + 1,
+    y1: Math.ceil(((t.y + t.h) / rasio) / sel) + 1,
   }));
   if (kotakTeks.length) {
     for (let gy = 0; gy < gh; gy++) {

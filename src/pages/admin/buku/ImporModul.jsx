@@ -30,16 +30,16 @@ import { db } from '../../../firebase';
 import {
   collection, getDocs, doc, setDoc, serverTimestamp,
 } from 'firebase/firestore';
-import {
-  getStorage, ref as sRef, uploadBytesResumable, getDownloadURL,
-} from 'firebase/storage';
+// v5.1: penyimpanan = Supabase Storage (gratis, sudah terbukti dipakai
+// fitur Materi Portal). Firebase Storage butuh Blaze -> tidak dipakai.
+import { uploadElearningFile } from '../../../services/uploadService';
 import {
   ArrowLeft, UploadCloud, FileText, Loader2, Trash2, Plus, Save, CheckCircle2,
   AlertTriangle, Layers, Eye, Scissors, Copy, Split,
 } from 'lucide-react';
 import {
   bukaPdf, infoModul, thumbnailHalaman, deteksiBabDalamPdf, judulDariNamaFile,
-  babIdDari, namaFileAman, ukuranTerbaca, hashFile, susunUrutan, cariBentrokId,
+  babIdDari, ukuranTerbaca, hashFile, susunUrutan, cariBentrokId,
 } from '../../../utils/modulPdf';
 import { sanitasiFirestore, ekstrakPdf, konversiTeksKeBab } from '../../../utils/konversiPdfBuku';
 
@@ -245,22 +245,14 @@ export default function ImporModul() {
   // ============================================================
   // UNGGAH & TERBITKAN
   // ============================================================
-  const unggahSatu = (file, path, onProgres) => new Promise((resolve, reject) => {
-    try {
-      const storage = getStorage();
-      const r = sRef(storage, path);
-      const task = uploadBytesResumable(r, file, { contentType: 'application/pdf' });
-      task.on('state_changed',
-        (snap) => {
-          const p = snap.totalBytes ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
-          if (onProgres) onProgres(p);
-        },
-        (err) => reject(err),
-        async () => {
-          try { resolve({ url: await getDownloadURL(r), path }); } catch (e) { reject(e); }
-        });
-    } catch (e) { reject(e); }
-  });
+  // v5.1: upload ke Supabase Storage (bucket materi-bimbel, folder pdf/).
+  const unggahSatu = async (file, onProgres) => {
+    if (onProgres) onProgres(8);
+    const hasil = await uploadElearningFile(file, 'materi', { kompres: false });
+    if (!hasil.success) throw new Error(hasil.error || 'Gagal upload ke Supabase');
+    if (onProgres) onProgres(92);
+    return { url: hasil.downloadURL, path: hasil.filePath };
+  };
 
   const mulai = async () => {
     const siap = items.filter((x) => x.status === 'siap' || x.status === 'terbit');
@@ -297,10 +289,10 @@ export default function ImporModul() {
           tambahLog(`♻️ ${it.nama}: file identik sudah ada (bab "${sama.judul}") — tidak diupload ulang.`);
           ubah(it.kunci, { progres: 100 });
         } else {
-          path = `buku-digital/${buku.id}/modul/${Date.now()}_${namaFileAman(it.nama)}`;
-          const hasilUnggah = await unggahSatu(it.file, path, (p) => ubah(it.kunci, { progres: p }));
+          const hasilUnggah = await unggahSatu(it.file, (p) => ubah(it.kunci, { progres: p }));
           url = hasilUnggah.url;
-          tambahLog(`⬆️ ${it.nama} (${ukuranTerbaca(it.ukuran)}) → Storage selesai.`);
+          path = hasilUnggah.path;
+          tambahLog(`⬆️ ${it.nama} (${ukuranTerbaca(it.ukuran)}) → Supabase Storage selesai.`);
         }
 
         // ---------- susun dokumen bab ----------

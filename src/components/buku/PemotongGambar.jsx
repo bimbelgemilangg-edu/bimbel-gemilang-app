@@ -16,7 +16,8 @@
 // halaman Impor Modul.
 // ============================================================
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+// v5.1: simpan potongan ke Supabase Storage (gratis), bukan Firebase Storage.
+import { uploadElearningFile } from '../../services/uploadService';
 import {
   X, ChevronLeft, ChevronRight, ScanSearch, Save, Loader2, ZoomIn, ZoomOut,
   ImageIcon, Crop, RotateCcw, Copy, Check,
@@ -256,13 +257,21 @@ export default function PemotongGambar({
     try {
       const rectPdf = kePdf(pilihan);
       const hasil = await potongRegionKeBlob(pdf, halaman, rectPdf, { format, kualitas, maxLebar });
-      const storage = getStorage();
       const ext = format === 'image/png' ? 'png' : 'jpg';
-      const path = `buku-digital/${bukuId}/potongan/${Date.now()}_hal${halaman}_${namaFileAman(judul).slice(0, 30)}.${ext}`;
-      const r = sRef(storage, path);
-      await uploadBytes(r, hasil.blob, { contentType: hasil.format });
-      const url = await getDownloadURL(r);
-      const catatan = { url, path, halaman, rect: rectPdf, lebar: hasil.lebar, tinggi: hasil.tinggi, blob: hasil.blob, thumb: buatThumb(canvasRef.current, pilihan) };
+      const namaPot = `hal${halaman}_${namaFileAman(judul).slice(0, 30)}.${ext}`;
+      const filePot = new File([hasil.blob], namaPot, { type: hasil.format });
+      const up = await uploadElearningFile(filePot, 'materi', {
+        kompres: false,
+        contentType: hasil.format,
+      });
+      if (!up.success) throw new Error(up.error || 'Gagal upload ke Supabase');
+      const url = up.downloadURL;
+      const path = up.filePath;
+      const catatan = {
+        url, path, halaman, rect: rectPdf, bukuId,
+        lebar: hasil.lebar, tinggi: hasil.tinggi,
+        blob: hasil.blob, thumb: buatThumb(canvasRef.current, pilihan),
+      };
       setGaleri((g) => [catatan, ...g]);
       setStatus(`✅ Gambar ${hasil.lebar}×${hasil.tinggi}px terupload.`);
       if (onSelesai) onSelesai(catatan);

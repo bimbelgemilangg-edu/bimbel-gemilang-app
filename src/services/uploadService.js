@@ -90,8 +90,12 @@ const compressImage = (file, maxWidth = 1024, quality = 0.7) => {
 
 // ============================================================
 // 🔥 UPLOAD FILE KE SUPABASE - DENGAN SANITASI
+// v5.1: parameter `opsi` baru:
+//   opsi.kompres = false -> gambar TIDAK dikompres (HD apa adanya,
+//                           dipakai potongan gambar buku digital)
+//   opsi.contentType     -> paksa tipe konten (mis. 'image/png')
 // ============================================================
-export const uploadElearningFile = async (file, customPath = 'materi') => {
+export const uploadElearningFile = async (file, customPath = 'materi', opsi = {}) => {
   try {
     if (!file) throw new Error('Tidak ada file yang dipilih.');
 
@@ -99,8 +103,13 @@ export const uploadElearningFile = async (file, customPath = 'materi') => {
     let finalFileType = file.type;
     let finalFileName = file.name;
 
-    // Kompres gambar jika perlu
-    if (file.type.startsWith('image/')) {
+    // v5.1: tipe konten boleh dipaksa pemanggil (mis. image/png)
+    if (opsi.contentType) finalFileType = opsi.contentType;
+
+    // Kompres gambar jika perlu.
+    // opsi.kompres = false -> biarkan HD apa adanya (dipakai potongan
+    // gambar buku digital supaya diagram tidak pecah).
+    if (file.type.startsWith('image/') && opsi.kompres !== false) {
       console.log(`📦 Mengompres gambar: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
       try {
         dataToUpload = await compressImage(file, 1024, 0.7);

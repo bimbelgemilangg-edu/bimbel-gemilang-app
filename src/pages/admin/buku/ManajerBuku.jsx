@@ -27,11 +27,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { sanitasiFirestore, ekstrakPdf, konversiTeksKeBab } from '../../../utils/konversiPdfBuku';
+// v5.1: semua upload gambar pindah ke Supabase Storage (gratis).
+import { uploadElearningFile } from '../../../services/uploadService';
+import { sanitasiFirestore } from '../../../utils/konversiPdfBuku';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Save, X, BookOpen, Layers, Eye,
-  ImageIcon, Upload, Copy, Link2, FileCode, FileJson, FileText, Loader2,
+  ImageIcon, Upload, Copy, Link2, FileCode, FileJson,
   UploadCloud, Scissors, ToggleLeft
 } from 'lucide-react';
 // 🔥 v5: alat potong gambar langsung dari halaman modul (pengganti
@@ -166,14 +167,8 @@ export default function ManajerBuku() {
   const [teksJson, setTeksJson] = useState('');
   const [errValidasi, setErrValidasi] = useState([]);
 
-  // ===== STATE v4: impor file JSON & konversi PDF otomatis =====
+  // ===== STATE v4: impor file JSON sekali klik =====
   const jsonFileRef = useRef(null);
-  const pdfFileRef = useRef(null);
-  const [konversiInfo, setKonversiInfo] = useState('');
-
-  // ===== STATE v4.1: PAKET GAMBAR (upload banyak + pasang otomatis) =====
-  const paketRef = useRef(null);
-  const [pesanPaket, setPesanPaket] = useState('');
 
   // ===== STATE v5: IMPOR MODUL & PEMOTONG GAMBAR =====
   const textareaRef = useRef(null);
@@ -309,19 +304,16 @@ export default function ManajerBuku() {
     setPesanGambar('');
     const hasil = [];
     try {
-      const storage = getStorage();
       for (const f of Array.from(files)) {
-        const path = `buku-digital/${bukuDipilih.id}/${Date.now()}_${f.name}`;
-        const r = sRef(storage, path);
-        await uploadBytes(r, f);
-        const url = await getDownloadURL(r);
-        hasil.push({ url, name: f.name });
+        const up = await uploadElearningFile(f, 'materi');
+        if (!up.success) throw new Error(up.error || 'Gagal upload');
+        hasil.push({ url: up.downloadURL, name: f.name });
       }
       setImages((prev) => [...prev, ...hasil]);
       setPesanGambar(`✅ ${hasil.length} gambar terupload. Pakai tombol salin di bawah untuk memasangnya ke JSON.`);
     } catch (e) {
       console.error('Gagal upload gambar:', e);
-      setPesanGambar('❌ Gagal upload ke Firebase Storage: ' + (e?.message || e) + '. Pastikan Storage aktif di project Firebase, atau pakai URL eksternal di bawah.');
+      setPesanGambar('❌ Gagal upload ke Supabase Storage: ' + (e?.message || e) + '. Coba lagi, atau pakai URL eksternal di bawah.');
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = '';
@@ -351,105 +343,20 @@ export default function ManajerBuku() {
       const parsed = JSON.parse(teks);
       setTeksJson(JSON.stringify(parsed, null, 2));
       setErrValidasi([]);
-      setKonversiInfo(`✅ File "${file.name}" dimuat ke kolom JSON — tekan "Validasi & Simpan".`);
+      setPesanGambar(`✅ File "${file.name}" dimuat ke kolom JSON — tekan "Validasi & Simpan".`);
     } catch (e) {
-      setKonversiInfo(`❌ File bukan JSON valid: ${e.message}`);
+      setPesanGambar(`❌ File bukan JSON valid: ${e.message}`);
     }
     if (jsonFileRef.current) jsonFileRef.current.value = '';
   };
 
   // ============================================================
-  // v4: IMPOR PDF OTOMATIS -- ekstrak teks + gambar tersemat,
-  // susun draf bab (seksi materi + soal + pembahasan), gambar
-  // otomatis terupload ke Storage & terpasang sebagai blok.
-  // Hasil = DRAF: admin tetap review sebelum simpan.
+  // CATATAN v5.1: fitur lama "Impor PDF (otomatis)" dan "Paket Gambar"
+  // DIHAPUS dari halaman ini karena jadi jalan buntu untuk modul scan
+  // dan alur rename file tidak efisien. Penggantinya:
+  //   - Impor Modul (massal)  -> tombol hijau di header
+  //   - Gambar dari Modul     -> potong langsung dari halaman modul
   // ============================================================
-  const imporPdf = async (file) => {
-    if (!file) return;
-    setKonversiInfo('📄 Membaca PDF...');
-    try {
-      const halaman = await ekstrakPdf(file, (i, n) => setKonversiInfo(`📄 Mengekstrak halaman ${i}/${n}...`));
-      const totalTeks = halaman.reduce((a, h) => a + h.baris.join(' ').length, 0);
-      if (totalTeks < 200) {
-        setKonversiInfo('❌ PDF ini hasil scan (tidak ada lapisan teks) sehingga tidak bisa dikonversi otomatis. Gunakan PDF berlapis teks, atau kirim file-nya untuk konversi terbimbing.');
-        if (pdfFileRef.current) pdfFileRef.current.value = '';
-        return;
-      }
-      const base = file.name.replace(/\.pdf$/i, '').replace(/^\d+\s*/, '').trim();
-      const draf = konversiTeksKeBab(halaman, { id: 'bab-' + (slugify(base) || 'baru').slice(0, 24), judul: base || 'Bab Baru', urutan: babList.length + 1 });
-      const gambarList = [];
-      for (const h of halaman) for (const blob of h.gambar) gambarList.push({ page: h.nomor, blob });
-      let gambarOk = 0;
-      if (gambarList.length) {
-        setKonversiInfo(`🖼️ Mengupload ${gambarList.length} gambar dari PDF ke Storage...`);
-        const storage = getStorage();
-        for (let gi = 0; gi < gambarList.length; gi++) {
-          const g = gambarList[gi];
-          try {
-            const path = `buku-digital/${bukuDipilih.id}/${Date.now()}_hal${g.page}_${gi}.png`;
-            const r = sRef(storage, path);
-            await uploadBytes(r, g.blob);
-            const url = await getDownloadURL(r);
-            const sek = [...draf.sections].reverse().find((s) => (s._hal || 1) <= g.page) || draf.sections[0];
-            sek.blocks.push({ tipe: 'gambar', src: url, alt: `Gambar halaman ${g.page}`, caption: `Gambar dari PDF halaman ${g.page}` });
-            gambarOk++;
-          } catch { /* gambar gagal = dilewati, draf jalan terus */ }
-        }
-      }
-      draf.sections.forEach((s) => delete s._hal);
-      setTeksJson(JSON.stringify(draf, null, 2));
-      setErrValidasi([]);
-      setKonversiInfo(`✅ Draf otomatis siap: ${draf.sections.length} seksi • ${draf.ujiPemahaman.length} soal • ${gambarOk} gambar terpasang. Periksa/edit seperlunya, lalu Validasi & Simpan.`);
-    } catch (e) {
-      console.error('Konversi PDF gagal:', e);
-      setKonversiInfo('❌ Konversi PDF gagal: ' + (e?.message || e));
-    }
-    if (pdfFileRef.current) pdfFileRef.current.value = '';
-  };
-
-  // ============================================================
-  // v4.1: PAKET GAMBAR -- pilih BANYAK file sekaligus; nama file
-  // menentukan tujuan: "u10.png" -> soal id u10 (field "gambar"),
-  // "bab-5-a.png" -> seksi id bab-5-a (blok gambar di materi).
-  // Sistem upload ke Storage + suntik ke JSON di kolom otomatis.
-  // Admin tetap tekan Validasi & Simpan sesudahnya (satu tulisan).
-  // ============================================================
-  const imporPaketGambar = async (files) => {
-    if (!files || !files.length) return;
-    let parsed;
-    try { parsed = JSON.parse(teksJson); } catch { setPesanPaket('❌ Kolom JSON kosong/rusak. Muat dulu bab-nya: klik ✏️ pada baris bab, atau Impor File JSON / Impor PDF dulu.'); return; }
-    const tunggal = !Array.isArray(parsed);
-    const list = tunggal ? [parsed] : parsed;
-    const log = [];
-    const storage = getStorage();
-    for (const f of Array.from(files)) {
-      const kunci = f.name.replace(/\.(png|jpe?g|webp|gif)$/i, '').trim().toLowerCase();
-      try {
-        const path = `buku-digital/${bukuDipilih.id}/${Date.now()}_${f.name}`;
-        const r = sRef(storage, path);
-        await uploadBytes(r, f);
-        const url = await getDownloadURL(r);
-        let kena = null;
-        for (const bab of list) {
-          for (const q of (bab.ujiPemahaman || [])) if (String(q.id).toLowerCase() === kunci) kena = { jenis: 'soal', obj: q };
-          for (const s of (bab.sections || [])) if (String(s.id).toLowerCase() === kunci) kena = { jenis: 'seksi', obj: s };
-        }
-        if (!kena) { log.push(`⚠️ ${f.name}: tidak ditemukan soal/seksi ber-id "${kunci}" — dilewati.`); continue; }
-        if (kena.jenis === 'soal') {
-          kena.obj.gambar = { src: url, alt: kena.obj.id, caption: 'Gambar soal dari modul' };
-        } else {
-          kena.obj.blocks = [...(kena.obj.blocks || []), { tipe: 'gambar', src: url, alt: kunci, caption: 'Gambar materi dari modul' }];
-        }
-        log.push(`✅ ${f.name} → terpasang di ${kena.jenis} "${kunci}".`);
-      } catch (e) {
-        log.push(`❌ ${f.name}: ${e?.message || e}`);
-      }
-    }
-    setTeksJson(JSON.stringify(tunggal ? list[0] : list, null, 2));
-    setPesanPaket(log.join('\n') + '\n→ JSON sudah diperbarui otomatis. Tekan "Validasi & Simpan" untuk menerbitkan.');
-    if (paketRef.current) paketRef.current.value = '';
-  };
-
   // ============================================================
   // v5: HASIL POTONGAN GAMBAR DARI MODUL
   // Gambar dipotong langsung dari halaman PDF modul (tidak ada
@@ -598,11 +505,9 @@ export default function ManajerBuku() {
               {bukuDipilih.emoji} {bukuDipilih.judul} — Daftar Bab ({babList.length})
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              <input ref={jsonFileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={(e) => { setModeBab('baru'); setErrValidasi([]); setKonversiInfo(''); imporFileJson(e.target.files[0]); }} />
-              <input ref={pdfFileRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={(e) => { setModeBab('baru'); setErrValidasi([]); setKonversiInfo(''); imporPdf(e.target.files[0]); }} />
-              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); setKonversiInfo(''); pdfFileRef.current?.click(); }} style={st.btnSecondary} title="Sistem membaca PDF & menyusun draf bab otomatis (teks + gambar)"><FileText size={14} /> Impor PDF (otomatis)</button>
-              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); setKonversiInfo(''); jsonFileRef.current?.click(); }} style={st.btnSecondary} title="Muat file .json siap-paste sekali klik"><FileJson size={14} /> Impor File JSON</button>
-              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); setKonversiInfo(''); }} style={st.btnPrimary}><Plus size={14} /> Bab (Paste JSON)</button>
+              <input ref={jsonFileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={(e) => { setModeBab('baru'); setErrValidasi([]); imporFileJson(e.target.files[0]); }} />
+              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); jsonFileRef.current?.click(); }} style={st.btnSecondary} title="Muat file .json siap-paste sekali klik"><FileJson size={14} /> Impor File JSON</button>
+              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); }} style={st.btnPrimary}><Plus size={14} /> Bab (Paste JSON)</button>
               <button onClick={() => setBukuDipilih(null)} style={st.iconBtn}><X size={15} /></button>
             </div>
           </div>
@@ -728,23 +633,6 @@ export default function ManajerBuku() {
                 </div>
               </div>
 
-              {/* ===== v4.1 PAKET GAMBAR ===== */}
-              <div style={st.imgCard}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <Upload size={16} color="#16a34a" />
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#1e293b' }}>Paket Gambar (sekali klik)</span>
-                  <span style={{ fontSize: 10, color: '#64748b' }}>— pilih banyak file sekaligus; nama file = id tujuan.</span>
-                </div>
-                <div style={{ fontSize: 10.5, color: '#475569', lineHeight: 1.6, marginBottom: 8 }}>
-                  Muat dulu bab ke kolom JSON (klik ✏️ pada baris bab). Lalu pilih file-file gambar: nama <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>u10.png</code> memasang gambar asli ke <b>soal u10</b>; nama <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>bab-5-a.png</code> memasang blok gambar di <b>seksi bab-5-a</b>. Semua file terupload otomatis ke Storage & masuk JSON — tinggal Validasi & Simpan.
-                </div>
-                <input ref={paketRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => imporPaketGambar(e.target.files)} />
-                <button onClick={() => paketRef.current?.click()} style={st.btnSecondary}><ImageIcon size={14} /> Pilih Paket Gambar</button>
-                {pesanPaket && (
-                  <pre style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: 8, marginTop: 8, fontSize: 10.5, color: '#334155', whiteSpace: 'pre-wrap', maxHeight: 160, overflowY: 'auto' }}>{pesanPaket}</pre>
-                )}
-              </div>
-
               <details style={{ marginBottom: 8 }}>
                 <summary style={{ fontSize: 11, color: '#4C6EF5', cursor: 'pointer', fontWeight: 700 }}>Lihat contoh format JSON bab</summary>
                 <pre style={{ background: '#0f172a', color: '#e2e8f0', padding: 10, borderRadius: 8, fontSize: 10, overflowX: 'auto', marginTop: 6 }}>{CONTOH_JSON_BAB}</pre>
@@ -757,12 +645,6 @@ export default function ManajerBuku() {
                 placeholder={CONTOH_JSON_BAB}
                 style={st.textarea}
               />
-
-              {konversiInfo && (
-                <div style={{ background: konversiInfo.startsWith('❌') ? '#fef2f2' : '#f0fdf4', border: `1px solid ${konversiInfo.startsWith('❌') ? '#fecaca' : '#bbf7d0'}`, borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 11.5, color: konversiInfo.startsWith('❌') ? '#991b1b' : '#166534', whiteSpace: 'pre-wrap' }}>
-                  {konversiInfo}
-                </div>
-              )}
 
               {errValidasi.length > 0 && (
                 <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: 10, marginTop: 8, maxHeight: 200, overflowY: 'auto' }}>
