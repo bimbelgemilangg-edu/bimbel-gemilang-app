@@ -5,6 +5,7 @@
 // tidak tampil; semua visual vektor (tajim di zoom/proyektor) dan
 // interaktif/animatif biar enak dipakai siswa belajar & guru mengajar.
 import React, { useState } from 'react';
+import { deretBaris } from '../../utils/konversiPdfBuku';
 
 export default function VisualBuku({ visual }) {
   if (!visual) return null;
@@ -67,6 +68,7 @@ export function BangunDatar({ titik = [], sisi = [], isi = [], keterangan = '' }
   const [buka, setBuka] = useState({});
   const P = {};
   titik.forEach((t) => { P[t.id] = t; });
+  const grupIsi = deretBaris(isi); // tahan bentuk mentah [[..]] maupun hasil sanitasi Firestore [{s:[..]}]
   const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
   return (
     <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '10px 8px 8px', marginBottom: 12 }}>
@@ -77,7 +79,7 @@ export function BangunDatar({ titik = [], sisi = [], isi = [], keterangan = '' }
         .bd-fade { opacity: 0; animation: bdFade 0.6s ease forwards; }
       `}</style>
       <svg width="100%" viewBox="0 0 100 100" style={{ maxHeight: 230, display: 'block' }}>
-        {isi.map((grup, i) => (
+        {grupIsi.map((grup, i) => (
           <polygon
             key={i}
             points={grup.map((id) => `${P[id].x},${P[id].y}`).join(' ')}
@@ -159,7 +161,9 @@ export function GarisBuku({ titik = [], keterangan = '' }) {
 }
 
 // Tabel data sederhana (pengganti tabel cetak di modul).
+// baris boleh bentuk mentah [["a","b"]] atau bentuk Firestore [{s:["a","b"]}].
 export function TabelBuku({ caption, kepala = [], baris = [] }) {
+  const rows = deretBaris(baris);
   return (
     <div style={{ overflowX: 'auto', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 10, marginBottom: 12 }}>
       {caption && <div style={{ fontSize: 10.5, fontWeight: 800, color: '#475569', marginBottom: 6 }}>{caption}</div>}
@@ -172,7 +176,7 @@ export function TabelBuku({ caption, kepala = [], baris = [] }) {
           </tr>
         </thead>
         <tbody>
-          {baris.map((r, i) => (
+          {rows.map((r, i) => (
             <tr key={i}>
               {r.map((c, j) => (
                 <td key={j} style={{ border: '1px solid #e2e8f0', padding: '6px 8px', color: '#334155' }}>{c}</td>
