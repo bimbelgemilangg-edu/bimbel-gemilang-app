@@ -10,7 +10,7 @@
 //   3. Kirim gambar halaman + daftar placeholder ke API Vercel
 //      (Groq -> OpenRouter -> Mistral, otomatis).
 //   4. Rapikan hasil: substitusi placeholder dengan URL asli,
-//      buang blok/somal cacat, beri id, sanitasi Firestore.
+//      buang blok/soal cacat, beri id, sanitasi Firestore.
 //   5. Kembalikan bab siap simpan (tipe 'terstruktur').
 //
 // Semua gagal-di-satu-tempat tidak menjatuhkan alur: figur yang
@@ -19,14 +19,13 @@
 import {
     bukaPdf,
     renderHalamanKeCanvas,
-    potongRegionKeBlob,
     deteksiBagianDariCanvas,
   } from './modulPdf';
   import { sanitasiFirestore } from './konversiPdfBuku';
   import { uploadElearningFile } from '../services/uploadService';
   
-  const MAKS_HAL_PER_PANGGILAN = 14;   // batas api/konversiModulScan
-  const LEBAR_RENDER_AI = 1100;        // px: cukup tajam untuk OCR AI
+  const MAKS_HAL_PER_PANGGILAN = 10;   // batas aman memori tab + body request
+  const LEBAR_RENDER_AI = 900;         // px: cukup tajam untuk AI, hemat memori
   const KUALITAS_JPEG = 0.72;
   const MAKS_FIGUR_PER_HALAMAN = 4;    // biar upload tidak bengkak
   
@@ -111,13 +110,29 @@ import {
     return { ...bab, sections, ujiPemahaman: uji };
   }
   
+  // Crop region (piksel canvas) -> Blob JPEG, tanpa render ulang PDF
+  function cropCanvasKeBlob(canvas, r) {
+    return new Promise((resolve) => {
+      try {
+        const out = buatCanvas();
+        out.width = Math.max(1, Math.round(r.w));
+        out.height = Math.max(1, Math.round(r.h));
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, out.width, out.height);
+        ctx.drawImage(canvas, r.x, r.y, r.w, r.h, 0, 0, out.width, out.height);
+        out.toBlob((b) => resolve(b && b.size > 500 ? b : null), 'image/jpeg', 0.85);
+      } catch { resolve(null); }
+    });
+  }
+  
   // ------------------------------------------------------------
   // Satu putaran: render + potong figur + upload untuk rentang halaman
   // ------------------------------------------------------------
-  async function siapkanHalaman(pdf, daftarHal, bukuId, onProgres) {
+  async function siapkanHalaman(pdf, daftarHal, onProgres) {
     const images = [];
     const placeholders = [];
-    let n = placeholders.length ? Math.max(...placeholders.map((p) => p.n)) + 1 : 1;
+    let n = 1;
   
     for (let i = 0; i < daftarHal.length; i++) {
       const hal = daftarHal[i];
@@ -136,16 +151,9 @@ import {
         for (const r of region) {
           try {
             if (onProgres) onProgres('figur', `Memotong figur halaman ${hal}...`);
-            const rectPdf = {
-              x: r.x, y: r.y, w: r.w, h: r.h,   // canvas AI ≈ skala render; pakai rasio 1:1 pt? tidak -- lihat catatan
-            };
-            // region dalam piksel canvas; konversi ke satuan halaman render:
-            // potongRegionKeBlob bekerja dalam satuan PDF, jadi kita render
-            // ulang region langsung dari piksel canvas lewat crop manual:
             const blob = await cropCanvasKeBlob(canvas, r);
             if (!blob) continue;
-            const ext = 'jpg';
-            const filePot = new File([blob], `hal${hal}_fig${n}.${ext}`, { type: 'image/jpeg' });
+            const filePot = new File([blob], `hal${hal}_fig${n}.jpg`, { type: 'image/jpeg' });
             const up = await uploadElearningFile(filePot, 'materi', {
               kompres: false,
               contentType: 'image/jpeg',
@@ -156,37 +164,22 @@ import {
           } catch { /* satu figur gagal bukan bencana */ }
         }
       } catch { /* deteksi gagal -> halaman tetap dikirim tanpa placeholder */ }
-      void rectPdfSafe();
+  
+      // bebaskan memori canvas sebelum halaman berikutnya (anti tab crash)
+      canvas.width = 0;
+      canvas.height = 0;
     }
   
-    function rectPdfSafe() { return null; }
     return { images, placeholders };
-  }
-  
-  // Crop region (piksel canvas) -> Blob JPEG, tanpa render ulang PDF
-  function cropCanvasKeBlob(canvas, r) {
-    return new Promise((resolve) => {
-      try {
-        const out = buatCanvas();
-        out.width = Math.max(1, Math.round(r.w));
-        out.height = Math.max(1, Math.round(r.h));
-        const ctx = out.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, out.width, out.height);
-        ctx.drawImage(canvas, r.x, r.y, r.w, r.h, 0, 0, out.width, out.height);
-        out.toBlob((b) => resolve(b && b.size > 500 ? b : null), 'image/jpeg', 0.85);
-      } catch { resolve(null); }
-    });
   }
   
   // ------------------------------------------------------------
   // PINTU UTAMA: konversi satu bab (rentang halaman) jadi bab JSON
-  // siap simpan. babChunk > 14 halaman dipecah otomatis & digabung.
+  // siap simpan. Bab > 10 halaman dipecah otomatis & digabung.
   // ------------------------------------------------------------
   export async function konversiModulKeBab(opts) {
     const {
       sumber,              // File | url pdf
-      bukuId,              // untuk path upload Supabase
       halamanMulai = 1,
       halamanSampai = null,
       meta = {},           // { judul, nomor, urutan }
@@ -203,7 +196,7 @@ import {
       for (let h = mulai; h <= sampai; h++) semuaHal.push(h);
       if (!semuaHal.length) throw new Error('Rentang halaman kosong.');
   
-      // pecah jadi chunk <= 14 halaman
+      // pecah jadi chunk <= 10 halaman
       const chunks = [];
       for (let i = 0; i < semuaHal.length; i += MAKS_HAL_PER_PANGGILAN) {
         chunks.push(semuaHal.slice(i, i + MAKS_HAL_PER_PANGGILAN));
@@ -216,7 +209,7 @@ import {
       for (let c = 0; c < chunks.length; c++) {
         const halChunk = chunks[c];
         if (onProgres) onProgres('siapkan', `Menyiapkan halaman ${halChunk[0]}–${halChunk[halChunk.length - 1]} (render + potong figur)...`);
-        const { images, placeholders } = await siapkanHalaman(pdf, halChunk, bukuId, onProgres);
+        const { images, placeholders } = await siapkanHalaman(pdf, halChunk, onProgres);
   
         if (onProgres) onProgres('ai', `AI menulis ulang bagian ${c + 1}/${chunks.length}... (bisa 20-60 detik)`);
         const resp = await fetch('/api/konversiModulScan', {
@@ -237,7 +230,7 @@ import {
         gabungUji.push(...babChunk.ujiPemahaman);
       }
   
-      if (!gabunganSectionsValid(gabungSections)) {
+      if (!Array.isArray(gabungSections) || !gabungSections.some((s) => Array.isArray(s.blocks) && s.blocks.length > 0)) {
         throw new Error('Hasil AI tidak menghasilkan seksi materi yang valid.');
       }
   
@@ -260,9 +253,4 @@ import {
     } finally {
       try { await pdf.destroy(); } catch { /* abaikan */ }
     }
-  }
-  
-  function gabunganSectionsValid(sections) {
-    return Array.isArray(sections) && sections.length > 0 &&
-      sections.some((s) => Array.isArray(s.blocks) && s.blocks.length > 0);
   }

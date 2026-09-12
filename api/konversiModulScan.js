@@ -1,57 +1,62 @@
 // api/konversiModulScan.js
 // ============================================================
 // 🔥 MESIN TULIS ULANG MODUL SCAN -> BAB INTERAKTIF (0 RUPIAH)
-// Scan modul (gambar halaman) dikirim ke Gemini Vision (kuota
-// gratis), lalu DITULIS ULANG jadi bab terstruktur skema buku
-// digital kita: sections + blocks (p/list/math/contoh/tips/gambar)
-// + visual interaktif (tabel/bangun/garis/termometer) +
-// ujiPemahaman (pg/multi/bs) lengkap dengan kunci & pembahasan.
+// Gambar halaman scan dikirim ke AI VISION gratis, lalu DITULIS
+// ULANG jadi bab terstruktur skema buku digital kita:
+// sections + blocks (p/list/math/contoh/tips/gambar) + visual
+// interaktif (tabel/bangun/garis/termometer) + ujiPemahaman
+// (pg/multi/bs) lengkap dengan kunci & pembahasan.
 //
-// PROVIDER (semua gratis, rantai cadangan otomatis):
-//   1) Groq      -> GROQ_API_KEY      (tercepat, llama-4-scout vision)
-//   2) OpenRouter-> OPENROUTER_API_KEY (qwen2.5-vl / pixtral :free)
-//   3) Mistral   -> MISTRAL_API_KEY   (pixtral spesialis dokumen)
-// Cukup isi kunci yang ada; provider tanpa kunci dilewati.
-// Model lain di menu lain TIDAK terpengaruh file ini.
+// PROVIDER GRATIS (rantai cadangan otomatis; yang mati dilewati):
+//   1) Groq       -> GROQ_API_KEY
+//   2) OpenRouter -> OPENROUTER_API_KEY (model :free verifikasi
+//      hidup per 12 Sep 2026 lewat openrouter.ai/api/v1/models)
+//   3) Mistral    -> MISTRAL_API_KEY
+// Cukup isi kunci yang ada. Menu AI lain TIDAK terpengaruh.
 //
-// Desain hemat kuota: 1 bab = 1 panggilan. Gambar figur TIDAK
-// dibuat AI: client mengirim placeholder {{GAMBAR_n}} hasil
-// potongan halaman yang sudah diupload ke Supabase; AI hanya
-// boleh MEMAKAI placeholder itu, tidak boleh mengarang URL.
+// Desain hemat kuota: 1 bab = 1 panggilan (maks 10 halaman).
+// Gambar figur TIDAK dibuat AI: client mengirim placeholder
+// {{GAMBAR_n}} hasil potongan halaman yang sudah diupload ke
+// Supabase; AI hanya boleh MEMAKAI placeholder itu.
 // ============================================================
 
 export const config = {
     maxDuration: 60,
   };
   
-  // Rantai provider: base url OpenAI-compatible + model vision andalan.
-  // Model bisa dioverride lewat env tanpa deploy ulang.
   const PROVIDERS = [
     {
       nama: 'groq',
       key: () => process.env.GROQ_API_KEY,
       base: 'https://api.groq.com/openai/v1',
-      models: () => ['meta-llama/llama-4-scout-17b-16e-instruct'],
+      models: () => String(process.env.GROQ_MODELS || '')
+        .split(',').map((x) => x.trim()).filter(Boolean)
+        .concat([
+          'meta-llama/llama-4-scout-17b-16e-instruct',
+          'llama-4-scout-17b-16e-instruct',
+          'meta-llama/llama-4-maverick-17b-128e-instruct',
+          'llama-3.2-90b-vision-preview',
+        ]),
     },
     {
       nama: 'openrouter',
       key: () => process.env.OPENROUTER_API_KEY,
       base: 'https://openrouter.ai/api/v1',
       models: () => String(process.env.OPENROUTER_MODELS || '')
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
+        .split(',').map((x) => x.trim()).filter(Boolean)
         .concat([
-          'qwen/qwen2.5-vl-72b-instruct:free',
-          'mistralai/pixtral-12b:free',
-          'meta-llama/llama-4-scout:free',
+          'google/gemma-4-31b-it:free',
+          'thinkingmachines/inkling:free',
+          'inclusionai/ling-3.0-flash-vl:free',
+          'nex-agi/nex-n2.5-pro:free',
+          'google/gemma-4-26b-a4b-it:free',
         ]),
     },
     {
       nama: 'mistral',
       key: () => process.env.MISTRAL_API_KEY,
       base: 'https://api.mistral.ai/v1',
-      models: () => ['pixtral-12b-2409'],
+      models: () => ['pixtral-12b-2409', 'pixtral-large-latest'],
     },
   ];
   
@@ -117,7 +122,7 @@ export const config = {
         max_tokens: 8192,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content },
         ],
       }),
@@ -153,7 +158,11 @@ export const config = {
       else if (c === '}') {
         depth--;
         if (depth === 0) {
-          try { return JSON.parse(t.slice(start, i + 1)); } catch { return null; }
+          try {
+            return JSON.parse(t.slice(start, i + 1));
+          } catch {
+            return null;
+          }
         }
       }
     }
@@ -168,7 +177,7 @@ export const config = {
     const tersedia = PROVIDERS.filter((p) => !!p.key());
     if (!tersedia.length) {
       return res.status(500).json({
-        error: 'Belum ada kunci AI. Isi salah satu env di Vercel: GROQ_API_KEY (disarankan, gratis di console.groq.com), OPENROUTER_API_KEY, atau MISTRAL_API_KEY.',
+        error: 'Belum ada kunci AI. Isi env Vercel: GROQ_API_KEY atau OPENROUTER_API_KEY (dua-duanya gratis).',
       });
     }
   
@@ -180,7 +189,6 @@ export const config = {
       return res.status(400).json({ error: 'Maksimal 14 halaman per panggilan. Pecah bab menjadi dua bagian di sisi klien.' });
     }
   
-    // Susun parts: instruksi + daftar placeholder + gambar berurutan
     const daftarPlaceholder = Array.isArray(placeholders) && placeholders.length
       ? placeholders.map((p) => `- {{GAMBAR_${p.n}}} = potongan gambar halaman ${p.halaman}${p.ket ? ` (${p.ket})` : ''}`).join('\n')
       : '- (tidak ada potongan gambar tersedia; jangan memakai blok gambar)';
@@ -211,12 +219,12 @@ export const config = {
           return res.status(200).json({ success: true, bab, provider: provider.nama, model });
         } catch (e) {
           kesalahan.push(`${provider.nama}/${model}: ${e.message}`);
-          // lanjut model/provider berikutnya (limit kuota, model turun, dll)
+          // model/provider mati atau kena limit -> coba berikutnya
         }
       }
     }
   
     return res.status(500).json({
-      error: `Semua provider gagal. Rincian:\n${kesalahan.slice(0, 6).join('\n')}`,
+      error: `Semua provider gagal: ${kesalahan.slice(0, 6).join(' | ')}`,
     });
   }
