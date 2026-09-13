@@ -14,6 +14,8 @@ import {
   Navigate,
   useParams
 } from 'react-router-dom';
+// v5.3: pengaman layar putih -- error render ditampilkan, bukan ditelan
+import ErrorBoundary from './components/ErrorBoundary';
 
 // ============================================================
 // LOGIN & PUBLIK
@@ -348,6 +350,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ErrorBoundary>
       <Routes>
 
         {/* PUBLIC */}
@@ -540,6 +543,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

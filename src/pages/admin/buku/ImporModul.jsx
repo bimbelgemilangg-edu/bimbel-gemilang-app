@@ -15,13 +15,14 @@
 //   4. Koreksi seperlunya (judul/urutan/mode/rentang halaman).
 //   5. "Unggah & Terbitkan" -> file masuk Storage, bab masuk
 //      Firestore, langsung terlihat siswa. Tanpa deploy.
-//      ATAU tombol "✨ AI" -> scan DITULIS ULANG jadi bab
-//      terstruktur interaktif (rumus LaTeX + visual + soal).
 //
 // Kenapa modul scan TIDAK dipaksa jadi teks?
 //   Modul bimbel umumnya PDF hasil scan (1 halaman = 1 gambar).
-//   Dipaksa OCR merusak rumus & diagram. Sekarang ada dua jalan:
-//   Modul Asli (fidelity 100%) atau Tulis Ulang AI (interaktif).
+//   Dipaksa OCR = rumus & gambar rusak. Disimpan apa adanya =
+//   fidelity 100% (rumus, diagram, tabel, warna semua HD) dan
+//   siswa tetap dapat lapisan interaktif (Uji Pemahaman + XP).
+//   Gambar untuk soal diambil dengan "Ambil Gambar dari Modul"
+//   di Manajer Buku -- bukan upload manual.
 // ============================================================
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -147,7 +148,7 @@ export default function ImporModul() {
           halSampai: info.jumlahHalaman,
           mode: info.adaLapisanTeks ? 'konversi' : 'pdf',
           pesan: info.hasilPindai
-            ? `Modul scan (${info.jumlahHalaman} hal, tanpa lapisan teks) → siap Modul Asli atau ✨ AI.`
+            ? `Modul scan (${info.jumlahHalaman} hal, tanpa lapisan teks) → disimpan sebagai Modul Asli.`
             : info.adaLapisanTeks
               ? `Ada lapisan teks (${info.karakterPerHalaman} karakter/hal) → boleh dikonversi jadi bab terstruktur.`
               : `${info.jumlahHalaman} halaman.`,
@@ -371,6 +372,7 @@ export default function ImporModul() {
   const jalankanAi = async (it) => {
     if (it.status === 'ai') return;
     const statusSemula = it.status;
+    let terakhirPesan = 0;
     ubah(it.kunci, { status: 'ai', progres: 0, pesan: 'Mengupload modul ke Supabase (cadangan Modul Asli)...' });
     try {
       let url = '';
@@ -385,7 +387,12 @@ export default function ImporModul() {
         halamanMulai: it.halMulai || 1,
         halamanSampai: it.halSampai || null,
         meta: { judul: it.judul, nomor: it.nomor, urutan: it.urutan },
-        onProgres: (tahap, pesan) => ubah(it.kunci, { pesan: `[AI] ${pesan}` }),
+        onProgres: (tahap, pesan) => {
+          const sekarang = Date.now();
+          if (sekarang - terakhirPesan < 700) return;   // throttle render
+          terakhirPesan = sekarang;
+          ubah(it.kunci, { pesan: `[AI] ${pesan}` });
+        },
       });
 
       let buku = bukuSiap;
@@ -601,8 +608,8 @@ export default function ImporModul() {
                       <span style={{ color: '#94a3b8' }}> • id: <code style={st.code}>{it.babId}</code> • urutan {it.urutan || '-'}</span>
                     </div>
 
-                    {(it.status === 'unggah' || it.status === 'terbit' || it.status === 'ai') && (
-                      <div style={st.barProgres}><div style={{ ...st.barProgresIsi, width: `${it.progres || 0}%`, background: it.status === 'terbit' ? '#22c55e' : it.status === 'ai' ? '#7c3aed' : '#4C6EF5' }} /></div>
+                    {(it.status === 'unggah' || it.status === 'terbit') && (
+                      <div style={st.barProgres}><div style={{ ...st.barProgresIsi, width: `${it.progres || 0}%`, background: it.status === 'terbit' ? '#22c55e' : '#4C6EF5' }} /></div>
                     )}
                   </div>
 

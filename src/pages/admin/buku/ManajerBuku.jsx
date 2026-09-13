@@ -32,7 +32,7 @@ import { uploadElearningFile } from '../../../services/uploadService';
 import { sanitasiFirestore } from '../../../utils/konversiPdfBuku';
 import {
   ArrowLeft, Plus, Pencil, Trash2, Save, X, BookOpen, Layers, Eye,
-  ImageIcon, Upload, Copy, Link2, FileCode, FileJson,
+  ImageIcon, Upload, Copy, Link2, FileCode, FileJson, Loader2,
   UploadCloud, Scissors, ToggleLeft, Sparkles
 } from 'lucide-react';
 // v5.2: tulis ulang scan tersimpan -> bab terstruktur interaktif (AI gratis)
@@ -174,10 +174,10 @@ export default function ManajerBuku() {
 
   // ===== STATE v5: IMPOR MODUL & PEMOTONG GAMBAR =====
   const textareaRef = useRef(null);
-  const [potong, setPotong] = useState(null);   // { bab } saat alat potong dibuka
-  const [hasilPotong, setHasilPotong] = useState([]);
   const [aiJalan, setAiJalan] = useState(null);   // babId yang sedang diproses AI
   const [aiPesan, setAiPesan] = useState('');
+  const [potong, setPotong] = useState(null);   // { bab } saat alat potong dibuka
+  const [hasilPotong, setHasilPotong] = useState([]);
 
   // ===== STATE MANAJER GAMBAR =====
   const [images, setImages] = useState([]);          // [{ url, name }]
@@ -424,6 +424,7 @@ export default function ManajerBuku() {
     if (aiJalan) return;
     if (!window.confirm(`Tulis ulang "${bab.judul}" dengan AI?\nSections/soal lama bab ini akan DITIMPA hasil AI (mode bisa ditukar balik ke Modul Asli).`)) return;
     setAiJalan(bab.id);
+    let terakhirPesan = 0;
     setAiPesan(`✨ AI menulis ulang "${bab.judul}"... (render halaman + potong figur + tulis ulang, bisa 1-3 menit)`);
     try {
       const hasil = await konversiModulKeBab({
@@ -432,7 +433,12 @@ export default function ManajerBuku() {
         halamanMulai: bab.halamanMulai || 1,
         halamanSampai: bab.halamanSelesai || bab.jumlahHalaman || null,
         meta: { judul: bab.judul, nomor: bab.urutan, urutan: bab.urutan },
-        onProgres: (tahap, pesan) => setAiPesan(`✨ [AI] ${pesan}`),
+        onProgres: (tahap, pesan) => {
+          const sekarang = Date.now();
+          if (sekarang - terakhirPesan < 700) return;   // throttle: jangan bombastis render
+          terakhirPesan = sekarang;
+          setAiPesan(`✨ [AI] ${pesan}`);
+        },
       });
       await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', bab.id), {
         tipe: 'terstruktur',
