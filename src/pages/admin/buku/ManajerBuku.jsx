@@ -1,8 +1,8 @@
 // src/pages/admin/buku/ManajerBuku.jsx
-// MANAJER BUKU DIGITAL v4.1
-// v4.1: + tombol ✏️ Edit Bab (editor visual split-screen)
-//        + tombol + Bab Kosong (buat bab baru lewat editor)
-//        Semua fitur v4 (JSON, AI stub, potong gambar, toggle mode) tetap utuh.
+// MANAJER BUKU DIGITAL v4.2
+// v4.2: tombol 📥 Impor HTML terintegrasi (bab bertipe 'html' + badge HTML INTERAKTIF).
+// Semua fitur v4/v4.1 tetap: paste/impor JSON, validasi ketat, manajer gambar,
+// potong gambar dari modul, toggle mode pdf/terstruktur, ✏️ Edit Bab (editor visual).
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
@@ -17,9 +17,8 @@ import {
 import { konversiModulKeBab } from '../../../utils/konversiAiClient';
 import PemotongGambar from '../../../components/buku/PemotongGambar';
 import '../../../components/buku/buku.css';
-
-// 🆕 Editor bab visual (Sprint S1)
 import EditorBab from '../../../components/admin/EditorBab';
+import ImporHtmlBab from '../../../components/admin/ImporHtmlBab';
 
 const JENJANG_OPSI = ['SD/MI', 'SMP/MTs', 'SMA/MA', 'SMK', 'UTBK/SNBT'];
 const TIPE_BLOK = ['p', 'list', 'math', 'contoh', 'tips', 'gambar'];
@@ -37,19 +36,14 @@ const CONTOH_JSON_BAB = `[
         "judul": "A. Menyajikan Data",
         "blocks": [
           { "tipe": "p", "teks": "Paragraf materi. LaTeX inline boleh: $...$" },
-          { "tipe": "gambar", "src": "https://.../diagram.png", "alt": "Diagram materi", "caption": "Gambar 7.1 — keterangan singkat di bawah gambar" },
+          { "tipe": "gambar", "src": "https://.../diagram.png", "alt": "Diagram materi", "caption": "Gambar 7.1 — keterangan singkat" },
           { "tipe": "list", "items": ["poin pertama", "poin kedua"] },
-          { "tipe": "math", "teks": "x^2 + y^2 = r^2" },
-          { "tipe": "p", "teks": "Blok apa pun boleh punya visual interaktif:", "visual": { "tipe": "tabel", "caption": "Tabel di dalam MATERI (bukan cuma soal)", "kepala": ["Data", "Frekuensi"], "baris": [["A", "5"], ["B", "8"]] } },
-          { "tipe": "contoh", "teks": "Contoh soal beserta langkahnya." },
-          { "tipe": "tips", "teks": "Tips cepat mengerjakan." }
+          { "tipe": "math", "teks": "x^2 + y^2 = r^2" }
         ]
       }
     ],
     "ujiPemahaman": [
-      { "id": "u1", "tipe": "pg", "level": "mudah", "soal": "Teks soal...", "pilihan": ["A", "B", "C", "D"], "benar": 0, "pembahasan": "Langkah pembahasan..." },
-      { "id": "u2", "tipe": "multi", "level": "sedang", "soal": "Teks soal...", "pilihan": ["opsi1", "opsi2", "opsi3"], "benar": [0, 2], "pembahasan": "..." },
-      { "id": "u3", "tipe": "bs", "level": "sulit", "soal": "Teks soal...", "pernyataan": ["pernyataan 1", "pernyataan 2"], "benar": [true, false], "pembahasan": "..." }
+      { "id": "u1", "tipe": "pg", "level": "mudah", "soal": "Teks soal...", "pilihan": ["A", "B", "C", "D"], "benar": 0, "pembahasan": "Langkah pembahasan..." }
     ]
   }
 ]`;
@@ -118,9 +112,7 @@ function validasiBab(obj) {
 }
 
 const waktuSekarang = () => Date.now();
-
-const slugify = (s) => String(s || '').toLowerCase().trim()
-  .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const slugify = (s) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 export default function ManajerBuku() {
   const navigate = useNavigate();
@@ -137,7 +129,6 @@ export default function ManajerBuku() {
   const [modeBab, setModeBab] = useState(null);
   const [teksJson, setTeksJson] = useState('');
   const [errValidasi, setErrValidasi] = useState([]);
-
   const jsonFileRef = useRef(null);
 
   const textareaRef = useRef(null);
@@ -151,8 +142,8 @@ export default function ManajerBuku() {
   const [externalUrl, setExternalUrl] = useState('');
   const [pesanGambar, setPesanGambar] = useState('');
 
-  // 🆕 State editor bab visual
-  const [editBab, setEditBab] = useState(null); // { bab } | null
+  const [editBab, setEditBab] = useState(null);
+  const [imporHtml, setImporHtml] = useState(false);
 
   const muatBuku = async () => {
     setLoading(true);
@@ -272,10 +263,10 @@ export default function ManajerBuku() {
         hasil.push({ url: up.downloadURL, name: f.name });
       }
       setImages((prev) => [...prev, ...hasil]);
-      setPesanGambar(`✅ ${hasil.length} gambar terupload. Pakai tombol salin di bawah untuk memasangnya ke JSON.`);
+      setPesanGambar(`✅ ${hasil.length} gambar terupload. Pakai tombol salin untuk memasangnya ke JSON.`);
     } catch (e) {
       console.error('Gagal upload gambar:', e);
-      setPesanGambar('❌ Gagal upload ke Supabase Storage: ' + (e?.message || e) + '. Coba lagi, atau pakai URL eksternal di bawah.');
+      setPesanGambar('❌ Gagal upload ke Supabase Storage: ' + (e?.message || e) + '. Coba lagi, atau pakai URL eksternal.');
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = '';
@@ -340,7 +331,7 @@ export default function ManajerBuku() {
     if (!punyaPdf && !punyaSections) { alert('Bab ini tidak punya modul PDF maupun seksi materi — belum ada yang bisa diganti.'); return; }
     const sekarang = bab.tipe === 'pdf' || (!bab.tipe && punyaPdf && !punyaSections) ? 'pdf' : 'terstruktur';
     const target = sekarang === 'pdf' ? 'terstruktur' : 'pdf';
-    if (target === 'terstruktur' && !punyaSections) { alert('Bab ini belum punya materi terstruktur (sections kosong). Tambahkan dulu lewat Edit JSON atau ✏️ Edit Bab.'); return; }
+    if (target === 'terstruktur' && !punyaSections) { alert('Bab ini belum punya materi terstruktur (sections kosong). Tambahkan dulu lewat Edit JSON / ✏️ Edit Bab.'); return; }
     if (target === 'pdf' && !punyaPdf) { alert('Bab ini tidak punya file modul PDF. Impor dulu lewat "Impor Modul".'); return; }
     if (!window.confirm(`Ubah tampilan bab "${bab.judul}" di sisi siswa menjadi ${target === 'pdf' ? 'MODUL ASLI (halaman PDF)' : 'TERSTRUKTUR (blok materi)'}?`)) return;
     try {
@@ -349,47 +340,34 @@ export default function ManajerBuku() {
     } catch (e) { alert('Gagal mengubah mode: ' + e.message); }
   };
 
-  const modeBabSekarang = (bab) => (bab.tipe === 'pdf' || (!bab.tipe && bab.pdfUrl && !(bab.sections || []).length)) ? 'pdf' : 'terstruktur';
+  const modeBabSekarang = (bab) => {
+    if (bab.tipe === 'html') return 'html';
+    return (bab.tipe === 'pdf' || (!bab.tipe && bab.pdfUrl && !(bab.sections || []).length)) ? 'pdf' : 'terstruktur';
+  };
 
   const tulisUlangAi = async (bab) => {
     if (!bab.pdfUrl) { alert('Bab ini tidak punya file modul tersimpan. Impor dulu lewat Impor Modul.'); return; }
     if (aiJalan) return;
-    if (!window.confirm(`Tulis ulang "${bab.judul}" dengan AI?\nSections/soal lama bab ini akan DITIMPA hasil AI (mode bisa ditukar balik ke Modul Asli).`)) return;
+    if (!window.confirm(`Tulis ulang "${bab.judul}" dengan AI?\n(Mesin AI sudah dipensiunkan — tombol ini akan menampilkan pesan.)`)) return;
     setAiJalan(bab.id);
-    let terakhirPesan = 0;
-    setAiPesan(`✨ AI menulis ulang "${bab.judul}"...`);
+    setAiPesan('✨ Menyiapkan...');
     try {
-      const hasil = await konversiModulKeBab({
+      await konversiModulKeBab({
         sumber: bab.pdfUrl,
         bukuId: bukuDipilih.id,
         halamanMulai: bab.halamanMulai || 1,
         halamanSampai: bab.halamanSelesai || bab.jumlahHalaman || null,
         meta: { judul: bab.judul, nomor: bab.urutan, urutan: bab.urutan },
-        onProgres: (tahap, pesan) => {
-          const sekarang = Date.now();
-          if (sekarang - terakhirPesan < 700) return;
-          terakhirPesan = sekarang;
-          setAiPesan(`✨ [AI] ${pesan}`);
-        },
+        onProgres: () => {},
       });
-      await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', bab.id), {
-        tipe: 'terstruktur',
-        sections: hasil.bab.sections,
-        ujiPemahaman: hasil.bab.ujiPemahaman,
-        sumber: `ai:${hasil.model}`,
-        updatedAt: Date.now(),
-      }, { merge: true });
-      setAiPesan(`✅ Selesai: ${(hasil.bab.sections || []).length} seksi, ${(hasil.bab.ujiPemahaman || []).length} soal (${hasil.model}).`);
-      muatBab(bukuDipilih.id);
     } catch (e) {
-      console.error('Gagal tulis ulang AI:', e);
-      setAiPesan('❌ AI gagal: ' + (e?.message || e));
+      console.error('AI (pensiun):', e);
+      setAiPesan('❌ ' + (e?.message || e) + ' — pakai 📥 Impor HTML atau ✏️ Edit Bab.');
     }
     setAiJalan(null);
     setTimeout(() => setAiPesan(''), 8000);
   };
 
-  // 🆕 Simpan dari editor visual ke subkoleksi bab
   const simpanDariEditor = async (babBaru) => {
     const babLama = editBab?.bab;
     const babId = babLama?.id || `bab-${Date.now().toString(36)}`;
@@ -403,14 +381,10 @@ export default function ManajerBuku() {
       sumber: 'editor',
       updatedAt: Date.now(),
     };
-    // merge:true -> field modul (pdfUrl, jumlahHalaman, pdfHash, ...) TIDAK hilang
     await setDoc(doc(db, 'buku_digital', bukuDipilih.id, 'bab', babId), payload, { merge: true });
     muatBab(bukuDipilih.id);
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   return (
     <div style={st.page}>
       <div style={st.header}>
@@ -420,7 +394,7 @@ export default function ManajerBuku() {
             <BookOpen size={20} color="#4C6EF5" /> Manajer Buku Digital
           </div>
           <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
-            Tambah buku/bab + upload gambar — terbit ke siswa tanpa deploy.
+            Tambah buku/bab + upload gambar + impor HTML — terbit ke siswa tanpa deploy.
           </div>
         </div>
         <button onClick={() => navigate('/admin/buku/impor')} style={st.btnImport} title="Impor banyak PDF modul sekaligus">
@@ -476,7 +450,7 @@ export default function ManajerBuku() {
         {loading ? <div style={st.kosong}>Memuat daftar buku...</div> : daftarBuku.length === 0 ? (
           <div style={st.kosong}>
             Belum ada buku di Firestore.<br />
-            Klik <b>Buku Baru</b> untuk membuat buku pertama, lalu tambah bab lewat tombol <b>Bab (Paste JSON)</b> atau <b>✏️ Edit Bab</b>.
+            Klik <b>Buku Baru</b>, lalu tambah bab lewat <b>Bab (Paste JSON)</b>, <b>✏️ Bab Kosong</b>, atau <b>📥 Impor HTML</b>.
           </div>
         ) : daftarBuku.map((b) => (
           <div key={b.id} style={{ ...st.card, marginBottom: 0, borderLeft: `5px solid ${b.warna || '#4C6EF5'}` }}>
@@ -505,10 +479,10 @@ export default function ManajerBuku() {
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               <input ref={jsonFileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={(e) => { setModeBab('baru'); setErrValidasi([]); imporFileJson(e.target.files[0]); }} />
-              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); jsonFileRef.current?.click(); }} style={st.btnSecondary} title="Muat file .json"><FileJson size={14} /> Impor File JSON</button>
+              <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); jsonFileRef.current?.click(); }} style={st.btnSecondary} title="Muat file .json sekali klik"><FileJson size={14} /> Impor File JSON</button>
               <button onClick={() => { setModeBab('baru'); setTeksJson(''); setErrValidasi([]); setImages([]); setPesanGambar(''); }} style={st.btnSecondary}><Plus size={14} /> Bab (Paste JSON)</button>
-              {/* 🆕 Bab kosong lewat editor visual */}
-              <button onClick={() => setEditBab({ bab: null })} style={st.btnPrimary}><Plus size={14} /> ✏️ Bab Kosong</button>
+              <button onClick={() => setEditBab({ bab: null })} style={st.btnPrimary}><Pencil size={14} /> ✏️ Bab Kosong</button>
+              <button onClick={() => setImporHtml(true)} style={{ ...st.btnSecondary, background: '#fff7ed', color: '#c2410c' }} title="Impor bab dari file/teks HTML modul interaktif">📥 Impor HTML</button>
               <button onClick={() => setBukuDipilih(null)} style={st.iconBtn}><X size={15} /></button>
             </div>
           </div>
@@ -521,11 +495,15 @@ export default function ManajerBuku() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     {bab.judul}
-                    <span style={{ ...st.badgeMode, background: mode === 'pdf' ? '#fef3c7' : '#dcfce7', color: mode === 'pdf' ? '#92400e' : '#166534' }}
-                      title={mode === 'pdf' ? 'Siswa membaca halaman modul asli' : 'Siswa membaca blok materi terstruktur'}>
+                    <span style={{
+                      ...st.badgeMode,
+                      background: mode === 'pdf' ? '#fef3c7' : mode === 'html' ? '#f3e8ff' : '#dcfce7',
+                      color: mode === 'pdf' ? '#92400e' : mode === 'html' ? '#7c3aed' : '#166534',
+                    }}
+                      title={mode === 'pdf' ? 'Siswa membaca halaman modul asli' : mode === 'html' ? 'Siswa membaca modul HTML interaktif' : 'Siswa membaca blok materi terstruktur'}>
                       {mode === 'pdf'
                         ? `MODUL PDF${bab.jumlahHalaman ? ` • hal ${bab.halamanMulai || 1}–${bab.halamanSelesai || bab.jumlahHalaman}` : ''}`
-                        : 'TERSTRUKTUR'}
+                        : mode === 'html' ? 'HTML INTERAKTIF' : 'TERSTRUKTUR'}
                     </span>
                     {bab.status === 'draft' && <span style={{ ...st.badgeMode, background: '#f1f5f9', color: '#64748b' }}>DRAFT</span>}
                   </div>
@@ -534,26 +512,24 @@ export default function ManajerBuku() {
                     {bab.namaFile ? ` • ${bab.namaFile}` : ''}
                   </div>
                 </div>
-                {/* 🆕 Tombol Edit Bab (editor visual) */}
                 <button onClick={() => setEditBab({ bab })} style={{ ...st.btnSmall, background: '#f3e8ff', color: '#7c3aed' }} title="Edit bab dengan editor visual split-screen">
                   <Pencil size={13} /> ✏️ Edit Bab
                 </button>
                 {bab.pdfUrl && (
-                  <button onClick={() => { setPotong({ bab }); setHasilPotong([]); }} style={st.btnSmall2}
-                    title="Potong gambar dari halaman modul">
+                  <button onClick={() => { setPotong({ bab }); setHasilPotong([]); }} style={st.btnSmall2} title="Potong gambar dari halaman modul">
                     <Scissors size={13} /> Gambar dari Modul
                   </button>
                 )}
                 {bab.pdfUrl && (
-                  <button onClick={() => tulisUlangAi(bab)} disabled={aiJalan === bab.id} style={{ ...st.btnSmall2, background: '#f3e8ff', color: '#7c3aed' }}
-                    title="Tulis ulang scan jadi bab interaktif lewat AI (dipensiunkan — akan tampil pesan)">
+                  <button onClick={() => tulisUlangAi(bab)} disabled={aiJalan === bab.id} style={{ ...st.btnSmall2, background: '#f3e8ff', color: '#7c3aed' }} title="AI sudah dipensiunkan">
                     {aiJalan === bab.id ? <Loader2 size={13} className="spin" /> : <Sparkles size={13} />} Tulis Ulang AI
                   </button>
                 )}
-                <button onClick={() => gantiModeBab(bab)} style={st.iconBtn}
-                  title={`Tampilan siswa: ${mode === 'pdf' ? 'Modul Asli' : 'Terstruktur'}. Klik untuk menukar.`}>
-                  <ToggleLeft size={16} />
-                </button>
+                {mode !== 'html' && (
+                  <button onClick={() => gantiModeBab(bab)} style={st.iconBtn} title={`Tampilan siswa: ${mode === 'pdf' ? 'Modul Asli' : 'Terstruktur'}. Klik untuk menukar.`}>
+                    <ToggleLeft size={16} />
+                  </button>
+                )}
                 <button onClick={() => window.open(`/siswa/buku/${bukuDipilih.id}/${bab.id}`, '_blank')} style={st.iconBtn} title="Buka di reader siswa"><Eye size={14} /></button>
                 <button onClick={() => { setModeBab(bab); setTeksJson(JSON.stringify({ id: bab.id, judul: bab.judul, urutan: bab.urutan, tipe: mode, sections: bab.sections || [], ujiPemahaman: bab.ujiPemahaman || [] }, null, 2)); setErrValidasi([]); setImages([]); setPesanGambar(''); setHasilPotong([]); }} style={st.iconBtn} title="Edit JSON"><FileCode size={14} /></button>
                 <button onClick={() => hapusBab(bab)} style={{ ...st.iconBtn, color: '#dc2626' }} title="Hapus bab"><Trash2 size={14} /></button>
@@ -574,15 +550,13 @@ export default function ManajerBuku() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
                     <Scissors size={16} color="#16a34a" />
                     <span style={{ fontSize: 12, fontWeight: 800, color: '#166534' }}>Gambar dari Modul</span>
-                    <span style={{ fontSize: 10, color: '#15803d' }}>— potong diagram/tabel/foto langsung dari halaman modul.</span>
                     <button onClick={() => { setPotong({ bab: modeBab }); setHasilPotong([]); }} style={{ ...st.btnSecondary, marginLeft: 'auto', background: '#16a34a', color: 'white' }}>
                       <Scissors size={13} /> Buka alat potong
                     </button>
                   </div>
-
                   {hasilPotong.length === 0 ? (
                     <div style={{ fontSize: 10.5, color: '#166534', lineHeight: 1.65 }}>
-                      Alur cepat: <b>Buka alat potong</b> → pilih halaman → <b>Deteksi bagian otomatis</b> → ketuk gambarnya → <b>Potong & Upload</b>.
+                      Alur: <b>Buka alat potong</b> → pilih halaman → deteksi/seret kotak → <b>Potong & Upload</b> → kembali ke sini → sisipkan ke JSON.
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -593,8 +567,8 @@ export default function ManajerBuku() {
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#166534' }}>Halaman {g.halaman} • {g.lebar}×{g.tinggi}px</div>
                             <div style={{ fontSize: 9, color: '#4ade80', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.url}</div>
                           </div>
-                          <button onClick={() => sisipBlokGambar(g.url, `Gambar modul halaman ${g.halaman}`)} style={st.btnTiny} title="Sisipkan sebagai blok gambar di MATERI"><Layers size={12} /> Blok</button>
-                          <button onClick={() => sisipGambarSoal(g.url, `Gambar soal dari modul halaman ${g.halaman}`)} style={st.btnTiny} title="Sisipkan sebagai field gambar SOAL"><FileCode size={12} /> Soal</button>
+                          <button onClick={() => sisipBlokGambar(g.url, `Gambar modul halaman ${g.halaman}`)} style={st.btnTiny}><Layers size={12} /> Blok</button>
+                          <button onClick={() => sisipGambarSoal(g.url, `Gambar soal dari modul halaman ${g.halaman}`)} style={st.btnTiny}><FileCode size={12} /> Soal</button>
                           <button onClick={() => salin(g.url, 'URL')} style={st.btnTiny}><Copy size={12} /> URL</button>
                         </div>
                       ))}
@@ -607,9 +581,7 @@ export default function ManajerBuku() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <ImageIcon size={16} color="#4C6EF5" />
                   <span style={{ fontSize: 12, fontWeight: 800, color: '#1e293b' }}>Manajer Gambar</span>
-                  <span style={{ fontSize: 10, color: '#64748b' }}>— upload diagram/foto, lalu salin snippet-nya ke JSON.</span>
                 </div>
-
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
                   <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => uploadGambar(e.target.files)} />
                   <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ ...st.btnSecondary, opacity: uploading ? 0.6 : 1 }}>
@@ -618,9 +590,7 @@ export default function ManajerBuku() {
                   <input style={{ ...st.input, flex: 1, minWidth: 180 }} placeholder="atau tempel URL gambar eksternal (https://...)" value={externalUrl} onChange={(e) => setExternalUrl(e.target.value)} />
                   <button onClick={tambahUrlExternal} style={st.btnSecondary}><Link2 size={14} /> Tambah URL</button>
                 </div>
-
                 {pesanGambar && <div style={{ fontSize: 11, color: pesanGambar.startsWith('✅') ? '#16a34a' : '#dc2626', marginBottom: 8 }}>{pesanGambar}</div>}
-
                 {images.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {images.map((img, idx) => (
@@ -638,12 +608,6 @@ export default function ManajerBuku() {
                     ))}
                   </div>
                 )}
-
-                <div style={{ fontSize: 10, color: '#64748b', marginTop: 8, lineHeight: 1.6 }}>
-                  Cara pakai:<br />
-                  • <b>Soal</b> → tempel di DALAM object soal<br />
-                  • <b>Blok</b> → tempel sebagai satu blok di sections[].blocks
-                </div>
               </div>
 
               <details style={{ marginBottom: 8 }}>
@@ -675,7 +639,6 @@ export default function ManajerBuku() {
         </div>
       )}
 
-      {/* 🆕 EDITOR BAB VISUAL (layer penuh, muncul di atas halaman) */}
       {editBab && bukuDipilih && (
         <EditorBab
           buku={bukuDipilih}
@@ -686,6 +649,15 @@ export default function ManajerBuku() {
           halSampai={editBab.bab?.halamanSelesai || editBab.bab?.jumlahHalaman || null}
           onSimpan={simpanDariEditor}
           onTutup={() => setEditBab(null)}
+        />
+      )}
+
+      {bukuDipilih && (
+        <ImporHtmlBab
+          terbuka={imporHtml}
+          tutup={() => { setImporHtml(false); muatBab(bukuDipilih.id); }}
+          bukuId={bukuDipilih.id}
+          jumlahBab={babList.length}
         />
       )}
 

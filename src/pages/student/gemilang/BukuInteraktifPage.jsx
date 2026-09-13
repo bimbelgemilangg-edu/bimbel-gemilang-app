@@ -3,9 +3,8 @@
 // RAK BUKU + DAFTAR ISI -- murni baca dari Firestore:
 //   buku_digital/{bookId}              -> metadata buku (status 'aktif')
 //   buku_digital/{bookId}/bab/{babId}  -> daftar bab
-// TIDAK meng-import file data statis sama sekali (konten hidup di
-// database; tambah buku/bab = kerjaan admin di Manajer Buku).
-// Filter jenjang/kelas REUSE utils/aksesKontenSiswa.js.
+// v4: bab bertipe 'html' (MODUL INTERAKTIF) dihitung setara modul:
+//     1 unit baca (selesaiModul) + 1 unit quiz.
 // ============================================================
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -23,10 +22,9 @@ export default function BukuInteraktifPage() {
   const [jenjang, setJenjang] = useState(null);
   const [books, setBooks] = useState([]);
   const [babList, setBabList] = useState([]);
-  const [progresMap, setProgresMap] = useState({}); // { babId: progres }
+  const [progresMap, setProgresMap] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Jenjang siswa (filter buku) + progres semua bab (sekali fetch)
   useEffect(() => {
     (async () => {
       let jenjangSiswa = null;
@@ -44,7 +42,6 @@ export default function BukuInteraktifPage() {
     })();
   }, [studentId]);
 
-  // Daftar buku aktif dari Firestore
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -58,7 +55,6 @@ export default function BukuInteraktifPage() {
     })();
   }, []);
 
-  // Daftar bab buku yang sedang dibuka
   useEffect(() => {
     if (!bukuId) { setBabList([]); return; }
     (async () => {
@@ -71,7 +67,6 @@ export default function BukuInteraktifPage() {
     })();
   }, [bukuId]);
 
-  // Pagar akses: jenjang dulu, baru kelas (aturan searah yang sama)
   const bukuTerlihat = books.filter((b) => {
     if (!jenjang) return false;
     if (!cocokkanJenjang(b.jenjang, jenjang)) return false;
@@ -79,9 +74,12 @@ export default function BukuInteraktifPage() {
     return true;
   });
 
-  // v3: bab bisa berupa MODUL ASLI (PDF) atau MATERI TERSTRUKTUR.
-  // Progresnya dihitung setara: 1 modul selesai = 1 unit (sama seperti 1 seksi).
-  const babModul = (bab) => bab?.tipe === 'pdf' || (!(bab?.sections || []).length && !!bab?.pdfUrl);
+  // v4: pdf | html | terstruktur
+  const babModul = (bab) =>
+    bab?.tipe === 'pdf' ||
+    bab?.tipe === 'html' ||
+    (!(bab?.sections || []).length && !!bab?.pdfUrl);
+
   const unitBab = (bab) => {
     const p = progresMap[bab.id];
     if (!p) return 0;
@@ -94,6 +92,7 @@ export default function BukuInteraktifPage() {
   };
   const keteranganBab = (bab) => {
     const soal = (bab.ujiPemahaman || []).length;
+    if (bab?.tipe === 'html') return `✨ modul interaktif • ${soal} soal pemantapan`;
     if (babModul(bab)) {
       const hal = (bab.halamanSelesai || bab.jumlahHalaman || 0) - (bab.halamanMulai || 1) + 1;
       return `📄 modul ${hal > 0 ? hal : (bab.jumlahHalaman || 0)} halaman • ${soal} soal pemantapan`;

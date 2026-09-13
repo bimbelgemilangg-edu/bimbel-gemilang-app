@@ -1,21 +1,18 @@
 // src/pages/student/gemilang/BukuBacaPage.jsx
 // ============================================================
-// READER BUKU DIGITAL v3 -- DUA MODE, SATU HALAMAN
+// READER BUKU DIGITAL v4 -- TIGA MODE, SATU HALAMAN
 //
-//   MODE TERSTRUKTUR (seperti sebelumnya):
-//     bab.sections[] dirender jadi blok materi (p/list/math/contoh/
-//     tips/gambar + visual interaktif), +5 XP per seksi selesai.
+//   MODE TERSTRUKTUR: bab.sections[] dirender jadi blok materi
+//     (p/list/math/contoh/tips/gambar + visual interaktif),
+//     +5 XP per seksi selesai.
 //
-//   MODE MODUL ASLI (BARU -- hasil "Impor Modul"):
-//     bab.pdfUrl berisi PDF modul (umumnya hasil scan). Halaman
-//     aslinya dirender di dalam app: rumus, diagram, tabel, warna
-//     100% utuh & HD -- tidak ada yang hilang karena konversi.
-//     Siswa membaca per halaman (+ progres), lalu tetap mengerjakan
-//     Uji Pemahaman interaktif (+10 XP per soal benar).
+//   MODE MODUL ASLI: bab.pdfUrl dirender per halaman (scan HD),
+//     + progres halaman, +5 XP saat selesai baca.
 //
-// Mode dipilih otomatis dari isi dokumen bab:
-//   punya sections -> terstruktur; kalau tidak & punya pdfUrl -> modul.
-//   Admin bisa memaksa lewat field `tipe`: 'pdf' | 'terstruktur'.
+//   MODE MODUL INTERAKTIF (BARU v4): bab.tipe==='html' && bab.html
+//     dirender lewat RendererHtmlBab (Shadow DOM: style modul
+//     terkurung, script dibuang sanitizer). +5 XP saat ditandai
+//     selesai. Uji Pemahaman tetap tersedia untuk semua mode.
 //
 // Sumber data: Firestore buku_digital/{bukuId}/bab/{babId}
 // Progres    : siswa_buku_progress/{studentId}_{babId}
@@ -32,10 +29,11 @@ import {
 import { MathText, MathBlock } from '../../../components/MathText';
 import VisualBuku, { GambarBuku } from '../../../components/buku/VisualBuku';
 import { bukaPdf, renderHalamanKeCanvas } from '../../../utils/modulPdf';
+import RendererHtmlBab from '../../../components/buku/RendererHtmlBab';
 import '../../../components/buku/buku.css';
 
 const XP_SEKSI = 5;      // 1 seksi materi selesai dibaca
-const XP_MODUL = 5;      // 1 modul PDF selesai dibaca (setara 1 seksi)
+const XP_MODUL = 5;      // 1 modul (PDF/HTML) selesai dibaca
 const XP_BENAR = 10;     // 1 soal Uji Pemahaman benar
 
 export default function BukuBacaPage() {
@@ -59,7 +57,7 @@ export default function BukuBacaPage() {
   const [selesaiModul, setSelesaiModul] = useState(false);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pdfError, setPdfError] = useState('');
-  const [halAktif, setHalAktif] = useState(0);      // indeks dalam daftarHalaman
+  const [halAktif, setHalAktif] = useState(0);
   const [zoomBaca, setZoomBaca] = useState(1);
   const [muatHal, setMuatHal] = useState(false);
   const canvasRef = useRef(null);
@@ -105,10 +103,10 @@ export default function BukuBacaPage() {
   const sections = useMemo(() => bab?.sections || [], [bab]);
   const ujiPemahaman = useMemo(() => bab?.ujiPemahaman || [], [bab]);
 
-  // MODE: modul PDF kalau tidak ada sections tapi ada pdfUrl (atau dipaksa tipe:'pdf')
-  const modeModul = !!bab && (bab.tipe === 'pdf' || ((!sections || sections.length === 0) && !!bab.pdfUrl));
+  // MODE v4: html dulu, lalu modul PDF, selain itu terstruktur
+  const modeHtml = !!bab && bab.tipe === 'html' && !!bab.html;
+  const modeModul = !!bab && !modeHtml && (bab.tipe === 'pdf' || ((!sections || sections.length === 0) && !!bab.pdfUrl));
 
-  // Rentang halaman yang jadi tanggung jawab bab ini
   const daftarHalaman = useMemo(() => {
     if (!modeModul || !bab) return [];
     const total = Number(bab.jumlahHalaman) || 0;
@@ -160,8 +158,9 @@ export default function BukuBacaPage() {
   const tandaiModulSelesai = () => {
     if (selesaiModul) return;
     setSelesaiModul(true);
-    setHalamanTerbaca(daftarHalaman[daftarHalaman.length - 1] || halamanTerbaca);
-    simpanProgres({ selesaiModul: true, halamanTerbaca: daftarHalaman[daftarHalaman.length - 1] || halamanTerbaca });
+    const terakhir = daftarHalaman[daftarHalaman.length - 1] || halamanTerbaca;
+    setHalamanTerbaca(terakhir);
+    simpanProgres({ selesaiModul: true, halamanTerbaca: terakhir });
     tambahXp(XP_MODUL);
     munculToast(`+${XP_MODUL} XP`);
   };
@@ -193,7 +192,6 @@ export default function BukuBacaPage() {
     };
   }, [modeModul, bab?.pdfUrl]);
 
-  // posisi awal: lanjutkan dari halaman terakhir yang dibaca
   useEffect(() => {
     if (!daftarHalaman.length) return;
     setHalAktif((prev) => {
@@ -214,9 +212,6 @@ export default function BukuBacaPage() {
     setMuatHal(true);
     (async () => {
       try {
-        // Modul hasil scan resolusinya tinggi (1720x2437 px). Kalau dirender
-        // seukuran layar saja hasilnya buram saat diperbesar, jadi kita render
-        // mengikuti devicePixelRatio + zoom, dengan batas aman memori HP.
         const lebarLayar = typeof window !== 'undefined' ? Math.min(560, window.innerWidth - 28) : 480;
         const dpr = typeof window !== 'undefined' ? Math.min(2.5, window.devicePixelRatio || 1) : 2;
         const targetPx = Math.round(Math.min(2200, Math.max(700, lebarLayar * dpr) * zoomBaca));
@@ -227,7 +222,6 @@ export default function BukuBacaPage() {
         });
         if (token !== renderToken.current) return;
         setMuatHal(false);
-        // catat halaman terjauh yang sudah dibuka
         const dibuka = daftarHalaman[halAktif];
         setHalamanTerbaca((prev) => {
           if (dibuka <= prev) return prev;
@@ -238,7 +232,7 @@ export default function BukuBacaPage() {
         console.error('Gagal merender halaman modul:', e);
         if (token === renderToken.current) { setMuatHal(false); setPdfError('Halaman gagal ditampilkan. Coba geser halaman atau muat ulang.'); }
       }
-    })();
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modeModul, pdfDoc, halAktif, zoomBaca, daftarHalaman]);
 
@@ -295,16 +289,20 @@ export default function BukuBacaPage() {
   // ============================================================
   // PROGRESS HEADER
   // ============================================================
-  const persenBaca = modeModul
-    ? (daftarHalaman.length
-      ? Math.round((Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) / daftarHalaman.length * 100)
-      : 0)
-    : (sections.length ? Math.round((selesaiSections.length / sections.length) * 100) : 0);
+  const persenBaca = modeHtml
+    ? (selesaiModul ? 100 : 0)
+    : modeModul
+      ? (daftarHalaman.length
+        ? Math.round((Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) / daftarHalaman.length * 100)
+        : 0)
+      : (sections.length ? Math.round((selesaiSections.length / sections.length) * 100) : 0);
   const persenAman = Math.max(0, Math.min(100, persenBaca));
 
-  const teksProgres = modeModul
-    ? `${daftarHalaman.length ? (Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) : 0}/${daftarHalaman.length} halaman dibaca${selesaiModul ? ' • ✓ selesai' : ''}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
-    : `${selesaiSections.length}/${sections.length} seksi selesai${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`;
+  const teksProgres = modeHtml
+    ? `${selesaiModul ? '✓ selesai dibaca' : 'modul interaktif'}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
+    : modeModul
+      ? `${daftarHalaman.length ? (Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) : 0}/${daftarHalaman.length} halaman dibaca${selesaiModul ? ' • ✓ selesai' : ''}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
+      : `${selesaiSections.length}/${sections.length} seksi selesai${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`;
 
   // ============================================================
   // GUARD
@@ -342,6 +340,7 @@ export default function BukuBacaPage() {
             <div style={{ color: 'white', fontWeight: 800, fontSize: 15 }}>{bab.judul}</div>
             <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 2 }}>
               {modeModul && <span style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 5, padding: '1px 5px', marginRight: 5, fontSize: 9.5, fontWeight: 800 }}>MODUL ASLI</span>}
+              {modeHtml && <span style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 5, padding: '1px 5px', marginRight: 5, fontSize: 9.5, fontWeight: 800 }}>MODUL INTERAKTIF</span>}
               {teksProgres}
             </div>
           </div>
@@ -352,9 +351,9 @@ export default function BukuBacaPage() {
       </div>
 
       {/* ====================================================
-          MODE BACA
+          MODE BACA — TERSTRUKTUR
           ==================================================== */}
-      {mode === 'baca' && !modeModul && (
+      {mode === 'baca' && !modeModul && !modeHtml && (
         <div style={{ padding: '16px 16px 90px' }}>
           {sections.map((sec, idx) => {
             const sudah = selesaiSections.includes(sec.id);
@@ -381,7 +380,9 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ===== MODE MODUL ASLI (PDF) ===== */}
+      {/* ====================================================
+          MODE BACA — MODUL ASLI (PDF)
+          ==================================================== */}
       {mode === 'baca' && modeModul && (
         <div style={{ padding: '12px 12px 96px' }}>
           {pdfError && (
@@ -399,7 +400,6 @@ export default function BukuBacaPage() {
 
           {pdfDoc && (
             <>
-              {/* bar navigasi halaman */}
               <div style={st.barHalaman}>
                 <button style={st.tombolHal} disabled={halAktif <= 0} onClick={() => { setHalAktif((h) => Math.max(0, h - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                   <ChevronLeft size={17} />
@@ -447,6 +447,30 @@ export default function BukuBacaPage() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* ====================================================
+          MODE BACA — MODUL INTERAKTIF (HTML) [BARU v4]
+          ==================================================== */}
+      {mode === 'baca' && modeHtml && (
+        <div style={{ padding: '12px 12px 96px' }}>
+          <div style={st.kotakModul}>
+            <RendererHtmlBab html={bab.html} />
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+            <button
+              onClick={tandaiModulSelesai}
+              disabled={selesaiModul}
+              style={{ ...st.tombolKecil, flex: 1, background: selesaiModul ? '#dcfce7' : '#7C3AED', color: selesaiModul ? '#166534' : 'white' }}
+            >
+              {selesaiModul ? '✓ Modul selesai dibaca' : `Tandai selesai baca modul (+${XP_MODUL} XP)`}
+            </button>
+          </div>
+          <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 8, lineHeight: 1.6, textAlign: 'center' }}>
+            Modul interaktif: ketuk bagian <b>"Lihat kunci & pembahasan"</b> pada tiap soal untuk belajar mandiri.
+            Setelah tuntas, kerjakan <b>Uji Pemahaman</b> di bawah.
+          </div>
         </div>
       )}
 
