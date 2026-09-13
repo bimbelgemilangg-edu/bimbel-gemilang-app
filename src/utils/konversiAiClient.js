@@ -1,6 +1,6 @@
 // src/utils/konversiAiClient.js
 // ============================================================
-// MESIN KLIEN v3: SCAN -> BAB INTERAKTIF, DIPANGGIL LANGSUNG
+// MESIN KLIEN v3.1: SCAN -> BAB INTERAKTIF, DIPANGGIL LANGSUNG
 // DARI BROWSER ADMIN (bukan lewat fungsi Vercel).
 //
 // Kenapa pindah ke client:
@@ -12,9 +12,13 @@
 //  - Daftar model diambil LIVE dari endpoint /models provider,
 //    jadi slug yang sudah mati/tidak gratis tidak akan dipilih.
 //
+// v3.1: seleksi model Groq memakai metadata capabilities
+// (input.image) + blacklist model audio/TTS, sehingga tidak
+// akan lagi memilih model salah seperti orpheus-* (400).
+//
 // Provider didukung (gratis):
 //  - Groq      : kunci diawali "gsk_"   (cepat, kuota besar)
-//  - OpenRouter: kunci diawai "sk-or-"  (model vision :free)
+//  - OpenRouter: kunci diawali "sk-or-" (model vision :free)
 //
 // Alur per bab:
 //  1. Render halaman PDF -> JPEG 900px + potong figur -> Supabase.
@@ -78,22 +82,35 @@ export function ambilKeyAi() {
 // ------------------------------------------------------------
 // DAFTAR MODEL VISION HIDUP (diambil live, tanpa hardcode slug mati)
 // ------------------------------------------------------------
+const BLACKLIST_MODEL = /orpheus|tts|whisper|speech|audio|voice|guard|distil/i;
+
+function urutkanPrioritas(ids) {
+  const prioritas = [/scout/i, /maverick/i, /vision/i, /llama-4/i, /llama-3\.2-90b/i, /llama-3\.3/i, /llama/i, /gpt-oss/i];
+  const keluar = [];
+  for (const re of prioritas) for (const id of ids) if (re.test(id) && !keluar.includes(id)) keluar.push(id);
+  for (const id of ids) if (!keluar.includes(id)) keluar.push(id);
+  return keluar;
+}
+
 async function daftarModelGroq(key) {
   const resp = await fetch(`${BASE_GROQ}/models`, {
     headers: { Authorization: `Bearer ${key}` },
   });
   if (!resp.ok) throw new Error(`Groq /models HTTP ${resp.status}`);
   const data = await resp.json();
-  const ids = (data.data || []).map((m) => m.id);
-  const prioritas = [
-    /llama-4-scout/, /llama-4-maverick/, /vision/, /llama-3\.2-90b/, /llama-3\.3/, /llama-3\.1-8b/,
-  ];
-  const keluar = [];
-  for (const re of prioritas) {
-    for (const id of ids) if (re.test(id) && !keluar.includes(id)) keluar.push(id);
-  }
-  // model bervision dulu kalau ada kata vision, sisanya menyusul
-  return keluar.length ? keluar : ids;
+  const aktif = (data.data || []).filter(
+    (m) => m && m.id && m.active !== false && !BLACKLIST_MODEL.test(m.id)
+  );
+
+  // 1) sumber kebenaran: metadata capabilities dari Groq (input.image)
+  const visionMeta = aktif.filter((m) => ((m.capabilities || {}).input || {}).image === true);
+
+  // 2) cadangan bila metadata tidak dikirim: tebak dari slug
+  const visionSlug = aktif.filter((m) => /vision|llama-4|scout|maverick|llama-3\.2-(90b|11b)/i.test(m.id));
+
+  const sumber = visionMeta.length ? visionMeta : visionSlug;
+  if (!sumber.length) throw new Error('Akun Groq ini tidak punya model vision aktif.');
+  return urutkanPrioritas(sumber.map((m) => m.id));
 }
 
 async function daftarModelOpenRouter() {
@@ -113,25 +130,22 @@ async function daftarModelOpenRouter() {
 }
 
 async function siapkanRantaiModel(keyInfo) {
-  if (keyInfo.provider === 'groq') {
+  const coba = async (provider, key) => {
+    const daftar = provider === 'groq' ? await daftarModelGroq(key) : await daftarModelOpenRouter();
+    return { provider, key, daftar };
+  };
+  const urutan = [{ provider: keyInfo.provider, key: keyInfo.key }];
+  const cadangan = ambilKeyCadangan();
+  if (cadangan && keyInfo.provider !== 'openrouter') urutan.push({ provider: 'openrouter', key: cadangan });
+  let lastErr = null;
+  for (const u of urutan) {
     try {
-      const daftar = await daftarModelGroq(keyInfo.key);
-      if (daftar.length) return { ...keyInfo, daftar };
-    } catch { /* jatuh ke openrouter kalau ada kunci cadangan */ }
-  }
-  if (keyInfo.provider === 'openrouter' || true) {
-    // coba OpenRouter (daftar model gratis bervision, live)
-    let key = keyInfo.key;
-    if (keyInfo.provider !== 'openrouter') {
-      const cadangan = ambilKeyCadangan();
-      if (cadangan) key = cadangan;
+      return await coba(u.provider, u.key);
+    } catch (e) {
+      lastErr = e; // provider ini tidak punya vision hidup -> coba berikutnya
     }
-    try {
-      const daftar = await daftarModelOpenRouter();
-      if (daftar.length) return { provider: 'openrouter', key, daftar };
-    } catch { /* lanjut */ }
   }
-  throw new Error('Tidak bisa mengambil daftar model vision gratis. Cek kunci AI / koneksi.');
+  throw new Error(lastErr ? lastErr.message : 'Tidak bisa mengambil daftar model vision gratis.');
 }
 
 function ambilKeyCadangan() {
