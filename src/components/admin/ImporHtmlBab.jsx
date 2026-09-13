@@ -1,6 +1,9 @@
 // src/components/admin/ImporHtmlBab.jsx
-// Modal impor bab dari file/teks HTML. Menyimpan ke
-// buku_digital/{bukuId}/bab/{babId} dengan tipe:'html'.
+// Modal impor bab dari file/teks HTML (v2).
+// v2: kolom "urutan" DIHAPUS (membingungkan) — urutan diisi otomatis
+//     sebagai nomor berikutnya di daftar isi.
+//     Menimpa bab lama: impor dengan JUDUL yang sama akan memperbarui
+//     bab yang sudah ada (id = slug judul), tidak membuat duplikat.
 import { useRef, useState } from 'react';
 import { db } from '../../firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -18,16 +21,18 @@ const st = {
   area: { width: '100%', minHeight: 220, border: '1px solid #cbd5e1', borderRadius: 8, padding: 10, fontSize: 11, fontFamily: 'monospace', color: '#1e293b', background: '#fff', boxSizing: 'border-box' },
   btn: { display: 'flex', alignItems: 'center', gap: 6, background: '#4C6EF5', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer' },
   btn2: { display: 'flex', alignItems: 'center', gap: 6, background: '#f1f5f9', color: '#334155', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  info: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '8px 10px', fontSize: 11, color: '#1d4ed8', lineHeight: 1.6, marginBottom: 10 },
 };
 
 export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) {
   const [judul, setJudul] = useState('');
-  const [urutan, setUrutan] = useState('');
   const [teks, setTeks] = useState('');
   const [pesan, setPesan] = useState('');
   const [busy, setBusy] = useState(false);
   const fileRef = useRef(null);
   if (!terbuka) return null;
+
+  const urutanOtomatis = jumlahBab + 1;
 
   async function bacaFile(f) {
     if (!f) return;
@@ -35,7 +40,7 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
       const t = await f.text();
       setTeks(t);
       if (!judul) setJudul(f.name.replace(/\.html?$/i, '').replace(/[_-]+/g, ' ').trim());
-      setPesan(`✅ File "${f.name}" dimuat. Cek judul & urutan, lalu Simpan & Terbitkan.`);
+      setPesan(`✅ File "${f.name}" dimuat. Cek judul, lalu Simpan & Terbitkan.`);
     } catch (e) {
       setPesan('❌ Gagal membaca file: ' + e.message);
     }
@@ -52,7 +57,7 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
       await setDoc(doc(db, 'buku_digital', bukuId, 'bab', id), {
         id,
         judul: judul.trim(),
-        urutan: Number(urutan) || jumlahBab + 1,
+        urutan: urutanOtomatis,
         tipe: 'html',
         html: bersihkanHtml(teks),
         sumber: 'html',
@@ -74,14 +79,14 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
           Tempel kode HTML modul (atau pilih file .html). Isi dibersihkan otomatis (script dibuang)
           lalu disimpan sebagai bab bertipe <b>html</b> — reader siswa merendernya sebagai modul interaktif.
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 10 }}>
-          <label style={st.label}>Judul bab
-            <input style={st.input} value={judul} onChange={(e) => setJudul(e.target.value)} placeholder="Teorema Pythagoras" />
-          </label>
-          <label style={st.label}>Urutan
-            <input style={st.input} type="number" value={urutan} onChange={(e) => setUrutan(e.target.value)} placeholder={String(jumlahBab + 1)} />
-          </label>
+        <div style={st.info}>
+          📌 Urutan di daftar isi: <b>otomatis nomor {urutanOtomatis}</b>.<br />
+           Impor dengan <b>judul yang sama</b> = memperbarui bab yang sudah ada (tidak duplikat) —
+          pakai ini untuk mengirim ulang perbaikan modul.
         </div>
+        <label style={{ ...st.label, marginBottom: 10 }}>Judul bab
+          <input style={st.input} value={judul} onChange={(e) => setJudul(e.target.value)} placeholder="Teorema Pythagoras" />
+        </label>
         <input ref={fileRef} type="file" accept=".html,.htm,text/html" style={{ display: 'none' }} onChange={(e) => bacaFile(e.target.files[0])} />
         <button style={st.btn2} onClick={() => fileRef.current && fileRef.current.click()}>📂 Pilih file .html</button>
         <textarea

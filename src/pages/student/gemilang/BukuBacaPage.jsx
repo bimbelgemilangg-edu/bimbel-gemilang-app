@@ -1,22 +1,9 @@
 // src/pages/student/gemilang/BukuBacaPage.jsx
 // ============================================================
-// READER BUKU DIGITAL v4 -- TIGA MODE, SATU HALAMAN
-//
-//   MODE TERSTRUKTUR: bab.sections[] dirender jadi blok materi
-//     (p/list/math/contoh/tips/gambar + visual interaktif),
-//     +5 XP per seksi selesai.
-//
-//   MODE MODUL ASLI: bab.pdfUrl dirender per halaman (scan HD),
-//     + progres halaman, +5 XP saat selesai baca.
-//
-//   MODE MODUL INTERAKTIF (BARU v4): bab.tipe==='html' && bab.html
-//     dirender lewat RendererHtmlBab (Shadow DOM: style modul
-//     terkurung, script dibuang sanitizer). +5 XP saat ditandai
-//     selesai. Uji Pemahaman tetap tersedia untuk semua mode.
-//
-// Sumber data: Firestore buku_digital/{bukuId}/bab/{babId}
-// Progres    : siswa_buku_progress/{studentId}_{babId}
-// XP         : siswa_progress
+// READER BUKU DIGITAL v5 -- TIGA MODE, SATU HALAMAN
+//   TERSTRUKTUR | MODUL ASLI (PDF) | MODUL INTERAKTIF (HTML)
+// v5: - bab html: bar bawah quiz disembunyikan (modul punya soal bawaan)
+//     - teks progres bab html tidak menduplikasi badge hero
 // ============================================================
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -32,9 +19,9 @@ import { bukaPdf, renderHalamanKeCanvas } from '../../../utils/modulPdf';
 import RendererHtmlBab from '../../../components/buku/RendererHtmlBab';
 import '../../../components/buku/buku.css';
 
-const XP_SEKSI = 5;      // 1 seksi materi selesai dibaca
-const XP_MODUL = 5;      // 1 modul (PDF/HTML) selesai dibaca
-const XP_BENAR = 10;     // 1 soal Uji Pemahaman benar
+const XP_SEKSI = 5;
+const XP_MODUL = 5;
+const XP_BENAR = 10;
 
 export default function BukuBacaPage() {
   const { bukuId, babId } = useParams();
@@ -46,13 +33,12 @@ export default function BukuBacaPage() {
   const [siap, setSiap] = useState(false);
   const [selesaiSections, setSelesaiSections] = useState([]);
   const [quizTerbaik, setQuizTerbaik] = useState(null);
-  const [mode, setMode] = useState('baca'); // baca | quiz | hasil
+  const [mode, setMode] = useState('baca');
   const [jawaban, setJawaban] = useState({});
   const [hasil, setHasil] = useState(null);
   const [peringatan, setPeringatan] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // ----- state mode modul PDF -----
   const [halamanTerbaca, setHalamanTerbaca] = useState(0);
   const [selesaiModul, setSelesaiModul] = useState(false);
   const [pdfDoc, setPdfDoc] = useState(null);
@@ -64,9 +50,6 @@ export default function BukuBacaPage() {
   const renderToken = useRef(0);
   const pdfMatikan = useRef(false);
 
-  // ============================================================
-  // MUAT BUKU + BAB
-  // ============================================================
   useEffect(() => {
     (async () => {
       try {
@@ -81,9 +64,6 @@ export default function BukuBacaPage() {
     })();
   }, [bukuId, babId]);
 
-  // ============================================================
-  // MUAT PROGRES SISWA
-  // ============================================================
   useEffect(() => {
     if (!bab || !studentId) return;
     (async () => {
@@ -103,7 +83,6 @@ export default function BukuBacaPage() {
   const sections = useMemo(() => bab?.sections || [], [bab]);
   const ujiPemahaman = useMemo(() => bab?.ujiPemahaman || [], [bab]);
 
-  // MODE v4: html dulu, lalu modul PDF, selain itu terstruktur
   const modeHtml = !!bab && bab.tipe === 'html' && !!bab.html;
   const modeModul = !!bab && !modeHtml && (bab.tipe === 'pdf' || ((!sections || sections.length === 0) && !!bab.pdfUrl));
 
@@ -117,9 +96,6 @@ export default function BukuBacaPage() {
     return out.length ? out : [1];
   }, [modeModul, bab]);
 
-  // ============================================================
-  // SIMPAN PROGRES + XP
-  // ============================================================
   const simpanProgres = (patch) => {
     if (!studentId) return;
     setDoc(doc(db, 'siswa_buku_progress', `${studentId}_${bab.id}`), {
@@ -165,9 +141,6 @@ export default function BukuBacaPage() {
     munculToast(`+${XP_MODUL} XP`);
   };
 
-  // ============================================================
-  // MUAT PDF (mode modul)
-  // ============================================================
   useEffect(() => {
     if (!modeModul || !bab?.pdfUrl) return;
     let batal = false;
@@ -203,9 +176,6 @@ export default function BukuBacaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [daftarHalaman.length, halamanTerbaca]);
 
-  // ============================================================
-  // RENDER HALAMAN PDF AKTIF
-  // ============================================================
   useEffect(() => {
     if (!modeModul || !pdfDoc || !canvasRef.current || !daftarHalaman.length) return;
     const token = ++renderToken.current;
@@ -238,9 +208,6 @@ export default function BukuBacaPage() {
 
   const warna = buku?.warna || '#4C6EF5';
 
-  // ============================================================
-  // QUIZ
-  // ============================================================
   const semuaTerjawab = ujiPemahaman.every((q) => {
     const j = jawaban[q.id];
     if (q.tipe === 'pg') return typeof j === 'number';
@@ -270,9 +237,6 @@ export default function BukuBacaPage() {
     window.scrollTo(0, 0);
   };
 
-  // ============================================================
-  // RENDER BLOK MATERI (mode terstruktur)
-  // ============================================================
   const renderBlok = (blok, i) => {
     let inti = null;
     if (blok.tipe === 'p' && blok.teks) inti = <p style={st.paragraf}><MathText text={blok.teks} /></p>;
@@ -286,9 +250,6 @@ export default function BukuBacaPage() {
     return <React.Fragment key={i}>{inti}{visual}</React.Fragment>;
   };
 
-  // ============================================================
-  // PROGRESS HEADER
-  // ============================================================
   const persenBaca = modeHtml
     ? (selesaiModul ? 100 : 0)
     : modeModul
@@ -299,14 +260,11 @@ export default function BukuBacaPage() {
   const persenAman = Math.max(0, Math.min(100, persenBaca));
 
   const teksProgres = modeHtml
-    ? `${selesaiModul ? '✓ selesai dibaca' : 'modul interaktif'}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
+    ? `${selesaiModul ? '✓ selesai dibaca' : 'belum selesai dibaca'}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
     : modeModul
       ? `${daftarHalaman.length ? (Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) : 0}/${daftarHalaman.length} halaman dibaca${selesaiModul ? ' • ✓ selesai' : ''}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
       : `${selesaiSections.length}/${sections.length} seksi selesai${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`;
 
-  // ============================================================
-  // GUARD
-  // ============================================================
   if (!siap) {
     return <div style={st.pusat}><div style={{ fontSize: 32 }}>📖</div><div style={{ marginTop: 8 }}>Memuat bab...</div></div>;
   }
@@ -320,7 +278,6 @@ export default function BukuBacaPage() {
     );
   }
 
-  // ============================================================
   return (
     <div style={st.page}>
       {toast && <div style={st.toast}>{toast}</div>}
@@ -350,9 +307,7 @@ export default function BukuBacaPage() {
         </div>
       </div>
 
-      {/* ====================================================
-          MODE BACA — TERSTRUKTUR
-          ==================================================== */}
+      {/* ===== MODE BACA — TERSTRUKTUR ===== */}
       {mode === 'baca' && !modeModul && !modeHtml && (
         <div style={{ padding: '16px 16px 90px' }}>
           {sections.map((sec, idx) => {
@@ -380,9 +335,7 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ====================================================
-          MODE BACA — MODUL ASLI (PDF)
-          ==================================================== */}
+      {/* ===== MODE BACA — MODUL ASLI (PDF) ===== */}
       {mode === 'baca' && modeModul && (
         <div style={{ padding: '12px 12px 96px' }}>
           {pdfError && (
@@ -390,14 +343,12 @@ export default function BukuBacaPage() {
               ⚠️ {pdfError}
             </div>
           )}
-
           {!pdfDoc && !pdfError && (
             <div style={{ ...st.kartuSeksi, textAlign: 'center', color: '#64748b', fontSize: 12.5 }}>
               <Loader2 size={20} className="spin" style={{ margin: '0 auto 8px' }} />
               Memuat modul ({bab.namaFile || 'PDF'})...
             </div>
           )}
-
           {pdfDoc && (
             <>
               <div style={st.barHalaman}>
@@ -419,18 +370,15 @@ export default function BukuBacaPage() {
                   <ChevronRight size={17} />
                 </button>
               </div>
-
               <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 10 }}>
                 <button onClick={() => setZoomBaca((z) => Math.max(0.8, +(z - 0.25).toFixed(2)))} style={st.tombolZoom}><ZoomOut size={14} /> Perkecil</button>
                 <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center', minWidth: 42, textAlign: 'center' }}>{Math.round(zoomBaca * 100)}%</span>
                 <button onClick={() => setZoomBaca((z) => Math.min(2.5, +(z + 0.25).toFixed(2)))} style={st.tombolZoom}><ZoomIn size={14} /> Perbesar</button>
               </div>
-
               <div style={st.kotakModul}>
                 {muatHal && <div style={st.muatHal}><Loader2 size={18} className="spin" /></div>}
                 <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 10 }} />
               </div>
-
               <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
                 <button
                   onClick={tandaiModulSelesai}
@@ -440,7 +388,6 @@ export default function BukuBacaPage() {
                   {selesaiModul ? '✓ Modul selesai dibaca' : `Tandai selesai baca modul (+${XP_MODUL} XP)`}
                 </button>
               </div>
-
               <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 8, lineHeight: 1.6, textAlign: 'center' }}>
                 Baca sampai tuntas, lalu kerjakan <b>Uji Pemahaman</b> di bawah. Modul ini tampilan aslinya dari buku cetak —
                 perbesar kalau rumusnya kecil.
@@ -450,11 +397,9 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ====================================================
-          MODE BACA — MODUL INTERAKTIF (HTML) [BARU v4]
-          ==================================================== */}
+      {/* ===== MODE BACA — MODUL INTERAKTIF (HTML) ===== */}
       {mode === 'baca' && modeHtml && (
-        <div style={{ padding: '12px 12px 96px' }}>
+        <div style={{ padding: '12px 12px 40px' }}>
           <div style={st.kotakModul}>
             <RendererHtmlBab html={bab.html} />
           </div>
@@ -468,15 +413,12 @@ export default function BukuBacaPage() {
             </button>
           </div>
           <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 8, lineHeight: 1.6, textAlign: 'center' }}>
-            Modul interaktif: ketuk bagian <b>"Lihat kunci & pembahasan"</b> pada tiap soal untuk belajar mandiri.
-            Setelah tuntas, kerjakan <b>Uji Pemahaman</b> di bawah.
+            Modul interaktif: ketuk <b>"Lihat kunci & pembahasan"</b> pada tiap soal untuk belajar mandiri.
           </div>
         </div>
       )}
 
-      {/* ====================================================
-          MODE QUIZ
-          ==================================================== */}
+      {/* ===== MODE QUIZ ===== */}
       {mode === 'quiz' && (
         <div style={{ padding: '16px 16px 90px' }}>
           {ujiPemahaman.length === 0 ? (
@@ -505,9 +447,7 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ====================================================
-          MODE HASIL
-          ==================================================== */}
+      {/* ===== MODE HASIL ===== */}
       {mode === 'hasil' && hasil && (
         <div style={{ padding: '16px 16px 40px' }}>
           <div style={{ ...st.kartuSeksi, textAlign: 'center' }}>
@@ -543,8 +483,8 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ===== BAR BAWAH ===== */}
-      {mode !== 'hasil' && (
+      {/* ===== BAR BAWAH (disembunyikan untuk bab html) ===== */}
+      {mode !== 'hasil' && !modeHtml && (
         <div style={st.barBawah}>
           {mode === 'baca' ? (
             <button
