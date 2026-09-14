@@ -1,10 +1,7 @@
 // src/pages/student/gemilang/BukuBacaPage.jsx
-// ============================================================
-// READER BUKU DIGITAL v5 -- TIGA MODE, SATU HALAMAN
+// READER BUKU DIGITAL v7 -- TIGA MODE, SATU HALAMAN
 //   TERSTRUKTUR | MODUL ASLI (PDF) | MODUL INTERAKTIF (HTML)
-// v5: - bab html: bar bawah quiz disembunyikan (modul punya soal bawaan)
-//     - teks progres bab html tidak menduplikasi badge hero
-// ============================================================
+// v7: perbaikan kutip warna + file dibersihkan penuh (pengganti v6 rusak).
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
@@ -242,8 +239,8 @@ export default function BukuBacaPage() {
     if (blok.tipe === 'p' && blok.teks) inti = <p style={st.paragraf}><MathText text={blok.teks} /></p>;
     else if (blok.tipe === 'list' && Array.isArray(blok.items) && blok.items.length) inti = <ul style={st.list}>{blok.items.map((it, j) => <li key={j} style={{ marginBottom: 6 }}><MathText text={it} /></li>)}</ul>;
     else if (blok.tipe === 'math' && blok.teks) inti = <div style={st.boxMath}><MathBlock text={blok.teks} /></div>;
-    else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>✏️ Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
-    else if (blok.tipe === 'tips' && blok.teks) inti = <div style={st.boxTips}><b>💡 Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
+    else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
+    else if (blok.tipe === 'tips' && blok.teks) inti = <div style={st.boxTips}><b>Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     else if (blok.tipe === 'gambar' && blok.src) inti = <GambarBuku src={blok.src} alt={blok.alt} caption={blok.caption} />;
     const visual = blok.visual ? <VisualBuku visual={blok.visual} /> : null;
     if (!inti && !visual) return null;
@@ -260,9 +257,9 @@ export default function BukuBacaPage() {
   const persenAman = Math.max(0, Math.min(100, persenBaca));
 
   const teksProgres = modeHtml
-    ? `${selesaiModul ? '✓ selesai dibaca' : 'belum selesai dibaca'}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
+    ? `${selesaiModul ? 'selesai dibaca' : 'belum selesai dibaca'}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
     : modeModul
-      ? `${daftarHalaman.length ? (Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) : 0}/${daftarHalaman.length} halaman dibaca${selesaiModul ? ' • ✓ selesai' : ''}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
+      ? `${daftarHalaman.length ? (Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) : 0}/${daftarHalaman.length} halaman dibaca${selesaiModul ? ' • selesai' : ''}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
       : `${selesaiSections.length}/${sections.length} seksi selesai${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`;
 
   if (!siap) {
@@ -278,14 +275,15 @@ export default function BukuBacaPage() {
     );
   }
 
+  const lebarHalaman = modeHtml ? 960 : 480;
+
   return (
-    <div style={st.page}>
+    <div style={{ ...st.page, maxWidth: lebarHalaman }}>
       {toast && <div style={st.toast}>{toast}</div>}
       {peringatan && (
         <div style={st.peringatan}><AlertTriangle size={13} /> {peringatan}</div>
       )}
 
-      {/* ===== HERO ===== */}
       <div style={{ ...st.hero, background: `linear-gradient(160deg, ${warna} 0%, #1E1B4B 100%)` }}>
         <div style={st.heroStars} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
@@ -307,7 +305,6 @@ export default function BukuBacaPage() {
         </div>
       </div>
 
-      {/* ===== MODE BACA — TERSTRUKTUR ===== */}
       {mode === 'baca' && !modeModul && !modeHtml && (
         <div style={{ padding: '16px 16px 90px' }}>
           {sections.map((sec, idx) => {
@@ -324,7 +321,7 @@ export default function BukuBacaPage() {
                   disabled={sudah}
                   style={{ ...st.tombolKecil, background: sudah ? '#dcfce7' : '#7C3AED', color: sudah ? '#166534' : 'white' }}
                 >
-                  {sudah ? '✓ Selesai dibaca' : 'Tandai selesai & lanjut'}
+                  {sudah ? 'Selesai dibaca' : 'Tandai selesai & lanjut'}
                 </button>
                 {idx < sections.length - 1 && (
                   <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 6 }}>Lanjut: {sections[idx + 1].judul}</div>
@@ -335,7 +332,6 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ===== MODE BACA — MODUL ASLI (PDF) ===== */}
       {mode === 'baca' && modeModul && (
         <div style={{ padding: '12px 12px 96px' }}>
           {pdfError && (
@@ -385,11 +381,11 @@ export default function BukuBacaPage() {
                   disabled={selesaiModul}
                   style={{ ...st.tombolKecil, flex: 1, background: selesaiModul ? '#dcfce7' : '#7C3AED', color: selesaiModul ? '#166534' : 'white' }}
                 >
-                  {selesaiModul ? '✓ Modul selesai dibaca' : `Tandai selesai baca modul (+${XP_MODUL} XP)`}
+                  {selesaiModul ? 'Modul selesai dibaca' : `Tandai selesai baca modul (+${XP_MODUL} XP)`}
                 </button>
               </div>
               <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 8, lineHeight: 1.6, textAlign: 'center' }}>
-                Baca sampai tuntas, lalu kerjakan <b>Uji Pemahaman</b> di bawah. Modul ini tampilan aslinya dari buku cetak —
+                Baca sampai tuntas, lalu kerjakan Uji Pemahaman di bawah. Modul ini tampilan aslinya dari buku cetak —
                 perbesar kalau rumusnya kecil.
               </div>
             </>
@@ -397,11 +393,10 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ===== MODE BACA — MODUL INTERAKTIF (HTML) ===== */}
       {mode === 'baca' && modeHtml && (
         <div style={{ padding: '12px 12px 40px' }}>
           <div style={st.kotakModul}>
-            <RendererHtmlBab html={bab.html} />
+            <RendererHtmlBab html={bab.html} babId={bab.id} />
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button
@@ -409,16 +404,12 @@ export default function BukuBacaPage() {
               disabled={selesaiModul}
               style={{ ...st.tombolKecil, flex: 1, background: selesaiModul ? '#dcfce7' : '#7C3AED', color: selesaiModul ? '#166534' : 'white' }}
             >
-              {selesaiModul ? '✓ Modul selesai dibaca' : `Tandai selesai baca modul (+${XP_MODUL} XP)`}
+              {selesaiModul ? 'Modul selesai dibaca' : `Tandai selesai baca modul (+${XP_MODUL} XP)`}
             </button>
-          </div>
-          <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 8, lineHeight: 1.6, textAlign: 'center' }}>
-            Modul interaktif: ketuk <b>"Lihat kunci & pembahasan"</b> pada tiap soal untuk belajar mandiri.
           </div>
         </div>
       )}
 
-      {/* ===== MODE QUIZ ===== */}
       {mode === 'quiz' && (
         <div style={{ padding: '16px 16px 90px' }}>
           {ujiPemahaman.length === 0 ? (
@@ -426,7 +417,7 @@ export default function BukuBacaPage() {
               <BookOpen size={18} color="#94a3b8" />
               <div style={{ marginTop: 6 }}>Belum ada soal pemantapan di bab ini.</div>
               <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>
-                Guru/admin bisa menambahkannya lewat Manajer Buku → bab ini → Edit.
+                Guru/admin bisa menambahkannya lewat Manajer Buku, bab ini, lalu Edit.
               </div>
             </div>
           ) : ujiPemahaman.map((q, i) => (
@@ -447,7 +438,6 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ===== MODE HASIL ===== */}
       {mode === 'hasil' && hasil && (
         <div style={{ padding: '16px 16px 40px' }}>
           <div style={{ ...st.kartuSeksi, textAlign: 'center' }}>
@@ -474,7 +464,7 @@ export default function BukuBacaPage() {
               {!item.benar && <div style={{ fontSize: 11.5, color: '#16a34a', marginBottom: 3 }}>Kunci: <b>{teksKunci(item.q)}</b></div>}
               {item.q.pembahasan && (
                 <div style={st.boxPembahasan}>
-                  <b>💡 Pembahasan</b>
+                  <b>Pembahasan</b>
                   <div style={{ marginTop: 4 }}><MathText text={item.q.pembahasan} /></div>
                 </div>
               )}
@@ -483,7 +473,6 @@ export default function BukuBacaPage() {
         </div>
       )}
 
-      {/* ===== BAR BAWAH (disembunyikan untuk bab html) ===== */}
       {mode !== 'hasil' && !modeHtml && (
         <div style={st.barBawah}>
           {mode === 'baca' ? (
