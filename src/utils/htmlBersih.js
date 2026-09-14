@@ -1,15 +1,19 @@
-// src/utils/htmlBersih.js (v5)
-// Sanitizer whitelist + normalisasi tabel markdown + normalisasi pecahan
-// + PENGHAPUSAN REFERENSI SUMBER (URL eksternal, Scribd, SlideShare, dll).
-// v5: teks/node yang memuat URL eksternal atau domain terlarang dibuang,
-//     sehingga siswa tidak pernah melihat link sumber di modul.
-const TAG_AMAN = new Set(['HTML','HEAD','BODY','DIV','SPAN','P','H1','H2','H3','H4','H5','H6','B','I','U','EM','STRONG','SMALL','BR','HR','UL','OL','LI','TABLE','THEAD','TBODY','TR','TH','TD','STYLE','SVG','G','PATH','LINE','POLYLINE','POLYGON','CIRCLE','RECT','ELLIPSE','TEXT','TSPAN','DEFS','TITLE','DETAILS','SUMMARY','A','CODE','PRE','BLOCKQUOTE','FIGURE','FIGCAPTION','SECTION','HEADER','FOOTER','MAIN','ARTICLE','SUP','SUB','DL','DT','DD','MARK','LABEL']);
+// src/utils/htmlBersih.js (v6)
+// FIX v6: pembersih referensi sumber TIDAK lagi memakan figur:
+//  - bentuk SVG (line/circle/path/polygon/rect/ellipse/dll) tidak pernah dianggap "kosong"
+//  - <img> diizinkan kembali, src hanya boleh https:// aman atau data:image/
+//    (hasil potong ✂️ Gambar dari Modul), selain itu src dicabut
+//  - yang dibuang hanya: URL, nama situs terlarang, kurungan referensi
+//    [..SUMBER..], <footer> sumber, dan atribut pembawa link.
+const TAG_AMAN = new Set(['HTML','HEAD','BODY','DIV','SPAN','P','H1','H2','H3','H4','H5','H6','B','I','U','EM','STRONG','SMALL','BR','HR','UL','OL','LI','TABLE','THEAD','TBODY','TR','TH','TD','STYLE','SVG','G','PATH','LINE','POLYLINE','POLYGON','CIRCLE','RECT','ELLIPSE','TEXT','TSPAN','DEFS','TITLE','DETAILS','SUMMARY','IMG','A','CODE','PRE','BLOCKQUOTE','FIGURE','FIGCAPTION','SECTION','HEADER','FOOTER','MAIN','ARTICLE','SUP','SUB','DL','DT','DD','MARK','LABEL']);
 const TAG_BUANG_ISI = new Set(['SCRIPT','IFRAME','OBJECT','EMBED','LINK','META','FORM','BASE','TEMPLATE','NOSCRIPT']);
-const ATTR_AMAN = new Set(['class','id','style','width','height','viewbox','preserveaspectratio','xmlns','fill','fill-opacity','stroke','stroke-width','stroke-linecap','stroke-linejoin','stroke-dasharray','stroke-opacity','points','x','y','x1','y1','x2','y2','cx','cy','r','rx','ry','d','opacity','font-size','font-weight','text-anchor','transform','title','aria-label','role','open','colspan','rowspan','start']);
-// atribut yang membawa URL dilarang total: href, src, cite, action
-
+const ATTR_AMAN = new Set(['class','id','style','width','height','viewbox','preserveaspectratio','xmlns','fill','fill-opacity','stroke','stroke-width','stroke-linecap','stroke-linejoin','stroke-dasharray','stroke-opacity','points','x','y','x1','y1','x2','y2','cx','cy','r','rx','ry','d','opacity','font-size','font-weight','text-anchor','transform','title','aria-label','role','open','colspan','rowspan','start','alt','src','srcset','loading']);
+const SVG_TAGS = new Set(['SVG','G','PATH','LINE','POLYLINE','POLYGON','CIRCLE','RECT','ELLIPSE','TEXT','TSPAN','DEFS','TITLE','IMAGE','USE','MARKER','LINEARGRADIENT','RADIALGRADIENT','STOP','SYMBOL','CLIPPATH']);
+const TEXT_WADAH = new Set(['P','DIV','SPAN','LI','TD','TH','H1','H2','H3','H4','H5','H6','FIGCAPTION','BLOCKQUOTE','SMALL','EM','STRONG','B','I','U','CODE','PRE','LABEL','DD','DT','SUMMARY']);
 const DOMAIN_TERLARANG = /scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams|drive\.google|dropbox|mega\.nz/i;
 const URL_RE = /https?:\/\/[^\s<>"']+/i;
+const RUJUK_SUMBER = /\[[^\]]*(?:SUMBER|sumber)[^\]]*\]/g;
+const KATA_DOMAIN = /\b(?:scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams)\b[^\s<>"']*/gi;
 
 const tagNama = (el) => String(el.tagName || '').toUpperCase();
 
@@ -61,45 +65,56 @@ export function normalkanPecahan(html) {
     .replace(/<sup>([^<]{1,6})<\/sup>(?:⁄|\/)<sub>([^<]{1,6})<\/sub>/g, pec);
 }
 
-function teksBermasalah(teks) {
-  const t = String(teks || '');
-  if (URL_RE.test(t)) return true;
-  if (DOMAIN_TERLARANG.test(t)) return true;
+function srcAman(nilai) {
+  const v = String(nilai || '').trim();
+  const low = v.toLowerCase();
+  if (low.startsWith('javascript:') || low.startsWith('data:text/html')) return false;
+  if (DOMAIN_TERLARANG.test(v)) return false;
+  if (/^https:\/\//i.test(v)) return true;
+  if (low.startsWith('data:image/')) return true;
   return false;
 }
 
 function bersihkanNode(el) {
-  // buang <a> pembawa URL eksternal (sisakan teksnya saja)
-  if (tagNama(el) === 'A') {
+  const tag = tagNama(el);
+  if (tag === 'A') {
     const frag = document.createDocumentFragment();
     while (el.firstChild) frag.appendChild(el.firstChild);
     el.replaceWith(frag);
     return;
   }
-  // buang <footer> atau <div>/<p> yang isinya cuma referensi sumber
-  if (tagNama(el) === 'FOOTER' ||
-      (tagNama(el) === 'P' && /sumber|source|diunduh|retrieved/i.test(el.textContent || ''))) {
-    if (teksBermasalah(el.textContent)) { el.remove(); return; }
+  for (const attr of [...el.attributes]) {
+    const nama = attr.name.toLowerCase();
+    const nilai = attr.value || '';
+    const hapus =
+      nama.startsWith('on') ||
+      !ATTR_AMAN.has(nama) ||
+      ['href', 'cite', 'action', 'data-src'].includes(nama) ||
+      (nama === 'src' && !srcAman(nilai));
+    if (hapus) el.removeAttribute(attr.name);
   }
-  // buang text node yang memuat URL atau domain terlarang
-  const anak = [...el.childNodes];
-  for (const n of anak) {
-    if (n.nodeType === 3) { // TEXT_NODE
+  if (tag === 'FOOTER') { el.remove(); return; }
+  if (tag === 'P' && /sumber|source|diunduh|retrieved/i.test(el.textContent || '') &&
+      (URL_RE.test(el.textContent || '') || DOMAIN_TERLARANG.test(el.textContent || ''))) {
+    el.remove();
+    return;
+  }
+  for (const n of [...el.childNodes]) {
+    if (n.nodeType === 3) {
       const isi = n.nodeValue || '';
-      if (URL_RE.test(isi) || DOMAIN_TERLARANG.test(isi)) {
-        // hapus bagian URL/domain-nya saja, pertahankan teks lain
-        const bersih = isi
+      if (URL_RE.test(isi) || DOMAIN_TERLARANG.test(isi) || RUJUK_SUMBER.test(isi)) {
+        n.nodeValue = isi
+          .replace(RUJUK_SUMBER, '')
           .replace(URL_RE, '')
-          .replace(/\b(?:scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams)\b[^\s<>"']*/gi, '')
-          .replace(/\s{2,}/g, ' ').trim();
-        n.nodeValue = bersih;
+          .replace(KATA_DOMAIN, '')
+          .replace(/\s{2,}/g, ' ');
       }
     } else if (n.nodeType === 1) {
       bersihkanNode(n);
     }
   }
-  // buang elemen yang kini kosong karena teksnya dihapus
-  if (el.childElementCount === 0 && !el.textContent.trim() && tagNama(el) !== 'BR' && tagNama(el) !== 'HR') {
+  // HANYA wadah teks kosong yang dibuang; bentuk SVG & img TIDAK pernah di sini.
+  if (TEXT_WADAH.has(tag) && el.childElementCount === 0 && !el.textContent.trim() && !el.hasAttribute('src')) {
     el.remove();
   }
 }
@@ -107,43 +122,20 @@ function bersihkanNode(el) {
 export function bersihkanHtml(html) {
   const sumber = normalkanPecahan(normalkanTabelMarkdown(html));
   const doc = new DOMParser().parseFromString(sumber, 'text/html');
-
-  // 1) buang tag berbahaya beserta isinya
   doc.querySelectorAll([...TAG_BUANG_ISI].join(',')).forEach((n) => n.remove());
-
-  // 2) buang komentar HTML (termasuk AUDIT) — tidak perlu tampil
-  const iter = document.createTreeWalker(doc, 128 /* NodeFilter.SHOW_COMMENT */);
+  const iter = document.createTreeWalker(doc, 128);
   const kom = [];
   while (iter.nextNode()) kom.push(iter.currentNode);
   kom.forEach((c) => c.parentNode && c.parentNode.removeChild(c));
-
-  // 3) sanitasi tag & atribut (tanpa whitelist URL)
   const semua = [...doc.body.querySelectorAll('*'), ...doc.head.querySelectorAll('style')];
   for (const el of semua) {
-    if (el.closest('body') && !TAG_AMAN.has(tagNama(el))) {
+    if (el.closest('body') && !TAG_AMAN.has(tagNama(el)) && !SVG_TAGS.has(tagNama(el))) {
       const frag = doc.createDocumentFragment();
       while (el.firstChild) frag.appendChild(el.firstChild);
       el.replaceWith(frag);
-      continue;
-    }
-    for (const attr of [...el.attributes]) {
-      const nama = attr.name.toLowerCase();
-      const nilai = String(attr.value || '').trim().toLowerCase();
-      if (
-        nama.startsWith('on') ||
-        !ATTR_AMAN.has(nama) ||
-        ['href','src','cite','action','data-src'].includes(nama) ||
-        (nilai.startsWith('javascript:') || nilai.startsWith('data:text/html'))
-      ) {
-        el.removeAttribute(attr.name);
-      }
     }
   }
-
-  // 4) bersihkan node yang memuat URL/domain terlarang
   bersihkanNode(doc.body);
-
-  // 5) kumpulkan <style> + body (tanpa komentar)
   const styles = [...doc.querySelectorAll('style')].map((s) => s.outerHTML).join('\n');
   return styles + doc.body.innerHTML;
 }

@@ -1,11 +1,13 @@
-// src/components/buku/RendererHtmlBab.jsx (v8)
-// COBA DULU, BARU LIHAT KUNCI — tahan-banting + lapis pembersih sumber di browser.
-// v8: setelah enhance, buang ulang node apa pun yang masih memuat URL/domain
-//     terlarang (scribd/slideshare/my99dreams/...) — lapis pertahanan kedua.
+// src/components/buku/RendererHtmlBab.jsx (v10)
+// FIX v10: lapis pembersih di browser tidak lagi menghapus figur:
+//  - bersihkanUlang hanya membuang link/footer/rujukan sumber & wadah teks kosong
+//  - bentuk SVG dan <img src=https aman> dipertahankan
+// Fitur tetap: coba-dulu-baru-kunci, pencatatan jawaban siswa, mode presentasi guru.
 import { useEffect, useRef } from 'react';
 import { bersihkanHtml } from '../../utils/htmlBersih';
+import { catatJawaban } from '../../services/kelasService';
 
-const VERSI = 'v8';
+const VERSI = 'v10';
 
 const BASE_STYLE = `
   :host{display:block}
@@ -37,6 +39,7 @@ const BASE_STYLE = `
   .gb-wrap ul.pil.gb-multi li.gb-dipilih{border-color:#7C3AED;background:#f5f3ff}
   .gb-wrap ul.pil.gb-multi li.gb-dipilih::before{content:"✓";background:#7C3AED;border-color:#7C3AED;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
   .gb-bsbtns{display:flex;gap:6px;margin-top:8px}
+  .gb-guru{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
   .gb-wrap details.kunci{margin:6px 0}
   .gb-wrap details.kunci summary{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#4338ca;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:800;list-style:none;cursor:pointer}
   .gb-wrap details.kunci summary::before{content:"▸";font-size:11px}
@@ -67,11 +70,63 @@ const BASE_STYLE = `
 
 const DOMAIN_TERLARANG = /scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams|drive\.google|dropbox|mega\.nz/i;
 const URL_RE = /https?:\/\/[^\s<>"']+/i;
+const RUJUK_SUMBER = /\[[^\]]*(?:SUMBER|sumber)[^\]]*\]/g;
+const KATA_DOMAIN = /\b(?:scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams)\b[^\s<>"']*/gi;
+const TEXT_WADAH = ['p', 'div', 'span', 'li', 'td', 'th', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'figcaption', 'blockquote', 'small'];
 
 function siapkanCss(html) {
   return String(html)
     .replace(/:root\s*\{/g, '.gb-wrap{')
     .replace(/(^|})\s*body\s*\{/g, '$1.gb-wrap{');
+}
+
+function srcAman(nilai) {
+  const v = String(nilai || '').trim();
+  const low = v.toLowerCase();
+  if (low.startsWith('javascript:') || low.startsWith('data:text/html')) return false;
+  if (DOMAIN_TERLARANG.test(v)) return false;
+  if (/^https:\/\//i.test(v)) return true;
+  if (low.startsWith('data:image/')) return true;
+  return false;
+}
+
+function bersihkanUlang(root) {
+  const semua = [...root.querySelectorAll('*')];
+  for (const el of semua) {
+    if (el.tagName === 'A') {
+      const frag = document.createDocumentFragment();
+      while (el.firstChild) frag.appendChild(el.firstChild);
+      el.replaceWith(frag);
+      continue;
+    }
+    for (const nama of ['href', 'cite', 'action', 'data-src']) {
+      if (el.hasAttribute(nama)) el.removeAttribute(nama);
+    }
+    const src = el.getAttribute ? el.getAttribute('src') : null;
+    if (src !== null && !srcAman(src)) el.removeAttribute('src');
+    if (el.tagName === 'FOOTER') { el.remove(); continue; }
+    if (el.tagName === 'P' && /sumber|source|diunduh|retrieved/i.test(el.textContent || '') &&
+        (URL_RE.test(el.textContent || '') || DOMAIN_TERLARANG.test(el.textContent || ''))) {
+      el.remove();
+      continue;
+    }
+    for (const n of [...el.childNodes]) {
+      if (n.nodeType === 3) {
+        const isi = n.nodeValue || '';
+        if (URL_RE.test(isi) || DOMAIN_TERLARANG.test(isi) || RUJUK_SUMBER.test(isi)) {
+          n.nodeValue = isi
+            .replace(RUJUK_SUMBER, '')
+            .replace(URL_RE, '')
+            .replace(KATA_DOMAIN, '')
+            .replace(/\s{2,}/g, ' ');
+        }
+      }
+    }
+  }
+  // Hanya wadah teks kosong yang dibuang — SVG & img TIDAK disentuh.
+  [...root.querySelectorAll(TEXT_WADAH.join(','))].forEach((el) => {
+    if (el.childElementCount === 0 && !el.textContent.trim() && !el.hasAttribute('src')) el.remove();
+  });
 }
 
 function parseKunci(teks) {
@@ -114,35 +169,40 @@ const hint = (soalEl, teks) => {
   else soalEl.appendChild(d);
 };
 
-function langkahBertahap(details) {
-  if (!details || details.dataset.bertahap) return;
+function setupLangkah(details) {
+  if (details._maju) return details._maju;
   const list = details.querySelector('.langkah') || details.querySelector('ol');
-  if (!list) return;
+  if (!list) return null;
   const items = [...list.querySelectorAll('li')];
-  if (items.length < 2) return;
+  if (items.length < 2) return null;
   details.dataset.bertahap = '1';
   items.forEach((li, i) => { if (i > 0) li.classList.add('blm'); });
-  const btn = buatBtn('Langkah berikutnya ▸', 'mini');
   let idx = 1;
-  btn.addEventListener('click', () => {
+  const maju = () => {
     if (idx < items.length) {
       items[idx].classList.remove('blm');
       idx += 1;
-      if (idx >= items.length) btn.textContent = 'Semua langkah terbuka ✓';
-    } else {
-      items.forEach((li, i) => li.classList.toggle('blm', i > 0));
-      idx = 1;
-      btn.textContent = 'Langkah berikutnya ▸';
+      if (idx >= items.length && btn) btn.textContent = 'Semua langkah terbuka ✓';
+      return true;
     }
-  });
+    return false;
+  };
+  const btn = buatBtn('Langkah berikutnya ▸', 'mini');
+  btn.addEventListener('click', () => { maju(); });
   list.after(btn);
+  details._maju = maju;
+  return maju;
 }
 
-function bukaKunci(details) {
+function bukaKunci(details, semuaLangkah) {
   if (!details) return;
   details.classList.remove('gb-terkunci');
   details.open = true;
-  langkahBertahap(details);
+  if (semuaLangkah) {
+    details.querySelectorAll('.langkah li.blm').forEach((li) => li.classList.remove('blm'));
+  } else if (!details.dataset.bertahap) {
+    setupLangkah(details);
+  }
 }
 
 function toastShadow(root, teks) {
@@ -158,47 +218,6 @@ function toastShadow(root, teks) {
 
 function bersihGlyph(el) {
   el.innerHTML = el.innerHTML.replace(/^\s*[\u2610\u2611\u2612\u25A1\u25EB\u25FC\u2B1C\u2B1D]\s*/, '');
-}
-
-// LAPIS PERTAHANAN KEDUA: buang node bermuatan URL/domain terlarang.
-function bersihkanUlang(root) {
-  const semua = [...root.querySelectorAll('*')];
-  for (const el of semua) {
-    // buang <a>
-    if (el.tagName === 'A') {
-      const frag = document.createDocumentFragment();
-      while (el.firstChild) frag.appendChild(el.firstChild);
-      el.replaceWith(frag);
-      continue;
-    }
-    // buang atribut pembawa URL
-    for (const nama of ['href','src','cite','action','data-src']) {
-      if (el.hasAttribute(nama)) el.removeAttribute(nama);
-    }
-    // buang elemen <footer> atau <p> sumber
-    if (el.tagName === 'FOOTER') { el.remove(); continue; }
-    if (el.tagName === 'P' && /sumber|source|diunduh|retrieved/i.test(el.textContent || '') && (URL_RE.test(el.textContent || '') || DOMAIN_TERLARANG.test(el.textContent || ''))) {
-      el.remove(); continue;
-    }
-    // text node yang memuat URL/domain terlarang
-    for (const n of [...el.childNodes]) {
-      if (n.nodeType === 3) {
-        const isi = n.nodeValue || '';
-        if (URL_RE.test(isi) || DOMAIN_TERLARANG.test(isi)) {
-          n.nodeValue = isi
-            .replace(URL_RE, '')
-            .replace(/\b(?:scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams)\b[^\s<>"']*/gi, '')
-            .replace(/\s{2,}/g, ' ');
-        }
-      }
-    }
-  }
-  // buang elemen yang kini kosong (kecuali BR/HR)
-  [...root.querySelectorAll('*')].forEach((el) => {
-    if (el.childElementCount === 0 && !el.textContent.trim() && el.tagName !== 'BR' && el.tagName !== 'HR') {
-      el.remove();
-    }
-  });
 }
 
 function cariKunci(soalEl) {
@@ -218,11 +237,44 @@ function cariPilihan(soalEl) {
   return { ul, lis };
 }
 
-function interaktif(soalEl, root) {
+function interaktif(soalEl, root, soalNo, opts) {
   const details = soalEl.querySelector('details');
   const kunci = cariKunci(soalEl);
   const { ul, lis } = cariPilihan(soalEl);
   if (!kunci || !lis.length) return false;
+
+  const catat = (tepat, ringkas) => {
+    if (opts.presentasi || !opts.siswaId) return;
+    catatJawaban({
+      bukuId: opts.bukuId,
+      babId: opts.babId,
+      soalNo,
+      tipe: kunci.tipe,
+      benar: tepat,
+      jawaban: ringkas,
+      siswaId: opts.siswaId,
+      nama: opts.nama,
+    });
+  };
+
+  if (opts.presentasi) {
+    const ctrl = document.createElement('div');
+    ctrl.className = 'gb-guru';
+    const bReveal = buatBtn('🔓 Buka kunci & pembahasan', 'mini');
+    bReveal.addEventListener('click', () => bukaKunci(details, true));
+    const bStep = buatBtn('▸ Jelaskan bertahap', 'mini');
+    bStep.addEventListener('click', () => {
+      if (!details) return;
+      details.classList.remove('gb-terkunci');
+      details.open = true;
+      const maju = setupLangkah(details);
+      if (maju) maju();
+    });
+    ctrl.appendChild(bReveal);
+    ctrl.appendChild(bStep);
+    soalEl.appendChild(ctrl);
+    return true;
+  }
 
   if (kunci.tipe === 'pg' && lis.length >= 2) {
     hint(soalEl, 'Ketuk jawabanmu untuk memeriksa.');
@@ -234,8 +286,9 @@ function interaktif(soalEl, root) {
           if (j === kunci.pg) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
           else if (j === idx) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
         });
-        bukaKunci(details);
+        bukaKunci(details, false);
         banner(soalEl, idx === kunci.pg);
+        catat(idx === kunci.pg, String.fromCharCode(65 + idx));
       });
     });
     return true;
@@ -262,8 +315,9 @@ function interaktif(soalEl, root) {
         else if (pilih.has(j)) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
       });
       const tepat = pilih.size === benarSet.size && [...pilih].every((j) => benarSet.has(j));
-      bukaKunci(details);
+      bukaKunci(details, false);
       banner(soalEl, tepat);
+      catat(tepat, [...pilih].sort((a, b) => a - b).map((i) => i + 1).join(','));
     });
     const anchor = ul || soalEl.querySelector('table') || soalEl.querySelector('p');
     if (anchor) anchor.after(btn);
@@ -313,8 +367,10 @@ function interaktif(soalEl, root) {
         x.style.background = tepat ? '#dcfce7' : '#fef2f2';
         x.style.borderColor = tepat ? '#22c55e' : '#ef4444';
       });
-      bukaKunci(details);
-      banner(soalEl, pilih.every((v, j) => v === kunci.bs[j]));
+      const tepatAll = pilih.every((v, j) => v === kunci.bs[j]);
+      bukaKunci(details, false);
+      banner(soalEl, tepatAll);
+      catat(tepatAll, pilih.map((v) => (v ? 'B' : 'S')).join(''));
     });
     const anchor = soalEl.querySelector('table') || ul || soalEl.querySelector('p');
     if (anchor) anchor.after(btn);
@@ -325,11 +381,9 @@ function interaktif(soalEl, root) {
   return false;
 }
 
-function enhance(root, babId) {
+function enhance(root, opts) {
   const wrap = root.querySelector('.gb-wrap') || root;
   wrap.querySelectorAll('li').forEach(bersihGlyph);
-
-  // pembersihan sumber lapis kedua
   bersihkanUlang(wrap);
 
   try {
@@ -348,7 +402,7 @@ function enhance(root, babId) {
       layout.appendChild(kanan);
       wrap.appendChild(layout);
     }
-  } catch { /* split gagal = tetap satu kolom */ }
+  } catch { /* split gagal = satu kolom */ }
 
   const semuaSoal = [...wrap.querySelectorAll('.soal')];
 
@@ -356,7 +410,7 @@ function enhance(root, babId) {
   sticky.className = 'gb-sticky';
   const chipSoal = document.createElement('span');
   chipSoal.className = 'gb-chip';
-  chipSoal.textContent = `🎯 ${semuaSoal.length} soal`;
+  chipSoal.textContent = opts.presentasi ? `🎓 Mode Bahas · ${semuaSoal.length} soal` : `🎯 ${semuaSoal.length} soal`;
   const chipSiap = document.createElement('span');
   chipSiap.className = 'gb-chip';
   const chipPaham = document.createElement('span');
@@ -368,26 +422,44 @@ function enhance(root, babId) {
   sticky.appendChild(chipSiap);
   sticky.appendChild(chipPaham);
   sticky.appendChild(chipVer);
+
+  if (opts.presentasi) {
+    const bAll = buatBtn('🔓 Buka semua kunci', 'mini');
+    bAll.addEventListener('click', () => root.querySelectorAll('details').forEach((d) => bukaKunci(d, true)));
+    const bNone = buatBtn('🙈 Tutup semua', 'mini');
+    bNone.addEventListener('click', () => root.querySelectorAll('details').forEach((d) => {
+      d.open = false;
+      d.classList.add('gb-terkunci');
+      d.querySelectorAll('.langkah li').forEach((li, i) => { if (i > 0) li.classList.add('blm'); });
+    }));
+    const bExit = buatBtn('⬅ Keluar mode bahas', 'mini');
+    bExit.addEventListener('click', () => { if (opts.onKeluar) opts.onKeluar(); });
+    sticky.appendChild(bAll);
+    sticky.appendChild(bNone);
+    sticky.appendChild(bExit);
+  }
   wrap.insertBefore(sticky, wrap.firstChild);
 
-  const kartuMateri = [...wrap.querySelectorAll('.kartu')];
-  const kunciKey = `gbPaham:${babId || '-'}`;
-  let paham = new Set();
-  try { paham = new Set(JSON.parse(localStorage.getItem(kunciKey) || '[]')); } catch { paham = new Set(); }
-  const segarkanChip = () => { chipPaham.textContent = `💡 ${paham.size}/${kartuMateri.length} paham`; };
-  segarkanChip();
-  kartuMateri.forEach((kartu, i) => {
-    const btn = buatBtn(paham.has(i) ? '✓ Sudah paham' : '✓ Tandai paham bagian ini', 'gb-paham' + (paham.has(i) ? ' oke' : ''));
-    btn.addEventListener('click', () => {
-      if (paham.has(i)) paham.delete(i);
-      else paham.add(i);
-      try { localStorage.setItem(kunciKey, JSON.stringify([...paham])); } catch { /* abaikan */ }
-      btn.textContent = paham.has(i) ? '✓ Sudah paham' : '✓ Tandai paham bagian ini';
-      btn.classList.toggle('oke', paham.has(i));
-      segarkanChip();
+  if (!opts.presentasi) {
+    const kartuMateri = [...wrap.querySelectorAll('.kartu')];
+    const kunciKey = `gbPaham:${opts.babId || '-'}`;
+    let paham = new Set();
+    try { paham = new Set(JSON.parse(localStorage.getItem(kunciKey) || '[]')); } catch { paham = new Set(); }
+    const segarkanChip = () => { chipPaham.textContent = `💡 ${paham.size}/${kartuMateri.length} paham`; };
+    segarkanChip();
+    kartuMateri.forEach((kartu, i) => {
+      const btn = buatBtn(paham.has(i) ? '✓ Sudah paham' : '✓ Tandai paham bagian ini', 'gb-paham' + (paham.has(i) ? ' oke' : ''));
+      btn.addEventListener('click', () => {
+        if (paham.has(i)) paham.delete(i);
+        else paham.add(i);
+        try { localStorage.setItem(kunciKey, JSON.stringify([...paham])); } catch { /* abaikan */ }
+        btn.textContent = paham.has(i) ? '✓ Sudah paham' : '✓ Tandai paham bagian ini';
+        btn.classList.toggle('oke', paham.has(i));
+        segarkanChip();
+      });
+      kartu.appendChild(btn);
     });
-    kartu.appendChild(btn);
-  });
+  }
 
   root.querySelectorAll('details').forEach((d) => {
     if (/Jawaban:/i.test(d.textContent || '')) { d.open = false; d.classList.add('gb-terkunci'); }
@@ -397,15 +469,17 @@ function enhance(root, babId) {
       const d = s.closest('details');
       if (d && d.classList.contains('gb-terkunci')) {
         e.preventDefault();
-        toastShadow(root, 'Kerjakan soal ini dulu ya — kunci & pembahasan terbuka setelah kamu menjawab 🙂');
+        toastShadow(root, opts.presentasi
+          ? 'Gunakan tombol guru di bawah soal untuk membuka kunci.'
+          : 'Kerjakan soal ini dulu ya — kunci & pembahasan terbuka setelah kamu menjawab 🙂');
       }
     });
   });
 
   let siap = 0;
-  semuaSoal.forEach((soalEl) => {
+  semuaSoal.forEach((soalEl, i) => {
     let ok = false;
-    try { ok = interaktif(soalEl, root); } catch { ok = false; }
+    try { ok = interaktif(soalEl, root, i + 1, opts); } catch { ok = false; }
     if (ok) siap += 1;
     else { const d = soalEl.querySelector('details'); if (d) d.classList.remove('gb-terkunci'); }
   });
@@ -414,21 +488,25 @@ function enhance(root, babId) {
     root.querySelectorAll('details.gb-terkunci').forEach((d) => d.classList.remove('gb-terkunci'));
     chipSiap.textContent = '⚠️ mode baca saja';
   } else {
-    chipSiap.textContent = `🔓 ${siap}/${semuaSoal.length} siap dicoba`;
+    chipSiap.textContent = opts.presentasi ? '🔓 kontrol guru aktif' : `🔓 ${siap}/${semuaSoal.length} siap dicoba`;
   }
 }
 
-export default function RendererHtmlBab({ html, babId }) {
+export default function RendererHtmlBab({ html, babId, bukuId, modePresentasi = false, onKeluar }) {
   const hostRef = useRef(null);
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
     if (!host.shadowRoot) host.attachShadow({ mode: 'open' });
     host.shadowRoot.innerHTML = `<style>${BASE_STYLE}</style><div class="gb-wrap">${bersihkanHtml(siapkanCss(html))}</div>`;
-    try { enhance(host.shadowRoot, babId); } catch {
+    const siswaId = localStorage.getItem('studentId') || '';
+    const nama = localStorage.getItem('studentName') || localStorage.getItem('studentNama') || '';
+    try {
+      enhance(host.shadowRoot, { babId, bukuId, presentasi: modePresentasi, siswaId, nama, onKeluar });
+    } catch {
       host.shadowRoot.querySelectorAll('details').forEach((d) => d.classList.remove('gb-terkunci'));
     }
     return undefined;
-  }, [html, babId]);
+  }, [html, babId, bukuId, modePresentasi]);
   return <div ref={hostRef} />;
 }
