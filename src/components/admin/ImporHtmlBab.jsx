@@ -1,8 +1,10 @@
-// src/components/admin/ImporHtmlBab.jsx (v3)
+// src/components/admin/ImporHtmlBab.jsx (v4)
 // Mesin penerima hasil scan: terima BANYAK file .html sekaligus,
 // validasi otomatis (svg hilang / tag terlarang / tabel markdown /
 // placeholder gambar), isi URL potongan modul untuk placeholder,
-// lalu simpan semua ke buku_digital/{bukuId}/bab/{babId} (tipe 'html').
+// lalu simpan ke buku_digital/{bukuId}/bab/{babId} (tipe 'html').
+// v4: tombol nonaktif TERLIHAT abu-abu; label berubah "✓ Tersimpan";
+//     pesan sukses menegaskan data sudah masuk & cara melihatnya.
 import { useRef, useState } from 'react';
 import { db } from '../../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -36,8 +38,10 @@ const st = {
   label: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, fontWeight: 700, color: '#475569' },
   input: { border: '1px solid #cbd5e1', borderRadius: 8, padding: '7px 9px', fontSize: 12, color: '#1e293b', background: '#fff' },
   btn: { display: 'flex', alignItems: 'center', gap: 6, background: '#4C6EF5', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer' },
+  btnMat: { display: 'flex', alignItems: 'center', gap: 6, background: '#cbd5e1', color: '#f8fafc', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'not-allowed' },
   btn2: { display: 'flex', alignItems: 'center', gap: 6, background: '#f1f5f9', color: '#334155', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
-  ok: { color: '#16a34a', fontSize: 11.5, fontWeight: 700 },
+  btn2Mat: { display: 'flex', alignItems: 'center', gap: 6, background: '#f1f5f9', color: '#94a3b8', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, cursor: 'not-allowed' },
+  ok: { color: '#16a34a', fontSize: 11.5, fontWeight: 800 },
   warn: { color: '#92400e', fontSize: 11.5, fontWeight: 700 },
   err: { color: '#dc2626', fontSize: 11.5, fontWeight: 700 },
   meta: { fontSize: 11, color: '#64748b' },
@@ -50,6 +54,7 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
   const fileRef = useRef(null);
   if (!terbuka) return null;
 
+  const adaSiap = antrian.some((x) => x.status === 'siap');
   const ubah = (key, patch) => setAntrian((p) => p.map((x) => (x.key === key ? { ...x, ...patch } : x)));
   const ubahPh = (key, ph, url) => setAntrian((p) => p.map((x) => (x.key === key ? { ...x, phUrl: { ...x.phUrl, [ph]: url } } : x)));
 
@@ -79,7 +84,7 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
   }
 
   async function simpanSatu(row) {
-    if (row.hasil.ditolak) return;
+    if (row.hasil.ditolak || row.status !== 'siap') return;
     let isi = row.hasil.bersih;
     for (const ph of row.hasil.ph) {
       const url = (row.phUrl[ph] || '').trim();
@@ -87,8 +92,9 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
     }
     const id = 'bab-' + (slug(row.judul) || Date.now().toString(36));
     const lama = await getDoc(doc(db, 'buku_digital', bukuId, 'bab', id));
-    if (lama.exists() && !window.confirm(`Bab "${row.judul}" sudah ada. Timpa dengan versi baru ini?`)) {
-      ubah(row.key, { status: 'dilewati' });
+    if (lama.exists() && !window.confirm(`Bab "${row.judul}" sudah ada di buku ini. Timpa dengan versi baru ini?`)) {
+      ubah(row.key, { status: 'siap' });
+      setPesan('ℹ️ Penimpaan dibatalkan — bab lama tidak berubah.');
       return;
     }
     await setDoc(doc(db, 'buku_digital', bukuId, 'bab', id), {
@@ -101,6 +107,7 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
       updatedAt: Date.now(),
     }, { merge: true });
     ubah(row.key, { status: 'tersimpan' });
+    setPesan(`✅ "${row.judul}" SUDAH masuk ke buku (urutan ${row.urutan}). Klik Tutup untuk melihat daftar bab & membukanya di reader.`);
   }
 
   async function simpanSemua() {
@@ -111,7 +118,7 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
         if (row.status !== 'siap') continue;
         await simpanSatu(row);
       }
-      setPesan('✅ Proses selesai. Bab bertipe HTML terbit ke siswa.');
+      setPesan('✅ Proses selesai. Semua bab bertipe HTML terbit ke siswa.');
     } catch (e) {
       setPesan('❌ Gagal: ' + e.message);
     }
@@ -123,17 +130,17 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
       <div style={st.kartu} onClick={(e) => e.stopPropagation()}>
         <div style={st.judul}>📥 Impor Bab dari HTML Hasil Scan</div>
         <div style={st.sub}>
-          Pilih SEMUA file .html hasil scan sekaligus (bab02-..., bab03-..., dst).
-          Mesin memeriksa otomatis: SVG utuh, tag terlarang, tabel markdown, dan placeholder figur.
-          Placeholder <b>{'{{GAMBAR_...}}'}</b> bisa ditambal URL potongan dari fitur <b>✂️ Gambar dari Modul</b> sebelum disimpan.
+          Pilih SEMUA file .html hasil scan sekaligus (bab02-..., bab03-..., dst). Mesin memeriksa otomatis: SVG utuh, tag terlarang, tabel markdown,
+          dan placeholder figur. Placeholder <b>{'{{GAMBAR_...}}'}</b> bisa ditambal URL potongan dari fitur <b>✂️ Gambar dari Modul</b> sebelum disimpan.
+          Tombol abu-abu = tidak aktif (sudah tersimpan / tidak ada yang siap).
         </div>
         <input ref={fileRef} type="file" accept=".html,.htm" multiple style={{ display: 'none' }} onChange={(e) => { tambahFiles(e.target.files); if (fileRef.current) fileRef.current.value = ''; }} />
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <button style={st.btn2} onClick={() => fileRef.current && fileRef.current.click()}>📂 Pilih file .html (bisa banyak)</button>
-          <button style={{ ...st.btn, opacity: busy ? 0.6 : 1 }} disabled={busy || !antrian.some((x) => x.status === 'siap')} onClick={simpanSemua}>💾 Simpan Semua yang Siap</button>
+          <button style={busy || !adaSiap ? st.btnMat : st.btn} disabled={busy || !adaSiap} onClick={simpanSemua}>💾 Simpan Semua yang Siap</button>
           <button style={st.btn2} onClick={tutup}>Tutup</button>
         </div>
-        {pesan && <div style={{ marginBottom: 10, fontSize: 12, fontWeight: 700, color: pesan.startsWith('❌') ? '#dc2626' : '#16a34a' }}>{pesan}</div>}
+        {pesan && <div style={{ marginBottom: 10, fontSize: 12, fontWeight: 800, color: pesan.startsWith('❌') ? '#dc2626' : pesan.startsWith('ℹ️') ? '#92400e' : '#16a34a' }}>{pesan}</div>}
         {antrian.map((row) => (
           <div key={row.key} style={st.baris}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
@@ -165,9 +172,16 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
                 ))}
               </div>
             )}
-            <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-              <button style={st.btn} disabled={busy || row.status !== 'siap'} onClick={() => simpanSatu(row)}>💾 Simpan bab ini</button>
+            <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button
+                style={busy || row.status !== 'siap' ? st.btnMat : st.btn}
+                disabled={busy || row.status !== 'siap'}
+                onClick={() => simpanSatu(row)}
+              >
+                {row.status === 'tersimpan' ? '✓ Tersimpan' : '💾 Simpan bab ini'}
+              </button>
               <button style={st.btn2} onClick={() => setAntrian((p) => p.filter((x) => x.key !== row.key))}>Buang</button>
+              {row.status === 'tersimpan' && <span style={st.ok}>Data sudah masuk Firestore — tidak perlu klik lagi.</span>}
             </div>
           </div>
         ))}
