@@ -1,7 +1,7 @@
-// src/utils/htmlBersih.js (v3)
-// Sanitizer whitelist + normalisasi tabel markdown + util pemeriksaan.
-// v3: tabel markdown "| ... |" dikonversi otomatis menjadi <table class="ring">
-//     (Qwen kadang lolos menulis markdown di dalam HTML).
+// src/utils/htmlBersih.js (v4)
+// Sanitizer whitelist + normalisasi tabel markdown + normalisasi pecahan.
+// v4: pecahan "<sup>a</sup>/<sub>b</sub>" dikonversi menjadi span pecahan
+//     bertumpuk (.pec) supaya tampilan rumus tidak membingungkan siswa.
 const TAG_AMAN = new Set(['HTML','HEAD','BODY','DIV','SPAN','P','H1','H2','H3','H4','H5','H6','B','I','U','EM','STRONG','SMALL','BR','HR','UL','OL','LI','TABLE','THEAD','TBODY','TR','TH','TD','STYLE','SVG','G','PATH','LINE','POLYLINE','POLYGON','CIRCLE','RECT','ELLIPSE','TEXT','TSPAN','DEFS','TITLE','DETAILS','SUMMARY','IMG','A','CODE','PRE','BLOCKQUOTE','FIGURE','FIGCAPTION','SECTION','HEADER','FOOTER','MAIN','ARTICLE','SUP','SUB','DL','DT','DD','MARK','LABEL']);
 const TAG_BUANG_ISI = new Set(['SCRIPT','IFRAME','OBJECT','EMBED','LINK','META','FORM','BASE','TEMPLATE','NOSCRIPT']);
 const ATTR_AMAN = new Set(['class','id','style','width','height','viewbox','preserveaspectratio','xmlns','fill','fill-opacity','stroke','stroke-width','stroke-linecap','stroke-linejoin','stroke-dasharray','stroke-opacity','points','x','y','x1','y1','x2','y2','cx','cy','r','rx','ry','d','opacity','font-size','font-weight','text-anchor','transform','href','target','rel','alt','src','title','aria-label','role','open','colspan','rowspan','start']);
@@ -49,8 +49,15 @@ export function normalkanTabelMarkdown(html) {
   return out.join('\n');
 }
 
+export function normalkanPecahan(html) {
+  const pec = '<span class="pec"><span class="pec-pemb">$1</span><span class="pec-peny">$2</span></span>';
+  return String(html)
+    .replace(/<sup>([^<]{1,6})<\/sup>\s*(?:⁄|\/)\s*<sub>([^<]{1,6})<\/sub>/g, pec)
+    .replace(/<sup>([^<]{1,6})<\/sup>(?:⁄|\/)<sub>([^<]{1,6})<\/sub>/g, pec);
+}
+
 export function bersihkanHtml(html) {
-  const sumber = normalkanTabelMarkdown(html);
+  const sumber = normalkanPecahan(normalkanTabelMarkdown(html));
   const doc = new DOMParser().parseFromString(sumber, 'text/html');
   doc.querySelectorAll([...TAG_BUANG_ISI].join(',')).forEach((n) => n.remove());
   const semua = [...doc.body.querySelectorAll('*'), ...doc.head.querySelectorAll('style')];
