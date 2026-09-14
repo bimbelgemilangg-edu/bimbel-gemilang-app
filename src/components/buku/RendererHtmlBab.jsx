@@ -1,14 +1,11 @@
-// src/components/buku/RendererHtmlBab.jsx (v7)
-// COBA DULU, BARU LIHAT KUNCI — versi tahan-banting:
-//  - Soal dicari di SELURUH dokumen (tidak bergantung pemisahan kolom).
-//  - Pemisahan 2 kolom hanya visual & opsional (gagal split = tetap 1 kolom).
-//  - Soal yang gagal dibuat interaktif => kuncinya DIBUKA (mode baca).
-//  - Jika SATU PUN soal tidak interaktif => semua kunci dibuka (siswa tidak terjebak).
-//  - Chip sticky menampilkan VERSI mesin + jumlah soal siap dicoba (diagnostik).
+// src/components/buku/RendererHtmlBab.jsx (v8)
+// COBA DULU, BARU LIHAT KUNCI — tahan-banting + lapis pembersih sumber di browser.
+// v8: setelah enhance, buang ulang node apa pun yang masih memuat URL/domain
+//     terlarang (scribd/slideshare/my99dreams/...) — lapis pertahanan kedua.
 import { useEffect, useRef } from 'react';
 import { bersihkanHtml } from '../../utils/htmlBersih';
 
-const VERSI = 'v7';
+const VERSI = 'v8';
 
 const BASE_STYLE = `
   :host{display:block}
@@ -67,6 +64,9 @@ const BASE_STYLE = `
   .gb-wrap .pec-pemb{padding:0 4px 1px;border-bottom:1.5px solid currentColor;font-size:.82em}
   .gb-wrap .pec-peny{padding:1px 4px 0;font-size:.82em}
 `;
+
+const DOMAIN_TERLARANG = /scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams|drive\.google|dropbox|mega\.nz/i;
+const URL_RE = /https?:\/\/[^\s<>"']+/i;
 
 function siapkanCss(html) {
   return String(html)
@@ -158,6 +158,47 @@ function toastShadow(root, teks) {
 
 function bersihGlyph(el) {
   el.innerHTML = el.innerHTML.replace(/^\s*[\u2610\u2611\u2612\u25A1\u25EB\u25FC\u2B1C\u2B1D]\s*/, '');
+}
+
+// LAPIS PERTAHANAN KEDUA: buang node bermuatan URL/domain terlarang.
+function bersihkanUlang(root) {
+  const semua = [...root.querySelectorAll('*')];
+  for (const el of semua) {
+    // buang <a>
+    if (el.tagName === 'A') {
+      const frag = document.createDocumentFragment();
+      while (el.firstChild) frag.appendChild(el.firstChild);
+      el.replaceWith(frag);
+      continue;
+    }
+    // buang atribut pembawa URL
+    for (const nama of ['href','src','cite','action','data-src']) {
+      if (el.hasAttribute(nama)) el.removeAttribute(nama);
+    }
+    // buang elemen <footer> atau <p> sumber
+    if (el.tagName === 'FOOTER') { el.remove(); continue; }
+    if (el.tagName === 'P' && /sumber|source|diunduh|retrieved/i.test(el.textContent || '') && (URL_RE.test(el.textContent || '') || DOMAIN_TERLARANG.test(el.textContent || ''))) {
+      el.remove(); continue;
+    }
+    // text node yang memuat URL/domain terlarang
+    for (const n of [...el.childNodes]) {
+      if (n.nodeType === 3) {
+        const isi = n.nodeValue || '';
+        if (URL_RE.test(isi) || DOMAIN_TERLARANG.test(isi)) {
+          n.nodeValue = isi
+            .replace(URL_RE, '')
+            .replace(/\b(?:scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams)\b[^\s<>"']*/gi, '')
+            .replace(/\s{2,}/g, ' ');
+        }
+      }
+    }
+  }
+  // buang elemen yang kini kosong (kecuali BR/HR)
+  [...root.querySelectorAll('*')].forEach((el) => {
+    if (el.childElementCount === 0 && !el.textContent.trim() && el.tagName !== 'BR' && el.tagName !== 'HR') {
+      el.remove();
+    }
+  });
 }
 
 function cariKunci(soalEl) {
@@ -288,6 +329,9 @@ function enhance(root, babId) {
   const wrap = root.querySelector('.gb-wrap') || root;
   wrap.querySelectorAll('li').forEach(bersihGlyph);
 
+  // pembersihan sumber lapis kedua
+  bersihkanUlang(wrap);
+
   try {
     const anak = [...wrap.children];
     let splitIdx = anak.findIndex((el) => /^H[12]$/.test(el.tagName) && /Soal Pemantapan/i.test(el.textContent || ''));
@@ -304,7 +348,7 @@ function enhance(root, babId) {
       layout.appendChild(kanan);
       wrap.appendChild(layout);
     }
-  } catch { /* split gagal = tetap satu kolom, tidak masalah */ }
+  } catch { /* split gagal = tetap satu kolom */ }
 
   const semuaSoal = [...wrap.querySelectorAll('.soal')];
 
