@@ -1,13 +1,10 @@
-// src/components/buku/RendererHtmlBab.jsx (v5)
-// Prinsip belajar: COBA DULU, BARU LIHAT KUNCI.
-//  - Semua details.kunci dipaksa TERTUTUP & TERKUNCI saat render.
-//    Ketuk summary sebelum menjawab => toast pengingat (tidak terbuka).
-//    Setelah siswa menjawab => kunci terbuka otomatis, langkah demi langkah.
-//  - Soal PG: pilihan bisa diketuk (hijau benar / merah keliru).
-//  - Soal MULTI: simbol ☐ dibuang, diganti kotak centang asli; tombol Periksa.
-//  - Soal B-S: pernyataan (list ATAU tabel) diberi tombol Benar/Salah; tombol Periksa.
-//  - Desktop >=900px: 2 kolom (materi kiri, latihan kanan sticky).
-//  - Pecahan bertumpuk, kartu rumus, langkah bernomor, chip "paham" sticky.
+// src/components/buku/RendererHtmlBab.jsx (v6)
+// COBA DULU, BARU LIHAT KUNCI — versi defensif:
+//  - Tiap soal diproses dalam try/catch: satu soal rusak tidak mematikan lainnya.
+//  - Kunci dicari dari .jawab ATAU dari teks details (tidak bergantung class).
+//  - Pilihan dicari berlapis: ul.pil -> ul -> li -> baris tabel (untuk B-S).
+//  - Soal yang tidak bisa dibuat interaktif => kuncinya DIBUKA (siswa tidak terjebak).
+//  - Chip sticky menampilkan jumlah soal yang siap dicoba (indikator sehat).
 import { useEffect, useRef } from 'react';
 import { bersihkanHtml } from '../../utils/htmlBersih';
 
@@ -79,12 +76,12 @@ function parseKunci(teks) {
   const t = String(teks || '').replace(/\s+/g, ' ').trim();
   let m = t.match(/Jawaban:\s*([A-D])\b/i);
   if (m) return { tipe: 'pg', pg: m[1].toUpperCase().charCodeAt(0) - 65 };
-  m = t.match(/Jawaban:\s*(?:Pernyataan\s*)?(\d+(?:\s*,\s*\d+)*(?:\s*,?\s*dan\s*\d+)?)\s*$/i);
+  m = t.match(/Jawaban:\s*(?:Pernyataan\s*)?(\d+(?:\s*,\s*\d+)*(?:\s*,?\s*dan\s*\d+)?)/i);
   if (m) {
     const arr = m[1].replace(/dan/gi, ',').split(',').map((x) => parseInt(x.trim(), 10) - 1).filter((x) => !isNaN(x) && x >= 0);
     if (arr.length) return { tipe: 'multi', multi: arr };
   }
-  m = t.match(/Jawaban:\s*((?:Benar|Salah)(?:\s*,\s*(?:Benar|Salah))+)\s*$/i);
+  m = t.match(/Jawaban:\s*((?:Benar|Salah)(?:\s*,\s*(?:Benar|Salah))+)/i);
   if (m) return { tipe: 'bs', bs: m[1].split(',').map((x) => x.trim().toLowerCase() === 'benar') };
   return null;
 }
@@ -110,14 +107,14 @@ const hint = (soalEl, teks) => {
   const d = document.createElement('div');
   d.textContent = '✋ ' + teks;
   d.style.cssText = 'margin:6px 0 2px;font-size:11px;color:#7C3AED;font-weight:700';
-  const pil = soalEl.querySelector('.pil');
+  const pil = soalEl.querySelector('.pil') || soalEl.querySelector('ul') || soalEl.querySelector('table');
   if (pil) pil.before(d);
   else soalEl.appendChild(d);
 };
 
 function langkahBertahap(details) {
   if (!details || details.dataset.bertahap) return;
-  const list = details.querySelector('.langkah');
+  const list = details.querySelector('.langkah') || details.querySelector('ol');
   if (!list) return;
   const items = [...list.querySelectorAll('li')];
   if (items.length < 2) return;
@@ -152,7 +149,8 @@ function toastShadow(root, teks) {
   const d = document.createElement('div');
   d.className = 'gb-toast';
   d.textContent = teks;
-  root.querySelector('.gb-wrap').appendChild(d);
+  const wrap = root.querySelector('.gb-wrap');
+  if (wrap) wrap.appendChild(d);
   setTimeout(() => d.remove(), 2200);
 }
 
@@ -160,20 +158,34 @@ function bersihGlyph(li) {
   li.innerHTML = li.innerHTML.replace(/^\s*[\u2610\u2611\u2612\u25A1\u25EB\u25FC\u2B1C\u2B1D]\s*/, '');
 }
 
-function interaktif(soalEl, root) {
-  const kunciEl = soalEl.querySelector('.jawab');
-  const details = soalEl.querySelector('details.kunci');
-  const kunci = kunciEl ? parseKunci(kunciEl.textContent) : null;
-  const pilUl = soalEl.querySelector('ul.pil');
-  const lis = pilUl ? [...pilUl.querySelectorAll('li')] : [];
+function cariKunci(soalEl) {
+  const j = soalEl.querySelector('.jawab');
+  if (j) { const k = parseKunci(j.textContent); if (k) return k; }
+  const d = soalEl.querySelector('details');
+  if (d) { const k = parseKunci(d.textContent); if (k) return k; }
+  return parseKunci(soalEl.textContent);
+}
+
+function cariPilihan(soalEl) {
+  const ul = soalEl.querySelector('ul.pil') || soalEl.querySelector('ul');
+  let lis = ul ? [...ul.querySelectorAll('li')] : [];
+  if (!lis.length) lis = [...soalEl.querySelectorAll('li')];
   lis.forEach(bersihGlyph);
+  return { ul, lis };
+}
+
+function interaktif(soalEl, root) {
+  const details = soalEl.querySelector('details');
+  const kunci = cariKunci(soalEl);
+  const { ul, lis } = cariPilihan(soalEl);
 
   if (!kunci || !lis.length) {
     if (details) details.classList.remove('gb-terkunci');
     return;
   }
 
-  if (kunci.tipe === 'pg') {
+  if (kunci.tipe === 'pg' && lis.length >= 2) {
+    soalEl.dataset.interaktif = '1';
     hint(soalEl, 'Ketuk jawabanmu untuk memeriksa.');
     lis.forEach((li, idx) => {
       li.style.cursor = 'pointer';
@@ -191,8 +203,9 @@ function interaktif(soalEl, root) {
     return;
   }
 
-  if (kunci.tipe === 'multi') {
-    pilUl.classList.add('gb-multi');
+  if (kunci.tipe === 'multi' && lis.length >= 2) {
+    soalEl.dataset.interaktif = '1';
+    if (ul) ul.classList.add('gb-multi');
     hint(soalEl, 'Ketuk satu atau lebih pernyataan, lalu tekan Periksa.');
     const pilih = new Set();
     lis.forEach((li, idx) => {
@@ -216,7 +229,9 @@ function interaktif(soalEl, root) {
       bukaKunci(details);
       banner(soalEl, tepat);
     });
-    pilUl.after(btn);
+    const anchor = ul || soalEl.querySelector('table') || soalEl.querySelector('p');
+    if (anchor) anchor.after(btn);
+    else soalEl.appendChild(btn);
     return;
   }
 
@@ -230,6 +245,7 @@ function interaktif(soalEl, root) {
       if (details) details.classList.remove('gb-terkunci');
       return;
     }
+    soalEl.dataset.interaktif = '1';
     hint(soalEl, 'Pilih Benar/Salah untuk tiap pernyataan, lalu Periksa.');
     const pilih = [];
     stmts.forEach((el, idx) => {
@@ -269,10 +285,13 @@ function interaktif(soalEl, root) {
       bukaKunci(details);
       banner(soalEl, tepatAll);
     });
-    const pilWrap = soalEl.querySelector('.pil') || soalEl.querySelector('table');
-    if (pilWrap) pilWrap.after(btn);
+    const anchor = soalEl.querySelector('table') || ul || soalEl.querySelector('p');
+    if (anchor) anchor.after(btn);
     else soalEl.appendChild(btn);
+    return;
   }
+
+  if (details) details.classList.remove('gb-terkunci');
 }
 
 function enhance(root, babId) {
@@ -280,7 +299,7 @@ function enhance(root, babId) {
   if (!wrap) return;
 
   const anak = [...wrap.children];
-  let splitIdx = anak.findIndex((el) => el.tagName === 'H2' && /Soal Pemantapan/i.test(el.textContent || ''));
+  let splitIdx = anak.findIndex((el) => /Soal Pemantapan/i.test(el.textContent || '') && /^H[12]$/.test(el.tagName));
   if (splitIdx < 0) splitIdx = anak.findIndex((el) => el.classList && el.classList.contains('soal'));
   if (splitIdx < 0) splitIdx = anak.length;
   const kiri = document.createElement('div');
@@ -301,12 +320,16 @@ function enhance(root, babId) {
   sticky.className = 'gb-sticky';
   const chipSoal = document.createElement('span');
   chipSoal.className = 'gb-chip';
-  chipSoal.textContent = `🎯 ${kanan.querySelectorAll('.soal').length} soal latihan`;
+  const semuaSoal = [...kanan.querySelectorAll('.soal')];
+  chipSoal.textContent = `🎯 ${semuaSoal.length} soal latihan`;
   const chipPaham = document.createElement('span');
   chipPaham.className = 'gb-chip';
   const segarkanChip = () => { chipPaham.textContent = `💡 ${paham.size}/${kartuMateri.length} bagian dipahami`; };
   segarkanChip();
+  const chipSiap = document.createElement('span');
+  chipSiap.className = 'gb-chip';
   sticky.appendChild(chipSoal);
+  sticky.appendChild(chipSiap);
   sticky.appendChild(chipPaham);
   wrap.appendChild(sticky);
   wrap.appendChild(layout);
@@ -324,12 +347,12 @@ function enhance(root, babId) {
     kartu.appendChild(btn);
   });
 
-  // KUNCI TERKUNCI: tutup paksa (buang atribut open bawaan scan) + cegah buka dini.
-  root.querySelectorAll('details.kunci').forEach((d) => {
+  root.querySelectorAll('details.kunci, details').forEach((d) => {
+    if (!d.querySelector('.jawab') && !/Jawaban:/i.test(d.textContent || '')) return;
     d.open = false;
     d.classList.add('gb-terkunci');
   });
-  root.querySelectorAll('details.kunci summary').forEach((s) => {
+  root.querySelectorAll('details summary').forEach((s) => {
     s.addEventListener('click', (e) => {
       const d = s.closest('details');
       if (d && d.classList.contains('gb-terkunci')) {
@@ -339,7 +362,15 @@ function enhance(root, babId) {
     });
   });
 
-  kanan.querySelectorAll('.soal').forEach((soalEl) => interaktif(soalEl, root));
+  semuaSoal.forEach((soalEl) => {
+    try { interaktif(soalEl, root); } catch (e) {
+      const d = soalEl.querySelector('details');
+      if (d) d.classList.remove('gb-terkunci');
+    }
+  });
+
+  const siap = kanan.querySelectorAll('.soal[data-interaktif="1"]').length;
+  chipSiap.textContent = `🔓 ${siap}/${semuaSoal.length} soal siap dicoba`;
 }
 
 export default function RendererHtmlBab({ html, babId }) {
@@ -349,7 +380,10 @@ export default function RendererHtmlBab({ html, babId }) {
     if (!host) return;
     if (!host.shadowRoot) host.attachShadow({ mode: 'open' });
     host.shadowRoot.innerHTML = `<style>${BASE_STYLE}</style><div class="gb-wrap">${bersihkanHtml(siapkanCss(html))}</div>`;
-    enhance(host.shadowRoot, babId);
+    try { enhance(host.shadowRoot, babId); } catch (e) {
+      host.shadowRoot.querySelectorAll('details').forEach((d) => { d.classList.remove('gb-terkunci'); });
+    }
+    return undefined;
   }, [html, babId]);
   return <div ref={hostRef} />;
 }
