@@ -1,72 +1,119 @@
-// src/components/admin/ImporHtmlBab.jsx
-// Modal impor bab dari file/teks HTML (v2).
-// v2: kolom "urutan" DIHAPUS (membingungkan) — urutan diisi otomatis
-//     sebagai nomor berikutnya di daftar isi.
-//     Menimpa bab lama: impor dengan JUDUL yang sama akan memperbarui
-//     bab yang sudah ada (id = slug judul), tidak membuat duplikat.
+// src/components/admin/ImporHtmlBab.jsx (v3)
+// Mesin penerima hasil scan: terima BANYAK file .html sekaligus,
+// validasi otomatis (svg hilang / tag terlarang / tabel markdown /
+// placeholder gambar), isi URL potongan modul untuk placeholder,
+// lalu simpan semua ke buku_digital/{bukuId}/bab/{babId} (tipe 'html').
 import { useRef, useState } from 'react';
 import { db } from '../../firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { bersihkanHtml } from '../../utils/htmlBersih';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { bersihkanHtml, daftarPlaceholder, hitungPattern } from '../../utils/htmlBersih';
 
 const slug = (s) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
+function periksa(teks) {
+  const bersih = bersihkanHtml(teks);
+  const w = [];
+  let ditolak = false;
+  const svgSebelum = hitungPattern(teks, /<svg[\s>]/gi);
+  const svgSesudah = hitungPattern(bersih, /<svg[\s>]/gi);
+  if (svgSesudah < svgSebelum) w.push(`⚠️ ${svgSebelum - svgSesudah} SVG hilang saat pembersihan — JANGAN simpan, kirim file ini ke QA.`);
+  if (/<script|<iframe/i.test(teks)) { w.push('⛔ Ada tag terlarang (script/iframe) — file ditolak.'); ditolak = true; }
+  if (/<img[\s>]/i.test(teks)) w.push('⚠️ Ada <img> (akan dibuang sanitizer). Pastikan bukan figur penting.');
+  if (/\|\s*---/.test(teks)) w.push('ℹ️ Tabel markdown ditemukan → sudah dinormalisasi menjadi <table>.');
+  const soal = hitungPattern(bersih, /class="soal"/g);
+  const kunci = hitungPattern(bersih, /<details/g);
+  const svg = svgSesudah;
+  const ph = daftarPlaceholder(bersih);
+  return { bersih, w, ditolak, soal, kunci, svg, ph };
+}
+
 const st = {
   lapis: { position: 'fixed', inset: 0, zIndex: 970, background: 'rgba(15,17,35,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 },
-  kartu: { background: '#fff', borderRadius: 14, padding: 16, width: 'min(760px, 96vw)', maxHeight: '88vh', overflow: 'auto' },
+  kartu: { background: '#fff', borderRadius: 14, padding: 16, width: 'min(860px, 96vw)', maxHeight: '90vh', overflow: 'auto' },
   judul: { fontSize: 15, fontWeight: 800, color: '#1e293b', marginBottom: 4 },
   sub: { fontSize: 11, color: '#64748b', marginBottom: 12, lineHeight: 1.6 },
+  baris: { border: '1px solid #e3e6ef', borderRadius: 12, padding: 12, marginBottom: 10, background: '#fcfcfd' },
   label: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, fontWeight: 700, color: '#475569' },
-  input: { border: '1px solid #cbd5e1', borderRadius: 8, padding: '8px 10px', fontSize: 12, color: '#1e293b', background: '#fff' },
-  area: { width: '100%', minHeight: 220, border: '1px solid #cbd5e1', borderRadius: 8, padding: 10, fontSize: 11, fontFamily: 'monospace', color: '#1e293b', background: '#fff', boxSizing: 'border-box' },
+  input: { border: '1px solid #cbd5e1', borderRadius: 8, padding: '7px 9px', fontSize: 12, color: '#1e293b', background: '#fff' },
   btn: { display: 'flex', alignItems: 'center', gap: 6, background: '#4C6EF5', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer' },
   btn2: { display: 'flex', alignItems: 'center', gap: 6, background: '#f1f5f9', color: '#334155', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
-  info: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '8px 10px', fontSize: 11, color: '#1d4ed8', lineHeight: 1.6, marginBottom: 10 },
+  ok: { color: '#16a34a', fontSize: 11.5, fontWeight: 700 },
+  warn: { color: '#92400e', fontSize: 11.5, fontWeight: 700 },
+  err: { color: '#dc2626', fontSize: 11.5, fontWeight: 700 },
+  meta: { fontSize: 11, color: '#64748b' },
 };
 
 export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) {
-  const [judul, setJudul] = useState('');
-  const [teks, setTeks] = useState('');
+  const [antrian, setAntrian] = useState([]);
   const [pesan, setPesan] = useState('');
   const [busy, setBusy] = useState(false);
   const fileRef = useRef(null);
   if (!terbuka) return null;
 
-  const urutanOtomatis = jumlahBab + 1;
+  const ubah = (key, patch) => setAntrian((p) => p.map((x) => (x.key === key ? { ...x, ...patch } : x)));
+  const ubahPh = (key, ph, url) => setAntrian((p) => p.map((x) => (x.key === key ? { ...x, phUrl: { ...x.phUrl, [ph]: url } } : x)));
 
-  async function bacaFile(f) {
-    if (!f) return;
-    try {
-      const t = await f.text();
-      setTeks(t);
-      if (!judul) setJudul(f.name.replace(/\.html?$/i, '').replace(/[_-]+/g, ' ').trim());
-      setPesan(`✅ File "${f.name}" dimuat. Cek judul, lalu Simpan & Terbitkan.`);
-    } catch (e) {
-      setPesan('❌ Gagal membaca file: ' + e.message);
+  async function tambahFiles(files) {
+    const daftar = Array.from(files || []).filter((f) => /\.html?$/i.test(f.name));
+    if (!daftar.length) { setPesan('❌ Hanya file .html yang diterima.'); return; }
+    const baru = [];
+    for (let i = 0; i < daftar.length; i++) {
+      const f = daftar[i];
+      const teks = await f.text();
+      const hasil = periksa(teks);
+      const mNomor = f.name.match(/bab\s*(\d+)/i);
+      const judul = f.name.replace(/\.html?$/i, '').replace(/bab\s*\d+\s*[-_]?\s*/i, '').replace(/[-_]+/g, ' ').trim() || f.name;
+      baru.push({
+        key: `${Date.now()}-${i}-${f.name}`,
+        nama: f.name,
+        judul: judul.charAt(0).toUpperCase() + judul.slice(1),
+        urutan: mNomor ? Number(mNomor[1]) : jumlahBab + i + 1,
+        teks,
+        hasil,
+        phUrl: {},
+        status: hasil.ditolak ? 'ditolak' : 'siap',
+      });
     }
-    if (fileRef.current) fileRef.current.value = '';
+    setAntrian((p) => [...p, ...baru]);
+    setPesan(`✅ ${baru.length} file dimuat & diperiksa.`);
   }
 
-  async function simpan() {
-    if (!judul.trim()) { setPesan('❌ Judul bab wajib diisi.'); return; }
-    if (!teks.trim() || !/<[a-z]/i.test(teks)) { setPesan('❌ Isi HTML kosong atau bukan HTML.'); return; }
+  async function simpanSatu(row) {
+    if (row.hasil.ditolak) return;
+    let isi = row.hasil.bersih;
+    for (const ph of row.hasil.ph) {
+      const url = (row.phUrl[ph] || '').trim();
+      if (url) isi = isi.split(`<div class="figslot">${ph}</div>`).join(`<img src="${url}" alt="figur modul" style="max-width:100%;display:block;margin:10px auto;border-radius:10px">`);
+    }
+    const id = 'bab-' + (slug(row.judul) || Date.now().toString(36));
+    const lama = await getDoc(doc(db, 'buku_digital', bukuId, 'bab', id));
+    if (lama.exists() && !window.confirm(`Bab "${row.judul}" sudah ada. Timpa dengan versi baru ini?`)) {
+      ubah(row.key, { status: 'dilewati' });
+      return;
+    }
+    await setDoc(doc(db, 'buku_digital', bukuId, 'bab', id), {
+      id,
+      judul: row.judul.trim(),
+      urutan: Number(row.urutan) || jumlahBab + 1,
+      tipe: 'html',
+      html: isi,
+      sumber: 'html-scan',
+      updatedAt: Date.now(),
+    }, { merge: true });
+    ubah(row.key, { status: 'tersimpan' });
+  }
+
+  async function simpanSemua() {
     setBusy(true);
-    setPesan('Menyimpan & menerbitkan...');
+    setPesan('Menyimpan...');
     try {
-      const id = 'bab-' + (slug(judul) || Date.now().toString(36));
-      await setDoc(doc(db, 'buku_digital', bukuId, 'bab', id), {
-        id,
-        judul: judul.trim(),
-        urutan: urutanOtomatis,
-        tipe: 'html',
-        html: bersihkanHtml(teks),
-        sumber: 'html',
-        updatedAt: Date.now(),
-      }, { merge: true });
-      setPesan('✅ Bab HTML tersimpan & terbit ke siswa.');
-      setTimeout(tutup, 700);
+      for (const row of antrian) {
+        if (row.status !== 'siap') continue;
+        await simpanSatu(row);
+      }
+      setPesan('✅ Proses selesai. Bab bertipe HTML terbit ke siswa.');
     } catch (e) {
-      setPesan('❌ Gagal simpan: ' + e.message);
+      setPesan('❌ Gagal: ' + e.message);
     }
     setBusy(false);
   }
@@ -74,34 +121,56 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
   return (
     <div style={st.lapis} onClick={tutup}>
       <div style={st.kartu} onClick={(e) => e.stopPropagation()}>
-        <div style={st.judul}>📥 Impor Bab dari HTML</div>
+        <div style={st.judul}>📥 Impor Bab dari HTML Hasil Scan</div>
         <div style={st.sub}>
-          Tempel kode HTML modul (atau pilih file .html). Isi dibersihkan otomatis (script dibuang)
-          lalu disimpan sebagai bab bertipe <b>html</b> — reader siswa merendernya sebagai modul interaktif.
+          Pilih SEMUA file .html hasil scan sekaligus (bab02-..., bab03-..., dst).
+          Mesin memeriksa otomatis: SVG utuh, tag terlarang, tabel markdown, dan placeholder figur.
+          Placeholder <b>{'{{GAMBAR_...}}'}</b> bisa ditambal URL potongan dari fitur <b>✂️ Gambar dari Modul</b> sebelum disimpan.
         </div>
-        <div style={st.info}>
-          📌 Urutan di daftar isi: <b>otomatis nomor {urutanOtomatis}</b>.<br />
-           Impor dengan <b>judul yang sama</b> = memperbarui bab yang sudah ada (tidak duplikat) —
-          pakai ini untuk mengirim ulang perbaikan modul.
+        <input ref={fileRef} type="file" accept=".html,.htm" multiple style={{ display: 'none' }} onChange={(e) => { tambahFiles(e.target.files); if (fileRef.current) fileRef.current.value = ''; }} />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <button style={st.btn2} onClick={() => fileRef.current && fileRef.current.click()}>📂 Pilih file .html (bisa banyak)</button>
+          <button style={{ ...st.btn, opacity: busy ? 0.6 : 1 }} disabled={busy || !antrian.some((x) => x.status === 'siap')} onClick={simpanSemua}>💾 Simpan Semua yang Siap</button>
+          <button style={st.btn2} onClick={tutup}>Tutup</button>
         </div>
-        <label style={{ ...st.label, marginBottom: 10 }}>Judul bab
-          <input style={st.input} value={judul} onChange={(e) => setJudul(e.target.value)} placeholder="Teorema Pythagoras" />
-        </label>
-        <input ref={fileRef} type="file" accept=".html,.htm,text/html" style={{ display: 'none' }} onChange={(e) => bacaFile(e.target.files[0])} />
-        <button style={st.btn2} onClick={() => fileRef.current && fileRef.current.click()}>📂 Pilih file .html</button>
-        <textarea
-          style={{ ...st.area, marginTop: 10 }}
-          value={teks}
-          onChange={(e) => setTeks(e.target.value)}
-          placeholder="<!-- tempel seluruh kode HTML modul di sini -->"
-        />
-        {pesan && (
-          <div style={{ fontSize: 11.5, marginTop: 8, color: pesan.startsWith('❌') ? '#dc2626' : '#16a34a', fontWeight: 700 }}>{pesan}</div>
-        )}
-        <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'flex-end' }}>
-          <button style={st.btn2} onClick={tutup}>Batal</button>
-          <button style={{ ...st.btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={simpan}>💾 Simpan & Terbitkan</button>
-        </div>
+        {pesan && <div style={{ marginBottom: 10, fontSize: 12, fontWeight: 700, color: pesan.startsWith('❌') ? '#dc2626' : '#16a34a' }}>{pesan}</div>}
+        {antrian.map((row) => (
+          <div key={row.key} style={st.baris}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+              <b style={{ fontSize: 12.5, color: '#1e293b' }}>{row.nama}</b>
+              <span style={st.meta}>{row.hasil.soal} soal • {row.hasil.svg} svg • {row.hasil.kunci} kunci</span>
+              <span style={row.status === 'tersimpan' ? st.ok : row.status === 'ditolak' ? st.err : st.meta}>
+                [{row.status}]
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8, marginBottom: 8 }}>
+              <label style={st.label}>Judul bab
+                <input style={st.input} value={row.judul} onChange={(e) => ubah(row.key, { judul: e.target.value })} />
+              </label>
+              <label style={st.label}>Urutan
+                <input style={st.input} type="number" value={row.urutan} onChange={(e) => ubah(row.key, { urutan: e.target.value })} />
+              </label>
+            </div>
+            {row.hasil.w.map((w, i) => (
+              <div key={i} style={w.startsWith('⛔') ? st.err : w.startsWith('⚠️') ? st.warn : st.meta}>{w}</div>
+            ))}
+            {row.hasil.ph.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <div style={st.meta}>Placeholder figur (tempel URL dari ✂️ Gambar dari Modul, boleh dikosongkan):</div>
+                {row.hasil.ph.map((ph) => (
+                  <div key={ph} style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
+                    <code style={{ fontSize: 10.5, color: '#4338ca', minWidth: 150 }}>{ph}</code>
+                    <input style={{ ...st.input, flex: 1 }} placeholder="https://...supabase.co/...jpg" value={row.phUrl[ph] || ''} onChange={(e) => ubahPh(row.key, ph, e.target.value)} />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+              <button style={st.btn} disabled={busy || row.status !== 'siap'} onClick={() => simpanSatu(row)}>💾 Simpan bab ini</button>
+              <button style={st.btn2} onClick={() => setAntrian((p) => p.filter((x) => x.key !== row.key))}>Buang</button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
