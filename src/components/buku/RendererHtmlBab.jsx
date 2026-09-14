@@ -1,12 +1,13 @@
-// src/components/buku/RendererHtmlBab.jsx (v4)
-// UX belajar terbimbing untuk modul HTML:
-//  - Desktop (>=900px): 2 kolom — materi kiri, latihan kanan sticky.
-//    Mobile: satu kolom mengalir.
-//  - Pembahasan tampil LANGKAH DEMI LANGKAH (tombol "Langkah berikutnya").
-//  - Langkah bernomor, kartu rumus menonjol, chip matematika jelas.
-//  - Pilihan soal = target ketuk besar + umpan balik hijau/merah (v3).
-//  - Tombol "✓ Tandai paham" per seksi materi + chip progres sticky
-//    (tersimpan per perangkat).
+// src/components/buku/RendererHtmlBab.jsx (v5)
+// Prinsip belajar: COBA DULU, BARU LIHAT KUNCI.
+//  - Semua details.kunci dipaksa TERTUTUP & TERKUNCI saat render.
+//    Ketuk summary sebelum menjawab => toast pengingat (tidak terbuka).
+//    Setelah siswa menjawab => kunci terbuka otomatis, langkah demi langkah.
+//  - Soal PG: pilihan bisa diketuk (hijau benar / merah keliru).
+//  - Soal MULTI: simbol ☐ dibuang, diganti kotak centang asli; tombol Periksa.
+//  - Soal B-S: pernyataan (list ATAU tabel) diberi tombol Benar/Salah; tombol Periksa.
+//  - Desktop >=900px: 2 kolom (materi kiri, latihan kanan sticky).
+//  - Pecahan bertumpuk, kartu rumus, langkah bernomor, chip "paham" sticky.
 import { useEffect, useRef } from 'react';
 import { bersihkanHtml } from '../../utils/htmlBersih';
 
@@ -32,25 +33,34 @@ const BASE_STYLE = `
   .gb-wrap .m{background:#eef2ff;border:1px solid #dbe3ff;color:#1e293b;padding:2px 7px;border-radius:7px}
   .gb-wrap .soal{border:1px solid #e3e6ef;box-shadow:0 2px 10px rgba(30,27,75,.05)}
   .gb-wrap .soal>p{font-size:15.5px}
+  .gb-wrap .pil{list-style:none;margin:8px 0;padding:0}
   .gb-wrap .pil li{padding:12px 14px;font-size:15px;border-radius:12px;margin:7px 0;border:1.5px solid #e6e9f4;background:#fbfcff;transition:background .15s,border-color .15s}
   .gb-wrap .pil li:active{transform:scale(.995)}
+  .gb-wrap ul.pil.gb-multi li{display:flex;align-items:flex-start}
+  .gb-wrap ul.pil.gb-multi li::before{content:"";width:18px;height:18px;border:2px solid #94a3b8;border-radius:5px;flex:0 0 auto;margin:2px 10px 0 0;background:#fff}
+  .gb-wrap ul.pil.gb-multi li.gb-dipilih{border-color:#7C3AED;background:#f5f3ff}
+  .gb-wrap ul.pil.gb-multi li.gb-dipilih::before{content:"✓";background:#7C3AED;border-color:#7C3AED;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .gb-bsbtns{display:flex;gap:6px;margin-top:8px}
+  .gb-wrap details.kunci{margin:6px 0}
   .gb-wrap details.kunci summary{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#4338ca;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:800;list-style:none;cursor:pointer}
   .gb-wrap details.kunci summary::before{content:"▸";font-size:11px}
   .gb-wrap details.kunci[open] summary::before{content:"▾"}
   .gb-wrap details.kunci summary::-webkit-details-marker{display:none}
+  .gb-wrap details.kunci.gb-terkunci summary{opacity:.55;cursor:not-allowed}
   .gb-wrap .langkah{counter-reset:lk;list-style:none;padding-left:0;margin:10px 0}
   .gb-wrap .langkah li{counter-increment:lk;position:relative;padding:9px 12px 9px 42px;margin:7px 0;background:#fbfcff;border:1px solid #eef1f6;border-radius:10px;line-height:1.75}
   .gb-wrap .langkah li::before{content:counter(lk);position:absolute;left:10px;top:10px;width:22px;height:22px;border-radius:50%;background:#5b4b8a;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
   .gb-wrap .langkah li.blm{display:none}
   .gb-btn{margin:8px 0 0;padding:10px 14px;border:none;border-radius:10px;background:#7C3AED;color:#fff;font-weight:700;font-size:12px;cursor:pointer}
   .gb-btn.mini{padding:7px 12px;border-radius:999px;font-size:11px;background:#fff;color:#64748b;border:1px solid #e2e8f0;font-weight:700}
+  .gb-btn.mini.gb-aktif{background:#7C3AED;color:#fff;border-color:#7C3AED}
   .gb-paham{margin-top:10px;width:100%;background:#f1f5f9;color:#334155}
   .gb-paham.oke{background:#dcfce7;color:#166534;border:1px solid #a7f3d0}
+  .gb-toast{position:sticky;bottom:8px;z-index:9;margin:8px auto 0;max-width:420px;background:#4338ca;color:#fff;border-radius:999px;padding:9px 16px;font-size:12px;font-weight:700;text-align:center;box-shadow:0 6px 16px rgba(67,56,202,.35)}
   .gb-wrap table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13.5px}
   .gb-wrap th{background:#4C6EF5;color:#fff;padding:7px 9px;text-align:left}
   .gb-wrap td{border:1px solid #e3e6ef;padding:6px 9px}
   .gb-wrap tr:nth-child(even) td{background:#f8fafc}
-  .gb-wrap details{margin:6px 0}
   .gb-wrap img,.gb-wrap svg{max-width:100%;height:auto}
   .gb-wrap img{display:block;margin:10px auto;border-radius:10px}
   .gb-wrap .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:18px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:10px 0}
@@ -89,7 +99,7 @@ const buatBtn = (teks, cls) => {
 
 const banner = (soalEl, tepat) => {
   const d = document.createElement('div');
-  d.textContent = tepat ? '✅ Tepat! Lanjut ke soal berikutnya.' : '❌ Belum tepat — simak pembahasan bertahap di bawah.';
+  d.textContent = tepat ? '✅ Tepat! Kunci & pembahasan terbuka di bawah.' : '❌ Belum tepat — simak pembahasan bertahap di bawah.';
   d.style.cssText = tepat
     ? 'margin-top:8px;padding:9px 12px;border-radius:10px;background:#ecfdf5;border:1px solid #a7f3d0;color:#166534;font-weight:700;font-size:12.5px'
     : 'margin-top:8px;padding:9px 12px;border-radius:10px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-weight:700;font-size:12.5px';
@@ -106,10 +116,12 @@ const hint = (soalEl, teks) => {
 };
 
 function langkahBertahap(details) {
+  if (!details || details.dataset.bertahap) return;
   const list = details.querySelector('.langkah');
   if (!list) return;
   const items = [...list.querySelectorAll('li')];
   if (items.length < 2) return;
+  details.dataset.bertahap = '1';
   items.forEach((li, i) => { if (i > 0) li.classList.add('blm'); });
   const btn = buatBtn('Langkah berikutnya ▸', 'mini');
   let idx = 1;
@@ -127,26 +139,52 @@ function langkahBertahap(details) {
   list.after(btn);
 }
 
-function interaktif(soalEl) {
+function bukaKunci(details) {
+  if (!details) return;
+  details.classList.remove('gb-terkunci');
+  details.open = true;
+  langkahBertahap(details);
+}
+
+function toastShadow(root, teks) {
+  const lama = root.querySelector('.gb-toast');
+  if (lama) lama.remove();
+  const d = document.createElement('div');
+  d.className = 'gb-toast';
+  d.textContent = teks;
+  root.querySelector('.gb-wrap').appendChild(d);
+  setTimeout(() => d.remove(), 2200);
+}
+
+function bersihGlyph(li) {
+  li.innerHTML = li.innerHTML.replace(/^\s*[\u2610\u2611\u2612\u25A1\u25EB\u25FC\u2B1C\u2B1D]\s*/, '');
+}
+
+function interaktif(soalEl, root) {
   const kunciEl = soalEl.querySelector('.jawab');
   const details = soalEl.querySelector('details.kunci');
-  const pil = soalEl.querySelectorAll('.pil li');
-  if (!kunciEl || !pil.length) return;
-  const kunci = parseKunci(kunciEl.textContent);
-  if (!kunci) return;
+  const kunci = kunciEl ? parseKunci(kunciEl.textContent) : null;
+  const pilUl = soalEl.querySelector('ul.pil');
+  const lis = pilUl ? [...pilUl.querySelectorAll('li')] : [];
+  lis.forEach(bersihGlyph);
+
+  if (!kunci || !lis.length) {
+    if (details) details.classList.remove('gb-terkunci');
+    return;
+  }
 
   if (kunci.tipe === 'pg') {
     hint(soalEl, 'Ketuk jawabanmu untuk memeriksa.');
-    pil.forEach((li, idx) => {
+    lis.forEach((li, idx) => {
       li.style.cursor = 'pointer';
       li.addEventListener('click', () => {
         if (soalEl.dataset.done) return;
         soalEl.dataset.done = '1';
-        pil.forEach((x, j) => {
+        lis.forEach((x, j) => {
           if (j === kunci.pg) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
           else if (j === idx) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
         });
-        if (details) { details.open = true; langkahBertahap(details); }
+        bukaKunci(details);
         banner(soalEl, idx === kunci.pg);
       });
     });
@@ -154,76 +192,86 @@ function interaktif(soalEl) {
   }
 
   if (kunci.tipe === 'multi') {
-    hint(soalEl, 'Ketuk satu atau lebih pernyataan, lalu Periksa.');
+    pilUl.classList.add('gb-multi');
+    hint(soalEl, 'Ketuk satu atau lebih pernyataan, lalu tekan Periksa.');
     const pilih = new Set();
-    pil.forEach((li, idx) => {
+    lis.forEach((li, idx) => {
       li.style.cursor = 'pointer';
       li.addEventListener('click', () => {
         if (soalEl.dataset.done) return;
-        if (pilih.has(idx)) { pilih.delete(idx); li.style.borderColor = '#e6e9f4'; li.style.background = '#fbfcff'; }
-        else { pilih.add(idx); li.style.borderColor = '#7C3AED'; li.style.background = '#f5f3ff'; }
+        if (pilih.has(idx)) { pilih.delete(idx); li.classList.remove('gb-dipilih'); }
+        else { pilih.add(idx); li.classList.add('gb-dipilih'); }
       });
     });
-    const pilWrap = soalEl.querySelector('.pil');
-    if (pilWrap) {
-      const btn = buatBtn('Periksa Jawaban');
-      btn.addEventListener('click', () => {
-        if (soalEl.dataset.done || !pilih.size) return;
-        soalEl.dataset.done = '1';
-        const benarSet = new Set(kunci.multi);
-        pil.forEach((x, j) => {
-          if (benarSet.has(j)) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
-          else if (pilih.has(j)) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
-        });
-        const tepat = pilih.size === benarSet.size && [...pilih].every((j) => benarSet.has(j));
-        if (details) { details.open = true; langkahBertahap(details); }
-        banner(soalEl, tepat);
+    const btn = buatBtn('Periksa Jawaban');
+    btn.addEventListener('click', () => {
+      if (soalEl.dataset.done || !pilih.size) return;
+      soalEl.dataset.done = '1';
+      const benarSet = new Set(kunci.multi);
+      lis.forEach((x, j) => {
+        if (benarSet.has(j)) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
+        else if (pilih.has(j)) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
       });
-      pilWrap.after(btn);
-    }
+      const tepat = pilih.size === benarSet.size && [...pilih].every((j) => benarSet.has(j));
+      bukaKunci(details);
+      banner(soalEl, tepat);
+    });
+    pilUl.after(btn);
     return;
   }
 
-  if (kunci.tipe === 'bs' && pil.length === kunci.bs.length) {
-    hint(soalEl, 'Pilih Benar/Salah tiap pernyataan, lalu Periksa.');
+  if (kunci.tipe === 'bs') {
+    let stmts = lis.length === kunci.bs.length ? lis : null;
+    if (!stmts) {
+      const tds = [...soalEl.querySelectorAll('table tbody tr')].map((tr) => tr.querySelector('td')).filter(Boolean);
+      if (tds.length === kunci.bs.length) stmts = tds;
+    }
+    if (!stmts) {
+      if (details) details.classList.remove('gb-terkunci');
+      return;
+    }
+    hint(soalEl, 'Pilih Benar/Salah untuk tiap pernyataan, lalu Periksa.');
     const pilih = [];
-    pil.forEach((li, idx) => {
+    stmts.forEach((el, idx) => {
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'display:flex;gap:6px;margin-top:8px';
+      wrap.className = 'gb-bsbtns';
       const bB = buatBtn('Benar', 'mini');
       const bS = buatBtn('Salah', 'mini');
       bB.addEventListener('click', () => {
         if (soalEl.dataset.done) return;
         pilih[idx] = true;
-        bB.style.cssText += ';background:#7C3AED;color:#fff;border-color:#7C3AED';
-        bS.style.cssText += ';background:#fff;color:#64748b;border-color:#e2e8f0';
+        bB.classList.add('gb-aktif');
+        bS.classList.remove('gb-aktif');
       });
       bS.addEventListener('click', () => {
         if (soalEl.dataset.done) return;
         pilih[idx] = false;
-        bS.style.cssText += ';background:#7C3AED;color:#fff;border-color:#7C3AED';
-        bB.style.cssText += ';background:#fff;color:#64748b;border-color:#e2e8f0';
+        bS.classList.add('gb-aktif');
+        bB.classList.remove('gb-aktif');
       });
       wrap.appendChild(bB);
       wrap.appendChild(bS);
-      li.appendChild(wrap);
+      el.appendChild(wrap);
     });
-    const pilWrap = soalEl.querySelector('.pil');
-    if (pilWrap) {
-      const btn = buatBtn('Periksa Jawaban');
-      btn.addEventListener('click', () => {
-        if (soalEl.dataset.done || pilih.length !== kunci.bs.length || pilih.some((x) => typeof x !== 'boolean')) return;
-        soalEl.dataset.done = '1';
-        pil.forEach((x, j) => {
-          if (pilih[j] === kunci.bs[j]) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
-          else { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
-        });
-        const tepat = pilih.every((v, j) => v === kunci.bs[j]);
-        if (details) { details.open = true; langkahBertahap(details); }
-        banner(soalEl, tepat);
+    const btn = buatBtn('Periksa Jawaban');
+    btn.addEventListener('click', () => {
+      if (soalEl.dataset.done || pilih.length !== kunci.bs.length || pilih.some((x) => typeof x !== 'boolean')) {
+        toastShadow(root, 'Lengkapi pilihan Benar/Salah semua pernyataan dulu ya.');
+        return;
+      }
+      soalEl.dataset.done = '1';
+      stmts.forEach((x, j) => {
+        const tepat = pilih[j] === kunci.bs[j];
+        x.style.background = tepat ? '#dcfce7' : '#fef2f2';
+        x.style.borderColor = tepat ? '#22c55e' : '#ef4444';
       });
-      pilWrap.after(btn);
-    }
+      const tepatAll = pilih.every((v, j) => v === kunci.bs[j]);
+      bukaKunci(details);
+      banner(soalEl, tepatAll);
+    });
+    const pilWrap = soalEl.querySelector('.pil') || soalEl.querySelector('table');
+    if (pilWrap) pilWrap.after(btn);
+    else soalEl.appendChild(btn);
   }
 }
 
@@ -231,7 +279,6 @@ function enhance(root, babId) {
   const wrap = root.querySelector('.gb-wrap');
   if (!wrap) return;
 
-  // ----- pisah materi vs latihan -----
   const anak = [...wrap.children];
   let splitIdx = anak.findIndex((el) => el.tagName === 'H2' && /Soal Pemantapan/i.test(el.textContent || ''));
   if (splitIdx < 0) splitIdx = anak.findIndex((el) => el.classList && el.classList.contains('soal'));
@@ -246,7 +293,6 @@ function enhance(root, babId) {
   layout.appendChild(kiri);
   layout.appendChild(kanan);
 
-  // ----- header sticky + progres paham -----
   const kartuMateri = [...kiri.querySelectorAll('.kartu')];
   const kunciKey = `gbPaham:${babId || '-'}`;
   let paham = new Set();
@@ -278,8 +324,22 @@ function enhance(root, babId) {
     kartu.appendChild(btn);
   });
 
-  // ----- interaktivitas soal -----
-  kanan.querySelectorAll('.soal').forEach(interaktif);
+  // KUNCI TERKUNCI: tutup paksa (buang atribut open bawaan scan) + cegah buka dini.
+  root.querySelectorAll('details.kunci').forEach((d) => {
+    d.open = false;
+    d.classList.add('gb-terkunci');
+  });
+  root.querySelectorAll('details.kunci summary').forEach((s) => {
+    s.addEventListener('click', (e) => {
+      const d = s.closest('details');
+      if (d && d.classList.contains('gb-terkunci')) {
+        e.preventDefault();
+        toastShadow(root, 'Kerjakan soal ini dulu ya — kunci & pembahasan terbuka setelah kamu menjawab 🙂');
+      }
+    });
+  });
+
+  kanan.querySelectorAll('.soal').forEach((soalEl) => interaktif(soalEl, root));
 }
 
 export default function RendererHtmlBab({ html, babId }) {
