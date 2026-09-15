@@ -1,7 +1,4 @@
-// src/services/sesiService.js
-// Service SESI KELAS (satu file untuk semua operasi sesi live & kelas).
-// Menyediakan fungsi untuk buat sesi, join via kode, dengar real-time,
-// kirim jawaban, dan rekap.
+// src/services/sesiService.js — SESI KELAS (2 mode: materi interaktif & bank soal)
 import {
   collection, doc, setDoc, updateDoc, getDocs, query, where,
   onSnapshot, serverTimestamp, addDoc, deleteDoc,
@@ -11,15 +8,19 @@ import { db } from '../firebase';
 const ABJ = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const kodeAcak = () => Array.from({ length: 6 }, () => ABJ[Math.floor(Math.random() * ABJ.length)]).join('');
 
-// ---------- Sesi ----------
-export async function buatSesi({ bukuId, babId, guruId, catatan, soalPrioritas }) {
+export async function buatSesi({ bukuId, babId, guruId, catatan, soalPrioritas, mode, sumber, daftarSoal }) {
   const ref = doc(collection(db, 'sesi_kelas'));
   const kode = kodeAcak();
   await setDoc(ref, {
-    bukuId, babId, guruId: guruId || '', kode,
-    status: 'aktif', fase: 'materi',
-    soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0,
+    bukuId: bukuId || '', babId: babId || '', guruId: guruId || '', kode,
+    mode: mode || 'bank',          // 'materi' | 'bank'
+    sumber: sumber || 'bank',      // 'buku'  | 'bank'
+    status: 'aktif',
+    slideAktif: 0,                 // untuk mode materi (index slide)
+    soalAktif: null,               // untuk mode bank (index soal)
+    kunciTerbuka: false, langkahTerbuka: 0,
     catatan: catatan || '', soalPrioritas: soalPrioritas || [],
+    daftarSoal: daftarSoal || [],
     dibuatAt: serverTimestamp(),
   });
   return { id: ref.id, kode };
@@ -43,7 +44,6 @@ export async function akhiriSesi(sesiId) {
   await updateDoc(doc(db, 'sesi_kelas', sesiId), { status: 'selesai', diakhiriAt: serverTimestamp() });
 }
 
-// ---------- Peserta ----------
 export async function gabungSesi(sesiId, siswaId, nama) {
   await setDoc(doc(db, 'sesi_kelas', sesiId, 'peserta', siswaId),
     { siswaId, nama: nama || '', gabungAt: serverTimestamp() }, { merge: true });
@@ -53,7 +53,6 @@ export const dengarPeserta = (sesiId, cb) =>
   onSnapshot(collection(db, 'sesi_kelas', sesiId, 'peserta'),
     (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
 
-// ---------- Jawaban ----------
 export async function kirimJawaban(sesiId, { siswaId, nama, soalIdx, jawaban, benar }) {
   await setDoc(doc(db, 'sesi_kelas', sesiId, 'jawaban', `${siswaId}__${soalIdx}`),
     { siswaId, nama: nama || '', soalIdx: Number(soalIdx), jawaban, benar: !!benar, ts: serverTimestamp() },
@@ -64,7 +63,6 @@ export const dengarJawaban = (sesiId, cb) =>
   onSnapshot(collection(db, 'sesi_kelas', sesiId, 'jawaban'),
     (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
 
-// ---------- Tanya ----------
 export async function kirimTanya(sesiId, { siswaId, nama, teks }) {
   await addDoc(collection(db, 'sesi_kelas', sesiId, 'tanya'),
     { siswaId, nama: nama || '', teks, ts: serverTimestamp() });

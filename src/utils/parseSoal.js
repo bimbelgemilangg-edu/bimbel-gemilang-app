@@ -1,48 +1,19 @@
 // src/utils/parseSoal.js
-// ============================================================
-// PARSER MODUL HTML -> DAFTAR SOAL TERSTRUKTUR
-// Dipakai oleh:
-//  - LiveSessionTeacher.jsx  (sesi live dari bab buku digital)
-//  - LiveSessionStudent.jsx  (render soal + cek jawaban siswa)
-//  - KelasLivePanel.jsx      (Step 2 ClassSession, via soalKeFormatSesi)
-// Sumber: field `html` di buku_digital/{bukuId}/bab/{babId}.
-// Struktur HTML yang dibaca mengikuti template modul internal:
-//   <div class="soal">
-//     <div class="nbadges"><span class="no">N</span>
-//       <span class="tipe">...</span><span class="lvl">...</span></div>
-//     <p>teks soal</p>
-//     <ul class="pil"><li>...</li></ul>  ATAU  <table class="ring"> (pernyataan)
-//     <details class="kunci">
-//       <div class="jawab">Jawaban: ...</div>
-//       <ol class="langkah"><li>...</li></ol>
-//     </details>
-//   </div>
-// ============================================================
-
+// Parser modul HTML -> daftar soal terstruktur + SLIDE ala PPT untuk
+// Mode Materi Interaktif di Sesi Kelas Live.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
-
-// Buang simbol kotak centang (☐ □) dan huruf pilihan (A. B. C. D.) di awal item
 const bersihItem = (s) => bersihTeks(s)
   .replace(/^[\u2610\u2611\u2612\u25A1\u25EB\u25FC]\s*/, '')
   .replace(/^[A-D][.).]\s*/, '');
 
-/**
- * Parse seluruh blok .soal dari HTML modul.
- * @param {string} html - isi field `html` bab buku digital
- * @returns {Array} daftar soal: {idx, nomor, tipe, level, sumber, teks,
- *          pilihan[], pernyataan[], kunci{tipe,pg|multi|bs}, langkah[], pembahasan}
- */
 export function parseDaftarSoal(html) {
   const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
   const soalEls = [...doc.querySelectorAll('.soal')];
-
   return soalEls.map((el, idx) => {
     const nomor = bersihTeks(el.querySelector('.no')?.textContent) || String(idx + 1);
     const sumber = bersihTeks(el.querySelector('.tipe')?.textContent) || '';
     const level = bersihTeks(el.querySelector('.lvl')?.textContent) || 'sedang';
     const teks = bersihTeks(el.querySelector('p')?.textContent) || '';
-
-    // ---- kumpulkan pilihan / pernyataan ----
     const ul = el.querySelector('ul.pil') || el.querySelector('ul');
     let items = ul ? [...ul.querySelectorAll('li')].map((li) => bersihTeks(li.textContent)) : [];
     let dariTabel = false;
@@ -55,39 +26,22 @@ export function parseDaftarSoal(html) {
         dariTabel = true;
       }
     }
-
     const berHuruf = items.filter((t) => /^[A-D][.).]/.test(t)).length;
     const details = el.querySelector('details');
     const jawabEl = details ? details.querySelector('.jawab') : null;
-
-    // FALLBACK 1: kalau tidak ada elemen .jawab, cari teks "Jawaban: ..."
-    // langsung di dalam details (maks 120 karakter supaya tidak makan pembahasan).
     let jawabTeks = bersihTeks(jawabEl?.textContent);
     if (!jawabTeks && details) {
       const m = (details.textContent || '').match(/Jawaban:[\s\S]{0,120}/i);
       if (m) jawabTeks = bersihTeks(m[0]);
     }
-
-    // ---- tentukan tipe soal ----
     let tipe;
-    if (berHuruf >= Math.max(1, items.length - 1) && items.length >= 2) {
-      tipe = 'pg';
-    } else if (/^Jawaban:\s*(Benar|Salah)/i.test(jawabTeks)) {
-      tipe = 'bs';
-    } else if (/Jawaban:\s*Pernyataan/i.test(jawabTeks) || /pernyataan\s*\d/i.test(jawabTeks)) {
-      tipe = 'multi';
-    } else if (dariTabel) {
-      tipe = 'bs'; // tabel Pernyataan/Benar/Salah
-    } else {
-      tipe = 'multi';
-    }
-
-    const pilihan = tipe === 'pg'
-      ? items.map((t) => t.replace(/^[A-D][.).]\s*/, ''))
-      : (tipe === 'multi' ? items.map(bersihItem) : []);
+    if (berHuruf >= Math.max(1, items.length - 1) && items.length >= 2) tipe = 'pg';
+    else if (/^Jawaban:\s*(Benar|Salah)/i.test(jawabTeks)) tipe = 'bs';
+    else if (/Jawaban:\s*Pernyataan/i.test(jawabTeks) || /pernyataan\s*\d/i.test(jawabTeks)) tipe = 'multi';
+    else if (dariTabel) tipe = 'bs';
+    else tipe = 'multi';
+    const pilihan = tipe === 'pg' ? items.map((t) => t.replace(/^[A-D][.).]\s*/, '')) : (tipe === 'multi' ? items.map(bersihItem) : []);
     const pernyataan = tipe === 'bs' ? items.map(bersihItem) : [];
-
-    // ---- parse kunci jawaban ----
     let kunci = null;
     if (tipe === 'pg') {
       const m = jawabTeks.match(/([A-D])\b/i);
@@ -95,88 +49,71 @@ export function parseDaftarSoal(html) {
     } else if (tipe === 'multi') {
       const m = jawabTeks.match(/(\d+(?:\s*,\s*\d+)*(?:\s*,?\s*dan\s*\d+)?)/);
       if (m) {
-        const arr = m[1].replace(/dan/gi, ',').split(',')
-          .map((x) => parseInt(x.trim(), 10) - 1)
-          .filter((x) => !isNaN(x) && x >= 0);
+        const arr = m[1].replace(/dan/gi, ',').split(',').map((x) => parseInt(x.trim(), 10) - 1).filter((x) => !isNaN(x) && x >= 0);
         if (arr.length) kunci = { tipe: 'multi', multi: arr };
       }
     } else {
       const m = jawabTeks.match(/((?:Benar|Salah)(?:\s*,\s*(?:Benar|Salah))+)/i);
       if (m) kunci = { tipe: 'bs', bs: m[1].split(',').map((x) => x.trim().toLowerCase() === 'benar') };
     }
-
-    // ---- langkah pembahasan ----
-    const langkah = details
-      ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent))
-      : [];
-
-    // FALLBACK 2: pembahasan = isi details dikurangi teks summary & teks kunci,
-    // supaya tidak dobel dengan `langkah` saat ditampilkan guru/siswa.
-    const pembahasan = bersihTeks(
-      details
-        ? (details.textContent || '')
-            .replace(/Lihat Kunci & Pembahasan/i, '')
-            .replace(jawabTeks, '')
-        : ''
-    );
-
+    const langkah = details ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent)) : [];
+    const pembahasan = bersihTeks(details ? (details.textContent || '').replace(/Lihat Kunci & Pembahasan/i, '').replace(jawabTeks, '') : '');
     return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan };
   }).filter((s) => s.teks || s.pilihan.length || s.pernyataan.length);
 }
 
-/**
- * Konversi soal hasil parse ke bentuk yang dipakai sesi_live / KelasLivePanel.
- * Bentuk keluaran: { tipe:'pg'|'multi'|'bs', soal, opsiJawaban[], pernyataan[],
- *                    kunciJawaban (number|number[]|boolean[]), pembahasan }
- */
-export function soalKeFormatSesi(s) {
-  if (s.tipe === 'bs') {
-    return {
-      tipe: 'bs',
-      soal: s.teks,
-      opsiJawaban: [],
-      pernyataan: s.pernyataan,
-      kunciJawaban: s.kunci && Array.isArray(s.kunci.bs) ? s.kunci.bs : [],
-      pembahasan: s.pembahasan || (s.langkah || []).join(' '),
-    };
-  }
-  if (s.tipe === 'multi') {
-    return {
-      tipe: 'multi',
-      soal: s.teks,
-      opsiJawaban: s.pilihan,
-      pernyataan: [],
-      kunciJawaban: s.kunci && Array.isArray(s.kunci.multi) ? s.kunci.multi : [],
-      pembahasan: s.pembahasan || (s.langkah || []).join(' '),
-    };
-  }
-  return {
-    tipe: 'pg',
-    soal: s.teks,
-    opsiJawaban: s.pilihan,
-    pernyataan: [],
-    kunciJawaban: s.kunci && typeof s.kunci.pg === 'number' ? s.kunci.pg : 0,
-    pembahasan: s.pembahasan || (s.langkah || []).join(' '),
-  };
-}
-
-/**
- * Cek kebenaran jawaban siswa terhadap kunci hasil parse.
- * @param {object} kunci - {tipe:'pg'|'multi'|'bs', pg?, multi?, bs?}
- * @param {*} jawaban - number (pg) | number[] (multi) | boolean[] (bs)
- */
 export function cekBenar(kunci, jawaban) {
   if (!kunci) return false;
   if (kunci.tipe === 'pg') return jawaban === kunci.pg;
-  if (kunci.tipe === 'multi') {
-    return Array.isArray(jawaban) && jawaban.length === (kunci.multi || []).length &&
-      (kunci.multi || []).every((i) => jawaban.includes(i));
-  }
-  if (kunci.tipe === 'bs') {
-    return Array.isArray(jawaban) && jawaban.length === (kunci.bs || []).length &&
-      jawaban.every((v, i) => v === kunci.bs[i]);
-  }
+  if (kunci.tipe === 'multi') return Array.isArray(jawaban) && jawaban.length === (kunci.multi || []).length && (kunci.multi || []).every((i) => jawaban.includes(i));
+  if (kunci.tipe === 'bs') return Array.isArray(jawaban) && jawaban.length === (kunci.bs || []).length && jawaban.every((v, i) => v === kunci.bs[i]);
   return false;
 }
 
-export default { parseDaftarSoal, soalKeFormatSesi, cekBenar };
+// ===== CSS TERSKOP untuk slide materi (aman ditempel di halaman live) =====
+export const CSS_MODUL = `
+.modmod{font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1e293b}
+.modmod .kartu{background:#fff;border-radius:14px;border-left:6px solid #4C6EF5;padding:16px;margin:10px 0}
+.modmod h2.sec{margin:0 0 10px;font-size:18px}
+.modmod h3.sub{margin:14px 0 6px;font-size:15px;color:#5b4b8a}
+.modmod .rumus{background:#eef2ff;border:1px dashed #4C6EF5;border-radius:12px;padding:10px;text-align:center;font-size:17px;font-weight:800;margin:8px 0}
+.modmod .rumus small{display:block;font-size:12px;font-weight:600;color:#64748b;margin-top:3px}
+.modmod ul.sifat{margin:6px 0;padding-left:20px;font-size:13.5px}
+.modmod ul.sifat li{margin:3px 0}
+.modmod table.ring{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+.modmod table.ring th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
+.modmod table.ring td{border:1px solid #e3e6ef;padding:5px 8px}
+.modmod svg,.modmod img{max-width:100%;height:auto;display:block;margin:8px auto}
+.modmod .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:14px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:8px 0}
+.modmod .caption{text-align:center;font-size:11.5px;color:#64748b}
+.modmod .tips{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;font-size:13.5px;margin:10px 0}
+`;
+
+// ===== SUSUN SLIDE ala PPT dari satu bab modul =====
+// Urutan: cover -> kartu materi berurutan -> soal-soal bab -> refleksi.
+export function parseSlides(html) {
+  const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+  const slides = [];
+  const hero = doc.querySelector('.hero');
+  if (hero) {
+    slides.push({
+      tipe: 'cover',
+      judul: bersihTeks(hero.querySelector('h1')?.textContent) || 'Materi',
+      chips: [...hero.querySelectorAll('.chips span')].map((s) => bersihTeks(s.textContent)),
+    });
+  }
+  doc.querySelectorAll('.kartu').forEach((k) => {
+    slides.push({
+      tipe: 'materi',
+      judul: bersihTeks(k.querySelector('h2.sec')?.textContent) || 'Materi',
+      html: k.outerHTML,
+    });
+  });
+  const soals = parseDaftarSoal(html);
+  soals.forEach((s, i) => slides.push({ tipe: 'soal', soalIdx: i, nomor: s.nomor, tipeSoal: s.tipe }));
+  const tips = doc.querySelector('.tips');
+  if (tips) slides.push({ tipe: 'refleksi', judul: 'Refleksi', html: tips.outerHTML });
+  return slides;
+}
+
+export default { parseDaftarSoal, parseSlides, cekBenar, CSS_MODUL };

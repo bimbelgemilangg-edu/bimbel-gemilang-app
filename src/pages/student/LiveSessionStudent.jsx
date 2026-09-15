@@ -1,24 +1,21 @@
 // src/pages/student/LiveSessionStudent.jsx
-// Sisi siswa sesi live. Soal Benar/Salah dirender sebagai GRID CBT
-// (pernyataan + tombol radio B/S besar yang bisa ditekan), sesuai
-// standar ujian. Setelah guru buka kunci, tiap baris menyala
-// hijau/merah dan kolom kunci ditandai.
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { cekBenar } from '../../utils/parseSoal';
+// Sisi siswa: join lewat KODE, lalu mengikuti sesi sesuai mode guru:
+//  📖 materi -> slide sama persis dengan proyektor guru (materi read-only,
+//     soal di akhir slide dikerjakan interaktif gaya CBT).
+//  ✍️ bank   -> soal terpantau saja; kunci/pembahasan hanya dibuka guru.
+import React, { useState, useEffect, useMemo } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
+import { parseSlides, cekBenar, CSS_MODUL } from '../../utils/parseSoal';
 import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban } from '../../services/sesiService';
 
 const S = {
-  page: { maxWidth: 560, margin: '0 auto', padding: 16, fontFamily: 'sans-serif', minHeight: '100vh', background: '#f8fafc' },
+  page: { maxWidth: 620, margin: '0 auto', padding: 16, fontFamily: 'sans-serif', minHeight: '100vh', background: '#f8fafc' },
   card: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 12, padding: 16, marginBottom: 12 },
   row: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 },
   input: { border: '1px solid #cbd5e1', borderRadius: 8, padding: '10px 12px', fontSize: 14, background: '#fff' },
   btn: { width: '100%', padding: 12, background: '#7C3AED', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 14, cursor: 'pointer' },
-  btn2: { padding: '8px 12px', background: '#f1f5f9', color: '#334155', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: 'pointer' },
   chip: { background: '#eef2ff', color: '#4338ca', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 700 },
-  opsi: (a, k, s) => ({ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%', textAlign: 'left', padding: '11px 12px', borderRadius: 10, border: `2px solid ${s && k ? '#16a34a' : s && a ? '#e74c3c' : a ? '#7C3AED' : '#e2e8f0'}`, background: s && k ? '#f0fdf4' : s && a ? '#fef2f2' : a ? '#f5f3ff' : '#fff', fontSize: 13.5, cursor: s ? 'default' : 'pointer', marginBottom: 8 }),
-  langkah: { background: '#fbfcff', border: '1px solid #eef1f6', borderRadius: 10, padding: '9px 12px', margin: '7px 0', fontSize: 13, lineHeight: 1.6 },
-  // ===== GRID CBT =====
   cbt: { border: '1px solid #e3e6ef', borderRadius: 12, overflow: 'hidden', background: '#fff', margin: '10px 0' },
   cbtHead: { display: 'grid', gridTemplateColumns: '1fr 76px 76px', background: '#4C6EF5', color: '#fff', fontSize: 11, fontWeight: 800 },
   cbtHeadText: { padding: '8px 10px' },
@@ -33,25 +30,46 @@ const S = {
     color: a ? '#fff' : s && k ? '#16a34a' : '#64748b',
     fontWeight: 800, fontSize: 12, cursor: s ? 'default' : 'pointer',
   }),
+  opsi: (a, k, s) => ({ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%', textAlign: 'left', padding: '11px 12px', borderRadius: 10, border: `2px solid ${s && k ? '#16a34a' : s && a ? '#e74c3c' : a ? '#7C3AED' : '#e2e8f0'}`, background: s && k ? '#f0fdf4' : s && a ? '#fef2f2' : a ? '#f5f3ff' : '#fff', fontSize: 13.5, cursor: s ? 'default' : 'pointer', marginBottom: 8 }),
 };
 
 export default function LiveSessionStudent() {
-  const navigate = useNavigate();
   const siswaId = localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '';
   const nama = localStorage.getItem('studentName') || 'Siswa';
   const [kode, setKode] = useState('');
   const [sesi, setSesi] = useState(null);
+  const [babHtml, setBabHtml] = useState('');
   const [pilih, setPilih] = useState(null);
   const [terkirim, setTerkirim] = useState({});
   const [err, setErr] = useState('');
-
-  useEffect(() => { setPilih(null); }, [sesi && sesi.soalAktif]);
 
   useEffect(() => {
     if (!sesi) return undefined;
     const u = dengarSesi(sesi.id, (s) => { if (s) setSesi(s); });
     return u;
   }, [sesi && sesi.id]);
+
+  useEffect(() => {
+    if (!sesi || sesi.mode !== 'materi' || !sesi.babId) return;
+    (async () => {
+      try {
+        const s = await getDoc(doc(db, 'buku_digital', sesi.bukuId, 'bab', sesi.babId));
+        if (s.exists()) setBabHtml(s.data().html || '');
+      } catch (e) {}
+    })();
+  }, [sesi && sesi.id, sesi && sesi.mode]);
+
+  useEffect(() => { setPilih(null); }, [sesi && sesi.slideAktif, sesi && sesi.soalAktif]);
+
+  const slides = useMemo(() => (babHtml ? parseSlides(babHtml) : []), [babHtml]);
+  const slideNow = slides[sesi ? (sesi.slideAktif || 0) : 0] || null;
+  const daftarSoal = sesi ? (sesi.daftarSoal || []) : [];
+  const soal = sesi && sesi.mode === 'materi'
+    ? (slideNow && slideNow.tipe === 'soal' ? daftarSoal[slideNow.soalIdx] : null)
+    : (sesi && sesi.soalAktif != null ? daftarSoal[sesi.soalAktif] : null);
+  const idxSoal = sesi && sesi.mode === 'materi' ? (slideNow ? slideNow.soalIdx : null) : (sesi ? sesi.soalAktif : null);
+  const sudah = idxSoal != null ? !!terkirim[idxSoal] : false;
+  const terbuka = sesi ? !!sesi.kunciTerbuka : false;
 
   async function gabung() {
     setErr('');
@@ -61,16 +79,11 @@ export default function LiveSessionStudent() {
     setSesi(s);
   }
 
-  const idx = sesi ? sesi.soalAktif : null;
-  const soal = idx != null ? (sesi.daftarSoal || [])[idx] : null;
-  const sudah = idx != null ? !!terkirim[idx] : false;
-  const terbuka = sesi ? !!sesi.kunciTerbuka : false;
-
   async function kirim() {
     if (pilih === null || (Array.isArray(pilih) && pilih.length === 0)) return;
     const benar = cekBenar(soal.kunci, pilih);
-    await kirimJawaban(sesi.id, { siswaId, nama, soalIdx: idx, jawaban: pilih, benar });
-    setTerkirim((t) => ({ ...t, [idx]: benar }));
+    await kirimJawaban(sesi.id, { siswaId, nama, soalIdx: idxSoal, jawaban: pilih, benar });
+    setTerkirim((t) => ({ ...t, [idxSoal]: benar }));
   }
 
   if (!sesi) {
@@ -83,7 +96,7 @@ export default function LiveSessionStudent() {
             <button style={{ ...S.btn, width: 'auto' }} onClick={gabung}>Gabung</button>
           </div>
           {err && <div style={{ fontSize: 12, color: '#991b1b', fontWeight: 700 }}>{err}</div>}
-          <p style={{ fontSize: 11.5, color: '#64748b', margin: '8px 0 0' }}>Minta kode sesi ke guru (ditampilkan di proyektor).</p>
+          <p style={{ fontSize: 11.5, color: '#64748b', margin: '8px 0 0' }}>Minta kode sesi ke guru (tertampil di proyektor).</p>
         </div>
       </div>
     );
@@ -91,29 +104,39 @@ export default function LiveSessionStudent() {
 
   return (
     <div style={S.page}>
+      <style>{CSS_MODUL}</style>
       <div style={S.card}>
         <div style={S.row}>
           <span style={S.chip}>🔴 {sesi.kode}</span>
-          <span style={S.chip}>{sesi.materiJudul || 'Sesi kelas'}</span>
-          {idx != null && <span style={S.chip}>Soal {idx + 1}/{(sesi.daftarSoal || []).length}</span>}
+          <span style={S.chip}>{sesi.mode === 'materi' ? '📖 Materi Interaktif' : '✍️ Soal & Pembahasan'}</span>
+          {sesi.mode === 'materi' && slideNow && <span style={S.chip}>Slide {(sesi.slideAktif || 0) + 1}/{slides.length}</span>}
+          {soal && <span style={S.chip}>Soal {idxSoal + 1}/{daftarSoal.length}</span>}
         </div>
       </div>
 
-      {idx == null && (
-        <div style={{ ...S.card, textAlign: 'center' }}>
-          <div style={{ fontSize: 34 }}>📖</div>
-          <p style={{ fontSize: 13, color: '#475569' }}>Guru sedang menerangkan materi. Perhatikan proyektor.</p>
-          {sesi.bukuId && sesi.babId && (
-            <button style={S.btn2} onClick={() => navigate(`/siswa/buku/${sesi.bukuId}/${sesi.babId}`)}>Buka modul untuk menyimak</button>
+      {/* ---- SLIDE MATERI / COVER / REFLEKSI (read-only, sama dengan proyektor) ---- */}
+      {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (
+        <div style={S.card}>
+          {slideNow.tipe === 'cover' ? (
+            <div style={{ textAlign: 'center', padding: '20px 6px' }}>
+              <div style={{ fontSize: 10, letterSpacing: 3, color: '#94a3b8', fontWeight: 800 }}>BAB · MATERI</div>
+              <h2 style={{ fontSize: 22, margin: '8px 0', color: '#1e293b' }}>{slideNow.judul}</h2>
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {(slideNow.chips || []).map((c, i) => <span key={i} style={S.chip}>{c}</span>)}
+              </div>
+            </div>
+          ) : (
+            <div className="modmod" dangerouslySetInnerHTML={{ __html: slideNow.html }} />
           )}
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: '8px 0 0', textAlign: 'center' }}>Ikuti penjelasan guru — slide berpindah otomatis dari kendali guru.</p>
         </div>
       )}
 
+      {/* ---- SOAL INTERAKTIF (CBT) ---- */}
       {soal && (
         <div style={S.card}>
           <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
 
-          {/* ===== PG ===== */}
           {soal.kunci && soal.kunci.tipe === 'pg' && (soal.pilihan || []).map((p, i) => (
             <button key={i} style={S.opsi(pilih === i, terbuka && soal.kunci.pg === i, terbuka)} disabled={sudah || terbuka} onClick={() => setPilih(i)}>
               <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
@@ -122,7 +145,6 @@ export default function LiveSessionStudent() {
             </button>
           ))}
 
-          {/* ===== MULTI ===== */}
           {soal.kunci && soal.kunci.tipe === 'multi' && (soal.pilihan || []).map((p, i) => {
             const arr = Array.isArray(pilih) ? pilih : [];
             const a = arr.includes(i);
@@ -137,7 +159,6 @@ export default function LiveSessionStudent() {
             );
           })}
 
-          {/* ===== BENAR/SALAH — GRID CBT ===== */}
           {soal.kunci && soal.kunci.tipe === 'bs' && (
             <div style={S.cbt}>
               <div style={S.cbtHead}>
@@ -153,18 +174,12 @@ export default function LiveSessionStudent() {
                   <div key={i} style={S.cbtRow(sayaSalah)}>
                     <div style={S.cbtText}>{i + 1}. {p}</div>
                     <div style={S.cbtOpt}>
-                      <button
-                        style={S.cbtBtn(arr[i] === true, terbuka && kunciB === true, terbuka)}
-                        disabled={sudah || terbuka}
-                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = true; setPilih(a); }}
-                      >B</button>
+                      <button style={S.cbtBtn(arr[i] === true, terbuka && kunciB === true, terbuka)} disabled={sudah || terbuka}
+                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = true; setPilih(a); }}>B</button>
                     </div>
                     <div style={S.cbtOpt}>
-                      <button
-                        style={S.cbtBtn(arr[i] === false, terbuka && kunciB === false, terbuka)}
-                        disabled={sudah || terbuka}
-                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = false; setPilih(a); }}
-                      >S</button>
+                      <button style={S.cbtBtn(arr[i] === false, terbuka && kunciB === false, terbuka)} disabled={sudah || terbuka}
+                        onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = false; setPilih(a); }}>S</button>
                     </div>
                   </div>
                 );
@@ -176,21 +191,18 @@ export default function LiveSessionStudent() {
             <button style={S.btn} disabled={pilih === null || (Array.isArray(pilih) && pilih.length === 0)} onClick={kirim}>📤 Kirim Jawaban</button>
           )}
           {sudah && !terbuka && (
-            <div style={{ fontSize: 12.5, color: '#166534', fontWeight: 700, marginTop: 8 }}>✅ Terkirim — tunggu guru membuka pembahasan.</div>
+            <div style={{ fontSize: 12.5, color: '#166534', fontWeight: 700, marginTop: 8 }}>✅ Terkirim — perhatikan penjelasan guru.</div>
           )}
           {terbuka && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#4338ca', marginBottom: 6 }}>💡 Pembahasan:</div>
-              {(soal.langkah || []).slice(0, Math.max(1, sesi.langkahTerbuka || 1)).map((l, i) => (
-                <div key={i} style={S.langkah}><b>{i + 1}.</b> {l}</div>
-              ))}
-              {(soal.langkah || []).length > Math.max(1, sesi.langkahTerbuka || 1) && (
-                <div style={{ fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>Menunggu langkah berikutnya dari guru…</div>
-              )}
+            <div style={{ fontSize: 12.5, color: sudah ? (terkirim[idxSoal] ? '#166534' : '#991b1b') : '#64748b', fontWeight: 700, marginTop: 8 }}>
+              {sudah ? (terkirim[idxSoal] ? '✅ Jawabanmu benar.' : '❌ Jawabanmu belum tepat — simak pembahasan guru.') : 'Kunci dibuka guru.'}
             </div>
           )}
         </div>
       )}
+
+      {sesi.mode === 'materi' && !slideNow && <div style={S.card}>Menunggu slide dari guru…</div>}
+      {sesi.mode === 'bank' && !soal && <div style={S.card}>Menunggu soal dari guru…</div>}
     </div>
   );
 }
