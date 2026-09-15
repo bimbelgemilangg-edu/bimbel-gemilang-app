@@ -1,863 +1,335 @@
 // src/pages/teacher/ClassSession.jsx
+// Step 1: Absensi (bukti guru + QR/toggle siswa) -- TETAP seperti semula.
+// Step 2: Kelas & Soal Live (KelasLivePanel) -- BARU, terhubung buku digital.
+// Step 3: Laporan materi + honor + Google Form -- TETAP seperti semula.
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
-import { 
-  collection, addDoc, doc, getDoc, setDoc, serverTimestamp, 
-  onSnapshot, query, where, updateDoc 
-} from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp, onSnapshot, query, where, updateDoc } from 'firebase/firestore';
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, ArrowLeft, ExternalLink, Camera, Upload, CheckCircle, Paperclip } from 'lucide-react';
-// 🔥 BARU: dipakai buat upload foto/screenshot bukti kehadiran & lampiran
-// materi ke Supabase Storage (bucket yang sama dengan materi e-learning).
+import { QrCode, ArrowLeft, Camera, Upload, CheckCircle, Paperclip } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
+import KelasLivePanel from './KelasLivePanel';
 
 const ClassSession = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
   const [schedule, setSchedule] = useState(null);
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
   const [attendanceMap, setAttendanceMap] = useState({});
   const [step, setStep] = useState(1);
-
-  // 🔥 BARU: sub-tab di dalam Step 1 -- "Bukti Kehadiran Guru" (foto
-  // pribadi guru) dipisah TOTAL dari "Absensi Siswa" (QR + toggle
-  // kehadiran, yang layarnya ditunjukkan ke siswa). Sebelumnya dua-duanya
-  // nempel di 1 layar -- kalau guru buka di laptop buat nunjukin QR ke
-  // kelas, foto pribadi bukti kehadiran ikut kelihatan, gak profesional.
-  // Default ke 'kehadiranGuru' (privat dulu, sebelum layar ditunjukkan
-  // ke siapa pun).
   const [step1Tab, setStep1Tab] = useState('kehadiranGuru');
-  const [materiAktual, setMateriAktual] = useState("");
+  const [materiAktual, setMateriAktual] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [salaryRules, setSalaryRules] = useState(null);
   const [timeStatus, setTimeStatus] = useState({ isPastEnd: false, remaining: '' });
-
-  // ============================================================
-  // 🔥 BARU: TIPE KELAS & BUKTI KEHADIRAN
-  // ============================================================
-  // `tipeKelas` dipilih guru SENDIRI di awal sesi (bukan properti tetap
-  // jadwal) -- karena kelas yang biasanya tatap muka bisa berubah jadi
-  // online sewaktu-waktu (mis. pas tanggal merah). Berdasarkan pilihan
-  // ini, bukti kehadiran yang diminta berbeda:
-  // - "reguler" -> WAJIB foto kamera langsung (pakai capture="environment",
-  //   buka kamera HP langsung, bukan pilih dari galeri -- supaya beneran
-  //   foto real-time, bukan foto lama yang di-upload ulang)
-  // - "online"  -> WAJIB screenshot sesi video call (boleh dari galeri,
-  //   karena screenshot itu sendiri sudah bukti waktu real dari aplikasi
-  //   meeting-nya)
-  // Foto/screenshot ini WAJIB (menggerbangi tombol lanjut ke Step 2) --
-  // gak bisa diskip, sesuai keputusan eksplisit soal ini.
   const [tipeKelas, setTipeKelas] = useState('reguler');
   const [absensiPreviewUrl, setAbsensiPreviewUrl] = useState('');
   const [absensiUploadedUrl, setAbsensiUploadedUrl] = useState('');
   const [uploadingAbsensi, setUploadingAbsensi] = useState(false);
   const [absensiError, setAbsensiError] = useState('');
-
-  // 🔥 BARU: lampiran materi (opsional) -- buat tracking "tentor sudah
-  // upload materi hari ini atau belum" yang bisa dipantau admin dari
-  // TeacherSalaries.jsx (field materiFileUrl per log).
   const [materiFileUploadedUrl, setMateriFileUploadedUrl] = useState('');
   const [uploadingMateriFile, setUploadingMateriFile] = useState(false);
-  
-  // 🔥 STATE UNTUK GOOGLE FORM
-  const [googleForms, setGoogleForms] = useState({
-    sd: '',
-    smp: '',
-    sma: '',
-    english: '',
-    default: ''
-  });
+  const [googleForms, setGoogleForms] = useState({ sd: '', smp: '', sma: '', english: '', default: '' });
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const h = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
   }, []);
 
-  // 🔥 CEK WAKTU SETIAP DETIK
   useEffect(() => {
     if (!schedule) return;
-    
-    const checkTime = () => {
+    const check = () => {
       const now = new Date();
-      const [endHour, endMinute] = schedule.end.split(':').map(Number);
-      const endTime = new Date(now);
-      endTime.setHours(endHour, endMinute, 0, 0);
-      
-      const isPastEndTime = now > endTime;
-      
-      if (!isPastEndTime) {
-        const diffMs = endTime - now;
-        const diffMin = Math.floor(diffMs / 60000);
-        const diffHour = Math.floor(diffMin / 60);
-        const remainingMin = diffMin % 60;
-        
-        let remaining = '';
-        if (diffHour > 0) {
-          remaining = diffHour + ' jam ' + remainingMin + ' menit';
-        } else {
-          remaining = remainingMin + ' menit';
-        }
-        setTimeStatus({ isPastEnd: false, remaining });
-      } else {
-        setTimeStatus({ isPastEnd: true, remaining: '0' });
-      }
+      const [eh, em] = schedule.end.split(':').map(Number);
+      const end = new Date(now); end.setHours(eh, em, 0, 0);
+      if (now > end) { setTimeStatus({ isPastEnd: true, remaining: '0' }); return; }
+      const dm = Math.floor((end - now) / 60000);
+      setTimeStatus({ isPastEnd: false, remaining: (dm >= 60 ? Math.floor(dm / 60) + ' jam ' + (dm % 60) + ' menit' : dm + ' menit') });
     };
-    
-    checkTime();
-    const interval = setInterval(checkTime, 10000);
-    return () => clearInterval(interval);
+    check();
+    const iv = setInterval(check, 10000);
+    return () => clearInterval(iv);
   }, [schedule]);
 
-  // 🔥 AMBIL DATA + GOOGLE FORM SETTINGS
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Ambil data jadwal
-        const docRef = doc(db, "jadwal_bimbel", id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) {
-          alert("⚠️ Jadwal tidak ditemukan!");
-          navigate('/guru/dashboard');
-          return;
-        }
-        const data = { id: docSnap.id, ...docSnap.data() };
+        const ds = await getDoc(doc(db, 'jadwal_bimbel', id));
+        if (!ds.exists()) { alert('⚠️ Jadwal tidak ditemukan!'); navigate('/guru/dashboard'); return; }
+        const data = { id: ds.id, ...ds.data() };
         setSchedule(data);
-        setMateriAktual(data.title || "");
-
-        // 2. Ambil data guru dari localStorage
+        setMateriAktual(data.title || '');
         const stored = localStorage.getItem('teacherData');
-        if (stored) {
-          setTeacher(JSON.parse(stored));
+        if (!stored) { alert('⚠️ Data guru tidak ditemukan!'); navigate('/guru/dashboard'); return; }
+        setTeacher(JSON.parse(stored));
+        const sr = await getDoc(doc(db, 'settings', 'global_config'));
+        if (sr.exists() && sr.data().salaryRules) {
+          const rules = sr.data().salaryRules;
+          setSalaryRules(Array.isArray(rules.rates) ? { rates: rules.rates } : { rates: [
+            { id: 'sd', label: 'SD', pricePerHour: rules.honorSD ?? 35000 },
+            { id: 'smp', label: 'SMP', pricePerHour: rules.honorSMP ?? 40000 },
+            { id: 'sma', label: 'SMA', pricePerHour: rules.honorSMA ?? 50000 },
+          ] });
         } else {
-          alert("⚠️ Data guru tidak ditemukan!");
-          navigate('/guru/dashboard');
-          return;
+          setSalaryRules({ rates: [
+            { id: 'sd', label: 'SD', pricePerHour: 35000 },
+            { id: 'smp', label: 'SMP', pricePerHour: 40000 },
+            { id: 'sma', label: 'SMA', pricePerHour: 50000 },
+          ] });
         }
-
-        // 3. Ambil salary rules
-        const salaryRef = doc(db, "settings", "global_config");
-        const salarySnap = await getDoc(salaryRef);
-        if (salarySnap.exists() && salarySnap.data().salaryRules) {
-          const sr = salarySnap.data().salaryRules;
-          // 🔥 SEDERHANAKAN (keputusan eksplisit): bonus (Bonus English/EC),
-          // kompensasi 0 hadir, DAN "Honor Minimal/Sesi" semuanya DIHAPUS
-          // TOTAL -- gak dipakai lagi di hitungHonor(). Fokus cuma tarif
-          // per kategori (rates), yang sekarang bisa sespesifik "Kelas 6
-          // SD" (bukan cuma SD/SMP/SMA umum). Format lama (honorSD/dst)
-          // tetap diterima biar data lama gak hilang.
-          if (Array.isArray(sr.rates)) {
-            setSalaryRules({ rates: sr.rates });
-          } else {
-            setSalaryRules({
-              rates: [
-                { id: 'sd', label: 'SD', pricePerHour: sr.honorSD ?? 35000 },
-                { id: 'smp', label: 'SMP', pricePerHour: sr.honorSMP ?? 40000 },
-                { id: 'sma', label: 'SMA', pricePerHour: sr.honorSMA ?? 50000 },
-              ],
-            });
-          }
-        } else {
-          setSalaryRules({
-            rates: [
-              { id: 'sd', label: 'SD', pricePerHour: 35000 },
-              { id: 'smp', label: 'SMP', pricePerHour: 40000 },
-              { id: 'sma', label: 'SMA', pricePerHour: 50000 },
-            ],
-          });
-        }
-
-        // 🔥 4. AMBIL GOOGLE FORM SETTINGS
-        const formDoc = await getDoc(doc(db, "settings", "google_forms"));
-        if (formDoc.exists()) {
-          setGoogleForms(formDoc.data());
-        }
-
+        const fd = await getDoc(doc(db, 'settings', 'google_forms'));
+        if (fd.exists()) setGoogleForms(fd.data());
         setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        alert("❌ Gagal memuat data kelas");
-        navigate('/guru/dashboard');
-      }
+      } catch (e) { alert('❌ Gagal memuat data kelas'); navigate('/guru/dashboard'); }
     };
-
     if (id) fetchData();
   }, [id, navigate]);
 
-  // 🔥 REAL-TIME ATTENDANCE
   useEffect(() => {
     if (!schedule?.id) return;
-    
     const today = new Date().toISOString().split('T')[0];
-    const q = query(
-      collection(db, "attendance"), 
-      where("date", "==", today), 
-      where("scheduleId", "==", schedule.id)
-    );
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newMap = { ...attendanceMap };
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        if (schedule.students && schedule.students.some(s => s.id === data.studentId)) {
-          newMap[data.studentId] = (data.status === "Hadir");
-        }
+    const q = query(collection(db, 'attendance'), where('date', '==', today), where('scheduleId', '==', schedule.id));
+    const un = onSnapshot(q, (snap) => {
+      const m = { ...attendanceMap };
+      snap.docs.forEach((d) => {
+        const data = d.data();
+        if (schedule.students && schedule.students.some((s) => s.id === data.studentId)) m[data.studentId] = (data.status === 'Hadir');
       });
-      setAttendanceMap(newMap);
-    }, (error) => { 
-      console.error("Listener Error:", error); 
+      setAttendanceMap(m);
     });
-    
-    return () => unsubscribe();
+    return () => un();
   }, [schedule]);
 
-  // ============================================================
-  // 🔥 BARU: HANDLE UPLOAD FOTO/SCREENSHOT ABSENSI (WAJIB)
-  // ============================================================
   const handleAbsensiFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    setAbsensiError('');
-    setUploadingAbsensi(true);
-
-    // Preview lokal dulu (biar guru langsung lihat apa yang dia pilih,
-    // gak perlu nunggu upload selesai buat lihat previewnya).
-    const localPreview = URL.createObjectURL(file);
-    setAbsensiPreviewUrl(localPreview);
-
+    setAbsensiError(''); setUploadingAbsensi(true);
+    const prev = URL.createObjectURL(file);
+    setAbsensiPreviewUrl(prev);
     try {
-      const result = await uploadElearningFile(file, 'absensi-guru');
-      if (result.success) {
-        setAbsensiUploadedUrl(result.downloadURL);
-      } else {
-        setAbsensiError('Gagal upload: ' + (result.error || 'Terjadi kesalahan.'));
-        setAbsensiUploadedUrl('');
-      }
-    } catch (err) {
-      setAbsensiError('Gagal upload: ' + err.message);
-      setAbsensiUploadedUrl('');
-    }
+      const r = await uploadElearningFile(file, 'absensi-guru');
+      if (r.success) setAbsensiUploadedUrl(r.downloadURL);
+      else { setAbsensiError('Gagal upload: ' + (r.error || 'Kesalahan.')); setAbsensiUploadedUrl(''); }
+    } catch (err) { setAbsensiError('Gagal upload: ' + err.message); setAbsensiUploadedUrl(''); }
     setUploadingAbsensi(false);
   };
-
-  // 🔥 BARU: HANDLE UPLOAD LAMPIRAN MATERI (OPSIONAL)
   const handleMateriFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setUploadingMateriFile(true);
     try {
-      const result = await uploadElearningFile(file, 'lampiran-materi-harian');
-      if (result.success) {
-        setMateriFileUploadedUrl(result.downloadURL);
-      } else {
-        alert('Gagal upload lampiran: ' + (result.error || 'Terjadi kesalahan.'));
-      }
-    } catch (err) {
-      alert('Gagal upload lampiran: ' + err.message);
-    }
+      const r = await uploadElearningFile(file, 'lampiran-materi-harian');
+      if (r.success) setMateriFileUploadedUrl(r.downloadURL);
+      else alert('Gagal upload lampiran: ' + (r.error || 'Kesalahan.'));
+    } catch (err) { alert('Gagal upload lampiran: ' + err.message); }
     setUploadingMateriFile(false);
   };
 
-  // 🔥 TOGGLE SISWA
   const toggleStudent = async (student) => {
     if (!schedule || !teacher) return;
-    
-    const isCurrentlyPresent = !!attendanceMap[student.id];
-    const willBePresent = !isCurrentlyPresent;
-    setAttendanceMap(prev => ({ ...prev, [student.id]: willBePresent }));
-    
+    const cur = !!attendanceMap[student.id];
+    const next = !cur;
+    setAttendanceMap((p) => ({ ...p, [student.id]: next }));
     const today = new Date().toISOString().split('T')[0];
-    const absenId = student.id + '_' + today + '_' + schedule.id;
-    const absenRef = doc(db, "attendance", absenId);
-    
     try {
-      await setDoc(absenRef, {
-        studentId: student.id, 
-        studentName: student.nama,
-        program: student.program || schedule.program || "Reguler",
-        kelasSekolah: student.kelas || student.kelasSekolah || "-",
-        teacherId: teacher.id, 
-        teacherName: teacher.nama,
-        date: today, 
-        tanggal: today, 
-        timestamp: serverTimestamp(),
-        status: willBePresent ? "Hadir" : "Alpha",
-        keterangan: willBePresent ? "Input Manual Guru" : "Siswa tidak hadir",
-        mapel: schedule.title || "Umum",
-        scheduleId: schedule.id || "", 
-        planet: schedule.planet || "Ruang Umum"
+      await setDoc(doc(db, 'attendance', student.id + '_' + today + '_' + schedule.id), {
+        studentId: student.id, studentName: student.nama,
+        program: student.program || schedule.program || 'Reguler',
+        kelasSekolah: student.kelas || student.kelasSekolah || '-',
+        teacherId: teacher.id, teacherName: teacher.nama,
+        date: today, tanggal: today, timestamp: serverTimestamp(),
+        status: next ? 'Hadir' : 'Alpha',
+        keterangan: next ? 'Input Manual Guru' : 'Siswa tidak hadir',
+        mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
       }, { merge: true });
-    } catch (error) {
-      console.error("Update Absen Error:", error);
-      setAttendanceMap(prev => ({ ...prev, [student.id]: isCurrentlyPresent }));
-    }
+    } catch (e) { setAttendanceMap((p) => ({ ...p, [student.id]: cur })); }
   };
 
-  // 🔥 FIX INTI: sebelumnya tarif dicari lewat if/else yang HARDCODE nama
-  // jenjang (SD/SMP/SMA) langsung di kode -- kalau owner mau nambah
-  // kategori honor baru, gak akan pernah kepake di sini. Sekarang tarif
-  // dicari dari daftar `rates` yang diatur bebas lewat TeacherSalaries.jsx
-  // -- kategori baru otomatis langsung kepake di sini tanpa sentuh kode.
-  //
-  // 🔥 DISEDERHANAKAN (keputusan eksplisit): bonus tambahan (mis. "Bonus
-  // English"/EC) dan kompensasi 0-hadir (yang tadinya 50%) DIHAPUS total.
-  // Sekarang honor SELALU dihitung tarif penuh × jam, gak peduli berapa
-  // siswa yang hadir -- cuma dibatasi BAWAH oleh Honor Minimal/Sesi.
-  // 🔥 DISEDERHANAKAN (keputusan eksplisit): "Honor Minimal/Sesi" DIHAPUS
-  // TOTAL -- bikin bingung & gak dipakai lagi. Honor SELALU tarif × jam,
-  // tanpa batas bawah apa pun.
-  //
-  // 🔥 BARU: pencocokan tarif sekarang 2 TAHAP -- coba dulu kategori
-  // SPESIFIK berdasar kelas siswa yang beneran hadir (mis. siswa kelas
-  // "6" + jenjang "SD" -> cari kategori berlabel "Kelas 6 SD"), baru
-  // kalau gak ketemu, fallback ke jenjang umum (SD/SMP/SMA) seperti
-  // sebelumnya. Ini yang bikin kategori "Kelas 6 SD" (tarif beda dari
-  // "SD" umum) beneran kepakai, bukan cuma tersimpan tapi gak pernah
-  // kesentuh logika perhitungan.
   const hitungHonor = () => {
-    if (!salaryRules) return { nominal: 0, detailTxt: "", statusGaji: "Menunggu Validasi" };
-
-    const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
-    const jumlahHadir = siswaHadirList.length;
-
-    const startParts = schedule.start.split(':');
-    const endParts = schedule.end.split(':');
-    const startTime = new Date(0, 0, 0, startParts[0], startParts[1]);
-    const endTime = new Date(0, 0, 0, endParts[0], endParts[1]);
-    const diffHours = (endTime - startTime) / 36e5;
-
-    const level = schedule.level || "SD";
-    const program = schedule.program || "Reguler";
+    if (!salaryRules) return { nominal: 0, detailTxt: ' ', statusGaji: 'Menunggu Validasi' };
+    const hadir = (schedule.students || []).filter((s) => attendanceMap[s.id]);
+    const [sh, sm] = schedule.start.split(':');
+    const [eh, em] = schedule.end.split(':');
+    const diff = (new Date(0, 0, 0, eh, em) - new Date(0, 0, 0, sh, sm)) / 36e5;
+    const level = schedule.level || 'SD';
     const rates = salaryRules.rates || [];
-
-    // TAHAP 1: coba kategori SPESIFIK per kelas siswa yang hadir --
-    // mis. "Kelas 6 SD". Kalau siswa yang hadir dari beberapa kelas
-    // berbeda, dicoba satu-satu, dipakai yang PERTAMA ketemu.
-    const kelasSiswaUnik = [
-      ...new Set(
-        siswaHadirList.map(s => s.kelas || s.kelasSekolah).filter(Boolean)
-      )
-    ];
-
-    let matchedRate = null;
-    for (const kelasValue of kelasSiswaUnik) {
-      const candidateLabel = `kelas ${kelasValue} ${level}`.toLowerCase().trim();
-      const found = rates.find(r => (r.label || '').toLowerCase().trim() === candidateLabel);
-      if (found) { matchedRate = found; break; }
+    const kelasUnik = [...new Set(hadir.map((s) => s.kelas || s.kelasSekolah).filter(Boolean))];
+    let match = null;
+    for (const kv of kelasUnik) {
+      const label = `kelas ${kv} ${level}`.toLowerCase().trim();
+      const f = rates.find((r) => (r.label || '').toLowerCase().trim() === label);
+      if (f) { match = f; break; }
     }
-
-    // TAHAP 2: fallback ke jenjang umum (SD/SMP/SMA) kalau TAHAP 1
-    // gak ketemu kategori spesifik.
-    if (!matchedRate) {
-      matchedRate = rates.find(r =>
-        (r.id || '').toLowerCase() === level.toLowerCase() ||
-        (r.label || '').toLowerCase() === level.toLowerCase()
-      );
-    }
-
-    // Kalau gak ada yang cocok sama sekali, pakai tarif pertama di daftar sebagai jaring pengaman
-    let ratePerJam = matchedRate ? (matchedRate.pricePerHour || 0) : (rates[0]?.pricePerHour || 35000);
-    let detailTxt = program + ' - ' + (matchedRate?.label || level) + ' - ' + materiAktual;
-    let statusGaji = "Menunggu Validasi";
-
-    const nominal = ratePerJam * diffHours;
-
-    return { nominal: Math.round(nominal), detailTxt, statusGaji };
+    if (!match) match = rates.find((r) => (r.id || '').toLowerCase() === level.toLowerCase() || (r.label || '').toLowerCase() === level.toLowerCase());
+    const rate = match ? (match.pricePerHour || 0) : (rates[0]?.pricePerHour || 35000);
+    return { nominal: Math.round(rate * diff), detailTxt: (schedule.program || 'Reguler') + ' - ' + (match?.label || level) + ' - ' + materiAktual, statusGaji: 'Menunggu Validasi' };
   };
 
-  // 🔥 HANDLE BACK
-  const handleBack = () => {
-    if (window.confirm("Yakin kembali? Data yang belum disimpan akan hilang.")) {
-      navigate('/guru/dashboard');
-    }
-  };
-
-  // 🔥 FINALIZE CLASS + REDIRECT GOOGLE FORM
   const handleFinalizeClass = async () => {
-    if (!materiAktual) return alert("Mohon isi materi yang diajarkan!");
-
-    // 🔥 BARU: GERBANG WAJIB -- gak bisa finalize tanpa bukti kehadiran
-    // ter-upload. Ini pengecekan CADANGAN (tombol lanjut ke Step 2 di
-    // Step 1 sudah di-disable duluan kalau belum ada foto), tapi tetap
-    // dicek lagi di sini jaga-jaga ada state yang gak sinkron.
-    if (!absensiUploadedUrl) {
-      alert(
-        tipeKelas === 'online'
-          ? '⚠️ Screenshot sesi online wajib diunggah dulu sebelum kelas bisa diakhiri.'
-          : '⚠️ Foto kehadiran wajib diunggah dulu sebelum kelas bisa diakhiri.'
-      );
-      setStep(1);
-      return;
-    }
-    
-    // 🔥 CEK APAKAH SUDAH MELEWATI JAM SELESAI
+    if (!materiAktual) return alert('Mohon isi materi yang diajarkan!');
+    if (!absensiUploadedUrl) { alert('⚠️ Bukti kehadiran wajib diunggah dulu.'); setStep(1); return; }
     const now = new Date();
-    const [endHour, endMinute] = schedule.end.split(':').map(Number);
-    const endTime = new Date(now);
-    endTime.setHours(endHour, endMinute, 0, 0);
-    
-    const isPastEndTime = now > endTime;
-    
-    if (!isPastEndTime) {
-      const diffMs = endTime - now;
-      const diffMin = Math.floor(diffMs / 60000);
-      const diffHour = Math.floor(diffMin / 60);
-      const remainingMin = diffMin % 60;
-      
-      let timeRemaining = '';
-      if (diffHour > 0) {
-        timeRemaining = diffHour + ' jam ' + remainingMin + ' menit';
-      } else {
-        timeRemaining = remainingMin + ' menit';
-      }
-      
-      const confirmEnd = window.confirm(
-        '⏰ Kelas belum mencapai jam selesai (' + schedule.end + ')!\n\n' +
-        '⏳ Sisa waktu: ' + timeRemaining + '\n\n' +
-        'Apakah Anda yakin ingin mengakhiri kelas lebih awal?\n' +
-        '(Siswa yang belum hadir akan dicatat Alpha)'
-      );
-      
-      if (!confirmEnd) return;
+    const [eh, em] = schedule.end.split(':').map(Number);
+    const end = new Date(now); end.setHours(eh, em, 0, 0);
+    const isPast = now > end;
+    if (!isPast) {
+      const dm = Math.floor((end - now) / 60000);
+      const rem = dm >= 60 ? Math.floor(dm / 60) + ' jam ' + (dm % 60) + ' menit' : dm + ' menit';
+      if (!window.confirm('⏰ Kelas belum mencapai jam selesai (' + schedule.end + ')!\n⏳ Sisa: ' + rem + '\nYakin akhiri lebih awal?')) return;
     }
-    
-    if (!window.confirm("Yakin akhiri kelas? Data siswa yang tidak hadir akan dicatat sebagai Alpha.")) return;
-    
+    if (!window.confirm('Yakin akhiri kelas? Siswa tidak hadir dicatat Alpha.')) return;
     setLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
-      
-      // 🔥 1. SIMPAN ATTENDANCE
-      const batchPromises = (schedule.students || []).map(async (siswa) => {
-        const isPresent = !!attendanceMap[siswa.id];
-        const absenId = siswa.id + '_' + today + '_' + schedule.id;
-        const absenRef = doc(db, "attendance", absenId);
-        return setDoc(absenRef, {
-          studentId: siswa.id, 
-          studentName: siswa.nama,
-          program: siswa.program || schedule.program || "Reguler",
-          kelasSekolah: siswa.kelas || siswa.kelasSekolah || "-",
-          teacherId: teacher.id, 
-          teacherName: teacher.nama,
-          date: today, 
-          tanggal: today, 
-          timestamp: serverTimestamp(),
-          status: isPresent ? "Hadir" : "Alpha",
-          keterangan: isPresent ? "Sesi Selesai" : "Siswa tidak hadir (Otomatis Alpha)",
-          mapel: schedule.title || "Umum",
-          scheduleId: schedule.id || "", 
-          planet: schedule.planet || "Ruang Umum"
+      await Promise.all((schedule.students || []).map(async (s) => {
+        const present = !!attendanceMap[s.id];
+        return setDoc(doc(db, 'attendance', s.id + '_' + today + '_' + schedule.id), {
+          studentId: s.id, studentName: s.nama,
+          program: s.program || schedule.program || 'Reguler',
+          kelasSekolah: s.kelas || s.kelasSekolah || '-',
+          teacherId: teacher.id, teacherName: teacher.nama,
+          date: today, tanggal: today, timestamp: serverTimestamp(),
+          status: present ? 'Hadir' : 'Alpha',
+          keterangan: present ? 'Sesi Selesai' : 'Siswa tidak hadir (Otomatis Alpha)',
+          mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
         }, { merge: true });
-      });
-      await Promise.all(batchPromises);
-
-      // 🔥 2. SIMPAN TEACHER LOGS
-      const honorData = hitungHonor();
-      const siswaHadirList = (schedule.students || []).filter(s => attendanceMap[s.id]);
-      const jumlahHadir = siswaHadirList.length;
-
-      const startParts = schedule.start.split(':');
-      const endParts = schedule.end.split(':');
-      const startTime = new Date(0, 0, 0, startParts[0], startParts[1]);
-      const endTimeCalc = new Date(0, 0, 0, endParts[0], endParts[1]);
-      const diffHours = (endTimeCalc - startTime) / 36e5;
-
-      // 🔥 BARU: "kelas" sekarang diambil dari data KELAS SISWA yang
-      // beneran hadir (bukan nama mapel/schedule.title lagi) -- sesuai
-      // permintaan eksplisit: admin harus tahu KELAS BERAPA yang diajar,
-      // diambil dari data siswa yang terdaftar (field kelas/kelasSekolah
-      // per siswa), bukan nama pelajaran.
-      const daftarKelasSiswa = [
-        ...new Set(
-          siswaHadirList
-            .map(s => s.kelas || s.kelasSekolah)
-            .filter(Boolean)
-        )
-      ];
-      const kelasNamaGabungan = daftarKelasSiswa.length > 0
-        ? daftarKelasSiswa.join(', ')
-        : (schedule.title || "Umum");
-
-      // 🔥 BARU: daftar lengkap siswa yang hadir (nama + kelas per siswa)
-      // -- disimpan LANGSUNG di log ini, supaya admin bisa lihat SIAPA
-      // AJA yang masuk pas approval, tanpa perlu query terpisah ke
-      // collection attendance.
-      const daftarSiswaHadir = siswaHadirList.map(s => ({
-        id: s.id,
-        nama: s.nama,
-        kelas: s.kelas || s.kelasSekolah || "-",
       }));
-
-      await addDoc(collection(db, "teacher_logs"), {
-        teacherId: teacher.id, 
-        namaGuru: teacher.nama,
-        tanggal: today, 
-        waktu: new Date().toLocaleTimeString(),
-        jadwalId: schedule.id, 
-        program: schedule.program,
-        level: schedule.level || "SD", 
-        kegiatan: "Mengajar",
-        detail: honorData.detailTxt, 
-        siswaHadir: jumlahHadir,
-        durasiJam: diffHours, 
-        nominal: honorData.nominal,
-        status: honorData.statusGaji, 
-        createdAt: serverTimestamp(),
-        // 🔥 BARU: field cross-check buat admin (TeacherSalaries.jsx) --
-        // nama field disamakan PERSIS dengan yang sudah dibaca di sana,
-        // supaya begitu ini di-deploy, data langsung kelihatan di
-        // halaman gaji tanpa perlu sentuh kode itu lagi.
-        tipeKelas: tipeKelas, // 'reguler' atau 'online'
-        kelasNama: kelasNamaGabungan,
-        daftarSiswaHadir: daftarSiswaHadir,
-        fotoAbsensiUrl: absensiUploadedUrl,
-        materiFileUrl: materiFileUploadedUrl || null,
+      const honor = hitungHonor();
+      const hadirList = (schedule.students || []).filter((s) => attendanceMap[s.id]);
+      const [sh, sm] = schedule.start.split(':');
+      const diff = (new Date(0, 0, 0, eh, em) - new Date(0, 0, 0, sh, sm)) / 36e5;
+      const kelasNama = [...new Set(hadirList.map((s) => s.kelas || s.kelasSekolah).filter(Boolean))].join(', ') || (schedule.title || 'Umum');
+      await addDoc(collection(db, 'teacher_logs'), {
+        teacherId: teacher.id, namaGuru: teacher.nama, tanggal: today, waktu: new Date().toLocaleTimeString(),
+        jadwalId: schedule.id, program: schedule.program, level: schedule.level || 'SD',
+        kegiatan: 'Mengajar', detail: honor.detailTxt, siswaHadir: hadirList.length, durasiJam: diff,
+        nominal: honor.nominal, status: honor.statusGaji, createdAt: serverTimestamp(),
+        tipeKelas, kelasNama,
+        daftarSiswaHadir: hadirList.map((s) => ({ id: s.id, nama: s.nama, kelas: s.kelas || s.kelasSekolah || '-' })),
+        fotoAbsensiUrl: absensiUploadedUrl, materiFileUrl: materiFileUploadedUrl || null,
       });
-
-      // 🔥 3. UPDATE STATUS JADWAL
-      await updateDoc(doc(db, "jadwal_bimbel", schedule.id), {
-        status: 'completed',
-        completedAt: serverTimestamp(),
-        completedEarly: !isPastEndTime
-      });
-
-      const hadirCount = siswaHadirList.length;
-      const totalCount = (schedule.students || []).length;
-      
-      // 🔥 4. AMBIL LINK GOOGLE FORM
-      const level = schedule.level || 'sd';
-      const levelKey = level.toLowerCase();
-      const googleFormLink = googleForms[levelKey] || googleForms.default || '';
-      
-      // 🔥 5. TAMPILKAN ALERT SUKSES
-      const endStatus = !isPastEndTime ? ' (Selesai Lebih Awal ⚠️)' : '';
-      
-      const alertMessage = 
-        '✅ Kelas Berhasil Disimpan!\n\n' +
-        '📚 Materi: ' + materiAktual + '\n' +
-        '⏰ Jam: ' + schedule.start + ' - ' + schedule.end + '\n' +
-        '🏫 Ruang: ' + (schedule.planet || "Ruang Umum") + '\n' +
-        '👥 Kehadiran: ' + hadirCount + '/' + totalCount + ' siswa hadir' + endStatus + '\n\n' +
-        (googleFormLink ? 
-          '📋 Klik OK untuk membuka Google Form laporan materi' : 
-          'ℹ️ Belum ada Google Form yang diatur. Admin bisa atur di menu Gaji Guru.');
-      
-      alert(alertMessage);
-
-      // 🔥 6. REDIRECT KE GOOGLE FORM JIKA ADA
-      if (googleFormLink) {
-        // Buka di tab baru
-        window.open(googleFormLink, '_blank');
-      }
-      
-      // 🔥 7. NAVIGATE KE DASHBOARD
+      await updateDoc(doc(db, 'jadwal_bimbel', schedule.id), { status: 'completed', completedAt: serverTimestamp(), completedEarly: !isPast });
+      const link = googleForms[(schedule.level || 'sd').toLowerCase()] || googleForms.default || '';
+      alert('✅ Kelas Berhasil Disimpan!\n\n📚 Materi: ' + materiAktual + '\n👥 Kehadiran: ' + hadirList.length + '/' + (schedule.students || []).length + (link ? '\n\n📋 Klik OK untuk membuka Google Form laporan materi' : ''));
+      if (link) window.open(link, '_blank');
       navigate('/guru/dashboard');
-      
-    } catch (error) { 
-      alert("Gagal menyimpan sesi: " + error.message); 
-    } 
+    } catch (e) { alert('Gagal menyimpan sesi: ' + e.message); }
     finally { setLoading(false); }
   };
 
-  // 🔥 LOADING
-  if (loading) {
-    return (
-      <div style={styles.container(isMobile)}>
-        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>
-          <div style={styles.spinner}></div>
-          <p>Memuat kelas...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div style={st.container(isMobile)}><div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}><div style={st.spinner} /><p>Memuat kelas...</p></div></div>;
+  if (!schedule || !teacher) return <div style={st.container(isMobile)}><div style={{ textAlign: 'center', padding: 40, color: '#ef4444' }}><p>⚠️ Data kelas tidak ditemukan</p><button onClick={() => navigate('/guru/dashboard')} style={st.btnBack(isMobile)}>Kembali ke Dashboard</button></div></div>;
 
-  if (!schedule || !teacher) {
-    return (
-      <div style={styles.container(isMobile)}>
-        <div style={{ textAlign: 'center', padding: 40, color: '#ef4444' }}>
-          <p>⚠️ Data kelas tidak ditemukan</p>
-          <button onClick={() => navigate('/guru/dashboard')} style={styles.btnBack(isMobile)}>
-            Kembali ke Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // 🔥 RENDER
   return (
-    <div style={styles.container(isMobile)}>
-      <button onClick={handleBack} style={styles.btnBack(isMobile)}>
-        <ArrowLeft size={16}/> Kembali
+    <div style={st.container(isMobile)}>
+      <button onClick={() => { if (window.confirm('Yakin kembali? Data belum disimpan hilang.')) navigate('/guru/dashboard'); }} style={st.btnBack(isMobile)}>
+        <ArrowLeft size={16} /> Kembali
       </button>
-      
-      <div style={styles.headerCard(isMobile)}>
-        <div style={styles.headerFlex}>
+      <div style={st.headerCard(isMobile)}>
+        <div style={st.headerFlex}>
           <div>
-            <h2 style={styles.headerTitle(isMobile)}>{schedule.title || "Umum"}</h2>
-            <p style={styles.headerTime(isMobile)}>
-              ⏰ {schedule.start} - {schedule.end}
-              {!timeStatus.isPastEnd && timeStatus.remaining && (
-                <span style={{ color: '#f59e0b', marginLeft: 8 }}>
-                  ⏳ {timeStatus.remaining} lagi
-                </span>
-              )}
-              {timeStatus.isPastEnd && (
-                <span style={{ color: '#10b981', marginLeft: 8 }}>
-                  ✅ Waktu selesai telah lewat
-                </span>
-              )}
+            <h2 style={st.headerTitle(isMobile)}>{schedule.title || 'Umum'}</h2>
+            <p style={st.headerTime(isMobile)}>⏰ {schedule.start} - {schedule.end}
+              {!timeStatus.isPastEnd && timeStatus.remaining && <span style={{ color: '#f59e0b', marginLeft: 8 }}>⏳ {timeStatus.remaining} lagi</span>}
+              {timeStatus.isPastEnd && <span style={{ color: '#10b981', marginLeft: 8 }}>✅ Waktu selesai telah lewat</span>}
             </p>
           </div>
-          <span style={styles.badge(isMobile)}>{schedule.planet || "Ruang Umum"}</span>
+          <span style={st.badge(isMobile)}>{schedule.planet || 'Ruang Umum'}</span>
         </div>
       </div>
 
       {step === 1 && (
         <div>
-          {/* ============================================================
-              🔥 BARU: TAB SWITCHER -- pisah total "Bukti Kehadiran Guru"
-              (foto pribadi) dari "Absensi Siswa" (QR + toggle, layar yang
-              ditunjukkan ke kelas). Sebelumnya nempel di 1 layar -- kalau
-              guru buka di laptop buat nunjukin QR ke siswa, foto pribadi
-              ikut kelihatan, gak profesional. Default ke tab kehadiran
-              guru (selesaikan dulu secara privat, baru pindah tab kalau
-              mau nunjukin QR ke kelas).
-          ============================================================ */}
-          <div style={styles.step1TabRow(isMobile)}>
-            <button
-              type="button"
-              onClick={() => setStep1Tab('kehadiranGuru')}
-              style={styles.step1TabBtn(step1Tab === 'kehadiranGuru')}
-            >
-              🔒 Bukti Kehadiran Guru
-              {!absensiUploadedUrl && <span style={styles.tabDot} />}
+          <div style={st.step1TabRow(isMobile)}>
+            <button type="button" onClick={() => setStep1Tab('kehadiranGuru')} style={st.step1TabBtn(step1Tab === 'kehadiranGuru')}>
+              🔒 Bukti Kehadiran Guru {!absensiUploadedUrl && <span style={st.tabDot} />}
             </button>
-            <button
-              type="button"
-              onClick={() => setStep1Tab('absensiSiswa')}
-              style={styles.step1TabBtn(step1Tab === 'absensiSiswa')}
-            >
-              📋 Absensi Siswa
-            </button>
+            <button type="button" onClick={() => setStep1Tab('absensiSiswa')} style={st.step1TabBtn(step1Tab === 'absensiSiswa')}>📋 Absensi Siswa</button>
           </div>
-
-          {step1Tab === 'absensiSiswa' && (
-            <p style={styles.tabSafeNote(isMobile)}>
-              💡 Tab ini aman ditunjukkan ke layar kelas (proyektor/laptop) -- gak ada foto pribadi yang tampil di sini.
-            </p>
-          )}
-
+          {step1Tab === 'absensiSiswa' && <p style={st.tabSafeNote(isMobile)}>💡 Tab ini aman ditunjukkan ke layar kelas.</p>}
           {step1Tab === 'kehadiranGuru' && (
-          <div style={styles.card(isMobile)}>
-            <h4 style={styles.cardTitle}><Camera size={18} /> Bukti Kehadiran Mengajar</h4>
-
-            <div style={styles.tipeKelasRow(isMobile)}>
-              <button
-                type="button"
-                onClick={() => { setTipeKelas('reguler'); setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }}
-                style={styles.tipeKelasBtn(tipeKelas === 'reguler')}
-              >
-                🏫 Reguler (Tatap Muka)
-              </button>
-              <button
-                type="button"
-                onClick={() => { setTipeKelas('online'); setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }}
-                style={styles.tipeKelasBtn(tipeKelas === 'online')}
-              >
-                💻 Online
-              </button>
-            </div>
-
-            <p style={styles.absensiHint(isMobile)}>
-              {tipeKelas === 'online'
-                ? 'Kelas online tetap WAJIB ada bukti -- ambil/unggah screenshot sesi video call (Zoom/Meet/WA Video) yang menunjukkan wajah Anda dan waktu sesi. Ini juga berlaku untuk kelas online di hari libur/tanggal merah.'
-                : 'Ambil foto sebagai bukti Anda hadir di lokasi mengajar hari ini.'}
-            </p>
-
-            {!absensiUploadedUrl ? (
-              // 🔥 BARU: 3 opsi terpisah -- kamera belakang, kamera depan,
-              // atau import dari galeri. Tersedia buat KEDUA tipe kelas
-              // (sebelumnya terkunci 1 metode berdasar tipeKelas, sekarang
-              // guru bebas pilih caranya sendiri).
-              <div style={styles.uploadOptionsRow(isMobile)}>
-                <label style={styles.uploadBox(isMobile, uploadingAbsensi)}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleAbsensiFileChange}
-                    disabled={uploadingAbsensi}
-                    style={{ display: 'none' }}
-                  />
-                  <Camera size={18} /> Kamera Belakang
-                </label>
-
-                <label style={styles.uploadBox(isMobile, uploadingAbsensi)}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="user"
-                    onChange={handleAbsensiFileChange}
-                    disabled={uploadingAbsensi}
-                    style={{ display: 'none' }}
-                  />
-                  <Camera size={18} /> Kamera Depan
-                </label>
-
-                <label style={styles.uploadBoxImport(isMobile, uploadingAbsensi)}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAbsensiFileChange}
-                    disabled={uploadingAbsensi}
-                    style={{ display: 'none' }}
-                  />
-                  <Upload size={18} /> {uploadingAbsensi ? 'Mengunggah...' : 'Import dari Galeri'}
-                </label>
+            <div style={st.card(isMobile)}>
+              <h4 style={st.cardTitle}><Camera size={18} /> Bukti Kehadiran Mengajar</h4>
+              <div style={st.tipeKelasRow(isMobile)}>
+                <button type="button" onClick={() => { setTipeKelas('reguler'); setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }} style={st.tipeKelasBtn(tipeKelas === 'reguler')}>🏫 Reguler (Tatap Muka)</button>
+                <button type="button" onClick={() => { setTipeKelas('online'); setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }} style={st.tipeKelasBtn(tipeKelas === 'online')}>💻 Online</button>
               </div>
-            ) : (
-              <div style={styles.absensiSuccessBox(isMobile)}>
-                {absensiPreviewUrl && (
-                  <img src={absensiPreviewUrl} alt="Bukti kehadiran" style={styles.absensiThumb} />
-                )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: isMobile ? 12 : 13 }}>
-                    <CheckCircle size={16} /> Bukti kehadiran tersimpan
+              <p style={st.absensiHint(isMobile)}>{tipeKelas === 'online' ? 'Kelas online wajib screenshot sesi video call.' : 'Ambil foto sebagai bukti Anda hadir di lokasi.'}</p>
+              {!absensiUploadedUrl ? (
+                <div style={st.uploadOptionsRow(isMobile)}>
+                  <label style={st.uploadBox(isMobile, uploadingAbsensi)}><input type="file" accept="image/*" capture="environment" onChange={handleAbsensiFileChange} disabled={uploadingAbsensi} style={{ display: 'none' }} /><Camera size={18} /> Kamera Belakang</label>
+                  <label style={st.uploadBox(isMobile, uploadingAbsensi)}><input type="file" accept="image/*" capture="user" onChange={handleAbsensiFileChange} disabled={uploadingAbsensi} style={{ display: 'none' }} /><Camera size={18} /> Kamera Depan</label>
+                  <label style={st.uploadBoxImport(isMobile, uploadingAbsensi)}><input type="file" accept="image/*" onChange={handleAbsensiFileChange} disabled={uploadingAbsensi} style={{ display: 'none' }} /><Upload size={18} /> {uploadingAbsensi ? 'Mengunggah...' : 'Import dari Galeri'}</label>
+                </div>
+              ) : (
+                <div style={st.absensiSuccessBox(isMobile)}>
+                  {absensiPreviewUrl && <img src={absensiPreviewUrl} alt="Bukti" style={st.absensiThumb} />}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: 13 }}><CheckCircle size={16} /> Bukti kehadiran tersimpan</div>
+                    <button type="button" onClick={() => { setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }} style={st.btnGantiFoto}>Ganti foto</button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => { setAbsensiUploadedUrl(''); setAbsensiPreviewUrl(''); }}
-                    style={styles.btnGantiFoto}
-                  >
-                    Ganti foto
-                  </button>
+                </div>
+              )}
+              {absensiError && <p style={st.absensiErrorText}>{absensiError}</p>}
+            </div>
+          )}
+          {step1Tab === 'absensiSiswa' && (
+            <div style={st.gridContainer(isMobile)}>
+              <div style={st.card(isMobile)}>
+                <h4 style={st.cardTitle}><QrCode size={18} /> Scan Absensi</h4>
+                <div style={st.qrWrapper}>
+                  <QRCodeSVG value={JSON.stringify({ type: 'ABSENSI_BIMBEL', scheduleId: schedule.id, mapel: schedule.title || 'Umum', teacher: teacher.nama, date: new Date().toISOString().split('T')[0], level: schedule.level || 'SD' })} size={isMobile ? 140 : 180} style={{ width: '100%', height: 'auto', maxWidth: isMobile ? 140 : 180 }} />
+                </div>
+                <p style={st.qrHint(isMobile)}>Siswa silakan scan</p>
+              </div>
+              <div style={st.card(isMobile)}>
+                <h4 style={{ ...st.cardTitle, color: '#3498db' }}>Siswa ({Object.values(attendanceMap).filter((v) => v).length}/{(schedule.students || []).length})</h4>
+                <div style={st.studentScrollArea}>
+                  {(schedule.students || []).map((s) => {
+                    const p = attendanceMap[s.id];
+                    return (
+                      <div key={s.id} onClick={() => toggleStudent(s)} style={{ ...st.studentItem(isMobile), background: p ? '#27ae60' : '#f8fafc', color: p ? 'white' : '#64748b', border: p ? 'none' : '1px solid #e2e8f0' }}>
+                        <div style={st.studentName(isMobile)}>{s.nama}</div>
+                        <div style={st.studentStatus}>{p ? 'HADIR' : 'BELUM HADIR'}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            )}
-
-            {absensiError && <p style={styles.absensiErrorText}>{absensiError}</p>}
-          </div>
-          )}
-
-          {step1Tab === 'absensiSiswa' && (
-          <div style={styles.gridContainer(isMobile)}>
-          <div style={styles.card(isMobile)}>
-            <h4 style={styles.cardTitle}><QrCode size={18} /> Scan Absensi</h4>
-            <div style={styles.qrWrapper}>
-              <QRCodeSVG 
-                value={JSON.stringify({ 
-                  type: "ABSENSI_BIMBEL", 
-                  scheduleId: schedule.id, 
-                  mapel: schedule.title || "Umum", 
-                  teacher: teacher.nama, 
-                  date: new Date().toISOString().split('T')[0],
-                  level: schedule.level || "SD" // 🔥 Tambah level untuk validasi
-                })} 
-                size={isMobile ? 140 : 180} 
-                style={{ width: '100%', height: 'auto', maxWidth: isMobile ? '140px' : '180px' }} 
-              />
             </div>
-            <p style={styles.qrHint(isMobile)}>Siswa silakan scan</p>
-          </div>
-
-          <div style={styles.card(isMobile)}>
-            <h4 style={{...styles.cardTitle, color:'#3498db'}}>
-              Siswa ({Object.values(attendanceMap).filter(v=>v).length}/{(schedule.students || []).length})
-            </h4>
-            <div style={styles.studentScrollArea}>
-              {(schedule.students || []).map(siswa => {
-                const isPresent = attendanceMap[siswa.id];
-                return (
-                  <div 
-                    key={siswa.id} 
-                    onClick={() => toggleStudent(siswa)} 
-                    style={{ 
-                      ...styles.studentItem(isMobile), 
-                      background: isPresent ? '#27ae60' : '#f8fafc', 
-                      color: isPresent ? 'white' : '#64748b', 
-                      border: isPresent ? 'none' : '1px solid #e2e8f0' 
-                    }}
-                  >
-                    <div style={styles.studentName(isMobile)}>{siswa.nama}</div>
-                    <div style={styles.studentStatus}>{isPresent ? "HADIR" : "BELUM HADIR"}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          </div>
           )}
-
-          {/* 🔥 BARU: tombol lanjut dipindah keluar dari kedua tab --
-              SELALU kelihatan gak peduli tab mana yang lagi aktif, biar
-              guru bisa lanjut kapan pun syaratnya (foto) udah terpenuhi,
-              tanpa harus balik ke tab tertentu dulu. */}
-          <button
-            onClick={() => setStep(2)}
-            disabled={!absensiUploadedUrl}
-            style={{
-              ...styles.btnMain(isMobile),
-              ...(absensiUploadedUrl ? {} : styles.btnDisabled),
-              marginTop: 12,
-            }}
-            title={!absensiUploadedUrl ? 'Unggah bukti kehadiran dulu di atas' : undefined}
-          >
-            {absensiUploadedUrl ? 'Selesai & Buat Laporan ⮕' : '🔒 Unggah bukti kehadiran dulu'}
+          <button onClick={() => setStep(2)} disabled={!absensiUploadedUrl} style={{ ...st.btnMain(isMobile), ...(absensiUploadedUrl ? {} : st.btnDisabled), marginTop: 12 }}>
+            {absensiUploadedUrl ? 'Selesai & Masuk Kelas Live ⮕' : '🔒 Unggah bukti kehadiran dulu'}
           </button>
         </div>
       )}
 
       {step === 2 && (
-        <div style={styles.card(isMobile)}>
-          <h4 style={styles.step2Title(isMobile)}>📝 Laporan Materi</h4>
-          <textarea 
-            rows={isMobile ? 4 : 5} 
-            value={materiAktual} 
-            onChange={(e) => setMateriAktual(e.target.value)} 
-            placeholder="Tuliskan materi yang diajarkan hari ini..." 
-            style={styles.textarea(isMobile)} 
-          />
+        <div>
+          <KelasLivePanel schedule={schedule} teacher={teacher} onSelesai={() => setStep(3)} />
+          <button onClick={() => setStep(3)} style={{ ...st.btnMain(isMobile), marginTop: 4 }}>📝 Lanjut ke Laporan ⮕</button>
+        </div>
+      )}
 
-          {/* 🔥 BARU: lampiran materi (opsional) -- foto whiteboard,
-              worksheet, dll. Dipakai admin buat tracking "tentor sudah
-              upload materi hari ini". */}
-          <div style={styles.lampiranBox(isMobile)}>
+      {step === 3 && (
+        <div style={st.card(isMobile)}>
+          <h4 style={st.step2Title(isMobile)}>📝 Laporan Materi</h4>
+          <textarea rows={isMobile ? 4 : 5} value={materiAktual} onChange={(e) => setMateriAktual(e.target.value)} placeholder="Tuliskan materi yang diajarkan hari ini..." style={st.textarea(isMobile)} />
+          <div style={st.lampiranBox(isMobile)}>
             {!materiFileUploadedUrl ? (
-              <label style={styles.uploadBoxSecondary(isMobile, uploadingMateriFile)}>
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={handleMateriFileChange}
-                  disabled={uploadingMateriFile}
-                  style={{ display: 'none' }}
-                />
-                {uploadingMateriFile ? '⏳ Mengunggah lampiran...' : <><Paperclip size={16} /> Lampirkan foto materi/worksheet (opsional)</>}
-              </label>
+              <label style={st.uploadBoxSecondary(isMobile, uploadingMateriFile)}><input type="file" accept="image/*,.pdf" onChange={handleMateriFileChange} disabled={uploadingMateriFile} style={{ display: 'none' }} />{uploadingMateriFile ? '⏳ Mengunggah lampiran...' : <><Paperclip size={16} /> Lampirkan foto materi/worksheet (opsional)</>}</label>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: isMobile ? 11 : 12 }}>
-                <CheckCircle size={14} /> Lampiran materi tersimpan
-                <button type="button" onClick={() => setMateriFileUploadedUrl('')} style={styles.btnGantiFoto}>Ganti</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: 11 }}><CheckCircle size={14} /> Lampiran materi tersimpan
+                <button type="button" onClick={() => setMateriFileUploadedUrl('')} style={st.btnGantiFoto}>Ganti</button>
               </div>
             )}
           </div>
-
-          <div style={styles.footerBtns(isMobile)}>
-            <button onClick={() => setStep(1)} style={styles.btnSecondary(isMobile)}>
-              ⬅ Kembali
-            </button>
-            <button 
-              onClick={handleFinalizeClass} 
-              disabled={loading} 
-              style={styles.btnSave(isMobile, loading)}
-            >
-              {loading ? "Menyimpan..." : "💾 Simpan Sesi"}
-            </button>
+          <div style={st.footerBtns(isMobile)}>
+            <button onClick={() => setStep(2)} style={st.btnSecondary(isMobile)}>⬅ Kembali</button>
+            <button onClick={handleFinalizeClass} disabled={loading} style={st.btnSave(isMobile, loading)}>{loading ? 'Menyimpan...' : '💾 Simpan Sesi'}</button>
           </div>
         </div>
       )}
@@ -865,375 +337,46 @@ const ClassSession = () => {
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
-const styles = {
-  container: (m) => ({ 
-    padding: m ? '10px' : '15px', 
-    width: '100%', 
-    boxSizing: 'border-box', 
-    maxWidth: m ? '100%' : '1200px', 
-    margin: '0 auto' 
-  }),
-  
-  spinner: {
-    width: 40,
-    height: 40,
-    border: '4px solid #e2e8f0',
-    borderTop: '4px solid #652D90',
-    borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-    margin: '0 auto 12px'
-  },
-  
-  btnBack: (m) => ({ 
-    background: 'none', 
-    border: 'none', 
-    color: '#7f8c8d', 
-    cursor: 'pointer', 
-    marginBottom: m ? 10 : 15, 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 5, 
-    fontSize: m ? 12 : 14 
-  }),
-  
-  headerCard: (m) => ({ 
-    background: 'white', 
-    padding: m ? '15px' : '20px', 
-    borderRadius: m ? '12px' : '15px', 
-    border: '1px solid #eee', 
-    marginBottom: m ? '12px' : '20px' 
-  }),
-  
-  headerFlex: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    flexWrap: 'wrap', 
-    gap: 10 
-  },
-  
-  headerTitle: (m) => ({ 
-    margin: 0, 
-    fontSize: m ? '15px' : '18px', 
-    color: '#2c3e50' 
-  }),
-  
-  headerTime: (m) => ({ 
-    margin: 0, 
-    color: '#7f8c8d', 
-    fontSize: m ? '11px' : '13px' 
-  }),
-  
-  badge: (m) => ({ 
-    background: '#ebf5fb', 
-    color: '#3498db', 
-    padding: m ? '4px 10px' : '5px 12px', 
-    borderRadius: '20px', 
-    fontSize: m ? '10px' : '11px', 
-    fontWeight: 'bold' 
-  }),
-  
-  gridContainer: (m) => ({ 
-    display: 'flex', 
-    flexWrap: 'wrap', 
-    gap: m ? '12px' : '20px', 
-    width: '100%', 
-    flexDirection: m ? 'column' : 'row' 
-  }),
-  
-  card: (m) => ({ 
-    background: 'white', 
-    padding: m ? '15px' : '20px', 
-    borderRadius: m ? '12px' : '15px', 
-    border: '1px solid #eee', 
-    flex: m ? '1 1 100%' : '1 1 350px', 
-    boxSizing: 'border-box', 
-    display: 'flex', 
-    flexDirection: 'column' 
-  }),
-  
-  cardTitle: { 
-    margin: '0 0 15px', 
-    fontSize: 15, 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 8 
-  },
-  
-  qrWrapper: { 
-    textAlign: 'center', 
-    padding: 15, 
-    border: '1px dashed #ddd', 
-    borderRadius: 10, 
-    alignSelf: 'center' 
-  },
-  
-  qrHint: (m) => ({ 
-    fontSize: m ? 10 : 11, 
-    color: '#7f8c8d', 
-    marginTop: 10, 
-    textAlign: 'center' 
-  }),
-  
-  studentScrollArea: { 
-    display: 'grid', 
-    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', 
-    gap: 10, 
-    marginBottom: 20, 
-    maxHeight: '400px', 
-    overflowY: 'auto' 
-  },
-  
-  studentItem: (m) => ({ 
-    padding: m ? '10px' : '12px', 
-    borderRadius: '10px', 
-    cursor: 'pointer', 
-    textAlign: 'center', 
-    transition: '0.2s' 
-  }),
-  
-  studentName: (m) => ({ 
-    fontWeight: 'bold', 
-    fontSize: m ? '11px' : '13px' 
-  }),
-  
-  studentStatus: { 
-    fontSize: '10px', 
-    opacity: 0.8 
-  },
-  
-  step2Title: (m) => ({ 
-    marginTop: 0, 
-    color: '#e67e22', 
-    fontSize: m ? '14px' : '16px' 
-  }),
-  
-  textarea: (m) => ({ 
-    width: '100%', 
-    padding: '15px', 
-    borderRadius: '10px', 
-    border: '1px solid #ddd', 
-    boxSizing: 'border-box', 
-    fontSize: m ? 13 : 14, 
-    marginBottom: 20, 
-    outline: 'none', 
-    resize: 'vertical' 
-  }),
-  
-  footerBtns: (m) => ({ 
-    display: 'flex', 
-    gap: 10, 
-    flexDirection: m ? 'column' : 'row' 
-  }),
-  
-  btnMain: (m) => ({ 
-    flex: 1, 
-    padding: m ? '12px' : '14px', 
-    background: '#3498db', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '10px', 
-    fontWeight: 'bold', 
-    cursor: 'pointer', 
-    fontSize: m ? '12px' : '14px' 
-  }),
-  
-  btnSecondary: (m) => ({ 
-    padding: m ? '12px' : '14px 25px', 
-    background: '#f1f5f9', 
-    color: '#64748b', 
-    border: 'none', 
-    borderRadius: '10px', 
-    fontWeight: 'bold', 
-    cursor: 'pointer', 
-    fontSize: m ? '12px' : '14px', 
-    textAlign: 'center' 
-  }),
-  
-  btnSave: (m, loading) => ({ 
-    flex: 1, 
-    padding: m ? '12px' : '14px', 
-    background: loading ? '#bdc3c7' : '#2c3e50', 
-    color: 'white', 
-    border: 'none', 
-    borderRadius: '10px', 
-    fontWeight: 'bold', 
-    cursor: loading ? 'not-allowed' : 'pointer', 
-    fontSize: m ? '12px' : '14px' 
-  }),
-
-  // 🔥 BARU: styles buat tipe kelas + upload bukti kehadiran
-  // 🔥 BARU: baris 3 opsi upload (kamera belakang/depan/import)
-  uploadOptionsRow: (m) => ({
-    display: 'flex',
-    gap: 8,
-    flexDirection: m ? 'column' : 'row',
-  }),
-
-  uploadBoxImport: (m, loading) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: m ? '14px' : '16px',
-    borderRadius: 10,
-    border: '2px dashed #94a3b8',
-    color: '#64748b',
-    fontWeight: 'bold',
-    fontSize: m ? 12 : 13,
-    cursor: loading ? 'not-allowed' : 'pointer',
-    opacity: loading ? 0.6 : 1,
-    background: '#f8fafc',
-    flex: 1,
-  }),
-
-  // 🔥 BARU: tab switcher Step 1
-  step1TabRow: (m) => ({
-    display: 'flex',
-    gap: 8,
-    marginBottom: 12,
-  }),
-
-  step1TabBtn: (active) => ({
-    flex: 1,
-    padding: '10px 14px',
-    borderRadius: 10,
-    border: active ? '2px solid #2c3e50' : '1px solid #e2e8f0',
-    background: active ? '#2c3e50' : 'white',
-    color: active ? 'white' : '#64748b',
-    fontWeight: 'bold',
-    fontSize: 13,
-    cursor: 'pointer',
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  }),
-
-  tabDot: {
-    width: 7,
-    height: 7,
-    borderRadius: '50%',
-    background: '#ef4444',
-  },
-
-  tabSafeNote: (m) => ({
-    fontSize: m ? 10 : 11,
-    color: '#10b981',
-    background: '#f0fdf4',
-    border: '1px solid #bbf7d0',
-    borderRadius: 8,
-    padding: '6px 10px',
-    marginBottom: 12,
-  }),
-
-  tipeKelasRow: (m) => ({
-    display: 'flex',
-    gap: 8,
-    marginBottom: 12,
-    flexDirection: m ? 'column' : 'row',
-  }),
-
-  tipeKelasBtn: (active) => ({
-    flex: 1,
-    padding: '10px 14px',
-    borderRadius: 10,
-    border: active ? '2px solid #3498db' : '1px solid #e2e8f0',
-    background: active ? '#ebf5fb' : 'white',
-    color: active ? '#3498db' : '#64748b',
-    fontWeight: 'bold',
-    fontSize: 13,
-    cursor: 'pointer',
-  }),
-
-  absensiHint: (m) => ({
-    fontSize: m ? 11 : 12,
-    color: '#64748b',
-    marginBottom: 12,
-    lineHeight: 1.5,
-  }),
-
-  uploadBox: (m, loading) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: m ? '14px' : '16px',
-    borderRadius: 10,
-    border: '2px dashed #3498db',
-    color: '#3498db',
-    fontWeight: 'bold',
-    fontSize: m ? 12 : 13,
-    cursor: loading ? 'not-allowed' : 'pointer',
-    opacity: loading ? 0.6 : 1,
-    background: '#f8fbff',
-    flex: 1,
-  }),
-
-  uploadBoxSecondary: (m, loading) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    padding: '10px',
-    borderRadius: 8,
-    border: '1px dashed #cbd5e1',
-    color: '#64748b',
-    fontWeight: 600,
-    fontSize: m ? 11 : 12,
-    cursor: loading ? 'not-allowed' : 'pointer',
-    opacity: loading ? 0.6 : 1,
-  }),
-
-  absensiSuccessBox: (m) => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    padding: 10,
-    borderRadius: 10,
-    border: '1px solid #bbf7d0',
-    background: '#f0fdf4',
-  }),
-
-  absensiThumb: {
-    width: 56,
-    height: 56,
-    objectFit: 'cover',
-    borderRadius: 8,
-    border: '1px solid #e2e8f0',
-  },
-
-  btnGantiFoto: {
-    marginTop: 4,
-    background: 'none',
-    border: 'none',
-    color: '#3498db',
-    fontSize: 11,
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    textDecoration: 'underline',
-    padding: 0,
-  },
-
-  absensiErrorText: {
-    color: '#ef4444',
-    fontSize: 12,
-    marginTop: 8,
-  },
-
-  btnDisabled: {
-    background: '#cbd5e1',
-    color: '#64748b',
-    cursor: 'not-allowed',
-  },
-
-  lampiranBox: (m) => ({
-    marginBottom: 16,
-  }),
+const st = {
+  container: (m) => ({ padding: m ? 10 : 15, width: '100%', boxSizing: 'border-box', maxWidth: m ? '100%' : 1200, margin: '0 auto' }),
+  spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #652D90', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' },
+  btnBack: (m) => ({ background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', marginBottom: m ? 10 : 15, display: 'flex', alignItems: 'center', gap: 5, fontSize: m ? 12 : 14 }),
+  headerCard: (m) => ({ background: 'white', padding: m ? 15 : 20, borderRadius: m ? 12 : 15, border: '1px solid #eee', marginBottom: m ? 12 : 20 }),
+  headerFlex: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 },
+  headerTitle: (m) => ({ margin: 0, fontSize: m ? 15 : 18, color: '#2c3e50' }),
+  headerTime: (m) => ({ margin: 0, color: '#7f8c8d', fontSize: m ? 11 : 13 }),
+  badge: (m) => ({ background: '#ebf5fb', color: '#3498db', padding: m ? '4px 10px' : '5px 12px', borderRadius: 20, fontSize: m ? 10 : 11, fontWeight: 'bold' }),
+  gridContainer: (m) => ({ display: 'flex', flexWrap: 'wrap', gap: m ? 12 : 20, width: '100%', flexDirection: m ? 'column' : 'row' }),
+  card: (m) => ({ background: 'white', padding: m ? 15 : 20, borderRadius: m ? 12 : 15, border: '1px solid #eee', flex: m ? '1 1 100%' : '1 1 350px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', marginBottom: 12 }),
+  cardTitle: { margin: '0 0 15px', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 },
+  qrWrapper: { textAlign: 'center', padding: 15, border: '1px dashed #ddd', borderRadius: 10, alignSelf: 'center' },
+  qrHint: (m) => ({ fontSize: m ? 10 : 11, color: '#7f8c8d', marginTop: 10, textAlign: 'center' }),
+  studentScrollArea: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10, marginBottom: 20, maxHeight: 400, overflowY: 'auto' },
+  studentItem: (m) => ({ padding: m ? 10 : 12, borderRadius: 10, cursor: 'pointer', textAlign: 'center', transition: '0.2s' }),
+  studentName: (m) => ({ fontWeight: 'bold', fontSize: m ? 11 : 13 }),
+  studentStatus: { fontSize: 10, opacity: 0.8 },
+  step2Title: (m) => ({ marginTop: 0, color: '#e67e22', fontSize: m ? 14 : 16 }),
+  textarea: (m) => ({ width: '100%', padding: 15, borderRadius: 10, border: '1px solid #ddd', boxSizing: 'border-box', fontSize: m ? 13 : 14, marginBottom: 20, outline: 'none', resize: 'vertical' }),
+  footerBtns: (m) => ({ display: 'flex', gap: 10, flexDirection: m ? 'column' : 'row' }),
+  btnMain: (m) => ({ flex: 1, padding: m ? 12 : 14, background: '#3498db', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold', cursor: 'pointer', fontSize: m ? 12 : 14, width: '100%' }),
+  btnSecondary: (m) => ({ padding: m ? 12 : '14px 25px', background: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: 10, fontWeight: 'bold', cursor: 'pointer', fontSize: m ? 12 : 14, textAlign: 'center' }),
+  btnSave: (m, l) => ({ flex: 1, padding: m ? 12 : 14, background: l ? '#bdc3c7' : '#2c3e50', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold', cursor: l ? 'not-allowed' : 'pointer', fontSize: m ? 12 : 14 }),
+  uploadOptionsRow: (m) => ({ display: 'flex', gap: 8, flexDirection: m ? 'column' : 'row' }),
+  uploadBoxImport: (m, l) => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: m ? 14 : 16, borderRadius: 10, border: '2px dashed #94a3b8', color: '#64748b', fontWeight: 'bold', fontSize: m ? 12 : 13, cursor: l ? 'not-allowed' : 'pointer', opacity: l ? 0.6 : 1, background: '#f8fafc', flex: 1 }),
+  step1TabRow: (m) => ({ display: 'flex', gap: 8, marginBottom: 12 }),
+  step1TabBtn: (a) => ({ flex: 1, padding: '10px 14px', borderRadius: 10, border: a ? '2px solid #2c3e50' : '1px solid #e2e8f0', background: a ? '#2c3e50' : 'white', color: a ? 'white' : '#64748b', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }),
+  tabDot: { width: 7, height: 7, borderRadius: '50%', background: '#ef4444' },
+  tabSafeNote: (m) => ({ fontSize: m ? 10 : 11, color: '#10b981', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', marginBottom: 12 }),
+  tipeKelasRow: (m) => ({ display: 'flex', gap: 8, marginBottom: 12, flexDirection: m ? 'column' : 'row' }),
+  tipeKelasBtn: (a) => ({ flex: 1, padding: '10px 14px', borderRadius: 10, border: a ? '2px solid #3498db' : '1px solid #e2e8f0', background: a ? '#ebf5fb' : 'white', color: a ? '#3498db' : '#64748b', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' }),
+  absensiHint: (m) => ({ fontSize: m ? 11 : 12, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }),
+  uploadBox: (m, l) => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: m ? 14 : 16, borderRadius: 10, border: '2px dashed #3498db', color: '#3498db', fontWeight: 'bold', fontSize: m ? 12 : 13, cursor: l ? 'not-allowed' : 'pointer', opacity: l ? 0.6 : 1, background: '#f8fbff', flex: 1 }),
+  uploadBoxSecondary: (m, l) => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10, borderRadius: 8, border: '1px dashed #cbd5e1', color: '#64748b', fontWeight: 600, fontSize: m ? 11 : 12, cursor: l ? 'not-allowed' : 'pointer', opacity: l ? 0.6 : 1 }),
+  absensiSuccessBox: (m) => ({ display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 10, border: '1px solid #bbf7d0', background: '#f0fdf4' }),
+  absensiThumb: { width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' },
+  btnGantiFoto: { marginTop: 4, background: 'none', border: 'none', color: '#3498db', fontSize: 11, fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline', padding: 0 },
+  absensiErrorText: { color: '#ef4444', fontSize: 12, marginTop: 8 },
+  btnDisabled: { background: '#cbd5e1', color: '#64748b', cursor: 'not-allowed' },
+  lampiranBox: (m) => ({ marginBottom: 16 }),
 };
-
 export default ClassSession;

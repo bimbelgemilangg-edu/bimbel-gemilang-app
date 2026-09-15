@@ -1,16 +1,18 @@
 // src/pages/teacher/TeacherDashboard.jsx
+// Dashboard guru -- ditambah Quick Action "Buku Digital" yang membuka
+// ModalBukuGuru (mode persiapan: baca materi + kunci terbuka, H-2 dst).
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
-import { 
-  collection, query, where, getDocs, doc, getDoc, 
+import {
+  collection, query, where, getDocs, doc, getDoc,
   orderBy, serverTimestamp, limit, onSnapshot, updateDoc
 } from "firebase/firestore";
-import { 
-  Clock, Users, BookOpen, Star, ArrowRight, 
-  Calendar, Layout, MapPin, X, ChevronRight, 
-  TrendingUp, Award, Megaphone, 
-  Home, LogOut, Settings, Bell, Sparkles, 
+import {
+  Clock, Users, BookOpen, Star, ArrowRight,
+  Calendar, Layout, MapPin, X, ChevronRight,
+  TrendingUp, Award, Megaphone,
+  Home, LogOut, Settings, Bell, Sparkles,
   ChevronDown, Menu, Sun, Moon, Gift, Crown,
   Zap, Flame, Target, Layers, FileText, Send,
   CheckCircle, AlertCircle, MessageCircle, Phone,
@@ -19,25 +21,19 @@ import {
   Briefcase, BarChart3, Activity, PieChart,
   RefreshCw, Loader2, Eye, EyeOff, Radio
 } from 'lucide-react';
+import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 
-// ============================================================
-// LOGO COMPONENT - Menggunakan gambar dari folder public
-// ============================================================
 const LogoGemilang = ({ size = "medium", variant = "default", showText = true }) => {
   const sizes = {
     small: { width: 30, height: 30, fontSize: 12 },
     medium: { width: 40, height: 40, fontSize: 14 },
     large: { width: 60, height: 60, fontSize: 18 },
   };
-  
   const currentSize = sizes[size] || sizes.medium;
-  
-  // Path ke logo di folder public
-  const logoSrc = "/pwa-192x192.png"; // atau bisa pakai /vite.svg, /apple-touch-icon.png, /pwa-512x512.png
-  
+  const logoSrc = "/pwa-192x192.png";
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <img 
+      <img
         src={logoSrc}
         alt="Bimbel Gemilang"
         style={{
@@ -48,7 +44,6 @@ const LogoGemilang = ({ size = "medium", variant = "default", showText = true })
           filter: variant === 'dark' ? 'none' : 'none',
         }}
         onError={(e) => {
-          // Fallback jika gambar tidak ditemukan
           e.target.style.display = 'none';
           const parent = e.target.parentElement;
           const fallback = document.createElement('span');
@@ -71,19 +66,15 @@ const LogoGemilang = ({ size = "medium", variant = "default", showText = true })
   );
 };
 
-// ============================================================
-// MAIN COMPONENT
-// ============================================================
 const TeacherDashboard = () => {
   const navigate = useNavigate();
-  
-  // ===== STATES =====
   const [guru, setGuru] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [upcomingSchedules, setUpcomingSchedules] = useState([]);
   const [showStartModal, setShowStartModal] = useState(false);
+  const [showBuku, setShowBuku] = useState(false);
   const [inputToken, setInputToken] = useState("");
   const [pendingSchedule, setPendingSchedule] = useState(null);
   const [dailyCode, setDailyCode] = useState("");
@@ -101,11 +92,8 @@ const TeacherDashboard = () => {
     completedClasses: 0
   });
   const [greeting, setGreeting] = useState('');
-  
-  // ===== REFS =====
   const notificationRef = useRef(null);
 
-  // ===== EFFECTS =====
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -120,7 +108,6 @@ const TeacherDashboard = () => {
     else setGreeting('Selamat Malam 🌙');
   }, []);
 
-  // Click outside notification
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (notificationRef.current && !notificationRef.current.contains(e.target)) {
@@ -131,7 +118,6 @@ const TeacherDashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // ===== FETCH FUNCTIONS =====
   const fetchTeacherProfile = useCallback(async () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -139,7 +125,6 @@ const TeacherDashboard = () => {
         navigate('/login-guru');
         return null;
       }
-      
       try {
         const teacherQuery = query(
           collection(db, "teachers"),
@@ -155,7 +140,6 @@ const TeacherDashboard = () => {
       } catch (e) {
         console.log("Using cached teacher data");
       }
-      
       setGuru(saved);
       return saved;
     } catch (e) {
@@ -167,46 +151,35 @@ const TeacherDashboard = () => {
 
   const fetchData = useCallback(async (teacher) => {
     if (!teacher?.nama) return;
-    
     setLoading(true);
     try {
       const todayStr = new Date().toISOString().split('T')[0];
       const today = new Date();
-      
       const teacherName = teacher.nama.trim();
       const teacherId = teacher.guruId || teacher.id || teacherName;
-      
-      // ===== JADWAL HARI INI =====
       const qJadwal = query(
         collection(db, "jadwal_bimbel"),
         where("teacherName", "==", teacherName)
       );
       const snapJadwal = await getDocs(qJadwal);
       const allSchedules = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
-      
       const todayScheds = allSchedules
         .filter(s => s.dateStr === todayStr)
         .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
       setTodaySchedules(todayScheds);
-      
       const futureDate = new Date(today);
       futureDate.setDate(futureDate.getDate() + 7);
       const futureStr = futureDate.toISOString().split('T')[0];
-      
       const upcoming = allSchedules
         .filter(s => s.dateStr > todayStr && s.dateStr <= futureStr)
         .sort((a, b) => (a.dateStr || '').localeCompare(b.dateStr || ''));
       setUpcomingSchedules(upcoming);
-      
-      // ===== STATISTIK =====
       const weekAgo = new Date(today);
       weekAgo.setDate(weekAgo.getDate() - 7);
       const weekAgoStr = weekAgo.toISOString().split('T')[0];
-      
-      const weekSchedules = allSchedules.filter(s => 
+      const weekSchedules = allSchedules.filter(s =>
         s.dateStr >= weekAgoStr && s.dateStr <= todayStr
       );
-      
       const allStudents = new Set();
       allSchedules.forEach(s => {
         if (s.students) {
@@ -216,8 +189,6 @@ const TeacherDashboard = () => {
           });
         }
       });
-      
-      // ===== AMBIL DAILY CODE =====
       try {
         const codeDoc = await getDoc(doc(db, "settings", 'daily_code_' + todayStr));
         if (codeDoc.exists()) {
@@ -228,8 +199,6 @@ const TeacherDashboard = () => {
       } catch (e) {
         setDailyCode('');
       }
-      
-      // ===== ATTENDANCE RATE =====
       const qLogs = query(
         collection(db, "teacher_logs"),
         where("teacherId", "==", teacherId),
@@ -237,30 +206,14 @@ const TeacherDashboard = () => {
         limit(30)
       );
       const snapLogs = await getDocs(qLogs);
-      // 🔥 PENTING: nominal/gaji TIDAK BOLEH pernah sampai ke sisi guru
-      // dalam bentuk apapun -- dibuang di sini, sebelum masuk ke state
-      // React, biar gak ada di memori browser guru sama sekali (bukan
-      // cuma "tidak dirender"). Field lain (durasiJam, siswaHadir, dst)
-      // tetap dipakai untuk hitung statistik kehadiran di dashboard ini.
       const logs = snapLogs.docs.map(d => {
         const { nominal, ...rest } = d.data();
         return { id: d.id, ...rest };
       });
-      
       let attendanceRate = 0;
       if (logs.length > 0) {
-        // 🔥 FIX BUG LANJUTAN: field `siswa_total` yang tadinya dijadikan
-        // acuan penyebut TERNYATA tidak pernah ditulis sama sekali oleh
-        // ClassSession.jsx ke collection teacher_logs (sudah dicek lewat
-        // ClassSession.jsx). Daripada persentase Kehadiran jadi 100% palsu
-        // (kode lama) ATAU 0% terus-terusan (kalau field itu di-skip
-        // begitu saja), sekarang total siswa SEBENARNYA dihitung silang
-        // dari data jadwal (`allSchedules`, sudah diambil di atas) lewat
-        // `jadwalId` -- data yang BENERAN ada di database, bukan field
-        // kosong yang gak pernah diisi.
         const scheduleTotalById = new Map();
         allSchedules.forEach(s => scheduleTotalById.set(s.id, s.students?.length || 0));
-
         let totalHadir = 0, totalSiswa = 0;
         logs.forEach(l => {
           const total = scheduleTotalById.get(l.jadwalId);
@@ -271,7 +224,6 @@ const TeacherDashboard = () => {
         });
         attendanceRate = totalSiswa > 0 ? Math.round((totalHadir / totalSiswa) * 100) : 0;
       }
-      
       setStats({
         todaySessions: todayScheds.length,
         weekSessions: weekSchedules.length,
@@ -280,8 +232,6 @@ const TeacherDashboard = () => {
         totalClasses: allSchedules.length,
         completedClasses: allSchedules.filter(s => s.status === 'completed').length
       });
-      
-      // ===== ANNOUNCEMENTS =====
       const qAnnounce = query(
         collection(db, "student_contents"),
         orderBy("createdAt", "desc"),
@@ -292,17 +242,6 @@ const TeacherDashboard = () => {
       setAnnouncements(
         annData.filter(p => p.targetPortal === "Guru" || p.targetPortal === "Semua" || !p.targetPortal)
       );
-      
-      // ===== NOTIFICATIONS =====
-      // 🔥 CATATAN: sistem notifikasi yang sudah dibangun untuk siswa
-      // (notifications.js) menyimpan field `recipientId`/`recipientType`,
-      // BUKAN `userId`/`userType` yang dipakai query di bawah ini. Kalau
-      // fungsi pengirim notifikasi guru (notifyTeachers) ternyata memakai
-      // skema yang sama (recipientId/recipientType) -- yang paling
-      // mungkin, biar konsisten satu sistem -- maka query `userId` di
-      // bawah ini TIDAK AKAN PERNAH menemukan apa-apa. Sekarang dicari
-      // pakai KEDUA kemungkinan skema sekaligus dan digabung, biar aman
-      // dari kemungkinan itu tanpa perlu menebak-nebak.
       const [snapNotifByUserId, snapNotifByRecipientId] = await Promise.all([
         getDocs(query(
           collection(db, "notifications"),
@@ -323,7 +262,6 @@ const TeacherDashboard = () => {
         .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
         .slice(0, 5);
       setNotifications(notifData);
-      
     } catch (e) {
       console.error('Error fetching data:', e);
     } finally {
@@ -332,27 +270,14 @@ const TeacherDashboard = () => {
     }
   }, []);
 
-  // ===== MAIN EFFECT =====
   useEffect(() => {
-    // 🔥 FIX BUG SERIUS: sebelumnya `return () => unsubscribe()` ada di
-    // DALAM fungsi async `init()`, bukan langsung di dalam callback
-    // useEffect. React HANYA membaca nilai yang di-return LANGSUNG dari
-    // callback useEffect untuk dijadikan fungsi cleanup -- nilai yang
-    // di-return dari dalam fungsi async yang dipanggil di dalamnya itu
-    // TIDAK PERNAH sampai ke React. Akibatnya listener `onSnapshot` di
-    // sini TIDAK PERNAH benar-benar berhenti (unsubscribe), walau
-    // komponennya sudah dibongkar/ditinggalkan -- listener nyangkut terus
-    // (memory leak), dan kalau komponen ini sempat ke-mount ulang, listener
-    // lama & baru numpuk sekaligus jalan bareng.
     let unsubscribe = null;
     let cancelled = false;
-
     const init = async () => {
       const teacher = await fetchTeacherProfile();
       if (teacher && !cancelled) {
         await fetchData(teacher);
         if (cancelled) return;
-
         const todayStr = new Date().toISOString().split('T')[0];
         const q = query(
           collection(db, "jadwal_bimbel"),
@@ -369,15 +294,12 @@ const TeacherDashboard = () => {
       }
     };
     init();
-
-    // Sekarang cleanup ini BENERAN dipanggil React saat komponen dibongkar.
     return () => {
       cancelled = true;
       if (unsubscribe) unsubscribe();
     };
   }, [fetchTeacherProfile, fetchData]);
 
-  // ===== HANDLERS =====
   const handleRefresh = async () => {
     setRefreshing(true);
     const teacher = await fetchTeacherProfile();
@@ -390,37 +312,28 @@ const TeacherDashboard = () => {
     setInputToken("");
   };
 
-  // 🔥 FUNGSI VERIFIKASI TOKEN - REDIRECT KE ClassSession
   const handleVerifyTokenAndStart = async () => {
     if (!pendingSchedule) {
       alert("⚠️ Tidak ada jadwal yang dipilih!");
       return;
     }
-    
     if (!inputToken) {
       alert("⚠️ Masukkan kode absensi terlebih dahulu!");
       return;
     }
-    
     if (inputToken.trim().toUpperCase() !== dailyCode.trim().toUpperCase()) {
       alert("⚠️ Token absensi salah! Silakan periksa kembali atau hubungi admin.");
       setInputToken("");
       return;
     }
-
     try {
-      // Update status jadwal
       await updateDoc(doc(db, "jadwal_bimbel", pendingSchedule.id), {
         status: 'ongoing',
         startedAt: serverTimestamp()
       });
-
       setShowStartModal(false);
       setInputToken("");
-      
-      // 🔥 PINDAH KE ClassSession
       navigate('/guru/class-session/' + pendingSchedule.id);
-      
     } catch (error) {
       console.error("Gagal memulai kelas:", error);
       alert("❌ Terjadi kesalahan sistem saat membuka kelas: " + error.message);
@@ -449,10 +362,6 @@ const TeacherDashboard = () => {
     return parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
-
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -465,8 +374,6 @@ const TeacherDashboard = () => {
 
   return (
     <div style={styles.container}>
-      
-      {/* ===== HEADER ===== */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
           <LogoGemilang size="small" variant="default" />
@@ -474,10 +381,9 @@ const TeacherDashboard = () => {
         </div>
         <div style={styles.headerRight}>
           <span style={styles.greeting}>{greeting}</span>
-          
           <div style={styles.notifWrapper} ref={notificationRef}>
-            <button 
-              onClick={() => setShowNotifications(!showNotifications)} 
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
               style={styles.notifBtn}
             >
               <Bell size={18} />
@@ -511,22 +417,18 @@ const TeacherDashboard = () => {
               </div>
             )}
           </div>
-          
           <button onClick={handleRefresh} style={styles.refreshBtn} disabled={refreshing}>
             <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
           </button>
-          
           <div style={styles.avatar} onClick={() => navigate('/guru/profile')}>
             {getInitials(guru?.nama)}
           </div>
-          
           <button onClick={handleLogout} style={styles.logoutBtn}>
             <LogOut size={16} />
           </button>
         </div>
       </div>
 
-      {/* ===== BANNER ===== */}
       <div style={styles.banner}>
         <div style={styles.bannerLeft}>
           <div style={styles.bannerBadge}>
@@ -567,7 +469,6 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ===== STATS CARDS ===== */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={styles.statIcon('primary')}>
@@ -581,7 +482,6 @@ const TeacherDashboard = () => {
             <TrendingUp size={12} /> +{stats.weekSessions}
           </div>
         </div>
-
         <div style={styles.statCard}>
           <div style={styles.statIcon('success')}>
             <Users size={20} color="#10b981" />
@@ -594,7 +494,6 @@ const TeacherDashboard = () => {
             <User size={12} /> Aktif
           </div>
         </div>
-
         <div style={styles.statCard}>
           <div style={styles.statIcon('warning')}>
             <BookOpen size={20} color="#f59e0b" />
@@ -607,7 +506,6 @@ const TeacherDashboard = () => {
             <CheckCircle size={12} /> {stats.completedClasses} selesai
           </div>
         </div>
-
         <div style={styles.statCard}>
           <div style={styles.statIcon('purple')}>
             <Award size={20} color="#8b5cf6" />
@@ -623,10 +521,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ===== MAIN CONTENT ===== */}
       <div style={styles.mainGrid(isMobile)}>
-        
-        {/* ===== LEFT: SCHEDULES ===== */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
@@ -638,13 +533,10 @@ const TeacherDashboard = () => {
               </button>
             </div>
           </div>
-
-          {/* Today's Schedules */}
           <div style={styles.scheduleSubHeader}>
             <span style={styles.scheduleSubTitle}>📅 Hari Ini</span>
             <span style={styles.scheduleCount}>{todaySchedules.length} sesi</span>
           </div>
-          
           {todaySchedules.length === 0 ? (
             <div style={styles.emptyState}>
               <Calendar size={32} color="#cbd5e1" />
@@ -656,11 +548,9 @@ const TeacherDashboard = () => {
               {todaySchedules.slice(0, 5).map(item => {
                 const isCompleted = item.status === 'completed';
                 const isOngoing = item.status === 'ongoing';
-                
                 let btnText = 'Mulai Kelas';
                 let btnBg = '#3b82f6';
                 let disabled = false;
-                
                 if (isCompleted) {
                   btnText = '✓ Selesai';
                   btnBg = '#10b981';
@@ -670,7 +560,6 @@ const TeacherDashboard = () => {
                   btnBg = '#f59e0b';
                   disabled = false;
                 }
-                
                 return (
                   <div key={item.id} style={styles.scheduleCard}>
                     <div style={styles.scheduleTime}>
@@ -711,7 +600,7 @@ const TeacherDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <button 
+                    <button
                       onClick={() => {
                         if (isOngoing) {
                           navigate('/guru/class-session/' + item.id);
@@ -734,8 +623,6 @@ const TeacherDashboard = () => {
               })}
             </div>
           )}
-
-          {/* Upcoming Schedules */}
           {upcomingSchedules.length > 0 && (
             <div style={styles.upcomingSection}>
               <div style={styles.scheduleSubHeader}>
@@ -756,23 +643,10 @@ const TeacherDashboard = () => {
           )}
         </div>
 
-        {/* ===== RIGHT: QUICK ACTIONS & INFO ===== */}
         <div style={styles.rightCol}>
-          
-          {/* Quick Actions */}
           <div style={styles.quickActionsCard}>
             <h4 style={styles.quickActionsTitle}>⚡ Akses Cepat</h4>
             <div style={styles.quickActionsGrid}>
-              {/* 🔥 DIHAPUS: tombol "Klaim Absen" yang sebelumnya di sini
-                  navigate ke '/guru/attendance' -- halaman itu ternyata
-                  cuma nampilin "Kode Absensi" yang gak pernah divalidasi
-                  di mana pun (sisa desain lama), DAN tombol ini duplikat
-                  dengan tombol "Mulai Kelas"/"Lanjutkan Kelas" di kartu
-                  jadwal "Hari Ini" di atas -- yang justru punya konteks
-                  jelas kelas mana yang mau diabsen (tombol generik ini
-                  gak tau harus absen kelas yang mana). Absensi sekarang
-                  SATU JALUR SAJA: lewat kartu jadwal -> ClassSession.jsx. */}
-
               <button onClick={() => navigate('/guru/history')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#fef3c7', color: '#b45309'}}>
                   <Clock4 size={18} />
@@ -780,7 +654,6 @@ const TeacherDashboard = () => {
                 <span style={styles.quickLabel}>Riwayat</span>
                 <span style={styles.quickDesc}>Lihat histori</span>
               </button>
-              
               <button onClick={() => navigate('/guru/modul')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#d1fae5', color: '#059669'}}>
                   <Layers size={18} />
@@ -788,9 +661,6 @@ const TeacherDashboard = () => {
                 <span style={styles.quickLabel}>E-Learning</span>
                 <span style={styles.quickDesc}>Materi & tugas</span>
               </button>
-
-              {/* 🔥 BARU: Sesi Kelas Live -- fitur "buku interaktif" baru,
-                  sebelumnya gak ada jalan buat guru nemuin halaman ini. */}
               <button onClick={() => navigate('/guru/sesi-live')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#fee2e2', color: '#dc2626'}}>
                   <Radio size={18} />
@@ -798,7 +668,16 @@ const TeacherDashboard = () => {
                 <span style={styles.quickLabel}>Sesi Kelas Live</span>
                 <span style={styles.quickDesc}>Latihan bareng siswa</span>
               </button>
-              
+              {/* ⭐ BARU: Buku Digital -- mode persiapan guru (baca materi +
+                  kunci terbuka) lewat ModalBukuGuru. Sumber modul SAMA
+                  dengan yang dibaca siswa (buku_digital). */}
+              <button onClick={() => setShowBuku(true)} style={styles.quickAction}>
+                <div style={{...styles.quickIcon, background: '#dbeafe', color: '#1d4ed8'}}>
+                  <BookOpen size={18} />
+                </div>
+                <span style={styles.quickLabel}>Buku Digital</span>
+                <span style={styles.quickDesc}>Baca materi & kunci</span>
+              </button>
               <button onClick={() => navigate('/guru/profile')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#fce7f3', color: '#be185d'}}>
                   <User size={18} />
@@ -806,7 +685,6 @@ const TeacherDashboard = () => {
                 <span style={styles.quickLabel}>Profil</span>
                 <span style={styles.quickDesc}>Data diri</span>
               </button>
-
               <button onClick={() => navigate('/guru/grades/input')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#ede9fe', color: '#6d28d9'}}>
                   <GraduationCap size={18} />
@@ -814,7 +692,6 @@ const TeacherDashboard = () => {
                 <span style={styles.quickLabel}>Nilai</span>
                 <span style={styles.quickDesc}>Input nilai</span>
               </button>
-
               <button onClick={() => navigate('/guru/modul/tugas')} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#fef2f2', color: '#dc2626'}}>
                   <Send size={18} />
@@ -825,7 +702,6 @@ const TeacherDashboard = () => {
             </div>
           </div>
 
-          {/* Teacher Info Card */}
           <div style={styles.infoCard}>
             <div style={styles.infoHeader}>
               <User size={16} color="#652D90" />
@@ -862,7 +738,6 @@ const TeacherDashboard = () => {
             </div>
           </div>
 
-          {/* Announcements */}
           {announcements.length > 0 && (
             <div style={styles.announceCard}>
               <div style={styles.infoHeader}>
@@ -888,7 +763,6 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ===== FOOTER ===== */}
       <div style={styles.footer}>
         <div style={styles.footerContent}>
           <LogoGemilang size="small" variant="default" showText={true} />
@@ -916,7 +790,6 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
-      {/* ===== MODAL: NEWS DETAIL ===== */}
       {selectedNews && (
         <div style={styles.modalOverlay} onClick={() => setSelectedNews(null)}>
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -932,8 +805,8 @@ const TeacherDashboard = () => {
               <p style={styles.modalText}>{selectedNews.content}</p>
               {selectedNews.createdAt?.toDate && (
                 <div style={styles.modalDate}>
-                  {new Date(selectedNews.createdAt.toDate()).toLocaleDateString('id-ID', { 
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+                  {new Date(selectedNews.createdAt.toDate()).toLocaleDateString('id-ID', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
                   })}
                 </div>
               )}
@@ -942,7 +815,6 @@ const TeacherDashboard = () => {
         </div>
       )}
 
-      {/* ===== MODAL: KODE ABSENSI ===== */}
       {showStartModal && (
         <div style={styles.modalOverlay} onClick={() => setShowStartModal(false)}>
           <div style={styles.modalCode} onClick={e => e.stopPropagation()}>
@@ -951,13 +823,13 @@ const TeacherDashboard = () => {
             <p style={styles.modalCodeSub}>
               Masukkan kode absensi harian untuk memulai sesi.
             </p>
-            <input 
-              type="text" 
-              value={inputToken} 
-              onChange={e => setInputToken(e.target.value.toUpperCase())} 
-              style={styles.modalCodeInput} 
-              placeholder="KODE ABSEN" 
-              maxLength={6} 
+            <input
+              type="text"
+              value={inputToken}
+              onChange={e => setInputToken(e.target.value.toUpperCase())}
+              style={styles.modalCodeInput}
+              placeholder="KODE ABSEN"
+              maxLength={6}
               autoFocus
             />
             <div style={styles.modalCodeHint}>
@@ -973,6 +845,11 @@ const TeacherDashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ⭐ BARU: Modal Buku Digital (mode persiapan guru) */}
+      {showBuku && (
+        <ModalBukuGuru open={showBuku} onClose={() => setShowBuku(false)} />
       )}
 
       <style>{`
@@ -996,9 +873,6 @@ const TeacherDashboard = () => {
   );
 };
 
-// ============================================================
-// STYLES
-// ============================================================
 const styles = {
   container: {
     maxWidth: '1200px',
@@ -1009,7 +883,6 @@ const styles = {
     background: '#f8fafc',
     minHeight: '100vh'
   },
-  
   loadingContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -1028,7 +901,6 @@ const styles = {
     animation: 'spin 0.8s linear infinite',
   },
   loadingText: { color: '#94a3b8', fontSize: 13, fontWeight: 500 },
-
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -1051,7 +923,6 @@ const styles = {
   },
   headerRight: { display: 'flex', alignItems: 'center', gap: 8 },
   greeting: { fontSize: 12, color: '#64748b', fontWeight: 500 },
-  
   notifWrapper: { position: 'relative' },
   notifBtn: {
     position: 'relative',
@@ -1128,7 +999,6 @@ const styles = {
   notifContent: { flex: 1 },
   notifMsg: { fontSize: 12, color: '#1e293b' },
   notifTime: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
-
   refreshBtn: {
     background: '#f1f5f9',
     border: 'none',
@@ -1164,7 +1034,6 @@ const styles = {
     borderRadius: 8,
     transition: '0.2s',
   },
-
   banner: {
     background: 'linear-gradient(135deg, #1A237E 0%, #283593 100%)',
     padding: '20px 24px',
@@ -1218,7 +1087,6 @@ const styles = {
   bannerProgressValue: { fontWeight: 700 },
   bannerProgressBar: { height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2, overflow: 'hidden' },
   bannerProgressFill: { height: '100%', background: 'linear-gradient(90deg, #fbbf24, #10b981)', borderRadius: 2, transition: 'width 0.8s ease' },
-
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
@@ -1259,7 +1127,6 @@ const styles = {
     borderRadius: 8,
     background: direction === 'up' ? '#ecfdf5' : direction === 'down' ? '#fef2f2' : '#f1f5f9',
   }),
-
   mainGrid: (m) => ({
     display: 'grid',
     gridTemplateColumns: m ? '1fr' : '1.6fr 1fr',
@@ -1267,28 +1134,27 @@ const styles = {
     marginBottom: 20,
   }),
   rightCol: { display: 'flex', flexDirection: 'column', gap: 14 },
-
-  section: { 
-    background: 'white', 
-    padding: 16, 
-    borderRadius: 14, 
-    border: '1px solid #f1f5f9', 
-    boxShadow: '0 2px 4px rgba(0,0,0,0.02)' 
+  section: {
+    background: 'white',
+    padding: 16,
+    borderRadius: 14,
+    border: '1px solid #f1f5f9',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
   },
-  sectionHeader: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 12 
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12
   },
-  sectionTitle: { 
-    margin: 0, 
-    fontSize: 14, 
-    fontWeight: 800, 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 6, 
-    color: '#1e293b' 
+  sectionTitle: {
+    margin: 0,
+    fontSize: 14,
+    fontWeight: 800,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    color: '#1e293b'
   },
   sectionActions: { display: 'flex', gap: 6 },
   seeAllBtn: {
@@ -1302,21 +1168,20 @@ const styles = {
     alignItems: 'center',
     gap: 4,
   },
-  scheduleSubHeader: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 10 
+  scheduleSubHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10
   },
   scheduleSubTitle: { fontSize: 12, fontWeight: 600, color: '#64748b' },
-  scheduleCount: { 
-    fontSize: 10, 
-    color: '#94a3b8', 
-    background: '#f1f5f9', 
-    padding: '2px 8px', 
-    borderRadius: 10 
+  scheduleCount: {
+    fontSize: 10,
+    color: '#94a3b8',
+    background: '#f1f5f9',
+    padding: '2px 8px',
+    borderRadius: 10
   },
-
   scheduleList: { display: 'flex', flexDirection: 'column', gap: 8 },
   scheduleCard: {
     background: '#f8fafc',
@@ -1333,33 +1198,33 @@ const styles = {
   scheduleTimeText: { fontWeight: 800, fontSize: 13, color: '#1e293b' },
   scheduleTimeEnd: { fontSize: 10, color: '#94a3b8' },
   scheduleContent: { flex: 1, minWidth: 120 },
-  scheduleTitle: { 
-    fontWeight: 700, 
-    fontSize: 13, 
-    color: '#1e293b', 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 6, 
-    flexWrap: 'wrap' 
+  scheduleTitle: {
+    fontWeight: 700,
+    fontSize: 13,
+    color: '#1e293b',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap'
   },
-  scheduleMapelId: { 
-    fontSize: 8, 
-    color: '#8b5cf6', 
-    background: '#ede9fe', 
-    padding: '1px 6px', 
-    borderRadius: 4, 
-    display: 'inline-flex', 
-    alignItems: 'center', 
-    gap: 2 
+  scheduleMapelId: {
+    fontSize: 8,
+    color: '#8b5cf6',
+    background: '#ede9fe',
+    padding: '1px 6px',
+    borderRadius: 4,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 2
   },
-  scheduleMeta: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 8, 
-    marginTop: 2, 
-    fontSize: 10, 
-    color: '#64748b', 
-    flexWrap: 'wrap' 
+  scheduleMeta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 2,
+    fontSize: 10,
+    color: '#64748b',
+    flexWrap: 'wrap'
   },
   programBadge: (p) => ({
     fontSize: 8,
@@ -1403,11 +1268,9 @@ const styles = {
     flexShrink: 0,
     transition: '0.2s',
   },
-
   emptyState: { textAlign: 'center', padding: '30px 12px', color: '#94a3b8' },
   emptyText: { fontSize: 13, fontWeight: 600, margin: '8px 0 2px', color: '#64748b' },
   emptySub: { fontSize: 11, margin: 0 },
-
   upcomingSection: { marginTop: 14, paddingTop: 14, borderTop: '1px solid #f1f5f9' },
   upcomingList: { display: 'flex', flexDirection: 'column', gap: 6 },
   upcomingCard: {
@@ -1424,7 +1287,6 @@ const styles = {
   upcomingTime: { color: '#3b82f6', fontWeight: 600 },
   upcomingTitle: { color: '#64748b', flex: 1 },
   upcomingTeacher: { fontSize: 10, color: '#94a3b8' },
-
   quickActionsCard: {
     background: 'white',
     padding: 14,
@@ -1463,7 +1325,6 @@ const styles = {
   },
   quickLabel: { fontSize: 10, fontWeight: 700, color: '#1e293b' },
   quickDesc: { fontSize: 8, color: '#94a3b8' },
-
   infoCard: {
     background: 'white',
     padding: 14,
@@ -1479,7 +1340,6 @@ const styles = {
   teacherInfoValue: { fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 4 },
   mapelIdTag: { fontSize: 8, color: '#8b5cf6', background: '#ede9fe', padding: '1px 6px', borderRadius: 4 },
   statusActive: { color: '#10b981', background: '#dcfce7', padding: '1px 8px', borderRadius: 10, fontSize: 9, fontWeight: 700 },
-
   announceCard: {
     background: 'white',
     padding: 14,
@@ -1502,7 +1362,6 @@ const styles = {
   announceContent: { flex: 1 },
   announceTitle: { fontSize: 11, fontWeight: 600, color: '#1e293b' },
   announceDate: { fontSize: 8, color: '#94a3b8', marginTop: 2 },
-
   footer: {
     marginTop: 20,
     paddingTop: 16,
@@ -1546,7 +1405,6 @@ const styles = {
     fontWeight: 700,
     color: '#64748b',
   },
-
   modalOverlay: {
     position: 'fixed',
     inset: 0,
@@ -1591,7 +1449,6 @@ const styles = {
   modalTitle: { margin: '4px 0 8px', fontSize: 18, fontWeight: 900, color: '#1e293b' },
   modalText: { fontSize: 13, color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap' },
   modalDate: { marginTop: 12, fontSize: 10, color: '#94a3b8' },
-
   modalCode: {
     background: 'white',
     padding: 28,

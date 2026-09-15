@@ -1,166 +1,63 @@
 // src/services/sesiService.js
-// Lapisan service untuk SESI KELAS (collection: sesi_live) — struktur yang
-// SUDAH dipakai LiveSessionTeacher.jsx & LiveSessionStudent.jsx, ditambah:
-//  - sumber sesi dari bab buku digital (bukuId/babId, sumber:'buku')
-//  - absensi guru (absensiGuru.mulaiAt/selesaiAt) & absensi siswa (statusHadir)
-//  - kontrol lockstep (tayangkanSoal / bukaPembahasan / lanjutSoal / akhiri)
-//  - helper rekap jawaban & rekap absensi untuk layar pembahasan guru.
-// Tidak ada collection baru, tidak ada struktur baru yang memutus kode lama.
+// Service SESI LIVE (collection: sesi_live) -- dipakai ClassSession (guru)
+// dan LiveSessionStudent (siswa). Struktur dokumen SAMA dengan yang sudah
+// dipakai LiveSessionTeacher lama, jadi tidak ada migrasi data.
 import {
   collection, doc, setDoc, updateDoc, addDoc,
   query, where, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// ---------------- PEMBUATAN SESI ----------------
-// sumber: 'bank_soal' (alur lama) | 'buku' (bab buku digital, daftarSoal
-// diisi hasil parse bab.html yang sudah dinormalisasi lewat soalBukuKeFormatSesi)
-export async function mulaiSesi({
-  guruId, kelasSekolah, mataPelajaran, materiJudul,
-  daftarSoal, sumber, bukuId, babId,
-}) {
+// ---------- BUAT & LISTEN SESI ----------
+export async function buatSesiLive({ jadwalId, guruId, kelasSekolah, mataPelajaran, materiJudul, bukuId, babId, daftarSoal }) {
   const ref = await addDoc(collection(db, 'sesi_live'), {
-    guruId: guruId || '',
-    kelasSekolah: kelasSekolah || '',
-    mataPelajaran: mataPelajaran || '',
-    materiJudul: materiJudul || '',
-    daftarSoal: daftarSoal || [],
-    sumber: sumber || 'bank_soal',
-    bukuId: bukuId || '',
-    babId: babId || '',
-    indexSekarang: 0,
-    tahap: 'soal', // 'soal' | 'pembahasan'
-    status: 'aktif',
-    absensiGuru: { mulaiAt: serverTimestamp(), selesaiAt: null },
+    jadwalId: jadwalId || '', guruId: guruId || '', kelasSekolah: kelasSekolah || '',
+    mataPelajaran: mataPelajaran || '', materiJudul: materiJudul || '',
+    sumber: 'buku', bukuId: bukuId || '', babId: babId || '',
+    daftarSoal: daftarSoal || [], indexSekarang: null, tahap: 'materi', status: 'aktif',
     createdAt: serverTimestamp(),
   });
   return ref.id;
 }
-
-// Normalisasi soal hasil parse bab.html agar BENTUKNYA sama dengan soal
-// bank_soal yang sudah dipahami LiveSessionStudent:
-// { soal, opsiJawaban, kunciJawaban, pembahasan, tipe, pernyataan? }
-export function soalBukuKeFormatSesi(s) {
-  const langkah = (s.langkah || []).join(' ');
-  if (s.tipe === 'bs') {
-    return {
-      tipe: 'benar_salah',
-      soal: s.teks || '',
-      pernyataan: s.pernyataan || [],
-      kunciJawaban: s.kunci && Array.isArray(s.kunci.bs) ? s.kunci.bs : [],
-      pembahasan: langkah,
-    };
-  }
-  if (s.tipe === 'multi') {
-    return {
-      tipe: 'pg_kompleks',
-      soal: s.teks || '',
-      opsiJawaban: s.pilihan || [],
-      kunciJawaban: s.kunci && Array.isArray(s.kunci.multi) ? s.kunci.multi : [],
-      pembahasan: langkah,
-    };
-  }
-  return {
-    tipe: 'pg_sederhana',
-    soal: s.teks || '',
-    opsiJawaban: s.pilihan || [],
-    kunciJawaban: s.kunci && typeof s.kunci.pg === 'number' ? s.kunci.pg : 0,
-    pembahasan: langkah,
-  };
-}
-
-// ---------------- LISTENER REAL-TIME ----------------
+export const dengarSesiByJadwal = (jadwalId, cb) =>
+  onSnapshot(
+    query(collection(db, 'sesi_live'), where('jadwalId', '==', jadwalId), where('status', '==', 'aktif')),
+    (sn) => cb(sn.empty ? null : { id: sn.docs[0].id, ...sn.docs[0].data() })
+  );
 export const dengarSesiAktifKelas = (kelasSekolah, cb) =>
   onSnapshot(
-    query(
-      collection(db, 'sesi_live'),
-      where('kelasSekolah', '==', kelasSekolah),
-      where('status', '==', 'aktif')
-    ),
-    (snap) => cb(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() })
+    query(collection(db, 'sesi_live'), where('kelasSekolah', '==', kelasSekolah), where('status', '==', 'aktif')),
+    (sn) => cb(sn.empty ? null : { id: sn.docs[0].id, ...sn.docs[0].data() })
   );
-
 export const dengarSesi = (sesiId, cb) =>
-  onSnapshot(doc(db, 'sesi_live', sesiId), (snap) =>
-    cb(snap.exists() ? { id: snap.id, ...snap.data() } : null)
-  );
-
+  onSnapshot(doc(db, 'sesi_live', sesiId), (sn) => cb(sn.exists() ? { id: sn.id, ...sn.data() } : null));
 export const dengarPeserta = (sesiId, cb) =>
-  onSnapshot(collection(db, 'sesi_live', sesiId, 'peserta'), (snap) => {
-    const map = {};
-    snap.forEach((d) => { map[d.id] = { id: d.id, ...d.data() }; });
-    cb(map);
+  onSnapshot(collection(db, 'sesi_live', sesiId, 'peserta'), (sn) => {
+    const m = {};
+    sn.forEach((d) => { m[d.id] = { id: d.id, ...d.data() }; });
+    cb(m);
   });
 
-// ---------------- ABSENSI ----------------
-// Siswa join = tercatat hadir (bisa diubah guru jadi izin/absen).
-export async function gabungSesi(sesiId, studentId, nama, statusHadir = 'hadir') {
-  await setDoc(
-    doc(db, 'sesi_live', sesiId, 'peserta', studentId),
-    { nama: nama || '', statusHadir, waktuHadir: serverTimestamp() },
-    { merge: true }
-  );
+// ---------- KONTROL GURU ----------
+export const ubahSesi = (sesiId, patch) => updateDoc(doc(db, 'sesi_live', sesiId), { ...patch, updatedAt: serverTimestamp() });
+export const tayangkanMateri = (sesiId) => ubahSesi(sesiId, { tahap: 'materi' });
+export const tayangkanSoal = (sesiId, index) => ubahSesi(sesiId, { indexSekarang: Number(index), tahap: 'soal' });
+export const bukaPembahasan = (sesiId) => ubahSesi(sesiId, { tahap: 'pembahasan' });
+export const akhiriSesiLive = (sesiId) => ubahSesi(sesiId, { status: 'selesai' });
+
+// ---------- SISWA ----------
+export async function gabungSesiLive(sesiId, studentId, nama) {
+  await setDoc(doc(db, 'sesi_live', sesiId, 'peserta', studentId),
+    { nama: nama || '', joinAt: serverTimestamp() }, { merge: true });
+}
+export async function kirimJawabanLive(sesiId, studentId, nama, indexSoal, pilihan, benar) {
+  await setDoc(doc(db, 'sesi_live', sesiId, 'peserta', studentId), {
+    nama: nama || '',
+    [`jawabanPerSoal.${indexSoal}`]: { pilihan, benar: !!benar, waktu: serverTimestamp() },
+  }, { merge: true });
 }
 
-export async function setHadirSiswa(sesiId, studentId, statusHadir) {
-  await setDoc(
-    doc(db, 'sesi_live', sesiId, 'peserta', studentId),
-    { statusHadir, updatedAt: serverTimestamp() },
-    { merge: true }
-  );
-}
-
-export async function tutupAbsensiGuru(sesiId) {
-  await updateDoc(doc(db, 'sesi_live', sesiId), {
-    'absensiGuru.selesaiAt': serverTimestamp(),
-  });
-}
-
-export function rekapAbsensi(pesertaMap) {
-  const daftar = Object.values(pesertaMap || {});
-  const hitung = { hadir: 0, izin: 0, absen: 0, belum: 0, total: daftar.length };
-  daftar.forEach((p) => {
-    if (p.statusHadir === 'hadir') hitung.hadir++;
-    else if (p.statusHadir === 'izin') hitung.izin++;
-    else if (p.statusHadir === 'absen') hitung.absen++;
-    else hitung.belum++;
-  });
-  return hitung;
-}
-
-// ---------------- KONTROL LOCKSTEP GURU ----------------
-export const tayangkanSoal = (sesiId, index) =>
-  updateDoc(doc(db, 'sesi_live', sesiId), { indexSekarang: Number(index), tahap: 'soal' });
-
-export const bukaPembahasan = (sesiId) =>
-  updateDoc(doc(db, 'sesi_live', sesiId), { tahap: 'pembahasan' });
-
-export const lanjutSoal = (sesiId, index) =>
-  updateDoc(doc(db, 'sesi_live', sesiId), { indexSekarang: Number(index), tahap: 'soal' });
-
-export async function akhiriSesi(sesiId) {
-  await updateDoc(doc(db, 'sesi_live', sesiId), {
-    status: 'selesai',
-    'absensiGuru.selesaiAt': serverTimestamp(),
-    selesaiAt: serverTimestamp(),
-  });
-}
-
-// ---------------- JAWABAN SISWA ----------------
-// Menulis ke field jawabanPerSoal.{index} di dokumen peserta — format yang
-// SUDAH dibaca LiveSessionTeacher (ringkasan sudahJawab/benar real-time).
-export async function kirimJawaban(sesiId, studentId, nama, indexSoal, pilihan, benar) {
-  await setDoc(
-    doc(db, 'sesi_live', sesiId, 'peserta', studentId),
-    {
-      nama: nama || '',
-      [`jawabanPerSoal.${indexSoal}`]: { pilihan, benar: !!benar, waktu: serverTimestamp() },
-    },
-    { merge: true }
-  );
-}
-
-// ---------------- REKAP UNTUK LAYAR PEMBAHASAN ----------------
+// ---------- REKAP ----------
 export function hitungRekap(pesertaMap, indexSoal) {
   const daftar = Object.values(pesertaMap || {});
   let sudahJawab = 0, benar = 0;
@@ -176,7 +73,6 @@ export function hitungRekap(pesertaMap, indexSoal) {
   });
   return { totalSiswa: daftar.length, sudahJawab, benar, distribusi };
 }
-
 export function soalPalingSalah(pesertaMap, jumlahSoal) {
   const hasil = [];
   for (let i = 0; i < jumlahSoal; i++) {
