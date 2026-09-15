@@ -4,6 +4,7 @@
 // FIX: distribusi NETRAL sampai kunci dibuka (anti bocor di proyektor),
 // teks opsi dibersihkan dari verdict, tombol ⛶ Layar Penuh untuk proyektor
 // (hanya area slide yang diproyeksikan, panel monitor tidak ikut).
+// 🔥 BARU: figur soal (svg/img/figslot) ikut dirender di layar guru.
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -29,6 +30,7 @@ const S = {
   bar: { height: 12, borderRadius: 6, minWidth: 3 },
   opsi: (k) => ({ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: k ? '#f0fdf4' : '#f8fafc', fontSize: 13, marginBottom: 6 }),
   grid2: { display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 12 },
+  gambarBox: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 10, padding: 10, marginBottom: 10 },
 };
 
 export default function LiveSessionTeacher() {
@@ -97,6 +99,10 @@ export default function LiveSessionTeacher() {
   }, [sesi && sesi.id, sesi && sesi.mode]);
 
   const slides = useMemo(() => (babHtml ? parseSlides(babHtml) : []), [babHtml]);
+  // 🔥 BARU: parse ulang dari HTML bab sebagai sumber figur fallback
+  // (untuk sesi lama yang daftarSoal-nya tersimpan tanpa gambarHtml).
+  const soalDariHtml = useMemo(() => (babHtml ? parseDaftarSoal(babHtml) : []), [babHtml]);
+
   const daftarSoal = sesi ? (sesi.daftarSoal || []) : [];
   const slideNow = slides[sesi ? (sesi.slideAktif || 0) : 0] || null;
   const soalMateriNow = slideNow && slideNow.tipe === 'soal' ? daftarSoal[slideNow.soalIdx] : null;
@@ -104,6 +110,10 @@ export default function LiveSessionTeacher() {
   const soalNow = soalMateriNow || soalBankNow || null;
   const idxNow = soalMateriNow ? slideNow.soalIdx : (sesi ? sesi.soalAktif : null);
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
+  // 🔥 BARU: figur soal = dari daftarSoal, fallback dari HTML bab langsung.
+  const gambarNow = soalNow
+    ? (soalNow.gambarHtml || (soalDariHtml[idxNow] || {}).gambarHtml || '')
+    : '';
 
   const jwsNow = useMemo(() => (idxNow != null ? jawaban.filter((j) => j.soalIdx === idxNow) : []), [jawaban, idxNow]);
   const belum = peserta.filter((p) => !jwsNow.some((j) => j.siswaId === p.siswaId));
@@ -136,6 +146,7 @@ export default function LiveSessionTeacher() {
         idx: 0, nomor: String(s.nomor || ''), tipe, level: s.level || 'sedang', sumber: 'Bank Soal',
         teks: s.soal || s.teks_soal || s.teks || '', pilihan: s.opsiJawaban || s.pilihan || [],
         pernyataan: s.pernyataan || [], kunci, langkah: s.langkah || [], pembahasan: s.pembahasan || '',
+        gambarHtml: '', gambarUrls: s.gambarUrls || [],
       };
     });
     const s = await buatSesi({ mode: 'bank', sumber: 'bank', guruId, daftarSoal: soals, catatan: bankPick.materi });
@@ -298,6 +309,17 @@ export default function LiveSessionTeacher() {
           {soalNow && (
             <div>
               <div className="fs-teks" style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>{soalNow.teks}</div>
+              {/* 🔥 BARU: figur soal (svg/img/figslot) ikut tampil di proyektor */}
+              {gambarNow && (
+                <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: gambarNow }} />
+              )}
+              {!gambarNow && soalNow.gambarUrls && soalNow.gambarUrls.length > 0 && (
+                <div style={{ marginBottom: 10 }}>
+                  {soalNow.gambarUrls.map((u, i) => (
+                    <img key={i} src={u} alt="" style={{ maxWidth: '100%', height: 'auto', borderRadius: 8, marginBottom: 6 }} />
+                  ))}
+                </div>
+              )}
               {(soalNow.pilihan || []).map((p, i) => (
                 <div key={i} className="fs-opsi" style={S.opsi(terbuka && (soalNow.kunci.tipe === 'pg' ? soalNow.kunci.pg === i : (soalNow.kunci.tipe === 'multi' ? (soalNow.kunci.multi || []).includes(i) : false)))}>
                   <b>{String.fromCharCode(65 + i)}.</b> {bersihVerdikt(p)}
@@ -308,7 +330,7 @@ export default function LiveSessionTeacher() {
               ))}
               {soalNow && !soalNow.pilihan?.length && !soalNow.pernyataan?.length && (
                 <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#92400e' }}>
-                  ⚠️ Opsi/pernyataan soal ini tidak terbaca dari modul. Akhiri sesi lalu mulai ulang (parser sudah diperbaiki), atau periksa HTML bab di Manajer Buku Digital.
+                  ⚠️ Opsi/pernyataan soal ini tidak terbaca dari modul. Akhiri sesi lalu mulai ulang setelah parser diperbarui, atau periksa HTML bab di Manajer Buku Digital.
                 </div>
               )}
               {soalNow.pembahasan && (

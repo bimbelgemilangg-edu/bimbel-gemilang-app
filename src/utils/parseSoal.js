@@ -2,7 +2,9 @@
 // Parser modul HTML -> soal terstruktur + slide PPT.
 // FIX: (a) opsi/pernyataan TIDAK diambil dari dalam <details> (blok kunci),
 // (b) akhiran verdict "(Benar)/(Salah)" dibuang dari teks tampilan,
-// (c) fallback pencarian opsi lebih lengkap supaya tidak ada soal kosong.
+// (c) fallback pencarian opsi lebih lengkap supaya tidak ada soal kosong,
+// (d) 🔥 BARU: elemen gambar (svg/img/figslot/caption) di dalam .soal
+//     ikut diekstrak sebagai `gambarHtml` supaya figur tampil di sesi live.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
 // Buang akhiran kunci yang bocor di teks pernyataan/pilihan.
@@ -43,6 +45,12 @@ export function parseDaftarSoal(html) {
       items = [...el.querySelectorAll('ul li, ol li')].filter(diLuar).map((li) => bersihTeks(li.textContent)).filter(Boolean);
     }
 
+    // ---- 🔥 BARU: ambil figur (svg/img/figslot/caption) di luar details,
+    //      di luar daftar pilihan & tabel pernyataan ----
+    const figEls = [...el.querySelectorAll('svg, img, .figslot, .caption')]
+      .filter((n) => !n.closest('details') && !n.closest('ul.pil') && !n.closest('table'));
+    const gambarHtml = figEls.map((n) => n.outerHTML).join('');
+
     const berHuruf = items.filter((t) => /^[A-D][.).]/.test(t)).length;
     const details = el.querySelector('details');
     const jawabEl = details ? details.querySelector('.jawab') : null;
@@ -81,7 +89,7 @@ export function parseDaftarSoal(html) {
 
     const langkah = details ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent)) : [];
     const pembahasan = bersihTeks(details ? (details.textContent || '').replace(/Lihat Kunci & Pembahasan/i, '').replace(jawabTeks, '') : '');
-    return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan };
+    return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan, gambarHtml };
   }).filter((s) => s.teks || s.pilihan.length || s.pernyataan.length);
 }
 

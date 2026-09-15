@@ -1,11 +1,14 @@
 // src/pages/student/LiveSessionStudent.jsx
-// Sisi siswa sesi live: join lewat kode (bisa terisi otomatis dari
-// ?kode= di alamat), ikuti slide/soal guru real-time, kerjakan soal
-// gaya CBT (PG / multi / Benar-Salah), kunci terbuka hanya saat guru membuka.
+// Sisi siswa: join lewat kode (bisa terisi otomatis dari ?kode= di alamat),
+// ikuti slide/soal guru real-time, kerjakan soal gaya CBT (PG / multi /
+// Benar-Salah), kunci terbuka hanya saat guru membuka.
+// FIX: teks opsi/pernyataan dibersihkan dari verdict "(Benar)/(Salah)",
+// dan ada peringatan bila opsi soal tidak terbaca.
+// 🔥 BARU: figur soal (svg/img/figslot) ikut tampil di layar siswa.
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { parseSlides, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
+import { parseSlides, parseDaftarSoal, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban } from '../../services/sesiService';
 
 const S = {
@@ -30,12 +33,12 @@ const S = {
     fontWeight: 800, fontSize: 12, cursor: s ? 'default' : 'pointer',
   }),
   opsi: (a, k, s) => ({ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%', textAlign: 'left', padding: '11px 12px', borderRadius: 10, border: `2px solid ${s && k ? '#16a34a' : s && a ? '#e74c3c' : a ? '#7C3AED' : '#e2e8f0'}`, background: s && k ? '#f0fdf4' : s && a ? '#fef2f2' : a ? '#f5f3ff' : '#fff', fontSize: 13.5, cursor: s ? 'default' : 'pointer', marginBottom: 8 }),
+  gambarBox: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 10, padding: 10, marginBottom: 10 },
 };
 
 export default function LiveSessionStudent() {
   const siswaId = localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '';
   const nama = localStorage.getItem('studentName') || 'Siswa';
-  // 🔥 BARU: kode bisa datang otomatis dari tombol GABUNG di panel Buku Digital
   const [kode, setKode] = useState(() => {
     try { return new URLSearchParams(window.location.search).get('kode') || ''; } catch { return ''; }
   });
@@ -64,14 +67,21 @@ export default function LiveSessionStudent() {
   useEffect(() => { setPilih(null); }, [sesi && sesi.slideAktif, sesi && sesi.soalAktif]);
 
   const slides = useMemo(() => (babHtml ? parseSlides(babHtml) : []), [babHtml]);
-  const slideNow = slides[sesi ? (sesi.slideAktif || 0) : 0] || null;
+  // 🔥 BARU: fallback figur dari HTML bab (untuk sesi lama tanpa gambarHtml).
+  const soalDariHtml = useMemo(() => (babHtml ? parseDaftarSoal(babHtml) : []), [babHtml]);
+
   const daftarSoal = sesi ? (sesi.daftarSoal || []) : [];
+  const slideNow = slides[sesi ? (sesi.slideAktif || 0) : 0] || null;
   const soal = sesi && sesi.mode === 'materi'
     ? (slideNow && slideNow.tipe === 'soal' ? daftarSoal[slideNow.soalIdx] : null)
     : (sesi && sesi.soalAktif != null ? daftarSoal[sesi.soalAktif] : null);
   const idxSoal = sesi && sesi.mode === 'materi' ? (slideNow ? slideNow.soalIdx : null) : (sesi ? sesi.soalAktif : null);
   const sudah = idxSoal != null ? !!terkirim[idxSoal] : false;
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
+  // 🔥 BARU: figur soal = dari daftarSoal, fallback dari HTML bab langsung.
+  const gambarNow = soal
+    ? (soal.gambarHtml || (soalDariHtml[idxSoal] || {}).gambarHtml || '')
+    : '';
 
   async function gabung() {
     setErr('');
@@ -138,6 +148,18 @@ export default function LiveSessionStudent() {
       {soal && (
         <div style={S.card}>
           <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
+
+          {/* 🔥 BARU: figur soal ikut tampil di layar siswa */}
+          {gambarNow && (
+            <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: gambarNow }} />
+          )}
+          {!gambarNow && soal.gambarUrls && soal.gambarUrls.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              {soal.gambarUrls.map((u, i) => (
+                <img key={i} src={u} alt="" style={{ maxWidth: '100%', height: 'auto', borderRadius: 8, marginBottom: 6 }} />
+              ))}
+            </div>
+          )}
 
           {soal.kunci && soal.kunci.tipe === 'pg' && (soal.pilihan || []).map((p, i) => (
             <button key={i} style={S.opsi(pilih === i, terbuka && soal.kunci.pg === i, terbuka)} disabled={sudah || terbuka} onClick={() => setPilih(i)}>
