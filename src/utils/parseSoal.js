@@ -1,13 +1,11 @@
 // src/utils/parseSoal.js
 // ============================================================
 // PARSER MODUL HTML -> DAFTAR SOAL TERSTRUKTUR
-// Dipakai oleh ClassSession.jsx (Step 2: Kelas & Soal Live) untuk
-// mengubah bab buku digital (field `html` di buku_digital/{id}/bab/{id})
-// menjadi daftar soal yang bisa ditayangkan lockstep ke siswa lewat
-// collection sesi_live, serta dikonversi ke bentuk yang dipahami
-// LiveSessionStudent.jsx.
-//
-// File ini BARU (belum pernah ada di git) -- tidak menimpa apa pun.
+// Dipakai oleh:
+//  - LiveSessionTeacher.jsx  (sesi live dari bab buku digital)
+//  - LiveSessionStudent.jsx  (render soal + cek jawaban siswa)
+//  - KelasLivePanel.jsx      (Step 2 ClassSession, via soalKeFormatSesi)
+// Sumber: field `html` di buku_digital/{bukuId}/bab/{babId}.
 // Struktur HTML yang dibaca mengikuti template modul internal:
 //   <div class="soal">
 //     <div class="nbadges"><span class="no">N</span>
@@ -61,7 +59,14 @@ export function parseDaftarSoal(html) {
     const berHuruf = items.filter((t) => /^[A-D][.).]/.test(t)).length;
     const details = el.querySelector('details');
     const jawabEl = details ? details.querySelector('.jawab') : null;
-    const jawabTeks = bersihTeks(jawabEl?.textContent);
+
+    // FALLBACK 1: kalau tidak ada elemen .jawab, cari teks "Jawaban: ..."
+    // langsung di dalam details (maks 120 karakter supaya tidak makan pembahasan).
+    let jawabTeks = bersihTeks(jawabEl?.textContent);
+    if (!jawabTeks && details) {
+      const m = (details.textContent || '').match(/Jawaban:[\s\S]{0,120}/i);
+      if (m) jawabTeks = bersihTeks(m[0]);
+    }
 
     // ---- tentukan tipe soal ----
     let tipe;
@@ -77,7 +82,9 @@ export function parseDaftarSoal(html) {
       tipe = 'multi';
     }
 
-    const pilihan = tipe === 'pg' ? items.map((t) => t.replace(/^[A-D][.).]\s*/, '')) : (tipe === 'multi' ? items.map(bersihItem) : []);
+    const pilihan = tipe === 'pg'
+      ? items.map((t) => t.replace(/^[A-D][.).]\s*/, ''))
+      : (tipe === 'multi' ? items.map(bersihItem) : []);
     const pernyataan = tipe === 'bs' ? items.map(bersihItem) : [];
 
     // ---- parse kunci jawaban ----
@@ -102,8 +109,15 @@ export function parseDaftarSoal(html) {
     const langkah = details
       ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent))
       : [];
+
+    // FALLBACK 2: pembahasan = isi details dikurangi teks summary & teks kunci,
+    // supaya tidak dobel dengan `langkah` saat ditampilkan guru/siswa.
     const pembahasan = bersihTeks(
-      details ? details.textContent.replace(jawabTeks, '') : ''
+      details
+        ? (details.textContent || '')
+            .replace(/Lihat Kunci & Pembahasan/i, '')
+            .replace(jawabTeks, '')
+        : ''
     );
 
     return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan };
@@ -111,7 +125,7 @@ export function parseDaftarSoal(html) {
 }
 
 /**
- * Konversi soal hasil parse ke bentuk yang dipakai sesi_live / LiveSessionStudent.
+ * Konversi soal hasil parse ke bentuk yang dipakai sesi_live / KelasLivePanel.
  * Bentuk keluaran: { tipe:'pg'|'multi'|'bs', soal, opsiJawaban[], pernyataan[],
  *                    kunciJawaban (number|number[]|boolean[]), pembahasan }
  */
