@@ -2,9 +2,14 @@
 // 2 MODE: 📖 Materi Interaktif (bab buku digital, slide PPT + soal interaktif)
 // dan ✍️ Soal & Pembahasan (bank soal, pembahasan lisan guru).
 // FIX: distribusi NETRAL sampai kunci dibuka (anti bocor di proyektor),
-// teks opsi dibersihkan dari verdict, tombol ⛶ Layar Penuh untuk proyektor
-// (hanya area slide yang diproyeksikan, panel monitor tidak ikut).
-// 🔥 BARU: figur soal (svg/img/figslot) ikut dirender di layar guru.
+// teks opsi dibersihkan dari verdict, tombol ⛶ Layar Penuh untuk proyektor.
+// 🔥 BARU: tampilan soal JELAS per tipe di layar guru saat menerangkan:
+//   - PG                 -> baris opsi dengan BULATAN HURUF A-D
+//   - Pilih lebih satu   -> baris dengan KOTAK CENTANG
+//   - Benar/Salah        -> GRID CBT 3 kolom (Pernyataan | Benar | Salah)
+//   + badge tipe + petunjuk pengerjaan di atas soal,
+//   + semua ukuran membesar otomatis saat fullscreen (proyektor),
+//   + pembahasan privat guru DIPINDAH ke panel monitor (tak terproyeksi).
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -28,9 +33,27 @@ const S = {
   babRow: { display: 'flex', alignItems: 'center', gap: 10, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 12px', marginBottom: 8, cursor: 'pointer' },
   slideBox: { background: '#0f172a', borderRadius: 14, padding: 18, minHeight: 320, color: '#e2e8f0' },
   bar: { height: 12, borderRadius: 6, minWidth: 3 },
-  opsi: (k) => ({ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: k ? '#f0fdf4' : '#f8fafc', fontSize: 13, marginBottom: 6 }),
   grid2: { display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 12 },
   gambarBox: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 10, padding: 10, marginBottom: 10 },
+  // 🔥 BARU: badge tipe soal
+  tipeBadge: (t) => ({
+    background: t === 'pg' ? '#dbeafe' : t === 'multi' ? '#fef3c7' : '#dcfce7',
+    color: t === 'pg' ? '#1d4ed8' : t === 'multi' ? '#b45309' : '#166534',
+    borderRadius: 999, padding: '4px 12px', fontSize: 11, fontWeight: 800, letterSpacing: 0.5,
+  }),
+  // 🔥 BARU: penanda opsi
+  hurufBulat: { borderRadius: '50%', border: '2px solid #94a3b8', background: '#fff', color: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 },
+  kotakCentang: { borderRadius: 6, border: '2px solid #94a3b8', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 },
+  // 🔥 BARU: grid CBT benar/salah
+  cbt: { border: '1px solid #e3e6ef', borderRadius: 12, overflow: 'hidden', background: '#fff', margin: '10px 0' },
+  cbtHead: { display: 'grid', gridTemplateColumns: '1fr 88px 88px', background: '#4C6EF5', color: '#fff', fontWeight: 800 },
+  cbtHeadText: { padding: '8px 12px' },
+  cbtHeadOpt: { padding: '8px 4px', textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,.25)' },
+  cbtRow: { display: 'grid', gridTemplateColumns: '1fr 88px 88px', borderTop: '1px solid #eef1f6' },
+  cbtText: { padding: '10px 12px', lineHeight: 1.55 },
+  cbtOpt: { display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: '1px solid #eef1f6', padding: '6px 0' },
+  cbtRing: { borderRadius: '50%', border: '2px solid #cbd5e1', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 },
+  cbtRingIsi: { background: '#16a34a', borderColor: '#16a34a', color: '#fff' },
 };
 
 export default function LiveSessionTeacher() {
@@ -44,7 +67,17 @@ export default function LiveSessionTeacher() {
   const [sesi, setSesi] = useState(null);
   const [peserta, setPeserta] = useState([]);
   const [jawaban, setJawaban] = useState([]);
+  const [isFs, setIsFs] = useState(false);
   const fsRef = useRef(null);
+
+  // 🔥 BARU: deteksi fullscreen supaya ukuran teks/proyektor membesar
+  useEffect(() => {
+    const onFs = () => setIsFs(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  const uk = (n) => Math.round(n * (isFs ? 1.4 : 1));
 
   const guruId = (() => {
     try { const t = JSON.parse(localStorage.getItem('teacherData') || '{}'); return t.guruId || t.id || ''; } catch { return ''; }
@@ -99,8 +132,6 @@ export default function LiveSessionTeacher() {
   }, [sesi && sesi.id, sesi && sesi.mode]);
 
   const slides = useMemo(() => (babHtml ? parseSlides(babHtml) : []), [babHtml]);
-  // 🔥 BARU: parse ulang dari HTML bab sebagai sumber figur fallback
-  // (untuk sesi lama yang daftarSoal-nya tersimpan tanpa gambarHtml).
   const soalDariHtml = useMemo(() => (babHtml ? parseDaftarSoal(babHtml) : []), [babHtml]);
 
   const daftarSoal = sesi ? (sesi.daftarSoal || []) : [];
@@ -110,10 +141,8 @@ export default function LiveSessionTeacher() {
   const soalNow = soalMateriNow || soalBankNow || null;
   const idxNow = soalMateriNow ? slideNow.soalIdx : (sesi ? sesi.soalAktif : null);
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
-  // 🔥 BARU: figur soal = dari daftarSoal, fallback dari HTML bab langsung.
-  const gambarNow = soalNow
-    ? (soalNow.gambarHtml || (soalDariHtml[idxNow] || {}).gambarHtml || '')
-    : '';
+  const gambarNow = soalNow ? (soalNow.gambarHtml || (soalDariHtml[idxNow] || {}).gambarHtml || '') : '';
+  const tipeNow = soalNow?.kunci?.tipe || null;
 
   const jwsNow = useMemo(() => (idxNow != null ? jawaban.filter((j) => j.soalIdx === idxNow) : []), [jawaban, idxNow]);
   const belum = peserta.filter((p) => !jwsNow.some((j) => j.siswaId === p.siswaId));
@@ -156,6 +185,18 @@ export default function LiveSessionTeacher() {
 
   const keSlide = (i) => ubahSesi(sesi.id, { slideAktif: Math.max(0, Math.min(slides.length - 1, i)), kunciTerbuka: false, langkahTerbuka: 0 });
   const masukFullscreen = () => { if (fsRef.current && fsRef.current.requestFullscreen) fsRef.current.requestFullscreen(); };
+
+  // 🔥 BARU: helper warna/baris yang sadar fullscreen (proyektor gelap)
+  const warnaTeks = isFs ? '#e2e8f0' : '#1e293b';
+  const warnaSub = isFs ? '#94a3b8' : '#64748b';
+  const borderBaris = isFs ? '#334155' : '#e2e8f0';
+  const bgBaris = (k) => (k ? (isFs ? '#14532d' : '#f0fdf4') : (isFs ? '#1e293b' : '#f8fafc'));
+  const gayaBarisOpsi = (k) => ({
+    display: 'flex', gap: uk(10), alignItems: 'center',
+    padding: `${uk(8)}px ${uk(10)}px`, borderRadius: 10,
+    border: `1px solid ${borderBaris}`, background: bgBaris(k),
+    color: warnaTeks, fontSize: uk(13), marginBottom: 6,
+  });
 
   if (tahap === 'mode') {
     return (
@@ -237,9 +278,6 @@ export default function LiveSessionTeacher() {
       <style>{`
         .fs-area:fullscreen{background:#0f172a;overflow:auto;padding:28px}
         .fs-area:fullscreen .modmod{font-size:21px;line-height:1.7}
-        .fs-area:fullscreen .fs-teks{font-size:27px;line-height:1.55;color:#fff;margin-bottom:14px}
-        .fs-area:fullscreen .fs-opsi{font-size:20px;background:#1e293b;color:#e2e8f0;border-color:#334155}
-        .fs-area:fullscreen .fs-cover h1{font-size:46px}
         .fs-exit{display:none}
         .fs-area:fullscreen .fs-exit{display:inline-block}
       `}</style>
@@ -285,7 +323,7 @@ export default function LiveSessionTeacher() {
       </div>
 
       <div style={S.grid2}>
-        {/* ---- AREA PROYEKTOR (bisa fullscreen sendiri) ---- */}
+        {/* ---- AREA PROYEKTOR (fullscreen sendiri) ---- */}
         <div style={S.card} ref={fsRef} className="fs-area">
           <div style={{ ...S.row, marginBottom: 10 }}>
             <button style={S.btn2} onClick={masukFullscreen}>⛶ Layar Penuh (Proyektor)</button>
@@ -294,11 +332,11 @@ export default function LiveSessionTeacher() {
           {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (
             <div style={S.slideBox}>
               {slideNow.tipe === 'cover' ? (
-                <div className="fs-cover" style={{ textAlign: 'center', padding: '40px 10px' }}>
-                  <div style={{ fontSize: 11, letterSpacing: 3, color: '#94a3b8', fontWeight: 800 }}>BAB · MATERI</div>
-                  <h1 style={{ fontSize: 30, margin: '10px 0', color: '#fff' }}>{slideNow.judul}</h1>
+                <div style={{ textAlign: 'center', padding: '40px 10px' }}>
+                  <div style={{ fontSize: uk(11), letterSpacing: 3, color: '#94a3b8', fontWeight: 800 }}>BAB · MATERI</div>
+                  <h1 style={{ fontSize: uk(30), margin: '10px 0', color: '#fff' }}>{slideNow.judul}</h1>
                   <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {(slideNow.chips || []).map((c, i) => <span key={i} style={{ background: 'rgba(255,255,255,.12)', borderRadius: 999, padding: '3px 12px', fontSize: 11 }}>{c}</span>)}
+                    {(slideNow.chips || []).map((c, i) => <span key={i} style={{ background: 'rgba(255,255,255,.12)', borderRadius: 999, padding: '3px 12px', fontSize: uk(11) }}>{c}</span>)}
                   </div>
                 </div>
               ) : (
@@ -308,10 +346,20 @@ export default function LiveSessionTeacher() {
           )}
           {soalNow && (
             <div>
-              <div className="fs-teks" style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>{soalNow.teks}</div>
-              {/* 🔥 BARU: figur soal (svg/img/figslot) ikut tampil di proyektor */}
+              {/* 🔥 BARU: badge tipe + petunjuk pengerjaan */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+                <span style={{ ...S.tipeBadge(tipeNow), fontSize: uk(11) }}>
+                  {tipeNow === 'pg' ? '🅰️ PILIHAN GANDA' : tipeNow === 'multi' ? '☑️ PILIH LEBIH DARI SATU' : '⭕ BENAR / SALAH'}
+                </span>
+                <span style={{ fontSize: uk(12), color: warnaSub }}>
+                  {tipeNow === 'pg' ? 'Siswa memilih SATU jawaban A–D.'
+                    : tipeNow === 'multi' ? 'Siswa memilih SATU ATAU LEBIH pernyataan yang benar.'
+                    : 'Siswa menilai BENAR atau SALAH untuk SETIAP pernyataan.'}
+                </span>
+              </div>
+              <div style={{ fontSize: uk(15), lineHeight: 1.6, marginBottom: 10, color: warnaTeks, fontWeight: 600 }}>{soalNow.teks}</div>
               {gambarNow && (
-                <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: gambarNow }} />
+                <div className="modmod" style={{ ...S.gambarBox, background: isFs ? '#1e293b' : '#fff' }} dangerouslySetInnerHTML={{ __html: gambarNow }} />
               )}
               {!gambarNow && soalNow.gambarUrls && soalNow.gambarUrls.length > 0 && (
                 <div style={{ marginBottom: 10 }}>
@@ -320,31 +368,70 @@ export default function LiveSessionTeacher() {
                   ))}
                 </div>
               )}
-              {(soalNow.pilihan || []).map((p, i) => (
-                <div key={i} className="fs-opsi" style={S.opsi(terbuka && (soalNow.kunci.tipe === 'pg' ? soalNow.kunci.pg === i : (soalNow.kunci.tipe === 'multi' ? (soalNow.kunci.multi || []).includes(i) : false)))}>
-                  <b>{String.fromCharCode(65 + i)}.</b> {bersihVerdikt(p)}
-                </div>
-              ))}
-              {(soalNow.pernyataan || []).map((p, i) => (
-                <div key={i} className="fs-opsi" style={S.opsi(false)}>{i + 1}. {bersihVerdikt(p)}</div>
-              ))}
-              {soalNow && !soalNow.pilihan?.length && !soalNow.pernyataan?.length && (
-                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#92400e' }}>
-                  ⚠️ Opsi/pernyataan soal ini tidak terbaca dari modul. Akhiri sesi lalu mulai ulang setelah parser diperbarui, atau periksa HTML bab di Manajer Buku Digital.
+
+              {/* ===== PG: bulatan huruf A-D ===== */}
+              {tipeNow === 'pg' && (soalNow.pilihan || []).map((p, i) => {
+                const isKunci = terbuka && soalNow.kunci.pg === i;
+                return (
+                  <div key={i} style={gayaBarisOpsi(isKunci)}>
+                    <span style={{ ...S.hurufBulat, width: uk(26), height: uk(26), fontSize: uk(12), ...(isKunci ? { background: '#16a34a', borderColor: '#16a34a', color: '#fff' } : isFs ? { borderColor: '#64748b', color: '#e2e8f0', background: '#0f172a' } : {}) }}>
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                    {isKunci && <span style={{ fontSize: uk(14) }}>✅</span>}
+                  </div>
+                );
+              })}
+
+              {/* ===== MULTI: kotak centang ===== */}
+              {tipeNow === 'multi' && (soalNow.pilihan || []).map((p, i) => {
+                const isKunci = terbuka && (soalNow.kunci.multi || []).includes(i);
+                return (
+                  <div key={i} style={gayaBarisOpsi(isKunci)}>
+                    <span style={{ ...S.kotakCentang, width: uk(22), height: uk(22), fontSize: uk(13), color: isKunci ? '#fff' : 'transparent', ...(isKunci ? { background: '#16a34a', borderColor: '#16a34a' } : isFs ? { borderColor: '#64748b', background: '#0f172a' } : {}) }}>
+                      ✓
+                    </span>
+                    <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                  </div>
+                );
+              })}
+
+              {/* ===== BENAR/SALAH: grid CBT 3 kolom ===== */}
+              {tipeNow === 'bs' && (soalNow.pernyataan || []).length > 0 && (
+                <div style={{ ...S.cbt, background: isFs ? '#0f172a' : '#fff', borderColor: borderBaris }}>
+                  <div style={{ ...S.cbtHead, fontSize: uk(11) }}>
+                    <span style={S.cbtHeadText}>Pernyataan</span>
+                    <span style={S.cbtHeadOpt}>Benar</span>
+                    <span style={S.cbtHeadOpt}>Salah</span>
+                  </div>
+                  {(soalNow.pernyataan || []).map((p, i) => {
+                    const kunciB = (soalNow.kunci.bs || [])[i];
+                    return (
+                      <div key={i} style={{ ...S.cbtRow, borderColor: borderBaris, borderTop: `1px solid ${isFs ? '#334155' : '#eef1f6'}` }}>
+                        <div style={{ ...S.cbtText, fontSize: uk(13), color: warnaTeks }}>{i + 1}. {bersihVerdikt(p)}</div>
+                        <div style={{ ...S.cbtOpt, borderLeft: `1px solid ${isFs ? '#334155' : '#eef1f6'}` }}>
+                          <span style={{ ...S.cbtRing, width: uk(26), height: uk(26), fontSize: uk(13), ...(terbuka && kunciB === true ? S.cbtRingIsi : isFs ? { borderColor: '#64748b', background: '#0f172a', color: 'transparent' } : {}) }}>✓</span>
+                        </div>
+                        <div style={{ ...S.cbtOpt, borderLeft: `1px solid ${isFs ? '#334155' : '#eef1f6'}` }}>
+                          <span style={{ ...S.cbtRing, width: uk(26), height: uk(26), fontSize: uk(13), ...(terbuka && kunciB === false ? S.cbtRingIsi : isFs ? { borderColor: '#64748b', background: '#0f172a', color: 'transparent' } : {}) }}>✓</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-              {soalNow.pembahasan && (
-                <details style={{ marginTop: 10 }}>
-                  <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>🔒 Pembahasan (privat guru — tidak ikut diproyeksikan saat fullscreen)</summary>
-                  <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95', marginTop: 6 }}>{soalNow.pembahasan}</div>
-                </details>
+
+              {soalNow && !soalNow.pilihan?.length && !soalNow.pernyataan?.length && (
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10, fontSize: uk(12), color: '#92400e' }}>
+                  ⚠️ Opsi/pernyataan soal ini tidak terbaca dari modul. Akhiri sesi lalu mulai ulang setelah parser diperbarui, atau periksa HTML bab di Manajer Buku Digital.
+                </div>
               )}
             </div>
           )}
           {sesi.mode === 'materi' && !slideNow && <p style={{ fontSize: 12, color: '#64748b' }}>Memuat slide...</p>}
         </div>
 
-        {/* ---- PANEL MONITOR (tidak ikut fullscreen) ---- */}
+        {/* ---- PANEL MONITOR (privat guru, tidak ikut fullscreen) ---- */}
         <div style={S.card}>
           <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>📡 Jawaban siswa real-time</h4>
           {!soalNow && <p style={{ fontSize: 12, color: '#64748b' }}>{sesi.mode === 'materi' ? 'Navigasi slide; saat slide soal tampil, jawaban siswa masuk ke sini.' : 'Pilih soal untuk ditayangkan.'}</p>}
@@ -361,6 +448,13 @@ export default function LiveSessionTeacher() {
                 </div>
               ))}
               {belum.length > 0 && <div style={{ fontSize: 11, color: '#f39c12', marginTop: 8 }}>Belum: {belum.map((p) => p.nama || p.siswaId).join(', ')}</div>}
+              {/* 🔥 BARU: pembahasan privat DIPINDAH ke sini (tak terproyeksi) */}
+              {soalNow.pembahasan && (
+                <details style={{ marginTop: 12 }}>
+                  <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>🔒 Pembahasan (privat guru — tidak ikut diproyeksikan)</summary>
+                  <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95', marginTop: 6, whiteSpace: 'pre-wrap' }}>{soalNow.pembahasan}</div>
+                </details>
+              )}
             </>
           )}
         </div>

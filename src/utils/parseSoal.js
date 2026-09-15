@@ -1,13 +1,14 @@
 // src/utils/parseSoal.js
 // Parser modul HTML -> soal terstruktur + slide PPT.
-// FIX: (a) opsi/pernyataan TIDAK diambil dari dalam <details> (blok kunci),
-// (b) akhiran verdict "(Benar)/(Salah)" dibuang dari teks tampilan,
-// (c) fallback pencarian opsi lebih lengkap supaya tidak ada soal kosong,
-// (d) 🔥 BARU: elemen gambar (svg/img/figslot/caption) di dalam .soal
-//     ikut diekstrak sebagai `gambarHtml` supaya figur tampil di sesi live.
+// FIX: (a) tabel pernyataan Benar/Salah dikenali dari HEADER-nya
+//         ("Pernyataan | Benar | Salah"), sehingga tabel DATA/skor
+//         (stimulus) TIDAK lagi salah dibaca sebagai pernyataan;
+//     (b) tabel stimulus + figur (svg/img/figslot) ikut ditampilkan
+//         sebagai bagian soal di layar guru & siswa (gambarHtml);
+//     (c) opsi/pernyataan tidak diambil dari dalam <details>;
+//     (d) akhiran verdict "(Benar)/(Salah)" dibuang dari teks tampilan.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
-// Buang akhiran kunci yang bocor di teks pernyataan/pilihan.
 export const bersihVerdikt = (s) => String(s || '')
   .replace(/\s*\((Benar|Salah)\)\s*\.?\s*$/i, '')
   .replace(/\s*\[(Benar|Salah)\]\s*\.?\s*$/i, '')
@@ -27,29 +28,38 @@ export function parseDaftarSoal(html) {
     const sumber = bersihTeks(el.querySelector('.tipe')?.textContent) || '';
     const level = bersihTeks(el.querySelector('.lvl')?.textContent) || 'sedang';
     const teks = bersihTeks(el.querySelector('p')?.textContent) || '';
+    const diLuar = (n) => !n.closest('details');
 
-    // ---- kumpulkan opsi HANYA dari luar <details> ----
-    const diLuar = (node) => !node.closest('details');
-    let items = [...el.querySelectorAll('ul.pil li')].filter(diLuar).map((li) => bersihTeks(li.textContent));
-    let dariTabel = false;
-    if (!items.length) {
-      const tabel = [...el.querySelectorAll('table')].find(diLuar);
-      if (tabel) {
-        items = [...tabel.querySelectorAll('tbody tr')]
-          .map((tr) => bersihTeks(tr.querySelector('td')?.textContent))
-          .filter(Boolean);
-        dariTabel = true;
-      }
-    }
-    if (!items.length) {
-      items = [...el.querySelectorAll('ul li, ol li')].filter(diLuar).map((li) => bersihTeks(li.textContent)).filter(Boolean);
-    }
+    // ---- semua tabel di luar <details> ----
+    const tabels = [...el.querySelectorAll('table')].filter(diLuar);
+    const headText = (t) => ((t.querySelector('thead') || t.querySelector('tr'))?.textContent || '').toLowerCase();
+    // tabel pernyataan B/S = header memuat "pernyataan" + "benar/salah"
+    const tabelBS = tabels.find((t) => {
+      const h = headText(t);
+      return h.includes('pernyataan') && (h.includes('benar') || h.includes('salah'));
+    });
+    // tabel berisi pernyataan panjang (fallback bila header tidak standar)
+    const tabelPernyataan = tabelBS || tabels.find((t) => {
+      const rows = [...t.querySelectorAll('tbody tr')];
+      if (!rows.length) return false;
+      const avg = rows.reduce((a, tr) => a + bersihTeks(tr.querySelector('td')?.textContent).length, 0) / rows.length;
+      return avg > 24;
+    });
+    // tabel stimulus = semua tabel SELAIN tabel pernyataan (skor, data, dll)
+    const stimulusTabels = tabels.filter((t) => t !== tabelPernyataan);
 
-    // ---- 🔥 BARU: ambil figur (svg/img/figslot/caption) di luar details,
-    //      di luar daftar pilihan & tabel pernyataan ----
+    // ---- sumber opsi/pernyataan (urutan prioritas) ----
+    const pilItems = [...el.querySelectorAll('ul.pil li')].filter(diLuar).map((li) => bersihTeks(li.textContent));
+    let items = pilItems.length
+      ? pilItems
+      : tabelPernyataan
+        ? [...tabelPernyataan.querySelectorAll('tbody tr')].map((tr) => bersihTeks(tr.querySelector('td')?.textContent)).filter(Boolean)
+        : [...el.querySelectorAll('ul li, ol li')].filter(diLuar).map((li) => bersihTeks(li.textContent)).filter(Boolean);
+
+    // ---- figur + tabel stimulus untuk ditampilkan bersama soal ----
     const figEls = [...el.querySelectorAll('svg, img, .figslot, .caption')]
       .filter((n) => !n.closest('details') && !n.closest('ul.pil') && !n.closest('table'));
-    const gambarHtml = figEls.map((n) => n.outerHTML).join('');
+    const gambarHtml = figEls.map((n) => n.outerHTML).join('') + stimulusTabels.map((t) => t.outerHTML).join('');
 
     const berHuruf = items.filter((t) => /^[A-D][.).]/.test(t)).length;
     const details = el.querySelector('details');
@@ -60,11 +70,14 @@ export function parseDaftarSoal(html) {
       if (m) jawabTeks = bersihTeks(m[0]);
     }
 
+    // ---- tentukan tipe ----
     let tipe;
-    if (berHuruf >= Math.max(1, items.length - 1) && items.length >= 2) tipe = 'pg';
-    else if (/^Jawaban:\s*(Benar|Salah)/i.test(jawabTeks)) tipe = 'bs';
+    if (pilItems.length && berHuruf >= Math.max(1, pilItems.length - 1) && pilItems.length >= 2) tipe = 'pg';
+    else if (/^Jawaban:\s*(Benar|Salah)/i.test(jawabTeks) || tabelBS) tipe = 'bs';
     else if (/Jawaban:\s*Pernyataan/i.test(jawabTeks) || /pernyataan\s*\d/i.test(jawabTeks)) tipe = 'multi';
-    else if (dariTabel) tipe = 'bs';
+    else if (pilItems.length && !berHuruf) tipe = 'multi';
+    else if (!pilItems.length && tabelPernyataan) tipe = 'bs';
+    else if (berHuruf) tipe = 'pg';
     else tipe = 'multi';
 
     const pilihan = tipe === 'pg'
@@ -113,6 +126,9 @@ export const CSS_MODUL = `
 .modmod table.ring{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
 .modmod table.ring th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
 .modmod table.ring td{border:1px solid #e3e6ef;padding:5px 8px}
+.modmod table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+.modmod table th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
+.modmod table td{border:1px solid #e3e6ef;padding:5px 8px}
 .modmod svg,.modmod img{max-width:100%;height:auto;display:block;margin:8px auto}
 .modmod .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:14px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:8px 0}
 .modmod .caption{text-align:center;font-size:11.5px;color:#64748b}

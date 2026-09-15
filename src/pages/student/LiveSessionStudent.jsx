@@ -1,10 +1,9 @@
 // src/pages/student/LiveSessionStudent.jsx
-// Sisi siswa: join lewat kode (bisa terisi otomatis dari ?kode= di alamat),
-// ikuti slide/soal guru real-time, kerjakan soal gaya CBT (PG / multi /
-// Benar-Salah), kunci terbuka hanya saat guru membuka.
-// FIX: teks opsi/pernyataan dibersihkan dari verdict "(Benar)/(Salah)",
-// dan ada peringatan bila opsi soal tidak terbaca.
-// 🔥 BARU: figur soal (svg/img/figslot) ikut tampil di layar siswa.
+// Sisi siswa: join lewat kode (bisa otomatis dari ?kode=), ikuti slide/soal
+// guru real-time, kerjakan soal gaya CBT (PG / multi / Benar-Salah).
+// 🔥 BARU: setelah kirim, muncul kotak "📌 Anda memilih jawaban: ..." +
+// keterangan menunggu siswa lain & penjelasan guru.
+// Figur + tabel stimulus soal ikut tampil; kunci hanya saat guru membuka.
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -34,6 +33,9 @@ const S = {
   }),
   opsi: (a, k, s) => ({ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%', textAlign: 'left', padding: '11px 12px', borderRadius: 10, border: `2px solid ${s && k ? '#16a34a' : s && a ? '#e74c3c' : a ? '#7C3AED' : '#e2e8f0'}`, background: s && k ? '#f0fdf4' : s && a ? '#fef2f2' : a ? '#f5f3ff' : '#fff', fontSize: 13.5, cursor: s ? 'default' : 'pointer', marginBottom: 8 }),
   gambarBox: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 10, padding: 10, marginBottom: 10 },
+  // 🔥 BARU: kotak konfirmasi jawaban siswa
+  pilihBox: { background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: '10px 12px', marginTop: 10 },
+  pilihItem: { fontSize: 12.5, color: '#1e293b', lineHeight: 1.6, padding: '2px 0' },
 };
 
 export default function LiveSessionStudent() {
@@ -67,7 +69,6 @@ export default function LiveSessionStudent() {
   useEffect(() => { setPilih(null); }, [sesi && sesi.slideAktif, sesi && sesi.soalAktif]);
 
   const slides = useMemo(() => (babHtml ? parseSlides(babHtml) : []), [babHtml]);
-  // 🔥 BARU: fallback figur dari HTML bab (untuk sesi lama tanpa gambarHtml).
   const soalDariHtml = useMemo(() => (babHtml ? parseDaftarSoal(babHtml) : []), [babHtml]);
 
   const daftarSoal = sesi ? (sesi.daftarSoal || []) : [];
@@ -78,10 +79,7 @@ export default function LiveSessionStudent() {
   const idxSoal = sesi && sesi.mode === 'materi' ? (slideNow ? slideNow.soalIdx : null) : (sesi ? sesi.soalAktif : null);
   const sudah = idxSoal != null ? !!terkirim[idxSoal] : false;
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
-  // 🔥 BARU: figur soal = dari daftarSoal, fallback dari HTML bab langsung.
-  const gambarNow = soal
-    ? (soal.gambarHtml || (soalDariHtml[idxSoal] || {}).gambarHtml || '')
-    : '';
+  const gambarNow = soal ? (soal.gambarHtml || (soalDariHtml[idxSoal] || {}).gambarHtml || '') : '';
 
   async function gabung() {
     setErr('');
@@ -96,6 +94,28 @@ export default function LiveSessionStudent() {
     const benar = cekBenar(soal.kunci, pilih);
     await kirimJawaban(sesi.id, { siswaId, nama, soalIdx: idxSoal, jawaban: pilih, benar });
     setTerkirim((t) => ({ ...t, [idxSoal]: benar }));
+  }
+
+  // 🔥 BARU: ringkasan pilihan siswa untuk kotak konfirmasi
+  function ringkasPilihan() {
+    if (!soal || pilih === null) return null;
+    if (soal.kunci?.tipe === 'pg') {
+      const i = pilih;
+      return <div style={S.pilihItem}><b>{String.fromCharCode(65 + i)}.</b> {bersihVerdikt(soal.pilihan[i] || '')}</div>;
+    }
+    if (soal.kunci?.tipe === 'multi') {
+      return (Array.isArray(pilih) ? pilih : []).map((i) => (
+        <div key={i} style={S.pilihItem}>✓ {bersihVerdikt(soal.pilihan[i] || '')}</div>
+      ));
+    }
+    if (soal.kunci?.tipe === 'bs') {
+      return (soal.pernyataan || []).map((p, i) => (
+        <div key={i} style={S.pilihItem}>
+          {i + 1}. {bersihVerdikt(p)} → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
+        </div>
+      ));
+    }
+    return null;
   }
 
   if (!sesi) {
@@ -149,7 +169,6 @@ export default function LiveSessionStudent() {
         <div style={S.card}>
           <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
 
-          {/* 🔥 BARU: figur soal ikut tampil di layar siswa */}
           {gambarNow && (
             <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: gambarNow }} />
           )}
@@ -220,9 +239,18 @@ export default function LiveSessionStudent() {
           {!sudah && !terbuka && (
             <button style={S.btn} disabled={pilih === null || (Array.isArray(pilih) && pilih.length === 0)} onClick={kirim}>📤 Kirim Jawaban</button>
           )}
+
+          {/* 🔥 BARU: konfirmasi pilihan + status menunggu */}
           {sudah && !terbuka && (
-            <div style={{ fontSize: 12.5, color: '#166534', fontWeight: 700, marginTop: 8 }}>✅ Terkirim — perhatikan penjelasan guru.</div>
+            <div style={S.pilihBox}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: '#4338ca', marginBottom: 6 }}>📌 Anda memilih jawaban:</div>
+              {ringkasPilihan()}
+              <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 8 }}>
+                ⏳ Terkirim — menunggu siswa lain menyelesaikan & penjelasan guru…
+              </div>
+            </div>
           )}
+
           {terbuka && (
             <div style={{ fontSize: 12.5, color: sudah ? (terkirim[idxSoal] ? '#166534' : '#991b1b') : '#64748b', fontWeight: 700, marginTop: 8 }}>
               {sudah ? (terkirim[idxSoal] ? '✅ Jawabanmu benar.' : '❌ Jawabanmu belum tepat — simak pembahasan guru.') : 'Kunci dibuka guru.'}
