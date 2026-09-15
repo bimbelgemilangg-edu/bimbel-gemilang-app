@@ -1,13 +1,14 @@
-// src/components/buku/RendererHtmlBab.jsx (v10)
-// FIX v10: lapis pembersih di browser tidak lagi menghapus figur:
-//  - bersihkanUlang hanya membuang link/footer/rujukan sumber & wadah teks kosong
-//  - bentuk SVG dan <img src=https aman> dipertahankan
-// Fitur tetap: coba-dulu-baru-kunci, pencatatan jawaban siswa, mode presentasi guru.
+// src/components/buku/RendererHtmlBab.jsx (v11)
+// FIX: soal Benar/Salah dirender ulang menjadi GRID CBT standar ujian
+// (baris pernyataan + tombol radio Benar/Salah yang bisa ditekan),
+// menggantikan tabel markdown mati yang berantakan di sisi siswa.
+// Saat guru membuka kunci (live) / setelah siswa memeriksa (reader),
+// tiap baris menyala hijau/merah sesuai kebenaran.
 import { useEffect, useRef } from 'react';
 import { bersihkanHtml } from '../../utils/htmlBersih';
 import { catatJawaban } from '../../services/kelasService';
 
-const VERSI = 'v10';
+const VERSI = 'v11';
 
 const BASE_STYLE = `
   :host{display:block}
@@ -35,9 +36,29 @@ const BASE_STYLE = `
   .gb-wrap .pil li{padding:12px 14px;font-size:15px;border-radius:12px;margin:7px 0;border:1.5px solid #e6e9f4;background:#fbfcff;transition:background .15s,border-color .15s;cursor:pointer}
   .gb-wrap .pil li:active{transform:scale(.995)}
   .gb-wrap ul.pil.gb-multi li{display:flex;align-items:flex-start}
-  .gb-wrap ul.pil.gb-multi li::before{content:"";width:18px;height:18px;border:2px solid #94a3b8;border-radius:5px;flex:0 0 auto;margin:2px 10px 0 0;background:#fff}
+  .gb-wrap ul.pil.gb-multi li::before{content:"";width:20px;height:20px;border:2px solid #94a3b8;border-radius:6px;flex:0 0 auto;margin:2px 10px 0 0;background:#fff}
   .gb-wrap ul.pil.gb-multi li.gb-dipilih{border-color:#7C3AED;background:#f5f3ff}
-  .gb-wrap ul.pil.gb-multi li.gb-dipilih::before{content:"✓";background:#7C3AED;border-color:#7C3AED;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .gb-wrap ul.pil.gb-multi li.gb-dipilih::before{content:"✓";background:#7C3AED;border-color:#7C3AED;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  /* ===== GRID CBT BENAR/SALAH (standar ujian) ===== */
+  .gb-cbt{border:1px solid #e3e6ef;border-radius:12px;overflow:hidden;margin:10px 0;background:#fff}
+  .gb-cbt-head{display:grid;grid-template-columns:1fr 88px 88px;background:#4C6EF5;color:#fff;font-size:12px;font-weight:800}
+  .gb-cbt-head .gb-cbt-text{padding:9px 12px}
+  .gb-cbt-head .gb-cbt-opt{padding:9px 4px;text-align:center;border-left:1px solid rgba(255,255,255,.25)}
+  .gb-cbt-row{display:grid;grid-template-columns:1fr 88px 88px;border-top:1px solid #eef1f6;align-items:stretch}
+  .gb-cbt-row .gb-cbt-text{padding:11px 12px;font-size:14px;line-height:1.6}
+  .gb-cbt-row.gb-tepat .gb-cbt-text{background:#f0fdf4}
+  .gb-cbt-row.gb-meleset .gb-cbt-text{background:#fef2f2}
+  .gb-cbt-opt{display:flex;align-items:center;justify-content:center;border-left:1px solid #eef1f6;padding:6px 0}
+  .gb-cbt-btn{width:46px;height:46px;border-radius:50%;border:2px solid #cbd5e1;background:#fff;cursor:pointer;font-weight:800;font-size:12px;color:#64748b;transition:all .12s}
+  .gb-cbt-btn:active{transform:scale(.94)}
+  .gb-cbt-btn.gb-aktif{border-color:#7C3AED;background:#7C3AED;color:#fff}
+  .gb-cbt-btn.gb-kunci{border-color:#16a34a;color:#16a34a;background:#f0fdf4}
+  .gb-cbt-btn.gb-kunci.gb-aktif{background:#16a34a;color:#fff}
+  .gb-cbt-btn:disabled{cursor:default}
+  @media (max-width:640px){
+    .gb-cbt-head,.gb-cbt-row{grid-template-columns:1fr 64px 64px}
+    .gb-cbt-btn{width:40px;height:40px;font-size:11px}
+  }
   .gb-bsbtns{display:flex;gap:6px;margin-top:8px}
   .gb-guru{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
   .gb-wrap details.kunci{margin:6px 0}
@@ -68,65 +89,10 @@ const BASE_STYLE = `
   .gb-wrap .pec-peny{padding:1px 4px 0;font-size:.82em}
 `;
 
-const DOMAIN_TERLARANG = /scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams|drive\.google|dropbox|mega\.nz/i;
-const URL_RE = /https?:\/\/[^\s<>"']+/i;
-const RUJUK_SUMBER = /\[[^\]]*(?:SUMBER|sumber)[^\]]*\]/g;
-const KATA_DOMAIN = /\b(?:scribd|slideshare|slideguru|slideplayer|pdfcoffee|idoc|pdfdrive|academia|researchgate|docplayer|docshare|my99dreams)\b[^\s<>"']*/gi;
-const TEXT_WADAH = ['p', 'div', 'span', 'li', 'td', 'th', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'figcaption', 'blockquote', 'small'];
-
 function siapkanCss(html) {
   return String(html)
     .replace(/:root\s*\{/g, '.gb-wrap{')
     .replace(/(^|})\s*body\s*\{/g, '$1.gb-wrap{');
-}
-
-function srcAman(nilai) {
-  const v = String(nilai || '').trim();
-  const low = v.toLowerCase();
-  if (low.startsWith('javascript:') || low.startsWith('data:text/html')) return false;
-  if (DOMAIN_TERLARANG.test(v)) return false;
-  if (/^https:\/\//i.test(v)) return true;
-  if (low.startsWith('data:image/')) return true;
-  return false;
-}
-
-function bersihkanUlang(root) {
-  const semua = [...root.querySelectorAll('*')];
-  for (const el of semua) {
-    if (el.tagName === 'A') {
-      const frag = document.createDocumentFragment();
-      while (el.firstChild) frag.appendChild(el.firstChild);
-      el.replaceWith(frag);
-      continue;
-    }
-    for (const nama of ['href', 'cite', 'action', 'data-src']) {
-      if (el.hasAttribute(nama)) el.removeAttribute(nama);
-    }
-    const src = el.getAttribute ? el.getAttribute('src') : null;
-    if (src !== null && !srcAman(src)) el.removeAttribute('src');
-    if (el.tagName === 'FOOTER') { el.remove(); continue; }
-    if (el.tagName === 'P' && /sumber|source|diunduh|retrieved/i.test(el.textContent || '') &&
-        (URL_RE.test(el.textContent || '') || DOMAIN_TERLARANG.test(el.textContent || ''))) {
-      el.remove();
-      continue;
-    }
-    for (const n of [...el.childNodes]) {
-      if (n.nodeType === 3) {
-        const isi = n.nodeValue || '';
-        if (URL_RE.test(isi) || DOMAIN_TERLARANG.test(isi) || RUJUK_SUMBER.test(isi)) {
-          n.nodeValue = isi
-            .replace(RUJUK_SUMBER, '')
-            .replace(URL_RE, '')
-            .replace(KATA_DOMAIN, '')
-            .replace(/\s{2,}/g, ' ');
-        }
-      }
-    }
-  }
-  // Hanya wadah teks kosong yang dibuang — SVG & img TIDAK disentuh.
-  [...root.querySelectorAll(TEXT_WADAH.join(','))].forEach((el) => {
-    if (el.childElementCount === 0 && !el.textContent.trim() && !el.hasAttribute('src')) el.remove();
-  });
 }
 
 function parseKunci(teks) {
@@ -164,7 +130,7 @@ const hint = (soalEl, teks) => {
   const d = document.createElement('div');
   d.textContent = '✋ ' + teks;
   d.style.cssText = 'margin:6px 0 2px;font-size:11px;color:#7C3AED;font-weight:700';
-  const pil = soalEl.querySelector('.pil') || soalEl.querySelector('ul') || soalEl.querySelector('table');
+  const pil = soalEl.querySelector('.pil') || soalEl.querySelector('ul') || soalEl.querySelector('table') || soalEl.querySelector('.gb-cbt');
   if (pil) pil.before(d);
   else soalEl.appendChild(d);
 };
@@ -219,6 +185,9 @@ function toastShadow(root, teks) {
 function bersihGlyph(el) {
   el.innerHTML = el.innerHTML.replace(/^\s*[\u2610\u2611\u2612\u25A1\u25EB\u25FC\u2B1C\u2B1D]\s*/, '');
 }
+const bersihTeksStmt = (s) => String(s || '')
+  .replace(/^\s*[\u2610\u2611\u2612\u25A1\u25EB\u25FC\u2B1C\u2B1D]\s*/, '')
+  .replace(/\s+/g, ' ').trim();
 
 function cariKunci(soalEl) {
   const j = soalEl.querySelector('.jawab');
@@ -237,6 +206,39 @@ function cariPilihan(soalEl) {
   return { ul, lis };
 }
 
+// ===== BANGUN GRID CBT BENAR/SALAH =====
+function bangunCbt(soalEl, pernyataan) {
+  const wrapCbt = document.createElement('div');
+  wrapCbt.className = 'gb-cbt';
+  const head = document.createElement('div');
+  head.className = 'gb-cbt-head';
+  head.innerHTML = '<span class="gb-cbt-text">Pernyataan</span><span class="gb-cbt-opt">Benar</span><span class="gb-cbt-opt">Salah</span>';
+  wrapCbt.appendChild(head);
+  const rows = pernyataan.map((teks, i) => {
+    const row = document.createElement('div');
+    row.className = 'gb-cbt-row';
+    const txt = document.createElement('div');
+    txt.className = 'gb-cbt-text';
+    txt.textContent = (i + 1) + '. ' + teks;
+    const optB = document.createElement('button');
+    optB.type = 'button'; optB.className = 'gb-cbt-btn'; optB.textContent = 'B';
+    const optS = document.createElement('button');
+    optS.type = 'button'; optS.className = 'gb-cbt-btn'; optS.textContent = 'S';
+    const cellB = document.createElement('div'); cellB.className = 'gb-cbt-opt'; cellB.appendChild(optB);
+    const cellS = document.createElement('div'); cellS.className = 'gb-cbt-opt'; cellS.appendChild(optS);
+    row.appendChild(txt); row.appendChild(cellB); row.appendChild(cellS);
+    wrapCbt.appendChild(row);
+    return { row, optB, optS };
+  });
+  // sembunyikan wadah asli (tabel markdown / ul) supaya tidak dobel & rapi
+  const asli = soalEl.querySelector('table') || soalEl.querySelector('ul.pil') || soalEl.querySelector('ul');
+  if (asli) asli.style.display = 'none';
+  const jangkar = asli || soalEl.querySelector('p');
+  if (jangkar) jangkar.after(wrapCbt);
+  else soalEl.appendChild(wrapCbt);
+  return rows;
+}
+
 function interaktif(soalEl, root, soalNo, opts) {
   const details = soalEl.querySelector('details');
   const kunci = cariKunci(soalEl);
@@ -246,14 +248,9 @@ function interaktif(soalEl, root, soalNo, opts) {
   const catat = (tepat, ringkas) => {
     if (opts.presentasi || !opts.siswaId) return;
     catatJawaban({
-      bukuId: opts.bukuId,
-      babId: opts.babId,
-      soalNo,
-      tipe: kunci.tipe,
-      benar: tepat,
-      jawaban: ringkas,
-      siswaId: opts.siswaId,
-      nama: opts.nama,
+      bukuId: opts.bukuId, babId: opts.babId, soalNo,
+      tipe: kunci.tipe, benar: tepat, jawaban: ringkas,
+      siswaId: opts.siswaId, nama: opts.nama,
     });
   };
 
@@ -276,6 +273,7 @@ function interaktif(soalEl, root, soalNo, opts) {
     return true;
   }
 
+  // ---------- PG ----------
   if (kunci.tipe === 'pg' && lis.length >= 2) {
     hint(soalEl, 'Ketuk jawabanmu untuk memeriksa.');
     lis.forEach((li, idx) => {
@@ -294,6 +292,7 @@ function interaktif(soalEl, root, soalNo, opts) {
     return true;
   }
 
+  // ---------- MULTI (PG Kompleks) ----------
   if (kunci.tipe === 'multi' && lis.length >= 2) {
     if (ul) ul.classList.add('gb-multi');
     hint(soalEl, 'Ketuk satu atau lebih pernyataan, lalu tekan Periksa.');
@@ -325,35 +324,32 @@ function interaktif(soalEl, root, soalNo, opts) {
     return true;
   }
 
+  // ---------- BENAR/SALAH (GRID CBT) ----------
   if (kunci.tipe === 'bs') {
-    let stmts = lis.length === kunci.bs.length ? lis : null;
-    if (!stmts) {
-      const tds = [...soalEl.querySelectorAll('table tbody tr')].map((tr) => tr.querySelector('td')).filter(Boolean);
-      if (tds.length === kunci.bs.length) stmts = tds;
+    let pernyataan = lis.length === kunci.bs.length
+      ? lis.map((li) => bersihTeksStmt(li.textContent))
+      : null;
+    if (!pernyataan) {
+      const tds = [...soalEl.querySelectorAll('table tbody tr')].map((tr) => bersihTeksStmt(tr.querySelector('td')?.textContent)).filter(Boolean);
+      if (tds.length === kunci.bs.length) pernyataan = tds;
     }
-    if (!stmts) return false;
-    hint(soalEl, 'Pilih Benar/Salah untuk tiap pernyataan, lalu Periksa.');
+    if (!pernyataan) return false;
+    hint(soalEl, 'Pilih Benar (B) atau Salah (S) untuk tiap pernyataan, lalu Periksa.');
+    const rows = bangunCbt(soalEl, pernyataan);
     const pilih = [];
-    stmts.forEach((el, idx) => {
-      const wrap = document.createElement('div');
-      wrap.className = 'gb-bsbtns';
-      const bB = buatBtn('Benar', 'mini');
-      const bS = buatBtn('Salah', 'mini');
-      bB.addEventListener('click', () => {
+    rows.forEach((r, idx) => {
+      r.optB.addEventListener('click', () => {
         if (soalEl.dataset.done) return;
         pilih[idx] = true;
-        bB.classList.add('gb-aktif');
-        bS.classList.remove('gb-aktif');
+        r.optB.classList.add('gb-aktif');
+        r.optS.classList.remove('gb-aktif');
       });
-      bS.addEventListener('click', () => {
+      r.optS.addEventListener('click', () => {
         if (soalEl.dataset.done) return;
         pilih[idx] = false;
-        bS.classList.add('gb-aktif');
-        bB.classList.remove('gb-aktif');
+        r.optS.classList.add('gb-aktif');
+        r.optB.classList.remove('gb-aktif');
       });
-      wrap.appendChild(bB);
-      wrap.appendChild(bS);
-      el.appendChild(wrap);
     });
     const btn = buatBtn('Periksa Jawaban');
     btn.addEventListener('click', () => {
@@ -362,17 +358,22 @@ function interaktif(soalEl, root, soalNo, opts) {
         return;
       }
       soalEl.dataset.done = '1';
-      stmts.forEach((x, j) => {
+      rows.forEach((r, j) => {
         const tepat = pilih[j] === kunci.bs[j];
-        x.style.background = tepat ? '#dcfce7' : '#fef2f2';
-        x.style.borderColor = tepat ? '#22c55e' : '#ef4444';
+        r.row.classList.add(tepat ? 'gb-tepat' : 'gb-meleset');
+        const btnKunci = kunci.bs[j] ? r.optB : r.optS;
+        btnKunci.classList.add('gb-kunci');
+        r.optB.disabled = true;
+        r.optS.disabled = true;
       });
+      btn.disabled = true;
+      btn.style.opacity = '.5';
       const tepatAll = pilih.every((v, j) => v === kunci.bs[j]);
       bukaKunci(details, false);
       banner(soalEl, tepatAll);
       catat(tepatAll, pilih.map((v) => (v ? 'B' : 'S')).join(''));
     });
-    const anchor = soalEl.querySelector('table') || ul || soalEl.querySelector('p');
+    const anchor = soalEl.querySelector('.gb-cbt');
     if (anchor) anchor.after(btn);
     else soalEl.appendChild(btn);
     return true;
@@ -384,59 +385,42 @@ function interaktif(soalEl, root, soalNo, opts) {
 function enhance(root, opts) {
   const wrap = root.querySelector('.gb-wrap') || root;
   wrap.querySelectorAll('li').forEach(bersihGlyph);
-  bersihkanUlang(wrap);
 
   try {
     const anak = [...wrap.children];
     let splitIdx = anak.findIndex((el) => /^H[12]$/.test(el.tagName) && /Soal Pemantapan/i.test(el.textContent || ''));
     if (splitIdx < 0) splitIdx = anak.findIndex((el) => el.classList && el.classList.contains('soal'));
     if (splitIdx > 0 && splitIdx < anak.length) {
-      const kiri = document.createElement('div');
-      kiri.className = 'gb-kolom-materi';
-      const kanan = document.createElement('div');
-      kanan.className = 'gb-kolom-soal';
-      const layout = document.createElement('div');
-      layout.className = 'gb-layout';
+      const kiri = document.createElement('div'); kiri.className = 'gb-kolom-materi';
+      const kanan = document.createElement('div'); kanan.className = 'gb-kolom-soal';
+      const layout = document.createElement('div'); layout.className = 'gb-layout';
       anak.forEach((el, i) => (i < splitIdx ? kiri : kanan).appendChild(el));
-      layout.appendChild(kiri);
-      layout.appendChild(kanan);
+      layout.appendChild(kiri); layout.appendChild(kanan);
       wrap.appendChild(layout);
     }
-  } catch { /* split gagal = satu kolom */ }
+  } catch { /* satu kolom */ }
 
   const semuaSoal = [...wrap.querySelectorAll('.soal')];
-
   const sticky = document.createElement('div');
   sticky.className = 'gb-sticky';
-  const chipSoal = document.createElement('span');
-  chipSoal.className = 'gb-chip';
+  const chipSoal = document.createElement('span'); chipSoal.className = 'gb-chip';
   chipSoal.textContent = opts.presentasi ? `🎓 Mode Bahas · ${semuaSoal.length} soal` : `🎯 ${semuaSoal.length} soal`;
-  const chipSiap = document.createElement('span');
-  chipSiap.className = 'gb-chip';
-  const chipPaham = document.createElement('span');
-  chipPaham.className = 'gb-chip';
-  const chipVer = document.createElement('span');
-  chipVer.className = 'gb-chip';
+  const chipSiap = document.createElement('span'); chipSiap.className = 'gb-chip';
+  const chipPaham = document.createElement('span'); chipPaham.className = 'gb-chip';
+  const chipVer = document.createElement('span'); chipVer.className = 'gb-chip';
   chipVer.textContent = `⚙️ ${VERSI}`;
-  sticky.appendChild(chipSoal);
-  sticky.appendChild(chipSiap);
-  sticky.appendChild(chipPaham);
-  sticky.appendChild(chipVer);
-
+  sticky.appendChild(chipSoal); sticky.appendChild(chipSiap); sticky.appendChild(chipPaham); sticky.appendChild(chipVer);
   if (opts.presentasi) {
     const bAll = buatBtn('🔓 Buka semua kunci', 'mini');
     bAll.addEventListener('click', () => root.querySelectorAll('details').forEach((d) => bukaKunci(d, true)));
     const bNone = buatBtn('🙈 Tutup semua', 'mini');
     bNone.addEventListener('click', () => root.querySelectorAll('details').forEach((d) => {
-      d.open = false;
-      d.classList.add('gb-terkunci');
+      d.open = false; d.classList.add('gb-terkunci');
       d.querySelectorAll('.langkah li').forEach((li, i) => { if (i > 0) li.classList.add('blm'); });
     }));
     const bExit = buatBtn('⬅ Keluar mode bahas', 'mini');
     bExit.addEventListener('click', () => { if (opts.onKeluar) opts.onKeluar(); });
-    sticky.appendChild(bAll);
-    sticky.appendChild(bNone);
-    sticky.appendChild(bExit);
+    sticky.appendChild(bAll); sticky.appendChild(bNone); sticky.appendChild(bExit);
   }
   wrap.insertBefore(sticky, wrap.firstChild);
 
@@ -450,8 +434,7 @@ function enhance(root, opts) {
     kartuMateri.forEach((kartu, i) => {
       const btn = buatBtn(paham.has(i) ? '✓ Sudah paham' : '✓ Tandai paham bagian ini', 'gb-paham' + (paham.has(i) ? ' oke' : ''));
       btn.addEventListener('click', () => {
-        if (paham.has(i)) paham.delete(i);
-        else paham.add(i);
+        if (paham.has(i)) paham.delete(i); else paham.add(i);
         try { localStorage.setItem(kunciKey, JSON.stringify([...paham])); } catch { /* abaikan */ }
         btn.textContent = paham.has(i) ? '✓ Sudah paham' : '✓ Tandai paham bagian ini';
         btn.classList.toggle('oke', paham.has(i));
@@ -484,12 +467,7 @@ function enhance(root, opts) {
     else { const d = soalEl.querySelector('details'); if (d) d.classList.remove('gb-terkunci'); }
   });
 
-  if (semuaSoal.length > 0 && siap === 0) {
-    root.querySelectorAll('details.gb-terkunci').forEach((d) => d.classList.remove('gb-terkunci'));
-    chipSiap.textContent = '⚠️ mode baca saja';
-  } else {
-    chipSiap.textContent = opts.presentasi ? '🔓 kontrol guru aktif' : `🔓 ${siap}/${semuaSoal.length} siap dicoba`;
-  }
+  chipSiap.textContent = opts.presentasi ? '🔓 kontrol guru aktif' : `🔓 ${siap}/${semuaSoal.length} siap dicoba`;
 }
 
 export default function RendererHtmlBab({ html, babId, bukuId, modePresentasi = false, onKeluar }) {
