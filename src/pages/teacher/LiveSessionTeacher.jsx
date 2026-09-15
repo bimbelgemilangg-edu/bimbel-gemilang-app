@@ -1,10 +1,12 @@
 // src/pages/teacher/LiveSessionTeacher.jsx
 // PINTU SESI LIVE GURU: 📖 Materi Interaktif (bab buku digital) &
-// ✍️ Soal & Pembahasan (bank soal).
-// 🔥 BARU: panel monitor menampilkan NAMA SETIAP SISWA + PILIHAN
-// JAWABANNYA (huruf untuk PG, urutan B/S untuk benar-salah, nomor
-// tercentang untuk multi) serta yang BELUM menjawab -- untuk semua
-// tipe soal, terlihat sebelum pembahasan dibuka (privat guru).
+// ✍️ Soal & Pembahasan (bank soal). Sesuai sesiService.js asli repo:
+// buatSesi() hanya menyimpan field dasar, jadi field tambahan
+// (mode/sumber/daftarSoal/slideAktif) ditulis lewat ubahSesi() segera
+// setelah sesi dibuat -- siswa pasti menerimanya.
+// Fitur: manajemen sesi aktif, auto-akhiri sesi lama bab sama, fullscreen
+// proyektor, badge tipe + petunjuk, grid CBT B/S, monitor nama+pilihan
+// siswa (privat), pembahasan HTML privat guru.
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -47,14 +49,12 @@ const S = {
   cbtRing: { borderRadius: '50%', border: '2px solid #cbd5e1', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 },
   cbtRingIsi: { background: '#16a34a', borderColor: '#16a34a', color: '#fff' },
   sesiRow: { display: 'flex', alignItems: 'center', gap: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px', marginBottom: 8, flexWrap: 'wrap' },
-  // 🔥 BARU: baris daftar siswa + pilihan jawabannya di monitor
   siswaRow: { display: 'flex', gap: 6, alignItems: 'center', fontSize: 11.5, marginBottom: 3 },
   siswaNama: { flex: 1, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   siswaJawab: { background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 6, padding: '1px 7px', fontSize: 10.5, fontWeight: 800, color: '#4338ca', flexShrink: 0 },
   siswaBelum: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, padding: '1px 7px', fontSize: 10.5, fontWeight: 800, color: '#b45309', flexShrink: 0 },
 };
 
-// 🔥 BARU: ringkasan pilihan siswa untuk ditampilkan di panel guru
 function ringkasJawaban(soal, jw) {
   if (!soal || jw === undefined || jw === null) return '—';
   const t = soal.kunci?.tipe;
@@ -480,7 +480,6 @@ export default function LiveSessionTeacher() {
                   <span style={{ fontSize: 11, color: '#64748b' }}>{terbuka ? (d.nSalah ? `${d.n}✓/${d.nSalah}✗` : d.n) : (d.n + d.nSalah)}</span>
                 </div>
               ))}
-              {/* 🔥 BARU: DAFTAR NAMA SISWA + PILIHANNYA (semua tipe soal) */}
               <div style={{ marginTop: 12, borderTop: '1px dashed #e2e8f0', paddingTop: 8 }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: '#334155', marginBottom: 4 }}>
                   Siapa menjawab apa (privat guru — belum dibahas):

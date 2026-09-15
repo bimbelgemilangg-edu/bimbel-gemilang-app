@@ -1,11 +1,10 @@
 // src/pages/student/LiveSessionStudent.jsx
 // SISI SISWA sesi live: join lewat kode, ikuti slide/soal guru real-time.
-// 🔥 FIX KUNCI: setelah kirim, opsi dirender sebagai DIV MATI (bukan
-// tombol) -- siswa BENAR-BENAR tidak bisa pindah/mengubah jawaban lagi.
-// 🔥 FIX MATEMATIKA: soal dirender sebagai HTML dengan CSS_MODUL lengkap
-// (garis atas akar, pecahan bertingkat) supaya tidak membingungkan.
-import React, { useState, useEffect, useMemo } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+// Kunci jawaban: (1) status "sudah kirim" dimuat dari Firestore saat
+// bergabung (refresh/rejoin tidak membuka kunci), (2) PG ketuk = langsung
+// terkirim & terkunci, (3) setelah kirim semua opsi jadi div mati + 🔒.
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseSlides, parseDaftarSoal, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban } from '../../services/sesiService';
@@ -35,6 +34,7 @@ const S = {
   gambarBox: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 10, padding: 10, marginBottom: 10 },
   pilihBox: { background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: '10px 12px', marginTop: 10 },
   pilihItem: { fontSize: 12.5, color: '#1e293b', lineHeight: 1.6, padding: '2px 0' },
+  hintKunci: { fontSize: 11.5, color: '#64748b', marginTop: 6, lineHeight: 1.5 },
 };
 
 export default function LiveSessionStudent() {
@@ -48,12 +48,31 @@ export default function LiveSessionStudent() {
   const [pilih, setPilih] = useState(null);
   const [terkirim, setTerkirim] = useState({});
   const [err, setErr] = useState('');
+  const kirimGuard = useRef({});
 
   useEffect(() => {
     if (!sesi) return undefined;
     const u = dengarSesi(sesi.id, (s) => { if (s) setSesi(s); });
     return u;
   }, [sesi && sesi.id]);
+
+  useEffect(() => {
+    if (!sesi || !siswaId) return undefined;
+    let hidup = true;
+    (async () => {
+      try {
+        const sn = await getDocs(collection(db, 'sesi_kelas', sesi.id, 'jawaban'));
+        if (!hidup) return;
+        const map = {};
+        sn.forEach((d) => {
+          const j = d.data();
+          if (j.siswaId === siswaId && j.soalIdx != null) map[j.soalIdx] = !!j.benar;
+        });
+        setTerkirim((t) => ({ ...t, ...map }));
+      } catch (e) { /* abaikan */ }
+    })();
+    return () => { hidup = false; };
+  }, [sesi && sesi.id, siswaId]);
 
   useEffect(() => {
     if (!sesi || sesi.mode !== 'materi' || !sesi.babId) return;
@@ -76,7 +95,7 @@ export default function LiveSessionStudent() {
     ? (slideNow && slideNow.tipe === 'soal' ? daftarSoal[slideNow.soalIdx] : null)
     : (sesi && sesi.soalAktif != null ? daftarSoal[sesi.soalAktif] : null);
   const idxSoal = sesi && sesi.mode === 'materi' ? (slideNow ? slideNow.soalIdx : null) : (sesi ? sesi.soalAktif : null);
-  const sudah = idxSoal != null ? !!terkirim[idxSoal] : false;
+  const sudah = idxSoal != null ? terkirim[idxSoal] !== undefined : false;
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
   const gambarNow = soal ? ((soalDariHtml[idxSoal] || {}).gambarHtml || soal.gambarHtml || '') : '';
   const pembahasanHtmlNow = soal ? (soal.pembahasanHtml || (soalDariHtml[idxSoal] || {}).pembahasanHtml || '') : '';
@@ -89,11 +108,17 @@ export default function LiveSessionStudent() {
     setSesi(s);
   }
 
-  async function kirim() {
-    if (pilih === null || (Array.isArray(pilih) && pilih.length === 0)) return;
-    const benar = cekBenar(soal.kunci, pilih);
-    await kirimJawaban(sesi.id, { siswaId, nama, soalIdx: idxSoal, jawaban: pilih, benar });
+  async function kirimNow(jw) {
+    if (idxSoal == null || !soal) return;
+    if (terkirim[idxSoal] !== undefined || kirimGuard.current[idxSoal]) return;
+    kirimGuard.current[idxSoal] = true;
+    const benar = cekBenar(soal.kunci, jw);
     setTerkirim((t) => ({ ...t, [idxSoal]: benar }));
+    try {
+      await kirimJawaban(sesi.id, { siswaId, nama, soalIdx: idxSoal, jawaban: jw, benar });
+    } catch (e) {
+      kirimGuard.current[idxSoal] = false;
+    }
   }
 
   function ringkasPilihan() {
@@ -179,7 +204,6 @@ export default function LiveSessionStudent() {
             </div>
           )}
 
-          {/* ===== PG: tombol sebelum kirim, DIV MATI setelah kirim ===== */}
           {soal.kunci && soal.kunci.tipe === 'pg' && (soal.pilihan || []).map((p, i) => {
             const sel = pilih === i;
             if (sudah) {
@@ -193,14 +217,17 @@ export default function LiveSessionStudent() {
               );
             }
             return (
-              <button key={i} style={S.opsi(sel, false, false)} disabled={terbuka} onClick={() => setPilih(i)}>
+              <button key={i} style={S.opsi(sel, false, false)} disabled={terbuka}
+                onClick={() => { setPilih(i); kirimNow(i); }}>
                 <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
                 <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
               </button>
             );
           })}
+          {!sudah && !terbuka && soal.kunci && soal.kunci.tipe === 'pg' && (
+            <div style={S.hintKunci}>⚡ Ketuk satu jawaban — jawaban langsung terkirim & terkunci, tidak bisa dipindah lagi.</div>
+          )}
 
-          {/* ===== MULTI ===== */}
           {soal.kunci && soal.kunci.tipe === 'multi' && (soal.pilihan || []).map((p, i) => {
             const arr = Array.isArray(pilih) ? pilih : [];
             const a = arr.includes(i);
@@ -224,7 +251,6 @@ export default function LiveSessionStudent() {
             );
           })}
 
-          {/* ===== BENAR / SALAH ===== */}
           {soal.kunci && soal.kunci.tipe === 'bs' && (soal.pernyataan || []).length > 0 && (
             <div style={S.cbt}>
               <div style={S.cbtHead}>
@@ -259,8 +285,8 @@ export default function LiveSessionStudent() {
             </div>
           )}
 
-          {!sudah && !terbuka && (
-            <button style={S.btn} disabled={pilih === null || (Array.isArray(pilih) && pilih.length === 0)} onClick={kirim}>📤 Kirim Jawaban</button>
+          {!sudah && !terbuka && soal.kunci && soal.kunci.tipe !== 'pg' && (
+            <button style={S.btn} disabled={pilih === null || (Array.isArray(pilih) && pilih.length === 0)} onClick={() => kirimNow(pilih)}>📤 Kirim Jawaban</button>
           )}
 
           {sudah && !terbuka && (

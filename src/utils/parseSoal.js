@@ -1,8 +1,11 @@
 // src/utils/parseSoal.js
-// Parser modul HTML -> soal terstruktur + slide PPT.
-// 🔥 FIX: CSS_MODUL sekarang memuat gaya MATEMATIKA (garis atas akar
-// .vinc, pecahan bertingkat .pec, sup/sub) supaya bentuk soal di sesi
-// live SAMA PERSIS dengan di reader buku -- tidak lagi membingungkan.
+// Parser modul HTML -> soal terstruktur + slide PPT + CSS matematika.
+// Membaca struktur modul internal: blok .soal dengan badge .no/.tipe/.lvl,
+// tabel pernyataan Benar/Salah (header "Pernyataan|Benar|Salah"), daftar
+// ul.pil untuk PG/multi, tabel stimulus (Nomor|Persamaan dll), dan
+// <details> kunci+pembahasan. Figur & tabel stimulus ikut ditampilkan
+// urut sesuai aslinya (gambarHtml), dan CSS_MODUL memuat gaya akar/
+// pecahan supaya bentuk matematika tidak membingungkan siswa.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
 export const bersihVerdikt = (s) => String(s || '')
@@ -38,6 +41,8 @@ export function parseDaftarSoal(html) {
       return avg > 24;
     });
 
+    // Tubuh soal = semua anak langsung kecuali daftar pilihan, details,
+    // badge, dan tabel pernyataan (dirender terpisah sebagai grid CBT).
     const skipNode = (n) => {
       const tag = (n.tagName || '').toUpperCase();
       if (tag === 'UL' || tag === 'DETAILS' || tag === 'OL') return true;
@@ -138,7 +143,6 @@ export const CSS_MODUL = `
 .modmod ol,.modmod ul{padding-left:22px;margin:6px 0}
 .modmod ol li,.modmod ul li{margin:4px 0;line-height:1.6}
 .modmod p{margin:6px 0;line-height:1.7}
-/* 🔥 BARU: gaya MATEMATIKA supaya bentuk soal tidak membingungkan */
 .modmod .vinc{border-top:1.5px solid currentColor;padding:0 2px;margin-left:1px}
 .modmod .akar{white-space:nowrap}
 .modmod sup,.modmod sub{font-size:.7em;line-height:0}
