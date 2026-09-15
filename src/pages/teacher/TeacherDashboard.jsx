@@ -1,6 +1,4 @@
 // src/pages/teacher/TeacherDashboard.jsx
-// Dashboard guru -- ditambah Quick Action "Buku Digital" yang membuka
-// ModalBukuGuru (mode persiapan: baca materi + kunci terbuka, H-2 dst).
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
@@ -23,6 +21,9 @@ import {
 } from 'lucide-react';
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 
+// ============================================================
+// LOGO COMPONENT - Menggunakan gambar dari folder public
+// ============================================================
 const LogoGemilang = ({ size = "medium", variant = "default", showText = true }) => {
   const sizes = {
     small: { width: 30, height: 30, fontSize: 12 },
@@ -66,8 +67,13 @@ const LogoGemilang = ({ size = "medium", variant = "default", showText = true })
   );
 };
 
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
 const TeacherDashboard = () => {
   const navigate = useNavigate();
+  
+  // ===== STATES =====
   const [guru, setGuru] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -92,8 +98,11 @@ const TeacherDashboard = () => {
     completedClasses: 0
   });
   const [greeting, setGreeting] = useState('');
+
+  // ===== REFS =====
   const notificationRef = useRef(null);
 
+  // ===== EFFECTS =====
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -118,6 +127,7 @@ const TeacherDashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // ===== FETCH FUNCTIONS =====
   const fetchTeacherProfile = useCallback(async () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -125,6 +135,7 @@ const TeacherDashboard = () => {
         navigate('/login-guru');
         return null;
       }
+      
       try {
         const teacherQuery = query(
           collection(db, "teachers"),
@@ -140,6 +151,7 @@ const TeacherDashboard = () => {
       } catch (e) {
         console.log("Using cached teacher data");
       }
+      
       setGuru(saved);
       return saved;
     } catch (e) {
@@ -152,21 +164,25 @@ const TeacherDashboard = () => {
   const fetchData = useCallback(async (teacher) => {
     if (!teacher?.nama) return;
     setLoading(true);
+    
     try {
       const todayStr = new Date().toISOString().split('T')[0];
       const today = new Date();
       const teacherName = teacher.nama.trim();
       const teacherId = teacher.guruId || teacher.id || teacherName;
+
       const qJadwal = query(
         collection(db, "jadwal_bimbel"),
         where("teacherName", "==", teacherName)
       );
       const snapJadwal = await getDocs(qJadwal);
       const allSchedules = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
+      
       const todayScheds = allSchedules
         .filter(s => s.dateStr === todayStr)
         .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
       setTodaySchedules(todayScheds);
+
       const futureDate = new Date(today);
       futureDate.setDate(futureDate.getDate() + 7);
       const futureStr = futureDate.toISOString().split('T')[0];
@@ -174,12 +190,14 @@ const TeacherDashboard = () => {
         .filter(s => s.dateStr > todayStr && s.dateStr <= futureStr)
         .sort((a, b) => (a.dateStr || '').localeCompare(b.dateStr || ''));
       setUpcomingSchedules(upcoming);
+
       const weekAgo = new Date(today);
       weekAgo.setDate(weekAgo.getDate() - 7);
       const weekAgoStr = weekAgo.toISOString().split('T')[0];
-      const weekSchedules = allSchedules.filter(s =>
+      const weekSchedules = allSchedules.filter(s => 
         s.dateStr >= weekAgoStr && s.dateStr <= todayStr
       );
+
       const allStudents = new Set();
       allSchedules.forEach(s => {
         if (s.students) {
@@ -189,6 +207,7 @@ const TeacherDashboard = () => {
           });
         }
       });
+
       try {
         const codeDoc = await getDoc(doc(db, "settings", 'daily_code_' + todayStr));
         if (codeDoc.exists()) {
@@ -199,6 +218,7 @@ const TeacherDashboard = () => {
       } catch (e) {
         setDailyCode('');
       }
+
       const qLogs = query(
         collection(db, "teacher_logs"),
         where("teacherId", "==", teacherId),
@@ -206,10 +226,12 @@ const TeacherDashboard = () => {
         limit(30)
       );
       const snapLogs = await getDocs(qLogs);
+      
       const logs = snapLogs.docs.map(d => {
         const { nominal, ...rest } = d.data();
         return { id: d.id, ...rest };
       });
+
       let attendanceRate = 0;
       if (logs.length > 0) {
         const scheduleTotalById = new Map();
@@ -224,6 +246,7 @@ const TeacherDashboard = () => {
         });
         attendanceRate = totalSiswa > 0 ? Math.round((totalHadir / totalSiswa) * 100) : 0;
       }
+
       setStats({
         todaySessions: todayScheds.length,
         weekSessions: weekSchedules.length,
@@ -232,6 +255,7 @@ const TeacherDashboard = () => {
         totalClasses: allSchedules.length,
         completedClasses: allSchedules.filter(s => s.status === 'completed').length
       });
+
       const qAnnounce = query(
         collection(db, "student_contents"),
         orderBy("createdAt", "desc"),
@@ -242,6 +266,7 @@ const TeacherDashboard = () => {
       setAnnouncements(
         annData.filter(p => p.targetPortal === "Guru" || p.targetPortal === "Semua" || !p.targetPortal)
       );
+
       const [snapNotifByUserId, snapNotifByRecipientId] = await Promise.all([
         getDocs(query(
           collection(db, "notifications"),
@@ -256,6 +281,7 @@ const TeacherDashboard = () => {
           limit(10)
         )).catch(() => ({ docs: [] })),
       ]);
+      
       const notifMerged = new Map();
       [...snapNotifByUserId.docs, ...snapNotifByRecipientId.docs].forEach(d => notifMerged.set(d.id, { id: d.id, ...d.data() }));
       const notifData = Array.from(notifMerged.values())
@@ -270,20 +296,24 @@ const TeacherDashboard = () => {
     }
   }, []);
 
+  // ===== MAIN EFFECT =====
   useEffect(() => {
     let unsubscribe = null;
     let cancelled = false;
+    
     const init = async () => {
       const teacher = await fetchTeacherProfile();
       if (teacher && !cancelled) {
         await fetchData(teacher);
         if (cancelled) return;
+        
         const todayStr = new Date().toISOString().split('T')[0];
         const q = query(
           collection(db, "jadwal_bimbel"),
           where("teacherName", "==", teacher.nama.trim()),
           where("dateStr", "==", todayStr)
         );
+        
         unsubscribe = onSnapshot(q, (snapshot) => {
           const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
           data.sort((a, b) => (a.start || '').localeCompare(b.start || ''));
@@ -293,13 +323,16 @@ const TeacherDashboard = () => {
         });
       }
     };
+    
     init();
+    
     return () => {
       cancelled = true;
       if (unsubscribe) unsubscribe();
     };
   }, [fetchTeacherProfile, fetchData]);
 
+  // ===== HANDLERS =====
   const handleRefresh = async () => {
     setRefreshing(true);
     const teacher = await fetchTeacherProfile();
@@ -317,20 +350,24 @@ const TeacherDashboard = () => {
       alert("⚠️ Tidak ada jadwal yang dipilih!");
       return;
     }
+    
     if (!inputToken) {
       alert("⚠️ Masukkan kode absensi terlebih dahulu!");
       return;
     }
+    
     if (inputToken.trim().toUpperCase() !== dailyCode.trim().toUpperCase()) {
       alert("⚠️ Token absensi salah! Silakan periksa kembali atau hubungi admin.");
       setInputToken("");
       return;
     }
+
     try {
       await updateDoc(doc(db, "jadwal_bimbel", pendingSchedule.id), {
         status: 'ongoing',
         startedAt: serverTimestamp()
       });
+      
       setShowStartModal(false);
       setInputToken("");
       navigate('/guru/class-session/' + pendingSchedule.id);
@@ -362,6 +399,9 @@ const TeacherDashboard = () => {
     return parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
   };
 
+  // ============================================================
+  // RENDER
+  // ============================================================
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -374,6 +414,7 @@ const TeacherDashboard = () => {
 
   return (
     <div style={styles.container}>
+      {/* ===== HEADER ===== */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
           <LogoGemilang size="small" variant="default" />
@@ -382,8 +423,8 @@ const TeacherDashboard = () => {
         <div style={styles.headerRight}>
           <span style={styles.greeting}>{greeting}</span>
           <div style={styles.notifWrapper} ref={notificationRef}>
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)} 
               style={styles.notifBtn}
             >
               <Bell size={18} />
@@ -429,6 +470,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
+      {/* ===== BANNER ===== */}
       <div style={styles.banner}>
         <div style={styles.bannerLeft}>
           <div style={styles.bannerBadge}>
@@ -469,6 +511,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
+      {/* ===== STATS CARDS ===== */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={styles.statIcon('primary')}>
@@ -521,7 +564,9 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
+      {/* ===== MAIN CONTENT ===== */}
       <div style={styles.mainGrid(isMobile)}>
+        {/* ===== LEFT: SCHEDULES ===== */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>
@@ -533,10 +578,12 @@ const TeacherDashboard = () => {
               </button>
             </div>
           </div>
+
           <div style={styles.scheduleSubHeader}>
             <span style={styles.scheduleSubTitle}>📅 Hari Ini</span>
             <span style={styles.scheduleCount}>{todaySchedules.length} sesi</span>
           </div>
+
           {todaySchedules.length === 0 ? (
             <div style={styles.emptyState}>
               <Calendar size={32} color="#cbd5e1" />
@@ -551,6 +598,7 @@ const TeacherDashboard = () => {
                 let btnText = 'Mulai Kelas';
                 let btnBg = '#3b82f6';
                 let disabled = false;
+                
                 if (isCompleted) {
                   btnText = '✓ Selesai';
                   btnBg = '#10b981';
@@ -560,6 +608,7 @@ const TeacherDashboard = () => {
                   btnBg = '#f59e0b';
                   disabled = false;
                 }
+                
                 return (
                   <div key={item.id} style={styles.scheduleCard}>
                     <div style={styles.scheduleTime}>
@@ -600,7 +649,7 @@ const TeacherDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <button
+                    <button 
                       onClick={() => {
                         if (isOngoing) {
                           navigate('/guru/class-session/' + item.id);
@@ -623,6 +672,7 @@ const TeacherDashboard = () => {
               })}
             </div>
           )}
+
           {upcomingSchedules.length > 0 && (
             <div style={styles.upcomingSection}>
               <div style={styles.scheduleSubHeader}>
@@ -643,7 +693,9 @@ const TeacherDashboard = () => {
           )}
         </div>
 
+        {/* ===== RIGHT: QUICK ACTIONS & INFO ===== */}
         <div style={styles.rightCol}>
+          {/* Quick Actions */}
           <div style={styles.quickActionsCard}>
             <h4 style={styles.quickActionsTitle}>⚡ Akses Cepat</h4>
             <div style={styles.quickActionsGrid}>
@@ -668,9 +720,7 @@ const TeacherDashboard = () => {
                 <span style={styles.quickLabel}>Sesi Kelas Live</span>
                 <span style={styles.quickDesc}>Latihan bareng siswa</span>
               </button>
-              {/* ⭐ BARU: Buku Digital -- mode persiapan guru (baca materi +
-                  kunci terbuka) lewat ModalBukuGuru. Sumber modul SAMA
-                  dengan yang dibaca siswa (buku_digital). */}
+              {/* 🔥 BARU: Buku Digital - Mode Persiapan Guru */}
               <button onClick={() => setShowBuku(true)} style={styles.quickAction}>
                 <div style={{...styles.quickIcon, background: '#dbeafe', color: '#1d4ed8'}}>
                   <BookOpen size={18} />
@@ -702,6 +752,7 @@ const TeacherDashboard = () => {
             </div>
           </div>
 
+          {/* Teacher Info Card */}
           <div style={styles.infoCard}>
             <div style={styles.infoHeader}>
               <User size={16} color="#652D90" />
@@ -738,6 +789,7 @@ const TeacherDashboard = () => {
             </div>
           </div>
 
+          {/* Announcements */}
           {announcements.length > 0 && (
             <div style={styles.announceCard}>
               <div style={styles.infoHeader}>
@@ -763,6 +815,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
+      {/* ===== FOOTER ===== */}
       <div style={styles.footer}>
         <div style={styles.footerContent}>
           <LogoGemilang size="small" variant="default" showText={true} />
@@ -790,6 +843,7 @@ const TeacherDashboard = () => {
         </div>
       </div>
 
+      {/* ===== MODAL: NEWS DETAIL ===== */}
       {selectedNews && (
         <div style={styles.modalOverlay} onClick={() => setSelectedNews(null)}>
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -805,8 +859,8 @@ const TeacherDashboard = () => {
               <p style={styles.modalText}>{selectedNews.content}</p>
               {selectedNews.createdAt?.toDate && (
                 <div style={styles.modalDate}>
-                  {new Date(selectedNews.createdAt.toDate()).toLocaleDateString('id-ID', {
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                  {new Date(selectedNews.createdAt.toDate()).toLocaleDateString('id-ID', { 
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
                   })}
                 </div>
               )}
@@ -815,6 +869,7 @@ const TeacherDashboard = () => {
         </div>
       )}
 
+      {/* ===== MODAL: KODE ABSENSI ===== */}
       {showStartModal && (
         <div style={styles.modalOverlay} onClick={() => setShowStartModal(false)}>
           <div style={styles.modalCode} onClick={e => e.stopPropagation()}>
@@ -823,13 +878,13 @@ const TeacherDashboard = () => {
             <p style={styles.modalCodeSub}>
               Masukkan kode absensi harian untuk memulai sesi.
             </p>
-            <input
-              type="text"
-              value={inputToken}
-              onChange={e => setInputToken(e.target.value.toUpperCase())}
-              style={styles.modalCodeInput}
-              placeholder="KODE ABSEN"
-              maxLength={6}
+            <input 
+              type="text" 
+              value={inputToken} 
+              onChange={e => setInputToken(e.target.value.toUpperCase())} 
+              style={styles.modalCodeInput} 
+              placeholder="KODE ABSEN" 
+              maxLength={6} 
               autoFocus
             />
             <div style={styles.modalCodeHint}>
@@ -847,7 +902,7 @@ const TeacherDashboard = () => {
         </div>
       )}
 
-      {/* ⭐ BARU: Modal Buku Digital (mode persiapan guru) */}
+      {/* 🔥 BARU: Modal Buku Digital (Mode Persiapan Guru) */}
       {showBuku && (
         <ModalBukuGuru open={showBuku} onClose={() => setShowBuku(false)} />
       )}
@@ -873,6 +928,9 @@ const TeacherDashboard = () => {
   );
 };
 
+// ============================================================
+// STYLES
+// ============================================================
 const styles = {
   container: {
     maxWidth: '1200px',
