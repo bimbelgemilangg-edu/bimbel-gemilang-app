@@ -1,11 +1,10 @@
 // src/pages/teacher/LiveSessionTeacher.jsx
 // PINTU SESI LIVE GURU: 📖 Materi Interaktif (bab buku digital) &
 // ✍️ Soal & Pembahasan (bank soal).
-// 🔥 Fitur: manajemen sesi aktif (Lanjutkan/Akhiri), auto-akhiri sesi
-// lama bab sama, fullscreen proyektor, badge tipe + petunjuk pengerjaan,
-// grid CBT Benar/Salah, kotak centang multi, figur+tabel stimulus utuh,
-// pembahasan HTML privat guru (tabel & gambar lengkap), hasil per siswa
-// privat (✅/❌) sebelum pembahasan dibuka.
+// 🔥 BARU: panel monitor menampilkan NAMA SETIAP SISWA + PILIHAN
+// JAWABANNYA (huruf untuk PG, urutan B/S untuk benar-salah, nomor
+// tercentang untuk multi) serta yang BELUM menjawab -- untuk semua
+// tipe soal, terlihat sebelum pembahasan dibuka (privat guru).
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -48,7 +47,22 @@ const S = {
   cbtRing: { borderRadius: '50%', border: '2px solid #cbd5e1', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 },
   cbtRingIsi: { background: '#16a34a', borderColor: '#16a34a', color: '#fff' },
   sesiRow: { display: 'flex', alignItems: 'center', gap: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px', marginBottom: 8, flexWrap: 'wrap' },
+  // 🔥 BARU: baris daftar siswa + pilihan jawabannya di monitor
+  siswaRow: { display: 'flex', gap: 6, alignItems: 'center', fontSize: 11.5, marginBottom: 3 },
+  siswaNama: { flex: 1, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  siswaJawab: { background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 6, padding: '1px 7px', fontSize: 10.5, fontWeight: 800, color: '#4338ca', flexShrink: 0 },
+  siswaBelum: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, padding: '1px 7px', fontSize: 10.5, fontWeight: 800, color: '#b45309', flexShrink: 0 },
 };
+
+// 🔥 BARU: ringkasan pilihan siswa untuk ditampilkan di panel guru
+function ringkasJawaban(soal, jw) {
+  if (!soal || jw === undefined || jw === null) return '—';
+  const t = soal.kunci?.tipe;
+  if (t === 'pg') return typeof jw === 'number' ? String.fromCharCode(65 + jw) : String(jw);
+  if (t === 'multi') return Array.isArray(jw) && jw.length ? jw.map((i) => i + 1).join(',') : '—';
+  if (t === 'bs') return Array.isArray(jw) && jw.length ? jw.map((v) => (v ? 'B' : 'S')).join('') : '—';
+  return '—';
+}
 
 export default function LiveSessionTeacher() {
   const [tahap, setTahap] = useState('mode');
@@ -164,14 +178,11 @@ export default function LiveSessionTeacher() {
     const html = babItem.html || '';
     const soals = parseDaftarSoal(html);
     if (!soals.length) { alert('Bab ini tidak punya soal terparse.'); return; }
-    // 🔥 Auto-akhiri sesi lama untuk bab yang sama (anti-dobel)
     try {
       const q = query(collection(db, 'sesi_kelas'), where('status', '==', 'aktif'), where('babId', '==', babItem.id));
       const sn = await getDocs(q);
       await Promise.all(sn.docs.map((d) => akhiriSesi(d.id)));
     } catch (e) {}
-    // 🔥 PENTING: sesiService awalmu TIDAK menyimpan field mode/sumber/daftarSoal,
-    // jadi kita tulis field tambahan lewat ubahSesi setelah buatSesi.
     const s = await buatSesi({ bukuId, babId: babItem.id, guruId, catatan: babItem.judul || '' });
     await ubahSesi(s.id, { mode: 'materi', sumber: 'buku', daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0 });
     setSesi({ id: s.id, kode: s.kode, mode: 'materi', sumber: 'buku', bukuId, babId: babItem.id, daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0, status: 'aktif' });
@@ -354,7 +365,6 @@ export default function LiveSessionTeacher() {
       </div>
 
       <div style={S.grid2}>
-        {/* ---- AREA PROYEKTOR (fullscreen) ---- */}
         <div style={S.card} ref={fsRef} className="fs-area">
           <div style={{ ...S.row, marginBottom: 10 }}>
             <button style={S.btn2} onClick={masukFullscreen}>⛶ Layar Penuh (Proyektor)</button>
@@ -455,7 +465,6 @@ export default function LiveSessionTeacher() {
           {sesi.mode === 'materi' && !slideNow && <p style={{ fontSize: 12, color: '#64748b' }}>Memuat slide...</p>}
         </div>
 
-        {/* ---- PANEL MONITOR (privat guru) ---- */}
         <div style={S.card}>
           <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>📡 Jawaban siswa real-time</h4>
           {!soalNow && <p style={{ fontSize: 12, color: '#64748b' }}>{sesi.mode === 'materi' ? 'Navigasi slide; saat slide soal tampil, jawaban siswa masuk ke sini.' : 'Pilih soal untuk ditayangkan.'}</p>}
@@ -471,29 +480,29 @@ export default function LiveSessionTeacher() {
                   <span style={{ fontSize: 11, color: '#64748b' }}>{terbuka ? (d.nSalah ? `${d.n}✓/${d.nSalah}✗` : d.n) : (d.n + d.nSalah)}</span>
                 </div>
               ))}
-              {belum.length > 0 && <div style={{ fontSize: 11, color: '#f39c12', marginTop: 8 }}>Belum: {belum.map((p) => p.nama || p.siswaId).join(', ')}</div>}
-              {/* 🔥 BARU: hasil per siswa SEBELUM pembahasan (privat guru) */}
-              {jwsNow.length > 0 && (
-                <div style={{ marginTop: 12, borderTop: '1px dashed #e2e8f0', paddingTop: 8 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#334155', marginBottom: 4 }}>
-                    Hasil per siswa (privat guru — belum dibahas):
-                  </div>
-                  {peserta.map((p) => {
-                    const j = jwsNow.find((x) => x.siswaId === p.siswaId);
-                    if (!j) return null;
-                    return (
-                      <div key={p.id} style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 11.5, marginBottom: 2 }}>
-                        <span style={{ width: 16, textAlign: 'center' }}>{j.benar ? '✅' : '❌'}</span>
-                        <span style={{ color: '#334155' }}>{p.nama || p.siswaId}</span>
-                      </div>
-                    );
-                  })}
-                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 }}>
-                    ⚠️ Panel ini hanya untuk layar guru. Saat proyeksi ke kelas, pakai ⛶ Layar Penuh supaya siswa hanya melihat area slide/soal.
-                  </div>
+              {/* 🔥 BARU: DAFTAR NAMA SISWA + PILIHANNYA (semua tipe soal) */}
+              <div style={{ marginTop: 12, borderTop: '1px dashed #e2e8f0', paddingTop: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#334155', marginBottom: 4 }}>
+                  Siapa menjawab apa (privat guru — belum dibahas):
                 </div>
-              )}
-              {/* Pembahasan HTML utuh (tabel & gambar lengkap) */}
+                {peserta.length === 0 && <div style={{ fontSize: 11, color: '#94a3b8' }}>Belum ada siswa bergabung.</div>}
+                {peserta.map((p) => {
+                  const j = jwsNow.find((x) => x.siswaId === p.siswaId);
+                  return (
+                    <div key={p.id} style={S.siswaRow}>
+                      <span style={{ width: 16, textAlign: 'center' }}>{j ? (j.benar ? '✅' : '❌') : '⏳'}</span>
+                      <span style={S.siswaNama}>{p.nama || p.siswaId}</span>
+                      {j
+                        ? <span style={S.siswaJawab}>{ringkasJawaban(soalNow, j.jawaban)}</span>
+                        : <span style={S.siswaBelum}>belum</span>}
+                    </div>
+                  );
+                })}
+                {belum.length > 0 && <div style={{ fontSize: 10.5, color: '#f39c12', marginTop: 6 }}>Belum menjawab: {belum.map((p) => p.nama || p.siswaId).join(', ')}</div>}
+                <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 6, lineHeight: 1.5 }}>
+                  ⚠️ Panel ini hanya untuk layar guru. Saat proyeksi ke kelas, pakai ⛶ Layar Penuh supaya siswa hanya melihat area slide/soal.
+                </div>
+              </div>
               {(pembahasanHtmlNow || soalNow.pembahasan) && (
                 <details style={{ marginTop: 12 }}>
                   <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>🔒 Pembahasan (privat guru — tidak ikut diproyeksikan)</summary>

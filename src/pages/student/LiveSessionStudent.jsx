@@ -1,9 +1,9 @@
 // src/pages/student/LiveSessionStudent.jsx
 // SISI SISWA sesi live: join lewat kode, ikuti slide/soal guru real-time.
-// 🔥 FEEL MENGERJAKAN: setelah dikirim, jawaban TERKUNCI (opsi disabled +
-// ikon 🔒 pada pilihan yang dikirim) -- siswa tidak bisa memindahkan/
-// mengubah jawaban lagi. Setelah kunci terbuka, siswa yang belum jawab
-// tetap tidak bisa menjawab (mencegah menyalin jawaban yang terbuka).
+// 🔥 FIX KUNCI: setelah kirim, opsi dirender sebagai DIV MATI (bukan
+// tombol) -- siswa BENAR-BENAR tidak bisa pindah/mengubah jawaban lagi.
+// 🔥 FIX MATEMATIKA: soal dirender sebagai HTML dengan CSS_MODUL lengkap
+// (garis atas akar, pecahan bertingkat) supaya tidak membingungkan.
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -179,30 +179,52 @@ export default function LiveSessionStudent() {
             </div>
           )}
 
-          {soal.kunci && soal.kunci.tipe === 'pg' && (soal.pilihan || []).map((p, i) => (
-            <button key={i} style={S.opsi(pilih === i, terbuka && soal.kunci.pg === i, terbuka)} disabled={sudah || terbuka} onClick={() => setPilih(i)}>
-              <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
-              <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
-              {sudah && pilih === i && '🔒'}
-              {terbuka && soal.kunci.pg === i && '✅'}
-            </button>
-          ))}
-
-          {soal.kunci && soal.kunci.tipe === 'multi' && (soal.pilihan || []).map((p, i) => {
-            const arr = Array.isArray(pilih) ? pilih : [];
-            const a = arr.includes(i);
-            const k = terbuka && (soal.kunci.multi || []).includes(i);
+          {/* ===== PG: tombol sebelum kirim, DIV MATI setelah kirim ===== */}
+          {soal.kunci && soal.kunci.tipe === 'pg' && (soal.pilihan || []).map((p, i) => {
+            const sel = pilih === i;
+            if (sudah) {
+              return (
+                <div key={i} style={{ ...S.opsi(sel, terbuka && soal.kunci.pg === i, terbuka), cursor: 'default' }}>
+                  <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
+                  <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                  {sel && '🔒'}
+                  {terbuka && soal.kunci.pg === i && '✅'}
+                </div>
+              );
+            }
             return (
-              <button key={i} style={S.opsi(a, k, terbuka)} disabled={sudah || terbuka}
-                onClick={() => setPilih(a ? arr.filter((x) => x !== i) : [...arr, i])}>
-                <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
+              <button key={i} style={S.opsi(sel, false, false)} disabled={terbuka} onClick={() => setPilih(i)}>
+                <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
                 <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
-                {sudah && a && '🔒'}
-                {k && '✅'}
               </button>
             );
           })}
 
+          {/* ===== MULTI ===== */}
+          {soal.kunci && soal.kunci.tipe === 'multi' && (soal.pilihan || []).map((p, i) => {
+            const arr = Array.isArray(pilih) ? pilih : [];
+            const a = arr.includes(i);
+            const k = terbuka && (soal.kunci.multi || []).includes(i);
+            if (sudah) {
+              return (
+                <div key={i} style={{ ...S.opsi(a, k, terbuka), cursor: 'default' }}>
+                  <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
+                  <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                  {a && '🔒'}
+                  {k && '✅'}
+                </div>
+              );
+            }
+            return (
+              <button key={i} style={S.opsi(a, false, false)} disabled={terbuka}
+                onClick={() => setPilih(a ? arr.filter((x) => x !== i) : [...arr, i])}>
+                <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
+                <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+              </button>
+            );
+          })}
+
+          {/* ===== BENAR / SALAH ===== */}
           {soal.kunci && soal.kunci.tipe === 'bs' && (soal.pernyataan || []).length > 0 && (
             <div style={S.cbt}>
               <div style={S.cbtHead}>

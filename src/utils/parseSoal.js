@@ -1,10 +1,8 @@
 // src/utils/parseSoal.js
 // Parser modul HTML -> soal terstruktur + slide PPT.
-// 🔥 FIX: teks soal sekarang mengambil SELURUH isi .soal secara BERURUTAN
-// (paragraf + figur + tabel stimulus) sebagai satu blok HTML (gambarHtml),
-// sehingga kalimat pertanyaan yang letaknya SESUDAH gambar tidak lagi
-// hilang di layar live guru & siswa. Tabel pernyataan B/S tetap dipisah
-// (dirender sebagai grid CBT), dan <details> kunci tetap tidak ikut.
+// 🔥 FIX: CSS_MODUL sekarang memuat gaya MATEMATIKA (garis atas akar
+// .vinc, pecahan bertingkat .pec, sup/sub) supaya bentuk soal di sesi
+// live SAMA PERSIS dengan di reader buku -- tidak lagi membingungkan.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
 export const bersihVerdikt = (s) => String(s || '')
@@ -27,7 +25,6 @@ export function parseDaftarSoal(html) {
     const level = bersihTeks(el.querySelector('.lvl')?.textContent) || 'sedang';
     const diLuar = (n) => !n.closest('details');
 
-    // ---- tabel di luar details ----
     const tabels = [...el.querySelectorAll('table')].filter(diLuar);
     const headText = (t) => ((t.querySelector('thead') || t.querySelector('tr'))?.textContent || '').toLowerCase();
     const tabelBS = tabels.find((t) => {
@@ -41,11 +38,6 @@ export function parseDaftarSoal(html) {
       return avg > 24;
     });
 
-    // ---- 🔥 BARU: blok tubuh soal = semua anak langsung .soal kecuali
-    //      daftar pilihan (ul.pil), details kunci, badge nomor, dan
-    //      tabel pernyataan (dirender terpisah sebagai grid CBT).
-    //      Ini mempertahankan URUTAN asli: paragraf -> gambar -> paragraf
-    //      pertanyaan -> tabel stimulus.
     const skipNode = (n) => {
       const tag = (n.tagName || '').toUpperCase();
       if (tag === 'UL' || tag === 'DETAILS' || tag === 'OL') return true;
@@ -58,7 +50,6 @@ export function parseDaftarSoal(html) {
     const teks = bodyEls.map((n) => bersihTeks(n.textContent)).filter(Boolean).join(' ')
       || bersihTeks(el.querySelector('p')?.textContent) || '';
 
-    // ---- opsi / pernyataan ----
     const pilItems = [...el.querySelectorAll('ul.pil li')].filter(diLuar).map((li) => bersihTeks(li.textContent));
     let items = pilItems.length
       ? pilItems
@@ -147,6 +138,14 @@ export const CSS_MODUL = `
 .modmod ol,.modmod ul{padding-left:22px;margin:6px 0}
 .modmod ol li,.modmod ul li{margin:4px 0;line-height:1.6}
 .modmod p{margin:6px 0;line-height:1.7}
+/* 🔥 BARU: gaya MATEMATIKA supaya bentuk soal tidak membingungkan */
+.modmod .vinc{border-top:1.5px solid currentColor;padding:0 2px;margin-left:1px}
+.modmod .akar{white-space:nowrap}
+.modmod sup,.modmod sub{font-size:.7em;line-height:0}
+.modmod .pec{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 3px}
+.modmod .pec-pemb{padding:0 4px 1px;border-bottom:1.5px solid currentColor;font-size:.82em}
+.modmod .pec-peny{padding:1px 4px 0;font-size:.82em}
+.modmod .m{background:#eef2ff;border:1px solid #dbe3ff;color:#1e293b;padding:2px 7px;border-radius:7px}
 `;
 
 export function parseSlides(html) {
