@@ -1,15 +1,19 @@
 // src/pages/teacher/ClassSession.jsx
-// Step 1: Absensi (bukti guru + QR/toggle siswa) -- TETAP seperti semula.
-// Step 2: Kelas & Soal Live (KelasLivePanel) -- BARU, terhubung buku digital.
-// Step 3: Laporan materi + honor + Google Form -- TETAP seperti semula.
+// Alur kelas hybrid: Step 1 Absensi (bukti guru + QR siswa) ->
+// Step 2 Mengajar + Latihan Live (menanam LiveSessionTeacher, mesin live
+// berbasis bab buku digital) -> Step 3 Laporan + honor + Google Form.
+// TIDAK lagi memakai KelasLivePanel (dihapus) supaya mesin live cuma satu.
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
-import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp, onSnapshot, query, where, updateDoc } from 'firebase/firestore';
+import {
+  collection, addDoc, doc, getDoc, setDoc, serverTimestamp,
+  onSnapshot, query, where, updateDoc,
+} from 'firebase/firestore';
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, ArrowLeft, Camera, Upload, CheckCircle, Paperclip } from 'lucide-react';
 import { uploadElearningFile } from '../../services/uploadService';
-import KelasLivePanel from './KelasLivePanel';
+import LiveSessionTeacher from './LiveSessionTeacher';
 
 const ClassSession = () => {
   const { id } = useParams();
@@ -107,8 +111,7 @@ const ClassSession = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setAbsensiError(''); setUploadingAbsensi(true);
-    const prev = URL.createObjectURL(file);
-    setAbsensiPreviewUrl(prev);
+    setAbsensiPreviewUrl(URL.createObjectURL(file));
     try {
       const r = await uploadElearningFile(file, 'absensi-guru');
       if (r.success) setAbsensiUploadedUrl(r.downloadURL);
@@ -116,6 +119,7 @@ const ClassSession = () => {
     } catch (err) { setAbsensiError('Gagal upload: ' + err.message); setAbsensiUploadedUrl(''); }
     setUploadingAbsensi(false);
   };
+
   const handleMateriFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -247,7 +251,9 @@ const ClassSession = () => {
             <button type="button" onClick={() => setStep1Tab('kehadiranGuru')} style={st.step1TabBtn(step1Tab === 'kehadiranGuru')}>
               🔒 Bukti Kehadiran Guru {!absensiUploadedUrl && <span style={st.tabDot} />}
             </button>
-            <button type="button" onClick={() => setStep1Tab('absensiSiswa')} style={st.step1TabBtn(step1Tab === 'absensiSiswa')}>📋 Absensi Siswa</button>
+            <button type="button" onClick={() => setStep1Tab('absensiSiswa')} style={st.step1TabBtn(step1Tab === 'absensiSiswa')}>
+              📋 Absensi Siswa
+            </button>
           </div>
           {step1Tab === 'absensiSiswa' && <p style={st.tabSafeNote(isMobile)}>💡 Tab ini aman ditunjukkan ke layar kelas.</p>}
           {step1Tab === 'kehadiranGuru' && (
@@ -309,7 +315,13 @@ const ClassSession = () => {
 
       {step === 2 && (
         <div>
-          <KelasLivePanel schedule={schedule} teacher={teacher} onSelesai={() => setStep(3)} />
+          <div style={st.card(isMobile)}>
+            <h4 style={st.step2Title(isMobile)}>📡 Mengajar & Latihan Interaktif (dari Bab Buku Digital)</h4>
+            <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 10px' }}>
+              Pilih bab → terangkan materi di proyektor → mulai latihan → siswa menjawab di perangkat masing-masing → bahas bertahap.
+            </p>
+            <LiveSessionTeacher />
+          </div>
           <button onClick={() => setStep(3)} style={{ ...st.btnMain(isMobile), marginTop: 4 }}>📝 Lanjut ke Laporan ⮕</button>
         </div>
       )}
@@ -379,4 +391,5 @@ const st = {
   btnDisabled: { background: '#cbd5e1', color: '#64748b', cursor: 'not-allowed' },
   lampiranBox: (m) => ({ marginBottom: 16 }),
 };
+
 export default ClassSession;
