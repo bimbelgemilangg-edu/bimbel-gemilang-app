@@ -1,83 +1,79 @@
 // src/services/sesiService.js
-// Service SESI LIVE (collection: sesi_live) -- dipakai ClassSession (guru)
-// dan LiveSessionStudent (siswa). Struktur dokumen SAMA dengan yang sudah
-// dipakai LiveSessionTeacher lama, jadi tidak ada migrasi data.
+// Service SESI KELAS (satu file untuk semua operasi sesi live & kelas).
+// Menyediakan fungsi untuk buat sesi, join via kode, dengar real-time,
+// kirim jawaban, dan rekap.
 import {
-  collection, doc, setDoc, updateDoc, addDoc,
-  query, where, onSnapshot, serverTimestamp,
+  collection, doc, setDoc, updateDoc, getDocs, query, where,
+  onSnapshot, serverTimestamp, addDoc, deleteDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
-// ---------- BUAT & LISTEN SESI ----------
-export async function buatSesiLive({ jadwalId, guruId, kelasSekolah, mataPelajaran, materiJudul, bukuId, babId, daftarSoal }) {
-  const ref = await addDoc(collection(db, 'sesi_live'), {
-    jadwalId: jadwalId || '', guruId: guruId || '', kelasSekolah: kelasSekolah || '',
-    mataPelajaran: mataPelajaran || '', materiJudul: materiJudul || '',
-    sumber: 'buku', bukuId: bukuId || '', babId: babId || '',
-    daftarSoal: daftarSoal || [], indexSekarang: null, tahap: 'materi', status: 'aktif',
-    createdAt: serverTimestamp(),
+const ABJ = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const kodeAcak = () => Array.from({ length: 6 }, () => ABJ[Math.floor(Math.random() * ABJ.length)]).join('');
+
+// ---------- Sesi ----------
+export async function buatSesi({ bukuId, babId, guruId, catatan, soalPrioritas }) {
+  const ref = doc(collection(db, 'sesi_kelas'));
+  const kode = kodeAcak();
+  await setDoc(ref, {
+    bukuId, babId, guruId: guruId || '', kode,
+    status: 'aktif', fase: 'materi',
+    soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0,
+    catatan: catatan || '', soalPrioritas: soalPrioritas || [],
+    dibuatAt: serverTimestamp(),
   });
-  return ref.id;
+  return { id: ref.id, kode };
 }
-export const dengarSesiByJadwal = (jadwalId, cb) =>
-  onSnapshot(
-    query(collection(db, 'sesi_live'), where('jadwalId', '==', jadwalId), where('status', '==', 'aktif')),
-    (sn) => cb(sn.empty ? null : { id: sn.docs[0].id, ...sn.docs[0].data() })
-  );
-export const dengarSesiAktifKelas = (kelasSekolah, cb) =>
-  onSnapshot(
-    query(collection(db, 'sesi_live'), where('kelasSekolah', '==', kelasSekolah), where('status', '==', 'aktif')),
-    (sn) => cb(sn.empty ? null : { id: sn.docs[0].id, ...sn.docs[0].data() })
-  );
+
+export async function cariSesiByKode(kode) {
+  const q = query(collection(db, 'sesi_kelas'),
+    where('kode', '==', String(kode || '').toUpperCase().trim()),
+    where('status', '==', 'aktif'));
+  const snap = await getDocs(q);
+  return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+}
+
 export const dengarSesi = (sesiId, cb) =>
-  onSnapshot(doc(db, 'sesi_live', sesiId), (sn) => cb(sn.exists() ? { id: sn.id, ...sn.data() } : null));
+  onSnapshot(doc(db, 'sesi_kelas', sesiId), (s) => cb(s.exists() ? { id: s.id, ...s.data() } : null));
+
+export const ubahSesi = (sesiId, patch) =>
+  updateDoc(doc(db, 'sesi_kelas', sesiId), { ...patch, updatedAt: serverTimestamp() });
+
+export async function akhiriSesi(sesiId) {
+  await updateDoc(doc(db, 'sesi_kelas', sesiId), { status: 'selesai', diakhiriAt: serverTimestamp() });
+}
+
+// ---------- Peserta ----------
+export async function gabungSesi(sesiId, siswaId, nama) {
+  await setDoc(doc(db, 'sesi_kelas', sesiId, 'peserta', siswaId),
+    { siswaId, nama: nama || '', gabungAt: serverTimestamp() }, { merge: true });
+}
+
 export const dengarPeserta = (sesiId, cb) =>
-  onSnapshot(collection(db, 'sesi_live', sesiId, 'peserta'), (sn) => {
-    const m = {};
-    sn.forEach((d) => { m[d.id] = { id: d.id, ...d.data() }; });
-    cb(m);
-  });
+  onSnapshot(collection(db, 'sesi_kelas', sesiId, 'peserta'),
+    (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
 
-// ---------- KONTROL GURU ----------
-export const ubahSesi = (sesiId, patch) => updateDoc(doc(db, 'sesi_live', sesiId), { ...patch, updatedAt: serverTimestamp() });
-export const tayangkanMateri = (sesiId) => ubahSesi(sesiId, { tahap: 'materi' });
-export const tayangkanSoal = (sesiId, index) => ubahSesi(sesiId, { indexSekarang: Number(index), tahap: 'soal' });
-export const bukaPembahasan = (sesiId) => ubahSesi(sesiId, { tahap: 'pembahasan' });
-export const akhiriSesiLive = (sesiId) => ubahSesi(sesiId, { status: 'selesai' });
-
-// ---------- SISWA ----------
-export async function gabungSesiLive(sesiId, studentId, nama) {
-  await setDoc(doc(db, 'sesi_live', sesiId, 'peserta', studentId),
-    { nama: nama || '', joinAt: serverTimestamp() }, { merge: true });
-}
-export async function kirimJawabanLive(sesiId, studentId, nama, indexSoal, pilihan, benar) {
-  await setDoc(doc(db, 'sesi_live', sesiId, 'peserta', studentId), {
-    nama: nama || '',
-    [`jawabanPerSoal.${indexSoal}`]: { pilihan, benar: !!benar, waktu: serverTimestamp() },
-  }, { merge: true });
+// ---------- Jawaban ----------
+export async function kirimJawaban(sesiId, { siswaId, nama, soalIdx, jawaban, benar }) {
+  await setDoc(doc(db, 'sesi_kelas', sesiId, 'jawaban', `${siswaId}__${soalIdx}`),
+    { siswaId, nama: nama || '', soalIdx: Number(soalIdx), jawaban, benar: !!benar, ts: serverTimestamp() },
+    { merge: true });
 }
 
-// ---------- REKAP ----------
-export function hitungRekap(pesertaMap, indexSoal) {
-  const daftar = Object.values(pesertaMap || {});
-  let sudahJawab = 0, benar = 0;
-  const distribusi = {};
-  daftar.forEach((p) => {
-    const j = p.jawabanPerSoal ? p.jawabanPerSoal[indexSoal] : undefined;
-    if (j !== undefined) {
-      sudahJawab++;
-      if (j.benar) benar++;
-      const k = JSON.stringify(j.pilihan);
-      distribusi[k] = (distribusi[k] || 0) + 1;
-    }
-  });
-  return { totalSiswa: daftar.length, sudahJawab, benar, distribusi };
+export const dengarJawaban = (sesiId, cb) =>
+  onSnapshot(collection(db, 'sesi_kelas', sesiId, 'jawaban'),
+    (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
+
+// ---------- Tanya ----------
+export async function kirimTanya(sesiId, { siswaId, nama, teks }) {
+  await addDoc(collection(db, 'sesi_kelas', sesiId, 'tanya'),
+    { siswaId, nama: nama || '', teks, ts: serverTimestamp() });
 }
-export function soalPalingSalah(pesertaMap, jumlahSoal) {
-  const hasil = [];
-  for (let i = 0; i < jumlahSoal; i++) {
-    const r = hitungRekap(pesertaMap, i);
-    hasil.push({ index: i, ...r, salah: r.sudahJawab - r.benar });
-  }
-  return hasil.sort((a, b) => b.salah - a.salah || b.sudahJawab - a.sudahJawab);
-}
+
+export const dengarTanya = (sesiId, cb) =>
+  onSnapshot(collection(db, 'sesi_kelas', sesiId, 'tanya'),
+    (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.ts?.seconds || 0) - (b.ts?.seconds || 0))));
+
+export const hapusTanya = (sesiId, tanyaId) =>
+  deleteDoc(doc(db, 'sesi_kelas', sesiId, 'tanya', tanyaId));
