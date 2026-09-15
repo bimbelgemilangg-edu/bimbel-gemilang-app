@@ -1,14 +1,18 @@
 // src/pages/teacher/LiveSessionTeacher.jsx
-// 2 MODE: 📖 Materi Interaktif (bab buku digital) & ✍️ Soal & Pembahasan (bank soal).
-// 🔥 BARU: (1) kartu "Sesi yang masih aktif" di langkah pilih mode — daftar
-// sesi terlupakan + tombol Lanjutkan/Akhiri (pembersihan sesi tes);
-// (2) memulai sesi baru untuk bab yang sama otomatis mengakhiri sesi lama
-// bab itu (anti-dobel); (3) pembahasan privat guru dirender sebagai HTML
-// utuh (tabel & gambar lengkap, tidak lagi teks gepeng).
+// PINTU SESI LIVE GURU dengan 2 MODE:
+//  📖 Materi Interaktif -> dari bab buku digital: slide PPT (cover, kartu
+//     materi, refleksi) lalu soal bab di akhir slide, dikerjakan siswa
+//     secara interaktif real-time.
+//  ✍️ Soal & Pembahasan -> dari bank soal: latihan terpantau, pembahasan
+//     disampaikan guru lisan (teks pembahasan privat di panel guru).
+// Fitur: manajemen sesi aktif (Lanjutkan/Akhiri), auto-akhiri sesi lama
+// bab sama, fullscreen proyektor, badge tipe + petunjuk pengerjaan,
+// grid CBT Benar/Salah, kotak centang multi, figur+tabel stimulus utuh,
+// distribusi jawaban netral sampai kunci dibuka.
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { parseDaftarSoal, parseSlides, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
+import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, ubahSesi, akhiriSesi } from '../../services/sesiService';
 
 const S = {
@@ -94,7 +98,6 @@ export default function LiveSessionTeacher() {
     })();
   }, []);
 
-  // 🔥 BARU: muat daftar sesi yang masih aktif (untuk pembersihan)
   const muatSesiAktif = async () => {
     try {
       const q = query(collection(db, 'sesi_kelas'), where('status', '==', 'aktif'));
@@ -146,7 +149,7 @@ export default function LiveSessionTeacher() {
   const soalNow = soalMateriNow || soalBankNow || null;
   const idxNow = soalMateriNow ? slideNow.soalIdx : (sesi ? sesi.soalAktif : null);
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
-  const gambarNow = soalNow ? (soalNow.gambarHtml || (soalDariHtml[idxNow] || {}).gambarHtml || '') : '';
+  const gambarNow = soalNow ? ((soalDariHtml[idxNow] || {}).gambarHtml || soalNow.gambarHtml || '') : '';
   const pembahasanHtmlNow = soalNow ? (soalNow.pembahasanHtml || (soalDariHtml[idxNow] || {}).pembahasanHtml || '') : '';
   const tipeNow = soalNow?.kunci?.tipe || null;
 
@@ -164,13 +167,13 @@ export default function LiveSessionTeacher() {
     const html = babItem.html || '';
     const soals = parseDaftarSoal(html);
     if (!soals.length) { alert('Bab ini tidak punya soal terparse.'); return; }
-    // 🔥 BARU: akhiri otomatis sesi lama untuk bab yang sama (anti-dobel)
     try {
       const q = query(collection(db, 'sesi_kelas'), where('status', '==', 'aktif'), where('babId', '==', babItem.id));
       const sn = await getDocs(q);
       await Promise.all(sn.docs.map((d) => akhiriSesi(d.id)));
     } catch (e) {}
-    const s = await buatSesi({ mode: 'materi', sumber: 'buku', bukuId, babId: babItem.id, guruId, daftarSoal: soals, catatan: babItem.judul || '' });
+    const s = await buatSesi({ bukuId, babId: babItem.id, guruId, catatan: babItem.judul || '' });
+    await ubahSesi(s.id, { mode: 'materi', sumber: 'buku', daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0 });
     setSesi({ id: s.id, kode: s.kode, mode: 'materi', sumber: 'buku', bukuId, babId: babItem.id, daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0, status: 'aktif' });
     setBabHtml(html);
     setTahap('live');
@@ -190,7 +193,8 @@ export default function LiveSessionTeacher() {
         pembahasanHtml: '', gambarHtml: '', gambarUrls: s.gambarUrls || [],
       };
     });
-    const s = await buatSesi({ mode: 'bank', sumber: 'bank', guruId, daftarSoal: soals, catatan: bankPick.materi });
+    const s = await buatSesi({ guruId, catatan: bankPick.materi });
+    await ubahSesi(s.id, { mode: 'bank', sumber: 'bank', daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0 });
     setSesi({ id: s.id, kode: s.kode, mode: 'bank', sumber: 'bank', daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0, status: 'aktif' });
     setTahap('live');
   }
@@ -216,7 +220,6 @@ export default function LiveSessionTeacher() {
           <h2 style={{ margin: '0 0 6px', fontSize: 20 }}>🔴 Mulai Sesi Kelas Live</h2>
           <p style={{ fontSize: 12.5, color: '#64748b', margin: 0 }}>Pilih sumber sesi. Siswa bergabung lewat kode yang tampil di layar ini.</p>
         </div>
-        {/* 🔥 BARU: manajemen sesi yang masih aktif (pembersihan sesi tes) */}
         {sesiAktifList.length > 0 && (
           <div style={S.card}>
             <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>🗂️ Sesi yang masih aktif ({sesiAktifList.length}) — akhiri yang sudah tidak dipakai</h4>
@@ -351,7 +354,6 @@ export default function LiveSessionTeacher() {
       </div>
 
       <div style={S.grid2}>
-        {/* ---- AREA PROYEKTOR ---- */}
         <div style={S.card} ref={fsRef} className="fs-area">
           <div style={{ ...S.row, marginBottom: 10 }}>
             <button style={S.btn2} onClick={masukFullscreen}>⛶ Layar Penuh (Proyektor)</button>
@@ -384,9 +386,10 @@ export default function LiveSessionTeacher() {
                     : 'Siswa menilai BENAR atau SALAH untuk SETIAP pernyataan.'}
                 </span>
               </div>
-              <div style={{ fontSize: uk(15), lineHeight: 1.6, marginBottom: 10, color: warnaTeks, fontWeight: 600 }}>{soalNow.teks}</div>
-              {gambarNow && (
+              {gambarNow ? (
                 <div className="modmod" style={{ ...S.gambarBox, background: isFs ? '#1e293b' : '#fff' }} dangerouslySetInnerHTML={{ __html: gambarNow }} />
+              ) : (
+                <div style={{ fontSize: uk(15), lineHeight: 1.6, marginBottom: 10, color: warnaTeks, fontWeight: 600 }}>{soalNow.teks}</div>
               )}
               {!gambarNow && soalNow.gambarUrls && soalNow.gambarUrls.length > 0 && (
                 <div style={{ marginBottom: 10 }}>
@@ -451,7 +454,6 @@ export default function LiveSessionTeacher() {
           {sesi.mode === 'materi' && !slideNow && <p style={{ fontSize: 12, color: '#64748b' }}>Memuat slide...</p>}
         </div>
 
-        {/* ---- PANEL MONITOR (privat guru) ---- */}
         <div style={S.card}>
           <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>📡 Jawaban siswa real-time</h4>
           {!soalNow && <p style={{ fontSize: 12, color: '#64748b' }}>{sesi.mode === 'materi' ? 'Navigasi slide; saat slide soal tampil, jawaban siswa masuk ke sini.' : 'Pilih soal untuk ditayangkan.'}</p>}
@@ -468,7 +470,6 @@ export default function LiveSessionTeacher() {
                 </div>
               ))}
               {belum.length > 0 && <div style={{ fontSize: 11, color: '#f39c12', marginTop: 8 }}>Belum: {belum.map((p) => p.nama || p.siswaId).join(', ')}</div>}
-              {/* 🔥 FIX: pembahasan privat dirender HTML utuh — tabel & gambar lengkap */}
               {(pembahasanHtmlNow || soalNow.pembahasan) && (
                 <details style={{ marginTop: 12 }}>
                   <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>🔒 Pembahasan (privat guru — tidak ikut diproyeksikan)</summary>

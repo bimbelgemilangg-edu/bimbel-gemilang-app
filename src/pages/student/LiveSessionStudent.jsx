@@ -1,8 +1,10 @@
 // src/pages/student/LiveSessionStudent.jsx
-// Sisi siswa: join lewat kode, ikuti slide/soal guru real-time, CBT
-// (PG / multi / Benar-Salah), kotak "Anda memilih jawaban" saat menunggu.
-// 🔥 BARU: saat kunci terbuka, ada lipatan "📖 Lihat pembahasan lengkap
-// (tabel & gambar)" yang merender pembahasan HTML utuh termasuk figur.
+// SISI SISWA sesi live: join lewat kode (atau otomatis dari ?kode=),
+// ikuti slide/soal guru real-time. Soal dirender gaya CBT:
+// PG (bulatan huruf), multi (kotak centang), Benar/Salah (grid B/S).
+// Setelah kirim: kotak "📌 Anda memilih jawaban" + status menunggu.
+// Saat kunci terbuka: umpan benar/salah + lipatan pembahasan lengkap
+// (tabel & gambar). Figur + tabel stimulus tampil utuh berurutan.
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -77,7 +79,7 @@ export default function LiveSessionStudent() {
   const idxSoal = sesi && sesi.mode === 'materi' ? (slideNow ? slideNow.soalIdx : null) : (sesi ? sesi.soalAktif : null);
   const sudah = idxSoal != null ? !!terkirim[idxSoal] : false;
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
-  const gambarNow = soal ? (soal.gambarHtml || (soalDariHtml[idxSoal] || {}).gambarHtml || '') : '';
+  const gambarNow = soal ? ((soalDariHtml[idxSoal] || {}).gambarHtml || soal.gambarHtml || '') : '';
   const pembahasanHtmlNow = soal ? (soal.pembahasanHtml || (soalDariHtml[idxSoal] || {}).pembahasanHtml || '') : '';
 
   async function gabung() {
@@ -165,10 +167,10 @@ export default function LiveSessionStudent() {
 
       {soal && (
         <div style={S.card}>
-          <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
-
-          {gambarNow && (
+          {gambarNow ? (
             <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: gambarNow }} />
+          ) : (
+            <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
           )}
           {!gambarNow && soal.gambarUrls && soal.gambarUrls.length > 0 && (
             <div style={{ marginBottom: 10 }}>
@@ -254,7 +256,6 @@ export default function LiveSessionStudent() {
             </div>
           )}
 
-          {/* 🔥 BARU: pembahasan lengkap dengan tabel & gambar */}
           {terbuka && pembahasanHtmlNow && (
             <details style={{ marginTop: 10 }}>
               <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>📖 Lihat pembahasan lengkap (tabel & gambar)</summary>
