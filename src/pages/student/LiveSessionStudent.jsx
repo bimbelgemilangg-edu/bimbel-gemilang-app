@@ -1,10 +1,9 @@
 // src/pages/student/LiveSessionStudent.jsx
-// SISI SISWA sesi live: join lewat kode (atau otomatis dari ?kode=),
-// ikuti slide/soal guru real-time. Soal dirender gaya CBT:
-// PG (bulatan huruf), multi (kotak centang), Benar/Salah (grid B/S).
-// Setelah kirim: kotak "📌 Anda memilih jawaban" + status menunggu.
-// Saat kunci terbuka: umpan benar/salah + lipatan pembahasan lengkap
-// (tabel & gambar). Figur + tabel stimulus tampil utuh berurutan.
+// SISI SISWA sesi live: join lewat kode, ikuti slide/soal guru real-time.
+// 🔥 FEEL MENGERJAKAN: setelah dikirim, jawaban TERKUNCI (opsi disabled +
+// ikon 🔒 pada pilihan yang dikirim) -- siswa tidak bisa memindahkan/
+// mengubah jawaban lagi. Setelah kunci terbuka, siswa yang belum jawab
+// tetap tidak bisa menjawab (mencegah menyalin jawaban yang terbuka).
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -101,17 +100,17 @@ export default function LiveSessionStudent() {
     if (!soal || pilih === null) return null;
     if (soal.kunci?.tipe === 'pg') {
       const i = pilih;
-      return <div style={S.pilihItem}><b>{String.fromCharCode(65 + i)}.</b> {bersihVerdikt(soal.pilihan[i] || '')}</div>;
+      return <div style={S.pilihItem}>🔒 <b>{String.fromCharCode(65 + i)}.</b> {bersihVerdikt(soal.pilihan[i] || '')}</div>;
     }
     if (soal.kunci?.tipe === 'multi') {
       return (Array.isArray(pilih) ? pilih : []).map((i) => (
-        <div key={i} style={S.pilihItem}>✓ {bersihVerdikt(soal.pilihan[i] || '')}</div>
+        <div key={i} style={S.pilihItem}>🔒 ✓ {bersihVerdikt(soal.pilihan[i] || '')}</div>
       ));
     }
     if (soal.kunci?.tipe === 'bs') {
       return (soal.pernyataan || []).map((p, i) => (
         <div key={i} style={S.pilihItem}>
-          {i + 1}. {bersihVerdikt(p)} → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
+          🔒 {i + 1}. {bersihVerdikt(p)} → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
         </div>
       ));
     }
@@ -184,6 +183,7 @@ export default function LiveSessionStudent() {
             <button key={i} style={S.opsi(pilih === i, terbuka && soal.kunci.pg === i, terbuka)} disabled={sudah || terbuka} onClick={() => setPilih(i)}>
               <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
               <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+              {sudah && pilih === i && '🔒'}
               {terbuka && soal.kunci.pg === i && '✅'}
             </button>
           ))}
@@ -197,6 +197,7 @@ export default function LiveSessionStudent() {
                 onClick={() => setPilih(a ? arr.filter((x) => x !== i) : [...arr, i])}>
                 <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
                 <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                {sudah && a && '🔒'}
                 {k && '✅'}
               </button>
             );
@@ -242,7 +243,7 @@ export default function LiveSessionStudent() {
 
           {sudah && !terbuka && (
             <div style={S.pilihBox}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#4338ca', marginBottom: 6 }}>📌 Anda memilih jawaban:</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: '#4338ca', marginBottom: 6 }}>📌 Jawaban Anda (terkunci, tidak bisa diubah):</div>
               {ringkasPilihan()}
               <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 8 }}>
                 ⏳ Terkirim — menunggu siswa lain menyelesaikan & penjelasan guru…
@@ -252,7 +253,7 @@ export default function LiveSessionStudent() {
 
           {terbuka && (
             <div style={{ fontSize: 12.5, color: sudah ? (terkirim[idxSoal] ? '#166534' : '#991b1b') : '#64748b', fontWeight: 700, marginTop: 8 }}>
-              {sudah ? (terkirim[idxSoal] ? '✅ Jawabanmu benar.' : '❌ Jawabanmu belum tepat — simak pembahasan guru.') : 'Kunci dibuka guru.'}
+              {sudah ? (terkirim[idxSoal] ? '✅ Jawabanmu benar.' : '❌ Jawabanmu belum tepat — simak pembahasan guru.') : 'Kunci dibuka guru — soal ini sudah tidak bisa dijawab.'}
             </div>
           )}
 
