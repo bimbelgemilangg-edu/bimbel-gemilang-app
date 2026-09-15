@@ -1,12 +1,11 @@
 // src/pages/student/LiveSessionStudent.jsx
-// Sisi siswa: join lewat KODE, lalu mengikuti sesi sesuai mode guru:
-//  📖 materi -> slide sama persis dengan proyektor guru (materi read-only,
-//     soal di akhir slide dikerjakan interaktif gaya CBT).
-//  ✍️ bank   -> soal terpantau saja; kunci/pembahasan hanya dibuka guru.
+// Sisi siswa: join lewat kode, ikuti slide/soal guru.
+// FIX: teks opsi/pernyataan dibersihkan dari verdict "(Benar)/(Salah)",
+// dan ada peringatan bila opsi soal tidak terbaca (tidak lagi kosong diam-diam).
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { parseSlides, cekBenar, CSS_MODUL } from '../../utils/parseSoal';
+import { parseSlides, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban } from '../../services/sesiService';
 
 const S = {
@@ -114,7 +113,6 @@ export default function LiveSessionStudent() {
         </div>
       </div>
 
-      {/* ---- SLIDE MATERI / COVER / REFLEKSI (read-only, sama dengan proyektor) ---- */}
       {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (
         <div style={S.card}>
           {slideNow.tipe === 'cover' ? (
@@ -128,11 +126,10 @@ export default function LiveSessionStudent() {
           ) : (
             <div className="modmod" dangerouslySetInnerHTML={{ __html: slideNow.html }} />
           )}
-          <p style={{ fontSize: 11, color: '#94a3b8', margin: '8px 0 0', textAlign: 'center' }}>Ikuti penjelasan guru — slide berpindah otomatis dari kendali guru.</p>
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: '8px 0 0', textAlign: 'center' }}>Ikuti penjelasan guru — slide berpindah dari kendali guru.</p>
         </div>
       )}
 
-      {/* ---- SOAL INTERAKTIF (CBT) ---- */}
       {soal && (
         <div style={S.card}>
           <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
@@ -140,7 +137,7 @@ export default function LiveSessionStudent() {
           {soal.kunci && soal.kunci.tipe === 'pg' && (soal.pilihan || []).map((p, i) => (
             <button key={i} style={S.opsi(pilih === i, terbuka && soal.kunci.pg === i, terbuka)} disabled={sudah || terbuka} onClick={() => setPilih(i)}>
               <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
-              <span style={{ flex: 1 }}>{p}</span>
+              <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
               {terbuka && soal.kunci.pg === i && '✅'}
             </button>
           ))}
@@ -153,13 +150,13 @@ export default function LiveSessionStudent() {
               <button key={i} style={S.opsi(a, k, terbuka)} disabled={sudah || terbuka}
                 onClick={() => setPilih(a ? arr.filter((x) => x !== i) : [...arr, i])}>
                 <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
-                <span style={{ flex: 1 }}>{p}</span>
+                <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
                 {k && '✅'}
               </button>
             );
           })}
 
-          {soal.kunci && soal.kunci.tipe === 'bs' && (
+          {soal.kunci && soal.kunci.tipe === 'bs' && (soal.pernyataan || []).length > 0 && (
             <div style={S.cbt}>
               <div style={S.cbtHead}>
                 <span style={S.cbtHeadText}>Pernyataan</span>
@@ -172,7 +169,7 @@ export default function LiveSessionStudent() {
                 const sayaSalah = terbuka && arr[i] !== undefined && arr[i] !== kunciB;
                 return (
                   <div key={i} style={S.cbtRow(sayaSalah)}>
-                    <div style={S.cbtText}>{i + 1}. {p}</div>
+                    <div style={S.cbtText}>{i + 1}. {bersihVerdikt(p)}</div>
                     <div style={S.cbtOpt}>
                       <button style={S.cbtBtn(arr[i] === true, terbuka && kunciB === true, terbuka)} disabled={sudah || terbuka}
                         onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = true; setPilih(a); }}>B</button>
@@ -184,6 +181,12 @@ export default function LiveSessionStudent() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {soal && !soal.pilihan?.length && !soal.pernyataan?.length && (
+            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#92400e' }}>
+              ⚠️ Opsi soal ini tidak terbaca dari modul. Beri tahu guru — sesi akan dimulai ulang dengan parser yang sudah diperbaiki.
             </div>
           )}
 

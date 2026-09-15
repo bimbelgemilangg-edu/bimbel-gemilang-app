@@ -1,17 +1,14 @@
 // src/pages/teacher/LiveSessionTeacher.jsx
-// PINTU MASUK SESI LIVE GURU dengan 2 MODE:
-//  📖 MATERI INTERAKTIF  -> dari BAB BUKU DIGITAL: slide ala PPT (cover,
-//     kartu materi berurutan + rumus/gambar, refleksi) lalu soal bab di
-//     akhir slide yang dikerjakan siswa secara interaktif.
-//  ✍️ SOAL & PEMBAHASAN  -> dari BANK SOAL: latihan terpantau saja;
-//     pembahasan disampaikan GURU (teks pembahasan hanya privat di guru).
-import React, { useState, useEffect, useMemo } from 'react';
+// 2 MODE: 📖 Materi Interaktif (bab buku digital, slide PPT + soal interaktif)
+// dan ✍️ Soal & Pembahasan (bank soal, pembahasan lisan guru).
+// FIX: distribusi NETRAL sampai kunci dibuka (anti bocor di proyektor),
+// teks opsi dibersihkan dari verdict, tombol ⛶ Layar Penuh untuk proyektor
+// (hanya area slide yang diproyeksikan, panel monitor tidak ikut).
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { parseDaftarSoal, parseSlides, cekBenar, CSS_MODUL } from '../../utils/parseSoal';
-import {
-  buatSesi, dengarSesi, dengarPeserta, dengarJawaban, ubahSesi, akhiriSesi,
-} from '../../services/sesiService';
+import { parseDaftarSoal, parseSlides, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
+import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, ubahSesi, akhiriSesi } from '../../services/sesiService';
 
 const S = {
   page: { maxWidth: 1150, margin: '0 auto', padding: 16, fontFamily: 'sans-serif' },
@@ -26,16 +23,16 @@ const S = {
   kode: { fontSize: 30, fontWeight: 900, letterSpacing: 5, color: '#4338ca', background: '#eef2ff', border: '2px dashed #a5b4fc', borderRadius: 12, padding: '8px 20px' },
   chip: { background: '#eef2ff', color: '#4338ca', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 700 },
   modeGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 },
-  modeCard: { background: '#fff', border: '2px solid #e2e8f0', borderRadius: 14, padding: 18, cursor: 'pointer', textAlign: 'left', transition: '0.2s' },
+  modeCard: { background: '#fff', border: '2px solid #e2e8f0', borderRadius: 14, padding: 18, cursor: 'pointer', textAlign: 'left' },
   babRow: { display: 'flex', alignItems: 'center', gap: 10, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 12px', marginBottom: 8, cursor: 'pointer' },
   slideBox: { background: '#0f172a', borderRadius: 14, padding: 18, minHeight: 320, color: '#e2e8f0' },
-  bar: { height: 12, borderRadius: 6, minWidth: 3, background: '#3498db' },
+  bar: { height: 12, borderRadius: 6, minWidth: 3 },
   opsi: (k) => ({ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: k ? '#f0fdf4' : '#f8fafc', fontSize: 13, marginBottom: 6 }),
   grid2: { display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 12 },
 };
 
 export default function LiveSessionTeacher() {
-  const [tahap, setTahap] = useState('mode'); // mode | buku | bab | bank | live
+  const [tahap, setTahap] = useState('mode');
   const [bukuList, setBukuList] = useState([]);
   const [bukuId, setBukuId] = useState('');
   const [babList, setBabList] = useState([]);
@@ -45,6 +42,7 @@ export default function LiveSessionTeacher() {
   const [sesi, setSesi] = useState(null);
   const [peserta, setPeserta] = useState([]);
   const [jawaban, setJawaban] = useState([]);
+  const fsRef = useRef(null);
 
   const guruId = (() => {
     try { const t = JSON.parse(localStorage.getItem('teacherData') || '{}'); return t.guruId || t.id || ''; } catch { return ''; }
@@ -105,16 +103,17 @@ export default function LiveSessionTeacher() {
   const soalBankNow = sesi && sesi.mode === 'bank' && sesi.soalAktif != null ? daftarSoal[sesi.soalAktif] : null;
   const soalNow = soalMateriNow || soalBankNow || null;
   const idxNow = soalMateriNow ? slideNow.soalIdx : (sesi ? sesi.soalAktif : null);
+  const terbuka = sesi ? !!sesi.kunciTerbuka : false;
 
   const jwsNow = useMemo(() => (idxNow != null ? jawaban.filter((j) => j.soalIdx === idxNow) : []), [jawaban, idxNow]);
   const belum = peserta.filter((p) => !jwsNow.some((j) => j.siswaId === p.siswaId));
   const distribusi = useMemo(() => {
     if (!soalNow || !soalNow.kunci) return null;
-    if (soalNow.kunci.tipe === 'pg') return (soalNow.pilihan || []).map((p, i) => ({ label: `${String.fromCharCode(65 + i)}. ${p}`, n: jwsNow.filter((j) => j.jawaban === i).length, benar: soalNow.kunci.pg === i }));
-    if (soalNow.kunci.tipe === 'multi') return (soalNow.pilihan || []).map((p, i) => ({ label: p, n: jwsNow.filter((j) => Array.isArray(j.jawaban) && j.jawaban.includes(i)).length, benar: (soalNow.kunci.multi || []).includes(i) }));
-    return (soalNow.pernyataan || []).map((p, i) => ({ label: p, n: jwsNow.filter((j) => Array.isArray(j.jawaban) && j.jawaban[i] === (soalNow.kunci.bs || [])[i]).length, nSalah: jwsNow.filter((j) => Array.isArray(j.jawaban) && j.jawaban[i] !== undefined && j.jawaban[i] !== (soalNow.kunci.bs || [])[i]).length, benar: true }));
+    if (soalNow.kunci.tipe === 'pg') return (soalNow.pilihan || []).map((p, i) => ({ label: `${String.fromCharCode(65 + i)}. ${bersihVerdikt(p)}`, n: jwsNow.filter((j) => j.jawaban === i).length, nSalah: 0, benar: soalNow.kunci.pg === i }));
+    if (soalNow.kunci.tipe === 'multi') return (soalNow.pilihan || []).map((p, i) => ({ label: bersihVerdikt(p), n: jwsNow.filter((j) => Array.isArray(j.jawaban) && j.jawaban.includes(i)).length, nSalah: 0, benar: (soalNow.kunci.multi || []).includes(i) }));
+    return (soalNow.pernyataan || []).map((p, i) => ({ label: bersihVerdikt(p), n: jwsNow.filter((j) => Array.isArray(j.jawaban) && j.jawaban[i] === (soalNow.kunci.bs || [])[i]).length, nSalah: jwsNow.filter((j) => Array.isArray(j.jawaban) && j.jawaban[i] !== undefined && j.jawaban[i] !== (soalNow.kunci.bs || [])[i]).length, benar: true }));
   }, [soalNow, jwsNow]);
-  const maxN = distribusi ? Math.max(1, ...distribusi.map((d) => d.n + (d.nSalah || 0))) : 1;
+  const maxN = distribusi ? Math.max(1, ...distribusi.map((d) => d.n + d.nSalah)) : 1;
 
   async function mulaiMateri(babItem) {
     const html = babItem.html || '';
@@ -145,8 +144,8 @@ export default function LiveSessionTeacher() {
   }
 
   const keSlide = (i) => ubahSesi(sesi.id, { slideAktif: Math.max(0, Math.min(slides.length - 1, i)), kunciTerbuka: false, langkahTerbuka: 0 });
+  const masukFullscreen = () => { if (fsRef.current && fsRef.current.requestFullscreen) fsRef.current.requestFullscreen(); };
 
-  // ================= PILIH MODE =================
   if (tahap === 'mode') {
     return (
       <div style={S.page}>
@@ -158,25 +157,18 @@ export default function LiveSessionTeacher() {
           <button style={S.modeCard} onClick={() => setTahap('buku')}>
             <div style={{ fontSize: 26 }}>📖</div>
             <div style={{ fontSize: 15, fontWeight: 800, margin: '6px 0 4px' }}>Materi Interaktif</div>
-            <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
-              Dari <b>bab buku digital</b>: slide materi tertata (rumus + gambar) seperti PPT,
-              lalu di akhir slide ada <b>soal bab</b> yang dikerjakan siswa secara interaktif.
-            </div>
+            <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>Dari <b>bab buku digital</b>: slide materi tertata seperti PPT, lalu soal bab di akhir slide dikerjakan siswa secara interaktif.</div>
           </button>
           <button style={S.modeCard} onClick={() => setTahap('bank')}>
             <div style={{ fontSize: 26 }}>✍️</div>
             <div style={{ fontSize: 15, fontWeight: 800, margin: '6px 0 4px' }}>Soal & Pembahasan</div>
-            <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
-              Dari <b>bank soal</b>: latihan terpantau saja. Siswa mengerjakan, guru memantau
-              distribusi jawaban; <b>pembahasan disampaikan guru</b> secara lisan.
-            </div>
+            <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>Dari <b>bank soal</b>: latihan terpantau; pembahasan disampaikan guru secara lisan.</div>
           </button>
         </div>
       </div>
     );
   }
 
-  // ================= PILIH BUKU / BAB =================
   if (tahap === 'buku' || tahap === 'bab') {
     return (
       <div style={S.page}>
@@ -208,7 +200,6 @@ export default function LiveSessionTeacher() {
     );
   }
 
-  // ================= PILIH BANK SOAL =================
   if (tahap === 'bank') {
     return (
       <div style={S.page}>
@@ -223,18 +214,24 @@ export default function LiveSessionTeacher() {
               <span style={{ fontSize: 11, color: '#64748b' }}>{g.mapel} · {g.items.length} soal</span>
             </div>
           ))}
-          {bankPick && (
-            <button style={{ ...S.btnH, marginTop: 10 }} onClick={mulaiBank}>🚀 Mulai Sesi Soal ({bankPick.items.length} soal)</button>
-          )}
+          {bankPick && <button style={{ ...S.btnH, marginTop: 10 }} onClick={mulaiBank}>🚀 Mulai Sesi Soal ({bankPick.items.length} soal)</button>}
         </div>
       </div>
     );
   }
 
-  // ================= LIVE =================
   return (
     <div style={S.page}>
       <style>{CSS_MODUL}</style>
+      <style>{`
+        .fs-area:fullscreen{background:#0f172a;overflow:auto;padding:28px}
+        .fs-area:fullscreen .modmod{font-size:21px;line-height:1.7}
+        .fs-area:fullscreen .fs-teks{font-size:27px;line-height:1.55;color:#fff;margin-bottom:14px}
+        .fs-area:fullscreen .fs-opsi{font-size:20px;background:#1e293b;color:#e2e8f0;border-color:#334155}
+        .fs-area:fullscreen .fs-cover h1{font-size:46px}
+        .fs-exit{display:none}
+        .fs-area:fullscreen .fs-exit{display:inline-block}
+      `}</style>
       <div style={S.card}>
         <div style={S.row}>
           <span style={S.kode}>{sesi.kode}</span>
@@ -242,7 +239,7 @@ export default function LiveSessionTeacher() {
           <span style={S.chip}>👥 {peserta.length} siswa</span>
           {sesi.mode === 'materi' && slideNow && <span style={S.chip}>Slide {(sesi.slideAktif || 0) + 1}/{slides.length}</span>}
           {soalNow && <span style={S.chip}>✍️ Soal {idxNow + 1}/{daftarSoal.length}</span>}
-          {sesi.kunciTerbuka && <span style={{ ...S.chip, background: '#dcfce7', color: '#166534' }}>🔓 kunci terbuka</span>}
+          {terbuka && <span style={{ ...S.chip, background: '#dcfce7', color: '#166534' }}>🔓 kunci terbuka</span>}
           <span style={{ flex: 1 }} />
           <button style={S.btnR} onClick={async () => { if (window.confirm('Akhiri sesi?')) { await akhiriSesi(sesi.id); setTahap('mode'); setSesi(null); } }}>⏹ Akhiri</button>
         </div>
@@ -270,19 +267,23 @@ export default function LiveSessionTeacher() {
         )}
         {soalNow && (
           <div style={S.row}>
-            {!sesi.kunciTerbuka && <button style={S.btnW} onClick={() => ubahSesi(sesi.id, { kunciTerbuka: true, langkahTerbuka: 1 })}>🔓 Buka Kunci ke Siswa</button>}
-            {sesi.kunciTerbuka && <button style={S.btn2} onClick={() => ubahSesi(sesi.id, { kunciTerbuka: false, langkahTerbuka: 0 })}>🙈 Tutup Kunci</button>}
+            {!terbuka && <button style={S.btnW} onClick={() => ubahSesi(sesi.id, { kunciTerbuka: true, langkahTerbuka: 1 })}>🔓 Buka Kunci ke Siswa</button>}
+            {terbuka && <button style={S.btn2} onClick={() => ubahSesi(sesi.id, { kunciTerbuka: false, langkahTerbuka: 0 })}>🙈 Tutup Kunci</button>}
           </div>
         )}
       </div>
 
       <div style={S.grid2}>
-        {/* ---- AREA PROYEKTOR ---- */}
-        <div style={S.card}>
+        {/* ---- AREA PROYEKTOR (bisa fullscreen sendiri) ---- */}
+        <div style={S.card} ref={fsRef} className="fs-area">
+          <div style={{ ...S.row, marginBottom: 10 }}>
+            <button style={S.btn2} onClick={masukFullscreen}>⛶ Layar Penuh (Proyektor)</button>
+            <button className="fs-exit" style={S.btn2} onClick={() => document.exitFullscreen && document.exitFullscreen()}>⬅ Keluar Fullscreen</button>
+          </div>
           {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (
             <div style={S.slideBox}>
               {slideNow.tipe === 'cover' ? (
-                <div style={{ textAlign: 'center', padding: '40px 10px' }}>
+                <div className="fs-cover" style={{ textAlign: 'center', padding: '40px 10px' }}>
                   <div style={{ fontSize: 11, letterSpacing: 3, color: '#94a3b8', fontWeight: 800 }}>BAB · MATERI</div>
                   <h1 style={{ fontSize: 30, margin: '10px 0', color: '#fff' }}>{slideNow.judul}</h1>
                   <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -296,24 +297,23 @@ export default function LiveSessionTeacher() {
           )}
           {soalNow && (
             <div>
-              <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>{soalNow.teks}</div>
+              <div className="fs-teks" style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>{soalNow.teks}</div>
               {(soalNow.pilihan || []).map((p, i) => (
-                <div key={i} style={S.opsi(sesi.kunciTerbuka && (soalNow.kunci.tipe === 'pg' ? soalNow.kunci.pg === i : (soalNow.kunci.tipe === 'multi' ? (soalNow.kunci.multi || []).includes(i) : false)))}>
-                  <b>{String.fromCharCode(65 + i)}.</b> {p}
+                <div key={i} className="fs-opsi" style={S.opsi(terbuka && (soalNow.kunci.tipe === 'pg' ? soalNow.kunci.pg === i : (soalNow.kunci.tipe === 'multi' ? (soalNow.kunci.multi || []).includes(i) : false)))}>
+                  <b>{String.fromCharCode(65 + i)}.</b> {bersihVerdikt(p)}
                 </div>
               ))}
               {(soalNow.pernyataan || []).map((p, i) => (
-                <div key={i} style={S.opsi(false)}>{i + 1}. {p}</div>
+                <div key={i} className="fs-opsi" style={S.opsi(false)}>{i + 1}. {bersihVerdikt(p)}</div>
               ))}
-              {sesi.mode === 'bank' && soalNow.pembahasan && (
-                <details style={{ marginTop: 10 }}>
-                  <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>🔒 Pembahasan (privat guru — sampaikan lisan)</summary>
-                  <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95', marginTop: 6 }}>{soalNow.pembahasan}</div>
-                </details>
+              {soalNow && !soalNow.pilihan?.length && !soalNow.pernyataan?.length && (
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#92400e' }}>
+                  ⚠️ Opsi/pernyataan soal ini tidak terbaca dari modul. Akhiri sesi lalu mulai ulang (parser sudah diperbaiki), atau periksa HTML bab di Manajer Buku Digital.
+                </div>
               )}
-              {sesi.mode === 'materi' && soalNow.pembahasan && (
+              {soalNow.pembahasan && (
                 <details style={{ marginTop: 10 }}>
-                  <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>🔒 Pembahasan modul (privat guru)</summary>
+                  <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>🔒 Pembahasan (privat guru — tidak ikut diproyeksikan saat fullscreen)</summary>
                   <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95', marginTop: 6 }}>{soalNow.pembahasan}</div>
                 </details>
               )}
@@ -322,18 +322,20 @@ export default function LiveSessionTeacher() {
           {sesi.mode === 'materi' && !slideNow && <p style={{ fontSize: 12, color: '#64748b' }}>Memuat slide...</p>}
         </div>
 
-        {/* ---- PANEL MONITOR ---- */}
+        {/* ---- PANEL MONITOR (tidak ikut fullscreen) ---- */}
         <div style={S.card}>
           <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>📡 Jawaban siswa real-time</h4>
           {!soalNow && <p style={{ fontSize: 12, color: '#64748b' }}>{sesi.mode === 'materi' ? 'Navigasi slide; saat slide soal tampil, jawaban siswa masuk ke sini.' : 'Pilih soal untuk ditayangkan.'}</p>}
           {soalNow && (
             <>
-              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>{jwsNow.length}/{peserta.length} menjawab • benar {jwsNow.filter((j) => j.benar).length}</div>
+              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>
+                {jwsNow.length}/{peserta.length} menjawab{terbuka ? ` • benar ${jwsNow.filter((j) => j.benar).length}` : ''}
+              </div>
               {distribusi && distribusi.map((d, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 11, width: 160, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.label}</span>
-                  <div style={{ ...S.bar, width: `${((d.n + (d.nSalah || 0)) / maxN) * 120}px`, background: d.benar ? '#16a34a' : '#94a3b8' }} />
-                  <span style={{ fontSize: 11, color: '#64748b' }}>{d.nSalah ? `${d.n}✓/${d.nSalah}✗` : d.n}</span>
+                  <div style={{ ...S.bar, width: `${((d.n + d.nSalah) / maxN) * 120}px`, background: terbuka ? (d.benar ? '#16a34a' : '#94a3b8') : '#4C6EF5' }} />
+                  <span style={{ fontSize: 11, color: '#64748b' }}>{terbuka ? (d.nSalah ? `${d.n}✓/${d.nSalah}✗` : d.n) : (d.n + d.nSalah)}</span>
                 </div>
               ))}
               {belum.length > 0 && <div style={{ fontSize: 11, color: '#f39c12', marginTop: 8 }}>Belum: {belum.map((p) => p.nama || p.siswaId).join(', ')}</div>}

@@ -1,10 +1,21 @@
 // src/utils/parseSoal.js
-// Parser modul HTML -> daftar soal terstruktur + SLIDE ala PPT untuk
-// Mode Materi Interaktif di Sesi Kelas Live.
+// Parser modul HTML -> soal terstruktur + slide PPT.
+// FIX: (a) opsi/pernyataan TIDAK diambil dari dalam <details> (blok kunci),
+// (b) akhiran verdict "(Benar)/(Salah)" dibuang dari teks tampilan,
+// (c) fallback pencarian opsi lebih lengkap supaya tidak ada soal kosong.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
-const bersihItem = (s) => bersihTeks(s)
+
+// Buang akhiran kunci yang bocor di teks pernyataan/pilihan.
+export const bersihVerdikt = (s) => String(s || '')
+  .replace(/\s*\((Benar|Salah)\)\s*\.?\s*$/i, '')
+  .replace(/\s*\[(Benar|Salah)\]\s*\.?\s*$/i, '')
+  .replace(/\s*→\s*(Benar|Salah)\s*\.?\s*$/i, '')
+  .replace(/\s*:\s*(Benar|Salah)\s*\.?\s*$/i, '')
+  .trim();
+
+const bersihItem = (s) => bersihVerdikt(bersihTeks(s)
   .replace(/^[\u2610\u2611\u2612\u25A1\u25EB\u25FC]\s*/, '')
-  .replace(/^[A-D][.).]\s*/, '');
+  .replace(/^[A-D][.).]\s*/, ''));
 
 export function parseDaftarSoal(html) {
   const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
@@ -14,11 +25,13 @@ export function parseDaftarSoal(html) {
     const sumber = bersihTeks(el.querySelector('.tipe')?.textContent) || '';
     const level = bersihTeks(el.querySelector('.lvl')?.textContent) || 'sedang';
     const teks = bersihTeks(el.querySelector('p')?.textContent) || '';
-    const ul = el.querySelector('ul.pil') || el.querySelector('ul');
-    let items = ul ? [...ul.querySelectorAll('li')].map((li) => bersihTeks(li.textContent)) : [];
+
+    // ---- kumpulkan opsi HANYA dari luar <details> ----
+    const diLuar = (node) => !node.closest('details');
+    let items = [...el.querySelectorAll('ul.pil li')].filter(diLuar).map((li) => bersihTeks(li.textContent));
     let dariTabel = false;
-    if (items.length === 0) {
-      const tabel = el.querySelector('table');
+    if (!items.length) {
+      const tabel = [...el.querySelectorAll('table')].find(diLuar);
       if (tabel) {
         items = [...tabel.querySelectorAll('tbody tr')]
           .map((tr) => bersihTeks(tr.querySelector('td')?.textContent))
@@ -26,6 +39,10 @@ export function parseDaftarSoal(html) {
         dariTabel = true;
       }
     }
+    if (!items.length) {
+      items = [...el.querySelectorAll('ul li, ol li')].filter(diLuar).map((li) => bersihTeks(li.textContent)).filter(Boolean);
+    }
+
     const berHuruf = items.filter((t) => /^[A-D][.).]/.test(t)).length;
     const details = el.querySelector('details');
     const jawabEl = details ? details.querySelector('.jawab') : null;
@@ -34,14 +51,19 @@ export function parseDaftarSoal(html) {
       const m = (details.textContent || '').match(/Jawaban:[\s\S]{0,120}/i);
       if (m) jawabTeks = bersihTeks(m[0]);
     }
+
     let tipe;
     if (berHuruf >= Math.max(1, items.length - 1) && items.length >= 2) tipe = 'pg';
     else if (/^Jawaban:\s*(Benar|Salah)/i.test(jawabTeks)) tipe = 'bs';
     else if (/Jawaban:\s*Pernyataan/i.test(jawabTeks) || /pernyataan\s*\d/i.test(jawabTeks)) tipe = 'multi';
     else if (dariTabel) tipe = 'bs';
     else tipe = 'multi';
-    const pilihan = tipe === 'pg' ? items.map((t) => t.replace(/^[A-D][.).]\s*/, '')) : (tipe === 'multi' ? items.map(bersihItem) : []);
+
+    const pilihan = tipe === 'pg'
+      ? items.map((t) => bersihItem(t.replace(/^[A-D][.).]\s*/, '')))
+      : (tipe === 'multi' ? items.map(bersihItem) : []);
     const pernyataan = tipe === 'bs' ? items.map(bersihItem) : [];
+
     let kunci = null;
     if (tipe === 'pg') {
       const m = jawabTeks.match(/([A-D])\b/i);
@@ -56,6 +78,7 @@ export function parseDaftarSoal(html) {
       const m = jawabTeks.match(/((?:Benar|Salah)(?:\s*,\s*(?:Benar|Salah))+)/i);
       if (m) kunci = { tipe: 'bs', bs: m[1].split(',').map((x) => x.trim().toLowerCase() === 'benar') };
     }
+
     const langkah = details ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent)) : [];
     const pembahasan = bersihTeks(details ? (details.textContent || '').replace(/Lihat Kunci & Pembahasan/i, '').replace(jawabTeks, '') : '');
     return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan };
@@ -70,7 +93,6 @@ export function cekBenar(kunci, jawaban) {
   return false;
 }
 
-// ===== CSS TERSKOP untuk slide materi (aman ditempel di halaman live) =====
 export const CSS_MODUL = `
 .modmod{font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1e293b}
 .modmod .kartu{background:#fff;border-radius:14px;border-left:6px solid #4C6EF5;padding:16px;margin:10px 0}
@@ -89,8 +111,6 @@ export const CSS_MODUL = `
 .modmod .tips{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;font-size:13.5px;margin:10px 0}
 `;
 
-// ===== SUSUN SLIDE ala PPT dari satu bab modul =====
-// Urutan: cover -> kartu materi berurutan -> soal-soal bab -> refleksi.
 export function parseSlides(html) {
   const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
   const slides = [];
@@ -103,17 +123,12 @@ export function parseSlides(html) {
     });
   }
   doc.querySelectorAll('.kartu').forEach((k) => {
-    slides.push({
-      tipe: 'materi',
-      judul: bersihTeks(k.querySelector('h2.sec')?.textContent) || 'Materi',
-      html: k.outerHTML,
-    });
+    slides.push({ tipe: 'materi', judul: bersihTeks(k.querySelector('h2.sec')?.textContent) || 'Materi', html: k.outerHTML });
   });
-  const soals = parseDaftarSoal(html);
-  soals.forEach((s, i) => slides.push({ tipe: 'soal', soalIdx: i, nomor: s.nomor, tipeSoal: s.tipe }));
+  parseDaftarSoal(html).forEach((s, i) => slides.push({ tipe: 'soal', soalIdx: i, nomor: s.nomor, tipeSoal: s.tipe }));
   const tips = doc.querySelector('.tips');
   if (tips) slides.push({ tipe: 'refleksi', judul: 'Refleksi', html: tips.outerHTML });
   return slides;
 }
 
-export default { parseDaftarSoal, parseSlides, cekBenar, CSS_MODUL };
+export default { parseDaftarSoal, parseSlides, cekBenar, bersihVerdikt, CSS_MODUL };
