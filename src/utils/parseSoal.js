@@ -1,12 +1,11 @@
 // src/utils/parseSoal.js
 // Parser modul HTML -> soal terstruktur + slide PPT.
-// FIX: (a) tabel pernyataan Benar/Salah dikenali dari HEADER-nya
-//         ("Pernyataan | Benar | Salah"), sehingga tabel DATA/skor
-//         (stimulus) TIDAK lagi salah dibaca sebagai pernyataan;
-//     (b) tabel stimulus + figur (svg/img/figslot) ikut ditampilkan
-//         sebagai bagian soal di layar guru & siswa (gambarHtml);
-//     (c) opsi/pernyataan tidak diambil dari dalam <details>;
-//     (d) akhiran verdict "(Benar)/(Salah)" dibuang dari teks tampilan.
+// FIX: (a) tabel pernyataan B/S dikenali dari HEADER-nya, tabel data/skor
+//         jadi stimulus (ikut ditampilkan), bukan salah dibaca pernyataan;
+//     (b) figur + tabel stimulus ikut ditampilkan (gambarHtml);
+//     (c) 🔥 BARU: pembahasanHtml = isi <details> utuh (tanpa summary &
+//         .jawab) supaya TABEL & GAMBAR di pembahasan tampil lengkap
+//         di panel guru dan lipatan pembahasan siswa.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
 export const bersihVerdikt = (s) => String(s || '')
@@ -30,25 +29,20 @@ export function parseDaftarSoal(html) {
     const teks = bersihTeks(el.querySelector('p')?.textContent) || '';
     const diLuar = (n) => !n.closest('details');
 
-    // ---- semua tabel di luar <details> ----
     const tabels = [...el.querySelectorAll('table')].filter(diLuar);
     const headText = (t) => ((t.querySelector('thead') || t.querySelector('tr'))?.textContent || '').toLowerCase();
-    // tabel pernyataan B/S = header memuat "pernyataan" + "benar/salah"
     const tabelBS = tabels.find((t) => {
       const h = headText(t);
       return h.includes('pernyataan') && (h.includes('benar') || h.includes('salah'));
     });
-    // tabel berisi pernyataan panjang (fallback bila header tidak standar)
     const tabelPernyataan = tabelBS || tabels.find((t) => {
       const rows = [...t.querySelectorAll('tbody tr')];
       if (!rows.length) return false;
       const avg = rows.reduce((a, tr) => a + bersihTeks(tr.querySelector('td')?.textContent).length, 0) / rows.length;
       return avg > 24;
     });
-    // tabel stimulus = semua tabel SELAIN tabel pernyataan (skor, data, dll)
     const stimulusTabels = tabels.filter((t) => t !== tabelPernyataan);
 
-    // ---- sumber opsi/pernyataan (urutan prioritas) ----
     const pilItems = [...el.querySelectorAll('ul.pil li')].filter(diLuar).map((li) => bersihTeks(li.textContent));
     let items = pilItems.length
       ? pilItems
@@ -56,7 +50,6 @@ export function parseDaftarSoal(html) {
         ? [...tabelPernyataan.querySelectorAll('tbody tr')].map((tr) => bersihTeks(tr.querySelector('td')?.textContent)).filter(Boolean)
         : [...el.querySelectorAll('ul li, ol li')].filter(diLuar).map((li) => bersihTeks(li.textContent)).filter(Boolean);
 
-    // ---- figur + tabel stimulus untuk ditampilkan bersama soal ----
     const figEls = [...el.querySelectorAll('svg, img, .figslot, .caption')]
       .filter((n) => !n.closest('details') && !n.closest('ul.pil') && !n.closest('table'));
     const gambarHtml = figEls.map((n) => n.outerHTML).join('') + stimulusTabels.map((t) => t.outerHTML).join('');
@@ -70,7 +63,6 @@ export function parseDaftarSoal(html) {
       if (m) jawabTeks = bersihTeks(m[0]);
     }
 
-    // ---- tentukan tipe ----
     let tipe;
     if (pilItems.length && berHuruf >= Math.max(1, pilItems.length - 1) && pilItems.length >= 2) tipe = 'pg';
     else if (/^Jawaban:\s*(Benar|Salah)/i.test(jawabTeks) || tabelBS) tipe = 'bs';
@@ -102,7 +94,18 @@ export function parseDaftarSoal(html) {
 
     const langkah = details ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent)) : [];
     const pembahasan = bersihTeks(details ? (details.textContent || '').replace(/Lihat Kunci & Pembahasan/i, '').replace(jawabTeks, '') : '');
-    return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan, gambarHtml };
+
+    // 🔥 BARU: pembahasan HTML utuh (tabel & gambar ikut) untuk panel
+    // guru dan lipatan pembahasan siswa.
+    let pembahasanHtml = '';
+    if (details) {
+      const clone = details.cloneNode(true);
+      clone.querySelector('summary')?.remove();
+      clone.querySelector('.jawab')?.remove();
+      pembahasanHtml = clone.innerHTML;
+    }
+
+    return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan, pembahasanHtml, gambarHtml };
   }).filter((s) => s.teks || s.pilihan.length || s.pernyataan.length);
 }
 
@@ -123,16 +126,18 @@ export const CSS_MODUL = `
 .modmod .rumus small{display:block;font-size:12px;font-weight:600;color:#64748b;margin-top:3px}
 .modmod ul.sifat{margin:6px 0;padding-left:20px;font-size:13.5px}
 .modmod ul.sifat li{margin:3px 0}
-.modmod table.ring{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
-.modmod table.ring th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
-.modmod table.ring td{border:1px solid #e3e6ef;padding:5px 8px}
 .modmod table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
 .modmod table th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
 .modmod table td{border:1px solid #e3e6ef;padding:5px 8px}
+.modmod table.ring{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+.modmod table.ring th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
+.modmod table.ring td{border:1px solid #e3e6ef;padding:5px 8px}
 .modmod svg,.modmod img{max-width:100%;height:auto;display:block;margin:8px auto}
 .modmod .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:14px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:8px 0}
 .modmod .caption{text-align:center;font-size:11.5px;color:#64748b}
 .modmod .tips{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 12px;font-size:13.5px;margin:10px 0}
+.modmod ol,.modmod ul{padding-left:22px;margin:6px 0}
+.modmod ol li,.modmod ul li{margin:4px 0;line-height:1.6}
 `;
 
 export function parseSlides(html) {

@@ -1,13 +1,14 @@
 // src/components/buku/PanelSesiLiveSiswa.jsx
-// Panel "Sesi Live" yang DIPASANG DI DALAM halaman Buku Digital siswa.
-// Otomatis mendeteksi sesi kelas yang sedang berlangsung (sesi_kelas
-// status aktif) lewat onSnapshot, menampilkan judul bab + mode sesi,
-// dan tombol GABUNG yang membawa kode otomatis ke halaman live.
-// Kalau tidak ada sesi berlangsung, tampil tombol masuk lewat kode.
+// Panel "Sesi Live" di dalam halaman Buku Digital siswa.
+// 🔥 FIX ANTI-MENUMPUK: hanya sesi yang dibuat < 8 jam terakhir yang
+// ditampilkan, dan bila ada beberapa sesi untuk bab yang sama, hanya
+// YANG TERBARU yang muncul. Sesi lama/lupa diakhiri tidak lagi menghantui.
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, onSnapshot, query, where, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+
+const BATAS_JAM = 8;
 
 const S = {
   wrap: { marginBottom: 14 },
@@ -47,12 +48,26 @@ export default function PanelSesiLiveSiswa() {
   useEffect(() => {
     const q = query(collection(db, 'sesi_kelas'), where('status', '==', 'aktif'));
     const un = onSnapshot(q, (sn) => {
-      setSesiList(sn.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const now = Date.now();
+      const semua = sn.docs.map((d) => ({ id: d.id, ...d.data() }));
+      // 🔥 FILTER 1: hanya sesi < 8 jam terakhir
+      const segar = semua.filter((s) => {
+        const t = s.dibuatAt?.toDate?.();
+        return !t || (now - t.getTime()) < BATAS_JAM * 3600 * 1000;
+      });
+      // 🔥 FILTER 2: satu kartu per bab (yang terbaru saja)
+      const perBab = {};
+      segar.forEach((s) => {
+        const key = s.babId || ('bank-' + s.id);
+        const t = s.dibuatAt?.seconds || 0;
+        if (!perBab[key] || t > (perBab[key].dibuatAt?.seconds || 0)) perBab[key] = s;
+      });
+      const list = Object.values(perBab).sort((a, b) => (b.dibuatAt?.seconds || 0) - (a.dibuatAt?.seconds || 0));
+      setSesiList(list);
     });
     return un;
   }, []);
 
-  // ambil judul bab sekali per sesi (untuk tampilan kartu)
   useEffect(() => {
     sesiList.forEach((s) => {
       if (!s.bukuId || !s.babId || diambilRef.current[s.id]) return;
@@ -72,9 +87,7 @@ export default function PanelSesiLiveSiswa() {
       {sesiList.length === 0 ? (
         <div style={S.kosong}>
           <span style={{ fontSize: 20 }}>📡</span>
-          <span style={S.kosongTxt}>
-            Tidak ada sesi live berlangsung saat ini. Punya kode sesi dari guru?
-          </span>
+          <span style={S.kosongTxt}>Tidak ada sesi live berlangsung saat ini. Punya kode sesi dari guru?</span>
           <button style={S.btnKode} onClick={() => navigate('/siswa/sesi-live')}>🎧 Masuk lewat kode</button>
         </div>
       ) : (

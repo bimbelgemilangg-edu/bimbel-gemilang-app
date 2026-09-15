@@ -1,9 +1,8 @@
 // src/pages/student/LiveSessionStudent.jsx
-// Sisi siswa: join lewat kode (bisa otomatis dari ?kode=), ikuti slide/soal
-// guru real-time, kerjakan soal gaya CBT (PG / multi / Benar-Salah).
-// 🔥 BARU: setelah kirim, muncul kotak "📌 Anda memilih jawaban: ..." +
-// keterangan menunggu siswa lain & penjelasan guru.
-// Figur + tabel stimulus soal ikut tampil; kunci hanya saat guru membuka.
+// Sisi siswa: join lewat kode, ikuti slide/soal guru real-time, CBT
+// (PG / multi / Benar-Salah), kotak "Anda memilih jawaban" saat menunggu.
+// 🔥 BARU: saat kunci terbuka, ada lipatan "📖 Lihat pembahasan lengkap
+// (tabel & gambar)" yang merender pembahasan HTML utuh termasuk figur.
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -33,7 +32,6 @@ const S = {
   }),
   opsi: (a, k, s) => ({ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%', textAlign: 'left', padding: '11px 12px', borderRadius: 10, border: `2px solid ${s && k ? '#16a34a' : s && a ? '#e74c3c' : a ? '#7C3AED' : '#e2e8f0'}`, background: s && k ? '#f0fdf4' : s && a ? '#fef2f2' : a ? '#f5f3ff' : '#fff', fontSize: 13.5, cursor: s ? 'default' : 'pointer', marginBottom: 8 }),
   gambarBox: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 10, padding: 10, marginBottom: 10 },
-  // 🔥 BARU: kotak konfirmasi jawaban siswa
   pilihBox: { background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: '10px 12px', marginTop: 10 },
   pilihItem: { fontSize: 12.5, color: '#1e293b', lineHeight: 1.6, padding: '2px 0' },
 };
@@ -80,6 +78,7 @@ export default function LiveSessionStudent() {
   const sudah = idxSoal != null ? !!terkirim[idxSoal] : false;
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
   const gambarNow = soal ? (soal.gambarHtml || (soalDariHtml[idxSoal] || {}).gambarHtml || '') : '';
+  const pembahasanHtmlNow = soal ? (soal.pembahasanHtml || (soalDariHtml[idxSoal] || {}).pembahasanHtml || '') : '';
 
   async function gabung() {
     setErr('');
@@ -96,7 +95,6 @@ export default function LiveSessionStudent() {
     setTerkirim((t) => ({ ...t, [idxSoal]: benar }));
   }
 
-  // 🔥 BARU: ringkasan pilihan siswa untuk kotak konfirmasi
   function ringkasPilihan() {
     if (!soal || pilih === null) return null;
     if (soal.kunci?.tipe === 'pg') {
@@ -240,7 +238,6 @@ export default function LiveSessionStudent() {
             <button style={S.btn} disabled={pilih === null || (Array.isArray(pilih) && pilih.length === 0)} onClick={kirim}>📤 Kirim Jawaban</button>
           )}
 
-          {/* 🔥 BARU: konfirmasi pilihan + status menunggu */}
           {sudah && !terbuka && (
             <div style={S.pilihBox}>
               <div style={{ fontSize: 12, fontWeight: 800, color: '#4338ca', marginBottom: 6 }}>📌 Anda memilih jawaban:</div>
@@ -255,6 +252,18 @@ export default function LiveSessionStudent() {
             <div style={{ fontSize: 12.5, color: sudah ? (terkirim[idxSoal] ? '#166534' : '#991b1b') : '#64748b', fontWeight: 700, marginTop: 8 }}>
               {sudah ? (terkirim[idxSoal] ? '✅ Jawabanmu benar.' : '❌ Jawabanmu belum tepat — simak pembahasan guru.') : 'Kunci dibuka guru.'}
             </div>
+          )}
+
+          {/* 🔥 BARU: pembahasan lengkap dengan tabel & gambar */}
+          {terbuka && pembahasanHtmlNow && (
+            <details style={{ marginTop: 10 }}>
+              <summary style={{ cursor: 'pointer', color: '#7C3AED', fontSize: 12, fontWeight: 700 }}>📖 Lihat pembahasan lengkap (tabel & gambar)</summary>
+              <div
+                className="modmod"
+                style={{ background: '#fbfcff', border: '1px solid #eef1f6', borderRadius: 10, padding: 10, marginTop: 6 }}
+                dangerouslySetInnerHTML={{ __html: pembahasanHtmlNow }}
+              />
+            </details>
           )}
         </div>
       )}
