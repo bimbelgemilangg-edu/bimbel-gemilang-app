@@ -1,7 +1,7 @@
 // src/pages/student/LiveSessionStudent.jsx
-// Sisi siswa: join lewat kode, ikuti slide/soal guru.
-// FIX: teks opsi/pernyataan dibersihkan dari verdict "(Benar)/(Salah)",
-// dan ada peringatan bila opsi soal tidak terbaca (tidak lagi kosong diam-diam).
+// Sisi siswa sesi live: join lewat kode (bisa terisi otomatis dari
+// ?kode= di alamat), ikuti slide/soal guru real-time, kerjakan soal
+// gaya CBT (PG / multi / Benar-Salah), kunci terbuka hanya saat guru membuka.
 import React, { useState, useEffect, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -12,7 +12,7 @@ const S = {
   page: { maxWidth: 620, margin: '0 auto', padding: 16, fontFamily: 'sans-serif', minHeight: '100vh', background: '#f8fafc' },
   card: { background: '#fff', border: '1px solid #e3e6ef', borderRadius: 12, padding: 16, marginBottom: 12 },
   row: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 },
-  input: { border: '1px solid #cbd5e1', borderRadius: 8, padding: '10px 12px', fontSize: 14, background: '#fff' },
+  input: { border: '1px solid #cbd5e1', borderRadius: 8, padding: '10px 12px', fontSize: 14, background: '#fff', letterSpacing: 3, textTransform: 'uppercase' },
   btn: { width: '100%', padding: 12, background: '#7C3AED', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 800, fontSize: 14, cursor: 'pointer' },
   chip: { background: '#eef2ff', color: '#4338ca', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 700 },
   cbt: { border: '1px solid #e3e6ef', borderRadius: 12, overflow: 'hidden', background: '#fff', margin: '10px 0' },
@@ -35,7 +35,10 @@ const S = {
 export default function LiveSessionStudent() {
   const siswaId = localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '';
   const nama = localStorage.getItem('studentName') || 'Siswa';
-  const [kode, setKode] = useState('');
+  // 🔥 BARU: kode bisa datang otomatis dari tombol GABUNG di panel Buku Digital
+  const [kode, setKode] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get('kode') || ''; } catch { return ''; }
+  });
   const [sesi, setSesi] = useState(null);
   const [babHtml, setBabHtml] = useState('');
   const [pilih, setPilih] = useState(null);
@@ -91,11 +94,13 @@ export default function LiveSessionStudent() {
         <div style={S.card}>
           <h3 style={{ margin: '0 0 10px' }}>🎧 Gabung Sesi Kelas</h3>
           <div style={S.row}>
-            <input style={{ ...S.input, width: 150, letterSpacing: 3, textTransform: 'uppercase' }} placeholder="KODE" value={kode} onChange={(e) => setKode(e.target.value)} />
+            <input style={{ ...S.input, width: 150 }} placeholder="KODE" value={kode} onChange={(e) => setKode(e.target.value.toUpperCase())} />
             <button style={{ ...S.btn, width: 'auto' }} onClick={gabung}>Gabung</button>
           </div>
           {err && <div style={{ fontSize: 12, color: '#991b1b', fontWeight: 700 }}>{err}</div>}
-          <p style={{ fontSize: 11.5, color: '#64748b', margin: '8px 0 0' }}>Minta kode sesi ke guru (tertampil di proyektor).</p>
+          <p style={{ fontSize: 11.5, color: '#64748b', margin: '8px 0 0' }}>
+            Kode tampil di proyektor guru, atau tekan tombol GABUNG pada kartu sesi di halaman Buku Digital.
+          </p>
         </div>
       </div>
     );

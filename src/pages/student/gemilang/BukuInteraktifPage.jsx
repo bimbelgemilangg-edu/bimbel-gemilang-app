@@ -13,6 +13,8 @@ import { collection, getDocs, query, where, limit } from 'firebase/firestore';
 import { ArrowLeft, BookOpen, ChevronRight } from 'lucide-react';
 import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas } from '../../../utils/aksesKontenSiswa';
 import MaskotAstronot from '../../../components/MaskotAstronot';
+// 🔥 BARU: pintu sesi live di dalam menu Buku Digital
+import PanelSesiLiveSiswa from '../../../components/buku/PanelSesiLiveSiswa';
 
 export default function BukuInteraktifPage() {
   const navigate = useNavigate();
@@ -122,6 +124,8 @@ export default function BukuInteraktifPage() {
           </div>
         </div>
         <div style={{ padding: '16px 16px 30px' }}>
+          {/* 🔥 BARU: pintu sesi live di dalam mode daftar isi */}
+          <PanelSesiLiveSiswa />
           <div style={{ fontSize: 12, fontWeight: 800, color: '#64748b', marginBottom: 10 }}>📖 DAFTAR ISI</div>
           {babList.length === 0 ? (
             <div style={st.kosong}>Belum ada bab di buku ini. Admin bisa menambahnya lewat Manajer Buku.</div>
@@ -167,6 +171,8 @@ export default function BukuInteraktifPage() {
         </div>
       </div>
       <div style={{ padding: '18px 16px' }}>
+        {/* 🔥 BARU: pintu sesi live di dalam mode rak buku */}
+        <PanelSesiLiveSiswa />
         {loading ? (
           <div style={st.kosong}>Memuat rak buku...</div>
         ) : bukuTerlihat.length === 0 ? (
