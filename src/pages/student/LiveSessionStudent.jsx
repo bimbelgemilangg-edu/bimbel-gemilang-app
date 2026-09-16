@@ -3,10 +3,12 @@
 // Kunci jawaban: (1) status "sudah kirim" dimuat dari Firestore saat
 // bergabung (refresh/rejoin tidak membuka kunci), (2) PG ketuk = langsung
 // terkirim & terkunci, (3) setelah kirim semua opsi jadi div mati + 🔒.
+// Tipografi matematika dipercantik lewat percantikMatika().
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseSlides, parseDaftarSoal, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
+import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
 import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban } from '../../services/sesiService';
 
 const S = {
@@ -125,17 +127,17 @@ export default function LiveSessionStudent() {
     if (!soal || pilih === null) return null;
     if (soal.kunci?.tipe === 'pg') {
       const i = pilih;
-      return <div style={S.pilihItem}>🔒 <b>{String.fromCharCode(65 + i)}.</b> {bersihVerdikt(soal.pilihan[i] || '')}</div>;
+      return <div style={S.pilihItem}>🔒 <b>{String.fromCharCode(65 + i)}.</b> <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(soal.pilihan[i] || '') }} /></div>;
     }
     if (soal.kunci?.tipe === 'multi') {
       return (Array.isArray(pilih) ? pilih : []).map((i) => (
-        <div key={i} style={S.pilihItem}>🔒 ✓ {bersihVerdikt(soal.pilihan[i] || '')}</div>
+        <div key={i} style={S.pilihItem}>🔒 ✓ <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(soal.pilihan[i] || '') }} /></div>
       ));
     }
     if (soal.kunci?.tipe === 'bs') {
       return (soal.pernyataan || []).map((p, i) => (
         <div key={i} style={S.pilihItem}>
-          🔒 {i + 1}. {bersihVerdikt(p)} → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
+          🔒 {i + 1}. <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pernyataanHtml?.[i] || bersihVerdikt(p) }} /> → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
         </div>
       ));
     }
@@ -162,7 +164,7 @@ export default function LiveSessionStudent() {
 
   return (
     <div style={S.page}>
-      <style>{CSS_MODUL}</style>
+      <style>{CSS_MODUL}{CSS_MATIKA}</style>
       <div style={S.card}>
         <div style={S.row}>
           <span style={S.chip}>🔴 {sesi.kode}</span>
@@ -183,7 +185,7 @@ export default function LiveSessionStudent() {
               </div>
             </div>
           ) : (
-            <div className="modmod" dangerouslySetInnerHTML={{ __html: slideNow.html }} />
+            <div className="modmod" dangerouslySetInnerHTML={{ __html: percantikMatika(slideNow.html) }} />
           )}
           <p style={{ fontSize: 11, color: '#94a3b8', margin: '8px 0 0', textAlign: 'center' }}>Ikuti penjelasan guru — slide berpindah dari kendali guru.</p>
         </div>
@@ -192,7 +194,7 @@ export default function LiveSessionStudent() {
       {soal && (
         <div style={S.card}>
           {gambarNow ? (
-            <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: gambarNow }} />
+            <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: percantikMatika(gambarNow) }} />
           ) : (
             <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
           )}
@@ -210,7 +212,8 @@ export default function LiveSessionStudent() {
               return (
                 <div key={i} style={{ ...S.opsi(sel, terbuka && soal.kunci.pg === i, terbuka), cursor: 'default' }}>
                   <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
-                  <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                  <span style={{ flex: 1 }} className="modmod"
+                    dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
                   {sel && '🔒'}
                   {terbuka && soal.kunci.pg === i && '✅'}
                 </div>
@@ -220,7 +223,8 @@ export default function LiveSessionStudent() {
               <button key={i} style={S.opsi(sel, false, false)} disabled={terbuka}
                 onClick={() => { setPilih(i); kirimNow(i); }}>
                 <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
-                <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                <span style={{ flex: 1 }} className="modmod"
+                  dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
               </button>
             );
           })}
@@ -236,7 +240,8 @@ export default function LiveSessionStudent() {
               return (
                 <div key={i} style={{ ...S.opsi(a, k, terbuka), cursor: 'default' }}>
                   <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
-                  <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                  <span style={{ flex: 1 }} className="modmod"
+                    dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
                   {a && '🔒'}
                   {k && '✅'}
                 </div>
@@ -246,7 +251,8 @@ export default function LiveSessionStudent() {
               <button key={i} style={S.opsi(a, false, false)} disabled={terbuka}
                 onClick={() => setPilih(a ? arr.filter((x) => x !== i) : [...arr, i])}>
                 <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
-                <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                <span style={{ flex: 1 }} className="modmod"
+                  dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
               </button>
             );
           })}
@@ -264,7 +270,10 @@ export default function LiveSessionStudent() {
                 const sayaSalah = terbuka && arr[i] !== undefined && arr[i] !== kunciB;
                 return (
                   <div key={i} style={S.cbtRow(sayaSalah)}>
-                    <div style={S.cbtText}>{i + 1}. {bersihVerdikt(p)}</div>
+                    <div style={S.cbtText}>
+                      {i + 1}. <span className="modmod"
+                        dangerouslySetInnerHTML={{ __html: soal.pernyataanHtml?.[i] || bersihVerdikt(p) }} />
+                    </div>
                     <div style={S.cbtOpt}>
                       <button style={S.cbtBtn(arr[i] === true, terbuka && kunciB === true, terbuka)} disabled={sudah || terbuka}
                         onClick={() => { const a = [...(Array.isArray(pilih) ? pilih : [])]; a[i] = true; setPilih(a); }}>B</button>
@@ -311,7 +320,7 @@ export default function LiveSessionStudent() {
               <div
                 className="modmod"
                 style={{ background: '#fbfcff', border: '1px solid #eef1f6', borderRadius: 10, padding: 10, marginTop: 6 }}
-                dangerouslySetInnerHTML={{ __html: pembahasanHtmlNow }}
+                dangerouslySetInnerHTML={{ __html: percantikMatika(pembahasanHtmlNow) }}
               />
             </details>
           )}

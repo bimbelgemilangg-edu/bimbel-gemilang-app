@@ -6,11 +6,12 @@
 // setelah sesi dibuat -- siswa pasti menerimanya.
 // Fitur: manajemen sesi aktif, auto-akhiri sesi lama bab sama, fullscreen
 // proyektor, badge tipe + petunjuk, grid CBT B/S, monitor nama+pilihan
-// siswa (privat), pembahasan HTML privat guru.
+// siswa (privat), pembahasan HTML privat guru, tipografi matematika asli.
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
+import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
 import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, ubahSesi, akhiriSesi } from '../../services/sesiService';
 
 const S = {
@@ -316,7 +317,7 @@ export default function LiveSessionTeacher() {
 
   return (
     <div style={S.page}>
-      <style>{CSS_MODUL}</style>
+      <style>{CSS_MODUL}{CSS_MATIKA}</style>
       <style>{`
         .fs-area:fullscreen{background:#0f172a;overflow:auto;padding:28px}
         .fs-area:fullscreen .modmod{font-size:21px;line-height:1.7}
@@ -381,7 +382,7 @@ export default function LiveSessionTeacher() {
                   </div>
                 </div>
               ) : (
-                <div className="modmod" style={{ background: '#fff', borderRadius: 12, padding: 14 }} dangerouslySetInnerHTML={{ __html: slideNow.html }} />
+                <div className="modmod" style={{ background: '#fff', borderRadius: 12, padding: 14 }} dangerouslySetInnerHTML={{ __html: percantikMatika(slideNow.html) }} />
               )}
             </div>
           )}
@@ -398,7 +399,7 @@ export default function LiveSessionTeacher() {
                 </span>
               </div>
               {gambarNow ? (
-                <div className="modmod" style={{ ...S.gambarBox, background: isFs ? '#1e293b' : '#fff' }} dangerouslySetInnerHTML={{ __html: gambarNow }} />
+                <div className="modmod" style={{ ...S.gambarBox, background: isFs ? '#1e293b' : '#fff' }} dangerouslySetInnerHTML={{ __html: percantikMatika(gambarNow) }} />
               ) : (
                 <div style={{ fontSize: uk(15), lineHeight: 1.6, marginBottom: 10, color: warnaTeks, fontWeight: 600 }}>{soalNow.teks}</div>
               )}
@@ -416,7 +417,8 @@ export default function LiveSessionTeacher() {
                     <span style={{ ...S.hurufBulat, width: uk(26), height: uk(26), fontSize: uk(12), ...(isKunci ? { background: '#16a34a', borderColor: '#16a34a', color: '#fff' } : isFs ? { borderColor: '#64748b', color: '#e2e8f0', background: '#0f172a' } : {}) }}>
                       {String.fromCharCode(65 + i)}
                     </span>
-                    <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                    <span style={{ flex: 1 }} className="modmod"
+                      dangerouslySetInnerHTML={{ __html: soalNow.pilihanHtml?.[i] || bersihVerdikt(p) }} />
                     {isKunci && <span style={{ fontSize: uk(14) }}>✅</span>}
                   </div>
                 );
@@ -428,7 +430,8 @@ export default function LiveSessionTeacher() {
                     <span style={{ ...S.kotakCentang, width: uk(22), height: uk(22), fontSize: uk(13), color: isKunci ? '#fff' : 'transparent', ...(isKunci ? { background: '#16a34a', borderColor: '#16a34a' } : isFs ? { borderColor: '#64748b', background: '#0f172a' } : {}) }}>
                       ✓
                     </span>
-                    <span style={{ flex: 1 }}>{bersihVerdikt(p)}</span>
+                    <span style={{ flex: 1 }} className="modmod"
+                      dangerouslySetInnerHTML={{ __html: soalNow.pilihanHtml?.[i] || bersihVerdikt(p) }} />
                   </div>
                 );
               })}
@@ -443,7 +446,10 @@ export default function LiveSessionTeacher() {
                     const kunciB = (soalNow.kunci.bs || [])[i];
                     return (
                       <div key={i} style={{ ...S.cbtRow, borderTop: `1px solid ${isFs ? '#334155' : '#eef1f6'}` }}>
-                        <div style={{ ...S.cbtText, fontSize: uk(13), color: warnaTeks }}>{i + 1}. {bersihVerdikt(p)}</div>
+                        <div style={{ ...S.cbtText, fontSize: uk(13), color: warnaTeks }}>
+                          {i + 1}. <span className="modmod"
+                            dangerouslySetInnerHTML={{ __html: soalNow.pernyataanHtml?.[i] || bersihVerdikt(p) }} />
+                        </div>
                         <div style={{ ...S.cbtOpt, borderLeft: `1px solid ${isFs ? '#334155' : '#eef1f6'}` }}>
                           <span style={{ ...S.cbtRing, width: uk(26), height: uk(26), fontSize: uk(13), ...(terbuka && kunciB === true ? S.cbtRingIsi : isFs ? { borderColor: '#64748b', background: '#0f172a', color: 'transparent' } : {}) }}>✓</span>
                         </div>
@@ -508,7 +514,7 @@ export default function LiveSessionTeacher() {
                   <div
                     className="modmod"
                     style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: 10, marginTop: 6 }}
-                    dangerouslySetInnerHTML={{ __html: pembahasanHtmlNow || `<p>${soalNow.pembahasan}</p>` }}
+                    dangerouslySetInnerHTML={{ __html: percantikMatika(pembahasanHtmlNow || `<p>${soalNow.pembahasan}</p>`) }}
                   />
                 </details>
               )}

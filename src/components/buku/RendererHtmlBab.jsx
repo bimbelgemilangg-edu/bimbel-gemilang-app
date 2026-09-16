@@ -1,14 +1,16 @@
-// src/components/buku/RendererHtmlBab.jsx (v11)
-// FIX: soal Benar/Salah dirender ulang menjadi GRID CBT standar ujian
-// (baris pernyataan + tombol radio Benar/Salah yang bisa ditekan),
-// menggantikan tabel markdown mati yang berantakan di sisi siswa.
-// Saat guru membuka kunci (live) / setelah siswa memeriksa (reader),
-// tiap baris menyala hijau/merah sesuai kebenaran.
+// src/components/buku/RendererHtmlBab.jsx (v14 — gabungan final)
+// Menggabungkan SEMUA fitur terbaik v11 (Grid CBT Benar/Salah rapi dengan
+// tombol radio bulat per baris + kelas gb-tepat/gb-meleset/gb-kunci) +
+// parser kunci Bahasa Indonesia (dari parseSoal.js) + tipografi matematika
+// asli (dari matika.js) + fallback baca pilihan dari tabel untuk soal
+// multi Bahasa Indonesia tanpa <ul class="pil">.
 import { useEffect, useRef } from 'react';
 import { bersihkanHtml } from '../../utils/htmlBersih';
 import { catatJawaban } from '../../services/kelasService';
+import { parseKunci } from '../../utils/parseSoal';
+import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
 
-const VERSI = 'v11';
+const VERSI = 'v14';
 
 const BASE_STYLE = `
   :host{display:block}
@@ -22,19 +24,20 @@ const BASE_STYLE = `
     .gb-layout{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:22px;align-items:start}
     .gb-kolom-soal{position:sticky;top:52px;max-height:calc(100vh - 64px);overflow:auto;padding:4px 6px 40px 4px;border-left:1px dashed #d8dcf0}
   }
-  .gb-wrap .kartu{box-shadow:0 2px 10px rgba(30,27,75,.06)}
-  .gb-wrap h2.sec{display:flex;align-items:center;gap:8px}
-  .gb-wrap h3.sub{color:#5b4b8a}
+  .gb-wrap .kartu{box-shadow:0 2px 10px rgba(30,27,75,.06);background:#fff;border-radius:14px;border-left:6px solid #4C6EF5;padding:16px;margin:10px 0}
+  .gb-wrap h2.sec{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:18px}
+  .gb-wrap h3.sub{color:#5b4b8a;margin:14px 0 6px;font-size:15px}
   .gb-wrap p{font-size:15.5px;line-height:1.8;margin:8px 0}
-  .gb-wrap ul.sifat{padding-left:20px}
+  .gb-wrap ul.sifat{padding-left:20px;margin:6px 0}
   .gb-wrap ul.sifat li{margin:6px 0;line-height:1.7}
-  .gb-wrap .rumus{font-size:20px;padding:14px;border-radius:14px;background:linear-gradient(180deg,#f5f7ff,#eef2ff);border:1px solid #dbe3ff}
+  .gb-wrap .rumus{font-size:20px;padding:14px;border-radius:14px;background:linear-gradient(180deg,#f5f7ff,#eef2ff);border:1px solid #dbe3ff;text-align:center;font-weight:800;margin:8px 0}
   .gb-wrap .m{background:#eef2ff;border:1px solid #dbe3ff;color:#1e293b;padding:2px 7px;border-radius:7px}
-  .gb-wrap .soal{border:1px solid #e3e6ef;box-shadow:0 2px 10px rgba(30,27,75,.05)}
+  .gb-wrap .soal{border:1px solid #e3e6ef;box-shadow:0 2px 10px rgba(30,27,75,.05);background:#fff;border-radius:14px;padding:14px;margin:12px 0}
   .gb-wrap .soal>p{font-size:15.5px}
   .gb-wrap .pil{list-style:none;margin:8px 0;padding:0}
   .gb-wrap .pil li{padding:12px 14px;font-size:15px;border-radius:12px;margin:7px 0;border:1.5px solid #e6e9f4;background:#fbfcff;transition:background .15s,border-color .15s;cursor:pointer}
   .gb-wrap .pil li:active{transform:scale(.995)}
+  .gb-wrap .pil li svg{max-height:200px;width:auto;margin:6px auto;display:block}
   .gb-wrap ul.pil.gb-multi li{display:flex;align-items:flex-start}
   .gb-wrap ul.pil.gb-multi li::before{content:"";width:20px;height:20px;border:2px solid #94a3b8;border-radius:6px;flex:0 0 auto;margin:2px 10px 0 0;background:#fff}
   .gb-wrap ul.pil.gb-multi li.gb-dipilih{border-color:#7C3AED;background:#f5f3ff}
@@ -81,9 +84,13 @@ const BASE_STYLE = `
   .gb-wrap th{background:#4C6EF5;color:#fff;padding:7px 9px;text-align:left}
   .gb-wrap td{border:1px solid #e3e6ef;padding:6px 9px}
   .gb-wrap tr:nth-child(even) td{background:#f8fafc}
-  .gb-wrap img,.gb-wrap svg{max-width:100%;height:auto}
+  .gb-wrap table.bs-hide{display:none}
+  .gb-wrap img,.gb-wrap svg{max-width:100%;max-height:260px;height:auto}
   .gb-wrap img{display:block;margin:10px auto;border-radius:10px}
   .gb-wrap .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:18px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:10px 0}
+  .gb-wrap .caption{text-align:center;font-size:11.5px;color:#64748b}
+  .gb-wrap .vinc{border-top:1.5px solid currentColor;padding:0 2px;margin-left:1px}
+  .gb-wrap .akar{white-space:nowrap}
   .gb-wrap .pec{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 3px}
   .gb-wrap .pec-pemb{padding:0 4px 1px;border-bottom:1.5px solid currentColor;font-size:.82em}
   .gb-wrap .pec-peny{padding:1px 4px 0;font-size:.82em}
@@ -93,20 +100,6 @@ function siapkanCss(html) {
   return String(html)
     .replace(/:root\s*\{/g, '.gb-wrap{')
     .replace(/(^|})\s*body\s*\{/g, '$1.gb-wrap{');
-}
-
-function parseKunci(teks) {
-  const t = String(teks || '').replace(/\s+/g, ' ').trim();
-  let m = t.match(/Jawaban:\s*([A-D])\b/i);
-  if (m) return { tipe: 'pg', pg: m[1].toUpperCase().charCodeAt(0) - 65 };
-  m = t.match(/Jawaban:\s*(?:Pernyataan\s*)?(\d+(?:\s*,\s*\d+)*(?:\s*,?\s*dan\s*\d+)?)/i);
-  if (m) {
-    const arr = m[1].replace(/dan/gi, ',').split(',').map((x) => parseInt(x.trim(), 10) - 1).filter((x) => !isNaN(x) && x >= 0);
-    if (arr.length) return { tipe: 'multi', multi: arr };
-  }
-  m = t.match(/Jawaban:\s*((?:Benar|Salah)(?:\s*,\s*(?:Benar|Salah))+)/i);
-  if (m) return { tipe: 'bs', bs: m[1].split(',').map((x) => x.trim().toLowerCase() === 'benar') };
-  return null;
 }
 
 const buatBtn = (teks, cls) => {
@@ -189,6 +182,9 @@ const bersihTeksStmt = (s) => String(s || '')
   .replace(/^\s*[\u2610\u2611\u2612\u25A1\u25EB\u25FC\u2B1C\u2B1D]\s*/, '')
   .replace(/\s+/g, ' ').trim();
 
+// cariKunci memakai parseKunci dari parseSoal.js yang sudah mendukung
+// kunci Bahasa Indonesia (tanpa prefix "Jawaban:", format "C", "Pernyataan
+// 1, 3, dan 4", "A Salah · B Benar · C Benar", "A Setuju · ...", dll).
 function cariKunci(soalEl) {
   const j = soalEl.querySelector('.jawab');
   if (j) { const k = parseKunci(j.textContent); if (k) return k; }
@@ -206,7 +202,7 @@ function cariPilihan(soalEl) {
   return { ul, lis };
 }
 
-// ===== BANGUN GRID CBT BENAR/SALAH =====
+// ===== BANGUN GRID CBT BENAR/SALAH (dari v11 — tidak dipotong) =====
 function bangunCbt(soalEl, pernyataan) {
   const wrapCbt = document.createElement('div');
   wrapCbt.className = 'gb-cbt';
@@ -232,7 +228,10 @@ function bangunCbt(soalEl, pernyataan) {
   });
   // sembunyikan wadah asli (tabel markdown / ul) supaya tidak dobel & rapi
   const asli = soalEl.querySelector('table') || soalEl.querySelector('ul.pil') || soalEl.querySelector('ul');
-  if (asli) asli.style.display = 'none';
+  if (asli) {
+    asli.style.display = 'none';
+    asli.classList.add('bs-hide');
+  }
   const jangkar = asli || soalEl.querySelector('p');
   if (jangkar) jangkar.after(wrapCbt);
   else soalEl.appendChild(wrapCbt);
@@ -243,7 +242,7 @@ function interaktif(soalEl, root, soalNo, opts) {
   const details = soalEl.querySelector('details');
   const kunci = cariKunci(soalEl);
   const { ul, lis } = cariPilihan(soalEl);
-  if (!kunci || !lis.length) return false;
+  if (!kunci) return false;
 
   const catat = (tepat, ringkas) => {
     if (opts.presentasi || !opts.siswaId) return;
@@ -293,11 +292,22 @@ function interaktif(soalEl, root, soalNo, opts) {
   }
 
   // ---------- MULTI (PG Kompleks) ----------
-  if (kunci.tipe === 'multi' && lis.length >= 2) {
-    if (ul) ul.classList.add('gb-multi');
+  // Fallback: untuk soal Bahasa Indonesia tanpa <ul class="pil">,
+  // baca pilihan dari tabel pernyataan (kolom pertama setiap baris).
+  let lisMulti = lis;
+  let ulMulti = ul;
+  if (!lisMulti.length) {
+    const tds = [...soalEl.querySelectorAll('table tbody tr')].map((tr) => tr.querySelector('td'));
+    if (tds.length) {
+      lisMulti = tds;
+      ulMulti = null;
+    }
+  }
+  if (kunci.tipe === 'multi' && lisMulti.length >= 2) {
+    if (ulMulti) ulMulti.classList.add('gb-multi');
     hint(soalEl, 'Ketuk satu atau lebih pernyataan, lalu tekan Periksa.');
     const pilih = new Set();
-    lis.forEach((li, idx) => {
+    lisMulti.forEach((li, idx) => {
       li.addEventListener('click', () => {
         if (soalEl.dataset.done) return;
         if (pilih.has(idx)) { pilih.delete(idx); li.classList.remove('gb-dipilih'); }
@@ -309,7 +319,7 @@ function interaktif(soalEl, root, soalNo, opts) {
       if (soalEl.dataset.done || !pilih.size) return;
       soalEl.dataset.done = '1';
       const benarSet = new Set(kunci.multi);
-      lis.forEach((x, j) => {
+      lisMulti.forEach((x, j) => {
         if (benarSet.has(j)) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
         else if (pilih.has(j)) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
       });
@@ -318,7 +328,7 @@ function interaktif(soalEl, root, soalNo, opts) {
       banner(soalEl, tepat);
       catat(tepat, [...pilih].sort((a, b) => a - b).map((i) => i + 1).join(','));
     });
-    const anchor = ul || soalEl.querySelector('table') || soalEl.querySelector('p');
+    const anchor = ulMulti || soalEl.querySelector('table') || soalEl.querySelector('p');
     if (anchor) anchor.after(btn);
     else soalEl.appendChild(btn);
     return true;
@@ -476,7 +486,9 @@ export default function RendererHtmlBab({ html, babId, bukuId, modePresentasi = 
     const host = hostRef.current;
     if (!host) return;
     if (!host.shadowRoot) host.attachShadow({ mode: 'open' });
-    host.shadowRoot.innerHTML = `<style>${BASE_STYLE}</style><div class="gb-wrap">${bersihkanHtml(siapkanCss(html))}</div>`;
+    // v14: terapkan percantikMatika() SEBELUM injeksi ke shadow DOM
+    const isi = percantikMatika(bersihkanHtml(siapkanCss(html)));
+    host.shadowRoot.innerHTML = `<style>${BASE_STYLE}${CSS_MATIKA}</style><div class="gb-wrap">${isi}</div>`;
     const siswaId = localStorage.getItem('studentId') || '';
     const nama = localStorage.getItem('studentName') || localStorage.getItem('studentNama') || '';
     try {
