@@ -1,15 +1,6 @@
-// src/utils/parseSoal.js
-// Parser modul HTML -> soal terstruktur + slide PPT + CSS matematika.
-// MENDUKUNG semua pola hasil scan PDF, termasuk modul NON-matematika:
-//  - PG (pilihan A-D), multi-select (checkbox / "jawaban lebih dari satu"),
-//  - Benar/Salah DAN Setuju/Tidak Setuju (tabel Pernyataan|Benar|Salah
-//    maupun Pernyataan|S|TS), kunci "Jawaban: B", "Jawaban: Pernyataan
-//    1, 2, dan 4", "Jawaban: Benar, Salah, ...", "Jawaban: Setuju,
-//    Tidak Setuju, ...".
-//  - Figur SVG inline + tabel stimulus ikut ditampilkan (gambarHtml).
-//  - Tipografi matematika dipercantik lewat percantikMatika (matika.js)
-//    di lapisan render, bukan di parser ini.
+// src/utils/parseSoal.js (Fix Export Vercel)
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 export const bersihVerdikt = (s) => String(s || '')
   .replace(/\s*\((Benar|Salah)\)\s*\.?\s*$/i, '')
@@ -22,113 +13,184 @@ const bersihItem = (s) => bersihVerdikt(bersihTeks(s)
   .replace(/^[\u2610\u2611\u2612\u25A1\u25EB\u25FC]\s*/, '')
   .replace(/^[A-D][.).]\s*/, ''));
 
-// 🔥 BARU: header tabel pernyataan dikenali untuk DUA varian kolom:
-// "Pernyataan|Benar|Salah" MAUPUN "Pernyataan|S|TS" (Setuju/Tidak Setuju).
+const stripPrefix = (t) => String(t || '')
+  .replace(/\s+/g, ' ').trim()
+  .replace(/^kunci\s*&\s*pembahasan\s*/i, '')
+  .replace(/^jawaban\s*:\s*/i, '')
+  .trim();
+
+const tokenBs = (x) => /^(benar|setuju)$/i.test(x.trim());
+
+// 🔥 WAJIB ADA "export" DI SINI (ini yang bikin error di Vercel sebelumnya)
+export function parseKunci(teks) {
+  const body = stripPrefix(teks);
+  if (!body) return null;
+  let m = body.match(/pernyataan\s*((?:\d+(?:\s*,\s*\d+)*)(?:\s*,?\s*dan\s*\d+)?)/i);
+  if (m) {
+    const arr = m[1].replace(/dan/gi, ',').split(',')
+      .map((x) => parseInt(x.trim(), 10) - 1).filter((x) => !isNaN(x) && x >= 0);
+    if (arr.length) return { tipe: 'multi', multi: arr };
+  }
+  const pairs = [...body.matchAll(/([A-D])\s*[:.]?\s*(tidak\s+setuju|setuju|benar|salah)/gi)];
+  if (pairs.length >= 2) return { tipe: 'bs', bs: pairs.map((p) => tokenBs(p[2])) };
+  m = body.match(/^((?:tidak\s+setuju|setuju|benar|salah)(?:\s*,\s*(?:tidak\s+setuju|setuju|benar|salah))+)$/i);
+  if (m) return { tipe: 'bs', bs: m[1].split(',').map(tokenBs) };
+  m = body.match(/^([A-D])$/i);
+  if (m) return { tipe: 'pg', pg: m[1].toUpperCase().charCodeAt(0) - 65 };
+  return null;
+}
+
 const isBsHeader = (h) =>
   h.includes('pernyataan') &&
   (h.includes('benar') || h.includes('salah') || h.includes('setuju') || /\bts\b/.test(h));
 
-// 🔥 BARU: satu token kunci bs -> boolean (Setuju/Benar = true).
-const tokenBs = (t) => {
-  const x = t.trim().toLowerCase();
-  return (x === 'benar' || x === 'setuju');
-};
+function parseOneSoal(el, idx) {
+  const nomor = bersihTeks(el.querySelector('.no')?.textContent) || String(idx + 1);
+  const sumber = bersihTeks(el.querySelector('.tipe')?.textContent) || '';
+  const level = bersihTeks(el.querySelector('.lvl')?.textContent) || 'sedang';
+  const diLuar = (n) => !n.closest('details');
+
+  const tabels = [...el.querySelectorAll('table')].filter(diLuar);
+  const headText = (t) => ((t.querySelector('thead') || t.querySelector('tr'))?.textContent || '').toLowerCase();
+  const tabelBS = tabels.find((t) => isBsHeader(headText(t)));
+  const tabelPernyataan = tabelBS || tabels.find((t) => {
+    const rows = [...t.querySelectorAll('tbody tr')];
+    if (!rows.length) return false;
+    const avg = rows.reduce((a, tr) => a + bersihTeks(tr.querySelector('td')?.textContent).length, 0) / rows.length;
+    return avg > 24;
+  });
+
+  const skipNode = (n) => {
+    const tag = (n.tagName || '').toUpperCase();
+    if (tag === 'UL' || tag === 'DETAILS' || tag === 'OL') return true;
+    if (n.classList && (n.classList.contains('nbadges') || n.classList.contains('pil'))) return true;
+    if (n === tabelPernyataan) return true;
+    return false;
+  };
+  const bodyEls = [...el.children].filter((n) => !skipNode(n));
+  const gambarHtml = bodyEls.map((n) => n.outerHTML).join('');
+  const teks = bodyEls.map((n) => bersihTeks(n.textContent)).filter(Boolean).join(' ')
+    || bersihTeks(el.querySelector('p')?.textContent) || '';
+
+  const pilLis = [...el.querySelectorAll('ul.pil li')].filter(diLuar);
+  const pilItems = pilLis.map((li) => bersihTeks(li.textContent));
+  const pilHtml = pilLis.map((li) => li.innerHTML);
+
+  let items = pilItems;
+  let itemsHtml = pilHtml;
+  if (!items.length && tabelPernyataan) {
+    const trs = [...tabelPernyataan.querySelectorAll('tbody tr')];
+    items = trs.map((tr) => bersihTeks(tr.querySelector('td')?.textContent)).filter(Boolean);
+    itemsHtml = trs.map((tr) => tr.querySelector('td')?.innerHTML || '').filter(Boolean);
+  }
+  if (!items.length) {
+    const lis = [...el.querySelectorAll('ul li, ol li')].filter(diLuar);
+    items = lis.map((li) => bersihTeks(li.textContent)).filter(Boolean);
+    itemsHtml = lis.map((li) => li.innerHTML);
+  }
+
+  const berHuruf = items.filter((t) => /^[A-D][.).]/.test(t)).length;
+  const details = el.querySelector('details');
+  const jawabEl = details ? details.querySelector('.jawab') : null;
+  let jawabTeks = bersihTeks(jawabEl?.textContent);
+  if (!jawabTeks && details) {
+    const m2 = (details.textContent || '').match(/(Kunci|Jawaban)[\s\S]{0,160}/i);
+    if (m2) jawabTeks = bersihTeks(m2[0]);
+  }
+
+  let tipe;
+  if (pilItems.length && berHuruf >= Math.max(1, pilItems.length - 1) && pilItems.length >= 2) tipe = 'pg';
+  else if (tabelBS) tipe = 'bs';
+  else if (/pernyataan\s*\d/i.test(jawabTeks)) tipe = 'multi';
+  else if (pilItems.length && !berHuruf) tipe = 'multi';
+  else if (!pilItems.length && tabelPernyataan) tipe = 'bs';
+  else if (berHuruf) tipe = 'pg';
+  else tipe = 'multi';
+
+  const pilihan = tipe === 'pg'
+    ? items.map((t) => bersihItem(t.replace(/^[A-D][.).]\s*/, '')))
+    : (tipe === 'multi' ? items.map(bersihItem) : []);
+  const pilihanHtml = (tipe === 'pg' || tipe === 'multi') ? itemsHtml : [];
+  const pernyataan = tipe === 'bs' ? items.map(bersihItem) : [];
+  const pernyataanHtml = tipe === 'bs' ? itemsHtml : [];
+
+  let kunci = parseKunci(jawabTeks);
+  if (!kunci && tipe === 'multi' && pilihan.length) {
+    const body = stripPrefix(jawabTeks);
+    const frag = body.split(/\s*,\s*|\s+dan\s+/i).map(bersihTeks).filter(Boolean);
+    const idxs = frag
+      .map((f) => pilihan.findIndex((p) => {
+        const a = norm(p); const b = norm(f);
+        return a && b && (a === b || a.startsWith(b) || b.startsWith(a));
+      }))
+      .filter((i) => i >= 0);
+    if (idxs.length) kunci = { tipe: 'multi', multi: [...new Set(idxs)] };
+  }
+
+  const langkah = details ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent)) : [];
+  const pembahasan = bersihTeks(details ? (details.textContent || '').replace(/Kunci & Pembahasan/i, '').replace(jawabTeks, '') : '');
+
+  let pembahasanHtml = '';
+  if (details) {
+    const clone = details.cloneNode(true);
+    clone.querySelector('summary')?.remove();
+    clone.querySelector('.jawab')?.remove();
+    pembahasanHtml = clone.innerHTML;
+  }
+
+  return {
+    idx, nomor, tipe, level, sumber, teks,
+    pilihan, pilihanHtml, pernyataan, pernyataanHtml,
+    kunci, langkah, pembahasan, pembahasanHtml, gambarHtml,
+    konteksHtml: '',
+  };
+}
+
+function rangeFromText(txt) {
+  let m = txt.match(/nomor\s*(\d+)\s*(?:–|—|-|sampai|s\/d|hingga)\s*(\d+)/i);
+  if (m) return { a: +m[1], b: +m[2] };
+  m = txt.match(/nomor\s*(\d+)\s+dan\s+(\d+)/i);
+  if (m) return { a: +m[1], b: +m[2] };
+  if (/untuk menjawab|cermatilah|bacalah|perhatikan/i.test(txt)) {
+    m = txt.match(/nomor\s*(\d+)/i);
+    if (m) return { a: +m[1], b: +m[1] };
+  }
+  return null;
+}
 
 export function parseDaftarSoal(html) {
   const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
   const soalEls = [...doc.querySelectorAll('.soal')];
-  return soalEls.map((el, idx) => {
-    const nomor = bersihTeks(el.querySelector('.no')?.textContent) || String(idx + 1);
-    const sumber = bersihTeks(el.querySelector('.tipe')?.textContent) || '';
-    const level = bersihTeks(el.querySelector('.lvl')?.textContent) || 'sedang';
-    const diLuar = (n) => !n.closest('details');
+  if (!soalEls.length) return [];
+  const container = soalEls[0].parentElement;
+  const children = container ? [...container.children] : soalEls;
 
-    const tabels = [...el.querySelectorAll('table')].filter(diLuar);
-    const headText = (t) => ((t.querySelector('thead') || t.querySelector('tr'))?.textContent || '').toLowerCase();
-    const tabelBS = tabels.find((t) => isBsHeader(headText(t)));
-    const tabelPernyataan = tabelBS || tabels.find((t) => {
-      const rows = [...t.querySelectorAll('tbody tr')];
-      if (!rows.length) return false;
-      const avg = rows.reduce((a, tr) => a + bersihTeks(tr.querySelector('td')?.textContent).length, 0) / rows.length;
-      return avg > 24;
-    });
+  let buffer = [];
+  let pending = null;
+  const out = [];
 
-    const skipNode = (n) => {
-      const tag = (n.tagName || '').toUpperCase();
-      if (tag === 'UL' || tag === 'DETAILS' || tag === 'OL') return true;
-      if (n.classList && (n.classList.contains('nbadges') || n.classList.contains('pil'))) return true;
-      if (n === tabelPernyataan) return true;
-      return false;
-    };
-    const bodyEls = [...el.children].filter((n) => !skipNode(n));
-    const gambarHtml = bodyEls.map((n) => n.outerHTML).join('');
-    const teks = bodyEls.map((n) => bersihTeks(n.textContent)).filter(Boolean).join(' ')
-      || bersihTeks(el.querySelector('p')?.textContent) || '';
-
-    const pilItems = [...el.querySelectorAll('ul.pil li')].filter(diLuar).map((li) => bersihTeks(li.textContent));
-    let items = pilItems.length
-      ? pilItems
-      : tabelPernyataan
-        ? [...tabelPernyataan.querySelectorAll('tbody tr')].map((tr) => bersihTeks(tr.querySelector('td')?.textContent)).filter(Boolean)
-        : [...el.querySelectorAll('ul li, ol li')].filter(diLuar).map((li) => bersihTeks(li.textContent)).filter(Boolean);
-
-    const berHuruf = items.filter((t) => /^[A-D][.).]/.test(t)).length;
-    const details = el.querySelector('details');
-    const jawabEl = details ? details.querySelector('.jawab') : null;
-    let jawabTeks = bersihTeks(jawabEl?.textContent);
-    if (!jawabTeks && details) {
-      const m = (details.textContent || '').match(/Jawaban:[\s\S]{0,160}/i);
-      if (m) jawabTeks = bersihTeks(m[0]);
+  for (const node of children) {
+    const isSoal = node.classList && node.classList.contains('soal');
+    if (!isSoal) {
+      buffer.push(node);
+      const txt = buffer.map((n) => n.textContent || '').join(' ');
+      const r = rangeFromText(txt);
+      if (r) pending = { a: r.a, b: r.b, html: buffer.map((n) => n.outerHTML).join('') };
+      continue;
     }
-
-    let tipe;
-    if (pilItems.length && berHuruf >= Math.max(1, pilItems.length - 1) && pilItems.length >= 2) tipe = 'pg';
-    else if (/^Jawaban:\s*(Benar|Salah|Setuju|Tidak\s+Setuju)/i.test(jawabTeks) || tabelBS) tipe = 'bs';
-    else if (/Jawaban:\s*Pernyataan/i.test(jawabTeks) || /pernyataan\s*\d/i.test(jawabTeks)) tipe = 'multi';
-    else if (pilItems.length && !berHuruf) tipe = 'multi';
-    else if (!pilItems.length && tabelPernyataan) tipe = 'bs';
-    else if (berHuruf) tipe = 'pg';
-    else tipe = 'multi';
-
-    const pilihan = tipe === 'pg'
-      ? items.map((t) => bersihItem(t.replace(/^[A-D][.).]\s*/, '')))
-      : (tipe === 'multi' ? items.map(bersihItem) : []);
-    const pernyataan = tipe === 'bs' ? items.map(bersihItem) : [];
-
-    let kunci = null;
-    if (tipe === 'pg') {
-      const m = jawabTeks.match(/([A-D])\b/i);
-      if (m) kunci = { tipe: 'pg', pg: m[1].toUpperCase().charCodeAt(0) - 65 };
-    } else if (tipe === 'multi') {
-      const m = jawabTeks.match(/(\d+(?:\s*,\s*\d+)*(?:\s*,?\s*dan\s*\d+)?)/);
-      if (m) {
-        const arr = m[1].replace(/dan/gi, ',').split(',').map((x) => parseInt(x.trim(), 10) - 1).filter((x) => !isNaN(x) && x >= 0);
-        if (arr.length) kunci = { tipe: 'multi', multi: arr };
-      }
-    } else {
-      // 🔥 BARU: terima Benar/Salah DAN Setuju/Tidak Setuju (urutan penting:
-      // "Tidak Setuju" dicek lebih dulu supaya tidak tertelan "Setuju").
-      const m = jawabTeks.match(/((?:Tidak\s+Setuju|Setuju|Benar|Salah)(?:\s*,\s*(?:Tidak\s+Setuju|Setuju|Benar|Salah))+)/i);
-      if (m) kunci = { tipe: 'bs', bs: m[1].split(',').map(tokenBs) };
-      if (!kunci) {
-        const s = jawabTeks.match(/^Jawaban:\s*(Tidak\s+Setuju|Setuju|Benar|Salah)\s*$/i);
-        if (s) kunci = { tipe: 'bs', bs: [tokenBs(s[1])] };
-      }
+    const nomor = parseInt((node.querySelector('.no')?.textContent || '').trim(), 10);
+    let konteksHtml = '';
+    if (pending) {
+      if (!isNaN(nomor) && nomor >= pending.a && nomor <= pending.b) konteksHtml = pending.html;
+      else if (!isNaN(nomor) && nomor > pending.b) pending = null;
     }
+    const obj = parseOneSoal(node, out.length);
+    obj.konteksHtml = konteksHtml;
+    out.push(obj);
+    buffer = [];
+  }
 
-    const langkah = details ? [...details.querySelectorAll('.langkah li, ol li')].map((li) => bersihTeks(li.textContent)) : [];
-    const pembahasan = bersihTeks(details ? (details.textContent || '').replace(/Lihat Kunci & Pembahasan/i, '').replace(jawabTeks, '') : '');
-
-    let pembahasanHtml = '';
-    if (details) {
-      const clone = details.cloneNode(true);
-      clone.querySelector('summary')?.remove();
-      clone.querySelector('.jawab')?.remove();
-      pembahasanHtml = clone.innerHTML;
-    }
-
-    return { idx, nomor, tipe, level, sumber, teks, pilihan, pernyataan, kunci, langkah, pembahasan, pembahasanHtml, gambarHtml };
-  }).filter((s) => s.teks || s.pilihan.length || s.pernyataan.length);
+  return out.filter((s) => s.teks || s.pilihan.length || s.pernyataan.length);
 }
 
 export function cekBenar(kunci, jawaban) {
@@ -145,15 +207,11 @@ export const CSS_MODUL = `
 .modmod h2.sec{margin:0 0 10px;font-size:18px}
 .modmod h3.sub{margin:14px 0 6px;font-size:15px;color:#5b4b8a}
 .modmod .rumus{background:#eef2ff;border:1px dashed #4C6EF5;border-radius:12px;padding:10px;text-align:center;font-size:17px;font-weight:800;margin:8px 0}
-.modmod .rumus small{display:block;font-size:12px;font-weight:600;color:#64748b;margin-top:3px}
 .modmod table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
 .modmod table th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
 .modmod table td{border:1px solid #e3e6ef;padding:5px 8px}
-.modmod table.ring{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
-.modmod table.ring th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
-.modmod table.ring td{border:1px solid #e3e6ef;padding:5px 8px}
-.modmod svg,.modmod img{max-width:100%;height:auto;display:block;margin:8px auto}
-.modmod img{display:block;margin:10px auto;border-radius:10px}
+.modmod svg,.modmod img{max-width:100%;max-height:260px;height:auto;display:block;margin:6px auto}
+.modmod img{border-radius:10px}
 .modmod .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:14px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:8px 0}
 .modmod .caption{text-align:center;font-size:11.5px;color:#64748b}
 .modmod .vinc{border-top:1.5px solid currentColor;padding:0 2px;margin-left:1px}
@@ -186,4 +244,4 @@ export function parseSlides(html) {
   return slides;
 }
 
-export default { parseDaftarSoal, parseSlides, cekBenar, bersihVerdikt, CSS_MODUL };
+export default { parseDaftarSoal, parseSlides, parseKunci, cekBenar, bersihVerdikt, CSS_MODUL };
