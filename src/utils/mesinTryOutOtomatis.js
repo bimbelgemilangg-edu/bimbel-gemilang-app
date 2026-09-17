@@ -369,6 +369,17 @@ import {
     return hasil;
   }
   
+  
+  /** Alias kompatibilitas (nama lama di beberapa deploy) */
+  export async function generateMingguIniUntukTemplate(template, rules) {
+    return siapkanDrafMingguIni(template, rules);
+  }
+  
+  /** Alias: generate paket langsung (draf) untuk satu slot */
+  export async function generatePaketDariTemplate(template, slot, rules) {
+    return siapkanDrafDariTemplate(template, slot, rules);
+  }
+  
   export const DEFAULT_TEMPLATE_SMA = {
     nama: 'Try Out Otomatis SMA',
     jenjang: 'SMA',
