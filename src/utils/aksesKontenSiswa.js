@@ -94,3 +94,112 @@ export function auditKecocokanSoal(soal, jenjangSiswa, kelasSiswa) {
   }
   return { cocok: true, alasan: '' };
 }
+// ---------------------------------------------------------------
+// Try Out: filter soal sesuai mapel yang didaftarkan admin ke siswa
+// (field students.enrolledSubjects = array kodeMapel, atau "semua")
+// ---------------------------------------------------------------
+
+const ALIAS_MAPEL = [
+  { kode: 'bing', nama: ['bahasa inggris', 'english', 'b.inggris', 'b inggris'] },
+  { kode: 'bind', nama: ['bahasa indonesia', 'b.indonesia', 'b indonesia', 'bindo'] },
+  { kode: 'mtk', nama: ['matematika', 'math', 'mtk'] },
+  { kode: 'fis', nama: ['fisika', 'physics'] },
+  { kode: 'kim', nama: ['kimia', 'chemistry'] },
+  { kode: 'bio', nama: ['biologi', 'biology'] },
+  { kode: 'sej', nama: ['sejarah', 'history'] },
+  { kode: 'geo', nama: ['geografi', 'geography'] },
+  { kode: 'eko', nama: ['ekonomi', 'economy', 'akuntansi'] },
+  { kode: 'pkn', nama: ['ppkn', 'pkn', 'pendidikan kewarganegaraan'] },
+  { kode: 'pai', nama: ['pai', 'agama islam', 'pendidikan agama'] },
+  { kode: 'seni', nama: ['seni budaya', 'seni'] },
+  { kode: 'pjok', nama: ['pjok', 'olahraga', 'penjaskes'] },
+  { kode: 'tik', nama: ['informatika', 'tik', 'komputer'] },
+  { kode: 'ipa', nama: ['ipa', 'ilmu pengetahuan alam'] },
+  { kode: 'ips', nama: ['ips', 'ilmu pengetahuan sosial'] },
+  { kode: 'ipas', nama: ['ipas', 'ilmu pengetahuan alam dan sosial'] },
+];
+
+function normMapel(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Ubah kode atau nama mapel jadi set token yang bisa dicocokkan */
+function tokenMapel(raw) {
+  const n = normMapel(raw);
+  if (!n) return new Set();
+  const set = new Set([n]);
+  for (const a of ALIAS_MAPEL) {
+    if (n === a.kode || a.nama.includes(n) || a.nama.some((x) => n.includes(x) || x.includes(n))) {
+      set.add(a.kode);
+      a.nama.forEach((x) => set.add(x));
+    }
+  }
+  return set;
+}
+
+/**
+ * Apakah satu soal boleh dikerjakan siswa berdasarkan enrolledSubjects.
+ */
+export function soalCocokMapelSiswa(soal, enrolledSubjects) {
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) {
+    return false;
+  }
+  const enrolledNorm = enrolledSubjects.map(normMapel);
+  if (enrolledNorm.some((s) => s === 'semua')) return true;
+
+  const enrolledTokens = new Set();
+  enrolledSubjects.forEach((e) => {
+    tokenMapel(e).forEach((t) => enrolledTokens.add(t));
+  });
+
+  const kandidat = [
+    soal.kodeMapel,
+    soal.mapel,
+    soal.mataPelajaran,
+    soal.materi,
+  ].filter(Boolean);
+
+  if (!kandidat.length) {
+    // Soal tanpa label mapel: jangan ditampilkan di mode ketat
+    return false;
+  }
+
+  for (const k of kandidat) {
+    const tokens = tokenMapel(k);
+    for (const t of tokens) {
+      if (enrolledTokens.has(t)) return true;
+    }
+    // cocok string langsung
+    if (enrolledNorm.some((e) => e === normMapel(k) || normMapel(k).includes(e) || e.includes(normMapel(k)))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Filter daftar soal try out agar hanya mapel yang diikuti siswa.
+ * @returns {{ soal: array, dibuang: number, mapelSiswa: string[] }}
+ */
+export function filterSoalTryOutByMapelSiswa(daftarSoal, enrolledSubjects) {
+  const list = Array.isArray(daftarSoal) ? daftarSoal : [];
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) {
+    return { soal: [], dibuang: list.length, mapelSiswa: [], alasan: 'Siswa belum punya akses mapel (enrolledSubjects kosong). Hubungi admin.' };
+  }
+  if (enrolledSubjects.some((s) => normMapel(s) === 'semua')) {
+    return { soal: list, dibuang: 0, mapelSiswa: ['semua'] };
+  }
+  const soal = list.filter((s) => soalCocokMapelSiswa(s, enrolledSubjects));
+  return {
+    soal,
+    dibuang: list.length - soal.length,
+    mapelSiswa: enrolledSubjects,
+    alasan: soal.length ? '' : 'Tidak ada soal di paket ini yang sesuai mapel yang kamu ikuti. Hubungi admin.',
+  };
+}

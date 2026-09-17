@@ -28,6 +28,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
+import { filterSoalTryOutByMapelSiswa } from '../../../utils/aksesKontenSiswa';
 import {
   doc, getDoc, addDoc, updateDoc, collection, query, where, getDocs, serverTimestamp,
 } from 'firebase/firestore';
@@ -163,7 +164,34 @@ export default function TryOutView() {
       const snapPaket = await getDoc(doc(db, 'tryout_paket', paketId));
       if (!snapPaket.exists()) { setTahap('tidak-ditemukan'); return; }
       const dataPaket = { id: snapPaket.id, ...snapPaket.data() };
-      setPaket(dataPaket);
+
+      // Filter soal hanya mapel yang didaftarkan admin ke siswa (enrolledSubjects)
+      let enrolled = [];
+      try {
+        const snapSiswa = await getDocs(query(collection(db, 'students'), where('studentId', '==', studentId)));
+        const dataSiswa = snapSiswa.docs[0]?.data() || {};
+        enrolled = Array.isArray(dataSiswa.enrolledSubjects) ? dataSiswa.enrolledSubjects : [];
+      } catch (eSiswa) {
+        console.warn('Gagal muat enrolledSubjects:', eSiswa);
+      }
+      const filterMapel = filterSoalTryOutByMapelSiswa(dataPaket.daftarSoal || [], enrolled);
+      if (filterMapel.alasan && !filterMapel.soal.length) {
+        setPaket({ ...dataPaket, daftarSoal: [], _filterMapelPesan: filterMapel.alasan });
+      } else {
+        const idOk = new Set(filterMapel.soal.map((s) => s.id));
+        const subtes = (dataPaket.subtes || []).map((sub) => ({
+          ...sub,
+          soalIds: (sub.soalIds || []).filter((id) => idOk.has(id)),
+        })).filter((sub) => (sub.soalIds || []).length > 0);
+        setPaket({
+          ...dataPaket,
+          daftarSoal: filterMapel.soal,
+          totalSoal: filterMapel.soal.length,
+          subtes: dataPaket.modeTimer === 'per-subtes' ? subtes : (dataPaket.subtes || []),
+          _mapelSiswa: filterMapel.mapelSiswa,
+          _soalDibuangMapel: filterMapel.dibuang,
+        });
+      }
 
       const snapSesi = await getDocs(query(
         collection(db, 'tryout_sesi'),
@@ -500,6 +528,19 @@ export default function TryOutView() {
   }
 
   if (tahap === 'mulai') {
+    if (paket && Array.isArray(paket.daftarSoal) && paket.daftarSoal.length === 0) {
+      return (
+        <div style={{ maxWidth: 420, margin: '40px auto', padding: 24, textAlign: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 10 }}>📚</div>
+          <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a' }}>Tidak ada soal untuk mapelmu</h2>
+          <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, margin: '10px 0 16px' }}>
+            {paket._filterMapelPesan || 'Paket ini tidak berisi soal dari mapel yang kamu ikuti. Minta admin cek "Akses Mapel" di data siswa dan komposisi try out.'}
+          </p>
+          <button type="button" onClick={() => window.history.back()} style={st.tombolSekunder}>Kembali</button>
+        </div>
+      );
+    }
+
     return (
       <div style={{ maxWidth: 560, margin: '40px auto', padding: 20, textAlign: 'center' }}>
         <button onClick={() => navigate(-1)} style={st.backBtn}><ArrowLeft size={16} /> Kembali</button>
