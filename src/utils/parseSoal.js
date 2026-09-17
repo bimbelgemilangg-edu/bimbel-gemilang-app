@@ -1,4 +1,10 @@
-// src/utils/parseSoal.js (Fix Export Vercel)
+// src/utils/parseSoal.js (v3)
+// Mendukung Matematika (Bab 6-7) DAN Bahasa Indonesia (Bab 1-5):
+//  - PG / multi-select / Benar-Salah / Setuju-TidakSetuju
+//  - kunci: "Jawaban: B", "Pernyataan 1,3,dan 4", "Benar,Benar,Salah",
+//    "A Setuju · B Tidak Setuju", maupun daftar teks ("Gunting dan jarum")
+//  - v3: tabel OPSI (kolom pertama A./B./C./D.) tidak lagi ikut jadi konteks
+//    (hindari opsi tampil dobel), dan sel pernyataan tabel BS tahan kolom label.
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -21,7 +27,6 @@ const stripPrefix = (t) => String(t || '')
 
 const tokenBs = (x) => /^(benar|setuju)$/i.test(x.trim());
 
-// 🔥 WAJIB ADA "export" DI SINI (ini yang bikin error di Vercel sebelumnya)
 export function parseKunci(teks) {
   const body = stripPrefix(teks);
   if (!body) return null;
@@ -44,6 +49,22 @@ const isBsHeader = (h) =>
   h.includes('pernyataan') &&
   (h.includes('benar') || h.includes('salah') || h.includes('setuju') || /\bts\b/.test(h));
 
+// tabel yang kolom pertamanya berisi label opsi A./B./C./D. -> tabel OPSI (bukan stimulus)
+const isOptionTable = (t) => {
+  const rows = [...t.querySelectorAll('tbody tr')];
+  if (!rows.length || rows.length < 2) return false;
+  const hit = rows.filter((tr) => /^[A-D][.).]?$/.test((tr.querySelector('td')?.textContent || '').trim())).length;
+  return hit >= Math.max(1, rows.length - 1);
+};
+
+// ambil sel pernyataan dari baris tabel BS (tahan kolom label pendek seperti "A")
+const statementFromRow = (tr) => {
+  const tds = [...tr.children].filter((c) => c.tagName === 'TD');
+  if (!tds.length) return '';
+  if (tds.length >= 3 && tds[0].textContent.trim().length <= 3) return tds[1]?.textContent || '';
+  return tds[0]?.textContent || '';
+};
+
 function parseOneSoal(el, idx) {
   const nomor = bersihTeks(el.querySelector('.no')?.textContent) || String(idx + 1);
   const sumber = bersihTeks(el.querySelector('.tipe')?.textContent) || '';
@@ -56,7 +77,7 @@ function parseOneSoal(el, idx) {
   const tabelPernyataan = tabelBS || tabels.find((t) => {
     const rows = [...t.querySelectorAll('tbody tr')];
     if (!rows.length) return false;
-    const avg = rows.reduce((a, tr) => a + bersihTeks(tr.querySelector('td')?.textContent).length, 0) / rows.length;
+    const avg = rows.reduce((a, tr) => a + bersihTeks(statementFromRow(tr)).length, 0) / rows.length;
     return avg > 24;
   });
 
@@ -65,6 +86,7 @@ function parseOneSoal(el, idx) {
     if (tag === 'UL' || tag === 'DETAILS' || tag === 'OL') return true;
     if (n.classList && (n.classList.contains('nbadges') || n.classList.contains('pil'))) return true;
     if (n === tabelPernyataan) return true;
+    if (tag === 'TABLE' && isOptionTable(n)) return true;   // v3: buang tabel opsi duplikat
     return false;
   };
   const bodyEls = [...el.children].filter((n) => !skipNode(n));
@@ -80,8 +102,12 @@ function parseOneSoal(el, idx) {
   let itemsHtml = pilHtml;
   if (!items.length && tabelPernyataan) {
     const trs = [...tabelPernyataan.querySelectorAll('tbody tr')];
-    items = trs.map((tr) => bersihTeks(tr.querySelector('td')?.textContent)).filter(Boolean);
-    itemsHtml = trs.map((tr) => tr.querySelector('td')?.innerHTML || '').filter(Boolean);
+    items = trs.map((tr) => bersihTeks(statementFromRow(tr))).filter(Boolean);
+    itemsHtml = trs.map((tr) => {
+      const tds = [...tr.children].filter((c) => c.tagName === 'TD');
+      if (tds.length >= 3 && tds[0].textContent.trim().length <= 3) return tds[1]?.innerHTML || '';
+      return tds[0]?.innerHTML || '';
+    });
   }
   if (!items.length) {
     const lis = [...el.querySelectorAll('ul li, ol li')].filter(diLuar);
@@ -115,6 +141,7 @@ function parseOneSoal(el, idx) {
   const pernyataanHtml = tipe === 'bs' ? itemsHtml : [];
 
   let kunci = parseKunci(jawabTeks);
+  // fallback: kunci berupa daftar teks pilihan (Bahasa Indonesia)
   if (!kunci && tipe === 'multi' && pilihan.length) {
     const body = stripPrefix(jawabTeks);
     const frag = body.split(/\s*,\s*|\s+dan\s+/i).map(bersihTeks).filter(Boolean);
