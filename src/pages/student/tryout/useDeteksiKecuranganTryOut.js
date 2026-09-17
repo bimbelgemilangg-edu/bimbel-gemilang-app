@@ -27,8 +27,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { uploadElearningFile } from '../../../services/uploadService';
 
-const JEDA_MIN_MS = 45 * 1000; // 45 detik
-const JEDA_MAKS_MS = 4 * 60 * 1000; // 4 menit
+const JEDA_MIN_MS = 15 * 1000; // 15 detik (setelah foto pertama)
+const JEDA_MAKS_MS = 90 * 1000; // 90 detik
 
 function jedaAcak() {
   return JEDA_MIN_MS + Math.random() * (JEDA_MAKS_MS - JEDA_MIN_MS);
@@ -135,12 +135,22 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
   // sendiri, dan KALAU GAGAL cuma di-log ke console -- TIDAK PERNAH
   // melempar error yang bisa mengganggu alur ngerjain soal siswa.
   const waktuTerakhirFotoRef = useRef(0);
-  const jedaBerikutnyaRef = useRef(jedaAcak());
+  // 0 = foto pertama langsung boleh; setelah itu jeda acak
+  const jedaBerikutnyaRef = useRef(0);
 
+  const cobaFrameRef = useRef(0);
   const ambilSatuFoto = useCallback(() => {
     try {
       const video = videoRef.current;
-      if (!video || video.videoWidth === 0) return;
+      if (!video) return;
+      if (!video.videoWidth || !video.videoHeight) {
+        if (cobaFrameRef.current < 8) {
+          cobaFrameRef.current += 1;
+          setTimeout(() => ambilSatuFoto(), 300);
+        }
+        return;
+      }
+      cobaFrameRef.current = 0;
       const canvas = document.createElement('canvas');
       // Ukuran kecil sengaja -- ini cuma buat bukti visual, bukan
       // butuh resolusi tinggi, biar upload cepat & hemat storage.

@@ -104,6 +104,7 @@ export default function TryOutView() {
   const [waktuMulaiMs, setWaktuMulaiMs] = useState(null);
   const [waktuMulaiSubtesMs, setWaktuMulaiSubtesMs] = useState(null);
   const [indexSoalAktif, setIndexSoalAktif] = useState(0);
+  const [siapPeraturan, setSiapPeraturan] = useState(false);
   const [hasilAkhir, setHasilAkhir] = useState(null); // { xpMentah, xpFinal, totalSkorPersen, ... }
   const [fotoPengawasan, setFotoPengawasan] = useState([]);
 
@@ -519,7 +520,7 @@ export default function TryOutView() {
           </div>
         )}
         <button
-          onClick={() => paket.wajibKamera ? setTahap('cek-kamera') : mulaiTryOut()}
+          onClick={() => { setSiapPeraturan(false); setTahap('peraturan'); }}
           style={st.tombolUtama}
         >
           Mulai Try Out
@@ -533,7 +534,44 @@ export default function TryOutView() {
   // buat paket yang wajibKamera. Siswa WAJIB lihat preview wajahnya
   // dulu sebelum lanjut, biar gak langsung ke-catat "kamera tidak
   // aktif" gara-gara belum sempat klik izinkan di browser.
+  if (tahap === 'peraturan') {
+    const durasiLabel = paket.modeTimer === 'per-subtes'
+      ? 'Timer per mapel/subtes (tidak bisa kembali ke subtes sebelumnya)'
+      : `Timer total ${paket.durasiTotalMenit || 90} menit untuk seluruh try out`;
+    return (
+      <div style={{ maxWidth: 440, margin: '0 auto', padding: '24px 16px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 18 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg,#5B2ECC,#7c3aed)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+            <ShieldAlert size={24} color="#fff" />
+          </div>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Peraturan Try Out</h2>
+          <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Baca sampai selesai, lalu centang siap.</p>
+        </div>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16, boxShadow: '0 4px 20px rgba(15,23,42,0.06)', marginBottom: 14 }}>
+          <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: '#334155', lineHeight: 1.7 }}>
+            <li><b>Waktu:</b> {durasiLabel}.</li>
+            <li>Kerjakan sendiri. Dilarang membuka tab, chat, atau aplikasi lain.</li>
+            <li>{paket.wajibKamera ? 'Kamera wajib aktif; wajah harus terlihat jelas.' : 'Ikuti instruksi pengawasan dari admin.'}</li>
+            <li>Sistem dapat menjepret foto saat menjawab atau pindah soal.</li>
+            <li>Pindah tab / keluar layar penuh dicatat sebagai pelanggaran (XP dapat terpotong).</li>
+            <li>Jangan tutup halaman sebelum mengumpulkan jawaban.</li>
+          </ol>
+        </div>
+        <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, fontWeight: 600, color: '#0f172a', marginBottom: 14, cursor: 'pointer' }}>
+          <input type="checkbox" checked={siapPeraturan} onChange={(e) => setSiapPeraturan(e.target.checked)} style={{ width: 18, height: 18, marginTop: 2 }} />
+          <span>Saya sudah membaca dan siap mengikuti peraturan.</span>
+        </label>
+        <button type="button" disabled={!siapPeraturan} onClick={() => (paket.wajibKamera ? setTahap('cek-kamera') : mulaiTryOut())}
+          style={{ ...st.tombolUtama, opacity: siapPeraturan ? 1 : 0.4, cursor: siapPeraturan ? 'pointer' : 'not-allowed' }}>
+          {paket.wajibKamera ? 'Lanjut cek kamera' : 'Mulai try out'}
+        </button>
+        <button type="button" onClick={() => setTahap('mulai')} style={{ ...st.tombolSekunder, width: '100%', marginTop: 8 }}>Kembali</button>
+      </div>
+    );
+  }
+
   if (tahap === 'cek-kamera') {
+
     return (
       <div style={{ maxWidth: 420, margin: '40px auto', padding: 20, textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
@@ -661,11 +699,32 @@ export default function TryOutView() {
   if (!soalAktif) return <div style={st.pusat}>Memuat soal...</div>;
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: 16, paddingBottom: 100 }}>
-      <video ref={videoRef} autoPlay muted playsInline style={{ display: 'none' }} />
+    <div style={st.shell}>
+      {/* Kamera: PiP terlihat = bukti nyala + sumber foto */}
+      {paket.wajibKamera && (
+        <div style={st.camPip} title="Kamera pengawasan aktif">
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
+          />
+          <div style={{
+            position: 'absolute', bottom: 2, left: 0, right: 0, textAlign: 'center',
+            fontSize: 9, fontWeight: 800, color: '#fff', textShadow: '0 1px 2px #000',
+          }}
+          >
+            {statusKamera === 'aktif' ? 'LIVE' : statusKamera === 'memuat' ? '...' : 'OFF'}
+          </div>
+        </div>
+      )}
+      {!paket.wajibKamera && (
+        <video ref={videoRef} autoPlay muted playsInline style={{ display: 'none' }} />
+      )}
 
       {/* HEADER: timer + status kamera */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#1E3A8A', borderRadius: 10, marginBottom: 12 }}>
+      <div style={st.headerBar}>
         <div style={{ color: 'white', fontSize: 12.5 }}>
           {paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : paket.judul}
         </div>
@@ -690,24 +749,36 @@ export default function TryOutView() {
       )}
 
       {/* PALET NOMOR SOAL */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-        {daftarSoalAktif.map((s, i) => (
-          <button
-            key={s.id}
-            onClick={() => setIndexSoalAktif(i)}
-            style={{
-              width: 30, height: 30, borderRadius: 6, border: i === indexSoalAktif ? '2px solid #5B2ECC' : '1px solid #e2e8f0',
-              background: jawaban[s.id] !== undefined ? '#ede9fe' : 'white', fontSize: 11.5, fontWeight: 700,
-              color: i === indexSoalAktif ? '#5B2ECC' : '#64748b', cursor: 'pointer',
-            }}
-          >
-            {i + 1}
-          </button>
-        ))}
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14, padding: 12,
+        background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0',
+      }}
+      >
+        {daftarSoalAktif.map((s, i) => {
+          const answered = jawaban[s.id] !== undefined;
+          const active = i === indexSoalAktif;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => { setIndexSoalAktif(i); try { cobaAmbilFoto(); } catch (_) {} }}
+              style={{
+                width: 34, height: 34, borderRadius: 10,
+                border: active ? '2px solid #5B2ECC' : '1px solid #e2e8f0',
+                background: active ? '#5B2ECC' : answered ? '#ede9fe' : '#fff',
+                fontSize: 12, fontWeight: 800,
+                color: active ? '#fff' : answered ? '#5B2ECC' : '#64748b',
+                cursor: 'pointer',
+              }}
+            >
+              {i + 1}
+            </button>
+          );
+        })}
       </div>
 
       {/* SOAL */}
-      <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+      <div style={st.soalCard}>
         <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 700 }}>{soalAktif.materi}</div>
         {soalAktif.bacaan?.teks && (
           <div style={{ background: '#f8fafc', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: '#334155', lineHeight: 1.7, whiteSpace: 'pre-wrap', textAlign: 'left' }}>
@@ -744,7 +815,7 @@ export default function TryOutView() {
       {/* NAVIGASI */}
       <div style={{ display: 'flex', gap: 10 }}>
         <button
-          onClick={() => setIndexSoalAktif((i) => Math.max(0, i - 1))}
+          onClick={() => { try { cobaAmbilFoto(); } catch (_) {} setIndexSoalAktif((i) => Math.max(0, i - 1)); }}
           disabled={indexSoalAktif === 0}
           style={{ ...st.tombolSekunder, opacity: indexSoalAktif === 0 ? 0.4 : 1 }}
         >
@@ -801,9 +872,34 @@ export default function TryOutView() {
 
 const st = {
   pusat: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: '#64748b', fontSize: 13 },
-  backBtn: { display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontSize: 13 },
-  tombolUtama: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 20px', borderRadius: 12, border: 'none', background: '#5B2ECC', color: 'white', fontWeight: 800, fontSize: 14, cursor: 'pointer', width: '100%' },
-  tombolSekunder: { padding: '13px 20px', borderRadius: 12, border: '1px solid #e2e8f0', background: 'white', color: '#374151', fontWeight: 700, fontSize: 13, cursor: 'pointer' },
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 },
-  modal: { background: 'white', borderRadius: 16, padding: 24, maxWidth: 340, textAlign: 'center' },
+  backBtn: { display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginBottom: 16, fontSize: 13, fontWeight: 600 },
+  tombolUtama: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+    padding: '14px 20px', borderRadius: 12, border: 'none',
+    background: 'linear-gradient(135deg, #5B2ECC 0%, #7c3aed 100%)',
+    color: 'white', fontWeight: 800, fontSize: 14, cursor: 'pointer', width: '100%',
+    boxShadow: '0 4px 14px rgba(91,46,204,0.35)',
+  },
+  tombolSekunder: {
+    padding: '13px 20px', borderRadius: 12, border: '1px solid #e2e8f0',
+    background: '#fff', color: '#334155', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+  },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(4px)' },
+  modal: { background: 'white', borderRadius: 18, padding: 28, maxWidth: 360, textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' },
+  shell: { maxWidth: 720, margin: '0 auto', padding: '12px 14px 28px', minHeight: '100vh', background: 'linear-gradient(180deg, #f1f5f9 0%, #f8fafc 40%, #fff 100%)' },
+  headerBar: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+    padding: '12px 14px', borderRadius: 14,
+    background: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 100%)',
+    color: '#fff', marginBottom: 12, boxShadow: '0 8px 24px rgba(30,58,138,0.25)',
+  },
+  soalCard: {
+    background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 18,
+    marginBottom: 14, boxShadow: '0 2px 12px rgba(15,23,42,0.04)',
+  },
+  camPip: {
+    position: 'fixed', right: 12, bottom: 12, width: 104, height: 78, borderRadius: 12,
+    overflow: 'hidden', border: '2px solid #fff', boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
+    zIndex: 40, background: '#0f172a',
+  },
 };
