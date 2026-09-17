@@ -133,7 +133,6 @@ const SidebarAdmin = () => {
     {
       label: 'BANK SOAL',
       items: [
-        { name: 'Mesin Bank Soal', path: '/admin/bank-soal/mesin', icon: <Sparkles size={18} /> },
         { name: 'Import dari PDF',      path: '/admin/bank-soal',        icon: <FileUp size={18} /> },
         { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={18} /> },
         { name: 'Terbitkan Kuis',       path: '/admin/bank-soal/terbitkan', icon: <Rocket size={18} /> },

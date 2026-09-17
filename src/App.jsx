@@ -82,7 +82,6 @@ import ImporModul from './pages/admin/buku/ImporModul';
 // ============================================================
 import BankSoalPage from './pages/admin/banksoal/BankSoalPage';
 import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
-import MesinBankSoalPage from './pages/admin/bank-soal/MesinBankSoalPage';
 import DashboardAnalisis from './pages/admin/DashboardAnalisis';
 import TerbitkanKuisPage from './pages/admin/bank-soal/TerbitkanKuisPage';
 import TerbitkanTryOutPage from './pages/admin/bank-soal/TerbitkanTryOutPage';
@@ -460,10 +459,6 @@ function App() {
             🔥 BANK SOAL
             ==================================================== */}
         <Route path="/admin/bank-soal" element={<AdminRoute><BankSoalPage /></AdminRoute>} />
-        <Route
-          path="/admin/bank-soal/mesin"
-          element={<AdminRoute><MesinBankSoalPage /></AdminRoute>}
-        />
         <Route
           path="/admin/bank-soal/import"
           element={<AdminRoute><ImportHasilScanPage /></AdminRoute>}
