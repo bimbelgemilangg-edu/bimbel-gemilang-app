@@ -13,7 +13,8 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ArrowLeft, Trophy, Flame } from 'lucide-react';
-import { kunciMingguIni } from '../../utils/mingguIni';
+import { kunciMingguIni } from '../../utils/mingguIni'
+import { filterSiswaLeaderboard, isAkunBelajarAktif } from '../../utils/statusAkunSiswa';
 
 // Avatar bulat berisi inisial nama, warnanya konsisten per nama (hash
 // sederhana) -- biar tiap siswa punya "identitas visual" walau kita
@@ -80,7 +81,9 @@ export default function LeaderboardPage() {
         if (!kelas) { setLoading(false); return; }
 
         const snapSekelas = await getDocs(query(collection(db, 'students'), where('kelasSekolah', '==', kelas)));
-        const siswaSekelas = snapSekelas.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const siswaSekelasRaw = snapSekelas.docs.map((d) => ({ id: d.id, ...d.data() }));
+        // Siswa terblokir (pembayaran) tidak masuk ranking — pantau realtime
+        const siswaSekelas = filterSiswaLeaderboard(siswaSekelasRaw);
 
         const snapProgres = await getDocs(collection(db, 'siswa_progress'));
         const progresMap = {};

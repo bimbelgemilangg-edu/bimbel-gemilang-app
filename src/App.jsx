@@ -123,6 +123,7 @@ import GenerateRaport from './pages/teacher/grades/GenerateRaport';
 
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
 import LeaderboardPage from './pages/student/LeaderboardPage';
+import GateAksesSiswa from './components/GateAksesSiswa';
 import StudentSmartReport from './pages/student/raport/StudentSmartReport';
 
 // ============================================================
@@ -293,6 +294,21 @@ const GuruPage = ({ children }) => (
 const SiswaPage = ({ children }) => (
   <SiswaRoute>
     <SiswaLayout>{children}</SiswaLayout>
+  </SiswaRoute>
+);
+
+// Fitur belajar: cek isBlocked / status sebelum tampil (buku, tryout, latihan, leaderboard)
+const SiswaFiturBelajar = ({ children, fitur }) => (
+  <SiswaRoute>
+    <GateAksesSiswa fitur={fitur}>{children}</GateAksesSiswa>
+  </SiswaRoute>
+);
+
+const SiswaPageBelajar = ({ children, fitur }) => (
+  <SiswaRoute>
+    <SiswaLayout>
+      <GateAksesSiswa fitur={fitur}>{children}</GateAksesSiswa>
+    </SiswaLayout>
   </SiswaRoute>
 );
 
@@ -497,35 +513,35 @@ function App() {
             SISWA
             ==================================================== */}
         <Route path="/siswa/dashboard" element={<SiswaPage><StudentDashboard /></SiswaPage>} />
-        <Route path="/siswa/tryout" element={<SiswaPage><DaftarTryOutPage /></SiswaPage>} />
-        <Route path="/siswa/tryout/:paketId" element={<SiswaRoute><TryOutView /></SiswaRoute>} />
-        <Route path="/siswa/materi" element={<SiswaPage><StudentElearning /></SiswaPage>} />
+        <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><DaftarTryOutPage /></SiswaPageBelajar>} />
+        <Route path="/siswa/tryout/:paketId" element={<SiswaFiturBelajar fitur="Try Out"><TryOutView /></SiswaFiturBelajar>} />
+        <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
         <Route path="/siswa/jadwal" element={<SiswaPage><StudentSchedule /></SiswaPage>} />
         <Route path="/siswa/keuangan" element={<SiswaPage><StudentFinanceSiswa /></SiswaPage>} />
         <Route path="/siswa/rapor" element={<SiswaPage><StudentGrades /></SiswaPage>} />
         <Route path="/siswa/smart-rapor" element={<SiswaPage><StudentSmartReport /></SiswaPage>} />
-        <Route path="/siswa/leaderboard" element={<SiswaRoute><LeaderboardPage /></SiswaRoute>} />
+        <Route path="/siswa/leaderboard" element={<SiswaFiturBelajar fitur="Papan Peringkat"><LeaderboardPage /></SiswaFiturBelajar>} />
         <Route
           path="/siswa/leaderboard-raport"
           element={<SiswaPage><StudentLeaderboard /></SiswaPage>}
         />
         <Route path="/siswa/absensi" element={<SiswaPage><StudentAttendanceSiswa /></SiswaPage>} />
-        <Route path="/siswa/modul/:id" element={<SiswaPage><ModulSiswaWrapper /></SiswaPage>} />
-        <Route path="/siswa/kuis/:id" element={<SiswaPage><KuisSiswaWrapper /></SiswaPage>} />
+        <Route path="/siswa/modul/:id" element={<SiswaPageBelajar fitur="Materi Modul"><ModulSiswaWrapper /></SiswaPageBelajar>} />
+        <Route path="/siswa/kuis/:id" element={<SiswaPageBelajar fitur="Kuis"><KuisSiswaWrapper /></SiswaPageBelajar>} />
         <Route path="/siswa/survei/:id" element={<SiswaPage><StudentSurveyView /></SiswaPage>} />
 
         {/* 🔥 Latihan Harian -- SENGAJA tanpa SiswaLayout (gaya app mobile) */}
         <Route
           path="/siswa/latihan-harian"
-          element={<SiswaRoute><LatihanHarianPage /></SiswaRoute>}
+          element={<SiswaFiturBelajar fitur="Latihan Harian"><LatihanHarianPage /></SiswaFiturBelajar>}
         />
 
         {/* 🔥 BUKU INTERAKTIF DIGITAL -- rak buku, daftar isi, reader per bab */}
-        <Route path="/siswa/buku" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
-        <Route path="/siswa/buku/:bukuId" element={<SiswaRoute><BukuInteraktifPage /></SiswaRoute>} />
+        <Route path="/siswa/buku" element={<SiswaFiturBelajar fitur="Buku Digital"><BukuInteraktifPage /></SiswaFiturBelajar>} />
+        <Route path="/siswa/buku/:bukuId" element={<SiswaFiturBelajar fitur="Buku Digital"><BukuInteraktifPage /></SiswaFiturBelajar>} />
         <Route
           path="/siswa/buku/:bukuId/:babId"
-          element={<SiswaRoute><BukuBacaPage /></SiswaRoute>}
+          element={<SiswaFiturBelajar fitur="Buku Digital"><BukuBacaPage /></SiswaFiturBelajar>}
         />
 
         {/* REDIRECT */}
