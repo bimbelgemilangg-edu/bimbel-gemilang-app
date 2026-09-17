@@ -80,7 +80,7 @@ export default function BukuBacaPage() {
   const sections = useMemo(() => bab?.sections || [], [bab]);
   const ujiPemahaman = useMemo(() => bab?.ujiPemahaman || [], [bab]);
 
-  const modeHtml = !!bab && bab.tipe === 'html' && !!bab.html;
+  const modeHtml = !!bab && bab.tipe === 'html' && (!!bab.html || !!bab.htmlUrl);
   const modeModul = !!bab && !modeHtml && (bab.tipe === 'pdf' || ((!sections || sections.length === 0) && !!bab.pdfUrl));
 
   const daftarHalaman = useMemo(() => {
@@ -396,7 +396,7 @@ export default function BukuBacaPage() {
       {mode === 'baca' && modeHtml && (
         <div style={{ padding: '12px 12px 40px' }}>
           <div style={st.kotakModul}>
-            <RendererHtmlBab html={bab.html} babId={bab.id} />
+            <RendererHtmlBab html={bab.html} htmlUrl={bab.htmlUrl} babId={bab.id} />
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button

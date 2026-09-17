@@ -119,7 +119,7 @@ export default function ModalBukuGuru({ open, onClose }) {
                 🔓 Mode guru: semua kunci & pembahasan terbuka untuk persiapan mengajar
               </div>
               {bab.tipe === 'html' && bab.html ? (
-                <RendererHtmlBab html={bab.html} babId={bab.id} bukuId={bukuId} modePresentasi />
+                <RendererHtmlBab html={bab.html} htmlUrl={bab.htmlUrl} babId={bab.id} bukuId={bukuId} modePresentasi />
               ) : bab.pdfUrl ? (
                 <iframe title="pdf" src={bab.pdfUrl} style={{ width: '100%', height: '70vh', border: 'none', borderRadius: 8 }} />
               ) : (

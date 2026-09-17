@@ -156,7 +156,9 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
         judul: row.judul.trim(),
         urutan: Number(row.urutan) || jumlahBab + 1,
         tipe: 'html',
-        html: siap.html,
+        html: siap.html || '',
+        htmlUrl: siap.htmlUrl || null,
+        modeSimpan: siap.mode || 'inline',
         sumber: 'html-scan',
         imgDipindah: siap.imgDipindah || 0,
         svgDipindah: siap.svgDipindah || 0,
@@ -170,7 +172,8 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
     const ringkas = [];
     if (siap.imgDipindah) ringkas.push(`${siap.imgDipindah} gambar → Supabase`);
     if (siap.svgDipindah) ringkas.push(`${siap.svgDipindah} SVG → Supabase`);
-    ringkas.push(`${(siap.bytes / 1024).toFixed(0)} KB di Firestore`);
+    if (siap.mode === 'url' && siap.htmlUrl) ringkas.push('HTML di CDN Supabase (ringan di Firestore)');
+    else ringkas.push(`${(siap.bytes / 1024).toFixed(0)} KB di Firestore`);
     setPesan(
       `✅ "${row.judul}" tersimpan (urutan ${row.urutan}). ${ringkas.join(' · ')}. Klik Tutup untuk melihat daftar bab.`
     );

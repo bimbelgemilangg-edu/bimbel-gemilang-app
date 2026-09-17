@@ -1,4 +1,5 @@
 
+
 // src/components/buku/RendererHtmlBab.jsx (v14 — gabungan final)
 // Menggabungkan SEMUA fitur terbaik v11 (Grid CBT Benar/Salah rapi dengan
 // tombol radio bulat per baris + kelas gb-tepat/gb-meleset/gb-kunci) +
@@ -498,23 +499,60 @@ function enhance(root, opts) {
   chipSiap.textContent = opts.presentasi ? '🔓 kontrol guru aktif' : `🔓 ${siap}/${semuaSoal.length} siap dicoba`;
 }
 
-export default function RendererHtmlBab({ html, babId, bukuId, modePresentasi = false, onKeluar }) {
+/**
+ * Renderer bab HTML interaktif.
+ * - html: string HTML inline (Firestore)
+ * - htmlUrl: URL file HTML di Supabase CDN (untuk bab besar, tanpa lemot)
+ * Psikologi belajar: gambar lazy, kunci terkunci sampai menjawab,
+ * toast ramah, mode presentasi guru untuk sesi live hybrid.
+ */
+export default function RendererHtmlBab({ html, htmlUrl, babId, bukuId, modePresentasi = false, onKeluar }) {
   const hostRef = useRef(null);
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-    if (!host.shadowRoot) host.attachShadow({ mode: 'open' });
-    // v14: terapkan percantikMatika() SEBELUM injeksi ke shadow DOM
-    const isi = percantikMatika(bersihkanHtml(siapkanCss(html)));
-    host.shadowRoot.innerHTML = `<style>${BASE_STYLE}${CSS_MATIKA}</style><div class="gb-wrap">${isi}</div>`;
-    const siswaId = localStorage.getItem('studentId') || '';
-    const nama = localStorage.getItem('studentName') || localStorage.getItem('studentNama') || '';
-    try {
-      enhance(host.shadowRoot, { babId, bukuId, presentasi: modePresentasi, siswaId, nama, onKeluar });
-    } catch {
-      host.shadowRoot.querySelectorAll('details').forEach((d) => d.classList.remove('gb-terkunci'));
+    let batal = false;
+
+    async function muatDanRender() {
+      if (!host.shadowRoot) host.attachShadow({ mode: 'open' });
+      host.shadowRoot.innerHTML = `<style>${BASE_STYLE}</style><div class="gb-wrap" style="padding:24px;text-align:center;color:#64748b">Memuat materi…</div>`;
+
+      let sumber = html || '';
+      if ((!sumber || sumber.length < 40) && htmlUrl) {
+        try {
+          const res = await fetch(htmlUrl, { cache: 'force-cache' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          sumber = await res.text();
+        } catch (e) {
+          if (!batal) {
+            host.shadowRoot.innerHTML = `<style>${BASE_STYLE}</style><div class="gb-wrap" style="padding:24px;color:#b91c1c">Gagal memuat materi dari CDN. Coba refresh atau cek koneksi.<br/><small>${String(e.message || e)}</small></div>`;
+          }
+          return;
+        }
+      }
+      if (batal) return;
+
+      // Pastikan img lazy (jaga-jaga untuk HTML lama)
+      sumber = String(sumber).replace(/<img\b([^>]*)>/gi, (full, attrs) => {
+        let a = attrs;
+        if (!/\bloading\s*=/i.test(a)) a += ' loading="lazy"';
+        if (!/\bdecoding\s*=/i.test(a)) a += ' decoding="async"';
+        return `<img${a}>`;
+      });
+
+      const isi = percantikMatika(bersihkanHtml(siapkanCss(sumber)));
+      host.shadowRoot.innerHTML = `<style>${BASE_STYLE}${CSS_MATIKA}</style><div class="gb-wrap">${isi}</div>`;
+      const siswaId = localStorage.getItem('studentId') || '';
+      const nama = localStorage.getItem('studentName') || localStorage.getItem('studentNama') || '';
+      try {
+        enhance(host.shadowRoot, { babId, bukuId, presentasi: modePresentasi, siswaId, nama, onKeluar });
+      } catch {
+        host.shadowRoot.querySelectorAll('details').forEach((d) => d.classList.remove('gb-terkunci'));
+      }
     }
-    return undefined;
-  }, [html, babId, bukuId, modePresentasi]);
+
+    muatDanRender();
+    return () => { batal = true; };
+  }, [html, htmlUrl, babId, bukuId, modePresentasi]);
   return <div ref={hostRef} />;
 }
