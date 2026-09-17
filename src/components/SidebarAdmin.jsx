@@ -99,6 +99,7 @@ const SidebarAdmin = () => {
       label: 'AKADEMIK',
       items: [
         { name: 'Kelola Siswa', path: '/admin/students',         icon: <Users size={18} />,        badge: badgeSiswaBaru > 0 ? badgeSiswaBaru : null, badgeColor: '#3b82f6' },
+        { name: 'Manajemen Absensi', path: '/admin/attendance', icon: <ClipboardCheck size={18} /> },
         { name: 'Kelola Guru',  path: '/admin/teachers',         icon: <GraduationCap size={18} /> },
         { name: 'Rapor & Nilai',path: '/admin/grades',           icon: <TrendingUp size={18} /> },
         { name: 'Portal Siswa', path: '/admin/portal',           icon: <Globe size={18} /> },

@@ -49,6 +49,7 @@ import OwnerFinance from './pages/admin/OwnerFinance';
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
 import StudentAttendance from './pages/admin/students/StudentAttendance';
+import AdminAttendanceManage from './pages/admin/students/AdminAttendanceManage';
 import StudentFinance from './pages/admin/students/StudentFinance';
 import EditStudent from './pages/admin/students/EditStudent';
 
@@ -389,6 +390,10 @@ function App() {
         <Route
           path="/admin/students/edit/:id"
           element={<AdminRoute><EditStudent /></AdminRoute>}
+        />
+        <Route
+          path="/admin/attendance"
+          element={<AdminRoute><AdminAttendanceManage /></AdminRoute>}
         />
         <Route
           path="/admin/students/attendance/:id"
