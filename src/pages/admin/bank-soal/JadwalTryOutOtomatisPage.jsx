@@ -29,10 +29,11 @@ const kosong = () => ({
   ...DEFAULT_TEMPLATE_SMA,
   nama: 'Try Out Otomatis',
   komposisi: [
-    { mapel: 'Bahasa Inggris', jumlah: 30 },
-    { mapel: 'Bahasa Indonesia', jumlah: 20 },
-    { mapel: 'Matematika', jumlah: 15 },
+    { mapel: 'Bahasa Inggris', jumlah: 30, durasiMenit: 35 },
+    { mapel: 'Bahasa Indonesia', jumlah: 20, durasiMenit: 25 },
+    { mapel: 'Matematika', jumlah: 15, durasiMenit: 20 },
   ],
+  modeTimer: 'per-subtes',
   hariDalamMinggu: [1, 4],
   soalAcak: true,
   tampilkanPembahasan: true,
@@ -100,7 +101,7 @@ export default function JadwalTryOutOtomatisPage() {
         hariDalamMinggu: edit.hariDalamMinggu || [1, 4],
         jamBuka: edit.jamBuka || '07:00',
         durasiTotalMenit: Number(edit.durasiTotalMenit) || 90,
-        modeTimer: edit.modeTimer || 'total',
+        modeTimer: edit.modeTimer || 'per-subtes',
         antiCheatAktif: edit.antiCheatAktif !== false,
         wajibKamera: !!edit.wajibKamera,
         soalAcak: edit.soalAcak !== false,
@@ -134,6 +135,7 @@ export default function JadwalTryOutOtomatisPage() {
         wajibKamera: t.wajibKamera,
         tampilkanPembahasan: t.tampilkanPembahasan,
         durasiTotalMenit: t.durasiTotalMenit,
+        modeTimer: t.modeTimer || 'per-subtes',
         jamBuka: t.jamBuka,
       });
       setLog(hasil.map((h) => {
@@ -167,6 +169,7 @@ export default function JadwalTryOutOtomatisPage() {
           wajibKamera: t.wajibKamera,
           tampilkanPembahasan: t.tampilkanPembahasan,
           durasiTotalMenit: t.durasiTotalMenit,
+          modeTimer: t.modeTimer || 'per-subtes',
           jamBuka: t.jamBuka,
         });
         for (const h of hasil) {
@@ -306,9 +309,9 @@ export default function JadwalTryOutOtomatisPage() {
               <label style={st.label}>Jam buka<input style={st.input} type="time" value={edit.jamBuka || '07:00'} onChange={(e) => setEdit({ ...edit, jamBuka: e.target.value })} /></label>
               <label style={st.label}>Durasi (menit)<input style={st.input} type="number" value={edit.durasiTotalMenit || 90} onChange={(e) => setEdit({ ...edit, durasiTotalMenit: Number(e.target.value) })} /></label>
               <label style={st.label}>Mode waktu
-                <select style={st.input} value={edit.modeTimer || 'total'} onChange={(e) => setEdit({ ...edit, modeTimer: e.target.value })}>
+                <select style={st.input} value={edit.modeTimer || 'per-subtes'} onChange={(e) => setEdit({ ...edit, modeTimer: e.target.value })}>
+                  <option value="per-subtes">Per mapel (disarankan — timer ketat)</option>
                   <option value="total">Total (satu timer seluruh TO)</option>
-                  <option value="per-subtes">Per mapel / subtes</option>
                 </select>
               </label>
             </div>
@@ -337,10 +340,21 @@ export default function JadwalTryOutOtomatisPage() {
 
             <div style={{ marginTop: 12 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 6 }}>
-                Komposisi jumlah (sistem yang pilih soal-nya)
+                Komposisi per mapel (jumlah soal + durasi menit)
+              </div>
+              <p style={{ fontSize: 11.5, color: '#64748b', margin: '0 0 8px', lineHeight: 1.45 }}>
+                Disarankan mode <b>Per mapel</b>: mis. Matematika 15 soal · <b>20 menit</b>.
+                Timer ketat mengurangi waktu siswa mencari jawaban di internet.
+                Selesai satu mapel, tidak bisa kembali.
+              </p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 4, fontSize: 10, fontWeight: 700, color: '#94a3b8', paddingLeft: 2 }}>
+                <span style={{ flex: '1 1 160px' }}>Mapel</span>
+                <span style={{ width: 64 }}>Soal</span>
+                <span style={{ width: 64 }}>Menit</span>
+                <span style={{ width: 34 }} />
               </div>
               {(edit.komposisi || []).map((row, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   <select style={{ ...st.input, flex: '1 1 160px' }} value={row.mapel} onChange={(e) => {
                     const komposisi = [...edit.komposisi];
                     komposisi[idx] = { ...row, mapel: e.target.value };
@@ -349,9 +363,21 @@ export default function JadwalTryOutOtomatisPage() {
                   >
                     {KATALOG_MAPEL.map((m) => <option key={m.kode} value={m.nama}>{m.nama}</option>)}
                   </select>
-                  <input style={{ ...st.input, width: 72 }} type="number" min={1} value={row.jumlah} onChange={(e) => {
+                  <input style={{ ...st.input, width: 64 }} type="number" min={1} title="Jumlah soal" value={row.jumlah} onChange={(e) => {
                     const komposisi = [...edit.komposisi];
-                    komposisi[idx] = { ...row, jumlah: Number(e.target.value) || 0 };
+                    const jumlah = Number(e.target.value) || 0;
+                    const autoDur = Math.max(10, Math.round(jumlah * 1.3));
+                    komposisi[idx] = {
+                      ...row,
+                      jumlah,
+                      durasiMenit: row.durasiMenit || autoDur,
+                    };
+                    setEdit({ ...edit, komposisi });
+                  }}
+                  />
+                  <input style={{ ...st.input, width: 64 }} type="number" min={1} title="Durasi menit" value={row.durasiMenit ?? Math.max(10, Math.round((row.jumlah || 10) * 1.3))} onChange={(e) => {
+                    const komposisi = [...edit.komposisi];
+                    komposisi[idx] = { ...row, durasiMenit: Number(e.target.value) || 1 };
                     setEdit({ ...edit, komposisi });
                   }}
                   />
@@ -365,10 +391,16 @@ export default function JadwalTryOutOtomatisPage() {
               ))}
               <button type="button" style={st.btnGhost} onClick={() => setEdit({
                 ...edit,
-                komposisi: [...(edit.komposisi || []), { mapel: 'Bahasa Inggris', jumlah: 10 }],
+                komposisi: [...(edit.komposisi || []), { mapel: 'Bahasa Inggris', jumlah: 10, durasiMenit: 15 }],
               })}
               ><Plus size={12} /> Mapel
               </button>
+              <div style={{ fontSize: 12, color: '#475569', marginTop: 8 }}>
+                Total soal: <b>{(edit.komposisi || []).reduce((a, r) => a + (Number(r.jumlah) || 0), 0)}</b>
+                {' · '}
+                Total waktu mapel: <b>{(edit.komposisi || []).reduce((a, r) => a + (Number(r.durasiMenit) || Math.max(10, Math.round((r.jumlah || 0) * 1.3))), 0)}</b> menit
+                {edit.modeTimer === 'per-subtes' ? ' (timer per mapel)' : ' (jika mode total, pakai durasi total di atas)'}
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
@@ -463,7 +495,7 @@ export default function JadwalTryOutOtomatisPage() {
                     </div>
                     <div style={{ marginTop: 6 }}>
                       {(t.komposisi || []).map((r, i) => (
-                        <span key={i} style={st.badge}>{r.jumlah} {r.mapel}</span>
+                        <span key={i} style={st.badge}>{r.jumlah} {r.mapel} · {r.durasiMenit || "?"} mnt</span>
                       ))}
                     </div>
                   </div>

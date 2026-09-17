@@ -147,6 +147,7 @@ import {
   
   export async function susunSoalDariKomposisi(template, excludeIds) {
     const hasil = [];
+    const grupMapel = [];
     const dipakai = new Set(excludeIds || []);
     for (const baris of template.komposisi || []) {
       // eslint-disable-next-line no-await-in-loop
@@ -160,12 +161,26 @@ import {
         excludeIds: dipakai,
         kelompok: baris.kelompok || template.kelompokBank || null,
       });
+      const ids = [];
       for (const s of ambil) {
         dipakai.add(s.id);
         hasil.push(s);
+        ids.push(s.id);
       }
+      // Durasi per mapel: dari baris, atau default ~1.3 menit/soal (min 10)
+      const jml = ids.length || Number(baris.jumlah) || 10;
+      let durasi = Number(baris.durasiMenit);
+      if (!durasi || durasi < 1) {
+        durasi = Math.max(10, Math.round(jml * 1.3));
+      }
+      grupMapel.push({
+        mapel: baris.mapel,
+        soalIds: ids,
+        durasiMenit: durasi,
+        jumlah: jml,
+      });
     }
-    return hasil;
+    return { daftarSoal: hasil, grupMapel };
   }
   
   export function hitungSlotMingguIni(hariDalamMinggu, jamBuka, durasiMenit) {
@@ -224,11 +239,21 @@ import {
    */
   export async function siapkanDrafDariTemplate(template, slot, rules) {
     const r = rules || {};
-    const exclude = await idSoalBaruDipakai(template.jenjang, 10);
-    let daftarSoal = await susunSoalDariKomposisi(template, exclude);
+      const exclude = await idSoalBaruDipakai(template.jenjang, 10);
+    const susunan = await susunSoalDariKomposisi(template, exclude);
+    let daftarSoal = susunan.daftarSoal || [];
+    const grupMapel = susunan.grupMapel || [];
     const soalAcak = r.soalAcak !== false && template.soalAcak !== false;
+    // Acak dalam tiap mapel (bukan campur antar mapel) agar subtes tetap utuh
     if (soalAcak) {
-      daftarSoal = acakArray(daftarSoal);
+      const byId = {};
+      daftarSoal.forEach((s) => { byId[s.id] = s; });
+      const ordered = [];
+      grupMapel.forEach((g) => {
+        g.soalIds = acakArray(g.soalIds || []);
+        g.soalIds.forEach((id) => { if (byId[id]) ordered.push(byId[id]); });
+      });
+      daftarSoal = ordered.length ? ordered : acakArray(daftarSoal);
     }
   
     if (!daftarSoal.length) {
@@ -242,8 +267,19 @@ import {
     const antiCheat = r.antiCheatAktif !== false && template.antiCheatAktif !== false;
     const kamera = !!(r.wajibKamera != null ? r.wajibKamera : template.wajibKamera);
     const pembahasan = r.tampilkanPembahasan !== false && template.tampilkanPembahasan !== false;
-    const modeTimer = r.modeTimer || template.modeTimer || 'total';
-    const durasi = Number(r.durasiTotalMenit != null ? r.durasiTotalMenit : template.durasiTotalMenit) || 90;
+    const modeTimer = r.modeTimer || template.modeTimer || 'per-subtes';
+    const durasi = Number(r.durasiTotalMenit != null ? r.durasiTotalMenit : template.durasiTotalMenit)
+      || grupMapel.reduce((a, g) => a + (Number(g.durasiMenit) || 0), 0)
+      || 90;
+  
+    // Subtes per mapel (timer terpisah, tidak bisa balik ke mapel sebelumnya)
+    const subtes = modeTimer === 'per-subtes'
+      ? grupMapel.filter((g) => (g.soalIds || []).length > 0).map((g) => ({
+          nama: g.mapel,
+          durasiMenit: Number(g.durasiMenit) || 20,
+          soalIds: g.soalIds,
+        }))
+      : [];
   
     const payload = {
       judul,
@@ -254,7 +290,7 @@ import {
       totalSoal: daftarSoal.length,
       modeTimer,
       durasiTotalMenit: durasi,
-      subtes: [],
+      subtes,
       antiCheatAktif: antiCheat,
       wajibKamera: kamera,
       soalAcak,
@@ -387,14 +423,14 @@ import {
     targetKelas: ['Semua'],
     targetKategori: ['Semua'],
     komposisi: [
-      { mapel: 'Bahasa Inggris', jumlah: 30 },
-      { mapel: 'Bahasa Indonesia', jumlah: 20 },
-      { mapel: 'Matematika', jumlah: 15 },
+      { mapel: 'Bahasa Inggris', jumlah: 30, durasiMenit: 35 },
+      { mapel: 'Bahasa Indonesia', jumlah: 20, durasiMenit: 25 },
+      { mapel: 'Matematika', jumlah: 15, durasiMenit: 20 },
     ],
     hariDalamMinggu: [1, 4],
     jamBuka: '07:00',
     durasiTotalMenit: 90,
-    modeTimer: 'total',
+    modeTimer: 'per-subtes',
     antiCheatAktif: true,
     wajibKamera: false,
     soalAcak: true,
