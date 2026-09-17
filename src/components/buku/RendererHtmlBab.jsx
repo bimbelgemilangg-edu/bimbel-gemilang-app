@@ -1,5 +1,3 @@
-
-
 // src/components/buku/RendererHtmlBab.jsx (v14 — gabungan final)
 // Menggabungkan SEMUA fitur terbaik v11 (Grid CBT Benar/Salah rapi dengan
 // tombol radio bulat per baris + kelas gb-tepat/gb-meleset/gb-kunci) +
@@ -37,8 +35,15 @@ const BASE_STYLE = `
   .gb-wrap .soal{border:1px solid #e3e6ef;box-shadow:0 2px 10px rgba(30,27,75,.05);background:#fff;border-radius:14px;padding:14px;margin:12px 0}
   .gb-wrap .soal>p{font-size:15.5px}
   .gb-wrap .pil{list-style:none;margin:8px 0;padding:0}
-  .gb-wrap .pil li{padding:12px 14px;font-size:15px;border-radius:12px;margin:7px 0;border:1.5px solid #e6e9f4;background:#fbfcff;transition:background .15s,border-color .15s;cursor:pointer}
+  .gb-wrap .pil li{padding:12px 14px;font-size:15px;border-radius:12px;margin:7px 0;border:1.5px solid #e6e9f4;background:#fbfcff;transition:background .15s,border-color .15s;cursor:pointer;user-select:none;-webkit-user-select:none}
+  .gb-wrap .pil li:hover{border-color:#a5b4fc;background:#eef2ff}
   .gb-wrap .pil li:active{transform:scale(.995)}
+  .gb-wrap .pil li label{cursor:pointer;display:block;width:100%;pointer-events:none}
+  .gb-wrap .pil li input[type=radio],.gb-wrap .pil li input[type=checkbox]{margin-right:8px;width:18px;height:18px;accent-color:#4C6EF5;pointer-events:none;vertical-align:middle}
+  .gb-wrap table.ring td.cen input[type=radio]{width:20px;height:20px;accent-color:#4C6EF5;cursor:pointer}
+  .gb-wrap table.ring td.cen{text-align:center;vertical-align:middle;min-width:56px}
+  .gb-wrap .soal .gb-cbt-btn{cursor:pointer;min-width:44px;min-height:44px;font-size:16px;font-weight:800}
+  .gb-wrap .soal button.gb-btn{cursor:pointer}
   .gb-wrap .pil li svg,.gb-wrap .pil li img{max-height:min(50vh,360px);width:auto;margin:6px auto;display:block}
   .gb-wrap ul.pil.gb-multi li{display:flex;align-items:flex-start}
   .gb-wrap ul.pil.gb-multi li::before{content:"";width:20px;height:20px;border:2px solid #94a3b8;border-radius:6px;flex:0 0 auto;margin:2px 10px 0 0;background:#fff}
@@ -227,7 +232,13 @@ function bangunCbt(soalEl, pernyataan) {
   wrapCbt.className = 'gb-cbt';
   const head = document.createElement('div');
   head.className = 'gb-cbt-head';
-  head.innerHTML = '<span class="gb-cbt-text">Pernyataan</span><span class="gb-cbt-opt">Benar</span><span class="gb-cbt-opt">Salah</span>';
+  const headSrc = ((soalEl.querySelector('table thead') || soalEl.querySelector('table tr'))?.textContent || '').toLowerCase();
+  const pakaiTF = headSrc.includes('true') || headSrc.includes('false');
+  const labB = pakaiTF ? 'True' : 'B';
+  const labS = pakaiTF ? 'False' : 'S';
+  const labHB = pakaiTF ? 'True' : 'Benar';
+  const labHS = pakaiTF ? 'False' : 'Salah';
+  head.innerHTML = '<span class="gb-cbt-text">Pernyataan</span><span class="gb-cbt-opt">' + labHB + '</span><span class="gb-cbt-opt">' + labHS + '</span>';
   wrapCbt.appendChild(head);
   const rows = pernyataan.map((teks, i) => {
     const row = document.createElement('div');
@@ -236,9 +247,9 @@ function bangunCbt(soalEl, pernyataan) {
     txt.className = 'gb-cbt-text';
     txt.textContent = (i + 1) + '. ' + teks;
     const optB = document.createElement('button');
-    optB.type = 'button'; optB.className = 'gb-cbt-btn'; optB.textContent = 'B';
+    optB.type = 'button'; optB.className = 'gb-cbt-btn'; optB.textContent = labB;
     const optS = document.createElement('button');
-    optS.type = 'button'; optS.className = 'gb-cbt-btn'; optS.textContent = 'S';
+    optS.type = 'button'; optS.className = 'gb-cbt-btn'; optS.textContent = labS;
     const cellB = document.createElement('div'); cellB.className = 'gb-cbt-opt'; cellB.appendChild(optB);
     const cellS = document.createElement('div'); cellS.className = 'gb-cbt-opt'; cellS.appendChild(optS);
     row.appendChild(txt); row.appendChild(cellB); row.appendChild(cellS);
@@ -295,12 +306,20 @@ function interaktif(soalEl, root, soalNo, opts) {
   if (kunci.tipe === 'pg' && lis.length >= 2) {
     hint(soalEl, 'Ketuk jawabanmu untuk memeriksa.');
     lis.forEach((li, idx) => {
-      li.addEventListener('click', () => {
+      li.style.cursor = 'pointer';
+      const inp = li.querySelector('input[type=radio],input[type=checkbox]');
+      if (inp) inp.style.pointerEvents = 'none';
+      li.addEventListener('click', (e) => {
         if (soalEl.dataset.done) return;
+        e.preventDefault();
+        e.stopPropagation();
         soalEl.dataset.done = '1';
+        if (inp) inp.checked = true;
         lis.forEach((x, j) => {
+          x.style.pointerEvents = 'none';
           if (j === kunci.pg) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
           else if (j === idx) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
+          else { x.style.opacity = '0.72'; }
         });
         bukaKunci(details, false);
         banner(soalEl, idx === kunci.pg);

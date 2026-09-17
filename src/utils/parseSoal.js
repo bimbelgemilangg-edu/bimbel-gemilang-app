@@ -27,7 +27,7 @@ const stripPrefix = (t) => String(t || '')
   .replace(/^jawaban\s*:\s*/i, '')
   .trim();
 
-const tokenBs = (x) => /^(benar|setuju)$/i.test(x.trim());
+const tokenBs = (x) => /^(benar|setuju|true|ya|t)$/i.test(String(x || '').trim());
 
 export function parseKunci(teks) {
   const body = stripPrefix(teks);
@@ -38,18 +38,35 @@ export function parseKunci(teks) {
       .map((x) => parseInt(x.trim(), 10) - 1).filter((x) => !isNaN(x) && x >= 0);
     if (arr.length) return { tipe: 'multi', multi: arr };
   }
-  const pairs = [...body.matchAll(/([A-D])\s*[:.]?\s*(tidak\s+setuju|setuju|benar|salah)/gi)];
+  // A Benar / B Salah / C True ...
+  const pairs = [...body.matchAll(/([A-E])\s*[:.]?\s*(tidak\s+setuju|setuju|benar|salah|true|false)/gi)];
   if (pairs.length >= 2) return { tipe: 'bs', bs: pairs.map((p) => tokenBs(p[2])) };
-  m = body.match(/^((?:tidak\s+setuju|setuju|benar|salah)(?:\s*,\s*(?:tidak\s+setuju|setuju|benar|salah))+)$/i);
+  // Benar, Salah, Benar  OR  True, False, True, True, False
+  m = body.match(/^((?:tidak\s+setuju|setuju|benar|salah|true|false)(?:\s*,\s*(?:tidak\s+setuju|setuju|benar|salah|true|false))+)$/i);
   if (m) return { tipe: 'bs', bs: m[1].split(',').map(tokenBs) };
-  m = body.match(/^([A-D])$/i);
+  // B,S,B,B  atau  T,F,T,T,F
+  m = body.match(/^([BSTFbstf](?:\s*,\s*[BSTFbstf])+)$/);
+  if (m) {
+    const arr = m[1].split(',').map((x) => {
+      const t = x.trim().toUpperCase();
+      return t === 'B' || t === 'T';
+    });
+    if (arr.length >= 2) return { tipe: 'bs', bs: arr };
+  }
+  // Inanna, Ereshkigal, ... (kategorisasi) — biarkan null di sini, ditangani di renderer
+  m = body.match(/^([A-E])$/i);
   if (m) return { tipe: 'pg', pg: m[1].toUpperCase().charCodeAt(0) - 65 };
   return null;
 }
 
-const isBsHeader = (h) =>
-  h.includes('pernyataan') &&
-  (h.includes('benar') || h.includes('salah') || h.includes('setuju') || /\bts\b/.test(h));
+const isBsHeader = (h) => {
+  const hasStmt = h.includes('pernyataan') || h.includes('statement') || h.includes('pernyataan');
+  const hasBs = h.includes('benar') || h.includes('salah') || h.includes('setuju')
+    || h.includes('true') || h.includes('false') || /\bts\b/.test(h) || /\bt\b/.test(h);
+  // Tabel True/False murni (kolom True & False) tanpa kata Statement
+  const pureTF = h.includes('true') && h.includes('false');
+  return (hasStmt && hasBs) || pureTF;
+};
 
 const isOptionTable = (t) => {
   const rows = [...t.querySelectorAll('tbody tr')];
