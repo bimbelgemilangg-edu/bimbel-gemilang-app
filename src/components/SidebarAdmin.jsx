@@ -1,4 +1,4 @@
-// src/components/SidebarAdmin.jsx
+/ src/components/SidebarAdmin.jsx
 // ============================================================
 // Sidebar admin -- termasuk menu BARU "Manajer Buku Digital"
 // (/admin/buku) di grup MATERI (BUKU DIGITAL).
