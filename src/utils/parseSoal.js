@@ -1,10 +1,12 @@
-// src/utils/parseSoal.js (v3)
-// Mendukung Matematika (Bab 6-7) DAN Bahasa Indonesia (Bab 1-5):
-//  - PG / multi-select / Benar-Salah / Setuju-TidakSetuju
+// src/utils/parseSoal.js (v4)
+// Parser modul HTML -> soal terstruktur + slide PPT. Terverifikasi untuk
+// Matematika (Bab 6-7) DAN Bahasa Indonesia (Bab 1-5):
 //  - kunci: "Jawaban: B", "Pernyataan 1,3,dan 4", "Benar,Benar,Salah",
-//    "A Setuju · B Tidak Setuju", maupun daftar teks ("Gunting dan jarum")
-//  - v3: tabel OPSI (kolom pertama A./B./C./D.) tidak lagi ikut jadi konteks
-//    (hindari opsi tampil dobel), dan sel pernyataan tabel BS tahan kolom label.
+//    "A Salah · B Benar · C Benar", "A Setuju · D Tidak Setuju",
+//    maupun daftar-teks ("Kilo, rebung, dan tunas globa") dicocokkan ke opsi.
+//  - tabel BS dengan header Benar/Salah MAUPUN S/TS.
+//  - v4: langkah <ol> dan list infografik <ul> biasa IKUT jadi konteks soal
+//    (hanya ul.pil, details, tabel pernyataan, dan tabel opsi yang dilewati).
 const bersihTeks = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -49,7 +51,6 @@ const isBsHeader = (h) =>
   h.includes('pernyataan') &&
   (h.includes('benar') || h.includes('salah') || h.includes('setuju') || /\bts\b/.test(h));
 
-// tabel yang kolom pertamanya berisi label opsi A./B./C./D. -> tabel OPSI (bukan stimulus)
 const isOptionTable = (t) => {
   const rows = [...t.querySelectorAll('tbody tr')];
   if (!rows.length || rows.length < 2) return false;
@@ -57,7 +58,6 @@ const isOptionTable = (t) => {
   return hit >= Math.max(1, rows.length - 1);
 };
 
-// ambil sel pernyataan dari baris tabel BS (tahan kolom label pendek seperti "A")
 const statementFromRow = (tr) => {
   const tds = [...tr.children].filter((c) => c.tagName === 'TD');
   if (!tds.length) return '';
@@ -81,12 +81,14 @@ function parseOneSoal(el, idx) {
     return avg > 24;
   });
 
+  // v4: yang dilewati HANYA: details, ul.pil, tabel pernyataan, tabel opsi.
+  // <ol> langkah prosedur & <ul> infografik biasa IKUT masuk konteks.
   const skipNode = (n) => {
     const tag = (n.tagName || '').toUpperCase();
-    if (tag === 'UL' || tag === 'DETAILS' || tag === 'OL') return true;
-    if (n.classList && (n.classList.contains('nbadges') || n.classList.contains('pil'))) return true;
+    if (tag === 'DETAILS') return true;
+    if (tag === 'UL' && n.classList && n.classList.contains('pil')) return true;
     if (n === tabelPernyataan) return true;
-    if (tag === 'TABLE' && isOptionTable(n)) return true;   // v3: buang tabel opsi duplikat
+    if (tag === 'TABLE' && isOptionTable(n)) return true;
     return false;
   };
   const bodyEls = [...el.children].filter((n) => !skipNode(n));
@@ -141,7 +143,6 @@ function parseOneSoal(el, idx) {
   const pernyataanHtml = tipe === 'bs' ? itemsHtml : [];
 
   let kunci = parseKunci(jawabTeks);
-  // fallback: kunci berupa daftar teks pilihan (Bahasa Indonesia)
   if (!kunci && tipe === 'multi' && pilihan.length) {
     const body = stripPrefix(jawabTeks);
     const frag = body.split(/\s*,\s*|\s+dan\s+/i).map(bersihTeks).filter(Boolean);

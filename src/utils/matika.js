@@ -1,7 +1,7 @@
 // src/utils/matika.js (v2)
 // Tipografi matematika: pecahan bertingkat, akar bergaris atas, pecahan unicode.
-// v2 AMAN untuk teks Bahasa Indonesia: TIDAK mengubah "Benar/Salah", "S/TS",
-// "dan/atau", atau tanggal seperti 13/12/2025 menjadi pecahan.
+// v2 AMAN untuk teks Bahasa: "Benar/Salah", "S/TS", "dan/atau", tanggal
+// 13/12/2025, dan satuan seperti Rp25.000/lembar TIDAK diubah jadi pecahan.
 export const CSS_MATIKA = `
 .mk-pec{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 3px;text-align:center}
 .mk-pec-pemb{padding:0 4px 1px;border-bottom:1.5px solid currentColor;font-size:.82em}
@@ -26,7 +26,6 @@ export function percantikMatika(html) {
   const root = doc.getElementById('mk');
   if (!root) return html;
 
-  // regex dibuat per-panggilan supaya lastIndex tidak bocor antar render
   const TOK = '[A-Za-z0-9⁰¹²³⁴⁵⁶⁷⁸⁹²³⁻⁺][A-Za-z0-9⁰¹²³⁴⁵⁶⁷⁸⁹²³⁻⁺.,]*';
   const RE_FRAC = new RegExp(`(\\([^()]{1,24}\\)|${TOK})\\s*\\/\\s*(\\([^()]{1,24}\\)|${TOK})`, 'g');
   const RE_AKAR = /([0-9]{0,2})√\s*(\([^()]{1,24}\)|[0-9A-Za-z⁰¹²³⁴⁵⁶⁷⁸⁹]{1,6}(?:[.,][0-9]{1,4})?)/g;
@@ -35,6 +34,10 @@ export function percantikMatika(html) {
   const nodes = [];
   const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
   while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  const adaAngka = (x) => /\d/.test(x);
+  const paren = (x) => x.startsWith('(');
+  const varPendek = (x) => /^[a-zA-Z]{1,2}$/.test(x);
 
   nodes.forEach((n) => {
     const t = n.nodeValue;
@@ -47,12 +50,15 @@ export function percantikMatika(html) {
     });
 
     s = s.replace(RE_FRAC, (m, a, b, off, full) => {
-      const hasDigit = /\d/.test(a) || /\d/.test(b);
-      if (!hasDigit) return m;                    // "Benar/Salah", "S/TS", "dan/atau" dibiarkan
+      const terima = paren(a) || paren(b)
+        || (adaAngka(a) && adaAngka(b))
+        || (adaAngka(a) && varPendek(b))
+        || (varPendek(a) && adaAngka(b));
+      if (!terima) return m;                       // Rp25.000/lembar, Benar/Salah, dll
       const after = full.slice(off + m.length);
-      if (/^\s*\/\s*\d{2,4}/.test(after)) return m;   // tanggal 13/12/2025 -> jangan
+      if (/^\s*\/\s*\d{2,4}/.test(after)) return m;   // tanggal 13/12/2025
       const before = full.slice(0, off);
-      if (/\d{1,2}\s*\/\s*$/.test(before)) return m;  // bagian kedua tanggal
+      if (/\d{1,2}\s*\/\s*$/.test(before)) return m;
       return pec(a.replace(/[()]/g, ''), b.replace(/[()]/g, ''));
     });
 
