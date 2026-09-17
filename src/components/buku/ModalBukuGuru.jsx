@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
+import RendererHtmlBab from './RendererHtmlBab';
 
 const S = {
   overlay: {
@@ -117,7 +118,13 @@ export default function ModalBukuGuru({ open, onClose }) {
               <div style={S.note}>
                 🔓 Mode guru: semua kunci & pembahasan terbuka untuk persiapan mengajar
               </div>
-              <div style={S.content} dangerouslySetInnerHTML={{ __html: bab.html || 'Belum ada konten' }} />
+              {bab.tipe === 'html' && bab.html ? (
+                <RendererHtmlBab html={bab.html} babId={bab.id} bukuId={bukuId} modePresentasi />
+              ) : bab.pdfUrl ? (
+                <iframe title="pdf" src={bab.pdfUrl} style={{ width: '100%', height: '70vh', border: 'none', borderRadius: 8 }} />
+              ) : (
+                <div style={S.content} dangerouslySetInnerHTML={{ __html: bab.html || 'Belum ada konten' }} />
+              )}
             </div>
           )}
         </div>

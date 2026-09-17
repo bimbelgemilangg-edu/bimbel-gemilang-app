@@ -1,3 +1,4 @@
+
 // src/components/buku/RendererHtmlBab.jsx (v14 — gabungan final)
 // Menggabungkan SEMUA fitur terbaik v11 (Grid CBT Benar/Salah rapi dengan
 // tombol radio bulat per baris + kelas gb-tepat/gb-meleset/gb-kunci) +
@@ -37,7 +38,7 @@ const BASE_STYLE = `
   .gb-wrap .pil{list-style:none;margin:8px 0;padding:0}
   .gb-wrap .pil li{padding:12px 14px;font-size:15px;border-radius:12px;margin:7px 0;border:1.5px solid #e6e9f4;background:#fbfcff;transition:background .15s,border-color .15s;cursor:pointer}
   .gb-wrap .pil li:active{transform:scale(.995)}
-  .gb-wrap .pil li svg{max-height:200px;width:auto;margin:6px auto;display:block}
+  .gb-wrap .pil li svg,.gb-wrap .pil li img{max-height:min(50vh,360px);width:auto;margin:6px auto;display:block}
   .gb-wrap ul.pil.gb-multi li{display:flex;align-items:flex-start}
   .gb-wrap ul.pil.gb-multi li::before{content:"";width:20px;height:20px;border:2px solid #94a3b8;border-radius:6px;flex:0 0 auto;margin:2px 10px 0 0;background:#fff}
   .gb-wrap ul.pil.gb-multi li.gb-dipilih{border-color:#7C3AED;background:#f5f3ff}
@@ -85,8 +86,25 @@ const BASE_STYLE = `
   .gb-wrap td{border:1px solid #e3e6ef;padding:6px 9px}
   .gb-wrap tr:nth-child(even) td{background:#f8fafc}
   .gb-wrap table.bs-hide{display:none}
-  .gb-wrap img,.gb-wrap svg{max-width:100%;max-height:260px;height:auto}
-  .gb-wrap img{display:block;margin:10px auto;border-radius:10px}
+  .gb-wrap img,.gb-wrap svg{max-width:100%;height:auto}
+  .gb-wrap img{display:block;margin:12px auto;border-radius:10px;max-height:min(70vh,560px);object-fit:contain}
+  .gb-wrap svg{max-height:min(70vh,480px);display:block;margin:10px auto}
+  .gb-wrap .rujukan img,.gb-wrap .rujukan svg,.gb-wrap .soal img,.gb-wrap .soal svg{max-height:min(75vh,640px)}
+  .gb-wrap .rujukan{overflow:auto;-webkit-overflow-scrolling:touch}
+  .gb-wrap .fig{max-width:100%;height:auto}
+  .gb-wrap .tanya{font-weight:700;margin:12px 0 8px;font-size:15.5px;line-height:1.55;color:#0f172a}
+  .gb-wrap .nbadges{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+  .gb-wrap .no{min-width:26px;height:26px;padding:0 6px;border-radius:8px;background:#5b4b8a;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .gb-wrap .lvl,.gb-wrap .tipe{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;border-radius:999px;padding:2px 9px}
+  .gb-wrap .lvl.mudah{background:#dcfce7;color:#166534}.gb-wrap .lvl.sedang{background:#fef3c7;color:#92400e}.gb-wrap .lvl.sulit{background:#fee2e2;color:#991b1b}
+  .gb-wrap .tipe{background:#eef2ff;color:#4338ca}
+  .gb-wrap .rujukan{background:#f8fafc;border:1px solid #e2e8f0;border-left:5px solid #4C6EF5;border-radius:12px;padding:12px 14px;margin:8px 0 12px}
+  .gb-wrap .rujukan-lab{font-size:11.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:#4C6EF5;margin:0 0 8px}
+  .gb-wrap .naskah{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px 14px;font-size:14.2px;margin:10px 0;line-height:1.75}
+  .gb-wrap .hero{background:linear-gradient(135deg,#5b4b8a,#4C6EF5);color:#fff;border-radius:18px;padding:22px 20px;margin-bottom:12px}
+  .gb-wrap .hero h1{margin:4px 0 8px;font-size:24px;line-height:1.2}
+  .gb-wrap .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .gb-wrap .chips span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700}
   .gb-wrap .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:18px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:10px 0}
   .gb-wrap .caption{text-align:center;font-size:11.5px;color:#64748b}
   .gb-wrap .vinc{border-top:1.5px solid currentColor;padding:0 2px;margin-left:1px}

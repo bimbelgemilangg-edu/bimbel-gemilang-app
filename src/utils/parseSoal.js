@@ -238,8 +238,15 @@ export const CSS_MODUL = `
 .modmod table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
 .modmod table th{background:#4C6EF5;color:#fff;padding:6px 8px;text-align:left}
 .modmod table td{border:1px solid #e3e6ef;padding:5px 8px}
-.modmod svg,.modmod img{max-width:100%;max-height:260px;height:auto;display:block;margin:6px auto}
-.modmod img{border-radius:10px}
+.modmod svg,.modmod img{max-width:100%;height:auto;display:block;margin:8px auto}
+.modmod img{border-radius:10px;max-height:min(70vh,560px);object-fit:contain}
+.modmod svg{max-height:min(70vh,480px)}
+.modmod .rujukan img,.modmod .rujukan svg,.modmod .soal img,.modmod .soal svg{max-height:min(75vh,640px)}
+.modmod .rujukan{background:#f8fafc;border:1px solid #e2e8f0;border-left:5px solid #4C6EF5;border-radius:12px;padding:12px 14px;margin:8px 0;overflow:auto}
+.modmod .rujukan-lab{font-size:11.5px;font-weight:800;text-transform:uppercase;color:#4C6EF5;margin:0 0 8px}
+.modmod .tanya{font-weight:700;margin:10px 0 8px;font-size:15px;line-height:1.55}
+.modmod .naskah{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px 14px;margin:8px 0;line-height:1.7}
+.modmod .fig{max-width:100%;height:auto}
 .modmod .figslot{border:2px dashed #cbd5e1;border-radius:10px;padding:14px;text-align:center;color:#64748b;font-size:12px;font-weight:700;margin:8px 0}
 .modmod .caption{text-align:center;font-size:11.5px;color:#64748b}
 .modmod .vinc{border-top:1.5px solid currentColor;padding:0 2px;margin-left:1px}
