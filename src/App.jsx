@@ -91,6 +91,8 @@ import DaftarTryOutPage from './pages/student/tryout/DaftarTryOutPage';
 import TryOutView from './pages/student/tryout/TryOutView';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
 import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
+import RankingSiswaPage from './pages/admin/bank-soal/RankingSiswaPage';
+import AuditMateriPage from './pages/admin/bank-soal/AuditMateriPage';
 import BatalkanUjiCobaPage from './pages/admin/bank-soal/BatalkanUjiCobaPage';
 
 // ============================================================
@@ -491,6 +493,14 @@ function App() {
         <Route
           path="/admin/bank-soal/aktivitas-latihan"
           element={<AdminRoute><LatihanAktivitasPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/ranking-siswa"
+          element={<AdminRoute><RankingSiswaPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/audit-materi"
+          element={<AdminRoute><AuditMateriPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/batalkan-uji-coba"

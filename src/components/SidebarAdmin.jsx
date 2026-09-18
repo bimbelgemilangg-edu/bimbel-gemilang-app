@@ -141,6 +141,8 @@ const SidebarAdmin = () => {
         { name: 'Terbitkan Try Out',    path: '/admin/bank-soal/terbitkan-tryout', icon: <Trophy size={18} /> },
         { name: 'Hasil Try Out',        path: '/admin/bank-soal/hasil-tryout',     icon: <Trophy size={18} /> },
         { name: 'Aktivitas Latihan',    path: '/admin/bank-soal/aktivitas-latihan', icon: <Sparkles size={18} /> },
+        { name: 'Ranking Siswa',        path: '/admin/bank-soal/ranking-siswa',     icon: <Trophy size={18} /> },
+        { name: 'Audit Materi',         path: '/admin/bank-soal/audit-materi',      icon: <ClipboardList size={18} /> },
       ]
     },
     {
