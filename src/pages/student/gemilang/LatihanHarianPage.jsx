@@ -22,7 +22,7 @@ import {
 import { ArrowLeft, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
-import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel } from '../../../utils/aksesKontenSiswa';
+import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel, isMapelPenguatanDasar } from '../../../utils/aksesKontenSiswa';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import RenderTable from '../../../components/RenderTable';
@@ -493,6 +493,12 @@ export default function LatihanHarianPage() {
         // kode-nya di koleksi "mapel" (data mapel dihapus/berubah nama),
         // soal itu DILOLOSKAN sementara -- itu masalah data di sisi
         // mapel, bukan alasan buat blokir siswa yang gak salah apa-apa.
+        //
+        // 🔒 BARU: soal Penguatan Dasar (Literasi/Numerasi/Logika) SELALU
+        // lolos pagar ini, gak peduli apa isi koleksi "mapel" -- lihat
+        // isMapelPenguatanDasar() di aksesKontenSiswa.js buat alasan
+        // lengkapnya (bahaya blokir diam-diam kalau kategori ini pernah
+        // kebetulan ketambah sebagai entri guru).
         try {
           const snapMapel = await getDocs(collection(db, 'mapel'));
           const namaKeKode = {};
@@ -501,6 +507,7 @@ export default function LatihanHarianPage() {
             if (m.namaMapel) namaKeKode[m.namaMapel.toLowerCase().trim()] = m.kodeMapel;
           });
           soal = soal.filter((s) => {
+            if (isMapelPenguatanDasar(s.mataPelajaran)) return true;
             const kodeMapelSoal = namaKeKode[(s.mataPelajaran || '').toLowerCase().trim()];
             return cocokkanAksesMapel(enrolledSubjectsSiswa, kodeMapelSoal);
           });

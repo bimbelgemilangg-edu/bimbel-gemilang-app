@@ -64,6 +64,29 @@ export function cocokkanKelas(soal, angkaKelasSiswa) {
   return angkaKelasSoal === angkaKelasSiswa;
 }
 
+// 🔒 PENGUATAN DASAR -- daftar "mapel" yang BUKAN mapel kurikulum
+// sungguhan (gak akan pernah ada di rapor/jadwal/Kelola Guru sebagai
+// mapel formal), tapi sengaja ditawarkan sebagai pilihan di form
+// Import Bank Soal (lihat DAFTAR_MAPEL di ImportHasilScanPage.jsx)
+// khusus buat isi Latihan Harian/Try Out kategori "Penguatan Dasar"
+// (baca, hitung, nalar -- lintas mapel, cocok jadi latihan harian
+// SEMUA siswa apapun Akses Mapel-nya).
+//
+// KENAPA INI HARUS ADA: nama-nama ini TIDAK PERNAH dicentang di Akses
+// Mapel siswa manapun (karena bukan mapel beneran, gak kepikiran buat
+// dicentang). Tanpa whitelist ini, begitu ada admin yang KEBETULAN
+// pernah menambahkan "Literasi" sebagai entri di Kelola Guru (assign
+// tentor ke situ), sistem akan mulai menganggapnya mapel sungguhan
+// dan otomatis MEMBLOKIR SEMUA SISWA dari kategori ini -- padahal
+// niatnya justru sebaliknya (selalu terbuka buat semua). Whitelist ini
+// memastikan 3 kategori ini SELALU lolos, gak peduli data di koleksi
+// "mapel" berubah jadi apa.
+const MAPEL_PENGUATAN_DASAR = ['literasi', 'numerasi', 'logika/berpikir kritis'];
+
+export function isMapelPenguatanDasar(namaMapel) {
+  return MAPEL_PENGUATAN_DASAR.includes(String(namaMapel || '').toLowerCase().trim());
+}
+
 // Cek akses mapel siswa terhadap suatu kodeMapel -- LOGIKA & SEMANTIK
 // SAMA PERSIS dengan hasSubjectAccess() yang sudah dipakai di
 // StudentDashboard.jsx & StudentElearning.jsx (materi/kuis), supaya
@@ -152,6 +175,11 @@ function tokenMapel(raw) {
  * Apakah satu soal boleh dikerjakan siswa berdasarkan enrolledSubjects.
  */
 export function soalCocokMapelSiswa(soal, enrolledSubjects) {
+  // 🔒 Penguatan Dasar (Literasi/Numerasi/Logika) SELALU lolos --
+  // lihat penjelasan lengkap di isMapelPenguatanDasar() di atas.
+  if (isMapelPenguatanDasar(soal.mataPelajaran) || isMapelPenguatanDasar(soal.mapel)) {
+    return true;
+  }
   if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) {
     return false;
   }
