@@ -194,17 +194,41 @@ export function soalCocokMapelSiswa(soal, enrolledSubjects) {
  */
 export function filterSoalTryOutByMapelSiswa(daftarSoal, enrolledSubjects) {
   const list = Array.isArray(daftarSoal) ? daftarSoal : [];
+
+  // 🚨 MODE DARURAT (18 Sep 2026): dulu enrolledSubjects kosong = BLOKIR
+  // SEMUA soal try out ("Tidak ada soal untuk mapelmu"). Ternyata banyak
+  // siswa (kemungkinan siswa lama, dibuat sebelum field "Akses Mapel"
+  // ini ada) belum punya enrolledSubjects terisi di data siswa, jadi
+  // try out mereka jadi kosong total. Sambil admin isi "Akses Mapel"
+  // tiap siswa lewat halaman Edit Siswa, try out TETAP DIBUKA PENUH
+  // (tidak difilter) buat siswa yang enrolledSubjects-nya kosong --
+  // daripada mereka sama sekali tidak bisa mengerjakan. Begitu field
+  // Akses Mapel siswa itu diisi admin, filter mapel otomatis aktif lagi
+  // normal untuk siswa itu.
   if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) {
-    return { soal: [], dibuang: list.length, mapelSiswa: [], alasan: 'Siswa belum punya akses mapel (enrolledSubjects kosong). Hubungi admin.' };
+    return { soal: list, dibuang: 0, mapelSiswa: [], alasan: '' };
   }
+
   if (enrolledSubjects.some((s) => normMapel(s) === 'semua')) {
     return { soal: list, dibuang: 0, mapelSiswa: ['semua'] };
   }
+
   const soal = list.filter((s) => soalCocokMapelSiswa(s, enrolledSubjects));
+
+  // 🚨 MODE DARURAT (18 Sep 2026): kalau siswa SUDAH punya Akses Mapel
+  // tapi hasil filter tetap 0 soal (kemungkinan kode/nama mapel di soal
+  // tidak persis cocok format Akses Mapel siswa), jangan bikin try out
+  // kosong total juga -- tampilkan semua soal biar siswa tetap bisa
+  // mengerjakan, tapi tandai `kemungkinanMismatch: true` biar nanti
+  // gampang dicari mana paket/siswa yang datanya perlu dicek admin.
+  if (soal.length === 0) {
+    return { soal: list, dibuang: 0, mapelSiswa: enrolledSubjects, alasan: '', kemungkinanMismatch: true };
+  }
+
   return {
     soal,
     dibuang: list.length - soal.length,
     mapelSiswa: enrolledSubjects,
-    alasan: soal.length ? '' : 'Tidak ada soal di paket ini yang sesuai mapel yang kamu ikuti. Hubungi admin.',
+    alasan: '',
   };
 }
