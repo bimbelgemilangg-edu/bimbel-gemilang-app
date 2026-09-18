@@ -821,9 +821,42 @@ export default function TryOutView() {
       {/* SOAL */}
       <div style={st.soalCard}>
         <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 700 }}>{soalAktif.materi}</div>
-        {soalAktif.bacaan?.teks && (
-          <div style={{ background: '#f8fafc', borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: '#334155', lineHeight: 1.7, whiteSpace: 'pre-wrap', textAlign: 'left' }}>
-            <RenderMath text={soalAktif.bacaan.teks} />
+        {(soalAktif.bacaan?.teks || (soalAktif.bacaan?.gambar || []).length > 0) && (
+          <div style={{
+            background: 'linear-gradient(180deg, #f8fafc 0%, #fff 100%)',
+            border: '1px solid #e2e8f0',
+            borderRadius: 12,
+            padding: 14,
+            marginBottom: 14,
+            textAlign: 'left',
+            maxHeight: 280,
+            overflowY: 'auto',
+            position: 'sticky',
+            top: 8,
+            zIndex: 2,
+            boxShadow: '0 2px 10px rgba(15,23,42,0.04)',
+          }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#64748b', marginBottom: 8, letterSpacing: 0.3, textTransform: 'uppercase' }}>
+              {(() => {
+                const r = soalAktif.stimulusRentang || soalAktif.bacaan?.rentang;
+                return r ? `Bacaan bersama (no ${r.dari}–${r.sampai})` : 'Bacaan / stimulus';
+              })()}
+            </div>
+            {soalAktif.bacaan?.teks && (
+              <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                <RenderMath text={soalAktif.bacaan.teks} />
+              </div>
+            )}
+            {(soalAktif.bacaan?.gambar || []).length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                {soalAktif.bacaan.gambar.map((g, gi) => {
+                  const url = typeof g === 'string' ? g : g?.url;
+                  if (!url) return null;
+                  return <img key={gi} src={url} alt="" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                })}
+              </div>
+            )}
           </div>
         )}
         <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16, lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}><RenderMath text={soalAktif.soal || soalAktif.teks_soal} /></div>

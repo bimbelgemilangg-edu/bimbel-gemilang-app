@@ -24,6 +24,11 @@ import {
   kelompokkanSoal,
   KATALOG_MAPEL,
 } from '../../../utils/mesinTaksonomiSoal';
+import {
+  tautkanStimulusBersama,
+  ringkasKartuSoal,
+  PROMPT_IDENTITAS_SOAL_AI,
+} from '../../../utils/mesinIdentitasSoal';
 
 const COL = 'bank_soal';
 const BATCH_MAX = 400;
@@ -42,7 +47,7 @@ function keDokumenBank(soalNorm, taksonomi, meta) {
     nomor: soalNorm.nomor ?? null,
     tipe: soalNorm.tipe || 'pg_sederhana',
     teksSoal: soalNorm.teksSoal || soalNorm.soal || '',
-    soal: soalNorm.teksSoal || soalNorm.soal || '', // alias kompatibilitas
+    soal: soalNorm.teksSoal || soalNorm.soal || '',
     opsiJawaban: soalNorm.opsiJawaban || [],
     pernyataan: soalNorm.pernyataan || [],
     tabelBenarSalah: soalNorm.tabelBenarSalah || [],
@@ -50,6 +55,10 @@ function keDokumenBank(soalNorm, taksonomi, meta) {
     kunciJawaban: soalNorm.kunciJawaban || '',
     gambar: soalNorm.gambar || [],
     gambarUrls: (soalNorm.gambar || []).map((g) => (typeof g === 'string' ? g : g?.url)).filter(Boolean),
+    bacaan: soalNorm.bacaan || null,
+    stimulusGrup: soalNorm.stimulusGrup || soalNorm.bacaan?.grup || null,
+    stimulusRentang: soalNorm.stimulusRentang || soalNorm.bacaan?.rentang || null,
+    idLokal: soalNorm.idLokal || null,
     status: 'aktif',
     sumberFile: meta.fileName || '',
     createdAt: serverTimestamp(),
@@ -61,6 +70,7 @@ function keDokumenBank(soalNorm, taksonomi, meta) {
 export default function MesinBankSoalPage() {
   const [isMobile] = useState(window.innerWidth < 1024);
   const [tab, setTab] = useState('impor'); // impor | rapikan
+  const [modeKartu, setModeKartu] = useState(true);
   const [fileName, setFileName] = useState('');
   const [rawText, setRawText] = useState('');
   const [hint, setHint] = useState({
@@ -137,7 +147,7 @@ export default function MesinBankSoalPage() {
       d._key = `new-${i}`;
       return d;
     });
-    setPreview(hasil);
+    setPreview(tautkanStimulusBersama(hasil));
     setPesan(`✅ ${hasil.length} soal siap. Cek kelompok di bawah, lalu simpan.`);
   }
 
@@ -217,7 +227,7 @@ export default function MesinBankSoalPage() {
         }
       }
 
-      setPreview(diubah);
+      setPreview(tautkanStimulusBersama(diubah));
       setPesan(
         diubah.length
           ? `🔍 ${diubah.length} dari ${semua.length} soal akan dirapikan (metadata kosong/tidak lengkap). Review lalu simpan.`
@@ -420,6 +430,40 @@ export default function MesinBankSoalPage() {
                     <span style={st.badge}>{b.jumlah} soal</span>
                   </div>
                   <div style={{ overflowX: 'auto' }}>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button type="button" onClick={() => setModeKartu(true)} style={modeKartu ? st.tabOn : st.tabOff}>Kartu</button>
+                      <button type="button" onClick={() => setModeKartu(false)} style={!modeKartu ? st.tabOn : st.tabOff}>Tabel</button>
+                      <span style={{ fontSize: 11, color: '#94a3b8' }}>Badge 📖 = ada bacaan/stimulus bersama</span>
+                    </div>
+                    {modeKartu ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10, marginBottom: 12 }}>
+                        {b.items.map((s, i) => {
+                          const k = ringkasKartuSoal(s);
+                          return (
+                            <div key={s.idLokal || s.id || i} style={{
+                              border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, background: '#fff',
+                              boxShadow: '0 1px 4px rgba(15,23,42,0.04)',
+                            }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
+                                <span style={{ fontWeight: 800, color: '#4C6EF5', fontSize: 13 }}>No {k.nomor ?? '—'}</span>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>{k.tipe}</span>
+                              </div>
+                              <div style={{ fontSize: 12.5, color: '#1e293b', lineHeight: 1.45, minHeight: 56 }}>{k.preview}</div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                                <span style={{ fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 999 }}>{k.mapel}</span>
+                                <span style={{ fontSize: 10, background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: 999 }}>{k.jenjang}</span>
+                                {k.punyaBacaan && (
+                                  <span style={{ fontSize: 10, background: '#ecfdf5', color: '#047857', padding: '2px 8px', borderRadius: 999 }}>
+                                    📖 {k.rentangLabel || 'bacaan'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
                     <table style={st.table}>
                       <thead>
                         <tr>
@@ -455,6 +499,7 @@ export default function MesinBankSoalPage() {
                         ))}
                       </tbody>
                     </table>
+                    )}
                     {b.items.length > 8 && (
                       <div style={{ fontSize: 11, color: '#94a3b8', padding: '6px 10px' }}>
                         +{b.items.length - 8} soal lain di kelompok ini
