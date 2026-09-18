@@ -336,6 +336,8 @@ function buildMasterHTMLPrompt(meta = {}) {
     jenjang = 'SMA/MA',
     tingkatKelas = '10',
     tingkatKesulitan = 'sedang',
+    jenisUjian = '',
+    tags = '',
     catatanTambahan = '',
   } = meta;
 
@@ -352,14 +354,31 @@ function buildMasterHTMLPrompt(meta = {}) {
 
   return `Kamu adalah asisten ekstraksi dokumen untuk Bank Soal Gemilang. Baca SELURUH PDF/gambar sumber, termasuk semua nomor, gambar, grafik, tabel, rumus, dan pembahasan. Jangan mengarang informasi yang tidak terbaca.
 
-KONTEKS:
+KONTEKS (WAJIB DIPATUHI — metadata produksi Bank Soal Gemilang):
 - Mata pelajaran: ${mataPelajaran}
 - Jenjang: ${jenjang}
 - Kelas: ${tingkatKelas}
+- Jenis ujian: ${jenisUjian || '(umum / tidak diisi)'}
+- Tags/kelompok bank: ${tags || '(kosong)'}
 - Kesulitan default: ${tingkatKesulitan}
 ${catatanTambahan ? `- Catatan admin: ${catatanTambahan}` : ''}
 
+PANDUAN JENIS UJIAN (sangat penting untuk try out otomatis):
+- Jika jenis ujian = tka / prediksi / utbk / snbt: ini BANK UJIAN CAMPURAN, BUKAN ulangan satu bab.
+  * JANGAN mengisi data-kelas kecuali kamu SANGAT yakin materi hanya untuk satu kelas.
+  * JANGAN mengarang bab kurikulum yang tidak ada di sumber; isi data-field="materi" dari topik soal itu (mis. "Konflik sosial", "Norma", "Sosialisasi").
+  * Seluruh soal tetap mapel form (${mataPelajaran}) kecuali dokumen benar-benar multi-mapel.
+- Jika jenis ujian = uh / pts / pas / latihan: data-kelas dan materi/bab boleh lebih spesifik sesuai sumber.
+
+DETEKSI TIPE SOAL (jangan diseragamkan jadi pg_sederhana):
+- Satu jawaban A-E → data-tipe="pg_sederhana"
+- Teks sumber "pilihan jawaban bisa lebih dari satu" / lebih dari satu kunci → data-tipe="pg_kompleks"
+- Tabel Benar/Salah atau centang Benar-Salah → data-tipe="benar_salah"
+- Isian angka/singkat → data-tipe="isian_singkat"
+- Menjodohkan → data-tipe="menjodohkan"
+
 TUJUAN: keluarkan SATU dokumen HTML Master yang dapat langsung di-upload ke Bank Soal Gemilang. Jangan keluarkan JSON, Markdown, atau penjelasan di luar HTML.
+Kualitas produksi: pihak ketiga AI HARUS menjaga nomor berurutan, opsi lengkap, kunci + pembahasan, dan identitas (materi, kesulitan) per soal agar try out otomatis bisa memfilter mapel/jenjang/kelompok dengan benar.
 
 ATURAN WAJIB:
 1. Setiap soal wajib berada di <article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1">.
@@ -3162,7 +3181,7 @@ export default function ImportHasilScanPage() {
   const [jumlahSoalGenerate, setJumlahSoalGenerate] = useState(10);
 
   const generatedPrompt = useMemo(() => {
-    const meta = { mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanTambahan: catatanPrompt };
+    const meta = { mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, jenisUjian, tags, catatanTambahan: catatanPrompt };
     const promptDasar = promptMode === 'html' ? buildMasterHTMLPrompt(meta) : buildMasterPrompt(meta);
 
     if (sumberSoal !== 'generate') return promptDasar;
@@ -3188,7 +3207,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
 
 `;
     return preambleGenerate + promptDasar;
-  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, catatanPrompt, promptMode, sumberSoal, topikGenerate, jumlahSoalGenerate, fasePilihan]);
+  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, jenisUjian, tags, catatanPrompt, promptMode, sumberSoal, topikGenerate, jumlahSoalGenerate, fasePilihan]);
 
   const handleCopyPrompt = useCallback(async () => {
     try {
