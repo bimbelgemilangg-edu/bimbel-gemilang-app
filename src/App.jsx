@@ -94,6 +94,7 @@ import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
 import RankingSiswaPage from './pages/admin/bank-soal/RankingSiswaPage';
 import AuditMateriPage from './pages/admin/bank-soal/AuditMateriPage';
 import BersihkanSoalPage from './pages/admin/bank-soal/BersihkanSoalPage';
+import RapikanLiterasiPage from './pages/admin/bank-soal/RapikanLiterasiPage';
 import BatalkanUjiCobaPage from './pages/admin/bank-soal/BatalkanUjiCobaPage';
 
 // ============================================================
@@ -506,6 +507,10 @@ function App() {
         <Route
           path="/admin/bank-soal/bersihkan-soal"
           element={<AdminRoute><BersihkanSoalPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/rapikan-literasi"
+          element={<AdminRoute><RapikanLiterasiPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/batalkan-uji-coba"
