@@ -130,7 +130,7 @@ export default function DashboardAnalisis() {
   useEffect(() => { muatData(); }, []);
 
   const wrapper = { display: 'flex', background: '#f8fafc', minHeight: '100vh' };
-  const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' };
+  const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', transition: '0.3s' };
 
   if (loading) {
     return (

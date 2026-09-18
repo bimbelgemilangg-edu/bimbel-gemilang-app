@@ -215,7 +215,7 @@ export default function BersihkanSoalPage() {
   }, [tercentang, daftarRusak]);
 
   const wrapper = { display: 'flex', background: '#f8fafc', minHeight: '100vh' };
-  const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: '100%', boxSizing: 'border-box' };
+  const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box' };
   const cardStyle = { background: 'white', border: '1px solid #e5e7eb', borderRadius: 16, padding: 20, marginBottom: 20 };
   const rowStyle = (checked) => ({ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, background: checked ? '#fef2f2' : '#f8fafc', marginBottom: 6, cursor: 'pointer' });
 
