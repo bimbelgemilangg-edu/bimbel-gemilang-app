@@ -133,10 +133,11 @@ const SidebarAdmin = () => {
     {
       label: 'BANK SOAL',
       items: [
-        { name: 'Import dari PDF',      path: '/admin/bank-soal',        icon: <FileUp size={18} /> },
+        { name: 'Mesin Bank Soal', path: '/admin/bank-soal/mesin', icon: <Sparkles size={18} /> },
         { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={18} /> },
         { name: 'Terbitkan Kuis',       path: '/admin/bank-soal/terbitkan', icon: <Rocket size={18} /> },
         { name: 'Hasil Kuis',           path: '/admin/bank-soal/hasil',     icon: <ClipboardCheck size={18} /> },
+        { name: 'Try Out Otomatis', path: '/admin/bank-soal/tryout-otomatis', icon: <Trophy size={18} /> },
         { name: 'Terbitkan Try Out',    path: '/admin/bank-soal/terbitkan-tryout', icon: <Trophy size={18} /> },
         { name: 'Hasil Try Out',        path: '/admin/bank-soal/hasil-tryout',     icon: <Trophy size={18} /> },
         { name: 'Aktivitas Latihan',    path: '/admin/bank-soal/aktivitas-latihan', icon: <Sparkles size={18} /> },
