@@ -146,7 +146,8 @@ const SidebarAdmin = () => {
         { name: 'Bersihkan Soal',       path: '/admin/bank-soal/bersihkan-soal',    icon: <Trash2 size={18} /> },
         { name: 'Rapikan Literasi',     path: '/admin/bank-soal/rapikan-literasi',  icon: <FolderTree size={18} /> },
         { name: 'Taksonomi Materi',     path: '/admin/bank-soal/taksonomi-materi',  icon: <BookMarked size={18} /> },
-        { name: 'Petakan Matematika',   path: '/admin/bank-soal/petakan-matematika', icon: <GitMerge size={18} /> },
+        { name: 'Petakan Materi',       path: '/admin/bank-soal/petakan-matematika', icon: <GitMerge size={18} /> },
+        { name: 'Petakan Mapel (Umum)', path: '/admin/bank-soal/petakan-mapel',      icon: <GitMerge size={18} /> },
       ]
     },
     {

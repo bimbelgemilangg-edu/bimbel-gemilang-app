@@ -57,6 +57,52 @@ const SEED_MATEMATIKA = [
   { kelas: '12', jenjang: 'SMA/MA', fase: 'F', elemen: ['Aljabar dan Fungsi', 'Geometri', 'Analisis Data dan Peluang', 'Kalkulus'], babBaku: ['Limit dan turunan', 'Integral', 'Barisan dan deret', 'Kaidah pencacahan dan peluang', 'Statistika', 'Geometri ruang', 'Matriks', 'Numerasi dan konteks'] },
 ];
 
+// ============================================================
+// SEED BAHASA INDONESIA SMA -- dipatok ke ATP resmi kolaborasi
+// SMAN 10 & SMAN 15 Surabaya (Fase E kelas 10) untuk jenis teks per
+// semester, dilanjut pola umum ATP Fase F (kelas 11-12) yang lazim
+// dipakai sekolah lain. "Pemahaman Bacaan" ditambahkan di tiap kelas
+// karena data TKA/SNBT yang ada justru banyak berupa soal keterampilan
+// membaca (ide pokok, makna kata, simpulan) lintas jenis teks, bukan
+// cuma soal per-genre.
+// ============================================================
+const SEED_BAHASA_INDONESIA = [
+  { kelas: '10', jenjang: 'SMA/MA', fase: 'E', elemen: ['Menyimak', 'Membaca dan Memirsa', 'Berbicara dan Mempresentasikan', 'Menulis'], babBaku: ['Teks Laporan Hasil Observasi', 'Teks Anekdot', 'Teks Eksposisi', 'Teks Hikayat', 'Teks Cerpen', 'Teks Negosiasi', 'Teks Biografi', 'Teks Rekon', 'Teks Puisi', 'Teks Diskusi', 'Pemahaman Bacaan (Ide Pokok, Makna Kata, Simpulan)'] },
+  { kelas: '11', jenjang: 'SMA/MA', fase: 'F', elemen: ['Menyimak', 'Membaca dan Memirsa', 'Berbicara dan Mempresentasikan', 'Menulis'], babBaku: ['Teks Proposal', 'Teks Karya Ilmiah', 'Teks Resensi', 'Drama (Naskah Drama)', 'Kritik dan Esai', 'Pemahaman Bacaan (Ide Pokok, Makna Kata, Simpulan)'] },
+  { kelas: '12', jenjang: 'SMA/MA', fase: 'F', elemen: ['Menyimak', 'Membaca dan Memirsa', 'Berbicara dan Mempresentasikan', 'Menulis'], babBaku: ['Teks Editorial (Opini)', 'Surat Lamaran Kerja', 'Novel dan Kritik Sastra', 'Artikel', 'Pemahaman Bacaan (Ide Pokok, Makna Kata, Simpulan)'] },
+];
+
+// ============================================================
+// SEED SOSIOLOGI SMA (mapel peminatan IPS) -- urutan materi pokok
+// lazim: kelas 10 dasar-dasar interaksi & norma, kelas 11 struktur &
+// dinamika sosial, kelas 12 perubahan sosial & penelitian.
+// ============================================================
+const SEED_SOSIOLOGI = [
+  { kelas: '10', jenjang: 'SMA/MA', fase: 'E', elemen: ['Pemahaman Konsep', 'Keterampilan Proses'], babBaku: ['Konsep Dasar Sosiologi', 'Individu, Kelompok, dan Hubungan Sosial', 'Interaksi Sosial', 'Nilai dan Norma Sosial', 'Sosialisasi dan Pembentukan Kepribadian', 'Penyimpangan Sosial', 'Pengendalian Sosial'] },
+  { kelas: '11', jenjang: 'SMA/MA', fase: 'F', elemen: ['Pemahaman Konsep', 'Keterampilan Proses'], babBaku: ['Struktur Sosial', 'Diferensiasi dan Stratifikasi Sosial', 'Kelompok Sosial', 'Multikulturalisme', 'Konflik Sosial dan Integrasi', 'Mobilitas Sosial'] },
+  { kelas: '12', jenjang: 'SMA/MA', fase: 'F', elemen: ['Pemahaman Konsep', 'Keterampilan Proses'], babBaku: ['Perubahan Sosial', 'Globalisasi', 'Ketimpangan Sosial', 'Pemberdayaan Komunitas', 'Penelitian Sosial'] },
+];
+
+// ============================================================
+// SEED GEOGRAFI SMA (mapel peminatan IPS) -- kelas 10 geografi fisik
+// & alat analisis, kelas 11 sumber daya & kependudukan, kelas 12
+// pola keruangan desa-kota & kerjasama antarnegara.
+// ============================================================
+const SEED_GEOGRAFI = [
+  { kelas: '10', jenjang: 'SMA/MA', fase: 'E', elemen: ['Pemahaman Konsep', 'Keterampilan Proses'], babBaku: ['Konsep dan Prinsip Geografi', 'Peta, Penginderaan Jauh, dan SIG', 'Litosfer dan Vulkanisme', 'Atmosfer dan Iklim', 'Hidrosfer', 'Biosfer (Flora dan Fauna)', 'Kependudukan'] },
+  { kelas: '11', jenjang: 'SMA/MA', fase: 'F', elemen: ['Pemahaman Konsep', 'Keterampilan Proses'], babBaku: ['Flora dan Fauna Dunia', 'Sumber Daya Alam', 'Ketahanan Pangan, Industri, dan Energi', 'Dinamika Kependudukan', 'Keragaman Budaya Indonesia', 'Mitigasi Bencana Alam'] },
+  { kelas: '12', jenjang: 'SMA/MA', fase: 'F', elemen: ['Pemahaman Konsep', 'Keterampilan Proses'], babBaku: ['Pola Keruangan Desa dan Kota', 'Interaksi Desa-Kota', 'Negara Maju dan Berkembang', 'Kerjasama Antarnegara'] },
+];
+
+// Daftar semua mapel yang punya seed siap-pakai -- dipakai buat
+// nampilin tombol "Isi Otomatis" per mapel yang belum ada datanya.
+const SEMUA_SEED = {
+  Matematika: SEED_MATEMATIKA,
+  'Bahasa Indonesia': SEED_BAHASA_INDONESIA,
+  Sosiologi: SEED_SOSIOLOGI,
+  Geografi: SEED_GEOGRAFI,
+};
+
 export default function TaksonomiMateriPage() {
   const [isMobile] = useState(window.innerWidth < 1024);
   const [loading, setLoading] = useState(true);
@@ -87,19 +133,21 @@ export default function TaksonomiMateriPage() {
 
   useEffect(() => { muatData(); }, [muatData]);
 
-  const semaiMatematika = useCallback(async () => {
-    if (!window.confirm(`Isi taksonomi Matematika untuk 12 kelas (SD-SMA)? Ini TIDAK menyentuh koleksi bank_soal sama sekali, cuma bikin rujukan baru.`)) return;
+  const semaiMapel = useCallback(async (namaMapel) => {
+    const seed = SEMUA_SEED[namaMapel];
+    if (!seed) return;
+    if (!window.confirm(`Isi taksonomi ${namaMapel} untuk ${seed.length} kelas? Ini TIDAK menyentuh koleksi bank_soal sama sekali, cuma bikin rujukan baru.`)) return;
     setMenyemai(true);
     try {
       const batch = writeBatch(db);
-      SEED_MATEMATIKA.forEach((item) => {
-        const docId = `Matematika_${item.kelas}`;
-        batch.set(doc(db, 'taksonomi_materi', docId), { mapel: 'Matematika', ...item });
+      seed.forEach((item) => {
+        const docId = `${namaMapel.replace(/\s+/g, '_')}_${item.kelas}`;
+        batch.set(doc(db, 'taksonomi_materi', docId), { mapel: namaMapel, ...item });
       });
       await batch.commit();
-      setPesan('✅ Taksonomi Matematika (12 kelas) berhasil diisi.');
+      setPesan(`✅ Taksonomi ${namaMapel} (${seed.length} kelas) berhasil diisi.`);
       await muatData();
-      setMapelDipilih('Matematika');
+      setMapelDipilih(namaMapel);
     } catch (e) {
       console.error('Gagal menyemai:', e);
       setPesan('❌ Gagal: ' + e.message);
@@ -107,6 +155,8 @@ export default function TaksonomiMateriPage() {
     setMenyemai(false);
     setTimeout(() => setPesan(''), 4000);
   }, [muatData]);
+
+  const mapelBelumDiisi = Object.keys(SEMUA_SEED).filter((m) => !daftar.some((d) => d.mapel === m));
 
   const daftarMapel = [...new Set(daftar.map((d) => d.mapel))].sort();
   const daftarKelasUntukMapel = daftar
@@ -160,17 +210,24 @@ export default function TaksonomiMateriPage() {
           </p>
         </div>
 
-        {daftar.length === 0 && !loading && (
-          <div style={{ ...cardStyle, background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ fontSize: 13, color: '#374151' }}>Belum ada taksonomi tersimpan. Mulai dari Matematika (volume terbesar di bank soal kamu).</div>
-            <button
-              onClick={semaiMatematika}
-              disabled={menyemai}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#5B2ECC', color: 'white', border: 'none', borderRadius: 10, padding: '9px 16px', fontWeight: 700, fontSize: 12.5, cursor: menyemai ? 'default' : 'pointer' }}
-            >
-              {menyemai ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />}
-              Isi Otomatis Matematika (12 Kelas)
-            </button>
+        {mapelBelumDiisi.length > 0 && (
+          <div style={{ ...cardStyle, background: '#f5f3ff' }}>
+            <div style={{ fontSize: 13, color: '#374151', marginBottom: 10 }}>
+              {daftar.length === 0 ? 'Belum ada taksonomi tersimpan.' : 'Ada mapel lain yang sudah punya rujukan siap-pakai:'}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {mapelBelumDiisi.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => semaiMapel(m)}
+                  disabled={menyemai}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#5B2ECC', color: 'white', border: 'none', borderRadius: 10, padding: '9px 16px', fontWeight: 700, fontSize: 12.5, cursor: menyemai ? 'default' : 'pointer' }}
+                >
+                  {menyemai ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />}
+                  Isi Otomatis {m} ({SEMUA_SEED[m].length} kelas)
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {pesan && <div style={{ ...cardStyle, color: pesan.startsWith('✅') ? '#166534' : '#dc2626' }}>{pesan}</div>}
@@ -187,9 +244,9 @@ export default function TaksonomiMateriPage() {
                 <option value="">Pilih kelas</option>
                 {daftarKelasUntukMapel.map((k) => <option key={k} value={k}>Kelas {k}</option>)}
               </select>
-              {mapelDipilih === 'Matematika' && (
-                <button onClick={semaiMatematika} disabled={menyemai} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, background: '#f1f5f9', color: '#5B2ECC', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 14px', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-                  <Sparkles size={13} /> Isi ulang seed Matematika
+              {SEMUA_SEED[mapelDipilih] && (
+                <button onClick={() => semaiMapel(mapelDipilih)} disabled={menyemai} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, background: '#f1f5f9', color: '#5B2ECC', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 14px', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                  <Sparkles size={13} /> Isi ulang seed {mapelDipilih}
                 </button>
               )}
             </div>
