@@ -11,7 +11,7 @@ import {
   CreditCard, FileText, Settings, LogOut, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
-  UploadCloud, Trash2, FolderTree
+  UploadCloud, Trash2, FolderTree, BookMarked
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -145,6 +145,7 @@ const SidebarAdmin = () => {
         { name: 'Audit Materi',         path: '/admin/bank-soal/audit-materi',      icon: <ClipboardList size={18} /> },
         { name: 'Bersihkan Soal',       path: '/admin/bank-soal/bersihkan-soal',    icon: <Trash2 size={18} /> },
         { name: 'Rapikan Literasi',     path: '/admin/bank-soal/rapikan-literasi',  icon: <FolderTree size={18} /> },
+        { name: 'Taksonomi Materi',     path: '/admin/bank-soal/taksonomi-materi',  icon: <BookMarked size={18} /> },
       ]
     },
     {
