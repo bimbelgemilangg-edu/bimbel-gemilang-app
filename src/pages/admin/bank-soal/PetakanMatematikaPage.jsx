@@ -15,16 +15,17 @@
 // Literasi yang langsung otomatis, karena di sini potensi salah
 // tebak lebih tinggi (tidak ada pola string yang pasti).
 //
-// Soal dengan tingkatKelas spesifik (1-12) dicocokkan ke bab kelas
-// itu saja. Soal dengan tingkatKelas "Semua" (biasanya TKA/SNBT
-// lintas kelas) dicocokkan ke GABUNGAN bab kelas 10-12 -- konsisten
-// dengan aturan akses yang sudah ada (TKA/SNBT/UTBK memang lintas
-// kelas dalam 1 jenjang, lihat cocokkanKelas() di aksesKontenSiswa.js).
+// Soal dengan tingkatKelas spesifik (1-9) dicocokkan ke bab kelas
+// itu saja. Soal kelas 10/11/12 SELALU dicocokkan ke GABUNGAN bab
+// kelas 10-12 -- konsisten dengan aturan akses yang sudah ada
+// (TKA/SNBT/UTBK memang lintas kelas dalam 1 jenjang, lihat
+// cocokkanKelas() di aksesKontenSiswa.js), dan ternyata banyak soal
+// yang ditag kelas 12 isinya materi kelas 10/11 juga.
 //
-// Kelompok yang skor kecocokannya 0 (gak ketemu kata kunci yang
-// nyambung sama bab manapun) TIDAK diberi saran otomatis -- admin
-// wajib pilih manual atau biarkan, supaya gak ada tebakan sembarangan
-// yang lolos tanpa disadari.
+// Kelompok yang skor kecocokannya rendah (gak ketemu kata kunci yang
+// nyambung cukup kuat sama bab manapun) TIDAK diberi saran otomatis --
+// admin wajib pilih manual atau biarkan, supaya gak ada tebakan
+// sembarangan yang lolos tanpa disadari.
 //
 // 🔒 NON-DESTRUKTIF: cuma mengubah field `materi` (+ menyimpan nilai
 // asli di `materiAsliSebelumRapi`), tidak menghapus apa pun. Tetap
@@ -38,6 +39,12 @@ import { collection, getDocs, query, where, doc, writeBatch } from 'firebase/fir
 import { Loader2, ScanSearch, GitMerge, Sparkles } from 'lucide-react';
 
 const BIARKAN = '(biarkan, jangan diubah)';
+const AMBANG_YAKIN = 7; // skor minimal (skala 0-10) biar dianggap "cukup yakin" buat disarankan otomatis
+
+// Kata sambung yang HARUS diabaikan -- tanpa ini, dua topik yang gak
+// ada hubungannya bisa keanggap "mirip" cuma gara-gara sama-sama
+// punya kata "dan"/"yang"/dst.
+const KATA_SAMBUNG = new Set(['dan', 'atau', 'yang', 'dalam', 'dari', 'ke', 'di', 'pada', 'untuk', 'dengan', 'sampai', 'adalah', 'ini', 'itu', 'antara', 'serta', 'oleh', 'secara', 'terhadap', 'akan', 'juga']);
 
 function normalisasi(s) {
   return String(s || '')
@@ -49,16 +56,29 @@ function normalisasi(s) {
     .trim();
 }
 
+// Kata "bermakna" -- buang kata sambung & kata terlalu pendek.
+function ambilKataBermakna(s) {
+  return normalisasi(s).split(' ').filter((w) => w.length > 2 && !KATA_SAMBUNG.has(w));
+}
+
+// 🔥 FIX ke-3: skor sebelumnya (jumlah kata cocok x3, bonus cuma
+// kalau SEMUA kata bab ketemu persis) bikin banyak kecocokan JELAS
+// BENAR malah gagal disarankan -- mis. "Pecahan" (1 kata) vs bab
+// "Pecahan dan desimal" (2 kata) cuma dapat skor 3, di bawah ambang,
+// padahal itu jelas cocok. Sekarang pakai RASIO: seberapa besar
+// bagian dari sisi yang LEBIH PENDEK (materi lama ATAU nama bab)
+// yang ketemu di sisi lainnya. "Pecahan" yang 1 katanya nyambung
+// penuh ke "pecahan dan desimal" jadi rasio 1.0 (skor 10) -- jauh
+// lebih masuk akal buat kasus istilah pendek vs istilah lengkap.
 function skorCocok(materiLama, bab) {
-  const a = normalisasi(materiLama);
-  const b = normalisasi(bab);
-  if (!a || !b) return 0;
-  let skor = 0;
-  if (a.includes(b) || b.includes(a)) skor += 10; // salah satu memuat yang lain -- indikasi kuat
-  const kataB = new Set(b.split(' ').filter((w) => w.length > 2));
-  const kataA = new Set(a.split(' '));
-  kataB.forEach((w) => { if (kataA.has(w)) skor += 2; });
-  return skor;
+  const kataA = new Set(ambilKataBermakna(materiLama));
+  const kataB = new Set(ambilKataBermakna(bab));
+  if (kataA.size === 0 || kataB.size === 0) return 0;
+  let overlap = 0;
+  kataB.forEach((w) => { if (kataA.has(w)) overlap++; });
+  if (overlap === 0) return 0;
+  const rasio = overlap / Math.min(kataA.size, kataB.size);
+  return Math.round(rasio * 10);
 }
 
 function cariBabTerbaik(materiLama, daftarBab) {
@@ -104,22 +124,32 @@ export default function PetakanMatematikaPage() {
 
       // Kelompokkan per (kelasKey, materiLama) -- kelasKey menentukan
       // pool bab yang jadi kandidat pencocokan.
+      //
+      // 🔥 FIX ke-4: kelas 10/11/12 SELALU pakai pool GABUNGAN
+      // (bukan taksonomi kelasnya sendiri-sendiri) -- soal SMA yang
+      // ditag "kelas 12" ternyata sering isinya materi kelas 10/11
+      // juga (mis. "Eksponen dan logaritma" itu materi kelas 10,
+      // tapi banyak soal review/TKA yang ditag kelas 12). Kalau
+      // dibatasi ke taksonomi kelas 12 doang, banyak yang gagal
+      // ketemu padahal jelas cocok ke bab kelas lain dalam jenjang
+      // SMA yang sama.
+      const KELAS_SMA = new Set(['10', '11', '12']);
       const peta = new Map();
       semua.forEach((s) => {
         const kelasAsli = String(s.tingkatKelas || '').trim();
-        const punyaTaksonomiSendiri = !!babPerKelas[kelasAsli];
-        const kelasKey = punyaTaksonomiSendiri ? kelasAsli : 'SMA_GABUNGAN';
-        const opsiBab = punyaTaksonomiSendiri ? babPerKelas[kelasAsli] : babGabunganSMA;
+        const pakaiGabungan = KELAS_SMA.has(kelasAsli) || !babPerKelas[kelasAsli];
+        const kelasKey = pakaiGabungan ? 'SMA_GABUNGAN' : kelasAsli;
+        const opsiBab = pakaiGabungan ? babGabunganSMA : babPerKelas[kelasAsli];
         const kunci = `${kelasKey}|||${s.materi.trim()}`;
         if (!peta.has(kunci)) {
-          peta.set(kunci, { kelasKey, kelasLabel: punyaTaksonomiSendiri ? `Kelas ${kelasAsli}` : 'Kelas 10-12 (gabungan/TKA)', opsiBab, materiLama: s.materi.trim(), ids: [] });
+          peta.set(kunci, { kelasKey, kelasLabel: pakaiGabungan ? 'Kelas 10-12 (gabungan/TKA)' : `Kelas ${kelasAsli}`, opsiBab, materiLama: s.materi.trim(), ids: [] });
         }
         peta.get(kunci).ids.push(s.id);
       });
 
       const hasil = [...peta.values()].map((g) => {
         const { bab, skor } = cariBabTerbaik(g.materiLama, g.opsiBab);
-        return { ...g, kunci: `${g.kelasKey}|||${g.materiLama}`, jumlah: g.ids.length, skor, pilihan: skor > 0 ? bab : BIARKAN };
+        return { ...g, kunci: `${g.kelasKey}|||${g.materiLama}`, jumlah: g.ids.length, skor, pilihan: skor >= AMBANG_YAKIN ? bab : BIARKAN };
       }).sort((a, b) => b.jumlah - a.jumlah);
 
       setKelompok(hasil);
@@ -137,7 +167,7 @@ export default function PetakanMatematikaPage() {
   };
 
   const jumlahAkanDiubah = useMemo(() => kelompok.filter((k) => k.pilihan !== BIARKAN).reduce((acc, k) => acc + k.jumlah, 0), [kelompok]);
-  const jumlahTanpaSaran = useMemo(() => kelompok.filter((k) => k.skor === 0).length, [kelompok]);
+  const jumlahTanpaSaran = useMemo(() => kelompok.filter((k) => k.skor < AMBANG_YAKIN).length, [kelompok]);
 
   const terapkanPemetaan = useCallback(async () => {
     const dipetakan = kelompok.filter((k) => k.pilihan !== BIARKAN);
@@ -225,10 +255,10 @@ export default function PetakanMatematikaPage() {
 
             <div style={cardStyle}>
               {kelompok.map((k) => (
-                <div key={k.kunci} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, background: k.skor === 0 ? '#fffbeb' : '#f8fafc', marginBottom: 8, flexWrap: 'wrap' }}>
+                <div key={k.kunci} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, background: k.skor < AMBANG_YAKIN ? '#fffbeb' : '#f8fafc', marginBottom: 8, flexWrap: 'wrap' }}>
                   <div style={{ flex: 1, minWidth: 220 }}>
                     <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{k.materiLama}</div>
-                    <div style={{ fontSize: 10.5, color: '#9ca3af' }}>{k.kelasLabel} · {k.jumlah} soal {k.skor === 0 && <span style={{ color: '#d97706', fontWeight: 700 }}>· tanpa saran</span>}</div>
+                    <div style={{ fontSize: 10.5, color: '#9ca3af' }}>{k.kelasLabel} · {k.jumlah} soal {k.skor < AMBANG_YAKIN && <span style={{ color: '#d97706', fontWeight: 700 }}>· tanpa saran</span>}</div>
                   </div>
                   <select value={k.pilihan} onChange={(e) => ubahPilihan(k.kunci, e.target.value)} style={selectStyle}>
                     <option value={BIARKAN}>{BIARKAN}</option>
