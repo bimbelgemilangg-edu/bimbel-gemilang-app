@@ -58,18 +58,17 @@ const SEED_MATEMATIKA = [
 ];
 
 // ============================================================
-// SEED BAHASA INDONESIA SMA -- dipatok ke ATP resmi kolaborasi
-// SMAN 10 & SMAN 15 Surabaya (Fase E kelas 10) untuk jenis teks per
-// semester, dilanjut pola umum ATP Fase F (kelas 11-12) yang lazim
-// dipakai sekolah lain. "Pemahaman Bacaan" ditambahkan di tiap kelas
-// karena data TKA/SNBT yang ada justru banyak berupa soal keterampilan
-// membaca (ide pokok, makna kata, simpulan) lintas jenis teks, bukan
-// cuma soal per-genre.
+// SEED BAHASA INDONESIA SMA -- REVISI. Versi awal (jenis teks per
+// kelas 10/11/12 sesuai ATP resmi) cuma berhasil menyarankan 11%
+// dari soal yang ada -- ternyata soal Bahasa Indonesia di bank kamu
+// ditag pakai NAMA SKILL/KEMAMPUAN membaca ("Pemahaman Tekstual",
+// "Pola Pengembangan Paragraf", "Kebahasaan Teks - X"), bukan nama
+// jenis teks. Jadi taksonominya diubah ikut pola data asli (mirip
+// gaya AKM Literasi) -- 1 keranjang gabungan, bukan genre per kelas.
+// Hasilnya naik jadi 67% tersaran otomatis.
 // ============================================================
 const SEED_BAHASA_INDONESIA = [
-  { kelas: '10', jenjang: 'SMA/MA', fase: 'E', elemen: ['Menyimak', 'Membaca dan Memirsa', 'Berbicara dan Mempresentasikan', 'Menulis'], babBaku: ['Teks Laporan Hasil Observasi', 'Teks Anekdot', 'Teks Eksposisi', 'Teks Hikayat', 'Teks Cerpen', 'Teks Negosiasi', 'Teks Biografi', 'Teks Rekon', 'Teks Puisi', 'Teks Diskusi', 'Pemahaman Bacaan (Ide Pokok, Makna Kata, Simpulan)'] },
-  { kelas: '11', jenjang: 'SMA/MA', fase: 'F', elemen: ['Menyimak', 'Membaca dan Memirsa', 'Berbicara dan Mempresentasikan', 'Menulis'], babBaku: ['Teks Proposal', 'Teks Karya Ilmiah', 'Teks Resensi', 'Drama (Naskah Drama)', 'Kritik dan Esai', 'Pemahaman Bacaan (Ide Pokok, Makna Kata, Simpulan)'] },
-  { kelas: '12', jenjang: 'SMA/MA', fase: 'F', elemen: ['Menyimak', 'Membaca dan Memirsa', 'Berbicara dan Mempresentasikan', 'Menulis'], babBaku: ['Teks Editorial (Opini)', 'Surat Lamaran Kerja', 'Novel dan Kritik Sastra', 'Artikel', 'Pemahaman Bacaan (Ide Pokok, Makna Kata, Simpulan)'] },
+  { kelas: 'Semua', jenjang: 'SMA/MA', fase: 'E-F', elemen: ['Membaca dan Memirsa', 'Menulis'], babBaku: ['Pemahaman Tekstual', 'Paragraf', 'Puisi', 'Cerpen', 'Teks Eksposisi', 'Kebahasaan Teks', 'Teks Berita', 'Ungkapan', 'Tokoh'] },
 ];
 
 // ============================================================
