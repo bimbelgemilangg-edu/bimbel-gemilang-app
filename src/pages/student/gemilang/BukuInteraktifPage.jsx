@@ -9,19 +9,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, limit } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, limit } from 'firebase/firestore';
 import { ArrowLeft, BookOpen, ChevronRight, Clock3, Play, Search } from 'lucide-react';
 import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas } from '../../../utils/aksesKontenSiswa';
 import MaskotAstronot from '../../../components/MaskotAstronot';
 // 🔥 BARU: pintu sesi live di dalam menu Buku Digital
 import PanelSesiLiveSiswa from '../../../components/buku/PanelSesiLiveSiswa';
 
+function normalisasiJenjang(raw) {
+  const value = String(raw || '').toLowerCase();
+  if (value.includes('smp') || value.includes('mts')) return 'smp';
+  if (value.includes('sma') || value.includes('ma') || value.includes('smk')) return 'sma';
+  if (value.includes('sd') || value.includes('mi')) return 'sd';
+  return '';
+}
+
 export default function BukuInteraktifPage() {
   const navigate = useNavigate();
   const { bukuId } = useParams();
   const studentId = localStorage.getItem('studentId') || '';
+  const studentDocId = localStorage.getItem('studentDocId') || '';
   const studentKelas = localStorage.getItem('studentKelas') || localStorage.getItem('studentGrade') || '';
   const [jenjang, setJenjang] = useState(null);
+  const [profilSiap, setProfilSiap] = useState(false);
   const [books, setBooks] = useState([]);
   const [babList, setBabList] = useState([]);
   const [progresMap, setProgresMap] = useState({});
@@ -36,9 +46,20 @@ export default function BukuInteraktifPage() {
       let jenjangSiswa = null;
       try {
         const snap = await getDocs(query(collection(db, 'students'), where('studentId', '==', studentId), limit(1)));
-        if (!snap.empty) jenjangSiswa = snap.docs[0].data().jenjang || null;
+        if (!snap.empty) jenjangSiswa = snap.docs[0].data().jenjang || snap.docs[0].data().programType || null;
       } catch (e) { console.error('Gagal ambil jenjang siswa:', e); }
-      setJenjang(jenjangSiswa);
+      if (!jenjangSiswa && studentDocId) {
+        try {
+          const byId = await getDoc(doc(db, 'students', studentDocId));
+          if (byId.exists()) {
+            const data = byId.data();
+            jenjangSiswa = data.jenjang || data.programType || null;
+          }
+        } catch (e) { console.error('Gagal ambil profil berdasarkan docId:', e); }
+      }
+      const fallback = normalisasiJenjang(studentKelas);
+      setJenjang(normalisasiJenjang(jenjangSiswa) || fallback || null);
+      setProfilSiap(true);
       try {
         const snapP = await getDocs(query(collection(db, 'siswa_buku_progress'), where('studentId', '==', studentId)));
         const m = {};
@@ -46,7 +67,7 @@ export default function BukuInteraktifPage() {
         setProgresMap(m);
       } catch (e) { console.error('Gagal muat progres buku:', e); }
     })();
-  }, [studentId]);
+  }, [studentId, studentDocId, studentKelas]);
 
   useEffect(() => {
     (async () => {
@@ -205,7 +226,7 @@ export default function BukuInteraktifPage() {
             <ChevronRight size={17} color="#7C3AED" />
           </button>
         )}
-        {loading ? (
+        {loading || !profilSiap ? (
           <div style={st.kosong}>Memuat rak buku...</div>
         ) : bukuTerlihat.length === 0 ? (
           <div style={st.kosong}>
