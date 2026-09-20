@@ -12,15 +12,15 @@
 // lompat langsung ke bab atau isi soal tertentu tanpa drill-down
 // manual dari atas.
 //
-// 🔒 READ-ONLY: halaman ini cuma menampilkan, tidak mengubah data
-// bank_soal sama sekali. Aman dibuka kapan saja.
+// 🔒 READ-ONLY untuk sebagian besar halaman -- pengecualian satu-
+// satunya adalah tombol "Gabungkan jadi IPA" (lihat di bawah).
 // ============================================================
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import { Loader2, ChevronRight, Search, GraduationCap, BookOpen, FolderOpen, FileText } from 'lucide-react';
+import { collection, getDocs, doc, writeBatch } from 'firebase/firestore';
+import { Loader2, ChevronRight, Search, GraduationCap, BookOpen, FolderOpen, FileText, AlertTriangle } from 'lucide-react';
 
 const URUTAN_JENJANG = ['SD/MI', 'SMP/MTs', 'SMA/MA'];
 
@@ -42,6 +42,8 @@ export default function LemariSoalPage() {
   const [mapelAktif, setMapelAktif] = useState(null);
   const [materiAktif, setMateriAktif] = useState(null);
   const [cari, setCari] = useState('');
+  const [menggabung, setMenggabung] = useState(false);
+  const [pesanGabung, setPesanGabung] = useState('');
 
   const muat = useCallback(async () => {
     setLoading(true);
@@ -104,6 +106,35 @@ export default function LemariSoalPage() {
       ((s.materi || '').trim() || '(Belum diatur)') === materiAktif
     );
   }, [semuaSoal, jenjangAktif, mapelAktif, materiAktif]);
+
+  // ---------------- Koreksi: IPA SMP yang kepisah jadi Fisika/Kimia/Biologi ----------------
+  // Kurikulum SMP (dulu maupun Kurikulum Merdeka) menggabungkan IPA jadi
+  // 1 mapel -- pemisahan Fisika/Kimia/Biologi baru mulai di SMA. Soal
+  // SMP yang ke-tag salah satu dari 3 itu berarti salah tag dari sesi
+  // impor lama, bukan struktur yang benar.
+  const soalIpaSalahTagSMP = useMemo(() => {
+    return semuaSoal.filter((s) => s.jenjang === 'SMP/MTs' && ['Fisika', 'Kimia', 'Biologi'].includes(s.mataPelajaran));
+  }, [semuaSoal]);
+
+  const gabungkanJadiIPA = useCallback(async () => {
+    if (soalIpaSalahTagSMP.length === 0) return;
+    if (!window.confirm(`Ubah mataPelajaran ${soalIpaSalahTagSMP.length} soal SMP (Fisika/Kimia/Biologi) jadi "IPA"? Nilai materi/bab masing-masing soal TIDAK diubah, cuma label mapelnya.`)) return;
+    setMenggabung(true);
+    try {
+      for (let i = 0; i < soalIpaSalahTagSMP.length; i += 400) {
+        const potongan = soalIpaSalahTagSMP.slice(i, i + 400);
+        const batch = writeBatch(db);
+        potongan.forEach((s) => batch.update(doc(db, 'bank_soal', s.id), { mataPelajaran: 'IPA', mataPelajaranSebelumDigabung: s.mataPelajaran }));
+        await batch.commit();
+      }
+      setPesanGabung(`✅ ${soalIpaSalahTagSMP.length} soal berhasil digabung jadi IPA.`);
+      await muat();
+    } catch (e) {
+      console.error('Gagal menggabungkan:', e);
+      setPesanGabung('❌ Gagal: ' + e.message);
+    }
+    setMenggabung(false);
+  }, [soalIpaSalahTagSMP, muat]);
 
   // ---------------- Pencarian cepat lintas semua level ----------------
   const hasilCari = useMemo(() => {
@@ -186,6 +217,18 @@ export default function LemariSoalPage() {
             {jenjangAktif && !mapelAktif && (
               <div style={cardStyle}>
                 <div style={{ fontWeight: 800, fontSize: 13, color: '#374151', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><BookOpen size={15} /> Pilih Mapel di {jenjangAktif}</div>
+                {jenjangAktif === 'SMP/MTs' && soalIpaSalahTagSMP.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '10px 14px', marginBottom: 12, flexWrap: 'wrap' }}>
+                    <AlertTriangle size={15} color="#d97706" style={{ flexShrink: 0 }} />
+                    <div style={{ fontSize: 12, color: '#92400e', flex: 1 }}>
+                      {soalIpaSalahTagSMP.length} soal SMP masih terpisah Fisika/Kimia/Biologi -- di kurikulum SMP harusnya digabung jadi 1 mapel "IPA".
+                    </div>
+                    <button onClick={gabungkanJadiIPA} disabled={menggabung} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#d97706', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontWeight: 700, fontSize: 12, cursor: menggabung ? 'default' : 'pointer' }}>
+                      {menggabung ? <Loader2 size={13} className="spin" /> : null} Gabungkan jadi IPA
+                    </button>
+                  </div>
+                )}
+                {pesanGabung && <div style={{ fontSize: 12.5, marginBottom: 10, color: pesanGabung.startsWith('✅') ? '#166534' : '#dc2626' }}>{pesanGabung}</div>}
                 {daftarMapel.map((m) => (
                   <div key={m.nama} style={rakStyle} onClick={() => pilihMapel(m.nama)}>
                     <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>{m.nama}</span>
