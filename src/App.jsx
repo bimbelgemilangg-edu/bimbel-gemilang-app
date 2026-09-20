@@ -98,6 +98,7 @@ import RapikanLiterasiPage from './pages/admin/bank-soal/RapikanLiterasiPage';
 import TaksonomiMateriPage from './pages/admin/bank-soal/TaksonomiMateriPage';
 import PetakanMatematikaPage from './pages/admin/bank-soal/PetakanMatematikaPage';
 import PetakanMapelPage from './pages/admin/bank-soal/PetakanMapelPage';
+import LemariSoalPage from './pages/admin/bank-soal/LemariSoalPage';
 import BatalkanUjiCobaPage from './pages/admin/bank-soal/BatalkanUjiCobaPage';
 
 // ============================================================
@@ -526,6 +527,10 @@ function App() {
         <Route
           path="/admin/bank-soal/petakan-mapel"
           element={<AdminRoute><PetakanMapelPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/lemari-soal"
+          element={<AdminRoute><LemariSoalPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/batalkan-uji-coba"

@@ -11,7 +11,7 @@ import {
   CreditCard, FileText, Settings, LogOut, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
-  UploadCloud, Trash2, FolderTree, BookMarked, GitMerge
+  UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
@@ -124,9 +124,7 @@ const SidebarAdmin = () => {
       label: '📖 MATERI (BUKU DIGITAL)',
       items: [
         { name: 'Kelola Materi/Modul', path: '/admin/portal/materi', icon: <BookOpen size={18} /> },
-        // 🔥 BARU: pintu operasional Buku Interaktif Digital
         { name: 'Manajer Buku Digital', path: '/admin/buku', icon: <BookOpen size={18} /> },
-        // 🔥 v5: unggah banyak modul PDF sekaligus -> otomatis jadi bab
         { name: 'Impor Modul (PDF)', path: '/admin/buku/impor', icon: <UploadCloud size={18} /> },
       ]
     },
@@ -148,6 +146,7 @@ const SidebarAdmin = () => {
         { name: 'Taksonomi Materi',     path: '/admin/bank-soal/taksonomi-materi',  icon: <BookMarked size={18} /> },
         { name: 'Petakan Materi',       path: '/admin/bank-soal/petakan-matematika', icon: <GitMerge size={18} /> },
         { name: 'Petakan Mapel (Umum)', path: '/admin/bank-soal/petakan-mapel',      icon: <GitMerge size={18} /> },
+        { name: 'Lemari Soal',          path: '/admin/bank-soal/lemari-soal',       icon: <Archive size={18} /> },
       ]
     },
     {
