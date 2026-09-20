@@ -106,23 +106,48 @@ const GROUP_ITEM_KEYS = ['soal', 'soals', 'questions', 'items', 'data'];
 // diperbarui juga supaya tetap sinkron (satu sumber kebenaran).
 // ============================================================
 
-function buildMasterPrompt(meta = {}) {
+// ===========================================function buildMasterHTMLPrompt(meta = {}) {
   const {
     mataPelajaran = 'Matematika',
     jenjang = 'SMA/MA',
     tingkatKelas = '10',
     tingkatKesulitan = 'sedang',
+    jenisUjian = '',
+    tags = '',
     catatanTambahan = '',
+    babBaku = [],
   } = meta;
 
-  return `Kamu adalah asisten yang mengubah dokumen soal ujian (PDF/gambar hasil scan) menjadi JSON terstruktur untuk sistem "Bank Soal Gemilang". Ikuti skema di bawah ini SECARA PERSIS — skema ini diambil langsung dari kode sistem (ImportHasilScanPage.jsx), bukan dari bentuk asli dokumen sumber. Tujuannya JSON yang kamu hasilkan bisa langsung di-upload dan sejalan dengan sistem, tanpa perlu diedit manual.
+  // 🔥 BARU (Langkah 7 -- pagar materi): kalau Taksonomi Materi untuk
+  // mapel+kelas ini sudah ada isinya, sisipkan sebagai daftar PILIHAN
+  // buat data-field="materi" -- AI diarahkan MEMILIH dari sini dulu,
+  // bukan langsung ngarang nama bab sendiri. Ini akar dari masalah
+  // "materi beranak terus" yang sudah dibereskan berkali-kali secara
+  // manual (Rapikan Literasi, Petakan Matematika, dst) -- daripada
+  // beres-beres lagi tiap kali, sekarang dicegah dari titik masuknya.
+  const instruksiBabBaku = babBaku.length > 0 ? `
 
-KONTEKS SOAL INI:
-- Mata pelajaran: ${mataPelajaran}
-- Jenjang: ${jenjang}
-- Kelas: ${tingkatKelas}
-- Tingkat kesulitan default (kalau tidak bisa dinilai per soal): ${tingkatKesulitan}
-${catatanTambahan ? `- Catatan tambahan dari admin: ${catatanTambahan}` : ''}
+## 2A. DAFTAR BAB BAKU (WAJIB DIPRIORITASKAN untuk data-field="materi")
+
+Sistem sudah punya daftar bab resmi untuk ${mataPelajaran} kelas ${tingkatKelas}:
+${babBaku.map((b) => `- ${b}`).join('\n')}
+
+Untuk SETIAP soal, cek dulu apakah topiknya cocok dengan salah satu bab di atas -- kalau cocok, isi data-field="materi" PERSIS SAMA PERSIS dengan nama bab itu (jangan diparafrase/disingkat/ditambah kata lain). Kalau topik soal itu jujur TIDAK ADA yang cocok dari daftar di atas (bab baru yang memang belum tercatat), baru boleh bikin nama baru yang singkat & jelas -- tapi ini pengecualian, bukan kebiasaan. Jangan membuat variasi penulisan baru untuk bab yang SUDAH ada di daftar (mis. jangan tulis "Trigonometri" kalau daftar sudah punya "Trigonometri dasar").
+` : '';
+
+</parameter>=================
+// SEED BAHASA INDONESIA SMA -- REVISI. Versi awal (jenis teks per
+// kelas 10/11/12 sesuai ATP resmi) cuma berhasil menyarankan 11%
+// dari soal yang ada -- ternyata soal Bahasa Indonesia di bank kamu
+// ditag pakai NAMA SKILL/KEMAMPUAN membaca ("Pemahaman Tekstual",
+// "Pola Pengembangan Paragraf", "Kebahasaan Teks - X"), bukan nama
+// jenis teks. Jadi taksonominya diubah ikut pola data asli (mirip
+// gaya AKM Literasi) -- 1 keranjang gabungan, bukan genre per kelas.
+// Hasilnya naik jadi 67% tersaran otomatis.
+// ============================================================
+const SEED_BAHASA_INDONESIA = [
+  { kelas: 'Semua', jenjang: 'SMA/MA', fase: 'E-F', elemen: ['Membaca dan Memirsa', 'Menulis'], babBaku: ['Pemahaman Tekstual', 'Paragraf', 'Puisi', 'Cerpen', 'Teks Eksposisi', 'Kebahasaan Teks', 'Teks Berita', 'Ungkapan', 'Tokoh'] },
+];
 
 Baca SELURUH isi dokumen yang dilampirkan (semua paket/tryout, semua nomor, semua halaman pembahasan jika ada), lalu hasilkan SATU file JSON sesuai aturan berikut.
 
@@ -362,6 +387,7 @@ KONTEKS (WAJIB DIPATUHI — metadata produksi Bank Soal Gemilang):
 - Tags/kelompok bank: ${tags || '(kosong)'}
 - Kesulitan default: ${tingkatKesulitan}
 ${catatanTambahan ? `- Catatan admin: ${catatanTambahan}` : ''}
+${instruksiBabBaku}
 
 PANDUAN JENIS UJIAN (sangat penting untuk try out otomatis):
 - Jika jenis ujian = tka / prediksi / utbk / snbt: ini BANK UJIAN CAMPURAN, BUKAN ulangan satu bab.
@@ -3010,6 +3036,37 @@ export default function ImportHasilScanPage() {
   const [kategori, setKategori] = useState('');
   const [tags, setTags] = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
+
+  // 🔥 BARU (Langkah 7 -- pagar materi): begitu Mapel/Kelas di form
+  // ini dipilih, ambil daftar bab baku dari koleksi `taksonomi_materi`
+  // (dibangun di halaman Taksonomi Materi). Dipakai buat 2 hal:
+  //   1. Disisipkan ke prompt AI (buildMasterHTMLPrompt/buildMasterPrompt)
+  //      supaya AI diarahkan MEMILIH dari daftar ini, bukan ngarang
+  //      nama bab sendiri kayak sebelumnya -- ini yang bikin materi
+  //      "beranak" terus di masa lalu.
+  //   2. Ditandai di kartu preview kalau materi hasil AI TERNYATA
+  //      tidak cocok satu pun dari daftar ini -- biar admin sadar
+  //      SEBELUM disimpan, bukan baru ketahuan belakangan pas udah
+  //      numpuk ratusan soal (persis skenario yang sudah kejadian).
+  // Kalau taksonomi utk mapel/kelas ini belum ada sama sekali, daftar
+  // kosong -- sistem tetap jalan seperti biasa (gak maksa isi).
+  const [babTaksonomi, setBabTaksonomi] = useState([]);
+  useEffect(() => {
+    if (!mataPelajaran) { setBabTaksonomi([]); return; }
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'taksonomi_materi'), where('mapel', '==', mataPelajaran)));
+        const babPerKelas = {};
+        snap.docs.forEach((d) => { babPerKelas[d.data().kelas] = d.data().babBaku || []; });
+        const kelasCocok = tingkatKelas && babPerKelas[tingkatKelas];
+        const gabungan = [...new Set(Object.values(babPerKelas).flat())];
+        setBabTaksonomi(kelasCocok || gabungan);
+      } catch (e) {
+        console.error('Gagal memuat taksonomi materi:', e);
+        setBabTaksonomi([]);
+      }
+    })();
+  }, [mataPelajaran, tingkatKelas]);
   const [sumberFile, setSumberFile] = useState('');
   // 🔥 BARU (pdf24): file HTML kedua (opsional) hasil convert PDF asli
   // di tools.pdf24.org -- dipakai HANYA sebagai sumber gambar tambahan,
@@ -3181,7 +3238,7 @@ export default function ImportHasilScanPage() {
   const [jumlahSoalGenerate, setJumlahSoalGenerate] = useState(10);
 
   const generatedPrompt = useMemo(() => {
-    const meta = { mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, jenisUjian, tags, catatanTambahan: catatanPrompt };
+    const meta = { mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, jenisUjian, tags, catatanTambahan: catatanPrompt, babBaku: babTaksonomi };
     const promptDasar = promptMode === 'html' ? buildMasterHTMLPrompt(meta) : buildMasterPrompt(meta);
 
     if (sumberSoal !== 'generate') return promptDasar;
@@ -4546,6 +4603,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                             mathReady={mathReady}
                             onCropImage={handleCropImage}
                             imageStatus={imageStatus}
+                            daftarBabValid={babTaksonomi}
                           />
                         ))}
                       </div>
@@ -4920,7 +4978,7 @@ const btnBiruKecil = { fontSize: '13px', padding: '8px 16px', borderRadius: '8px
 // QUESTION PREVIEW
 // ============================================================
 
-function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} }) {
+function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, daftarBabValid = [] }) {
   const q = question;
   const correctIndexes = safeArray(q.opsi_benar);
 
@@ -5001,6 +5059,12 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {} })
         {q.materi && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#c2410c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             📘 {q.materi}
+          </span>
+        )}
+
+        {q.materi && daftarBabValid.length > 0 && !daftarBabValid.includes(q.materi) && (
+          <span title={`Belum ada di Taksonomi Materi. Bab yang terdaftar: ${daftarBabValid.join(', ')}`} style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fef2f2', color: '#b91c1c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', cursor: 'help' }}>
+            ⚠️ materi baru, belum ada di Taksonomi
           </span>
         )}
 

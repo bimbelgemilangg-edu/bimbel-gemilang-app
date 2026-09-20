@@ -124,6 +124,37 @@ export default function BankSoalImportPage() {
   const [tags,             setTags]             = useState('');
   const [tingkatKesulitan, setTingkatKesulitan] = useState('sedang');
 
+  // 🔥 BARU (Langkah 7 -- pagar materi): begitu Mapel/Kelas di form
+  // ini dipilih, ambil daftar bab baku dari koleksi `taksonomi_materi`
+  // (dibangun di halaman Taksonomi Materi). Dipakai buat 2 hal:
+  //   1. Disisipkan ke prompt AI (buildMasterHTMLPrompt/buildMasterPrompt)
+  //      supaya AI diarahkan MEMILIH dari daftar ini, bukan ngarang
+  //      nama bab sendiri kayak sebelumnya -- ini yang bikin materi
+  //      "beranak" terus di masa lalu.
+  //   2. Ditandai di kartu preview kalau materi hasil AI TERNYATA
+  //      tidak cocok satu pun dari daftar ini -- biar admin sadar
+  //      SEBELUM disimpan, bukan baru ketahuan belakangan pas udah
+  //      numpuk ratusan soal (persis skenario yang sudah kejadian).
+  // Kalau taksonomi utk mapel/kelas ini belum ada sama sekali, daftar
+  // kosong -- sistem tetap jalan seperti biasa (gak maksa isi).
+  const [babTaksonomi, setBabTaksonomi] = useState([]);
+  useEffect(() => {
+    if (!mataPelajaran) { setBabTaksonomi([]); return; }
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'taksonomi_materi'), where('mapel', '==', mataPelajaran)));
+        const babPerKelas = {};
+        snap.docs.forEach((d) => { babPerKelas[d.data().kelas] = d.data().babBaku || []; });
+        const kelasCocok = tingkatKelas && babPerKelas[tingkatKelas];
+        const gabungan = [...new Set(Object.values(babPerKelas).flat())];
+        setBabTaksonomi(kelasCocok || gabungan);
+      } catch (e) {
+        console.error('Gagal memuat taksonomi materi:', e);
+        setBabTaksonomi([]);
+      }
+    })();
+  }, [mataPelajaran, tingkatKelas]);
+
   const logsEndRef = useRef(null);
   const settings   = { resolution: 2.5, delayBetweenPages: 2500 };
 

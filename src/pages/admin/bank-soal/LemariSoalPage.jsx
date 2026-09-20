@@ -35,10 +35,6 @@ const LABEL_TIPE = {
   menjodohkan: 'Menjodohkan',
 };
 
-// kunciJawaban bisa berupa 1 huruf (pg_sederhana) atau array huruf
-// (pg_kompleks) -- ini dipakai buat nandain opsi mana yang benar,
-// dicocokkan lewat HURUF (A/B/C/D/E), bukan index array, sesuai cara
-// sistem menyimpannya (lihat RendererPgKompleks.jsx).
 function hurufKunciSet(kunciJawaban) {
   const arr = Array.isArray(kunciJawaban) ? kunciJawaban : [kunciJawaban];
   return new Set(arr.filter(Boolean).map((k) => String(k).toUpperCase().trim()));
@@ -72,7 +68,6 @@ export default function LemariSoalPage() {
 
   useEffect(() => { muat(); }, [muat]);
 
-  // ---------------- Level 1: Jenjang ----------------
   const daftarJenjang = useMemo(() => {
     const peta = new Map();
     semuaSoal.forEach((s) => {
@@ -84,7 +79,6 @@ export default function LemariSoalPage() {
     return [...utama, ...sisanya];
   }, [semuaSoal]);
 
-  // ---------------- Level 2: Mapel (dalam jenjang aktif) ----------------
   const daftarMapel = useMemo(() => {
     if (!jenjangAktif) return [];
     const peta = new Map();
@@ -95,7 +89,6 @@ export default function LemariSoalPage() {
     return [...peta.entries()].map(([nama, jumlah]) => ({ nama, jumlah })).sort((a, b) => b.jumlah - a.jumlah);
   }, [semuaSoal, jenjangAktif]);
 
-  // ---------------- Level 3: Bab/Materi (dalam jenjang+mapel aktif) ----------------
   const daftarMateri = useMemo(() => {
     if (!jenjangAktif || !mapelAktif) return [];
     const peta = new Map();
@@ -108,7 +101,6 @@ export default function LemariSoalPage() {
     return [...peta.entries()].map(([nama, jumlah]) => ({ nama, jumlah })).sort((a, b) => b.jumlah - a.jumlah);
   }, [semuaSoal, jenjangAktif, mapelAktif]);
 
-  // ---------------- Level 4: Daftar soal (dalam bab aktif) ----------------
   const daftarSoalBab = useMemo(() => {
     if (!jenjangAktif || !mapelAktif || !materiAktif) return [];
     return semuaSoal.filter((s) =>
@@ -118,7 +110,6 @@ export default function LemariSoalPage() {
     );
   }, [semuaSoal, jenjangAktif, mapelAktif, materiAktif]);
 
-  // ---------------- Koreksi: IPA SMP yang kepisah jadi Fisika/Kimia/Biologi ----------------
   const soalIpaSalahTagSMP = useMemo(() => {
     return semuaSoal.filter((s) => s.jenjang === 'SMP/MTs' && ['Fisika', 'Kimia', 'Biologi'].includes(s.mataPelajaran));
   }, [semuaSoal]);
@@ -143,7 +134,6 @@ export default function LemariSoalPage() {
     setMenggabung(false);
   }, [soalIpaSalahTagSMP, muat]);
 
-  // ---------------- Pencarian cepat lintas semua level ----------------
   const hasilCari = useMemo(() => {
     const kunci = cari.trim().toLowerCase();
     if (kunci.length < 3) return null;
@@ -160,7 +150,6 @@ export default function LemariSoalPage() {
   const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box' };
   const cardStyle = { background: 'white', border: '1px solid #e5e7eb', borderRadius: 16, padding: 20, marginBottom: 20 };
   const rakStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '12px 16px', borderRadius: 12, background: '#f8fafc', border: '1px solid #f1f5f9', cursor: 'pointer', marginBottom: 8 };
-  const rakAktifStyle = { ...rakStyle, background: '#f5f3ff', border: '1px solid #ddd6fe' };
 
   const breadcrumb = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 12.5, color: '#6b7280', marginBottom: 16 }}>
