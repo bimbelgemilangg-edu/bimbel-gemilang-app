@@ -46,3 +46,56 @@
     cursor: pointer;
     border: 2px solid white;
   }
+
+/* ============================================================
+   READER EXPERIENCE V1
+   Lapisan visual ini tidak mengubah data buku lama.
+   ============================================================ */
+.gemilang-reader { --reader-bg:#f4f2ff; --reader-surface:#fff; --reader-ink:#1e293b; --reader-muted:#64748b; --reader-accent:#6d4aff; background:var(--reader-bg)!important; transition:background-color .25s ease,color .25s ease; }
+.gemilang-reader.reader-theme-sepia { --reader-bg:#efe6d2; --reader-surface:#fffaf0; --reader-ink:#493b2a; --reader-muted:#806d55; --reader-accent:#9a641f; }
+.gemilang-reader.reader-theme-night { --reader-bg:#111827; --reader-surface:#1f2937; --reader-ink:#e5e7eb; --reader-muted:#a7b0c0; --reader-accent:#a78bfa; }
+.reader-toolbar { position:sticky; top:60px; z-index:4; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 14px; background:color-mix(in srgb,var(--reader-surface) 92%,transparent); border-bottom:1px solid color-mix(in srgb,var(--reader-ink) 10%,transparent); box-shadow:0 3px 16px rgba(30,27,75,.06); backdrop-filter:blur(14px); }
+.reader-toolbar__left,.reader-toolbar__actions { display:flex; align-items:center; gap:6px; min-width:0; }
+.reader-toolbar__actions { flex-wrap:wrap; justify-content:flex-end; }
+.reader-toolbar__label { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--reader-muted); font-size:11px; font-weight:700; }
+.reader-progress { width:72px; height:4px; border-radius:999px; background:color-mix(in srgb,var(--reader-ink) 12%,transparent); overflow:hidden; }
+.reader-progress span { display:block; height:100%; border-radius:inherit; background:var(--reader-accent); transition:width .25s ease; }
+.reader-tool { display:inline-flex; align-items:center; gap:5px; min-height:32px; padding:6px 9px; border:1px solid color-mix(in srgb,var(--reader-ink) 12%,transparent); border-radius:10px; background:color-mix(in srgb,var(--reader-surface) 86%,var(--reader-bg)); color:var(--reader-ink); font:700 11px/1.1 system-ui,sans-serif; cursor:pointer; transition:border-color .15s ease,background-color .15s ease,transform .15s ease; }
+.reader-tool:hover { border-color:var(--reader-accent); transform:translateY(-1px); }
+.reader-tool.is-active { background:color-mix(in srgb,var(--reader-accent) 13%,var(--reader-surface)); border-color:var(--reader-accent); color:var(--reader-accent); }
+.reader-tool--font { padding-right:5px; }
+.reader-tool--font button { border:0; background:transparent; color:inherit; font-weight:900; cursor:pointer; padding:2px 3px; }
+.reader-tool--font span { min-width:30px; text-align:center; color:var(--reader-muted); }
+.reader-content { position:relative; color:var(--reader-ink); }
+.reader-structured { padding:16px 16px 112px; }
+.reader-page-nav { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px; }
+.reader-page-nav button { flex:1; border:1px solid color-mix(in srgb,var(--reader-ink) 12%,transparent); border-radius:12px; padding:10px 12px; background:var(--reader-surface); color:var(--reader-ink); font-weight:800; cursor:pointer; }
+.reader-page-nav button:disabled { opacity:.4; cursor:not-allowed; }
+.reader-page-nav button:not(:disabled):hover { border-color:var(--reader-accent); color:var(--reader-accent); }
+.reader-surface { background:var(--reader-surface)!important; color:var(--reader-ink); }
+.reader-contents { margin:10px 16px 0; padding:10px; border:1px solid color-mix(in srgb,var(--reader-ink) 12%,transparent); border-radius:14px; background:var(--reader-surface); box-shadow:0 6px 18px rgba(30,27,75,.08); }
+.reader-contents__head { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:3px 4px 8px; color:var(--reader-ink); font:700 12px/1.2 system-ui,sans-serif; }
+.reader-contents__head button { border:0; background:transparent; color:var(--reader-accent); font:700 11px system-ui,sans-serif; cursor:pointer; }
+.reader-contents > button { display:flex; align-items:center; gap:8px; width:100%; padding:9px 8px; border:0; border-radius:9px; background:transparent; color:var(--reader-ink); text-align:left; font:600 12px/1.35 system-ui,sans-serif; cursor:pointer; }
+.reader-contents > button span:first-child { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; border-radius:7px; background:color-mix(in srgb,var(--reader-accent) 12%,transparent); color:var(--reader-accent); font-size:10px; }
+.reader-contents > button span:nth-child(2) { flex:1; }
+.reader-contents > button.is-current { background:color-mix(in srgb,var(--reader-accent) 10%,var(--reader-surface)); color:var(--reader-accent); }
+.reader-pdf-page { transform-origin:50% 10%; transition:transform .26s ease,opacity .26s ease; }
+.reader-pdf-page.is-turning { transform:perspective(1000px) rotateY(-5deg) translateX(4px); opacity:.72; }
+.reader-theme-night .kartuSeksi,.reader-theme-night .barHalaman,.reader-theme-night .kotakModul,.reader-theme-night .reader-page-nav button { background:var(--reader-surface)!important; color:var(--reader-ink)!important; border-color:#374151!important; }
+.reader-theme-night .paragraf,.reader-theme-night .list { color:#dbe4ef!important; }
+.reader-theme-sepia .kartuSeksi,.reader-theme-sepia .barHalaman,.reader-theme-sepia .kotakModul,.reader-theme-sepia .reader-page-nav button { background:var(--reader-surface)!important; color:var(--reader-ink)!important; }
+.reader-focus .reader-hero { display:none; }
+.reader-focus .reader-toolbar { top:60px; }
+.reader-focus .reader-structured { max-width:800px; margin:0 auto; }
+.reader-bookmark-note { margin:0 16px 10px; padding:8px 12px; border-radius:10px; background:#fef3c7; color:#92400e; font:700 11px/1.4 system-ui,sans-serif; }
+@media (max-width:720px) {
+  .reader-toolbar { top:56px; padding:7px 10px; align-items:flex-start; }
+  .reader-toolbar__left { flex:1; }
+  .reader-toolbar__actions { flex:0 1 auto; max-width:72%; }
+  .reader-tool span { display:none; }
+  .reader-tool--contents span,.reader-tool--font span { display:inline; }
+  .reader-tool { min-width:32px; justify-content:center; padding:7px; }
+  .reader-tool--font { gap:2px; }
+  .reader-progress { width:44px; }
+}

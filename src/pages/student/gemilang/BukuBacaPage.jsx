@@ -14,6 +14,7 @@ import { MathText, MathBlock } from '../../../components/MathText';
 import VisualBuku, { GambarBuku } from '../../../components/buku/VisualBuku';
 import { bukaPdf, renderHalamanKeCanvas } from '../../../utils/modulPdf';
 import RendererHtmlBab from '../../../components/buku/RendererHtmlBab';
+import ReaderControls from '../../../components/buku/ReaderControls';
 import '../../../components/buku/buku.css';
 
 const XP_SEKSI = 5;
@@ -35,6 +36,14 @@ export default function BukuBacaPage() {
   const [hasil, setHasil] = useState(null);
   const [peringatan, setPeringatan] = useState(null);
   const [toast, setToast] = useState(null);
+  const [readerTheme, setReaderTheme] = useState('paper');
+  const [fontScale, setFontScale] = useState(1);
+  const [focusMode, setFocusMode] = useState(false);
+  const [layoutMode, setLayoutMode] = useState('scroll');
+  const [sectionIndex, setSectionIndex] = useState(0);
+  const [showContents, setShowContents] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [pageTurn, setPageTurn] = useState(false);
 
   const [halamanTerbaca, setHalamanTerbaca] = useState(0);
   const [selesaiModul, setSelesaiModul] = useState(false);
@@ -80,6 +89,41 @@ export default function BukuBacaPage() {
   const sections = useMemo(() => bab?.sections || [], [bab]);
   const ujiPemahaman = useMemo(() => bab?.ujiPemahaman || [], [bab]);
 
+  useEffect(() => {
+    try {
+      const pref = JSON.parse(localStorage.getItem('gemilang:reader-preferences') || '{}');
+      if (['paper', 'sepia', 'night'].includes(pref.theme)) setReaderTheme(pref.theme);
+      if (Number(pref.fontScale)) setFontScale(Math.min(1.18, Math.max(0.9, Number(pref.fontScale))));
+    } catch { /* preferensi rusak tidak boleh menghalangi buku dibaca */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('gemilang:reader-preferences', JSON.stringify({ theme: readerTheme, fontScale }));
+    } catch { /* localStorage opsional */ }
+  }, [readerTheme, fontScale]);
+
+  useEffect(() => {
+    if (!bab?.id) return;
+    try {
+      const posisi = JSON.parse(localStorage.getItem(`gemilang:reader-position:${bab.id}`) || '{}');
+      if (Number.isInteger(posisi.sectionIndex)) setSectionIndex(Math.max(0, posisi.sectionIndex));
+      setBookmarked(!!posisi.bookmarked);
+    } catch { /* posisi lokal opsional */ }
+  }, [bab?.id]);
+
+  const simpanPosisiLokal = (patch) => {
+    if (!bab?.id) return;
+    try {
+      const key = `gemilang:reader-position:${bab.id}`;
+      const lama = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...lama, ...patch, updatedAt: Date.now() }));
+      localStorage.setItem('gemilang:last-reader', JSON.stringify({
+        bukuId, babId: bab.id, judul: bab.judul || '', updatedAt: Date.now(),
+      }));
+    } catch { /* posisi lokal opsional */ }
+  };
+
   const modeHtml = !!bab && bab.tipe === 'html' && (!!bab.html || !!bab.htmlUrl);
   const modeModul = !!bab && !modeHtml && (bab.tipe === 'pdf' || ((!sections || sections.length === 0) && !!bab.pdfUrl));
 
@@ -124,6 +168,12 @@ export default function BukuBacaPage() {
     const baru = [...selesaiSections, sid];
     setSelesaiSections(baru);
     simpanProgres({ selesaiSections: baru, terakhirDibacaSection: sid });
+    const idx = sections.findIndex((sec) => sec.id === sid);
+    if (idx >= 0) {
+      const berikutnya = Math.min(Math.max(0, sections.length - 1), idx + 1);
+      setSectionIndex(berikutnya);
+      simpanPosisiLokal({ sectionIndex: berikutnya });
+    }
     tambahXp(XP_SEKSI);
     munculToast(`+${XP_SEKSI} XP`);
   };
@@ -166,12 +216,29 @@ export default function BukuBacaPage() {
     if (!daftarHalaman.length) return;
     setHalAktif((prev) => {
       if (prev !== 0) return prev;
+      try {
+        const posisi = JSON.parse(localStorage.getItem(`gemilang:reader-position:${bab?.id}`) || '{}');
+        if (Number.isInteger(posisi.pageIndex) && posisi.pageIndex > 0) {
+          return Math.min(daftarHalaman.length - 1, posisi.pageIndex);
+        }
+      } catch { /* posisi lokal opsional */ }
       const idx = daftarHalaman.indexOf(halamanTerbaca);
       if (idx > 0 && idx < daftarHalaman.length - 1) return idx;
       return 0;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [daftarHalaman.length, halamanTerbaca]);
+  }, [daftarHalaman.length, halamanTerbaca, bab?.id]);
+
+  useEffect(() => {
+    if (!modeModul || !daftarHalaman.length) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'ArrowLeft') { event.preventDefault(); ubahHalaman(-1); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); ubahHalaman(1); }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modeModul, daftarHalaman.length, halAktif]);
 
   useEffect(() => {
     if (!modeModul || !pdfDoc || !canvasRef.current || !daftarHalaman.length) return;
@@ -204,6 +271,31 @@ export default function BukuBacaPage() {
   }, [modeModul, pdfDoc, halAktif, zoomBaca, daftarHalaman]);
 
   const warna = buku?.warna || '#4C6EF5';
+
+  const tampilkanHalaman = (nextIndex) => {
+    const aman = Math.max(0, Math.min(daftarHalaman.length - 1, nextIndex));
+    setPageTurn(true);
+    window.setTimeout(() => setPageTurn(false), 260);
+    setHalAktif(aman);
+    simpanPosisiLokal({ pageIndex: aman, pageNumber: daftarHalaman[aman] });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const ubahHalaman = (delta) => tampilkanHalaman(halAktif + delta);
+
+  const ubahSection = (nextIndex) => {
+    const aman = Math.max(0, Math.min(Math.max(0, sections.length - 1), nextIndex));
+    setSectionIndex(aman);
+    simpanPosisiLokal({ sectionIndex: aman });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const toggleBookmark = () => {
+    const berikutnya = !bookmarked;
+    setBookmarked(berikutnya);
+    simpanPosisiLokal({ bookmarked: berikutnya });
+    munculToast(berikutnya ? 'Halaman ditandai untuk dibaca lagi' : 'Penanda dihapus');
+  };
 
   const semuaTerjawab = ujiPemahaman.every((q) => {
     const j = jawaban[q.id];
@@ -262,6 +354,10 @@ export default function BukuBacaPage() {
       ? `${daftarHalaman.length ? (Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) : 0}/${daftarHalaman.length} halaman dibaca${selesaiModul ? ' • selesai' : ''}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
       : `${selesaiSections.length}/${sections.length} seksi selesai${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`;
 
+  const sectionsToRender = layoutMode === 'page'
+    ? sections.slice(sectionIndex, sectionIndex + 1)
+    : sections;
+
   if (!siap) {
     return <div style={st.pusat}><div style={{ fontSize: 32 }}>📖</div><div style={{ marginTop: 8 }}>Memuat bab...</div></div>;
   }
@@ -278,13 +374,16 @@ export default function BukuBacaPage() {
   const lebarHalaman = modeHtml ? 960 : 480;
 
   return (
-    <div style={{ ...st.page, maxWidth: lebarHalaman }}>
+    <div
+      className={`gemilang-reader reader-theme-${readerTheme}${focusMode ? ' reader-focus' : ''}`}
+      style={{ ...st.page, maxWidth: lebarHalaman }}
+    >
       {toast && <div style={st.toast}>{toast}</div>}
       {peringatan && (
         <div style={st.peringatan}><AlertTriangle size={13} /> {peringatan}</div>
       )}
 
-      <div style={{ ...st.hero, background: `linear-gradient(160deg, ${warna} 0%, #1E1B4B 100%)` }}>
+      <div className="reader-hero" style={{ ...st.hero, background: `linear-gradient(160deg, ${warna} 0%, #1E1B4B 100%)` }}>
         <div style={st.heroStars} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
           <button onClick={() => (mode === 'baca' ? navigate(`/siswa/buku/${bukuId}`) : setMode('baca'))} style={st.backBtn}>
@@ -305,12 +404,52 @@ export default function BukuBacaPage() {
         </div>
       </div>
 
+      <ReaderControls
+        theme={readerTheme}
+        onTheme={setReaderTheme}
+        fontScale={fontScale}
+        onFontScale={setFontScale}
+        focusMode={focusMode}
+        onFocusMode={() => setFocusMode((v) => !v)}
+        layoutMode={layoutMode}
+        onLayoutMode={setLayoutMode}
+        showLayout={!modeModul && !modeHtml && sections.length > 1}
+        bookmarked={bookmarked}
+        onBookmark={toggleBookmark}
+        onContents={() => setShowContents((v) => !v)}
+        progress={persenAman}
+        pageLabel={modeModul ? `Halaman ${daftarHalaman[halAktif] || 1}` : `${Math.min(sectionIndex + 1, sections.length || 1)} dari ${sections.length || 1} bagian`}
+      />
+
+      {bookmarked && mode === 'baca' && (
+        <div className="reader-bookmark-note">Penanda tersimpan di perangkat ini. Kamu bisa kembali melanjutkan dari bagian yang sama.</div>
+      )}
+
+      {showContents && mode === 'baca' && !modeModul && !modeHtml && (
+        <aside className="reader-contents" aria-label="Daftar isi bab">
+          <div className="reader-contents__head"><strong>Daftar isi bab</strong><button type="button" onClick={() => setShowContents(false)}>Tutup</button></div>
+          {sections.map((sec, idx) => (
+            <button
+              type="button"
+              key={sec.id}
+              className={idx === sectionIndex ? 'is-current' : ''}
+              onClick={() => { ubahSection(idx); setShowContents(false); }}
+            >
+              <span>{idx + 1}</span>
+              <span>{sec.judul}</span>
+              {selesaiSections.includes(sec.id) && <CheckCircle2 size={15} />}
+            </button>
+          ))}
+        </aside>
+      )}
+
       {mode === 'baca' && !modeModul && !modeHtml && (
-        <div style={{ padding: '16px 16px 90px' }}>
-          {sections.map((sec, idx) => {
+        <div className="reader-content reader-structured" style={{ fontSize: `${fontScale}em` }}>
+          {sectionsToRender.map((sec) => {
+            const idx = sections.findIndex((item) => item.id === sec.id);
             const sudah = selesaiSections.includes(sec.id);
             return (
-              <div key={sec.id} style={st.kartuSeksi}>
+              <div key={sec.id} className="reader-surface" style={st.kartuSeksi}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <div style={{ fontSize: 15, fontWeight: 800, color: '#1e293b' }}>{sec.judul}</div>
                   {sudah && <CheckCircle2 size={18} color="#22c55e" />}
@@ -329,6 +468,12 @@ export default function BukuBacaPage() {
               </div>
             );
           })}
+          {layoutMode === 'page' && sections.length > 1 && (
+            <div className="reader-page-nav">
+              <button type="button" disabled={sectionIndex <= 0} onClick={() => ubahSection(sectionIndex - 1)}>← Sebelumnya</button>
+              <button type="button" disabled={sectionIndex >= sections.length - 1} onClick={() => ubahSection(sectionIndex + 1)}>Berikutnya →</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -348,7 +493,7 @@ export default function BukuBacaPage() {
           {pdfDoc && (
             <>
               <div style={st.barHalaman}>
-                <button style={st.tombolHal} disabled={halAktif <= 0} onClick={() => { setHalAktif((h) => Math.max(0, h - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <button style={st.tombolHal} disabled={halAktif <= 0} onClick={() => ubahHalaman(-1)}>
                   <ChevronLeft size={17} />
                 </button>
                 <div style={{ flex: 1, textAlign: 'center' }}>
@@ -357,12 +502,12 @@ export default function BukuBacaPage() {
                   </div>
                   <input
                     type="range" min={0} max={Math.max(0, daftarHalaman.length - 1)} value={halAktif}
-                    onChange={(e) => { setHalAktif(Number(e.target.value)); window.scrollTo({ top: 0 }); }}
+                    onChange={(e) => tampilkanHalaman(Number(e.target.value))}
                     className="slider-modul"
                     style={{ width: '100%', marginTop: 4, accentColor: '#7C3AED' }}
                   />
                 </div>
-                <button style={st.tombolHal} disabled={halAktif >= daftarHalaman.length - 1} onClick={() => { setHalAktif((h) => Math.min(daftarHalaman.length - 1, h + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <button style={st.tombolHal} disabled={halAktif >= daftarHalaman.length - 1} onClick={() => ubahHalaman(1)}>
                   <ChevronRight size={17} />
                 </button>
               </div>
@@ -371,7 +516,7 @@ export default function BukuBacaPage() {
                 <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center', minWidth: 42, textAlign: 'center' }}>{Math.round(zoomBaca * 100)}%</span>
                 <button onClick={() => setZoomBaca((z) => Math.min(2.5, +(z + 0.25).toFixed(2)))} style={st.tombolZoom}><ZoomIn size={14} /> Perbesar</button>
               </div>
-              <div style={st.kotakModul}>
+              <div className={`reader-pdf-page${pageTurn ? ' is-turning' : ''}`} style={st.kotakModul}>
                 {muatHal && <div style={st.muatHal}><Loader2 size={18} className="spin" /></div>}
                 <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 10 }} />
               </div>
