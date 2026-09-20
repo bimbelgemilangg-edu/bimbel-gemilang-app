@@ -106,48 +106,35 @@ const GROUP_ITEM_KEYS = ['soal', 'soals', 'questions', 'items', 'data'];
 // diperbarui juga supaya tetap sinkron (satu sumber kebenaran).
 // ============================================================
 
-// ===========================================function buildMasterHTMLPrompt(meta = {}) {
+function buildMasterPrompt(meta = {}) {
   const {
     mataPelajaran = 'Matematika',
     jenjang = 'SMA/MA',
     tingkatKelas = '10',
     tingkatKesulitan = 'sedang',
-    jenisUjian = '',
-    tags = '',
     catatanTambahan = '',
     babBaku = [],
   } = meta;
 
-  // 🔥 BARU (Langkah 7 -- pagar materi): kalau Taksonomi Materi untuk
-  // mapel+kelas ini sudah ada isinya, sisipkan sebagai daftar PILIHAN
-  // buat data-field="materi" -- AI diarahkan MEMILIH dari sini dulu,
-  // bukan langsung ngarang nama bab sendiri. Ini akar dari masalah
-  // "materi beranak terus" yang sudah dibereskan berkali-kali secara
-  // manual (Rapikan Literasi, Petakan Matematika, dst) -- daripada
-  // beres-beres lagi tiap kali, sekarang dicegah dari titik masuknya.
-  const instruksiBabBaku = babBaku.length > 0 ? `
+  // Sama seperti versi HTML -- lihat penjelasan lengkap di
+  // buildMasterHTMLPrompt().
+  const instruksiBabBakuJSON = babBaku.length > 0 ? `
 
-## 2A. DAFTAR BAB BAKU (WAJIB DIPRIORITASKAN untuk data-field="materi")
-
-Sistem sudah punya daftar bab resmi untuk ${mataPelajaran} kelas ${tingkatKelas}:
+DAFTAR BAB BAKU (WAJIB DIPRIORITASKAN untuk field "materi") untuk ${mataPelajaran} kelas ${tingkatKelas}:
 ${babBaku.map((b) => `- ${b}`).join('\n')}
 
-Untuk SETIAP soal, cek dulu apakah topiknya cocok dengan salah satu bab di atas -- kalau cocok, isi data-field="materi" PERSIS SAMA PERSIS dengan nama bab itu (jangan diparafrase/disingkat/ditambah kata lain). Kalau topik soal itu jujur TIDAK ADA yang cocok dari daftar di atas (bab baru yang memang belum tercatat), baru boleh bikin nama baru yang singkat & jelas -- tapi ini pengecualian, bukan kebiasaan. Jangan membuat variasi penulisan baru untuk bab yang SUDAH ada di daftar (mis. jangan tulis "Trigonometri" kalau daftar sudah punya "Trigonometri dasar").
+Untuk SETIAP soal, cek dulu apakah topiknya cocok salah satu bab di atas -- kalau cocok, isi field "materi" PERSIS SAMA dengan nama bab itu (jangan diparafrase). Kalau benar-benar tidak ada yang cocok (bab baru), baru boleh bikin nama baru yang singkat & jelas -- itu pengecualian, bukan kebiasaan.
 ` : '';
 
-</parameter>=================
-// SEED BAHASA INDONESIA SMA -- REVISI. Versi awal (jenis teks per
-// kelas 10/11/12 sesuai ATP resmi) cuma berhasil menyarankan 11%
-// dari soal yang ada -- ternyata soal Bahasa Indonesia di bank kamu
-// ditag pakai NAMA SKILL/KEMAMPUAN membaca ("Pemahaman Tekstual",
-// "Pola Pengembangan Paragraf", "Kebahasaan Teks - X"), bukan nama
-// jenis teks. Jadi taksonominya diubah ikut pola data asli (mirip
-// gaya AKM Literasi) -- 1 keranjang gabungan, bukan genre per kelas.
-// Hasilnya naik jadi 67% tersaran otomatis.
-// ============================================================
-const SEED_BAHASA_INDONESIA = [
-  { kelas: 'Semua', jenjang: 'SMA/MA', fase: 'E-F', elemen: ['Membaca dan Memirsa', 'Menulis'], babBaku: ['Pemahaman Tekstual', 'Paragraf', 'Puisi', 'Cerpen', 'Teks Eksposisi', 'Kebahasaan Teks', 'Teks Berita', 'Ungkapan', 'Tokoh'] },
-];
+  return `Kamu adalah asisten yang mengubah dokumen soal ujian (PDF/gambar hasil scan) menjadi JSON terstruktur untuk sistem "Bank Soal Gemilang". Ikuti skema di bawah ini SECARA PERSIS — skema ini diambil langsung dari kode sistem (ImportHasilScanPage.jsx), bukan dari bentuk asli dokumen sumber. Tujuannya JSON yang kamu hasilkan bisa langsung di-upload dan sejalan dengan sistem, tanpa perlu diedit manual.
+
+KONTEKS SOAL INI:
+- Mata pelajaran: ${mataPelajaran}
+- Jenjang: ${jenjang}
+- Kelas: ${tingkatKelas}
+- Tingkat kesulitan default (kalau tidak bisa dinilai per soal): ${tingkatKesulitan}
+${catatanTambahan ? `- Catatan tambahan dari admin: ${catatanTambahan}` : ''}
+${instruksiBabBakuJSON}
 
 Baca SELURUH isi dokumen yang dilampirkan (semua paket/tryout, semua nomor, semua halaman pembahasan jika ada), lalu hasilkan SATU file JSON sesuai aturan berikut.
 
@@ -364,7 +351,25 @@ function buildMasterHTMLPrompt(meta = {}) {
     jenisUjian = '',
     tags = '',
     catatanTambahan = '',
+    babBaku = [],
   } = meta;
+
+  // 🔥 BARU (Langkah 7 -- pagar materi): kalau Taksonomi Materi untuk
+  // mapel+kelas ini sudah ada isinya, sisipkan sebagai daftar PILIHAN
+  // buat data-field="materi" -- AI diarahkan MEMILIH dari sini dulu,
+  // bukan langsung ngarang nama bab sendiri. Ini akar dari masalah
+  // "materi beranak terus" yang sudah dibereskan berkali-kali secara
+  // manual (Rapikan Literasi, Petakan Matematika, dst) -- daripada
+  // beres-beres lagi tiap kali, sekarang dicegah dari titik masuknya.
+  const instruksiBabBaku = babBaku.length > 0 ? `
+
+## 2A. DAFTAR BAB BAKU (WAJIB DIPRIORITASKAN untuk data-field="materi")
+
+Sistem sudah punya daftar bab resmi untuk ${mataPelajaran} kelas ${tingkatKelas}:
+${babBaku.map((b) => `- ${b}`).join('\n')}
+
+Untuk SETIAP soal, cek dulu apakah topiknya cocok dengan salah satu bab di atas -- kalau cocok, isi data-field="materi" PERSIS SAMA PERSIS dengan nama bab itu (jangan diparafrase/disingkat/ditambah kata lain). Kalau topik soal itu jujur TIDAK ADA yang cocok dari daftar di atas (bab baru yang memang belum tercatat), baru boleh bikin nama baru yang singkat & jelas -- tapi ini pengecualian, bukan kebiasaan. Jangan membuat variasi penulisan baru untuk bab yang SUDAH ada di daftar (mis. jangan tulis "Trigonometri" kalau daftar sudah punya "Trigonometri dasar").
+` : '';
 
   // Contoh di bagian akhir prompt HARUS ikut nilai form yang sebenarnya --
   // kalau kelas form "Semua" (mis. scan UTBK/TKA lintas kelas), atribut
@@ -3264,7 +3269,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
 
 `;
     return preambleGenerate + promptDasar;
-  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, jenisUjian, tags, catatanPrompt, promptMode, sumberSoal, topikGenerate, jumlahSoalGenerate, fasePilihan]);
+  }, [mataPelajaran, jenjang, tingkatKelas, tingkatKesulitan, jenisUjian, tags, catatanPrompt, promptMode, sumberSoal, topikGenerate, jumlahSoalGenerate, fasePilihan, babTaksonomi]);
 
   const handleCopyPrompt = useCallback(async () => {
     try {
