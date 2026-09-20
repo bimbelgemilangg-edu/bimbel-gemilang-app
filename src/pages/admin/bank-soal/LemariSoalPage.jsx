@@ -8,12 +8,13 @@
 // berantakan kayak tab "Jelajah per Folder" yang lama.
 // ============================================================
 // Alur: pilih Jenjang -> pilih Mapel -> pilih Bab (materi baku hasil
-// Langkah 3-5) -> lihat daftar soalnya. Ada kotak cari cepat buat
-// lompat langsung ke bab atau isi soal tertentu tanpa drill-down
-// manual dari atas.
+// Langkah 3-5) -> lihat daftar soalnya. Klik satu soal buat buka
+// detail lengkap: opsi jawaban, kunci (ditandai hijau), pembahasan,
+// dan status verifikasi kunci -- biar admin bisa cek sendiri isi
+// soalnya, bukan cuma percaya angka ringkasan.
 //
-// 🔒 READ-ONLY untuk sebagian besar halaman -- pengecualian satu-
-// satunya adalah tombol "Gabungkan jadi IPA" (lihat di bawah).
+// 🔒 READ-ONLY: halaman ini cuma menampilkan, tidak mengubah data
+// bank_soal sama sekali. Aman dibuka kapan saja.
 // ============================================================
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -34,6 +35,15 @@ const LABEL_TIPE = {
   menjodohkan: 'Menjodohkan',
 };
 
+// kunciJawaban bisa berupa 1 huruf (pg_sederhana) atau array huruf
+// (pg_kompleks) -- ini dipakai buat nandain opsi mana yang benar,
+// dicocokkan lewat HURUF (A/B/C/D/E), bukan index array, sesuai cara
+// sistem menyimpannya (lihat RendererPgKompleks.jsx).
+function hurufKunciSet(kunciJawaban) {
+  const arr = Array.isArray(kunciJawaban) ? kunciJawaban : [kunciJawaban];
+  return new Set(arr.filter(Boolean).map((k) => String(k).toUpperCase().trim()));
+}
+
 export default function LemariSoalPage() {
   const [isMobile] = useState(window.innerWidth < 1024);
   const [loading, setLoading] = useState(true);
@@ -42,6 +52,7 @@ export default function LemariSoalPage() {
   const [mapelAktif, setMapelAktif] = useState(null);
   const [materiAktif, setMateriAktif] = useState(null);
   const [cari, setCari] = useState('');
+  const [soalTerbuka, setSoalTerbuka] = useState(null);
   const [menggabung, setMenggabung] = useState(false);
   const [pesanGabung, setPesanGabung] = useState('');
 
@@ -108,10 +119,6 @@ export default function LemariSoalPage() {
   }, [semuaSoal, jenjangAktif, mapelAktif, materiAktif]);
 
   // ---------------- Koreksi: IPA SMP yang kepisah jadi Fisika/Kimia/Biologi ----------------
-  // Kurikulum SMP (dulu maupun Kurikulum Merdeka) menggabungkan IPA jadi
-  // 1 mapel -- pemisahan Fisika/Kimia/Biologi baru mulai di SMA. Soal
-  // SMP yang ke-tag salah satu dari 3 itu berarti salah tag dari sesi
-  // impor lama, bukan struktur yang benar.
   const soalIpaSalahTagSMP = useMemo(() => {
     return semuaSoal.filter((s) => s.jenjang === 'SMP/MTs' && ['Fisika', 'Kimia', 'Biologi'].includes(s.mataPelajaran));
   }, [semuaSoal]);
@@ -252,13 +259,89 @@ export default function LemariSoalPage() {
 
             {materiAktif && (
               <div style={cardStyle}>
-                <div style={{ fontWeight: 800, fontSize: 13, color: '#374151', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={15} /> {daftarSoalBab.length} soal di "{materiAktif}"</div>
-                {daftarSoalBab.map((s) => (
-                  <div key={s.id} style={{ padding: '10px 14px', borderRadius: 10, background: '#f8fafc', marginBottom: 6 }}>
-                    <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.soal || '(teks kosong)'}</div>
-                    <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 3 }}>{LABEL_TIPE[s.tipe] || s.tipe || 'PG Sederhana'} · Kelas {s.tingkatKelas || 'Semua'}{s.subMateri ? ` · ${s.subMateri}` : ''}</div>
-                  </div>
-                ))}
+                <div style={{ fontWeight: 800, fontSize: 13, color: '#374151', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}><FileText size={15} /> {daftarSoalBab.length} soal di "{materiAktif}"</div>
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 12 }}>Klik satu soal buat lihat opsi, kunci jawaban, dan pembahasan lengkapnya.</div>
+                {daftarSoalBab.map((s) => {
+                  const terbuka = soalTerbuka === s.id;
+                  const hurufBenar = hurufKunciSet(s.kunciJawaban);
+                  const punyaOpsi = Array.isArray(s.opsiJawaban) && s.opsiJawaban.length > 0;
+                  const punyaPernyataan = Array.isArray(s.pernyataan) && s.pernyataan.length > 0;
+                  const punyaPasangan = Array.isArray(s.pasangan) && s.pasangan.length > 0;
+                  return (
+                    <div key={s.id} style={{ borderRadius: 10, background: '#f8fafc', marginBottom: 8, overflow: 'hidden', border: terbuka ? '1px solid #ddd6fe' : '1px solid transparent' }}>
+                      <div style={{ padding: '10px 14px', cursor: 'pointer' }} onClick={() => setSoalTerbuka(terbuka ? null : s.id)}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                          <div style={{ fontSize: 12.5, color: '#1e293b', flex: 1, ...(terbuka ? {} : { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }) }}>{s.soal || '(teks kosong)'}</div>
+                          <ChevronRight size={14} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2, transform: terbuka ? 'rotate(90deg)' : 'none', transition: '0.15s' }} />
+                        </div>
+                        <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <span>{LABEL_TIPE[s.tipe] || s.tipe || 'PG Sederhana'} · Kelas {s.tingkatKelas || 'Semua'}{s.subMateri ? ` · ${s.subMateri}` : ''}</span>
+                          {s.kunciTerverifikasi === false && (
+                            <span style={{ background: '#fffbeb', color: '#b45309', borderRadius: 999, padding: '1px 8px', fontWeight: 700 }}>kunci belum terverifikasi</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {terbuka && (
+                        <div style={{ padding: '4px 14px 16px', borderTop: '1px solid #eef2ff' }}>
+                          {punyaOpsi && (
+                            <div style={{ marginTop: 10 }}>
+                              {s.opsiJawaban.map((opsi, i) => {
+                                const huruf = String.fromCharCode(65 + i);
+                                const benar = hurufBenar.has(huruf);
+                                return (
+                                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', borderRadius: 8, background: benar ? '#f0fdf4' : 'transparent', marginBottom: 4 }}>
+                                    <span style={{ fontWeight: 800, color: benar ? '#16a34a' : '#9ca3af', minWidth: 18 }}>{huruf}.</span>
+                                    <span style={{ fontSize: 12.5, color: benar ? '#166534' : '#374151', fontWeight: benar ? 700 : 400 }}>{opsi?.teks || String(opsi || '')}</span>
+                                    {benar && <span style={{ fontSize: 10.5, color: '#16a34a', fontWeight: 800 }}>✓ kunci</span>}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {punyaPernyataan && (
+                            <div style={{ marginTop: 10 }}>
+                              {s.pernyataan.map((p, i) => (
+                                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '6px 10px', borderRadius: 8, background: '#fff', border: '1px solid #eef2ff', marginBottom: 4 }}>
+                                  <span style={{ fontSize: 12.5, color: '#374151' }}>{p.teks || p.pernyataan || ''}</span>
+                                  <span style={{ fontSize: 11.5, fontWeight: 800, color: /benar|true|ya/i.test(String(p.jawaban || '')) ? '#16a34a' : '#dc2626', flexShrink: 0 }}>{p.jawaban || '-'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {punyaPasangan && (
+                            <div style={{ marginTop: 10 }}>
+                              {s.pasangan.map((pr, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', borderRadius: 8, background: '#fff', border: '1px solid #eef2ff', marginBottom: 4, fontSize: 12.5 }}>
+                                  <span style={{ flex: 1 }}>{pr.kiri}</span>
+                                  <span style={{ color: '#5B2ECC' }}>↔</span>
+                                  <span style={{ flex: 1 }}>{pr.kanan}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {!punyaOpsi && !punyaPernyataan && !punyaPasangan && s.kunciJawaban != null && (
+                            <div style={{ marginTop: 10, fontSize: 12.5, color: '#166534', fontWeight: 700 }}>
+                              ✔️ Kunci jawaban: {Array.isArray(s.kunciJawaban) ? s.kunciJawaban.join(', ') : String(s.kunciJawaban)}
+                            </div>
+                          )}
+
+                          {s.pembahasan && (
+                            <div style={{ marginTop: 12, padding: '10px 12px', background: '#fefce8', border: '1px solid #fde68a', borderRadius: 8, fontSize: 12, color: '#78350f' }}>
+                              <b>Pembahasan:</b> {s.pembahasan}
+                            </div>
+                          )}
+                          {s.catatanAdmin && (
+                            <div style={{ marginTop: 8, fontSize: 11.5, color: '#0369a1' }}>ℹ️ Catatan: {s.catatanAdmin}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </>
