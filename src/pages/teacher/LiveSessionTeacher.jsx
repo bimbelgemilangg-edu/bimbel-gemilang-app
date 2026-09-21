@@ -8,10 +8,12 @@
 // proyektor, badge tipe + petunjuk, grid CBT B/S, monitor nama+pilihan
 // siswa (privat), pembahasan HTML privat guru, tipografi matematika asli.
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import katexCss from 'katex/dist/katex.min.css?inline';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
+import { renderLatexHtml } from '../../utils/renderLatexHtml';
 import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, dengarRelawan, pilihRelawan, selesaikanMaju, mulaiTimerSesi, jedaTimerSesi, resetTimerSesi, ubahSesi, akhiriSesi } from '../../services/sesiService';
 import { beriXpKeberanian, XP_KEBERANIAN_MAJU } from '../../services/xpService';
 import { TAHAP_KELAS, tahapDenganId, formatTimer, sisaTimer } from '../../utils/tahapKelas';
@@ -84,7 +86,16 @@ export default function LiveSessionTeacher() {
   const [isFs, setIsFs] = useState(false);
   const [sesiAktifList, setSesiAktifList] = useState([]);
   const [clockNow, setClockNow] = useState(() => Date.now());
+  const [online, setOnline] = useState(() => navigator.onLine);
   const fsRef = useRef(null);
+
+  useEffect(() => {
+    const on = () => setOnline(true);
+    const off = () => setOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
+  }, []);
 
   useEffect(() => {
     const onFs = () => setIsFs(!!document.fullscreenElement);
@@ -100,7 +111,7 @@ export default function LiveSessionTeacher() {
 
   useEffect(() => {
     (async () => {
-      try { const sn = await getDocs(collection(db, 'buku_digital')); setBukuList(sn.docs.map((d) => ({ id: d.id, ...d.data() }))); } catch (e) {}
+      try { const sn = await getDocs(collection(db, 'buku_digital')); setBukuList(sn.docs.map((d) => ({ id: d.id, ...d.data() }))); } catch { /* fallback offline */ }
       try {
         const sn = await getDocs(collection(db, 'bank_soal'));
         const grup = {};
@@ -112,7 +123,7 @@ export default function LiveSessionTeacher() {
           grup[key].items.push(s);
         });
         setBankList(Object.values(grup).filter((g) => g.items.length >= 3));
-      } catch (e) {}
+      } catch { /* fallback offline */ }
     })();
   }, []);
 
@@ -123,7 +134,7 @@ export default function LiveSessionTeacher() {
       const list = sn.docs.map((d) => ({ id: d.id, ...d.data() }));
       list.sort((a, b) => (b.dibuatAt?.seconds || 0) - (a.dibuatAt?.seconds || 0));
       setSesiAktifList(list);
-    } catch (e) {}
+    } catch { /* fallback offline */ }
   };
   useEffect(() => { if (tahap === 'mode') muatSesiAktif(); }, [tahap]);
 
@@ -135,7 +146,7 @@ export default function LiveSessionTeacher() {
         const l = sn.docs.map((d) => ({ id: d.id, ...d.data() }));
         l.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
         setBabList(l);
-      } catch (e) {}
+      } catch { /* fallback offline */ }
     })();
   }, [bukuId]);
 
@@ -155,7 +166,7 @@ export default function LiveSessionTeacher() {
       try {
         const s = await getDoc(doc(db, 'buku_digital', sesi.bukuId, 'bab', sesi.babId));
         if (s.exists()) setBabHtml(s.data().html || '');
-      } catch (e) {}
+      } catch { /* fallback offline */ }
     })();
   }, [sesi && sesi.id, sesi && sesi.mode]);
 
@@ -178,6 +189,7 @@ export default function LiveSessionTeacher() {
   const gambarNow = soalNow ? ((soalDariHtml[idxNow] || {}).gambarHtml || soalNow.gambarHtml || '') : '';
   const pembahasanHtmlNow = soalNow ? (soalNow.pembahasanHtml || (soalDariHtml[idxNow] || {}).pembahasanHtml || '') : '';
   const tipeNow = soalNow?.kunci?.tipe || null;
+  const renderLiveMath = (html) => renderLatexHtml(percantikMatika(html || ''));
 
   const jwsNow = useMemo(() => (idxNow != null ? jawaban.filter((j) => j.soalIdx === idxNow) : []), [jawaban, idxNow]);
   const belum = peserta.filter((p) => !jwsNow.some((j) => j.siswaId === p.siswaId));
@@ -197,7 +209,7 @@ export default function LiveSessionTeacher() {
       const q = query(collection(db, 'sesi_kelas'), where('status', '==', 'aktif'), where('babId', '==', babItem.id));
       const sn = await getDocs(q);
       await Promise.all(sn.docs.map((d) => akhiriSesi(d.id)));
-    } catch (e) {}
+    } catch { /* fallback offline */ }
     const s = await buatSesi({ bukuId, babId: babItem.id, guruId, catatan: babItem.judul || '' });
     await ubahSesi(s.id, { mode: 'materi', sumber: 'buku', daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0 });
     setSesi({ id: s.id, kode: s.kode, mode: 'materi', sumber: 'buku', bukuId, babId: babItem.id, daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0, status: 'aktif' });
@@ -348,7 +360,7 @@ export default function LiveSessionTeacher() {
 
   return (
     <div style={S.page}>
-      <style>{CSS_MODUL}{CSS_MATIKA}</style>
+      <style>{katexCss}{CSS_MODUL}{CSS_MATIKA}</style>
       <style>{`
         .fs-area:fullscreen{background:#0f172a;overflow:auto;padding:28px}
         .fs-area:fullscreen .modmod{font-size:21px;line-height:1.7}
@@ -374,6 +386,9 @@ export default function LiveSessionTeacher() {
           <div><strong>{jwsNow.length}</strong><span>Jawaban masuk</span></div>
           <div><strong>{pertanyaan.length}</strong><span>Pertanyaan masuk</span></div>
           <div className="live-room-tip">Gunakan layar kiri untuk menjelaskan. Panel kanan adalah kendali privat guru.</div>
+        </div>
+        <div className={`live-sync-status ${online && !sesi._fromCache ? 'is-online' : 'is-offline'}`} role="status" aria-live="polite">
+          {(!online || sesi._fromCache) ? '○ Cache lokal — tunggu koneksi sesi aktif sebelum memindah soal/tahap.' : sesi._hasPendingWrites ? '◌ Perubahan tersimpan lokal — sedang dikirim ke siswa.' : '● Koneksi guru aktif — perubahan akan disebarkan ke siswa.'}
         </div>
         <div className="live-stage-control">
           <div className="live-stage-heading"><span>TAHAP KELAS</span><strong>{tahapAktif.ikon} {tahapAktif.label}</strong><small>{tahapAktif.bantuan}</small></div>
@@ -438,7 +453,7 @@ export default function LiveSessionTeacher() {
                   </div>
                 </div>
               ) : (
-                <div className="modmod" style={{ background: '#fff', borderRadius: 12, padding: 14 }} dangerouslySetInnerHTML={{ __html: percantikMatika(slideNow.html) }} />
+                <div className="modmod" style={{ background: '#fff', borderRadius: 12, padding: 14 }} dangerouslySetInnerHTML={{ __html: renderLiveMath(slideNow.html) }} />
               )}
             </div>
           )}
@@ -455,9 +470,9 @@ export default function LiveSessionTeacher() {
                 </span>
               </div>
               {gambarNow ? (
-                <div className="modmod" style={{ ...S.gambarBox, background: isFs ? '#1e293b' : '#fff' }} dangerouslySetInnerHTML={{ __html: percantikMatika(gambarNow) }} />
+                <div className="modmod" style={{ ...S.gambarBox, background: isFs ? '#1e293b' : '#fff' }} dangerouslySetInnerHTML={{ __html: renderLiveMath(gambarNow) }} />
               ) : (
-                <div style={{ fontSize: uk(15), lineHeight: 1.6, marginBottom: 10, color: warnaTeks, fontWeight: 600 }}>{soalNow.teks}</div>
+                <div className="modmod live-stem" style={{ fontSize: uk(15), lineHeight: 1.6, marginBottom: 10, color: warnaTeks, fontWeight: 600 }} dangerouslySetInnerHTML={{ __html: renderLiveMath(soalNow.teks) }} />
               )}
               {!gambarNow && soalNow.gambarUrls && soalNow.gambarUrls.length > 0 && (
                 <div style={{ marginBottom: 10 }}>
@@ -474,7 +489,7 @@ export default function LiveSessionTeacher() {
                       {String.fromCharCode(65 + i)}
                     </span>
                     <span style={{ flex: 1 }} className="modmod"
-                      dangerouslySetInnerHTML={{ __html: soalNow.pilihanHtml?.[i] || bersihVerdikt(p) }} />
+                      dangerouslySetInnerHTML={{ __html: renderLiveMath(soalNow.pilihanHtml?.[i] || bersihVerdikt(p)) }} />
                     {isKunci && <span style={{ fontSize: uk(14) }}>✅</span>}
                   </div>
                 );
@@ -487,7 +502,7 @@ export default function LiveSessionTeacher() {
                       ✓
                     </span>
                     <span style={{ flex: 1 }} className="modmod"
-                      dangerouslySetInnerHTML={{ __html: soalNow.pilihanHtml?.[i] || bersihVerdikt(p) }} />
+                      dangerouslySetInnerHTML={{ __html: renderLiveMath(soalNow.pilihanHtml?.[i] || bersihVerdikt(p)) }} />
                   </div>
                 );
               })}
@@ -504,7 +519,7 @@ export default function LiveSessionTeacher() {
                       <div key={i} style={{ ...S.cbtRow, borderTop: `1px solid ${isFs ? '#334155' : '#eef1f6'}` }}>
                         <div style={{ ...S.cbtText, fontSize: uk(13), color: warnaTeks }}>
                           {i + 1}. <span className="modmod"
-                            dangerouslySetInnerHTML={{ __html: soalNow.pernyataanHtml?.[i] || bersihVerdikt(p) }} />
+                            dangerouslySetInnerHTML={{ __html: renderLiveMath(soalNow.pernyataanHtml?.[i] || bersihVerdikt(p)) }} />
                         </div>
                         <div style={{ ...S.cbtOpt, borderLeft: `1px solid ${isFs ? '#334155' : '#eef1f6'}` }}>
                           <span style={{ ...S.cbtRing, width: uk(26), height: uk(26), fontSize: uk(13), ...(terbuka && kunciB === true ? S.cbtRingIsi : isFs ? { borderColor: '#64748b', background: '#0f172a', color: 'transparent' } : {}) }}>✓</span>
@@ -588,7 +603,7 @@ export default function LiveSessionTeacher() {
                   <div
                     className="modmod"
                     style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: 10, marginTop: 6 }}
-                    dangerouslySetInnerHTML={{ __html: percantikMatika(pembahasanHtmlNow || `<p>${soalNow.pembahasan}</p>`) }}
+                    dangerouslySetInnerHTML={{ __html: renderLiveMath(pembahasanHtmlNow || `<p>${soalNow.pembahasan}</p>`) }}
                   />
                 </details>
               )}

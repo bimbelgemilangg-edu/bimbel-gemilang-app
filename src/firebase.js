@@ -1,7 +1,10 @@
 import { initializeApp } from "firebase/app";
 
 import {
-  initializeFirestore
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
 } from "firebase/firestore";
 
 import { getAuth } from "firebase/auth";
@@ -52,14 +55,17 @@ const app =
 // initializeFirestore(app, ...).
 // ============================================================
 
-const db =
-  initializeFirestore(
-    app,
-    {
-      experimentalAutoDetectLongPolling:
-        true,
-    }
-  );
+let db;
+try {
+  db = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  });
+} catch (error) {
+  // Fallback aman untuk browser private mode/IndexedDB yang tidak tersedia.
+  console.warn('[Firestore] Cache persisten tidak tersedia; memakai cache sesi.', error);
+  db = getFirestore(app);
+}
 
 // ============================================================
 // AUTH
