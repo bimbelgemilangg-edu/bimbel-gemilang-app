@@ -387,8 +387,9 @@ function interaktif(soalEl, root, soalNo, opts) {
     const actions = document.createElement('div');
     actions.className = 'gb-cbt-actions';
     const btn = buatBtn('Periksa Jawaban');
-    const ragu = buatBtn('Tandai Ragu-ragu', 'gb-ragu');
-    ragu.addEventListener('click', () => {
+    const formative = soalEl.dataset.questionMode === 'formative';
+    const ragu = formative ? null : buatBtn('Tandai Ragu-ragu', 'gb-ragu');
+    if (ragu) ragu.addEventListener('click', () => {
       if (soalEl.dataset.done) return;
       const aktif = soalEl.dataset.doubt !== '1';
       soalEl.dataset.doubt = aktif ? '1' : '0';
@@ -407,12 +408,12 @@ function interaktif(soalEl, root, soalNo, opts) {
         else { x.style.opacity = '0.72'; }
       });
       btn.disabled = true;
-      ragu.disabled = true;
+      if (ragu) ragu.disabled = true;
       bukaKunci(details, false);
       banner(soalEl, dipilih === kunci.pg);
       catat(dipilih === kunci.pg, String.fromCharCode(65 + dipilih));
     });
-    actions.appendChild(btn); actions.appendChild(ragu);
+    actions.appendChild(btn); if (ragu) actions.appendChild(ragu);
     const anchor = ul || lis[lis.length - 1];
     if (anchor) anchor.after(actions); else soalEl.appendChild(actions);
     return true;
@@ -685,10 +686,14 @@ function enhance(root, opts) {
   const bukuUi = bangunBuku(wrap, opts);
 
   const semuaSoal = [...wrap.querySelectorAll('.soal')];
+  const soalCbt = semuaSoal.filter((soal) => soal.dataset.questionMode !== 'formative');
+  const soalFormative = semuaSoal.filter((soal) => soal.dataset.questionMode === 'formative');
   const sticky = document.createElement('div');
   sticky.className = 'gb-sticky';
   const chipSoal = document.createElement('span'); chipSoal.className = 'gb-chip';
-  chipSoal.textContent = opts.presentasi ? `🎓 Mode Bahas · ${semuaSoal.length} soal` : `🎯 ${semuaSoal.length} soal`;
+  chipSoal.textContent = opts.presentasi
+    ? `🎓 Mode Bahas · ${semuaSoal.length} soal/latihan`
+    : `📖 ${soalFormative.length} latihan · 🧪 ${soalCbt.length} soal CBT`;
   const chipSiap = document.createElement('span'); chipSiap.className = 'gb-chip';
   const chipPaham = document.createElement('span'); chipPaham.className = 'gb-chip';
   const chipVer = document.createElement('span'); chipVer.className = 'gb-chip';
@@ -706,7 +711,7 @@ function enhance(root, opts) {
     bExit.addEventListener('click', () => { if (opts.onKeluar) opts.onKeluar(); });
     sticky.appendChild(bAll); sticky.appendChild(bNone); sticky.appendChild(bExit);
   }
-  bangunPaletSoal(sticky, semuaSoal, bukuUi);
+  bangunPaletSoal(sticky, soalCbt, bukuUi);
   wrap.insertBefore(sticky, wrap.firstChild);
 
   if (!opts.presentasi) {
