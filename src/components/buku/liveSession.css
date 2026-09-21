@@ -82,3 +82,16 @@
 .live-projector-queue-item{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,.08);font-size:clamp(13px,1.5vw,18px)}
 .live-projector-code{font-size:clamp(24px,4vw,48px);font-weight:950;letter-spacing:8px;color:#c4b5fd}
 @media (max-width:760px){.live-courage-active,.live-courage-student{align-items:stretch;flex-direction:column}.live-courage-active button,.live-courage-student button{width:100%}.live-projector-grid{grid-template-columns:1fr}}
+
+.live-stage-control{margin-top:12px;padding:11px 12px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.09)}
+.live-stage-heading{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.live-stage-heading span,.live-stage-mini-label{font-size:9px;letter-spacing:1.5px;font-weight:900;color:#c4b5fd}
+.live-stage-heading strong{font-size:14px;color:#fff}.live-stage-heading small{font-size:10px;color:#ddd6fe}
+.live-stage-buttons{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.live-stage-buttons button{border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.08);color:#ede9fe;font-size:10px;font-weight:800;cursor:pointer}
+.live-stage-buttons button.active{border-color:#fbbf24;background:#fef3c7;color:#92400e}
+.live-timer-control{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border-radius:14px;background:#111827;border:1px solid #374151;color:#fff}
+.live-timer-control strong{display:block;font-size:25px;letter-spacing:2px;color:#fef3c7;line-height:1.05;margin:3px 0}.live-timer-control small{display:block;color:#9ca3af;font-size:10px}.live-timer-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.live-timer-actions button,.live-timer-actions select{border:1px solid #4b5563;border-radius:8px;padding:7px 9px;background:#1f2937;color:#f9fafb;font-size:11px;font-weight:800;cursor:pointer}.live-timer-actions select{font-weight:600}
+.live-stage-projector{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(196,181,253,.3);color:#ede9fe;font-size:12px;font-weight:800}
+@media (max-width:760px){.live-timer-control{align-items:flex-start;flex-direction:column}.live-timer-actions{width:100%}.live-timer-actions button,.live-timer-actions select{flex:1}}
+.live-stage-student-tip{margin-top:9px;padding:8px 10px;border-left:3px solid #a78bfa;color:#ede9fe;background:rgba(255,255,255,.08);border-radius:0 8px 8px 0;font-size:11px;line-height:1.45}

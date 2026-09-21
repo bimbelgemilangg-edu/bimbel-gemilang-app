@@ -12,8 +12,9 @@ import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firesto
 import { db } from '../../firebase';
 import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
-import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, dengarRelawan, pilihRelawan, selesaikanMaju, ubahSesi, akhiriSesi } from '../../services/sesiService';
+import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, dengarRelawan, pilihRelawan, selesaikanMaju, mulaiTimerSesi, jedaTimerSesi, resetTimerSesi, ubahSesi, akhiriSesi } from '../../services/sesiService';
 import { beriXpKeberanian, XP_KEBERANIAN_MAJU } from '../../services/xpService';
+import { TAHAP_KELAS, tahapDenganId, formatTimer, sisaTimer } from '../../utils/tahapKelas';
 import '../../components/buku/liveSession.css';
 
 const S = {
@@ -82,6 +83,7 @@ export default function LiveSessionTeacher() {
   const [relawan, setRelawan] = useState([]);
   const [isFs, setIsFs] = useState(false);
   const [sesiAktifList, setSesiAktifList] = useState([]);
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const fsRef = useRef(null);
 
   useEffect(() => {
@@ -157,6 +159,12 @@ export default function LiveSessionTeacher() {
     })();
   }, [sesi && sesi.id, sesi && sesi.mode]);
 
+  useEffect(() => {
+    if (!sesi || sesi.timerStatus !== 'running') return undefined;
+    const id = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [sesi && sesi.id, sesi && sesi.timerStatus]);
+
   const slides = useMemo(() => (babHtml ? parseSlides(babHtml) : []), [babHtml]);
   const soalDariHtml = useMemo(() => (babHtml ? parseDaftarSoal(babHtml) : []), [babHtml]);
 
@@ -219,6 +227,12 @@ export default function LiveSessionTeacher() {
 
   const keSlide = (i) => ubahSesi(sesi.id, { slideAktif: Math.max(0, Math.min(slides.length - 1, i)), kunciTerbuka: false, langkahTerbuka: 0 });
   const masukFullscreen = () => { if (fsRef.current && fsRef.current.requestFullscreen) fsRef.current.requestFullscreen(); };
+  const tahapAktif = tahapDenganId(sesi?.tahapKelas);
+  const timerDetik = sisaTimer(sesi, clockNow);
+  const ubahTahapKelas = (id) => ubahSesi(sesi.id, { tahapKelas: id });
+  const mulaiTimer = (detik = sesi.timerDurasiDetik || 300) => mulaiTimerSesi(sesi.id, detik);
+  const jedaTimer = () => jedaTimerSesi(sesi.id, timerDetik);
+  const resetTimer = () => resetTimerSesi(sesi.id, sesi.timerDurasiDetik || 300);
   const panggilMaju = async (item) => {
     try { await pilihRelawan(sesi.id, item); } catch { window.alert('Siswa belum dapat dipanggil. Periksa koneksi lalu coba lagi.'); }
   };
@@ -360,6 +374,22 @@ export default function LiveSessionTeacher() {
           <div><strong>{jwsNow.length}</strong><span>Jawaban masuk</span></div>
           <div><strong>{pertanyaan.length}</strong><span>Pertanyaan masuk</span></div>
           <div className="live-room-tip">Gunakan layar kiri untuk menjelaskan. Panel kanan adalah kendali privat guru.</div>
+        </div>
+        <div className="live-stage-control">
+          <div className="live-stage-heading"><span>TAHAP KELAS</span><strong>{tahapAktif.ikon} {tahapAktif.label}</strong><small>{tahapAktif.bantuan}</small></div>
+          <div className="live-stage-buttons">
+            {TAHAP_KELAS.map((t) => <button type="button" key={t.id} className={t.id === tahapAktif.id ? 'active' : ''} onClick={() => ubahTahapKelas(t.id)}>{t.ikon} {t.label}</button>)}
+          </div>
+        </div>
+        <div className="live-timer-control">
+          <div><span className="live-stage-mini-label">TIMER KELAS</span><strong>{formatTimer(timerDetik)}</strong><small>{sesi.timerStatus === 'running' && timerDetik > 0 ? 'Berjalan di semua layar' : sesi.timerStatus === 'running' ? 'Waktu habis' : sesi.timerStatus === 'paused' ? 'Dijeda oleh guru' : 'Siap dimulai'}</small></div>
+          <div className="live-timer-actions">
+            {sesi.timerStatus === 'running' ? <button type="button" onClick={jedaTimer}>⏸ Jeda</button> : <button type="button" onClick={() => mulaiTimer(sesi.timerSisaDetik || sesi.timerDurasiDetik || 300)}>▶ Mulai</button>}
+            <button type="button" onClick={resetTimer}>↺ Reset</button>
+            <select aria-label="Durasi timer" value={sesi.timerDurasiDetik || 300} onChange={(e) => ubahSesi(sesi.id, { timerDurasiDetik: Number(e.target.value), timerSisaDetik: Number(e.target.value), timerStatus: 'idle' })}>
+              <option value="60">1 menit</option><option value="180">3 menit</option><option value="300">5 menit</option><option value="600">10 menit</option>
+            </select>
+          </div>
         </div>
         {sesi.mode === 'materi' && (
           <div style={S.row}>

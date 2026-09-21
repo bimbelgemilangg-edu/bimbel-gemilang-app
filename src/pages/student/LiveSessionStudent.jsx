@@ -9,6 +9,7 @@ import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseSlides, parseDaftarSoal, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
+import { tahapDenganId, formatTimer, sisaTimer } from '../../utils/tahapKelas';
 import { cariSesiByKode, gabungSesi, dengarSesi, dengarRelawanSiswa, ajukanMaju, kirimJawaban, kirimTanya } from '../../services/sesiService';
 import '../../components/buku/liveSession.css';
 
@@ -56,6 +57,7 @@ export default function LiveSessionStudent() {
   const [statusMaju, setStatusMaju] = useState(null);
   const [sedangAjukan, setSedangAjukan] = useState(false);
   const [online, setOnline] = useState(() => navigator.onLine);
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const kirimGuard = useRef({});
 
   useEffect(() => {
@@ -68,6 +70,12 @@ export default function LiveSessionStudent() {
     if (!sesi || !siswaId) return undefined;
     return dengarRelawanSiswa(sesi.id, siswaId, setStatusMaju);
   }, [sesi && sesi.id, siswaId]);
+
+  useEffect(() => {
+    if (!sesi || sesi.timerStatus !== 'running') return undefined;
+    const id = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [sesi && sesi.timerStatus]);
 
   useEffect(() => {
     const saatOnline = () => setOnline(true);
@@ -129,6 +137,8 @@ export default function LiveSessionStudent() {
   const terbuka = sesi ? !!sesi.kunciTerbuka : false;
   const gambarNow = soal ? ((soalDariHtml[idxSoal] || {}).gambarHtml || soal.gambarHtml || '') : '';
   const pembahasanHtmlNow = soal ? (soal.pembahasanHtml || (soalDariHtml[idxSoal] || {}).pembahasanHtml || '') : '';
+  const tahapAktif = tahapDenganId(sesi?.tahapKelas);
+  const timerDetik = sisaTimer(sesi, clockNow);
 
   async function gabung() {
     setErr('');
@@ -225,6 +235,7 @@ export default function LiveSessionStudent() {
           <span style={S.chip}>{sesi.mode === 'materi' ? '📖 Materi Interaktif' : '✍️ Soal & Pembahasan'}</span>
           {sesi.mode === 'materi' && slideNow && <span style={S.chip}>Slide {(sesi.slideAktif || 0) + 1}/{slides.length}</span>}
           {soal && <span style={S.chip}>Soal {idxSoal + 1}/{daftarSoal.length}</span>}
+          <span style={{ ...S.chip, background: '#fef3c7', color: '#92400e' }}>{tahapAktif.ikon} {tahapAktif.label} · {formatTimer(timerDetik)}</span>
         </div>
         <div className="live-room-tip">Guru mengendalikan materi dan membuka pembahasan. Kamu dapat menjawab dan bertanya tanpa meninggalkan halaman.</div>
         <div className={`live-courage-student ${statusMaju?.status === 'dipilih' ? 'is-called' : ''}`}>
@@ -233,6 +244,7 @@ export default function LiveSessionStudent() {
             {statusMaju?.status === 'dipilih' ? '✓ Kamu dipanggil' : statusMaju?.status === 'menunggu' ? '⏳ Menunggu giliran' : statusMaju?.status === 'lokal' ? '💾 Tersimpan offline' : sedangAjukan ? 'Mengirim…' : 'Saya mau maju'}
           </button>
         </div>
+        <div className="live-stage-student-tip">{tahapAktif.bantuan}</div>
       </div>
 
       {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (

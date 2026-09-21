@@ -19,6 +19,7 @@ export async function buatSesi({ bukuId, babId, guruId, catatan, soalPrioritas, 
     slideAktif: 0,                 // untuk mode materi (index slide)
     soalAktif: null,               // untuk mode bank (index soal)
     kunciTerbuka: false, langkahTerbuka: 0,
+    tahapKelas: 'menjelaskan', timerStatus: 'idle', timerDurasiDetik: 300, timerSisaDetik: 300,
     catatan: catatan || '', soalPrioritas: soalPrioritas || [],
     daftarSoal: daftarSoal || [],
     dibuatAt: serverTimestamp(),
@@ -112,3 +113,12 @@ export async function selesaikanMaju(sesiId, siswaId) {
     }),
   ]);
 }
+
+export const mulaiTimerSesi = (sesiId, detik) =>
+  ubahSesi(sesiId, { timerStatus: 'running', timerDurasiDetik: Number(detik) || 300, timerSisaDetik: Number(detik) || 300, timerMulaiAt: serverTimestamp() });
+
+export const jedaTimerSesi = (sesiId, sisaDetik) =>
+  ubahSesi(sesiId, { timerStatus: 'paused', timerSisaDetik: Math.max(0, Number(sisaDetik) || 0) });
+
+export const resetTimerSesi = (sesiId, detik) =>
+  ubahSesi(sesiId, { timerStatus: 'idle', timerDurasiDetik: Number(detik) || 300, timerSisaDetik: Number(detik) || 300 });
