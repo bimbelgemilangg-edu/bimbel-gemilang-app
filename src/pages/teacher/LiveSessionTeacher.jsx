@@ -12,7 +12,8 @@ import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firesto
 import { db } from '../../firebase';
 import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
-import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, ubahSesi, akhiriSesi } from '../../services/sesiService';
+import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, dengarRelawan, pilihRelawan, selesaikanMaju, ubahSesi, akhiriSesi } from '../../services/sesiService';
+import { beriXpKeberanian, XP_KEBERANIAN_MAJU } from '../../services/xpService';
 import '../../components/buku/liveSession.css';
 
 const S = {
@@ -78,6 +79,7 @@ export default function LiveSessionTeacher() {
   const [peserta, setPeserta] = useState([]);
   const [jawaban, setJawaban] = useState([]);
   const [pertanyaan, setPertanyaan] = useState([]);
+  const [relawan, setRelawan] = useState([]);
   const [isFs, setIsFs] = useState(false);
   const [sesiAktifList, setSesiAktifList] = useState([]);
   const fsRef = useRef(null);
@@ -141,7 +143,8 @@ export default function LiveSessionTeacher() {
     const u2 = dengarPeserta(sesi.id, setPeserta);
     const u3 = dengarJawaban(sesi.id, setJawaban);
     const u4 = dengarTanya(sesi.id, setPertanyaan);
-    return () => { u1(); u2(); u3(); u4(); };
+    const u5 = dengarRelawan(sesi.id, setRelawan);
+    return () => { u1(); u2(); u3(); u4(); u5(); };
   }, [sesi && sesi.id]);
 
   useEffect(() => {
@@ -216,6 +219,17 @@ export default function LiveSessionTeacher() {
 
   const keSlide = (i) => ubahSesi(sesi.id, { slideAktif: Math.max(0, Math.min(slides.length - 1, i)), kunciTerbuka: false, langkahTerbuka: 0 });
   const masukFullscreen = () => { if (fsRef.current && fsRef.current.requestFullscreen) fsRef.current.requestFullscreen(); };
+  const panggilMaju = async (item) => {
+    try { await pilihRelawan(sesi.id, item); } catch { window.alert('Siswa belum dapat dipanggil. Periksa koneksi lalu coba lagi.'); }
+  };
+  const selesaikanSiswaMaju = async () => {
+    const aktif = sesi?.relawanAktif;
+    if (!aktif) return;
+    try {
+      await beriXpKeberanian({ sesiId: sesi.id, siswaId: aktif.siswaId, nama: aktif.nama });
+      await selesaikanMaju(sesi.id, aktif.siswaId);
+    } catch { window.alert('XP belum berhasil dicatat. Jangan tutup sesi; coba tombol ini lagi.'); }
+  };
 
   const warnaTeks = isFs ? '#e2e8f0' : '#1e293b';
   const warnaSub = isFs ? '#94a3b8' : '#64748b';
@@ -333,11 +347,13 @@ export default function LiveSessionTeacher() {
           <span style={S.kode}>{sesi.kode}</span>
           <span style={S.chip}>{sesi.mode === 'materi' ? '📖 Materi Interaktif' : '✍️ Soal & Pembahasan'}</span>
           <span style={S.chip}>👥 {peserta.length} siswa</span>
+          {sesi.relawanAktif && <span className="live-courage-chip">🎤 {sesi.relawanAktif.nama} maju</span>}
           {sesi.mode === 'materi' && slideNow && <span style={S.chip}>Slide {(sesi.slideAktif || 0) + 1}/{slides.length}</span>}
           {soalNow && <span style={S.chip}>✍️ Soal {idxNow + 1}/{daftarSoal.length}</span>}
           {terbuka && <span style={{ ...S.chip, background: '#dcfce7', color: '#166534' }}>🔓 kunci terbuka</span>}
           <span style={{ flex: 1 }} />
           <button style={S.btnR} onClick={async () => { if (window.confirm('Akhiri sesi?')) { await akhiriSesi(sesi.id); setTahap('mode'); setSesi(null); } }}>⏹ Akhiri</button>
+          <button style={S.btn2} onClick={() => window.open(`/guru/sesi-live/${sesi.id}/proyektor`, '_blank', 'noopener,noreferrer')}>📽️ Buka Proyektor</button>
         </div>
         <div className="live-room-overview">
           <div><strong>{peserta.length}</strong><span>Siswa terhubung</span></div>
@@ -482,6 +498,24 @@ export default function LiveSessionTeacher() {
         </div>
 
         <div className="live-teacher-panel" style={S.card}>
+          <div className="live-courage-panel">
+            <div className="live-panel-title">🎤 Keberanian maju ke papan</div>
+            {sesi.relawanAktif ? (
+              <div className="live-courage-active">
+                <div><span className="live-courage-label">DIPANGGIL GURU</span><strong>{sesi.relawanAktif.nama}</strong><small>Silakan maju ke papan dan jelaskan caramu.</small></div>
+                <button type="button" onClick={selesaikanSiswaMaju}>✓ Selesai +{XP_KEBERANIAN_MAJU} XP</button>
+              </div>
+            ) : (
+              <>
+                <div className="live-panel-empty">Siswa yang menekan “Saya mau maju” akan muncul di sini.</div>
+                <div className="live-courage-queue">
+                  {relawan.filter((r) => r.status === 'menunggu').map((r) => (
+                    <div className="live-courage-row" key={r.id}><strong>{r.nama || r.siswaId}</strong><span>siap mencoba</span><button type="button" onClick={() => panggilMaju(r)}>Panggil</button></div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>📡 Jawaban siswa real-time</h4>
           {!soalNow && <p style={{ fontSize: 12, color: '#64748b' }}>{sesi.mode === 'materi' ? 'Navigasi slide; saat slide soal tampil, jawaban siswa masuk ke sini.' : 'Pilih soal untuk ditayangkan.'}</p>}
           {soalNow && (

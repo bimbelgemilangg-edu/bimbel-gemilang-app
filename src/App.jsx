@@ -124,6 +124,7 @@ import ClassSession from './pages/teacher/ClassSession';
 
 import TeacherLearningAid from './pages/teacher/TeacherLearningAid';
 import LiveSessionTeacher from './pages/teacher/LiveSessionTeacher';
+import ProjectorSession from './pages/teacher/ProjectorSession';
 import LiveSessionStudent from './pages/student/LiveSessionStudent';
 
 // ============================================================
@@ -564,6 +565,7 @@ function App() {
         <Route path="/guru/cek-tugas" element={<GuruPage><CekTugasSiswa /></GuruPage>} />
         <Route path="/guru/alat-bantu" element={<GuruPage><TeacherLearningAid /></GuruPage>} />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
+        <Route path="/guru/sesi-live/:sesiId/proyektor" element={<GuruRoute><ProjectorSession /></GuruRoute>} />
         <Route path="/siswa/sesi-live" element={<SiswaRoute><LiveSessionStudent /></SiswaRoute>} />
 
         {/* ====================================================
