@@ -12,7 +12,8 @@ import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firesto
 import { db } from '../../firebase';
 import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
-import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, ubahSesi, akhiriSesi } from '../../services/sesiService';
+import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, ubahSesi, akhiriSesi } from '../../services/sesiService';
+import '../../components/buku/liveSession.css';
 
 const S = {
   page: { maxWidth: 1150, margin: '0 auto', padding: 16, fontFamily: 'sans-serif' },
@@ -76,6 +77,7 @@ export default function LiveSessionTeacher() {
   const [sesi, setSesi] = useState(null);
   const [peserta, setPeserta] = useState([]);
   const [jawaban, setJawaban] = useState([]);
+  const [pertanyaan, setPertanyaan] = useState([]);
   const [isFs, setIsFs] = useState(false);
   const [sesiAktifList, setSesiAktifList] = useState([]);
   const fsRef = useRef(null);
@@ -138,7 +140,8 @@ export default function LiveSessionTeacher() {
     const u1 = dengarSesi(sesi.id, (s) => { if (s) setSesi(s); });
     const u2 = dengarPeserta(sesi.id, setPeserta);
     const u3 = dengarJawaban(sesi.id, setJawaban);
-    return () => { u1(); u2(); u3(); };
+    const u4 = dengarTanya(sesi.id, setPertanyaan);
+    return () => { u1(); u2(); u3(); u4(); };
   }, [sesi && sesi.id]);
 
   useEffect(() => {
@@ -324,8 +327,9 @@ export default function LiveSessionTeacher() {
         .fs-exit{display:none}
         .fs-area:fullscreen .fs-exit{display:inline-block}
       `}</style>
-      <div style={S.card}>
+      <div className="live-room-header" style={S.card}>
         <div style={S.row}>
+          <span className="live-room-kicker">RUANG KENDALI GURU · TERHUBUNG REAL-TIME</span>
           <span style={S.kode}>{sesi.kode}</span>
           <span style={S.chip}>{sesi.mode === 'materi' ? '📖 Materi Interaktif' : '✍️ Soal & Pembahasan'}</span>
           <span style={S.chip}>👥 {peserta.length} siswa</span>
@@ -334,6 +338,12 @@ export default function LiveSessionTeacher() {
           {terbuka && <span style={{ ...S.chip, background: '#dcfce7', color: '#166534' }}>🔓 kunci terbuka</span>}
           <span style={{ flex: 1 }} />
           <button style={S.btnR} onClick={async () => { if (window.confirm('Akhiri sesi?')) { await akhiriSesi(sesi.id); setTahap('mode'); setSesi(null); } }}>⏹ Akhiri</button>
+        </div>
+        <div className="live-room-overview">
+          <div><strong>{peserta.length}</strong><span>Siswa terhubung</span></div>
+          <div><strong>{jwsNow.length}</strong><span>Jawaban masuk</span></div>
+          <div><strong>{pertanyaan.length}</strong><span>Pertanyaan masuk</span></div>
+          <div className="live-room-tip">Gunakan layar kiri untuk menjelaskan. Panel kanan adalah kendali privat guru.</div>
         </div>
         {sesi.mode === 'materi' && (
           <div style={S.row}>
@@ -471,7 +481,7 @@ export default function LiveSessionTeacher() {
           {sesi.mode === 'materi' && !slideNow && <p style={{ fontSize: 12, color: '#64748b' }}>Memuat slide...</p>}
         </div>
 
-        <div style={S.card}>
+        <div className="live-teacher-panel" style={S.card}>
           <h4 style={{ margin: '0 0 10px', fontSize: 14 }}>📡 Jawaban siswa real-time</h4>
           {!soalNow && <p style={{ fontSize: 12, color: '#64748b' }}>{sesi.mode === 'materi' ? 'Navigasi slide; saat slide soal tampil, jawaban siswa masuk ke sini.' : 'Pilih soal untuk ditayangkan.'}</p>}
           {soalNow && (
@@ -518,6 +528,16 @@ export default function LiveSessionTeacher() {
                   />
                 </details>
               )}
+              <div className="live-question-panel">
+                <div className="live-panel-title">💬 Pertanyaan siswa</div>
+                {pertanyaan.length === 0 && <div className="live-panel-empty">Belum ada pertanyaan. Siswa dapat mengirim pertanyaan dari panel mereka.</div>}
+                {pertanyaan.slice(-6).map((t) => (
+                  <div className="live-question-row" key={t.id}>
+                    <div><strong>{t.nama || 'Siswa'}</strong><p>{t.teks}</p></div>
+                    <button type="button" onClick={() => hapusTanya(sesi.id, t.id)}>Selesai</button>
+                  </div>
+                ))}
+              </div>
             </>
           )}
         </div>

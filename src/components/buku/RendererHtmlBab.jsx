@@ -153,9 +153,13 @@ const BASE_STYLE = `
   .gb-wrap .gb-qnum.is-doubt{background:#f97316;color:#fff;border-color:#f97316}
   .gb-wrap .gb-ragu{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
   .gb-wrap .gb-ragu.gb-aktif{background:#f97316;color:#fff;border-color:#f97316}
-  .gb-wrap .langkah-gemilang{position:relative;margin:16px 0;padding:18px;border-radius:18px;background:linear-gradient(135deg,#fff7cc,#fffdf2);border:1px solid #f4d35e;box-shadow:0 8px 22px rgba(183,121,31,.10)}
+  .gb-wrap .langkah-gemilang{position:relative;margin:16px 0;padding:18px;border-radius:18px;background:linear-gradient(135deg,#fff7cc,#fffdf2);border:1px solid #f4d35e;box-shadow:0 8px 22px rgba(183,121,31,.10);color:#334155}
   .gb-wrap .langkah-gemilang::before{content:"★ LANGKAH GEMILANG";display:inline-block;margin-bottom:9px;color:#7c3aed;font:900 11px/1 system-ui,sans-serif;letter-spacing:.08em}
   .gb-wrap .rumus-gemilang{margin:14px 0;padding:16px 18px;border-radius:18px;background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;box-shadow:0 10px 26px rgba(91,33,182,.22)}
+  .gb-wrap .rumus-gemilang p,.gb-wrap .rumus-gemilang li,.gb-wrap .rumus-gemilang strong{color:#fff}
+  .gb-wrap .rumus-gemilang .langkah li{background:rgba(255,255,255,.96);border-color:rgba(255,255,255,.7);color:#334155}
+  .gb-wrap .rumus-gemilang .langkah li::before{background:#4c1d95;color:#fff}
+  .gb-wrap .rumus-gemilang .katex{color:#fff}
   .gb-wrap .rumus-gemilang::before{content:"★ RUMUS GEMILANG";display:block;margin-bottom:8px;color:#fde68a;font:900 11px/1 system-ui,sans-serif;letter-spacing:.08em}
   .gb-wrap .teacher-only{display:none}
   .gb-wrap.gb-mode-teacher .teacher-only{display:block}
