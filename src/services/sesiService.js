@@ -1,7 +1,7 @@
 // src/services/sesiService.js — SESI KELAS (2 mode: materi interaktif & bank soal)
 import {
   collection, doc, setDoc, updateDoc, getDocs, query, where,
-  onSnapshot, serverTimestamp, addDoc, deleteDoc,
+  onSnapshot, serverTimestamp, deleteDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -36,7 +36,9 @@ export async function cariSesiByKode(kode) {
 }
 
 export const dengarSesi = (sesiId, cb) =>
-  onSnapshot(doc(db, 'sesi_kelas', sesiId), (s) => cb(s.exists() ? { id: s.id, ...s.data() } : null));
+  onSnapshot(doc(db, 'sesi_kelas', sesiId), { includeMetadataChanges: true }, (s) => cb(s.exists()
+    ? { id: s.id, ...s.data(), _fromCache: s.metadata.fromCache, _hasPendingWrites: s.metadata.hasPendingWrites }
+    : null));
 
 export const ubahSesi = (sesiId, patch) =>
   updateDoc(doc(db, 'sesi_kelas', sesiId), { ...patch, updatedAt: serverTimestamp() });
@@ -64,9 +66,11 @@ export const dengarJawaban = (sesiId, cb) =>
   onSnapshot(collection(db, 'sesi_kelas', sesiId, 'jawaban'),
     (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
 
-export async function kirimTanya(sesiId, { siswaId, nama, teks }) {
-  await addDoc(collection(db, 'sesi_kelas', sesiId, 'tanya'),
-    { siswaId, nama: nama || '', teks, ts: serverTimestamp() });
+export async function kirimTanya(sesiId, { siswaId, nama, teks, eventId }) {
+  const safeId = String(eventId || `${siswaId || 'siswa'}_${Date.now()}`)
+    .replace(/[^a-zA-Z0-9_-]/g, '_');
+  await setDoc(doc(db, 'sesi_kelas', sesiId, 'tanya', safeId),
+    { siswaId, nama: nama || '', teks, eventId: safeId, ts: serverTimestamp() }, { merge: true });
 }
 
 export const dengarTanya = (sesiId, cb) =>

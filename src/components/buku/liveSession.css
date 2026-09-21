@@ -95,3 +95,13 @@
 .live-stage-projector{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(196,181,253,.3);color:#ede9fe;font-size:12px;font-weight:800}
 @media (max-width:760px){.live-timer-control{align-items:flex-start;flex-direction:column}.live-timer-actions{width:100%}.live-timer-actions button,.live-timer-actions select{flex:1}}
 .live-stage-student-tip{margin-top:9px;padding:8px 10px;border-left:3px solid #a78bfa;color:#ede9fe;background:rgba(255,255,255,.08);border-radius:0 8px 8px 0;font-size:11px;line-height:1.45}
+.live-stem{overflow-wrap:anywhere;word-break:normal}
+.live-stem .gb-katex-block,.live-student-ask .gb-katex-block{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:7px 2px;text-align:center}
+.live-stem .gb-katex-inline,.live-student-ask .gb-katex-inline{display:inline-block;max-width:100%;vertical-align:middle}
+.live-stem .katex,.live-student-ask .katex{font-size:1.08em}
+.live-stem .katex-display{margin:.35em 0}
+.live-sync-status{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;padding:8px 10px;border-radius:10px;font-size:11px;line-height:1.4;font-weight:700}
+.live-sync-status.is-online{background:#ecfdf5;border:1px solid #a7f3d0;color:#166534}
+.live-sync-status.is-offline{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}
+.live-sync-status.is-syncing{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3}
+.live-sync-status button{margin-left:auto;border:1px solid currentColor;border-radius:7px;padding:4px 8px;background:transparent;color:inherit;font-size:10px;font-weight:800;cursor:pointer}

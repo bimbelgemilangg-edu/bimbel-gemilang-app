@@ -5,12 +5,15 @@
 // terkirim & terkunci, (3) setelah kirim semua opsi jadi div mati + 🔒.
 // Tipografi matematika dipercantik lewat percantikMatika().
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import katexCss from 'katex/dist/katex.min.css?inline';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseSlides, parseDaftarSoal, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
+import { renderLatexHtml } from '../../utils/renderLatexHtml';
 import { tahapDenganId, formatTimer, sisaTimer } from '../../utils/tahapKelas';
 import { cariSesiByKode, gabungSesi, dengarSesi, dengarRelawanSiswa, ajukanMaju, kirimJawaban, kirimTanya } from '../../services/sesiService';
+import { flushLiveActions, listLiveActions, queueLiveAction } from '../../services/liveOutbox';
 import '../../components/buku/liveSession.css';
 
 const S = {
@@ -57,8 +60,34 @@ export default function LiveSessionStudent() {
   const [statusMaju, setStatusMaju] = useState(null);
   const [sedangAjukan, setSedangAjukan] = useState(false);
   const [online, setOnline] = useState(() => navigator.onLine);
+  const [pendingSync, setPendingSync] = useState(0);
+  const [syncing, setSyncing] = useState(false);
   const [clockNow, setClockNow] = useState(() => Date.now());
   const kirimGuard = useRef({});
+  const syncBusy = useRef(false);
+
+  const renderLiveMath = (html) => renderLatexHtml(percantikMatika(html || ''));
+  const withTimeout = (promise, ms = 6000) => Promise.race([
+    promise,
+    new Promise((_, reject) => window.setTimeout(() => reject(new Error('NETWORK_TIMEOUT')), ms)),
+  ]);
+
+  async function syncOutbox() {
+    if (!sesi || !online || syncBusy.current) return;
+    syncBusy.current = true;
+    setSyncing(true);
+    try {
+      const hasil = await flushLiveActions(sesi.id, async (item) => {
+        if (item.kind === 'answer') await withTimeout(kirimJawaban(sesi.id, item.payload));
+        if (item.kind === 'question') await withTimeout(kirimTanya(sesi.id, item.payload));
+        if (item.kind === 'volunteer') await withTimeout(ajukanMaju(sesi.id, item.payload));
+      });
+      setPendingSync(hasil.remaining);
+    } finally {
+      syncBusy.current = false;
+      setSyncing(false);
+    }
+  }
 
   useEffect(() => {
     if (!sesi) return undefined;
@@ -86,13 +115,24 @@ export default function LiveSessionStudent() {
   }, []);
 
   useEffect(() => {
-    if (!sesi || !siswaId || !online) return undefined;
-    const key = `gemilang:relawan:${sesi.id}:${siswaId}`;
-    const pending = localStorage.getItem(key);
-    if (!pending) return undefined;
-    ajukanMaju(sesi.id, { siswaId, nama }).then(() => localStorage.removeItem(key)).catch(() => {});
+    if (!sesi) return undefined;
+    const pending = listLiveActions(sesi.id);
+    setPendingSync(pending.length);
+    pending.filter((item) => item.kind === 'answer').forEach((item) => {
+      const idx = item.payload?.soalIdx;
+      if (idx != null) {
+        kirimGuard.current[idx] = true;
+        setTerkirim((t) => ({ ...t, [idx]: !!item.payload.benar }));
+      }
+    });
     return undefined;
-  }, [sesi && sesi.id, siswaId, online, nama]);
+  }, [sesi && sesi.id]);
+
+  useEffect(() => {
+    if (!sesi || !online) return undefined;
+    syncOutbox();
+    return undefined;
+  }, [sesi && sesi.id, online]);
 
   useEffect(() => {
     if (!sesi || !siswaId) return undefined;
@@ -142,10 +182,14 @@ export default function LiveSessionStudent() {
 
   async function gabung() {
     setErr('');
-    const s = await cariSesiByKode(kode);
-    if (!s) { setErr('Kode tidak ditemukan / sesi sudah berakhir.'); return; }
-    await gabungSesi(s.id, siswaId, nama);
-    setSesi(s);
+    try {
+      const s = await withTimeout(cariSesiByKode(kode));
+      if (!s) { setErr('Kode tidak ditemukan / sesi sudah berakhir.'); return; }
+      await withTimeout(gabungSesi(s.id, siswaId, nama));
+      setSesi(s);
+    } catch {
+      setErr('Belum bisa terhubung. Periksa sinyal lalu coba lagi.');
+    }
   }
 
   async function kirimNow(jw) {
@@ -153,11 +197,20 @@ export default function LiveSessionStudent() {
     if (terkirim[idxSoal] !== undefined || kirimGuard.current[idxSoal]) return;
     kirimGuard.current[idxSoal] = true;
     const benar = cekBenar(soal.kunci, jw);
+    const payload = { siswaId, nama, soalIdx: idxSoal, jawaban: jw, benar };
     setTerkirim((t) => ({ ...t, [idxSoal]: benar }));
+    if (!online) {
+      queueLiveAction(sesi.id, 'answer', payload);
+      setPendingSync((n) => n + 1);
+      setErr('Jawaban tersimpan di perangkat dan akan dikirim saat koneksi kembali.');
+      return;
+    }
     try {
-      await kirimJawaban(sesi.id, { siswaId, nama, soalIdx: idxSoal, jawaban: jw, benar });
+      await withTimeout(kirimJawaban(sesi.id, payload));
     } catch {
-      kirimGuard.current[idxSoal] = false;
+      queueLiveAction(sesi.id, 'answer', payload);
+      setPendingSync((n) => n + 1);
+      setErr('Jawaban tersimpan sementara. Akan disinkronkan otomatis saat sinyal stabil.');
     }
   }
 
@@ -165,24 +218,40 @@ export default function LiveSessionStudent() {
     e.preventDefault();
     const teks = tanya.trim();
     if (!teks || !sesi) return;
+    const eventId = `q_${siswaId || 'siswa'}_${Date.now()}`;
+    const payload = { siswaId, nama, teks, eventId };
     try {
-      await kirimTanya(sesi.id, { siswaId, nama, teks });
+      if (!online) throw new Error('OFFLINE');
+      await withTimeout(kirimTanya(sesi.id, payload));
       setTanya('');
       setTanyaTerkirim(true);
       window.setTimeout(() => setTanyaTerkirim(false), 3000);
-    } catch { setErr('Pertanyaan belum terkirim. Coba lagi.'); }
+    } catch {
+      queueLiveAction(sesi.id, 'question', payload);
+      setPendingSync((n) => n + 1);
+      setTanya('');
+      setTanyaTerkirim(true);
+      setErr('Pertanyaan disimpan sementara dan akan dikirim saat koneksi kembali.');
+      window.setTimeout(() => setTanyaTerkirim(false), 3000);
+    }
   }
 
   async function ajukanDiri() {
     if (!sesi || sedangAjukan || statusMaju?.status === 'menunggu' || statusMaju?.status === 'dipilih' || statusMaju?.status === 'lokal') return;
     if (!online) {
-      localStorage.setItem(`gemilang:relawan:${sesi.id}:${siswaId}`, JSON.stringify({ siswaId, nama }));
+      queueLiveAction(sesi.id, 'volunteer', { siswaId, nama });
+      setPendingSync((n) => n + 1);
       setStatusMaju({ status: 'lokal', siswaId, nama });
       return;
     }
     setSedangAjukan(true);
-    try { await ajukanMaju(sesi.id, { siswaId, nama }); }
-    catch { setErr('Belum bisa mengirim keberanian. Coba lagi saat koneksi stabil.'); }
+    try { await withTimeout(ajukanMaju(sesi.id, { siswaId, nama })); }
+    catch {
+      queueLiveAction(sesi.id, 'volunteer', { siswaId, nama });
+      setPendingSync((n) => n + 1);
+      setStatusMaju({ status: 'lokal', siswaId, nama });
+      setErr('Keberanian tersimpan sementara dan akan dikirim saat koneksi stabil.');
+    }
     finally { setSedangAjukan(false); }
   }
 
@@ -200,7 +269,7 @@ export default function LiveSessionStudent() {
     if (soal.kunci?.tipe === 'bs') {
       return (soal.pernyataan || []).map((p, i) => (
         <div key={i} style={S.pilihItem}>
-          🔒 {i + 1}. <span className="modmod" dangerouslySetInnerHTML={{ __html: soal.pernyataanHtml?.[i] || bersihVerdikt(p) }} /> → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
+          🔒 {i + 1}. <span className="modmod" dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pernyataanHtml?.[i] || bersihVerdikt(p)) }} /> → <b>{pilih[i] === true ? 'Benar' : pilih[i] === false ? 'Salah' : '—'}</b>
         </div>
       ));
     }
@@ -227,7 +296,7 @@ export default function LiveSessionStudent() {
 
   return (
     <div style={S.page}>
-      <style>{CSS_MODUL}{CSS_MATIKA}</style>
+      <style>{katexCss}{CSS_MODUL}{CSS_MATIKA}</style>
       <div className="live-room-header" style={S.card}>
         <div style={S.row}>
           <span className="live-room-kicker">RUANG BELAJAR · TERHUBUNG KE GURU</span>
@@ -245,6 +314,12 @@ export default function LiveSessionStudent() {
           </button>
         </div>
         <div className="live-stage-student-tip">{tahapAktif.bantuan}</div>
+        <div className={`live-sync-status ${syncing ? 'is-syncing' : online && !sesi._fromCache ? 'is-online' : 'is-offline'}`} role="status" aria-live="polite">
+          <span>{syncing ? '⟳ Menyinkronkan…' : !online ? '○ Offline — jawaban tetap disimpan di perangkat' : sesi._fromCache ? '◌ Memakai cache lokal — menunggu koneksi sesi' : '● Koneksi sesi siap'}</span>
+          {pendingSync > 0 && <span>· {pendingSync} aksi menunggu</span>}
+          {pendingSync > 0 && online && <button type="button" onClick={syncOutbox}>Sinkronkan</button>}
+        </div>
+        {err && <div className="live-sync-status is-offline" role="alert">{err}</div>}
       </div>
 
       {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (
@@ -258,7 +333,7 @@ export default function LiveSessionStudent() {
               </div>
             </div>
           ) : (
-            <div className="modmod" dangerouslySetInnerHTML={{ __html: percantikMatika(slideNow.html) }} />
+            <div className="modmod" dangerouslySetInnerHTML={{ __html: renderLiveMath(slideNow.html) }} />
           )}
           <p style={{ fontSize: 11, color: '#94a3b8', margin: '8px 0 0', textAlign: 'center' }}>Ikuti penjelasan guru — slide berpindah dari kendali guru.</p>
         </div>
@@ -267,9 +342,9 @@ export default function LiveSessionStudent() {
       {soal && (
         <div style={S.card}>
           {gambarNow ? (
-            <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: percantikMatika(gambarNow) }} />
+            <div className="modmod" style={S.gambarBox} dangerouslySetInnerHTML={{ __html: renderLiveMath(gambarNow) }} />
           ) : (
-            <div style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>{soal.teks}</div>
+            <div className="modmod live-stem" style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 12 }} dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.teks) }} />
           )}
           {!gambarNow && soal.gambarUrls && soal.gambarUrls.length > 0 && (
             <div style={{ marginBottom: 10 }}>
@@ -286,7 +361,7 @@ export default function LiveSessionStudent() {
                 <div key={i} style={{ ...S.opsi(sel, terbuka && soal.kunci.pg === i, terbuka), cursor: 'default' }}>
                   <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
                   <span style={{ flex: 1 }} className="modmod"
-                    dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
+                    dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pilihanHtml?.[i] || bersihVerdikt(p)) }} />
                   {sel && '🔒'}
                   {terbuka && soal.kunci.pg === i && '✅'}
                 </div>
@@ -297,7 +372,7 @@ export default function LiveSessionStudent() {
                 onClick={() => { setPilih(i); kirimNow(i); }}>
                 <span style={{ fontWeight: 800 }}>{String.fromCharCode(65 + i)}.</span>
                 <span style={{ flex: 1 }} className="modmod"
-                  dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
+                  dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pilihanHtml?.[i] || bersihVerdikt(p)) }} />
               </button>
             );
           })}
@@ -314,7 +389,7 @@ export default function LiveSessionStudent() {
                 <div key={i} style={{ ...S.opsi(a, k, terbuka), cursor: 'default' }}>
                   <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
                   <span style={{ flex: 1 }} className="modmod"
-                    dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
+                    dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pilihanHtml?.[i] || bersihVerdikt(p)) }} />
                   {a && '🔒'}
                   {k && '✅'}
                 </div>
@@ -325,7 +400,7 @@ export default function LiveSessionStudent() {
                 onClick={() => setPilih(a ? arr.filter((x) => x !== i) : [...arr, i])}>
                 <span style={{ fontWeight: 800, width: 20 }}>{a ? '✓' : ''}</span>
                 <span style={{ flex: 1 }} className="modmod"
-                  dangerouslySetInnerHTML={{ __html: soal.pilihanHtml?.[i] || bersihVerdikt(p) }} />
+                  dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pilihanHtml?.[i] || bersihVerdikt(p)) }} />
               </button>
             );
           })}
@@ -345,7 +420,7 @@ export default function LiveSessionStudent() {
                   <div key={i} style={S.cbtRow(sayaSalah)}>
                     <div style={S.cbtText}>
                       {i + 1}. <span className="modmod"
-                        dangerouslySetInnerHTML={{ __html: soal.pernyataanHtml?.[i] || bersihVerdikt(p) }} />
+                        dangerouslySetInnerHTML={{ __html: renderLiveMath(soal.pernyataanHtml?.[i] || bersihVerdikt(p)) }} />
                     </div>
                     <div style={S.cbtOpt}>
                       <button style={S.cbtBtn(arr[i] === true, terbuka && kunciB === true, terbuka)} disabled={sudah || terbuka}
@@ -393,7 +468,7 @@ export default function LiveSessionStudent() {
               <div
                 className="modmod"
                 style={{ background: '#fbfcff', border: '1px solid #eef1f6', borderRadius: 10, padding: 10, marginTop: 6 }}
-                dangerouslySetInnerHTML={{ __html: percantikMatika(pembahasanHtmlNow) }}
+                dangerouslySetInnerHTML={{ __html: renderLiveMath(pembahasanHtmlNow) }}
               />
             </details>
           )}
