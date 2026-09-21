@@ -571,7 +571,7 @@ function bangunBuku(wrap, opts) {
   kandidat.forEach((el) => {
     if (el.matches('.pagebreak,hr.pagebreak')) { push(); el.remove(); return; }
     if (el.matches('.kicker')) { push(); pending = [el]; return; }
-    if (el.matches('header.hero,section.toc,section.card,section.kartu,section.question,section.soal,section.summary,section.refs')) {
+    if (el.matches('header.hero,section.toc,section.card,section.kartu,section.learning-unit,section.question,section.soal,section.summary,section.refs')) {
       pending.push(el);
       push();
       return;
@@ -716,7 +716,7 @@ function enhance(root, opts) {
   wrap.insertBefore(sticky, wrap.firstChild);
 
   if (!opts.presentasi) {
-    const kartuMateri = [...wrap.querySelectorAll('.kartu')];
+    const kartuMateri = [...wrap.querySelectorAll('.kartu, .learning-unit')];
     const kunciKey = `gbPaham:${opts.babId || '-'}`;
     let paham = new Set();
     try { paham = new Set(JSON.parse(localStorage.getItem(kunciKey) || '[]')); } catch { paham = new Set(); }
