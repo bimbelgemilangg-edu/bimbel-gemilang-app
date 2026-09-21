@@ -24,9 +24,12 @@ function normalisasiJenjang(raw) {
   return '';
 }
 
-export default function BukuInteraktifPage() {
+export default function BukuInteraktifPage({ audience = 'student' }) {
   const navigate = useNavigate();
   const { bukuId } = useParams();
+  const isTeacher = audience === 'teacher';
+  const basePath = isTeacher ? '/guru/buku' : '/siswa/buku';
+  const dashboardPath = isTeacher ? '/guru/dashboard' : '/siswa/dashboard';
   const studentId = localStorage.getItem('studentId') || '';
   const studentDocId = localStorage.getItem('studentDocId') || '';
   const studentKelas = localStorage.getItem('studentKelas') || localStorage.getItem('studentGrade') || '';
@@ -43,6 +46,11 @@ export default function BukuInteraktifPage() {
 
   useEffect(() => {
     (async () => {
+      if (isTeacher) {
+        setJenjang('all');
+        setProfilSiap(true);
+        return;
+      }
       let jenjangSiswa = null;
       try {
         const snap = await getDocs(query(collection(db, 'students'), where('studentId', '==', studentId), limit(1)));
@@ -67,7 +75,7 @@ export default function BukuInteraktifPage() {
         setProgresMap(m);
       } catch (e) { console.error('Gagal muat progres buku:', e); }
     })();
-  }, [studentId, studentDocId, studentKelas]);
+  }, [isTeacher, studentId, studentDocId, studentKelas]);
 
   useEffect(() => {
     (async () => {
@@ -95,9 +103,11 @@ export default function BukuInteraktifPage() {
   }, [bukuId]);
 
   const bukuTerlihat = books.filter((b) => {
-    if (!jenjang) return false;
-    if (!cocokkanJenjang(b.jenjang, jenjang)) return false;
-    if (studentKelas && !cocokkanKelas({ tingkatKelas: String(b.kelas) }, ekstrakAngkaKelas(studentKelas))) return false;
+    if (!isTeacher) {
+      if (!jenjang) return false;
+      if (!cocokkanJenjang(b.jenjang, jenjang)) return false;
+      if (studentKelas && !cocokkanKelas({ tingkatKelas: String(b.kelas) }, ekstrakAngkaKelas(studentKelas))) return false;
+    }
     if (cari.trim()) {
       const q = cari.trim().toLowerCase();
       if (![b.judul, b.mapel, b.deskripsi].filter(Boolean).join(' ').toLowerCase().includes(q)) return false;
@@ -136,10 +146,10 @@ export default function BukuInteraktifPage() {
     const buku = books.find((b) => b.id === bukuId);
     const warna = buku?.warna || '#4C6EF5';
     return (
-      <div style={st.page}>
+      <div style={{ ...st.page, maxWidth: isTeacher ? 980 : 480 }}>
         <div style={{ ...st.hero, background: `linear-gradient(160deg, ${warna} 0%, #1E1B4B 100%)` }}>
           <div style={st.heroStars} />
-          <button onClick={() => navigate('/siswa/buku')} style={st.backBtn}><ArrowLeft size={20} /></button>
+          <button onClick={() => navigate(basePath)} style={st.backBtn}><ArrowLeft size={20} /></button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
             <div style={{ width: 52, height: 66, borderRadius: 10, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>
               {buku?.emoji || '📘'}
@@ -154,7 +164,7 @@ export default function BukuInteraktifPage() {
         </div>
         <div style={{ padding: '16px 16px 30px' }}>
           {/* 🔥 BARU: pintu sesi live di dalam mode daftar isi */}
-          <PanelSesiLiveSiswa />
+          {!isTeacher && <PanelSesiLiveSiswa />}
           <div style={{ fontSize: 12, fontWeight: 800, color: '#64748b', marginBottom: 10 }}>📖 DAFTAR ISI</div>
           {babList.length === 0 ? (
             <div style={st.kosong}>Belum ada bab di buku ini. Admin bisa menambahnya lewat Manajer Buku.</div>
@@ -163,7 +173,7 @@ export default function BukuInteraktifPage() {
               {babList.map((bab, i) => {
                 const persen = persenBab(bab);
                 return (
-                  <button key={bab.id} onClick={() => navigate(`/siswa/buku/${bukuId}/${bab.id}`)} style={st.kartuBab}>
+                  <button key={bab.id} onClick={() => navigate(`${basePath}/${bukuId}/${bab.id}`)} style={st.kartuBab}>
                     <div style={{ ...st.nomorBab, background: `${warna}18`, color: warna }}>{i + 1}</div>
                     <div style={{ flex: 1, textAlign: 'left' }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{bab.judul}</div>
@@ -187,21 +197,23 @@ export default function BukuInteraktifPage() {
 
   // ---------------- MODE RAK BUKU ----------------
   return (
-    <div style={st.page}>
+    <div style={{ ...st.page, maxWidth: isTeacher ? 980 : 480 }}>
       <div style={st.hero}>
         <div style={st.heroStars} />
-        <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtn}><ArrowLeft size={20} /></button>
+        <button onClick={() => navigate(dashboardPath)} style={st.backBtn}><ArrowLeft size={20} /></button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
           <MaskotAstronot size={64} />
           <div>
-            <h1 style={{ color: 'white', fontSize: 21, fontWeight: 800, margin: 0 }}>Buku Digital</h1>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: '2px 0 0' }}>Perpustakaan pribadimu, Siswa Gemilang 📚</p>
+            <h1 style={{ color: 'white', fontSize: 21, fontWeight: 800, margin: 0 }}>{isTeacher ? 'Persiapan Buku Gemilang' : 'Buku Digital'}</h1>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: '2px 0 0' }}>
+              {isTeacher ? 'Pelajari Langkah Gemilang sebelum menjelaskan di kelas.' : 'Perpustakaan pribadimu, Siswa Gemilang 📚'}
+            </p>
           </div>
         </div>
       </div>
       <div style={{ padding: '18px 16px' }}>
         {/* 🔥 BARU: pintu sesi live di dalam menu Buku Digital */}
-        <PanelSesiLiveSiswa />
+        {!isTeacher && <PanelSesiLiveSiswa />}
         <div style={st.searchWrap}>
           <Search size={17} color="#94a3b8" />
           <input
@@ -216,7 +228,7 @@ export default function BukuInteraktifPage() {
           <button
             type="button"
             style={st.lanjut}
-            onClick={() => navigate(`/siswa/buku/${terakhir.bukuId}/${terakhir.babId}`)}
+            onClick={() => navigate(`${basePath}/${terakhir.bukuId}/${terakhir.babId}`)}
           >
             <div style={st.lanjutIcon}><Play size={16} fill="currentColor" /></div>
             <div style={{ flex: 1, textAlign: 'left' }}>
@@ -238,7 +250,7 @@ export default function BukuInteraktifPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {bukuTerlihat.map((buku) => (
-              <button key={buku.id} onClick={() => navigate(`/siswa/buku/${buku.id}`)} style={{ ...st.kartu, borderLeft: `6px solid ${buku.warna || '#4C6EF5'}` }}>
+              <button key={buku.id} onClick={() => navigate(`${basePath}/${buku.id}`)} style={{ ...st.kartu, borderLeft: `6px solid ${buku.warna || '#4C6EF5'}` }}>
                 <div style={{ ...st.cover, background: `linear-gradient(135deg, ${buku.warna || '#4C6EF5'}, #1E1B4B)` }}>{buku.emoji || '📘'}</div>
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{ fontWeight: 800, fontSize: 14, color: '#1e293b' }}>{buku.judul}</div>

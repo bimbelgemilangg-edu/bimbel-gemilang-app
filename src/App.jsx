@@ -555,6 +555,9 @@ function App() {
         <Route path="/guru/grades/manage" element={<GuruPage><TeacherGradeManager /></GuruPage>} />
         <Route path="/guru/grades/generate" element={<GuruPage><GenerateRaport /></GuruPage>} />
         <Route path="/guru/modul" element={<GuruPage><ModulManager /></GuruPage>} />
+        <Route path="/guru/buku" element={<GuruPage><BukuInteraktifPage audience="teacher" /></GuruPage>} />
+        <Route path="/guru/buku/:bukuId" element={<GuruPage><BukuInteraktifPage audience="teacher" /></GuruPage>} />
+        <Route path="/guru/buku/:bukuId/:babId" element={<GuruPage><BukuBacaPage audience="teacher" /></GuruPage>} />
         <Route path="/guru/modul/materi" element={<GuruPage><ManageMateriGuru /></GuruPage>} />
         <Route path="/guru/modul/tugas" element={<GuruPage><ManageTugas /></GuruPage>} />
         <Route path="/guru/modul/quiz" element={<GuruPage><ManageQuiz /></GuruPage>} />

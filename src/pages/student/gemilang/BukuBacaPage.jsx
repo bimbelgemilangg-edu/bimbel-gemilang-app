@@ -2,7 +2,7 @@
 // READER BUKU DIGITAL v7 -- TIGA MODE, SATU HALAMAN
 //   TERSTRUKTUR | MODUL ASLI (PDF) | MODUL INTERAKTIF (HTML)
 // v7: perbaikan kutip warna + file dibersihkan penuh (pengganti v6 rusak).
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -21,10 +21,12 @@ const XP_SEKSI = 5;
 const XP_MODUL = 5;
 const XP_BENAR = 10;
 
-export default function BukuBacaPage() {
+export default function BukuBacaPage({ audience = 'student' }) {
   const { bukuId, babId } = useParams();
   const navigate = useNavigate();
-  const studentId = localStorage.getItem('studentId') || '';
+  const isTeacher = audience === 'teacher';
+  const studentId = isTeacher ? '' : (localStorage.getItem('studentId') || '');
+  const basePath = isTeacher ? '/guru/buku' : '/siswa/buku';
 
   const [buku, setBuku] = useState(null);
   const [bab, setBab] = useState(null);
@@ -44,6 +46,8 @@ export default function BukuBacaPage() {
   const [showContents, setShowContents] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [pageTurn, setPageTurn] = useState(false);
+  const [teacherView, setTeacherView] = useState('guide');
+  const keluarModeGuru = useCallback(() => setTeacherView('student'), []);
 
   const [halamanTerbaca, setHalamanTerbaca] = useState(0);
   const [selesaiModul, setSelesaiModul] = useState(false);
@@ -348,7 +352,9 @@ export default function BukuBacaPage() {
       : (sections.length ? Math.round((selesaiSections.length / sections.length) * 100) : 0);
   const persenAman = Math.max(0, Math.min(100, persenBaca));
 
-  const teksProgres = modeHtml
+  const teksProgres = isTeacher
+    ? 'Mode persiapan mengajar · pelajari konsep, cara cepat, dan kesalahan umum'
+    : modeHtml
     ? `${selesaiModul ? 'selesai dibaca' : 'belum selesai dibaca'}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
     : modeModul
       ? `${daftarHalaman.length ? (Math.min(halamanTerbaca, daftarHalaman[daftarHalaman.length - 1]) - daftarHalaman[0] + 1) : 0}/${daftarHalaman.length} halaman dibaca${selesaiModul ? ' • selesai' : ''}${quizTerbaik != null ? ` • quiz terbaik ${quizTerbaik}%` : ''}`
@@ -371,7 +377,7 @@ export default function BukuBacaPage() {
     );
   }
 
-  const lebarHalaman = modeHtml ? 960 : 480;
+  const lebarHalaman = modeHtml ? (isTeacher ? 1120 : 960) : 480;
 
   return (
     <div
@@ -386,7 +392,7 @@ export default function BukuBacaPage() {
       <div className="reader-hero" style={{ ...st.hero, background: `linear-gradient(160deg, ${warna} 0%, #1E1B4B 100%)` }}>
         <div style={st.heroStars} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
-          <button onClick={() => (mode === 'baca' ? navigate(`/siswa/buku/${bukuId}`) : setMode('baca'))} style={st.backBtn}>
+          <button onClick={() => (mode === 'baca' ? navigate(`${basePath}/${bukuId}`) : setMode('baca'))} style={st.backBtn}>
             <ArrowLeft size={20} />
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -394,7 +400,7 @@ export default function BukuBacaPage() {
             <div style={{ color: 'white', fontWeight: 800, fontSize: 15 }}>{bab.judul}</div>
             <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 2 }}>
               {modeModul && <span style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 5, padding: '1px 5px', marginRight: 5, fontSize: 9.5, fontWeight: 800 }}>MODUL ASLI</span>}
-              {modeHtml && <span style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 5, padding: '1px 5px', marginRight: 5, fontSize: 9.5, fontWeight: 800 }}>MODUL INTERAKTIF</span>}
+              {modeHtml && <span style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 5, padding: '1px 5px', marginRight: 5, fontSize: 9.5, fontWeight: 800 }}>{isTeacher ? 'PERSIAPAN GURU' : 'MODUL INTERAKTIF'}</span>}
               {teksProgres}
             </div>
           </div>
@@ -540,10 +546,29 @@ export default function BukuBacaPage() {
 
       {mode === 'baca' && modeHtml && (
         <div style={{ padding: '12px 12px 40px' }}>
+          {isTeacher && (
+            <div className="teacher-reader-switch">
+              <div>
+                <strong>Ruang Persiapan Guru</strong>
+                <small>Mode panduan membuka kunci, Langkah Gemilang, dan catatan mengajar.</small>
+              </div>
+              <div className="teacher-reader-switch__actions">
+                <button type="button" className={teacherView === 'guide' ? 'is-active' : ''} onClick={() => setTeacherView('guide')}>Panduan Guru</button>
+                <button type="button" className={teacherView === 'student' ? 'is-active' : ''} onClick={() => setTeacherView('student')}>Pratinjau Siswa</button>
+              </div>
+            </div>
+          )}
           <div style={st.kotakModul}>
-            <RendererHtmlBab html={bab.html} htmlUrl={bab.htmlUrl} babId={bab.id} />
+            <RendererHtmlBab
+              html={bab.html}
+              htmlUrl={bab.htmlUrl}
+              babId={bab.id}
+              bukuId={bukuId}
+              modePresentasi={isTeacher && teacherView === 'guide'}
+              onKeluar={keluarModeGuru}
+            />
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+          {!isTeacher && <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button
               onClick={tandaiModulSelesai}
               disabled={selesaiModul}
@@ -551,7 +576,7 @@ export default function BukuBacaPage() {
             >
               {selesaiModul ? 'Modul selesai dibaca' : `Tandai selesai baca modul (+${XP_MODUL} XP)`}
             </button>
-          </div>
+          </div>}
         </div>
       )}
 

@@ -99,3 +99,42 @@
   .reader-tool--font { gap:2px; }
   .reader-progress { width:44px; }
 }
+
+/* ============================================================
+   SUPER EBOOK — RUANG PERSIAPAN GURU
+   ============================================================ */
+.teacher-reader-switch {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:0 0 12px;
+  padding:13px 15px;
+  border:1px solid #c7d2fe;
+  border-radius:16px;
+  background:linear-gradient(135deg,#eef2ff,#faf5ff);
+  box-shadow:0 6px 18px rgba(67,56,202,.08);
+  color:#312e81;
+}
+.teacher-reader-switch strong { display:block; font-size:13px; }
+.teacher-reader-switch small { display:block; margin-top:3px; color:#6366f1; font-size:10.5px; line-height:1.45; }
+.teacher-reader-switch__actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.teacher-reader-switch__actions button {
+  min-height:36px;
+  padding:8px 12px;
+  border:1px solid #c7d2fe;
+  border-radius:10px;
+  background:#fff;
+  color:#4338ca;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+  transition:transform .15s cubic-bezier(.23,1,.32,1),background .15s,border-color .15s;
+}
+.teacher-reader-switch__actions button:active { transform:scale(.97); }
+.teacher-reader-switch__actions button.is-active { background:#4f46e5; color:#fff; border-color:#4f46e5; }
+@media (max-width:700px) {
+  .teacher-reader-switch { align-items:flex-start; flex-direction:column; }
+  .teacher-reader-switch__actions { width:100%; }
+  .teacher-reader-switch__actions button { flex:1; }
+}
