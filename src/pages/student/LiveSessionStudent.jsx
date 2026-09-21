@@ -9,7 +9,7 @@ import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseSlides, parseDaftarSoal, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
-import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban, kirimTanya } from '../../services/sesiService';
+import { cariSesiByKode, gabungSesi, dengarSesi, dengarRelawanSiswa, ajukanMaju, kirimJawaban, kirimTanya } from '../../services/sesiService';
 import '../../components/buku/liveSession.css';
 
 const S = {
@@ -53,6 +53,9 @@ export default function LiveSessionStudent() {
   const [err, setErr] = useState('');
   const [tanya, setTanya] = useState('');
   const [tanyaTerkirim, setTanyaTerkirim] = useState(false);
+  const [statusMaju, setStatusMaju] = useState(null);
+  const [sedangAjukan, setSedangAjukan] = useState(false);
+  const [online, setOnline] = useState(() => navigator.onLine);
   const kirimGuard = useRef({});
 
   useEffect(() => {
@@ -60,6 +63,28 @@ export default function LiveSessionStudent() {
     const u = dengarSesi(sesi.id, (s) => { if (s) setSesi(s); });
     return u;
   }, [sesi && sesi.id]);
+
+  useEffect(() => {
+    if (!sesi || !siswaId) return undefined;
+    return dengarRelawanSiswa(sesi.id, siswaId, setStatusMaju);
+  }, [sesi && sesi.id, siswaId]);
+
+  useEffect(() => {
+    const saatOnline = () => setOnline(true);
+    const saatOffline = () => setOnline(false);
+    window.addEventListener('online', saatOnline);
+    window.addEventListener('offline', saatOffline);
+    return () => { window.removeEventListener('online', saatOnline); window.removeEventListener('offline', saatOffline); };
+  }, []);
+
+  useEffect(() => {
+    if (!sesi || !siswaId || !online) return undefined;
+    const key = `gemilang:relawan:${sesi.id}:${siswaId}`;
+    const pending = localStorage.getItem(key);
+    if (!pending) return undefined;
+    ajukanMaju(sesi.id, { siswaId, nama }).then(() => localStorage.removeItem(key)).catch(() => {});
+    return undefined;
+  }, [sesi && sesi.id, siswaId, online, nama]);
 
   useEffect(() => {
     if (!sesi || !siswaId) return undefined;
@@ -138,6 +163,19 @@ export default function LiveSessionStudent() {
     } catch { setErr('Pertanyaan belum terkirim. Coba lagi.'); }
   }
 
+  async function ajukanDiri() {
+    if (!sesi || sedangAjukan || statusMaju?.status === 'menunggu' || statusMaju?.status === 'dipilih' || statusMaju?.status === 'lokal') return;
+    if (!online) {
+      localStorage.setItem(`gemilang:relawan:${sesi.id}:${siswaId}`, JSON.stringify({ siswaId, nama }));
+      setStatusMaju({ status: 'lokal', siswaId, nama });
+      return;
+    }
+    setSedangAjukan(true);
+    try { await ajukanMaju(sesi.id, { siswaId, nama }); }
+    catch { setErr('Belum bisa mengirim keberanian. Coba lagi saat koneksi stabil.'); }
+    finally { setSedangAjukan(false); }
+  }
+
   function ringkasPilihan() {
     if (!soal || pilih === null) return null;
     if (soal.kunci?.tipe === 'pg') {
@@ -189,6 +227,12 @@ export default function LiveSessionStudent() {
           {soal && <span style={S.chip}>Soal {idxSoal + 1}/{daftarSoal.length}</span>}
         </div>
         <div className="live-room-tip">Guru mengendalikan materi dan membuka pembahasan. Kamu dapat menjawab dan bertanya tanpa meninggalkan halaman.</div>
+        <div className={`live-courage-student ${statusMaju?.status === 'dipilih' ? 'is-called' : ''}`}>
+          <div><strong>🎤 Berani maju ke papan?</strong><span>{statusMaju?.status === 'dipilih' ? 'Namamu sudah dipilih guru. Silakan maju dan jelaskan caramu.' : statusMaju?.status === 'menunggu' ? 'Namamu sudah masuk antrean keberanian.' : statusMaju?.status === 'lokal' ? 'Koneksi terputus. Pengajuan tersimpan dan akan dikirim saat online.' : 'Tekan tombol jika ingin mencoba menjelaskan jawabanmu.'}</span></div>
+          <button type="button" onClick={ajukanDiri} disabled={sedangAjukan || statusMaju?.status === 'menunggu' || statusMaju?.status === 'dipilih' || statusMaju?.status === 'lokal'}>
+            {statusMaju?.status === 'dipilih' ? '✓ Kamu dipanggil' : statusMaju?.status === 'menunggu' ? '⏳ Menunggu giliran' : statusMaju?.status === 'lokal' ? '💾 Tersimpan offline' : sedangAjukan ? 'Mengirim…' : 'Saya mau maju'}
+          </button>
+        </div>
       </div>
 
       {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (

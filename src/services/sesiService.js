@@ -75,3 +75,40 @@ export const dengarTanya = (sesiId, cb) =>
 
 export const hapusTanya = (sesiId, tanyaId) =>
   deleteDoc(doc(db, 'sesi_kelas', sesiId, 'tanya', tanyaId));
+
+export async function ajukanMaju(sesiId, { siswaId, nama }) {
+  const ref = doc(db, 'sesi_kelas', sesiId, 'relawan', siswaId);
+  await setDoc(ref, {
+    siswaId, nama: nama || 'Siswa', status: 'menunggu', diajukanAt: serverTimestamp(),
+  }, { merge: true });
+}
+
+export const dengarRelawan = (sesiId, cb) =>
+  onSnapshot(collection(db, 'sesi_kelas', sesiId, 'relawan'),
+    (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.diajukanAt?.seconds || 0) - (b.diajukanAt?.seconds || 0))));
+
+export const dengarRelawanSiswa = (sesiId, siswaId, cb) =>
+  onSnapshot(doc(db, 'sesi_kelas', sesiId, 'relawan', siswaId),
+    (snap) => cb(snap.exists() ? { id: snap.id, ...snap.data() } : null));
+
+export async function pilihRelawan(sesiId, relawan) {
+  await Promise.all([
+    ubahSesi(sesiId, {
+      relawanAktif: { siswaId: relawan.siswaId, nama: relawan.nama || 'Siswa' },
+      relawanAktifSejak: serverTimestamp(),
+    }),
+    updateDoc(doc(db, 'sesi_kelas', sesiId, 'relawan', relawan.siswaId), {
+      status: 'dipilih', dipilihAt: serverTimestamp(),
+    }),
+  ]);
+}
+
+export async function selesaikanMaju(sesiId, siswaId) {
+  await Promise.all([
+    ubahSesi(sesiId, { relawanAktif: null, relawanTerakhir: siswaId }),
+    updateDoc(doc(db, 'sesi_kelas', sesiId, 'relawan', siswaId), {
+      status: 'selesai', selesaiAt: serverTimestamp(),
+    }),
+  ]);
+}
