@@ -30,6 +30,7 @@ const SidebarGuru = () => {
     { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20} /> },
     { name: 'E-Learning', path: '/guru/modul', icon: <BookOpen size={20} /> },
+    { name: 'Persiapan Buku', path: '/guru/buku', icon: <GraduationCap size={20} /> },
     // Ruang kerja PRIVAT guru: bank referensi buku paket + generate alat bantu
     // belajar yang grounded ke buku yang diupload. Tidak tampil ke siswa.
     { name: 'Alat Bantu Guru', path: '/guru/alat-bantu', icon: <GraduationCap size={20} /> },

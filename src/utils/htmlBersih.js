@@ -69,9 +69,12 @@ function srcAman(nilai) {
   const v = String(nilai || '').trim();
   const low = v.toLowerCase();
   if (low.startsWith('javascript:') || low.startsWith('data:text/html')) return false;
+  // Jangan uji payload base64 dengan regex domain: rangkaian karakter acak
+  // dapat kebetulan membentuk "idoc", "mega", dll. Prefix MIME gambar sudah
+  // menjadi pagar yang tepat dan importer akan memindahkannya ke Supabase.
+  if (low.startsWith('data:image/')) return true;
   if (DOMAIN_TERLARANG.test(v)) return false;
   if (/^https:\/\//i.test(v)) return true;
-  if (low.startsWith('data:image/')) return true;
   return false;
 }
 

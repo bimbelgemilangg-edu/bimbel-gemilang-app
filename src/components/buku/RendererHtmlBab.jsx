@@ -5,10 +5,12 @@
 // asli (dari matika.js) + fallback baca pilihan dari tabel untuk soal
 // multi Bahasa Indonesia tanpa <ul class="pil">.
 import { useEffect, useRef } from 'react';
+import katexCss from 'katex/dist/katex.min.css?inline';
 import { bersihkanHtml } from '../../utils/htmlBersih';
 import { catatJawaban } from '../../services/kelasService';
 import { parseKunci } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
+import { renderLatexHtml } from '../../utils/renderLatexHtml';
 
 const VERSI = 'v14';
 
@@ -118,6 +120,57 @@ const BASE_STYLE = `
   .gb-wrap .pec{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 3px}
   .gb-wrap .pec-pemb{padding:0 4px 1px;border-bottom:1.5px solid currentColor;font-size:.82em}
   .gb-wrap .pec-peny{padding:1px 4px 0;font-size:.82em}
+  .gb-wrap .gb-katex{max-width:100%}
+  .gb-wrap .gb-katex-inline{display:inline-block;vertical-align:middle;margin:0 2px}
+  .gb-wrap .gb-katex-block{display:block;overflow-x:auto;overflow-y:hidden;padding:8px 4px;text-align:center}
+  .gb-wrap .gb-katex-block .katex-display{margin:.35em 0}
+  .gb-wrap .gb-katex-error{color:#b91c1c;background:#fef2f2;border-radius:6px;padding:2px 5px}
+  .gb-wrap .gb-book-shell{position:relative;margin:6px auto 18px;perspective:1800px}
+  .gb-wrap .gb-book-stage{position:relative;min-height:680px;border-radius:10px 20px 20px 10px;background:#fffdf8;box-shadow:0 22px 55px rgba(30,27,75,.18),inset 18px 0 28px rgba(102,81,50,.06);overflow:hidden;border:1px solid #eadfca}
+  .gb-wrap .gb-book-stage::before{content:"";position:absolute;z-index:3;left:0;top:0;bottom:0;width:18px;background:linear-gradient(90deg,rgba(66,47,28,.15),rgba(255,255,255,.1),rgba(66,47,28,.04));pointer-events:none}
+  .gb-wrap .gb-book-page{display:none;position:relative;min-height:680px;padding:42px 44px 78px 54px;background:linear-gradient(90deg,#fbf7ee 0,#fffdf8 4%,#fff 22%,#fffdf9 100%);transform-origin:left center;backface-visibility:hidden}
+  .gb-wrap .gb-book-page.is-active{display:block}
+  .gb-wrap .gb-book-page.is-turning-next{animation:gbTurnNext .24s cubic-bezier(.77,0,.175,1)}
+  .gb-wrap .gb-book-page.is-turning-prev{animation:gbTurnPrev .24s cubic-bezier(.77,0,.175,1)}
+  .gb-wrap .gb-book-page>.toc,.gb-wrap .gb-book-page>.card,.gb-wrap .gb-book-page>.question,.gb-wrap .gb-book-page>.soal,.gb-wrap .gb-book-page>.summary{margin:0;background:transparent;border:0;box-shadow:none;padding:0}
+  .gb-wrap .gb-book-page>.hero{margin:0;min-height:520px;display:flex;flex-direction:column;justify-content:center}
+  .gb-wrap .gb-page-folio{position:absolute;left:0;right:0;bottom:24px;text-align:center;color:#9a8f7d;font:700 11px/1 system-ui,sans-serif;letter-spacing:.08em}
+  .gb-wrap .gb-page-nav{display:flex;align-items:center;gap:10px;margin:12px auto 0;padding:8px 10px;border-radius:16px;background:#fff;box-shadow:0 8px 24px rgba(30,27,75,.10);border:1px solid #ede8dd;max-width:520px}
+  .gb-wrap .gb-page-nav button{min-height:42px;border:0;border-radius:12px;background:#f3f0ff;color:#5b21b6;font-weight:800;cursor:pointer;padding:9px 14px}
+  .gb-wrap .gb-page-nav button:disabled{opacity:.35;cursor:not-allowed}
+  .gb-wrap .gb-page-nav button:active{transform:scale(.97)}
+  .gb-wrap .gb-page-status{flex:1;text-align:center;font:800 12px/1.25 system-ui,sans-serif;color:#645d52}
+  .gb-wrap .gb-page-status small{display:block;margin-top:3px;color:#9a8f7d;font-weight:600}
+  .gb-wrap .pil li{display:flex;align-items:flex-start;gap:10px}
+  .gb-wrap .pil li::before{content:attr(data-label);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:#f1f0f9;color:#4c1d95;font:800 12px/1 system-ui,sans-serif;border:2px solid transparent}
+  .gb-wrap .pil li.gb-dipilih{border-color:#7c3aed;background:#f5f3ff}
+  .gb-wrap .pil li.gb-dipilih::before{background:#7c3aed;color:#fff}
+  .gb-wrap .gb-cbt-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .gb-wrap .gb-question-palette{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;padding-top:7px;border-top:1px solid #e7e3f5}
+  .gb-wrap .gb-question-palette strong{font-size:10px;color:#64748b;margin-right:3px;text-transform:uppercase;letter-spacing:.05em}
+  .gb-wrap .gb-qnum{width:32px;height:32px;padding:0;border-radius:9px;border:1px solid #d8d2ed;background:#fff;color:#5b21b6;font-weight:900;cursor:pointer}
+  .gb-wrap .gb-qnum.is-answered{background:#22c55e;color:#fff;border-color:#22c55e}
+  .gb-wrap .gb-qnum.is-doubt{background:#f97316;color:#fff;border-color:#f97316}
+  .gb-wrap .gb-ragu{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+  .gb-wrap .gb-ragu.gb-aktif{background:#f97316;color:#fff;border-color:#f97316}
+  .gb-wrap .langkah-gemilang{position:relative;margin:16px 0;padding:18px;border-radius:18px;background:linear-gradient(135deg,#fff7cc,#fffdf2);border:1px solid #f4d35e;box-shadow:0 8px 22px rgba(183,121,31,.10)}
+  .gb-wrap .langkah-gemilang::before{content:"★ LANGKAH GEMILANG";display:inline-block;margin-bottom:9px;color:#7c3aed;font:900 11px/1 system-ui,sans-serif;letter-spacing:.08em}
+  .gb-wrap .rumus-gemilang{margin:14px 0;padding:16px 18px;border-radius:18px;background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;box-shadow:0 10px 26px rgba(91,33,182,.22)}
+  .gb-wrap .rumus-gemilang::before{content:"★ RUMUS GEMILANG";display:block;margin-bottom:8px;color:#fde68a;font:900 11px/1 system-ui,sans-serif;letter-spacing:.08em}
+  .gb-wrap .teacher-only{display:none}
+  .gb-wrap.gb-mode-teacher .teacher-only{display:block}
+  .gb-wrap .panduan-guru{margin:16px 0;padding:16px 18px;border-radius:16px;background:#eef6ff;border:1px solid #bfdbfe;border-left:6px solid #2563eb;color:#1e3a8a}
+  .gb-wrap .panduan-guru::before{content:"PANDUAN GURU GEMILANG";display:block;margin-bottom:7px;font:900 11px/1 system-ui,sans-serif;letter-spacing:.07em}
+  @keyframes gbTurnNext{0%{opacity:1;transform:rotateY(0)}50%{opacity:.38;transform:rotateY(-8deg) translateX(-6px)}100%{opacity:1;transform:rotateY(0)}}
+  @keyframes gbTurnPrev{0%{opacity:1;transform:rotateY(0)}50%{opacity:.38;transform:rotateY(8deg) translateX(6px)}100%{opacity:1;transform:rotateY(0)}}
+  @media(max-width:700px){
+    .gb-wrap{padding:4px}
+    .gb-wrap .gb-book-stage,.gb-wrap .gb-book-page{min-height:70vh}
+    .gb-wrap .gb-book-page{padding:28px 18px 70px 28px}
+    .gb-wrap .gb-book-stage{border-radius:8px 14px 14px 8px}
+    .gb-wrap .gb-page-nav{position:sticky;bottom:8px;z-index:8}
+  }
+  @media(prefers-reduced-motion:reduce){.gb-wrap .gb-book-page.is-turning-next,.gb-wrap .gb-book-page.is-turning-prev{animation:none}}
 `;
 
 function siapkanCss(html) {
@@ -211,9 +264,17 @@ const bersihTeksStmt = (s) => String(s || '')
 // 1, 3, dan 4", "A Salah · B Benar · C Benar", "A Setuju · ...", dll).
 function cariKunci(soalEl) {
   const j = soalEl.querySelector('.jawab');
-  if (j) { const k = parseKunci(j.textContent); if (k) return k; }
+  if (j) {
+    const langsung = (j.textContent || '').match(/jawaban\s*:\s*([A-E])\b/i);
+    if (langsung) return { tipe: 'pg', pg: langsung[1].toUpperCase().charCodeAt(0) - 65 };
+    const k = parseKunci(j.textContent); if (k) return k;
+  }
   const d = soalEl.querySelector('details');
-  if (d) { const k = parseKunci(d.textContent); if (k) return k; }
+  if (d) {
+    const langsung = (d.textContent || '').match(/jawaban\s*:\s*([A-E])\b/i);
+    if (langsung) return { tipe: 'pg', pg: langsung[1].toUpperCase().charCodeAt(0) - 65 };
+    const k = parseKunci(d.textContent); if (k) return k;
+  }
   return parseKunci(soalEl.textContent);
 }
 
@@ -304,7 +365,8 @@ function interaktif(soalEl, root, soalNo, opts) {
 
   // ---------- PG ----------
   if (kunci.tipe === 'pg' && lis.length >= 2) {
-    hint(soalEl, 'Ketuk jawabanmu untuk memeriksa.');
+    hint(soalEl, 'Pilih satu jawaban, tandai ragu bila perlu, lalu tekan Periksa Jawaban.');
+    let dipilih = -1;
     lis.forEach((li, idx) => {
       li.style.cursor = 'pointer';
       const inp = li.querySelector('input[type=radio],input[type=checkbox]');
@@ -313,19 +375,42 @@ function interaktif(soalEl, root, soalNo, opts) {
         if (soalEl.dataset.done) return;
         e.preventDefault();
         e.stopPropagation();
-        soalEl.dataset.done = '1';
+        dipilih = idx;
         if (inp) inp.checked = true;
-        lis.forEach((x, j) => {
-          x.style.pointerEvents = 'none';
-          if (j === kunci.pg) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
-          else if (j === idx) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
-          else { x.style.opacity = '0.72'; }
-        });
-        bukaKunci(details, false);
-        banner(soalEl, idx === kunci.pg);
-        catat(idx === kunci.pg, String.fromCharCode(65 + idx));
+        lis.forEach((x, j) => x.classList.toggle('gb-dipilih', j === idx));
       });
     });
+    const actions = document.createElement('div');
+    actions.className = 'gb-cbt-actions';
+    const btn = buatBtn('Periksa Jawaban');
+    const ragu = buatBtn('Tandai Ragu-ragu', 'gb-ragu');
+    ragu.addEventListener('click', () => {
+      if (soalEl.dataset.done) return;
+      const aktif = soalEl.dataset.doubt !== '1';
+      soalEl.dataset.doubt = aktif ? '1' : '0';
+      ragu.classList.toggle('gb-aktif', aktif);
+      ragu.textContent = aktif ? 'Ragu-ragu ✓' : 'Tandai Ragu-ragu';
+    });
+    btn.addEventListener('click', () => {
+      if (soalEl.dataset.done) return;
+      if (dipilih < 0) { toastShadow(root, 'Pilih satu jawaban terlebih dahulu.'); return; }
+      soalEl.dataset.done = '1';
+      soalEl.dataset.doubt = '0';
+      lis.forEach((x, j) => {
+        x.style.pointerEvents = 'none';
+        if (j === kunci.pg) { x.style.background = '#dcfce7'; x.style.borderColor = '#22c55e'; }
+        else if (j === dipilih) { x.style.background = '#fef2f2'; x.style.borderColor = '#ef4444'; }
+        else { x.style.opacity = '0.72'; }
+      });
+      btn.disabled = true;
+      ragu.disabled = true;
+      bukaKunci(details, false);
+      banner(soalEl, dipilih === kunci.pg);
+      catat(dipilih === kunci.pg, String.fromCharCode(65 + dipilih));
+    });
+    actions.appendChild(btn); actions.appendChild(ragu);
+    const anchor = ul || lis[lis.length - 1];
+    if (anchor) anchor.after(actions); else soalEl.appendChild(actions);
     return true;
   }
 
@@ -430,23 +515,170 @@ function interaktif(soalEl, root, soalNo, opts) {
   return false;
 }
 
+function normalisasiSchema(wrap) {
+  const isiLama = wrap.querySelector(':scope > .wrap');
+  if (isiLama) {
+    while (isiLama.firstChild) wrap.insertBefore(isiLama.firstChild, isiLama);
+    isiLama.remove();
+  }
+
+  const alias = [
+    ['.question', 'soal'],
+    ['.options', 'pil'],
+    ['.answer', 'kunci'],
+    ['.card', 'kartu'],
+    ['.formula', 'rumus'],
+    ['.steps', 'langkah'],
+  ];
+  alias.forEach(([selector, cls]) => {
+    wrap.querySelectorAll(selector).forEach((el) => el.classList.add(cls));
+  });
+
+  wrap.querySelectorAll('.pil').forEach((ul) => {
+    [...ul.querySelectorAll(':scope > li')].forEach((li, idx) => {
+      const label = String.fromCharCode(65 + idx);
+      li.dataset.label = label;
+      const first = [...li.childNodes].find((n) => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim());
+      if (first) first.nodeValue = first.nodeValue.replace(new RegExp(`^\\s*${label}[.)]\\s*`, 'i'), '');
+    });
+  });
+
+  wrap.querySelectorAll('details.answer,details.kunci').forEach((d) => d.classList.add('kunci'));
+}
+
+function judulLembar(page, index) {
+  const title = page.querySelector('h1,h2,h3,.kicker,.tag')?.textContent?.trim();
+  return title || `Lembar ${index + 1}`;
+}
+
+function bangunBuku(wrap, opts) {
+  const kandidat = [...wrap.children].filter((el) => el.tagName !== 'STYLE' && !el.classList.contains('gb-sticky'));
+  if (kandidat.length < 2) return null;
+
+  const groups = [];
+  let pending = [];
+  const push = () => {
+    if (pending.length) groups.push(pending);
+    pending = [];
+  };
+
+  kandidat.forEach((el) => {
+    if (el.matches('.pagebreak,hr.pagebreak')) { push(); el.remove(); return; }
+    if (el.matches('.kicker')) { push(); pending = [el]; return; }
+    if (el.matches('header.hero,section.toc,section.card,section.kartu,section.question,section.soal,section.summary,section.refs')) {
+      pending.push(el);
+      push();
+      return;
+    }
+    pending.push(el);
+    if (pending.length >= 2) push();
+  });
+  push();
+  if (groups.length < 2) return null;
+
+  const shell = document.createElement('div');
+  shell.className = 'gb-book-shell';
+  const stage = document.createElement('div');
+  stage.className = 'gb-book-stage';
+  shell.appendChild(stage);
+  const pages = groups.map((nodes, idx) => {
+    const page = document.createElement('section');
+    page.className = 'gb-book-page';
+    page.dataset.page = String(idx + 1);
+    nodes.forEach((node) => page.appendChild(node));
+    const folio = document.createElement('div');
+    folio.className = 'gb-page-folio';
+    folio.textContent = `${idx + 1} · GEMILANG`;
+    page.appendChild(folio);
+    stage.appendChild(page);
+    return page;
+  });
+
+  const nav = document.createElement('div');
+  nav.className = 'gb-page-nav';
+  const prev = buatBtn('← Sebelumnya');
+  const status = document.createElement('div');
+  status.className = 'gb-page-status';
+  const next = buatBtn('Berikutnya →');
+  nav.appendChild(prev); nav.appendChild(status); nav.appendChild(next);
+  shell.appendChild(nav);
+  wrap.appendChild(shell);
+  wrap.tabIndex = 0;
+
+  const key = `gemilang:html-page:${opts.babId || '-'}`;
+  let active = 0;
+  try { active = Math.max(0, Math.min(pages.length - 1, Number(localStorage.getItem(key)) || 0)); } catch { active = 0; }
+  let timer = null;
+  const show = (index, direction = 1) => {
+    const aman = Math.max(0, Math.min(pages.length - 1, index));
+    pages.forEach((page, i) => {
+      page.classList.toggle('is-active', i === aman);
+      page.setAttribute('aria-hidden', i === aman ? 'false' : 'true');
+      page.classList.remove('is-turning-next', 'is-turning-prev');
+    });
+    active = aman;
+    const page = pages[active];
+    page.classList.add(direction >= 0 ? 'is-turning-next' : 'is-turning-prev');
+    clearTimeout(timer);
+    timer = setTimeout(() => page.classList.remove('is-turning-next', 'is-turning-prev'), 280);
+    prev.disabled = active <= 0;
+    next.disabled = active >= pages.length - 1;
+    status.innerHTML = `Lembar ${active + 1} dari ${pages.length}<small>${judulLembar(page, active)}</small>`;
+    try { localStorage.setItem(key, String(active)); } catch { /* posisi lokal opsional */ }
+    shell.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  prev.addEventListener('click', () => show(active - 1, -1));
+  next.addEventListener('click', () => show(active + 1, 1));
+  wrap.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); show(active - 1, -1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); show(active + 1, 1); }
+  });
+  let x0 = null;
+  stage.addEventListener('touchstart', (e) => { x0 = e.touches[0]?.clientX ?? null; }, { passive: true });
+  stage.addEventListener('touchend', (e) => {
+    if (x0 == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? x0) - x0;
+    if (Math.abs(dx) > 55) show(active + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+    x0 = null;
+  }, { passive: true });
+  show(active, 1);
+  return { pages, show };
+}
+
+function bangunPaletSoal(sticky, semuaSoal, bukuUi) {
+  if (!semuaSoal.length || !bukuUi) return;
+  const palet = document.createElement('div');
+  palet.className = 'gb-question-palette';
+  const label = document.createElement('strong');
+  label.textContent = 'Navigasi soal';
+  palet.appendChild(label);
+  semuaSoal.forEach((soal, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'gb-qnum';
+    btn.textContent = String(idx + 1);
+    btn.title = `Buka soal ${idx + 1}`;
+    const pageIdx = bukuUi.pages.findIndex((page) => page.contains(soal));
+    btn.addEventListener('click', () => {
+      if (pageIdx >= 0) bukuUi.show(pageIdx, pageIdx >= 0 ? 1 : -1);
+    });
+    const sync = () => {
+      btn.classList.toggle('is-answered', soal.dataset.done === '1');
+      btn.classList.toggle('is-doubt', soal.dataset.done !== '1' && soal.dataset.doubt === '1');
+    };
+    sync();
+    new MutationObserver(sync).observe(soal, { attributes: true, attributeFilter: ['data-done', 'data-doubt'] });
+    palet.appendChild(btn);
+  });
+  sticky.appendChild(palet);
+}
+
 function enhance(root, opts) {
   const wrap = root.querySelector('.gb-wrap') || root;
+  wrap.classList.toggle('gb-mode-teacher', !!opts.presentasi);
+  normalisasiSchema(wrap);
   wrap.querySelectorAll('li').forEach(bersihGlyph);
-
-  try {
-    const anak = [...wrap.children];
-    let splitIdx = anak.findIndex((el) => /^H[12]$/.test(el.tagName) && /Soal Pemantapan/i.test(el.textContent || ''));
-    if (splitIdx < 0) splitIdx = anak.findIndex((el) => el.classList && el.classList.contains('soal'));
-    if (splitIdx > 0 && splitIdx < anak.length) {
-      const kiri = document.createElement('div'); kiri.className = 'gb-kolom-materi';
-      const kanan = document.createElement('div'); kanan.className = 'gb-kolom-soal';
-      const layout = document.createElement('div'); layout.className = 'gb-layout';
-      anak.forEach((el, i) => (i < splitIdx ? kiri : kanan).appendChild(el));
-      layout.appendChild(kiri); layout.appendChild(kanan);
-      wrap.appendChild(layout);
-    }
-  } catch { /* satu kolom */ }
+  const bukuUi = bangunBuku(wrap, opts);
 
   const semuaSoal = [...wrap.querySelectorAll('.soal')];
   const sticky = document.createElement('div');
@@ -470,6 +702,7 @@ function enhance(root, opts) {
     bExit.addEventListener('click', () => { if (opts.onKeluar) opts.onKeluar(); });
     sticky.appendChild(bAll); sticky.appendChild(bNone); sticky.appendChild(bExit);
   }
+  bangunPaletSoal(sticky, semuaSoal, bukuUi);
   wrap.insertBefore(sticky, wrap.firstChild);
 
   if (!opts.presentasi) {
@@ -559,8 +792,9 @@ export default function RendererHtmlBab({ html, htmlUrl, babId, bukuId, modePres
         return `<img${a}>`;
       });
 
-      const isi = percantikMatika(bersihkanHtml(siapkanCss(sumber)));
-      host.shadowRoot.innerHTML = `<style>${BASE_STYLE}${CSS_MATIKA}</style><div class="gb-wrap">${isi}</div>`;
+      const aman = bersihkanHtml(siapkanCss(sumber));
+      const isi = percantikMatika(renderLatexHtml(aman));
+      host.shadowRoot.innerHTML = `<style>${katexCss}\n${BASE_STYLE}${CSS_MATIKA}</style><div class="gb-wrap">${isi}</div>`;
       const siswaId = localStorage.getItem('studentId') || '';
       const nama = localStorage.getItem('studentName') || localStorage.getItem('studentNama') || '';
       try {
@@ -572,6 +806,6 @@ export default function RendererHtmlBab({ html, htmlUrl, babId, bukuId, modePres
 
     muatDanRender();
     return () => { batal = true; };
-  }, [html, htmlUrl, babId, bukuId, modePresentasi]);
+  }, [html, htmlUrl, babId, bukuId, modePresentasi, onKeluar]);
   return <div ref={hostRef} />;
 }
