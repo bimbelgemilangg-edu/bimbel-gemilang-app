@@ -9,7 +9,8 @@ import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseSlides, parseDaftarSoal, cekBenar, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
-import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban } from '../../services/sesiService';
+import { cariSesiByKode, gabungSesi, dengarSesi, kirimJawaban, kirimTanya } from '../../services/sesiService';
+import '../../components/buku/liveSession.css';
 
 const S = {
   page: { maxWidth: 620, margin: '0 auto', padding: 16, fontFamily: 'sans-serif', minHeight: '100vh', background: '#f8fafc' },
@@ -50,6 +51,8 @@ export default function LiveSessionStudent() {
   const [pilih, setPilih] = useState(null);
   const [terkirim, setTerkirim] = useState({});
   const [err, setErr] = useState('');
+  const [tanya, setTanya] = useState('');
+  const [tanyaTerkirim, setTanyaTerkirim] = useState(false);
   const kirimGuard = useRef({});
 
   useEffect(() => {
@@ -71,7 +74,7 @@ export default function LiveSessionStudent() {
           if (j.siswaId === siswaId && j.soalIdx != null) map[j.soalIdx] = !!j.benar;
         });
         setTerkirim((t) => ({ ...t, ...map }));
-      } catch (e) { /* abaikan */ }
+      } catch { /* abaikan */ }
     })();
     return () => { hidup = false; };
   }, [sesi && sesi.id, siswaId]);
@@ -82,7 +85,7 @@ export default function LiveSessionStudent() {
       try {
         const s = await getDoc(doc(db, 'buku_digital', sesi.bukuId, 'bab', sesi.babId));
         if (s.exists()) setBabHtml(s.data().html || '');
-      } catch (e) {}
+      } catch { /* abaikan */ }
     })();
   }, [sesi && sesi.id, sesi && sesi.mode]);
 
@@ -118,9 +121,21 @@ export default function LiveSessionStudent() {
     setTerkirim((t) => ({ ...t, [idxSoal]: benar }));
     try {
       await kirimJawaban(sesi.id, { siswaId, nama, soalIdx: idxSoal, jawaban: jw, benar });
-    } catch (e) {
+    } catch {
       kirimGuard.current[idxSoal] = false;
     }
+  }
+
+  async function kirimPertanyaan(e) {
+    e.preventDefault();
+    const teks = tanya.trim();
+    if (!teks || !sesi) return;
+    try {
+      await kirimTanya(sesi.id, { siswaId, nama, teks });
+      setTanya('');
+      setTanyaTerkirim(true);
+      window.setTimeout(() => setTanyaTerkirim(false), 3000);
+    } catch { setErr('Pertanyaan belum terkirim. Coba lagi.'); }
   }
 
   function ringkasPilihan() {
@@ -165,13 +180,15 @@ export default function LiveSessionStudent() {
   return (
     <div style={S.page}>
       <style>{CSS_MODUL}{CSS_MATIKA}</style>
-      <div style={S.card}>
+      <div className="live-room-header" style={S.card}>
         <div style={S.row}>
+          <span className="live-room-kicker">RUANG BELAJAR · TERHUBUNG KE GURU</span>
           <span style={S.chip}>🔴 {sesi.kode}</span>
           <span style={S.chip}>{sesi.mode === 'materi' ? '📖 Materi Interaktif' : '✍️ Soal & Pembahasan'}</span>
           {sesi.mode === 'materi' && slideNow && <span style={S.chip}>Slide {(sesi.slideAktif || 0) + 1}/{slides.length}</span>}
           {soal && <span style={S.chip}>Soal {idxSoal + 1}/{daftarSoal.length}</span>}
         </div>
+        <div className="live-room-tip">Guru mengendalikan materi dan membuka pembahasan. Kamu dapat menjawab dan bertanya tanpa meninggalkan halaman.</div>
       </div>
 
       {sesi.mode === 'materi' && slideNow && slideNow.tipe !== 'soal' && (
@@ -329,6 +346,15 @@ export default function LiveSessionStudent() {
 
       {sesi.mode === 'materi' && !slideNow && <div style={S.card}>Menunggu slide dari guru…</div>}
       {sesi.mode === 'bank' && !soal && <div style={S.card}>Menunggu soal dari guru…</div>}
+      <div className="live-student-ask" style={S.card}>
+        <h4>💬 Tanyakan kepada guru</h4>
+        <p>Pertanyaanmu tampil privat di panel guru dan tidak mengganggu layar siswa lain.</p>
+        <form onSubmit={kirimPertanyaan}>
+          <input value={tanya} onChange={(e) => setTanya(e.target.value)} maxLength={240} placeholder="Contoh: Mengapa tandanya berubah menjadi negatif?" />
+          <button type="submit" disabled={!tanya.trim()}>Kirim</button>
+        </form>
+        {tanyaTerkirim && <div className="sent">✓ Pertanyaan terkirim ke guru.</div>}
+      </div>
     </div>
   );
 }
