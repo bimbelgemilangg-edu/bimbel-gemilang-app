@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Users, Volume2, Maximize2, Sparkles } from 'lucide-react';
 import { dengarSesi, dengarPeserta, dengarRelawan } from '../../services/sesiService';
+import { tahapDenganId, formatTimer, sisaTimer } from '../../utils/tahapKelas';
 import '../../components/buku/liveSession.css';
 
 export default function ProjectorSession() {
@@ -9,6 +10,8 @@ export default function ProjectorSession() {
   const [sesi, setSesi] = useState(null);
   const [peserta, setPeserta] = useState([]);
   const [relawan, setRelawan] = useState([]);
+  const [clockNow, setClockNow] = useState(() => Date.now());
+  const timerStatus = sesi?.timerStatus;
 
   useEffect(() => {
     if (!sesiId) return undefined;
@@ -18,8 +21,16 @@ export default function ProjectorSession() {
     return () => { u1(); u2(); u3(); };
   }, [sesiId]);
 
+  useEffect(() => {
+    if (timerStatus !== 'running') return undefined;
+    const id = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [timerStatus]);
+
   const antrean = relawan.filter((r) => r.status === 'menunggu').slice(0, 8);
   const aktif = sesi?.relawanAktif;
+  const tahap = tahapDenganId(sesi?.tahapKelas);
+  const timerDetik = sisaTimer(sesi, clockNow);
   const nomorAktif = sesi?.mode === 'materi'
     ? `Slide ${(sesi.slideAktif || 0) + 1}`
     : sesi?.soalAktif != null ? `Soal ${(sesi.soalAktif || 0) + 1}` : 'Menunggu soal';
@@ -33,9 +44,10 @@ export default function ProjectorSession() {
       <div className="live-projector-shell">
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
           <div>
-            <div className="live-projector-kicker">BIMBEL GEMILANG · RUANG KELAS</div>
+        <div className="live-projector-kicker">BIMBEL GEMILANG · RUANG KELAS</div>
+            <div className="live-stage-projector">{tahap.ikon} TAHAP: {tahap.label} <span style={{ opacity: .65 }}>•</span> {sesi.timerStatus === 'running' ? '⏱' : '◷'} {formatTimer(timerDetik)}</div>
             <h1 className="live-projector-title">Belajar bersama, berani mencoba.</h1>
-            <p className="live-projector-subtitle">Guru sedang memandu {nomorAktif}. Perhatikan papan, jelaskan langkahmu, dan bantu teman belajar.</p>
+            <p className="live-projector-subtitle">{tahap.bantuan} Guru sedang memandu {nomorAktif}.</p>
           </div>
           <button type="button" onClick={() => document.documentElement.requestFullscreen?.()} style={{ border: 0, borderRadius: 12, padding: 12, background: 'rgba(255,255,255,.12)', color: '#fff', cursor: 'pointer' }} title="Layar penuh"><Maximize2 size={20} /></button>
         </div>
