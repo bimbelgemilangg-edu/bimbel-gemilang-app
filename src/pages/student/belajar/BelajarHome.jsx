@@ -1,22 +1,22 @@
 // src/pages/student/belajar/BelajarHome.jsx
 // ============================================================
 // MATERI v2 -- BERANDA BELAJAR SISWA (route /siswa/belajar)
-// Fase 1 rombak tampilan materi (docs/RENCANA-ROMBAK-MATERI.md).
-//
-// ⚠️ CATATAN DESAIN: gaya visual di file ini adalah PLACEHOLDER
-// yang bersih & netral. Identitas visual final mengikuti FOTO
-// DESAIN dari owner (lihat DOKUMEN-PROYEK.md Turn 4) -- struktur
-// data/navigasi sudah final, styling yang akan disesuaikan.
+// Visual: tema "Gemilang Biru" mengikuti mockup resmi owner
+// (docs/desain/mockup-ui-gemilang.png) -- Turn 5.
 // ============================================================
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Play, ChevronRight, BookOpen, Lock, FlaskConical,
+  Search, Play, ChevronRight, BookOpen, Lock, FlaskConical, Star,
 } from 'lucide-react';
 import {
   muatDaftarMateri, muatProgressSiswa, sedangModeContoh,
   bacaTerakhir, persenBab,
 } from '../../../services/materiV2Service';
+import MaskotAstronot from '../../../components/MaskotAstronot';
+import {
+  T, kartuDasar, chip, barLuar, barDalam, halamanDasar,
+} from './tema';
 
 export default function BelajarHome() {
   const navigate = useNavigate();
@@ -50,8 +50,6 @@ export default function BelajarHome() {
   }, [materiList]);
 
   const terlihat = useMemo(() => materiList.filter((m) => {
-    // Filter longgar di beranda: semua materi ditampilkan;
-    // pencarian & filter mapel menyempitkan daftar.
     if (filterMapel !== 'Semua' && m.mapel !== filterMapel) return false;
     if (cari.trim()) {
       const q = cari.trim().toLowerCase();
@@ -68,23 +66,27 @@ export default function BelajarHome() {
       const total = babs.reduce((a, b) => a + persenBab(b, progresMap[b.id]), 0);
       return Math.round(total / babs.length);
     }
-    // Non-contoh: daftar bab penuh dimuat di halaman daftar isi;
-    // di beranda tampilkan progres ringkas dari field tercache.
     return Number(m.progresRingkas?.[studentId] ?? 0);
   };
 
   return (
-    <div style={S.page}>
-      {/* Kopf / sambutan */}
+    <div style={halamanDasar}>
+      {/* Hero biru gradasi + maskot (gaya sidebar mockup) */}
       <div style={S.hero}>
         <div style={S.heroGlow} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <p style={S.sapa}>Halo, <b>{nama}</b> 👋</p>
-          <h1 style={S.judul}>Mau belajar apa hari ini?</h1>
-          <p style={S.sub}>
-            {studentKelas ? `Kelas ${studentKelas} • ` : ''}
-            Pilih materi, baca, lalu uji pemahamanmu.
-          </p>
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 14, alignItems: 'center' }}>
+          <MaskotAstronot size={72} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={S.sapa}>Halo, <b>{nama}</b> 👋</p>
+            <h1 style={S.judul}>Mau belajar apa hari ini?</h1>
+            <p style={S.sub}>
+              {studentKelas ? `Kelas ${studentKelas} • ` : ''}
+              Baca materi, tonton video, lalu uji pemahamanmu.
+            </p>
+            <span style={S.level}>
+              <Star size={11} fill="currentColor" /> Belajar Nyaman, Prestasi Gemilang!
+            </span>
+          </div>
         </div>
       </div>
 
@@ -106,22 +108,22 @@ export default function BelajarHome() {
             onClick={() => navigate(
               `/siswa/belajar/${terakhir.materiId}/${terakhir.babId}`
             )}>
-            <span style={S.lanjutIcon}><Play size={15} fill="currentColor" /></span>
-            <span style={{ flex: 1, textAlign: 'left' }}>
-              <span style={S.lanjutLabel}>Lanjutkan membaca</span>
+            <span style={S.lanjutIcon}><Play size={14} fill="currentColor" /></span>
+            <span style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+              <span style={S.lanjutLabel}>LANJUTKAN MEMBACA</span>
               <span style={S.lanjutTitle}>{terakhir.judul || 'Bab terakhir'}</span>
             </span>
-            <ChevronRight size={17} color="#6d5bd0" />
+            <ChevronRight size={17} color={T.biru} />
           </button>
         )}
 
-        {/* Pencarian */}
+        {/* Pencarian pill */}
         <div style={S.cariWrap}>
-          <Search size={16} color="#94a3b8" />
+          <Search size={16} color={T.samar} />
           <input
             value={cari}
             onChange={(e) => setCari(e.target.value)}
-            placeholder="Cari materi atau mapel..."
+            placeholder="Cari materi, bab, atau kata kunci..."
             aria-label="Cari materi"
             style={S.cariInput}
           />
@@ -132,10 +134,7 @@ export default function BelajarHome() {
           {mapelList.map((mp) => (
             <button key={mp} type="button"
               onClick={() => setFilterMapel(mp)}
-              style={{
-                ...S.chip,
-                ...(filterMapel === mp ? S.chipAktif : null),
-              }}>
+              style={chip(filterMapel === mp)}>
               {mp}
             </button>
           ))}
@@ -157,11 +156,9 @@ export default function BelajarHome() {
               return (
                 <button key={m.id} type="button"
                   onClick={() => navigate(`/siswa/belajar/${m.id}`)}
-                  style={{ ...S.kartu, borderTop: `4px solid ${m.warna || '#4C6EF5'}` }}>
+                  style={S.kartu}>
                   <div style={S.kartuTop}>
-                    <span style={{ ...S.cover, background: `${m.warna || '#4C6EF5'}15` }}>
-                      {m.emoji || '📘'}
-                    </span>
+                    <span style={S.cover}>{m.emoji || '📘'}</span>
                     {m.premium && (
                       <span style={S.badgePremium}><Lock size={10} /> Premium</span>
                     )}
@@ -170,16 +167,12 @@ export default function BelajarHome() {
                   <div style={S.kartuMeta}>
                     <BookOpen size={12} /> {m.mapel || '-'} • Kelas {m.kelas || '-'}
                   </div>
-                  <div style={S.barLatar}>
-                    <div style={{
-                      ...S.barIsi,
-                      width: `${persen}%`,
-                      background: m.warna || '#4C6EF5',
-                    }} />
+                  <div style={barLuar(6)}>
+                    <div style={barDalam(persen)} />
                   </div>
                   <div style={S.kartuFoot}>
                     <span>{persen > 0 ? `${persen}% selesai` : 'Mulai belajar'}</span>
-                    <ChevronRight size={15} color="#cbd5e1" />
+                    <ChevronRight size={15} color={T.samar} />
                   </div>
                 </button>
               );
@@ -191,101 +184,93 @@ export default function BelajarHome() {
   );
 }
 
-// ---------- style placeholder (menunggu foto desain owner) ----------
 const S = {
-  page: { minHeight: '100vh', background: '#F6F7FB', fontFamily: 'sans-serif' },
   hero: {
     position: 'relative', overflow: 'hidden',
-    padding: '22px 18px 26px',
-    background: 'linear-gradient(150deg,#4338CA 0%,#6D28D9 60%,#1E1B4B 100%)',
+    padding: '22px 20px 26px', background: T.gradasiHero,
   },
   heroGlow: {
     position: 'absolute', inset: 0, pointerEvents: 'none',
-    background: 'radial-gradient(circle at 85% 15%, rgba(255,255,255,.14), transparent 42%)',
+    background: 'radial-gradient(circle at 85% 10%, rgba(255,255,255,.18), transparent 45%)',
   },
-  sapa: { margin: 0, color: 'rgba(255,255,255,.8)', fontSize: 12.5 },
-  judul: { margin: '4px 0 4px', color: '#fff', fontSize: 21, fontWeight: 800 },
-  sub: { margin: 0, color: 'rgba(255,255,255,.72)', fontSize: 12.5, lineHeight: 1.5 },
-  isi: { padding: '14px 16px 34px', maxWidth: 960, margin: '0 auto' },
+  sapa: { margin: 0, color: 'rgba(255,255,255,.85)', fontSize: 12.5 },
+  judul: { margin: '4px 0 4px', color: '#fff', fontSize: 22, fontWeight: 800 },
+  sub: { margin: 0, color: 'rgba(255,255,255,.78)', fontSize: 12.5, lineHeight: 1.5 },
+  level: {
+    display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 10,
+    background: 'rgba(255,255,255,.18)', border: '1px solid rgba(255,255,255,.3)',
+    color: '#FFE9A8', borderRadius: 999, padding: '4px 11px',
+    fontSize: 10.5, fontWeight: 800,
+  },
+  isi: { padding: '14px 16px 34px', maxWidth: 1000, margin: '0 auto' },
   bannerContoh: {
     display: 'flex', gap: 8, alignItems: 'center',
-    background: '#FFFBEB', border: '1px solid #FDE68A', color: '#92400E',
+    background: T.amberLatar, border: `1px solid ${T.amberGaris}`, color: T.amberTeks,
     borderRadius: 12, padding: '9px 12px', fontSize: 11.5,
     lineHeight: 1.5, marginBottom: 12,
   },
   lanjut: {
-    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-    background: '#fff', border: '1px solid #E4DEF9', borderRadius: 14,
-    padding: '11px 13px', marginBottom: 12, cursor: 'pointer',
-    boxShadow: '0 4px 14px rgba(67,56,202,.07)',
+    display: 'flex', alignItems: 'center', gap: 11, width: '100%',
+    ...kartuDasar, padding: '11px 13px', marginBottom: 12, cursor: 'pointer',
   },
   lanjutIcon: {
-    width: 34, height: 34, borderRadius: 11, background: '#6D28D9',
+    width: 34, height: 34, borderRadius: 10, background: T.biru,
     color: '#fff', display: 'flex', alignItems: 'center',
     justifyContent: 'center', flexShrink: 0,
+    boxShadow: '0 4px 12px rgba(30,155,240,.35)',
   },
   lanjutLabel: {
-    display: 'block', color: '#6D28D9', fontSize: 10.5, fontWeight: 800,
-    letterSpacing: .3,
+    display: 'block', color: T.biruGelap, fontSize: 10, fontWeight: 800,
+    letterSpacing: .6,
   },
   lanjutTitle: {
-    display: 'block', color: '#334155', fontSize: 12.5, fontWeight: 700,
+    display: 'block', color: T.judul, fontSize: 13, fontWeight: 700,
     marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
   cariWrap: {
     display: 'flex', alignItems: 'center', gap: 8, background: '#fff',
-    border: '1px solid #E7E9F2', borderRadius: 13, padding: '10px 12px',
-    marginBottom: 10,
+    border: `1px solid ${T.garis}`, borderRadius: 999, padding: '11px 16px',
+    marginBottom: 10, boxShadow: T.bayanganKecil,
   },
   cariInput: {
     flex: 1, minWidth: 0, border: 'none', outline: 'none',
-    background: 'transparent', fontSize: 13, color: '#1e293b',
+    background: 'transparent', fontSize: 13, color: T.teks, fontFamily: 'inherit',
   },
   chipRow: {
     display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 4,
-    marginBottom: 12, scrollbarWidth: 'none',
-  },
-  chip: {
-    flexShrink: 0, border: '1px solid #E1E4EF', background: '#fff',
-    color: '#64748b', borderRadius: 999, padding: '6px 13px',
-    fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
-  },
-  chipAktif: {
-    background: '#4338CA', borderColor: '#4338CA', color: '#fff',
+    marginBottom: 14, scrollbarWidth: 'none',
   },
   kosong: {
-    textAlign: 'center', color: '#8b93a7', background: '#fff',
-    borderRadius: 16, padding: '34px 20px', fontSize: 13, lineHeight: 1.7,
+    textAlign: 'center', color: T.samar, ...kartuDasar,
+    padding: '34px 20px', fontSize: 13, lineHeight: 1.7,
   },
   grid: {
-    display: 'grid', gap: 12,
-    gridTemplateColumns: 'repeat(auto-fill,minmax(230px,1fr))',
+    display: 'grid', gap: 13,
+    gridTemplateColumns: 'repeat(auto-fill,minmax(235px,1fr))',
   },
   kartu: {
-    background: '#fff', borderRadius: 16, padding: 14,
-    border: '1px solid #EDEFF6', cursor: 'pointer', textAlign: 'left',
-    boxShadow: '0 3px 12px rgba(30,27,75,.05)',
-    display: 'flex', flexDirection: 'column', gap: 7,
+    ...kartuDasar, padding: 15, cursor: 'pointer', textAlign: 'left',
+    display: 'flex', flexDirection: 'column', gap: 8, width: '100%',
+    transition: 'transform .15s ease, box-shadow .15s ease',
   },
   kartuTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   cover: {
-    width: 44, height: 44, borderRadius: 12, display: 'flex',
+    width: 46, height: 46, borderRadius: 13, display: 'flex',
     alignItems: 'center', justifyContent: 'center', fontSize: 22,
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
   },
   badgePremium: {
     display: 'inline-flex', alignItems: 'center', gap: 3,
-    background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A',
-    borderRadius: 999, padding: '3px 8px', fontSize: 9.5, fontWeight: 800,
+    background: T.amberLatar, color: T.amberTeks, border: `1px solid ${T.amberGaris}`,
+    borderRadius: 999, padding: '3px 9px', fontSize: 9.5, fontWeight: 800,
   },
-  kartuJudul: { fontWeight: 800, fontSize: 14, color: '#1e293b', lineHeight: 1.35 },
+  kartuJudul: { fontWeight: 800, fontSize: 14.5, color: T.judul, lineHeight: 1.35 },
   kartuMeta: {
     display: 'flex', alignItems: 'center', gap: 4,
-    fontSize: 11, color: '#94a3b8',
+    fontSize: 11, color: T.samar,
   },
-  barLatar: { height: 6, borderRadius: 99, background: '#EEF0F7', overflow: 'hidden' },
-  barIsi: { height: '100%', borderRadius: 99, transition: 'width .3s ease' },
   kartuFoot: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    fontSize: 11, fontWeight: 700, color: '#64748b',
+    fontSize: 11, fontWeight: 700, color: T.samar,
   },
 };
