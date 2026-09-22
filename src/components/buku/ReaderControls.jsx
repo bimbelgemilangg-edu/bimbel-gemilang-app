@@ -1,23 +1,15 @@
-import React from 'react';
-import {
-  AlignJustify,
-  Bookmark,
-  BookOpen,
-  Check,
-  List,
-  Maximize2,
-  Minimize2,
-  Moon,
-  Palette,
-  Sun,
-  Type,
-} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Bookmark, Check, List, Type } from 'lucide-react';
 
-const THEME_LABEL = {
-  paper: 'Kertas',
-  sepia: 'Sepia',
-  night: 'Malam',
-};
+/* ============================================================
+   ReaderControls v2 — Bookfeel
+   Krom reader disederhanakan: [Isi] [label] ... [Penanda] [Aa].
+   Tema, ukuran teks, mode baca, dan fokus masuk satu lembar bawah
+   (bottom sheet) lewat tombol "Aa". Toolbar auto-hide saat siswa
+   membaca (scroll turun) dan muncul saat scroll naik / sentuh.
+   ============================================================ */
+
+const THEME_LABEL = { paper: 'Kertas', sepia: 'Sepia', night: 'Malam' };
 
 export default function ReaderControls({
   theme = 'paper',
@@ -35,72 +27,106 @@ export default function ReaderControls({
   progress = 0,
   pageLabel = '',
 }) {
-  const nextTheme = theme === 'paper' ? 'sepia' : theme === 'sepia' ? 'night' : 'paper';
+  const [hidden, setHidden] = useState(false);
+  const [sheet, setSheet] = useState(false);
+  const lastY = useRef(0);
+  const timer = useRef(null);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      if (y < 140) { setHidden(false); lastY.current = y; return; }
+      if (y > lastY.current + 24) setHidden(true);
+      else if (y < lastY.current - 12) setHidden(false);
+      lastY.current = y;
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setHidden(false), 4000);
+    };
+    const onDown = () => setHidden(false);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('touchstart', onDown, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('touchstart', onDown);
+      clearTimeout(timer.current);
+    };
+  }, []);
+
   const decrease = () => onFontScale?.(Math.max(0.9, +(fontScale - 0.05).toFixed(2)));
-  const increase = () => onFontScale?.(Math.min(1.18, +(fontScale + 0.05).toFixed(2)));
+  const increase = () => onFontScale?.(Math.min(1.3, +(fontScale + 0.05).toFixed(2)));
 
   return (
-    <div className="reader-toolbar" aria-label="Pengaturan membaca">
-      <div className="reader-toolbar__left">
-        <button type="button" className="reader-tool reader-tool--contents" onClick={onContents} title="Daftar isi">
-          <List size={16} />
-          <span>Isi</span>
-        </button>
-        <span className="reader-toolbar__label">{pageLabel}</span>
-        <span className="reader-progress" title={`${Math.round(progress)}% terbaca`} aria-label={`${Math.round(progress)} persen terbaca`}>
-          <span style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} />
-        </span>
-      </div>
-      <div className="reader-toolbar__actions">
-        {showLayout && (
+    <>
+      <div className={`reader-toolbar ${hidden ? 'is-hidden' : ''}`} aria-label="Pengaturan membaca">
+        <div className="reader-toolbar__left">
+          <button type="button" className="reader-tool reader-tool--contents" onClick={onContents} title="Daftar isi">
+            <List size={16} />
+            <span>Isi</span>
+          </button>
+          <span className="reader-toolbar__label">{pageLabel}</span>
+        </div>
+        <div className="reader-toolbar__actions">
           <button
             type="button"
-            className="reader-tool"
-            onClick={() => onLayoutMode?.(layoutMode === 'page' ? 'scroll' : 'page')}
-            title={layoutMode === 'page' ? 'Mode gulir' : 'Mode halaman'}
-            aria-label={layoutMode === 'page' ? 'Beralih ke mode gulir' : 'Beralih ke mode halaman'}
+            className={`reader-tool ${bookmarked ? 'is-active' : ''}`}
+            onClick={onBookmark}
+            title={bookmarked ? 'Hapus penanda' : 'Tandai halaman'}
+            aria-label="Penanda halaman"
           >
-            {layoutMode === 'page' ? <AlignJustify size={16} /> : <BookOpen size={16} />}
-            <span>{layoutMode === 'page' ? 'Gulir' : 'Halaman'}</span>
+            {bookmarked ? <Check size={16} /> : <Bookmark size={16} />}
           </button>
-        )}
-        <button
-          type="button"
-          className={`reader-tool ${bookmarked ? 'is-active' : ''}`}
-          onClick={onBookmark}
-          title={bookmarked ? 'Hapus penanda' : 'Tandai halaman'}
-          aria-label={bookmarked ? 'Hapus penanda halaman' : 'Tandai halaman'}
-        >
-          {bookmarked ? <Check size={16} /> : <Bookmark size={16} />}
-          <span>{bookmarked ? 'Ditandai' : 'Tandai'}</span>
-        </button>
-        <button
-          type="button"
-          className="reader-tool"
-          onClick={() => onTheme?.(nextTheme)}
-          title={`Tema: ${THEME_LABEL[theme]}. Klik untuk ganti.`}
-          aria-label={`Ganti tema baca, sekarang ${THEME_LABEL[theme]}`}
-        >
-          {theme === 'night' ? <Moon size={16} /> : theme === 'sepia' ? <Palette size={16} /> : <Sun size={16} />}
-          <span>{THEME_LABEL[theme]}</span>
-        </button>
-        <div className="reader-tool reader-tool--font" aria-label="Ukuran teks">
-          <Type size={15} />
-          <button type="button" onClick={decrease} aria-label="Perkecil teks">A−</button>
-          <span>{Math.round(fontScale * 100)}%</span>
-          <button type="button" onClick={increase} aria-label="Perbesar teks">A+</button>
+          <button
+            type="button"
+            className={`reader-tool ${sheet ? 'is-active' : ''}`}
+            onClick={() => setSheet((s) => !s)}
+            title="Pengaturan baca: tema, ukuran teks, mode"
+            aria-label="Pengaturan baca"
+          >
+            <Type size={16} />
+            <span>Aa</span>
+          </button>
         </div>
-        <button
-          type="button"
-          className="reader-tool"
-          onClick={onFocusMode}
-          title={focusMode ? 'Keluar mode fokus' : 'Masuk mode fokus'}
-          aria-label={focusMode ? 'Keluar mode fokus' : 'Masuk mode fokus'}
-        >
-          {focusMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          <span>{focusMode ? 'Keluar' : 'Fokus'}</span>
-        </button>
       </div>
-    </div>
+
+      <span className="reader-progress" title={`${Math.round(progress)}% terbaca`} aria-label={`${Math.round(progress)} persen terbaca`}>
+        <span style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} />
+      </span>
+
+      <div className={`gb-scrim ${sheet ? 'is-open' : ''}`} onClick={() => setSheet(false)} />
+      <div className={`gb-sheet ${sheet ? 'is-open' : ''}`} role="dialog" aria-label="Pengaturan baca">
+        <h4>Pengaturan Membaca</h4>
+        <div className="row">
+          <span>Tema</span>
+          {['paper', 'sepia', 'night'].map((t) => (
+            <button key={t} type="button" className={theme === t ? 'is-active' : ''} onClick={() => onTheme?.(t)}>
+              {THEME_LABEL[t]}
+            </button>
+          ))}
+        </div>
+        <div className="row">
+          <span>Teks</span>
+          <button type="button" onClick={decrease} aria-label="Perkecil teks">A−</button>
+          <button type="button" onClick={increase} aria-label="Perbesar teks">A+</button>
+          <span style={{ width: 'auto', color: 'var(--reader-muted)' }}>{Math.round(fontScale * 100)}%</span>
+        </div>
+        {showLayout && (
+          <div className="row">
+            <span>Mode</span>
+            <button type="button" className={layoutMode === 'scroll' ? 'is-active' : ''} onClick={() => onLayoutMode?.('scroll')}>
+              Gulir
+            </button>
+            <button type="button" className={layoutMode === 'page' ? 'is-active' : ''} onClick={() => onLayoutMode?.('page')}>
+              Halaman
+            </button>
+          </div>
+        )}
+        <div className="row">
+          <span>Fokus</span>
+          <button type="button" className={focusMode ? 'is-active' : ''} onClick={onFocusMode}>
+            {focusMode ? 'Matikan fokus' : 'Mode fokus'}
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

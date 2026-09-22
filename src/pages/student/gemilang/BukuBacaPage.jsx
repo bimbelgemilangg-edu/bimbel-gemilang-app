@@ -16,6 +16,7 @@ import { bukaPdf, renderHalamanKeCanvas } from '../../../utils/modulPdf';
 import RendererHtmlBab from '../../../components/buku/RendererHtmlBab';
 import ReaderControls from '../../../components/buku/ReaderControls';
 import '../../../components/buku/buku.css';
+import '../../../components/buku/bukuBookfeel.css'; // Bookfeel v2: ruang baca gaya buku cetak
 
 const XP_SEKSI = 5;
 const XP_MODUL = 5;

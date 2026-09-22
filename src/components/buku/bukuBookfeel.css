@@ -1,0 +1,163 @@
+
+/* src/components/buku/bukuBookfeel.css
+   ============================================================
+   GEMILANG READER — BOOKFEEL V2
+   Lapisan tema yang mengubah reader dari "tumpukan kartu aplikasi"
+   menjadi "ruang membaca seperti buku cetak". Murni CSS (override),
+   tidak mengubah schema data maupun route.
+   Prinsip: konten adalah pahlawan; krom aplikasi menyelinap pergi.
+   ============================================================ */
+
+/* ---------- 1. Kertas, bukan lavender ---------- */
+.gemilang-reader {
+    --reader-bg: #FBF9F3;            /* kertas hangat ala buku cetak */
+    --reader-surface: #FBF9F3;
+    --reader-ink: #22304A;
+    --reader-muted: #6B7789;
+    --reader-accent: #1B6CA8;        /* biru bab, bukan ungu aplikasi */
+    --gb-gold: #C08A00;
+  }
+  .gemilang-reader.reader-theme-sepia { --reader-bg:#F3E9D6; --reader-surface:#F3E9D6; --reader-ink:#493B2A; --reader-muted:#806D55; --reader-accent:#9A641F; }
+  .gemilang-reader.reader-theme-night { --reader-bg:#141A22; --reader-surface:#141A22; --reader-ink:#E7EBF2; --reader-muted:#9AA6B5; --reader-accent:#7FB4E0; }
+  
+  /* ---------- 2. Kolom baca ukuran buku (68ch) ---------- */
+  .gemilang-reader .reader-structured {
+    max-width: 720px !important;
+    margin: 0 auto !important;
+    padding: 26px 22px 120px !important;
+    font-family: "Nunito", "Segoe UI", system-ui, sans-serif;
+  }
+  .gemilang-reader .reader-structured .paragraf,
+  .gemilang-reader .reader-structured .list {
+    font-size: 15.5px !important;
+    line-height: 1.85 !important;
+    color: var(--reader-ink) !important;
+    max-width: 68ch;
+    margin-bottom: 14px !important;
+  }
+  .gemilang-reader .reader-structured .list { padding-left: 20px !important; }
+  
+  /* ---------- 3. Bongkar kartu: seksi menjadi halaman mengalir ---------- */
+  .gemilang-reader .reader-structured .reader-surface {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 0 30px !important;
+    break-inside: avoid;
+  }
+  /* pemisah antar-seksi: garis rambut seperti pergantian halaman */
+  .gemilang-reader .reader-structured .reader-surface + .reader-surface::before {
+    content: "";
+    display: block;
+    height: 1px;
+    margin: 0 0 26px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--reader-ink) 22%, transparent), transparent);
+  }
+  /* judul seksi = kepala subbab buku cetak */
+  .gemilang-reader .reader-structured .reader-surface > div:first-child {
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    color: var(--reader-accent) !important;
+    border-bottom: 2px solid var(--reader-accent);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+    letter-spacing: .2px;
+  }
+  
+  /* ---------- 4. Matematika gaya buku ---------- */
+  .gemilang-reader .gb-katex-block {
+    margin: 20px 0 !important;
+    text-align: center;
+    font-size: 1.14em;
+    overflow-x: auto;
+    padding: 4px 0;
+  }
+  .gemilang-reader .gb-katex-inline { font-size: 1.04em; }
+  /* tabel apa pun di dalam bacaan dirapikan seperti tabel buku */
+  .gemilang-reader .reader-structured table {
+    border-collapse: collapse;
+    margin: 16px auto;
+    font-size: .95em;
+  }
+  .gemilang-reader .reader-structured table td,
+  .gemilang-reader .reader-structured table th {
+    border: 1px solid color-mix(in srgb, var(--reader-ink) 25%, transparent);
+    padding: 6px 10px;
+  }
+  /* hitung bersusun: rapikan baris flex lama menjadi kolom rata-kanan */
+  .gemilang-reader .reader-structured [class*="barisBs"],
+  .gemilang-reader .reader-structured div[style*="alignItems"][style*="borderRadius"] {
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* ---------- 5. Kotak buku: maksimum dua aksen per layar ---------- */
+  .gemilang-reader .reader-structured div[style*="FFFBEB"] {   /* kotak contoh/kuning */
+    background: #FFF6DC !important;
+    border: 1.5px dashed #E0AE2B !important;
+    border-radius: 10px !important;
+    color: #6B4E00 !important;
+  }
+  .gemilang-reader .reader-structured div[style*="F4F2FF"][style*="border"] {
+    background: color-mix(in srgb, var(--reader-accent) 8%, transparent) !important;
+    border: 0 !important;
+    border-left: 4px solid var(--reader-accent) !important;
+    border-radius: 4px !important;
+    color: var(--reader-ink) !important;
+  }
+  
+  /* ---------- 6. Krom menyelinap pergi: toolbar tipis + auto-hide ---------- */
+  .gemilang-reader .reader-toolbar {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; right: 0 !important;
+    z-index: 30;
+    padding: 8px 12px !important;
+    background: color-mix(in srgb, var(--reader-surface) 88%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--reader-ink) 10%, transparent);
+    transition: transform .32s ease, opacity .32s ease;
+  }
+  .gemilang-reader .reader-toolbar.is-hidden { transform: translateY(-110%); opacity: 0; pointer-events: none; }
+  .gemilang-reader .reader-progress {
+    position: fixed !important; top: 0; left: 0;
+    width: 100vw !important; height: 3px !important;
+    border-radius: 0 !important; background: color-mix(in srgb, var(--reader-ink) 10%, transparent);
+    z-index: 31;
+  }
+  /* folio: nomor halaman kecil di kaki, seperti buku */
+  .gemilang-reader .reader-page-nav {
+    max-width: 720px; margin: 18px auto 0; padding-top: 10px;
+    border-top: 1px solid color-mix(in srgb, var(--reader-ink) 14%, transparent);
+  }
+  .gemilang-reader .reader-page-nav button {
+    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--reader-ink) 20%, transparent) !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    padding: 9px 16px !important;
+  }
+  
+  /* lembar pengaturan (bottom sheet) v2 */
+  .gb-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: var(--reader-surface);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.18);
+    padding: 14px 18px calc(18px + env(safe-area-inset-bottom));
+    transform: translateY(105%);
+    transition: transform .3s ease;
+  }
+  .gb-sheet.is-open { transform: translateY(0); }
+  .gb-sheet h4 { margin: 2px 0 10px; font: 900 13px/1.2 "Nunito", system-ui, sans-serif; color: var(--reader-ink); }
+  .gb-sheet .row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+  .gb-sheet .row > span:first-child { width: 74px; font: 700 11px/1.2 "Nunito", system-ui, sans-serif; color: var(--reader-muted); }
+  .gb-sheet button {
+    border: 1px solid color-mix(in srgb, var(--reader-ink) 15%, transparent);
+    background: transparent; color: var(--reader-ink);
+    border-radius: 10px; min-height: 34px; padding: 6px 12px;
+    font: 800 11.5px/1 "Nunito", system-ui, sans-serif; cursor: pointer;
+  }
+  .gb-sheet button.is-active { border-color: var(--reader-accent); color: var(--reader-accent); background: color-mix(in srgb, var(--reader-accent) 10%, transparent); }
+  .gb-scrim { position: fixed; inset: 0; background: rgba(10,15,25,.35); z-index: 39; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .gb-scrim.is-open { opacity: 1; pointer-events: auto; }
+  
