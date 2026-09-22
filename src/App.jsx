@@ -151,6 +151,11 @@ import StudentFinanceSiswa from './pages/student/StudentFinance';
 import StudentGrades from './pages/student/StudentGrades';
 import StudentAttendanceSiswa from './pages/student/StudentAttendance';
 import StudentElearning from './pages/student/StudentElearning';
+// MATERI v2 -- rombak tampilan materi belajar
+// (rencana: docs/RENCANA-ROMBAK-MATERI.md)
+import BelajarHome from './pages/student/belajar/BelajarHome';
+import BelajarDaftarIsi from './pages/student/belajar/BelajarDaftarIsi';
+import BelajarReader from './pages/student/belajar/BelajarReader';
 import StudentModuleView from './pages/student/StudentModuleView';
 import StudentQuizView from './pages/student/StudentQuizView';
 import StudentSurveyView from './pages/student/StudentSurveyView';
@@ -570,6 +575,32 @@ function App() {
         <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><DaftarTryOutPage /></SiswaPageBelajar>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaFiturBelajar fitur="Try Out"><TryOutView /></SiswaFiturBelajar>} />
         <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
+        {/* MATERI v2 -- tampilan materi belajar baru (fase 1-2,
+            docs/RENCANA-ROMBAK-MATERI.md). Reader full-screen. */}
+        <Route
+          path="/siswa/belajar"
+          element={
+            <SiswaPageBelajar fitur="Materi Belajar">
+              <BelajarHome />
+            </SiswaPageBelajar>
+          }
+        />
+        <Route
+          path="/siswa/belajar/:materiId"
+          element={
+            <SiswaPageBelajar fitur="Materi Belajar">
+              <BelajarDaftarIsi />
+            </SiswaPageBelajar>
+          }
+        />
+        <Route
+          path="/siswa/belajar/:materiId/:babId"
+          element={
+            <SiswaFiturBelajar fitur="Materi Belajar">
+              <BelajarReader />
+            </SiswaFiturBelajar>
+          }
+        />
         <Route path="/siswa/jadwal" element={<SiswaPage><StudentSchedule /></SiswaPage>} />
         <Route path="/siswa/keuangan" element={<SiswaPage><StudentFinanceSiswa /></SiswaPage>} />
         <Route path="/siswa/rapor" element={<SiswaPage><StudentGrades /></SiswaPage>} />
