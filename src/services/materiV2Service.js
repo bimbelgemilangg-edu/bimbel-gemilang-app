@@ -21,6 +21,7 @@
 import { db } from '../firebase';
 import {
   collection, getDoc, getDocs, doc, query, setDoc, where, limit,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { MATERI_CONTOH } from '../data/materiV2Contoh';
 import {
@@ -273,6 +274,29 @@ export async function simpanSlideVersiGuru(materiId, babId, guruId, url) {
   if (url) peta[guruId] = url;
   else delete peta[guruId];
   await setDoc(ref, { slideVersiGuru: peta }, { merge: true });
+}
+
+/**
+ * Tambah XP ke toko XP RESMI (`siswa_progress/{studentId}.xp`) --
+ * sumber yang dibaca Dashboard, level, streak & leaderboard,
+ * pola baca-merge sama seperti tambahXp di BukuBacaPage lama.
+ * Dipakai reader Materi v2 supaya belajar di modul baru tetap
+ * menaikkan level siswa (request budaya reward owner).
+ */
+export async function tambahXpGlobal(xp) {
+  const studentId = localStorage.getItem('studentId') || '';
+  if (!studentId || !xp || xp <= 0) return;
+  try {
+    const ref = doc(db, 'siswa_progress', studentId);
+    const snap = await getDoc(ref);
+    const ex = snap.exists() ? snap.data() : { xp: 0 };
+    await setDoc(ref, {
+      xp: (Number(ex.xp) || 0) + xp,
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  } catch (e) {
+    console.warn('XP global gagal simpan (progres lokal tetap aman):', e);
+  }
 }
 
 // ---------------- perhitungan ringkas ----------------

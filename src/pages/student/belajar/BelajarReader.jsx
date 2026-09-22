@@ -31,7 +31,7 @@ import {
 import {
   muatMateriDanBab, muatProgressSiswa, simpanProgressBab,
   simpanTerakhir, persenBab, paksaFlushTulisan,
-  muatProfilAkses, cocokMateriUntukSiswa,
+  muatProfilAkses, cocokMateriUntukSiswa, tambahXpGlobal,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, chip, lingkaranNomor, barLuar, barDalam,
@@ -60,6 +60,8 @@ export default function BelajarReader() {
   const [jawaban, setJawaban] = useState({});
   const [soalIdx, setSoalIdx] = useState(0);
   const [quizTersimpan, setQuizTersimpan] = useState(null);
+  const [xpBacaDiberi, setXpBacaDiberi] = useState(false);
+  const [xpKuisDiberi, setXpKuisDiberi] = useState(false);
   const [cari, setCari] = useState('');
   const [toast, setToast] = useState(null);
   const [sesiKuis, setSesiKuis] = useState(0);
@@ -170,6 +172,8 @@ export default function BelajarReader() {
       const p = pm[babId];
       if (p) {
         setSelesaiBaca(!!p.selesaiBab);
+        setXpBacaDiberi(!!p.xpGlobalBaca);
+        setXpKuisDiberi(!!p.xpGlobalKuis);
         if (p.quizTerbaik != null) setQuizTersimpan(p.quizTerbaik);
       }
       if (m && b) {
@@ -218,18 +222,33 @@ export default function BelajarReader() {
     const simpan = lebihBaik ? hasil : quizTersimpan;
     setQuizTersimpan(simpan);
     const xp = XP_BENAR * benar;
-    simpanProgressBab(studentId, materiId, babId, { quizTerbaik: simpan, xp });
+    // XP global resmi sekali-sekali (anti-farming): kuis 1x, baca 1x
+    const globalKuis = !xpKuisDiberi ? XP_BENAR * benar : 0;
+    const globalBaca = !selesaiBaca && !xpBacaDiberi ? XP_BACA : 0;
+    if (globalKuis) setXpKuisDiberi(true);
+    if (globalBaca) setXpBacaDiberi(true);
+    simpanProgressBab(studentId, materiId, babId, {
+      quizTerbaik: simpan,
+      xp,
+      ...(globalKuis ? { xpGlobalKuis: true } : {}),
+      ...(globalBaca ? { xpGlobalBaca: true } : {}),
+    });
+    if (globalKuis + globalBaca > 0) tambahXpGlobal(globalKuis + globalBaca);
     tampilToast(`Kuis selesai — +${xp} XP ✨`);
   };
 
   const tandaiSelesaiBaca = () => {
     if (selesaiBaca) return;
     setSelesaiBaca(true);
+    const beriGlobal = !xpBacaDiberi;
+    if (beriGlobal) setXpBacaDiberi(true);
     simpanProgressBab(studentId, materiId, babId, {
       selesaiBab: true,
       selesaiSections: sections.map((_, i) => i),
       xp: XP_BACA + (quizTersimpan ? XP_BENAR * (quizTersimpan.benar || 0) : 0),
+      ...(beriGlobal ? { xpGlobalBaca: true } : {}),
     });
+    if (beriGlobal) tambahXpGlobal(XP_BACA);
     tampilToast(`+${XP_BACA} XP — bagian selesai 🎉`);
   };
 
