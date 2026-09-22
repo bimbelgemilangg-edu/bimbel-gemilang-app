@@ -845,6 +845,9 @@ function LiveKuis({ sessionId, soal, idx, total }) {
       <div style={S.liveHead}>
         📡 Latihan bersama • soal {idx + 1} / {total}
       </div>
+      {soal.soalGambar && (
+        <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
+      )}
       <div style={S.soalTeks}><MathText text={soal.soal} /></div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {(soal.opsi || []).map((op, j) => (
@@ -1011,6 +1014,11 @@ const S = {
   chipRow: { display: 'flex', gap: 7, marginBottom: 14 },
   soalNomor: { fontSize: 11, fontWeight: 800, color: T.samar, marginBottom: 6 },
   soalTeks: { fontSize: 14.5, lineHeight: 1.75, color: T.judul, fontWeight: 600, marginBottom: 13 },
+  soalGambar: {
+    display: 'block', width: '100%', maxWidth: 560, background: '#fff',
+    border: `1px solid ${T.garis}`, borderRadius: 10, padding: 6,
+    margin: '0 0 10px',
+  },
   opsi: {
     display: 'flex', alignItems: 'center', gap: 11, width: '100%',
     background: '#fff', border: `1.5px solid ${T.garis}`, borderRadius: 12,

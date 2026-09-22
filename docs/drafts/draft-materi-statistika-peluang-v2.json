@@ -8,7 +8,7 @@
     "premium": false,
     "warna": "#0EA5E9",
     "emoji": "📊",
-    "deskripsi": "Materi LENGKAP sesuai buku Sukses Tes Kemampuan Akademik SMA Saintek bab 5: teks verbatim, rumus/tabel/diagram tampil sebagai potongan cetakan buku asli (prinsip fidelity), + latihan model TKA.",
+    "deskripsi": "Materi FINAL sesuai buku Sukses Tes Kemampuan Akademik SMA Saintek bab 5: teks verbatim, rumus/tabel/diagram sebagai potongan cetakan buku asli, 10 latihan model TKA berpembahasan (kunci terverifikasi), + modul PDF asli. Prinsip fidelity Gemilang.",
     "urutan": 1,
     "status": "draft"
   },
@@ -134,7 +134,7 @@
             "6"
           ],
           "jawaban": 0,
-          "pembahasan": "Jangkauan hanya terpengaruh perkalian: 6p = 9 sehingga p = 1,5. Median: 16p - q = 20 sehingga 24 - q = 20, q = 4. Maka 4p - q = 6 - 4 = 2. (Soal buku hal. 23 no. 1)"
+          "pembahasan": "Jangkauan hanya terpengaruh perkalian: 6p = 9 sehingga p = 1,5. Median: 16p - q = 20 sehingga 24 - q = 20, q = 4. Maka 4p - q = 6 - 4 = 2. (Buku hal. 23 no. 1)"
         },
         {
           "soal": "Nilai rata-rata bahasa Inggris kelas 10 A yang terdiri dari 36 siswa adalah 86. Apabila rata-rata nilai siswa laki-laki 86,8 dan rata-rata nilai siswa perempuan 85, banyak siswa perempuan di kelas tersebut adalah ...",
@@ -147,7 +147,33 @@
             "24"
           ],
           "jawaban": 1,
-          "pembahasan": "Misal laki-laki b: 86,8b + 85(36 - b) = 86 x 36 = 3096 maka 1,8b = 36, b = 20. Perempuan = 36 - 20 = 16. (Soal buku hal. 23 no. 2)"
+          "pembahasan": "Misal laki-laki b: 86,8b + 85(36 - b) = 3096 maka 1,8b = 36, b = 20. Perempuan = 36 - 20 = 16. (Buku hal. 23 no. 2)"
+        },
+        {
+          "soal": "Rataan dari data 6, 7, 8, 9, 10 adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jumlah = 40, banyak data 5, rataan = 40/5 = 8. (Latihan standar Gemilang, rumus sesuai buku hal. 21)"
+        },
+        {
+          "soal": "Jangkauan dari data 3, 7, 11, 15, 19 adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "12",
+            "14",
+            "16",
+            "18",
+            "20"
+          ],
+          "jawaban": 2,
+          "pembahasan": "J = x maks - x min = 19 - 3 = 16. (Latihan standar Gemilang, rumus J sesuai buku hal. 21)"
         }
       ]
     },
@@ -290,7 +316,7 @@
             "21 hari"
           ],
           "jawaban": 0,
-          "pembahasan": "P(tidak cerah) = 1 - 0,7 = 0,3. September 30 hari sehingga 0,3 x 30 = 9 hari. (Buku hal. 23 no. 3)"
+          "pembahasan": "P(tidak cerah) = 1 - 0,7 = 0,3; September 30 hari sehingga 0,3 x 30 = 9 hari. (Buku hal. 23 no. 3)"
         },
         {
           "soal": "Banyak bilangan ratusan genap dengan digit berbeda yang dapat disusun dari angka-angka 4, 5, 6, 7, 8 dan memiliki nilai lebih besar dari 600 adalah ...",
@@ -303,7 +329,47 @@
             "27"
           ],
           "jawaban": 3,
-          "pembahasan": "Satuan genap {4,6,8}. Satuan 4: ratusan {6,7,8} = 3 cara, puluhan 3 cara = 9. Satuan 6: ratusan {7,8} = 2 x 3 = 6. Satuan 8: ratusan {6,7} = 2 x 3 = 6. Total 21. (Buku hal. 23 no. 4)"
+          "pembahasan": "Satuan genap {4,6,8}: satuan 4 -> ratusan {6,7,8} x puluhan 3 = 9; satuan 6 -> ratusan {7,8} x 3 = 6; satuan 8 -> ratusan {6,7} x 3 = 6. Total 21. (Buku hal. 23 no. 4)"
+        },
+        {
+          "soal": "Dari 36 siswa yang menggunakan bahasa Indonesia atau bahasa daerah sebagai bahasa sehari-hari, 16 siswa gemar menggunakan bahasa Indonesia sehari-hari. Sebanyak 10 orang gemar menggunakan bahasa Indonesia dan bahasa daerah sehari-hari. Apabila dipilih satu siswa secara acak, peluang siswa yang terpilih hanya menggunakan bahasa daerah sebagai bahasa sehari-hari adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "1/9",
+            "6/36",
+            "1/3",
+            "5/9",
+            "22/36"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Hanya daerah = 36 - 16 = 20 siswa. Peluang = 20/36 = 5/9. (Buku hal. 23 no. 6)"
+        },
+        {
+          "soal": "Pak RW memiliki program 'Membaca itu Menyenangkan'. Beliau menyediakan 25 buku berbeda terdiri dari 10 buku sains dan 15 buku sejarah. Di awal program tersebut pak RW akan memberikan masing-masing satu buku bacaan kepada Andi, Bisma, dan Cerlo agar pengetahuan mereka makin luas. Banyak cara pak RW memilih buku sehingga Cerlo menerima buku tentang sains, serta Andi dan Bisma menerima buku tentang sejarah adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "375 cara",
+            "720 cara",
+            "1.560 cara",
+            "2.100 cara",
+            "2.730 cara"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Cerlo sains: 10 cara; Andi sejarah: 15 cara; Bisma sejarah sisa: 14 cara. Total = 10 x 15 x 14 = 2.100 cara. (Buku hal. 23 no. 7)"
+        },
+        {
+          "soal": "Lima orang sahabat, yaitu A, B, C, D, dan E hendak menonton sebuah film di bioskop. Mereka duduk berjajar pada lima kursi. Ketentuan: (1) C harus duduk di salah satu ujung barisan; (2) A harus selalu duduk bersebelahan dengan D. Berapa banyak susunan posisi duduk yang mungkin?",
+          "tipe": "pg",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/s09_kursi.png",
+          "opsi": [
+            "8",
+            "12",
+            "24",
+            "48",
+            "96"
+          ],
+          "jawaban": 2,
+          "pembahasan": "C di ujung: 2 cara. Blok AD (2 urutan internal) bersama B dan E mengisi 3 kursi sisa: 3! = 6. Total = 2 x 6 x 2 = 24. (Buku hal. 23 no. 9, gambar kursi sesuai buku)"
         },
         {
           "soal": "Sebuah kartu diambil secara acak dari satu set lengkap kartu bridge. Peluang terambil kartu merah prima adalah ...",
@@ -317,19 +383,6 @@
           ],
           "jawaban": 1,
           "pembahasan": "Kartu merah prima: 2, 3, 5, 7 pada hati dan wajik = 8 kartu. P = 8/52 = 2/13. (Buku hal. 25 no. 17)"
-        },
-        {
-          "soal": "Lima orang sahabat, yaitu A, B, C, D, dan E hendak menonton sebuah film di bioskop. Mereka duduk berjajar pada lima kursi. Ketentuan: (1) C harus duduk di salah satu ujung barisan; (2) A harus selalu duduk bersebelahan dengan D. Berapa banyak susunan posisi duduk yang mungkin?",
-          "tipe": "pg",
-          "opsi": [
-            "8",
-            "12",
-            "24",
-            "48",
-            "96"
-          ],
-          "jawaban": 2,
-          "pembahasan": "C di ujung: 2 cara. Blok AD (2 urutan internal) bersama B dan E mengisi 3 kursi sisa: 3! = 6. Total = 2 x 6 x 2 = 24. (Buku hal. 23 no. 9)"
         }
       ]
     }
