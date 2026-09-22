@@ -751,6 +751,12 @@ function PanelKuis({
       </div>
 
       <div style={S.soalNomor}>Soal {soalIdx + 1} dari {kuis.length}</div>
+      {/* Fase konten: chip sumber + gambar soal WAJIB tampil juga di
+          latihan mandiri (sebelumnya hanya di kuis live guru) */}
+      {soal.sumber && <div style={S.sumberChip}>🎓 {soal.sumber}</div>}
+      {soal.soalGambar && (
+        <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
+      )}
       <div style={S.soalTeks}><MathText text={soal.soal} /></div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
