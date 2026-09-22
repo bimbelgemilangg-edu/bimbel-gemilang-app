@@ -159,6 +159,9 @@ import BelajarReader from './pages/student/belajar/BelajarReader';
 // FASE 3: panggung presentasi guru (sinkron proyektor-siswa)
 import DaftarPresentasi from './pages/teacher/presentasi/DaftarPresentasi';
 import PanggungPresentasi from './pages/teacher/presentasi/PanggungPresentasi';
+// FASE 4: manajer materi v2 (admin)
+import ManageMateriV2 from './pages/admin/materi/ManageMateriV2';
+import EditBabV2 from './pages/admin/materi/EditBabV2';
 import StudentModuleView from './pages/student/StudentModuleView';
 import StudentQuizView from './pages/student/StudentQuizView';
 import StudentSurveyView from './pages/student/StudentSurveyView';
@@ -435,6 +438,15 @@ function App() {
 
         {/* 🔥 BARU: MANAJER BUKU DIGITAL */}
         <Route path="/admin/buku" element={<AdminRoute><ManajerBuku /></AdminRoute>} />
+        {/* MATERI v2 FASE 4 -- manajer konten baru (aditif) */}
+        <Route
+          path="/admin/materi-v2"
+          element={<AdminRoute><ManageMateriV2 /></AdminRoute>}
+        />
+        <Route
+          path="/admin/materi-v2/:materiId"
+          element={<AdminRoute><EditBabV2 /></AdminRoute>}
+        />
         {/* 🔥 v5: IMPOR MODUL MASSAL (PDF -> bab) */}
         <Route path="/admin/buku/impor" element={<AdminRoute><ImporModul /></AdminRoute>} />
 

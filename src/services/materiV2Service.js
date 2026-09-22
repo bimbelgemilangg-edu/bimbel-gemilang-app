@@ -219,6 +219,45 @@ export const simpanTerakhir = (info) => {
   catch { /* opsional */ }
 };
 
+// ---------------- administrasi (Manajer Materi v2, Fase 4) ----------------
+
+/** Semua materi (termasuk draft/arsip) untuk manajer admin. */
+export async function muatSemuaMateri() {
+  try {
+    const snap = await getDocs(collection(db, KOL_MATERI));
+    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    list.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+    return list;
+  } catch (e) {
+    console.error('Gagal muat semua materi:', e);
+    return [];
+  }
+}
+
+/** Simpan materi (buat baru bila id null). Return id. */
+export async function simpanMateri(id, data) {
+  const pakaiId = id || `m_${Date.now()}`;
+  await setDoc(doc(db, KOL_MATERI, pakaiId), {
+    ...data, diupdatePada: Date.now(),
+  }, { merge: true });
+  return pakaiId;
+}
+
+/** Simpan bab (buat baru bila babId null). Return babId. */
+export async function simpanBab(materiId, babId, data) {
+  const pakaiId = babId || `b_${Date.now()}`;
+  await setDoc(doc(db, KOL_MATERI, materiId, 'bab', pakaiId), {
+    ...data, diupdatePada: Date.now(),
+  }, { merge: true });
+  return pakaiId;
+}
+
+/** Hapus bab permanen (hati-hati; admin hanya). */
+export async function hapusBab(materiId, babId) {
+  const { deleteDoc } = await import('firebase/firestore');
+  await deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', babId));
+}
+
 // ---------------- perhitungan ringkas ----------------
 export const jumlahUnitBab = (bab) =>
   Math.max(1, (bab?.sections || []).length) + ((bab?.ujiPemahaman || []).length ? 1 : 0);
