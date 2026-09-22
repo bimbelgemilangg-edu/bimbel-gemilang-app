@@ -162,6 +162,8 @@ import PanggungPresentasi from './pages/teacher/presentasi/PanggungPresentasi';
 // FASE 4: manajer materi v2 (admin)
 import ManageMateriV2 from './pages/admin/materi/ManageMateriV2';
 import EditBabV2 from './pages/admin/materi/EditBabV2';
+// FASE 4.1: PPT versi guru sendiri
+import PptVersiGuru from './pages/teacher/presentasi/PptVersiGuru';
 import StudentModuleView from './pages/student/StudentModuleView';
 import StudentQuizView from './pages/student/StudentQuizView';
 import StudentSurveyView from './pages/student/StudentSurveyView';
@@ -591,6 +593,11 @@ function App() {
         <Route
           path="/guru/presentasi/:materiId/:babId"
           element={<GuruRoute><PanggungPresentasi /></GuruRoute>}
+        />
+        {/* FASE 4.1: guru upload PPT versinya sendiri per bab */}
+        <Route
+          path="/guru/ppt-ku"
+          element={<GuruPage><PptVersiGuru /></GuruPage>}
         />
         <Route path="/siswa/sesi-live" element={<SiswaRoute><LiveSessionStudent /></SiswaRoute>} />
 

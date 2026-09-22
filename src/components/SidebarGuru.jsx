@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, User, BookOpen, Edit,
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
-  Database, GraduationCap, Projector,
+  Database, GraduationCap, Projector, Presentation,
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -34,6 +34,8 @@ const SidebarGuru = () => {
     // MATERI v2 (Fase 3): panggung presentasi sinkron guru-siswa.
     // Menu ini pengecualian tercatat -- lihat docs/RENCANA-ROMBAK-MATERI.md.
     { name: 'Presentasi Materi', path: '/guru/presentasi', icon: <Projector size={20} /> },
+    // FASE 4.1: upload PPT versi guru per bab (slide resmi admin tetap ada)
+    { name: 'PPT Versiku', path: '/guru/ppt-ku', icon: <Presentation size={20} /> },
     // Ruang kerja PRIVAT guru: bank referensi buku paket + generate alat bantu
     // belajar yang grounded ke buku yang diupload. Tidak tampil ke siswa.
     { name: 'Alat Bantu Guru', path: '/guru/alat-bantu', icon: <GraduationCap size={20} /> },

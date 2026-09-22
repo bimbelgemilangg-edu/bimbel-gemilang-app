@@ -258,6 +258,23 @@ export async function hapusBab(materiId, babId) {
   await deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', babId));
 }
 
+/**
+ * PPT VERSI GURU (request owner Turn 14): admin punya slide resmi
+ * (slideUrl), tiap guru boleh punya versinya sendiri per bab:
+ *   bab.slideVersiGuru = { [guruId]: url }
+ * Panggung & siswa-yang-mengikuti memakai versi guru tsb;
+ * siswa belajar mandiri tetap memakai slide resmi admin.
+ */
+export async function simpanSlideVersiGuru(materiId, babId, guruId, url) {
+  const ref = doc(db, KOL_MATERI, materiId, 'bab', babId);
+  const snap = await getDoc(ref);
+  const data = snap.exists() ? snap.data() : {};
+  const peta = { ...(data.slideVersiGuru || {}) };
+  if (url) peta[guruId] = url;
+  else delete peta[guruId];
+  await setDoc(ref, { slideVersiGuru: peta }, { merge: true });
+}
+
 // ---------------- perhitungan ringkas ----------------
 export const jumlahUnitBab = (bab) =>
   Math.max(1, (bab?.sections || []).length) + ((bab?.ujiPemahaman || []).length ? 1 : 0);

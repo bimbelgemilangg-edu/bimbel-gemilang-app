@@ -16,7 +16,7 @@ import { muatMateriDanBab } from '../../../services/materiV2Service';
 import {
   cariSesiAktif, pantauSesi, pantauPeserta, pantauJawaban,
   mulaiSesi, akhiriSesi, setPosisiSesi, setModeSesi,
-  pantauAntrean, setStatusAntrean, beriXpGuru,
+  pantauAntrean, setStatusAntrean, beriXpGuru, bacaIdentitasGuru,
 } from '../../../services/sesiPresentasiService';
 import IsiSections from '../../../components/belajar/IsiSections';
 import { MathText } from '../../../components/MathText';
@@ -67,13 +67,18 @@ export default function PanggungPresentasi() {
 
   const sections = useMemo(() => bab?.sections || [], [bab]);
   const kuis = useMemo(() => bab?.ujiPemahaman || [], [bab]);
+  const { guruId } = bacaIdentitasGuru();
+  // PPT versi guru menimpa slide resmi saat kelasnya berlangsung
+  const slideEfektif = bab?.slideVersiGuru?.[guruId] || bab?.slideUrl || '';
   const posisi = sesi?.posisi || { jenis: 'section', index: 0 };
   const idx = Number(posisi.index) || 0;
   const sesiAktif = sesi?.status === 'aktif';
 
   const geser = (jenis, indexBaru) => {
     if (!sesi?.id) return;
-    setPosisiSesi(sesi.id, { jenis, index: indexBaru }).catch(() => {});
+    // saat menampilkan slide, siarkan URL versi aktif ke siswa
+    const extra = jenis === 'slide' ? { slideUrlAktif: slideEfektif } : {};
+    setPosisiSesi(sesi.id, { jenis, index: indexBaru }, extra).catch(() => {});
   };
 
   // statistik jawaban live untuk soal saat ini
@@ -182,12 +187,17 @@ export default function PanggungPresentasi() {
                 </div>
               </div>
             )
-          ) : posisi.jenis === 'slide' && bab.slideUrl ? (
-            <iframe
-              title="Slide proyektor"
-              src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(bab.slideUrl)}`}
-              style={S.slideBesar}
-            />
+          ) : posisi.jenis === 'slide' && slideEfektif ? (
+            <>
+              <iframe
+                title="Slide proyektor"
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(slideEfektif)}`}
+                style={S.slideBesar}
+              />
+              {bab.slideVersiGuru?.[guruId] && (
+                <div style={S.versikuChip}>📽 Menayangkan PPT versimu</div>
+              )}
+            </>
           ) : (
             <div style={S.kosong}>Posisi tidak dikenali.</div>
           )}
@@ -263,7 +273,7 @@ export default function PanggungPresentasi() {
                 {tampilKunci ? ' Sembunyikan kunci' : ' Tampilkan kunci'}
               </button>
             )}
-            {bab.slideUrl && (
+            {slideEfektif && (
               <button type="button" style={tombolPill('putih')}
                 onClick={() => geser('slide', 0)}>
                 <Presentation size={14} /> Slide
@@ -416,6 +426,11 @@ const S = {
     borderTop: `1px solid ${T.garis}`,
   },
   pemisah: { width: 1, height: 26, background: T.garis, margin: '0 4px' },
+  versikuChip: {
+    display: 'inline-flex', marginTop: 10, background: T.kotakBiru,
+    border: `1px solid ${T.kotakBiruGaris}`, color: T.biruDalam,
+    borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800,
+  },
   slideBesar: {
     width: '100%', height: '68vh', border: `1px solid ${T.garis}`,
     borderRadius: 12, background: '#fff',

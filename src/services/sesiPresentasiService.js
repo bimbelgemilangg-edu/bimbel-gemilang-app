@@ -39,6 +39,9 @@ const bacaGuru = () => {
   }
 };
 
+/** Identitas guru login (dipakai halaman PPT versi guru & panggung). */
+export const bacaIdentitasGuru = bacaGuru;
+
 /** Cari satu sesi aktif (terbaru). Return null bila tidak ada. */
 export async function cariSesiAktif() {
   try {
@@ -94,10 +97,10 @@ export async function akhiriSesi(sessionId) {
     { status: 'selesai', diupdatePada: serverTimestamp() }, { merge: true });
 }
 
-/** Ganti posisi tayang guru (section / kuis). */
-export async function setPosisiSesi(sessionId, posisi) {
+/** Ganti posisi tayang guru (section / kuis/slide + field ekstra). */
+export async function setPosisiSesi(sessionId, posisi, extra = {}) {
   await setDoc(doc(db, KOL_SESI, sessionId),
-    { posisi, diupdatePada: serverTimestamp() }, { merge: true });
+    { posisi, ...extra, diupdatePada: serverTimestamp() }, { merge: true });
 }
 
 /** Ganti mode: 'mengikuti' (siswa ikut layar guru) | 'bebas'. */

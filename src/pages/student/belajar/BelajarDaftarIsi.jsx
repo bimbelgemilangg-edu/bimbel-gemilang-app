@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import {
   muatMateriDanBab, muatProgressSiswa, persenBab,
+  muatProfilAkses, cocokMateriUntukSiswa,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, lingkaranNomor, barLuar, barDalam, halamanDasar,
@@ -21,10 +22,14 @@ export default function BelajarDaftarIsi() {
   const { materiId } = useParams();
   const navigate = useNavigate();
   const studentId = localStorage.getItem('studentId') || '';
+  const studentKelas =
+    localStorage.getItem('studentKelas') ||
+    localStorage.getItem('studentGrade') || '';
 
   const [materi, setMateri] = useState(null);
   const [babList, setBabList] = useState([]);
   const [progresMap, setProgresMap] = useState({});
+  const [profil, setProfil] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,6 +39,10 @@ export default function BelajarDaftarIsi() {
       setMateri(m);
       setBabList(bl);
       setProgresMap(await muatProgressSiswa(studentId));
+      setProfil(await muatProfilAkses(
+        studentId, studentKelas,
+        localStorage.getItem('studentProgram') || ''
+      ));
       setLoading(false);
     })();
   }, [materiId, studentId]);
@@ -56,6 +65,18 @@ export default function BelajarDaftarIsi() {
 
   if (loading) {
     return <div style={halamanDasar}><div style={S.kosong}>Memuat materi...</div></div>;
+  }
+  if (materi && profil
+    && !cocokMateriUntukSiswa(materi, profil, studentKelas)) {
+    return (
+      <div style={halamanDasar}>
+        <div style={S.kosong}>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>🔒</div>
+          Materi ini untuk jenjang/program lain, bukan untuk
+          akunmu. Hubungi admin bila merasa ini keliru.
+        </div>
+      </div>
+    );
   }
   if (!materi) {
     return (

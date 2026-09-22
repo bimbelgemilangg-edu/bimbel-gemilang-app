@@ -31,6 +31,7 @@ import {
 import {
   muatMateriDanBab, muatProgressSiswa, simpanProgressBab,
   simpanTerakhir, persenBab, paksaFlushTulisan,
+  muatProfilAkses, cocokMateriUntukSiswa,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, chip, lingkaranNomor, barLuar, barDalam,
@@ -75,6 +76,7 @@ export default function BelajarReader() {
 
   // ============ SESI PRESENTASI GURU (Fase 3) ============
   const [sesi, setSesi] = useState(null);
+  const [profil, setProfil] = useState(null);
   const [antreanSaya, setAntreanSaya] = useState(null);
   const [abaikanIkuti, setAbaikanIkuti] = useState(false);
   const pesertaDitandai = useRef('');
@@ -95,6 +97,21 @@ export default function BelajarReader() {
     return () => { hidup = false; if (unsub) unsub(); };
   }, [materiId]);
 
+  // kunci jenjang/program (request owner: materi sesuai jenjang)
+  useEffect(() => {
+    let hidup = true;
+    (async () => {
+      const p = await muatProfilAkses(
+        studentId,
+        localStorage.getItem('studentKelas')
+          || localStorage.getItem('studentGrade') || '',
+        localStorage.getItem('studentProgram') || ''
+      );
+      if (hidup) setProfil(p);
+    })();
+    return () => { hidup = false; };
+  }, [studentId]);
+
   const sesiAktif = !!sesi && sesi.status === 'aktif';
   const sesiBabIni = sesiAktif && sesi.babId === babId;
   const ikutAktif = sesiBabIni && sesi.mode === 'mengikuti' && !abaikanIkuti;
@@ -112,6 +129,14 @@ export default function BelajarReader() {
     if (!sesiBabIni || !sesi?.id || !studentId) return undefined;
     return pantauAntreanSaya(sesi.id, studentId, setAntreanSaya);
   }, [sesiBabIni, sesi, studentId]);
+
+  // slide efektif: saat mengikuti sesi pakai versi yang ditayangkan
+  // guru (bisa PPT versi guru); belajar mandiri = slide resmi admin
+  const slideSiswa = ikutAktif && sesi?.slideUrlAktif
+    ? sesi.slideUrlAktif
+    : (bab?.slideUrl || '');
+  const slideVersiGuruLive = ikutAktif && sesi?.slideUrlAktif
+    && sesi.slideUrlAktif !== bab?.slideUrl;
 
   // Tab saat mengikuti sesi DITURUNKAN dari posisi guru (bukan setState).
   const tabAktifNow = ikutAktif
@@ -236,6 +261,21 @@ export default function BelajarReader() {
     );
   }
 
+  if (materi && profil
+    && !cocokMateriUntukSiswa(materi, profil,
+      localStorage.getItem('studentKelas')
+        || localStorage.getItem('studentGrade') || '')) {
+    return (
+      <div style={halamanDasar}>
+        <div style={S.kosong}>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>🔒</div>
+          Materi ini untuk jenjang/program lain, bukan untuk
+          akunmu. Hubungi admin bila merasa ini keliru.
+        </div>
+      </div>
+    );
+  }
+
   const persen = persenBab(bab, {
     selesaiBab: selesaiBaca,
     selesaiSections: selesaiBaca ? sections.map((_, i) => i) : [],
@@ -338,7 +378,7 @@ export default function BelajarReader() {
               { id: 'video', label: 'Video', ikon: <PlayCircle size={14} /> },
               {
                 id: 'slide', label: 'Slide', ikon: <Presentation size={14} />,
-                hide: !bab.slideUrl,
+                hide: !slideSiswa,
               },
               { id: 'latihan', label: 'Latihan Soal', ikon: <CheckCircle2 size={14} /> },
               { id: 'diskusi', label: 'Diskusi', ikon: <MessageCircle size={14} />, soon: true },
@@ -437,21 +477,24 @@ export default function BelajarReader() {
           )}
 
           {/* ---------- TAB SLIDE PPT ---------- */}
-          {tabAktifNow === 'slide' && bab.slideUrl && (
+          {tabAktifNow === 'slide' && slideSiswa && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><Presentation size={14} /></span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
                   Slide Materi (PPT)
                 </span>
-                <a href={bab.slideUrl} target="_blank" rel="noreferrer"
+                {slideVersiGuruLive && (
+                  <span style={S.versiLiveChip}>📽 versi tentor (live)</span>
+                )}
+                <a href={slideSiswa} target="_blank" rel="noreferrer"
                   style={S.unduhLink}>
                   Unduh PPT
                 </a>
               </div>
               <iframe
                 title="Slide materi"
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(bab.slideUrl)}`}
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(slideSiswa)}`}
                 style={S.slideFrame}
               />
               <p style={S.catatanKecil}>
@@ -1001,6 +1044,11 @@ const S = {
     fontSize: 11.5, fontWeight: 800, marginBottom: 12,
   },
   opsiDipilihLive: { borderColor: T.biru, background: T.kotakBiru },
+  versiLiveChip: {
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    color: T.biruDalam, borderRadius: 999, padding: '4px 10px',
+    fontSize: 10.5, fontWeight: 800,
+  },
   unduhLink: {
     color: T.biruGelap, fontSize: 11.5, fontWeight: 800,
     textDecoration: 'none', border: `1px solid ${T.kotakBiruGaris}`,
