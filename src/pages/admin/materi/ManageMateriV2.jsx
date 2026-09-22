@@ -10,7 +10,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus, Pencil, FolderOpen, Save, X, BookOpen, Trash2,
 } from 'lucide-react';
+import { db } from '../../../firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import {
+  KOL_MATERI,
   muatSemuaMateri, simpanMateri, simpanBab, hapusMateri,
 } from '../../../services/materiV2Service';
 import {
@@ -32,15 +35,40 @@ export default function ManageMateriV2() {
   const [pesan, setPesan] = useState('');
   const [imporOpen, setImporOpen] = useState(false);
   const [imporText, setImporText] = useState('');
+  // Statistik isi per materi (bab & soal) -- supaya "cangkang kosong"
+  // (materi aktif tanpa bab) langsung kelihatan, kasus Turn 25.
+  const [stat, setStat] = useState({});
+
+  const muatStat = async (daftar) => {
+    const peta = {};
+    for (const m of daftar) {
+      try {
+        const b = await getDocs(collection(db, KOL_MATERI, m.id, 'bab'));
+        let soal = 0;
+        b.docs.forEach((d) => {
+          soal += (d.data().ujiPemahaman || []).length;
+        });
+        peta[m.id] = { bab: b.size, soal };
+      } catch {
+        peta[m.id] = { bab: 0, soal: 0 };
+      }
+    }
+    setStat(peta);
+  };
 
   const muat = async () => {
-    setList(await muatSemuaMateri());
+    const l = await muatSemuaMateri();
+    setList(l);
+    muatStat(l);
   };
   useEffect(() => {
     let hidup = true;
     (async () => {
       const l = await muatSemuaMateri();
-      if (hidup) { setList(l); setLoading(false); }
+      if (!hidup) return;
+      setList(l);
+      setLoading(false);
+      muatStat(l);
     })();
     return () => { hidup = false; };
   }, []);
@@ -65,6 +93,17 @@ export default function ManageMateriV2() {
     try {
       const data = JSON.parse(imporText);
       if (!data.materi?.judul) throw new Error('Field materi.judul wajib.');
+      // Impor = SALINAN baru. Peringatkan bila judul sama sudah ada
+      // (mencegah kejadian "ter-copy" membingungkan, Turn 25).
+      const judulImpor = String(data.materi.judul).trim().toLowerCase();
+      const sama = list.find((x) =>
+        String(x.judul).trim().toLowerCase() === judulImpor);
+      if (sama && !window.confirm(
+        `Sudah ada materi berjudul sama:\n"${sama.judul}"\n`
+        + `status: ${sama.status} • isi: ${(stat[sama.id] || {}).bab ?? '?'} bab\n\n`
+        + 'Impor JSON selalu membuat SALINAN baru (tidak menimpa yang lama).\n'
+        + 'Lanjutkan impor?'
+      )) return;
       const id = await simpanMateri(null, data.materi);
       const babs = Array.isArray(data.bab) ? data.bab : [];
       for (let i = 0; i < babs.length; i++) {
@@ -266,6 +305,16 @@ export default function ManageMateriV2() {
                   {' '}{m.program || 'semua program'}
                   {m.premium ? ' • 🔒' : ''}
                 </div>
+                <div style={S.kartuStat}>
+                  📚 {(stat[m.id] || {}).bab ?? '…'} bab •
+                  {' '}{(stat[m.id] || {}).soal ?? '…'} soal
+                </div>
+                {m.status === 'aktif' && (stat[m.id] || {}).bab === 0 && (
+                  <div style={S.warnChip}>
+                    ⚠️ AKTIF TAPI TANPA BAB — siswa melihat halaman kosong.
+                    Isi babnya atau hapus materi ini.
+                  </div>
+                )}
                 <div style={S.kartuBtns}>
                   <button type="button" style={S.btnKecil}
                     onClick={() => { setForm({ ...KOSONG, ...m }); setEditId(m.id); }}>
@@ -365,6 +414,17 @@ const S = {
     borderRadius: 999, padding: '3px 10px', fontSize: 10, fontWeight: 800,
   }),
   kartuJudul: { fontWeight: 800, fontSize: 14, color: T.judul },
+  kartuStat: {
+    fontSize: 11.5, fontWeight: 800, color: T.biruDalam,
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    borderRadius: 999, padding: '4px 10px',
+    display: 'inline-block', margin: '6px 0 0',
+  },
+  warnChip: {
+    marginTop: 8, fontSize: 11, fontWeight: 800, color: '#92400E',
+    background: '#FEF3C7', border: '1px solid #FDE68A',
+    borderRadius: 10, padding: '7px 10px', lineHeight: 1.5,
+  },
   kartuMeta: {
     display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap',
     fontSize: 10.5, color: T.samar,
