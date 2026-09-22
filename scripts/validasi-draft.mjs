@@ -50,11 +50,33 @@ for (const f of files) {
     const kuis = b.ujiPemahaman || [];
     kuis.forEach((k, ki) => {
       const label2 = `${label} soal[${ki + 1}]`;
-      if (!k.soal || String(k.soal).length < 8) salah(f, `${label2}: teks soal terlalu pendek`);
-      if (k.tipe && k.tipe !== 'pg') salah(f, `${label2}: tipe tak didukung: ${k.tipe}`);
       const opsi = Array.isArray(k.opsi) ? k.opsi.filter(Boolean) : [];
-      if (opsi.length < 2) salah(f, `${label2}: opsi < 2`);
-      if (typeof k.jawaban !== 'number' || k.jawaban < 0 || k.jawaban >= opsi.length) {
+      if (!k.soal || String(k.soal).length < 8) salah(f, `${label2}: teks soal terlalu pendek`);
+      if (k.tipe && !['pg', 'pgMulti', 'tabel'].includes(k.tipe)) {
+        salah(f, `${label2}: tipe tak didukung: ${k.tipe}`);
+      }
+      if (k.tipe === 'pgMulti') {
+        if (!Array.isArray(k.jawaban) || !k.jawaban.length) {
+          salah(f, `${label2}: pgMulti butuh jawaban array (indeks yang dicentang)`);
+        } else if (k.jawaban.some((x) => x < 0 || x >= opsi.length)) {
+          salah(f, `${label2}: indeks pgMulti di luar rentang opsi`);
+        }
+      }
+      if (k.tipe === 'tabel') {
+        const baris = Array.isArray(k.baris) ? k.baris : [];
+        const kolom = Array.isArray(k.kolom) ? k.kolom : [];
+        if (!baris.length || kolom.length < 2) {
+          salah(f, `${label2}: tabel butuh baris[] dan kolom[] (>=2)`);
+        }
+        if (!Array.isArray(k.jawaban) || k.jawaban.length !== baris.length) {
+          salah(f, `${label2}: jawaban tabel harus satu indeks kolom per baris`);
+        } else if (k.jawaban.some((c) => c == null || c < 0 || c >= kolom.length)) {
+          salah(f, `${label2}: indeks kolom jawaban tabel di luar rentang`);
+        }
+      }
+      if (k.tipe !== 'tabel' && opsi.length < 2) salah(f, `${label2}: opsi < 2`);
+      if ((k.tipe || 'pg') === 'pg'
+        && (typeof k.jawaban !== 'number' || k.jawaban < 0 || k.jawaban >= opsi.length)) {
         salah(f, `${label2}: indeks jawaban ${k.jawaban} di luar rentang 0..${opsi.length - 1}`);
       }
       if (k.perluKunci) console.log(`   ⚠️  ${label2}: ditandai perluKunci`);

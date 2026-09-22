@@ -1,0 +1,106 @@
+{
+  "materi": {
+    "judul": "TKA Matematika SMP — Paket 1 (Format Ujian Asli)",
+    "mapel": "Matematika",
+    "kelas": "9",
+    "jenjang": "smp",
+    "program": "semua",
+    "premium": false,
+    "warna": "#0EA5E9",
+    "emoji": "🧮",
+    "deskripsi": "Soal TKA asli lengkap dengan format jawaban ujian sesungguhnya: pilihan ganda, PGK-MCMA (centang beberapa pernyataan benar), dan PGK kategori (tabel Benar/Salah atau Mungkin/Tidak Mungkin). Sumber: mathcyber1997.com — TKA Matematika SMP Paket 1, dikutip bersama pembahasannya.",
+    "urutan": 1,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "Paket 1: PG, PGK-MCMA & PGK Kategori",
+      "ringkasan": "Enam soal asli TKA SMP Paket 1 yang mewakili tiga format jawaban ujian: pilihan ganda biasa tidak ada di sini — khusus format kompleks: centang beberapa benar (MCMA) dan tabel kategori per baris, termasuk soal bergambar rangka jembatan.",
+      "estimasiMenit": 20,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Tiga Format Jawaban Ujian TKA" },
+        { "jenis": "paragraf", "teks": "Soal TKA tidak hanya pilihan ganda biasa. Seperti AKM, ada soal yang jawabannya lebih dari satu (PGK-MCMA: kamu mencentang semua pernyataan yang benar) dan soal kategori (setiap baris pernyataan harus kamu masukkan ke satu kolom, mis. Benar/Salah atau Mungkin/Tidak Mungkin)." },
+        { "jenis": "callout", "tipe": "tips", "judul": "Cara mengerjakan di aplikasi", "teks": "PGK-MCMA: ketuk beberapa opsi untuk mencentang, lalu tekan \"Kirim jawaban\". Tabel kategori: ketuk lingkaran pada kolom pilihanmu untuk tiap baris, lalu kirim. Jawaban dinilai benar hanya bila SEMUA centang/kolom cocok dengan kunci." },
+        { "jenis": "callout", "tipe": "info", "judul": "Sumber soal", "teks": "Seluruh soal bab ini dikutip apa adanya (termasuk gambar) dari mathcyber1997.com — TKA Matematika SMP Paket 1, beserta pembahasan ringkasnya. Chip 🎓 sumber tampil di setiap soal." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Terdapat tiga bilangan yang dinyatakan dengan (3³ − 3²), (8² + 296), dan (36 × 35). Bilangan apa saja yang merupakan faktor persekutuan dari ketiga bilangan tersebut? Jawaban benar mungkin lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": ["2³ × 3² × 7", "2² × 3² × 7", "2² × 3² × 5", "2 × 3² × 5"],
+          "jawaban": [2, 3],
+          "pembahasan": "Faktorisasi prima: 3³ − 3² = 2² × 3³ × 5; 8² + 296 = 2³ × 3² × 5; 36 × 35 = 2² × 3² × 5 × 7. Faktor persekutuan = faktor yang dimiliki ketiganya: 2² × 3² × 5 (pilihan 3) dan semua pembaginya, mis. 2 × 3² × 5 (pilihan 4). Pilihan 1 butuh 2³ (tidak dimiliki 36 × 35); pilihan 2 butuh 7 (tidak dimiliki 3³ − 3²).",
+          "sumber": "TKA Matematika SMP Paket 1 no. 2 — mathcyber1997.com (dikutip dengan pembahasan)"
+        },
+        {
+          "soal": "Misalkan a dan b merupakan dua bilangan real sehingga sistem persamaan linear 2x + ay = 4 dan bx − 2y = −1 mempunyai solusi (x, y) = (5, −2). Beri tanda centang (✓) pada kolom Benar atau Salah untuk setiap pernyataan berikut.",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "a merupakan bilangan prima.",
+            "b merupakan bilangan ganjil.",
+            "10a + b = 31."
+          ],
+          "jawaban": [0, 0, 1],
+          "pembahasan": "Substitusi (5, −2): persamaan 1 → 10 − 2a = 4 → a = 3; persamaan 2 → 5b + 4 = −1 → b = −1. Maka a = 3 prima (Benar); b = −1 ganjil (Benar); 10a + b = 30 − 1 = 29 ≠ 31 (Salah).",
+          "sumber": "TKA Matematika SMP Paket 1 no. 13 — mathcyber1997.com (dikutip dengan pembahasan)"
+        },
+        {
+          "soal": "Desain jembatan yang tepat sangat penting untuk memperkuat struktur karena menentukan kestabilan, ketahanan, dan keselamatan jembatan dalam menghadapi beban dan kondisi lingkungan. Bagian rangka jembatan pada gambar dapat digambarkan dengan sketsa garis: garis L1 sejajar dengan L2, sedangkan L3 sejajar dengan L4. Jika besar sudut A adalah 50°, berilah tanda centang (✓) pada pernyataan yang bernilai benar terkait besar sudut yang lain. Jawaban benar mungkin lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Besar sudut D adalah 50°.",
+            "Besar sudut C dapat ditentukan dengan menggunakan sifat sudut berpelurus, yaitu 50°.",
+            "Sudut B dan E sama besar, yaitu 130°.",
+            "Jumlah besar sudut D dan E kurang dari 180°."
+          ],
+          "jawaban": [0, 2],
+          "pembahasan": "Sudut A dan D berseberangan luar → D = 50° (pernyataan 1 benar). Sudut sehadap dengan A besarnya 50° dan berpelurus dengan C → C = 130°, bukan 50° (pernyataan 2 salah). B berpelurus dengan A → B = 130°; B dan E berseberangan → E = 130° (pernyataan 3 benar). D dan E sepihak dalam → D + E = 180°, bukan kurang (pernyataan 4 salah).",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/mathcyber-tka-smp1-jembatan.jpg",
+          "sumber": "TKA Matematika SMP Paket 1 no. 14 — mathcyber1997.com (dikutip dengan pembahasan dan gambar)"
+        },
+        {
+          "soal": "Titik A(3, −5) ditranslasikan oleh T(2, 7). Berilah tanda centang (✓) pada pernyataan yang bernilai benar mengenai bayangan titik A. Jawaban benar mungkin lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Absis bayangan titik A adalah 5.",
+            "Ordinat bayangan titik A adalah −2.",
+            "Bayangan titik A berada di kuadran III.",
+            "Jarak bayangan titik A ke titik (0, 0) adalah √29."
+          ],
+          "jawaban": [0, 3],
+          "pembahasan": "A' = (3 + 2, −5 + 7) = (5, 2). Absis 5 (benar); ordinat 2, bukan −2 (salah); (5, 2) di kuadran I, bukan III (salah); jarak ke O = √(5² + 2²) = √29 (benar).",
+          "sumber": "TKA Matematika SMP Paket 1 no. 18 — mathcyber1997.com (dikutip dengan pembahasan)"
+        },
+        {
+          "soal": "Berdasarkan data, diketahui bahwa rata-rata berat satu butir telur kecil 45 gram, satu telur sedang 55 gram, dan satu telur besar 65 gram. Seorang karyawan toko bahan pangan sedang mengemas setiap 10 butir telur ke dalam satu kemasan dengan ketentuan bahwa rata-rata berat per telur dalam setiap kemasan tersebut kurang dari 55 gram. Jika dalam satu kemasan sudah berisi 1 telur besar, 5 telur sedang, dan 2 telur kecil, tentukan dua telur tambahan yang dapat dipilih supaya tetap memenuhi aturan pengemasan. Berilah tanda centang (✓) pada pilihan yang sesuai. Jawaban benar mungkin lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "2 telur sedang",
+            "2 telur besar",
+            "1 telur besar dan 1 telur kecil",
+            "1 telur besar dan 1 telur sedang"
+          ],
+          "jawaban": [0, 2],
+          "pembahasan": "Berat isi sekarang = 65 + 5×55 + 2×45 = 430 gram. Batas total < 10 × 55 = 550 gram → dua telur tambahan harus < 120 gram. 2 sedang = 110 (memenuhi); 2 besar = 130 (tidak); besar+kecil = 110 (memenuhi); besar+sedang = 120 (tidak, karena harus kurang dari).",
+          "sumber": "TKA Matematika SMP Paket 1 no. 19 — mathcyber1997.com (dikutip dengan pembahasan)"
+        },
+        {
+          "soal": "Rata-rata usia 5 orang guru adalah 40 tahun. Median usia mereka adalah 40 tahun, dan jangkauannya 10 tahun. Tentukan apakah kombinasi usia berikut mungkin untuk kelima guru tersebut. Beri tanda centang (✓) pada kolom Mungkin atau Tidak Mungkin untuk setiap kombinasi berikut.",
+          "tipe": "tabel",
+          "kolom": ["Mungkin", "Tidak Mungkin"],
+          "baris": [
+            "35, 40, 40, 40, 45",
+            "35, 38, 40, 42, 45",
+            "30, 35, 40, 45, 50"
+          ],
+          "jawaban": [0, 0, 1],
+          "pembahasan": "Syarat: jumlah = 5 × 40 = 200, median (nilai tengah terurut) = 40, jangkauan = 10. Kombinasi 1: jumlah 200, median 40, jangkauan 10 → mungkin. Kombinasi 2: jumlah 200, median 40, jangkauan 10 → mungkin. Kombinasi 3: jumlah 200, median 40, tetapi jangkauan 50 − 30 = 20 → tidak mungkin.",
+          "sumber": "TKA Matematika SMP Paket 1 no. 20 — mathcyber1997.com (dikutip dengan pembahasan)"
+        }
+      ]
+    }
+  ]
+}

@@ -42,6 +42,51 @@ import {
 const XP_BACA = 5;
 const XP_BENAR = 10;
 
+// ============================================================
+// FORMAT SOAL GAYA UJIAN ASLI (TKA/AKM) -- Turn 22
+//   'pg'      : pilihan ganda biasa (satu jawaban)
+//   'pgMulti' : PGK-MCMA -- centang semua pernyataan benar (>=1)
+//   'tabel'   : PGK kategori -- tiap baris pilih satu kolom
+//               (mis. Benar/Salah atau Mungkin/Tidak Mungkin)
+// ============================================================
+const tipeSoal = (s) => String(s?.tipe || 'pg');
+const kolomSoal = (s) => (Array.isArray(s?.kolom) && s.kolom.length
+  ? s.kolom : ['Benar', 'Salah']);
+const jawabanLengkap = (s, jaw) => {
+  const t = tipeSoal(s);
+  if (t === 'pgMulti') return Array.isArray(jaw) && jaw.length > 0;
+  if (t === 'tabel') {
+    return Array.isArray(jaw) && jaw.length === (s.baris || []).length
+      && jaw.every((x) => x != null);
+  }
+  return jaw != null;
+};
+const jawabanBenar = (s, jaw) => {
+  const t = tipeSoal(s);
+  if (t === 'pgMulti') {
+    const k = s.jawaban || [];
+    return Array.isArray(jaw) && k.length > 0 && jaw.length === k.length
+      && k.every((x) => jaw.includes(x));
+  }
+  if (t === 'tabel') {
+    const k = s.jawaban || [];
+    return Array.isArray(jaw) && k.length > 0
+      && k.every((c, r) => jaw[r] === c);
+  }
+  return jaw === s.jawaban;
+};
+const kunciTeks = (s) => {
+  const t = tipeSoal(s);
+  if (t === 'pgMulti') {
+    return (s.jawaban || []).map((j) => String.fromCharCode(65 + j)).join(', ');
+  }
+  if (t === 'tabel') {
+    return (s.jawaban || [])
+      .map((c, r) => `baris ${r + 1}: ${kolomSoal(s)[c]}`).join('; ');
+  }
+  return String.fromCharCode(65 + (s.jawaban || 0));
+};
+
 export default function BelajarReader() {
   const { materiId, babId } = useParams();
   const navigate = useNavigate();
@@ -195,15 +240,36 @@ export default function BelajarReader() {
   const idxBab = babList.findIndex((b) => b.id === babId);
   const babBerikut = idxBab >= 0 ? babList[idxBab + 1] : null;
 
+  // Format TKA: centang banyak jawaban (PGK-MCMA)
+  const pilihMulti = useCallback((i, j) => {
+    setJawaban((old) => {
+      const arr = Array.isArray(old[i]) ? [...old[i]] : [];
+      const at = arr.indexOf(j);
+      if (at >= 0) arr.splice(at, 1);
+      else arr.push(j);
+      arr.sort((a, b) => a - b);
+      return { ...old, [i]: arr };
+    });
+  }, []);
+  // Format TKA: tabel kategori (per baris pilih satu kolom)
+  const pilihTabel = useCallback((i, r, c) => {
+    setJawaban((old) => {
+      const arr = Array.isArray(old[i]) ? [...old[i]] : [];
+      arr[r] = c;
+      return { ...old, [i]: arr };
+    });
+  }, []);
+
   const tampilToast = useCallback((teks) => {
     setToast(teks);
     setTimeout(() => setToast(null), 2200);
   }, []);
 
   const benarCount = useMemo(() =>
-    kuis.reduce((a, s, i) => (jawaban[i] != null && jawaban[i] === s.jawaban ? a + 1 : a), 0),
+    kuis.reduce((a, s, i) => (jawabanBenar(s, jawaban[i]) ? a + 1 : a), 0),
   [kuis, jawaban]);
-  const semuaDijawab = kuis.length > 0 && Object.keys(jawaban).length === kuis.length;
+  const semuaDijawab = kuis.length > 0
+    && kuis.every((s, i) => jawabanLengkap(s, jawaban[i]));
 
   // Simpan kuis lewat EVENT jawab (bukan effect) -- hemat render
   // & dijamin sekali per sesi berkat ref kuisTersimpanSesi.
@@ -586,6 +652,8 @@ export default function BelajarReader() {
                   kuis={kuis}
                   jawaban={jawaban}
                   pilih={pilihJawaban}
+                  pilihMulti={pilihMulti}
+                  pilihTabel={pilihTabel}
                   soalIdx={soalIdx}
                   setSoalIdx={setSoalIdx}
                   benarCount={benarCount}
@@ -713,14 +781,14 @@ export default function BelajarReader() {
 
 // ---------------- panel kuis (satu soal per layar) ----------------
 function PanelKuis({
-  kuis, jawaban, pilih, soalIdx, setSoalIdx,
+  kuis, jawaban, pilih, pilihMulti, pilihTabel, soalIdx, setSoalIdx,
   benarCount, semuaDijawab, ulangKuis,
 }) {
   const [lihatHasil, setLihatHasil] = useState(false);
   const soal = kuis[soalIdx];
   const dipilih = jawaban[soalIdx];
-  const terkoreksi = dipilih != null;
-  const benar = terkoreksi && dipilih === soal.jawaban;
+  const terkoreksi = jawabanLengkap(soal, dipilih);
+  const benar = terkoreksi && jawabanBenar(soal, dipilih);
 
   if (semuaDijawab && lihatHasil) {
     const nilai = Math.round((benarCount / kuis.length) * 100);
@@ -759,29 +827,102 @@ function PanelKuis({
       )}
       <div style={S.soalTeks}><MathText text={soal.soal} /></div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {(soal.opsi || []).map((op, j) => {
-          let gaya = S.opsi;
-          if (terkoreksi && j === soal.jawaban) gaya = { ...S.opsi, ...S.opsiBenar };
-          else if (terkoreksi && dipilih === j) gaya = { ...S.opsi, ...S.opsiSalah };
-          return (
-            <button key={j} type="button" style={gaya} disabled={terkoreksi}
-              onClick={() => pilih(soalIdx, j)}>
-              <span style={{
-                ...S.opsiBulat,
-                ...(terkoreksi && j === soal.jawaban ? S.opsiBulatBenar : null),
-                ...(terkoreksi && dipilih === j && !benar ? S.opsiBulatSalah : null),
-              }}>
-                {terkoreksi && j === soal.jawaban
-                  ? <CheckCircle2 size={13} />
-                  : terkoreksi && dipilih === j ? <XCircle size={13} /> : null}
-              </span>
-              <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
-              <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
-            </button>
-          );
-        })}
-      </div>
+      {tipeSoal(soal) === 'tabel' ? (
+        <div style={S.tabelWrap}>
+          <table style={S.tabel}>
+            <thead>
+              <tr>
+                <th style={S.tabelSel}>Pernyataan</th>
+                {kolomSoal(soal).map((k) => (
+                  <th key={k} style={S.tabelSel}>{k}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(soal.baris || []).map((bar, r) => {
+                const pil = Array.isArray(dipilih) ? dipilih[r] : undefined;
+                return (
+                  <tr key={r}>
+                    <td style={S.tabelSel}><MathText text={bar} /></td>
+                    {kolomSoal(soal).map((k, c) => {
+                      const kunci = (soal.jawaban || [])[r] === c;
+                      return (
+                        <td key={c} style={S.tabelSelTengah}>
+                          <button type="button" disabled={terkoreksi}
+                            aria-label={`baris ${r + 1} kolom ${k}`}
+                            style={{
+                              ...S.tabelRadio,
+                              ...(pil === c ? S.tabelRadioPil : null),
+                              ...(terkoreksi && kunci ? S.tabelRadioKunci : null),
+                              ...(terkoreksi && pil === c && !kunci
+                                ? S.tabelRadioSalah : null),
+                            }}
+                            onClick={() => pilihTabel(soalIdx, r, c)}>
+                            {pil === c ? '✓' : ''}
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : tipeSoal(soal) === 'pgMulti' ? (
+        <>
+          <div style={S.formatChip}>
+            ☑️ Centang semua pernyataan yang benar — jawaban bisa lebih dari satu.
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {(soal.opsi || []).map((op, j) => {
+              const pil = Array.isArray(dipilih) && dipilih.includes(j);
+              const kunci = (soal.jawaban || []).includes(j);
+              let gaya = S.opsi;
+              if (pil) gaya = { ...S.opsi, ...S.opsiDipilihMulti };
+              if (terkoreksi && kunci) gaya = { ...S.opsi, ...S.opsiBenar };
+              else if (terkoreksi && pil && !kunci) gaya = { ...S.opsi, ...S.opsiSalah };
+              return (
+                <button key={j} type="button" style={gaya} disabled={terkoreksi}
+                  onClick={() => pilihMulti(soalIdx, j)}>
+                  <span style={{
+                    ...S.opsiKotak,
+                    ...(pil || (terkoreksi && kunci) ? S.opsiKotakIsi : null),
+                  }}>
+                    {pil || (terkoreksi && kunci) ? <CheckCircle2 size={13} /> : null}
+                  </span>
+                  <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+                  <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {(soal.opsi || []).map((op, j) => {
+            let gaya = S.opsi;
+            if (terkoreksi && j === soal.jawaban) gaya = { ...S.opsi, ...S.opsiBenar };
+            else if (terkoreksi && dipilih === j) gaya = { ...S.opsi, ...S.opsiSalah };
+            return (
+              <button key={j} type="button" style={gaya} disabled={terkoreksi}
+                onClick={() => pilih(soalIdx, j)}>
+                <span style={{
+                  ...S.opsiBulat,
+                  ...(terkoreksi && j === soal.jawaban ? S.opsiBulatBenar : null),
+                  ...(terkoreksi && dipilih === j && !benar ? S.opsiBulatSalah : null),
+                }}>
+                  {terkoreksi && j === soal.jawaban
+                    ? <CheckCircle2 size={13} />
+                    : terkoreksi && dipilih === j ? <XCircle size={13} /> : null}
+                </span>
+                <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+                <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {terkoreksi && (
         benar ? (
@@ -796,7 +937,7 @@ function PanelKuis({
           <div style={{ ...kotakTips, background: T.merahLatar, borderColor: T.merahGaris, color: '#B91C1C' }}>
             <XCircle size={15} />
             <span>
-              <b>Belum tepat.</b> Jawaban yang benar: {String.fromCharCode(65 + soal.jawaban)}.
+              <b>Belum tepat.</b> Kunci: {kunciTeks(soal)}.
               {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
             </span>
           </div>
@@ -840,12 +981,26 @@ function PanelKuis({
 function LiveKuis({ sessionId, soal, idx, total }) {
   const [pilihan, setPilihan] = useState(null);
   const [terkirim, setTerkirim] = useState(false);
+  const fmt = tipeSoal(soal);
   const kirim = (j) => {
     if (terkirim) return;
     setPilihan(j);
     setTerkirim(true);
     kirimJawabanLive(sessionId, idx, j).catch(() => setTerkirim(false));
   };
+  const togMulti = (j) => setPilihan((old) => {
+    const arr = Array.isArray(old) ? [...old] : [];
+    const at = arr.indexOf(j);
+    if (at >= 0) arr.splice(at, 1);
+    else arr.push(j);
+    return arr.sort((a, b) => a - b);
+  });
+  const pilBaris = (r, c) => setPilihan((old) => {
+    const arr = Array.isArray(old) ? [...old] : [];
+    arr[r] = c;
+    return arr;
+  });
+  const lengkap = jawabanLengkap(soal, pilihan);
   return (
     <>
       <div style={S.liveHead}>
@@ -856,20 +1011,92 @@ function LiveKuis({ sessionId, soal, idx, total }) {
         <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
       )}
       <div style={S.soalTeks}><MathText text={soal.soal} /></div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {(soal.opsi || []).map((op, j) => (
-          <button key={j} type="button"
-            style={{
-              ...S.opsi,
-              ...(pilihan === j ? S.opsiDipilihLive : null),
-            }}
-            disabled={terkirim}
-            onClick={() => kirim(j)}>
-            <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
-            <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
-          </button>
-        ))}
-      </div>
+      {fmt === 'tabel' ? (
+        <div style={S.tabelWrap}>
+          <table style={S.tabel}>
+            <thead>
+              <tr>
+                <th style={S.tabelSel}>Pernyataan</th>
+                {kolomSoal(soal).map((k) => (
+                  <th key={k} style={S.tabelSel}>{k}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(soal.baris || []).map((bar, r) => (
+                <tr key={r}>
+                  <td style={S.tabelSel}><MathText text={bar} /></td>
+                  {kolomSoal(soal).map((k, c) => (
+                    <td key={c} style={S.tabelSelTengah}>
+                      <button type="button" disabled={terkirim}
+                        aria-label={`baris ${r + 1} kolom ${k}`}
+                        style={{
+                          ...S.tabelRadio,
+                          ...(Array.isArray(pilihan) && pilihan[r] === c
+                            ? S.tabelRadioPil : null),
+                        }}
+                        onClick={() => pilBaris(r, c)}>
+                        {Array.isArray(pilihan) && pilihan[r] === c ? '✓' : ''}
+                      </button>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : fmt === 'pgMulti' ? (
+        <>
+          <div style={S.formatChip}>
+            ☑️ Centang semua pernyataan yang benar — jawaban bisa lebih dari satu.
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {(soal.opsi || []).map((op, j) => (
+              <button key={j} type="button"
+                style={{
+                  ...S.opsi,
+                  ...(Array.isArray(pilihan) && pilihan.includes(j)
+                    ? S.opsiDipilihLive : null),
+                }}
+                disabled={terkirim}
+                onClick={() => togMulti(j)}>
+                <span style={{
+                  ...S.opsiKotak,
+                  ...(Array.isArray(pilihan) && pilihan.includes(j)
+                    ? S.opsiKotakIsi : null),
+                }}>
+                  {Array.isArray(pilihan) && pilihan.includes(j)
+                    ? <CheckCircle2 size={13} /> : null}
+                </span>
+                <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+                <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {(soal.opsi || []).map((op, j) => (
+            <button key={j} type="button"
+              style={{
+                ...S.opsi,
+                ...(pilihan === j ? S.opsiDipilihLive : null),
+              }}
+              disabled={terkirim}
+              onClick={() => kirim(j)}>
+              <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+              <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+            </button>
+          ))}
+        </div>
+      )}
+      {fmt !== 'pg' && (
+        <button type="button" style={tombolPill('primer')}
+          disabled={!lengkap || terkirim}
+          onClick={() => kirim(pilihan)}>
+          Kirim jawaban <ChevronRight size={14} />
+        </button>
+      )}
       <div style={{ ...S.kotakInfoLive, ...(terkirim ? null : { opacity: .75 }) }}>
         {terkirim
           ? '✅ Jawabanmu terkirim ke guru — pembahasan muncul setelah sesi.'
@@ -1026,6 +1253,42 @@ const S = {
     color: T.samar, borderRadius: 999, padding: '3px 10px',
     fontSize: 10, fontWeight: 800, marginBottom: 8,
   },
+  formatChip: {
+    fontSize: 11.5, fontWeight: 800, color: T.biruDalam,
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    borderRadius: 10, padding: '7px 10px', margin: '2px 0 8px',
+  },
+  opsiDipilihMulti: {
+    borderColor: T.biru, background: '#F4FAFF',
+    boxShadow: '0 3px 10px rgba(30,155,240,.14)',
+  },
+  opsiKotak: {
+    width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+    border: `2px solid ${T.garis}`, background: '#fff',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    color: '#fff',
+  },
+  opsiKotakIsi: { background: T.biru, borderColor: T.biru },
+  tabelWrap: { overflowX: 'auto', margin: '4px 0 8px' },
+  tabel: {
+    width: '100%', borderCollapse: 'collapse', background: '#fff',
+    border: `1px solid ${T.garis}`, borderRadius: 10, fontSize: 12.5,
+  },
+  tabelSel: {
+    border: `1px solid ${T.garis}`, padding: '8px 10px',
+    textAlign: 'left', color: T.teks, fontWeight: 600,
+  },
+  tabelSelTengah: {
+    border: `1px solid ${T.garis}`, padding: 6, textAlign: 'center',
+  },
+  tabelRadio: {
+    width: 30, height: 30, borderRadius: 999, cursor: 'pointer',
+    border: `2px solid ${T.garis}`, background: '#fff',
+    fontSize: 14, fontWeight: 800, color: '#fff', lineHeight: 1,
+  },
+  tabelRadioPil: { background: T.biru, borderColor: T.biru },
+  tabelRadioKunci: { background: T.hijau, borderColor: T.hijau },
+  tabelRadioSalah: { background: T.merah, borderColor: T.merah },
   soalGambar: {
     display: 'block', width: '100%', maxWidth: 560, background: '#fff',
     border: `1px solid ${T.garis}`, borderRadius: 10, padding: 6,

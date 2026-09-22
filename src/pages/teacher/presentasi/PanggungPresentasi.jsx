@@ -82,13 +82,25 @@ export default function PanggungPresentasi() {
     setPosisiSesi(sesi.id, { jenis, index: indexBaru }, extra).catch(() => {});
   };
 
-  // statistik jawaban live untuk soal saat ini
+  // statistik jawaban live untuk soal saat ini (pg / pgMulti / tabel)
   const statSoal = useMemo(() => {
     if (posisi.jenis !== 'kuis') return null;
     const masuk = jawaban.filter((j) => Number(j.soalIndex) === idx);
-    const perOpsi = (kuis[idx]?.opsi || []).map((_, j) =>
-      masuk.filter((m2) => Number(m2.pilihan) === j).length);
-    return { responden: masuk.length, perOpsi };
+    const sNow = kuis[idx] || {};
+    const fmt = String(sNow.tipe || 'pg');
+    if (fmt === 'tabel') {
+      const kolom = Array.isArray(sNow.kolom) && sNow.kolom.length
+        ? sNow.kolom : ['Benar', 'Salah'];
+      const perBaris = (sNow.baris || []).map((_, r) =>
+        kolom.map((_, c) => masuk.filter(
+          (m2) => Array.isArray(m2.pilihan) && m2.pilihan[r] === c).length));
+      return { responden: masuk.length, perBaris, kolom, fmt };
+    }
+    const perOpsi = (sNow.opsi || []).map((_, j) =>
+      masuk.filter((m2) => (Array.isArray(m2.pilihan)
+        ? m2.pilihan.includes(j)
+        : Number(m2.pilihan) === j)).length);
+    return { responden: masuk.length, perOpsi, fmt };
   }, [jawaban, posisi.jenis, idx, kuis]);
 
   if (loading) {
@@ -166,29 +178,72 @@ export default function PanggungPresentasi() {
                   <div style={S.sumberChip}>🎓 {kuis[idx].sumber}</div>
                 )}
                 <div style={S.soalBesar}><MathText text={kuis[idx].soal} /></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {(kuis[idx].opsi || []).map((op, j) => {
-                    const n = statSoal?.perOpsi[j] || 0;
-                    const total = statSoal?.responden || 0;
-                    const persen = total ? Math.round((n / total) * 100) : 0;
-                    const kunci = tampilKunci && j === kuis[idx].jawaban;
-                    return (
-                      <div key={j} style={{
-                        ...S.opsiProyektor,
-                        ...(kunci ? S.opsiProyektorKunci : null),
-                      }}>
-                        <span style={S.opsiHurufBesar}>
-                          {String.fromCharCode(65 + j)}.
-                        </span>
-                        <span style={{ flex: 1 }}><MathText text={op} /></span>
-                        <span style={S.statChip}>
-                          {n} ({persen}%)
-                        </span>
-                        {kunci && <CheckCircle2 size={18} color={T.hijau} />}
-                      </div>
-                    );
-                  })}
-                </div>
+                {String(kuis[idx].tipe || 'pg') === 'pgMulti' && (
+                  <div style={S.formatChipProyektor}>
+                    ☑️ Format ujian asli: centang lebih dari satu pernyataan benar
+                  </div>
+                )}
+                {String(kuis[idx].tipe || 'pg') === 'tabel' ? (
+                  <table style={S.tabelProyektor}>
+                    <thead>
+                      <tr>
+                        <th style={S.tabelProyektorSel}>Pernyataan</th>
+                        {(statSoal?.kolom || ['Benar', 'Salah']).map((k) => (
+                          <th key={k} style={S.tabelProyektorSel}>{k}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(kuis[idx].baris || []).map((bar, r) => (
+                        <tr key={r}>
+                          <td style={S.tabelProyektorSel}>
+                            <MathText text={bar} />
+                          </td>
+                          {(statSoal?.kolom || ['Benar', 'Salah']).map((k, c) => {
+                            const n = statSoal?.perBaris?.[r]?.[c] || 0;
+                            const kunci = tampilKunci
+                              && (kuis[idx].jawaban || [])[r] === c;
+                            return (
+                              <td key={c} style={{
+                                ...S.tabelProyektorSel, textAlign: 'center',
+                                ...(kunci ? S.tabelProyektorKunci : null),
+                              }}>
+                                {n} siswa {kunci ? '✓ kunci' : ''}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {(kuis[idx].opsi || []).map((op, j) => {
+                      const n = statSoal?.perOpsi[j] || 0;
+                      const total = statSoal?.responden || 0;
+                      const persen = total ? Math.round((n / total) * 100) : 0;
+                      const kunci = tampilKunci && (
+                        String(kuis[idx].tipe || 'pg') === 'pgMulti'
+                          ? (kuis[idx].jawaban || []).includes(j)
+                          : j === kuis[idx].jawaban);
+                      return (
+                        <div key={j} style={{
+                          ...S.opsiProyektor,
+                          ...(kunci ? S.opsiProyektorKunci : null),
+                        }}>
+                          <span style={S.opsiHurufBesar}>
+                            {String.fromCharCode(65 + j)}.
+                          </span>
+                          <span style={{ flex: 1 }}><MathText text={op} /></span>
+                          <span style={S.statChip}>
+                            {n} ({persen}%)
+                          </span>
+                          {kunci && <CheckCircle2 size={18} color={T.hijau} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 <div style={S.statFoot}>
                   {statSoal?.responden || 0} siswa menjawab •
                   {' '}{peserta.length} peserta sesi
@@ -461,6 +516,20 @@ const S = {
     border: `1px solid ${T.kotakBiruGaris}`, color: T.biruDalam,
     borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800,
   },
+  formatChipProyektor: {
+    fontSize: 13, fontWeight: 800, color: T.biruDalam,
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    borderRadius: 10, padding: '8px 12px', margin: '0 0 10px',
+  },
+  tabelProyektor: {
+    width: '100%', borderCollapse: 'collapse', background: '#fff',
+    border: `1px solid ${T.garis}`, fontSize: 15, margin: '4px 0 10px',
+  },
+  tabelProyektorSel: {
+    border: `1px solid ${T.garis}`, padding: '10px 12px',
+    textAlign: 'left', color: T.teks, fontWeight: 600,
+  },
+  tabelProyektorKunci: { background: T.hijauLatar, color: T.hijauTeks },
   slideBesar: {
     width: '100%', height: '68vh', border: `1px solid ${T.garis}`,
     borderRadius: 12, background: '#fff',
