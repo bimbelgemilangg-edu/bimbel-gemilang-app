@@ -1,0 +1,337 @@
+{
+  "materi": {
+    "judul": "Statistika dan Peluang (TKA Saintek)",
+    "mapel": "Matematika",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#0EA5E9",
+    "emoji": "📊",
+    "deskripsi": "Materi LENGKAP sesuai buku Sukses Tes Kemampuan Akademik SMA Saintek bab 5: teks verbatim, rumus/tabel/diagram tampil sebagai potongan cetakan buku asli (prinsip fidelity), + latihan model TKA.",
+    "urutan": 1,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "5.1 Statistika (sesuai buku hal. 21-22)",
+      "ringkasan": "Seluruh subbab statistika buku: pemusatan, letak, penyebaran data tunggal & berkelompok. Rumus tampil persis seperti cetakan buku.",
+      "estimasiMenit": 25,
+      "urutan": 1,
+      "tipe": "teks",
+      "pdfUrl": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/pdf-statistika-peluang-tka-k12.pdf",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "5.1.1 Ukuran Pemusatan Data Tunggal"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_mean.png",
+          "keterangan": "Sesuai buku hal. 21 — definisi & rumus mean (rataan) persis seperti cetakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "2. Modus — Data yang paling sering muncul."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "3. Median — Nilai yang membagi suatu data menjadi dua bagian sama banyak setelah data diurutkan mulai dari terkecil hingga terbesar."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.1.2 Ukuran Letak Data Tunggal (Kuartil)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Kuartil membagi data atas empat bagian yang sama setelah data diurutkan mulai dari terkecil hingga terbesar. Q1 = kuartil bawah, Q2 = kuartil tengah (median), Q3 = kuartil atas."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_kuartil.png",
+          "keterangan": "Sesuai buku hal. 21 — diagram garis kuartil Q1, Q2, Q3 seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.1.3 Ukuran Penyebaran Data Tunggal"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "1. Jangkauan  2. Jangkauan Kuartil  3. Simpangan Kuartil  4. Simpangan Rata-rata (SR), Simpangan Baku (S), dan Ragam (S²) — seluruh rumusnya berikut ini persis seperti di buku:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_sebaran.png",
+          "keterangan": "Sesuai buku hal. 21 — rumus J, H, Qs, SR, S, S² data tunggal seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.1.4 Ukuran Pemusatan Data Berkelompok"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "1. Mean (Rataan) — dengan menggunakan rataan sementara (xs):"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_mean_kel.png",
+          "keterangan": "Sesuai buku hal. 21 — rumus mean data berkelompok seperti cetakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "2. Modus:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_modus.png",
+          "keterangan": "Sesuai buku hal. 21 — rumus modus data berkelompok seperti cetakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "3. Median:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_median.png",
+          "keterangan": "Sesuai buku hal. 21 — rumus median data berkelompok seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.1.5 Ukuran Letak Data Berkelompok"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "1. Kuartil  2. Persentil — rumus lengkap seperti di buku:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_kuartil_kel.png",
+          "keterangan": "Sesuai buku hal. 21 — rumus kuartil & persentil data berkelompok seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.1.6 Ukuran Penyebaran Data Berkelompok"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "1. Jangkauan Kuartil (H = Q3 - Q1)  2. Simpangan Kuartil (Qs = ½(Q3 - Q1))  3. Simpangan Rata-rata, Simpangan Baku, dan Ragam — bentuk berkelompok:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_sebaran_kel.png",
+          "keterangan": "Sesuai buku hal. 21 — rumus penyebaran data berkelompok seperti cetakan."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Suatu data memiliki median 16 dan jangkauan 6. Jika setiap nilai dalam data tersebut dikalikan p kemudian dikurangi q, diperoleh data baru dengan median 20 dan jangkauan 9. Nilai dari 4p - q adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jangkauan hanya terpengaruh perkalian: 6p = 9 sehingga p = 1,5. Median: 16p - q = 20 sehingga 24 - q = 20, q = 4. Maka 4p - q = 6 - 4 = 2. (Soal buku hal. 23 no. 1)"
+        },
+        {
+          "soal": "Nilai rata-rata bahasa Inggris kelas 10 A yang terdiri dari 36 siswa adalah 86. Apabila rata-rata nilai siswa laki-laki 86,8 dan rata-rata nilai siswa perempuan 85, banyak siswa perempuan di kelas tersebut adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "12",
+            "16",
+            "18",
+            "20",
+            "24"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Misal laki-laki b: 86,8b + 85(36 - b) = 86 x 36 = 3096 maka 1,8b = 36, b = 20. Perempuan = 36 - 20 = 16. (Soal buku hal. 23 no. 2)"
+        }
+      ]
+    },
+    {
+      "judul": "5.2 Peluang (sesuai buku hal. 21-23)",
+      "ringkasan": "Ruang sampel (dadu/koin/kartu lengkap dengan tabel buku), peluang teoretis, frekuensi harapan, kaidah pencacahan, permutasi-kombinasi, kejadian majemuk — rumus persis cetakan buku.",
+      "estimasiMenit": 30,
+      "urutan": 2,
+      "tipe": "teks",
+      "pdfUrl": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/pdf-statistika-peluang-tka-k12.pdf",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "5.2.1 Titik Sampel dan Ruang Sampel"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Titik sampel adalah anggota dari ruang sampel atau kejadian yang mungkin, banyaknya titik sampel ditulis n(A). Ruang sampel adalah himpunan semua kejadian yang mungkin pada suatu percobaan, banyaknya ruang sampel ditulis sebagai n(S)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.2.2 Peluang Teoretis"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Perbandingan antara jumlah hasil yang diharapkan dengan jumlah semua hasil yang mungkin terjadi:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h1_peluang.png",
+          "keterangan": "Sesuai buku hal. 21 — P(A) = n(A)/n(S) dengan 0 ≤ P(A) ≤ 1 seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Ruang Sampel Dadu, Koin, dan Kartu Bridge"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_dadu.png",
+          "keterangan": "Sesuai buku hal. 22 — tabel ruang sampel dua dadu (36 titik) dan aturan n(S) = 6ⁿ seperti cetakan."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_koin.png",
+          "keterangan": "Sesuai buku hal. 22 — ruang sampel koin dan aturan n(S) = 2ⁿ seperti cetakan."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_kartu.png",
+          "keterangan": "Sesuai buku hal. 22 — empat jenis kartu bridge dan n(S) = 4 x 13 = 52 seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.2.3 Frekuensi Harapan"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_frekharp.png",
+          "keterangan": "Sesuai buku hal. 22 — F(H) = n x P(A) beserta keterangan simbol seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.2.4 Kaidah Pencacahan"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "1. Aturan Perkalian — Jika ada k pilihan dengan masing-masing pilihan memiliki n1, n2, n3, ..., nk yang kemungkinan, banyaknya cara untuk mengisi k pilihan tersebut secara keseluruhan diberikan oleh hasil kali n1 x n2 x n3 x .... x nk."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "2. Aturan Penjumlahan — Jika suatu kejadian dapat dilakukan dengan n1 cara atau n2 cara atau .... nk cara, dan kejadian tidak dapat dilakukan secara bersamaan maka banyaknya cara untuk mengisi k pilihan tersebut secara keseluruhan adalah n1 + n2 + n3 + .... + nk."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.2.5 Permutasi dan Kombinasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "1. Permutasi — Penyusunan objek yang terdiri dari beberapa unsur dengan mempertimbangkan urutan. Banyaknya permutasi r unsur dari n unsur yang berbeda adalah:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_permutasi.png",
+          "keterangan": "Sesuai buku hal. 22 — rumus nPr = n!/(n-r)! seperti cetakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "2. Permutasi dari beberapa objek yang mempunyai unsur sama — Jika terdapat n objek dengan unsur kelompok pertama yang sama sebanyak n1, kelompok kedua sebanyak n2, ...., dan kelompok ke-m sebanyak nm, rumus permutasi dirumuskan:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_perm_sama.png",
+          "keterangan": "Sesuai buku hal. 22 — rumus permutasi unsur sama n!/(n1!.n2!....nm!) seperti cetakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "3. Permutasi siklis — Permutasi siklis diaplikasikan untuk mengatur posisi objek pada rute melingkar. Rumus permutasi siklis adalah:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_siklis.png",
+          "keterangan": "Sesuai buku hal. 22 — permutasi siklis = (n - 1)! seperti cetakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "4. Kombinasi — Penyusunan objek yang terdiri dari beberapa unsur dengan tidak mempertimbangkan urutan. Banyaknya kombinasi r unsur dari n unsur yang berbeda adalah:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_kombinasi.png",
+          "keterangan": "Sesuai buku hal. 22 — rumus nCr = n!/((n-r)!.r!) seperti cetakan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "5.2.6 Peluang Kejadian Majemuk"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "1. Peluang Dua Kejadian yang Beririsan — Suatu percobaan dengan kejadian A dan kejadian B yang bisa terjadi secara bersamaan. Nilai peluang kejadian A atau kejadian B adalah:"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-buku/h2_majemuk.png",
+          "keterangan": "Sesuai buku hal. 22 — P(A u B) = P(A) + P(B) - P(A n B) seperti cetakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "2. Peluang Dua Kejadian yang Saling Lepas — Suatu percobaan dengan kejadian A dan kejadian B tidak mungkin terjadi secara bersamaan: P(A n B) = 0 sehingga P(A u B) = P(A) + P(B)."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Peluang cuaca cerah di bulan September adalah 0,7. Berapa kemungkinan banyak hari dengan cuaca tidak cerah di bulan September?",
+          "tipe": "pg",
+          "opsi": [
+            "9 hari",
+            "12 hari",
+            "16 hari",
+            "18 hari",
+            "21 hari"
+          ],
+          "jawaban": 0,
+          "pembahasan": "P(tidak cerah) = 1 - 0,7 = 0,3. September 30 hari sehingga 0,3 x 30 = 9 hari. (Buku hal. 23 no. 3)"
+        },
+        {
+          "soal": "Banyak bilangan ratusan genap dengan digit berbeda yang dapat disusun dari angka-angka 4, 5, 6, 7, 8 dan memiliki nilai lebih besar dari 600 adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "12",
+            "15",
+            "18",
+            "21",
+            "27"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Satuan genap {4,6,8}. Satuan 4: ratusan {6,7,8} = 3 cara, puluhan 3 cara = 9. Satuan 6: ratusan {7,8} = 2 x 3 = 6. Satuan 8: ratusan {6,7} = 2 x 3 = 6. Total 21. (Buku hal. 23 no. 4)"
+        },
+        {
+          "soal": "Sebuah kartu diambil secara acak dari satu set lengkap kartu bridge. Peluang terambil kartu merah prima adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "1/13",
+            "2/13",
+            "3/26",
+            "5/26",
+            "7/52"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Kartu merah prima: 2, 3, 5, 7 pada hati dan wajik = 8 kartu. P = 8/52 = 2/13. (Buku hal. 25 no. 17)"
+        },
+        {
+          "soal": "Lima orang sahabat, yaitu A, B, C, D, dan E hendak menonton sebuah film di bioskop. Mereka duduk berjajar pada lima kursi. Ketentuan: (1) C harus duduk di salah satu ujung barisan; (2) A harus selalu duduk bersebelahan dengan D. Berapa banyak susunan posisi duduk yang mungkin?",
+          "tipe": "pg",
+          "opsi": [
+            "8",
+            "12",
+            "24",
+            "48",
+            "96"
+          ],
+          "jawaban": 2,
+          "pembahasan": "C di ujung: 2 cara. Blok AD (2 urutan internal) bersama B dan E mengisi 3 kursi sisa: 3! = 6. Total = 2 x 6 x 2 = 24. (Buku hal. 23 no. 9)"
+        }
+      ]
+    }
+  ]
+}
