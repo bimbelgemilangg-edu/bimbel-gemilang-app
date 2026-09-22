@@ -30,7 +30,7 @@ const stripPrefix = (t) => String(t || '')
 const tokenBs = (x) => /^(benar|setuju|true|ya|t)$/i.test(String(x || '').trim());
 
 export function parseKunci(teks) {
-  const body = stripPrefix(teks);
+  const body = stripPrefix(teks).replace(/[.;:]+\s*$/, '').trim();
   if (!body) return null;
   let m = body.match(/pernyataan\s*((?:\d+(?:\s*,\s*\d+)*)(?:\s*,?\s*dan\s*\d+)?)/i);
   if (m) {
@@ -39,10 +39,10 @@ export function parseKunci(teks) {
     if (arr.length) return { tipe: 'multi', multi: arr };
   }
   // A Benar / B Salah / C True ...
-  const pairs = [...body.matchAll(/([A-E])\s*[:.]?\s*(tidak\s+setuju|setuju|benar|salah|true|false)/gi)];
+  const pairs = [...body.matchAll(/([A-E])\s*[:.]?\s*(tidak\s+setuju|setuju|benar|salah|ya|tidak|true|false)/gi)];
   if (pairs.length >= 2) return { tipe: 'bs', bs: pairs.map((p) => tokenBs(p[2])) };
   // Benar, Salah, Benar  OR  True, False, True, True, False
-  m = body.match(/^((?:tidak\s+setuju|setuju|benar|salah|true|false)(?:\s*,\s*(?:tidak\s+setuju|setuju|benar|salah|true|false))+)$/i);
+  m = body.match(/^((?:tidak\s+setuju|setuju|benar|salah|ya|tidak|true|false)(?:\s*,\s*(?:tidak\s+setuju|setuju|benar|salah|ya|tidak|true|false))+)$/i);
   if (m) return { tipe: 'bs', bs: m[1].split(',').map(tokenBs) };
   // B,S,B,B  atau  T,F,T,T,F
   m = body.match(/^([BSTFbstf](?:\s*,\s*[BSTFbstf])+)$/);
