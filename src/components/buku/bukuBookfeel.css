@@ -1,163 +1,192 @@
 
 /* src/components/buku/bukuBookfeel.css
    ============================================================
-   GEMILANG READER — BOOKFEEL V2
-   Lapisan tema yang mengubah reader dari "tumpukan kartu aplikasi"
-   menjadi "ruang membaca seperti buku cetak". Murni CSS (override),
-   tidak mengubah schema data maupun route.
-   Prinsip: konten adalah pahlawan; krom aplikasi menyelinap pergi.
+   GEMILANG READER UI — v3 ("UI khas Gemilang", bukan paksaan feel buku)
+   Arah desain mengikuti mockup resmi Gemilang: kartu airy bordir tipis,
+   latar biru sangat muda, kolom baca LEGA, rumus dalam kotak lembut,
+   contoh hijau, tips kuning, navigasi menyembunyi sendiri.
+   Murni lapisan CSS override — tidak mengubah data, route, atau JSX.
    ============================================================ */
 
-/* ---------- 1. Kertas, bukan lavender ---------- */
+/* ---------- 1. Palet Gemilang ---------- */
 .gemilang-reader {
-    --reader-bg: #FBF9F3;            /* kertas hangat ala buku cetak */
-    --reader-surface: #FBF9F3;
-    --reader-ink: #22304A;
-    --reader-muted: #6B7789;
-    --reader-accent: #1B6CA8;        /* biru bab, bukan ungu aplikasi */
-    --gb-gold: #C08A00;
+    --reader-bg: #F4F8FE;
+    --reader-surface: #FFFFFF;
+    --reader-ink: #1E2A44;
+    --reader-muted: #64748B;
+    --reader-accent: #2563EB;
+    --gb-soft: #EAF2FF;
+    --gb-line: #E3EDFB;
+    --gb-green: #16A34A;   --gb-green-bg: #ECFDF3;  --gb-green-line: #C4E9D0;
+    --gb-yellow-bg: #FFF7E0; --gb-yellow-line: #F0DFAE; --gb-yellow-ink: #8A6D00;
+    --gb-math-bg: #F0F6FF; --gb-math-line: #D8E6FB;
   }
-  .gemilang-reader.reader-theme-sepia { --reader-bg:#F3E9D6; --reader-surface:#F3E9D6; --reader-ink:#493B2A; --reader-muted:#806D55; --reader-accent:#9A641F; }
-  .gemilang-reader.reader-theme-night { --reader-bg:#141A22; --reader-surface:#141A22; --reader-ink:#E7EBF2; --reader-muted:#9AA6B5; --reader-accent:#7FB4E0; }
+  .gemilang-reader.reader-theme-sepia {
+    --reader-bg:#F6EFE2; --reader-surface:#FFFDF7; --reader-ink:#4A3B28; --reader-muted:#8A7658;
+    --reader-accent:#B07A1E; --gb-soft:#F6EBD8; --gb-line:#EADFC8;
+    --gb-math-bg:#F8F1E3; --gb-math-line:#E7D9BE;
+  }
+  .gemilang-reader.reader-theme-night {
+    --reader-bg:#10161F; --reader-surface:#18202B; --reader-ink:#E8EDF5; --reader-muted:#93A0B4;
+    --reader-accent:#6EA8FF; --gb-soft:#1D2836; --gb-line:#2A3648;
+    --gb-green-bg:#12291C; --gb-green-line:#1E4630; --gb-yellow-bg:#2B2410; --gb-yellow-line:#4A3D14;
+    --gb-math-bg:#16202E; --gb-math-line:#2A3648;
+  }
+  .gemilang-reader { background: var(--reader-bg) !important; }
   
-  /* ---------- 2. Kolom baca ukuran buku (68ch) ---------- */
+  /* ---------- 2. Kolom baca LEGA (tidak sempit) ---------- */
   .gemilang-reader .reader-structured {
-    max-width: 720px !important;
+    max-width: 880px !important;
     margin: 0 auto !important;
     padding: 26px 22px 120px !important;
     font-family: "Nunito", "Segoe UI", system-ui, sans-serif;
   }
   .gemilang-reader .reader-structured .paragraf,
   .gemilang-reader .reader-structured .list {
-    font-size: 15.5px !important;
+    font-size: 15.8px !important;
     line-height: 1.85 !important;
     color: var(--reader-ink) !important;
-    max-width: 68ch;
     margin-bottom: 14px !important;
   }
   .gemilang-reader .reader-structured .list { padding-left: 20px !important; }
   
-  /* ---------- 3. Bongkar kartu: seksi menjadi halaman mengalir ---------- */
+  /* ---------- 3. Kartu seksi: airy, bordir 1px (tidak tebal) ---------- */
   .gemilang-reader .reader-structured .reader-surface {
-    background: transparent !important;
-    box-shadow: none !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    margin: 0 0 30px !important;
-    break-inside: avoid;
+    background: var(--reader-surface) !important;
+    border: 1px solid var(--gb-line) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 22px rgba(37, 99, 235, .06) !important;
+    padding: 20px 22px !important;
+    margin: 0 0 18px !important;
   }
-  /* pemisah antar-seksi: garis rambut seperti pergantian halaman */
-  .gemilang-reader .reader-structured .reader-surface + .reader-surface::before {
-    content: "";
-    display: block;
-    height: 1px;
-    margin: 0 0 26px;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--reader-ink) 22%, transparent), transparent);
-  }
-  /* judul seksi = kepala subbab buku cetak */
+  /* judul seksi ala mockup: nomor/biru tebal, tanpa garis bawah keras */
   .gemilang-reader .reader-structured .reader-surface > div:first-child {
     font-size: 17px !important;
     font-weight: 900 !important;
-    color: var(--reader-accent) !important;
-    border-bottom: 2px solid var(--reader-accent);
-    padding-bottom: 6px;
+    color: var(--reader-ink) !important;
+    letter-spacing: .1px;
+    padding-bottom: 10px;
     margin-bottom: 14px;
-    letter-spacing: .2px;
+    border-bottom: 1px solid var(--gb-line);
+  }
+  .gemilang-reader .reader-structured .reader-surface > div:first-child::before {
+    content: "";
+    display: inline-block;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--reader-accent);
+    margin-right: 8px;
+    vertical-align: middle;
   }
   
-  /* ---------- 4. Matematika gaya buku ---------- */
+  /* ---------- 4. Rumus: kotak lembut tengah, napas longgar ---------- */
   .gemilang-reader .gb-katex-block {
-    margin: 20px 0 !important;
+    background: var(--gb-math-bg);
+    border: 1px solid var(--gb-math-line);
+    border-radius: 12px;
+    padding: 14px 12px;
+    margin: 16px 0 !important;
     text-align: center;
-    font-size: 1.14em;
+    font-size: 1.12em;
     overflow-x: auto;
-    padding: 4px 0;
   }
   .gemilang-reader .gb-katex-inline { font-size: 1.04em; }
-  /* tabel apa pun di dalam bacaan dirapikan seperti tabel buku */
   .gemilang-reader .reader-structured table {
-    border-collapse: collapse;
-    margin: 16px auto;
-    font-size: .95em;
+    border-collapse: collapse; margin: 14px auto; font-size: .95em;
+    background: var(--reader-surface);
   }
   .gemilang-reader .reader-structured table td,
   .gemilang-reader .reader-structured table th {
-    border: 1px solid color-mix(in srgb, var(--reader-ink) 25%, transparent);
-    padding: 6px 10px;
+    border: 1px solid var(--gb-line); padding: 7px 12px;
   }
-  /* hitung bersusun: rapikan baris flex lama menjadi kolom rata-kanan */
-  .gemilang-reader .reader-structured [class*="barisBs"],
-  .gemilang-reader .reader-structured div[style*="alignItems"][style*="borderRadius"] {
-    font-variant-numeric: tabular-nums;
-  }
+  .gemilang-reader .reader-structured table th { background: var(--gb-soft); color: var(--reader-ink); }
   
-  /* ---------- 5. Kotak buku: maksimum dua aksen per layar ---------- */
-  .gemilang-reader .reader-structured div[style*="FFFBEB"] {   /* kotak contoh/kuning */
-    background: #FFF6DC !important;
-    border: 1.5px dashed #E0AE2B !important;
-    border-radius: 10px !important;
-    color: #6B4E00 !important;
+  /* ---------- 5. Kotak makna: contoh=hijau, konsep=biru, tips=kuning ---------- */
+  .gemilang-reader .reader-structured div[style*="FFFBEB"] {
+    background: var(--gb-green-bg) !important;
+    border: 1px solid var(--gb-green-line) !important;
+    border-radius: 12px !important;
+    color: #14532D !important;
+    padding: 14px 16px !important;
   }
+  .gemilang-reader.reader-theme-night .reader-structured div[style*="FFFBEB"] { color: #BBF7D0 !important; }
   .gemilang-reader .reader-structured div[style*="F4F2FF"][style*="border"] {
-    background: color-mix(in srgb, var(--reader-accent) 8%, transparent) !important;
-    border: 0 !important;
+    background: var(--gb-math-bg) !important;
+    border: 1px solid var(--gb-math-line) !important;
     border-left: 4px solid var(--reader-accent) !important;
-    border-radius: 4px !important;
+    border-radius: 12px !important;
     color: var(--reader-ink) !important;
+    padding: 14px 16px !important;
   }
   
-  /* ---------- 6. Krom menyelinap pergi: toolbar tipis + auto-hide ---------- */
+  /* ---------- 6. Krom tipis & menyembunyi sendiri ---------- */
   .gemilang-reader .reader-toolbar {
     position: fixed !important;
     top: 0 !important; left: 0 !important; right: 0 !important;
     z-index: 30;
-    padding: 8px 12px !important;
-    background: color-mix(in srgb, var(--reader-surface) 88%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--reader-ink) 10%, transparent);
+    padding: 8px 14px !important;
+    background: color-mix(in srgb, var(--reader-surface) 92%, transparent);
+    border-bottom: 1px solid var(--gb-line);
+    box-shadow: 0 4px 18px rgba(30, 60, 120, .06);
     transition: transform .32s ease, opacity .32s ease;
   }
   .gemilang-reader .reader-toolbar.is-hidden { transform: translateY(-110%); opacity: 0; pointer-events: none; }
+  .gemilang-reader .reader-tool {
+    border: 1px solid var(--gb-line) !important;
+    background: var(--reader-surface) !important;
+    color: var(--reader-ink) !important;
+    border-radius: 10px !important;
+  }
+  .gemilang-reader .reader-tool.is-active { border-color: var(--reader-accent) !important; color: var(--reader-accent) !important; background: var(--gb-soft) !important; }
   .gemilang-reader .reader-progress {
     position: fixed !important; top: 0; left: 0;
     width: 100vw !important; height: 3px !important;
-    border-radius: 0 !important; background: color-mix(in srgb, var(--reader-ink) 10%, transparent);
+    border-radius: 0 !important;
+    background: color-mix(in srgb, var(--reader-ink) 8%, transparent);
     z-index: 31;
   }
-  /* folio: nomor halaman kecil di kaki, seperti buku */
+  .gemilang-reader .reader-progress span { background: var(--reader-accent); }
   .gemilang-reader .reader-page-nav {
-    max-width: 720px; margin: 18px auto 0; padding-top: 10px;
-    border-top: 1px solid color-mix(in srgb, var(--reader-ink) 14%, transparent);
+    max-width: 880px; margin: 16px auto 0; padding-top: 12px;
+    border-top: 1px solid var(--gb-line);
   }
   .gemilang-reader .reader-page-nav button {
-    background: transparent !important;
-    border: 1px solid color-mix(in srgb, var(--reader-ink) 20%, transparent) !important;
+    background: var(--reader-surface) !important;
+    border: 1px solid var(--gb-line) !important;
     border-radius: 999px !important;
-    font-size: 12px !important;
-    padding: 9px 16px !important;
+    color: var(--reader-ink) !important;
+    font-size: 12.5px !important;
+    padding: 10px 18px !important;
+    box-shadow: 0 3px 12px rgba(37, 99, 235, .06) !important;
+  }
+  .gemilang-reader .reader-contents {
+    border: 1px solid var(--gb-line) !important;
+    border-radius: 16px !important;
+    background: var(--reader-surface) !important;
+    box-shadow: 0 10px 30px rgba(30, 60, 120, .08) !important;
   }
   
-  /* lembar pengaturan (bottom sheet) v2 */
+  /* ---------- 7. Lembar bawah (Aa) ---------- */
   .gb-sheet {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     background: var(--reader-surface);
     border-radius: 18px 18px 0 0;
-    box-shadow: 0 -10px 40px rgba(0,0,0,.18);
-    padding: 14px 18px calc(18px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--gb-line);
+    box-shadow: 0 -10px 40px rgba(20, 40, 80, .16);
+    padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
     transform: translateY(105%);
     transition: transform .3s ease;
   }
   .gb-sheet.is-open { transform: translateY(0); }
-  .gb-sheet h4 { margin: 2px 0 10px; font: 900 13px/1.2 "Nunito", system-ui, sans-serif; color: var(--reader-ink); }
+  .gb-sheet h4 { margin: 2px 0 10px; font: 900 13.5px/1.2 "Nunito", system-ui, sans-serif; color: var(--reader-ink); }
   .gb-sheet .row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
-  .gb-sheet .row > span:first-child { width: 74px; font: 700 11px/1.2 "Nunito", system-ui, sans-serif; color: var(--reader-muted); }
+  .gb-sheet .row > span:first-child { width: 74px; font: 700 11.5px/1.2 "Nunito", system-ui, sans-serif; color: var(--reader-muted); }
   .gb-sheet button {
-    border: 1px solid color-mix(in srgb, var(--reader-ink) 15%, transparent);
-    background: transparent; color: var(--reader-ink);
-    border-radius: 10px; min-height: 34px; padding: 6px 12px;
+    border: 1px solid var(--gb-line);
+    background: var(--reader-surface); color: var(--reader-ink);
+    border-radius: 10px; min-height: 34px; padding: 6px 14px;
     font: 800 11.5px/1 "Nunito", system-ui, sans-serif; cursor: pointer;
   }
-  .gb-sheet button.is-active { border-color: var(--reader-accent); color: var(--reader-accent); background: color-mix(in srgb, var(--reader-accent) 10%, transparent); }
-  .gb-scrim { position: fixed; inset: 0; background: rgba(10,15,25,.35); z-index: 39; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .gb-sheet button.is-active { border-color: var(--reader-accent); color: var(--reader-accent); background: var(--gb-soft); }
+  .gb-scrim { position: fixed; inset: 0; background: rgba(15, 25, 45, .35); z-index: 39; opacity: 0; pointer-events: none; transition: opacity .25s; }
   .gb-scrim.is-open { opacity: 1; pointer-events: auto; }
   
