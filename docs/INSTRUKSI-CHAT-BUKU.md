@@ -123,6 +123,11 @@ Simpan di `docs/drafts/draft-<slug-buku>.json`:
 - `jenis rumus` = { "latex" } → rumus diketik (KaTeX), jangan gambar.
 - `jenis callout` tipe `gemilang` = kotak Rumus Cepat Gemilang (minimal 1/bab).
 - Soal: field `sumber` wajib (ujian asli berlabel tahun, atau "Gemilang Drill …").
+- **Field `subbab` wajib per soal** + minimal 3 soal per sub-bab (request owner
+  Turn 30): dipakai chip filter cek pemahaman di reader dan chip lompat topik
+  di panggung sesi live.
+- Field `sumberMateri` per bab = daftar rujukan transparan (CP/Kemdikbud,
+  bank soal, situs gambar ber-kredit).
 - `jenis paragraf/judul` = { "teks" } tulisan orisinal sesuai kurikulum.
 - `soalGambar` opsional bila soal punya gambar.
 - Impor oleh owner lewat admin → `/admin/materi-v2` → 📥 Impor JSON.
