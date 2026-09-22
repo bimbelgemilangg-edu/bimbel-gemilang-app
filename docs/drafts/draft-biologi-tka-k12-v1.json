@@ -1,0 +1,304 @@
+{
+  "materi": {
+    "judul": "TKA Biologi SMA — Persiapan TKA 2026 (Kelas 12)",
+    "mapel": "Biologi",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#16A34A",
+    "emoji": "🧬",
+    "deskripsi": "Materi orisinal Gemilang hasil riset Kerangka Asesmen TKA Biologi (Pusmendik Kemendikdasmen): elemen keanekaragaman hayati, sel & metabolisme, proses-proses tubuh manusia, dan keterampilan proses. Setiap bab punya kotak Cara Gemilang (langkah berpikir sederhana) + latihan tiga level kognitif (pemahaman, penerapan, penalaran) dengan format ujian asli: PG, PGK-MCMA, dan PGK kategori. Soal resmi berlabel sumber; latihan orisinal berlabel jujur Gemilang Drill.",
+    "urutan": 3,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "Keanekaragaman Hayati: Klasifikasi, Bakteri & Ekosistem",
+      "ringkasan": "Prinsip klasifikasi (ciri, bukan habitat), bakteri Gram + peran + resistensi, dan ekosistem Indonesia: komponen, interaksi, pelestarian — plus cara membaca jaring-jaring makanan.",
+      "estimasiMenit": 25,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Prinsip Klasifikasi: Ciri, Bukan Habitat" },
+        { "jenis": "paragraf", "teks": "Makhluk hidup dikelompokkan berdasarkan persamaan dan perbedaan ciri (morfologi, anatomi, fisiologi, hingga genetika), BUKAN berdasarkan tempat tinggalnya. Paus dan hiu sama-sama hidup di laut dan berbentuk streamline, tetapi paus bernapas dengan paru-paru, menyusui, dan berdarah panas (Mammalia), sedangkan hiu bernapas dengan insang (Pisces) — karena itu keduanya berada di kelompok berbeda meski 'tetangga' di laut." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — 3 Pertanyaan Klasifikasi", "teks": "Saat soal membandingkan dua organisme, urutkan pertanyaan ini: (1) ciri tubuhnya sama atau cuma rumahnya yang sama? (2) cara hidup dasarnya (napas, reproduksi, suhu tubuh) sama? (3) baru cek kekerabatan terdekat. Bila jawaban 1 dan 2 berbeda → pasti kelompok berbeda, seberapapun mirip penampilannya." },
+        { "jenis": "judul", "teks": "Bakteri: Gram, Peran & Resistensi" },
+        { "jenis": "paragraf", "teks": "Dinding sel bakteri menentukan warna pewarnaan Gram: Gram positif berdinding peptidoglikan tebal (ungu), Gram negatif berdinding tipis berselubung luar (merah muda) dan umumnya lebih sulit diobati karena selubungnya menghalangi antibiotik. Peran bakteri bagi manusia dua arah: menguntungkan (fermentasi, fiksasi nitrogen, flora usus) dan merugikan (patogen). Resistensi muncul lewat seleksi alam: populasi bakteri sudah mengandung variasi genetik; pemakaian antibiotik/insektisida yang tidak tuntas menyeleksi individu resisten sehingga frekuensinya meningkat." },
+        { "jenis": "langkah", "judul": "Cara Gemilang membaca kasus resistensi", "items": ["Cari angka efektivitas sebelum vs sesudah perlakuan lama.", "Bila efektivitas turun drastis di satu wilayah saja → curigai resistensi lokal, bukan obatnya rusak.", "Strategi terbaik = kombinasi: alat cepat di wilayah tanpa resistensi + perpanjang/dosis tepat di wilayah resisten."] },
+        { "jenis": "judul", "teks": "Ekosistem Indonesia: Komponen, Interaksi, Pelestarian" },
+        { "jenis": "paragraf", "teks": "Ekosistem = komponen biotik (produsen, konsumen, pengurai) + abiotik yang saling terhubung lewat aliran energi dan materi. Gangguan pada satu populasi merambat ke populasi lain melalui jaring-jaring makanan: mangsa menurun → pemangsanya menurun; pemangsa menurun → mangsanya meledak. Pelestarian di Indonesia dilakukan in-situ (taman nasional, cagar alam) dan ex-situ (kebun raya, penangkaran)." },
+        { "jenis": "callout", "tipe": "tips", "judul": "Arah rambatan gangguan", "teks": "Di jaring makanan, efek 'meledak/merosot' berjalan ke ATAS (pemangsa) dan ke BAWAH (mangsa) sekaligus. Tanyakan selalu: siapa yang dimakan siapa, lalu ikuti panahnya dua arah." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Paus (Balaenoptera musculus) dan ikan hiu (Carcharodon carcharias) sama-sama hidup di laut, memiliki sirip dan ekor, serta bentuk tubuh yang lancip di ujung depan dan ujung belakang sehingga efisien untuk berenang. Namun, paus bernapas dengan paru-paru dan menyusui anaknya, sedangkan ikan hiu bernapas dengan insang dan sebagian besar bertelur. Meskipun memiliki bentuk luar yang mirip, dalam sistem klasifikasi keduanya ditempatkan pada kelompok yang berbeda. Apa prinsip utama yang digunakan dalam pengelompokan tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Kedua makhluk hidup tersebut hidup di ekosistem laut yang berbeda.",
+            "Mereka memiliki peran yang berbeda dalam rantai makanan.",
+            "Pengelompokan didasarkan pada habitat dan perilaku makan.",
+            "Klasifikasi didasarkan pada persamaan dan perbedaan ciri.",
+            "Paus dan ikan hiu memiliki massa tubuh yang berbeda secara alami."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Kunci resmi: D. Klasifikasi memakai persamaan-perbedaan ciri (anatomi, fisiologi, cara reproduksi), bukan habitat atau peran ekologis. Paus menyusui & berparu-paru → Mammalia; hiu berinsang → Pisces.",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 2 — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Dalam sebuah ekosistem laut, terdapat beberapa organisme seperti pada gambar jaring-jaring makanan. Jika populasi ikan kecil menurun drastis, maka manakah dampak yang paling mungkin terjadi dalam jaring-jaring makanan pada ekosistem laut tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Jumlah fitoplankton akan meningkat.",
+            "Populasi paus biru akan menurun.",
+            "Anjing laut akan meningkat populasinya.",
+            "Ledakan populasi zooplankton.",
+            "Populasi penguin akan berkurang."
+          ],
+          "jawaban": 3,
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/tka-bio-jaring-makanan-zenius.png",
+          "pembahasan": "Kunci sumber: D. Ikan kecil memakan zooplankton; tekanan pemangsaan hilang sehingga zooplankton meledak. Efek ke pemangsa ikan kecil (penurunan) juga ada, tetapi opsi yang paling langsung & didukung jaring adalah ledakan zooplankton.",
+          "sumber": "Contoh Soal TKA Biologi SMA 2026 (1) — zenius.net (dilengkapi gambar jaring makanan)"
+        },
+        {
+          "soal": "Malaria diatasi dengan pemberian obat kina dan penyemprotan DDT. Hasil penelitian: Wilayah A (tanpa resistensi nyamuk) — kina 3 hari 50% sembuh, kina 5 hari 76%, kina 7 hari 87%, DDT 90% menurunkan infeksi. Wilayah B (dengan resistensi nyamuk) — kina 3 hari 48%, kina 5 hari 72%, kina 7 hari 82%, DDT hanya 60%. Berdasarkan data tersebut, tentukan apakah pernyataan berikut Tepat atau Tidak Tepat!",
+          "tipe": "tabel",
+          "kolom": ["Tepat", "Tidak Tepat"],
+          "baris": [
+            "Mengandalkan DDT di kedua wilayah, karena efektivitasnya paling tinggi dibandingkan obat kina.",
+            "Menggunakan DDT di wilayah A untuk hasil cepat, dan memperpanjang pemberian kina di wilayah B karena efektivitas DDT menurun akibat resistensi.",
+            "Mengutamakan kina 3 hari di wilayah A maupun B, karena tingkat kesembuhannya cukup tinggi dan tidak memerlukan waktu lama."
+          ],
+          "jawaban": [1, 0, 1],
+          "pembahasan": "Kunci resmi: A Tidak Tepat (di wilayah B DDT hanya 60% karena resistensi), B Tepat (strategi campuran sesuai data), C Tidak Tepat (kina 3 hari hanya 48–50% sembuh — jauh dari 'cukup tinggi').",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 1 (PGK Kategori) — Pusmendik Kemendikdasmen"
+        }
+      ]
+    },
+    {
+      "judul": "Sel & Metabolisme: Organel, Enzim, Energi",
+      "ringkasan": "Peta fungsi organel untuk soal analisis kasus kerusakan sel, katabolisme-anabolisme, serta sifat dan cara kerja enzim — lengkap dengan Cara Gemilang menghubungkan gejala ke organel.",
+      "estimasiMenit": 22,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Organel: Peta Fungsi untuk Soal Kasus" },
+        { "jenis": "paragraf", "teks": "Soal TKA jarang meminta hafalan nama organel; yang diuji adalah menalar AKIBAT kerusakan/p kekurangan organel. Karena itu hafalkan satu fungsi kunci per organel: mitokondria = pembangkit ATP (respirasi seluler); RE kasar = sintesis protein (ada ribosom); RE halus = sintesis lipid & detoksifikasi; ribosom = perakitan protein; lisosom = pencernaan intrasel; nukleus = penyimpanan informasi genetik." },
+        { "jenis": "langkah", "judul": "Cara Gemilang — gejala → organel (3 langkah)", "items": ["Terjemahkan gejala jadi proses yang gagal (mis. 'lemas, metabolisme lambat' = gagal produksi energi).", "Cocokkan proses dengan satu fungsi kunci organel di peta atas.", "Singkirkan opsi yang menyebut proses milik organel lain (jebakan pertukaran peran)."] },
+        { "jenis": "judul", "teks": "Metabolisme: Katabolisme, Anabolisme & Enzim" },
+        { "jenis": "paragraf", "teks": "Katabolisme membongkar molekul kompleks menjadi sederhana dan melepaskan energi (contoh: respirasi seluler); anabolisme menyusun molekul kompleks dan membutuhkan energi (contoh: fotosintesis, sintesis protein). Enzim adalah biokatalis protein: menurunkan energi aktivasi, bekerja spesifik (model kunci-anak kunci / induced fit), tidak ikut berubah atau habis, dan hanya mempercepat tercapainya kesetimbangan — tidak menggesernya." },
+        { "jenis": "rumus", "latex": "\\text{C}_6\\text{H}_{12}\\text{O}_6 + 6\\,\\text{O}_2 \\rightarrow 6\\,\\text{CO}_2 + 6\\,\\text{H}_2\\text{O} + \\text{energi (±36-38 ATP)}" },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — enzim dalam 4 kata", "teks": "Spesifik, menurunkan Ea, tak habis, tak menggeser kesetimbangan. Empat kata ini langsung menumbangkan hampir semua opsi jebakan soal sifat enzim." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Pada sebuah sel hewan, terdapat beberapa organel yang memiliki fungsi penting dalam mendukung kehidupan sel tersebut. Jika sebuah sel kekurangan mitokondria, maka manakah yang paling mungkin terjadi pada sel tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Kekurangan energi untuk menjalankan proses metabolisme yang vital.",
+            "Tidak mampu mencerna zat asing sehingga limbah menumpuk di sel.",
+            "Mengalami hambatan pada sintesis protein dan pengeluaran zat dari sel.",
+            "Terganggu dalam penyimpanan dan pengaturan informasi genetik.",
+            "Kehilangan kemampuan dalam menjaga bentuk dan fungsi sel."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Kunci resmi: A. Mitokondria = tempat respirasi seluler penghasil ATP; tanpanya sel kekurangan energi untuk proses vital. Opsi lain menunjuk lisosom (B), RE/ribosom/Golgi (C), nukleus (D), sitoskeleton (E).",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 8 — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Dalam sebuah penelitian mengenai penyakit pada sel, para ilmuwan menemukan bahwa pada beberapa sel tubuh pasien, retikulum endoplasma kasar (RE kasar) dan retikulum endoplasma halus (RE halus) mengalami kerusakan parah. Hal ini menghambat beberapa fungsi penting dalam sel tersebut. Berdasarkan peranan RE kasar dan RE halus, apa kemungkinan yang dapat terjadi pada sel-sel pasien tersebut? Pilih semua jawaban yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Produksi protein terganggu, mengakibatkan sel tidak dapat melakukan fungsi-fungsi penting yang membutuhkan protein.",
+            "Sintesis lipid terhambat, sehingga kemampuan sel untuk memproduksi membran dan melakukan detoksifikasi berkurang.",
+            "Sel mengalami kesulitan dalam menyimpan kalsium, yang berpotensi mempengaruhi aktivitas seluler yang bergantung pada kalsium, seperti kontraksi otot.",
+            "Penurunan produksi ATP yang signifikan terjadi, karena sel tidak dapat menghasilkan energi dengan efisien.",
+            "Gangguan dalam pengangkutan protein dan sintesis lipid menyebabkan berbagai proses seluler terganggu."
+          ],
+          "jawaban": [0, 1, 2, 4],
+          "pembahasan": "Kunci sumber: pernyataan 1, 2, 3, 5 benar. RE kasar = sintesis & pengangkutan protein; RE halus = sintesis lipid, detoksifikasi, penyimpanan kalsium. Produksi ATP (pernyataan 4) adalah tugas mitokondria, bukan RE.",
+          "sumber": "Contoh Soal TKA Biologi SMA 2026 (2, PGK-MCMA) — zenius.net"
+        },
+        {
+          "soal": "Enzim mempercepat reaksi metabolisme tanpa ikut terubah. Berikut pernyataan yang benar tentang sifat enzim adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "Enzim menaikkan energi aktivasi agar reaksi berlangsung lebih cepat.",
+            "Enzim bekerja spesifik seperti kunci dan anak kunci terhadap substratnya.",
+            "Enzim habis terpakai selama reaksi berlangsung sehingga sel terus memproduksinya.",
+            "Enzim menggeser kesetimbangan reaksi ke arah produk.",
+            "Enzim hanya dapat bekerja pada suhu 0 derajat Celsius."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Enzim MENURUNKAN energi aktivasi (A salah), bekerja spesifik (B benar), tidak habis (C salah), tidak menggeser kesetimbangan (D salah), dan bekerja optimal pada suhu tubuh — denaturasi di suhu ekstrem (E salah).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai kerangka TKA: sifat & cara kerja enzim)"
+        }
+      ]
+    },
+    {
+      "judul": "Sistem Tubuh Manusia: Sirkulasi, Respirasi, Ekskresi",
+      "ringkasan": "Keterkaitan struktur-fungsi tiga sistem transport/pertukaran zat, cara membaca tabel hasil lab seperti dokter (Cara Gemilang), dan hubungan antarsistem yang sering ditanyakan.",
+      "estimasiMenit": 25,
+      "urutan": 3,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Sirkulasi: Baca Tabel Lab Seperti Dokter" },
+        { "jenis": "paragraf", "teks": "Soal penalaran TKA sering memberi tabel hasil pemeriksaan darah lalu meminta kesimpulan. Komponen kunci: eritrosit/Hb/Ht (transport O2), leukosit & jenisnya (imun/infeksi), trombosit (pembekuan). Bandingkan HASIL dengan NILAI RUJUKAN dulu — selisihnya adalah petunjuk, bukan hiasan." },
+        { "jenis": "langkah", "judul": "Cara Gemilang — 3 langkah baca tabel lab", "items": ["Tandai baris yang di luar rujukan (naik/turun).", "Terjemahkan: leukosit+neutrofil naik = infeksi/inflamasi; Hb/Ht turun = anemia; trombosit turun = gangguan pembekuan.", "Cocokkan dengan gejala di cerita soal; buang opsi yang menyebut organ tak terkait (jebakan hati/jantung)."] },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — trio cepat darah", "teks": "Hb/Ht = truk oksigen (turun → pucat-lesu). Leukosit = pasukan (naik → perang/infeksi). Trombosit = tambal bocor (turun → mudah berdarah). Tiga baris ini menjawab 80% soal tabel darah TKA." },
+        { "jenis": "judul", "teks": "Respirasi & Ekskresi: Kenapa Terhubung?" },
+        { "jenis": "paragraf", "teks": "Respirasi menukar O2 dan CO2; kecepatannya mengikuti kebutuhan energi sel (olahraga → respirasi seluler naik → O2 dibutuhkan lebih banyak dan CO2 lebih banyak dibuang). Ekskresi membuang zat sisa: ginjal (urea, urin), hati (bilirubin dari perombakan eritrosit tua), kulit (keringat), paru-paru (CO2 dan uap air — BUKAN oksigen). Keterkaitan antarsistem: misalnya ginjal mengatur tekanan darah yang dipompa jantung, paru menyediakan O2 untuk respirasi seluler." },
+        { "jenis": "callout", "tipe": "peringatan", "judul": "Jebakan klasik", "teks": "'Paru-paru mengeluarkan oksigen' = salah. Zat sisa respirasi yang dibuang adalah CO2 dan uap air; oksigen justru diambil." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Kecepatan pernapasan orang yang sedang berolahraga lebih tinggi dibandingkan dengan orang yang sedang duduk. Perbedaan kecepatan pernapasan ini disebabkan oleh ....",
+          "tipe": "pg",
+          "opsi": [
+            "orang yang sedang berolahraga membutuhkan energi lebih banyak daripada orang yang sedang duduk. Energi dihasilkan dari penguraian zat makanan dengan bantuan oksigen yang masuk melalui pernafasan",
+            "orang yang sedang berolahraga membutuhkan oksigen lebih sedikit dari pada orang yang sedang duduk. Energi dihasilkan dari penguraian zat makanan dengan bantuan oksigen dan menghasilkan karbondioksida lebih sedikit",
+            "orang yang sedang berolahraga membutuhkan energi lebih banyak dari pada orang yang sedang duduk. Energi dihasilkan dari penguraian zat makanan dengan bantuan karbondioksida",
+            "orang yang berolah raga membutuhkan oksigen lebih sedikit dari pada orang yang duduk, energi dihasilkan dari penguraian zat makanan dengan bantuan oksigen yang masuk melalui pernapasan",
+            "orang yang sedang berolahraga membutuhkan oksigen lebih sedikit dari pada orang yang sedang duduk, energi dihasilkan dari penguraian zat makanan dengan bantuan oksigen dan menghasilkan karbondioksida lebih banyak"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Kunci resmi: A. Olahraga menaikkan kebutuhan energi; energi dari penguraian zat makanan yang MEMBUTUHKAN oksigen, sehingga frekuensi napas meningkat. Opsi lain salah arah (oksigen 'lebih sedikit' atau 'dibantu karbondioksida').",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 5 — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Amir pucat, lesu, demam, dan sering mimisan. Hasil lab: Trombosit 279 ribu/µL (rujukan 150–440); Hematokrit 32,6% (35–47); Hemoglobin 12,4 g/dL (11,7–15,5); Eritrosit 4,18 juta/µL (3,8–5,2); Leukosit 14,92 ribu/µL (3,6–11,0); Neutrofil 76,5% (50–70); Limfosit 6% (24–40); Monosit 6,4% (2–8); Eosinofil 0,9% (2–4). Manakah pernyataan yang tepat terkait hasil uji laboratorium klinis darah Amir tersebut? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Amir mengalami gangguan fungsi jantung sehingga sel darah putih diproduksi dalam jumlah tinggi.",
+            "Amir mengalami kondisi produksi sel darah putih melebihi batas normal akibat gangguan pada sumsum tulang belakang.",
+            "Amir mengalami gangguan fungsi hati sehingga perombakan sel darah putih berlangsung lambat.",
+            "Terjadi penyumbatan pada pembuluh darah dan terjadi hemolisis (pecah) sehingga sel darah putih aktif diproduksi.",
+            "Terjadi penghancuran sel-sel darah merah dalam hati yang terlalu cepat dan banyak sehingga beberapa jenis leukosit jumlahnya lebih banyak."
+          ],
+          "jawaban": [1],
+          "pembahasan": "Kunci resmi: B. Leukosit 14,92 (di atas rujukan) + neutrofil naik + limfosit turun = produksi sel darah putih berlebihan (gangguan sumsum tulang). Hematokrit turun menjelaskan pucat/lesu; trombosit normal-normal saja menyingkirkan cerita pembekuan. Opsi jantung/hati/hemolisis tidak didukung tabel.",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 9 (PGK-MCMA) — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Tentukan apakah pernyataan berikut Benar atau Salah terkait organ dan zat sisa ekskresi manusia.",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "Ginjal menyaring darah dan menghasilkan urin yang mengandung urea.",
+            "Hati merombak sel darah merah tua dan menghasilkan bilirubin sebagai zat ekskresi.",
+            "Paru-paru mengeluarkan zat sisa berupa oksigen dan uap air."
+          ],
+          "jawaban": [0, 0, 1],
+          "pembahasan": "Ginjal → urin + urea (benar). Hati → bilirubin dari perombakan eritrosit tua (benar). Paru-paru membuang CO2 dan uap air, bukan oksigen (salah).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai kerangka TKA: sistem ekskresi)"
+        }
+      ]
+    },
+    {
+      "judul": "Imun, Koordinasi & Reproduksi",
+      "ringkasan": "Mekanisme pertahanan tubuh dan logika vaksin, peta saraf vs hormon dengan pasangan hormon cepat, serta struktur-fungsi sistem reproduksi termasuk cara kerja kontrasepsi IUD.",
+      "estimasiMenit": 24,
+      "urutan": 4,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Sistem Imun: Lapis Pertahanan & Logika Vaksin" },
+        { "jenis": "paragraf", "teks": "Pertahanan tubuh berlapis: non-spesifik (kulit, mukosa, fagosit, peradangan) lalu spesifik (limfosit B menghasilkan antibodi, limfosit T membunuh sel terinfeksi). Vaksin = melatih lapisan spesifik: antigen dilemahkan/dimatikan memperkenalkan 'foto pelaku' sehingga sel memori terbentuk; saat patogen asli datang, respons sekunder lebih cepat dan kuat — inilah yang terlihat sebagai penurunan kasus setelah vaksinasi massal." },
+        { "jenis": "judul", "teks": "Koordinasi: Saraf vs Hormon" },
+        { "jenis": "paragraf", "teks": "Sistem saraf bekerja cepat lewat impuls listrik; hormon bekerja lebih lambat lewat darah tetapi efeknya lama dan luas. Kelenjar tiroid menghasilkan tiroksin yang mengatur metabolisme tubuh; kalsitonin (juga dari tiroid) MENURUNKAN kalsium darah, sedangkan parathormon menaikkannya." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — pasangan hormon cepat", "teks": "Tiroksin = mesin metabolisme. Kalsitonin = 'tone down' kalsium (turun); parathormon = naikkan. Insulin turunkan glukosa; adrenalin = mode lawan-lari. Hafalkan arah panahnya, bukan definisinya." },
+        { "jenis": "judul", "teks": "Reproduksi & Kontrasepsi: Cara Kerja IUD" },
+        { "jenis": "paragraf", "teks": "IUD (spiral) dipasang di rongga rahim: ion tembaga/hormonnya menurunkan kemampuan sperma membuahi sel telur dan mengganggu pergerakan sperma, serta membuat dinding rahim kurang sesuai bagi implantasi embrio. IUD BUKAN penghenti ovulasi (itu kerja kontrasepsi hormonal pil/suntik) dan BUKAN pemandulan permanen — kesuburan kembali setelah dilepas." },
+        { "jenis": "callout", "tipe": "peringatan", "judul": "Jebakan opsi IUD", "teks": "Opsi 'mencegah pelepasan sel telur' dan 'mematikan kesuburan permanen' adalah dua pengecoh tetap di soal kontrasepsi IUD. IUD bekerja di rahim & pada sperma, bukan di ovarium." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Kelenjar tiroid menghasilkan tiroksin yang berperan ....",
+          "tipe": "pg",
+          "opsi": [
+            "mengatur metabolisme tubuh",
+            "menurunkan kadar kalsium dalam darah",
+            "meningkatkan kadar kalsium dalam darah",
+            "merangsang lepasnya kalsium dari tulang keras",
+            "mengatur metabolisme mineral dan glukosa"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Kunci resmi: A. Tiroksin mengatur metabolisme tubuh. Penurun kalsium = kalsitonin; penaik = parathormon.",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 6 — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Seorang wanita datang ke dokter spesialis kandungan berniat memasang IUD (Intra Uterine Device). Pemasangan IUD merupakan cara kontrasepsi jangka panjang. IUD berupa alat kecil terdiri dari bahan plastik yang lentur yang dimasukkan ke dalam rongga rahim, yang harus diganti jika sudah digunakan selama periode tertentu. Tujuan penggunaan IUD ini adalah .... Pilih semua jawaban benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Mencegah terjadinya fertilisasi dengan mengganggu pergerakan sperma atau mencegah sperma mencapai sel telur.",
+            "Menghentikan kesuburan pada seorang wanita secara permanen sehingga tidak dapat hamil lagi.",
+            "Menghambat proses implantasi hasil pembuahan dengan menciptakan kondisi rahim yang kurang sesuai bagi embrio.",
+            "Menghalangi proses pembuahan dengan mencegah pelepasan sel telur di saluran reproduksi wanita.",
+            "Menurunkan kemampuan sperma dalam membuahi sel telur melalui pengaruh ion tembaga atau hormon pada alat tersebut."
+          ],
+          "jawaban": [0, 2, 4],
+          "pembahasan": "Kunci resmi: A, C, E. IUD mengganggu sperma/fertilisasi, membuat rahim tidak cocok untuk implantasi, dan ion tembaga/hormonnya menurunkan daya buahi sperma. Bukan pemandulan permanen (B) dan tidak mencegah ovulasi (D).",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 3 (PGK-MCMA) — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Hormon yang berperan mengatur metabolisme tubuh dan hormon yang menurunkan kadar kalsium darah, berturut-turut adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "tiroksin dan kalsitonin",
+            "tiroksin dan parathormon",
+            "insulin dan kalsitonin",
+            "adrenalin dan kalsitonin",
+            "tiroksin dan adrenalin"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Tiroksin = pengatur metabolisme; kalsitonin = menurunkan kalsium darah (parathormon sebaliknya).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai kerangka TKA: sistem koordinasi)"
+        }
+      ]
+    },
+    {
+      "judul": "Keterampilan Proses & Strategi Menaklukkan TKA",
+      "ringkasan": "Urutan metode ilmiah yang tidak boleh dibolak-balik, cara mengolah data tabel/grafik, dan strategi mengerjakan tiga level kognitif TKA (pemahaman–penerapan–penalaran).",
+      "estimasiMenit": 15,
+      "urutan": 5,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Metode Ilmiah: Urutan yang Tidak Boleh Ditolak" },
+        { "jenis": "langkah", "judul": "Urutan baku", "items": ["Observasi masalah", "Rumuskan masalah (batasan jelas)", "Kajian informasi/teori", "Hipotesis", "Rancang & lakukan penyelidikan", "Olah data → analisis → kesimpulan", "Komunikasi hasil"] },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — jebakan 'langsung tindakan'", "teks": "Pada soal 'langkah pertama', opsi yang berisi aksi lapangan (pendataan, sosialisasi, pemberian bantuan) hampir selalu salah bila masalahnya belum dirumuskan/dikaji. Langkah pertama yang aman: kumpulkan informasi rujukan untuk mengidentifikasi masalah, atau rumuskan masalah bila konteks sudah kaya data." },
+        { "jenis": "judul", "teks": "Membaca Tabel & Grafik: Ambil Kesimpulan, Jangan Menghayal" },
+        { "jenis": "paragraf", "teks": "Soal penalaran memberi stimulus tabel/grafik lalu meminta pernyataan yang 'logis dan didukung data'. Aturan emas: kesimpulan harus tertaut langsung dengan angka/tren yang terlihat; pernyataan yang benar secara teori tetapi tidak tampak di data tetap dianggap tidak didukung. Bandingkan sebelum-sesudah, wilayah A-B, atau naik-turun tren, lalu pilih yang selisihnya nyata." },
+        { "jenis": "callout", "tipe": "tips", "judul": "Tiga level kognitif, tiga kecepatan", "teks": "Pemahaman = jawab dari konsep (cepat). Penerapan = substitusi konsep ke kasus (sedang). Penalaran = WAJIB baca stimulus dulu (pelan, coret selisihnya). Bagi waktumu sesuai level ini." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Masalah gizi di Indonesia saat ini masih sangat kompleks, tidak hanya masalah kekurangan gizi, masalah kelebihan gizi juga merupakan persoalan yang harus ditangani secara serius. Pada anak-anak kondisi stunting (pendek) sering ditemukan disebabkan karena asupan gizi yang tidak sesuai dengan kebutuhan gizinya dalam waktu yang lama. Hal itu terjadi sejak di dalam kandungan dan akan terlihat pada anak berusia 2 tahun, mengakibatkan perkembangan fisik maupun kognitif tidak maksimal, mudah terserang penyakit, serta berdaya saing rendah. Langkah pertama untuk memecahkan permasalahan tersebut menggunakan metode ilmiah yang tepat adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "mengumpulkan informasi dari berbagai referensi terkait pengaruh faktor gizi terhadap pertumbuhan sebagai dasar untuk mengidentifikasi permasalahan",
+            "merumuskan masalah dengan memperjelas batasan permasalahan yang akan dipecahkan",
+            "melakukan pendataan bagi keluarga yang memiliki anak rendah gizi atau bergizi buruk",
+            "mengadakan sosialisasi program pentingnya makanan bergizi bagi ibu dan anak bagi masyarakat",
+            "pemberian makanan bergizi seimbang bagi seluruh anak balita dan usia anak sekolah dasar"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Kunci resmi: A. Sebelum merumuskan/bertindak, kumpulkan informasi rujukan untuk mengidentifikasi masalah dengan tepat. Opsi C–E adalah aksi lapangan yang prematur; B menyusul setelah kajian.",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 4 — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Manakah kegiatan yang termasuk keterampilan 'memproses, menganalisis data dan informasi' dalam penyelidikan ilmiah? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Membuat tabel dan grafik dari hasil pengukuran.",
+            "Membandingkan hasil kelompok perlakuan dengan kelompok kontrol.",
+            "Memilih alat dan bahan sebelum percobaan dimulai.",
+            "Menyimpulkan tren dari garis regresi data.",
+            "Menyalin prosedur percobaan dari buku teks."
+          ],
+          "jawaban": [0, 1, 3],
+          "pembahasan": "Mengolah data = mentabel/grafik, membandingkan, menyimpulkan tren (A, B, D). Memilih alat-bahan = merencanakan penyelidikan (C); menyalin prosedur bukan analisis (E).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai matriks keterampilan proses TKA)"
+        }
+      ]
+    }
+  ]
+}
