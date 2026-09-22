@@ -372,30 +372,128 @@ export default function EditBabV2() {
                     <textarea style={S.inp} rows={2} value={k.soal}
                       placeholder="Soal (dukung LaTeX $...$)"
                       onChange={(e) => setKuis(i, { soal: e.target.value })} />
-                    {k.opsi.map((op, j) => (
-                      <div key={j} style={S.opsiRow}>
-                        <input type="radio" name={`kuis${i}`} checked={k.jawaban === j}
-                          onChange={() => setKuis(i, { jawaban: j })}
-                          title="Tandai sebagai jawaban benar" />
-                        <input style={S.inp} value={op}
-                          placeholder={`Opsi ${String.fromCharCode(65 + j)}`}
+                    <select style={S.inp} value={k.tipe || 'pg'}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const patch = { tipe: v };
+                        if (v === 'pg') patch.jawaban = 0;
+                        if (v === 'pgMulti') patch.jawaban = Array.isArray(k.jawaban) ? k.jawaban : [];
+                        if (v === 'tabel') {
+                          patch.kolom = k.kolom || ['Benar', 'Salah'];
+                          patch.baris = k.baris || [''];
+                          patch.jawaban = Array.isArray(k.jawaban) ? k.jawaban : [];
+                        }
+                        setKuis(i, patch);
+                      }}>
+                      <option value="pg">PG — satu jawaban</option>
+                      <option value="pgMulti">PGK-MCMA — centang beberapa benar</option>
+                      <option value="tabel">PGK kategori — tabel per baris</option>
+                    </select>
+                    {(k.tipe || 'pg') === 'tabel' ? (
+                      <>
+                        <input style={S.inp}
+                          value={(k.kolom || ['Benar', 'Salah']).join(', ')}
+                          placeholder="Nama kolom, pisahkan koma (Mungkin, Tidak Mungkin)"
                           onChange={(e) => setKuis(i, {
-                            opsi: k.opsi.map((o, x) => (x === j ? e.target.value : o)),
+                            kolom: e.target.value.split(',')
+                              .map((x) => x.trim()).filter(Boolean),
                           })} />
-                      </div>
-                    ))}
+                        {(k.baris || []).map((bar, r) => (
+                          <div key={r} style={S.opsiRow}>
+                            <select style={{ ...S.inp, width: 140, flexShrink: 0 }}
+                              value={Array.isArray(k.jawaban) && k.jawaban[r] != null
+                                ? k.jawaban[r] : 0}
+                              onChange={(e) => {
+                                const arr = Array.isArray(k.jawaban)
+                                  ? [...k.jawaban] : [];
+                                arr[r] = Number(e.target.value);
+                                setKuis(i, { jawaban: arr });
+                              }}>
+                              {(k.kolom || ['Benar', 'Salah']).map((kk, c) => (
+                                <option key={c} value={c}>{kk}</option>
+                              ))}
+                            </select>
+                            <input style={S.inp} value={bar}
+                              placeholder={`Pernyataan baris ${r + 1}`}
+                              onChange={(e) => setKuis(i, {
+                                baris: (k.baris || []).map((x, y) => (y === r ? e.target.value : x)),
+                              })} />
+                            <button type="button" style={S.iconBtn}
+                              onClick={() => setKuis(i, {
+                                baris: (k.baris || []).filter((_, y) => y !== r),
+                              })}>
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        <button type="button" style={S.btnKecil}
+                          onClick={() => setKuis(i, { baris: [...(k.baris || []), ''] })}>
+                          + baris pernyataan
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {(k.opsi || []).map((op, j) => (
+                          <div key={j} style={S.opsiRow}>
+                            {(k.tipe || 'pg') === 'pgMulti' ? (
+                              <input type="checkbox"
+                                checked={Array.isArray(k.jawaban) && k.jawaban.includes(j)}
+                                onChange={(e) => {
+                                  const arr = Array.isArray(k.jawaban)
+                                    ? [...k.jawaban] : [];
+                                  const at = arr.indexOf(j);
+                                  if (e.target.checked && at < 0) arr.push(j);
+                                  if (!e.target.checked && at >= 0) arr.splice(at, 1);
+                                  arr.sort((a, b) => a - b);
+                                  setKuis(i, { jawaban: arr });
+                                }}
+                                title="Centang jika ini jawaban benar" />
+                            ) : (
+                              <input type="radio" name={`kuis${i}`} checked={k.jawaban === j}
+                                onChange={() => setKuis(i, { jawaban: j })}
+                                title="Tandai sebagai jawaban benar" />
+                            )}
+                            <input style={S.inp} value={op}
+                              placeholder={`Opsi ${String.fromCharCode(65 + j)}`}
+                              onChange={(e) => setKuis(i, {
+                                opsi: (k.opsi || []).map((o, x) => (x === j ? e.target.value : o)),
+                              })} />
+                          </div>
+                        ))}
+                        <button type="button" style={S.btnKecil}
+                          onClick={() => setKuis(i, { opsi: [...(k.opsi || []), ''] })}>
+                          + opsi
+                        </button>
+                      </>
+                    )}
                     <input style={S.inp} value={k.pembahasan || ''}
                       placeholder="Pembahasan"
                       onChange={(e) => setKuis(i, { pembahasan: e.target.value })} />
                   </div>
                 ))}
-                <button type="button" style={S.btnAdd}
-                  onClick={() => set('ujiPemahaman', [
-                    ...(bab.ujiPemahaman || []),
-                    JSON.parse(JSON.stringify(KUIS_KOSONG)),
-                  ])}>
-                  + soal pilihan ganda
-                </button>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button type="button" style={S.btnAdd}
+                    onClick={() => set('ujiPemahaman', [
+                      ...(bab.ujiPemahaman || []),
+                      JSON.parse(JSON.stringify(KUIS_KOSONG)),
+                    ])}>
+                    + soal PG
+                  </button>
+                  <button type="button" style={S.btnAdd}
+                    onClick={() => set('ujiPemahaman', [
+                      ...(bab.ujiPemahaman || []),
+                      { soal: '', tipe: 'pgMulti', opsi: ['', '', '', ''], jawaban: [], pembahasan: '' },
+                    ])}>
+                    + PGK-MCMA (centang)
+                  </button>
+                  <button type="button" style={S.btnAdd}
+                    onClick={() => set('ujiPemahaman', [
+                      ...(bab.ujiPemahaman || []),
+                      { soal: '', tipe: 'tabel', kolom: ['Benar', 'Salah'], baris: [''], jawaban: [], pembahasan: '' },
+                    ])}>
+                    + tabel kategori
+                  </button>
+                </div>
 
                 <div style={S.footBtns}>
                   {babId && (
