@@ -16,6 +16,7 @@ import {
   muatMateriDanBab, simpanBab, hapusBab,
 } from '../../../services/materiV2Service';
 import { uploadElearningFile } from '../../../services/uploadService';
+import { listBankFiles, formatUkuran } from '../../../services/bankFileService';
 import {
   T, kartuDasar, halamanDasar, tombolPill, lingkaranNomor,
 } from '../../student/belajar/tema';
@@ -47,7 +48,22 @@ export default function EditBabV2() {
   const [babId, setBabId] = useState(null);
   const [pesan, setPesan] = useState('');
   const [uploading, setUploading] = useState('');
+  const [bankOpen, setBankOpen] = useState(null); // {jenis, field, onUrl}
+  const [bankList, setBankList] = useState([]);
+  const [bankLoading, setBankLoading] = useState(false);
   const fileRefs = useRef({});
+
+  const bukaBank = async (konfig) => {
+    setBankOpen(konfig);
+    setBankLoading(true);
+    setBankList(await listBankFiles());
+    setBankLoading(false);
+  };
+  const pilihDariBank = (f) => {
+    if (bankOpen?.onUrl) bankOpen.onUrl(f.url);
+    else if (bankOpen?.field) set(bankOpen.field, f.url);
+    setBankOpen(null);
+  };
 
   const muat = async () => {
     const { materi: m, babList: bl } = await muatMateriDanBab(materiId);
@@ -138,7 +154,7 @@ export default function EditBabV2() {
     }
   };
 
-  const FileRow = ({ field, label, accept, ikon, value, onUrl }) => {
+  const FileRow = ({ field, label, accept, ikon, value, onUrl, jenisBank }) => {
     const urlNow = value !== undefined ? value : bab[field];
     return (
     <div style={S.fileRow}>
@@ -159,6 +175,10 @@ export default function EditBabV2() {
         onClick={() => fileRefs.current[field]?.click()}>
         <Upload size={12} />
         {uploading === field ? 'Mengunggah…' : 'Upload'}
+      </button>
+      <button type="button" style={S.btnKecil}
+        onClick={() => bukaBank({ jenis: jenisBank, field: onUrl ? null : field, onUrl })}>
+        🏦 Bank
       </button>
       {urlNow && (
         <a href={urlNow} target="_blank" rel="noreferrer" style={S.btnKecilLink}>
@@ -248,11 +268,14 @@ export default function EditBabV2() {
 
                 <div style={S.seksiJudul}>📁 File Pendukung (Supabase)</div>
                 <FileRow field="slideUrl" label="Slide PPT (.pptx/.ppt)"
-                  accept=".ppt,.pptx" ikon={<Presentation size={15} />} />
+                  accept=".ppt,.pptx" ikon={<Presentation size={15} />}
+                  jenisBank="slide" />
                 <FileRow field="pdfUrl" label="Modul PDF (.pdf)"
-                  accept="application/pdf" ikon={<FileText size={15} />} />
+                  accept="application/pdf" ikon={<FileText size={15} />}
+                  jenisBank="pdf" />
                 <FileRow field="videoUrl" label="Video (.mp4/.webm)"
-                  accept="video/*" ikon={<Video size={15} />} />
+                  accept="video/*" ikon={<Video size={15} />}
+                  jenisBank="video" />
 
                 <div style={S.seksiJudul}>
                   🧩 Bagian Materi ({(bab.sections || []).length})
@@ -273,7 +296,7 @@ export default function EditBabV2() {
                       <>
                         <FileRow field={`img-${i}`} label="Gambar"
                           accept="image/*" ikon={<IconGambar size={15} />}
-                          value={sec.url}
+                          value={sec.url} jenisBank="gambar"
                           onUrl={(u) => setSec(i, { url: u })} />
                         <input style={S.inp} value={sec.url}
                           placeholder="atau tempel URL gambar"
@@ -392,6 +415,48 @@ export default function EditBabV2() {
           )}
         </main>
       </div>
+
+      {/* ---------- modal pilih dari bank ---------- */}
+      {bankOpen && (
+        <div style={S.modalLatar}>
+          <div style={S.modal}>
+            <div style={S.modalHead}>
+              <span style={{ fontWeight: 800, fontSize: 14, color: T.judul }}>
+                🏦 Pilih dari Bank Materi
+              </span>
+              <button type="button" style={S.tutup}
+                onClick={() => setBankOpen(null)}>✕</button>
+            </div>
+            {bankLoading ? (
+              <div style={S.modalKosong}>Memuat bank...</div>
+            ) : (
+              <div style={S.modalList}>
+                {bankList
+                  .filter((f) => f.jenis === bankOpen.jenis)
+                  .map((f) => (
+                    <button key={f.path} type="button" style={S.modalItem}
+                      onClick={() => pilihDariBank(f)}>
+                      <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                        <span style={S.modalNama}>{f.name}</span>
+                        <span style={S.modalMeta}>
+                          {formatUkuran(f.ukuran)}
+                          {f.updated ? ` • ${String(f.updated).slice(0, 10)}` : ''}
+                        </span>
+                      </span>
+                      <span style={S.modalPilih}>Pakai</span>
+                    </button>
+                  ))}
+                {bankList.filter((f) => f.jenis === bankOpen.jenis).length === 0 && (
+                  <div style={S.modalKosong}>
+                    Belum ada file jenis ini di bank — upload dulu lewat
+                    halaman Bank Materi atau tombol Upload di samping.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -497,4 +562,37 @@ const S = {
   },
   opsiRow: { display: 'flex', gap: 8, alignItems: 'center' },
   footBtns: { display: 'flex', gap: 9, alignItems: 'center', marginTop: 16 },
+  modalLatar: {
+    position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(15,48,87,.45)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18,
+  },
+  modal: {
+    background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520,
+    maxHeight: '70vh', display: 'flex', flexDirection: 'column',
+    boxShadow: '0 18px 50px rgba(11,36,64,.35)',
+  },
+  modalHead: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '13px 16px', borderBottom: `1px solid ${T.garis}`,
+  },
+  tutup: {
+    background: T.latar, border: `1px solid ${T.garis}`, borderRadius: 8,
+    color: T.samar, width: 28, height: 28, cursor: 'pointer', fontFamily: 'inherit',
+  },
+  modalList: { overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 },
+  modalKosong: { color: T.samar, fontSize: 12.5, textAlign: 'center', padding: 22, lineHeight: 1.6 },
+  modalItem: {
+    display: 'flex', gap: 10, alignItems: 'center', background: T.latar,
+    border: `1px solid ${T.garisLembut}`, borderRadius: 11,
+    padding: '9px 11px', cursor: 'pointer', fontFamily: 'inherit',
+  },
+  modalNama: {
+    display: 'block', fontWeight: 700, fontSize: 12.5, color: T.judul,
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  },
+  modalMeta: { display: 'block', fontSize: 10.5, color: T.samar, marginTop: 2 },
+  modalPilih: {
+    background: T.biru, color: '#fff', borderRadius: 8,
+    padding: '5px 11px', fontSize: 11, fontWeight: 800, flexShrink: 0,
+  },
 };

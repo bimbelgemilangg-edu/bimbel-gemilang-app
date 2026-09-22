@@ -162,6 +162,8 @@ import PanggungPresentasi from './pages/teacher/presentasi/PanggungPresentasi';
 // FASE 4: manajer materi v2 (admin)
 import ManageMateriV2 from './pages/admin/materi/ManageMateriV2';
 import EditBabV2 from './pages/admin/materi/EditBabV2';
+// FASE 4.2: bank materi (gudang file pusat admin)
+import BankMateriV2 from './pages/admin/materi/BankMateriV2';
 // FASE 4.1: PPT versi guru sendiri
 import PptVersiGuru from './pages/teacher/presentasi/PptVersiGuru';
 import StudentModuleView from './pages/student/StudentModuleView';
@@ -448,6 +450,11 @@ function App() {
         <Route
           path="/admin/materi-v2/:materiId"
           element={<AdminRoute><EditBabV2 /></AdminRoute>}
+        />
+        {/* FASE 4.2: bank materi (gudang file pusat) */}
+        <Route
+          path="/admin/bank-materi"
+          element={<AdminRoute><BankMateriV2 /></AdminRoute>}
         />
         {/* 🔥 v5: IMPOR MODUL MASSAL (PDF -> bab) */}
         <Route path="/admin/buku/impor" element={<AdminRoute><ImporModul /></AdminRoute>} />

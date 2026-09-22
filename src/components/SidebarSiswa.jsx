@@ -50,7 +50,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         // MATERI v2 (mockup Gemilang Biru) -- route /siswa/belajar.
         // Menu lama (E-Learning, Buku Digital via dashboard) tetap ada
         // sampai switch Fase 5; lihat docs/RENCANA-ROMBAK-MATERI.md.
-        { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0' },
+        { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0', badge: 'BARU' },
         { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
         // 🔥 Menu ini sebelumnya TIDAK PERNAH ADA sejak awal, padahal
@@ -198,6 +198,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
                       {item.icon}
                     </span>
                     <span style={styles.menuLabel}>{item.label}</span>
+                    {item.badge && <span style={styles.menuBadge}>{item.badge}</span>}
                   </div>
                 );
               })}
@@ -393,6 +394,11 @@ const styles = {
     flexShrink: 0
   },
   menuLabel: { flex: 1 },
+    menuBadge: {
+      marginLeft: 'auto', background: '#1E9BF0', color: '#fff',
+      borderRadius: 999, padding: '1px 7px', fontSize: 8.5,
+      fontWeight: 800, letterSpacing: 0.4,
+    },
   
   footer: {
     display: 'flex',
