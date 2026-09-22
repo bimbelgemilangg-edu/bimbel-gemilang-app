@@ -1,0 +1,130 @@
+{
+  "materi": {
+    "judul": "Statistika & Peluang — Kelas 12 (Kurikulum Terbaru)",
+    "mapel": "Matematika",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#0E7AD4",
+    "emoji": "📊",
+    "deskripsi": "Konten ORISINAL Gemilang sesuai Capaian Pembelajaran Fase F (elemen Data & Peluang): penjelasan ditulis ulang oleh sistem, rumus diketik rapi (bukan gambar), diagram dari sumber berlisensi terkredit, soal ujian asli berlabel sumber + Gemilang Drill, serta kotak Rumus Cepat Gemilang di tiap bab.",
+    "urutan": 1,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "Statistika: Meringkas Dunia dengan Angka",
+      "ringkasan": "Dari data mentah menjadi keputusan: ukuran pemusatan, letak, dan penyebaran untuk data tunggal maupun berkelompok, plus cara membaca histogram.",
+      "estimasiMenit": 25,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Mengapa statistika? (Sesuai CP Fase F)" },
+        { "jenis": "paragraf", "teks": "Pada elemen Data dan Peluang Fase F, kamu diharapkan mampu menyajikan, menganalisis, dan menafsirkan data. Statistika adalah ilmu mengumpulkan, menyajikan, dan menyimpulkan data. Data mentah (misalnya nilai 40 siswa) tidak bercerita apa-apa sampai kita ringkas: seberapa tinggi umumnya (pemusatan), di mana posisi tertentu (letak), dan seberapa bervariasi (penyebaran)." },
+        { "jenis": "judul", "teks": "Ukuran Pemusatan Data Tunggal" },
+        { "jenis": "paragraf", "teks": "Mean (rataan) adalah jumlah seluruh nilai dibagi banyak data. Modus adalah nilai yang paling sering muncul. Median adalah nilai tengah setelah data diurutkan dari terkecil ke terbesar." },
+        { "jenis": "rumus", "latex": "\\bar{x} = \\frac{\\sum_{i=1}^{n} x_i}{n}" },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Rumus Cepat Gemilang — Rataan Gabungan", "teks": "Dua kelompok digabung? Jangan gabungkan datanya, gabungkan rataannya: $\\bar{x}_{gab} = \\frac{n_1\\bar{x}_1 + n_2\\bar{x}_2}{n_1 + n_2}$. Contoh: 20 anak rata-rata 80 dan 30 anak rata-rata 90 → gabungan = (20·80 + 30·90)/50 = 86." },
+        { "jenis": "judul", "teks": "Menyajikan Data: Tabel Frekuensi & Histogram" },
+        { "jenis": "paragraf", "teks": "Data berkelompok disajikan dalam tabel distribusi frekuensi (kelas interval + frekuensi) dan digambarkan sebagai histogram: batang-batang yang menempel, tiap batang mewakili satu kelas. Perhatikan contoh histogram berikut: sumbu datar = nilai ujian, sumbu tegak = frekuensi." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/histogram-smartstat.png", "keterangan": "Contoh histogram distribusi frekuensi. Sumber: smartstat.info (dipakai dengan kredit)." },
+        { "jenis": "callout", "tipe": "tips", "judul": "Cara baca cepat", "teks": "Tinggi batang = frekuensi kelas. Kelas dengan batang tertinggi = kelas modus. Bentuk histogram (miring kiri/kanan/simetris) langsung memberitahu hubungan mean-median-modus." },
+        { "jenis": "judul", "teks": "Data Berkelompok: Mean, Modus, Median" },
+        { "jenis": "paragraf", "teks": "Untuk data berkelompok dipakai tepi kelas (Tb = batas bawah − 0,5), panjang kelas c, frekuensi kelas f, dan frekuensi kumulatif sebelum kelas F." },
+        { "jenis": "rumus", "latex": "\\bar{x} = \\sum \\frac{f_i \\cdot x_i}{\\sum f_i}" },
+        { "jenis": "rumus", "latex": "M_o = T_b + \\left(\\frac{d_1}{d_1 + d_2}\\right)c" },
+        { "jenis": "rumus", "latex": "Me = T_b + \\left(\\frac{\\frac{1}{2}n - F}{f}\\right)c" },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Rumus Cepat Gemilang — d1 & d2 tanpa hafal", "teks": "Pada rumus modus: d1 = frekuensi kelas modus − frekuensi kelas SEBELUMnya; d2 = frekuensi kelas modus − frekuensi kelas SESUDAHnya. Modus selalu 'ditarik' ke sisi tetangga yang lebih tinggi frekuensinya." },
+        { "jenis": "judul", "teks": "Ukuran Penyebaran (Simpangan)" },
+        { "jenis": "paragraf", "teks": "Penyebaran mengukur seberapa bervariasi data: jangkauan (J), jangkauan kuartil (H), simpangan kuartil (Qd), ragam (S²), dan simpangan baku (S)." },
+        { "jenis": "rumus", "latex": "J = x_{max} - x_{min}, \\quad H = Q_3 - Q_1, \\quad Q_d = \\tfrac{1}{2}(Q_3 - Q_1)" },
+        { "jenis": "rumus", "latex": "S^2 = \\frac{\\sum (x_i - \\bar{x})^2}{n}, \\quad S = \\sqrt{S^2}" },
+        { "jenis": "callout", "tipe": "info", "judul": "Intuisi", "teks": "Dua kelas bisa punya rataan sama tetapi 'kepribadian' berbeda: yang simpangan bakunya kecil berarti nilainya merata; yang besar berarti ada jurang antara siswa cepat dan lambat." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Rataan dari 8 bilangan adalah 50. Setelah ditambah satu bilangan, rataan menjadi 52. Bilangan yang ditambahkan adalah ...",
+          "tipe": "pg",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": ["58", "62", "66", "68", "70"],
+          "jawaban": 3,
+          "pembahasan": "Jumlah awal = 8 × 50 = 400. Jumlah baru = 9 × 52 = 468. Bilangan yang ditambahkan = 468 − 400 = 68."
+        },
+        {
+          "soal": "Modus dari data 4, 5, 5, 6, 7, 7, 7, 8, 9 adalah ...",
+          "tipe": "pg",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": ["5", "6", "7", "8", "9"],
+          "jawaban": 2,
+          "pembahasan": "Nilai yang paling sering muncul adalah 7 (tiga kali)."
+        },
+        {
+          "soal": "Ragam (varians) dari data 1, 2, 3, 4, 5 adalah ...",
+          "tipe": "pg",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": ["1", "√2", "2", "2,5", "4"],
+          "jawaban": 2,
+          "pembahasan": "Rataan = 3. Simpangan kuadrat: 4+1+0+1+4 = 10. Ragam = 10/5 = 2."
+        }
+      ]
+    },
+    {
+      "judul": "Peluang: Menghitung Kemungkinan dengan Pasti",
+      "ringkasan": "Kaidah pencacahan, permutasi, kombinasi, ruang sampel, dan peluang kejadian majemuk — ditutup soal asli AKM Kemdikbud.",
+      "estimasiMenit": 28,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Kaidah Pencacahan Dasar" },
+        { "jenis": "paragraf", "teks": "Jika suatu pilihan dapat dilakukan dengan n1 cara, pilihan berikutnya n2 cara, dan seterusnya, maka total cara seluruhnya adalah hasil kalinya. Contoh: 3 kemeja × 2 celana × 2 sepatu = 12 penampilan berbeda." },
+        { "jenis": "rumus", "latex": "n_{total} = n_1 \\times n_2 \\times \\dots \\times n_k" },
+        { "jenis": "judul", "teks": "Permutasi vs Kombinasi" },
+        { "jenis": "paragraf", "teks": "Permutasi MEMPERHATIKAN urutan (juara, susunan pengurus, antrian). Kombinasi TIDAK memperhatikan urutan (memilih tim, mengambil bola sekaligus)." },
+        { "jenis": "rumus", "latex": "P(n,r) = \\frac{n!}{(n-r)!}, \\qquad C(n,r) = \\frac{n!}{(n-r)!\\,r!}" },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Rumus Cepat Gemilang — Tes 3 detik", "teks": "Tanya: 'kalau posisinya dibolak-balik, jadi cerita berbeda tidak?' Jika YA → permutasi. Jika TIDAK → kombinasi. Contoh: ketua-sekretaris = beda orang beda cerita → permutasi; memilih 2 wakil = sama saja → kombinasi." },
+        { "jenis": "judul", "teks": "Ruang Sampel & Peluang Suatu Kejadian" },
+        { "jenis": "paragraf", "teks": "Ruang sampel S = semua hasil yang mungkin; kejadian A = bagian dari S yang diinginkan. Peluang A = banyak anggota A dibagi banyak anggota S. Wajib hafal: satu dadu n(S)=6; dua dadu n(S)=36; satu koin n(S)=2; satu set kartu n(S)=52." },
+        { "jenis": "rumus", "latex": "P(A) = \\frac{n(A)}{n(S)}, \\qquad 0 \\le P(A) \\le 1" },
+        { "jenis": "judul", "teks": "Kejadian Majemuk" },
+        { "jenis": "rumus", "latex": "P(A \\cup B) = P(A) + P(B) - P(A \\cap B)" },
+        { "jenis": "paragraf", "teks": "Saling lepas: tidak mungkin terjadi bersama sehingga P(A ∩ B) = 0. Saling bebas: terjadinya A tidak mempengaruhi B sehingga P(A ∩ B) = P(A) × P(B)." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Rumus Cepat Gemilang — Trik Komplemen", "teks": "Kata 'minimal satu' atau 'paling sedikit satu' → pakai komplemen: $P(\\text{minimal satu}) = 1 - P(\\text{tidak sama sekali})$. Contoh: minimal satu angka dari 3 koin = 1 − P(GGG) = 1 − 1/8 = 7/8." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Amel mengunduh bagan pertandingan sepak bola piala dunia dari babak perempat final. Berdasarkan survei, peluang Perancis menang pada perempat final adalah 0,7; untuk babak semifinal dan final semua tim berpeluang sama 50%. Peluang Perancis menjadi juara dunia adalah ...",
+          "tipe": "pg",
+          "sumber": "AKM Numerasi SMA — Pusmenjar Kemdikbud (via Zenius)",
+          "opsi": ["0,125", "0,175", "0,343", "0,95", "1"],
+          "jawaban": 1,
+          "pembahasan": "Juara = menang 3 babak beruntun: 0,7 × 0,5 × 0,5 = 0,175. (Soal resmi AKM Kemdikbud.)"
+        },
+        {
+          "soal": "Dua dadu dilempar undi bersama satu kali. Peluang muncul jumlah kedua mata dadu sama dengan 8 adalah ...",
+          "tipe": "pg",
+          "sumber": "UN SMA — soal ujian nasional tahun 2015",
+          "opsi": ["5/36", "6/36", "7/36", "8/36", "9/36"],
+          "jawaban": 0,
+          "pembahasan": "Pasangan berjumlah 8: (2,6),(3,5),(4,4),(5,3),(6,2) = 5 cara. P = 5/36."
+        },
+        {
+          "soal": "Dari 5 orang siswa akan dipilih 3 orang sebagai tim lomba. Banyak cara pemilihan tim tersebut adalah ...",
+          "tipe": "pg",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": ["6", "10", "15", "20", "60"],
+          "jawaban": 1,
+          "pembahasan": "Tidak memperhatikan urutan → kombinasi: C(5,3) = 10 cara."
+        },
+        {
+          "soal": "Tiga koin dilempar bersamaan satu kali. Peluang muncul minimal satu angka adalah ...",
+          "tipe": "pg",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": ["1/8", "3/8", "4/8", "7/8", "1"],
+          "jawaban": 3,
+          "pembahasan": "Trik komplemen Gemilang: 1 − P(tidak ada angka) = 1 − 1/8 = 7/8."
+        }
+      ]
+    }
+  ]
+}
