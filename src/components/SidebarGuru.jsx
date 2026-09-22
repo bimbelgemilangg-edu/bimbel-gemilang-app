@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, User, BookOpen, Edit,
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
-  Database, GraduationCap,
+  Database, GraduationCap, Projector,
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -31,6 +31,9 @@ const SidebarGuru = () => {
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20} /> },
     { name: 'E-Learning', path: '/guru/modul', icon: <BookOpen size={20} /> },
     { name: 'Persiapan Buku', path: '/guru/buku', icon: <GraduationCap size={20} /> },
+    // MATERI v2 (Fase 3): panggung presentasi sinkron guru-siswa.
+    // Menu ini pengecualian tercatat -- lihat docs/RENCANA-ROMBAK-MATERI.md.
+    { name: 'Presentasi Materi', path: '/guru/presentasi', icon: <Projector size={20} /> },
     // Ruang kerja PRIVAT guru: bank referensi buku paket + generate alat bantu
     // belajar yang grounded ke buku yang diupload. Tidak tampil ke siswa.
     { name: 'Alat Bantu Guru', path: '/guru/alat-bantu', icon: <GraduationCap size={20} /> },

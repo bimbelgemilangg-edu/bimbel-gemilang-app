@@ -21,14 +21,18 @@ import {
   TriangleAlert, Info, Image as IconGambar, RotateCcw, Search, Bell,
   PlayCircle, FileText, MessageCircle, XCircle, BookOpen, Star,
 } from 'lucide-react';
-import { MathText, MathBlock } from '../../../components/MathText';
+import { MathText } from '../../../components/MathText';
+import IsiSections from '../../../components/belajar/IsiSections';
+import {
+  cariSesiAktif, pantauSesi, tandaiPeserta, kirimJawabanLive,
+} from '../../../services/sesiPresentasiService';
 import {
   muatMateriDanBab, muatProgressSiswa, simpanProgressBab,
   simpanTerakhir, persenBab, paksaFlushTulisan,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, chip, lingkaranNomor, barLuar, barDalam,
-  tombolPill, kotakRumus, kotakTips, kotakSukses, halamanDasar,
+  tombolPill, kotakTips, kotakSukses, halamanDasar,
   lencanaSeksi,
 } from './tema';
 
@@ -66,6 +70,56 @@ export default function BelajarReader() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   const tampilPanel = lebar >= 1100;
+
+  // ============ SESI PRESENTASI GURU (Fase 3) ============
+  const [sesi, setSesi] = useState(null);
+  const [abaikanIkuti, setAbaikanIkuti] = useState(false);
+  const pesertaDitandai = useRef('');
+
+  useEffect(() => {
+    let unsub = null;
+    let hidup = true;
+    (async () => {
+      const s = await cariSesiAktif();
+      if (!hidup) return;
+      if (s && s.materiId === materiId) {
+        setSesi(s);
+        unsub = pantauSesi(s.id, (sn) => setSesi(sn));
+      } else {
+        setSesi(null);
+      }
+    })();
+    return () => { hidup = false; if (unsub) unsub(); };
+  }, [materiId]);
+
+  const sesiAktif = !!sesi && sesi.status === 'aktif';
+  const sesiBabIni = sesiAktif && sesi.babId === babId;
+  const ikutAktif = sesiBabIni && sesi.mode === 'mengikuti' && !abaikanIkuti;
+
+  // tandai peserta sekali per sesi (dok kecil, tulis murah)
+  useEffect(() => {
+    if (sesiBabIni && sesi?.id && pesertaDitandai.current !== sesi.id) {
+      pesertaDitandai.current = sesi.id;
+      tandaiPeserta(sesi.id).catch(() => {});
+    }
+  }, [sesiBabIni, sesi]);
+
+  // Tab saat mengikuti sesi DITURUNKAN dari posisi guru (bukan setState).
+  const tabAktifNow = ikutAktif && sesi?.posisi?.jenis === 'kuis'
+    ? 'latihan'
+    : ikutAktif ? 'materi' : tab;
+
+  // layar siswa mengikuti posisi guru: scroll halus ke bagian terkait
+  useEffect(() => {
+    if (!ikutAktif || !sesi?.posisi) return undefined;
+    const p = sesi.posisi;
+    if (p.jenis !== 'section') return undefined;
+    const t = setTimeout(() => {
+      const el = document.getElementById(`sec-${p.index}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 90);
+    return () => clearTimeout(t);
+  }, [ikutAktif, sesi]);
 
   useEffect(() => {
     (async () => {
@@ -208,6 +262,38 @@ export default function BelajarReader() {
         </div>
       </header>
 
+      {/* ============ BANNER SESI PRESENTASI (Fase 3) ============ */}
+      {sesiAktif && !sesiBabIni && (
+        <div style={S.bannerSesi}>
+          <span>
+            📡 <b>{sesi.guruNama}</b> sedang menjelaskan bab lain
+            di materi ini.
+          </span>
+          <button type="button" style={S.bannerBtn}
+            onClick={() => navigate(`/siswa/belajar/${materiId}/${sesi.babId}`)}>
+            Gabung sesi
+          </button>
+        </div>
+      )}
+      {sesiBabIni && sesi.mode === 'mengikuti' && (
+        <div style={S.bannerSesi}>
+          <span>
+            📡 {ikutAktif
+              ? <>Mengikuti sesi <b>{sesi.guruNama}</b> — layarmu mengikuti layar guru.</>
+              : <>Kamu melepas sesi; guru masih menyajikan.</>}
+          </span>
+          <button type="button" style={S.bannerBtn}
+            onClick={() => setAbaikanIkuti((v) => !v)}>
+            {ikutAktif ? 'Lepas' : 'Ikuti lagi'}
+          </button>
+        </div>
+      )}
+      {sesiBabIni && sesi.mode === 'bebas' && (
+        <div style={{ ...S.bannerSesi, background: T.amberLatar, borderColor: T.amberGaris, color: T.amberTeks }}>
+          <span>✋ Mode bebas — guru memberi waktu membaca sendiri.</span>
+        </div>
+      )}
+
       <div style={S.badan}>
         {/* ================= KOLOM UTAMA ================= */}
         <main style={S.utama}>
@@ -244,12 +330,12 @@ export default function BelajarReader() {
               { id: 'diskusi', label: 'Diskusi', ikon: <MessageCircle size={14} />, soon: true },
             ].map((t) => (
               <button key={t.id} type="button" role="tab"
-                aria-selected={tab === t.id}
+                aria-selected={tabAktifNow === t.id}
                 disabled={t.soon}
                 onClick={() => setTab(t.id)}
                 style={{
                   ...S.tab,
-                  ...(tab === t.id ? S.tabAktif : null),
+                  ...(tabAktifNow === t.id ? S.tabAktif : null),
                   ...(t.soon ? S.tabSoon : null),
                 }}>
                 {t.ikon} {t.label}
@@ -259,7 +345,7 @@ export default function BelajarReader() {
           </div>
 
           {/* ---------- TAB MATERI ---------- */}
-          {tab === 'materi' && (
+          {tabAktifNow === 'materi' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}>{idxBab + 1}</span>
@@ -281,7 +367,7 @@ export default function BelajarReader() {
           )}
 
           {/* ---------- TAB RINGKASAN ---------- */}
-          {tab === 'ringkasan' && (
+          {tabAktifNow === 'ringkasan' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><FileText size={14} /></span>
@@ -311,7 +397,7 @@ export default function BelajarReader() {
           )}
 
           {/* ---------- TAB VIDEO ---------- */}
-          {tab === 'video' && (
+          {tabAktifNow === 'video' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><PlayCircle size={14} /></span>
@@ -337,7 +423,7 @@ export default function BelajarReader() {
           )}
 
           {/* ---------- TAB LATIHAN SOAL ---------- */}
-          {tab === 'latihan' && (
+          {tabAktifNow === 'latihan' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><CheckCircle2 size={14} /></span>
@@ -355,6 +441,15 @@ export default function BelajarReader() {
                     Belum ada soal pemantapan untuk bagian ini.
                   </p>
                 </div>
+              ) : ikutAktif && sesi.posisi?.jenis === 'kuis'
+                && kuis[Number(sesi.posisi.index)] ? (
+                <LiveKuis
+                  key={Number(sesi.posisi.index)}
+                  sessionId={sesi.id}
+                  soal={kuis[Number(sesi.posisi.index)]}
+                  idx={Number(sesi.posisi.index)}
+                  total={kuis.length}
+                />
               ) : (
                 <PanelKuis
                   key={`${babId}-${sesiKuis}`}
@@ -452,98 +547,6 @@ export default function BelajarReader() {
 
       {toast && <div style={S.toast}>{toast}</div>}
     </div>
-  );
-}
-
-// ---------------- isi sections materi ----------------
-function IsiSections({ sections }) {
-  return (
-    <>
-      {sections.map((sec, i) => {
-        const jenis = String(sec?.jenis || 'paragraf');
-        if (jenis === 'judul') {
-          const sebelum = sections
-            .slice(0, i)
-            .filter((s) => String(s.jenis || 'paragraf') === 'judul').length;
-          const label = String.fromCharCode(65 + sebelum);
-          return (
-            <h3 key={i} style={S.subJudul}>
-              <span style={S.subHuruf}>{label}.</span> <MathText text={sec.teks} />
-            </h3>
-          );
-        }
-        if (jenis === 'paragraf') {
-          return <p key={i} style={S.paragraf}><MathText text={sec.teks} /></p>;
-        }
-        if (jenis === 'rumus') {
-          return (
-            <div key={i} style={kotakRumus}>
-              <MathBlock text={sec.latex || sec.teks || ''} />
-            </div>
-          );
-        }
-        if (jenis === 'callout') {
-          const tipe = String(sec.tipe || 'info');
-          const gaya = tipe === 'tips' ? kotakTips
-            : tipe === 'peringatan'
-              ? { ...kotakTips, background: T.merahLatar, borderColor: T.merahGaris, color: '#B91C1C' }
-              : { ...kotakTips, background: T.kotakBiru, borderColor: T.kotakBiruGaris, color: T.biruDalam };
-          const ikon = tipe === 'tips' ? <Lightbulb size={14} />
-            : tipe === 'peringatan' ? <TriangleAlert size={14} /> : <Info size={14} />;
-          return (
-            <div key={i} style={gaya}>
-              {ikon}
-              <span>
-                {sec.judul ? <b>{sec.judul}: </b> : null}
-                <MathText text={sec.teks} />
-              </span>
-            </div>
-          );
-        }
-        if (jenis === 'contoh') {
-          return (
-            <div key={i} style={S.contohBox}>
-              <div style={S.contohJudul}>
-                <CheckCircle2 size={14} /> {sec.judul || 'Contoh'}
-              </div>
-              <p style={{ ...S.paragraf, margin: 0 }}><MathText text={sec.teks} /></p>
-              {sec.pembahasan && (
-                <div style={kotakSukses}>
-                  <Lightbulb size={14} /> <span>{sec.pembahasan}</span>
-                </div>
-              )}
-            </div>
-          );
-        }
-        if (jenis === 'gambar') {
-          return (
-            <figure key={i} style={{ margin: '0 0 16px' }}>
-              {sec.url
-                ? <img src={sec.url} alt={sec.keterangan || ''} style={S.gambar} loading="lazy" />
-                : (
-                  <div style={S.gambarKosong}>
-                    <IconGambar size={22} /> Gambar menyusul
-                  </div>
-                )}
-              {sec.keterangan && <figcaption style={S.gambarKet}>{sec.keterangan}</figcaption>}
-            </figure>
-          );
-        }
-        if (jenis === 'langkah') {
-          return (
-            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '0 0 16px' }}>
-              {(sec.items || []).map((it, j) => (
-                <div key={j} style={S.langkahItem}>
-                  <span style={S.langkahNomor}>{j + 1}</span>
-                  <span style={{ flex: 1 }}><MathText text={it} /></span>
-                </div>
-              ))}
-            </div>
-          );
-        }
-        return <p key={i} style={S.paragraf}><MathText text={sec.teks} /></p>;
-      })}
-    </>
   );
 }
 
@@ -661,6 +664,45 @@ function PanelKuis({
         ) : (
           <span style={{ width: 36 }} />
         )}
+      </div>
+    </>
+  );
+}
+
+// ---------------- kuis live bersama guru (Fase 3) ----------------
+function LiveKuis({ sessionId, soal, idx, total }) {
+  const [pilihan, setPilihan] = useState(null);
+  const [terkirim, setTerkirim] = useState(false);
+  const kirim = (j) => {
+    if (terkirim) return;
+    setPilihan(j);
+    setTerkirim(true);
+    kirimJawabanLive(sessionId, idx, j).catch(() => setTerkirim(false));
+  };
+  return (
+    <>
+      <div style={S.liveHead}>
+        📡 Latihan bersama • soal {idx + 1} / {total}
+      </div>
+      <div style={S.soalTeks}><MathText text={soal.soal} /></div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {(soal.opsi || []).map((op, j) => (
+          <button key={j} type="button"
+            style={{
+              ...S.opsi,
+              ...(pilihan === j ? S.opsiDipilihLive : null),
+            }}
+            disabled={terkirim}
+            onClick={() => kirim(j)}>
+            <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+            <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+          </button>
+        ))}
+      </div>
+      <div style={{ ...S.kotakInfoLive, ...(terkirim ? null : { opacity: .75 }) }}>
+        {terkirim
+          ? '✅ Jawabanmu terkirim ke guru — pembahasan muncul setelah sesi.'
+          : 'Pilih jawabanmu; hasilnya langsung terlihat di layar guru.'}
       </div>
     </>
   );
@@ -870,5 +912,28 @@ const S = {
     background: '#0B2440', color: '#fff', borderRadius: 999,
     padding: '10px 18px', fontSize: 12.5, fontWeight: 700, zIndex: 60,
     boxShadow: '0 8px 24px rgba(11,36,64,.35)', whiteSpace: 'nowrap',
+  },
+  bannerSesi: {
+    display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    color: T.biruDalam, padding: '9px 16px', fontSize: 12.5, fontWeight: 600,
+    borderBottom: 'none',
+  },
+  bannerBtn: {
+    marginLeft: 'auto', background: T.biru, color: '#fff', border: 'none',
+    borderRadius: 9, padding: '6px 13px', fontSize: 11.5, fontWeight: 800,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
+  liveHead: {
+    display: 'inline-flex', alignItems: 'center', gap: 7,
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    color: T.biruDalam, borderRadius: 999, padding: '6px 13px',
+    fontSize: 11.5, fontWeight: 800, marginBottom: 12,
+  },
+  opsiDipilihLive: { borderColor: T.biru, background: T.kotakBiru },
+  kotakInfoLive: {
+    marginTop: 12, background: T.hijauLatar, border: `1px solid ${T.hijauGaris}`,
+    color: T.hijauTeks, borderRadius: 10, padding: '9px 12px',
+    fontSize: 12, fontWeight: 700,
   },
 };

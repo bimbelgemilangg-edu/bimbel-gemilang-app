@@ -156,6 +156,9 @@ import StudentElearning from './pages/student/StudentElearning';
 import BelajarHome from './pages/student/belajar/BelajarHome';
 import BelajarDaftarIsi from './pages/student/belajar/BelajarDaftarIsi';
 import BelajarReader from './pages/student/belajar/BelajarReader';
+// FASE 3: panggung presentasi guru (sinkron proyektor-siswa)
+import DaftarPresentasi from './pages/teacher/presentasi/DaftarPresentasi';
+import PanggungPresentasi from './pages/teacher/presentasi/PanggungPresentasi';
 import StudentModuleView from './pages/student/StudentModuleView';
 import StudentQuizView from './pages/student/StudentQuizView';
 import StudentSurveyView from './pages/student/StudentSurveyView';
@@ -566,6 +569,17 @@ function App() {
         <Route path="/guru/cek-tugas" element={<GuruPage><CekTugasSiswa /></GuruPage>} />
         <Route path="/guru/alat-bantu" element={<GuruPage><TeacherLearningAid /></GuruPage>} />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
+        {/* MATERI v2 FASE 3 -- panggung presentasi sinkron.
+            Panggung full-screen (tanpa layout) supaya bersih
+            di proyektor; daftar pakai layout guru. */}
+        <Route
+          path="/guru/presentasi"
+          element={<GuruPage><DaftarPresentasi /></GuruPage>}
+        />
+        <Route
+          path="/guru/presentasi/:materiId/:babId"
+          element={<GuruRoute><PanggungPresentasi /></GuruRoute>}
+        />
         <Route path="/siswa/sesi-live" element={<SiswaRoute><LiveSessionStudent /></SiswaRoute>} />
 
         {/* ====================================================

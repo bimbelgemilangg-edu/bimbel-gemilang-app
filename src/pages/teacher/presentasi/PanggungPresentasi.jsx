@@ -1,0 +1,325 @@
+// src/pages/teacher/presentasi/PanggungPresentasi.jsx
+// ============================================================
+// FASE 3 -- PANGGUNG PRESENTASI GURU (route /guru/presentasi/:materiId/:babId)
+// Layar proyektor = layar siswa (sinkron realtime via `sesi_presentasi`).
+// Alur pertemuan: Mulai Sesi -> bedah bagian per bagian (siswa ikut
+// scroll) -> Latihan bersama (soal live, statistik jawaban realtime)
+// -> Mode bebas -> Akhiri Sesi.
+// ============================================================
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  ArrowLeft, Play, Square, ChevronLeft, ChevronRight, Users,
+  Radio, Eye, EyeOff, Hand, Magnet, CheckCircle2,
+} from 'lucide-react';
+import { muatMateriDanBab } from '../../../services/materiV2Service';
+import {
+  cariSesiAktif, pantauSesi, pantauPeserta, pantauJawaban,
+  mulaiSesi, akhiriSesi, setPosisiSesi, setModeSesi,
+} from '../../../services/sesiPresentasiService';
+import IsiSections from '../../../components/belajar/IsiSections';
+import { MathText } from '../../../components/MathText';
+import { T, kartuDasar, halamanDasar, tombolPill } from '../../student/belajar/tema';
+
+export default function PanggungPresentasi() {
+  const { materiId, babId } = useParams();
+  const navigate = useNavigate();
+
+  const [materi, setMateri] = useState(null);
+  const [bab, setBab] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [sesi, setSesi] = useState(null);
+  const [peserta, setPeserta] = useState([]);
+  const [jawaban, setJawaban] = useState([]);
+  const [tampilKunci, setTampilKunci] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { materi: m, babList } = await muatMateriDanBab(materiId);
+      setMateri(m);
+      setBab(babList.find((b) => b.id === babId) || null);
+      const aktif = await cariSesiAktif();
+      if (aktif && aktif.babId === babId) setSesi(aktif);
+      setLoading(false);
+    })();
+  }, [materiId, babId]);
+
+  // listener realtime hanya saat sesi aktif di bab ini
+  useEffect(() => {
+    if (!sesi?.id || sesi.status !== 'aktif') return undefined;
+    const u1 = pantauSesi(sesi.id, (sn) => setSesi(sn));
+    const u2 = pantauPeserta(sesi.id, setPeserta);
+    const u3 = pantauJawaban(sesi.id, setJawaban);
+    return () => { u1(); u2(); u3(); };
+  }, [sesi?.id, sesi?.status]);
+
+  const sections = useMemo(() => bab?.sections || [], [bab]);
+  const kuis = useMemo(() => bab?.ujiPemahaman || [], [bab]);
+  const posisi = sesi?.posisi || { jenis: 'section', index: 0 };
+  const idx = Number(posisi.index) || 0;
+  const sesiAktif = sesi?.status === 'aktif';
+
+  const geser = (jenis, indexBaru) => {
+    if (!sesi?.id) return;
+    setPosisiSesi(sesi.id, { jenis, index: indexBaru }).catch(() => {});
+  };
+
+  // statistik jawaban live untuk soal saat ini
+  const statSoal = useMemo(() => {
+    if (posisi.jenis !== 'kuis') return null;
+    const masuk = jawaban.filter((j) => Number(j.soalIndex) === idx);
+    const perOpsi = (kuis[idx]?.opsi || []).map((_, j) =>
+      masuk.filter((m2) => Number(m2.pilihan) === j).length);
+    return { responden: masuk.length, perOpsi };
+  }, [jawaban, posisi.jenis, idx, kuis]);
+
+  if (loading) {
+    return <div style={halamanDasar}><div style={S.kosong}>Memuat panggung...</div></div>;
+  }
+  if (!bab || !materi) {
+    return (
+      <div style={halamanDasar}>
+        <div style={S.kosong}>
+          Bab tidak ditemukan.
+          <div style={{ marginTop: 12 }}>
+            <button type="button" style={tombolPill('primer')}
+              onClick={() => navigate('/guru/presentasi')}>
+              <ArrowLeft size={15} /> Ke daftar presentasi
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const offsetHuruf = posisi.jenis === 'section'
+    ? sections.slice(0, idx).filter(
+      (s) => String(s.jenis || 'paragraf') === 'judul').length
+    : 0;
+
+  return (
+    <div style={halamanDasar}>
+      {/* ---------- header panggung ---------- */}
+      <header style={S.topbar}>
+        <button type="button" style={S.kembali}
+          onClick={() => navigate('/guru/presentasi')}>
+          <ArrowLeft size={16} /> Daftar
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={S.judulTop}>{bab.judul}</div>
+          <div style={S.metaTop}>{materi.judul} • {materi.mapel}</div>
+        </div>
+        <span style={sesiAktif ? S.chipLive : S.chipOff}>
+          <Radio size={12} /> {sesiAktif ? 'SESI AKTIF' : 'BELUM MULAI'}
+        </span>
+        <span style={S.chipPeserta}>
+          <Users size={13} /> {peserta.length}
+        </span>
+      </header>
+
+      {/* ---------- area proyektor ---------- */}
+      <main style={S.panggung}>
+        <div style={S.layar}>
+          {posisi.jenis === 'section' ? (
+            sections[idx] ? (
+              <div style={S.zoomWrap}>
+                <div style={S.penanda}>
+                  Bagian {idx + 1} / {sections.length}
+                </div>
+                <IsiSections
+                  sections={sections.slice(idx, idx + 1)}
+                  offsetHuruf={offsetHuruf}
+                />
+              </div>
+            ) : (
+              <div style={S.kosong}>Tidak ada bagian untuk ditampilkan.</div>
+            )
+          ) : (
+            kuis[idx] && (
+              <div style={S.zoomWrap}>
+                <div style={S.penanda}>
+                  Latihan bersama • soal {idx + 1} / {kuis.length}
+                </div>
+                <div style={S.soalBesar}><MathText text={kuis[idx].soal} /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {(kuis[idx].opsi || []).map((op, j) => {
+                    const n = statSoal?.perOpsi[j] || 0;
+                    const total = statSoal?.responden || 0;
+                    const persen = total ? Math.round((n / total) * 100) : 0;
+                    const kunci = tampilKunci && j === kuis[idx].jawaban;
+                    return (
+                      <div key={j} style={{
+                        ...S.opsiProyektor,
+                        ...(kunci ? S.opsiProyektorKunci : null),
+                      }}>
+                        <span style={S.opsiHurufBesar}>
+                          {String.fromCharCode(65 + j)}.
+                        </span>
+                        <span style={{ flex: 1 }}><MathText text={op} /></span>
+                        <span style={S.statChip}>
+                          {n} ({persen}%)
+                        </span>
+                        {kunci && <CheckCircle2 size={18} color={T.hijau} />}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={S.statFoot}>
+                  {statSoal?.responden || 0} siswa menjawab •
+                  {' '}{peserta.length} peserta sesi
+                </div>
+              </div>
+            )
+          )}
+        </div>
+      </main>
+
+      {/* ---------- bar kontrol guru ---------- */}
+      <footer style={S.kontrol}>
+        {!sesiAktif ? (
+          <button type="button" style={tombolPill('primer')}
+            onClick={async () => {
+              const id = await mulaiSesi(materiId, babId);
+              setSesi({
+                id, materiId, babId, status: 'aktif', mode: 'mengikuti',
+                posisi: { jenis: 'section', index: 0 },
+              });
+            }}>
+            <Play size={15} /> Mulai Sesi — sinkronkan layar siswa
+          </button>
+        ) : (
+          <>
+            <button type="button" style={tombolPill('putih')}
+              disabled={posisi.jenis !== 'kuis' && idx === 0}
+              onClick={() => posisi.jenis === 'kuis'
+                ? geser('section', sections.length - 1)
+                : geser('section', Math.max(0, idx - 1))}>
+              <ChevronLeft size={15} />
+            </button>
+            {posisi.jenis === 'section' ? (
+              <button type="button" style={tombolPill('primer')}
+                disabled={idx >= sections.length - 1}
+                onClick={() => geser('section', idx + 1)}>
+                Bagian berikutnya <ChevronRight size={15} />
+              </button>
+            ) : (
+              <button type="button" style={tombolPill('primer')}
+                disabled={idx >= kuis.length - 1}
+                onClick={() => { setTampilKunci(false); geser('kuis', idx + 1); }}>
+                Soal berikutnya <ChevronRight size={15} />
+              </button>
+            )}
+            <span style={S.pemisah} />
+            {posisi.jenis === 'section' ? (
+              <button type="button" style={tombolPill('putih')}
+                disabled={kuis.length === 0}
+                onClick={() => { setTampilKunci(false); geser('kuis', 0); }}>
+                🎯 Latihan soal 1
+              </button>
+            ) : (
+              <button type="button" style={tombolPill('putih')}
+                onClick={() => geser('section', idx > 0 ? idx : 0)}>
+                📖 Kembali ke bagian {Math.min(idx + 1, sections.length) || 1}
+              </button>
+            )}
+            {posisi.jenis === 'kuis' && (
+              <button type="button" style={tombolPill('putih')}
+                onClick={() => setTampilKunci((v) => !v)}>
+                {tampilKunci ? <EyeOff size={14} /> : <Eye size={14} />}
+                {tampilKunci ? ' Sembunyikan kunci' : ' Tampilkan kunci'}
+              </button>
+            )}
+            <span style={S.pemisah} />
+            <button type="button"
+              style={tombolPill(sesi.mode === 'mengikuti' ? 'primer' : 'putih')}
+              onClick={() => setModeSesi(sesi.id,
+                sesi.mode === 'mengikuti' ? 'bebas' : 'mengikuti')}>
+              {sesi.mode === 'mengikuti'
+                ? <><Magnet size={14} /> Mode mengikuti</>
+                : <><Hand size={14} /> Mode bebas</>}
+            </button>
+            <button type="button"
+              style={{ ...tombolPill('putih'), color: '#B91C1C', borderColor: T.merahGaris }}
+              onClick={async () => {
+                await akhiriSesi(sesi.id);
+                setSesi((s) => (s ? { ...s, status: 'selesai' } : s));
+              }}>
+              <Square size={13} /> Akhiri
+            </button>
+          </>
+        )}
+      </footer>
+    </div>
+  );
+}
+
+const S = {
+  kosong: {
+    textAlign: 'center', color: T.samar, ...kartuDasar,
+    padding: '40px 20px', fontSize: 13, margin: '60px 16px',
+  },
+  topbar: {
+    position: 'sticky', top: 0, zIndex: 30, display: 'flex', gap: 12,
+    alignItems: 'center', padding: '10px 18px',
+    background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(10px)',
+    borderBottom: `1px solid ${T.garis}`,
+  },
+  kembali: {
+    display: 'inline-flex', gap: 6, alignItems: 'center', background: 'none',
+    border: 'none', color: T.biruGelap, fontWeight: 800, fontSize: 12.5,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
+  judulTop: {
+    fontWeight: 800, fontSize: 14, color: T.judul,
+    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+  },
+  metaTop: { fontSize: 10.5, color: T.samar },
+  chipLive: {
+    display: 'inline-flex', gap: 5, alignItems: 'center',
+    background: T.hijauLatar, color: T.hijauTeks, border: `1px solid ${T.hijauGaris}`,
+    borderRadius: 999, padding: '5px 11px', fontSize: 10.5, fontWeight: 800,
+  },
+  chipOff: {
+    display: 'inline-flex', gap: 5, alignItems: 'center',
+    background: T.latar, color: T.samar, border: `1px solid ${T.garis}`,
+    borderRadius: 999, padding: '5px 11px', fontSize: 10.5, fontWeight: 800,
+  },
+  chipPeserta: {
+    display: 'inline-flex', gap: 5, alignItems: 'center',
+    background: T.kotakBiru, color: T.biruDalam, border: `1px solid ${T.kotakBiruGaris}`,
+    borderRadius: 999, padding: '5px 11px', fontSize: 11, fontWeight: 800,
+  },
+  panggung: { padding: '18px 20px 110px', maxWidth: 1050, margin: '0 auto' },
+  layar: { ...kartuDasar, padding: '26px 30px', minHeight: '62vh' },
+  zoomWrap: { zoom: 1.28 },
+  penanda: {
+    display: 'inline-block', background: T.kotakBiru,
+    border: `1px solid ${T.kotakBiruGaris}`, color: T.biruDalam,
+    borderRadius: 999, padding: '5px 13px', fontSize: 11.5,
+    fontWeight: 800, marginBottom: 14,
+  },
+  soalBesar: {
+    fontSize: 17, fontWeight: 700, color: T.judul,
+    lineHeight: 1.6, marginBottom: 16,
+  },
+  opsiProyektor: {
+    display: 'flex', gap: 12, alignItems: 'center',
+    border: `1.5px solid ${T.garis}`, borderRadius: 13,
+    padding: '12px 15px', fontSize: 14.5, color: T.teks, background: '#fff',
+  },
+  opsiProyektorKunci: { borderColor: T.hijau, background: T.hijauLatar },
+  opsiHurufBesar: { fontWeight: 800, color: T.samar },
+  statChip: {
+    background: T.latar, border: `1px solid ${T.garis}`, borderRadius: 999,
+    padding: '3px 10px', fontSize: 11.5, fontWeight: 800, color: T.biruGelap,
+  },
+  statFoot: { marginTop: 14, fontSize: 12, color: T.samar, fontWeight: 700 },
+  kontrol: {
+    position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 40,
+    display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap',
+    justifyContent: 'center', padding: '12px 16px',
+    background: 'rgba(255,255,255,.95)', backdropFilter: 'blur(10px)',
+    borderTop: `1px solid ${T.garis}`,
+  },
+  pemisah: { width: 1, height: 26, background: T.garis, margin: '0 4px' },
+};
