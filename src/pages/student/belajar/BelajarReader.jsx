@@ -20,11 +20,13 @@ import {
   ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, Lightbulb,
   TriangleAlert, Info, Image as IconGambar, RotateCcw, Search, Bell,
   PlayCircle, FileText, MessageCircle, XCircle, BookOpen, Star,
+  Presentation,
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
 import IsiSections from '../../../components/belajar/IsiSections';
 import {
   cariSesiAktif, pantauSesi, tandaiPeserta, kirimJawabanLive,
+  antreMaju, batalAntre, pantauAntreanSaya,
 } from '../../../services/sesiPresentasiService';
 import {
   muatMateriDanBab, muatProgressSiswa, simpanProgressBab,
@@ -73,6 +75,7 @@ export default function BelajarReader() {
 
   // ============ SESI PRESENTASI GURU (Fase 3) ============
   const [sesi, setSesi] = useState(null);
+  const [antreanSaya, setAntreanSaya] = useState(null);
   const [abaikanIkuti, setAbaikanIkuti] = useState(false);
   const pesertaDitandai = useRef('');
 
@@ -104,10 +107,17 @@ export default function BelajarReader() {
     }
   }, [sesiBabIni, sesi]);
 
+  // langganan antrean "coba maju" saya (dok kecil, hanya saat sesi)
+  useEffect(() => {
+    if (!sesiBabIni || !sesi?.id || !studentId) return undefined;
+    return pantauAntreanSaya(sesi.id, studentId, setAntreanSaya);
+  }, [sesiBabIni, sesi, studentId]);
+
   // Tab saat mengikuti sesi DITURUNKAN dari posisi guru (bukan setState).
-  const tabAktifNow = ikutAktif && sesi?.posisi?.jenis === 'kuis'
-    ? 'latihan'
-    : ikutAktif ? 'materi' : tab;
+  const tabAktifNow = ikutAktif
+    ? (sesi?.posisi?.jenis === 'kuis' ? 'latihan'
+      : sesi?.posisi?.jenis === 'slide' ? 'slide' : 'materi')
+    : tab;
 
   // layar siswa mengikuti posisi guru: scroll halus ke bagian terkait
   useEffect(() => {
@@ -326,9 +336,13 @@ export default function BelajarReader() {
               { id: 'materi', label: 'Materi', ikon: <BookOpen size={14} /> },
               { id: 'ringkasan', label: 'Ringkasan', ikon: <FileText size={14} /> },
               { id: 'video', label: 'Video', ikon: <PlayCircle size={14} /> },
+              {
+                id: 'slide', label: 'Slide', ikon: <Presentation size={14} />,
+                hide: !bab.slideUrl,
+              },
               { id: 'latihan', label: 'Latihan Soal', ikon: <CheckCircle2 size={14} /> },
               { id: 'diskusi', label: 'Diskusi', ikon: <MessageCircle size={14} />, soon: true },
-            ].map((t) => (
+            ].filter((t) => !t.hide).map((t) => (
               <button key={t.id} type="button" role="tab"
                 aria-selected={tabAktifNow === t.id}
                 disabled={t.soon}
@@ -419,6 +433,31 @@ export default function BelajarReader() {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ---------- TAB SLIDE PPT ---------- */}
+          {tabAktifNow === 'slide' && bab.slideUrl && (
+            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+              <div style={S.headSeksi}>
+                <span style={lencanaSeksi}><Presentation size={14} /></span>
+                <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
+                  Slide Materi (PPT)
+                </span>
+                <a href={bab.slideUrl} target="_blank" rel="noreferrer"
+                  style={S.unduhLink}>
+                  Unduh PPT
+                </a>
+              </div>
+              <iframe
+                title="Slide materi"
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(bab.slideUrl)}`}
+                style={S.slideFrame}
+              />
+              <p style={S.catatanKecil}>
+                Perlu internet. Bila slide tidak tampil, unduh lalu buka
+                di PowerPoint / Google Slides.
+              </p>
             </div>
           )}
 
@@ -544,6 +583,37 @@ export default function BelajarReader() {
           </aside>
         )}
       </div>
+
+      {/* ===== widget antrean "coba maju" (sesi live) ===== */}
+      {sesiBabIni && (
+        <div style={S.queueWrap}>
+          {(!antreanSaya || antreanSaya.status === 'selesai') && (
+            <button type="button" style={S.queueBtn}
+              onClick={() => antreMaju(sesi.id).catch(() => {})}>
+              🙋 Coba Maju
+            </button>
+          )}
+          {antreanSaya?.status === 'menunggu' && (
+            <div style={S.queueChip}>
+              ⏳ Menunggu giliran…
+              <button type="button" style={S.queueBatal}
+                onClick={() => batalAntre(sesi.id).catch(() => {})}>
+                Batal
+              </button>
+            </div>
+          )}
+          {antreanSaya?.status === 'dipanggil' && (
+            <div style={{ ...S.queueChip, ...S.queueDipanggil }}>
+              🎉 Namamu dipanggil — maju ya!
+            </div>
+          )}
+          {antreanSaya?.status === 'diberi' && (
+            <div style={{ ...S.queueChip, ...S.queueDiberi }}>
+              ⭐ +{antreanSaya.xpDiberi || 0} XP dari tentor!
+            </div>
+          )}
+        </div>
+      )}
 
       {toast && <div style={S.toast}>{toast}</div>}
     </div>
@@ -931,6 +1001,42 @@ const S = {
     fontSize: 11.5, fontWeight: 800, marginBottom: 12,
   },
   opsiDipilihLive: { borderColor: T.biru, background: T.kotakBiru },
+  unduhLink: {
+    color: T.biruGelap, fontSize: 11.5, fontWeight: 800,
+    textDecoration: 'none', border: `1px solid ${T.kotakBiruGaris}`,
+    background: T.kotakBiru, borderRadius: 9, padding: '5px 10px',
+  },
+  slideFrame: {
+    width: '100%', height: '62vh', border: `1px solid ${T.garis}`,
+    borderRadius: 12, background: '#fff',
+  },
+  catatanKecil: { color: T.samar, fontSize: 11, marginTop: 8 },
+  queueWrap: {
+    position: 'fixed', right: 16, bottom: 18, zIndex: 55,
+    display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8,
+  },
+  queueBtn: {
+    background: T.biru, color: '#fff', border: 'none', borderRadius: 999,
+    padding: '12px 20px', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+    fontFamily: 'inherit', boxShadow: '0 8px 22px rgba(30,155,240,.4)',
+  },
+  queueChip: {
+    display: 'flex', alignItems: 'center', gap: 9,
+    background: '#fff', border: `1px solid ${T.garis}`, borderRadius: 999,
+    padding: '10px 16px', fontSize: 12, fontWeight: 800, color: T.teks,
+    boxShadow: '0 6px 18px rgba(16,84,148,.14)',
+  },
+  queueBatal: {
+    background: T.latar, border: `1px solid ${T.garis}`, color: T.samar,
+    borderRadius: 999, padding: '3px 10px', fontSize: 10.5,
+    fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+  },
+  queueDipanggil: {
+    background: T.hijauLatar, borderColor: T.hijauGaris, color: T.hijauTeks,
+  },
+  queueDiberi: {
+    background: T.amberLatar, borderColor: T.amberGaris, color: T.amberTeks,
+  },
   kotakInfoLive: {
     marginTop: 12, background: T.hijauLatar, border: `1px solid ${T.hijauGaris}`,
     color: T.hijauTeks, borderRadius: 10, padding: '9px 12px',

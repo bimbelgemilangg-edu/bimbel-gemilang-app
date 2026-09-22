@@ -21,7 +21,7 @@
 // ============================================================
 import { db } from '../firebase';
 import {
-  collection, doc, getDocs, query, setDoc, where, limit,
+  collection, doc, getDoc, getDocs, query, setDoc, where, limit,
   onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
 
@@ -144,4 +144,68 @@ export function pantauJawaban(sessionId, cb) {
   return onSnapshot(collection(db, KOL_SESI, sessionId, 'jawaban'), (sn) => {
     cb(sn.docs.map((d) => ({ id: d.id, ...d.data() })));
   }, (e) => console.warn('pantau jawaban gagal:', e));
+}
+
+// ============================================================
+// ANTREAN MAJU ("courage queue" v2) -- siswa sukarela maju,
+// tentor memanggil & memberi reward XP manual.
+//   sesi_presentasi/{sid}/antrean/{studentId}
+//     nama, pada, status: 'menunggu'|'dipanggil'|'diberi'|'selesai',
+//     xpDiberi (opsional)
+// ============================================================
+
+/** Siswa menekan tombol "Coba Maju". */
+export async function antreMaju(sessionId) {
+  const studentId = localStorage.getItem('studentId') || '';
+  if (!studentId) return;
+  const nama = localStorage.getItem('studentName') || 'Siswa';
+  await setDoc(doc(db, KOL_SESI, sessionId, 'antrean', studentId), {
+    nama, pada: serverTimestamp(), status: 'menunggu',
+  }, { merge: true });
+}
+
+/** Siswa batal antre. */
+export async function batalAntre(sessionId) {
+  const studentId = localStorage.getItem('studentId') || '';
+  if (!studentId) return;
+  await setDoc(doc(db, KOL_SESI, sessionId, 'antrean', studentId), {
+    status: 'selesai',
+  }, { merge: true });
+}
+
+/** Langganan antrean saya sendiri (siswa). Return unsubscribe. */
+export function pantauAntreanSaya(sessionId, studentId, cb) {
+  return onSnapshot(doc(db, KOL_SESI, sessionId, 'antrean', studentId), (sn) => {
+    cb(sn.exists() ? sn.data() : null);
+  }, (e) => console.warn('pantau antrean saya gagal:', e));
+}
+
+/** Langganan seluruh antrean (guru). Return unsubscribe. */
+export function pantauAntrean(sessionId, cb) {
+  return onSnapshot(collection(db, KOL_SESI, sessionId, 'antrean'), (sn) => {
+    cb(sn.docs.map((d) => ({ id: d.id, ...d.data() })));
+  }, (e) => console.warn('pantau antrean gagal:', e));
+}
+
+/** Guru mengubah status antrean (+ catatan XP bila diberi). */
+export async function setStatusAntrean(sessionId, studentId, status, xpDiberi = 0) {
+  await setDoc(doc(db, KOL_SESI, sessionId, 'antrean', studentId), {
+    status, ...(xpDiberi ? { xpDiberi } : {}),
+  }, { merge: true });
+}
+
+/**
+ * Guru memberi XP manual -> masuk ke toko XP RESMI aplikasi
+ * (`siswa_progress/{studentId}.xp`, dibaca Dashboard & leaderboard),
+ * pola baca-lalu-merge sama seperti tambahXp di BukuBacaPage.
+ */
+export async function beriXpGuru(studentId, xp) {
+  if (!studentId || xp <= 0) return;
+  const ref = doc(db, 'siswa_progress', studentId);
+  const snap = await getDoc(ref);
+  const ex = snap.exists() ? snap.data() : { xp: 0 };
+  await setDoc(ref, {
+    xp: (Number(ex.xp) || 0) + xp,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
 }

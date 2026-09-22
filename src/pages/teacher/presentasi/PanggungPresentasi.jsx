@@ -10,12 +10,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Play, Square, ChevronLeft, ChevronRight, Users,
-  Radio, Eye, EyeOff, Hand, Magnet, CheckCircle2,
+  Radio, Eye, EyeOff, Hand, Magnet, CheckCircle2, Presentation, Star,
 } from 'lucide-react';
 import { muatMateriDanBab } from '../../../services/materiV2Service';
 import {
   cariSesiAktif, pantauSesi, pantauPeserta, pantauJawaban,
   mulaiSesi, akhiriSesi, setPosisiSesi, setModeSesi,
+  pantauAntrean, setStatusAntrean, beriXpGuru,
 } from '../../../services/sesiPresentasiService';
 import IsiSections from '../../../components/belajar/IsiSections';
 import { MathText } from '../../../components/MathText';
@@ -31,7 +32,17 @@ export default function PanggungPresentasi() {
   const [sesi, setSesi] = useState(null);
   const [peserta, setPeserta] = useState([]);
   const [jawaban, setJawaban] = useState([]);
+  const [antrean, setAntrean] = useState([]);
   const [tampilKunci, setTampilKunci] = useState(false);
+  const [lebar, setLebar] = useState(
+    () => (typeof window !== 'undefined' ? window.innerWidth : 900));
+
+  useEffect(() => {
+    const onR = () => setLebar(window.innerWidth);
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
+  const tampilSamping = lebar >= 1100;
 
   useEffect(() => {
     (async () => {
@@ -50,7 +61,8 @@ export default function PanggungPresentasi() {
     const u1 = pantauSesi(sesi.id, (sn) => setSesi(sn));
     const u2 = pantauPeserta(sesi.id, setPeserta);
     const u3 = pantauJawaban(sesi.id, setJawaban);
-    return () => { u1(); u2(); u3(); };
+    const u4 = pantauAntrean(sesi.id, setAntrean);
+    return () => { u1(); u2(); u3(); u4(); };
   }, [sesi?.id, sesi?.status]);
 
   const sections = useMemo(() => bab?.sections || [], [bab]);
@@ -118,8 +130,8 @@ export default function PanggungPresentasi() {
       </header>
 
       {/* ---------- area proyektor ---------- */}
-      <main style={S.panggung}>
-        <div style={S.layar}>
+      <main style={{ ...S.panggung, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+        <div style={{ ...S.layar, flex: 1, minWidth: 0 }}>
           {posisi.jenis === 'section' ? (
             sections[idx] ? (
               <div style={S.zoomWrap}>
@@ -134,7 +146,7 @@ export default function PanggungPresentasi() {
             ) : (
               <div style={S.kosong}>Tidak ada bagian untuk ditampilkan.</div>
             )
-          ) : (
+          ) : posisi.jenis === 'kuis' ? (
             kuis[idx] && (
               <div style={S.zoomWrap}>
                 <div style={S.penanda}>
@@ -170,8 +182,30 @@ export default function PanggungPresentasi() {
                 </div>
               </div>
             )
+          ) : posisi.jenis === 'slide' && bab.slideUrl ? (
+            <iframe
+              title="Slide proyektor"
+              src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(bab.slideUrl)}`}
+              style={S.slideBesar}
+            />
+          ) : (
+            <div style={S.kosong}>Posisi tidak dikenali.</div>
           )}
         </div>
+          <div style={{ ...S.kartuAntreMobil, ...(tampilSamping ? { display: 'none' } : null) }}>
+            <PanelAntrean
+              antrean={antrean}
+              sessionId={sesiAktif ? sesi.id : null}
+            />
+          </div>
+        {tampilSamping && (
+          <aside style={S.sisi}>
+            <PanelAntrean
+              antrean={antrean}
+              sessionId={sesiAktif ? sesi.id : null}
+            />
+          </aside>
+        )}
       </main>
 
       {/* ---------- bar kontrol guru ---------- */}
@@ -229,6 +263,12 @@ export default function PanggungPresentasi() {
                 {tampilKunci ? ' Sembunyikan kunci' : ' Tampilkan kunci'}
               </button>
             )}
+            {bab.slideUrl && (
+              <button type="button" style={tombolPill('putih')}
+                onClick={() => geser('slide', 0)}>
+                <Presentation size={14} /> Slide
+              </button>
+            )}
             <span style={S.pemisah} />
             <button type="button"
               style={tombolPill(sesi.mode === 'mengikuti' ? 'primer' : 'putih')}
@@ -249,6 +289,60 @@ export default function PanggungPresentasi() {
           </>
         )}
       </footer>
+    </div>
+  );
+}
+
+// ---------- panel antrean maju + reward XP tentor ----------
+function PanelAntrean({ antrean, sessionId }) {
+  if (!sessionId) return null;
+  const urut = (a, b) => (a.pada?.seconds || 0) - (b.pada?.seconds || 0);
+  const menunggu = antrean.filter((a) => a.status === 'menunggu').sort(urut);
+  const dipanggil = antrean.filter((a) => a.status === 'dipanggil');
+  const panggil = (uid) => setStatusAntrean(sessionId, uid, 'dipanggil').catch(() => {});
+  const beri = async (uid, n) => {
+    try {
+      await beriXpGuru(uid, n);
+      await setStatusAntrean(sessionId, uid, 'diberi', n);
+    } catch (e) { console.error('Gagal beri XP:', e); }
+  };
+  const tutup = (uid) => setStatusAntrean(sessionId, uid, 'selesai').catch(() => {});
+  return (
+    <div style={{ ...kartuDasar, padding: 14 }}>
+      <div style={S.sisiJudul}>
+        <Hand size={15} /> Antrean Maju
+        {menunggu.length > 0 && <span style={S.sisiBadge}>{menunggu.length}</span>}
+      </div>
+      {menunggu.length === 0 && dipanggil.length === 0 && (
+        <div style={S.sisiKosong}>
+          Belum ada siswa yang mengajukan diri.
+          Siswa menekan tombol 🙋 di layarnya.
+        </div>
+      )}
+      {dipanggil.map((a) => (
+        <div key={a.id} style={{ ...S.antreRow, background: T.hijauLatar, borderColor: T.hijauGaris }}>
+          <span style={S.antreNama}>🎤 {a.nama}</span>
+          <span style={S.antreBtnRow}>
+            {[10, 20, 50].map((n) => (
+              <button key={n} type="button" style={S.xpBtn}
+                onClick={() => beri(a.id, n)}>
+                <Star size={11} fill="currentColor" /> +{n}
+              </button>
+            ))}
+            <button type="button" style={S.antreBtn} onClick={() => tutup(a.id)}>
+              Selesai
+            </button>
+          </span>
+        </div>
+      ))}
+      {menunggu.map((a) => (
+        <div key={a.id} style={S.antreRow}>
+          <span style={S.antreNama}>🙋 {a.nama}</span>
+          <button type="button" style={S.antreBtn} onClick={() => panggil(a.id)}>
+            Panggil
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
@@ -322,4 +416,37 @@ const S = {
     borderTop: `1px solid ${T.garis}`,
   },
   pemisah: { width: 1, height: 26, background: T.garis, margin: '0 4px' },
+  slideBesar: {
+    width: '100%', height: '68vh', border: `1px solid ${T.garis}`,
+    borderRadius: 12, background: '#fff',
+  },
+  sisi: { width: 300, flexShrink: 0, position: 'sticky', top: 66 },
+  kartuAntreMobil: { marginTop: 14 },
+  sisiJudul: {
+    display: 'flex', alignItems: 'center', gap: 7, fontWeight: 800,
+    fontSize: 13.5, color: T.judul, marginBottom: 10,
+  },
+  sisiBadge: {
+    background: T.biru, color: '#fff', borderRadius: 999,
+    padding: '1px 8px', fontSize: 10.5, fontWeight: 800,
+  },
+  sisiKosong: { color: T.samar, fontSize: 11.5, lineHeight: 1.6, padding: '4px 2px' },
+  antreRow: {
+    display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+    border: `1px solid ${T.garis}`, borderRadius: 11,
+    padding: '8px 10px', marginBottom: 8, background: T.latar,
+  },
+  antreNama: { flex: 1, minWidth: 0, fontWeight: 700, fontSize: 12.5, color: T.judul },
+  antreBtnRow: { display: 'flex', gap: 5, alignItems: 'center' },
+  antreBtn: {
+    background: '#fff', border: `1px solid ${T.garis}`, color: T.biruGelap,
+    borderRadius: 8, padding: '5px 10px', fontSize: 11, fontWeight: 800,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
+  xpBtn: {
+    display: 'inline-flex', gap: 3, alignItems: 'center',
+    background: T.amberLatar, border: `1px solid ${T.amberGaris}`,
+    color: T.amberTeks, borderRadius: 8, padding: '5px 8px',
+    fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+  },
 };

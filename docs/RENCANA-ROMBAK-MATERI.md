@@ -1,6 +1,6 @@
 # 🎨 RENCANA ROMBAK MATERI v2 — Bimbel Gemilang
 
-> Status: **FASE 1 SELESAI DI KODE** (commit `a643a20`, belum di-push — menunggu token GitHub).
+> Status: **FASE 1-3 SELESAI DI KODE** (commit `a643a20`, `8c4f933`, `34b79a1`, `9705634` di branch `feat/materi-v2`; push OK Turn 11 — menunggu merge PR).
 > Keputusan user (Turn 4): cakupan **siswa dulu (Fase 1-2)**; gaya visual **mengikuti foto desain yang akan dikirim owner** (styling sekarang placeholder); data model **diserahkan ke AI → dipilih yang paling hemat kuota gratis**: Firestore untuk teks (cache-first + debounce write), Supabase Storage untuk file besar, tanpa listener realtime sampai Fase 3.
 > Dibuat: 22 September 2026 oleh AI (Qwen) bersama owner Bimbel Gemilang.
 > Konteks: Owner akan **menghapus buku lama di Firestore dan mulai dari 0**. Kode dirombak secara **aditif** (halaman lama tetap hidup sampai versi baru siap, lalu switch).
