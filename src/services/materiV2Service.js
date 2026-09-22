@@ -244,18 +244,37 @@ export async function simpanMateri(id, data) {
   return pakaiId;
 }
 
+/**
+ * HEMAT KUOTA (Turn 27): hitungan isi materi disimpan DENORMALISASI
+ * di dokumen materi (jumlahBab/jumlahSoal) supaya kartu Manajer tidak
+ * perlu query sub-koleksi tiap kunjungan (N+1 read -> 0 read).
+ */
+export async function segarkanHitunganMateri(materiId) {
+  const snap = await getDocs(collection(db, KOL_MATERI, materiId, 'bab'));
+  let soal = 0;
+  snap.docs.forEach((d) => {
+    soal += (d.data().ujiPemahaman || []).length;
+  });
+  await setDoc(doc(db, KOL_MATERI, materiId), {
+    jumlahBab: snap.size, jumlahSoal: soal,
+  }, { merge: true });
+  return { bab: snap.size, soal };
+}
+
 /** Simpan bab (buat baru bila babId null). Return babId. */
 export async function simpanBab(materiId, babId, data) {
   const pakaiId = babId || `b_${Date.now()}`;
   await setDoc(doc(db, KOL_MATERI, materiId, 'bab', pakaiId), {
     ...data, diupdatePada: Date.now(),
   }, { merge: true });
+  await segarkanHitunganMateri(materiId).catch(() => {});
   return pakaiId;
 }
 
 /** Hapus bab permanen (hati-hati; admin hanya). */
 export async function hapusBab(materiId, babId) {
   await deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', babId));
+  await segarkanHitunganMateri(materiId).catch(() => {});
 }
 
 /**

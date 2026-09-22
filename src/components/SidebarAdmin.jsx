@@ -37,8 +37,23 @@ const SidebarAdmin = () => {
   }, []);
 
   useEffect(() => {
+    const KEY_BADGE = 'gemilang:admin-badges';
     const fetchBadges = async () => {
       try {
+        // HEMAT KUOTA (Turn 27): badge di-cache 5 menit di sessionStorage.
+        // Sebelumnya query students + 2 agregasi jalan tiap 3 menit per
+        // tab admin -> ikut memicu 429 resource-exhausted paket gratis.
+        const c = sessionStorage.getItem(KEY_BADGE);
+        if (c) {
+          const b = JSON.parse(c);
+          if (Date.now() - (b.t || 0) < 300000) {
+            setBadgePiutang(b.piutang || 0);
+            setBadgeSiswaBaru(b.baru || 0);
+            setBadgePendaftaran(b.pendaftaran || 0);
+            setBadgeLamaranTentor(b.lamaran || 0);
+            return;
+          }
+        }
         const snap = await getDocs(collection(db, "students"));
         let piutang = 0, baru = 0;
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -62,6 +77,13 @@ const SidebarAdmin = () => {
         const lamaranCountSnap = await getCountFromServer(lamaranBaruQuery);
         setBadgeLamaranTentor(lamaranCountSnap.data().count);
 
+        sessionStorage.setItem(KEY_BADGE, JSON.stringify({
+          t: Date.now(),
+          piutang,
+          baru,
+          pendaftaran: countSnap.data().count,
+          lamaran: lamaranCountSnap.data().count,
+        }));
       } catch { /* silent */ }
     };
     fetchBadges();
