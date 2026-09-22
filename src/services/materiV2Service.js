@@ -21,7 +21,7 @@
 import { db } from '../firebase';
 import {
   collection, getDoc, getDocs, doc, query, setDoc, where, limit,
-  serverTimestamp,
+  serverTimestamp, deleteDoc,
 } from 'firebase/firestore';
 import { MATERI_CONTOH } from '../data/materiV2Contoh';
 import {
@@ -255,8 +255,20 @@ export async function simpanBab(materiId, babId, data) {
 
 /** Hapus bab permanen (hati-hati; admin hanya). */
 export async function hapusBab(materiId, babId) {
-  const { deleteDoc } = await import('firebase/firestore');
   await deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', babId));
+}
+
+/**
+ * Hapus materi + SELURUH babnya (admin hanya; konfirmasi di UI).
+ * Dipakai Manajer Materi v2 untuk membersihkan draft lama/salah
+ * (request owner Turn 28). Progres siswa tidak disentuh.
+ */
+export async function hapusMateri(materiId) {
+  const snap = await getDocs(collection(db, KOL_MATERI, materiId, 'bab'));
+  const dels = snap.docs.map((d) =>
+    deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', d.id)));
+  await Promise.all(dels);
+  await deleteDoc(doc(db, KOL_MATERI, materiId));
 }
 
 /**

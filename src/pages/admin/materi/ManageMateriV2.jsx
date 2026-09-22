@@ -8,10 +8,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Plus, Pencil, FolderOpen, Save, X, BookOpen,
+  Plus, Pencil, FolderOpen, Save, X, BookOpen, Trash2,
 } from 'lucide-react';
 import {
-  muatSemuaMateri, simpanMateri, simpanBab,
+  muatSemuaMateri, simpanMateri, simpanBab, hapusMateri,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, halamanDasar, tombolPill,
@@ -46,6 +46,19 @@ export default function ManageMateriV2() {
   }, []);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const hapus = async (id) => {
+    if (!window.confirm(
+      'Hapus materi ini beserta SEMUA babnya? Tindakan permanen.'
+    )) return;
+    try {
+      await hapusMateri(id);
+      setPesan('✅ Materi dihapus.');
+      await muat();
+    } catch (e) {
+      setPesan(`Gagal hapus: ${e.message}`);
+    }
+  };
 
   /** Impor draft JSON {materi, bab[]} -- mis. hasil konversi buku/PDF. */
   const jalankanImpor = async () => {
@@ -119,6 +132,10 @@ export default function ManageMateriV2() {
               Tempel JSON berformat {'{ "materi": {...}, "bab": [ ... ] }'} —
               misalnya draft konversi buku/PDF dari asisten AI.
               Materi masuk sebagai <b>draft</b>; terbitkan setelah diperiksa.
+              <br />
+              ⚠️ Lebih aman pakai tombol <b>muat berkas .json</b>:
+              copy-paste teks panjang sering terpotong dan menyebabkan
+              error “Unexpected end of JSON input”.
             </p>
             <textarea style={{ ...S.inp, fontFamily: 'monospace', fontSize: 11.5 }}
               rows={8} value={imporText}
@@ -253,6 +270,11 @@ export default function ManageMateriV2() {
                   <button type="button" style={S.btnKecil}
                     onClick={() => { setForm({ ...KOSONG, ...m }); setEditId(m.id); }}>
                     <Pencil size={12} /> Edit
+                  </button>
+                  <button type="button"
+                    style={{ ...S.btnKecil, color: '#B91C1C', borderColor: T.merahGaris }}
+                    onClick={() => hapus(m.id)}>
+                    <Trash2 size={12} /> Hapus
                   </button>
                   <button type="button" style={{ ...S.btnKecil, ...S.btnKecilPrimer }}
                     onClick={() => navigate(`/admin/materi-v2/${m.id}`)}>
