@@ -11,7 +11,7 @@ import {
   Plus, Pencil, FolderOpen, Save, X, BookOpen, Trash2,
 } from 'lucide-react';
 import { db } from '../../../firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, getDocsFromServer } from 'firebase/firestore';
 import {
   KOL_MATERI,
   muatSemuaMateri, simpanMateri, simpanBab, hapusMateri,
@@ -43,14 +43,22 @@ export default function ManageMateriV2() {
     const peta = {};
     for (const m of daftar) {
       try {
-        const b = await getDocs(collection(db, KOL_MATERI, m.id, 'bab'));
+        // Baca dari SERVER agar tidak kena cache lama (kasus Turn 26:
+        // kartu pernah tampil "0 bab" padahal isi 2 bab).
+        let b;
+        try {
+          b = await getDocsFromServer(collection(db, KOL_MATERI, m.id, 'bab'));
+        } catch {
+          b = await getDocs(collection(db, KOL_MATERI, m.id, 'bab'));
+        }
         let soal = 0;
         b.docs.forEach((d) => {
           soal += (d.data().ujiPemahaman || []).length;
         });
         peta[m.id] = { bab: b.size, soal };
       } catch {
-        peta[m.id] = { bab: 0, soal: 0 };
+        // gagal baca -> tampilkan '…' (null), JANGAN 0 yang menyesatkan
+        peta[m.id] = { bab: null, soal: null };
       }
     }
     setStat(peta);
