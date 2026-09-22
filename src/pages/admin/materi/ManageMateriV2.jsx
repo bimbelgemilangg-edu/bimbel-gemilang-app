@@ -10,11 +10,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus, Pencil, FolderOpen, Save, X, BookOpen, Trash2,
 } from 'lucide-react';
-import { db } from '../../../firebase';
-import { collection, getDocs, getDocsFromServer } from 'firebase/firestore';
 import {
   KOL_MATERI,
   muatSemuaMateri, simpanMateri, simpanBab, hapusMateri,
+  segarkanHitunganMateri,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, halamanDasar, tombolPill,
@@ -42,20 +41,15 @@ export default function ManageMateriV2() {
   const muatStat = async (daftar) => {
     const peta = {};
     for (const m of daftar) {
+      // HEMAT KUOTA (Turn 27): bila dokumen sudah menyimpan hitungan
+      // denormalisasi, pakai itu (0 read tambahan). Hanya dokumen lama
+      // yang belum punya field yang di-backfill (baca + tulis sekali).
+      if (Number.isFinite(m.jumlahBab)) {
+        peta[m.id] = { bab: m.jumlahBab, soal: m.jumlahSoal || 0 };
+        continue;
+      }
       try {
-        // Baca dari SERVER agar tidak kena cache lama (kasus Turn 26:
-        // kartu pernah tampil "0 bab" padahal isi 2 bab).
-        let b;
-        try {
-          b = await getDocsFromServer(collection(db, KOL_MATERI, m.id, 'bab'));
-        } catch {
-          b = await getDocs(collection(db, KOL_MATERI, m.id, 'bab'));
-        }
-        let soal = 0;
-        b.docs.forEach((d) => {
-          soal += (d.data().ujiPemahaman || []).length;
-        });
-        peta[m.id] = { bab: b.size, soal };
+        peta[m.id] = await segarkanHitunganMateri(m.id);
       } catch {
         // gagal baca -> tampilkan '…' (null), JANGAN 0 yang menyesatkan
         peta[m.id] = { bab: null, soal: null };
@@ -117,6 +111,7 @@ export default function ManageMateriV2() {
       for (let i = 0; i < babs.length; i++) {
         await simpanBab(id, null, { urutan: i + 1, ...babs[i] });
       }
+      await segarkanHitunganMateri(id).catch(() => {});
       setPesan(`✅ Materi "${data.materi.judul}" + ${babs.length} bab masuk (status draft).`);
       setImporOpen(false);
       setImporText('');
