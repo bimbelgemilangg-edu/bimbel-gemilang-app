@@ -299,10 +299,11 @@ function bangunCbt(soalEl, pernyataan) {
   head.className = 'gb-cbt-head';
   const headSrc = ((soalEl.querySelector('table thead') || soalEl.querySelector('table tr'))?.textContent || '').toLowerCase();
   const pakaiTF = headSrc.includes('true') || headSrc.includes('false');
-  const labB = pakaiTF ? 'True' : 'B';
-  const labS = pakaiTF ? 'False' : 'S';
-  const labHB = pakaiTF ? 'True' : 'Benar';
-  const labHS = pakaiTF ? 'False' : 'Salah';
+  const pakaiYN = headSrc.includes('ya') || headSrc.includes('tidak');
+  const labB = pakaiTF ? 'True' : (pakaiYN ? 'Ya' : 'B');
+  const labS = pakaiTF ? 'False' : (pakaiYN ? 'Tidak' : 'S');
+  const labHB = pakaiTF ? 'True' : (pakaiYN ? 'Ya' : 'Benar');
+  const labHS = pakaiTF ? 'False' : (pakaiYN ? 'Tidak' : 'Salah');
   head.innerHTML = '<span class="gb-cbt-text">Pernyataan</span><span class="gb-cbt-opt">' + labHB + '</span><span class="gb-cbt-opt">' + labHS + '</span>';
   wrapCbt.appendChild(head);
   const rows = pernyataan.map((teks, i) => {
@@ -570,7 +571,7 @@ function bangunBuku(wrap, opts) {
   kandidat.forEach((el) => {
     if (el.matches('.pagebreak,hr.pagebreak')) { push(); el.remove(); return; }
     if (el.matches('.kicker')) { push(); pending = [el]; return; }
-    if (el.matches('header.hero,section.toc,section.card,section.kartu,section.question,section.soal,section.summary,section.refs')) {
+    if (el.matches('header.hero,section.toc,section.card,section.kartu,section.learning-unit,section.question,section.soal,section.summary,section.refs')) {
       pending.push(el);
       push();
       return;
@@ -715,7 +716,7 @@ function enhance(root, opts) {
   wrap.insertBefore(sticky, wrap.firstChild);
 
   if (!opts.presentasi) {
-    const kartuMateri = [...wrap.querySelectorAll('.kartu')];
+    const kartuMateri = [...wrap.querySelectorAll('.kartu, .learning-unit')];
     const kunciKey = `gbPaham:${opts.babId || '-'}`;
     let paham = new Set();
     try { paham = new Set(JSON.parse(localStorage.getItem(kunciKey) || '[]')); } catch { paham = new Set(); }
