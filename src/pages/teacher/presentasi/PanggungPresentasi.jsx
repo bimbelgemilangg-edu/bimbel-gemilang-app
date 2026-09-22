@@ -158,6 +158,10 @@ export default function PanggungPresentasi() {
                 <div style={S.penanda}>
                   Latihan bersama • soal {idx + 1} / {kuis.length}
                 </div>
+                {kuis[idx].soalGambar && (
+                  <img src={kuis[idx].soalGambar} alt="Gambar soal"
+                    style={S.soalGambarBesar} />
+                )}
                 <div style={S.soalBesar}><MathText text={kuis[idx].soal} /></div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {(kuis[idx].opsi || []).map((op, j) => {
@@ -414,6 +418,11 @@ const S = {
     border: `1px solid ${T.kotakBiruGaris}`, color: T.biruDalam,
     borderRadius: 999, padding: '5px 13px', fontSize: 11.5,
     fontWeight: 800, marginBottom: 14,
+  },
+  soalGambarBesar: {
+    display: 'block', width: '100%', maxWidth: 760, background: '#fff',
+    border: `1px solid ${T.garis}`, borderRadius: 12, padding: 8,
+    margin: '0 0 14px',
   },
   soalBesar: {
     fontSize: 17, fontWeight: 700, color: T.judul,

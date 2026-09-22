@@ -31,7 +31,7 @@ import {
 import {
   muatMateriDanBab, muatProgressSiswa, simpanProgressBab,
   simpanTerakhir, persenBab, paksaFlushTulisan,
-  muatProfilAkses, cocokMateriUntukSiswa,
+  muatProfilAkses, cocokMateriUntukSiswa, tambahXpGlobal,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, chip, lingkaranNomor, barLuar, barDalam,
@@ -60,6 +60,8 @@ export default function BelajarReader() {
   const [jawaban, setJawaban] = useState({});
   const [soalIdx, setSoalIdx] = useState(0);
   const [quizTersimpan, setQuizTersimpan] = useState(null);
+  const [xpBacaDiberi, setXpBacaDiberi] = useState(false);
+  const [xpKuisDiberi, setXpKuisDiberi] = useState(false);
   const [cari, setCari] = useState('');
   const [toast, setToast] = useState(null);
   const [sesiKuis, setSesiKuis] = useState(0);
@@ -170,6 +172,8 @@ export default function BelajarReader() {
       const p = pm[babId];
       if (p) {
         setSelesaiBaca(!!p.selesaiBab);
+        setXpBacaDiberi(!!p.xpGlobalBaca);
+        setXpKuisDiberi(!!p.xpGlobalKuis);
         if (p.quizTerbaik != null) setQuizTersimpan(p.quizTerbaik);
       }
       if (m && b) {
@@ -218,18 +222,33 @@ export default function BelajarReader() {
     const simpan = lebihBaik ? hasil : quizTersimpan;
     setQuizTersimpan(simpan);
     const xp = XP_BENAR * benar;
-    simpanProgressBab(studentId, materiId, babId, { quizTerbaik: simpan, xp });
+    // XP global resmi sekali-sekali (anti-farming): kuis 1x, baca 1x
+    const globalKuis = !xpKuisDiberi ? XP_BENAR * benar : 0;
+    const globalBaca = !selesaiBaca && !xpBacaDiberi ? XP_BACA : 0;
+    if (globalKuis) setXpKuisDiberi(true);
+    if (globalBaca) setXpBacaDiberi(true);
+    simpanProgressBab(studentId, materiId, babId, {
+      quizTerbaik: simpan,
+      xp,
+      ...(globalKuis ? { xpGlobalKuis: true } : {}),
+      ...(globalBaca ? { xpGlobalBaca: true } : {}),
+    });
+    if (globalKuis + globalBaca > 0) tambahXpGlobal(globalKuis + globalBaca);
     tampilToast(`Kuis selesai — +${xp} XP ✨`);
   };
 
   const tandaiSelesaiBaca = () => {
     if (selesaiBaca) return;
     setSelesaiBaca(true);
+    const beriGlobal = !xpBacaDiberi;
+    if (beriGlobal) setXpBacaDiberi(true);
     simpanProgressBab(studentId, materiId, babId, {
       selesaiBab: true,
       selesaiSections: sections.map((_, i) => i),
       xp: XP_BACA + (quizTersimpan ? XP_BENAR * (quizTersimpan.benar || 0) : 0),
+      ...(beriGlobal ? { xpGlobalBaca: true } : {}),
     });
+    if (beriGlobal) tambahXpGlobal(XP_BACA);
     tampilToast(`+${XP_BACA} XP — bagian selesai 🎉`);
   };
 
@@ -826,6 +845,9 @@ function LiveKuis({ sessionId, soal, idx, total }) {
       <div style={S.liveHead}>
         📡 Latihan bersama • soal {idx + 1} / {total}
       </div>
+      {soal.soalGambar && (
+        <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
+      )}
       <div style={S.soalTeks}><MathText text={soal.soal} /></div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {(soal.opsi || []).map((op, j) => (
@@ -992,6 +1014,11 @@ const S = {
   chipRow: { display: 'flex', gap: 7, marginBottom: 14 },
   soalNomor: { fontSize: 11, fontWeight: 800, color: T.samar, marginBottom: 6 },
   soalTeks: { fontSize: 14.5, lineHeight: 1.75, color: T.judul, fontWeight: 600, marginBottom: 13 },
+  soalGambar: {
+    display: 'block', width: '100%', maxWidth: 560, background: '#fff',
+    border: `1px solid ${T.garis}`, borderRadius: 10, padding: 6,
+    margin: '0 0 10px',
+  },
   opsi: {
     display: 'flex', alignItems: 'center', gap: 11, width: '100%',
     background: '#fff', border: `1.5px solid ${T.garis}`, borderRadius: 12,
