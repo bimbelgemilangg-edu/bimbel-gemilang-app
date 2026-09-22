@@ -11,6 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Play, Square, ChevronLeft, ChevronRight, Users,
   Radio, Eye, EyeOff, Hand, Magnet, CheckCircle2, Presentation, Star,
+  FileText,
 } from 'lucide-react';
 import { muatMateriDanBab } from '../../../services/materiV2Service';
 import {
@@ -198,6 +199,12 @@ export default function PanggungPresentasi() {
                 <div style={S.versikuChip}>📽 Menayangkan PPT versimu</div>
               )}
             </>
+          ) : posisi.jenis === 'pdf' && bab.pdfUrl ? (
+            <iframe
+              title="Modul PDF proyektor"
+              src={bab.pdfUrl}
+              style={S.slideBesar}
+            />
           ) : (
             <div style={S.kosong}>Posisi tidak dikenali.</div>
           )}
@@ -277,6 +284,12 @@ export default function PanggungPresentasi() {
               <button type="button" style={tombolPill('putih')}
                 onClick={() => geser('slide', 0)}>
                 <Presentation size={14} /> Slide
+              </button>
+            )}
+            {bab.pdfUrl && (
+              <button type="button" style={tombolPill('putih')}
+                onClick={() => geser('pdf', 0)}>
+                <FileText size={14} /> PDF
               </button>
             )}
             <span style={S.pemisah} />

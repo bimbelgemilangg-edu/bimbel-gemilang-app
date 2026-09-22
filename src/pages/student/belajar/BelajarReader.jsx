@@ -141,7 +141,8 @@ export default function BelajarReader() {
   // Tab saat mengikuti sesi DITURUNKAN dari posisi guru (bukan setState).
   const tabAktifNow = ikutAktif
     ? (sesi?.posisi?.jenis === 'kuis' ? 'latihan'
-      : sesi?.posisi?.jenis === 'slide' ? 'slide' : 'materi')
+      : sesi?.posisi?.jenis === 'slide' ? 'slide'
+        : sesi?.posisi?.jenis === 'pdf' ? 'pdf' : 'materi')
     : tab;
 
   // layar siswa mengikuti posisi guru: scroll halus ke bagian terkait
@@ -380,6 +381,10 @@ export default function BelajarReader() {
                 id: 'slide', label: 'Slide', ikon: <Presentation size={14} />,
                 hide: !slideSiswa,
               },
+              {
+                id: 'pdf', label: 'Modul PDF', ikon: <FileText size={14} />,
+                hide: !bab.pdfUrl,
+              },
               { id: 'latihan', label: 'Latihan Soal', ikon: <CheckCircle2 size={14} /> },
               { id: 'diskusi', label: 'Diskusi', ikon: <MessageCircle size={14} />, soon: true },
             ].filter((t) => !t.hide).map((t) => (
@@ -500,6 +505,30 @@ export default function BelajarReader() {
               <p style={S.catatanKecil}>
                 Perlu internet. Bila slide tidak tampil, unduh lalu buka
                 di PowerPoint / Google Slides.
+              </p>
+            </div>
+          )}
+
+          {/* ---------- TAB MODUL PDF ---------- */}
+          {tabAktifNow === 'pdf' && bab.pdfUrl && (
+            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+              <div style={S.headSeksi}>
+                <span style={lencanaSeksi}><FileText size={14} /></span>
+                <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
+                  Modul PDF (asli)
+                </span>
+                <a href={bab.pdfUrl} target="_blank" rel="noreferrer"
+                  style={S.unduhLink}>
+                  Unduh PDF
+                </a>
+              </div>
+              <iframe
+                title="Modul PDF"
+                src={bab.pdfUrl}
+                style={S.slideFrame}
+              />
+              <p style={S.catatanKecil}>
+                Bila PDF tidak tampil di browser, unduh lalu buka manual.
               </p>
             </div>
           )}

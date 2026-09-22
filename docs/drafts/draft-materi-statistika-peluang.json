@@ -1,0 +1,233 @@
+{
+  "materi": {
+    "judul": "Statistika dan Peluang (TKA Saintek)",
+    "mapel": "Matematika",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#0EA5E9",
+    "emoji": "📊",
+    "deskripsi": "Ringkasan rumus + latihan model TKA dari buku Sukses Tes Kemampuan Akademik SMA Saintek, bab Statistika dan Peluang. Cocok untuk kelas 12 & persiapan TKA/UTBK.",
+    "urutan": 1,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "Statistika: Pemusatan, Letak, Penyebaran",
+      "ringkasan": "Mean, modus, median, kuartil, simpangan, hingga rumus data berkelompok — semua ringkasan rumus TKA statistika.",
+      "estimasiMenit": 15,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Ukuran Pemusatan Data Tunggal"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Mean (rataan) adalah jumlah seluruh nilai dibagi banyak data. Modus adalah data yang paling sering muncul. Median adalah nilai tengah setelah data diurutkan dari terkecil ke terbesar."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "\\bar{x} = \\frac{x_1 + x_2 + \\dots + x_n}{n}"
+        },
+        {
+          "jenis": "judul",
+          "teks": "Ukuran Letak & Penyebaran Data Tunggal"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Kuartil membagi data terurut menjadi empat bagian sama banyak: Q1 (kuartil bawah), Q2 (median), Q3 (kuartil atas)."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "J = x_{max} - x_{min}, \\quad H = Q_3 - Q_1, \\quad Q_s = \\tfrac{1}{2}(Q_3 - Q_1)"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "S_R = \\frac{\\sum_{i=1}^{n} |x_i - \\bar{x}|}{n}, \\quad S = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n}}, \\quad S^2 = \\frac{\\sum (x_i - \\bar{x})^2}{n}"
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Ingat",
+          "teks": "Jangkauan (J) hanya memakai nilai ekstrem; simpangan kuartil (Qs) lebih tahan terhadap pencilan karena memakai Q1 dan Q3."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Data Berkelompok"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "\\bar{x} = \\bar{x}_s + \\frac{\\sum f \\cdot d}{\\sum f}"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "M_o = T_b + \\left(\\frac{d_1}{d_1 + d_2}\\right) C"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "Median = T_b + \\left(\\frac{\\tfrac{1}{2}n - F}{f}\\right) C"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "Q_i = T_b + \\left(\\frac{\\tfrac{i}{4}n - \\Sigma f}{f(Q_i)}\\right) C, \\quad P_i = T_b + \\left(\\frac{\\tfrac{i}{100}n - \\Sigma f}{f(P_i)}\\right) C"
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Keterangan",
+          "teks": "Tb = tepi bawah kelas, C = panjang kelas, f = frekuensi kelas terkait, F = frekuensi kumulatif sebelum kelas."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Suatu data memiliki median 16 dan jangkauan 6. Jika setiap nilai dikalikan p kemudian dikurangi q, diperoleh data baru dengan median 20 dan jangkauan 9. Nilai dari 4p - q adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jangkauan hanya terpengaruh perkalian: 6p = 9 sehingga p = 1,5. Median: 16p - q = 20 sehingga 24 - q = 20, q = 4. Maka 4p - q = 6 - 4 = 2."
+        },
+        {
+          "soal": "Nilai rata-rata bahasa Inggris kelas 10 A yang terdiri dari 36 siswa adalah 86. Apabila rata-rata nilai siswa laki-laki 86,8 dan rata-rata nilai siswa perempuan 85, banyak siswa perempuan di kelas tersebut adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "12",
+            "16",
+            "18",
+            "20",
+            "24"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Misal laki-laki b: 86,8b + 85(36 - b) = 86 x 36 = 3096 maka 1,8b = 36, b = 20. Perempuan = 36 - 20 = 16."
+        }
+      ],
+      "pdfUrl": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/pdf-statistika-peluang-tka-k12.pdf"
+    },
+    {
+      "judul": "Peluang: Ruang Sampel s.d. Kejadian Majemuk",
+      "ringkasan": "Ruang sampel dadu/koin/kartu, peluang teoretis, frekuensi harapan, aturan pencacahan, permutasi-kombinasi, dan peluang kejadian majemuk.",
+      "estimasiMenit": 18,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Titik Sampel & Ruang Sampel"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Ruang sampel S adalah himpunan semua hasil yang mungkin. Contoh penting: satu dadu n(S) = 6; dua dadu n(S) = 36; n dadu n(S) = 6^n. Satu koin n(S) = 2; n koin n(S) = 2^n. Satu set kartu bridge n(S) = 52 (4 jenis x 13 kartu)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Peluang Teoretis & Frekuensi Harapan"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "P(A) = \\frac{n(A)}{n(S)}, \\quad 0 \\le P(A) \\le 1"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "F(H) = n \\times P(A)"
+        },
+        {
+          "jenis": "judul",
+          "teks": "Kaidah Pencacahan"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Aturan perkalian: jika ada k pilihan beruntun dengan n1, n2, ... nk kemungkinan, total cara = n1 x n2 x ... x nk. Aturan penjumlahan dipakai bila pilihan saling lepas (tidak bisa bersamaan)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Permutasi & Kombinasi"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "_nP_r = \\frac{n!}{(n-r)!}, \\quad \\text{siklis} = (n-1)!, \\quad _nC_r = \\frac{n!}{(n-r)!\\, r!}"
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Bedanya",
+          "teks": "Permutasi MEMPERHATIKAN urutan (jabatan, susunan duduk, juara); kombinasi TIDAK (memilih tim, mengambil bola sekaligus)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Peluang Kejadian Majemuk"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "P(A \\cup B) = P(A) + P(B) - P(A \\cap B)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Saling lepas: P(A n B) = 0 sehingga P(A u B) = P(A) + P(B). Saling bebas: P(A n B) = P(A) x P(B)."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Peluang cuaca cerah di bulan September adalah 0,7. Banyak hari dengan cuaca tidak cerah di bulan September adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "9 hari",
+            "12 hari",
+            "16 hari",
+            "18 hari",
+            "21 hari"
+          ],
+          "jawaban": 0,
+          "pembahasan": "P(tidak cerah) = 1 - 0,7 = 0,3. September 30 hari sehingga 0,3 x 30 = 9 hari."
+        },
+        {
+          "soal": "Banyak bilangan ratusan genap dengan digit berbeda yang dapat disusun dari angka 4, 5, 6, 7, 8 dan memiliki nilai lebih besar dari 600 adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "12",
+            "15",
+            "18",
+            "21",
+            "27"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Satuan genap {4,6,8}. Satuan 4: ratusan {6,7,8} = 3 cara, puluhan 3 cara = 9. Satuan 6: ratusan {7,8} = 2 x 3 = 6. Satuan 8: ratusan {6,7} = 2 x 3 = 6. Total 21."
+        },
+        {
+          "soal": "Sebuah kartu diambil secara acak dari satu set lengkap kartu bridge. Peluang terambil kartu merah prima adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "1/13",
+            "2/13",
+            "3/26",
+            "5/26",
+            "7/52"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Kartu merah prima: 2, 3, 5, 7 pada hati dan wajik = 8 kartu. P = 8/52 = 2/13."
+        },
+        {
+          "soal": "Lima orang sahabat A, B, C, D, E duduk berjajar pada lima kursi. Ketentuan: C harus duduk di salah satu ujung barisan, dan A harus duduk bersebelahan dengan D. Banyak susunan posisi duduk yang mungkin adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "8",
+            "12",
+            "24",
+            "48",
+            "96"
+          ],
+          "jawaban": 2,
+          "pembahasan": "C di ujung: 2 cara. Blok AD (2 urutan internal) bersama B dan E mengisi 3 kursi sisa: 3! = 6. Total = 2 x 6 x 2 = 24."
+        }
+      ],
+      "pdfUrl": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/pdf-statistika-peluang-tka-k12.pdf"
+    }
+  ]
+}
