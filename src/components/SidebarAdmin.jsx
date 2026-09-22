@@ -62,7 +62,7 @@ const SidebarAdmin = () => {
         const lamaranCountSnap = await getCountFromServer(lamaranBaruQuery);
         setBadgeLamaranTentor(lamaranCountSnap.data().count);
 
-      } catch (e) { /* silent */ }
+      } catch { /* silent */ }
     };
     fetchBadges();
     const interval = setInterval(fetchBadges, 180000);
@@ -103,6 +103,11 @@ const SidebarAdmin = () => {
         { name: 'Kelola Guru',  path: '/admin/teachers',         icon: <GraduationCap size={18} /> },
         { name: 'Rapor & Nilai',path: '/admin/grades',           icon: <TrendingUp size={18} /> },
         { name: 'Portal Siswa', path: '/admin/portal',           icon: <Globe size={18} /> },
+        // MATERI v2 (Fase 4): manajer konten baru (upload PPT/PDF/
+        // video + editor bagian + soal). Lihat docs/RENCANA-ROMBAK-MATERI.md
+        { name: 'Materi v2', path: '/admin/materi-v2', icon: <BookMarked size={18} /> },
+        // FASE 4.2: gudang file pusat (upload sekali, pakai berulang)
+        { name: 'Bank Materi', path: '/admin/bank-materi', icon: <Archive size={18} /> },
       ]
     },
     {

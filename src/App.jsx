@@ -156,6 +156,16 @@ import StudentElearning from './pages/student/StudentElearning';
 import BelajarHome from './pages/student/belajar/BelajarHome';
 import BelajarDaftarIsi from './pages/student/belajar/BelajarDaftarIsi';
 import BelajarReader from './pages/student/belajar/BelajarReader';
+// FASE 3: panggung presentasi guru (sinkron proyektor-siswa)
+import DaftarPresentasi from './pages/teacher/presentasi/DaftarPresentasi';
+import PanggungPresentasi from './pages/teacher/presentasi/PanggungPresentasi';
+// FASE 4: manajer materi v2 (admin)
+import ManageMateriV2 from './pages/admin/materi/ManageMateriV2';
+import EditBabV2 from './pages/admin/materi/EditBabV2';
+// FASE 4.2: bank materi (gudang file pusat admin)
+import BankMateriV2 from './pages/admin/materi/BankMateriV2';
+// FASE 4.1: PPT versi guru sendiri
+import PptVersiGuru from './pages/teacher/presentasi/PptVersiGuru';
 import StudentModuleView from './pages/student/StudentModuleView';
 import StudentQuizView from './pages/student/StudentQuizView';
 import StudentSurveyView from './pages/student/StudentSurveyView';
@@ -432,6 +442,20 @@ function App() {
 
         {/* 🔥 BARU: MANAJER BUKU DIGITAL */}
         <Route path="/admin/buku" element={<AdminRoute><ManajerBuku /></AdminRoute>} />
+        {/* MATERI v2 FASE 4 -- manajer konten baru (aditif) */}
+        <Route
+          path="/admin/materi-v2"
+          element={<AdminRoute><ManageMateriV2 /></AdminRoute>}
+        />
+        <Route
+          path="/admin/materi-v2/:materiId"
+          element={<AdminRoute><EditBabV2 /></AdminRoute>}
+        />
+        {/* FASE 4.2: bank materi (gudang file pusat) */}
+        <Route
+          path="/admin/bank-materi"
+          element={<AdminRoute><BankMateriV2 /></AdminRoute>}
+        />
         {/* 🔥 v5: IMPOR MODUL MASSAL (PDF -> bab) */}
         <Route path="/admin/buku/impor" element={<AdminRoute><ImporModul /></AdminRoute>} />
 
@@ -566,6 +590,22 @@ function App() {
         <Route path="/guru/cek-tugas" element={<GuruPage><CekTugasSiswa /></GuruPage>} />
         <Route path="/guru/alat-bantu" element={<GuruPage><TeacherLearningAid /></GuruPage>} />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
+        {/* MATERI v2 FASE 3 -- panggung presentasi sinkron.
+            Panggung full-screen (tanpa layout) supaya bersih
+            di proyektor; daftar pakai layout guru. */}
+        <Route
+          path="/guru/presentasi"
+          element={<GuruPage><DaftarPresentasi /></GuruPage>}
+        />
+        <Route
+          path="/guru/presentasi/:materiId/:babId"
+          element={<GuruRoute><PanggungPresentasi /></GuruRoute>}
+        />
+        {/* FASE 4.1: guru upload PPT versinya sendiri per bab */}
+        <Route
+          path="/guru/ppt-ku"
+          element={<GuruPage><PptVersiGuru /></GuruPage>}
+        />
         <Route path="/siswa/sesi-live" element={<SiswaRoute><LiveSessionStudent /></SiswaRoute>} />
 
         {/* ====================================================

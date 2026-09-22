@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import {
   muatDaftarMateri, muatProgressSiswa, sedangModeContoh,
-  bacaTerakhir, persenBab,
+  bacaTerakhir, persenBab, muatProfilAkses, cocokMateriUntukSiswa,
 } from '../../../services/materiV2Service';
 import MaskotAstronot from '../../../components/MaskotAstronot';
 import {
@@ -28,6 +28,7 @@ export default function BelajarHome() {
 
   const [materiList, setMateriList] = useState([]);
   const [progresMap, setProgresMap] = useState({});
+  const [profil, setProfil] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cari, setCari] = useState('');
   const [filterMapel, setFilterMapel] = useState('Semua');
@@ -40,9 +41,15 @@ export default function BelajarHome() {
       setMateriList(list);
       setModeContoh(sedangModeContoh());
       setProgresMap(await muatProgressSiswa(studentId));
+      // Filter jenjang/program: materi harus sesuai jenjang &
+      // program siswa (banyak program bimbel) -- request owner.
+      setProfil(await muatProfilAkses(
+        studentId, studentKelas,
+        localStorage.getItem('studentProgram') || ''
+      ));
       setLoading(false);
     })();
-  }, [studentId]);
+  }, [studentId, studentKelas]);
 
   const mapelList = useMemo(() => {
     const set = new Set(materiList.map((m) => m.mapel).filter(Boolean));
@@ -57,8 +64,10 @@ export default function BelajarHome() {
         .filter(Boolean).join(' ').toLowerCase();
       if (!teks.includes(q)) return false;
     }
+    // Kesesuaian jenjang & program (aturan bersama di service)
+    if (profil && !cocokMateriUntukSiswa(m, profil, studentKelas)) return false;
     return true;
-  }), [materiList, filterMapel, cari]);
+  }), [materiList, filterMapel, cari, profil, studentKelas]);
 
   const persenMateri = (m) => {
     const babs = m.bab || [];

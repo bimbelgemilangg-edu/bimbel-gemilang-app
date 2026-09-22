@@ -20,15 +20,22 @@ import {
   ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, Lightbulb,
   TriangleAlert, Info, Image as IconGambar, RotateCcw, Search, Bell,
   PlayCircle, FileText, MessageCircle, XCircle, BookOpen, Star,
+  Presentation,
 } from 'lucide-react';
-import { MathText, MathBlock } from '../../../components/MathText';
+import { MathText } from '../../../components/MathText';
+import IsiSections from '../../../components/belajar/IsiSections';
+import {
+  cariSesiAktif, pantauSesi, tandaiPeserta, kirimJawabanLive,
+  antreMaju, batalAntre, pantauAntreanSaya,
+} from '../../../services/sesiPresentasiService';
 import {
   muatMateriDanBab, muatProgressSiswa, simpanProgressBab,
   simpanTerakhir, persenBab, paksaFlushTulisan,
+  muatProfilAkses, cocokMateriUntukSiswa,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, chip, lingkaranNomor, barLuar, barDalam,
-  tombolPill, kotakRumus, kotakTips, kotakSukses, halamanDasar,
+  tombolPill, kotakTips, kotakSukses, halamanDasar,
   lencanaSeksi,
 } from './tema';
 
@@ -66,6 +73,88 @@ export default function BelajarReader() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   const tampilPanel = lebar >= 1100;
+
+  // ============ SESI PRESENTASI GURU (Fase 3) ============
+  const [sesi, setSesi] = useState(null);
+  const [profil, setProfil] = useState(null);
+  const [antreanSaya, setAntreanSaya] = useState(null);
+  const [abaikanIkuti, setAbaikanIkuti] = useState(false);
+  const pesertaDitandai = useRef('');
+
+  useEffect(() => {
+    let unsub = null;
+    let hidup = true;
+    (async () => {
+      const s = await cariSesiAktif();
+      if (!hidup) return;
+      if (s && s.materiId === materiId) {
+        setSesi(s);
+        unsub = pantauSesi(s.id, (sn) => setSesi(sn));
+      } else {
+        setSesi(null);
+      }
+    })();
+    return () => { hidup = false; if (unsub) unsub(); };
+  }, [materiId]);
+
+  // kunci jenjang/program (request owner: materi sesuai jenjang)
+  useEffect(() => {
+    let hidup = true;
+    (async () => {
+      const p = await muatProfilAkses(
+        studentId,
+        localStorage.getItem('studentKelas')
+          || localStorage.getItem('studentGrade') || '',
+        localStorage.getItem('studentProgram') || ''
+      );
+      if (hidup) setProfil(p);
+    })();
+    return () => { hidup = false; };
+  }, [studentId]);
+
+  const sesiAktif = !!sesi && sesi.status === 'aktif';
+  const sesiBabIni = sesiAktif && sesi.babId === babId;
+  const ikutAktif = sesiBabIni && sesi.mode === 'mengikuti' && !abaikanIkuti;
+
+  // tandai peserta sekali per sesi (dok kecil, tulis murah)
+  useEffect(() => {
+    if (sesiBabIni && sesi?.id && pesertaDitandai.current !== sesi.id) {
+      pesertaDitandai.current = sesi.id;
+      tandaiPeserta(sesi.id).catch(() => {});
+    }
+  }, [sesiBabIni, sesi]);
+
+  // langganan antrean "coba maju" saya (dok kecil, hanya saat sesi)
+  useEffect(() => {
+    if (!sesiBabIni || !sesi?.id || !studentId) return undefined;
+    return pantauAntreanSaya(sesi.id, studentId, setAntreanSaya);
+  }, [sesiBabIni, sesi, studentId]);
+
+  // slide efektif: saat mengikuti sesi pakai versi yang ditayangkan
+  // guru (bisa PPT versi guru); belajar mandiri = slide resmi admin
+  const slideSiswa = ikutAktif && sesi?.slideUrlAktif
+    ? sesi.slideUrlAktif
+    : (bab?.slideUrl || '');
+  const slideVersiGuruLive = ikutAktif && sesi?.slideUrlAktif
+    && sesi.slideUrlAktif !== bab?.slideUrl;
+
+  // Tab saat mengikuti sesi DITURUNKAN dari posisi guru (bukan setState).
+  const tabAktifNow = ikutAktif
+    ? (sesi?.posisi?.jenis === 'kuis' ? 'latihan'
+      : sesi?.posisi?.jenis === 'slide' ? 'slide' : 'materi')
+    : tab;
+
+  // layar siswa mengikuti posisi guru: scroll halus ke bagian terkait
+  useEffect(() => {
+    if (!ikutAktif || !sesi?.posisi) return undefined;
+    const p = sesi.posisi;
+    if (p.jenis !== 'section') return undefined;
+    const t = setTimeout(() => {
+      const el = document.getElementById(`sec-${p.index}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 90);
+    return () => clearTimeout(t);
+  }, [ikutAktif, sesi]);
 
   useEffect(() => {
     (async () => {
@@ -172,6 +261,21 @@ export default function BelajarReader() {
     );
   }
 
+  if (materi && profil
+    && !cocokMateriUntukSiswa(materi, profil,
+      localStorage.getItem('studentKelas')
+        || localStorage.getItem('studentGrade') || '')) {
+    return (
+      <div style={halamanDasar}>
+        <div style={S.kosong}>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>🔒</div>
+          Materi ini untuk jenjang/program lain, bukan untuk
+          akunmu. Hubungi admin bila merasa ini keliru.
+        </div>
+      </div>
+    );
+  }
+
   const persen = persenBab(bab, {
     selesaiBab: selesaiBaca,
     selesaiSections: selesaiBaca ? sections.map((_, i) => i) : [],
@@ -208,6 +312,38 @@ export default function BelajarReader() {
         </div>
       </header>
 
+      {/* ============ BANNER SESI PRESENTASI (Fase 3) ============ */}
+      {sesiAktif && !sesiBabIni && (
+        <div style={S.bannerSesi}>
+          <span>
+            📡 <b>{sesi.guruNama}</b> sedang menjelaskan bab lain
+            di materi ini.
+          </span>
+          <button type="button" style={S.bannerBtn}
+            onClick={() => navigate(`/siswa/belajar/${materiId}/${sesi.babId}`)}>
+            Gabung sesi
+          </button>
+        </div>
+      )}
+      {sesiBabIni && sesi.mode === 'mengikuti' && (
+        <div style={S.bannerSesi}>
+          <span>
+            📡 {ikutAktif
+              ? <>Mengikuti sesi <b>{sesi.guruNama}</b> — layarmu mengikuti layar guru.</>
+              : <>Kamu melepas sesi; guru masih menyajikan.</>}
+          </span>
+          <button type="button" style={S.bannerBtn}
+            onClick={() => setAbaikanIkuti((v) => !v)}>
+            {ikutAktif ? 'Lepas' : 'Ikuti lagi'}
+          </button>
+        </div>
+      )}
+      {sesiBabIni && sesi.mode === 'bebas' && (
+        <div style={{ ...S.bannerSesi, background: T.amberLatar, borderColor: T.amberGaris, color: T.amberTeks }}>
+          <span>✋ Mode bebas — guru memberi waktu membaca sendiri.</span>
+        </div>
+      )}
+
       <div style={S.badan}>
         {/* ================= KOLOM UTAMA ================= */}
         <main style={S.utama}>
@@ -240,16 +376,20 @@ export default function BelajarReader() {
               { id: 'materi', label: 'Materi', ikon: <BookOpen size={14} /> },
               { id: 'ringkasan', label: 'Ringkasan', ikon: <FileText size={14} /> },
               { id: 'video', label: 'Video', ikon: <PlayCircle size={14} /> },
+              {
+                id: 'slide', label: 'Slide', ikon: <Presentation size={14} />,
+                hide: !slideSiswa,
+              },
               { id: 'latihan', label: 'Latihan Soal', ikon: <CheckCircle2 size={14} /> },
               { id: 'diskusi', label: 'Diskusi', ikon: <MessageCircle size={14} />, soon: true },
-            ].map((t) => (
+            ].filter((t) => !t.hide).map((t) => (
               <button key={t.id} type="button" role="tab"
-                aria-selected={tab === t.id}
+                aria-selected={tabAktifNow === t.id}
                 disabled={t.soon}
                 onClick={() => setTab(t.id)}
                 style={{
                   ...S.tab,
-                  ...(tab === t.id ? S.tabAktif : null),
+                  ...(tabAktifNow === t.id ? S.tabAktif : null),
                   ...(t.soon ? S.tabSoon : null),
                 }}>
                 {t.ikon} {t.label}
@@ -259,7 +399,7 @@ export default function BelajarReader() {
           </div>
 
           {/* ---------- TAB MATERI ---------- */}
-          {tab === 'materi' && (
+          {tabAktifNow === 'materi' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}>{idxBab + 1}</span>
@@ -281,7 +421,7 @@ export default function BelajarReader() {
           )}
 
           {/* ---------- TAB RINGKASAN ---------- */}
-          {tab === 'ringkasan' && (
+          {tabAktifNow === 'ringkasan' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><FileText size={14} /></span>
@@ -311,7 +451,7 @@ export default function BelajarReader() {
           )}
 
           {/* ---------- TAB VIDEO ---------- */}
-          {tab === 'video' && (
+          {tabAktifNow === 'video' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><PlayCircle size={14} /></span>
@@ -336,8 +476,36 @@ export default function BelajarReader() {
             </div>
           )}
 
+          {/* ---------- TAB SLIDE PPT ---------- */}
+          {tabAktifNow === 'slide' && slideSiswa && (
+            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+              <div style={S.headSeksi}>
+                <span style={lencanaSeksi}><Presentation size={14} /></span>
+                <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
+                  Slide Materi (PPT)
+                </span>
+                {slideVersiGuruLive && (
+                  <span style={S.versiLiveChip}>📽 versi tentor (live)</span>
+                )}
+                <a href={slideSiswa} target="_blank" rel="noreferrer"
+                  style={S.unduhLink}>
+                  Unduh PPT
+                </a>
+              </div>
+              <iframe
+                title="Slide materi"
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(slideSiswa)}`}
+                style={S.slideFrame}
+              />
+              <p style={S.catatanKecil}>
+                Perlu internet. Bila slide tidak tampil, unduh lalu buka
+                di PowerPoint / Google Slides.
+              </p>
+            </div>
+          )}
+
           {/* ---------- TAB LATIHAN SOAL ---------- */}
-          {tab === 'latihan' && (
+          {tabAktifNow === 'latihan' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><CheckCircle2 size={14} /></span>
@@ -355,6 +523,15 @@ export default function BelajarReader() {
                     Belum ada soal pemantapan untuk bagian ini.
                   </p>
                 </div>
+              ) : ikutAktif && sesi.posisi?.jenis === 'kuis'
+                && kuis[Number(sesi.posisi.index)] ? (
+                <LiveKuis
+                  key={Number(sesi.posisi.index)}
+                  sessionId={sesi.id}
+                  soal={kuis[Number(sesi.posisi.index)]}
+                  idx={Number(sesi.posisi.index)}
+                  total={kuis.length}
+                />
               ) : (
                 <PanelKuis
                   key={`${babId}-${sesiKuis}`}
@@ -450,100 +627,39 @@ export default function BelajarReader() {
         )}
       </div>
 
+      {/* ===== widget antrean "coba maju" (sesi live) ===== */}
+      {sesiBabIni && (
+        <div style={S.queueWrap}>
+          {(!antreanSaya || antreanSaya.status === 'selesai') && (
+            <button type="button" style={S.queueBtn}
+              onClick={() => antreMaju(sesi.id).catch(() => {})}>
+              🙋 Coba Maju
+            </button>
+          )}
+          {antreanSaya?.status === 'menunggu' && (
+            <div style={S.queueChip}>
+              ⏳ Menunggu giliran…
+              <button type="button" style={S.queueBatal}
+                onClick={() => batalAntre(sesi.id).catch(() => {})}>
+                Batal
+              </button>
+            </div>
+          )}
+          {antreanSaya?.status === 'dipanggil' && (
+            <div style={{ ...S.queueChip, ...S.queueDipanggil }}>
+              🎉 Namamu dipanggil — maju ya!
+            </div>
+          )}
+          {antreanSaya?.status === 'diberi' && (
+            <div style={{ ...S.queueChip, ...S.queueDiberi }}>
+              ⭐ +{antreanSaya.xpDiberi || 0} XP dari tentor!
+            </div>
+          )}
+        </div>
+      )}
+
       {toast && <div style={S.toast}>{toast}</div>}
     </div>
-  );
-}
-
-// ---------------- isi sections materi ----------------
-function IsiSections({ sections }) {
-  return (
-    <>
-      {sections.map((sec, i) => {
-        const jenis = String(sec?.jenis || 'paragraf');
-        if (jenis === 'judul') {
-          const sebelum = sections
-            .slice(0, i)
-            .filter((s) => String(s.jenis || 'paragraf') === 'judul').length;
-          const label = String.fromCharCode(65 + sebelum);
-          return (
-            <h3 key={i} style={S.subJudul}>
-              <span style={S.subHuruf}>{label}.</span> <MathText text={sec.teks} />
-            </h3>
-          );
-        }
-        if (jenis === 'paragraf') {
-          return <p key={i} style={S.paragraf}><MathText text={sec.teks} /></p>;
-        }
-        if (jenis === 'rumus') {
-          return (
-            <div key={i} style={kotakRumus}>
-              <MathBlock text={sec.latex || sec.teks || ''} />
-            </div>
-          );
-        }
-        if (jenis === 'callout') {
-          const tipe = String(sec.tipe || 'info');
-          const gaya = tipe === 'tips' ? kotakTips
-            : tipe === 'peringatan'
-              ? { ...kotakTips, background: T.merahLatar, borderColor: T.merahGaris, color: '#B91C1C' }
-              : { ...kotakTips, background: T.kotakBiru, borderColor: T.kotakBiruGaris, color: T.biruDalam };
-          const ikon = tipe === 'tips' ? <Lightbulb size={14} />
-            : tipe === 'peringatan' ? <TriangleAlert size={14} /> : <Info size={14} />;
-          return (
-            <div key={i} style={gaya}>
-              {ikon}
-              <span>
-                {sec.judul ? <b>{sec.judul}: </b> : null}
-                <MathText text={sec.teks} />
-              </span>
-            </div>
-          );
-        }
-        if (jenis === 'contoh') {
-          return (
-            <div key={i} style={S.contohBox}>
-              <div style={S.contohJudul}>
-                <CheckCircle2 size={14} /> {sec.judul || 'Contoh'}
-              </div>
-              <p style={{ ...S.paragraf, margin: 0 }}><MathText text={sec.teks} /></p>
-              {sec.pembahasan && (
-                <div style={kotakSukses}>
-                  <Lightbulb size={14} /> <span>{sec.pembahasan}</span>
-                </div>
-              )}
-            </div>
-          );
-        }
-        if (jenis === 'gambar') {
-          return (
-            <figure key={i} style={{ margin: '0 0 16px' }}>
-              {sec.url
-                ? <img src={sec.url} alt={sec.keterangan || ''} style={S.gambar} loading="lazy" />
-                : (
-                  <div style={S.gambarKosong}>
-                    <IconGambar size={22} /> Gambar menyusul
-                  </div>
-                )}
-              {sec.keterangan && <figcaption style={S.gambarKet}>{sec.keterangan}</figcaption>}
-            </figure>
-          );
-        }
-        if (jenis === 'langkah') {
-          return (
-            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '0 0 16px' }}>
-              {(sec.items || []).map((it, j) => (
-                <div key={j} style={S.langkahItem}>
-                  <span style={S.langkahNomor}>{j + 1}</span>
-                  <span style={{ flex: 1 }}><MathText text={it} /></span>
-                </div>
-              ))}
-            </div>
-          );
-        }
-        return <p key={i} style={S.paragraf}><MathText text={sec.teks} /></p>;
-      })}
-    </>
   );
 }
 
@@ -661,6 +777,45 @@ function PanelKuis({
         ) : (
           <span style={{ width: 36 }} />
         )}
+      </div>
+    </>
+  );
+}
+
+// ---------------- kuis live bersama guru (Fase 3) ----------------
+function LiveKuis({ sessionId, soal, idx, total }) {
+  const [pilihan, setPilihan] = useState(null);
+  const [terkirim, setTerkirim] = useState(false);
+  const kirim = (j) => {
+    if (terkirim) return;
+    setPilihan(j);
+    setTerkirim(true);
+    kirimJawabanLive(sessionId, idx, j).catch(() => setTerkirim(false));
+  };
+  return (
+    <>
+      <div style={S.liveHead}>
+        📡 Latihan bersama • soal {idx + 1} / {total}
+      </div>
+      <div style={S.soalTeks}><MathText text={soal.soal} /></div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {(soal.opsi || []).map((op, j) => (
+          <button key={j} type="button"
+            style={{
+              ...S.opsi,
+              ...(pilihan === j ? S.opsiDipilihLive : null),
+            }}
+            disabled={terkirim}
+            onClick={() => kirim(j)}>
+            <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+            <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+          </button>
+        ))}
+      </div>
+      <div style={{ ...S.kotakInfoLive, ...(terkirim ? null : { opacity: .75 }) }}>
+        {terkirim
+          ? '✅ Jawabanmu terkirim ke guru — pembahasan muncul setelah sesi.'
+          : 'Pilih jawabanmu; hasilnya langsung terlihat di layar guru.'}
       </div>
     </>
   );
@@ -870,5 +1025,69 @@ const S = {
     background: '#0B2440', color: '#fff', borderRadius: 999,
     padding: '10px 18px', fontSize: 12.5, fontWeight: 700, zIndex: 60,
     boxShadow: '0 8px 24px rgba(11,36,64,.35)', whiteSpace: 'nowrap',
+  },
+  bannerSesi: {
+    display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    color: T.biruDalam, padding: '9px 16px', fontSize: 12.5, fontWeight: 600,
+    borderBottom: 'none',
+  },
+  bannerBtn: {
+    marginLeft: 'auto', background: T.biru, color: '#fff', border: 'none',
+    borderRadius: 9, padding: '6px 13px', fontSize: 11.5, fontWeight: 800,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
+  liveHead: {
+    display: 'inline-flex', alignItems: 'center', gap: 7,
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    color: T.biruDalam, borderRadius: 999, padding: '6px 13px',
+    fontSize: 11.5, fontWeight: 800, marginBottom: 12,
+  },
+  opsiDipilihLive: { borderColor: T.biru, background: T.kotakBiru },
+  versiLiveChip: {
+    background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
+    color: T.biruDalam, borderRadius: 999, padding: '4px 10px',
+    fontSize: 10.5, fontWeight: 800,
+  },
+  unduhLink: {
+    color: T.biruGelap, fontSize: 11.5, fontWeight: 800,
+    textDecoration: 'none', border: `1px solid ${T.kotakBiruGaris}`,
+    background: T.kotakBiru, borderRadius: 9, padding: '5px 10px',
+  },
+  slideFrame: {
+    width: '100%', height: '62vh', border: `1px solid ${T.garis}`,
+    borderRadius: 12, background: '#fff',
+  },
+  catatanKecil: { color: T.samar, fontSize: 11, marginTop: 8 },
+  queueWrap: {
+    position: 'fixed', right: 16, bottom: 18, zIndex: 55,
+    display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8,
+  },
+  queueBtn: {
+    background: T.biru, color: '#fff', border: 'none', borderRadius: 999,
+    padding: '12px 20px', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+    fontFamily: 'inherit', boxShadow: '0 8px 22px rgba(30,155,240,.4)',
+  },
+  queueChip: {
+    display: 'flex', alignItems: 'center', gap: 9,
+    background: '#fff', border: `1px solid ${T.garis}`, borderRadius: 999,
+    padding: '10px 16px', fontSize: 12, fontWeight: 800, color: T.teks,
+    boxShadow: '0 6px 18px rgba(16,84,148,.14)',
+  },
+  queueBatal: {
+    background: T.latar, border: `1px solid ${T.garis}`, color: T.samar,
+    borderRadius: 999, padding: '3px 10px', fontSize: 10.5,
+    fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+  },
+  queueDipanggil: {
+    background: T.hijauLatar, borderColor: T.hijauGaris, color: T.hijauTeks,
+  },
+  queueDiberi: {
+    background: T.amberLatar, borderColor: T.amberGaris, color: T.amberTeks,
+  },
+  kotakInfoLive: {
+    marginTop: 12, background: T.hijauLatar, border: `1px solid ${T.hijauGaris}`,
+    color: T.hijauTeks, borderRadius: 10, padding: '9px 12px',
+    fontSize: 12, fontWeight: 700,
   },
 };

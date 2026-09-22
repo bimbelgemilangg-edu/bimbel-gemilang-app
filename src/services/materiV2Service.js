@@ -20,9 +20,12 @@
 // ============================================================
 import { db } from '../firebase';
 import {
-  collection, getDoc, getDocs, doc, query, setDoc, where,
+  collection, getDoc, getDocs, doc, query, setDoc, where, limit,
 } from 'firebase/firestore';
 import { MATERI_CONTOH } from '../data/materiV2Contoh';
+import {
+  cocokkanJenjang, cocokkanKelas, ekstrakAngkaKelas,
+} from '../utils/aksesKontenSiswa';
 
 export const KOL_MATERI = 'materi_v2';
 export const KOL_PROGRES = 'progres_materi_v2';
@@ -58,7 +61,56 @@ export const paksaFlushTulisan = () => {
   timerTulis.clear();
 };
 
-// ---------------- materi ----------------
+// ---------------- kesesuaian jenjang/program ----------------
+
+const normalisasiJenjang = (raw) => {
+  const v = String(raw || '').toLowerCase();
+  if (v.includes('smp') || v.includes('mts')) return 'smp';
+  if (v.includes('sma') || v.includes('ma') || v.includes('smk')) return 'sma';
+  if (v.includes('sd') || v.includes('mi')) return 'sd';
+  return '';
+};
+
+/**
+ * Profil akses siswa (jenjang + program) untuk menyaring materi
+ * agar SESUAI JENJANG & PROGRAM bimbelnya (request owner Turn 12).
+ */
+export async function muatProfilAkses(studentId, kelasLokal, programLokal) {
+  let jenjang = '';
+  let program = programLokal || '';
+  if (studentId) {
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'students'), where('studentId', '==', studentId), limit(1)
+      ));
+      if (!snap.empty) {
+        const d = snap.docs[0].data();
+        jenjang = normalisasiJenjang(d.jenjang || d.programType || '');
+        program = d.program || program;
+      }
+    } catch (e) {
+      console.warn('Gagal muat profil siswa:', e);
+    }
+  }
+  if (!jenjang) jenjang = normalisasiJenjang(kelasLokal);
+  return { jenjang, program: program || 'Reguler' };
+}
+
+/**
+ * Aturan saring materi v2 per siswa:
+ *  - jenjang wajib cocok (pakai cocokkanJenjang, SMA termasuk UTBK/SNBT)
+ *  - kelas satu arah: siswa boleh materi kelas sendiri & di bawahnya
+ *  - program: bila materi ber-program khusus, harus sama dg program siswa
+ * Materi tanpa field tsb dianggap untuk semua.
+ */
+export const cocokMateriUntukSiswa = (m, profil, kelasLokal) => {
+  if (m.jenjang && profil.jenjang && !cocokkanJenjang(m.jenjang, profil.jenjang)) return false;
+  const angka = ekstrakAngkaKelas(kelasLokal);
+  if (m.kelas && angka && !cocokkanKelas({ tingkatKelas: String(m.kelas) }, angka)) return false;
+  if (m.program && m.program !== 'semua' && profil.program
+    && String(m.program) !== String(profil.program)) return false;
+  return true;
+};
 
 /** Daftar materi aktif (sudah difilter status). Urut: urutan lalu judul. */
 export async function muatDaftarMateri() {
@@ -166,6 +218,62 @@ export const simpanTerakhir = (info) => {
   try { localStorage.setItem(KEY_TERAKHIR, JSON.stringify(info)); }
   catch { /* opsional */ }
 };
+
+// ---------------- administrasi (Manajer Materi v2, Fase 4) ----------------
+
+/** Semua materi (termasuk draft/arsip) untuk manajer admin. */
+export async function muatSemuaMateri() {
+  try {
+    const snap = await getDocs(collection(db, KOL_MATERI));
+    const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    list.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+    return list;
+  } catch (e) {
+    console.error('Gagal muat semua materi:', e);
+    return [];
+  }
+}
+
+/** Simpan materi (buat baru bila id null). Return id. */
+export async function simpanMateri(id, data) {
+  const pakaiId = id || `m_${Date.now()}`;
+  await setDoc(doc(db, KOL_MATERI, pakaiId), {
+    ...data, diupdatePada: Date.now(),
+  }, { merge: true });
+  return pakaiId;
+}
+
+/** Simpan bab (buat baru bila babId null). Return babId. */
+export async function simpanBab(materiId, babId, data) {
+  const pakaiId = babId || `b_${Date.now()}`;
+  await setDoc(doc(db, KOL_MATERI, materiId, 'bab', pakaiId), {
+    ...data, diupdatePada: Date.now(),
+  }, { merge: true });
+  return pakaiId;
+}
+
+/** Hapus bab permanen (hati-hati; admin hanya). */
+export async function hapusBab(materiId, babId) {
+  const { deleteDoc } = await import('firebase/firestore');
+  await deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', babId));
+}
+
+/**
+ * PPT VERSI GURU (request owner Turn 14): admin punya slide resmi
+ * (slideUrl), tiap guru boleh punya versinya sendiri per bab:
+ *   bab.slideVersiGuru = { [guruId]: url }
+ * Panggung & siswa-yang-mengikuti memakai versi guru tsb;
+ * siswa belajar mandiri tetap memakai slide resmi admin.
+ */
+export async function simpanSlideVersiGuru(materiId, babId, guruId, url) {
+  const ref = doc(db, KOL_MATERI, materiId, 'bab', babId);
+  const snap = await getDoc(ref);
+  const data = snap.exists() ? snap.data() : {};
+  const peta = { ...(data.slideVersiGuru || {}) };
+  if (url) peta[guruId] = url;
+  else delete peta[guruId];
+  await setDoc(ref, { slideVersiGuru: peta }, { merge: true });
+}
 
 // ---------------- perhitungan ringkas ----------------
 export const jumlahUnitBab = (bab) =>
