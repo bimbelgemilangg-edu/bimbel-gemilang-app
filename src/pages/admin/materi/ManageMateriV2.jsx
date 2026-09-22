@@ -11,7 +11,7 @@ import {
   Plus, Pencil, FolderOpen, Save, X, BookOpen,
 } from 'lucide-react';
 import {
-  muatSemuaMateri, simpanMateri,
+  muatSemuaMateri, simpanMateri, simpanBab,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, halamanDasar, tombolPill,
@@ -30,6 +30,8 @@ export default function ManageMateriV2() {
   const [form, setForm] = useState(null);   // null = tertutup
   const [editId, setEditId] = useState(null);
   const [pesan, setPesan] = useState('');
+  const [imporOpen, setImporOpen] = useState(false);
+  const [imporText, setImporText] = useState('');
 
   const muat = async () => {
     setList(await muatSemuaMateri());
@@ -44,6 +46,25 @@ export default function ManageMateriV2() {
   }, []);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  /** Impor draft JSON {materi, bab[]} -- mis. hasil konversi buku/PDF. */
+  const jalankanImpor = async () => {
+    try {
+      const data = JSON.parse(imporText);
+      if (!data.materi?.judul) throw new Error('Field materi.judul wajib.');
+      const id = await simpanMateri(null, data.materi);
+      const babs = Array.isArray(data.bab) ? data.bab : [];
+      for (let i = 0; i < babs.length; i++) {
+        await simpanBab(id, null, { urutan: i + 1, ...babs[i] });
+      }
+      setPesan(`✅ Materi "${data.materi.judul}" + ${babs.length} bab masuk (status draft).`);
+      setImporOpen(false);
+      setImporText('');
+      await muat();
+    } catch (e) {
+      setPesan(`Impor gagal: ${e.message}`);
+    }
+  };
 
   const simpan = async () => {
     if (!form.judul.trim()) { setPesan('Judul wajib diisi.'); return; }
@@ -68,14 +89,59 @@ export default function ManageMateriV2() {
             (tersaring jenjang & program) dan siap dipresentasikan.
           </p>
         </div>
-        <button type="button" style={tombolPill('primer')}
-          onClick={() => { setForm({ ...KOSONG }); setEditId(null); }}>
-          <Plus size={15} /> Materi Baru
-        </button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" style={tombolPill('putih')}
+            onClick={() => { setImporOpen((v) => !v); setForm(null); }}>
+            📥 Impor JSON
+          </button>
+          <button type="button" style={tombolPill('primer')}
+            onClick={() => { setForm({ ...KOSONG }); setEditId(null); }}>
+            <Plus size={15} /> Materi Baru
+          </button>
+        </div>
       </div>
 
       <div style={S.isi}>
-        {pesan && <div style={S.err}>{pesan}</div>}
+        {pesan && (
+          <div style={pesan.startsWith('✅') ? S.ok : S.err}>{pesan}</div>
+        )}
+
+        {imporOpen && (
+          <div style={{ ...kartuDasar, ...S.form }}>
+            <div style={S.formHead}>
+              <span style={{ fontWeight: 800, fontSize: 14, color: T.judul }}>
+                Impor Draft Materi (JSON)
+              </span>
+              <button type="button" style={S.tutup}
+                onClick={() => setImporOpen(false)}>✕</button>
+            </div>
+            <p style={{ fontSize: 12, color: T.samar, margin: '0 0 8px', lineHeight: 1.6 }}>
+              Tempel JSON berformat {'{ "materi": {...}, "bab": [ ... ] }'} —
+              misalnya draft konversi buku/PDF dari asisten AI.
+              Materi masuk sebagai <b>draft</b>; terbitkan setelah diperiksa.
+            </p>
+            <textarea style={{ ...S.inp, fontFamily: 'monospace', fontSize: 11.5 }}
+              rows={8} value={imporText}
+              placeholder='{ "materi": { "judul": "..." }, "bab": [ ... ] }'
+              onChange={(e) => setImporText(e.target.value)} />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <label style={S.btnKecilLabel}>
+                muat berkas .json
+                <input type="file" accept=".json,application/json" style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const r = new FileReader();
+                    r.onload = () => setImporText(String(r.result));
+                    r.readAsText(f);
+                  }} />
+              </label>
+              <button type="button" style={tombolPill('primer')} onClick={jalankanImpor}>
+                Impor Sekarang
+              </button>
+            </div>
+          </div>
+        )}
 
         {form && (
           <div style={{ ...kartuDasar, ...S.form }}>
@@ -215,6 +281,17 @@ const S = {
     background: T.merahLatar, border: `1px solid ${T.merahGaris}`,
     color: '#B91C1C', borderRadius: 10, padding: '9px 13px',
     fontSize: 12.5, marginBottom: 12,
+  },
+  ok: {
+    background: T.hijauLatar, border: `1px solid ${T.hijauGaris}`,
+    color: T.hijauTeks, borderRadius: 10, padding: '9px 13px',
+    fontSize: 12.5, marginBottom: 12,
+  },
+  btnKecilLabel: {
+    display: 'inline-flex', gap: 5, alignItems: 'center',
+    background: '#fff', border: `1px solid ${T.garis}`, color: T.teks,
+    borderRadius: 9, padding: '7px 12px', fontSize: 11.5, fontWeight: 700,
+    cursor: 'pointer',
   },
   form: { padding: 16, marginBottom: 16 },
   formHead: {
