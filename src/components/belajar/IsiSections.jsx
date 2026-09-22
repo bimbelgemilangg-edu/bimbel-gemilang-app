@@ -8,7 +8,7 @@
 // ============================================================
 import React from 'react';
 import {
-  Lightbulb, TriangleAlert, Info, Image as IconGambar, CheckCircle2,
+  Lightbulb, TriangleAlert, Info, Image as IconGambar, CheckCircle2, Zap,
 } from 'lucide-react';
 import { MathText, MathBlock } from '../MathText';
 import { T, kotakRumus, kotakTips, kotakSukses } from '../../pages/student/belajar/tema';
@@ -44,9 +44,15 @@ export default function IsiSections({ sections, offsetHuruf = 0 }) {
           const gaya = tipe === 'tips' ? kotakTips
             : tipe === 'peringatan'
               ? { ...kotakTips, background: T.merahLatar, borderColor: T.merahGaris, color: '#B91C1C' }
-              : { ...kotakTips, background: T.kotakBiru, borderColor: T.kotakBiruGaris, color: T.biruDalam };
+              : tipe === 'gemilang'
+                ? {
+                  ...kotakTips, background: T.gradasiHero, borderColor: 'transparent',
+                  color: '#fff', boxShadow: '0 8px 20px rgba(14,122,212,.28)',
+                }
+                : { ...kotakTips, background: T.kotakBiru, borderColor: T.kotakBiruGaris, color: T.biruDalam };
           const ikon = tipe === 'tips' ? <Lightbulb size={14} />
-            : tipe === 'peringatan' ? <TriangleAlert size={14} /> : <Info size={14} />;
+            : tipe === 'peringatan' ? <TriangleAlert size={14} />
+              : tipe === 'gemilang' ? <Zap size={14} fill="currentColor" /> : <Info size={14} />;
           return (
             <div key={i} id={`sec-${i}`} style={{ ...gaya, ...S.jangkar }}>
               {ikon}
