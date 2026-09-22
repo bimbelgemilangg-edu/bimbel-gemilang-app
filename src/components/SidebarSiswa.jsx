@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LogOut, X, Home, BarChart2, BookOpen, Wallet, 
   Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck,
-  Hash
+  Hash, Library
 } from 'lucide-react';
 
 // Logo dari folder public
@@ -14,21 +14,19 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
-  const [studentData, setStudentData] = useState({ name: '', nim: '', kelas: '' });
+  // Inisialisasi langsung dari localStorage lewat lazy initializer --
+  // tanpa setState di dalam effect (aturan react-hooks repo ini).
+  const [studentData] = useState(() => ({
+    name: localStorage.getItem('studentName') || 'Siswa',
+    nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '',
+    kelas: localStorage.getItem('studentKelas') ||
+          localStorage.getItem('studentGrade') || '',
+  }));
 
   // ===== EFFECTS =====
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     window.addEventListener('resize', handleResize);
-    
-    // Ambil data siswa
-    const name = localStorage.getItem('studentName') || 'Siswa';
-    const nim = localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
-    const kelas = localStorage.getItem('studentKelas') || 
-                  localStorage.getItem('studentGrade') || '';
-    
-    setStudentData({ name, nim, kelas });
-    
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -49,6 +47,10 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     {
       label: 'BELAJAR',
       items: [
+        // MATERI v2 (mockup Gemilang Biru) -- route /siswa/belajar.
+        // Menu lama (E-Learning, Buku Digital via dashboard) tetap ada
+        // sampai switch Fase 5; lihat docs/RENCANA-ROMBAK-MATERI.md.
+        { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0' },
         { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
         // 🔥 Menu ini sebelumnya TIDAK PERNAH ADA sejak awal, padahal
