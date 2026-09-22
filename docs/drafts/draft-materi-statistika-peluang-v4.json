@@ -1,0 +1,519 @@
+{
+  "materi": {
+    "judul": "Statistika & Peluang — Kelas 12 (Kurikulum Terbaru)",
+    "mapel": "Matematika",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#0E7AD4",
+    "emoji": "📊",
+    "deskripsi": "Konten ORISINAL Gemilang (CP Fase F): penjelasan terhubung dari sumber resmi, rumus diketik KaTeX, diagram ber-kredit, 22 soal ber-label SUB-BAB & SUMBER (kumpulan UN/SBMPTN mathcyber1997, AKM Kemdikbud, UN 2015, Gemilang Drill jujur) untuk cek pemahaman per sub-bab maupun sesi live tentor, plus kotak Rumus Cepat Gemilang.",
+    "urutan": 1,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "Statistika: Meringkas Dunia dengan Angka",
+      "ringkasan": "Dari data mentah menjadi keputusan: ukuran pemusatan, letak, dan penyebaran untuk data tunggal maupun berkelompok, plus cara membaca histogram.",
+      "estimasiMenit": 25,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Mengapa statistika? (Sesuai CP Fase F)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Pada elemen Data dan Peluang Fase F, kamu diharapkan mampu menyajikan, menganalisis, dan menafsirkan data. Statistika adalah ilmu mengumpulkan, menyajikan, dan menyimpulkan data. Data mentah (misalnya nilai 40 siswa) tidak bercerita apa-apa sampai kita ringkas: seberapa tinggi umumnya (pemusatan), di mana posisi tertentu (letak), dan seberapa bervariasi (penyebaran)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Ukuran Pemusatan Data Tunggal"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Mean (rataan) adalah jumlah seluruh nilai dibagi banyak data. Modus adalah nilai yang paling sering muncul. Median adalah nilai tengah setelah data diurutkan dari terkecil ke terbesar."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "\\bar{x} = \\frac{\\sum_{i=1}^{n} x_i}{n}"
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang — Rataan Gabungan",
+          "teks": "Dua kelompok digabung? Jangan gabungkan datanya, gabungkan rataannya: $\\bar{x}_{gab} = \\frac{n_1\\bar{x}_1 + n_2\\bar{x}_2}{n_1 + n_2}$. Contoh: 20 anak rata-rata 80 dan 30 anak rata-rata 90 → gabungan = (20·80 + 30·90)/50 = 86."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Menyajikan Data: Tabel Frekuensi & Histogram"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Data berkelompok disajikan dalam tabel distribusi frekuensi (kelas interval + frekuensi) dan digambarkan sebagai histogram: batang-batang yang menempel, tiap batang mewakili satu kelas. Perhatikan contoh histogram berikut: sumbu datar = nilai ujian, sumbu tegak = frekuensi."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/histogram-smartstat.png",
+          "keterangan": "Contoh histogram distribusi frekuensi. Sumber: smartstat.info (dipakai dengan kredit)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Cara baca cepat",
+          "teks": "Tinggi batang = frekuensi kelas. Kelas dengan batang tertinggi = kelas modus. Bentuk histogram (miring kiri/kanan/simetris) langsung memberitahu hubungan mean-median-modus."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Data Berkelompok: Mean, Modus, Median"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Untuk data berkelompok dipakai tepi kelas (Tb = batas bawah − 0,5), panjang kelas c, frekuensi kelas f, dan frekuensi kumulatif sebelum kelas F."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "\\bar{x} = \\sum \\frac{f_i \\cdot x_i}{\\sum f_i}"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "M_o = T_b + \\left(\\frac{d_1}{d_1 + d_2}\\right)c"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "Me = T_b + \\left(\\frac{\\frac{1}{2}n - F}{f}\\right)c"
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang — d1 & d2 tanpa hafal",
+          "teks": "Pada rumus modus: d1 = frekuensi kelas modus − frekuensi kelas SEBELUMnya; d2 = frekuensi kelas modus − frekuensi kelas SESUDAHnya. Modus selalu 'ditarik' ke sisi tetangga yang lebih tinggi frekuensinya."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Ukuran Penyebaran (Simpangan)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Penyebaran mengukur seberapa bervariasi data: jangkauan (J), jangkauan kuartil (H), simpangan kuartil (Qd), ragam (S²), dan simpangan baku (S)."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "J = x_{max} - x_{min}, \\quad H = Q_3 - Q_1, \\quad Q_d = \\tfrac{1}{2}(Q_3 - Q_1)"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "S^2 = \\frac{\\sum (x_i - \\bar{x})^2}{n}, \\quad S = \\sqrt{S^2}"
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Intuisi",
+          "teks": "Dua kelas bisa punya rataan sama tetapi 'kepribadian' berbeda: yang simpangan bakunya kecil berarti nilainya merata; yang besar berarti ada jurang antara siswa cepat dan lambat."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Rataan dari 8 bilangan adalah 50. Setelah ditambah satu bilangan, rataan menjadi 52. Bilangan yang ditambahkan adalah ...",
+          "tipe": "pg",
+          "subbab": "Pemusatan Data Tunggal",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": [
+            "58",
+            "62",
+            "66",
+            "68",
+            "70"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jumlah awal 8×50=400; jumlah baru 9×52=468; tambahan = 68."
+        },
+        {
+          "soal": "Modus dari data 4, 5, 5, 6, 7, 7, 7, 8, 9 adalah ...",
+          "tipe": "pg",
+          "subbab": "Pemusatan Data Tunggal",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": [
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Nilai 7 muncul tiga kali (terbanyak)."
+        },
+        {
+          "soal": "Ragam (varians) dari data 1, 2, 3, 4, 5 adalah ...",
+          "tipe": "pg",
+          "subbab": "Ukuran Penyebaran",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": [
+            "1",
+            "√2",
+            "2",
+            "2,5",
+            "4"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Rataan 3; jumlah kuadrat simpangan 10; ragam 10/5 = 2."
+        },
+        {
+          "soal": "Jangkauan dan simpangan kuartil dari data 3, 7, 11, 15, 19, 23 adalah ...",
+          "tipe": "pg",
+          "subbab": "Ukuran Penyebaran",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": [
+            "J=20, Qd=6",
+            "J=20, Qd=8",
+            "J=23, Qd=6",
+            "J=18, Qd=8",
+            "J=20, Qd=4"
+          ],
+          "jawaban": 0,
+          "pembahasan": "J = 23−3 = 20. Q1 = 8, Q3 = 20 → Qd = ½(20−8) = 6."
+        },
+        {
+          "soal": "Data nilai siswa hasil ulangan matematika disajikan dalam tabel: 20−29:3, 30−39:7, 40−49:8, 50−59:12, 60−69:9, 70−79:6, 80−89:5. Nilai modus data tersebut adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Modus",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "49,5 − 40/7",
+            "49,5 − 36/7",
+            "49,5 + 36/7",
+            "49,5 + 40/7",
+            "49,5 + 48/7"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Kelas modus 50−59: L0=49,5; c=10; d1=12−8=4; d2=12−9=3 → Mo = 49,5 + 10·(4/7) = 49,5 + 40/7."
+        },
+        {
+          "soal": "Tabel data penjualan beras (ton): 21−25:3, 26−30:5, 31−35:15, 36−40:8, 41−45:6, 46−50:3. Modus data tersebut adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Modus",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "32,44 ton",
+            "32,66 ton",
+            "33,44 ton",
+            "33,66 ton",
+            "34,44 ton"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Kelas modus 31−35: L0=30,5; c=5; d1=10; d2=7 → Mo = 30,5 + 5·(10/17) ≈ 33,44."
+        },
+        {
+          "soal": "Modus dari data pada histogram berikut adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Modus",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "13,05",
+            "13,50",
+            "13,75",
+            "14,05",
+            "14,25"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Kelas modus 11−15: L0=10,5; c=5; d1=14−8=6; d2=14−12=2 → Mo = 10,5 + 5·(6/8) = 14,25.",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/histogram-modus-soal.png"
+        },
+        {
+          "soal": "Data panjang ikan gurame (mm): 30−35:5, 36−41:9, 42−47:8, 48−53:12, 54−59:6. Median data tersebut adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Median",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "44,25 mm",
+            "45,50 mm",
+            "45,75 mm",
+            "46,00 mm",
+            "46,50 mm"
+          ],
+          "jawaban": 3,
+          "pembahasan": "n=40; kelas median 42−47 (Fk=14, fm=8): Me = 41,5 + 6·(6/8) = 46,00."
+        },
+        {
+          "soal": "Median dari data pada histogram berikut adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Median",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "44,7",
+            "45,2",
+            "46,4",
+            "46,5",
+            "46,6"
+          ],
+          "jawaban": 4,
+          "pembahasan": "n=40; kelas median 45−49 (Fk=15, fm=12): Me = 44,5 + 5·(5/12) ≈ 46,6.",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/histogram-median-soal.png"
+        },
+        {
+          "soal": "Tabel nilai ujian: 30:3, 35:4, 40:5, 45:8, 50:x, 60:3. Jika rata-rata 44, nilai x adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Rataan",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ],
+          "jawaban": 1,
+          "pembahasan": "44(23+x) = 970+50x → 1012+44x = 970+50x → x = 7."
+        },
+        {
+          "soal": "Berat badan 60 orang ibu: 56−60:8, 61−65:3, 66−70:18, 71−75:21, 76−80:6, 81−85:4. Rata-rata berat badan tersebut adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Rataan",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "69,25",
+            "70,16",
+            "70,17",
+            "70,33",
+            "72,25"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Σfi·xi = 4210; rataan = 4210/60 ≈ 70,17."
+        },
+        {
+          "soal": "Nilai ulangan 40 siswa: 60−64:3, 65−69:8, 70−74:10, 75−79:12, 80−84:7. Rata-rata data tersebut adalah ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Rataan",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "73,5",
+            "74,5",
+            "76,3",
+            "77,7",
+            "80,5"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Σfi·xi = 2940; rataan = 2940/40 = 73,5."
+        },
+        {
+          "soal": "Pendapatan (juta): 10−14:5, 15−19:8, 20−24:10, 25−29:12, 30−34:7, 35−39:3 (n=45). Jika rataan sementara 27 juta, maka rataan hitung data ditunjukkan oleh rumus ...",
+          "tipe": "pg",
+          "subbab": "Data Berkelompok: Rataan",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "x̄ = 27 − 140/45",
+            "x̄ = 27 − 50/45",
+            "x̄ = 27 + 140/45",
+            "x̄ = 27 + 3(140/45)",
+            "x̄ = 27 − 3(140/45)"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Σfi·di = −28, c = 5 → x̄ = 27 + 5·(−28/45) = 27 − 140/45."
+        }
+      ],
+      "sumberMateri": [
+        "Capaian Pembelajaran Fase F Matematika (elemen Data & Peluang) — Kemdikbud",
+        "Histogram contoh: smartstat.info (kredit tertera)",
+        "Bank soal: mathcyber1997.com (kumpulan UN/SBMPTN)"
+      ]
+    },
+    {
+      "judul": "Peluang: Menghitung Kemungkinan dengan Pasti",
+      "ringkasan": "Kaidah pencacahan, permutasi, kombinasi, ruang sampel, dan peluang kejadian majemuk — ditutup soal asli AKM Kemdikbud.",
+      "estimasiMenit": 28,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Kaidah Pencacahan Dasar"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Jika suatu pilihan dapat dilakukan dengan n1 cara, pilihan berikutnya n2 cara, dan seterusnya, maka total cara seluruhnya adalah hasil kalinya. Contoh: 3 kemeja × 2 celana × 2 sepatu = 12 penampilan berbeda."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "n_{total} = n_1 \\times n_2 \\times \\dots \\times n_k"
+        },
+        {
+          "jenis": "judul",
+          "teks": "Permutasi vs Kombinasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Permutasi MEMPERHATIKAN urutan (juara, susunan pengurus, antrian). Kombinasi TIDAK memperhatikan urutan (memilih tim, mengambil bola sekaligus)."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "P(n,r) = \\frac{n!}{(n-r)!}, \\qquad C(n,r) = \\frac{n!}{(n-r)!\\,r!}"
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang — Tes 3 detik",
+          "teks": "Tanya: 'kalau posisinya dibolak-balik, jadi cerita berbeda tidak?' Jika YA → permutasi. Jika TIDAK → kombinasi. Contoh: ketua-sekretaris = beda orang beda cerita → permutasi; memilih 2 wakil = sama saja → kombinasi."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Ruang Sampel & Peluang Suatu Kejadian"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Ruang sampel S = semua hasil yang mungkin; kejadian A = bagian dari S yang diinginkan. Peluang A = banyak anggota A dibagi banyak anggota S. Wajib hafal: satu dadu n(S)=6; dua dadu n(S)=36; satu koin n(S)=2; satu set kartu n(S)=52."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "P(A) = \\frac{n(A)}{n(S)}, \\qquad 0 \\le P(A) \\le 1"
+        },
+        {
+          "jenis": "judul",
+          "teks": "Kejadian Majemuk"
+        },
+        {
+          "jenis": "rumus",
+          "latex": "P(A \\cup B) = P(A) + P(B) - P(A \\cap B)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Saling lepas: tidak mungkin terjadi bersama sehingga P(A ∩ B) = 0. Saling bebas: terjadinya A tidak mempengaruhi B sehingga P(A ∩ B) = P(A) × P(B)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang — Trik Komplemen",
+          "teks": "Kata 'minimal satu' atau 'paling sedikit satu' → pakai komplemen: $P(\\text{minimal satu}) = 1 - P(\\text{tidak sama sekali})$. Contoh: minimal satu angka dari 3 koin = 1 − P(GGG) = 1 − 1/8 = 7/8."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Seorang murid diminta mengerjakan 8 soal dari 18 soal dengan ketentuan nomor 1 sampai 5 harus dikerjakan. Banyak susunan soal yang dapat dipilih adalah ...",
+          "tipe": "pg",
+          "subbab": "Permutasi & Kombinasi",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "1.716",
+            "816",
+            "626",
+            "286",
+            "56"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Tinggal pilih 3 soal dari 13: C(13,3) = 286."
+        },
+        {
+          "soal": "Suatu toko buah menjual jeruk, mangga, dan pisang. Wawa ingin membeli 20 buah dengan paling sedikit masing-masing 5 buah. Banyak komposisi buah yang mungkin dibeli adalah ...",
+          "tipe": "pg",
+          "subbab": "Permutasi & Kombinasi",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "12",
+            "15",
+            "18",
+            "21",
+            "24"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Kombinasi berulang: C(3+5−1, 5) = C(7,5) = 21."
+        },
+        {
+          "soal": "Kristy hanya dapat mengundang 10 dari 15 teman. Candra dan Dewi harus diundang; Sandra dan Susan pasti tidak hadir. Banyak cara mengundang teman-temannya adalah ...",
+          "tipe": "pg",
+          "subbab": "Permutasi & Kombinasi",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "303",
+            "286",
+            "196",
+            "165",
+            "120"
+          ],
+          "jawaban": 3,
+          "pembahasan": "2 sudah terpilih; 2 tidak hadir → pilih 8 dari 11: C(11,8) = 165."
+        },
+        {
+          "soal": "Dari 5 orang siswa akan dipilih 3 orang sebagai tim lomba. Banyak cara pemilihan tim tersebut adalah ...",
+          "tipe": "pg",
+          "subbab": "Permutasi & Kombinasi",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": [
+            "6",
+            "10",
+            "15",
+            "20",
+            "60"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Kombinasi C(5,3) = 10."
+        },
+        {
+          "soal": "Dua dadu dilempar undi bersama satu kali. Peluang muncul jumlah kedua mata dadu sama dengan 8 adalah ...",
+          "tipe": "pg",
+          "subbab": "Ruang Sampel & Peluang Kejadian",
+          "sumber": "UN SMA — soal ujian nasional tahun 2015",
+          "opsi": [
+            "5/36",
+            "6/36",
+            "7/36",
+            "8/36",
+            "9/36"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Pasangan: (2,6),(3,5),(4,4),(5,3),(6,2) = 5 → P = 5/36."
+        },
+        {
+          "soal": "Pada pelemparan sebuah dadu bias, peluang muncul angka 1 adalah 1/3 dari peluang angka lain. Peluang muncul angka prima adalah ...",
+          "tipe": "pg",
+          "subbab": "Ruang Sampel & Peluang Kejadian",
+          "sumber": "Kumpulan soal UN/SBMPTN — mathcyber1997.com (dikutip dgn pembahasan)",
+          "opsi": [
+            "5/16",
+            "6/16",
+            "7/16",
+            "8/16",
+            "9/16"
+          ],
+          "jawaban": 4,
+          "pembahasan": "⅓a + 5a = 1 → a = 3/16; prima {2,3,5} → 3 × 3/16 = 9/16."
+        },
+        {
+          "soal": "Amel mengunduh bagan pertandingan piala dunia dari perempat final. Peluang Perancis menang perempat final 0,7; semifinal & final masing-masing 50%. Peluang Perancis juara dunia adalah ...",
+          "tipe": "pg",
+          "subbab": "Kejadian Majemuk",
+          "sumber": "AKM Numerasi SMA — Pusmenjar Kemdikbud (via Zenius)",
+          "opsi": [
+            "0,125",
+            "0,175",
+            "0,343",
+            "0,95",
+            "1"
+          ],
+          "jawaban": 1,
+          "pembahasan": "0,7 × 0,5 × 0,5 = 0,175."
+        },
+        {
+          "soal": "Tiga koin dilempar bersamaan satu kali. Peluang muncul minimal satu angka adalah ...",
+          "tipe": "pg",
+          "subbab": "Kejadian Majemuk",
+          "sumber": "Gemilang Drill (latihan orisinal sistem, sesuai CP Fase F)",
+          "opsi": [
+            "1/8",
+            "3/8",
+            "4/8",
+            "7/8",
+            "1"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Trik komplemen Gemilang: 1 − 1/8 = 7/8."
+        }
+      ],
+      "sumberMateri": [
+        "Capaian Pembelajaran Fase F Matematika (elemen Data & Peluang) — Kemdikbud",
+        "Soal AKM: Pusmenjar Kemdikbud (via Zenius)",
+        "Bank soal: mathcyber1997.com (kumpulan UN/SBMPTN)"
+      ]
+    }
+  ]
+}

@@ -63,6 +63,7 @@ export default function BelajarReader() {
   const [xpBacaDiberi, setXpBacaDiberi] = useState(false);
   const [xpKuisDiberi, setXpKuisDiberi] = useState(false);
   const [cari, setCari] = useState('');
+  const [filterSubbab, setFilterSubbab] = useState('Semua');
   const [toast, setToast] = useState(null);
   const [sesiKuis, setSesiKuis] = useState(0);
   const kuisTersimpanSesi = useRef(false);
@@ -184,6 +185,7 @@ export default function BelajarReader() {
       }
       setJawaban({});
       setSoalIdx(0);
+      setFilterSubbab('Semua');
       setTab('materi');
       kuisTersimpanSesi.current = false;
       setLoading(false);
@@ -192,6 +194,13 @@ export default function BelajarReader() {
 
   const sections = useMemo(() => bab?.sections || [], [bab]);
   const kuis = useMemo(() => bab?.ujiPemahaman || [], [bab]);
+  // Cek pemahaman PER SUB-BAB (request owner Turn 30):
+  const daftarSubbab = useMemo(
+    () => Array.from(new Set(kuis.map((k) => k.subbab).filter(Boolean))),
+    [kuis]);
+  const kuisAktif = useMemo(
+    () => (filterSubbab === 'Semua' ? kuis : kuis.filter((k) => k.subbab === filterSubbab)),
+    [kuis, filterSubbab]);
   const idxBab = babList.findIndex((b) => b.id === babId);
   const babBerikut = idxBab >= 0 ? babList[idxBab + 1] : null;
 
@@ -201,8 +210,8 @@ export default function BelajarReader() {
   }, []);
 
   const benarCount = useMemo(() =>
-    kuis.reduce((a, s, i) => (jawaban[i] != null && jawaban[i] === s.jawaban ? a + 1 : a), 0),
-  [kuis, jawaban]);
+    kuisAktif.reduce((a, s2, i) => (jawaban[i] != null && jawaban[i] === s2.jawaban ? a + 1 : a), 0),
+  [kuisAktif, jawaban]);
   const semuaDijawab = kuis.length > 0 && Object.keys(jawaban).length === kuis.length;
 
   // Simpan kuis lewat EVENT jawab (bukan effect) -- hemat render
@@ -211,13 +220,13 @@ export default function BelajarReader() {
     if (jawaban[idxSoal] != null) return;
     const baru = { ...jawaban, [idxSoal]: j };
     setJawaban(baru);
-    if (Object.keys(baru).length !== kuis.length) return;
+    if (Object.keys(baru).length !== kuisAktif.length) return;
     if (kuisTersimpanSesi.current) return;
     kuisTersimpanSesi.current = true;
-    const benar = kuis.reduce(
-      (a, s, ix) => (baru[ix] === s.jawaban ? a + 1 : a), 0);
-    const nilai = Math.round((benar / kuis.length) * 100);
-    const hasil = { nilai, benar, total: kuis.length, pada: Date.now() };
+    const benar = kuisAktif.reduce(
+      (a, s2, ix) => (baru[ix] === s2.jawaban ? a + 1 : a), 0);
+    const nilai = Math.round((benar / kuisAktif.length) * 100);
+    const hasil = { nilai, benar, total: kuisAktif.length, pada: Date.now() };
     const lebihBaik = !quizTersimpan || nilai > quizTersimpan.nilai;
     const simpan = lebihBaik ? hasil : quizTersimpan;
     setQuizTersimpan(simpan);
@@ -581,9 +590,21 @@ export default function BelajarReader() {
                   total={kuis.length}
                 />
               ) : (
+                <>
+                {daftarSubbab.length > 0 && (
+                  <div style={S.chipRowSoal}>
+                    {['Semua', ...daftarSubbab].map((sb2) => (
+                      <button key={sb2} type="button"
+                        style={chip(filterSubbab === sb2)}
+                        onClick={() => { setFilterSubbab(sb2); setJawaban({}); setSoalIdx(0); }}>
+                        {sb2}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <PanelKuis
-                  key={`${babId}-${sesiKuis}`}
-                  kuis={kuis}
+                  key={`${babId}-${sesiKuis}-${filterSubbab}`}
+                  kuis={kuisAktif}
                   jawaban={jawaban}
                   pilih={pilihJawaban}
                   soalIdx={soalIdx}
@@ -592,6 +613,7 @@ export default function BelajarReader() {
                   semuaDijawab={semuaDijawab}
                   ulangKuis={ulangKuis}
                 />
+                </>
               )}
             </div>
           )}
@@ -1011,6 +1033,9 @@ const S = {
   nilaiChip: {
     background: T.hijauLatar, color: T.hijauTeks, border: `1px solid ${T.hijauGaris}`,
     borderRadius: 999, padding: '4px 11px', fontSize: 10.5, fontWeight: 800,
+  },
+  chipRowSoal: {
+    display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12,
   },
   chipRow: { display: 'flex', gap: 7, marginBottom: 14 },
   soalNomor: { fontSize: 11, fontWeight: 800, color: T.samar, marginBottom: 6 },

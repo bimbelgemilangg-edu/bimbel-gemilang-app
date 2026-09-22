@@ -158,6 +158,18 @@ export default function PanggungPresentasi() {
                 <div style={S.penanda}>
                   Latihan bersama • soal {idx + 1} / {kuis.length}
                 </div>
+                <div style={S.chipSubbab}>
+                  {Array.from(new Set(kuis.map((k) => k.subbab).filter(Boolean)))
+                    .map((nm) => (
+                      <button key={nm} type="button" style={S.chipItem}
+                        onClick={() => {
+                          const i0 = kuis.findIndex((k) => k.subbab === nm);
+                          if (i0 >= 0) geser('kuis', i0);
+                        }}>
+                        {nm}
+                      </button>
+                    ))}
+                </div>
                 {kuis[idx].soalGambar && (
                   <img src={kuis[idx].soalGambar} alt="Gambar soal"
                     style={S.soalGambarBesar} />
@@ -456,6 +468,12 @@ const S = {
     borderTop: `1px solid ${T.garis}`,
   },
   pemisah: { width: 1, height: 26, background: T.garis, margin: '0 4px' },
+  chipSubbab: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 },
+  chipItem: {
+    background: '#fff', border: `1px solid ${T.kotakBiruGaris}`, color: T.biruDalam,
+    borderRadius: 999, padding: '5px 12px', fontSize: 11, fontWeight: 800,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
   versikuChip: {
     display: 'inline-flex', marginTop: 10, background: T.kotakBiru,
     border: `1px solid ${T.kotakBiruGaris}`, color: T.biruDalam,
