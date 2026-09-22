@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import {
   muatDaftarMateri, muatProgressSiswa, sedangModeContoh,
-  bacaTerakhir, persenBab, muatProfilAkses, cocokMateriUntukSiswa,
+  bacaTerakhir, simpanTerakhir, muatMateriDanBab,
+  persenBab, muatProfilAkses, cocokMateriUntukSiswa,
 } from '../../../services/materiV2Service';
 import MaskotAstronot from '../../../components/MaskotAstronot';
 import {
@@ -33,7 +34,24 @@ export default function BelajarHome() {
   const [cari, setCari] = useState('');
   const [filterMapel, setFilterMapel] = useState('Semua');
   const [modeContoh, setModeContoh] = useState(false);
+  const [terakhirOk, setTerakhirOk] = useState(false);
   const terakhir = bacaTerakhir();
+
+  // ANTI-HANTU (Turn 29): riwayat "lanjutkan membaca" diverifikasi dulu;
+  // bila materi/bab-nya sudah dihapus admin, riwayat dibersihkan agar
+  // tidak terus memanggil dokumen yang tidak ada.
+  useEffect(() => {
+    let hidup = true;
+    (async () => {
+      if (!terakhir?.materiId) { if (hidup) setTerakhirOk(false); return; }
+      const { materi, babList } = await muatMateriDanBab(terakhir.materiId);
+      const ada = !!materi && (babList || []).some((b) => b.id === terakhir.babId);
+      if (!hidup) return;
+      if (!ada) { simpanTerakhir(null); setTerakhirOk(false); }
+      else setTerakhirOk(true);
+    })();
+    return () => { hidup = false; };
+  }, [terakhir]);
 
   useEffect(() => {
     (async () => {
@@ -112,7 +130,7 @@ export default function BelajarHome() {
         )}
 
         {/* Lanjutkan membaca */}
-        {terakhir?.materiId && (
+        {terakhirOk && terakhir?.materiId && (
           <button type="button" style={S.lanjut}
             onClick={() => navigate(
               `/siswa/belajar/${terakhir.materiId}/${terakhir.babId}`
