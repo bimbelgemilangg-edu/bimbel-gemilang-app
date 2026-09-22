@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="900" height="620" fill="#F7FBFF"/>
+  <text x="450" y="34" text-anchor="middle" font-size="22" font-weight="700" fill="#0F3057">Tingkatan Takson &amp; Penamaan Binomial</text>
+  <text x="450" y="56" text-anchor="middle" font-size="13" fill="#7E93AB">Diagram orisinal Tim Kurikulum Bimbel Gemilang — contoh: harimau Sumatera</text>
+  <g font-size="15">
+    <rect x="60"  y="80"  width="780" height="46" rx="10" fill="#0A5FC0"/><text x="80" y="109" fill="#fff" font-weight="700">DOMAIN — Eukarya</text><text x="620" y="109" fill="#DCEBFF">cakupan paling luas, anggota paling banyak</text>
+    <rect x="90"  y="134" width="720" height="46" rx="10" fill="#1176D8"/><text x="110" y="163" fill="#fff" font-weight="700">KINGDOM — Animalia</text><text x="620" y="163" fill="#DCEBFF">dunia hewan</text>
+    <rect x="120" y="188" width="660" height="46" rx="10" fill="#1E9BF0"/><text x="140" y="217" fill="#fff" font-weight="700">FILUM — Chordata</text><text x="620" y="217" fill="#EAF4FE">bertulang belakang</text>
+    <rect x="150" y="242" width="600" height="46" rx="10" fill="#41AFF8"/><text x="170" y="271" fill="#fff" font-weight="700">KELAS — Mammalia</text><text x="620" y="271" fill="#F2FAFF">menyusui</text>
+    <rect x="180" y="296" width="540" height="46" rx="10" fill="#7CC8FB"/><text x="200" y="325" fill="#0F3057" font-weight="700">ORDO — Carnivora</text><text x="600" y="325" fill="#0F3057">pemakan daging</text>
+    <rect x="210" y="350" width="480" height="46" rx="10" fill="#A8DBFC"/><text x="230" y="379" fill="#0F3057" font-weight="700">FAMILI — Felidae</text><text x="560" y="379" fill="#0F3057">kucing-kucingan</text>
+    <rect x="240" y="404" width="420" height="46" rx="10" fill="#D2ECFE"/><text x="260" y="433" fill="#0F3057" font-weight="700">GENUS — Panthera</text><text x="540" y="433" fill="#33506E">kucing besar</text>
+    <rect x="270" y="458" width="360" height="46" rx="10" fill="#EAF4FE" stroke="#1E9BF0" stroke-width="3"/><text x="290" y="487" fill="#0A5FC0" font-weight="700">SPESIES — Panthera tigris</text>
+  </g>
+  <g font-size="14" fill="#33506E">
+    <text x="60" y="540" font-weight="700" fill="#0F3057">Aturan binomial nomenclature:</text>
+    <text x="60" y="562">1) dua kata: kata pertama = genus (huruf kapital), kata kedua = penunjuk spesies (huruf kecil);</text>
+    <text x="60" y="584">2) ditulis miring (italic) atau digarisbawahi terpisah; 3) bahasa Latin/Latinisasi; contoh benar: <tspan font-style="italic">Panthera tigris</tspan>, <tspan font-style="italic">Oryza sativa</tspan>.</text>
+    <text x="60" y="606" fill="#7E93AB">Makin ke bawah takson → anggota makin sedikit, persamaan ciri makin banyak.</text>
+  </g>
+</svg>
