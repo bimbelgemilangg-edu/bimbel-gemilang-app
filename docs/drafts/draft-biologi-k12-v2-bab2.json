@@ -10,7 +10,13 @@
     "emoji": "🧬",
     "deskripsi": "Bab 2 (ditambah via mode impor tambah-bab): Sel & Metabolisme.",
     "urutan": 4,
-    "status": "draft"
+    "status": "draft",
+    "daftarPustaka": [
+      "Buku Biologi untuk SMA/MA Kelas XII — Kemendikdasmen (BSE Kurmer) — 2022 — ISBN 978-602-427-958-5 — PDF resmi gratis SIBI; gambar dikutip berkredit (hal. 7, 18, 33).",
+      "Kerangka Asesmen TKA Biologi SMA — Pusmendik Kemendikdasmen — 2025 — dokumen publik.",
+      "Latihan Soal Saintek UTBK 2022 Biologi — Brain Academy (Ruangguru) — 2022 — soal+kunci berlabel.",
+      "Latihan Metabolisme & Enzim — bukusekolah.id — soal ber-pembahasan, berlabel."
+    ]
   },
   "bab": [
     {
@@ -52,8 +58,13 @@
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-cara-kerja-enzim.svg",
-          "keterangan": "Tiga tahap kerja enzim (substrat spesifik → kompleks enzim-substrat → produk lepas, enzim utuh) beserta faktor-faktor yang mempengaruhinya."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-4-mekanisme-katalase.jpg",
+          "keterangan": "Gambar 1.4 Mekanisme penguraian hidrogen peroksida oleh enzim katalase. Sumber: Buku Biologi untuk SMA/MA Kelas XII, BSE Kemendikdasmen (ISBN 978-602-427-958-5), hal. 7."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-5-lock-and-key.jpg",
+          "keterangan": "Gambar 1.5 Teori lock and key (gembok-anak kunci) dan induced fit. Sumber: Buku Biologi untuk SMA/MA Kelas XII, BSE Kemendikdasmen, hal. 7 (buku mencantumkan sumber asli: Biology Brain, 2022)."
         },
         {
           "jenis": "paragraf",
@@ -79,8 +90,8 @@
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-peta-respirasi-sel.svg",
-          "keterangan": "Peta empat tahap respirasi aerob: tempat berlangsung, masukan, dan hasil tiap tahap, plus neraca energi dan perbandingan dengan fermentasi."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-13-tahapan-respirasi.jpg",
+          "keterangan": "Gambar 1.13 Tahapan respirasi aerob: glikolisis, oksidasi asam piruvat (dekarboksilasi oksidatif), siklus asam sitrat (Krebs), dan fosforilasi oksidatif/transpor elektron di mitokondria. Sumber: Buku Biologi untuk SMA/MA Kelas XII, BSE Kemendikdasmen, hal. 18."
         },
         {
           "jenis": "langkah",
@@ -113,6 +124,11 @@
         {
           "jenis": "paragraf",
           "teks": "Fotosintesis berlangsung dua tahap. Reaksi terang di membran tilakoid (grana): klorofil menangkap foton, air difotolisis melepaskan O2, dan energi cahaya diubah menjadi energi kimia ATP serta NADPH (fotofosforilasi). Reaksi gelap (siklus Calvin) di stroma: enzim rubisco mengikat CO2 pada RuBP, lalu dengan memakai ATP dan NADPH dari reaksi terang, CO2 direduksi menjadi PGAL yang akhirnya menyusun glukosa. Urutannya WAJIB terang dahulu lalu gelap; lajunya dipengaruhi intensitas cahaya, kadar CO2, suhu, dan ketersediaan air."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-22-reaksi-terang-gelap.jpg",
+          "keterangan": "Gambar 1.22 Keterkaitan reaksi terang (grana/tilakoid) dan reaksi gelap (stroma) pada fotosintesis. Sumber: Buku Biologi untuk SMA/MA Kelas XII, BSE Kemendikdasmen, hal. 33."
         },
         {
           "jenis": "callout",

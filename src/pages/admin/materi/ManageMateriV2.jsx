@@ -22,8 +22,16 @@ import {
 const KOSONG = {
   judul: '', mapel: '', kelas: '', jenjang: '', program: 'semua',
   premium: false, warna: '#1E9BF0', emoji: '📘', deskripsi: '',
-  urutan: 1, status: 'draft',
+  urutan: 1, status: 'draft', daftarPustaka: [],
 };
+
+// DAFTAR PUSTAKA (Turn 33, arahan owner): sumber buku/modul/situs yang
+// dipakai tim kurikulum disimpan di dokumen materi untuk keperluan
+// hak cipta & audit -- HANYA tampil di halaman admin ini, TIDAK pernah
+// dirender di halaman siswa/guru.
+const pustakaKeTeks = (arr) => (Array.isArray(arr) ? arr : []).join('\n');
+const teksKePustaka = (t) => String(t || '').split('\n')
+  .map((x) => x.trim()).filter(Boolean);
 
 export default function ManageMateriV2() {
   const navigate = useNavigate();
@@ -311,6 +319,15 @@ export default function ManageMateriV2() {
             <label style={S.lab}>Deskripsi
               <textarea style={S.inp} rows={2} value={form.deskripsi}
                 onChange={(e) => set('deskripsi', e.target.value)} />
+            </label>
+            <label style={S.lab}>
+              Daftar pustaka & sumber — RAHASIA ADMIN (tidak tampil ke
+              siswa/guru; satu sumber per baris: Judul — Penulis/Penerbit —
+              Tahun — ISBN/URL — catatan hak cipta)
+              <textarea style={{ ...S.inp, fontFamily: 'monospace', fontSize: 11.5 }}
+                rows={4} value={pustakaKeTeks(form.daftarPustaka)}
+                placeholder={'BSE Biologi SMA/MA Kelas XII — Kemendikdasmen — 2022 — ISBN 978-602-427-958-5 — PDF resmi gratis; gambar dikutip berkredit per halaman'}
+                onChange={(e) => set('daftarPustaka', teksKePustaka(e.target.value))} />
             </label>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button type="button" style={tombolPill('putih')}
