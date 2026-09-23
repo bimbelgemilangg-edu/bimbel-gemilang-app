@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="900" height="600" fill="#F7FBFF"/>
+  <text x="450" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#0F3057">Peta Respirasi Seluler Aerob (Katabolisme Glukosa)</text>
+  <text x="450" y="54" text-anchor="middle" font-size="13" fill="#7E93AB">Diagram orisinal Tim Kurikulum Bimbel Gemilang — ikuti panahannya, hafalkan tempat &amp; hasilnya</text>
+  <!-- tahap 1 glikolisis -->
+  <rect x="60" y="90" width="240" height="120" rx="14" fill="#EAF4FE" stroke="#1E9BF0" stroke-width="3"/>
+  <text x="180" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#0A5FC0">1. GLIKOLISIS</text>
+  <text x="180" y="140" text-anchor="middle" font-size="13" fill="#33506E">Tempat: sitoplasma (tanpa O2)</text>
+  <text x="180" y="160" text-anchor="middle" font-size="13" fill="#33506E">Glukosa (6C) → 2 asam piruvat (3C)</text>
+  <text x="180" y="182" text-anchor="middle" font-size="13" font-weight="700" fill="#16A34A">Hasil: 2 ATP + 2 NADH</text>
+  <text x="320" y="150" font-size="24" fill="#1E9BF0">→</text>
+  <!-- tahap 2 dekarboksilasi -->
+  <rect x="350" y="90" width="240" height="120" rx="14" fill="#EAF4FE" stroke="#1E9BF0" stroke-width="3"/>
+  <text x="470" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#0A5FC0">2. DEKARBOKSILASI OKSIDATIF</text>
+  <text x="470" y="140" text-anchor="middle" font-size="13" fill="#33506E">Tempat: matriks mitokondria</text>
+  <text x="470" y="160" text-anchor="middle" font-size="13" fill="#33506E">Piruvat → asetil-KoA + CO2</text>
+  <text x="470" y="182" text-anchor="middle" font-size="13" font-weight="700" fill="#16A34A">Hasil: 2 NADH + 2 CO2</text>
+  <text x="610" y="150" font-size="24" fill="#1E9BF0">→</text>
+  <!-- tahap 3 krebs -->
+  <rect x="640" y="90" width="220" height="120" rx="14" fill="#EAF4FE" stroke="#1E9BF0" stroke-width="3"/>
+  <text x="750" y="118" text-anchor="middle" font-size="16" font-weight="700" fill="#0A5FC0">3. SIKLUS KREBS</text>
+  <text x="750" y="140" text-anchor="middle" font-size="13" fill="#33506E">Tempat: matriks mitokondria</text>
+  <text x="750" y="160" text-anchor="middle" font-size="13" fill="#33506E">Asetil-KoA → CO2 (4x)</text>
+  <text x="750" y="182" text-anchor="middle" font-size="13" font-weight="700" fill="#16A34A">Hasil: 2 ATP + 6 NADH + 2 FADH2</text>
+  <!-- panah ke etc -->
+  <path d="M750 210 q 0 40 -280 60" fill="none" stroke="#1E9BF0" stroke-width="3" marker-end="url(#arr)"/>
+  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#1E9BF0"/></marker></defs>
+  <!-- tahap 4 etc -->
+  <rect x="240" y="270" width="420" height="120" rx="14" fill="#DCFCE7" stroke="#16A34A" stroke-width="3"/>
+  <text x="450" y="298" text-anchor="middle" font-size="16" font-weight="700" fill="#047857">4. RANTAI TRANSPOR ELEKTRON + FOSFORILASI OKSIDATIF</text>
+  <text x="450" y="320" text-anchor="middle" font-size="13" fill="#33506E">Tempat: krista (membran dalam mitokondria); O2 = akseptor elektron terakhir → H2O</text>
+  <text x="450" y="342" text-anchor="middle" font-size="13" fill="#33506E">NADH &amp; FADH2 menyerahkan elektron; gradien H+ menggerakkan ATP sintase</text>
+  <text x="450" y="366" text-anchor="middle" font-size="13" font-weight="700" fill="#16A34A">Hasil: ±32-34 ATP + H2O</text>
+  <!-- neraca -->
+  <rect x="60" y="420" width="780" height="140" rx="14" fill="#FFFFFF" stroke="#E1ECF8"/>
+  <text x="80" y="448" font-size="15" font-weight="700" fill="#0F3057">Neraca energi 1 glukosa (cara Gemilang)</text>
+  <g font-size="13.5" fill="#33506E">
+    <text x="80" y="474">Glikolisis 2 ATP + 2 NADH • Dekarboksilasi 2 NADH • Krebs 2 ATP + 6 NADH + 2 FADH2 • ETC ±32-34 ATP</text>
+    <text x="80" y="498">Total umum dikutip: 36-38 ATP (1 NADH sitoplasma " worth " 2-3 ATP tergantung sistem sel).</text>
+    <text x="80" y="522" font-weight="700" fill="#B91C1C">Tanpa O2 (fermentasi): hanya 2 ATP dari glikolisis + produk organik (asam laktat / etanol + CO2).</text>
+    <text x="80" y="546" fill="#7E93AB">Ingat: NADH/FADH2 = "tiket" pembawa elektron ke ETC; CO2 dilepas saat dekarboksilasi &amp; Krebs.</text>
+  </g>
+</svg>

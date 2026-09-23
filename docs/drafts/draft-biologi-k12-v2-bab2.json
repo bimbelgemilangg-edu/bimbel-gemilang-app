@@ -1,0 +1,348 @@
+{
+  "materi": {
+    "judul": "Biologi SMA Kelas 12 — Persiapan TKA 2026",
+    "mapel": "Biologi",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#16A34A",
+    "emoji": "🧬",
+    "deskripsi": "Bab 2 (ditambah via mode impor tambah-bab): Sel & Metabolisme.",
+    "urutan": 4,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "Sel & Metabolisme: Transpor, Enzim, Respirasi, Fermentasi, Fotosintesis",
+      "ringkasan": "Sel sebagai unit kehidupan beserta organelnya, transpor membran, enzim sebagai biokatalis (sifat, mekanisme, faktor), empat tahap respirasi aerob lengkap dengan neraca ATP, fermentasi tanpa oksigen, serta fotosintesis reaksi terang dan gelap. Dilengkapi 2 diagram orisinal, catatan guru, Cara Gemilang, dan 16 soal latihan (11 asli UTBK/UN/resmi + 5 drill berlabel).",
+      "estimasiMenit": 55,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "A. Sel: Unit Kehidupan dan Peta Organel"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sel adalah unit struktural dan fungsional terkecil makhluk hidup. Sel prokariotik (bakteri) tidak memiliki membran inti dan organel bermembran; sel eukariotik (tumbuhan, hewan, jamur) memiliki inti berselubung dan organel khusus. Untuk metabolisme, empat organel paling sering diuji: mitokondria (respirasi aerob penghasil ATP), kloroplas (fotosintesis pada tumbuhan), ribosom (sintesis protein), serta retikulum endoplasma kasar-halus (sintesis protein-lipid, detoksifikasi, penyimpanan kalsium). Membran plasma mengatur lalu lintas zat masuk-keluar sel."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Catatan Guru",
+          "teks": "Analogi kota membantu siswa menghafal fungsi: membran plasma = gerbang kota bersensor; mitokondria = pembangkit listrik; ribosom = pabrik protein; RE = jalan raya distribusi; lisosom = tempat pengolahan sampah; nukleus = balai kota penyimpan blueprint."
+        },
+        {
+          "jenis": "judul",
+          "teks": "B. Transpor Melalui Membran"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Transpor pasif tidak membutuhkan energi: difusi (zat bergerak dari konsentrasi tinggi ke rendah, mis. O2 dan CO2 melewati membran) dan osmosis (air bergerak melintasi membran semi permeabel dari larutan encer ke pekat). Transpor aktif membutuhkan ATP karena melawan gradien konsentrasi (mis. pompa natrium-kalium pada sel saraf). Transpor partikel besar dilakukan lewat endositosis (masuk) dan eksositosis (keluar). Sel tumbuhan dalam larutan sangat pekat kehilangan air sehingga membran mengelupas dari dinding (plasmolisis); sebaliknya dalam air murni sel menjadi tegang (turgid)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "C. Enzim: Biokatalis Reaksi Metabolisme"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Enzim adalah protein yang berperan sebagai biokatalis: mempercepat reaksi kimia tanpa ikut berubah atau habis, dengan cara MENURUNKAN energi aktivasi. Sifat-sifatnya: bekerja spesifik terhadap substrat tertentu; diperlukan dalam jumlah sedikit; tidak menggeser kesetimbangan reaksi; dapat bekerja bolak-balik; dan aktivitasnya dipengaruhi suhu, pH, konsentrasi substrat/enzim, aktivator, serta inhibitor. Suhu terlalu tinggi atau pH ekstrem mengubah bentuk sisi aktif secara permanen — peristiwa ini disebut denaturasi."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-cara-kerja-enzim.svg",
+          "keterangan": "Tiga tahap kerja enzim (substrat spesifik → kompleks enzim-substrat → produk lepas, enzim utuh) beserta faktor-faktor yang mempengaruhinya."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Dua model menjelaskan mekanisme kerja enzim: model kunci-gembok (lock and key) — bentuk sisi aktif sudah komplementer dengan substrat — dan induced fit — sisi aktif sedikit menyesuaikan bentuknya saat substrat masuk agar ikatan lebih kuat. Inhibitor kompetitif menutup sisi aktif sehingga substrat tidak bisa masuk; inhibitor non-kompetitif menempel di tempat lain dan mengubah bentuk enzim."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — enzim dalam 4 kata + alarm denaturasi",
+          "teks": "Spesifik, menurunkan Ea, tak habis, tak menggeser kesetimbangan. Alarm denaturasi: jika soal menyebut 'dipanaskan', 'pH ekstrem', atau 'enzim tidak berfungsi lagi walau substrat ada', jawabannya hampir selalu perubahan bentuk sisi aktif yang permanen."
+        },
+        {
+          "jenis": "judul",
+          "teks": "D. Respirasi Seluler Aerob: Empat Tahap"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Katabolisme glukosa dengan oksigen berlangsung empat tahap berurutan: glikolisis di sitoplasma (glukosa 6C dipecah menjadi 2 asam piruvat 3C, hasil bersih 2 ATP + 2 NADH); dekarboksilasi oksidatif di matriks mitokondria (piruvat → asetil-KoA + CO2 + NADH); siklus Krebs di matriks (asetil-KoA dioksidasi penuh menjadi CO2, menghasilkan ATP, NADH, FADH2); serta rantai transpor elektron di krista (NADH dan FADH2 menyerahkan elektron; oksigen menjadi akseptor elektron terakhir membentuk air; gradien H+ menggerakkan ATP sintase menghasilkan ATP terbanyak)."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "\\text{C}_6\\text{H}_{12}\\text{O}_6 + 6\\,\\text{O}_2 \\rightarrow 6\\,\\text{CO}_2 + 6\\,\\text{H}_2\\text{O} + \\pm 36\\text{-}38\\ \\text{ATP}"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-peta-respirasi-sel.svg",
+          "keterangan": "Peta empat tahap respirasi aerob: tempat berlangsung, masukan, dan hasil tiap tahap, plus neraca energi dan perbandingan dengan fermentasi."
+        },
+        {
+          "jenis": "langkah",
+          "judul": "Ledger tahap demi tahap (per 1 glukosa)",
+          "items": [
+            "Glikolisis (sitoplasma): 2 ATP + 2 NADH, produk 2 piruvat.",
+            "Dekarboksilasi oksidatif (matriks): 2 NADH + 2 CO2, produk 2 asetil-KoA.",
+            "Siklus Krebs (matriks): 2 ATP + 6 NADH + 2 FADH2 + 4 CO2.",
+            "Rantai transpor elektron (krista): ±32-34 ATP + H2O; O2 = akseptor elektron terakhir."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — tiket NADH/FADH2",
+          "teks": "Perlakukan NADH dan FADH2 sebagai 'tiket' pembawa elektron ke rantai transpor; ATP tahap 1-3 hanya recehan, panen besar di tahap 4. Soal 'hasil tahap X' = cocokkan tempat + tiketnya. Soal 'peran O2' = akseptor elektron TERAKHIR (bukan pembawa, bukan bahan baku Krebs)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "E. Fermentasi: Bertahan Tanpa Oksigen"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bila oksigen tidak tersedia, sel tetap dapat menghasilkan energi lewat fermentasi: hanya glikolisis yang berjalan (2 ATP), lalu piruvat dialihkan menjadi produk organik. Fermentasi asam laktat terjadi pada sel otot yang bekerja berat (piruvat → asam laktat; penumpukannya menimbulkan rasa lelah) dan pada pembuatan yoghurt oleh Lactobacillus. Fermentasi alkohol oleh ragi Saccharomyces mengubah piruvat menjadi etanol + CO2 — CO2 inilah yang mengembangkan adonan roti. Karena produknya masih bahan organik berenergi, fermentasi jauh kurang efisien dibanding respirasi aerob."
+        },
+        {
+          "jenis": "judul",
+          "teks": "F. Fotosintesis: Anabolisme di Kloroplas"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Fotosintesis berlangsung dua tahap. Reaksi terang di membran tilakoid (grana): klorofil menangkap foton, air difotolisis melepaskan O2, dan energi cahaya diubah menjadi energi kimia ATP serta NADPH (fotofosforilasi). Reaksi gelap (siklus Calvin) di stroma: enzim rubisco mengikat CO2 pada RuBP, lalu dengan memakai ATP dan NADPH dari reaksi terang, CO2 direduksi menjadi PGAL yang akhirnya menyusun glukosa. Urutannya WAJIB terang dahulu lalu gelap; lajunya dipengaruhi intensitas cahaya, kadar CO2, suhu, dan ketersediaan air."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — NADPH vs NADH",
+          "teks": "NADPH = fotosintesis (P untuk 'photosynthesis'); NADH = respirasi. Satu huruf ini menumbangkan opsi jebakan 'reaksi terang menghasilkan NADH' yang sangat sering muncul."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Catatan Guru",
+          "teks": "Praktikum Ingenhousz (Hydrilla dalam corong menghasilkan gelembung O2 di bawah cahaya) dan Sachs (daun tertutup vs terbuka + uji iodin untuk amilum) adalah dua percobaan klasik yang paling sering menjadi stimulus soal keterampilan proses."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Dalam topik Metabolisme dan Enzim, istilah yang sesuai dengan pengertian 'reaksi penyusunan molekul kompleks yang memerlukan energi' adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "anabolisme",
+            "denaturasi",
+            "situs aktif",
+            "enzim"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Anabolisme = reaksi penyusunan (fotosintesis, sintesis protein); butuh energi. Katabolisme kebalikannya.",
+          "sumber": "Latihan ber-pembahasan bukusekolah.id — Metabolisme & Enzim kelas 12 (soal 01)"
+        },
+        {
+          "soal": "Istilah yang sesuai dengan pengertian 'reaksi penguraian molekul yang melepaskan energi' adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "katabolisme",
+            "denaturasi",
+            "enzim",
+            "anabolisme"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Katabolisme = penguraian molekul kompleks menjadi sederhana + melepaskan energi (respirasi, fermentasi).",
+          "sumber": "Latihan ber-pembahasan bukusekolah.id — Metabolisme & Enzim kelas 12 (soal 02)"
+        },
+        {
+          "soal": "Istilah yang sesuai dengan pengertian 'biokatalis yang mempercepat reaksi dengan menurunkan energi aktivasi' adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "enzim",
+            "denaturasi",
+            "anabolisme",
+            "situs aktif"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Enzim = biokatalis protein; mempercepat reaksi dengan menurunkan energi aktivasi, tanpa ikut habis.",
+          "sumber": "Latihan ber-pembahasan bukusekolah.id — Metabolisme & Enzim kelas 12 (soal 03)"
+        },
+        {
+          "soal": "Contoh yang paling tepat menunjukkan anabolisme adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "fotosintesis membentuk glukosa",
+            "respirasi sel memecah glukosa",
+            "substrat yang sesuai masuk ke sisi aktif",
+            "amilase membantu menguraikan pati"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Fotosintesis menyusun glukosa dari CO2 dan air = anabolisme. Opsi lain = katabolisme atau kerja enzim.",
+          "sumber": "Latihan ber-pembahasan bukusekolah.id — Metabolisme & Enzim kelas 12 (soal 06)"
+        },
+        {
+          "soal": "Contoh yang paling tepat menunjukkan denaturasi enzim adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "respirasi sel memecah glukosa",
+            "substrat yang sesuai masuk ke sisi aktif",
+            "suhu terlalu tinggi menurunkan aktivitas enzim",
+            "amilase membantu menguraikan pati"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Denaturasi = perubahan struktur enzim akibat kondisi ekstrem (suhu/pH) sehingga sisi aktif rusak dan aktivitas turun.",
+          "sumber": "Latihan ber-pembahasan bukusekolah.id — Metabolisme & Enzim kelas 12 (soal 10)"
+        },
+        {
+          "soal": "Berikut yang BUKAN merupakan faktor yang mempengaruhi kerja enzim adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "suhu lingkungan reaksi",
+            "pH medium reaksi",
+            "konsentrasi substrat dan enzim",
+            "warna wadah tempat reaksi berlangsung",
+            "keberadaan inhibitor atau aktivator"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Faktor kerja enzim: suhu, pH, konsentrasi substrat/enzim, aktivator, inhibitor. Warna wadah tidak berpengaruh — opsi pengecoh.",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi faktor kerja enzim)"
+        },
+        {
+          "soal": "Hasil bersih tahap glikolisis dari satu molekul glukosa adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "2 asam piruvat + 2 ATP + 2 NADH",
+            "2 asetil-KoA + 2 ATP + 2 FADH2",
+            "6 CO2 + 6 H2O + 38 ATP",
+            "2 etanol + 2 CO2 + 2 ATP",
+            "1 glukosa-6-fosfat + 1 ATP"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Glikolisis (sitoplasma, tanpa O2): glukosa → 2 piruvat; hasil bersih 2 ATP + 2 NADH. Asetil-KoA hasil dekarboksilasi; etanol hasil fermentasi alkohol.",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi tahapan respirasi)"
+        },
+        {
+          "soal": "Tentukan Benar/Salah pasangan tahap respirasi dan tempat berlangsungnya berikut.",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Glikolisis berlangsung di sitoplasma.",
+            "Siklus Krebs berlangsung di matriks mitokondria.",
+            "Rantai transpor elektron berlangsung di membran luar mitokondria."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Glikolisis = sitoplasma (benar); Krebs = matriks (benar); rantai transpor elektron = KRISTA/membran DALAM mitokondria, bukan membran luar (salah).",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi tempat tahap respirasi)"
+        },
+        {
+          "soal": "Pernyataan berikut yang sesuai berkaitan dengan proses respirasi anaerob adalah .... (1) menghasilkan produk berupa bahan anorganik; (2) hanya dapat berlangsung di sitoplasma; (3) hanya dapat dilakukan oleh sel prokariotik; (4) menghasilkan dua molekul ATP.",
+          "tipe": "pg",
+          "opsi": [
+            "1, 2, dan 3 benar",
+            "1 dan 3 benar",
+            "2 dan 4 benar",
+            "4 benar",
+            "semua benar"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Kunci sumber: C (2 dan 4). Produk fermentasi = bahan ORGANIK (1 salah); berlangsung di sitoplasma (2 benar); dapat dilakukan sel eukariotik seperti jamur & sel otot (3 salah); hasil bersih 2 ATP (4 benar).",
+          "sumber": "UTBK Saintek 2022 Biologi — Brain Academy (ruangguru), kunci & pembahasan resmi artikel"
+        },
+        {
+          "soal": "Molekul oksigen dalam respirasi aerob berperan sebagai ....",
+          "tipe": "pg",
+          "opsi": [
+            "akseptor awal elektron dalam rantai transpor elektron",
+            "agen kunci agar siklus Krebs dapat berlangsung",
+            "pembawa elektron dalam glikolisis",
+            "penyedia elektron dalam tahap rantai transpor elektron",
+            "akseptor akhir elektron dalam tahap rantai transpor elektron"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Kunci sumber: E. O2 = akseptor elektron TERAKHIR di rantai transpor elektron; bersama ion H+ membentuk H2O. Elektron disediakan NADH/FADH2, bukan O2.",
+          "sumber": "UTBK Saintek 2022 Biologi — Brain Academy (ruangguru), kunci & pembahasan resmi artikel"
+        },
+        {
+          "soal": "SEBAB-AKIBAT: Respirasi aerob menghasilkan molekul ATP dan NADPH dalam jumlah yang lebih banyak daripada respirasi anaerob SEBAB oksigen dibutuhkan dalam respirasi aerob sebagai penerima elektron terakhir dalam rantai transpor elektron pada tahap fosforilasi oksidatif.",
+          "tipe": "pg",
+          "opsi": [
+            "pernyataan benar, alasan benar, dan keduanya menunjukkan hubungan sebab akibat",
+            "pernyataan benar, alasan benar, tetapi keduanya tidak menunjukkan hubungan sebab akibat",
+            "pernyataan benar dan alasan salah",
+            "pernyataan salah dan alasan benar",
+            "pernyataan dan alasan salah"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Kunci sumber: D. Pernyataan SALAH (produk pembawa energi respirasi = NADH & FADH2, bukan NADPH); alasan BENAR (O2 akseptor elektron terakhir).",
+          "sumber": "UTBK Saintek 2022 Biologi — Brain Academy (ruangguru), kunci & pembahasan resmi artikel"
+        },
+        {
+          "soal": "Pada sebuah sel hewan, terdapat beberapa organel yang memiliki fungsi penting dalam mendukung kehidupan sel tersebut. Jika sebuah sel kekurangan mitokondria, maka manakah yang paling mungkin terjadi pada sel tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Kekurangan energi untuk menjalankan proses metabolisme yang vital.",
+            "Tidak mampu mencerna zat asing sehingga limbah menumpuk di sel.",
+            "Mengalami hambatan pada sintesis protein dan pengeluaran zat dari sel.",
+            "Terganggu dalam penyimpanan dan pengaturan informasi genetik.",
+            "Kehilangan kemampuan dalam menjaga bentuk dan fungsi sel."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Kunci resmi: A. Mitokondria = tempat respirasi aerob penghasil ATP; tanpa mitokondria sel krisis energi untuk proses vital.",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 8 — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Manakah yang merupakan produk REAKSI TERANG fotosintesis? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "ATP",
+            "NADPH",
+            "O2 (dari fotolisis air)",
+            "Glukosa"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "Reaksi terang (tilakoid): fotolisis air melepas O2; fotofosforilasi menghasilkan ATP & NADPH. Glukosa baru terbentuk di reaksi gelap (siklus Calvin).",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi reaksi terang vs gelap)"
+        },
+        {
+          "soal": "SEBAB-AKIBAT: Siklus Calvin merupakan reaksi gelap yang harus terjadi sebelum reaksi terang SEBAB reaksi terang akan menghasilkan ATP dan NADH sebagai molekul pembawa energi.",
+          "tipe": "pg",
+          "opsi": [
+            "pernyataan benar, alasan benar, dan keduanya menunjukkan hubungan sebab akibat",
+            "pernyataan benar, alasan benar, tetapi keduanya tidak menunjukkan hubungan sebab akibat",
+            "pernyataan benar dan alasan salah",
+            "pernyataan salah dan alasan benar",
+            "pernyataan dan alasan salah"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Kunci sumber: E. Pernyataan salah (urutan = terang dahulu lalu gelap); alasan salah (pembawa energi reaksi terang = ATP & NADPH, bukan NADH).",
+          "sumber": "UTBK Saintek 2022 Biologi — Brain Academy (ruangguru), kunci & pembahasan resmi artikel"
+        },
+        {
+          "soal": "Saat berlari sprint, otot kaki terasa panas, lelah, dan agak kaku karena sel otot kekurangan oksigen dan beralih ke fermentasi asam laktat. Mengapa energi yang dihasilkan sangat sedikit dibandingkan respirasi aerob?",
+          "tipe": "pg",
+          "opsi": [
+            "Karena hanya glikolisis yang berjalan (2 ATP); piruvat dialihkan menjadi asam laktat alih-alih masuk mitokondria sehingga Krebs dan rantai transpor elektron tidak berjalan.",
+            "Karena rantai transpor elektron berjalan mundur dan mengonsumsi ATP.",
+            "Karena asam laktat menguraikan ATP yang sudah terbentuk.",
+            "Karena sel otot tidak memiliki mitokondria sama sekali.",
+            "Karena CO2 yang tertahan menghambat ATP sintase."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Fermentasi = glikolisis saja (2 ATP). Piruvat tidak dioksidasi di mitokondria melainkan direduksi menjadi asam laktat; panenan besar (Krebs + ETC) tidak terjadi.",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi fermentasi)"
+        }
+      ]
+    }
+  ]
+}
