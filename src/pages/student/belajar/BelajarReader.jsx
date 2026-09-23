@@ -106,20 +106,7 @@ const jawabanLengkap = (s, jaw) => {
   if (t === 'isian' || t === 'uraian') return String(jaw ?? '').trim().length > 0;
   return jaw != null;
 };
-const jawabanBenar = (s, jaw) => {
-  const t = tipeSoal(s);
-  if (t === 'pgMulti') {
-    const k = s.jawaban || [];
-    return Array.isArray(jaw) && k.length > 0 && jaw.length === k.length
-      && k.every((x) => jaw.includes(x));
-  }
-  if (t === 'tabel') {
-    const k = s.jawaban || [];
-    return Array.isArray(jaw) && k.length > 0
-      && k.every((c, r) => jaw[r] === c);
-  }
-  return jaw === s.jawaban;
-};
+
 const kunciTeks = (s) => {
   const t = tipeSoal(s);
   if (t === 'pgMulti') {
@@ -894,7 +881,7 @@ function PanelKuis({
   const soal = kuis[soalIdx];
   const dipilih = jawaban[soalIdx];
   const terkoreksi = jawabanLengkap(soal, dipilih);
-  const benar = terkoreksi && jawabanBenar(soal, dipilih);
+  const multiSoal = tipeSoal(soal) === 'pgMulti';
 
   if (semuaDijawab && lihatHasil) {
     const nilai = Math.round((benarCount / kuis.length) * 100);
@@ -980,42 +967,10 @@ function PanelKuis({
               })}
             </tbody>
           </table>
+          <div style={S.hintKecil}>
+            Setiap baris dinilai mandiri; isi semua baris sebelum lanjut.
+          </div>
         </div>
-      ) : tipeSoal(soal) === 'pgMulti' ? (
-        <>
-          <div style={S.formatChip}>
-            ☑️ Centang semua pernyataan yang benar — jawaban bisa lebih dari satu.
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {(soal.opsi || []).map((op, j) => {
-              const pil = Array.isArray(dipilih) && dipilih.includes(j);
-              const kunci = (soal.jawaban || []).includes(j);
-              let gaya = S.opsi;
-              if (pil && !terkoreksi) gaya = { ...S.opsi, ...S.opsiDipilihMulti };
-              if (terkoreksi && pil && kunci) gaya = { ...S.opsi, ...S.opsiBenar };
-              else if (terkoreksi && pil && !kunci) gaya = { ...S.opsi, ...S.opsiSalah };
-              else if (terkoreksi && !pil && kunci) gaya = { ...S.opsi, ...S.opsiKunciTipis };
-              return (
-                <button key={j} type="button" style={gaya} disabled={terkoreksi}
-                  onClick={() => pilihMulti(soalIdx, j)}>
-                  <span style={{
-                    ...S.opsiKotak,
-                    ...(pil ? S.opsiKotakIsi : null),
-                  }}>
-                    {pil ? <CheckCircle2 size={13} /> : null}
-                  </span>
-                  <span style={{ flex: 1, textAlign: 'left' }}>
-                    <MathText text={op} />
-                    {terkoreksi && kunci && (
-                      <span style={S.kunciTag}>✓ kunci</span>
-                    )}
-                  </span>
-                  <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
-                </button>
-              );
-            })}
-          </div>
-        </>
       ) : tipeSoal(soal) === 'jodoh' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {(soal.premis || []).map((pr, r) => {
@@ -1048,7 +1003,7 @@ function PanelKuis({
             );
           })}
           <div style={S.hintKecil}>
-            Setiap respons hanya dapat dipakai untuk satu premis.
+            Satu respons hanya untuk satu premis; mulai dari pasangan pasti.
           </div>
         </div>
       ) : tipeSoal(soal) === 'isian' ? (
@@ -1077,29 +1032,54 @@ function PanelKuis({
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {(soal.opsi || []).map((op, j) => {
-            let gaya = S.opsi;
-            if (terkoreksi && j === soal.jawaban) gaya = { ...S.opsi, ...S.opsiBenar };
-            else if (terkoreksi && dipilih === j) gaya = { ...S.opsi, ...S.opsiSalah };
+            const multi = multiSoal;
+            const pil = multi
+              ? (Array.isArray(dipilih) && dipilih.includes(j))
+              : (dipilih === j);
+            const kunci = multi
+              ? (soal.jawaban || []).includes(j)
+              : (j === soal.jawaban);
+            let border = `1px solid ${T.garis}`;
+            let bg = '#fff';
+            if (pil && !terkoreksi) { border = `2px solid ${T.biru}`; bg = T.kotakBiru; }
+            if (terkoreksi && kunci) { border = `2px solid ${T.hijau}`; bg = T.hijauLatar; }
+            else if (terkoreksi && pil && !kunci) { border = `2px solid ${T.merah}`; bg = T.merahLatar; }
             return (
-              <button key={j} type="button" style={gaya} disabled={terkoreksi}
-                onClick={() => pilih(soalIdx, j)}>
+              <button key={j} type="button"
+                disabled={terkoreksi}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px', borderRadius: 10,
+                  border, background: bg, cursor: terkoreksi ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit', textAlign: 'left', width: '100%',
+                }}
+                onClick={() => (multi ? pilihMulti(soalIdx, j) : pilih(soalIdx, j))}>
                 <span style={{
-                  ...S.opsiBulat,
-                  ...(terkoreksi && j === soal.jawaban ? S.opsiBulatBenar : null),
-                  ...(terkoreksi && dipilih === j && !benar ? S.opsiBulatSalah : null),
+                  width: 20, height: 20, flexShrink: 0,
+                  borderRadius: multi ? 4 : '50%',
+                  border: `2px solid ${pil ? T.biru : '#CBD5E1'}`,
+                  background: pil ? T.biru : '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff',
                 }}>
-                  {terkoreksi && j === soal.jawaban
-                    ? <CheckCircle2 size={13} />
-                    : terkoreksi && dipilih === j ? <XCircle size={13} /> : null}
+                  {pil ? <CheckCircle2 size={12} /> : null}
                 </span>
-                <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
-                <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+                <span style={{ flex: 1, fontSize: 13, color: T.teks, lineHeight: 1.55 }}>
+                  <MathText text={op} />
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: T.samar }}>
+                  {String.fromCharCode(65 + j)}.
+                </span>
               </button>
             );
           })}
+          {multiSoal && (
+            <div style={S.hintKecil}>
+              Jawaban benar bisa lebih dari satu; centang semua yang sesuai.
+            </div>
+          )}
         </div>
       )}
-
       {terkoreksi && tipeSoal(soal) === 'uraian' ? (
         <div style={{ ...kotakTips, background: T.kotakBiru, borderColor: T.kotakBiruGaris, color: T.biruDalam }}>
           <CheckCircle2 size={15} />
