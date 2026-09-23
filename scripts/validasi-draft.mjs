@@ -14,7 +14,7 @@ const files = process.argv.slice(2).length
   : readdirSync(DIR).filter((f) => f.endsWith('.json')).map((f) => join(DIR, f));
 
 const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'gambar', 'langkah']);
-const TIPE_CALLOUT = new Set(['info', 'tips', 'peringatan', 'gemilang']);
+const TIPE_CALLOUT = new Set(['info', 'tips', 'peringatan', 'gemilang', 'guru']);
 let masalah = 0;
 const salah = (f, teks) => { masalah += 1; console.log(`   ❌ ${f}: ${teks}`); };
 
@@ -80,6 +80,9 @@ for (const f of files) {
         salah(f, `${label2}: indeks jawaban ${k.jawaban} di luar rentang 0..${opsi.length - 1}`);
       }
       if (k.perluKunci) console.log(`   ⚠️  ${label2}: ditandai perluKunci`);
+      if (k.pembahasanGambar && !/^https?:\/\//.test(k.pembahasanGambar)) {
+        salah(f, `${label2}: pembahasanGambar harus URL http(s)`);
+      }
     });
     const adaPdf = b.pdfUrl ? '📄' : '';
     const adaHal = (b.halamanBuku || []).length ? `🖼${b.halamanBuku.length}` : '';
