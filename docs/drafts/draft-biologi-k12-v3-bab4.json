@@ -16,7 +16,9 @@
       "Matriks Asesmen TKA Biologi — Pusmendik Kemendikdasmen 2025 (imun, koordinasi, reproduksi).",
       "UN 2017 soal mata via kakajaz.blogspot (diadaptasi seperlunya).",
       "Diagram buatan tim kurikulum (tabel/alur/panah) sesuai izin owner; crop diagram modul menyusul.",
-      "Gambar soal UN 2017 No. 17 (penampang mata manusia bernomor 1-5) — foto soal asli via kakajaz.blogspot.com/2017/11/pembahasan-biologi-un-2017-no-16-20.html, diarsipkan di Supabase materi-bimbel/materi-v2/soal-gambar/un2017-penampang-mata.jpg (kredit: Kemendikbud RI, UN 2017)."
+      "Gambar soal UN 2017 No. 17 (penampang mata manusia bernomor 1-5) — foto soal asli via kakajaz.blogspot.com/2017/11/pembahasan-biologi-un-2017-no-16-20.html, diarsipkan di Supabase materi-bimbel/materi-v2/soal-gambar/un2017-penampang-mata.jpg (kredit: Kemendikbud RI, UN 2017).",
+      "Gambar neuron, sinaps, mata, telinga, spermatogenesis, oogenesis, serta organ reproduksi pria & wanita: crop dari MODUL TENTOR GEMILANG RANGKUMAN MATERI (internal), bagian Biologi hal. cetak 139, 143, 146-147; gambar pada modul mencantumkan sumber Neil A. Campbell & Jane B. Reece, Biology 8th ed. (2008).",
+      "Bagan alur respons imun spesifik serta gerak sadar vs gerak refleks: buatan tim kurikulum Gemilang sebagai visual penunjang (izin owner Turn 44)."
     ]
   },
   "bab": [
@@ -118,6 +120,11 @@
           "tipe": "gemilang",
           "judul": "Cara Gemilang — siapa berbuat apa",
           "teks": "Makrofag = penyaji antigen. T helper = koordinator. Limfosit B = pabrik antibodi + memori. T sitotoksik = eksekutor sel terinfeksi. Empat peran ini menjawab hampir semua soal mekanisme imun."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bagan-bab4-respons-imun.jpg",
+          "keterangan": "Bagan respons imun spesifik: patogen difagosit makrofag, antigen disajikan ke limfosit T helper, lalu bercabang ke jalur humoral (limfosit B -> antibodi) dan jalur seluler (limfosit T sitotoksik -> lisis sel terinfeksi), disertai sel memori sebagai dasar vaksinasi. Bagan alur: tim kurikulum Gemilang (penunjang)."
         },
         {
           "jenis": "judul",
@@ -246,6 +253,16 @@
           ]
         },
         {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-struktur-neuron.jpg",
+          "keterangan": "Struktur neuron (sel saraf): dendrit penerima rangsang, badan sel pengolah, dan akson berselubung mielin yang menghantar impuls menuju sinaps. Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Neil A. Campbell & Jane B. Reece (2008)."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-mekanisme-sinaps.jpg",
+          "keterangan": "Mekanisme sinaps: vesikel sinaps melepas neurotransmiter ke celah sinaps, berikatan dengan reseptor (ligan pintu gerbang ion) pada membran pascasinaps sehingga impuls berlanjut ke neuron berikutnya. Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Campbell & Reece (2008)."
+        },
+        {
           "jenis": "judul",
           "level": 2,
           "teks": "Pembagian sistem saraf"
@@ -301,6 +318,11 @@
             "Neuron motorik → efektor",
             "Tanggapan lebih lambat tetapi terencana"
           ]
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bagan-bab4-gerak-sadar-refleks.jpg",
+          "keterangan": "Perbandingan jalur gerak sadar (rangsang - reseptor - neuron sensorik - OTAK - neuron motorik - efektor) dengan gerak refleks (pusat di SUMSUM TULANG BELAKANG) sehingga respons lebih cepat dan bersifat melindungi. Bagan alur: tim kurikulum Gemilang (penunjang)."
         },
         {
           "jenis": "judul",
@@ -393,6 +415,16 @@
           ]
         },
         {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-penampang-mata.jpg",
+          "keterangan": "Penampang bola mata manusia: lapisan pelindung sklera-kornea, koroid ber-pembuluh darah, dan retina berisi sel fotoreseptor (batang & kerucut); lensa memfokuskan bayangan ke bintik kuning (fovea). Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Campbell & Reece (2008)."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-penampang-telinga.jpg",
+          "keterangan": "Penampang telinga: telinga luar (daun telinga, kanal auditori), telinga tengah (membran timpani, maleus, inkus, stapes), dan telinga dalam (koklea untuk pendengaran serta kanal semisirkularis untuk keseimbangan). Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Campbell & Reece (2008)."
+        },
+        {
           "jenis": "judul",
           "level": 2,
           "teks": "Kelainan sistem koordinasi"
@@ -448,6 +480,11 @@
           ]
         },
         {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-organ-reproduksi-pria.jpg",
+          "keterangan": "Organ reproduksi pria: testis tempat spermatogenesis, epididimis pematangan sperma, vas deferens, serta kelenjar pendukung (vesikula seminalis, prostat, bulbouretralis). Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
+        },
+        {
           "jenis": "judul",
           "level": 2,
           "teks": "Reproduksi wanita & siklus menstruasi"
@@ -490,6 +527,11 @@
           ]
         },
         {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-organ-reproduksi-wanita.jpg",
+          "keterangan": "Organ reproduksi wanita: ovarium penghasil ovum dan hormon, tuba fallopi (oviduk) tempat fertilisasi, uterus tempat implantasi, serviks, dan vagina. Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
+        },
+        {
           "jenis": "judul",
           "level": 2,
           "teks": "Gametogenesis"
@@ -514,6 +556,16 @@
             "Meiosis II (bila dibuahi) → ovum + badan polar II",
             "Hasil fungsional: 1 ovum (sitoplasma besar)"
           ]
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-spermatogenesis.jpg",
+          "keterangan": "Spermatogenesis: spermatogonium (2n) -> spermatosit primer -> meiosis I -> 2 spermatosit sekunder (n) -> meiosis II -> 4 spermatid -> 4 spermatozoa fungsional. Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-oogenesis.jpg",
+          "keterangan": "Oogenesis: oogonium (2n) -> oosit primer -> meiosis I -> oosit sekunder + badan polar primer -> meiosis II -> 1 ovum fungsional + badan polar. Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
         },
         {
           "jenis": "judul",
