@@ -27,67 +27,324 @@
       "urutan": 2,
       "tipe": "teks",
       "sections": [
-        { "jenis": "callout", "tipe": "info", "judul": "Peta belajar bab ini", "teks": "A. Enzim (A.1 struktur & sifat, A.2 mekanisme kerja, A.3 faktor & inhibitor, A.4 enzim kunci metabolisme) • B. Katabolisme (B.1 overview, B.2 glikolisis, B.3 dekarboksilasi oksidatif, B.4 siklus Krebs, B.5 transpor elektron, B.6 neraca energi, B.7 fermentasi) • C. Anabolisme (C.1 kloroplas & pigmen, C.2 reaksi terang, C.3 siklus Calvin, C.4 faktor & percobaan klasik, C.5 kemosintesis) • D. Integrasi (D.1 koneksi dua arah, D.2 kasus inhibitor & catatan praktikum)." },
-
-        { "jenis": "judul", "level": 1, "teks": "Enzim: Kunci Seluruh Reaksi Metabolisme" },
-        { "jenis": "judul", "level": 2, "teks": "Struktur dan sifat enzim" },
-        { "jenis": "paragraf", "teks": "Enzim adalah biokatalis protein yang mempercepat reaksi kimia sel tanpa ikut berubah atau habis. Enzim lengkap (holoenzim) = apoenzim (bagian protein) + kofaktor: koenzim (molekul organik seperti NAD+, FAD, koenzim A) atau ion logam (Mg2+, Fe2+, Zn2+). Sifat yang wajib hafal: (1) hanya diperlukan dalam jumlah sedikit; (2) bekerja spesifik pada substrat tertentu; (3) tidak mengubah kesetimbangan reaksi, hanya mempercepat tercapainya kesetimbangan; (4) dapat bekerja bolak-balik (reversibel); (5) aktivitasnya dipengaruhi suhu, pH, dan zat lain; (6) mudah terdenaturasi (rusak bentuk) oleh suhu ekstrem, pH ekstrem, logam berat." },
-        { "jenis": "judul", "level": 2, "teks": "Mekanisme kerja: menurunkan energi aktivasi" },
-        { "jenis": "paragraf", "teks": "Setiap reaksi kimia membutuhkan energi aktivasi (Ea) untuk memulai. Enzim menurunkan Ea dengan mengikat substrat pada sisi aktif membentuk kompleks enzim-substrat, memberikan tekanan/orientasi yang melemahkan ikatan substrat sehingga produk terbentuk lebih mudah. Dua model: LOCK AND KEY (sisi aktif sudah komplementer persis dengan substrat, Fischer) dan INDUCED FIT (sisi aktif menyesuaikan bentuk saat substrat masuk, Koshland — model yang lebih diterima). Setelah produk lepas, enzim utuh kembali dan siap mengkatalisis substrat berikutnya." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-5-lock-and-key.jpg", "keterangan": "Teori lock and key (gembok-anak kunci) dan induced fit: kompleks enzim-substrat terbentuk lalu produk lepas dan enzim utuh kembali. Gambar 1.5 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 7 (buku mencantumkan sumber asli: Biology Brain, 2022)." },
-        { "jenis": "judul", "level": 2, "teks": "Faktor yang mempengaruhi aktivitas dan inhibisi" },
-        { "jenis": "paragraf", "teks": "Suhu: aktivitas naik sampai optimum (±37°C pada manusia) lalu anjlok karena denaturasi. pH: tiap enzim punya optimum sendiri (pepsin ±2 di lambung, tripsin ±8 di usus, amilase ±7). Konsentrasi: makin banyak substrat, laju naik hingga semua sisi aktif jenuh (kurva mendatar); menambah enzim menaikkan laju maksimum. Aktivator (ion logam, koenzim) meningkatkan aktivitas; INHIBITOR menurunkannya: kompetitif (menutup sisi aktif, dapat diatasi menambah substrat) vs non-kompetitif (menempel di situs lain mengubah bentuk enzim, tidak dapat diatasi menambah substrat); irreversibel (logam berat, sianida, gas saraf)." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — 4 kata enzim + alarm denaturasi", "teks": "Spesifik, menurunkan Ea, tak habis, tak geser setimbang. Alarm denaturasi: kata kunci 'dipanaskan', 'pH ekstrem', 'logam berat' + 'aktivitas hilang permanen' = bentuk sisi aktif rusak, bukan enzim 'lelah'." },
-        { "jenis": "judul", "level": 2, "teks": "Enzim-enzim kunci dalam metabolisme" },
-        { "jenis": "paragraf", "teks": "Beberapa enzim yang paling sering muncul: katalase (menguraikan H2O2 menjadi H2O + O2 di peroksisom), dehidrogenase (memindahkan elektron ke NAD+/FAD pada respirasi), ATP sintase (membentuk ATP lewat gradien H+), Rubisco (mengikat CO2 pada siklus Calvin — protein paling melimpah di bumi), amilase/ptialin (pati → maltosa), protease seperti pepsin & tripsin (protein → pepton/asam amino), lipase (lemak → asam lemak + gliserol)." },
-
-        { "jenis": "judul", "level": 1, "teks": "Katabolisme: Membongkar Glukosa Menjadi ATP" },
-        { "jenis": "judul", "level": 2, "teks": "Overview dan persamaan reaksi" },
-        { "jenis": "paragraf", "teks": "Katabolisme = rangkaian reaksi pemecahan molekul kompleks menjadi sederhana dengan melepaskan energi (eksergonik). Respirasi aerob (dengan O2) membongkar glukosa sempurna menjadi CO2 + H2O + ±30-38 ATP melalui empat tahap berurutan: glikolisis (sitoplasma), dekarboksilasi oksidatif (matriks mitokondria), siklus Krebs (matriks), transpor elektron + fosforilasi oksidatif (krista/mitokondria). Respirasi anaerob (fermentasi) hanya menjalankan glikolisis lalu mereduksi piruvat menjadi produk organik." },
-        { "jenis": "rumus", "latex": "\\text{C}_6\\text{H}_{12}\\text{O}_6 + 6\\,\\text{O}_2 \\rightarrow 6\\,\\text{CO}_2 + 6\\,\\text{H}_2\\text{O} + \\pm 30\\text{-}38\\ \\text{ATP}" },
-        { "jenis": "judul", "level": 2, "teks": "Glikolisis: investasi lalu panen" },
-        { "jenis": "paragraf", "teks": "Glikolisis (sitoplasma, tanpa O2, 10 langkah enzimatis) membelah glukosa (6C) menjadi 2 PGAL (3C) lalu 2 asam piruvat. Fase INVESTISI energi memakai 2 ATP (fosforilasi glukosa & fruktosa-1,6-bifosfat); fase PEMBENTUKAN energi menghasilkan 4 ATP (substrate-level phosphorylation) + 2 NADH. Hasil bersih per glukosa: 2 ATP + 2 NADH + 2 piruvat. Karena terjadi di sitoplasma dan tidak butuh O2, glikolisis adalah jalur tertua dan satu-satunya pemasok ATP saat kondisi anaerob." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-15-bagan-glikolisis.jpg", "keterangan": "Bagan glikolisis: fase investasi energi (2 ATP dipakai) dan fase pembentukan energi (4 ATP + 2 NADH2 dihasilkan) — bersih 2 ATP + 2 asam piruvat. Gambar 1.15 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 30." },
-        { "jenis": "judul", "level": 2, "teks": "Dekarboksilasi oksidatif: pintu masuk mitokondria" },
-        { "jenis": "paragraf", "teks": "Setiap piruvat (3C) masuk matriks mitokondria, melepaskan 1 CO2 (dekarboksilasi) dan teroksidasi sambil mereduksi NAD+ menjadi NADH; sisa 2C bergabung dengan koenzim A membentuk asetil-KoA. Per glukosa: 2 asetil-KoA + 2 NADH + 2 CO2. Tahap ini menghubungkan glikolisis dengan siklus Krebs." },
-        { "jenis": "judul", "level": 2, "teks": "Siklus Krebs: pembongkaran sempurna menjadi CO2" },
-        { "jenis": "paragraf", "teks": "Asetil-KoA (2C) bergabung dengan oksaloasetat (4C) membentuk sitrat (6C); melalui serangkaian oksidasi-dekarboksilasi, dua karbon dilepas sebagai CO2 dan oksaloasetat diregenerasi (karena itu disebut siklus). Hasil SATU putaran: 3 NADH + 1 FADH2 + 1 ATP/GTP + 2 CO2. Per glukosa (2 putaran): 6 NADH + 2 FADH2 + 2 ATP + 4 CO2. Seluruh CO2 yang kita hembuskan berasal dari tahap ini dan dekarboksilasi oksidatif." },
-        { "jenis": "judul", "level": 2, "teks": "Rantai transpor elektron dan fosforilasi oksidatif" },
-        { "jenis": "paragraf", "teks": "NADH & FADH2 menyerahkan elektron ke kompleks protein pada membran dalam (krista). Elektron melompat antar kompleks melepaskan energi untuk memompa H+ ke ruang antarmembran, menciptakan gradien elektrokimia. H+ kembali masuk melalui ATP SINTASE (kemiosmosis) menghasilkan ATP terbanyak (±2,5-3 ATP per NADH; ±1,5-2 ATP per FADH2). Di ujung rantai, OKSIGEN berperan sebagai akseptor elektron terakhir, bergabung dengan H+ membentuk H2O — tanpa O2 rantai berhenti total." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-13-tahapan-respirasi.jpg", "keterangan": "Empat tahapan respirasi aerob dan tempat berlangsungnya: glikolisis (sitoplasma), oksidasi asam piruvat & siklus Krebs (matriks), fosforilasi oksidatif/transpor elektron (krista). Gambar 1.13 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 18." },
-        { "jenis": "judul", "level": 2, "teks": "Neraca energi dan efisiensi" },
-        { "jenis": "paragraf", "teks": "Rekap per glukosa: glikolisis 2 ATP + 2 NADH; dekarboksilasi 2 NADH; Krebs 2 ATP + 6 NADH + 2 FADH2; transpor elektron mengubah 10 NADH + 2 FADH2 menjadi ±26-34 ATP. Total kutipan buku lama ±36-38 ATP, perhitungan modern ±30-32 ATP (karena biaya transpor NADH sitoplasma). Efisiensi ±34-40%; sisanya keluar sebagai panas — itulah mengapa tubuh hangat saat berolahraga." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — ledger ATP & tiket elektron", "teks": "ATP langsung (recehan): 2 glikolisis + 2 Krebs. Tiket elektron: 10 NADH + 2 FADH2 → panen besar di krista. Soal 'hasil tahap X' = cocokkan tempat + recehan + tiketnya." },
-        { "jenis": "judul", "level": 2, "teks": "Fermentasi: bertahan tanpa oksigen" },
-        { "jenis": "paragraf", "teks": "Tanpa O2, NADH tidak dapat dibuang di rantai transpor; sel harus meregenerasi NAD+ agar glikolisis terus jalan. Fermentasi asam laktat (sel otot berat, Lactobacillus): piruvat + NADH → asam laktat + NAD+ (penumpukan asam laktat = pegal). Fermentasi alkohol (ragi Saccharomyces): piruvat → asetaldehida + CO2, lalu asetaldehida + NADH → etanol + NAD+ (CO2-nya mengembangkan roti). Hasil energi HANYA 2 ATP dari glikolisis — sangat tidak efisien karena energi masih tersimpan dalam produk organik." },
-        { "jenis": "langkah", "judul": "Membandingkan respirasi aerob vs fermentasi", "items": ["Aerob: akhir piruvat = CO2 + H2O; energi ±30-38 ATP; tempat mitokondria terlibat.", "Fermentasi: akhir piruvat = laktat/etanol; energi 2 ATP; seluruhnya di sitoplasma.", "Keduanya tetap membutuhkan glikolisis — itu titik pertemuannya."] },
-        { "jenis": "judul", "level": 1, "teks": "Anabolisme: Fotosintesis Menyusun Glukosa" },
-        { "jenis": "judul", "level": 2, "teks": "Kloroplas dan pigmen penangkap cahaya" },
-        { "jenis": "paragraf", "teks": "Fotosintesis berlangsung di kloroplas: membran luar & dalam, stroma (cairan tempat siklus Calvin), dan tilakoid (kantong membran bertumpuk = grana, tempat reaksi terang). Pigmen: klorofil a (pusat reaksi, menyerap biru-merah, memantulkan hijau), klorofil b (antena), karotenoid (kuning-oranye, pelindung & antena). Klorofil a pada fotosistem I menyerap maksimum ±700 nm (P700), fotosistem II ±680 nm (P680)." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-21-struktur-kloroplas.jpg", "keterangan": "Struktur kloroplas: membran luar, membran dalam, lamela, grana (tumpukan tilakoid), dan stroma. Gambar 1.21 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 42." },
-        { "jenis": "judul", "level": 2, "teks": "Reaksi terang: cahaya menjadi ATP & NADPH" },
-        { "jenis": "paragraf", "teks": "Di membran tilakoid, foton mengeksitasi elektron fotosistem II; air difotolisis (2H2O → 4H+ + 4e- + O2) sehingga O2 lepas sebagai produk samping. Elektron mengalir melalui rantai transpor (plastoquinon, sitokrom, plastosianin) ke fotosistem I sambil memompa H+ ke lumen tilakoid; gradien H+ menggerakkan ATP sintase (fotofosforilasi). Fotosistem I menyerahkan elektron ke NADP+ membentuk NADPH. Alur ini (air → PSII → PSI → NADPH) disebut non-siklik; jalur siklik (hanya PSI) menghasilkan ATP tambahan tanpa NADPH/O2." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-24-reaksi-terang.jpg", "keterangan": "Empat tahap reaksi terang: penangkapan cahaya, fotolisis air, transpor elektron, dan pembentukan ATP/NADPH. Gambar 1.24 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 45." },
-        { "jenis": "judul", "level": 2, "teks": "Siklus Calvin: mengikat CO2 menjadi gula" },
-        { "jenis": "paragraf", "teks": "Di stroma, siklus Calvin memakai ATP & NADPH reaksi terang untuk mereduksi CO2 menjadi gula dalam tiga fase: (1) FIKSASI — enzim Rubisco mengikat CO2 pada RuBP (5C) membentuk 2 molekul PGA (3C); (2) REDUKSI — PGA direduksi oleh ATP & NADPH menjadi PGAL/G3P; sebagian G3P keluar untuk menyusun glukosa; (3) REGENERASI — sisa G3 disusun ulang menjadi RuBP memakai ATP. Untuk 1 glukosa: 6 CO2 + 18 ATP + 12 NADPH. 'Reaksi gelap' tidak berarti butuh gelap — hanya tidak memerlukan cahaya langsung." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-26-siklus-calvin.jpg", "keterangan": "Siklus Calvin: fiksasi CO2 oleh Rubisco, reduksi PGA menjadi PGAL memakai ATP & NADPH, dan regenerasi RuBP. Gambar 1.26 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 48." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — NADPH vs NADH", "teks": "NADPH = fotosintesis (P untuk photosynthesis); NADH = respirasi. Satu huruf ini menumbangkan pengecoh 'reaksi terang menghasilkan NADH'." },
-        { "jenis": "judul", "level": 2, "teks": "Faktor yang mempengaruhi & percobaan klasik" },
-        { "jenis": "paragraf", "teks": "Laju fotosintesis dipengaruhi intensitas cahaya (naik lalu jenuh — saat jenuh faktor pembatas pindah ke CO2/suhu), kadar CO2, suhu (kerja enzim Rubisco dkk), ketersediaan air & mineral. Percobaan klasik: INGENHOUSZ (Hydrilla dalam corong melepaskan gelembung O2 hanya saat terkena cahaya → fotosintesis menghasilkan O2) dan SACHS (daun sebagian tertutup setelah diuji iodin berubah biru-hitam hanya di bagian terkena cahaya → fotosintesis menghasilkan amilum & butuh cahaya)." },
-        { "jenis": "judul", "level": 2, "teks": "Kemosintesis: anabolisme tanpa cahaya" },
-        { "jenis": "paragraf", "teks": "Sejumlah bakteri autotrof menyusun bahan organik memakai energi kimia, bukan cahaya: bakteri nitrifikasi (Nitrosomonas mengoksidasi amonia menjadi nitrit, Nitrobacter nitrit menjadi nitrat), bakteri sulfur (mengoksidasi H2S), bakteri besi (mengoksidasi Fe2+). Peran ekologisnya besar dalam daur nitrogen dan kesuburan tanah." },
-        { "jenis": "judul", "level": 1, "teks": "Integrasi Metabolisme dan Kasus Inhibitor" },
-        { "jenis": "judul", "level": 2, "teks": "Koneksi dua arah respirasi-fotosintesis" },
-        { "jenis": "paragraf", "teks": "Produk satu proses adalah bahan baku proses lain: O2 dan glukosa hasil fotosintesis menjadi substrat respirasi; CO2 dan H2O hasil respirasi menjadi bahan fotosintesis. Senyawa antara menjadi simpul jalur: G3P/PGAL, piruvat, dan asetil-KoA dapat dialihkan untuk sintesis lemak, asam amino, atau pati — karena itu metabolisme adalah JARINGAN, bukan dua pipa terpisah." },
-        { "jenis": "judul", "level": 2, "teks": "Kasus inhibitor & catatan praktikum" },
-        { "jenis": "contoh", "judul": "Kasus: racun sianida", "teks": "Sianida mengikat sitokrom c oksidase (kompleks IV) sehingga elektron tidak dapat diserahkan ke O2. Prediksikan akibat berantainya.", "pembahasan": "Rantai transpor berhenti → gradien H+ runtuh → ATP sintase berhenti (ATP anjlok) → NADH/FADH2 menumpuk → siklus Krebs & glikolisis terhambat umpan balik; sel beralih fermentasi sebentar lalu mati. O2 tetap ada di darah tetapi tidak dapat dipakai (histotoxic hypoxia)." },
-        { "jenis": "callout", "tipe": "guru", "judul": "Catatan Guru", "teks": "Praktikum murah: (1) respirometer sederhana kecambah + NaOH untuk menunjukkan konsumsi O2; (2) Ingenhousz dengan Hydrilla + corong; (3) uji iodin daun bervariegasi untuk Sachs sekaligus membahas peran klorofil." }
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Peta belajar bab ini",
+          "teks": "A. Enzim (A.1 struktur & sifat, A.2 mekanisme kerja, A.3 faktor & inhibitor, A.4 enzim kunci metabolisme) • B. Katabolisme (B.1 overview, B.2 glikolisis, B.3 dekarboksilasi oksidatif, B.4 siklus Krebs, B.5 transpor elektron, B.6 neraca energi, B.7 fermentasi) • C. Anabolisme (C.1 kloroplas & pigmen, C.2 reaksi terang, C.3 siklus Calvin, C.4 faktor & percobaan klasik, C.5 kemosintesis) • D. Integrasi (D.1 koneksi dua arah, D.2 kasus inhibitor & catatan praktikum)."
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Enzim: Kunci Seluruh Reaksi Metabolisme"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Struktur dan sifat enzim"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Enzim adalah biokatalis protein yang mempercepat reaksi kimia sel tanpa ikut berubah atau habis. Enzim lengkap (holoenzim) = apoenzim (bagian protein) + kofaktor: koenzim (molekul organik seperti NAD+, FAD, koenzim A) atau ion logam (Mg2+, Fe2+, Zn2+). Sifat yang wajib hafal: (1) hanya diperlukan dalam jumlah sedikit; (2) bekerja spesifik pada substrat tertentu; (3) tidak mengubah kesetimbangan reaksi, hanya mempercepat tercapainya kesetimbangan; (4) dapat bekerja bolak-balik (reversibel); (5) aktivitasnya dipengaruhi suhu, pH, dan zat lain; (6) mudah terdenaturasi (rusak bentuk) oleh suhu ekstrem, pH ekstrem, logam berat."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Enam sifat enzim wajib hafal",
+          "items": [
+            "Biokatalis protein; jumlah sedikit saja cukup.",
+            "Spesifik pada substrat tertentu.",
+            "Tidak menggeser kesetimbangan — hanya mempercepat.",
+            "Dapat bekerja bolak-balik (reversibel).",
+            "Dipengaruhi suhu, pH, konsentrasi, aktivator/inhibitor.",
+            "Mudah denaturasi oleh panas/pH ekstrem/logam berat."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Mekanisme kerja: menurunkan energi aktivasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Setiap reaksi kimia membutuhkan energi aktivasi (Ea) untuk memulai. Enzim menurunkan Ea dengan mengikat substrat pada sisi aktif membentuk kompleks enzim-substrat, memberikan tekanan/orientasi yang melemahkan ikatan substrat sehingga produk terbentuk lebih mudah. Dua model: LOCK AND KEY (sisi aktif sudah komplementer persis dengan substrat, Fischer) dan INDUCED FIT (sisi aktif menyesuaikan bentuk saat substrat masuk, Koshland — model yang lebih diterima). Setelah produk lepas, enzim utuh kembali dan siap mengkatalisis substrat berikutnya."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-5-lock-and-key.jpg",
+          "keterangan": "Teori lock and key (gembok-anak kunci) dan induced fit: kompleks enzim-substrat terbentuk lalu produk lepas dan enzim utuh kembali. Gambar 1.5 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 7 (buku mencantumkan sumber asli: Biology Brain, 2022)."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Faktor yang mempengaruhi aktivitas dan inhibisi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Suhu: aktivitas naik sampai optimum (±37°C pada manusia) lalu anjlok karena denaturasi. pH: tiap enzim punya optimum sendiri (pepsin ±2 di lambung, tripsin ±8 di usus, amilase ±7). Konsentrasi: makin banyak substrat, laju naik hingga semua sisi aktif jenuh (kurva mendatar); menambah enzim menaikkan laju maksimum. Aktivator (ion logam, koenzim) meningkatkan aktivitas; INHIBITOR menurunkannya: kompetitif (menutup sisi aktif, dapat diatasi menambah substrat) vs non-kompetitif (menempel di situs lain mengubah bentuk enzim, tidak dapat diatasi menambah substrat); irreversibel (logam berat, sianida, gas saraf)."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Dua kelas inhibitor",
+          "items": [
+            "Kompetitif: menutup sisi aktif; DAPAT diatasi menambah substrat.",
+            "Non-kompetitif: menempel situs lain, mengubah bentuk enzim; TIDAK dapat diatasi menambah substrat.",
+            "Irreversibel: sianida, logam berat, gas saraf — merusak permanen."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — 4 kata enzim + alarm denaturasi",
+          "teks": "Spesifik, menurunkan Ea, tak habis, tak geser setimbang. Alarm denaturasi: kata kunci 'dipanaskan', 'pH ekstrem', 'logam berat' + 'aktivitas hilang permanen' = bentuk sisi aktif rusak, bukan enzim 'lelah'."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Enzim-enzim kunci dalam metabolisme"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Beberapa enzim yang paling sering muncul: katalase (menguraikan H2O2 menjadi H2O + O2 di peroksisom), dehidrogenase (memindahkan elektron ke NAD+/FAD pada respirasi), ATP sintase (membentuk ATP lewat gradien H+), Rubisco (mengikat CO2 pada siklus Calvin — protein paling melimpah di bumi), amilase/ptialin (pati → maltosa), protease seperti pepsin & tripsin (protein → pepton/asam amino), lipase (lemak → asam lemak + gliserol)."
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Katabolisme: Membongkar Glukosa Menjadi ATP"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Overview dan persamaan reaksi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Katabolisme = rangkaian reaksi pemecahan molekul kompleks menjadi sederhana dengan melepaskan energi (eksergonik). Respirasi aerob (dengan O2) membongkar glukosa sempurna menjadi CO2 + H2O + ±30-38 ATP melalui empat tahap berurutan: glikolisis (sitoplasma), dekarboksilasi oksidatif (matriks mitokondria), siklus Krebs (matriks), transpor elektron + fosforilasi oksidatif (krista/mitokondria). Respirasi anaerob (fermentasi) hanya menjalankan glikolisis lalu mereduksi piruvat menjadi produk organik."
+        },
+        {
+          "jenis": "rumus",
+          "latex": "\\text{C}_6\\text{H}_{12}\\text{O}_6 + 6\\,\\text{O}_2 \\rightarrow 6\\,\\text{CO}_2 + 6\\,\\text{H}_2\\text{O} + \\pm 30\\text{-}38\\ \\text{ATP}"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Glikolisis: investasi lalu panen"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Glikolisis (sitoplasma, tanpa O2, 10 langkah enzimatis) membelah glukosa (6C) menjadi 2 PGAL (3C) lalu 2 asam piruvat. Fase INVESTISI energi memakai 2 ATP (fosforilasi glukosa & fruktosa-1,6-bifosfat); fase PEMBENTUKAN energi menghasilkan 4 ATP (substrate-level phosphorylation) + 2 NADH. Hasil bersih per glukosa: 2 ATP + 2 NADH + 2 piruvat. Karena terjadi di sitoplasma dan tidak butuh O2, glikolisis adalah jalur tertua dan satu-satunya pemasok ATP saat kondisi anaerob."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Neraca glikolisis per glukosa",
+          "items": [
+            "Investasi: −2 ATP. Panen: +4 ATP + 2 NADH.",
+            "BERSIH: 2 ATP + 2 NADH + 2 asam piruvat.",
+            "Tempat: sitoplasma; TIDAK butuh O2 → satu-satunya pemasok ATP saat anaerob."
+          ]
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-15-bagan-glikolisis.jpg",
+          "keterangan": "Bagan glikolisis: fase investasi energi (2 ATP dipakai) dan fase pembentukan energi (4 ATP + 2 NADH2 dihasilkan) — bersih 2 ATP + 2 asam piruvat. Gambar 1.15 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 30."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Dekarboksilasi oksidatif: pintu masuk mitokondria"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Setiap piruvat (3C) masuk matriks mitokondria, melepaskan 1 CO2 (dekarboksilasi) dan teroksidasi sambil mereduksi NAD+ menjadi NADH; sisa 2C bergabung dengan koenzim A membentuk asetil-KoA. Per glukosa: 2 asetil-KoA + 2 NADH + 2 CO2. Tahap ini menghubungkan glikolisis dengan siklus Krebs."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Siklus Krebs: pembongkaran sempurna menjadi CO2"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Asetil-KoA (2C) bergabung dengan oksaloasetat (4C) membentuk sitrat (6C); melalui serangkaian oksidasi-dekarboksilasi, dua karbon dilepas sebagai CO2 dan oksaloasetat diregenerasi (karena itu disebut siklus). Hasil SATU putaran: 3 NADH + 1 FADH2 + 1 ATP/GTP + 2 CO2. Per glukosa (2 putaran): 6 NADH + 2 FADH2 + 2 ATP + 4 CO2. Seluruh CO2 yang kita hembuskan berasal dari tahap ini dan dekarboksilasi oksidatif."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Rantai transpor elektron dan fosforilasi oksidatif"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "NADH & FADH2 menyerahkan elektron ke kompleks protein pada membran dalam (krista). Elektron melompat antar kompleks melepaskan energi untuk memompa H+ ke ruang antarmembran, menciptakan gradien elektrokimia. H+ kembali masuk melalui ATP SINTASE (kemiosmosis) menghasilkan ATP terbanyak (±2,5-3 ATP per NADH; ±1,5-2 ATP per FADH2). Di ujung rantai, OKSIGEN berperan sebagai akseptor elektron terakhir, bergabung dengan H+ membentuk H2O — tanpa O2 rantai berhenti total."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-13-tahapan-respirasi.jpg",
+          "keterangan": "Empat tahapan respirasi aerob dan tempat berlangsungnya: glikolisis (sitoplasma), oksidasi asam piruvat & siklus Krebs (matriks), fosforilasi oksidatif/transpor elektron (krista). Gambar 1.13 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 18."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Neraca energi dan efisiensi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Rekap per glukosa: glikolisis 2 ATP + 2 NADH; dekarboksilasi 2 NADH; Krebs 2 ATP + 6 NADH + 2 FADH2; transpor elektron mengubah 10 NADH + 2 FADH2 menjadi ±26-34 ATP. Total kutipan buku lama ±36-38 ATP, perhitungan modern ±30-32 ATP (karena biaya transpor NADH sitoplasma). Efisiensi ±34-40%; sisanya keluar sebagai panas — itulah mengapa tubuh hangat saat berolahraga."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — ledger ATP & tiket elektron",
+          "teks": "ATP langsung (recehan): 2 glikolisis + 2 Krebs. Tiket elektron: 10 NADH + 2 FADH2 → panen besar di krista. Soal 'hasil tahap X' = cocokkan tempat + recehan + tiketnya."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Fermentasi: bertahan tanpa oksigen"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tanpa O2, NADH tidak dapat dibuang di rantai transpor; sel harus meregenerasi NAD+ agar glikolisis terus jalan. Fermentasi asam laktat (sel otot berat, Lactobacillus): piruvat + NADH → asam laktat + NAD+ (penumpukan asam laktat = pegal). Fermentasi alkohol (ragi Saccharomyces): piruvat → asetaldehida + CO2, lalu asetaldehida + NADH → etanol + NAD+ (CO2-nya mengembangkan roti). Hasil energi HANYA 2 ATP dari glikolisis — sangat tidak efisien karena energi masih tersimpan dalam produk organik."
+        },
+        {
+          "jenis": "langkah",
+          "judul": "Membandingkan respirasi aerob vs fermentasi",
+          "items": [
+            "Aerob: akhir piruvat = CO2 + H2O; energi ±30-38 ATP; tempat mitokondria terlibat.",
+            "Fermentasi: akhir piruvat = laktat/etanol; energi 2 ATP; seluruhnya di sitoplasma.",
+            "Keduanya tetap membutuhkan glikolisis — itu titik pertemuannya."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Anabolisme: Fotosintesis Menyusun Glukosa"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Kloroplas dan pigmen penangkap cahaya"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Fotosintesis berlangsung di kloroplas: membran luar & dalam, stroma (cairan tempat siklus Calvin), dan tilakoid (kantong membran bertumpuk = grana, tempat reaksi terang). Pigmen: klorofil a (pusat reaksi, menyerap biru-merah, memantulkan hijau), klorofil b (antena), karotenoid (kuning-oranye, pelindung & antena). Klorofil a pada fotosistem I menyerap maksimum ±700 nm (P700), fotosistem II ±680 nm (P680)."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-21-struktur-kloroplas.jpg",
+          "keterangan": "Struktur kloroplas: membran luar, membran dalam, lamela, grana (tumpukan tilakoid), dan stroma. Gambar 1.21 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 42."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Reaksi terang: cahaya menjadi ATP & NADPH"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Di membran tilakoid, foton mengeksitasi elektron fotosistem II; air difotolisis (2H2O → 4H+ + 4e- + O2) sehingga O2 lepas sebagai produk samping. Elektron mengalir melalui rantai transpor (plastoquinon, sitokrom, plastosianin) ke fotosistem I sambil memompa H+ ke lumen tilakoid; gradien H+ menggerakkan ATP sintase (fotofosforilasi). Fotosistem I menyerahkan elektron ke NADP+ membentuk NADPH. Alur ini (air → PSII → PSI → NADPH) disebut non-siklik; jalur siklik (hanya PSI) menghasilkan ATP tambahan tanpa NADPH/O2."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-24-reaksi-terang.jpg",
+          "keterangan": "Empat tahap reaksi terang: penangkapan cahaya, fotolisis air, transpor elektron, dan pembentukan ATP/NADPH. Gambar 1.24 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 45."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Siklus Calvin: mengikat CO2 menjadi gula"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Di stroma, siklus Calvin memakai ATP & NADPH reaksi terang untuk mereduksi CO2 menjadi gula dalam tiga fase: (1) FIKSASI — enzim Rubisco mengikat CO2 pada RuBP (5C) membentuk 2 molekul PGA (3C); (2) REDUKSI — PGA direduksi oleh ATP & NADPH menjadi PGAL/G3P; sebagian G3P keluar untuk menyusun glukosa; (3) REGENERASI — sisa G3 disusun ulang menjadi RuBP memakai ATP. Untuk 1 glukosa: 6 CO2 + 18 ATP + 12 NADPH. 'Reaksi gelap' tidak berarti butuh gelap — hanya tidak memerlukan cahaya langsung."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Tiga fase siklus Calvin",
+          "items": [
+            "FIKSASI: Rubisco mengikat CO2 pada RuBP → 2 PGA (3C).",
+            "REDUKSI: PGA + ATP + NADPH → PGAL/G3P (sebagian keluar jadi glukosa).",
+            "REGENERASI: sisa G3 → RuBP memakai ATP.",
+            "Per glukosa: 6 CO2 + 18 ATP + 12 NADPH."
+          ]
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-gambar-1-26-siklus-calvin.jpg",
+          "keterangan": "Siklus Calvin: fiksasi CO2 oleh Rubisco, reduksi PGA menjadi PGAL memakai ATP & NADPH, dan regenerasi RuBP. Gambar 1.26 BSE Biologi SMA/MA Kelas XII Kemendikdasmen, hal. 48."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — NADPH vs NADH",
+          "teks": "NADPH = fotosintesis (P untuk photosynthesis); NADH = respirasi. Satu huruf ini menumbangkan pengecoh 'reaksi terang menghasilkan NADH'."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Faktor yang mempengaruhi & percobaan klasik"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Laju fotosintesis dipengaruhi intensitas cahaya (naik lalu jenuh — saat jenuh faktor pembatas pindah ke CO2/suhu), kadar CO2, suhu (kerja enzim Rubisco dkk), ketersediaan air & mineral. Percobaan klasik: INGENHOUSZ (Hydrilla dalam corong melepaskan gelembung O2 hanya saat terkena cahaya → fotosintesis menghasilkan O2) dan SACHS (daun sebagian tertutup setelah diuji iodin berubah biru-hitam hanya di bagian terkena cahaya → fotosintesis menghasilkan amilum & butuh cahaya)."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Faktor pembatas (hukum Blackman)",
+          "items": [
+            "Cahaya naik → laju naik lalu JENUH (pembatas pindah ke CO2/suhu).",
+            "CO2 & suhu mempengaruhi kerja enzim Calvin.",
+            "Air & mineral sebagai bahan baku & koenzim."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Kemosintesis: anabolisme tanpa cahaya"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sejumlah bakteri autotrof menyusun bahan organik memakai energi kimia, bukan cahaya: bakteri nitrifikasi (Nitrosomonas mengoksidasi amonia menjadi nitrit, Nitrobacter nitrit menjadi nitrat), bakteri sulfur (mengoksidasi H2S), bakteri besi (mengoksidasi Fe2+). Peran ekologisnya besar dalam daur nitrogen dan kesuburan tanah."
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Integrasi Metabolisme dan Kasus Inhibitor"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Koneksi dua arah respirasi-fotosintesis"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Produk satu proses adalah bahan baku proses lain: O2 dan glukosa hasil fotosintesis menjadi substrat respirasi; CO2 dan H2O hasil respirasi menjadi bahan fotosintesis. Senyawa antara menjadi simpul jalur: G3P/PGAL, piruvat, dan asetil-KoA dapat dialihkan untuk sintesis lemak, asam amino, atau pati — karena itu metabolisme adalah JARINGAN, bukan dua pipa terpisah."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Kasus inhibitor & catatan praktikum"
+        },
+        {
+          "jenis": "contoh",
+          "judul": "Kasus: racun sianida",
+          "teks": "Sianida mengikat sitokrom c oksidase (kompleks IV) sehingga elektron tidak dapat diserahkan ke O2. Prediksikan akibat berantainya.",
+          "pembahasan": "Rantai transpor berhenti → gradien H+ runtuh → ATP sintase berhenti (ATP anjlok) → NADH/FADH2 menumpuk → siklus Krebs & glikolisis terhambat umpan balik; sel beralih fermentasi sebentar lalu mati. O2 tetap ada di darah tetapi tidak dapat dipakai (histotoxic hypoxia)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan Guru",
+          "teks": "Praktikum murah: (1) respirometer sederhana kecambah + NaOH untuk menunjukkan konsumsi O2; (2) Ingenhousz dengan Hydrilla + corong; (3) uji iodin daun bervariegasi untuk Sachs sekaligus membahas peran klorofil."
+        }
       ],
       "ujiPemahaman": [
         {
           "soal": "Pernyataan berikut yang sesuai berkaitan dengan proses respirasi anaerob adalah .... (1) menghasilkan produk berupa bahan anorganik; (2) hanya dapat berlangsung di sitoplasma; (3) hanya dapat dilakukan oleh sel prokariotik; (4) menghasilkan dua molekul ATP.",
           "tipe": "pg",
-          "opsi": ["1, 2, dan 3 benar", "1 dan 3 benar", "2 dan 4 benar", "4 benar", "semua benar"],
+          "opsi": [
+            "1, 2, dan 3 benar",
+            "1 dan 3 benar",
+            "2 dan 4 benar",
+            "4 benar",
+            "semua benar"
+          ],
           "jawaban": 2,
           "pembahasan": "Produk fermentasi = bahan ORGANIK (1 salah); berlangsung di sitoplasma (2 benar); dapat dilakukan sel eukariot seperti jamur & sel otot (3 salah); hasil bersih 2 ATP (4 benar).",
           "sumber": "UTBK Saintek 2022 Biologi — Brain Academy (ruangguru)"
@@ -137,7 +394,12 @@
         {
           "soal": "Istilah yang sesuai dengan pengertian 'reaksi penyusunan molekul kompleks yang memerlukan energi' adalah ...",
           "tipe": "pg",
-          "opsi": ["anabolisme", "denaturasi", "situs aktif", "enzim"],
+          "opsi": [
+            "anabolisme",
+            "denaturasi",
+            "situs aktif",
+            "enzim"
+          ],
           "jawaban": 0,
           "pembahasan": "Anabolisme = penyusunan (fotosintesis, sintesis protein); butuh energi.",
           "sumber": "Latihan ber-pembahasan bukusekolah.id (soal 01)"
@@ -145,7 +407,12 @@
         {
           "soal": "Istilah yang sesuai dengan pengertian 'reaksi penguraian molekul yang melepaskan energi' adalah ...",
           "tipe": "pg",
-          "opsi": ["katabolisme", "denaturasi", "enzim", "anabolisme"],
+          "opsi": [
+            "katabolisme",
+            "denaturasi",
+            "enzim",
+            "anabolisme"
+          ],
           "jawaban": 0,
           "pembahasan": "Katabolisme = penguraian + pelepasan energi (respirasi, fermentasi).",
           "sumber": "Latihan ber-pembahasan bukusekolah.id (soal 02)"
@@ -153,7 +420,12 @@
         {
           "soal": "Istilah yang sesuai dengan pengertian 'biokatalis yang mempercepat reaksi dengan menurunkan energi aktivasi' adalah ...",
           "tipe": "pg",
-          "opsi": ["enzim", "denaturasi", "anabolisme", "situs aktif"],
+          "opsi": [
+            "enzim",
+            "denaturasi",
+            "anabolisme",
+            "situs aktif"
+          ],
           "jawaban": 0,
           "pembahasan": "Enzim = biokatalis protein; menurunkan Ea tanpa ikut habis.",
           "sumber": "Latihan ber-pembahasan bukusekolah.id (soal 03)"
@@ -201,21 +473,38 @@
         {
           "soal": "Manakah yang merupakan hasil BERSIH glikolisis per satu glukosa? Pilih semua yang benar!",
           "tipe": "pgMulti",
-          "opsi": ["2 asam piruvat", "2 ATP (bersih)", "2 NADH", "2 asetil-KoA", "4 ATP bersih"],
-          "jawaban": [0, 1, 2],
+          "opsi": [
+            "2 asam piruvat",
+            "2 ATP (bersih)",
+            "2 NADH",
+            "2 asetil-KoA",
+            "4 ATP bersih"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
           "pembahasan": "Bersih: 2 piruvat + 2 ATP (4 dibuat − 2 investasi) + 2 NADH. Asetil-KoA baru terbentuk pada dekarboksilasi oksidatif; 4 ATP adalah kotor, bukan bersih.",
           "sumber": "Gemilang HOTS Drill (neraca glikolisis, tim kurikulum)"
         },
         {
           "soal": "Tentukan Benar/Salah pasangan tahap respirasi dan tempat berlangsungnya berikut.",
           "tipe": "tabel",
-          "kolom": ["Benar", "Salah"],
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
           "baris": [
             "Glikolisis berlangsung di sitoplasma.",
             "Siklus Krebs berlangsung di matriks mitokondria.",
             "Rantai transpor elektron berlangsung di membran luar mitokondria."
           ],
-          "jawaban": [0, 0, 1],
+          "jawaban": [
+            0,
+            0,
+            1
+          ],
           "pembahasan": "Transpor elektron di MEMBRAN DALAM (krista), bukan membran luar.",
           "sumber": "Gemilang HOTS Drill (pemetaan tahap respirasi, tim kurikulum)"
         },
@@ -236,21 +525,38 @@
         {
           "soal": "Tentukan Benar/Salah pernyataan perbandingan fermentasi berikut.",
           "tipe": "tabel",
-          "kolom": ["Benar", "Salah"],
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
           "baris": [
             "Fermentasi asam laktat menghasilkan CO2 dalam jumlah besar.",
             "Fermentasi alkohol menghasilkan etanol dan CO2.",
             "Kedua jenis fermentasi hanya menghasilkan 2 ATP dari glikolisis."
           ],
-          "jawaban": [1, 0, 0],
+          "jawaban": [
+            1,
+            0,
+            0
+          ],
           "pembahasan": "Fermentasi laktat TIDAK melepas CO2 (piruvat langsung direduksi); alkohol melepas CO2; energi keduanya hanya 2 ATP.",
           "sumber": "Gemilang HOTS Drill (perbandingan fermentasi, tim kurikulum)"
         },
         {
           "soal": "Manakah produk REAKSI TERANG fotosintesis? Pilih semua yang benar!",
           "tipe": "pgMulti",
-          "opsi": ["ATP", "NADPH", "O2 (dari fotolisis air)", "Glukosa", "CO2"],
-          "jawaban": [0, 1, 2],
+          "opsi": [
+            "ATP",
+            "NADPH",
+            "O2 (dari fotolisis air)",
+            "Glukosa",
+            "CO2"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
           "pembahasan": "Reaksi terang: fotolisis air melepas O2; fotofosforilasi membuat ATP; NADP+ direduksi menjadi NADPH. Glukosa baru dibentuk siklus Calvin.",
           "sumber": "Gemilang HOTS Drill (produk reaksi terang, tim kurikulum)"
         },
@@ -291,7 +597,11 @@
             "Kedua proses melibatkan rantai transpor elektron di membran khusus.",
             "Kedua proses berlangsung dalam organel yang sama pada sel tumbuhan."
           ],
-          "jawaban": [0, 1, 2],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
           "pembahasan": "Pernyataan 4 salah: fotosintesis di kloroplas, respirasi aerob utama di mitokondria — organel berbeda meski keduanya punya rantai transpor & DNA sendiri.",
           "sumber": "Gemilang HOTS Drill (integrasi metabolisme, tim kurikulum)"
         }

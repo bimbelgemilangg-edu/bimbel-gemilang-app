@@ -27,66 +27,329 @@
       "urutan": 1,
       "tipe": "teks",
       "sections": [
-        { "jenis": "callout", "tipe": "info", "judul": "Peta belajar bab ini", "teks": "A. Klasifikasi & keanekaragaman (A.1 tingkat keanekaragaman, A.2 prinsip & takson, A.3 sistem kingdom, A.4 identifikasi & kunci determinasi, A.5 permasalahan & nilai konservasi) • B. Bakteri (B.1 struktur prokariotik, B.2 Gram & morfologi, B.3 reproduksi & genetika, B.4 peranan & resistensi) • C. Ekosistem (C.1 komponen & organisasi, C.2 aliran energi, C.3 interaksi & daur materi, C.4 ekosistem Indonesia & bioma, C.5 permasalahan & pelestarian)." },
-
-        { "jenis": "judul", "level": 1, "teks": "Klasifikasi dan Keanekaragaman Makhluk Hidup" },
-        { "jenis": "judul", "level": 2, "teks": "Tiga tingkat keanekaragaman hayati" },
-        { "jenis": "paragraf", "teks": "Keanekaragaman hayati (biodiversitas) adalah variasi kehidupan pada tiga tingkat: GEN, JENIS (spesies), dan EKOSISTEM. Tingkat gen: variasi dalam SATU spesies akibat perbedaan susunan gen — penampilan bisa beda tetapi tetap bisa kawin dan menghasilkan keturunan fertil (padi IR64-C4-Rojolele, mangga arumanis-gedong, anjing ras, warna bunga mawar). Tingkat jenis: variasi ANTAR spesies yang masih satu famili/genus sehingga tampak jelas perbedaannya (harimau-singa-macan tutul pada Felidae; jeruk-lemon-grapefruit; kacang-kacangan pada Fabaceae). Tingkat ekosistem: variasi habitat beserta keseluruhan interaksinya (hutan hujan tropis, mangrove, padang lamun, savana, gurun, tundra)." },
-        { "jenis": "paragraf", "teks": "Kesalahan paling umum di ujian adalah tertukar tingkat gen dan tingkat jenis. Patokan tegasnya: jika semua contoh masih SATU spesies (nama ilmiahnya sama, hanya varietas/ras/golongan berbeda) maka itu tingkat gen; jika nama spesiesnya berbeda maka tingkat jenis; jika yang dibandingkan adalah habitat beserta komunitasnya maka tingkat ekosistem. Keanekaragaman Indonesia istimewa karena posisi geografis di antara dua benua dan dua samudra menghasilkan garis Wallace (memisahkan zona Asiatis-peralihan), Weber, dan Lydekker (peralihan-Australis) dengan fauna endemik seperti komodo, anoa, dan burung maleo." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — kacamata 3 tingkat", "teks": "Tanya urut: (1) satu spesies beda varian? → GEN. (2) beda spesies tapi masih 'sekandung'? → JENIS. (3) beda rumah besar beserta isinya? → EKOSISTEM. Singkatan Gemilang: SaRu-BeDa-HaBi (satu ras-varietas, beda spesies, habitat-biota)." },
-
-        { "jenis": "judul", "level": 2, "teks": "Prinsip klasifikasi, jenjang takson, dan binomial nomenclature" },
-        { "jenis": "paragraf", "teks": "Klasifikasi adalah pengelompokan makhluk hidup berdasarkan persamaan dan perbedaan ciri; tujuannya menyederhanakan objek studi, memperlihatkan hubungan kekerabatan, dan memberi nama ilmiah yang berlaku universal. Hasil pengelompokan berjenjang disebut TAKSON, dari yang terluas ke tersempit: domain - kingdom - filum/divisi - kelas - ordo - famili - genus - spesies. Semakin turun jenjangnya, anggota semakin sedikit tetapi persamaan ciri semakin banyak dan kekerabatan semakin dekat — prinsip inilah yang diuji soal 'takson terendah'." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-2-13-lima-kingdom.jpg", "keterangan": "Sistem lima kingdom beserta contoh kelompoknya (Monera, Protista, Animalia, Mycota, Plantae). Gambar 2.13 BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 40 (sumber asli gambar: Microsoft Encarta 2006, sebagaimana dicantumkan buku)." },
-        { "jenis": "paragraf", "teks": "Nama spesies mengikuti binomial nomenclature (Carolus Linnaeus): dua kata Latin/Latinisasi; kata pertama = genus (diawali huruf kapital), kata kedua = penunjuk spesies (huruf kecil seluruhnya); dicetak miring pada teks cetak atau digarisbawahi terpisah pada tulisan tangan; contoh Oryza sativa, Panthera tigris, Escherichia coli. Penulis spesies sering diikuti nama penulis deskripsi pertama (mis. Oryza sativa L.). Aturan kecil yang sering jadi jebakan: nama genus boleh disingkat setelah penyebutan pertama (E. coli), tetapi nama spesies tidak pernah ditulis dengan huruf kapital di kata kedua." },
-
-        { "jenis": "judul", "level": 2, "teks": "Sistem klasifikasi: dari dua kingdom sampai lima kingdom" },
-        { "jenis": "paragraf", "teks": "Sistem klasifikasi berkembang mengikuti kemajuan mikroskopi dan biologi molekuler. Sistem dua kingdom (Plantae-Animalia) hanya memakai dasar dinding sel & cara makan; sistem tiga kingdom memisahkan jamur dan organisme unisel ke Protista/Mycota; sistem empat kingdom menambah Monera untuk organisme prokariotik; sistem lima kingdom (Whittaker) yang paling dipakai di sekolah membagi Monera (prokariot), Protista (eukariot sederhana), Fungi/Mycota (heterotrof berdinding kitin), Plantae (autotrof fotosintetik), Animalia (heterotrof multiseluler). Klasifikasi modern (domain Archaea-Bacteria-Eukarya) menambahkan bukti urutan rRNA — cukup dipahami sebagai wawasan karena matriks TKA membatasi pada prinsip klasifikasi dan permasalahan keanekaragaman." },
-
-        { "jenis": "judul", "level": 2, "teks": "Identifikasi dan kunci determinasi" },
-        { "jenis": "paragraf", "teks": "Identifikasi (determinasi) adalah menentukan nama dan kedudukan taksonomi organisme yang belum dikenal. Alat bantu utamanya kunci determinasi: rangkaian pertanyaan bercabang dua (dikotomi) yang setiap jawabannya menuntun ke nomor berikutnya hingga nama takson ditemukan. Prinsip kerjanya: mulai dari ciri paling umum (ada tulang belakang/tidak) menuju ciri khusus (jumlah kaki, tipe sayap, bentuk bunga). Di laboratorium, identifikasi diperkuat mikroskop (bentuk sel, dinding), uji biokimia (katalase, oksidase), dan kini sekuensing DNA barcoding." },
-        { "jenis": "langkah", "judul": "Membaca kunci determinasi tanpa tersesat", "items": ["Baca SEPASANG pernyataan (1a & 1b) sebelum memilih — jangan loncat.", "Cocokkan dengan ciri spesimen yang PALING pasti terlihat (jumlah kaki, ruas tubuh).", "Catat nomor tujuan, ulang sampai muncul nama takson; bila buntu, mundur satu langkah dan pilih pasangan sebaliknya."] },
-
-        { "jenis": "judul", "level": 2, "teks": "Permasalahan keanekaragaman dan nilai konservasi" },
-        { "jenis": "paragraf", "teks": "Keanekaragaman hayati menyusut oleh lima tekanan utama (akronim HIPPO): Hilangnya habitat, spesies Invasif, Polusi, Populasi manusia, Over-exploitation (perburuan/penangkapan berlebih). Nilai yang dipertaruhkan bukan hanya ekologis tetapi juga biologis (plasma nutfah untuk pangan & obat), pendidikan, estetika, budaya-religius, dan ekonomi. Karena itu soal TKA sering meminta analisis solusi: memilih tindakan yang menyerang PENYEBAB utamanya, bukan gejalanya." },
-
-        { "jenis": "judul", "level": 1, "teks": "Bakteri: Struktur, Gram, Reproduksi, dan Peranan" },
-        { "jenis": "judul", "level": 2, "teks": "Struktur sel prokariotik bagian demi bagian" },
-        { "jenis": "paragraf", "teks": "Bakteri adalah prokariota: TIDAK memiliki membran inti sehingga DNA-nya berupa nukleoid yang terletak langsung di sitoplasma, dan tidak memiliki organel bermembran (mitokondria, RE, badan Golgi). Pembungkus dari luar ke dalam: kapsul/lapisan lendir (perlindungan, membantu menempel, faktor virulensi), dinding sel peptidoglikan (memberi bentuk & mencegah lisis osmotik), membran plasma (transpor & tempat reaksi respirasi/fotosintesis pada bakteri terkait). Di dalam sitoplasma terdapat ribosom 70S (sintesis protein), plasmid (DNA sirkular kecil pembawa gen tambahan seperti gen resistensi & toksin, dapat berpindah antarbakteri), inklusi (cadangan makanan), serta struktur luar flagela (gerak) dan pilus/fimbria (menempel & konjugasi). Beberapa jenis membentuk endospora berdinding tebal untuk bertahan pada kondisi ekstrem." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-4-1-prokariot-eukariot.jpg", "keterangan": "Perbandingan sel prokariotik dan eukariotik: prokariot tanpa membran inti & organel bermembran. Gambar 4.1 BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 78 (sumber asli: Microsoft Encarta 2006)." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-4-2-struktur-monera.jpg", "keterangan": "Struktur monera (bakteri): kromosom, pilus, ribosom, inklusi, plasmid, membran sel, dinding sel, kapsul, flagela. Gambar 4.2 BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 78." },
-
-        { "jenis": "judul", "level": 2, "teks": "Pewarnaan Gram dan morfologi" },
-        { "jenis": "paragraf", "teks": "Berdasarkan susunan kimia dinding sel, bakteri dibagi Gram-positif (peptidoglikan tebal, menahan ungu kristal violet, contoh Staphylococcus, Lactobacillus, Bacillus) dan Gram-negatif (peptidoglikan tipis + selubung luar lipopolisakarida, tampak merah muda oleh safranin, contoh Escherichia, Salmonella, Pseudomonas). Konsekuensi klinisnya nyata: selubung luar Gram-negatif menghalangi banyak antibiotik sehingga infeksi Gram-negatif umumnya lebih sulit diobati. Morfologi dasar: kokus (bulat; tersusun mono-, diplo-, strepto-, stafilokokus), basil/batang (mis. E. coli, Bacillus), spiral/vibrio (koma, mis. Vibrio cholerae, Treponema)." },
-
-        { "jenis": "judul", "level": 2, "teks": "Reproduksi dan pertukaran materi genetik" },
-        { "jenis": "paragraf", "teks": "Reproduksi utama adalah pembelahan biner (aseksual): satu sel membelah menjadi dua identik, sangat cepat pada kondisi ideal (E. coli ±20 menit) — inilah alasan infeksi dapat memburuk dalam hitungan jam. Variasi genetik muncul BUKAN dari meiosis melainkan tiga jalur parasexual: TRANSFORMASI (mengambil DNA bebas dari lingkungan), TRANSDUKSI (DNA dibawa bakteriofag/virus), KONJUGASI (pemindahan plasmid melalui pilus dari donor ke resipien). Ketiganya menjelaskan mengapa gen resistensi antibiotik dapat menyebar cepat dalam satu populasi bahkan antarspesies bakteri." },
-
-        { "jenis": "judul", "level": 2, "teks": "Peranan bagi manusia dan mekanisme resistensi" },
-        { "jenis": "paragraf", "teks": "Peranan menguntungkan: Rhizobium mengikat N2 pada bintil akar legum; Lactobacillus bulgaricus (yoghurt), L. casei (probiotik); Acetobacter xylinum (nata de coco); Acetobacter aceti (asam cuka); Streptomyces griseus (antibiotik streptomisin); Escherichia coli (vitamin K, indikator sanitasi, vektor rekayasa genetika); bakteri fermentasi & pengurai dalam siklus materi. Merugikan: Mycobacterium tuberculosis (TBC), Vibrio cholerae (kolera), Salmonella typhi (tifus), Clostridium botulinum (toksin makanan kaleng), Bacillus anthracis (antraks)." },
-        { "jenis": "paragraf", "teks": "Resistensi antibiotik adalah EVOLUSI oleh seleksi alam, bukan bakteri 'belajar': dalam populasi sudah ada sebagian kecil individu yang kebetulan membawa gen resisten (mutasi/plasmid). Saat antibiotik dipakai tidak tuntas atau berlebihan, individu sensitif mati sedangkan individu resisten selamat dan berkembang biak — frekuensi gen resisten naik sehingga obat kehilangan khasiatnya. Pencegahan yang benar: habiskan dosis sesuai resep, tidak memakai antibiotik untuk infeksi virus, dan rotasi/jenis antibiotik sesuai uji sensitivitas." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — alur resistensi 4 langkah", "teks": "VARIASI ada → OBAT membunuh yang sensitif → yang RESISTEN selamat & berbiak → populasi baru KEBAL (singkatan: V-O-R-K). Soal kasus resistensi hampir selalu meminta langkah ke-2/ke-3 sebagai penjelasan." },
-        { "jenis": "callout", "tipe": "guru", "judul": "Catatan Guru", "teks": "Simulasi resistensi murah: kertas lingkaran warna (bakteri sensitif/resisten) + 'semprotan' seleksi beberapa putaran; siswa menghitung perubahan frekuensi warna = analogi seleksi alam. Hubungkan dengan data tabel pada soal HOTS bab ini." },
-
-        { "jenis": "judul", "level": 1, "teks": "Ekosistem: Komponen, Aliran Energi, dan Pelestarian" },
-        { "jenis": "judul", "level": 2, "teks": "Komponen dan tingkat organisasi" },
-        { "jenis": "paragraf", "teks": "Ekosistem = kesatuan interaksi timbal balik antara komunitas (seluruh populasi berbagai spesies di suatu area) dengan lingkungan abiotiknya (cahaya, suhu, air, tanah, mineral, pH). Tingkat organisasi menaik: individu - populasi (kumpulan se spesies searea, mis. populasi padi di sawah) - komunitas - ekosistem - bioma - biosfer. Komponen abiotik bukan 'latar': cahaya menentukan laju fotosintesis produsen, suhu & curah hujan menentukan tipe bioma, mineral membatasi produktivitas." },
-
-        { "jenis": "judul", "level": 2, "teks": "Aliran energi: rantai makanan, jaring-jaring, piramida" },
-        { "jenis": "paragraf", "teks": "Energi masuk ekosistem sebagai cahaya lalu diubah produsen (tumbuhan, fitoplankton, alga) menjadi energi kimia; selanjutnya mengalir satu arah melalui konsumen I (herbivora), II, III, hingga pengurai (bakteri & jamur) yang mengembalikan materi ke lingkungan — MATERI berdaur, ENERGI tidak (ia hilang sebagai panas di setiap tingkat). Rantai makanan yang saling bersilangan membentuk jaring-jaring makanan; semakin kompleks jaringnya, semakin stabil ekosistem terhadap gangguan." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/tka-bio-jaring-makanan-zenius.png", "keterangan": "Contoh jaring-jaring makanan ekosistem laut: perubahan satu populasi merambat dua arah (ke pemangsa dan ke mangsa). Gambar stimulus soal TKA via zenius.net (berkredit)." },
-        { "jenis": "paragraf", "teks": "Piramida ekologi menggambarkan hubungan trofik: piramida jumlah (individu), biomassa (berat kering), dan energi (paling jujur karena memperhitungkan produktivitas). Hukum 10%: hanya ±10% energi yang tersalurkan ke tingkat trofik berikutnya — konsekuensinya rantai makanan jarang lebih dari 4-5 tingkat dan populasi pemangsa puncak selalu kecil; ini dasar soal 'mengapa daging lebih mahal daripada beras' versi biologi." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — rambat dua arah", "teks": "Populasi X berubah? Telusuri panah NAIK (pemangsa X: makanan berkurang → menurun) dan panah TURUN (mangsa X: tekanan berkurang → meledak). Efek TERBESAR biasanya pada pihak yang paling bergantung langsung pada X." },
-
-        { "jenis": "judul", "level": 2, "teks": "Interaksi antarkomponen dan daur materi" },
-        { "jenis": "paragraf", "teks": "Interaksi utama: predasi (pemangsa-mangsa), kompetisi (perebutan sumber daya, intra- & antarspesies), simbiosis mutualisme (rhizobium-legum, mikoriza), komensalisme (anggrek-pohon inang), parasitisme (plasmodium-manusia), amensalisme (antibiotik jamur menghambat bakteri), serta netral. Daur biogeokimia yang wajib dikuasai: air, karbon (fotosintesis-respirasi-pembakaran), nitrogen (fiksasi-nitrifikasi-denitrifikasi), fosfor (tanpa fase gas — paling rentan terputus oleh erosi & pupuk berlebih)." },
-
-        { "jenis": "judul", "level": 2, "teks": "Ekosistem Indonesia dan bioma dunia" },
-        { "jenis": "paragraf", "teks": "Indonesia memiliki hutan hujan tropis (stratifikasi kanopi, biodiversitas tertinggi), mangrove (pelindung pantai, nursery biota laut, penyimpan karbon), padang lamun, savana (Sumba, Baluran), dan ekosistem perairan tawar-laut. Bioma dunia dibedakan iklim-vegetasi: tundra (lumut kerak, permafrost), taiga (konifer), hutan gugur (empat musim), savana, gurun, hutan hujan tropis. Kunci soal ciri bioma: pasangan curah hujan + vegetasi dominan + suhu." },
-
-        { "jenis": "judul", "level": 2, "teks": "Permasalahan lingkungan dan strategi pelestarian" },
-        { "jenis": "paragraf", "teks": "Permasalahan khas Indonesia: deforestasi & fragmentasi habitat (sawit, tambang), pencemaran (plastik, limbah, tumpahan minyak), spesies invasif (ikan sapu-sapu, eceng gondok), overfishing & perburuan, serta perubahan iklim. Pelestarian in-situ melindungi di habitat asli (Taman Nasional Komodo, Ujung Kulon, Way Kambas, cagar alam, suaka margasatwa); ex-situ di luar habitat (kebun raya, kebun binatang, penangkaran, bank biji, kriopreservasi). In-situ menjaga seluruh interaksi ekosistem; ex-situ menjadi cadangan genetik & edukasi — soal evaluasi biasanya meminta memilih kombinasi keduanya beserta alasan." },
-        { "jenis": "callout", "tipe": "guru", "judul": "Catatan Guru", "teks": "Studi kasus lokal paling efektif: bawa satu berita lingkungan daerah (tumpahan minyak/penebangan) lalu minta siswa memetakan komponen terdampak + mengusulkan in-situ/ex-situ berdasar penyebab — melatih kompetensi 'solusi atas permasalahan' sesuai matriks TKA." }
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Peta belajar bab ini",
+          "teks": "A. Klasifikasi & keanekaragaman (A.1 tingkat keanekaragaman, A.2 prinsip & takson, A.3 sistem kingdom, A.4 identifikasi & kunci determinasi, A.5 permasalahan & nilai konservasi) • B. Bakteri (B.1 struktur prokariotik, B.2 Gram & morfologi, B.3 reproduksi & genetika, B.4 peranan & resistensi) • C. Ekosistem (C.1 komponen & organisasi, C.2 aliran energi, C.3 interaksi & daur materi, C.4 ekosistem Indonesia & bioma, C.5 permasalahan & pelestarian)."
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Klasifikasi dan Keanekaragaman Makhluk Hidup"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Tiga tingkat keanekaragaman hayati"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Keanekaragaman hayati (biodiversitas) adalah variasi kehidupan pada tiga tingkat: GEN, JENIS (spesies), dan EKOSISTEM. Tingkat gen: variasi dalam SATU spesies akibat perbedaan susunan gen — penampilan bisa beda tetapi tetap bisa kawin dan menghasilkan keturunan fertil (padi IR64-C4-Rojolele, mangga arumanis-gedong, anjing ras, warna bunga mawar). Tingkat jenis: variasi ANTAR spesies yang masih satu famili/genus sehingga tampak jelas perbedaannya (harimau-singa-macan tutul pada Felidae; jeruk-lemon-grapefruit; kacang-kacangan pada Fabaceae). Tingkat ekosistem: variasi habitat beserta keseluruhan interaksinya (hutan hujan tropis, mangrove, padang lamun, savana, gurun, tundra)."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Tiga tingkat keanekaragaman — poin kunci",
+          "items": [
+            "GEN = satu spesies, beda varian/varietas/ras (padi IR64-C4-Rojolele; mawar merah-putih).",
+            "JENIS (spesies) = beda spesies tapi masih sekandung/famili (harimau-singa-macan tutul; jeruk-lemon).",
+            "EKOSISTEM = beda habitat + komunitasnya (mangrove vs terumbu karang; savana vs tundra)."
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Kesalahan paling umum di ujian adalah tertukar tingkat gen dan tingkat jenis. Patokan tegasnya: jika semua contoh masih SATU spesies (nama ilmiahnya sama, hanya varietas/ras/golongan berbeda) maka itu tingkat gen; jika nama spesiesnya berbeda maka tingkat jenis; jika yang dibandingkan adalah habitat beserta komunitasnya maka tingkat ekosistem. Keanekaragaman Indonesia istimewa karena posisi geografis di antara dua benua dan dua samudra menghasilkan garis Wallace (memisahkan zona Asiatis-peralihan), Weber, dan Lydekker (peralihan-Australis) dengan fauna endemik seperti komodo, anoa, dan burung maleo."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Patokan tegas menjawab soal tingkat",
+          "items": [
+            "Nama ilmiah SAMA, hanya varian berbeda → tingkat GEN.",
+            "Nama spesies BERBEDA → tingkat JENIS.",
+            "Yang dibandingkan HABITAT + komunitasnya → tingkat EKOSISTEM.",
+            "Indonesia istimewa: garis Wallace, Weber, Lydekker → fauna endemik (komodo, anoa, maleo)."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — kacamata 3 tingkat",
+          "teks": "Tanya urut: (1) satu spesies beda varian? → GEN. (2) beda spesies tapi masih 'sekandung'? → JENIS. (3) beda rumah besar beserta isinya? → EKOSISTEM. Singkatan Gemilang: SaRu-BeDa-HaBi (satu ras-varietas, beda spesies, habitat-biota)."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Prinsip klasifikasi, jenjang takson, dan binomial nomenclature"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Klasifikasi adalah pengelompokan makhluk hidup berdasarkan persamaan dan perbedaan ciri; tujuannya menyederhanakan objek studi, memperlihatkan hubungan kekerabatan, dan memberi nama ilmiah yang berlaku universal. Hasil pengelompokan berjenjang disebut TAKSON, dari yang terluas ke tersempit: domain - kingdom - filum/divisi - kelas - ordo - famili - genus - spesies. Semakin turun jenjangnya, anggota semakin sedikit tetapi persamaan ciri semakin banyak dan kekerabatan semakin dekat — prinsip inilah yang diuji soal 'takson terendah'."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-2-13-lima-kingdom.jpg",
+          "keterangan": "Sistem lima kingdom beserta contoh kelompoknya (Monera, Protista, Animalia, Mycota, Plantae). Gambar 2.13 BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 40 (sumber asli gambar: Microsoft Encarta 2006, sebagaimana dicantumkan buku)."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Nama spesies mengikuti binomial nomenclature (Carolus Linnaeus): dua kata Latin/Latinisasi; kata pertama = genus (diawali huruf kapital), kata kedua = penunjuk spesies (huruf kecil seluruhnya); dicetak miring pada teks cetak atau digarisbawahi terpisah pada tulisan tangan; contoh Oryza sativa, Panthera tigris, Escherichia coli. Penulis spesies sering diikuti nama penulis deskripsi pertama (mis. Oryza sativa L.). Aturan kecil yang sering jadi jebakan: nama genus boleh disingkat setelah penyebutan pertama (E. coli), tetapi nama spesies tidak pernah ditulis dengan huruf kapital di kata kedua."
+        },
+        {
+          "jenis": "contoh",
+          "judul": "Contoh analisis penulisan",
+          "teks": "Manakah yang sah: 'oryza sativa', 'Oryza Sativa', 'Oryza sativa', 'O. Sativa'?",
+          "pembahasan": "Hanya 'Oryza sativa' (miring/garis bawah terpisah): genus kapital + spesies kecil. 'O. Sativa' salah karena kata kedua kapital; 'oryza sativa' salah karena genus kecil."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Sistem klasifikasi: dari dua kingdom sampai lima kingdom"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sistem klasifikasi berkembang mengikuti kemajuan mikroskopi dan biologi molekuler. Sistem dua kingdom (Plantae-Animalia) hanya memakai dasar dinding sel & cara makan; sistem tiga kingdom memisahkan jamur dan organisme unisel ke Protista/Mycota; sistem empat kingdom menambah Monera untuk organisme prokariotik; sistem lima kingdom (Whittaker) yang paling dipakai di sekolah membagi Monera (prokariot), Protista (eukariot sederhana), Fungi/Mycota (heterotrof berdinding kitin), Plantae (autotrof fotosintetik), Animalia (heterotrof multiseluler). Klasifikasi modern (domain Archaea-Bacteria-Eukarya) menambahkan bukti urutan rRNA — cukup dipahami sebagai wawasan karena matriks TKA membatasi pada prinsip klasifikasi dan permasalahan keanekaragaman."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Ciri pembeda lima kingdom (Whittaker)",
+          "items": [
+            "Monera = prokariot (bakteri, cyanobacteria).",
+            "Protista = eukariot sederhana (amoeba, alga).",
+            "Mycota/Fungi = heterotrof, dinding kitin (jamur tempe, merang).",
+            "Plantae = autotrof fotosintetik (lumut, paku, biji).",
+            "Animalia = heterotrof multiseluler (porifera s.d. chordata)."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Identifikasi dan kunci determinasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Identifikasi (determinasi) adalah menentukan nama dan kedudukan taksonomi organisme yang belum dikenal. Alat bantu utamanya kunci determinasi: rangkaian pertanyaan bercabang dua (dikotomi) yang setiap jawabannya menuntun ke nomor berikutnya hingga nama takson ditemukan. Prinsip kerjanya: mulai dari ciri paling umum (ada tulang belakang/tidak) menuju ciri khusus (jumlah kaki, tipe sayap, bentuk bunga). Di laboratorium, identifikasi diperkuat mikroskop (bentuk sel, dinding), uji biokimia (katalase, oksidase), dan kini sekuensing DNA barcoding."
+        },
+        {
+          "jenis": "langkah",
+          "judul": "Membaca kunci determinasi tanpa tersesat",
+          "items": [
+            "Baca SEPASANG pernyataan (1a & 1b) sebelum memilih — jangan loncat.",
+            "Cocokkan dengan ciri spesimen yang PALING pasti terlihat (jumlah kaki, ruas tubuh).",
+            "Catat nomor tujuan, ulang sampai muncul nama takson; bila buntu, mundur satu langkah dan pilih pasangan sebaliknya."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Permasalahan keanekaragaman dan nilai konservasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Keanekaragaman hayati menyusut oleh lima tekanan utama yang disingkat HIPPO. Soal TKA biasanya menyajikan kasus lalu meminta solusi yang menyerang PENYEBAB utamanya:"
+        },
+        {
+          "jenis": "poin",
+          "judul": "Lima tekanan HIPPO",
+          "items": [
+            "H = Hilangnya habitat (deforestasi, fragmentasi).",
+            "I = spesies Invasif (sapu-sapu, eceng gondok).",
+            "P = Polusi (plastik, limbah, tumpahan minyak).",
+            "P = Populasi manusia (tekanan ruang & konsumsi).",
+            "O = Over-exploitation (perburuan & penangkapan berlebih)."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Trik Gemilang — bedah kasus HIPPO",
+          "teks": "Baca kasus → tunjuk huruf HIPPO mana yang bekerja → solusi benar WAJIB menyerang huruf itu. Kasus gundul→banjir = H (solusi: reboisasi/larangan tebang, bukan sekadar kirim bantuan). Kasus eceng gondok menutup waduk = I (solusi: kontrol biologis/penanganan hama, bukan hanya pengerukan)."
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Bakteri: Struktur, Gram, Reproduksi, dan Peranan"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Struktur sel prokariotik bagian demi bagian"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bakteri adalah prokariota: TIDAK memiliki membran inti sehingga DNA-nya berupa nukleoid yang terletak langsung di sitoplasma, dan tidak memiliki organel bermembran (mitokondria, RE, badan Golgi). Pembungkus dari luar ke dalam: kapsul/lapisan lendir (perlindungan, membantu menempel, faktor virulensi), dinding sel peptidoglikan (memberi bentuk & mencegah lisis osmotik), membran plasma (transpor & tempat reaksi respirasi/fotosintesis pada bakteri terkait). Di dalam sitoplasma terdapat ribosom 70S (sintesis protein), plasmid (DNA sirkular kecil pembawa gen tambahan seperti gen resistensi & toksin, dapat berpindah antarbakteri), inklusi (cadangan makanan), serta struktur luar flagela (gerak) dan pilus/fimbria (menempel & konjugasi). Beberapa jenis membentuk endospora berdinding tebal untuk bertahan pada kondisi ekstrem."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-4-1-prokariot-eukariot.jpg",
+          "keterangan": "Perbandingan sel prokariotik dan eukariotik: prokariot tanpa membran inti & organel bermembran. Gambar 4.1 BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 78 (sumber asli: Microsoft Encarta 2006)."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-4-2-struktur-monera.jpg",
+          "keterangan": "Struktur monera (bakteri): kromosom, pilus, ribosom, inklusi, plasmid, membran sel, dinding sel, kapsul, flagela. Gambar 4.2 BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 78."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Pewarnaan Gram dan morfologi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Berdasarkan susunan kimia dinding sel, bakteri dibagi Gram-positif (peptidoglikan tebal, menahan ungu kristal violet, contoh Staphylococcus, Lactobacillus, Bacillus) dan Gram-negatif (peptidoglikan tipis + selubung luar lipopolisakarida, tampak merah muda oleh safranin, contoh Escherichia, Salmonella, Pseudomonas). Konsekuensi klinisnya nyata: selubung luar Gram-negatif menghalangi banyak antibiotik sehingga infeksi Gram-negatif umumnya lebih sulit diobati. Morfologi dasar: kokus (bulat; tersusun mono-, diplo-, strepto-, stafilokokus), basil/batang (mis. E. coli, Bacillus), spiral/vibrio (koma, mis. Vibrio cholerae, Treponema)."
+        },
+        {
+          "jenis": "contoh",
+          "judul": "Contoh kasus klinis",
+          "teks": "Infeksi X tidak mempan dengan antibiotik yang biasanya efektif terhadap bakteri Gram-positif. Setelah diuji, dinding sel patogen berlapis selubung luar lipopolisakarida. Termasuk golongan manakah patogen itu dan mengapa lebih sulit diobati?",
+          "pembahasan": "Selubung luar lipopolisakarida = ciri Gram-negatif; lapisan ini menghalangi masuknya banyak antibiotik sehingga infeksi Gram-negatif umumnya lebih sulit diobati daripada Gram-positif."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Reproduksi dan pertukaran materi genetik"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Reproduksi utama adalah pembelahan biner (aseksual): satu sel membelah menjadi dua identik, sangat cepat pada kondisi ideal (E. coli ±20 menit) — inilah alasan infeksi dapat memburuk dalam hitungan jam. Variasi genetik muncul BUKAN dari meiosis melainkan tiga jalur parasexual: TRANSFORMASI (mengambil DNA bebas dari lingkungan), TRANSDUKSI (DNA dibawa bakteriofag/virus), KONJUGASI (pemindahan plasmid melalui pilus dari donor ke resipien). Ketiganya menjelaskan mengapa gen resistensi antibiotik dapat menyebar cepat dalam satu populasi bahkan antarspesies bakteri."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Peranan bagi manusia dan mekanisme resistensi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Peranan bakteri dua arah dan menjadi langganan soal pasangan bakteri-peran. Hafalkan sebagai dua daftar berikut, lalu latih dengan soal mencocokkan."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Bakteri MENGUNTUNGKAN (contoh wajib hafal)",
+          "items": [
+            "Rhizobium = fiksasi N2 di bintil akar legum.",
+            "Lactobacillus bulgaricus = yoghurt; L. casei = probiotik.",
+            "Acetobacter xylinum = nata de coco; A. aceti = asam cuka.",
+            "Streptomyces griseus = antibiotik streptomisin.",
+            "Escherichia coli = vitamin K, indikator sanitasi, vektor rekayasa genetika."
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Bakteri MERUGIKAN (penyakit & toksin)",
+          "items": [
+            "Mycobacterium tuberculosis = TBC.",
+            "Vibrio cholerae = kolera; Salmonella typhi = tifus.",
+            "Clostridium botulinum = toksin makanan kaleng.",
+            "Bacillus anthracis = antraks."
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Resistensi antibiotik adalah EVOLUSI oleh seleksi alam, bukan bakteri 'belajar' atau 'beradaptasi karena ingin'. Mekanisme lengkapnya:"
+        },
+        {
+          "jenis": "poin",
+          "judul": "Alur resistensi (V-O-R-K)",
+          "items": [
+            "VARIASI: sebagian kecil individu sudah membawa gen resisten (mutasi/plasmid).",
+            "OBAT: antibiotik tidak tuntas membunuh yang sensitif.",
+            "RESISTEN selamat lalu berkembang biak.",
+            "KEBAL: frekuensi gen resisten naik → obat kehilangan khasiat.",
+            "Pencegahan: habiskan dosis, jangan pakai untuk infeksi virus, uji sensitivitas."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — alur resistensi 4 langkah",
+          "teks": "VARIASI ada → OBAT membunuh yang sensitif → yang RESISTEN selamat & berbiak → populasi baru KEBAL (singkatan: V-O-R-K). Soal kasus resistensi hampir selalu meminta langkah ke-2/ke-3 sebagai penjelasan."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan Guru",
+          "teks": "Simulasi resistensi murah: kertas lingkaran warna (bakteri sensitif/resisten) + 'semprotan' seleksi beberapa putaran; siswa menghitung perubahan frekuensi warna = analogi seleksi alam. Hubungkan dengan data tabel pada soal HOTS bab ini."
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Ekosistem: Komponen, Aliran Energi, dan Pelestarian"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Komponen dan tingkat organisasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Ekosistem = kesatuan interaksi timbal balik antara komunitas (seluruh populasi berbagai spesies di suatu area) dengan lingkungan abiotiknya (cahaya, suhu, air, tanah, mineral, pH). Tingkat organisasi menaik: individu - populasi (kumpulan se spesies searea, mis. populasi padi di sawah) - komunitas - ekosistem - bioma - biosfer. Komponen abiotik bukan 'latar': cahaya menentukan laju fotosintesis produsen, suhu & curah hujan menentukan tipe bioma, mineral membatasi produktivitas."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Aliran energi: rantai makanan, jaring-jaring, piramida"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Energi masuk ekosistem sebagai cahaya lalu diubah produsen (tumbuhan, fitoplankton, alga) menjadi energi kimia; selanjutnya mengalir satu arah melalui konsumen I (herbivora), II, III, hingga pengurai (bakteri & jamur) yang mengembalikan materi ke lingkungan — MATERI berdaur, ENERGI tidak (ia hilang sebagai panas di setiap tingkat). Rantai makanan yang saling bersilangan membentuk jaring-jaring makanan; semakin kompleks jaringnya, semakin stabil ekosistem terhadap gangguan."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/tka-bio-jaring-makanan-zenius.png",
+          "keterangan": "Contoh jaring-jaring makanan ekosistem laut: perubahan satu populasi merambat dua arah (ke pemangsa dan ke mangsa). Gambar stimulus soal TKA via zenius.net (berkredit)."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Piramida ekologi menggambarkan hubungan trofik: piramida jumlah (individu), biomassa (berat kering), dan energi (paling jujur karena memperhitungkan produktivitas). Hukum 10%: hanya ±10% energi yang tersalurkan ke tingkat trofik berikutnya — konsekuensinya rantai makanan jarang lebih dari 4-5 tingkat dan populasi pemangsa puncak selalu kecil; ini dasar soal 'mengapa daging lebih mahal daripada beras' versi biologi."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Hukum 10% — konsekuensi yang sering diuji",
+          "items": [
+            "Hanya ±10% energi lolos ke tingkat trofik berikut; sisanya panas.",
+            "Rantai makanan jarang melebihi 4-5 tingkat trofik.",
+            "Populasi pemangsa puncak selalu kecil → paling rentan punah.",
+            "Materi BERDAUR (biogeokimia), energi TIDAK (mengalir satu arah)."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — rambat dua arah",
+          "teks": "Populasi X berubah? Telusuri panah NAIK (pemangsa X: makanan berkurang → menurun) dan panah TURUN (mangsa X: tekanan berkurang → meledak). Efek TERBESAR biasanya pada pihak yang paling bergantung langsung pada X."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Interaksi antarkomponen dan daur materi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Interaksi utama: predasi (pemangsa-mangsa), kompetisi (perebutan sumber daya, intra- & antarspesies), simbiosis mutualisme (rhizobium-legum, mikoriza), komensalisme (anggrek-pohon inang), parasitisme (plasmodium-manusia), amensalisme (antibiotik jamur menghambat bakteri), serta netral. Daur biogeokimia yang wajib dikuasai: air, karbon (fotosintesis-respirasi-pembakaran), nitrogen (fiksasi-nitrifikasi-denitrifikasi), fosfor (tanpa fase gas — paling rentan terputus oleh erosi & pupuk berlebih)."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Ekosistem Indonesia dan bioma dunia"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Indonesia memiliki hutan hujan tropis (stratifikasi kanopi, biodiversitas tertinggi), mangrove (pelindung pantai, nursery biota laut, penyimpan karbon), padang lamun, savana (Sumba, Baluran), dan ekosistem perairan tawar-laut. Bioma dunia dibedakan iklim-vegetasi: tundra (lumut kerak, permafrost), taiga (konifer), hutan gugur (empat musim), savana, gurun, hutan hujan tropis. Kunci soal ciri bioma: pasangan curah hujan + vegetasi dominan + suhu."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Permasalahan lingkungan dan strategi pelestarian"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Permasalahan khas Indonesia: deforestasi & fragmentasi habitat (sawit, tambang), pencemaran (plastik, limbah, tumpahan minyak), spesies invasif (ikan sapu-sapu, eceng gondok), overfishing & perburuan, serta perubahan iklim. Pelestarian in-situ melindungi di habitat asli (Taman Nasional Komodo, Ujung Kulon, Way Kambas, cagar alam, suaka margasatwa); ex-situ di luar habitat (kebun raya, kebun binatang, penangkaran, bank biji, kriopreservasi). In-situ menjaga seluruh interaksi ekosistem; ex-situ menjadi cadangan genetik & edukasi — soal evaluasi biasanya meminta memilih kombinasi keduanya beserta alasan."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan Guru",
+          "teks": "Studi kasus lokal paling efektif: bawa satu berita lingkungan daerah (tumpahan minyak/penebangan) lalu minta siswa memetakan komponen terdampak + mengusulkan in-situ/ex-situ berdasar penyebab — melatih kompetensi 'solusi atas permasalahan' sesuai matriks TKA."
+        }
       ],
       "ujiPemahaman": [
         {
@@ -150,7 +413,13 @@
         {
           "soal": "Perhatikan tabel nama bakteri dan perannya pada gambar (I Acetobacter, II Azotobacter, III Bacillus, IV Escherichia, V Streptococcus; peran a-e). Pasangan yang tepat antara bakteri dan perannya adalah ...",
           "tipe": "pg",
-          "opsi": ["I-a dan II-e", "I-d dan V-c", "II-a dan III-e", "III-b dan IV-c", "IV-b dan V-d"],
+          "opsi": [
+            "I-a dan II-e",
+            "I-d dan V-c",
+            "II-a dan III-e",
+            "III-b dan IV-c",
+            "IV-b dan V-d"
+          ],
           "jawaban": 3,
           "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2019-tabel-peran-bakteri.jpg",
           "pembahasan": "Kunci resmi UN 2019: pasangan benar I-e, II-a, III-b, IV-c, V-d; opsi tersedia yang tepat III-b dan IV-c (D).",
@@ -159,7 +428,13 @@
         {
           "soal": "Eubacteria yang dapat menghasilkan zat racun pada makanan kemasan dalam kaleng adalah ...",
           "tipe": "pg",
-          "opsi": ["Pseudomonas sp.", "Thiobacillus ferrooxidans", "Clostridium botulinum", "Escherichia coli", "Acetobacter xylinum"],
+          "opsi": [
+            "Pseudomonas sp.",
+            "Thiobacillus ferrooxidans",
+            "Clostridium botulinum",
+            "Escherichia coli",
+            "Acetobacter xylinum"
+          ],
           "jawaban": 2,
           "pembahasan": "Clostridium botulinum menghasilkan toksin botulinin pada kaleng yang sterilisasinya tidak sempurna.",
           "sumber": "UN 2014 — via kakajaz.blogspot.com"
@@ -181,7 +456,13 @@
         {
           "soal": "Perhatikan gambar jamur roti (Rhizopus stolonifer). Dari ciri: (1) hifa bercabang tidak bersekat; (2) pembiakan seksual dan aseksual; (3) spora dalam askus; (4) hifa bersekat; (5) spora dalam basidium; (6) zigospora berdinding tebal — ciri yang dimilikinya adalah ...",
           "tipe": "pg",
-          "opsi": ["(1), (2), dan (3)", "(1), (2), dan (6)", "(3), (4), dan (5)", "(3), (4), dan (6)", "(4), (5), dan (6)"],
+          "opsi": [
+            "(1), (2), dan (3)",
+            "(1), (2), dan (6)",
+            "(3), (4), dan (5)",
+            "(3), (4), dan (6)",
+            "(4), (5), dan (6)"
+          ],
           "jawaban": 1,
           "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2015-rhizopus.jpg",
           "pembahasan": "Rhizopus = Zygomycota: hifa tidak bersekat, reproduksi seksual-aseksual, zigospora berdinding tebal.",
@@ -190,7 +471,13 @@
         {
           "soal": "Suatu ekosistem darat berciri: hampir seluruh wilayah tertutup salju/es, curah hujan sangat rendah, usia tumbuh tanaman pendek, vegetasi dominan lumut kerak dan semak pendek. Ekosistem tersebut adalah ...",
           "tipe": "pg",
-          "opsi": ["taiga", "tundra", "hutan gugur", "savana", "hutan hujan tropis"],
+          "opsi": [
+            "taiga",
+            "tundra",
+            "hutan gugur",
+            "savana",
+            "hutan hujan tropis"
+          ],
           "jawaban": 1,
           "pembahasan": "Tundra: permafrost/salju, vegetasi lumut & semak kerdil, musim tumbuh sangat singkat. Taiga = konifer.",
           "sumber": "UN 2016 — via kakajaz.blogspot.com"
@@ -213,13 +500,20 @@
         {
           "soal": "Malaria diatasi dengan kina dan DDT. Data: Wilayah A (tanpa resistensi) — kina 3/5/7 hari: 50/76/87% sembuh, DDT 90% menurunkan infeksi; Wilayah B (resisten) — kina 48/72/82%, DDT hanya 60%. Tentukan Tepat/Tidak Tepat tiap pernyataan strategi berikut!",
           "tipe": "tabel",
-          "kolom": ["Tepat", "Tidak Tepat"],
+          "kolom": [
+            "Tepat",
+            "Tidak Tepat"
+          ],
           "baris": [
             "Mengandalkan DDT di kedua wilayah karena efektivitasnya paling tinggi.",
             "DDT di wilayah A untuk hasil cepat, dan memperpanjang pemberian kina di wilayah B karena efektivitas DDT menurun akibat resistensi.",
             "Mengutamakan kina 3 hari di kedua wilayah karena cukup efektif dan cepat."
           ],
-          "jawaban": [1, 0, 1],
+          "jawaban": [
+            1,
+            0,
+            1
+          ],
           "pembahasan": "Kunci resmi: A Tidak Tepat (DDT B hanya 60%), B Tepat, C Tidak Tepat (kina 3 hari hanya ±50%).",
           "sumber": "Contoh Soal Resmi TKA Biologi no. 1 (PGK Kategori, HOTS analisis data) — Pusmendik Kemendikdasmen"
         },
@@ -233,7 +527,11 @@
             "Ekosistem mangrove dan ekosistem terumbu karang.",
             "Mawar merah dan mawar putih dalam satu species Rosa."
           ],
-          "jawaban": [0, 1, 4],
+          "jawaban": [
+            0,
+            1,
+            4
+          ],
           "pembahasan": "Tingkat gen = variasi DALAM satu spesies (varietas/ras/warna). Ayam-bebek = beda spesies (tingkat jenis); mangrove-terumbu = tingkat ekosistem.",
           "sumber": "Gemilang HOTS Drill (analisis tingkat keanekaragaman, tim kurikulum)"
         },
@@ -310,8 +608,18 @@
         {
           "soal": "Dalam ekosistem sawah tercatat: padi, belalang, katak, cahaya matahari, air, tanah, jamur pengurai, suhu. Manakah yang tergolong komponen ABIOTIK? Pilih semua yang benar!",
           "tipe": "pgMulti",
-          "opsi": ["Cahaya matahari", "Air dan tanah", "Jamur pengurai", "Suhu", "Belalang"],
-          "jawaban": [0, 1, 3],
+          "opsi": [
+            "Cahaya matahari",
+            "Air dan tanah",
+            "Jamur pengurai",
+            "Suhu",
+            "Belalang"
+          ],
+          "jawaban": [
+            0,
+            1,
+            3
+          ],
           "pembahasan": "Abiotik = faktor fisik-kimia tak hidup (cahaya, air, tanah, suhu). Jamur = biotik pengurai; belalang = biotik konsumen.",
           "sumber": "Gemilang HOTS Drill (analisis komponen ekosistem, tim kurikulum)"
         }

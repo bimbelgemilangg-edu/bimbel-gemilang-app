@@ -150,21 +150,15 @@ export default function BelajarDaftarIsi() {
               const soal = (bab.ujiPemahaman || []).length;
               // GATE BELAJAR (Turn 29): bab terkunci sampai latihan
               // bab sebelumnya selesai dijawab semua.
-              const terkunci = i > 0
-                && !progresMap[babList[i - 1]?.id]?.latihanSelesai;
               return (
                 <button key={bab.id} type="button"
-                  onClick={() => {
-                    if (terkunci) return;
-                    navigate(`/siswa/belajar/${materiId}/${bab.id}`);
-                  }}
+                  onClick={() => navigate(`/siswa/belajar/${materiId}/${bab.id}`)}
                   style={{
                     ...S.kartuBab,
                     ...(aktif ? S.kartuBabAktif : null),
-                    ...(terkunci ? { opacity: 0.62 } : null),
                   }}>
                   <span style={lingkaranNomor(selesai ? 'selesai' : aktif ? 'aktif' : 'biasa')}>
-                    {terkunci ? '🔒' : selesai ? <CheckCircle2 size={18} /> : i + 1}
+                    {selesai ? <CheckCircle2 size={18} /> : i + 1}
                   </span>
                   <span style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
                     <span style={S.babJudul}>{bab.judul}</span>
@@ -175,7 +169,6 @@ export default function BelajarDaftarIsi() {
                       {(bab.sections || []).length ? ` • ${(bab.sections).length} bagian` : ''}
                       {soal ? ` • ${soal} soal` : ''}
                       {bab.estimasiMenit ? ` • ±${bab.estimasiMenit} mnt` : ''}
-                      {terkunci ? ' • 🔒 selesaikan latihan bab sebelumnya' : ''}
                     </span>
                   </span>
                   <ChevronRight size={16} color={T.samar} />
