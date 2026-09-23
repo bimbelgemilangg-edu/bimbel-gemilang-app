@@ -59,6 +59,60 @@ export default function IsiSections({
             </h3>
           );
         }
+        if (jenis === 'alur') {
+          // Alur ber-panah (flow proses) -- visual panah menurun antar langkah
+          return (
+            <div key={i} id={`sec-${i}`} style={{ ...S.alurWrap, ...S.jangkar }}>
+              {sec.judul ? <div style={S.poinJudul}>🔁 {sec.judul}</div> : null}
+              {(sec.items || []).map((it, k) => (
+                <React.Fragment key={k}>
+                  <div style={S.alurChip}><MathText text={it} /></div>
+                  {k < (sec.items || []).length - 1 && (
+                    <div style={S.alurPanah}>↓</div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          );
+        }
+        if (jenis === 'tabelinfo') {
+          return (
+            <div key={i} id={`sec-${i}`} style={{ ...S.tabelWrap, ...S.jangkar }}>
+              {sec.judul ? <div style={S.poinJudul}>📊 {sec.judul}</div> : null}
+              <table style={S.tabel}>
+                <thead>
+                  <tr>
+                    {(sec.kolom || ['Istilah/Komponen', 'Keterangan']).map((k2) => (
+                      <th key={k2} style={S.tabelSel}>{k2}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(sec.rows || []).map((r2, k) => (
+                    <tr key={k}>
+                      <td style={S.tabelSel}><MathText text={r2[0]} /></td>
+                      <td style={S.tabelSel}><MathText text={r2[1]} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+        if (jenis === 'istilah') {
+          return (
+            <div key={i} id={`sec-${i}`} style={{ ...S.poinBox, ...S.jangkar }}>
+              <div style={S.poinJudul}>📖 Kamus mini istilah</div>
+              <ul style={S.poinList}>
+                {(sec.items || []).map((it, k) => (
+                  <li key={k} style={S.poinItem}>
+                    <b>{it[0]}</b> = {it[1]}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        }
         if (jenis === 'poin') {
           return (
             <div key={i} id={`sec-${i}`} style={{ ...S.poinBox, ...S.jangkar }}>
@@ -219,6 +273,19 @@ const S = {
     display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
     background: T.latar, border: `1px dashed ${T.garis}`, borderRadius: 12,
     color: T.samar, padding: 26, fontSize: 12.5,
+  },
+  alurWrap: {
+    background: '#F4F9FF', border: `1px solid ${T.kotakBiruGaris}`,
+    borderRadius: 12, padding: '10px 14px', margin: '10px 0',
+  },
+  alurChip: {
+    background: '#fff', border: `1.5px solid ${T.biru}`, color: T.biruDalam,
+    borderRadius: 999, padding: '7px 14px', fontSize: 12.5, fontWeight: 700,
+    textAlign: 'center', lineHeight: 1.5,
+  },
+  alurPanah: {
+    textAlign: 'center', color: T.biru, fontWeight: 800, fontSize: 15,
+    lineHeight: '18px',
   },
   poinBox: {
     background: '#F4F9FF', border: `1px solid ${T.kotakBiruGaris}`,

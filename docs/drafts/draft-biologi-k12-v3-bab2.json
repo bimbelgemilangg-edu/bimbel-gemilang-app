@@ -45,7 +45,36 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Enzim adalah biokatalis protein yang mempercepat reaksi kimia sel tanpa ikut berubah atau habis. Enzim lengkap (holoenzim) = apoenzim (bagian protein) + kofaktor: koenzim (molekul organik seperti NAD+, FAD, koenzim A) atau ion logam (Mg2+, Fe2+, Zn2+). Sifat yang wajib hafal: (1) hanya diperlukan dalam jumlah sedikit; (2) bekerja spesifik pada substrat tertentu; (3) tidak mengubah kesetimbangan reaksi, hanya mempercepat tercapainya kesetimbangan; (4) dapat bekerja bolak-balik (reversibel); (5) aktivitasnya dipengaruhi suhu, pH, dan zat lain; (6) mudah terdenaturasi (rusak bentuk) oleh suhu ekstrem, pH ekstrem, logam berat."
+          "teks": "Enzim adalah biokatalis protein yang mempercepat reaksi kimia sel tanpa ikut berubah atau habis. Enzim bekerja dengan menurunkan energi aktivasi."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Enzim lengkap (holoenzim) tersusun dari apoenzim (bagian protein) dan kofaktor. Kofaktor dapat berupa koenzim (NAD+, FAD, koenzim A) atau ion logam (Mg2+, Fe2+, Zn2+)."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Holoenzim",
+              "enzim lengkap yang aktif (apoenzim + kofaktor)."
+            ],
+            [
+              "Apoenzim",
+              "bagian protein enzim."
+            ],
+            [
+              "Koenzim",
+              "kofaktor organik pembawa gugus/elektron (NAD+, FAD)."
+            ],
+            [
+              "Energi aktivasi (Ea)",
+              "energi minimum untuk memulai reaksi; diturunkan oleh enzim."
+            ],
+            [
+              "Denaturasi",
+              "rusaknya bentuk enzim (sisi aktif) oleh panas/pH ekstrem/logam berat."
+            ]
+          ]
         },
         {
           "jenis": "poin",
@@ -131,7 +160,17 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Glikolisis (sitoplasma, tanpa O2, 10 langkah enzimatis) membelah glukosa (6C) menjadi 2 PGAL (3C) lalu 2 asam piruvat. Fase INVESTISI energi memakai 2 ATP (fosforilasi glukosa & fruktosa-1,6-bifosfat); fase PEMBENTUKAN energi menghasilkan 4 ATP (substrate-level phosphorylation) + 2 NADH. Hasil bersih per glukosa: 2 ATP + 2 NADH + 2 piruvat. Karena terjadi di sitoplasma dan tidak butuh O2, glikolisis adalah jalur tertua dan satu-satunya pemasok ATP saat kondisi anaerob."
+          "teks": "Glikolisis berlangsung di sitoplasma dan tidak membutuhkan O2. Karena itu glikolisis adalah jalur tertua dan satu-satunya pemasok ATP saat kondisi anaerob."
+        },
+        {
+          "jenis": "alur",
+          "judul": "Glikolisis: investasi lalu panen",
+          "items": [
+            "Glukosa (6C) difosforilasi: INVESTASI 2 ATP.",
+            "Pecah menjadi 2 PGAL (3C).",
+            "PANEN: 4 ATP + 2 NADH.",
+            "Hasil BERSIH: 2 ATP + 2 NADH + 2 asam piruvat."
+          ]
         },
         {
           "jenis": "poin",
@@ -172,7 +211,18 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "NADH & FADH2 menyerahkan elektron ke kompleks protein pada membran dalam (krista). Elektron melompat antar kompleks melepaskan energi untuk memompa H+ ke ruang antarmembran, menciptakan gradien elektrokimia. H+ kembali masuk melalui ATP SINTASE (kemiosmosis) menghasilkan ATP terbanyak (±2,5-3 ATP per NADH; ±1,5-2 ATP per FADH2). Di ujung rantai, OKSIGEN berperan sebagai akseptor elektron terakhir, bergabung dengan H+ membentuk H2O — tanpa O2 rantai berhenti total."
+          "teks": "Rantai transpor elektron terletak di membran dalam mitokondria (krista). Elektron dari NADH & FADH2 melompat antar kompleks protein sambil memompa H+ ke ruang antarmembran."
+        },
+        {
+          "jenis": "alur",
+          "judul": "Rantai transpor elektron & kemiosmosis",
+          "items": [
+            "NADH/FADH2 menyerahkan elektron ke kompleks protein.",
+            "Energi lompatan elektron memompa H+ ke ruang antarmembran.",
+            "Gradien H+ mengalir balik melalui ATP sintase (kemiosmosis).",
+            "ATP terbanyak terbentuk (±2,5-3 ATP per NADH; ±1,5-2 per FADH2).",
+            "O2 = akseptor elektron terakhir, bergabung dengan H+ menjadi H2O."
+          ]
         },
         {
           "jenis": "gambar",
@@ -224,7 +274,36 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Fotosintesis berlangsung di kloroplas: membran luar & dalam, stroma (cairan tempat siklus Calvin), dan tilakoid (kantong membran bertumpuk = grana, tempat reaksi terang). Pigmen: klorofil a (pusat reaksi, menyerap biru-merah, memantulkan hijau), klorofil b (antena), karotenoid (kuning-oranye, pelindung & antena). Klorofil a pada fotosistem I menyerap maksimum ±700 nm (P700), fotosistem II ±680 nm (P680)."
+          "teks": "Fotosintesis berlangsung di kloroplas: membran luar & dalam, stroma (cairan tempat siklus Calvin), dan tilakoid (kantong membran bertumpuk = grana, tempat reaksi terang)."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Klorofil a",
+              "pigmen pusat reaksi; menyerap maksimum ±700 nm (P700) & ±680 nm (P680)."
+            ],
+            [
+              "Klorofil b",
+              "pigmen antena pendukung."
+            ],
+            [
+              "Karotenoid",
+              "pigmen kuning-oranye; antena & pelindung."
+            ],
+            [
+              "Fotosistem",
+              "paket pigmen + protein penangkap cahaya (FS I & FS II)."
+            ],
+            [
+              "Grana",
+              "tumpukan tilakoid tempat reaksi terang."
+            ],
+            [
+              "Stroma",
+              "cairan kloroplas tempat siklus Calvin."
+            ]
+          ]
         },
         {
           "jenis": "gambar",
@@ -252,7 +331,37 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Di stroma, siklus Calvin memakai ATP & NADPH reaksi terang untuk mereduksi CO2 menjadi gula dalam tiga fase: (1) FIKSASI — enzim Rubisco mengikat CO2 pada RuBP (5C) membentuk 2 molekul PGA (3C); (2) REDUKSI — PGA direduksi oleh ATP & NADPH menjadi PGAL/G3P; sebagian G3P keluar untuk menyusun glukosa; (3) REGENERASI — sisa G3 disusun ulang menjadi RuBP memakai ATP. Untuk 1 glukosa: 6 CO2 + 18 ATP + 12 NADPH. 'Reaksi gelap' tidak berarti butuh gelap — hanya tidak memerlukan cahaya langsung."
+          "teks": "Siklus Calvin berlangsung di stroma dan memakai ATP & NADPH hasil reaksi terang. Meskipun disebut 'reaksi gelap', siklus ini tidak membutuhkan gelap, hanya tidak memerlukan cahaya langsung."
+        },
+        {
+          "jenis": "alur",
+          "judul": "Tiga fase siklus Calvin",
+          "items": [
+            "FIKSASI: Rubisco mengikat CO2 pada RuBP (5C) menjadi 2 PGA (3C).",
+            "REDUKSI: PGA + ATP + NADPH menjadi PGAL/G3P; sebagian keluar menyusun glukosa.",
+            "REGENERASI: sisa G3 disusun ulang menjadi RuBP memakai ATP."
+          ]
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Rubisco",
+              "enzim pengikat CO2 pada fase fiksasi; protein paling melimpah di bumi."
+            ],
+            [
+              "RuBP",
+              "molekul 5C penerima CO2."
+            ],
+            [
+              "PGA",
+              "molekul 3C hasil fiksasi."
+            ],
+            [
+              "PGAL/G3P",
+              "produk reduksi; bahan penyusun glukosa."
+            ]
+          ]
         },
         {
           "jenis": "poin",

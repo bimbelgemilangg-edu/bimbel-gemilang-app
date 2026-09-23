@@ -45,7 +45,36 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Keanekaragaman hayati (biodiversitas) adalah variasi kehidupan pada tiga tingkat: GEN, JENIS (spesies), dan EKOSISTEM. Tingkat gen: variasi dalam SATU spesies akibat perbedaan susunan gen — penampilan bisa beda tetapi tetap bisa kawin dan menghasilkan keturunan fertil (padi IR64-C4-Rojolele, mangga arumanis-gedong, anjing ras, warna bunga mawar). Tingkat jenis: variasi ANTAR spesies yang masih satu famili/genus sehingga tampak jelas perbedaannya (harimau-singa-macan tutul pada Felidae; jeruk-lemon-grapefruit; kacang-kacangan pada Fabaceae). Tingkat ekosistem: variasi habitat beserta keseluruhan interaksinya (hutan hujan tropis, mangrove, padang lamun, savana, gurun, tundra)."
+          "teks": "Keanekaragaman hayati (biodiversitas) adalah variasi kehidupan pada tiga tingkat: GEN, JENIS (spesies), dan EKOSISTEM."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tingkat gen: variasi dalam SATU spesies akibat perbedaan susunan gen. Penampilan bisa beda tetapi tetap bisa kawin dan menghasilkan keturunan fertil."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tingkat jenis: variasi ANTAR spesies yang masih satu famili/genus sehingga perbedaannya tampak jelas. Tingkat ekosistem: variasi habitat beserta keseluruhan interaksinya."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Gen",
+              "unit pewarisan; perbedaan susunan gen dalam satu spesies = keanekaragaman tingkat gen."
+            ],
+            [
+              "Spesies",
+              "kelompok organisme yang dapat kawin dan menghasilkan keturunan fertil."
+            ],
+            [
+              "Ekosistem",
+              "kesatuan komunitas dengan lingkungan abiotiknya."
+            ],
+            [
+              "Endemik",
+              "spesies yang hanya ditemukan di satu wilayah tertentu (mis. komodo, anoa, maleo)."
+            ]
+          ]
         },
         {
           "jenis": "poin",
@@ -92,7 +121,28 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Nama spesies mengikuti binomial nomenclature (Carolus Linnaeus): dua kata Latin/Latinisasi; kata pertama = genus (diawali huruf kapital), kata kedua = penunjuk spesies (huruf kecil seluruhnya); dicetak miring pada teks cetak atau digarisbawahi terpisah pada tulisan tangan; contoh Oryza sativa, Panthera tigris, Escherichia coli. Penulis spesies sering diikuti nama penulis deskripsi pertama (mis. Oryza sativa L.). Aturan kecil yang sering jadi jebakan: nama genus boleh disingkat setelah penyebutan pertama (E. coli), tetapi nama spesies tidak pernah ditulis dengan huruf kapital di kata kedua."
+          "teks": "Nama spesies mengikuti binomial nomenclature (Carolus Linnaeus): dua kata Latin atau Latinisasi."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Aturannya tegas: kata pertama = genus dengan huruf kapital, kata kedua = penunjuk spesies dengan huruf kecil, dicetak miring atau digarisbawahi terpisah."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Takson",
+              "kelompok hasil klasifikasi pada jenjang tertentu (domain s.d. spesies)."
+            ],
+            [
+              "Binomial nomenclature",
+              "aturan penamaan dua kata (genus + penunjuk spesies)."
+            ],
+            [
+              "Genus",
+              "takson di atas spesies; nama pertama pada nama ilmiah."
+            ]
+          ]
         },
         {
           "jenis": "contoh",
@@ -176,7 +226,32 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Bakteri adalah prokariota: TIDAK memiliki membran inti sehingga DNA-nya berupa nukleoid yang terletak langsung di sitoplasma, dan tidak memiliki organel bermembran (mitokondria, RE, badan Golgi). Pembungkus dari luar ke dalam: kapsul/lapisan lendir (perlindungan, membantu menempel, faktor virulensi), dinding sel peptidoglikan (memberi bentuk & mencegah lisis osmotik), membran plasma (transpor & tempat reaksi respirasi/fotosintesis pada bakteri terkait). Di dalam sitoplasma terdapat ribosom 70S (sintesis protein), plasmid (DNA sirkular kecil pembawa gen tambahan seperti gen resistensi & toksin, dapat berpindah antarbakteri), inklusi (cadangan makanan), serta struktur luar flagela (gerak) dan pilus/fimbria (menempel & konjugasi). Beberapa jenis membentuk endospora berdinding tebal untuk bertahan pada kondisi ekstrem."
+          "teks": "Bakteri adalah prokariota: TIDAK memiliki membran inti sehingga DNA-nya berupa nukleoid yang terletak langsung di sitoplasma. Bakteri juga tidak memiliki organel bermembran (mitokondria, RE, badan Golgi)."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Pembungkus dari luar ke dalam: kapsul/lapisan lendir, dinding sel peptidoglikan, lalu membran plasma. Di dalam sitoplasma ada ribosom 70S, plasmid, dan inklusi."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Nukleoid",
+              "zona DNA bakteri tanpa selubung membran."
+            ],
+            [
+              "Plasmid",
+              "DNA sirkular kecil pembawa gen tambahan (mis. gen resistensi); dapat berpindah antarbakteri."
+            ],
+            [
+              "Peptidoglikan",
+              "penyusun dinding sel bakteri; tebal pada Gram-positif."
+            ],
+            [
+              "Endospora",
+              "bentuk bertahan berdinding tebal pada kondisi ekstrem."
+            ]
+          ]
         },
         {
           "jenis": "gambar",
@@ -299,7 +374,38 @@
         },
         {
           "jenis": "paragraf",
-          "teks": "Piramida ekologi menggambarkan hubungan trofik: piramida jumlah (individu), biomassa (berat kering), dan energi (paling jujur karena memperhitungkan produktivitas). Hukum 10%: hanya ±10% energi yang tersalurkan ke tingkat trofik berikutnya — konsekuensinya rantai makanan jarang lebih dari 4-5 tingkat dan populasi pemangsa puncak selalu kecil; ini dasar soal 'mengapa daging lebih mahal daripada beras' versi biologi."
+          "teks": "Piramida ekologi menggambarkan hubungan trofik: piramida jumlah (individu), biomassa (berat kering), dan energi (paling jujur karena memperhitungkan produktivitas)."
+        },
+        {
+          "jenis": "alur",
+          "judul": "Aliran energi rantai makanan",
+          "items": [
+            "Produsen (tumbuhan/fitoplankton) menangkap energi cahaya.",
+            "Konsumen I (herbivora) memakan produsen.",
+            "Konsumen II & III (karnivora) memakan konsumen di bawahnya.",
+            "Dekomposer (bakteri & jamur) mengurai sisa semua tingkat."
+          ]
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Trofik",
+              "tingkat kedudukan organisme dalam rantai makanan."
+            ],
+            [
+              "Produsen",
+              "organisme autotrof penyusun zat organik."
+            ],
+            [
+              "Konsumen",
+              "organisme heterotrof pemakan organisme lain."
+            ],
+            [
+              "Dekomposer",
+              "pengurai sisa organik menjadi materi anorganik."
+            ]
+          ]
         },
         {
           "jenis": "poin",
