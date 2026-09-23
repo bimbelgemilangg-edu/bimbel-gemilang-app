@@ -7,12 +7,13 @@
 > Kesimpulan dipakai untuk menyelaraskan konten app (bab 1-5 Biologi).
 
 ## 1. VERDICT SINGKAT
-**Sejalan sebagian besar (±75% sub-elemen TKA tertutup), dengan 5 celah penting.**
+**Sejalan sebagian besar (±85% sub-elemen TKA tertutup setelah verifikasi teliti), dengan 3 celah penting.**
+(Koreksi Turn 46: imun & hormon ternyata ADA di modul hal 143-156 — verdict awal meremehkan karena header modul tidak konsisten.)
 Modul sangat kuat di **fisiologi manusia + metabolisme** (persis porsi terbesar
 matriks TKA "proses-proses pada makhluk hidup" + "sel"), dan gayanya
 (rangkuman + soal pengantar + alur campuran) cocok sebagai **pegangan tentor**.
-Namun matriks TKA memuat elemen yang **tidak terlihat di modul**: keanekaragaman
-hayati & klasifikasi, bakteri, sistem imun, hormon, pelestarian ekosistem, dan
+Namun matriks TKA memuat elemen yang **tidak terlihat di modul**: keanekaragaman hayati & klasifikasi, bakteri
+(termasuk resistensi), pelestarian ekosistem (in-situ/ex-situ), dan
 **keterampilan proses** (merumuskan pertanyaan, merancang penyelidikan, mengolah
 data) — semuanya justru sering muncul sebagai soal HOTS TKA.
 
@@ -28,8 +29,8 @@ data) — semuanya justru sering muncul sebagai soal HOTS TKA.
 | Transport & pertukaran zat: sistem sirkulasi | ❖ SUSUNAN DARAH, ❖ DARAH, ❖ JANTUNG, ❖ PEMBULUH DARAH, ❖ MACAM PEREDARAN DARAH, ❖ GOLONGAN DARAH & TRANSFUSI, ❖ KELAINAN PEREDARAN DARAH | ✅ sejalan (lebih kaya: golongan darah & transfusi) | bab 3 fokus A.1-A.4 | Bonus modul (golongan darah) baik untuk pengayaan |
 | Sistem respirasi | ❖ ALAT RESPIRASI, ❖ JENIS RESPIRASI, ❖ GANGGUAN PERNAPASAN | ✅ sejalan | bab 3 fokus B.1-B.4 | - |
 | Sistem ekskresi | Daftar isi: Sistem Ekskresi (Hal 149-151 internal) | ✅ sejalan | bab 3 fokus C.1-C.3 | - |
-| Sistem imun | Tidak terlihat | ❌ CELAH | bab 4 (rencana) | Wajib ditambah app & modul |
-| Sistem koordinasi (saraf & hormon) | ❖ SARAF, ❖ ALAT INDRA (saraf OK); **hormon tidak terlihat** | ⚠️ sebagian | bab 4 (rencana: saraf + hormon) | Hormon = celah modul |
+| Sistem imun | ✅ ADA (hal 143-146, 161-163: antigen-antibodi, non-spesifik/spesifik, IgA-IgM, kekebalan aktif/pasif, vaksinasi) | ✅ sejalan (ringkas) | bab 4 fokus A.1-A.5 | App merinci + visual tabel/alur; koreksi verdict awal |
+| Sistem koordinasi (saraf & hormon) | ✅ ADA (hal 147-156: saraf sadar/otonom, panca indra, endokrin: ADH/vasopressin, testosteron) | ✅ sejalan (ringkas) | bab 4 fokus B.1-B.6 | Koreksi verdict awal: hormon ADA |
 | Sistem reproduksi (pria & wanita) | ❖ SISTEM REPRODUKSI PADA MANUSIA | ✅ sejalan | bab 4 (rencana) | - |
 | Keterampilan proses (merumuskan pertanyaan, merancang penyelidikan, mengolah data) | Tidak eksplisit (soal pengantar mayoritas PG konten) | ❌ CELAH | semua bab (soal HOTS/app) | Kekhasan TKA; app menutup lewat 6 format soal + HOTS |
 

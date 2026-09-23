@@ -1,0 +1,959 @@
+{
+  "materi": {
+    "judul": "Biologi SMA Kelas 12 — Persiapan TKA 2026",
+    "mapel": "Biologi",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#16A34A",
+    "emoji": "🧬",
+    "deskripsi": "Bab 4 VERSI DALAM: Sistem Imun, Koordinasi (saraf+hormon+indra), Reproduksi & Integrasi. Menutup sub-elemen matriks TKA; modul tentor hal 143-156 jadi acuan internal (imun & hormon), app merinci + visual tabel/alur. 20 soal: 6 asli/internal + 14 drill HOTS, 6 format.",
+    "urutan": 4,
+    "status": "draft",
+    "daftarPustaka": [
+      "Modul Tentor Gemilang Rangkuman Materi SMA Kurmer 2025 (INTERNAL) hal 143-156 + Soal Pengantar imun no 5-10 (kunci diverifikasi tim kurikulum).",
+      "Matriks Asesmen TKA Biologi — Pusmendik Kemendikdasmen 2025 (imun, koordinasi, reproduksi).",
+      "UN 2017 soal mata via kakajaz.blogspot (diadaptasi seperlunya).",
+      "Diagram buatan tim kurikulum (tabel/alur/panah) sesuai izin owner; crop diagram modul menyusul."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Imun, Koordinasi & Reproduksi (VERSI DALAM): Pertahanan, Pengendali, dan Pewarisan",
+      "ringkasan": "Menutup tiga sub-elemen matriks TKA: imun (non-spesifik/spesifik, mekanisme, imunitas & Ig, vaksinasi & kelainan), koordinasi (neuron-impuls, pembagian saraf, refleks vs sadar, hormon-endokrin, indra, kelainan), reproduksi (pria, wanita & menstruasi, gametogenesis, fertilisasi & kontrasepsi, kelainan) + integrasi saraf-hormon. 20 soal 6 format.",
+      "estimasiMenit": 95,
+      "urutan": 4,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Peta belajar bab ini",
+          "teks": "A. Sistem Imun (A.1 konsep & antigen-antibodi, A.2 non-spesifik vs spesifik, A.3 mekanisme respons, A.4 macam imunitas & imunoglobulin, A.5 vaksinasi & kelainan) • B. Koordinasi (B.1 neuron & impuls, B.2 pembagian sistem saraf, B.3 refleks vs sadar, B.4 hormon & kelenjar endokrin, B.5 panca indra, B.6 kelainan) • C. Reproduksi (C.1 pria, C.2 wanita & menstruasi, C.3 gametogenesis, C.4 fertilisasi & kontrasepsi, C.5 kelainan) • D. Integrasi (D.1 regulasi gula darah, D.2 perbandingan saraf-hormon)."
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Sistem Imun: Pertahanan Tubuh"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Konsep imunitas, antigen, dan antibodi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Imun = sistem pertahanan tubuh terhadap semua antigen (zat asing yang memicu respons imun: bakteri, virus, toksin, sel asing). Antibodi adalah protein (imunoglobulin) yang diproduksi limfosit B untuk mengikat antigen secara spesifik."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Antigen",
+              "zat asing yang memicu respons imun."
+            ],
+            [
+              "Antibodi",
+              "protein imunoglobulin pengikat antigen secara spesifik."
+            ],
+            [
+              "Imunitas",
+              "kemampuan tubuh menahan/menetralkan antigen."
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Pertahanan non-spesifik vs spesifik"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Dua lapis pertahanan",
+          "kolom": [
+            "Aspek",
+            "Non-spesifik (bawaan)",
+            "Spesifik (adaptif)"
+          ],
+          "rows": [
+            [
+              "Garis pertama",
+              "Kulit & membran mukosa",
+              "-"
+            ],
+            [
+              "Garis kedua",
+              "Protein antimikroba, sel fagosit (makrofag, neutrofil), peradangan, demam",
+              "-"
+            ],
+            [
+              "Garis ketiga",
+              "-",
+              "Limfosit B (antibodi) & limfosit T (pembunuh, memori)"
+            ],
+            [
+              "Sifat",
+              "Cepat, umum, tidak ingat patogen",
+              "Lambat awal, spesifik, punya memori"
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Mekanisme respons imun"
+        },
+        {
+          "jenis": "alur",
+          "judul": "Alur respons spesifik",
+          "items": [
+            "Antigen masuk tubuh.",
+            "Makrofag menelan & menyajikan antigen.",
+            "Limfosit T helper mengenali & mengaktivasi.",
+            "Limfosit B berproliferasi menjadi sel plasma (penghasil antibodi) + sel B memori.",
+            "Antibodi menetralkan/menggumpalkan antigen; sel T sitotoksik membunuh sel terinfeksi.",
+            "Sel memori bertahan → respons kedua lebih cepat & kuat."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — siapa berbuat apa",
+          "teks": "Makrofag = penyaji antigen. T helper = koordinator. Limfosit B = pabrik antibodi + memori. T sitotoksik = eksekutor sel terinfeksi. Empat peran ini menjawab hampir semua soal mekanisme imun."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Macam imunitas & imunoglobulin"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Empat macam imunitas",
+          "kolom": [
+            "Jenis",
+            "Contoh"
+          ],
+          "rows": [
+            [
+              "Aktif alami",
+              "Sembuh dari infeksi lalu membentuk antibodi sendiri."
+            ],
+            [
+              "Aktif buatan",
+              "Vaksinasi (antigen dilemahkan memicu antibodi)."
+            ],
+            [
+              "Pasif alami",
+              "Kolostrum/ASI (IgA); antibodi ibu via plasenta (IgG)."
+            ],
+            [
+              "Pasif buatan",
+              "Suntikan serum/antibodi siap pakai (mis. anti-bisa ular)."
+            ]
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Lima imunoglobulin",
+          "kolom": [
+            "Ig",
+            "Peran utama"
+          ],
+          "rows": [
+            [
+              "IgA",
+              "Dominan di sekret/kolostrum; penjaga mukosa."
+            ],
+            [
+              "IgD",
+              "Penanda aktivasi limfosit B."
+            ],
+            [
+              "IgE",
+              "Alergi & pertahanan parasit."
+            ],
+            [
+              "IgG",
+              "Paling banyak; menembus plasenta; respons sekunder."
+            ],
+            [
+              "IgM",
+              "Pertama muncul saat infeksi awal."
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Vaksinasi & kelainan sistem imun"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Vaksinasi = imunisasi aktif buatan: antigen dilemahkan/dimatikan memperkenalkan 'foto pelaku' sehingga sel memori terbentuk tanpa penyakit penuh."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Kelainan & penyakit sistem imun",
+          "items": [
+            "Alergi = respons IgE berlebihan terhadap alergen.",
+            "Autoimun = imun menyerang sel diri (lupus, rheumatoid arthritis, DM tipe 1).",
+            "HIV/AIDS = virus merusak limfosit T helper → imun runtuh.",
+            "Sindrom Stevens-Johnson = hipersensitivitas berat (sering akibat obat).",
+            "Imunodefisiensi = kekurangan komponen imun (bawaan/didapat)."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Sistem Koordinasi: Saraf, Hormon, Indra"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Neuron dan penghantaran impuls"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Neuron (sel saraf) terdiri dari dendrit (penerima), badan sel, dan akson (pengirim). Impuls listrik berjalan sepanjang akson; pada sinaps sinyal berpindah kimiawi lewat neurotransmiter (asetilkolin, dopamin, dll)."
+        },
+        {
+          "jenis": "alur",
+          "judul": "Alur impuls",
+          "items": [
+            "Reseptor menerima rangsang.",
+            "Dendrit → badan sel → akson (impuls listrik).",
+            "Sinaps: neurotransmiter menyeberang ke neuron berikutnya.",
+            "Efektor (otot/kelenjar) memberikan tanggapan."
+          ]
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            [
+              "Neuron",
+              "sel penghantar impuls."
+            ],
+            [
+              "Sinaps",
+              "celah sambungan antar neuron."
+            ],
+            [
+              "Neurotransmiter",
+              "zat kimia pembawa sinyal di sinaps."
+            ],
+            [
+              "Reseptor",
+              "struktur penerima rangsang."
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Pembagian sistem saraf"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Peta sistem saraf",
+          "kolom": [
+            "Cabang",
+            "Anggota & tugas"
+          ],
+          "rows": [
+            [
+              "Sistem saraf pusat",
+              "Otak (pusat sadar) & sumsum tulang belakang (pusat refleks)."
+            ],
+            [
+              "Saraf somatik (sadar)",
+              "Mengatur gerak yang disadari."
+            ],
+            [
+              "Otonom simpatik",
+              "Mode lawan-lari: detak jantung naik, pupil melebar, pencernaan turun."
+            ],
+            [
+              "Otonom parasimpatik",
+              "Mode rest-digest: kebalikan simpatik."
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Gerak refleks vs gerak sadar"
+        },
+        {
+          "jenis": "alur",
+          "judul": "Busur refleks (cepat, tanpa otak)",
+          "items": [
+            "Reseptor (mis. lutut / kulit terbakar)",
+            "Neuron sensorik → sumsum tulang belakang",
+            "Interneuron (konektor)",
+            "Neuron motorik → efektor (otot)",
+            "Tanggapan seketika; otak hanya menerima laporan sesudahnya"
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Gerak sadar",
+          "items": [
+            "Reseptor",
+            "Neuron sensorik → OTAK (diproses & diputuskan)",
+            "Neuron motorik → efektor",
+            "Tanggapan lebih lambat tetapi terencana"
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Hormon dan kelenjar endokrin"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Kelenjar endokrin melepaskan hormon langsung ke darah; kerja lambat tetapi lama dan luas, melengkapi kerja saraf yang cepat dan singkat."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Kelenjar & hormon kunci",
+          "kolom": [
+            "Kelenjar",
+            "Hormon",
+            "Fungsi utama"
+          ],
+          "rows": [
+            [
+              "Hipofisis (pituitari)",
+              "GH, TSH, ACTH, ADH/vasopresin",
+              "Master gland; ADH mengatur reabsorpsi air di ginjal."
+            ],
+            [
+              "Tiroid",
+              "Tiroksin, kalsitonin",
+              "Metabolisme; kalsitonin menurunkan kalsium darah."
+            ],
+            [
+              "Paratiroid",
+              "Parathormon",
+              "Menaikkan kalsium darah."
+            ],
+            [
+              "Pankreas",
+              "Insulin, glukagon",
+              "Menurunkan/menaikkan glukosa darah."
+            ],
+            [
+              "Adrenal",
+              "Adrenalin, kortisol",
+              "Respons stres, metabolisme."
+            ],
+            [
+              "Testis",
+              "Testosteron",
+              "Ciri seks sekunder pria, spermatogenesis."
+            ],
+            [
+              "Ovarium",
+              "Estrogen, progesteron",
+              "Siklus menstruasi, ciri seks sekunder wanita."
+            ]
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — pasang surut kalsium & gula",
+          "teks": "Kalsitonin = TURUNkan kalsium (sama-sama berawalan turun); parathormon = naikkan. Insulin = masukkan gula ke sel (gula darah turun); glukagon = keluarkan gula dari hati (gula darah naik). Dua pasang ini langganan soal sebab-akibat."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Panca indra"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Lima indra & reseptornya",
+          "kolom": [
+            "Indra",
+            "Rangsang",
+            "Reseptor"
+          ],
+          "rows": [
+            [
+              "Mata",
+              "Cahaya",
+              "Fotoreseptor retina (batang & kerucut)."
+            ],
+            [
+              "Telinga",
+              "Suara & keseimbangan",
+              "Sel rambut koklea (organ korti) & saluran setengah lingkaran."
+            ],
+            [
+              "Hidung",
+              "Zat kimia udara",
+              "Kemoreseptor epitel olfaktori."
+            ],
+            [
+              "Lidah",
+              "Zat kimia larutan",
+              "Pengecap pada papila."
+            ],
+            [
+              "Kulit",
+              "Sentuhan, suhu, nyeri",
+              "Mekanoreseptor, termoreseptor, nosireseptor."
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Kelainan sistem koordinasi"
+        },
+        {
+          "jenis": "poin",
+          "judul": "Kelainan langganan",
+          "items": [
+            "Miopi/hipermetropi/astigmatisme = kelainan pembiasan mata.",
+            "Parkinson & epilepsi = gangguan fungsi otak.",
+            "Diabetes insipidus = kekurangan ADH (bedakan dengan mellitus).",
+            "Gondok = pembesaran tiroid (kekurangan yodium)."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Sistem Reproduksi"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Reproduksi pria"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Struktur & fungsi pria",
+          "kolom": [
+            "Struktur",
+            "Fungsi"
+          ],
+          "rows": [
+            [
+              "Testis",
+              "Memproduksi sperma (tubulus seminiferus) & testosteron."
+            ],
+            [
+              "Epididimis",
+              "Pematangan & penyimpanan sperma."
+            ],
+            [
+              "Vas deferens",
+              "Saluran pengangkut sperma."
+            ],
+            [
+              "Prostat, vesikula seminalis, bulbouretral",
+              "Menyusun cairan semen."
+            ],
+            [
+              "Penis",
+              "Alat kopulasi & saluran urine."
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Reproduksi wanita & siklus menstruasi"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Struktur & fungsi wanita",
+          "kolom": [
+            "Struktur",
+            "Fungsi"
+          ],
+          "rows": [
+            [
+              "Ovarium",
+              "Memproduksi ovum, estrogen & progesteron."
+            ],
+            [
+              "Tuba falopi (oviduk)",
+              "Tempat fertilisasi."
+            ],
+            [
+              "Uterus (rahim)",
+              "Tempat implantasi & perkembangan janin."
+            ],
+            [
+              "Serviks & vagina",
+              "Leher rahim & saluran lahir/kopulasi."
+            ]
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Siklus menstruasi (±28 hari)",
+          "items": [
+            "Fase menstruasi: peluruhan endometrium (hari 1-5).",
+            "Fase folikuler: FSH mematangkan folikel; estrogen membangun endometrium.",
+            "Ovulasi: lonjakan LH melepas ovum (±hari 14).",
+            "Fase luteal: korpus luteum melepas progesteron mempertahankan endometrium.",
+            "Tanpa pembuahan: korpus luteum luruh → progesteron turun → menstruasi."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Gametogenesis"
+        },
+        {
+          "jenis": "alur",
+          "judul": "Spermatogenesis (di testis)",
+          "items": [
+            "Spermatogonium (2n)",
+            "Mitosis → spermatosit primer (2n)",
+            "Meiosis I → 2 spermatosit sekunder (n)",
+            "Meiosis II → 4 spermatid (n)",
+            "Diferensiasi → 4 sperma fungsional"
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Oogenesis (di ovarium)",
+          "items": [
+            "Oogonium (2n) → oosit primer (2n)",
+            "Meiosis I → oosit sekunder + badan polar I",
+            "Meiosis II (bila dibuahi) → ovum + badan polar II",
+            "Hasil fungsional: 1 ovum (sitoplasma besar)"
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Fertilisasi & kontrasepsi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Fertilisasi terjadi di tuba falopi; zigot membelah menjadi blastosis lalu berimplantasi di endometrium. Kontrasepsi mencegah pertemuan sperma-ovum atau implantasi."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Metode kontrasepsi & cara kerjanya",
+          "kolom": [
+            "Metode",
+            "Mekanisme"
+          ],
+          "rows": [
+            [
+              "IUD (spiral)",
+              "Mengganggu pergerakan sperma & membuat rahim tak sesuai implantasi (tembaga/hormon)."
+            ],
+            [
+              "Pil hormonal",
+              "Menekan ovulasi (estrogen/progesteron)."
+            ],
+            [
+              "Kondom",
+              "Penghalang mekanis sperma (juga proteksi PMS)."
+            ],
+            [
+              "Vasektomi/tubektomi",
+              "Pemotongan saluran (pria/wanita) — permanen."
+            ]
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Kelainan & penyakit reproduksi"
+        },
+        {
+          "jenis": "poin",
+          "judul": "Langganan ujian",
+          "items": [
+            "AIDS (HIV), gonore, sifilis, herpes genital, kandidiasis = PMS.",
+            "Endometriosis = jaringan endometrium tumbuh di luar rahim.",
+            "Kriptorkidisme = testis tidak turun ke skrotum."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "level": 1,
+          "teks": "Integrasi: Saraf, Hormon, dan Homeostasis"
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
+          "teks": "Regulasi gula darah (contoh klasik saraf-hormon)"
+        },
+        {
+          "jenis": "alur",
+          "judul": "Umpan balik glukosa",
+          "items": [
+            "Gula darah naik (sehabis makan)",
+            "Pankreas melepas INSULIN",
+            "Sel menyerap glukosa; hati menyimpan glikogen",
+            "Gula darah turun ke normal",
+            "Bila gula rendah: GLUKAGON melepas glukosa dari hati"
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Saraf vs hormon",
+          "kolom": [
+            "Aspek",
+            "Sistem saraf",
+            "Sistem hormon"
+          ],
+          "rows": [
+            [
+              "Media",
+              "Impuls listrik + neurotransmiter",
+              "Darah"
+            ],
+            [
+              "Kecepatan",
+              "Sangat cepat (milidetik)",
+              "Lambat (detik-jam)"
+            ],
+            [
+              "Durasi efek",
+              "Singkat",
+              "Lama"
+            ],
+            [
+              "Target",
+              "Spesifik (efektor tertentu)",
+              "Luas (sel ber-reseptor)"
+            ]
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan Guru",
+          "teks": "Demonstrasi refleks: ketuk tendon lutut atau refleks pupil dengan senter; bandingkan kecepatan menarik tangan saat menyentuh benda panas vs keputusan sadar — siswa merasakan sendiri perbedaan busur refleks vs jalur sadar."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Pemberian ASI pada bayi baru lahir sangat dianjurkan karena sekresi awal kelenjar susu yang disebut kolostrum mampu menyediakan perlindungan dari infeksi sampai sistem kekebalan bayi berkembang baik. Kolostrum memberikan kekebalan pasif alami karena mengandung imunoglobulin (Ig) jenis ...",
+          "tipe": "pg",
+          "opsi": [
+            "IgA",
+            "IgD",
+            "IgE",
+            "IgG",
+            "IgM"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Kolostrum kaya IgA (penjaga permukaan mukosa bayi). Kunci modul tentor: A.",
+          "sumber": "Soal Pengantar Modul Tentor Gemilang (internal), imun no 5"
+        },
+        {
+          "soal": "Pada sistem pertahanan tubuh non-spesifik, garis pertahanan pertama adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "kulit dan antibodi",
+            "kulit dan membran mukosa",
+            "protein antimikroba dan membran mukosa",
+            "kulit dan sel fagosit",
+            "limfosit dan antibodi"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Garis pertama non-spesifik = barrier fisik-kimia: kulit & membran mukosa. Kunci modul: B.",
+          "sumber": "Soal Pengantar Modul Tentor Gemilang (internal), imun no 6"
+        },
+        {
+          "soal": "Efektivitas protein antibodi dalam mengaktifkan penggumpalan (aglutinasi) antigen terjadi karena antibodi ...",
+          "tipe": "pg",
+          "opsi": [
+            "memiliki sisi aktif untuk semua tipe antigen",
+            "mengaktifkan makrofag untuk menangkap antigen",
+            "memiliki lebih dari satu tempat pengikatan antigen",
+            "menghasilkan protein pengikat antigen",
+            "menghasilkan lisosom penghancur antigen"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Antibodi berbentuk Y dengan ≥2 tempat pengikatan antigen sehingga dapat menggumpalkan banyak antigen sekaligus. Kunci modul: C.",
+          "sumber": "Soal Pengantar Modul Tentor Gemilang (internal), imun no 7"
+        },
+        {
+          "soal": "Prinsip kerja antibiotik dalam menyembuhkan penyakit infeksi adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "menjadi sel yang bersifat fagositosis",
+            "merangsang pembentukan sel limfosit T",
+            "menjadi antibodi yang menetralisir bibit penyakit",
+            "menjadi antigen untuk pembentuk antibodi",
+            "mematikan atau menghambat pertumbuhan bakteri"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Antibiotik bekerja langsung mematikan/menghambat bakteri (bukan bagian sistem imun). Kunci modul: E.",
+          "sumber": "Soal Pengantar Modul Tentor Gemilang (internal), imun no 9"
+        },
+        {
+          "soal": "Rita memiliki riwayat infeksi 3 bulan lalu. Saat kembali terkena infeksi yang sama, responnya tidak separah yang pertama. Komponen yang membantu mengenali antigen tersebut adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "sel punca",
+            "sel T",
+            "sel B memori",
+            "sel mast",
+            "sel NK"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Respons sekunder cepat & ringan karena sel B memori mengenali antigen dan cepat memproduksi antibodi. Kunci modul: C (sel B/memori).",
+          "sumber": "Soal Pengantar Modul Tentor Gemilang (internal), imun no 10"
+        },
+        {
+          "soal": "Perhatikan gambar penampang mata. Hubungan yang tepat antara bagian mata dan fungsinya ditunjukkan oleh nomor ... (struktur: 1 sklera, 2 lensa, 3 pupil, 4 iris, 5 koroid)",
+          "tipe": "pg",
+          "opsi": [
+            "1 = pelindung bagian dalam bola mata",
+            "2 = mengatur cahaya yang masuk",
+            "3 = memfokuskan bayangan benda",
+            "4 = memberi warna mata sekaligus mengatur cahaya",
+            "5 = pembuluh darah penyuplai oksigen & nutrisi"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Iris memberi warna mata sekaligus mengatur banyaknya cahaya lewat pupil. (Kunci resmi UN 2017 menunjuk pasangan iris/pupil sebagai hubungan tepat.)",
+          "sumber": "UN 2017 — via kakajaz.blogspot.com (diadaptasi seperlunya)"
+        },
+        {
+          "soal": "Pasangkan macam imunitas dengan contohnya.",
+          "tipe": "jodoh",
+          "premis": [
+            "Sembuh dari cacar air lalu kebal seumur hidup",
+            "Bayi mendapat ASI/kolostrum dari ibu",
+            "Suntikan vaksin campak",
+            "Suntikan serum anti-bisa ular"
+          ],
+          "opsi": [
+            "Aktif alami",
+            "Pasif alami",
+            "Aktif buatan",
+            "Pasif buatan",
+            "Non-spesifik bawaan"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Opsi E pengecoh. Aktif = tubuh membuat antibodi sendiri (alami: infeksi; buatan: vaksin). Pasif = menerima antibodi jadi (alami: ASI/plasenta; buatan: serum).",
+          "sumber": "Gemilang Drill menjodohkan (fokus A.4, tim kurikulum)"
+        },
+        {
+          "soal": "Tentukan Benar/Salah pernyataan mekanisme respons imun berikut.",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Makrofag menyajikan antigen kepada limfosit T helper setelah menelan patogen.",
+            "Limfosit B berproliferasi menjadi sel plasma penghasil antibodi dan sel memori.",
+            "Respons imun sekunder lebih lambat daripada respons primer."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Respons sekunder justru LEBIH CEPAT & kuat karena sel memori sudah siap.",
+          "sumber": "Gemilang Drill (fokus A.3, tim kurikulum)"
+        },
+        {
+          "soal": "Manakah yang termasuk kelainan autoimun? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Lupus (SLE)",
+            "Rheumatoid arthritis",
+            "Diabetes melitus tipe 1",
+            "AIDS",
+            "Alzheimer"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "Autoimun = imun menyerang diri sendiri (lupus, RA, DM tipe 1). AIDS = imunodefisiensi didapat; Alzheimer = degeneratif saraf.",
+          "sumber": "Gemilang Drill (fokus A.5, tim kurikulum)"
+        },
+        {
+          "soal": "Urutan busur refleks yang benar saat lutut diketuk adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "reseptor - neuron sensorik - sumsum tulang belakang - neuron motorik - efektor",
+            "reseptor - otak - neuron motorik - efektor",
+            "reseptor - neuron motorik - otak - neuron sensorik - efektor",
+            "efektor - neuron sensorik - otak - neuron motorik",
+            "reseptor - interneuron otak - sumsum tulang belakang - efektor"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Refleks lutut berpusat di sumsum tulang belakang, tidak menunggu otak.",
+          "sumber": "Gemilang Drill (fokus B.3, tim kurikulum)"
+        },
+        {
+          "soal": "Saat seseorang kaget mendengar suara keras, detak jantung naik dan pupil melebar. Cabang sistem saraf yang bekerja adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "somatik sadar",
+            "otonom parasimpatik",
+            "otonom simpatik",
+            "saraf cranial sensorik",
+            "refleks spinal somatik"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Simpatik = mode lawan-lari: jantung cepat, pupil melebar, pencernaan turun.",
+          "sumber": "Gemilang Drill (fokus B.2, tim kurikulum)"
+        },
+        {
+          "soal": "Pasangkan kelenjar endokrin dengan hormon utamanya.",
+          "tipe": "jodoh",
+          "premis": [
+            "Hipofisis posterior",
+            "Tiroid",
+            "Pankreas (sel beta)",
+            "Testis"
+          ],
+          "opsi": [
+            "ADH (vasopresin)",
+            "Tiroksin",
+            "Insulin",
+            "Testosteron",
+            "Parathormon"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Parathormon dari paratiroid (pengecoh). ADH disimpan-dilepas hipofisis posterior; tiroksin dari tiroid; insulin dari sel beta pankreas; testosteron dari testis.",
+          "sumber": "Gemilang Drill menjodohkan (fokus B.4, tim kurikulum)"
+        },
+        {
+          "soal": "Seseorang poliuria (sering buang urine encer banyak) tanpa glukosa dalam urine. Kemungkinan gangguan hormon dan letaknya adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "kekurangan ADH dari hipofisis posterior (diabetes insipidus)",
+            "kekurangan insulin dari pankreas",
+            "kelebihan tiroksin dari tiroid",
+            "kekurangan aldosteron dari adrenal",
+            "kelebihan glukagon dari pankreas"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Tanpa glukosa = bukan mellitus. ADH kurang → reabsorpsi air ginjal turun → urine encer banyak (insipidus).",
+          "sumber": "Gemilang Drill (fokus B.4 integrasi ekskresi, tim kurikulum)"
+        },
+        {
+          "soal": "Tentukan Benar/Salah pernyataan siklus menstruasi berikut.",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Lonjakan LH memicu ovulasi sekitar hari ke-14.",
+            "Progesteron dari korpus luteum mempertahankan endometrium.",
+            "FSH menurun drastis tepat saat menstruasi dimulai sebagai penyebab peluruhan."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Peluruhan endometrium disebabkan TURUNNYA progesteron/estrogen (korpus luteum luruh), bukan penurunan FSH.",
+          "sumber": "Gemilang Drill (fokus C.2, tim kurikulum)"
+        },
+        {
+          "soal": "Perbedaan hasil spermatogenesis dan oogenesis yang benar adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "spermatogenesis menghasilkan 4 sel fungsional, oogenesis 1 sel fungsional + badan polar",
+            "spermatogenesis menghasilkan 2 sel, oogenesis 4 sel",
+            "keduanya menghasilkan 4 sel fungsional",
+            "oogenesis terjadi di testis",
+            "spermatogenesis berhenti sejak lahir"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Sitoplasma oogenesis dibagi tidak merata: 1 ovum besar + badan polar; spermatogenesis 4 sperma fungsional.",
+          "sumber": "Gemilang Drill (fokus C.3, tim kurikulum)"
+        },
+        {
+          "soal": "Wanita memilih kontrasepsi yang TIDAK menghalangi ovulasi tetapi mencegah implantasi dan mengganggu sperma. Metode yang paling sesuai adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "pil kombinasi",
+            "IUD (spiral)",
+            "kondom",
+            "tubektomi",
+            "metode kalender"
+          ],
+          "jawaban": 1,
+          "pembahasan": "IUD bekerja di rahim (ganggu sperma & implantasi) tanpa menghentikan ovulasi; pil justru menekan ovulasi.",
+          "sumber": "Gemilang Drill (fokus C.4, tim kurikulum)"
+        },
+        {
+          "soal": "Manakah penyakit yang tergolong menular seksual? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "gonore",
+            "sifilis",
+            "herpes genital",
+            "diabetes insipidus",
+            "endometriosis"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "DI = gangguan hormon ADH; endometriosis = kelainan jaringan rahim; keduanya tidak menular.",
+          "sumber": "Gemilang Drill (fokus C.5, tim kurikulum)"
+        },
+        {
+          "soal": "Setelah makan nasi porsi besar, urutan regulasi gula darah yang benar adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "glukosa naik - insulin dilepas - sel menyerap glukosa & hati menyimpan glikogen - gula darah normal",
+            "glukosa naik - glukagon dilepas - hati menyimpan glikogen - gula darah normal",
+            "glukosa naik - adrenalin dilepas - sel membuang glukosa - gula darah normal",
+            "glukosa naik - insulin ditekan - gula darah tetap tinggi",
+            "glukosa naik - pankreas berhenti bekerja - gula darah turun sendiri"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Umpan balik insulin: naik setelah makan, menurunkan gula via penyerapan sel & simpanan glikogen hati.",
+          "sumber": "Gemilang Drill (fokus D.1, tim kurikulum)"
+        },
+        {
+          "soal": "Jelaskan dengan poin mengapa orang yang sumsum tulang belakangnya rusak di bagian dada tetap menarik tangan saat jarinya tertusuk duri, tetapi tidak merasakan nyeri sekaligus.",
+          "tipe": "uraian",
+          "pembahasan": "Referensi: (1) busur refleks tertusuk berpusat di sumsum tulang belakang segmen terkait (servikal/lumbal atas untuk lengan) sehingga tetap utuh walau segmen dada rusak; (2) impuls nyeri naik ke otak lewat jalur asenden sumsum tulang belakang; (3) kerusakan segmen dada memutus jalur naik itu sehingga refleks terjadi tetapi sensasi nyeri tidak sampai ke otak; (4) kesimpulan: refleks dan kesadaran nyeri memakai jalur berbeda.",
+          "sumber": "Gemilang Drill uraian (fokus B.3 integrasi, tim kurikulum)"
+        },
+        {
+          "soal": "Perbandingan sistem saraf dan hormon yang benar adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "saraf cepat & singkat lewat impuls; hormon lambat & lama lewat darah",
+            "saraf lambat & lama; hormon cepat & singkat",
+            "keduanya lewat darah",
+            "hormon hanya bekerja pada satu sel target",
+            "saraf tidak pernah memakai zat kimia"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Saraf: listrik+neurotransmiter, cepat-singkat-spesifik. Hormon: darah, lambat-lama-luas.",
+          "sumber": "Gemilang Drill (fokus D.2, tim kurikulum)"
+        }
+      ]
+    }
+  ]
+}
