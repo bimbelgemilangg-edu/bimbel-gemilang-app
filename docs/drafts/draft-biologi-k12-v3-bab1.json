@@ -59,20 +59,20 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Gen",
-              "d": "unit pewarisan; perbedaan susunan gen dalam satu spesies = keanekaragaman tingkat gen."
+              "k": "Gen",
+              "v": "unit pewarisan; perbedaan susunan gen dalam satu spesies = keanekaragaman tingkat gen."
             },
             {
-              "t": "Spesies",
-              "d": "kelompok organisme yang dapat kawin dan menghasilkan keturunan fertil."
+              "k": "Spesies",
+              "v": "kelompok organisme yang dapat kawin dan menghasilkan keturunan fertil."
             },
             {
-              "t": "Ekosistem",
-              "d": "kesatuan komunitas dengan lingkungan abiotiknya."
+              "k": "Ekosistem",
+              "v": "kesatuan komunitas dengan lingkungan abiotiknya."
             },
             {
-              "t": "Endemik",
-              "d": "spesies yang hanya ditemukan di satu wilayah tertentu (mis. komodo, anoa, maleo)."
+              "k": "Endemik",
+              "v": "spesies yang hanya ditemukan di satu wilayah tertentu (mis. komodo, anoa, maleo)."
             }
           ]
         },
@@ -131,16 +131,16 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Takson",
-              "d": "kelompok hasil klasifikasi pada jenjang tertentu (domain s.d. spesies)."
+              "k": "Takson",
+              "v": "kelompok hasil klasifikasi pada jenjang tertentu (domain s.d. spesies)."
             },
             {
-              "t": "Binomial nomenclature",
-              "d": "aturan penamaan dua kata (genus + penunjuk spesies)."
+              "k": "Binomial nomenclature",
+              "v": "aturan penamaan dua kata (genus + penunjuk spesies)."
             },
             {
-              "t": "Genus",
-              "d": "takson di atas spesies; nama pertama pada nama ilmiah."
+              "k": "Genus",
+              "v": "takson di atas spesies; nama pertama pada nama ilmiah."
             }
           ]
         },
@@ -236,20 +236,20 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Nukleoid",
-              "d": "zona DNA bakteri tanpa selubung membran."
+              "k": "Nukleoid",
+              "v": "zona DNA bakteri tanpa selubung membran."
             },
             {
-              "t": "Plasmid",
-              "d": "DNA sirkular kecil pembawa gen tambahan (mis. gen resistensi); dapat berpindah antarbakteri."
+              "k": "Plasmid",
+              "v": "DNA sirkular kecil pembawa gen tambahan (mis. gen resistensi); dapat berpindah antarbakteri."
             },
             {
-              "t": "Peptidoglikan",
-              "d": "penyusun dinding sel bakteri; tebal pada Gram-positif."
+              "k": "Peptidoglikan",
+              "v": "penyusun dinding sel bakteri; tebal pada Gram-positif."
             },
             {
-              "t": "Endospora",
-              "d": "bentuk bertahan berdinding tebal pada kondisi ekstrem."
+              "k": "Endospora",
+              "v": "bentuk bertahan berdinding tebal pada kondisi ekstrem."
             }
           ]
         },
@@ -390,20 +390,20 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Trofik",
-              "d": "tingkat kedudukan organisme dalam rantai makanan."
+              "k": "Trofik",
+              "v": "tingkat kedudukan organisme dalam rantai makanan."
             },
             {
-              "t": "Produsen",
-              "d": "organisme autotrof penyusun zat organik."
+              "k": "Produsen",
+              "v": "organisme autotrof penyusun zat organik."
             },
             {
-              "t": "Konsumen",
-              "d": "organisme heterotrof pemakan organisme lain."
+              "k": "Konsumen",
+              "v": "organisme heterotrof pemakan organisme lain."
             },
             {
-              "t": "Dekomposer",
-              "d": "pengurai sisa organik menjadi materi anorganik."
+              "k": "Dekomposer",
+              "v": "pengurai sisa organik menjadi materi anorganik."
             }
           ]
         },

@@ -81,16 +81,16 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Hemoglobin",
-              "d": "protein di eritrosit yang mengikat O2 (membentuk oksihemoglobin)."
+              "k": "Hemoglobin",
+              "v": "protein di eritrosit yang mengikat O2 (membentuk oksihemoglobin)."
             },
             {
-              "t": "Hematokrit",
-              "d": "persentase volume eritrosit terhadap seluruh volume darah."
+              "k": "Hematokrit",
+              "v": "persentase volume eritrosit terhadap seluruh volume darah."
             },
             {
-              "t": "Fibrinogen",
-              "d": "protein plasma yang diubah menjadi benang fibrin saat pembekuan."
+              "k": "Fibrinogen",
+              "v": "protein plasma yang diubah menjadi benang fibrin saat pembekuan."
             }
           ]
         },
@@ -140,16 +140,16 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Sistole",
-              "d": "fase kontraksi (pemompaan)."
+              "k": "Sistole",
+              "v": "fase kontraksi (pemompaan)."
             },
             {
-              "t": "Diastole",
-              "d": "fase relaksasi (pengisian)."
+              "k": "Diastole",
+              "v": "fase relaksasi (pengisian)."
             },
             {
-              "t": "Katup atrioventrikular",
-              "d": "katup antara serambi dan bilik (trikuspidalis & bikuspidalis)."
+              "k": "Katup atrioventrikular",
+              "v": "katup antara serambi dan bilik (trikuspidalis & bikuspidalis)."
             }
           ]
         },
@@ -339,20 +339,20 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Oksihemoglobin (HbO2)",
-              "d": "bentuk angkut utama O2 oleh hemoglobin."
+              "k": "Oksihemoglobin (HbO2)",
+              "v": "bentuk angkut utama O2 oleh hemoglobin."
             },
             {
-              "t": "Bikarbonat (HCO3-)",
-              "d": "bentuk angkut utama CO2 dalam plasma (±70%)."
+              "k": "Bikarbonat (HCO3-)",
+              "v": "bentuk angkut utama CO2 dalam plasma (±70%)."
             },
             {
-              "t": "Karbaminohemoglobin",
-              "d": "bentuk angkut CO2 yang menempel langsung ke hemoglobin."
+              "k": "Karbaminohemoglobin",
+              "v": "bentuk angkut CO2 yang menempel langsung ke hemoglobin."
             },
             {
-              "t": "Kemoreseptor sentral",
-              "d": "sensor di medula oblongata yang peka terhadap kenaikan CO2/penurunan pH."
+              "k": "Kemoreseptor sentral",
+              "v": "sensor di medula oblongata yang peka terhadap kenaikan CO2/penurunan pH."
             }
           ]
         },
@@ -423,20 +423,20 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Nefron",
-              "d": "unit fungsional penyaring ginjal (±1 juta per ginjal)."
+              "k": "Nefron",
+              "v": "unit fungsional penyaring ginjal (±1 juta per ginjal)."
             },
             {
-              "t": "Glomerulus",
-              "d": "anyaman kapiler tempat filtrasi darah."
+              "k": "Glomerulus",
+              "v": "anyaman kapiler tempat filtrasi darah."
             },
             {
-              "t": "Kapsula Bowman",
-              "d": "cangkang penampung hasil filtrasi."
+              "k": "Kapsula Bowman",
+              "v": "cangkang penampung hasil filtrasi."
             },
             {
-              "t": "Ambang ginjal",
-              "d": "batas kadar zat di darah yang bila terlampaui ikut terbuang ke urine (mis. glukosa)."
+              "k": "Ambang ginjal",
+              "v": "batas kadar zat di darah yang bila terlampaui ikut terbuang ke urine (mis. glukosa)."
             }
           ]
         },

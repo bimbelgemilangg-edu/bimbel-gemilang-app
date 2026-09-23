@@ -55,24 +55,24 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Holoenzim",
-              "d": "enzim lengkap yang aktif (apoenzim + kofaktor)."
+              "k": "Holoenzim",
+              "v": "enzim lengkap yang aktif (apoenzim + kofaktor)."
             },
             {
-              "t": "Apoenzim",
-              "d": "bagian protein enzim."
+              "k": "Apoenzim",
+              "v": "bagian protein enzim."
             },
             {
-              "t": "Koenzim",
-              "d": "kofaktor organik pembawa gugus/elektron (NAD+, FAD)."
+              "k": "Koenzim",
+              "v": "kofaktor organik pembawa gugus/elektron (NAD+, FAD)."
             },
             {
-              "t": "Energi aktivasi (Ea)",
-              "d": "energi minimum untuk memulai reaksi; diturunkan oleh enzim."
+              "k": "Energi aktivasi (Ea)",
+              "v": "energi minimum untuk memulai reaksi; diturunkan oleh enzim."
             },
             {
-              "t": "Denaturasi",
-              "d": "rusaknya bentuk enzim (sisi aktif) oleh panas/pH ekstrem/logam berat."
+              "k": "Denaturasi",
+              "v": "rusaknya bentuk enzim (sisi aktif) oleh panas/pH ekstrem/logam berat."
             }
           ]
         },
@@ -280,28 +280,28 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Klorofil a",
-              "d": "pigmen pusat reaksi; menyerap maksimum ±700 nm (P700) & ±680 nm (P680)."
+              "k": "Klorofil a",
+              "v": "pigmen pusat reaksi; menyerap maksimum ±700 nm (P700) & ±680 nm (P680)."
             },
             {
-              "t": "Klorofil b",
-              "d": "pigmen antena pendukung."
+              "k": "Klorofil b",
+              "v": "pigmen antena pendukung."
             },
             {
-              "t": "Karotenoid",
-              "d": "pigmen kuning-oranye; antena & pelindung."
+              "k": "Karotenoid",
+              "v": "pigmen kuning-oranye; antena & pelindung."
             },
             {
-              "t": "Fotosistem",
-              "d": "paket pigmen + protein penangkap cahaya (FS I & FS II)."
+              "k": "Fotosistem",
+              "v": "paket pigmen + protein penangkap cahaya (FS I & FS II)."
             },
             {
-              "t": "Grana",
-              "d": "tumpukan tilakoid tempat reaksi terang."
+              "k": "Grana",
+              "v": "tumpukan tilakoid tempat reaksi terang."
             },
             {
-              "t": "Stroma",
-              "d": "cairan kloroplas tempat siklus Calvin."
+              "k": "Stroma",
+              "v": "cairan kloroplas tempat siklus Calvin."
             }
           ]
         },
@@ -346,20 +346,20 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Rubisco",
-              "d": "enzim pengikat CO2 pada fase fiksasi; protein paling melimpah di bumi."
+              "k": "Rubisco",
+              "v": "enzim pengikat CO2 pada fase fiksasi; protein paling melimpah di bumi."
             },
             {
-              "t": "RuBP",
-              "d": "molekul 5C penerima CO2."
+              "k": "RuBP",
+              "v": "molekul 5C penerima CO2."
             },
             {
-              "t": "PGA",
-              "d": "molekul 3C hasil fiksasi."
+              "k": "PGA",
+              "v": "molekul 3C hasil fiksasi."
             },
             {
-              "t": "PGAL/G3P",
-              "d": "produk reduksi; bahan penyusun glukosa."
+              "k": "PGAL/G3P",
+              "v": "produk reduksi; bahan penyusun glukosa."
             }
           ]
         },

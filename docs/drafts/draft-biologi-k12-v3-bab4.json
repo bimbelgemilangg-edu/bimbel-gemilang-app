@@ -50,16 +50,16 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Antigen",
-              "d": "zat asing yang memicu respons imun."
+              "k": "Antigen",
+              "v": "zat asing yang memicu respons imun."
             },
             {
-              "t": "Antibodi",
-              "d": "protein imunoglobulin pengikat antigen secara spesifik."
+              "k": "Antibodi",
+              "v": "protein imunoglobulin pengikat antigen secara spesifik."
             },
             {
-              "t": "Imunitas",
-              "d": "kemampuan tubuh menahan/menetralkan antigen."
+              "k": "Imunitas",
+              "v": "kemampuan tubuh menahan/menetralkan antigen."
             }
           ]
         },
@@ -227,20 +227,20 @@
           "jenis": "istilah",
           "items": [
             {
-              "t": "Neuron",
-              "d": "sel penghantar impuls."
+              "k": "Neuron",
+              "v": "sel penghantar impuls."
             },
             {
-              "t": "Sinaps",
-              "d": "celah sambungan antar neuron."
+              "k": "Sinaps",
+              "v": "celah sambungan antar neuron."
             },
             {
-              "t": "Neurotransmiter",
-              "d": "zat kimia pembawa sinyal di sinaps."
+              "k": "Neurotransmiter",
+              "v": "zat kimia pembawa sinyal di sinaps."
             },
             {
-              "t": "Reseptor",
-              "d": "struktur penerima rangsang."
+              "k": "Reseptor",
+              "v": "struktur penerima rangsang."
             }
           ]
         },
