@@ -50,6 +50,46 @@ const XP_BENAR = 10;
 //               (mis. Benar/Salah atau Mungkin/Tidak Mungkin)
 // ============================================================
 const tipeSoal = (s) => String(s?.tipe || 'pg');
+
+// PETUNJUK CARA MENJAWAB per jenis (blueprint TKA standar terbaru,
+// arahan owner Turn 39): algoritma pengguna ditampilkan sebagai hint.
+const HINT_JAWAB = {
+  pg: 'Cara menjawab: baca pertanyaan dulu cari kata kunci, lalu eliminasilah opsi yang paling tidak logis sesuai stimulus.',
+  tabel: 'Cara menjawab: nilai SETIAP baris secara mandiri dan isi SEMUA baris — skor dihitung per baris benar.',
+  pgMulti: 'Cara menjawab: pindai ulang stimulus; jawaban benar bisa lebih dari satu, jangan berhenti di temuan pertama.',
+  jodoh: 'Cara menjawab: pasangkan dulu pasangan yang paling pasti (jangkar), sisa opsi sulit dikerjakan terakhir.',
+  isian: 'Cara menjawab: ketik jawaban eksak; perhatikan format (pembulatan, tanda koma/titik, satuan).',
+  uraian: 'Cara menjawab: tulis poin-per-poin agar selaras kata kunci rubrik; bandingkan dengan referensi setelah dikirim.',
+};
+
+// Kredit parsial: tabel per baris, jodohkan per pasangan, lain biner.
+const kreditSoal = (s, jaw) => {
+  const t = tipeSoal(s);
+  if (t === 'tabel') {
+    const k = s.jawaban || [];
+    if (!Array.isArray(jaw) || !k.length) return 0;
+    const benar = k.filter((c, r) => jaw[r] === c).length;
+    return benar / k.length;
+  }
+  if (t === 'jodoh') {
+    const k = s.jawaban || [];
+    if (!Array.isArray(jaw) || !k.length) return 0;
+    const benar = k.filter((c, r) => jaw[r] === c).length;
+    return benar / k.length;
+  }
+  if (t === 'pgMulti') {
+    const k = s.jawaban || [];
+    return Array.isArray(jaw) && k.length && jaw.length === k.length
+      && k.every((x) => jaw.includes(x)) ? 1 : 0;
+  }
+  if (t === 'isian') {
+    const norm = (x) => String(x ?? '').trim().toLowerCase()
+      .replace(/\s+/g, ' ').replace(/,/g, '.');
+    return norm(jaw) === norm(s.jawaban) ? 1 : 0;
+  }
+  if (t === 'uraian') return 0; // dinilai mandiri vs referensi
+  return jaw === s.jawaban ? 1 : 0;
+};
 const kolomSoal = (s) => (Array.isArray(s?.kolom) && s.kolom.length
   ? s.kolom : ['Benar', 'Salah']);
 const jawabanLengkap = (s, jaw) => {
@@ -59,6 +99,11 @@ const jawabanLengkap = (s, jaw) => {
     return Array.isArray(jaw) && jaw.length === (s.baris || []).length
       && jaw.every((x) => x != null);
   }
+  if (t === 'jodoh') {
+    return Array.isArray(jaw) && jaw.length === (s.premis || []).length
+      && jaw.every((x) => x != null);
+  }
+  if (t === 'isian' || t === 'uraian') return String(jaw ?? '').trim().length > 0;
   return jaw != null;
 };
 const jawabanBenar = (s, jaw) => {
@@ -84,6 +129,12 @@ const kunciTeks = (s) => {
     return (s.jawaban || [])
       .map((c, r) => `baris ${r + 1}: ${kolomSoal(s)[c]}`).join('; ');
   }
+  if (t === 'jodoh') {
+    return (s.jawaban || []).map((c, r) =>
+      `${r + 1}→${String.fromCharCode(65 + c)}`).join(', ');
+  }
+  if (t === 'isian') return String(s.jawaban ?? '');
+  if (t === 'uraian') return 'lihat referensi jawaban';
   return String.fromCharCode(65 + (s.jawaban || 0));
 };
 
@@ -254,6 +305,23 @@ export default function BelajarReader() {
   // dicatat untuk progres & ditandai ✔ di panel, bukan sebagai gerbang.
   const latihanSelesaiBab = (b) => !!progresMap[b?.id]?.latihanSelesai;
 
+  // Menjodohkan: satu opsi respons hanya boleh dipakai satu premis
+  const pilihJodoh = useCallback((i, r, c) => {
+    setJawaban((old) => {
+      const arr = Array.isArray(old[i]) ? [...old[i]] : [];
+      if (arr[r] === c) { arr[r] = undefined; return { ...old, [i]: arr }; }
+      const dipakai = arr.indexOf(c);
+      if (dipakai >= 0) arr[dipakai] = undefined;
+      arr[r] = c;
+      return { ...old, [i]: arr };
+    });
+  }, []);
+
+  // Isian singkat & uraian
+  const setIsian = useCallback((i, v) => {
+    setJawaban((old) => ({ ...old, [i]: v }));
+  }, []);
+
   // Format TKA: centang banyak jawaban (PGK-MCMA)
   const pilihMulti = useCallback((i, j) => {
     setJawaban((old) => {
@@ -279,8 +347,10 @@ export default function BelajarReader() {
     setTimeout(() => setToast(null), 2200);
   }, []);
 
+  // Turn 39: skor memakai KREDIT PARSIAL (tabel per baris, jodohkan per
+  // pasangan) sesuai blueprint pembobotan TKA.
   const benarCount = useMemo(() =>
-    kuis.reduce((a, s, i) => (jawabanBenar(s, jawaban[i]) ? a + 1 : a), 0),
+    kuis.reduce((a, s, i) => a + kreditSoal(s, jawaban[i]), 0),
   [kuis, jawaban]);
   const semuaDijawab = kuis.length > 0
     && kuis.every((s, i) => jawabanLengkap(s, jawaban[i]));
@@ -687,6 +757,8 @@ export default function BelajarReader() {
                   pilih={pilihJawaban}
                   pilihMulti={pilihMulti}
                   pilihTabel={pilihTabel}
+                  pilihJodoh={pilihJodoh}
+                  setIsian={setIsian}
                   soalIdx={soalIdx}
                   setSoalIdx={setSoalIdx}
                   benarCount={benarCount}
@@ -815,8 +887,8 @@ export default function BelajarReader() {
 
 // ---------------- panel kuis (satu soal per layar) ----------------
 function PanelKuis({
-  kuis, jawaban, pilih, pilihMulti, pilihTabel, soalIdx, setSoalIdx,
-  benarCount, semuaDijawab, ulangKuis,
+  kuis, jawaban, pilih, pilihMulti, pilihTabel, pilihJodoh, setIsian,
+  soalIdx, setSoalIdx, benarCount, semuaDijawab, ulangKuis,
 }) {
   const [lihatHasil, setLihatHasil] = useState(false);
   const soal = kuis[soalIdx];
@@ -856,6 +928,9 @@ function PanelKuis({
       {/* Fase konten: chip sumber + gambar soal WAJIB tampil juga di
           latihan mandiri (sebelumnya hanya di kuis live guru) */}
       {/* Sumber soal TIDAK ditampilkan ke siswa (Turn 35): cukup admin. */}
+      {HINT_JAWAB[tipeSoal(soal)] && (
+        <div style={S.hintChip}>💡 {HINT_JAWAB[tipeSoal(soal)]}</div>
+      )}
       {soal.soalGambar && (
         <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
       )}
@@ -941,6 +1016,64 @@ function PanelKuis({
             })}
           </div>
         </>
+      ) : tipeSoal(soal) === 'jodoh' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {(soal.premis || []).map((pr, r) => {
+            const pil = Array.isArray(dipilih) ? dipilih[r] : undefined;
+            return (
+              <div key={r} style={S.jodohRow}>
+                <div style={S.jodohPremis}>{r + 1}. <MathText text={pr} /></div>
+                <div style={S.jodohOpsis}>
+                  {(soal.opsi || []).map((op, c) => {
+                    const dipakaiLain = Array.isArray(dipilih)
+                      && dipilih.includes(c) && pil !== c;
+                    const kunci = terkoreksi && (soal.jawaban || [])[r] === c;
+                    return (
+                      <button key={c} type="button"
+                        disabled={terkoreksi || dipakaiLain}
+                        style={{
+                          ...S.jodohChip,
+                          ...(pil === c ? S.jodohChipPil : null),
+                          ...(terkoreksi && pil === c && kunci ? S.opsiBenar : null),
+                          ...(terkoreksi && pil === c && !kunci ? S.opsiSalah : null),
+                          ...(terkoreksi && pil !== c && kunci ? S.opsiKunciTipis : null),
+                        }}
+                        onClick={() => pilihJodoh(soalIdx, r, c)}>
+                        {String.fromCharCode(65 + c)}. <MathText text={op} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+          <div style={S.hintKecil}>
+            Setiap respons hanya dapat dipakai untuk satu premis.
+          </div>
+        </div>
+      ) : tipeSoal(soal) === 'isian' ? (
+        <div>
+          <input style={S.isianInput}
+            value={typeof dipilih === 'string' ? dipilih : ''}
+            placeholder="Ketik jawaban eksak (angka/kata)…"
+            disabled={terkoreksi}
+            onChange={(e) => setIsian(soalIdx, e.target.value)} />
+          {soal.hintFormat && (
+            <div style={S.hintKecil}>Format: {soal.hintFormat}</div>
+          )}
+        </div>
+      ) : tipeSoal(soal) === 'uraian' ? (
+        <div>
+          <textarea style={S.uraianArea} rows={5}
+            value={typeof dipilih === 'string' ? dipilih : ''}
+            placeholder="Tulis jawabanmu poin-per-poin…"
+            disabled={terkoreksi}
+            onChange={(e) => setIsian(soalIdx, e.target.value)} />
+          <div style={S.hintKecil}>
+            {(typeof dipilih === 'string'
+              ? dipilih.trim().split(/\s+/).filter(Boolean).length : 0)} kata
+          </div>
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {(soal.opsi || []).map((op, j) => {
@@ -967,33 +1100,48 @@ function PanelKuis({
         </div>
       )}
 
-      {terkoreksi && (
-        benar ? (
-          <div style={kotakSukses}>
-            <CheckCircle2 size={15} />
-            <span>
-              <b>Jawaban benar!</b>
-              {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
-              {soal.pembahasanGambar && (
-                <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
-                  style={S.pembahasanImg} loading="lazy" />
-              )}
-            </span>
-          </div>
-        ) : (
-          <div style={{ ...kotakTips, background: T.merahLatar, borderColor: T.merahGaris, color: '#B91C1C' }}>
-            <XCircle size={15} />
-            <span>
-              <b>Belum tepat.</b> Kunci: {kunciTeks(soal)}.
-              {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
-              {soal.pembahasanGambar && (
-                <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
-                  style={S.pembahasanImg} loading="lazy" />
-              )}
-            </span>
-          </div>
-        )
-      )}
+      {terkoreksi && tipeSoal(soal) === 'uraian' ? (
+        <div style={{ ...kotakTips, background: T.kotakBiru, borderColor: T.kotakBiruGaris, color: T.biruDalam }}>
+          <CheckCircle2 size={15} />
+          <span>
+            <b>Referensikan jawabanmu:</b>
+            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+          </span>
+        </div>
+      ) : terkoreksi && kreditSoal(soal, dipilih) === 1 ? (
+        <div style={kotakSukses}>
+          <CheckCircle2 size={15} />
+          <span>
+            <b>Jawaban benar!</b>
+            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            {soal.pembahasanGambar && (
+              <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
+                style={S.pembahasanImg} loading="lazy" />
+            )}
+          </span>
+        </div>
+      ) : terkoreksi && kreditSoal(soal, dipilih) > 0 ? (
+        <div style={kotakTips}>
+          <CheckCircle2 size={15} />
+          <span>
+            <b>Tepat sebagian.</b> Kredit {kreditSoal(soal, dipilih).toFixed(2)}
+            {' '}dari 1. Kunci: {kunciTeks(soal)}.
+            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+          </span>
+        </div>
+      ) : terkoreksi ? (
+        <div style={{ ...kotakTips, background: T.merahLatar, borderColor: T.merahGaris, color: '#B91C1C' }}>
+          <XCircle size={15} />
+          <span>
+            <b>Belum tepat.</b> Kunci: {kunciTeks(soal)}.
+            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            {soal.pembahasanGambar && (
+              <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
+                style={S.pembahasanImg} loading="lazy" />
+            )}
+          </span>
+        </div>
+      ) : null}
 
       <div style={S.kuisNav}>
         <button type="button" style={S.panahBulat} disabled={soalIdx === 0}
@@ -1125,6 +1273,50 @@ function LiveKuis({ sessionId, soal, idx, total }) {
             ))}
           </div>
         </>
+      ) : fmt === 'jodoh' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {(soal.premis || []).map((pr, r) => (
+            <div key={r} style={S.jodohRow}>
+              <div style={S.jodohPremis}>{r + 1}. <MathText text={pr} /></div>
+              <div style={S.jodohOpsis}>
+                {(soal.opsi || []).map((op, c) => {
+                  const arr = Array.isArray(pilihan) ? pilihan : [];
+                  const pil = arr[r] === c;
+                  const dipakaiLain = arr.includes(c) && !pil;
+                  return (
+                    <button key={c} type="button"
+                      disabled={terkirim || dipakaiLain}
+                      style={{
+                        ...S.jodohChip,
+                        ...(pil ? S.jodohChipPil : null),
+                      }}
+                      onClick={() => setPilihan((old) => {
+                        const a = Array.isArray(old) ? [...old] : [];
+                        const idx = a.indexOf(c);
+                        if (idx >= 0) a[idx] = undefined;
+                        a[r] = c;
+                        return a;
+                      })}>
+                      {String.fromCharCode(65 + c)}. <MathText text={op} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : fmt === 'isian' ? (
+        <input style={S.isianInput}
+          value={typeof pilihan === 'string' ? pilihan : ''}
+          placeholder="Ketik jawaban eksak…"
+          disabled={terkirim}
+          onChange={(e) => setPilihan(e.target.value)} />
+      ) : fmt === 'uraian' ? (
+        <textarea style={S.uraianArea} rows={4}
+          value={typeof pilihan === 'string' ? pilihan : ''}
+          placeholder="Tulis jawabanmu poin-per-poin…"
+          disabled={terkirim}
+          onChange={(e) => setPilihan(e.target.value)} />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {(soal.opsi || []).map((op, j) => (
@@ -1398,6 +1590,36 @@ const S = {
     boxShadow: '0 8px 20px rgba(30,155,240,.35)',
   },
   navBab: { display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' },
+  hintChip: {
+    fontSize: 11.5, color: T.biruDalam, background: T.kotakBiru,
+    border: `1px dashed ${T.kotakBiruGaris}`, borderRadius: 10,
+    padding: '7px 10px', margin: '0 0 10px', lineHeight: 1.55,
+  },
+  hintKecil: { fontSize: 11, color: T.samar, marginTop: 6 },
+  jodohRow: {
+    background: '#fff', border: `1px solid ${T.garis}`, borderRadius: 12,
+    padding: 10,
+  },
+  jodohPremis: { fontSize: 13, fontWeight: 700, color: T.teks, marginBottom: 8 },
+  jodohOpsis: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  jodohChip: {
+    border: `1.5px solid ${T.garis}`, background: '#fff', borderRadius: 999,
+    padding: '6px 11px', fontSize: 12, color: T.teks, cursor: 'pointer',
+    fontFamily: 'inherit',
+  },
+  jodohChipPil: {
+    borderColor: T.biru, background: T.kotakBiru, color: T.biruDalam,
+    fontWeight: 800,
+  },
+  isianInput: {
+    width: '100%', border: `1.5px solid ${T.garis}`, borderRadius: 10,
+    padding: '10px 12px', fontSize: 14, fontFamily: 'inherit', color: T.judul,
+  },
+  uraianArea: {
+    width: '100%', border: `1.5px solid ${T.garis}`, borderRadius: 10,
+    padding: '10px 12px', fontSize: 13.5, fontFamily: 'inherit',
+    color: T.judul, lineHeight: 1.6, resize: 'vertical',
+  },
   gateChip: {
     fontSize: 11.5, fontWeight: 800, color: '#92400E',
     background: '#FEF3C7', border: '1px solid #FDE68A',
