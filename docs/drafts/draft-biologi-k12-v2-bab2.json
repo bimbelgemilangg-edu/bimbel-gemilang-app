@@ -36,7 +36,7 @@
         },
         {
           "jenis": "callout",
-          "tipe": "info",
+          "tipe": "guru",
           "judul": "Catatan Guru",
           "teks": "Analogi kota membantu siswa menghafal fungsi: membran plasma = gerbang kota bersensor; mitokondria = pembangkit listrik; ribosom = pabrik protein; RE = jalan raya distribusi; lisosom = tempat pengolahan sampah; nukleus = balai kota penyimpan blueprint."
         },
@@ -138,7 +138,7 @@
         },
         {
           "jenis": "callout",
-          "tipe": "info",
+          "tipe": "guru",
           "judul": "Catatan Guru",
           "teks": "Praktikum Ingenhousz (Hydrilla dalam corong menghasilkan gelembung O2 di bawah cahaya) dan Sachs (daun tertutup vs terbuka + uji iodin untuk amilum) adalah dua percobaan klasik yang paling sering menjadi stimulus soal keterampilan proses."
         }
