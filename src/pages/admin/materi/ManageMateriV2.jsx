@@ -13,6 +13,7 @@ import {
 import {
   KOL_MATERI,
   muatSemuaMateri, simpanMateri, simpanBab, hapusMateri,
+  muatMateriDanBab, hapusBab, normalJudul,
   segarkanHitunganMateri, pesanErrorFirestore,
 } from '../../../services/materiV2Service';
 import {
@@ -114,6 +115,14 @@ export default function ManageMateriV2() {
   // bug backfill lama (setDoc merge menghidupkan ulang materi terhapus).
   // Satu tombol menghapus semuanya permanen.
   const daftarSisa = list.filter((m) => !m.judul);
+  // MATERI KEMBAR (Turn 56): judul dinormalisasi muncul >= 2 kali =
+  // kemungkinan salinan impor lama/baru -- ditandai di kartu supaya
+  // owner langsung tahu mana yang harus dihapus (anti "file hantu").
+  const hitungJudulMateri = {};
+  for (const m of list) {
+    const k = normalJudul(m.judul);
+    if (k) hitungJudulMateri[k] = (hitungJudulMateri[k] || 0) + 1;
+  }
   const bersihkanSisa = async () => {
     if (!window.confirm(
       `Hapus ${daftarSisa.length} dokumen sisa tanpa judul? Tindakan permanen.`
@@ -141,12 +150,46 @@ export default function ManageMateriV2() {
       if (imporMode === 'tambah') {
         const target = list.find((x) => x.id === imporTarget);
         if (!target) throw new Error('Pilih dulu materi tujuan penambahan bab.');
-        const offset = stat[imporTarget]?.bab || 0;
+        // ANTI-SALINAN (Turn 56, permintaan owner "pastikan bersih gak ada
+        // salinan apapun"): baca bab yang SUDAH ADA di server; bila judul
+        // impor kembar dengan bab lama -> bab lama DIGANTI (dihapus dulu,
+        // versi impor masuk di urutannya). Re-impor tidak pernah lagi
+        // menghasilkan bab dobel ("file hantu").
+        const { babList: lama } =
+          await muatMateriDanBab(imporTarget, { dariServer: true });
+        const pasangan = [];
+        for (const nb of babs) {
+          const k = normalJudul(nb.judul);
+          const hit = k ? lama.find((x) => normalJudul(x.judul) === k) : null;
+          if (hit) pasangan.push({ baru: nb, lama: hit });
+        }
+        if (pasangan.length > 0 && !window.confirm(
+          'Bab berikut SUDAH ADA di materi tujuan:\n\n'
+          + pasangan.map((p) => `• "${p.lama.judul}"`).join('\n')
+          + '\n\nLanjutkan = bab lama DIGANTI (dihapus dulu, versi impor'
+          + ' masuk di urutannya) sehingga TIDAK ada salinan ganda.\n'
+          + 'Batal = tidak ada perubahan apa pun.',
+        )) return;
+        for (const p of pasangan) {
+          await hapusBab(imporTarget, p.lama.id);
+        }
+        const dihapus = new Set(pasangan.map((p) => p.lama.id));
+        let maxU = 0;
+        for (const x of lama) {
+          if (!dihapus.has(x.id)) maxU = Math.max(maxU, Number(x.urutan) || 0);
+        }
         for (let i = 0; i < babs.length; i++) {
-          await simpanBab(imporTarget, null, { urutan: offset + i + 1, ...babs[i] });
+          const ganti = pasangan.find((p) => p.baru === babs[i]);
+          const urutan = ganti
+            ? (Number(ganti.lama.urutan) || maxU + i + 1)
+            : maxU + i + 1;
+          await simpanBab(imporTarget, null, { urutan, ...babs[i] });
         }
         await segarkanHitunganMateri(imporTarget).catch(() => {});
-        setPesan(`✅ ${babs.length} bab ditambahkan ke materi "${target.judul}".`);
+        setPesan(pasangan.length > 0
+          ? `✅ ${babs.length} bab masuk ke "${target.judul}" — `
+            + `${pasangan.length} bab lama berjudul sama DIGANTI (tanpa salinan).`
+          : `✅ ${babs.length} bab ditambahkan ke materi "${target.judul}".`);
         setImporOpen(false);
         setImporText('');
         await muat();
@@ -424,6 +467,13 @@ export default function ManageMateriV2() {
                   }}>
                     🧟 Cangkang kosong sisa bug lama (id {m.id}) —
                     {' '}AMAN DIHAPUS; versi baru tidak bisa membuatnya lagi.
+                  </div>
+                )}
+                {m.judul && hitungJudulMateri[normalJudul(m.judul)] > 1 && (
+                  <div style={S.warnChip}>
+                    ⚠️ Ada {hitungJudulMateri[normalJudul(m.judul)]} materi
+                    berjudul sama — kemungkinan SALINAN. Periksa isinya lewat
+                    "Kelola Bab & File", lalu Hapus yang tidak dipakai.
                   </div>
                 )}
                 <div style={S.kartuBtns}>
