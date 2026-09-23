@@ -15,7 +15,8 @@
       "Modul Tentor Gemilang Rangkuman Materi SMA Kurmer 2025 (INTERNAL) hal 143-156 + Soal Pengantar imun no 5-10 (kunci diverifikasi tim kurikulum).",
       "Matriks Asesmen TKA Biologi — Pusmendik Kemendikdasmen 2025 (imun, koordinasi, reproduksi).",
       "UN 2017 soal mata via kakajaz.blogspot (diadaptasi seperlunya).",
-      "Diagram buatan tim kurikulum (tabel/alur/panah) sesuai izin owner; crop diagram modul menyusul."
+      "Diagram buatan tim kurikulum (tabel/alur/panah) sesuai izin owner; crop diagram modul menyusul.",
+      "Gambar soal UN 2017 No. 17 (penampang mata manusia bernomor 1-5) — foto soal asli via kakajaz.blogspot.com/2017/11/pembahasan-biologi-un-2017-no-16-20.html, diarsipkan di Supabase materi-bimbel/materi-v2/soal-gambar/un2017-penampang-mata.jpg (kredit: Kemendikbud RI, UN 2017)."
     ]
   },
   "bab": [
@@ -690,18 +691,19 @@
           "sumber": "Soal Pengantar Modul Tentor Gemilang (internal), imun no 10"
         },
         {
-          "soal": "Perhatikan gambar penampang mata. Hubungan yang tepat antara bagian mata dan fungsinya ditunjukkan oleh nomor ... (struktur: 1 sklera, 2 lensa, 3 pupil, 4 iris, 5 koroid)",
+          "soal": "Perhatikan gambar penampang mata manusia berikut! Hubungan yang tepat antara nomor, bagian mata, dan fungsinya ditunjukkan oleh ...",
           "tipe": "pg",
           "opsi": [
-            "1 = pelindung bagian dalam bola mata",
-            "2 = mengatur cahaya yang masuk",
-            "3 = memfokuskan bayangan benda",
-            "4 = memberi warna mata sekaligus mengatur cahaya",
-            "5 = pembuluh darah penyuplai oksigen & nutrisi"
+            "1 = sklera — memfokuskan bayangan benda",
+            "2 = lensa — mengatur banyaknya cahaya yang masuk ke mata",
+            "3 = pupil — mengatur cahaya yang masuk ke mata",
+            "4 = iris — pembuluh darah yang menyuplai oksigen dan nutrisi",
+            "5 = koroid — pelindung bagian dalam bola mata"
           ],
-          "jawaban": 3,
-          "pembahasan": "Iris memberi warna mata sekaligus mengatur banyaknya cahaya lewat pupil. (Kunci resmi UN 2017 menunjuk pasangan iris/pupil sebagai hubungan tepat.)",
-          "sumber": "UN 2017 — via kakajaz.blogspot.com (diadaptasi seperlunya)"
+          "jawaban": 2,
+          "pembahasan": "Hubungan resmi tiap bagian (UN 2017): 1 sklera = pelindung bagian dalam bola mata; 2 lensa = memfokuskan bayangan benda; 3 pupil = mengatur cahaya yang masuk ke mata; 4 iris = memberi warna mata (sekaligus mengatur banyaknya cahaya lewat pupil); 5 koroid = pembuluh darah yang menyuplai oksigen dan nutrisi ke mata. Satu-satunya baris yang benar penuh adalah baris nomor 3 (pupil — mengatur cahaya masuk). Kunci resmi UN 2017 No. 17: C.",
+          "sumber": "UN 2017 No. 17 — via kakajaz.blogspot.com (gambar penampang mata asli dari sumber yang sama, diarsipkan di Supabase soal-gambar/un2017-penampang-mata.jpg; baris opsi tabel asli dikonversi ke teks oleh tim kurikulum Gemilang)",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2017-penampang-mata.jpg"
         },
         {
           "soal": "Pasangkan macam imunitas dengan contohnya.",

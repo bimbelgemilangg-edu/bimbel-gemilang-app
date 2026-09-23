@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import {
   muatMateriDanBab, simpanBab, hapusBab,
+  pesanErrorFirestore, normalJudul,
 } from '../../../services/materiV2Service';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { listBankFiles, formatUkuran } from '../../../services/bankFileService';
@@ -66,14 +67,17 @@ export default function EditBabV2() {
   };
 
   const muat = async () => {
-    const { materi: m, babList: bl } = await muatMateriDanBab(materiId);
+    // Turn 56: admin WAJIB lihat kebenaran server (cache basi pernah
+    // menampilkan bab terhapus / menyembunyikan salinan -- "hantu").
+    const { materi: m, babList: bl } =
+      await muatMateriDanBab(materiId, { dariServer: true });
     setMateri(m);
     setBabList(bl);
   };
   useEffect(() => {
     let hidup = true;
     (async () => {
-      const r = await muatMateriDanBab(materiId);
+      const r = await muatMateriDanBab(materiId, { dariServer: true });
       if (!hidup) return;
       setMateri(r.materi);
       setBabList(r.babList);
@@ -138,19 +142,59 @@ export default function EditBabV2() {
       setPesan('✅ Bab tersimpan & langsung berlaku.');
       await muat();
     } catch (e) {
-      setPesan(`Gagal simpan: ${e.message}`);
+      setPesan(`Gagal simpan: ${pesanErrorFirestore(e)}`);
+      // Bab ternyata sudah dihapus di server -> tutup editor + muat ulang
+      // supaya tidak ada yang mencoba menyimpan "bab hantu" lagi.
+      if (String(e?.message || '').includes('sudah dihapus')) {
+        setBab(null); setBabId(null);
+        await muat();
+      }
     }
   };
 
+  const konfirmasiHapus = (judul, nSec, nSoal) => window.confirm(
+    `Hapus bab "${judul}" PERMANEN?\n\n`
+    + `Isi: ${nSec} bagian • ${nSoal} soal.\n`
+    + 'Progres siswa bab ini ikut dibersihkan.\n'
+    + 'Tidak bisa dibatalkan — pastikan cadangannya ada '
+    + '(file IMPOR-…-TERBARU.json bisa diimpor ulang).',
+  );
+
   const hapus = async () => {
     if (!babId) return;
-    if (!window.confirm('Hapus bab ini permanen?')) return;
+    if (!konfirmasiHapus(
+      bab?.judul || '',
+      (bab?.sections || []).length,
+      (bab?.ujiPemahaman || []).length,
+    )) return;
     try {
       await hapusBab(materiId, babId);
+      const judul = bab?.judul || '';
       setBab(null); setBabId(null);
+      setPesan(`✅ Bab "${judul}" dihapus — terverifikasi hilang di server.`);
       await muat();
     } catch (e) {
-      setPesan(`Gagal hapus: ${e.message}`);
+      setPesan(`Gagal hapus: ${pesanErrorFirestore(e)}`);
+      await muat();
+    }
+  };
+
+  // HAPUS PER BAB dari daftar kiri (Turn 56 -- permintaan owner: tombol
+  // hapus bab harus kelihatan langsung, tidak terkubur di kaki editor).
+  const hapusBabItem = async (b) => {
+    if (!konfirmasiHapus(
+      b.judul || '',
+      (b.sections || []).length,
+      (b.ujiPemahaman || []).length,
+    )) return;
+    try {
+      await hapusBab(materiId, b.id);
+      if (babId === b.id) { setBab(null); setBabId(null); }
+      setPesan(`✅ Bab "${b.judul}" dihapus — terverifikasi hilang di server.`);
+      await muat();
+    } catch (e) {
+      setPesan(`Gagal hapus: ${pesanErrorFirestore(e)}`);
+      await muat();
     }
   };
 
@@ -189,6 +233,18 @@ export default function EditBabV2() {
     );
   };
 
+  // Deteksi BAB KEMBAR (Turn 56): judul dinormalisasi muncul >= 2 kali =
+  // kemungkinan salinan impor ganda. Ditandai chip + banner agar owner
+  // langsung bisa menghapus salah satunya (anti "file hantu").
+  const hitungJudul = {};
+  for (const b of babList) {
+    const k = normalJudul(b.judul);
+    if (k) hitungJudul[k] = (hitungJudul[k] || 0) + 1;
+  }
+  const judulKembar = new Set(
+    Object.keys(hitungJudul).filter((k) => hitungJudul[k] > 1),
+  );
+
   return (
     <div style={halamanDasar}>
       <div style={S.head}>
@@ -208,22 +264,41 @@ export default function EditBabV2() {
       <div style={S.badan}>
         {/* ------- daftar bab ------- */}
         <aside style={S.sisi}>
+          {judulKembar.size > 0 && (
+            <div style={S.dupBanner}>
+              ⚠️ Ada bab berjudul sama — kemungkinan SALINAN impor ganda.
+              Hapus salah satu lewat tombol 🗑 di sampingnya.
+            </div>
+          )}
           {babList.map((b, i) => (
-            <button key={b.id} type="button"
-              style={{ ...S.babItem, ...(babId === b.id ? S.babItemAktif : null) }}
-              onClick={() => bukaBab(b)}>
-              <span style={lingkaranNomor(babId === b.id ? 'aktif' : 'biasa')}>
-                {i + 1}
-              </span>
-              <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-                <span style={S.babJudul}>{b.judul}</span>
-                <span style={S.babMeta}>
-                  {(b.sections || []).length} bagian •
-                  {' '}{(b.ujiPemahaman || []).length} soal
-                  {b.slideUrl ? ' • 📽' : ''}
+            <div key={b.id} style={S.babBaris}>
+              <button type="button"
+                style={{
+                  ...S.babItem, flex: 1, minWidth: 0,
+                  ...(babId === b.id ? S.babItemAktif : null),
+                }}
+                onClick={() => bukaBab(b)}>
+                <span style={lingkaranNomor(babId === b.id ? 'aktif' : 'biasa')}>
+                  {i + 1}
                 </span>
-              </span>
-            </button>
+                <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                  <span style={S.babJudul}>{b.judul}</span>
+                  <span style={S.babMeta}>
+                    {(b.sections || []).length} bagian •
+                    {' '}{(b.ujiPemahaman || []).length} soal
+                    {b.slideUrl ? ' • 📽' : ''}
+                  </span>
+                  {judulKembar.has(normalJudul(b.judul)) && (
+                    <span style={S.dupChip}>⚠️ judul kembar</span>
+                  )}
+                </span>
+              </button>
+              <button type="button" style={S.babHapus}
+                title={`Hapus bab "${b.judul}"`}
+                onClick={() => hapusBabItem(b)}>
+                <Trash2 size={14} />
+              </button>
+            </div>
           ))}
           {babList.length === 0 && (
             <div style={S.sisiKosong}>Belum ada bab — klik “Bab Baru”.</div>
@@ -247,6 +322,21 @@ export default function EditBabV2() {
                 <div style={pesan.startsWith('✅') ? S.ok : S.err}>{pesan}</div>
               )}
               <div style={{ ...kartuDasar, padding: 16 }}>
+                {/* Turn 56: tombol HAPUS & SIMPAN juga di ATAS -- dulu hanya
+                    di kaki editor (tak terlihat pada bab 46 bagian). */}
+                <div style={{ ...S.footBtns, marginTop: 0, marginBottom: 14 }}>
+                  {babId && (
+                    <button type="button"
+                      style={{ ...tombolPill('putih'), color: '#B91C1C', borderColor: T.merahGaris }}
+                      onClick={hapus}>
+                      <Trash2 size={14} /> Hapus Bab
+                    </button>
+                  )}
+                  <span style={{ flex: 1 }} />
+                  <button type="button" style={tombolPill('primer')} onClick={simpan}>
+                    <Save size={14} /> Simpan Bab
+                  </button>
+                </div>
                 <div style={S.grid2}>
                   <label style={S.lab}>Judul bab *
                     <input style={S.inp} value={bab.judul}
@@ -693,6 +783,22 @@ const S = {
     flexWrap: 'wrap',
   },
   sisi: { width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 },
+  babBaris: { display: 'flex', gap: 6, alignItems: 'stretch' },
+  babHapus: {
+    background: '#fff', border: `1px solid ${T.merahGaris}`, color: '#B91C1C',
+    borderRadius: 10, width: 34, flexShrink: 0, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  dupChip: {
+    display: 'inline-block', marginTop: 4, fontSize: 9.5, fontWeight: 800,
+    color: '#92400E', background: '#FEF3C7', border: '1px solid #FDE68A',
+    borderRadius: 999, padding: '1px 7px',
+  },
+  dupBanner: {
+    fontSize: 11, fontWeight: 700, color: '#92400E', background: '#FEF3C7',
+    border: '1px solid #FDE68A', borderRadius: 10, padding: '8px 10px',
+    lineHeight: 1.5,
+  },
   babItem: {
     display: 'flex', gap: 10, alignItems: 'center', ...kartuDasar,
     padding: '10px 11px', cursor: 'pointer', fontFamily: 'inherit', width: '100%',

@@ -16,7 +16,8 @@
       "Bank soal UN via kakajaz.blogspot (UN 2014/2018/2019) — soal+kunci berlabel.",
       "Diagram jantung: Alodokter (pelengkap berkredit; menunggu diganti gambar buku paket/modul owner).",
       "Diagram nefron: LMS SPADA Kemdiktisaintek (pelengkap berkredit; label Inggris diterjemahkan di keterangan).",
-      "BSE Biologi K11 TIDAK ditemukan di sumber resmi gratis — dicatat sebagai kebutuhan."
+      "BSE Biologi K11 TIDAK ditemukan di sumber resmi gratis — dicatat sebagai kebutuhan.",
+      "Gambar soal UN 2018 No. 15 (empat organ: paru-paru, kulit, hati, ginjal) — foto soal asli via kakajaz.blogspot.com/2018/11/pembahasan-biologi-un-2018-no-11-15.html, diarsipkan di Supabase materi-bimbel/materi-v2/soal-gambar/un2018-empat-organ.jpg (kredit: Kemendikbud RI, UN 2018)."
     ]
   },
   "bab": [
@@ -602,9 +603,9 @@
             "(4) dan (2)"
           ],
           "jawaban": 3,
-          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2018-organ-ekskresi-sirkulasi.jpg",
-          "pembahasan": "Penyimpan kelebihan gula (glikogen) = HATI (3); pengikatan O2 = PARU-PARU (1). Kunci resmi UN 2018: D.",
-          "sumber": "UN 2018 — via kakajaz.blogspot.com"
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2018-empat-organ.jpg",
+          "pembahasan": "Fungsi keempat organ: paru-paru (1) = tempat pertukaran/pengikatan O2 dan pelepasan CO2 oleh darah; kulit (2) = ekskresi keringat; hati (3) = menyimpan kelebihan gula darah sebagai glikogen (juga membentuk sel darah merah & membongkar racun); ginjal (4) = menyaring darah membentuk urine. Penyimpan kelebihan gula = HATI (3); tempat pengikatan O2 oleh darah = PARU-PARU (1) → urutan (3) dan (1). Kunci resmi UN 2018 No. 15: D.",
+          "sumber": "UN 2018 No. 15 — via kakajaz.blogspot.com (gambar empat organ asli dari sumber yang sama, diarsipkan di Supabase soal-gambar/un2018-empat-organ.jpg)"
         },
         {
           "soal": "Orang yang lukanya tidak mudah menutup karena tidak mempunyai faktor penggumpal darah menderita ...",

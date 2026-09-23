@@ -135,18 +135,35 @@ export async function muatDaftarMateri() {
   return MATERI_CONTOH.map((m) => ({ ...m }));
 }
 
-/** Satu materi + daftar bab-nya (bab di-embed saat mode contoh). */
-export async function muatMateriDanBab(materiId) {
+/** Satu materi + daftar bab-nya (bab di-embed saat mode contoh).
+ *  Turn 56: admin memanggil dengan {dariServer:true} supaya daftar bab =
+ *  kebenaran server (cache basi pernah menampilkan bab yang sudah dihapus
+ *  dan menyembunyikan salinan baru -- sumber kebingungan "hantu"). */
+export async function muatMateriDanBab(materiId, opts = {}) {
+  const { dariServer = false } = opts;
   if (modeContoh) {
     const m = MATERI_CONTOH.find((x) => x.id === materiId);
     if (!m) return { materi: null, babList: [] };
     return { materi: { ...m }, babList: [...(m.bab || [])] };
   }
+  const bacaCache = () => Promise.all([
+    getDoc(doc(db, KOL_MATERI, materiId)),
+    getDocs(collection(db, KOL_MATERI, materiId, 'bab')),
+  ]);
   try {
-    const [mSnap, bSnap] = await Promise.all([
-      getDoc(doc(db, KOL_MATERI, materiId)),
-      getDocs(collection(db, KOL_MATERI, materiId, 'bab')),
-    ]);
+    let mSnap; let bSnap;
+    if (dariServer) {
+      try {
+        [mSnap, bSnap] = await Promise.all([
+          getDocFromServer(doc(db, KOL_MATERI, materiId)),
+          getDocsFromServer(collection(db, KOL_MATERI, materiId, 'bab')),
+        ]);
+      } catch {
+        [mSnap, bSnap] = await bacaCache(); // kuota/offline -> fallback cache
+      }
+    } else {
+      [mSnap, bSnap] = await bacaCache();
+    }
     const materi = mSnap.exists() ? { id: mSnap.id, ...mSnap.data() } : null;
     const babList = bSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
     babList.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
@@ -250,12 +267,64 @@ export async function muatSemuaMateri(opts = {}) {
   }
 }
 
+/**
+ * Normalisasi judul untuk deteksi DUPLIKAT/SALINAN (Turn 56):
+ * huruf kecil + spasi dirapatkan. Dua bab/materi dengan judul "sama"
+ * menurut fungsi ini dianggap kembar (indikasi salinan impor ganda).
+ */
+export const normalJudul = (s) =>
+  String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+/**
+ * SANITASI NESTED ARRAY (janji commit cb1eafd Turn 48 yang implementasi
+ * servicenya tidak pernah ter-commit -- dilengkapi Turn 56).
+ * Firestore MENOLAK array di dalam array; draft lama (tabelinfo.rows /
+ * istilah.items berbentuk [[a,b],...]) dibungkus jadi { s: [...] } SEBELUM
+ * disimpan. Kegagalan setDoc di tengah impor inilah yang dulu melahirkan
+ * cangkang materi 0 bab ("dokumen hantu", kasus m_1790157157695 dkk).
+ * Renderer IsiSections sudah bisa membaca bentuk { s: [...] } maupun {k,v}.
+ */
+export function sanitasiNested(v) {
+  if (Array.isArray(v)) {
+    return v.map((x) => (Array.isArray(x)
+      ? { s: sanitasiNested(x) }
+      : sanitasiNested(x)));
+  }
+  if (v && typeof v === 'object') {
+    const o = {};
+    for (const k of Object.keys(v)) o[k] = sanitasiNested(v[k]);
+    return o;
+  }
+  return v;
+}
+
+/** Pesan seragam untuk dokumen yang sudah dihapus di server (Turn 56). */
+const errorSudahDihapus = (apa) => new Error(
+  `${apa} ini sudah dihapus di server (mungkin dari tab/perangkat lain) — muat ulang halaman, jangan disimpan lagi dari tab ini.`,
+);
+
 /** Simpan materi (buat baru bila id null). Return id. */
 export async function simpanMateri(id, data) {
-  const pakaiId = id || `m_${Date.now()}`;
+  const bersih = sanitasiNested(data);
+  if (id) {
+    // ANTI-ZOMBIE (Turn 56): updateDoc SELALU gagal untuk dokumen yang
+    // sudah dihapus -> edit dari tab lama tidak bisa menghidupkan lagi
+    // materi yang sudah dihapus (dulu setDoc merge = jalur kebangkitan,
+    // kelas bug yang sama dengan backfill Turn 51).
+    try {
+      await updateDoc(doc(db, KOL_MATERI, id), {
+        ...bersih, diupdatePada: Date.now(),
+      });
+    } catch (e) {
+      if (e?.code === 'not-found') throw errorSudahDihapus('Materi');
+      throw e;
+    }
+    return id;
+  }
+  const pakaiId = `m_${Date.now()}`;
   await setDoc(doc(db, KOL_MATERI, pakaiId), {
-    ...data, diupdatePada: Date.now(),
-  }, { merge: true });
+    ...bersih, diupdatePada: Date.now(),
+  });
   return pakaiId;
 }
 
@@ -284,17 +353,68 @@ export async function segarkanHitunganMateri(materiId) {
 
 /** Simpan bab (buat baru bila babId null). Return babId. */
 export async function simpanBab(materiId, babId, data) {
-  const pakaiId = babId || `b_${Date.now()}`;
-  await setDoc(doc(db, KOL_MATERI, materiId, 'bab', pakaiId), {
-    ...data, diupdatePada: Date.now(),
-  }, { merge: true });
+  const bersih = sanitasiNested(data);
+  let pakaiId = babId;
+  if (babId) {
+    // ANTI-ZOMBIE (Turn 56): updateDoc gagal untuk bab yang sudah dihapus
+    // -> tab editor lama tidak bisa membangkitkan bab hantu.
+    try {
+      await updateDoc(doc(db, KOL_MATERI, materiId, 'bab', babId), {
+        ...bersih, diupdatePada: Date.now(),
+      });
+    } catch (e) {
+      if (e?.code === 'not-found') throw errorSudahDihapus('Bab');
+      throw e;
+    }
+  } else {
+    pakaiId = `b_${Date.now()}`;
+    await setDoc(doc(db, KOL_MATERI, materiId, 'bab', pakaiId), {
+      ...bersih, diupdatePada: Date.now(),
+    });
+  }
   await segarkanHitunganMateri(materiId).catch(() => {});
   return pakaiId;
 }
 
-/** Hapus bab permanen (hati-hati; admin hanya). */
+/**
+ * Hapus bab permanen (hati-hati; admin hanya).
+ * Turn 56 -- versi BERSIH TOTAL (permintaan owner: "pastikan bersih gak
+ * ada salinan apapun supaya gak terjadi file hantu lagi"):
+ *  1. hapus dokumen bab;
+ *  2. sapu dokumen progres siswa milik bab itu (progres_materi_v2
+ *     ber-field babId) agar tidak ada riwayat/progress yatim;
+ *  3. VERIFIKASI server bahwa bab benar-benar hilang (pola Turn 51);
+ *  4. segarkan hitungan denormalisasi materi.
+ */
 export async function hapusBab(materiId, babId) {
   await deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', babId));
+  // (2) progres yatim -- best-effort: kegagalan (kuota/offline) tidak
+  // boleh menggagalkan hapus bab-nya sendiri.
+  try {
+    const snapProg = await getDocs(
+      query(collection(db, KOL_PROGRES), where('babId', '==', babId)),
+    );
+    await Promise.all(snapProg.docs.map((d) => deleteDoc(d.ref).catch(
+      (e) => console.warn('Gagal hapus progres', d.id, ':', e?.message),
+    )));
+  } catch (e) {
+    console.warn('Gagal sapu progres bab:', e?.message);
+  }
+  // (3) verifikasi server -- "terhapus" bukan ilusi cache/mutasi tertunda.
+  try {
+    const sisa = await getDocFromServer(
+      doc(db, KOL_MATERI, materiId, 'bab', babId),
+    );
+    if (sisa.exists()) {
+      throw new Error(
+        'bab MASIH ADA di server setelah dihapus (kemungkinan rules/kuota '
+        + 'Firestore) -- coba lagi atau hapus via Firebase Console',
+      );
+    }
+  } catch (e) {
+    if (e?.message?.includes('MASIH ADA')) throw e;
+    console.warn('Verifikasi pasca-hapus bab gagal:', e?.message);
+  }
   await segarkanHitunganMateri(materiId).catch(() => {});
 }
 
@@ -343,11 +463,14 @@ export async function hapusMateri(materiId) {
 export async function simpanSlideVersiGuru(materiId, babId, guruId, url) {
   const ref = doc(db, KOL_MATERI, materiId, 'bab', babId);
   const snap = await getDoc(ref);
-  const data = snap.exists() ? snap.data() : {};
-  const peta = { ...(data.slideVersiGuru || {}) };
+  // ANTI-ZOMBIE (Turn 56): bab yang sudah dihapus TIDAK boleh dibangkitkan
+  // menjadi cangkang berisi slideVersiGuru saja (dulu setDoc merge
+  // melakukannya bila guru menyimpan PPT untuk bab yang baru dihapus).
+  if (!snap.exists()) throw errorSudahDihapus('Bab');
+  const peta = { ...(snap.data().slideVersiGuru || {}) };
   if (url) peta[guruId] = url;
   else delete peta[guruId];
-  await setDoc(ref, { slideVersiGuru: peta }, { merge: true });
+  await updateDoc(ref, { slideVersiGuru: peta });
 }
 
 /**
