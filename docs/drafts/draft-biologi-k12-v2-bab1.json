@@ -10,7 +10,16 @@
     "emoji": "🧬",
     "deskripsi": "Materi ajar LENGKAP gaya buku pelajaran untuk siswa & guru: penjabaran konsep rinci per bab, diagram asli tim kurikulum, contoh berpembahasan, kotak Cara Gemilang (langkah berpikir sederhana), dan 15-20 soal latihan asli per bab (UN/TKA berlabel sumber) sebagai gerbang menuju bab berikutnya. Cakupan bab mengikuti matriks TKA Biologi resmi, tetapi isi bab adalah materi belajar — bukan ringkasan asesmen.",
     "urutan": 4,
-    "status": "draft"
+    "status": "draft",
+    "daftarPustaka": [
+      "Buku Biologi untuk SMA/MA Kelas XII — Kemendikdasmen (BSE Kurmer) — 2022 — ISBN 978-602-427-958-5 — PDF resmi gratis SIBI; gambar dikutip berkredit per halaman (hal. 7, 18, 33).",
+      "Buku Biologi Kelas X untuk SMA-MA — Kemendikbud (BSE K-13) — 2009 — PDF resmi gratis BSE; gambar dikutip berkredit per halaman (hal. 40, 78); sumber asli gambar tercantum di buku (Microsoft Encarta 2006 dll).",
+      "Kerangka Asesmen TKA Biologi SMA — Pusmendik Kemendikdasmen — 2025 — pusmendik.kemendikdasmen.go.id — dokumen publik; contoh soal resmi dikutip berlabel.",
+      "Latihan Soal Saintek UTBK 2022 Biologi — Brain Academy (Ruangguru) — 2022 — blog resmi; soal+kunci dikutip berlabel.",
+      "Bank soal UN Biologi (kakajaz.blogspot) — 2020 — soal UN 2014-2019 + pembahasan; dikutip berlabel tahun ujian.",
+      "Latihan Metabolisme & Enzim — bukusekolah.id — soal ber-pembahasan; dikutip berlabel.",
+      "Modul/buku paket biologi Bimbel Gemilang — MENUNGGU FILE OWNER untuk crop gambar bab lanjutan."
+    ]
   },
   "bab": [
     {
@@ -27,6 +36,11 @@
         {
           "jenis": "paragraf",
           "teks": "Klasifikasi adalah pengelompokan makhluk hidup berdasarkan persamaan dan perbedaan ciri. Tujuannya praktis: menyederhanakan jutaan spesies agar mudah dipelajari, menunjukkan hubungan kekerabatan, dan memberi nama ilmiah yang sama di seluruh dunia. Manfaatnya terasa saat peneliti obat mencari tumbuhan berkhasiat: cukup telusuri satu genus, maka spesies saudaranya kemungkinan membawa senyawa serupa."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-2-13-lima-kingdom.jpg",
+          "keterangan": "Gambar 2.13 Sistem klasifikasi makhluk hidup lima kingdom (Monera, Protista, Animalia, Mycota, Plantae) beserta contoh kelompoknya. Sumber: Buku Biologi Kelas X untuk SMA-MA (BSE Kemendikbud K-13), hal. 40 (gambar asli: Microsoft Encarta 2006, sebagaimana dicantumkan buku)."
         },
         {
           "jenis": "paragraf",
@@ -73,6 +87,16 @@
         {
           "jenis": "paragraf",
           "teks": "Bakteri adalah prokariota: tidak memiliki membran inti sehingga materi genetiknya berupa nukleoid yang bebas di sitoplasma. Pembungkusnya berlapis tiga — kapsul (lendir pelindung), dinding sel peptidoglikan, dan membran plasma. Di dalamnya ada ribosom untuk sintesis protein serta plasmid, cincin DNA kecil yang membawa gen tambahan seperti gen resistensi antibiotik dan dapat berpindah antarbakteri melalui konjugasi. Beberapa jenis membentuk endospora untuk bertahan di kondisi ekstrem. Reproduksi utamanya pembelahan biner (aseksual), sangat cepat pada kondisi ideal."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-4-1-prokariot-eukariot.jpg",
+          "keterangan": "Gambar 4.1 Perbandingan sel prokariotik (bakteri: kapsul, dinding sel, membran sel, DNA, nukleoid, ribosom, plasmid, flagel) dengan sel eukariotik (nukleus, RE, mitokondria, dll.). Sumber: BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 78 (Microsoft Encarta 2006)."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k10-gambar-4-2-struktur-monera.jpg",
+          "keterangan": "Gambar 4.2 Struktur monera (bakteri): kromosom, pilus, ribosom, inklusi, plasmid, membran sel, dinding sel, kapsul/lapisan lendir, flagel. Sumber: BSE Biologi Kelas X SMA-MA Kemendikbud, hal. 78 (Microsoft Encarta 2006)."
         },
         {
           "jenis": "paragraf",

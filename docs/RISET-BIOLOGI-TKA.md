@@ -91,3 +91,20 @@ beberapa tahun terakhir**, serta situs gratis lain di internet — selalu
 dengan label sumber + kunci terverifikasi pembahasan. Rumus/Cara Gemilang
 = jembatan keledai / tips / cara cepat / singkatan kreatif untuk materi
 yang sulit, bukan untuk semua hal.
+
+## 8. KERANGKA BUKU PAKET YANG SUDAH DIPELAJARI (Turn 33)
+
+Peran tim kurikulum: buku paket = KERANGKA + sumber gambar; dipadukan dengan
+sumber lain (soal asli, situs) agar "Gemilang kuat". Daftar pustaka lengkap
+disimpan per materi di field `daftarPustaka` (admin-only, Turn 33).
+
+| Buku paket (pdf resmi gratis) | Isi/kerangka yang dipakai |
+|---|---|
+| BSE Biologi K12 Kurmer (ISBN 978-602-427-958-5, 280 hal) | Bab 1 Enzim & Metabolisme (kerangka bab 2 kita + gambar hal. 7/18/33); Bab 2 Genetika & pewarisan; Bab 3 Evolusi; Bab 4 Bioteknologi (kerangka bab lanjutan/program 12) |
+| BSE Biologi K10 K-13 (280 hal, host BSE lama resmi) | Bab 2 keanekaragaman & klasifikasi (Gambar 2.13 lima kingdom hal. 40); Bab 4 monera/bakteri (Gambar 4.1 & 4.2 hal. 78); Bab 9 ekosistem & bioma (foto bioma hal. 236-239) → kerangka + gambar bab 1 kita |
+| BSE K11 | BELUM KETEMU pdf resmi gratis (SIBI hanya K12; host lama belum ditemukan) → dicarikan lagi; sementara kerangka sistem tubuh/imun/koordinasi/reproduksi pakai matriks TKA + sumber berkredit |
+
+Catatan hak cipta: semua gambar buku dikutip sebagai kutipan pendidikan
+berkredit (judul buku + halaman + sumber asli yang dicantumkan buku);
+file pdf disimpan hanya di sandbox kerja, tidak di-upload ke Supabase
+(yang di-upload hanya crop gambar berkredit).

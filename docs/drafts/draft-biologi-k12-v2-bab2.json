@@ -10,7 +10,13 @@
     "emoji": "🧬",
     "deskripsi": "Bab 2 (ditambah via mode impor tambah-bab): Sel & Metabolisme.",
     "urutan": 4,
-    "status": "draft"
+    "status": "draft",
+    "daftarPustaka": [
+      "Buku Biologi untuk SMA/MA Kelas XII — Kemendikdasmen (BSE Kurmer) — 2022 — ISBN 978-602-427-958-5 — PDF resmi gratis SIBI; gambar dikutip berkredit (hal. 7, 18, 33).",
+      "Kerangka Asesmen TKA Biologi SMA — Pusmendik Kemendikdasmen — 2025 — dokumen publik.",
+      "Latihan Soal Saintek UTBK 2022 Biologi — Brain Academy (Ruangguru) — 2022 — soal+kunci berlabel.",
+      "Latihan Metabolisme & Enzim — bukusekolah.id — soal ber-pembahasan, berlabel."
+    ]
   },
   "bab": [
     {
