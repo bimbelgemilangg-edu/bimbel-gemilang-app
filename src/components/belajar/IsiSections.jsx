@@ -88,7 +88,10 @@ export default function IsiSections({
           const isGuru = String(sec.tipe) === 'guru'
             || /^catatan guru/i.test(String(sec.judul || ''));
           if (isGuru && !untukGuru) return null;
-          if (tipe === 'gemilang') {
+          // HOTFIX Turn 41: pakai sec.tipe langsung -- deklarasi `const tipe`
+          // berada di bawah blok ini sehingga memicu TDZ crash produksi
+          // ("Cannot access 'c' before initialization") saat ada callout.
+          if (String(sec.tipe) === 'gemilang') {
             return (
               <div key={i} id={`sec-${i}`} style={{ ...S.gemilangBox, ...S.jangkar }}>
                 <span style={S.gemilangIkon}>
