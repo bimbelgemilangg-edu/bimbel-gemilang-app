@@ -240,6 +240,15 @@ export default function BelajarReader() {
   const idxBab = babList.findIndex((b) => b.id === babId);
   const babBerikut = idxBab >= 0 ? babList[idxBab + 1] : null;
 
+  // ============================================================
+  // GATE BELAJAR (Turn 29, arahan owner): bab berikutnya baru
+  // terbuka setelah LATIHAN bab sebelumnya selesai dijawab semua
+  // (flag latihanSelesai di progres_materi_v2).
+  // ============================================================
+  const latihanSelesaiBab = (b) => !!progresMap[b?.id]?.latihanSelesai;
+  const babTerkunci = (i) => i > 0 && !latihanSelesaiBab(babList[i - 1]);
+  const terkunciSekarang = babTerkunci(idxBab);
+
   // Format TKA: centang banyak jawaban (PGK-MCMA)
   const pilihMulti = useCallback((i, j) => {
     setJawaban((old) => {
@@ -264,6 +273,12 @@ export default function BelajarReader() {
     setToast(teks);
     setTimeout(() => setToast(null), 2200);
   }, []);
+
+  // tandai latihan bab selesai begitu semua soal terjawab
+  useEffect(() => {
+    if (!semuaDijawab || !babId) return;
+    simpanProgressBab(studentId, materiId, babId, { latihanSelesai: true });
+  }, [semuaDijawab, studentId, materiId, babId]);
 
   const benarCount = useMemo(() =>
     kuis.reduce((a, s, i) => (jawabanBenar(s, jawaban[i]) ? a + 1 : a), 0),
@@ -331,15 +346,41 @@ export default function BelajarReader() {
     return <div style={halamanDasar}><div style={S.kosong}>Memuat materi...</div></div>;
   }
   if (!bab || !materi) {
+    // ANTI-HANTU (Turn 29): materi/bab sudah dihapus admin ->
+    // tampilkan penjelasan ramah + bersihkan riwayat "lanjutkan membaca".
     return (
       <div style={halamanDasar}>
         <div style={S.kosong}>
-          <div style={{ fontSize: 30, marginBottom: 8 }}>🤔</div>
-          Bab tidak ditemukan.
+          <div style={{ fontSize: 30, marginBottom: 8 }}>🗂️</div>
+          Materi atau bab ini sudah tidak tersedia
+          (kemungkinan dihapus/diganti versi baru oleh admin).
           <div style={{ marginTop: 14 }}>
             <button type="button" style={tombolPill('primer')}
+              onClick={() => { simpanTerakhir(null); navigate('/siswa/belajar'); }}>
+              <ArrowLeft size={15} /> Ke beranda Materi Belajar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (terkunciSekarang) {
+    return (
+      <div style={halamanDasar}>
+        <div style={S.kosong}>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>🔒</div>
+          Bab ini terbuka setelah seluruh Latihan Soal bab sebelumnya
+          selesai dijawab.
+          <div style={{ marginTop: 14, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button type="button" style={tombolPill('primer')}
+              onClick={() => navigate(
+                `/siswa/belajar/${materiId}/${babList[idxBab - 1].id}`)}>
+              Kerjakan bab {idxBab}: {babList[idxBab - 1].judul}
+            </button>
+            <button type="button" style={tombolPill('putih')}
               onClick={() => navigate(`/siswa/belajar/${materiId}`)}>
-              <ArrowLeft size={15} /> Ke daftar materi
+              Daftar materi
             </button>
           </div>
         </div>
@@ -674,10 +715,16 @@ export default function BelajarReader() {
             )}
             <span style={{ flex: 1 }} />
             {babBerikut ? (
-              <button type="button" style={tombolPill('primer')}
-                onClick={() => navigate(`/siswa/belajar/${materiId}/${babBerikut.id}`)}>
-                {babBerikut.judul} <ChevronRight size={15} />
-              </button>
+              latihanSelesaiBab(bab) ? (
+                <button type="button" style={tombolPill('primer')}
+                  onClick={() => navigate(`/siswa/belajar/${materiId}/${babBerikut.id}`)}>
+                  {babBerikut.judul} <ChevronRight size={15} />
+                </button>
+              ) : (
+                <span style={S.gateChip}>
+                  🔒 Selesaikan Latihan Soal bab ini untuk membuka bab berikutnya
+                </span>
+              )
             ) : selesaiBaca ? (
               <button type="button" style={tombolPill('primer')}
                 onClick={() => navigate(`/siswa/belajar/${materiId}`)}>
@@ -1328,6 +1375,11 @@ const S = {
     boxShadow: '0 8px 20px rgba(30,155,240,.35)',
   },
   navBab: { display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' },
+  gateChip: {
+    fontSize: 11.5, fontWeight: 800, color: '#92400E',
+    background: '#FEF3C7', border: '1px solid #FDE68A',
+    borderRadius: 999, padding: '8px 14px', alignSelf: 'center',
+  },
   panel: { width: 320, flexShrink: 0, position: 'sticky', top: 70 },
   panelJudul: {
     display: 'flex', alignItems: 'center', gap: 7,

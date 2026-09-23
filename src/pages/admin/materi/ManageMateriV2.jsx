@@ -34,6 +34,10 @@ export default function ManageMateriV2() {
   const [pesan, setPesan] = useState('');
   const [imporOpen, setImporOpen] = useState(false);
   const [imporText, setImporText] = useState('');
+  // Mode impor (Turn 29): 'baru' = materi baru; 'tambah' = bab ditempel
+  // ke materi yang sudah ada (konten dibangun bertahap per bab).
+  const [imporMode, setImporMode] = useState('baru');
+  const [imporTarget, setImporTarget] = useState('');
   // Statistik isi per materi (bab & soal) -- supaya "cangkang kosong"
   // (materi aktif tanpa bab) langsung kelihatan, kasus Turn 25.
   const [stat, setStat] = useState({});
@@ -95,6 +99,21 @@ export default function ManageMateriV2() {
     try {
       const data = JSON.parse(imporText);
       if (!data.materi?.judul) throw new Error('Field materi.judul wajib.');
+      const babs = Array.isArray(data.bab) ? data.bab : [];
+      if (imporMode === 'tambah') {
+        const target = list.find((x) => x.id === imporTarget);
+        if (!target) throw new Error('Pilih dulu materi tujuan penambahan bab.');
+        const offset = stat[imporTarget]?.bab || 0;
+        for (let i = 0; i < babs.length; i++) {
+          await simpanBab(imporTarget, null, { urutan: offset + i + 1, ...babs[i] });
+        }
+        await segarkanHitunganMateri(imporTarget).catch(() => {});
+        setPesan(`✅ ${babs.length} bab ditambahkan ke materi "${target.judul}".`);
+        setImporOpen(false);
+        setImporText('');
+        await muat();
+        return;
+      }
       // Impor = SALINAN baru. Peringatkan bila judul sama sudah ada
       // (mencegah kejadian "ter-copy" membingungkan, Turn 25).
       const judulImpor = String(data.materi.judul).trim().toLowerCase();
@@ -107,7 +126,6 @@ export default function ManageMateriV2() {
         + 'Lanjutkan impor?'
       )) return;
       const id = await simpanMateri(null, data.materi);
-      const babs = Array.isArray(data.bab) ? data.bab : [];
       for (let i = 0; i < babs.length; i++) {
         await simpanBab(id, null, { urutan: i + 1, ...babs[i] });
       }
@@ -179,6 +197,27 @@ export default function ManageMateriV2() {
               copy-paste teks panjang sering terpotong dan menyebabkan
               error “Unexpected end of JSON input”.
             </p>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 8px' }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: T.teks, display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                <input type="radio" name="impormode" checked={imporMode === 'baru'}
+                  onChange={() => setImporMode('baru')} />
+                Materi baru
+              </label>
+              <label style={{ fontSize: 12, fontWeight: 700, color: T.teks, display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                <input type="radio" name="impormode" checked={imporMode === 'tambah'}
+                  onChange={() => setImporMode('tambah')} />
+                Tambah bab ke materi existing
+              </label>
+              {imporMode === 'tambah' && (
+                <select style={{ ...S.inp, width: 280 }} value={imporTarget}
+                  onChange={(e) => setImporTarget(e.target.value)}>
+                  <option value="">— pilih materi tujuan —</option>
+                  {list.map((m) => (
+                    <option key={m.id} value={m.id}>{m.judul}</option>
+                  ))}
+                </select>
+              )}
+            </div>
             <textarea style={{ ...S.inp, fontFamily: 'monospace', fontSize: 11.5 }}
               rows={8} value={imporText}
               placeholder='{ "materi": { "judul": "..." }, "bab": [ ... ] }'

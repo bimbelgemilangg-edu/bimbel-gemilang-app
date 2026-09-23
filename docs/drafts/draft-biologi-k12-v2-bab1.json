@@ -1,0 +1,266 @@
+{
+  "materi": {
+    "judul": "Biologi SMA Kelas 12 — Persiapan TKA 2026",
+    "mapel": "Biologi",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#16A34A",
+    "emoji": "🧬",
+    "deskripsi": "Materi ajar LENGKAP gaya buku pelajaran untuk siswa & guru: penjabaran konsep rinci per bab, diagram asli tim kurikulum, contoh berpembahasan, kotak Cara Gemilang (langkah berpikir sederhana), dan 15-20 soal latihan asli per bab (UN/TKA berlabel sumber) sebagai gerbang menuju bab berikutnya. Cakupan bab mengikuti matriks TKA Biologi resmi, tetapi isi bab adalah materi belajar — bukan ringkasan asesmen.",
+    "urutan": 4,
+    "status": "draft"
+  },
+  "bab": [
+    {
+      "judul": "Keanekaragaman Hayati: Klasifikasi, Bakteri, Alga-Jamur & Ekosistem",
+      "ringkasan": "Bab pembuka Biologi TKA: hakikat dan sistem klasifikasi, tingkatan takson & binomial nomenclature, tiga tingkat keanekaragaman hayati Indonesia, struktur dan peranan bakteri (termasuk resistensi), alga & jamur bermanfaat, hingga ekosistem, bioma, dan pelestarian. Diakhiri 16 soal latihan asli berformat ujian.",
+      "estimasiMenit": 60,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "A. Hakikat Klasifikasi Makhluk Hidup" },
+        { "jenis": "paragraf", "teks": "Klasifikasi adalah pengelompokan makhluk hidup berdasarkan persamaan dan perbedaan ciri. Tujuannya praktis: menyederhanakan jutaan spesies agar mudah dipelajari, menunjukkan hubungan kekerabatan, dan memberi nama ilmiah yang sama di seluruh dunia. Manfaatnya terasa saat peneliti obat mencari tumbuhan berkhasiat: cukup telusuri satu genus, maka spesies saudaranya kemungkinan membawa senyawa serupa." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-tingkatan-takson.svg", "keterangan": "Delapan tingkatan takson dari yang paling luas (domain) hingga paling spesifik (spesies). Semakin ke bawah, anggota semakin sedikit tetapi persamaan ciri semakin banyak." },
+        { "jenis": "paragraf", "teks": "Nama ilmiah memakai binomial nomenclature (karya Linnaeus): dua kata berbahasa Latin — kata pertama nama genus dengan huruf kapital, kata kedua penunjuk spesies dengan huruf kecil — ditulis miring atau digarisbawahi terpisah. Contoh: Oryza sativa (padi), Panthera tigris (harimau). Aturan ini yang membuat soal 'penulisan yang benar' selalu muncul di ujian." },
+        { "jenis": "callout", "tipe": "info", "judul": "Catatan Guru", "teks": "Ajak siswa mengklasifikasi benda di kelas (spidol, buku, botol) dengan kriteria buatan mereka sendiri, lalu bandingkan: klasifikasi teman berbeda karena kriteria berbeda. Dari situ masuk konsep: taksonomi ilmiah menyepakati KRIteria ciri, bukan selera." },
+        { "jenis": "judul", "teks": "B. Tiga Sistem Klasifikasi & Contoh Penalaran" },
+        { "jenis": "paragraf", "teks": "Sistem artifisial mengelompokkan berdasarkan ciri mudah dilihat yang sering kali tidak mencerminkan kekerabatan (mis. semua hewan bisa berenang dijadikan satu). Sistem alami memakai banyak ciri morfologi-anatomi-fisiologi sekaligus. Sistem filogenetik menambahkan sejarah evolusi dan kekerabatan genetika — inilah dasar klasifikasi modern. Karena itu dua hewan yang tampak mirip karena adaptasi habitat yang sama belum tentu sekeluarga." },
+        { "jenis": "contoh", "judul": "Paus dan hiu: mirip tetapi berbeda kelas", "teks": "Paus (Balaenoptera musculus) dan hiu (Carcharodon carcharias) sama-sama hidup di laut, bersirip, dan berbentuk streamline. Mengapa klasifikasi memisahkan keduanya?", "pembahasan": "Bentuk streamline keduanya adalah hasil adaptasi konvergen terhadap air, bukan tanda kekerabatan. Paus bernapas dengan paru-paru, menyusui, dan berdarah panas → Mammalia. Hiu bernapas dengan insang dan umumnya bertelur → Pisces. Klasifikasi didasarkan pada persamaan-perbedaan ciri (jawab: prinsip ciri, bukan habitat)." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — 3 pertanyaan klasifikasi", "teks": "Bila soal membandingkan dua organisme: (1) ciri tubuhnya sama, atau cuma rumahnya yang sama? (2) cara hidup dasarnya (napas, reproduksi, suhu tubuh) sama? (3) baru cek kekerabatan terdekat. Bila (1) dan (2) berbeda → pasti kelompok berbeda, seberapa pun mirip penampilannya." },
+        { "jenis": "judul", "teks": "C. Keanekaragaman Hayati: Tiga Tingkat" },
+        { "jenis": "paragraf", "teks": "Tingkat gen: variasi dalam satu spesies (padi IR64, C4, Rojolele; mangga harum-manis dan gedong; anjing berbagai ras). Tingkat jenis (spesies): variasi antarspesies dalam satu keluarga (harimau, singa, macan tutul pada Felidae). Tingkat ekosistem: variasi habitat beserta interaksinya (hutan hujan tropis, mangrove, padang lamun, savana Sumba). Indonesia termasuk negara megabiodiversity: garis Wallace, Weber, dan Lydekker membagi fauna Indonesia menjadi tipe Asiatis, peralihan, dan Australis." },
+        { "jenis": "judul", "teks": "D. Bakteri: Struktur, Pewarnaan Gram, dan Peranan" },
+        { "jenis": "paragraf", "teks": "Bakteri adalah prokariota: tidak memiliki membran inti sehingga materi genetiknya berupa nukleoid yang bebas di sitoplasma. Pembungkusnya berlapis tiga — kapsul (lendir pelindung), dinding sel peptidoglikan, dan membran plasma. Di dalamnya ada ribosom untuk sintesis protein serta plasmid, cincin DNA kecil yang membawa gen tambahan seperti gen resistensi antibiotik dan dapat berpindah antarbakteri melalui konjugasi. Alcuni jenis membentuk endospora untuk bertahan di kondisi ekstrem. Reproduksi utamanya pembelahan biner (aseksual), sangat cepat pada kondisi ideal." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-struktur-sel-bakteri.svg", "keterangan": "Diagram sel bakteri: kapsul, dinding sel, membran plasma, nukleoid, plasmid, ribosom, pili, dan flagela. Perhatikan perbedaan ketebalan peptidoglikan Gram positif vs negatif." },
+        { "jenis": "paragraf", "teks": "Pewarnaan Gram membagi bakteri menjadi Gram positif (dinding peptidoglikan tebal, menahan warna ungu kristal violet) dan Gram negatif (peptidoglikan tipis berselubung luar, tampak merah muda); selubung luar Gram negatif membuatnya umumnya lebih sulit ditembus antibiotik. Peranan bakteri dua arah: menguntungkan (Rhizobium mengikat nitrogen, Lactobacillus dalam yoghurt, Acetobacter xylinum dalam nata de coco, Escherichia coli membantu pencernaan dan sintesis vitamin K) serta merugikan (patogen seperti Salmonella, Mycobacterium tuberculosis). Clostridium botulinum menghasilkan racun botulinin pada makanan kaleng yang pengolahannya tidak sempurna." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — alur resistensi dalam 4 langkah", "teks": "(1) Populasi bakteri sudah beragam secara genetik, sebagian kecil kebetulan resisten. (2) Antibiotik/insektisida dipakai tidak tuntas → yang sensitif mati, yang resisten selamat. (3) Yang resisten berkembang biak → frekuensi gen resisten naik. (4) Akibatnya obat 'terasa tidak mempan' — padahal yang berubah adalah populasi patogennya, bukan obatnya. Empat langkah ini menjawab hampir semua soal kasus resistensi." },
+        { "jenis": "judul", "teks": "E. Alga dan Jamur yang Berperan dalam Kehidupan" },
+        { "jenis": "paragraf", "teks": "Alga bermanfaat luas: Gelidium untuk es krim dan agar-agar, Eucheuma spinosum untuk agar-agar, Ulva sebagai sayuran laut, Chlorella sebagai protein sel tunggal. Jamur dikelompokkan berdasarkan alat reproduksi seksualnya: Zygomycota (hifa tidak bersekat, zigospora berdinding tebal; Rhizopus stolonifer untuk tempe), Ascomycota (spora dalam askus; Saccharomyces untuk roti dan tape), Basidiomycota (spora pada basidium; jamur merang dan kuping), serta Deuteromycota sebagai 'jamur imperfect' yang fase seksualnya belum diketahui. Ingat: Oomycota (mis. Phytophthora) bukan jamur sejati melainkan protista mirip jamur." },
+        { "jenis": "judul", "teks": "F. Ekosistem: Komponen, Interaksi, dan Pelestarian" },
+        { "jenis": "paragraf", "teks": "Ekosistem = komunitas (semua populasi) + abiotik (cahaya, air, tanah, suhu) yang terhubung oleh aliran energi dan daur materi. Rantai makanan menyalurkan energi dari produsen (tumbuhan, fitoplankton) ke konsumen I, II, III dan pengurai; sejumlah rantai yang saling bersilangan membentuk jaring-jaring makanan. Karena energi berkurang ±90% tiap tingkat trofik (hukum 10%), piramida energi selalu menyempit ke atas — inilah alasan ekosistem sehat butuh produsen melimpah." },
+        { "jenis": "paragraf", "teks": "Bioma dunia dibedakan oleh iklim dan vegetasi dominan: tundra (bersalju, lumut kerak, vegetasi berumur pendek), taiga (konifer), hutan gugur (empat musim), savana (padang rumput berpohon), gurun, dan hutan hujan tropis (curah hujan 200-450 cm/tahun, kanopi berlapis). Indonesia memiliki hutan hujan tropis, mangrove, dan savana Nusa Tenggara. Pelestarian dilakukan in-situ di habitat asli (taman nasional Komodo, Ujung Kulon, Way Kambas, cagar alam) dan ex-situ di luar habitat (kebun raya, kebun binatang, penangkaran, bank biji)." },
+        { "jenis": "callout", "tipe": "tips", "judul": "Membaca jaring-jaring makanan dua arah", "teks": "Saat satu populasi berubah, telusuri panah ke ATAS (pemangsanya kekurangan makanan → menurun) dan ke BAWAH (mangsanya lepas dari pemangsaan → meledak). Jawaban soal biasanya efek yang paling langsung, bukan efek turunan ketiga." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Paus (Balaenoptera musculus) dan ikan hiu (Carcharodon carcharias) sama-sama hidup di laut, memiliki sirip dan ekor, serta bentuk tubuh yang lancip di ujung depan dan ujung belakang sehingga efisien untuk berenang. Namun, paus bernapas dengan paru-paru dan menyusui anaknya, sedangkan ikan hiu bernapas dengan insang dan sebagian besar bertelur. Meskipun memiliki bentuk luar yang mirip, dalam sistem klasifikasi keduanya ditempatkan pada kelompok yang berbeda. Apa prinsip utama yang digunakan dalam pengelompokan tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Kedua makhluk hidup tersebut hidup di ekosistem laut yang berbeda.",
+            "Mereka memiliki peran yang berbeda dalam rantai makanan.",
+            "Pengelompokan didasarkan pada habitat dan perilaku makan.",
+            "Klasifikasi didasarkan pada persamaan dan perbedaan ciri.",
+            "Paus dan ikan hiu memiliki massa tubuh yang berbeda secara alami."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Klasifikasi memakai persamaan-perbedaan ciri morfologi, anatomi, fisiologi (dan genetika), bukan habitat atau peran ekologis. Paus menyusui & berparu-paru → Mammalia; hiu berinsang → Pisces.",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 2 — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Perhatikan gambar kelompok hewan berikut (kalajengking, lalat, kupu-kupu, lipan). Apakah takson terendah dan dasar pengelompokan dari kelompok hewan tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Invertebrata, tidak bertulang belakang.",
+            "Insecta, kaki beruas-ruas.",
+            "Insecta, mengalami metamorfosis.",
+            "Arthropoda, kaki beruas-ruas.",
+            "Arthropoda, tubuh simetri bilateral."
+          ],
+          "jawaban": 3,
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2018-arthropoda.jpg",
+          "pembahasan": "Keempat hewan tidak bertulang belakang; ciri bersama yang paling spesifik adalah kaki beruas-ruas → filum Arthropoda. Insecta hanya mencakup lalat & kupu-kupu, bukan takson bersama keempatnya.",
+          "sumber": "UN 2018 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Industri tekstil akhir-akhir ini kesulitan mendapatkan bahan baku kain sutera. Untuk mengatasi masalah tersebut masyarakat melakukan budidaya ulat sutera yang tergolong hewan kelas Insekta dalam kelompok Arthropoda. Ciri-ciri kelas Insekta adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "kaki beruas-ruas dan memiliki sayap",
+            "jumlah kaki 3 pasang dan tubuh terdiri atas 2 bagian (kepala-dada dan perut)",
+            "jumlah kaki sepasang dan tubuh terdiri atas 3 bagian (kepala, dada, dan perut)",
+            "jumlah kaki 3 pasang, tubuh terdiri atas 3 bagian (kepala, dada, dan perut)",
+            "jumlah kaki 3 pasang, tubuh beruas-ruas"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Insekta = hexapoda (3 pasang kaki) dengan tubuh 3 bagian: kaput (kepala), toraks (dada), abdomen (perut).",
+          "sumber": "UN 2017 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Perhatikan gambar dua hewan vertebrata berikut (ular dan singa). Persamaan ciri kedua hewan tersebut adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "memiliki 4 ruang jantung yang sempurna",
+            "bersifat poikiloterm",
+            "peredaran darah tertutup",
+            "pembuahan eksternal",
+            "bernapas menggunakan trakea"
+          ],
+          "jawaban": 2,
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2015-ular-singa.jpg",
+          "pembahasan": "Reptilia (ular) dan Mammalia (singa) sama-sama berperedaran darah tertutup. Sekat jantung reptil belum sempurna (A salah); reptil poikiloterm, mamalia homoiterm (B salah); pembuahan eksternal pada ikan & katak (D salah); trakea pada Arthropoda (E salah).",
+          "sumber": "UN 2015 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Penulisan nama ilmiah padi yang benar menurut kaidah binomial nomenclature adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "Oryza sativa (ditulis miring, genus kapital, penunjuk spesies kecil)",
+            "oryza sativa (semua huruf kecil dan miring)",
+            "Oryza Sativa (kedua kata diawali huruf kapital)",
+            "Oryza sativa (digabung menjadi satu kata tanpa spasi)",
+            "SATIVA oryza (penunjuk spesies ditulis lebih dulu)"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Binomial = dua kata: genus huruf kapital + penunjuk spesies huruf kecil, dicetak miring (atau digarisbawahi terpisah). Hanya opsi pertama yang memenuhi seluruh kaidah.",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, sesuai kaidah binomial nomenclature)"
+        },
+        {
+          "soal": "Di sawah yang sama ditanam padi varietas IR64, C4, dan Rojolele; di pasar dijual mangga harum-manis, gadung, dan gedong. Keanekaragaman yang ditunjukkan oleh kedua contoh tersebut berturut-turut adalah tingkat ...",
+          "tipe": "pg",
+          "opsi": [
+            "gen dan jenis",
+            "jenis dan gen",
+            "gen dan ekosistem",
+            "ekosistem dan jenis",
+            "jenis dan ekosistem"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Varietas dalam satu spesies (padi; mangga) = keanekaragaman tingkat gen. Bila contoh membandingkan spesies berbeda (mis. harimau-singa-macan) baru tingkat jenis; membandingkan habitat = tingkat ekosistem.",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi tiga tingkat keanekaragaman)"
+        },
+        {
+          "soal": "Perhatikan tabel nama bakteri dan perannya pada gambar (I Acetobacter, II Azotobacter, III Bacillus, IV Escherichia, V Streptococcus beserta peran a-e). Manakah yang menunjukkan pasangan yang tepat antara bakteri dan perannya?",
+          "tipe": "pg",
+          "opsi": [
+            "I-a dan II-e",
+            "I-d dan V-c",
+            "II-a dan III-e",
+            "III-b dan IV-c",
+            "IV-b dan V-d"
+          ],
+          "jawaban": 3,
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2019-tabel-peran-bakteri.jpg",
+          "pembahasan": "Kunci resmi UN 2019: pasangan benar I-e, II-a, III-b, IV-c, V-d; dari opsi yang tersedia yang tepat adalah III-b dan IV-c (D).",
+          "sumber": "UN 2019 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Eubacteria yang dapat menghasilkan zat racun pada makanan kemasan dalam kaleng adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "Pseudomonas sp.",
+            "Thiobacillus ferrooxidans",
+            "Clostridium botulinum",
+            "Escherichia coli",
+            "Acetobacter xylinum"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Clostridium botulinum menghasilkan toksin botulinin pada makanan kaleng yang sterilisasinya tidak sempurna — alasan utama kemasan kaleng menggembung harus dibuang.",
+          "sumber": "UN 2014 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Sumber bahan makanan alternatif dapat digunakan untuk mengatasi krisis bahan pangan dari kelompok alga, seperti Gelidium, Ulva, dan Eucheuma spinosum. Secara berurutan ketiga spesies tersebut bermanfaat untuk pembuatan ...",
+          "tipe": "pg",
+          "opsi": [
+            "protein sel tunggal, agar-agar, dan sayuran",
+            "protein sel tunggal, sayuran, dan agar-agar",
+            "es krim, sayuran, dan agar-agar",
+            "es krim, jelly, dan agar-agar",
+            "agar-agar, jelly, dan sayuran"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Gelidium → es krim/agar; Ulva → sayuran laut (selada laut); Eucheuma spinosum → agar-agar. Urutan yang cocok: es krim, sayuran, agar-agar.",
+          "sumber": "UN 2017 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Perhatikan ciri-ciri jamur berikut: (1) hifa tidak bersekat; (2) berperan dalam proses pembuatan tempe; (3) reproduksi terjadi secara aseksual dan seksual. Jamur yang memiliki ciri-ciri tersebut dapat dikelompokkan ke dalam divisio ...",
+          "tipe": "pg",
+          "opsi": ["Zygomycota", "Ascomycota", "Basidiomycota", "Deuteromycota", "Oomycota"],
+          "jawaban": 0,
+          "pembahasan": "Jamur tempe (Rhizopus stolonifer) berhifa tidak bersekat dan membentuk zigospora berdinding tebal → Zygomycota. Oomycota bukan jamur sejati (protista mirip jamur).",
+          "sumber": "UN 2016 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Perhatikan gambar jamur roti (Rhizopus stolonifer). Dari ciri berikut: (1) hifa bercabang-cabang dan tidak bersekat; (2) pembiakan terjadi secara seksual dan aseksual; (3) menghasilkan spora dalam askus; (4) mempunyai hifa bersekat-sekat; (5) spora dibentuk dalam basidium; (6) membentuk spora berdinding tebal yang disebut zigospora. Ciri yang dimiliki oleh jamur pada gambar adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "(1), (2), dan (3)",
+            "(1), (2), dan (6)",
+            "(3), (4), dan (5)",
+            "(3), (4), dan (6)",
+            "(4), (5), dan (6)"
+          ],
+          "jawaban": 1,
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2015-rhizopus.jpg",
+          "pembahasan": "Rhizopus = Zygomycota: hifa tidak bersekat (1), reproduksi seksual-aseksual (2), spora seksual zigospora berdinding tebal (6). Askus (3) milik Ascomycota; basidium (5) milik Basidiomycota; hifa bersekat (4) bukan ciri Zygomycota.",
+          "sumber": "UN 2015 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Suatu ekosistem darat memiliki ciri-ciri: hampir semua wilayahnya tertutup oleh salju atau es; curah hujan sangat rendah; usia tumbuh tanaman pendek; vegetasi yang dominan adalah lumut kerak, lumut, dan semak-semak pendek. Ekosistem yang memiliki ciri-ciri tersebut adalah ...",
+          "tipe": "pg",
+          "opsi": ["taiga", "tundra", "hutan gugur", "savana", "hutan hujan tropis"],
+          "jawaban": 1,
+          "pembahasan": "Tundra: bersalju permanen, vegetasi lumut & semak pendek, musim tumbuh sangat singkat. Taiga = konifer berdaun jarum; savana = padang rumput tropis.",
+          "sumber": "UN 2016 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Dalam sebuah ekosistem laut, terdapat beberapa organisme seperti pada gambar jaring-jaring makanan. Jika populasi ikan kecil menurun drastis, maka manakah dampak yang paling mungkin terjadi dalam jaring-jaring makanan pada ekosistem laut tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Jumlah fitoplankton akan meningkat.",
+            "Populasi paus biru akan menurun.",
+            "Anjing laut akan meningkat populasinya.",
+            "Ledakan populasi zooplankton.",
+            "Populasi penguin akan berkurang."
+          ],
+          "jawaban": 3,
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/tka-bio-jaring-makanan-zenius.png",
+          "pembahasan": "Ikan kecil adalah pemangsa zooplankton; bila ikan kecil menurun, tekanan pemangsaan zooplankton hilang sehingga populasi zooplankton meledak (efek ke bawah yang paling langsung).",
+          "sumber": "Contoh Soal TKA Biologi SMA 2026 (1) — zenius.net"
+        },
+        {
+          "soal": "Malaria diatasi dengan pemberian obat kina dan penyemprotan DDT. Hasil penelitian: Wilayah A (tanpa resistensi nyamuk) — kina 3 hari 50% sembuh, kina 5 hari 76%, kina 7 hari 87%, DDT 90% menurunkan infeksi. Wilayah B (dengan resistensi nyamuk) — kina 3 hari 48%, kina 5 hari 72%, kina 7 hari 82%, DDT hanya 60%. Berdasarkan data tersebut, tentukan apakah pernyataan berikut Tepat atau Tidak Tepat!",
+          "tipe": "tabel",
+          "kolom": ["Tepat", "Tidak Tepat"],
+          "baris": [
+            "Mengandalkan DDT di kedua wilayah, karena efektivitasnya paling tinggi dibandingkan obat kina.",
+            "Menggunakan DDT di wilayah A untuk hasil cepat, dan memperpanjang pemberian kina di wilayah B karena efektivitas DDT menurun akibat resistensi.",
+            "Mengutamakan kina 3 hari di wilayah A maupun B, karena tingkat kesembuhannya cukup tinggi dan tidak memerlukan waktu lama."
+          ],
+          "jawaban": [1, 0, 1],
+          "pembahasan": "Kunci resmi: A Tidak Tepat (DDT wilayah B hanya 60% karena resistensi), B Tepat (strategi campuran sesuai data), C Tidak Tepat (kina 3 hari hanya 48-50% sembuh).",
+          "sumber": "Contoh Soal Resmi TKA Biologi no. 1 (PGK Kategori) — Pusmendik Kemendikdasmen"
+        },
+        {
+          "soal": "Manakah upaya pelestarian keanekaragaman hayati yang dilakukan secara in-situ (di habitat aslinya)? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Taman Nasional Komodo untuk melindungi komodo dan ekosistem pulau.",
+            "Kebun Raya Bogor mengoleksi tumbuhan dari berbagai daerah di luar habitat aslinya.",
+            "Taman Nasional Ujung Kulon untuk badak bercula satu di alam liarnya.",
+            "Kebun binatang merawat satwa dalam kandang untuk pendidikan masyarakat.",
+            "Taman Nasional Way Kambas sebagai rumah gajah Sumatera di habitat aslinya."
+          ],
+          "jawaban": [0, 2, 4],
+          "pembahasan": "In-situ = perlindungan di habitat asli (taman nasional, cagar alam, suaka margasatwa). Kebun raya & kebun binatang = ex-situ (di luar habitat).",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi pelestarian in-situ/ex-situ)"
+        },
+        {
+          "soal": "Seorang pasien infeksi saluran kemih diresepkan antibiotik 7 hari, tetapi berhenti sendiri pada hari ke-3 karena merasa sudah sembuh. Beberapa bulan kemudian infeksi serupa kambuh dan antibiotik yang sama tidak lagi mempan. Penjelasan ilmiah yang paling tepat adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "Antibiotik kehilangan khasiatnya karena terlalu sering diproduksi massal.",
+            "Bakteri yang kebetulan resisten selamat dari pengobatan tidak tuntas, lalu berkembang biak sehingga populasi patogen kini didominasi keturunan resisten.",
+            "Tubuh pasien menjadi kebal terhadap antibiotik sehingga obat tidak bekerja.",
+            "Bakteri bermutasi karena ingin bertahan hidup setelah 'melihat' antibiotik.",
+            "Dosis antibiotik semula terlalu tinggi sehingga bakteri beradaptasi menurunkan dosis."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Resistensi = seleksi alam atas variasi genetik yang SUDAH ada dalam populasi bakteri; pengobatan tidak tuntas menyeleksi individu resisten. Bakteri tidak 'ingin' atau 'melihat' (opsi D keliru konsep), dan yang berubah adalah populasinya, bukan tubuh pasien atau obatnya.",
+          "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi resistensi bakteri)"
+        }
+      ]
+    }
+  ]
+}
