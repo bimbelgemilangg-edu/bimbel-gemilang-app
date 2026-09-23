@@ -1,0 +1,796 @@
+{
+ "materi": {
+  "judul": "Biologi SMA Kelas 12 — Persiapan TKA 2026",
+  "mapel": "Biologi",
+  "kelas": "12",
+  "jenjang": "sma",
+  "program": "semua",
+  "premium": false,
+  "warna": "#16A34A",
+  "emoji": "🧬",
+  "deskripsi": "Materi Biologi Kelas 12 VERSI DALAM persiapan TKA 2026, bab 1-5 mengikuti matriks resmi Pusmendik. Bab 5 = keterampilan proses & strategi TKA: bertanya & memprediksi, merancang penyelidikan (variabel/kontrol/ulangan), mengolah data tabel & grafik, menyimpulkan berdasar bukti, plus strategi 3 level kognitif dan 6 format soal. Visual: crop BSE K12 300 dpi + bagan/grafik orisinal tim kurikulum; sebagian soal membahas jawaban DENGAN gambar beranotasi.",
+  "urutan": 4,
+  "status": "draft",
+  "daftarPustaka": [
+   "Matriks Asesmen & Contoh Soal Resmi TKA Biologi SMA — Pusmendik Kemendikdasmen (definisi, 3 sub-elemen keterampilan proses, 3 level kognitif; soal resmi no. 4 dipakai berlabel).",
+   "Biologi untuk SMA/MA Kelas XII, Kemendikbudristek 2022 (BSE): Gambar 1.3 hal. 6, Gambar 1.7 hal. 11, tabel percobaan katalase hal. 11, Gambar 1.8 & tabel Activity 1.4 hal. 12, Gambar 1.27 hal. 41 — dicrop 300 dpi, kredit disimpan di sini (tersembunyi dari siswa).",
+   "Modul Tentor Gemilang Rangkuman Materi SMA Kurmer 2025 (INTERNAL) — rujukan gaya bahasa tentor; bagian keterampilan proses merupakan celah modul yang ditutup bab ini.",
+   "Bagan metode ilmiah, skema variabel, grafik stimulus soal, dan versi beranotasinya: diagram orisinal tim kurikulum (visual penunjang).",
+   "Soal bertanda \"Gemilang Drill\": latihan orisinal sistem sesuai matriks keterampilan proses TKA, bukan soal ujian bersumber."
+  ]
+ },
+ "bab": [
+  {
+   "judul": "Keterampilan Proses & Strategi TKA (VERSI DALAM): Bertanya, Merancang, dan Membaca Data seperti Ilmuwan",
+   "ringkasan": "Bab penutup matriks TKA: tiga sub-elemen keterampilan proses (mempertanyakan & memprediksi; merencanakan penyelidikan; mengolah data & menyimpulkan) dibedah dengan tabel/grafik asli bab 1-4, ditambah etika ilmiah dan strategi 3 level kognitif + 6 format soal. Setiap visual dilengkapi poin \"Membaca gambar/tabel/grafik\" dan kaitan konsep; 19 soal latihan memakai 6 format TKA, sebagian berstimulus grafik dan berpembahasan gambar beranotasi.",
+   "estimasiMenit": 90,
+   "urutan": 5,
+   "tipe": "teks",
+   "sections": [
+    {
+     "jenis": "judul",
+     "teks": "A. Inkuiri Ilmiah: Cara Berpikir Ilmuwan Biologi"
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Biologi sering disalahpahami sebagai pelajaran hafalan: daftar nama organ, tahapan siklus, dan istilah latin. Padahal cara kerja ilmuwan biologi justru mirip detektif: mereka mengamati gejala, mengajukan pertanyaan, merancang ujian yang adil, lalu menarik simpulan semata-mata dari bukti. Dokumen resmi TKA menyebutkan bahwa TKA Biologi mengukur \"kemampuan berpikir terkait konsep biologi dan keterampilan proses/inkuiri\" — artinya cara berpikir ini DIUJIKAN secara eksplisit, bukan tempelan."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Matriks asesmen resmi memecah keterampilan proses menjadi tiga sub-elemen: (1) mempertanyakan dan memprediksi, (2) merencanakan dan melakukan penyelidikan, serta (3) memproses, menganalisis data dan informasi hingga menyimpulkan. Bab ini membongkar ketiganya satu per satu, lalu menutupnya dengan strategi menghadapi soal TKA yang memakai keterampilan proses sebagai bingkai."
+    },
+    {
+     "jenis": "callout",
+     "tipe": "info",
+     "judul": "Posisi bab ini dalam TKA",
+     "teks": "Soal keterampilan proses tidak pernah berdiri sendiri: konteksnya selalu materi bab 1-4 (ekosistem, enzim, sistem tubuh). Karena itu bab ini berlatih memakai grafik dan tabel asli dari bab-bab tersebut — sekaligus menjadi ulasan lintas bab."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Sebelum masuk ke tiga sub-elemen, lihat dulu peta besarnya: alur metode ilmiah. Bacalah bagan berikut sambil bertanya pada diri sendiri: di kotak manakah kesalahan \"langsung bertindak tanpa data\" biasanya terjadi?"
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bab5-bagan-metode-ilmiah.jpg",
+     "keterangan": "Bagan alur metode ilmiah dalam enam kotak berpanah: baris atas berisi mengamati & bertanya, hipotesis & prediksi, serta merancang penyelidikan; baris bawah berisi mengumpulkan data, mengolah & menganalisis, lalu simpulan & komunikasi; panah putus-putus berwarna jingga mengembalikan alur dari simpulan ke hipotesis bila data tidak mendukung."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca bagan — enam kotak metode ilmiah",
+     "items": [
+      "Mengamati & bertanya: titik awal selalu gejala nyata yang dicatat indra atau alat, bukan pendapat; pertanyaan yang baik memuat variabel yang bisa diukur.",
+      "Hipotesis & prediksi: jawaban sementara berbentuk \"jika ... maka ...\" yang berani salah — artinya bisa dibantah oleh data.",
+      "Merancang penyelidikan: menentukan variabel bebas, terikat, dan kontrol supaya perbandingan antar kelompok adil.",
+      "Mengumpulkan data: mengukur dengan satuan jelas dan mengulang pengukuran supaya hasil bukan kebetulan.",
+      "Mengolah & menganalisis: data mentah ditabelkan dan digrafikkan, lalu pola atau perbedaannya dicari.",
+      "Simpulan & komunikasi: menjawab pertanyaan awal BERDASARKAN data; bila hipotesis gugur, panah putus-putus menuntun kembali ke kotak 2."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "tips",
+     "judul": "Kaitan konsep — urutan langkah adalah soal favorit",
+     "teks": "Soal resmi TKA (kasus stunting) menanyakan \"langkah pertama\" pemecahan masalah. Kuncinya bukan langsung bertindak atau langsung menyimpulkan, melainkan mengkaji informasi untuk mempertajam identifikasi masalah. Ingat urutan bagan: tindakan lapangan (sosialisasi, pemberian bantuan) selalu berada DI LUAR enam kotak — itu penerapan hasil, bukan penyelidikan."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Perhatikan sekali lagi panah putus-putus pada bagan: metode ilmiah berbentuk siklus, bukan garis lurus. Ketika data tidak mendukung hipotesis, ilmuwan memperbaiki hipotesis lalu menguji ulang — bukan membuang data yang \"tidak enak\". Siklus kecil inilah jantung kejujuran ilmiah yang akan kamu nilai juga pada bagian E."
+    },
+    {
+     "jenis": "judul",
+     "teks": "B. Mempertanyakan dan Memprediksi: Pertanyaan yang Dapat Diselidiki"
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Sub-elemen pertama matriks resmi adalah merumuskan pertanyaan yang dapat diselidiki secara ilmiah. Kuncinya: tidak semua pertanyaan adalah pertanyaan ilmiah. Pertanyaan \"warna bunga apa yang paling indah?\" bergantung selera; pertanyaan \"apakah pH tanah memengaruhi warna bunga hortensia?\" dapat dijawab dengan data terukur."
+    },
+    {
+     "jenis": "poin",
+     "judul": "Ciri pertanyaan yang dapat diselidiki secara ilmiah",
+     "items": [
+      "Memuat variabel yang dapat diukur atau dihitung (suhu, jumlah, panjang, kecepatan), bukan perasaan.",
+      "Batasannya jelas: objek, tempat, dan rentang waktunya disebutkan.",
+      "Dapat dijawab dengan data empiris — pengamatan atau percobaan — bukan dengan keyakinan atau selera.",
+      "Membuka prediksi: dari pertanyaan yang baik langsung terbayang bentuk \"jika ... maka ...\" yang akan diuji."
+     ]
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Hipotesis adalah jawaban sementara yang diajukan SEBELUM data dikumpulkan, dan harus menyebut hubungan antar variabel. Rumusan yang rapi memudahkan perancangan: variabel bebas muncul setelah kata \"jika\", variabel terikat muncul setelah kata \"maka\"."
+    },
+    {
+     "jenis": "callout",
+     "tipe": "info",
+     "judul": "Contoh rumusan pertanyaan dan hipotesis",
+     "teks": "Kasus: hamparan padi di satu petak menguning pucat sementara petak tetangga hijau subur. Pertanyaan ilmiah: \"Apakah dosis pupuk nitrogen memengaruhi tingkat kehijauan daun padi?\" Hipotesis: \"Jika dosis nitrogen dinaikkan, maka kehijauan daun meningkat, karena nitrogen merupakan penyusun klorofil.\" Kedua kalimat itu langsung menunjuk alat ukur: warna daun dapat dibandingkan dengan kartu warna atau klorofil meter."
+    },
+    {
+     "jenis": "callout",
+     "tipe": "peringatan",
+     "judul": "Jebakan — hipotesis bukan tebakan bebas",
+     "teks": "Hipotesis wajib berdasar: pengamatan awal atau teori yang sudah mapan. Dan ingat, hipotesis yang GUGUR oleh data bukanlah kegagalan — justru di situlah pengetahuan baru lahir. Yang dilarang adalah mengubah data agar cocok dengan hipotesis."
+    },
+    {
+     "jenis": "judul",
+     "teks": "C. Merencanakan Penyelidikan: Variabel, Kontrol, dan Ulangan"
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Sub-elemen kedua adalah merancang penyelidikan. Rancangan yang adil membedakan penyelidikan ilmiah dari uji coba acak: hanya SATU hal yang sengaja dibedakan antar kelompok, satu hal lagi diukur sebagai hasil, dan semua sisanya disamakan. Skema berikut menerjemahkan prinsip itu ke percobaan pupuk yang konkret."
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bab5-bagan-variabel.jpg",
+     "keterangan": "Skema tiga pot kecambah kacang hijau dengan tinggi berbeda: pot kontrol tanpa pupuk, pot pupuk A, dan pot pupuk B; chip jingga menandai variabel bebas (jenis pupuk), chip hijau menandai variabel terikat (tinggi kecambah setelah 12 hari), dan chip biru di bagian bawah menandai variabel kontrol (jenis biji, jumlah air, cahaya, ukuran pot, suhu)."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca skema — tiga peran variabel",
+     "items": [
+      "Variabel bebas: satu-satunya hal yang SENGAJA dibedakan antar pot -> jenis pupuk (tanpa / A / B).",
+      "Variabel terikat: hal yang DIUKUR sebagai akibat -> tinggi kecambah setelah 12 hari (cm).",
+      "Variabel kontrol: semua hal yang DISAMAKAN -> jenis biji, volume air, intensitas cahaya, ukuran pot, suhu ruang.",
+      "Logika adil: bila ketiga pot diperlakukan sama kecuali pupuk, maka perbedaan tinggi HANYA masuk akal disebabkan pupuk."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "tips",
+     "judul": "Kaitan konsep — cara cepat menemukan variabel di soal",
+     "teks": "Terjemahkan kalimat soal: \"pengaruh X terhadap Y\" hampir pasti berarti X = variabel bebas, Y = variabel terikat. Lalu sapu sisa keterangan percobaan: segala hal yang dibuat sama = kontrol. Tiga pertanyaan kunci: apa yang diubah? apa yang diukur? apa yang disamakan?"
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Kelompok kontrol adalah pembanding dasar: kelompok yang TIDAK diberi perlakuan. Tanpa kontrol, kita tidak tahu apakah hasil yang muncul disebabkan perlakuan atau memang terjadi dengan sendirinya. Pada skema di atas, pot tanpa pupuk berperan sebagai kontrol — tinggi kecambahnya menjadi garis dasar untuk menilai pupuk A dan B."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Ulangan (replikasi) dan jumlah sampel menentukan seberapa layak data dipercaya. Satu pot per perlakuan bisa saja kebetulan (mungkin bijinya memang lemah); tiga pot atau lebih per perlakuan lalu dirata-ratakan mengubah kebetulan menjadi pola. Karena itu rancangan yang baik selalu menyebut \"tiga kali pengulangan\" atau \"10 biji per pot\", bukan \"satu pot\" atau \"satu biji\"."
+    },
+    {
+     "jenis": "tabelinfo",
+     "judul": "Kriteria rancangan penyelidikan yang baik",
+     "kolom": [
+      "Kriteria",
+      "Alasannya"
+     ],
+     "rows": [
+      {
+       "k": "Hanya satu variabel bebas yang dibedakan",
+       "v": "Agar penyebab perbedaan hasil tidak ambigu."
+      },
+      {
+       "k": "Ada kelompok kontrol tanpa perlakuan",
+       "v": "Sebagai garis dasar pembanding."
+      },
+      {
+       "k": "Ulangan minimal tiga kali per perlakuan",
+       "v": "Meredam kebetulan; nilai rata-rata lebih stabil."
+      },
+      {
+       "k": "Pengukuran memakai satuan dan alat yang jelas",
+       "v": "Data kuantitatif dapat dibandingkan dan diulang orang lain."
+      },
+      {
+       "k": "Prosedur ditulis rinci dan tetap",
+       "v": "Supaya penyelidik lain dapat mereplikasi percobaan yang sama."
+      }
+     ]
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Sekarang lihat contoh rancangan nyata dari buku paketmu: rangkaian percobaan Ingenhousz. Alat sederhanya — gelas berisi air, corong, dan tabung reaksi — ternyata memenuhi semua kriteria di atas bila dipakai dengan benar."
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-alat-ingenhousz.jpg",
+     "keterangan": "Rangkaian percobaan Ingenhousz: sebatang Hydrilla terendam dalam gelas berisi air, ditutup corong terbalik yang ujung pipetnya memasuki tabung reaksi terbalik penuh air; gelembung gas tampak naik dan terkumpul di puncak tabung."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca alat — rangkaian Ingenhousz",
+     "items": [
+      "Hydrilla: objek penyelidik — tumbuhan air yang berfotosintesis dan melepas gelembung oksigen.",
+      "Corong terbalik: mengarahkan SEMUA gelembung dari tumbuhan agar tidak tercecer ke air sekitar.",
+      "Tabung reaksi terbalik: menampung dan mengukur volume gas — kolom udara yang bertambah adalah datanya.",
+      "Gelembung per menit: data kuantitatif sederhana yang nantinya menjadi titik-titik pada grafik.",
+      "Rangkaian identik beberapa buah: syarat mutlak bila cahaya (atau faktor lain) ingin dibandingkan secara adil."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "tips",
+     "judul": "Kaitan konsep — dari alat menjadi data",
+     "teks": "Untuk menjawab \"apakah cahaya memengaruhi laju fotosintesis?\", siapkan tiga rangkaian IDENTIK yang hanya berbeda penempatan: gelap, teduh, dan terang. Hitung gelembung per menit pada masing-masing. Hasil percobaan semacam inilah yang menjadi grafik garis pada bagian D — jadi alat, tabel, dan grafik sebenarnya satu cerita yang sama."
+    },
+    {
+     "jenis": "judul",
+     "teks": "D. Mengolah, Menganalisis Data, dan Menarik Simpulan"
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Sub-elemen ketiga — dan yang paling sering muncul di TKA — adalah mengolah data dan menyimpulkan. Data mentah hanyalah catatan; ia berubah menjadi informasi lewat tiga tangga: ditabelkan, divisualkan (grafik), lalu ditafsirkan. Setiap anak tangga punya jebakan sendiri, dan kita akan melatihnya dengan tabel serta grafik asli dari bab-bab sebelumnya."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Tabel pertama adalah rekaman percobaan kualitatif: kerja enzim katalase pada tiga suhu berbeda. Latih matamu menemukan struktur tabel lebih dulu: kolom mana yang memuat perlakuan, baris mana yang memuat hasil?"
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-tabel-suhu-katalase.jpg",
+     "keterangan": "Tabel percobaan katalase dengan tiga kolom perlakuan — ekstrak hati ditambah hidrogen peroksida bersama es batu, bersama air panas, dan pada suhu ruang — serta dua baris pengamatan: banyak gelembung gas dan nyala api dari bara yang dimasukkan."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca tabel — percobaan suhu katalase",
+     "items": [
+      "Tiap kolom = satu perlakuan suhu; kepala kolom menyebut bahan sekaligus suhu yang harus dicatat siswa.",
+      "Baris \"gelembung gas\" = data laju reaksi; baris \"nyala api\" = uji identitas gas (oksigen menyala-kan bara).",
+      "Sel-sel kosong sengaja dibiarkan: pada ujian, kamu diminta MEMPREDIKSI isinya dari teori, lalu mencocokkan dengan hasil.",
+      "Struktur \"perlakuan di kolom, hasil di baris\" adalah pola tabel biologi paling umum — kuasai arah bacanya."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "tips",
+     "judul": "Kaitan konsep — memprediksi isi tabel",
+     "teks": "Katalase bekerja optimal dekat suhu tubuh; es memperlambat gerak molekul; air panas mendenaturasi enzim (bab 2). Maka prediksi: gelembung terbanyak dan bara menyala terang pada kolom suhu ruang, sedikit pada kolom es, dan hampir tidak ada pada kolom air panas. Soal TKA gemar memberi tabel kosong lalu menanyakan prediksi yang konsisten dengan teori."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Tabel kedua bersifat kuantitatif: volume gas oksigen yang dihasilkan katalase pada interval waktu 30 detik, untuk lima konsentrasi enzim yang berbeda. Tabel dua arah seperti ini menuntut keterampilan membaca irisan baris-kolom."
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-tabel-data-katalase.jpg",
+     "keterangan": "Tabel data Activity 1.4: kolom paling kiri memuat konsentrasi katalase 0,5 sampai 4 sentimeter kubik (dicetak tebal), baris atas memuat interval waktu 30 sampai 240 detik, dan sel-sel isi memuat volume gas oksigen dalam mililiter yang meningkat seiring konsentrasi dan waktu."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca tabel dua arah — data konsentrasi katalase",
+     "items": [
+      "Konsentrasi enzim dibaca pada kolom kiri bercetak tebal (0,5-4 cm³); waktu dibaca pada baris kepala (30-240 detik).",
+      "Satu sel = irisan satu konsentrasi dan satu waktu; mis. konsentrasi 4 pada 240 detik bernilai 4,7 mL.",
+      "Pola baris: pada waktu yang sama, volume gas naik seiring naiknya konsentrasi -> enzim lebih banyak, reaksi lebih cepat.",
+      "Pola kolom: pada konsentrasi yang sama, volume bertambah seiring waktu -> gas terus terkumpul.",
+      "Satuan wajib diperhatikan (cm³ untuk enzim, mL untuk gas, detik untuk waktu) — salah satuan adalah jebakan klasik."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "info",
+     "judul": "Cara membaca cepat tabel dua arah di ujian",
+     "teks": "Tiga langkah: (1) baca kepala kolom DAN kepala baris beserta satuannya; (2) telusuri dengan jari/baris penanda sampai irisan yang ditanya; (3) cocokkan angka dengan opsi JELUM membandingkan pola keseluruhan. Baru setelah jawaban ditemukan, baca pola keseluruhannya untuk soal lanjutan."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Grafik adalah \"foto\" hubungan dua variabel: pola yang tersembunyi di tabel panjang langsung terlihat sebagai bentuk kurva. Aturan nomor satu membaca grafik: BACA SUMBUNYA sebelum membaca kurvanya — sumbu memberitahu siapa yang memengaruhi siapa."
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-grafik-konsentrasi-substrat.jpg",
+     "keterangan": "Grafik kurva yang menanjak curam lalu mendatar: sumbu datar memuat konsentrasi substrat, sumbu tegak memuat kecepatan reaksi; garis putus-putus menandai Km pada sumbu datar dan setengah V-maks pada sumbu tegak."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca grafik — kurva saturasi enzim",
+     "items": [
+      "Sumbu x = konsentrasi substrat (penyebab), sumbu y = kecepatan reaksi (akibat) — arah pengaruh terbaca dari sini.",
+      "Bagian curam: substrat bertambah, kecepatan naik hampir lurus — enzim masih menganggur banyak.",
+      "Bagian mendatar (plateau): semua situs aktif enzim telah jenuh oleh substrat; kecepatan mencapai maksimum (V-maks).",
+      "Km: konsentrasi substrat saat kecepatan mencapai setengah V-maks — ukuran afinitas enzim terhadap substrat.",
+      "Setengah V-maks dan Km selalu berpasangan lewat garis putus-putus: tarik dari sumbu y ke kurva lalu turun ke sumbu x."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "tips",
+     "judul": "Kaitan konsep — kenapa kurva mendatar?",
+     "teks": "Jawaban resminya: enzim jenuh — setiap molekul enzim sudah memegang substrat, jadi menambah substrat tidak menambah kecepatan. TKA suka membalik pertanyaan: \"faktor pembatas pada fase mendatar adalah ...\" (jumlah enzim). Bentuk kurva menanjak-lalu-mendatar ini juga muncul di topik lain (laju fotosintesis vs cahaya), jadi kenali polanya, bukan hafalkan konteksnya."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Tidak semua grafik berisi satu kurva. Grafik berikut memuat tiga kurva lonceng sekaligus — cara favorit buku paket membandingkan kerja tiga enzim dalam satu gambar."
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-grafik-ph-optimum.jpg",
+     "keterangan": "Grafik tiga kurva berbentuk lonceng pada sumbu pH 0 sampai lebih dari 8: kurva biru berpuncak di pH sekitar 2 (pepsin), kurva jingga berpuncak di pH sekitar 7 (amilase), dan kurva hijau berpuncak di pH sekitar 8 (tripsin); sumbu tegak memuat kecepatan reaksi dalam persen."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca grafik — pH optimum tiga enzim",
+     "items": [
+      "Puncak lonceng = pH optimum: pepsin ±2, amilase ±7, tripsin ±8 — tiap enzim punya \"rumah pH\" sendiri.",
+      "Lebar lonceng sempit: sedikit saja pH bergeser dari optimum, kecepatan reaksi anjlok (enzim mulai denaturasi).",
+      "Titik potong dua kurva = pH tempat dua enzim bekerja sama cepat — berguna untuk soal perbandingan.",
+      "Di luar lonceng, kurva menyentuh nol: enzim tidak bekerja sama sekali pada pH ekstrem baginya."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "tips",
+     "judul": "Kaitan konsep — dari grafik kembali ke organ",
+     "teks": "Satu grafik ini menyambungkan bab 2 dan bab 3: pepsin ber-pH 2 hanya masuk akal bekerja di lambung yang asam; tripsin ber-pH 8 cocok dengan usus halus yang basa. Bila soal menampilkan kurva lonceng tanpa nama enzim, cocokkan puncak pH-nya dengan pH organ — itulah penalaran lintas bab yang dicari TKA."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Grafik terakhir berjenis diagram energi: ia tidak memuat data pengukuran waktu, melainkan membandingkan \"tinggi bukit\" energi yang harus dilewati reaksi."
+    },
+    {
+     "jenis": "gambar",
+     "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-grafik-energi-aktivasi.jpg",
+     "keterangan": "Diagram energi dengan sumbu tegak energi dan sumbu datar hasil reaksi: dua kurva berbentuk bukit dari titik awal yang sama — bukit putih tinggi berlabel energi aktivasi reaksi tanpa enzim, dan bukit biru rendah berlabel energi aktivasi reaksi dengan enzim — keduanya berakhir pada garis akhir yang sama rendah."
+    },
+    {
+     "jenis": "poin",
+     "judul": "🔍 Membaca diagram — energi aktivasi dan enzim",
+     "items": [
+      "Tinggi puncak bukit = energi aktivasi: \"toll\" energi yang wajib dibayar agar reaksi berangkat.",
+      "Bukit biru (dengan enzim) lebih rendah: enzim menurunkan energi aktivasi, reaksi lebih mudah berangkat.",
+      "Titik awal dan titik akhir KEDUA kurva sama: enzim tidak mengubah bahan awal maupun hasil akhir reaksi.",
+      "Warna latar (jingga-kuning-biru) hanya penegas zona tinggi-rendah energi; fokus tetap pada dua kurva."
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "peringatan",
+     "judul": "Jebakan opsi — \"enzim mengubah hasil reaksi\"",
+     "teks": "Karena titik akhir kedua kurva identik, setiap opsi yang menyebut enzim mengubah produk, mengubah jumlah energi yang dilepas, atau menggantikan bahan awal adalah SALAH. Enzim hanya merendahkan bukit perjalanan — ia pemandu jalan pintas, bukan penyulap bahan."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Anak tangga terakhir adalah menyimpulkan. Simpulan yang sah memenuhi tiga syarat: menjawab pertanyaan awal, didukung data yang benar-benar ada di tabel/grafik, dan tidak melompat melebihi cakupan sampel. Kalimat \"data menunjukkan ...\" adalah pagar yang membedakan simpulan ilmiah dari opini."
+    },
+    {
+     "jenis": "poin",
+     "judul": "Uji sahih tidaknya sebuah simpulan",
+     "items": [
+      "Apakah simpulan menjawab pertanyaan yang dirumuskan di awal (bukan pertanyaan lain)?",
+      "Apakah setiap klaimnya dapat ditunjuk sel/grafik mana yang mendukungnya?",
+      "Apakah bebas dari kata sebab-akibat bila rancangan tidak mengontrol variabel (korelasi bukan kausasi)?",
+      "Apakah cakupannya tidak melebih-lebihkan sampel (mis. hasil pada Hydrilla diklaim untuk semua tumbuhan)?"
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "peringatan",
+     "judul": "Jebakan \"langsung tindakan\" dan korelasi-sebab",
+     "teks": "Dua dosa penalaran paling sering diujikan: (1) memilih opsi tindakan lapangan (sosialisasi, pembagian bantuan) saat soal meminta langkah penyelidikan — lihat kembali soal resmi stunting; (2) menyimpulkan sebab-akibat dari dua garis yang sama-sama naik padahal tidak ada kelompok kontrol. Selalu tanya: adakah data pembandingnya?"
+    },
+    {
+     "jenis": "judul",
+     "teks": "E. Mengomunikasikan Hasil dan Sikap Ilmiah"
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Penyelidikan baru selesai ketika dikomunikasikan. Laporan yang baik memuat tiga hal: metode cukup rinci agar orang lain dapat mereplikasi, data disajikan utuh dalam tabel/grafik (termasuk data yang tidak mendukung hipotesis), serta simpulan disertai batasan penyelidikannya. Membaca kritik terhadap laporan orang lain juga bagian dari keterampilan ini."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Sikap ilmiah menyertai seluruh alur: jujur mencatat apa adanya, berani menggugurkan hipotesis sendiri, dan menghargai karya orang lain dengan menyebut sumber. Materi dan gambar di aplikasi ini pun mencantumkan sumbernya di daftar pustaka — contoh kecil etika yang sama."
+    },
+    {
+     "jenis": "callout",
+     "tipe": "info",
+     "judul": "Wajah sub-elemen ini di TKA",
+     "teks": "Soal \"mengevaluasi informasi\" biasanya berbentuk: diberikan cuplikan percobaan atau grafik, lalu diminta memilih simpulan yang PALING didukung data atau kelemahan rancangan yang paling fatal. Kacamata yang dipakai persis tiga syarat simpulan sah dan lima kriteria rancangan baik di atas."
+    },
+    {
+     "jenis": "judul",
+     "teks": "F. Strategi TKA: Level Kognitif, Format Soal, dan Manajemen Waktu"
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Kerangka resmi mengukur tiga level kognitif: pemahaman (menjelaskan konsep), penerapan (memakai konsep pada situasi baru), dan penalaran (menganalisis, mengevaluasi, menyimpulkan dari informasi kompleks). Soal keterampilan proses hampir selalu berada di level penalaran — karena itu strateginya berbeda dari soal hafalan."
+    },
+    {
+     "jenis": "tabelinfo",
+     "judul": "Tiga level kognitif TKA",
+     "kolom": [
+      "Level",
+      "Ciri & kata kerja",
+      "Strategi menjawab"
+     ],
+     "rows": [
+      {
+       "k": "Pemahaman",
+       "v": "menjelaskan, menyebutkan, mengidentifikasi konsep yang sudah dipelajari",
+       "w": " Panggil ingatan konsepnya; hati-hati opsi yang memutarbalik istilah."
+      },
+      {
+       "k": "Penerapan",
+       "v": "menggunakan konsep pada kasus/baru (menghitung, memprediksi tabel)",
+       "w": " Tuliskan rumus/aturan dulu, baru substitusi data kasus."
+      },
+      {
+       "k": "Penalaran",
+       "v": "menganalisis data, mengevaluasi rancangan, menyimpulkan berdasar bukti",
+       "w": " Mulai dari DATA (tabel/grafik), bukan dari opsi; coret opsi yang tidak ditunjuk data."
+      }
+     ]
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "TKA menyajikan enam format soal, dan aplikasi ini mendukung semuanya dengan petunjuk cara menjawab pada tiap soal. Tabel berikut merangkum cara tercepat menaklukkan tiap format — pakai sebagai checklist sebelum menekan tombol lanjut."
+    },
+    {
+     "jenis": "tabelinfo",
+     "judul": "Enam format soal & cara menjawab tercepat",
+     "kolom": [
+      "Format",
+      "Cara menjawab"
+     ],
+     "rows": [
+      {
+       "k": "Pilihan ganda (PG)",
+       "v": " Baca stimulus/data dulu, tutup opsi, rumuskan jawaban sendiri, baru cari opsi yang cocok."
+      },
+      {
+       "k": "PGK kategori tabel",
+       "v": " Nilai TIAP pernyataan mandiri (Tepat/Tidak Tepat); jangan biarkan satu baris memengaruhi baris lain."
+      },
+      {
+       "k": "PGK-MCMA (centang)",
+       "v": " Uji setiap opsi satu per satu terhadap data; jumlah centangan tidak harus dua atau tiga."
+      },
+      {
+       "k": "Menjodohkan",
+       "v": " Pasangkan dulu yang paling pasti (jangkar), sisa pengecoh akan gugur sendiri."
+      },
+      {
+       "k": "Isian singkat",
+       "v": " Perhatikan format jawaban (satuan, desimal/koma) pada petunjuk; hitung dua kali."
+      },
+      {
+       "k": "Uraian",
+       "v": " Jawab poin-per-poin mengikuti perintah (a,b,c); sebut data pendukung secara eksplisit."
+      }
+     ]
+    },
+    {
+     "jenis": "poin",
+     "judul": "Cara Gemilang — 5 langkah menaklukkan soal keterampilan proses",
+     "items": [
+      "Kenali jenis stimulusnya: tabel, grafik, skema alat, atau cerita percobaan — masing-masing punya arah baca (bagian D).",
+      "Tulis di kertas coretan: apa yang diubah, apa yang diukur, apa yang disamakan (trik variabel bagian C).",
+      "Rumuskan jawaban versimu SENDIRI sebelum melihat opsi — imun terhadap opsi pengecoh.",
+      "Untuk simpulan: tunjuk sel/grafik pendukungnya; bila tidak bisa ditunjuk, buang opsi itu.",
+      "Segel dengan uji jebakan: apakah opsi ini \"langsung tindakan\" atau mengklaim sebab-akibat tanpa kontrol?"
+     ]
+    },
+    {
+     "jenis": "callout",
+     "tipe": "tips",
+     "judul": "Manajemen waktu & putaran dua lapis",
+     "teks": "Anggarkan ±90 detik per soal. Putaran pertama kerjakan yang stimulusnya langsung terbaca; tandai soal yang butuh membaca tabel panjang dan kerjakan di putaran kedua. Soal keterampilan proses jarang butuh hafalan — yang dibutuhkan adalah ketenangan membaca data dua kali."
+    },
+    {
+     "jenis": "paragraf",
+     "teks": "Keterampilan proses adalah sayap yang membuat semua bab lain terbang: grafik enzim di bab 2, tabel lab di bab 3, dan skema hormon di bab 4 semuanya dibaca dengan kacamata yang sama. Latih kacamata itu pada 19 soal berikut — sebagian menyajikan grafik stimulus, dan sebagian lagi membahas jawabannya DENGAN gambar beranotasi, supaya kamu melihat contoh \"membaca data\" yang benar."
+    }
+   ],
+   "ujiPemahaman": [
+    {
+     "soal": "Masalah gizi di Indonesia saat ini masih sangat kompleks, tidak hanya masalah kekurangan gizi, masalah kelebihan gizi juga merupakan persoalan yang harus ditangani secara serius. Pada anak-anak kondisi stunting (pendek) sering ditemukan disebabkan karena asupan gizi yang tidak sesuai dengan kebutuhan gizinya dalam waktu yang lama. Hal itu terjadi sejak di dalam kandungan dan akan terlihat pada anak berusia 2 tahun, mengakibatkan perkembangan fisik maupun kognitif tidak maksimal, mudah terserang penyakit, serta berdaya saing rendah. Langkah pertama untuk memecahkan permasalahan tersebut menggunakan metode ilmiah yang tepat adalah ....",
+     "tipe": "pg",
+     "opsi": [
+      "mengumpulkan informasi dari berbagai referensi terkait pengaruh faktor gizi terhadap pertumbuhan sebagai dasar untuk mengidentifikasi permasalahan",
+      "merumuskan masalah dengan memperjelas batasan permasalahan yang akan dipecahkan",
+      "melakukan pendataan bagi keluarga yang memiliki anak rendah gizi atau bergizi buruk",
+      "mengadakan sosialisasi program pentingnya makanan bergizi bagi ibu dan anak bagi masyarakat",
+      "pemberian makanan bergizi seimbang bagi seluruh anak balita dan usia anak sekolah dasar"
+     ],
+     "jawaban": 0,
+     "pembahasan": "Kunci resmi: A. Sesuai kotak 1-2 bagan metode ilmiah: sebelum merumuskan atau bertindak, kumpulkan informasi rujukan agar identifikasi masalah tajam. Opsi C-E adalah aksi lapangan yang prematur; opsi B menyusul SETELAH kajian informasi.",
+     "sumber": "Contoh Soal Resmi TKA Biologi no. 4 — Pusmendik Kemendikdasmen"
+    },
+    {
+     "soal": "Perhatikan grafik hasil percobaan Ingenhousz berikut. Simpulan yang PALING didukung data adalah ....",
+     "tipe": "pg",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-soal-grafik-garis-cahaya.jpg",
+     "opsi": [
+      "Tempat gelap menghentikan fotosintesis sepenuhnya karena garisnya berimpit dengan sumbu waktu.",
+      "Intensitas cahaya meningkatkan laju fotosintesis, terlihat dari garis tempat terang yang paling terjal dan berakhir paling tinggi.",
+      "Tempat teduh dan tempat terang menghasilkan jumlah gelembung yang sama pada menit ke-10.",
+      "Waktu tidak memengaruhi jumlah gelembung karena ketiga garis berangkat dari titik yang berdekatan.",
+      "Gelembung yang terbentuk berasal dari penguapan air, bukan dari fotosintesis."
+     ],
+     "jawaban": 1,
+     "pembahasan": "Pada menit ke-10: terang = 24 gelembung, teduh = 10, gelap = 2. Urutan gelap < teduh < terang sejajar dengan urutan intensitas cahaya, dan kecuraman garis terang terbesar -> laju fotosintesis meningkat seiring cahaya. Opsi A salah (garis gelap tetap naik sampai 2), C bertentangan dengan data, D mengabaikan perbedaan akhir, E tidak diuji oleh rancangan ini.",
+     "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-pembahasan-grafik-garis-cahaya.jpg",
+     "pembahasanGambarKet": "Lingkaran merah menandai titik akhir garis tempat terang (24 gelembung pada menit ke-10) — jauh di atas teduh (10) dan gelap (2); garis paling terjal = laju paling cepat.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Berdasarkan grafik rata-rata tinggi kecambah kacang hijau berikut, perlakuan yang paling efektif meningkatkan pertumbuhan sampai hari ke-12 adalah ....",
+     "tipe": "pg",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-soal-grafik-batang-pupuk.jpg",
+     "opsi": [
+      "kontrol, karena pertumbuhannya paling stabil dari hari ke hari",
+      "pupuk A, karena mulai hari ke-4 sudah unggul atas kontrol",
+      "pupuk B, karena mencapai tinggi rata-rata terbesar pada hari ke-12",
+      "pupuk A dan B sama efektif karena keduanya di atas kontrol",
+      "tidak ada yang efektif karena selisihnya kurang dari 10 cm"
+     ],
+     "jawaban": 2,
+     "pembahasan": "Bar tertinggi pada hari ke-12 adalah pupuk B (19 cm), di atas pupuk A (16 cm) dan kontrol (11 cm). Efektivitas dinilai dari hasil akhir perlakuan, bukan kestabilan (A) atau selisih subjektif (E). Opsi D mengabaikan bahwa B konsisten unggul atas A sejak hari ke-8.",
+     "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-pembahasan-grafik-batang-pupuk.jpg",
+     "pembahasanGambarKet": "Bingkai merah mengelilingi bar tertinggi: pupuk B pada hari ke-12 = 19 cm — pembandingnya A = 16 cm dan kontrol = 11 cm.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Seorang siswa melihat hamparan padi di satu petak menguning pucat setelah seminggu tergenang banjir, sementara petak tetangga yang tidak tergenang tetap hijau. Langkah PERTAMA metode ilmiah yang sebaiknya ia lakukan adalah ....",
+     "tipe": "pg",
+     "opsi": [
+      "segera menaburkan pupuk ekstra agar tanaman tidak mati",
+      "mengamati pola menguningnya dan merumuskan pertanyaan penyelidikan",
+      "menyimpulkan bahwa padi terserang virus tungro",
+      "menyebarkan angket kepada petani tentang merek benih yang dipakai",
+      "mengganti seluruh varietas padi di desa tersebut"
+     ],
+     "jawaban": 1,
+     "pembahasan": "Kotak pertama bagan: mengamati & bertanya. Pengamatan terarah (petak mana, sejak kapan, bagian daun mana yang menguning) melahirkan pertanyaan yang dapat diselidiki. Opsi A dan E tindakan lapangan prematur; C simpulan tanpa data; D alat yang tidak menjawab gejala genangan.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Pengamatan: ikan mas dalam akuarium yang terang tampak lebih aktif bergerak daripada dalam akuarium remang. Rumusan hipotesis yang paling tepat untuk diselidiki adalah ....",
+     "tipe": "pg",
+     "opsi": [
+      "Ikan mas terlihat lebih indah ketika sedang aktif berenang.",
+      "Jika intensitas cahaya ditingkatkan, maka frekuensi gerak ikan mas per menit meningkat.",
+      "Aktivitas ikan mas tidak dipengaruhi oleh kondisi apa pun.",
+      "Setiap akuarium sebaiknya dilengkapi lampu agar menarik.",
+      "Harga ikan mas ditentukan oleh tingkat aktivitasnya."
+     ],
+     "jawaban": 1,
+     "pembahasan": "Hipotesis yang baik berbentuk \"jika ... maka ...\" dengan variabel bebas (intensitas cahaya) dan terikat (frekuensi gerak per menit) yang terukur, serta searah dengan pengamatan awal. Opsi A/E berbasis selera/nilai, C menutup penyelidikan, D saran bukan hipotesis.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Perhatikan grafik pengaruh konsentrasi substrat terhadap kecepatan reaksi enzim. Alasan kurva mendatar setelah konsentrasi substrat tertentu adalah ....",
+     "tipe": "pg",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-grafik-konsentrasi-substrat.jpg",
+     "opsi": [
+      "substrat habis sehingga reaksi berhenti total",
+      "seluruh situs aktif enzim jenuh oleh substrat sehingga kecepatan mencapai maksimum",
+      "enzim terdenaturasi oleh banyaknya substrat",
+      "produk reaksi mengubah suhu campuran",
+      "alat ukur tidak mampu membaca kecepatan lebih tinggi"
+     ],
+     "jawaban": 1,
+     "pembahasan": "Plateau = fase jenuh: semua situs aktif enzim telah terisi substrat, sehingga menambah substrat tidak menambah kecepatan (V-maks tercapai). Enzim tidak habis/denaturasi oleh substrat (B vs C), dan grafik tidak memuat informasi suhu maupun alat (D, E).",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA); stimulus grafik: BSE Biologi SMA/MA Kelas XII, Kemendikbudristek 2022, hal. 12 (Gambar 1.8)"
+    },
+    {
+     "soal": "Grafik berikut menunjukkan pH optimum tiga enzim pencernaan. Enzim yang paling mungkin bekerja di dalam lambung manusia adalah ....",
+     "tipe": "pg",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-grafik-ph-optimum.jpg",
+     "opsi": [
+      "amilase, karena puncaknya di pH netral",
+      "pepsin, karena puncaknya di pH sekitar 2",
+      "tripsin, karena puncaknya di pH sekitar 8",
+      "ketiganya, karena lambung mampu mengatur pH sendiri",
+      "tidak ada, karena lambung tidak mengandung enzim"
+     ],
+     "jawaban": 1,
+     "pembahasan": "Lambung bersifat sangat asam (pH ±1,5-2). Hanya kurva berpuncak di pH ±2 yang cocok: pepsin. Amilase (±7) bekerja mis. di mulut, tripsin (±8) di usus halus yang basa.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA); stimulus grafik: BSE Biologi SMA/MA Kelas XII, Kemendikbudristek 2022, hal. 11 (Gambar 1.7)"
+    },
+    {
+     "soal": "Pernyataan yang SESUAI dengan diagram energi aktivasi berikut adalah ....",
+     "tipe": "pg",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-grafik-energi-aktivasi.jpg",
+     "opsi": [
+      "enzim menaikkan energi aktivasi agar reaksi lebih terkendali",
+      "enzim menurunkan energi aktivasi sehingga reaksi lebih mudah berlangsung",
+      "enzim mengubah hasil akhir reaksi menjadi senyawa yang berbeda",
+      "tanpa enzim reaksi tidak mungkin terjadi sama sekali",
+      "dengan enzim reaksi melepaskan energi jauh lebih besar"
+     ],
+     "jawaban": 1,
+     "pembahasan": "Bukit kurva biru (dengan enzim) lebih rendah dari bukit putih (tanpa enzim) = energi aktivasi turun. Titik awal-akhir kedua kurva sama -> produk dan total energi lepas tidak berubah (menolak C dan E); tanpa enzim reaksi tetap mungkin, hanya lambat (menolak D).",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA); stimulus grafik: BSE Biologi SMA/MA Kelas XII, Kemendikbudristek 2022, hal. 6 (Gambar 1.3)"
+    },
+    {
+     "soal": "Sekelompok siswa merancang percobaan pengaruh cahaya terhadap laju fotosintesis dengan alat Ingenhousz. Tentukan Tepat/Tidak Tepat untuk tiap pernyataan rancangan berikut!",
+     "tipe": "tabel",
+     "kolom": [
+      "Tepat",
+      "Tidak Tepat"
+     ],
+     "baris": [
+      "Menyiapkan tiga rangkaian alat identik yang ditempatkan di gelap, teduh, dan terang.",
+      "Memakai jenis tumbuhan yang berbeda pada tiap rangkaian agar hasil lebih beragam.",
+      "Menghitung gelembung selama durasi yang sama pada setiap rangkaian.",
+      "Mengulang pengukuran tiga kali lalu memakai nilai rata-ratanya.",
+      "Menaruh rangkaian terang lebih dekat ke jendela DAN memakai corong berukuran lebih besar."
+     ],
+     "jawaban": [
+      0,
+      1,
+      0,
+      0,
+      1
+     ],
+     "pembahasan": "Rancangan adil = satu variabel bebas (penempatan cahaya), objek & alat identik, durasi sama, ada ulangan. Pernyataan 2 mengubah jenis tumbuhan (variabel bebas kedua); pernyataan 5 mengubah dua hal sekaligus (jarak cahaya dan ukuran corong) sehingga penyebab perbedaan hasil jadi ambigu.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Perhatikan tabel percobaan katalase pada tiga suhu berikut (sel hasil telah diisi sesuai pengamatan: suhu ruang = gelembung banyak & bara menyala; es = gelembung sedikit; air panas = hampir tidak ada gelembung). Tentukan Tepat/Tidak Tepat tiap simpulan!",
+     "tipe": "tabel",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-tabel-suhu-katalase.jpg",
+     "kolom": [
+      "Tepat",
+      "Tidak Tepat"
+     ],
+     "baris": [
+      "Aktivitas katalase paling tinggi terjadi pada suhu ruang.",
+      "Air panas menyebabkan enzim terdenaturasi sehingga gelembung hampir tidak terbentuk.",
+      "Es batu mempercepat kerja enzim sehingga gelembung paling banyak.",
+      "Gas yang dihasilkan adalah oksigen karena bara api menyala kembali."
+     ],
+     "jawaban": [
+      0,
+      0,
+      1,
+      0
+     ],
+     "pembahasan": "Data: gelembung terbanyak pada suhu ruang (pernyataan 1 Tepat); panas mendenaturasi enzim (2 Tepat); es justru MEMPERLAMBAT (3 Tidak Tepat); bara menyala = ciri oksigen (4 Tepat). Perhatikan arah pernyataan 3 yang membalik fakta — pola jebakan umum di PGK kategori.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA); stimulus tabel: BSE Biologi SMA/MA Kelas XII, Kemendikbudristek 2022, hal. 11"
+    },
+    {
+     "soal": "Warga menemukan banyak ikan mati di sungai tepat di hilir sebuah pabrik tekstil. Manakah pertanyaan yang DAPAT diselidiki secara ilmiah? Pilih semua yang benar!",
+     "tipe": "pgMulti",
+     "opsi": [
+      "Apakah limbah pabrik menurunkan kadar oksigen terlarut air sungai?",
+      "Apakah kematian ikan itu merupakan kutukan leluhur desa?",
+      "Apakah konsentrasi limbah memengaruhi kelulusan hidup ikan uji di laboratorium?",
+      "Siapakah yang paling bersalah atas matinya ikan-ikan tersebut?",
+      "Apakah pH air sungai berbeda antara titik sebelum dan sesudah pabrik?"
+     ],
+     "jawaban": [
+      0,
+      2,
+      4
+     ],
+     "pembahasan": "Pertanyaan ilmiah memuat variabel terukur dan dapat dijawab data: oksigen terlarut (A), dosis-respons ikan uji (C), perbandingan pH (E). B berbasis keyakinan, D pertanyaan hukum/normatif — keduanya di luar metode ilmiah.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Perhatikan skema percobaan pupuk kacang hijau berikut. Manakah yang merupakan VARIABEL KONTROL? Pilih semua yang benar!",
+     "tipe": "pgMulti",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bab5-bagan-variabel.jpg",
+     "opsi": [
+      "jenis biji kacang hijau yang dipakai",
+      "volume air yang diberikan tiap pot",
+      "jenis pupuk yang diberikan (tanpa / A / B)",
+      "tinggi kecambah setelah 12 hari",
+      "intensitas cahaya dan suhu ruang tempat pot"
+     ],
+     "jawaban": [
+      0,
+      1,
+      4
+     ],
+     "pembahasan": "Kontrol = semua yang DISAMAKAN: jenis biji, volume air, cahaya & suhu (A, B, E). Jenis pupuk adalah variabel bebas (C); tinggi kecambah adalah variabel terikat (D).",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Perhatikan diagram energi aktivasi reaksi dengan dan tanpa enzim. Pernyataan yang BENAR tentang diagram tersebut? Pilih semua yang benar!",
+     "tipe": "pgMulti",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-grafik-energi-aktivasi.jpg",
+     "opsi": [
+      "Puncak kurva reaksi dengan enzim lebih rendah daripada tanpa enzim.",
+      "Energi awal dan energi akhir kedua reaksi sama besar.",
+      "Enzim menggeser kesetimbangan reaksi ke arah produk.",
+      "Energi aktivasi adalah \"bukit\" energi minimum yang harus dilewati agar reaksi berlangsung.",
+      "Reaksi tanpa enzim melepaskan energi total yang lebih besar daripada dengan enzim."
+     ],
+     "jawaban": [
+      0,
+      1,
+      3
+     ],
+     "pembahasan": "Diagram menunjukkan bukit lebih rendah (A), titik awal-akhir berhimpit (B), dan makna bukit sebagai energi aktivasi (D). Karena awal-akhir sama, energi total lepas identik (E salah) dan posisi kesetimbangan tidak berubah (C salah).",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA); stimulus grafik: BSE Biologi SMA/MA Kelas XII, Kemendikbudristek 2022, hal. 6 (Gambar 1.3)"
+    },
+    {
+     "soal": "Pasangkan setiap langkah metode ilmiah dengan kegiatan yang sesuai!",
+     "tipe": "jodoh",
+     "premis": [
+      "Mengamati & bertanya",
+      "Hipotesis & prediksi",
+      "Merancang penyelidikan",
+      "Mengumpulkan data",
+      "Mengolah & menganalisis",
+      "Simpulan & komunikasi"
+     ],
+     "opsi": [
+      "Mencatat bahwa padi di satu petak menguning pucat setelah tergenang banjir",
+      "Menulis \"jika dosis nitrogen dinaikkan, maka tingkat menguning berkurang\"",
+      "Menetapkan dosis pupuk sebagai variabel bebas dan kehijauan daun sebagai variabel terikat",
+      "Mengukur kehijauan daun dengan klorofil meter setiap minggu",
+      "Menggambar grafik dosis terhadap kehijauan lalu membandingkan kemiringan garisnya",
+      "Menyatakan data mendukung hipotesis dan menuliskannya dalam laporan",
+      "Membagikan pupuk gratis kepada seluruh petani desa"
+     ],
+     "jawaban": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "pembahasan": "Urutan kegiatan persis mengikuti enam kotak bagan; pengecoh \"membagikan pupuk\" adalah tindakan penerapan hasil, bukan langkah penyelidikan. Teknik jangkar: pasangkan dulu yang paling khas (klorofil meter = mengumpulkan data; grafik = mengolah).",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Pasangkan unsur penyelidikan Ingenhousz (pengaruh cahaya terhadap fotosintesis) dengan perannya!",
+     "tipe": "jodoh",
+     "premis": [
+      "Variabel bebas",
+      "Variabel terikat",
+      "Variabel kontrol",
+      "Data kuantitatif"
+     ],
+     "opsi": [
+      "Penempatan rangkaian: gelap / teduh / terang",
+      "Jumlah gelembung yang dihitung per menit",
+      "Panjang Hydrilla dan volume air dalam gelas",
+      "Tabel catatan jumlah gelembung tiap interval waktu",
+      "Warna tabung reaksi yang dipakai"
+     ],
+     "jawaban": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "pembahasan": "Yang sengaja diubah = penempatan cahaya (bebas); yang diukur = gelembung per menit (terikat); yang disamakan = panjang Hydrilla & volume air (kontrol); catatan hitungan = data kuantitatif. Warna tabung pengecoh: seharusnya memang disamakan, tetapi bukan unsur yang berperan sebagai data.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Berdasarkan grafik rata-rata tinggi kecambah berikut, tinggi rata-rata kecambah perlakuan pupuk B pada hari ke-12 adalah ... cm.",
+     "tipe": "isian",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-soal-grafik-batang-pupuk.jpg",
+     "jawaban": "19",
+     "hintFormat": "Tulis bilangan bulat tanpa satuan, contoh: 12",
+     "pembahasan": "Baca irisan kelompok \"Pupuk B\" dengan baris seri \"Hari ke-12\" (bar biru tua): puncaknya berada pada garis kisi 19 cm — bar tertinggi di seluruh grafik.",
+     "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-pembahasan-grafik-batang-pupuk.jpg",
+     "pembahasanGambarKet": "Bingkai merah menandai bar pupuk B hari ke-12; tarik garis mendatar dari puncak bar ke sumbu y -> angka 19.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Berdasarkan grafik percobaan Ingenhousz berikut, selisih jumlah gelembung antara tempat terang dan tempat gelap pada menit ke-10 adalah ... gelembung.",
+     "tipe": "isian",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-soal-grafik-garis-cahaya.jpg",
+     "jawaban": "22",
+     "hintFormat": "Tulis bilangan bulat, contoh: 5",
+     "pembahasan": "Titik menit ke-10: terang = 24, gelap = 2. Selisih = 24 - 2 = 22 gelembung.",
+     "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/bab5-pembahasan-grafik-garis-cahaya.jpg",
+     "pembahasanGambarKet": "Lingkaran merah = titik terang menit ke-10 (24); titik garis abu-abu pada menit sama bernilai 2 -> selisih 22.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Rancanglah penyelidikan pengaruh intensitas cahaya terhadap laju fotosintesis memakai alat Ingenhousz. Tuliskan: (a) satu pertanyaan penyelidikan, (b) variabel bebas, terikat, dan dua variabel kontrol, (c) cara mengumpulkan data beserta ulangannya, (d) bentuk simpulan yang sah berdasarkan data tersebut.",
+     "tipe": "uraian",
+     "jawaban": "Pokok-pokok rubrik: (a) pertanyaan memuat variabel terukur, mis. \"Apakah intensitas cahaya memengaruhi jumlah gelembung per menit pada Hydrilla?\"; (b) bebas = penempatan/intensitas cahaya (gelap-teduh-terang), terikat = jumlah gelembung per menit, kontrol mis. panjang Hydrilla & volume air (atau suhu, durasi); (c) tiga rangkaian identik, hitung gelembung 3 kali pengulangan per perlakuan dengan durasi sama, catat dalam tabel; (d) simpulan membandingkan rata-rata antar perlakuan dan hanya menyebut hubungan yang ditunjuk data (mis. \"semakin terang, laju semakin tinggi pada rentang yang diuji\").",
+     "pembahasan": "Rubrik menilai empat komponen: pertanyaan terukur, pemetaan tiga peran variabel, prosedur berulangan yang adil, dan simpulan yang dibatasi data. Kehilangan salah satu komponen = kredit parsial sesuai bobot komponen.",
+     "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bab5-bagan-variabel.jpg",
+     "pembahasanGambarKet": "Skema variabel ini template rancanganmu: satu hal diubah (cahaya), satu hal diukur (gelembung), sisanya disamakan.",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA)"
+    },
+    {
+     "soal": "Perhatikan tabel volume gas oksigen hasil kerja katalase berikut. (a) Nyatakan hubungan antara konsentrasi katalase dan volume gas yang dihasilkan. (b) Dukung jawabanmu dengan DUA pembacaan data spesifik dari tabel. (c) Sebutkan satu batasan simpulan yang jujur dari tabel ini.",
+     "tipe": "uraian",
+     "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bse-k12-bab5-tabel-data-katalase.jpg",
+     "jawaban": "Pokok-pokok rubrik: (a) hubungan searah/berbanding lurus pada rentang yang diuji: semakin tinggi konsentrasi katalase, semakin besar volume gas pada waktu yang sama; (b) dua contoh pembacaan mis. pada 240 detik: konsentrasi 0,5 -> 1,7 mL vs konsentrasi 4 -> 4,7 mL; dan pada 120 detik: 1,1 mL (0,5) vs 3,9 mL (4); (c) batasan mis. tabel hanya menguji sampai konsentrasi 4 cm³ dan 240 detik, sehingga perilaku di luar rentang itu (mis. kejenuhan) tidak boleh diklaim.",
+     "pembahasan": "Simpulan sah = pola + bukti sel spesifik + pengakuan batas rentang data. Jawaban yang menyebut pola tanpa menunjuk sel, atau mengklaim \"selalu naik tanpa batas\", kehilangan kredit komponen (b)/(c).",
+     "sumber": "Gemilang Drill (latihan orisinal sistem — format keterampilan proses TKA); stimulus tabel: BSE Biologi SMA/MA Kelas XII, Kemendikbudristek 2022, hal. 12 (Activity 1.4)"
+    }
+   ]
+  }
+ ]
+}

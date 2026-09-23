@@ -73,6 +73,9 @@ perbedaan hasilnya").
       modul vs AI per bab; tidak ada kredit bocor ke `keterangan`.
 - [ ] Validator draft hijau; tidak ada nested array; tidak ada deklarasi kode
       mendahului pemakaian (review urutan deklarasi wajib).
+- [ ] Pencarian soal & gambar mengikuti `docs/SKILL-CARI-SOAL-DAN-GAMBAR-PRESISI.md`
+      (hierarki sumber berlabel, crop 300 dpi terverifikasi, HEAD 200, dan minimal satu
+      soal berpembahasan gambar beranotasi).
 - [ ] Baca ulang satu sub-bab sebagai siswa: apakah tiap gambar kini "berbicara"
       lewat teks? Jika masih terasa tempelan → tulis ulang pengantar/poinnya.
 

@@ -48,11 +48,15 @@ for (const f of files) {
       if (jenis === 'poin' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] poin tanpa items`);
       if (jenis === 'alur' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] alur tanpa items`);
       if (jenis === 'tabelinfo' && !(Array.isArray(s.rows) && s.rows.length)) salah(f, `${label} section[${si}] tabelinfo tanpa rows`);
+      if (jenis === 'tabelinfo' && Array.isArray(s.rows)
+        && s.rows.some((r) => !r || typeof r !== 'object' || r.k === undefined || r.v === undefined)) {
+        salah(f, `${label} section[${si}] tabelinfo.rows tiap baris wajib objek ber-k dan ber-v`);
+      }
       if (jenis === 'istilah' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] istilah tanpa items`);
       // Turn 54: Firestore menolak nested array -> rows/items WAJIB objek {k,v}
       if (jenis === 'tabelinfo' && Array.isArray(s.rows)
         && s.rows.some((r) => Array.isArray(r))) {
-        salah(f, `${label} section[${si}] tabelinfo.rows harus objek {k,v} (nested array ditolak Firestore)`);
+        salah(f, `${label} section[${si}] tabelinfo.rows harus objek {k,v} / {k,v,w} (nested array ditolak Firestore)`);
       }
       if (jenis === 'istilah' && Array.isArray(s.items)
         && s.items.some((r) => Array.isArray(r))) {
@@ -113,6 +117,12 @@ for (const f of files) {
       if (k.perluKunci) console.log(`   ⚠️  ${label2}: ditandai perluKunci`);
       if (k.pembahasanGambar && !/^https?:\/\//.test(k.pembahasanGambar)) {
         salah(f, `${label2}: pembahasanGambar harus URL http(s)`);
+      }
+      if (k.pembahasanGambarKet && typeof k.pembahasanGambarKet !== 'string') {
+        salah(f, `${label2}: pembahasanGambarKet harus teks string`);
+      }
+      if (k.soalGambar && !/^https?:\/\//.test(k.soalGambar)) {
+        salah(f, `${label2}: soalGambar harus URL http(s)`);
       }
     });
     const adaPdf = b.pdfUrl ? '📄' : '';

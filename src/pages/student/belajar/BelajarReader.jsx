@@ -126,6 +126,21 @@ const kunciTeks = (s) => {
   return String.fromCharCode(65 + (s.jawaban || 0));
 };
 
+// Gambar pembahasan + keterangan deskriptif (Turn 60): tampil di semua
+// cabang umpan balik kuis (benar / sebagian / belum tepat / referensi uraian).
+function GambarPembahasan({ soal }) {
+  if (!soal || !soal.pembahasanGambar) return null;
+  return (
+    <>
+      <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
+        style={S.pembahasanImg} loading="lazy" />
+      {soal.pembahasanGambarKet ? (
+        <div style={S.pembahasanKap}>🔍 {soal.pembahasanGambarKet}</div>
+      ) : null}
+    </>
+  );
+}
+
 export default function BelajarReader() {
   const { materiId, babId } = useParams();
   const navigate = useNavigate();
@@ -1054,6 +1069,7 @@ function PanelKuis({
           <span>
             <b>Referensikan jawabanmu:</b>
             {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            <GambarPembahasan soal={soal} />
           </span>
         </div>
       ) : terkoreksi && kreditSoal(soal, dipilih) === 1 ? (
@@ -1062,10 +1078,7 @@ function PanelKuis({
           <span>
             <b>Jawaban benar!</b>
             {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
-            {soal.pembahasanGambar && (
-              <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
-                style={S.pembahasanImg} loading="lazy" />
-            )}
+            <GambarPembahasan soal={soal} />
           </span>
         </div>
       ) : terkoreksi && kreditSoal(soal, dipilih) > 0 ? (
@@ -1075,6 +1088,7 @@ function PanelKuis({
             <b>Tepat sebagian.</b> Kredit {kreditSoal(soal, dipilih).toFixed(2)}
             {' '}dari 1. Kunci: {kunciTeks(soal)}.
             {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            <GambarPembahasan soal={soal} />
           </span>
         </div>
       ) : terkoreksi ? (
@@ -1083,10 +1097,7 @@ function PanelKuis({
           <span>
             <b>Belum tepat.</b> Kunci: {kunciTeks(soal)}.
             {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
-            {soal.pembahasanGambar && (
-              <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
-                style={S.pembahasanImg} loading="lazy" />
-            )}
+            <GambarPembahasan soal={soal} />
           </span>
         </div>
       ) : null}
@@ -1449,6 +1460,10 @@ const S = {
   pembahasanImg: {
     display: 'block', width: '100%', maxWidth: 420, margin: '10px auto 0',
     borderRadius: 10, border: `1px solid ${T.garis}`, background: '#fff',
+  },
+  pembahasanKap: {
+    margin: '6px auto 0', maxWidth: 420, fontSize: 11.5, fontStyle: 'italic',
+    color: T.samar, lineHeight: 1.5,
   },
   tabelWrap: { overflowX: 'auto', margin: '4px 0 8px' },
   tabel: {

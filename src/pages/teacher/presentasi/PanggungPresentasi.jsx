@@ -280,8 +280,13 @@ export default function PanggungPresentasi() {
                   </>
                 )}
                 {tampilKunci && kuis[idx].pembahasanGambar && (
-                  <img src={kuis[idx].pembahasanGambar} alt="Gambar pembahasan"
-                    style={S.pembahasanImg} loading="lazy" />
+                  <>
+                    <img src={kuis[idx].pembahasanGambar} alt="Gambar pembahasan"
+                      style={S.pembahasanImg} loading="lazy" />
+                    {kuis[idx].pembahasanGambarKet && (
+                      <div style={S.pembahasanKap}>🔍 {kuis[idx].pembahasanGambarKet}</div>
+                    )}
+                  </>
                 )}
                 <div style={S.statFoot}>
                   {statSoal?.responden || 0} siswa menjawab •
@@ -577,6 +582,10 @@ const S = {
   pembahasanImg: {
     display: 'block', width: '100%', maxWidth: 560, margin: '10px auto 0',
     borderRadius: 10, border: `1px solid ${T.garis}`, background: '#fff',
+  },
+  pembahasanKap: {
+    margin: '6px auto 0', maxWidth: 560, fontSize: 13,
+    fontStyle: 'italic', color: T.samar, lineHeight: 1.5,
   },
   slideBesar: {
     width: '100%', height: '68vh', border: `1px solid ${T.garis}`,

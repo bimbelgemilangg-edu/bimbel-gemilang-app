@@ -653,6 +653,15 @@ export default function EditBabV2() {
                     <input style={S.inp} value={k.pembahasan || ''}
                       placeholder="Pembahasan"
                       onChange={(e) => setKuis(i, { pembahasan: e.target.value })} />
+                    <input style={S.inp} value={k.soalGambar || ''}
+                      placeholder="URL gambar stimulus soal (opsional, salin dari Bank Materi)"
+                      onChange={(e) => setKuis(i, { soalGambar: e.target.value })} />
+                    <input style={S.inp} value={k.pembahasanGambar || ''}
+                      placeholder="URL gambar pembahasan (opsional: grafik beranotasi dll.)"
+                      onChange={(e) => setKuis(i, { pembahasanGambar: e.target.value })} />
+                    <input style={S.inp} value={k.pembahasanGambarKet || ''}
+                      placeholder="Keterangan gambar pembahasan (cara membacanya)"
+                      onChange={(e) => setKuis(i, { pembahasanGambarKet: e.target.value })} />
                   </div>
                 ))}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
