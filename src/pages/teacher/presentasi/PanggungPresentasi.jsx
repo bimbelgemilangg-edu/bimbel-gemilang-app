@@ -175,9 +175,7 @@ export default function PanggungPresentasi() {
                   <img src={kuis[idx].soalGambar} alt="Gambar soal"
                     style={S.soalGambarBesar} />
                 )}
-                {kuis[idx].sumber && (
-                  <div style={S.sumberChip}>🎓 {kuis[idx].sumber}</div>
-                )}
+                {/* Sumber soal tidak ditampilkan ke peserta (Turn 35). */}
                 <div style={S.soalBesar}><MathText text={kuis[idx].soal} /></div>
                 {String(kuis[idx].tipe || 'pg') === 'pgMulti' && (
                   <div style={S.formatChipProyektor}>
@@ -244,6 +242,10 @@ export default function PanggungPresentasi() {
                       );
                     })}
                   </div>
+                )}
+                {tampilKunci && kuis[idx].pembahasanGambar && (
+                  <img src={kuis[idx].pembahasanGambar} alt="Gambar pembahasan"
+                    style={S.pembahasanImg} loading="lazy" />
                 )}
                 <div style={S.statFoot}>
                   {statSoal?.responden || 0} siswa menjawab •
@@ -531,6 +533,10 @@ const S = {
     textAlign: 'left', color: T.teks, fontWeight: 600,
   },
   tabelProyektorKunci: { background: T.hijauLatar, color: T.hijauTeks },
+  pembahasanImg: {
+    display: 'block', width: '100%', maxWidth: 560, margin: '10px auto 0',
+    borderRadius: 10, border: `1px solid ${T.garis}`, background: '#fff',
+  },
   slideBesar: {
     width: '100%', height: '68vh', border: `1px solid ${T.garis}`,
     borderRadius: 12, background: '#fff',

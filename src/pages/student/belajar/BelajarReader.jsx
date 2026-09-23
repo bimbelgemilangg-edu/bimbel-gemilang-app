@@ -882,7 +882,7 @@ function PanelKuis({
       <div style={S.soalNomor}>Soal {soalIdx + 1} dari {kuis.length}</div>
       {/* Fase konten: chip sumber + gambar soal WAJIB tampil juga di
           latihan mandiri (sebelumnya hanya di kuis live guru) */}
-      {soal.sumber && <div style={S.sumberChip}>🎓 {soal.sumber}</div>}
+      {/* Sumber soal TIDAK ditampilkan ke siswa (Turn 35): cukup admin. */}
       {soal.soalGambar && (
         <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
       )}
@@ -914,9 +914,12 @@ function PanelKuis({
                             style={{
                               ...S.tabelRadio,
                               ...(pil === c ? S.tabelRadioPil : null),
-                              ...(terkoreksi && kunci ? S.tabelRadioKunci : null),
+                              ...(terkoreksi && pil === c && kunci
+                                ? S.tabelRadioBenar : null),
                               ...(terkoreksi && pil === c && !kunci
                                 ? S.tabelRadioSalah : null),
+                              ...(terkoreksi && pil !== c && kunci
+                                ? S.tabelRadioKunciTipis : null),
                             }}
                             onClick={() => pilihTabel(soalIdx, r, c)}>
                             {pil === c ? '✓' : ''}
@@ -940,19 +943,25 @@ function PanelKuis({
               const pil = Array.isArray(dipilih) && dipilih.includes(j);
               const kunci = (soal.jawaban || []).includes(j);
               let gaya = S.opsi;
-              if (pil) gaya = { ...S.opsi, ...S.opsiDipilihMulti };
-              if (terkoreksi && kunci) gaya = { ...S.opsi, ...S.opsiBenar };
+              if (pil && !terkoreksi) gaya = { ...S.opsi, ...S.opsiDipilihMulti };
+              if (terkoreksi && pil && kunci) gaya = { ...S.opsi, ...S.opsiBenar };
               else if (terkoreksi && pil && !kunci) gaya = { ...S.opsi, ...S.opsiSalah };
+              else if (terkoreksi && !pil && kunci) gaya = { ...S.opsi, ...S.opsiKunciTipis };
               return (
                 <button key={j} type="button" style={gaya} disabled={terkoreksi}
                   onClick={() => pilihMulti(soalIdx, j)}>
                   <span style={{
                     ...S.opsiKotak,
-                    ...(pil || (terkoreksi && kunci) ? S.opsiKotakIsi : null),
+                    ...(pil ? S.opsiKotakIsi : null),
                   }}>
-                    {pil || (terkoreksi && kunci) ? <CheckCircle2 size={13} /> : null}
+                    {pil ? <CheckCircle2 size={13} /> : null}
                   </span>
-                  <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+                  <span style={{ flex: 1, textAlign: 'left' }}>
+                    <MathText text={op} />
+                    {terkoreksi && kunci && (
+                      <span style={S.kunciTag}>✓ kunci</span>
+                    )}
+                  </span>
                   <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
                 </button>
               );
@@ -992,6 +1001,10 @@ function PanelKuis({
             <span>
               <b>Jawaban benar!</b>
               {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+              {soal.pembahasanGambar && (
+                <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
+                  style={S.pembahasanImg} loading="lazy" />
+              )}
             </span>
           </div>
         ) : (
@@ -1000,6 +1013,10 @@ function PanelKuis({
             <span>
               <b>Belum tepat.</b> Kunci: {kunciTeks(soal)}.
               {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+              {soal.pembahasanGambar && (
+                <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
+                  style={S.pembahasanImg} loading="lazy" />
+              )}
             </span>
           </div>
         )
@@ -1067,7 +1084,7 @@ function LiveKuis({ sessionId, soal, idx, total }) {
       <div style={S.liveHead}>
         📡 Latihan bersama • soal {idx + 1} / {total}
       </div>
-      {soal.sumber && <div style={S.sumberChip}>🎓 {soal.sumber}</div>}
+      {/* Sumber soal TIDAK ditampilkan ke siswa (Turn 35): cukup admin. */}
       {soal.soalGambar && (
         <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
       )}
@@ -1332,6 +1349,18 @@ const S = {
     color: '#fff',
   },
   opsiKotakIsi: { background: T.biru, borderColor: T.biru },
+  opsiKunciTipis: {
+    borderColor: T.hijau, borderStyle: 'dashed', background: '#F6FCF8',
+  },
+  kunciTag: {
+    marginLeft: 8, fontSize: 10.5, fontWeight: 800, color: T.hijauTeks,
+    background: T.hijauLatar, border: `1px solid ${T.hijauGaris}`,
+    borderRadius: 999, padding: '2px 8px', whiteSpace: 'nowrap',
+  },
+  pembahasanImg: {
+    display: 'block', width: '100%', maxWidth: 420, margin: '10px auto 0',
+    borderRadius: 10, border: `1px solid ${T.garis}`, background: '#fff',
+  },
   tabelWrap: { overflowX: 'auto', margin: '4px 0 8px' },
   tabel: {
     width: '100%', borderCollapse: 'collapse', background: '#fff',
@@ -1351,6 +1380,11 @@ const S = {
   },
   tabelRadioPil: { background: T.biru, borderColor: T.biru },
   tabelRadioKunci: { background: T.hijau, borderColor: T.hijau },
+  tabelRadioBenar: { background: T.hijau, borderColor: T.hijau },
+  tabelRadioKunciTipis: {
+    borderColor: T.hijau, borderStyle: 'dashed', background: '#F6FCF8',
+    color: T.hijauTeks,
+  },
   tabelRadioSalah: { background: T.merah, borderColor: T.merah },
   soalGambar: {
     display: 'block', width: '100%', maxWidth: 560, background: '#fff',

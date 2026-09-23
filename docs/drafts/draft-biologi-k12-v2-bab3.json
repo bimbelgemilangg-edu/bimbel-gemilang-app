@@ -1,0 +1,260 @@
+{
+  "materi": {
+    "judul": "Biologi SMA Kelas 12 — Persiapan TKA 2026",
+    "mapel": "Biologi",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#16A34A",
+    "emoji": "🧬",
+    "deskripsi": "Bab 3 (tambah-bab): Sistem Tubuh Manusia — sirkulasi, respirasi, ekskresi & keterkaitan antarsistem.",
+    "urutan": 4,
+    "status": "draft",
+    "daftarPustaka": [
+      "Buku Biologi untuk SMA/MA Kelas XII — Kemendikdasmen (BSE Kurmer) — 2022 — ISBN 978-602-427-958-5 — kerangka metabolisme; gambar berkredit.",
+      "Buku Biologi Kelas X untuk SMA-MA — Kemendikbud (BSE K-13) — gambar berkredit hal. 40 & 78.",
+      "Bank soal UN Biologi (kakajaz.blogspot) — UN 2014/2018/2019 + pembahasan; gambar soal UN 2018 dikutip berkredit.",
+      "Kerangka Asesmen TKA Biologi SMA — Pusmendik Kemendikdasmen — 2025 — cakupan sistem sirkulasi/respirasi/ekskresi.",
+      "Modul/buku paket biologi Bimbel Gemilang — MENUNGGU FILE OWNER (gambar jantung & nefron menyusul dari sana/BSE K11)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Sistem Tubuh Manusia: Sirkulasi, Respirasi, Ekskresi & Keterkaitan Antarsistem",
+      "ringkasan": "Bab paling 'ujian': komponen darah dan cara membaca tabel lab, jantung & tiga jenis pembuluh beserta jalur sirkulasi besar-kecil, kelainan darah; organ & mekanisme pernapasan beserta volume udara dan pertukaran gas; empat organ ekskresi dengan tahapan pembentukan urine; lalu keterkaitan antarsistem dalam kasus nyata. Ditutup 16 soal (5 asli UN berlabel + 11 drill pemetaan subbab).",
+      "estimasiMenit": 75,
+      "urutan": 3,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "A. Darah: Empat Komponen dan Cara Membaca Tabel Lab" },
+        { "jenis": "paragraf", "teks": "Darah terdiri atas plasma (±55%: air, protein plasma seperti albumin & globulin, hormon, zat terlarut) dan sel-sel darah (±45%): eritrosit (tanpa inti, berisi hemoglobin pengikat O2, umur ±120 hari lalu dirombak di hati dan limpa), leukosit (pertahanan: neutrofil fagosit bakteri, limfosit pembentuk antibodi, monosit/makrofag, eosinofil parasit & alergi, basofil histamin), serta trombosit (keping darah untuk pembekuan). Nilai rujukan umum: eritrosit 4-5 juta/µL, hemoglobin 12-16 g/dL, hematokrit 35-47%, leukosit 4-11 ribu/µL, trombosit 150-440 ribu/µL." },
+        { "jenis": "langkah", "judul": "Cara membaca tabel lab (dipakai di banyak soal TKA)", "items": ["Tandai baris di luar nilai rujukan (naik/turun).", "Terjemahkan: Hb/Ht turun = anemia (pucat, lelah); leukosit & neutrofil naik = infeksi/peradangan; trombosit turun = mudah berdarah; limfosit turun = pertahanan spesifik lemah.", "Cocokkan dengan gejala pada cerita soal; singkirkan opsi yang menyalahkan organ yang tidak terkait."] },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — trio cepat darah", "teks": "Hb/Ht = truk oksigen (turun → pucat-lesu). Leukosit = pasukan (naik → perang/infeksi). Trombosit = tambal bocor (turun → mudah memar/berdarah). Tiga baris ini menjawab mayoritas soal tabel darah." },
+        { "jenis": "judul", "teks": "B. Jantung, Pembuluh Darah, dan Jalur Sirkulasi" },
+        { "jenis": "paragraf", "teks": "Jantung beruang empat: atrium kanan-kiri (serambi, penerima) dan ventrikel kanan-kiri (bilik, pemompa; dinding ventrikel kiri paling tebal karena memompa ke seluruh tubuh). Katup atrioventrikular (trikuspidalis & bikuspidalis) mencegah aliran balik ke serambi; katup semilunaris mencegah aliran balik ke ventrikel. Arteri berdinding tebal-elastis membawa darah KELUAR jantung (umumnya kaya O2, kecuali arteri pulmonalis); vena berdinding tipis berkatup membawa darah MASUK jantung (umumnya kaya CO2, kecuali vena pulmonalis); kapiler berdinding satu sel adalah tempat pertukaran gas dan zat dengan jaringan — ciri: diameter kecil, bercabang halus, berhubungan langsung dengan jaringan." },
+        { "jenis": "paragraf", "teks": "Sirkulasi pulmonal (kecil): ventrikel kanan → arteri pulmonalis → paru-paru (pertukaran CO2-O2) → vena pulmonalis → atrium kiri. Sirkulasi sistemik (besar): ventrikel kiri → aorta → seluruh tubuh → vena cava → atrium kanan. Ingat: darah yang masuk paru sudah 'kotor' (CO2 tinggi) dan kembali 'bersih'; karena itu istilah kotor/bersih mengikuti kandungan gas, bukan jenis pembuluhnya." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — kompas jantung", "teks": "Ventrikel = pengirim (V untuk 'ventrikel melepas'), atrium = penerima. Sisi kanan jantung selalu mengurus darah miskin O2, sisi kiri mengurus darah kaya O2. Soal jalur sirkulasi = tinggal susun: kanan-kotor keluar dulu ke paru, kiri-bersih keluar ke tubuh." },
+        { "jenis": "judul", "teks": "C. Kelainan dan Penyakit pada Darah serta Pembuluh" },
+        { "jenis": "paragraf", "teks": "Anemia = kekurangan eritrosit/hemoglobin; hemofilia = tidak ada faktor pembeku sehingga luka sukar menutup; leukemia = produksi leukosit abnormal berlebihan; polisitemia = eritrosit berlebih; talasemia = bentuk hemoglobin abnormal; hipertensi = tekanan darah tinggi; varises = pelebaran vena (sering di kaki karena katup lemah); sklerosis = pengerasan dinding arteri. Skema soal khas: diberikan gejala atau cerita keluarga → cocokkan dengan mekanisme yang rusak." },
+        { "jenis": "judul", "teks": "D. Sistem Respirasi: Organ hingga Alveolus" },
+        { "jenis": "paragraf", "teks": "Urutan organ: rongga hidung (menyaring, menghangatkan, melembapkan) → faring → laring → trakea (bercincin tulang rawan, bersilia) → bronkus → bronkiolus → alveolus. Alveolus adalah unit pertukaran: dindingnya setipis satu sel, diselubungi kapiler, permukaannya luas (±70 m²) sehingga difusi O2 dan CO2 berlangsung cepat menurut gradien konsentrasi. Pleura membungkus paru dan menghasilkan cairan pelumas." },
+        { "jenis": "judul", "teks": "E. Mekanisme Pernapasan dan Volume Udara" },
+        { "jenis": "langkah", "judul": "Satu siklus napas (inspirasi aktif, ekspirasi pasif)", "items": ["Diafragma berkontraksi (mendatar) + otot antar-tulang rusuk menegang → rongga dada membesar → tekanan intra-paru turun → udara MASUK (inspirasi).", "Diafragma relaksasi (melengkung) + otot rusuk mengendur → rongga dada mengecil → tekanan naik → udara KELUAR (ekspirasi).", "Pernapasan perut digerakkan diafragma; pernapasan dada digerakkan otot antar-tulang rusuk — keduanya berlangsung bersamaan."] },
+        { "jenis": "paragraf", "teks": "Volume udara: tidal/VT ±500 cc (napas biasa); cadangan inspirasi/VCI ±1500 cc; cadangan ekspirasi/VCE ±1500 cc; residu/VR ±1000 cc (tidak pernah keluar). Kapasitas penting: kapasitas vital = VT+VCI+VCE ±3500 cc; kapasitas residu fungsional (udara tersisa saat ekspirasi biasa) = VCE+VR ±2500 cc; kapasitas total = KV+VR ±4500 cc. Soal biasanya memberi tabel volume lalu meminta salah satu kapasitas — kunci sukses: hafalkan pasangan penjumlahannya." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — aritmetika paru", "teks": "KV = 500+1500+1500 = 3500. KRF = 1500+1000 = 2500 (udara yang TETAP ada setelah embusan biasa). Total = 3500+1000 = 4500. Residu tidak pernah ikut terukur spirometer — pengecoh favorit!" },
+        { "jenis": "judul", "teks": "F. Pertukaran dan Pengangkutan Gas" },
+        { "jenis": "paragraf", "teks": "Di alveolus O2 berdifusi ke kapiler karena tekanan parsial O2 alveolus lebih tinggi; sebaliknya CO2 berdifusi keluar. O2 diangkut terutama sebagai oksihemoglobin (HbO2); sebagian kecil larut dalam plasma. CO2 diangkut utama sebagai ion bikarbonat (HCO3-) dalam plasma (±70%), sebagian sebagai karbaminohemoglobin, sisanya larut. Saat jaringan aktif (olahraga), kadar CO2 naik → pusat pernapasan di medula oblongata mempercepat frekuensi napas — inilah alasan soal 'olahraga membuat napas cepat'." },
+        { "jenis": "judul", "teks": "G. Sistem Ekskresi: Ginjal, Hati, Kulit, Paru-paru" },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/un2018-organ-ekskresi-sirkulasi.jpg", "keterangan": "Empat organ tubuh manusia pada soal UN 2018: (1) paru-paru, (2) kulit, (3) hati, (4) ginjal. Paru & kulit berperan ganda (respirasi/ekskresi); hati menyimpan kelebihan gula & merombak eritrosit tua; ginjal menyaring darah. Gambar soal UN 2018 via kakajaz.blogspot.com." },
+        { "jenis": "paragraf", "teks": "Ginjal (nefron) membentuk urine lewat tiga tahap: FILTRASI di glomerulus/kapsula Bowman menghasilkan urine primer (masih berisi glukosa & asam amino); REABSORPSI di tubulus kontortus proksimal mengambil kembali zat berguna → urine sekunder (glukosa normalnya habis di sini); AUGMENTASI di tubulus kontortus distal & kolektivus menambahkan zat sisa (ion H+, amonia, asam urat) → urine sesungguhnya. Hati: membentuk urea dari amonia (siklus ornitin), merombak eritrosit tua menjadi bilirubin, menetralisir racun, menyimpan glikogen. Kulit: kelenjar keringat membuang air+garam sekaligus mengatur suhu. Paru-paru: membuang CO2 dan uap air." },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — peta urine 3 langkah", "teks": "F-Re-A: Filtrasi (glom-Bowman, urine primer, ada glukosa) → Reabsorpsi (proksimal, glukosa hilang) → Augmentasi (distal-kolektivus, urine final). Soal 'glukosa dalam urine' = kerusakan REABSORPSI proksimal (atau gula darah melewati ambang → diabetes)." },
+        { "jenis": "judul", "teks": "H. Gangguan Sistem Ekskresi" },
+        { "jenis": "paragraf", "teks": "Diabetes melitus = glukosa darah tinggi melewati ambang ginjal sehingga glukosa terbawa urine; diabetes insipidus = kekurangan ADH sehingga urine sangat banyak dan encer; batu ginjal = endapan mineral di saluran urine; albuminuria = kerusakan glomerulus sehingga protein lolos; uremia = urea menumpuk di darah (gagal ginjal); anuria = tidak terbentuk urine. Kaitkan selalu: zat yang muncul/hilang di urine menunjuk TAHAP dan BAGIAN nefron yang rusak." },
+        { "jenis": "judul", "teks": "I. Keterkaitan Antarsistem: Satu Gejala, Tiga Sistem" },
+        { "jenis": "contoh", "judul": "Kasus: berlari 10 menit", "teks": "Jelaskan mengapa wajah memerah, napas cepat, dan kulit berkeringat setelah berlari.", "pembahasan": "Otot butuh ATP → respirasi seluler naik → butuh O2 dan menghasilkan CO2+panas. Sistem sirkulasi: jantung berdetak lebih cepat & pembuluh kulit melebar (wajah memerah) untuk mengantar O2 dan membuang panas. Sistem respirasi: frekuensi napas naik membuang CO2. Sistem ekskresi (kulit): keringat menguap membawa panas. Tiga sistem bekerja serentak menjaga homeostasis." },
+        { "jenis": "callout", "tipe": "guru", "judul": "Catatan Guru", "teks": "Demonstrasi murah: (1) jantung sapi/kambing dari pasar untuk menunjukkan 4 ruang & katup; (2) spirometer sederhana dari botol+balon untuk volume tidal; (3) uji glukosa urine simulasi dengan air gula + strip glukosa untuk menghubungkan reabsorpsi proksimal dengan diabetes." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Pada saat luka, kita tidak mengalami pendarahan karena darah mengandung faktor penggumpal yang dapat menutup luka. Tetapi pada kasus tertentu, ada orang yang bila terluka, lukanya tidak mudah menutup sebab tidak mempunyai faktor penggumpal. Orang tersebut menderita penyakit ...",
+          "tipe": "pg",
+          "opsi": ["leukemia", "hemofilia", "anemia", "polisitemia", "sklerosis"],
+          "jawaban": 1,
+          "pembahasan": "Hemofilia = kekurangan faktor pembekuan darah. Leukemia = kanker darah; anemia = kurang eritrosit/Hb; polisitemia = eritrosit berlebih; sklerosis = pengerasan arteri.",
+          "sumber": "UN 2014 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Hasil identifikasi struktur pembuluh darah: (1) letaknya tidak di dekat permukaan tubuh; (2) diameter kecil; (3) memiliki percabangan yang membentuk saluran halus; (4) berhubungan langsung dengan jaringan. Berdasarkan ciri-cirinya, fungsi dari pembuluh darah tersebut adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "mengangkut darah yang banyak mengandung CO2 menuju atrium kanan",
+            "mengangkut hasil metabolisme tubuh dari aorta menuju atrium kiri jantung",
+            "mengangkut darah yang banyak mengandung O2 dari sari-sari makanan menuju atrium kanan jantung",
+            "tempat terjadinya pertukaran gas O2, CO2, dan zat makanan dari paru-paru ke dalam jaringan",
+            "tempat terjadinya pertukaran gas O2, CO2, dan zat makanan dari darah ke dalam jaringan"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Ciri diameter kecil + berhubungan langsung dengan jaringan = KAPILER, tempat pertukaran gas & zat dari DARAH ke JARINGAN (opsi E).",
+          "sumber": "UN 2019 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Perhatikan gambar empat organ tubuh manusia (1 paru-paru, 2 kulit, 3 hati, 4 ginjal). Organ yang berfungsi menyimpan kelebihan gula dalam darah dan tempat terjadinya proses pengikatan O2 oleh darah secara berurutan ditunjukkan oleh gambar ...",
+          "tipe": "pg",
+          "opsi": ["(1) dan (2)", "(1) dan (3)", "(2) dan (4)", "(3) dan (1)", "(4) dan (2)"],
+          "jawaban": 3,
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/un2018-organ-ekskresi-sirkulasi.jpg",
+          "pembahasan": "Menyimpan kelebihan gula (glikogen) = HATI (3); pengikatan O2 = PARU-PARU (1). Urutan: (3) dan (1) → D.",
+          "sumber": "UN 2018 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Data volume udara pernapasan: cadangan inspirasi 1.500 cc; pernapasan biasa (tidal) 500 cc; cadangan ekspirasi 1.500 cc; udara sisa/residu 1.000 cc. Kapasitas udara di dalam paru-paru pada saat terjadi ekspirasi biasa (kapasitas residu fungsional) adalah ...",
+          "tipe": "pg",
+          "opsi": ["1.000 cc", "1.500 cc", "2.500 cc", "3.000 cc", "3.500 cc"],
+          "jawaban": 2,
+          "pembahasan": "KRF = cadangan ekspirasi + residu = 1.500 + 1.000 = 2.500 cc (udara yang tetap berada di paru setelah embusan biasa).",
+          "sumber": "UN 2014 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Hasil uji laboratorium menunjukkan urine seseorang mengandung glukosa. Hal ini terjadi akibat ada gangguan fungsi ginjal pada bagian ...",
+          "tipe": "pg",
+          "opsi": [
+            "tubulus kontortus proksimal",
+            "tubulus kontortus distal",
+            "tubulus kolektivus",
+            "vesica urinaria",
+            "glomerulus"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Glukosa seharusnya diserap kembali seluruhnya saat REABSORPSI di tubulus kontortus proksimal; glukosa dalam urine menunjuk gangguan bagian tersebut (atau gula darah melewati ambang batas pada diabetes melitus).",
+          "sumber": "UN 2014 — via kakajaz.blogspot.com (soal & pembahasan)"
+        },
+        {
+          "soal": "Pasangkan komponen darah dengan fungsi utamanya: plasma, eritrosit, leukosit, trombosit. Manakah pasangan yang BENAR?",
+          "tipe": "pg",
+          "opsi": [
+            "eritrosit — mengangkut O2 dengan hemoglobin",
+            "plasma — membekukan darah saat luka",
+            "leukosit — mengangkut CO2 sebagai bikarbonat utama",
+            "trombosit — membentuk antibodi spesifik",
+            "eritrosit — memfagosit bakteri patogen"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Eritrosit = pengangkut O2 (hemoglobin). Plasma = medium zat terlarut; pembekuan = trombosit; antibodi = limfosit (leukosit); fagosit = neutrofil/makrofag; bikarbonat terutama di plasma.",
+          "sumber": "Gemilang Drill (pemetaan subbab A — komponen darah)"
+        },
+        {
+          "soal": "Saat ventrikel kiri berkontraksi (sistole), pernyataan manakah yang benar?",
+          "tipe": "pg",
+          "opsi": [
+            "Darah kaya O2 dipompa ke aorta menuju seluruh tubuh; katup semilunaris terbuka.",
+            "Darah kaya CO2 dipompa ke paru-paru melalui arteri pulmonalis.",
+            "Darah dari vena cava masuk ke atrium kanan melalui katup bikuspidalis.",
+            "Katup atrioventrikular terbuka agar darah kembali ke atrium.",
+            "Darah kaya O2 dipompa ke paru-paru untuk oksigenasi ulang."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Ventrikel kiri = pemompa darah kaya O2 ke sirkulasi sistemik via aorta; saat sistole katup semilunaris terbuka dan katup atrioventrikular menutup.",
+          "sumber": "Gemilang Drill (pemetaan subbab B — mekanisme jantung)"
+        },
+        {
+          "soal": "Manakah pernyataan yang benar tentang jalur sirkulasi pulmonal (kecil)? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Dimulai dari ventrikel kanan yang memompa darah miskin O2.",
+            "Darah dibawa oleh arteri pulmonalis menuju paru-paru.",
+            "Darah kaya O2 kembali ke atrium kiri melalui vena pulmonalis.",
+            "Darah kembali ke atrium kanan setelah dari paru-paru.",
+            "Pertukaran gas terjadi di alveolus."
+          ],
+          "jawaban": [0, 1, 2, 4],
+          "pembahasan": "Sirkulasi kecil: ventrikel kanan → arteri pulmonalis → paru (alveolus) → vena pulmonalis → atrium kiri. Pernyataan 4 salah (kembali ke atrium KIRI).",
+          "sumber": "Gemilang Drill (pemetaan subbab B — jalur sirkulasi)"
+        },
+        {
+          "soal": "Tentukan Benar/Salah pernyataan perbandingan arteri dan vena berikut.",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "Arteri berdinding tebal dan elastis karena menerima darah bertekanan tinggi dari ventrikel.",
+            "Vena cava membawa darah kaya O2 dari paru-paru ke atrium kiri.",
+            "Kapiler berdinding satu lapis sel sehingga memungkinkan pertukaran zat dengan jaringan."
+          ],
+          "jawaban": [0, 1, 0],
+          "pembahasan": "Arteri tebal-elastis (benar). Vena cava membawa darah miskin O2 dari TUBUH ke atrium kanan; yang dari paru = vena pulmonalis (salah). Kapiler satu lapis sel (benar).",
+          "sumber": "Gemilang Drill (pemetaan subbab B — jenis pembuluh)"
+        },
+        {
+          "soal": "O2 berdifusi dari alveolus ke kapiler darah karena ...",
+          "tipe": "pg",
+          "opsi": [
+            "tekanan parsial O2 di alveolus lebih tinggi daripada di kapiler",
+            "tekanan parsial CO2 di alveolus lebih tinggi daripada di kapiler",
+            "alveolus secara aktif memompa O2 ke dalam darah",
+            "hemoglobin menarik O2 melawan gradien konsentrasi",
+            "dinding alveolus bermuatan positif sehingga menarik O2"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Difusi mengikuti gradien tekanan parsial: pO2 alveolus > pO2 kapiler; sebaliknya pCO2 kapiler > pCO2 alveolus. Tidak ada pompa aktif untuk gas.",
+          "sumber": "Gemilang Drill (pemetaan subbab F — pertukaran gas)"
+        },
+        {
+          "soal": "Kapasitas vital paru-paru seseorang dengan volume tidal 500 cc, cadangan inspirasi 1.500 cc, dan cadangan ekspirasi 1.500 cc adalah ...",
+          "tipe": "pg",
+          "opsi": ["2.000 cc", "2.500 cc", "3.000 cc", "3.500 cc", "4.500 cc"],
+          "jawaban": 3,
+          "pembahasan": "Kapasitas vital = VT + VCI + VCE = 500 + 1.500 + 1.500 = 3.500 cc (residu tidak termasuk).",
+          "sumber": "Gemilang Drill (pemetaan subbab E — volume udara)"
+        },
+        {
+          "soal": "Tentukan Benar/Salah pernyataan mekanisme pernapasan berikut.",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "Saat inspirasi, diafragma berkontraksi mendatar sehingga rongga dada membesar.",
+            "Saat ekspirasi, tekanan udara di dalam paru lebih rendah daripada tekanan luar.",
+            "Pernapasan dada digerakkan oleh otot-otot antar tulang rusuk."
+          ],
+          "jawaban": [0, 1, 0],
+          "pembahasan": "Inspiration: diafragma mendatar, rongga membesar (benar). Ekspirasi: tekanan dalam paru LEBIH TINGGI sehingga udara keluar (salah). Pernapasan dada = otot antar-rusuk (benar).",
+          "sumber": "Gemilang Drill (pemetaan subbab E — mekanisme napas)"
+        },
+        {
+          "soal": "Urutan tahapan pembentukan urine yang benar beserta hasilnya adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "filtrasi (urine primer) → reabsorpsi (urine sekunder) → augmentasi (urine sesungguhnya)",
+            "augmentasi (urine primer) → filtrasi (urine sekunder) → reabsorpsi (urine sesungguhnya)",
+            "reabsorpsi (urine primer) → augmentasi (urine sekunder) → filtrasi (urine sesungguhnya)",
+            "filtrasi (urine sekunder) → augmentasi (urine primer) → reabsorpsi (urine sesungguhnya)",
+            "filtrasi (urine primer) → augmentasi (urine sekunder) → reabsorpsi (urine sesungguhnya)"
+          ],
+          "jawaban": 0,
+          "pembahasan": "F-Re-A: filtrasi di glomerulus/Bowman (primer, masih ber-glukosa) → reabsorpsi proksimal (sekunder) → augmentasi distal/kolektivus (urine final).",
+          "sumber": "Gemilang Drill (pemetaan subbab G — pembentukan urine)"
+        },
+        {
+          "soal": "Fungsi hati dalam sistem ekskresi dan metabolisme yang benar adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "membentuk urea dari amonia dan merombak eritrosit tua menjadi bilirubin",
+            "menyaring darah membentuk urine primer",
+            "menghasilkan keringat untuk mengatur suhu tubuh",
+            "mengikat CO2 menjadi bikarbonat",
+            "memproduksi hormon insulin dan glukagon sebagai zat ekskresi"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Hati: siklus ornitin (amonia → urea), perombakan eritrosit tua → bilirubin, detoksifikasi, simpan glikogen. Urine primer = ginjal; keringat = kulit; bikarbonat = plasma; insulin = hormon (bukan ekskresi).",
+          "sumber": "Gemilang Drill (pemetaan subbab G — hati)"
+        },
+        {
+          "soal": "Setelah berlari 10 menit, wajah seorang siswa memerah, napasnya cepat, dan kulitnya berkeringat. Analisis keterkaitan antarsistem yang paling tepat adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "Sirkulasi mempercepat pengantaran O2 dan pembuangan panas (vasodilatasi kulit), respirasi menaikkan pembuangan CO2, dan kulit membuang panas lewat penguapan keringat.",
+            "Respirasi melambat agar O2 tertahan di paru, sementara jantung berdetak lebih pelan.",
+            "Kulit berkeringat karena ginjal berhenti menyaring darah selama olahraga.",
+            "Wajah memerah karena pembuluh kapiler kulit menyempit sehingga darah menumpuk di jantung.",
+            "Napas cepat disebabkan menurunnya kadar CO2 darah akibat olahraga."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Homeostasis saat aktivitas: sirkulasi (curah jantung naik, vasodilatasi kulit), respirasi (frekuensi naik membuang CO2), kulit (keringat = pendingin evaporatif). Opsi lain membalik mekanisme.",
+          "sumber": "Gemilang Drill (pemetaan subbab I — keterkaitan antarsistem)"
+        },
+        {
+          "soal": "Kulit berperan sebagai organ ekskresi sekaligus pengatur suhu. Manakah pernyataan yang benar tentang mekanisme tersebut? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Kelenjar keringat mengeluarkan air dan garam mineral sebagai zat sisa.",
+            "Penguapan keringat dari permukaan kulit membawa panas tubuh keluar.",
+            "Saat suhu dingin, pembuluh kapiler kulit melebar agar panas cepat keluar.",
+            "Kulit juga melindungi tubuh dari patogen sebagai bagian pertahanan non-spesifik."
+          ],
+          "jawaban": [0, 1, 3],
+          "pembahasan": "Saat DINGIN kapiler kulit justru menyempit (vasokonstriksi) untuk menahan panas — pernyataan 3 salah. Sisanya benar: keringat = ekskresi air+garam; evaporasi = pendinginan; kulit = barrier non-spesifik.",
+          "sumber": "Gemilang Drill (pemetaan subbab G — kulit & termoregulasi)"
+        }
+      ]
+    }
+  ]
+}
