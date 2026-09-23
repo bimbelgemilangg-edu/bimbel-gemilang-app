@@ -108,3 +108,36 @@ Catatan hak cipta: semua gambar buku dikutip sebagai kutipan pendidikan
 berkredit (judul buku + halaman + sumber asli yang dicantumkan buku);
 file pdf disimpan hanya di sandbox kerja, tidak di-upload ke Supabase
 (yang di-upload hanya crop gambar berkredit).
+
+## 9. WORKFLOW MEMBACA & MENYUSUN MATERI (WAJIB, Turn 36 — menggantikan cara lama)
+
+Koreksi owner: materi versi lama = kilasan/deskripsi, tidak mencerminkan
+materi inti. Cara baru (dipakai untuk SEMUA bab & mapel selanjutnya):
+
+1. **Ambil matriks resmi** (Pusmendik/kerangka asesmen mapel tsb): daftar
+   Elemen -> Sub-elemen/Submateri -> Kompetensi -> Batasan.
+2. **Pecah lagi tiap Sub-elemen menjadi FOKUS-FOKUS bimbel** (sub-sub
+   materi) - inilah "dasar berpikir" yang dimaksud owner; satu fokus =
+   satu blok belajar dengan judul level-2 di reader (A.1, A.2, ...).
+3. **Uraian tiap fokus HARUS rinci**: pengertian -> mekanisme/langkah ->
+   contoh -> kasus/pengecualian -> (bila relevan) nilai klinis/ekologis.
+   Dilarang menulis kilasan satu paragraf per sub-elemen.
+4. **Sumber buku DICAMPUR**: BSE/buku paket resmi (utama, kerangka +
+   gambar berkredit) + buku/blog materi lain yang setara (pelengkap);
+   semua masuk daftarPustaka admin. BSE boleh dicari lewat mirror/blog/web
+   lain bila situs resmi tidak menyediakan.
+5. **Gambar** per fokus dari buku paket berkredit (crop halaman); jangan
+   membuat gambar sendiri.
+6. **Soal dicari SETELAH materi jadi**, dipetakan per fokus; campuran soal
+   asli (UN/TKA/UTBK/SIMAK UI/UM UGM, berlabel) + soal HOTS (analisis
+   data, prediksi gangguan, evaluasi solusi) buatan tim berlabel jujur
+   "Gemilang HOTS Drill". Minimal 15-20 soal per bab.
+7. **Cara Gemilang** = jembatan keledai/singkatan kreatif/cara cepat untuk
+   konsep sulit saja; **Catatan Guru** = callout tipe 'guru' (khusus guru).
+8. Validasi draft (scripts/validasi-draft.mjs) -> commit -> PR -> owner
+   impor (mode tambah-bab / ganti bab lama).
+
+Status penerapan: Bab 1 Biologi SUDAH versi dalam (46 sections, 14 fokus,
+18 soal; draft-biologi-k12-v3-bab1.json). Bab 2-5 biologi & mapel lain
+MENUNGGU dikonversi ke workflow ini (bab lama v2 tetap terpakai sementara
+sampai diganti).
