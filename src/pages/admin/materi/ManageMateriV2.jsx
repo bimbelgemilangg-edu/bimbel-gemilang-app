@@ -13,7 +13,7 @@ import {
 import {
   KOL_MATERI,
   muatSemuaMateri, simpanMateri, simpanBab, hapusMateri,
-  segarkanHitunganMateri,
+  segarkanHitunganMateri, pesanErrorFirestore,
 } from '../../../services/materiV2Service';
 import {
   T, kartuDasar, halamanDasar, tombolPill,
@@ -105,7 +105,7 @@ export default function ManageMateriV2() {
       setPesan('✅ Materi dihapus — terverifikasi hilang di server.');
       await muat();
     } catch (e) {
-      setPesan(`Gagal hapus: ${e.message}`);
+      setPesan(`Gagal hapus: ${pesanErrorFirestore(e)}`);
       await muat();
     }
   };
@@ -173,7 +173,7 @@ export default function ManageMateriV2() {
       setImporText('');
       await muat();
     } catch (e) {
-      setPesan(`Impor gagal: ${e.message}`);
+      setPesan(`Impor gagal: ${pesanErrorFirestore(e)}`);
     }
   };
 
@@ -186,7 +186,7 @@ export default function ManageMateriV2() {
       setEditId(null);
       await muat();
     } catch (e) {
-      setPesan(`Gagal simpan (cek rules Firestore): ${e.message}`);
+      setPesan(`Gagal simpan: ${pesanErrorFirestore(e)}`);
     }
   };
 

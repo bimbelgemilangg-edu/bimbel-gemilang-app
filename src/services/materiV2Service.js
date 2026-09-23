@@ -387,3 +387,31 @@ export const persenBab = (bab, prog) => {
   const total = jumlahUnitBab(bab);
   return total ? Math.min(100, Math.round((unitSelesaiBab(bab, prog) / total) * 100)) : 0;
 };
+
+/**
+ * Penerjemah error Firestore → Bahasa Indonesia (Turn 53).
+ * SDK Firebase melempar pesan Inggris mentah ("Quota exceeded", dsb) yang
+ * langsung dipajang ke banner admin; pemilik butuh pesan yang bisa dibaca.
+ */
+export function pesanErrorFirestore(e) {
+  const m = String((e && e.message) || e || '');
+  if (/resource-exhausted|quota exceeded/i.test(m)) {
+    return 'kuota harian Firestore (paket gratis) habis — server menolak semua baca/tulis sampai reset harian (± pukul 14:00 WIB). Jangan diulang-ulang; coba lagi besok siang.';
+  }
+  if (/permission-denied|insufficient permissions/i.test(m)) {
+    return 'izin Firestore ditolak — biasanya sesi login kedaluwarsa. Keluar, lalu login ulang sebagai admin.';
+  }
+  if (/unavailable|failed to fetch|network error/i.test(m)) {
+    return 'koneksi ke Firestore terputus — periksa internet, lalu coba lagi.';
+  }
+  if (/nested arrays/i.test(m)) {
+    return 'format draft lama mengandung array bersarang — pakai file IMPOR-…-TERBARU.json dari chat sistem.';
+  }
+  if (/invalid data|invalid-data/i.test(m)) {
+    return 'data draft tidak valid untuk Firestore — kirim screenshot ke chat sistem.';
+  }
+  if (/not-found/i.test(m)) {
+    return 'dokumen tidak ditemukan di server (kemungkinan sudah terhapus) — muat ulang halaman.';
+  }
+  return 'pesan teknis: ' + m;
+}
