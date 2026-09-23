@@ -353,6 +353,24 @@
       ],
       "ujiPemahaman": [
         {
+          "soal": "Manakah contoh yang menunjukkan keanekaragaman tingkat GEN? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Padi varietas tahan wereng dan varietas sensitif wereng dalam satu species.",
+            "Mangga arumanis dan mangga gadung pada species yang sama.",
+            "Ayam kampung dan bebek pada unggas pedesaan.",
+            "Ekosistem mangrove dan ekosistem terumbu karang.",
+            "Mawar merah dan mawar putih dalam satu species Rosa."
+          ],
+          "jawaban": [
+            0,
+            1,
+            4
+          ],
+          "pembahasan": "Tingkat gen = variasi DALAM satu spesies (varietas/ras/warna). Ayam-bebek = beda spesies (tingkat jenis); mangrove-terumbu = tingkat ekosistem.",
+          "sumber": "Gemilang HOTS Drill (analisis tingkat keanekaragaman, tim kurikulum)"
+        },
+        {
           "soal": "Paus (Balaenoptera musculus) dan ikan hiu (Carcharodon carcharias) sama-sama hidup di laut, memiliki sirip dan ekor, serta bentuk tubuh yang lancip sehingga efisien berenang. Namun paus bernapas dengan paru-paru dan menyusui, hiu bernapas dengan insang dan bertelur. Prinsip utama pengelompokan yang memisahkan keduanya adalah ...",
           "tipe": "pg",
           "opsi": [
@@ -396,6 +414,20 @@
           "sumber": "UN 2017 — via kakajaz.blogspot.com"
         },
         {
+          "soal": "Manakah penulisan nama ilmiah yang SAH menurut binomial nomenclature?",
+          "tipe": "pg",
+          "opsi": [
+            "Oryza sativa (cetak miring, genus kapital, spesies kecil)",
+            "oryza sativa (semua huruf kecil)",
+            "Oryza Sativa (kedua kata kapital)",
+            "Oryza sativa L. dengan kata kedua digarisbawahi menyatu dengan kata pertama",
+            "O. Sativa (genus disingkat, spesies kapital)"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Hanya opsi pertama memenuhi seluruh kaidah: dua kata, genus kapital, spesies kecil, miring/garis bawah TERPISAH; nama penulis (L.) boleh menyusul tetapi bukan bagian keharusan kaidah dasar.",
+          "sumber": "Gemilang HOTS Drill (evaluasi kaidah penulisan, tim kurikulum)"
+        },
+        {
           "soal": "Perhatikan gambar dua vertebrata (ular dan singa). Persamaan ciri kedua hewan tersebut adalah ...",
           "tipe": "pg",
           "opsi": [
@@ -409,6 +441,62 @@
           "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2015-ular-singa.jpg",
           "pembahasan": "Reptilia & Mammalia sama-sama berperedaran tertutup. Sekat jantung reptil belum sempurna; reptil poikiloterm; pembuahan eksternal pada ikan/amfibi; trakea pada Arthropoda.",
           "sumber": "UN 2015 — via kakajaz.blogspot.com"
+        },
+        {
+          "soal": "Spesimen X memiliki ciri: tidak bertulang belakang, tubuh beruas-ruas, kaki 3 pasang, memiliki sayap, mengalami metamorfosis sempurna. Spesimen Y: tidak bertulang belakang, tubuh beruas, kaki 4 pasang, tanpa sayap. Pernyataan yang BENAR tentang kedudukan keduanya adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "X dan Y sama-sama Insekta karena beruas-ruas.",
+            "X = Insekta, Y = Arachnida; keduanya berada dalam filum Arthropoda.",
+            "X = Arachnida, Y = Insekta karena perbedaan jumlah kaki.",
+            "X dan Y berbeda filum karena satu bersayap satu tidak.",
+            "X = Crustacea, Y = Insekta."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Kaki 3 pasang + sayap = Insekta; kaki 4 pasang tanpa sayap = Arachnida; keduanya Arthropoda (kaki beruas).",
+          "sumber": "Gemilang HOTS Drill (penerapan kunci determinasi, tim kurikulum)"
+        },
+        {
+          "soal": "Tumpahan minyak mencemari hutan mangrove di sebuah teluk; akar napas tertutup lapisan minyak dan banyak bibit mati. Strategi pemulihan yang PALING tepat beserta alasannya adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "Memindahkan seluruh mangrove ke kebun raya agar selamat (ex-situ penuh).",
+            "Membersihkan minyak (bioremediasi) lalu rehabilitasi in-situ dengan penanaman kembali spesies asli, karena fungsi ekologis mangrove hanya pulih di habitat aslinya.",
+            "Menimbun area dengan pasir baru dan menanam kelapa sawit pengganti.",
+            "Menunggu alami tanpa intervensi karena mangrove tidak dapat direhabilitasi.",
+            "Menebang semua pohon tercemar lalu membakarnya agar minyak hilang."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Evaluasi solusi harus menyerang penyebab (minyak) lalu memulihkan interaksi di habitat asli (in-situ). Ex-situ tidak dapat mempertahankan fungsi ekosistem pantai; opsi lain merusak atau pasif keliru.",
+          "sumber": "Gemilang HOTS Drill (evaluasi solusi pelestarian, tim kurikulum)"
+        },
+        {
+          "soal": "Sel bakteri tergolong prokariotik karena TIDAK memiliki struktur tertentu. Struktur manakah yang PASTI tidak ditemukan pada sel bakteri?",
+          "tipe": "pg",
+          "opsi": [
+            "Membran plasma",
+            "Ribosom 70S",
+            "Mitokondria dan badan Golgi",
+            "Plasmid",
+            "Dinding sel peptidoglikan"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Prokariot = tanpa membran inti dan tanpa organel bermembran (mitokondria, RE, Golgi). Ribosom 70S, plasmid, dinding peptidoglikan, dan membran plasma justru ADA pada bakteri.",
+          "sumber": "Gemilang Drill (pemetaan fokus B.1 struktur prokariotik, tim kurikulum)"
+        },
+        {
+          "soal": "Hasil pewarnaan menunjukkan dinding sel bakteri X tebal berwarna ungu (kristal violet) tanpa selubung luar, sedangkan bakteri Y tipis berwarna merah muda dengan selubung luar lipopolisakarida. Pernyataan yang benar adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "X Gram-negatif sehingga lebih sulit diobati",
+            "X Gram-positif; Y Gram-negatif yang umumnya lebih sulit diobati karena selubung luarnya",
+            "Keduanya Gram-positif karena sama-sama berdinding peptidoglikan",
+            "Y Gram-positif karena berwarna merah muda",
+            "X dan Y sama-sama mudah diobati semua antibiotik"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Ungu tebal tanpa selubung = Gram-positif (X); tipis merah muda berselubung luar = Gram-negatif (Y) yang umumnya lebih sulit ditembus antibiotik.",
+          "sumber": "Gemilang Drill (pemetaan fokus B.2 pewarnaan Gram, tim kurikulum)"
         },
         {
           "soal": "Perhatikan tabel nama bakteri dan perannya pada gambar (I Acetobacter, II Azotobacter, III Bacillus, IV Escherichia, V Streptococcus; peran a-e). Pasangan yang tepat antara bakteri dan perannya adalah ...",
@@ -440,47 +528,61 @@
           "sumber": "UN 2014 — via kakajaz.blogspot.com"
         },
         {
-          "soal": "Sumber bahan makanan alternatif dari kelompok alga seperti Gelidium, Ulva, dan Eucheuma spinosum secara berurutan bermanfaat untuk pembuatan ...",
+          "soal": "Data persentase bakteri resisten terhadap antibiotik X pada sebuah rumah sakit: 2021 = 8%, 2022 = 15%, 2023 = 29%, 2024 = 44%. Audit menunjukkan banyak resep tidak dihabiskan pasien. Kesimpulan PALING tepat adalah ...",
           "tipe": "pg",
           "opsi": [
-            "protein sel tunggal, agar-agar, dan sayuran",
-            "protein sel tunggal, sayuran, dan agar-agar",
-            "es krim, sayuran, dan agar-agar",
-            "es krim, jelly, dan agar-agar",
-            "agar-agar, jelly, dan sayuran"
-          ],
-          "jawaban": 2,
-          "pembahasan": "Gelidium → es krim/agar; Ulva → sayuran laut; Eucheuma spinosum → agar-agar.",
-          "sumber": "UN 2017 — via kakajaz.blogspot.com"
-        },
-        {
-          "soal": "Perhatikan gambar jamur roti (Rhizopus stolonifer). Dari ciri: (1) hifa bercabang tidak bersekat; (2) pembiakan seksual dan aseksual; (3) spora dalam askus; (4) hifa bersekat; (5) spora dalam basidium; (6) zigospora berdinding tebal — ciri yang dimilikinya adalah ...",
-          "tipe": "pg",
-          "opsi": [
-            "(1), (2), dan (3)",
-            "(1), (2), dan (6)",
-            "(3), (4), dan (5)",
-            "(3), (4), dan (6)",
-            "(4), (5), dan (6)"
+            "Antibiotik X mutasinya makin cepat sehingga kualitas produksinya menurun.",
+            "Penggunaan tidak tuntas menyeleksi bakteri resisten sehingga frekuensi gen resisten naik dari tahun ke tahun.",
+            "Tubuh pasien membangun kekebalan terhadap antibiotik X.",
+            "Bakteri sengaja beradaptasi karena 'ingin' bertahan hidup.",
+            "Rumah sakit perlu menaikkan dosis X dua kali lipat agar resistensi hilang."
           ],
           "jawaban": 1,
-          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/un2015-rhizopus.jpg",
-          "pembahasan": "Rhizopus = Zygomycota: hifa tidak bersekat, reproduksi seksual-aseksual, zigospora berdinding tebal.",
-          "sumber": "UN 2015 — via kakajaz.blogspot.com"
+          "pembahasan": "V-O-R-K: variasi ada → obat membunuh yang sensitif → resisten selamat & berbiak → populasi kebal. Mutasi tidak 'dipercepat' oleh obat; dosis lebih tinggi tidak menghapus gen resisten.",
+          "sumber": "Gemilang HOTS Drill (analisis data resistensi, tim kurikulum)"
         },
         {
-          "soal": "Suatu ekosistem darat berciri: hampir seluruh wilayah tertutup salju/es, curah hujan sangat rendah, usia tumbuh tanaman pendek, vegetasi dominan lumut kerak dan semak pendek. Ekosistem tersebut adalah ...",
-          "tipe": "pg",
-          "opsi": [
-            "taiga",
-            "tundra",
-            "hutan gugur",
-            "savana",
-            "hutan hujan tropis"
+          "soal": "Pasangkan bakteri dengan peranan yang tepat.",
+          "tipe": "jodoh",
+          "premis": [
+            "Rhizobium sp.",
+            "Lactobacillus bulgaricus",
+            "Acetobacter xylinum",
+            "Streptomyces griseus"
           ],
-          "jawaban": 1,
-          "pembahasan": "Tundra: permafrost/salju, vegetasi lumut & semak kerdil, musim tumbuh sangat singkat. Taiga = konifer.",
-          "sumber": "UN 2016 — via kakajaz.blogspot.com"
+          "opsi": [
+            "Fiksasi nitrogen pada bintil akar legum",
+            "Pembuatan yoghurt",
+            "Pembuatan nata de coco",
+            "Penghasil antibiotik streptomisin",
+            "Penghasil vitamin K pada usus manusia"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Rhizobium = fiksasi N2; L. bulgaricus = yoghurt; A. xylinum = nata de coco; Streptomyces griseus = streptomisin. Opsi E (vitamin K) adalah peran Escherichia coli = pengecoh.",
+          "sumber": "Gemilang Drill menjodohkan (fokus B.4 peranan bakteri, tim kurikulum)"
+        },
+        {
+          "soal": "Dalam ekosistem sawah tercatat: padi, belalang, katak, cahaya matahari, air, tanah, jamur pengurai, suhu. Manakah yang tergolong komponen ABIOTIK? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Cahaya matahari",
+            "Air dan tanah",
+            "Jamur pengurai",
+            "Suhu",
+            "Belalang"
+          ],
+          "jawaban": [
+            0,
+            1,
+            3
+          ],
+          "pembahasan": "Abiotik = faktor fisik-kimia tak hidup (cahaya, air, tanah, suhu). Jamur = biotik pengurai; belalang = biotik konsumen.",
+          "sumber": "Gemilang HOTS Drill (analisis komponen ekosistem, tim kurikulum)"
         },
         {
           "soal": "Dalam ekosistem laut pada gambar jaring-jaring makanan, jika populasi ikan kecil menurun drastis, dampak paling mungkin adalah ...",
@@ -496,6 +598,28 @@
           "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/soal-gambar/tka-bio-jaring-makanan-zenius.png",
           "pembahasan": "Ikan kecil = pemangsa zooplankton; tekanan hilang → zooplankton meledak (efek ke bawah paling langsung).",
           "sumber": "Contoh Soal TKA Biologi 2026 (1) — zenius.net"
+        },
+        {
+          "soal": "Pada rantai makanan rumput → belalang → katak → ular, energi yang tersimpan pada produsen adalah 1.000 kJ. Berdasarkan hukum 10%, energi yang tersedia pada tingkat konsumen kedua (katak) adalah ... kJ.",
+          "tipe": "isian",
+          "jawaban": "10",
+          "hintFormat": "ketik angka saja tanpa satuan",
+          "pembahasan": "Produsen 1.000 kJ → konsumen I (belalang) 100 kJ → konsumen II (katak) 10 kJ.",
+          "sumber": "Gemilang Drill isian singkat (fokus C.2 hukum 10%, tim kurikulum)"
+        },
+        {
+          "soal": "Suatu ekosistem darat berciri: hampir seluruh wilayah tertutup salju/es, curah hujan sangat rendah, usia tumbuh tanaman pendek, vegetasi dominan lumut kerak dan semak pendek. Ekosistem tersebut adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "taiga",
+            "tundra",
+            "hutan gugur",
+            "savana",
+            "hutan hujan tropis"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Tundra: permafrost/salju, vegetasi lumut & semak kerdil, musim tumbuh sangat singkat. Taiga = konifer.",
+          "sumber": "UN 2016 — via kakajaz.blogspot.com"
         },
         {
           "soal": "Malaria diatasi dengan kina dan DDT. Data: Wilayah A (tanpa resistensi) — kina 3/5/7 hari: 50/76/87% sembuh, DDT 90% menurunkan infeksi; Wilayah B (resisten) — kina 48/72/82%, DDT hanya 60%. Tentukan Tepat/Tidak Tepat tiap pernyataan strategi berikut!",
@@ -518,110 +642,10 @@
           "sumber": "Contoh Soal Resmi TKA Biologi no. 1 (PGK Kategori, HOTS analisis data) — Pusmendik Kemendikdasmen"
         },
         {
-          "soal": "Manakah contoh yang menunjukkan keanekaragaman tingkat GEN? Pilih semua yang benar!",
-          "tipe": "pgMulti",
-          "opsi": [
-            "Padi varietas tahan wereng dan varietas sensitif wereng dalam satu species.",
-            "Mangga arumanis dan mangga gadung pada species yang sama.",
-            "Ayam kampung dan bebek pada unggas pedesaan.",
-            "Ekosistem mangrove dan ekosistem terumbu karang.",
-            "Mawar merah dan mawar putih dalam satu species Rosa."
-          ],
-          "jawaban": [
-            0,
-            1,
-            4
-          ],
-          "pembahasan": "Tingkat gen = variasi DALAM satu spesies (varietas/ras/warna). Ayam-bebek = beda spesies (tingkat jenis); mangrove-terumbu = tingkat ekosistem.",
-          "sumber": "Gemilang HOTS Drill (analisis tingkat keanekaragaman, tim kurikulum)"
-        },
-        {
-          "soal": "Data persentase bakteri resisten terhadap antibiotik X pada sebuah rumah sakit: 2021 = 8%, 2022 = 15%, 2023 = 29%, 2024 = 44%. Audit menunjukkan banyak resep tidak dihabiskan pasien. Kesimpulan PALING tepat adalah ...",
-          "tipe": "pg",
-          "opsi": [
-            "Antibiotik X mutasinya makin cepat sehingga kualitas produksinya menurun.",
-            "Penggunaan tidak tuntas menyeleksi bakteri resisten sehingga frekuensi gen resisten naik dari tahun ke tahun.",
-            "Tubuh pasien membangun kekebalan terhadap antibiotik X.",
-            "Bakteri sengaja beradaptasi karena 'ingin' bertahan hidup.",
-            "Rumah sakit perlu menaikkan dosis X dua kali lipat agar resistensi hilang."
-          ],
-          "jawaban": 1,
-          "pembahasan": "V-O-R-K: variasi ada → obat membunuh yang sensitif → resisten selamat & berbiak → populasi kebal. Mutasi tidak 'dipercepat' oleh obat; dosis lebih tinggi tidak menghapus gen resisten.",
-          "sumber": "Gemilang HOTS Drill (analisis data resistensi, tim kurikulum)"
-        },
-        {
-          "soal": "Spesimen X memiliki ciri: tidak bertulang belakang, tubuh beruas-ruas, kaki 3 pasang, memiliki sayap, mengalami metamorfosis sempurna. Spesimen Y: tidak bertulang belakang, tubuh beruas, kaki 4 pasang, tanpa sayap. Pernyataan yang BENAR tentang kedudukan keduanya adalah ...",
-          "tipe": "pg",
-          "opsi": [
-            "X dan Y sama-sama Insekta karena beruas-ruas.",
-            "X = Insekta, Y = Arachnida; keduanya berada dalam filum Arthropoda.",
-            "X = Arachnida, Y = Insekta karena perbedaan jumlah kaki.",
-            "X dan Y berbeda filum karena satu bersayap satu tidak.",
-            "X = Crustacea, Y = Insekta."
-          ],
-          "jawaban": 1,
-          "pembahasan": "Kaki 3 pasang + sayap = Insekta; kaki 4 pasang tanpa sayap = Arachnida; keduanya Arthropoda (kaki beruas).",
-          "sumber": "Gemilang HOTS Drill (penerapan kunci determinasi, tim kurikulum)"
-        },
-        {
-          "soal": "Pada jaring-jaring makanan sawah: padi → belalang → katak → ular → elang. Jika petani memakai insektisida yang membunuh sebagian besar belalang DAN pemburu menangkap ular secara masif, prediksi yang PALING didukung adalah ...",
-          "tipe": "pg",
-          "opsi": [
-            "Katak meningkat karena ular hilang, lalu populasi elang stabil.",
-            "Katak menurun tajam karena makanan (belalang) hilang; elang menurun karena ular (mangsanya) hilang.",
-            "Padi menurun karena belalang bermigrasi ke sawah lain.",
-            "Elang meningkat karena beralih memakan katak secara penuh.",
-            "Tidak ada perubahan karena sawah ekosistem buatan."
-          ],
-          "jawaban": 1,
-          "pembahasan": "Dua gangguan sekaligus: belalang turun → katak kehilangan makanan (turun); ular turun → elang kehilangan mangsa utama (turun). Opsi A lupa efek ke bawah; D menganggap substitusi sempurna (tidak didukung).",
-          "sumber": "Gemilang HOTS Drill (prediksi jaring makanan dua gangguan, tim kurikulum)"
-        },
-        {
-          "soal": "Manakah penulisan nama ilmiah yang SAH menurut binomial nomenclature?",
-          "tipe": "pg",
-          "opsi": [
-            "Oryza sativa (cetak miring, genus kapital, spesies kecil)",
-            "oryza sativa (semua huruf kecil)",
-            "Oryza Sativa (kedua kata kapital)",
-            "Oryza sativa L. dengan kata kedua digarisbawahi menyatu dengan kata pertama",
-            "O. Sativa (genus disingkat, spesies kapital)"
-          ],
-          "jawaban": 0,
-          "pembahasan": "Hanya opsi pertama memenuhi seluruh kaidah: dua kata, genus kapital, spesies kecil, miring/garis bawah TERPISAH; nama penulis (L.) boleh menyusul tetapi bukan bagian keharusan kaidah dasar.",
-          "sumber": "Gemilang HOTS Drill (evaluasi kaidah penulisan, tim kurikulum)"
-        },
-        {
-          "soal": "Tumpahan minyak mencemari hutan mangrove di sebuah teluk; akar napas tertutup lapisan minyak dan banyak bibit mati. Strategi pemulihan yang PALING tepat beserta alasannya adalah ...",
-          "tipe": "pg",
-          "opsi": [
-            "Memindahkan seluruh mangrove ke kebun raya agar selamat (ex-situ penuh).",
-            "Membersihkan minyak (bioremediasi) lalu rehabilitasi in-situ dengan penanaman kembali spesies asli, karena fungsi ekologis mangrove hanya pulih di habitat aslinya.",
-            "Menimbun area dengan pasir baru dan menanam kelapa sawit pengganti.",
-            "Menunggu alami tanpa intervensi karena mangrove tidak dapat direhabilitasi.",
-            "Menebang semua pohon tercemar lalu membakarnya agar minyak hilang."
-          ],
-          "jawaban": 1,
-          "pembahasan": "Evaluasi solusi harus menyerang penyebab (minyak) lalu memulihkan interaksi di habitat asli (in-situ). Ex-situ tidak dapat mempertahankan fungsi ekosistem pantai; opsi lain merusak atau pasif keliru.",
-          "sumber": "Gemilang HOTS Drill (evaluasi solusi pelestarian, tim kurikulum)"
-        },
-        {
-          "soal": "Dalam ekosistem sawah tercatat: padi, belalang, katak, cahaya matahari, air, tanah, jamur pengurai, suhu. Manakah yang tergolong komponen ABIOTIK? Pilih semua yang benar!",
-          "tipe": "pgMulti",
-          "opsi": [
-            "Cahaya matahari",
-            "Air dan tanah",
-            "Jamur pengurai",
-            "Suhu",
-            "Belalang"
-          ],
-          "jawaban": [
-            0,
-            1,
-            3
-          ],
-          "pembahasan": "Abiotik = faktor fisik-kimia tak hidup (cahaya, air, tanah, suhu). Jamur = biotik pengurai; belalang = biotik konsumen.",
-          "sumber": "Gemilang HOTS Drill (analisis komponen ekosistem, tim kurikulum)"
+          "soal": "Bandingkan pelestarian in-situ dan ex-situ: mengapa in-situ dinilai lebih efektif mempertahankan keanekaragaman hayati jangka panjang? Jawab dengan poin-poin.",
+          "tipe": "uraian",
+          "pembahasan": "Referensi: (1) in-situ melindungi spesies beserta SELURUH interaksi ekosistemnya (rantai makanan, polinator, simbion); (2) proses evolusi & adaptasi alamiah tetap berjalan; (3) biaya perawatan relatif lebih rendah daripada penangkaran; (4) ex-situ tetap berharga sebagai cadangan genetik & edukasi, tetapi populasi kecilnya rawan inbreeding dan tidak menjalankan fungsi ekologis di alam.",
+          "sumber": "Gemilang Drill uraian (fokus C.5 pelestarian, tim kurikulum)"
         }
       ]
     }

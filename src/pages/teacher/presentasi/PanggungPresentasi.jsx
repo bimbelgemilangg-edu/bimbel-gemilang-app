@@ -216,7 +216,24 @@ export default function PanggungPresentasi() {
                     </tbody>
                   </table>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <>
+                    {String(kuis[idx].tipe || 'pg') === 'isian'
+                      || String(kuis[idx].tipe || 'pg') === 'uraian' ? (
+                      <div style={S.catatanProyektor}>
+                        Soal berbentuk {String(kuis[idx].tipe)} — jawaban siswa
+                        berupa teks; {statSoal?.responden || 0} respons masuk.
+                        {tampilKunci && (
+                          <> Kunci/referensi: {String(kuis[idx].jawaban || '')} {kuis[idx].pembahasan || ''}</>
+                        )}
+                      </div>
+                    ) : null}
+                    {String(kuis[idx].tipe || 'pg') === 'jodoh' && (
+                      <div style={S.catatanProyektor}>
+                        Soal menjodohkan: {((kuis[idx].premis || []).length)} premis →
+                        pilih respons. Statistik per respons di bawah.
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {(kuis[idx].opsi || []).map((op, j) => {
                       const n = statSoal?.perOpsi[j] || 0;
                       const total = statSoal?.responden || 0;
@@ -241,7 +258,8 @@ export default function PanggungPresentasi() {
                         </div>
                       );
                     })}
-                  </div>
+                    </div>
+                  </>
                 )}
                 {tampilKunci && kuis[idx].pembahasanGambar && (
                   <img src={kuis[idx].pembahasanGambar} alt="Gambar pembahasan"
@@ -533,6 +551,11 @@ const S = {
     textAlign: 'left', color: T.teks, fontWeight: 600,
   },
   tabelProyektorKunci: { background: T.hijauLatar, color: T.hijauTeks },
+  catatanProyektor: {
+    fontSize: 14, color: T.teks, background: T.kotakBiru,
+    border: `1px solid ${T.kotakBiruGaris}`, borderRadius: 10,
+    padding: '10px 12px', marginBottom: 10, lineHeight: 1.6,
+  },
   pembahasanImg: {
     display: 'block', width: '100%', maxWidth: 560, margin: '10px auto 0',
     borderRadius: 10, border: `1px solid ${T.garis}`, background: '#fff',

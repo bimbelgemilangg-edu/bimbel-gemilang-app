@@ -53,7 +53,7 @@ for (const f of files) {
       const label2 = `${label} soal[${ki + 1}]`;
       const opsi = Array.isArray(k.opsi) ? k.opsi.filter(Boolean) : [];
       if (!k.soal || String(k.soal).length < 8) salah(f, `${label2}: teks soal terlalu pendek`);
-      if (k.tipe && !['pg', 'pgMulti', 'tabel'].includes(k.tipe)) {
+      if (k.tipe && !['pg', 'pgMulti', 'tabel', 'jodoh', 'isian', 'uraian'].includes(k.tipe)) {
         salah(f, `${label2}: tipe tak didukung: ${k.tipe}`);
       }
       if (k.tipe === 'pgMulti') {
@@ -62,6 +62,24 @@ for (const f of files) {
         } else if (k.jawaban.some((x) => x < 0 || x >= opsi.length)) {
           salah(f, `${label2}: indeks pgMulti di luar rentang opsi`);
         }
+      }
+      if (k.tipe === 'jodoh') {
+        const premis = Array.isArray(k.premis) ? k.premis : [];
+        const opsi = Array.isArray(k.opsi) ? k.opsi : [];
+        if (!premis.length || opsi.length <= premis.length) {
+          salah(f, `${label2}: jodohkan butuh premis & opsi lebih banyak (pengecoh)`);
+        }
+        if (!Array.isArray(k.jawaban) || k.jawaban.length !== premis.length) {
+          salah(f, `${label2}: jawaban jodohkan harus per premis`);
+        } else if (k.jawaban.some((c) => c == null || c < 0 || c >= opsi.length)) {
+          salah(f, `${label2}: indeks respons jodohkan di luar rentang`);
+        }
+      }
+      if (k.tipe === 'isian' && typeof k.jawaban !== 'string') {
+        salah(f, `${label2}: isian singkat butuh jawaban string eksak`);
+      }
+      if (k.tipe === 'uraian' && !k.pembahasan) {
+        salah(f, `${label2}: uraian butuh pembahasan sebagai referensi`);
       }
       if (k.tipe === 'tabel') {
         const baris = Array.isArray(k.baris) ? k.baris : [];
@@ -75,7 +93,7 @@ for (const f of files) {
           salah(f, `${label2}: indeks kolom jawaban tabel di luar rentang`);
         }
       }
-      if (k.tipe !== 'tabel' && opsi.length < 2) salah(f, `${label2}: opsi < 2`);
+      if (!['tabel', 'isian', 'uraian'].includes(k.tipe) && opsi.length < 2) salah(f, `${label2}: opsi < 2`);
       if ((k.tipe || 'pg') === 'pg'
         && (typeof k.jawaban !== 'number' || k.jawaban < 0 || k.jawaban >= opsi.length)) {
         salah(f, `${label2}: indeks jawaban ${k.jawaban} di luar rentang 0..${opsi.length - 1}`);
