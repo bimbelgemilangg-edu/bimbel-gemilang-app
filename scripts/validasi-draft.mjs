@@ -13,7 +13,7 @@ const files = process.argv.slice(2).length
   ? process.argv.slice(2)
   : readdirSync(DIR).filter((f) => f.endsWith('.json')).map((f) => join(DIR, f));
 
-const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'gambar', 'langkah']);
+const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'gambar', 'langkah', 'poin']);
 const TIPE_CALLOUT = new Set(['info', 'tips', 'peringatan', 'gemilang', 'guru']);
 let masalah = 0;
 const salah = (f, teks) => { masalah += 1; console.log(`   ❌ ${f}: ${teks}`); };
@@ -45,6 +45,7 @@ for (const f of files) {
       if (jenis === 'callout' && s.tipe && !TIPE_CALLOUT.has(s.tipe)) salah(f, `${label} section[${si}] callout tipe aneh: ${s.tipe}`);
       if (jenis === 'contoh' && !s.teks) salah(f, `${label} section[${si}] contoh tanpa teks`);
       if (jenis === 'langkah' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] langkah tanpa items`);
+      if (jenis === 'poin' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] poin tanpa items`);
       if (jenis === 'gambar' && !s.url) salah(f, `${label} section[${si}] gambar tanpa url`);
     });
     const kuis = b.ujiPemahaman || [];

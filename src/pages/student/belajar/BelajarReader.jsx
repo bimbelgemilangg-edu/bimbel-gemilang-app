@@ -249,9 +249,10 @@ export default function BelajarReader() {
   // terbuka setelah LATIHAN bab sebelumnya selesai dijawab semua
   // (flag latihanSelesai di progres_materi_v2).
   // ============================================================
+  // Turn 38: TIDAK ADA kunci bab — siswa bebas membuka bab mana pun
+  // (kelas 12 TKA perlu refresh materi lama). latihanSelesai tetap
+  // dicatat untuk progres & ditandai ✔ di panel, bukan sebagai gerbang.
   const latihanSelesaiBab = (b) => !!progresMap[b?.id]?.latihanSelesai;
-  const babTerkunci = (i) => i > 0 && !latihanSelesaiBab(babList[i - 1]);
-  const terkunciSekarang = babTerkunci(idxBab);
 
   // Format TKA: centang banyak jawaban (PGK-MCMA)
   const pilihMulti = useCallback((i, j) => {
@@ -363,29 +364,6 @@ export default function BelajarReader() {
             <button type="button" style={tombolPill('primer')}
               onClick={() => { simpanTerakhir(null); navigate('/siswa/belajar'); }}>
               <ArrowLeft size={15} /> Ke beranda Materi Belajar
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (terkunciSekarang) {
-    return (
-      <div style={halamanDasar}>
-        <div style={S.kosong}>
-          <div style={{ fontSize: 30, marginBottom: 8 }}>🔒</div>
-          Bab ini terbuka setelah seluruh Latihan Soal bab sebelumnya
-          selesai dijawab.
-          <div style={{ marginTop: 14, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button type="button" style={tombolPill('primer')}
-              onClick={() => navigate(
-                `/siswa/belajar/${materiId}/${babList[idxBab - 1].id}`)}>
-              Kerjakan bab {idxBab}: {babList[idxBab - 1].judul}
-            </button>
-            <button type="button" style={tombolPill('putih')}
-              onClick={() => navigate(`/siswa/belajar/${materiId}`)}>
-              Daftar materi
             </button>
           </div>
         </div>
@@ -729,16 +707,10 @@ export default function BelajarReader() {
             )}
             <span style={{ flex: 1 }} />
             {babBerikut ? (
-              latihanSelesaiBab(bab) ? (
-                <button type="button" style={tombolPill('primer')}
-                  onClick={() => navigate(`/siswa/belajar/${materiId}/${babBerikut.id}`)}>
-                  {babBerikut.judul} <ChevronRight size={15} />
-                </button>
-              ) : (
-                <span style={S.gateChip}>
-                  🔒 Selesaikan Latihan Soal bab ini untuk membuka bab berikutnya
-                </span>
-              )
+              <button type="button" style={tombolPill('primer')}
+                onClick={() => navigate(`/siswa/belajar/${materiId}/${babBerikut.id}`)}>
+                {babBerikut.judul} <ChevronRight size={15} />
+              </button>
             ) : selesaiBaca ? (
               <button type="button" style={tombolPill('primer')}
                 onClick={() => navigate(`/siswa/belajar/${materiId}`)}>
@@ -775,6 +747,7 @@ export default function BelajarReader() {
                       <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                         <span style={S.panelItemJudul}>{b.judul}</span>
                         <span style={S.panelItemMeta}>
+                          {latihanSelesaiBab(b) ? '✔ latihan • ' : ''}
                           {selesai ? 'Selesai dibaca' : p > 0 ? `${p}% selesai` : 'Belum dibaca'}
                         </span>
                       </span>

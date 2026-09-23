@@ -11,6 +11,7 @@ import {
   Lightbulb, TriangleAlert, Info, Image as IconGambar, CheckCircle2, Zap,
 } from 'lucide-react';
 import { MathText, MathBlock } from '../MathText';
+import bintangGemilang from '../../assets/bintang-gemilang.png';
 import { T, kotakRumus, kotakTips, kotakSukses } from '../../pages/student/belajar/tema';
 
 // banyak judul level-1 sebelum indeks i (untuk penomoran A.1, A.2, ...)
@@ -33,20 +34,19 @@ export default function IsiSections({
           // sampai dasar: level 1 = Sub-elemen (A., B., ...),
           // level 2 = Fokus pembahasan (A.1, A.2, ...) gaya sub-subbab.
           const level = Number(sec.level || 1);
-          const judulL1 = sections
-            .slice(0, i)
-            .filter((x) => String(x.jenis || 'paragraf') === 'judul'
-              && Number(x.level || 1) === 1).length;
+          const judulL1 = jumlahL1Sebelum(sections, i);
           if (level === 2) {
+            // fokus ke-ke dalam sub-elemen ke-judulL1 (1-based);
+            // huruf sub-elemen = judulL1-1 agar A.1, A.2, ... (fix Turn 38)
             const ke = sections
               .slice(0, i)
-              .filter((x) => String(x.jenis || 'paragraf') === 'judul'
+              .filter((x, xi) => String(x.jenis || 'paragraf') === 'judul'
                 && Number(x.level || 1) === 2
-                && jumlahL1Sebelum(sections, i) === judulL1).length;
+                && jumlahL1Sebelum(sections, xi) === judulL1).length;
             return (
               <h4 key={i} id={`sec-${i}`} style={{ ...S.subJudul2, ...S.jangkar }}>
                 <span style={S.subHuruf2}>
-                  {String.fromCharCode(65 + offsetHuruf + judulL1)}.{ke + 1}
+                  {String.fromCharCode(65 + offsetHuruf + judulL1 - 1)}.{ke + 1}
                 </span>{' '}
                 <MathText text={sec.teks} />
               </h4>
@@ -57,6 +57,18 @@ export default function IsiSections({
             <h3 key={i} id={`sec-${i}`} style={{ ...S.subJudul, ...S.jangkar }}>
               <span style={S.subHuruf}>{label}.</span> <MathText text={sec.teks} />
             </h3>
+          );
+        }
+        if (jenis === 'poin') {
+          return (
+            <div key={i} id={`sec-${i}`} style={{ ...S.poinBox, ...S.jangkar }}>
+              {sec.judul ? <div style={S.poinJudul}>📌 {sec.judul}</div> : null}
+              <ul style={S.poinList}>
+                {(sec.items || []).map((it, k) => (
+                  <li key={k} style={S.poinItem}><MathText text={it} /></li>
+                ))}
+              </ul>
+            </div>
           );
         }
         if (jenis === 'paragraf') {
@@ -76,6 +88,19 @@ export default function IsiSections({
           const isGuru = String(sec.tipe) === 'guru'
             || /^catatan guru/i.test(String(sec.judul || ''));
           if (isGuru && !untukGuru) return null;
+          if (tipe === 'gemilang') {
+            return (
+              <div key={i} id={`sec-${i}`} style={{ ...S.gemilangBox, ...S.jangkar }}>
+                <span style={S.gemilangIkon}>
+                  <img src={bintangGemilang} alt="" style={S.gemilangImg} />
+                </span>
+                <span>
+                  <b>{sec.judul || 'Bintang Gemilang — cara cepat'}:</b>{' '}
+                  <MathText text={sec.teks} />
+                </span>
+              </div>
+            );
+          }
           if (isGuru) {
             return (
               <div key={i} id={`sec-${i}`} style={{ ...S.guruBox, ...S.jangkar }}>
@@ -195,6 +220,28 @@ const S = {
     background: T.latar, border: `1px dashed ${T.garis}`, borderRadius: 12,
     color: T.samar, padding: 26, fontSize: 12.5,
   },
+  poinBox: {
+    background: '#F4F9FF', border: `1px solid ${T.kotakBiruGaris}`,
+    borderLeft: `4px solid ${T.biru}`, borderRadius: 12,
+    padding: '10px 14px', margin: '10px 0',
+  },
+  poinJudul: {
+    fontWeight: 800, fontSize: 13, color: T.biruDalam, marginBottom: 6,
+  },
+  poinList: { margin: 0, paddingLeft: 18 },
+  poinItem: {
+    fontSize: 13, color: T.teks, lineHeight: 1.65, margin: '3px 0',
+  },
+  gemilangBox: {
+    display: 'flex', gap: 10, alignItems: 'flex-start',
+    background: 'linear-gradient(135deg,#FFF9E3 0%,#FFEFB8 100%)',
+    border: '1.5px solid #F5C542', borderRadius: 14,
+    padding: '10px 12px', margin: '12px 0',
+    color: '#6B4E00', fontSize: 12.5, lineHeight: 1.65,
+    boxShadow: '0 4px 14px rgba(245,197,66,.25)',
+  },
+  gemilangIkon: { flexShrink: 0, marginTop: -2 },
+  gemilangImg: { width: 30, height: 30, display: 'block' },
   guruBox: {
     display: 'flex', gap: 10, alignItems: 'flex-start',
     background: '#FFF6DE', border: '1px solid #F1E1AE', color: '#8A6D1A',
