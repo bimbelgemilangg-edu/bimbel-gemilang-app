@@ -274,17 +274,18 @@ export default function BelajarReader() {
     setTimeout(() => setToast(null), 2200);
   }, []);
 
-  // tandai latihan bab selesai begitu semua soal terjawab
-  useEffect(() => {
-    if (!semuaDijawab || !babId) return;
-    simpanProgressBab(studentId, materiId, babId, { latihanSelesai: true });
-  }, [semuaDijawab, studentId, materiId, babId]);
-
   const benarCount = useMemo(() =>
     kuis.reduce((a, s, i) => (jawabanBenar(s, jawaban[i]) ? a + 1 : a), 0),
   [kuis, jawaban]);
   const semuaDijawab = kuis.length > 0
     && kuis.every((s, i) => jawabanLengkap(s, jawaban[i]));
+
+  // tandai latihan bab selesai begitu semua soal terjawab
+  // (ditaruh SETELAH deklarasi semuaDijawab -- bug TDZ Turn 30)
+  useEffect(() => {
+    if (!semuaDijawab || !babId) return;
+    simpanProgressBab(studentId, materiId, babId, { latihanSelesai: true });
+  }, [semuaDijawab, studentId, materiId, babId]);
 
   // Simpan kuis lewat EVENT jawab (bukan effect) -- hemat render
   // & dijamin sekali per sesi berkat ref kuisTersimpanSesi.
