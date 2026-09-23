@@ -20,7 +20,7 @@ import {
   ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, Lightbulb,
   TriangleAlert, Info, Image as IconGambar, RotateCcw, Search, Bell,
   PlayCircle, FileText, MessageCircle, XCircle, BookOpen, Star,
-  Presentation,
+  Presentation, PanelRight,
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
 import IsiSections from '../../../components/belajar/IsiSections';
@@ -119,7 +119,11 @@ export default function BelajarReader() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
-  const tampilPanel = lebar >= 1100;
+  // Turn 34: panel daftar materi bisa disembunyikan supaya area baca
+  // lega; default terbuka hanya di layar lebar.
+  const [panelBuka, setPanelBuka] = useState(true);
+  const tampilPanel = lebar >= 1100 && panelBuka;
+  const sempit = lebar < 700;
 
   // ============ SESI PRESENTASI GURU (Fase 3) ============
   const [sesi, setSesi] = useState(null);
@@ -433,6 +437,15 @@ export default function BelajarReader() {
           />
         </div>
         <div style={S.topKanan}>
+          {lebar >= 1100 && (
+            <button type="button" style={S.ikonBulat}
+              title={panelBuka
+                ? 'Sembunyikan panel daftar materi — baca lebih lega'
+                : 'Tampilkan panel daftar materi'}
+              onClick={() => setPanelBuka((v) => !v)}>
+              <PanelRight size={16} />
+            </button>
+          )}
           <button type="button" style={S.ikonBulat} aria-label="Notifikasi">
             <Bell size={16} />
           </button>
@@ -472,7 +485,7 @@ export default function BelajarReader() {
         </div>
       )}
 
-      <div style={S.badan}>
+      <div style={{ ...S.badan, ...(sempit ? S.badanSempit : null) }}>
         {/* ================= KOLOM UTAMA ================= */}
         <main style={S.utama}>
           {/* breadcrumb + judul + progress */}
@@ -532,7 +545,7 @@ export default function BelajarReader() {
 
           {/* ---------- TAB MATERI ---------- */}
           {tabAktifNow === 'materi' && (
-            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+            <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}>{idxBab + 1}</span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
@@ -554,7 +567,7 @@ export default function BelajarReader() {
 
           {/* ---------- TAB RINGKASAN ---------- */}
           {tabAktifNow === 'ringkasan' && (
-            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+            <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><FileText size={14} /></span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
@@ -584,7 +597,7 @@ export default function BelajarReader() {
 
           {/* ---------- TAB VIDEO ---------- */}
           {tabAktifNow === 'video' && (
-            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+            <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><PlayCircle size={14} /></span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
@@ -610,7 +623,7 @@ export default function BelajarReader() {
 
           {/* ---------- TAB SLIDE PPT ---------- */}
           {tabAktifNow === 'slide' && slideSiswa && (
-            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+            <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><Presentation size={14} /></span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
@@ -638,7 +651,7 @@ export default function BelajarReader() {
 
           {/* ---------- TAB MODUL PDF ---------- */}
           {tabAktifNow === 'pdf' && bab.pdfUrl && (
-            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+            <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><FileText size={14} /></span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
@@ -662,7 +675,7 @@ export default function BelajarReader() {
 
           {/* ---------- TAB LATIHAN SOAL ---------- */}
           {tabAktifNow === 'latihan' && (
-            <div style={{ ...kartuDasar, ...S.kartuKonten }}>
+            <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}><CheckCircle2 size={14} /></span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
@@ -1197,6 +1210,8 @@ const S = {
     display: 'flex', gap: 18, alignItems: 'flex-start',
     maxWidth: 1280, margin: '0 auto', padding: '18px 18px 44px',
   },
+  badanSempit: { gap: 10, padding: '10px 8px 36px' },
+  kontenSempit: { padding: 14 },
   utama: { flex: 1, minWidth: 0 },
   headRow: {
     display: 'flex', gap: 16, alignItems: 'flex-start',
@@ -1381,7 +1396,7 @@ const S = {
     background: '#FEF3C7', border: '1px solid #FDE68A',
     borderRadius: 999, padding: '8px 14px', alignSelf: 'center',
   },
-  panel: { width: 320, flexShrink: 0, position: 'sticky', top: 70 },
+  panel: { width: 300, flexShrink: 0, position: 'sticky', top: 70 },
   panelJudul: {
     display: 'flex', alignItems: 'center', gap: 7,
     fontWeight: 800, fontSize: 14.5, color: T.judul,

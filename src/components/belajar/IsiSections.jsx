@@ -13,7 +13,9 @@ import {
 import { MathText, MathBlock } from '../MathText';
 import { T, kotakRumus, kotakTips, kotakSukses } from '../../pages/student/belajar/tema';
 
-export default function IsiSections({ sections, offsetHuruf = 0 }) {
+export default function IsiSections({
+  sections, offsetHuruf = 0, untukGuru = false,
+}) {
   return (
     <>
       {sections.map((sec, i) => {
@@ -40,6 +42,23 @@ export default function IsiSections({ sections, offsetHuruf = 0 }) {
           );
         }
         if (jenis === 'callout') {
+          // CATATAN GURU (Turn 34): callout tipe 'guru' atau berjudul
+          // "Catatan Guru" HANYA tampil di sisi guru (panggung), tidak
+          // pernah di reader siswa.
+          const isGuru = String(sec.tipe) === 'guru'
+            || /^catatan guru/i.test(String(sec.judul || ''));
+          if (isGuru && !untukGuru) return null;
+          if (isGuru) {
+            return (
+              <div key={i} id={`sec-${i}`} style={{ ...S.guruBox, ...S.jangkar }}>
+                <span>👩‍🏫</span>
+                <span>
+                  <b>Catatan Guru (khusus pengajar): </b>
+                  <MathText text={sec.teks} />
+                </span>
+              </div>
+            );
+          }
           const tipe = String(sec.tipe || 'info');
           const gaya = tipe === 'tips' ? kotakTips
             : tipe === 'peringatan'
@@ -88,7 +107,15 @@ export default function IsiSections({ sections, offsetHuruf = 0 }) {
                     <IconGambar size={22} /> Gambar menyusul
                   </div>
                 )}
-              {sec.keterangan && <figcaption style={S.gambarKet}>{sec.keterangan}</figcaption>}
+              {(() => {
+                // Kredit sumber TIDAK ditampilkan ke siswa/guru (Turn 34):
+                // disimpan untuk admin (daftar pustaka). Potong dari "Sumber:".
+                const ket = String(sec.keterangan || '')
+                  .split(/Sumber:/)[0].trim();
+                return ket
+                  ? <figcaption style={S.gambarKet}>{ket}</figcaption>
+                  : null;
+              })()}
             </figure>
           );
         }
@@ -131,6 +158,12 @@ const S = {
     display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
     background: T.latar, border: `1px dashed ${T.garis}`, borderRadius: 12,
     color: T.samar, padding: 26, fontSize: 12.5,
+  },
+  guruBox: {
+    display: 'flex', gap: 10, alignItems: 'flex-start',
+    background: '#FFF6DE', border: '1px solid #F1E1AE', color: '#8A6D1A',
+    borderRadius: 12, padding: '10px 12px', margin: '10px 0',
+    fontSize: 12.5, lineHeight: 1.65,
   },
   gambarKet: { textAlign: 'center', color: T.samar, fontSize: 11.5, marginTop: 6 },
   langkahItem: {

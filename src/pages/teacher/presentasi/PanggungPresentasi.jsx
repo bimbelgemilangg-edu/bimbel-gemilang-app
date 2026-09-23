@@ -159,6 +159,7 @@ export default function PanggungPresentasi() {
                 <IsiSections
                   sections={sections.slice(idx, idx + 1)}
                   offsetHuruf={offsetHuruf}
+                  untukGuru
                 />
               </div>
             ) : (
