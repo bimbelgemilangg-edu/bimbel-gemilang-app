@@ -435,6 +435,88 @@
         {
           "jenis": "judul",
           "level": 2,
+          "teks": "Daur biogeokimia: materi berdaur, energi mengalir"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Daur biogeokimia = pertukaran/perubahan terus-menerus antara komponen biotik dan abiotik. Pada setiap tingkat trofik MATERI tidak hilang — yang mengalir satu arah hanyalah ENERGI. Fungsi daur: mengembalikan unsur kimia yang sudah terpakai ke alam sehingga kehidupan terjaga (Modul Tentor Gemilang, hal ±162-167)."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Peran biotik (versi modul)",
+          "kolom": [
+            "Peran",
+            "Definisi & contoh"
+          ],
+          "rows": [
+            [
+              "Produsen",
+              "Mengubah anorganik menjadi organik (fotosintesis/kemosintesis): tumbuhan, ganggang, fitoplankton."
+            ],
+            [
+              "Konsumen",
+              "Pemakan produsen/konsumen lain (tingkat I, II, III); heterotrof."
+            ],
+            [
+              "Pengurai (dekomposer)",
+              "Menguraikan organik menjadi anorganik: bakteri & jamur (saprofit)."
+            ],
+            [
+              "Detritivor",
+              "Pemakan detritus (sisa bangkai/zat organik): cacing, dll."
+            ]
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Daur air",
+          "items": [
+            "Evaporasi: air laut & daratan menguap karena panas matahari.",
+            "Transpirasi: tumbuhan melepas uap air (±90% penguapan ekosistem darat).",
+            "Kondensasi: uap menjadi awan.",
+            "Presipitasi: hujan ke daratan & laut.",
+            "Infiltrasi: air masuk tanah → diserap tumbuhan / menjadi air tanah."
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Daur karbon",
+          "items": [
+            "CO2 atmosfer difiksasi fotosintesis menjadi zat organik.",
+            "Karbon berpindah lewat rantai makanan.",
+            "Respirasi, penguraian, dan pembakaran mengembalikan CO2 ke atmosfer."
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Daur nitrogen",
+          "items": [
+            "Fiksasi: N2 diikat Rhizobium/petir menjadi senyawa nitrogen.",
+            "Nitrifikasi: amonia → nitrit → nitrat (bakteri nitrifikasi).",
+            "Asimilasi: tanaman menyerap nitrat; hewan memperoleh dari makanan.",
+            "Amonifikasi: pengurai mengembalikan amonia dari sisa organik.",
+            "Denitrifikasi: bakteri denitrifikasi melepas N2 ke atmosfer."
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Daur sulfur & fosfor (khas modul)",
+          "items": [
+            "Sulfur: sulfat direduksi Desulfomaculum/Desulfovibrio → H2S.",
+            "H2S dipakai bakteri fotoautotrof (Chromatium); sulfur dioksidasi menjadi sulfat oleh kemolitotrof.",
+            "Fosfor: TIDAK punya fase gas — ion fosfat dari batuan → erosi → sedimen laut.",
+            "Pengangkatan dasar bumi mengembalikan fosfat ke darat → diserap tumbuhan."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — daur mana tanpa fase gas?",
+          "teks": "Fosfor = satu-satunya daur tanpa fase gas di atmosfer → paling rentan terputus oleh erosi & pupuk berlebih. Opsi jebakan 'daur fosfor lewat udara' selalu salah. Daur air & karbon punya fase gas; nitrogen lewat N2."
+        },
+        {
+          "jenis": "judul",
+          "level": 2,
           "teks": "Ekosistem Indonesia dan bioma dunia"
         },
         {
@@ -752,6 +834,38 @@
           "tipe": "uraian",
           "pembahasan": "Referensi: (1) in-situ melindungi spesies beserta SELURUH interaksi ekosistemnya (rantai makanan, polinator, simbion); (2) proses evolusi & adaptasi alamiah tetap berjalan; (3) biaya perawatan relatif lebih rendah daripada penangkaran; (4) ex-situ tetap berharga sebagai cadangan genetik & edukasi, tetapi populasi kecilnya rawan inbreeding dan tidak menjalankan fungsi ekologis di alam.",
           "sumber": "Gemilang Drill uraian (fokus C.5 pelestarian, tim kurikulum)"
+        },
+        {
+          "soal": "Daur biogeokimia yang TIDAK memiliki fase gas di atmosfer adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "daur air",
+            "daur karbon",
+            "daur nitrogen",
+            "daur fosfor",
+            "daur sulfur"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Fosfor hanya berp lewat batuan-air-sedimen-tumbuhan; tanpa fase gas sehingga paling rentan terputus.",
+          "sumber": "Gemilang Drill (fokus C daur biogeokimia, dikembangkan dari Modul Tentor Gemilang)"
+        },
+        {
+          "soal": "Manakah proses yang termasuk daur nitrogen? Pilih semua yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Fiksasi N2 oleh Rhizobium",
+            "Nitrifikasi amonia menjadi nitrat",
+            "Denitrifikasi melepas N2 ke atmosfer",
+            "Transpirasi uap air oleh daun",
+            "Fotolisis air di tilakoid"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "Transpirasi & fotolisis termasuk  daur air/fotosintesis, bukan daur nitrogen.",
+          "sumber": "Gemilang Drill (fokus C daur biogeokimia, dikembangkan dari Modul Tentor Gemilang)"
         }
       ]
     }
