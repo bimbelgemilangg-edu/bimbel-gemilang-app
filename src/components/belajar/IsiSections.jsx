@@ -76,6 +76,10 @@ export default function IsiSections({
           );
         }
         if (jenis === 'tabelinfo') {
+          // baris bisa [a,b] (draft) atau {s:[a,b]} (hasil sanitasi Firestore)
+          const pasangan = (r) => (Array.isArray(r) ? r
+            : (Array.isArray(r && r.s) ? r.s
+              : (r && r.k !== undefined ? [r.k, r.v] : [r && r.a, r && r.b])));
           return (
             <div key={i} id={`sec-${i}`} style={{ ...S.tabelWrap, ...S.jangkar }}>
               {sec.judul ? <div style={S.poinJudul}>📊 {sec.judul}</div> : null}
@@ -88,12 +92,15 @@ export default function IsiSections({
                   </tr>
                 </thead>
                 <tbody>
-                  {(sec.rows || []).map((r2, k) => (
-                    <tr key={k}>
-                      <td style={S.tabelSel}><MathText text={r2[0]} /></td>
-                      <td style={S.tabelSel}><MathText text={r2[1]} /></td>
-                    </tr>
-                  ))}
+                  {(sec.rows || []).map((r0, k) => {
+                    const r2 = pasangan(r0);
+                    return (
+                      <tr key={k}>
+                        <td style={S.tabelSel}><MathText text={r2[0]} /></td>
+                        <td style={S.tabelSel}><MathText text={r2[1]} /></td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -104,11 +111,15 @@ export default function IsiSections({
             <div key={i} id={`sec-${i}`} style={{ ...S.poinBox, ...S.jangkar }}>
               <div style={S.poinJudul}>📖 Kamus mini istilah</div>
               <ul style={S.poinList}>
-                {(sec.items || []).map((it, k) => (
-                  <li key={k} style={S.poinItem}>
-                    <b>{it[0]}</b> = {it[1]}
-                  </li>
-                ))}
+                {(sec.items || []).map((it0, k) => {
+                  const it = Array.isArray(it0) ? it0
+                    : (Array.isArray(it0 && it0.s) ? it0.s : [it0 && it0.k, it0 && it0.v]);
+                  return (
+                    <li key={k} style={S.poinItem}>
+                      <b>{it[0]}</b> = {it[1]}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           );
