@@ -58,22 +58,22 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Gen",
-              "unit pewarisan; perbedaan susunan gen dalam satu spesies = keanekaragaman tingkat gen."
-            ],
-            [
-              "Spesies",
-              "kelompok organisme yang dapat kawin dan menghasilkan keturunan fertil."
-            ],
-            [
-              "Ekosistem",
-              "kesatuan komunitas dengan lingkungan abiotiknya."
-            ],
-            [
-              "Endemik",
-              "spesies yang hanya ditemukan di satu wilayah tertentu (mis. komodo, anoa, maleo)."
-            ]
+            {
+              "k": "Gen",
+              "v": "unit pewarisan; perbedaan susunan gen dalam satu spesies = keanekaragaman tingkat gen."
+            },
+            {
+              "k": "Spesies",
+              "v": "kelompok organisme yang dapat kawin dan menghasilkan keturunan fertil."
+            },
+            {
+              "k": "Ekosistem",
+              "v": "kesatuan komunitas dengan lingkungan abiotiknya."
+            },
+            {
+              "k": "Endemik",
+              "v": "spesies yang hanya ditemukan di satu wilayah tertentu (mis. komodo, anoa, maleo)."
+            }
           ]
         },
         {
@@ -130,18 +130,18 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Takson",
-              "kelompok hasil klasifikasi pada jenjang tertentu (domain s.d. spesies)."
-            ],
-            [
-              "Binomial nomenclature",
-              "aturan penamaan dua kata (genus + penunjuk spesies)."
-            ],
-            [
-              "Genus",
-              "takson di atas spesies; nama pertama pada nama ilmiah."
-            ]
+            {
+              "k": "Takson",
+              "v": "kelompok hasil klasifikasi pada jenjang tertentu (domain s.d. spesies)."
+            },
+            {
+              "k": "Binomial nomenclature",
+              "v": "aturan penamaan dua kata (genus + penunjuk spesies)."
+            },
+            {
+              "k": "Genus",
+              "v": "takson di atas spesies; nama pertama pada nama ilmiah."
+            }
           ]
         },
         {
@@ -235,22 +235,22 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Nukleoid",
-              "zona DNA bakteri tanpa selubung membran."
-            ],
-            [
-              "Plasmid",
-              "DNA sirkular kecil pembawa gen tambahan (mis. gen resistensi); dapat berpindah antarbakteri."
-            ],
-            [
-              "Peptidoglikan",
-              "penyusun dinding sel bakteri; tebal pada Gram-positif."
-            ],
-            [
-              "Endospora",
-              "bentuk bertahan berdinding tebal pada kondisi ekstrem."
-            ]
+            {
+              "k": "Nukleoid",
+              "v": "zona DNA bakteri tanpa selubung membran."
+            },
+            {
+              "k": "Plasmid",
+              "v": "DNA sirkular kecil pembawa gen tambahan (mis. gen resistensi); dapat berpindah antarbakteri."
+            },
+            {
+              "k": "Peptidoglikan",
+              "v": "penyusun dinding sel bakteri; tebal pada Gram-positif."
+            },
+            {
+              "k": "Endospora",
+              "v": "bentuk bertahan berdinding tebal pada kondisi ekstrem."
+            }
           ]
         },
         {
@@ -389,22 +389,22 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Trofik",
-              "tingkat kedudukan organisme dalam rantai makanan."
-            ],
-            [
-              "Produsen",
-              "organisme autotrof penyusun zat organik."
-            ],
-            [
-              "Konsumen",
-              "organisme heterotrof pemakan organisme lain."
-            ],
-            [
-              "Dekomposer",
-              "pengurai sisa organik menjadi materi anorganik."
-            ]
+            {
+              "k": "Trofik",
+              "v": "tingkat kedudukan organisme dalam rantai makanan."
+            },
+            {
+              "k": "Produsen",
+              "v": "organisme autotrof penyusun zat organik."
+            },
+            {
+              "k": "Konsumen",
+              "v": "organisme heterotrof pemakan organisme lain."
+            },
+            {
+              "k": "Dekomposer",
+              "v": "pengurai sisa organik menjadi materi anorganik."
+            }
           ]
         },
         {
@@ -449,22 +449,22 @@
             "Definisi & contoh"
           ],
           "rows": [
-            [
-              "Produsen",
-              "Mengubah anorganik menjadi organik (fotosintesis/kemosintesis): tumbuhan, ganggang, fitoplankton."
-            ],
-            [
-              "Konsumen",
-              "Pemakan produsen/konsumen lain (tingkat I, II, III); heterotrof."
-            ],
-            [
-              "Pengurai (dekomposer)",
-              "Menguraikan organik menjadi anorganik: bakteri & jamur (saprofit)."
-            ],
-            [
-              "Detritivor",
-              "Pemakan detritus (sisa bangkai/zat organik): cacing, dll."
-            ]
+            {
+              "k": "Produsen",
+              "v": "Mengubah anorganik menjadi organik (fotosintesis/kemosintesis): tumbuhan, ganggang, fitoplankton."
+            },
+            {
+              "k": "Konsumen",
+              "v": "Pemakan produsen/konsumen lain (tingkat I, II, III); heterotrof."
+            },
+            {
+              "k": "Pengurai (dekomposer)",
+              "v": "Menguraikan organik menjadi anorganik: bakteri & jamur (saprofit)."
+            },
+            {
+              "k": "Detritivor",
+              "v": "Pemakan detritus (sisa bangkai/zat organik): cacing, dll."
+            }
           ]
         },
         {

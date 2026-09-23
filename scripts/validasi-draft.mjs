@@ -49,6 +49,15 @@ for (const f of files) {
       if (jenis === 'alur' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] alur tanpa items`);
       if (jenis === 'tabelinfo' && !(Array.isArray(s.rows) && s.rows.length)) salah(f, `${label} section[${si}] tabelinfo tanpa rows`);
       if (jenis === 'istilah' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] istilah tanpa items`);
+      // Turn 54: Firestore menolak nested array -> rows/items WAJIB objek {k,v}
+      if (jenis === 'tabelinfo' && Array.isArray(s.rows)
+        && s.rows.some((r) => Array.isArray(r))) {
+        salah(f, `${label} section[${si}] tabelinfo.rows harus objek {k,v} (nested array ditolak Firestore)`);
+      }
+      if (jenis === 'istilah' && Array.isArray(s.items)
+        && s.items.some((r) => Array.isArray(r))) {
+        salah(f, `${label} section[${si}] istilah.items harus objek {k,v} (nested array ditolak Firestore)`);
+      }
       if (jenis === 'gambar' && !s.url) salah(f, `${label} section[${si}] gambar tanpa url`);
     });
     const kuis = b.ujiPemahaman || [];

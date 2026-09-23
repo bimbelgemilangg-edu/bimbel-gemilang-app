@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
 import IsiSections from '../../../components/belajar/IsiSections';
+import JodohBoard from '../../../components/belajar/JodohBoard';
 import {
   cariSesiAktif, pantauSesi, tandaiPeserta, kirimJawabanLive,
   antreMaju, batalAntre, pantauAntreanSaya,
@@ -57,7 +58,7 @@ const HINT_JAWAB = {
   pg: 'Cara menjawab: baca pertanyaan dulu cari kata kunci, lalu eliminasilah opsi yang paling tidak logis sesuai stimulus.',
   tabel: 'Cara menjawab: nilai SETIAP baris secara mandiri dan isi SEMUA baris — skor dihitung per baris benar.',
   pgMulti: 'Cara menjawab: pindai ulang stimulus; jawaban benar bisa lebih dari satu, jangan berhenti di temuan pertama.',
-  jodoh: 'Cara menjawab: pasangkan dulu pasangan yang paling pasti (jangkar), sisa opsi sulit dikerjakan terakhir.',
+  jodoh: 'Cara menjawab: baca premis kiri, pilih pasangannya lewat kotak di sampingnya; kunci pasangan paling pasti (jangkar) dulu, opsi sulit terakhir. Satu pilihan boleh jadi jawaban lebih dari satu premis.',
   isian: 'Cara menjawab: ketik jawaban eksak; perhatikan format (pembulatan, tanda koma/titik, satuan).',
   uraian: 'Cara menjawab: tulis poin-per-poin agar selaras kata kunci rubrik; bandingkan dengan referensi setelah dikirim.',
 };
@@ -292,14 +293,13 @@ export default function BelajarReader() {
   // dicatat untuk progres & ditandai ✔ di panel, bukan sebagai gerbang.
   const latihanSelesaiBab = (b) => !!progresMap[b?.id]?.latihanSelesai;
 
-  // Menjodohkan: satu opsi respons hanya boleh dipakai satu premis
+  // Menjodohkan (Turn 54, arahan owner): tiap premis memilih respons
+  // dari kolam pilihan di sampingnya; SATU RESPONS BOLEH dipakai lebih
+  // dari satu premis (kunci boleh sama) seperti CBT TKA asli.
   const pilihJodoh = useCallback((i, r, c) => {
     setJawaban((old) => {
       const arr = Array.isArray(old[i]) ? [...old[i]] : [];
-      if (arr[r] === c) { arr[r] = undefined; return { ...old, [i]: arr }; }
-      const dipakai = arr.indexOf(c);
-      if (dipakai >= 0) arr[dipakai] = undefined;
-      arr[r] = c;
+      arr[r] = c == null ? undefined : c;
       return { ...old, [i]: arr };
     });
   }, []);
@@ -972,40 +972,8 @@ function PanelKuis({
           </div>
         </div>
       ) : tipeSoal(soal) === 'jodoh' ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {(soal.premis || []).map((pr, r) => {
-            const pil = Array.isArray(dipilih) ? dipilih[r] : undefined;
-            return (
-              <div key={r} style={S.jodohRow}>
-                <div style={S.jodohPremis}>{r + 1}. <MathText text={pr} /></div>
-                <div style={S.jodohOpsis}>
-                  {(soal.opsi || []).map((op, c) => {
-                    const dipakaiLain = Array.isArray(dipilih)
-                      && dipilih.includes(c) && pil !== c;
-                    const kunci = terkoreksi && (soal.jawaban || [])[r] === c;
-                    return (
-                      <button key={c} type="button"
-                        disabled={terkoreksi || dipakaiLain}
-                        style={{
-                          ...S.jodohChip,
-                          ...(pil === c ? S.jodohChipPil : null),
-                          ...(terkoreksi && pil === c && kunci ? S.opsiBenar : null),
-                          ...(terkoreksi && pil === c && !kunci ? S.opsiSalah : null),
-                          ...(terkoreksi && pil !== c && kunci ? S.opsiKunciTipis : null),
-                        }}
-                        onClick={() => pilihJodoh(soalIdx, r, c)}>
-                        {String.fromCharCode(65 + c)}. <MathText text={op} />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-          <div style={S.hintKecil}>
-            Satu respons hanya untuk satu premis; mulai dari pasangan pasti.
-          </div>
-        </div>
+        <JodohBoard soal={soal} dipilih={dipilih} terkoreksi={terkoreksi}
+          onPilih={(r, c) => pilihJodoh(soalIdx, r, c)} />
       ) : tipeSoal(soal) === 'isian' ? (
         <div>
           <input style={S.isianInput}
@@ -1254,37 +1222,13 @@ function LiveKuis({ sessionId, soal, idx, total }) {
           </div>
         </>
       ) : fmt === 'jodoh' ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {(soal.premis || []).map((pr, r) => (
-            <div key={r} style={S.jodohRow}>
-              <div style={S.jodohPremis}>{r + 1}. <MathText text={pr} /></div>
-              <div style={S.jodohOpsis}>
-                {(soal.opsi || []).map((op, c) => {
-                  const arr = Array.isArray(pilihan) ? pilihan : [];
-                  const pil = arr[r] === c;
-                  const dipakaiLain = arr.includes(c) && !pil;
-                  return (
-                    <button key={c} type="button"
-                      disabled={terkirim || dipakaiLain}
-                      style={{
-                        ...S.jodohChip,
-                        ...(pil ? S.jodohChipPil : null),
-                      }}
-                      onClick={() => setPilihan((old) => {
-                        const a = Array.isArray(old) ? [...old] : [];
-                        const idx = a.indexOf(c);
-                        if (idx >= 0) a[idx] = undefined;
-                        a[r] = c;
-                        return a;
-                      })}>
-                      {String.fromCharCode(65 + c)}. <MathText text={op} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+        <JodohBoard soal={soal} dipilih={pilihan} terkoreksi={false}
+          disabled={terkirim}
+          onPilih={(r, c) => setPilihan((old) => {
+            const a = Array.isArray(old) ? [...old] : [];
+            a[r] = c == null ? undefined : c;
+            return a;
+          })} />
       ) : fmt === 'isian' ? (
         <input style={S.isianInput}
           value={typeof pilihan === 'string' ? pilihan : ''}

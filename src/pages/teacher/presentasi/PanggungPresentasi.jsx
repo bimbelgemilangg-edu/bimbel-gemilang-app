@@ -229,8 +229,26 @@ export default function PanggungPresentasi() {
                     ) : null}
                     {String(kuis[idx].tipe || 'pg') === 'jodoh' && (
                       <div style={S.catatanProyektor}>
-                        Soal menjodohkan: {((kuis[idx].premis || []).length)} premis →
-                        pilih respons. Statistik per respons di bawah.
+                        Soal menjodohkan: {(kuis[idx].premis || []).length} premis
+                        (kiri) memilih pasangan dari kolam respons (kanan);
+                        satu respons boleh dipakai lebih dari satu premis.
+                        Statistik per respons di bawah.
+                        {tampilKunci && (
+                          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            {(kuis[idx].premis || []).map((pr, r) => {
+                              const c = (kuis[idx].jawaban || [])[r];
+                              return (
+                                <div key={r}>
+                                  {r + 1}. {pr} →{' '}
+                                  <b>
+                                    {c == null ? '—'
+                                      : `${String.fromCharCode(65 + c)}. ${(kuis[idx].opsi || [])[c]}`}
+                                  </b>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

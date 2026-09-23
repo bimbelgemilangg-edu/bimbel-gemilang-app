@@ -383,11 +383,26 @@ export default function EditBabV2() {
                           patch.baris = k.baris || [''];
                           patch.jawaban = Array.isArray(k.jawaban) ? k.jawaban : [];
                         }
+                        if (v === 'jodoh') {
+                          patch.premis = Array.isArray(k.premis) && k.premis.length
+                            ? k.premis : ['', ''];
+                          patch.opsi = Array.isArray(k.opsi) && k.opsi.length
+                            ? k.opsi : ['', '', ''];
+                          patch.jawaban = patch.premis.map((_, r) =>
+                            (Array.isArray(k.jawaban) && k.jawaban[r] != null
+                              ? k.jawaban[r] : 0));
+                        }
+                        if (v === 'isian' || v === 'uraian') {
+                          patch.jawaban = typeof k.jawaban === 'string' ? k.jawaban : '';
+                        }
                         setKuis(i, patch);
                       }}>
                       <option value="pg">PG — satu jawaban</option>
                       <option value="pgMulti">PGK-MCMA — centang beberapa benar</option>
                       <option value="tabel">PGK kategori — tabel per baris</option>
+                      <option value="jodoh">Menjodohkan — premis kiri, pilihan kanan</option>
+                      <option value="isian">Isian singkat — jawaban eksak</option>
+                      <option value="uraian">Uraian — referensi jawaban</option>
                     </select>
                     {(k.tipe || 'pg') === 'tabel' ? (
                       <>
@@ -431,6 +446,85 @@ export default function EditBabV2() {
                           + baris pernyataan
                         </button>
                       </>
+                    ) : (k.tipe || 'pg') === 'jodoh' ? (
+                      <>
+                        <div style={S.labelKecil}>
+                          Premis (kolom kiri) + huruf kunci pasangannya
+                          (satu huruf boleh menjadi kunci lebih dari satu premis)
+                        </div>
+                        {(k.premis || []).map((pr, r) => (
+                          <div key={r} style={S.opsiRow}>
+                            <select style={{ ...S.inp, width: 74, flexShrink: 0 }}
+                              value={Array.isArray(k.jawaban) && k.jawaban[r] != null
+                                ? k.jawaban[r] : 0}
+                              onChange={(e) => {
+                                const arr = Array.isArray(k.jawaban)
+                                  ? [...k.jawaban] : [];
+                                arr[r] = Number(e.target.value);
+                                setKuis(i, { jawaban: arr });
+                              }}
+                              title="Kunci pasangan premis ini">
+                              {(k.opsi || []).map((_, c) => (
+                                <option key={c} value={c}>
+                                  {String.fromCharCode(65 + c)}
+                                </option>
+                              ))}
+                            </select>
+                            <input style={S.inp} value={pr}
+                              placeholder={`Premis ${r + 1}`}
+                              onChange={(e) => setKuis(i, {
+                                premis: (k.premis || []).map((x, y) => (y === r ? e.target.value : x)),
+                              })} />
+                            <button type="button" style={S.iconBtn}
+                              onClick={() => setKuis(i, {
+                                premis: (k.premis || []).filter((_, y) => y !== r),
+                                jawaban: (k.jawaban || []).filter((_, y) => y !== r),
+                              })}>
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        <button type="button" style={S.btnKecil}
+                          onClick={() => setKuis(i, {
+                            premis: [...(k.premis || []), ''],
+                            jawaban: [...(k.jawaban || []), 0],
+                          })}>
+                          + premis
+                        </button>
+                        <div style={S.labelKecil}>
+                          Kolam pilihan pasangan (kolom kanan) — wajib lebih
+                          banyak daripada premis (sisanya pengecoh)
+                        </div>
+                        {(k.opsi || []).map((op, j) => (
+                          <div key={j} style={S.opsiRow}>
+                            <input style={S.inp} value={op}
+                              placeholder={`Pilihan ${String.fromCharCode(65 + j)}`}
+                              onChange={(e) => setKuis(i, {
+                                opsi: (k.opsi || []).map((o, x) => (x === j ? e.target.value : o)),
+                              })} />
+                            <button type="button" style={S.iconBtn}
+                              onClick={() => setKuis(i, {
+                                opsi: (k.opsi || []).filter((_, y) => y !== j),
+                              })}>
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                        <button type="button" style={S.btnKecil}
+                          onClick={() => setKuis(i, { opsi: [...(k.opsi || []), ''] })}>
+                          + pilihan pasangan
+                        </button>
+                      </>
+                    ) : (k.tipe || 'pg') === 'isian' ? (
+                      <input style={S.inp}
+                        value={typeof k.jawaban === 'string' ? k.jawaban : ''}
+                        placeholder="Kunci jawaban eksak (mis. 80 atau 2,5)"
+                        onChange={(e) => setKuis(i, { jawaban: e.target.value })} />
+                    ) : (k.tipe || 'pg') === 'uraian' ? (
+                      <textarea style={S.inp} rows={3}
+                        value={typeof k.jawaban === 'string' ? k.jawaban : ''}
+                        placeholder="Referensi jawaban (pokok-pokok kunci rubrik)"
+                        onChange={(e) => setKuis(i, { jawaban: e.target.value })} />
                     ) : (
                       <>
                         {(k.opsi || []).map((op, j) => (
@@ -492,6 +586,27 @@ export default function EditBabV2() {
                       { soal: '', tipe: 'tabel', kolom: ['Benar', 'Salah'], baris: [''], jawaban: [], pembahasan: '' },
                     ])}>
                     + tabel kategori
+                  </button>
+                  <button type="button" style={S.btnAdd}
+                    onClick={() => set('ujiPemahaman', [
+                      ...(bab.ujiPemahaman || []),
+                      { soal: '', tipe: 'jodoh', premis: ['', ''], opsi: ['', '', ''], jawaban: [0, 0], pembahasan: '' },
+                    ])}>
+                    + menjodohkan
+                  </button>
+                  <button type="button" style={S.btnAdd}
+                    onClick={() => set('ujiPemahaman', [
+                      ...(bab.ujiPemahaman || []),
+                      { soal: '', tipe: 'isian', jawaban: '', pembahasan: '' },
+                    ])}>
+                    + isian singkat
+                  </button>
+                  <button type="button" style={S.btnAdd}
+                    onClick={() => set('ujiPemahaman', [
+                      ...(bab.ujiPemahaman || []),
+                      { soal: '', tipe: 'uraian', jawaban: '', pembahasan: '' },
+                    ])}>
+                    + uraian
                   </button>
                 </div>
 
@@ -560,6 +675,7 @@ export default function EditBabV2() {
 }
 
 const S = {
+  labelKecil: { fontSize: 11, color: '#64748B', margin: '6px 0 4px', fontWeight: 700 },
   head: {
     display: 'flex', gap: 12, alignItems: 'center',
     padding: '14px 18px', background: T.gradasiHero,
