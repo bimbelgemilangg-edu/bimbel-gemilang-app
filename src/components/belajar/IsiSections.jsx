@@ -13,6 +13,14 @@ import {
 import { MathText, MathBlock } from '../MathText';
 import { T, kotakRumus, kotakTips, kotakSukses } from '../../pages/student/belajar/tema';
 
+// banyak judul level-1 sebelum indeks i (untuk penomoran A.1, A.2, ...)
+function jumlahL1Sebelum(sections, i) {
+  return sections
+    .slice(0, i)
+    .filter((x) => String(x.jenis || 'paragraf') === 'judul'
+      && Number(x.level || 1) === 1).length;
+}
+
 export default function IsiSections({
   sections, offsetHuruf = 0, untukGuru = false,
 }) {
@@ -21,10 +29,30 @@ export default function IsiSections({
       {sections.map((sec, i) => {
         const jenis = String(sec?.jenis || 'paragraf');
         if (jenis === 'judul') {
-          const sebelum = sections
+          // Turn 36: hierarki dua tingkat agar materi bisa dipelajari
+          // sampai dasar: level 1 = Sub-elemen (A., B., ...),
+          // level 2 = Fokus pembahasan (A.1, A.2, ...) gaya sub-subbab.
+          const level = Number(sec.level || 1);
+          const judulL1 = sections
             .slice(0, i)
-            .filter((s) => String(s.jenis || 'paragraf') === 'judul').length;
-          const label = String.fromCharCode(65 + offsetHuruf + sebelum);
+            .filter((x) => String(x.jenis || 'paragraf') === 'judul'
+              && Number(x.level || 1) === 1).length;
+          if (level === 2) {
+            const ke = sections
+              .slice(0, i)
+              .filter((x) => String(x.jenis || 'paragraf') === 'judul'
+                && Number(x.level || 1) === 2
+                && jumlahL1Sebelum(sections, i) === judulL1).length;
+            return (
+              <h4 key={i} id={`sec-${i}`} style={{ ...S.subJudul2, ...S.jangkar }}>
+                <span style={S.subHuruf2}>
+                  {String.fromCharCode(65 + offsetHuruf + judulL1)}.{ke + 1}
+                </span>{' '}
+                <MathText text={sec.teks} />
+              </h4>
+            );
+          }
+          const label = String.fromCharCode(65 + offsetHuruf + judulL1);
           return (
             <h3 key={i} id={`sec-${i}`} style={{ ...S.subJudul, ...S.jangkar }}>
               <span style={S.subHuruf}>{label}.</span> <MathText text={sec.teks} />
@@ -142,6 +170,14 @@ const S = {
   subJudul: {
     display: 'flex', alignItems: 'baseline', gap: 7,
     margin: '22px 0 8px', fontSize: 15.5, fontWeight: 800, color: T.judul,
+  },
+  subJudul2: {
+    fontSize: 14, fontWeight: 800, color: T.biruDalam,
+    margin: '14px 0 6px', lineHeight: 1.4,
+    borderLeft: `3px solid ${T.kotakBiruGaris}`, paddingLeft: 8,
+  },
+  subHuruf2: {
+    color: T.biru, fontWeight: 800, marginRight: 6, fontSize: 12.5,
   },
   subHuruf: { color: T.biru, fontStyle: 'italic' },
   paragraf: { margin: '0 0 13px', fontSize: 14, lineHeight: 1.85, color: T.teks },
