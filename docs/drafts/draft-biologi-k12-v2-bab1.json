@@ -20,28 +20,96 @@
       "urutan": 1,
       "tipe": "teks",
       "sections": [
-        { "jenis": "judul", "teks": "A. Hakikat Klasifikasi Makhluk Hidup" },
-        { "jenis": "paragraf", "teks": "Klasifikasi adalah pengelompokan makhluk hidup berdasarkan persamaan dan perbedaan ciri. Tujuannya praktis: menyederhanakan jutaan spesies agar mudah dipelajari, menunjukkan hubungan kekerabatan, dan memberi nama ilmiah yang sama di seluruh dunia. Manfaatnya terasa saat peneliti obat mencari tumbuhan berkhasiat: cukup telusuri satu genus, maka spesies saudaranya kemungkinan membawa senyawa serupa." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-tingkatan-takson.svg", "keterangan": "Delapan tingkatan takson dari yang paling luas (domain) hingga paling spesifik (spesies). Semakin ke bawah, anggota semakin sedikit tetapi persamaan ciri semakin banyak." },
-        { "jenis": "paragraf", "teks": "Nama ilmiah memakai binomial nomenclature (karya Linnaeus): dua kata berbahasa Latin — kata pertama nama genus dengan huruf kapital, kata kedua penunjuk spesies dengan huruf kecil — ditulis miring atau digarisbawahi terpisah. Contoh: Oryza sativa (padi), Panthera tigris (harimau). Aturan ini yang membuat soal 'penulisan yang benar' selalu muncul di ujian." },
-        { "jenis": "callout", "tipe": "info", "judul": "Catatan Guru", "teks": "Ajak siswa mengklasifikasi benda di kelas (spidol, buku, botol) dengan kriteria buatan mereka sendiri, lalu bandingkan: klasifikasi teman berbeda karena kriteria berbeda. Dari situ masuk konsep: taksonomi ilmiah menyepakati KRIteria ciri, bukan selera." },
-        { "jenis": "judul", "teks": "B. Tiga Sistem Klasifikasi & Contoh Penalaran" },
-        { "jenis": "paragraf", "teks": "Sistem artifisial mengelompokkan berdasarkan ciri mudah dilihat yang sering kali tidak mencerminkan kekerabatan (mis. semua hewan bisa berenang dijadikan satu). Sistem alami memakai banyak ciri morfologi-anatomi-fisiologi sekaligus. Sistem filogenetik menambahkan sejarah evolusi dan kekerabatan genetika — inilah dasar klasifikasi modern. Karena itu dua hewan yang tampak mirip karena adaptasi habitat yang sama belum tentu sekeluarga." },
-        { "jenis": "contoh", "judul": "Paus dan hiu: mirip tetapi berbeda kelas", "teks": "Paus (Balaenoptera musculus) dan hiu (Carcharodon carcharias) sama-sama hidup di laut, bersirip, dan berbentuk streamline. Mengapa klasifikasi memisahkan keduanya?", "pembahasan": "Bentuk streamline keduanya adalah hasil adaptasi konvergen terhadap air, bukan tanda kekerabatan. Paus bernapas dengan paru-paru, menyusui, dan berdarah panas → Mammalia. Hiu bernapas dengan insang dan umumnya bertelur → Pisces. Klasifikasi didasarkan pada persamaan-perbedaan ciri (jawab: prinsip ciri, bukan habitat)." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — 3 pertanyaan klasifikasi", "teks": "Bila soal membandingkan dua organisme: (1) ciri tubuhnya sama, atau cuma rumahnya yang sama? (2) cara hidup dasarnya (napas, reproduksi, suhu tubuh) sama? (3) baru cek kekerabatan terdekat. Bila (1) dan (2) berbeda → pasti kelompok berbeda, seberapa pun mirip penampilannya." },
-        { "jenis": "judul", "teks": "C. Keanekaragaman Hayati: Tiga Tingkat" },
-        { "jenis": "paragraf", "teks": "Tingkat gen: variasi dalam satu spesies (padi IR64, C4, Rojolele; mangga harum-manis dan gedong; anjing berbagai ras). Tingkat jenis (spesies): variasi antarspesies dalam satu keluarga (harimau, singa, macan tutul pada Felidae). Tingkat ekosistem: variasi habitat beserta interaksinya (hutan hujan tropis, mangrove, padang lamun, savana Sumba). Indonesia termasuk negara megabiodiversity: garis Wallace, Weber, dan Lydekker membagi fauna Indonesia menjadi tipe Asiatis, peralihan, dan Australis." },
-        { "jenis": "judul", "teks": "D. Bakteri: Struktur, Pewarnaan Gram, dan Peranan" },
-        { "jenis": "paragraf", "teks": "Bakteri adalah prokariota: tidak memiliki membran inti sehingga materi genetiknya berupa nukleoid yang bebas di sitoplasma. Pembungkusnya berlapis tiga — kapsul (lendir pelindung), dinding sel peptidoglikan, dan membran plasma. Di dalamnya ada ribosom untuk sintesis protein serta plasmid, cincin DNA kecil yang membawa gen tambahan seperti gen resistensi antibiotik dan dapat berpindah antarbakteri melalui konjugasi. Alcuni jenis membentuk endospora untuk bertahan di kondisi ekstrem. Reproduksi utamanya pembelahan biner (aseksual), sangat cepat pada kondisi ideal." },
-        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/diagram-struktur-sel-bakteri.svg", "keterangan": "Diagram sel bakteri: kapsul, dinding sel, membran plasma, nukleoid, plasmid, ribosom, pili, dan flagela. Perhatikan perbedaan ketebalan peptidoglikan Gram positif vs negatif." },
-        { "jenis": "paragraf", "teks": "Pewarnaan Gram membagi bakteri menjadi Gram positif (dinding peptidoglikan tebal, menahan warna ungu kristal violet) dan Gram negatif (peptidoglikan tipis berselubung luar, tampak merah muda); selubung luar Gram negatif membuatnya umumnya lebih sulit ditembus antibiotik. Peranan bakteri dua arah: menguntungkan (Rhizobium mengikat nitrogen, Lactobacillus dalam yoghurt, Acetobacter xylinum dalam nata de coco, Escherichia coli membantu pencernaan dan sintesis vitamin K) serta merugikan (patogen seperti Salmonella, Mycobacterium tuberculosis). Clostridium botulinum menghasilkan racun botulinin pada makanan kaleng yang pengolahannya tidak sempurna." },
-        { "jenis": "callout", "tipe": "gemilang", "judul": "Cara Gemilang — alur resistensi dalam 4 langkah", "teks": "(1) Populasi bakteri sudah beragam secara genetik, sebagian kecil kebetulan resisten. (2) Antibiotik/insektisida dipakai tidak tuntas → yang sensitif mati, yang resisten selamat. (3) Yang resisten berkembang biak → frekuensi gen resisten naik. (4) Akibatnya obat 'terasa tidak mempan' — padahal yang berubah adalah populasi patogennya, bukan obatnya. Empat langkah ini menjawab hampir semua soal kasus resistensi." },
-        { "jenis": "judul", "teks": "E. Alga dan Jamur yang Berperan dalam Kehidupan" },
-        { "jenis": "paragraf", "teks": "Alga bermanfaat luas: Gelidium untuk es krim dan agar-agar, Eucheuma spinosum untuk agar-agar, Ulva sebagai sayuran laut, Chlorella sebagai protein sel tunggal. Jamur dikelompokkan berdasarkan alat reproduksi seksualnya: Zygomycota (hifa tidak bersekat, zigospora berdinding tebal; Rhizopus stolonifer untuk tempe), Ascomycota (spora dalam askus; Saccharomyces untuk roti dan tape), Basidiomycota (spora pada basidium; jamur merang dan kuping), serta Deuteromycota sebagai 'jamur imperfect' yang fase seksualnya belum diketahui. Ingat: Oomycota (mis. Phytophthora) bukan jamur sejati melainkan protista mirip jamur." },
-        { "jenis": "judul", "teks": "F. Ekosistem: Komponen, Interaksi, dan Pelestarian" },
-        { "jenis": "paragraf", "teks": "Ekosistem = komunitas (semua populasi) + abiotik (cahaya, air, tanah, suhu) yang terhubung oleh aliran energi dan daur materi. Rantai makanan menyalurkan energi dari produsen (tumbuhan, fitoplankton) ke konsumen I, II, III dan pengurai; sejumlah rantai yang saling bersilangan membentuk jaring-jaring makanan. Karena energi berkurang ±90% tiap tingkat trofik (hukum 10%), piramida energi selalu menyempit ke atas — inilah alasan ekosistem sehat butuh produsen melimpah." },
-        { "jenis": "paragraf", "teks": "Bioma dunia dibedakan oleh iklim dan vegetasi dominan: tundra (bersalju, lumut kerak, vegetasi berumur pendek), taiga (konifer), hutan gugur (empat musim), savana (padang rumput berpohon), gurun, dan hutan hujan tropis (curah hujan 200-450 cm/tahun, kanopi berlapis). Indonesia memiliki hutan hujan tropis, mangrove, dan savana Nusa Tenggara. Pelestarian dilakukan in-situ di habitat asli (taman nasional Komodo, Ujung Kulon, Way Kambas, cagar alam) dan ex-situ di luar habitat (kebun raya, kebun binatang, penangkaran, bank biji)." },
-        { "jenis": "callout", "tipe": "tips", "judul": "Membaca jaring-jaring makanan dua arah", "teks": "Saat satu populasi berubah, telusuri panah ke ATAS (pemangsanya kekurangan makanan → menurun) dan ke BAWAH (mangsanya lepas dari pemangsaan → meledak). Jawaban soal biasanya efek yang paling langsung, bukan efek turunan ketiga." }
+        {
+          "jenis": "judul",
+          "teks": "A. Hakikat Klasifikasi Makhluk Hidup"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Klasifikasi adalah pengelompokan makhluk hidup berdasarkan persamaan dan perbedaan ciri. Tujuannya praktis: menyederhanakan jutaan spesies agar mudah dipelajari, menunjukkan hubungan kekerabatan, dan memberi nama ilmiah yang sama di seluruh dunia. Manfaatnya terasa saat peneliti obat mencari tumbuhan berkhasiat: cukup telusuri satu genus, maka spesies saudaranya kemungkinan membawa senyawa serupa."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Nama ilmiah memakai binomial nomenclature (karya Linnaeus): dua kata berbahasa Latin — kata pertama nama genus dengan huruf kapital, kata kedua penunjuk spesies dengan huruf kecil — ditulis miring atau digarisbawahi terpisah. Contoh: Oryza sativa (padi), Panthera tigris (harimau). Aturan ini yang membuat soal 'penulisan yang benar' selalu muncul di ujian."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Catatan Guru",
+          "teks": "Ajak siswa mengklasifikasi benda di kelas (spidol, buku, botol) dengan kriteria buatan mereka sendiri, lalu bandingkan: klasifikasi teman berbeda karena kriteria berbeda. Dari situ masuk konsep: taksonomi ilmiah menyepakati KRIteria ciri, bukan selera."
+        },
+        {
+          "jenis": "judul",
+          "teks": "B. Tiga Sistem Klasifikasi & Contoh Penalaran"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sistem artifisial mengelompokkan berdasarkan ciri mudah dilihat yang sering kali tidak mencerminkan kekerabatan (mis. semua hewan bisa berenang dijadikan satu). Sistem alami memakai banyak ciri morfologi-anatomi-fisiologi sekaligus. Sistem filogenetik menambahkan sejarah evolusi dan kekerabatan genetika — inilah dasar klasifikasi modern. Karena itu dua hewan yang tampak mirip karena adaptasi habitat yang sama belum tentu sekeluarga."
+        },
+        {
+          "jenis": "contoh",
+          "judul": "Paus dan hiu: mirip tetapi berbeda kelas",
+          "teks": "Paus (Balaenoptera musculus) dan hiu (Carcharodon carcharias) sama-sama hidup di laut, bersirip, dan berbentuk streamline. Mengapa klasifikasi memisahkan keduanya?",
+          "pembahasan": "Bentuk streamline keduanya adalah hasil adaptasi konvergen terhadap air, bukan tanda kekerabatan. Paus bernapas dengan paru-paru, menyusui, dan berdarah panas → Mammalia. Hiu bernapas dengan insang dan umumnya bertelur → Pisces. Klasifikasi didasarkan pada persamaan-perbedaan ciri (jawab: prinsip ciri, bukan habitat)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — 3 pertanyaan klasifikasi",
+          "teks": "Bila soal membandingkan dua organisme: (1) ciri tubuhnya sama, atau cuma rumahnya yang sama? (2) cara hidup dasarnya (napas, reproduksi, suhu tubuh) sama? (3) baru cek kekerabatan terdekat. Bila (1) dan (2) berbeda → pasti kelompok berbeda, seberapa pun mirip penampilannya."
+        },
+        {
+          "jenis": "judul",
+          "teks": "C. Keanekaragaman Hayati: Tiga Tingkat"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tingkat gen: variasi dalam satu spesies (padi IR64, C4, Rojolele; mangga harum-manis dan gedong; anjing berbagai ras). Tingkat jenis (spesies): variasi antarspesies dalam satu keluarga (harimau, singa, macan tutul pada Felidae). Tingkat ekosistem: variasi habitat beserta interaksinya (hutan hujan tropis, mangrove, padang lamun, savana Sumba). Indonesia termasuk negara megabiodiversity: garis Wallace, Weber, dan Lydekker membagi fauna Indonesia menjadi tipe Asiatis, peralihan, dan Australis."
+        },
+        {
+          "jenis": "judul",
+          "teks": "D. Bakteri: Struktur, Pewarnaan Gram, dan Peranan"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bakteri adalah prokariota: tidak memiliki membran inti sehingga materi genetiknya berupa nukleoid yang bebas di sitoplasma. Pembungkusnya berlapis tiga — kapsul (lendir pelindung), dinding sel peptidoglikan, dan membran plasma. Di dalamnya ada ribosom untuk sintesis protein serta plasmid, cincin DNA kecil yang membawa gen tambahan seperti gen resistensi antibiotik dan dapat berpindah antarbakteri melalui konjugasi. Beberapa jenis membentuk endospora untuk bertahan di kondisi ekstrem. Reproduksi utamanya pembelahan biner (aseksual), sangat cepat pada kondisi ideal."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Pewarnaan Gram membagi bakteri menjadi Gram positif (dinding peptidoglikan tebal, menahan warna ungu kristal violet) dan Gram negatif (peptidoglikan tipis berselubung luar, tampak merah muda); selubung luar Gram negatif membuatnya umumnya lebih sulit ditembus antibiotik. Peranan bakteri dua arah: menguntungkan (Rhizobium mengikat nitrogen, Lactobacillus dalam yoghurt, Acetobacter xylinum dalam nata de coco, Escherichia coli membantu pencernaan dan sintesis vitamin K) serta merugikan (patogen seperti Salmonella, Mycobacterium tuberculosis). Clostridium botulinum menghasilkan racun botulinin pada makanan kaleng yang pengolahannya tidak sempurna."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Cara Gemilang — alur resistensi dalam 4 langkah",
+          "teks": "(1) Populasi bakteri sudah beragam secara genetik, sebagian kecil kebetulan resisten. (2) Antibiotik/insektisida dipakai tidak tuntas → yang sensitif mati, yang resisten selamat. (3) Yang resisten berkembang biak → frekuensi gen resisten naik. (4) Akibatnya obat 'terasa tidak mempan' — padahal yang berubah adalah populasi patogennya, bukan obatnya. Empat langkah ini menjawab hampir semua soal kasus resistensi."
+        },
+        {
+          "jenis": "judul",
+          "teks": "E. Alga dan Jamur yang Berperan dalam Kehidupan"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Alga bermanfaat luas: Gelidium untuk es krim dan agar-agar, Eucheuma spinosum untuk agar-agar, Ulva sebagai sayuran laut, Chlorella sebagai protein sel tunggal. Jamur dikelompokkan berdasarkan alat reproduksi seksualnya: Zygomycota (hifa tidak bersekat, zigospora berdinding tebal; Rhizopus stolonifer untuk tempe), Ascomycota (spora dalam askus; Saccharomyces untuk roti dan tape), Basidiomycota (spora pada basidium; jamur merang dan kuping), serta Deuteromycota sebagai 'jamur imperfect' yang fase seksualnya belum diketahui. Ingat: Oomycota (mis. Phytophthora) bukan jamur sejati melainkan protista mirip jamur."
+        },
+        {
+          "jenis": "judul",
+          "teks": "F. Ekosistem: Komponen, Interaksi, dan Pelestarian"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Ekosistem = komunitas (semua populasi) + abiotik (cahaya, air, tanah, suhu) yang terhubung oleh aliran energi dan daur materi. Rantai makanan menyalurkan energi dari produsen (tumbuhan, fitoplankton) ke konsumen I, II, III dan pengurai; sejumlah rantai yang saling bersilangan membentuk jaring-jaring makanan. Karena energi berkurang ±90% tiap tingkat trofik (hukum 10%), piramida energi selalu menyempit ke atas — inilah alasan ekosistem sehat butuh produsen melimpah."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bioma dunia dibedakan oleh iklim dan vegetasi dominan: tundra (bersalju, lumut kerak, vegetasi berumur pendek), taiga (konifer), hutan gugur (empat musim), savana (padang rumput berpohon), gurun, dan hutan hujan tropis (curah hujan 200-450 cm/tahun, kanopi berlapis). Indonesia memiliki hutan hujan tropis, mangrove, dan savana Nusa Tenggara. Pelestarian dilakukan in-situ di habitat asli (taman nasional Komodo, Ujung Kulon, Way Kambas, cagar alam) dan ex-situ di luar habitat (kebun raya, kebun binatang, penangkaran, bank biji)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Membaca jaring-jaring makanan dua arah",
+          "teks": "Saat satu populasi berubah, telusuri panah ke ATAS (pemangsanya kekurangan makanan → menurun) dan ke BAWAH (mangsanya lepas dari pemangsaan → meledak). Jawaban soal biasanya efek yang paling langsung, bukan efek turunan ketiga."
+        }
       ],
       "ujiPemahaman": [
         {
@@ -176,7 +244,13 @@
         {
           "soal": "Perhatikan ciri-ciri jamur berikut: (1) hifa tidak bersekat; (2) berperan dalam proses pembuatan tempe; (3) reproduksi terjadi secara aseksual dan seksual. Jamur yang memiliki ciri-ciri tersebut dapat dikelompokkan ke dalam divisio ...",
           "tipe": "pg",
-          "opsi": ["Zygomycota", "Ascomycota", "Basidiomycota", "Deuteromycota", "Oomycota"],
+          "opsi": [
+            "Zygomycota",
+            "Ascomycota",
+            "Basidiomycota",
+            "Deuteromycota",
+            "Oomycota"
+          ],
           "jawaban": 0,
           "pembahasan": "Jamur tempe (Rhizopus stolonifer) berhifa tidak bersekat dan membentuk zigospora berdinding tebal → Zygomycota. Oomycota bukan jamur sejati (protista mirip jamur).",
           "sumber": "UN 2016 — via kakajaz.blogspot.com (soal & pembahasan)"
@@ -199,7 +273,13 @@
         {
           "soal": "Suatu ekosistem darat memiliki ciri-ciri: hampir semua wilayahnya tertutup oleh salju atau es; curah hujan sangat rendah; usia tumbuh tanaman pendek; vegetasi yang dominan adalah lumut kerak, lumut, dan semak-semak pendek. Ekosistem yang memiliki ciri-ciri tersebut adalah ...",
           "tipe": "pg",
-          "opsi": ["taiga", "tundra", "hutan gugur", "savana", "hutan hujan tropis"],
+          "opsi": [
+            "taiga",
+            "tundra",
+            "hutan gugur",
+            "savana",
+            "hutan hujan tropis"
+          ],
           "jawaban": 1,
           "pembahasan": "Tundra: bersalju permanen, vegetasi lumut & semak pendek, musim tumbuh sangat singkat. Taiga = konifer berdaun jarum; savana = padang rumput tropis.",
           "sumber": "UN 2016 — via kakajaz.blogspot.com (soal & pembahasan)"
@@ -222,13 +302,20 @@
         {
           "soal": "Malaria diatasi dengan pemberian obat kina dan penyemprotan DDT. Hasil penelitian: Wilayah A (tanpa resistensi nyamuk) — kina 3 hari 50% sembuh, kina 5 hari 76%, kina 7 hari 87%, DDT 90% menurunkan infeksi. Wilayah B (dengan resistensi nyamuk) — kina 3 hari 48%, kina 5 hari 72%, kina 7 hari 82%, DDT hanya 60%. Berdasarkan data tersebut, tentukan apakah pernyataan berikut Tepat atau Tidak Tepat!",
           "tipe": "tabel",
-          "kolom": ["Tepat", "Tidak Tepat"],
+          "kolom": [
+            "Tepat",
+            "Tidak Tepat"
+          ],
           "baris": [
             "Mengandalkan DDT di kedua wilayah, karena efektivitasnya paling tinggi dibandingkan obat kina.",
             "Menggunakan DDT di wilayah A untuk hasil cepat, dan memperpanjang pemberian kina di wilayah B karena efektivitas DDT menurun akibat resistensi.",
             "Mengutamakan kina 3 hari di wilayah A maupun B, karena tingkat kesembuhannya cukup tinggi dan tidak memerlukan waktu lama."
           ],
-          "jawaban": [1, 0, 1],
+          "jawaban": [
+            1,
+            0,
+            1
+          ],
           "pembahasan": "Kunci resmi: A Tidak Tepat (DDT wilayah B hanya 60% karena resistensi), B Tepat (strategi campuran sesuai data), C Tidak Tepat (kina 3 hari hanya 48-50% sembuh).",
           "sumber": "Contoh Soal Resmi TKA Biologi no. 1 (PGK Kategori) — Pusmendik Kemendikdasmen"
         },
@@ -242,7 +329,11 @@
             "Kebun binatang merawat satwa dalam kandang untuk pendidikan masyarakat.",
             "Taman Nasional Way Kambas sebagai rumah gajah Sumatera di habitat aslinya."
           ],
-          "jawaban": [0, 2, 4],
+          "jawaban": [
+            0,
+            2,
+            4
+          ],
           "pembahasan": "In-situ = perlindungan di habitat asli (taman nasional, cagar alam, suaka margasatwa). Kebun raya & kebun binatang = ex-situ (di luar habitat).",
           "sumber": "Gemilang Drill (latihan orisinal tim kurikulum, materi pelestarian in-situ/ex-situ)"
         },
