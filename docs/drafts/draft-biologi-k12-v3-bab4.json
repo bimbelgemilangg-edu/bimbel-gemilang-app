@@ -15,10 +15,11 @@
       "Modul Tentor Gemilang Rangkuman Materi SMA Kurmer 2025 (INTERNAL) hal 143-156 + Soal Pengantar imun no 5-10 (kunci diverifikasi tim kurikulum).",
       "Matriks Asesmen TKA Biologi — Pusmendik Kemendikdasmen 2025 (imun, koordinasi, reproduksi).",
       "UN 2017 soal mata via kakajaz.blogspot (diadaptasi seperlunya).",
-      "Diagram buatan tim kurikulum (tabel/alur/panah) sesuai izin owner; crop diagram modul menyusul.",
+      "Diagram/tabel/alur buatan tim kurikulum (visual penunjang) sesuai izin owner; crop diagram modul diverifikasi kelengkapan label secara visual.",
       "Gambar soal UN 2017 No. 17 (penampang mata manusia bernomor 1-5) — foto soal asli via kakajaz.blogspot.com/2017/11/pembahasan-biologi-un-2017-no-16-20.html, diarsipkan di Supabase materi-bimbel/materi-v2/soal-gambar/un2017-penampang-mata.jpg (kredit: Kemendikbud RI, UN 2017).",
       "Gambar neuron, sinaps, mata, telinga, spermatogenesis, oogenesis, serta organ reproduksi pria & wanita: crop dari MODUL TENTOR GEMILANG RANGKUMAN MATERI (internal), bagian Biologi hal. cetak 139, 143, 146-147; gambar pada modul mencantumkan sumber Neil A. Campbell & Jane B. Reece, Biology 8th ed. (2008).",
-      "Bagan alur respons imun spesifik serta gerak sadar vs gerak refleks: buatan tim kurikulum Gemilang sebagai visual penunjang (izin owner Turn 44)."
+      "Bagan alur respons imun spesifik serta gerak sadar vs gerak refleks: buatan tim kurikulum Gemilang sebagai visual penunjang (izin owner Turn 44).",
+      "Turn 59: seluruh diagram modul dicrop ulang pada 300 dpi dengan bbox tinta otomatis (label kiri-kanan-atas-bawah utuh, tanpa teks halaman tetangga); setiap visual disertai paragraf pengantar, poin \"Membaca gambar\", dan kaitan konsep sesuai kaidah penulisan materi Gemilang."
     ]
   },
   "bab": [
@@ -122,9 +123,30 @@
           "teks": "Makrofag = penyaji antigen. T helper = koordinator. Limfosit B = pabrik antibodi + memori. T sitotoksik = eksekutor sel terinfeksi. Empat peran ini menjawab hampir semua soal mekanisme imun."
         },
         {
+          "jenis": "paragraf",
+          "teks": "Pertahanan tubuh bukan satu tembok melainkan rantai berlapis. Bagan berikut merangkum respons imun spesifik (diperoleh) dalam satu alur: ikuti panahnya dari masuknya patogen sampai terbentuknya sel memori."
+        },
+        {
           "jenis": "gambar",
           "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bagan-bab4-respons-imun.jpg",
-          "keterangan": "Bagan respons imun spesifik: patogen difagosit makrofag, antigen disajikan ke limfosit T helper, lalu bercabang ke jalur humoral (limfosit B -> antibodi) dan jalur seluler (limfosit T sitotoksik -> lisis sel terinfeksi), disertai sel memori sebagai dasar vaksinasi. Bagan alur: tim kurikulum Gemilang (penunjang)."
+          "keterangan": "Alur respons imun spesifik: patogen difagosit makrofag, antigen dipresentasikan ke limfosit T helper, lalu respons bercabang ke jalur humoral (limfosit B menghasilkan antibodi) dan jalur seluler (limfosit T sitotoksik melisis sel terinfeksi); sebagian limfosit berdiferensiasi menjadi sel memori."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca bagan — rantai respons imun spesifik",
+          "items": [
+            "Makrofag: memfagosit patogen lalu \"memajang\" antigen di permukaan selnya sebagai kartu pengenal.",
+            "Limfosit T helper: komandan yang mengaktifkan limfosit lain setelah mengenal antigen yang dipresentasikan.",
+            "Jalur humoral: limfosit B berbiak menjadi sel plasma yang melepas antibodi — ampuh untuk patogen yang beredar di cairan tubuh.",
+            "Jalur seluler: limfosit T sitotoksik melisis langsung sel tubuh yang sudah terinfeksi (mis. sel terinfeksi virus).",
+            "Sel memori: cadangan yang tersisa setelah infeksi reda — alasan respons sekunder lebih cepat dan lebih kuat."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — kenapa vaksin bekerja",
+          "teks": "Vaksin = pengenalan antigen secara aman sehingga sel memori terbentuk tanpa menyebabkan penyakit. Saat infeksi sungguh terjadi, sel memori langsung meluncurkan respons sekunder yang masif. Karena itu bagan selalu berakhir di sel memori."
         },
         {
           "jenis": "judul",
@@ -253,14 +275,56 @@
           ]
         },
         {
-          "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-struktur-neuron.jpg",
-          "keterangan": "Struktur neuron (sel saraf): dendrit penerima rangsang, badan sel pengolah, dan akson berselubung mielin yang menghantar impuls menuju sinaps. Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Neil A. Campbell & Jane B. Reece (2008)."
+          "jenis": "paragraf",
+          "teks": "Neuron bukan sel biasa: bentuknya adalah jawaban atas pertanyaan \"bagaimana menerima, mengolah, dan mengirim sinyal listrik jarak jauh?\". Baca gambar berikut sambil mencocokkan setiap bagian dengan satu dari tiga tugas itu."
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-mekanisme-sinaps.jpg",
-          "keterangan": "Mekanisme sinaps: vesikel sinaps melepas neurotransmiter ke celah sinaps, berikatan dengan reseptor (ligan pintu gerbang ion) pada membran pascasinaps sehingga impuls berlanjut ke neuron berikutnya. Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Campbell & Reece (2008)."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-struktur-neuron-v2.jpg",
+          "keterangan": "Struktur neuron beserta arah jalannya impuls: dendrit menerima rangsang, badan sel mengintegrasikan, akson berselubung mielin menghantarkan, dan terminal sinaps menyerahkan sinyal ke sel berikutnya pada sinapsis."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — struktur neuron",
+          "items": [
+            "Dendrit: cabang-cabang pendek penerima rangsang; percabangan memperluas \"antena\" penangkap sinyal dari sel lain.",
+            "Badan sel & nukleus: pusat metabolisme dan integrasi; jika total rangsang melewati ambang, impuls dibangkitkan.",
+            "Akson: \"kabel\" panjang penghantar impuls menjauhi badan sel menuju terminal sinaps.",
+            "Selubung mielin: isolator lemak yang mencegah kebocoran sinyal dan mempercepat hantaran (impuls melompat antar nodus Ranvier).",
+            "Terminal sinaps: ujung akson yang membentuk sinapsis — titik penyerahan sinyal ke neuron atau efektor berikutnya."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — jalan satu arah impuls",
+          "teks": "Arah impuls selalu dendrit -> badan sel -> akson -> sinaps, tidak pernah terbalik. Soal label urutan dan soal jalur impuls adalah langganan TKA; hafalkan gambar ini dari kiri ke kanan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Di sinaps impuls \"berganti kendaraan\": dari sinyal listrik di neuron prasinaps menjadi sinyal kimia di celah sinaps, lalu kembali menjadi listrik di neuron pascasinaps. Gambar berikut memperlihatkan momen penyerahan itu secara rinci."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-mekanisme-sinaps-v2.jpg",
+          "keterangan": "Mekanisme sinaps kimia: vesikel sinaps melepas neurotransmiter ke celah sinaps; neurotransmiter berikatan dengan reseptor (ligan pintu gerbang ion) pada membran pascasinaps sehingga sinyal berlanjut ke neuron berikutnya. Panel kanan memperlihatkan kanal ion terbuka saat ikatan terjadi."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — sinaps kimia",
+          "items": [
+            "Vesikel sinaps: kantong penyimpan neurotransmiter di ujung akson, siap dilepas saat impuls tiba.",
+            "Celah sinaps: celah sempit antar neuron — alasan sinyal harus diubah menjadi kimia sejenak.",
+            "Membran pascasinaps: sisi penerima yang dilengkapi reseptor spesifik, bukan sekadar membran biasa.",
+            "Ligan (pintu gerbang ion): \"pintu\" yang terbuka saat neurotransmiter berikatan; masuknya ion mengubah potensial membran pascasinaps.",
+            "Panel kanan: urutan ikatan -> kanal terbuka -> ion mengalir — sinyal kimia berubah kembali menjadi listrik."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — neurotransmiter harus hilang",
+          "teks": "Setelah menyampaikan sinyal, neurotransmiter cepat dipecah atau diserap kembali agar sel pascasinaps tidak terangsang terus-menerus. Obat dan racun saraf banyak bekerja tepat di titik ini — menghambat atau meniru neurotransmiter."
         },
         {
           "jenis": "judul",
@@ -320,9 +384,29 @@
           ]
         },
         {
+          "jenis": "paragraf",
+          "teks": "Rangsang yang sama bisa menempuh dua rute: lewat otak (gerak sadar) atau lewat sumsum tulang belakang (gerak refleks). Bagan berikut membandingkan keduanya berdampingan; perhatikan di mana \"pusat komando\" berada."
+        },
+        {
           "jenis": "gambar",
           "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bagan-bab4-gerak-sadar-refleks.jpg",
-          "keterangan": "Perbandingan jalur gerak sadar (rangsang - reseptor - neuron sensorik - OTAK - neuron motorik - efektor) dengan gerak refleks (pusat di SUMSUM TULANG BELAKANG) sehingga respons lebih cepat dan bersifat melindungi. Bagan alur: tim kurikulum Gemilang (penunjang)."
+          "keterangan": "Perbandingan jalur gerak sadar (reseptor -> neuron sensorik -> otak -> neuron motorik -> efektor) dengan jalur gerak refleks (pusat integrasi di sumsum tulang belakang, tanpa menunggu otak) sehingga respons refleks lebih cepat dan bersifat melindungi."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca bagan — sadar vs refleks",
+          "items": [
+            "Kedua jalur dimulai dan diakhiri komponen yang sama: reseptor (penerima rangsang) dan efektor (otot/kelenjar).",
+            "Jalur sadar: pusat komando di otak — respons lebih lambat tetapi bisa dikendalikan (mis. sengaja mengambil benda).",
+            "Jalur refleks: pusat komando di sumsum tulang belakang — sinyal diolah lokal sehingga respons seketika (mis. menarik tangan dari benda panas).",
+            "Otak tetap \"dikabari\" setelah respons refleks terjadi — karena itu kamu baru merasakan nyeri sesaat setelah tangan tertarik."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — refleks lutut langganan ujian",
+          "teks": "Ketukan pada tendon lutut meregangkan otot; neuron sensorik mengirim sinyal ke sumsum tulang belakang dan neuron motorik langsung mengontraksikan kaki. Jika soal menanyakan pusat integrasi refleks, jawabannya sumsum tulang belakang, bukan otak."
         },
         {
           "jenis": "judul",
@@ -415,14 +499,57 @@
           ]
         },
         {
-          "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-penampang-mata.jpg",
-          "keterangan": "Penampang bola mata manusia: lapisan pelindung sklera-kornea, koroid ber-pembuluh darah, dan retina berisi sel fotoreseptor (batang & kerucut); lensa memfokuskan bayangan ke bintik kuning (fovea). Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Campbell & Reece (2008)."
+          "jenis": "paragraf",
+          "teks": "Mata bekerja seperti kamera: ada jendela bening, ada pengatur cahaya, ada lensa penfokus, dan ada \"film\" penangkap bayangan. Pada penampang berikut, temukan empat komponen itu lebih dulu sebelum membaca label satu per satu."
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-penampang-telinga.jpg",
-          "keterangan": "Penampang telinga: telinga luar (daun telinga, kanal auditori), telinga tengah (membran timpani, maleus, inkus, stapes), dan telinga dalam (koklea untuk pendengaran serta kanal semisirkularis untuk keseimbangan). Gambar: Modul Tentor Gemilang (internal), mencantumkan sumber Campbell & Reece (2008)."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-penampang-mata-v2.jpg",
+          "keterangan": "Penampang bola mata manusia: lapisan luar (sklera dan kornea), lapisan tengah ber-pembuluh darah (koroid), serta lapisan dalam (retina) berisi sel fotoreseptor; lensa memfokuskan bayangan ke retina dengan titik paling tajam di fovea dan saraf optik keluar pada cakram optik (bintik buta)."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — penampang mata",
+          "items": [
+            "Kornea: jendela bening terdepan — permukaan pembias pertama dan terkuat; sklera adalah lanjutan putihnya yang kokoh.",
+            "Iris & pupil: diafragma berwarna dan lubang tengahnya; iris mengatur lebar pupil sesuai intensitas cahaya (seperti aperture kamera).",
+            "Lensa: penfokus halus dengan akomodasi — mencembung untuk dekat, memipih untuk jauh.",
+            "Retina: \"film\" berisi sel batang (cahaya remang) dan sel kerucut (warna); fovea adalah titik terpadat kerucut = penglihatan paling tajam.",
+            "Saraf optik & cakram optik: kabel menuju otak; pada bintik buta tidak ada fotoreseptor sehingga bayangan yang jatuh di sana tidak terlihat."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — bayangan terbalik",
+          "teks": "Bayangan yang jatuh di retina bersifat terbalik dan diperkecil; otaklah yang menerjemahkannya menjadi tegak. Jebakan umum: (1) fungsi sel batang vs sel kerucut tertukar, (2) urutan jalannya cahaya kornea -> pupil -> lensa -> vitreous humor -> retina."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Telinga menangkap bunyi dalam tiga etape: mengumpulkan (luar), memperkuat (tengah), dan mengubah menjadi sinyal saraf (dalam). Telusuri jalur bunyi pada gambar berikut dari daun telinga sampai koklea."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-penampang-telinga-v2.jpg",
+          "keterangan": "Penampang telinga manusia: telinga luar (daun telinga dan kanal auditori), telinga tengah (membran timpani serta tulang-tulang maleus, inkus, stapes), dan telinga dalam (koklea untuk pendengaran serta kanal semisirkularis untuk keseimbangan); saluran Eustachius menghubungkan telinga tengah ke faring."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — penampang telinga",
+          "items": [
+            "Daun telinga & kanal auditori: corong pengumpul gelombang bunyi yang diarahkan ke membran timpani.",
+            "Membran timpani: selaput getar pertama — gelombang bunyi diubah menjadi getaran mekanis.",
+            "Tulang pendengaran (maleus-inkus-stapes): rantai pengungkit yang memperkuat getaran sebelum masuk ke jendela oval.",
+            "Koklea: organ berbentuk rumah siput berisi organ Korti — getaran diubah menjadi impuls saraf menuju saraf auditori.",
+            "Kanal semisirkularis: organ keseimbangan (rotasi kepala) — fungsinya terpisah dari pendengaran.",
+            "Saluran Eustachius: penyeimbang tekanan antara telinga tengah dan luar; penyumbatannya menimbulkan rasa \"penuh\" pada telinga."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — dengar vs seimbang",
+          "teks": "Pendengaran = koklea; keseimbangan = kanal semisirkularis + vestibulum. Banyak opsi jawaban menukar keduanya — ingat bentuknya: rumah siput (koklea) untuk mendengar, tiga gelang (kanal) untuk keseimbangan."
         },
         {
           "jenis": "judul",
@@ -480,9 +607,31 @@
           ]
         },
         {
+          "jenis": "paragraf",
+          "teks": "Gambar berikut adalah \"papan nama\" organ reproduksi pria. Sambil membaca label, perhatikan dua hal: di mana sperma diproduksi dan dimatangkan, serta saluran mana yang dipakai bersama sistem urin."
+        },
+        {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-organ-reproduksi-pria.jpg",
-          "keterangan": "Organ reproduksi pria: testis tempat spermatogenesis, epididimis pematangan sperma, vas deferens, serta kelenjar pendukung (vesikula seminalis, prostat, bulbouretralis). Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-organ-reproduksi-pria-v2.jpg",
+          "keterangan": "Penampang sagital organ reproduksi pria: testis dan skrotum di bagian bawah, epididimis serta vas deferens sebagai jalur sperma, plus kelenjar pendukung (vesikula seminalis, prostat, kelenjar cowper) di sekitar kandung kemih dan uretra."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — organ reproduksi pria",
+          "items": [
+            "Testis: pabrik sperma (spermatogenesis) sekaligus penghasil testosteron; terletak di luar rongga perut, dalam skrotum.",
+            "Skrotum: \"kantong pendingin\" — menjaga suhu testis di bawah suhu tubuh agar spermatogenesis berjalan normal.",
+            "Epididimis: tempat pematangan dan penyimpanan sementara sperma selepas dari testis.",
+            "Vas deferens: saluran transportasi sperma dari epididimis menuju uretra; titik potong pada vasektomi.",
+            "Vesikula seminalis, prostat, kelenjar cowper: penyusun cairan semen — nutrisi, buffer, dan pelumas; sperma + secret = semen.",
+            "Uretra: saluran akhir bersama untuk semen dan urine (tidak bersamaan — ada mekanisme sfingter yang mencegah campuran)."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — kenapa di luar tubuh?",
+          "teks": "Spermatogenesis butuh suhu ±2-3 °C di bawah suhu tubuh — karena itu testis menggantung di skrotum. Soal sebab-akibat (\"apa akibat testis tidak turun?\") sering muncul: jawabannya spermatogenesis terganggu."
         },
         {
           "jenis": "judul",
@@ -527,9 +676,30 @@
           ]
         },
         {
+          "jenis": "paragraf",
+          "teks": "Organ reproduksi wanita membentuk jalur yang nyaris simetris: ovum dilepas ovarium, ditangkap tuba, lalu berjalan menuju uterus. Gambar berikut menampilkan jalur itu lengkap dengan label a-g yang lazim dipakai soal."
+        },
+        {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-organ-reproduksi-wanita.jpg",
-          "keterangan": "Organ reproduksi wanita: ovarium penghasil ovum dan hormon, tuba fallopi (oviduk) tempat fertilisasi, uterus tempat implantasi, serviks, dan vagina. Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-organ-reproduksi-wanita-v2.jpg",
+          "keterangan": "Organ reproduksi wanita: sepasang ovarium dengan tuba fallopi (oviduk) yang berujung infundibulum/fimbriae, uterus berbentuk buah pir dengan dinding endometrium, serta serviks dan vagina sebagai saluran lahir bagian bawah."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — organ reproduksi wanita",
+          "items": [
+            "Ovarium (a): penghasil ovum (oogenesis) sekaligus hormon estrogen dan progesteron.",
+            "Infundibulum/fimbriae (c): \"jari-jari\" penjaring ovum yang baru dilepas saat ovulasi.",
+            "Tuba fallopi/oviduk (b): jalur ovum dan TEMPAT FERTILISASI — titik paling sering diujikan.",
+            "Uterus/rahim (d): tempat implantasi dan perkembangan janin; dinding dalamnya (endometrium, e) menebal dan meluruh dalam siklus menstruasi.",
+            "Serviks (g) & vagina (f): saluran bagian bawah — jalan masuk sperma dan jalan lahir bayi."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — fertilisasi bukan di uterus",
+          "teks": "Fertilisasi terjadi di tuba fallopi (oviduk); zigot lalu berjalan ke uterus untuk implantasi. Jika opsi menyebut \"pembuahan di rahim\", itu keliru. Implantasi di tuba = kehamilan ektopik."
         },
         {
           "jenis": "judul",
@@ -558,14 +728,56 @@
           ]
         },
         {
-          "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-spermatogenesis.jpg",
-          "keterangan": "Spermatogenesis: spermatogonium (2n) -> spermatosit primer -> meiosis I -> 2 spermatosit sekunder (n) -> meiosis II -> 4 spermatid -> 4 spermatozoa fungsional. Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
+          "jenis": "paragraf",
+          "teks": "Gametogenesis adalah meiosis yang diterapkan untuk reproduksi. Baca diagram berikut sambil berhitung: berapa sel masuk, berapa sel keluar, dan berapa jumlah kromosom pada tiap tahap."
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-oogenesis.jpg",
-          "keterangan": "Oogenesis: oogonium (2n) -> oosit primer -> meiosis I -> oosit sekunder + badan polar primer -> meiosis II -> 1 ovum fungsional + badan polar. Gambar: Modul Tentor Gemilang (internal), hal. cetak 139."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-spermatogenesis-v2.jpg",
+          "keterangan": "Alur spermatogenesis: satu spermatogonium (2n) tumbuh menjadi spermatosit primer, meiosis I menghasilkan 2 spermatosit sekunder (n), meiosis II menghasilkan 4 spermatid (n) yang kemudian berdiferensiasi menjadi 4 spermatozoa fungsional."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — spermatogenesis",
+          "items": [
+            "Titik awal: spermatogonium (2n) di dinding tubulus seminiferus — cadangan sel induk yang membelah mitosis.",
+            "Spermatosit primer (2n): sel siap meiosis I setelah replikasi DNA.",
+            "Meiosis I: kromosom homolog berpisah -> 2 spermatosit sekunder (n, kromosom masih berkromatid dua).",
+            "Meiosis II: kromatid saudara berpisah -> 4 spermatid bulat (n).",
+            "Diferensiasi (spermiogenesis): spermatid menumbuhkan ekor dan kepala -> 4 spermatozoa motil."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — hitungan sperma",
+          "teks": "Satu spermatogonium -> 4 sperma fungsional (semua hidup). Maka 100 spermatogonium -> 400 sperma. Bandingkan dengan oogenesis: 1 oogonium -> hanya 1 ovum. Kontras angka ini favorit penulis soal."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bandingkan dengan oogenesis: tahapnya sama (mitosis -> meiosis I -> meiosis II) tetapi pembagian sitoplasma tidak merata, sehingga hasil akhirnya hanya satu sel besar yang fungsional. Perhatikan sel-sel kecil — badan polar — pada diagram berikut."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/modul-bab4-oogenesis-v2.jpg",
+          "keterangan": "Alur oogenesis: oogonium (2n) menjadi oosit primer, meiosis I menghasilkan oosit sekunder + badan polar primer, lalu meiosis II (selesai hanya jika terjadi fertilisasi) menghasilkan 1 ovum fungsional + badan polar yang berdegenerasi."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — oogenesis",
+          "items": [
+            "Titik awal: oogonium (2n); sebelum lahir semuanya telah menjadi oosit primer yang berhenti di profase I.",
+            "Meiosis I (tiap siklus sejak pubertas): 1 oosit sekunder (n) + 1 badan polar primer — pembagian sitoplasma timpang.",
+            "Meiosis II: berlanjut HANYA jika sperma masuk (fertilisasi); hasilnya 1 ovum + badan polar kedua.",
+            "Badan polar: sel kecil tak fungsional yang berdegenerasi — \"korban\" agar sitoplasma ovum tetap besar.",
+            "Hasil akhir: 1 ovum fungsional (n) per siklus, lengkap dengan cadangan nutrisi untuk embrio awal."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — meiosis II menunggu sperma",
+          "teks": "Oosit sekunder yang dilepas saat ovulasi sebenarnya \"belum selesai\": meiosis II baru tuntas bila ada fertilisasi. Tanpa sperma, oosit sekunder degenerasi — titik ini menghubungkan oogenesis dengan siklus menstruasi."
         },
         {
           "jenis": "judul",
