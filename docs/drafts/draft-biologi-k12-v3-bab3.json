@@ -59,39 +59,39 @@
             "Ciri & fungsi utama"
           ],
           "rows": [
-            [
-              "Eritrosit (sel darah merah)",
-              "Tanpa inti, bikonkaf, berisi hemoglobin pengikat O2; umur ±120 hari lalu dirombak di hati/limpa."
-            ],
-            [
-              "Leukosit (sel darah putih)",
-              "Pertahanan: neutrofil memakan bakteri, limfosit membuat antibodi, monosit/makrofag pembersih, eosinofil parasit & alergi, basofil melepas histamin."
-            ],
-            [
-              "Trombosit (keping darah)",
-              "Menutup luka lewat pembekuan darah."
-            ],
-            [
-              "Plasma",
-              "Medium transport: air, protein (albumin, globulin, fibrinogen), hormon, zat terlarut."
-            ]
+            {
+              "k": "Eritrosit (sel darah merah)",
+              "v": "Tanpa inti, bikonkaf, berisi hemoglobin pengikat O2; umur ±120 hari lalu dirombak di hati/limpa."
+            },
+            {
+              "k": "Leukosit (sel darah putih)",
+              "v": "Pertahanan: neutrofil memakan bakteri, limfosit membuat antibodi, monosit/makrofag pembersih, eosinofil parasit & alergi, basofil melepas histamin."
+            },
+            {
+              "k": "Trombosit (keping darah)",
+              "v": "Menutup luka lewat pembekuan darah."
+            },
+            {
+              "k": "Plasma",
+              "v": "Medium transport: air, protein (albumin, globulin, fibrinogen), hormon, zat terlarut."
+            }
           ]
         },
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Hemoglobin",
-              "protein di eritrosit yang mengikat O2 (membentuk oksihemoglobin)."
-            ],
-            [
-              "Hematokrit",
-              "persentase volume eritrosit terhadap seluruh volume darah."
-            ],
-            [
-              "Fibrinogen",
-              "protein plasma yang diubah menjadi benang fibrin saat pembekuan."
-            ]
+            {
+              "t": "Hemoglobin",
+              "d": "protein di eritrosit yang mengikat O2 (membentuk oksihemoglobin)."
+            },
+            {
+              "t": "Hematokrit",
+              "d": "persentase volume eritrosit terhadap seluruh volume darah."
+            },
+            {
+              "t": "Fibrinogen",
+              "d": "protein plasma yang diubah menjadi benang fibrin saat pembekuan."
+            }
           ]
         },
         {
@@ -139,18 +139,18 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Sistole",
-              "fase kontraksi (pemompaan)."
-            ],
-            [
-              "Diastole",
-              "fase relaksasi (pengisian)."
-            ],
-            [
-              "Katup atrioventrikular",
-              "katup antara serambi dan bilik (trikuspidalis & bikuspidalis)."
-            ]
+            {
+              "t": "Sistole",
+              "d": "fase kontraksi (pemompaan)."
+            },
+            {
+              "t": "Diastole",
+              "d": "fase relaksasi (pengisian)."
+            },
+            {
+              "t": "Katup atrioventrikular",
+              "d": "katup antara serambi dan bilik (trikuspidalis & bikuspidalis)."
+            }
           ]
         },
         {
@@ -185,21 +185,18 @@
             "Arah & isi"
           ],
           "rows": [
-            [
-              "Arteri",
-              "Tebal & elastis",
-              "Membawa darah KELUAR jantung; umumnya kaya O2 (kecuali arteri pulmonalis)."
-            ],
-            [
-              "Vena",
-              "Tipis & berkatup",
-              "Membawa darah MASUK jantung; umumnya kaya CO2 (kecuali vena pulmonalis)."
-            ],
-            [
-              "Kapiler",
-              "Satu lapis sel",
-              "Menempel langsung di jaringan; tempat pertukaran gas & zat."
-            ]
+            {
+              "k": "Arteri",
+              "v": "Tebal & elastis"
+            },
+            {
+              "k": "Vena",
+              "v": "Tipis & berkatup"
+            },
+            {
+              "k": "Kapiler",
+              "v": "Satu lapis sel"
+            }
           ]
         },
         {
@@ -341,22 +338,22 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Oksihemoglobin (HbO2)",
-              "bentuk angkut utama O2 oleh hemoglobin."
-            ],
-            [
-              "Bikarbonat (HCO3-)",
-              "bentuk angkut utama CO2 dalam plasma (±70%)."
-            ],
-            [
-              "Karbaminohemoglobin",
-              "bentuk angkut CO2 yang menempel langsung ke hemoglobin."
-            ],
-            [
-              "Kemoreseptor sentral",
-              "sensor di medula oblongata yang peka terhadap kenaikan CO2/penurunan pH."
-            ]
+            {
+              "t": "Oksihemoglobin (HbO2)",
+              "d": "bentuk angkut utama O2 oleh hemoglobin."
+            },
+            {
+              "t": "Bikarbonat (HCO3-)",
+              "d": "bentuk angkut utama CO2 dalam plasma (±70%)."
+            },
+            {
+              "t": "Karbaminohemoglobin",
+              "d": "bentuk angkut CO2 yang menempel langsung ke hemoglobin."
+            },
+            {
+              "t": "Kemoreseptor sentral",
+              "d": "sensor di medula oblongata yang peka terhadap kenaikan CO2/penurunan pH."
+            }
           ]
         },
         {
@@ -425,22 +422,22 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Nefron",
-              "unit fungsional penyaring ginjal (±1 juta per ginjal)."
-            ],
-            [
-              "Glomerulus",
-              "anyaman kapiler tempat filtrasi darah."
-            ],
-            [
-              "Kapsula Bowman",
-              "cangkang penampung hasil filtrasi."
-            ],
-            [
-              "Ambang ginjal",
-              "batas kadar zat di darah yang bila terlampaui ikut terbuang ke urine (mis. glukosa)."
-            ]
+            {
+              "t": "Nefron",
+              "d": "unit fungsional penyaring ginjal (±1 juta per ginjal)."
+            },
+            {
+              "t": "Glomerulus",
+              "d": "anyaman kapiler tempat filtrasi darah."
+            },
+            {
+              "t": "Kapsula Bowman",
+              "d": "cangkang penampung hasil filtrasi."
+            },
+            {
+              "t": "Ambang ginjal",
+              "d": "batas kadar zat di darah yang bila terlampaui ikut terbuang ke urine (mis. glukosa)."
+            }
           ]
         },
         {

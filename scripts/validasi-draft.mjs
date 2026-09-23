@@ -49,6 +49,15 @@ for (const f of files) {
       if (jenis === 'alur' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] alur tanpa items`);
       if (jenis === 'tabelinfo' && !(Array.isArray(s.rows) && s.rows.length)) salah(f, `${label} section[${si}] tabelinfo tanpa rows`);
       if (jenis === 'istilah' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] istilah tanpa items`);
+      // Firestore menolak nested array: tiap baris/item WAJIB objek {t,d} atau {k,v}
+      if (jenis === 'tabelinfo') (s.rows||[]).forEach((r,ri)=>{
+        if (Array.isArray(r)) salah(f, `${label} section[${si}] tabelinfo row[${ri}] array (nested array dilarang Firestore); pakai objek {t,d}`);
+        else if (!r || typeof r!=='object' || !(('t' in r && 'd' in r) || ('k' in r && 'v' in r))) salah(f, `${label} section[${si}] tabelinfo row[${ri}] bukan objek {t,d}/{k,v}`);
+      });
+      if (jenis === 'istilah') (s.items||[]).forEach((r,ri)=>{
+        if (Array.isArray(r)) salah(f, `${label} section[${si}] istilah item[${ri}] array (nested array dilarang Firestore); pakai objek {t,d}`);
+        else if (!r || typeof r!=='object' || !(('t' in r && 'd' in r) || ('k' in r && 'v' in r))) salah(f, `${label} section[${si}] istilah item[${ri}] bukan objek {t,d}/{k,v}`);
+      });
       if (jenis === 'gambar' && !s.url) salah(f, `${label} section[${si}] gambar tanpa url`);
     });
     const kuis = b.ujiPemahaman || [];

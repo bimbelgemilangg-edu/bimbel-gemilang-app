@@ -54,26 +54,26 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Holoenzim",
-              "enzim lengkap yang aktif (apoenzim + kofaktor)."
-            ],
-            [
-              "Apoenzim",
-              "bagian protein enzim."
-            ],
-            [
-              "Koenzim",
-              "kofaktor organik pembawa gugus/elektron (NAD+, FAD)."
-            ],
-            [
-              "Energi aktivasi (Ea)",
-              "energi minimum untuk memulai reaksi; diturunkan oleh enzim."
-            ],
-            [
-              "Denaturasi",
-              "rusaknya bentuk enzim (sisi aktif) oleh panas/pH ekstrem/logam berat."
-            ]
+            {
+              "t": "Holoenzim",
+              "d": "enzim lengkap yang aktif (apoenzim + kofaktor)."
+            },
+            {
+              "t": "Apoenzim",
+              "d": "bagian protein enzim."
+            },
+            {
+              "t": "Koenzim",
+              "d": "kofaktor organik pembawa gugus/elektron (NAD+, FAD)."
+            },
+            {
+              "t": "Energi aktivasi (Ea)",
+              "d": "energi minimum untuk memulai reaksi; diturunkan oleh enzim."
+            },
+            {
+              "t": "Denaturasi",
+              "d": "rusaknya bentuk enzim (sisi aktif) oleh panas/pH ekstrem/logam berat."
+            }
           ]
         },
         {
@@ -279,30 +279,30 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Klorofil a",
-              "pigmen pusat reaksi; menyerap maksimum ±700 nm (P700) & ±680 nm (P680)."
-            ],
-            [
-              "Klorofil b",
-              "pigmen antena pendukung."
-            ],
-            [
-              "Karotenoid",
-              "pigmen kuning-oranye; antena & pelindung."
-            ],
-            [
-              "Fotosistem",
-              "paket pigmen + protein penangkap cahaya (FS I & FS II)."
-            ],
-            [
-              "Grana",
-              "tumpukan tilakoid tempat reaksi terang."
-            ],
-            [
-              "Stroma",
-              "cairan kloroplas tempat siklus Calvin."
-            ]
+            {
+              "t": "Klorofil a",
+              "d": "pigmen pusat reaksi; menyerap maksimum ±700 nm (P700) & ±680 nm (P680)."
+            },
+            {
+              "t": "Klorofil b",
+              "d": "pigmen antena pendukung."
+            },
+            {
+              "t": "Karotenoid",
+              "d": "pigmen kuning-oranye; antena & pelindung."
+            },
+            {
+              "t": "Fotosistem",
+              "d": "paket pigmen + protein penangkap cahaya (FS I & FS II)."
+            },
+            {
+              "t": "Grana",
+              "d": "tumpukan tilakoid tempat reaksi terang."
+            },
+            {
+              "t": "Stroma",
+              "d": "cairan kloroplas tempat siklus Calvin."
+            }
           ]
         },
         {
@@ -345,22 +345,22 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Rubisco",
-              "enzim pengikat CO2 pada fase fiksasi; protein paling melimpah di bumi."
-            ],
-            [
-              "RuBP",
-              "molekul 5C penerima CO2."
-            ],
-            [
-              "PGA",
-              "molekul 3C hasil fiksasi."
-            ],
-            [
-              "PGAL/G3P",
-              "produk reduksi; bahan penyusun glukosa."
-            ]
+            {
+              "t": "Rubisco",
+              "d": "enzim pengikat CO2 pada fase fiksasi; protein paling melimpah di bumi."
+            },
+            {
+              "t": "RuBP",
+              "d": "molekul 5C penerima CO2."
+            },
+            {
+              "t": "PGA",
+              "d": "molekul 3C hasil fiksasi."
+            },
+            {
+              "t": "PGAL/G3P",
+              "d": "produk reduksi; bahan penyusun glukosa."
+            }
           ]
         },
         {

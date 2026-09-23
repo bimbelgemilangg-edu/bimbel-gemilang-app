@@ -79,7 +79,8 @@ export default function IsiSections({
           // baris bisa [a,b] (draft) atau {s:[a,b]} (hasil sanitasi Firestore)
           const pasangan = (r) => (Array.isArray(r) ? r
             : (Array.isArray(r && r.s) ? r.s
-              : (r && r.k !== undefined ? [r.k, r.v] : [r && r.a, r && r.b])));
+              : (r && r.t !== undefined ? [r.t, r.d]
+                : (r && r.k !== undefined ? [r.k, r.v] : [r && r.a, r && r.b]))));
           return (
             <div key={i} id={`sec-${i}`} style={{ ...S.tabelWrap, ...S.jangkar }}>
               {sec.judul ? <div style={S.poinJudul}>📊 {sec.judul}</div> : null}
@@ -113,7 +114,8 @@ export default function IsiSections({
               <ul style={S.poinList}>
                 {(sec.items || []).map((it0, k) => {
                   const it = Array.isArray(it0) ? it0
-                    : (Array.isArray(it0 && it0.s) ? it0.s : [it0 && it0.k, it0 && it0.v]);
+                    : (Array.isArray(it0 && it0.s) ? it0.s
+                      : (it0 && it0.t !== undefined ? [it0.t, it0.d] : [it0 && it0.k, it0 && it0.v]));
                   return (
                     <li key={k} style={S.poinItem}>
                       <b>{it[0]}</b> = {it[1]}

@@ -49,18 +49,18 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Antigen",
-              "zat asing yang memicu respons imun."
-            ],
-            [
-              "Antibodi",
-              "protein imunoglobulin pengikat antigen secara spesifik."
-            ],
-            [
-              "Imunitas",
-              "kemampuan tubuh menahan/menetralkan antigen."
-            ]
+            {
+              "t": "Antigen",
+              "d": "zat asing yang memicu respons imun."
+            },
+            {
+              "t": "Antibodi",
+              "d": "protein imunoglobulin pengikat antigen secara spesifik."
+            },
+            {
+              "t": "Imunitas",
+              "d": "kemampuan tubuh menahan/menetralkan antigen."
+            }
           ]
         },
         {
@@ -77,26 +77,22 @@
             "Spesifik (adaptif)"
           ],
           "rows": [
-            [
-              "Garis pertama",
-              "Kulit & membran mukosa",
-              "-"
-            ],
-            [
-              "Garis kedua",
-              "Protein antimikroba, sel fagosit (makrofag, neutrofil), peradangan, demam",
-              "-"
-            ],
-            [
-              "Garis ketiga",
-              "-",
-              "Limfosit B (antibodi) & limfosit T (pembunuh, memori)"
-            ],
-            [
-              "Sifat",
-              "Cepat, umum, tidak ingat patogen",
-              "Lambat awal, spesifik, punya memori"
-            ]
+            {
+              "k": "Garis pertama",
+              "v": "Kulit & membran mukosa"
+            },
+            {
+              "k": "Garis kedua",
+              "v": "Protein antimikroba, sel fagosit (makrofag, neutrofil), peradangan, demam"
+            },
+            {
+              "k": "Garis ketiga",
+              "v": "-"
+            },
+            {
+              "k": "Sifat",
+              "v": "Cepat, umum, tidak ingat patogen"
+            }
           ]
         },
         {
@@ -135,22 +131,22 @@
             "Contoh"
           ],
           "rows": [
-            [
-              "Aktif alami",
-              "Sembuh dari infeksi lalu membentuk antibodi sendiri."
-            ],
-            [
-              "Aktif buatan",
-              "Vaksinasi (antigen dilemahkan memicu antibodi)."
-            ],
-            [
-              "Pasif alami",
-              "Kolostrum/ASI (IgA); antibodi ibu via plasenta (IgG)."
-            ],
-            [
-              "Pasif buatan",
-              "Suntikan serum/antibodi siap pakai (mis. anti-bisa ular)."
-            ]
+            {
+              "k": "Aktif alami",
+              "v": "Sembuh dari infeksi lalu membentuk antibodi sendiri."
+            },
+            {
+              "k": "Aktif buatan",
+              "v": "Vaksinasi (antigen dilemahkan memicu antibodi)."
+            },
+            {
+              "k": "Pasif alami",
+              "v": "Kolostrum/ASI (IgA); antibodi ibu via plasenta (IgG)."
+            },
+            {
+              "k": "Pasif buatan",
+              "v": "Suntikan serum/antibodi siap pakai (mis. anti-bisa ular)."
+            }
           ]
         },
         {
@@ -161,26 +157,26 @@
             "Peran utama"
           ],
           "rows": [
-            [
-              "IgA",
-              "Dominan di sekret/kolostrum; penjaga mukosa."
-            ],
-            [
-              "IgD",
-              "Penanda aktivasi limfosit B."
-            ],
-            [
-              "IgE",
-              "Alergi & pertahanan parasit."
-            ],
-            [
-              "IgG",
-              "Paling banyak; menembus plasenta; respons sekunder."
-            ],
-            [
-              "IgM",
-              "Pertama muncul saat infeksi awal."
-            ]
+            {
+              "k": "IgA",
+              "v": "Dominan di sekret/kolostrum; penjaga mukosa."
+            },
+            {
+              "k": "IgD",
+              "v": "Penanda aktivasi limfosit B."
+            },
+            {
+              "k": "IgE",
+              "v": "Alergi & pertahanan parasit."
+            },
+            {
+              "k": "IgG",
+              "v": "Paling banyak; menembus plasenta; respons sekunder."
+            },
+            {
+              "k": "IgM",
+              "v": "Pertama muncul saat infeksi awal."
+            }
           ]
         },
         {
@@ -230,22 +226,22 @@
         {
           "jenis": "istilah",
           "items": [
-            [
-              "Neuron",
-              "sel penghantar impuls."
-            ],
-            [
-              "Sinaps",
-              "celah sambungan antar neuron."
-            ],
-            [
-              "Neurotransmiter",
-              "zat kimia pembawa sinyal di sinaps."
-            ],
-            [
-              "Reseptor",
-              "struktur penerima rangsang."
-            ]
+            {
+              "t": "Neuron",
+              "d": "sel penghantar impuls."
+            },
+            {
+              "t": "Sinaps",
+              "d": "celah sambungan antar neuron."
+            },
+            {
+              "t": "Neurotransmiter",
+              "d": "zat kimia pembawa sinyal di sinaps."
+            },
+            {
+              "t": "Reseptor",
+              "d": "struktur penerima rangsang."
+            }
           ]
         },
         {
@@ -261,22 +257,22 @@
             "Anggota & tugas"
           ],
           "rows": [
-            [
-              "Sistem saraf pusat",
-              "Otak (pusat sadar) & sumsum tulang belakang (pusat refleks)."
-            ],
-            [
-              "Saraf somatik (sadar)",
-              "Mengatur gerak yang disadari."
-            ],
-            [
-              "Otonom simpatik",
-              "Mode lawan-lari: detak jantung naik, pupil melebar, pencernaan turun."
-            ],
-            [
-              "Otonom parasimpatik",
-              "Mode rest-digest: kebalikan simpatik."
-            ]
+            {
+              "k": "Sistem saraf pusat",
+              "v": "Otak (pusat sadar) & sumsum tulang belakang (pusat refleks)."
+            },
+            {
+              "k": "Saraf somatik (sadar)",
+              "v": "Mengatur gerak yang disadari."
+            },
+            {
+              "k": "Otonom simpatik",
+              "v": "Mode lawan-lari: detak jantung naik, pupil melebar, pencernaan turun."
+            },
+            {
+              "k": "Otonom parasimpatik",
+              "v": "Mode rest-digest: kebalikan simpatik."
+            }
           ]
         },
         {
@@ -323,41 +319,34 @@
             "Fungsi utama"
           ],
           "rows": [
-            [
-              "Hipofisis (pituitari)",
-              "GH, TSH, ACTH, ADH/vasopresin",
-              "Master gland; ADH mengatur reabsorpsi air di ginjal."
-            ],
-            [
-              "Tiroid",
-              "Tiroksin, kalsitonin",
-              "Metabolisme; kalsitonin menurunkan kalsium darah."
-            ],
-            [
-              "Paratiroid",
-              "Parathormon",
-              "Menaikkan kalsium darah."
-            ],
-            [
-              "Pankreas",
-              "Insulin, glukagon",
-              "Menurunkan/menaikkan glukosa darah."
-            ],
-            [
-              "Adrenal",
-              "Adrenalin, kortisol",
-              "Respons stres, metabolisme."
-            ],
-            [
-              "Testis",
-              "Testosteron",
-              "Ciri seks sekunder pria, spermatogenesis."
-            ],
-            [
-              "Ovarium",
-              "Estrogen, progesteron",
-              "Siklus menstruasi, ciri seks sekunder wanita."
-            ]
+            {
+              "k": "Hipofisis (pituitari)",
+              "v": "GH, TSH, ACTH, ADH/vasopresin"
+            },
+            {
+              "k": "Tiroid",
+              "v": "Tiroksin, kalsitonin"
+            },
+            {
+              "k": "Paratiroid",
+              "v": "Parathormon"
+            },
+            {
+              "k": "Pankreas",
+              "v": "Insulin, glukagon"
+            },
+            {
+              "k": "Adrenal",
+              "v": "Adrenalin, kortisol"
+            },
+            {
+              "k": "Testis",
+              "v": "Testosteron"
+            },
+            {
+              "k": "Ovarium",
+              "v": "Estrogen, progesteron"
+            }
           ]
         },
         {
@@ -380,31 +369,26 @@
             "Reseptor"
           ],
           "rows": [
-            [
-              "Mata",
-              "Cahaya",
-              "Fotoreseptor retina (batang & kerucut)."
-            ],
-            [
-              "Telinga",
-              "Suara & keseimbangan",
-              "Sel rambut koklea (organ korti) & saluran setengah lingkaran."
-            ],
-            [
-              "Hidung",
-              "Zat kimia udara",
-              "Kemoreseptor epitel olfaktori."
-            ],
-            [
-              "Lidah",
-              "Zat kimia larutan",
-              "Pengecap pada papila."
-            ],
-            [
-              "Kulit",
-              "Sentuhan, suhu, nyeri",
-              "Mekanoreseptor, termoreseptor, nosireseptor."
-            ]
+            {
+              "k": "Mata",
+              "v": "Cahaya"
+            },
+            {
+              "k": "Telinga",
+              "v": "Suara & keseimbangan"
+            },
+            {
+              "k": "Hidung",
+              "v": "Zat kimia udara"
+            },
+            {
+              "k": "Lidah",
+              "v": "Zat kimia larutan"
+            },
+            {
+              "k": "Kulit",
+              "v": "Sentuhan, suhu, nyeri"
+            }
           ]
         },
         {
@@ -440,26 +424,26 @@
             "Fungsi"
           ],
           "rows": [
-            [
-              "Testis",
-              "Memproduksi sperma (tubulus seminiferus) & testosteron."
-            ],
-            [
-              "Epididimis",
-              "Pematangan & penyimpanan sperma."
-            ],
-            [
-              "Vas deferens",
-              "Saluran pengangkut sperma."
-            ],
-            [
-              "Prostat, vesikula seminalis, bulbouretral",
-              "Menyusun cairan semen."
-            ],
-            [
-              "Penis",
-              "Alat kopulasi & saluran urine."
-            ]
+            {
+              "k": "Testis",
+              "v": "Memproduksi sperma (tubulus seminiferus) & testosteron."
+            },
+            {
+              "k": "Epididimis",
+              "v": "Pematangan & penyimpanan sperma."
+            },
+            {
+              "k": "Vas deferens",
+              "v": "Saluran pengangkut sperma."
+            },
+            {
+              "k": "Prostat, vesikula seminalis, bulbouretral",
+              "v": "Menyusun cairan semen."
+            },
+            {
+              "k": "Penis",
+              "v": "Alat kopulasi & saluran urine."
+            }
           ]
         },
         {
@@ -475,22 +459,22 @@
             "Fungsi"
           ],
           "rows": [
-            [
-              "Ovarium",
-              "Memproduksi ovum, estrogen & progesteron."
-            ],
-            [
-              "Tuba falopi (oviduk)",
-              "Tempat fertilisasi."
-            ],
-            [
-              "Uterus (rahim)",
-              "Tempat implantasi & perkembangan janin."
-            ],
-            [
-              "Serviks & vagina",
-              "Leher rahim & saluran lahir/kopulasi."
-            ]
+            {
+              "k": "Ovarium",
+              "v": "Memproduksi ovum, estrogen & progesteron."
+            },
+            {
+              "k": "Tuba falopi (oviduk)",
+              "v": "Tempat fertilisasi."
+            },
+            {
+              "k": "Uterus (rahim)",
+              "v": "Tempat implantasi & perkembangan janin."
+            },
+            {
+              "k": "Serviks & vagina",
+              "v": "Leher rahim & saluran lahir/kopulasi."
+            }
           ]
         },
         {
@@ -547,22 +531,22 @@
             "Mekanisme"
           ],
           "rows": [
-            [
-              "IUD (spiral)",
-              "Mengganggu pergerakan sperma & membuat rahim tak sesuai implantasi (tembaga/hormon)."
-            ],
-            [
-              "Pil hormonal",
-              "Menekan ovulasi (estrogen/progesteron)."
-            ],
-            [
-              "Kondom",
-              "Penghalang mekanis sperma (juga proteksi PMS)."
-            ],
-            [
-              "Vasektomi/tubektomi",
-              "Pemotongan saluran (pria/wanita) — permanen."
-            ]
+            {
+              "k": "IUD (spiral)",
+              "v": "Mengganggu pergerakan sperma & membuat rahim tak sesuai implantasi (tembaga/hormon)."
+            },
+            {
+              "k": "Pil hormonal",
+              "v": "Menekan ovulasi (estrogen/progesteron)."
+            },
+            {
+              "k": "Kondom",
+              "v": "Penghalang mekanis sperma (juga proteksi PMS)."
+            },
+            {
+              "k": "Vasektomi/tubektomi",
+              "v": "Pemotongan saluran (pria/wanita) — permanen."
+            }
           ]
         },
         {
@@ -609,26 +593,22 @@
             "Sistem hormon"
           ],
           "rows": [
-            [
-              "Media",
-              "Impuls listrik + neurotransmiter",
-              "Darah"
-            ],
-            [
-              "Kecepatan",
-              "Sangat cepat (milidetik)",
-              "Lambat (detik-jam)"
-            ],
-            [
-              "Durasi efek",
-              "Singkat",
-              "Lama"
-            ],
-            [
-              "Target",
-              "Spesifik (efektor tertentu)",
-              "Luas (sel ber-reseptor)"
-            ]
+            {
+              "k": "Media",
+              "v": "Impuls listrik + neurotransmiter"
+            },
+            {
+              "k": "Kecepatan",
+              "v": "Sangat cepat (milidetik)"
+            },
+            {
+              "k": "Durasi efek",
+              "v": "Singkat"
+            },
+            {
+              "k": "Target",
+              "v": "Spesifik (efektor tertentu)"
+            }
           ]
         },
         {
