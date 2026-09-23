@@ -60,6 +60,13 @@ export default function ManageMateriV2() {
         peta[m.id] = { bab: m.jumlahBab, soal: m.jumlahSoal || 0 };
         continue;
       }
+      // ANTI-ZOMBIE (Turn 51): dokumen TANPA judul = cangkang sisa bug
+      // lama -- jangan pernah disentuh backfill (dulu inilah yang
+      // menghidupkan ulang materi yang sudah dihapus).
+      if (!m.judul) {
+        peta[m.id] = { bab: 0, soal: 0 };
+        continue;
+      }
       try {
         peta[m.id] = await segarkanHitunganMateri(m.id);
       } catch {
@@ -71,14 +78,14 @@ export default function ManageMateriV2() {
   };
 
   const muat = async () => {
-    const l = await muatSemuaMateri();
+    const l = await muatSemuaMateri({ dariServer: true });
     setList(l);
     muatStat(l);
   };
   useEffect(() => {
     let hidup = true;
     (async () => {
-      const l = await muatSemuaMateri();
+      const l = await muatSemuaMateri({ dariServer: true });
       if (!hidup) return;
       setList(l);
       setLoading(false);
@@ -95,11 +102,34 @@ export default function ManageMateriV2() {
     )) return;
     try {
       await hapusMateri(id);
-      setPesan('✅ Materi dihapus.');
+      setPesan('✅ Materi dihapus — terverifikasi hilang di server.');
       await muat();
     } catch (e) {
       setPesan(`Gagal hapus: ${e.message}`);
+      await muat();
     }
+  };
+
+  // SAPU BERSIH (Turn 51): dokumen "zombie" = cangkang tanpa judul sisa
+  // bug backfill lama (setDoc merge menghidupkan ulang materi terhapus).
+  // Satu tombol menghapus semuanya permanen.
+  const daftarSisa = list.filter((m) => !m.judul);
+  const bersihkanSisa = async () => {
+    if (!window.confirm(
+      `Hapus ${daftarSisa.length} dokumen sisa tanpa judul? Tindakan permanen.`
+    )) return;
+    let gagal = 0;
+    for (const m of daftarSisa) {
+      try {
+        await hapusMateri(m.id);
+      } catch {
+        gagal += 1;
+      }
+    }
+    setPesan(gagal === 0
+      ? `✅ ${daftarSisa.length} dokumen sisa dibersihkan.`
+      : `⚠️ ${gagal} dokumen sisa GAGAL dihapus — coba lagi atau lewat Firebase Console.`);
+    await muat();
   };
 
   /** Impor draft JSON {materi, bab[]} -- mis. hasil konversi buku/PDF. */
@@ -171,6 +201,13 @@ export default function ManageMateriV2() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {daftarSisa.length > 0 && (
+            <button type="button"
+              style={{ ...tombolPill('putih'), color: '#B91C1C', fontWeight: 800 }}
+              onClick={bersihkanSisa}>
+              🧹 Bersihkan {daftarSisa.length} dokumen sisa
+            </button>
+          )}
           <button type="button" style={tombolPill('putih')}
             onClick={() => { setImporOpen((v) => !v); setForm(null); }}>
             📥 Impor JSON
@@ -220,7 +257,7 @@ export default function ManageMateriV2() {
                 <select style={{ ...S.inp, width: 280 }} value={imporTarget}
                   onChange={(e) => setImporTarget(e.target.value)}>
                   <option value="">— pilih materi tujuan —</option>
-                  {list.map((m) => (
+                  {list.filter((m) => m.judul).map((m) => (
                     <option key={m.id} value={m.id}>{m.judul}</option>
                   ))}
                 </select>
@@ -356,7 +393,13 @@ export default function ManageMateriV2() {
                   <span style={S.cover}>{m.emoji || '📘'}</span>
                   <span style={S.badgeStatus(m.status)}>{m.status}</span>
                 </div>
-                <div style={S.kartuJudul}>{m.judul}</div>
+                <div style={S.kartuJudul}>
+                  {m.judul || (
+                    <span style={{ color: '#B91C1C' }}>
+                      🧟 Sisa dokumen tanpa judul
+                    </span>
+                  )}
+                </div>
                 <div style={S.kartuMeta}>
                   <BookOpen size={12} />
                   {m.mapel || '-'} • Kelas {m.kelas || '-'} •
@@ -372,6 +415,15 @@ export default function ManageMateriV2() {
                   <div style={S.warnChip}>
                     ⚠️ AKTIF TAPI TANPA BAB — siswa melihat halaman kosong.
                     Isi babnya atau hapus materi ini.
+                  </div>
+                )}
+                {!m.judul && (
+                  <div style={{
+                    ...S.warnChip, color: '#B91C1C',
+                    background: T.merahLatar, border: `1px solid ${T.merahGaris}`,
+                  }}>
+                    🧟 Cangkang kosong sisa bug lama (id {m.id}) —
+                    {' '}AMAN DIHAPUS; versi baru tidak bisa membuatnya lagi.
                   </div>
                 )}
                 <div style={S.kartuBtns}>

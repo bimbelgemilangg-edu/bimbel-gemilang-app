@@ -21,7 +21,8 @@
 import { db } from '../firebase';
 import {
   collection, getDoc, getDocs, doc, query, setDoc, where, limit,
-  serverTimestamp, deleteDoc,
+  serverTimestamp, deleteDoc, updateDoc, getDocFromServer,
+  getDocsFromServer,
 } from 'firebase/firestore';
 import { MATERI_CONTOH } from '../data/materiV2Contoh';
 import {
@@ -223,9 +224,23 @@ export const simpanTerakhir = (info) => {
 // ---------------- administrasi (Manajer Materi v2, Fase 4) ----------------
 
 /** Semua materi (termasuk draft/arsip) untuk manajer admin. */
-export async function muatSemuaMateri() {
+export async function muatSemuaMateri(opts = {}) {
+  // ANTI-HANTU (Turn 51): halaman ADMIN wajib lihat kebenaran server
+  // (dariServer: true) -- cache lokal yang basi pernah menelurkan
+  // "dokumen zombie" (cangkang terhapus dihidupkan ulang backfill).
+  // Halaman siswa/guru tetap cache-first demi kuota gratis.
+  const { dariServer = false } = opts;
   try {
-    const snap = await getDocs(collection(db, KOL_MATERI));
+    let snap;
+    if (dariServer) {
+      try {
+        snap = await getDocsFromServer(collection(db, KOL_MATERI));
+      } catch {
+        snap = await getDocs(collection(db, KOL_MATERI)); // fallback cache
+      }
+    } else {
+      snap = await getDocs(collection(db, KOL_MATERI));
+    }
     const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     list.sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
     return list;
@@ -255,9 +270,15 @@ export async function segarkanHitunganMateri(materiId) {
   snap.docs.forEach((d) => {
     soal += (d.data().ujiPemahaman || []).length;
   });
-  await setDoc(doc(db, KOL_MATERI, materiId), {
+  // ⚠️ ANTI-ZOMBIE (Turn 51): DULU setDoc(..., {merge:true}) di sini --
+  // bila materi baru saja dihapus (dari tab/perangkat/console lain) tapi
+  // daftar cache lama masih memuatnya, backfill MENGHIDUPKAN ULANG
+  // dokumen sebagai cangkang tanpa judul (kasus m_1790089768431).
+  // updateDoc selalu GAGAL untuk dokumen yang tidak ada -> yang sudah
+  // dihapus tetap terhapus.
+  await updateDoc(doc(db, KOL_MATERI, materiId), {
     jumlahBab: snap.size, jumlahSoal: soal,
-  }, { merge: true });
+  });
   return { bab: snap.size, soal };
 }
 
@@ -283,11 +304,33 @@ export async function hapusBab(materiId, babId) {
  * (request owner Turn 28). Progres siswa tidak disentuh.
  */
 export async function hapusMateri(materiId) {
-  const snap = await getDocs(collection(db, KOL_MATERI, materiId, 'bab'));
-  const dels = snap.docs.map((d) =>
-    deleteDoc(doc(db, KOL_MATERI, materiId, 'bab', d.id)));
-  await Promise.all(dels);
+  // Best-effort hapus semua bab dulu: kegagalan baca/hapus bab (kuota
+  // 429, aturan, offline) TIDAK boleh membatalkan hapus dokumen induk --
+  // dokumen induk yang hilang sudah cukup membuat materi lenyap dari app.
+  try {
+    const snap = await getDocs(collection(db, KOL_MATERI, materiId, 'bab'));
+    await Promise.all(snap.docs.map((d) => deleteDoc(
+      doc(db, KOL_MATERI, materiId, 'bab', d.id),
+    ).catch((e) => console.warn('Gagal hapus bab', d.id, ':', e?.message))));
+  } catch (e) {
+    console.warn('Gagal daftar bab saat hapus materi:', e?.message);
+  }
   await deleteDoc(doc(db, KOL_MATERI, materiId));
+  // VERIFIKASI SERVER (Turn 51): pastikan "Materi dihapus" bukan ilusi
+  // cache/mutasi tertunda -- baca ulang langsung dari server.
+  try {
+    const sisa = await getDocFromServer(doc(db, KOL_MATERI, materiId));
+    if (sisa.exists()) {
+      throw new Error(
+        'dokumen MASIH ADA di server setelah dihapus (kemungkinan rules/'
+        + 'kuota Firestore) -- coba lagi atau hapus via Firebase Console',
+      );
+    }
+  } catch (e) {
+    if (e?.message?.includes('MASIH ADA')) throw e;
+    // verifikasi gagal (offline/kuota) -> jangan gagalkan hapus-nya
+    console.warn('Verifikasi pasca-hapus gagal:', e?.message);
+  }
 }
 
 /**
