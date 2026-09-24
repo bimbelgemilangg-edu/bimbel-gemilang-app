@@ -13,7 +13,7 @@ const files = process.argv.slice(2).length
   ? process.argv.slice(2)
   : readdirSync(DIR).filter((f) => f.endsWith('.json')).map((f) => join(DIR, f));
 
-const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'gambar', 'langkah', 'poin', 'alur', 'tabelinfo', 'istilah']);
+const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'gambar', 'langkah', 'poin', 'alur', 'tabelinfo', 'istilah', 'kilat', 'peta', 'caraGemilang', 'zona']);
 const TIPE_CALLOUT = new Set(['info', 'tips', 'peringatan', 'gemilang', 'guru']);
 let masalah = 0;
 const salah = (f, teks) => { masalah += 1; console.log(`   ❌ ${f}: ${teks}`); };
@@ -59,6 +59,9 @@ for (const f of files) {
         salah(f, `${label} section[${si}] istilah.items harus objek {k,v} (nested array ditolak Firestore)`);
       }
       if (jenis === 'gambar' && !s.url) salah(f, `${label} section[${si}] gambar tanpa url`);
+      if (jenis === 'zona' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] zona butuh items soal`);
+      if (jenis === 'kilat' && !s.teks) salah(f, `${label} section[${si}] kilat tanpa teks`);
+      if (jenis === 'peta' && !s.teks) salah(f, `${label} section[${si}] peta tanpa teks`);
     });
     const kuis = b.ujiPemahaman || [];
     kuis.forEach((k, ki) => {

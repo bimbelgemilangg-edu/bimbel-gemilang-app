@@ -721,6 +721,43 @@ export default function BelajarReader() {
               <p style={S.paragraf}>
                 {bab.ringkasan || 'Ringkasan belum tersedia untuk bagian ini.'}
               </p>
+              {/* Turn 82: LEMBAR CARA GEMILANG — agregasi kartu caraGemilang bab ini */}
+              {sections.some((s2) => s2.jenis === 'caraGemilang') && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{
+                    fontWeight: 900, fontSize: 14.5, color: '#5B21B6',
+                    background: 'linear-gradient(135deg,#F5F3FF,#EDE9FE)',
+                    border: '2px solid #7C3AED', borderRadius: 14,
+                    padding: '10px 14px', marginBottom: 10,
+                  }}>
+                    👑 LEMBAR CARA GEMILANG — kumpulan jurus cepat bab ini
+                  </div>
+                  {sections.filter((s2) => s2.jenis === 'caraGemilang').map((s2, i2) => (
+                    <div key={i2} style={{
+                      background: '#FFFDF7', border: '2px solid #F5C542',
+                      borderRadius: 14, padding: '10px 12px', marginBottom: 8,
+                    }}>
+                      <b style={{ color: '#6B4E00', fontSize: 13.5 }}>
+                        👑 {s2.judul || 'Cara Gemilang'}
+                      </b>
+                      {s2.teks ? (
+                        <div style={{ fontSize: 13, lineHeight: 1.7, color: '#4C1D95', marginTop: 4 }}>
+                          {s2.teks}
+                        </div>
+                      ) : null}
+                      {(s2.items || []).length ? (
+                        <ol style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                          {(s2.items || []).map((it, k2) => (
+                            <li key={k2} style={{ fontSize: 12.5, lineHeight: 1.65, color: '#3B0764' }}>
+                              {it}
+                            </li>
+                          ))}
+                        </ol>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )}
               {sections.filter((s) => s.jenis === 'langkah' || s.jenis === 'callout')
                 .map((s, i) => (
                   <div key={i} style={s.jenis === 'callout' && String(s.tipe) === 'tips'
