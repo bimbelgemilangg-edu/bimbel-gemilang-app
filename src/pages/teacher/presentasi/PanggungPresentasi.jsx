@@ -301,6 +301,11 @@ export default function PanggungPresentasi() {
                   <img src={kuis[idx].pembahasanGambar} alt="Gambar pembahasan"
                     style={S.pembahasanImg} loading="lazy" />
                 )}
+                {tampilKunci && kuis[idx].pembahasanGambarKet && (
+                  <div style={{ textAlign: 'center', color: '#64748B', fontSize: 12.5, marginTop: 6 }}>
+                    🔍 {kuis[idx].pembahasanGambarKet}
+                  </div>
+                )}
                 <div style={S.statFoot}>
                   {statSoal?.responden || 0} siswa menjawab •
                   {' '}{peserta.length} peserta sesi

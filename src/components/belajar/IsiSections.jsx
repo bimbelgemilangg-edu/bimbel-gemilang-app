@@ -79,7 +79,7 @@ export default function IsiSections({
           // baris bisa [a,b] (draft) atau {s:[a,b]} (hasil sanitasi Firestore)
           const pasangan = (r) => (Array.isArray(r) ? r
             : (Array.isArray(r && r.s) ? r.s
-              : (r && r.k !== undefined ? [r.k, r.v] : [r && r.a, r && r.b])));
+              : (r && r.k !== undefined ? [r.k, r.v, r.w, r.x, r.y] : [r && r.a, r && r.b])));
           return (
             <div key={i} id={`sec-${i}`} style={{ ...S.tabelWrap, ...S.jangkar }}>
               {sec.judul ? <div style={S.poinJudul}>📊 {sec.judul}</div> : null}
@@ -94,10 +94,14 @@ export default function IsiSections({
                 <tbody>
                   {(sec.rows || []).map((r0, k) => {
                     const r2 = pasangan(r0);
+                    const nKol = Math.max(2, (sec.kolom || []).length);
                     return (
-                      <tr key={k}>
-                        <td style={S.tabelSel}><MathText text={r2[0]} /></td>
-                        <td style={S.tabelSel}><MathText text={r2[1]} /></td>
+                      <tr key={k} style={{ background: k % 2 ? '#F8FAFC' : '#fff' }}>
+                        {Array.from({ length: nKol }).map((_, ci) => (
+                          <td key={ci} style={S.tabelSel}>
+                            <MathText text={r2[ci] !== undefined ? r2[ci] : '-'} />
+                          </td>
+                        ))}
                       </tr>
                     );
                   })}
@@ -262,7 +266,8 @@ const S = {
   jangkar: { scrollMarginTop: 76 },
   subJudul: {
     display: 'flex', alignItems: 'baseline', gap: 7,
-    margin: '22px 0 8px', fontSize: 15.5, fontWeight: 800, color: T.judul,
+    margin: '26px 0 10px', fontSize: 17.5, fontWeight: 900, color: T.judul,
+    letterSpacing: -0.2,
   },
   subJudul2: {
     fontSize: 14, fontWeight: 800, color: T.biruDalam,
@@ -273,7 +278,7 @@ const S = {
     color: T.biru, fontWeight: 800, marginRight: 6, fontSize: 12.5,
   },
   subHuruf: { color: T.biru, fontStyle: 'italic' },
-  paragraf: { margin: '0 0 13px', fontSize: 15, lineHeight: 1.85, color: T.teks },
+  paragraf: { margin: '0 0 14px', fontSize: 16, lineHeight: 1.9, color: T.teks, maxWidth: '72ch' },
   contohBox: {
     background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
     borderRadius: 12, padding: '13px 15px', margin: '0 0 15px',
@@ -284,7 +289,8 @@ const S = {
   },
   gambar: {
     width: '100%', maxHeight: 520, objectFit: 'contain', background: '#fff',
-    borderRadius: 12, display: 'block',
+    borderRadius: 16, display: 'block', border: `1px solid ${T.garis}`,
+    padding: 8, boxShadow: '0 6px 18px rgba(15,23,42,.06)',
   },
   gambarKosong: {
     display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
@@ -306,23 +312,23 @@ const S = {
   },
   poinBox: {
     background: '#F4F9FF', border: `1px solid ${T.kotakBiruGaris}`,
-    borderLeft: `4px solid ${T.biru}`, borderRadius: 12,
-    padding: '10px 14px', margin: '10px 0',
+    borderLeft: `4px solid ${T.biru}`, borderRadius: 16,
+    padding: '12px 16px', margin: '12px 0',
   },
   poinJudul: {
     fontWeight: 800, fontSize: 13, color: T.biruDalam, marginBottom: 6,
   },
   poinList: { margin: 0, paddingLeft: 18 },
   poinItem: {
-    fontSize: 13.5, color: T.teks, lineHeight: 1.7, margin: '3px 0',
+    fontSize: 14.5, color: T.teks, lineHeight: 1.75, margin: '4px 0',
   },
   gemilangBox: {
-    display: 'flex', gap: 10, alignItems: 'flex-start',
-    background: 'linear-gradient(135deg,#FFF9E3 0%,#FFEFB8 100%)',
-    border: '1.5px solid #F5C542', borderRadius: 14,
-    padding: '10px 12px', margin: '12px 0',
-    color: '#6B4E00', fontSize: 12.5, lineHeight: 1.65,
-    boxShadow: '0 4px 14px rgba(245,197,66,.25)',
+    display: 'flex', gap: 12, alignItems: 'flex-start',
+    background: 'linear-gradient(135deg,#FFFDF5 0%,#FFEFB8 100%)',
+    border: '2px solid #F5C542', borderRadius: 18,
+    padding: '14px 16px', margin: '16px 0',
+    color: '#6B4E00', fontSize: 13.5, lineHeight: 1.75,
+    boxShadow: '0 8px 22px rgba(245,197,66,.3)',
   },
   gemilangIkon: { flexShrink: 0, marginTop: -2 },
   gemilangImg: { width: 30, height: 30, display: 'block' },
@@ -332,7 +338,19 @@ const S = {
     borderRadius: 12, padding: '10px 12px', margin: '10px 0',
     fontSize: 12.5, lineHeight: 1.65,
   },
-  gambarKet: { textAlign: 'center', color: T.samar, fontSize: 11.5, marginTop: 6 },
+  gambarKet: { textAlign: 'center', color: T.samar, fontSize: 12, lineHeight: 1.6, marginTop: 8 },
+  // Turn 80: style tabel premium (sebelumnya tidak terdefinisi -> tabel polos
+  // tanpa border di produksi = tampilan 'berantakan' yang dikeluhkan owner).
+  tabelWrap: {
+    background: '#fff', border: `1px solid ${T.garis}`, borderRadius: 16,
+    padding: '10px 10px', margin: '14px 0', overflowX: 'auto',
+    boxShadow: '0 6px 18px rgba(15,23,42,.05)',
+  },
+  tabel: { width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 14 },
+  tabelSel: {
+    padding: '10px 12px', borderBottom: `1px solid ${T.garis}`,
+    textAlign: 'left', verticalAlign: 'top', lineHeight: 1.6, minWidth: 110,
+  },
   langkahItem: {
     display: 'flex', gap: 10, alignItems: 'flex-start',
     fontSize: 13.5, lineHeight: 1.65, color: T.teks,
