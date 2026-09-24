@@ -42,11 +42,17 @@ const bacaGuru = () => {
 /** Identitas guru login (dipakai halaman PPT versi guru & panggung). */
 export const bacaIdentitasGuru = bacaGuru;
 
-/** Cari satu sesi aktif (terbaru). Return null bila tidak ada. */
-export async function cariSesiAktif() {
+/** Cari satu sesi aktif (terbaru). Filter opsional: {guruId, materiId, babId}.
+ *  Turn 76: WAJIB pakai filter di halaman guru & siswa agar sesi dua guru
+ *  yang berjalan bersamaan tidak saling tertukar. */
+export async function cariSesiAktif(filter = {}) {
   try {
+    const kon = [where('status', '==', 'aktif')];
+    if (filter.guruId) kon.push(where('guruId', '==', String(filter.guruId)));
+    if (filter.materiId) kon.push(where('materiId', '==', String(filter.materiId)));
+    if (filter.babId) kon.push(where('babId', '==', String(filter.babId)));
     const snap = await getDocs(
-      query(collection(db, KOL_SESI), where('status', '==', 'aktif'), limit(1))
+      query(collection(db, KOL_SESI), ...kon, limit(1))
     );
     if (snap.empty) return null;
     const d = snap.docs[0];
@@ -57,11 +63,37 @@ export async function cariSesiAktif() {
   }
 }
 
-/** Matikan sesi aktif milik guru ini (mis. buka sesi baru). */
+/** Daftar sesi aktif (max 10) terbaru dulu. Filter opsional {materiId}.
+ *  Dipakai reader siswa: bila >1 sesi pada materi sama (dua guru mengajar
+ *  paralel), siswa MEMILIH sesi kelasnya — tidak dilempar acak. */
+export async function cariDaftarSesiAktif(filter = {}) {
+  try {
+    const kon = [where('status', '==', 'aktif')];
+    if (filter.materiId) kon.push(where('materiId', '==', String(filter.materiId)));
+    const snap = await getDocs(
+      query(collection(db, KOL_SESI), ...kon, limit(10))
+    );
+    return snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.dibukaPada?.seconds || 0) - (a.dibukaPada?.seconds || 0));
+  } catch (e) {
+    console.warn('Gagal daftar sesi aktif:', e);
+    return [];
+  }
+}
+
+/** Matikan sesi aktif MILIK GURU INI SENDIRI saja (mis. buka sesi baru).
+ *  Turn 76: sebelumnya fungsi ini mematikan SEMUA sesi aktif — termasuk sesi
+ *  guru lain yang sedang berlangsung — penyebab kelas paralel saling memutus
+ *  dan siswa terlempar antar sesi. Kini difilter guruId sendiri. */
 export async function tutupSesiAktifGuruLain() {
   try {
+    const { guruId } = bacaGuru();
     const snap = await getDocs(
-      query(collection(db, KOL_SESI), where('status', '==', 'aktif'), limit(5))
+      query(collection(db, KOL_SESI),
+        where('status', '==', 'aktif'),
+        where('guruId', '==', String(guruId)),
+        limit(5))
     );
     const janji = [];
     snap.docs.forEach((d) => {
@@ -74,8 +106,10 @@ export async function tutupSesiAktifGuruLain() {
   }
 }
 
-/** Mulai sesi baru di satu bab. Return sessionId. */
-export async function mulaiSesi(materiId, babId) {
+/** Mulai sesi baru di satu bab. Return sessionId.
+ *  meta opsional: {kelas, mapel, judulMateri, judulBab} untuk pemilahan sesi
+ *  di sisi siswa (kelas paralel tidak saling tertukar). */
+export async function mulaiSesi(materiId, babId, meta = {}) {
   await tutupSesiAktifGuruLain();
   const { guruId, guruNama } = bacaGuru();
   const id = `${guruId}_${Date.now()}`;
@@ -85,6 +119,10 @@ export async function mulaiSesi(materiId, babId) {
     mode: 'mengikuti',
     status: 'aktif',
     guruId, guruNama,
+    kelas: meta.kelas != null ? String(meta.kelas) : '',
+    mapel: meta.mapel || '',
+    judulMateri: meta.judulMateri || '',
+    judulBab: meta.judulBab || '',
     dibukaPada: serverTimestamp(),
     diupdatePada: serverTimestamp(),
   });

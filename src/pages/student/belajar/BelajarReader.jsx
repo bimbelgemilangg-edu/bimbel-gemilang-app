@@ -26,7 +26,7 @@ import { MathText } from '../../../components/MathText';
 import IsiSections from '../../../components/belajar/IsiSections';
 import JodohBoard from '../../../components/belajar/JodohBoard';
 import {
-  cariSesiAktif, pantauSesi, tandaiPeserta, kirimJawabanLive,
+  cariSesiAktif, cariDaftarSesiAktif, pantauSesi, tandaiPeserta, kirimJawabanLive,
   antreMaju, batalAntre, pantauAntreanSaya,
 } from '../../../services/sesiPresentasiService';
 import {
@@ -171,21 +171,40 @@ export default function BelajarReader() {
   const [abaikanIkuti, setAbaikanIkuti] = useState(false);
   const pesertaDitandai = useRef('');
 
+  // Turn 76: dua guru bisa sesi paralel di materi sama. Siswa TIDAK dilempar
+  // acak: daftar sesi difilter kelasnya; bila tetap >1, siswa MEMILIH sendiri.
+  const [daftarSesi, setDaftarSesi] = useState([]);
+  const [pilihSesiId, setPilihSesiId] = useState('');
   useEffect(() => {
     let unsub = null;
     let hidup = true;
-    (async () => {
-      const s = await cariSesiAktif();
+    const muat = async () => {
+      const list = await cariDaftarSesiAktif({ materiId });
       if (!hidup) return;
-      if (s && s.materiId === materiId) {
-        setSesi(s);
-        unsub = pantauSesi(s.id, (sn) => setSesi(sn));
+      const kelasSiswa = String(localStorage.getItem('studentKelas')
+        || localStorage.getItem('studentGrade') || '');
+      const angkaS = (kelasSiswa.match(/\d+/) || [])[0] || '';
+      const cocok = list.filter((x) => {
+        if (!x.kelas || !angkaS) return true;
+        return ((String(x.kelas).match(/\d+/) || [])[0]) === angkaS;
+      });
+      setDaftarSesi(cocok);
+      const target = cocok.find((x) => x.id === pilihSesiId)
+        || (cocok.length === 1 ? cocok[0] : null);
+      if (target) {
+        setSesi(target);
+        if (unsub) unsub();
+        unsub = pantauSesi(target.id, (sn) => {
+          setSesi(sn);
+          if (!sn || sn.status !== 'aktif') { setSesi(null); muat(); }
+        });
       } else {
         setSesi(null);
       }
-    })();
+    };
+    muat();
     return () => { hidup = false; if (unsub) unsub(); };
-  }, [materiId]);
+  }, [materiId, pilihSesiId]);
 
   // kunci jenjang/program (request owner: materi sesuai jenjang)
   useEffect(() => {
@@ -443,6 +462,22 @@ export default function BelajarReader() {
     );
   }
 
+  const pemilihSesi = (!sesi && daftarSesi.length > 1) ? (
+    <div style={{ ...kartuDasar, padding: 14, marginBottom: 12 }}>
+      <div style={{ fontWeight: 800, marginBottom: 8 }}>
+        📡 Ada {daftarSesi.length} sesi live di materi ini — pilih sesi kelasmu:
+      </div>
+      {daftarSesi.map((x) => (
+        <button key={x.id} type="button"
+          style={{ ...tombolPill('primer'), marginBottom: 6, display: 'block' }}
+          onClick={() => setPilihSesiId(x.id)}>
+          {x.guruNama || 'Guru'} • {x.judulBab || ('Bab ' + (x.babId || ''))}
+          {x.kelas ? ` • Kelas ${x.kelas}` : ''}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   const persen = persenBab(bab, {
     selesaiBab: selesaiBaca,
     selesaiSections: selesaiBaca ? sections.map((_, i) => i) : [],
@@ -455,6 +490,7 @@ export default function BelajarReader() {
 
   return (
     <div style={halamanDasar}>
+      {pemilihSesi}
       {/* ================= TOPBAR ================= */}
       <header style={S.topbar}>
         <button type="button" style={S.kembali}
