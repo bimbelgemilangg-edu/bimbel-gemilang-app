@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
 import IsiSections from '../../../components/belajar/IsiSections';
+import { buatSlide, SlideView } from '../../../components/belajar/slideMateri';
 import JodohBoard from '../../../components/belajar/JodohBoard';
 import {
   cariSesiAktif, cariDaftarSesiAktif, cariSesiByKodePresentasi, pantauSesi, tandaiPeserta, kirimJawabanLive,
@@ -465,6 +466,8 @@ export default function BelajarReader() {
     );
   }
 
+  const slides = useMemo(() => buatSlide(sections), [sections]);
+  const [bebasBaca, setBebasBaca] = useState(false);
   const [kodeInput, setKodeInput] = useState('');
   const [errKode, setErrKode] = useState('');
   const gabungKode = async (kode) => {
@@ -514,6 +517,47 @@ export default function BelajarReader() {
   const unitTotal = 2;
   const babPanel = babList.filter((b) =>
     !cari.trim() || String(b.judul || '').toLowerCase().includes(cari.trim().toLowerCase()));
+
+  // Turn 77: MODE PPT — siswa yang mengikuti sesi materi melihat SLIDE yang
+  // sama dengan panggung guru (bukan reader scroll), plus widget antrean.
+  const ikutSlide = ikutAktif && sesi?.posisi?.jenis === 'section';
+  if (ikutSlide && !bebasBaca && slides.length) {
+    const sIdx = Math.min(Number(sesi.posisi.index) || 0, slides.length - 1);
+    return (
+      <div style={halamanDasar}>
+        <div style={{ ...kartuDasar, padding: 14, marginBottom: 12 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 800 }}>
+              📡 Mengikuti layar guru • slide {sIdx + 1}/{slides.length}
+            </span>
+            <button type="button" style={{ ...tombolPill('putih'), marginLeft: 'auto' }}
+              onClick={() => setBebasBaca(true)}>
+              📖 Bacaan penuh
+            </button>
+          </div>
+          <div style={{ marginTop: 12 }}><SlideView slide={slides[sIdx]} /></div>
+          {sesiBabIni && (
+            <div style={{ marginTop: 12 }}>
+              {(!antreanSaya || antreanSaya.status === 'selesai') && (
+                <button type="button" style={S.queueBtn}
+                  onClick={() => antreMaju(sesi.id).catch(() => {})}>
+                  🙋 Coba Maju
+                </button>
+              )}
+              {antreanSaya?.status === 'menunggu' && (
+                <div style={S.queueChip}>⏳ Menunggu giliran…</div>
+              )}
+              {antreanSaya?.status === 'dipanggil' && (
+                <div style={{ ...S.queueChip, ...S.queueDipanggil }}>
+                  🎉 Namamu dipanggil — maju ya!
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={halamanDasar}>
@@ -790,6 +834,10 @@ export default function BelajarReader() {
                     Belum ada soal pemantapan untuk bagian ini.
                   </p>
                 </div>
+              ) : ikutAktif && sesi.posisi?.jenis === 'kuisPaket' ? (
+                <LivePaket sessionId={sesi.id} kuis={kuis}
+                  indexes={sesi.posisi.indexes || kuis.map((_, i2) => i2)}
+                  sesi={sesi} />
               ) : ikutAktif && sesi.posisi?.jenis === 'kuis'
                 && kuis[Number(sesi.posisi.index)] ? (
                 <LiveKuis
@@ -798,6 +846,7 @@ export default function BelajarReader() {
                   soal={kuis[Number(sesi.posisi.index)]}
                   idx={Number(sesi.posisi.index)}
                   total={kuis.length}
+                  sesi={sesi}
                 />
               ) : (
                 <PanelKuis
@@ -943,7 +992,10 @@ function PanelKuis({
   const [lihatHasil, setLihatHasil] = useState(false);
   const soal = kuis[soalIdx];
   const dipilih = jawaban[soalIdx];
-  const terkoreksi = jawabanLengkap(soal, dipilih);
+  const [sudahCek, setSudahCek] = useState(false);
+  useEffect(() => { setSudahCek(false); }, [soalIdx]);
+  // Turn 77: jawaban TIDAK langsung dikoreksi — siswa menekan "Cek Jawaban" dulu.
+  const terkoreksi = jawabanLengkap(soal, dipilih) && sudahCek;
   const multiSoal = tipeSoal(soal) === 'pgMulti';
 
   if (semuaDijawab && lihatHasil) {
@@ -1154,6 +1206,12 @@ function PanelKuis({
         </div>
       ) : null}
 
+      {jawabanLengkap(soal, dipilih) && !sudahCek && (
+        <button type="button" style={tombolPill('primer')}
+          onClick={() => setSudahCek(true)}>
+          ✔ Cek Jawaban
+        </button>
+      )}
       <div style={S.kuisNav}>
         <button type="button" style={S.panahBulat} disabled={soalIdx === 0}
           onClick={() => setSoalIdx((i) => Math.max(0, i - 1))}
@@ -1188,7 +1246,40 @@ function PanelKuis({
 }
 
 // ---------------- kuis live bersama guru (Fase 3) ----------------
-function LiveKuis({ sessionId, soal, idx, total }) {
+function fmtKunciSingkat(soal) {
+  const t = tipeSoal(soal);
+  if (t === 'pg') return String.fromCharCode(65 + (soal.jawaban || 0));
+  if (t === 'pgMulti') return (soal.jawaban || []).map((j) => String.fromCharCode(65 + j)).join(', ');
+  if (t === 'tabel') return (soal.jawaban || []).map((c, r) => `baris ${r + 1}: ${(soal.kolom || [])[c] || c}`).join('; ');
+  if (t === 'jodoh') return (soal.jawaban || []).map((c, r) => `${r + 1}→${String.fromCharCode(65 + c)}`).join(', ');
+  return String(soal.jawaban ?? '');
+}
+
+// Turn 77: MODE PAKET — semua soal dilempar sekaligus, siswa mengerjakan
+// sebisanya, pembahasan baru muncul saat guru membuka kunci.
+function LivePaket({ sessionId, kuis, indexes, sesi }) {
+  return (
+    <>
+      <div style={S.liveHead}>
+        📝 Mode paket • kerjakan semua soal sebisanya • {indexes.length} soal
+      </div>
+      <div style={{ fontSize: 12.5, color: T.samar, marginBottom: 10 }}>
+        Jawaban terkirim per soal saat kamu memilih/mengirim. Setelah semua
+        selesai, tunggu guru membuka pembahasan bersama.
+      </div>
+      {indexes.map((i) => (
+        <div key={i} style={{ marginBottom: 18 }}>
+          <div style={{ ...S.soalNomor }}>Soal {i + 1}</div>
+          <LiveKuis sessionId={sessionId} soal={kuis[i]} idx={i}
+            total={kuis.length} sesi={sesi} />
+        </div>
+      ))}
+    </>
+  );
+}
+
+// ---------------- kuis live bersama guru (Fase 3) ----------------
+function LiveKuis({ sessionId, soal, idx, total, sesi }) {
   const [pilihan, setPilihan] = useState(null);
   const [terkirim, setTerkirim] = useState(false);
   const fmt = tipeSoal(soal);
@@ -1329,9 +1420,21 @@ function LiveKuis({ sessionId, soal, idx, total }) {
       )}
       <div style={{ ...S.kotakInfoLive, ...(terkirim ? null : { opacity: .75 }) }}>
         {terkirim
-          ? '✅ Jawabanmu terkirim ke guru — pembahasan muncul setelah sesi.'
-          : 'Pilih jawabanmu; hasilnya langsung terlihat di layar guru.'}
+          ? (sesi?.kunciTerbuka
+            ? '🔓 Guru membuka pembahasan — simak kunci & langkah di bawah.'
+            : '✅ Jawabanmu terkirim ke guru — pembahasan muncul setelah guru membukanya.')
+          : 'Pilih jawabanmu; hasilnya terlihat di layar guru. Kunci dibuka guru saat pembahasan.'}
       </div>
+      {terkirim && sesi?.kunciTerbuka && (
+        <div style={{ ...S.kotakInfoLive, marginTop: 10 }}>
+          <b>Kunci:</b> {fmtKunciSingkat(soal)}
+          <div style={{ marginTop: 6, lineHeight: 1.7 }}>{soal.pembahasan}</div>
+          {soal.pembahasanGambar && (
+            <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
+              style={S.pembahasanImg} loading="lazy" />
+          )}
+        </div>
+      )}
     </>
   );
 }
