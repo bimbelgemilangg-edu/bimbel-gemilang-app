@@ -897,6 +897,124 @@
       ],
       "ujiPemahaman": [
         {
+          "soal": "Gambar berikut merepresentasikan konfigurasi elektron dari dua jenis ion, yaitu ion X²⁺ dan Y²⁻. Pernyataan yang benar terkait atom/unsur X dan Y adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "Elektron pada atom X menempati 2 kulit.",
+            "Nomor atom unsur X adalah 12.",
+            "Atom Y mempunyai 2 elektron valensi.",
+            "Unsur Y terletak pada golongan VIIIA dalam sistem periodik.",
+            "Senyawa yang terbentuk jika kedua ion tersebut berikatan memiliki rumus kimia X₂Y₂."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Ion X²⁺ berkonfigurasi 2 8 (10 elektron) -> atom X melepas 2 elektron terluar, maka atom X = 2 8 2 -> Z = 12 (B BENAR; A salah karena atom X berkulit 3). Ion Y²⁻ = 2 8 -> atom Y menangkap 2 elektron, maka atom Y = 2 6 -> 6 elektron valensi, golongan VIA (C dan D salah). Ion X²⁺ + Y²⁻ berbanding 1 : 1 -> rumus XY, bukan X₂Y₂ (E salah).",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1q-fr1.png",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 02 FR no. 1 (kunci diverifikasi dari 03 Pembahasan FR); transkrip verbatim, stimulus dicrop 300 dpi dari PDF yang sama"
+        },
+        {
+          "soal": "Berikut konfigurasi elektron atom unsur A, B, C, dan X: A = 1s¹; B = 1s² 2s² 2p²; C = 1s² 2s² 2p⁶ 3s¹; X = 1s² 2s² 2p⁶ 3s² 3p⁵. Unsur X membentuk 3 senyawa masing-masing dengan A, B, dan C dengan sifat: Senyawa I = larut, titik leleh/didih tinggi, larutan menghantar listrik; Senyawa II = larut, titik leleh/didih rendah, larutan menghantar listrik; Senyawa III = tidak larut, titik leleh/didih rendah, larutan tidak menghantar. Identifikasilah senyawa yang terbentuk dari tiap pasangan unsur berikut berdasarkan kesesuaian sifat-sifat itu!",
+          "tipe": "tabel",
+          "kolom": [
+            "Senyawa I",
+            "Senyawa II",
+            "Senyawa III"
+          ],
+          "baris": [
+            "Unsur A dan X",
+            "Unsur B dan X",
+            "Unsur C dan X"
+          ],
+          "jawaban": [
+            1,
+            2,
+            0
+          ],
+          "pembahasan": "A = H (nonlogam), B = C (nonlogam), C = Na (logam), X = Cl (nonlogam). A&X = HCl: kovalen polar -> larut, titik didih rendah, larutan menghantar -> Senyawa II. B&X = CCl₄ (BX₄): kovalen nonpolar -> tidak larut, titik didih rendah, tidak menghantar -> Senyawa III. C&X = NaCl: ion -> larut, titik leleh tinggi, larutan menghantar -> Senyawa I.",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 02 FR no. 2 (kunci diverifikasi dari 03 Pembahasan FR); transkrip verbatim, stimulus dicrop 300 dpi dari PDF yang sama"
+        },
+        {
+          "soal": "Diketahui 3 molekul berikut: H₂O, NH₃, dan CH₄ (nomor atom H = 1, C = 6, N = 7, O = 8). Ketiga molekul tersebut mewakili senyawa yang berbeda, namun memiliki kesamaan. Dalam hal apa saja kesamaan dari ketiga molekul tersebut? (Jawaban benar lebih dari satu.)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Jumlah pasangan elektron bebas",
+            "Geometri elektron",
+            "Bentuk molekul",
+            "Kepolaran",
+            "Hibridisasi"
+          ],
+          "jawaban": [
+            1,
+            4
+          ],
+          "pembahasan": "Tabel pembahasan bank: H₂O (PEB 2, geometri elektron tetrahedral, bentuk V, polar, sp³); NH₃ (PEB 1, tetrahedral, trigonal piramida, polar, sp³); CH₄ (PEB 0, tetrahedral, tetrahedral, nonpolar, sp³). Yang SAMA: geometri elektron (tetrahedral) dan hibridisasi (sp³). Jumlah PEB, bentuk molekul, dan kepolaran berbeda.",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 02 FR no. 3 (kunci diverifikasi dari 03 Pembahasan FR); transkrip verbatim, stimulus dicrop 300 dpi dari PDF yang sama"
+        },
+        {
+          "soal": "Perhatikan kurva titik didih dari senyawa-senyawa hidrida golongan VA berikut! Berdasarkan kecenderungan pada kurva tersebut, titik didih NH₃ diharapkan lebih rendah dibandingkan titik didih PH₃. Namun ternyata faktanya tidak demikian. Alasan yang paling tepat untuk menjelaskan fakta tersebut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "NH₃ lebih bersifat kovalen dibandingkan PH₃",
+            "pasangan elektron bebas pada molekul NH₃ lebih banyak dibanding molekul PH₃",
+            "ikatan van der Waals antarmolekul NH₃ lebih kuat dibandingkan antarmolekul PH₃",
+            "molekul NH₃ lebih polar dibandingkan molekul PH₃",
+            "NH₃ memiliki ikatan hidrogen antarmolekulnya"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Pada NH₃ terdapat ikatan hidrogen antarmolekul akibat perbedaan keelektronegatifan yang besar antara N dan H; ikatan hidrogen yang kuat membutuhkan energi lebih besar untuk diputuskan sehingga titik didih NH₃ tinggi. Pada PH₃ selisih keelektronegatifan P-H tidak signifikan sehingga tidak ada ikatan hidrogen -> jawab E.",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1q-fr4.png",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 02 FR no. 4 (kunci diverifikasi dari 03 Pembahasan FR); transkrip verbatim, stimulus dicrop 300 dpi dari PDF yang sama"
+        },
+        {
+          "soal": "Diagram berikut menunjukkan susunan elektron pada atom dari dua unsur yang berbeda. Massa molekul relatif senyawa yang terbentuk dari kedua unsur tersebut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "11",
+            "14",
+            "23",
+            "30",
+            "39"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Inti kiri 3p 4n -> Z = 3 (Li, Mr ≈ 7), konfigurasi 2 1. Inti kanan 8p 8n -> Z = 8 (O, Mr ≈ 16), konfigurasi 2 6. Li melepas 1 elektron, O menangkap 2 -> senyawa Li₂O. Mr = 2 × 7 + 16 = 30 -> jawaban D.",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1q-pred1.png",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 08 Prediksi no. 1 (kunci dari 09 KJ Prediksi); transkrip verbatim, stimulus dicrop 300 dpi dari PDF yang sama"
+        },
+        {
+          "soal": "Gambar berikut menunjukkan susunan elektron dari atom A dan B ketika membentuk senyawa AB₂. Tentukan apakah Tepat atau Tidak Tepat untuk setiap pernyataan tentang senyawa AB₂ sesuai penggambaran di atas!",
+          "tipe": "tabel",
+          "kolom": [
+            "Tepat",
+            "Tidak Tepat"
+          ],
+          "baris": [
+            "Senyawa AB₂ merupakan senyawa ion.",
+            "Senyawa AB₂ memiliki titik didih yang rendah.",
+            "Senyawa AB₂ dapat menghantarkan listrik."
+          ],
+          "jawaban": [
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Gambar menunjukkan pasangan elektron yang DIPAKAI BERSAMA di antara A dan B (pasangan ikatan milik berdua) -> ikatan kovalen, bukan ion: pernyataan 1 TIDAK TEPAT. Senyawa kovalen molekuler memiliki titik didih rendah: pernyataan 2 TEPAT. Senyawa kovalen molekuler tidak menghantarkan listrik: pernyataan 3 TIDAK TEPAT.",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1q-pred2.png",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 08 Prediksi no. 2 (kunci dari 09 KJ Prediksi); transkrip verbatim, stimulus dicrop 300 dpi dari PDF yang sama"
+        },
+        {
+          "soal": "Diketahui empat senyawa dengan rumus molekul yang sama sebagai berikut: (1) NH₃, (2) BF₃, (3) PCl₃, (4) ClF₃ (nomor atom H = 1, B = 5, N = 7, F = 9, P = 15, Cl = 17). Pasangan senyawa yang memiliki bentuk molekul yang sama adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "(1) dan (2)",
+            "(1) dan (3)",
+            "(2) dan (3)",
+            "(2) dan (4)",
+            "(3) dan (4)"
+          ],
+          "jawaban": 1,
+          "pembahasan": "NH₃: 3 PEI + 1 PEB -> trigonal piramida. PCl₃: 3 PEI + 1 PEB -> trigonal piramida (sama!). BF₃: 3 PEI + 0 PEB -> segitiga planar. ClF₃: 3 PEI + 2 PEB -> bentuk T. Jadi pasangan sama = (1) dan (3) -> jawaban B.",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 08 Prediksi no. 3 (kunci dari 09 KJ Prediksi); transkrip verbatim, stimulus dicrop 300 dpi dari PDF yang sama"
+        },
+        {
           "soal": "Diketahui notasi dua macam unsur: ³¹₁₅X dan ³⁵₁₇Y. Jika kedua unsur bersenyawa, hibridisasi atom pusat, geometri molekul, dan kepolaran senyawanya berturut-turut adalah ....",
           "tipe": "pg",
           "opsi": [
@@ -913,34 +1031,6 @@
           "sumber": "Contoh Soal Resmi TKA Kimia no. 6 — Pusmendik (kunci resmi D; notasi ditranskrip teks)"
         },
         {
-          "soal": "Perhatikan pernyataan-pernyataan tentang model atom yang elektronnya bergerak mengelilingi inti pada lintasan kulit-kulit tertentu (K, L, M, ...) berikut! (1) Elektron bergerak mengelilingi inti atom pada lintasan tertentu yang disebut kulit atom. (2) Energi elektron bersifat terkuantisasi sehingga hanya nilai tertentu yang diperbolehkan. (3) Posisi elektron tidak dapat diketahui secara pasti, melainkan dinyatakan dalam bentuk probabilitas. (4) Perpindahan elektron antartingkat energi disertai penyerapan atau pelepasan energi dalam bentuk foton. (5) Model atom ini gagal menjelaskan spektrum atom hidrogen. Pernyataan yang sesuai dengan model atom Bohr ditunjukkan oleh nomor ....",
-          "tipe": "pg",
-          "opsi": [
-            "(1), (2), dan (4)",
-            "(1), (2), dan (5)",
-            "(2), (3), dan (4)",
-            "(3), (4), dan (5)",
-            "(1), (4), dan (5)"
-          ],
-          "jawaban": 0,
-          "pembahasan": "Ciri model Bohr: kulit/lintasan tetap (1), energi terkuantisasi (2), transisi kulit = serap/pancar foton (4). Pernyataan (3) adalah ciri mekanika kuantum, bukan Bohr. Pernyataan (5) salah arah: justru keberhasilan Bohr adalah menjelaskan spektrum HIDROGEN; kegagalannya pada atom berelektron banyak. Maka (1), (2), (4).",
-          "sumber": "Adaptasi latihan no. 1 — Sukses TKA Saintek hlm. 192"
-        },
-        {
-          "soal": "Kromium merupakan logam transisi yang banyak dimanfaatkan dalam industri, misalnya untuk pelapisan logam agar tahan karat (korosi). Unsur ini memiliki nomor atom 24 dan nomor massa 52. Berdasarkan informasi tersebut, konfigurasi elektron kromium pada keadaan dasar adalah ....",
-          "tipe": "pg",
-          "opsi": [
-            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁴",
-            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s¹ 3d⁵",
-            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁵",
-            "1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁶",
-            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 4p⁴"
-          ],
-          "jawaban": 1,
-          "pembahasan": "Z = 24 berarti 24 elektron. Pengisian naif memberi 4s² 3d⁴, tetapi subkulit d setengah penuh (d⁵) lebih stabil, sehingga satu elektron 4s 'pindah': [Ar] 4s¹ 3d⁵ = 1s² 2s² 2p⁶ 3s² 3p⁶ 4s¹ 3d⁵. Opsi C berjumlah 25 elektron (salah jumlah), opsi D melompati 4s, opsi E mengisi 4p sebelum 3d penuh.",
-          "sumber": "Adaptasi latihan no. 2 — Sukses TKA Saintek hlm. 192"
-        },
-        {
           "soal": "Konfigurasi elektron ion X⁺ adalah [Ar]. Harga keempat bilangan kuantum untuk elektron terakhir atom X adalah ....",
           "tipe": "pg",
           "opsi": [
@@ -953,20 +1043,6 @@
           "jawaban": 4,
           "pembahasan": "X⁺ = [Ar] (18 elektron) → atom X = 19 elektron = kalium: [Ar] 4s¹. Elektron terakhir berada di 4s¹: n = 4; subkulit s → l = 0; satu-satunya orbital s → m = 0; elektron pertama (panah naik) → s = +½.",
           "sumber": "Adaptasi latihan no. 3 — Sukses TKA Saintek hlm. 192"
-        },
-        {
-          "soal": "Vanadium memiliki nomor atom 23. Unsur ini merupakan logam transisi yang digunakan sebagai campuran baja untuk meningkatkan kekuatan dan ketahanan terhadap korosi. Berdasarkan informasi tersebut, letak unsur vanadium pada sistem periodik adalah ....",
-          "tipe": "pg",
-          "opsi": [
-            "golongan VB, periode 4",
-            "golongan VIIB, periode 4",
-            "golongan IVB, periode 4",
-            "golongan VB, periode 3",
-            "golongan VIB, periode 3"
-          ],
-          "jawaban": 0,
-          "pembahasan": "V (Z=23): [Ar] 4s² 3d³. Blok d → golongan = elektron 4s + 3d = 2 + 3 = 5 → golongan VB (golongan 5 notasi IUPAC baru); periode = kulit terbesar = 4.",
-          "sumber": "Adaptasi latihan no. 8 — Sukses TKA Saintek hlm. 192"
         },
         {
           "soal": "Diketahui lima unsur: ₁₇P, ₂₀Q, ₂₅R, ₂₆S, dan ₃₅T. Pasangan unsur yang termasuk golongan halogen adalah ....",
@@ -1000,24 +1076,6 @@
           "sumber": "Adaptasi latihan no. 10 (format MCMA) — Sukses TKA Saintek hlm. 193"
         },
         {
-          "soal": "Perhatikan data afinitas elektron dua unsur nonlogam berikut: unsur X = +240 kJ/mol dan unsur Y = −349 kJ/mol. Berdasarkan data tersebut, pernyataan yang benar mengenai kedua unsur adalah .... (Pilih semua yang benar!)",
-          "tipe": "pgMulti",
-          "opsi": [
-            "Unsur Y lebih cenderung membentuk anion dibandingkan unsur X.",
-            "Unsur X lebih reaktif secara kimia daripada unsur Y.",
-            "Unsur Y mudah menangkap elektron daripada unsur X.",
-            "Afinitas elektron positif menunjukkan energi dilepaskan saat elektron ditangkap.",
-            "Afinitas elektron negatif menunjukkan energi dilepaskan saat elektron ditangkap."
-          ],
-          "jawaban": [
-            0,
-            2,
-            4
-          ],
-          "pembahasan": "Nilai AE negatif (Y) berarti penangkapan elektron MELEPAS energi → berlangsung mudah dan anion stabil: pernyataan 1 dan 3 BENAR, sekaligus menegaskan pernyataan 5 BENAR (negatif = melepas energi). Nilai positif (X) berarti perlu energi untuk menangkap elektron → X sulit membentuk anion: pernyataan 4 salah (positif = menyerap energi). Reaktivitas nonlogam sejalan dengan kemudahan menangkap elektron → Y lebih reaktif: pernyataan 2 salah.",
-          "sumber": "Adaptasi latihan no. 11 (format MCMA) — Sukses TKA Saintek hlm. 193"
-        },
-        {
           "soal": "Jika diketahui notasi unsur ²⁷₁₃X dan ³¹₁₅Y, pernyataan berikut yang benar terkait sifat kedua unsur tersebut adalah .... (Pilih semua yang benar!)",
           "tipe": "pgMulti",
           "opsi": [
@@ -1033,38 +1091,6 @@
           ],
           "pembahasan": "X = Al (logam periode 3 golongan IIIA), Y = P (nonlogam golongan VA). Sepanjang periode kiri→kanan: sifat logam berkurang (X lebih logam: pernyataan 3 BENAR), EN dan EI bertambah (pernyataan 1 dan 4 salah), jari-jari mengecil (X > Y, pernyataan 2 salah). Titik leleh: Al logam kristal logam ±660 °C, P molekuler (P₄) ±44 °C → pernyataan 5 BENAR.",
           "sumber": "Adaptasi latihan no. 14 (format MCMA) — Sukses TKA Saintek hlm. 193"
-        },
-        {
-          "soal": "Perhatikan sifat beberapa unsur berikut! Unsur P: wujud padat, oksida bersifat basa, potensial reduksi −2,71 V, keelektronegatifan 1,0. Unsur Q: wujud gas, oksida bersifat asam, potensial reduksi +1,36 V, keelektronegatifan 2,9. Unsur R: wujud padat, oksida amfoter, potensial reduksi −1,66 V, keelektronegatifan 1,5. Berdasarkan data tersebut, pernyataan berikut yang benar adalah .... (Pilih semua yang benar!)",
-          "tipe": "pgMulti",
-          "opsi": [
-            "Unsur P dan R merupakan unsur logam, sedangkan unsur Q merupakan unsur nonlogam.",
-            "Unsur P lebih mudah teroksidasi dibandingkan unsur R.",
-            "Unsur R dapat bersifat asam dan basa.",
-            "Unsur P paling stabil di antara ketiganya.",
-            "Keelektronegatifan Q paling tinggi menunjukkan unsur tersebut mudah melepaskan elektron."
-          ],
-          "jawaban": [
-            0,
-            1,
-            2
-          ],
-          "pembahasan": "Ciri logam: padat, oksida basa, E° sangat negatif, EN kecil → P dan R logam; Q (gas, oksida asam, E° positif, EN besar) nonlogam: pernyataan 1 BENAR. E° P (−2,71 V) lebih negatif dari R (−1,66 V) → P lebih mudah teroksidasi: pernyataan 2 BENAR. Oksida R amfoter → R (ciri aluminium) dapat bereaksi sebagai asam maupun basa: pernyataan 3 BENAR. E° paling negatif justru = paling reaktif, bukan paling stabil: pernyataan 4 salah. EN tinggi = mudah MENANGKAP elektron: pernyataan 5 salah.",
-          "sumber": "Adaptasi latihan no. 16 (format MCMA) — Sukses TKA Saintek hlm. 194"
-        },
-        {
-          "soal": "Diketahui beberapa sifat unsur ²⁴₁₂X dan ⁴⁰₂₀Y berikut: (1) X logam, Y nonlogam, titik leleh/didih X > Y; (2) X logam, Y nonlogam, X < Y; (3) X logam, Y logam, X < Y; (4) X logam, Y logam, X > Y; (5) X nonlogam, Y nonlogam, X < Y. Sifat yang tepat untuk kedua unsur tersebut ditunjukkan oleh nomor ....",
-          "tipe": "pg",
-          "opsi": [
-            "1",
-            "2",
-            "3",
-            "4",
-            "5"
-          ],
-          "jawaban": 2,
-          "pembahasan": "X = Mg dan Y = Ca, keduanya logam alkali tanah (golongan IIA). Dalam satu golongan ke bawah jari-jari membesar dan ikatan logam melemah: titik leleh Mg (±650 °C) < Ca (±842 °C). Catatan: tren titik leleh IIA memang menurun ke bawah setelah Ca, tetapi pasangan Mg-Ca berada pada ruas X < Y. Maka baris (3): logam-logam dengan X < Y.",
-          "sumber": "Adaptasi latihan no. 15 — Sukses TKA Saintek hlm. 193"
         },
         {
           "soal": "Diketahui harga keelektronegatifan beberapa unsur: K = 2,20; L = 2,55; M = 3,04; N = 4,00; O = 0,93. Berdasarkan data tersebut, pasangan unsur yang membentuk senyawa paling polar adalah ....",
@@ -1115,26 +1141,6 @@
           ],
           "pembahasan": "Na (logam IA) + O (nonlogam VIA) → serah terima elektron → ionik: pernyataan 1 BENAR. Ciri rapuh/keras dan larutan menghantar listrik justru ciri senyawa ION (ion bebas bergerak): pernyataan 2 BENAR. Kesimpulan 'kovalen karena rapuh' terbalik: rapuh adalah ciri kisi ionik (pergeseran lapisan membuat ion senama berhadapan dan tolak-menolak): pernyataan 3 SALAH.",
           "sumber": "Adaptasi latihan no. 21 (format PGK kategori) — Sukses TKA Saintek hlm. 194"
-        },
-        {
-          "soal": "Suatu senyawa tersusun dari dua unsur yaitu ₆X dan ₁₇Y. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
-          "tipe": "tabel",
-          "kolom": [
-            "Benar",
-            "Salah"
-          ],
-          "baris": [
-            "Unsur X pada senyawa XY₄ tidak memiliki pasangan elektron bebas (PEB).",
-            "Geometri molekul XY₄ adalah linier.",
-            "Molekul XY₄ memiliki momen dipol total ≠ 0."
-          ],
-          "jawaban": [
-            0,
-            1,
-            1
-          ],
-          "pembahasan": "X = C (valensi 4), Y = Cl (valensi 7) → CCl₄. PE atom pusat = (4+4)/2 = 4, PEI 4 → PEB 0: pernyataan 1 BENAR. AX₄ = TETRAHEDRAL, bukan linier: pernyataan 2 SALAH. Tanpa PEB dengan empat atom tepi identik → simetris → momen dipol total = 0 (nonpolar): pernyataan 3 SALAH.",
-          "sumber": "Adaptasi latihan no. 22 (format PGK kategori) — Sukses TKA Saintek hlm. 194"
         },
         {
           "soal": "Diketahui konfigurasi elektron unsur X dan Y: X = 1s² 2s² 2p⁶ 3s² 3p³ dan Y = 1s² 2s² 2p⁵. Berdasarkan data tersebut, tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
