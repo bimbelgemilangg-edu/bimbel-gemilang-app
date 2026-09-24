@@ -12,11 +12,13 @@
     "urutan": 5,
     "status": "draft",
     "daftarPustaka": [
-      "Ilmu Pengetahuan Alam untuk SMA/MA Kelas X Edisi Revisi (Kemendikbudristek, 2023; Niken Resminingpuri Krisdianti dkk.) — SUMBER GAMBAR ASLI bab ini: Gambar 3.2 & 3.3 (hlm. cetak 73-74), 3.5 & 3.6 (75-76), 3.11 & 3.12 (82), 3.15 (90), 3.16 (91), 3.23 (99), 3.24 (101), 3.27 (105); dirender 300 dpi dan dipotong bbox tinta; caption & baris kredit buku dipotong dari crop (kredit disimpan di sini).",
+      "Ilmu Pengetahuan Alam untuk SMA/MA Kelas X Edisi Revisi (Kemendikbudristek, 2023; Niken Resminingpuri Krisdianti dkk.) — SUMBER GAMBAR ASLI bab ini: Gambar 3.2 & 3.3 (hlm. cetak 73-74), 3.5 & 3.6 (75-76), 3.11 & 3.12 (82), 3.15 (90), 3.16 (91), 3.23 (99; diganti versi HD Commons), 3.24 (101; diganti versi HD Commons), 3.27 (105); dirender 300 dpi dan dipotong bbox tinta; caption & baris kredit buku dipotong dari crop (kredit disimpan di sini).",
       "Matriks Asesmen & 20 Contoh Soal Resmi TKA Kimia SMA — Pusmendik Kemendikdasmen (soal resmi no. 6 dipakai berlabel penuh).",
       "Sukses Tes Kemampuan Akademik SMA - Saintek, Bab 1 'Struktur Atom, Sistem Periodik, Ikatan Kimia', hlm. 189-195 (berkas scan dilampirkan owner; teori dirujuk, latihan diadaptasi berlabel).",
       "Modul Tentor Gemilang — blok Kimia 'Struktur Atom Dan Ikatan Kimia' hlm. cetak 207-211 (basis internal).",
-      "Bagan penunjang orisinal tim kurikulum Gemilang via canvas DIPAKAI HANYA untuk topik yang tidak memiliki padanan gambar di buku sumber ber-kredit: panel ikatan ion/kovalen, kartu bentuk molekul VSEPR, dan rantai ikatan hidrogen (bab 1); semuanya ber-anatomi KAIDAH."
+      "Bagan penunjang orisinal tim kurikulum Gemilang via canvas DIPAKAI HANYA untuk topik yang tidak memiliki padanan gambar di buku sumber ber-kredit: panel ikatan ion/kovalen, kartu bentuk molekul VSEPR, dan rantai ikatan hidrogen (bab 1); semuanya ber-anatomi KAIDAH.",
+      "Grafik HD pengganti crop buku beraster rendah: 'First Ionization Energy.svg' (Glrx dkk., lisensi CC BY 3.0) dan 'Empirical atomic radius trends.svg' (Francois~frwiki, lisensi CC BY-SA 4.0) — Wikimedia Commons, diraster 3840 px lalu diunggah ke Supabase; kredit lisensi disimpan di sini sesuai kewajiban atribusi.",
+      "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — '01 Ringkasan Materi' hlm. 2-11: BASIS penulisan ulang bab 1 (tabel partikel lengkap, detail bilangan kuantum 2ℓ+1 & n+ℓ, prosedur Lewis ΣEV & muatan formal, domain VSEPR DI/DNI, sigma-pi, urutan kepolaran ΔEN & titik didih); Gambar 3.1 pengelompokan tabel periodik (sumber asli Brown dkk. 2012 via bank) dicrop 300 dpi vektor tajam, kredit disimpan di sini."
     ]
   },
   "bab": [
@@ -30,6 +32,10 @@
         {
           "jenis": "judul",
           "teks": "A. Perkembangan Teori Atom: Dari Bola Pejal ke Awan Elektron"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan atom seperti tersangka yang tidak pernah terlihat wajahnya: yang kita punya hanya jejak di TKP percobaan. Setiap model atom adalah \"sketsa wajah\" yang dibuat dari jejak berbeda — dan sketsa baru lahir justru karena sketsa lama gagal menjelaskan jejak baru. Membaca bagian ini seperti membaca serial detektif: perhatikan BUKTI apa yang mematahkan tiap model."
         },
         {
           "jenis": "paragraf",
@@ -106,6 +112,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — mencocokkan bukti dengan model. Soal: \"Suatu model menyatakan atom sebagian besar ruang kosong dengan inti kecil bermuatan positif.\" Bukti percobaan manakah yang melahirkannya? Langkah 1: kata kunci \"ruang kosong + inti kecil\" berarti kebanyakan partikel alfa lolos lurus. Langkah 2: itu hasil hamburan sinar alfa Rutherford pada lempeng emas. Langkah 3: jawab Rutherford (1911); pembanding: Thomson lahir dari sinar katode (elektron), Bohr dari spektrum hidrogen, kuantum dari sifat gelombang elektron."
+        },
+        {
           "jenis": "callout",
           "tipe": "gemilang",
           "judul": "Kaitan konsep",
@@ -117,11 +127,15 @@
         },
         {
           "jenis": "paragraf",
+          "teks": "Notasi atom adalah KTP-nya unsur: satu kartu kecil memuat seluruh identitas — nomor massa di atas, nomor atom di bawah, lambang di tengah. Dari KTP itu plus muatan, kamu bisa menghitung proton, neutron, dan elektron tanpa hafalan tambahan."
+        },
+        {
+          "jenis": "paragraf",
           "teks": "Semua informasi kuantitatif tentang satu atom termuat dalam notasinya: nomor massa A di atas, nomor atom Z di bawah, lalu lambang unsur. Dari dua angka itu plus muatan, kita dapat menghitung proton, neutron, dan elektron — keterampilan yang muncul hampir pasti di soal TKA, sering sebagai langkah antara soal konfigurasi atau ikatan."
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-notasi.png",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-notasi-v2.png",
           "keterangan": "Notasi atom karbon asli dari buku: angka 12 besar di kiri atas huruf C dan angka 6 di kiri bawah; tiga panah merah muda menghubungkan label Nomor Massa (jumlah proton + neutron) ke angka 12, Nomor Atom (= jumlah proton) ke angka 6, dan Simbol Atom ke huruf C."
         },
         {
@@ -132,6 +146,32 @@
             "Angka bawah (6) adalah nomor atom Z: jumlah proton = jumlah elektron pada atom netral.",
             "Neutron = selisih kedua angka pada label: 12 - 6 = 6.",
             "Pola label yang sama berlaku untuk unsur mana pun: A di atas, Z di bawah, simbol di tengah."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Partikel penyusun atom (data lengkap sumber owner)",
+          "kolom": [
+            "Partikel",
+            "Muatan & massa",
+            "Peran"
+          ],
+          "rows": [
+            {
+              "k": "Elektron (e⁻)",
+              "v": "Muatan −1,60218 × 10⁻¹⁹ C (relatif −1); massa 9,11 × 10⁻²⁸ g (1/1836 proton)",
+              "w": "Menentukan muatan ion, ikatan, dan konfigurasi; berada di luar inti."
+            },
+            {
+              "k": "Proton (p⁺)",
+              "v": "Muatan +1,60218 × 10⁻¹⁹ C (relatif +1); massa 1,67262 × 10⁻²⁴ g",
+              "w": "Menetapkan identitas unsur (nomor atom Z)."
+            },
+            {
+              "k": "Neutron (n⁰)",
+              "v": "Muatan 0; massa 1,67493 × 10⁻²⁴ g",
+              "w": "Menambah massa & isotop; tidak mengubah jenis unsur."
+            }
           ]
         },
         {
@@ -191,6 +231,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — membaca KTP atom. Soal: tentukan proton, neutron, elektron dari ²⁴₁₂Mg²⁺. Langkah 1: Z = 12 -> proton 12. Langkah 2: neutron = A − Z = 24 − 12 = 12. Langkah 3: muatan +2 berarti kehilangan 2 elektron -> elektron = 12 − 2 = 10. Ingat: muatan positif hanya mengubah elektron, TIDAK pernah proton/neutron."
+        },
+        {
           "jenis": "callout",
           "tipe": "tips",
           "judul": "Cara Gemilang membaca 'keluarga iso-'",
@@ -202,11 +246,15 @@
         },
         {
           "jenis": "paragraf",
+          "teks": "Bayangkan atom sebagai hotel bertingkat: kulit adalah lantai, subkulit adalah lorong, orbital adalah kamar, dan elektron adalah tamu yang wajib mengikuti aturan check-in (Aufbau, Pauli, Hund). Konfigurasi elektron hanyalah daftar tamu per lantai — dan daftar itu yang menentukan \"alamat\" unsur di tabel periodik."
+        },
+        {
+          "jenis": "paragraf",
           "teks": "Konfigurasi elektron adalah 'alamat lengkap' seluruh elektron atom menurut kulitnya. Gambar asli berikut menampilkan atom kalsium nyata dengan elektron-elektronnya pada empat kulit — hitung titik pada tiap kulit sebelum membaca aturan pengisian (Aufbau) pada alur sesudahnya; pengecualian Cr/Cu tetap menjadi jebakan favorit TKA."
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-konfig-ca.png",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-konfig-ca-v2.png",
           "keterangan": "Gambar asli konfigurasi elektron atom kalsium: label Atom 20Ca di atas inti merah bertuliskan Ca yang dikelilingi empat lingkaran kulit hitam; titik-titik elektron biru tersebar 2 pada kulit pertama, 8 pada kulit kedua, 8 pada kulit ketiga, dan 2 pada kulit terluar."
         },
         {
@@ -220,6 +268,16 @@
           ]
         },
         {
+          "jenis": "poin",
+          "judul": "Tiga hukum check-in tamu hotel (Aufbau, Hund, Pauli)",
+          "items": [
+            "Aufbau (n + ℓ terendah dulu): subkulit baru dibuka hanya setelah subkulit sebelumnya penuh — urutan 1s 2s 2p 3s 3p 4s 3d dst.",
+            "Hund: orbital setingkat energi diisi tunggal dulu dengan spin sama, baru berpasangan — seperti tamu asing yang memilih kamar kosong.",
+            "Pauli: dua elektron sekamar WAJIB beda spin (±1/2) — karena itu satu orbital maksimal 2 elektron.",
+            "Konsekuensi ujian: pengecualian Cr ([Ar] 4s¹ 3d⁵) dan Cu ([Ar] 4s¹ 3d¹⁰) lahir dari semangat Hund/Pauli: setengah penuh & penuh lebih stabil."
+          ]
+        },
+        {
           "jenis": "alur",
           "judul": "Menulis konfigurasi ion tanpa terpeleset",
           "items": [
@@ -230,6 +288,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — konfigurasi atom dan ionnya. Soal: tulis konfigurasi Fe (Z = 26) dan Fe³⁺. Langkah 1: netral: 1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁶ (atau [Ar] 4s² 3d⁶). Langkah 2: untuk kation, LEPASKAN dari 4s dulu baru 3d (kebalikan urutan isi): lepas 2 elektron 4s dan 1 elektron 3d. Langkah 3: Fe³⁺ = [Ar] 3d⁵ — tepat setengah penuh, konfigurasi yang stabil. Periksa jumlah elektron: 26 − 3 = 23."
+        },
+        {
           "jenis": "callout",
           "tipe": "peringatan",
           "judul": "Dua pengecualian yang wajib reflex",
@@ -238,6 +300,10 @@
         {
           "jenis": "judul",
           "teks": "D. Empat Bilangan Kuantum: KTP Setiap Elektron"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Empat bilangan kuantum adalah alamat lengkap satu elektron: kota (kulit n), jalan (subkulit l), nomor rumah (orbital m), dan arah tidur penghuni (spin s). Soal TKA biasanya memberi satu alamat lalu meminta kamu menemukan si penghuni — atau sebaliknya."
         },
         {
           "jenis": "paragraf",
@@ -275,6 +341,16 @@
           ]
         },
         {
+          "jenis": "poin",
+          "judul": "Rumus cepat bilangan kuantum",
+          "items": [
+            "ℓ: 0 → s, 1 → p, 2 → d, 3 → f; nilai ℓ selalu 0 sampai n−1.",
+            "Jumlah orbital dalam subkulit = 2ℓ + 1 (s 1, p 3, d 5, f 7).",
+            "Tingkat energi subkulit dibanding dari jumlah n + ℓ (dasar urutan Aufbau).",
+            "m_s hanya +1/2 atau −1/2; elektron terakhir pasangan berarti −1/2."
+          ]
+        },
+        {
           "jenis": "alur",
           "judul": "Prosedur 5 langkah bilangan kuantum elektron terakhir",
           "items": [
@@ -286,6 +362,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — empat bilangan kuantum elektron terakhir. Soal: tentukan n, l, m, s elektron terakhir belerang S (Z = 16). Langkah 1: konfigurasi ... 3p⁴ -> elektron terakhir di 3p: n = 3. Langkah 2: subkulit p -> l = 1. Langkah 3: isi orbital p menurut Hund: tiga orbital terisi tunggal dulu (m = −1, 0, +1), elektron ke-4 berpasangan di m = −1 dengan spin turun s = −1/2. Langkah 4: jawab (3, 1, −1, −1/2)."
+        },
+        {
           "jenis": "callout",
           "tipe": "gemilang",
           "judul": "Jebakan spin",
@@ -294,6 +374,10 @@
         {
           "jenis": "judul",
           "teks": "E. Letak Unsur: Periode dan Golongan dari Konfigurasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tabel periodik adalah peta kota yang rapi: periode adalah nomor jalan mendatar, golongan adalah nomor blok vertikal. Konfigurasi elektron memberi koordinat GPS-nya; bagian ini mengajarkan cara membaca koordinat itu menjadi alamat yang disebut soal."
         },
         {
           "jenis": "paragraf",
@@ -343,6 +427,29 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — dari konfigurasi ke alamat. Soal: tentukan periode & golongan unsur berkonfigurasi [Ar] 4s² 3d⁶. Langkah 1: kulit terbesar 4 -> periode 4. Langkah 2: blok d (subkulit terakhir d) -> golongan transisi: 2 + 6 = 8 -> golongan VIII B (golongan 8 notasi IUPAC). Langkah 3: sebut nama untuk cek: besi (Fe) — cocok dengan contoh bagian C."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Peta kelompok unsur berikut berasal dari ringkasan materi bank soal owner (diadaptasi dari Brown dkk.): perhatikan tiga warna keluarga besar (logam, metaloid, nonlogam) dan garis tangga tebal yang memisahkan logam dari nonlogam — posisi terhadap tangga ini yang meramalkan jenis ikatan di bagian G."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1s-spu-kelompok.png",
+          "keterangan": "Tabel periodik lengkap berlabel ganda (IA–VIIIA dan 1–18) dengan kotak unsur berisi nomor atom, lambang, dan massa atom; legenda tiga kotak abu menjelaskan keluarga logam, metaloid, dan nonlogam; garis tepi tebal berbentuk tangga di sisi kanan membelah antara logam dan nonlogam melalui deret metaloid (B, Si, Ge, As, Sb, Te); dua baris bawah adalah lantanida dan aktinida."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — peta keluarga unsur",
+          "items": [
+            "Kiri bawah sampai tengah = logam (konduktor, cenderung melepas elektron -> kation).",
+            "Tangga tebal = deret metaloid: sifat antara logam dan nonlogam (Si, Ge bahan semikonduktor).",
+            "Kanan atas = nonlogam: cenderung menarik elektron -> anion atau pakai bersama.",
+            "Gas mulia kolom terakhir (VIIIA/18): sudah stabil, acuan oktet semua ikatan."
+          ]
+        },
+        {
           "jenis": "callout",
           "tipe": "tips",
           "judul": "Cara Gemilang: lihat subkulit terakhir",
@@ -354,21 +461,25 @@
         },
         {
           "jenis": "paragraf",
+          "teks": "Sifat periodik seperti tarik tambang antara dua tim: jumlah kulit menarik jari-jari membesar, muatan inti menarik mengecil. Siapa yang menang tergantung posisi unsur di peta — dan pemenang tarik tambang itu yang menjelaskan kenapa logam mudah melepas elektron."
+        },
+        {
+          "jenis": "paragraf",
           "teks": "Sifat periodik adalah sifat yang berubah beraturan sepanjang tabel: jari-jari atom, energi ionisasi, afinitas elektron, dan keelektronegatifan. Dua gambar ASLI berikut memperlihatkan dua sifat pertama sebagai pola visual: ukuran titik menyatakan besar jari-jari, dan tinggi-rendah garis menyatakan energi ionisasi. Cari polanya dulu (mana yang membesar, mana yang mengecil), baru baca penjelasannya."
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-jarijari.png",
-          "keterangan": "Tabel periodik jari-jari atom asli dari buku: setiap unsur digambarkan sebagai titik berwarna yang ukurannya menyatakan jari-jari atom — titik-titik terbesar berkumpul di sisi kiri bawah setiap periode dan mengecil ke arah kanan, lalu membesar kembali pada periode berikutnya."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-jarijari-v2.png",
+          "keterangan": "Grafik garis tajam (sumber HD Wikimedia Commons): sumbu vertikal jari-jari atom empiris dalam pikometer (pm) 0-300, sumbu horizontal nomor atom 1-96; garis biru menghubungkan titik-titik data yang membentuk puncak sangat tinggi pada setiap logam alkali (berlabel merah Li, Na, K, Rb, Cs, Fr) lalu turun curam di dalam periode dan mendatar di unsur transisi."
         },
         {
           "jenis": "poin",
-          "judul": "🔍 Membaca gambar — pola ukuran titik",
+          "judul": "🔍 Membaca gambar — puncak alkali & lereng periode",
           "items": [
-            "Kolom paling kiri (logam alkali): titik terbesar pada setiap periode -> jari-jari maksimum di golongan IA.",
-            "Ke arah kanan satu baris: titik mengecil -> jari-jari menyusut karena muatan inti bertambah pada kulit yang sama.",
-            "Satu kolom dari atas ke bawah: titik membesar -> jari-jari bertambah karena jumlah kulit bertambah.",
-            "Pola besar-kecil ini ringkasan visual dua faktor yang bersaing: jumlah kulit vs muatan inti efektif."
+            "Puncak berlabel merah adalah logam alkali: Li ±145 pm, Na ±180 pm, K ±220 pm, Rb ±265 pm, Cs ±260 pm, Fr ±285 pm — jari-jari terbesar tiap periode ada di golongan IA.",
+            "Setelah puncak, garis turun curam ke kanan: muatan inti bertambah pada kulit yang sama menarik elektron lebih dekat.",
+            "Tinggi puncak naik dari Li ke Fr: setiap periode baru menambah satu kulit sehingga jari-jari melonjak.",
+            "Bagian hampir datar di tengah periode (unsur transisi) menunjukkan penurunan jari-jari yang melambat karena elektron masuk kulit dalam."
           ]
         },
         {
@@ -377,17 +488,17 @@
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-ei.png",
-          "keterangan": "Grafik asli energi ionisasi pertama terhadap nomor atom 1-36: sumbu vertikal energi ionisasi (kJ/mol), sumbu horizontal nomor atom; garis ungu menghubungkan titik-titik data yang membentuk puncak tajam pada setiap gas mulia (He, Ne, Ar, Kr) dan lembah dalam pada setiap logam alkali (Li, Na, K)."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-ei-v2.png",
+          "keterangan": "Diagram pencar tajam (sumber HD Wikimedia Commons): sumbu vert energi ionisasi pertama dalam elektronvolt (eV) 0-30, sumbu horizontal nomor atom Z sampai 110; tiap titik berwarna sesuai kategori unsur pada legenda kanan (merah logam alkali, biru muda gas mulia, merah muda logam transisi, dst.); puncak bertanda He, Ne, Ar, Kr, Xe, Rn dan lembah bertanda Li, Na, K, Rb, Cs, Fr."
         },
         {
           "jenis": "poin",
-          "judul": "🔍 Membaca gambar — puncak dan lembah",
+          "judul": "🔍 Membaca gambar — puncak gas mulia & lembah alkali",
           "items": [
-            "Puncak tertinggi milik gas mulia (He paling tinggi): konfigurasi stabil sangat sulit dilepas elektronnya.",
-            "Lembah tepat setelah tiap puncak milik logam alkali: satu elektron terluar mudah lepas.",
-            "Di dalam satu periode garis menanjak bertahap: muatan inti naik sementara kulit tetap.",
-            "Pola puncak-lembah yang berulang setiap periode adalah wujud visual sifat periodik."
+            "Puncak tertinggi milik gas mulia (He ±24,6 eV paling tinggi): konfigurasi stabil sangat sulit dilepas elektronnya.",
+            "Lembah tepat setelah tiap puncak milik logam alkali: satu elektron terluar berjarak paling jauh dari inti sehingga mudah lepas.",
+            "Di dalam satu periode titik menanjak dari kiri ke kanan: muatan inti naik sementara kulit tetap.",
+            "Warna legenda menegaskan polanya: titik biru muda (gas mulia) selalu menutup periode dan titik merah (alkali) selalu membuka periode berikutnya."
           ]
         },
         {
@@ -427,6 +538,45 @@
           ]
         },
         {
+          "jenis": "tabelinfo",
+          "judul": "Kecenderungan empat sifat periodik (ringkasan sumber owner)",
+          "kolom": [
+            "Sifat",
+            "Kiri → kanan",
+            "Atas → bawah"
+          ],
+          "rows": [
+            {
+              "k": "Jari-jari partikel",
+              "v": "Berkurang (muatan inti menarik lebih kuat)",
+              "w": "Bertambah (kulit bertambah)"
+            },
+            {
+              "k": "Energi ionisasi (EI)",
+              "v": "Bertambah (sulit lepas elektron)",
+              "w": "Berkurang (mudah lepas)"
+            },
+            {
+              "k": "Afinitas elektron (AE)",
+              "v": "Cenderung bertambah",
+              "w": "Cenderung berkurang"
+            },
+            {
+              "k": "Keelektronegatifan (EN)",
+              "v": "Bertambah (puncak di F)",
+              "w": "Berkurang"
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — mengurutkan jari-jari. Soal: urutkan Na, Mg, K dari jari-jari terkecil. Langkah 1: lihat periode/golongan: Mg & Na periode 3, K periode 4. Langkah 2: K punya kulit lebih banyak -> terbesar. Langkah 3: dalam satu periode, makin kanan makin kecil: Mg (Z 12) < Na (Z 11). Jawaban: Mg < Na < K."
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — jari-jari ion isoelektronik (soal bank owner). Soal: urutkan kenaikan jari-jari Ca²⁺, K, Cl⁻. Langkah 1: ketiganya isoelektronik (18 elektron) -> pemisahnya jumlah proton: Ca 20, K 19, Cl 17. Langkah 2: makin banyak proton, tarikan ke 18 elektron yang sama itu makin kuat -> jari-jari makin kecil. Langkah 3: urutan naik: Ca²⁺ < K⁺ < Cl⁻. Kaidah umum: kation < atom netral < anion; makin positif muatan makin kecil, makin negatif makin besar."
+        },
+        {
           "jenis": "callout",
           "tipe": "info",
           "judul": "Kaitan konsep",
@@ -435,6 +585,10 @@
         {
           "jenis": "judul",
           "teks": "G. Ikatan Kimia: Ion, Kovalen, dan Koordinasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Ikatan kimia adalah cara atom berbagi kekayaan (elektron valensi): ada yang menyerahkan sepenuhnya seperti hibahan (ikatan ion), ada yang memakai bersama seperti patungan (ikatan kovalen), dan ada yang menumpang pasangan milik tetangga (kovalen koordinasi). Selisih keelektronegatifan (ingat tebing Pauling bab 2... tepatnya bagan Pauling di bagian sifat periodik) yang memilih jenisnya."
         },
         {
           "jenis": "paragraf",
@@ -535,6 +689,25 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — memprediksi jenis ikatan. Soal: ikatan pada NaCl dan HCl termasuk jenis apa? Langkah 1: baca selisih keelektronegatifan: Na (0,9) vs Cl (3,0) -> selisih 2,1 (besar) -> serah terima elektron -> ION. Langkah 2: H (2,1) vs Cl (3,0) -> selisih 0,9 (kecil-sedang) -> pakai bersama -> KOVALEN (polar). Langkah 3: cek sifat: NaCl padat titik leleh tinggi & larutannya menghantar = ciri ion; HCl gas pada suhu ruang = ciri kovalen."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Prosedur struktur Lewis ala bank owner (ΣEV → kerangka → EI/ENI)",
+          "items": [
+            "Hitung ΣEV: jumlah elektron valensi atom bebas; ion negatif TAMBAH muatan, ion positif KURANGI muatan.",
+            "Buat kerangka ikatan tunggal; atom pusat = yang jumlahnya lebih sedikit dan butuh lebih banyak elektron.",
+            "EI = 2 × jumlah garis; ENI = ΣEV − EI; sebarkan ENI ke atom tepi sampai oktet (H cukup 2).",
+            "Sisa ENI ke atom pusat; bila pusat kurang oktet, ubah pasangan tepi menjadi garis ganda/rangkap.",
+            "Uji muatan formal MF = EV − ½EI − ENI; struktur terbaik membuat MF semua atom nol (contoh CCl₄: MF C = 4 − ½(8) = 0)."
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — Lewis CCl₄ dua jalur. Jalur cepat: C butuh 4 elektron, tiap Cl butuh 1 -> C pusat berikatan tunggal dengan 4 Cl. Jalur bank owner: ΣEV = 4 + 4×7 = 32; kerangka 4 garis -> EI = 8; ENI = 24 disebar 6 per Cl; MF C = 4 − ½(8) − 0 = 0 dan MF Cl = 7 − ½(2) − 6 = 0 -> struktur valid karena semua MF nol."
+        },
+        {
           "jenis": "callout",
           "tipe": "peringatan",
           "judul": "Pengecualian oktet yang sering keluar",
@@ -543,6 +716,10 @@
         {
           "jenis": "judul",
           "teks": "H. Hibridisasi dan Bentuk Molekul (Teori VSEPR)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Pasangan elektron di kulit valensi ibarat orang-orang yang membawa balon di ruangan sempit: mereka saling menjauh sebaik mungkin. Susunan \"jaga jarak\" itulah bentuk molekul (VSEPR). Pasangan elektron bebas (PEB) adalah balon besar yang menekan lebih kuat — ia yang membuat sudut mengecil dan molekul menjadi polar."
         },
         {
           "jenis": "paragraf",
@@ -574,6 +751,35 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — bentuk molekul dengan VSEPR. Soal: tentukan bentuk & kepolaran H2O. Langkah 1: elektron valensi O = 6; PEI = 2 (dua O−H). Langkah 2: PE = (6 + 2) ÷ 2 = 4; PEB = 4 − 2 = 2 -> tipe AX₂E₂. Langkah 3: AX₂E₂ = bentuk bengkok (sudut ±104,5°). Langkah 4: ada PEB & bentuk tidak simetris -> POLAR."
+        },
+        {
+          "jenis": "poin",
+          "judul": "VSEPR empat langkah ala bank owner (domain DI & DNI)",
+          "items": [
+            "Gambar struktur Lewis lebih dulu — tanpa Lewis, domain tidak bisa dihitung.",
+            "Hitung domain: DI (domain ikatan; ikatan tunggal/rangkap dihitung SATU) dan DNI (domain nonikatan = PEB).",
+            "Geometri elektron = orientasi SEMUA domain; bentuk molekul = orientasi DI saja (PEB tak terlihat tetapi menekan).",
+            "Contoh bank owner: NH₃ = 4 domain (3 DI + 1 DNI) -> geometri elektron tetrahedral, bentuk molekul segitiga piramida.",
+            "Orbital hibrida = jumlah domain: 2 -> sp, 3 -> sp², 4 -> sp³, 5 -> sp³d (PCl₅), 6 -> sp³d²."
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — urutan kepolaran ikatan lewat ΔEN (soal bank owner). Soal: urutkan kepolaran ikatan H−F, H−O, H−N. Langkah 1: ingat urutan EN: F > O > N. Langkah 2: ΔEN terbesar = ikatan paling polar: H−F > H−O > H−N. Langkah 3: simpulkan: HF ikatan paling polar di antara ketiganya; pola sama dipakai membandingkan ikatan C−X lain."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Sigma, pi, dan simetri penentu polar",
+          "items": [
+            "Ikatan sigma (σ): tumpang-tindih ujung orbital sejajar sumbu ikatan — semua ikatan tunggal adalah σ.",
+            "Ikatan pi (π): tumpang-tindih sisi orbital — isi tambahan pada ikatan rangkap dua/tiga.",
+            "Molekul SIMETRIS (PF₅, XeF₂, CO₂) -> momen dipol saling hapus -> nonpolar meski ikatannya polar.",
+            "Molekul TIDAK simetris (NH₃, H₂O) -> dipol bersih -> polar; PEB biasanya biang keladinya."
+          ]
+        },
+        {
           "jenis": "callout",
           "tipe": "gemilang",
           "judul": "Polar atau nonpolar dalam 5 detik",
@@ -582,6 +788,10 @@
         {
           "jenis": "judul",
           "teks": "I. Gaya Antarmolekul: van der Waals dan Ikatan Hidrogen"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Di luar molekul masih ada gaya perekat antar-molekul: semacam perekat velcro yang jauh lebih lemah daripada lem di dalam molekul. Ikatan hidrogen adalah velcro terkuat (H bertemu F/O/N), lalu dipol-dipol, lalu gaya London. Kekuatan velcro inilah yang menentukan titik didih — kenapa air mendidih di 100 °C sedangkan H2S jauh lebih rendah."
         },
         {
           "jenis": "paragraf",
@@ -628,6 +838,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — titik didih tertinggi (soal bank owner). Soal: mana titik didih tertinggi di antara CH₄, NH₃, SiH₄, PH₃, PCl₅? Langkah 1: cek velcro terkuat: hanya NH₃ punya H terikat ke N -> ikatan hidrogen. Langkah 2: yang lain hanya dipol-dipol (PH₃) atau London (CH₄, SiH₄, PCl₅). Langkah 3: untuk massa sekelas, ikatan hidrogen mengalahkan yang lain -> jawab NH₃; London PCl₅ besar karena massa, maka bandingkan hanya sesama non-hidrogen bila soal meminta."
+        },
+        {
           "jenis": "callout",
           "tipe": "info",
           "judul": "Kaitan konsep: dari atom sampai wujud zat",
@@ -669,6 +883,10 @@
               "v": "Kecenderungan atom memiliki 8 elektron valensi (duplet untuk H/He)."
             }
           ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — membandingkan titik didih. Soal: mengapa HF mendidih lebih tinggi daripada HCl padahal HCl lebih berat? Langkah 1: cek velcro terkuat: HF punya H terikat langsung ke F -> ikatan hidrogen; HCl tidak (Cl bukan F/O/N). Langkah 2: bandingkan: ikatan hidrogen HF mengalahkan gaya London HCl yang lebih besar. Langkah 3: simpulkan: urutan titik didih HF > HCl; pola serupa H₂O > H₂S dan NH₃ > PH₃."
         },
         {
           "jenis": "callout",
@@ -939,7 +1157,7 @@
           "sumber": "Adaptasi latihan no. 23 (format PGK kategori) — Sukses TKA Saintek hlm. 195"
         },
         {
-          "soal": "Perhatikan gambar ilustrasi tentang gaya intramolekul dan antarmolekul hidrogen fluorida (HF) berikut: tiga molekul H–F berjajar, garis penuh di dalam tiap molekul dan garis putus-putus di antara molekul yang berdekatan. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
+          "soal": "Perhatikan gambar ilustrasi tentang gaya intramolekul dan antarmolekul hidrogen fluorida (HF) berikut (gambar terlampir): tiga molekul H–F berjajar, garis penuh di dalam tiap molekul dan garis putus-putus di antara molekul yang berdekatan. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
           "tipe": "tabel",
           "kolom": [
             "Benar",
@@ -958,7 +1176,8 @@
           "pembahasan": "Ikatan H–F di DALAM molekul adalah ikatan kovalen = gaya INTRAmolekul: pernyataan 1 SALAH. Ikatan kovalen (intramolekul, orde ratusan kJ/mol) jauh lebih kuat daripada gaya antarmolekul (orde puluhan kJ/mol): pernyataan 2 BENAR. Ikatan hidrogen (H···F antar molekul) memang digambarkan sebagai garis putus-putus: pernyataan 3 BENAR.",
           "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-hidrogen-hf.jpg",
           "pembahasanGambarKet": "Panah (1) menunjuk garis penuh H–F (intramolekul), panah (2) menunjuk garis putus-putus antar molekul (ikatan hidrogen = antarmolekul).",
-          "sumber": "Adaptasi latihan no. 25 (format PGK kategori) — Sukses TKA Saintek hlm. 195"
+          "sumber": "Adaptasi latihan no. 25 (format PGK kategori) — Sukses TKA Saintek hlm. 195",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-hidrogen-hf.jpg"
         },
         {
           "soal": "Pasangkan setiap tokoh/model atom dengan pernyataan yang paling tepat!",
