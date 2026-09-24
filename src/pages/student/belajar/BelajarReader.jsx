@@ -690,6 +690,29 @@ export default function BelajarReader() {
           {/* ---------- TAB MATERI ---------- */}
           {tabAktifNow === 'materi' && (
             <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
+              {/* Turn 86: navigasi chip subbab sticky (mobile-first) */}
+              <div style={{
+                position: 'sticky', top: 52, zIndex: 20,
+                background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(8px)',
+                margin: '-4px -4px 12px', padding: '8px 4px',
+                display: 'flex', gap: 8, overflowX: 'auto',
+              }}>
+                {sections.map((s2, i2) => (s2.jenis === 'judul' ? (
+                  <button key={i2} type="button"
+                    onClick={() => {
+                      const el = document.getElementById(`sec-${i2}`);
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    style={{
+                      flexShrink: 0, borderRadius: 999, padding: '7px 12px',
+                      fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                      border: `1.5px solid ${T.kotakBiruGaris}`,
+                      background: '#F4F9FF', color: T.biruDalam,
+                    }}>
+                    {String(s2.teks || '').replace(/^[A-Z]\.\s*/, '')}
+                  </button>
+                ) : null))}
+              </div>
               <div style={S.headSeksi}>
                 <span style={lencanaSeksi}>{idxBab + 1}</span>
                 <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
