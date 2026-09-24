@@ -1,0 +1,54 @@
+import json
+U='https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/'
+S=[]
+def add(j,**kw): S.append(dict(jenis=j,**kw))
+add('judul',teks='A. Sosiologi: Cermin yang Membuat Masyarakat Terlihat')
+add('paragraf',teks='Bayangkan masyarakat sebagai wajah yang tidak pernah bisa melihat dirinya sendiri. Sosiologi adalah cermin yang membuatnya terlihat: ilmu yang mempelajari masyarakat, hubungan sosial, dan interaksi manusia secara objektif dan rasional. Kata sosiologi berasal dari bahasa Latin socius (teman atau kawan) dan bahasa Yunani logos (ilmu) — jadi harfiahnya "ilmu berteman": ilmu tentang bagaimana manusia saling terkait.')
+add('callout',tipe='info',judul='Posisi topik ini dalam TKA',teks='Sosiologi sebagai ilmu adalah pembuka semua paket TKA Soshum: soal biasanya menyajikan ciri ilmu, fungsi, atau peran sosiolog dalam kasus nyata (pemerintah minta pendapat, peneliti mengecek teori), lalu meminta kamu menyebut konsep yang tepat. Hafalkan empat ciri dan tiga fungsi sebagai kunci cepat.')
+add('paragraf',teks='Kenali dulu empat tokoh yang mendirikan rumah ini. Bagan berikut memasang potret asli mereka (domain publik) beserta satu kalimat sumbangan pikirannya — baca nama lalu kalimatnya sebelum lanjut.')
+add('gambar',url=U+'sos1-tokoh.jpg',keterangan='Empat panel potret asli berjajar dari kiri ke kanan: Auguste Comte (bapak sosiologi Prancis, ilmu positif tentang masyarakat), Karl Marx (teori konflik kelas borjuis vs proletar), Emile Durkheim (fakta sosial dan solidaritas), dan Max Weber (tindakan sosial dan makna dalam interaksi); tiap panel berlabel nama dan satu kalimat sumbangan pemikiran.')
+add('poin',judul='🔍 Membaca gambar — empat pendiri',items=[
+ 'Comte (1798-1857): menamai ilmu ini dan menuntut kajian masyarakat secara positif — berdasarkan fakta, bukan spekulasi.',
+ 'Marx: masyarakat digerakkan pertentangan kepentingan antarkelas; konflik adalah mesin perubahan.',
+ 'Durkheim: fakta sosial (norma, lembaga) berada di luar individu tetapi memaksakan diri; tugas sosiologi mengukurnya.',
+ 'Weber: memahami masyarakat lewat makna yang diberi pelaku pada tindakannya (verstehen).'])
+add('judul',teks='B. Sejarah & Empat Ciri Ilmu Sosiologi')
+add('paragraf',teks='Sosiologi lahir abad ke-19 di Prancis sebagai jawaban atas kekacauan: Revolusi Industri dan Revolusi Prancis membongkar tatanan lama, dan Comte berkata masyarakat harus dipelajari seperti alam — dengan observasi dan akal. Dari kelahiran itu sosiologi mewarisi empat ciri yang selalu ditanyakan ujian.')
+add('tabelinfo',judul='Empat ciri sosiologi + cara mengenalinya di soal',kolom=['Ciri','Arti','Kata kunci kasus'],rows=[
+ {'k':'Empiris','v':'Berdasarkan fakta nyata di lapangan, bukan dugaan.','w':'"data lapangan", "hasil observasi", "kenyataan di lokasi riset"'},
+ {'k':'Teoretis','v':'Menyusun kesimpulan dari hubungan sebab-akibat hasil observasi.','w':'"membangun penjelasan", "kerangka pemikiran"'},
+ {'k':'Kumulatif','v':'Teori baru memperbaiki atau melengkapi teori lama, bukan menghapus.','w':'"merevisi teori sebelumnya", "mengembangkan temuan lama"'},
+ {'k':'Nonetis','v':'Tidak menghakimi baik-buruk fakta; hanya menjelaskan.','w':'"tidak menilai pelaku jahat", "menganalisis faktor penyebab"'}])
+add('contoh',teks='Contoh terpecah langkah — membaca ciri dari kasus. Soal: "Budi mendasarkan pendapatnya pada kenyataan di lapangan; data harus dapat dipertanggungjawabkan." Ciri apa saja yang tampil? Langkah 1: "kenyataan lapangan" = empiris. Langkah 2: "dapat dipertanggungjawabkan" menegaskan fakta nyata -> empiris/nyata (kunci bank: empiris & nyata). Langkah 3: bandingkan pilihan lain: tidak ada pembahasan teori (teoretis) atau pembangunan teori lama (kumulatif) -> jangan tergoda.')
+add('judul',teks='C. Fungsi Sosiologi & Peran Sosiolog')
+add('paragraf',teks='Sosiologi bukan ilmu pajangan: ia bekerja di tiga medan — perencanaan sosial (merancang kebijakan sesuai kondisi masyarakat), pendidikan (menumbuhkan sikap kritis terhadap masalah sosial), dan praktik (memecahkan masalah langsung di lapangan). Pelakunya disebut sosiolog, dan peranannya berganti-ganti seperti topi: konsultan, penasihat, praktisi, peneliti, pendidik.')
+add('tabelinfo',judul='Topi-topi sosiolog',kolom=['Peran','Ciri tindakan','Contoh kasus'],rows=[
+ {'k':'Konsultan/penasihat','v':'Memberi pertimbangan kepada pembuat kebijakan.','w':'Tim sosiolog dimintai pendapat rencana penerbangan KRL oleh pemkot.'},
+ {'k':'Praktisi (applied sociologist)','v':'Terjun langsung memecahkan masalah masyarakat.','w':'Sosiolog memimpin program pemberdayaan warga.'},
+ {'k':'Peneliti','v':'Mengumpulkan dan menganalisis data sosial.','w':'Riset kemiskinan untuk bahan kebijakan.'},
+ {'k':'Pendidik','v':'Mengajar dan menumbuhkan nalar kritis.','w':'Dosen menjelaskan masalah sosial di kelas.'}])
+add('contoh',teks='Contoh terpecah langkah — fungsi di balik kasus. Soal: "Kota membangun halte bus di titik pemberhentian alami penumpang agar perjalanan tertib." Fungsi sosiologi mana yang bekerja? Langkah 1: ada perancangan fasilitas berdasarkan perilaku masyarakat = perencanaan sosial. Langkah 2: singkirkan fungsi pendidikan (tak ada pembelajaran) dan praktik langsung (tak ada pendampingan). Jawaban: perencanaan sosial.')
+add('judul',teks='D. Metode Penelitian Sosial: Dua Kacamata, Satu Masyarakat')
+add('paragraf',teks='Meneliti masyarakat bisa memakai dua kacamata: kualitatif (mendalam, makna, narasi — "mengapa dan bagaimana") dan kuantitatif (angka, statistik, generalisasi — "berapa banyak dan seberapa kuat"). Keduanya sah; yang membedakan adalah jenis data dan tujuan. Soal TKA gemar memberi satu kasus lalu bertanya kacamata mana yang tepat — atau meminta mencampur keduanya secara jujur.')
+add('tabelinfo',judul='Kualitatif vs kuantitatif',kolom=['Aspek','Kualitatif','Kuantitatif'],rows=[
+ {'k':'Data','v':'Narasi, deskripsi, makna.','w':'Angka, tabel, statistik.'},
+ {'k':'Tujuan','v':'Memahami mendalam, multiperspektif.','w':'Mengukur hubungan variabel, generalisasi.'},
+ {'k':'Sampling khas','v':'Snowball/purposive (populasi sulit diidentifikasi).','w':'Simple random/stratified (acak).'},
+ {'k':'Hasil','v':'Teori dasar, tema.','w':'Persentase, koefisien, uji hipotesis.'}])
+add('poin',judul='🔍 Memilih metode dalam 3 detik',items=[
+ 'Soal menyebut "persentase", "statistik", "generalisasi" -> kuantitatif.',
+ 'Soal menyebut "makna", "pengalaman", "deskripsi mendalam" -> kualitatif.',
+ 'Populasi sulit diakses (pengguna narkoba, komunitas tertutup) -> snowball sampling (kualitatif).',
+ 'Responden diacak pakai nomor/undian -> simple random sampling (kuantitatif).'])
+add('contoh',teks='Contoh terpecah langkah — kasus dua metode. Soal: "Penelitian ingin mengetahui persentase tingkat kemiskinan; fenomena kemiskinan juga ingin dipahami maknanya." Langkah 1: persentase -> butuh angka -> kuantitatif. Langkah 2: makna fenomena -> kualitatif. Langkah 3: kunci bank (Prediksi #9): B, C -> kedua pendekatan dipakai sesuai tujuan masing-masing; jangan pilih salah satu bila soal meminta keduanya.')
+add('callout',tipe='gemilang',judul='Rumus Cepat Gemilang',teks='Empat ciri = E-T-K-N (Empiris, Teoretis, Kumulatif, Nonetis); tiga fungsi = perencanaan sosial, pendidikan, praktik; tokoh = Comte (nama & positivisme), Marx (konflik), Durkheim (fakta sosial), Weber (makna). Lihat kata kunci kasus -> cocokkan -> jawab.')
+add('callout',tipe='guru',judul='Catatan pengajaran',teks='Bab ini ringan konsep tetapi padat istilah mirip-mirip (empiris vs nonetis, konsultan vs praktisi). Latih siswa dengan permainan kartu kasus: satu kartu kasus, empat kartu ciri/fungsi — siapa cepat mencocokkan. Mode live: lempar kartu kasus sebagai soal kuis, bahas dengan tabel ciri.')
+d={'materi':{'judul':'Sosiologi SMA — Persiapan TKA 2026','mapel':'Sosiologi','kelas':'12','jenjang':'sma','program':'soshum','premium':False,'warna':'#0EA5E9','emoji':'🧭','deskripsi':'Materi Sosiologi VERSI DALAM persiapan TKA 2026 berbasis bank Sukses TKA 26 Sosiologi (@my99dreams): bab 1 = sosiologi sebagai ilmu pengetahuan & penelitian sosial (definisi, sejarah, empat ciri, fungsi & peran sosiolog, metode kualitatif-kuantitatif). Visual: potret asli tokoh (domain publik via Wikimedia Commons).','urutan':6,'status':'draft',
+ 'daftarPustaka':[
+  'Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 "Sosiologi Sebagai Ilmu Pengetahuan dan Penelitian Sosial" hlm. 162-164: BASIS materi & soal latihan bab 1; kunci diverifikasi dari 08 "Kunci dan Pembahasan" hlm. 93-95.',
+  'Potret asli Auguste Comte, Karl Marx, Emile Durkheim, Max Weber — Wikimedia Commons, domain publik; komposit berlabel tim kurikulum Gemilang.',
+  'Prediksi & kunci bank owner (09 Prediksi + 10 Pembahasan Prediksi berteks) untuk soal metode penelitian sosial.',
+  'Bagan/tabel ringkas dalam bab ini disusun orisinal tim kurikulum Gemilang sebagai penunjang baca (berlabel penunjang).']},
+ 'bab':[{'judul':'Bab 1 — Sosiologi sebagai Ilmu Pengetahuan & Penelitian Sosial','ringkasan':'Sosiologi = cermin masyarakat: ilmu empiris-teoretis-kumulatif-nonetis yang lahir abad ke-19 dari Comte, diperkaya Marx (konflik), Durkheim (fakta sosial), Weber (makna). Bab ini membekali empat ciri, tiga fungsi, topi-topi sosiolog, dan dua kacamata metode penelitian — bekal menjawab paket TKA Soshum bagian pembuka.','estimasiMenit':60,'urutan':1,'tipe':'teks','sections':S,'ujiPemahaman':[]}]}
+json.dump(d,open('docs/drafts/draft-sosiologi-k12-v1-bab1.json','w'),ensure_ascii=False,indent=2)
+print('sections materi:',len(S))
