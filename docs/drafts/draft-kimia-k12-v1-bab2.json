@@ -614,6 +614,76 @@
       ],
       "ujiPemahaman": [
         {
+          "soal": "Suatu gas hidrokarbon terdiri atas 75% karbon. Jika diketahui bahwa 11,2 liter dari gas ini pada 0 °C dan 1 atm massanya 8 gram maka hidrokarbon tersebut adalah .... (Ar C = 12; H = 1)",
+          "tipe": "pg",
+          "opsi": [
+            "butana",
+            "metana",
+            "etana",
+            "etilena",
+            "asetilena"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Per 100 g: mol C : mol H = 75/12 : 25/1 = 6,25 : 25 = 1 : 4 -> rumus empiris CH4. Mr = massa ÷ mol = 8 ÷ (11,2/22,4) = 8 ÷ 0,5 = 16. (12 + 4)n = 16 -> n = 1 -> rumus molekul CH4 (metana).",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 02 FR no. 7 (kunci diverifikasi dari 03 Pembahasan FR); transkrip verbatim"
+        },
+        {
+          "soal": "Serbuk besi sebanyak 28 gram (Ar Fe = 56) direaksikan dengan 20 gram belerang (Ar S = 32) sesuai dengan persamaan: Fe(s) + S(s) -> FeS(s). Pernyataan yang benar dari reaksi ini adalah ...",
+          "tipe": "pg",
+          "opsi": [
+            "Belerang merupakan pereaksi pembatas.",
+            "Kedua pereaksi habis bereaksi.",
+            "FeS yang terbentuk sebanyak 48 gram.",
+            "Di akhir reaksi tersisa 4 g belerang.",
+            "Reaksi tersebut tidak memenuhi hukum kekekalan massa."
+          ],
+          "jawaban": 3,
+          "pembahasan": "mol Fe = 28/56 = 0,5; mol S = 20/32 = 0,625. Rasio 1 : 1 -> Fe pembatas. MRS: bereaksi 0,5 Fe + 0,5 S -> 0,5 FeS (44 g); sisa S = 0,125 mol = 4 g (D benar, A & B & C salah). Massa sebelum = 48 g = massa sesudah (44 + 4) -> hukum kekekalan massa tetap berlaku (E salah).",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 02 FR no. 8 (kunci diverifikasi dari 03 Pembahasan FR); transkrip verbatim"
+        },
+        {
+          "soal": "Suplemen antasid mengandung kalsium karbonat sebagai bahan aktifnya. Satu tablet antasid yang memiliki berat 2 g direaksikan dengan HCl(aq) berlebih menghasilkan 0,22 g CO2 menurut reaksi: CaCO3(s) + HCl(aq) -> CaCl2(aq) + H2O(l) + CO2(g). Pernyataan yang tidak benar tentang persamaan kimia tersebut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "Kalsium karbonat merupakan reaktan.",
+            "Reaksi tersebut menghasilkan larutan kalsium klorida.",
+            "Persamaan kimia di atas belum setara.",
+            "Koefisien reaksi HCl sama dengan koefisien reaksi CO2.",
+            "Produk reaksi yang berupa gas adalah karbon dioksida."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Penyetaraan: CaCO3 + 2 HCl -> CaCl2 + H2O + CO2. Koefisien HCl = 2 sedangkan CO2 = 1 -> pernyataan D TIDAK benar (itu jawabannya). Pernyataan lain benar: CaCO3 reaktan; CaCl2 dalam larutan (aq); persamaan sebagaimana ditulis memang belum setara; produk gas = CO2.",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 08 Prediksi no. 5 (kunci dari 09 KJ Prediksi); transkrip verbatim"
+        },
+        {
+          "soal": "Satu tablet antasid berat 2 g (bahan aktif CaCO3) direaksikan dengan HCl(aq) berlebih menghasilkan 0,22 g CO2. Persentase kalsium dalam tablet tersebut adalah .... (Ar H = 1; O = 16; C = 12; Ca = 40; Cl = 35,5)",
+          "tipe": "pg",
+          "opsi": [
+            "40%",
+            "35%",
+            "25%",
+            "19%",
+            "10%"
+          ],
+          "jawaban": 2,
+          "pembahasan": "n CO2 = 0,22 ÷ 44 = 0,005 mol = n CaCO3 (rasio 1 : 1). m CaCO3 = 0,005 × 100 = 0,5 g -> kadar bagian kalsium karbonat = 0,5 ÷ 2 × 100% = 25% -> kunci bank C. Catatan educator: bila yang dimaksud unsur Ca bebas, massanya 0,005 × 40 = 0,2 g = 10%; bank soal menghitung \"kalsium\" sebagai CaCO3 — pahami kedua bacaan ini sebelum ujian.",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 08 Prediksi no. 6 (kunci dari 09 KJ Prediksi); transkrip verbatim"
+        },
+        {
+          "soal": "Untuk mengidentifikasi suatu senyawa oksida nitrogen, NxOy, direaksikan dengan gas hidrogen berlebihan dengan bantuan katalis pada suhu 25 °C dan tekanan 1 atm menurut reaksi (belum setara) berikut: NxOy(g) + H2(g) -> NH3(g) + H2O(g). Jika massa air adalah 3,6 g dan ammonia yang dihasilkan sebanyak 2,4 L, oksida nitrogen tersebut adalah .... (Ar H = 1; N = 14; O = 16)",
+          "tipe": "pg",
+          "opsi": [
+            "nitrogen monoksida",
+            "nitrogen dioksida",
+            "dinitrogen trioksida",
+            "dinitrogen tetraoksida",
+            "dinitrogen pentaoksida"
+          ],
+          "jawaban": 1,
+          "pembahasan": "n H2O = 3,6 ÷ 18 = 0,2 mol (semua O dari oksida masuk ke air); n NH3 = 2,4 ÷ 24 = 0,1 mol (Vm 24 L/mol pada 25 °C, 1 atm; semua N dari oksida). N : O = 0,1 : 0,2 = 1 : 2 -> NO2 = nitrogen dioksida.",
+          "sumber": "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — 08 Prediksi no. 7 (kunci dari 09 KJ Prediksi); transkrip verbatim"
+        },
+        {
           "soal": "Gas sulfur dioksida (SO2) di udara dapat mengalami reaksi oksidasi menghasilkan sulfur trioksida (SO3). Persamaan reaksi kimia tersebut dapat dituliskan dalam bentuk: a SO2 + b O2 -> c SO3. Untuk menyetarakan reaksi, nilai koefisien a, b, dan c harus ditentukan. Nilai a, b, dan c berturut-turut adalah ....",
           "tipe": "pg",
           "opsi": [
@@ -713,34 +783,6 @@
           "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2r-mg.jpg"
         },
         {
-          "soal": "Pada suhu dan tekanan tertentu, 10 liter gas nitrogen bereaksi habis dengan gas hidrogen membentuk gas amonia menurut persamaan: N2(g) + 3 H2(g) -> 2 NH3(g). Volume gas hidrogen yang diperlukan dan volume gas amonia yang dihasilkan berturut-turut adalah ....",
-          "tipe": "pg",
-          "opsi": [
-            "10 L dan 10 L",
-            "20 L dan 15 L",
-            "30 L dan 20 L",
-            "30 L dan 30 L",
-            "15 L dan 30 L"
-          ],
-          "jawaban": 2,
-          "pembahasan": "Hukum Gay-Lussac: pada P dan T sama, perbandingan volume = perbandingan koefisien = 1 : 3 : 2. V H2 = 3 × 10 = 30 L; V NH3 = 2 × 10 = 20 L.",
-          "sumber": "Gemilang Drill (latihan orisinal sistem — hukum perbandingan volume)"
-        },
-        {
-          "soal": "Jumlah molekul yang terdapat dalam 4,4 gram gas karbon dioksida (Mr = 44) adalah ....",
-          "tipe": "pg",
-          "opsi": [
-            "6,02 × 10^21",
-            "6,02 × 10^22",
-            "6,02 × 10^23",
-            "1,20 × 10^23",
-            "3,01 × 10^22"
-          ],
-          "jawaban": 1,
-          "pembahasan": "n = 4,4 ÷ 44 = 0,1 mol. N = 0,1 × 6,02 × 10^23 = 6,02 × 10^22 molekul. (Bila yang ditanya jumlah atom O, kalikan dua: 1,204 × 10^23 — perhatikan kata 'molekul' vs 'atom' pada soal.)",
-          "sumber": "Gemilang Drill (latihan orisinal sistem — jembatan mol ke jumlah partikel)"
-        },
-        {
           "soal": "Massa kristal tembaga(II) sulfat pentahidrat, CuSO4·5H2O (Mr = 250), sebanyak 0,2 mol adalah ....",
           "tipe": "pg",
           "opsi": [
@@ -785,21 +827,6 @@
           "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-konsentrasi.jpg"
         },
         {
-          "soal": "Volume yang ditempati oleh 8 gram gas oksigen (Mr = 32) pada kondisi STP adalah ....",
-          "tipe": "pg",
-          "opsi": [
-            "2,24 L",
-            "4,48 L",
-            "5,60 L",
-            "8,00 L",
-            "11,20 L"
-          ],
-          "jawaban": 2,
-          "pembahasan": "n = 8 ÷ 32 = 0,25 mol; V = 0,25 × 22,4 = 5,6 L. Perhatikan bahwa oksigen berwujud molekul diatomik O2 sehingga Mr = 32, bukan 16.",
-          "sumber": "Gemilang Drill (latihan orisinal sistem — volume molar STP)",
-          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2r-balon.jpg"
-        },
-        {
           "soal": "Perhatikan tabel data percobaan pembentukan tembaga(II) oksida pada gambar. Bila percobaan keempat menggunakan 32,0 gram tembaga dan seluruhnya habis bereaksi, maka massa oksigen yang bergabung dan massa CuO yang terbentuk berturut-turut adalah ....",
           "tipe": "pg",
           "opsi": [
@@ -835,24 +862,6 @@
           "sumber": "Gemilang Drill (latihan orisinal sistem format MCMA — konsep mol)"
         },
         {
-          "soal": "Pada suhu dan tekanan yang sama, pasangan gas manakah yang mengandung JUMLAH MOLEKUL sama banyak? (Pilih semua yang benar!)",
-          "tipe": "pgMulti",
-          "opsi": [
-            "1 L gas N2 dan 1 L gas O2",
-            "2 L gas CO2 dan 2 L gas CH4",
-            "1 L gas H2 dan 2 L gas Cl2",
-            "500 mL gas NH3 dan 500 mL gas SO3",
-            "3 L gas O2 dan 1,5 L gas O3"
-          ],
-          "jawaban": [
-            0,
-            1,
-            3
-          ],
-          "pembahasan": "Hukum Avogadro: pada P dan T sama, volume sama = jumlah molekul sama, apa pun jenis gasnya. Maka pasangan bervolume identik (1 L & 1 L; 2 L & 2 L; 500 mL & 500 mL) benar. Pasangan 1 L vs 2 L dan 3 L vs 1,5 L memiliki volume berbeda sehingga jumlah molekulnya berbeda (yang kedua justru setengah dan dua kali lipat).",
-          "sumber": "Gemilang Drill (latihan orisinal sistem format MCMA — hukum Avogadro)"
-        },
-        {
           "soal": "Tentukan BENAR atau SALAH untuk tiap pernyataan tentang reaksi setara berikut: 2 SO2(g) + O2(g) -> 2 SO3(g)!",
           "tipe": "tabel",
           "kolom": [
@@ -871,26 +880,6 @@
           ],
           "pembahasan": "Total koefisien 2 + 1 + 2 = 5: BENAR. Rasio SO2 : O2 = 2 : 1, maka untuk 3 mol O2 diperlukan 6 mol SO2, bukan 3: SALAH. Rasio SO2 : SO3 = 2 : 2 = 1 : 1: BENAR.",
           "sumber": "Gemilang Drill (latihan orisinal sistem format PGK kategori — makna koefisien)"
-        },
-        {
-          "soal": "Tentukan BENAR atau SALAH untuk tiap pernyataan tentang rumus empiris dan rumus molekul berikut!",
-          "tipe": "tabel",
-          "kolom": [
-            "Benar",
-            "Salah"
-          ],
-          "baris": [
-            "Senyawa dengan rumus empiris CH2O dan Mr = 90 memiliki rumus molekul C3H6O3.",
-            "Rumus empiris benzena (C6H6) adalah CH.",
-            "Rumus empiris suatu senyawa selalu sama dengan rumus molekulnya."
-          ],
-          "jawaban": [
-            0,
-            0,
-            1
-          ],
-          "pembahasan": "Mr CH2O = 30; n = 90 ÷ 30 = 3 -> C3H6O3: BENAR. C6H6 dibagi faktor 6 menjadi CH: BENAR. Pernyataan ketiga SALAH: contohnya glukosa (RE CH2O, RM C6H12O6) — keduanya hanya sama bila n = 1 seperti pada air.",
-          "sumber": "Gemilang Drill (latihan orisinal sistem format PGK kategori — RE vs RM)"
         },
         {
           "soal": "Pasangkan setiap hukum dasar kimia dengan pernyataan yang paling tepat!",
