@@ -1,0 +1,294 @@
+import json
+U='https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/'
+S=[]
+def a(j,**kw): S.append(dict(jenis=j,**kw))
+CG='caraGemilang'
+
+# ========== A. PARTIKEL & NOTASI ==========
+a('judul',teks='A. Partikel Penyusun Atom & Notasi Unsur')
+a('kilat',teks='Atom = inti (proton+neutron) dikelilingi elektron. Notasi ᴬZX: A=massa (p+n), Z=nomor (p). Ion hanya mengubah elektron.')
+a('peta',teks='Subbab ini fondasi seluruh bab: notasi dipakai di konfigurasi (B), konfigurasi dipakai menentukan letak (C) dan ikatan (E). Kuasai notasi = menguasai pintu masuk semua soal struktur atom.',url=U+'k1r-notasi-v2.png')
+a('paragraf',teks='Bayangkan atom sebagai stadion: inti adalah lapangan kecil di tengah (proton bermuatan positif dan neutron netral), sedangkan elektron adalah penonton yang memenuhi tribun luas di sekelilingnya. Karena itu atom hampir seluruhnya ruang kosong — fakta yang ditemukan Rutherford ketika partikel alfa 대부분 lolos lurus melewati lempeng emas. Tiga angka yang perlu kau pegang dari setiap partikel: muatan relatif (−1, 0, +1), massa relatif (elektron ≈ 1/1836 proton), dan lokasi (luar inti vs dalam inti).')
+a('paragraf',teks='Notasi unsur menuliskan semuanya sekaligus: ᴬZX dengan A = nomor massa = jumlah proton + neutron, dan Z = nomor atom = jumlah proton. Pada atom netral, jumlah elektron sama dengan proton; pada ion, elektron bertambah (anion) atau berkurang (kation) SESUAI muatannya, sementara proton dan neutron TIDAK pernah berubah. Contoh mikro: ²⁴₁₂Mg²⁺ berarti p = 12, n = 24 − 12 = 12, e = 12 − 2 = 10.')
+a('gambar',url=U+'k1r-notasi-v2.png',keterangan='Notasi karbon-12: angka 12 di kiri atas (nomor massa = proton + neutron), angka 6 di kiri bawah (nomor atom = jumlah proton), huruf C simbol unsur; tiga panah merah muda menghubungkan tiap angka dengan labelnya.')
+a('poin',judul='🔍 Membaca gambar — tiga bagian notasi',items=[
+ 'Angka atas = A = p + n; angka bawah = Z = p.',
+ 'Neutron = A − Z; elektron = Z − muatan ion.',
+ 'Muatan positif = elektron BERKURANG; muatan negatif = elektron BERTAMBAH.',
+ 'Isotop = Z sama A beda; isobar = A sama Z beda; isoton = n sama.'])
+a('tabelinfo',judul='Partikel penyusun atom (data bank owner)',kolom=['Partikel','Muatan & massa','Letak & peran'],rows=[
+ {'k':'Elektron (e⁻)','v':'−1,60218 × 10⁻¹⁹ C (relatif −1); 9,11 × 10⁻²⁸ g (1/1836 proton)','w':'Di luar inti; menentukan ikatan, muatan ion, konfigurasi.'},
+ {'k':'Proton (p⁺)','v':'+1,60218 × 10⁻¹⁹ C (relatif +1); 1,67262 × 10⁻²⁴ g','w':'Dalam inti; menetapkan identitas unsur (Z).'},
+ {'k':'Neutron (n⁰)','v':'Muatan 0; 1,67493 × 10⁻²⁴ g','w':'Dalam inti; menambah massa & membentuk isotop.'}])
+a('contoh',teks='Contoh terpecah langkah — ion & isotop. Soal: ion X²⁻ memiliki 18 elektron dan 17 neutron; tentukan notasi lengkapnya. Langkah 1: anion 2− berarti elektron = p + 2, maka p = 18 − 2 = 16. Langkah 2: A = p + n = 16 + 17 = 33. Langkah 3: notasi = ³³₁₆X²⁻ (unsur belerang, S). Langkah 4: cek ulang arah muatan: negatif = menangkap elektron ✓.')
+a(CG,judul='CG-NOTASI: tiga angka satu pintu',teks='p = Z; n = A − Z; e = Z − muatan. Pakailah URUTAN INI setiap melihat notasi, sebelum membaca pertanyaan.',items=[
+ 'Tulis p dari angka bawah.',
+ 'Hitung n = atas − bawah.',
+ 'Hitung e = bawah − muatan (muatan + kurangi, muatan − tambah).',
+ 'Contoh kilat: ²⁷₁₃Al³⁺ -> p 13, n 14, e 10.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Kesalahan paling umum: menerapkan muatan pada proton/neutron (mis. Al³⁺ disebut p = 10). Muatan ion HANYA mengubah elektron. Jebakan kedua: tertukar isotop vs isobar — ingat ISOtop = proton sama (Z), isoBAR = massa sama (A).')
+a('zona',items=[
+ {'soal':'Jumlah neutron pada ³⁵₁₇Cl⁻ adalah ....','tipe':'pg','opsi':['17','18','19','35','52'],'jawaban':2,'pembahasan':'n = A − Z = 35 − 17 = 18 (muatan tidak mengubah neutron). Jalur Cara Gemilang: CG-NOTASI langkah 2.'},
+ {'soal':'Elektron pada ²⁴₁₂Mg²⁺ berjumlah ....','tipe':'pg','opsi':['10','12','14','24'],'jawaban':0,'pembahasan':'e = Z − muatan = 12 − 2 = 10.'},
+ {'soal':'Pasangan yang merupakan isotop: ¹²C & ¹³C, ¹⁴C & ¹⁴N, ¹³C & ¹⁴N.','tipe':'pg','opsi':['¹²C & ¹³C','¹⁴C & ¹⁴N','¹³C & ¹⁴N','tidak ada'],'jawaban':0,'pembahasan':'Isotop = proton sama neutron beda: ¹²C & ¹³C (Z sama 6).'}])
+
+# ========== B. BILANGAN KUANTUM & KONFIGURASI ==========
+a('judul',teks='B. Bilangan Kuantum & Konfigurasi Elektron')
+a('kilat',teks='Empat "alamat" elektron: n (kulit), l (subkulit: s p d f), m (orbital), s (spin ±½). Konfigurasi diisi aturan Aufbau (n+l terendah), Hund, Pauli.')
+a('peta',teks='Konfigurasi adalah jembatan notasi → letak unsur: elektron terakhir menentukan periode (kulit terbesar) dan golongan (elektron valensi). Bab C memakai hasilnya langsung.')
+a('paragraf',teks='Elektron tidak duduk sembarangan: ia punya alamat empat angka. n menyebut kulit (ukuran orbital), l menyebut subkulit dengan kode 0=s, 1=p, 2=d, 3=f, m menyebut orbital spesifik dalam subkulit (dari −l sampai +l, jumlahnya 2l+1), dan s menyebut arah spin (+½ atau −½). Satu orbital maksimal dua elektron dengan spin berlawanan — itu isi Larangan Pauli.')
+a('paragraf',teks='Pengisian mengikuti tiga aturan bank owner: Aufbau mengisi dari tingkat energi (n+l) terendah dan subkulit baru dibuka setelah sebelumnya penuh; Hund mengisi orbital setingkat satu-satu dulu dengan spin sama sebelum berpasangan; Pauli melarang dua elektron se-orbital memiliki keempat bilangan kuantum sama. Pengecualian stabil: Cr [Ar]4s¹3d⁵ dan Cu [Ar]4s¹3d¹⁰ (setengah penuh/penuh lebih stabil).')
+a('gambar',url=U+'k1r-konfig-ca-v2.png',keterangan='Konfigurasi kulit atom kalsium: inti merah Ca dikelilingi empat lingkaran kulit berisi titik elektron 2, 8, 8, 2 dari dalam ke luar.')
+a('poin',judul='🔍 Membaca gambar — kulit kalsium',items=[
+ 'Kulit 1 terisi 2 (maks 2n² = 2); kulit 2 terisi 8; kulit 3 terisi 8; kulit 4 terisi 2.',
+ 'Elektron valensi = 2 -> golongan IIA; jumlah kulit = 4 -> periode 4.',
+ 'Versi subkulit: 1s² 2s² 2p⁶ 3s² 3p⁶ 4s².',
+ 'Untuk ion: lepas dari kulit terluar (4s) dulu, bukan dari 3d.'])
+a('tabelinfo',judul='Bilangan kuantum & aturannya (bank owner)',kolom=['BK','Menyatakan','Aturan nilai'],rows=[
+ {'k':'Utama (n)','v':'Kulit & ukuran orbital','w':'1, 2, 3, ... (K, L, M, ...)'},
+ {'k':'Azimut (l)','v':'Subkulit & bentuk orbital','w':'0 → n−1; energi subkulit = n + l'},
+ {'k':'Magnetik (m)','v':'Orbital & orientasinya','w':'−l ... 0 ... +l; jumlah orbital = 2l + 1'},
+ {'k':'Spin (s)','v':'Arah rotasi elektron','w':'+½ atau −½; se-orbital maks 2 elektron berlawanan'}])
+a('contoh',teks='Contoh terpecah langkah — bilangan kuantum elektron terakhir. Soal: tentukan keempat BK elektron terakhir atom S (Z = 16). Langkah 1: konfigurasi 1s² 2s² 2p⁶ 3s² 3p⁴ -> elektron terakhir di 3p. Langkah 2: n = 3, l = 1. Langkah 3: isi 3p menurut Hund: ↑ ↑ ↑ lalu elektron ke-4 berpasangan di m = −1 dengan spin −½. Langkah 4: jawaban (3, 1, −1, −½).')
+a(CG,judul='CG-KONFIG: isi tangga, baca ujung',teks='Tulis konfigurasi sampai elektron habis; periode = pangkat n terbesar; golongan lihat subkulit ujung (s/p utama; d transisi: jumlah elektron s+d).',items=[
+ 'Isi urutan 1s 2s 2p 3s 3p 4s 3d 4p ...',
+ 'Ion positif: buang dari ujung n terbesar dulu.',
+ 'Cek pengecualian Cr & Cu.',
+ 'Contoh kilat: ₂₆Fe -> [Ar] 4s² 3d⁶ -> periode 4, golongan VIII (2+6=8).'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Urutan lepas elektron ion transisi KEBALIKAN urutan isi: Fe³⁺ = [Ar] 3d⁵ (buang 4s² dulu lalu 1 dari 3d), BUKAN [Ar] 4s² 3d³. Satu kesalahan ini menggugurkan seluruh soal lanjutan.')
+a('zona',items=[
+ {'soal':'Jumlah orbital pada subkulit d adalah ....','tipe':'pg','opsi':['1','3','5','7'],'jawaban':2,'pembahasan':'2l+1 = 2(2)+1 = 5.'},
+ {'soal':'Konfigurasi ion Fe³⁺ (Z=26) adalah ....','tipe':'pg','opsi':['[Ar] 4s² 3d³','[Ar] 3d⁵','[Ar] 4s¹ 3d⁴','[Ar] 4s² 3d⁵'],'jawaban':1,'pembahasan':'Buang 2 elektron 4s dulu lalu 1 dari 3d -> [Ar] 3d⁵ (setengah penuh, stabil).'},
+ {'soal':'Elektron tak berpasangan pada atom N (Z=7) berjumlah ....','tipe':'pg','opsi':['0','1','2','3'],'jawaban':3,'pembahasan':'2p³ terisi tunggal tiga orbital (Hund) -> 3 tak berpasangan (soal bank owner: 3).'}])
+
+# ========== C. TABEL PERIODIK & LETAK ==========
+a('judul',teks='C. Tabel Periodik Modern & Menentukan Letak Unsur')
+a('kilat',teks='Periode = jumlah kulit; golongan utama = elektron valensi s+p; transisi = elektron s+d. Konfigurasi dulu, baru baca peta.')
+a('peta',teks='Tabel periodik adalah peta yang menyusun unsur berdasarkan konfigurasi elektronnya — karena itu semua tren sifat (bab D) bisa DIPREDIKSI dari posisi.',url=U+'k1s-spu-kelompok.png')
+a('paragraf',teks='Tabel periodik modern menyusun unsur berdasarkan nomor atom, dan bentuk tabelnya sesungguhnya adalah gambar konfigurasi: baris (periode) = kulit terluar yang sedang terisi, kolom (golongan) = jumlah elektron valensi. Blok s dan p menjadi golongan utama (IA–VIIIA), blok d golongan transisi, blok f lantanida/aktinida yang dipisah di bawah.')
+a('paragraf',teks='Menentukan letak unsur = dua langkah baca konfigurasi: hitung kulit terisi terbesar (periode), lalu hitung elektron valensi sesuai blok (golongan). Untuk He, ingat pengecualian: konfigurasi 1s² tetapi berada di VIIIA.')
+a('gambar',url=U+'k1s-spu-kelompok.png',keterangan='Tabel periodik lengkap berlabel ganda IA-VIIIA dan 1-18 dengan kotak unsur berisi nomor atom, lambang, massa atom; legenda warna logam, metaloid, nonlogam; tangga tebal pemisah logam-nonlogam; dua baris bawah lantanida & aktinida.')
+a('poin',judul='🔍 Membaca gambar — peta keluarga unsur',items=[
+ 'Warna keluarga mempercepat navigasi: alkali merah muda, transisi kuning, halogen hijau-biru, gas mulia ungu.',
+ 'Tangga tebal = batas logam/nonlogam lewat deret metaloid (B, Si, Ge, As, Sb, Te).',
+ 'Golongan utama: elektron valensi ns + np; transisi: (n−1)d + ns.',
+ 'Periode = nomor kulit terbesar yang berisi elektron.'])
+a('contoh',teks='Contoh terpecah langkah — letak Br (bank owner). Soal: Br (Z = 35) berada di periode & golongan mana? Langkah 1: konfigurasi 1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹⁰ 4s² 4p⁵. Langkah 2: kulit terbesar 4 -> periode 4. Langkah 3: valensi blok p = 2 + 5 = 7 -> golongan VIIA. Kunci bank: periode 4, VIIA.')
+a(CG,judul='CG-LETAK: konfigurasi → dua angka',teks='Periode = n terbesar; golongan = valensi (s+p utama; s+d transisi). He pengecualan: 1s² tapi VIIIA.',items=[
+ 'Tulis konfigurasi lengkap/rapat gas mulia.',
+ 'Ambil n terbesar = periode.',
+ 'Jumlahkan valensi sesuai blok = golongan.',
+ 'Contoh kilat: ₃₅Br -> 4p⁵ -> periode 4, VIIA.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Unsur blok d: golongan BUKAN hanya elektron d terakhir — jumlahkan s + d (Fe: 2+6 = 8 -> VIIIB/golongan 8). Kesalahan kedua: lupa Cr & Cu punya konfigurasi istimewa sehingga golongannya ikut bergeser bila dihitung naif.')
+a('zona',items=[
+ {'soal':'Letak unsur berkonfigurasi [Ar] 4s² 3d¹⁰ 4p³ adalah ....','tipe':'pg','opsi':['periode 4 golongan IIIA','periode 4 golongan VA','periode 4 golongan VB','periode 3 golongan VA'],'jawaban':1,'pembahasan':'n terbesar 4; valensi s+p = 2+3 = 5 -> VA periode 4.'},
+ {'soal':'Unsur X periode 3 golongan IIA memiliki konfigurasi ....','tipe':'pg','opsi':['[Ne] 3s¹','[Ne] 3s²','[Ar] 4s²','[Ne] 3p²'],'jawaban':1,'pembahasan':'Periode 3 IIA -> [Ne] 3s².'},
+ {'soal':'Lantanida & aktinida sebenarnya milik periode 6 & 7 karena elektron terakhir masuk subkulit f.','tipe':'pg','opsi':['Benar','Salah'],'jawaban':0,'pembahasan':'Blok f dipisah di bawah tabel tetapi periode aslinya 6 (lantanida) dan 7 (aktinida).'}])
+
+# ========== D. SIFAT PERIODIK ==========
+a('judul',teks='D. Sifat Periodik: Jari-jari, EI, AE, Elektronegativitas')
+a('kilat',teks='Kanan: jari-jari kecil, EI/AE/EN besar. Bawah: jari-jari besar, EI/AE/EN kecil. Isoelektronik: proton banyak = jari-jari kecil.')
+a('peta',teks='Sifat periodik menjelaskan MENGAPA unsur berikatan tertentu (bab E) dan mengapa titik didih/reaktivitas berbeda — soal TKA sering meminta membandingkan dua unsur tanpa angka.')
+a('paragraf',teks='Empat sifat periodik adalah tarik tambang antara dua kekuatan: jumlah kulit (membesarkan jari-jari) versus muatan inti efektif (mengecilkannya). Ke kanan satu periode kulit tetap tetapi proton bertambah -> tarikan kuat -> jari-jari mengecil sementara EI, AE, EN membesar. Ke bawah satu golongan kulit bertambah -> jari-jari membesar sementara EI, AE, EN mengecil.')
+a('paragraf',teks='Kasus khusus yang disukai ujian: deret isoelektronik (jumlah elektron sama). Karena elektronnya identik, penentu tunggal adalah proton: makin banyak proton, makin kuat tarikan, makin kecil jari-jari ion. Ion positif selalu lebih kecil dari atom netralnya; ion negatif lebih besar.')
+a('gambar',url=U+'k1r-jarijari-v2.png',keterangan='Tabel periodik jari-jari atom: tiap unsur digambarkan titik berwarna dengan ukuran sebanding jari-jari; titik terbesar di kiri bawah setiap periode dan mengecil ke kanan.')
+a('poin',judul='🔍 Membaca gambar — pola ukuran titik',items=[
+ 'Kolom kiri (alkali) titik terbesar per periode -> jari-jari maksimal di IA.',
+ 'Mengecil ke kanan: muatan inti efektif naik, kulit sama.',
+ 'Membesar ke bawah: kulit bertambah.',
+ 'Gas mulia tidak ikut tren perbandingan kovalen (dijanjikan van der Waals).'])
+a('tabelinfo',judul='Kecenderungan empat sifat (bank owner)',kolom=['Sifat','Kiri → kanan','Atas → bawah'],rows=[
+ {'k':'Jari-jari partikel','v':'Berkurang','w':'Bertambah'},
+ {'k':'Energi ionisasi (EI)','v':'Bertambah','w':'Berkurang'},
+ {'k':'Afinitas elektron (AE)','v':'Bertambah','w':'Berkurang'},
+ {'k':'Keelektronegatifan (EN)','v':'Bertambah (puncak F)','w':'Berkurang'}])
+a('contoh',teks='Contoh terpecah langkah — isoelektronik (bank owner). Soal: urutkan kenaikan jari-jari K⁺, Ca²⁺, Cl⁻ (isoelektronik 18 e⁻). Langkah 1: proton Ca 20 > K 19 > Cl 17. Langkah 2: proton terbanyak menarik paling kuat -> terkecil: Ca²⁺. Langkah 3: urutan naik: Ca²⁺ < K < Cl⁻. Kunci bank sama.')
+a(CG,judul='CG-PERIODIK: dua arah satu pengecualian',teks='Kanan = kecil & kuat menarik; bawah = besar & mudah lepas. Isoelektronik: bandingkan proton saja.',items=[
+ 'Tentukan posisi relatif di tabel.',
+ 'Terapkan aturan arah.',
+ 'Bila elektron sama: urut proton terbalik.',
+ 'Contoh kilat: Na vs Mg: Mg kanan -> jari-jadi lebih kecil, EI lebih besar.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='EI tidak mulus: golongan IIA > IIIA dan VA > VIA pada periode sama (stabilitas subkulit penuh/setengah penuh). Soal yang menyodorkan grafik EI dengan titik "nyeleneh" biasanya menguji pengecualian ini.')
+a('zona',items=[
+ {'soal':'Urutan jari-jari terkecil ke terbesar: O, S, Se adalah ....','tipe':'pg','opsi':['O, S, Se','Se, S, O','S, O, Se','O, Se, S'],'jawaban':0,'pembahasan':'Satu golongan ke bawah membesar: O < S < Se.'},
+ {'soal':'Energi ionisasi terbesar dimiliki ....','tipe':'pg','opsi':['Na','Mg','P','Cl'],'jawaban':3,'pembahasan':'Periode sama ke kanan EI bertambah (kecuali kecil IIA/VA); Cl paling kanan -> terbesar.'},
+ {'soal':'Ion Cl⁻ lebih besar daripada atom Cl karena elektron bertambah sementara proton tetap.','tipe':'pg','opsi':['Benar','Salah'],'jawaban':0,'pembahasan':'Anion: elektron bertambah, tarikan per elektron melemah -> jari-jari membesar.'}])
+
+# ========== E. IKATAN KIMIA & LEWIS ==========
+a('judul',teks='E. Kestabilan Atom, Ikatan Ion-Kovalen, dan Struktur Lewis')
+a('kilat',teks='Atom mencari oktet (duplet untuk H/He): logam melepas (ion +), nonlogam menangkap (ion −) atau memakai bersama (kovalen). Lewis = titik valensi; ΣEV → kerangka → EI/ENI → oktet.')
+a('peta',teks='Ikatan adalah pintu ke bentuk molekul (F) dan gaya antarmolekul (G): jenis ikatan menentukan geometri, geometri menentukan kepolaran, kepolaran menentukan sifat fisik.')
+a('paragraf',teks='Atom stabil ala gas mulia: oktet elektron valensi (duplet untuk H dan He). Logam cenderung melepas elektron menjadi kation, nonlogam menangkap menjadi anion — serah terima penuh menghasilkan ikatan ion (kisi keras, titik leleh tinggi, lelehan menghantar). Bila dua nonlogam bertemu, mereka memakai bersama pasangan elektron: ikatan kovalen (tunggal, rangkap, koordinasi bila pasangan berasal dari satu pihak).')
+a('paragraf',teks='Struktur Lewis adalah bahasa gambarnya: titik = elektron valensi; garis = satu pasangan elektron ikatan (PEI); titik berpasangan tanpa garis = pasangan elektron bebas (PEB). Prosedur bank owner untuk molekul rumit: jumlahkan ΣEV (tambah muatan negatif/kurangi muatan positif), buat kerangka ikatan tunggal dengan atom pusat yang butuh elektron paling banyak, hitung EI = 2 × jumlah garis, sebarkan ENI = ΣEV − EI ke atom tepi sampai oktet, sisa ke atom pusat, lalu ubah PEB menjadi PEI bila pusat kurang oktet.')
+a('gambar',url=U+'k1-ikat-ion-kovalen.jpg',keterangan='Dua panel: kiri ikatan ion NaCl (panah serah terima elektron dari Na ke Cl membentuk Na⁺ dan Cl); kanan ikatan kovalen dua atom memakai bersama pasangan elektron.')
+a('poin',judul='🔍 Membaca gambar — serah terima vs patungan',items=[
+ 'Panel ion: panah pemindahan elektron dari logam ke nonlogam; hasil ion berlawanan muatan saling tarik.',
+ 'Panel kovalen: pasangan elektron berada DI ANTARA dua inti (milik bersama).',
+ 'Kovalen koordinasi: pasangan bersama berasal dari satu atom penyumbang.',
+ 'Ciri fisik ion: keras, rapuh, leleh tinggi, larutan menghantar; kovalen molekuler: leleh rendah, tidak menghantar.'])
+a('tabelinfo',judul='Aturan struktur Lewis (bank owner)',kolom=['Langkah','Isi','Catatan'],rows=[
+ {'k':'1. ΣEV','v':'Jumlah elektron valensi atom bebas','w':'Ion − tambah muatan; ion + kurangi muatan'},
+ {'k':'2. Kerangka','v':'Ikatan tunggal; atom pusat = jumlah sedikit & butuh elektron banyak','w':'H selalu terminal'},
+ {'k':'3. EI & ENI','v':'EI = 2 × garis; ENI = ΣEV − EI','w':'Sebarkan ENI ke tepi sampai oktet'},
+ {'k':'4. Uji','v':'Muatan formal MF = EV − ½EI − ENI','w':'Struktur terbaik: MF nol; pusat periode 2 maks oktet'}])
+a('contoh',teks='Contoh terpecah langkah — Lewis CCl₄ (bank owner). Langkah 1: ΣEV = 4 + 4×7 = 32. Langkah 2: kerangka C pusat dengan 4 garis C–Cl. Langkah 3: EI = 2×4 = 8; ENI = 32 − 8 = 24. Langkah 4: sebarkan 24 sebagai 6 titik (3 PEB) per Cl -> semua oktet. Langkah 5: MF C = 4 − ½(8) − 0 = 0; MF Cl = 7 − ½(2) − 6 = 0 -> struktur valid. PEB total = 12.')
+a(CG,judul='CG-LEWIS: 32-8-24',teks='ΣEV → EI = 2×garis → ENI = ΣEV−EI → oktetkan tepi → sisa ke pusat → cek MF nol.',items=[
+ 'Hitung ΣEV termasuk muatan ion.',
+ 'Gambar kerangka, hitung EI.',
+ 'Sebarkan ENI, kunci oktet (H: 2).',
+ 'Contoh kilat: CO₂: ΣEV 16; dua rangkap -> MF nol.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Pusat periode 2 (C, N, O, F) TIDAK boleh ekstra oktet; bila ΣEV memaksa, buat rangkap. Sebaliknya S, P, Xe boleh ekstra oktet (SF₆, PCl₅). Tertukar aturan ini = struktur Lewis salah total.')
+a('zona',items=[
+ {'soal':'Jumlah PEB pada Lewis CCl₄ adalah ....','tipe':'pg','opsi':['4','8','12','16'],'jawaban':2,'pembahasan':'4 Cl × 3 PEB = 12; C pusat 0 PEB.'},
+ {'soal':'Ikatan pada KCl tergolong ion karena K logam menyerahkan elektron ke Cl nonlogam.','tipe':'pg','opsi':['Benar','Salah'],'jawaban':0,'pembahasan':'Selisih EN besar + serah terima penuh = ion.'},
+ {'soal':'Pada NH₃, pasangan elektron ikatan N–H berjumlah ....','tipe':'pg','opsi':['1','2','3','4'],'jawaban':2,'pembahasan':'Tiga ikatan N–H = 3 PEI; N menyimpan 1 PEB.'}])
+
+# ========== F. VSEPR & KEPOLARAN ==========
+a('judul',teks='F. Bentuk Molekul (VSEPR), Hibridisasi, dan Kepolaran')
+a('kilat',teks='Domain = PEI + PEB; bentuk molekul = orientasi PEI saja. Ada PEB -> biasanya polar. AX₄E₂ = segiempat datar? tidak: AX₄E₂ = segiempat datar; AX₅E₁ = piramida segiempat.')
+a('peta',teks='VSEPR memakai Lewis (E) sebagai input; outputnya dipakai G (gaya antarmolekul) dan menjelaskan titik didih/kelarutan — rantai utuh struktur -> sifat.')
+a('paragraf',teks='VSEPR (Valence Shell Electron Pair Repulsion): pasangan elektron valensi saling tolak dan menyusun diri sejauh mungkin. Hitung domain: setiap PEI (tunggal maupun rangkap dihitung SATU) dan setiap PEB. Geometri elektron melihat semua domain; bentuk molekul hanya melihat PEI — karena itu PEB "tak terlihat" tetapi menekan sudut ikatan.')
+a('paragraf',teks='Kode AXₙEₘ mempercepat: A atom pusat, X domain ikatan, E PEB. Hafalkan pasangan kode-bentuk yang sering keluar: AX₄ tetrahedral; AX₃E piramida segitiga; AX₂E₂ bengkok; AX₅ bipiramida trigonal; AX₄E₁ piramida segiempat (kasus UTBK BrF₅); AX₃E₂ bentuk T; AX₆ oktahedral; AX₄E₂ segiempat datar. Kepolaran: molekul polar bila bentuk tidak simetris (ada PEB atau substituen berbeda).')
+a('gambar',url=U+'k1-vsepr.jpg',keterangan='Sembilan kartu bentuk molekul: linier, bengkok, trigonal planar, piramida segitiga, tetrahedral, bipiramida trigonal, bentuk T, oktahedral, piramida segiempat; tiap kartu berlabel kode AX dan sudut ikatan.')
+a('poin',judul='🔍 Membaca gambar — kartu bentuk',items=[
+ 'Kartu tanpa E (linier, trigonal planar, tetrahedral, oktahedral) simetris -> nonpolar bila substituen sama.',
+ 'Kartu ber-PEB (bengkok, piramida, T, segiempat datar) -> umumnya polar.',
+ 'BrF₅ = AXE₁ -> piramida segiempat (soal UTBK).',
+ 'PCl₃ = AX₃E -> piramida segitiga polar (soal resmi Pusmendik #6).'])
+a('contoh',teks='Contoh terpecah langkah — BrF₅ (UTBK asli). Soal: geometri BrF₅? Langkah 1: EV Br = 7; PEI = 5; PEB = (7 − 5)/2 = 1. Langkah 2: domain = 6 -> geometri elektron oktahedral. Langkah 3: bentuk molekul = oktahedral minus 1 PEB = PIRAMIDA SEGIEMPAT. Kunci UTBK: A.')
+a(CG,judul='CG-VSEPR: (EV − ikatan) ÷ 2 = PEB',teks='PEB = (EV pusat − jumlah ikatan) ÷ 2; domain = PEI + PEB; bentuk = domain − PEB.',items=[
+ 'Hitung EV pusat.',
+ 'PEI = jumlah atom terikat.',
+ 'PEB = (EV − PEI) ÷ 2.',
+ 'Contoh kilat: H₂O: (6−2)/2 = 2 -> AX₂E₂ bengkok, polar.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Rangkap dihitung SATU domain (CO₂ tetap linier). Dan ingat: simetri menentukan polar — XeF₂ (AX₂E₃) linier NONPOLAR meski punya 3 PEB; SF₆ nonpolar meski oktahedral ramai.')
+a('zona',items=[
+ {'soal':'Bentuk molekul BrF₅ adalah ....','tipe':'pg','opsi':['Piramida segiempat','Planar segiempat','Trigonal bipiramida','Piramida segilima'],'jawaban':0,'pembahasan':'AX₅E₁ -> piramida segiempat (UTBK, kunci A).'},
+ {'soal':'PCl₃ bersifat polar karena memiliki satu PEB yang membuat bentuk tidak simetris.','tipe':'pg','opsi':['Benar','Salah'],'jawaban':0,'pembahasan':'AX₃E piramida segitiga -> polar (soal resmi #6 kunci D terkait).'},
+ {'soal':'Jumlah PEB atom pusat XeF₄ adalah ....','tipe':'pg','opsi':['0','1','2','3'],'jawaban':2,'pembahasan':'EV Xe 8 − 4 ikatan = 4 -> ÷2 = 2 PEB (AX₄E₂ segiempat datar).'}])
+
+# ========== G. GAYA ANTARMOLEKUL ==========
+a('judul',teks='G. Gaya Antarmolekul: Velcro di Antara Molekul')
+a('kilat',teks='Kekuatan: ikatan hidrogen (H–F/O/N) > dipol-dipol > London. Titik didih mengikuti kekuatan velcro; massa besar memperkuat London.')
+a('peta',teks='Subbab penutup rantai bab 1: kepolaran (F) menentukan jenis velcro; velcro menentukan wujud & titik didih — jawaban soal "mengapa X mendidih lebih tinggi".')
+a('paragraf',teks='Di luar molekul masih ada perekat antar-molekul yang jauh lebih lemah daripada ikatan intra: gaya London/dispersi (dipol sesaat, semua molekul, menguat seiring massa/elektron), dipol-dipol (molekul polar permanen), dan ikatan hidrogen (H terikat langsung ke F, O, atau N tertarik ke pasangan bebas F/O/N molekul lain). Ikatan hidrogen bukan ikatan sejati melainkan velcro terkuat antar-molekul.')
+a('paragraf',teks='Konsekuensi yang dicintai ujian: HF, H₂O, NH₃ mendidih jauh lebih tinggi daripada tren golongannya karena ikatan hidrogen; senyawa nonpolar besar (I₂, CCl₄) tetap berwujud cair/padat karena London yang menumpuk; membandingkan dua zat = cek velcro dulu, baru massa.')
+a('gambar',url=U+'k1-hidrogen-hf.jpg',keterangan='Tiga molekul HF berjajar: garis penuh H–F di dalam molekul (intramolekul), garis putus-putus antar molekul menunjukkan ikatan hidrogen; kartu kuning menjelaskan anomali titik didih.')
+a('poin',judul='🔍 Membaca gambar — garis penuh vs putus',items=[
+ 'Garis penuh = ikatan kovalen intramolekul (kuat).',
+ 'Garis putus-putus = ikatan hidrogen antarmolekul (lemah tetapi menentukan titik didih).',
+ 'Ikatan hidrogen menghubungkan H satu molekul ke F/O/N molekul lain, BUKAN H ke H.',
+ 'Tanpa H–F/O/N: hanya dipol-dipol atau London.'])
+a('tabelinfo',judul='Hierarki gaya antarmolekul',kolom=['Gaya','Syarat','Kekuatan & contoh'],rows=[
+ {'k':'Ikatan hidrogen','v':'H terikat F/O/N','w':'Terkuat antar-molekul; HF, H₂O, NH₃, alkohol'},
+ {'k':'Dipol-dipol','v':'Molekul polar permanen','w':'Sedang; HCl, SO₂'},
+ {'k':'London/dispersi','v':'Semua molekul','w':'Lemah, menguat seiring massa/elektron; I₂, CCl₄, hidrokarbon'}])
+a('contoh',teks='Contoh terpecah langkah — membandingkan titik didih. Soal: mengapa H₂O mendidih 100 °C sedangkan H₂S −60 °C? Langkah 1: cek velcro: H₂O punya H–O -> ikatan hidrogen; H₂S tidak (S bukan F/O/N). Langkah 2: ikatan hidrogen jauh lebih kuat daripada dipol-dipol H₂S. Langkah 3: simpulkan selisih titik didih ekstrem meski massa H₂S lebih besar — velcro mengalahkan massa.')
+a(CG,judul='CG-VElcro: FON sebelum massa',teks='Cek F-O-N dulu (ikatan hidrogen), lalu polaritas (dipol), baru massa (London). Urutan pemeriksaan ini menjawab 90% soal titik didih.',items=[
+ 'Ada H–F/O/N? -> ikatan hidrogen, titik didih melonjak.',
+ 'Polar tanpa H–F/O/N? -> dipol-dipol.',
+ 'Nonpolar? -> bandingkan massa untuk London.',
+ 'Contoh kilat: NH₃ > PH₃ meski lebih ringan.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Ikatan hidrogen TIDAK terjadi pada H yang terikat C (CH₄ tidak punya), dan bukan antara dua H. Soal yang menyebut "CH₃OH vs CH₃SH": hanya O yang memberi ikatan hidrogen.')
+a('zona',items=[
+ {'soal':'Zat berikut yang memiliki ikatan hidrogen antarmolekul: ....','tipe':'pg','opsi':['CH₄','H₂S','NH₃','CCl₄'],'jawaban':2,'pembahasan':'NH₃ punya H–N -> ikatan hidrogen.'},
+ {'soal':'Titik didih I₂ lebih tinggi daripada F₂ karena gaya London menguat seiring bertambahnya elektron.','tipe':'pg','opsi':['Benar','Salah'],'jawaban':0,'pembahasan':'Nonpolar keduanya; massa/elektron I₂ besar -> London kuat.'},
+ {'soal':'Urutan kekuatan gaya antarmolekul dari terkuat: ikatan hidrogen, dipol-dipol, London.','tipe':'pg','opsi':['Benar','Salah'],'jawaban':0,'pembahasan':'Hierarki baku: H-bond > dipol-dipol > London.'}])
+
+Q=[
+ {'soal':'Atom kalium (K) memiliki 19 proton dan 20 neutron. Notasi yang benar beserta jumlah elektron pada ion K⁺ adalah ....','tipe':'pg',
+  'opsi':['³⁹₁₉K⁺ dengan 18 elektron','³⁹₁₉K⁺ dengan 19 elektron','⁳⁹₁₉K⁺ dengan 20 elektron','⁴⁰₁₉K⁺ dengan 18 elektron','³⁹₁₈K⁺ dengan 18 elektron'],'jawaban':0,
+  'pembahasan':'Jalur konsep: A = p + n = 19 + 20 = 39; Z = 19; ion +1 berarti e = 19 − 1 = 18 -> ³⁹₁₉K⁺, 18 elektron. Jalur Cara Gemilang: CG-NOTASI tiga langkah: p = 19, n = 20, e = 19 − 1 = 18.',
+  'sumber':'Adaptasi contoh bank owner 01 hlm 3 (K: 19 proton, 20 neutron) — kunci diturunkan dengan aturan notasi bank'},
+ {'soal':'Keempat bilangan kuantum yang mungkin untuk salah satu elektron pada orbital 3d adalah ....','tipe':'pg',
+  'opsi':['n=3, l=2, m=0, s=+½','n=3, l=1, m=0, s=+½','n=3, l=2, m=3, s=+½','n=2, l=3, m=0, s=−½','n=3, l=3, m=0, s=+½'],'jawaban':0,
+  'pembahasan':'Jalur konsep: subkulit 3d -> n = 3, l = 2; m harus dalam −2..+2; s ±½. Opsi A memenuhi semua. Opsi C salah karena m = 3 di luar rentang; opsi B l = 1 adalah 3p; opsi D n/l tertukar; opsi E l = 3 adalah 4f. Jalur Cara Gemilang: CG-KONFIG: 3d -> (3, 2, m∈−2..2, ±½).',
+  'sumber':'Verbatim contoh bank owner 01 hlm 4 no 2 (pembahasan: n=3, l=2, m −2..+2, s ±½)'},
+ {'soal':'Atom brom (Br) memiliki nomor atom 35. Pada periode dan golongan berapakah letak unsur Br dalam tabel periodik unsur modern?','tipe':'pg',
+  'opsi':['Periode 3 golongan VIIA','Periode 4 golongan VIA','Periode 4 golongan VIIA','Periode 4 golongan VIIB','Periode 5 golongan VIIA'],'jawaban':2,
+  'pembahasan':'Jalur konsep: konfigurasi Br = 1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹⁰ 4s² 4p⁵; valensi 4s+4p = 7 -> VIIA; kulit terbesar 4 -> periode 4. Jalur Cara Gemilang: CG-LETAK: ujung 4p⁵ -> periode 4, golongan 2+5 = VIIA.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 5 (kunci: periode 4, VIIA)'},
+ {'soal':'Jika ion isoelektronik K⁺, Ca²⁺, Cl⁻ disusun berdasarkan kenaikan jari-jari ion, urutan yang benar adalah .... (Nomor atom: Cl = 17, K = 19, Ca = 20)','tipe':'pg',
+  'opsi':['K⁺ < Ca²⁺ < Cl⁻','Cl⁻ < K⁺ < Ca²⁺','Ca²⁺ < K⁺ < Cl','Ca²⁺ < Cl⁻ < K⁺','K⁺ < Cl < Ca²⁺'],'jawaban':2,
+  'pembahasan':'Jalur konsep: ketiganya berelektron 18; proton Ca 20 > K 19 > Cl 17; makin banyak proton tarikan makin kuat -> jari-jari makin kecil; urutan naik Ca²⁺ < K⁺ < Cl. Jalur Cara Gemilang: CG-PERIODIK aturan isoelektronik: urutkan proton terbalik.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 6 (kunci: Ca²⁺ < K⁺ < Cl)'},
+ {'soal':'Jumlah elektron yang tidak berpasangan pada struktur Lewis atom N (Z = 7) adalah ....','tipe':'pg',
+  'opsi':['0','1','2','3','5'],'jawaban':3,
+  'pembahasan':'Jalur konsep: konfigurasi N = 1s² 2s² 2p³; menurut Hund tiga orbital 2p terisi tunggal -> 3 elektron tak berpasangan. Jalur Cara Gemilang: p³ = setengah penuh -> semua tunggal = 3.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 8 (kunci: 3)'},
+ {'soal':'Diketahui notasi dua macam unsur: ³¹₁₅X dan ³⁵₁₇Y. Jika kedua unsur bersenyawa, hibridisasi atom pusat, geometri molekul, dan kepolaran senyawanya berturut-turut adalah ....','tipe':'pg',
+  'opsi':['sp²; segitiga planar; nonpolar','sp³; segitiga piramida; nonpolar','sp³; segitiga piramida; polar','sp³; oktahedral; polar','sp²; segitiga piramida; polar'],'jawaban':2,
+  'pembahasan':'Jalur konsep: X = P (valensi 5), Y = Cl -> PCl₃; PEI 3, PEB = (5−3)/2 = 1 -> AX₃E piramida segitiga, hibridisasi sp³; ada PEB -> polar. Jalur Cara Gemilang: CG-VSEPR: (5−3)/2 = 1 PEB -> AX₃E -> polar.',
+  'pembahasanGambar':U+'k1-vsepr.jpg','pembahasanGambarKet':'🔍 Kartu AX₃E (piramida segitiga) adalah bentuk PCl₃: satu lingkaran PEB membuat molekul tidak simetris -> polar.',
+  'sumber':'Contoh Soal Resmi TKA Kimia no. 6 — Pusmendik (kunci resmi D = sp³, piramida, polar); transkrip verbatim'},
+ {'soal':'Atom pusat Br dalam molekul BrF₅ dikelilingi oleh enam domain pasangan elektron, yaitu lima domain merupakan pasangan elektron ikatan dan satu domain merupakan pasangan elektron bebas. Geometri molekul BrF₅ adalah ....','tipe':'pg',
+  'opsi':['Piramida segiempat','Planar segiempat','Trigonal bipiramida','Piramida segilima','Piramida segitiga'],'jawaban':0,
+  'pembahasan':'Jalur konsep: 6 domain = oktahedral elektron; satu PEB menempati satu posisi sehingga bentuk molekul = piramida segiempat. Jalur Cara Gemilang: CG-VSEPR kode AX₅E₁ -> piramida segiempat.',
+  'sumber':'Soal asli UTBK TKA Kimia (arsip Zenius blog, contoh soal ikatan kimia) — kunci A piramida segiempat'},
+ {'soal':'Ion Fe³⁺ (Z = 26) memiliki konfigurasi [Ar] 3d⁵. Bilangan kuantum yang mungkin untuk salah satu elektron tak berpasangannya adalah ....','tipe':'pg',
+  'opsi':['n=3, l=2, m=+2, s=+½','n=3, l=1, m=+2, s=+½','n=4, l=2, m=0, s=+½','n=3, l=2, m=+3, s=−½','n=3, l=0, m=0, s=+½'],'jawaban':0,
+  'pembahasan':'Jalur konsep: elektron 3d -> n = 3, l = 2, m ∈ −2..+2, s ±½; opsi A valid; opsi D m di luar rentang; opsi B/C/E subkulit salah. Jalur Cara Gemilang: d selalu l = 2.',
+  'sumber':'Adaptasi soal kumpulan urip.info (bilangan kuantum Fe³⁺ [Ar] 3d⁵) — kunci diturunkan dari aturan BK bank owner'},
+ {'soal':'Pernyataan berikut yang BENAR tentang senyawa ion vs kovalen: (1) NaCl rapuh dan lelehannya menghantar; (2) CCl₄ memiliki titik leleh tinggi; (3) HCl dalam air menghantar karena terionisasi; (4) semua senyawa kovalen tidak menghantar dalam bentuk apa pun.','tipe':'pgMulti',
+  'opsi':['(1) dan (2)','(1) dan (3)','(2) dan (4)','(1), (2), dan (3)','(3) dan (4)'],'jawaban':[1],
+  'pembahasan':'Jalur konsep: (1) benar ciri kisi ion; (2) salah CCl₄ molekuler leleh rendah; (3) benar HCl terionisasi dalam air; (4) salah (kovalen polar seperti HCl murni tetap tidak menghantar tetapi larutan asam menghantar; pernyataan mutlak salah). Jadi (1)&(3). Jalur Cara Gemilang: ion = rapuh+leleh tinggi+lelehan menghantar; kovalen molekuler = kebalikannya.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — ciri ikatan, pola bank owner §C)'},
+ {'soal':'Struktur Lewis yang paling mungkin untuk molekul CO₂ memiliki ....','tipe':'pg',
+  'opsi':['dua ikatan tunggal dan 4 PEB pada C','dua ikatan rangkap dua, MF semua atom nol','satu rangkap tiga dan satu tunggal','ikatan koordinasi dari O ke C','tiga ikatan rangkap dua'],'jawaban':1,
+  'pembahasan':'Jalur konsep: ΣEV = 4 + 2×6 = 16; kerangka O–C–O memakai 4 elektron; sisa 12 disebar; pusat C kekurangan oktet -> dua PEB O diubah menjadi PEI rangkap -> O=C=O; MF C = 4 − ½(8) = 0, MF O = 6 − ½(4) − 4 = 0. Jalur Cara Gemilang: CG-LEWIS 16-4-12 lalu rangkapkan sampai MF nol.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — prosedur ΣEV/EI/ENI bank owner §C.2)'},
+ {'soal':'Berdasarkan tabel kecenderungan sifat periodik, pernyataan yang benar adalah .... (1) jari-jari Cl < jari-jari Na; (2) EI Na > EI Cl; (3) EN F paling besar; (4) jari-jari K < jari-jari Na.','tipe':'pgMulti',
+  'opsi':['(1) dan (3)','(2) dan (4)','(1), (2), dan (3)','(3) dan (4)','(1), (3), dan (4)'],'jawaban':[0],
+  'pembahasan':'Jalur konsep: (1) benar (satu periode ke kanan mengecil); (2) salah (EI Cl > Na); (3) benar (F puncak EN); (4) salah (ke bawah membesar: K > Na). Jadi (1)&(3). Jalur Cara Gemilang: CG-PERIODIK dua arah: kanan kecil-kuat, bawah besar-lembut.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — tabel tren bank owner §B.2)'},
+ {'soal':'Tentukan BENAR/SALAH: (a) ¹²C dan ¹³C adalah isotop; (b) ¹⁴C dan ¹⁴N adalah isotop; (c) pada ²⁷₁₃Al³⁺ jumlah elektron 10.','tipe':'tabel',
+  'kolom':['Benar','Salah'],
+  'baris':['¹²C dan ¹³C merupakan isotop.','¹⁴C dan ¹⁴N merupakan isotop.','Pada ²⁷₁₃Al³⁺ jumlah elektron = 10.'],
+  'jawaban':[0,1,0],
+  'pembahasan':'Jalur konsep: isotop = Z sama: ¹²C & ¹³C benar; ¹⁴C & ¹⁴N adalah isobar (A sama) -> salah; Al³⁺: e = 13 − 3 = 10 -> benar. Jalur Cara Gemilang: CG-NOTASI + iso-top = proton sama.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — notasi & isotop)'},
+ {'soal':'Tentukan BENAR/SALAH pernyataan VSEPR berikut: (a) CO₂ linier karena tidak ada PEB pada C; (b) XeF₂ polar karena memiliki 3 PEB; (c) SF₆ nonpolar karena oktahedral simetris.','tipe':'tabel',
+  'kolom':['Benar','Salah'],
+  'baris':['CO₂ linier karena atom pusat tanpa PEB.','XeF₂ polar karena memiliki 3 PEB.','SF₆ nonpolar karena bentuk oktahedral simetris.'],
+  'jawaban':[0,1,0],
+  'pembahasan':'Jalur konsep: (a) benar AX₂; (b) salah: AX₂E₃ linier -> momen dipol hapus -> nonpolar; (c) benar oktahedral simetris. Jalur Cara Gemilang: simetri mengalahkan jumlah PEB.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — kepolaran & simetri)'},
+ {'soal':'Pasangkan tokoh/model dengan bukti percobaan yang melahirkannya!','tipe':'jodoh',
+  'premis':['Dalton','Thomson','Rutherford','Bohr','Mekanika kuantum'],
+  'opsi':['Hukum kekekalan massa & perbandingan tetap','Sinar katode bermuatan negatif (elektron)','Hamburan sinar alfa pada lempeng emas','Spektrum garis atom hidrogen','Sifat gelombang elektron (orbital)','Percobaan tetes minyak muatan elektron'],
+  'jawaban':[0,1,2,3,4],
+  'pembahasan':'Dalton = hukum dasar massa; Thomson = sinar katode; Rutherford = lempeng emas; Bohr = spektrum H; kuantum = gelombang elektron. Pengecoh: tetes minyak Millikan bukan kelahiran model.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — sejarah model atom)'},
+ {'soal':'Jumlah pasangan elektron bebas (PEB) pada atom pusat XeF₄ adalah ....','tipe':'isian',
+  'jawaban':'2','hintFormat':'Tulis satu angka bulat',
+  'pembahasan':'Jalur konsep: EV Xe = 8; PEI = 4; PEB = (8−4)/2 = 2 (AX₄E₂ segiempat datar). Jalur Cara Gemilang: CG-VSEPR satu baris: (8−4)/2 = 2.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — VSEPR)'},
+ {'soal':'Uraikan: (a) tulis konfigurasi elektron atom ₂₆Fe dan ion Fe³⁺; (b) tentukan periode & golongan Fe; (c) jelaskan mengapa Fe³⁺ lebih stabil daripada Fe²⁺ berdasarkan keterisian subkulit d!','tipe':'uraian',
+  'jawaban':'Rubrik: (a) Fe = [Ar] 4s² 3d⁶; Fe³⁺ = [Ar] 3d⁵ (buang 4s² dulu lalu 1 elektron 3d). (b) periode 4; golongan VIII/transisi (2+6 = 8). (c) 3d⁵ setengah penuh (tiap orbital d terisi tunggal, aturan Hund) lebih stabil daripada 3d⁶ yang memiliki satu orbital berpasangan bertolakan ekstra.',
+  'pembahasan':'Jalur konsep mengikuti urutan CG-KONFIG; poin (c) menilai pemahaman Hund & kestabilan setengah penuh. Jalur Cara Gemilang: d⁵ = setengah penuh = stabil.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — uraian konfigurasi & kestabilan)'},
+ {'soal':'Mengapa titik didih HF jauh lebih tinggi daripada HCl meskipun massa HF lebih kecil?','tipe':'pg',
+  'opsi':['HF lebih polar sehingga dipol-dipolnya kuat','HF memiliki ikatan hidrogen antarmolekul, HCl tidak','Massa HCl terlalu kecil','HF berwujud ionik','London HF lebih kuat'],'jawaban':1,
+  'pembahasan':'Jalur konsep: H terikat F -> ikatan hidrogen (velcro terkuat); HCl hanya dipol-dipol; selisih kekuatan mengatasi selisih massa. Jalur Cara Gemilang: CG-VELCRO: cek FON dulu -> HF menang.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — gaya antarmolekul)'},
+ {'soal':'Pada molekul berikut yang memiliki momen dipol nol (nonpolar) meskipun memiliki PEB: ....','tipe':'pg',
+  'opsi':['NH₃','H₂O','XeF₂','SF₄','PCl₃'],'jawaban':2,
+  'pembahasan':'Jalur konsep: XeF₂ = AX₂E₃: tiga PEB tersusun ekuatorial sehingga dua ikatan axial berlawanan arah -> momen dipol nol. NH₃/H₂O/PCl₃ polar; SF₄ (AXE) polar. Jalur Cara Gemilang: simetri geometri mengalahkan keberadaan PEB.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — simetri & kepolaran)'},
+ {'soal':'Pernyataan tentang muatan formal (MF) struktur Lewis SO₄²⁻ yang benar: MF S = 6 − ½(8) − 0 = +2 bila semua ikatan tunggal; struktur dengan dua rangkap menurunkan MF S menjadi 0; struktur terbaik memiliki MF sedekat nol.','tipe':'pgMulti',
+  'opsi':['Pernyataan 1 dan 2','Pernyataan 1 dan 3','Pernyataan 2 dan 3','Semua benar','Semua salah'],'jawaban':[3],
+  'pembahasan':'Jalur konsep: dengan 4 ikatan tunggal MF S = 6 − 4 − 0 = +2 (benar); menambah dua rangkap: MF S = 6 − ½(12) − 0 = 0 (benar); prinsip struktur terbaik MF ≈ 0 (benar). Semua benar. Jalur Cara Gemilang: MF = EV − ½EI − ENI, minimalkan.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — muatan formal bank owner §C.4)'},
+]
+
+D={'materi':{'judul':'Kimia SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)','mapel':'Kimia','kelas':'12','jenjang':'sma','program':'semua','premium':False,'warna':'#7C3AED','emoji':'⚗️','deskripsi':'Kimia bab 1 VERSI CARA GEMILANG: struktur atom, bilangan kuantum & konfigurasi, tabel periodik, sifat periodik, ikatan & Lewis, VSEPR & kepolaran, gaya antarmolekul. Template 10 kartu per subbab (Konsep Kilat, Peta Besar, visual HD ber-kredit, contoh terpecah langkah, kartu CG, jebakan, Zona Berlatih) + pembahasan dua jalur (konsep + Jalur Cara Gemilang). Sumber: bank owner Gercep TKA 26 Kimia, Pusmendik, UTBK asli, BS IPA 10 Kurmer.','urutan':5,'status':'draft',
+ 'daftarPustaka':[
+  'Bank Soal Sukses TKA 26 Kimia (@my99dreams) — 01 Ringkasan Materi hlm 2-10: BASIS konsep & contoh berkunci (partikel, BK, konfigurasi, SPU, sifat periodik, ikatan, Lewis, muatan formal); contoh verbatim: letak Br, isoelektronik, elektron tak berpasangan N, 3d BK.',
+  'Matriks Asesmen & 20 Contoh Soal Resmi TKA Kimia — Pusmendik (soal no. 6 verbatim berlabel).',
+  'Soal asli UTBK TKA Kimia topik ikatan/bentuk molekul (BrF₅) via arsip blog Zenius — berlabel.',
+  'Ilmu Pengetahuan Alam SMA/MA Kelas X Edisi Revisi (Kemendikbudristek 2023) — gambar asli crop vektor 300-900 dpi (notasi, konfigurasi Ca) + kumpulan soal adaptasi.',
+  'Visual HD lain: crop vektor buku & Wikimedia Commons (tabel periodik, jari-jari, EI, Pauling) ber-kredit; bagan ikatan & kartu VSEPR = penunjang tim berlabel.',
+  'Kumpulan soal bilangan kuantum Fe³⁺ adaptasi urip.info — berlabel.']},
+ 'bab':[{'judul':'Bab 1 — Struktur Atom, Periodisitas, Ikatan Kimia & Bentuk Molekul (Edisi Cara Gemilang)','ringkasan':'Rantai utuh struktur atom: partikel & notasi -> bilangan kuantum & konfigurasi -> letak pada tabel periodik -> sifat periodik -> ikatan & Lewis -> VSEPR & kepolaran -> gaya antarmolekul. Setiap subbab membawa kartu Konsep Kilat, Peta Besar, visual HD, contoh terpecah langkah, jurus Cara Gemilang (CG), jebakan ujian, dan Zona Berlatih 3 soal; pembahasan soal selalu dua jalur: konsep bertahap + Jalur Cara Gemilang satu napas.','estimasiMenit':120,'urutan':1,'tipe':'teks','sections':S,'ujiPemahaman':Q}]}
+json.dump(D,open('docs/drafts/draft-kimia-k12-v2-bab1.json','w'),ensure_ascii=False,indent=2)
+print('sections:',len(S),'soal:',len(Q))
