@@ -12,11 +12,12 @@
     "urutan": 5,
     "status": "draft",
     "daftarPustaka": [
-      "Ilmu Pengetahuan Alam untuk SMA/MA Kelas X Edisi Revisi (Kemendikbudristek, 2023; Niken Resminingpuri Krisdianti dkk.) — SUMBER GAMBAR ASLI bab ini: Gambar 3.2 & 3.3 (hlm. cetak 73-74), 3.5 & 3.6 (75-76), 3.11 & 3.12 (82), 3.15 (90), 3.16 (91), 3.23 (99), 3.24 (101), 3.27 (105); dirender 300 dpi dan dipotong bbox tinta; caption & baris kredit buku dipotong dari crop (kredit disimpan di sini).",
+      "Ilmu Pengetahuan Alam untuk SMA/MA Kelas X Edisi Revisi (Kemendikbudristek, 2023; Niken Resminingpuri Krisdianti dkk.) — SUMBER GAMBAR ASLI bab ini: Gambar 3.2 & 3.3 (hlm. cetak 73-74), 3.5 & 3.6 (75-76), 3.11 & 3.12 (82), 3.15 (90), 3.16 (91), 3.23 (99; diganti versi HD Commons), 3.24 (101; diganti versi HD Commons), 3.27 (105); dirender 300 dpi dan dipotong bbox tinta; caption & baris kredit buku dipotong dari crop (kredit disimpan di sini).",
       "Matriks Asesmen & 20 Contoh Soal Resmi TKA Kimia SMA — Pusmendik Kemendikdasmen (soal resmi no. 6 dipakai berlabel penuh).",
       "Sukses Tes Kemampuan Akademik SMA - Saintek, Bab 1 'Struktur Atom, Sistem Periodik, Ikatan Kimia', hlm. 189-195 (berkas scan dilampirkan owner; teori dirujuk, latihan diadaptasi berlabel).",
       "Modul Tentor Gemilang — blok Kimia 'Struktur Atom Dan Ikatan Kimia' hlm. cetak 207-211 (basis internal).",
-      "Bagan penunjang orisinal tim kurikulum Gemilang via canvas DIPAKAI HANYA untuk topik yang tidak memiliki padanan gambar di buku sumber ber-kredit: panel ikatan ion/kovalen, kartu bentuk molekul VSEPR, dan rantai ikatan hidrogen (bab 1); semuanya ber-anatomi KAIDAH."
+      "Bagan penunjang orisinal tim kurikulum Gemilang via canvas DIPAKAI HANYA untuk topik yang tidak memiliki padanan gambar di buku sumber ber-kredit: panel ikatan ion/kovalen, kartu bentuk molekul VSEPR, dan rantai ikatan hidrogen (bab 1); semuanya ber-anatomi KAIDAH.",
+      "Grafik HD pengganti crop buku beraster rendah: 'First Ionization Energy.svg' (Glrx dkk., lisensi CC BY 3.0) dan 'Empirical atomic radius trends.svg' (Francois~frwiki, lisensi CC BY-SA 4.0) — Wikimedia Commons, diraster 3840 px lalu diunggah ke Supabase; kredit lisensi disimpan di sini sesuai kewajiban atribusi."
     ]
   },
   "bab": [
@@ -358,17 +359,17 @@
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-jarijari.png",
-          "keterangan": "Tabel periodik jari-jari atom asli dari buku: setiap unsur digambarkan sebagai titik berwarna yang ukurannya menyatakan jari-jari atom — titik-titik terbesar berkumpul di sisi kiri bawah setiap periode dan mengecil ke arah kanan, lalu membesar kembali pada periode berikutnya."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-jarijari-v2.png",
+          "keterangan": "Grafik garis tajam (sumber HD Wikimedia Commons): sumbu vertikal jari-jari atom empiris dalam pikometer (pm) 0-300, sumbu horizontal nomor atom 1-96; garis biru menghubungkan titik-titik data yang membentuk puncak sangat tinggi pada setiap logam alkali (berlabel merah Li, Na, K, Rb, Cs, Fr) lalu turun curam di dalam periode dan mendatar di unsur transisi."
         },
         {
           "jenis": "poin",
-          "judul": "🔍 Membaca gambar — pola ukuran titik",
+          "judul": "🔍 Membaca gambar — puncak alkali & lereng periode",
           "items": [
-            "Kolom paling kiri (logam alkali): titik terbesar pada setiap periode -> jari-jari maksimum di golongan IA.",
-            "Ke arah kanan satu baris: titik mengecil -> jari-jari menyusut karena muatan inti bertambah pada kulit yang sama.",
-            "Satu kolom dari atas ke bawah: titik membesar -> jari-jari bertambah karena jumlah kulit bertambah.",
-            "Pola besar-kecil ini ringkasan visual dua faktor yang bersaing: jumlah kulit vs muatan inti efektif."
+            "Puncak berlabel merah adalah logam alkali: Li ±145 pm, Na ±180 pm, K ±220 pm, Rb ±265 pm, Cs ±260 pm, Fr ±285 pm — jari-jari terbesar tiap periode ada di golongan IA.",
+            "Setelah puncak, garis turun curam ke kanan: muatan inti bertambah pada kulit yang sama menarik elektron lebih dekat.",
+            "Tinggi puncak naik dari Li ke Fr: setiap periode baru menambah satu kulit sehingga jari-jari melonjak.",
+            "Bagian hampir datar di tengah periode (unsur transisi) menunjukkan penurunan jari-jari yang melambat karena elektron masuk kulit dalam."
           ]
         },
         {
@@ -377,17 +378,17 @@
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-ei.png",
-          "keterangan": "Grafik asli energi ionisasi pertama terhadap nomor atom 1-36: sumbu vertikal energi ionisasi (kJ/mol), sumbu horizontal nomor atom; garis ungu menghubungkan titik-titik data yang membentuk puncak tajam pada setiap gas mulia (He, Ne, Ar, Kr) dan lembah dalam pada setiap logam alkali (Li, Na, K)."
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-ei-v2.png",
+          "keterangan": "Diagram pencar tajam (sumber HD Wikimedia Commons): sumbu vert energi ionisasi pertama dalam elektronvolt (eV) 0-30, sumbu horizontal nomor atom Z sampai 110; tiap titik berwarna sesuai kategori unsur pada legenda kanan (merah logam alkali, biru muda gas mulia, merah muda logam transisi, dst.); puncak bertanda He, Ne, Ar, Kr, Xe, Rn dan lembah bertanda Li, Na, K, Rb, Cs, Fr."
         },
         {
           "jenis": "poin",
-          "judul": "🔍 Membaca gambar — puncak dan lembah",
+          "judul": "🔍 Membaca gambar — puncak gas mulia & lembah alkali",
           "items": [
-            "Puncak tertinggi milik gas mulia (He paling tinggi): konfigurasi stabil sangat sulit dilepas elektronnya.",
-            "Lembah tepat setelah tiap puncak milik logam alkali: satu elektron terluar mudah lepas.",
-            "Di dalam satu periode garis menanjak bertahap: muatan inti naik sementara kulit tetap.",
-            "Pola puncak-lembah yang berulang setiap periode adalah wujud visual sifat periodik."
+            "Puncak tertinggi milik gas mulia (He ±24,6 eV paling tinggi): konfigurasi stabil sangat sulit dilepas elektronnya.",
+            "Lembah tepat setelah tiap puncak milik logam alkali: satu elektron terluar berjarak paling jauh dari inti sehingga mudah lepas.",
+            "Di dalam satu periode titik menanjak dari kiri ke kanan: muatan inti naik sementara kulit tetap.",
+            "Warna legenda menegaskan polanya: titik biru muda (gas mulia) selalu menutup periode dan titik merah (alkali) selalu membuka periode berikutnya."
           ]
         },
         {
