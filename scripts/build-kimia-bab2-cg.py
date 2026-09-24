@@ -1,0 +1,232 @@
+import json
+U='https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/'
+S=[]; Z=[]
+def a(j,**kw): S.append(dict(jenis=j,**kw))
+def z(sub,**kw):
+    kw['sumber']=f'Zona Berlatih subbab {sub} — Gemilang Drill'
+    Z.append(kw)
+
+# ===== A. LIMA HUKUM DASAR =====
+a('judul',teks='A. Lima Hukum Dasar Kimia: Aturan Main Massa & Volume')
+a('callout',tipe='info',judul='⚡ Konsep Kilat 60 detik',teks='Lavoisier: massa kekal. Proust: rasio unsur dalam senyawa tetap. Dalton: dua senyawa dari unsur sama -> rasio bulat. Gay-Lussac: volume gas bereaksi = rasio koefisien. Avogadro: volume sama = molekul sama (P,T sama).')
+a('paragraf',teks='🗺 Peta Besar: stoikiometri = seni menghitung zat bereaksi; lima hukum adalah pagar yang membuat hitungan itu sah. Bab ini mengalir: hukum (A) -> alat hitung mol (B) -> rumus senyawa (C) -> persamaan setara (D) -> pereaksi pembatas (E) -> larutan (F) -> gas (G). Soal TKA bab ini hampir selalu gabungan B+D+E.')
+a('paragraf',teks='Bayangkan dapur timbangan: bahan masuk = masakan + sisa (Lavoisier); resep kue selalu tepung:gula tetap (Proust); bila dua kue memakai tepung sama tetapi gula berbeda, selisih gulanya bulat sederhana (Dalton); untuk bahan berwujud uap, takaran gelas mengikuti perbandingan sederhana (Gay-Lussac); dan gelas uap sama besar berisi jumlah butir uap sama (Avogadro). Lima analogi itu persis lima hukum yang diuji.')
+a('paragraf',teks='Bank owner merangkum: Lavoisier = massa sebelum = massa sesudah (sistem tertutup); Proust = perbandingan massa unsur dalam satu senyawa selalu tetap; Dalton = bila massa satu unsur sama, massa unsur lain berbanding bilangan bulat; Gay-Lussac = perbandingan volume gas = koefisien; Avogadro = volume sama, P&T sama, berisi molekul sama.')
+a('gambar',url=U+'k2r-lima-hukum.jpg',keterangan='Lima panel potret asli ilmuwan: Lavoisier, Proust (medali), Dalton, Gay-Lussac, Avogadro; tiap panel berlabel nama dan satu kalimat hukumnya.')
+a('poin',judul='🔍 Membaca gambar — lima tokoh lima hukum',items=[
+ 'Lavoisier: timbangan tertutup tidak pernah bohong -> massa kekal.',
+ 'Proust: Cu:O dalam CuO selalu rasio sama dari sumber mana pun.',
+ 'Dalton: CO vs CO2 -> untuk C sama, O berbanding 1 : 2.',
+ 'Gay-Lussac: 1 L H2 + 1 L Cl2 -> 2 L HCl (rasio 1:1:2).',
+ 'Avogadro: balon sama besar = molekul sama banyak.'])
+a('tabelinfo',judul='Kapan memakai hukum nào (bank owner)',kolom=['Kasus soal','Hukum','Rumus pakai'],rows=[
+ {'k':'Massa sebelum vs sesudah','v':'Lavoisier','w':'m produk = m reaktan − sisa'},
+ {'k':'Kadar unsur dalam senyawa','v':'Proust','w':'m unsur = (ΣAr unsur ÷ Mr) × m senyawa'},
+ {'k':'Dua senyawa unsur sama','v':'Dalton','w':'bandingkan massa unsur kedua setelah unsur pertama disamakan'},
+ {'k':'Volume gas bereaksi','v':'Gay-Lussac','w':'V : V = koefisien : koefisien'},
+ {'k':'Volume vs jumlah molekul','v':'Avogadro','w':'V sama -> n sama (P,T sama)'}])
+a('contoh',teks='Contoh terpecah langkah — Proust (bank owner). Soal: dalam 15,9 g tembaga(I) sulfida Cu₂S terdapat tembaga sebanyak .... (Ar Cu = 63,5; S = 32). Langkah 1: Mr Cu₂S = 2(63,5) + 32 = 159. Langkah 2: fraksi Cu = 127 ÷ 159. Langkah 3: m Cu = (127 ÷ 159) × 15,9 = 12,7 g. Jalur Cara Gemilang: CG-PROUST: kalikan massa senyawa dengan (massa unsur ÷ Mr).')
+a('callout',tipe='gemilang',judul='👑 CG-HUKUM: baca kata kunci, pilih pagar',teks='(1) "massa total/sisa" -> Lavoisier. (2) "kadar/persentase unsur" -> Proust. (3) "dua senyawa unsur sama" -> Dalton. (4) "liter gas bereaksi" -> Gay-Lussac. (5) "volume sama/molekul sama" -> Avogadro.',items=['Tandai kata kunci soal.','Tulis hukumnya di pinggir.','Baru hitung dengan rumus pagar itu.','Contoh kilat: "2 L X + 10 L O2" -> langsung Gay-Lussac.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Proust sering dijebak dengan "senyawa berbeda": rasio tetap hanya dalam SATU senyawa; membandingkan dua senyawa = Dalton. Dan hukum volume hanya berlaku untuk GAS pada P&T sama — cairan/padatan tidak ikut.')
+z('A',soal='Pembakaran 10 g CaCO3 menghasilkan 5,6 g CaO dan gas CO2. Massa CO2 adalah ....',tipe='pg',opsi=['2,4 g','4,4 g','5,6 g','10 g'],jawaban=1,pembahasan='Jalur konsep: Lavoisier: m CO2 = 10 − 5,6 = 4,4 g. Jalur Cara Gemilang: CG-HUKUM kata kunci "massa sisa" -> Lavoisier, kurangkan.')
+z('A',soal='Massa hidrogen yang bersenyawa dengan 8 g oksigen dalam air (H:O = 1:8) adalah ....',tipe='pg',opsi=['0,5 g','1 g','2 g','4 g'],jawaban=1,pembahasan='Jalur konsep: Proust rasio 1:8 -> m H = 8 ÷ 8 = 1 g. Jalur Cara Gemilang: bagi massa O dengan 8.')
+z('A',soal='Pada P&T sama, 2 L N2 bereaksi dengan 3 L H2? Tidak: menurut Gay-Lussac untuk N2 + 3H2 -> 2NH3, volume H2 yang diperlukan bagi 2 L N2 adalah ....',tipe='pg',opsi=['2 L','3 L','4 L','6 L'],jawaban=3,pembahasan='Jalur konsep: V H2 = 3 × V N2 = 6 L. Jalur Cara Gemilang: kali koefisien.')
+
+# ===== B. KONSEP MOL =====
+a('judul',teks='B. Konsep Mol & Massa Molar: Jembatan Semua Hitungan')
+a('callout',tipe='info',judul='⚡ Konsep Kilat 60 detik',teks='n = m ÷ M = V(STP) ÷ 22,4 = N ÷ 6,02×10²³ = Molaritas × V(liter). Semua soal stoikiometri singgah di n dulu.')
+a('paragraf',teks='🗺 Peta Besar: mol adalah mata uang bersama kimia: gram, liter gas, jumlah partikel, dan liter larutan semua bisa ditukar ke mol lalu ke sesamanya. Kuasai empat kurs penukaran = menguasai 80% soal bab ini.')
+a('paragraf',teks='Bank owner: massa molar (Mm) = Ar atau Mr dalam gram/mol; 1 mol = 6,02 × 10²³ partikel; pada STP (0 °C, 1 atm) 1 mol gas = 22,4 L; pada suhu-tekanan lain pakai PV = nRT atau perbandingan. Contoh bank: 3,4 g NH3 (Mr 17) pada STP -> n = 0,2 mol -> V = 4,48 L.')
+a('gambar',url=U+'k2-peta-mol.jpg',keterangan='Bagan penunjang: lingkaran n (mol) di tengah dengan empat kartu besaran (massa, volume STP, jumlah partikel, molaritas) terhubung panah kali/bagi berlabel M, 22,4, N_A, dan V.')
+a('poin',judul='🔍 Membaca gambar — empat kurs penukaran',items=[
+ 'gram -> mol: bagi M; mol -> gram: kali M.',
+ 'mol -> liter STP: kali 22,4; sebaliknya bagi.',
+ 'mol -> partikel: kali 6,02×10²³; perhatikan atom vs molekul.',
+ 'larutan: n = M × V(liter); pengenceran M1V1 = M2V2.'])
+a('tabelinfo',judul='Kurs penukaran mol (bank owner)',kolom=['Dari','Ke mol','Contoh'],rows=[
+ {'k':'Massa m gram','v':'n = m ÷ M','w':'3,4 g NH3 -> 0,2 mol'},
+ {'k':'Volume gas STP','v':'n = V ÷ 22,4','w':'4,48 L -> 0,2 mol'},
+ {'k':'Jumlah partikel','v':'n = N ÷ N_A','w':'1,204×10²⁴ -> 2 mol'},
+ {'k':'Larutan','v':'n = M × V','w':'50 mL 2 M -> 0,1 mol'}])
+a('contoh',teks='Contoh terpecah langkah — partikel (bank owner). Soal: jumlah atom H dalam 0,40 mol H2S? Langkah 1: mol H = 2 × 0,40 = 0,80 mol. Langkah 2: N = 0,80 × 6,02×10²³ = 4,82×10²³ atom. Jalur Cara Gemilang: CG-MOL: kalikan indeks atom SEBELUM N_A.')
+a('callout',tipe='gemilang',judul='👑 CG-MOL: satu lingkaran empat pintu',teks='n = m/M = V/22,4 = N/N_A = M×V. Masuk pintu mana pun, keluar pintu mana pun — selalu lewat n.',items=['Tulis n dulu di kertas.','Tempel satuan pada tiap angka.','Cek STP atau bukan sebelum pakai 22,4.','Contoh kilat: 8 g O2 -> 0,25 mol -> 5,6 L STP.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='22,4 L/mol HANYA di STP (0 °C, 1 atm). Soal "25 °C, 1 atm" memakai 24 L/mol atau PV = nRT. Dan partikel: soal minta ATOM tetapi kamu hitung MOLEKUL = jawaban salah faktor 2-3.')
+z('B',soal='Volume 3,4 g NH3 (Mr 17) pada STP adalah ....',tipe='pg',opsi=['2,24 L','4,48 L','6,72 L','8,96 L'],jawaban=1,pembahasan='Jalur konsep: n = 0,2 mol; V = 0,2 × 22,4 = 4,48 L (bank owner sama). Jalur Cara Gemilang: CG-MOL pintu massa -> pintu volume.')
+z('B',soal='Jumlah molekul dalam 4,4 g CO2 (Mr 44) adalah ....',tipe='pg',opsi=['6,02×10²²','6,02×10²³','1,2×10²³','3,01×10²²'],jawaban=0,pembahasan='n = 0,1 mol -> 6,02×10²² molekul.')
+z('B',soal='Pada 25 °C 1 atm, 1 mol gas menempati sekitar 24 L; maka 0,5 mol menempati 12 L.',tipe='pg',opsi=['Benar','Salah'],jawaban=0,pembahasan='V = n × 24 = 12 L pada kondisi itu (bukan 22,4).')
+
+# ===== C. RUMUS EMPIRIS-MOLEKUL & HIDRAT =====
+a('judul',teks='C. Rumus Empiris, Rumus Molekul & Hidrat')
+a('callout',tipe='info',judul='⚡ Konsep Kilat 60 detik',teks='RE = rasio mol terkecil dari persen massa; RM = RE × n dengan n = Mr ÷ Mr RE. Hidrat: air kristal ikut ditimbang (CuSO4·5H2O: Mr 250).')
+a('paragraf',teks='🗺 Peta Besar: bab ini menerjemahkan "resep persen" menjadi rumus; soal resmi Pusmendik #12 dan contoh bank (asam maleat) persis alur ini: persen -> mol -> rasio -> RE -> kali n -> RM.')
+a('paragraf',teks='Contoh bank owner (asam maleat): 41,39% C, 3,47% H, 55,14% O, Mr 116,1. Mol per 100 g: C 3,449; H 3,443; O 3,446 -> rasio 1:1:1 -> RE CHO (Mr 29); n = 116,1 ÷ 29 = 4 -> RM C4H4O4. Hidrat kebalikannya: air dilepas/ditimbang untuk mencari x pada garam·xH2O.')
+a('gambar',url=U+'k2r-hidrat.jpg',keterangan='Foto asli kristal chalcanthite CuSO4·5H2O biru transparan menumpuk di atas bubuk biru muda; menunjukkan air kristal terikat dalam kisi.')
+a('poin',judul='🔍 Membaca gambar — kristal ber-air',items=[
+ 'Warna biru = air terikat; dipanaskan -> putih (anhidrat).',
+ 'Mr hidrat = Mr garam + x·18.',
+ 'x dicari dari selisih massa sebelum-sesudah pemanasan ÷ 18.',
+ 'Hidrat adalah kasus Proust: rasio air:garam tetap.'])
+a('contoh',teks='Contoh terpecah langkah — asam maleat (bank owner). Langkah 1: mol per 100 g: C 41,39÷12,001 = 3,449; H 3,47÷1,008 = 3,443; O 55,14÷16 = 3,446. Langkah 2: bagi terkecil -> 1:1:1 -> RE = CHO (Mr 29). Langkah 3: n = 116,1 ÷ 29 = 4. Langkah 4: RM = C4H4O4. Jalur Cara Gemilang: CG-RE: persen->mol->rasio->kali n.')
+a('callout',tipe='gemilang',judul='👑 CG-RE: 4 anak tangga',teks='Persen -> mol (÷Ar) -> rasio (÷terkecil) -> RM (× n = Mr÷MrRE).',items=['Anggap sampel 100 g.','Bagi Ar masing-masing.','Bagi nilai terkecil -> RE.','Kali n -> RM; hidrat: x = mol air ÷ mol garam.','Contoh kilat: glukosa 40/6,7/53,3 Mr 180 -> CH2O ×6 = C6H12O6.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='RE = RM hanya bila n = 1; kunci bank soal resmi #12 justru menghukum jawaban yang menyamakan keduanya tanpa memeriksa Mr. Hidrat: lupa mengalikan x·18 = massa meleset jauh.')
+z('C',soal='Rumus empiris senyawa dengan rasio mol C:H:O = 1:2:1 dan Mr 90 adalah ....',tipe='pg',opsi=['CH2O','C2H4O2','C3H6O3','C4H8O4'],jawaban=2,pembahasan='MrRE 30; n = 90÷30 = 3 -> C3H6O3.')
+z('C',soal='Sebanyak 24,6 g MgSO4·xH2O dipanaskan hingga massa tetap 12 g (Mr MgSO4 = 120). Nilai x adalah ....',tipe='pg',opsi=['4','5','6','7'],jawaban=3,pembahasan='Massa air = 12,6 g -> 0,7 mol; mol garam = 12÷120 = 0,1 -> x = 7.')
+z('C',soal='Rumus molekul bensena C6H6 memiliki rumus empiris CH.',tipe='pg',opsi=['Benar','Salah'],jawaban=0,pembahasan='C6H6 ÷ 6 = CH.')
+
+# ===== D. PENYETARAAN & VOLUME GAS =====
+a('judul',teks='D. Menyetarakan Persamaan & Hukum Volume Gas')
+a('callout',tipe='info',judul='⚡ Konsep Kilat 60 detik',teks='Setarakan: logam/nonlogam dulu, H & O terakhir; koefisien = rasio mol = rasio volume gas (P,T sama).')
+a('paragraf',teks='🗺 Peta Besar: persamaan setara adalah rel tempat kereta stoikiometri berjalan; tanpanya semua hitungan bab ini anjlok. Bagan buku (hal 161 bank) memberi kode warna: koefisien merah muda, wujud hijau, panah arah reaksi.')
+a('paragraf',teks='Bank owner contoh: 2 L senyawa X (C & H) dibakar dengan 10 L O2 menghasilkan 8 L uap air dan CO2. Gay-Lussac: V = mol. H: 8 L H2O -> 16 H -> per 2 L X = 8 H; O: 20 atom = 2·V CO2 + 8 -> V CO2 = 6 -> per X = 3 C. Rumus X = C3H8.')
+a('gambar',url=U+'k2r-persamaan-reaksi.png',keterangan='Bagan asli buku: persamaan 6CO2 + 6H2O -> 1C6H12O6 + 6O2 dengan koefisien disorot merah muda, wujud (g)/(l)/(s) hijau, empat kotak keterangan (reaktan, produk, arah panah, definisi koefisien).')
+a('poin',judul='🔍 Membaca gambar — anatomi persamaan',items=[
+ 'Koefisien = pengali mol seluruh atom rumus itu.',
+ 'Wujud (s)(l)(g)(aq) menentukan boleh tidaknya hukum volume.',
+ 'Panah = arah reaksi, bukan tanda sama dengan.',
+ 'Setara = jumlah tiap unsur kiri = kanan.'])
+a('contoh',teks='Contoh terpecah langkah — volume gas (bank owner). Soal: 3H2 + N2 -> 2NH3; V N2 = 1,0 L maka V NH3? Langkah 1: rasio koefisien NH3:N2 = 2:1. Langkah 2: V NH3 = 2 × 1,0 = 2,0 L. Jalur Cara Gemilang: CG-VOLUME: kali rasio koefisien, selesai.')
+a('callout',tipe='gemilang',judul='👑 CG-SETARA: L-H-O terakhir',teks='Setarakan Logam lalu nonlogam utama; H kemudian; O paling akhir; pecahan -> kalikan semua.',items=['Tulis ulang persamaan.','Kunci atom muncul sekali di tiap ruas.','H lalu O menyusul.','Cek inventaris atom.','Contoh kilat: C3H8 + 5O2 -> 3CO2 + 4H2O.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Mengubah INDEKS (angka kecil) saat menyetarakan = mengganti zat = salah total. Dan hukum volume tidak berlaku bila salah satu pereaksi bukan gas pada kondisi itu.')
+z('D',soal='Koefisien a,b,c pada a SO2 + b O2 -> c SO3 adalah ....',tipe='pg',opsi=['2,1,2','1,1,1','2,2,3','4,2,4'],jawaban=0,pembahasan='2SO2 + O2 -> 2SO3 (soal resmi #7 kunci C = 2,1,2).')
+z('D',soal='Pembakaran 1 L propana C3H8 memerlukan O2 sebanyak ....',tipe='pg',opsi=['3 L','4 L','5 L','6 L'],jawaban=2,pembahasan='C3H8 + 5O2 -> 3CO2 + 4H2O -> 5 L.')
+z('D',soal='Pada persamaan setara, jumlah muatan dan jumlah atom masing-masing unsur sama di kedua ruas.',tipe='pg',opsi=['Benar','Salah'],jawaban=0,pembahasan='Itulah definisi setara (untuk reaksi ion, muatan juga setara).')
+
+# ===== E. STOIKIOMETRI REAKSI & PEREAKSI PEMBATAS =====
+a('judul',teks='E. Stoikiometri Reaksi & Pereaksi Pembatas (MRS)')
+a('callout',tipe='info',judul='⚡ Konsep Kilat 60 detik',teks='Pembatas = mol÷koefisien terkecil; semua produk dihitung dari pembatas; tabel MRS (Mula-mula, Bereaksi, Sisa) merapikan pikiran.')
+a('paragraf',teks='🗺 Peta Besar: ini jantung bab: soal resmi #11 (botol AgNO3/NaCl), #16 (Mg+HCl), dan contoh bank (Na + H2O) semua berujung pada satu jurus: temukan pembatas, lalu ikuti rasio.')
+a('paragraf',teks='Bank owner contoh: 0,1 mol Na + 0,2 mol H2O: 2Na + 2H2O -> 2NaOH + H2; rasio Na:H2O = 1:1 -> keduanya habis? mol÷koef: Na 0,1÷2 = 0,05; H2O 0,2÷2 = 0,1 -> Na pembatas; H2 = ½ × 0,1 = 0,05 mol -> V STP = 1,12 L.')
+a('gambar',url=U+'k2r-mg.jpg',keterangan='Foto asli pita magnesium terbakar menyilaukan di atas lempeng gelap dengan serbuk putih MgO; konteks reaksi Mg + O2 dan Mg + HCl.')
+a('poin',judul='🔍 Membaca gambar — satu foto dua reaksi',items=[
+ 'Nyala putih = Mg + O2 -> MgO (massa bertambah = O masuk).',
+ 'Dalam HCl: Mg + 2HCl -> MgCl2 + H2 (gelembung = H2).',
+ 'Pembatas menentukan berapa H2 maksimal.',
+ 'Sisa pereaksi = awal − bereaksi (baris S tabel MRS).'])
+a('tabelinfo',judul='Tabel MRS contoh Mg + HCl (soal resmi #16)',kolom=['Tahap','Mg & HCl (mol)','MgCl2 & H2 (mol)'],rows=[
+ {'k':'Mula-mula','v':'Mg 1; HCl 3','w':'0; 0'},
+ {'k':'Bereaksi','v':'Mg 1; HCl 2','w':'1; 1'},
+ {'k':'Sisa','v':'Mg 0; HCl 1','w':'1; 1'}])
+a('contoh',teks='Contoh terpecah langkah — Na + H2O (bank owner). Langkah 1: mol÷koef: Na 0,05 vs H2O 0,1 -> Na pembatas. Langkah 2: H2 = ½ × mol Na = 0,05. Langkah 3: V STP = 0,05 × 22,4 = 1,12 L. Jalur Cara Gemilang: CG-PEMBATAS: bagi koefisien, ambil terkecil, produk ikuti pembatas.')
+a('callout',tipe='gemilang',judul='👑 CG-PEMBATAS: bagi-kecil-ikut',teks='(1) bagi mol tiap pereaksi dengan koefisiennya; (2) yang TERKECIL = pembatas; (3) semua produk = pembatas × (koef produk ÷ koef pembatas).',items=['Tulis mol awal semua pereaksi.','Bagi koefisien, lingkari terkecil.','Hitung produk dari pembatas.','Sisa = awal − bereaksi.','Contoh kilat: #16: Mg 1÷1 < HCl 3÷2 -> Mg pembatas -> H2 22,4 L.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='"Pereaksi berlebih" bukan pembatas walau molnya besar: bandingkan SETELAH dibagi koefisien. Soal resmi #16 menjebak dengan HCl 3 mol yang terdengar besar tetapi justru berlebih.')
+z('E',soal='28 g Fe (Ar 56) + 20 g S (Ar 32) -> FeS. Pereaksi pembatasnya ....',tipe='pg',opsi=['Fe','S','Keduanya habis','Tidak ada reaksi'],jawaban=0,pembahasan='n Fe 0,5; n S 0,625; rasio 1:1 -> Fe pembatas; sisa S 0,125 mol = 4 g.')
+z('E',soal='Pada reaksi Mg + 2HCl, bila Mg 1 mol dan HCl 3 mol maka HCl yang bereaksi 2 mol.',tipe='pg',opsi=['Benar','Salah'],jawaban=0,pembahasan='Mg pembatas 1 mol -> HCl bereaksi 2 × 1 = 2 mol (sisa 1).')
+z('E',soal='Volume H2 (STP) dari 2,4 g Mg + HCl berlebih adalah ....',tipe='pg',opsi=['1,12 L','2,24 L','4,48 L','22,4 L'],jawaban=1,pembahasan='n Mg 0,1 -> H2 0,1 -> 2,24 L.')
+
+# ===== F. KONSENTRASI LARUTAN =====
+a('judul',teks='F. Konsentrasi Larutan: Molaritas & Pengenceran')
+a('callout',tipe='info',judul='⚡ Konsep Kilat 60 detik',teks='M = n ÷ V(liter); pengenceran M1V1 = M2V2; mol zat terlarut tidak berubah oleh air.')
+a('paragraf',teks='🗺 Peta Besar: larutan adalah wadah reaksi paling sering di lab & soal (soal resmi #11 memakai mL × M = mmol). Kuasai satu identitas: n = M × V.')
+a('paragraf',teks='Analogi sirup: menambah air mengubah kepekatan tetapi tidak jumlah gula — karena itu M1V1 = M2V2 sah. Campuran dua larutan zat sama: M camp = (M1V1 + M2V2) ÷ (V1 + V2).')
+a('gambar',url=U+'k2-konsentrasi.jpg',keterangan='Bagan penunjang dua gelas: titik zat terlarut sama banyak (12) tetapi volume larutan kanan separuh sehingga molaritasnya dua kali; panah "air diuapkan".')
+a('poin',judul='🔍 Membaca gambar — kepekatan vs volume',items=[
+ 'Titik = mol zat terlarut: tidak berubah oleh penguapan.',
+ 'Volume separuh -> M dua kali.',
+ 'M memakai volume LARUTAN, bukan pelarut.',
+ 'mmol = M × mL (satuan praktis soal).'])
+a('contoh',teks='Contoh terpecah langkah — pengenceran. Soal: 50 mL NaCl 2 M diencerkan menjadi 200 mL. Langkah 1: mmol = 2 × 50 = 100. Langkah 2: M = 100 ÷ 200 = 0,5 M. Jalur Cara Gemilang: CG-ENCER: mmol tetap, bagi volume akhir.')
+a('callout',tipe='gemilang',judul='👑 CG-ENCER: mmol abadi',teks='n (mmol) tidak berubah oleh air: M1V1 = M2V2; campuran: jumlahkan mmol lalu bagi total V.',items=['Hitung mmol awal.','Tambah air? V akhir membesar.','M baru = mmol ÷ V akhir.','Contoh kilat: 100 mmol ÷ 200 mL = 0,5 M.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Satuan: M × mL = mmol, BUKAN mol; lupa konversi = jawaban salah 1000×. Campuran zat BERBEDA yang bereaksi: hitung reaksi dulu, baru konsentrasi sisa.')
+z('F',soal='Molaritas larutan 0,4 mol dalam 250 mL adalah ....',tipe='pg',opsi=['0,8 M','1,6 M','1,0 M','2,0 M'],jawaban=1,pembahasan='M = 0,4 ÷ 0,25 = 1,6 M.')
+z('F',soal='100 mL HCl 1 M + 100 mL HCl 3 M menghasilkan M = 2 M.',tipe='pg',opsi=['Benar','Salah'],jawaban=0,pembahasan='mmol = 100 + 300 = 400 ÷ 200 mL = 2 M.')
+z('F',soal='mmol AgNO3 dalam 10 mL larutan 1 M adalah ....',tipe='isian',jawaban='10',hintFormat='Tulis angka bulat',pembahasan='mmol = M × mL = 1 × 10 = 10 (kunci soal resmi #11 memakai ini).')
+
+# ===== G. GAS: STP & NON-STP =====
+a('judul',teks='G. Volume Gas: STP, Non-STP, dan PV = nRT')
+a('callout',tipe='info',judul='⚡ Konsep Kilat 60 detik',teks='STP (0 °C, 1 atm): V = n × 22,4. Kondisi lain: PV = nRT (R = 0,082) atau perbandingan P1V1/T1 = P2V2/T2.')
+a('paragraf',teks='🗺 Peta Besar: penutup bab: mengubah mol menjadi liter pada kondisi apa pun; soal resmi #16 menyebut STP eksplisit, sedangkan prediksi sering memakai 25 °C (24 L/mol).')
+a('paragraf',teks='Bank owner: pada STP 1 mol gas = 22,4 L; pada suhu-tekanan lain gunakan PV = nRT; keadaan sama: V1/V2 = n1/n2 (Avogadro). Contoh: 0,2 mol NH3 STP = 4,48 L; pada 27 °C 1 atm ≈ 0,2 × 24,6 = 4,92 L.')
+a('gambar',url=U+'k2r-balon.jpg',keterangan='Foto asli gerombol balon helium warna-warni berukuran sebanding; ilustrasi volume molar sama untuk gas apa pun pada P&T sama.')
+a('poin',judul='🔍 Membaca gambar — balon adil',items=[
+ 'Ukuran sama = mol sama (P,T sama).',
+ 'Massa berbeda mengikuti Mr.',
+ 'STP: 22,4 L/mol; ruang (25 °C): ±24 L/mol.',
+ 'PV = nRT jembatan semua kondisi.'])
+a('contoh',teks='Contoh terpecah langkah — non-STP. Soal: V untuk 0,5 mol gas pada 2 atm & 27 °C? Langkah 1: T = 300 K. Langkah 2: V = nRT ÷ P = 0,5 × 0,082 × 300 ÷ 2 = 6,15 L. Jalur Cara Gemilang: CG-GAS: susun P,V,n,T lalu isolasi yang ditanya.')
+a('callout',tipe='gemilang',judul='👑 CG-GAS: 22,4 hanya di STP',teks='Cek kondisi dulu: STP -> ×22,4; 25 °C 1 atm -> ×24; selain itu PV = nRT.',items=['Tulis kondisi soal.','Konversi °C ke K.','Pilih kurs yang tepat.','Contoh kilat: 0,25 mol STP = 5,6 L.'])
+a('callout',tipe='peringatan',judul='Jebakan ujian',teks='Lupa menambah 273 pada suhu = kesalahan paling mahal bab ini. Dan R = 0,082 hanya bila P dalam atm & V dalam liter.')
+z('G',soal='Volume 0,25 mol gas pada STP adalah ....',tipe='pg',opsi=['5,6 L','11,2 L','22,4 L','2,24 L'],jawaban=0,pembahasan='0,25 × 22,4 = 5,6 L.')
+z('G',soal='Pada 27 °C dan 1 atm, 1 mol gas ≈ 24 L.',tipe='pg',opsi=['Benar','Salah'],jawaban=0,pembahasan='V = nRT/P = 1 × 0,082 × 300 = 24,6 L ≈ 24 L.')
+z('G',soal='Uraikan: 2 L gas X (C dan H) dibakar sempurna dengan 10 L O2 menghasilkan 8 L uap air dan CO2. Tentukan rumus X!',tipe='uraian',
+  jawaban='Rubrik: H: 8 L H2O -> 16 atom H -> per 2 L X = 8 H. O: 20 atom O masuk = 2·V(CO2) + 8 -> V CO2 = 6 L -> per X = 3 C. Rumus X = C3H8 (kunci bank owner sama).',
+  pembahasan='Jalur konsep: Gay-Lussac menjadikan volume = mol; setarakan atom H dan O. Jalur Cara Gemilang: CG-VOLUME + inventaris atom.')
+
+Q = Z + [
+ {'soal':'Dalam 15,9 gram senyawa tembaga(I) sulfida (Cu2S) terdapat tembaga sebanyak .... (Ar Cu = 63,5; S = 32)','tipe':'pg',
+  'opsi':['6,35 g','9,55 g','12,7 g','15,9 g','3,2 g'],'jawaban':2,
+  'pembahasan':'Jalur konsep: Mr Cu2S = 159; fraksi Cu = 127/159; m Cu = 127/159 × 15,9 = 12,7 g. Jalur Cara Gemilang: CG-PROUST satu kali kali.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 13 (hukum Proust)'},
+ {'soal':'Pada suhu dan tekanan tertentu, sebanyak 2 liter suatu senyawa X yang hanya mengandung atom C dan H dibakar sempurna dengan 10 L gas oksigen menghasilkan gas karbon dioksida dan uap air. Jika uap air yang dihasilkan sebanyak 8 liter, rumus kimia senyawa X adalah ....','tipe':'pg',
+  'opsi':['C2H6','C3H4','C3H8','C4H8','CH4'],'jawaban':2,
+  'pembahasan':'Jalur konsep: V H2O 8 L -> H 16 -> per 2 L X: 8 H; O masuk 20 atom = 2·V CO2 + 8 -> V CO2 = 6 -> per X: 3 C -> C3H8. Jalur Cara Gemilang: CG-VOLUME + inventaris atom dua baris.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 14 (Gay-Lussac)'},
+ {'soal':'Pada suhu 0 °C dan tekanan 1 atm, volume untuk 3,4 gram gas NH3 (Mr = 17) adalah ....','tipe':'pg',
+  'opsi':['2,24 L','4,48 L','6,72 L','8,96 L'],'jawaban':1,
+  'pembahasan':'Jalur konsep: n = 3,4 ÷ 17 = 0,2 mol; V = 0,2 × 22,4 = 4,48 L. Jalur Cara Gemilang: CG-MOL pintu massa -> pintu STP.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 17 (STP)'},
+ {'soal':'Asam maleat memiliki komposisi 41,39% karbon, 3,47% hidrogen, dan 55,14% oksigen dengan massa molar 116,1 g/mol. Rumus molekul asam maleat adalah ....','tipe':'pg',
+  'opsi':['CHO','C2H2O2','C4H4O4','C6H6O6'],'jawaban':2,
+  'pembahasan':'Jalur konsep: mol per 100 g: 3,449 : 3,443 : 3,446 -> 1:1:1 -> RE CHO (29); n = 116,1 ÷ 29 = 4 -> C4H4O4. Jalur Cara Gemilang: CG-RE empat anak tangga.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 18 (RE/RM)'},
+ {'soal':'Sebanyak 0,1 mol logam natrium direaksikan dengan 0,2 mol air menurut reaksi 2Na + 2H2O -> 2NaOH + H2. Volume H2 pada STP adalah ....','tipe':'pg',
+  'opsi':['0,56 L','1,12 L','2,24 L','4,48 L'],'jawaban':1,
+  'pembahasan':'Jalur konsep: mol÷koef Na 0,05 < H2O 0,1 -> Na pembatas; H2 = 0,05 mol -> 1,12 L. Jalur Cara Gemilang: CG-PEMBATAS bagi-kecil-ikut.',
+  'sumber':'Verbatim contoh bank owner 01 hlm 19 (MRS)'},
+ {'soal':'Gas sulfur dioksida (SO2) di udara dapat mengalami reaksi oksidasi menghasilkan sulfur trioksida (SO3): a SO2 + b O2 -> c SO3. Nilai a, b, c berturut-turut adalah ....','tipe':'pg',
+  'opsi':['4,3,2','2,3,4','2,1,2','2,1,3'],'jawaban':2,
+  'pembahasan':'Jalur konsep: setarakan S (a = c) lalu O: 2a + 2b = 2c -> a 2, b 1, c 2. Jalur Cara Gemilang: CG-SETARA L-H-O.',
+  'sumber':'Contoh Soal Resmi TKA Kimia no. 7 — Pusmendik (kunci resmi C)'},
+ {'soal':'Seorang murid akan menghasilkan 1,435 g AgCl dari larutan AgNO3 dan NaCl (gambar empat botol: A AgNO3 1 M, B AgNO3 2 M, C NaCl 1 M, D NaCl 2 M). Tentukan TEPAT/TIDAK TEPAT tiap komposisi!','tipe':'tabel',
+  'kolom':['Tepat','Tidak Tepat'],
+  'baris':['5 mL Botol A + 5 mL Botol C','10 mL Botol A + 5 mL Botol D','10 mL Botol B + 10 mL Botol D'],
+  'jawaban':[1,0,1],
+  'pembahasan':'Jalur konsep: target 10 mmol AgCl butuh 10 mmol tiap ion. A+C: 5+5 mmol -> tidak tepat. A+D: 10 + 10 mmol -> tepat. B+D: 20+20 mmol -> tidak tepat. Jalur Cara Gemilang: CG-MOL mmol = M × mL, cocokkan 1:1.',
+  'soalGambar':U+'k2-soal11-botol-reaktan.png',
+  'pembahasanGambar':U+'k2-soal11-pembahasan.png',
+  'pembahasanGambarKet':'🔍 Lingkaran merah pada Botol A & D: 10 mL × 1 M dan 5 mL × 2 M sama-sama 10 mmol -> rasio pas.',
+  'sumber':'Contoh Soal Resmi TKA Kimia no. 11 — Pusmendik (kunci: Tidak Tepat, Tepat, Tidak Tepat)'},
+ {'soal':'Senyawa organik limbah makanan: 40% C, 6,7% H, sisanya O; massa molar 180 g/mol. Peneliti menyimpulkan rumus empiris DAN rumus molekulnya CH2O. Apakah kesimpulan itu benar?','tipe':'pg',
+  'opsi':['Benar, RE = RM','Benar, RM harus sama dengan RE','Salah, rasio mol tidak sesuai','Salah, massa molar menunjukkan RM = C6H12O6'],'jawaban':3,
+  'pembahasan':'Jalur konsep: RE CH2O (30); n = 180 ÷ 30 = 6 -> RM C6H12O6; kesimpulan peneliti salah. Jalur Cara Gemilang: CG-RE anak tangga keempat wajib.',
+  'sumber':'Contoh Soal Resmi TKA Kimia no. 12 — Pusmendik (kunci resmi D)'},
+ {'soal':'24 g Mg (Ar 24) + 1 L HCl 3 M menurut Mg + 2HCl -> MgCl2 + H2 pada STP. Pernyataan benar: (1) mol Mg bereaksi 1; (2) V H2 22,4 L; (3) HCl pembatas; (4) HCl bereaksi 3 mol; (5) MgCl2 2 mol.','tipe':'pgMulti',
+  'opsi':['(1) dan (2)','(1) dan (3)','(2) dan (4)','(3) dan (5)','(1), (2), dan (4)'],'jawaban':[0],
+  'pembahasan':'Jalur konsep: Mg 1 mol vs HCl 3 mol; ÷koef: 1 vs 1,5 -> Mg pembatas; H2 = 1 mol = 22,4 L; HCl bereaksi 2; MgCl2 1. Jadi (1)&(2). Jalur Cara Gemilang: CG-PEMBATAS bagi-kecil-ikut.',
+  'pembahasanGambar':U+'k2-mrs-pembahasan.png',
+  'pembahasanGambarKet':'🔍 Lingkaran merah baris SISA: HCl masih 1 mol -> HCl berlebih, Mg pembatas.',
+  'sumber':'Contoh Soal Resmi TKA Kimia no. 16 — Pusmendik (kunci resmi A dan B)'},
+ {'soal':'Pasangkan hukum dasar dengan contoh penerapannya!','tipe':'jodoh',
+  'premis':['Lavoisier','Proust','Dalton','Gay-Lussac','Avogadro'],
+  'opsi':['Massa abu + gas = massa bahan terbakar','Kadar Cu dalam CuO selalu 79,9%','O pada CO dan CO2 berbanding 1:2 untuk C sama','1 L N2 + 3 L H2 -> 2 L NH3','Balon 1 L H2 dan 1 L O2 berisi molekul sama banyak','Massa jenis air selalu 1 g/mL'],
+  'jawaban':[0,1,2,3,4],
+  'pembahasan':'Pengecoh: massa jenis air = sifat fisika, bukan hukum kombinasi kimia.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — pemetaan hukum)'},
+ {'soal':'Jumlah mol oksigen yang dibutuhkan untuk membakar sempurna 0,5 mol propana C3H8 adalah ....','tipe':'isian',
+  'jawaban':'2,5','hintFormat':'Tulis angka desimal dengan koma bila perlu',
+  'pembahasan':'C3H8 + 5O2 -> 3CO2 + 4H2O; O2 = 5 × 0,5 = 2,5 mol. Jalur Cara Gemilang: kali koefisien.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — rasio koefisien)'},
+ {'soal':'Tentukan BENAR/SALAH: (a) pada pengenceran mol zat terlarut tetap; (b) M campuran = rata-rata sederhana dua M; (c) mmol = M × mL.','tipe':'tabel',
+  'kolom':['Benar','Salah'],
+  'baris':['Pada pengenceran mol zat terlarut tetap.','Molaritas campuran = rata-rata sederhana dua molaritas.','mmol = M × mL.'],
+  'jawaban':[0,1,0],
+  'pembahasan':'(a) benar; (b) salah: M camp = total mmol ÷ total V (rata-rata tertimbang volume); (c) benar.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — konsentrasi)'},
+ {'soal':'Uraikan: 10 g CaCO3 dipanaskan terurai menjadi CaO dan CO2. (a) tulis persamaan setara; (b) hitung massa CaO dan CO2; (c) hukum apa yang berlaku dan mengapa!','tipe':'uraian',
+  'jawaban':'Rubrik: (a) CaCO3 -> CaO + CO2 (sudah setara). (b) n = 10 ÷ 100 = 0,1 mol -> CaO 0,1 × 56 = 5,6 g; CO2 0,1 × 44 = 4,4 g. (c) Hukum Lavoisier: 5,6 + 4,4 = 10 g = massa awal.',
+  'pembahasan':'Jalur konsep tiga langkah; Jalur Cara Gemilang: CG-HUKUM + CG-MOL berurutan.',
+  'sumber':'Gemilang Drill (latihan orisinal sistem — uraian Lavoisier)'},
+]
+
+D={'materi':{'judul':'Kimia SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)','mapel':'Kimia','kelas':'12','jenjang':'sma','program':'semua','premium':False,'warna':'#7C3AED','emoji':'⚗️','deskripsi':'Kimia bab 2 VERSI CARA GEMILANG: lima hukum dasar, konsep mol, RE/RM & hidrat, penyetaraan & volume gas, pereaksi pembatas (MRS), konsentrasi larutan, gas STP/non-STP. Template kartu per subbab + 40 soal dua jalur (Zona Berlatih + inti: 4 soal resmi Pusmendik, verbatim bank owner, drill berlabel).','urutan':5,'status':'draft',
+ 'daftarPustaka':[
+  'Bank Soal Sukses TKA 26 Kimia (@my99dreams) — 01 Ringkasan Materi hlm 12-19: BASIS konsep & contoh berkunci (Lavoisier s.d. Avogadro, mol, RE/RM asam maleat, MRS Na+H2O, volume gas); contoh verbatim: Cu2S, C3H8, NH3 STP, asam maleat, Na+H2O.',
+  'Matriks & 20 Contoh Soal Resmi TKA Kimia — Pusmendik (no. 7, 11, 12, 16 verbatim berlabel; stimulus botol & diagram MRS ber-kredit).',
+  'Ilmu Pengetahuan Alam SMA/MA Kelas X Edisi Revisi (Kemendikbudristek 2023) — bagan persamaan reaksi crop vektor hlm 161.',
+  'Foto HD Wikimedia Commons CC: kristal chalcanthite, pita magnesium terbakar, balon helium; bagan peta mol & dua gelas = penunjang tim berlabel.']},
+ 'bab':[{'judul':'Bab 2 — Hukum Dasar Kimia & Stoikiometri (Edisi Cara Gemilang)','ringkasan':'Rantai hitung kimia: lima hukum sebagai pagar -> mol sebagai mata uang -> rumus senyawa -> persamaan setara -> pereaksi pembatas -> larutan -> gas. Setiap subbab membawa Konsep Kilat, Peta Besar, konsep berbobot, visual HD ber-kredit, contoh terpecah langkah, kartu CG, jebakan, dan Zona Berlatih; pembahasan soal dua jalur (konsep + Jalur Cara Gemilang).','estimasiMenit':120,'urutan':2,'tipe':'teks','sections':S,'ujiPemahaman':Q}]}
+json.dump(D,open('docs/drafts/draft-kimia-k12-v2-bab2-maincompat.json','w'),ensure_ascii=False,indent=2)
+OLD={'judul','paragraf','rumus','callout','contoh','gambar','langkah','poin','alur','tabelinfo','istilah'}
+bad=[s['jenis'] for s in S if s['jenis'] not in OLD]
+from collections import Counter
+print('sections:',len(S),'| soal:',len(Q),'| jenis luar main:',bad or 'NONE')
+print(Counter(k['tipe'] for k in Q))
