@@ -1,0 +1,638 @@
+{
+  "materi": {
+    "judul": "Sosiologi SMA — Persiapan TKA 2026",
+    "mapel": "Sosiologi",
+    "kelas": "",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#0EA5E9",
+    "emoji": "🧭",
+    "deskripsi": "Materi Sosiologi VERSI DALAM persiapan TKA 2026 berbasis bank Sukses TKA 26 Sosiologi (@my99dreams): bab 2 = interaksi sosial (syarat, faktor, bentuk), tindakan sosial Max Weber, nilai sosial (Kluckhohn & Notonagoro), norma sosial (jenis & tangga daya ikat). Terbuka semua kelas/program.",
+    "urutan": 7,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 \"Interaksi Sosial, Nilai Sosial, dan Norma Sosial\" hlm. 155-158: BASIS materi & 25 latihan bab 2; kunci & pembahasan DETAIL diverifikasi dari 08 \"Kunci dan Pembahasan\" hlm. 94-95.",
+      "Bagan tangga daya ikat norma = penunjang orisinal tim kurikulum Gemilang (berlabel penunjang), isi mengikuti urutan usage-folkways-mores-customs-law dari bank.",
+      "Potret tokoh & visual lain mengikuti bab 1 (domain publik via Wikimedia Commons)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 2 — Interaksi Sosial, Nilai Sosial, dan Norma Sosial",
+      "ringkasan": "Masyarakat hidup karena interaksi: kontak + komunikasi yang dipengaruhi sugesti s.d. identifikasi dan berbentuk asosiatif atau disosiatif. Interaksi diatur nilai (standar langgeng: material, vital, rohani) yang mewujud menjadi norma bertangga daya ikat (cara s.d. hukum). Bab ini memberi kunci membaca kasus: syarat, faktor, bentuk, jenis nilai, tingkat norma.",
+      "estimasiMenit": 75,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "A. Interaksi Sosial: Tarian Sosial yang Tak Pernah Berhenti"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Masyarakat hidup karena anggotanya terus \"bertarian\" bersama: saling menyapa, menawar di pasar, berdebat, bekerja sama. Tarian itu bernama interaksi sosial — menurut Soerjono Soekanto: hubungan sosial yang berkaitan dengan hubungan antarindividu, antarkelompok, yang saling memengaruhi. Tanpa interaksi, masyarakat hanya kumpulan orang asing."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Posisi topik ini dalam TKA",
+          "teks": "Soal interaksi sosial gemar menyajikan kasus sehari-hari (belanja online, guru-murid berdiskusi, kerja bakti) lalu menanyakan SYARAT, FAKTOR, atau BENTUK interaksi yang bekerja. Kuasai tiga kunci: syarat (kontak+komunikasi), faktor (sugesti s.d. identifikasi), bentuk (asosiatif vs disosiatif)."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sebuah interaksi sah terjadi bila dua syarat terpenuhi: KONTAK (bertemu langsung/primer atau lewat media/sekunder) dan KOMUNIKASI (pesan tersampaikan dan ditanggapi). Belanja online tanpa tatap muka tetap interaksi: kontak sekunder tetap kontak."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Syarat & faktor interaksi",
+          "kolom": [
+            "Konsep",
+            "Arti",
+            "Contoh kasus"
+          ],
+          "rows": [
+            {
+              "k": "Kontak sosial",
+              "v": "Pertemuan/pertautan pihak, langsung (primer) atau lewat media (sekunder).",
+              "w": "Chat penjual-pembeli = kontak sekunder."
+            },
+            {
+              "k": "Komunikasi sosial",
+              "v": "Pesan disampaikan & ditanggapi.",
+              "w": "Balasan chat menawar harga."
+            },
+            {
+              "k": "Sugesti",
+              "v": "Pemberian pandangan/pengaruh yang diterima tanpa pikir panjang.",
+              "w": "Terbeli barang karena iklan & diskon."
+            },
+            {
+              "k": "Imitasi",
+              "v": "Meniru sikap/tindakan orang lain.",
+              "w": "Meniru gaya bicara kreator konten."
+            },
+            {
+              "k": "Identifikasi",
+              "v": "Menjadi sama persis dengan orang lain yang dikagumi.",
+              "w": "Ingin menjadi seperti idolanya secara mendalam."
+            },
+            {
+              "k": "Empati & simpati",
+              "v": "Empati = memahami + turut merasa; simpati = memahami saja.",
+              "w": "Membantu korban bencana karena ikut merasa."
+            }
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bentuk interaksi terbagi dua keluarga besar: ASOSIATIF (menyatukan: kerja sama/kooperasi, akomodasi, asimilasi, akulturasi) dan DISOSIATIF (memecah: persaingan/kompetisi, kontravensi, konflik). Ingat tangga ketegangan: persaingan (belum saling menjatuhkan) -> kontravensi (gosip, desas-desus, provokasi tersembunyi) -> konflik (terbuka)."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Keluarga asosiatif vs disosiatif",
+          "kolom": [
+            "Bentuk",
+            "Ciri",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Kerja sama (kooperasi)",
+              "v": "Beberapa pihak bergerak bersama mencapai tujuan.",
+              "w": "Kerja bakti membersihkan desa."
+            },
+            {
+              "k": "Akomodasi",
+              "v": "Upaya meredakan/menyelesaikan konflik.",
+              "w": "Mediasi, ajudikasi, konsiliasi."
+            },
+            {
+              "k": "Asimilasi & akulturasi",
+              "v": "Percampuran budaya; asimilasi melebur jadi baru, akulturasi tanpa menghilangkan budaya asli.",
+              "w": "Menara Kudus (akulturasi Islam-Hindu)."
+            },
+            {
+              "k": "Kontravensi",
+              "v": "Penolakan tersembunyi: gosip, desas-desus, provokasi.",
+              "w": "Menyebarkan gosip tentang tetangga."
+            },
+            {
+              "k": "Konflik",
+              "v": "Pertentangan terbuka untuk menundukkan lawan.",
+              "w": "Sengketa lahan antar desa."
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — membaca kasus. Soal: \"Kakak membeli alat makan karena melihat iklan dan diskon tinggi.\" Faktor interaksi mana yang bekerja? Langkah 1: ada pemberian pandangan oleh iklan -> bukan tiruan langsung (imitasi). Langkah 2: penerimaan pandangan tanpa analisis = SUGESTI. Langkah 3: singkirkan empati/simpati (tak ada perasaan pihak lain) & identifikasi (tak ingin menjadi iklan). Jawaban: sugesti (kunci bank A)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "B. Tindakan Sosial Max Weber: Empat Motif di Balik Perbuatan"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tidak semua gerakan tubuh adalah tindakan sosial. Menurut Max Weber, tindakan disebut sosial bila dilakukan dengan MEMAKNAI kehadiran orang lain. Empat motifnya: rasional instrumental (memperhitungkan cara-tujuan-manfaat), rasional berorientasi nilai (bertindak demi nilai yang diyakini), tradisional (adat/kebiasaan), dan afeksi (dorongan emosi spontan)."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Empat tindakan sosial Weber",
+          "kolom": [
+            "Tindakan",
+            "Pemicu",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Rasional instrumental",
+              "v": "Memperhitungkan kesesuaian cara, tujuan, dan manfaat.",
+              "w": "Kakak belajar sungguh-sungguh untuk lulus di PTN favorit."
+            },
+            {
+              "k": "Rasional berorientasi nilai",
+              "v": "Demi nilai yang diyakini, hasil sekunder.",
+              "w": "Adik membeli sepatu baru karena murah DAN berkualitas (nilai hemat+mutu)."
+            },
+            {
+              "k": "Tradisional",
+              "v": "Adat/kebiasaan yang berulang.",
+              "w": "Membungkuk saat menyapa orang tua."
+            },
+            {
+              "k": "Afeksi",
+              "v": "Emosi/perasaan spontan.",
+              "w": "Marah atau kasih sayang tanpa rencana."
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — mengelompokkan tindakan. Soal: \"Semua masyarakat tentu bertindak berbeda-beda; manakah yang termasuk tindakan sosial Weber?\" (bank #12, jawaban lebih dari satu). Langkah 1: cek tiap baris terhadap empat motif: memperhitungkan manfaat (instrumental) = B; dorongan emosional (afeksi) = B; cara memengaruhi orang lain = BUKAN kategori tindakan Weber (itu definisi komunikasi/sugesti) = S; kesesuaian cara-tujuan (instrumental) = B. Kunci bank: B, B, B, S."
+        },
+        {
+          "jenis": "judul",
+          "teks": "C. Nilai Sosial: Standar yang Langgeng"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Nilai (value) adalah hal yang dianggap berharga untuk mengukur kualitas keputusan dan tindakan — menurut Clyde Kluckhohn: standar yang langgeng dari waktu ke waktu. Ciri nilai: menjadi pedoman bertingkah laku, bisa menimbang/menghargai, langsung dirasakan masyarakat. Prof. Notonagoro membagi tiga: nilai material (jasmani), nilai vital (bermanfaat untuk aktivitas), nilai rohani (kerohanian: kebenaran, keindahan, moral, religi)."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Tiga nilai Notonagoro",
+          "kolom": [
+            "Nilai",
+            "Untuk",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Material",
+              "v": "Kebutuhan jasmani.",
+              "w": "Makan, minum, pakaian."
+            },
+            {
+              "k": "Vital",
+              "v": "Menunjang aktivitas/pekerjaan.",
+              "w": "Kendaraan, alat kerja."
+            },
+            {
+              "k": "Rohani",
+              "v": "Kebutuhan jiwa/batin.",
+              "w": "Ibadah, kejujuran, keindahan seni."
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — memilih jenis nilai. Soal: \"Manusia membutuhkan nilai sosial dan norma agar hidup terarah; manakah jenis nilai menurut Notonagoro?\" (bank #13, jawaban lebih dari satu). Langkah 1: nilai kerohanian = rohani (B). Langkah 2: nilai material = jasmani (B). Langkah 3: \"nilai dominan\" & \"nilai mendarah daging\" bukan istilah Notonagoro (S). Kunci bank: A, C, D (kerohanian, material, vital)."
+        },
+        {
+          "jenis": "judul",
+          "teks": "D. Norma Sosial: Nilai yang Memakai Gigi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Nilai masih abstrak; NORMA adalah wujud nyatanya yang memakai \"gigi\" pengendali: menurut Soerjono Soekanto, bentuk nyata dari nilai sosial yang bermanfaat sebagai alat pengendali sosial. Ciri norma: ada SANKSI bagi pelanggar, mengatur masyarakat, mengikat. Jenisnya: norma agama, kesusilaan (hati nurani), kesopanan (pergaulan), adat istiadat, dan hukum."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Daya ikat norma bertingkat seperti tangga: dari yang paling ringan (cara/usage) sampai yang paling keras (hukum/law). Bagan tangga berikut adalah penunjang tim Gemilang — hafalkan urutan dan satu contoh tiap anak tangganya."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/sos2-tangga-norma.png",
+          "keterangan": "Bagan tangga lima anak menaik dari kiri ke kanan berlabel: 1 cara (usage) contoh menerima kasih sayang; 2 kebiasaan (folkways) contoh memberi salam kepada orang tua; 3 tata kelakuan (mores) contoh setia dalam pernikahan; 4 adat istiadat (customs) contoh upacara adat pernikahan; 5 hukum (law) contoh UUD 1945 tentang pelanggaran lalu lintas; anak tangga makin tinggi menggambarkan daya ikat dan sanksi makin kuat."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — tangga daya ikat",
+          "items": [
+            "Cara (usage): perbuatan pribadi yang bisa diterima maupun ditegur ringan — mis. cara mengucapkan terima kasih.",
+            "Kebiasaan (folkways): perbuatan berulang-ulang — mis. memberi salam kepada orang tua.",
+            "Tata kelakuan (mores): kebiasaan bernilai moral tinggi — mis. setia dalam pernikahan.",
+            "Adat istiadat (customs): aturan kuat mengikat tradisi masyarakat — mis. upacara adat pernikahan.",
+            "Hukum (law): tertulis & resmi, sanksi tegas — mis. UUD/undang-undang lalu lintas."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Jenis norma & wilayah kerjanya",
+          "kolom": [
+            "Norma",
+            "Sumber",
+            "Contoh pelanggaran & sanksi"
+          ],
+          "rows": [
+            {
+              "k": "Agama",
+              "v": "Wahyu Tuhan; mutlak.",
+              "w": "Tidak beribadah -> dosa."
+            },
+            {
+              "k": "Kesusilaan",
+              "v": "Hati nurani manusia.",
+              "w": "Berbohong -> perasaan bersalah."
+            },
+            {
+              "k": "Kesopanan",
+              "v": "Pergaulan sehari-hari.",
+              "w": "Memotong pembicaraan -> ditegur."
+            },
+            {
+              "k": "Adat istiadat",
+              "v": "Tradisi masyarakat.",
+              "w": "Melanggar upacara -> sanksi adat."
+            },
+            {
+              "k": "Hukum",
+              "v": "Lembaga resmi, tertulis.",
+              "w": "Melanggar lalu lintas -> denda/penjara."
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — menempatkan kasus pada tingkat norma. Soal: \"Mengucapkan terima kasih kepada orang lain karena telah membantunya termasuk tingkatan norma sosial ....\" Langkah 1: perbuatan pribadi sekali waktu, bukan tradisi = cara (usage). Langkah 2: bukan kebiasaan berulang (folkways) apalagi hukum. Jawaban: cara/usage (kunci bank E)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang",
+          "teks": "Interaksi = kontak + komunikasi; faktor = Su-Im-Mo-Em-Si-Id (Sugesti, Imitasi, Motivasi, Empati, Simpati, Identifikasi); bentuk = A-A-A-A vs K-K-K (asosiatif: kerja sama, Akomodasi, Asimilasi, Akulturasi; disosiatif: Kompetisi, Kontravensi, Konflik); norma = tangga U-K-T-A-H (Usage, folkKways, moTres... hafalkan: Usage-Folkways-Mores-Customs-Law)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan pengajaran",
+          "teks": "Mode live: minta siswa memberi satu contoh dari kehidupannya untuk tiap anak tangga norma (cara s.d. hukum) — lempar sebagai kuis cepat. Kesalahan klasik siswa: menukar kontravensi dengan konflik; tekankan kata kunci \"tersembunyi vs terbuka\"."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Kakak membeli alat makan karakter karena melihat iklan dan mendapatkan diskon yang tinggi. Jika dilihat dari faktor yang memengaruhi interaksi sosial, sikap kakak termasuk bagian ....",
+          "tipe": "pg",
+          "opsi": [
+            "sugesti.",
+            "motivasi.",
+            "imitasi.",
+            "empati.",
+            "identifikasi."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Faktor yang memengaruhi interaksi sosial salah satunya SUGESTI: pemberian suatu pandangan atau pengaruh oleh seseorang kepada orang lain. Contohnya membeli barang karena melihat iklan dan adanya diskon atau potongan harga — penerimaan pandangan tanpa analisis panjang. Imitasi berarti meniru sikap/tindakan secara langsung; empati ikut merasakan; identifikasi menjadi sama persis — tidak tampil pada kasus.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 1 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: A); transkrip verbatim"
+        },
+        {
+          "soal": "Seorang guru dan seorang murid sedang berdiskusi tentang materi pelajaran sosiologi di perpustakaan. Jika dilihat dari jenis-jenis interaksi sosial termasuk bagian ....",
+          "tipe": "pg",
+          "opsi": [
+            "hanya sendirian.",
+            "individu dengan kelompok.",
+            "individu dengan individu.",
+            "antarorganisasi.",
+            "antarkelompok."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Berdasarkan pernyataan tersebut terjadi interaksi INDIVIDU dengan INDIVIDU: interaksi dilakukan oleh dua orang (guru dan murid) yang saling menanggapi dalam diskusi.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 2 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: C); transkrip verbatim"
+        },
+        {
+          "soal": "Suatu pekerjaan jika dilakukan bersama akan cepat selesai. Kerja sama merupakan bagian dari bentuk interaksi sosial ....",
+          "tipe": "pg",
+          "opsi": [
+            "disosiatif.",
+            "kolaboratif.",
+            "asimilasi.",
+            "asosiatif.",
+            "akomodasi."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Bentuk-bentuk interaksi sosial salah satunya kerja sama (cooperation): beberapa ahli sosiologi menganggap adanya kerja sama sedikit membantu sebuah tim dalam menyelesaikan pekerjaan — contohnya kerja sama mengadakan kegiatan bakti sosial. Kerja sama masuk keluarga ASOSIATIF (positif, menyatukan).",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 3 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: D); transkrip verbatim"
+        },
+        {
+          "soal": "Mengucapkan terima kasih kepada orang lain karena telah membantunya merupakan bagian dari tingkatan norma sosial ....",
+          "tipe": "pg",
+          "opsi": [
+            "adat istiadat.",
+            "hukum.",
+            "instrumental.",
+            "kerja sama.",
+            "cara."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Satu di antara tingkatan norma sosial adalah CARA (usage): kebiasaan umum masyarakat yang berarti perbuatan pribadi — contohnya mengucapkan terima kasih karena telah dibantu. Bukan adat istiadat (tradisi kuat), bukan hukum (tertulis resmi).",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 4 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: E); transkrip verbatim"
+        },
+        {
+          "soal": "Belanja terkadang bisa dilakukan secara langsung (offline) dan secara tidak langsung (online). Dilihat dari syarat interaksi sosial termasuk bagian ....",
+          "tipe": "pg",
+          "opsi": [
+            "komunikasi sosial.",
+            "kontak sosial.",
+            "tindakan instrumental.",
+            "nilai dominan.",
+            "nilai material."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Satu di antara syarat interaksi sosial adalah KONTAK sosial: bisa terjadi secara langsung (primer) maupun tidak langsung (sekunder) — contohnya belanja online ataupun offline.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 5 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: B); transkrip verbatim"
+        },
+        {
+          "soal": "Bentuk interaksi sosial terdapat bentuk disosiatif. Berikut yang termasuk bentuk disosiatif adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "akulturasi.",
+            "asimilasi.",
+            "kontravensi.",
+            "kerja sama.",
+            "akomodasi."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Bentuk disosiatif salah satunya KONTRAVENSI: berada antara persaingan dan konflik, berisi hal negatif seperti menyebar desas-desus atau gosip, kekerasan tersembunyi. Akulturasi/asimilasi/kerja sama/akomodasi = asosiatif.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 6 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: C); transkrip verbatim"
+        },
+        {
+          "soal": "Terdapat tradisi pernikahan di suatu wilayah tentunya berbeda-beda. Berdasarkan tingkatan norma sosial termasuk pada bagian ....",
+          "tipe": "pg",
+          "opsi": [
+            "hukum (law).",
+            "adat istiadat (customs).",
+            "tindakan afeksi.",
+            "tindakan modern.",
+            "cara (usage)."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Pada tingkatan norma sosial terdapat ADAT ISTIADAT (customs): norma yang paling kuat dalam tradisi masyarakat — contohnya adat atau tradisi pernikahan dalam suatu wilayah.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 7 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: B); transkrip verbatim"
+        },
+        {
+          "soal": "Fenomena bahasa gaul terkadang memudahkan sebagian masyarakat dalam berkomunikasi; fenomena ini menggunakan bahasa yang baik ataupun sedikit kasar. Maka perilaku tersebut termasuk pada ....",
+          "tipe": "pg",
+          "opsi": [
+            "integrasi sosial.",
+            "difusi sosial.",
+            "disosiatif interaksi sosial.",
+            "asimilasi budaya.",
+            "akulturasi budaya."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Dilihat dari interaksi sosial, bahasa gaul termasuk bentuk DISOSIATIF: sebagian masyarakat menggunakan bahasa gaul yang berisi sebagian kata-kata kasar yang menyimpang pada aturan yang berlaku (kontravensi terhadap norma kesopanan).",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 8 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: C); transkrip verbatim"
+        },
+        {
+          "soal": "Sebuah wilayah Z mengalami konflik sosial yang rumit sehingga membutuhkan penyelesaian konflik tersebut. Cara yang tepat dalam penyelesaian konflik tersebut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "akomodasi.",
+            "kontravensi.",
+            "difusi sosial.",
+            "akulturasi.",
+            "asimilasi."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Berdasarkan fenomena tersebut termasuk bentuk interaksi sosial ASOSIATIF pada AKOMODASI: bentuk penyelesaian konflik sosial — contohnya mediasi yang menggunakan pihak ketiga sebagai penengah atau penasihat.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 9 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: A); transkrip verbatim"
+        },
+        {
+          "soal": "Terjadinya kasus bullying di beberapa wilayah menjadikan seseorang lebih berhati-hati dalam bertindak. Berdasarkan bentuk interaksi sosial termasuk pada bagian .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "disosiatif.",
+            "akulturasi.",
+            "asimilasi.",
+            "konflik sosial.",
+            "difusi sosial."
+          ],
+          "jawaban": [
+            0,
+            3
+          ],
+          "pembahasan": "Opsi A dan D merupakan bagian dari interaksi sosial disosiatif: bullying = konflik sosial yang bersifat merusak, merugikan, dan harus dihindari. Akulturasi/asimilasi = asosiatif; difusi sosial bukan bentuk interaksi.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 10 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: A,D); transkrip verbatim"
+        },
+        {
+          "soal": "Pada daya ikat norma sosial terdapat beberapa tahap di antaranya .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "mendarah daging (internalized value).",
+            "kebiasaan (folkways).",
+            "adat istiadat (customs).",
+            "tata kelakuan (mores).",
+            "keajegan sosial."
+          ],
+          "jawaban": [
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Daya ikat norma sosial: (1) cara (usage) — kebiasaan umum, mis. menerima kasih sayang, minta tolong, minta maaf; (2) kebiasaan (folkways) — tindakan berulang-ulang, mis. memberi salam kepada orang tua; (3) tata kelakuan (mores) — kebiasaan bernilai moral tinggi, mis. setia dalam pernikahan; (4) adat istiadat (customs) — norma mengikat kuat dalam tradisi, mis. upacara adat pernikahan; (5) hukum (law) — tertulis resmi, mis. UUD 1945. Maka yang tepat: folkways, customs, mores (B, C, D).",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 11 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: B,C,D); transkrip verbatim"
+        },
+        {
+          "soal": "Tindakan sosial yang dilakukan oleh semua masyarakat tentunya berbeda-beda. Berikut yang termasuk pada tindakan sosial menurut Max Weber adalah .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "tindakan afeksi.",
+            "tindakan berorientasi instrumental.",
+            "tindakan berorientasi nilai.",
+            "tindakan modern.",
+            "tindakan kontemporer."
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "Tindakan sosial menurut Max Weber: (1) berorientasi instrumental — dilakukan atas dasar tujuan & manfaat yang dihitung, mis. kakak belajar sungguh-sungguh untuk lulus PTN favorit; (2) berorientasi nilai — demi nilai yang diyakini, mis. membeli sepatu karena murah dan berkualitas; (3) tradisional — adat/kebiasaan, mis. membungkuk saat menyapa orang tua; (4) afeksi — emosi/perasaan spontan, mis. kasih sayang atau marah. \"Modern/kontemporer\" bukan kategori Weber.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 12 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: A,B,C); transkrip verbatim"
+        },
+        {
+          "soal": "Pada dasarnya manusia membutuhkan suatu nilai sosial dan norma sosial agar hidupnya lebih terarah. Berikut yang termasuk pada jenis nilai sosial menurut Prof. Dr. Notonegoro adalah .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "nilai kerohanian.",
+            "nilai dominan.",
+            "nilai material.",
+            "nilai vital.",
+            "nilai mendarah daging."
+          ],
+          "jawaban": [
+            0,
+            2,
+            3
+          ],
+          "pembahasan": "Nilai sosial menurut Notonegoro: (1) nilai MATERIAL — bermanfaat bagi kebutuhan jasmani, mis. makan, minum, pakaian; (2) nilai VITAL — bermanfaat untuk mendukung aktivitas, mis. kendaraan; (3) nilai KEROHANIAN — nilai spiritual untuk kebutuhan jiwa/batin. \"Dominan\" & \"mendarah daging\" bukan kategori Notonagoro.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 13 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: A,C,D); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah: manusia tidak dapat hidup seorang diri karena membutuhkan bantuan sesama (makhluk sosial); interaksi sosial masyarakat memiliki bentuk asosiatif dan disosiatif. Berikut yang termasuk bentuk ASOSIATIF adalah ....",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Adanya akulturasi atau percampuran dua kebudayaan tanpa menghilangkan kebudayaan asli.",
+            "Adanya kontravensi seperti menyebarkan gosip atau desas-desus.",
+            "Adanya akomodasi yang berarti upaya penyelesaian konflik sosial yang terjadi di masyarakat."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "BENAR: akulturasi = percampuran dua kebudayaan tanpa menghilangkan budaya asli (asosiatif), contoh Menara Kudus di Jawa Tengah (percampuran budaya Islam dan Hindu). SALAH: kontravensi = disosiatif (negatif), contoh menyebarkan gosip/desas-desus. BENAR: akomodasi = upaya penyelesaian konflik (asosiatif), contoh ajudikasi lewat jalur pengadilan atau jalur hukum.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 19 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: B,S,B); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah: interaksi sosial akan berjalan baik jika ada dua hal yang menjadi satu. Berikut yang termasuk SYARAT interaksi sosial adalah ....",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Adanya pengebaian nilai dan norma sosial oleh masyarakat.",
+            "Terdapat kontak sosial di masyarakat.",
+            "Terdapat komunikasi sosial untuk menyampaikan segala pesan.",
+            "Terjadinya konflik sosial di masyarakat."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "SALAH: \"pengebawaian nilai dan norma\" bukan syarat interaksi (itu sosialisasi). BENAR: KONTAK sosial = syarat terjadinya interaksi, pihak berhubungan langsung maupun tidak. BENAR: KOMUNIKASI sosial = syarat interaksi, menyampaikan pesan dan mendapat tanggapan/lahiran sinyal. SALAH: konflik bukan syarat interaksi — justru konflik adalah bagian bentuk disosiatif.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 20 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: S,B,B,S); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah: dalam kehidupan sehari-hari manusia berpegang teguh pada nilai dan norma; berdasarkan DAYA IKAT norma, pernyataan berikut ....",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Adanya akomodasi sosial di masyarakat yang mencegah terjadinya konflik sosial.",
+            "Terdapat cara (usage) yang menunjukkan pada suatu bentuk perbuatan pribadi.",
+            "Memberikan batasan-batasan pada perilaku individu dan menjaga solidaritas.",
+            "Terjadinya kontravensi dalam kehidupan masyarakat."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "SALAH: akomodasi adalah bentuk interaksi (penyelesaian konflik), BUKAN tingkat daya ikat norma. BENAR: cara (usage) = daya ikat norma yang menunjukkan perbuatan pribadi. BENAR: tata kelakuan (mores) = pengawasan baik langsung maupun tidak, memberi batasan perilaku individu dan menjaga solidaritas antar anggota. SALAH: kontravensi = bentuk disosiatif yang memicu konflik, bukan daya ikat norma.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 23 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: S,B,B,S); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah: dengan adanya norma sosial kehidupan manusia berpegang teguh pada sebuah aturan. Berikut yang termasuk bagian dari NORMA SOSIAL adalah ....",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Dalam interaksi sosial tentunya membutuhkan komunikasi yang baik agar terciptanya kehidupan yang selaras.",
+            "Sebuah aturan yang tertulis dan juga bersifat resmi.",
+            "Aturan sosial yang muncul dari tindakan yang dilakukan berulang-ulang dalam suatu masyarakat.",
+            "Suatu aturan yang bersifat mutlak dan bersumber dari Tuhan."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "pembahasan": "SALAH: komunikasi yang baik = syarat interaksi sosial, bukan jenis norma. BENAR: norma HUKUM = aturan tertulis, resmi, berisi perintah/larangan, ada sanksi bagi pelanggar. BENAR: norma KEBIASAAN = daya ikat dari tindakan berulang-ulang dalam masyarakat. BENAR: norma AGAMA = daya ikat mutlak, sumber dari Tuhan, tidak bisa ditawar.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 24 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: S,B,B,B); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah: interaksi sosial penting dalam masyarakat; dengan berinteraksi yang baik, masyarakat bertindak baik pula. Berikut yang termasuk TINDAKAN SOSIAL menurut Max Weber adalah ....",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Tindakan yang dilakukan seseorang dengan memperhitungkan kesesuaian antara cara yang digunakan dengan tujuan yang akan dicapai.",
+            "Tindakan yang dilakukan dengan memperhitungkan manfaatnya.",
+            "Tindakan yang dilakukan pada dorongan emosional atau perasaan.",
+            "Sebuah cara untuk memengaruhi orang lain untuk melakukan suatu hal atau tindakan."
+          ],
+          "jawaban": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "BENAR: kesesuaian cara-tujuan = tindakan rasional instrumental. BENAR: memperhitungkan manfaat = rasional instrumental/nilai. BENAR: dorongan emosional/perasaan = tindakan afeksi. SALAH: \"cara memengaruhi orang lain\" adalah definisi sugesti/komunikasi, BUKAN kategori tindakan sosial Weber.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 02 Latihan no. 25 (kunci & pembahasan detail dari 08 Pembahasan hlm. 94-95: B,B,B,S); transkrip verbatim"
+        },
+        {
+          "soal": "Pasangkan setiap tingkat daya ikat norma dengan contoh perilakunya yang paling tepat!",
+          "tipe": "jodoh",
+          "premis": [
+            "Cara (usage)",
+            "Kebiasaan (folkways)",
+            "Tata kelakuan (mores)",
+            "Adat istiadat (customs)",
+            "Hukum (law)"
+          ],
+          "opsi": [
+            "Mengucapkan terima kasih setelah dibantu",
+            "Memberi salam kepada orang tua setiap bertemu",
+            "Setia dalam pernikahan",
+            "Upacara adat pernikahan di suatu wilayah",
+            "Ditilang karena melanggar lampu lalu lintas",
+            "Sugesti: pemberian pandangan seorang tokoh kepada pengikutnya"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Urutan tangga daya ikat: usage (perbuatan pribadi sekali waktu) -> folkways (berulang) -> mores (moral tinggi) -> customs (tradisi mengikat) -> law (tertulis, sanksi tegas). Contoh-contoh di atas persis mengikuti urutan itu.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — format menjodohkan tangga norma)"
+        },
+        {
+          "soal": "Tokoh sosiologi yang mendefinisikan interaksi sosial sebagai hubungan sosial yang berkaitan dengan hubungan antarindividu, antarkelompok yang saling memengaruhi adalah ....",
+          "tipe": "isian",
+          "jawaban": "Soerjono Soekanto",
+          "hintFormat": "Tulis nama tokoh, contoh: Max Weber",
+          "pembahasan": "Menurut Soerjono Soekanto, interaksi sosial adalah hubungan sosial yang berkaitan dengan hubungan antarindividu, antarkelompok yang saling memengaruhi; norma sosial menurut beliau = bentuk nyata nilai sosial sebagai alat pengendali sosial.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — isian tokoh definisi)"
+        }
+      ]
+    }
+  ]
+}
