@@ -171,6 +171,12 @@ export default function BelajarReader() {
   const [antreanSaya, setAntreanSaya] = useState(null);
   const [abaikanIkuti, setAbaikanIkuti] = useState(false);
   const pesertaDitandai = useRef('');
+  // Turn 79 HOTFIX: semua hooks WAJIB di atas early return (loading/bab/kunci)
+  // altrimenti React #310 "Rendered more hooks than during the previous render".
+  const [bebasBaca, setBebasBaca] = useState(false);
+  const [kodeInput, setKodeInput] = useState('');
+  const [errKode, setErrKode] = useState('');
+  const slides = useMemo(() => buatSlide(bab?.sections || []), [bab]);
 
   // Turn 76: dua guru bisa sesi paralel di materi sama. Siswa TIDAK dilempar
   // acak: daftar sesi difilter kelasnya; bila tetap >1, siswa MEMILIH sendiri.
@@ -466,10 +472,6 @@ export default function BelajarReader() {
     );
   }
 
-  const slides = useMemo(() => buatSlide(sections), [sections]);
-  const [bebasBaca, setBebasBaca] = useState(false);
-  const [kodeInput, setKodeInput] = useState('');
-  const [errKode, setErrKode] = useState('');
   const gabungKode = async (kode) => {
     const s2 = await cariSesiByKodePresentasi(kode);
     if (!s2) { setErrKode('Kode tidak ditemukan atau sesi sudah berakhir.'); return; }
