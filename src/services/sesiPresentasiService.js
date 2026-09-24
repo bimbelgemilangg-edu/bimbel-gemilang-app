@@ -166,6 +166,12 @@ export async function setPosisiSesi(sessionId, posisi, extra = {}) {
     { posisi, ...extra, diupdatePada: serverTimestamp() }, { merge: true });
 }
 
+/** Patch bebas dokumen sesi (Turn 77: dipakai tombol buka/tutup kunci
+ *  pembahasan). Merge aman, tidak menimpa field lain. */
+export const ubahSesi = (sessionId, patch = {}) =>
+  setDoc(doc(db, KOL_SESI, sessionId),
+    { ...patch, diupdatePada: serverTimestamp() }, { merge: true });
+
 /** Ganti mode: 'mengikuti' (siswa ikut layar guru) | 'bebas'. */
 export async function setModeSesi(sessionId, mode) {
   await setDoc(doc(db, KOL_SESI, sessionId),
