@@ -1,4 +1,4 @@
-# 👑 CETAK BIRU GEMILANG PREMIUM — Hasil Riset Turn 81
+# 👑 CETAK BIRU GEMILANG PREMIUM — Hasil Riset Turn 81, struktur wadah Turn 82
 
 > Perintah owner Turn 81: *"ulangi dari materi awal; riset dulu tampilan belajar
 > menarik, sumber materi, buku, aset soal asli, gambar HD, pola materi & soal —
@@ -25,22 +25,28 @@ Urutan kartu (semua kartu = komponen reader yang sudah ada, distyling premium):
 4. **🖼 Visual ber-anatomi KAIDAH** (asli/HD ber-kredit; pengantar → gambar → poin 🔍 → kaitan).
 5. **📊 Tabel/bagan berisi** (pembanding/ringkasan; N-kolom render penuh).
 6. **✍️ Contoh terpecah langkah** (Langkah 1..n meniru pola soal bank; tutup dengan jawaban).
-7. **👑 Kartu KING** (callout gemilang gaya emas): KODE KING + rumus/cara cepat + kapan dipakai + contoh 10 detik.
+7. **👑 Kartu Cara Gemilang** (jenis `caraGemilang`, frame ungu-emas bermaskot): KODE CG + rumus/cara cepat + kapan dipakai + contoh 10 detik.
 8. **⚠️ Jebakan** (callout peringatan): 1-2 kesalahan paling umum + cara menghindarinya.
-9. **🎮 Zona Berlatih** (3 soal mini: 1 mudah, 1 sedang, 1 HOTS; umpan balik instan; kunci TERKUNCI sampai dicek).
+9. **🎮 Zona Berlatih** (jenis `zona`: 3 soal mini 1 mudah-1 sedang-1 HOTS; koreksi instan lokal; kunci terbuka per soal setelah tombol Cek).
 10. **🔁 Ringkas Sendiri** (callout guru/contoh): prompt siswa menuliskan KING versi sendiri (kebiasaan GO).
 
 Aturan lintas kartu: paragraf ≤4 kalimat/kartu di HP; istilah baru langsung dijelaskan;
 setiap klitik visual wajib punya kalimat pemakai; **kolaborasi buku wajib** (rujuk
 halaman bank owner / buku paket / BSE di teks atau daftarPustaka).
 
-## 3. SISTEM "GEMILANG THE KING" (cara cepat khas kita)
+## 3. SISTEM "CARA GEMILANG" (cara cepat khas kita — BUKAN The King;
+> The King GO hanya POLA ACUAN. Nama & merek kita: **CARA GEMILANG —
+> Sistem Langkah Gemilang**, maskot astronot mahkota ungu-emas.)
 
-- **Format kartu KING:** `👑 KING-<KODE>: <nama jurus>` + isi rumus/langkah maksimal
+- **Format kartu Cara Gemilang:** `👑 CG-<KODE>: <nama jurus>` + isi rumus/langkah maksimal
   2 baris + "pakai saat: ..." + "contoh kilat: ...".
-  Contoh: `KING-MOL: n = m/M = V/22,4 = N/NA = M×V — pakai saat soal menukar gram-liter-partikel; contoh kilat: 8 g O2 = 8/32 = 0,25 mol = 5,6 L.`
-- **King Sheet bab:** tab Ringkasan menampilkan DAFTAR kartu KING bab itu (satu
-  layar gulir) = padanan "Playlist Rangkuman" Ruangguru & buku KODING GO.
+  Contoh: `CG-MOL: n = m/M = V/22,4 = N/NA = M×V — pakai saat soal menukar gram-liter-partikel; contoh kilat: 8 g O2 = 8/32 = 0,25 mol = 5,6 L.`
+- **Lembar Cara Gemilang bab:** tab Ringkasan otomatis menampilkan DAFTAR kartu
+  Cara Gemilang bab itu (satu layar gulir) = padanan "Playlist Rangkuman"
+  Ruangguru & buku KODING GO. SUDAH TERDEPLOY (Turn 82, branch
+  feat/struktur-cara-gemilang): jenis section `caraGemilang`, `kilat`, `peta`,
+  `zona` + agregasi lembar di tab Ringkasan => **produksi konten berikutnya
+  cukup impor JSON, tanpa deploy ulang.**
 - **Ujian cepat:** di pembahasan soal, setelah cara panjang wajib ada baris
   **"Jalur KING:"** satu kalimat cara cepat → siswa melihat kedua jalur (paham + cepat).
 - Penamaan kode konsisten per mapel: KING-MOL, KING-PEMBATAS, KING-VSEPR,
@@ -65,7 +71,7 @@ unggah Supabase + HEAD 200; HOTLINK dilarang.
 1. **Stimulus** (teks/gambar terlampir wajib; gambar = crop PDF bank atau Commons).
 2. **Soal verbatim** bank/official berlabel sumber + nomor asli.
 3. **Opsisi/kolom** lengkap termasuk pengecoh (validator: opsi > premis untuk jodoh).
-4. **Pembahasan dua jalur:** (a) jalur konsep langkah 1..n; (b) **"Jalur KING:"**
+4. **Pembahasan dua jalur:** (a) jalur konsep langkah 1..n; (b) **"Jalur Cara Gemilang:"**
    satu kalimat cara cepat; bila gambar: lapisan anotasi 🔍 + keterangan.
 5. **Kunci** hanya dari file kunci sumber; tanpa kunci sumber = soal tidak dipakai.
 6. Distribusi per bab: 15-20 soal, 6 format TKA, min. 40% verbatim bank/official.
