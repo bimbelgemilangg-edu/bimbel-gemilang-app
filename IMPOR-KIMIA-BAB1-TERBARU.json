@@ -940,7 +940,7 @@
           "sumber": "Adaptasi latihan no. 23 (format PGK kategori) — Sukses TKA Saintek hlm. 195"
         },
         {
-          "soal": "Perhatikan gambar ilustrasi tentang gaya intramolekul dan antarmolekul hidrogen fluorida (HF) berikut: tiga molekul H–F berjajar, garis penuh di dalam tiap molekul dan garis putus-putus di antara molekul yang berdekatan. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
+          "soal": "Perhatikan gambar ilustrasi tentang gaya intramolekul dan antarmolekul hidrogen fluorida (HF) berikut (gambar terlampir): tiga molekul H–F berjajar, garis penuh di dalam tiap molekul dan garis putus-putus di antara molekul yang berdekatan. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
           "tipe": "tabel",
           "kolom": [
             "Benar",
@@ -959,7 +959,8 @@
           "pembahasan": "Ikatan H–F di DALAM molekul adalah ikatan kovalen = gaya INTRAmolekul: pernyataan 1 SALAH. Ikatan kovalen (intramolekul, orde ratusan kJ/mol) jauh lebih kuat daripada gaya antarmolekul (orde puluhan kJ/mol): pernyataan 2 BENAR. Ikatan hidrogen (H···F antar molekul) memang digambarkan sebagai garis putus-putus: pernyataan 3 BENAR.",
           "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-hidrogen-hf.jpg",
           "pembahasanGambarKet": "Panah (1) menunjuk garis penuh H–F (intramolekul), panah (2) menunjuk garis putus-putus antar molekul (ikatan hidrogen = antarmolekul).",
-          "sumber": "Adaptasi latihan no. 25 (format PGK kategori) — Sukses TKA Saintek hlm. 195"
+          "sumber": "Adaptasi latihan no. 25 (format PGK kategori) — Sukses TKA Saintek hlm. 195",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-hidrogen-hf.jpg"
         },
         {
           "soal": "Pasangkan setiap tokoh/model atom dengan pernyataan yang paling tepat!",
