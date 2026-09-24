@@ -14,6 +14,90 @@ import { MathText, MathBlock } from '../MathText';
 import bintangGemilang from '../../assets/bintang-gemilang.png';
 import { T, kotakRumus, kotakTips, kotakSukses } from '../../pages/student/belajar/tema';
 
+// ============================================================
+// Turn 82: STRUKTUR KONTEN CARA GEMILANG (deploy sekali; konten berikutnya
+// cukup impor JSON tanpa deploy):
+//  - jenis 'kilat'        : kartu Konsep Kilat 60 detik
+//  - jenis 'peta'         : kartu Peta Besar subbab
+//  - jenis 'caraGemilang' : kartu bermerek CARA GEMILANG (frame ungu-emas)
+//  - jenis 'zona'         : Zona Berlatih = mini-quiz instan (koreksi lokal)
+// ============================================================
+export const URL_FRAME_CG =
+  'https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/cara-gemilang-frame.png';
+
+function ZonaBerlatih({ sec }) {
+  const [pil, setPil] = React.useState({});
+  const [cek, setCek] = React.useState({});
+  const soalList = sec.items || [];
+  return (
+    <div style={{
+      background: '#F5F3FF', border: '2px solid #7C3AED', borderRadius: 18,
+      padding: '14px 16px', margin: '14px 0',
+    }}>
+      <div style={{ fontWeight: 900, color: '#5B21B6', fontSize: 14, marginBottom: 4 }}>
+        🎮 Zona Berlatih • {soalList.length} soal pemanasan
+      </div>
+      <div style={{ fontSize: 12, color: '#64748B', marginBottom: 10 }}>
+        Jawab lalu tekan Cek per soal — kunci terbuka hanya setelah dicek.
+      </div>
+      {soalList.map((q, qi) => {
+        const sudah = !!cek[qi];
+        const benar = sudah && Number(pil[qi]) === Number(q.jawaban);
+        return (
+          <div key={qi} style={{
+            background: '#fff', border: '1px solid #DDD6FE', borderRadius: 14,
+            padding: '10px 12px', marginBottom: 10,
+          }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0F172A', marginBottom: 8 }}>
+              {qi + 1}. {q.soal}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {(q.opsi || []).map((op, oi) => (
+                <button key={oi} type="button" disabled={sudah}
+                  onClick={() => setPil((o) => ({ ...o, [qi]: oi }))}
+                  style={{
+                    textAlign: 'left', borderRadius: 10, padding: '8px 10px',
+                    fontSize: 13, cursor: sudah ? 'default' : 'pointer',
+                    border: sudah && oi === Number(q.jawaban)
+                      ? '2px solid #16A34A'
+                      : sudah && pil[qi] === oi && !benar
+                        ? '2px solid #DC2626'
+                        : '1px solid #E2E8F0',
+                    background: sudah && oi === Number(q.jawaban)
+                      ? '#ECFDF5'
+                      : sudah && pil[qi] === oi ? '#FEF2F2' : '#fff',
+                  }}>
+                  {String.fromCharCode(65 + oi)}. {op}
+                </button>
+              ))}
+            </div>
+            {!sudah ? (
+              <button type="button" disabled={pil[qi] == null}
+                onClick={() => setCek((o) => ({ ...o, [qi]: true }))}
+                style={{
+                  marginTop: 8, borderRadius: 10, padding: '7px 14px',
+                  background: pil[qi] == null ? '#E2E8F0' : '#7C3AED',
+                  color: pil[qi] == null ? '#94A3B8' : '#fff',
+                  border: 'none', fontWeight: 800, fontSize: 12.5, cursor: 'pointer',
+                }}>
+                ✔ Cek
+              </button>
+            ) : (
+              <div style={{
+                marginTop: 8, fontSize: 12.5, lineHeight: 1.6,
+                color: benar ? '#15803D' : '#B91C1C',
+              }}>
+                {benar ? '✅ Benar! ' : '❌ Belum tepat. '}
+                {q.pembahasan || ''}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // banyak judul level-1 sebelum indeks i (untuk penomoran A.1, A.2, ...)
 function jumlahL1Sebelum(sections, i) {
   return sections
@@ -137,7 +221,69 @@ export default function IsiSections({
           );
         }
         if (jenis === 'paragraf') {
-          return <p key={i} id={`sec-${i}`} style={{ ...S.paragraf, ...S.jangkar }}><MathText text={sec.teks} /></p>;
+          if (jenis === 'kilat') {
+          return (
+            <div key={i} id={`sec-${i}`} style={{ ...S.jangkar,
+              background: 'linear-gradient(135deg,#EFF6FF 0%,#DBEAFE 100%)',
+              border: '1.5px solid #93C5FD', borderRadius: 16,
+              padding: '12px 16px', margin: '12px 0' }}>
+              <div style={{ fontWeight: 900, color: '#1D4ED8', fontSize: 13, marginBottom: 4 }}>
+                ⚡ Konsep Kilat 60 detik
+              </div>
+              <div style={{ fontSize: 15, lineHeight: 1.75, color: '#0F172A' }}>
+                <MathText text={sec.teks} />
+              </div>
+            </div>
+          );
+        }
+        if (jenis === 'peta') {
+          return (
+            <div key={i} id={`sec-${i}`} style={{ ...S.jangkar,
+              background: '#fff', border: '1.5px solid #CBD5E1', borderRadius: 16,
+              padding: '12px 16px', margin: '12px 0' }}>
+              <div style={{ fontWeight: 900, color: '#334155', fontSize: 13, marginBottom: 4 }}>
+                🗺 Peta Besar
+              </div>
+              <div style={{ fontSize: 14.5, lineHeight: 1.75, color: '#0F172A' }}>
+                <MathText text={sec.teks} />
+              </div>
+              {sec.url ? <img src={sec.url} alt={sec.keterangan || ''} style={{ ...S.gambar, marginTop: 10 }} /> : null}
+            </div>
+          );
+        }
+        if (jenis === 'caraGemilang') {
+          return (
+            <div key={i} id={`sec-${i}`} style={{ ...S.jangkar,
+              background: 'linear-gradient(160deg,#FFFDF7 0%,#FFF3D6 100%)',
+              border: '3px solid #6D28D9', borderRadius: 22,
+              padding: '10px 14px 14px', margin: '16px 0',
+              boxShadow: '0 10px 26px rgba(109,40,217,.18)' }}>
+              <img src={URL_FRAME_CG} alt="Cara Gemilang"
+                style={{ width: '100%', maxHeight: 120, objectFit: 'contain', display: 'block' }} />
+              <div style={{ fontWeight: 900, color: '#5B21B6', fontSize: 15, margin: '6px 0 6px', textAlign: 'center' }}>
+                👑 {sec.judul || 'Cara Gemilang'}
+              </div>
+              {sec.teks ? (
+                <div style={{ fontSize: 14.5, lineHeight: 1.75, color: '#4C1D95', textAlign: 'center', marginBottom: 6 }}>
+                  <MathText text={sec.teks} />
+                </div>
+              ) : null}
+              {(sec.items || []).length ? (
+                <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(sec.items || []).map((it, k) => (
+                    <li key={k} style={{ fontSize: 14, lineHeight: 1.7, color: '#3B0764' }}>
+                      <MathText text={it} />
+                    </li>
+                  ))}
+                </ol>
+              ) : null}
+            </div>
+          );
+        }
+        if (jenis === 'zona') {
+          return <ZonaBerlatih key={i} sec={sec} />;
+        }
+        return <p key={i} id={`sec-${i}`} style={{ ...S.paragraf, ...S.jangkar }}><MathText text={sec.teks} /></p>;
         }
         if (jenis === 'rumus') {
           return (
