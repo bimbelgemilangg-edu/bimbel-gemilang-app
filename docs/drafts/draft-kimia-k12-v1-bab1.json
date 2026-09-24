@@ -1,0 +1,488 @@
+{
+  "materi": {
+    "judul": "Kimia SMA Kelas 12 — Persiapan TKA 2026",
+    "mapel": "Kimia",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#7C3AED",
+    "emoji": "⚗️",
+    "deskripsi": "Materi Kimia VERSI DALAM persiapan TKA 2026, bab 1-6 mengikuti matriks resmi Pusmendik (4 elemen muatan: Kimia Dasar, Kimia Analitik, Kimia Fisik, Kimia Organik). Bab 1 = struktur atom, sistem periodik, ikatan kimia & bentuk molekul: teori atom, notasi & partikel dasar, konfigurasi elektron beserta pengecualian Cr/Cu, bilangan kuantum, letak periode-golongan, tren sifat periodik, ikatan ion/kovalen/koordinasi, hibridisasi-VSEPR-kepolaran, hingga gaya antarmolekul. Visual: bagan orisinal tim kurikulum (canvas) + soal resmi Pusmendik berlabel + latihan adaptasi buku Sukses TKA Saintek.",
+    "urutan": 5,
+    "status": "draft",
+    "daftarPustaka": [
+      "Matriks Asesmen & 20 Contoh Soal Resmi TKA Kimia SMA — Pusmendik Kemendikdasmen (soal resmi no. 6 dipakai berlabel penuh).",
+      "Sukses Tes Kemampuan Akademik SMA - Saintek, Bab 1 'Struktur Atom, Sistem Periodik, Ikatan Kimia', hlm. 189-195 (berkas scan dilampirkan owner; teori dirujuk, latihan diadaptasi berlabel).",
+      "Modul Tentor Gemilang — blok Kimia 'Struktur Atom Dan Ikatan Kimia' hlm. cetak 207-211 (basis internal).",
+      "Bagan penunjang (model atom, notasi, aufbau, tren periodik, ikatan, VSEPR, ikatan hidrogen, grafik EI) digambar orisinal tim kurikulum Gemilang via canvas — bukan gambar buatan AI."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 1 — Struktur Atom, Sistem Periodik, dan Ikatan Kimia",
+      "ringkasan": "Fondasi seluruh kimia TKA: bagaimana atom tersusun, bagaimana elektron mengisi kulit/orbital, bagaimana susunan itu menentukan letak unsur dan sifat periodiknya, lalu bagaimana atom-atom berikatan membentuk molekul dengan bentuk dan kepolaran tertentu. Bab ini menutup rantai sebab-akibat itu: konfigurasi elektron → letak dalam tabel periodik → sifat periodik → jenis ikatan → bentuk molekul → gaya antarmolekul.",
+      "estimasiMenit": 95,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "A. Perkembangan Teori Atom: Dari Bola Pejal ke Awan Elektron" },
+        { "jenis": "paragraf", "teks": "Atom tidak pernah terlihat langsung; segala yang kita ketahui tentangnya adalah kesimpulan dari percobaan. Karena itu teori atom berkembang seperti proses pengadilan: setiap model baru diajukan karena model lama gagal menjelaskan bukti baru. Memahami urutan ini penting untuk TKA karena soal sering menanyakan 'pernyataan mana yang sesuai dengan model X' — dan jebakan terbesarnya adalah mencampuradukkan ciri satu model dengan model lain." },
+        { "jenis": "callout", "tipe": "info", "judul": "Posisi topik ini dalam TKA", "teks": "Struktur atom masuk elemen muatan Kimia Dasar. Soal resminya jarang berdiri sendiri: konfigurasi elektron dan struktur atom biasanya menjadi langkah pertama soal ikatan, sifat periodik, bahkan stoikiometri. Kuasai bab ini = fondasi bab 2-6." },
+        { "jenis": "poin", "judul": "Lima model atom dalam satu tarikan napas", "items": [
+          "Dalton (1803): atom bola pejal, bagian terkecil materi yang tak dapat dibagi lagi; atom unsur sama identik, atom unsur berbeda berbeda.",
+          "Thomson (1904): atom bola bermuatan positif dengan elektron tersebar merata di dalamnya — model 'roti kismis'; lahir setelah percobaan sinar katode membuktikan ada elektron.",
+          "Rutherford (1911): hamburan sinar alfa pada lempeng emas menunjukkan atom sebagian besar berongga dengan inti kecil bermuatan positif; elektron beredar mengelilingi inti.",
+          "Bohr (1913): elektron mengelilingi inti hanya pada kulit (orbit) dengan tingkat energi tertentu; berpindah kulit = menyerap atau memancarkan energi; sukses menjelaskan spektrum atom hidrogen.",
+          "Mekanika kuantum (1926): elektron bersifat gelombang-partikel; posisinya hanya dapat dinyatakan sebagai probabilitas dalam daerah yang disebut orbital (awan elektron)."
+        ] },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-model-atom.jpg", "keterangan": "Lima panel model atom dari kiri ke kanan: bola pejal Dalton; bola positif berisi titik-titik elektron Thomson; inti merah kecil dengan elektron tersebar Rutherford; kulit melingkar K-L-M dengan elektron Bohr; awan ungu bergradasi (orbital) mekanika kuantum. Panah jingga antarpanel menandakan urutan perkembangan." },
+        { "jenis": "poin", "judul": "🔍 Membaca gambar", "items": [
+          "Perhatikan apa yang terjadi pada 'posisi elektron': tersebar merata (Thomson) → beredar bebas di rongga (Rutherford) → terkunci di kulit tertentu (Bohr) → menjadi awan probabilitas (kuantum).",
+          "Inti atom baru muncul mulai model Rutherford (titik merah di tengah); model Dalton dan Thomson belum mengenal inti.",
+          "Panel Bohr menampilkan tiga kulit (K, L, M) — jumlah kulit inilah yang kelak menjadi 'periode' dalam tabel periodik."
+        ] },
+        { "jenis": "tabelinfo", "judul": "Kekuatan vs kelemahan lima model", "kolom": ["Model", "Kelebihan", "Kelemahan"], "rows": [
+          { "k": "Dalton", "v": "Menjelaskan hukum kekekalan massa & perbandingan tetap.", "w": "Tak dapat menjelaskan sifat listrik materi; atom ternyata masih terbagi." },
+          { "k": "Thomson", "v": "Memuat keberadaan elektron (muatan negatif).", "w": "Bertentangan dengan hasil hamburan sinar alfa: seharusnya ada inti pejal." },
+          { "k": "Rutherford", "v": "Menemukan inti atom; menjelaskan bahwa atom sebagian besar berongga.", "w": "Tak dapat menjelaskan mengapa elektron tidak jatuh ke inti & spektrum garis." },
+          { "k": "Bohr", "v": "Menjelaskan spektrum atom hidrogen & tingkat energi kulit.", "w": "Gagal untuk atom berelektron banyak; tidak menjelaskan ikatan kimia." },
+          { "k": "Mekanika kuantum", "v": "Menjelaskan atom berelektron banyak, orbital, dan ikatan.", "w": "Model probabilistik; posisi & momentum tak dapat dipastikan bersamaan." }
+        ] },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Kaitan konsep", "teks": "Setiap model lahir untuk menambal kelemahan model sebelumnya: sinar katode meruntuhkan Dalton, hamburan sinar alfa meruntuhkan Thomson, spektrum hidrogen meruntuhkan Rutherford, dan sifat gelombang elektron memperhalus Bohr. Jika soal memberi ciri percobaan, temukan dulu 'bukti baru'-nya, lalu model yang menjelaskannya pasti jawaban." },
+
+        { "jenis": "judul", "teks": "B. Notasi Atom, Partikel Dasar, dan Keluarga Isotop" },
+        { "jenis": "paragraf", "teks": "Semua informasi kuantitatif tentang satu atom termuat dalam notasinya: nomor massa A di atas, nomor atom Z di bawah, lalu lambang unsur. Dari dua angka itu plus muatan, kita dapat menghitung proton, neutron, dan elektron — keterampilan yang muncul hampir pasti di soal TKA, sering sebagai langkah antara soal konfigurasi atau ikatan." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-notasi.jpg", "keterangan": "Kiri: notasi A di atas Z di bawah lambang X dengan garis putus-putus penunjuk arti (A = nomor massa = proton + neutron; Z = nomor atom = jumlah proton). Kanan: tiga kartu partikel — proton (+1, di inti, jumlah = Z), neutron (netral, di inti, jumlah = A − Z), elektron (−1, mengelilingi inti, jumlah = Z − muatan) — plus kartu kuning peringatan tentang ion." },
+        { "jenis": "poin", "judul": "🔍 Membaca gambar", "items": [
+          "Tiga rumus kotak kanan adalah satu-satunya yang perlu dihafal: proton = Z; neutron = A − Z; elektron = Z − muatan.",
+          "Pada atom netral muatan = 0 sehingga elektron = Z; pada ion, selisih muatanlah yang menambah/mengurangi elektron.",
+          "Warna kartu (merah-netral-biru) sengaja mengikuti muatan partikel: positif, netral, negatif."
+        ] },
+        { "jenis": "tabelinfo", "judul": "Contoh menghitung partikel (atom netral & ion)", "kolom": ["Spesies", "p, n, e", "Catatan"], "rows": [
+          { "k": "²³₁₁Na", "v": "p=11, n=12, e=11", "w": "Atom netral: elektron = Z." },
+          { "k": "²⁴₁₂Mg²⁺", "v": "p=12, n=12, e=10", "w": "Kation +2: elektron = 12 − 2." },
+          { "k": "³⁵₁₇Cl⁻", "v": "p=17, n=18, e=18", "w": "Anion −1: elektron = 17 + 1." },
+          { "k": "³¹₁₅P", "v": "p=15, n=16, e=15", "w": "Unsur pusat pada soal resmi TKA no. 6." }
+        ] },
+        { "jenis": "istilah", "items": [
+          { "k": "Isotop", "v": "Proton sama, neutron berbeda (unsur sama, massa berbeda): ¹²C dan ¹³C." },
+          { "k": "Isobar", "v": "Nomor massa sama, proton berbeda: ¹⁴C dan ¹⁴N." },
+          { "k": "Isoton", "v": "Neutron sama, proton berbeda: ¹³C (n=7) dan ¹⁴N (n=7)." },
+          { "k": "Isoelektronik", "v": "Jumlah elektron sama: Ne, F⁻, Na⁺, Mg²⁺ (semua 10 e⁻)." },
+          { "k": "Nuklida", "v": "Sebutan untuk satu jenis inti dengan Z dan A tertentu." }
+        ] },
+        { "jenis": "callout", "tipe": "tips", "judul": "Cara Gemilang membaca 'keluarga iso-'", "teks": "Ingat kata kuncinya: ISOtop = proton (Z) sama; ISObAR = massa (A) sama, bar seperti garis massa; ISOton = neutron sama; ISOelektronik = elektron sama. Hitung neutron = A − Z dulu, baru bandingkan." },
+
+        { "jenis": "judul", "teks": "C. Konfigurasi Elektron: Aufbau, Gas Mulia, dan Pengecualian Stabil" },
+        { "jenis": "paragraf", "teks": "Konfigurasi elektron adalah 'alamat lengkap' seluruh elektron atom menurut tingkat energinya. Aturan pengisian (Aufbau) menyatakan elektron mengisi subkulit dari energi terendah: 1s 2s 2p 3s 3p 4s 3d 4p 5s 4d 5p 6s 4f 5d 6p 7s. Kapasitas tiap subkulit: s = 2, p = 6, d = 10, f = 14 elektron. Dua aturan pendamping: larangan Pauli (maksimal dua elektron per orbital dengan spin berlawanan) dan aturan Hund (orbital setara diisi tunggal dulu semua, baru berpasangan)." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-aufbau.jpg", "keterangan": "Kiri: diagram diagonal kotak-kotak subkulit 1s sampai 7p dengan garis merah urutan pengisian. Kanan atas: kartu urutan pengisian dan singkatan gas mulia; kanan bawah: kartu kuning pengecualian stabil Cr [Ar] 4s¹ 3d⁵ dan Cu [Ar] 4s¹ 3d¹⁰." },
+        { "jenis": "poin", "judul": "🔍 Membaca gambar", "items": [
+          "Garis merah dibaca dari atas ke bawah: setelah 3p loncat ke 4s BARU 3d — inilah mengapa konfigurasi ditulis urut energi, bukan urut kulit.",
+          "Kotak kuning adalah pengecualian yang paling sering diuji: setengah penuh (d⁵) dan penuh (d¹⁰) lebih stabil.",
+          "Singkatan gas mulia ([He], [Ne], [Ar], ...) mengganti blok konfigurasi inti agar konfigurasi unsur besar lebih pendek."
+        ] },
+        { "jenis": "alur", "judul": "Menulis konfigurasi ion tanpa terpeleset", "items": [
+          "Tulis konfigurasi atom netralnya terlebih dahulu (lengkap atau singkatan gas mulia).",
+          "Kation: lepaskan elektron dari kulit terluar (ns) dulu, BARU (n−1)d — urutan lepas kebalikan urutan isi!",
+          "Anion: tambahkan elektron melanjutkan urutan Aufbau.",
+          "Periksa jumlah elektron akhir = Z − muatan."
+        ] },
+        { "jenis": "callout", "tipe": "peringatan", "judul": "Dua pengecualian yang wajib reflex", "teks": "Cr (Z=24): [Ar] 4s¹ 3d⁵, bukan [Ar] 4s² 3d⁴. Cu (Z=29): [Ar] 4s¹ 3d¹⁰, bukan [Ar] 4s² 3d⁹. Konsekuensi ujian: Fe³⁺ ([Ar] 3d⁵, setengah penuh) lebih stabil daripada Fe²⁺ ([Ar] 3d⁶) — pola pikir yang sama." },
+
+        { "jenis": "judul", "teks": "D. Empat Bilangan Kuantum: KTP Setiap Elektron" },
+        { "jenis": "paragraf", "teks": "Dalam model kuantum, keadaan satu elektron dinyatakan dengan empat bilangan: utama (n), azimuth (l), magnetik (m), dan spin (s). Soal TKA favorit: 'tentukan keempat bilangan kuantum elektron terakhir unsur X'. Kuncinya disiplin urutan kerja: konfigurasi dulu, lalu orbital terakhir, baru terjemahkan ke empat bilangan." },
+        { "jenis": "tabelinfo", "judul": "Empat bilangan kuantum", "kolom": ["Bilangan", "Lambang", "Menyatakan"], "rows": [
+          { "k": "Utama", "v": "n = 1, 2, 3, ...", "w": "Nomor kulit / tingkat energi utama; makin besar, makin jauh dari inti." },
+          { "k": "Azimut", "v": "l = 0 ... n−1", "w": "Jenis subkulit: 0=s, 1=p, 2=d, 3=f (bentuk orbital)." },
+          { "k": "Magnetik", "v": "m = −l ... +l", "w": "Orientasi orbital dalam ruang (nomor orbital tempat elektron duduk)." },
+          { "k": "Spin", "v": "s = +½ atau −½", "w": "Arah rotasi elektron; panah naik diisi lebih dulu menurut aturan Hund." }
+        ] },
+        { "jenis": "alur", "judul": "Prosedur 5 langkah bilangan kuantum elektron terakhir", "items": [
+          "Tulis konfigurasi elektron atom (hati-hati pengecualian Cr/Cu dan ion!).",
+          "Tentukan subkulit terakhir yang terisi (mis. 3d⁵).",
+          "n = nomor kulit subkulit itu; l = kode subkulitnya (s0 p1 d2 f3).",
+          "Gambar kotak orbital subkulit itu sesuai aturan Hund (isi tunggal spin naik dulu), lalu lihat elektron terakhir jatuh di kotak ke berapa → m.",
+          "s = +½ bila elektron itu panah naik (pengisian pertama di orbitalnya), −½ bila panah turun (pasangan)."
+        ] },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Jebakan spin", "teks": "Subkulit yang terisi SETENGAH atau kurang: elektron terakhir pasti panah naik → s = +½. Subkulit yang terisi lebih dari setengah: elektron terakhir panah turun → s = −½. Contoh: 3d⁶ → elektron ke-6 adalah pasangan pertama → s = −½." },
+
+        { "jenis": "judul", "teks": "E. Letak Unsur: Periode dan Golongan dari Konfigurasi" },
+        { "jenis": "paragraf", "teks": "Tabel periodik adalah peta konfigurasi elektron: periode = nomor kulit terluar (n terbesar), golongan ditentukan elektron valensi. Unsur blok s dan p (golongan utama/A): elektron valensi = nsˣ npʸ, golongan = x + y. Unsur blok d (transisi/B): elektron valensi = nsˣ (n−1)dᶻ, golongan = x + z dengan ketentuan khusus: jumlah 8, 9, 10 = golongan VIIIB; 11 = IB; 12 = IIB. Blok f = lantanida (berakhir di 4f) dan aktinida (berakhir di 5f)." },
+        { "jenis": "poin", "judul": "Golongan utama (blok s & p)", "items": [
+          "Elektron valensi nsˣ npʸ → golongan = x + y (ditulis IA-VIIIA), periode = n.",
+          "Contoh: [Ne] 3s² 3p⁵ → valensi 7 → golongan VIIA, periode 3 (klor).",
+          "Gas mulia: ns² np⁶ → VIIIA (He: 1s² tetap VIIIA)."
+        ] },
+        { "jenis": "poin", "judul": "Golongan transisi (blok d)", "items": [
+          "Elektron valensi nsˣ (n−1)dᶻ → golongan = x + z, periode = n.",
+          "x + z = 8, 9, atau 10 → VIIIB; = 11 → IB; = 12 → IIB (ingat: Cr dan Cu mengecualikan konfigurasi!).",
+          "Contoh: [Ar] 4s² 3d³ → 2 + 3 = 5 → golongan VB (golongan 5 sistem baru), periode 4 (vanadium)."
+        ] },
+        { "jenis": "callout", "tipe": "tips", "judul": "Cara Gemilang: lihat subkulit terakhir", "teks": "Subkulit terakhir s/p → golongan utama dari jumlah elektron valensi; subkulit terakhir d → golongan dari (s + d); subkulit terakhir f → lantanida/aktinida. Periode selalu = angka kulit terbesar yang terisi elektron." },
+
+        { "jenis": "judul", "teks": "F. Sifat Periodik dan Trennya" },
+        { "jenis": "paragraf", "teks": "Sifat periodik adalah sifat yang berubah beraturan sepanjang tabel: jari-jari atom, energi ionisasi (EI), afinitas elektron (AE), keelektronegatifan (EN), serta sifat logam-nonlogam dan sifat asam-basa oksidanya. Semua tren itu punya SATU penyebab utama: tarik-menarik antara muatan inti efektif (muatan inti yang dirasakan elektron valensi setelah perisai elektron dalam) dengan jumlah kulit. Soal TKA gemar menyajikan tren ini sebagai tabel data atau grafik untuk diinterpretasi." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-tren-periodik.jpg", "keterangan": "Kisi tabel periodik skematik dengan dua panah besar bersilangan: panah merah ke kiri-bawah = jari-jari atom membesar; panah hijau ke kanan-atas = EI, AE, keelektronegatifan, dan sifat asam membesar. Lima kartu kanan merangkum definisi tiap sifat." },
+        { "jenis": "poin", "judul": "🔍 Membaca gambar", "items": [
+          "Dua panah bersilangan itu seluruh 'hafalan' sifat periodik: ke kanan atas = makin kecil/makin sukar melepas/makin kuat menarik; ke kiri bawah = sebaliknya.",
+          "Sifat asam oksida mengikuti keelektronegatifan: oksida nonlogam (kanan-atas) bersifat asam, oksida logam (kiri-bawah) bersifat basa.",
+          "Kartu EI dan AE sering tertukar: EI = energi untuk MELEPAS elektron; AE = energi terlibat saat MENANGKAP elektron."
+        ] },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-grafik-ei.jpg", "keterangan": "Grafik EI pertama periode 2 (Li sampai Ne): garis biru naik berundak dengan dua penurunan lokal yang ditandai titik merah pada B dan O; anotasi menjelaskan penyebab masing-masing penurunan; kartu biru kanan memberi cara membaca grafik tren berundak." },
+        { "jenis": "poin", "judul": "🔍 Membaca grafik EI", "items": [
+          "Tren umum naik kiri ke kanan karena muatan inti efektif bertambah pada kulit yang sama.",
+          "Penurunan di B: elektron pertama subkulit 2p lebih mudah dilepas daripada elektron 2s penuh.",
+          "Penurunan di O: pasangan elektron pertama dalam satu orbital 2p saling menolak sehingga salah satunya lebih mudah lepas — pola yang sama menjelaskan mengapa N (2p³ setengah penuh) relatif stabil."
+        ] },
+        { "jenis": "tabelinfo", "judul": "Ringkasan lima sifat periodik", "kolom": ["Sifat", "Definisi", "Tren (kanan / bawah)"], "rows": [
+          { "k": "Jari-jari atom", "v": "Jarak inti ke kulit terluar.", "w": "Kanan mengecil; bawah membesar." },
+          { "k": "Energi ionisasi", "v": "Energi minimum melepas 1 elektron terluar (fasa gas).", "w": "Kanan membesar; bawah mengecil." },
+          { "k": "Afinitas elektron", "v": "Energi terlibat saat menangkap 1 elektron; makin negatif makin mudah menangkap.", "w": "Kanan makin negatif; bawah makin kurang negatif." },
+          { "k": "Keelektronegatifan", "v": "Kemampuan menarik elektron ikatan; F = 4,0 terbesar.", "w": "Kanan membesar; bawah mengecil." },
+          { "k": "Sifat logam", "v": "Kecenderungan melepas elektron (tereduksi/oksidator lawan).", "w": "Kanan berkurang; bawah bertambah." }
+        ] },
+        { "jenis": "callout", "tipe": "info", "judul": "Kaitan konsep", "teks": "Muatan inti efektif naik ke kanan (proton bertambah, perisai hampir tetap) → elektron valensi tertarik lebih kuat → jari-jari mengecil, EI/EN membesar. Ke bawah, kulit bertambah → perisai menang → jari-jari membesar, EI/EN mengecil, sifat logam menguat." },
+
+        { "jenis": "judul", "teks": "G. Ikatan Kimia: Ion, Kovalen, dan Koordinasi" },
+        { "jenis": "paragraf", "teks": "Atom berikatan karena susunan elektron gas mulia (oktet/duplet) lebih stabil. Dua jalan besar: serah terima elektron (ikatan ion, logam ↔ nonlogam, selisih EN besar) dan pemakaian bersama pasangan elektron (ikatan kovalen, antar nonlogam). Kaidah oktet punya pengecualian penting: duplet untuk H dan He, oktet tak lengkap (B pada BF₃), dan oktet berkembang (P, S, Cl periode 3 ke atas seperti PCl₅ dan SF₆)." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-ikat-ion-kovalen.jpg", "keterangan": "Dua panel. Kiri (merah, ikatan ion NaCl): lingkaran Na (1e⁻ valensi) menyerahkan satu elektron lewat panah jingga ke Cl (7e⁻ valensi), menghasilkan kation Na⁺ kecil dan anion Cl⁻ besar yang tarik-menarik dalam kisi. Kanan (biru, ikatan kovalen Cl₂): dua lingkaran Cl bertumpang tindih dengan empat titik = satu pasangan elektron ikatan (PEI) dipakai bersama; teks bawah menjelaskan kovalen polar, nonpolar, dan koordinasi." },
+        { "jenis": "poin", "judul": "🔍 Membaca gambar", "items": [
+          "Panah jingga di panel kiri selalu dari logam ke nonlogam: arah perpindahan elektron menentukan tanda muatan ion.",
+          "Kation lebih KECIL dari atom netralnya (kulit terluar hilang), anion lebih BESAR (tolakan antar elektron bertambah) — perhatikan ukuran lingkaran.",
+          "Di panel kanan, pasangan titik di daerah tumpang tindih itulah PEI; pasangan lain yang tidak digambar tetap ada sebagai PEB pada tiap Cl."
+        ] },
+        { "jenis": "tabelinfo", "judul": "Ciri fisik senyawa ion vs kovalen", "kolom": ["Sifat", "Senyawa ion", "Senyawa kovalen"], "rows": [
+          { "k": "Wujud umum (suhu ruang)", "v": "Padat, kristal rapuh.", "w": "Padat, cair, atau gas (molekul diskret)." },
+          { "k": "Titik leleh & didih", "v": "Tinggi (kisi kuat).", "w": "Umumnya rendah (gaya antarmolekul lemah)." },
+          { "k": "Daya hantar listrik", "v": "Menghantar bila lelehan/larutan (ion bebas).", "w": "Umumnya tidak menghantar; polar dapat menghantar lemah." },
+          { "k": "Kelarutan", "v": "Umumnya larut dalam pelarut polar (air).", "w": "Nonpolar larut dalam pelarut nonpolar ('like dissolves like')." }
+        ] },
+        { "jenis": "poin", "judul": "Tiga rasa ikatan kovalen", "items": [
+          "Kovalen polar: PEI tertarik lebih kuat ke atom yang EN-nya lebih besar (HCl, H₂O) → momen dipol ≠ 0.",
+          "Kovalen nonpolar: PEI tertarik sama kuat karena atom identik atau geometri simetris (Cl₂, CO₂, CH₄).",
+          "Kovalen koordinasi: PEI berasal dari satu atom penyumbang pasangan elektron bebas (N→O pada HNO₃, S→O pada SO₄²⁻, B←N pada BF₃NH₃)."
+        ] },
+        { "jenis": "alur", "judul": "Menggambar struktur Lewis 5 langkah", "items": [
+          "Hitung total elektron valensi semua atom (tambah 1 per muatan negatif, kurang 1 per muatan positif).",
+          "Rangkai kerangka: atom paling sedikit/tidak paling elektronegatif sebagai pusat, hubungkan dengan pasangan ikatan.",
+          "Sebar sisa elektron sebagai PEB mulai dari atom tepi sampai oktet/duplet.",
+          "Bila atom pusat kekurangan elektron, ubah PEB atom tepi menjadi ikatan rangkap.",
+          "Periksa: jumlah titik = total elektron valensi; muatan formal sedekat mungkin ke nol."
+        ] },
+        { "jenis": "callout", "tipe": "peringatan", "judul": "Pengecualian oktet yang sering keluar", "teks": "Duplet: H, He, Li. Oktet tak lengkap: Be (BeCl₂), B (BF₃). Oktet berkembang (hanya periode 3+): PCl₅ (10 e⁻), SF₆ (12 e⁻). Molekul elektron ganjil: NO, NO₂. Jika soal menanyakan 'yang TIDAK mengikuti oktet', cari trio ini dulu." },
+
+        { "jenis": "judul", "teks": "H. Hibridisasi dan Bentuk Molekul (Teori VSEPR)" },
+        { "jenis": "paragraf", "teks": "VSEPR (Valence Shell Electron Pair Repulsion) menyatakan pasangan elektron kulit valensi — baik PEI maupun PEB — saling tolak dan mengatur diri sejauh mungkin, sehingga jumlah dan jenis pasangan menentukan bentuk molekul. Rumus cepat tim: PE = (elektron valensi atom pusat + jumlah atom terikat − muatan) ÷ 2; PEI = jumlah atom terikat; PEB = PE − PEI. Notasi bentuk: AXₙEₘ (n = PEI, m = PEB). Hibridisasi mengikuti jumlah PE: 2 = sp, 3 = sp², 4 = sp³, 5 = sp³d, 6 = sp³d²." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-vsepr.jpg", "keterangan": "Sembilan kartu bentuk molekul: linier (AX₂, 180°), segitiga planar (AX₃, 120°), bentuk V (AX₂E), tetrahedral (AX₄, 109,5°), piramida segitiga (AX₃E, ±107°), bentuk V (AX₂E₂, ±104,5°), jungkat-jungkit (AX₄E), segitiga bipiramida (AX₅), oktahedral (AX₆); tiap kartu memuat notasi AX/E, rasio PEI/PEB, hibridisasi, sudut, contoh, dan mini-gambar bola-tongkat dengan lingkaran kuning putus-putus untuk PEB." },
+        { "jenis": "poin", "judul": "🔍 Membaca gambar", "items": [
+          "Bandingkan AX₄ (tetrahedral) dengan AX₃E (piramida) dan AX₂E₂ (V): ketiganya sp³, tetapi setiap PEB yang masuk 'menggeser' sudut ikatan mengecil (109,5° → ±107° → ±104,5°).",
+          "PEB menempati ruang lebih besar daripada PEI — karena itu pada jungkat-jungkit (AX₄E) PEB memilih posisi ekuatorial yang longgar.",
+          "Baris contoh memberi jangkar hafalan: CO₂, BF₃, SO₂, CH₄, NH₃/PCl₃, H₂O, SF₄, PCl₅, SF₆."
+        ] },
+        { "jenis": "alur", "judul": "Menentukan bentuk & kepolaran dalam 5 langkah", "items": [
+          "Gambar Lewis senyawa; temukan atom pusat.",
+          "Hitung PE dengan rumus tim; pisahkan PEI (jumlah atom terikat) dan PEB.",
+          "Tulis notasi AXₙEₘ → baca bentuk & sudut dari tabel.",
+          "Hibridisasi = jumlah PE (2→sp, 3→sp², 4→sp³, 5→sp³d, 6→sp³d²).",
+          "Kepolaran: ada PEB pada pusat ATAU atom tepi berbeda → biasanya polar; tanpa PEB dan semua tepi sama (AX₂, AX₃, AX₄, AX₅, AX₆ simetris) → nonpolar."
+        ] },
+        { "jenis": "callout", "tipe": "gemilang", "judul": "Polar atau nonpolar dalam 5 detik", "teks": "Lihat PEB atom pusat: ADA PEB → hampir pasti polar (momen dipol tak saling menghapus); TIDAK ADA PEB dengan semua atom tepi sama → nonpolar. CO₂ (AX₂) nonpolar, H₂O (AX₂E₂) polar; BF₃ nonpolar, NH₃ polar. Pengecualian yang harus diingat: AX₄E₂ seperti XeF₄ kembali simetris (segiempat datar) sehingga nonpolar." },
+
+        { "jenis": "judul", "teks": "I. Gaya Antarmolekul: van der Waals dan Ikatan Hidrogen" },
+        { "jenis": "paragraf", "teks": "Di luar molekul masih ada gaya yang lebih lemah tetapi menentukan wujud zat: gaya antarmolekul. Tiga jenis pentingnya: gaya London/dispersi (dipol sesaat, ada pada semua molekul, menguat seiring besarnya massa/elektron), gaya dipol-dipol (antar molekul polar), dan ikatan hidrogen (dipol-dipol ekstra kuat bila H terikat langsung ke F, O, atau N). Jangan tertukar dengan gaya INTRAmolekul (= ikatan kovalen/ion di dalam molekul) yang jauh lebih kuat." },
+        { "jenis": "gambar", "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-hidrogen-hf.jpg", "keterangan": "Tiga molekul HF berjajar: garis hitam tebal H–F di dalam tiap molekul (intramolekul), garis putus-putus merah antar molekul (ikatan hidrogen, antarmolekul); panah (1) menunjuk ikatan kovalen dan panah (2) menunjuk garis putus-putus; kartu kuning bawah merangkum definisi ikatan hidrogen, akibatnya pada titik didih, dan gaya London/dispersi." },
+        { "jenis": "poin", "judul": "🔍 Membaca gambar", "items": [
+          "Garis penuh = ikatan kovalen (intramolekul, kuat); garis putus-putus = ikatan hidrogen (antarmolekul, lemah) — soal sering meminta membedakan keduanya lewat nomor panah.",
+          "Ikatan hidrogen menghubungkan H (molekul satu) dengan F/O/N (molekul lain), BUKAN H dengan H.",
+          "Kartu kuning menjelaskan anomali titik didih HF, H₂O, NH₃ yang jauh lebih tinggi daripada tren golongannya."
+        ] },
+        { "jenis": "tabelinfo", "judul": "Hierarki gaya antarmolekul", "kolom": ["Jenis gaya", "Terjadi pada", "Kekuatan relatif"], "rows": [
+          { "k": "London / dispersi", "v": "Semua molekul (dominan pada nonpolar).", "w": "Paling lemah; menguat bila massa & jumlah elektron bertambah." },
+          { "k": "Dipol-dipol", "v": "Molekul polar permanen (HCl, SO₂).", "w": "Sedang; bertambah kuat bila momen dipol besar." },
+          { "k": "Ikatan hidrogen", "v": "Molekul dengan H–F, H–O, atau H–N (HF, H₂O, NH₃, alkohol).", "w": "Paling kuat di antara gaya antarmolekul; tetap jauh lebih lemah daripada ikatan kovalen." }
+        ] },
+        { "jenis": "callout", "tipe": "info", "judul": "Kaitan konsep: dari atom sampai wujud zat", "teks": "Rantai bab ini kini tertutup: konfigurasi elektron → letak & sifat periodik → jenis ikatan → bentuk & kepolaran molekul → gaya antarmolekul → titik didih/wujud. Soal 'mengapa titik didih X lebih tinggi dari Y?' hampir selalu dijawab dengan rantai ini: bandingkan kepolaran dulu, lalu ikatan hidrogen, lalu massa molekul (London)." },
+
+        { "jenis": "istilah", "items": [
+          { "k": "Orbital", "v": "Daerah probabilitas terbesar menemukan elektron (model kuantum)." },
+          { "k": "Elektron valensi", "v": "Elektron kulit terluar yang terlibat ikatan." },
+          { "k": "Muatan inti efektif", "v": "Muatan inti bersih yang dirasakan elektron valensi setelah perisai elektron dalam." },
+          { "k": "PEI / PEB", "v": "Pasangan elektron ikatan / pasangan elektron bebas pada atom pusat." },
+          { "k": "Hibridisasi", "v": "Pencampuran orbital atom pusat menjadi orbital hibrida setara (sp, sp², sp³, sp³d, sp³d²)." },
+          { "k": "Momen dipol", "v": "Ukuran pemisahan muatan dalam molekul; nol = nonpolar." },
+          { "k": "Kisi kristal", "v": "Susunan berulang ion-ion dalam padatan ionik." },
+          { "k": "Aturan oktet", "v": "Kecenderungan atom memiliki 8 elektron valensi (duplet untuk H/He)." }
+        ] },
+        { "jenis": "callout", "tipe": "guru", "judul": "Catatan tentor (mode panggung)", "teks": "Tekankan rantai sebab-akibat, bukan hafalan terpisah: setiap kali menulis konfigurasi, lanjutkan otomatis ke letak unsur lalu satu sifat periodiknya. Latih format MCMA & Benar/Salah sejak bab ini karena 7 dari 20 soal resmi TKA Kimia memakai dua format itu. Gunakan bagan VSEPR sebagai slide kunci: minta siswa menebar bentuk sebelum tabel dibuka." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Diketahui notasi dua macam unsur: ³¹₁₅X dan ³⁵₁₇Y. Jika kedua unsur bersenyawa, hibridisasi atom pusat, geometri molekul, dan kepolaran senyawanya berturut-turut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "sp²; segitiga piramida; polar",
+            "sp²; segitiga planar; nonpolar",
+            "sp³; segitiga piramida; nonpolar",
+            "sp³; segitiga piramida; polar",
+            "sp³; oktahedral; polar"
+          ],
+          "jawaban": 3,
+          "pembahasan": "X = P (valensi 5), Y = Cl (valensi 7). Senyawa yang terbentuk PCl₃: atom pusat P mengikat 3 Cl (PEI = 3). PE = (5 + 3) ÷ 2 = 4 → PEB = 4 − 3 = 1. Notasi AX₃E → hibridisasi sp³, geometri piramida segitiga. Karena ada PEB, momen dipol tidak saling menghapus → molekul POLAR. Jawaban D.",
+          "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-vsepr.jpg",
+          "pembahasanGambarKet": "Kartu 'Piramida segitiga' (AX₃E, sp³, PEI/PEB = 3/1) adalah baris yang dipakai PCl₃: satu lingkaran kuning (PEB) membuat molekul tak simetris sehingga polar.",
+          "sumber": "Contoh Soal Resmi TKA Kimia no. 6 — Pusmendik (kunci resmi D; notasi ditranskrip teks)"
+        },
+        {
+          "soal": "Perhatikan pernyataan-pernyataan tentang model atom yang elektronnya bergerak mengelilingi inti pada lintasan kulit-kulit tertentu (K, L, M, ...) berikut! (1) Elektron bergerak mengelilingi inti atom pada lintasan tertentu yang disebut kulit atom. (2) Energi elektron bersifat terkuantisasi sehingga hanya nilai tertentu yang diperbolehkan. (3) Posisi elektron tidak dapat diketahui secara pasti, melainkan dinyatakan dalam bentuk probabilitas. (4) Perpindahan elektron antartingkat energi disertai penyerapan atau pelepasan energi dalam bentuk foton. (5) Model atom ini gagal menjelaskan spektrum atom hidrogen. Pernyataan yang sesuai dengan model atom Bohr ditunjukkan oleh nomor ....",
+          "tipe": "pg",
+          "opsi": [
+            "(1), (2), dan (4)",
+            "(1), (2), dan (5)",
+            "(2), (3), dan (4)",
+            "(3), (4), dan (5)",
+            "(1), (4), dan (5)"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Ciri model Bohr: kulit/lintasan tetap (1), energi terkuantisasi (2), transisi kulit = serap/pancar foton (4). Pernyataan (3) adalah ciri mekanika kuantum, bukan Bohr. Pernyataan (5) salah arah: justru keberhasilan Bohr adalah menjelaskan spektrum HIDROGEN; kegagalannya pada atom berelektron banyak. Maka (1), (2), (4).",
+          "sumber": "Adaptasi latihan no. 1 — Sukses TKA Saintek hlm. 192"
+        },
+        {
+          "soal": "Kromium merupakan logam transisi yang banyak dimanfaatkan dalam industri, misalnya untuk pelapisan logam agar tahan karat (korosi). Unsur ini memiliki nomor atom 24 dan nomor massa 52. Berdasarkan informasi tersebut, konfigurasi elektron kromium pada keadaan dasar adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁴",
+            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s¹ 3d⁵",
+            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁵",
+            "1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁶",
+            "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 4p⁴"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Z = 24 berarti 24 elektron. Pengisian naif memberi 4s² 3d⁴, tetapi subkulit d setengah penuh (d⁵) lebih stabil, sehingga satu elektron 4s 'pindah': [Ar] 4s¹ 3d⁵ = 1s² 2s² 2p⁶ 3s² 3p⁶ 4s¹ 3d⁵. Opsi C berjumlah 25 elektron (salah jumlah), opsi D melompati 4s, opsi E mengisi 4p sebelum 3d penuh.",
+          "sumber": "Adaptasi latihan no. 2 — Sukses TKA Saintek hlm. 192"
+        },
+        {
+          "soal": "Konfigurasi elektron ion X⁺ adalah [Ar]. Harga keempat bilangan kuantum untuk elektron terakhir atom X adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "n = 2, l = 0, m = 0, s = −½",
+            "n = 2, l = 1, m = +1, s = +½",
+            "n = 3, l = 2, m = +2, s = +½",
+            "n = 3, l = 1, m = +1, s = +½",
+            "n = 4, l = 0, m = 0, s = +½"
+          ],
+          "jawaban": 4,
+          "pembahasan": "X⁺ = [Ar] (18 elektron) → atom X = 19 elektron = kalium: [Ar] 4s¹. Elektron terakhir berada di 4s¹: n = 4; subkulit s → l = 0; satu-satunya orbital s → m = 0; elektron pertama (panah naik) → s = +½.",
+          "sumber": "Adaptasi latihan no. 3 — Sukses TKA Saintek hlm. 192"
+        },
+        {
+          "soal": "Vanadium memiliki nomor atom 23. Unsur ini merupakan logam transisi yang digunakan sebagai campuran baja untuk meningkatkan kekuatan dan ketahanan terhadap korosi. Berdasarkan informasi tersebut, letak unsur vanadium pada sistem periodik adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "golongan VB, periode 4",
+            "golongan VIIB, periode 4",
+            "golongan IVB, periode 4",
+            "golongan VB, periode 3",
+            "golongan VIB, periode 3"
+          ],
+          "jawaban": 0,
+          "pembahasan": "V (Z=23): [Ar] 4s² 3d³. Blok d → golongan = elektron 4s + 3d = 2 + 3 = 5 → golongan VB (golongan 5 notasi IUPAC baru); periode = kulit terbesar = 4.",
+          "sumber": "Adaptasi latihan no. 8 — Sukses TKA Saintek hlm. 192"
+        },
+        {
+          "soal": "Diketahui lima unsur: ₁₇P, ₂₀Q, ₂₅R, ₂₆S, dan ₃₅T. Pasangan unsur yang termasuk golongan halogen adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "P dan Q",
+            "R dan S",
+            "Q dan S",
+            "P dan T",
+            "R dan T"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Halogen = golongan VIIA (valensi 7). P (Z=17): [Ne] 3s² 3p⁵ → VIIA (Cl). T (Z=35): [Ar] 4s² 3d¹⁰ 4p⁵ → VIIA (Br). Q (20) = IIA, R (25) & S (26) = transisi (VIIB & VIIIB). Maka P dan T.",
+          "sumber": "Adaptasi latihan no. 9 — Sukses TKA Saintek hlm. 193"
+        },
+        {
+          "soal": "Diketahui nomor atom beberapa unsur berikut: P = 4, Q = 11, R = 12, S = 19, T = 20. Pernyataan yang benar berkaitan dengan unsur-unsur tersebut adalah .... (Pilih semua yang benar!)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Unsur P, R, dan T memiliki jumlah elektron valensi yang sama.",
+            "Unsur R dan S berada pada periode yang sama dalam sistem periodik unsur.",
+            "Unsur Q dan S cenderung membentuk ion positif dengan muatan +1 untuk mencapai kestabilan.",
+            "Unsur P dan T memiliki jari-jari atom yang identik sehingga sifat kimianya mirip.",
+            "Unsur P, Q, dan R ketiganya merupakan unsur logam alkali tanah yang sangat reaktif terhadap air."
+          ],
+          "jawaban": [0, 2],
+          "pembahasan": "P = Be (2s², valensi 2), R = Mg (3s²), T = Ca (4s²) → sama-sama valensi 2 (golongan IIA): pernyataan 1 BENAR. R = Mg (periode 3), S = K (periode 4): pernyataan 2 salah. Q = Na dan S = K (golongan IA) → ion +1: pernyataan 3 BENAR. Jari-jari P (Be) jauh lebih kecil dari T (Ca): pernyataan 4 salah. P = Be logam alkali tanah, tetapi Q = Na logam ALKALI dan R = Mg alkali tanah — 'ketiganya alkali tanah' salah; lagi pula Be tidak reaktif terhadap air dingin: pernyataan 5 salah.",
+          "sumber": "Adaptasi latihan no. 10 (format MCMA) — Sukses TKA Saintek hlm. 193"
+        },
+        {
+          "soal": "Perhatikan data afinitas elektron dua unsur nonlogam berikut: unsur X = +240 kJ/mol dan unsur Y = −349 kJ/mol. Berdasarkan data tersebut, pernyataan yang benar mengenai kedua unsur adalah .... (Pilih semua yang benar!)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Unsur Y lebih cenderung membentuk anion dibandingkan unsur X.",
+            "Unsur X lebih reaktif secara kimia daripada unsur Y.",
+            "Unsur Y mudah menangkap elektron daripada unsur X.",
+            "Afinitas elektron positif menunjukkan energi dilepaskan saat elektron ditangkap.",
+            "Afinitas elektron negatif menunjukkan energi dilepaskan saat elektron ditangkap."
+          ],
+          "jawaban": [0, 2, 4],
+          "pembahasan": "Nilai AE negatif (Y) berarti penangkapan elektron MELEPAS energi → berlangsung mudah dan anion stabil: pernyataan 1 dan 3 BENAR, sekaligus menegaskan pernyataan 5 BENAR (negatif = melepas energi). Nilai positif (X) berarti perlu energi untuk menangkap elektron → X sulit membentuk anion: pernyataan 4 salah (positif = menyerap energi). Reaktivitas nonlogam sejalan dengan kemudahan menangkap elektron → Y lebih reaktif: pernyataan 2 salah.",
+          "sumber": "Adaptasi latihan no. 11 (format MCMA) — Sukses TKA Saintek hlm. 193"
+        },
+        {
+          "soal": "Jika diketahui notasi unsur ²⁷₁₃X dan ³¹₁₅Y, pernyataan berikut yang benar terkait sifat kedua unsur tersebut adalah .... (Pilih semua yang benar!)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Keelektronegatifan unsur X dan Y sama.",
+            "Jari-jari atom Y lebih besar daripada unsur X.",
+            "Unsur X lebih bersifat logam dibandingkan unsur Y.",
+            "Energi ionisasi unsur X lebih besar dari unsur Y.",
+            "Titik leleh unsur X lebih besar dibandingkan unsur Y."
+          ],
+          "jawaban": [2, 4],
+          "pembahasan": "X = Al (logam periode 3 golongan IIIA), Y = P (nonlogam golongan VA). Sepanjang periode kiri→kanan: sifat logam berkurang (X lebih logam: pernyataan 3 BENAR), EN dan EI bertambah (pernyataan 1 dan 4 salah), jari-jari mengecil (X > Y, pernyataan 2 salah). Titik leleh: Al logam kristal logam ±660 °C, P molekuler (P₄) ±44 °C → pernyataan 5 BENAR.",
+          "sumber": "Adaptasi latihan no. 14 (format MCMA) — Sukses TKA Saintek hlm. 193"
+        },
+        {
+          "soal": "Perhatikan sifat beberapa unsur berikut! Unsur P: wujud padat, oksida bersifat basa, potensial reduksi −2,71 V, keelektronegatifan 1,0. Unsur Q: wujud gas, oksida bersifat asam, potensial reduksi +1,36 V, keelektronegatifan 2,9. Unsur R: wujud padat, oksida amfoter, potensial reduksi −1,66 V, keelektronegatifan 1,5. Berdasarkan data tersebut, pernyataan berikut yang benar adalah .... (Pilih semua yang benar!)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Unsur P dan R merupakan unsur logam, sedangkan unsur Q merupakan unsur nonlogam.",
+            "Unsur P lebih mudah teroksidasi dibandingkan unsur R.",
+            "Unsur R dapat bersifat asam dan basa.",
+            "Unsur P paling stabil di antara ketiganya.",
+            "Keelektronegatifan Q paling tinggi menunjukkan unsur tersebut mudah melepaskan elektron."
+          ],
+          "jawaban": [0, 1, 2],
+          "pembahasan": "Ciri logam: padat, oksida basa, E° sangat negatif, EN kecil → P dan R logam; Q (gas, oksida asam, E° positif, EN besar) nonlogam: pernyataan 1 BENAR. E° P (−2,71 V) lebih negatif dari R (−1,66 V) → P lebih mudah teroksidasi: pernyataan 2 BENAR. Oksida R amfoter → R (ciri aluminium) dapat bereaksi sebagai asam maupun basa: pernyataan 3 BENAR. E° paling negatif justru = paling reaktif, bukan paling stabil: pernyataan 4 salah. EN tinggi = mudah MENANGKAP elektron: pernyataan 5 salah.",
+          "sumber": "Adaptasi latihan no. 16 (format MCMA) — Sukses TKA Saintek hlm. 194"
+        },
+        {
+          "soal": "Diketahui beberapa sifat unsur ²⁴₁₂X dan ⁴⁰₂₀Y berikut: (1) X logam, Y nonlogam, titik leleh/didih X > Y; (2) X logam, Y nonlogam, X < Y; (3) X logam, Y logam, X < Y; (4) X logam, Y logam, X > Y; (5) X nonlogam, Y nonlogam, X < Y. Sifat yang tepat untuk kedua unsur tersebut ditunjukkan oleh nomor ....",
+          "tipe": "pg",
+          "opsi": ["1", "2", "3", "4", "5"],
+          "jawaban": 2,
+          "pembahasan": "X = Mg dan Y = Ca, keduanya logam alkali tanah (golongan IIA). Dalam satu golongan ke bawah jari-jari membesar dan ikatan logam melemah: titik leleh Mg (±650 °C) < Ca (±842 °C). Catatan: tren titik leleh IIA memang menurun ke bawah setelah Ca, tetapi pasangan Mg-Ca berada pada ruas X < Y. Maka baris (3): logam-logam dengan X < Y.",
+          "sumber": "Adaptasi latihan no. 15 — Sukses TKA Saintek hlm. 193"
+        },
+        {
+          "soal": "Diketahui harga keelektronegatifan beberapa unsur: K = 2,20; L = 2,55; M = 3,04; N = 4,00; O = 0,93. Berdasarkan data tersebut, pasangan unsur yang membentuk senyawa paling polar adalah ....",
+          "tipe": "pg",
+          "opsi": ["K dan L", "K dan O", "L dan M", "M dan N", "N dan O"],
+          "jawaban": 4,
+          "pembahasan": "Kepolaran ikatan sebanding dengan selisih keelektronegatifan (ΔEN). Hitung: K-L = 0,35; K-O = 1,27; L-M = 0,49; M-N = 0,96; N-O = 3,07. Selisih terbesar = N dan O (3,07) → ikatan paling polar (bahkan cenderung ionik).",
+          "sumber": "Adaptasi latihan no. 19 — Sukses TKA Saintek hlm. 194"
+        },
+        {
+          "soal": "Perhatikan tipe dan geometri molekul yang dibentuk unsur ¹⁴N, ³²S, dan ¹⁹F berikut! Baris (1) AX₃, PEB 0, planar segitiga; (2) AX₃E, PEB 1, bengkok; (3) AX₄, PEB 0, tetrahedral; (4) AX₃E, PEB 1, piramida segitiga; (5) AX₄E, PEB 1, jungkat-jungkit. Tipe dan geometri molekul SF₄ dan NF₃ secara berturut-turut ditunjukkan oleh nomor ....",
+          "tipe": "pg",
+          "opsi": [
+            "(2) dan (4)",
+            "(3) dan (1)",
+            "(3) dan (5)",
+            "(4) dan (3)",
+            "(5) dan (4)"
+          ],
+          "jawaban": 4,
+          "pembahasan": "SF₄: S valensi 6, PEI 4 → PE = (6+4)/2 = 5, PEB = 1 → AX₄E = jungkat-jungkit = baris (5). NF₃: N valensi 5, PEI 3 → PE = (5+3)/2 = 4, PEB = 1 → AX₃E = piramida segitiga = baris (4). Maka (5) dan (4).",
+          "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-vsepr.jpg",
+          "pembahasanGambarKet": "Kartu 'Jungkat-jungkit' (AX₄E, sp³d) untuk SF₄ dan kartu 'Piramida segitiga' (AX₃E, sp³) untuk NF₃; lingkaran kuning = PEB yang menempati satu posisi domain.",
+          "sumber": "Adaptasi latihan no. 24 — Sukses TKA Saintek hlm. 195"
+        },
+        {
+          "soal": "Seorang siswa mempelajari padatan natrium oksida. Ia menaruh padatan tersebut dalam wadah kaca dan menambahkan sedikit air. Ia mengamati bahwa senyawa tersebut bereaksi hebat dengan air membentuk larutan yang bersifat basa. Ketika padatan ini ditekan dengan spatula, ternyata bersifat keras dan rapuh. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "Na₂O adalah senyawa ionik karena tersusun atas logam dan nonlogam.",
+            "Ketika dilarutkan dalam air, larutannya dapat menghantar listrik karena mengandung ion yang bergerak bebas.",
+            "Na₂O adalah senyawa kovalen karena bersifat rapuh."
+          ],
+          "jawaban": [0, 0, 1],
+          "pembahasan": "Na (logam IA) + O (nonlogam VIA) → serah terima elektron → ionik: pernyataan 1 BENAR. Ciri rapuh/keras dan larutan menghantar listrik justru ciri senyawa ION (ion bebas bergerak): pernyataan 2 BENAR. Kesimpulan 'kovalen karena rapuh' terbalik: rapuh adalah ciri kisi ionik (pergeseran lapisan membuat ion senama berhadapan dan tolak-menolak): pernyataan 3 SALAH.",
+          "sumber": "Adaptasi latihan no. 21 (format PGK kategori) — Sukses TKA Saintek hlm. 194"
+        },
+        {
+          "soal": "Suatu senyawa tersusun dari dua unsur yaitu ₆X dan ₁₇Y. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "Unsur X pada senyawa XY₄ tidak memiliki pasangan elektron bebas (PEB).",
+            "Geometri molekul XY₄ adalah linier.",
+            "Molekul XY₄ memiliki momen dipol total ≠ 0."
+          ],
+          "jawaban": [0, 1, 1],
+          "pembahasan": "X = C (valensi 4), Y = Cl (valensi 7) → CCl₄. PE atom pusat = (4+4)/2 = 4, PEI 4 → PEB 0: pernyataan 1 BENAR. AX₄ = TETRAHEDRAL, bukan linier: pernyataan 2 SALAH. Tanpa PEB dengan empat atom tepi identik → simetris → momen dipol total = 0 (nonpolar): pernyataan 3 SALAH.",
+          "sumber": "Adaptasi latihan no. 22 (format PGK kategori) — Sukses TKA Saintek hlm. 194"
+        },
+        {
+          "soal": "Diketahui konfigurasi elektron unsur X dan Y: X = 1s² 2s² 2p⁶ 3s² 3p³ dan Y = 1s² 2s² 2p⁵. Berdasarkan data tersebut, tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "Unsur X dapat membentuk 3 ikatan kovalen dengan unsur Y sehingga rumus senyawa yang terbentuk adalah XY₃.",
+            "Senyawa XY₃ bersifat nonpolar karena memiliki geometri molekul yang simetris sehingga momen dipol saling meniadakan.",
+            "Atom pusat (X) dalam senyawa XY₃ mengalami hibridisasi sp³."
+          ],
+          "jawaban": [0, 1, 0],
+          "pembahasan": "X = P (valensi 5, butuh 3 elektron), Y = F (valensi 7, butuh 1) → PF₃: pernyataan 1 BENAR. PF₃: PE = (5+3)/2 = 4, PEB = 1 → AX₃E piramida segitiga, TIDAK simetris → POLAR: pernyataan 2 SALAH. Jumlah domain 4 → hibridisasi sp³: pernyataan 3 BENAR.",
+          "sumber": "Adaptasi latihan no. 23 (format PGK kategori) — Sukses TKA Saintek hlm. 195"
+        },
+        {
+          "soal": "Perhatikan gambar ilustrasi tentang gaya intramolekul dan antarmolekul hidrogen fluorida (HF) berikut: tiga molekul H–F berjajar, garis penuh di dalam tiap molekul dan garis putus-putus di antara molekul yang berdekatan. Tentukan BENAR atau SALAH untuk tiap pernyataan berikut!",
+          "tipe": "tabel",
+          "kolom": ["Benar", "Salah"],
+          "baris": [
+            "Ikatan antara atom H dan F dalam molekul yang sama adalah gaya antarmolekul.",
+            "Gaya intramolekul lebih kuat daripada gaya antarmolekul.",
+            "Ikatan hidrogen ditunjukkan oleh garis putus-putus antar molekul."
+          ],
+          "jawaban": [1, 0, 0],
+          "pembahasan": "Ikatan H–F di DALAM molekul adalah ikatan kovalen = gaya INTRAmolekul: pernyataan 1 SALAH. Ikatan kovalen (intramolekul, orde ratusan kJ/mol) jauh lebih kuat daripada gaya antarmolekul (orde puluhan kJ/mol): pernyataan 2 BENAR. Ikatan hidrogen (H···F antar molekul) memang digambarkan sebagai garis putus-putus: pernyataan 3 BENAR.",
+          "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1-hidrogen-hf.jpg",
+          "pembahasanGambarKet": "Panah (1) menunjuk garis penuh H–F (intramolekul), panah (2) menunjuk garis putus-putus antar molekul (ikatan hidrogen = antarmolekul).",
+          "sumber": "Adaptasi latihan no. 25 (format PGK kategori) — Sukses TKA Saintek hlm. 195"
+        },
+        {
+          "soal": "Pasangkan setiap tokoh/model atom dengan pernyataan yang paling tepat!",
+          "tipe": "jodoh",
+          "premis": [
+            "John Dalton",
+            "J.J. Thomson",
+            "Ernest Rutherford",
+            "Niels Bohr",
+            "Mekanika kuantum (Schrödinger dkk.)"
+          ],
+          "opsi": [
+            "Atom berbentuk bola pejal yang tak dapat dibagi lagi",
+            "Atom bola bermuatan positif dengan elektron tersebar merata di dalamnya",
+            "Atom berinti kecil bermuatan positif, sebagian besar volumenya ruang hampa",
+            "Elektron beredar pada kulit-kulit dengan tingkat energi tertentu",
+            "Elektron berada dalam orbital berdasarkan probabilitas (awan elektron)",
+            "Elektron hanya dapat berada di dua lintasan sekaligus"
+          ],
+          "jawaban": [0, 1, 2, 3, 4],
+          "pembahasan": "Dalton = bola pejal; Thomson = roti kismis (elektron tersebar dalam bola positif); Rutherford = inti kecil + ruang hampa (percobaan lempeng emas); Bohr = kulit tingkat energi; kuantum = orbital probabilitas. Opsi pengecoh 'dua lintasan sekaligus' tidak milik siapa pun.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — format menjodohkan patokan TKA)"
+        },
+        {
+          "soal": "Jumlah pasangan elektron bebas (PEB) pada atom pusat dalam molekul XeF₄ adalah ....",
+          "tipe": "isian",
+          "jawaban": "2",
+          "hintFormat": "Tulis satu angka bulat, contoh: 3",
+          "pembahasan": "Xe valensi 8, terikat 4 F → PE = (8 + 4) ÷ 2 = 6; PEI = 4 → PEB = 6 − 4 = 2. (Bentuknya AX₄E₂ = segiempat datar, hibridisasi sp³d² — meskipun ber-PEB, geometrinya simetris sehingga XeF₄ nonpolar.)",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — penerapan rumus PE/PEB)"
+        },
+        {
+          "soal": "Unsur besi (Fe) memiliki nomor atom 26. Jawablah tiga poin berikut: (a) tuliskan konfigurasi elektron atom Fe dan ion Fe³⁺; (b) tentukan letak Fe (periode & golongan) dalam tabel periodik; (c) jelaskan mengapa ion Fe³⁺ lebih stabil daripada Fe²⁺ ditinjau dari keterisian subkulit d!",
+          "tipe": "uraian",
+          "jawaban": "Rubrik: (a) Fe: [Ar] 4s² 3d⁶ (atau 1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁶); Fe³⁺: lepas 2 elektron 4s dulu lalu 1 dari 3d → [Ar] 3d⁵. (b) Blok d: golongan = 2 + 6 = 8 → VIIIB (golongan 8 notasi baru), periode 4. (c) Fe³⁺ berakhir 3d⁵ = setengah penuh (tiap orbital d terisi tunggal sesuai aturan Hund) yang lebih stabil; Fe²⁺ = 3d⁶ memiliki satu orbital berpasangan yang menambah tolakan antar elektron sehingga relatif lebih mudah teroksidasi lanjut.",
+          "pembahasan": "Kunci pengerjaan: (1) konfigurasi netral dulu; (2) ion positif melepas dari 4s SEBELUM 3d (kebalikan urutan pengisian); (3) golongan transisi = jumlah elektron 4s + 3d; (4) kestabilan setengah penuh d⁵ adalah konsep yang sama dengan pengecualian Cr/Cu di bagian C.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — uraian berantai konfigurasi→letak→kestabilan)"
+        }
+      ]
+    }
+  ]
+}
