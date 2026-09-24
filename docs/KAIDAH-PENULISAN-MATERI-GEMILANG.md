@@ -81,3 +81,30 @@ perbedaan hasilnya").
 Bab 4 Biologi (Turn 59): 10 visual direstrukturisasi penuh mengikuti §2 dan 8
 crop modul dirender ulang 300 dpi mengikuti §3 — lihat
 `docs/drafts/draft-biologi-k12-v3-bab4.json` sebagai referensi emas.
+
+## 6. STANDAR KEDALAMAN MINIMAL PER SUBBAB (Turn 80 — jawaban atas keluhan
+"materi kurang dijabarkan & belum kolaborasi buku")
+
+Keluhan owner Turn 80 diakui benar: kecepatan menambah mapel membuat materi
+terlalu ringkas. Mulai turn ini SETIAP subbab WAJIB memuat minimal:
+1. **2 paragraf konsep** beruntun (analogi sehari-hari -> definisi -> contoh
+   mikro), bukan daftar poin semata;
+2. **1 visual ber-anatomi KAIDAH** (asli/HD ber-kredit; penunjang hanya bila
+   tak ada padanan);
+3. **1 tabel/bagan pembanding** berisi (bukan judul saja);
+4. **1 contoh terpecah langkah** (Langkah 1..n) yang MENIRU pola soal bank;
+5. **1 kartu "RUMUS THE KING"** (callout tipe `gemilang`): satu rumus/kunci
+   cepat + satu kalimat cara pakai, gaya kartu emas premium;
+6. **1 peringatan jebakan** (callout `peringatan` atau `tips`) berisi kesalahan
+   paling umum siswa;
+7. **1 kolaborasi buku**: rujukan silang eksplisit ke buku sumber (halaman/
+   bab bank owner ATAU buku paket/BSE bila terjangkau) di teks atau
+   daftarPustaka — materi tanpa jejak buku dianggap BELUM SELESAI.
+
+## 7. STANDAR UI PREMIUM (Turn 80)
+
+Tampilan baca wajib terasa seperti aplikasi belajar premium (rujukan owner:
+Ruangguru, Zenius, Duolingo): kartu membulat 16-18 px, bayangan halus, spasi
+longgar, tabel BERBINGKAI + zebra + gulir horizontal di HP, gambar dalam
+kartu ber-padding, paragraf max 72ch, dan kartu rumus emas menonjol.
+Setiap patch UI diverifikasi lewat screenshot reader mobile sebelum rilis.

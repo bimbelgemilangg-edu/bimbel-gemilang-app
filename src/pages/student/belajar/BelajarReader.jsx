@@ -1243,6 +1243,9 @@ function PanelKuis({
               <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
                 style={S.pembahasanImg} loading="lazy" />
             )}
+            {soal.pembahasanGambarKet && (
+              <div style={S.pembahasanKet}>🔍 {soal.pembahasanGambarKet}</div>
+            )}
           </span>
         </div>
       ) : terkoreksi && kreditSoal(soal, dipilih) > 0 ? (
@@ -1263,6 +1266,9 @@ function PanelKuis({
             {soal.pembahasanGambar && (
               <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
                 style={S.pembahasanImg} loading="lazy" />
+            )}
+            {soal.pembahasanGambarKet && (
+              <div style={S.pembahasanKet}>🔍 {soal.pembahasanGambarKet}</div>
             )}
           </span>
         </div>
@@ -1673,6 +1679,10 @@ const S = {
     marginLeft: 8, fontSize: 10.5, fontWeight: 800, color: T.hijauTeks,
     background: T.hijauLatar, border: `1px solid ${T.hijauGaris}`,
     borderRadius: 999, padding: '2px 8px', whiteSpace: 'nowrap',
+  },
+  pembahasanKet: {
+    textAlign: 'center', color: T.samar, fontSize: 12.5, lineHeight: 1.6,
+    margin: '6px auto 0', maxWidth: 560,
   },
   pembahasanImg: {
     display: 'block', width: '100%', maxWidth: 420, margin: '10px auto 0',
