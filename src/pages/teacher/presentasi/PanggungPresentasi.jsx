@@ -16,10 +16,11 @@ import {
 import { muatMateriDanBab } from '../../../services/materiV2Service';
 import {
   cariSesiAktif, pantauSesi, pantauPeserta, pantauJawaban,
-  mulaiSesi, akhiriSesi, setPosisiSesi, setModeSesi,
+  mulaiSesi, akhiriSesi, setPosisiSesi, setModeSesi, ubahSesi,
   pantauAntrean, setStatusAntrean, beriXpGuru, bacaIdentitasGuru,
 } from '../../../services/sesiPresentasiService';
 import IsiSections from '../../../components/belajar/IsiSections';
+import { buatSlide, SlideView } from '../../../components/belajar/slideMateri';
 import { MathText } from '../../../components/MathText';
 import { T, kartuDasar, halamanDasar, tombolPill } from '../../student/belajar/tema';
 
@@ -69,6 +70,8 @@ export default function PanggungPresentasi() {
   }, [sesi?.id, sesi?.status]);
 
   const sections = useMemo(() => bab?.sections || [], [bab]);
+  // Turn 77: mode PPT — bacaan disusun jadi slide rapi (gambar utuh + caption).
+  const slides = useMemo(() => buatSlide(sections), [sections]);
   const kuis = useMemo(() => bab?.ujiPemahaman || [], [bab]);
   const { guruId } = bacaIdentitasGuru();
   // PPT versi guru menimpa slide resmi saat kelasnya berlangsung
@@ -153,20 +156,33 @@ export default function PanggungPresentasi() {
       <main style={{ ...S.panggung, display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         <div style={{ ...S.layar, flex: 1, minWidth: 0 }}>
           {posisi.jenis === 'section' ? (
-            sections[idx] ? (
+            slides[idx] ? (
               <div style={S.zoomWrap}>
                 <div style={S.penanda}>
-                  Bagian {idx + 1} / {sections.length}
+                  📽 Slide {idx + 1} / {slides.length} (mode PPT)
                 </div>
-                <IsiSections
-                  sections={sections.slice(idx, idx + 1)}
-                  offsetHuruf={offsetHuruf}
-                  untukGuru
-                />
+                <SlideView slide={slides[idx]} />
               </div>
             ) : (
-              <div style={S.kosong}>Tidak ada bagian untuk ditampilkan.</div>
+              <div style={S.kosong}>Tidak ada slide untuk ditampilkan.</div>
             )
+          ) : posisi.jenis === 'kuisPaket' ? (
+            <div style={S.zoomWrap}>
+              <div style={S.penanda}>
+                📝 Mode paket • {kuis.length} soal • siswa mengerjakan semua dulu
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 2px' }}>
+                {kuis.map((q, i2) => {
+                  const n = jawaban.filter((j2) => Number(j2.soalIndex) === i2).length;
+                  return (
+                    <div key={i2} style={{ fontSize: 13.5 }}>
+                      Soal {i2 + 1}: <b>{n}</b> jawaban masuk
+                      {sesi?.kunciTerbuka ? ' • 🔓 pembahasan terbuka' : ''}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           ) : posisi.jenis === 'kuis' ? (
             kuis[idx] && (
               <div style={S.zoomWrap}>
@@ -354,23 +370,45 @@ export default function PanggungPresentasi() {
         ) : (
           <>
             <button type="button" style={tombolPill('putih')}
-              disabled={posisi.jenis !== 'kuis' && idx === 0}
-              onClick={() => posisi.jenis === 'kuis'
-                ? geser('section', sections.length - 1)
+              disabled={posisi.jenis === 'section' && idx === 0}
+              onClick={() => (posisi.jenis === 'kuis' || posisi.jenis === 'kuisPaket')
+                ? geser('section', slides.length - 1)
                 : geser('section', Math.max(0, idx - 1))}>
               <ChevronLeft size={15} />
             </button>
             {posisi.jenis === 'section' ? (
               <button type="button" style={tombolPill('primer')}
-                disabled={idx >= sections.length - 1}
+                disabled={idx >= slides.length - 1}
                 onClick={() => geser('section', idx + 1)}>
-                Bagian berikutnya <ChevronRight size={15} />
+                Slide berikutnya <ChevronRight size={15} />
+              </button>
+            ) : posisi.jenis === 'kuisPaket' ? (
+              <button type="button" style={tombolPill('primer')}
+                onClick={() => geser('section', 0)}>
+                ⬅ Kembali ke slide
               </button>
             ) : (
               <button type="button" style={tombolPill('primer')}
                 disabled={idx >= kuis.length - 1}
                 onClick={() => { setTampilKunci(false); geser('kuis', idx + 1); }}>
                 Soal berikutnya <ChevronRight size={15} />
+              </button>
+            )}
+            {sesiAktif && posisi.jenis !== 'kuisPaket' && kuis.length > 0 && (
+              <button type="button" style={tombolPill('putih')}
+                onClick={() => {
+                  setTampilKunci(false);
+                  setPosisiSesi(sesi.id,
+                    { jenis: 'kuisPaket', indexes: kuis.map((_, i2) => i2) },
+                    { kunciTerbuka: false }).catch(() => {});
+                }}>
+                📝 Paket: kerjakan semua dulu
+              </button>
+            )}
+            {sesiAktif && (posisi.jenis === 'kuis' || posisi.jenis === 'kuisPaket') && (
+              <button type="button" style={tombolPill('hijau')}
+                onClick={() => ubahSesi(sesi.id, { kunciTerbuka: !sesi.kunciTerbuka }).catch(() => {})}>
+                {sesi.kunciTerbuka ? '🔒 Tutup pembahasan' : '🔓 Buka pembahasan'}
               </button>
             )}
             <span style={S.pemisah} />
