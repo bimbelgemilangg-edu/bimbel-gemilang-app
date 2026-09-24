@@ -1,0 +1,604 @@
+{
+  "materi": {
+    "judul": "Bahasa Inggris SMA — Persiapan TKA 2026",
+    "mapel": "Bahasa Inggris",
+    "kelas": "",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#F59E0B",
+    "emoji": "🌏",
+    "deskripsi": "Materi Bahasa Inggris VERSI DALAM persiapan TKA 2026 berbasis bank Sukses TKA 26 Bhs Inggris (@my99dreams): bab 1 Narrative Text & bab 2 Descriptive Text (struktur, ciri bahasa, tipe soal, strategi jawab). Terbuka semua kelas/program.",
+    "urutan": 8,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank Soal Sukses TKA 26 Bahasa Inggris (@my99dreams) — 01 Narrative Text hlm. 71-74 & 02 Descriptive Text hlm. 76-78: BASIS materi & latihan; kunci & pembahasan detail dari 08 Pembahasan hlm. 44-47.",
+      "Teks contoh bank diadaptasi dari sumber terbuka: legenda Naka Cave (thailand.go.th), Tristan da Cunha & Seed Vault (britannica.com), Great Blue Hole (unesco.org) — dikutip ringkas untuk keperluan pendidikan.",
+      "Bagan struktur teks (narrative & descriptive) = penunjang orisinal tim kurikulum Gemilang (berlabel penunjang)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 1 — Narrative Text",
+      "ringkasan": "Narrative = cerita berkronologi dengan moral: orientation-complication-resolution-coda, past tense & temporal conjunctions; strategi menjawab topic, inference, reference, moral value, dan tabel True/False.",
+      "estimasiMenit": 60,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "A. What Is a Narrative Text? (Cerita yang Menangkap Pembaca)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan menonton film legenda: ada tokoh, tempat, masalah, puncak ketegangan, dan akhir yang memberi pelajaran. Itulah narrative text — cerita fiksi atau non-fiksi yang menyusun rangkaian peristiwa secara kronologis. Social function-nya ganda: menghibur (to amuse/entertain) DAN mengajarkan nilai moral (moral lesson)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Posisi topik ini dalam TKA",
+          "teks": "Narrative adalah teks pembuka paket Bahasa Inggris TKA. Soal favorit: topic/ide utama, inference (kesimpulan tersirat), rujukan kata (reference), moral value, dan True/False tabel berdasarkan teks. Kuncinya satu: semua jawaban harus JEJAK di teks, bukan pendapat pribadi."
+        },
+        {
+          "jenis": "judul",
+          "teks": "B. Generic Structure: Empat Stasiun Cerita"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Setiap narrative berhenti di empat stasiun: Orientation (memperkenalkan tokoh & latar) -> Complication (masalah muncul & memuncak) -> Resolution (masalah terselesaikan) -> Coda (perubahan tokoh & pelajaran yang dipetik; opsional). Mengenali stasiun membantu menjawab soal \"apa yang terjadi selanjutnya\" dan \"mengapa tokoh bertindak\"."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bing1-struktur-narrative.png",
+          "keterangan": "Bagan alur empat stasiun narrative dari kiri ke kanan: Orientation (kotak biru: tokoh & latar), panah ke Complication (kotak merah: masalah memuncak), panah ke Resolution (kotak hijau: masalah terselesaikan), panah ke Coda (kotak amber: perubahan & pelajaran); di bawah tiap kotak tertulis pertanyaan pemandu: siapa & di mana? masalah apa? bagaimana selesai? apa yang dipelajari?"
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca bagan — empat stasiun",
+          "items": [
+            "Orientation menjawab WHO & WHERE: tokoh, waktu, latar.",
+            "Complication adalah mesin cerita: tanpa masalah tidak ada narrative.",
+            "Resolution menutup konflik: menang, kalah, atau berubah.",
+            "Coda membawa moral: apa yang tokoh (dan pembaca) pelajari.",
+            "Soal \"moral value\" hampir selalu berumah di Coda atau resolusi akhir."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "C. Language Features: Sidik Jari Narrative"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Ciri bahasa yang wajib dikenali",
+          "kolom": [
+            "Feature",
+            "Contoh",
+            "Kenapa dipakai"
+          ],
+          "rows": [
+            {
+              "k": "Past tense",
+              "v": "rose, swept, banished, fell",
+              "w": "Cerita terjadi di masa lampau."
+            },
+            {
+              "k": "Temporal conjunctions",
+              "v": "long ago, one day, ultimately, as the waters receded",
+              "w": "Merangkai urutan peristiwa."
+            },
+            {
+              "k": "Action & mental verbs",
+              "v": "ordered, peeked, felt, believed",
+              "w": "Menggerakkan tokoh & batinnya."
+            },
+            {
+              "k": "Saying & thinking verbs",
+              "v": "demanded, thought, replied",
+              "w": "Menampilkan suara tokoh."
+            },
+            {
+              "k": "Adverbial phrases of time",
+              "v": "once upon a time, for three years",
+              "w": "Menjangkar waktu cerita."
+            },
+            {
+              "k": "Quoted & reported speech",
+              "v": "\"He ordered his finest smiths...\"",
+              "w": "Menghidupkan dialog."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "D. Kinds of Narrative & Cara Menjawab 5 Tipe Soal"
+        },
+        {
+          "jenis": "poin",
+          "judul": "Jenis narrative yang sering muncul",
+          "items": [
+            "Fairy Tale & Fable: dunia ajaib, hewan berbicara, moral eksplisit.",
+            "Legend & Myth: asal-usul tempat/fenomena (mis. legenda gua Naga).",
+            "Science Fiction & Fantasy: aturan dunia buatan yang konsisten.",
+            "Historical Fiction: tokoh fiksi di latar sejarah nyata."
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — inference & reference (pola bank soal). Soal tipe reference: \"He was transformed into a giant serpent.\" He = ? Langkah 1: cari subjek kalimat sebelumnya: King U-Lue dihukum? Bukan — kalimat sebelum menyebut the Naga King rising; namun subjek grammatical terdekat pada kalimat anteseden adalah King U-Lue yang berubah -> kunci bank: D (King U-Lue). Langkah 2: untuk inference: kutip kalimat pendukung dulu, baru simpulkan (mis. pernikahan terlarang = pemicu kehancuran -> kunci E). Langkah 3: buang opsi yang tidak berjejak teks."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang",
+          "teks": "Topic = gabungan tokoh+masalah+latar dalam satu kalimat; inference = benar menurut teks tapi TIDAK ditulis; reference = ganti kata dengan kandidat, baca ulang, pilih yang tidak janggal; moral = kalimat nilai universal (bukan detail cerita)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan pengajaran",
+          "teks": "Mode live: bacakan satu paragraf Orientation, minta siswa menebak stasiun berikutnya; lempar soal reference sebagai kuis cepat. Mode mandiri: tekankan kebiasaan menggarisbawahi kalimat bukti sebelum memilih jawaban."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "What is the topic of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "The geological process of sun cracking in Thailand",
+            "A historical account of the Mekong River's floods",
+            "The tragic legend behind the formation of Naka Cave",
+            "A romance between two noble families in ancient Thailand",
+            "The architectural grandeur of the Rattaphan Nakhon city"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Ide utama teks adalah legenda tragis di balik asal-usul Gua Naka di Thailand: kutukan Raja U-Lue hingga tubuhnya berubah menjadi batu. Seluruh isi teks menceritakan asal-usul itu, bukan geologi, sejarah sungai, romansa, atau arsitektur. Jawaban: C.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 1 (kunci & pembahasan dari 08: C); transkrip verbatim"
+        },
+        {
+          "soal": "What can be inferred from the text?",
+          "tipe": "pg",
+          "opsi": [
+            "The Naka Cave was built by the people of Rattaphan Nakhon as a tomb.",
+            "The princess intentionally deceived the King by hiding her serpent form.",
+            "King U-Lue was a merciful leader who prioritized his grandson's happiness.",
+            "The Naga King attacked the city because he wanted to expand his territory.",
+            "The forbidden marriage was the primary catalyst for the kingdom's destruction."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Inferensi harus berjejak teks: paragraf 1 menyatakan \"...but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess...\" -> pernikahan terlarang itu pemicu utama kehancuran kerajaan (E). Opsi lain tidak didukung: gua bukan makam buatan; putri tidak sengaja menipu; raja justru mengusir; Naga King menyerang karena balas dendam, bukan ekspansi.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 2 (kunci & pembahasan dari 08: E); transkrip verbatim"
+        },
+        {
+          "soal": "\"He was transformed into a giant serpent, eternally bound to the Phu Langka mountains.\" The word \"He\" in the sentence refers to ....",
+          "tipe": "pg",
+          "opsi": [
+            "The Princess.",
+            "The Naga King.",
+            "A royal servant.",
+            "King U-Lue.",
+            "The grandson."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Kata \"He\" merujuk pada subjek yang disebutkan sebelumnya dalam rangkaian hukuman: King U-Lue yang tubuhnya menegang dan bersisik -> ia yang diubah menjadi ular raksasa. Kunci bank: D.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 3 (kunci & pembahasan dari 08: D); transkrip verbatim"
+        },
+        {
+          "soal": "Decide whether the following statements are True or False based on the Naga legend text!",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "The marriage between Prince Fa Rung and Nakkhrinthrani lasted for three years.",
+            "The princess was banished because the King felt insult by her true form.",
+            "Bueng Khong Long was once a vibrant city before it became a lake.",
+            "King U-Lue was killed immediately by the Naga King during the flood.",
+            "The curse on the King will last until the land reaches a state of perfect virtue."
+          ],
+          "jawaban": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "True: pernikahan tiga tahun (paragraf 1 \"for three years, the kingdom celebrated their love\"). True: raja merasa dihina wujud ular putri lalu mengusirnya (paragraf 2). True: Bueng Khong Long dahulu kota hidup sebelum jadi danau (paragraf 3). False: King U-Lue tidak tewas seketika — ia dikutuk berubah menjadi batu/ular, \"a punishment far worse than death\". True: kutukan berakhir saat tanah mencapai kebajikan sempurna (paragraf 4). Kunci bank: T, T, T, F, T.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 4 (kunci & pembahasan per pernyataan dari 08: T,T,T,F,T); transkrip verbatim"
+        },
+        {
+          "soal": "Decide whether the following statements are True or False based on the miller-and-sorcerer story!",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "The miller knew from the start that he was bargaining with a sorcerer.",
+            "The girl's hands miraculously grew back while she was in the mountains.",
+            "The sorcerer manipulated the king's letters to cause a conflict.",
+            "The king recognized his wife immediately because of her silver hands.",
+            "The story suggests that internal virtue can act as a shield against evil."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "False: penggiling tidak tahu ia berurusan dengan penyihir (paragraf 1 \"Unknowingly, he had promised his daughter to the stranger\"). True: tangan gadis tumbuh kembali secara ajaib di gunung (paragraf 2). True: penyihir mencegat & memanipulasi surat raja (paragraf 2-3). False: raja TIDAK mengenali istrinya dari tangan perak (\"He did not recognize her at first because of her restored hands\"). True: pesan moral penutup — kebajikan internal adalah perisai dari kejahatan. Kunci bank: F, T, T, F, T.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 12 (kunci & pembahasan per pernyataan dari 08: F,T,T,F,T); transkrip verbatim"
+        },
+        {
+          "soal": "What is the moral value of the Owl-and-Nightingale story?",
+          "tipe": "pg",
+          "opsi": [
+            "Wisdom is only found in traditional and functional ways of living.",
+            "True wisdom lies in recognizing that different forms of beauty can coexist.",
+            "Competition is necessary to determine which talents are superior to others.",
+            "Creativity should be avoided if it does not serve a practical, daily purpose.",
+            "Silence is always more valuable than artistic expression in the natural world."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Moral ditemukan di resolusi: Falcon menolak menyatakan pemenang dan menjelaskan bahwa suara Owl dan lagu Nightingale masing-masing punya tempat -> kebijaksanaan sejati = mengakui koeksistensi berbagai bentuk keindahan (B). Opsi lain justru bertentangan dengan pesan teks.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 13 (kunci & pembahasan dari 08: B); transkrip verbatim"
+        },
+        {
+          "soal": "What is the tone of the Owl-and-Nightingale text?",
+          "tipe": "pg",
+          "opsi": [
+            "Humorous",
+            "Reflective",
+            "Indifferent",
+            "Sarcastic",
+            "Critical"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Laras teks reflektif: narasi mengajak pembaca merenungkan makna filosofis di balik perbedaan karakter Owl dan Nightingale, bukan sekadar informasi faktual atau humor. Kunci bank: B.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 14 (kunci & pembahasan dari 08: B); transkrip verbatim"
+        },
+        {
+          "soal": "What is the purpose of the Owl-and-Nightingale text?",
+          "tipe": "pg",
+          "opsi": [
+            "To teach readers the importance of diversity in expression",
+            "To explain the technical history of animal fables in literature",
+            "To criticize the Nightingale for being too loud during the night",
+            "To persuade readers to protect the habitats of endangered birds",
+            "To describe the biological differences between owls and falcons"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Tujuan utama: menyampaikan pesan moral tentang keberagaman ekspresi — setiap suara mempunyai keunggulan dan tempatnya sendiri (paragraf akhir). Kunci bank: A.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 15 (kunci & pembahasan dari 08: A); transkrip verbatim"
+        },
+        {
+          "soal": "What can be concluded from the Owl-and-Nightingale text?",
+          "tipe": "pg",
+          "opsi": [
+            "The Falcon found it easy to decide who was the superior bird in the forest.",
+            "The Nightingale changed her song to make it more functional for the Owl.",
+            "The forest animals preferred the Owl's wisdom over the Nightingale's joy.",
+            "The Owl eventually admitted that the Nightingale's song was better than his call.",
+            "Value is subjective, and different perspectives can both hold merit simultaneously."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Kesimpulan: nilai itu subjektif — ketertiban Owl dan kreativitas Nightingale keduanya memiliki keunggulan masing-masing; Falcon menolak memilih pemenang. Kunci bank: E.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 01 Narrative Text Latihan no. 16 (kunci & pembahasan dari 08: E); transkrip verbatim"
+        },
+        {
+          "soal": "Which of the following are language features of a narrative text? (Choose every correct answer!)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Simple present tense as the dominant tense",
+            "Past tense & temporal conjunctions",
+            "Saying and thinking verbs",
+            "Adverbial phrases of time",
+            "Quoted and reported speech"
+          ],
+          "jawaban": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Sidik jari narrative: past tense (rose, swept), konjungsi temporal (long ago, ultimately), saying/thinking verbs (demanded, believed), adverbial phrase of time (once upon a time), quoted/reported speech. Simple present adalah ciri descriptive/exposition, bukan narrative.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — language features sesuai ringkasan bank 01 §1.1-C)"
+        },
+        {
+          "soal": "Match each narrative kind with its best example!",
+          "tipe": "jodoh",
+          "premis": [
+            "Fairy Tale",
+            "Legend",
+            "Myth",
+            "Fable",
+            "Science Fiction"
+          ],
+          "opsi": [
+            "Cinderella and her magical godmother",
+            "The tragic origin of Naka Cave",
+            "The journey of Inanna to the underworld",
+            "The owl and the nightingale debating beauty",
+            "A colony ship drifting toward a new planet"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Fairy tale = dunia ajaib (Cinderella); legend = asal-usul tempat (Naka Cave); myth = dewa & kosmos (Inanna); fable = hewan berbudi (owl & nightingale); science fiction = teknologi masa depan (colony ship).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — jenis narrative §1.1-D bank)"
+        },
+        {
+          "soal": "The correct order of narrative generic structure is ....",
+          "tipe": "isian",
+          "jawaban": "Orientation, Complication, Resolution, Coda",
+          "hintFormat": "Tulis empat stasiun berurutan, pisahkan koma",
+          "pembahasan": "Urutan stasiun narrative: Orientation (tokoh & latar) -> Complication (masalah) -> Resolution (penyelesaian) -> Coda (perubahan & pelajaran).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — generic structure §1.1-B bank)"
+        },
+        {
+          "soal": "Read the Naga legend again in your module. In one sentence, state its moral value and quote ONE sentence from the text that supports it!",
+          "tipe": "uraian",
+          "jawaban": "Rubrik: moral = kesombongan & prasangka menghancurkan keharmonisan (harmony is easily destroyed when pride and prejudice take over); pemimpin harus memimpin dengan bijak & kasih, bukan amarah; tindakan dalam amarah berakibat bencana. Kutipan pendukung mis.: \"But for King U-Lue, the Naga King reserved a punishment far worse than death.\" atau kalimat kutukan di paragraf akhir.",
+          "pembahasan": "Kunci pembahasan bank untuk soal moral (no. 5) menyebutkan tiga pesan: harmony is easily destroyed when pride and prejudice take over; leaders should lead with wisdom and compassion rather than anger; actions taken in rage can lead to catastrophic consequences. Siswa perlu menyebut minimal satu + kutipan pendukung.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — uraian moral value, rubrik dari pembahasan bank 08 no. 5)"
+        }
+      ]
+    },
+    {
+      "judul": "Bab 2 — Descriptive Text",
+      "ringkasan": "Descriptive = foto kata: identification + description, simple present & adjectives; strategi menjawab key characteristics, makna frasa, rujukan, dan tabel kategorisasi.",
+      "estimasiMenit": 60,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "A. Descriptive Text: Kamera yang Menulis"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bila narrative adalah film, descriptive adalah foto beresolusi tinggi: teks yang menjelaskan bagaimana rupa seseorang atau benda — bentuk, sifat, jumlah, suasana — sehingga pembaca bisa MELIHATNYA di kepala. Social function-nya: to describe, represent, or reveal a person or object, abstract or concrete."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Posisi topik ini dalam TKA",
+          "teks": "Soal descriptive menguji: kunci karakteristik utama (key characteristics), detail tersurat vs tersirat, makna frasa deskriptif (\"glittering light\"), rujukan kata, dan tabel kategorisasi. Semua jawaban berjejak pada kalimat deskripsi — jangan bawa pengetahuan luar."
+        },
+        {
+          "jenis": "judul",
+          "teks": "B. Generic Structure & Language Features"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Struktur descriptive hanya dua stasiun: Identification (memperkenalkan subjek utama: siapa/apa yang akan dideskripsikan) lalu Description (rincian yang membuat pembaca melihatnya jelas). Bahasa utamanya: simple present tense (fakta keadaan), fokus pada satu partisipan spesifik, kata sifat padat, dan action verbs untuk gerak subjek."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/bing2-struktur-descriptive.png",
+          "keterangan": "Bagan dua stasiun descriptive: kotak biru Identification (memperkenalkan subjek: Tristan da Cunha, pulau vulkanik terisolasi) dengan panah ke kotak hijau Description (rincian: gunung berapi simetris, tebing curam, koloni penguin, permukiman Edinburgh of the Seven Seas); di samping kanan daftar ciri bahasa: simple present, adjectives, specific participant, action verbs."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca bagan — dua stasiun",
+          "items": [
+            "Identification = paragraf pembuka: nama subjek + status unik (mis. \"the most isolated inhabited island\").",
+            "Description = paragraf berikutnya: geografi, flora-fauna, cuaca, kehidupan — rinci & sensorik.",
+            "Simple present menandai keadaan tetap; action verbs menandai gerak alam/subjek.",
+            "Kata sifat adalah \"pixel\" deskripsi: jagged, symmetrical, monochromatic — sering jadi soal makna frasa."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "C. Cara Menjawab 4 Tipe Soal Descriptive"
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — key characteristics (pola bank #2). Soal: pilihan mana yang paling menunjukkan karakteristik utama Tristan da Cunha dalam SELURUH teks? Langkah 1: kumpulkan jejak per paragraf: kepulauan vulkanik terpencil; kerucut vulcano simetris; akses hanya kapal beberapa hari; suaka margasatwa unik. Langkah 2: cocokkan dengan opsi yang memuat keempatnya -> kunci bank A. Langkah 3: opsi yang menyebut rainforest/flight/rail langsung gugur karena bertentangan dengan \"no airports\"."
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — makna frasa (pola bank #7). \"The entrance is illuminated by a glittering light installation.\" Glittering light = ? Langkah 1: cari kontras konteks: pintu masuk terlihat dari bermil-mil di lanskap kutub gelap. Langkah 2: makna = shines brightly like a beacon against the dark polar landscape -> kunci bank A. Langkah 3: opsi \"hidden under snow\" bertentangan dengan kata visible."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang",
+          "teks": "Descriptive = WHAT IS IT LIKE? Kumpulkan kata sifat per paragraf; jawaban benar biasanya PARA-FRASE dari kumpulan itu. Tabel kategorisasi: cocokkan tiap kondisi dengan kata kunci sumbernya (naturally frozen = environmental; three-ply foil packages = technical)."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan pengajaran",
+          "teks": "Latihan live: tampilkan satu foto benda di kelas, minta siswa menulis Identification 1 kalimat + Description 2 kalimat dalam 3 menit — lalu tukar dan tebak bendanya. Ini melatih struktur sebelum masuk soal bank."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Why is Tristan da Cunha considered a unique location for human settlement?",
+          "tipe": "pg",
+          "opsi": [
+            "It is located very close to the continental landmass of Africa.",
+            "It features luxury resorts and modern airports for easy access.",
+            "Its geography consists entirely of flat plains and tropical forests.",
+            "It is a place where residents can enjoy the digital noise of modern life.",
+            "It is the most isolated inhabited island on Earth, far from any continent."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Paragraf 1: \"As the most isolated inhabited island on Earth, it is defined by its dramatic and formidable geography.\" Justru keterpencilan ekstrem itu yang membuatnya unik; opsi lain bertentangan langsung dengan teks (no airports, no luxury resorts). Kunci bank: E.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 02 Descriptive Text Latihan no. 1 (kunci & pembahasan dari 08: E); transkrip verbatim"
+        },
+        {
+          "soal": "Which of the following options best shows the key characteristics of Tristan da Cunha as told in the whole text?",
+          "tipe": "pg",
+          "opsi": [
+            "(1) Remote volcanic archipelago (2) Symmetrical volcanic cone (3) Multi-day ship journey (4) Unique wildlife sanctuary",
+            "(1) Tropical coastal island (2) Dense rainforest canopy (3) Daily international flight (4) Luxury tourism destination",
+            "(1) Flat continental landmass (2) Massive industrial plateau (3) High-speed rail connection (4) Crowded metropolitan center",
+            "(1) Modern maritime territory (2) Jagged limestone cliff (3) Seasonal luxury cruise (4) Global commercial harbor",
+            "(1) Isolated desert outpost (2) Arid rocky landscape (3) Regular military transport (4) Scientific research station"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Karakteristik utama yang mencakup keseluruhan teks: (1) statusnya kepulauan vulkanik terpencil; (2) kerucut vulkanik Queen Mary's Peak yang simetris; (3) akses hanya kapal multi-hari dari Afrika Selatan; (4) suaka margasatwa unik (penguin, albatros). Kunci bank: A.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 02 Descriptive Text Latihan no. 2 (kunci & pembahasan dari 08: A); transkrip verbatim"
+        },
+        {
+          "soal": "Decide whether the following statements are True or False based on the Tristan da Cunha text!",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "Tristan da Cunha is the most isolated inhabited island on Earth.",
+            "Queen Mary's Peak is a dormant volcano that never experiences mist.",
+            "The island can be reached quickly by taking a flight from South Africa.",
+            "Edinburgh of the Seven Seas is the only human settlement on the island.",
+            "The island's vegetation consists of dense tropical forests and tall trees."
+          ],
+          "jawaban": [
+            0,
+            1,
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "True: paragraf 1 \"the most isolated inhabited island on Earth\". False: puncak justru active volcano yang sering menghilang dalam kabut. False: tidak ada bandara; akses kapal berhari-hari. True: Edinburgh of the Seven Seas adalah satu-satunya permukiman. False: vegetasi = pakis & lumut keras, bukan hutan tropis. Kunci bank: T, F, F, T, F.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 02 Descriptive Text Latihan no. 5 (kunci & pembahasan per pernyataan dari 08: T,F,F,T,F); transkrip verbatim"
+        },
+        {
+          "soal": "The author mentioned the entrance is \"illuminated by a glittering light installation that makes it visible for miles\". The phrase \"glittering light\" describes the entrance ....",
+          "tipe": "pg",
+          "opsi": [
+            "shines brightly like a beacon against the dark polar landscape",
+            "is hidden under the snow and only visible during the daytime",
+            "glows with gold and silver treasures stored inside the mountain",
+            "appears small and round like a star falling from the Arctic sky",
+            "flickers inconsistently due to the extreme freezing temperatures"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Frasa \"glittering light\" menunjukkan kontras terang di tengah kegelapan kutub; deskripsi pintu masuk sebagai concrete wedge yang menonjol dari gunung bersalju, diterangi instalasi cahaya yang terlihat bermil-mil -> shines brightly like a beacon against the dark polar landscape. Kunci bank: A.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 02 Descriptive Text Latihan no. 7 (kunci & pembahasan dari 08: A); transkrip verbatim"
+        },
+        {
+          "soal": "What idea does the text suggest about the Global Seed Vault?",
+          "tipe": "pg",
+          "opsi": [
+            "The challenges of building a facility in a bustling modern city",
+            "The negative impact of cooling systems on the surrounding permafrost",
+            "The economic growth of the Svalbard archipelago through seed tourism",
+            "The competition between nations to build their own \"Doomsday Vaults\"",
+            "The importance of global cooperation in safeguarding future food security"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Teks menyatakan fasilitas ini penting untuk menjaga keberlangsungan pangan di masa depan bagi berbagai bangsa (\"provides a sense of security for nations that rely on these biological resources\") -> pentingnya kerja sama global menjaga ketahanan pangan. Kunci bank: E.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 02 Descriptive Text Latihan no. 8 (kunci & pembahasan dari 08: E); transkrip verbatim"
+        },
+        {
+          "soal": "Which detail would best persuade people about the importance of the Seed Vault?",
+          "tipe": "pg",
+          "opsi": [
+            "The role of the vault as a global insurance policy against disasters",
+            "The specialized four-ply foil packets used to store the seed samples",
+            "The specific depth of 120 meters carved into the sandstone mountain",
+            "The architectural design of the rectangular concrete wedge at the entrance",
+            "The distance of the facility from the bustling cities of the modern world"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Detail paling persuasif = fungsinya sebagai cadangan keamanan pangan global: \"The facility functions as a secure backup for the world's crop diversity... protects millions of seed samples from natural disasters and human conflicts.\" Kunci bank: A.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 02 Descriptive Text Latihan no. 9 (kunci & pembahasan dari 08: A); transkrip verbatim"
+        },
+        {
+          "soal": "Categorize the following conditions based on the design of the Seed Vault into Environmental Factors or Technical Protection. Put a tick on each category!",
+          "tipe": "tabel",
+          "kolom": [
+            "Environmental Factors",
+            "Technical Protection"
+          ],
+          "baris": [
+            "Use of the surrounding permafrost to stay naturally frozen.",
+            "Storage of samples in specialized three-ply foil packages.",
+            "Constant -18 C temperature maintained by cooling systems.",
+            "Location 120 meters deep inside a solid sandstone mountain.",
+            "A striking concrete wedge and massive steel doors."
+          ],
+          "jawaban": [
+            0,
+            1,
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Environmental = yang disediakan alam: permafrost pembeku alami (E) dan lokasi 120 m dalam gunung batu pasir (E). Technical = buatan fasilitas: paket foil tiga lapis (T), pendingin penjaga -18 C (T), baji beton & pintu baja (T). Kunci bank: E, T, T, E, T.",
+          "sumber": "Bank Soal Sukses TKA 26 Bhs Inggris (@my99dreams) — 02 Descriptive Text Latihan no. 10 (kunci dari 08: E,T,T,E,T); transkrip verbatim"
+        },
+        {
+          "soal": "Which of the following are language features of descriptive text? (Choose every correct answer!)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Simple present tense",
+            "Focus on a specific participant",
+            "Adjectives",
+            "Action verbs",
+            "Temporal conjunctions as dominant connectors"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Ciri bahasa descriptive (§2.1-C bank): simple present tense, fokus pada partisipan spesifik, adjectives, action verbs. Temporal conjunctions adalah ciri narrative, bukan descriptive.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — language features §2.1-C bank)"
+        },
+        {
+          "soal": "Match each sentence to its generic-structure station in a descriptive text!",
+          "tipe": "jodoh",
+          "premis": [
+            "Tristan da Cunha is a remote volcanic archipelago in the South Atlantic.",
+            "The coastline is characterized by sheer, jagged cliffs.",
+            "The Great Blue Hole spans over 300 meters across.",
+            "Its waters host Caribbean reef sharks and hammerhead sharks.",
+            "Long ago, a king ruled a magnificent city near the Mekong River."
+          ],
+          "opsi": [
+            "Identification",
+            "Description",
+            "Description",
+            "Description",
+            "Bukan descriptive (narrative orientation)"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Kalimat pembuka yang memperkenalkan subjek = Identification; rincian bentang alam & isi = Description; kalimat \"Long ago, a king...\" berpola narrative (orientation), bukan descriptive.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — identification vs description)"
+        },
+        {
+          "soal": "The two generic structures of descriptive text, in order, are ....",
+          "tipe": "isian",
+          "jawaban": "Identification, Description",
+          "hintFormat": "Tulis dua stasiun berurutan, pisahkan koma",
+          "pembahasan": "Descriptive = Identification (memperkenalkan subjek) lalu Description (merinci agar pembaca melihatnya jelas).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — generic structure §2.1-B bank)"
+        },
+        {
+          "soal": "Choose one object in your classroom. Write ONE identification sentence and TWO description sentences using at least three adjectives, in simple present tense!",
+          "tipe": "uraian",
+          "jawaban": "Rubrik: identification memperkenalkan subjek secara jelas (mis. \"Our classroom whiteboard is the most-used object in this room.\"); dua kalimat description memuat >=3 adjectives keseluruhan (mis. wide, glossy, squeaky) dan simple present; tidak mencampur past tense.",
+          "pembahasan": "Penilaian: (1) subjek spesifik disebut di identification; (2) rincian sensorik/visual di description; (3) minimal tiga adjectives; (4) konsisten simple present. Contoh unggul meniru pola teks Tristan: status unik dulu, lalu rincian.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — menulis descriptive pendek)"
+        }
+      ]
+    }
+  ]
+}
