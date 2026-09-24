@@ -1,0 +1,516 @@
+{
+  "materi": {
+    "judul": "Sosiologi SMA — Persiapan TKA 2026",
+    "mapel": "Sosiologi",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "soshum",
+    "premium": false,
+    "warna": "#0EA5E9",
+    "emoji": "🧭",
+    "deskripsi": "Materi Sosiologi VERSI DALAM persiapan TKA 2026 berbasis bank Sukses TKA 26 Sosiologi (@my99dreams): bab 1 = sosiologi sebagai ilmu pengetahuan & penelitian sosial (definisi, sejarah, empat ciri, fungsi & peran sosiolog, metode kualitatif-kuantitatif). Visual: potret asli tokoh (domain publik via Wikimedia Commons).",
+    "urutan": 6,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 \"Sosiologi Sebagai Ilmu Pengetahuan dan Penelitian Sosial\" hlm. 162-164: BASIS materi & soal latihan bab 1; kunci diverifikasi dari 08 \"Kunci dan Pembahasan\" hlm. 93-95.",
+      "Potret asli Auguste Comte, Karl Marx, Emile Durkheim, Max Weber — Wikimedia Commons, domain publik; komposit berlabel tim kurikulum Gemilang.",
+      "Prediksi & kunci bank owner (09 Prediksi + 10 Pembahasan Prediksi berteks) untuk soal metode penelitian sosial.",
+      "Bagan/tabel ringkas dalam bab ini disusun orisinal tim kurikulum Gemilang sebagai penunjang baca (berlabel penunjang)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 1 — Sosiologi sebagai Ilmu Pengetahuan & Penelitian Sosial",
+      "ringkasan": "Sosiologi = cermin masyarakat: ilmu empiris-teoretis-kumulatif-nonetis yang lahir abad ke-19 dari Comte, diperkaya Marx (konflik), Durkheim (fakta sosial), Weber (makna). Bab ini membekali empat ciri, tiga fungsi, topi-topi sosiolog, dan dua kacamata metode penelitian — bekal menjawab paket TKA Soshum bagian pembuka.",
+      "estimasiMenit": 60,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "A. Sosiologi: Cermin yang Membuat Masyarakat Terlihat"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan masyarakat sebagai wajah yang tidak pernah bisa melihat dirinya sendiri. Sosiologi adalah cermin yang membuatnya terlihat: ilmu yang mempelajari masyarakat, hubungan sosial, dan interaksi manusia secara objektif dan rasional. Kata sosiologi berasal dari bahasa Latin socius (teman atau kawan) dan bahasa Yunani logos (ilmu) — jadi harfiahnya \"ilmu berteman\": ilmu tentang bagaimana manusia saling terkait."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Posisi topik ini dalam TKA",
+          "teks": "Sosiologi sebagai ilmu adalah pembuka semua paket TKA Soshum: soal biasanya menyajikan ciri ilmu, fungsi, atau peran sosiolog dalam kasus nyata (pemerintah minta pendapat, peneliti mengecek teori), lalu meminta kamu menyebut konsep yang tepat. Hafalkan empat ciri dan tiga fungsi sebagai kunci cepat."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Kenali dulu empat tokoh yang mendirikan rumah ini. Bagan berikut memasang potret asli mereka (domain publik) beserta satu kalimat sumbangan pikirannya — baca nama lalu kalimatnya sebelum lanjut."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/sos1-tokoh.jpg",
+          "keterangan": "Empat panel potret asli berjajar dari kiri ke kanan: Auguste Comte (bapak sosiologi Prancis, ilmu positif tentang masyarakat), Karl Marx (teori konflik kelas borjuis vs proletar), Emile Durkheim (fakta sosial dan solidaritas), dan Max Weber (tindakan sosial dan makna dalam interaksi); tiap panel berlabel nama dan satu kalimat sumbangan pemikiran."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — empat pendiri",
+          "items": [
+            "Comte (1798-1857): menamai ilmu ini dan menuntut kajian masyarakat secara positif — berdasarkan fakta, bukan spekulasi.",
+            "Marx: masyarakat digerakkan pertentangan kepentingan antarkelas; konflik adalah mesin perubahan.",
+            "Durkheim: fakta sosial (norma, lembaga) berada di luar individu tetapi memaksakan diri; tugas sosiologi mengukurnya.",
+            "Weber: memahami masyarakat lewat makna yang diberi pelaku pada tindakannya (verstehen)."
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "B. Sejarah & Empat Ciri Ilmu Sosiologi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sosiologi lahir abad ke-19 di Prancis sebagai jawaban atas kekacauan: Revolusi Industri dan Revolusi Prancis membongkar tatanan lama, dan Comte berkata masyarakat harus dipelajari seperti alam — dengan observasi dan akal. Dari kelahiran itu sosiologi mewarisi empat ciri yang selalu ditanyakan ujian."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Empat ciri sosiologi + cara mengenalinya di soal",
+          "kolom": [
+            "Ciri",
+            "Arti",
+            "Kata kunci kasus"
+          ],
+          "rows": [
+            {
+              "k": "Empiris",
+              "v": "Berdasarkan fakta nyata di lapangan, bukan dugaan.",
+              "w": "\"data lapangan\", \"hasil observasi\", \"kenyataan di lokasi riset\""
+            },
+            {
+              "k": "Teoretis",
+              "v": "Menyusun kesimpulan dari hubungan sebab-akibat hasil observasi.",
+              "w": "\"membangun penjelasan\", \"kerangka pemikiran\""
+            },
+            {
+              "k": "Kumulatif",
+              "v": "Teori baru memperbaiki atau melengkapi teori lama, bukan menghapus.",
+              "w": "\"merevisi teori sebelumnya\", \"mengembangkan temuan lama\""
+            },
+            {
+              "k": "Nonetis",
+              "v": "Tidak menghakimi baik-buruk fakta; hanya menjelaskan.",
+              "w": "\"tidak menilai pelaku jahat\", \"menganalisis faktor penyebab\""
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — membaca ciri dari kasus. Soal: \"Budi mendasarkan pendapatnya pada kenyataan di lapangan; data harus dapat dipertanggungjawabkan.\" Ciri apa saja yang tampil? Langkah 1: \"kenyataan lapangan\" = empiris. Langkah 2: \"dapat dipertanggungjawabkan\" menegaskan fakta nyata -> empiris/nyata (kunci bank: empiris & nyata). Langkah 3: bandingkan pilihan lain: tidak ada pembahasan teori (teoretis) atau pembangunan teori lama (kumulatif) -> jangan tergoda."
+        },
+        {
+          "jenis": "judul",
+          "teks": "C. Fungsi Sosiologi & Peran Sosiolog"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sosiologi bukan ilmu pajangan: ia bekerja di tiga medan — perencanaan sosial (merancang kebijakan sesuai kondisi masyarakat), pendidikan (menumbuhkan sikap kritis terhadap masalah sosial), dan praktik (memecahkan masalah langsung di lapangan). Pelakunya disebut sosiolog, dan peranannya berganti-ganti seperti topi: konsultan, penasihat, praktisi, peneliti, pendidik."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Topi-topi sosiolog",
+          "kolom": [
+            "Peran",
+            "Ciri tindakan",
+            "Contoh kasus"
+          ],
+          "rows": [
+            {
+              "k": "Konsultan/penasihat",
+              "v": "Memberi pertimbangan kepada pembuat kebijakan.",
+              "w": "Tim sosiolog dimintai pendapat rencana penerbangan KRL oleh pemkot."
+            },
+            {
+              "k": "Praktisi (applied sociologist)",
+              "v": "Terjun langsung memecahkan masalah masyarakat.",
+              "w": "Sosiolog memimpin program pemberdayaan warga."
+            },
+            {
+              "k": "Peneliti",
+              "v": "Mengumpulkan dan menganalisis data sosial.",
+              "w": "Riset kemiskinan untuk bahan kebijakan."
+            },
+            {
+              "k": "Pendidik",
+              "v": "Mengajar dan menumbuhkan nalar kritis.",
+              "w": "Dosen menjelaskan masalah sosial di kelas."
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — fungsi di balik kasus. Soal: \"Kota membangun halte bus di titik pemberhentian alami penumpang agar perjalanan tertib.\" Fungsi sosiologi mana yang bekerja? Langkah 1: ada perancangan fasilitas berdasarkan perilaku masyarakat = perencanaan sosial. Langkah 2: singkirkan fungsi pendidikan (tak ada pembelajaran) dan praktik langsung (tak ada pendampingan). Jawaban: perencanaan sosial."
+        },
+        {
+          "jenis": "judul",
+          "teks": "D. Metode Penelitian Sosial: Dua Kacamata, Satu Masyarakat"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Meneliti masyarakat bisa memakai dua kacamata: kualitatif (mendalam, makna, narasi — \"mengapa dan bagaimana\") dan kuantitatif (angka, statistik, generalisasi — \"berapa banyak dan seberapa kuat\"). Keduanya sah; yang membedakan adalah jenis data dan tujuan. Soal TKA gemar memberi satu kasus lalu bertanya kacamata mana yang tepat — atau meminta mencampur keduanya secara jujur."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Kualitatif vs kuantitatif",
+          "kolom": [
+            "Aspek",
+            "Kualitatif",
+            "Kuantitatif"
+          ],
+          "rows": [
+            {
+              "k": "Data",
+              "v": "Narasi, deskripsi, makna.",
+              "w": "Angka, tabel, statistik."
+            },
+            {
+              "k": "Tujuan",
+              "v": "Memahami mendalam, multiperspektif.",
+              "w": "Mengukur hubungan variabel, generalisasi."
+            },
+            {
+              "k": "Sampling khas",
+              "v": "Snowball/purposive (populasi sulit diidentifikasi).",
+              "w": "Simple random/stratified (acak)."
+            },
+            {
+              "k": "Hasil",
+              "v": "Teori dasar, tema.",
+              "w": "Persentase, koefisien, uji hipotesis."
+            }
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Memilih metode dalam 3 detik",
+          "items": [
+            "Soal menyebut \"persentase\", \"statistik\", \"generalisasi\" -> kuantitatif.",
+            "Soal menyebut \"makna\", \"pengalaman\", \"deskripsi mendalam\" -> kualitatif.",
+            "Populasi sulit diakses (pengguna narkoba, komunitas tertutup) -> snowball sampling (kualitatif).",
+            "Responden diacak pakai nomor/undian -> simple random sampling (kuantitatif)."
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — kasus dua metode. Soal: \"Penelitian ingin mengetahui persentase tingkat kemiskinan; fenomena kemiskinan juga ingin dipahami maknanya.\" Langkah 1: persentase -> butuh angka -> kuantitatif. Langkah 2: makna fenomena -> kualitatif. Langkah 3: kunci bank (Prediksi #9): B, C -> kedua pendekatan dipakai sesuai tujuan masing-masing; jangan pilih salah satu bila soal meminta keduanya."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang",
+          "teks": "Empat ciri = E-T-K-N (Empiris, Teoretis, Kumulatif, Nonetis); tiga fungsi = perencanaan sosial, pendidikan, praktik; tokoh = Comte (nama & positivisme), Marx (konflik), Durkheim (fakta sosial), Weber (makna). Lihat kata kunci kasus -> cocokkan -> jawab."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan pengajaran",
+          "teks": "Bab ini ringan konsep tetapi padat istilah mirip-mirip (empiris vs nonetis, konsultan vs praktisi). Latih siswa dengan permainan kartu kasus: satu kartu kasus, empat kartu ciri/fungsi — siapa cepat mencocokkan. Mode live: lempar kartu kasus sebagai soal kuis, bahas dengan tabel ciri."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Tidak mempersoalkan baik atau buruknya fakta tetapi fakta tersebut harus tetap dianalisis disebut dengan ciri ilmu sosiologi bagian ....",
+          "tipe": "pg",
+          "opsi": [
+            "nonetis.",
+            "modern.",
+            "klasik.",
+            "kontemporer.",
+            "sementara."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Ciri sosiologi yang tidak mempersoalkan baik atau buruk suatu fakta disebut NONETIS: sosiologi hanya menjelaskan dan menganalisis fenomena sosial secara objektif tanpa penilaian moral — misalnya meneliti kriminalitas tanpa menilai pelaku \"jahat\", tetapi fokus pada faktor penyebabnya.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 1 (kunci diverifikasi dari 08 Pembahasan: A); transkrip verbatim"
+        },
+        {
+          "soal": "Berikut fungsi dari ilmu sosiologi adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "penyebab terjadinya konflik sosial.",
+            "sebagai perencanaan sosial.",
+            "tidak terjadinya komunikasi.",
+            "terdapat pengaruh dari globalisasi.",
+            "adanya kesenjangan ekonomi."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Sosiologi berfungsi dalam PERENCANAAN SOSIAL: membantu merancang kebijakan yang tepat berdasarkan kondisi masyarakat. Pilihan lain adalah fenomena sosial, bukan fungsi ilmu.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 2 (kunci diverifikasi dari 08 Pembahasan: B); transkrip verbatim"
+        },
+        {
+          "soal": "Kata socius dalam sosiologi yang berarti ....",
+          "tipe": "pg",
+          "opsi": [
+            "tetangga.",
+            "teman.",
+            "kelompok.",
+            "organisasi.",
+            "korporasi."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Socius (Latin) berarti teman atau kawan; logos (Yunani) berarti ilmu. Sosiologi = ilmu tentang hubungan antarmanusia dalam masyarakat.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 3 (kunci diverifikasi dari 08 Pembahasan: B); transkrip verbatim"
+        },
+        {
+          "soal": "Berikut pengertian ilmu sosiologi adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "usaha untuk menentang pihak lawan.",
+            "hubungan timbal balik.",
+            "suatu perubahan yang mendunia.",
+            "ilmu yang mempelajari tentang masyarakat.",
+            "suatu peraturan dalam masyarakat."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Definisi umum sosiologi: ilmu yang mempelajari masyarakat, hubungan sosial, dan interaksi manusia — definisi paling tepat di antara opsi lain.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 4 (kunci diverifikasi dari 08 Pembahasan: D); transkrip verbatim"
+        },
+        {
+          "soal": "Sosiologi sebagai ilmu yang terpisah dari fisika, filsafat, dan psikologi muncul pada abad ke- ....",
+          "tipe": "pg",
+          "opsi": [
+            "18.",
+            "19.",
+            "20.",
+            "21.",
+            "22."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Sosiologi lahir sebagai ilmu terpisah pada abad ke-19, dipopulerkan Auguste Comte pada masa perubahan besar akibat Revolusi Industri dan Revolusi Prancis.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 5 (kunci diverifikasi dari 08 Pembahasan: B); transkrip verbatim"
+        },
+        {
+          "soal": "Dalam ilmu sosiologi dijelaskan bahwa sosiologi adalah ilmu positif mengenai masyarakat. Berikut pengertian ilmu sosiologi menurut ....",
+          "tipe": "pg",
+          "opsi": [
+            "Karl Benz.",
+            "Auguste Comte.",
+            "Max Weber.",
+            "Selo Soemardjan.",
+            "Soelaeman Soemardi."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Auguste Comte menyebut sosiologi sebagai ilmu POSITIF: mempelajari masyarakat berdasarkan fakta dan metode ilmiah, bukan spekulasi. (Karl Benz adalah penemu mobil — pengecoh nama!)",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 6 (kunci diverifikasi dari 08 Pembahasan: B); transkrip verbatim"
+        },
+        {
+          "soal": "Fungsi ilmu sosiologi yaitu untuk ilmu pendidikan artinya ....",
+          "tipe": "pg",
+          "opsi": [
+            "menimbulkan masalah sosial.",
+            "tidak mengalami sebuah perubahan sosial.",
+            "untuk memahami dan menumbuhkan sikap kritis terhadap masalah sosial.",
+            "tidak menghasilkan kualitas sumber daya manusia yang lebih baik.",
+            "usaha untuk menentang pihak lawan."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Dalam pendidikan, sosiologi membantu siswa memahami realitas sosial dan MENUMBUHKAN SIKAP KRITIS terhadap masalah sosial seperti kemiskinan, konflik, dan perubahan sosial.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 7 (kunci diverifikasi dari 08 Pembahasan: C); transkrip verbatim"
+        },
+        {
+          "soal": "Adanya sebuah halte bus sebagai tempat pemberhentian para penumpang untuk melanjutkan sebuah perjalanan. Maka pembangunan halte bus tersebut membutuhkan sebuah fungsi ilmu sosiologi yaitu fungsi ....",
+          "tipe": "pg",
+          "opsi": [
+            "pendidikan.",
+            "memecahkan masalah sosial.",
+            "menjaga perdamaian sosial.",
+            "perencanaan sosial.",
+            "memperbaiki kehidupan ekonomi masyarakat."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Pembangunan halte bus = contoh penerapan sosiologi dalam PERENCANAAN SOSIAL: mempertimbangkan kebutuhan masyarakat dalam mobilitas sehari-hari secara lateral.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 8 (kunci diverifikasi dari 08 Pembahasan: D); transkrip verbatim"
+        },
+        {
+          "soal": "Budi harus mendasarkan pendapatnya pada kenyataan yang ada di lapangan; apa yang ia temukan menjadi data yang bisa dipertanggungjawabkan. Pernyataan di atas merupakan ciri sosiologi yaitu .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "empiris.",
+            "nyata.",
+            "kumulatif.",
+            "nonetis.",
+            "nonrasional."
+          ],
+          "jawaban": [
+            0,
+            1
+          ],
+          "pembahasan": "Empiris = berdasarkan fakta nyata di lapangan; data harus dapat diuji dan dipertanggungjawabkan secara ilmiah sesuai temuan nyata di titik riset. Kunci bank: A (empiris) dan B (nyata).",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 10 (kunci diverifikasi dari 08 Pembahasan: A,B); transkrip verbatim"
+        },
+        {
+          "soal": "Tim Sosiolog UNJ diminta pendapatnya oleh Pemerintah Kota Depok Jawa Barat untuk rencana pembangunan fly over untuk melewati perlintasan sebidang KRL Jakarta Bogor. Profesi sosiologi yang tepat adalah .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "konsultan.",
+            "penasihat.",
+            "peneliti.",
+            "guru.",
+            "praktisi."
+          ],
+          "jawaban": [
+            0,
+            1
+          ],
+          "pembahasan": "Ketika sosiolog dimintai pendapat oleh pemerintah, perannya adalah KONSULTAN sekaligus PENASIHAT: memberi masukan dalam kebijakan sosial (\"peramal kebijakan sosial\").",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 12 (kunci diverifikasi dari 08 Pembahasan: A,B); transkrip verbatim"
+        },
+        {
+          "soal": "Sosiolog yang terjun langsung dalam program pemberdayaan masyarakat disebut .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "konsultan.",
+            "praktisi.",
+            "pendidik.",
+            "teoretikus.",
+            "applied Sociologist."
+          ],
+          "jawaban": [
+            1,
+            4
+          ],
+          "pembahasan": "Sosiolog yang terjun langsung di lapangan untuk menyelesaikan masalah sosial tentatif dan meningkatkan kualitas warga = PRAKTISI / APPLIED SOCIOLOGIST.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 13 (kunci diverifikasi dari 08 Pembahasan: B,E); transkrip verbatim"
+        },
+        {
+          "soal": "Dosen sosiologi kampus negeri X melakukan riset. Terdapat kesimpulan yang merevisi teori yang diajukan oleh peneliti sebelumnya dan dosen tersebut melakukannya berdasarkan kenyataan yang ada di lokasi penelitian. Ciri sosiologi sebagai ilmu yang tepat adalah .... (Jawaban bisa lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "empiris.",
+            "represif.",
+            "nonetis.",
+            "kumulatif.",
+            "eksploratif."
+          ],
+          "jawaban": [
+            0,
+            3
+          ],
+          "pembahasan": "Berdasarkan kenyataan lokasi = EMPIRIS; merevisi teori peneliti sebelumnya = KUMULATIF (teori baru memperbaiki teori lama). Kunci bank: A, D.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 17 (kunci diverifikasi dari 08 Pembahasan: A,D); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah berdasarkan pernyataan berikut! (Tokoh sosiologi: klasik/modern)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Karl Marx merupakan salah satu tokoh sosiologi klasik.",
+            "Niccolo Machiavelli adalah salah seorang tokoh sosiologi modern.",
+            "Pierre Bourdieu adalah salah seorang tokoh sosiologi klasik."
+          ],
+          "jawaban": [
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Marx = tokoh sosiologi klasik (BENAR). Machiavelli bukan tokoh sosiologi (ia pemikir politik) apalagi modern (SALAH). Bourdieu = tokoh sosiologi MODERN, bukan klasik (SALAH). Kunci bank: B, S, S.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 18 (kunci diverifikasi dari 08 Pembahasan: B,S,S); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah: dua tokoh sosiologi yang mendefinisikan sosiologi sebagai ilmu tentang interaksi sosial adalah ....",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "John Philip Gillin",
+            "John Lewis Gillin",
+            "JP. Morgan",
+            "Emile Durkheim"
+          ],
+          "jawaban": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Definisi sosiologi sebagai ilmu tentang interaksi sosial dikemukakan pasangan Gillin & Gillin (John Philip Gillin dan John Lewis Gillin) -> dua baris pertama BENAR. JP Morgan dan Durkheim tidak mendefinisikan demikian -> SALAH. Kunci bank: B, B, S, S.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 21 (kunci diverifikasi dari 08 Pembahasan: B,B,S,S); transkrip verbatim"
+        },
+        {
+          "soal": "Berilah tanda centang pada kolom Benar atau Salah: dalam mengumpulkan data dan membuat laporan riset, dapat digunakan beberapa metode penelitian sosiologi. Metode itu dibagi menjadi dua, yaitu ....",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "empiris dan nonetis.",
+            "kualitatif.",
+            "kuantitatif.",
+            "teortitis."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Metode penelitian sosiologi dibagi dua: KUALITATIF (mendalam) dan KUANTITATIF (angka) -> baris 2 & 3 BENAR. \"Empiris dan nonetis\" adalah CIRI ilmu, bukan metode (SALAH); \"teortitis\" bukan istilah metode (SALAH). Kunci bank: S, B, B, S.",
+          "sumber": "Bank Soal Sukses TKA 26 Sosiologi (@my99dreams) — 01 Latihan no. 23 (kunci diverifikasi dari 08 Pembahasan: S,B,B,S); transkrip verbatim"
+        },
+        {
+          "soal": "Pandangan bahwa masyarakat digerakkan oleh pertentangan kepentingan antara kelas borjuis dan proletar sehingga konflik menjadi mesin perubahan sosial berasal dari tokoh ....",
+          "tipe": "pg",
+          "opsi": [
+            "Auguste Comte.",
+            "Karl Marx.",
+            "Emile Durkheim.",
+            "Max Weber.",
+            "Selo Soemardjan."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Karl Marx: konflik kelas borjuis vs proletar dalam kapitalisme adalah motor perubahan sosial (terkonfirmasi juga di kunci Prediksi sosiologi no. 29).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — tokoh & teori konflik)"
+        },
+        {
+          "soal": "Pasangkan setiap tokoh sosiologi dengan sumbangan pemikiran yang paling tepat!",
+          "tipe": "jodoh",
+          "premis": [
+            "Auguste Comte",
+            "Karl Marx",
+            "Emile Durkheim",
+            "Max Weber"
+          ],
+          "opsi": [
+            "Menamai sosiologi dan menuntut kajian positif berbasis fakta",
+            "Teori konflik kelas sebagai mesin perubahan",
+            "Fakta sosial yang memaksa individu & solidaritas",
+            "Memahami tindakan sosial lewat makna (verstehen)",
+            "Snowball sampling untuk populasi tertutup"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Comte = penamaan & positivisme; Marx = konflik kelas; Durkheim = fakta sosial & solidaritas; Weber = tindakan sosial & makna. Pengecoh: snowball sampling adalah teknik sampling modern, bukan sumbangan tokoh klasik.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — format menjodohkan tokoh)"
+        },
+        {
+          "soal": "Buku berjudul \"Cours de Philosophie Positive\" yang menjadi tonggak kelahiran sosiologi ditulis oleh ....",
+          "tipe": "isian",
+          "jawaban": "Auguste Comte",
+          "hintFormat": "Tulis nama tokoh, contoh: Max Weber",
+          "pembahasan": "Auguste Comte (1798-1857) menulis \"Cours de Philosophie Positive\" — buku yang memuat nama sosiologi untuk pertama kalinya.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — isian sejarah sosiologi)"
+        },
+        {
+          "soal": "Jelaskan empat ciri ilmu sosiologi (empiris, teoretis, kumulatif, nonetis) dan berikan SATU contoh tindakan peneliti yang melanggar ciri nonetis!",
+          "tipe": "uraian",
+          "jawaban": "Rubrik: (1) Empiris = berdasarkan fakta lapangan; (2) Teoretis = menyusun kesimpulan sebab-akibat dari observasi; (3) Kumulatif = teori baru memperbaiki teori lama; (4) Nonetis = tidak menghakimi baik-buruk fakta. Contoh pelanggaran nonetis: peneliti menulis laporan yang menyebut pelaku tawuran \"anak jahat yang pantas dihukum\" alih-alih menganalisis faktor penyebab tawuran.",
+          "pembahasan": "Kunci pengerjaan: sebut definisi tiap ciri dengan kata kuncimu sendiri, lalu beri contoh pelanggaran nonetis berupa penilaian moral pada objek penelitian — bukan analisis faktor.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — uraian empat ciri)"
+        }
+      ]
+    }
+  ]
+}
