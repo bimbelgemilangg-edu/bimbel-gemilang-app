@@ -34,6 +34,10 @@
         },
         {
           "jenis": "paragraf",
+          "teks": "Bayangkan atom seperti tersangka yang tidak pernah terlihat wajahnya: yang kita punya hanya jejak di TKP percobaan. Setiap model atom adalah \"sketsa wajah\" yang dibuat dari jejak berbeda — dan sketsa baru lahir justru karena sketsa lama gagal menjelaskan jejak baru. Membaca bagian ini seperti membaca serial detektif: perhatikan BUKTI apa yang mematahkan tiap model."
+        },
+        {
+          "jenis": "paragraf",
           "teks": "Atom tidak pernah terlihat langsung; segala yang kita ketahui tentangnya adalah kesimpulan dari percobaan. Karena itu teori atom berkembang seperti proses pengadilan: setiap model baru diajukan karena model lama gagal menjelaskan bukti baru. Memahami urutan ini penting untuk TKA karena soal sering menanyakan 'pernyataan mana yang sesuai dengan model X' — dan jebakan terbesarnya adalah mencampuradukkan ciri satu model dengan model lain."
         },
         {
@@ -107,6 +111,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — mencocokkan bukti dengan model. Soal: \"Suatu model menyatakan atom sebagian besar ruang kosong dengan inti kecil bermuatan positif.\" Bukti percobaan manakah yang melahirkannya? Langkah 1: kata kunci \"ruang kosong + inti kecil\" berarti kebanyakan partikel alfa lolos lurus. Langkah 2: itu hasil hamburan sinar alfa Rutherford pada lempeng emas. Langkah 3: jawab Rutherford (1911); pembanding: Thomson lahir dari sinar katode (elektron), Bohr dari spektrum hidrogen, kuantum dari sifat gelombang elektron."
+        },
+        {
           "jenis": "callout",
           "tipe": "gemilang",
           "judul": "Kaitan konsep",
@@ -115,6 +123,10 @@
         {
           "jenis": "judul",
           "teks": "B. Notasi Atom, Partikel Dasar, dan Keluarga Isotop"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Notasi atom adalah KTP-nya unsur: satu kartu kecil memuat seluruh identitas — nomor massa di atas, nomor atom di bawah, lambang di tengah. Dari KTP itu plus muatan, kamu bisa menghitung proton, neutron, dan elektron tanpa hafalan tambahan."
         },
         {
           "jenis": "paragraf",
@@ -192,6 +204,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — membaca KTP atom. Soal: tentukan proton, neutron, elektron dari ²⁴₁₂Mg²⁺. Langkah 1: Z = 12 -> proton 12. Langkah 2: neutron = A − Z = 24 − 12 = 12. Langkah 3: muatan +2 berarti kehilangan 2 elektron -> elektron = 12 − 2 = 10. Ingat: muatan positif hanya mengubah elektron, TIDAK pernah proton/neutron."
+        },
+        {
           "jenis": "callout",
           "tipe": "tips",
           "judul": "Cara Gemilang membaca 'keluarga iso-'",
@@ -200,6 +216,10 @@
         {
           "jenis": "judul",
           "teks": "C. Konfigurasi Elektron: Aufbau, Gas Mulia, dan Pengecualian Stabil"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan atom sebagai hotel bertingkat: kulit adalah lantai, subkulit adalah lorong, orbital adalah kamar, dan elektron adalah tamu yang wajib mengikuti aturan check-in (Aufbau, Pauli, Hund). Konfigurasi elektron hanyalah daftar tamu per lantai — dan daftar itu yang menentukan \"alamat\" unsur di tabel periodik."
         },
         {
           "jenis": "paragraf",
@@ -231,6 +251,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — konfigurasi atom dan ionnya. Soal: tulis konfigurasi Fe (Z = 26) dan Fe³⁺. Langkah 1: netral: 1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁶ (atau [Ar] 4s² 3d⁶). Langkah 2: untuk kation, LEPASKAN dari 4s dulu baru 3d (kebalikan urutan isi): lepas 2 elektron 4s dan 1 elektron 3d. Langkah 3: Fe³⁺ = [Ar] 3d⁵ — tepat setengah penuh, konfigurasi yang stabil. Periksa jumlah elektron: 26 − 3 = 23."
+        },
+        {
           "jenis": "callout",
           "tipe": "peringatan",
           "judul": "Dua pengecualian yang wajib reflex",
@@ -239,6 +263,10 @@
         {
           "jenis": "judul",
           "teks": "D. Empat Bilangan Kuantum: KTP Setiap Elektron"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Empat bilangan kuantum adalah alamat lengkap satu elektron: kota (kulit n), jalan (subkulit l), nomor rumah (orbital m), dan arah tidur penghuni (spin s). Soal TKA biasanya memberi satu alamat lalu meminta kamu menemukan si penghuni — atau sebaliknya."
         },
         {
           "jenis": "paragraf",
@@ -287,6 +315,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — empat bilangan kuantum elektron terakhir. Soal: tentukan n, l, m, s elektron terakhir belerang S (Z = 16). Langkah 1: konfigurasi ... 3p⁴ -> elektron terakhir di 3p: n = 3. Langkah 2: subkulit p -> l = 1. Langkah 3: isi orbital p menurut Hund: tiga orbital terisi tunggal dulu (m = −1, 0, +1), elektron ke-4 berpasangan di m = −1 dengan spin turun s = −1/2. Langkah 4: jawab (3, 1, −1, −1/2)."
+        },
+        {
           "jenis": "callout",
           "tipe": "gemilang",
           "judul": "Jebakan spin",
@@ -295,6 +327,10 @@
         {
           "jenis": "judul",
           "teks": "E. Letak Unsur: Periode dan Golongan dari Konfigurasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tabel periodik adalah peta kota yang rapi: periode adalah nomor jalan mendatar, golongan adalah nomor blok vertikal. Konfigurasi elektron memberi koordinat GPS-nya; bagian ini mengajarkan cara membaca koordinat itu menjadi alamat yang disebut soal."
         },
         {
           "jenis": "paragraf",
@@ -344,6 +380,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — dari konfigurasi ke alamat. Soal: tentukan periode & golongan unsur berkonfigurasi [Ar] 4s² 3d⁶. Langkah 1: kulit terbesar 4 -> periode 4. Langkah 2: blok d (subkulit terakhir d) -> golongan transisi: 2 + 6 = 8 -> golongan VIII B (golongan 8 notasi IUPAC). Langkah 3: sebut nama untuk cek: besi (Fe) — cocok dengan contoh bagian C."
+        },
+        {
           "jenis": "callout",
           "tipe": "tips",
           "judul": "Cara Gemilang: lihat subkulit terakhir",
@@ -352,6 +392,10 @@
         {
           "jenis": "judul",
           "teks": "F. Sifat Periodik dan Trennya"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sifat periodik seperti tarik tambang antara dua tim: jumlah kulit menarik jari-jari membesar, muatan inti menarik mengecil. Siapa yang menang tergantung posisi unsur di peta — dan pemenang tarik tambang itu yang menjelaskan kenapa logam mudah melepas elektron."
         },
         {
           "jenis": "paragraf",
@@ -428,6 +472,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — mengurutkan jari-jari. Soal: urutkan Na, Mg, K dari jari-jari terkecil. Langkah 1: lihat periode/golongan: Mg & Na periode 3, K periode 4. Langkah 2: K punya kulit lebih banyak -> terbesar. Langkah 3: dalam satu periode, makin kanan makin kecil: Mg (Z 12) < Na (Z 11). Jawaban: Mg < Na < K."
+        },
+        {
           "jenis": "callout",
           "tipe": "info",
           "judul": "Kaitan konsep",
@@ -436,6 +484,10 @@
         {
           "jenis": "judul",
           "teks": "G. Ikatan Kimia: Ion, Kovalen, dan Koordinasi"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Ikatan kimia adalah cara atom berbagi kekayaan (elektron valensi): ada yang menyerahkan sepenuhnya seperti hibahan (ikatan ion), ada yang memakai bersama seperti patungan (ikatan kovalen), dan ada yang menumpang pasangan milik tetangga (kovalen koordinasi). Selisih keelektronegatifan (ingat tebing Pauling bab 2... tepatnya bagan Pauling di bagian sifat periodik) yang memilih jenisnya."
         },
         {
           "jenis": "paragraf",
@@ -536,6 +588,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — memprediksi jenis ikatan. Soal: ikatan pada NaCl dan HCl termasuk jenis apa? Langkah 1: baca selisih keelektronegatifan: Na (0,9) vs Cl (3,0) -> selisih 2,1 (besar) -> serah terima elektron -> ION. Langkah 2: H (2,1) vs Cl (3,0) -> selisih 0,9 (kecil-sedang) -> pakai bersama -> KOVALEN (polar). Langkah 3: cek sifat: NaCl padat titik leleh tinggi & larutannya menghantar = ciri ion; HCl gas pada suhu ruang = ciri kovalen."
+        },
+        {
           "jenis": "callout",
           "tipe": "peringatan",
           "judul": "Pengecualian oktet yang sering keluar",
@@ -544,6 +600,10 @@
         {
           "jenis": "judul",
           "teks": "H. Hibridisasi dan Bentuk Molekul (Teori VSEPR)"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Pasangan elektron di kulit valensi ibarat orang-orang yang membawa balon di ruangan sempit: mereka saling menjauh sebaik mungkin. Susunan \"jaga jarak\" itulah bentuk molekul (VSEPR). Pasangan elektron bebas (PEB) adalah balon besar yang menekan lebih kuat — ia yang membuat sudut mengecil dan molekul menjadi polar."
         },
         {
           "jenis": "paragraf",
@@ -575,6 +635,10 @@
           ]
         },
         {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — bentuk molekul dengan VSEPR. Soal: tentukan bentuk & kepolaran H2O. Langkah 1: elektron valensi O = 6; PEI = 2 (dua O−H). Langkah 2: PE = (6 + 2) ÷ 2 = 4; PEB = 4 − 2 = 2 -> tipe AX₂E₂. Langkah 3: AX₂E₂ = bentuk bengkok (sudut ±104,5°). Langkah 4: ada PEB & bentuk tidak simetris -> POLAR."
+        },
+        {
           "jenis": "callout",
           "tipe": "gemilang",
           "judul": "Polar atau nonpolar dalam 5 detik",
@@ -583,6 +647,10 @@
         {
           "jenis": "judul",
           "teks": "I. Gaya Antarmolekul: van der Waals dan Ikatan Hidrogen"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Di luar molekul masih ada gaya perekat antar-molekul: semacam perekat velcro yang jauh lebih lemah daripada lem di dalam molekul. Ikatan hidrogen adalah velcro terkuat (H bertemu F/O/N), lalu dipol-dipol, lalu gaya London. Kekuatan velcro inilah yang menentukan titik didih — kenapa air mendidih di 100 °C sedangkan H2S jauh lebih rendah."
         },
         {
           "jenis": "paragraf",
@@ -670,6 +738,10 @@
               "v": "Kecenderungan atom memiliki 8 elektron valensi (duplet untuk H/He)."
             }
           ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — membandingkan titik didih. Soal: mengapa HF mendidih lebih tinggi daripada HCl padahal HCl lebih berat? Langkah 1: cek velcro terkuat: HF punya H terikat langsung ke F -> ikatan hidrogen; HCl tidak (Cl bukan F/O/N). Langkah 2: bandingkan: ikatan hidrogen HF mengalahkan gaya London HCl yang lebih besar. Langkah 3: simpulkan: urutan titik didih HF > HCl; pola serupa H₂O > H₂S dan NH₃ > PH₃."
         },
         {
           "jenis": "callout",
