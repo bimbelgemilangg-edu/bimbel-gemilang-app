@@ -330,6 +330,13 @@ export default function PanggungPresentasi() {
 
       {/* ---------- bar kontrol guru ---------- */}
       <footer style={S.kontrol}>
+        {sesiAktif && sesi?.kode && (
+          <button type="button" style={tombolPill('primer')}
+            title="Kode sesi untuk siswa — ketuk untuk menyalin"
+            onClick={() => { try { navigator.clipboard?.writeText(sesi.kode); } catch { /* noop */ } }}>
+            🔑 Kode sesi: <b style={{ letterSpacing: 3 }}>{sesi.kode}</b> · ketuk utk salin
+          </button>
+        )}
         {!sesiAktif ? (
           <button type="button" style={tombolPill('primer')}
             onClick={async () => {

@@ -27,6 +27,12 @@ import {
 
 export const KOL_SESI = 'sesi_presentasi';
 
+// Turn 76: kode gabung 6 karakter (tanpa huruf mirip: O/0/1/I) agar siswa
+// masuk ke sesi YANG TEPAT saat beberapa guru mengajar paralel.
+const ABJ_SESI = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const kodeSesiAcak = () =>
+  Array.from({ length: 6 }, () => ABJ_SESI[Math.floor(Math.random() * ABJ_SESI.length)]).join('');
+
 const bacaGuru = () => {
   try {
     const d = JSON.parse(localStorage.getItem('teacherData') || '{}');
@@ -123,10 +129,29 @@ export async function mulaiSesi(materiId, babId, meta = {}) {
     mapel: meta.mapel || '',
     judulMateri: meta.judulMateri || '',
     judulBab: meta.judulBab || '',
+    kode: kodeSesiAcak(),
     dibukaPada: serverTimestamp(),
     diupdatePada: serverTimestamp(),
   });
   return id;
+}
+
+/** Cari sesi aktif BERDASARKAN KODE yang diketik siswa (Turn 76). */
+export async function cariSesiByKodePresentasi(kode) {
+  try {
+    const snap = await getDocs(
+      query(collection(db, KOL_SESI),
+        where('kode', '==', String(kode || '').toUpperCase().trim()),
+        where('status', '==', 'aktif'),
+        limit(1))
+    );
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() };
+  } catch (e) {
+    console.warn('Gagal cari sesi by kode:', e);
+    return null;
+  }
 }
 
 /** Akhiri sesi (status selesai). */
