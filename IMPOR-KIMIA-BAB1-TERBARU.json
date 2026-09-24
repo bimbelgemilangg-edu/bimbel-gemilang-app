@@ -17,7 +17,8 @@
       "Sukses Tes Kemampuan Akademik SMA - Saintek, Bab 1 'Struktur Atom, Sistem Periodik, Ikatan Kimia', hlm. 189-195 (berkas scan dilampirkan owner; teori dirujuk, latihan diadaptasi berlabel).",
       "Modul Tentor Gemilang — blok Kimia 'Struktur Atom Dan Ikatan Kimia' hlm. cetak 207-211 (basis internal).",
       "Bagan penunjang orisinal tim kurikulum Gemilang via canvas DIPAKAI HANYA untuk topik yang tidak memiliki padanan gambar di buku sumber ber-kredit: panel ikatan ion/kovalen, kartu bentuk molekul VSEPR, dan rantai ikatan hidrogen (bab 1); semuanya ber-anatomi KAIDAH.",
-      "Grafik HD pengganti crop buku beraster rendah: 'First Ionization Energy.svg' (Glrx dkk., lisensi CC BY 3.0) dan 'Empirical atomic radius trends.svg' (Francois~frwiki, lisensi CC BY-SA 4.0) — Wikimedia Commons, diraster 3840 px lalu diunggah ke Supabase; kredit lisensi disimpan di sini sesuai kewajiban atribusi."
+      "Grafik HD pengganti crop buku beraster rendah: 'First Ionization Energy.svg' (Glrx dkk., lisensi CC BY 3.0) dan 'Empirical atomic radius trends.svg' (Francois~frwiki, lisensi CC BY-SA 4.0) — Wikimedia Commons, diraster 3840 px lalu diunggah ke Supabase; kredit lisensi disimpan di sini sesuai kewajiban atribusi.",
+      "Bank Soal Gercep TKA 26 Kimia (@my99dreams) — '01 Ringkasan Materi' hlm. 2-11: BASIS penulisan ulang bab 1 (tabel partikel lengkap, detail bilangan kuantum 2ℓ+1 & n+ℓ, prosedur Lewis ΣEV & muatan formal, domain VSEPR DI/DNI, sigma-pi, urutan kepolaran ΔEN & titik didih); Gambar 3.1 pengelompokan tabel periodik (sumber asli Brown dkk. 2012 via bank) dicrop 300 dpi vektor tajam, kredit disimpan di sini."
     ]
   },
   "bab": [
@@ -134,7 +135,7 @@
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-notasi.png",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-notasi-v2.png",
           "keterangan": "Notasi atom karbon asli dari buku: angka 12 besar di kiri atas huruf C dan angka 6 di kiri bawah; tiga panah merah muda menghubungkan label Nomor Massa (jumlah proton + neutron) ke angka 12, Nomor Atom (= jumlah proton) ke angka 6, dan Simbol Atom ke huruf C."
         },
         {
@@ -145,6 +146,32 @@
             "Angka bawah (6) adalah nomor atom Z: jumlah proton = jumlah elektron pada atom netral.",
             "Neutron = selisih kedua angka pada label: 12 - 6 = 6.",
             "Pola label yang sama berlaku untuk unsur mana pun: A di atas, Z di bawah, simbol di tengah."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Partikel penyusun atom (data lengkap sumber owner)",
+          "kolom": [
+            "Partikel",
+            "Muatan & massa",
+            "Peran"
+          ],
+          "rows": [
+            {
+              "k": "Elektron (e⁻)",
+              "v": "Muatan −1,60218 × 10⁻¹⁹ C (relatif −1); massa 9,11 × 10⁻²⁸ g (1/1836 proton)",
+              "w": "Menentukan muatan ion, ikatan, dan konfigurasi; berada di luar inti."
+            },
+            {
+              "k": "Proton (p⁺)",
+              "v": "Muatan +1,60218 × 10⁻¹⁹ C (relatif +1); massa 1,67262 × 10⁻²⁴ g",
+              "w": "Menetapkan identitas unsur (nomor atom Z)."
+            },
+            {
+              "k": "Neutron (n⁰)",
+              "v": "Muatan 0; massa 1,67493 × 10⁻²⁴ g",
+              "w": "Menambah massa & isotop; tidak mengubah jenis unsur."
+            }
           ]
         },
         {
@@ -227,7 +254,7 @@
         },
         {
           "jenis": "gambar",
-          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-konfig-ca.png",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1r-konfig-ca-v2.png",
           "keterangan": "Gambar asli konfigurasi elektron atom kalsium: label Atom 20Ca di atas inti merah bertuliskan Ca yang dikelilingi empat lingkaran kulit hitam; titik-titik elektron biru tersebar 2 pada kulit pertama, 8 pada kulit kedua, 8 pada kulit ketiga, dan 2 pada kulit terluar."
         },
         {
@@ -238,6 +265,16 @@
             "Kulit kedua dan ketiga masing-masing memuat 8 titik pada gambar.",
             "Dua elektron sisa menempati kulit keempat -> konfigurasi kalsium 2.8.8.2.",
             "Dua elektron pada kulit terluar itulah elektron valensi yang menempatkan kalsium di golongan IIA."
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Tiga hukum check-in tamu hotel (Aufbau, Hund, Pauli)",
+          "items": [
+            "Aufbau (n + ℓ terendah dulu): subkulit baru dibuka hanya setelah subkulit sebelumnya penuh — urutan 1s 2s 2p 3s 3p 4s 3d dst.",
+            "Hund: orbital setingkat energi diisi tunggal dulu dengan spin sama, baru berpasangan — seperti tamu asing yang memilih kamar kosong.",
+            "Pauli: dua elektron sekamar WAJIB beda spin (±1/2) — karena itu satu orbital maksimal 2 elektron.",
+            "Konsekuensi ujian: pengecualian Cr ([Ar] 4s¹ 3d⁵) dan Cu ([Ar] 4s¹ 3d¹⁰) lahir dari semangat Hund/Pauli: setengah penuh & penuh lebih stabil."
           ]
         },
         {
@@ -301,6 +338,16 @@
               "v": "s = +½ atau −½",
               "w": "Arah rotasi elektron; panah naik diisi lebih dulu menurut aturan Hund."
             }
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Rumus cepat bilangan kuantum",
+          "items": [
+            "ℓ: 0 → s, 1 → p, 2 → d, 3 → f; nilai ℓ selalu 0 sampai n−1.",
+            "Jumlah orbital dalam subkulit = 2ℓ + 1 (s 1, p 3, d 5, f 7).",
+            "Tingkat energi subkulit dibanding dari jumlah n + ℓ (dasar urutan Aufbau).",
+            "m_s hanya +1/2 atau −1/2; elektron terakhir pasangan berarti −1/2."
           ]
         },
         {
@@ -382,6 +429,25 @@
         {
           "jenis": "contoh",
           "teks": "Contoh terpecah langkah — dari konfigurasi ke alamat. Soal: tentukan periode & golongan unsur berkonfigurasi [Ar] 4s² 3d⁶. Langkah 1: kulit terbesar 4 -> periode 4. Langkah 2: blok d (subkulit terakhir d) -> golongan transisi: 2 + 6 = 8 -> golongan VIII B (golongan 8 notasi IUPAC). Langkah 3: sebut nama untuk cek: besi (Fe) — cocok dengan contoh bagian C."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Peta kelompok unsur berikut berasal dari ringkasan materi bank soal owner (diadaptasi dari Brown dkk.): perhatikan tiga warna keluarga besar (logam, metaloid, nonlogam) dan garis tangga tebal yang memisahkan logam dari nonlogam — posisi terhadap tangga ini yang meramalkan jenis ikatan di bagian G."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k1s-spu-kelompok.png",
+          "keterangan": "Tabel periodik lengkap berlabel ganda (IA–VIIIA dan 1–18) dengan kotak unsur berisi nomor atom, lambang, dan massa atom; legenda tiga kotak abu menjelaskan keluarga logam, metaloid, dan nonlogam; garis tepi tebal berbentuk tangga di sisi kanan membelah antara logam dan nonlogam melalui deret metaloid (B, Si, Ge, As, Sb, Te); dua baris bawah adalah lantanida dan aktinida."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — peta keluarga unsur",
+          "items": [
+            "Kiri bawah sampai tengah = logam (konduktor, cenderung melepas elektron -> kation).",
+            "Tangga tebal = deret metaloid: sifat antara logam dan nonlogam (Si, Ge bahan semikonduktor).",
+            "Kanan atas = nonlogam: cenderung menarik elektron -> anion atau pakai bersama.",
+            "Gas mulia kolom terakhir (VIIIA/18): sudah stabil, acuan oktet semua ikatan."
+          ]
         },
         {
           "jenis": "callout",
@@ -472,8 +538,43 @@
           ]
         },
         {
+          "jenis": "tabelinfo",
+          "judul": "Kecenderungan empat sifat periodik (ringkasan sumber owner)",
+          "kolom": [
+            "Sifat",
+            "Kiri → kanan",
+            "Atas → bawah"
+          ],
+          "rows": [
+            {
+              "k": "Jari-jari partikel",
+              "v": "Berkurang (muatan inti menarik lebih kuat)",
+              "w": "Bertambah (kulit bertambah)"
+            },
+            {
+              "k": "Energi ionisasi (EI)",
+              "v": "Bertambah (sulit lepas elektron)",
+              "w": "Berkurang (mudah lepas)"
+            },
+            {
+              "k": "Afinitas elektron (AE)",
+              "v": "Cenderung bertambah",
+              "w": "Cenderung berkurang"
+            },
+            {
+              "k": "Keelektronegatifan (EN)",
+              "v": "Bertambah (puncak di F)",
+              "w": "Berkurang"
+            }
+          ]
+        },
+        {
           "jenis": "contoh",
           "teks": "Contoh terpecah langkah — mengurutkan jari-jari. Soal: urutkan Na, Mg, K dari jari-jari terkecil. Langkah 1: lihat periode/golongan: Mg & Na periode 3, K periode 4. Langkah 2: K punya kulit lebih banyak -> terbesar. Langkah 3: dalam satu periode, makin kanan makin kecil: Mg (Z 12) < Na (Z 11). Jawaban: Mg < Na < K."
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — jari-jari ion isoelektronik (soal bank owner). Soal: urutkan kenaikan jari-jari Ca²⁺, K, Cl⁻. Langkah 1: ketiganya isoelektronik (18 elektron) -> pemisahnya jumlah proton: Ca 20, K 19, Cl 17. Langkah 2: makin banyak proton, tarikan ke 18 elektron yang sama itu makin kuat -> jari-jari makin kecil. Langkah 3: urutan naik: Ca²⁺ < K⁺ < Cl⁻. Kaidah umum: kation < atom netral < anion; makin positif muatan makin kecil, makin negatif makin besar."
         },
         {
           "jenis": "callout",
@@ -592,6 +693,21 @@
           "teks": "Contoh terpecah langkah — memprediksi jenis ikatan. Soal: ikatan pada NaCl dan HCl termasuk jenis apa? Langkah 1: baca selisih keelektronegatifan: Na (0,9) vs Cl (3,0) -> selisih 2,1 (besar) -> serah terima elektron -> ION. Langkah 2: H (2,1) vs Cl (3,0) -> selisih 0,9 (kecil-sedang) -> pakai bersama -> KOVALEN (polar). Langkah 3: cek sifat: NaCl padat titik leleh tinggi & larutannya menghantar = ciri ion; HCl gas pada suhu ruang = ciri kovalen."
         },
         {
+          "jenis": "poin",
+          "judul": "Prosedur struktur Lewis ala bank owner (ΣEV → kerangka → EI/ENI)",
+          "items": [
+            "Hitung ΣEV: jumlah elektron valensi atom bebas; ion negatif TAMBAH muatan, ion positif KURANGI muatan.",
+            "Buat kerangka ikatan tunggal; atom pusat = yang jumlahnya lebih sedikit dan butuh lebih banyak elektron.",
+            "EI = 2 × jumlah garis; ENI = ΣEV − EI; sebarkan ENI ke atom tepi sampai oktet (H cukup 2).",
+            "Sisa ENI ke atom pusat; bila pusat kurang oktet, ubah pasangan tepi menjadi garis ganda/rangkap.",
+            "Uji muatan formal MF = EV − ½EI − ENI; struktur terbaik membuat MF semua atom nol (contoh CCl₄: MF C = 4 − ½(8) = 0)."
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — Lewis CCl₄ dua jalur. Jalur cepat: C butuh 4 elektron, tiap Cl butuh 1 -> C pusat berikatan tunggal dengan 4 Cl. Jalur bank owner: ΣEV = 4 + 4×7 = 32; kerangka 4 garis -> EI = 8; ENI = 24 disebar 6 per Cl; MF C = 4 − ½(8) − 0 = 0 dan MF Cl = 7 − ½(2) − 6 = 0 -> struktur valid karena semua MF nol."
+        },
+        {
           "jenis": "callout",
           "tipe": "peringatan",
           "judul": "Pengecualian oktet yang sering keluar",
@@ -637,6 +753,31 @@
         {
           "jenis": "contoh",
           "teks": "Contoh terpecah langkah — bentuk molekul dengan VSEPR. Soal: tentukan bentuk & kepolaran H2O. Langkah 1: elektron valensi O = 6; PEI = 2 (dua O−H). Langkah 2: PE = (6 + 2) ÷ 2 = 4; PEB = 4 − 2 = 2 -> tipe AX₂E₂. Langkah 3: AX₂E₂ = bentuk bengkok (sudut ±104,5°). Langkah 4: ada PEB & bentuk tidak simetris -> POLAR."
+        },
+        {
+          "jenis": "poin",
+          "judul": "VSEPR empat langkah ala bank owner (domain DI & DNI)",
+          "items": [
+            "Gambar struktur Lewis lebih dulu — tanpa Lewis, domain tidak bisa dihitung.",
+            "Hitung domain: DI (domain ikatan; ikatan tunggal/rangkap dihitung SATU) dan DNI (domain nonikatan = PEB).",
+            "Geometri elektron = orientasi SEMUA domain; bentuk molekul = orientasi DI saja (PEB tak terlihat tetapi menekan).",
+            "Contoh bank owner: NH₃ = 4 domain (3 DI + 1 DNI) -> geometri elektron tetrahedral, bentuk molekul segitiga piramida.",
+            "Orbital hibrida = jumlah domain: 2 -> sp, 3 -> sp², 4 -> sp³, 5 -> sp³d (PCl₅), 6 -> sp³d²."
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — urutan kepolaran ikatan lewat ΔEN (soal bank owner). Soal: urutkan kepolaran ikatan H−F, H−O, H−N. Langkah 1: ingat urutan EN: F > O > N. Langkah 2: ΔEN terbesar = ikatan paling polar: H−F > H−O > H−N. Langkah 3: simpulkan: HF ikatan paling polar di antara ketiganya; pola sama dipakai membandingkan ikatan C−X lain."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Sigma, pi, dan simetri penentu polar",
+          "items": [
+            "Ikatan sigma (σ): tumpang-tindih ujung orbital sejajar sumbu ikatan — semua ikatan tunggal adalah σ.",
+            "Ikatan pi (π): tumpang-tindih sisi orbital — isi tambahan pada ikatan rangkap dua/tiga.",
+            "Molekul SIMETRIS (PF₅, XeF₂, CO₂) -> momen dipol saling hapus -> nonpolar meski ikatannya polar.",
+            "Molekul TIDAK simetris (NH₃, H₂O) -> dipol bersih -> polar; PEB biasanya biang keladinya."
+          ]
         },
         {
           "jenis": "callout",
@@ -695,6 +836,10 @@
               "w": "Paling kuat di antara gaya antarmolekul; tetap jauh lebih lemah daripada ikatan kovalen."
             }
           ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Contoh terpecah langkah — titik didih tertinggi (soal bank owner). Soal: mana titik didih tertinggi di antara CH₄, NH₃, SiH₄, PH₃, PCl₅? Langkah 1: cek velcro terkuat: hanya NH₃ punya H terikat ke N -> ikatan hidrogen. Langkah 2: yang lain hanya dipol-dipol (PH₃) atau London (CH₄, SiH₄, PCl₅). Langkah 3: untuk massa sekelas, ikatan hidrogen mengalahkan yang lain -> jawab NH₃; London PCl₅ besar karena massa, maka bandingkan hanya sesama non-hidrogen bila soal meminta."
         },
         {
           "jenis": "callout",
