@@ -1,0 +1,925 @@
+{
+  "materi": {
+    "judul": "Kimia SMA Kelas 12 — Persiapan TKA 2026",
+    "mapel": "Kimia",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#7C3AED",
+    "emoji": "⚗️",
+    "deskripsi": "Materi Kimia VERSI DALAM persiapan TKA 2026, bab 1-6 mengikuti matriks resmi Pusmendik (4 elemen muatan: Kimia Dasar, Kimia Analitik, Kimia Fisik, Kimia Organik). Bab 2 = hukum dasar kimia & stoikiometri: lima hukum dasar, konsep mol & massa molar, rumus empiris-molekul & hidrat, penyetaraan persamaan reaksi, stoikiometri reaksi & pereaksi pembatas, konsentrasi larutan, hingga volume gas STP. Visual: bagan orisinal tim kurikulum (canvas) + soal resmi Pusmendik berlabel (no. 7, 11, 12, 16) + Gemilang Drill berstimulus data.",
+    "urutan": 5,
+    "status": "draft",
+    "daftarPustaka": [
+      "Matriks Asesmen & 20 Contoh Soal Resmi TKA Kimia SMA — Pusmendik Kemendikdasmen (soal resmi no. 7, 11, 12, 16 dipakai berlabel penuh; kunci resmi diverifikasi dari dokumen resmi).",
+      "Stimulus soal resmi no. 11 (gambar empat botol reaktan) © Pusmendik Kemendikdasmen — diunduh dari pusmendik.kemendikdasmen.go.id lalu diunggah ulang ke Supabase ber-kredit (bukan hotlink).",
+      "Modul Tentor Gemilang — blok Kimia 'Stoikiometri' hlm. cetak 212-213 (basis internal ringkas; dikembangkan penuh oleh AI sesuai CP Fase F & matriks TKA).",
+      "Capaian Pembelajaran Fase F Kimia (Kurikulum Merdeka) — kerangka pengembangan konten orisinal bab ini.",
+      "Bagan penunjang (lima hukum, peta mol, tangga RE-RM, neraca atom, jembatan stoikiometri, diagram MRS, molaritas dua gelas, balon STP, tabel data Proust + tiga lapis anotasi pembahasan) digambar orisinal tim kurikulum Gemilang via canvas — bukan gambar buatan AI."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 2 — Hukum Dasar Kimia dan Stoikiometri",
+      "ringkasan": "Kimia adalah ilmu menghitung yang jujur: atom tidak pernah hilang, tidak pernah tercipta, hanya bertukar pasangan. Bab ini membangun alat hitungnya — lima hukum dasar sebagai pagar berpikir, konsep mol sebagai jembatan antara dunia atom dan dunia timbangan, lalu stoikiometri reaksi (termasuk pereaksi pembatas) sebagai mesin penjawab hampir semua soal perhitungan TKA. Rantainya: hukum → mol → rasio koefisien → jawaban.",
+      "estimasiMenit": 100,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "A. Lima Hukum Dasar Kimia: Siapa Menjaga Apa"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Seluruh perhitungan kimia berdiri di atas lima hukum dasar yang ditemukan dari percobaan, bukan dari hafalan. Setiap hukum menjawab satu pertanyaan: apa yang TIDAK berubah ketika reaksi berlangsung? Massa total (Lavoisier), perbandingan massa unsur dalam satu senyawa (Proust), perbandingan massa unsur antar dua senyawa (Dalton), perbandingan volume gas (Gay-Lussac), dan hubungan volume dengan jumlah molekul (Avogadro). Mengenali 'penjaga' masing-masing hukum adalah kunci membaca soal data percobaan di TKA."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Posisi topik ini dalam TKA",
+          "teks": "Hukum dasar kimia masuk elemen muatan Kimia Dasar bersama stoikiometri dan persamaan reaksi. Soal resminya jarang menanyakan bunyi hukum secara langsung: data percobaan (tabel massa, volume gas) disajikan, lalu murid diminta menyimpulkan hukum mana yang berlaku atau menghitung memakai rasio yang dijaga hukum itu — lihat soal resmi no. 7, 11, 12, dan 16 di bagian latihan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Amati bagan berikut dengan satu tujuan: pada tiap panel, temukan besaran yang NILAINYA TETAP sebelum dan sesudah perubahan. Lima panel, lima jawaban berbeda — dan kelima-limanya akan dipakai berulang kali di bab ini."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-lima-hukum.jpg",
+          "keterangan": "Lima panel berjajar dari kiri ke kanan: (1) neraca dua piringan bertuliskan 10,0 g sebelum dan 10,0 g sesudah reaksi; (2) dua bar mendatar biru pendek H 1 g dan hijau panjang O 8 g dalam air; (3) dua bar tegak massa oksigen pada CO dan CO2 dengan tinggi berbanding 1 : 2 untuk karbon yang sama; (4) tiga tabung volume gas 1 L H2 ditambah 1 L Cl2 menghasilkan 2 L HCl; (5) dua balon berukuran sama H2 dan O2 masing-masing berisi enam titik molekul."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — lima hukum",
+          "items": [
+            "Panel 1 (Lavoisier): kedua piringan tetap 10,0 g — massa total sistem tertutup tidak berubah oleh reaksi.",
+            "Panel 2 (Proust): bar H dan O dalam air selalu berbanding 1 : 8 berapa pun sampelnya — senyawa punya 'resep' tetap.",
+            "Panel 3 (Dalton): untuk massa C yang sama, massa O pada CO dan CO2 berbanding 1 : 2 — bilangan bulat dan sederhana.",
+            "Panel 4 (Gay-Lussac): volume H2, Cl2, dan HCl berbanding 1 : 1 : 2, persis seperti koefisien reaksinya.",
+            "Panel 5 (Avogadro): dua balon sama besar pada P dan T sama berisi jumlah titik molekul yang sama (6 titik)."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — hukum adalah pagar, bukan hafalan",
+          "teks": "Kelima hukum ini bekerja sampai akhir bab: Proust memasok rasio massa untuk rumus empiris (bagian C), Gay-Lussac dan Avogadro memasok rasio volume untuk gas (bagian G), dan Lavoisier menjamin baris 'sisa' pada tabel MRS (bagian E) selalu menutup. Bagan ini bukan tujuan, melainkan pagar berpikir seluruh perhitungan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tabel berikut merangkum kelima hukum beserta bukti percobaannya — jadikan kolom pernyataan sebagai kalimat yang Anda ucapkan ulang dengan bahasa sendiri saat berlatih:"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Lima hukum dalam satu tabel",
+          "kolom": [
+            "Hukum",
+            "Pernyataan inti",
+            "Contoh bukti percobaan"
+          ],
+          "rows": [
+            {
+              "k": "Lavoisier (kekekalan massa)",
+              "v": "Massa zat sebelum reaksi = massa zat sesudah reaksi (sistem tertutup).",
+              "w": "Pembakaran 10 g CaCO3 menghasilkan CaO + CO2 yang jumlah massanya tetap 10 g."
+            },
+            {
+              "k": "Proust (perbandingan tetap)",
+              "v": "Perbandingan massa unsur-unsur dalam satu senyawa selalu tetap.",
+              "w": "Air dari sumber mana pun: massa H : O = 1 : 8."
+            },
+            {
+              "k": "Dalton (perbandingan berganda)",
+              "v": "Bila dua unsur membentuk lebih dari satu senyawa dan massa satu unsur disamakan, massa unsur lainnya berbanding bilangan bulat sederhana.",
+              "w": "CO dan CO2: untuk C yang sama, O berbanding 16 : 32 = 1 : 2."
+            },
+            {
+              "k": "Gay-Lussac (perbandingan volume)",
+              "v": "Pada P dan T sama, volume gas-gas yang bereaksi dan hasil reaksi berbanding sebagai bilangan bulat sederhana (= koefisien).",
+              "w": "1 L H2 + 1 L Cl2 -> 2 L HCl."
+            },
+            {
+              "k": "Avogadro (volume = jumlah molekul)",
+              "v": "Pada P dan T sama, volume gas yang sama mengandung jumlah molekul yang sama.",
+              "w": "1 L O2 dan 1 L H2 pada kondisi sama berisi jumlah molekul identik."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang",
+          "teks": "Kata kunci soal hukum: 'massa total tetap' -> Lavoisier; 'kadar/rasio tetap dalam satu senyawa' -> Proust; 'dua senyawa, unsur sama' -> Dalton; 'volume gas bereaksi' -> Gay-Lussac; 'volume sama, jumlah partikel' -> Avogadro. Satu kata kunci, satu hukum — tidak perlu membaca ulang seluruh soal."
+        },
+        {
+          "jenis": "judul",
+          "teks": "B. Konsep Mol: Jembatan Antara Dunia Atom dan Dunia Timbangan"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Atom terlalu kecil untuk dihitung satu per satu, tetapi terlalu banyak untuk diabaikan. Mol adalah jawaban kimia untuk masalah itu: satu mol berarti sekumpulan 6,02 × 10^23 partikel (bilangan Avogadro, N_A), sebanyak atom dalam tepat 12 gram karbon-12. Dengan mol, timbangan laboratorium (gram) bisa 'berbicara' dengan persamaan reaksi (jumlah partikel). Massa molar (M) adalah massa satu mol zat, nilainya sama dengan massa relatif (Ar atau Mr) dalam satuan g/mol."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Buka peta konsep berikut dan perhatikan satu hal: SEMUA jalan melewati lingkaran tengah. Dari besaran apa pun (gram, liter gas, jumlah partikel, atau molaritas larutan), langkah pertama selalu mengubahnya menjadi mol — dan langkah terakhir selalu keluar dari mol menuju besaran yang ditanya."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-peta-mol.jpg",
+          "keterangan": "Lingkaran biru besar bertuliskan n (mol) di tengah dengan empat kartu di sekelilingnya: kiri m (gram) dengan sepasang panah berlabel kali M dan bagi M; kanan V (liter, STP) dengan panah kali 22,4 dan bagi 22,4; atas N (partikel) dengan panah kali N_A dan bagi N_A; bawah M (mol/L) dengan panah bagi V dan kali V. Catatan kaki: N_A = 6,02 × 10^23 partikel/mol, STP 0 °C dan 1 atm."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — peta mol",
+          "items": [
+            "Lingkaran tengah n (mol) adalah satu-satunya simpul yang terhubung ke semua besaran: tidak ada panah langsung gram -> partikel.",
+            "Panah keluar dari mol ke m memakai operasi kali M; panah kembali dari m ke mol memakai bagi M.",
+            "Ke volume gas STP: kali 22,4 L/mol; kembali: bagi 22,4.",
+            "Ke jumlah partikel: kali N_A; kembali: bagi N_A.",
+            "Ke molaritas larutan: n dibagi V larutan memberi M; sebaliknya n = M × V."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — peta mol adalah mesin bab ini",
+          "teks": "Hampir semua soal latihan bab ini (nomor 5-13, 16, 19, 20) adalah perjalanan melewati lingkaran tengah peta mol: masuk dari satu besaran, keluar dari besaran lain. Simpan urutan panah ini di kepala sebelum menyentuh kalkulator — salah memilih jembatan adalah sumber kesalahan terbesar soal stoikiometri."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Empat jembatan pada bagan diringkas menjadi rumus siap pakai pada tabel berikut; hafalkan arah operasinya (kali atau bagi), bukan sekadar simbolnya:"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Empat jembatan menuju mol",
+          "kolom": [
+            "Besaran diketahui",
+            "Rumus ke mol",
+            "Contoh cepat"
+          ],
+          "rows": [
+            {
+              "k": "Massa m (gram)",
+              "v": "n = m ÷ M",
+              "w": "8 g O2: n = 8 ÷ 32 = 0,25 mol"
+            },
+            {
+              "k": "Volume gas STP (L)",
+              "v": "n = V ÷ 22,4",
+              "w": "5,6 L CO2: n = 0,25 mol"
+            },
+            {
+              "k": "Jumlah partikel N",
+              "v": "n = N ÷ N_A",
+              "w": "1,204 × 10^24 molekul: n = 2 mol"
+            },
+            {
+              "k": "Larutan (M dan V)",
+              "v": "n = M × V",
+              "w": "50 mL HCl 2 M: n = 0,1 mol"
+            }
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Menghitung partikel tanpa tersesat",
+          "items": [
+            "Ubah besaran diketahui menjadi mol (pakai jembatan yang sesuai).",
+            "Kalikan dengan N_A = 6,02 × 10^23 untuk mendapatkan jumlah partikel.",
+            "Periksa satuan akhir: 'molekul' untuk zat molekuler, 'atom' bila ditanya atom di dalam molekul (kalikan lagi jumlah atom per molekul).",
+            "Contoh: 4,4 g CO2 = 0,1 mol -> 6,02 × 10^22 molekul; jumlah atom O = 2 × itu."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang",
+          "teks": "Tiga angka wajib hafal luar kepala: M (g/mol) = Ar/Mr; 22,4 L/mol (STP); 6,02 × 10^23 /mol. Soal stoikiometri apa pun hanyalah campuran dari ketiganya: masuk lewat satu jembatan (menuju mol), keluar lewat jembatan lain (menuju besaran yang ditanya)."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            {
+              "k": "Mol",
+              "v": "Satuan jumlah zat; 1 mol = 6,02 × 10^23 partikel (bilangan Avogadro)."
+            },
+            {
+              "k": "Massa molar (M)",
+              "v": "Massa satu mol zat, bernilai sama dengan Ar/Mr dalam g/mol."
+            },
+            {
+              "k": "STP",
+              "v": "Standard Temperature and Pressure: 0 °C dan 1 atm; volume molar gas 22,4 L/mol."
+            },
+            {
+              "k": "Molaritas (M)",
+              "v": "Konsentrasi dalam mol zat terlarut per liter LARUTAN (mol/L)."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "C. Rumus Empiris vs Rumus Molekul: Resep dan Wujud Nyata"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Rumus empiris (RE) adalah perbandingan paling sederhana antar atom dalam senyawa, sedangkan rumus molekul (RM) adalah jumlah atom sebenarnya dalam satu molekul. Keduanya bisa sama (H2O) atau berbeda kelipatan (RE CH2O vs RM C6H12O6). Pemisah keduanya satu saja: massa molar hasil pengukuran (misalnya spektrometri massa). Tanpa data Mr, soal persen massa hanya bisa berhenti di RE — dan di situlah jebakan ujian dipasang."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Ikuti tangga lima anak berikut dari kiri ke kanan. Baris contoh memakai data limbah organik sungguhan dari soal resmi TKA no. 12: perhatikan anak tangga mana yang TIDAK bisa dilewati tanpa data Mr."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-re-mr.jpg",
+          "keterangan": "Lima kartu bertingkat menurun dari kiri ke kanan: (1) persen massa C 40%, H 6,7%, O 53,3%; (2) mol tiap unsur hasil bagi Ar: 3,33 : 6,7 : 3,33; (3) rasio setelah dibagi nilai terkecil: 1 : 2 : 1; (4) rumus empiris CH2O dengan Mr 30; (5) rumus molekul n = 180/30 = 6 menjadi C6H12O6. Di bawahnya kotak amber berisi peringatan bahwa rumus empiris belum tentu rumus molekul."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — tangga lima anak",
+          "items": [
+            "Anak 1 ke 2: setiap persen dibagi Ar unsurnya sendiri (40 ÷ 12; 6,7 ÷ 1; 53,3 ÷ 16) — persen adalah massa per 100 g sampel.",
+            "Anak 2 ke 3: semua nilai dibagi yang terkecil (3,33) sehingga rasio menjadi bilangan bulat 1 : 2 : 1.",
+            "Anak 3 ke 4: rasio bulat langsung menjadi indeks rumus empiris CH2O (Mr RE = 30).",
+            "Anak 4 ke 5: faktor pengali n = Mr senyawa ÷ Mr RE = 180 ÷ 30 = 6, maka RM = C6H12O6.",
+            "Kotak amber: tanpa Mr, perjalanan berhenti di anak 4 — pernyataan 'RE = RM' tidak boleh disimpulkan."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — tangga yang sama dengan soal resmi no. 12",
+          "teks": "Lima anak tangga ini persis alur soal resmi TKA no. 12: persen massa dan Mr diberikan, kesimpulan 'RE = RM' diuji. Jebakan selalu dipasang di anak tangga terakhir — tempat data Mr WAJIB dipakai sebelum menyatakan rumus molekul."
+        },
+        {
+          "jenis": "alur",
+          "judul": "Menentukan rumus molekul dari persen massa",
+          "items": [
+            "Anggap sampel 100 g sehingga persen langsung menjadi gram.",
+            "Bagi tiap massa dengan Ar -> mol tiap unsur.",
+            "Bagi semua mol dengan nilai terkecil -> rasio RE.",
+            "Hitung Mr RE; bandingkan dengan Mr senyawa: n = Mr ÷ Mr RE.",
+            "Kalikan semua indeks RE dengan n -> rumus molekul."
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Beberapa pasangan rumus empiris dan rumus molekul layak dikenali langsung agar tangga tidak perlu dipanjat ulang pada setiap soal:"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Pasangan RE-RM yang sering muncul di soal",
+          "kolom": [
+            "Rumus empiris",
+            "Rumus molekul",
+            "Nilai n"
+          ],
+          "rows": [
+            {
+              "k": "CH2O",
+              "v": "C6H12O6 (glukosa)",
+              "w": "6"
+            },
+            {
+              "k": "CH",
+              "v": "C2H2 (etuna) atau C6H6 (benzena)",
+              "w": "2 atau 6"
+            },
+            {
+              "k": "NO2",
+              "v": "N2O4 (dinitrogen tetraoksida)",
+              "w": "2"
+            },
+            {
+              "k": "CH2",
+              "v": "C3H6 (propena), C4H8, dst.",
+              "w": "3, 4, dst."
+            }
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Kerabat dekat topik ini adalah hidrat: kristal yang mengikat molekul air dalam jumlah tetap, misalnya tembaga(II) sulfat pentahidrat CuSO4·5H2O. Air kristal punya massa yang nyata: Mr CuSO4·5H2O = 160 + 5 × 18 = 250, artinya 90 dari setiap 250 gram kristal adalah air. Memanaskan hidrat sampai massa tetap adalah cara laboratorium menentukan jumlah air kristal — dan soal TKA senang membalik prosedur itu menjadi perhitungan."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Hidrat: air ikut ditimbang",
+          "teks": "Kesalahan paling umum: memakai Mr zat anhidrat (tanpa air) untuk kristal hidrat. Massa 0,2 mol CuSO4·5H2O adalah 0,2 × 250 = 50 g, BUKAN 0,2 × 160 = 32 g. Titik air pada rumus artinya PENJUMLAHAN massa, bukan perkalian."
+        },
+        {
+          "jenis": "judul",
+          "teks": "D. Menyetarakan Persamaan Reaksi: Neraca Atom"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Persamaan reaksi adalah kalimat kimia: ruas kiri menyebut pereaksi, ruas kanan menyebut hasil, dan tanda panah berarti 'berubah menjadi'. Karena atom tidak diciptakan atau dimusnahkan (Lavoisier), jumlah atom tiap unsur WAJIB sama di dua ruas. Koefisien (angka di depan rumus) adalah satu-satunya boleh diubah; indeks (angka kecil dalam rumus) tidak boleh, karena mengubah indeks berarti mengganti zatnya."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Perhatikan contoh penyetaraan berikut seperti memeriksa neraca pedagang: buka tabel inventaris atom, dan pastikan tiap baris tertutup dengan tanda centang sebelum persamaan dinyatakan setara."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-penyetaraan.jpg",
+          "keterangan": "Bagian atas menampilkan persamaan setara 2 SO2 + 1 O2 -> 2 SO3. Tengah: tabel inventaris atom dua baris — S: 2 di ruas kiri dan 2 di ruas kanan; O: 4 + 2 = 6 di kiri dan 6 di kanan — keduanya bercentang hijau. Bawah: gambar neraca lengan sama dengan dua piringan bertuliskan 6 O, 2 S pada tiap sisi dalam keadaan seimbang."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — neraca atom",
+          "items": [
+            "Koefisien 2 di depan SO2 berarti 2 atom S dan 4 atom O; O2 menyumbang 2 atom O lagi -> kiri total 2 S, 6 O.",
+            "Koefisien 2 di depan SO3 berarti 2 S dan 6 O di ruas kanan — inventaris tertutup.",
+            "Tanda centang hanya muncul bila baris unsur SAMA di dua ruas; satu baris terbuka berarti belum setara.",
+            "Piringan neraca yang seimbang adalah terjemahan visual hukum Lavoisier: tidak ada atom yang hilang."
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Langkah menyetarakan (metode inspeksi)",
+          "items": [
+            "Tulis ulang persamaan dengan rumus yang benar (jangan ubah indeks!).",
+            "Setarakan lebih dulu unsur yang muncul dalam SATU zat di tiap ruas, biasanya logam lalu nonlogam.",
+            "Setarakan H dan O paling akhir (sering muncul di banyak zat).",
+            "Bila muncul pecahan, kalikan semua koefisien dengan penyebutnya.",
+            "Tutup dengan tabel inventaris atom: semua baris harus centang."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — koefisien adalah mata uang bab ini",
+          "teks": "Koefisien bukan sekadar hiasan agar persamaan rapi: ia adalah rasio MOL yang dipakai jembatan stoikiometri bagian E, rasio VOLUME gas pada hukum Gay-Lussac, dan kunci soal resmi no. 7. Menyetarakan dengan salah = seluruh perhitungan sesudahnya salah walau aritmetikanya benar."
+        },
+        {
+          "jenis": "judul",
+          "teks": "E. Stoikiometri Reaksi: Jembatan Tiga Langkah dan Pereaksi Pembatas"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Stoikiometri adalah seni memakai rasio koefisien untuk meramalkan jumlah zat. Hanya ada satu aturan lalu lintas: semua besaran harus singgah di MOL dulu. Gram tidak bisa langsung menjadi liter; partikel tidak bisa langsung menjadi gram. Tiga langkah jembatan berikut menyelesaikan hampir seluruh soal perhitungan TKA, dari pembakaran bahan bakar sampai dosis reagen laboratorium."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Buka bagan jembatan berikut dan telusuri contoh yang tertulis: dari 24 g magnesium di kartu kiri sampai volume gas hidrogen di kartu kanan. Perhatikan bahwa kartu tengah hanya berisi RASIO — tidak ada satuan gram atau liter di sana."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-jembatan.jpg",
+          "keterangan": "Tiga kartu terhubung panah dari kiri ke kanan: kartu biru 'zat diketahui' berisi 24 g Mg -> n = 24/24 = 1 mol; kartu amber 'rasio koefisien' berisi Mg : HCl : MgCl2 : H2 = 1 : 2 : 1 : 1; kartu hijau 'zat ditanya' berisi n H2 = 1 mol -> V = 22,4 L (STP). Di bawahnya kotak biru muda bertuliskan urutan emas: gram -> mol (bagi M) -> mol zat lain (kali rasio koefisien) -> gram/liter/partikel."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — jembatan stoikiometri",
+          "items": [
+            "Kartu 1: massa Mg dibagi massa molarnya (24 g/mol) memberi 1 mol — gerbang masuk selalu mol.",
+            "Kartu 2: rasio koefisien dari persamaan setara Mg + 2 HCl -> MgCl2 + H2 adalah 1 : 2 : 1 : 1.",
+            "Kartu 3: karena rasio Mg : H2 = 1 : 1, mol H2 = 1 mol; pada STP volumenya 1 × 22,4 = 22,4 L.",
+            "Kotak urutan emas: setiap soal perhitungan adalah perjalanan pulang-pergi melalui mol."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — satu mesin, tiga suku cadang",
+          "teks": "Jembatan stoikiometri adalah mesin tunggal bab ini: suku cadangnya koefisien dari bagian D, bahan bakarnya mol dari bagian B, dan rambu lalu lintasnya pereaksi pembatas berikut. Soal resmi no. 16 hanyalah mesin ini dengan angka 24 gram dan 3 M."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Di laboratorium, pereaksi jarang dicampur tepat sesuai rasio; biasanya ada yang berlebih. Pereaksi pembatas adalah pereaksi yang HABIS lebih dulu dan karena itu membatasi jumlah produk. Cara menemukannya: bagi mol tiap pereaksi dengan koefisiennya — nilai terkecil adalah pembatas. Setelah pembatas diketahui, semua produk dihitung DARI pembatas itu, bukan dari pereaksi lain."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Diagram batang berikut memvisualkan kasus soal resmi no. 16: 1 mol Mg dicampur dengan 3 mol HCl. Bandingkan tinggi batang Mg dan HCl pada ketiga kelompok (awal, bereaksi, sisa) — kelompok manakah yang membocorkan identitas pereaksi pembatas?"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-mrs.jpg",
+          "keterangan": "Diagram batang dua seri (biru Mg, hijau HCl) dalam tiga kelompok sepanjang sumbu mol 0-3: kelompok AWAL 1 mol Mg dan 3 mol HCl; kelompok BEREAKSI 1 mol Mg dan 2 mol HCl; kelompok SISA 0 mol Mg (garis putus-putus di nol) dan 1 mol HCl. Keterangan kaki: bereaksi memakai rasio koefisien 1 : 2 sehingga Mg habis lebih dulu."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — diagram awal-bereaksi-sisa",
+          "items": [
+            "AWAL: persediaan sebelum reaksi, 1 mol Mg dan 3 mol HCl — belum ada yang terpakai.",
+            "BEREAKSI: jumlah yang benar-benar terpakai mengikuti rasio koefisien 1 : 2, yaitu 1 mol Mg dan 2 mol HCl.",
+            "SISA: Mg 0 mol (habis total) sedangkan HCl masih 1 mol — Mg-lah pereaksi pembatasnya.",
+            "Produk (MgCl2 dan H2) dihitung dari Mg: masing-masing 1 mol, karena rasionya 1 : 1 : 1."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — MRS tumbuh dewasa di bab 5",
+          "teks": "Tabel mula-mula, bereaksi, sisa yang lahir di sini akan dipakai ulang di bab 5 untuk kesetimbangan kimia (mula-mula, bereaksi, saat setimbang). Bentuknya sama persis; hanya tahap akhir yang berganti nama dari 'sisa' menjadi 'setimbang'. Menguasai MRS sekarang berarti memangkas separuh pekerjaan di bab 5."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Diagram batang tadi dapat dituliskan ulang sebagai tabel MRS — format tabel yang sebaiknya Anda pakai pada setiap soal pereaksi pembatas, karena baris 'bereaksi' memaksa Anda menulis rasio koefisien secara eksplisit:"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Tabel MRS (Mula-mula, Bereaksi, Sisa) contoh Mg + HCl",
+          "kolom": [
+            "Tahap",
+            "Mg dan HCl (mol)",
+            "MgCl2 dan H2 (mol)"
+          ],
+          "rows": [
+            {
+              "k": "Mula-mula",
+              "v": "Mg 1; HCl 3",
+              "w": "MgCl2 0; H2 0"
+            },
+            {
+              "k": "Bereaksi",
+              "v": "Mg -1; HCl -2 (rasio 1 : 2)",
+              "w": "MgCl2 +1; H2 +1"
+            },
+            {
+              "k": "Sisa",
+              "v": "Mg 0 (habis); HCl 1",
+              "w": "MgCl2 1; H2 1"
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "gemilang",
+          "judul": "Rumus Cepat Gemilang",
+          "teks": "Pereaksi pembatas = pemilik nilai (mol ÷ koefisien) TERKECIL. Kasus no. 16: Mg 1 ÷ 1 = 1; HCl 3 ÷ 2 = 1,5 -> Mg pembatas. Produk selalu = (mol pembatas ÷ koefisien pembatas) × koefisien produk. Dua baris perhitungan, satu jawaban benar."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Kaitan konsep — stoikiometri di dunia nyata",
+          "teks": "Kantong udara mobil (airbag) mengembang lewat dekomposisi natrium azida 2 NaN3 -> 2 Na + 3 N2: insinyur menghitung massa NaN3 agar mol N2 tepat mengisi kantong. Dapur Anda memakai logika sama saat baking soda (NaHCO3) bertemu asam: rasio koefisien menentukan berapa banyak gelembung CO2 pengembang adonan. Konteks industri dan rumah tangga seperti ini persis bingkai 'konteks' kerangka TKA."
+        },
+        {
+          "jenis": "judul",
+          "teks": "F. Konsentrasi Larutan: Molaritas dan Pengenceran"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Sebagian besar reaksi kimia di laboratorium dan di tubuh berlangsung dalam larutan. Molaritas (M) menyatakan mol zat terlarut per liter LARUTAN — perhatikan: per liter larutan akhir, bukan per liter pelarut yang ditambahkan. Dua gelas dengan mol zat terlarut sama tetapi volume larutan berbeda akan memiliki molaritas berbeda, dan itulah inti bagan berikut."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bandingkan kedua gelas pada bagan: hitung titik zat terlarut pada masing-masing gelas (harus sama banyak), lalu baca bagaimana tinggi permukaan air mengubah molaritasnya."
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-konsentrasi.jpg",
+          "keterangan": "Dua gelas kimia berjajar: kiri berisi 12 titik zat terlarut dalam larutan setinggi 1,0 L berlabel 0,5 mol dalam 1,0 L sehingga M = 0,5 mol/L; kanan berisi 12 titik sama dalam larutan setinggi 0,5 L berlabel 0,5 mol dalam 0,5 L sehingga M = 1,0 mol/L. Panah amber bertuliskan 'air diuapkan' menghubungkan keduanya."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — dua gelas, mol sama",
+          "items": [
+            "Jumlah titik zat terlarut identik (12 titik): mol tidak berubah oleh penguapan air.",
+            "Volume larutan kanan setengahnya, sehingga kerapatan titik (konsentrasi) dua kali lebih rapat.",
+            "Molaritas kiri 0,5 mol/L; kanan 1,0 mol/L — volume larutan setengahnya, maka molaritasnya dua kali lipat.",
+            "Sebaliknya, menambah air (pengenceran) memperbesar V dan mengecilkan M sementara mol tetap."
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Molaritas hanyalah satu dari beberapa ukuran konsentrasi yang dipakai kimia. Tabel berikut menempatkan masing-masing ukuran pada definisi dan kegunaannya, supaya tidak tertukar saat mengerjakan soal sifat koligatif di bab 4:"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Ukuran konsentrasi yang perlu dikenal",
+          "kolom": [
+            "Nama",
+            "Definisi",
+            "Kapan dipakai"
+          ],
+          "rows": [
+            {
+              "k": "Molaritas (M)",
+              "v": "mol zat terlarut ÷ liter larutan",
+              "w": "Stoikiometri larutan, titrasi, soal TKA paling sering"
+            },
+            {
+              "k": "Molalitas (m)",
+              "v": "mol zat terlarut ÷ kg pelarut",
+              "w": "Sifat koligatif (bab 4)"
+            },
+            {
+              "k": "Fraksi mol (x)",
+              "v": "mol komponen ÷ mol total",
+              "w": "Campuran gas dan larutan lanjutan"
+            },
+            {
+              "k": "Persen massa",
+              "v": "massa zat ÷ massa larutan × 100%",
+              "w": "Label produk rumah tangga"
+            }
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Pengenceran: mol yang tetap adalah jangkarnya",
+          "items": [
+            "Tulis mol sebelum dan sesudah: n1 = n2, maka M1 × V1 = M2 × V2.",
+            "Samakan satuan volume (mL keduanya boleh, asal konsisten).",
+            "Contoh: 50 mL HCl 2 M diencerkan jadi 200 mL -> M2 = (2 × 50) ÷ 200 = 0,5 M.",
+            "Masuk ke jembatan stoikiometri lewat n = M × V larutan yang dipakai."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "tips",
+          "judul": "Kaitan konsep — larutan adalah pintu bab 4",
+          "teks": "Molaritas yang Anda kuasai di sini dipakai ulang tanpa ampun di bab 4: menghitung pH asam-basa, titrasi, dan kesetimbangan larutan semuanya berangkat dari n = M × V. Kuasai pengenceran sekarang, dan separuh bab 4 terasa seperti pengulangan."
+        },
+        {
+          "jenis": "judul",
+          "teks": "G. Volume Gas: STP dan Persamaan Gas Ideal"
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Gas adalah wujud zat yang paling 'murah hati' kepada ahli kimia: pada suhu dan tekanan sama, satu mol gas APA PUN menempati volume yang sama. Pada STP (0 °C, 1 atm) volume molar itu 22,4 L/mol. Di luar STP, hubungan P, V, n, dan T dirangkum persamaan gas ideal PV = nRT dengan R = 0,082 L·atm/(mol·K) — perluasan alami dari hukum Gay-Lussac dan Avogadro."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Tiga balon berikut diisi gas berbeda pada STP. Prediksi sebelum membaca label: balon manakah yang paling besar, dan balon manakah yang paling berat?"
+        },
+        {
+          "jenis": "gambar",
+          "url": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-gas-stp.jpg",
+          "keterangan": "Tiga balon berukuran sama berjajar: biru H2 (Mr = 2), hijau O2 (Mr = 32), amber CO2 (Mr = 44); masing-masing berisi enam titik molekul dan berlabel 1 mol serta 22,4 L. Catatan kaki: massanya berbeda (2 g, 32 g, 44 g) tetapi volumenya sama."
+        },
+        {
+          "jenis": "poin",
+          "judul": "🔍 Membaca gambar — tiga balon STP",
+          "items": [
+            "Ketiga balon sama besar karena n, P, dan T sama — jenis gas tidak memengaruhi volume (Avogadro).",
+            "Jumlah titik molekul tiap balon sama (6 titik): 1 mol selalu 6,02 × 10^23 partikel apa pun zatnya.",
+            "Yang berbeda adalah MASSA: 2 g vs 32 g vs 44 g, mengikuti Mr masing-masing gas.",
+            "Jawaban prediksi: tidak ada balon terbesar (semua 22,4 L); yang terberat adalah CO2."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Kaitan konsep — dari STP ke kondisi ruang",
+          "teks": "Bila soal menyebut 'pada suhu 27 °C dan tekanan 2 atm', jangan paksa 22,4 L/mol: pakai PV = nRT atau perbandingan (P1V1 ÷ T1) = (P2V2 ÷ T2). Ingat suhu WAJIB dalam Kelvin (T = °C + 273). Soal resmi TKA umumnya ramah dengan memakai STP, tetapi bab 6 (keterampilan proses) akan melatih Anda membaca kondisi yang tidak ramah."
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            {
+              "k": "Pereaksi pembatas",
+              "v": "Pereaksi yang habis lebih dulu dan membatasi jumlah produk; nilai (mol ÷ koefisien) terkecil."
+            },
+            {
+              "k": "Rumus empiris",
+              "v": "Perbandingan bulat terkecil atom-atom dalam senyawa."
+            },
+            {
+              "k": "Rumus molekul",
+              "v": "Jumlah atom sebenarnya dalam satu molekul; RE × n dengan n = Mr ÷ Mr RE."
+            },
+            {
+              "k": "Hidrat",
+              "v": "Kristal yang mengikat molekul air dalam perbandingan tetap, mis. CuSO4·5H2O."
+            },
+            {
+              "k": "Volume molar",
+              "v": "Volume satu mol gas; 22,4 L/mol pada STP."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Catatan pengajaran",
+          "teks": "Ajak siswa menutup rantai bab ini dengan satu kalimat: 'hukum dasar menjaga rasio, mol menjembatani rasio ke timbangan, koefisien memberi rasionya, dan pembatas menunjuk siapa yang berkuasa.' Latihan bab berikutnya (bab 3 hidrokarbon) akan memakai jembatan yang sama dengan molekul organik — tidak ada alat hitung baru yang perlu diajarkan."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Gas sulfur dioksida (SO2) di udara dapat mengalami reaksi oksidasi menghasilkan sulfur trioksida (SO3). Persamaan reaksi kimia tersebut dapat dituliskan dalam bentuk: a SO2 + b O2 -> c SO3. Untuk menyetarakan reaksi, nilai koefisien a, b, dan c harus ditentukan. Nilai a, b, dan c berturut-turut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "4, 3, dan 2",
+            "2, 3, dan 4",
+            "2, 1, dan 2",
+            "2, 1, dan 3",
+            "2, 1, dan 1"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Atom S hanya ada di SO2 (kiri) dan SO3 (kanan), maka a = c; pilih a = c = 2. Neraca oksigen: kiri = 2a + 2b = 4 + 2b; kanan = 3c = 6. Maka 4 + 2b = 6 -> b = 1. Koefisien (a, b, c) = (2, 1, 2) — cek ulang: 2 S dan 6 O di kedua ruas. Jawaban C.",
+          "sumber": "Contoh Soal Resmi TKA Kimia no. 7 — Pusmendik (kunci resmi C; transkrip verbatim)"
+        },
+        {
+          "soal": "Sekelompok peneliti kimia lingkungan sedang meneliti kandungan bahan organik dalam limbah cair industri makanan. Mereka berhasil memurnikan satu senyawa organik utama, yang diketahui hanya tersusun atas unsur karbon (C), hidrogen (H), dan oksigen (O). Dari hasil uji laboratorium, senyawa tersebut memiliki komposisi massa: 40% karbon, 6,7% hidrogen, sisanya oksigen. Melalui spektrometri massa, diketahui bahwa massa molar senyawa tersebut adalah 180 g/mol. Mereka menyimpulkan bahwa rumus empiris dan rumus molekul senyawa itu adalah CH2O. Apakah kesimpulan tersebut benar? (Ar C = 12; H = 1; O = 16)",
+          "tipe": "pg",
+          "opsi": [
+            "Benar, karena CH2O adalah rumus empiris dan sesuai dengan rumus molekulnya.",
+            "Benar, karena rumus molekul harus sama dengan rumus empiris.",
+            "Salah, karena rasio mol tidak sesuai dengan komposisi yang diberikan.",
+            "Salah, karena massa molar menunjukkan bahwa rumus molekulnya adalah C6H12O6.",
+            "Salah, karena rumus empiris adalah CH2O tetapi rumus molekulnya adalah C4H8O4."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Per 100 g: mol C = 40 ÷ 12 = 3,33; mol H = 6,7 ÷ 1 = 6,7; mol O = 53,3 ÷ 16 = 3,33. Rasio 1 : 2 : 1 -> RE = CH2O (Mr RE = 30). n = 180 ÷ 30 = 6 -> RM = C6H12O6. Kesimpulan peneliti SALAH bukan karena RE-nya keliru, tetapi karena Mr 180 menunjukkan rumus molekul enam kali lipatnya: jawaban D.",
+          "sumber": "Contoh Soal Resmi TKA Kimia no. 12 — Pusmendik (kunci resmi D; transkrip verbatim)"
+        },
+        {
+          "soal": "Seorang murid melakukan percobaan reaksi antara 24 gram logam magnesium (Mg, Ar = 24 g/mol) dengan larutan asam klorida (HCl) 3 M sebanyak 1 liter, pada kondisi STP (Standard Temperature and Pressure). Reaksi yang terjadi: Mg(s) + 2 HCl(aq) -> MgCl2(aq) + H2(g). Berdasarkan reaksi tersebut, pilihlah pernyataan yang benar berkaitan dengan zat reaktan dan produk! (Jawaban benar lebih dari satu.)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Mol Mg yang bereaksi adalah 1 mol",
+            "Volume H2 yang dihasilkan adalah 22,4 L.",
+            "HCl adalah reagen pembatas.",
+            "HCl yang bereaksi adalah 3 mol",
+            "MgCl2 yang dihasilkan adalah 2 mol"
+          ],
+          "jawaban": [
+            0,
+            1
+          ],
+          "pembahasan": "n Mg = 24 ÷ 24 = 1 mol; n HCl = 3 M × 1 L = 3 mol. Rasio pembatas: Mg 1 ÷ 1 = 1; HCl 3 ÷ 2 = 1,5 -> Mg PEMBATA (pernyataan 3 salah). Mg habis 1 mol (pernyataan 1 benar); HCl bereaksi 2 × 1 = 2 mol, bukan 3 (pernyataan 4 salah); MgCl2 = 1 mol, bukan 2 (pernyataan 5 salah); H2 = 1 mol -> V = 22,4 L pada STP (pernyataan 2 benar).",
+          "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-mrs-pembahasan.png",
+          "pembahasanGambarKet": "🔍 Lingkaran merah pada kelompok SISA menunjukkan HCl masih 1 mol: HCl berlebih, Mg pembatas; tinggi batang H2 mengikuti mol Mg = 1 -> 22,4 L.",
+          "sumber": "Contoh Soal Resmi TKA Kimia no. 16 — Pusmendik (kunci resmi A dan B; transkrip verbatim)"
+        },
+        {
+          "soal": "Seorang murid akan melakukan eksperimen untuk menghasilkan 1,435 gram AgCl dari larutan AgNO3 dan NaCl melalui reaksi: AgNO3(aq) + NaCl(aq) -> AgCl(s) + NaNO3(aq). Terdapat empat botol zat: Botol A (AgNO3 1 M), Botol B (AgNO3 2 M), Botol C (NaCl 1 M), Botol D (NaCl 2 M) seperti pada gambar. Murid tersebut menentukan kombinasi larutan untuk menghasilkan tepat 1,435 g padatan AgCl. Tentukan TEPAT atau TIDAK TEPAT pada tiap pilihan komposisi berikut! (Ar Ag = 108; N = 14; O = 16; Na = 23; Cl = 35,5)",
+          "tipe": "tabel",
+          "kolom": [
+            "Tepat",
+            "Tidak Tepat"
+          ],
+          "baris": [
+            "5 mL larutan dari Botol A + 5 mL larutan dari Botol C",
+            "10 mL larutan dari Botol A + 5 mL larutan dari Botol D",
+            "10 mL larutan dari Botol B + 10 mL larutan dari Botol D"
+          ],
+          "jawaban": [
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Target: 1,435 ÷ 143,5 = 0,01 mol = 10 mmol AgCl; karena rasio 1 : 1, butuh 10 mmol AgNO3 DAN 10 mmol NaCl. (A) 5 mL × 1 M = 5 mmol + 5 mL × 1 M = 5 mmol -> hanya 5 mmol AgCl: TIDAK TEPAT. (B) 10 mL × 1 M = 10 mmol + 5 mL × 2 M = 10 mmol -> tepat 10 mmol: TEPAT. (C) 10 mL × 2 M = 20 mmol + 10 mL × 2 M = 20 mmol -> 20 mmol AgCl (2,87 g): TIDAK TEPAT.",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-soal11-botol-reaktan.png",
+          "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-soal11-pembahasan.png",
+          "pembahasanGambarKet": "🔍 Lingkaran merah menandai Botol A dan Botol D: 10 mL × 1 M = 10 mmol AgNO3 bertemu 5 mL × 2 M = 10 mmol NaCl — rasio 1:1 pas untuk 10 mmol AgCl.",
+          "sumber": "Contoh Soal Resmi TKA Kimia no. 11 — Pusmendik (kunci resmi: A Tidak Tepat, B Tepat, C Tidak Tepat; stimulus empat botol diunggah ulang ber-kredit)"
+        },
+        {
+          "soal": "Dalam wadah tertutup rapat, 10,0 gram kalsium karbonat dipanaskan hingga terurai sempurna menjadi kalsium oksida padat dan gas karbon dioksida. Massa kalsium oksida yang tertinggal di wadah adalah 5,6 gram. Massa gas karbon dioksida yang terbentuk adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "2,4 gram",
+            "4,4 gram",
+            "5,6 gram",
+            "6,4 gram",
+            "10,0 gram"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Hukum Lavoisier: massa total sesudah = massa total sebelum. m CO2 = 10,0 - 5,6 = 4,4 gram. Gas tetap berada dalam wadah tertutup sehingga 'hilangnya' massa padatan persis sama dengan massa gas yang terbentuk.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — penerapan hukum kekekalan massa)"
+        },
+        {
+          "soal": "Magnesium dan oksigen bereaksi membentuk magnesium oksida dengan perbandingan massa Mg : O = 3 : 2. Jika 12 gram magnesium direaksikan dengan 10 gram oksigen hingga reaksi selesai, maka hasil yang diperoleh adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "20 gram MgO dengan sisa 2 gram oksigen",
+            "20 gram MgO dengan sisa 2 gram magnesium",
+            "22 gram MgO tanpa sisa pereaksi",
+            "18 gram MgO dengan sisa 4 gram oksigen",
+            "16 gram MgO dengan sisa 6 gram magnesium"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Hukum Proust: rasio tetap 3 : 2. Untuk 12 g Mg dibutuhkan O = (2 ÷ 3) × 12 = 8 g; tersedia 10 g sehingga oksigen bersisa 10 - 8 = 2 g. Massa MgO = 12 + 8 = 20 g. Magnesium habis (pembatas), oksigen berlebih.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — hukum perbandingan tetap + pereaksi pembatas)"
+        },
+        {
+          "soal": "Pada suhu dan tekanan tertentu, 10 liter gas nitrogen bereaksi habis dengan gas hidrogen membentuk gas amonia menurut persamaan: N2(g) + 3 H2(g) -> 2 NH3(g). Volume gas hidrogen yang diperlukan dan volume gas amonia yang dihasilkan berturut-turut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "10 L dan 10 L",
+            "20 L dan 15 L",
+            "30 L dan 20 L",
+            "30 L dan 30 L",
+            "15 L dan 30 L"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Hukum Gay-Lussac: pada P dan T sama, perbandingan volume = perbandingan koefisien = 1 : 3 : 2. V H2 = 3 × 10 = 30 L; V NH3 = 2 × 10 = 20 L.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — hukum perbandingan volume)"
+        },
+        {
+          "soal": "Jumlah molekul yang terdapat dalam 4,4 gram gas karbon dioksida (Mr = 44) adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "6,02 × 10^21",
+            "6,02 × 10^22",
+            "6,02 × 10^23",
+            "1,20 × 10^23",
+            "3,01 × 10^22"
+          ],
+          "jawaban": 1,
+          "pembahasan": "n = 4,4 ÷ 44 = 0,1 mol. N = 0,1 × 6,02 × 10^23 = 6,02 × 10^22 molekul. (Bila yang ditanya jumlah atom O, kalikan dua: 1,204 × 10^23 — perhatikan kata 'molekul' vs 'atom' pada soal.)",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — jembatan mol ke jumlah partikel)"
+        },
+        {
+          "soal": "Massa kristal tembaga(II) sulfat pentahidrat, CuSO4·5H2O (Mr = 250), sebanyak 0,2 mol adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "25 gram",
+            "40 gram",
+            "50 gram",
+            "80 gram",
+            "125 gram"
+          ],
+          "jawaban": 2,
+          "pembahasan": "m = n × M = 0,2 × 250 = 50 gram. Ingat Mr kristal hidrat SUDAH mencakup 5 molekul air (5 × 18 = 90); memakai Mr CuSO4 anhidrat (160) akan memberi jawaban salah 32 g.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — massa molar hidrat)"
+        },
+        {
+          "soal": "Sebanyak 2,7 gram aluminium (Ar = 27) direaksikan dengan 250 mL larutan asam klorida 1 M menurut reaksi: 2 Al(s) + 6 HCl(aq) -> 2 AlCl3(aq) + 3 H2(g). Volume gas hidrogen yang terbentuk pada STP adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "1,12 L",
+            "2,24 L",
+            "2,80 L",
+            "3,36 L",
+            "4,48 L"
+          ],
+          "jawaban": 2,
+          "pembahasan": "n Al = 2,7 ÷ 27 = 0,1 mol; n HCl = 0,25 mol. Rasio pembatas: Al 0,1 ÷ 2 = 0,05; HCl 0,25 ÷ 6 = 0,0417 -> HCl pembatas. n H2 = (3 ÷ 6) × 0,25 = 0,125 mol -> V = 0,125 × 22,4 = 2,8 L.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — pereaksi pembatas + volume STP)"
+        },
+        {
+          "soal": "Sebanyak 50 mL larutan natrium klorida 2 M diencerkan dengan menambahkan air hingga volume larutan menjadi 200 mL. Konsentrasi larutan setelah pengenceran adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "0,25 M",
+            "0,50 M",
+            "1,00 M",
+            "1,50 M",
+            "2,00 M"
+          ],
+          "jawaban": 1,
+          "pembahasan": "M1V1 = M2V2 -> 2 × 50 = M2 × 200 -> M2 = 100 ÷ 200 = 0,5 M. Mol zat terlarut tetap 0,1 mol; hanya volume larutan yang bertambah.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — pengenceran)"
+        },
+        {
+          "soal": "Volume yang ditempati oleh 8 gram gas oksigen (Mr = 32) pada kondisi STP adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "2,24 L",
+            "4,48 L",
+            "5,60 L",
+            "8,00 L",
+            "11,20 L"
+          ],
+          "jawaban": 2,
+          "pembahasan": "n = 8 ÷ 32 = 0,25 mol; V = 0,25 × 22,4 = 5,6 L. Perhatikan bahwa oksigen berwujud molekul diatomik O2 sehingga Mr = 32, bukan 16.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — volume molar STP)"
+        },
+        {
+          "soal": "Perhatikan tabel data percobaan pembentukan tembaga(II) oksida pada gambar. Bila percobaan keempat menggunakan 32,0 gram tembaga dan seluruhnya habis bereaksi, maka massa oksigen yang bergabung dan massa CuO yang terbentuk berturut-turut adalah ....",
+          "tipe": "pg",
+          "opsi": [
+            "6,4 g dan 38,4 g",
+            "8,0 g dan 40,0 g",
+            "9,6 g dan 41,6 g",
+            "12,8 g dan 44,8 g",
+            "16,0 g dan 48,0 g"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Kolom rasio pada tabel konstan: m Cu : m O = 4,0. Maka m O = 32,0 ÷ 4 = 8,0 g dan m CuO = 32,0 + 8,0 = 40,0 g (Lavoisier menutup penjumlahan). Data yang menjaga rasio tetap inilah tanda tangan hukum Proust.",
+          "soalGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-stimulus-proust.png",
+          "pembahasanGambar": "https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/k2-proust-pembahasan.png",
+          "pembahasanGambarKet": "🔍 Lingkari kolom rasio m Cu : m O = 4,0 pada ketiga baris; untuk baris baru dengan Cu 32,0 g, tarik 32,0 ÷ 4,0 = 8,0 g oksigen.",
+          "sumber": "Gemilang Drill (data percobaan digambar orisinal tim kurikulum — stimulus tabel + pembahasan beranotasi)"
+        },
+        {
+          "soal": "Perhatikan pernyataan-pernyataan berikut tentang konsep mol. Pilihlah semua pernyataan yang BENAR!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Satu mol zat apa pun mengandung jumlah partikel yang sama, yaitu 6,02 × 10^23 partikel.",
+            "Massa molar CO2 adalah 44 g/mol, sehingga 44 g CO2 mengandung 6,02 × 10^23 molekul.",
+            "Pada STP, 1 mol gas O2 menempati volume yang sama dengan 1 mol gas CO2.",
+            "Jumlah mol dari 10 g CaCO3 (Mr = 100) adalah 0,2 mol.",
+            "Pada STP, 22,4 L zat apa pun selalu berjumlah 1 mol."
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "Pernyataan 1 benar (definisi mol). Pernyataan 2 benar (44 g = 1 mol CO2). Pernyataan 3 benar (Avogadro: gas apa pun, 1 mol = 22,4 L pada STP). Pernyataan 4 salah: n = 10 ÷ 100 = 0,1 mol. Pernyataan 5 salah: 22,4 L/mol hanya berlaku untuk GAS pada STP — 22,4 L air cair jelas bukan 1 mol.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem format MCMA — konsep mol)"
+        },
+        {
+          "soal": "Pada suhu dan tekanan yang sama, pasangan gas manakah yang mengandung JUMLAH MOLEKUL sama banyak? (Pilih semua yang benar!)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "1 L gas N2 dan 1 L gas O2",
+            "2 L gas CO2 dan 2 L gas CH4",
+            "1 L gas H2 dan 2 L gas Cl2",
+            "500 mL gas NH3 dan 500 mL gas SO3",
+            "3 L gas O2 dan 1,5 L gas O3"
+          ],
+          "jawaban": [
+            0,
+            1,
+            3
+          ],
+          "pembahasan": "Hukum Avogadro: pada P dan T sama, volume sama = jumlah molekul sama, apa pun jenis gasnya. Maka pasangan bervolume identik (1 L & 1 L; 2 L & 2 L; 500 mL & 500 mL) benar. Pasangan 1 L vs 2 L dan 3 L vs 1,5 L memiliki volume berbeda sehingga jumlah molekulnya berbeda (yang kedua justru setengah dan dua kali lipat).",
+          "sumber": "Gemilang Drill (latihan orisinal sistem format MCMA — hukum Avogadro)"
+        },
+        {
+          "soal": "Tentukan BENAR atau SALAH untuk tiap pernyataan tentang reaksi setara berikut: 2 SO2(g) + O2(g) -> 2 SO3(g)!",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Jumlah total koefisien reaksi tersebut adalah 5.",
+            "Untuk bereaksi habis dengan 3 mol O2 diperlukan 3 mol SO2.",
+            "Perbandingan mol SO2 terhadap SO3 adalah 1 : 1."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Total koefisien 2 + 1 + 2 = 5: BENAR. Rasio SO2 : O2 = 2 : 1, maka untuk 3 mol O2 diperlukan 6 mol SO2, bukan 3: SALAH. Rasio SO2 : SO3 = 2 : 2 = 1 : 1: BENAR.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem format PGK kategori — makna koefisien)"
+        },
+        {
+          "soal": "Tentukan BENAR atau SALAH untuk tiap pernyataan tentang rumus empiris dan rumus molekul berikut!",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Senyawa dengan rumus empiris CH2O dan Mr = 90 memiliki rumus molekul C3H6O3.",
+            "Rumus empiris benzena (C6H6) adalah CH.",
+            "Rumus empiris suatu senyawa selalu sama dengan rumus molekulnya."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Mr CH2O = 30; n = 90 ÷ 30 = 3 -> C3H6O3: BENAR. C6H6 dibagi faktor 6 menjadi CH: BENAR. Pernyataan ketiga SALAH: contohnya glukosa (RE CH2O, RM C6H12O6) — keduanya hanya sama bila n = 1 seperti pada air.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem format PGK kategori — RE vs RM)"
+        },
+        {
+          "soal": "Pasangkan setiap hukum dasar kimia dengan pernyataan yang paling tepat!",
+          "tipe": "jodoh",
+          "premis": [
+            "Hukum Lavoisier",
+            "Hukum Proust",
+            "Hukum Dalton",
+            "Hukum Gay-Lussac",
+            "Hukum Avogadro"
+          ],
+          "opsi": [
+            "Massa total zat dalam sistem tertutup tetap sebelum dan sesudah reaksi",
+            "Perbandingan massa unsur-unsur dalam satu senyawa selalu tetap",
+            "Bila massa satu unsur sama, massa unsur lain pada dua senyawa berbanding bilangan bulat sederhana",
+            "Pada P dan T sama, volume gas-gas yang bereaksi berbanding sebagai bilangan bulat sederhana",
+            "Pada P dan T sama, volume gas yang sama mengandung jumlah molekul yang sama",
+            "Volume gas selalu berbanding lurus dengan massa molar gasnya"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Lavoisier = kekekalan massa; Proust = perbandingan tetap dalam SATU senyawa; Dalton = perbandingan berganda antar DUA senyawa; Gay-Lussac = volume gas bereaksi; Avogadro = volume sama, molekul sama. Pengecoh terakhir membalik fakta: pada P dan T sama, volume justru TIDAK bergantung pada massa molar.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — format menjodohkan patokan TKA)"
+        },
+        {
+          "soal": "Sebanyak 10 mmol perak nitrat (AgNO3) direaksikan dengan larutan natrium klorida berlebih menurut reaksi: AgNO3(aq) + NaCl(aq) -> AgCl(s) + NaNO3(aq). Massa endapan perak klorida yang terbentuk (Mr = 143,5) adalah .... (dalam miligram)",
+          "tipe": "isian",
+          "jawaban": "1435",
+          "hintFormat": "Tulis bilangan bulat dalam mg, contoh: 500",
+          "pembahasan": "NaCl berlebih maka AgNO3 pembatas: n AgCl = n AgNO3 = 10 mmol = 0,01 mol. m = 0,01 × 143,5 = 1,435 g = 1435 mg. (Angka ini persis target padatan pada soal resmi no. 11 — sekarang Anda tahu dari mana angka itu datang.)",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — isian singkat stoikiometri pengendapan)"
+        },
+        {
+          "soal": "Gas butana (C4H10) dipakai sebagai bahan bakar kompor portabel. Jawablah tiga poin berikut: (a) tuliskan persamaan reaksi pembakaran sempurna butana yang setara; (b) bila 11,6 gram butana (Mr = 58) dibakar habis, hitunglah volume gas CO2 yang terbentuk pada STP; (c) bila oksigen yang tersedia hanya 0,9 mol, tentukan pereaksi pembatasnya dan jumlah mol CO2 yang terbentuk!",
+          "tipe": "uraian",
+          "jawaban": "Rubrik: (a) 2 C4H10 + 13 O2 -> 8 CO2 + 10 H2O. (b) n butana = 11,6 ÷ 58 = 0,2 mol; rasio CO2 = 8/2 = 4 kali -> n CO2 = 0,8 mol; V = 0,8 × 22,4 = 17,92 L. (c) Rasio pembatas: butana 0,2 ÷ 2 = 0,1; O2 0,9 ÷ 13 = 0,069 -> O2 PEMBATA; n CO2 = (8 ÷ 13) × 0,9 = 0,554 mol (± 0,55 mol).",
+          "pembahasan": "Kunci pengerjaan: (1) setarakan dengan menggenapkan C dan H lebih dulu, O terakhir (koefisien pecahan 13/2 lalu kalikan 2); (2) semua besaran singgah di mol sebelum melewati rasio koefisien; (3) pereaksi pembatas ditentukan dari nilai mol ÷ koefisien terkecil, lalu produk dihitung dari pembatas itu — persis prosedur bagian E bab ini.",
+          "sumber": "Gemilang Drill (latihan orisinal sistem — uraian berantai penyetaraan -> stoikiometri -> pereaksi pembatas)"
+        }
+      ]
+    }
+  ]
+}
