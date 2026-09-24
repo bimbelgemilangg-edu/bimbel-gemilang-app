@@ -98,3 +98,22 @@ input, select, textarea {
         background: white !important;
     }
 }
+/* ==== TURN 75: RAPIKAN TAMPILAN GURU DI HP ==== */
+img { max-width: 100%; height: auto; }
+
+@media (max-width: 768px) {
+  /* grid kartu guru jadi satu kolom agar tidak sempit */
+  .responsive-grid { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .teacher-card { padding: 16px !important; border-radius: 12px !important; }
+  .teacher-page-container { padding: 10px !important; }
+  /* baris flex inline (style React) boleh melipat di layar sempit */
+  div[style*="flex-direction: row"] { flex-wrap: wrap !important; }
+  /* tabel tidak gepet: paksa gulir horizontal */
+  table { font-size: 13px !important; }
+  .table-responsive { overflow-x: auto !important; }
+  .table-responsive table { min-width: 520px; }
+  /* target sentuh minimal 40px & judul tidak raksasa */
+  button { min-height: 40px; }
+  h1, h2 { font-size: 1.15rem !important; }
+  h3, h4 { font-size: 1rem !important; }
+}
