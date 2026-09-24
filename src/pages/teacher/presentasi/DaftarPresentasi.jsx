@@ -12,7 +12,7 @@ import {
 import {
   muatDaftarMateri, muatMateriDanBab, sedangModeContoh,
 } from '../../../services/materiV2Service';
-import { cariSesiAktif } from '../../../services/sesiPresentasiService';
+import { cariSesiAktif, bacaIdentitasGuru } from '../../../services/sesiPresentasiService';
 import { T, kartuDasar, halamanDasar, lingkaranNomor } from '../../student/belajar/tema';
 
 export default function DaftarPresentasi() {
@@ -28,7 +28,8 @@ export default function DaftarPresentasi() {
       const list = await muatDaftarMateri();
       setMateriList(list);
       setModeContoh(sedangModeContoh());
-      setSesiAktif(await cariSesiAktif());
+      // Turn 76: banner sesi hanya milik SAYA (guru lain bisa paralel).
+      setSesiAktif(await cariSesiAktif({ guruId: bacaIdentitasGuru().guruId }));
       setLoading(false);
     })();
   }, []);

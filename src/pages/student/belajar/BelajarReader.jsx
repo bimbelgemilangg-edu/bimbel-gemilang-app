@@ -26,7 +26,7 @@ import { MathText } from '../../../components/MathText';
 import IsiSections from '../../../components/belajar/IsiSections';
 import JodohBoard from '../../../components/belajar/JodohBoard';
 import {
-  cariSesiAktif, pantauSesi, tandaiPeserta, kirimJawabanLive,
+  cariSesiAktif, cariDaftarSesiAktif, cariSesiByKodePresentasi, pantauSesi, tandaiPeserta, kirimJawabanLive,
   antreMaju, batalAntre, pantauAntreanSaya,
 } from '../../../services/sesiPresentasiService';
 import {
@@ -171,21 +171,43 @@ export default function BelajarReader() {
   const [abaikanIkuti, setAbaikanIkuti] = useState(false);
   const pesertaDitandai = useRef('');
 
+  // Turn 76: dua guru bisa sesi paralel di materi sama. Siswa TIDAK dilempar
+  // acak: daftar sesi difilter kelasnya; bila tetap >1, siswa MEMILIH sendiri.
+  const [daftarSesi, setDaftarSesi] = useState([]);
+  const [pilihSesiId, setPilihSesiId] = useState('');
   useEffect(() => {
     let unsub = null;
     let hidup = true;
-    (async () => {
-      const s = await cariSesiAktif();
+    const muat = async () => {
+      const list = await cariDaftarSesiAktif({ materiId });
       if (!hidup) return;
-      if (s && s.materiId === materiId) {
-        setSesi(s);
-        unsub = pantauSesi(s.id, (sn) => setSesi(sn));
+      const kelasSiswa = String(localStorage.getItem('studentKelas')
+        || localStorage.getItem('studentGrade') || '');
+      const angkaS = (kelasSiswa.match(/\d+/) || [])[0] || '';
+      const cocok = list.filter((x) => {
+        if (!x.kelas || !angkaS) return true;
+        return ((String(x.kelas).match(/\d+/) || [])[0]) === angkaS;
+      });
+      setDaftarSesi(cocok);
+      const kodeSimpan = (localStorage.getItem('gemilangSesiKode_' + materiId) || '').toUpperCase();
+      const target = cocok.find((x) => x.id === pilihSesiId)
+        || (kodeSimpan ? cocok.find((x) => (x.kode || '') === kodeSimpan) : null)
+        || (cocok.length === 1 && cocok[0].kelas && angkaS
+          && ((String(cocok[0].kelas).match(/\d+/) || [])[0]) === angkaS ? cocok[0] : null);
+      if (target) {
+        setSesi(target);
+        if (unsub) unsub();
+        unsub = pantauSesi(target.id, (sn) => {
+          setSesi(sn);
+          if (!sn || sn.status !== 'aktif') { setSesi(null); muat(); }
+        });
       } else {
         setSesi(null);
       }
-    })();
+    };
+    muat();
     return () => { hidup = false; if (unsub) unsub(); };
-  }, [materiId]);
+  }, [materiId, pilihSesiId]);
 
   // kunci jenjang/program (request owner: materi sesuai jenjang)
   useEffect(() => {
@@ -443,6 +465,46 @@ export default function BelajarReader() {
     );
   }
 
+  const [kodeInput, setKodeInput] = useState('');
+  const [errKode, setErrKode] = useState('');
+  const gabungKode = async (kode) => {
+    const s2 = await cariSesiByKodePresentasi(kode);
+    if (!s2) { setErrKode('Kode tidak ditemukan atau sesi sudah berakhir.'); return; }
+    if (s2.materiId !== materiId) { setErrKode('Kode itu untuk materi lain. Minta kode sesi materi ini.'); return; }
+    localStorage.setItem('gemilangSesiKode_' + materiId, String(s2.kode || kode).toUpperCase());
+    setErrKode(''); setPilihSesiId(s2.id);
+  };
+  const pemilihSesi = (!sesi && (daftarSesi.length > 0 || true)) ? (
+    <div style={{ ...kartuDasar, padding: 14, marginBottom: 12 }}>
+      <div style={{ fontWeight: 800, marginBottom: 6 }}> Masuk sesi live</div>
+      <div style={{ fontSize: 12.5, color: T.samar, marginBottom: 8 }}>
+        Ketik kode sesi yang ditampilkan guru di layar panggung/proyektor.
+        Setiap kelas punya kode sendiri sehingga panel guru tetap leluasa.
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <input value={kodeInput} placeholder="KODE SESI (6 karakter)"
+          onChange={(e) => setKodeInput(e.target.value.toUpperCase())}
+          style={{ flex: 1, minWidth: 160, padding: '10px 12px', borderRadius: 10,
+            border: `1px solid ${T.garis}`, fontSize: 15, letterSpacing: 2, textTransform: 'uppercase' }} />
+        <button type="button" style={tombolPill('primer')}
+          onClick={() => gabungKode(kodeInput)}>Gabung</button>
+      </div>
+      {errKode && <div style={{ color: T.merah, fontSize: 12, marginTop: 6 }}>{errKode}</div>}
+      {daftarSesi.length > 0 && (
+        <div style={{ marginTop: 10, fontSize: 12.5, color: T.samar }}>
+          Sesi aktif di materi ini:{' '}
+          {daftarSesi.map((x) => (
+            <button key={x.id} type="button"
+              style={{ ...tombolPill('putih'), marginLeft: 6 }}
+              onClick={() => gabungKode(x.kode || '')}>
+              {x.guruNama || 'Guru'}{x.kelas ? ` · K${x.kelas}` : ''} · {x.kode}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  ) : null;
+
   const persen = persenBab(bab, {
     selesaiBab: selesaiBaca,
     selesaiSections: selesaiBaca ? sections.map((_, i) => i) : [],
@@ -455,6 +517,7 @@ export default function BelajarReader() {
 
   return (
     <div style={halamanDasar}>
+      {pemilihSesi}
       {/* ================= TOPBAR ================= */}
       <header style={S.topbar}>
         <button type="button" style={S.kembali}

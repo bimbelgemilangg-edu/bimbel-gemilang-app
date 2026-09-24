@@ -50,7 +50,9 @@ export default function PanggungPresentasi() {
       const { materi: m, babList } = await muatMateriDanBab(materiId);
       setMateri(m);
       setBab(babList.find((b) => b.id === babId) || null);
-      const aktif = await cariSesiAktif();
+      // Turn 76: hanya sesi MILIK SAYA di bab ini — sesi guru lain yang paralel
+      // tidak boleh membuat panggung ini menempel ke kelas sebelah.
+      const aktif = await cariSesiAktif({ guruId: bacaIdentitasGuru().guruId, babId });
       if (aktif && aktif.babId === babId) setSesi(aktif);
       setLoading(false);
     })();
@@ -328,10 +330,20 @@ export default function PanggungPresentasi() {
 
       {/* ---------- bar kontrol guru ---------- */}
       <footer style={S.kontrol}>
+        {sesiAktif && sesi?.kode && (
+          <button type="button" style={tombolPill('primer')}
+            title="Kode sesi untuk siswa — ketuk untuk menyalin"
+            onClick={() => { try { navigator.clipboard?.writeText(sesi.kode); } catch { /* noop */ } }}>
+            🔑 Kode sesi: <b style={{ letterSpacing: 3 }}>{sesi.kode}</b> · ketuk utk salin
+          </button>
+        )}
         {!sesiAktif ? (
           <button type="button" style={tombolPill('primer')}
             onClick={async () => {
-              const id = await mulaiSesi(materiId, babId);
+              const id = await mulaiSesi(materiId, babId, {
+                kelas: materi?.kelas ?? '', mapel: materi?.mapel || '',
+                judulMateri: materi?.judul || '', judulBab: bab?.judul || '',
+              });
               setSesi({
                 id, materiId, babId, status: 'aktif', mode: 'mengikuti',
                 posisi: { jenis: 'section', index: 0 },
