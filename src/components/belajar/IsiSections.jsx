@@ -273,7 +273,7 @@ const S = {
     color: T.biru, fontWeight: 800, marginRight: 6, fontSize: 12.5,
   },
   subHuruf: { color: T.biru, fontStyle: 'italic' },
-  paragraf: { margin: '0 0 13px', fontSize: 14, lineHeight: 1.85, color: T.teks },
+  paragraf: { margin: '0 0 13px', fontSize: 15, lineHeight: 1.85, color: T.teks },
   contohBox: {
     background: T.kotakBiru, border: `1px solid ${T.kotakBiruGaris}`,
     borderRadius: 12, padding: '13px 15px', margin: '0 0 15px',
@@ -282,7 +282,10 @@ const S = {
     display: 'flex', alignItems: 'center', gap: 6, color: T.biruGelap,
     fontWeight: 800, fontSize: 12.5, marginBottom: 7,
   },
-  gambar: { width: '100%', borderRadius: 12, display: 'block' },
+  gambar: {
+    width: '100%', maxHeight: 520, objectFit: 'contain', background: '#fff',
+    borderRadius: 12, display: 'block',
+  },
   gambarKosong: {
     display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center',
     background: T.latar, border: `1px dashed ${T.garis}`, borderRadius: 12,
@@ -311,7 +314,7 @@ const S = {
   },
   poinList: { margin: 0, paddingLeft: 18 },
   poinItem: {
-    fontSize: 13, color: T.teks, lineHeight: 1.65, margin: '3px 0',
+    fontSize: 13.5, color: T.teks, lineHeight: 1.7, margin: '3px 0',
   },
   gemilangBox: {
     display: 'flex', gap: 10, alignItems: 'flex-start',
