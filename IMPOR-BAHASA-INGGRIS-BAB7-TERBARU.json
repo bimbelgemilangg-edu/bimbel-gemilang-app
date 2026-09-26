@@ -1,0 +1,708 @@
+{
+  "materi": {
+    "judul": "Bahasa Inggris Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Inggris",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#059669",
+    "emoji": "🗣️",
+    "deskripsi": "Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, descriptive, recount, procedure, hortatory exposition, analytical exposition, dan infographic reading (7 bab sesuai urutan buku). Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 6,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks.",
+      "Kartu Cara Gemilang, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 7 — Infographic (Edisi Cara Gemilang)",
+      "ringkasan": "Definisi & key elements infografik (visual hierarchy, data, ikon, warna, concise messaging), language features (bullet style, persuasive words, noun phrases, active verbs), cara membaca ANGKA-LABEL-PESAN, pola soal persen/NOT-mentioned/fungsi angka/kategorisasi/inferensi — dengan 3 gambar infografis asli sebagai stimulus (public/gambar-bing), susun urutan cara membaca, jodohkan elemen, benar/salah, isian rumpang, CG-INFOGRAFIK, dan 25 soal resmi bank (stres & layar, foster children, child abuse, teen online, konservasi, bilingual, shark finning) + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 7,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Infographic: Reading Data at a Glance"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "An infographic is a visual representation of data, information, or knowledge designed to present complex information quickly, clearly, and engagingly. Membacanya = menerjemahkan angka, label, dan ikon menjadi pesan."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Infographic adalah \"dashboard\" bacaan TKA: soal menguji ketelitian membaca angka/persen/label dan kemampuan menyimpulkan pesan visual. Keterampilan ini juga dipakai di soal grafik mapel lain — satu latihan, banyak panen."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Infografik seperti dasbor mobil: kecepatan, bahan bakar, dan lampu peringatan tampil serentak sebagai angka dan ikon. Pembaca yang baik tidak hanya melihat angkanya, tetapi membaca pasangan angka-labelnya — persis seperti soal persen di ujian."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Key elements of an infographic (bank h.103)",
+          "items": [
+            "Visual hierarchy — tata letak menuntun mata ke informasi terpenting lebih dulu.",
+            "Data & facts — angka, persen, dan fakta yang jadi tulang punggung pesan.",
+            "Graphics & icons — simbol yang mempercepat pemahaman.",
+            "Color & typography — penekanan & pengelompokan informasi.",
+            "Concise messaging — pesan ringkas gaya bullet point, bukan paragraf panjang."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Language features infografik + contoh",
+          "kolom": [
+            "Fitur",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Conciseness (bullet style)",
+              "v": "\"70% stress-related illness\" — tanpa kalimat lengkap."
+            },
+            {
+              "k": "Persuasive language",
+              "v": "Boost, Vital, Discover — kata yang meyakinkan/menginspirasi."
+            },
+            {
+              "k": "Noun phrases sebagai label",
+              "v": "\"Daily Intake\", \"Energy Levels\" — bukan kalimat utuh."
+            },
+            {
+              "k": "Active verbs kuat",
+              "v": "Saves, Reduces, Improves."
+            }
+          ]
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: cara membaca infografik",
+          "keterangan": "Urutan membaca yang efisien dari bank & praktik tim Gemilang.",
+          "items": [
+            "Baca judul & subjudul: pesan utama yang diklaim",
+            "Scan label, legenda, dan satuan (%, jam, tahun)",
+            "Telusuri angka per bagian sambil dicocokkan dengan labelnya",
+            "Rangkai pesan: apa yang ingin membuat pembaca percaya/bertindak"
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: elemen dan fungsinya",
+          "items": [
+            {
+              "kiri": "Menuntun mata ke info terpenting",
+              "kanan": "Visual hierarchy"
+            },
+            {
+              "kiri": "Angka, persen, fakta",
+              "kanan": "Data & facts"
+            },
+            {
+              "kiri": "Simbol pemercepat paham",
+              "kanan": "Graphics & icons"
+            },
+            {
+              "kiri": "Penekanan & pengelompokan",
+              "kanan": "Color & typography"
+            },
+            {
+              "kiri": "Pesan ringkas gaya bullet",
+              "kanan": "Concise messaging"
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: membaca data",
+          "items": [
+            {
+              "teks": "Persen selalu harus dibaca bersama label populasiya (70% dari SIAPA).",
+              "jawaban": true,
+              "penjelasan": "Persen tanpa label populasi = jebakan."
+            },
+            {
+              "teks": "Judul infografik selalu netral tanpa pesan persuasif.",
+              "jawaban": false,
+              "penjelasan": "Judul sering memuat klaim/pesan (persuasive language)."
+            },
+            {
+              "teks": "Noun phrases dipakai sebagai label, bukan kalimat utuh.",
+              "jawaban": true,
+              "penjelasan": "Concise messaging."
+            },
+            {
+              "teks": "Warna dan tipografi hanya hiasan tanpa fungsi informasi.",
+              "jawaban": false,
+              "penjelasan": "Keduanya mengelompokkan & menekankan informasi."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-INFOGRAFIK: ANGKA-LABEL-PESAN",
+          "teks": "Setiap angka dikawinkan dengan labelnya (persen dari siapa, satuan apa, tahun mana); lalu rangkai pesan akhir infografik. Soal apa pun jatuh ke salah satu dari tiga itu.",
+          "items": [
+            "Lingkari angka di soal, temukan kembarannya di gambar BESERTA labelnya.",
+            "Soal NOT mentioned = daftar yang ADA dulu, coret, sisa jawaban.",
+            "Soal inferensi = pesan keseluruhan + tren (naik/turun/terbesar/terkecil)."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Penukar persen-vs-jumlah dan subset-vs-total: \"32% of teens\" bukan \"32% of parents\". Cek juga satuan (per week vs per day) dan tahun bila ada dua grafik berdampingan."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "The element that guides the reader eyes to the most important information first is ...",
+              "opsi": [
+                "data & facts",
+                "visual hierarchy",
+                "concise messaging",
+                "noun phrases",
+                "active verbs"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: visual hierarchy menuntun mata (bank h.103). Jalur Cara Gemilang: hierarki = urutan pandang."
+            },
+            {
+              "soal": "An infographic label reads \"Daily Intake\". This label is an example of ...",
+              "opsi": [
+                "a full sentence",
+                "a noun phrase",
+                "an imperative",
+                "a passive clause",
+                "a temporal conjunction"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: label ringkas = noun phrase (bank h.103). Jalur Cara Gemilang: label, bukan kalimat."
+            },
+            {
+              "soal": "A chart shows 46% (Indonesia), 22% (country X), 12% (country Y) of a global total. The biggest contributor is ...",
+              "opsi": [
+                "country Y",
+                "country X",
+                "Indonesia",
+                "all equal",
+                "cannot be determined"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: persen terbesar = kontributor terbesar (pola soal shark finning). Jalur Cara Gemilang: ANGKA-LABEL-PESAN — cari puncak."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Infographic Question Patterns"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Pola soal + jurus",
+          "kolom": [
+            "Pola",
+            "Penanda",
+            "Jurus"
+          ],
+          "rows": [
+            {
+              "k": "Angka/persen",
+              "v": "\"What percentage...?\", \"How many...?\"",
+              "w": "Temukan angka + label populasi & satuan."
+            },
+            {
+              "k": "NOT mentioned",
+              "v": "\"Which is NOT mentioned...?\"",
+              "w": "Daftar yang ada dulu, coret, sisa."
+            },
+            {
+              "k": "Fungsi angka",
+              "v": "\"Why does the infographic mention...?\"",
+              "w": "Angka = penekanan pesan apa?"
+            },
+            {
+              "k": "Sinonim frasa",
+              "v": "\"approximately = ...\"",
+              "w": "Substitusi ke label/kalimat."
+            },
+            {
+              "k": "Categorize",
+              "v": "\"Problem/Solution\", \"True/False\"",
+              "w": "Dua kolom aspek; verifikasi per baris."
+            },
+            {
+              "k": "Inferensi/prediksi",
+              "v": "\"What can be inferred/predicted...?\"",
+              "w": "Tren + pesan keseluruhan infografik."
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: istilah infografik",
+          "items": [
+            {
+              "teks": "The visual arrangement that leads the reader eyes is called visual ...",
+              "jawaban": [
+                "hierarchy"
+              ],
+              "hint": "Berjenjang/urutan pandang.",
+              "penjelasan": "Visual hierarchy = penuntun mata."
+            },
+            {
+              "teks": "Labels like \"Daily Intake\" are examples of ... phrases.",
+              "jawaban": [
+                "noun"
+              ],
+              "hint": "Frasa benda ringkas.",
+              "penjelasan": "Noun phrases sebagai label."
+            },
+            {
+              "teks": "Words like Boost and Discover belong to ... language.",
+              "jawaban": [
+                "persuasive"
+              ],
+              "hint": "Bersifat membujuk.",
+              "penjelasan": "Persuasive language infografik."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri",
+          "teks": "Pilih satu infografik bab ini, tulis ulang isinya menjadi 5 bullet: judul-klaim, tiga angka-label terpenting, dan pesan akhir. Latihan ini memaksa ANGKA-LABEL-PESAN menjadi kebiasaan."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Seri Bahasa Inggris tuntas",
+          "teks": "Tujuh bab (narrative, descriptive, recount, procedure, hortatory, analytical, infographic) lengkap dengan 175 soal resmi bank. Kerjakan berurutan atau lompat ke tipe teks yang paling sering salah — riwayat latihanmu menunjukkan polanya."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from pinterest.co.uk)\n\nWhat percentage of American workers experience stress-related illnesses?",
+          "tipe": "pg",
+          "opsi": [
+            "33%",
+            "34%",
+            "45%",
+            "66%",
+            "70%"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g1.jpg",
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Pada infografik disebutkan bahwa 70% pekerja Amerika mengalami penyakit terkait stres di tempat kerja. Jalur Cara Gemilang: Baca angka + labelnya: 70% pekerja Amerika mengalami penyakit terkait stres.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from pinterest.co.uk)\n\nHow many hours per week does the average adult spend online?",
+          "tipe": "pg",
+          "opsi": [
+            "About 5 hours",
+            "Less than 10 hours",
+            "More than 20 hours",
+            "Exactly 40 hours",
+            "Around 50 hours"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g1.jpg",
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Rata-rata orang dewasa menghabiskan lebih dari 20 jam online per minggu, termasuk waktu di kantor. Jalur Cara Gemilang: Angka + satuan: lebih dari 20 jam per minggu online — termasuk apa saja hitungannya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from pinterest.co.uk)\n\nWhy does the infographic mention \"33% more heart attacks on Monday mornings\"?",
+          "tipe": "pg",
+          "opsi": [
+            "To convince the readers that workplace is healthy",
+            "To highlight the serious health impact of workplace stress",
+            "To promote a 20 hours work per week program",
+            "To describe the habit of American workers",
+            "To entertain American workers in the office"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g1.jpg",
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Pernyataan tentang 33% lebih banyak serangan jantung Senin pagi menyoroti dampak serius stres kerja terhadap kesehatan. Jalur Cara Gemilang: Fungsi angka 33% = menyoroti dampak stres hari Senin, bukan data acak.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from pinterest.co.uk)\n\nWhich of the following is NOT mentioned in the infographic?",
+          "tipe": "pg",
+          "opsi": [
+            "Monthly taxation policies",
+            "Average commute time",
+            "Stress among entrepreneurs",
+            "Emails sent per minute",
+            "YouTube viewing statistics"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s4-a.svg",
+            "/bagan/bab1-s4-b.svg",
+            "/bagan/bab1-s4-c.svg",
+            "/bagan/bab1-s4-d.svg",
+            "/bagan/bab1-s4-e.svg"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g1.jpg",
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Pada infografik tidak disebutkan kebijakan perpajakan bulanan, hanya data tentang email, YouTube, stres, dan jam kerja. Jalur Cara Gemilang: NOT mentioned = eliminasi angka/label yang ADA di infografik; sisa = jawaban.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.fairfaxcounty.gov)\n\nWhich racial/ethnic groups are represented among foster children? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Asian",
+            "White",
+            "African American",
+            "Native American",
+            "Hispanic"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g2.jpg",
+          "jawaban": [
+            1,
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Kelompok ras/etnis anak asuh yang disebutkan pada infografik adalah White, African American, dan Hispanic, juga multi-racial. Jalur Cara Gemilang: Daftar etnis pada grafik anak asuh = sumber opsi pgMulti.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.fairfaxcounty.gov)\n\nHow do racial/ethnic demographics of foster parents compare to foster children?",
+          "tipe": "pg",
+          "opsi": [
+            "Foster parents are mostly Hispanic, while children are mostly White",
+            "Foster parents and children share identical percentages",
+            "Foster parents are majority African American, while children are majority White",
+            "Foster parents are majority White, while foster children are more diverse",
+            "Foster parents are evenly distributed across all groups"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g2.jpg",
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Foster parents (orang tua angkat) mayoritas beretnis kulit putih (white) yaitu sebanyak 68%, sedangkan anak asuh lebih beragam dengan persentase Hispanic, African American, dan lainnya. Jalur Cara Gemilang: Bandingkan dua grafik: orangtua angkat mayoritas putih vs anak lebih beragam.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.fairfaxcounty.gov)\n\nIn the phrase \"approximately 120 active foster families\", which synonym best fits \"approximately\"?",
+          "tipe": "pg",
+          "opsi": [
+            "Exactly",
+            "Definitely",
+            "Around",
+            "Absolutely",
+            "Strictly"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g2.jpg",
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Kata approximately \"sekitar\" yang secara kontekstual makna nya sepadan dengan around . Jalur Cara Gemilang: approximately = sekitar = around; substitusi ke frasa.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.fairfaxcounty.gov)\n\nCategorize the statements into True or False based on the text!\n(Answer each row by choosing True / False.)",
+          "tipe": "tabel",
+          "kolom": [
+            "True",
+            "False"
+          ],
+          "baris": [
+            "There were over 200 children in foster care in Fairfax County in 2020.",
+            "The largest age group in foster care was children aged 13–20 years.",
+            "More boys than girls were in foster care.",
+            "Hispanic children made up the smallest racial/ethnic group in foster care.",
+            "There are more than 200 active foster parents in Fairfax County."
+          ],
+          "soalGambar": "/gambar-bing/infographic-g2.jpg",
+          "jawaban": [
+            0,
+            0,
+            1,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TRUE Baris 2 — TRUE Baris 3 — FALSE Baris 4 — FALSE Baris 5 — FALSE (Catatan: tabel kunci ringkas buku mencetak \"T,T,F,F,T\" untuk baris terakhir, tetapi centang tabel pembahasan dan baris Jawaban pembahasan sepakat FALSE — kami mengikuti pembahasan.) Jalur Cara Gemilang: True/False = verifikasi angka grafik per baris (bila buku salah cetak, voting pembahasan yang menang).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://abuseguardian.com/)\n\nWhat is the main purpose of presenting these child abuse statistics?",
+          "tipe": "pg",
+          "opsi": [
+            "To illustrate the different forms of child labor",
+            "To raise awareness about the severity of child abuse in America",
+            "To explain that abuse only occurs in hospitals",
+            "To promote adoption programs for older children",
+            "To argue that neglecting a child is not a serious issue"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Tujuan utama statistik yang ditunjukkan pada infografik ini adalah untuk meningkatkan kesadaran tentang seriusnya kasus kekerasan anak di Amerika. Jalur Cara Gemilang: Statistik dipajang = to raise awareness (menyadarkan), bukan menghibur.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://abuseguardian.com/)\n\nIn the context of the infographic, what does the word \"epidemic\" most likely mean?",
+          "tipe": "pg",
+          "opsi": [
+            "A minor issue that happens only occasionally",
+            "A sudden surge of technological innovations in society",
+            "A rapid increase in financial market activity",
+            "A rise in cultural diversity among modern societies",
+            "A widespread and serious problem affecting many people"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Kata epidemic pada konteks infografik ini memiliki arti masalah luas dan serius yang memengaruhi banyak orang secara signifikan. Jalur Cara Gemilang: epidemic dalam konteks = masalah luas & serius, bukan wabah medis harfiah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://abuseguardian.com/)\n\nHow does the infographic describe child abuse in America?",
+          "tipe": "pg",
+          "opsi": [
+            "As a minor inconvenience",
+            "As a silent epidemic",
+            "As a hidden cultural emergency",
+            "As a growing economic concern",
+            "As an overlooked health crisis"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Infografik ini menggambarkan kekerasan anak di Amerika sebagai \"silent epidemic\", masalah besar namun sering tersembunyi. Jalur Cara Gemilang: Label kunci: \"silent epidemic\" = cara infografik menggambarkan isu.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://abuseguardian.com/)\n\nWhich types of abuse are mentioned in the infographic? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Physical abuse",
+            "Verbal abuse",
+            "Psychological abuse",
+            "Sexual abuse",
+            "Spiritual abuse"
+          ],
+          "jawaban": [
+            0,
+            2,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Jenis kekerasan yang disebutkan adalah physical abuse (kekerasan fisik), psychological abuse (kekerasan psikologis), dan sexual abuse (kekerasan seksual) karena dianggap sebagai bentuk kekerasan utama yang terjadi di Amerika. Jalur Cara Gemilang: Jenis abuse = daftar eksplisit ikon/label (physical, psychological, ...).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from pinterest.com)\n\nWhat is the main concern highlighted in the infographic on teen internet use?",
+          "tipe": "pg",
+          "opsi": [
+            "Celebrity endorsements shaping teen fashion choices",
+            "Risks of unsafe and hidden online behavior among teenagers",
+            "Online gaming communities influencing gamers' skills",
+            "Climate discussions appearing in classroom projects",
+            "Fitness gadgets attracting attention of old consumers"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g4.jpg",
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Infografik menyoroti risiko perilaku online yang tidak aman dan tersembunyi di kalangan remaja. Jalur Cara Gemilang: Main concern = risiko perilaku online tak aman & tersembunyi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from pinterest.com)\n\nWhat does the phrase \"concerned about how their child interacts online\" mean in the infographic?",
+          "tipe": "pg",
+          "opsi": [
+            "Parents believe online activity is always safe.",
+            "Parents think the internet is unnecessary.",
+            "Parents ignore their children's online habits.",
+            "Parents encourage children to meet new friends online.",
+            "Parents worry about unsafe communication with strangers."
+          ],
+          "soalGambar": "/gambar-bing/infographic-g4.jpg",
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Frasa \" concerned about how their child interacts online \" berarti orang tua khawatir anak berkomunikasi tidak aman dengan orang asing di internet. Jalur Cara Gemilang: Frasa = orangtua khawatir atas interaksi online anak.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from pinterest.com)\n\nWhat do 32% of teens avoid doing regarding their online activity?",
+          "tipe": "pg",
+          "opsi": [
+            "Owning a cell phone",
+            "Watching videos online",
+            "Playing games with friends",
+            "Using social networking sites",
+            "Telling their parents what they are doing online"
+          ],
+          "soalGambar": "/gambar-bing/infographic-g4.jpg",
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Sebanyak 32% remaja tidak memberi tahu orang tua tentang aktivitas online mereka, menyembunyikan perilaku digital. Jalur Cara Gemilang: 32% avoid = tidak memberitahu orangtua soal aktivitas online.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from behance.net)\n\nWhat human activities are said to contribute to greenhouse gas emissions?",
+          "tipe": "pg",
+          "opsi": [
+            "Expanding public transportation",
+            "Using solar panels",
+            "Planting urban gardens",
+            "Recycling plastics",
+            "Burning, logging, and degradation of forests"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s16-a.svg",
+            "/bagan/bab1-s16-b.svg",
+            "/bagan/bab1-s16-c.svg",
+            "/bagan/bab1-s16-d.svg",
+            "/bagan/bab1-s16-e.svg"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Aktivitas manusia yang berkontribusi pada emisi gas rumah kaca adalah pembakaran, penebangan, dan degradasi hutan. Jalur Cara Gemilang: Aktivitas penyumbang emisi = pembakaran fosil, deforestasi, industri.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from behance.net)\n\nWhat activity is discouraged as part of forest conservation?",
+          "tipe": "pg",
+          "opsi": [
+            "Poaching",
+            "Farming",
+            "Fishing",
+            "Mining",
+            "Tourism"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Kegiatan yang dilarang sebagai bagian dari konservasi hutan adalah poaching (perburuan ilegal) karena merusak ekosistem. Jalur Cara Gemilang: Discouraged = poaching (perburuan liar) dilarang dalam konservasi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from behance.net)\n\nCategorize the statements into Problem or Solution based on the text.\n(Answer each row by choosing Problem / Solution.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Problem",
+            "Solution"
+          ],
+          "baris": [
+            "Poaching will be fined and punished with jail terms.",
+            "Every 30 minutes, an area of forest the size of a football field is destroyed.",
+            "Developing national parks and reforestation programs.",
+            "Approximately 28,000 plant and animal species may become extinct in the next 25 years.",
+            "The burning, logging and degradation of forest contribute to forest destruction."
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s18-a.svg",
+            "/bagan/bab1-s18-b.svg",
+            "/bagan/bab1-s18-c.svg",
+            "/bagan/bab1-s18-d.svg",
+            "/bagan/bab1-s18-e.svg"
+          ],
+          "jawaban": [
+            1,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SOLUTION Baris 2 — PROBLEM Baris 3 — SOLUTION Baris 4 — PROBLEM Baris 5 — PROBLEM Jalur Cara Gemilang: Problem = kerusakan/ancaman; Solution = tindakan konservasi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from behance.net)\n\nIf deforestation continues at the current rate, what is most likely to happen to biodiversity?",
+          "tipe": "pg",
+          "opsi": [
+            "Forests will expand naturally without human help.",
+            "Greenhouse gas emissions will drop rapidly.",
+            "Poaching will completely disappear.",
+            "Many plant and animal species will become extinct.",
+            "Reserved forest areas will no longer exist."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Jika deforestasi berlanjut dengan kecepatan seperti saat ini, maka banyak spesies tumbuhan dan hewan akan punah, mengurangi keanekaragaman hayati. Jalur Cara Gemilang: If continues = proyeksi tren: spesies hilang/biodiversitas anjlok.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://ind.pinterest.com/)\n\nWhat cognitive advantages do bilingual individuals gain? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Reduced brain activity",
+            "Lower motivation and performance",
+            "Better control over attention",
+            "More efficient information management",
+            "Greater ability to plan and deal with change"
+          ],
+          "jawaban": [
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Berdasarkan isi infografik, individu bilingual memperoleh kontrol perhatian lebih baik, manajemen informasi lebih efisien, serta kemampuan merencanakan dan beradaptasi. Jalur Cara Gemilang: Cognitive advantages = kontrol atensi, memori, task-switching.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://ind.pinterest.com/)\n\nWhat social advantage is mentioned for mastering several languages?",
+          "tipe": "pg",
+          "opsi": [
+            "Increases the power of seduction",
+            "Prevents students from traveling",
+            "Eliminates cultural diversity",
+            "Stops communication across cultures",
+            "Reduces motivation to meet new people"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Keuntungan sosial yang disebutkan adalah meningkatnya daya tarik ( power of seduction ) bagi mereka yang menguasai beberapa bahasa. Jalur Cara Gemilang: Social advantage = daya tarik/power of seduction multibahasa.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://ind.pinterest.com/)\n\nWhat can be predicted about students who learn in multiple languages?",
+          "tipe": "pg",
+          "opsi": [
+            "They will lose the ability to plan effectively.",
+            "Their native language will disappear entirely.",
+            "They will develop stronger attention control and adaptability skills.",
+            "Their motivation for learning will decline permanently.",
+            "They will struggle to manage information efficiently."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Siswa yang belajar dalam banyak bahasa akan mengembangkan kontrol perhatian lebih kuat dan keterampilan adaptasi lebih baik. Jalur Cara Gemilang: Prediksi siswa multibahasa = transfer keuntungan kognitif.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from behance.net)\n\nWhich country contributes the most to shark finning according to the infographic?",
+          "tipe": "pg",
+          "opsi": [
+            "El Salvador",
+            "Taiwan",
+            "Indonesia",
+            "Singapore",
+            "India"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Infografik menunjukkan bahwa Indonesia menyumbang 46%, menjadikannya negara dengan kontribusi terbesar terhadap shark finning . Jalur Cara Gemilang: Kontributor terbesar = persen tertinggi: Indonesia 46%.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from behance.net)\n\nWhat happens to the remaining 98% of the shark after the fins are removed?",
+          "tipe": "pg",
+          "opsi": [
+            "It is sold in local markets.",
+            "It is preserved for scientific research.",
+            "It is used for fertilizer production.",
+            "It is donated to aquariums.",
+            "It is thrown back into the ocean."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Pada infografik disebutkan bahwa sebanyak 98% tubuh hiu dibuang kembali ke laut, sering kali masih hidup dan dibiarkan mati. Jalur Cara Gemilang: 98% tubuh hiu = dibuang kembali ke laut setelah sirip diambil.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from behance.net)\n\nWhat can be inferred about the effect of shark finning on marine ecosystems?",
+          "tipe": "pg",
+          "opsi": [
+            "Ocean biodiversity increases when sharks are killed.",
+            "Shark populations are unaffected by finning.",
+            "Shark finning reduces greenhouse gas emissions.",
+            "Removing sharks disrupts the balance of ocean food chains.",
+            "Finning helps protect coral reefs."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Aktivitas shark finning dapat mengganggu keseimbangan rantai makanan laut, karena populasi hiu berkurang drastis sehingga ekosistem terguncang. Jalur Cara Gemilang: Inferensi ekosistem = rantai makanan laut terganggu.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}

@@ -264,7 +264,7 @@ const draft = {
     judul: 'Bahasa Inggris Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)',
     mapel: 'Bahasa Inggris', kelas: '12', jenjang: 'sma', program: 'semua',
     premium: false, warna: '#059669', emoji: '🗣️',
-    deskripsi: 'Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, recount, procedure, analytical exposition, dan infographic reading. Impor bab tambahan pakai mode "tambah" pada materi ini.',
+    deskripsi: 'Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, descriptive, recount, procedure, hortatory exposition, analytical exposition, dan infographic reading (7 bab sesuai urutan buku). Impor bab tambahan pakai mode "tambah" pada materi ini.',
     urutan: 6, status: 'draft',
     daftarPustaka: [
       'Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA (narrative h.71+ dll) + tabel kunci di tiap HTML + pembahasan di HTML/PDF "08 Pembahasan"; kunci mengikuti cetakan asli.',
