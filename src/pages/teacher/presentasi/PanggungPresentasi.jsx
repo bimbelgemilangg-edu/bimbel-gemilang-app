@@ -211,6 +211,10 @@ export default function PanggungPresentasi() {
                           ⏹ Akhiri Sekarang
                         </button>
                       )}
+                      <button type="button" style={tombolPill('hijau')}
+                        onClick={() => navigate(`/guru/review-sesi/${sesi.id}`)}>
+                        🎯 Review & Leaderboard
+                      </button>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       {peserta.map((p) => {
