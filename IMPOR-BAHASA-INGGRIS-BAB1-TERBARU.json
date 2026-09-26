@@ -1,0 +1,795 @@
+{
+  "materi": {
+    "judul": "Bahasa Inggris Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Inggris",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#059669",
+    "emoji": "🗣️",
+    "deskripsi": "Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, descriptive, recount, procedure, hortatory exposition, analytical exposition, dan infographic reading (7 bab sesuai urutan buku). Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 6,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA (narrative h.71+ dll) + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks (mis. thailand.go.th).",
+      "Kartu CG-NARRATIVE, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 1 — Narrative Text (Edisi Cara Gemilang)",
+      "ringkasan": "Definisi & social function narrative, generic structure O-C-R-C, language features, kinds of narrative, plus 8 pola soal TKA dan jurusnya — dengan susun urutan struktur, jodohkan fungsi, flashcard language features, benar/salah, isian rumpang, dan 25 soal resmi bank (4 teks) + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Narrative Text: Definition & Anatomy"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "A narrative text is a story describing a sequence of fictional or non-fictional events in a constructive format. Social function: to amuse and entertain the reader with a story of complication leading to crisis and resolution, sambil menyelipkan moral lesson."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Narrative adalah tipe teks paling sering keluar di TKA Bahasa Inggris: pola soalnya berulang — topic/main idea, inference, reference, moral value, closest meaning, True/False, dan categorize. Menguasai anatomi narrative (struktur + language features) membuat semua pola itu jadi pemetaan, bukan tebakan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan narrative seperti rangkaian domino yang jatuh: setiap peristiwa menyenggol peristiwa berikutnya karena sebab-akibat, menuju satu krisis, lalu resolusi. Domino yang tidak menyenggol apa-apa itulah detail pengecoh di opsi jawaban."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Generic structure (bank h.71)",
+          "items": [
+            "Orientation — memperkenalkan tokoh dan menggambarkan latar (setting).",
+            "Complication — memunculkan situasi masalah/konflik hingga krisis.",
+            "Resolution — penyelesaian masalah (baik atau buruk).",
+            "Coda — menunjukkan perubahan tokoh dan pelajaran yang dipetik (opsional)."
+          ]
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: generic structure narrative",
+          "keterangan": "Urutkan dari pembukaan cerita sampai penutup.",
+          "items": [
+            "Orientation: tokoh & latar diperkenalkan",
+            "Complication: konflik muncul dan memuncak",
+            "Resolution: masalah terselesaikan",
+            "Coda: perubahan tokoh & pelajaran terlihat"
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Kinds of narrative text + contoh cepat",
+          "kolom": [
+            "Jenis",
+            "Ciri",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Fairy tale",
+              "v": "Cerita ajaib bertokoh fantasi, sering \"once upon a time\".",
+              "w": "Cinderella, putri & peri."
+            },
+            {
+              "k": "Legend",
+              "v": "Asal-usul tempat/benda yang dipercaya masyarakat.",
+              "w": "Legenda Gua Naka (teks 1 bab ini)."
+            },
+            {
+              "k": "Myth",
+              "v": "Cerita dewa-dewi & kepercayaan kuno.",
+              "w": "Perjalanan Inanna ke dunia bawah (Sumeria)."
+            },
+            {
+              "k": "Fable",
+              "v": "Tokoh binatang berperilaku manusia.",
+              "w": "Kisah Owl & Nightingale (teks 3)."
+            },
+            {
+              "k": "Science fiction",
+              "v": "Sains/teknologi imajinatif masa depan.",
+              "w": "Perjalanan antariksa, robot."
+            },
+            {
+              "k": "Fantasy",
+              "v": "Dunia imajiner dengan aturan ajaib.",
+              "w": "Tangan perak & penyihir (teks 2)."
+            },
+            {
+              "k": "Historical fiction",
+              "v": "Latar peristiwa sejarah dengan tokoh rekaan.",
+              "w": "Novel berlatar kerajaan Nusantara."
+            }
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: struktur dan fungsinya",
+          "items": [
+            {
+              "kiri": "Introduces the characters and describes the setting",
+              "kanan": "Orientation"
+            },
+            {
+              "kiri": "Introduces the crisis-provoking situation",
+              "kanan": "Complication"
+            },
+            {
+              "kiri": "Resolves the problem",
+              "kanan": "Resolution"
+            },
+            {
+              "kiri": "Shows how the character has changed and what was learnt",
+              "kanan": "Coda"
+            }
+          ]
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: language features narrative",
+          "items": [
+            {
+              "depan": "Past tenses",
+              "belakang": "Kata kerja bentuk lampau: was/were, -ed, irregular (went, stole)."
+            },
+            {
+              "depan": "Temporal conjunctions",
+              "belakang": "Penghubung waktu: then, after that, meanwhile, once upon a time."
+            },
+            {
+              "depan": "Saying & thinking verbs",
+              "belakang": "said, told, thought, wondered — mengutip ucapan/pikiran tokoh."
+            },
+            {
+              "depan": "Adverbs & adverbial phrases of time",
+              "belakang": "once upon a time, long ago, one day."
+            },
+            {
+              "depan": "Behavioral & verbal processes",
+              "belakang": "Kata kerja tindakan & ucapan tokoh yang menggerakkan cerita."
+            },
+            {
+              "depan": "Quoted & reported speech",
+              "belakang": "\"Jangan masuk!\" serunya = quoted; ia melarangnya = reported."
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: narrative basics",
+          "keterangan": "Gemilang Drill — pemanasan sebelum zona berlatih.",
+          "items": [
+            {
+              "teks": "Narrative text uses past tenses as its typical verb form.",
+              "jawaban": true,
+              "penjelasan": "Language features bank: past tenses."
+            },
+            {
+              "teks": "Complication is the part where the crisis develops.",
+              "jawaban": true,
+              "penjelasan": "Complication memperkenalkan situasi problematik menuju krisis."
+            },
+            {
+              "teks": "Every narrative text must contain a coda.",
+              "jawaban": false,
+              "penjelasan": "Coda opsional; banyak cerita berhenti di resolution."
+            },
+            {
+              "teks": "Social function narrative is to describe how to make something.",
+              "jawaban": false,
+              "penjelasan": "Itu procedure; narrative = to amuse/entertain + moral."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-NARRATIVE: O-C-R-C + moral di tutup",
+          "teks": "Kunci narrative: struktur Orientation-Complication-Resolution-(Coda); past tenses; moral value cari di RESOLUTION/CODA; reference cari subjek terdekat sebelum kata ganti.",
+          "items": [
+            "Soal struktur/urutan: petakan paragraf ke O-C-R-C dulu sebelum menjawab.",
+            "Soal moral: baca paragraf terakhir; moral = pelajaran universal, bukan ringkasan plot.",
+            "Soal reference: mundur satu-dua kalimat, cari subjek yang sedang dibicarakan."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Opsi inference/conclusion yang memakai kata mutlak (always, never, only, permanent) hampir pasti salah. Moral value juga sering dijebak dengan ringkasan peristiwa — moral harus berupa pelajaran hidup yang bisa dipakai pembaca."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Which part of a narrative text introduces the characters and the setting?",
+              "opsi": [
+                "Orientation",
+                "Complication",
+                "Resolution",
+                "Coda",
+                "Evaluation"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: orientation memperkenalkan tokoh & latar (bank h.71). Jalur Cara Gemilang: CG-NARRATIVE — O pertama."
+            },
+            {
+              "soal": "Read the text carefully! Once upon a time, a greedy merchant refused to share his food with the starving villagers. One night his warehouse burned down, and he learned that wealth means nothing without kindness. What is the moral value of the story?",
+              "opsi": [
+                "Warehouses must be guarded at night.",
+                "Greed leads to loss; kindness gives wealth its meaning.",
+                "Villagers should always help merchants.",
+                "Fire is the best teacher of discipline.",
+                "Wealth is a sign of hard work."
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: krisis (gudang terbakar) mengajarkan penyesalan atas keserakahan -> moral tentang kebaikan. Jalur Cara Gemilang: moral di resolusi, berupa pelajaran universal."
+            },
+            {
+              "soal": "\"The queen was furious when she discovered the missing necklace.\" The closest meaning of \"furious\" is ...",
+              "opsi": [
+                "calm",
+                "confused",
+                "very angry",
+                "slightly annoyed",
+                "delighted"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: furious = sangat marah (intensitas tinggi). Jalur Cara Gemilang: substitusi opsi ke kalimat; pilih yang menjaga intensitas emosi."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Question Patterns & How to Conquer Them"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Soal narrative TKA berulang di delapan pola: topic/main idea, inference, reference, moral value, tone, purpose, closest meaning, dan True/False-categorize. Setiap pola punya jurus pencarian yang sama: lokalisasi bukti, lalu eliminasi pengecoh ekstrem."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "8 pola soal + jurus Gemilang",
+          "kolom": [
+            "Pola soal",
+            "Petunjuk di batang soal",
+            "Jurus"
+          ],
+          "rows": [
+            {
+              "k": "Topic / main idea",
+              "v": "\"What is the topic/main idea...?\"",
+              "w": "Rangkum seluruh teks satu frasa; cek judul + peristiwa berulang."
+            },
+            {
+              "k": "Inference / conclusion",
+              "v": "\"What can be inferred/concluded...?\"",
+              "w": "Rantai sebab-akibat; coret opsi ber-kata mutlak."
+            },
+            {
+              "k": "Reference",
+              "v": "\"The word \"He\" refers to...\"",
+              "w": "Subjek terdekat sebelum kata ganti."
+            },
+            {
+              "k": "Moral value",
+              "v": "\"What is the moral value...?\"",
+              "w": "Paragraf resolusi/coda; pelajaran universal."
+            },
+            {
+              "k": "Tone",
+              "v": "\"What is the tone...?\"",
+              "w": "Sikap penulis lewat kata emosi dominan."
+            },
+            {
+              "k": "Purpose",
+              "v": "\"What is the purpose...?\"",
+              "w": "Narrative = amuse/entertain + teach moral."
+            },
+            {
+              "k": "Closest meaning",
+              "v": "\"The closest meaning of ...\"",
+              "w": "Substitusi opsi ke kalimat konteks."
+            },
+            {
+              "k": "True/False & categorize",
+              "v": "\"Decide whether... / Categorize...\"",
+              "w": "Verifikasi per baris; tempel ciri ke pelaku/pembicara."
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: istilah narrative",
+          "items": [
+            {
+              "teks": "The part of a narrative where the problem is solved is called the ...",
+              "jawaban": [
+                "resolution"
+              ],
+              "hint": "Setelah komplikasi.",
+              "penjelasan": "Resolution = penyelesaian masalah."
+            },
+            {
+              "teks": "The optional closing part that shows the character change is the ...",
+              "jawaban": [
+                "coda"
+              ],
+              "hint": "Berupa pelajaran yang dipetik.",
+              "penjelasan": "Coda menutup dengan perubahan tokoh."
+            },
+            {
+              "teks": "Narrative texts typically use ... tenses.",
+              "jawaban": [
+                "past"
+              ],
+              "hint": "Bentuk lampau.",
+              "penjelasan": "Language features: past tenses."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri",
+          "teks": "Tulis satu kartu CG-NARRATIVE versimu: struktur O-C-R-C, tiga pola soal tersulitmu, dan satu contoh bukti teks untuk masing-masing. Bawa kartu itu ke sesi ujian berikutnya."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Siap uji pemahaman",
+          "teks": "25 soal resmi bab ini memakai 4 teks narrative (legenda Gua Naka, gadis bertangan perak, Owl & Nightingale, mitologi Inanna). Beri label pola soal di tiap nomor sebelum menjawab — kecepatan naik drastis setelah pola dikenali."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Read the following text carefully!\n\nLong ago, King U-Lue was a divine ruler of a magnificent city called Rattaphan Nakhon, located near the Mekong River. In this golden age, the human world and the mystical Naga kingdom were deeply connected. The city's prosperity was legendary, but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess named Nakkhrinthrani. Despite the ancient laws forbidding the union of different species, the two were married, and for three years, the kingdom celebrated their love.\n\nHowever, the joy turned into a dark mystery when the princess failed to conceive an heir. She fell into a deep, wasting sickness that weakened her magical veil. One day, a royal servant peeked into her chambers and was horrified to see a giant, shimmering serpent resting on the bed instead of a woman. Word of this \"deceit\" spread like wildfire, reaching King U-Lue. Enraged and feeling insulted by the presence of a beast in his palace, the King banished the princess and sent a harsh letter to her father, the Naga King, demanding he take his daughter back.\n\nThe Naga King, heartbroken by his daughters humiliation and the King's lack of compassion, rose from the depths with a vengeful army. That very night, a catastrophic flood swept through Rattaphan Nakhon, tearing down its golden walls and swallowing its people. The Naga King spared no one, transforming the once-vibrant city into a vast, silent lake known today as Bueng Khong Long. But for King U-Lue, the Naga King reserved a punishment far worse than death.\n\nAs the waters receded, the gods placed a heavy curse on King U-Lue for failing to lead with wisdom and mercy. His body began to stiffen and stretch, his skin turning into cold, grey stone scales. He was transformed into a giant serpent, eternally bound to the Phu Langka mountains. The curse decreed that he would remain petrified until his lost city was reborn or the land reached a state of perfect virtue. Today, his silent remains form the Naka Cave, where his scales and weary head stand as a permanent monument to a fallen kingdom.\n\n(adapted from https://thailand.go.th)\n\nWhat is the topic of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "The geological process of sun cracking in Thailand",
+            "A historical account of the Mekong River's floods",
+            "The tragic legend behind the formation of Naka Cave",
+            "A romance between two noble families in ancient Thailand",
+            "The architectural grandeur of the Rattaphan Nakhon city"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Ide utama teks adalah tentang legenda tragis di balik asal usul Gua Naka di Thailand. Hal ini didukung oleh keseluruhan isi teks yang menceritakan asal-usul kutukan Raja U-Lue hingga tubuhnya berubah menjadi batu. Jalur Cara Gemilang: Topik = frasa yang mewadahi SELURUH teks; lihat judul + peristiwa berulang, jangan terjebak detail satu paragraf.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLong ago, King U-Lue was a divine ruler of a magnificent city called Rattaphan Nakhon, located near the Mekong River. In this golden age, the human world and the mystical Naga kingdom were deeply connected. The city's prosperity was legendary, but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess named Nakkhrinthrani. Despite the ancient laws forbidding the union of different species, the two were married, and for three years, the kingdom celebrated their love.\n\nHowever, the joy turned into a dark mystery when the princess failed to conceive an heir. She fell into a deep, wasting sickness that weakened her magical veil. One day, a royal servant peeked into her chambers and was horrified to see a giant, shimmering serpent resting on the bed instead of a woman. Word of this \"deceit\" spread like wildfire, reaching King U-Lue. Enraged and feeling insulted by the presence of a beast in his palace, the King banished the princess and sent a harsh letter to her father, the Naga King, demanding he take his daughter back.\n\nThe Naga King, heartbroken by his daughters humiliation and the King's lack of compassion, rose from the depths with a vengeful army. That very night, a catastrophic flood swept through Rattaphan Nakhon, tearing down its golden walls and swallowing its people. The Naga King spared no one, transforming the once-vibrant city into a vast, silent lake known today as Bueng Khong Long. But for King U-Lue, the Naga King reserved a punishment far worse than death.\n\nAs the waters receded, the gods placed a heavy curse on King U-Lue for failing to lead with wisdom and mercy. His body began to stiffen and stretch, his skin turning into cold, grey stone scales. He was transformed into a giant serpent, eternally bound to the Phu Langka mountains. The curse decreed that he would remain petrified until his lost city was reborn or the land reached a state of perfect virtue. Today, his silent remains form the Naka Cave, where his scales and weary head stand as a permanent monument to a fallen kingdom.\n\n(adapted from https://thailand.go.th)\n\nWhat can be inferred from the text?",
+          "tipe": "pg",
+          "opsi": [
+            "The Naka Cave was built by the people of Rattaphan Nakhon as a tomb.",
+            "The princess intentionally deceived the King by hiding her serpent form.",
+            "King U-Lue was a merciful leader who prioritized his grandson's happiness.",
+            "The Naga King attacked the city because he wanted to expand his territory.",
+            "The forbidden marriage was the primary catalyst for the kingdom's destruction."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Dari teks dapat disimpulkan bahwa pernikahan terlarang antara manusia dan Naga adalah pemicu utama kehancuran kerajaan tersebut. Hal ini tersirat pada paragraf ke-1 ( …but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess named Nakhhrinthrani ). Jalur Cara Gemilang: Inference = kesimpulan tak tertulis; tarik dari rantai sebab-akibat cerita (pernikahan terlarang -> kehancuran).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLong ago, King U-Lue was a divine ruler of a magnificent city called Rattaphan Nakhon, located near the Mekong River. In this golden age, the human world and the mystical Naga kingdom were deeply connected. The city's prosperity was legendary, but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess named Nakkhrinthrani. Despite the ancient laws forbidding the union of different species, the two were married, and for three years, the kingdom celebrated their love.\n\nHowever, the joy turned into a dark mystery when the princess failed to conceive an heir. She fell into a deep, wasting sickness that weakened her magical veil. One day, a royal servant peeked into her chambers and was horrified to see a giant, shimmering serpent resting on the bed instead of a woman. Word of this \"deceit\" spread like wildfire, reaching King U-Lue. Enraged and feeling insulted by the presence of a beast in his palace, the King banished the princess and sent a harsh letter to her father, the Naga King, demanding he take his daughter back.\n\nThe Naga King, heartbroken by his daughters humiliation and the King's lack of compassion, rose from the depths with a vengeful army. That very night, a catastrophic flood swept through Rattaphan Nakhon, tearing down its golden walls and swallowing its people. The Naga King spared no one, transforming the once-vibrant city into a vast, silent lake known today as Bueng Khong Long. But for King U-Lue, the Naga King reserved a punishment far worse than death.\n\nAs the waters receded, the gods placed a heavy curse on King U-Lue for failing to lead with wisdom and mercy. His body began to stiffen and stretch, his skin turning into cold, grey stone scales. He was transformed into a giant serpent, eternally bound to the Phu Langka mountains. The curse decreed that he would remain petrified until his lost city was reborn or the land reached a state of perfect virtue. Today, his silent remains form the Naka Cave, where his scales and weary head stand as a permanent monument to a fallen kingdom.\n\n(adapted from https://thailand.go.th)\n\n\"He was transformed into a giant serpent, eternally bound to the Phu Langka mountains.\" The word \"He\" in the sentence refers to",
+          "tipe": "pg",
+          "opsi": [
+            "the Prince.",
+            "the Naga King.",
+            "A royal servant.",
+            "King U-Lue.",
+            "the grandson."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kata \"He\" pada kalimat tersebut merujuk pada King U-Lue, yang disebutkan pada subjek sebelumnya. Jalur Cara Gemilang: Reference: cari subjek terdekat SEBELUM kata ganti; \"He was transformed\" = raja yang dikutuk, King U-Lue.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLong ago, King U-Lue was a divine ruler of a magnificent city called Rattaphan Nakhon, located near the Mekong River. In this golden age, the human world and the mystical Naga kingdom were deeply connected. The city's prosperity was legendary, but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess named Nakkhrinthrani. Despite the ancient laws forbidding the union of different species, the two were married, and for three years, the kingdom celebrated their love.\n\nHowever, the joy turned into a dark mystery when the princess failed to conceive an heir. She fell into a deep, wasting sickness that weakened her magical veil. One day, a royal servant peeked into her chambers and was horrified to see a giant, shimmering serpent resting on the bed instead of a woman. Word of this \"deceit\" spread like wildfire, reaching King U-Lue. Enraged and feeling insulted by the presence of a beast in his palace, the King banished the princess and sent a harsh letter to her father, the Naga King, demanding he take his daughter back.\n\nThe Naga King, heartbroken by his daughters humiliation and the King's lack of compassion, rose from the depths with a vengeful army. That very night, a catastrophic flood swept through Rattaphan Nakhon, tearing down its golden walls and swallowing its people. The Naga King spared no one, transforming the once-vibrant city into a vast, silent lake known today as Bueng Khong Long. But for King U-Lue, the Naga King reserved a punishment far worse than death.\n\nAs the waters receded, the gods placed a heavy curse on King U-Lue for failing to lead with wisdom and mercy. His body began to stiffen and stretch, his skin turning into cold, grey stone scales. He was transformed into a giant serpent, eternally bound to the Phu Langka mountains. The curse decreed that he would remain petrified until his lost city was reborn or the land reached a state of perfect virtue. Today, his silent remains form the Naka Cave, where his scales and weary head stand as a permanent monument to a fallen kingdom.\n\n(adapted from https://thailand.go.th)\n\nDecide whether the following statements are True or False based on the text. Put a tick (✓) on (T) or (F)!\n(Answer each row by choosing True (T) / False (F).)",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "The marriage between Prince Fa Rung and Nakkhrinnthrani lasted for three years.",
+            "The princess was banished because the King felt insulted by her true form.",
+            "Bueng Khong Long was once a vibrant city before it became a lake.",
+            "King U-Lue was killed immediately by the Naga King during the flood.",
+            "The curse on the King will last until the land reaches a state of perfect virtue."
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s4-a.svg",
+            "/bagan/bab1-s4-b.svg",
+            "/bagan/bab1-s4-c.svg",
+            "/bagan/bab1-s4-d.svg",
+            "/bagan/bab1-s4-e.svg"
+          ],
+          "jawaban": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TRUE (T) Baris 2 — TRUE (T) Baris 3 — TRUE (T) Baris 4 — FALSE (F) Baris 5 — TRUE (T) Jalur Cara Gemilang: True/False = cocokkan kata per kata dengan kalimat teks; satu saja meleset (all/never/only) = False.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLong ago, King U-Lue was a divine ruler of a magnificent city called Rattaphan Nakhon, located near the Mekong River. In this golden age, the human world and the mystical Naga kingdom were deeply connected. The city's prosperity was legendary, but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess named Nakkhrinthrani. Despite the ancient laws forbidding the union of different species, the two were married, and for three years, the kingdom celebrated their love.\n\nHowever, the joy turned into a dark mystery when the princess failed to conceive an heir. She fell into a deep, wasting sickness that weakened her magical veil. One day, a royal servant peeked into her chambers and was horrified to see a giant, shimmering serpent resting on the bed instead of a woman. Word of this \"deceit\" spread like wildfire, reaching King U-Lue. Enraged and feeling insulted by the presence of a beast in his palace, the King banished the princess and sent a harsh letter to her father, the Naga King, demanding he take his daughter back.\n\nThe Naga King, heartbroken by his daughters humiliation and the King's lack of compassion, rose from the depths with a vengeful army. That very night, a catastrophic flood swept through Rattaphan Nakhon, tearing down its golden walls and swallowing its people. The Naga King spared no one, transforming the once-vibrant city into a vast, silent lake known today as Bueng Khong Long. But for King U-Lue, the Naga King reserved a punishment far worse than death.\n\nAs the waters receded, the gods placed a heavy curse on King U-Lue for failing to lead with wisdom and mercy. His body began to stiffen and stretch, his skin turning into cold, grey stone scales. He was transformed into a giant serpent, eternally bound to the Phu Langka mountains. The curse decreed that he would remain petrified until his lost city was reborn or the land reached a state of perfect virtue. Today, his silent remains form the Naka Cave, where his scales and weary head stand as a permanent monument to a fallen kingdom.\n\n(adapted from https://thailand.go.th)\n\nWhich of the following statements reflect the moral lessons from the text? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Breaking sacred laws always leads to a happy ending.",
+            "Wealth is the only thing that can save a kingdom from a curse.",
+            "Harmony is easily destroyed when pride and prejudice take over.",
+            "Leaders should lead with wisdom and compassion rather than anger.",
+            "Actions taken in rage can lead to catastrophic consequences for many."
+          ],
+          "jawaban": [
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Pesan moral yang dapat diambil dari cerita tersebut adalah: Harmony is easily destroyed when pride and prejudice take over. (Kesombongan dan prasangka Raja U-Lue terhadap putri Naga menyebabkan pengusirannya, yang menghancurkan kedamaian antara manusia dan Naga serta memicu kehancuran.) Leaders should lead with wisdom and compassion rather than anger. (Teks secara eksplisit menyatakan bahwa para dewa menghukum Raja U-Lue 'karena gagal memimpin dengan kebijaksanaan dan belas kasih,' menyoroti ini sebagai pelajaran penting.) Actions taken in rage can lead to catastrophic consequences for many. (Reaksi marah Raja yang mengusir sang putri dan menghina Raja Naga secara langsung memicu banjir balas dendam yang menghancurkan seluruh kota dan rakyatnya.) Jalur Cara Gemilang: Moral = pelajaran yang bisa digeneralisasi; coret opsi yang memuji kekayaan atau kekerasan sebagai solusi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLong ago, King U-Lue was a divine ruler of a magnificent city called Rattaphan Nakhon, located near the Mekong River. In this golden age, the human world and the mystical Naga kingdom were deeply connected. The city's prosperity was legendary, but its downfall began when King U-Lue's grandson, Prince Fa Rung, fell in love with a beautiful Naga princess named Nakkhrinthrani. Despite the ancient laws forbidding the union of different species, the two were married, and for three years, the kingdom celebrated their love.\n\nHowever, the joy turned into a dark mystery when the princess failed to conceive an heir. She fell into a deep, wasting sickness that weakened her magical veil. One day, a royal servant peeked into her chambers and was horrified to see a giant, shimmering serpent resting on the bed instead of a woman. Word of this \"deceit\" spread like wildfire, reaching King U-Lue. Enraged and feeling insulted by the presence of a beast in his palace, the King banished the princess and sent a harsh letter to her father, the Naga King, demanding he take his daughter back.\n\nThe Naga King, heartbroken by his daughters humiliation and the King's lack of compassion, rose from the depths with a vengeful army. That very night, a catastrophic flood swept through Rattaphan Nakhon, tearing down its golden walls and swallowing its people. The Naga King spared no one, transforming the once-vibrant city into a vast, silent lake known today as Bueng Khong Long. But for King U-Lue, the Naga King reserved a punishment far worse than death.\n\nAs the waters receded, the gods placed a heavy curse on King U-Lue for failing to lead with wisdom and mercy. His body began to stiffen and stretch, his skin turning into cold, grey stone scales. He was transformed into a giant serpent, eternally bound to the Phu Langka mountains. The curse decreed that he would remain petrified until his lost city was reborn or the land reached a state of perfect virtue. Today, his silent remains form the Naka Cave, where his scales and weary head stand as a permanent monument to a fallen kingdom.\n\n(adapted from https://thailand.go.th)\n\n\"The city's prosperity was legendary…\" What is the closest meaning of the word \"prosperity\"?",
+          "tipe": "pg",
+          "opsi": [
+            "Poverty",
+            "Suffering",
+            "Wealth",
+            "Diversity",
+            "Disaster"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Kata prosperity 'kemakmuran' memiliki makna yang sama secara kontekstual dengan kata wealth . Jalur Cara Gemilang: Closest meaning = substitusi ke kalimat: prosperity (kemakmuran kota) = wealth.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn a quiet village near a dense forest, a hardworking miller lived with his beautiful daughter. One day, the miller was tricked by a mysterious dark figure into a deal: great wealth in exchange for whatever stood behind his mill. Unknowingly, he had promised his daughter to the stranger, who was actually a sorcerer. The girl was so pure and kind that the sorcerer could not touch her. To protect herself further, she spent her days washing her hands until they shone like pearls, frustrating the sorcerer's attempts to claim her. Angered by his inability to seize her, the sorcerer commanded the miller to cut off his daughter's hands, threatening to destroy the entire village if he refused. Heartbroken, the miller obeyed, but the girl did not lose hope.\n\nShe continued to weep, and her tears kept her stumps clean and holy. Eventually, she fled into the royal gardens, where she lived off the fruit that hung low from the trees. Her resilience in the face of such cruelty drew the attention of the young king, who resided in the castle nearby. The king was moved by her tragic story and her unwavering spirit. He ordered his finest smiths to craft a pair of beautiful silver hands for her. They were married soon after, and for a time, they lived in peace. However, the sorcerer's malice was not yet exhausted. While the king was away at war, the sorcerer intercepted letters and manipulated messages to make the king believe his wife and newborn child were monsters.\n\nForced into exile once more, the girl fled into the mountains with her infant, seeking refuge in a hidden hermitage. In the solitude of the mountains, a miracle occurred. Because of her patience and goodness, her hands began to grow back, fleshy and real. Years later, the king, who had been searching for her tirelessly, found the hermitage. He did not recognize her at first because of her restored hands, but the silver ones she had kept as a reminder proved her identity. They returned to the kingdom together, the sorcerer's curse finally broken by a love that was stronger than any silver or steel. The daughter, once a victim of a dark bargain, became a symbol of purity that could not be tarnished by evil.\n\n(adapted from https://sites.pitt.edu)\n\nWhat is the main idea of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "A miller's daughter survives various hardships through her unwavering purity and resilience.",
+            "A powerful sorcerer successfully destroys a village after a miller fails to keep his promise.",
+            "A young king travels to the mountains to find a miraculous cure for his wife's disability.",
+            "The craftsmanship of silver hands becomes the most famous legend in a royal kingdom.",
+            "The story compares the simple life of a miller to the complex struggles of a royal family."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Ide utama teks naratif ini adalah tentang keteguhan hati dan kekuatan jiwa seorang anak penggiling gandum yang mampu melewati berbagai penderitaan mulai dari pengkhianatan ayahnya, kehilangan tangan, hingga fitnah penyihir sampai akhirnya ia mendapatkan kebahagiaannya kembali. Hal ini didukung oleh keseluruhan isi teks. Jalur Cara Gemilang: Main idea naratif = siapa + melewati apa: putri penggiling bertahan melewati berbagai penderitaan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn a quiet village near a dense forest, a hardworking miller lived with his beautiful daughter. One day, the miller was tricked by a mysterious dark figure into a deal: great wealth in exchange for whatever stood behind his mill. Unknowingly, he had promised his daughter to the stranger, who was actually a sorcerer. The girl was so pure and kind that the sorcerer could not touch her. To protect herself further, she spent her days washing her hands until they shone like pearls, frustrating the sorcerer's attempts to claim her. Angered by his inability to seize her, the sorcerer commanded the miller to cut off his daughter's hands, threatening to destroy the entire village if he refused. Heartbroken, the miller obeyed, but the girl did not lose hope.\n\nShe continued to weep, and her tears kept her stumps clean and holy. Eventually, she fled into the royal gardens, where she lived off the fruit that hung low from the trees. Her resilience in the face of such cruelty drew the attention of the young king, who resided in the castle nearby. The king was moved by her tragic story and her unwavering spirit. He ordered his finest smiths to craft a pair of beautiful silver hands for her. They were married soon after, and for a time, they lived in peace. However, the sorcerer's malice was not yet exhausted. While the king was away at war, the sorcerer intercepted letters and manipulated messages to make the king believe his wife and newborn child were monsters.\n\nForced into exile once more, the girl fled into the mountains with her infant, seeking refuge in a hidden hermitage. In the solitude of the mountains, a miracle occurred. Because of her patience and goodness, her hands began to grow back, fleshy and real. Years later, the king, who had been searching for her tirelessly, found the hermitage. He did not recognize her at first because of her restored hands, but the silver ones she had kept as a reminder proved her identity. They returned to the kingdom together, the sorcerer's curse finally broken by a love that was stronger than any silver or steel. The daughter, once a victim of a dark bargain, became a symbol of purity that could not be tarnished by evil.\n\n(adapted from https://sites.pitt.edu)\n\nAccording to the text, why could the sorcerer not initially touch the girl?",
+          "tipe": "pg",
+          "opsi": [
+            "She was protected by a powerful spell from her father.",
+            "She kept herself pure and constantly washed her hands.",
+            "The miller had hidden her behind a secret wall in the mill.",
+            "She possessed a pair of silver hands that repelled evil.",
+            "The King's soldiers were guarding her day and night."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Penyihir tidak bisa menyentuh gadis tersebut karena ia sangat suci. Ia memperkuat perlindungan dirinya dengan mencuci tangannya hingga bersih dan bersinar seperti mutiara. Informasi ini dapat ditemukan pada paragraf ke-1 ( The girl was so pure and kind that the sorcerer could not touch her. To protect herself further, she spent her days washing her hands until they shone like pearls, frustrating the sorcerer's attempts to claim her ). Jalur Cara Gemilang: Soal \"according to the text\": lokalkan kata kunci (could not touch) -> kalimat jawabannya di sebelahnya (tangan bersih/suci).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn a quiet village near a dense forest, a hardworking miller lived with his beautiful daughter. One day, the miller was tricked by a mysterious dark figure into a deal: great wealth in exchange for whatever stood behind his mill. Unknowingly, he had promised his daughter to the stranger, who was actually a sorcerer. The girl was so pure and kind that the sorcerer could not touch her. To protect herself further, she spent her days washing her hands until they shone like pearls, frustrating the sorcerer's attempts to claim her. Angered by his inability to seize her, the sorcerer commanded the miller to cut off his daughter's hands, threatening to destroy the entire village if he refused. Heartbroken, the miller obeyed, but the girl did not lose hope.\n\nShe continued to weep, and her tears kept her stumps clean and holy. Eventually, she fled into the royal gardens, where she lived off the fruit that hung low from the trees. Her resilience in the face of such cruelty drew the attention of the young king, who resided in the castle nearby. The king was moved by her tragic story and her unwavering spirit. He ordered his finest smiths to craft a pair of beautiful silver hands for her. They were married soon after, and for a time, they lived in peace. However, the sorcerer's malice was not yet exhausted. While the king was away at war, the sorcerer intercepted letters and manipulated messages to make the king believe his wife and newborn child were monsters.\n\nForced into exile once more, the girl fled into the mountains with her infant, seeking refuge in a hidden hermitage. In the solitude of the mountains, a miracle occurred. Because of her patience and goodness, her hands began to grow back, fleshy and real. Years later, the king, who had been searching for her tirelessly, found the hermitage. He did not recognize her at first because of her restored hands, but the silver ones she had kept as a reminder proved her identity. They returned to the kingdom together, the sorcerer's curse finally broken by a love that was stronger than any silver or steel. The daughter, once a victim of a dark bargain, became a symbol of purity that could not be tarnished by evil.\n\n(adapted from https://sites.pitt.edu)\n\nWhich of the following are challenges faced by the girl in the story? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Her hands were cut off due to the sorcerers threat.",
+            "She was forced into exile twice during her life.",
+            "She had to fight the sorcerer in a physical battle.",
+            "Her letters to the king were manipulated by the sorcerer.",
+            "She was rejected by the king because of her physical disability."
+          ],
+          "jawaban": [
+            0,
+            1,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Berdasarkan isi teks, tantangan yang dihadapi oleh gadis tersebut dalam cerita adalah: Her hands were cut off due to the sorcerer's threat. (Penyihir memerintahkan ayah gadis itu untuk memotong tangannya dengan ancaman menghancurkan seluruh desa. Dengan berat hati, sang ayah menuruti perintah tersebut, sehingga gadis ini harus menghadapi kehidupan tanpa tangan.) She was forced into exile twice during her life. (Pertama, setelah tangannya dipotong, ia melarikan diri ke taman kerajaan. Kedua, setelah pesan-pesan dimanipulasi oleh penyihir, ia \"dipaksa ke pengasingan sekali lagi\" dan lari ke pegunungan bersama bayi yang baru dilahirkannya.) Her letters to the king were manipulated by the sorcerer. (Saat raja pergi berperang, penyihir menyadap surat dan memanipulasi pesan sehingga raja percaya bahwa istri dan anaknya adalah monster. Hal ini memakan gadis tersebut yang mengalami pengasingan kedua dan menjadi tantangan besar baginya.) Jalur Cara Gemilang: Challenges = peristiwa yang MENIMPA tokoh; coret aksi yang tidak pernah ia lakukan (bertaruh melawan penyihir).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn a quiet village near a dense forest, a hardworking miller lived with his beautiful daughter. One day, the miller was tricked by a mysterious dark figure into a deal: great wealth in exchange for whatever stood behind his mill. Unknowingly, he had promised his daughter to the stranger, who was actually a sorcerer. The girl was so pure and kind that the sorcerer could not touch her. To protect herself further, she spent her days washing her hands until they shone like pearls, frustrating the sorcerer's attempts to claim her. Angered by his inability to seize her, the sorcerer commanded the miller to cut off his daughter's hands, threatening to destroy the entire village if he refused. Heartbroken, the miller obeyed, but the girl did not lose hope.\n\nShe continued to weep, and her tears kept her stumps clean and holy. Eventually, she fled into the royal gardens, where she lived off the fruit that hung low from the trees. Her resilience in the face of such cruelty drew the attention of the young king, who resided in the castle nearby. The king was moved by her tragic story and her unwavering spirit. He ordered his finest smiths to craft a pair of beautiful silver hands for her. They were married soon after, and for a time, they lived in peace. However, the sorcerer's malice was not yet exhausted. While the king was away at war, the sorcerer intercepted letters and manipulated messages to make the king believe his wife and newborn child were monsters.\n\nForced into exile once more, the girl fled into the mountains with her infant, seeking refuge in a hidden hermitage. In the solitude of the mountains, a miracle occurred. Because of her patience and goodness, her hands began to grow back, fleshy and real. Years later, the king, who had been searching for her tirelessly, found the hermitage. He did not recognize her at first because of her restored hands, but the silver ones she had kept as a reminder proved her identity. They returned to the kingdom together, the sorcerer's curse finally broken by a love that was stronger than any silver or steel. The daughter, once a victim of a dark bargain, became a symbol of purity that could not be tarnished by evil.\n\n(adapted from https://sites.pitt.edu)\n\n\"…seeking refuge in a hidden hermitage.\" What is the closest meaning of the word \"hermitage\"?",
+          "tipe": "pg",
+          "opsi": [
+            "Palace",
+            "Marketplace",
+            "Secluded retreat",
+            "Busy harbor",
+            "Military camp"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Kata hermitage 'tempat pertapaan' memiliki makna yang sama secara kontekstual dengan kata secluded retreat . Jalur Cara Gemilang: Hermitage = tempat berlindung yang sunyi -> secluded retreat; kunci konteks \"seeking refuge\".",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn a quiet village near a dense forest, a hardworking miller lived with his beautiful daughter. One day, the miller was tricked by a mysterious dark figure into a deal: great wealth in exchange for whatever stood behind his mill. Unknowingly, he had promised his daughter to the stranger, who was actually a sorcerer. The girl was so pure and kind that the sorcerer could not touch her. To protect herself further, she spent her days washing her hands until they shone like pearls, frustrating the sorcerer's attempts to claim her. Angered by his inability to seize her, the sorcerer commanded the miller to cut off his daughter's hands, threatening to destroy the entire village if he refused. Heartbroken, the miller obeyed, but the girl did not lose hope.\n\nShe continued to weep, and her tears kept her stumps clean and holy. Eventually, she fled into the royal gardens, where she lived off the fruit that hung low from the trees. Her resilience in the face of such cruelty drew the attention of the young king, who resided in the castle nearby. The king was moved by her tragic story and her unwavering spirit. He ordered his finest smiths to craft a pair of beautiful silver hands for her. They were married soon after, and for a time, they lived in peace. However, the sorcerer's malice was not yet exhausted. While the king was away at war, the sorcerer intercepted letters and manipulated messages to make the king believe his wife and newborn child were monsters.\n\nForced into exile once more, the girl fled into the mountains with her infant, seeking refuge in a hidden hermitage. In the solitude of the mountains, a miracle occurred. Because of her patience and goodness, her hands began to grow back, fleshy and real. Years later, the king, who had been searching for her tirelessly, found the hermitage. He did not recognize her at first because of her restored hands, but the silver ones she had kept as a reminder proved her identity. They returned to the kingdom together, the sorcerer's curse finally broken by a love that was stronger than any silver or steel. The daughter, once a victim of a dark bargain, became a symbol of purity that could not be tarnished by evil.\n\n(adapted from https://sites.pitt.edu)\n\n\"He ordered his finest smiths to craft a pair of beautiful silver hands for her.\" The word \"He\" in the sentence refers to",
+          "tipe": "pg",
+          "opsi": [
+            "The miller.",
+            "The sorcerer.",
+            "The dark figure.",
+            "The young king.",
+            "The infant child."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kata \"He\" pada kalimat tersebut merujuk pada subjek yang sedang dicentikan tindakannya dalam membantu tokoh utama, yaitu raja muda ( the young king ). Jalur Cara Gemilang: Reference: subjek pelaku \"ordered his finest smiths\" = raja muda, bukan miller/penyihir.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn a quiet village near a dense forest, a hardworking miller lived with his beautiful daughter. One day, the miller was tricked by a mysterious dark figure into a deal: great wealth in exchange for whatever stood behind his mill. Unknowingly, he had promised his daughter to the stranger, who was actually a sorcerer. The girl was so pure and kind that the sorcerer could not touch her. To protect herself further, she spent her days washing her hands until they shone like pearls, frustrating the sorcerer's attempts to claim her. Angered by his inability to seize her, the sorcerer commanded the miller to cut off his daughter's hands, threatening to destroy the entire village if he refused. Heartbroken, the miller obeyed, but the girl did not lose hope.\n\nShe continued to weep, and her tears kept her stumps clean and holy. Eventually, she fled into the royal gardens, where she lived off the fruit that hung low from the trees. Her resilience in the face of such cruelty drew the attention of the young king, who resided in the castle nearby. The king was moved by her tragic story and her unwavering spirit. He ordered his finest smiths to craft a pair of beautiful silver hands for her. They were married soon after, and for a time, they lived in peace. However, the sorcerer's malice was not yet exhausted. While the king was away at war, the sorcerer intercepted letters and manipulated messages to make the king believe his wife and newborn child were monsters.\n\nForced into exile once more, the girl fled into the mountains with her infant, seeking refuge in a hidden hermitage. In the solitude of the mountains, a miracle occurred. Because of her patience and goodness, her hands began to grow back, fleshy and real. Years later, the king, who had been searching for her tirelessly, found the hermitage. He did not recognize her at first because of her restored hands, but the silver ones she had kept as a reminder proved her identity. They returned to the kingdom together, the sorcerer's curse finally broken by a love that was stronger than any silver or steel. The daughter, once a victim of a dark bargain, became a symbol of purity that could not be tarnished by evil.\n\n(adapted from https://sites.pitt.edu)\n\nDecide whether the following statements are True or False based on the text. Put a tick (✓) on (T) or (F)!\n(Answer each row by choosing True (T) / False (F).)",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "The miller knew from the start that he was bargaining with a sorcerer.",
+            "The girl's hands miraculously grew back while she was in the mountains.",
+            "The sorcerer manipulated the king's letters to cause a conflict.",
+            "The king recognized his wife immediately because of her silver hands.",
+            "The story suggests that internal virtue can act as a shield against evil."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — FALSE (F) Baris 2 — TRUE (T) Baris 3 — TRUE (T) Baris 4 — FALSE (F) Baris 5 — TRUE (T) Jalur Cara Gemilang: True/False: verifikasi per pernyataan; \"miller tahu sejak awal\" = False (ia tidak tahu berurusan dengan penyihir).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDeep within a shadowy grove, a Nightingale sat upon a branch, pouring her heart into a melody that echoed through the trees. Her song was intricate and sweet, a celebration of the coming spring. Nearby, a Great Horned Owl sat in the hollow of an oak, blinking his large eyes in annoyance. He found the Nightingale's music disruptive to his quiet contemplation and sleep. To the Owl, the complexity of the song was nothing more than a chaotic noise that lacked the solemnity of the night. He believed that the world should remain silent and orderly, viewing the Nightingale's artistic expression as a frivolous waste of energy that served no practical purpose in the forest.\n\nThe Owl finally called out, challenging the Nightingale to a debate about the value of their respective voices. He argued that his deep, steady hooting was far superior because it represented wisdom and the seriousness of life. \"Your song is flighty and serves no purpose but to distract,\" the Owl hooted sternly. The Nightingale, unfazed, replied that music was not meant to be a lecture but an expression of the soul's joy. She believed that beauty itself was a form of wisdom that the Owl was too rigid to understand. The forest animals gathered to listen, intrigued by the clash between the stern guardian of the night and the vibrant singer of the morning.\n\nAs the argument grew heated, a passing Falcon was asked to judge between them. The Falcon listened as the Owl spoke of tradition and the Nightingale sang of inspiration. The Owl insisted that only things that are useful and predictable have value. Meanwhile, the Nightingale argued that the world would be a dull place if every creature only produced sounds that were functional. The Falcon looked at both birds, noting that they were trying to measure two different things with the same ruler. He saw that the Owl valued structure and silence, while the Nightingale valued creativity and movement. Both birds were convinced of their own superiority, refusing to see the merit in the other's perspective.\n\nUltimately, the Falcon refused to declare a winner, choosing instead to honor the distinct nature of their contributions. He explained that the Owl's deep, steady call served to announce the presence and gravity of the night, while the Nightingale's intricate song heralded the awakening beauty of the day. Recognizing that neither could truly eclipse the other, the Owl and the Nightingale eventually returned to their respective roles within the grove. The forest remained a harmonious sanctuary where both the solemnity of silence and the vibrancy of song held their rightful, respected place in the grand design.\n\n(adapted from https://www.britannica.com)\n\nWhat is the moral value of the story?",
+          "tipe": "pg",
+          "opsi": [
+            "Wisdom is only found in traditional and functional ways of living.",
+            "True wisdom lies in recognizing that different forms of beauty can coexist.",
+            "Competition is necessary to determine which talents are superior to others.",
+            "Creativity should be avoided if it does not serve a practical, daily purpose.",
+            "Silence is always more valuable than artistic expression in the natural world."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Nilai moral dari cerita ini ditemukan pada resolusi di paragraf terakhir, di mana Falcon menjelaskan bahwa setiap suara memiliki peran uniknya sendiri. Kebijaksanaan sejati dijelaskan sebagai kemampuan untuk menghargai bahwa berbagai bentuk keindahan dapat hidup berdampingan tanpa harus bersaing. Jalur Cara Gemilang: Moral value biasanya di paragraf resolusi/penutup cerita.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDeep within a shadowy grove, a Nightingale sat upon a branch, pouring her heart into a melody that echoed through the trees. Her song was intricate and sweet, a celebration of the coming spring. Nearby, a Great Horned Owl sat in the hollow of an oak, blinking his large eyes in annoyance. He found the Nightingale's music disruptive to his quiet contemplation and sleep. To the Owl, the complexity of the song was nothing more than a chaotic noise that lacked the solemnity of the night. He believed that the world should remain silent and orderly, viewing the Nightingale's artistic expression as a frivolous waste of energy that served no practical purpose in the forest.\n\nThe Owl finally called out, challenging the Nightingale to a debate about the value of their respective voices. He argued that his deep, steady hooting was far superior because it represented wisdom and the seriousness of life. \"Your song is flighty and serves no purpose but to distract,\" the Owl hooted sternly. The Nightingale, unfazed, replied that music was not meant to be a lecture but an expression of the soul's joy. She believed that beauty itself was a form of wisdom that the Owl was too rigid to understand. The forest animals gathered to listen, intrigued by the clash between the stern guardian of the night and the vibrant singer of the morning.\n\nAs the argument grew heated, a passing Falcon was asked to judge between them. The Falcon listened as the Owl spoke of tradition and the Nightingale sang of inspiration. The Owl insisted that only things that are useful and predictable have value. Meanwhile, the Nightingale argued that the world would be a dull place if every creature only produced sounds that were functional. The Falcon looked at both birds, noting that they were trying to measure two different things with the same ruler. He saw that the Owl valued structure and silence, while the Nightingale valued creativity and movement. Both birds were convinced of their own superiority, refusing to see the merit in the other's perspective.\n\nUltimately, the Falcon refused to declare a winner, choosing instead to honor the distinct nature of their contributions. He explained that the Owl's deep, steady call served to announce the presence and gravity of the night, while the Nightingale's intricate song heralded the awakening beauty of the day. Recognizing that neither could truly eclipse the other, the Owl and the Nightingale eventually returned to their respective roles within the grove. The forest remained a harmonious sanctuary where both the solemnity of silence and the vibrancy of song held their rightful, respected place in the grand design.\n\n(adapted from https://www.britannica.com)\n\nWhat is the tone of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Humorous",
+            "Reflective",
+            "Indifferent",
+            "Sarcastic",
+            "Critical"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Laras dari teks tersebut adalah reflektif karena narasi mengajak pembaca untuk merenungkan makna filosofis di balik perbedaan karakter Owl dan Nightingale, bukan sekadar memberikan informasi faktual atau humor. Jalur Cara Gemilang: Tone = sikap penulis: reflective = mengajak merenung; cari kata emosi dominan, bukan isi peristiwa.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDeep within a shadowy grove, a Nightingale sat upon a branch, pouring her heart into a melody that echoed through the trees. Her song was intricate and sweet, a celebration of the coming spring. Nearby, a Great Horned Owl sat in the hollow of an oak, blinking his large eyes in annoyance. He found the Nightingale's music disruptive to his quiet contemplation and sleep. To the Owl, the complexity of the song was nothing more than a chaotic noise that lacked the solemnity of the night. He believed that the world should remain silent and orderly, viewing the Nightingale's artistic expression as a frivolous waste of energy that served no practical purpose in the forest.\n\nThe Owl finally called out, challenging the Nightingale to a debate about the value of their respective voices. He argued that his deep, steady hooting was far superior because it represented wisdom and the seriousness of life. \"Your song is flighty and serves no purpose but to distract,\" the Owl hooted sternly. The Nightingale, unfazed, replied that music was not meant to be a lecture but an expression of the soul's joy. She believed that beauty itself was a form of wisdom that the Owl was too rigid to understand. The forest animals gathered to listen, intrigued by the clash between the stern guardian of the night and the vibrant singer of the morning.\n\nAs the argument grew heated, a passing Falcon was asked to judge between them. The Falcon listened as the Owl spoke of tradition and the Nightingale sang of inspiration. The Owl insisted that only things that are useful and predictable have value. Meanwhile, the Nightingale argued that the world would be a dull place if every creature only produced sounds that were functional. The Falcon looked at both birds, noting that they were trying to measure two different things with the same ruler. He saw that the Owl valued structure and silence, while the Nightingale valued creativity and movement. Both birds were convinced of their own superiority, refusing to see the merit in the other's perspective.\n\nUltimately, the Falcon refused to declare a winner, choosing instead to honor the distinct nature of their contributions. He explained that the Owl's deep, steady call served to announce the presence and gravity of the night, while the Nightingale's intricate song heralded the awakening beauty of the day. Recognizing that neither could truly eclipse the other, the Owl and the Nightingale eventually returned to their respective roles within the grove. The forest remained a harmonious sanctuary where both the solemnity of silence and the vibrancy of song held their rightful, respected place in the grand design.\n\n(adapted from https://www.britannica.com)\n\nWhat is the purpose of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "To teach readers the importance of diversity in expression",
+            "To explain the technical history of animal fables in literature",
+            "To criticize the Nightingale for being too loud during the night",
+            "To persuade readers to protect the habitats of endangered birds",
+            "To describe the biological differences between owls and falcons"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Tujuan utama teks ini adalah untuk menyampaikan pesan moral atau pelajaran hidup. Dalam konteks ini, teks bertujuan mengajarkan pentingnya keberagaman dan saling menghargai perbedaan dalam berekspresi. Hal ini didukung oleh ide pokok dari keseluruhan isi teks. Jalur Cara Gemilang: Purpose naratif = to amuse/entertain + mengajar moral -> pilih \"to teach readers the importance of...\".",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDeep within a shadowy grove, a Nightingale sat upon a branch, pouring her heart into a melody that echoed through the trees. Her song was intricate and sweet, a celebration of the coming spring. Nearby, a Great Horned Owl sat in the hollow of an oak, blinking his large eyes in annoyance. He found the Nightingale's music disruptive to his quiet contemplation and sleep. To the Owl, the complexity of the song was nothing more than a chaotic noise that lacked the solemnity of the night. He believed that the world should remain silent and orderly, viewing the Nightingale's artistic expression as a frivolous waste of energy that served no practical purpose in the forest.\n\nThe Owl finally called out, challenging the Nightingale to a debate about the value of their respective voices. He argued that his deep, steady hooting was far superior because it represented wisdom and the seriousness of life. \"Your song is flighty and serves no purpose but to distract,\" the Owl hooted sternly. The Nightingale, unfazed, replied that music was not meant to be a lecture but an expression of the soul's joy. She believed that beauty itself was a form of wisdom that the Owl was too rigid to understand. The forest animals gathered to listen, intrigued by the clash between the stern guardian of the night and the vibrant singer of the morning.\n\nAs the argument grew heated, a passing Falcon was asked to judge between them. The Falcon listened as the Owl spoke of tradition and the Nightingale sang of inspiration. The Owl insisted that only things that are useful and predictable have value. Meanwhile, the Nightingale argued that the world would be a dull place if every creature only produced sounds that were functional. The Falcon looked at both birds, noting that they were trying to measure two different things with the same ruler. He saw that the Owl valued structure and silence, while the Nightingale valued creativity and movement. Both birds were convinced of their own superiority, refusing to see the merit in the other's perspective.\n\nUltimately, the Falcon refused to declare a winner, choosing instead to honor the distinct nature of their contributions. He explained that the Owl's deep, steady call served to announce the presence and gravity of the night, while the Nightingale's intricate song heralded the awakening beauty of the day. Recognizing that neither could truly eclipse the other, the Owl and the Nightingale eventually returned to their respective roles within the grove. The forest remained a harmonious sanctuary where both the solemnity of silence and the vibrancy of song held their rightful, respected place in the grand design.\n\n(adapted from https://www.britannica.com)\n\nWhat can be concluded from the text?",
+          "tipe": "pg",
+          "opsi": [
+            "The Falcon found it easy to decide who was the superior bird in the forest.",
+            "The Nightingale changed her song to make it more functional for the Owl.",
+            "The forest animals preferred the Owl's wisdom over the Nightingale's joy.",
+            "The Owl eventually admitted that the Nightingale's song was better than his call.",
+            "Value is subjective, and different perspectives can both hold merit simultaneously."
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s16-a.svg",
+            "/bagan/bab1-s16-b.svg",
+            "/bagan/bab1-s16-c.svg",
+            "/bagan/bab1-s16-d.svg",
+            "/bagan/bab1-s16-e.svg"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Dapat disimpulkan bahwa nilai adalah sesuatu yang subjektif, di mana keteteruan Owl dan kreativitas Nightingale keduanya memiliki kegunaan dan tempatnya masing-masing. Hal ini didukung oleh paragraf ke-4 pada teks yang menunjukkan sikap Falcon yang menolak menentukan pemenang. Jalur Cara Gemilang: Conclusion = rangkuman yang digeneralisasi: nilai itu subjektif (Owl & Nightingale berdua berguna).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDeep within a shadowy grove, a Nightingale sat upon a branch, pouring her heart into a melody that echoed through the trees. Her song was intricate and sweet, a celebration of the coming spring. Nearby, a Great Horned Owl sat in the hollow of an oak, blinking his large eyes in annoyance. He found the Nightingale's music disruptive to his quiet contemplation and sleep. To the Owl, the complexity of the song was nothing more than a chaotic noise that lacked the solemnity of the night. He believed that the world should remain silent and orderly, viewing the Nightingale's artistic expression as a frivolous waste of energy that served no practical purpose in the forest.\n\nThe Owl finally called out, challenging the Nightingale to a debate about the value of their respective voices. He argued that his deep, steady hooting was far superior because it represented wisdom and the seriousness of life. \"Your song is flighty and serves no purpose but to distract,\" the Owl hooted sternly. The Nightingale, unfazed, replied that music was not meant to be a lecture but an expression of the soul's joy. She believed that beauty itself was a form of wisdom that the Owl was too rigid to understand. The forest animals gathered to listen, intrigued by the clash between the stern guardian of the night and the vibrant singer of the morning.\n\nAs the argument grew heated, a passing Falcon was asked to judge between them. The Falcon listened as the Owl spoke of tradition and the Nightingale sang of inspiration. The Owl insisted that only things that are useful and predictable have value. Meanwhile, the Nightingale argued that the world would be a dull place if every creature only produced sounds that were functional. The Falcon looked at both birds, noting that they were trying to measure two different things with the same ruler. He saw that the Owl valued structure and silence, while the Nightingale valued creativity and movement. Both birds were convinced of their own superiority, refusing to see the merit in the other's perspective.\n\nUltimately, the Falcon refused to declare a winner, choosing instead to honor the distinct nature of their contributions. He explained that the Owl's deep, steady call served to announce the presence and gravity of the night, while the Nightingale's intricate song heralded the awakening beauty of the day. Recognizing that neither could truly eclipse the other, the Owl and the Nightingale eventually returned to their respective roles within the grove. The forest remained a harmonious sanctuary where both the solemnity of silence and the vibrancy of song held their rightful, respected place in the grand design.\n\n(adapted from https://www.britannica.com)\n\nWhich of the following were arguments or perspectives held by the Owl? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Beauty is a form of wisdom that is often misunderstood.",
+            "The world should remain silent, orderly, and predictable.",
+            "Complexity in music is a chaotic noise that lacks solemnity.",
+            "Artistic expression is an essential celebration of the soul's joy.",
+            "Only things that are useful and serve a practical purpose have value."
+          ],
+          "jawaban": [
+            1,
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Berdasarkan isi teks, argumen dan pandangan yang dipegang oleh Owl adalah sebagai berikut: The world should remain silent, orderly, and predictable. Sesuai dengan paragraf pertama, ia percaya bahwa dunia seharusnya tetap diam, teratur, dan tertata. Complexity in music is a chaotic noise that lacks solemnity. Ia menganggap kerumitan lagu Nightingale hanyalah kebisingan yang kacau dan tidak memiliki keseriusan. Only things that are useful and serve a practical purpose have value. Ia bersikeras bahwa hanya hal-hal yang berguna, praktis, dan dapat diprediksi yang memiliki nilai dalam kehidupan di hutan. Jalur Cara Gemilang: Trace the speaker: tandai kalimat milik Owl vs Nightingale; opsi pandangan Owl harus dari mulut Owl.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDeep within a shadowy grove, a Nightingale sat upon a branch, pouring her heart into a melody that echoed through the trees. Her song was intricate and sweet, a celebration of the coming spring. Nearby, a Great Horned Owl sat in the hollow of an oak, blinking his large eyes in annoyance. He found the Nightingale's music disruptive to his quiet contemplation and sleep. To the Owl, the complexity of the song was nothing more than a chaotic noise that lacked the solemnity of the night. He believed that the world should remain silent and orderly, viewing the Nightingale's artistic expression as a frivolous waste of energy that served no practical purpose in the forest.\n\nThe Owl finally called out, challenging the Nightingale to a debate about the value of their respective voices. He argued that his deep, steady hooting was far superior because it represented wisdom and the seriousness of life. \"Your song is flighty and serves no purpose but to distract,\" the Owl hooted sternly. The Nightingale, unfazed, replied that music was not meant to be a lecture but an expression of the soul's joy. She believed that beauty itself was a form of wisdom that the Owl was too rigid to understand. The forest animals gathered to listen, intrigued by the clash between the stern guardian of the night and the vibrant singer of the morning.\n\nAs the argument grew heated, a passing Falcon was asked to judge between them. The Falcon listened as the Owl spoke of tradition and the Nightingale sang of inspiration. The Owl insisted that only things that are useful and predictable have value. Meanwhile, the Nightingale argued that the world would be a dull place if every creature only produced sounds that were functional. The Falcon looked at both birds, noting that they were trying to measure two different things with the same ruler. He saw that the Owl valued structure and silence, while the Nightingale valued creativity and movement. Both birds were convinced of their own superiority, refusing to see the merit in the other's perspective.\n\nUltimately, the Falcon refused to declare a winner, choosing instead to honor the distinct nature of their contributions. He explained that the Owl's deep, steady call served to announce the presence and gravity of the night, while the Nightingale's intricate song heralded the awakening beauty of the day. Recognizing that neither could truly eclipse the other, the Owl and the Nightingale eventually returned to their respective roles within the grove. The forest remained a harmonious sanctuary where both the solemnity of silence and the vibrancy of song held their rightful, respected place in the grand design.\n\n(adapted from https://www.britannica.com)\n\nCategorize the following characteristics based on the bird they describe according to the text! Put a tick (✓) on Nightingale or Owl!\n(Answer each row by choosing Nightingale / Owl.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Nightingale",
+            "Owl"
+          ],
+          "baris": [
+            "valued creativity, movement, and inspiration",
+            "believed the world should remain silent and orderly",
+            "argued that music is an expression of the soul's joy",
+            "represented tradition, structure, and seriousness",
+            "viewed the other's voice as a frivolous waste of energy"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s18-a.svg",
+            "/bagan/bab1-s18-b.svg",
+            "/bagan/bab1-s18-c.svg",
+            "/bagan/bab1-s18-d.svg",
+            "/bagan/bab1-s18-e.svg"
+          ],
+          "jawaban": [
+            0,
+            1,
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — NIGHTINGALE Baris 2 — OWL Baris 3 — NIGHTINGALE Baris 4 — OWL Baris 5 — OWL Jalur Cara Gemilang: Categorize: tempel tiap ciri pada burung yang MENGUCAPKANNYA di teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn the ancient lands of Sumer, Inanna, the Queen of Heaven, decided to visit the Great Below, the underworld ruled by her sister Ereshkigal. Inanna knew the journey was perilous, for no one who entered the land of no return was ever permitted to leave. Before she departed, she instructed her faithful servant, Ninshubur, to seek help from the gods if she did not return within three days. Armed with her seven divine powers and dressed in her royal robes, Inanna approached the first of the seven gates of the underworld. She was determined to witness the mysteries of death, even if it meant risking her immortal status among the gods.\n\nAt each gate, the gatekeeper Neti demanded an offering. To pass through the first gate, she had to remove her crown. At the second, she gave up her lapis beads, and at each subsequent gate, she surrendered another piece of jewelry. By the time she reached the throne of Ereshkigal, Inanna was stripped of all her earthly power and stood humbled and defenseless. Her sister, consumed by bitterness and grief, turned Inanna into a corpse and hung her from a hook on the wall, symbolizing the ultimate loss of ego. The Queen of Heaven had become a mere shadow, her vibrant light extinguished by the cold laws of the subterranean realm.\n\nWhen Inanna failed to return, Ninshubur pleaded with the gods. Most refused to interfere with the laws of the underworld, but Enki, the god of wisdom, took pity. He created two genderless beings who could slip unnoticed into the realm of death. They reached Ereshkigal and showed her empathy for her eternal suffering. Grateful for their compassion, Ereshkigal offered them a gift, and they chose the body of Inanna. They sprinkled her with the food and water of life, and the Queen of Heaven slowly began to breathe again. Her revival was a testament to the power of wisdom and the importance of empathy even in the darkest places.\n\nInanna's ascent from the subterranean realm was not without a price; she was required to find a substitute to take her place in the shadows. Upon her return to the upper world, she found her husband, Dumuzi, dressed in his shining garments and celebrating her absence rather than mourning her descent. In her cold anger, Inanna looked upon him with the eye of death and allowed the demons of the underworld to seize him. This transition established the eternal cycle of the seasons, as Dumuzi was decreed to spend half the year in the Great Below, bringing the barren cold of winter, and return to the earth for the other half, bringing the vibrant rebirth of spring.\n\n(adapted from https://thedecursionlab.com)\n\nWhat is the text primary concerned with?",
+          "tipe": "pg",
+          "opsi": [
+            "The romantic relationship between Inanna and her husband Dumuzi",
+            "The technical process of how ancient gods created genderless beings",
+            "The physical geography and gates of the ancient Sumerian underworld",
+            "The administrative laws governing the subterranean realm of Ereshkigal",
+            "The journey of Inanna to the underworld and the resulting cycle of seasons"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Ide utama teks ini mencakup keseluruhan narasi mitologi Sumeria tersebut, mulai dari motif perjalanan Inanna ke dunia bawah hingga dampak akhir yang menjelaskan terciptanya siklus musim. Jalur Cara Gemilang: Primary concern = alur utama keseluruhan: perjalanan Inanna ke dunia bawah, bukan detail gerbang/hukum.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn the ancient lands of Sumer, Inanna, the Queen of Heaven, decided to visit the Great Below, the underworld ruled by her sister Ereshkigal. Inanna knew the journey was perilous, for no one who entered the land of no return was ever permitted to leave. Before she departed, she instructed her faithful servant, Ninshubur, to seek help from the gods if she did not return within three days. Armed with her seven divine powers and dressed in her royal robes, Inanna approached the first of the seven gates of the underworld. She was determined to witness the mysteries of death, even if it meant risking her immortal status among the gods.\n\nAt each gate, the gatekeeper Neti demanded an offering. To pass through the first gate, she had to remove her crown. At the second, she gave up her lapis beads, and at each subsequent gate, she surrendered another piece of jewelry. By the time she reached the throne of Ereshkigal, Inanna was stripped of all her earthly power and stood humbled and defenseless. Her sister, consumed by bitterness and grief, turned Inanna into a corpse and hung her from a hook on the wall, symbolizing the ultimate loss of ego. The Queen of Heaven had become a mere shadow, her vibrant light extinguished by the cold laws of the subterranean realm.\n\nWhen Inanna failed to return, Ninshubur pleaded with the gods. Most refused to interfere with the laws of the underworld, but Enki, the god of wisdom, took pity. He created two genderless beings who could slip unnoticed into the realm of death. They reached Ereshkigal and showed her empathy for her eternal suffering. Grateful for their compassion, Ereshkigal offered them a gift, and they chose the body of Inanna. They sprinkled her with the food and water of life, and the Queen of Heaven slowly began to breathe again. Her revival was a testament to the power of wisdom and the importance of empathy even in the darkest places.\n\nInanna's ascent from the subterranean realm was not without a price; she was required to find a substitute to take her place in the shadows. Upon her return to the upper world, she found her husband, Dumuzi, dressed in his shining garments and celebrating her absence rather than mourning her descent. In her cold anger, Inanna looked upon him with the eye of death and allowed the demons of the underworld to seize him. This transition established the eternal cycle of the seasons, as Dumuzi was decreed to spend half the year in the Great Below, bringing the barren cold of winter, and return to the earth for the other half, bringing the vibrant rebirth of spring.\n\n(adapted from https://thedecursionlab.com)\n\nWhat is the purpose of the text? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "To provide a scientific report on the geological changes of the seasons",
+            "To persuade readers to follow the ancient laws of the Sumerian gatekeepers",
+            "To teach a lesson about the necessity of humility and the power of empathy",
+            "To tell the story of Inanna's transformation and her encounter with Ereshkigal",
+            "To entertain readers with a dramatic myth about the Queen of Heaven's descent"
+          ],
+          "jawaban": [
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Sesuai dengan karakteristik teks naratif/mitologi, tujuan teks ini adalah: To teach: Memberikan pelajaran tentang pentingnya kerendahan hati saat menghadapi maut dan kekuatan empati To tell: Menceritakan rangkaian peristiwa pertemuan Inanna dengan penguasa dunia bawah To entertain: Menghibur pembaca melalui kisah dramatis Inanna yang mempertaruhkan status abadinya Jalur Cara Gemilang: Purpose mitologi/naratif = teach + tell + entertain; laporan ilmiah/persuasi = pengecoh.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn the ancient lands of Sumer, Inanna, the Queen of Heaven, decided to visit the Great Below, the underworld ruled by her sister Ereshkigal. Inanna knew the journey was perilous, for no one who entered the land of no return was ever permitted to leave. Before she departed, she instructed her faithful servant, Ninshubur, to seek help from the gods if she did not return within three days. Armed with her seven divine powers and dressed in her royal robes, Inanna approached the first of the seven gates of the underworld. She was determined to witness the mysteries of death, even if it meant risking her immortal status among the gods.\n\nAt each gate, the gatekeeper Neti demanded an offering. To pass through the first gate, she had to remove her crown. At the second, she gave up her lapis beads, and at each subsequent gate, she surrendered another piece of jewelry. By the time she reached the throne of Ereshkigal, Inanna was stripped of all her earthly power and stood humbled and defenseless. Her sister, consumed by bitterness and grief, turned Inanna into a corpse and hung her from a hook on the wall, symbolizing the ultimate loss of ego. The Queen of Heaven had become a mere shadow, her vibrant light extinguished by the cold laws of the subterranean realm.\n\nWhen Inanna failed to return, Ninshubur pleaded with the gods. Most refused to interfere with the laws of the underworld, but Enki, the god of wisdom, took pity. He created two genderless beings who could slip unnoticed into the realm of death. They reached Ereshkigal and showed her empathy for her eternal suffering. Grateful for their compassion, Ereshkigal offered them a gift, and they chose the body of Inanna. They sprinkled her with the food and water of life, and the Queen of Heaven slowly began to breathe again. Her revival was a testament to the power of wisdom and the importance of empathy even in the darkest places.\n\nInanna's ascent from the subterranean realm was not without a price; she was required to find a substitute to take her place in the shadows. Upon her return to the upper world, she found her husband, Dumuzi, dressed in his shining garments and celebrating her absence rather than mourning her descent. In her cold anger, Inanna looked upon him with the eye of death and allowed the demons of the underworld to seize him. This transition established the eternal cycle of the seasons, as Dumuzi was decreed to spend half the year in the Great Below, bringing the barren cold of winter, and return to the earth for the other half, bringing the vibrant rebirth of spring.\n\n(adapted from https://thedecursionlab.com)\n\nWhat can be concluded about Inanna's revival based on the third paragraph?",
+          "tipe": "pg",
+          "opsi": [
+            "She was brought back to life because she managed to defeat Ereshkigal in battle.",
+            "Her return was made possible through the cleverness of Enki and the power of empathy.",
+            "The other gods were very eager to help Ninshubur rescue Inanna from the underworld.",
+            "Inanna's revival was a gift from Ereshkigal because she missed her sister's company.",
+            "She breathed again because she consumed the food and water of the underworld's king."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Berdasarkan paragraf ke-3, kebangkitan Inanna dimungkinkan karena strategi Enki (dewa kebijaksanaan) yang menciptakan makhluk untuk menunjukkan empati kepada Ereshkigal, sehingga ia luluh dan memberikan tubuh Inanna. Jalur Cara Gemilang: Kesimpulan per paragraf: fokus paragraf 3 = strategi Enki -> revival \"through\" makhluk ciptaannya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn the ancient lands of Sumer, Inanna, the Queen of Heaven, decided to visit the Great Below, the underworld ruled by her sister Ereshkigal. Inanna knew the journey was perilous, for no one who entered the land of no return was ever permitted to leave. Before she departed, she instructed her faithful servant, Ninshubur, to seek help from the gods if she did not return within three days. Armed with her seven divine powers and dressed in her royal robes, Inanna approached the first of the seven gates of the underworld. She was determined to witness the mysteries of death, even if it meant risking her immortal status among the gods.\n\nAt each gate, the gatekeeper Neti demanded an offering. To pass through the first gate, she had to remove her crown. At the second, she gave up her lapis beads, and at each subsequent gate, she surrendered another piece of jewelry. By the time she reached the throne of Ereshkigal, Inanna was stripped of all her earthly power and stood humbled and defenseless. Her sister, consumed by bitterness and grief, turned Inanna into a corpse and hung her from a hook on the wall, symbolizing the ultimate loss of ego. The Queen of Heaven had become a mere shadow, her vibrant light extinguished by the cold laws of the subterranean realm.\n\nWhen Inanna failed to return, Ninshubur pleaded with the gods. Most refused to interfere with the laws of the underworld, but Enki, the god of wisdom, took pity. He created two genderless beings who could slip unnoticed into the realm of death. They reached Ereshkigal and showed her empathy for her eternal suffering. Grateful for their compassion, Ereshkigal offered them a gift, and they chose the body of Inanna. They sprinkled her with the food and water of life, and the Queen of Heaven slowly began to breathe again. Her revival was a testament to the power of wisdom and the importance of empathy even in the darkest places.\n\nInanna's ascent from the subterranean realm was not without a price; she was required to find a substitute to take her place in the shadows. Upon her return to the upper world, she found her husband, Dumuzi, dressed in his shining garments and celebrating her absence rather than mourning her descent. In her cold anger, Inanna looked upon him with the eye of death and allowed the demons of the underworld to seize him. This transition established the eternal cycle of the seasons, as Dumuzi was decreed to spend half the year in the Great Below, bringing the barren cold of winter, and return to the earth for the other half, bringing the vibrant rebirth of spring.\n\n(adapted from https://thedecursionlab.com)\n\nWhat is the main idea of the 2nd paragraph?",
+          "tipe": "pg",
+          "opsi": [
+            "Neti is the most powerful gatekeeper in the Sumerian underworld.",
+            "Inanna lost her lapis beads because she was not careful during her journey.",
+            "The cold laws of the subterranean realm are more important than royal jewelry.",
+            "Inanna was gradually stripped of her power and ego as she descended to her sister.",
+            "Ereshkigal was happy to see Inanna standing naked and humble before her throne."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Paragraf ke-2 befokus pada proses penurunan ego Inanna secara bertahap. Ia harus menyerahkan simbol kekuasaan dunianya satu per satu di setiap gerbang hingga ia berdiri rendah hati di hadapan takhta saudarinya. Jalur Cara Gemilang: Main idea paragraf = inti prosesnya: Inanna dilucuti simbol kekuasaan gerbang demi gerbang.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn the ancient lands of Sumer, Inanna, the Queen of Heaven, decided to visit the Great Below, the underworld ruled by her sister Ereshkigal. Inanna knew the journey was perilous, for no one who entered the land of no return was ever permitted to leave. Before she departed, she instructed her faithful servant, Ninshubur, to seek help from the gods if she did not return within three days. Armed with her seven divine powers and dressed in her royal robes, Inanna approached the first of the seven gates of the underworld. She was determined to witness the mysteries of death, even if it meant risking her immortal status among the gods.\n\nAt each gate, the gatekeeper Neti demanded an offering. To pass through the first gate, she had to remove her crown. At the second, she gave up her lapis beads, and at each subsequent gate, she surrendered another piece of jewelry. By the time she reached the throne of Ereshkigal, Inanna was stripped of all her earthly power and stood humbled and defenseless. Her sister, consumed by bitterness and grief, turned Inanna into a corpse and hung her from a hook on the wall, symbolizing the ultimate loss of ego. The Queen of Heaven had become a mere shadow, her vibrant light extinguished by the cold laws of the subterranean realm.\n\nWhen Inanna failed to return, Ninshubur pleaded with the gods. Most refused to interfere with the laws of the underworld, but Enki, the god of wisdom, took pity. He created two genderless beings who could slip unnoticed into the realm of death. They reached Ereshkigal and showed her empathy for her eternal suffering. Grateful for their compassion, Ereshkigal offered them a gift, and they chose the body of Inanna. They sprinkled her with the food and water of life, and the Queen of Heaven slowly began to breathe again. Her revival was a testament to the power of wisdom and the importance of empathy even in the darkest places.\n\nInanna's ascent from the subterranean realm was not without a price; she was required to find a substitute to take her place in the shadows. Upon her return to the upper world, she found her husband, Dumuzi, dressed in his shining garments and celebrating her absence rather than mourning her descent. In her cold anger, Inanna looked upon him with the eye of death and allowed the demons of the underworld to seize him. This transition established the eternal cycle of the seasons, as Dumuzi was decreed to spend half the year in the Great Below, bringing the barren cold of winter, and return to the earth for the other half, bringing the vibrant rebirth of spring.\n\n(adapted from https://thedecursionlab.com)\n\nWhich of the following were consequences of Inanna's visit to the underworld? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Inanna gained new divine powers from her sister Ereshkigal.",
+            "The world experienced a permanent state of spring and rebirth.",
+            "Inanna had to be stripped of her earthly symbols of power and ego.",
+            "Dumuzi had to spend half of every year in the shadows of the underworld.",
+            "The establishment of a cycle that explains the presence of winter and spring."
+          ],
+          "jawaban": [
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Berdasarkan teks, konsekuensi dari perjalanan tersebut adalah: Inanna had to be stripped of her earthly symbols of power and ego. (Di setiap gerbang dunia bawah, penjaga Neti menuntut Inanna menyerahkan salah satu atributnya. Ia melepaskan mahkota, manik-manik, dan perhiasannya satu per satu. Ketika tiba di hadapan Ereshkigal, Inanna telah kehilangan semua kekuatannya dan berdiri dalam keadaan rendah hati tanpa tak berdaya.) Dumuzi had to spend half of every year in the shadows of the underworld. (Setelah Inanna bangkit kembali, ia menemukan suaminya, Dumuzi, merayakan ketidakhadirannya alih-alih berduka. Dalam kemarahannya, Inanna menjinihkan iblis dunia bawah menangkap Dumuzi. Ia kemudian ditetapkan untuk menghabiskan separuh tahun di dunia bawah dan separuhnya lagi di bumi.) The establishment of a cycle that explains the presence of winter and spring. (Teks secara eksplisit menyatakan bahwa peristiwa ini \"menetapkan siklus abadi musim\", di mana Dumuzi membawa musim dingin yang tandus saat berada di dunia bawah, dan membawa kebangkitan musim semi saat kembali ke bumi.) Jalur Cara Gemilang: Consequences = akibat setelah peristiwa; \"permanent state\" jebakan (teks: siklus, bukan permanen).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn the ancient lands of Sumer, Inanna, the Queen of Heaven, decided to visit the Great Below, the underworld ruled by her sister Ereshkigal. Inanna knew the journey was perilous, for no one who entered the land of no return was ever permitted to leave. Before she departed, she instructed her faithful servant, Ninshubur, to seek help from the gods if she did not return within three days. Armed with her seven divine powers and dressed in her royal robes, Inanna approached the first of the seven gates of the underworld. She was determined to witness the mysteries of death, even if it meant risking her immortal status among the gods.\n\nAt each gate, the gatekeeper Neti demanded an offering. To pass through the first gate, she had to remove her crown. At the second, she gave up her lapis beads, and at each subsequent gate, she surrendered another piece of jewelry. By the time she reached the throne of Ereshkigal, Inanna was stripped of all her earthly power and stood humbled and defenseless. Her sister, consumed by bitterness and grief, turned Inanna into a corpse and hung her from a hook on the wall, symbolizing the ultimate loss of ego. The Queen of Heaven had become a mere shadow, her vibrant light extinguished by the cold laws of the subterranean realm.\n\nWhen Inanna failed to return, Ninshubur pleaded with the gods. Most refused to interfere with the laws of the underworld, but Enki, the god of wisdom, took pity. He created two genderless beings who could slip unnoticed into the realm of death. They reached Ereshkigal and showed her empathy for her eternal suffering. Grateful for their compassion, Ereshkigal offered them a gift, and they chose the body of Inanna. They sprinkled her with the food and water of life, and the Queen of Heaven slowly began to breathe again. Her revival was a testament to the power of wisdom and the importance of empathy even in the darkest places.\n\nInanna's ascent from the subterranean realm was not without a price; she was required to find a substitute to take her place in the shadows. Upon her return to the upper world, she found her husband, Dumuzi, dressed in his shining garments and celebrating her absence rather than mourning her descent. In her cold anger, Inanna looked upon him with the eye of death and allowed the demons of the underworld to seize him. This transition established the eternal cycle of the seasons, as Dumuzi was decreed to spend half the year in the Great Below, bringing the barren cold of winter, and return to the earth for the other half, bringing the vibrant rebirth of spring.\n\n(adapted from https://thedecursionlab.com)\n\nDecide whether the following statements are True or False based on the text. Put a tick (✓) on (T) or (F)!\n(Answer each row by choosing True (T) / False (F).)",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "Ninshubur was instructed to seek help from the gods only if Inanna had not returned within three days.",
+            "Inanna was allowed to keep her crown and royal robes when she finally stood before Ereshkigal's throne.",
+            "The other gods refused to interfere with the underworld's laws.",
+            "Ereshkigal gave Inanna's body back because she was moved by the empathy shown by Enki's genderless beings.",
+            "Dumuzi was sent to the underworld for the entire year to compensate for Inanna's revival."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TRUE (T) Baris 2 — FALSE (F) Baris 3 — TRUE (T) Baris 4 — TRUE (T) Baris 5 — FALSE (F) Jalur Cara Gemilang: True/False: cek instruksi Inanna ke pelayan (paragraf 1) dan detail kebangkitan (paragraf 3).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn the ancient lands of Sumer, Inanna, the Queen of Heaven, decided to visit the Great Below, the underworld ruled by her sister Ereshkigal. Inanna knew the journey was perilous, for no one who entered the land of no return was ever permitted to leave. Before she departed, she instructed her faithful servant, Ninshubur, to seek help from the gods if she did not return within three days. Armed with her seven divine powers and dressed in her royal robes, Inanna approached the first of the seven gates of the underworld. She was determined to witness the mysteries of death, even if it meant risking her immortal status among the gods.\n\nAt each gate, the gatekeeper Neti demanded an offering. To pass through the first gate, she had to remove her crown. At the second, she gave up her lapis beads, and at each subsequent gate, she surrendered another piece of jewelry. By the time she reached the throne of Ereshkigal, Inanna was stripped of all her earthly power and stood humbled and defenseless. Her sister, consumed by bitterness and grief, turned Inanna into a corpse and hung her from a hook on the wall, symbolizing the ultimate loss of ego. The Queen of Heaven had become a mere shadow, her vibrant light extinguished by the cold laws of the subterranean realm.\n\nWhen Inanna failed to return, Ninshubur pleaded with the gods. Most refused to interfere with the laws of the underworld, but Enki, the god of wisdom, took pity. He created two genderless beings who could slip unnoticed into the realm of death. They reached Ereshkigal and showed her empathy for her eternal suffering. Grateful for their compassion, Ereshkigal offered them a gift, and they chose the body of Inanna. They sprinkled her with the food and water of life, and the Queen of Heaven slowly began to breathe again. Her revival was a testament to the power of wisdom and the importance of empathy even in the darkest places.\n\nInanna's ascent from the subterranean realm was not without a price; she was required to find a substitute to take her place in the shadows. Upon her return to the upper world, she found her husband, Dumuzi, dressed in his shining garments and celebrating her absence rather than mourning her descent. In her cold anger, Inanna looked upon him with the eye of death and allowed the demons of the underworld to seize him. This transition established the eternal cycle of the seasons, as Dumuzi was decreed to spend half the year in the Great Below, bringing the barren cold of winter, and return to the earth for the other half, bringing the vibrant rebirth of spring.\n\n(adapted from https://thedecursionlab.com)\n\nCategorize the following actions and descriptions based on whether they refer to Inanna or Ereshkigal according to the text! Put a tick (✓) on Inanna or Ereshkigal!\n(Answer each row by choosing Inanna / Ereshkigal.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Inanna",
+            "Ereshkigal"
+          ],
+          "baris": [
+            "The Queen of Heaven who decided to witness the mysteries of death",
+            "Consumed by bitterness and grief while ruling the Great Below",
+            "Stripped of all royal garments and stood humbled before the throne",
+            "Turned her own sister into a corpse and hung her from a wall hook",
+            "Felt gratitude for the empathy shown by Enki's genderless beings"
+          ],
+          "jawaban": [
+            0,
+            1,
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — INANNA Baris 2 — ERESHKIGAL Baris 3 — INANNA Baris 4 — ERESHKIGAL Baris 5 — ERESHKIGAL Jalur Cara Gemilang: Categorize Inanna vs Ereshkigal: ratu langit vs ratu dunia bawah; tempelkan aksi ke pelakunya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Narrative Text h.71+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}

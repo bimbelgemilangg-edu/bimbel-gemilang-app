@@ -1,0 +1,689 @@
+{
+  "materi": {
+    "judul": "Bahasa Inggris Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Inggris",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#059669",
+    "emoji": "🗣️",
+    "deskripsi": "Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, recount, procedure, analytical exposition, dan infographic reading. Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 6,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks.",
+      "Kartu Cara Gemilang, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 6 — Analytical Exposition (Edisi Cara Gemilang)",
+      "ringkasan": "Social function persuade-that-is-the-case, struktur thesis-arguments-reiteration, language features, pembeda analytical-vs-hortatory (IS-THE-CASE TEST), pola soal NOT-mentioned/argumen-terkuat/kategorisasi/antonim — dengan jodohkan struktur, benar/salah, isian rumpang, CG-EXPO, dan 25 soal resmi bank (cybersecurity, national parks, genetic medicine, migration, poetry) + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 6,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Analytical Exposition: Persuading that Something IS the Case"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Analytical exposition persuades the readers that something is the case — menegaskan bahwa suatu keadaan/klaim memang benar adanya lewat argumen. Struktur: Thesis - Arguments - Reiteration (penegasan ulang, BUKAN rekomendasi)."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Pasangan sekaligus pembeda hortatory: analytical menutup dengan REITERATION (\"karena itu benar demikian\"), hortatory dengan RECOMMENDATION (\"karena itu lakukan ini\"). Satu tes sederhana memisahkan keduanya di semua soal purpose/structure."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Analytical exposition seperti surat pendapat ahli: membuka posisi, menumpuk bukti, lalu menegaskan ulang posisi awal dengan kata-kata baru. Tidak ada ajakan bertindak — yang diminta hanya satu: setuju bahwa keadaannya memang begitu."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Generic structure (bank h.98)",
+          "items": [
+            "Thesis — pernyataan posisi/klaim utama penulis.",
+            "Arguments — alasan & bukti pendukung (satu paragraf per argumen).",
+            "Reiteration — penegasan ulang tesis di penutup (berbeda dari recommendation!)."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Language features + contoh",
+          "kolom": [
+            "Fitur",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Simple present tense",
+              "v": "Cybersecurity awareness protects businesses."
+            },
+            {
+              "k": "Modal verbs",
+              "v": "can, may, must (penalaran, bukan perintah). "
+            },
+            {
+              "k": "Passive voice",
+              "v": "Mistakes are exploited by attackers."
+            },
+            {
+              "k": "Evaluative words",
+              "v": "importantly, unfortunately, crucial."
+            },
+            {
+              "k": "Thinking verbs",
+              "v": "think, believe, realize, know."
+            },
+            {
+              "k": "Connectives antarargumen",
+              "v": "firstly, furthermore, in conclusion."
+            }
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: struktur dan isyaratnya",
+          "items": [
+            {
+              "kiri": "Klaim pembuka yang akan dibela",
+              "kanan": "Thesis"
+            },
+            {
+              "kiri": "Paragraf-paragraf alasan & bukti",
+              "kanan": "Arguments"
+            },
+            {
+              "kiri": "Penutup yang menegaskan ulang tesis",
+              "kanan": "Reiteration"
+            },
+            {
+              "kiri": "Penutup yang menyerukan should/must",
+              "kanan": "Recommendation (milik hortatory)"
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: analytical markers",
+          "items": [
+            {
+              "teks": "Analytical exposition ends with a reiteration of the thesis.",
+              "jawaban": true,
+              "penjelasan": "Penegasan ulang, bukan ajakan."
+            },
+            {
+              "teks": "Its social function is to persuade that something is the case.",
+              "jawaban": true,
+              "penjelasan": "Definisi bank h.98."
+            },
+            {
+              "teks": "Recommendation (should/must) is the typical closing of analytical exposition.",
+              "jawaban": false,
+              "penjelasan": "Itu hortatory; analytical = reiteration."
+            },
+            {
+              "teks": "Thinking verbs (think, believe, realize) are common language features.",
+              "jawaban": true,
+              "penjelasan": "Language features bank."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-EXPO: IS-THE-CASE TEST",
+          "teks": "Tutup teks dengan pertanyaan: penulis ingin kita PERCAYAI keadaan (analytical) atau MELAKUKAN tindakan (hortatory)? Percayai = reiteration; lakukan = recommendation.",
+          "items": [
+            "Petakan T-A-R: thesis (paragraf 1), satu argumen per paragraf tengah, penutup reiteration/recommendation.",
+            "Soal argumen terkuat/terdukung = cari argumen dengan bukti/data ilmiah eksplisit.",
+            "Soal NOT mentioned = eliminasi daftar eksplisit teks satu per satu."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Opsi purpose \"to recommend how to...\" menempel di analytical sebagai pengecoh hortatory. Cek kalimat penutup teks: menegaskan ulang (= analytical) atau menyerukan tindakan (= hortatory)."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "The closing part of an analytical exposition that restates the thesis is called ...",
+              "opsi": [
+                "recommendation",
+                "reiteration",
+                "re-orientation",
+                "coda",
+                "goal"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: reiteration = penegasan ulang (bank h.98). Jalur Cara Gemilang: IS-THE-CASE TEST."
+            },
+            {
+              "soal": "A text argues that urban trees cool cities and ends: \"Thus, urban trees are indeed vital infrastructure.\" The text is ...",
+              "opsi": [
+                "hortatory exposition",
+                "analytical exposition",
+                "procedure",
+                "narrative",
+                "recount"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: penutup menegaskan klaim (indeed vital) tanpa should = analytical. Jalur Cara Gemilang: IS-THE-CASE TEST lulus."
+            },
+            {
+              "soal": "Which connective typically signals a new argument in analytical exposition?",
+              "opsi": [
+                "furthermore",
+                "once",
+                "after that",
+                "finally pour",
+                "meanwhile stir"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: furthermore = penambah argumen; once/after that milik procedure. Jalur Cara Gemilang: connective antarargumen vs antarlangkah."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Analytical Question Patterns"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Pola soal + jurus",
+          "kolom": [
+            "Pola",
+            "Penanda",
+            "Jurus"
+          ],
+          "rows": [
+            {
+              "k": "Main idea/thesis",
+              "v": "\"main idea of the text/paragraph\"",
+              "w": "Klaim tesis atau kalimat inti paragraf."
+            },
+            {
+              "k": "NOT mentioned/except",
+              "v": "\"Which is NOT mentioned...?\"",
+              "w": "Eliminasi daftar eksplisit."
+            },
+            {
+              "k": "Strongest argument",
+              "v": "\"most strongly supported\"",
+              "w": "Argumen berbukti data/ilmiah."
+            },
+            {
+              "k": "Categorize advantage/impact",
+              "v": "\"Advantage/Disadvantage\", \"Economic/Social\"",
+              "w": "Dua kolom aspek dulu."
+            },
+            {
+              "k": "Vocabulary/antonym",
+              "v": "\"closest meaning / opposite\"",
+              "w": "Substitusi konteks atau pasangan antonim."
+            },
+            {
+              "k": "Conclusion/inference",
+              "v": "\"What conclusion can be drawn...?\"",
+              "w": "Generalisasi setia tanpa kata mutlak."
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: istilah exposition",
+          "items": [
+            {
+              "teks": "The restatement of the thesis at the end of an analytical exposition is called ...",
+              "jawaban": [
+                "reiteration"
+              ],
+              "hint": "Penegasan ulang.",
+              "penjelasan": "Reiteration menutup analytical exposition."
+            },
+            {
+              "teks": "Paragraphs that give reasons and evidence are called ...",
+              "jawaban": [
+                "arguments",
+                "argument"
+              ],
+              "hint": "Alasan pendukung.",
+              "penjelasan": "Arguments = paragraf alasan & bukti."
+            },
+            {
+              "teks": "Words like \"crucial\" and \"unfortunately\" are ... words.",
+              "jawaban": [
+                "evaluative"
+              ],
+              "hint": "Menilai sikap penulis.",
+              "penjelasan": "Evaluative words menandai sikap penulis."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri",
+          "teks": "Bandingkan dua teks bab 5 dan bab 6 (hortatory vs analytical) dalam tabel tiga baris: pembuka, isi, penutup. Selisih satu baris penutup itulah yang diuji hampir semua soal structure/purpose."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Siap uji pemahaman",
+          "teks": "25 soal resmi bab ini memakai 5 analytical: keamanan siber, taman nasional, kedokteran genetik, migrasi ekonomi, dan puisi-otak. Petakan T-A-R sebelum menyentuh opsi."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Read the following text carefully!\n\nIn today's interconnected world, cybersecurity awareness has become a fundamental necessity. The rapid growth of digital platforms for banking, education, shopping, and communication has created countless opportunities, but it has also exposed individuals and organizations to cyber threats. Hackers no longer target only large corporations. Ordinary users are equally vulnerable to phishing emails, identity theft, and ransomware attacks. Without awareness, people may unknowingly compromise their personal data, financial security, and even national safety. Thus, raising awareness is the first line of defense against the dangers of the digital age.\n\nCybersecurity awareness is crucial because technology alone cannot guarantee protection. Many breaches occur due to human error, such as clicking on suspicious links, reusing weak passwords, or ignoring software updates. By educating users about safe practices — like enabling two-factor authentication, using password managers, and avoiding public Wi-Fi for sensitive transactions — risks can be significantly reduced. Organizations also benefit from regular training programs that keep employees updated on evolving threats. Awareness empowers individuals to recognize warning signs and respond appropriately, making them active participants in safeguarding digital systems rather than passive victims.\n\nFinally, cybersecurity awareness ensures trust and resilience in society. Businesses that prioritize awareness build stronger reputations, as customers feel confident their data is protected. Governments and schools that promote digital literacy prepare citizens to navigate online spaces responsibly. In contrast, neglecting awareness leads to financial losses, reputational damage, and weakened public confidence. The digital age offers immense opportunities, but only those who are informed and vigilant can fully enjoy its benefits. Therefore, cybersecurity awareness is not optional; it is essential for protecting privacy, maintaining trust, and ensuring safety in our increasingly digital lives.\n\n(adapted from various sources)\n\nWhat is the main idea of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Cybersecurity awareness is only the duty of IT staff in large companies.",
+            "Cybersecurity awareness is unnecessary for ordinary users in daily activities.",
+            "Cybersecurity awareness is essential to protect people and organizations in the digital era.",
+            "Cybersecurity awareness is mainly important for governments and national defense.",
+            "Cybersecurity awareness is limited to online shopping and e-commerce platforms."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Gagasan utama teks adalah kesadaran akan keamanan siber sangat penting untuk melindungi individu dan organisasi di era digital. Jalur Cara Gemilang: Main idea = tesis: kesadaran keamanan siber penting untuk melindungi data.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's interconnected world, cybersecurity awareness has become a fundamental necessity. The rapid growth of digital platforms for banking, education, shopping, and communication has created countless opportunities, but it has also exposed individuals and organizations to cyber threats. Hackers no longer target only large corporations. Ordinary users are equally vulnerable to phishing emails, identity theft, and ransomware attacks. Without awareness, people may unknowingly compromise their personal data, financial security, and even national safety. Thus, raising awareness is the first line of defense against the dangers of the digital age.\n\nCybersecurity awareness is crucial because technology alone cannot guarantee protection. Many breaches occur due to human error, such as clicking on suspicious links, reusing weak passwords, or ignoring software updates. By educating users about safe practices — like enabling two-factor authentication, using password managers, and avoiding public Wi-Fi for sensitive transactions — risks can be significantly reduced. Organizations also benefit from regular training programs that keep employees updated on evolving threats. Awareness empowers individuals to recognize warning signs and respond appropriately, making them active participants in safeguarding digital systems rather than passive victims.\n\nFinally, cybersecurity awareness ensures trust and resilience in society. Businesses that prioritize awareness build stronger reputations, as customers feel confident their data is protected. Governments and schools that promote digital literacy prepare citizens to navigate online spaces responsibly. In contrast, neglecting awareness leads to financial losses, reputational damage, and weakened public confidence. The digital age offers immense opportunities, but only those who are informed and vigilant can fully enjoy its benefits. Therefore, cybersecurity awareness is not optional; it is essential for protecting privacy, maintaining trust, and ensuring safety in our increasingly digital lives.\n\n(adapted from various sources)\n\nAccording to the text, what common mistakes lead to cyber breaches?",
+          "tipe": "pg",
+          "opsi": [
+            "Avoiding public Wi-Fi for sensitive transactions",
+            "Using strong passwords and updating software",
+            "Reading about cybersecurity in newspapers",
+            "Buying products from online stores",
+            "Clicking suspicious links and reusing weak passwords"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Kesalahan umum yang menyebabkan pelanggaran siber adalah mengklik tautan mencurigakan dan menggunakan kembali kata sandi yang lemah. Jalur Cara Gemilang: Kesalahan umum = daftar di paragraf argumen (tautan mencurigakan, kata sandi lemah).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's interconnected world, cybersecurity awareness has become a fundamental necessity. The rapid growth of digital platforms for banking, education, shopping, and communication has created countless opportunities, but it has also exposed individuals and organizations to cyber threats. Hackers no longer target only large corporations. Ordinary users are equally vulnerable to phishing emails, identity theft, and ransomware attacks. Without awareness, people may unknowingly compromise their personal data, financial security, and even national safety. Thus, raising awareness is the first line of defense against the dangers of the digital age.\n\nCybersecurity awareness is crucial because technology alone cannot guarantee protection. Many breaches occur due to human error, such as clicking on suspicious links, reusing weak passwords, or ignoring software updates. By educating users about safe practices — like enabling two-factor authentication, using password managers, and avoiding public Wi-Fi for sensitive transactions — risks can be significantly reduced. Organizations also benefit from regular training programs that keep employees updated on evolving threats. Awareness empowers individuals to recognize warning signs and respond appropriately, making them active participants in safeguarding digital systems rather than passive victims.\n\nFinally, cybersecurity awareness ensures trust and resilience in society. Businesses that prioritize awareness build stronger reputations, as customers feel confident their data is protected. Governments and schools that promote digital literacy prepare citizens to navigate online spaces responsibly. In contrast, neglecting awareness leads to financial losses, reputational damage, and weakened public confidence. The digital age offers immense opportunities, but only those who are informed and vigilant can fully enjoy its benefits. Therefore, cybersecurity awareness is not optional; it is essential for protecting privacy, maintaining trust, and ensuring safety in our increasingly digital lives.\n\n(adapted from various sources)\n\nWhy do businesses benefit from promoting cybersecurity awareness?",
+          "tipe": "pg",
+          "opsi": [
+            "It builds trust and strengthens their reputation.",
+            "It allows them to ignore customer concerns.",
+            "It reduces the need for employee training.",
+            "It eliminates the need for digital platforms.",
+            "It guarantees profits without effort."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Bisnis dapat diuntungkan dari promosi kesadaran keamanan siber karena membangun kepercayaan dan memperkuat reputasi mereka. Jalur Cara Gemilang: Why benefit = rantai argumen: kepercayaan pelanggan + penurunan risiko.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's interconnected world, cybersecurity awareness has become a fundamental necessity. The rapid growth of digital platforms for banking, education, shopping, and communication has created countless opportunities, but it has also exposed individuals and organizations to cyber threats. Hackers no longer target only large corporations. Ordinary users are equally vulnerable to phishing emails, identity theft, and ransomware attacks. Without awareness, people may unknowingly compromise their personal data, financial security, and even national safety. Thus, raising awareness is the first line of defense against the dangers of the digital age.\n\nCybersecurity awareness is crucial because technology alone cannot guarantee protection. Many breaches occur due to human error, such as clicking on suspicious links, reusing weak passwords, or ignoring software updates. By educating users about safe practices — like enabling two-factor authentication, using password managers, and avoiding public Wi-Fi for sensitive transactions — risks can be significantly reduced. Organizations also benefit from regular training programs that keep employees updated on evolving threats. Awareness empowers individuals to recognize warning signs and respond appropriately, making them active participants in safeguarding digital systems rather than passive victims.\n\nFinally, cybersecurity awareness ensures trust and resilience in society. Businesses that prioritize awareness build stronger reputations, as customers feel confident their data is protected. Governments and schools that promote digital literacy prepare citizens to navigate online spaces responsibly. In contrast, neglecting awareness leads to financial losses, reputational damage, and weakened public confidence. The digital age offers immense opportunities, but only those who are informed and vigilant can fully enjoy its benefits. Therefore, cybersecurity awareness is not optional; it is essential for protecting privacy, maintaining trust, and ensuring safety in our increasingly digital lives.\n\n(adapted from various sources)\n\nWhat practices are recommended to reduce risks?",
+          "tipe": "pg",
+          "opsi": [
+            "Ignoring suspicious emails and avoiding software updates",
+            "Sharing personal information freely on social media",
+            "Using the same password for all accounts",
+            "Enabling two-factor authentication and using password managers",
+            "Avoiding digital platforms completely"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s4-a.svg",
+            "/bagan/bab1-s4-b.svg",
+            "/bagan/bab1-s4-c.svg",
+            "/bagan/bab1-s4-d.svg",
+            "/bagan/bab1-s4-e.svg"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Praktik yang direkomendasikan untuk mengurangi risiko adalah mengaktifkan autentikasi dua faktor dan menggunakan pengelola kata sandi. Jalur Cara Gemilang: Praktik rekomendasi = daftar tindakan (MFA, pembaruan, pelatihan).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's interconnected world, cybersecurity awareness has become a fundamental necessity. The rapid growth of digital platforms for banking, education, shopping, and communication has created countless opportunities, but it has also exposed individuals and organizations to cyber threats. Hackers no longer target only large corporations. Ordinary users are equally vulnerable to phishing emails, identity theft, and ransomware attacks. Without awareness, people may unknowingly compromise their personal data, financial security, and even national safety. Thus, raising awareness is the first line of defense against the dangers of the digital age.\n\nCybersecurity awareness is crucial because technology alone cannot guarantee protection. Many breaches occur due to human error, such as clicking on suspicious links, reusing weak passwords, or ignoring software updates. By educating users about safe practices — like enabling two-factor authentication, using password managers, and avoiding public Wi-Fi for sensitive transactions — risks can be significantly reduced. Organizations also benefit from regular training programs that keep employees updated on evolving threats. Awareness empowers individuals to recognize warning signs and respond appropriately, making them active participants in safeguarding digital systems rather than passive victims.\n\nFinally, cybersecurity awareness ensures trust and resilience in society. Businesses that prioritize awareness build stronger reputations, as customers feel confident their data is protected. Governments and schools that promote digital literacy prepare citizens to navigate online spaces responsibly. In contrast, neglecting awareness leads to financial losses, reputational damage, and weakened public confidence. The digital age offers immense opportunities, but only those who are informed and vigilant can fully enjoy its benefits. Therefore, cybersecurity awareness is not optional; it is essential for protecting privacy, maintaining trust, and ensuring safety in our increasingly digital lives.\n\n(adapted from various sources)\n\nWhat does the word \"breaches\" most likely mean in the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Security failures or break-ins",
+            "Successful protection of systems",
+            "Strong defenses against hackers",
+            "Updates to digital platforms",
+            "Improvements in online services"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Kata breaches dalam teks ini memiliki makna kegagalan keamanan atau pembobolan. Jalur Cara Gemilang: Breaches = konteks keamanan = pembobolan/kegagalan sistem.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nNational parks play a vital role in conserving biodiversity by protecting large areas of natural habitat from urban development, agriculture, and industrial activities. These protected zones allow ecosystems to function naturally, providing safe havens for countless species of plants and animals. For example, the U.S. National Park Service emphasizes that parks must steward resources to preserve ecological integrity and authenticity, ensuring that visitors experience landscapes in their natural state. By securing land from exploitation, national parks prevent habitat loss, which is one of the leading causes of species extinction worldwide.\n\nBeyond habitat protection, national parks contribute to maintaining genetic diversity through wildlife corridors and expansive ecosystems. These corridors allow species to migrate, adapt, and interbreed, reducing the risks of isolation and genetic decline. Studies highlight that national parks serve as sanctuaries where rare and endangered species can survive, such as tigers in India's Ranthambore National Park or orangutans in Indonesia's Tanjung Puting National Park. By limiting human interference, parks create conditions where biodiversity flourishes, supporting the overall health of the planet.\n\nUltimately, national parks strengthen resilience against climate change and environmental pressures. Forests, wetlands, and coral reefs within these protected areas act as natural buffers, absorbing carbon, regulating water cycles, and sustaining food chains. They also provide opportunities for scientific research, education, and ecotourism, which raise awareness about conservation. Without national parks, many ecosystems would collapse under the weight of deforestation, pollution, and urban expansion. Therefore, safeguarding biodiversity through national parks is not only about protecting wildlife but also about ensuring ecological stability and human survival.\n\n(adapted from various sources)\n\nWhat is the writer's purpose in writing the text?",
+          "tipe": "pg",
+          "opsi": [
+            "To entertain readers with stories about wildlife adventures in different countries",
+            "To persuade readers that national parks are essential for safeguarding biodiversity",
+            "To inform readers about the history of national parks in the United States",
+            "To describe tourism activities available in national parks around the world",
+            "To explain how governments earn money from protected areas and ecotourism"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Karena teks ini merupakan teks eksposisi, maka tujuan penulis adalah membujuk pembaca bahwa taman nasional sangat penting untuk melindungi keanekaragaman hayati. Jalur Cara Gemilang: Purpose analytical = persuade that something IS the case (bukan should).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nNational parks play a vital role in conserving biodiversity by protecting large areas of natural habitat from urban development, agriculture, and industrial activities. These protected zones allow ecosystems to function naturally, providing safe havens for countless species of plants and animals. For example, the U.S. National Park Service emphasizes that parks must steward resources to preserve ecological integrity and authenticity, ensuring that visitors experience landscapes in their natural state. By securing land from exploitation, national parks prevent habitat loss, which is one of the leading causes of species extinction worldwide.\n\nBeyond habitat protection, national parks contribute to maintaining genetic diversity through wildlife corridors and expansive ecosystems. These corridors allow species to migrate, adapt, and interbreed, reducing the risks of isolation and genetic decline. Studies highlight that national parks serve as sanctuaries where rare and endangered species can survive, such as tigers in India's Ranthambore National Park or orangutans in Indonesia's Tanjung Puting National Park. By limiting human interference, parks create conditions where biodiversity flourishes, supporting the overall health of the planet.\n\nUltimately, national parks strengthen resilience against climate change and environmental pressures. Forests, wetlands, and coral reefs within these protected areas act as natural buffers, absorbing carbon, regulating water cycles, and sustaining food chains. They also provide opportunities for scientific research, education, and ecotourism, which raise awareness about conservation. Without national parks, many ecosystems would collapse under the weight of deforestation, pollution, and urban expansion. Therefore, safeguarding biodiversity through national parks is not only about protecting wildlife but also about ensuring ecological stability and human survival.\n\n(adapted from various sources)\n\nWhich of the following is NOT mentioned in the text as a role of national parks?",
+          "tipe": "pg",
+          "opsi": [
+            "Providing opportunities for scientific research and education",
+            "Acting as natural buffers against climate change",
+            "Generating revenue through mining and industrial projects",
+            "Supporting ecotourism and raising conservation awareness",
+            "Serving as sanctuaries for endangered species"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Teks tidak menyebutkan peran taman nasional menghasilkan pendapatan melalui proyek pertambangan atau kegiatan industri. Jalur Cara Gemilang: NOT mentioned = eliminasi peran yang terdaftar satu per satu.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nNational parks play a vital role in conserving biodiversity by protecting large areas of natural habitat from urban development, agriculture, and industrial activities. These protected zones allow ecosystems to function naturally, providing safe havens for countless species of plants and animals. For example, the U.S. National Park Service emphasizes that parks must steward resources to preserve ecological integrity and authenticity, ensuring that visitors experience landscapes in their natural state. By securing land from exploitation, national parks prevent habitat loss, which is one of the leading causes of species extinction worldwide.\n\nBeyond habitat protection, national parks contribute to maintaining genetic diversity through wildlife corridors and expansive ecosystems. These corridors allow species to migrate, adapt, and interbreed, reducing the risks of isolation and genetic decline. Studies highlight that national parks serve as sanctuaries where rare and endangered species can survive, such as tigers in India's Ranthambore National Park or orangutans in Indonesia's Tanjung Puting National Park. By limiting human interference, parks create conditions where biodiversity flourishes, supporting the overall health of the planet.\n\nUltimately, national parks strengthen resilience against climate change and environmental pressures. Forests, wetlands, and coral reefs within these protected areas act as natural buffers, absorbing carbon, regulating water cycles, and sustaining food chains. They also provide opportunities for scientific research, education, and ecotourism, which raise awareness about conservation. Without national parks, many ecosystems would collapse under the weight of deforestation, pollution, and urban expansion. Therefore, safeguarding biodiversity through national parks is not only about protecting wildlife but also about ensuring ecological stability and human survival.\n\n(adapted from various sources)\n\nCategorize the statements into Advantage or Disadvantage based on the text!\n(Answer each row by choosing Advantage / Disadvantage.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Advantage",
+            "Disadvantage"
+          ],
+          "baris": [
+            "National parks safeguard biodiversity and ecological integrity.",
+            "They provide opportunities for education, research, and ecotourism.",
+            "Maintaining parks requires high costs and limits land for development.",
+            "Without national parks, ecosystems collapse under deforestation and pollution.",
+            "National parks strengthen resilience against climate change and environmental pressures."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — ADVANTAGE Baris 2 — ADVANTAGE Baris 3 — DISADVANTAGE Baris 4 — ADVANTAGE Baris 5 — ADVANTAGE Jalur Cara Gemilang: Advantage = manfaat; Disadvantage = biaya/kerugian/limitasi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nNational parks play a vital role in conserving biodiversity by protecting large areas of natural habitat from urban development, agriculture, and industrial activities. These protected zones allow ecosystems to function naturally, providing safe havens for countless species of plants and animals. For example, the U.S. National Park Service emphasizes that parks must steward resources to preserve ecological integrity and authenticity, ensuring that visitors experience landscapes in their natural state. By securing land from exploitation, national parks prevent habitat loss, which is one of the leading causes of species extinction worldwide.\n\nBeyond habitat protection, national parks contribute to maintaining genetic diversity through wildlife corridors and expansive ecosystems. These corridors allow species to migrate, adapt, and interbreed, reducing the risks of isolation and genetic decline. Studies highlight that national parks serve as sanctuaries where rare and endangered species can survive, such as tigers in India's Ranthambore National Park or orangutans in Indonesia's Tanjung Puting National Park. By limiting human interference, parks create conditions where biodiversity flourishes, supporting the overall health of the planet.\n\nUltimately, national parks strengthen resilience against climate change and environmental pressures. Forests, wetlands, and coral reefs within these protected areas act as natural buffers, absorbing carbon, regulating water cycles, and sustaining food chains. They also provide opportunities for scientific research, education, and ecotourism, which raise awareness about conservation. Without national parks, many ecosystems would collapse under the weight of deforestation, pollution, and urban expansion. Therefore, safeguarding biodiversity through national parks is not only about protecting wildlife but also about ensuring ecological stability and human survival.\n\n(adapted from various sources)\n\nWhich examples of species survival are mentioned in the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Lions in Africa and pandas in China",
+            "Tigers in India and orangutans in Indonesia",
+            "Elephants in Thailand and kangaroos in Australia",
+            "Wolves in Canada and bears in Russia",
+            "Dolphins in Japan and whales in Norway"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Contoh spesies yang disebutkan adalah harimau di India dan orangutan di Indonesia. Jalur Cara Gemilang: Contoh spesies = eksplisit: harimau India, orangutan Indonesia.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nNational parks play a vital role in conserving biodiversity by protecting large areas of natural habitat from urban development, agriculture, and industrial activities. These protected zones allow ecosystems to function naturally, providing safe havens for countless species of plants and animals. For example, the U.S. National Park Service emphasizes that parks must steward resources to preserve ecological integrity and authenticity, ensuring that visitors experience landscapes in their natural state. By securing land from exploitation, national parks prevent habitat loss, which is one of the leading causes of species extinction worldwide.\n\nBeyond habitat protection, national parks contribute to maintaining genetic diversity through wildlife corridors and expansive ecosystems. These corridors allow species to migrate, adapt, and interbreed, reducing the risks of isolation and genetic decline. Studies highlight that national parks serve as sanctuaries where rare and endangered species can survive, such as tigers in India's Ranthambore National Park or orangutans in Indonesia's Tanjung Puting National Park. By limiting human interference, parks create conditions where biodiversity flourishes, supporting the overall health of the planet.\n\nUltimately, national parks strengthen resilience against climate change and environmental pressures. Forests, wetlands, and coral reefs within these protected areas act as natural buffers, absorbing carbon, regulating water cycles, and sustaining food chains. They also provide opportunities for scientific research, education, and ecotourism, which raise awareness about conservation. Without national parks, many ecosystems would collapse under the weight of deforestation, pollution, and urban expansion. Therefore, safeguarding biodiversity through national parks is not only about protecting wildlife but also about ensuring ecological stability and human survival.\n\n(adapted from various sources)\n\nWhat can be inferred about wildlife corridors in national parks?",
+          "tipe": "pg",
+          "opsi": [
+            "They are used solely for scientific experiments.",
+            "They are created to replace farming land.",
+            "They are built mainly for tourist transportation.",
+            "They help species migrate and maintain genetic diversity.",
+            "They are designed to separate animals from humans."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Koridor satwa liar membantu spesies bermigrasi, beradaptasi, dan menjaga keragaman genetik agar populasi tetap terjaga. Jalur Cara Gemilang: Inferensi koridor = fungsinya: migrasi, adaptasi, keragaman genetik.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nGenetic studies are essential in modern medicine because they allow scientists and doctors to identify mutations that cause hereditary diseases. According to the Centers for Disease Control and Prevention (CDC), advances since the Human Genome Project have made it possible to translate genetic discoveries into clinical practice, helping prevent conditions linked to inherited mutations. By analyzing DNA, researchers can detect whether individuals carry genes associated with disorders such as cystic fibrosis, Huntington's disease, or sickle cell anemia. This knowledge empowers families to make informed health decisions and reduces the risk of passing these conditions to future generations.\n\nBeyond detection, genetic studies provide opportunities for early intervention. Screening programs allow doctors to monitor individuals at higher risk and recommend lifestyle changes, medical treatments, or preventive measures before symptoms appear. For example, genetic counseling helps families understand inheritance patterns and guides them in planning for healthy pregnancies. International studies emphasize that identifying carriers of recessive mutations can prevent the transmission of severe genetic disorders. In this way, genetic studies shift healthcare from reactive treatment to proactive prevention.\n\nAnother major contribution of genetic studies is the development of innovative therapies. Research from Harvard T.H. Chan School of Public Health highlights how gene editing technologies, such as CRISPR, are being used to correct harmful mutations and fight diseases like sickle cell anemia and Huntington's disease. These breakthroughs demonstrate that genetic studies not only identify risks but also open pathways to cures. By targeting the root cause of hereditary diseases, gene editing offers hope for long-term solutions that were previously unimaginable.\n\nIn conclusion, genetic studies are vital for preventing hereditary diseases because they combine detection, prevention, and treatment. They help families avoid passing on harmful mutations, allow doctors to intervene early, and enable scientists to develop cutting-edge therapies. As international research shows, genomics is reshaping healthcare by protecting individuals and strengthening public health systems. Therefore, investing in genetic studies is not just a scientific priority but a moral responsibility to ensure healthier generations in the future.\n\n(adapted from various sources)\n\nWhat is the main idea of paragraph 3?",
+          "tipe": "pg",
+          "opsi": [
+            "Genetic studies are mainly used to promote medical issue in scientific laboratories.",
+            "Genetic studies contribute to innovative therapies such as CRISPR gene editing.",
+            "Genetic studies are designed to replace traditional education systems.",
+            "Genetic studies are focused only on government revenue collection.",
+            "Genetic studies are intended to entertain readers with stories about scientists."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Paragraf ketiga menekankan bahwa studi genetik berkontribusi pada terapi inovatif, termasuk teknologi pengeditan gen CRISPR. Jalur Cara Gemilang: Main idea p3 = studi genetik -> terapi inovatif.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nGenetic studies are essential in modern medicine because they allow scientists and doctors to identify mutations that cause hereditary diseases. According to the Centers for Disease Control and Prevention (CDC), advances since the Human Genome Project have made it possible to translate genetic discoveries into clinical practice, helping prevent conditions linked to inherited mutations. By analyzing DNA, researchers can detect whether individuals carry genes associated with disorders such as cystic fibrosis, Huntington's disease, or sickle cell anemia. This knowledge empowers families to make informed health decisions and reduces the risk of passing these conditions to future generations.\n\nBeyond detection, genetic studies provide opportunities for early intervention. Screening programs allow doctors to monitor individuals at higher risk and recommend lifestyle changes, medical treatments, or preventive measures before symptoms appear. For example, genetic counseling helps families understand inheritance patterns and guides them in planning for healthy pregnancies. International studies emphasize that identifying carriers of recessive mutations can prevent the transmission of severe genetic disorders. In this way, genetic studies shift healthcare from reactive treatment to proactive prevention.\n\nAnother major contribution of genetic studies is the development of innovative therapies. Research from Harvard T.H. Chan School of Public Health highlights how gene editing technologies, such as CRISPR, are being used to correct harmful mutations and fight diseases like sickle cell anemia and Huntington's disease. These breakthroughs demonstrate that genetic studies not only identify risks but also open pathways to cures. By targeting the root cause of hereditary diseases, gene editing offers hope for long-term solutions that were previously unimaginable.\n\nIn conclusion, genetic studies are vital for preventing hereditary diseases because they combine detection, prevention, and treatment. They help families avoid passing on harmful mutations, allow doctors to intervene early, and enable scientists to develop cutting-edge therapies. As international research shows, genomics is reshaping healthcare by protecting individuals and strengthening public health systems. Therefore, investing in genetic studies is not just a scientific priority but a moral responsibility to ensure healthier generations in the future.\n\n(adapted from various sources)\n\nWhat is the writer's reason for highlighting genetic counseling in Paragraph 2?",
+          "tipe": "pg",
+          "opsi": [
+            "To persuade readers that counseling is only for medical activities in hospitals",
+            "To describe farming techniques used in biotechnology projects",
+            "To inform readers about the geography of medical research centers",
+            "To explain how families can use genetic knowledge to plan for healthy pregnancies",
+            "To entertain readers with stories about doctors and patients"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Penulis menyoroti konseling genetik untuk menjelaskan bagaimana keluarga dapat merencanakan kehamilan sehat menggunakan pengetahuan genetik. Jalur Cara Gemilang: Alasan menyoroti counseling = keluarga paham risiko & pengambilan keputusan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nGenetic studies are essential in modern medicine because they allow scientists and doctors to identify mutations that cause hereditary diseases. According to the Centers for Disease Control and Prevention (CDC), advances since the Human Genome Project have made it possible to translate genetic discoveries into clinical practice, helping prevent conditions linked to inherited mutations. By analyzing DNA, researchers can detect whether individuals carry genes associated with disorders such as cystic fibrosis, Huntington's disease, or sickle cell anemia. This knowledge empowers families to make informed health decisions and reduces the risk of passing these conditions to future generations.\n\nBeyond detection, genetic studies provide opportunities for early intervention. Screening programs allow doctors to monitor individuals at higher risk and recommend lifestyle changes, medical treatments, or preventive measures before symptoms appear. For example, genetic counseling helps families understand inheritance patterns and guides them in planning for healthy pregnancies. International studies emphasize that identifying carriers of recessive mutations can prevent the transmission of severe genetic disorders. In this way, genetic studies shift healthcare from reactive treatment to proactive prevention.\n\nAnother major contribution of genetic studies is the development of innovative therapies. Research from Harvard T.H. Chan School of Public Health highlights how gene editing technologies, such as CRISPR, are being used to correct harmful mutations and fight diseases like sickle cell anemia and Huntington's disease. These breakthroughs demonstrate that genetic studies not only identify risks but also open pathways to cures. By targeting the root cause of hereditary diseases, gene editing offers hope for long-term solutions that were previously unimaginable.\n\nIn conclusion, genetic studies are vital for preventing hereditary diseases because they combine detection, prevention, and treatment. They help families avoid passing on harmful mutations, allow doctors to intervene early, and enable scientists to develop cutting-edge therapies. As international research shows, genomics is reshaping healthcare by protecting individuals and strengthening public health systems. Therefore, investing in genetic studies is not just a scientific priority but a moral responsibility to ensure healthier generations in the future.\n\n(adapted from various sources)\n\nWhich examples of genetic disorders are mentioned in the text? There is more than one correct answer. Choose all that apply!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Cystic fibrosis",
+            "Charley horse",
+            "Diabetes",
+            "Huntington's disease",
+            "Sickle cell anemia"
+          ],
+          "jawaban": [
+            0,
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Teks menyebutkan tiga contoh gangguan genetik yaitu cystic fibrosis , Huntington's disease , dan sickle cell anemia sebagai fokus penelitian. Jalur Cara Gemilang: Daftar gangguan genetik eksplisit (cystic fibrosis, Huntington, sickle cell).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nGenetic studies are essential in modern medicine because they allow scientists and doctors to identify mutations that cause hereditary diseases. According to the Centers for Disease Control and Prevention (CDC), advances since the Human Genome Project have made it possible to translate genetic discoveries into clinical practice, helping prevent conditions linked to inherited mutations. By analyzing DNA, researchers can detect whether individuals carry genes associated with disorders such as cystic fibrosis, Huntington's disease, or sickle cell anemia. This knowledge empowers families to make informed health decisions and reduces the risk of passing these conditions to future generations.\n\nBeyond detection, genetic studies provide opportunities for early intervention. Screening programs allow doctors to monitor individuals at higher risk and recommend lifestyle changes, medical treatments, or preventive measures before symptoms appear. For example, genetic counseling helps families understand inheritance patterns and guides them in planning for healthy pregnancies. International studies emphasize that identifying carriers of recessive mutations can prevent the transmission of severe genetic disorders. In this way, genetic studies shift healthcare from reactive treatment to proactive prevention.\n\nAnother major contribution of genetic studies is the development of innovative therapies. Research from Harvard T.H. Chan School of Public Health highlights how gene editing technologies, such as CRISPR, are being used to correct harmful mutations and fight diseases like sickle cell anemia and Huntington's disease. These breakthroughs demonstrate that genetic studies not only identify risks but also open pathways to cures. By targeting the root cause of hereditary diseases, gene editing offers hope for long-term solutions that were previously unimaginable.\n\nIn conclusion, genetic studies are vital for preventing hereditary diseases because they combine detection, prevention, and treatment. They help families avoid passing on harmful mutations, allow doctors to intervene early, and enable scientists to develop cutting-edge therapies. As international research shows, genomics is reshaping healthcare by protecting individuals and strengthening public health systems. Therefore, investing in genetic studies is not just a scientific priority but a moral responsibility to ensure healthier generations in the future.\n\n(adapted from various sources)\n\nWhat preventive measures are suggested for individuals identified as carriers of genetic mutations?",
+          "tipe": "pg",
+          "opsi": [
+            "Screening activities in hospitals and laboratories for research",
+            "Lifestyle changes, medical treatments, and counseling before symptoms appear",
+            "Farming practices related to biotechnology and food production",
+            "Government taxation policies on healthcare institutions",
+            "Entertainment programs about rare diseases in media"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Langkah pencegahan bagi pembawa mutasi genetik meliputi perubahan gaya hidup, perawatan medis, dan konseling sebelum gejala muncul. Jalur Cara Gemilang: Preventive carriers = gaya hidup, pemantauan, skrining berkala.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nGenetic studies are essential in modern medicine because they allow scientists and doctors to identify mutations that cause hereditary diseases. According to the Centers for Disease Control and Prevention (CDC), advances since the Human Genome Project have made it possible to translate genetic discoveries into clinical practice, helping prevent conditions linked to inherited mutations. By analyzing DNA, researchers can detect whether individuals carry genes associated with disorders such as cystic fibrosis, Huntington's disease, or sickle cell anemia. This knowledge empowers families to make informed health decisions and reduces the risk of passing these conditions to future generations.\n\nBeyond detection, genetic studies provide opportunities for early intervention. Screening programs allow doctors to monitor individuals at higher risk and recommend lifestyle changes, medical treatments, or preventive measures before symptoms appear. For example, genetic counseling helps families understand inheritance patterns and guides them in planning for healthy pregnancies. International studies emphasize that identifying carriers of recessive mutations can prevent the transmission of severe genetic disorders. In this way, genetic studies shift healthcare from reactive treatment to proactive prevention.\n\nAnother major contribution of genetic studies is the development of innovative therapies. Research from Harvard T.H. Chan School of Public Health highlights how gene editing technologies, such as CRISPR, are being used to correct harmful mutations and fight diseases like sickle cell anemia and Huntington's disease. These breakthroughs demonstrate that genetic studies not only identify risks but also open pathways to cures. By targeting the root cause of hereditary diseases, gene editing offers hope for long-term solutions that were previously unimaginable.\n\nIn conclusion, genetic studies are vital for preventing hereditary diseases because they combine detection, prevention, and treatment. They help families avoid passing on harmful mutations, allow doctors to intervene early, and enable scientists to develop cutting-edge therapies. As international research shows, genomics is reshaping healthcare by protecting individuals and strengthening public health systems. Therefore, investing in genetic studies is not just a scientific priority but a moral responsibility to ensure healthier generations in the future.\n\n(adapted from various sources)\n\nWhere does the text mention that advances since the Human Genome Project have made it possible to translate genetic discoveries into clinical practice?",
+          "tipe": "pg",
+          "opsi": [
+            "Paragraph 1 sentence 1",
+            "Paragraph 1 sentence 2",
+            "Paragraph 2 sentence 2",
+            "Paragraph 3 sentence 1",
+            "Paragraph 4 sentence 3"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Kemajuan sejak Human Genome Project memungkinkan penerapan temuan genetik dalam praktik klinis disebutkan pada kalimat kedua paragraf pertama. Jalur Cara Gemilang: Lokalisasi frasa: paragraf yang menyebut penerapan temuan pasca-HGP.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nMigration has long served as a catalyst for economic growth and social transformation. The International Organization for Migration (IOM) notes that migrants fill labor shortages, stimulate innovation, and balance demographic shifts. In many advanced economies, migration helps counter aging populations and declining birth rates. Consequently, the arrival of new workers and skills sustains productivity and ensures stability across industries such as healthcare and technology.\n\nMoreover, migration enriches societies culturally and socially. The United Nations emphasizes that migrants introduce traditions, languages, and perspectives which encourage dialogue and tolerance. This diversity strengthens social cohesion when communities adopt inclusive policies. Migrants also participate in civic life through volunteerism and community initiatives, thereby reinforcing the social fabric of host nations. Thus, migration is not only about labor mobility but also about building vibrant, multicultural societies.\n\nIn addition, remittances highlight migration's global impact. The World Bank reports that migrants send hundreds of billions of dollars annually to their countries of origin, often exceeding official aid. These funds support education, healthcare, and small businesses, reducing poverty and stimulating local economies. As a result, migration generates a dual benefit: host nations gain workers and innovation, while origin countries receive financial support and knowledge transfer. This exchange fosters stronger economic ties and shared prosperity.\n\nTo conclude, migration contributes to economic and social development by addressing labor needs, promoting cultural diversity, and sustaining financial flows worldwide. International evidence confirms that when migration is managed responsibly, both sending and receiving nations benefit. Therefore, migration should be regarded not as a burden but as an opportunity to build resilient economies and inclusive societies.\n\n(adapted from various sources)\n\nWhich of the following are economic contributions of migration mentioned in the text? There is more than one correct answer. Choose all that apply!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Increasing unemployment",
+            "Filling labor shortages",
+            "Stimulating innovation",
+            "Sustaining productivity across industries",
+            "Reducing healthcare access"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s16-a.svg",
+            "/bagan/bab1-s16-b.svg",
+            "/bagan/bab1-s16-c.svg",
+            "/bagan/bab1-s16-d.svg",
+            "/bagan/bab1-s16-e.svg"
+          ],
+          "jawaban": [
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Migrasi berkontribusi secara ekonomi dengan mengisi kekurangan tenaga kerja, mendorong inovasi, dan menjaga produktivitas industri. Jalur Cara Gemilang: Kontribusi ekonomi = isi kekurangan tenaga kerja, pajak, wirausaha.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nMigration has long served as a catalyst for economic growth and social transformation. The International Organization for Migration (IOM) notes that migrants fill labor shortages, stimulate innovation, and balance demographic shifts. In many advanced economies, migration helps counter aging populations and declining birth rates. Consequently, the arrival of new workers and skills sustains productivity and ensures stability across industries such as healthcare and technology.\n\nMoreover, migration enriches societies culturally and socially. The United Nations emphasizes that migrants introduce traditions, languages, and perspectives which encourage dialogue and tolerance. This diversity strengthens social cohesion when communities adopt inclusive policies. Migrants also participate in civic life through volunteerism and community initiatives, thereby reinforcing the social fabric of host nations. Thus, migration is not only about labor mobility but also about building vibrant, multicultural societies.\n\nIn addition, remittances highlight migration's global impact. The World Bank reports that migrants send hundreds of billions of dollars annually to their countries of origin, often exceeding official aid. These funds support education, healthcare, and small businesses, reducing poverty and stimulating local economies. As a result, migration generates a dual benefit: host nations gain workers and innovation, while origin countries receive financial support and knowledge transfer. This exchange fosters stronger economic ties and shared prosperity.\n\nTo conclude, migration contributes to economic and social development by addressing labor needs, promoting cultural diversity, and sustaining financial flows worldwide. International evidence confirms that when migration is managed responsibly, both sending and receiving nations benefit. Therefore, migration should be regarded not as a burden but as an opportunity to build resilient economies and inclusive societies.\n\n(adapted from various sources)\n\nThe word \"poverty\" has an opposite meaning with",
+          "tipe": "pg",
+          "opsi": [
+            "cohesion.",
+            "diversity.",
+            "burden.",
+            "prosperity.",
+            "obstacle."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kata poverty berarti kemiskinan, lawan katanya adalah prosperity , yang berarti kemakmuran atau kesejahteraan. Jalur Cara Gemilang: Antonim poverty = prosperity (kemakmuran).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nMigration has long served as a catalyst for economic growth and social transformation. The International Organization for Migration (IOM) notes that migrants fill labor shortages, stimulate innovation, and balance demographic shifts. In many advanced economies, migration helps counter aging populations and declining birth rates. Consequently, the arrival of new workers and skills sustains productivity and ensures stability across industries such as healthcare and technology.\n\nMoreover, migration enriches societies culturally and socially. The United Nations emphasizes that migrants introduce traditions, languages, and perspectives which encourage dialogue and tolerance. This diversity strengthens social cohesion when communities adopt inclusive policies. Migrants also participate in civic life through volunteerism and community initiatives, thereby reinforcing the social fabric of host nations. Thus, migration is not only about labor mobility but also about building vibrant, multicultural societies.\n\nIn addition, remittances highlight migration's global impact. The World Bank reports that migrants send hundreds of billions of dollars annually to their countries of origin, often exceeding official aid. These funds support education, healthcare, and small businesses, reducing poverty and stimulating local economies. As a result, migration generates a dual benefit: host nations gain workers and innovation, while origin countries receive financial support and knowledge transfer. This exchange fosters stronger economic ties and shared prosperity.\n\nTo conclude, migration contributes to economic and social development by addressing labor needs, promoting cultural diversity, and sustaining financial flows worldwide. International evidence confirms that when migration is managed responsibly, both sending and receiving nations benefit. Therefore, migration should be regarded not as a burden but as an opportunity to build resilient economies and inclusive societies.\n\n(adapted from various sources)\n\nCategorize the statements into Economic Impact or Social Impact based on the text.\n(Answer each row by choosing Economic Impact / Social Impact.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Economic Impact",
+            "Social Impact"
+          ],
+          "baris": [
+            "Migrants introduce traditions, languages, and perspectives that encourage tolerance.",
+            "Migrants fill labor shortages and sustain productivity in industries like healthcare.",
+            "Remittances support education, healthcare, and small businesses in origin countries.",
+            "Migrants participate in civic life through volunteerism and community initiatives.",
+            "International evidence confirms that when migration is managed responsibly, both sending and receiving nations benefit."
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s18-a.svg",
+            "/bagan/bab1-s18-b.svg",
+            "/bagan/bab1-s18-c.svg",
+            "/bagan/bab1-s18-d.svg",
+            "/bagan/bab1-s18-e.svg"
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SOCIAL IMPACT Baris 2 — ECONOMIC IMPACT Baris 3 — ECONOMIC IMPACT Baris 4 — SOCIAL IMPACT Baris 5 — ECONOMIC IMPACT Jalur Cara Gemilang: Economic = uang/tenaga kerja; Social = komunitas/budaya/keluarga.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nMigration has long served as a catalyst for economic growth and social transformation. The International Organization for Migration (IOM) notes that migrants fill labor shortages, stimulate innovation, and balance demographic shifts. In many advanced economies, migration helps counter aging populations and declining birth rates. Consequently, the arrival of new workers and skills sustains productivity and ensures stability across industries such as healthcare and technology.\n\nMoreover, migration enriches societies culturally and socially. The United Nations emphasizes that migrants introduce traditions, languages, and perspectives which encourage dialogue and tolerance. This diversity strengthens social cohesion when communities adopt inclusive policies. Migrants also participate in civic life through volunteerism and community initiatives, thereby reinforcing the social fabric of host nations. Thus, migration is not only about labor mobility but also about building vibrant, multicultural societies.\n\nIn addition, remittances highlight migration's global impact. The World Bank reports that migrants send hundreds of billions of dollars annually to their countries of origin, often exceeding official aid. These funds support education, healthcare, and small businesses, reducing poverty and stimulating local economies. As a result, migration generates a dual benefit: host nations gain workers and innovation, while origin countries receive financial support and knowledge transfer. This exchange fosters stronger economic ties and shared prosperity.\n\nTo conclude, migration contributes to economic and social development by addressing labor needs, promoting cultural diversity, and sustaining financial flows worldwide. International evidence confirms that when migration is managed responsibly, both sending and receiving nations benefit. Therefore, migration should be regarded not as a burden but as an opportunity to build resilient economies and inclusive societies.\n\n(adapted from various sources)\n\nIf migration were severely restricted in aging societies, what would most likely happen according to the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Labor shortages would worsen and productivity could decline.",
+            "Tourism activities would increase rapidly.",
+            "Farming practices would replace modern industries.",
+            "Government taxation policies would disappear.",
+            "Entertainment programs would dominate social life."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Jika migrasi dibatasi di masyarakat yang menua, maka kekurangan tenaga kerja akan memburuk dan produktivitas bisa menurun drastis. Jalur Cara Gemilang: Kondisi kontrafaktual: pembatasan -> kekurangan tenaga kerja menua memburuk.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nMigration has long served as a catalyst for economic growth and social transformation. The International Organization for Migration (IOM) notes that migrants fill labor shortages, stimulate innovation, and balance demographic shifts. In many advanced economies, migration helps counter aging populations and declining birth rates. Consequently, the arrival of new workers and skills sustains productivity and ensures stability across industries such as healthcare and technology.\n\nMoreover, migration enriches societies culturally and socially. The United Nations emphasizes that migrants introduce traditions, languages, and perspectives which encourage dialogue and tolerance. This diversity strengthens social cohesion when communities adopt inclusive policies. Migrants also participate in civic life through volunteerism and community initiatives, thereby reinforcing the social fabric of host nations. Thus, migration is not only about labor mobility but also about building vibrant, multicultural societies.\n\nIn addition, remittances highlight migration's global impact. The World Bank reports that migrants send hundreds of billions of dollars annually to their countries of origin, often exceeding official aid. These funds support education, healthcare, and small businesses, reducing poverty and stimulating local economies. As a result, migration generates a dual benefit: host nations gain workers and innovation, while origin countries receive financial support and knowledge transfer. This exchange fosters stronger economic ties and shared prosperity.\n\nTo conclude, migration contributes to economic and social development by addressing labor needs, promoting cultural diversity, and sustaining financial flows worldwide. International evidence confirms that when migration is managed responsibly, both sending and receiving nations benefit. Therefore, migration should be regarded not as a burden but as an opportunity to build resilient economies and inclusive societies.\n\n(adapted from various sources)\n\nWhat conclusion can be drawn from the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Migration is described mainly as a factor in tourism and entertainment activities.",
+            "Migration is presented as focusing only on farming and agricultural practices.",
+            "Migration is explained as being designed to replace traditional education systems.",
+            "Migration should be seen as an opportunity to build resilient economies and inclusive societies.",
+            "Migration is portrayed primarily as a matter of government taxation and financial policies."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kesimpulan teks adalah migrasi harus dipandang sebagai peluang membangun ekonomi tangguh dan masyarakat inklusif. Jalur Cara Gemilang: Conclusion = migrasi peluang membangun ekonomi, bukan ancaman.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nPoetry is not only an artistic form but also a medium that nurtures emotional intelligence. Emotional intelligence refers to the ability to recognize, understand, and manage emotions in oneself and others. Research published in Social Cognitive and Affective Neuroscience highlights that poetry, like music, activates neural circuits linked to emotional processing, showing its capacity to elicit strong feelings and reflection. Thus, engaging with poetry provides readers with opportunities to explore emotions deeply and develop empathy, self-awareness, and regulation.\n\nFirst, poetry fosters empathy by presenting diverse perspectives and emotional experiences. A survey study in the International Journal of Science, Engineering and Technology found that literature, including poetry, enhances empathic capacities among students and professionals by exposing them to varied human conditions. When readers encounter verses about joy, grief, or resilience, they imaginatively step into others' lives. This process builds compassion and tolerance, making poetry a bridge to understanding cultural diversity and interpersonal struggles.\n\nSecond, poetry strengthens self-awareness and emotional regulation. The symbolic and condensed nature of poems encourages readers to pause and reflect on metaphors and imagery. Neuroscientific evidence suggests that such aesthetic experiences stimulate psychophysiological responses, helping individuals confront and articulate their own emotions. Writing or reading poetry also provides a safe outlet for intense feelings. Instead of suppressing emotions, individuals can channel them into creative language, reducing stress and promoting resilience.\n\nIn conclusion, international studies confirm that poetry enhances emotional intelligence by cultivating empathy, encouraging self-awareness, and supporting emotional regulation. Its artistic qualities invite readers to engage with emotions in meaningful ways, making poetry not only a cultural treasure but also a valuable tool for personal development. Therefore, poetry should be embraced as a pathway to deeper emotional understanding and stronger human connections.\n\n(adapted from various sources)\n\nWhich argument in the text is most strongly supported by scientific evidence?",
+          "tipe": "pg",
+          "opsi": [
+            "Poetry activates neural circuits linked to emotional processing.",
+            "Poetry reduces one's self-confidence in social interactions.",
+            "Poetry informs readers about historical cultural stories.",
+            "Poetry focuses only on imaginary activities without real impact.",
+            "Poetry eliminates critical thinking practices in literature."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Argumen yang didukung oleh bukti ilmiah adalah puisi mengaktifkan sirkuit otak terkait pemrosesan emosi. Jalur Cara Gemilang: Argumen terkuat = yang memakai bukti ilmiah (sirkuit otak teraktivasi).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nPoetry is not only an artistic form but also a medium that nurtures emotional intelligence. Emotional intelligence refers to the ability to recognize, understand, and manage emotions in oneself and others. Research published in Social Cognitive and Affective Neuroscience highlights that poetry, like music, activates neural circuits linked to emotional processing, showing its capacity to elicit strong feelings and reflection. Thus, engaging with poetry provides readers with opportunities to explore emotions deeply and develop empathy, self-awareness, and regulation.\n\nFirst, poetry fosters empathy by presenting diverse perspectives and emotional experiences. A survey study in the International Journal of Science, Engineering and Technology found that literature, including poetry, enhances empathic capacities among students and professionals by exposing them to varied human conditions. When readers encounter verses about joy, grief, or resilience, they imaginatively step into others' lives. This process builds compassion and tolerance, making poetry a bridge to understanding cultural diversity and interpersonal struggles.\n\nSecond, poetry strengthens self-awareness and emotional regulation. The symbolic and condensed nature of poems encourages readers to pause and reflect on metaphors and imagery. Neuroscientific evidence suggests that such aesthetic experiences stimulate psychophysiological responses, helping individuals confront and articulate their own emotions. Writing or reading poetry also provides a safe outlet for intense feelings. Instead of suppressing emotions, individuals can channel them into creative language, reducing stress and promoting resilience.\n\nIn conclusion, international studies confirm that poetry enhances emotional intelligence by cultivating empathy, encouraging self-awareness, and supporting emotional regulation. Its artistic qualities invite readers to engage with emotions in meaningful ways, making poetry not only a cultural treasure but also a valuable tool for personal development. Therefore, poetry should be embraced as a pathway to deeper emotional understanding and stronger human connections.\n\n(adapted from various sources)\n\nWhich statements reflect poetry's role in self-awareness and regulation? There is more than one correct answer. Choose all that apply!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Encouraging reflection on metaphors and imagery",
+            "Suppressing emotions to avoid stress",
+            "Stimulating psychophysiological responses",
+            "Providing a safe outlet for intense feelings",
+            "Preventing all negative emotions permanently"
+          ],
+          "jawaban": [
+            0,
+            2,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Pada teks disebutkan bahwa puisi mendorong refleksi pada metafora, menstimulasi respons psikofisiologis, dan menyediakan saluran aman bagi emosi. Jalur Cara Gemilang: Self-awareness = refleksi metafora + regulasi emosi lewat puisi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nPoetry is not only an artistic form but also a medium that nurtures emotional intelligence. Emotional intelligence refers to the ability to recognize, understand, and manage emotions in oneself and others. Research published in Social Cognitive and Affective Neuroscience highlights that poetry, like music, activates neural circuits linked to emotional processing, showing its capacity to elicit strong feelings and reflection. Thus, engaging with poetry provides readers with opportunities to explore emotions deeply and develop empathy, self-awareness, and regulation.\n\nFirst, poetry fosters empathy by presenting diverse perspectives and emotional experiences. A survey study in the International Journal of Science, Engineering and Technology found that literature, including poetry, enhances empathic capacities among students and professionals by exposing them to varied human conditions. When readers encounter verses about joy, grief, or resilience, they imaginatively step into others' lives. This process builds compassion and tolerance, making poetry a bridge to understanding cultural diversity and interpersonal struggles.\n\nSecond, poetry strengthens self-awareness and emotional regulation. The symbolic and condensed nature of poems encourages readers to pause and reflect on metaphors and imagery. Neuroscientific evidence suggests that such aesthetic experiences stimulate psychophysiological responses, helping individuals confront and articulate their own emotions. Writing or reading poetry also provides a safe outlet for intense feelings. Instead of suppressing emotions, individuals can channel them into creative language, reducing stress and promoting resilience.\n\nIn conclusion, international studies confirm that poetry enhances emotional intelligence by cultivating empathy, encouraging self-awareness, and supporting emotional regulation. Its artistic qualities invite readers to engage with emotions in meaningful ways, making poetry not only a cultural treasure but also a valuable tool for personal development. Therefore, poetry should be embraced as a pathway to deeper emotional understanding and stronger human connections.\n\n(adapted from various sources)\n\nThe word \"elicit\" in the text is closest in meaning to",
+          "tipe": "pg",
+          "opsi": [
+            "suppress.",
+            "decline.",
+            "reduce.",
+            "block.",
+            "evoke."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Kata elicit \"membangkitkan\" secara kontekstual maknanya sepadan dengan evoke . Jalur Cara Gemilang: Elicit = membangkitkan = evoke; substitusi ke kalimat.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nPoetry is not only an artistic form but also a medium that nurtures emotional intelligence. Emotional intelligence refers to the ability to recognize, understand, and manage emotions in oneself and others. Research published in Social Cognitive and Affective Neuroscience highlights that poetry, like music, activates neural circuits linked to emotional processing, showing its capacity to elicit strong feelings and reflection. Thus, engaging with poetry provides readers with opportunities to explore emotions deeply and develop empathy, self-awareness, and regulation.\n\nFirst, poetry fosters empathy by presenting diverse perspectives and emotional experiences. A survey study in the International Journal of Science, Engineering and Technology found that literature, including poetry, enhances empathic capacities among students and professionals by exposing them to varied human conditions. When readers encounter verses about joy, grief, or resilience, they imaginatively step into others' lives. This process builds compassion and tolerance, making poetry a bridge to understanding cultural diversity and interpersonal struggles.\n\nSecond, poetry strengthens self-awareness and emotional regulation. The symbolic and condensed nature of poems encourages readers to pause and reflect on metaphors and imagery. Neuroscientific evidence suggests that such aesthetic experiences stimulate psychophysiological responses, helping individuals confront and articulate their own emotions. Writing or reading poetry also provides a safe outlet for intense feelings. Instead of suppressing emotions, individuals can channel them into creative language, reducing stress and promoting resilience.\n\nIn conclusion, international studies confirm that poetry enhances emotional intelligence by cultivating empathy, encouraging self-awareness, and supporting emotional regulation. Its artistic qualities invite readers to engage with emotions in meaningful ways, making poetry not only a cultural treasure but also a valuable tool for personal development. Therefore, poetry should be embraced as a pathway to deeper emotional understanding and stronger human connections.\n\n(adapted from various sources)\n\nHow does writing poetry help individuals regulate emotions?",
+          "tipe": "pg",
+          "opsi": [
+            "By offering a safe outlet to express and transform emotions into creative language.",
+            "By eliminating the need for formal education to analyze literature.",
+            "By entertaining readers with fictional stories without deeper reflection or meaning.",
+            "By implementing curriculum related poetry writing.",
+            "By focusing mainly on reading activities about literature."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Menulis puisi membantu regulasi emosi dengan menyediakan wadah aman untuk menyalurkan perasaan dalam bahasa kreatif. Jalur Cara Gemilang: Menulis puisi = wadah aman menyalurkan & menata emosi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nPoetry is not only an artistic form but also a medium that nurtures emotional intelligence. Emotional intelligence refers to the ability to recognize, understand, and manage emotions in oneself and others. Research published in Social Cognitive and Affective Neuroscience highlights that poetry, like music, activates neural circuits linked to emotional processing, showing its capacity to elicit strong feelings and reflection. Thus, engaging with poetry provides readers with opportunities to explore emotions deeply and develop empathy, self-awareness, and regulation.\n\nFirst, poetry fosters empathy by presenting diverse perspectives and emotional experiences. A survey study in the International Journal of Science, Engineering and Technology found that literature, including poetry, enhances empathic capacities among students and professionals by exposing them to varied human conditions. When readers encounter verses about joy, grief, or resilience, they imaginatively step into others' lives. This process builds compassion and tolerance, making poetry a bridge to understanding cultural diversity and interpersonal struggles.\n\nSecond, poetry strengthens self-awareness and emotional regulation. The symbolic and condensed nature of poems encourages readers to pause and reflect on metaphors and imagery. Neuroscientific evidence suggests that such aesthetic experiences stimulate psychophysiological responses, helping individuals confront and articulate their own emotions. Writing or reading poetry also provides a safe outlet for intense feelings. Instead of suppressing emotions, individuals can channel them into creative language, reducing stress and promoting resilience.\n\nIn conclusion, international studies confirm that poetry enhances emotional intelligence by cultivating empathy, encouraging self-awareness, and supporting emotional regulation. Its artistic qualities invite readers to engage with emotions in meaningful ways, making poetry not only a cultural treasure but also a valuable tool for personal development. Therefore, poetry should be embraced as a pathway to deeper emotional understanding and stronger human connections.\n\n(adapted from various sources)\n\nWhat can be inferred about poetry's symbolic nature?",
+          "tipe": "pg",
+          "opsi": [
+            "It prevents readers from understanding emotions clearly.",
+            "It encourages readers to reflect deeply on emotions and meanings.",
+            "It makes poetry less effective than music in emotional expression.",
+            "It limits readers' ability to connect with personal experiences.",
+            "It focuses more on factual information than emotional experiences."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Hal yang dapat disimpulkan terkait sifat simbolis puisi adalah puisi membuat pembaca berpikir secara hati-hati dan mendalam tentang emosi, makna, metafora dan imaji. Oleh karena itu, puisi membantu pembacanya melakukan refleksi diri. Jalur Cara Gemilang: Simbolis = pemrosesan pengalaman secara tidak langsung lewat lambang.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 6 Analytical Exposition h.98+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}

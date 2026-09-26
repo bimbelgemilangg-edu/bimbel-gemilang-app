@@ -33,7 +33,8 @@ const teksBergaris = (s) => entity(s
   .split('\n').map((l) => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean).join('\n'));
 
 // ---------- area ----------
-const mH2 = /<h2 class="hbar"[^>]*>[\s\S]{0,300}?Latihan Soal/.exec(html);
+const LATIHAN_RE = /<h2 class="hbar"[^>]*>[\s\S]{0,300}?(Latihan Soal|Exercises?)/;
+const mH2 = LATIHAN_RE.exec(html);
 const iMulai = mH2 ? mH2.index : html.indexOf('Latihan Soal');
 const iKunci = html.indexOf('KUNCI DAN PEMBAHASAN');
 const iBahasan = html.indexOf('>Pembahasan<');
@@ -110,6 +111,21 @@ function parseSoal(liHtml) {
     .replace(/<ul class="(opsi|chk)">[\s\S]*?<\/ul>/g, ' ')
     .replace(/<table class="(tbl|grid)">[\s\S]*?<\/table>/g, ' ')
     .replace(/<div class="diagram">[\s\S]*?<\/div>/g, ' '));
+  // Turn 98: opsi INLINE tercampur di teks ("... meaning to (A) x. (D) y. (B) z.")
+  // -> pecah per penanda huruf, urutkan A-E, bersihkan teks soal.
+  if (s.tipe === 'pg' && s.opsi.length === 0 && /\([A-E]\)/.test(s.teks)) {
+    const marks = [...s.teks.matchAll(/\(([A-E])\)\s*/g)];
+    if (marks.length >= 4) {
+      const pairs = marks.map((mk, i2) => {
+        const start = mk.index + mk[0].length;
+        const end = i2 + 1 < marks.length ? marks[i2 + 1].index : s.teks.length;
+        return { L: mk[1], t: s.teks.slice(start, end).trim() };
+      });
+      pairs.sort((a, b) => (a.L < b.L ? -1 : 1));
+      s.opsi = pairs.map((p) => p.t);
+      s.teks = s.teks.slice(0, marks[0].index).trim();
+    }
+  }
   return s;
 }
 
@@ -128,7 +144,7 @@ const soal = [];
       // soal MANDIRI: membawa bacaan sendiri di dalam butirnya
       // (diawali "Bacalah ..." + paragraf panjang) -> jangan ditempeli
       // stimulus grup.
-      s.mandiri = /^Bacalah\b/.test(s.teks) && s.teks.length > 400;
+      s.mandiri = /^(Bacalah|Read)\b/.test(s.teks) && s.teks.length > 400;
       // grup stimulus: petik terakhir yang posisinya sebelum <ol> ini
       let gi = -1;
       stimuli.forEach((st, i) => { if (st.pos < mo.index) gi = i; });

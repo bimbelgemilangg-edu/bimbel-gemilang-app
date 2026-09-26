@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300"><style>.banner h1{margin:0;font-size:34px;letter-spacing:3px;color:#141414}.chap .num{background:#383838;color:#fff;font-size:42px;font-weight:bold;padding:4px 22px;line-height:1.2}.chap .ttl{background:#c9c9c9;flex:1;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:bold;letter-spacing:1px;padding:10px}.hbar{background:linear-gradient(#c2c2c2,#a5a5a5);border:1px solid #7f7f7f;padding:5px 10px;font-weight:bold;margin:20px 0 10px}.sumber{text-align:right;font-style:italic;margin:4px 0 16px;font-size:13px;color:#333}.petik{font-style:italic}.tekslabel{font-weight:bold;margin:10px 0 6px}.cb.on::after{content:"\2713";position:absolute;left:0;top:-4px;font-size:13px;font-weight:bold;color:#111}.tick{font-weight:bold;font-size:14px}.jb{font-weight:bold;margin:6px 0 6px 30px}.hal{display:inline-block;float:right;background:#8a8a8a;color:#fff;border-radius:9px;padding:1px 9px;font-size:11.5px;margin:2px 0 2px 10px}.toc{border:1.5px solid #979797;background:#f3f3f3;border-radius:6px;padding:12px 18px;margin:0 0 22px;font-size:14px}.note{font-size:12.5px;color:#555;border-top:1.5px solid #999;margin-top:34px;padding-top:10px;line-height:1.5}.kbar{background:#383838;color:#fff;padding:8px 14px;font-weight:bold;font-size:19px;margin:34px 0 14px;border-radius:4px}.ksub{font-weight:bold;font-size:16px;margin:18px 0 8px}text{font-family:Arial,Helvetica,sans-serif}</style><rect width="100%" height="100%" fill="#fff"></rect>
+      <text x="18" y="150" font-size="11" fill="#333" transform="rotate(-90 18 150)" text-anchor="middle">Recycling Rate (Percent)</text>
+      <line x1="52" y1="20" x2="52" y2="248" stroke="#333" stroke-width="1.5"></line>
+      <line x1="52" y1="248" x2="628" y2="248" stroke="#333" stroke-width="1.5"></line>
+      <g font-size="9" fill="#333" text-anchor="end">
+        <text x="48" y="251">0</text><text x="48" y="205">20</text><text x="48" y="160">40</text><text x="48" y="114">60</text><text x="48" y="69">80</text><text x="48" y="23">100</text>
+      </g>
+      <g>
+        <rect x="62" y="22.3" width="34" height="225.7" fill="#2e7d32"></rect>
+        <rect x="118" y="87.6" width="34" height="160.4" fill="#43a047"></rect>
+        <rect x="174" y="95.8" width="34" height="152.2" fill="#66bb6a"></rect>
+        <rect x="230" y="111.2" width="34" height="136.8" fill="#8bc34a"></rect>
+        <rect x="286" y="120.6" width="34" height="127.4" fill="#c0ca33"></rect>
+        <rect x="342" y="155.3" width="34" height="92.7" fill="#fdd835"></rect>
+        <rect x="398" y="156.4" width="34" height="91.6" fill="#ffb300"></rect>
+        <rect x="454" y="171.0" width="34" height="77.0" fill="#fb8c00"></rect>
+        <rect x="510" y="177.2" width="34" height="70.8" fill="#f4511e"></rect>
+        <rect x="566" y="184.3" width="34" height="63.7" fill="#e53935"></rect>
+      </g>
+      <g font-size="9" fill="#111" text-anchor="middle" font-weight="bold">
+        <text x="79" y="18">99.0</text><text x="135" y="83">70.6</text><text x="191" y="91">67.0</text><text x="247" y="107">60.2</text><text x="303" y="116">56.1</text>
+        <text x="359" y="151">40.9</text><text x="415" y="152">40.4</text><text x="471" y="167">34.0</text><text x="527" y="173">31.3</text><text x="583" y="180">28.2</text>
+      </g>
+      <g font-size="7.5" fill="#333" text-anchor="middle">
+        <text x="79" y="260">Lead-Acid</text><text x="79" y="269">Batteries</text>
+        <text x="135" y="260">Steel Cans</text>
+        <text x="191" y="260">Newspapers/</text><text x="191" y="269">Mechanical</text><text x="191" y="278">Papers</text>
+        <text x="247" y="260">Yard</text><text x="247" y="269">Trimmings</text>
+        <text x="303" y="260">Aluminum</text><text x="303" y="269">Beer &amp;</text><text x="303" y="278">Soda Cans</text>
+        <text x="359" y="260">Tires</text>
+        <text x="415" y="260">Selected</text><text x="415" y="269">Consumer</text><text x="415" y="278">Electronics</text>
+        <text x="471" y="260">Glass</text><text x="471" y="269">Containers</text>
+        <text x="527" y="260">PET Bottles</text><text x="527" y="269">&amp; Jars</text>
+        <text x="583" y="260">HDPE Natural</text><text x="583" y="269">(White</text><text x="583" y="278">Translucent)</text><text x="583" y="287">Bottles</text>
+      </g>
+      <text x="340" y="298" font-size="10" fill="#333" text-anchor="middle">Products</text>
+    </svg>
