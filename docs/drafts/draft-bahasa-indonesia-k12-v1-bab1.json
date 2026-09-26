@@ -340,6 +340,11 @@
           "teks": "Skema memiliki arti yang sama dengan bagan, rangka, atau denah. Skema menggambarkan secara analitik sistem atau olahan data sehingga pembaca melihat keseluruhan sekaligus. Karena itu bagan menjadi bahasa favorit soal pemahaman praktis (pragmatik)."
         },
         {
+          "jenis": "gambar",
+          "url": "/bagan/bab1-materi-1.svg",
+          "keterangan": "Bagan contoh dari buku (1.1.2): alur penelitian-pengembangan — Analisis Kebutuhan → Analisis Kurikulum → Pengembangan Produk Awal → Validasi Ahli → Revisi Produk → Uji Coba Lapangan → Revisi Produk Akhir. Cara baca: label kotak → arah panah → loop revisi."
+        },
+        {
           "jenis": "urutan",
           "judul": "🧩 Susun: alur bagan penelitian-pengembangan (contoh bank h.42)",
           "keterangan": "Contoh bagan buku: alur pengembangan produk dari kebutuhan sampai revisi akhir.",
@@ -473,6 +478,13 @@
             "diagram venn makna kata teknologi, manfaat teknologi, dampak teknologi",
             "tiga batang makna kata teknologi, perkembangan teknologi, dampak positif dan negatif teknologi",
             "diagram pie kesimpulan teknologi, pengertian teknologi, dampak teknologi"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s4-a.svg",
+            "/bagan/bab1-s4-b.svg",
+            "/bagan/bab1-s4-c.svg",
+            "/bagan/bab1-s4-d.svg",
+            "/bagan/bab1-s4-e.svg"
           ],
           "jawaban": 3,
           "pembahasan": "Jalur konsep: Informasi penting teks tersebut meliputi makna kata teknologi; perkembangan teknologi; dan dampak positif dan negatif teknologi. Jadi, bagan yang tepat untuk teks tersebut adalah makna kata teknologi perkembangan teknologi dampak positif dan negatif teknologi Jalur Cara Gemilang: Soal bagan = tulis 3 informasi inti sesuai urutan muncul; bagan benar memuat ketiganya TANPA tambahan kotak asing.",
@@ -672,6 +684,13 @@
             "diagram pie tiga bagian (label pada pindai kurang jelas)",
             "tiga lingkaran penyebab, solusi, akibat"
           ],
+          "opsiGambar": [
+            "/bagan/bab1-s16-a.svg",
+            "/bagan/bab1-s16-b.svg",
+            "/bagan/bab1-s16-c.svg",
+            "/bagan/bab1-s16-d.svg",
+            "/bagan/bab1-s16-e.svg"
+          ],
           "jawaban": 1,
           "pembahasan": "Jalur konsep: Informasi penting teks tersebut meliputi kaidah kesehatan fisik; upaya atau usaha untuk mencapai kesehatan fisik; dan kesimpulan. Jadi, bagan yang tepat untuk teks tersebut adalah kaidah kesehatan fisik upaya atau usaha untuk mencapai kesehatan fisik kesimpulan Jalur Cara Gemilang: Bagan benar = urutan informasi: kaidah -> upaya -> kesimpulan; cocokkan label kotak dengan teks, bukan hafalan.",
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #16)"
@@ -699,6 +718,13 @@
             "tiga batang pengertian, dampak, manfaat lensa kontak",
             "tiga lingkaran pengertian lensa kontak dan manfaatnya, kesimpulan, akibat penggunaan lensa kontak",
             "aliran penggunaan lensa kontak, dampak negatif penggunaan lensa kontak, pencegahan bahaya penggunaan lensa kontak"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s18-a.svg",
+            "/bagan/bab1-s18-b.svg",
+            "/bagan/bab1-s18-c.svg",
+            "/bagan/bab1-s18-d.svg",
+            "/bagan/bab1-s18-e.svg"
           ],
           "jawaban": 4,
           "pembahasan": "Jalur konsep: Informasi penting teks tersebut meliputi penggunaan lensa kontak; dampak negatif penggunaan lensa kontak; dan pencegahan bahaya penggunaan lensa kontak. Jadi, bagan yang tepat untuk teks tersebut adalah penggunaan lensa kontak dampak negatif penggunaan lensa kontak pencegahan bahaya penggunaan lensa kontak Jalur Cara Gemilang: Tiga kotak inti: pemakaian -> dampak negatif -> pencegahan; bagan yang menukar urutan = salah.",

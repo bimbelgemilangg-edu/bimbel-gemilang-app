@@ -241,6 +241,10 @@ const sections = [
   { jenis: 'kilat', teks: 'Skema, bagan, dan kerangka adalah garis besar suatu tulisan dalam bentuk gambar atau grafik untuk memudahkan pemahaman. Di ujian, bagan muncul dua arah: memilih bagan yang cocok untuk sebuah teks, dan membaca maksud sebuah bagan.' },
   { jenis: 'paragraf', teks: 'Skema memiliki arti yang sama dengan bagan, rangka, atau denah. Skema menggambarkan secara analitik sistem atau olahan data sehingga pembaca melihat keseluruhan sekaligus. Karena itu bagan menjadi bahasa favorit soal pemahaman praktis (pragmatik).' },
   {
+    jenis: 'gambar', url: '/bagan/bab1-materi-1.svg',
+    keterangan: 'Bagan contoh dari buku (1.1.2): alur penelitian-pengembangan — Analisis Kebutuhan → Analisis Kurikulum → Pengembangan Produk Awal → Validasi Ahli → Revisi Produk → Uji Coba Lapangan → Revisi Produk Akhir. Cara baca: label kotak → arah panah → loop revisi.',
+  },
+  {
     jenis: 'urutan', judul: '🧩 Susun: alur bagan penelitian-pengembangan (contoh bank h.42)',
     keterangan: 'Contoh bagan buku: alur pengembangan produk dari kebutuhan sampai revisi akhir.',
     items: [
@@ -281,6 +285,14 @@ const sections = [
 ];
 
 // ---------- rakit soal ----------
+// Turn 90 (koreksi owner): opsi bagan soal 4, 16, 18 pada cetakan/HTML
+// asli berupa GAMBAR SVG — diekstrak ke public/bagan/ lewat
+// scripts/ekstrak-bagan-svg.mjs; teks opsi menjadi keterangan kecil.
+const OPSI_GAMBAR = {
+  4: ['a', 'b', 'c', 'd', 'e'].map((h) => `/bagan/bab1-s4-${h}.svg`),
+  16: ['a', 'b', 'c', 'd', 'e'].map((h) => `/bagan/bab1-s16-${h}.svg`),
+  18: ['a', 'b', 'c', 'd', 'e'].map((h) => `/bagan/bab1-s18-${h}.svg`),
+};
 const SUMBER = 'Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #{no})';
 const ujiPemahaman = E.soal.map((s0) => {
   const no = s0.no;
@@ -305,6 +317,7 @@ const ujiPemahaman = E.soal.map((s0) => {
   return {
     soal: soalTeks, tipe: s.tipe,
     ...(s.tipe === 'tabel' ? { kolom: s.kolom, baris: s.baris } : { opsi: s.opsi }),
+    ...(OPSI_GAMBAR[no] ? { opsiGambar: OPSI_GAMBAR[no] } : {}),
     jawaban,
     pembahasan: buatPembahasan(no, s, jawaban),
     sumber: SUMBER.replace('{no}', String(no)),
