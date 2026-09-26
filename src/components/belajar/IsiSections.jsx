@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { MathText, MathBlock } from '../MathText';
 import bintangGemilang from '../../assets/bintang-gemilang.png';
+import WidgetInteraktif, { JENIS_INTERAKTIF } from './WidgetInteraktif';
 import { T, kotakRumus, kotakTips, kotakSukses } from '../../pages/student/belajar/tema';
 
 export const URL_FRAME_CG =
@@ -432,6 +433,11 @@ export default function IsiSections({ sections = [], offsetHuruf = 0, untukGuru 
           return <div key={i} id={`sec-${i}`} style={S.jangkar}><KartuCG judul={sec.judul} teks={sec.teks} items={sec.items} /></div>;
         }
         if (jenis === 'zona') return <div key={i} id={`sec-${i}`} style={S.jangkar}><ZonaBerlatih sec={sec} /></div>;
+        // 🔥 MATERI INTERAKTIF (Turn 87): jodohMini, isianRumpang, flashcard,
+        // urutan, benarSalah, video — semua dirender widget bersama.
+        if (JENIS_INTERAKTIF.has(jenis)) {
+          return <div key={i} id={`sec-${i}`} style={S.jangkar}><WidgetInteraktif widget={sec} /></div>;
+        }
         if (jenis === 'alur') {
           return (
             <div key={i} id={`sec-${i}`} style={{ ...S.poinBox, ...S.jangkar, background: '#F4F9FF' }}>

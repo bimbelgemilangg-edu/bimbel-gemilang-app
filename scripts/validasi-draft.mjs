@@ -13,7 +13,10 @@ const files = process.argv.slice(2).length
   ? process.argv.slice(2)
   : readdirSync(DIR).filter((f) => f.endsWith('.json')).map((f) => join(DIR, f));
 
-const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'gambar', 'langkah', 'poin', 'alur', 'tabelinfo', 'istilah', 'kilat', 'peta', 'caraGemilang', 'zona']);
+const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'gambar', 'langkah', 'poin', 'alur', 'tabelinfo', 'istilah', 'kilat', 'peta', 'caraGemilang', 'zona',
+  // 🔥 MATERI INTERAKTIF (Turn 87): widget interaktif dalam sections
+  'jodohMini', 'isianRumpang', 'flashcard', 'urutan', 'benarSalah', 'video']);
+const JENIS_INTERAKTIF = new Set(['jodohMini', 'isianRumpang', 'flashcard', 'urutan', 'benarSalah', 'video']);
 const TIPE_CALLOUT = new Set(['info', 'tips', 'peringatan', 'gemilang', 'guru']);
 let masalah = 0;
 const salah = (f, teks) => { masalah += 1; console.log(`   ❌ ${f}: ${teks}`); };
@@ -62,6 +65,65 @@ for (const f of files) {
       if (jenis === 'zona' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] zona butuh items soal`);
       if (jenis === 'kilat' && !s.teks) salah(f, `${label} section[${si}] kilat tanpa teks`);
       if (jenis === 'peta' && !s.teks) salah(f, `${label} section[${si}] peta tanpa teks`);
+
+      // 🔥 MATERI INTERAKTIF (Turn 87) -- aturan per widget.
+      // CATATAN FIRESTORE: nested array DITOLAK -> items harus berisi
+      // objek/string, dan field array (mis. jawaban isianRumpang) hanya
+      // boleh berisi string.
+      if (JENIS_INTERAKTIF.has(jenis) && jenis !== 'video'
+        && !(Array.isArray(s.items) && s.items.length)) {
+        salah(f, `${label} section[${si}] ${jenis} butuh items`);
+      }
+      if (jenis === 'jodohMini') {
+        const its = Array.isArray(s.items) ? s.items : [];
+        if (its.length < 2) salah(f, `${label} section[${si}] jodohMini minimal 2 pasangan`);
+        its.forEach((it, k) => {
+          if (Array.isArray(it)) { salah(f, `${label} section[${si}] jodohMini.items[${k}] harus objek {kiri,kanan} (nested array ditolak Firestore)`); return; }
+          if (!it || !it.kiri || !it.kanan) salah(f, `${label} section[${si}] jodohMini.items[${k}] butuh kiri & kanan`);
+        });
+      }
+      if (jenis === 'isianRumpang') {
+        const its = Array.isArray(s.items) ? s.items : [];
+        its.forEach((it, k) => {
+          if (!it || typeof it === 'string' || !it.teks) { salah(f, `${label} section[${si}] isianRumpang.items[${k}] butuh objek {teks,jawaban}`); return; }
+          const jw = it.jawaban;
+          const jwOk = (typeof jw === 'string' && jw.trim())
+            || (Array.isArray(jw) && jw.length && jw.every((x) => typeof x === 'string' && x.trim()));
+          if (!jwOk) salah(f, `${label} section[${si}] isianRumpang.items[${k}] jawaban wajib string / array string (tanpa nested array)`);
+        });
+      }
+      if (jenis === 'flashcard') {
+        const its = Array.isArray(s.items) ? s.items : [];
+        if (its.length < 2) salah(f, `${label} section[${si}] flashcard minimal 2 kartu`);
+        its.forEach((it, k) => {
+          if (Array.isArray(it)) { salah(f, `${label} section[${si}] flashcard.items[${k}] harus objek {depan,belakang} (nested array ditolak Firestore)`); return; }
+          if (!it || !it.depan || !it.belakang) salah(f, `${label} section[${si}] flashcard.items[${k}] butuh depan & belakang`);
+        });
+      }
+      if (jenis === 'urutan') {
+        const its = Array.isArray(s.items) ? s.items : [];
+        if (its.length < 2) salah(f, `${label} section[${si}] urutan minimal 2 langkah`);
+        its.forEach((it, k) => {
+          const ok = (typeof it === 'string' && it.trim())
+            || (it && !Array.isArray(it) && typeof it.teks === 'string' && it.teks.trim());
+          if (!ok) salah(f, `${label} section[${si}] urutan.items[${k}] harus string / objek {teks}`);
+        });
+      }
+      if (jenis === 'benarSalah') {
+        const its = Array.isArray(s.items) ? s.items : [];
+        its.forEach((it, k) => {
+          if (!it || Array.isArray(it) || !it.teks) { salah(f, `${label} section[${si}] benarSalah.items[${k}] butuh objek {teks,jawaban}`); return; }
+          const jw = it.jawaban;
+          const jwOk = typeof jw === 'boolean'
+            || ['benar', 'salah', 'b', 's', 'true', 'false'].includes(String(jw).toLowerCase().trim());
+          if (!jwOk) salah(f, `${label} section[${si}] benarSalah.items[${k}] jawaban harus boolean / 'benar' / 'salah'`);
+        });
+      }
+      if (jenis === 'video') {
+        if (!s.url || !/^https?:\/\//.test(String(s.url))) {
+          salah(f, `${label} section[${si}] video butuh url http(s) (YouTube/mp4)`);
+        }
+      }
     });
     const kuis = b.ujiPemahaman || [];
     kuis.forEach((k, ki) => {

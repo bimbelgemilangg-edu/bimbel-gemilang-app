@@ -18,6 +18,8 @@ import {
 } from '../../../services/materiV2Service';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { listBankFiles, formatUkuran } from '../../../services/bankFileService';
+// 🔥 MATERI INTERAKTIF (Turn 87): editor + pratinjau widget interaktif
+import WidgetInteraktif, { JENIS_INTERAKTIF } from '../../../components/belajar/WidgetInteraktif';
 import {
   T, kartuDasar, halamanDasar, tombolPill, lingkaranNomor,
 } from '../../student/belajar/tema';
@@ -36,9 +38,106 @@ const SEC_TEMPLATE = {
   contoh: { jenis: 'contoh', judul: '', teks: '', pembahasan: '' },
   langkah: { jenis: 'langkah', items: [] },
   gambar: { jenis: 'gambar', url: '', keterangan: '' },
+  // 🔥 MATERI INTERAKTIF (Turn 87) -- widget interaktif dalam sections.
+  // items diedit sebagai JSON mentah + pratinjau live (EditorInteraktif).
+  jodohMini: { jenis: 'jodohMini', judul: '', keterangan: '', items: [{ kiri: '', kanan: '', penjelasan: '' }] },
+  isianRumpang: { jenis: 'isianRumpang', judul: '', keterangan: '', items: [{ teks: '', jawaban: '', hint: '', penjelasan: '' }] },
+  flashcard: { jenis: 'flashcard', judul: '', keterangan: '', items: [{ depan: '', belakang: '' }] },
+  urutan: { jenis: 'urutan', judul: '', keterangan: '', items: ['', ''] },
+  benarSalah: { jenis: 'benarSalah', judul: '', keterangan: '', items: [{ teks: '', jawaban: true, penjelasan: '' }] },
+  video: { jenis: 'video', judul: '', url: '', keterangan: '' },
 };
 
 const KUIS_KOSONG = { soal: '', tipe: 'pg', opsi: ['', '', '', ''], jawaban: 0, pembahasan: '' };
+
+// ============================================================
+// EDITOR WIDGET INTERAKTIF (Turn 87)
+// Field sederhana (judul/keterangan/url) + textarea JSON untuk
+// items (commit saat blur / Ctrl+Enter) + PRATINJAU LIVE memakai
+// komponen yang sama persis dengan reader siswa.
+// ============================================================
+function EditorInteraktif({ sec, onChange, style }) {
+  const [jsonTeks, setJsonTeks] = useState(() => JSON.stringify(sec.items ?? [], null, 2));
+  const [err, setErr] = useState('');
+  const terakhirCommit = useRef(JSON.stringify(sec.items ?? []));
+
+  // Sinkron bila items diubah dari luar (mis. pindah bab / impor ulang).
+  useEffect(() => {
+    const eksternal = JSON.stringify(sec.items ?? []);
+    if (eksternal !== terakhirCommit.current) {
+      terakhirCommit.current = eksternal;
+      setJsonTeks(JSON.stringify(sec.items ?? [], null, 2));
+      setErr('');
+    }
+  }, [sec.items]);
+
+  const commitItems = (teks) => {
+    try {
+      const parsed = JSON.parse(teks);
+      if (!Array.isArray(parsed)) throw new Error('items harus berupa array');
+      if (parsed.some((x) => Array.isArray(x))) {
+        throw new Error('nested array ditolak Firestore — pakai objek {k,v}');
+      }
+      terakhirCommit.current = JSON.stringify(parsed);
+      onChange({ items: parsed });
+      setErr('');
+    } catch (e) {
+      setErr(`JSON belum valid: ${e.message}`);
+    }
+  };
+
+  const contohIsi = {
+    jodohMini: '[{ "kiri": "Pernyataan", "kanan": "Pasangannya", "penjelasan": "opsional" }]',
+    isianRumpang: '[{ "teks": "Pertanyaan rumpang", "jawaban": ["varian1", "varian2"], "hint": "opsional", "penjelasan": "opsional" }]',
+    flashcard: '[{ "depan": "Istilah/pertanyaan", "belakang": "Arti/jawaban" }]',
+    urutan: '["Langkah pertama (urutan benar)", "Langkah kedua", "Langkah ketiga"]',
+    benarSalah: '[{ "teks": "Pernyataan", "jawaban": true, "penjelasan": "opsional" }]',
+    video: '(widget video tidak memakai items — isi url di atas)',
+  }[sec.jenis] || '[]';
+
+  return (
+    <>
+      <input style={style.inp} value={sec.judul || ''} placeholder="Judul widget (opsional)"
+        onChange={(e) => onChange({ judul: e.target.value })} />
+      {sec.jenis === 'video' ? (
+        <>
+          <input style={style.inp} value={sec.url || ''}
+            placeholder="URL video: YouTube (watch/youtu.be/shorts) atau .mp4"
+            onChange={(e) => onChange({ url: e.target.value })} />
+          <input style={style.inp} value={sec.keterangan || ''} placeholder="Keterangan video (opsional)"
+            onChange={(e) => onChange({ keterangan: e.target.value })} />
+        </>
+      ) : (
+        <>
+          <input style={style.inp} value={sec.keterangan || ''}
+            placeholder="Petunjuk pengerjaan (opsional)"
+            onChange={(e) => onChange({ keterangan: e.target.value })} />
+          <div style={style.labelKecil}>
+            items (JSON) — contoh: <code style={{ fontSize: 10 }}>{contohIsi}</code>
+          </div>
+          <textarea
+            style={{
+              ...style.inp, fontFamily: 'ui-monospace,monospace', fontSize: 11.5,
+              borderColor: err ? '#DC2626' : undefined,
+            }}
+            rows={Math.min(14, Math.max(4, jsonTeks.split('\n').length))}
+            value={jsonTeks}
+            onChange={(e) => setJsonTeks(e.target.value)}
+            onBlur={() => commitItems(jsonTeks)}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') commitItems(jsonTeks);
+            }}
+          />
+          {err ? <div style={{ fontSize: 11, color: '#B91C1C', marginTop: 3 }}>⚠️ {err}</div> : null}
+        </>
+      )}
+      <div style={style.labelKecil}>👁 Pratinjau live (persis tampilan siswa):</div>
+      <div style={{ background: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: 12, padding: 10 }}>
+        <WidgetInteraktif widget={sec} />
+      </div>
+    </>
+  );
+}
 
 export default function EditBabV2() {
   const { materiId } = useParams();
@@ -404,6 +503,11 @@ export default function EditBabV2() {
                       <input style={S.inp} value={sec.latex || ''}
                         placeholder="LaTeX, mis. a^2 + b^2 = c^2"
                         onChange={(e) => setSec(i, { latex: e.target.value })} />
+                    ) : JENIS_INTERAKTIF.has(sec.jenis) ? (
+                      // 🔥 MATERI INTERAKTIF (Turn 87): judul/keterangan/url +
+                      // items JSON + pratinjau live persis tampilan siswa.
+                      <EditorInteraktif sec={sec} style={S}
+                        onChange={(patch) => setSec(i, patch)} />
                     ) : (
                       <>
                         {(sec.jenis === 'callout' || sec.jenis === 'contoh') && (

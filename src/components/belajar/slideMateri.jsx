@@ -7,6 +7,7 @@
 // ============================================================
 import React from 'react';
 import { MathText } from '../MathText';
+import WidgetInteraktif from './WidgetInteraktif';
 import { T } from '../../pages/student/belajar/tema';
 
 /** Susun sections menjadi daftar slide.
@@ -33,6 +34,44 @@ export function buatSlide(sections = []) {
       slides.push({
         t: 'poin', judul: s.judul || 'Kamus mini istilah',
         items: (s.items || []).map((it) => `${it.k}: ${it.v}`),
+      });
+    } else if (j === 'video') {
+      // 🔥 MATERI INTERAKTIF (Turn 87): slide video bisa diputar di panggung.
+      flush();
+      slides.push({ t: 'video', url: s.url, judul: s.judul, keterangan: s.keterangan });
+    } else if (j === 'jodohMini') {
+      flush();
+      slides.push({
+        t: 'tabel', judul: s.judul || '🔗 Jodohkan Pasangan', kolom: ['Pernyataan', 'Pasangan'],
+        rows: (s.items || []).map((it) => ({ k: it.kiri, v: it.kanan })),
+      });
+    } else if (j === 'flashcard') {
+      flush();
+      slides.push({
+        t: 'poin', judul: s.judul || '🃏 Flashcard',
+        items: (s.items || []).map((it) => `${it.depan} → ${it.belakang}`),
+      });
+    } else if (j === 'urutan') {
+      flush();
+      slides.push({
+        t: 'poin', judul: s.judul || '🧩 Susun Urutan',
+        items: (s.items || []).map((it) => (typeof it === 'string' ? it : (it && it.teks) || '')),
+      });
+    } else if (j === 'benarSalah') {
+      flush();
+      const labelBS = (v) => {
+        if (typeof v === 'boolean') return v ? 'Benar' : 'Salah';
+        return ['salah', 's', 'false'].includes(String(v).toLowerCase().trim()) ? 'Salah' : 'Benar';
+      };
+      slides.push({
+        t: 'poin', judul: s.judul || '⚖️ Benar atau Salah',
+        items: (s.items || []).map((it) => `${it.teks} — (${labelBS(it.jawaban)})`),
+      });
+    } else if (j === 'isianRumpang') {
+      flush();
+      slides.push({
+        t: 'poin', judul: s.judul || '✍️ Isian Rumpang',
+        items: (s.items || []).map((it) => it.teks),
       });
     } else {
       buf.push(s.teks || '');
@@ -125,6 +164,14 @@ export function SlideView({ slide }) {
       <div style={{ ...WRAP, background: '#F4F9FF' }}>
         <h3 style={{ ...JUD, fontSize: 18, marginBottom: 8 }}>✍️ Contoh terpecah langkah</h3>
         <p style={{ ...PAR, margin: 0 }}><MathText text={slide.teks} /></p>
+      </div>
+    );
+  }
+  if (slide.t === 'video') {
+    // 🔥 MATERI INTERAKTIF (Turn 87): video bisa langsung diputar di panggung.
+    return (
+      <div style={WRAP}>
+        <WidgetInteraktif widget={{ jenis: 'video', judul: slide.judul, url: slide.url, keterangan: slide.keterangan }} />
       </div>
     );
   }
