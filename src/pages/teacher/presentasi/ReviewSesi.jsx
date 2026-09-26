@@ -19,7 +19,8 @@ import { MathText } from '../../../components/MathText';
 import { TeksSoal } from '../../student/belajar/BelajarReader';
 import PembahasanBox from '../../../components/belajar/PembahasanBox';
 import { T, kartuDasar, halamanDasar, tombolPill } from '../../student/belajar/tema';
-import { ArrowLeft, Trophy, RefreshCw, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Trophy, RefreshCw, Target, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { catatRiwayatLatihan } from '../../../services/riwayatLatihanService';
 
 const tipeOf = (s) => {
   const t = String(s?.tipe || 'pg');
@@ -78,6 +79,32 @@ export default function ReviewSesi() {
   const [loading, setLoading] = useState(true);
   const [soalAktif, setSoalAktif] = useState(0);
   const [bukaBahas, setBukaBahas] = useState({});
+  const [syncPesan, setSyncPesan] = useState('');
+
+  // Turn 97: pulihkan riwayat siswa untuk sesi LAMA (sebelum pencatatan
+  // otomatis aktif) — idempoten lewat id ujian_<sesiId>.
+  const syncKeRiwayat = async () => {
+    if (!sesi) return;
+    setSyncPesan('Menyinkronkan…');
+    let ok = 0;
+    for (const u of ujian) {
+      const perSoal = jawaban
+        .filter((j) => j.siswaId === u.siswaId)
+        .map((j) => ({ i: Number(j.soalIdx), kredit: j.benar ? 1 : 0, jaw: j.jawaban ?? null }));
+      const id = await catatRiwayatLatihan(u.siswaId, {
+        jenis: 'ujian', kode: sesi.kode || '',
+        materiId: sesi.materiId || sesi.bukuId || '',
+        babId: sesi.babId || '',
+        babJudul: sesi.catatan || '',
+        nilai: u.skor, benar: u.benar, total: u.total, terjawab: u.terjawab,
+        perSoal, tsMs: u.ts || Date.now(), backfill: true,
+      }, `ujian_${sesiId}`);
+      if (id) ok += 1;
+    }
+    setSyncPesan(ok === ujian.length
+      ? `✅ ${ok} siswa tersinkron ke Riwayat Latihan mereka.`
+      : `⚠️ ${ok}/${ujian.length} tersinkron — bila gagal, kemungkinan aturan Firestore menolak penulisan ini.`);
+  };
 
   const muat = async () => {
     setLoading(true);
@@ -152,7 +179,17 @@ export default function ReviewSesi() {
         <button type="button" style={tombolPill('hijau')} onClick={muat}>
           <RefreshCw size={14} /> Muat ulang
         </button>
+        {ujian.length > 0 && (
+          <button type="button" style={tombolPill('putih')} onClick={syncKeRiwayat}>
+            <Save size={14} /> Sync ke riwayat siswa
+          </button>
+        )}
       </div>
+      {syncPesan && (
+        <div style={{ maxWidth: 900, margin: '8px auto 0', fontSize: 12, fontWeight: 700, color: T.biruDalam }}>
+          {syncPesan}
+        </div>
+      )}
 
       <div style={S.isi}>
         {loading ? (

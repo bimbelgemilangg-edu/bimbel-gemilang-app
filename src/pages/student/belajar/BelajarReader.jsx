@@ -1475,12 +1475,13 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
         total: indexes.length, terjawab,
       });
       // Turn 95: masuk riwayat latihan siswa (tab Riwayat Latihan).
+      // Turn 97: id idempoten per sesi — submit ulang/auto tidak menduplikat.
       catatRiwayatLatihan(siswaId, {
         jenis: 'ujian', kode: sesi?.kode || '', materiId, babId, babJudul,
         nilai: skor, benar: kredit.reduce((a, b) => a + b, 0),
         total: indexes.length,
         perSoal: indexes.map((i) => ({ i, kredit: kreditSoal(kuis[i], jw[i] ?? null), jaw: jw[i] ?? null })),
-      });
+      }, `ujian_${sessionId}`);
     } catch { /* nilai tetap tampil lokal bila offline */ }
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps

@@ -9,15 +9,21 @@
 //          nilai, benar, total, perSoal:[{i, kredit, jaw}], tsMs }
 // ============================================================
 import {
-  collection, addDoc, getDocs, query, where, serverTimestamp,
+  collection, addDoc, getDocs, query, where, serverTimestamp, doc, setDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const kol = (studentId) => collection(db, 'siswa_riwayat_latihan', String(studentId || '_'), 'items');
 
-export async function catatRiwayatLatihan(studentId, entry) {
+export async function catatRiwayatLatihan(studentId, entry, itemId) {
   if (!studentId) return null;
   try {
+    if (itemId) {
+      // id deterministik (mis. ujian_<sesiId>) -> idempoten, tidak duplikat
+      const ref = doc(db, 'siswa_riwayat_latihan', String(studentId), 'items', String(itemId));
+      await setDoc(ref, { ...entry, tsMs: entry.tsMs || Date.now() }, { merge: true });
+      return ref.id;
+    }
     const ref = await addDoc(kol(studentId), {
       ...entry,
       ts: serverTimestamp(),
