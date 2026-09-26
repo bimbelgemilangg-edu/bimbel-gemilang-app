@@ -92,6 +92,34 @@ const kreditSoal = (s, jaw) => {
   if (t === 'uraian') return 0; // dinilai mandiri vs referensi
   return jaw === s.jawaban ? 1 : 0;
 };
+// Turn 89 (koreksi owner): teks soal/stimulus sering MULTIPARAGRAF
+// (kutipan cerpen/teks). Pecah pada baris kosong supaya bacaan tidak
+// menjadi satu blok panjang; baris pembuka "Bacalah ..." dimiringkan
+// seperti cetakan buku, batang soal di akhir ditebalkan.
+function TeksSoal({ teks, style }) {
+  const paras = String(teks || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const adaBacalah = paras.length > 1 && /^Bacalah\b/.test(paras[0]);
+  return (
+    <div style={style}>
+      {paras.map((p, i) => {
+        const pembuka = adaBacalah && i === 0;
+        const batang = adaBacalah && i === paras.length - 1;
+        return (
+          <p key={i} style={{
+            margin: i === 0 ? 0 : '10px 0 0',
+            lineHeight: pembuka ? 1.7 : 1.9,
+            fontStyle: pembuka ? 'italic' : undefined,
+            fontWeight: pembuka ? 600 : batang ? 800 : 500,
+            color: batang ? undefined : '#33506E',
+          }}>
+            <MathText text={p} />
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 const kolomSoal = (s) => (Array.isArray(s?.kolom) && s.kolom.length
   ? s.kolom : ['Benar', 'Salah']);
 const jawabanLengkap = (s, jaw) => {
@@ -1098,7 +1126,7 @@ function PanelKuis({
       {soal.soalGambar && (
         <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
       )}
-      <div style={S.soalTeks}><MathText text={soal.soal} /></div>
+      <TeksSoal teks={soal.soal} style={S.soalTeks} />
 
       {tipeSoal(soal) === 'tabel' ? (
         <div style={S.tabelWrap}>
@@ -1379,7 +1407,7 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
       {soal.soalGambar && (
         <img src={soal.soalGambar} alt="Gambar soal" style={S.soalGambar} />
       )}
-      <div style={S.soalTeks}><MathText text={soal.soal} /></div>
+      <TeksSoal teks={soal.soal} style={S.soalTeks} />
       {fmt === 'tabel' ? (
         <div style={S.tabelWrap}>
           <table style={S.tabel}>

@@ -1,0 +1,826 @@
+{
+  "materi": {
+    "judul": "Bahasa Indonesia Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Indonesia",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#E11D48",
+    "emoji": "🎭",
+    "deskripsi": "Materi wajib kelas 12 seri TKA: bab 1 paragraf & pragmatik, bab 2 paragraf lanjutan, bab 3 ejaan-sintaksis-semantik, bab 4 sastra. Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 4,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1-4 dari berkas pindai buku Sukses Tes Kemampuan Akademik SMA – Saintek (bab 1 h.40-42 + kunci/pembahasan); kunci mengikuti cetakan asli dengan koreksi salah cetak terdokumentasi.",
+      "Kartu CG-PARAGRAF, CG-BAGAN, tabel penanda pola, dan soal Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 1 — Paragraf 1 & Pragmatik (Edisi Cara Gemilang)",
+      "ringkasan": "Gagasan utama & 5 jenis paragraf, informasi tersurat-tersirat, tujuan penulis (5 jenis teks), 8 pola pengembangan, serta membaca bagan/skema (pragmatik) — dengan jodohkan, flashcard, susun urutan, benar/salah, dan 25 soal resmi bank berstimulus teks utuh + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Paragraf: Gagasan Utama, Informasi, dan Pola"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Paragraf adalah kesatuan pikiran dalam kumpulan kalimat yang berkaitan untuk membentuk satu ide pokok. Letak kalimat utama menentukan jenis paragraf: deduktif, ineratif, induktif, variatif, atau deskriptif/naratif. Hampir semua soal bacaan TKA bertumpu pada keterampilan menemukan gagasan utama ini."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Bab 1 adalah fondasi seluruh bacaan TKA Bahasa Indonesia: gagasan utama, informasi tersurat-tersirat, tujuan penulis, dan pola pengembangan muncul lagi di bab 2 (paragraf lanjutan), bab 3 (ejaan-semantik pada kalimat), dan bab 4 (sastra). Kuasai pemetaan paragraf di sini = mempercepat semua bab lain."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan paragraf seperti satu paragraf chat panjang dari temanmu. Meski kalimatnya banyak, niatnya satu: menyampaikan satu hal pokok. Kalimat yang memuat hal pokok itulah kalimat utama; sisanya hanyalah pemerinci."
+        },
+        {
+          "jenis": "poin",
+          "judul": "5 jenis paragraf menurut letak kalimat utama",
+          "items": [
+            "Deduktif — kalimat utama di AWAL: pernyataan umum dulu, baru penjelasan khusus.",
+            "Ineratif — kalimat utama di TENGAH: kalimat sebelum dan sesudahnya penjelas.",
+            "Induktif — kalimat utama di AKHIR: rincian khusus dulu, ditutup kesimpulan umum.",
+            "Variatif — kalimat utama di AWAL dan AKHIR: gagasan awal dipertegas lagi di penutup.",
+            "Deskriptif/naratif — kalimat utama TERSEBAR di seluruh paragraf: pembaca menyimpulkan sendiri."
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: jenis paragraf dan letak kalimat utamanya",
+          "keterangan": "Pemanasan cepat sebelum masuk materi informasi.",
+          "items": [
+            {
+              "kiri": "Kalimat utama di awal paragraf",
+              "kanan": "Deduktif"
+            },
+            {
+              "kiri": "Kalimat utama di tengah paragraf",
+              "kanan": "Ineratif"
+            },
+            {
+              "kiri": "Kalimat utama di akhir paragraf",
+              "kanan": "Induktif"
+            },
+            {
+              "kiri": "Kalimat utama di awal dan akhir",
+              "kanan": "Variatif"
+            },
+            {
+              "kiri": "Kalimat utama tersebar seluruh paragraf",
+              "kanan": "Deskriptif/naratif"
+            }
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Informasi tersurat vs tersirat",
+          "items": [
+            "Tersurat — tertulis jelas di bacaan; ditemukan dengan membaca menyeluruh: apa masalahnya, di mana, kapan, siapa, mengapa, bagaimana.",
+            "Tersirat — tidak tertulis, tersembunyi; ditemukan dengan menghubungkan data teks (menyimpulkan).",
+            "Langkah tersirat 1: identifikasi hal-hal penting dalam teks.",
+            "Langkah tersirat 2: buat opini/pendapat yang mencakup keseluruhan hal penting itu."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "5 jenis teks menurut isi & tujuan (bank h.41)",
+          "kolom": [
+            "Jenis",
+            "Ciri-ciri",
+            "Tujuan"
+          ],
+          "rows": [
+            {
+              "k": "Deskripsi",
+              "v": "Ada rincian detail: tempat, benda, orang.",
+              "w": "Menggambarkan; pembaca seolah melihat/merasakan yang digambarkan."
+            },
+            {
+              "k": "Eksposisi",
+              "v": "Berisi pengetahuan; pola definisi, proses, klasifikasi, ilustrasi.",
+              "w": "Menjelaskan, memaparkan, menginformasikan."
+            },
+            {
+              "k": "Persuasi",
+              "v": "Berisi ajakan.",
+              "w": "Mengajak, membujuk, mengimbau."
+            },
+            {
+              "k": "Argumentasi",
+              "v": "Ada pendapat, pengetahuan, fakta & opini.",
+              "w": "Memengaruhi, meyakinkan, membuktikan."
+            },
+            {
+              "k": "Narasi",
+              "v": "Ada alur, latar, tokoh.",
+              "w": "Menceritakan, mengisahkan."
+            }
+          ]
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: jenis teks -> tujuan utamanya",
+          "items": [
+            {
+              "depan": "Deskripsi",
+              "belakang": "Menggambarkan objek rincian agar pembaca seolah melihat/merasakan."
+            },
+            {
+              "depan": "Eksposisi",
+              "belakang": "Menjelaskan/memaparkan informasi atau pengetahuan."
+            },
+            {
+              "depan": "Persuasi",
+              "belakang": "Mengajak, membujuk, mengimbau pembaca."
+            },
+            {
+              "depan": "Argumentasi",
+              "belakang": "Meyakinkan pembaca dengan pendapat + bukti."
+            },
+            {
+              "depan": "Narasi",
+              "belakang": "Menceritakan kisah (alur, latar, tokoh)."
+            }
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "8 pola pengembangan paragraf (bank h.42)",
+          "kolom": [
+            "Pola",
+            "Inti",
+            "Penanda cepat"
+          ],
+          "rows": [
+            {
+              "k": "Deskripsi",
+              "v": "Menggambarkan objek/tempat/peristiwa rinci.",
+              "w": "Rincian ciri yang bisa dibayangkan."
+            },
+            {
+              "k": "Eksposisi",
+              "v": "Menjelaskan topik agar pembaca paham.",
+              "w": "Umum -> rincian -> penutup, tanpa membujuk."
+            },
+            {
+              "k": "Argumentasi",
+              "v": "Meyakinkan pembaca dengan alasan/bukti.",
+              "w": "Klaim + bukti pendukung."
+            },
+            {
+              "k": "Prosedural",
+              "v": "Memberi langkah-langkah melakukan sesuatu.",
+              "w": "Urutan langkah/manual."
+            },
+            {
+              "k": "Klasifikasi",
+              "v": "Mengelompokkan informasi per kategori.",
+              "w": "Pembagian kelompok berdasar kriteria."
+            },
+            {
+              "k": "Sebab-akibat (kausal)",
+              "v": "Menunjukkan hubungan sebab dan akibat.",
+              "w": "Karena -> maka/dampak."
+            },
+            {
+              "k": "Kronologis",
+              "v": "Menyajikan informasi sesuai urutan waktu.",
+              "w": "Penanda waktu berurutan."
+            },
+            {
+              "k": "Perbandingan",
+              "v": "Membandingkan dua hal atau lebih.",
+              "w": "Persamaan/perbedaan disandingkan."
+            }
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: pola pengembangan dan contoh pakainya",
+          "items": [
+            {
+              "kiri": "Dampak perubahan iklim terhadap lingkungan",
+              "kanan": "Sebab-akibat (kausal)"
+            },
+            {
+              "kiri": "Teks sejarah atau narasi kejadian",
+              "kanan": "Kronologis"
+            },
+            {
+              "kiri": "Manual instruksi/petunjuk penggunaan",
+              "kanan": "Prosedural"
+            },
+            {
+              "kiri": "Pengelompokan tumbuhan/binatang per ciri",
+              "kanan": "Klasifikasi"
+            },
+            {
+              "kiri": "Membandingkan dua teori atau produk",
+              "kanan": "Perbandingan"
+            },
+            {
+              "kiri": "Laporan hasil observasi tempat/benda",
+              "kanan": "Deskripsi"
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-PARAGRAF: D-I-I-V-D & lapis tujuan",
+          "teks": "Letak kalimat utama = nama paragraf: Deduktif=depan, Ineratif=tengah, Induktif=belakang, Variatif=depan+belakang, Deskriptif/naratif=merata. Tujuan penulis = jenis teks (deskripsi-eksposisi-persuasi-argumentasi-narasi).",
+          "items": [
+            "Cari gagasan utama: baca kalimat pertama & terakhir dulu — 80% paragraf ujian deduktif/induktif.",
+            "Ragu jenis teks? Hitung kata kerja tujuan: mengajak=bujuk=persuasi; meyakinkan+bukti=argumentasi; murni informar=eksposisi.",
+            "Soal bagan: tulis 3 informasi inti sesuai urutan muncul, cocokkan dengan label kotak."
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: paragraf & informasi",
+          "keterangan": "Gemilang Drill — pemanasan sebelum zona berlatih.",
+          "items": [
+            {
+              "teks": "Paragraf deduktif memiliki kalimat utama di akhir paragraf.",
+              "jawaban": false,
+              "penjelasan": "Deduktif di awal; yang di akhir itu induktif."
+            },
+            {
+              "teks": "Paragraf variatif mengulang gagasan utamanya di awal dan akhir.",
+              "jawaban": true,
+              "penjelasan": "Gagasan awal dipertegas lagi pada kalimat terakhir."
+            },
+            {
+              "teks": "Informasi tersirat harus disimpulkan karena tidak tertulis langsung.",
+              "jawaban": true,
+              "penjelasan": "Tersirat = tersembunyi; dihubungkan dari data teks."
+            },
+            {
+              "teks": "Teks persuasi bertujuan meyakinkan pembaca dengan bukti dan fakta.",
+              "jawaban": false,
+              "penjelasan": "Itu argumentasi; persuasi = mengajak/membujuk/mengimbau."
+            },
+            {
+              "teks": "Pola pengembangan kronologis menyusun informasi menurut urutan waktu.",
+              "jawaban": true,
+              "penjelasan": "Ciri: penanda waktu yang berurutan."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Ineratif vs induktif tertukar adalah kesalahan paling umum: ingat \"ineratif = di teNGAH\". Jebakan kedua: opsi gagasan utama yang sebenarnya hanya kalimat penjelas (terlalu detail) atau terlalu luas melebihi paragraf."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Paragraf yang kalimat utamanya terletak di tengah disebut paragraf ...",
+              "opsi": [
+                "deduktif",
+                "ineratif",
+                "induktif",
+                "variatif",
+                "deskriptif"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: ineratif menyimpan kalimat utama di tengah, diapit kalimat penjelas. Jalur Cara Gemilang: CG-PARAGRAF — ineratif = teNGAH."
+            },
+            {
+              "soal": "Bacalah paragraf berikut! (1) Sampah plastik menumpuk di saluran air. (2) Saat hujan deras, air tidak lagi punya jalan. (3) Akibatnya, banjir merendam permukiman warga hampir setiap musim hujan. Pola pengembangan paragraf tersebut adalah ...",
+              "opsi": [
+                "perbandingan",
+                "kronologis",
+                "sebab-akibat",
+                "klasifikasi",
+                "prosedural"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: rantai tumpukan sampah -> air terhambat -> banjir = hubungan sebab-akibat. Jalur Cara Gemilang: ada karena->dampak = kausal."
+            },
+            {
+              "soal": "Teks yang berisi ajakan kepada pembaca untuk mengikuti suatu kegiatan tergolong teks ...",
+              "opsi": [
+                "deskripsi",
+                "eksposisi",
+                "narasi",
+                "persuasi",
+                "argumentasi"
+              ],
+              "jawaban": 3,
+              "pembahasan": "Jalur konsep: ciri persuasi = berisi ajakan; tujuannya mengajak/membujuk/mengimbau. Jalur Cara Gemilang: kata \"ajakan\" langsung kunci persuasi."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri",
+          "teks": "Tulis ulang 5 jenis paragraf + 8 pola pengembangan dengan bahasamu sendiri dalam satu halaman, lalu tandai pola yang paling sering muncul di latihan bab ini. Ringkasan buatan sendiri diingat jauh lebih lama."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Pragmatik: Membaca Bagan, Skema, dan Kerangka"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Skema, bagan, dan kerangka adalah garis besar suatu tulisan dalam bentuk gambar atau grafik untuk memudahkan pemahaman. Di ujian, bagan muncul dua arah: memilih bagan yang cocok untuk sebuah teks, dan membaca maksud sebuah bagan."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Skema memiliki arti yang sama dengan bagan, rangka, atau denah. Skema menggambarkan secara analitik sistem atau olahan data sehingga pembaca melihat keseluruhan sekaligus. Karena itu bagan menjadi bahasa favorit soal pemahaman praktis (pragmatik)."
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: alur bagan penelitian-pengembangan (contoh bank h.42)",
+          "keterangan": "Contoh bagan buku: alur pengembangan produk dari kebutuhan sampai revisi akhir.",
+          "items": [
+            "Analisis kebutuhan",
+            "Analisis kurikulum",
+            "Pengembangan produk awal",
+            "Validasi ahli",
+            "Revisi produk",
+            "Uji coba lapangan",
+            "Revisi produk akhir"
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Cara membaca bagan ala tentor",
+          "items": [
+            "Baca label setiap kotak dulu sebelum melihat anak panah — label adalah informasi intinya.",
+            "Ikuti arah anak panah: urutan alur = urutan panah, bukan urutan posisi gambar.",
+            "Waspadai loop revisi: panah balik berarti tahap sebelumnya diulang setelah evaluasi.",
+            "Soal \"bagan yang tepat\": tulis 3 informasi inti teks sesuai urutan muncul, lalu cocokkan — kotak berlebih atau kurang = salah."
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-BAGAN: Label–Panah–Loop",
+          "teks": "Bagan = label (isi kotak) + panah (alur) + loop (pengulangan). Soal bagan selalu bisa dipecahkan dengan menulis ulang tiga unsur itu dari teks.",
+          "items": [
+            "Soal memilih bagan: coret opsi yang kotaknya menambah/mengurangi informasi teks.",
+            "Soal membaca bagan: jawab dari panah, jangan dari posisi kotak di gambar.",
+            "Loop revisi = tanda tahap sebelumnya belum final."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Skema, bagan, dan kerangka pada hakikatnya adalah ...",
+              "opsi": [
+                "ringkasan teks dalam bentuk poin",
+                "garis besar tulisan dalam bentuk gambar/grafik",
+                "daftar istilah penting suatu bacaan",
+                "urutan kalimat utama tiap paragraf",
+                "catatan kaki sebuah tulisan"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: buku mendefinisikan skema/bagan/kerangka sebagai garis besar tulisan berbentuk gambar/grafik untuk memudahkan pemahaman. Jalur Cara Gemilang: CG-BAGAN — bagan = peta garis besar."
+            },
+            {
+              "soal": "Pada bagan alur pengembangan produk, tahap segera setelah \"validasi ahli\" adalah ...",
+              "opsi": [
+                "uji coba lapangan",
+                "analisis kurikulum",
+                "revisi produk",
+                "revisi produk akhir",
+                "pengembangan produk awal"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: urutan bagan buku: validasi ahli -> revisi produk -> uji coba lapangan. Jalur Cara Gemilang: ikuti panahnya — setelah validasi pasti revisi."
+            },
+            {
+              "soal": "Sebuah teks memuat tiga informasi inti: pengertian lensa kontak, dampak negatif pemakaian, dan pencegahan bahaya. Bagan yang tepat harus memuat ...",
+              "opsi": [
+                "pengertian -> dampak positif -> solusi",
+                "pemakaian -> dampak negatif -> pencegahan",
+                "pengertian -> pencegahan -> dampak negatif",
+                "dampak negatif -> pengertian -> pemakaian",
+                "pencegahan -> pemakaian -> pengertian"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: bagan benar mengikuti urutan & isi informasi teks (pola soal asli #18): pemakaian/penggunaan -> dampak negatif -> pencegahan. Jalur Cara Gemilang: tulis 3 inti sesuai urutan muncul, cocokkan label kotak."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Siap uji pemahaman",
+          "teks": "Subbab paragraf & pragmatik tuntas. Saat mengerjakan 25 soal resmi bab ini, tandai tiap soal dengan label CG-nya (gagasan utama / tujuan / bagan / pola / B-S tabel) — pola label itulah yang membuat latihan berikutnya terasa repetitif dan cepat."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKata teknologi berasal dari bahasa Inggris technology yang akar katanya merujuk pada bahasa Yunani kuno technologia yang berarti 'keahlian atau pengetahuan sistematis'. Kata dasarnya, techne, mengacu pada serangkaian prinsip, metode rasional, atau keterampilan yang digunakan dalam menciptakan suatu objek, mengembangkan seni, atau menguasai suatu bidang ilmu. Dalam konteks ini, teknologi tidak hanya berbicara tentang alat fisik, tetapi juga mencakup pengetahuan dan kecakapan yang mendasari proses pembuatan dan penerapan solusi terhadap berbagai persoalan manusia.\n\nPada awalnya, teknologi dipahami secara sempit sebagai benda-benda berwujud, seperti mesin dan peralatan. Namun, seiring perkembangan zaman, definisinya meluas mencakup hal-hal abstrak, seperti perangkat lunak, algoritma, sistem informasi, dan ilmu pengetahuan terapan. Menurut Kamus Besar Bahasa Indonesia (KBBI), teknologi adalah 'keseluruhan sarana, baik fisik maupun nonfisik, yang diciptakan manusia untuk memenuhi kebutuhan hidup, meningkatkan kenyamanan, serta mempermudah aktivitas sehari-hari'. Pemahaman ini menunjukkan bahwa teknologi kini menjadi bagian tidak terpisahkan dari kehidupan modern.\n\nTeknologi telah menyusup hampir di semua aspek kehidupan manusia sehingga berkembang menjadi berbagai jenis sesuai bidang penerapannya. Beberapa di antaranya adalah teknologi informasi yang memudahkan akses dan pengolahan data, teknologi komunikasi yang mempercepat pertukaran informasi, teknologi transportasi yang mempersingkat waktu perjalanan, serta teknologi pendidikan, medis, konstruksi, arsitektur, dan agrikultur yang masing-masing mengoptimalkan kinerja di bidangnya. Setiap jenis teknologi ini dirancang untuk menjawab tantangan spesifik dan meningkatkan efisiensi dalam aktivitas manusia.\n\nKeberadaan teknologi membawa berbagai manfaat, seperti efisiensi dalam bisnis, akses layanan perbankan yang lebih mudah, pembelajaran jarak jauh di bidang pendidikan, hingga pencatatan rekam medis yang akurat di sektor kesehatan. Namun, di balik segala kemudahannya, teknologi juga membawa dampak negatif, seperti tergerusnya budaya lokal akibat dominasi budaya asing, penurunan moral karena paparan konten negatif di internet, serta munculnya sikap antisosial akibat kecanduan media digital. Oleh karena itu, penggunaan teknologi perlu dilandasi oleh kesadaran kritis dan tanggung jawab sosial agar manfaatnya dapat dimaksimalkan tanpa mengorbankan nilai-nilai kemanusiaan.\n\n(diadaptasi dari https://www.gramedia.com/)\n\nApa gagasan utama yang disampaikan pada paragraf kedua teks tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Teknologi transportasi membantu mempercepat waktu perjalanan manusia.",
+            "Teknologi telah menyusup hampir di semua aspek kehidupan manusia.",
+            "Teknologi pendidikan dan medis meningkatkan efisiensi di bidangnya masing-masing.",
+            "Teknologi modern telah menggantikan peran alat tradisional dalam kehidupan manusia.",
+            "Teknologi informasi dan komunikasi memudahkan akses data dan pertukaran informasi."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Gagasan utama atau ide pokok adalah informasi utama yang menjadi inti pembahasan sebuah paragraf. Ide pokok terdapat pada kalimat utama yang terletak di awal (deduktif), di akhir (induktif), di tengah (ineratif), di awal dan akhir (variatif), dan tersebar (deskriptif/naratif). Namun, umumnya gagasan utama terletak di awal (deduktif) atau di akhir (induktif). Paragraf (2) dalam teks tersebut termasuk paragraf deduktif, yaitu ide pokok berada di awal. Jadi, gagasan utama yang tepat untuk paragraf (2) adalah Teknologi telah menyusup hampir di semua aspek kehidupan manusia . Jalur Cara Gemilang: Gagasan utama = kalimat paling umum yang mewadahi kalimat lain; cek kalimat pertama & terakhir dulu (deduktif/induktif paling sering keluar).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKata teknologi berasal dari bahasa Inggris technology yang akar katanya merujuk pada bahasa Yunani kuno technologia yang berarti 'keahlian atau pengetahuan sistematis'. Kata dasarnya, techne, mengacu pada serangkaian prinsip, metode rasional, atau keterampilan yang digunakan dalam menciptakan suatu objek, mengembangkan seni, atau menguasai suatu bidang ilmu. Dalam konteks ini, teknologi tidak hanya berbicara tentang alat fisik, tetapi juga mencakup pengetahuan dan kecakapan yang mendasari proses pembuatan dan penerapan solusi terhadap berbagai persoalan manusia.\n\nPada awalnya, teknologi dipahami secara sempit sebagai benda-benda berwujud, seperti mesin dan peralatan. Namun, seiring perkembangan zaman, definisinya meluas mencakup hal-hal abstrak, seperti perangkat lunak, algoritma, sistem informasi, dan ilmu pengetahuan terapan. Menurut Kamus Besar Bahasa Indonesia (KBBI), teknologi adalah 'keseluruhan sarana, baik fisik maupun nonfisik, yang diciptakan manusia untuk memenuhi kebutuhan hidup, meningkatkan kenyamanan, serta mempermudah aktivitas sehari-hari'. Pemahaman ini menunjukkan bahwa teknologi kini menjadi bagian tidak terpisahkan dari kehidupan modern.\n\nTeknologi telah menyusup hampir di semua aspek kehidupan manusia sehingga berkembang menjadi berbagai jenis sesuai bidang penerapannya. Beberapa di antaranya adalah teknologi informasi yang memudahkan akses dan pengolahan data, teknologi komunikasi yang mempercepat pertukaran informasi, teknologi transportasi yang mempersingkat waktu perjalanan, serta teknologi pendidikan, medis, konstruksi, arsitektur, dan agrikultur yang masing-masing mengoptimalkan kinerja di bidangnya. Setiap jenis teknologi ini dirancang untuk menjawab tantangan spesifik dan meningkatkan efisiensi dalam aktivitas manusia.\n\nKeberadaan teknologi membawa berbagai manfaat, seperti efisiensi dalam bisnis, akses layanan perbankan yang lebih mudah, pembelajaran jarak jauh di bidang pendidikan, hingga pencatatan rekam medis yang akurat di sektor kesehatan. Namun, di balik segala kemudahannya, teknologi juga membawa dampak negatif, seperti tergerusnya budaya lokal akibat dominasi budaya asing, penurunan moral karena paparan konten negatif di internet, serta munculnya sikap antisosial akibat kecanduan media digital. Oleh karena itu, penggunaan teknologi perlu dilandasi oleh kesadaran kritis dan tanggung jawab sosial agar manfaatnya dapat dimaksimalkan tanpa mengorbankan nilai-nilai kemanusiaan.\n\n(diadaptasi dari https://www.gramedia.com/)\n\nAlasan teknologi memengaruhi hampir setiap aspek kehidupan manusia adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Keberadaan teknologi membawa berbagai manfaat, seperti aktivitas dalam bisnis dan akses layanan perbankan.",
+            "Teknologi dirancang untuk menjawab tantangan spesifik, meningkatkan efisiensi, memenuhi kebutuhan hidup, serta mempermudah aktivitas sehari-hari manusia.",
+            "Teknologi membawa dampak buruk, seperti tergerusnya budaya asing akibat dominasi budaya daerah.",
+            "Teknologi hanya mencakup hal-hal abstrak, seperti perangkat lunak, algoritma, sistem reformasi, dan ilmu pengetahuan terapan.",
+            "Setiap jenis teknologi dibuat untuk menjawab tantangan khusus dan meningkatkan efektivitas dalam aktivitas manusia."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Alasan teknologi memengaruhi hampir setiap aspek dalam kehidupan manusia adalah teknologi dirancang secara sistematis untuk menjawab berbagai tantangan spesifik, meningkatkan efisiensi kerja, serta memenuhi kebutuhan hidup manusia . Sebagaimana dijelaskan dalam teks, teknologi berfungsi sebagai sarana fisik maupun nonfisik yang bertujuan meningkatkan kenyamanan dan mempermudah aktivitas sehari-hari di berbagai bidang, mulai dari informasi, komunikasi, hingga medis dan agrikultur. Dengan kemampuannya memberikan solusi praktis atas persoalan manusia, teknologi secara alami menyatu dan menjadi bagian yang tidak terpisahkan dalam mendukung kelancaran kehidupan modern. (Catatan: tabel kunci ringkas buku mencetak \"2. S,S,B\" — salah cetak; baris jawaban pembahasan menyatakan B, dan butir ini memang PG.) Jalur Cara Gemilang: Soal \"alasan\" = buru kalimat sebab di teks: teknologi disusun sistematis untuk menjawab tantangan spesifik — opsi yang menambah klaim baru = pengecoh.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKata teknologi berasal dari bahasa Inggris technology yang akar katanya merujuk pada bahasa Yunani kuno technologia yang berarti 'keahlian atau pengetahuan sistematis'. Kata dasarnya, techne, mengacu pada serangkaian prinsip, metode rasional, atau keterampilan yang digunakan dalam menciptakan suatu objek, mengembangkan seni, atau menguasai suatu bidang ilmu. Dalam konteks ini, teknologi tidak hanya berbicara tentang alat fisik, tetapi juga mencakup pengetahuan dan kecakapan yang mendasari proses pembuatan dan penerapan solusi terhadap berbagai persoalan manusia.\n\nPada awalnya, teknologi dipahami secara sempit sebagai benda-benda berwujud, seperti mesin dan peralatan. Namun, seiring perkembangan zaman, definisinya meluas mencakup hal-hal abstrak, seperti perangkat lunak, algoritma, sistem informasi, dan ilmu pengetahuan terapan. Menurut Kamus Besar Bahasa Indonesia (KBBI), teknologi adalah 'keseluruhan sarana, baik fisik maupun nonfisik, yang diciptakan manusia untuk memenuhi kebutuhan hidup, meningkatkan kenyamanan, serta mempermudah aktivitas sehari-hari'. Pemahaman ini menunjukkan bahwa teknologi kini menjadi bagian tidak terpisahkan dari kehidupan modern.\n\nTeknologi telah menyusup hampir di semua aspek kehidupan manusia sehingga berkembang menjadi berbagai jenis sesuai bidang penerapannya. Beberapa di antaranya adalah teknologi informasi yang memudahkan akses dan pengolahan data, teknologi komunikasi yang mempercepat pertukaran informasi, teknologi transportasi yang mempersingkat waktu perjalanan, serta teknologi pendidikan, medis, konstruksi, arsitektur, dan agrikultur yang masing-masing mengoptimalkan kinerja di bidangnya. Setiap jenis teknologi ini dirancang untuk menjawab tantangan spesifik dan meningkatkan efisiensi dalam aktivitas manusia.\n\nKeberadaan teknologi membawa berbagai manfaat, seperti efisiensi dalam bisnis, akses layanan perbankan yang lebih mudah, pembelajaran jarak jauh di bidang pendidikan, hingga pencatatan rekam medis yang akurat di sektor kesehatan. Namun, di balik segala kemudahannya, teknologi juga membawa dampak negatif, seperti tergerusnya budaya lokal akibat dominasi budaya asing, penurunan moral karena paparan konten negatif di internet, serta munculnya sikap antisosial akibat kecanduan media digital. Oleh karena itu, penggunaan teknologi perlu dilandasi oleh kesadaran kritis dan tanggung jawab sosial agar manfaatnya dapat dimaksimalkan tanpa mengorbankan nilai-nilai kemanusiaan.\n\n(diadaptasi dari https://www.gramedia.com/)\n\nTujuan penulisan berdasarkan kutipan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "menjelaskan berbagai jenis teknologi beserta contoh penerapannya dalam aktivitas manusia sehari-hari secara rinci.",
+            "menguraikan dampak negatif teknologi terhadap perubahan sosial dan budaya dalam kehidupan masyarakat global saat ini.",
+            "menjelaskan asal-usul istilah teknologi serta perkembangannya dari makna sempit menjadi luas dalam kehidupan manusia modern.",
+            "menggambarkan perbedaan penggunaan teknologi tradisional dan teknologi modern dalam berbagai bidang kehidupan manusia.",
+            "menginformasikan manfaat teknologi dalam meningkatkan efisiensi kerja tanpa membahas perkembangan dan dampaknya."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Tujuan penulisan teks tersebut adalah memberikan penjelasan yang komprehensif mengenai teknologi, dimulai dari asal-usul kata, perkembangan makna, hingga peran dan dampaknya dalam kehidupan manusia. Teks tidak hanya membahas definisi, tetapi juga memberikan pemahaman pembaca tentang cara teknologi berkembang dari konsep sederhana menjadi bagian penting dalam berbagai aspek kehidupan. Jadi, tujuan penulisan teks tersebut adalah menjelaskan asal-usul istilah teknologi serta perkembangannya dari makna sempit menjadi luas dalam kehidupan manusia modern . Jalur Cara Gemilang: Tujuan = jenis teks: penuh definisi & paparan = eksposisi -> menjelaskan/menginformasikan; coret opsi yang hanya mencakup satu paragraf.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKata teknologi berasal dari bahasa Inggris technology yang akar katanya merujuk pada bahasa Yunani kuno technologia yang berarti 'keahlian atau pengetahuan sistematis'. Kata dasarnya, techne, mengacu pada serangkaian prinsip, metode rasional, atau keterampilan yang digunakan dalam menciptakan suatu objek, mengembangkan seni, atau menguasai suatu bidang ilmu. Dalam konteks ini, teknologi tidak hanya berbicara tentang alat fisik, tetapi juga mencakup pengetahuan dan kecakapan yang mendasari proses pembuatan dan penerapan solusi terhadap berbagai persoalan manusia.\n\nPada awalnya, teknologi dipahami secara sempit sebagai benda-benda berwujud, seperti mesin dan peralatan. Namun, seiring perkembangan zaman, definisinya meluas mencakup hal-hal abstrak, seperti perangkat lunak, algoritma, sistem informasi, dan ilmu pengetahuan terapan. Menurut Kamus Besar Bahasa Indonesia (KBBI), teknologi adalah 'keseluruhan sarana, baik fisik maupun nonfisik, yang diciptakan manusia untuk memenuhi kebutuhan hidup, meningkatkan kenyamanan, serta mempermudah aktivitas sehari-hari'. Pemahaman ini menunjukkan bahwa teknologi kini menjadi bagian tidak terpisahkan dari kehidupan modern.\n\nTeknologi telah menyusup hampir di semua aspek kehidupan manusia sehingga berkembang menjadi berbagai jenis sesuai bidang penerapannya. Beberapa di antaranya adalah teknologi informasi yang memudahkan akses dan pengolahan data, teknologi komunikasi yang mempercepat pertukaran informasi, teknologi transportasi yang mempersingkat waktu perjalanan, serta teknologi pendidikan, medis, konstruksi, arsitektur, dan agrikultur yang masing-masing mengoptimalkan kinerja di bidangnya. Setiap jenis teknologi ini dirancang untuk menjawab tantangan spesifik dan meningkatkan efisiensi dalam aktivitas manusia.\n\nKeberadaan teknologi membawa berbagai manfaat, seperti efisiensi dalam bisnis, akses layanan perbankan yang lebih mudah, pembelajaran jarak jauh di bidang pendidikan, hingga pencatatan rekam medis yang akurat di sektor kesehatan. Namun, di balik segala kemudahannya, teknologi juga membawa dampak negatif, seperti tergerusnya budaya lokal akibat dominasi budaya asing, penurunan moral karena paparan konten negatif di internet, serta munculnya sikap antisosial akibat kecanduan media digital. Oleh karena itu, penggunaan teknologi perlu dilandasi oleh kesadaran kritis dan tanggung jawab sosial agar manfaatnya dapat dimaksimalkan tanpa mengorbankan nilai-nilai kemanusiaan.\n\n(diadaptasi dari https://www.gramedia.com/)\n\nBagan yang tepat untuk menggambarkan bagian-bagian penting dalam teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "tiga lingkaran penyebab teknologi, kesimpulan, akibat teknologi",
+            "siklus permasalahan, penyebab, solusi",
+            "diagram venn makna kata teknologi, manfaat teknologi, dampak teknologi",
+            "tiga batang makna kata teknologi, perkembangan teknologi, dampak positif dan negatif teknologi",
+            "diagram pie kesimpulan teknologi, pengertian teknologi, dampak teknologi"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Informasi penting teks tersebut meliputi makna kata teknologi; perkembangan teknologi; dan dampak positif dan negatif teknologi. Jadi, bagan yang tepat untuk teks tersebut adalah makna kata teknologi perkembangan teknologi dampak positif dan negatif teknologi Jalur Cara Gemilang: Soal bagan = tulis 3 informasi inti sesuai urutan muncul; bagan benar memuat ketiganya TANPA tambahan kotak asing.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nPemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen. Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar (fuel surcharge) guna membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar. Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menyatakan bahwa kebijakan ini juga disertai dengan penghapusan beberapa pajak terkait sektor penerbangan. Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik. Kebijakan ini merupakan bagian dari strategi pemerintah dalam menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat di tengah tekanan ekonomi global. Dengan adanya penyesuaian ini, maskapai diharapkan mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan. Namun, kebijakan kenaikan tarif ini berpotensi berdampak pada masyarakat, terutama dalam hal biaya perjalanan udara. Oleh karena itu, pemerintah tetap berupaya mengawasi implementasinya agar tidak memberatkan konsumen secara berlebihan.\n\n(diadaptasi dari https://www.reuters.com/)\n\nBerikut alasan pemerintah mengizinkan menaikkan tarif tiket pesawat sesuai dengan teks tersebut adalah Tentukan Benar atau Salah pada setiap pernyataan!\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "membantu maskapai penerbangan dalam menghadapi kenaikan biaya operasional, terutama harga bahan bakar.",
+            "sebagai langkah tunggal pemerintah untuk menekan daya beli masyarakat di tengah tekanan ekonomi global.",
+            "menjaga stabilitas industri penerbangan nasional agar layanan kepada masyarakat tetap berjalan dengan baik."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — BENAR: Bukti Teks: \"…guna membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar.\" Pernyataan ini sepenuhnya sesuai dan tertulis jelas di awal teks. Baris 2 — SALAH: Bukti Teks: Kebijakan ini bukan langkah tunggal karena disertai penghapusan beberapa pajak. Selain itu, tujuannya bukan untuk \"menekan daya beli\", melainkan untuk \"menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat\". Baris 3 — BENAR: Bukti Teks: \"Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik.\" Pernyataan ini sama persis dengan kalimat keempat pada teks. Jalur Cara Gemilang: Tabel B/S per baris: cari bukti teksnya; pernyataan berbau \"langkah tunggal/satu-satunya\" hampir pasti SALAH.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nPemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen. Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar (fuel surcharge) guna membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar. Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menyatakan bahwa kebijakan ini juga disertai dengan penghapusan beberapa pajak terkait sektor penerbangan. Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik. Kebijakan ini merupakan bagian dari strategi pemerintah dalam menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat di tengah tekanan ekonomi global. Dengan adanya penyesuaian ini, maskapai diharapkan mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan. Namun, kebijakan kenaikan tarif ini berpotensi berdampak pada masyarakat, terutama dalam hal biaya perjalanan udara. Oleh karena itu, pemerintah tetap berupaya mengawasi implementasinya agar tidak memberatkan konsumen secara berlebihan.\n\n(diadaptasi dari https://www.reuters.com/)\n\nGagasan utama yang tepat untuk paragraf pertama dalam teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Pemerintah harus berupaya untuk mengawasi implementasi agar tidak memberatkan konsumen.",
+            "Maskapai diharapkan mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan.",
+            "Pengesahan kebijakan menaikkan harga tiket maskapai dengan penyesuaian biaya tambahan bahan bakar.",
+            "Kebijakan memperbolehkan maskapai penerbangan menaikkan harga tiket telah diumumkan oleh pemerintah.",
+            "Pengesahan kebijakan menaikkan harga tiket pesawat disertai dengan penghapusan beberapa pajak terkait sektor penerbangan."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Gagasan utama atau ide pokok adalah informasi utama yang menjadi inti pembahasan sebuah paragraf. Ide pokok terdapat pada kalimat utama yang terletak di awal (deduktif), di akhir (induktif), di tengah (ineratif), di awal dan akhir (variatif), dan tersebar (deskriptif/naratif). Namun, umumnya gagasan utama terletak di awal (deduktif) atau di akhir (induktif). Teks tersebut termasuk paragraf deduktif, yaitu ide pokok berada di awal. Jadi, gagasan utama yang tepat untuk teks tersebut adalah Kebijakan memperbolehkan maskapai penerbangan menaikkan harga tiket telah diumumkan oleh pemerintah . Jalur Cara Gemilang: Gagasan utama paragraf deduktif = kalimat pertama; opsi benar = parafrasanya, bukan detail pendukung.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nPemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen. Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar (fuel surcharge) guna membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar. Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menyatakan bahwa kebijakan ini juga disertai dengan penghapusan beberapa pajak terkait sektor penerbangan. Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik. Kebijakan ini merupakan bagian dari strategi pemerintah dalam menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat di tengah tekanan ekonomi global. Dengan adanya penyesuaian ini, maskapai diharapkan mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan. Namun, kebijakan kenaikan tarif ini berpotensi berdampak pada masyarakat, terutama dalam hal biaya perjalanan udara. Oleh karena itu, pemerintah tetap berupaya mengawasi implementasinya agar tidak memberatkan konsumen secara berlebihan.\n\n(diadaptasi dari https://www.reuters.com/)\n\nTujuan penulisan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "menjelaskan kebijakan pemerintah terkait kenaikan tarif tiket pesawat serta dampaknya terhadap industri penerbangan nasional.",
+            "menguraikan alasan pemerintah menaikkan harga tiket pesawat tanpa mempertimbangkan dampaknya bagi masyarakat luas.",
+            "menyajikan kritik terhadap kebijakan pemerintah mengenai kenaikan harga tiket pesawat yang dinilai merugikan masyarakat.",
+            "menggambarkan kondisi industri penerbangan sebelum adanya kebijakan penyesuaian tarif dan biaya operasional maskapai.",
+            "membandingkan kebijakan tarif penerbangan di Indonesia dengan negara lain dalam menghadapi tekanan ekonomi global."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Teks tersebut bertujuan untuk memberikan informasi mengenai kebijakan pemerintah yang memperbolehkan kenaikan harga tiket pesawat beserta alasan, tujuan, dan dampaknya. Penjelasan mencakup latar belakang kebijakan, yaitu kenaikan biaya operasional maskapai, serta upaya pemerintah menjaga keseimbangan antara kepentingan industri dan masyarakat. Selain itu, teks juga menyinggung potensi dampak bagi konsumen dan pengawasan pemerintah. Jadi, tujuan penulisan kutipan teks tersebut adalah Menjelaskan kebijakan pemerintah terkait kenaikan tarif tiket pesawat serta dampaknya terhadap industri penerbangan nasional . Jalur Cara Gemilang: Teks berita informatif = eksposisi: menjelaskan kebijakan beserta alasannya — bukan mengkritik, bukan membandingkan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nPemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen. Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar (fuel surcharge) guna membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar. Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menyatakan bahwa kebijakan ini juga disertai dengan penghapusan beberapa pajak terkait sektor penerbangan. Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik. Kebijakan ini merupakan bagian dari strategi pemerintah dalam menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat di tengah tekanan ekonomi global. Dengan adanya penyesuaian ini, maskapai diharapkan mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan. Namun, kebijakan kenaikan tarif ini berpotensi berdampak pada masyarakat, terutama dalam hal biaya perjalanan udara. Oleh karena itu, pemerintah tetap berupaya mengawasi implementasinya agar tidak memberatkan konsumen secara berlebihan.\n\n(diadaptasi dari https://www.reuters.com/)\n\nPola pengembangan paragraf tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "pola perbandingan yang menunjukkan perbedaan kondisi industri penerbangan sebelum dan sesudah kebijakan kenaikan tarif diberlakukan.",
+            "pola definisi yang menjelaskan pengertian kebijakan tarif penerbangan beserta unsur-unsur yang membentuknya secara rinci.",
+            "pola sebab akibat yang menjelaskan hubungan antara kebijakan kenaikan tarif dan dampaknya terhadap industri penerbangan nasional.",
+            "pola kronologis yang menggambarkan urutan waktu penerapan kebijakan pemerintah dalam sektor penerbangan nasional.",
+            "pola ilustrasi yang memberikan contoh konkret penerapan kebijakan tarif dalam berbagai kondisi industri penerbangan."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Paragraf tersebut dikembangkan dengan pola sebab akibat yang menjelaskan hubungan antara kebijakan kenaikan tarif dan dampaknya terhadap industri penerbangan nasional karena memaparkan alasan diberlakukannya kebijakan, kemudian dampak yang diharapkan, seperti menjaga stabilitas industri dan kualitas layanan sebagai akibat. Penjelasan juga diperkuat dengan pernyataan pejabat serta tujuan kebijakan. Jalur Cara Gemilang: Ada rantai alasan -> dampak = sebab-akibat; urutan waktu = kronologis; rincian ciri objek = deskripsi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nIndonesia memiliki hamparan terumbu karang terluas di dunia, yaitu mencapai 2,5 juta hektare, yang kini menghadapi ancaman serius. Terumbu karang yang menjadi rumah bagi 569 spesies ini terancam akibat aktivitas manusia dan perubahan iklim. Menurut penelitian Juspi Ginting dalam Jurnal Kelautan dan Perikanan Terapan (Edisi Khusus 2023), kerusakan terumbu karang disebabkan oleh vandalisme wisata, penangkapan ikan destruktif, dan kesalahan teknis manusia yang berdampak serius dan permanen.\n\nMeski Undang-Undang Nomor 31 Tahun 2004 tentang Perikanan telah melarang praktik penangkapan ikan destruktif, pelanggaran masih sering terjadi. Praktik tersebut meliputi penggunaan bahan peledak, racun, dan alat yang merusak ikan serta struktur terumbu karang. Peneliti Fakhhrizal Setiawan dari Wildlife Conservation Society di Taman Wisata Perairan Gili Matra, Nusa Tenggara Barat, menunjukkan bahwa lebih dari 60 persen karang mengalami pemutihan akibat peningkatan suhu air laut. Pemutihan karang tersebut berdampak pada menurunnya kualitas ekosistem laut dan keanekaragaman hayati. Diperlukan upaya yang lebih serius dari berbagai pihak untuk melindungi terumbu karang dari kerusakan lebih lanjut.\n\nPemutihan karang dalam jangka panjang menyebabkan kerusakan fisik dan penurunan keanekaragaman spesies ikan terumbu.\n\nPada tahun 1998, Indonesia kehilangan 16 persen populasi terumbu karangnya akibat pemutihan massal. Pemulihan ekosistem ini sangat bergantung pada keanekaragaman komunitas laut, terutama kelimpahan ikan herbivor yang berperan mengurangi alga sehingga memungkinkan karang muda dan dewasa untuk tumbuh kembali.\n\nPernyataan berikut yang sesuai dengan permasalahan yang terjadi pada teks tersebut adalah Tentukan Setuju atau Tidak Setuju pada setiap pernyataan!\n(Tentukan Setuju/Tidak setuju untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Setuju",
+            "Tidak setuju"
+          ],
+          "baris": [
+            "Luas terumbu karang di Indonesia saat ini dalam kondisi aman karena luasnya mencapai 2,5 juta hektare.",
+            "Penggunaan bahan peledak dan racun untuk menangkap ikan diperbolehkan selama tidak merusak struktur karang secara permanen.",
+            "Kelimpahan ikan herbivor sangat krusial dalam proses pemulihan ekosistem terumbu karang karena perannya dalam mengurangi alga."
+          ],
+          "jawaban": [
+            1,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TIDAK SETUJU: Teks menyatakan bahwa terumbu karang Indonesia justru sedang menghadapi \"ancaman serius\" dan kerusakan akibat aktivitas manusia serta perubahan iklim. Baris 2 — TIDAK SETUJU: Undang-Undang Nomor 31 Tahun 2004 melarang keras praktik tersebut tanpa pengecualian, karena bahan peledak dan racun terbukti merusak struktur terumbu karang secara permanen. Baris 3 — SETUJU: Paragraf terakhir menegaskan bahwa pemulihan ekosistem sangat bergantung pada kelimpahan ikan herbivor yang mengurangi alga agar karang bisa tumbuh kembali. Jalur Cara Gemilang: Setuju/Tidak = cocokkan tiap pernyataan dengan fakta teks; pernyataan bertentangan dengan data = Tidak Setuju.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nIndonesia memiliki hamparan terumbu karang terluas di dunia, yaitu mencapai 2,5 juta hektare, yang kini menghadapi ancaman serius. Terumbu karang yang menjadi rumah bagi 569 spesies ini terancam akibat aktivitas manusia dan perubahan iklim. Menurut penelitian Juspi Ginting dalam Jurnal Kelautan dan Perikanan Terapan (Edisi Khusus 2023), kerusakan terumbu karang disebabkan oleh vandalisme wisata, penangkapan ikan destruktif, dan kesalahan teknis manusia yang berdampak serius dan permanen.\n\nMeski Undang-Undang Nomor 31 Tahun 2004 tentang Perikanan telah melarang praktik penangkapan ikan destruktif, pelanggaran masih sering terjadi. Praktik tersebut meliputi penggunaan bahan peledak, racun, dan alat yang merusak ikan serta struktur terumbu karang. Peneliti Fakhhrizal Setiawan dari Wildlife Conservation Society di Taman Wisata Perairan Gili Matra, Nusa Tenggara Barat, menunjukkan bahwa lebih dari 60 persen karang mengalami pemutihan akibat peningkatan suhu air laut. Pemutihan karang tersebut berdampak pada menurunnya kualitas ekosistem laut dan keanekaragaman hayati. Diperlukan upaya yang lebih serius dari berbagai pihak untuk melindungi terumbu karang dari kerusakan lebih lanjut.\n\nPemutihan karang dalam jangka panjang menyebabkan kerusakan fisik dan penurunan keanekaragaman spesies ikan terumbu.\n\nPada tahun 1998, Indonesia kehilangan 16 persen populasi terumbu karangnya akibat pemutihan massal. Pemulihan ekosistem ini sangat bergantung pada keanekaragaman komunitas laut, terutama kelimpahan ikan herbivor yang berperan mengurangi alga sehingga memungkinkan karang muda dan dewasa untuk tumbuh kembali.\n\nGagasan utama yang tepat untuk paragraf ketiga teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Indonesia yang memiliki hamparan terumbu karang terluas di dunia sedang menghadapi ancaman serius.",
+            "Pelanggaran masih sering terjadi meskipun terdapat Undang-Undang Nomor 31 Tahun 2004 tentang Perikanan.",
+            "Diperlukan upaya yang lebih serius dari berbagai pihak untuk melindungi terumbu karang dari kerusakan lebih lanjut.",
+            "Kita dapat meningkatkan daya tahan tubuh, mencegah penyakit, dan menjalani hidup dengan lebih produktif dan bahagia.",
+            "Kerusakan fisik dan penurunan keanekaragaman spesies ikan terumbu disebabkan oleh pemutihan karang dalam waktu panjang."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Gagasan utama atau ide pokok adalah informasi utama yang menjadi inti pembahasan sebuah paragraf. Ide pokok terdapat pada kalimat utama yang terletak di awal (deduktif), di akhir (induktif), di tengah (ineratif), di awal dan akhir (variatif), dan tersebar (deskriptif/naratif). Namun, umumnya gagasan utama terletak di awal (deduktif) atau di akhir (induktif). Paragraf (3) pada teks tersebut termasuk paragraf deduktif, yaitu ide pokok berada di awal. Jadi, gagasan utama yang tepat untuk paragraf (3) adalah Kerusakan fisik dan penurunan keanekaragaman spesies ikan terumbu disebabkan oleh pemutihan karang dalam waktu panjang . Jalur Cara Gemilang: Paragraf induktif: gagasan utama sering di akhir — kerusakan fisik + penurunan keanekaragaman hayati.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nIndonesia memiliki hamparan terumbu karang terluas di dunia, yaitu mencapai 2,5 juta hektare, yang kini menghadapi ancaman serius. Terumbu karang yang menjadi rumah bagi 569 spesies ini terancam akibat aktivitas manusia dan perubahan iklim. Menurut penelitian Juspi Ginting dalam Jurnal Kelautan dan Perikanan Terapan (Edisi Khusus 2023), kerusakan terumbu karang disebabkan oleh vandalisme wisata, penangkapan ikan destruktif, dan kesalahan teknis manusia yang berdampak serius dan permanen.\n\nMeski Undang-Undang Nomor 31 Tahun 2004 tentang Perikanan telah melarang praktik penangkapan ikan destruktif, pelanggaran masih sering terjadi. Praktik tersebut meliputi penggunaan bahan peledak, racun, dan alat yang merusak ikan serta struktur terumbu karang. Peneliti Fakhhrizal Setiawan dari Wildlife Conservation Society di Taman Wisata Perairan Gili Matra, Nusa Tenggara Barat, menunjukkan bahwa lebih dari 60 persen karang mengalami pemutihan akibat peningkatan suhu air laut. Pemutihan karang tersebut berdampak pada menurunnya kualitas ekosistem laut dan keanekaragaman hayati. Diperlukan upaya yang lebih serius dari berbagai pihak untuk melindungi terumbu karang dari kerusakan lebih lanjut.\n\nPemutihan karang dalam jangka panjang menyebabkan kerusakan fisik dan penurunan keanekaragaman spesies ikan terumbu.\n\nPada tahun 1998, Indonesia kehilangan 16 persen populasi terumbu karangnya akibat pemutihan massal. Pemulihan ekosistem ini sangat bergantung pada keanekaragaman komunitas laut, terutama kelimpahan ikan herbivor yang berperan mengurangi alga sehingga memungkinkan karang muda dan dewasa untuk tumbuh kembali.\n\nPola pengembangan paragraf tersebut adalah Tentukan Benar atau Salah pada setiap pernyataan!\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Paragraf pertama dikembangkan dengan pola kausalitas.",
+            "Paragraf kedua menggunakan pola perbandingan.",
+            "Paragraf ketiga menggunakan pola kausalitas."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — BENAR: Paragraf pertama menjelaskan kondisi terumbu karang lalu diikuti penyebab dan akibat kerusakan seperti aktivitas manusia dan perubahan iklim sehingga menunjukkan hubungan kausalitas. Baris 2 — SALAH: Pola pengembangan paragraf kedua adalah sebab–akibat (kausalitas). Hal ini terlihat dari pemaparan penggunaan praktik penangkapan ikan destruktif dan peningkatan suhu air laut, yang kemudian menimbulkan akibat berupa pemutihan karang serta menurunnya kualitas ekosistem laut dan keanekaragaman hayati. Baris 3 — BENAR: Paragraf ini menjelaskan akibat pemutihan karang dan faktor yang memengaruhi pemulihan sehingga menunjukkan hubungan kausalitas. Jalur Cara Gemilang: Pola per paragraf = lihat rangka: kondisi->sebab = kausalitas; dua hal disandingkan = perbandingan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nIndonesia memiliki hamparan terumbu karang terluas di dunia, yaitu mencapai 2,5 juta hektare, yang kini menghadapi ancaman serius. Terumbu karang yang menjadi rumah bagi 569 spesies ini terancam akibat aktivitas manusia dan perubahan iklim. Menurut penelitian Juspi Ginting dalam Jurnal Kelautan dan Perikanan Terapan (Edisi Khusus 2023), kerusakan terumbu karang disebabkan oleh vandalisme wisata, penangkapan ikan destruktif, dan kesalahan teknis manusia yang berdampak serius dan permanen.\n\nMeski Undang-Undang Nomor 31 Tahun 2004 tentang Perikanan telah melarang praktik penangkapan ikan destruktif, pelanggaran masih sering terjadi. Praktik tersebut meliputi penggunaan bahan peledak, racun, dan alat yang merusak ikan serta struktur terumbu karang. Peneliti Fakhhrizal Setiawan dari Wildlife Conservation Society di Taman Wisata Perairan Gili Matra, Nusa Tenggara Barat, menunjukkan bahwa lebih dari 60 persen karang mengalami pemutihan akibat peningkatan suhu air laut. Pemutihan karang tersebut berdampak pada menurunnya kualitas ekosistem laut dan keanekaragaman hayati. Diperlukan upaya yang lebih serius dari berbagai pihak untuk melindungi terumbu karang dari kerusakan lebih lanjut.\n\nPemutihan karang dalam jangka panjang menyebabkan kerusakan fisik dan penurunan keanekaragaman spesies ikan terumbu.\n\nPada tahun 1998, Indonesia kehilangan 16 persen populasi terumbu karangnya akibat pemutihan massal. Pemulihan ekosistem ini sangat bergantung pada keanekaragaman komunitas laut, terutama kelimpahan ikan herbivor yang berperan mengurangi alga sehingga memungkinkan karang muda dan dewasa untuk tumbuh kembali.\n\nTujuan penulisan teks tersebut adalah Tentukan Benar atau Salah pada setiap pernyataan!\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Teks bertujuan menghibur pembaca dengan cerita tentang kehidupan bawah laut",
+            "Teks bertujuan mengajak pembaca untuk membeli produk pelestarian terumbu karang",
+            "Teks bertujuan menjelaskan kondisi terumbu karang di Indonesia beserta ancaman yang dihadapinya"
+          ],
+          "jawaban": [
+            1,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SALAH: Teks bersifat ilmiah dan informatif, tidak mengandung unsur hiburan atau cerita naratif. Baris 2 — SALAH: Tidak ada unsur promosi atau ajakan komersial dalam teks tersebut. Baris 3 — BENAR: Isi teks memaparkan luas terumbu karang, ancaman, serta faktor penyebab kerusakan sehingga tujuan informatif ini sesuai. (Catatan: potongan \"Jawaban: E\" pada pembahasan buku adalah serpihan salah letak; kunci mengikuti centang tabel pembahasan & tabel kunci ringkas: S,S,B.) Jalur Cara Gemilang: Tujuan teks ilmiah = menjelaskan/menginformasikan; opsi \"menghibur\" atau \"mengajak membeli\" langsung SALAH.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKesehatan fisik merupakan fondasi utama kesejahteraan yang sering kali terabaikan karena fokus berlebihan pada pencapaian karier, materi, atau hubungan sosial. Padahal, kesehatan fisik bukan sekadar bebas dari penyakit, melainkan juga kondisi optimal tubuh yang memungkinkan kita menjalani hidup dengan penuh energi, antusiasme, dan semangat. Kesehatan fisik mencakup fungsi organ tubuh yang efisien, sistem imun yang kuat, stamina yang memadai, berat badan ideal, tidur berkualitas, kemampuan bergerak bebas, serta kemampuan tubuh dalam menghadapi stres. Semua aspek ini saling berkaitan dan membentuk dasar bagi tubuh yang sehat dan produktif. Produktif merupakan kemampuan seseorang atau organisasi untuk menghasilkan sesuatu yang bernilai, berkualitas, dan bermanfaat secara efisien dalam jangka waktu tertentu.\n\nUntuk mencapai kesehatan fisik yang prima, diperlukan berbagai upaya yang konsisten dan terencana. Pola makan bergizi seimbang, olahraga teratur, tidur cukup, manajemen stres yang efektif, serta konsumsi air putih yang cukup adalah langkah awal yang penting. Selain itu, menjauhi kebiasaan buruk, seperti merokok dan mengonsumsi alkohol berlebihan, melakukan pemeriksaan kesehatan rutin, menjaga kebersihan diri dan lingkungan, serta menjalani vaksinasi sesuai anjuran, juga berperan besar dalam menjaga kesehatan tubuh. Perawatan diri, seperti relaksasi dan aktivitas menyenangkan, turut membantu menjaga keseimbangan fisik dan mental. Pemerintah harus berkontribusi dalam menjaga kesehatan masyarakat, misalnya, dengan memfasilitasi pemeriksaan gratis.\n\nMenjaga kesehatan fisik adalah investasi jangka panjang yang memberikan manfaat besar bagi kualitas hidup. Dengan komitmen dan konsistensi dalam menerapkan gaya hidup sehat, kita dapat meningkatkan daya tahan tubuh, mencegah penyakit, dan menjalani hidup dengan lebih produktif dan bahagia. Jangan ragu untuk berkonsultasi dengan tenaga medis profesional guna mendapatkan panduan yang sesuai dengan kebutuhan tubuh Anda.\n\n(diadaptasi dari https://sisipengertian.com/)\n\nGagasan utama yang tepat untuk paragraf kedua dalam teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Satu di antara fondasi utama kesejahteraan yang sering kali terabaikan karena berbagai faktor adalah kesehatan fisik.",
+            "Diperlukan berbagai upaya yang tidak berubah dan terencana agar mencapai kesehatan fisik yang sangat baik.",
+            "Menjaga kesehatan fisik adalah investasi jangka panjang yang memberikan manfaat besar bagi kualitas hidup.",
+            "Produktif merupakan kemampuan seseorang atau organisasi untuk menghasilkan sesuatu yang bernilai.",
+            "Kesehatan fisik dapat dicapai secara instan melalui perawatan medis tanpa perlu perubahan gaya hidup."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Gagasan utama atau ide pokok adalah informasi utama yang menjadi inti pembahasan sebuah paragraf. Ide pokok terdapat pada kalimat utama yang terletak di awal (deduktif), di akhir (induktif), di tengah (ineratif), di awal dan akhir (variatif), dan tersebar (deskriptif/naratif). Namun, umumnya gagasan utama terletak di awal (deduktif) atau di akhir (induktif). Paragraf (2) pada teks tersebut termasuk paragraf induktif, yaitu ide pokok berada di akhir. Jadi, gagasan utama yang tepat untuk paragraf tersebut adalah diperlukan berbagai upaya yang tidak berubah dan terencana agar mencapai kesehatan fisik yang sangat baik . Jalur Cara Gemilang: Gagasan utama = kalimat yang mewadahi; opsi berisi detail/contoh (instant, definisi produktif) = pengecoh.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKesehatan fisik merupakan fondasi utama kesejahteraan yang sering kali terabaikan karena fokus berlebihan pada pencapaian karier, materi, atau hubungan sosial. Padahal, kesehatan fisik bukan sekadar bebas dari penyakit, melainkan juga kondisi optimal tubuh yang memungkinkan kita menjalani hidup dengan penuh energi, antusiasme, dan semangat. Kesehatan fisik mencakup fungsi organ tubuh yang efisien, sistem imun yang kuat, stamina yang memadai, berat badan ideal, tidur berkualitas, kemampuan bergerak bebas, serta kemampuan tubuh dalam menghadapi stres. Semua aspek ini saling berkaitan dan membentuk dasar bagi tubuh yang sehat dan produktif. Produktif merupakan kemampuan seseorang atau organisasi untuk menghasilkan sesuatu yang bernilai, berkualitas, dan bermanfaat secara efisien dalam jangka waktu tertentu.\n\nUntuk mencapai kesehatan fisik yang prima, diperlukan berbagai upaya yang konsisten dan terencana. Pola makan bergizi seimbang, olahraga teratur, tidur cukup, manajemen stres yang efektif, serta konsumsi air putih yang cukup adalah langkah awal yang penting. Selain itu, menjauhi kebiasaan buruk, seperti merokok dan mengonsumsi alkohol berlebihan, melakukan pemeriksaan kesehatan rutin, menjaga kebersihan diri dan lingkungan, serta menjalani vaksinasi sesuai anjuran, juga berperan besar dalam menjaga kesehatan tubuh. Perawatan diri, seperti relaksasi dan aktivitas menyenangkan, turut membantu menjaga keseimbangan fisik dan mental. Pemerintah harus berkontribusi dalam menjaga kesehatan masyarakat, misalnya, dengan memfasilitasi pemeriksaan gratis.\n\nMenjaga kesehatan fisik adalah investasi jangka panjang yang memberikan manfaat besar bagi kualitas hidup. Dengan komitmen dan konsistensi dalam menerapkan gaya hidup sehat, kita dapat meningkatkan daya tahan tubuh, mencegah penyakit, dan menjalani hidup dengan lebih produktif dan bahagia. Jangan ragu untuk berkonsultasi dengan tenaga medis profesional guna mendapatkan panduan yang sesuai dengan kebutuhan tubuh Anda.\n\n(diadaptasi dari https://sisipengertian.com/)\n\nKalimat yang tidak berhubungan dengan isi teks tersebut adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Produktif merupakan kemampuan seseorang atau organisasi untuk menghasilkan sesuatu yang bernilai, berkualitas, dan bermanfaat secara efisien dalam jangka waktu tertentu.",
+            "Jangan ragu untuk berkonsultasi dengan tenaga medis profesional guna mendapatkan panduan yang sesuai dengan kebutuhan tubuh Anda.",
+            "Kesehatan fisik yang optimal bukanlah tujuan akhir, melainkan proses berkelanjutan yang layak diperjuangkan setiap hari.",
+            "Pemerintah harus berkontribusi dalam menjaga kesehatan masyarakat, misalnya dengan memfasilitasi pemeriksaan gratis.",
+            "Untuk mencapai kesehatan fisik yang prima, diperlukan berbagai upaya yang konsisten dan terencana."
+          ],
+          "jawaban": [
+            0,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan (1) benar Tidak berhubungan. Kalimat ini membahas definisi produktivitas sementara teks hanya menyinggung produktivitas sebagai dampak dari kesehatan fisik, bukan fokus utama. Pernyataan (2) salah. Berhubungan. Teks memang menutup dengan anjuran untuk berkonsultasi dengan tenaga medis. Pernyataan (3) benar . Tidak berhubungan. Kalimat ini tidak muncul dalam teks dan justru memperkenalkan gagasan baru tentang \"proses berkelanjutan,\" yang tidak dibahas. Pernyataan (4) salah. Berhubungan. Teks secara eksplisit menyebut peran pemerintah dalam hal ini. Pernyataan (5) salah. Berhubungan. Kalimat ini ada dalam teks secara langsung. Jalur Cara Gemilang: Kalimat tak berhubungan = membahas hal yang hanya disinggung sekilas (definisi produktif) atau tak disebut teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKesehatan fisik merupakan fondasi utama kesejahteraan yang sering kali terabaikan karena fokus berlebihan pada pencapaian karier, materi, atau hubungan sosial. Padahal, kesehatan fisik bukan sekadar bebas dari penyakit, melainkan juga kondisi optimal tubuh yang memungkinkan kita menjalani hidup dengan penuh energi, antusiasme, dan semangat. Kesehatan fisik mencakup fungsi organ tubuh yang efisien, sistem imun yang kuat, stamina yang memadai, berat badan ideal, tidur berkualitas, kemampuan bergerak bebas, serta kemampuan tubuh dalam menghadapi stres. Semua aspek ini saling berkaitan dan membentuk dasar bagi tubuh yang sehat dan produktif. Produktif merupakan kemampuan seseorang atau organisasi untuk menghasilkan sesuatu yang bernilai, berkualitas, dan bermanfaat secara efisien dalam jangka waktu tertentu.\n\nUntuk mencapai kesehatan fisik yang prima, diperlukan berbagai upaya yang konsisten dan terencana. Pola makan bergizi seimbang, olahraga teratur, tidur cukup, manajemen stres yang efektif, serta konsumsi air putih yang cukup adalah langkah awal yang penting. Selain itu, menjauhi kebiasaan buruk, seperti merokok dan mengonsumsi alkohol berlebihan, melakukan pemeriksaan kesehatan rutin, menjaga kebersihan diri dan lingkungan, serta menjalani vaksinasi sesuai anjuran, juga berperan besar dalam menjaga kesehatan tubuh. Perawatan diri, seperti relaksasi dan aktivitas menyenangkan, turut membantu menjaga keseimbangan fisik dan mental. Pemerintah harus berkontribusi dalam menjaga kesehatan masyarakat, misalnya, dengan memfasilitasi pemeriksaan gratis.\n\nMenjaga kesehatan fisik adalah investasi jangka panjang yang memberikan manfaat besar bagi kualitas hidup. Dengan komitmen dan konsistensi dalam menerapkan gaya hidup sehat, kita dapat meningkatkan daya tahan tubuh, mencegah penyakit, dan menjalani hidup dengan lebih produktif dan bahagia. Jangan ragu untuk berkonsultasi dengan tenaga medis profesional guna mendapatkan panduan yang sesuai dengan kebutuhan tubuh Anda.\n\n(diadaptasi dari https://sisipengertian.com/)\n\nTujuan penulisan teks tersebut adalah Pilihlah dua jawaban yang benar!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "menginformasikan berbagai jenis penyakit yang disebabkan oleh kurangnya perhatian terhadap kesehatan fisik dalam kehidupan sehari-hari.",
+            "menggambarkan peran pemerintah dan tenaga medis dalam meningkatkan kualitas kesehatan masyarakat secara menyeluruh.",
+            "menguraikan hubungan antara kesehatan fisik dengan pencapaian karier, materi, dan hubungan sosial dalam kehidupan manusia modern.",
+            "menginformasikan masyarakat untuk menerapkan gaya hidup sehat melalui pola hidup yang teratur dan seimbang.",
+            "menjelaskan pentingnya kesehatan fisik sebagai dasar kesejahteraan serta cara-cara untuk menjaganya secara optimal."
+          ],
+          "jawaban": [
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Teks tersebut diawali dengan penjelasan mengenai pengertian dan pentingnya kesehatan fisik sebagai fondasi kesejahteraan hidup, kemudian dilanjutkan dengan uraian berbagai cara menjaga kesehatan seperti pola makan bergizi, olahraga, tidur cukup, hingga pemeriksaan kesehatan rutin. Selain itu, terdapat juga ajakan kepada pembaca untuk menerapkan gaya hidup sehat secara konsisten agar kualitas hidup meningkat. Oleh karena itu, tujuan utama teks adalah memberikan pemahaman tentang pentingnya kesehatan fisik sekaligus mendorong pembaca untuk menerapkan pola hidup sehat. menginformasikan berbagai jenis penyakit yang disebabkan oleh kurangnya perhatian terhadap kesehatan fisik dalam kehidupan sehari-hari. menggambarkan peran pemerintah dan tenaga medis dalam meningkatkan kualitas kesehatan masyarakat secara menyeluruh. menguraikan hubungan antara kesehatan fisik dengan pencapaian karier, materi, dan hubungan sosial dalam kehidupan manusia modern. menginformasikan masyarakat untuk menerapkan gaya hidup sehat melalui pola hidup yang teratur dan seimbang. menjelaskan pentingnya kesehatan fisik sebagai dasar kesejahteraan serta cara-cara untuk menjaganya secara optimal. Jalur Cara Gemilang: Tujuan ganda = dua lapisan teks: menginformasikan cara + menjelaskan pentingnya; opsi promosi/kritik coret.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nKesehatan fisik merupakan fondasi utama kesejahteraan yang sering kali terabaikan karena fokus berlebihan pada pencapaian karier, materi, atau hubungan sosial. Padahal, kesehatan fisik bukan sekadar bebas dari penyakit, melainkan juga kondisi optimal tubuh yang memungkinkan kita menjalani hidup dengan penuh energi, antusiasme, dan semangat. Kesehatan fisik mencakup fungsi organ tubuh yang efisien, sistem imun yang kuat, stamina yang memadai, berat badan ideal, tidur berkualitas, kemampuan bergerak bebas, serta kemampuan tubuh dalam menghadapi stres. Semua aspek ini saling berkaitan dan membentuk dasar bagi tubuh yang sehat dan produktif. Produktif merupakan kemampuan seseorang atau organisasi untuk menghasilkan sesuatu yang bernilai, berkualitas, dan bermanfaat secara efisien dalam jangka waktu tertentu.\n\nUntuk mencapai kesehatan fisik yang prima, diperlukan berbagai upaya yang konsisten dan terencana. Pola makan bergizi seimbang, olahraga teratur, tidur cukup, manajemen stres yang efektif, serta konsumsi air putih yang cukup adalah langkah awal yang penting. Selain itu, menjauhi kebiasaan buruk, seperti merokok dan mengonsumsi alkohol berlebihan, melakukan pemeriksaan kesehatan rutin, menjaga kebersihan diri dan lingkungan, serta menjalani vaksinasi sesuai anjuran, juga berperan besar dalam menjaga kesehatan tubuh. Perawatan diri, seperti relaksasi dan aktivitas menyenangkan, turut membantu menjaga keseimbangan fisik dan mental. Pemerintah harus berkontribusi dalam menjaga kesehatan masyarakat, misalnya, dengan memfasilitasi pemeriksaan gratis.\n\nMenjaga kesehatan fisik adalah investasi jangka panjang yang memberikan manfaat besar bagi kualitas hidup. Dengan komitmen dan konsistensi dalam menerapkan gaya hidup sehat, kita dapat meningkatkan daya tahan tubuh, mencegah penyakit, dan menjalani hidup dengan lebih produktif dan bahagia. Jangan ragu untuk berkonsultasi dengan tenaga medis profesional guna mendapatkan panduan yang sesuai dengan kebutuhan tubuh Anda.\n\n(diadaptasi dari https://sisipengertian.com/)\n\nBagan yang tepat untuk menggambarkan bagian-bagian penting dalam kutipan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "tiga batang pengertian, perkembangan, manfaat kesehatan fisik",
+            "aliran kaidah kesehatan fisik, upaya atau usaha untuk mencapai kesehatan fisik, kesimpulan",
+            "diagram venn penyebab, upaya, dampak",
+            "diagram pie tiga bagian (label pada pindai kurang jelas)",
+            "tiga lingkaran penyebab, solusi, akibat"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Informasi penting teks tersebut meliputi kaidah kesehatan fisik; upaya atau usaha untuk mencapai kesehatan fisik; dan kesimpulan. Jadi, bagan yang tepat untuk teks tersebut adalah kaidah kesehatan fisik upaya atau usaha untuk mencapai kesehatan fisik kesimpulan Jalur Cara Gemilang: Bagan benar = urutan informasi: kaidah -> upaya -> kesimpulan; cocokkan label kotak dengan teks, bukan hafalan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nPenggunaan lensa kontak kini makin populer, baik untuk alasan medis maupun estetika. Bagi penderita rabun jauh, rabun dekat, atau astigmatisme, lensa kontak berfungsi membantu ketajaman penglihatan dan dianggap lebih praktis dibandingkan kacamata. Namun, penggunaan yang tidak sesuai aturan, kurang menjaga kebersihan, atau memilih jenis lensa tanpa konsultasi dokter dapat menimbulkan berbagai masalah pada mata. Oleh karena itu, penting bagi pengguna untuk memahami penyebab bahaya lensa kontak agar terhindar dari pemakaiannya.\n\nDi balik manfaatnya, penggunaan lensa kontak yang tidak tepat dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata. Beberapa gangguan yang sering muncul adalah mata merah, kering, iritasi, reaksi alergi, dan luka pada kornea. Jika dibiarkan, kondisi tersebut dapat berkembang menjadi infeksi mata yang serius, seperti keratitis atau ulkus kornea, yang dapat mengancam penglihatan hingga menyebabkan kebutaan. Gejala yang perlu diwaspadai adalah nyeri pada mata, pandangan buram, mata mudah silau, dan rasa tidak nyaman saat mengenakan lensa kontak.\n\nUntuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik. Lensa kontak harus digunakan sesuai petunjuk dokter dan instruksi pada kemasan, rutin dibersihkan dengan cairan khusus, serta tidak digunakan saat tidur, mandi, atau berenang. Tempat penyimpanan lensa juga perlu dibersihkan dan diganti secara berkala. Selain itu, pastikan tangan dalam keadaan bersih sebelum menyentuh lensa. Konsultasi dengan dokter mata sangat dianjurkan agar pengguna memperoleh jenis lensa kontak yang sesuai dan aman bagi kondisi mata masing-masing.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nGagasan utama yang tepat untuk paragraf ketiga dalam teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Pengguna lensa kontak harus memahami penyebab bahaya lensa kontak agar tidak sembarangan dalam pemakaiannya.",
+            "Beberapa gangguan yang sering muncul adalah mata merah, kering, iritasi, reaksi alergi, dan luka pada kornea.",
+            "Penggunaan lensa kontak dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata.",
+            "Penggunaan lensa kontak kini makin populer, baik untuk alasan medis maupun estetika.",
+            "Pengguna lensa kontak perlu mematuhi aturan pemakaian dan menjaga kebersihan."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Gagasan utama atau ide pokok adalah informasi utama yang menjadi inti pembahasan sebuah paragraf. Ide pokok terdapat pada kalimat utama yang terletak di awal (deduktif), di akhir (induktif), di tengah (ineratif), di awal dan akhir (variatif), dan tersebar (deskriptif/naratif). Namun, umumnya gagasan utama terletak di awal (deduktif) atau di akhir (induktif). Paragraf ketiga pada teks tersebut termasuk paragraf induktif, yaitu ide pokok berada di akhir. Jadi, gagasan utama yang tepat untuk paragraf (3) pada teks tersebut adalah Pengguna lensa kontak perlu mematuhi aturan pemakaian dan menjaga kebersihan . Jalur Cara Gemilang: Paragraf penutup berisi rekomendasi = gagasan utamanya kewajiban/aturan pemakaian.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nPenggunaan lensa kontak kini makin populer, baik untuk alasan medis maupun estetika. Bagi penderita rabun jauh, rabun dekat, atau astigmatisme, lensa kontak berfungsi membantu ketajaman penglihatan dan dianggap lebih praktis dibandingkan kacamata. Namun, penggunaan yang tidak sesuai aturan, kurang menjaga kebersihan, atau memilih jenis lensa tanpa konsultasi dokter dapat menimbulkan berbagai masalah pada mata. Oleh karena itu, penting bagi pengguna untuk memahami penyebab bahaya lensa kontak agar terhindar dari pemakaiannya.\n\nDi balik manfaatnya, penggunaan lensa kontak yang tidak tepat dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata. Beberapa gangguan yang sering muncul adalah mata merah, kering, iritasi, reaksi alergi, dan luka pada kornea. Jika dibiarkan, kondisi tersebut dapat berkembang menjadi infeksi mata yang serius, seperti keratitis atau ulkus kornea, yang dapat mengancam penglihatan hingga menyebabkan kebutaan. Gejala yang perlu diwaspadai adalah nyeri pada mata, pandangan buram, mata mudah silau, dan rasa tidak nyaman saat mengenakan lensa kontak.\n\nUntuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik. Lensa kontak harus digunakan sesuai petunjuk dokter dan instruksi pada kemasan, rutin dibersihkan dengan cairan khusus, serta tidak digunakan saat tidur, mandi, atau berenang. Tempat penyimpanan lensa juga perlu dibersihkan dan diganti secara berkala. Selain itu, pastikan tangan dalam keadaan bersih sebelum menyentuh lensa. Konsultasi dengan dokter mata sangat dianjurkan agar pengguna memperoleh jenis lensa kontak yang sesuai dan aman bagi kondisi mata masing-masing.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nBagan yang tepat untuk menggambarkan bagian-bagian penting dalam kutipan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "siklus pemakaian, dampak negatif, dampak positif",
+            "diagram venn pengertian lensa kontak, solusi pencegahan, dampak positif dan negatif",
+            "tiga batang pengertian, dampak, manfaat lensa kontak",
+            "tiga lingkaran pengertian lensa kontak dan manfaatnya, kesimpulan, akibat penggunaan lensa kontak",
+            "aliran penggunaan lensa kontak, dampak negatif penggunaan lensa kontak, pencegahan bahaya penggunaan lensa kontak"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Informasi penting teks tersebut meliputi penggunaan lensa kontak; dampak negatif penggunaan lensa kontak; dan pencegahan bahaya penggunaan lensa kontak. Jadi, bagan yang tepat untuk teks tersebut adalah penggunaan lensa kontak dampak negatif penggunaan lensa kontak pencegahan bahaya penggunaan lensa kontak Jalur Cara Gemilang: Tiga kotak inti: pemakaian -> dampak negatif -> pencegahan; bagan yang menukar urutan = salah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nTradisi manten kopi adalah ritual budaya unik yang digelar di kebun kopi Karanganyar, Desa Modangan, Kecamatan Nglegok, Kabupaten Blitar, Jawa Timur. Ritual ini menandai dimulainya musim panen raya kopi dan menjadi simbol rasa syukur kepada Tuhan atas hasil bumi yang melimpah. Dalam tradisi ini, dua tangkai kopi, masing-masing tangkai disebut lanang (laki-laki) dan wadon (perempuan), dipersatukan layaknya sepasang pengantin, merefleksikan harmoni antara alam, manusia, dan kekuatan spiritual leluhur.\n\nTradisi ini berakar sejak masa kolonial Belanda, tepatnya sejak perkebunan kopi Karanganyar didirikan pada tahun 1874. Sejak itu, ritual manten kopi menjadi bagian tidak terpisahkan dari kehidupan masyarakat sekitar. Menurut catatan sejarah dan penuturan warga setempat, ritual di awalnya digelar secara tertutup sebagai bentuk penghormatan kepada alam dan doa agar panen berlangsung lancar. Seiring waktu, tradisi ini terus diwariskan dari generasi ke generasi sebagai bagian dari identitas budaya agraris masyarakat Blitar.\n\nProses pelaksanaan tradisi manten kopi diawali dengan pemilihan dua tangkai kopi terbaik oleh sesepuh Desa Modangan, satu lanang dan satu wadon, dari pohon yang dianggap paling subur. Kedua tangkai kopi tersebut kemudian dibungkus dengan kain putih dan dihias secukupnya. Selanjutnya, digelar arak-arakan mengelilingi area kebun kopi yang luasnya mencapai 250 hektare, ditemani iringan gamelan Jawa. Arak-arakan ini berakhir di pendopo, yang difungsikan sebagai pelaminan, tempat kedua kopi diserahkan secara simbolis kepada pengelola pabrik sebagai tanda bahwa panen siap dimulai dan kopi siap diolah.\n\nSejak tahun 2017, kebun kopi Karanganyar tidak hanya berfungsi sebagai lahan produksi, tetapi juga dikembangkan menjadi destinasi wisata budaya dan edukasi. Tradisi manten kopi pun akan dikemas ulang, yaitu menjadi atraksi budaya yang menarik minat wisatawan lokal dan nasional. Upaya ini tidak hanya membantu melestarikan warisan leluhur, tetapi juga memberikan manfaat ekonomi bagi masyarakat sekitar. Dengan dukungan berbagai pihak, termasuk komunitas kopi dan pemerintah daerah, ritual manten kopi harus dijaga keberlangsungannya agar tidak punah di tengah arus modernisasi pertanian dan industri kopi yang makin masif.\n\nDengan demikian, tradisi manten kopi tidak hanya warisan budaya yang sarat makna spiritual dan agraris, tetapi juga simbol keberlanjutan harmoni antara manusia, alam, dan tradisi di tengah dinamika zaman.\n\n(diadaptasi dari https://lottencoffee.co.id)\n\nDalam paragraf pertama disebutkan bahwa tradisi manten kopi merefleksikan harmoni antara alam, manusia, dan kekuatan spiritual leluhur. Manakah pernyataan berikut yang berhubungan dengan gagasan tersebut? Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Tradisi manten kopi berasal dari budaya kolonial Belanda dan telah diwariskan secara turun-temurun oleh masyarakat setempat.",
+            "Tradisi manten kopi dikembangkan menjadi daya tarik wisata budaya sejak tahun 2017 untuk meningkatkan ekonomi masyarakat.",
+            "Tradisi manten kopi dilakukan dengan berlari keliling kebun kopi yang luasnya mencapai 250 hektare.",
+            "Tradisi manten kopi dilaksanakan dengan memilih tangkai kopi terbaik dari pohon yang paling subur untuk meningkatkan kualitas hasil panen.",
+            "Tradisi manten kopi melibatkan penyatuan dua tangkai kopi ( lanang dan wadon ) yang diperlakukan seperti pengantin."
+          ],
+          "jawaban": [
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan (1) salah karena pernyataan ini membahas tentang akar sejarah (historis) dan asal-usul waktu tradisi, bukan membahas esensi nilai harmoni alam-manusia-spiritual. Pernyataan (2) salah karena tidak berhubungan dengan gagasan harmoni, fokus pada aspek ekonomi dan pariwisata. Pernyataan (3) salah karena tidak berhubungan teks menyebut arak-arakan dengan gamping, bukan berlari. Pernyataan (4) benar karena proses ini melibatkan manusia (sesepuh desa) yang memilih hasil alam terbaik (pohon paling subur). Pernyataan (5) benar karena simbol penyatuan ini jelas merefleksikan harmoni antara alam, manusia, dan spiritual leluhur. Jalur Cara Gemilang: \"Berhubungan dengan gagasan\" = nilainya sama dengan batang soal (harmoni alam-manusia-spiritual); opsi historis/ekonomi = lintas topik.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nTradisi manten kopi adalah ritual budaya unik yang digelar di kebun kopi Karanganyar, Desa Modangan, Kecamatan Nglegok, Kabupaten Blitar, Jawa Timur. Ritual ini menandai dimulainya musim panen raya kopi dan menjadi simbol rasa syukur kepada Tuhan atas hasil bumi yang melimpah. Dalam tradisi ini, dua tangkai kopi, masing-masing tangkai disebut lanang (laki-laki) dan wadon (perempuan), dipersatukan layaknya sepasang pengantin, merefleksikan harmoni antara alam, manusia, dan kekuatan spiritual leluhur.\n\nTradisi ini berakar sejak masa kolonial Belanda, tepatnya sejak perkebunan kopi Karanganyar didirikan pada tahun 1874. Sejak itu, ritual manten kopi menjadi bagian tidak terpisahkan dari kehidupan masyarakat sekitar. Menurut catatan sejarah dan penuturan warga setempat, ritual di awalnya digelar secara tertutup sebagai bentuk penghormatan kepada alam dan doa agar panen berlangsung lancar. Seiring waktu, tradisi ini terus diwariskan dari generasi ke generasi sebagai bagian dari identitas budaya agraris masyarakat Blitar.\n\nProses pelaksanaan tradisi manten kopi diawali dengan pemilihan dua tangkai kopi terbaik oleh sesepuh Desa Modangan, satu lanang dan satu wadon, dari pohon yang dianggap paling subur. Kedua tangkai kopi tersebut kemudian dibungkus dengan kain putih dan dihias secukupnya. Selanjutnya, digelar arak-arakan mengelilingi area kebun kopi yang luasnya mencapai 250 hektare, ditemani iringan gamelan Jawa. Arak-arakan ini berakhir di pendopo, yang difungsikan sebagai pelaminan, tempat kedua kopi diserahkan secara simbolis kepada pengelola pabrik sebagai tanda bahwa panen siap dimulai dan kopi siap diolah.\n\nSejak tahun 2017, kebun kopi Karanganyar tidak hanya berfungsi sebagai lahan produksi, tetapi juga dikembangkan menjadi destinasi wisata budaya dan edukasi. Tradisi manten kopi pun akan dikemas ulang, yaitu menjadi atraksi budaya yang menarik minat wisatawan lokal dan nasional. Upaya ini tidak hanya membantu melestarikan warisan leluhur, tetapi juga memberikan manfaat ekonomi bagi masyarakat sekitar. Dengan dukungan berbagai pihak, termasuk komunitas kopi dan pemerintah daerah, ritual manten kopi harus dijaga keberlangsungannya agar tidak punah di tengah arus modernisasi pertanian dan industri kopi yang makin masif.\n\nDengan demikian, tradisi manten kopi tidak hanya warisan budaya yang sarat makna spiritual dan agraris, tetapi juga simbol keberlanjutan harmoni antara manusia, alam, dan tradisi di tengah dinamika zaman.\n\n(diadaptasi dari https://lottencoffee.co.id)\n\nInformasi yang tidak berhubungan dengan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Tradisi manten kopi melibatkan tahapan ritual simbolis yang menandai kesiapan panen dan pengolahan hasil kopi.",
+            "Tradisi manten kopi berkembang dari praktik tertutup menjadi atraksi budaya terbuka yang bernilai ekonomi bagi masyarakat.",
+            "Tradisi manten kopi memiliki akar historis sejak masa kolonial dan diwariskan secara turun-temurun dalam masyarakat agraris.",
+            "Tradisi manten kopi berfungsi sebagai simbol spiritual yang mencerminkan hubungan harmonis antara manusia, alam, dan leluhur.",
+            "Tradisi manten kopi digunakan sebagai sarana utama untuk meningkatkan kualitas ekspor kopi melalui standardisasi industri modern."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Teks secara keseluruhan membahas tradisi Manten Kopi dari segi sejarah, makna simbolis, proses pelaksanaan, serta pengembangannya sebagai wisata budaya yang bernilai ekonomi dan pelestarian budaya. Tidak terdapat informasi yang mengaitkan tradisi ini dengan peningkatan kualitas ekspor kopi melalui standardisasi industri modern. Pernyataan Tradisi manten kopi digunakan sebagai sarana utama untuk meningkatkan kualitas ekspor kopi melalui standardisasi industri modern menyimpang karena mengarah pada aspek industri dan ekonomi global yang tidak dibahas dalam teks. Jalur Cara Gemilang: Soal \"kecuali\" = eliminasi satu per satu; opsi aneh menambahkan fungsi yang tidak pernah disebut teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Katarak adalah kondisi medis yang ditandai dengan kekeruhan pada lensa mata akibat menggumpal protein sehingga mengganggu kemampuan mata meneruskan cahaya secara normal. (2) Penyakit ini bersifat progresif dan umumnya berkembang seiring bertambahnya usia yang dapat terjadi pada satu atau kedua mata. (3) Banyak orang menderita katarak yang tidak tertangani karena kondisi ekonomi. (4) Meski tidak menular, katarak menjadi penyebab utama kebutaan di Indonesia dan menyumbang 81% kasus gangguan penglihatan. (5) Gejala awal meliputi penglihatan kabur, silau terhadap cahaya, kesulitan melihat di malam hari, pandangan ganda, dan perubahan persepsi warna. (6) Deteksi dini melalui pemeriksaan mata rutin sangat penting untuk mencegah kebutaan yang dapat dihindari.\n\n(7) Penuaan merupakan penyebab utama katarak, tetapi berbagai faktor lain turut mempercepat perkembangannya. (8) Paparan sinar ultraviolet, polusi, asap rokok, alkohol, dan zat beracun dapat meningkatkan radikal bebas yang merusak lensa mata. (9) Kondisi kesehatan, seperti diabetes, hipertensi, penggunaan kortikosteroid jangka panjang, riwayat cedera atau operasi mata, serta faktor genetik, juga berperan. (10) Kesehatan mata merupakan hal yang sangat berharga sehingga harus dijaga dengan baik. (11) Diagnosis dilakukan oleh dokter mata melalui anamnesis, pemeriksaan fisik, dan penunjang, seperti slit-lamp dan tes ketajaman penglihatan. (12) Penanganan bergantung pada tingkat keparahan, tetapi operasi penggantian lensa dengan lensa intraokular buatan adalah satu-satunya metode yang efektif dengan teknik phacoemulsifikasi sebagai pilihan utama.\n\n(13) Walaupun katarak tidak dapat dicegah sepenuhnya, gaya hidup sehat dapat memperlambat perkembangannya. (14) Langkah pencegahan yang dapat dilakukan adalah menggunakan kacamata anti-UV, mengonsumsi makanan kaya antioksidan, mengendalikan penyakit kronis, serta menghindari rokok dan alkohol. (15) Seharusnya, pemerintah mencanangkan pemeriksaan mata rutin setiap 2—4 tahun untuk mencegah penyakit tersebut. (16) Penting untuk diingat bahwa katarak tidak bisa disembuhkan dengan obat atau kacamata dan bersifat tidak menular. (17) Dengan deteksi dini dan penanganan yang tepat, kualitas penglihatan dapat dipulihkan dan menjadikan perawatan mata sebagai investasi penting untuk masa depan.\n\n(diadaptasi dari https://www.rspondokindah.co.id/)\n\nPernyataan yang sesuai berdasarkan kutipan teks tersebut adalah Tentukan Sesuai atau Tidak sesuai pada setiap pernyataan!\n(Tentukan Sesuai/Tidak Sesuai untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ],
+          "baris": [
+            "Katarak dapat dicegah sepenuhnya dengan menerapkan pola hidup sehat tanpa perlu melakukan pemeriksaan mata secara berkala.",
+            "Diagnosis katarak hanya dapat dilakukan melalui pengamatan gejala tanpa memerlukan pemeriksaan medis lanjutan oleh dokter.",
+            "Faktor utama penyebab katarak adalah penuaan, tetapi kondisi lingkungan dan kondisi kesehatan turut mempercepat perkembangannya."
+          ],
+          "jawaban": [
+            1,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TIDAK SESUAI: Kalimat (13) menyatakan katarak tidak dapat dicegah sepenuhnya, dan kalimat (6) menekankan pentingnya pemeriksaan rutin. Baris 2 — TIDAK SESUAI: Kalimat (11) menyebutkan diagnosis dilakukan melalui anamnesis, pemeriksaan fisik, dan penunjang (seperti slit-lamp ). Baris 3 — SESUAI: Hal ini dijelaskan dalam kalimat (7), (8), dan (9). Jalur Cara Gemilang: Cocokkan dengan kalimat bernomor di teks; kata mutlak \"sepenuhnya\"/\"hanya\" biasanya jebakan = Tidak Sesuai.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Katarak adalah kondisi medis yang ditandai dengan kekeruhan pada lensa mata akibat menggumpal protein sehingga mengganggu kemampuan mata meneruskan cahaya secara normal. (2) Penyakit ini bersifat progresif dan umumnya berkembang seiring bertambahnya usia yang dapat terjadi pada satu atau kedua mata. (3) Banyak orang menderita katarak yang tidak tertangani karena kondisi ekonomi. (4) Meski tidak menular, katarak menjadi penyebab utama kebutaan di Indonesia dan menyumbang 81% kasus gangguan penglihatan. (5) Gejala awal meliputi penglihatan kabur, silau terhadap cahaya, kesulitan melihat di malam hari, pandangan ganda, dan perubahan persepsi warna. (6) Deteksi dini melalui pemeriksaan mata rutin sangat penting untuk mencegah kebutaan yang dapat dihindari.\n\n(7) Penuaan merupakan penyebab utama katarak, tetapi berbagai faktor lain turut mempercepat perkembangannya. (8) Paparan sinar ultraviolet, polusi, asap rokok, alkohol, dan zat beracun dapat meningkatkan radikal bebas yang merusak lensa mata. (9) Kondisi kesehatan, seperti diabetes, hipertensi, penggunaan kortikosteroid jangka panjang, riwayat cedera atau operasi mata, serta faktor genetik, juga berperan. (10) Kesehatan mata merupakan hal yang sangat berharga sehingga harus dijaga dengan baik. (11) Diagnosis dilakukan oleh dokter mata melalui anamnesis, pemeriksaan fisik, dan penunjang, seperti slit-lamp dan tes ketajaman penglihatan. (12) Penanganan bergantung pada tingkat keparahan, tetapi operasi penggantian lensa dengan lensa intraokular buatan adalah satu-satunya metode yang efektif dengan teknik phacoemulsifikasi sebagai pilihan utama.\n\n(13) Walaupun katarak tidak dapat dicegah sepenuhnya, gaya hidup sehat dapat memperlambat perkembangannya. (14) Langkah pencegahan yang dapat dilakukan adalah menggunakan kacamata anti-UV, mengonsumsi makanan kaya antioksidan, mengendalikan penyakit kronis, serta menghindari rokok dan alkohol. (15) Seharusnya, pemerintah mencanangkan pemeriksaan mata rutin setiap 2—4 tahun untuk mencegah penyakit tersebut. (16) Penting untuk diingat bahwa katarak tidak bisa disembuhkan dengan obat atau kacamata dan bersifat tidak menular. (17) Dengan deteksi dini dan penanganan yang tepat, kualitas penglihatan dapat dipulihkan dan menjadikan perawatan mata sebagai investasi penting untuk masa depan.\n\n(diadaptasi dari https://www.rspondokindah.co.id/)\n\nPola pengembangan paragraf kedua dalam teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Pola sebab akibat yang menekankan hubungan antara berbagai faktor risiko dengan kerusakan lensa mata pada penderita katarak.",
+            "Pola eksposisi yang menyajikan penjelasan umum mengenai penyebab, diagnosis, dan penanganan katarak secara informatif.",
+            "Pola klasifikasi yang mengelompokkan faktor risiko, metode diagnosis, serta penanganan katarak ke dalam kategori tertentu.",
+            "Pola prosedural yang menjelaskan langkah-langkah pemeriksaan dan pengobatan katarak secara runtut dan sistematis.",
+            "Pola kronologis yang menggambarkan perkembangan katarak dari awal muncul hingga tahap penanganan medis lanjutan."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Paragraf tersebut menyajikan informasi secara umum mengenai katarak, dimulai dari informasi umum tentang faktor utama dan faktor risiko, dilanjutkan dengan penjelasan tentang diagnosis, hingga penanganannya. Penyusunan ini tidak berfokus pada pengelompokan kategori secara tegas, langkah-langkah prosedural, urutan waktu, dan hubungan sebab-akibat yang dominan, tetapi bertujuan memberikan pemahaman menyeluruh kepada pembaca. Oleh karena itu, pola yang digunakan adalah eksposisi karena paragraf berfungsi menjelaskan suatu topik secara informatif dan sistematis. Jalur Cara Gemilang: Paparan umum->rinci tanpa urutan waktu = eksposisi; jangan terkecoh opsi prosedural hanya karena ada kata diagnosis.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Katarak adalah kondisi medis yang ditandai dengan kekeruhan pada lensa mata akibat menggumpal protein sehingga mengganggu kemampuan mata meneruskan cahaya secara normal. (2) Penyakit ini bersifat progresif dan umumnya berkembang seiring bertambahnya usia yang dapat terjadi pada satu atau kedua mata. (3) Banyak orang menderita katarak yang tidak tertangani karena kondisi ekonomi. (4) Meski tidak menular, katarak menjadi penyebab utama kebutaan di Indonesia dan menyumbang 81% kasus gangguan penglihatan. (5) Gejala awal meliputi penglihatan kabur, silau terhadap cahaya, kesulitan melihat di malam hari, pandangan ganda, dan perubahan persepsi warna. (6) Deteksi dini melalui pemeriksaan mata rutin sangat penting untuk mencegah kebutaan yang dapat dihindari.\n\n(7) Penuaan merupakan penyebab utama katarak, tetapi berbagai faktor lain turut mempercepat perkembangannya. (8) Paparan sinar ultraviolet, polusi, asap rokok, alkohol, dan zat beracun dapat meningkatkan radikal bebas yang merusak lensa mata. (9) Kondisi kesehatan, seperti diabetes, hipertensi, penggunaan kortikosteroid jangka panjang, riwayat cedera atau operasi mata, serta faktor genetik, juga berperan. (10) Kesehatan mata merupakan hal yang sangat berharga sehingga harus dijaga dengan baik. (11) Diagnosis dilakukan oleh dokter mata melalui anamnesis, pemeriksaan fisik, dan penunjang, seperti slit-lamp dan tes ketajaman penglihatan. (12) Penanganan bergantung pada tingkat keparahan, tetapi operasi penggantian lensa dengan lensa intraokular buatan adalah satu-satunya metode yang efektif dengan teknik phacoemulsifikasi sebagai pilihan utama.\n\n(13) Walaupun katarak tidak dapat dicegah sepenuhnya, gaya hidup sehat dapat memperlambat perkembangannya. (14) Langkah pencegahan yang dapat dilakukan adalah menggunakan kacamata anti-UV, mengonsumsi makanan kaya antioksidan, mengendalikan penyakit kronis, serta menghindari rokok dan alkohol. (15) Seharusnya, pemerintah mencanangkan pemeriksaan mata rutin setiap 2—4 tahun untuk mencegah penyakit tersebut. (16) Penting untuk diingat bahwa katarak tidak bisa disembuhkan dengan obat atau kacamata dan bersifat tidak menular. (17) Dengan deteksi dini dan penanganan yang tepat, kualitas penglihatan dapat dipulihkan dan menjadikan perawatan mata sebagai investasi penting untuk masa depan.\n\n(diadaptasi dari https://www.rspondokindah.co.id/)\n\nTujuan penulisan teks tersebut adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "menjelaskan pengertian, penyebab, gejala, serta penanganan katarak agar pembaca memahami kondisi tersebut secara menyeluruh.",
+            "mengajak masyarakat untuk melakukan pemeriksaan mata rutin sebagai upaya utama dalam mengobati penyakit katarak secara total.",
+            "menginformasikan faktor risiko dan langkah pencegahan katarak agar masyarakat dapat mengurangi kemungkinan terjadinya gangguan penglihatan.",
+            "membandingkan berbagai metode pengobatan katarak berdasarkan tingkat keberhasilan dan efektivitas dalam dunia medis modern.",
+            "mengkritisi peran pemerintah dalam menyediakan layanan kesehatan mata bagi penderita katarak di Indonesia secara menyeluruh."
+          ],
+          "jawaban": [
+            0,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Teks tersebut bertujuan memberikan informasi yang lengkap mengenai katarak, mulai dari definisi, penyebab, gejala, diagnosis, hingga penanganannya sehingga pembaca memperoleh pemahaman yang utuh tentang penyakit tersebut. Selain itu, teks juga memuat penjelasan faktor risiko dan langkah pencegahan seperti gaya hidup sehat dan pemeriksaan rutin, yang bertujuan agar masyarakat dapat mengurangi risiko gangguan penglihatan. Oleh karena itu, pernyataan (1) dan (3) tepat karena mencerminkan tujuan informatif sekaligus edukatif dari teks secara menyeluruh. Pernyataan (1) benar menjelaskan pengertian, penyebab, gejala, serta penanganan katarak agar pembaca memahami kondisi tersebut secara menyeluruh. mengajak masyarakat untuk melakukan pemeriksaan mata rutin sebagai upaya utama dalam mengobati penyakit katarak secara total. Pernyataan (3) benar menginformasikan faktor risiko dan langkah pencegahan katarak agar masyarakat dapat mengurangi kemungkinan terjadinya gangguan penglihatan. membandingkan berbagai metode pengobatan katarak berdasarkan tingkat keberhasilan dan efektivitas dalam dunia medis modern. Jalur Cara Gemilang: Tujuan ganda teks medis: informasi utuh + informasi faktor risiko & pencegahan; ajakan/kritik tidak ada di teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Bacalah paragraf berikut dengan saksama! Fenomena alam di Indonesia pada tahun 2025 makin terasa dampaknya pada kehidupan sosial dan budaya masyarakat. Menurut Badan Meteorologi, Klimatologi, dan Geofisika (BMKG), sepanjang awal 2025 tercatat sebanyak 1.732 kejadian cuaca ekstrem, meliputi hujan es, puting beliung, angin kencang—yang menunjukkan bahwa perubahan iklim makin konkret dalam keseharian masyarakat. Fenomena-fenomena ini tidak hanya berdampak pada kerusakan fisik, tetapi juga pada perubahan perilaku sosial, seperti acara tradisional di luar ruangan yang harus dipersingkat atau dibatalkan. Ritual adat yang bergantung pada musim hujan menjadi terjadwal ulang. Selain itu, masyarakat kota dan desa makin sadar perlunya mitigasi bencana sebagai bagian dari budaya kolektif. Peristiwa kebakaran hutan dan lahan (karhutla) merupakan satu di antara fenomena alam yang sedang terjadi. Fenomena ini menjadi kejadian berulang yang berhubungan dengan budaya masyarakat di sekitar hutan. Data dari Kementerian Kehutanan menyebutkan bahwa hingga Mei 2025 luas area yang terbakar tercatat sekitar 8.500 hektare walaupun ada laporan angka kebakaran menurun secara signifikan dibandingkan tahun sebelumnya. h. 49 Kebakaran ini dapat menurunkan kualitas udara dan mengganggu aktivitas ekonomi dan kesehatan masyarakat sekitar. Kesadaran masyarakat untuk beralih pada cara-cara membuka lahan yang ramah lingkungan menjadi langkah penting dalam mencegah karhutla berulang di masa mendatang. Menanggapi dua fenomena tersebut, masyarakat Indonesia mulai menyesuaikan diri dengan budaya mitigasi dan budaya adaptasi. Ritual adat yang dahulu sangat bergantung pada musim dan lingkungan kini memasukkan unsur kesiapsiagaan bencana, seperti dalam adat upacara adat di daerah rawan, warga melibatkan unsur lingkungan dan pencegahan kebakaran atau banjir sebagai bagian dari proses budaya. Pemerintah dan komunitas juga mendorong agar edukasi bencana dan lingkungan menjadi bagian dari pendidikan informal dan kebudayaan lokal. Dengan demikian, fenomena alam yang awalnya dianggap sebagai alam lepas kini menjadi bagian yang tidak terpisahkan dari budaya sosial sehingga kita harus beradaptasi, memelihara, dan merespons alam sebagai bagian dari hidup bersama. (diadaptasi dari https://www.BMKG.co.id) Bagaimana pola pengembangan paragraf pertama, kedua, dan ketiga pada teks tersebut? Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Paragraf kedua dikembangkan dengan pola sebab akibat karena membahas kejadian kebakaran hutan dan akibatnya.",
+            "Paragraf ketiga menggunakan pola deskripsi karena menggambarkan pola hidup masyarakat dalam menghadapi bencana",
+            "Paragraf kedua dikembangkan dengan pola proses karena membahas urutan penyebab peristiwa kebakaran hutan.",
+            "Paragraf pertama dikembangkan dengan pola induktif khusus ke umum karena membahas kesimpulan umum lalu diikuti data BMKG.",
+            "Paragraf ketiga dikembangkan dengan pola proses karena paragraf ini menguraikan tindakan, langkah-langkah, atau proses penyesuaian (adaptasi) yang dilakukan masyarakat dalam menghadapi fenomena tersebut."
+          ],
+          "jawaban": [
+            0,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan (1) benar Paragraf kedua menjelaskan sebab (peristiwa karhutla dan budaya membuka lahan) yang menimbulkan akibat nyata di lingkungan (menurunkan kualitas udara, mengganggu aktivitas ekonomi), dan mengganggu kesehatan masyarakat sekitar). Hubungan antara kejadian (sebab) dan dampaknya menunjukkan bahwa pola pengembangannya adalah sebab akibat. Pernyataan (2) salah Paragraf ketiga tidak membandingkan dua pola hidup yang berbeda (misalnya: masyarakat kota vs desa, atau masa lalu vs masa kini secara kontras). Teks justru menekankan pada adaptasi dan integrasi dan adaptasi sebagai respons bersama, bukan perbandingan. Pernyataan (3) salah Paragraf kedua tidak menggunakan urutan waktu kejadian kebakaran hutan (kronologi) peristiwa. Fokusnya adalah pada dampak dari fenomena tersebut, bukan pada urutan tahapan penyebab atau proses terjadinya. Pernyataan (4) salah Paragraf pertama justru dimulai dari data khusus (angka kejadian cuaca ekstrem dari BMKG) lalu ditarik ke kesimpulan umum tentang dampak sosial budaya. Pernyataan (5) benar Paragraf ketiga memaparkan proses bagaimana masyarakat Indonesia mulai beradaptasi secara bertahap terhadap perubahan alam. Urutan penyesuaian ini terlihat dari cara mengubah ritual adat, keterlibatan warga secara aktif, hingga program edukasi bencana oleh pemerintah. Urutan peristiwa ini mengikuti pola proses atau kronologis . Jalur Cara Gemilang: Per paragraf: sebab->akibat = kausalitas; langkah = prosedural; ciri = deskripsi; uji tiap opsi ke rangka paragraf.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Bacalah paragraf berikut dengan saksama Laptop dan tablet adalah dua perangkat elektronik yang sering digunakan untuk bekerja dan hiburan. Namun, keduanya memiliki perbedaan yang signifikan. Laptop umumnya lebih besar dan berat, tetapi menawarkan performa yang lebih tinggi, prosesor yang lebih kuat, dan kapasitas penyimpanan yang lebih besar. Selain itu, laptop juga dilengkapi dengan keyboard fisik dan berbagai port untuk koneksi eksternal sehingga cocok untuk tugas-tugas berat, seperti pengeditan video dan pemrograman. Di sisi lain, tablet lebih ringan. Tablet biasanya digunakan untuk tugas yang lebih ringan, seperti membaca, menonton video, atau mengetik. Dengan demikian, pilihan antara laptop dan tablet tergantung pada kebutuhan penggunanya. Jika memerlukan perangkat yang kuat dan multifungsi, laptop adalah pilihan tepat, sedangkan tablet cocok untuk penggunaan ringan. Laptop umumnya memiliki sistem operasi yang lebih kompleks sehingga mendukung berbagai aplikasi profesional yang tidak tersedia di tablet. Sebaliknya, tablet menawarkan kemudahan mobilitas karena bentuknya yang ringkas dan praktis dibawa ke mana saja. Dan segi baterai, tablet cenderung memiliki daya tahan yang lebih lama dibandingkan laptop dalam penggunaan ringan. Namun, laptop unggul dalam hal produktivitas karena mampu menjalankan banyak aplikasi secara bersamaan tanpa penurunan kinerja yang signifikan. Oleh karena itu, perbandingan antara keduanya menunjukkan bahwa setiap perangkat memiliki keunggulan sesuai dengan kebutuhan pengguna. Tablet biasanya memiliki desain yang tipis dengan layar sentuh yang responsif dan tampilan yang jernih. Perangkat ini mudah dioperasikan hanya dengan sentuhan jari sehingga memberikan pengalaman penggunaan yang sederhana. Bobotnya yang ringan membuat tablet nyaman digunakan dalam berbagai posisi, baik saat duduk maupun berbaring. Selain itu, tampilannya yang modern dan minimalis menambah daya tarik bagi pengguna dari berbagai kalangan. Tablet juga sering dilengkapi dengan kamera dan speaker yang cukup baik untuk kebutuhan hiburan. Dengan karakteristik tersebut, tablet menjadi perangkat yang praktis dan menarik untuk penggunaan sehari-hari. (diadaptasi dari https://id.kumparan.com) Bagaimana pola pengembangan paragraf pertama, kedua, dan ketiga pada teks tersebut? Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Paragraf pertama menggunakan pola kronologi karena membahas perbedaan laptop dan tablet secara rinci berdasarkan fungsi dan karakteristik.",
+            "Paragraf kedua menggunakan pola perbandingan karena menguraikan kelebihan dan kekurangan laptop dan tablet dari berbagai aspek penggunaan.",
+            "Paragraf ketiga menggunakan pola deskripsi karena menggambarkan ciri fisik dan karakteristik tablet secara rinci dan jelas.",
+            "Paragraf pertama menggunakan pola deskripsi karena menggambarkan bentuk dan tampilan laptop serta tablet secara umum.",
+            "Paragraf kedua menggunakan pola sebab akibat karena menjelaskan hubungan antara fitur perangkat dan dampaknya terhadap pengguna."
+          ],
+          "jawaban": [
+            1,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan (1) salah Paragraf pertama tidak menyajikan urutan waktu atau tahapan peristiwa (kronologi). Pola yang digunakan adalah perbandingan karena teks secara langsung mengontraskan karakteristik laptop dan tablet (ukuran, performa, fitur, kegunaan). Pernyataan (2) benar menggunakan pola perbandingan karena membandingkan laptop dan tablet dari segi fleksibilitas, daya tahan baterai, serta produktivitas sehingga menunjukkan keunggulan masing-masing perangkat. Pernyataan (3) benar menggunakan pola deskripsi karena menggambarkan secara rinci bentuk, tampilan, dan karakteristik tablet sehingga pembaca dapat membayangkan wujudnya. Pernyataan (4) salah Meskipun terdapat penyebutan ciri fisik, tujuan utama paragraf pertama bukan sekadar menggambarkan objek, melainkan membedakan kedua perangkat untuk membantu pembaca memahami perbedaan mendasar keduanya. Pola dominan tetap perbandingan, bukan deskripsi murni. Pernyataan (5) salah Paragraf kedua tidak membangun rangkaian kausalitas (sebab → akibat) yang sistematis. Teks lebih menekankan pada perbandingan atribut antar-perangkat. Hubungan fitur dan dampak penggunaannya hanya bersifat implisit dan pendukung, bukan struktur utama pengembangan paragraf. Jalur Cara Gemilang: Dua hal dikontraskan = perbandingan; rincian ciri = deskripsi; urutan waktu = kronologis.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 1 Paragraf 1 & Pragmatik h.40-42; kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
