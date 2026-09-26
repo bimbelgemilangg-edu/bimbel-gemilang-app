@@ -14,6 +14,8 @@ import {
   FileText,
 } from 'lucide-react';
 import { muatMateriDanBab } from '../../../services/materiV2Service';
+// Turn 91: monitor mode ujian (rekap nilai live + akhiri paksa).
+import { dengarUjian, akhiriUjian } from '../../../services/sesiService';
 import {
   cariSesiAktif, pantauSesi, pantauPeserta, pantauJawaban,
   mulaiSesi, akhiriSesi, setPosisiSesi, setModeSesi, ubahSesi,
@@ -34,6 +36,19 @@ export default function PanggungPresentasi() {
   const [sesi, setSesi] = useState(null);
   const [peserta, setPeserta] = useState([]);
   const [jawaban, setJawaban] = useState([]);
+  // Turn 91: mode ujian — durasi menit, rekap submit, tick countdown.
+  const [durasiMenit, setDurasiMenit] = useState(30);
+  const [ujianList, setUjianList] = useState([]);
+  const [nowUji, setNowUji] = useState(() => Date.now());
+  useEffect(() => {
+    if (!sesi || !sesi.id) return undefined;
+    return dengarUjian(sesi.id, setUjianList);
+  }, [sesi?.id]);
+  useEffect(() => {
+    if (!sesi || sesi.posisi?.jenis !== 'kuisPaket') return undefined;
+    const id = window.setInterval(() => setNowUji(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [sesi?.id, sesi?.posisi?.jenis]);
   const [antrean, setAntrean] = useState([]);
   const [tampilKunci, setTampilKunci] = useState(false);
   const [lebar, setLebar] = useState(
@@ -169,19 +184,64 @@ export default function PanggungPresentasi() {
           ) : posisi.jenis === 'kuisPaket' ? (
             <div style={S.zoomWrap}>
               <div style={S.penanda}>
-                📝 Mode paket • {kuis.length} soal • siswa mengerjakan semua dulu
+                📝 MODE UJIAN • {kuis.length} soal • timer mundur di layar siswa
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 2px' }}>
-                {kuis.map((q, i2) => {
-                  const n = jawaban.filter((j2) => Number(j2.soalIndex) === i2).length;
-                  return (
-                    <div key={i2} style={{ fontSize: 13.5 }}>
-                      Soal {i2 + 1}: <b>{n}</b> jawaban masuk
-                      {sesi?.kunciTerbuka ? ' • 🔓 pembahasan terbuka' : ''}
+              {(() => {
+                const deadline = sesi?.ujianSelesaiAt || (sesi?.ujianMulaiAt
+                  ? sesi.ujianMulaiAt + (Number(sesi.durasiMenit) || 30) * 60000 : null);
+                const sisa = deadline ? Math.max(0, deadline - nowUji) : null;
+                const mm = sisa !== null ? Math.floor(sisa / 60000) : null;
+                const ss = sisa !== null ? Math.floor((sisa % 60000) / 1000) : null;
+                return (
+                  <div style={{ padding: '10px 2px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span style={{
+                        fontVariantNumeric: 'tabular-nums', fontWeight: 900, fontSize: 22,
+                        color: sisa !== null && sisa < 60000 ? '#DC2626' : '#4338ca',
+                      }}>
+                        {sisa !== null ? `⏳ ${mm}:${String(ss).padStart(2, '0')}` : '⏳ —'}
+                      </span>
+                      <span style={{ fontSize: 12.5, color: '#64748b' }}>
+                        {peserta.length} peserta • {ujianList.length} mengumpulkan
+                      </span>
+                      <span style={{ flex: 1 }} />
+                      {!sesi?.ujianSelesaiAt && (
+                        <button type="button" style={tombolPill('merah')}
+                          onClick={() => akhiriUjian(sesi.id).catch(() => {})}>
+                          ⏹ Akhiri Sekarang
+                        </button>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {peserta.map((p) => {
+                        const u = ujianList.find((x) => x.siswaId === p.siswaId);
+                        const n = jawaban.filter((j2) => j2.siswaId === p.siswaId).length;
+                        return (
+                          <div key={p.siswaId} style={{
+                            display: 'flex', gap: 8, alignItems: 'center', fontSize: 13,
+                            background: '#fff', border: '1px solid #eef1f6',
+                            borderRadius: 10, padding: '7px 10px',
+                          }}>
+                            <span style={{ flex: 1, textAlign: 'left', fontWeight: 700 }}>{p.nama || p.siswaId}</span>
+                            {u ? (
+                              <span style={{ fontWeight: 900, color: '#15803D', background: '#ECFDF5', border: '1px solid #BBF7D0', borderRadius: 999, padding: '2px 10px', fontSize: 12 }}>
+                                terkumpul • nilai {u.skor}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#64748b', fontSize: 12 }}>
+                                mengerjakan • {Math.min(n, kuis.length)}/{kuis.length} terjawab
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {peserta.length === 0 && (
+                        <div style={{ fontSize: 12.5, color: '#64748b' }}>Belum ada peserta bergabung.</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ) : posisi.jenis === 'kuis' ? (
             kuis[idx] && (
@@ -400,17 +460,33 @@ export default function PanggungPresentasi() {
               </button>
             )}
             {sesiAktif && posisi.jenis !== 'kuisPaket' && kuis.length > 0 && (
-              <button type="button" style={tombolPill('putih')}
-                onClick={() => {
-                  setTampilKunci(false);
-                  setPosisiSesi(sesi.id,
-                    { jenis: 'kuisPaket', indexes: kuis.map((_, i2) => i2) },
-                    { kunciTerbuka: false }).catch(() => {});
-                }}>
-                📝 Paket: kerjakan semua dulu
-              </button>
+              <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                <input
+                  type="number" min="1" max="180" value={durasiMenit}
+                  aria-label="Durasi ujian (menit)"
+                  onChange={(e) => setDurasiMenit(Math.max(1, Number(e.target.value) || 1))}
+                  style={{
+                    width: 64, borderRadius: 10, border: `1px solid ${T.garis}`,
+                    padding: '9px 6px', fontSize: 13, fontWeight: 800,
+                    textAlign: 'center', color: T.judul, background: '#fff',
+                  }} />
+                <button type="button" style={tombolPill('primer')}
+                  onClick={() => {
+                    setTampilKunci(false);
+                    setPosisiSesi(sesi.id,
+                      { jenis: 'kuisPaket', indexes: kuis.map((_, i2) => i2) },
+                      {
+                        kunciTerbuka: false,
+                        ujianMulaiAt: Date.now(),
+                        durasiMenit: Number(durasiMenit) || 30,
+                        ujianSelesaiAt: null,
+                      }).catch(() => {});
+                  }}>
+                  📝 Mulai Ujian • {kuis.length} soal • {durasiMenit} mnt
+                </button>
+              </span>
             )}
-            {sesiAktif && (posisi.jenis === 'kuis' || posisi.jenis === 'kuisPaket') && (
+            {sesiAktif && posisi.jenis === 'kuis' && (
               <button type="button" style={tombolPill('hijau')}
                 onClick={() => ubahSesi(sesi.id, { kunciTerbuka: !sesi.kunciTerbuka }).catch(() => {})}>
                 {sesi.kunciTerbuka ? '🔒 Tutup pembahasan' : '🔓 Buka pembahasan'}

@@ -113,10 +113,13 @@ export const tombolPill = (varian = 'primer') => ({
   fontWeight: 800,
   fontFamily: 'inherit',
   background: varian === 'primer' ? T.biru
-    : varian === 'hijau' ? T.hijauLatar : '#fff',
+    : varian === 'hijau' ? T.hijauLatar
+    : varian === 'merah' ? T.merahLatar : '#fff',
   color: varian === 'primer' ? '#fff'
-    : varian === 'hijau' ? T.hijauTeks : T.biruGelap,
+    : varian === 'hijau' ? T.hijauTeks
+    : varian === 'merah' ? '#B91C1C' : T.biruGelap,
   border: varian === 'hijau' ? `1px solid ${T.hijauGaris}`
+    : varian === 'merah' ? `1px solid ${T.merahGaris}`
     : varian === 'putih' ? `1px solid ${T.garis}` : 'none',
   boxShadow: varian === 'primer' ? '0 6px 16px rgba(30,155,240,.3)' : 'none',
 });

@@ -13,10 +13,14 @@ import {
   muatDaftarMateri, muatMateriDanBab, sedangModeContoh,
 } from '../../../services/materiV2Service';
 import { cariSesiAktif, bacaIdentitasGuru } from '../../../services/sesiPresentasiService';
+// Turn 91: menu Presentasi & PPT Versiku DIGABUNG — halaman ini kini
+// punya 2 tab: "Panggung & Baca" dan "PPT Versiku" (komponen embed).
+import PptVersiGuru from './PptVersiGuru';
 import { T, kartuDasar, halamanDasar, lingkaranNomor } from '../../student/belajar/tema';
 
 export default function DaftarPresentasi() {
   const navigate = useNavigate();
+  const [tab, setTab] = useState('panggung');
   const [materiList, setMateriList] = useState([]);
   const [babMap, setBabMap] = useState({});
   const [sesiAktif, setSesiAktif] = useState(null);
@@ -54,6 +58,21 @@ export default function DaftarPresentasi() {
       </div>
 
       <div style={S.isi}>
+        {/* Turn 91: satu menu, dua halaman (tab). */}
+        <div style={S.tabRow}>
+          <button type="button" style={tab === 'panggung' ? S.tabAktif : S.tab}
+            onClick={() => setTab('panggung')}>
+            <Projector size={14} /> Panggung & Baca
+          </button>
+          <button type="button" style={tab === 'pptku' ? S.tabAktif : S.tab}
+            onClick={() => setTab('pptku')}>
+            <BookOpen size={14} /> PPT Versiku
+          </button>
+        </div>
+        {tab === 'pptku' ? (
+          <PptVersiGuru embed />
+        ) : (
+          <>
         {sesiAktif && (
           <button type="button" style={S.bannerSesi}
             onClick={() => navigate(
@@ -99,18 +118,26 @@ export default function DaftarPresentasi() {
                   {babs && (
                     <div style={S.babList}>
                       {babs.map((b, i) => (
-                        <button key={b.id} type="button" style={S.babItem}
-                          onClick={() => navigate(`/guru/presentasi/${m.id}/${b.id}`)}>
-                          <span style={lingkaranNomor('biasa')}>{i + 1}</span>
-                          <span style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
-                            <span style={S.babJudul}>{b.judul}</span>
-                            <span style={S.babMeta}>
-                              {(b.sections || []).length} bagian •
-                              {' '}{(b.ujiPemahaman || []).length} soal
+                        <div key={b.id} style={{ display: 'flex', gap: 6, alignItems: 'stretch' }}>
+                          <button type="button" style={{ ...S.babItem, flex: 1 }}
+                            onClick={() => navigate(`/guru/presentasi/${m.id}/${b.id}`)}>
+                            <span style={lingkaranNomor('biasa')}>{i + 1}</span>
+                            <span style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+                              <span style={S.babJudul}>{b.judul}</span>
+                              <span style={S.babMeta}>
+                                {(b.sections || []).length} bagian •
+                                {' '}{(b.ujiPemahaman || []).length} soal
+                              </span>
                             </span>
-                          </span>
-                          <Projector size={15} color={T.biru} />
-                        </button>
+                            <Projector size={15} color={T.biru} />
+                          </button>
+                          {/* Turn 91: guru bisa BACA materi seperti versi siswa. */}
+                          <button type="button" title="Baca materi seperti versi siswa"
+                            style={S.bacaBtn}
+                            onClick={() => navigate(`/guru/belajar/${m.id}/${b.id}`)}>
+                            📖
+                          </button>
+                        </div>
                       ))}
                       {babs.length === 0 && (
                         <div style={S.babKosong}>Belum ada bab.</div>
@@ -122,12 +149,32 @@ export default function DaftarPresentasi() {
             })}
           </div>
         )}
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 const S = {
+  tabRow: { display: 'flex', gap: 8, marginBottom: 14 },
+  tab: {
+    display: 'inline-flex', gap: 7, alignItems: 'center',
+    border: `1px solid ${T.garis}`, background: '#fff', color: T.teks,
+    borderRadius: 999, padding: '8px 15px', fontSize: 12.5, fontWeight: 800,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
+  tabAktif: {
+    display: 'inline-flex', gap: 7, alignItems: 'center',
+    border: '1px solid transparent', background: T.biru, color: '#fff',
+    borderRadius: 999, padding: '8px 15px', fontSize: 12.5, fontWeight: 800,
+    cursor: 'pointer', fontFamily: 'inherit',
+  },
+  bacaBtn: {
+    flexShrink: 0, width: 40, borderRadius: 12, border: `1px solid ${T.garis}`,
+    background: '#fff', cursor: 'pointer', fontSize: 16,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
   hero: {
     display: 'flex', gap: 13, alignItems: 'center',
     padding: '20px 22px', background: T.gradasiHero,

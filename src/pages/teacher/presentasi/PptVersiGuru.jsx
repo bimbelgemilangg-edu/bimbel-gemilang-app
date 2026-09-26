@@ -20,7 +20,7 @@ import {
   T, kartuDasar, halamanDasar, lingkaranNomor,
 } from '../../student/belajar/tema';
 
-export default function PptVersiGuru() {
+export default function PptVersiGuru({ embed = false }) {
   const { guruId, guruNama } = bacaIdentitasGuru();
   const [materiList, setMateriList] = useState([]);
   const [babMap, setBabMap] = useState({});
@@ -88,7 +88,8 @@ export default function PptVersiGuru() {
   };
 
   return (
-    <div style={halamanDasar}>
+    <div style={embed ? undefined : halamanDasar}>
+      {!embed && (
       <div style={S.hero}>
         <div style={S.heroIkon}><Presentation size={22} /></div>
         <div>
@@ -100,8 +101,9 @@ export default function PptVersiGuru() {
           </p>
         </div>
       </div>
+      )}
 
-      <div style={S.isi}>
+      <div style={embed ? undefined : S.isi}>
         {pesan && (
           <div style={pesan.startsWith('✅') ? S.ok : S.err}>{pesan}</div>
         )}

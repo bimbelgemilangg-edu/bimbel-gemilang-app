@@ -23,6 +23,8 @@ import {
   Presentation, PanelRight, Crown,
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
+// Turn 91: mode ujian menulis rekap nilai ke subcollection ujian/.
+import { kumpulkanUjian } from '../../../services/sesiService';
 import IsiSections from '../../../components/belajar/IsiSections';
 import { buatSlide, SlideView } from '../../../components/belajar/slideMateri';
 import JodohBoard from '../../../components/belajar/JodohBoard';
@@ -96,7 +98,7 @@ const kreditSoal = (s, jaw) => {
 // (kutipan cerpen/teks). Pecah pada baris kosong supaya bacaan tidak
 // menjadi satu blok panjang; baris pembuka "Bacalah ..." dimiringkan
 // seperti cetakan buku, batang soal di akhir ditebalkan.
-function TeksSoal({ teks, style }) {
+export function TeksSoal({ teks, style }) {
   const paras = String(teks || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
   const adaBacalah = paras.length > 1 && /^Bacalah\b/.test(paras[0]);
   return (
@@ -124,7 +126,7 @@ function TeksSoal({ teks, style }) {
 // dipecah jadi dua kartu: "Jalur konsep" (biru; otomatis jadi daftar
 // bernomor bila memuat pola "Baris N —" atau "Pernyataan (N)") dan
 // "Jalur Cara Gemilang" (amber; satu kalimat jurus cepat).
-function PembahasanBox({ soal }) {
+export function PembahasanBox({ soal }) {
   const teks = String(soal.pembahasan || '').trim();
   if (!teks) return null;
   const iCg = teks.indexOf('Jalur Cara Gemilang:');
@@ -201,7 +203,12 @@ const kunciTeks = (s) => {
   return String.fromCharCode(65 + (s.jawaban || 0));
 };
 
-export default function BelajarReader() {
+export default function BelajarReader({ audience = 'student' }) {
+  // Turn 91: mode baca guru — tampilan sama persis dengan versi siswa,
+  // tetapi progres/XP TIDAK disimpan dan callout guru terlihat.
+  const isTeacher = audience === 'teacher';
+  // Progres/XP hanya untuk siswa; mode baca guru tidak menulis apa pun.
+  const simpanProgresAman = (...a) => (isTeacher ? undefined : simpanProgressBab(...a));
   const { materiId, babId } = useParams();
   const navigate = useNavigate();
   const studentId = localStorage.getItem('studentId') || '';
@@ -449,7 +456,7 @@ export default function BelajarReader() {
   // (ditaruh SETELAH deklarasi semuaDijawab -- bug TDZ Turn 30)
   useEffect(() => {
     if (!semuaDijawab || !babId) return;
-    simpanProgressBab(studentId, materiId, babId, { latihanSelesai: true });
+    simpanProgresAman(studentId, materiId, babId, { latihanSelesai: true });
   }, [semuaDijawab, studentId, materiId, babId]);
 
   // Simpan kuis lewat EVENT jawab (bukan effect) -- hemat render
@@ -474,7 +481,7 @@ export default function BelajarReader() {
     const globalBaca = !selesaiBaca && !xpBacaDiberi ? XP_BACA : 0;
     if (globalKuis) setXpKuisDiberi(true);
     if (globalBaca) setXpBacaDiberi(true);
-    simpanProgressBab(studentId, materiId, babId, {
+    simpanProgresAman(studentId, materiId, babId, {
       quizTerbaik: simpan,
       xp,
       ...(globalKuis ? { xpGlobalKuis: true } : {}),
@@ -489,7 +496,7 @@ export default function BelajarReader() {
     setSelesaiBaca(true);
     const beriGlobal = !xpBacaDiberi;
     if (beriGlobal) setXpBacaDiberi(true);
-    simpanProgressBab(studentId, materiId, babId, {
+    simpanProgresAman(studentId, materiId, babId, {
       selesaiBab: true,
       selesaiSections: sections.map((_, i) => i),
       xp: XP_BACA + (quizTersimpan ? XP_BENAR * (quizTersimpan.benar || 0) : 0),
@@ -795,7 +802,7 @@ export default function BelajarReader() {
                 <span style={S.emojiSeksi}>{materi.emoji || '📘'}</span>
               </div>
               {bab.ringkasan && <p style={S.ringkasan}>{bab.ringkasan}</p>}
-              <IsiSections sections={sections} />
+              <IsiSections sections={sections} untukGuru={isTeacher} />
               <button type="button"
                 onClick={tandaiSelesaiBaca}
                 style={selesaiBaca ? tombolPill('hijau') : tombolPill('primer')}>
@@ -973,7 +980,9 @@ export default function BelajarReader() {
               ) : ikutAktif && sesi.posisi?.jenis === 'kuisPaket' ? (
                 <LivePaket sessionId={sesi.id} kuis={kuis}
                   indexes={sesi.posisi.indexes || kuis.map((_, i2) => i2)}
-                  sesi={sesi} />
+                  sesi={sesi}
+                  siswaId={studentId}
+                  nama={localStorage.getItem('studentName') || 'Siswa'} />
               ) : ikutAktif && sesi.posisi?.jenis === 'kuis'
                 && kuis[Number(sesi.posisi.index)] ? (
                 <LiveKuis
@@ -1416,25 +1425,252 @@ function fmtKunciSingkat(soal) {
 
 // Turn 77: MODE PAKET — semua soal dilempar sekaligus, siswa mengerjakan
 // sebisanya, pembahasan baru muncul saat guru membuka kunci.
-function LivePaket({ sessionId, kuis, indexes, sesi }) {
+// ============================================================
+// MODE UJIAN (Turn 91 — arahan owner): begitu guru menekan
+// "Mulai Ujian", siswa LANGSUNG mengerjakan SEMUA soal dengan
+// timer mundur. Nilai muncul di layar guru secara live; siswa
+// melihat nilainya HANYA setelah benar-benar mengumpulkan
+// (semua soal terjawab) atau waktu habis (auto-submit).
+// Dipakai juga oleh sesi bank-soal (LiveSessionTeacher) sehingga
+// mode lepas-satu-per-satu tidak lagi dipakai untuk sesi baru.
+// ============================================================
+export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama }) {
+  const [jw, setJw] = useState({});
+  const [hasil, setHasil] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const deadline = sesi?.ujianSelesaiAt || (sesi?.ujianMulaiAt
+    ? sesi.ujianMulaiAt + (Number(sesi.durasiMenit) || 30) * 60000 : null);
+  const sisaMs = deadline ? deadline - now : null;
+  const habis = sisaMs !== null && sisaMs <= 0;
+  const kunci = !!hasil || habis;
+
+  const jawab = (i, v) => setJw((o) => ({ ...o, [i]: v }));
+  const terjawab = indexes.filter((i) => jawabanLengkap(kuis[i], jw[i])).length;
+  const lengkapSemua = terjawab === indexes.length;
+
+  async function kumpul() {
+    if (hasil) return;
+    const kredit = indexes.map((i) => kreditSoal(kuis[i], jw[i] ?? null));
+    const skor = Math.round((kredit.reduce((a, b) => a + b, 0) / Math.max(1, indexes.length)) * 100);
+    const h = { skor, kredit, terjawab, total: indexes.length };
+    setHasil(h);
+    try {
+      await Promise.all(indexes.map((i) => kirimJawabanLive(sessionId, i, jw[i] ?? null)));
+      await kumpulkanUjian(sessionId, {
+        siswaId, nama, skor,
+        benar: kredit.reduce((a, b) => a + b, 0),
+        total: indexes.length, terjawab,
+      });
+    } catch { /* nilai tetap tampil lokal bila offline */ }
+  }
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+  useEffect(() => { if (habis && !hasil) kumpul(); }, [habis]);
+
+  const mm = sisaMs !== null ? Math.max(0, Math.floor(sisaMs / 60000)) : null;
+  const ss = sisaMs !== null ? Math.max(0, Math.floor((sisaMs % 60000) / 1000)) : null;
+
+  const renderJawab = (soal, i) => {
+    const fmt = tipeSoal(soal);
+    const v = jw[i];
+    if (fmt === 'tabel') {
+      return (
+        <div style={S.tabelWrap}>
+          <table style={S.tabel}>
+            <thead>
+              <tr>
+                <th style={S.tabelSel}>Pernyataan</th>
+                {kolomSoal(soal).map((k) => <th key={k} style={S.tabelSel}>{k}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {(soal.baris || []).map((bar, r) => (
+                <tr key={r}>
+                  <td style={S.tabelSel}><MathText text={bar} /></td>
+                  {kolomSoal(soal).map((k, c) => {
+                    const pil = Array.isArray(v) ? v[r] : undefined;
+                    const kunc = (soal.jawaban || [])[r] === c;
+                    return (
+                      <td key={c} style={S.tabelSelTengah}>
+                        <button type="button" disabled={kunci}
+                          aria-label={`baris ${r + 1} kolom ${k}`}
+                          style={{
+                            ...S.tabelRadio,
+                            ...(pil === c ? S.tabelRadioPil : null),
+                            ...(kunci && pil === c && kunc ? S.tabelRadioBenar : null),
+                            ...(kunci && pil === c && !kunc ? S.tabelRadioSalah : null),
+                            ...(kunci && pil !== c && kunc ? S.tabelRadioKunciTipis : null),
+                          }}
+                          onClick={() => {
+                            const arr = Array.isArray(v) ? [...v] : [];
+                            arr[r] = c; jawab(i, arr);
+                          }}>
+                          {pil === c ? '✓' : ''}
+                        </button>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+    if (fmt === 'pgMulti') {
+      const arr = Array.isArray(v) ? v : [];
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {(soal.opsi || []).map((op, j) => {
+            const a = arr.includes(j);
+            const kunc = kunci && (soal.jawaban || []).includes(j);
+            return (
+              <button key={j} type="button" disabled={kunci}
+                onClick={() => jawab(i, a ? arr.filter((x) => x !== j) : [...arr, j].sort((x, y) => x - y))}
+                style={{
+                  display: 'flex', gap: 9, alignItems: 'flex-start', textAlign: 'left',
+                  padding: '9px 12px', borderRadius: 10, fontFamily: 'inherit',
+                  border: `2px solid ${kunc ? T.hijau : a ? T.biru : T.garis}`,
+                  background: kunc ? T.hijauLatar : a ? T.kotakBiru : '#fff',
+                  cursor: kunci ? 'default' : 'pointer', fontSize: 13, color: T.teks,
+                }}>
+                <span style={{
+                  width: 18, height: 18, flexShrink: 0, marginTop: 1, borderRadius: 4,
+                  border: `2px solid ${a ? T.biru : '#CBD5E1'}`, background: a ? T.biru : '#fff',
+                  color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>{a ? <CheckCircle2 size={11} /> : null}</span>
+                <span style={{ flex: 1, lineHeight: 1.55 }}><MathText text={op} /></span>
+              </button>
+            );
+          })}
+          <div style={S.hintKecil}>Jawaban benar bisa lebih dari satu; centang semua yang sesuai.</div>
+        </div>
+      );
+    }
+    if (fmt === 'isian' || fmt === 'uraian') {
+      return (
+        <input style={{ ...S.inpBiasa }} value={typeof v === 'string' ? v : ''}
+          disabled={kunci} placeholder="Ketik jawabanmu…"
+          onChange={(e) => jawab(i, e.target.value)} />
+      );
+    }
+    // pg (default)
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+        {(soal.opsi || []).map((op, j) => {
+          const a = v === j;
+          const kunc = kunci && soal.jawaban === j;
+          return (
+            <button key={j} type="button" disabled={kunci}
+              onClick={() => jawab(i, j)}
+              style={{
+                display: 'flex', gap: 9, alignItems: 'flex-start', textAlign: 'left',
+                padding: '9px 12px', borderRadius: 10, fontFamily: 'inherit',
+                border: `2px solid ${kunc ? T.hijau : a ? T.biru : T.garis}`,
+                background: kunc ? T.hijauLatar : a ? T.kotakBiru : '#fff',
+                cursor: kunci ? 'default' : 'pointer', fontSize: 13, color: T.teks,
+              }}>
+              <span style={{ fontWeight: 800, fontSize: 12, color: T.samar }}>{String.fromCharCode(65 + j)}.</span>
+              <span style={{ flex: 1, lineHeight: 1.55 }}><MathText text={op} /></span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <>
       <div style={S.liveHead}>
-        📝 Mode paket • kerjakan semua soal sebisanya • {indexes.length} soal
+        📝 MODE UJIAN • {indexes.length} soal
+        {sisaMs !== null && !hasil && (
+          <span style={{
+            marginLeft: 'auto', fontVariantNumeric: 'tabular-nums', fontWeight: 900,
+            color: sisaMs < 60000 ? '#DC2626' : '#4338ca',
+            background: sisaMs < 60000 ? '#FEF2F2' : '#eef2ff',
+            borderRadius: 999, padding: '3px 12px', fontSize: 13,
+          }}>
+            ⏳ {mm}:{String(ss).padStart(2, '0')}
+          </span>
+        )}
       </div>
-      <div style={{ fontSize: 12.5, color: T.samar, marginBottom: 10 }}>
-        Jawaban terkirim per soal saat kamu memilih/mengirim. Setelah semua
-        selesai, tunggu guru membuka pembahasan bersama.
-      </div>
-      {indexes.map((i) => (
-        <div key={i} style={{ marginBottom: 18 }}>
-          <div style={{ ...S.soalNomor }}>Soal {i + 1}</div>
-          <LiveKuis sessionId={sessionId} soal={kuis[i]} idx={i}
-            total={kuis.length} sesi={sesi} />
-        </div>
-      ))}
+      {!hasil ? (
+        <>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+            {indexes.map((i) => (
+              <button key={i} type="button"
+                onClick={() => document.getElementById(`uj-${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                style={{
+                  width: 30, height: 30, borderRadius: 9, border: '1.5px solid ' + (jw[i] !== undefined && jawabanLengkap(kuis[i], jw[i]) ? T.biru : T.garis),
+                  background: jw[i] !== undefined && jawabanLengkap(kuis[i], jw[i]) ? T.kotakBiru : '#fff',
+                  color: T.biruDalam, fontWeight: 800, fontSize: 12, cursor: 'pointer',
+                }}>
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 12.5, color: T.samar, marginBottom: 12 }}>
+            Kerjakan semua soal — tombol kumpul aktif setelah semua terjawab.
+            Waktu habis = terkirim otomatis.
+          </div>
+          {indexes.map((i) => (
+            <div key={i} id={`uj-${i}`} style={{ ...S.kartuKuisUjian, scrollMarginTop: 80 }}>
+              <div style={S.soalNomor}>Soal {i + 1}</div>
+              {kuis[i].soalGambar && <img src={kuis[i].soalGambar} alt="Gambar soal" style={S.soalGambar} />}
+              {(kuis[i].opsiGambar || []).length > 0 && null}
+              <TeksSoal teks={kuis[i].soal} style={S.soalTeks} />
+              {renderJawab(kuis[i], i)}
+            </div>
+          ))}
+          <button type="button" style={{ ...S.btn, opacity: lengkapSemua ? 1 : 0.5 }}
+            disabled={!lengkapSemua} onClick={() => kumpul()}>
+             Kumpulkan ({terjawab}/{indexes.length} terjawab)
+          </button>
+        </>
+      ) : (
+        <>
+          <div style={{
+            textAlign: 'center', background: T.kotakBiru, border: `1.5px solid ${T.kotakBiruGaris}`,
+            borderRadius: 14, padding: '14px 12px', marginBottom: 12,
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: T.biruDalam }}>NILAIMU</div>
+            <div style={{ fontSize: 34, fontWeight: 900, color: T.judul }}>{hasil.skor}</div>
+            <div style={{ fontSize: 12, color: T.teks }}>
+              {hasil.terjawab}/{hasil.total} terjawab • kredit {hasil.kredit.reduce((a, b) => a + b, 0).toFixed(2)}
+            </div>
+          </div>
+          {indexes.map((i) => {
+            const kr = hasil.kredit[indexes.indexOf(i)];
+            return (
+              <div key={i} style={{ ...S.kartuKuisUjian }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={S.soalNomor}>Soal {i + 1}</div>
+                  <span style={{
+                    fontSize: 11, fontWeight: 900, borderRadius: 999, padding: '2px 10px',
+                    background: kr === 1 ? T.hijauLatar : kr > 0 ? T.amberLatar : T.merahLatar,
+                    color: kr === 1 ? T.hijauTeks : kr > 0 ? T.amberTeks : '#991B1B',
+                    border: `1px solid ${kr === 1 ? T.hijauGaris : kr > 0 ? T.amberGaris : T.merahGaris}`,
+                  }}>
+                    {kr === 1 ? '✅ Benar' : kr > 0 ? `⚡ Kredit ${kr.toFixed(2)}` : '❌ Belum tepat'}
+                  </span>
+                </div>
+                <TeksSoal teks={kuis[i].soal} style={S.soalTeks} />
+                {renderJawab(kuis[i], i)}
+                <PembahasanBox soal={kuis[i]} />
+              </div>
+            );
+          })}
+        </>
+      )}
     </>
   );
+}
+
+function LivePaket(props) {
+  return <UjianPaketBoard {...props} />;
 }
 
 // ---------------- kuis live bersama guru (Fase 3) ----------------
@@ -1928,6 +2164,15 @@ const S = {
     marginLeft: 'auto', background: T.biru, color: '#fff', border: 'none',
     borderRadius: 9, padding: '6px 13px', fontSize: 11.5, fontWeight: 800,
     cursor: 'pointer', fontFamily: 'inherit',
+  },
+  kartuKuisUjian: {
+    background: '#fff', border: `1px solid ${T.garis}`, borderRadius: 14,
+    padding: '12px 13px', marginBottom: 14,
+  },
+  inpBiasa: {
+    width: '100%', boxSizing: 'border-box', border: `1.5px solid ${T.garis}`,
+    borderRadius: 10, padding: '10px 12px', fontSize: 13.5, background: '#fff',
+    color: T.teks, outline: 'none', fontFamily: 'inherit',
   },
   liveHead: {
     display: 'inline-flex', alignItems: 'center', gap: 7,

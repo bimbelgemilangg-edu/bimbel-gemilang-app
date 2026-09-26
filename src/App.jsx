@@ -601,6 +601,12 @@ function App() {
           path="/guru/presentasi/:materiId/:babId"
           element={<GuruRoute><PanggungPresentasi /></GuruRoute>}
         />
+        {/* Turn 91: mode baca guru — reader versi siswa untuk guru membaca
+            materi lengkap sebelum presentasi/ujian. */}
+        <Route
+          path="/guru/belajar/:materiId/:babId"
+          element={<GuruPage><BelajarReader audience="teacher" /></GuruPage>}
+        />
         {/* FASE 4.1: guru upload PPT versinya sendiri per bab */}
         <Route
           path="/guru/ppt-ku"

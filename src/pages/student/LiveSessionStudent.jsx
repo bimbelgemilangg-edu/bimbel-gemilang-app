@@ -13,6 +13,9 @@ import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
 import { renderLatexHtml } from '../../utils/renderLatexHtml';
 import { tahapDenganId, formatTimer, sisaTimer } from '../../utils/tahapKelas';
 import { cariSesiByKode, gabungSesi, dengarSesi, dengarRelawanSiswa, ajukanMaju, kirimJawaban, kirimTanya } from '../../services/sesiService';
+// Turn 91: mode ujian (semua soal + timer mundur) pakai komponen bersama
+// dengan reader materi v2.
+import { UjianPaketBoard } from './belajar/BelajarReader';
 import { flushLiveActions, listLiveActions, queueLiveAction } from '../../services/liveOutbox';
 import '../../components/buku/liveSession.css';
 
@@ -301,7 +304,7 @@ export default function LiveSessionStudent() {
         <div style={S.row}>
           <span className="live-room-kicker">RUANG BELAJAR · TERHUBUNG KE GURU</span>
           <span style={S.chip}>🔴 {sesi.kode}</span>
-          <span style={S.chip}>{sesi.mode === 'materi' ? '📖 Materi Interaktif' : '✍️ Soal & Pembahasan'}</span>
+          <span style={S.chip}>{sesi.mode === 'materi' ? '📖 Materi Interaktif' : sesi.mode === 'ujian' ? '📝 Mode Ujian' : '✍️ Soal & Pembahasan'}</span>
           {sesi.mode === 'materi' && slideNow && <span style={S.chip}>Slide {(sesi.slideAktif || 0) + 1}/{slides.length}</span>}
           {soal && <span style={S.chip}>Soal {idxSoal + 1}/{daftarSoal.length}</span>}
           <span style={{ ...S.chip, background: '#fef3c7', color: '#92400e' }}>{tahapAktif.ikon} {tahapAktif.label} · {formatTimer(timerDetik)}</span>
@@ -339,6 +342,15 @@ export default function LiveSessionStudent() {
         </div>
       )}
 
+      {sesi.mode === 'ujian' && (
+        <UjianPaketBoard
+          sessionId={sesi.id}
+          kuis={daftarSoal}
+          indexes={daftarSoal.map((_, i2) => i2)}
+          sesi={sesi}
+          siswaId={siswaId}
+          nama={nama} />
+      )}
       {soal && (
         <div style={S.card}>
           {gambarNow ? (

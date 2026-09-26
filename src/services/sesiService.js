@@ -66,6 +66,42 @@ export const dengarJawaban = (sesiId, cb) =>
   onSnapshot(collection(db, 'sesi_kelas', sesiId, 'jawaban'),
     (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
 
+// ============================================================
+// MODE UJIAN (Turn 91 — arahan owner): guru menekan "Mulai Ujian",
+// siswa LANGSUNG mengerjakan SEMUA soal dengan timer mundur.
+// Nilai terlihat di layar guru; siswa melihat nilainya hanya setelah
+// benar-benar mengumpulkan (manual semua terjawab atau auto saat habis).
+// ============================================================
+export async function mulaiUjian(sesiId, { daftarSoal, durasiMenit }) {
+  await updateDoc(doc(db, 'sesi_kelas', sesiId), {
+    mode: 'ujian',
+    daftarSoal: daftarSoal || [],
+    durasiMenit: Number(durasiMenit) || 30,
+    ujianMulaiAt: Date.now(),
+    ujianSelesaiAt: null,
+    soalAktif: null, kunciTerbuka: false,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function akhiriUjian(sesiId) {
+  await updateDoc(doc(db, 'sesi_kelas', sesiId), {
+    ujianSelesaiAt: Date.now(), updatedAt: serverTimestamp(),
+  });
+}
+
+export async function kumpulkanUjian(sesiId, { siswaId, nama, skor, benar, total, terjawab }) {
+  await setDoc(doc(db, 'sesi_kelas', sesiId, 'ujian', siswaId), {
+    siswaId, nama: nama || '', skor: Number(skor) || 0, benar: Number(benar) || 0,
+    total: Number(total) || 0, terjawab: Number(terjawab) || 0,
+    selesaiAt: serverTimestamp(), ts: Date.now(),
+  }, { merge: true });
+}
+
+export const dengarUjian = (sesiId, cb) =>
+  onSnapshot(collection(db, 'sesi_kelas', sesiId, 'ujian'),
+    (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
+
 export async function kirimTanya(sesiId, { siswaId, nama, teks, eventId }) {
   const safeId = String(eventId || `${siswaId || 'siswa'}_${Date.now()}`)
     .replace(/[^a-zA-Z0-9_-]/g, '_');

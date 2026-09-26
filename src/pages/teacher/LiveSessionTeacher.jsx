@@ -14,7 +14,7 @@ import { db } from '../../firebase';
 import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
 import { renderLatexHtml } from '../../utils/renderLatexHtml';
-import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, dengarRelawan, pilihRelawan, selesaikanMaju, mulaiTimerSesi, jedaTimerSesi, resetTimerSesi, ubahSesi, akhiriSesi } from '../../services/sesiService';
+import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, dengarRelawan, pilihRelawan, selesaikanMaju, mulaiTimerSesi, jedaTimerSesi, resetTimerSesi, ubahSesi, akhiriSesi, dengarUjian, akhiriUjian } from '../../services/sesiService';
 import { beriXpKeberanian, XP_KEBERANIAN_MAJU } from '../../services/xpService';
 import { TAHAP_KELAS, tahapDenganId, formatTimer, sisaTimer } from '../../utils/tahapKelas';
 import '../../components/buku/liveSession.css';
@@ -78,6 +78,10 @@ export default function LiveSessionTeacher() {
   const [babHtml, setBabHtml] = useState('');
   const [bankList, setBankList] = useState([]);
   const [bankPick, setBankPick] = useState(null);
+  // Turn 91: mode ujian — durasi, rekap submit, tick countdown.
+  const [durasiMenit, setDurasiMenit] = useState(30);
+  const [ujianList, setUjianList] = useState([]);
+  const [nowUji, setNowUji] = useState(() => Date.now());
   const [sesi, setSesi] = useState(null);
   const [peserta, setPeserta] = useState([]);
   const [jawaban, setJawaban] = useState([]);
@@ -182,6 +186,16 @@ export default function LiveSessionTeacher() {
   const daftarSoal = sesi ? (sesi.daftarSoal || []) : [];
   const slideNow = slides[sesi ? (sesi.slideAktif || 0) : 0] || null;
   const soalMateriNow = slideNow && slideNow.tipe === 'soal' ? daftarSoal[slideNow.soalIdx] : null;
+  // Turn 91: monitor mode ujian (rekap submit live + tick countdown).
+  useEffect(() => {
+    if (!sesi || !sesi.id) return undefined;
+    return dengarUjian(sesi.id, setUjianList);
+  }, [sesi?.id]);
+  useEffect(() => {
+    if (!sesi || sesi.mode !== 'ujian') return undefined;
+    const id = window.setInterval(() => setNowUji(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [sesi?.id, sesi?.mode]);
   const soalBankNow = sesi && sesi.mode === 'bank' && sesi.soalAktif != null ? daftarSoal[sesi.soalAktif] : null;
   const soalNow = soalMateriNow || soalBankNow || null;
   const idxNow = soalMateriNow ? slideNow.soalIdx : (sesi ? sesi.soalAktif : null);
@@ -218,22 +232,44 @@ export default function LiveSessionTeacher() {
   }
 
   async function mulaiBank() {
+    // Turn 91 (owner): mode lepas-satu-per-satu DIGANTI mode ujian —
+    // paket bank dikonversi ke bentuk materi-v2, siswa langsung
+    // mengerjakan SEMUA soal dengan timer mundur.
     if (!bankPick) return;
     const soals = bankPick.items.map((s) => {
-      const tipe = /benar|salah/i.test(s.tipe || '') ? 'bs' : /kompleks|multi/i.test(s.tipe || '') ? 'multi' : 'pg';
-      const kunci = tipe === 'pg' ? { tipe: 'pg', pg: typeof s.kunciJawaban === 'number' ? s.kunciJawaban : 0 }
-        : tipe === 'multi' ? { tipe: 'multi', multi: Array.isArray(s.kunciJawaban) ? s.kunciJawaban : [] }
-        : { tipe: 'bs', bs: Array.isArray(s.kunciJawaban) ? s.kunciJawaban : [] };
+      const teks = s.soal || s.teks_soal || s.teks || '';
+      const pembahasan = s.pembahasan || '';
+      if (/benar|salah/i.test(s.tipe || '')) {
+        return {
+          soal: teks, tipe: 'tabel', kolom: ['Benar', 'Salah'],
+          baris: s.pernyataan || [],
+          jawaban: (s.kunciJawaban || []).map((v) => (v === true ? 0 : v === false ? 1 : v)),
+          pembahasan,
+        };
+      }
+      if (/kompleks|multi/i.test(s.tipe || '')) {
+        return {
+          soal: teks + '\n\nPilihlah jawaban yang benar! Jawaban benar lebih dari satu.',
+          tipe: 'pgMulti', opsi: s.opsiJawaban || s.pilihan || [],
+          jawaban: Array.isArray(s.kunciJawaban) ? s.kunciJawaban : [],
+          pembahasan,
+        };
+      }
       return {
-        idx: 0, nomor: String(s.nomor || ''), tipe, level: s.level || 'sedang', sumber: 'Bank Soal',
-        teks: s.soal || s.teks_soal || s.teks || '', pilihan: s.opsiJawaban || s.pilihan || [],
-        pernyataan: s.pernyataan || [], kunci, langkah: s.langkah || [], pembahasan: s.pembahasan || '',
-        pembahasanHtml: '', gambarHtml: '', gambarUrls: s.gambarUrls || [],
+        soal: teks, tipe: 'pg', opsi: s.opsiJawaban || s.pilihan || [],
+        jawaban: typeof s.kunciJawaban === 'number' ? s.kunciJawaban : 0,
+        pembahasan,
       };
     });
     const s = await buatSesi({ guruId, catatan: bankPick.materi });
-    await ubahSesi(s.id, { mode: 'bank', sumber: 'bank', daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0 });
-    setSesi({ id: s.id, kode: s.kode, mode: 'bank', sumber: 'bank', daftarSoal: soals, slideAktif: 0, soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0, status: 'aktif' });
+    const patchUjian = {
+      mode: 'ujian', sumber: 'bank', daftarSoal: soals, slideAktif: 0,
+      soalAktif: null, kunciTerbuka: false, langkahTerbuka: 0,
+      ujianMulaiAt: Date.now(), durasiMenit: Number(durasiMenit) || 30,
+      ujianSelesaiAt: null,
+    };
+    await ubahSesi(s.id, patchUjian);
+    setSesi({ id: s.id, kode: s.kode, status: 'aktif', ...patchUjian });
     setTahap('live');
   }
 
@@ -344,7 +380,11 @@ export default function LiveSessionTeacher() {
         <div style={S.card}>
           <div style={S.row}>
             <button style={S.btn2} onClick={() => setTahap('mode')}>⬅ Kembali</button>
-            <span style={{ fontSize: 15, fontWeight: 800 }}>✍️ Pilih Paket Bank Soal</span>
+            <span style={{ fontSize: 15, fontWeight: 800 }}>📝 Mode Ujian — Pilih Paket Soal</span>
+          </div>
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8, lineHeight: 1.6 }}>
+            Turn 91: begitu dimulai, siswa LANGSUNG masuk mode ujian —
+            semua soal sekaligus dengan timer mundur. Nilai live di layar Anda.
           </div>
           {bankList.map((g) => (
             <div key={g.key} style={S.babRow} onClick={() => setBankPick(g)}>
@@ -352,7 +392,16 @@ export default function LiveSessionTeacher() {
               <span style={{ fontSize: 11, color: '#64748b' }}>{g.mapel} · {g.items.length} soal</span>
             </div>
           ))}
-          {bankPick && <button style={{ ...S.btnH, marginTop: 10 }} onClick={mulaiBank}>🚀 Mulai Sesi Soal ({bankPick.items.length} soal)</button>}
+          {bankPick && (
+            <div style={{ ...S.row, marginTop: 10 }}>
+              <input type="number" min="1" max="180" value={durasiMenit}
+                aria-label="Durasi ujian (menit)"
+                onChange={(e) => setDurasiMenit(Math.max(1, Number(e.target.value) || 1))}
+                style={{ width: 64, padding: '9px 6px', borderRadius: 8, border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 800 }} />
+              <span style={{ fontSize: 12, color: '#64748b' }}>menit</span>
+              <button style={{ ...S.btnH }} onClick={mulaiBank}>🚀 Mulai Ujian ({bankPick.items.length} soal)</button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -417,6 +466,58 @@ export default function LiveSessionTeacher() {
             </select>
           </div>
         )}
+        {sesi.mode === 'ujian' && (() => {
+          const deadline = sesi.ujianSelesaiAt || (sesi.ujianMulaiAt
+            ? sesi.ujianMulaiAt + (Number(sesi.durasiMenit) || 30) * 60000 : null);
+          const sisa = deadline ? Math.max(0, deadline - nowUji) : null;
+          const mm = sisa !== null ? Math.floor(sisa / 60000) : null;
+          const ss = sisa !== null ? Math.floor((sisa % 60000) / 1000) : null;
+          return (
+            <div style={S.card}>
+              <div style={S.row}>
+                <span style={{ fontSize: 15, fontWeight: 900, color: '#5b21b6' }}>📝 MONITOR UJIAN</span>
+                <span style={{
+                  marginLeft: 'auto', fontVariantNumeric: 'tabular-nums',
+                  fontWeight: 900, fontSize: 20,
+                  color: sisa !== null && sisa < 60000 ? '#DC2626' : '#4338ca',
+                }}>
+                  {sisa !== null ? `⏳ ${mm}:${String(ss).padStart(2, '0')}` : '—'}
+                </span>
+                {!sesi.ujianSelesaiAt && (
+                  <button type="button" style={{ ...S.btn2, background: '#FEF2F2', color: '#B91C1C', border: '1px solid #FBCACA' }}
+                    onClick={() => akhiriUjian(sesi.id)}>
+                    ⏹ Akhiri Sekarang
+                  </button>
+                )}
+              </div>
+              <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>
+                {(sesi.daftarSoal || []).length} soal • {peserta.length} peserta • {ujianList.length} mengumpulkan.
+                Nilai siswa terbuka setelah mereka mengumpulkan / waktu habis.
+              </div>
+              {peserta.map((p) => {
+                const u = ujianList.find((x) => x.siswaId === p.siswaId);
+                return (
+                  <div key={p.siswaId} style={{
+                    display: 'flex', gap: 8, alignItems: 'center', padding: '7px 10px',
+                    border: '1px solid #eef1f6', borderRadius: 10, marginBottom: 6, background: '#fff',
+                  }}>
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{p.nama || p.siswaId}</span>
+                    {u ? (
+                      <span style={{
+                        fontWeight: 900, color: '#15803D', background: '#ECFDF5',
+                        border: '1px solid #BBF7D0', borderRadius: 999, padding: '2px 10px', fontSize: 12,
+                      }}>
+                        terkumpul • nilai {u.skor}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 12, color: '#64748b' }}>mengerjakan…</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
         {sesi.mode === 'bank' && (
           <div style={S.row}>
             <select style={S.select} value={sesi.soalAktif != null ? String(sesi.soalAktif) : ''} onChange={(e) => e.target.value !== '' && ubahSesi(sesi.id, { soalAktif: Number(e.target.value), kunciTerbuka: false, langkahTerbuka: 0 })}>
