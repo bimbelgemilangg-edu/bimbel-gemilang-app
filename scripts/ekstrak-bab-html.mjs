@@ -33,7 +33,8 @@ const teksBergaris = (s) => entity(s
   .split('\n').map((l) => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean).join('\n'));
 
 // ---------- area ----------
-const mH2 = /<h2 class="hbar"[^>]*>[\s\S]{0,300}?Latihan Soal/.exec(html);
+const LATIHAN_RE = /<h2 class="hbar"[^>]*>[\s\S]{0,300}?(Latihan Soal|Exercises?)/;
+const mH2 = LATIHAN_RE.exec(html);
 const iMulai = mH2 ? mH2.index : html.indexOf('Latihan Soal');
 const iKunci = html.indexOf('KUNCI DAN PEMBAHASAN');
 const iBahasan = html.indexOf('>Pembahasan<');
@@ -128,7 +129,7 @@ const soal = [];
       // soal MANDIRI: membawa bacaan sendiri di dalam butirnya
       // (diawali "Bacalah ..." + paragraf panjang) -> jangan ditempeli
       // stimulus grup.
-      s.mandiri = /^Bacalah\b/.test(s.teks) && s.teks.length > 400;
+      s.mandiri = /^(Bacalah|Read)\b/.test(s.teks) && s.teks.length > 400;
       // grup stimulus: petik terakhir yang posisinya sebelum <ol> ini
       let gi = -1;
       stimuli.forEach((st, i) => { if (st.pos < mo.index) gi = i; });
