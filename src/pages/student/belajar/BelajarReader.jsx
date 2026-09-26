@@ -169,6 +169,10 @@ export default function BelajarReader({ audience = 'student' }) {
   // Turn 91: mode baca guru — tampilan sama persis dengan versi siswa,
   // tetapi progres/XP TIDAK disimpan dan callout guru terlihat.
   const isTeacher = audience === 'teacher';
+  // Turn 99: semua navigasi internal sadar-audience — guru jangan
+  // dilempar ke route /siswa/* (guard siswa -> login siswa).
+  const baseBelajar = isTeacher ? '/guru/belajar' : '/siswa/belajar';
+  const baseList = isTeacher ? '/guru/presentasi' : '/siswa/belajar';
   // Progres/XP hanya untuk siswa; mode baca guru tidak menulis apa pun.
   const simpanProgresAman = (...a) => (isTeacher ? undefined : simpanProgressBab(...a));
   const { materiId, babId } = useParams();
@@ -502,7 +506,7 @@ export default function BelajarReader({ audience = 'student' }) {
           (kemungkinan dihapus/diganti versi baru oleh admin).
           <div style={{ marginTop: 14 }}>
             <button type="button" style={tombolPill('primer')}
-              onClick={() => { simpanTerakhir(null); navigate('/siswa/belajar'); }}>
+              onClick={() => { simpanTerakhir(null); navigate(baseList); }}>
               <ArrowLeft size={15} /> Ke beranda Materi Belajar
             </button>
           </div>
@@ -621,7 +625,7 @@ export default function BelajarReader({ audience = 'student' }) {
       {/* ================= TOPBAR ================= */}
       <header style={S.topbar}>
         <button type="button" style={S.kembali}
-          onClick={() => navigate(`/siswa/belajar/${materiId}`)}>
+          onClick={() => navigate(baseList === '/siswa/belajar' ? `/siswa/belajar/${materiId}` : baseList)}>
           <ArrowLeft size={16} /> Kembali
         </button>
         <div style={S.cariWrap}>
@@ -659,7 +663,7 @@ export default function BelajarReader({ audience = 'student' }) {
             di materi ini.
           </span>
           <button type="button" style={S.bannerBtn}
-            onClick={() => navigate(`/siswa/belajar/${materiId}/${sesi.babId}`)}>
+            onClick={() => navigate(`${baseBelajar}/${materiId}/${sesi.babId}`)}>
             Gabung sesi
           </button>
         </div>
@@ -1020,19 +1024,19 @@ export default function BelajarReader({ audience = 'student' }) {
           <nav style={S.navBab}>
             {idxBab > 0 && (
               <button type="button" style={tombolPill('putih')}
-                onClick={() => navigate(`/siswa/belajar/${materiId}/${babList[idxBab - 1].id}`)}>
+                onClick={() => navigate(`${baseBelajar}/${materiId}/${babList[idxBab - 1].id}`)}>
                 <ChevronLeft size={15} /> {babList[idxBab - 1].judul}
               </button>
             )}
             <span style={{ flex: 1 }} />
             {babBerikut ? (
               <button type="button" style={tombolPill('primer')}
-                onClick={() => navigate(`/siswa/belajar/${materiId}/${babBerikut.id}`)}>
+                onClick={() => navigate(`${baseBelajar}/${materiId}/${babBerikut.id}`)}>
                 {babBerikut.judul} <ChevronRight size={15} />
               </button>
             ) : selesaiBaca ? (
               <button type="button" style={tombolPill('primer')}
-                onClick={() => navigate(`/siswa/belajar/${materiId}`)}>
+                onClick={() => navigate(baseList === '/siswa/belajar' ? `/siswa/belajar/${materiId}` : baseList)}>
                 Selesai — ke daftar materi <ChevronRight size={15} />
               </button>
             ) : null}
@@ -1055,7 +1059,7 @@ export default function BelajarReader({ audience = 'student' }) {
                   const aktifNow = b.id === babId;
                   return (
                     <button key={b.id} type="button"
-                      onClick={() => navigate(`/siswa/belajar/${materiId}/${b.id}`)}
+                      onClick={() => navigate(`${baseBelajar}/${materiId}/${b.id}`)}
                       style={{
                         ...S.panelItem,
                         ...(aktifNow ? S.panelItemAktif : null),
