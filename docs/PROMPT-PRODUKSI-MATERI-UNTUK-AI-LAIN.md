@@ -29,6 +29,12 @@ kemudian, contoh mikro menutup paragraf. Siswa SMA Indonesia; bahasa Indonesia
    jenis `caraGemilang` (atau `callout` tipe `gemilang` bila items kosong).
 7. Pembahasan soal WAJIB dua jalur: "Jalur konsep:" langkah bernurut +
    "Jalur Cara Gemilang:" satu kalimat jurus cepat.
+8. Aset lokal (field url/opsiGambar diawali '/') WAJIB ada di public/ DAN
+   terlacak git — folder public/ di-gitignore sehingga file baru harus
+   `git add -f public/...`. Sebelum serah: `node scripts/validasi-draft.mjs`
+   (menolak aset lokal yang hilang) dan `node scripts/cek-aset-materi.mjs`
+   (menolak aset belum tracked). Kejadian gambar 404 di live (turn 91)
+   tidak boleh terulang.
 
 ## 2. SKEMA JSON (persis; validator: scripts/validasi-draft.mjs)
 Struktur akar: { materi: {...}, bab: [ {judul, ringkasan, estimasiMenit,

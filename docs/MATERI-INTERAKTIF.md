@@ -157,6 +157,11 @@ atau bentuk bersarang:
    editor items (JSON) + **pratinjau live** persis tampilan siswa.
 4. Mode PPT guru: widget dirender sebagai slide statis (pasangan = tabel,
    langkah = poin bernomor) KECUALI `video` yang tetap bisa diputar.
+5. ASET LOKAL (turn 92): url diawali '/' menunjuk `public/` yang DI-GITIGNORE —
+   file aset baru WAJIB `git add -f public/...` lalu verifikasi dengan
+   `node scripts/cek-aset-materi.mjs` (ada + tracked) dan
+   `node scripts/validasi-draft.mjs` (menolak referensi aset hilang)
+   SEBELUM commit/impor, agar tidak ada gambar pecah/404 di live.
 
 ## 5. CONTOH SIAP IMPOR
 

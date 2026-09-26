@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 95" role="img" aria-label="Opsi E: aliran penggunaan lensa kontak, dampak negatif penggunaan lensa kontak, pencegahan bahaya penggunaan lensa kontak"><style>.lb{font-size:11px;fill:#141414;text-anchor:middle}.lbw{font-size:11px;fill:#fff;text-anchor:middle}.lbs{font-size:10px;fill:#141414;text-anchor:middle}.c1{fill:#9d9d9d;stroke:#4d4d4d;stroke-width:1.6}.c2{fill:#8a8a8a;stroke:#4d4d4d;stroke-width:1.6}.c3{fill:#ababab;stroke:#4d4d4d;stroke-width:1.6}.ar{fill:#111}.arl{stroke:#111;stroke-width:3;fill:none;marker-end:url(#ah)}.cyc{fill:none;stroke-width:10}text{font-family:Arial,Helvetica,sans-serif}</style><rect x="0" y="0" width="100%" height="100%" fill="#ffffff"></rect>
+          <rect class="bx" x="4" y="12" width="82" height="70" rx="9"></rect>
+          <text class="lbw" x="45" y="42">penggunaan</text><text class="lbw" x="45" y="56">lensa kontak</text>
+          <polygon class="ar" points="92,41 100,41 100,35 112,47 100,59 100,53 92,53"></polygon>
+          <rect class="bx" x="120" y="6" width="92" height="82" rx="9"></rect>
+          <text class="lbw" x="166" y="30">dampak</text><text class="lbw" x="166" y="44">negatif</text><text class="lbw" x="166" y="58">penggunaan</text><text class="lbw" x="166" y="72">lensa kontak</text>
+          <polygon class="ar" points="218,41 226,41 226,35 238,47 226,59 226,53 218,53"></polygon>
+          <rect class="bx" x="246" y="6" width="90" height="82" rx="9"></rect>
+          <text class="lbw" x="291" y="30">pencegahan</text><text class="lbw" x="291" y="44">bahaya</text><text class="lbw" x="291" y="58">penggunaan</text><text class="lbw" x="291" y="72">lensa kontak</text>
+        </svg>

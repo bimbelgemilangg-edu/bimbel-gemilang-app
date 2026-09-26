@@ -118,3 +118,6 @@ Thumbs.db
 .nuxt/
 public/
 ```
+# Turn 92: aset materi (bagan svg dll) WAJIB terlacak meski public/ di-ignore —
+# penambahan file baru pakai: git add -f public/bagan (atau jalankan
+# scripts/cek-aset-materi.mjs yang mengingatkan bila ada yang belum tracked).
