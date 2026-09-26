@@ -22,6 +22,8 @@ import {
   pantauAntrean, setStatusAntrean, beriXpGuru, bacaIdentitasGuru,
 } from '../../../services/sesiPresentasiService';
 import IsiSections from '../../../components/belajar/IsiSections';
+// Turn 96: tombol berbahaya dua langkah biar tidak kepencet saat presentasi.
+import TombolAkhiri from '../../../components/guru/TombolAkhiri';
 import { buatSlide, SlideView } from '../../../components/belajar/slideMateri';
 import { MathText } from '../../../components/MathText';
 import { T, kartuDasar, halamanDasar, tombolPill } from '../../student/belajar/tema';
@@ -206,10 +208,10 @@ export default function PanggungPresentasi() {
                       </span>
                       <span style={{ flex: 1 }} />
                       {!sesi?.ujianSelesaiAt && (
-                        <button type="button" style={tombolPill('merah')}
-                          onClick={() => akhiriUjian(sesi.id).catch(() => {})}>
-                          ⏹ Akhiri Sekarang
-                        </button>
+                        <TombolAkhiri
+                          label="⏹ Akhiri Ujian"
+                          detail={`${Math.max(0, peserta.length - ujianList.length)} siswa belum mengumpulkan`}
+                          onConfirm={() => akhiriUjian(sesi.id).catch(() => {})} />
                       )}
                       <button type="button" style={tombolPill('hijau')}
                         onClick={() => navigate(`/guru/review-sesi/${sesi.id}`)}>
@@ -537,14 +539,27 @@ export default function PanggungPresentasi() {
                 ? <><Magnet size={14} /> Mode mengikuti</>
                 : <><Hand size={14} /> Mode bebas</>}
             </button>
-            <button type="button"
-              style={{ ...tombolPill('putih'), color: '#B91C1C', borderColor: T.merahGaris }}
-              onClick={async () => {
-                await akhiriSesi(sesi.id);
-                setSesi((s) => (s ? { ...s, status: 'selesai' } : s));
-              }}>
-              <Square size={13} /> Akhiri
-            </button>
+            {/* Turn 96: ZONA AKHIRI terpisah dari tombol presentasi —
+                dua langkah klik + peringatan jumlah siswa yang masih
+                mengerjakan, supaya tidak kepencet saat mengajar. */}
+            <span style={{
+              marginLeft: 10, display: 'inline-flex', alignItems: 'center',
+              gap: 8, border: '1.5px dashed #FCA5A5', borderRadius: 12,
+              padding: '4px 9px', background: '#FFF7F7',
+            }}>
+              <span style={{ fontSize: 9.5, fontWeight: 900, color: '#B91C1C', letterSpacing: .6 }}>
+                ZONA AKHIRI
+              </span>
+              <TombolAkhiri kecil
+                label={<><Square size={12} /> Akhiri Sesi</>}
+                detail={sesi?.mode === 'ujian'
+                  ? `${Math.max(0, peserta.length - ujianList.length)} siswa belum mengumpulkan`
+                  : 'layar siswa akan tertutup'}
+                onConfirm={async () => {
+                  await akhiriSesi(sesi.id);
+                  setSesi((s) => (s ? { ...s, status: 'selesai' } : s));
+                }} />
+            </span>
           </>
         )}
       </footer>

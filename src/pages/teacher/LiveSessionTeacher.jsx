@@ -12,6 +12,8 @@ import katexCss from 'katex/dist/katex.min.css?inline';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { parseDaftarSoal, parseSlides, bersihVerdikt, CSS_MODUL } from '../../utils/parseSoal';
+// Turn 96: tombol berbahaya dua langkah (anti-kepencet saat mengajar).
+import TombolAkhiri from '../../components/guru/TombolAkhiri';
 import { percantikMatika, CSS_MATIKA } from '../../utils/matika';
 import { renderLatexHtml } from '../../utils/renderLatexHtml';
 import { buatSesi, dengarSesi, dengarPeserta, dengarJawaban, dengarTanya, hapusTanya, dengarRelawan, pilihRelawan, selesaikanMaju, mulaiTimerSesi, jedaTimerSesi, resetTimerSesi, ubahSesi, akhiriSesi, dengarUjian, akhiriUjian } from '../../services/sesiService';
@@ -427,7 +429,19 @@ export default function LiveSessionTeacher() {
           {soalNow && <span style={S.chip}>✍️ Soal {idxNow + 1}/{daftarSoal.length}</span>}
           {terbuka && <span style={{ ...S.chip, background: '#dcfce7', color: '#166534' }}>🔓 kunci terbuka</span>}
           <span style={{ flex: 1 }} />
-          <button style={S.btnR} onClick={async () => { if (window.confirm('Akhiri sesi?')) { await akhiriSesi(sesi.id); setTahap('mode'); setSesi(null); } }}>⏹ Akhiri</button>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            border: '1.5px dashed #FCA5A5', borderRadius: 10,
+            padding: '3px 8px', background: '#FFF7F7',
+          }}>
+            <span style={{ fontSize: 9, fontWeight: 900, color: '#B91C1C', letterSpacing: .6 }}>ZONA AKHIRI</span>
+            <TombolAkhiri kecil
+              label="⏹ Akhiri Sesi"
+              detail={sesi.mode === 'ujian'
+                ? `${Math.max(0, peserta.length - ujianList.length)} siswa belum mengumpulkan`
+                : 'layar siswa akan tertutup'}
+              onConfirm={async () => { await akhiriSesi(sesi.id); setTahap('mode'); setSesi(null); }} />
+          </span>
           <button style={S.btn2} onClick={() => window.open(`/guru/sesi-live/${sesi.id}/proyektor`, '_blank', 'noopener,noreferrer')}>📽️ Buka Proyektor</button>
         </div>
         <div className="live-room-overview">
@@ -484,10 +498,10 @@ export default function LiveSessionTeacher() {
                   {sisa !== null ? `⏳ ${mm}:${String(ss).padStart(2, '0')}` : '—'}
                 </span>
                 {!sesi.ujianSelesaiAt && (
-                  <button type="button" style={{ ...S.btn2, background: '#FEF2F2', color: '#B91C1C', border: '1px solid #FBCACA' }}
-                    onClick={() => akhiriUjian(sesi.id)}>
-                    ⏹ Akhiri Sekarang
-                  </button>
+                  <TombolAkhiri
+                    label="⏹ Akhiri Ujian"
+                    detail={`${Math.max(0, peserta.length - ujianList.length)} siswa belum mengumpulkan`}
+                    onConfirm={() => akhiriUjian(sesi.id)} />
                 )}
               </div>
               <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>
