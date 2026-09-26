@@ -1,0 +1,707 @@
+{
+  "materi": {
+    "judul": "Bahasa Inggris Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Inggris",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#059669",
+    "emoji": "🗣️",
+    "deskripsi": "Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, recount, procedure, analytical exposition, dan infographic reading. Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 6,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks.",
+      "Kartu Cara Gemilang, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 4 — Procedure Text (Edisi Cara Gemilang)",
+      "ringkasan": "Social function & struktur goal-materials-steps, language features (imperative, sequence connectors/adverbs), pola soal urutan/troubleshooting/reference/kategorisasi — dengan susun urutan manual, jodohkan fitur bahasa, benar/salah, isian rumpang, CG-PROCEDURE, dan 25 soal resmi bank (robot vacuum, tips keuangan, literasi anak, setup Nest Hub, tips belajar bahasa) + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 4,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Procedure Text: How to Make, Do, and Operate"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Procedure text tells HOW to make/do/use/operate something through a sequence of steps. Social function: memberi panduan langkah demi langkah agar tujuan tercapai — dari resep sampai manual robot vacuum."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Soal procedure di TKA jarang tentang hafalan — ia menguji logika urutan: what comes next, what if a step is skipped, what does \"it/then\" refer to, dan kategorisasi problem-solution atau passive-active. Kuasai penanda urutan dan kalimat imperatif, semuanya terpeta."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Procedure adalah resep masakan: judul = goal, bahan = materials, cara memasak = steps. Satu langkah terbalik saja, kue gagal — begitu juga soal \"what should be checked first\"."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Generic structure (bank h.88)",
+          "items": [
+            "Goal — judul bertujuan: how to ... (membuat/melakukan/mengoperasikan).",
+            "Materials — bahan/alat/peralatan yang dibutuhkan (tidak selalu ada).",
+            "Steps — metode berurutan menuju goal."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Language features + contoh",
+          "kolom": [
+            "Fitur",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Imperative sentences",
+              "v": "Press the button; Plug in the dock; Don't skip this step."
+            },
+            {
+              "k": "Action verbs",
+              "v": "install, change, place, tap, record."
+            },
+            {
+              "k": "Sequence connectors",
+              "v": "first, then, after that, finally."
+            },
+            {
+              "k": "Sequence adverbs",
+              "v": "once it is worn out, before using, while charging."
+            },
+            {
+              "k": "Simple present tense",
+              "v": "The light turns green when fully charged."
+            }
+          ]
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: langkah memasang & menguji robot vacuum (adaptasi teks 1)",
+          "keterangan": "Urutkan seperti manual: pemasangan dulu, lalu pemetaan.",
+          "items": [
+            "Install the side brush until it clicks",
+            "Place the charging dock against a wall and plug it in",
+            "Put the robot on the dock until the light turns green",
+            "Run the first mapping session so the robot learns the layout"
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: fitur bahasa dan contohnya",
+          "items": [
+            {
+              "kiri": "Press and hold for three seconds",
+              "kanan": "Imperative sentence"
+            },
+            {
+              "kiri": "then, after that, finally",
+              "kanan": "Sequence connector"
+            },
+            {
+              "kiri": "install, place, tap",
+              "kanan": "Action verb"
+            },
+            {
+              "kiri": "once it is worn out",
+              "kanan": "Sequence adverb"
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: procedure basics",
+          "items": [
+            {
+              "teks": "The goal of a procedure text is usually expressed in the title (\"How to ...\").",
+              "jawaban": true,
+              "penjelasan": "Goal = judul bertujuan."
+            },
+            {
+              "teks": "Steps may be presented in any order as long as all are included.",
+              "jawaban": false,
+              "penjelasan": "Urutan adalah inti procedure; terbalik = gagal."
+            },
+            {
+              "teks": "Imperative sentences are the typical mood of procedure steps.",
+              "jawaban": true,
+              "penjelasan": "Perintah langsung kepada pembaca."
+            },
+            {
+              "teks": "Materials section is mandatory in every procedure text.",
+              "jawaban": false,
+              "penjelasan": "Tips/kiat (seperti teks keuangan) bisa tanpa materials."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-PROCEDURE: GARIS LANGKAH",
+          "teks": "Buat garis langkah 1..n di kertas buram saat membaca; semua soal urutan/reference/troubleshooting dijawab dari garis itu.",
+          "items": [
+            "Nomori langkah saat membaca pertama kali (1,2,3...).",
+            "Soal \"right after X\" = lihat langkah n+1 di garismu.",
+            "Soal \"if X fails/skipped\" = cari konsekuensi di kalimat peringatan langkah itu atau langkah berikutnya.",
+            "Reference it/them/both = benda/perangkat terdekat sebelumnya yang cocok secara logika."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Pengecoh favorit: menukar urutan dua langkah yang \"keduanya masuk akal\" (pasang sikat vs letakkan dock). Kembali ke konektor teks (first/then/after that), bukan logika rumah tangga."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "The section that lists the tools or ingredients needed is called ...",
+              "opsi": [
+                "goal",
+                "materials",
+                "steps",
+                "re-orientation",
+                "identification"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: materials = bahan/alat (bank h.88). Jalur Cara Gemilang: struktur G-M-S."
+            },
+            {
+              "soal": "Read the steps! (1) Plug in the kettle. (2) Fill it with water to the max line. (3) Close the lid. (4) Press the switch. Which order is correct according to safe procedure?",
+              "opsi": [
+                "1-2-3-4",
+                "2-3-1-4",
+                "2-1-3-4",
+                "3-2-1-4",
+                "4-3-2-1"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: isi air dulu sebelum listrik (aman), tutup, baru nyalakan; menancapkan colokan setelah terisi menghindari pemanasan kosong. Jalur Cara Gemilang: garis langkah + logika keselamatan."
+            },
+            {
+              "soal": "\"Change the filter once it is worn out.\" The phrase \"once it is worn out\" functions as ...",
+              "opsi": [
+                "a sequence adverb of condition/time",
+                "a goal",
+                "an imperative",
+                "a material",
+                "a conclusion"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: penanda waktu/syarat urutan = sequence adverb. Jalur Cara Gemilang: CG-PROCEDURE — penanda urutan bukan langkah."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Procedure Question Patterns"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Pola soal + jurus",
+          "kolom": [
+            "Pola",
+            "Penanda",
+            "Jurus"
+          ],
+          "rows": [
+            {
+              "k": "Next/after step",
+              "v": "\"What should be done right after...?\"",
+              "w": "Garis langkah; jawab n+1."
+            },
+            {
+              "k": "Troubleshooting",
+              "v": "\"If X fails, what to check first?\"",
+              "w": "Kalimat peringatan/langkah pemeriksaan pertama."
+            },
+            {
+              "k": "Why a step",
+              "v": "\"Why does ... need to ...?\"",
+              "w": "Klausa tujuan (so that/in order to). "
+            },
+            {
+              "k": "Reference",
+              "v": "\"The word it/them refers to...\"",
+              "w": "Benda terdekat sebelumnya yang logis."
+            },
+            {
+              "k": "Categorize",
+              "v": "\"Problem/Solution\", \"Passive/Active\"",
+              "w": "Buat dua kolom aspek dulu."
+            },
+            {
+              "k": "Purpose",
+              "v": "\"The purpose of the text is...\"",
+              "w": "To tell/how to guide — panduan langkah."
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: istilah procedure",
+          "items": [
+            {
+              "teks": "The title section \"How to ...\" expresses the ... of a procedure text.",
+              "jawaban": [
+                "goal"
+              ],
+              "hint": "Tujuan/hasil akhir.",
+              "penjelasan": "Goal = judul bertujuan."
+            },
+            {
+              "teks": "Connectors like \"then\" and \"after that\" are called ... connectors.",
+              "jawaban": [
+                "sequence"
+              ],
+              "hint": "Berkenaan dengan urutan.",
+              "penjelasan": "Sequence connectors penanda urutan."
+            },
+            {
+              "teks": "Sentences that give commands directly to the reader are ... sentences.",
+              "jawaban": [
+                "imperative"
+              ],
+              "hint": "Berupa perintah.",
+              "penjelasan": "Imperative = kalimat perintah."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri",
+          "teks": "Ambil manual benda di rumahmu (setrika, router, rice cooker), tulis ulang sebagai procedure 4 langkah berbahasa Inggris dengan satu sequence adverb dan satu kalimat peringatan — lalu tukar dengan teman untuk diuji soal \"what if\"."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Siap uji pemahaman",
+          "teks": "25 soal resmi bab ini memakai 5 procedure: manual robot vacuum, tips keuangan pribadi, literasi keuangan anak, setup Google Nest Hub, dan tips belajar bahasa lewat film. Garis langkahmu adalah senjatanya."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Read the following text carefully!\n\nAn Intelligent Robotic Vacuum Cleaner, EcoClin Vacuum, is equipped with both Wet and Dry-Cleaning Feature allowing Mopping and Vacuuming all-in-one-go.\n\nHow to install the robot?\n\nNote: While connecting to the application, make sure your Wi-Fi is in 2.4G connection. If not, you can ask your service provider to enable 2.4G connection.\n\n(adapted from https://ecovacsindia.in/index)\n\nWhich statements are supported by the information in the text? There is more than one correct answer. Choose all correct answers!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "The installation service is available to customers who have purchased the device.",
+            "The robot must be placed on the base for charging before operation.",
+            "Too many obstacles can cause inefficient and faulty map directions.",
+            "All components must be removed from the packaging before installation.",
+            "The EcoClin Vacuum can only connect to a 5G Wi-Fi network."
+          ],
+          "jawaban": [
+            1,
+            2,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan mana yang didukung oleh informasi dalam teks adalah: The robot must be placed on the base for charging before operation (Robot harus ditempatkan di base untuk pengisian sebelum digunakan.) Too many obstacles can cause inefficient and faulty map directions (Terlalu banyak hambatan dapat menyebabkan pemetaan yang tidak efisien dan salah.) All components must be removed from the packaging before installation (Semua komponen harus dikeluarkan dari kemasan sebelum instalasi.) Jalur Cara Gemilang: Supported statements = cocokkan per pernyataan ke langkah manual; yang menambah aturan baru = salah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nAn Intelligent Robotic Vacuum Cleaner, EcoClin Vacuum, is equipped with both Wet and Dry-Cleaning Feature allowing Mopping and Vacuuming all-in-one-go.\n\nHow to install the robot?\n\nNote: While connecting to the application, make sure your Wi-Fi is in 2.4G connection. If not, you can ask your service provider to enable 2.4G connection.\n\n(adapted from https://ecovacsindia.in/index)\n\nThe author's intention to write the text is",
+          "tipe": "pg",
+          "opsi": [
+            "to tell users how to connect the device with wireless connection.",
+            "to give instruction on how to use non-automatic vacuum cleaner.",
+            "to describe the chronological steps to solve issues in using the device.",
+            "to help users operate the device safely and effectively.",
+            "to guide readers to maintain the device in a proper way."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Penulis bertujuan memberikan panduan langkah demi langkah agar pengguna dapat mengoperasikan perangkat dengan benar, aman, dan efisien. Jalur Cara Gemilang: Intention penulis procedure = memandu cara mengoperasikan (how to), langkah demi langkah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nAn Intelligent Robotic Vacuum Cleaner, EcoClin Vacuum, is equipped with both Wet and Dry-Cleaning Feature allowing Mopping and Vacuuming all-in-one-go.\n\nHow to install the robot?\n\nNote: While connecting to the application, make sure your Wi-Fi is in 2.4G connection. If not, you can ask your service provider to enable 2.4G connection.\n\n(adapted from https://ecovacsindia.in/index)\n\nWhat might happen if the side brush is not installed correctly?",
+          "tipe": "pg",
+          "opsi": [
+            "The device's powerful suction may not work effectively.",
+            "It could affect the battery's durability.",
+            "The device may not clean edges effectively.",
+            "It might not be able to prevent hair tangles.",
+            "It may affect the device's ability in mapping navigation."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Jika sikat pinggir ( side brush ) tidak terpasang dengan benar, robot kemungkinan tidak dapat membersihkan bagian tepi secara maksimal karena komponen tersebut berfungsi untuk menjangkau area sudut dan pinggir. Jalur Cara Gemilang: Soal \"what might happen if\" = cari kalimat peringatan/konsekuensi di langkah terkait.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nAn Intelligent Robotic Vacuum Cleaner, EcoClin Vacuum, is equipped with both Wet and Dry-Cleaning Feature allowing Mopping and Vacuuming all-in-one-go.\n\nHow to install the robot?\n\nNote: While connecting to the application, make sure your Wi-Fi is in 2.4G connection. If not, you can ask your service provider to enable 2.4G connection.\n\n(adapted from https://ecovacsindia.in/index)\n\nIf the robot fails to charge, what installation step should be checked first?",
+          "tipe": "pg",
+          "opsi": [
+            "The rubber C-shaped band",
+            "The QR code on the device",
+            "The card slot in the accessory kit",
+            "The base and station connection",
+            "The dust cabin in the Omni station"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s4-a.svg",
+            "/bagan/bab1-s4-b.svg",
+            "/bagan/bab1-s4-c.svg",
+            "/bagan/bab1-s4-d.svg",
+            "/bagan/bab1-s4-e.svg"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Jika robot tidak dapat mengisi daya, pengguna harus terlebih dahulu memeriksa apakah base dan station sudah terpasang dengan benar karena bagian ini berkaitan langsung dengan proses pengisian daya. Jalur Cara Gemilang: Troubleshooting = ikuti urutan pemeriksaan manual: cek dudukan/charging dock lebih dulu.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nAn Intelligent Robotic Vacuum Cleaner, EcoClin Vacuum, is equipped with both Wet and Dry-Cleaning Feature allowing Mopping and Vacuuming all-in-one-go.\n\nHow to install the robot?\n\nNote: While connecting to the application, make sure your Wi-Fi is in 2.4G connection. If not, you can ask your service provider to enable 2.4G connection.\n\n(adapted from https://ecovacsindia.in/index)\n\nWhich best explains why the robot needs to create a map during its first use?",
+          "tipe": "pg",
+          "opsi": [
+            "To provide basic management to ensure a tidy setup",
+            "To understand the layout of the space so it can clean efficiently",
+            "To perform modifications while accommodating the installation",
+            "To enable the device to inspect areas for any visible damage",
+            "To configure the device settings and integrate it with other appliances"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Robot tersebut membuat peta untuk memahami tata letak ruangan sehingga dapat bergerak dan membersihkan secara lebih efisien tanpa hambatan. Jalur Cara Gemilang: Why sebuah langkah = klausa tujuan di langkah itu (\"so that / in order to / untuk\").",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nAn Intelligent Robotic Vacuum Cleaner, EcoClin Vacuum, is equipped with both Wet and Dry-Cleaning Feature allowing Mopping and Vacuuming all-in-one-go.\n\nHow to install the robot?\n\nNote: While connecting to the application, make sure your Wi-Fi is in 2.4G connection. If not, you can ask your service provider to enable 2.4G connection.\n\n(adapted from https://ecovacsindia.in/index)\n\nIn \"It needs to be changed once it is worn out\", the word \"it\" refers to which of the following?",
+          "tipe": "pg",
+          "opsi": [
+            "The cover",
+            "The EcoClin",
+            "The dust bag",
+            "The card slot",
+            "The side brush"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Kata \"it\" merujuk pada dust bag (kantong debu) yang disebutkan sebelumnya. Kalimat sebelumnya membahas tentang kantong debu yang dapat diganti ketika sudah aus. Jalur Cara Gemilang: Reference \"it\" = benda terdekat sebelumnya yang logis diganti (dust bag).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nAn Intelligent Robotic Vacuum Cleaner, EcoClin Vacuum, is equipped with both Wet and Dry-Cleaning Feature allowing Mopping and Vacuuming all-in-one-go.\n\nHow to install the robot?\n\nNote: While connecting to the application, make sure your Wi-Fi is in 2.4G connection. If not, you can ask your service provider to enable 2.4G connection.\n\n(adapted from https://ecovacsindia.in/index)\n\nWrite True (T) or False (F) for each statement based on the text!\n(Answer each row by choosing TRUE / FALSE.)",
+          "tipe": "tabel",
+          "kolom": [
+            "TRUE",
+            "FALSE"
+          ],
+          "baris": [
+            "The vacuum relies on mapping technology.",
+            "Some parts of the device are replaceable and reusable",
+            "The vacuum likely operates manually after setup",
+            "The device is intended for indoor use.",
+            "Users must have advanced technical skills"
+          ],
+          "jawaban": [
+            0,
+            0,
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TRUE Baris 2 — TRUE Baris 3 — FALSE Baris 4 — TRUE Baris 5 — FALSE Jalur Cara Gemilang: True/False prosedur: urutan terbalik atau alat salah = False.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.facebook.com)\n\nWhat is the main purpose of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "To inform readers about important steps for choosing a better financial method",
+            "To educate young adults on how to handle their finances effectively",
+            "To present practical tips for young adults to build long-term financial life amidst crisis",
+            "To encourage good financial habits among young adults who are struggling with low income",
+            "To outline key strategies for improving personal financial choice"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Teks bertujuan untuk memberikan edukasi kepada orang dewasa muda tentang cara mengelola keuangan dengan baik melalui berbagai tips praktis seperti mengontrol diri, menabung, dan memahami pengeluaran. Jalur Cara Gemilang: Purpose tips keuangan = mengedukasi cara mengelola uang (how to manage).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.facebook.com)\n\nA person focuses only on saving for retirement but ignores other tips. What is the most possible long-term outcome?",
+          "tipe": "pg",
+          "opsi": [
+            "It might force them to use or lose their wealth.",
+            "It might allocate a small portion to an emergency fund.",
+            "It may make protection strategies less effective.",
+            "They may face short-term financial instability.",
+            "It can lead to overspending and income reduction."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Jika seseorang hanya fokus pada tabungan pensiun dan mengabaikan dana darurat serta aspek lain, mereka berisiko mengalami masalah keuangan jangka pendek karena tidak memiliki cadangan untuk kebutuhan mendesak. Jalur Cara Gemilang: Mengabaikan tips lain = rentan biaya tak terduga (dana darurat hilang).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.facebook.com)\n\nWhat does \"guard your health\" mean in a financial context?",
+          "tipe": "pg",
+          "opsi": [
+            "Setting financial boundaries and managing stress",
+            "Doing hygiene routines to prevent disease",
+            "Focusing on good financial plans and their positive influences",
+            "Protecting mind and emotions from financial stress",
+            "Maintaining good health to avoid high medical costs"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Kalimat \"Guard your health\" berarti menjaga kesehatan agar tidak mengeluarkan biaya besar untuk pengobatan, sehingga kondisi keuangan tetap stabil. Jalur Cara Gemilang: Makna frasa kontekstual: \"guard your health\" = hindari biaya medis besar.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.facebook.com)\n\nWhat does the tip \"know where your money goes\" suggest?",
+          "tipe": "pg",
+          "opsi": [
+            "Setting aside money early for the future to live comfortably",
+            "Making careful financial plans to avoid unnecessary risks",
+            "Tracking and understanding spending habits",
+            "Focusing on needs rather than what we want",
+            "Saving money specifically for unexpected situations"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Tips tersebut menyarankan agar seseorang mencatat dan memahami ke mana uang mereka dibelanjakan sehingga dapat mengontrol pengeluaran dan menghindari pemborosan. Jalur Cara Gemilang: \"Know where your money goes\" = catat & pahami arus pengeluaran.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nToday's financial landscape is almost entirely digital and children and adolescents are often exposed to these tools before they are able to fully understand them. This shift underscores the need essential strategies to equip children for financial literacy in the digital age.\n\n(adapted from https://www.privatebank.bankofamerica.com/)\n\nAccording to the text, how do family conversations help children develop financial literacy?",
+          "tipe": "pg",
+          "opsi": [
+            "They create an open conversation in which children engage in financial practices.",
+            "They assist children in finding suitable future financial planning.",
+            "They allow children to provide real-life financial advice.",
+            "They help children understand responsible financial behavior through discussion.",
+            "They make children become more aware of how much money they might earn."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Percakapan keluarga membantu anak mengembangkan literasi keuangan dengan menciptakan dialog terbuka tentang keputusan finansial. Hal ini membuat anak lebih sadar dan mampu memahami perilaku keuangan yang bertanggung jawab, sebagaimana disebutkan dalam strategi ke-3 bahwa melakukan dialog terbuka yang membahas tentang keputusan keuangan akan menumbuhkan kesadaran dan perilaku yang bertanggung jawab pada anak. Jalur Cara Gemilang: Percakapan keluarga = ruang aman anak berlatih & bertanya soal uang.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nToday's financial landscape is almost entirely digital and children and adolescents are often exposed to these tools before they are able to fully understand them. This shift underscores the need essential strategies to equip children for financial literacy in the digital age.\n\n(adapted from https://www.privatebank.bankofamerica.com/)\n\nBased on the information in the text, which is the most possible reason explaining why children might struggle with digital financial systems?",
+          "tipe": "pg",
+          "opsi": [
+            "There is limited evidence around the effectiveness of digital financial systems.",
+            "They are exposed to them before they fully understand how money works.",
+            "They are increasingly exposed to gamified spending environments using digital payments.",
+            "Most of them receive pocket money digitally and use debit cards to pay for things online.",
+            "There is a scarcity of literature on how digital financial systems impact their financial literacy."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Anak-anak kesulitan karena mereka sudah terpapar sistem keuangan digital sebelum benar-benar memahami konsep uang dan transaksi. Kesimpulan ini didukung oleh paragraf pertama teks. Jalur Cara Gemilang: Anak kesulitan = terpapar keuangan digital sebelum paham dasar.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nToday's financial landscape is almost entirely digital and children and adolescents are often exposed to these tools before they are able to fully understand them. This shift underscores the need essential strategies to equip children for financial literacy in the digital age.\n\n(adapted from https://www.privatebank.bankofamerica.com/)\n\nRegarding the information from the text, put a tick (✓) on the correct category!\n(Answer each row by choosing Problem / Solution.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Problem",
+            "Solution"
+          ],
+          "baris": [
+            "Setting a spending limit.",
+            "Impulsive buying due to easy digital payments.",
+            "Lack of awareness about digital transactions",
+            "Learning how spending affects the brain.",
+            "Using tools to track and manage expenses."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SOLUTION Baris 2 — PROBLEM Baris 3 — PROBLEM Baris 4 — SOLUTION Baris 5 — SOLUTION Jalur Cara Gemilang: Problem = hambatan/risiko; Solution = tindakan/strategi yang disarankan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nToday's financial landscape is almost entirely digital and children and adolescents are often exposed to these tools before they are able to fully understand them. This shift underscores the need essential strategies to equip children for financial literacy in the digital age.\n\n(adapted from https://www.privatebank.bankofamerica.com/)\n\nWhat problem might arise if children are not taught about digital financial behavior?",
+          "tipe": "pg",
+          "opsi": [
+            "They may develop poor financial habits.",
+            "They might engage in financial stability.",
+            "They may prevent unmanageable debt.",
+            "They might practice planned spending.",
+            "They could avoid more impulse buying."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Jika anak tidak diajarkan perilaku keuangan digital, mereka berpotensi mengembangkan kebiasaan keuangan yang buruk, seperti kurangnya kontrol diri dan pengambilan keputusan yang tidak bijak. Hal ini tersirat dalam teks yang menekankan pentingnya mengendalikan keinginan untuk membeli barang tanpa pertimbangan dan pentingnya mengambil keputusan yang matang. Jalur Cara Gemilang: Risiko tanpa edukasi = kebiasaan belanja digital impulsif.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nToday's financial landscape is almost entirely digital and children and adolescents are often exposed to these tools before they are able to fully understand them. This shift underscores the need essential strategies to equip children for financial literacy in the digital age.\n\n(adapted from https://www.privatebank.bankofamerica.com/)\n\nSome children record their online purchase in a budgeting app and review the total every week. Which strategies are best reflected by their actions? There is more than one correct answer. Choose all correct answers!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Learn how digital transactions affect the brain",
+            "Identify transactions across digital payment forms",
+            "Have family conversations about responsible digital financial behavior",
+            "Encourage interfacing and learning with digital financial tools",
+            "Creating an open dialogue about financial decisions"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s16-a.svg",
+            "/bagan/bab1-s16-b.svg",
+            "/bagan/bab1-s16-c.svg",
+            "/bagan/bab1-s16-d.svg",
+            "/bagan/bab1-s16-e.svg"
+          ],
+          "jawaban": [
+            1,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Tindakan mencatat pembelian dan meninjau total pengeluaran menunjukkan dua strategi, yaitu: Identify transactions across digital payment forms (Mengidentifikasi transaksi dari berbagai bentuk pembayaran digital) Encourage interfacing and learning with digital financial tools (Mendorong penggunaan dan pembelajaran dengan alat keuangan digital) Jalur Cara Gemilang: Dua strategi pada perilaku: mencatat pembelian + meninjau total mingguan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Google Nest Hub, previously known as Google Home Hub, is a smart display made by Google. It has a 7-inch touchscreen on which you can watch videos, view photos, control smart home devices, and more. The bigger version is the Nest Hub Max, which has a 10-inch HD screen and an inbuilt camera. Both are built-in with Google Assistant, so you can operate them only through voice. Setting up the Nest Hub is quick and straightforward. Just follow these steps for how to set it up:\n\n(adapted from https://roalink.com)\n\nWhat is the text about?",
+          "tipe": "pg",
+          "opsi": [
+            "Ways to fix the issues while setting up Google Nest Hub",
+            "Methods to set up a Photo Frame for the Google Nest Hub or display",
+            "Instructions on how to complete the setup process of a Google Nest Hub",
+            "Step-by-step guide for uninstalling a particular Google's smart display",
+            "Procedure to connect the Google Nest Hub speaker or display to Wi-Fi"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Teks membahas tentang panduan langkah demi langkah untuk melakukan setup atau pemasangan Google Nest Hub agar dapat digunakan dengan benar. Jalur Cara Gemilang: What is the text about = goal pada judul: how to set up Nest Hub.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Google Nest Hub, previously known as Google Home Hub, is a smart display made by Google. It has a 7-inch touchscreen on which you can watch videos, view photos, control smart home devices, and more. The bigger version is the Nest Hub Max, which has a 10-inch HD screen and an inbuilt camera. Both are built-in with Google Assistant, so you can operate them only through voice. Setting up the Nest Hub is quick and straightforward. Just follow these steps for how to set it up:\n\n(adapted from https://roalink.com)\n\nWhat should the users do right after opening the Google Home app?",
+          "tipe": "pg",
+          "opsi": [
+            "Link music/video streaming and Google Duo accounts",
+            "Tap on the \"Set up one device\" prompt to begin the setup",
+            "Ensure the code matches the one displayed on the screen",
+            "Set up Voice Match to recognize their voice when requested",
+            "Install a third-party launcher and make it the default app via Settings"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s18-a.svg",
+            "/bagan/bab1-s18-b.svg",
+            "/bagan/bab1-s18-c.svg",
+            "/bagan/bab1-s18-d.svg",
+            "/bagan/bab1-s18-e.svg"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Setelah membuka aplikasi Google Home, pengguna harus mengetuk opsi \"Set up one device\" untuk memulai proses pengaturan perangkat. Informasi ini didukung oleh langkah ke-2, \" Open the Google Home app on your phone or tablet. You'll see a prompt at the top saying, 'Set up one device.' – tap on this to begin setup. \" Jalur Cara Gemilang: Urutan: konektor \"then/next\" setelah membuka app = tap \"Set up one device\".",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Google Nest Hub, previously known as Google Home Hub, is a smart display made by Google. It has a 7-inch touchscreen on which you can watch videos, view photos, control smart home devices, and more. The bigger version is the Nest Hub Max, which has a 10-inch HD screen and an inbuilt camera. Both are built-in with Google Assistant, so you can operate them only through voice. Setting up the Nest Hub is quick and straightforward. Just follow these steps for how to set it up:\n\n(adapted from https://roalink.com)\n\nRegarding the focus of the text, which additional feature helps to improve the setup process of the Nest Hub?",
+          "tipe": "pg",
+          "opsi": [
+            "A Quick Gesture feature which uses motion sense to play media with a wave of hand",
+            "An interactive step-by-step tutorial displayed directly on the Nest Hub screen",
+            "A built-in speaker and microphone allowing for real-time conversation",
+            "A high-quality sound system which provides high-quality audio for music, radio, and podcasts",
+            "Adaptive smart schedule configured with various smart devices"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Teks tersebut berfokus pada proses pengaturan Nest Hub. Pada bagian akhir, disebutkan bahwa perangkat memberikan \"gambaran singkat tentang cara menggunakan kontrol sentuh,\" sehingga tutorial interaktif di layar demi langkah yang ditampilkan langsung di layar akan paling membantu dan meningkatkan proses pengaturan. Jalur Cara Gemilang: Fitur tambahan penutup: operasi suara lewat Google Assistant bawaan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Google Nest Hub, previously known as Google Home Hub, is a smart display made by Google. It has a 7-inch touchscreen on which you can watch videos, view photos, control smart home devices, and more. The bigger version is the Nest Hub Max, which has a 10-inch HD screen and an inbuilt camera. Both are built-in with Google Assistant, so you can operate them only through voice. Setting up the Nest Hub is quick and straightforward. Just follow these steps for how to set it up:\n\n(adapted from https://roalink.com)\n\nIf a user skips linking their streaming accounts during setup, how might that impact their use of the device? There is more than one correct answer. Choose all correct answers!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "The device will remain unusable because the app is required to configure it.",
+            "They would not be able to easily access personalized music or video content.",
+            "Their device will not turn on or may not function properly.",
+            "The device will not recognize individual users, which means no personalized responses.",
+            "They won't be able to use music/video services or make calls."
+          ],
+          "jawaban": [
+            1,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Dampak yang akan terjadi jika pengguna melewatkan langkah menghubungkan akun streaming saat setup adalah: They would not be able to easily access personalized music or video content (Mereka tidak dapat dengan mudah mengakses konten musik atau video yang dipersonalisasi) They won't be able to use music/video services or make calls (Mereka tidak dapat menggunakan layanan musik/video atau melakukan panggilan) Jika pengguna tidak menghubungkan akun streaming saat proses setup, maka mereka tidak dapat mengakses konten musik atau video secara personal serta tidak dapat menggunakan layanan streaming maupun fitur panggilan. Namun, perangkat tetap dapat digunakan untuk fungsi dasar lainnya. Jalur Cara Gemilang: Dampak melewatkan langkah = fungsi yang tak jalan (streaming & personalisasi).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Google Nest Hub, previously known as Google Home Hub, is a smart display made by Google. It has a 7-inch touchscreen on which you can watch videos, view photos, control smart home devices, and more. The bigger version is the Nest Hub Max, which has a 10-inch HD screen and an inbuilt camera. Both are built-in with Google Assistant, so you can operate them only through voice. Setting up the Nest Hub is quick and straightforward. Just follow these steps for how to set it up:\n\n(adapted from https://roalink.com)\n\nIn \"Both are built-in with Google Assistant, so you can operate them only through voice\", the word \"them\" refers to which of the following?",
+          "tipe": "pg",
+          "opsi": [
+            "The bigger versions of Google Home Hub",
+            "The Google Nest Hub and Google Home Hub",
+            "The 10-inch HD screen and the inbuilt camera",
+            "The Nest Hub and the Nest Hub Max",
+            "The previous versions of Google Home Hub"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kata \"them\" merujuk pada dua perangkat yaitu Nest Hub dan Nest Hub Max karena keduanya disebut sebelumnya dan dijelaskan memiliki fitur yang sama yaitu Google Assistant. Jalur Cara Gemilang: \"Both ... them\" = dua perangkat yang disebut: Nest Hub & Nest Hub Max.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.europelanguagejobs.com)\n\nWhat is the purpose of looking up new words while watching films or series mentioned in the tips?",
+          "tipe": "pg",
+          "opsi": [
+            "To apply what has been learned in real-life communication, which helps to develop fluency and confidence",
+            "To help learners move from understanding the language to actively using it effectively",
+            "To understand the meaning of unfamiliar words and phrases so the viewer can better follow the content and learn new vocabulary",
+            "To strengthen memory and retention so new vocabulary can be remembered and reviewed later",
+            "To improve pronunciation and speaking skills by practicing how the language sounds in real situations"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Tujuan mencari arti kata baru adalah untuk memahami kata dan ungkapan yang tidak dikenal sehingga penonton dapat mengikuti isi film dengan lebih baik sekaligus menambah kosakata baru. Jalur Cara Gemilang: Tujuan look up words = memahami kata/ungkapan tak dikenal saat menonton.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.europelanguagejobs.com)\n\nWhich step from the tips focuses most on improving speaking ability? There is more than one correct answer. Choose all correct answers!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Checking meanings using a dictionary, app, or subtitles",
+            "Writing down new words, phrases, or expressions learned",
+            "Saying sentences from the film or series out loud, especially difficult ones",
+            "Using applications to find language exchange partners, or hiring a tutor",
+            "Using the new words and expressions in real-life conversations or daily situations"
+          ],
+          "jawaban": [
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Langkah yang paling fokus meningkatkan kemampuan berbicara adalah: Saying sentences from the film or series out loud, especially difficult ones (Mengucapkan kalimat-kalimat dari film atau serial dengan lantang, terutama yang sulit). Using the new words and expressions in real-life conversations or daily situations (Menggunakan kata-kata dan ungkapan baru dalam percakapan kehidupan nyata atau situasi sehari-hari). Langkah yang paling meningkatkan kemampuan berbicara adalah mengucapkan kalimat secara langsung dan menggunakan bahasa tersebut dalam percakapan sehari-hari karena keduanya melatih pengucapan dan kelancaran berbicara. Jalur Cara Gemilang: Tips speaking = mengucapkan kalimat keras-keras + memakai dalam percakapan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.europelanguagejobs.com)\n\nRead each statement carefully. Put a tick (✓) on the correct category!\n(Answer each row by choosing Passive Learning / Active Learning.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Passive Learning",
+            "Active Learning"
+          ],
+          "baris": [
+            "Watching films.",
+            "Writing notes while watching.",
+            "Repeating and practicing sentences.",
+            "Looking up meanings of words.",
+            "Implementing what has been learned into everyday talk."
+          ],
+          "jawaban": [
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — PASSIVE LEARNING Baris 2 — ACTIVE LEARNING Baris 3 — ACTIVE LEARNING Baris 4 — ACTIVE LEARNING Baris 5 — ACTIVE LEARNING Jalur Cara Gemilang: Passive = menerima (menonton); Active = memproduksi/berinteraksi (berbicara, menulis, berlatih).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\n\n\n(taken from https://www.europelanguagejobs.com)\n\nThe phrase \"look up\" mentioned in the tips is closest in meaning to",
+          "tipe": "pg",
+          "opsi": [
+            "discover.",
+            "improve.",
+            "recite.",
+            "pursuit.",
+            "repeat."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Frasa \"look up\" berarti mencari atau menemukan informasi, khususnya arti kata dalam kamus atau sumber lain untuk memahami maknanya. Jalur Cara Gemilang: look up = mencari makna (di kamus/sumber) -> discover closest.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
