@@ -1,0 +1,960 @@
+{
+  "materi": {
+    "judul": "Bahasa Indonesia Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Indonesia",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#E11D48",
+    "emoji": "🎭",
+    "deskripsi": "Materi wajib kelas 12 seri TKA: bab 1 paragraf & pragmatik, bab 2 paragraf lanjutan, bab 3 ejaan-sintaksis-semantik, bab 4 sastra. Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 4,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1-4 dari berkas pindai buku Sukses Tes Kemampuan Akademik SMA – Saintek (bab 2 h.50-51 + kunci/pembahasan); kunci mengikuti cetakan asli dengan koreksi salah cetak terdokumentasi.",
+      "Kartu CG-PENJELAS, CG-RUMPANG, CG-HUBUNG, CG-FAKTA, CG-SIMPUL dan soal Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 2 — Paragraf II: Penjelas, Rumpang, Hubungan Antarparagraf, Fakta-Opini, Simpulan (Edisi Cara Gemilang)",
+      "ringkasan": "Kalimat penjelas & kalimat tidak padu, paragraf rumpang + 3 syarat paragraf + 6 hubungan kohesi, hubungan isi antarparagraf, fakta vs opini, dan menyusun simpulan — dengan jodohkan, isian rumpang, benar/salah, susun urutan, serta 25 soal resmi bank berstimulus teks utuh + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Kalimat Penjelas"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Kalimat penjelas adalah kalimat yang menjelaskan atau menjabarkan kalimat utama. Sifatnya lebih khusus dan detail, sehingga ia menjadi cara penulis menjabarkan pentingnya ide pokok. Soal ujian sering meminta menemukan penjelas yang TIDAK mendukung topik — itu uji pemahaman yang sama dari arah sebaliknya."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan paragraf seperti pohon: kalimat utama adalah batangnya, kalimat penjelas adalah ranting dan daunnya. Semua ranting harus tumbuh dari batang yang sama; ranting dari pohon lain itulah yang disebut kalimat tidak padu."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Ciri-ciri kalimat penjelas (bank h.50)",
+          "items": [
+            "Bersifat khusus (merinci, bukan gagasan umum).",
+            "Menjelaskan atau menjabarkan kalimat utama.",
+            "Sering memakai konjungsi seperti dan.",
+            "Membutuhkan kata penghubung seperti bahkan, misalnya, contohnya agar koheren (padu) antarkalimat."
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: kalimat penjelas",
+          "keterangan": "Gemilang Drill — panaskan mesin sebelum zona berlatih.",
+          "items": [
+            {
+              "teks": "Kalimat penjelas bersifat lebih khusus daripada kalimat utama.",
+              "jawaban": true,
+              "penjelasan": "Penjelas merinci; utama memayungi."
+            },
+            {
+              "teks": "Kalimat yang topiknya menyimpang dari kalimat utama disebut kalimat tidak padu.",
+              "jawaban": true,
+              "penjelasan": "Itu penjelas \"palsu\" yang sering jadi kunci soal \"tidak mendukung\"."
+            },
+            {
+              "teks": "Kalimat penjelas tidak boleh memakai konjungsi.",
+              "jawaban": false,
+              "penjelasan": "Justru konjungsi (bahkan, misalnya, contohnya) menjaga koherensi."
+            },
+            {
+              "teks": "Satu paragraf boleh memiliki beberapa ide pokok agar kaya.",
+              "jawaban": false,
+              "penjelasan": "Syarat paragraf baik = kesatuan: satu ide pokok per paragraf."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-PENJELAS: batang-ranting",
+          "teks": "Kalimat utama = batang (umum, mewadahi); kalimat penjelas = ranting (khusus, merinci). Kalimat tidak padu = ranting dari pohon lain.",
+          "items": [
+            "Temukan batang dulu: kalimat paling umum di awal/akhir paragraf.",
+            "Uji tiap opsi: merinci batang = penjelas sah; membahas hal lain = tidak mendukung/tidak padu.",
+            "Soal \"kecuali/tidak mendukung\" = cari ranting asing, biasanya menyelinap sebagai fakta benar tapi beda topik."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Opsi pengecoh pada soal kalimat penjelas biasanya BENAR secara isi tetapi merinci hal lain (mis. penampilan fisik saat topik manfaat). Jangan menilai kebenaran fakta, nilailah keterhubungan ke kalimat utama."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Kalimat penjelas berfungsi untuk ...",
+              "opsi": [
+                "memperkenalkan ide pokok baru",
+                "menjelaskan atau menjabarkan kalimat utama",
+                "menutup paragraf dengan simpulan umum",
+                "memindahkan topik ke paragraf berikut",
+                "memberi judul paragraf"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: penjelas merinci kalimat utama (bank h.50). Jalur Cara Gemilang: CG-PENJELAS — ranting menjabarkan batang."
+            },
+            {
+              "soal": "Bacalah paragraf berikut! (1) Temulawak menyimpan banyak manfaat kesehatan. (2) Kurkuminoid di dalamnya berperan sebagai antioksidan. (3) Warna rimpangnya kuning kecokelatan. (4) Manfaat itu didukung kajian farmakologi modern. Kalimat yang tidak mendukung topik utama adalah ...",
+              "opsi": [
+                "(1)",
+                "(2)",
+                "(3)",
+                "(4)",
+                "tidak ada"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: topik = manfaat kesehatan; kalimat (3) membahas ciri fisik, bukan manfaat → tidak padu. Jalur Cara Gemilang: ranting asing = ciri fisik di pohon manfaat."
+            },
+            {
+              "soal": "Konjungsi berikut yang lazim dipakai kalimat penjelas untuk menjaga koherensi adalah ...",
+              "opsi": [
+                "bahkan, misalnya, contohnya",
+                "atau, ataupun",
+                "meskipun, walau",
+                "jika, apabila",
+                "ketika, sejak"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: bank menyebut bahkan, misalnya, contohnya sebagai penghubung penjelas. Jalur Cara Gemilang: penjelas = perinci → butuh kata perinci (misalnya/contohnya)."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Paragraf Rumpang & Syarat Paragraf Padu"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Paragraf rumpang punya bagian kosong yang harus diisi kalimat tepat. Kuncinya tiga syarat paragraf: kesatuan (satu ide pokok), koherensi (keterkaitan makna), dan kohesi (keterkaitan bentuk lewat kata penghubung dan rujukan)."
+        },
+        {
+          "jenis": "poin",
+          "judul": "3 syarat paragraf baik",
+          "items": [
+            "Kesatuan — satu paragraf hanya membahas satu ide pokok/gagasan utama.",
+            "Koherensi (kepaduan makna) — antarkalimat berkaitan timbal balik; tanpa ini pembaca menemukan lompatan pikiran.",
+            "Kohesi (kepaduan bentuk) — kepaduan lewat pilihan kata perujuk dan penghubung."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "6 hubungan kohesi & penandanya (bank h.50)",
+          "kolom": [
+            "Hubungan",
+            "Penanda",
+            "Contoh kata"
+          ],
+          "rows": [
+            {
+              "k": "Referensi",
+              "v": "Kata penunjuk",
+              "w": "itu, ini, tersebut, berikut"
+            },
+            {
+              "k": "Pronominal",
+              "v": "Kata ganti",
+              "w": "saya, kami, kita, engkau, Anda, mereka, ia"
+            },
+            {
+              "k": "Elusif",
+              "v": "Cakupan bagian",
+              "w": "sebagian, seluruhnya"
+            },
+            {
+              "k": "Konjungsi",
+              "v": "Kata penghubung",
+              "w": "selanjutnya, setelah itu"
+            },
+            {
+              "k": "Leksikal",
+              "v": "Pengulangan/sinonim/hiponim",
+              "w": "mengulang kata kunci atau padanannya"
+            },
+            {
+              "k": "Kontekstual",
+              "v": "Pertentangan makna",
+              "w": "akan tetapi, sebaliknya, meskipun, namun"
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: penanda kohesi",
+          "keterangan": "Isi jenis hubungan kohesi sesuai penandanya.",
+          "items": [
+            {
+              "teks": "Kata \"itu, ini, tersebut, berikut\" menandai hubungan ...",
+              "jawaban": [
+                "referensi"
+              ],
+              "hint": "Bersifat penunjukan.",
+              "penjelasan": "Hubungan referensi memakai kata penunjuk."
+            },
+            {
+              "teks": "Kata \"selanjutnya, setelah itu\" menandai hubungan ...",
+              "jawaban": [
+                "konjungsi"
+              ],
+              "hint": "Berupa kata penghubung.",
+              "penjelasan": "Hubungan konjungsi memakai penghubung antarkalimat."
+            },
+            {
+              "teks": "Kata \"sebagian, seluruhnya\" menandai hubungan ...",
+              "jawaban": [
+                "elusif"
+              ],
+              "hint": "Berbicara cakupan.",
+              "penjelasan": "Hubungan elusif ditandai sebagian/seluruhnya."
+            },
+            {
+              "teks": "Pengulangan kata, sinonim, atau hiponim menandai hubungan ...",
+              "jawaban": [
+                "leksikal"
+              ],
+              "hint": "Berkaitan dengan kosa kata.",
+              "penjelasan": "Hubungan leksikal = keterkaitan lewat kata."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-RUMPANG: sebelum-sesudah",
+          "teks": "Kalimat pengisi rumpang = jembatan: subjek & kata rujukannya harus menyambung ke kalimat SEBELUM dan SESUDAH lubang.",
+          "items": [
+            "Baca kalimat sebelum lubang: ambil kata kuncinya.",
+            "Baca kalimat sesudah lubang: cari rujukan balik (itu, ini, tersebut).",
+            "Pilih opsi yang memuat kedua sambungan itu; opsi fakta benar tapi nyambung satu arah = pengecoh."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Pada soal rumpang berganda (pgMulti), satu opsi biasanya menutup gagasan lama dan satu lagi membuka gagasan baru — keduanya benar bersama. Jangan terpaku mencari satu kalimat \"paling benar\"."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Syarat paragraf yang menuntut satu ide pokok per paragraf disebut ...",
+              "opsi": [
+                "kohesi",
+                "koherensi",
+                "kesatuan",
+                "kronologi",
+                "kohabitasi"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: kesatuan = satu ide pokok per paragraf. Jalur Cara Gemilang: satu paragraf satu pohon."
+            },
+            {
+              "soal": "Bacalah paragraf berikut! (1) Banjir rob merendam pesisir utara. (2) ... (3) Akibatnya, ratusan warga harus mengungsi setiap pasang besar tiba. Kalimat yang tepat untuk mengisi rumpang adalah ...",
+              "opsi": [
+                "Warga pesisir gemar menangkap ikan saat pasang.",
+                "Kondisi ini diperparah penurunan muka tanah yang terus berlangsung.",
+                "Pasar ikan di kota itu buka sejak subuh.",
+                "Banyak rumah bercat biru di sepanjang pantai.",
+                "Nelayan menggunakan perahu kayu buatan lokal."
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: pengisi harus menjembatani sebab (rob) ke akibat (mengungsi): penurunan tanah memperparah genangan. Jalur Cara Gemilang: jembatan sebelum-sesudah."
+            },
+            {
+              "soal": "Kata \"mereka\" dalam kalimat kedua yang merujuk kelompok orang pada kalimat pertama termasuk hubungan ...",
+              "opsi": [
+                "leksikal",
+                "pronominal",
+                "elusif",
+                "kontekstual",
+                "konjungsi"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: kata ganti orang = hubungan pronominal. Jalur Cara Gemilang: pronominal = pribadi (saya-kami-mereka)."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Hubungan Isi Antarparagraf"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Teks yang baik menjalin paragraf-paragrafnya: koheren, satu kesatuan, dihubungkan kalimat penghubung, berstruktur konsisten, dan berpola sama. Soal hubungan antarparagraf menguji kemampuan memetakan arah logika teks."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Enam perekat antarparagraf (bank h.51)",
+          "items": [
+            "Koherensi — keterkaitan erat dengan paragraf sebelum & sesudah; dicapai lewat frasa penghubung (oleh karena itu, dengan demikian), pengulangan ide kunci, dan referensi.",
+            "Kesatuan (unity) — tiap paragraf satu ide pokok yang mendukung ide utama teks.",
+            "Kalimat penghubung — kalimat pembuka penjembatan (\"Sebelum membahas lebih lanjut...\") atau kalimat penutup-simpulan yang menyambung ke topik berikut.",
+            "Struktur teks konsisten — mis. argumentatif: tiap paragraf satu alasan menuju simpulan.",
+            "Perbandingan & kontras — paragraf kelebihan lalu paragraf kekurangan.",
+            "Pola pengembangan sama — contoh lalu alasan/bukti dengan gaya sejalan."
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: perekat dan wujudnya di teks",
+          "items": [
+            {
+              "kiri": "Frasa \"oleh karena itu\", \"dengan demikian\"",
+              "kanan": "Koherensi lewat kata penghubung"
+            },
+            {
+              "kiri": "Kata kunci diulang di paragraf berikutnya",
+              "kanan": "Pengulangan ide"
+            },
+            {
+              "kiri": "Kata ganti merujuk ide paragraf sebelumnya",
+              "kanan": "Referensi"
+            },
+            {
+              "kiri": "Paragraf kelebihan lalu paragraf kekurangan",
+              "kanan": "Perbandingan & kontras"
+            },
+            {
+              "kiri": "\"Sebelum membahas lebih lanjut, perlu dipahami bahwa…\"",
+              "kanan": "Kalimat pembuka penjembatan"
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-HUBUNG: peta arah logika",
+          "teks": "Hubungan antarparagraf = arah logika: umum->rinci, sebab->akibat, klaim->dukung, makna->cara, kelebihan->kekurangan.",
+          "items": [
+            "Tulis satu kata isi per paragraf (mis: akibat, sebab, contoh).",
+            "Hubungkan dengan panah logika; nama panah itulah jawabannya.",
+            "Opsi \"membantah\" hanya benar bila nada paragraf benar-benar berlawanan."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Paragraf pertama memaparkan menurunnya hasil panen; paragraf kedua memerinci penyebabnya berupa cuaca ekstrem dan hama. Hubungan kedua paragraf itu adalah ...",
+              "opsi": [
+                "akibat ke sebab",
+                "sebab ke akibat",
+                "perbandingan setara",
+                "contoh ke definisi",
+                "kronologis murni"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: paragraf 1 akibat (penurunan), paragraf 2 sebab (cuaca, hama) → akibat ke sebab. Jalur Cara Gemilang: CG-HUBUNG — tulis isi, tarik panah."
+            },
+            {
+              "soal": "Frasa penghubung berikut yang lazim menciptakan koherensi antarparagraf adalah ...",
+              "opsi": [
+                "selanjutnya, setelah itu",
+                "oleh karena itu, dengan demikian",
+                "bahkan, misalnya",
+                "atau, ataupun",
+                "jika, asalkan"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: bank menyebut oleh karena itu, dengan demikian, selain itu sebagai frasa transisi antarparagraf. Jalur Cara Gemilang: transisi logis = sebab-akibat ringkas."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Fakta dan Opini"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Fakta = kenyataan yang benar-benar ada/terjadi dan ada buktinya; diuji dengan apa, siapa, berapa, di mana, kapan. Opini = pandangan atau anggapan; diuji dengan mengapa dan bagaimana."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Fakta vs opini (bank h.51)",
+          "kolom": [
+            "Aspek",
+            "Fakta",
+            "Opini"
+          ],
+          "rows": [
+            {
+              "k": "Hakikat",
+              "v": "Kenyataan, benar-benar ada/terjadi, ada bukti.",
+              "w": "Pandangan, pikiran, anggapan orang/sekelompok orang."
+            },
+            {
+              "k": "Kata tanya penguji",
+              "v": "apa, siapa, berapa, di mana, kapan.",
+              "w": "mengapa, bagaimana."
+            },
+            {
+              "k": "Contoh buku",
+              "v": "Bencana banjir menimpa 200 rumah dan warga mengungsi beserta ternaknya.",
+              "w": "Kondisi korban banjir di penampungan sangat menyedihkan."
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: fakta atau opini?",
+          "items": [
+            {
+              "teks": "Kalimat berisi angka jumlah dan waktu kejadian biasanya fakta.",
+              "jawaban": true,
+              "penjelasan": "Tercek lewat berapa/kapan."
+            },
+            {
+              "teks": "\"Pemandangan itu sungguh menakjubkan\" adalah fakta.",
+              "jawaban": false,
+              "penjelasan": "Penilaian subjektif = opini."
+            },
+            {
+              "teks": "Opini dapat diuji dengan kata tanya mengapa atau bagaimana.",
+              "jawaban": true,
+              "penjelasan": "Sesuai bank h.51."
+            },
+            {
+              "teks": "Fakta harus bisa diverifikasi bukti, bukan sekadar masuk akal.",
+              "jawaban": true,
+              "penjelasan": "Definisi fakta: ada buktinya."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-FAKTA: 5K vs MB",
+          "teks": "Fakta lolos uji 5K: apa-K, siapa, berapa, di mana-K, kapan-K (data). Opini menjawab Mengapa-Bagaimana (penilaian).",
+          "items": [
+            "Ada angka, tanggal, nama tempat terverifikasi? → fakta.",
+            "Ada kata penilaian (sangat, sebaiknya, tampaknya, menakjubkan)? → opini.",
+            "Soal \"bukan opini\" = cari kalimat berdata; soal \"bukan fakta\" = cari kalimat berpendapat."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Kalimat campuran fakta+penilaian tetap opini bila inti pernyataannya penilaian (\"program itu berhasil meningkatkan...\", tanpa data). Sebaliknya, kalimat datar berangka meski membosankan = fakta."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Kalimat berikut yang merupakan fakta adalah ...",
+              "opsi": [
+                "Rasanya hidangan itu paling enak sekota.",
+                "Sebanyak 200 rumah terdampak banjir pada Senin malam.",
+                "Pemerintah sepertinya akan menaikkan tarif lagi.",
+                "Lukisan itu indah sekali bagi penikmat seni.",
+                "Menurut saya filmnya terlalu panjang."
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: ada jumlah (200 rumah) dan waktu (Senin malam) = tercek = fakta. Jalur Cara Gemilang: CG-FAKTA — uji 5K."
+            },
+            {
+              "soal": "Kata tanya penguji opini menurut bank soal adalah ...",
+              "opsi": [
+                "apa dan siapa",
+                "berapa dan kapan",
+                "di mana dan apa",
+                "mengapa dan bagaimana",
+                "kapan dan siapa"
+              ],
+              "jawaban": 3,
+              "pembahasan": "Jalur konsep: opini diuji dengan mengapa/bagaimana (bank h.51). Jalur Cara Gemilang: MB = opini."
+            },
+            {
+              "soal": "Bacalah kalimat berikut! \"Sawi termasuk sayuran rendah purin berdasarkan tabel komposisi pangan.\" Kalimat ini tergolong ...",
+              "opsi": [
+                "opini karena menyebut sayuran",
+                "fakta karena merujuk data tabel",
+                "opini karena bersifat teknis",
+                "fakta karena berisi ajakan",
+                "bukan keduanya"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: pernyataan merujuk data terverifikasi (tabel komposisi) = fakta. Jalur Cara Gemilang: ada sumber data = lolos uji bukti."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Menyusun Simpulan"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Simpulan adalah hasil menyimpulkan: mencari inti dan pendapat dari data teks. Simpulan yang baik memuat ide pokok setiap paragraf, mencerminkan seluruh isi, dan tidak wajib berurutan."
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: langkah menyimpulkan teks dengan cepat",
+          "keterangan": "Urutkan langkah kerja dari bank (bagan h.51).",
+          "items": [
+            "Kumpulkan hal yang dibahas tiap paragraf",
+            "Rangkai inti teks + pendapat",
+            "Pastikan simpulan mencerminkan seluruh isi teks"
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Ciri simpulan yang tepat",
+          "items": [
+            "Memuat gagasan keseluruhan / semua hal yang dibahas.",
+            "Mencerminkan seluruh isi teks, bukan satu paragraf.",
+            "Boleh tidak berurutan sesuai teks — yang penting menyeluruh.",
+            "Tidak menambah informasi baru di luar teks."
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-SIMPUL: payung terbesar",
+          "teks": "Simpulan = payung terbesar yang masih muat di kepala teks: mencakup semua paragraf, tanpa menambah klaim.",
+          "items": [
+            "Tulis satu kata inti per paragraf, lalu cari opsi yang memuat semuanya.",
+            "Opsi detail tunggal = terlalu sempit; opsi menambah hal baru = terlalu lebar.",
+            "Nada menghakimi yang tidak ada di teks = coret."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Simpulan yang baik harus ...",
+              "opsi": [
+                "mengikuti urutan kalimat teks persis",
+                "memuat ide pokok setiap paragraf",
+                "mengutip satu kalimat terindah",
+                "menambahkan pendapat penyimpulan",
+                "berfokus pada paragraf pertama"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: ide pokok setiap paragraf termuat dalam simpulan (bank h.51). Jalur Cara Gemilang: CG-SIMPUL — payung semua paragraf."
+            },
+            {
+              "soal": "Teks berisi: (1) kenaf tumbuh cepat; (2) serat kenaf kuat untuk industri; (3) kenaf ramah lingkungan dibanding plastik. Simpulan terbaik adalah ...",
+              "opsi": [
+                "Kenaf hanya cocok untuk industri tekstil.",
+                "Kenaf tanaman invasif yang berbahaya.",
+                "Kenaf serat alam berkelanjutan yang unggul agronomis, bermanfaat industri, dan ramah lingkungan.",
+                "Kenaf membutuhkan puluhan tahun untuk panen.",
+                "Kenaf pengganti plastik satu-satunya."
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: simpulan menggabungkan ketiga paragraf (cepat/kuat/ramah) = opsi C-pol lengkap. Jalur Cara Gemilang: payung terbesar yang setia."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Siap uji pemahaman",
+          "teks": "Bab 2 tuntas: penjelas, rumpang, hubungan antarparagraf, fakta-opini, simpulan — lima keluarga soal yang mendominasi 25 soal resmi bab ini. Saat berlatih, beri label keluarga soal di tiap nomor supaya polanya menempel."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek mulai 9 Mei 2026 menjadi bagian dari program penyederhanaan nama oleh PT Kereta Api Indonesia. (2) PT Kereta Api Indonesia (KAI) menegaskan bahwa langkah ini bukan sekadar rebranding, tetapi juga penyederhanaan identitas dengan tetap menjaga warisan yang ada. (3) Nama Anggrek dipilih karena memiliki filosofi mendalam, yaitu kuat, anggun, dan mampu bertahan dalam berbagai kondisi, menggambarkan kelembutan yang tidak rapuh serta ketenangan yang tidak lemah. (4) Meskipun nama berubah, KAI menjamin layanan tetap sama, tiket yang telah dibeli tetap berlaku, dan tidak ada perubahan administratif yang merugikan penumpang. (5) Unsur Argo pada nama sebelumnya berarti 'gunung' dalam bahasa Jawa Kuno, dan dengan menghapusnya, nama diharapkan menjadi lebih ringkas. (6) ….\n\n(7) Sebagai kereta api warisan, KA Anggrek memiliki sejarah panjang sejak pertama kali dioperasikan pada 24 September 1997 dengan kode JS-852, melayani rute Jakarta—Surabaya dengan 8 kali pemberhentian. (8) Kereta ini dikenal dengan desain elegan, dilengkapi suspensi pegas udder untuk kenyamanan, serta eksterior hitam khas dengan motif bunga anggrek. (9) Gerbong ini juga mengalami pembaruan warna eksterior dan peningkatan fasilitas penumpang. (10) Bahkan, KA Anggrek pernah berhenti beroperasi karena kendala teknis sebelum kembali hadir dengan konsep Go Green pada 2011. (11) ….\n\n(diadaptasi dari https://radarsolo.jawapos.com/)\n\nKalimat yang menjelaskan kalimat bercetak miring Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek pada 9 Mei 2026 menarik perhatian publik karena nama legendaris tersebut telah lama melekat dalam sejarah perkeretaapian Indonesia adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Nama Anggrek dipilih karena memiliki filosofi mendalam, yaitu kuat, anggun, dan mampu bertahan dalam berbagai kondisi, menggambarkan kelembutan yang tidak rapuh serta ketenangan yang tidak lemah.",
+            "Kereta ini dikenal dengan desain elegan, dilengkapi suspensi pegas udder untuk kenyamanan, serta eksterior hitam khas dengan motif bunga anggrek.",
+            "Gerbong ini juga mengalami pembaruan warna eksterior dan peningkatan fasilitas penumpang.",
+            "KA Anggrek pernah berhenti beroperasi karena kendala teknis sebelum kembali hadir dengan konsep Go Green pada 2011.",
+            "Sepanjang beroperasi, kereta ini mengalami berbagai penyegaran, termasuk perubahan warna eksterior (stripping) dan peningkatan fasilitas."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Kalimat penjelas adalah kalimat yang menjelaskan atau memerinci kalimat utama. Kalimat Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek mulai 9 Mei 2026 memicu perhatian publik karena nama legendaris ini telah lama melekat dalam sejarah perkeretaapian Indonesia merupakan kalimat penjelas dari paragraf pertama, bukan merupakan kalimat utama dari paragraf pertama. Dengan demikian, kalimat penjelas yang tepat adalah Nama Anggrek dipilih karena memiliki filosofi mendalam: kuat, elegan, dan mampu bertahan dalam berbagai kondisi, menggambarkan kelembutan yang tidak rapuh serta ketenangan yang tidak lemah . Jalur Cara Gemilang: Kalimat penjelas = perinci kalimat utama; cari opsi yang merinci peristiwa yang sama (nama KA, desain, gerbong), bukan peristiwa waktu lain.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek mulai 9 Mei 2026 menjadi bagian dari program penyederhanaan nama oleh PT Kereta Api Indonesia. (2) PT Kereta Api Indonesia (KAI) menegaskan bahwa langkah ini bukan sekadar rebranding, tetapi juga penyederhanaan identitas dengan tetap menjaga warisan yang ada. (3) Nama Anggrek dipilih karena memiliki filosofi mendalam, yaitu kuat, anggun, dan mampu bertahan dalam berbagai kondisi, menggambarkan kelembutan yang tidak rapuh serta ketenangan yang tidak lemah. (4) Meskipun nama berubah, KAI menjamin layanan tetap sama, tiket yang telah dibeli tetap berlaku, dan tidak ada perubahan administratif yang merugikan penumpang. (5) Unsur Argo pada nama sebelumnya berarti 'gunung' dalam bahasa Jawa Kuno, dan dengan menghapusnya, nama diharapkan menjadi lebih ringkas. (6) ….\n\n(7) Sebagai kereta api warisan, KA Anggrek memiliki sejarah panjang sejak pertama kali dioperasikan pada 24 September 1997 dengan kode JS-852, melayani rute Jakarta—Surabaya dengan 8 kali pemberhentian. (8) Kereta ini dikenal dengan desain elegan, dilengkapi suspensi pegas udder untuk kenyamanan, serta eksterior hitam khas dengan motif bunga anggrek. (9) Gerbong ini juga mengalami pembaruan warna eksterior dan peningkatan fasilitas penumpang. (10) Bahkan, KA Anggrek pernah berhenti beroperasi karena kendala teknis sebelum kembali hadir dengan konsep Go Green pada 2011. (11) ….\n\n(diadaptasi dari https://radarsolo.jawapos.com/)\n\nKalimat yang tepat untuk melengkapi bagian rumpang teks tersebut adalah (Pilihlah kolom Benar atau Salah untuk setiap pernyataan!)\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Kalimat Masyarakat sempat berspekulasi bahwa perubahan ini berkaitan dengan kecelakaan yang dialami kereta pada 2026, namun KAI tidak pernah menyatakan hal tersebut secara resmi tepat untuk mengisi rumpang paragraf kedua.",
+            "Kalimat Masyarakat sempat berspekulasi bahwa perubahan ini berkaitan dengan kecelakaan yang dialami kereta pada 2026, namun KAI tidak pernah menyatakan hal tersebut secara resmi tepat untuk mengisi bagian rumpang paragraf pertama.",
+            "Kalimat Dengan identitas baru sebagai KA Anggrek, kereta ini diharapkan tetap menjadi simbol modernisasi perkeretaapian Indonesia sekaligus menjaga warisan sejarah yang telah lama menjadi bagian dari perjalanan masyarakat merupakan kalimat yang tepat untuk melengkapi bagian rumpang paragraf kedua."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SALAH: Paragraf kedua secara khusus membahas sejarah masa lalu, fasilitas, dan rekam jejak kereta sejak tahun 1997 hingga 2011. Baris 2 — BENAR: Paragraf pertama berfokus pada peristiwa mutakhir di tahun 2026, yaitu respons masyarakat dan kebijakan PT KAI terkait perubahan nama. Baris 3 — BENAR: Paragraf kedua menceritakan sejarah panjang, rekam jejak operasional, dan perkembangan kereta tersebut Jalur Cara Gemilang: Kalimat pengisi rumpang = jembatan kalimat sebelum-sesudahnya; uji kohesi: subjek & kata rujukan harus nyambung.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek mulai 9 Mei 2026 menjadi bagian dari program penyederhanaan nama oleh PT Kereta Api Indonesia. (2) PT Kereta Api Indonesia (KAI) menegaskan bahwa langkah ini bukan sekadar rebranding, tetapi juga penyederhanaan identitas dengan tetap menjaga warisan yang ada. (3) Nama Anggrek dipilih karena memiliki filosofi mendalam, yaitu kuat, anggun, dan mampu bertahan dalam berbagai kondisi, menggambarkan kelembutan yang tidak rapuh serta ketenangan yang tidak lemah. (4) Meskipun nama berubah, KAI menjamin layanan tetap sama, tiket yang telah dibeli tetap berlaku, dan tidak ada perubahan administratif yang merugikan penumpang. (5) Unsur Argo pada nama sebelumnya berarti 'gunung' dalam bahasa Jawa Kuno, dan dengan menghapusnya, nama diharapkan menjadi lebih ringkas. (6) ….\n\n(7) Sebagai kereta api warisan, KA Anggrek memiliki sejarah panjang sejak pertama kali dioperasikan pada 24 September 1997 dengan kode JS-852, melayani rute Jakarta—Surabaya dengan 8 kali pemberhentian. (8) Kereta ini dikenal dengan desain elegan, dilengkapi suspensi pegas udder untuk kenyamanan, serta eksterior hitam khas dengan motif bunga anggrek. (9) Gerbong ini juga mengalami pembaruan warna eksterior dan peningkatan fasilitas penumpang. (10) Bahkan, KA Anggrek pernah berhenti beroperasi karena kendala teknis sebelum kembali hadir dengan konsep Go Green pada 2011. (11) ….\n\n(diadaptasi dari https://radarsolo.jawapos.com/)\n\nHubungan antarparagraf pertama dan kedua teks tersebut adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Hubungan kedua paragraf adalah sebab akibat, yakni perubahan nama pada paragraf pertama yang dikaitkan dengan latar belakang sejarah dan perkembangan kereta pada paragraf kedua.",
+            "Kritik publik terhadap layanan KAI disoroti pada paragraf pertama, sedangkan paragraf kedua membahas solusi yang ditawarkan KAI serta sejarah KA Argo Bromo Anggrek menjadi KA Anggrek.",
+            "Paragraf pertama menjelaskan alasan dan makna perubahan nama KA Argo Bromo Anggrek menjadi KA Anggrek, sedangkan paragraf kedua menguraikan sejarah panjang KA Anggrek.",
+            "Latar belakang sejarah dibahas pada paragraf pertama, sementara paragraf kedua menjelaskan alasan perubahan nama menjadi KA Argo Bromo Anggrek.",
+            "Paragraf pertama berisi fasilitas baru KA Anggrek, sementara paragraf kedua menjelaskan harga tiket terbaru."
+          ],
+          "jawaban": [
+            0,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Berdasarkan teks tersebut, hubungan paragraf pertama dan kedua teks tersebut adalah Pernyataan (1) benar Paragraf pertama menyajikan \"akibat\" atau peristiwa saat ini (perubahan nama). Paragraf kedua menyajikan \"sebab\" atau latar belakang mengapa kerela ini begitu penting sehingga perubahannya memicu perhatian publik. Pernyataan (2) salah Paragraf pertama menyebutkan perubahan ini \"memicu perhatian publik\", namun tidak disebutkan adanya kritik terhadap layanan. Pernyataan (3) benar Paragraf pertama berisi alasan (penyederhanaan identitas) dan makna (filosofi bunga anggrek). Paragraf kedua berisi sejarah (peluncuran 1997, kode JS-852, dan pembaruan fasilitas). Pernyataan (4) salah Latar belakang sejarah (1997) ada di paragraf kedua, sedangkan alasan perubahan nama ada di paragraf pertama. Pernyataan (5) salah Paragraf pertama tidak merinci fasilitas baru secara teknis, dan paragraf kedua tidak menyebutkan harga tiket sama sekali. Jalur Cara Gemilang: Hubungan antarparagraf = tanya arah logika (akibat->sebab, umum->rinci); pilih dua opsi yang searah dengan urutan informasi teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek mulai 9 Mei 2026 menjadi bagian dari program penyederhanaan nama oleh PT Kereta Api Indonesia. (2) PT Kereta Api Indonesia (KAI) menegaskan bahwa langkah ini bukan sekadar rebranding, tetapi juga penyederhanaan identitas dengan tetap menjaga warisan yang ada. (3) Nama Anggrek dipilih karena memiliki filosofi mendalam, yaitu kuat, anggun, dan mampu bertahan dalam berbagai kondisi, menggambarkan kelembutan yang tidak rapuh serta ketenangan yang tidak lemah. (4) Meskipun nama berubah, KAI menjamin layanan tetap sama, tiket yang telah dibeli tetap berlaku, dan tidak ada perubahan administratif yang merugikan penumpang. (5) Unsur Argo pada nama sebelumnya berarti 'gunung' dalam bahasa Jawa Kuno, dan dengan menghapusnya, nama diharapkan menjadi lebih ringkas. (6) ….\n\n(7) Sebagai kereta api warisan, KA Anggrek memiliki sejarah panjang sejak pertama kali dioperasikan pada 24 September 1997 dengan kode JS-852, melayani rute Jakarta—Surabaya dengan 8 kali pemberhentian. (8) Kereta ini dikenal dengan desain elegan, dilengkapi suspensi pegas udder untuk kenyamanan, serta eksterior hitam khas dengan motif bunga anggrek. (9) Gerbong ini juga mengalami pembaruan warna eksterior dan peningkatan fasilitas penumpang. (10) Bahkan, KA Anggrek pernah berhenti beroperasi karena kendala teknis sebelum kembali hadir dengan konsep Go Green pada 2011. (11) ….\n\n(diadaptasi dari https://radarsolo.jawapos.com/)\n\nKalimat fakta yang tidak terdapat dalam teks adalah",
+          "tipe": "pg",
+          "opsi": [
+            "(1).",
+            "(2).",
+            "(4).",
+            "(9).",
+            "(10)."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Fakta adalah hal-hal yang merupakan kenyataan, sesuatu yang benar-benar ada, benar-benar terjadi, dan ada buktinya. Sebaliknya, opini adalah pendapat, pikiran, atau pendirian seseorang atau sekelompok orang tentang sesuatu. Berdasarkan teks tersebut, kalimat fakta tidak ditemukan pada kalimat (2), yakni PT Kereta Api Indonesia (KAI) menegaskan bahwa langkah ini bukan sekadar rebranding, melainkan juga penyederhanaan identitas untuk mematangkan warisan yang sudah ada . Kalimat tersebut merupakan opini sebab menyatakan pendapat. Jalur Cara Gemilang: Fakta = tercek angka/waktu/tempat (apa-siapa-berapa-di mana-kapan); opsi berisi penilaian = opini = jawaban soal \"bukan fakta\".",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek mulai 9 Mei 2026 menjadi bagian dari program penyederhanaan nama oleh PT Kereta Api Indonesia. (2) PT Kereta Api Indonesia (KAI) menegaskan bahwa langkah ini bukan sekadar rebranding, tetapi juga penyederhanaan identitas dengan tetap menjaga warisan yang ada. (3) Nama Anggrek dipilih karena memiliki filosofi mendalam, yaitu kuat, anggun, dan mampu bertahan dalam berbagai kondisi, menggambarkan kelembutan yang tidak rapuh serta ketenangan yang tidak lemah. (4) Meskipun nama berubah, KAI menjamin layanan tetap sama, tiket yang telah dibeli tetap berlaku, dan tidak ada perubahan administratif yang merugikan penumpang. (5) Unsur Argo pada nama sebelumnya berarti 'gunung' dalam bahasa Jawa Kuno, dan dengan menghapusnya, nama diharapkan menjadi lebih ringkas. (6) ….\n\n(7) Sebagai kereta api warisan, KA Anggrek memiliki sejarah panjang sejak pertama kali dioperasikan pada 24 September 1997 dengan kode JS-852, melayani rute Jakarta—Surabaya dengan 8 kali pemberhentian. (8) Kereta ini dikenal dengan desain elegan, dilengkapi suspensi pegas udder untuk kenyamanan, serta eksterior hitam khas dengan motif bunga anggrek. (9) Gerbong ini juga mengalami pembaruan warna eksterior dan peningkatan fasilitas penumpang. (10) Bahkan, KA Anggrek pernah berhenti beroperasi karena kendala teknis sebelum kembali hadir dengan konsep Go Green pada 2011. (11) ….\n\n(diadaptasi dari https://radarsolo.jawapos.com/)\n\nSimpulan yang tepat untuk teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Penghapusan unsur 'Argo' dari nama kereta menunjukkan bahwa PT KAI sengaja menghilangkan seluruh nilai historis dan warisan budaya Jawa Kuno demi citra modern yang tidak terikat pada akar masa lalu.",
+            "Penumpang yang telah membeli tiket sebelum perubahan nama harus melakukan pembatalan atau penyesuaian administratif karena sistem lama tidak lagi mengakui identitas Argo Bromo Anggrek yang telah dihapus.",
+            "Filosofi nama 'Anggrek' yang disebut kuat dan anggun sesungguhnya merupakan konsep pemasaran baru yang diciptakan untuk keperluan rebranding, bukan nilai yang telah melekat sejak awal pengoperasian kereta ini.",
+            "Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek menandai penghentian sementara layanan lama dan pengoperasian rangkaian baru yang berbeda secara operasional maupun fasilitas.",
+            "Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek merupakan langkah strategis PT KAI untuk menyederhanakan identitas tanpa mengurangi nilai historis maupun kualitas layanan."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Simpulan adalah hasil dari kegiatan menyimpulkan. Simpulan yang tepat untuk teks tersebut adalah Perubahan nama Kereta Api Argo Bromo Anggrek menjadi KA Anggrek merupakan langkah strategis PT KAI untuk menyederhanakan identitas tanpa menghilangkan nilai sejarah dan kualitas layanan . Jalur Cara Gemilang: Simpulan = rangkuman SELURUH paragraf; coret opsi yang hanya memuat satu detail atau menambah klaim baru.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Temulawak (Curcuma zanthorrhiza) merupakan tanaman herbal asli Indonesia yang banyak dimanfaatkan untuk mengatasi berbagai masalah kesehatan, mulai dari menurunnya nafsu makan, gangguan pencernaan, perut kembung, diare, demam, radang sendi, hingga gangguan fungsi hati. (2) Tanaman ini masih memiliki kekerabatan dekat dengan kunyit. (3) Manfaat kesehatannya telah dikenal masyarakat Indonesia sejak lama. (4) Kandungan alami yang dimilikinya membuat tanaman rimpang ini digunakan secara turun-temurun sebagai komponen obat tradisional. (5) Masyarakat sering kali sulit membedakan temulawak dengan kunyit karena warna kuning yang sama serta memiliki khasiat yang hampir serupa.\n\n(6) Selain digunakan sebagai obat herbal, rimpang temulawak juga sering dimanfaatkan sebagai pewarna makanan, bahan masakan, dan komponen dalam produk kosmetik. (7) …. (8) Di Indonesia sendiri, temulawak biasanya dikonsumsi dalam bentuk irisan kering, serbuk, jamu, atau teh herbal. (9) Tanaman ini juga diproduksi massal dalam bentuk suplemen.\n\n(diadaptasi dari www.alodokter.com)\n\nKalimat penjelas yang tidak mendukung topik utama teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Kandungan alami yang dimilikinya membuat tanaman rimpang ini digunakan secara turun-temurun sebagai jamu atau obat tradisional.",
+            "Temulawak (Curcuma zanthorrhiza) merupakan tanaman herbal asli Indonesia yang banyak dimanfaatkan untuk mengatasi berbagai masalah kesehatan.",
+            "Sekilas, temulawak tampak hampir sama dengan kunyit karena keduanya memiliki warna dasar kuning.",
+            "Manfaat kesehatan temulawak telah dikenal masyarakat Indonesia sejak lama.",
+            "Tanaman ini masih memiliki kekerabatan dekat dengan kunyit."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Kalimat penjelas adalah kalimat yang menjelaskan atau memerinci kalimat utama. Sementara itu, kalimat utama paragraf pertama terdapat diawal kalimat. Jadi, kalimat penjelas yang tidak mendukung kalimat utama tersebut adalah Sekilas, temulawak hampir sama dengan kunyit yang sama-sama berwarna dasar kuning . Jalur Cara Gemilang: Uji tiap opsi terhadap kalimat utama paragraf: penjelas sah = memerinci topik; yang membelok ke ciri fisik sekilas = tidak mendukung.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Temulawak (Curcuma zanthorrhiza) merupakan tanaman herbal asli Indonesia yang banyak dimanfaatkan untuk mengatasi berbagai masalah kesehatan, mulai dari menurunnya nafsu makan, gangguan pencernaan, perut kembung, diare, demam, radang sendi, hingga gangguan fungsi hati. (2) Tanaman ini masih memiliki kekerabatan dekat dengan kunyit. (3) Manfaat kesehatannya telah dikenal masyarakat Indonesia sejak lama. (4) Kandungan alami yang dimilikinya membuat tanaman rimpang ini digunakan secara turun-temurun sebagai komponen obat tradisional. (5) Masyarakat sering kali sulit membedakan temulawak dengan kunyit karena warna kuning yang sama serta memiliki khasiat yang hampir serupa.\n\n(6) Selain digunakan sebagai obat herbal, rimpang temulawak juga sering dimanfaatkan sebagai pewarna makanan, bahan masakan, dan komponen dalam produk kosmetik. (7) …. (8) Di Indonesia sendiri, temulawak biasanya dikonsumsi dalam bentuk irisan kering, serbuk, jamu, atau teh herbal. (9) Tanaman ini juga diproduksi massal dalam bentuk suplemen.\n\n(diadaptasi dari www.alodokter.com)\n\nKalimat yang tepat untuk melengkapi bagian rumpang paragraf kedua adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Temulawak merupakan tanaman asli Indonesia yang dikenal sebagai obat tradisional untuk mengatasi gangguan pencernaan, kolesterol tinggi, dan meningkatkan daya tahan tubuh.",
+            "Karena pemanfaatannya yang sangat luas, rimpang ini kemudian diolah menjadi berbagai bentuk sediaan praktis agar mudah dikonsumsi oleh masyarakat.",
+            "Temulawak sering digunakan sebagai bahan pewarna sekaligus penambah aroma pada berbagai masakan sehingga menghasilkan warna alami.",
+            "Temulawak dapat dibudidayakan dalam pot atau polibag dengan diameter minimal 40 cm dan tinggi 40 cm.",
+            "Proses dari penanaman hingga panen temulawak membutuhkan waktu 8 hingga 12 bulan."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Sebuah paragraf yang baik harus memenuhi syarat kesatuan, yaitu dalam setiap paragraf hanya membahas satu gagasan. Berdasarkan kalimat utama paragraf kedua, kalimat yang tepat untuk melengkapi bagian rumpang paragraf kedua adalah Karena kegunaannya yang sangat luas, rimpang ini kemudian diolah menjadi berbagai bentuk yang praktis agar mudah dikonsumsi oleh masyarakat . Jalur Cara Gemilang: Kalimat pengisi = yang topiknya sama dengan kalimat utama DAN kalimat sesudah rumpang; konjungsi sebab (karena) sering jadi engsel.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Temulawak (Curcuma zanthorrhiza) merupakan tanaman herbal asli Indonesia yang banyak dimanfaatkan untuk mengatasi berbagai masalah kesehatan, mulai dari menurunnya nafsu makan, gangguan pencernaan, perut kembung, diare, demam, radang sendi, hingga gangguan fungsi hati. (2) Tanaman ini masih memiliki kekerabatan dekat dengan kunyit. (3) Manfaat kesehatannya telah dikenal masyarakat Indonesia sejak lama. (4) Kandungan alami yang dimilikinya membuat tanaman rimpang ini digunakan secara turun-temurun sebagai komponen obat tradisional. (5) Masyarakat sering kali sulit membedakan temulawak dengan kunyit karena warna kuning yang sama serta memiliki khasiat yang hampir serupa.\n\n(6) Selain digunakan sebagai obat herbal, rimpang temulawak juga sering dimanfaatkan sebagai pewarna makanan, bahan masakan, dan komponen dalam produk kosmetik. (7) …. (8) Di Indonesia sendiri, temulawak biasanya dikonsumsi dalam bentuk irisan kering, serbuk, jamu, atau teh herbal. (9) Tanaman ini juga diproduksi massal dalam bentuk suplemen.\n\n(diadaptasi dari www.alodokter.com)\n\nHubungan isi kedua paragraf tersebut adalah (Pilihlah kolom Setuju atau Tidak Setuju untuk setiap pernyataan!)\n(Tentukan Setuju/Tidak Setuju untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Setuju",
+            "Tidak Setuju"
+          ],
+          "baris": [
+            "Hubungan kedua paragraf tersebut adalah pengembangan gagasan, yaitu fungsi utama sebagai obat herbal dan manfaat temulawak dalam kuliner serta produk lainnya.",
+            "Paragraf pertama menjelaskan kritik masyarakat terhadap temulawak, sedangkan paragraf kedua membahas larangan penggunaan temulawak dalam makanan.",
+            "Paragraf pertama menjelaskan manfaat temulawak sebagai obat herbal, sedangkan paragraf kedua menekankan berbagai pemanfaatan temulawak, seperti pewarna makanan, bumbu masakan, dan kosmetik."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SETUJU: Paragraf pertama berfokus penuh pada fungsi utama temulawak sebagai tanaman obat/herbal tradisional. Paragraf kedua membuka informasi baru dengan konjungsi \"Selain sebagai obat herbal…\", lalu memaparkan fungsi tambahan atau diversifikasi pemanfaatannya di luar medis, seperti untuk kuliner (pewarna, bumbu) dan kosmetik. Ini merupakan pola pengembangan ide (dari fungsi utama ke fungsi tambahan/manfaat). Baris 2 — TIDAK SETUJU: Pernyataan ini sepenuhnya salah karena teks tidak mengandung kritik masyarakat maupun larangan penggunaan. Sebaliknya, teks menjelaskan apresiasi masyarakat terhadap pemanfaatan temulawak secara turun-temurun yang aman dalam makanan. Baris 3 — SETUJU: Pernyataan ini secara akurat meringkas isi konkret dari masing-masing paragraf. Paragraf pertama menjabarkan khasiat Jalur Cara Gemilang: Hubungan isi = bandingkan fungsi kedua paragraf (pengembangan gagasan vs perbandingan vs sebab-akibat) sebelum menilai pernyataan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Temulawak (Curcuma zanthorrhiza) merupakan tanaman herbal asli Indonesia yang banyak dimanfaatkan untuk mengatasi berbagai masalah kesehatan, mulai dari menurunnya nafsu makan, gangguan pencernaan, perut kembung, diare, demam, radang sendi, hingga gangguan fungsi hati. (2) Tanaman ini masih memiliki kekerabatan dekat dengan kunyit. (3) Manfaat kesehatannya telah dikenal masyarakat Indonesia sejak lama. (4) Kandungan alami yang dimilikinya membuat tanaman rimpang ini digunakan secara turun-temurun sebagai komponen obat tradisional. (5) Masyarakat sering kali sulit membedakan temulawak dengan kunyit karena warna kuning yang sama serta memiliki khasiat yang hampir serupa.\n\n(6) Selain digunakan sebagai obat herbal, rimpang temulawak juga sering dimanfaatkan sebagai pewarna makanan, bahan masakan, dan komponen dalam produk kosmetik. (7) …. (8) Di Indonesia sendiri, temulawak biasanya dikonsumsi dalam bentuk irisan kering, serbuk, jamu, atau teh herbal. (9) Tanaman ini juga diproduksi massal dalam bentuk suplemen.\n\n(diadaptasi dari www.alodokter.com)\n\nKalimat fakta yang terdapat dalam teks tersebut adalah sebagai berikut (Pilihlah kolom Sesuai atau Tidak Sesuai untuk setiap pernyataan!)\n(Tentukan Setuju/Tidak Sesuai untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Setuju",
+            "Tidak Sesuai"
+          ],
+          "baris": [
+            "Temulawak (Curcuma zanthorrhiza) merupakan tanaman herbal asli Indonesia yang banyak dimanfaatkan untuk mengatasi berbagai masalah kesehatan, mulai dari menurunnya nafsu makan, gangguan pencernaan, perut kembung, diare, demam, radang sendi, hingga gangguan fungsi hati.",
+            "Di Indonesia sendiri, temulawak biasanya dikonsumsi dalam bentuk irisan kering, serbuk, jamu, atau teh herbal.",
+            "Masyarakat sering kali sulit membedakan temulawak dengan kunyit karena warna kuning yang sama serta memiliki khasiat yang hampir serupa."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SETUJU: Kalimat ini merupakan kalimat fakta. Kalimat ini memuat nama ilmiah resmi ( Curcuma zanthorrhiza ), asal tanaman, serta daftar objektif gangguan kesehatan yang secara nyata sering diobati menggunakan temulawak sesuai data medis dan isi teks pada kalimat (1). Baris 2 — SETUJU: Kalimat ini merupakan kalimat fakta. Kalimat ini memaparkan realitas atau bentuk konkret dari cara konsumsi temulawak di masyarakat Indonesia (kering, bubuk, jamu, teh) tanpa adanya unsur opini atau tebakan. Baris 3 — TIDAK SESUAI: Kalimat ini menggunakan kata subjektif \"pasti mengira\". Ini merupakan asumsi atau tebakan personal terhadap pemikiran orang lain, bukan generalisasi yang didukung data ilmiah. Jalur Cara Gemilang: Fakta dalam teks = kalimat berdata (nama latin, asal, kandungan); pernyataan bernuansa pendapat = tidak masuk fakta.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah laut biru yang luas dan pemandangan alam yang memikat, terdapat beragam budaya dan tradisi. Salah satunya adalah Kabupaten Lembata yang memiliki tradisi berburu paus yang telah berlangsung selama berabad-abad dan melibatkan hubungan antara masyarakat dengan alam serta warisan budayanya. Tradisi berburu paus di Lembata tampaknya memiliki kekuatan yang luar biasa, terutama bagi wisatawan yang tertarik dengan budaya lokal.\n\nLembata tidak hanya dikenal karena keindahan alamnya, tetapi juga karena tradisi uniknya yang telah membentuk kehidupan masyarakat nelayannya secara mendalam. Karena letaknya di ujung timur Pulau Flores, Lembata menjadi rumah bagi suku yang memiliki hubungan erat dengan laut. Di sini, perburuan paus bukan sekadar aktivitas ekonomi, tetapi juga menjadi bagian dari tradisi yang diwariskan dari generasi ke generasi. ….\n\nPerburuan paus di Lembata tampaknya bukan merupakan tindakan yang dilakukan secara sembarangan. Hal ini merupakan bagian dari ritual yang penuh dengan penghormatan terhadap alam dan rasa syukur terhadap hasil laut. Dalam tradisi ini, masyarakat suku Lamalera di Desa Lamalera, Kecamatan Wulandoni, berlayar menggunakan perahu tradisional yang disebut peledang, terbuat dari kayu dan dilengkapi dengan tombak panjang untuk menangkap ikan paus. Tindakan para pemburu paus yang mendekati paus di laut dengan perahu tradisional merupakan simbol ketahanan budaya yang tetap hidup hingga saat ini.\n\nPerburuan paus di Lembata bukan sekadar aktivitas mencari nafkah, melainkan juga ritual sakral yang dilakukan dengan penuh penghormatan. Sebelum tradisi ini dimulai, para pemburu paus yang biasa disebut lamafa menyiapkan sesajen khusus. Selanjutnya, pada tanggal 1 Mei, acara dilanjutkan dengan Misa lefa, yaitu ritual Katolik untuk memohon berkat Tuhan bagi musim penangkapan ikan yang akan datang.\n\n(1) Paus yang ditangkap oleh para pemburu paus disebut koteklema dalam bahasa setempat. (2) Musim lefa dimulai pada 2 Mei dan berlangsung hingga 30 September setiap tahunnya. (3) Daging paus tidak hanya digunakan untuk konsumsi pribadi, tetapi juga dibagikan kepada masyarakat luas sebagai simbol solidaritas. (4) Tradisi ini menunjukkan betapa eratnya hubungan antara masyarakat Lembata dengan alam sekitarnya. (5) Terkait waktu, tradisi berburu paus masyarakat Lamalera dilakukan pada musim menangkap ikan yang dikenal dengan nama lefa, yang jatuh pada tiap tahun di bulan Mei. (6) Tradisi ini diadakan sekitar Mei hingga November, yang merupakan bulan migrasi paus. (7) Setelah ikan paus berhasil ditangkap, proses pengolahan dan pembagian daging paus dilakukan dengan penuh rasa syukur. (8) Bahkan, upacara adat juga diadakan untuk menghormati roh paus yang telah memberikan kehidupan bagi mereka.\n\n(diadaptasi dari https://lrri.co.id/)\n\nSimpulan yang tepat untuk teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Ritual perburuan paus oleh suku Lamalera di Lembata mencerminkan warisan budaya yang sarat makna spiritual dan nilai kebersamaan.",
+            "Tradisi baleo merupakan perburuan paus biasa yang dilakukan masyarakat Lembata untuk kepentingan ekspor dan perdagangan.",
+            "Tradisi baleo berlangsung sepanjang tahun dan menggunakan teknologi modern demi efisiensi dan keselamatan para pemburu.",
+            "Tradisi Lamalera melanggar hukum internasional karena melibatkan pembunuhan rutin hewan yang terancam punah setiap bulan.",
+            "Perburuan paus di Lembata hanyalah atraksi wisata yang diadakan pada musim migrasi paus saja."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Simpulan adalah hasil dari kegiatan menyimpulkan. Simpulan yang tepat untuk teks tersebut adalah Ritual perburuan paus oleh suku Lamalera di Lembata mencerminkan warisan budaya yang sarat makna spiritual dan nilai kebersamaan . Jalur Cara Gemilang: Simpulan tepat = kalimat terluas yang setia pada semua paragraf; opsi bernada menghakimi (melanggar hukum, sekadar atraksi) = coret.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah laut biru yang luas dan pemandangan alam yang memikat, terdapat beragam budaya dan tradisi. Salah satunya adalah Kabupaten Lembata yang memiliki tradisi berburu paus yang telah berlangsung selama berabad-abad dan melibatkan hubungan antara masyarakat dengan alam serta warisan budayanya. Tradisi berburu paus di Lembata tampaknya memiliki kekuatan yang luar biasa, terutama bagi wisatawan yang tertarik dengan budaya lokal.\n\nLembata tidak hanya dikenal karena keindahan alamnya, tetapi juga karena tradisi uniknya yang telah membentuk kehidupan masyarakat nelayannya secara mendalam. Karena letaknya di ujung timur Pulau Flores, Lembata menjadi rumah bagi suku yang memiliki hubungan erat dengan laut. Di sini, perburuan paus bukan sekadar aktivitas ekonomi, tetapi juga menjadi bagian dari tradisi yang diwariskan dari generasi ke generasi. ….\n\nPerburuan paus di Lembata tampaknya bukan merupakan tindakan yang dilakukan secara sembarangan. Hal ini merupakan bagian dari ritual yang penuh dengan penghormatan terhadap alam dan rasa syukur terhadap hasil laut. Dalam tradisi ini, masyarakat suku Lamalera di Desa Lamalera, Kecamatan Wulandoni, berlayar menggunakan perahu tradisional yang disebut peledang, terbuat dari kayu dan dilengkapi dengan tombak panjang untuk menangkap ikan paus. Tindakan para pemburu paus yang mendekati paus di laut dengan perahu tradisional merupakan simbol ketahanan budaya yang tetap hidup hingga saat ini.\n\nPerburuan paus di Lembata bukan sekadar aktivitas mencari nafkah, melainkan juga ritual sakral yang dilakukan dengan penuh penghormatan. Sebelum tradisi ini dimulai, para pemburu paus yang biasa disebut lamafa menyiapkan sesajen khusus. Selanjutnya, pada tanggal 1 Mei, acara dilanjutkan dengan Misa lefa, yaitu ritual Katolik untuk memohon berkat Tuhan bagi musim penangkapan ikan yang akan datang.\n\n(1) Paus yang ditangkap oleh para pemburu paus disebut koteklema dalam bahasa setempat. (2) Musim lefa dimulai pada 2 Mei dan berlangsung hingga 30 September setiap tahunnya. (3) Daging paus tidak hanya digunakan untuk konsumsi pribadi, tetapi juga dibagikan kepada masyarakat luas sebagai simbol solidaritas. (4) Tradisi ini menunjukkan betapa eratnya hubungan antara masyarakat Lembata dengan alam sekitarnya. (5) Terkait waktu, tradisi berburu paus masyarakat Lamalera dilakukan pada musim menangkap ikan yang dikenal dengan nama lefa, yang jatuh pada tiap tahun di bulan Mei. (6) Tradisi ini diadakan sekitar Mei hingga November, yang merupakan bulan migrasi paus. (7) Setelah ikan paus berhasil ditangkap, proses pengolahan dan pembagian daging paus dilakukan dengan penuh rasa syukur. (8) Bahkan, upacara adat juga diadakan untuk menghormati roh paus yang telah memberikan kehidupan bagi mereka.\n\n(diadaptasi dari https://lrri.co.id/)\n\nKalimat penjelas yang tidak sesuai dengan kalimat utama paragraf ketiga adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Dalam tradisi ini, masyarakat suku Lamalera di Desa Lamalera, Kecamatan Wulandoni, Lembata, berlayar menggunakan perahu tradisional yang disebut peledang, terbuat dari kayu dan dilengkapi dengan tombak panjang untuk menangkap ikan paus.",
+            "Tindakan para pemburu paus yang mendekati paus di laut dengan perahu tradisional merupakan simbol ketahanan budaya yang tetap hidup hingga saat ini.",
+            "Di sini, perburuan paus bukan sekadar aktivitas ekonomi, tetapi juga menjadi tradisi yang diwariskan dari generasi ke generasi.",
+            "Hal ini merupakan bagian dari ritual yang penuh dengan penghormatan terhadap alam dan terhadap makhluk hidup di laut.",
+            "Tradisi ini dalam bahasa setempat dikenal dengan nama baleo."
+          ],
+          "jawaban": [
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Kalimat penjelas adalah kalimat yang menjelaskan atau memerinci kalimat utama. Sementara itu, kalimat utama paragraf pertama terdapat diawal kalimat. Jadi, kalimat penjelas yang tidak sesuai kalimat utama paragraf ketiga adalah Pernyataan (1) salah Kalimat ini menjelaskan bagaimana perburuan dilakukan (menggunakan peledang dan tombak). Ini mendukung kalimat utama bahwa perburuan ini \"tidak sembarangan\" karena memiliki tata cara dan alat khusus. Pernyataan (2) salah Kalimat ini menjelaskan makna di balik perburuan tersebut sebagai simbol ketahanan budaya. Ini memperkuat alasan mengapa perburuan tersebut bukan sekadar tindakan sembarangan, melainkan tindakan yang dijaga. Pernyataan (3) benar Meskipun isinya masuk akal, kalimat ini tidak terdapat di dalam teks. Dalam soal analisis teks, kalimat yang tidak muncul dalam paragraf dianggap tidak relevan sebagai kalimat penjelas paragraf tersebut. Pernyataan (4) salah Kalimat ini langsung menjelaskan alasan mengapa perburuan tidak dilakukan sembarangan, yaitu karena adanya unsur ritual dan penghormatan terhadap alam. Pernyataan (5) benar Kalimat ini tidak tertulis dalam teks. Selain itu, kata \"Baleo\" sebenarnya adalah nama rumah adat Toraja, bukan nama tradisinya (Leva Nuang). Karena tidak ada di teks, ia tidak bisa menjadi kalimat penjelas. Jalur Cara Gemilang: Penjelas tak sesuai = kalimat yang menyimpang dari kalimat utama paragraf; bandingkan subjek setiap opsi dengan topik paragraf.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah laut biru yang luas dan pemandangan alam yang memikat, terdapat beragam budaya dan tradisi. Salah satunya adalah Kabupaten Lembata yang memiliki tradisi berburu paus yang telah berlangsung selama berabad-abad dan melibatkan hubungan antara masyarakat dengan alam serta warisan budayanya. Tradisi berburu paus di Lembata tampaknya memiliki kekuatan yang luar biasa, terutama bagi wisatawan yang tertarik dengan budaya lokal.\n\nLembata tidak hanya dikenal karena keindahan alamnya, tetapi juga karena tradisi uniknya yang telah membentuk kehidupan masyarakat nelayannya secara mendalam. Karena letaknya di ujung timur Pulau Flores, Lembata menjadi rumah bagi suku yang memiliki hubungan erat dengan laut. Di sini, perburuan paus bukan sekadar aktivitas ekonomi, tetapi juga menjadi bagian dari tradisi yang diwariskan dari generasi ke generasi. ….\n\nPerburuan paus di Lembata tampaknya bukan merupakan tindakan yang dilakukan secara sembarangan. Hal ini merupakan bagian dari ritual yang penuh dengan penghormatan terhadap alam dan rasa syukur terhadap hasil laut. Dalam tradisi ini, masyarakat suku Lamalera di Desa Lamalera, Kecamatan Wulandoni, berlayar menggunakan perahu tradisional yang disebut peledang, terbuat dari kayu dan dilengkapi dengan tombak panjang untuk menangkap ikan paus. Tindakan para pemburu paus yang mendekati paus di laut dengan perahu tradisional merupakan simbol ketahanan budaya yang tetap hidup hingga saat ini.\n\nPerburuan paus di Lembata bukan sekadar aktivitas mencari nafkah, melainkan juga ritual sakral yang dilakukan dengan penuh penghormatan. Sebelum tradisi ini dimulai, para pemburu paus yang biasa disebut lamafa menyiapkan sesajen khusus. Selanjutnya, pada tanggal 1 Mei, acara dilanjutkan dengan Misa lefa, yaitu ritual Katolik untuk memohon berkat Tuhan bagi musim penangkapan ikan yang akan datang.\n\n(1) Paus yang ditangkap oleh para pemburu paus disebut koteklema dalam bahasa setempat. (2) Musim lefa dimulai pada 2 Mei dan berlangsung hingga 30 September setiap tahunnya. (3) Daging paus tidak hanya digunakan untuk konsumsi pribadi, tetapi juga dibagikan kepada masyarakat luas sebagai simbol solidaritas. (4) Tradisi ini menunjukkan betapa eratnya hubungan antara masyarakat Lembata dengan alam sekitarnya. (5) Terkait waktu, tradisi berburu paus masyarakat Lamalera dilakukan pada musim menangkap ikan yang dikenal dengan nama lefa, yang jatuh pada tiap tahun di bulan Mei. (6) Tradisi ini diadakan sekitar Mei hingga November, yang merupakan bulan migrasi paus. (7) Setelah ikan paus berhasil ditangkap, proses pengolahan dan pembagian daging paus dilakukan dengan penuh rasa syukur. (8) Bahkan, upacara adat juga diadakan untuk menghormati roh paus yang telah memberikan kehidupan bagi mereka.\n\n(diadaptasi dari https://lrri.co.id/)\n\nKalimat yang tepat untuk melengkapi isi paragraf kedua adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Kebiasaan atau adat istiadat sering kali tidak tertulis, tetapi dipegang teguh oleh masyarakat.",
+            "Paus adalah mamalia laut berdarah panas yang bernapas menggunakan paru-paru.",
+            "Tradisi ini dalam bahasa setempat dikenal dengan nama baleo.",
+            "Di Jepang dan Norwegia, daging paus menjadi makanan tradisional.",
+            "Daging dan tulang paus memiliki nilai gizi yang tinggi."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Paragraf kedua memiliki kalimat utama di awal paragraf. Jadi, kalimat yang tepat untuk melengkapi isi paragraf kedua adalah Dalam bahasa setempat, tradisi ini dikenal dengan sebutan Baleo . Jalur Cara Gemilang: Pengisi paragraf = lanjutkan kata kunci kalimat sebelumnya (bahasa setempat -> nama tradisi), bukan informasi baru.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah laut biru yang luas dan pemandangan alam yang memikat, terdapat beragam budaya dan tradisi. Salah satunya adalah Kabupaten Lembata yang memiliki tradisi berburu paus yang telah berlangsung selama berabad-abad dan melibatkan hubungan antara masyarakat dengan alam serta warisan budayanya. Tradisi berburu paus di Lembata tampaknya memiliki kekuatan yang luar biasa, terutama bagi wisatawan yang tertarik dengan budaya lokal.\n\nLembata tidak hanya dikenal karena keindahan alamnya, tetapi juga karena tradisi uniknya yang telah membentuk kehidupan masyarakat nelayannya secara mendalam. Karena letaknya di ujung timur Pulau Flores, Lembata menjadi rumah bagi suku yang memiliki hubungan erat dengan laut. Di sini, perburuan paus bukan sekadar aktivitas ekonomi, tetapi juga menjadi bagian dari tradisi yang diwariskan dari generasi ke generasi. ….\n\nPerburuan paus di Lembata tampaknya bukan merupakan tindakan yang dilakukan secara sembarangan. Hal ini merupakan bagian dari ritual yang penuh dengan penghormatan terhadap alam dan rasa syukur terhadap hasil laut. Dalam tradisi ini, masyarakat suku Lamalera di Desa Lamalera, Kecamatan Wulandoni, berlayar menggunakan perahu tradisional yang disebut peledang, terbuat dari kayu dan dilengkapi dengan tombak panjang untuk menangkap ikan paus. Tindakan para pemburu paus yang mendekati paus di laut dengan perahu tradisional merupakan simbol ketahanan budaya yang tetap hidup hingga saat ini.\n\nPerburuan paus di Lembata bukan sekadar aktivitas mencari nafkah, melainkan juga ritual sakral yang dilakukan dengan penuh penghormatan. Sebelum tradisi ini dimulai, para pemburu paus yang biasa disebut lamafa menyiapkan sesajen khusus. Selanjutnya, pada tanggal 1 Mei, acara dilanjutkan dengan Misa lefa, yaitu ritual Katolik untuk memohon berkat Tuhan bagi musim penangkapan ikan yang akan datang.\n\n(1) Paus yang ditangkap oleh para pemburu paus disebut koteklema dalam bahasa setempat. (2) Musim lefa dimulai pada 2 Mei dan berlangsung hingga 30 September setiap tahunnya. (3) Daging paus tidak hanya digunakan untuk konsumsi pribadi, tetapi juga dibagikan kepada masyarakat luas sebagai simbol solidaritas. (4) Tradisi ini menunjukkan betapa eratnya hubungan antara masyarakat Lembata dengan alam sekitarnya. (5) Terkait waktu, tradisi berburu paus masyarakat Lamalera dilakukan pada musim menangkap ikan yang dikenal dengan nama lefa, yang jatuh pada tiap tahun di bulan Mei. (6) Tradisi ini diadakan sekitar Mei hingga November, yang merupakan bulan migrasi paus. (7) Setelah ikan paus berhasil ditangkap, proses pengolahan dan pembagian daging paus dilakukan dengan penuh rasa syukur. (8) Bahkan, upacara adat juga diadakan untuk menghormati roh paus yang telah memberikan kehidupan bagi mereka.\n\n(diadaptasi dari https://lrri.co.id/)\n\nHubungan paragraf ketiga dan keempat adalah",
+          "tipe": "pg",
+          "opsi": [
+            "menyatakan bahwa perburuan paus hanya dilakukan oleh generasi tua dan menyebutkan bahwa generasi muda Lamalera tidak lagi berminat melestarikan tradisi ini.",
+            "menggambarkan teknik penangkapan paus secara rinci dan membahas dampak ekonomi dari hasil tangkapan terhadap kesejahteraan masyarakat Lamalera.",
+            "menjelaskan tradisi perburuan paus sebagai ritual penghormatan terhadap alam dan menggambarkan tahapan spesifik persiapan spiritual dan religius.",
+            "menekankan keuntungan berburu paus untuk ekspor dan menjelaskan konflik antara tradisi lokal dengan perlindungan satwa.",
+            "menggambarkan perahu peledang sebagai teknologi modern dan menyebutkan tradisi sakral."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Berdasarkan isi teks tersebut, hubungan antara paragraf 3 dan 4 adalah menjelaskan tradisi berburu paus sebagai ritual penghormatan alam dan menguraikan tahapan spesifik persiapan spiritual dan religius . Jalur Cara Gemilang: Hubungan paragraf = fungsi masing-masing: makna ritual lalu tahapan cara -> \"menjelaskan ... dan menguraikan tahapan\".",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah laut biru yang luas dan pemandangan alam yang memikat, terdapat beragam budaya dan tradisi. Salah satunya adalah Kabupaten Lembata yang memiliki tradisi berburu paus yang telah berlangsung selama berabad-abad dan melibatkan hubungan antara masyarakat dengan alam serta warisan budayanya. Tradisi berburu paus di Lembata tampaknya memiliki kekuatan yang luar biasa, terutama bagi wisatawan yang tertarik dengan budaya lokal.\n\nLembata tidak hanya dikenal karena keindahan alamnya, tetapi juga karena tradisi uniknya yang telah membentuk kehidupan masyarakat nelayannya secara mendalam. Karena letaknya di ujung timur Pulau Flores, Lembata menjadi rumah bagi suku yang memiliki hubungan erat dengan laut. Di sini, perburuan paus bukan sekadar aktivitas ekonomi, tetapi juga menjadi bagian dari tradisi yang diwariskan dari generasi ke generasi. ….\n\nPerburuan paus di Lembata tampaknya bukan merupakan tindakan yang dilakukan secara sembarangan. Hal ini merupakan bagian dari ritual yang penuh dengan penghormatan terhadap alam dan rasa syukur terhadap hasil laut. Dalam tradisi ini, masyarakat suku Lamalera di Desa Lamalera, Kecamatan Wulandoni, berlayar menggunakan perahu tradisional yang disebut peledang, terbuat dari kayu dan dilengkapi dengan tombak panjang untuk menangkap ikan paus. Tindakan para pemburu paus yang mendekati paus di laut dengan perahu tradisional merupakan simbol ketahanan budaya yang tetap hidup hingga saat ini.\n\nPerburuan paus di Lembata bukan sekadar aktivitas mencari nafkah, melainkan juga ritual sakral yang dilakukan dengan penuh penghormatan. Sebelum tradisi ini dimulai, para pemburu paus yang biasa disebut lamafa menyiapkan sesajen khusus. Selanjutnya, pada tanggal 1 Mei, acara dilanjutkan dengan Misa lefa, yaitu ritual Katolik untuk memohon berkat Tuhan bagi musim penangkapan ikan yang akan datang.\n\n(1) Paus yang ditangkap oleh para pemburu paus disebut koteklema dalam bahasa setempat. (2) Musim lefa dimulai pada 2 Mei dan berlangsung hingga 30 September setiap tahunnya. (3) Daging paus tidak hanya digunakan untuk konsumsi pribadi, tetapi juga dibagikan kepada masyarakat luas sebagai simbol solidaritas. (4) Tradisi ini menunjukkan betapa eratnya hubungan antara masyarakat Lembata dengan alam sekitarnya. (5) Terkait waktu, tradisi berburu paus masyarakat Lamalera dilakukan pada musim menangkap ikan yang dikenal dengan nama lefa, yang jatuh pada tiap tahun di bulan Mei. (6) Tradisi ini diadakan sekitar Mei hingga November, yang merupakan bulan migrasi paus. (7) Setelah ikan paus berhasil ditangkap, proses pengolahan dan pembagian daging paus dilakukan dengan penuh rasa syukur. (8) Bahkan, upacara adat juga diadakan untuk menghormati roh paus yang telah memberikan kehidupan bagi mereka.\n\n(diadaptasi dari https://lrri.co.id/)\n\nKalimat yang menyatakan opini adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Selanjutnya, pada tanggal 1 Mei, acara dilanjutkan dengan misa lefa, yaitu ritual Katolik untuk memohon berkat Tuhan bagi musim lefa yang akan dijalankan.",
+            "Di tengah laut biru yang luas dan pemandangan alam yang memikat, terdapat beragam budaya dan tradisi.",
+            "Tradisi ini menunjukkan betapa eratnya hubungan antara masyarakat Lembata dengan alam sekitarnya.",
+            "Tradisi ini diadakan sekitar Mei hingga November, yang merupakan bulan migrasi paus.",
+            "Musim lefa dimulai pada 2 Mei dan berlangsung hingga 30 September setiap tahunnya."
+          ],
+          "jawaban": [
+            1,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Fakta adalah hal-hal yang merupakan kenyataan, sesuatu yang benar-benar ada, benar-benar terjadi, dan ada buktinya. Sebaliknya, opini adalah pendapat, pikiran, atau pendirian seseorang atau sekelompok orang tentang sesuatu. Berdasarkan teks tersebut, kalimat yang menyatakan opini adalah Pernyataan (1) salah Menyebutkan tanggal spesifik (1 Mei) dan nama kegiatan (Misa Leva) yang merupakan peristiwa nyata dalam tradisi masyarakat setempat. Pernyataan (2) benar Penggunaan kata \"memukau\" bersifat subjektif. Indah atau memukaunya suatu pemandangan bergantung pada perasaan orang yang melihatnya. Pernyataan (3) benar Frasa \"mencerminkan betapa dalamnya\" adalah sebuah penilaian atau interpretasi. Kedalaman hubungan batin sulit diukur secara objektif dan merupakan pendapat penulis. Pernyataan (4) salah Menyatakan tentang waktu (Mei hingga November) dan fenomena alam (migrasi paus) yang dapat dibuktikan secara ilmiah/data. Pernyataan (5) salah Merujuk pada jadwal tetap tahunan (2 Mei hingga 30 September) yang sudah menjadi aturan atau kesepakatan adat yang nyata. Jalur Cara Gemilang: Opini = ada penilaian/perasaan (\"betapa eratnya\", \"indah\"); tanggal, musim, jadwal = fakta.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Angin gending merupakan fenomena angin lokal khas yang terjadi di wilayah Probolinggo, Jawa Timur. (2) Artinya, angin ini berembus dengan kecepatan 20—30 knot (17—31 km/jam) dan terjadi pada musim kemarau. (3) Nama gending diambil dari nama sebuah kecamatan di Kabupaten Probolinggo yang berada di perbatasan dataran tinggi dan dataran rendah, tempat fenomena ini sering terjadi.\n\n(4) Angin gending dipicu oleh perbedaan suhu antara dataran tinggi dan dataran rendah. (5) Udara panas dan kering dari dataran tinggi bergerak turun ke dataran rendah, menghasilkan angin yang terasa menyengat. (6) Meskipun terasa panas, angin ini sebenarnya memiliki dampak negatif yang cukup serius. (7) Pada sektor pertanian, angin gending merusak tanaman, menyebabkan pohon tumbang, serta memperburuk kondisi kesehatan masyarakat dengan meningkatkan risiko penyakit pencernaan. (8) Oleh karena itu, para nelayan pun harus waspada karena angin ini dapat membuat kondisi laut menjadi berbahaya.\n\n(9) Secara geografis, angin gending termasuk dalam jenis angin foehn atau geurutee, yaitu angin panas dan kering yang terbentuk akibat pergerakan udara yang terhalang oleh pegunungan. (10) …. (11) Keberadaan angin gending tidak hanya membentuk karakter alam Probolinggo, tetapi juga mencerminkan keunikan geografis Indonesia. (12) Meskipun menimbulkan tantangan dalam aktivitas ekonomi dan kehidupan sehari-hari, fenomena ini menjadi bagian dari identitas alam dan budaya lokal. (13) Oleh karena itu, penting bagi masyarakat untuk memahami, mengantisipasi, dan melestarikan pengetahuan tentang angin gending sebagai bagian dari kearifan lokal yang bernilai.\n\n(diadaptasi dari www.bolinggo.co)\n\nSimpulan yang tepat untuk teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Angin gending merupakan fenomena angin lokal khas Probolinggo yang terbentuk akibat perbedaan suhu antara dataran tinggi dan rendah, membawa dampak beragam bagi kehidupan masyarakat, serta menjadi bagian penting dari identitas alam dan kearifan lokal setempat.",
+            "Angin gending merupakan fenomena angin nasional di Jawa Timur yang terbentuk akibat perbedaan suhu antara laut dan daratan, membawa dampak positif bagi aktivitas ekonomi, serta menjadi bagian penting dari identitas maritim dan kearifan global masyarakat pesisir.",
+            "Angin gending merupakan fenomena angin lokal khas Probolinggo yang terbentuk akibat perbedaan tekanan udara di wilayah pegunungan berapi, membawa dampak negatif bagi sektor pertanian dan kesehatan, serta menjadi bagian penting dari identitas alam dan kearifan lokal masyarakat perkotaan.",
+            "Angin gending merupakan fenomena angin musiman khas Probolinggo yang terbentuk akibat pergerakan massa udara dingin dari laut, membawa dampak netral bagi lingkungan dan masyarakat, serta menjadi bagian penting dari identitas geografis dan kearifan teknis masyarakat pesisir.",
+            "Angin gending merupakan fenomena angin lokal khas Probolinggo yang terbentuk akibat perbedaan suhu antara dataran tinggi dan rendah, membawa dampak positif bagi seluruh sektor tanpa kecuali, serta menjadi bagian penting dari identitas alam dan kearifan nasional yang bersifat homogen."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Simpulan adalah hasil dari kegiatan menyimpulkan. Simpulan yang tepat untuk teks tersebut adalah Angin gending merupakan fenomena angin lokal khas Probolinggo yang terbentuk akibat perbedaan suhu antara dataran tinggi dan rendah, membawa dampak beragam bagi kehidupan masyarakat, serta menjadi bagian penting dari identitas alam dan kearifan lokal setempat . Jalur Cara Gemilang: Simpulan teks fenomena = gabungkan definisi + sebab + dampak dalam satu kalimat yang tidak menambah informasi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Angin gending merupakan fenomena angin lokal khas yang terjadi di wilayah Probolinggo, Jawa Timur. (2) Artinya, angin ini berembus dengan kecepatan 20—30 knot (17—31 km/jam) dan terjadi pada musim kemarau. (3) Nama gending diambil dari nama sebuah kecamatan di Kabupaten Probolinggo yang berada di perbatasan dataran tinggi dan dataran rendah, tempat fenomena ini sering terjadi.\n\n(4) Angin gending dipicu oleh perbedaan suhu antara dataran tinggi dan dataran rendah. (5) Udara panas dan kering dari dataran tinggi bergerak turun ke dataran rendah, menghasilkan angin yang terasa menyengat. (6) Meskipun terasa panas, angin ini sebenarnya memiliki dampak negatif yang cukup serius. (7) Pada sektor pertanian, angin gending merusak tanaman, menyebabkan pohon tumbang, serta memperburuk kondisi kesehatan masyarakat dengan meningkatkan risiko penyakit pencernaan. (8) Oleh karena itu, para nelayan pun harus waspada karena angin ini dapat membuat kondisi laut menjadi berbahaya.\n\n(9) Secara geografis, angin gending termasuk dalam jenis angin foehn atau geurutee, yaitu angin panas dan kering yang terbentuk akibat pergerakan udara yang terhalang oleh pegunungan. (10) …. (11) Keberadaan angin gending tidak hanya membentuk karakter alam Probolinggo, tetapi juga mencerminkan keunikan geografis Indonesia. (12) Meskipun menimbulkan tantangan dalam aktivitas ekonomi dan kehidupan sehari-hari, fenomena ini menjadi bagian dari identitas alam dan budaya lokal. (13) Oleh karena itu, penting bagi masyarakat untuk memahami, mengantisipasi, dan melestarikan pengetahuan tentang angin gending sebagai bagian dari kearifan lokal yang bernilai.\n\n(diadaptasi dari www.bolinggo.co)\n\nPernyataan yang tepat sesuai dengan isi teks tersebut adalah (Pilihlah kolom Sesuai atau Tidak Sesuai untuk setiap pernyataan!)\n(Tentukan Sesuai/Tidak Sesuai untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ],
+          "baris": [
+            "Kalimat Nama gending diambil dari nama sebuah kecamatan di Kabupaten Probolinggo yang berada di perbatasan dataran tinggi dan dataran rendah, tempat fenomena ini sering terjadi merupakan kalimat tidak padu paragraf pertama.",
+            "Kalimat Meskipun angin ini terasa panas, kenyataannya dapat membuat kondisi laut menjadi berbahaya merupakan kalimat penjelas paragraf kedua.",
+            "Kalimat Meskipun menimbulkan tantangan dalam aktivitas ekonomi dan kehidupan sehari-hari, fenomena ini menjadi bagian dari identitas alam dan budaya lokal merupakan kalimat penjelas paragraf ketiga."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TIDAK SESUAI: Kalimat (3) tersebut adalah kalimat yang padu (koheren). Paragraf pertama membahas identitas dasar angin gending (definisi, kecepatan, dan asal-usul nama). Informasi mengenai asal nama \"gending\" dari sebuah kecamatan sangat mendukung gagasan utama paragraf pertama. (Catatan: Kalimat yang sebenarnya tidak padu pada paragraf pertama adalah kalimat (2) karena penggunaan konjungsi antarparagraf \"Selain itu\" di awal kalimat). Baris 2 — SESUAI: Kalimat (8) merupakan kalimat penjelas yang valid pada paragraf kedua. Gagasan utama paragraf kedua adalah dampak negatif angin gending (dinyatakan pada kalimat 6). Kalimat (7) menjelaskan dampaknya pada petani, sedangkan kalimat (8) menjelaskan dampaknya pada nelayan sebagai gagasan utama tersebut. Baris 3 — SESUAI: Kalimat (12) merupakan kalimat penjelas pada paragraf ketiga. Paragraf ketiga berfungsi sebagai kesimpulan teks yang membahas keunikan angin gending sebagai identitas, karakter alam, dan kearifan lokal Probolinggo. Kalimat (12) mendukung gagasan tersebut dengan menjelaskan bahwa meski menantang secara ekonomi, fenomena ini tetap menjadi identitas lokal. Jalur Cara Gemilang: Tabel Sesuai: verifikasi per pernyataan ke kalimat teks; penukaran nama/sejarah sering dijungkirbalikkan di pengecoh.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Angin gending merupakan fenomena angin lokal khas yang terjadi di wilayah Probolinggo, Jawa Timur. (2) Artinya, angin ini berembus dengan kecepatan 20—30 knot (17—31 km/jam) dan terjadi pada musim kemarau. (3) Nama gending diambil dari nama sebuah kecamatan di Kabupaten Probolinggo yang berada di perbatasan dataran tinggi dan dataran rendah, tempat fenomena ini sering terjadi.\n\n(4) Angin gending dipicu oleh perbedaan suhu antara dataran tinggi dan dataran rendah. (5) Udara panas dan kering dari dataran tinggi bergerak turun ke dataran rendah, menghasilkan angin yang terasa menyengat. (6) Meskipun terasa panas, angin ini sebenarnya memiliki dampak negatif yang cukup serius. (7) Pada sektor pertanian, angin gending merusak tanaman, menyebabkan pohon tumbang, serta memperburuk kondisi kesehatan masyarakat dengan meningkatkan risiko penyakit pencernaan. (8) Oleh karena itu, para nelayan pun harus waspada karena angin ini dapat membuat kondisi laut menjadi berbahaya.\n\n(9) Secara geografis, angin gending termasuk dalam jenis angin foehn atau geurutee, yaitu angin panas dan kering yang terbentuk akibat pergerakan udara yang terhalang oleh pegunungan. (10) …. (11) Keberadaan angin gending tidak hanya membentuk karakter alam Probolinggo, tetapi juga mencerminkan keunikan geografis Indonesia. (12) Meskipun menimbulkan tantangan dalam aktivitas ekonomi dan kehidupan sehari-hari, fenomena ini menjadi bagian dari identitas alam dan budaya lokal. (13) Oleh karena itu, penting bagi masyarakat untuk memahami, mengantisipasi, dan melestarikan pengetahuan tentang angin gending sebagai bagian dari kearifan lokal yang bernilai.\n\n(diadaptasi dari www.bolinggo.co)\n\nKalimat rumpang yang tepat untuk melengkapi kalimat (10) adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Fenomena serupa juga dijumpai di beberapa wilayah lain di Indonesia, namun angin gending memiliki kekhasan lokal yang menjadikannya bagian penting dari cuaca dan kehidupan masyarakat Probolinggo.",
+            "Wilayah kota Probolinggo terletak di selatan khatulistiwa (belahan bumi selatan), pada saat wilayah di belahan bumi selatan pada umumnya mengalami musim kemarau.",
+            "Angin gending paling sering terjadi pada Juni hingga September, yang tidak hanya berbahaya bagi kondisi kesehatan tetapi juga berbahaya bagi tubuh.",
+            "Monsun Australia yang berembus menuju wilayah perairan Indonesia melalui Samudra India memiliki suhu permukaan laut yang relatif lebih dingin.",
+            "Nama Gending dipercaya menjadi nama sebuah wilayah di Probolinggo yang menjadi asal mula angin tersebut."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Paragraf yang baik harus memiliki kepaduan. Adapun kalimat rumpang pada kalimat (10) dapat dilengkapi dengan kalimat yang sesuai dengan kalimat sebelum dan sesudahnya. Dengan demikian, kalimat rumpang yang tepat untuk melengkapi kalimat (10) adalah Fenomena serupa juga ditemukan di wilayah lain di Indonesia, tetapi angin gending memiliki kekhasan lokal yang menjadi bagian penting dari cuaca dan kehidupan masyarakat Probolinggo . Jalur Cara Gemilang: Rumpang bernomor = lihat kalimat sebelum & sesudah; opsi benar memakai rujukan/conjunction yang merujuk keduanya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Angin gending merupakan fenomena angin lokal khas yang terjadi di wilayah Probolinggo, Jawa Timur. (2) Artinya, angin ini berembus dengan kecepatan 20—30 knot (17—31 km/jam) dan terjadi pada musim kemarau. (3) Nama gending diambil dari nama sebuah kecamatan di Kabupaten Probolinggo yang berada di perbatasan dataran tinggi dan dataran rendah, tempat fenomena ini sering terjadi.\n\n(4) Angin gending dipicu oleh perbedaan suhu antara dataran tinggi dan dataran rendah. (5) Udara panas dan kering dari dataran tinggi bergerak turun ke dataran rendah, menghasilkan angin yang terasa menyengat. (6) Meskipun terasa panas, angin ini sebenarnya memiliki dampak negatif yang cukup serius. (7) Pada sektor pertanian, angin gending merusak tanaman, menyebabkan pohon tumbang, serta memperburuk kondisi kesehatan masyarakat dengan meningkatkan risiko penyakit pencernaan. (8) Oleh karena itu, para nelayan pun harus waspada karena angin ini dapat membuat kondisi laut menjadi berbahaya.\n\n(9) Secara geografis, angin gending termasuk dalam jenis angin foehn atau geurutee, yaitu angin panas dan kering yang terbentuk akibat pergerakan udara yang terhalang oleh pegunungan. (10) …. (11) Keberadaan angin gending tidak hanya membentuk karakter alam Probolinggo, tetapi juga mencerminkan keunikan geografis Indonesia. (12) Meskipun menimbulkan tantangan dalam aktivitas ekonomi dan kehidupan sehari-hari, fenomena ini menjadi bagian dari identitas alam dan budaya lokal. (13) Oleh karena itu, penting bagi masyarakat untuk memahami, mengantisipasi, dan melestarikan pengetahuan tentang angin gending sebagai bagian dari kearifan lokal yang bernilai.\n\n(diadaptasi dari www.bolinggo.co)\n\nBerdasarkan teks tersebut, hubungan antarparagraf (2) dan (3) adalah",
+          "tipe": "pg",
+          "opsi": [
+            "menjelaskan asal-usul nama gending (paragraf 2), sementara paragraf ketiga menggambarkan teknik tradisional masyarakat dalam memprediksi kedatangan angin gending berdasarkan tanda-tanda alam sekitar (paragraf 3).",
+            "menyajikan data statistik kecepatan angin gending per bulan (paragraf 2), sementara paragraf ketiga membandingkan fenomena ini dengan angin serupa di provinsi Nusa Tenggara Timur lainnya untuk kepentingan penelitian (paragraf 3).",
+            "membahas dampak positif angin gending terhadap hasil pertanian dan kesehatan masyarakat (paragraf 2), sementara paragraf ketiga menyatakan bahwa fenomena ini akan semakin ekstrem akibat perubahan iklim global yang semakin parah (paragraf 3).",
+            "menggambarkan manfaat positif angin gending bagi sektor pariwisata yang dijelaskan pada (paragraf 2), sementara paragraf menjelaskan upaya pemerintah daerah menghilangkan fenomena ini demi kenyamanan aktivitas ekonomi masyarakat pesisir (paragraf 3).",
+            "menyajikan mekanisme pembentukan dan dampak negatif angin gending (paragraf 2), sementara paragraf ketiga menempatkan fenomena ini dalam klasifikasi geografis yang lebih luas serta menekankan nilainya sebagai identitas alam dan kearifan lokal masyarakat Probolinggo (paragraf 3)."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Berdasarkan isi teks tersebut, hubungan antara paragraf 3 dan 4 adalah memaparkan mekanisme pembentukan dan dampak negatif angin gending (paragraf 2), sedangkan menempatkan fenomena tersebut dalam klasifikasi geografis yang lebih luas serta menegaskan nilainya sebagai identitas alam dan kearifan lokal masyarakat Probolinggo (paragraf 3) . Jalur Cara Gemilang: Hubungan antarparagraf = petakan isi tiap paragraf dulu (mekanisme vs dampak vs manfaat), baru cocokkan dengan opsi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nBanyak pandangan beredar di masyarakat bahwa penderita asam urat harus menghindari semua jenis sayuran hijau, termasuk sawi, karena dianggap memicu atau memperparah kondisi tersebut. Namun, anggapan ini perlu dikaji ulang dari sisi ilmiah. Berdasarkan berbagai penelitian dan data, sawi termasuk jenis sayuran yang aman dikonsumsi oleh penderita asam urat, bahkan memberikan manfaat tambahan bagi kesehatan. Mitos bahwa semua sayuran hijau tinggi purin sering kali tidak didasarkan pada bukti ilmiah. Oleh karena itu, penting bagi masyarakat untuk mendapatkan informasi yang akurat agar tidak salah dalam mengatur pola makan.\n\nSawi termasuk dalam kelompok sayuran rendah purin, dengan kadar purin kurang dari 25 mg per 100 gram. Sawi atau Brassica juncea merupakan sayuran hijau yang sering digunakan dalam berbagai masakan Asia. Jumlah ini jauh lebih kecil dibandingkan makanan tinggi purin seperti jeroan dan seafood. Selain itu, sawi mengandung vitamin C, serat, antioksidan, serta zat basa yang cukup untuk membantu tubuh menetralkan kelebihan asam urat dan mempercepat pembuangannya melalui urine. Sayuran ini juga memiliki sifat antiinflamasi yang berguna untuk meredakan nyeri sendi yang sering dialami penderita asam urat. Di Indonesia, istilah sawi biasanya merujuk pada sawi hijau (Brassica rapa), yaitu kelompok parachinensis yang juga disebut boksoy atau kaisin. Dengan kandungan gizinya, sawi mendukung pengelolaan kadar asam urat secara alami dan aman.\n\nMelihat fakta tersebut, dapat disimpulkan bahwa pandangan sawi memicu asam urat merupakan mitos. …. Edukasi yang tepat tentang asam urat sangat diperlukan agar tidak terjadi kesalahan dalam memilih makanan yang sebenarnya bermanfaat. Demikian pula, masyarakat sebaiknya tidak mudah percaya pada informasi yang beredar tanpa dasar ilmiah. ….\n\n(diadaptasi dari www.merdeka.com)\n\nBerdasarkan teks tersebut, kalimat yang bukan opini adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Banyak pandangan beredar di masyarakat bahwa penderita asam urat harus menghindari semua jenis sayuran hijau, termasuk sawi, karena dianggap memicu atau memperparah kondisi tersebut.",
+            "Selain itu, sawi mengandung vitamin C, serat, antioksidan, serta zat basa yang cukup untuk membantu tubuh menetralkan kelebihan asam urat dan mempercepat pembuangannya melalui urine.",
+            "Dengan mengutamakan pendekatan berbasis bukti, kita dapat membangun pola makan yang sehat dan tepat.",
+            "Sawi termasuk dalam kelompok sayuran rendah purin, dengan kadar purin kurang dari 25 mg per 100 gram.",
+            "Demikian pula, masyarakat sebaiknya tidak mudah percaya pada informasi yang beredar tanpa dasar ilmiah."
+          ],
+          "jawaban": [
+            1,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Fakta adalah hal-hal yang merupakan kenyataan, sesuatu yang benar-benar ada, benar-benar terjadi, dan ada buktinya. Sebaliknya, opini adalah pendapat, pikiran, atau pendirian seseorang atau sekelompok orang tentang sesuatu. Berdasarkan teks tersebut, kalimat yang menyatakan fakta adalah Pernyataan (1) salah Anggapan adalah sesuatu yang diyakini orang tetapi belum tentu benar secara medis. Ini menceritakan fenomena persepsi masyarakat, bukan data ilmiah tentang sawi itu sendiri. Pernyataan (2) benar Sifat basa dan kandungan vitamin C dalam tanaman adalah hasil dari pengujian laboratorium yang bisa dibuktikan kebenarannya oleh siapa pun (universal). Pernyataan (3) salah Penggunaan kata \"kita bisa\" menunjukkan penilaian subjektif penulis tentang hal yang mungkin terjadi jika mengikuti saran tersebut. Ini bukan data, melainkan cara pandang. Pernyataan (4) benar Angka \"25 mg per 100 gram\" adalah standar pengukuran yang pasti. Jika diukur ulang secara ilmiah, hasilnya akan sama, sehingga ini adalah fakta mutlak. Pernyataan (5) salah Kata \"sebaiknya\" merupakan ciri khas kalimat saran atau nasihat. Karena saran bersifat subjektif (bergantung pada siapa yang memberi nasihat), maka kalimat ini termasuk opini. Jalur Cara Gemilang: \"Bukan opini\" = cari kalimat berdata kandungan/klasifikasi (angka, kelompok sayuran); pandangan masyarakat = opini.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nBanyak pandangan beredar di masyarakat bahwa penderita asam urat harus menghindari semua jenis sayuran hijau, termasuk sawi, karena dianggap memicu atau memperparah kondisi tersebut. Namun, anggapan ini perlu dikaji ulang dari sisi ilmiah. Berdasarkan berbagai penelitian dan data, sawi termasuk jenis sayuran yang aman dikonsumsi oleh penderita asam urat, bahkan memberikan manfaat tambahan bagi kesehatan. Mitos bahwa semua sayuran hijau tinggi purin sering kali tidak didasarkan pada bukti ilmiah. Oleh karena itu, penting bagi masyarakat untuk mendapatkan informasi yang akurat agar tidak salah dalam mengatur pola makan.\n\nSawi termasuk dalam kelompok sayuran rendah purin, dengan kadar purin kurang dari 25 mg per 100 gram. Sawi atau Brassica juncea merupakan sayuran hijau yang sering digunakan dalam berbagai masakan Asia. Jumlah ini jauh lebih kecil dibandingkan makanan tinggi purin seperti jeroan dan seafood. Selain itu, sawi mengandung vitamin C, serat, antioksidan, serta zat basa yang cukup untuk membantu tubuh menetralkan kelebihan asam urat dan mempercepat pembuangannya melalui urine. Sayuran ini juga memiliki sifat antiinflamasi yang berguna untuk meredakan nyeri sendi yang sering dialami penderita asam urat. Di Indonesia, istilah sawi biasanya merujuk pada sawi hijau (Brassica rapa), yaitu kelompok parachinensis yang juga disebut boksoy atau kaisin. Dengan kandungan gizinya, sawi mendukung pengelolaan kadar asam urat secara alami dan aman.\n\nMelihat fakta tersebut, dapat disimpulkan bahwa pandangan sawi memicu asam urat merupakan mitos. …. Edukasi yang tepat tentang asam urat sangat diperlukan agar tidak terjadi kesalahan dalam memilih makanan yang sebenarnya bermanfaat. Demikian pula, masyarakat sebaiknya tidak mudah percaya pada informasi yang beredar tanpa dasar ilmiah. ….\n\n(diadaptasi dari www.merdeka.com)\n\nSimpulan yang tepat untuk teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Pandangan bahwa sawi memicu asam urat tidak selektif sehingga harus selektif dalam memilih sayuran untuk konsumsi sehari-hari.",
+            "Asam urat tidak hanya disebabkan oleh gaya hidup dan pola makan yang tidak sehat, tetapi juga karena konsumsi sawi yang terlalu sering.",
+            "Penelitian berkala terhadap pernyataan sawi memicu asam urat menunjukkan bahwa sayuran ini mengandung banyak nutrisi bermanfaat bagi tubuh.",
+            "Sawi hijau merupakan sayuran rendah purin dan mengandung nutrisi yang membantu menetralkan serta mempercepat pembuangan asam urat.",
+            "Fakta dan mitos mengenai dampak konsumsi sawi yang beredar di masyarakat membuat masyarakat ragu untuk mengonsumsi sawi."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Simpulan adalah hasil dari kegiatan menyimpulkan. Simpulan yang tepat untuk teks tersebut adalah Sawi hijau merupakan sayuran rendah purin dan justru mengandung nutrisi yang membantu menetralkan dan mempercepat pembuangan asam urat . Jalur Cara Gemilang: Simpulan teks mitos-fakta = tegaskan hasil verifikasi: mitos gugur, fakta nutrisi berdiri.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nBanyak pandangan beredar di masyarakat bahwa penderita asam urat harus menghindari semua jenis sayuran hijau, termasuk sawi, karena dianggap memicu atau memperparah kondisi tersebut. Namun, anggapan ini perlu dikaji ulang dari sisi ilmiah. Berdasarkan berbagai penelitian dan data, sawi termasuk jenis sayuran yang aman dikonsumsi oleh penderita asam urat, bahkan memberikan manfaat tambahan bagi kesehatan. Mitos bahwa semua sayuran hijau tinggi purin sering kali tidak didasarkan pada bukti ilmiah. Oleh karena itu, penting bagi masyarakat untuk mendapatkan informasi yang akurat agar tidak salah dalam mengatur pola makan.\n\nSawi termasuk dalam kelompok sayuran rendah purin, dengan kadar purin kurang dari 25 mg per 100 gram. Sawi atau Brassica juncea merupakan sayuran hijau yang sering digunakan dalam berbagai masakan Asia. Jumlah ini jauh lebih kecil dibandingkan makanan tinggi purin seperti jeroan dan seafood. Selain itu, sawi mengandung vitamin C, serat, antioksidan, serta zat basa yang cukup untuk membantu tubuh menetralkan kelebihan asam urat dan mempercepat pembuangannya melalui urine. Sayuran ini juga memiliki sifat antiinflamasi yang berguna untuk meredakan nyeri sendi yang sering dialami penderita asam urat. Di Indonesia, istilah sawi biasanya merujuk pada sawi hijau (Brassica rapa), yaitu kelompok parachinensis yang juga disebut boksoy atau kaisin. Dengan kandungan gizinya, sawi mendukung pengelolaan kadar asam urat secara alami dan aman.\n\nMelihat fakta tersebut, dapat disimpulkan bahwa pandangan sawi memicu asam urat merupakan mitos. …. Edukasi yang tepat tentang asam urat sangat diperlukan agar tidak terjadi kesalahan dalam memilih makanan yang sebenarnya bermanfaat. Demikian pula, masyarakat sebaiknya tidak mudah percaya pada informasi yang beredar tanpa dasar ilmiah. ….\n\n(diadaptasi dari www.merdeka.com)\n\nKalimat tidak padu yang terdapat dalam paragraf kedua adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Sawi atau Brassica juncea merupakan sayuran hijau yang sering digunakan dalam berbagai masakan Asia.",
+            "Dengan kandungan gizinya, sawi mendukung pengelolaan kadar asam urat secara alami dan aman.",
+            "Jumlah ini jauh lebih kecil dibandingkan makanan tinggi purin seperti jeroan dan seafood.",
+            "Di Indonesia, istilah sawi biasanya merujuk pada sawi hijau (Brassica rapa), yaitu kelompok parachinensis yang juga disebut boksoy atau kaisin.",
+            "Selain itu, sawi mengandung vitamin C, serat, antioksidan, serta zat basa yang cukup untuk membantu tubuh menetralkan kelebihan asam urat dan mempercepat pembuangannya melalui urine."
+          ],
+          "jawaban": [
+            0,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Kalimat tidak padu merupakan kalimat penjelas yang berbeda topik dengan kalimat utama. Berdasarkan isi paragraf kedua, kalimat tidak padu yang terdapat pada paragraf kedua adalah Pernyataan (1) benar Kalimat ini membahas definisi umum sawi secara botanis. Ini lebih cocok diletakkan di paragraf pembuka (pengenalan), bukan di tengah pembahasan medis (pengenalan). Pernyataan (2) salah Kalimat ini padu karena membahas solusi untuk penderita asam urat Pernyataan (3) salah Kalimat ini padu karena membandingkan kadar purin sawi dengan pemicu asam urat lainnya Pernyataan (4) benar Kalimat ini membahas istilah lokal/nama daerah. Sama seperti poin pertama, informasi ini tidak relevan dengan topik \"kandungan zat untuk menetralikan asam urat\". Pernyataan (5) salah Kalimat ini sangat padu karena menjelaskan alasan mengapa sawi baik untuk asam urat. Jalur Cara Gemilang: Kalimat tidak padu = topik menyimpang dari kalimat utama paragraf; tandai subjek tiap kalimat (sawi vs istilah vs vitamin).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nBanyak pandangan beredar di masyarakat bahwa penderita asam urat harus menghindari semua jenis sayuran hijau, termasuk sawi, karena dianggap memicu atau memperparah kondisi tersebut. Namun, anggapan ini perlu dikaji ulang dari sisi ilmiah. Berdasarkan berbagai penelitian dan data, sawi termasuk jenis sayuran yang aman dikonsumsi oleh penderita asam urat, bahkan memberikan manfaat tambahan bagi kesehatan. Mitos bahwa semua sayuran hijau tinggi purin sering kali tidak didasarkan pada bukti ilmiah. Oleh karena itu, penting bagi masyarakat untuk mendapatkan informasi yang akurat agar tidak salah dalam mengatur pola makan.\n\nSawi termasuk dalam kelompok sayuran rendah purin, dengan kadar purin kurang dari 25 mg per 100 gram. Sawi atau Brassica juncea merupakan sayuran hijau yang sering digunakan dalam berbagai masakan Asia. Jumlah ini jauh lebih kecil dibandingkan makanan tinggi purin seperti jeroan dan seafood. Selain itu, sawi mengandung vitamin C, serat, antioksidan, serta zat basa yang cukup untuk membantu tubuh menetralkan kelebihan asam urat dan mempercepat pembuangannya melalui urine. Sayuran ini juga memiliki sifat antiinflamasi yang berguna untuk meredakan nyeri sendi yang sering dialami penderita asam urat. Di Indonesia, istilah sawi biasanya merujuk pada sawi hijau (Brassica rapa), yaitu kelompok parachinensis yang juga disebut boksoy atau kaisin. Dengan kandungan gizinya, sawi mendukung pengelolaan kadar asam urat secara alami dan aman.\n\nMelihat fakta tersebut, dapat disimpulkan bahwa pandangan sawi memicu asam urat merupakan mitos. …. Edukasi yang tepat tentang asam urat sangat diperlukan agar tidak terjadi kesalahan dalam memilih makanan yang sebenarnya bermanfaat. Demikian pula, masyarakat sebaiknya tidak mudah percaya pada informasi yang beredar tanpa dasar ilmiah. ….\n\n(diadaptasi dari www.merdeka.com)\n\nKalimat yang tepat untuk melengkapi bagian rumpang paragraf ketiga adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Kandungan vitamin C dan zat basa justru menghambat kerja ginjal dalam membuang asam urat dari tubuh.",
+            "Sebaliknya, sawi merupakan pilihan sayuran bergizi dan bermanfaat yang dapat mendukung pengelolaan kadar asam urat dalam tubuh.",
+            "Oleh karena itu, penderita asam urat sebaiknya menghindari semua sayuran hijau agar kadar asam urat tidak meningkat drastis.",
+            "Faktanya, kadar purin dalam sawi sangat rendah dan tidak memicu pembentukan kristal asam urat pada sendi secara langsung.",
+            "Dengan mengutamakan pendekatan berbasis bukti, kita dapat membangun pola makan yang sehat dan tepat sasaran."
+          ],
+          "jawaban": [
+            1,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Satu di antara syarat paragraf yang baik adalah memiliki kepaduan. Oleh sebab itu, untuk melengkapi paragraf rumpang, kalimat tersebut harus disesuaikan dengan kalimat sebelum dan sesudahnya. Berdasarkan isi teks, kalimat yang tepat untuk melengkapi paragraf rumpang pada paragraf ketiga adalah Pernyataan (1) salah Pernyataan ini salah secara medis dan bertentangan dengan isi paragraf kedua yang menyatakan vitamin C dan sifat basa justru membantu membuang asam urat. Pernyataan (2) benar Kalimat ini berfungsi sebagai penegas setelah kalimat sebelumnya menyebutkan bahwa anggapan negatif masyarakat hanyalah mitos. Ini memberikan solusi positif bagi pembaca. Pernyataan (3) salah Kalimat ini bersifat kontradiktif. Seluruh isi teks justru berusaha meyakinkan pembaca bahwa tidak semua sayuran hijau harus dihindari. Pernyataan (4) salah Pernyataan ini adalah tidak sesuai dengan data dalam konteks teks tersebut. Paragraf kedua dengan jelas menyatakan sawi hijau memiliki kadar purin rendah (kurang dari 25 mg). Pernyataan (5) benar Kalimat ini sangat cocok sebagai kalimat penutup paragraf, al. merangkum pesan utama teks, yaitu pentingnya menggunakan data ilmiah (bukti) dalam menentukan pola makan, bukan sekadar mengikuti mitos. Jalur Cara Gemilang: Pengisi rumpang ganda: satu menutup gagasan sebelumnya (fakta kadar), satu membuka gagasan pendekatan berbasis bukti.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah meningkatnya kesadaran akan pentingnya keberlanjutan dalam industri tekstil, kenaf hadir sebagai solusi yang menjanjikan. Kenaf merupakan serat alam yang berasal dari tanaman Hibiscus cannabinus, dikenal karena kekuatannya dan manfaat ekologisnya. Dikenal sejak zaman firaun, serat ini awalnya digunakan sebagai bahan penguat dalam komposisi matriks polimer dan dianggap sebagai salah satu serat tekstil yang paling ramah lingkungan di dunia.\n\nKenaf memiliki banyak keunggulan yang membuatnya istimewa. Serat yang dihasilkan dari kulit batang dan inti tanaman kenaf memiliki tekstur yang panjang, berkilau, dan lebih kuat dibandingkan goni. Catatan sejarah menunjukkan bahwa tanaman ini berasal dari kawasan Gurun Sahara di Afrika dan digunakan oleh bangsa Mesir Kuno ribuan tahun lalu untuk membuat layar kapal, tali, benang, hingga pakaian. Meskipun sempat dianggap sebagai gulma, kenaf kini telah dibudidayakan secara luas di berbagai negara seperti Thailand, India, dan Tiongkok untuk memenuhi permintaan serat alami yang berkelanjutan.\n\nSecara agronomis, tanaman kenaf tumbuh cepat dan efisien. Dalam waktu hanya enam hingga delapan bulan, kenaf dapat tumbuh setinggi 8—14 kaki dan menghasilkan 6—10 ton bahan kering per hektare. Budi dayanya tidak memerlukan banyak air, pupuk, atau pestisida sehingga ramah lingkungan. Selain itu, proses pengolahan kenaf cenderung menggunakan sedikit bahan kimia, terutama jika menggunakan metode water retting (perendaman air) yang menghasilkan serat lebih cerah dan lembut.\n\nPemanfaatan kenaf sangat luas dan tidak terbatas pada industri tekstil. Dalam dunia tekstil, kenaf dicampur dengan kapas untuk membuat kain yang tebal, ringan, tahan lama, dan ramah lingkungan. Dalam industri pulp dan kertas, kenaf digunakan sebagai bahan baku kertas berkualitas tinggi karena proses produksinya lebih hemat air dan bahan kimianya lebih ramah lingkungan dibandingkan kayu. Selanjutnya, serat kenaf juga dimanfaatkan dalam industri konstruksi sebagai campuran panel dinding, isolasi termal, dan bahan bangunan. Tidak hanya itu, kenaf juga berpotensi sebagai sumber bioenergi dalam bentuk biomassa olahan menjadi pelet atau briket sebagai bahan bakar alternatif. Sisa hasil budidaya kenaf, seperti daun dan batang potong, dapat digunakan sebagai pupuk organik kaya nutrisi yang mendukung pertanian berkelanjutan.\n\n(diadaptasi dari www.bahankain.com)\n\nBerdasarkan teks tersebut, hubungan antara paragraf pertama dan kedua adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Keunggulan dan sejarah kenaf yang dijelaskan pada paragraf kedua mendukung pernyataan umum pada paragraf pertama bahwa kenaf adalah solusi berkelanjutan.",
+            "Isi paragraf kedua membantah klaim paragraf pertama dengan menyatakan bahwa kenaf justru berbahaya dan tidak ramah lingkungan bagi industri tekstil modern.",
+            "Fokus paragraf kedua adalah perbandingan kenaf dengan serat sintetis tanpa mengaitkannya dengan aspek keberlanjutan yang menjadi inti paragraf pertama.",
+            "Paragraf pertama menyimpulkan bahwa kenaf tidak berkelanjutan karena dianggap sebagai gulma yang merugikan petani di berbagai daerah.",
+            "Topik paragraf kedua adalah pembahasan baru yang tidak berhubungan dengan serat kenaf yang dibahas pada paragraf pertama."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Berdasarkan teks tersebut hubungan antarparagraf pertama dan kedua adalah Keunggulan dan sejarah kenaf dijelaskan pada paragraf kedua yang mendukung pernyataan umum pada paragraf pertama mengenai kenaf sebagai solusi berkelanjutan . Jalur Cara Gemilang: Hubungan paragraf 1-2 = pernyataan umum -> penjelasan pendukung; coret opsi \"membantah\" bila nada paragraf sejalan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah meningkatnya kesadaran akan pentingnya keberlanjutan dalam industri tekstil, kenaf hadir sebagai solusi yang menjanjikan. Kenaf merupakan serat alam yang berasal dari tanaman Hibiscus cannabinus, dikenal karena kekuatannya dan manfaat ekologisnya. Dikenal sejak zaman firaun, serat ini awalnya digunakan sebagai bahan penguat dalam komposisi matriks polimer dan dianggap sebagai salah satu serat tekstil yang paling ramah lingkungan di dunia.\n\nKenaf memiliki banyak keunggulan yang membuatnya istimewa. Serat yang dihasilkan dari kulit batang dan inti tanaman kenaf memiliki tekstur yang panjang, berkilau, dan lebih kuat dibandingkan goni. Catatan sejarah menunjukkan bahwa tanaman ini berasal dari kawasan Gurun Sahara di Afrika dan digunakan oleh bangsa Mesir Kuno ribuan tahun lalu untuk membuat layar kapal, tali, benang, hingga pakaian. Meskipun sempat dianggap sebagai gulma, kenaf kini telah dibudidayakan secara luas di berbagai negara seperti Thailand, India, dan Tiongkok untuk memenuhi permintaan serat alami yang berkelanjutan.\n\nSecara agronomis, tanaman kenaf tumbuh cepat dan efisien. Dalam waktu hanya enam hingga delapan bulan, kenaf dapat tumbuh setinggi 8—14 kaki dan menghasilkan 6—10 ton bahan kering per hektare. Budi dayanya tidak memerlukan banyak air, pupuk, atau pestisida sehingga ramah lingkungan. Selain itu, proses pengolahan kenaf cenderung menggunakan sedikit bahan kimia, terutama jika menggunakan metode water retting (perendaman air) yang menghasilkan serat lebih cerah dan lembut.\n\nPemanfaatan kenaf sangat luas dan tidak terbatas pada industri tekstil. Dalam dunia tekstil, kenaf dicampur dengan kapas untuk membuat kain yang tebal, ringan, tahan lama, dan ramah lingkungan. Dalam industri pulp dan kertas, kenaf digunakan sebagai bahan baku kertas berkualitas tinggi karena proses produksinya lebih hemat air dan bahan kimianya lebih ramah lingkungan dibandingkan kayu. Selanjutnya, serat kenaf juga dimanfaatkan dalam industri konstruksi sebagai campuran panel dinding, isolasi termal, dan bahan bangunan. Tidak hanya itu, kenaf juga berpotensi sebagai sumber bioenergi dalam bentuk biomassa olahan menjadi pelet atau briket sebagai bahan bakar alternatif. Sisa hasil budidaya kenaf, seperti daun dan batang potong, dapat digunakan sebagai pupuk organik kaya nutrisi yang mendukung pertanian berkelanjutan.\n\n(diadaptasi dari www.bahankain.com)\n\nKalimat fakta yang sesuai dengan isi teks adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Pemanfaatan kenaf sangat luas dan tidak terbatas pada industri tekstil.",
+            "Di tengah meningkatnya kesadaran akan pentingnya keberlanjutan dalam industri tekstil, kenaf hadir sebagai solusi yang menjanjikan.",
+            "Dalam waktu enam hingga delapan bulan, kenaf dapat tumbuh setinggi 8—14 kaki dan menghasilkan 6—10 ton bahan kering per hektare.",
+            "Selain itu, proses pengolahan kenaf cenderung menggunakan sedikit bahan kimia, terutama jika menggunakan metode water retting yang menghasilkan serat lebih cerah dan lembut.",
+            "Dikenal sejak zaman prasejarah, serat ini awalnya digunakan sebagai bahan penguat dalam komposisi matriks polimer dan dianggap sebagai salah satu serat tekstil yang paling ramah lingkungan di dunia."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Fakta adalah hal-hal yang merupakan kenyataan, sesuatu yang benar-benar ada, benar-benar terjadi, dan ada buktinya. Sebaliknya, opini adalah pendapat, pikiran, atau pendirian seseorang atau sekelompok orang tentang sesuatu. Berdasarkan teks tersebut, kalimat yang menyatakan fakta adalah Dalam waktu hanya lima hingga delapan bulan, kenaf dapat tumbuh setinggi 8—14 kaki dan menghasilkan 6—10 ton bahan kering per hektare . Jalur Cara Gemilang: Fakta = terukur & berwaktu (\"enam hingga delapan bulan\"); opsi bernada promosi = opini.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\nDi tengah meningkatnya kesadaran akan pentingnya keberlanjutan dalam industri tekstil, kenaf hadir sebagai solusi yang menjanjikan. Kenaf merupakan serat alam yang berasal dari tanaman Hibiscus cannabinus, dikenal karena kekuatannya dan manfaat ekologisnya. Dikenal sejak zaman firaun, serat ini awalnya digunakan sebagai bahan penguat dalam komposisi matriks polimer dan dianggap sebagai salah satu serat tekstil yang paling ramah lingkungan di dunia.\n\nKenaf memiliki banyak keunggulan yang membuatnya istimewa. Serat yang dihasilkan dari kulit batang dan inti tanaman kenaf memiliki tekstur yang panjang, berkilau, dan lebih kuat dibandingkan goni. Catatan sejarah menunjukkan bahwa tanaman ini berasal dari kawasan Gurun Sahara di Afrika dan digunakan oleh bangsa Mesir Kuno ribuan tahun lalu untuk membuat layar kapal, tali, benang, hingga pakaian. Meskipun sempat dianggap sebagai gulma, kenaf kini telah dibudidayakan secara luas di berbagai negara seperti Thailand, India, dan Tiongkok untuk memenuhi permintaan serat alami yang berkelanjutan.\n\nSecara agronomis, tanaman kenaf tumbuh cepat dan efisien. Dalam waktu hanya enam hingga delapan bulan, kenaf dapat tumbuh setinggi 8—14 kaki dan menghasilkan 6—10 ton bahan kering per hektare. Budi dayanya tidak memerlukan banyak air, pupuk, atau pestisida sehingga ramah lingkungan. Selain itu, proses pengolahan kenaf cenderung menggunakan sedikit bahan kimia, terutama jika menggunakan metode water retting (perendaman air) yang menghasilkan serat lebih cerah dan lembut.\n\nPemanfaatan kenaf sangat luas dan tidak terbatas pada industri tekstil. Dalam dunia tekstil, kenaf dicampur dengan kapas untuk membuat kain yang tebal, ringan, tahan lama, dan ramah lingkungan. Dalam industri pulp dan kertas, kenaf digunakan sebagai bahan baku kertas berkualitas tinggi karena proses produksinya lebih hemat air dan bahan kimianya lebih ramah lingkungan dibandingkan kayu. Selanjutnya, serat kenaf juga dimanfaatkan dalam industri konstruksi sebagai campuran panel dinding, isolasi termal, dan bahan bangunan. Tidak hanya itu, kenaf juga berpotensi sebagai sumber bioenergi dalam bentuk biomassa olahan menjadi pelet atau briket sebagai bahan bakar alternatif. Sisa hasil budidaya kenaf, seperti daun dan batang potong, dapat digunakan sebagai pupuk organik kaya nutrisi yang mendukung pertanian berkelanjutan.\n\n(diadaptasi dari www.bahankain.com)\n\nSimpulan yang tepat untuk teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Kenaf hanya dapat digunakan dalam industri tekstil, tetapi memiliki banyak manfaat aplikasi lain baik dalam bidang tekstil maupun bahan konstruksi.",
+            "Kenaf merupakan serat sintetis yang memerlukan banyak pestisida dan air sehingga tidak cocok untuk industri tekstil modern yang berkelanjutan.",
+            "Kenaf telah menjadi tanaman invasif yang dapat merusak ekosistem lokal sehingga penggunaannya harus segera dibatasi demi keberlanjutan lingkungan global.",
+            "Tanaman kenaf membutuhkan waktu puluhan tahun untuk tumbuh optimal sehingga tidak dapat dibudidayakan secara efisien di negara berkembang.",
+            "Kenaf merupakan serat alam berkelanjutan yang memiliki keunggulan agronomis, ramah lingkungan, serta beragam aplikasi industri yang mendukung pembangunan berkelanjutan."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Simpulan adalah hasil dari kegiatan menyimpulkan. Simpulan yang tepat untuk teks tersebut adalah Kenaf merupakan serat alami berkelanjutan yang memiliki keunggulan agronomis, ramah lingkungan, serta beragam aplikasi industri yang mendukung pembangunan berkelanjutan . Jalur Cara Gemilang: Simpulan = inti seluruh paragraf: kenaf = serat alam berkelanjutan multi-manfaat; coret opsi ekstrem (invasif, sintetis).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Paragraf II h.50-51; kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
