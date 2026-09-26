@@ -158,6 +158,7 @@ import BelajarDaftarIsi from './pages/student/belajar/BelajarDaftarIsi';
 import BelajarReader from './pages/student/belajar/BelajarReader';
 // FASE 3: panggung presentasi guru (sinkron proyektor-siswa)
 import DaftarPresentasi from './pages/teacher/presentasi/DaftarPresentasi';
+import ReviewSesi from './pages/teacher/presentasi/ReviewSesi';
 import PanggungPresentasi from './pages/teacher/presentasi/PanggungPresentasi';
 // FASE 4: manajer materi v2 (admin)
 import ManageMateriV2 from './pages/admin/materi/ManageMateriV2';
@@ -606,6 +607,12 @@ function App() {
         <Route
           path="/guru/belajar/:materiId/:babId"
           element={<GuruPage><BelajarReader audience="teacher" /></GuruPage>}
+        />
+        {/* Turn 94: review sesi & leaderboard — nilai sesi ujian bisa
+            dibuka kembali kapan pun (aktif maupun selesai). */}
+        <Route
+          path="/guru/review-sesi/:sesiId"
+          element={<GuruPage><ReviewSesi /></GuruPage>}
         />
         {/* FASE 4.1: guru upload PPT versinya sendiri per bab */}
         <Route

@@ -146,6 +146,10 @@ export default function DaftarPresentasi() {
                   <button type="button" style={S.tabAktif} onClick={() => bukaRekap(s2.id)}>
                     {rekap[s2.id] ? 'Tutup nilai' : 'Lihat nilai'}
                   </button>
+                  <button type="button" style={S.tab}
+                    onClick={() => navigate(`/guru/review-sesi/${s2.id}`)}>
+                    🎯 Review & Leaderboard
+                  </button>
                 </div>
                 {s2.catatan ? <div style={{ fontSize: 12, color: T.teks, marginTop: 6 }}>{s2.catatan}</div> : null}
                 {s2.mode === 'ujian' && s2.durasiMenit ? (
