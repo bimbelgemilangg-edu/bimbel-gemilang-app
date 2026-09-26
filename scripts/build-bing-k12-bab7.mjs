@@ -207,11 +207,7 @@ const sections = [
 // Turn 90 (koreksi owner): opsi bagan soal 4, 16, 18 pada cetakan/HTML
 // asli berupa GAMBAR SVG — diekstrak ke public/bagan/ lewat
 // scripts/ekstrak-bagan-svg.mjs; teks opsi menjadi keterangan kecil.
-const OPSI_GAMBAR = {
-  4: ['a', 'b', 'c', 'd', 'e'].map((h) => `/bagan/bab1-s4-${h}.svg`),
-  16: ['a', 'b', 'c', 'd', 'e'].map((h) => `/bagan/bab1-s16-${h}.svg`),
-  18: ['a', 'b', 'c', 'd', 'e'].map((h) => `/bagan/bab1-s18-${h}.svg`),
-};
+const OPSI_GAMBAR = {}; // turn 99: warisan bagan bindo dibuang (bocor lintas mapel)
 const SUMBER = 'Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #{no})';
 const GAMBAR_GRUP = {"0":"/gambar-bing/infographic-g1.jpg","1":"/gambar-bing/infographic-g2.jpg","3":"/gambar-bing/infographic-g4.jpg"};
 const OV = {"8":{"jaw":[0,0,1,1,1]}};

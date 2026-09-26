@@ -343,13 +343,6 @@
             "The base and station connection",
             "The dust cabin in the Omni station"
           ],
-          "opsiGambar": [
-            "/bagan/bab1-s4-a.svg",
-            "/bagan/bab1-s4-b.svg",
-            "/bagan/bab1-s4-c.svg",
-            "/bagan/bab1-s4-d.svg",
-            "/bagan/bab1-s4-e.svg"
-          ],
           "jawaban": 3,
           "pembahasan": "Jalur konsep: Jika robot tidak dapat mengisi daya, pengguna harus terlebih dahulu memeriksa apakah base dan station sudah terpasang dengan benar karena bagian ini berkaitan langsung dengan proses pengisian daya. Jalur Cara Gemilang: Troubleshooting = ikuti urutan pemeriksaan manual: cek dudukan/charging dock lebih dulu.",
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Procedure Text h.88+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #4)"
@@ -538,13 +531,6 @@
             "Encourage interfacing and learning with digital financial tools",
             "Creating an open dialogue about financial decisions"
           ],
-          "opsiGambar": [
-            "/bagan/bab1-s16-a.svg",
-            "/bagan/bab1-s16-b.svg",
-            "/bagan/bab1-s16-c.svg",
-            "/bagan/bab1-s16-d.svg",
-            "/bagan/bab1-s16-e.svg"
-          ],
           "jawaban": [
             1,
             3
@@ -575,13 +561,6 @@
             "Ensure the code matches the one displayed on the screen",
             "Set up Voice Match to recognize their voice when requested",
             "Install a third-party launcher and make it the default app via Settings"
-          ],
-          "opsiGambar": [
-            "/bagan/bab1-s18-a.svg",
-            "/bagan/bab1-s18-b.svg",
-            "/bagan/bab1-s18-c.svg",
-            "/bagan/bab1-s18-d.svg",
-            "/bagan/bab1-s18-e.svg"
           ],
           "jawaban": 1,
           "pembahasan": "Jalur konsep: Setelah membuka aplikasi Google Home, pengguna harus mengetuk opsi \"Set up one device\" untuk memulai proses pengaturan perangkat. Informasi ini didukung oleh langkah ke-2, \" Open the Google Home app on your phone or tablet. You'll see a prompt at the top saying, 'Set up one device.' – tap on this to begin setup. \" Jalur Cara Gemilang: Urutan: konektor \"then/next\" setelah membuka app = tap \"Set up one device\".",

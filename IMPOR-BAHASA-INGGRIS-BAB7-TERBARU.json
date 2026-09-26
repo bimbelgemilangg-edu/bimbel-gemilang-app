@@ -343,13 +343,6 @@
             "Emails sent per minute",
             "YouTube viewing statistics"
           ],
-          "opsiGambar": [
-            "/bagan/bab1-s4-a.svg",
-            "/bagan/bab1-s4-b.svg",
-            "/bagan/bab1-s4-c.svg",
-            "/bagan/bab1-s4-d.svg",
-            "/bagan/bab1-s4-e.svg"
-          ],
           "soalGambar": "/gambar-bing/infographic-g1.jpg",
           "jawaban": 0,
           "pembahasan": "Jalur konsep: Pada infografik tidak disebutkan kebijakan perpajakan bulanan, hanya data tentang email, YouTube, stres, dan jam kerja. Jalur Cara Gemilang: NOT mentioned = eliminasi angka/label yang ADA di infografik; sisa = jawaban.",
@@ -544,13 +537,6 @@
             "Recycling plastics",
             "Burning, logging, and degradation of forests"
           ],
-          "opsiGambar": [
-            "/bagan/bab1-s16-a.svg",
-            "/bagan/bab1-s16-b.svg",
-            "/bagan/bab1-s16-c.svg",
-            "/bagan/bab1-s16-d.svg",
-            "/bagan/bab1-s16-e.svg"
-          ],
           "jawaban": 4,
           "pembahasan": "Jalur konsep: Aktivitas manusia yang berkontribusi pada emisi gas rumah kaca adalah pembakaran, penebangan, dan degradasi hutan. Jalur Cara Gemilang: Aktivitas penyumbang emisi = pembakaran fosil, deforestasi, industri.",
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Infographic h.103+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 3 gambar infografis diekstrak ke public/gambar-bing/); kunci & pembahasan buku (soal asli #16)"
@@ -582,13 +568,6 @@
             "Developing national parks and reforestation programs.",
             "Approximately 28,000 plant and animal species may become extinct in the next 25 years.",
             "The burning, logging and degradation of forest contribute to forest destruction."
-          ],
-          "opsiGambar": [
-            "/bagan/bab1-s18-a.svg",
-            "/bagan/bab1-s18-b.svg",
-            "/bagan/bab1-s18-c.svg",
-            "/bagan/bab1-s18-d.svg",
-            "/bagan/bab1-s18-e.svg"
           ],
           "jawaban": [
             1,
