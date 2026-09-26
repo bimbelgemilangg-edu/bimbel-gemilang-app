@@ -1,142 +1,131 @@
-// Config bab 2 — RECOUNT TEXT (Bahasa Inggris K12, turn 98)
-export const INPUT = '../.ekstrak-bing2.json';
+// Config bab 2 — DESCRIPTIVE TEXT (Bahasa Inggris K12, turn 98)
+export const INPUT = '../.ekstrak-bing6.json';
 export const OUT_DRAFT = 'docs/drafts/draft-bahasa-inggris-k12-v1-bab2.json';
 export const OUT_IMPOT = 'IMPOR-BAHASA-INGGRIS-BAB2-TERBARU.json';
 export const BUILDER = 'scripts/build-bing-k12-bab2.mjs';
-export const SUMBER_TEKS = 'Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan)';
+export const SUMBER_TEKS = 'Bab 2 Descriptive Text h.76+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan; 5 gambar stimulus diekstrak ke public/gambar-bing/)';
+export const GAMBAR_GRUP = {
+  0: '/gambar-bing/descriptive-g1.jpg',
+  1: '/gambar-bing/descriptive-g2.jpg',
+  2: '/gambar-bing/descriptive-g3.jpg',
+  3: '/gambar-bing/descriptive-g4.jpg',
+  4: '/gambar-bing/descriptive-g5.jpg',
+};
 
 export const CG = {
-  1: 'Trigger = peristiwa penyebab di paragraf pembuka; cari kekhawatiran/fakta yang memulai aksi.',
-  2: 'Urutan recount = timeline; susun lewat penanda tahun/paragraf, jangan lewat perasaan.',
-  3: 'Alasan = kalimat tujuan ("to ...") di paragraf 1; pilih semua motivasi yang tertulis.',
-  4: 'Main idea paragraf = kalimat inti; paragraf 3 = langkah nyata/proyek solusi.',
-  5: 'True/False: verifikasi per baris ke paragraf; kata mutlak = False.',
-  6: 'Biographical recount = lahir -> karier -> penghargaan -> warisan; ikuti angka tahun.',
-  7: '"Primarily known for" = peran utama yang disebut berulang & di penutup.',
-  8: 'Tindakan nyata = daftar kerja di paragraf lingkungan (urging, calling, joining).',
-  9: 'Why = argumen tokoh: kerusakan lingkungan = ketidakadilan yang timpang.',
-  10: 'Categorize: tempel aksi ke eranya (anti-apartheid vs advokasi lingkungan).',
-  11: 'Main idea paragraf trek = tantangan fisik (panas, medan batuan).',
-  12: 'Purpose recount = to retell past experiences — bukan persuade/procedure.',
-  13: 'Conclusion = generalisasi: persiapan logistik + mental = syarat sukses.',
-  14: 'Challenges = yang dialami/dihadapi; coret yang tidak terjadi di teks.',
-  15: 'Penanda waktu: matahari terik = afternoon; bintang/dingin = nighttime.',
-  16: 'Early years = peristiwa awal gerakan; ban plastik 2019 = hasil akhir, bukan awal.',
-  17: 'Makna frasa = konteks sekitarnya: "landmark victory" = bersejarah & jadi model.',
-  18: 'Ide tersirat = pesan besar: kegigihan anak muda membawa perubahan nyata.',
-  19: 'Detail inspiratif = yang bisa ditiru pembaca (platform Youthtopia).',
-  20: 'Trigger paragraf 1: video gunungan plastik saat mengikuti kegiatan sekolah.',
-  21: 'Significance = titik balik yang memaksa dunia memperhatikan perjuangan RI.',
-  22: 'Tahapan = proklamasi -> kedatangan Sekutu -> ultimatum -> pertempuran -> peringatan.',
-  23: 'Paragraf terakhir = simbol abadi tekad; cari kalimat penutup bermakna luas.',
-  24: 'Why longer = abaikan ultimatum + semangat perlawanan + taktik gerilya.',
-  25: 'Bung Tomo = siaran radio pembakar semangat; cek tiap pernyataan ke perannya.',
+  1: 'Why unique = fakta superlatif paragraf 1: the most isolated inhabited island.',
+  2: 'Karakteristik menyeluruh = opsi yang merangkum SEMUA paragraf (isolasi, vulkanik, satwa).',
+  3: 'Vital sanctuary = tempat aman satwa; pilih semua alasan yang tertulis di paragraf satwa.',
+  4: 'Main idea paragraf = kalimat inti paragraf itu: ketangguhan manusia di lingkungan sulit.',
+  5: 'True/False verifikasi per baris ke teks; kata mutlak/angka meleset = False.',
+  6: 'Characteristics = adjektiva deskriptif teks (biting winds, permafrost); coret yang tak disebut.',
+  7: 'Makna frasa = konteks sekitar: glittering light = kontras terang di tengah salju.',
+  8: 'Ide tersirat = pentingnya bagi ketahanan pangan masa depan dunia.',
+  9: 'Detail paling meyakinkan = fungsi inti: cadangan benih global bila bencana terjadi.',
+  10: 'Categorize: faktor lingkungan (alam memberi) vs technical protection (rancangan manusia).',
+  11: 'Topik = objek + aspeknya: ciri fisik Great Blue Hole + nilai ilmiahnya.',
+  12: 'Sebab-akibat teks: es mencair -> laut naik -> sistem gua tergenang -> lubang vertikal.',
+  13: 'Functions/features = daftar fungsi di paragraf 2-3; coret yang karangan opsi.',
+  14: 'Chasm = celah dalam -> abyss; substitusi ke kalimat "vertical chasm".',
+  15: 'Verifikasi angka/dimensi paragraf 1 per baris.',
+  16: 'Purpose descriptive = to describe/portray sosok (Cillian Murphy), bukan narrate/cerita.',
+  17: 'Main idea paragraf 1 = perpaduan fisik unik + kemampuan akting.',
+  18: 'Inference = yang tak tertulis langsung: ia sangat menjaga privasi.',
+  19: 'Characteristics = adjektiva eksplisit (reserved, enigmatic, intense); kumpulkan dari teks.',
+  20: 'Physical vs work/personality: tempel deskripsi ke paragraf asal (fisik=1, kerja/sikap=2-3).',
+  21: 'Pernyataan benar replika T-Rex = detail paragraf pameran (skala, pose, material).',
+  22: 'Physical structure (tengkorak, ukuran) vs dynamic posture (pose bergerak, aksi).',
+  23: 'Target audience = pihak yang berkepentingan dengan tema: pelajar prasejarah, pengunjung museum, pecinta dinosaurus.',
+  24: 'More informative = informasi relevan yang BELUM ada (data/perbandingan ukuran ilmiah).',
+  25: 'Fact = pernyataan terukur/tercantum eksplisit (the largest...); opini = penilaian.',
 };
 
 export const SECTIONS = `
-  // ===== SUBBAB A: RECOUNT TEXT — DEFINISI & STRUKTUR =====
-  { jenis: 'judul', teks: 'Recount Text: Retelling the Past' },
-  { jenis: 'kilat', teks: 'A recount text retells the series of events or experiences that happened to the participant in the past in chronological order. Social function: to retell past events or experiences — dari laporan perjalanan sampai biografi tokoh.' },
-  { jenis: 'peta', teks: 'Recount adalah saudara narrative yang paling sering tertukar. Bedanya tegas: narrative punya complication-krisis-resolusi (cerita rekaan berkonflik), recount memaparkan urutan kejadian nyata/kronologis. Soal TKA menyukai penukaran ini — kuasai pembedanya dan pola soal urutan waktu.' },
-  { jenis: 'paragraf', teks: 'Bayangkan recount sebagai buku harian perjalanan: tanggal dan kejadian tercatat urut apa adanya. Narrative sebaliknya seperti film drama: ada konflik yang memuncak lalu selesai. Buku harian tidak mencari krisis — ia mencatat urutan.' },
+  // ===== SUBBAB A: DESCRIPTIVE TEXT — MELUKIS DENGAN KATA =====
+  { jenis: 'judul', teks: 'Descriptive Text: Painting with Words' },
+  { jenis: 'kilat', teks: 'Descriptive text explains how a person or an object is like — its form, properties, amount, and others. Social function: to describe, represent, or reveal a person or object, abstract or concrete, so the reader can picture it.' },
+  { jenis: 'peta', teks: 'Descriptive adalah teks "potret": tidak ada urutan waktu (itu recount), tidak ada argumen (itu exposition), tidak ada langkah (itu procedure). Soal TKA-nya khas: karakteristik objek, kategorisasi ciri, makna frasa, main idea per paragraf, dan purpose = menggambarkan.' },
+  { jenis: 'paragraf', teks: 'Bayangkan descriptive sebagai sketsa potret: pelukis menyebut subjek dulu (identification), lalu menambahkan detail lapis demi lapis (description) sampai penonton "melihat" tanpa hadir. Setiap detail adalah calon opsi jawaban soal karakteristik.' },
   {
-    jenis: 'poin', judul: 'Generic structure recount (bank)', items: [
-      'Orientation — latar belakang: siapa, kapan, di mana.',
-      'Sequence of events — rangkaian peristiwa secara kronologis.',
-      'Re-orientation — komentar pribadi penulis tentang peristiwa (penutup opsional).',
+    jenis: 'poin', judul: 'Generic structure (bank h.76)', items: [
+      'Identification — memperkenalkan & menyatakan subjek/topik utama yang akan dideskripsikan.',
+      'Description — merinci subjek (fisik, sifat, jumlah, latar) agar pembaca bisa membayangkannya.',
     ],
   },
   {
-    jenis: 'urutan', judul: '🧩 Susun: generic structure recount',
-    items: [
-      'Orientation: memperkenalkan peserta, waktu, dan tempat',
-      'Sequence of events: menceritakan rangkaian kejadian berurutan',
-      'Re-orientation: komentar/penilaian pribadi penulis di penutup',
-    ],
-  },
-  {
-    jenis: 'tabelinfo', judul: 'Kinds of recount + contoh di bab ini',
-    kolom: ['Jenis', 'Ciri', 'Contoh teks bank'],
+    jenis: 'tabelinfo', judul: 'Language features + contoh',
+    kolom: ['Fitur', 'Contoh'],
     rows: [
-      { k: 'Personal recount', v: 'Pengalaman pribadi penulis (sudut "I").', w: 'Perjalanan trek di Outback (teks 3).' },
-      { k: 'Factual recount', v: 'Laporan kejadian nyata/informal.', w: 'Aksi iklim Vanessa Nakate (teks 1).' },
-      { k: 'Imaginative recount', v: 'Khayalan/imajinasi diceritakan ulang.', w: 'Cerita mimpi atau peran imajiner.' },
-      { k: 'Historical recount', v: 'Peristiwa sejarah.', w: 'Pertempuran Surabaya (teks 5).' },
-      { k: 'Biographical recount', v: 'Riwayat hidup tokoh.', w: 'Desmond Tutu (teks 2).' },
+      { k: 'Simple present tense', v: 'The island lies in the South Atlantic; it has a mild climate.' },
+      { k: 'Focus on a specific participant', v: 'Satu subjek utama: Tristan da Cunha / the Seed Vault / Cillian Murphy.' },
+      { k: 'Adjectives', v: 'isolated, volcanic, biting winds, reserved, enigmatic.' },
+      { k: 'Action verbs (relational/mental juga)', v: 'has, consists of, seems, possesses.' },
     ],
   },
   {
-    jenis: 'jodohMini', judul: '🔗 Jodohkan: jenis recount dan contohnya',
+    jenis: 'jodohMini', judul: '🔗 Jodohkan: struktur dan fungsinya',
     items: [
-      { kiri: 'Pengalaman trek penulis di Outback', kanan: 'Personal recount' },
-      { kiri: 'Laporan aksi iklim Vanessa Nakate', kanan: 'Factual recount' },
-      { kiri: 'Riwayat hidup Desmond Tutu', kanan: 'Biographical recount' },
-      { kiri: 'Kronologi Pertempuran Surabaya', kanan: 'Historical recount' },
+      { kiri: 'Introduces and states the main subject', kanan: 'Identification' },
+      { kiri: 'Details the subject so readers can picture it', kanan: 'Description' },
+      { kiri: 'Tense khas teks descriptive', kanan: 'Simple present' },
+      { kiri: 'Kata yang mewarnai ciri (isolated, biting, reserved)', kanan: 'Adjectives' },
     ],
   },
   {
-    jenis: 'benarSalah', judul: '⚖️ Cek pemahaman: recount vs narrative',
+    jenis: 'benarSalah', judul: '⚖️ Cek pemahaman: descriptive basics',
     items: [
-      { teks: 'Recount text tells events in chronological order.', jawaban: true, penjelasan: 'Definisi bank: chronological order.' },
-      { teks: 'Recount wajib memiliki complication seperti narrative.', jawaban: false, penjelasan: 'Complication milik narrative; recount cukup urutan peristiwa.' },
-      { teks: 'Re-orientation berisi komentar pribadi penulis dan bersifat opsional.', jawaban: true, penjelasan: 'Struktur ketiga recount.' },
-      { teks: 'Language features recount meliputi past tenses dan action verbs.', jawaban: true, penjelasan: 'Fitur bahasa bank: past tenses, action verbs, adverbs of time.' },
+      { teks: 'Descriptive text predominantly uses simple present tense.', jawaban: true, penjelasan: 'Menggambarkan keadaan umum/fakta subjek.' },
+      { teks: 'Descriptive text retells events in chronological order.', jawaban: false, penjelasan: 'Itu recount; descriptive tanpa urutan waktu.' },
+      { teks: 'Adjectives are central language feature of descriptive text.', jawaban: true, penjelasan: 'Ciri dibangun lewat adjektiva.' },
+      { teks: 'Descriptive focuses on one specific participant.', jawaban: true, penjelasan: 'Subjek tunggal yang dipotret.' },
     ],
   },
   {
-    jenis: 'caraGemilang', judul: '👑 CG-RECOUNT: kronologi adalah raja',
-    teks: 'Recount = WHO did WHAT in WHAT order. Semua soal urutan/jadwal/tahap dijawab dengan garis waktu teks, bukan ingatan.',
+    jenis: 'caraGemilang', judul: '👑 CG-DESCRIPTIVE: SPOT',
+    teks: 'Subjek -> Picture-Of-Traits: temukan subjeknya, kumpulkan sifat per paragraf; soal kategorisasi = tempel sifat ke aspeknya; soal frasa = substitusi konteks.',
     items: [
-      'Buat timeline kasar di kertas: tahun/penanda waktu per paragraf.',
-      'Soal "which list shows the stages" = cocokkan urutan timeline, coret yang melompat.',
-      'Soal kategorisasi waktu/peran = tempel tiap pernyataan ke slot timeline atau era tokohnya.',
+      'Tandai subjek utama di identification (kalimat pertama).',
+      'Garis bawahi adjektiva/frasa ciri per paragraf — itulah bank opsi soal karakteristik.',
+      'Soal categorize: buat dua kolom aspek (mis. fisik vs sikap) sebelum membaca pernyataan.',
     ],
   },
-  { jenis: 'callout', tipe: 'peringatan', judul: 'Jebakan ujian', teks: 'Penukar narrative vs recount: narrative menekankan krisis & resolusi fiktif; recount menekankan urutan kejadian nyata. Opsi purpose "to persuade/to explain how to" selalu salah untuk recount.' },
+  { jenis: 'callout', tipe: 'peringatan', judul: 'Jebakan ujian', teks: 'Soal karakteristik sering menyisipkan ciri yang "masuk akal" tetapi tidak ada di teks (halu-wajar). Kembali ke adjektiva yang benar-benar tertulis. Untuk soal EXCEPT/kecuali, cari satu-satunya yang tidak tercatat.' },
   {
     jenis: 'zona', items: [
-      { soal: 'The social function of a recount text is ...', opsi: ['to amuse readers with a crisis story', 'to retell past events in chronological order', 'to persuade readers to act', 'to explain how to make something', 'to describe a place in detail'], jawaban: 1, pembahasan: 'Jalur konsep: social function recount = to retell past events/experiences (bank). Jalur Cara Gemilang: CG-RECOUNT — urutan kejadian lampau.' },
-      { soal: 'Read the text carefully! Last year, our school team joined a robotics competition. First, we designed the robot. Then, we programmed its sensors. Finally, we presented it to the judges and won the second prize. The generic structure of the text is ...', opsi: ['orientation - events - re-orientation', 'orientation - complication - resolution', 'goal - materials - steps', 'thesis - arguments - reiteration', 'classification - description'], jawaban: 0, pembahasan: 'Jalur konsep: latar (last year, school team) + urutan (first/then/finally) = recount: orientation-events-re-orientation (re-orientation tersirat kemenangan). Jalur Cara Gemilang: penanda first/then/finally = tanda tangan recount.' },
-      { soal: 'Which language feature is TYPICAL of recount text?', opsi: ['past tenses and action verbs', 'present tenses and imperatives', 'future tenses and modal of obligation', 'passive voice only', 'direct speech only'], jawaban: 0, pembahasan: 'Jalur konsep: language features recount: past tenses, action verbs, adverbs of time. Jalur Cara Gemilang: cerita lampau = past.' },
+      { soal: 'The social function of descriptive text is ...', opsi: ['to retell past events', 'to describe a person or an object', 'to persuade readers', 'to explain how to make something', 'to argue a point of view'], jawaban: 1, pembahasan: 'Jalur konsep: to describe, represent, or reveal a person or an object (bank h.76). Jalur Cara Gemilang: CG-DESCRIPTIVE — potret, bukan cerita.' },
+      { soal: 'Which section of a descriptive text introduces the main subject?', opsi: ['Description', 'Re-orientation', 'Identification', 'Complication', 'Thesis'], jawaban: 2, pembahasan: 'Jalur konsep: identification memperkenalkan subjek utama. Jalur Cara Gemilang: SPOT — S dulu (subjek).' },
+      { soal: '"The vault stays cold throughout the year." The closest meaning of "throughout" is ...', opsi: ['during the whole of', 'at the beginning of', 'after the end of', 'in the middle of', 'before the start of'], jawaban: 0, pembahasan: 'Jalur konsep: throughout = selama seluruh periode. Jalur Cara Gemilang: substitusi opsi ke kalimat; pilih yang menjaga makna "setiap saat".' },
     ],
   },
 
-  // ===== SUBBAB B: POLA SOAL RECOUNT =====
-  { jenis: 'judul', teks: 'Recount Question Patterns' },
-  { jenis: 'kilat', teks: 'Pola soal recount TKA: trigger/why, urutan kronologis, main idea paragraf, purpose, conclusion, categorize (waktu/peran), dan True/False verifikasi. Semuanya dijawab dari garis waktu dan kalimat bukti.' },
+  // ===== SUBBAB B: POLA SOAL DESCRIPTIVE =====
+  { jenis: 'judul', teks: 'Descriptive Question Patterns' },
   {
     jenis: 'tabelinfo', judul: 'Pola soal + jurus',
-    kolom: ['Pola', 'Penanda batang soal', 'Jurus'],
+    kolom: ['Pola', 'Penanda', 'Jurus'],
     rows: [
-      { k: 'Trigger/why', v: '"What triggered...?", "Why did...?"', w: 'Kalimat sebab di paragraf pemicu.' },
-      { k: 'Chronological stages', v: '"Which list shows the key stages...?"', w: 'Timeline tahun/penanda; coret yang melompat.' },
-      { k: 'Main idea paragraf', v: '"main idea of the 3rd paragraph"', w: 'Kalimat inti paragraf itu saja.' },
-      { k: 'Purpose', v: '"What is the purpose of the text?"', w: 'Retell experiences — bukan persuade/procedure.' },
-      { k: 'Conclusion', v: '"What can be concluded...?"', w: 'Generalisasi aman tanpa kata mutlak.' },
-      { k: 'Categorize', v: '"Categorize based on when/who..."', w: 'Tempel pernyataan ke slot waktu/era tokoh.' },
+      { k: 'Characteristics', v: '"Which are characteristics...?"', w: 'Kumpulkan adjektiva/frasa ciri tertulis; coret yang halu-wajar.' },
+      { k: 'Categorize', v: '"Categorize based on..."', w: 'Buat kolom aspek dulu, tempel pernyataan per paragraf asal.' },
+      { k: 'Phrase meaning', v: '"The phrase ... suggests"', w: 'Substitusi konteks sekitar frasa.' },
+      { k: 'Main idea paragraf', v: '"main idea of the 2nd paragraph"', w: 'Kalimat inti paragraf itu saja.' },
+      { k: 'Purpose', v: '"What is the purpose...?"', w: 'To describe/portray — bukan retell/argue/procedure.' },
+      { k: 'Fact vs opinion', v: '"Which statement is a fact...?"', w: 'Fakta = terukur/tercantum; opini = penilaian.' },
     ],
   },
   {
-    jenis: 'isianRumpang', judul: '✍️ Isian rumpang: istilah recount',
+    jenis: 'isianRumpang', judul: '✍️ Isian rumpang: istilah descriptive',
     items: [
-      { teks: 'The closing part containing the writer personal comment is called ...', jawaban: ['re-orientation', 'reorientation'], hint: 'Struktur ketiga.', penjelasan: 'Re-orientation = komentar pribadi penutup.' },
-      { teks: 'Recount events are told in ... order.', jawaban: ['chronological'], hint: 'Berurutan sesuai waktu.', penjelasan: 'Chronological = sesuai urutan waktu.' },
-      { teks: 'Two typical language features of recount are past tenses and ... verbs.', jawaban: ['action'], hint: 'Kata kerja tindakan.', penjelasan: 'Action verbs menggerakkan rangkaian peristiwa.' },
+      { teks: 'The first part of a descriptive text that states the main subject is called ...', jawaban: ['identification'], hint: 'Berkenalan dengan subjek.', penjelasan: 'Identification memperkenalkan subjek.' },
+      { teks: 'The part that details the subject features is called ...', jawaban: ['description'], hint: 'Rincian ciri.', penjelasan: 'Description merinci subjek.' },
+      { teks: 'Descriptive text mainly uses simple ... tense.', jawaban: ['present'], hint: 'Bentuk sekarang.', penjelasan: 'Simple present untuk keadaan umum.' },
     ],
   },
-  { jenis: 'callout', tipe: 'guru', judul: 'Ringkas sendiri', teks: 'Buat garis waktu 5 teks bab ini (Vanessa, Tutu, Outback, Bye Bye Plastic Bags, Surabaya) masing-masing 4 titik. Garis waktu itu senjata utama semua pola soal recount.' },
-  { jenis: 'callout', tipe: 'info', judul: 'Siap uji pemahaman', teks: '25 soal resmi bab ini memakai 5 recount (aktivis iklim, biografi Tutu, trek Outback, gerakan Bye Bye Plastic Bags, Pertempuran Surabaya). Tandai pola tiap soal sebelum menjawab.' },
+  { jenis: 'callout', tipe: 'guru', judul: 'Ringkas sendiri', teks: 'Pilih satu dari 5 teks bab ini (pulau Tristan, Seed Vault, Blue Hole, Cillian Murphy, T-Rex) dan buat kartu SPOT: subjek + 6 ciri tertulis + 2 kalimat kategori (fisik vs non-fisik). Kartu itu latihan terbaik untuk soal categorize.' },
+  { jenis: 'callout', tipe: 'info', judul: 'Siap uji pemahaman', teks: '25 soal resmi bab ini memakai 5 descriptive bertekstur nyata (tempat ekstrem, figur publik, objek pameran) — masing-masing dengan gambar stimulus. Perhatikan gambar sebelum menjawab: beberapa soal merujuk detail visual.' },
 `;
 
 export const META = {
-  babJudul: 'Bab 2 — Recount Text (Edisi Cara Gemilang)',
-  babRingkasan: 'Definisi & social function recount, generic structure orientation-events-re-orientation, kinds of recount, pola soal kronologi/kategorisasi/True-False — dengan susun urutan, jodohkan jenis, benar/salah, isian rumpang, dan 25 soal resmi bank (5 teks: Vanessa Nakate, Desmond Tutu, trek Outback, Bye Bye Plastic Bags, Pertempuran Surabaya) + pembahasan dua jalur.',
+  babJudul: 'Bab 2 — Descriptive Text (Edisi Cara Gemilang)',
+  babRingkasan: 'Definisi & social function descriptive, struktur identification-description, language features, pola soal karakteristik/kategorisasi/makna frasa — dengan gambar stimulus asli per teks (5 gambar diekstrak ke public/gambar-bing), jodohkan struktur, benar/salah, isian rumpang, dan 25 soal resmi bank (Tristan da Cunha, Svalbard Seed Vault, Great Blue Hole, Cillian Murphy, T-Rex) + pembahasan dua jalur.',
   urutan: 2,
 };
-
-// Salah cetak buku seri ini (ke-4 yang terdokumentasi): kunci ringkas
-// no.5 baris-1 mencetak F, tetapi centang tabel pembahasan DAN narasi
-// pembahasan ("transition from a quiet graduate into a determined
-// activist") menyatakan TRUE. Mengikuti pembahasan.
-export const OVERRIDES = { 5: { jaw: [0, 1, 0, 1, 0] } };
-export const CATATAN_KUNCI = { 5: ' (Catatan: tabel kunci ringkas buku mencetak "F,F,T,F,T", tetapi centang tabel pembahasan dan narasi pembahasan menyatakan baris 1 TRUE — kutipan "transition from a quiet graduate into a determined activist"; kami mengikuti pembahasan.)' };

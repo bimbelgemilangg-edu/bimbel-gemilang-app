@@ -1,0 +1,742 @@
+{
+  "materi": {
+    "judul": "Bahasa Inggris Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Inggris",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#059669",
+    "emoji": "🗣️",
+    "deskripsi": "Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, recount, procedure, analytical exposition, dan infographic reading. Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 6,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks.",
+      "Kartu Cara Gemilang, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 3 — Recount Text (Edisi Cara Gemilang)",
+      "ringkasan": "Definisi & social function recount, generic structure orientation-events-re-orientation, kinds of recount, pola soal kronologi/kategorisasi/True-False — dengan susun urutan, jodohkan jenis, benar/salah, isian rumpang, dan 25 soal resmi bank (5 teks: Vanessa Nakate, Desmond Tutu, trek Outback, Bye Bye Plastic Bags, Pertempuran Surabaya) + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 3,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Recount Text: Retelling the Past"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "A recount text retells the series of events or experiences that happened to the participant in the past in chronological order. Social function: to retell past events or experiences — dari laporan perjalanan sampai biografi tokoh."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Recount adalah saudara narrative yang paling sering tertukar. Bedanya tegas: narrative punya complication-krisis-resolusi (cerita rekaan berkonflik), recount memaparkan urutan kejadian nyata/kronologis. Soal TKA menyukai penukaran ini — kuasai pembedanya dan pola soal urutan waktu."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan recount sebagai buku harian perjalanan: tanggal dan kejadian tercatat urut apa adanya. Narrative sebaliknya seperti film drama: ada konflik yang memuncak lalu selesai. Buku harian tidak mencari krisis — ia mencatat urutan."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Generic structure recount (bank)",
+          "items": [
+            "Orientation — latar belakang: siapa, kapan, di mana.",
+            "Sequence of events — rangkaian peristiwa secara kronologis.",
+            "Re-orientation — komentar pribadi penulis tentang peristiwa (penutup opsional)."
+          ]
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: generic structure recount",
+          "items": [
+            "Orientation: memperkenalkan peserta, waktu, dan tempat",
+            "Sequence of events: menceritakan rangkaian kejadian berurutan",
+            "Re-orientation: komentar/penilaian pribadi penulis di penutup"
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Kinds of recount + contoh di bab ini",
+          "kolom": [
+            "Jenis",
+            "Ciri",
+            "Contoh teks bank"
+          ],
+          "rows": [
+            {
+              "k": "Personal recount",
+              "v": "Pengalaman pribadi penulis (sudut \"I\").",
+              "w": "Perjalanan trek di Outback (teks 3)."
+            },
+            {
+              "k": "Factual recount",
+              "v": "Laporan kejadian nyata/informal.",
+              "w": "Aksi iklim Vanessa Nakate (teks 1)."
+            },
+            {
+              "k": "Imaginative recount",
+              "v": "Khayalan/imajinasi diceritakan ulang.",
+              "w": "Cerita mimpi atau peran imajiner."
+            },
+            {
+              "k": "Historical recount",
+              "v": "Peristiwa sejarah.",
+              "w": "Pertempuran Surabaya (teks 5)."
+            },
+            {
+              "k": "Biographical recount",
+              "v": "Riwayat hidup tokoh.",
+              "w": "Desmond Tutu (teks 2)."
+            }
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: jenis recount dan contohnya",
+          "items": [
+            {
+              "kiri": "Pengalaman trek penulis di Outback",
+              "kanan": "Personal recount"
+            },
+            {
+              "kiri": "Laporan aksi iklim Vanessa Nakate",
+              "kanan": "Factual recount"
+            },
+            {
+              "kiri": "Riwayat hidup Desmond Tutu",
+              "kanan": "Biographical recount"
+            },
+            {
+              "kiri": "Kronologi Pertempuran Surabaya",
+              "kanan": "Historical recount"
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: recount vs narrative",
+          "items": [
+            {
+              "teks": "Recount text tells events in chronological order.",
+              "jawaban": true,
+              "penjelasan": "Definisi bank: chronological order."
+            },
+            {
+              "teks": "Recount wajib memiliki complication seperti narrative.",
+              "jawaban": false,
+              "penjelasan": "Complication milik narrative; recount cukup urutan peristiwa."
+            },
+            {
+              "teks": "Re-orientation berisi komentar pribadi penulis dan bersifat opsional.",
+              "jawaban": true,
+              "penjelasan": "Struktur ketiga recount."
+            },
+            {
+              "teks": "Language features recount meliputi past tenses dan action verbs.",
+              "jawaban": true,
+              "penjelasan": "Fitur bahasa bank: past tenses, action verbs, adverbs of time."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-RECOUNT: kronologi adalah raja",
+          "teks": "Recount = WHO did WHAT in WHAT order. Semua soal urutan/jadwal/tahap dijawab dengan garis waktu teks, bukan ingatan.",
+          "items": [
+            "Buat timeline kasar di kertas: tahun/penanda waktu per paragraf.",
+            "Soal \"which list shows the stages\" = cocokkan urutan timeline, coret yang melompat.",
+            "Soal kategorisasi waktu/peran = tempel tiap pernyataan ke slot timeline atau era tokohnya."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Penukar narrative vs recount: narrative menekankan krisis & resolusi fiktif; recount menekankan urutan kejadian nyata. Opsi purpose \"to persuade/to explain how to\" selalu salah untuk recount."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "The social function of a recount text is ...",
+              "opsi": [
+                "to amuse readers with a crisis story",
+                "to retell past events in chronological order",
+                "to persuade readers to act",
+                "to explain how to make something",
+                "to describe a place in detail"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: social function recount = to retell past events/experiences (bank). Jalur Cara Gemilang: CG-RECOUNT — urutan kejadian lampau."
+            },
+            {
+              "soal": "Read the text carefully! Last year, our school team joined a robotics competition. First, we designed the robot. Then, we programmed its sensors. Finally, we presented it to the judges and won the second prize. The generic structure of the text is ...",
+              "opsi": [
+                "orientation - events - re-orientation",
+                "orientation - complication - resolution",
+                "goal - materials - steps",
+                "thesis - arguments - reiteration",
+                "classification - description"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: latar (last year, school team) + urutan (first/then/finally) = recount: orientation-events-re-orientation (re-orientation tersirat kemenangan). Jalur Cara Gemilang: penanda first/then/finally = tanda tangan recount."
+            },
+            {
+              "soal": "Which language feature is TYPICAL of recount text?",
+              "opsi": [
+                "past tenses and action verbs",
+                "present tenses and imperatives",
+                "future tenses and modal of obligation",
+                "passive voice only",
+                "direct speech only"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: language features recount: past tenses, action verbs, adverbs of time. Jalur Cara Gemilang: cerita lampau = past."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Recount Question Patterns"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Pola soal recount TKA: trigger/why, urutan kronologis, main idea paragraf, purpose, conclusion, categorize (waktu/peran), dan True/False verifikasi. Semuanya dijawab dari garis waktu dan kalimat bukti."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Pola soal + jurus",
+          "kolom": [
+            "Pola",
+            "Penanda batang soal",
+            "Jurus"
+          ],
+          "rows": [
+            {
+              "k": "Trigger/why",
+              "v": "\"What triggered...?\", \"Why did...?\"",
+              "w": "Kalimat sebab di paragraf pemicu."
+            },
+            {
+              "k": "Chronological stages",
+              "v": "\"Which list shows the key stages...?\"",
+              "w": "Timeline tahun/penanda; coret yang melompat."
+            },
+            {
+              "k": "Main idea paragraf",
+              "v": "\"main idea of the 3rd paragraph\"",
+              "w": "Kalimat inti paragraf itu saja."
+            },
+            {
+              "k": "Purpose",
+              "v": "\"What is the purpose of the text?\"",
+              "w": "Retell experiences — bukan persuade/procedure."
+            },
+            {
+              "k": "Conclusion",
+              "v": "\"What can be concluded...?\"",
+              "w": "Generalisasi aman tanpa kata mutlak."
+            },
+            {
+              "k": "Categorize",
+              "v": "\"Categorize based on when/who...\"",
+              "w": "Tempel pernyataan ke slot waktu/era tokoh."
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: istilah recount",
+          "items": [
+            {
+              "teks": "The closing part containing the writer personal comment is called ...",
+              "jawaban": [
+                "re-orientation",
+                "reorientation"
+              ],
+              "hint": "Struktur ketiga.",
+              "penjelasan": "Re-orientation = komentar pribadi penutup."
+            },
+            {
+              "teks": "Recount events are told in ... order.",
+              "jawaban": [
+                "chronological"
+              ],
+              "hint": "Berurutan sesuai waktu.",
+              "penjelasan": "Chronological = sesuai urutan waktu."
+            },
+            {
+              "teks": "Two typical language features of recount are past tenses and ... verbs.",
+              "jawaban": [
+                "action"
+              ],
+              "hint": "Kata kerja tindakan.",
+              "penjelasan": "Action verbs menggerakkan rangkaian peristiwa."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri",
+          "teks": "Buat garis waktu 5 teks bab ini (Vanessa, Tutu, Outback, Bye Bye Plastic Bags, Surabaya) masing-masing 4 titik. Garis waktu itu senjata utama semua pola soal recount."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Siap uji pemahaman",
+          "teks": "25 soal resmi bab ini memakai 5 recount (aktivis iklim, biografi Tutu, trek Outback, gerakan Bye Bye Plastic Bags, Pertempuran Surabaya). Tandai pola tiap soal sebelum menjawab."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Read the following text carefully!\n\nVanessa Nakate's journey as a climate activist began in January 2019, after she became deeply concerned about the unusually high temperatures in her home country, Uganda. Inspired by the global youth strikes, she decided to take action by protesting outside the gates of the Parliament in Kampala. For several months, she stood alone with her handmade signs, despite the skepticism of passersby. This period marked her transition from a quiet graduate into a determined activist, as she demanded that the government acknowledge the climate emergencies affecting Africa.\n\nFollowing her solitary protests, Nakate founded the Rise Up Movement to amplify the voices of other African activists who were often ignored by international media. A pivotal moment in her career occurred in early 2020 when she was famously cropped out of a photo with white activists at the World Economic Forum in Davos. Rather than being discouraged, she used the incident to highlight the marginalization of African voices in the climate conversation. This event propelled her into the global spotlight, allowing her to speak more forcefully about the \"Congo Rainforest\" and the unfair reality that Africa suffers the most while emitting the least carbon.\n\nAs her influence grew, Nakate shifted some of her focus toward practical solutions through the Vash Green Schools Project. She began launching initiatives to install solar panels and eco-friendly cookstoves in schools across Uganda. By doing so, she successfully reduced the schools' dependence on firewood and improved the learning environment for thousands of students. She also started advocating for the education of girls, linking it directly to climate resilience, and began traveling to various international summits, including COP25 and COP26, to challenge world leaders.\n\nBy 2021, Nakate had solidified her status as a global icon with the publication of her memoir, A Bigger Picture. The book documented her transformation and her fight for an inclusive environmental movement. Today, she continues to lead the Rise Up Movement and collaborate with international organizations like UNICEF. From a lone protester in Kampala to a world-renowned leader, Vanessa Nakate has proven that persistence can spark a massive shift in how the world views environmental justice and the power of youth.\n\n(adapted from https://www.unicef.org)\n\nWhat triggered Vanessa Nakate to begin her journey as a climate activist in 2019?",
+          "tipe": "pg",
+          "opsi": [
+            "Her plan to work for the United Nations in Kampala",
+            "Her interest in joining international fashion movements",
+            "Her goal to publish a memoir about her graduate studies",
+            "Her desire to win an award from the World Economic Forum",
+            "Her concern regarding the unusually high temperatures in Uganda"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Awal mula perjalanan Vanessa dipicu oleh kekhwatirannya terhadap suhu yang sangat tinggi di negaranya, Uganda. Informasi ini dapat ditemukan pada paragraf ke-1 ( Vanessa Nakate's journey as a climate activist began in January 2019, after she became deeply concerned about the unusually high temperatures in her home country, Uganda ). Jalur Cara Gemilang: Trigger = peristiwa penyebab di paragraf pembuka; cari kekhawatiran/fakta yang memulai aksi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nVanessa Nakate's journey as a climate activist began in January 2019, after she became deeply concerned about the unusually high temperatures in her home country, Uganda. Inspired by the global youth strikes, she decided to take action by protesting outside the gates of the Parliament in Kampala. For several months, she stood alone with her handmade signs, despite the skepticism of passersby. This period marked her transition from a quiet graduate into a determined activist, as she demanded that the government acknowledge the climate emergencies affecting Africa.\n\nFollowing her solitary protests, Nakate founded the Rise Up Movement to amplify the voices of other African activists who were often ignored by international media. A pivotal moment in her career occurred in early 2020 when she was famously cropped out of a photo with white activists at the World Economic Forum in Davos. Rather than being discouraged, she used the incident to highlight the marginalization of African voices in the climate conversation. This event propelled her into the global spotlight, allowing her to speak more forcefully about the \"Congo Rainforest\" and the unfair reality that Africa suffers the most while emitting the least carbon.\n\nAs her influence grew, Nakate shifted some of her focus toward practical solutions through the Vash Green Schools Project. She began launching initiatives to install solar panels and eco-friendly cookstoves in schools across Uganda. By doing so, she successfully reduced the schools' dependence on firewood and improved the learning environment for thousands of students. She also started advocating for the education of girls, linking it directly to climate resilience, and began traveling to various international summits, including COP25 and COP26, to challenge world leaders.\n\nBy 2021, Nakate had solidified her status as a global icon with the publication of her memoir, A Bigger Picture. The book documented her transformation and her fight for an inclusive environmental movement. Today, she continues to lead the Rise Up Movement and collaborate with international organizations like UNICEF. From a lone protester in Kampala to a world-renowned leader, Vanessa Nakate has proven that persistence can spark a massive shift in how the world views environmental justice and the power of youth.\n\n(adapted from https://www.unicef.org)\n\nWhich of the following options best shows the key moments in Vanessa's life as told in the text?",
+          "tipe": "pg",
+          "opsi": [
+            "(1) Protesting alone (2) Starting a movement (3) Launching a school project (4) Publishing a memoir",
+            "(1) Graduating university (2) Moving to Davos (3) Working as a technician (4) Becoming a photographer",
+            "(1) Studying in Europe (2) Joining a singing club (3) Planting trees (4) Leading a strike in Sweden",
+            "(1) Feeling skeptical (2) Retiring from activism (3) Writing a book (4) Visiting world leaders",
+            "(1) Becoming a quiet graduate (2) Leaving Uganda (3) Refusing to speak (4) Ignoring the rainforest"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Urutan peristiwa kronologis yang tepat mencakup: (1) melakukan protes tunggal di depan parlemen (paragraf 1) (2) mendirikan gerakan Rise Up (paragraf 2) (3) meluncurkan proyek sekolah hijau (paragraf 3) (4) menerbitkan memoar (paragraf 4) Jalur Cara Gemilang: Urutan recount = timeline; susun lewat penanda tahun/paragraf, jangan lewat perasaan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nVanessa Nakate's journey as a climate activist began in January 2019, after she became deeply concerned about the unusually high temperatures in her home country, Uganda. Inspired by the global youth strikes, she decided to take action by protesting outside the gates of the Parliament in Kampala. For several months, she stood alone with her handmade signs, despite the skepticism of passersby. This period marked her transition from a quiet graduate into a determined activist, as she demanded that the government acknowledge the climate emergencies affecting Africa.\n\nFollowing her solitary protests, Nakate founded the Rise Up Movement to amplify the voices of other African activists who were often ignored by international media. A pivotal moment in her career occurred in early 2020 when she was famously cropped out of a photo with white activists at the World Economic Forum in Davos. Rather than being discouraged, she used the incident to highlight the marginalization of African voices in the climate conversation. This event propelled her into the global spotlight, allowing her to speak more forcefully about the \"Congo Rainforest\" and the unfair reality that Africa suffers the most while emitting the least carbon.\n\nAs her influence grew, Nakate shifted some of her focus toward practical solutions through the Vash Green Schools Project. She began launching initiatives to install solar panels and eco-friendly cookstoves in schools across Uganda. By doing so, she successfully reduced the schools' dependence on firewood and improved the learning environment for thousands of students. She also started advocating for the education of girls, linking it directly to climate resilience, and began traveling to various international summits, including COP25 and COP26, to challenge world leaders.\n\nBy 2021, Nakate had solidified her status as a global icon with the publication of her memoir, A Bigger Picture. The book documented her transformation and her fight for an inclusive environmental movement. Today, she continues to lead the Rise Up Movement and collaborate with international organizations like UNICEF. From a lone protester in Kampala to a world-renowned leader, Vanessa Nakate has proven that persistence can spark a massive shift in how the world views environmental justice and the power of youth.\n\n(adapted from https://www.unicef.org)\n\nWhy did Vanessa Nakate decide to stand alone outside the gates of the Parliament? There is more than one correct answer. Choose all that apply!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "To promote her new memoir to the politicians passing by",
+            "To ask for a job as a quiet graduate at the parliament office",
+            "To demonstrate her persistence as a determined climate activist",
+            "To raise awareness about rising temperatures and unpredictable weather",
+            "To demand government acknowledgment of climate emergencies in Africa"
+          ],
+          "jawaban": [
+            2,
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Alasan Vanessa melakukan aksi protes tunggal di depan gerbang parlemen disebutkan pada paragraf pertama: To demonstrate her persistence as a determined climate activist (Menunjukkan kegigihannya sebagai aktivis.) To raise awareness about rising temperatures and unpredictable weather (Meningkatkan kesadaran tentang kenaikan suhu dan cuaca yang tidak menentu) To demand government acknowledgment of climate emergencies in Africa (Menuntut pengakuan pemerintah atas darurat iklim di Afrika) Jalur Cara Gemilang: Alasan = kalimat tujuan (\"to ...\") di paragraf 1; pilih semua motivasi yang tertulis.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nVanessa Nakate's journey as a climate activist began in January 2019, after she became deeply concerned about the unusually high temperatures in her home country, Uganda. Inspired by the global youth strikes, she decided to take action by protesting outside the gates of the Parliament in Kampala. For several months, she stood alone with her handmade signs, despite the skepticism of passersby. This period marked her transition from a quiet graduate into a determined activist, as she demanded that the government acknowledge the climate emergencies affecting Africa.\n\nFollowing her solitary protests, Nakate founded the Rise Up Movement to amplify the voices of other African activists who were often ignored by international media. A pivotal moment in her career occurred in early 2020 when she was famously cropped out of a photo with white activists at the World Economic Forum in Davos. Rather than being discouraged, she used the incident to highlight the marginalization of African voices in the climate conversation. This event propelled her into the global spotlight, allowing her to speak more forcefully about the \"Congo Rainforest\" and the unfair reality that Africa suffers the most while emitting the least carbon.\n\nAs her influence grew, Nakate shifted some of her focus toward practical solutions through the Vash Green Schools Project. She began launching initiatives to install solar panels and eco-friendly cookstoves in schools across Uganda. By doing so, she successfully reduced the schools' dependence on firewood and improved the learning environment for thousands of students. She also started advocating for the education of girls, linking it directly to climate resilience, and began traveling to various international summits, including COP25 and COP26, to challenge world leaders.\n\nBy 2021, Nakate had solidified her status as a global icon with the publication of her memoir, A Bigger Picture. The book documented her transformation and her fight for an inclusive environmental movement. Today, she continues to lead the Rise Up Movement and collaborate with international organizations like UNICEF. From a lone protester in Kampala to a world-renowned leader, Vanessa Nakate has proven that persistence can spark a massive shift in how the world views environmental justice and the power of youth.\n\n(adapted from https://www.unicef.org)\n\nWhich statement best shows the main idea of the third paragraph?",
+          "tipe": "pg",
+          "opsi": [
+            "The publication of a memoir that documents Vanessa's journey as an icon",
+            "Vanessa Nakate's early life and her graduation from a university in Uganda",
+            "The history of climate strikes led by international youth movements in Europe",
+            "The incident at the World Economic Forum where Vanessa was cropped out of a photo",
+            "Vanessa's shift toward practical environmental solutions and the empowerment of girls"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s4-a.svg",
+            "/bagan/bab1-s4-b.svg",
+            "/bagan/bab1-s4-c.svg",
+            "/bagan/bab1-s4-d.svg",
+            "/bagan/bab1-s4-e.svg"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Ide utama paragraf ke-3 berfokus pada langkah nyata Vanessa dalam memberikan solusi praktis melalui proyek sekolah serta dukungannya terhadap pendidikan perempuan untuk ketahanan iklim ( shifted some of her focus toward practical solutions… advocating for the education of girls ). Jalur Cara Gemilang: Main idea paragraf = kalimat inti; paragraf 3 = langkah nyata/proyek solusi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nVanessa Nakate's journey as a climate activist began in January 2019, after she became deeply concerned about the unusually high temperatures in her home country, Uganda. Inspired by the global youth strikes, she decided to take action by protesting outside the gates of the Parliament in Kampala. For several months, she stood alone with her handmade signs, despite the skepticism of passersby. This period marked her transition from a quiet graduate into a determined activist, as she demanded that the government acknowledge the climate emergencies affecting Africa.\n\nFollowing her solitary protests, Nakate founded the Rise Up Movement to amplify the voices of other African activists who were often ignored by international media. A pivotal moment in her career occurred in early 2020 when she was famously cropped out of a photo with white activists at the World Economic Forum in Davos. Rather than being discouraged, she used the incident to highlight the marginalization of African voices in the climate conversation. This event propelled her into the global spotlight, allowing her to speak more forcefully about the \"Congo Rainforest\" and the unfair reality that Africa suffers the most while emitting the least carbon.\n\nAs her influence grew, Nakate shifted some of her focus toward practical solutions through the Vash Green Schools Project. She began launching initiatives to install solar panels and eco-friendly cookstoves in schools across Uganda. By doing so, she successfully reduced the schools' dependence on firewood and improved the learning environment for thousands of students. She also started advocating for the education of girls, linking it directly to climate resilience, and began traveling to various international summits, including COP25 and COP26, to challenge world leaders.\n\nBy 2021, Nakate had solidified her status as a global icon with the publication of her memoir, A Bigger Picture. The book documented her transformation and her fight for an inclusive environmental movement. Today, she continues to lead the Rise Up Movement and collaborate with international organizations like UNICEF. From a lone protester in Kampala to a world-renowned leader, Vanessa Nakate has proven that persistence can spark a massive shift in how the world views environmental justice and the power of youth.\n\n(adapted from https://www.unicef.org)\n\nWrite True (T) or False (F) for each statement based on the text!\n(Answer each row by choosing True (T) / False (F).)",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "Vanessa Nakate began her activism after graduating from university.",
+            "The Rise Up Movement was founded to silence the voices of African activists.",
+            "Vanessa Nakate was famously cropped out of a photo at the Davos forum.",
+            "The Vash Green Schools Project installs expensive luxury cooling systems.",
+            "Vanessa Nakate believes that educating girls helps build climate resilience."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TRUE (T) Baris 2 — FALSE (F) Baris 3 — TRUE (T) Baris 4 — FALSE (F) Baris 5 — TRUE (T) (Catatan: tabel kunci ringkas buku mencetak \"F,F,T,F,T\", tetapi centang tabel pembahasan dan narasi pembahasan menyatakan baris 1 TRUE — kutipan \"transition from a quiet graduate into a determined activist\"; kami mengikuti pembahasan.) Jalur Cara Gemilang: True/False: verifikasi per baris ke paragraf; kata mutlak = False.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nArchbishop Desmond Tutu was a towering figure in South African history, known globally for his role in ending apartheid and his subsequent dedication to environmental justice. Born in 1931, Tutu rose to prominence as a vocal opponent of racial segregation, winning the Nobel Peace Prize in 1984. However, in his later years, he became one of the first global religious leaders to identify climate change as one of the greatest moral challenges of our time, famously labeling it \"the apartheid of our era.\"\n\nTutu argued that the destruction of the environment was a profound injustice that disproportionately affected the poor and marginalized. He used his moral authority to call for a \"global boycott\" of the fossil fuel industry, similar to the sanctions that helped topple the apartheid regime. He believed that the same collective international pressure used to fight racial injustice should be applied to companies responsible for carbon emissions, urging institutions to divest from coal, oil, and gas to protect the planet for future generations.\n\nHis environmental philosophy was rooted in the African concept of Ubuntu, which emphasizes the interconnectedness of all living beings. For Tutu, caring for the Earth was an essential part of caring for one another. He frequently participated in international climate campaigns, signing petitions and recording messages that urged world leaders to transition to renewable energy. He saw the climate crisis not just as a scientific or political issue, but as a deeply spiritual one that required a fundamental shift in how humans relate to nature.\n\nUntil his passing in 2021, Desmond Tutu remained a \"moral compass\" for the world. His legacy lives on through the Desmond and Leah Tutu Legacy Foundation, which continues to advocate for social and environmental justice. By linking the struggle for human rights with the struggle for a healthy planet, he provided a powerful framework for modern activism. His life serves as a reminder that the fight for a better world is a unified mission that encompasses both social equality and ecological preservation.\n\n(adapted from https://www.tutu.org.za)\n\nWhich of the following lists correctly shows the key stages of Desmond Tutu's life in chronological order?",
+          "tipe": "pg",
+          "opsi": [
+            "Calling for a global boycott, Winning the Nobel Peace Prize, Ending apartheid, Born in 1931",
+            "Winning the Nobel Peace Prize (1984), Born (1931), Ending apartheid, Campaigning for climate justice",
+            "Born (1931), Winning the Nobel Peace Prize (1984), Identifying climate change as a moral challenge, Passing away (2021)",
+            "Starting the Legacy Foundation, Born in 1931, Opposing racial segregation, Winning the Nobel Peace Prize",
+            "Transitioning to renewable energy, Winning the Nobel Peace Prize, Passing away in 2021, Born in 1931"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Urutan kronologis yang tepat berdasarkan teks adalah lahir pada tahun 1931 (paragraf 1), memenangkan Hadiah Nobel Perdamaian pada tahun 1984 (paragraf 1), mengidentifikasi perubahan iklim sebagai tantangan moral di masa tuanya (paragraf 1), dan wafat pada tahun 2021 (paragraf 4). Jalur Cara Gemilang: Biographical recount = lahir -> karier -> penghargaan -> warisan; ikuti angka tahun.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nArchbishop Desmond Tutu was a towering figure in South African history, known globally for his role in ending apartheid and his subsequent dedication to environmental justice. Born in 1931, Tutu rose to prominence as a vocal opponent of racial segregation, winning the Nobel Peace Prize in 1984. However, in his later years, he became one of the first global religious leaders to identify climate change as one of the greatest moral challenges of our time, famously labeling it \"the apartheid of our era.\"\n\nTutu argued that the destruction of the environment was a profound injustice that disproportionately affected the poor and marginalized. He used his moral authority to call for a \"global boycott\" of the fossil fuel industry, similar to the sanctions that helped topple the apartheid regime. He believed that the same collective international pressure used to fight racial injustice should be applied to companies responsible for carbon emissions, urging institutions to divest from coal, oil, and gas to protect the planet for future generations.\n\nHis environmental philosophy was rooted in the African concept of Ubuntu, which emphasizes the interconnectedness of all living beings. For Tutu, caring for the Earth was an essential part of caring for one another. He frequently participated in international climate campaigns, signing petitions and recording messages that urged world leaders to transition to renewable energy. He saw the climate crisis not just as a scientific or political issue, but as a deeply spiritual one that required a fundamental shift in how humans relate to nature.\n\nUntil his passing in 2021, Desmond Tutu remained a \"moral compass\" for the world. His legacy lives on through the Desmond and Leah Tutu Legacy Foundation, which continues to advocate for social and environmental justice. By linking the struggle for human rights with the struggle for a healthy planet, he provided a powerful framework for modern activism. His life serves as a reminder that the fight for a better world is a unified mission that encompasses both social equality and ecological preservation.\n\n(adapted from https://www.tutu.org.za)\n\nWhat was Desmond Tutu primarily known for globally?",
+          "tipe": "pg",
+          "opsi": [
+            "His leadership in building luxury resorts throughout South Africa",
+            "His career as a professional scientist studying fossil fuel emissions",
+            "His achievement as the first person to identify the concept of Ubuntu",
+            "His role in ending apartheid and his dedication to environmental justice",
+            "His work as a financial advisor for large international oil and gas companies"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Desmond Tutu dikenal secara global atas perannya dalam mengakhiri apartheid dan dedikasinya pada keadilan lingkungan. Informasi ini dapat ditemukan pada paragraf ke-1 ( Archbishop Desmond Tutu was a towering figure in South African history, known globally for his role in ending apartheid and his subsequent dedication to environmental justice ). Jalur Cara Gemilang: \"Primarily known for\" = peran utama yang disebut berulang & di penutup.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nArchbishop Desmond Tutu was a towering figure in South African history, known globally for his role in ending apartheid and his subsequent dedication to environmental justice. Born in 1931, Tutu rose to prominence as a vocal opponent of racial segregation, winning the Nobel Peace Prize in 1984. However, in his later years, he became one of the first global religious leaders to identify climate change as one of the greatest moral challenges of our time, famously labeling it \"the apartheid of our era.\"\n\nTutu argued that the destruction of the environment was a profound injustice that disproportionately affected the poor and marginalized. He used his moral authority to call for a \"global boycott\" of the fossil fuel industry, similar to the sanctions that helped topple the apartheid regime. He believed that the same collective international pressure used to fight racial injustice should be applied to companies responsible for carbon emissions, urging institutions to divest from coal, oil, and gas to protect the planet for future generations.\n\nHis environmental philosophy was rooted in the African concept of Ubuntu, which emphasizes the interconnectedness of all living beings. For Tutu, caring for the Earth was an essential part of caring for one another. He frequently participated in international climate campaigns, signing petitions and recording messages that urged world leaders to transition to renewable energy. He saw the climate crisis not just as a scientific or political issue, but as a deeply spiritual one that required a fundamental shift in how humans relate to nature.\n\nUntil his passing in 2021, Desmond Tutu remained a \"moral compass\" for the world. His legacy lives on through the Desmond and Leah Tutu Legacy Foundation, which continues to advocate for social and environmental justice. By linking the struggle for human rights with the struggle for a healthy planet, he provided a powerful framework for modern activism. His life serves as a reminder that the fight for a better world is a unified mission that encompasses both social equality and ecological preservation.\n\n(adapted from https://www.tutu.org.za)\n\nWhich actions did Desmond Tutu take to promote environmental protection? There is more than one correct answer. Choose all that apply!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Urging institutions to divest from coal, oil, and gas",
+            "Labeling climate change as \"the apartheid of our era\"",
+            "Calling for a \"global boycott\" of the fossil fuel industry",
+            "Ignoring specific data and opposing renewable energy policies",
+            "Establishing the first renewable energy company in South Africa"
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Tindakan nyata Tutu untuk mempromosikan perlindungan lingkungan yang disebutkan dalam teks adalah: Urging institutions to divest from coal, oil, and gas (Mendesak lembaga untuk melakukan divestasi dari bahan bakar fosil (paragraf 2).) Labeling climate change as \"the apartheid of our era\" (Memberikan label moral \"apartheid era kita\" pada perubahan iklim (paragraf 1).) Calling for a \"global boycott\" of the fossil fuel industry (Menyerukan boikot industri bahan bakar fosil secara global (paragraf 2).) Jalur Cara Gemilang: Tindakan nyata = daftar kerja di paragraf lingkungan (urging, calling, joining).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nArchbishop Desmond Tutu was a towering figure in South African history, known globally for his role in ending apartheid and his subsequent dedication to environmental justice. Born in 1931, Tutu rose to prominence as a vocal opponent of racial segregation, winning the Nobel Peace Prize in 1984. However, in his later years, he became one of the first global religious leaders to identify climate change as one of the greatest moral challenges of our time, famously labeling it \"the apartheid of our era.\"\n\nTutu argued that the destruction of the environment was a profound injustice that disproportionately affected the poor and marginalized. He used his moral authority to call for a \"global boycott\" of the fossil fuel industry, similar to the sanctions that helped topple the apartheid regime. He believed that the same collective international pressure used to fight racial injustice should be applied to companies responsible for carbon emissions, urging institutions to divest from coal, oil, and gas to protect the planet for future generations.\n\nHis environmental philosophy was rooted in the African concept of Ubuntu, which emphasizes the interconnectedness of all living beings. For Tutu, caring for the Earth was an essential part of caring for one another. He frequently participated in international climate campaigns, signing petitions and recording messages that urged world leaders to transition to renewable energy. He saw the climate crisis not just as a scientific or political issue, but as a deeply spiritual one that required a fundamental shift in how humans relate to nature.\n\nUntil his passing in 2021, Desmond Tutu remained a \"moral compass\" for the world. His legacy lives on through the Desmond and Leah Tutu Legacy Foundation, which continues to advocate for social and environmental justice. By linking the struggle for human rights with the struggle for a healthy planet, he provided a powerful framework for modern activism. His life serves as a reminder that the fight for a better world is a unified mission that encompasses both social equality and ecological preservation.\n\n(adapted from https://www.tutu.org.za)\n\nWhy did Desmond Tutu believe that international pressure should be applied to the fossil fuel industry?",
+          "tipe": "pg",
+          "opsi": [
+            "He wanted to build a legacy foundation for coal and oil companies.",
+            "He believed climate change was a spiritual issue without practical action.",
+            "He saw environmental destruction as a profound injustice affecting the poor.",
+            "He aimed to replace the concept of Ubuntu with a scientific framework.",
+            "He thought the apartheid regime was more dangerous than carbon emissions."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Tutu berpendapat bahwa kerusakan lingkungan adalah ketidakadilan mendalam yang secara tidak proporsional berdampak pada masyarakat miskin dan terpinggirkan. Informasi ini didukung oleh informasi pada paragraf ke-2 ( Tutu argued that the destruction of the environment was a profound injustice that disproportionately affected the poor and marginalized ). Jalur Cara Gemilang: Why = argumen tokoh: kerusakan lingkungan = ketidakadilan yang timpang.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nArchbishop Desmond Tutu was a towering figure in South African history, known globally for his role in ending apartheid and his subsequent dedication to environmental justice. Born in 1931, Tutu rose to prominence as a vocal opponent of racial segregation, winning the Nobel Peace Prize in 1984. However, in his later years, he became one of the first global religious leaders to identify climate change as one of the greatest moral challenges of our time, famously labeling it \"the apartheid of our era.\"\n\nTutu argued that the destruction of the environment was a profound injustice that disproportionately affected the poor and marginalized. He used his moral authority to call for a \"global boycott\" of the fossil fuel industry, similar to the sanctions that helped topple the apartheid regime. He believed that the same collective international pressure used to fight racial injustice should be applied to companies responsible for carbon emissions, urging institutions to divest from coal, oil, and gas to protect the planet for future generations.\n\nHis environmental philosophy was rooted in the African concept of Ubuntu, which emphasizes the interconnectedness of all living beings. For Tutu, caring for the Earth was an essential part of caring for one another. He frequently participated in international climate campaigns, signing petitions and recording messages that urged world leaders to transition to renewable energy. He saw the climate crisis not just as a scientific or political issue, but as a deeply spiritual one that required a fundamental shift in how humans relate to nature.\n\nUntil his passing in 2021, Desmond Tutu remained a \"moral compass\" for the world. His legacy lives on through the Desmond and Leah Tutu Legacy Foundation, which continues to advocate for social and environmental justice. By linking the struggle for human rights with the struggle for a healthy planet, he provided a powerful framework for modern activism. His life serves as a reminder that the fight for a better world is a unified mission that encompasses both social equality and ecological preservation.\n\n(adapted from https://www.tutu.org.za)\n\nCategorize the following actions based on whether they refer to Desmond Tutu's role during the Anti-Apartheid Movement or his Environmental Justice Advocacy . Put a tick (✓) on the correct column!\n(Answer each row by choosing Anti-Apartheid Movement / Environmental Justice Advocacy.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Anti-Apartheid Movement",
+            "Environmental Justice Advocacy"
+          ],
+          "baris": [
+            "Winning the Nobel Peace Prize in 1984 for opposing racial segregation",
+            "Calling for a \"global boycott\" of the fossil fuel industry",
+            "Promoting the concept of Ubuntu to show the interconnectedness of all living beings",
+            "Identifying climate change as the \"apartheid of our era.\"",
+            "Using international pressure and sanctions to topple a regime of racial injustice"
+          ],
+          "jawaban": [
+            0,
+            1,
+            1,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — ANTI-APARTHEID MOVEMENT Baris 2 — ENVIRONMENTAL JUSTICE ADVOCACY Baris 3 — ENVIRONMENTAL JUSTICE ADVOCACY Baris 4 — ENVIRONMENTAL JUSTICE ADVOCACY Baris 5 — ANTI-APARTHEID MOVEMENT Jalur Cara Gemilang: Categorize: tempel aksi ke eranya (anti-apartheid vs advokasi lingkungan).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLast winter, I embarked on a solo journey through the Larapinta Trail, a rugged path that winds across the West MacDonnell Ranges in Australia's Northern Territory. Known as the heart of the \"Red Centre,\" the Outback offered a landscape that was as intimidating as it was mesmerizing. I started my trek at Alice Springs, carrying a heavy pack filled with essential supplies, including several liters of water and a satellite phone, as the vastness of the desert leaves no room for logistical errors.\n\nOn the third day, I reached the summit of Mount Sonder just before dawn. The climb was grueling, with loose spinifex grass and jagged orange rocks making every step a challenge. However, as the sun began to rise, the entire horizon ignited in hues of deep crimson and violet. Looking down at the ancient, weathered valleys below, I felt a profound sense of solitude. The silence of the Outback was unlike anything I had ever experienced; it was a heavy, humming stillness that made me acutely aware of my own heartbeat.\n\nThe journey was not without its trials. During the afternoon, the temperature soared to a blistering 35&deg;C, making the dry heat feel like a physical weight. I had to navigate through narrow gorges and dried-up creek beds, constantly checking my map to avoid losing the trail among the shifting sands. By nightfall, the desert transformed completely. The temperature plummeted to near freezing, forcing me to huddle in my thermal sleeping bag. Despite the cold, the clarity of the night sky was unparalleled, revealing a dense canopy of stars and the Milky Way stretching across the firmament like spilled milk.\n\nMy expedition concluded a week later at the Finke River, one of the oldest river systems in the world. Reflecting on the trek, I realized that the Outback is not just a place of extreme conditions, but a sanctuary that humbles the human spirit. Walking through that ancient terrain taught me more about resilience and self-reliance than any urban environment ever could. It was an exhausting ordeal, yet the raw beauty of the desert remains etched in my memory as my most significant adventure.\n\n(adapted from various sources)\n\nWhat is the main idea of the 3rd paragraph?",
+          "tipe": "pg",
+          "opsi": [
+            "The author reaches the final destination at the Finke River after a long week.",
+            "The night sky in the Outback reveals a beautiful and clear view of the Milky Way.",
+            "The trek involves facing extreme temperature shifts and difficult physical terrains.",
+            "The desert landscape is filled with ancient weathered valleys and orange rocks.",
+            "The use of a satellite phone is mandatory for anyone traveling in the Northern Territory."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Ide utama paragraf ke-3 adalah mengenai tantangan fisik yang dihadapi penulis, terutama perubahan suhu yang sangat ekstrem dan sulitnya medan navigasi. Hal ini dijelaskan melalui rincian suhu yang melonjak di siang hari dan anjlok drastis di malam hari. Jalur Cara Gemilang: Main idea paragraf trek = tantangan fisik (panas, medan batuan).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLast winter, I embarked on a solo journey through the Larapinta Trail, a rugged path that winds across the West MacDonnell Ranges in Australia's Northern Territory. Known as the heart of the \"Red Centre,\" the Outback offered a landscape that was as intimidating as it was mesmerizing. I started my trek at Alice Springs, carrying a heavy pack filled with essential supplies, including several liters of water and a satellite phone, as the vastness of the desert leaves no room for logistical errors.\n\nOn the third day, I reached the summit of Mount Sonder just before dawn. The climb was grueling, with loose spinifex grass and jagged orange rocks making every step a challenge. However, as the sun began to rise, the entire horizon ignited in hues of deep crimson and violet. Looking down at the ancient, weathered valleys below, I felt a profound sense of solitude. The silence of the Outback was unlike anything I had ever experienced; it was a heavy, humming stillness that made me acutely aware of my own heartbeat.\n\nThe journey was not without its trials. During the afternoon, the temperature soared to a blistering 35&deg;C, making the dry heat feel like a physical weight. I had to navigate through narrow gorges and dried-up creek beds, constantly checking my map to avoid losing the trail among the shifting sands. By nightfall, the desert transformed completely. The temperature plummeted to near freezing, forcing me to huddle in my thermal sleeping bag. Despite the cold, the clarity of the night sky was unparalleled, revealing a dense canopy of stars and the Milky Way stretching across the firmament like spilled milk.\n\nMy expedition concluded a week later at the Finke River, one of the oldest river systems in the world. Reflecting on the trek, I realized that the Outback is not just a place of extreme conditions, but a sanctuary that humbles the human spirit. Walking through that ancient terrain taught me more about resilience and self-reliance than any urban environment ever could. It was an exhausting ordeal, yet the raw beauty of the desert remains etched in my memory as my most significant adventure.\n\n(adapted from various sources)\n\nWhat is the purpose of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "To persuade readers to move to Alice Springs",
+            "To describe the technical history of the Finke River",
+            "To retell the author's experience trekking the Larapinta Trail",
+            "To entertain readers with a fictional story about a desert monster",
+            "To criticize the Australian government's management of the Outback"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Tujuan dari teks ini adalah untuk menceritakan kembali rangkaian pengalaman pribadi penulis selama melakukan pendakian solo di Jalur Larapinta. Hal ini didukung informasi pada keseluruhan isi teks. Jalur Cara Gemilang: Purpose recount = to retell past experiences — bukan persuade/procedure.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLast winter, I embarked on a solo journey through the Larapinta Trail, a rugged path that winds across the West MacDonnell Ranges in Australia's Northern Territory. Known as the heart of the \"Red Centre,\" the Outback offered a landscape that was as intimidating as it was mesmerizing. I started my trek at Alice Springs, carrying a heavy pack filled with essential supplies, including several liters of water and a satellite phone, as the vastness of the desert leaves no room for logistical errors.\n\nOn the third day, I reached the summit of Mount Sonder just before dawn. The climb was grueling, with loose spinifex grass and jagged orange rocks making every step a challenge. However, as the sun began to rise, the entire horizon ignited in hues of deep crimson and violet. Looking down at the ancient, weathered valleys below, I felt a profound sense of solitude. The silence of the Outback was unlike anything I had ever experienced; it was a heavy, humming stillness that made me acutely aware of my own heartbeat.\n\nThe journey was not without its trials. During the afternoon, the temperature soared to a blistering 35&deg;C, making the dry heat feel like a physical weight. I had to navigate through narrow gorges and dried-up creek beds, constantly checking my map to avoid losing the trail among the shifting sands. By nightfall, the desert transformed completely. The temperature plummeted to near freezing, forcing me to huddle in my thermal sleeping bag. Despite the cold, the clarity of the night sky was unparalleled, revealing a dense canopy of stars and the Milky Way stretching across the firmament like spilled milk.\n\nMy expedition concluded a week later at the Finke River, one of the oldest river systems in the world. Reflecting on the trek, I realized that the Outback is not just a place of extreme conditions, but a sanctuary that humbles the human spirit. Walking through that ancient terrain taught me more about resilience and self-reliance than any urban environment ever could. It was an exhausting ordeal, yet the raw beauty of the desert remains etched in my memory as my most significant adventure.\n\n(adapted from various sources)\n\nWhat can be concluded from the text?",
+          "tipe": "pg",
+          "opsi": [
+            "The Larapinta Trail is a very easy and relaxing path for beginners.",
+            "The author felt that the urban environment is better for learning resilience.",
+            "The author regretted the journey because it was too exhausting and lonely.",
+            "The temperature in the desert remains hot and blistering throughout the night.",
+            "The proper logistics and mental toughness are essential for an Outback expedition."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Dari teks tersebut dapat disimpulkan bahwa persiapan logistik yang matang serta kekuatan mental adalah syarat mutlak untuk melakukan ekspedisi di Outback guna menghindari kesalahan fatal. Hal ini didukung keseluruhan teks, terutama pada paragraf ke-4 ( Reflecting on the trek, I realized that the Outback is not just a place of extreme conditions, but a sanctuary that humbles the human spirit. Walking through that ancient terrain taught me more about resilience and self-reliance than any urban environment ever could ). Jalur Cara Gemilang: Conclusion = generalisasi: persiapan logistik + mental = syarat sukses.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLast winter, I embarked on a solo journey through the Larapinta Trail, a rugged path that winds across the West MacDonnell Ranges in Australia's Northern Territory. Known as the heart of the \"Red Centre,\" the Outback offered a landscape that was as intimidating as it was mesmerizing. I started my trek at Alice Springs, carrying a heavy pack filled with essential supplies, including several liters of water and a satellite phone, as the vastness of the desert leaves no room for logistical errors.\n\nOn the third day, I reached the summit of Mount Sonder just before dawn. The climb was grueling, with loose spinifex grass and jagged orange rocks making every step a challenge. However, as the sun began to rise, the entire horizon ignited in hues of deep crimson and violet. Looking down at the ancient, weathered valleys below, I felt a profound sense of solitude. The silence of the Outback was unlike anything I had ever experienced; it was a heavy, humming stillness that made me acutely aware of my own heartbeat.\n\nThe journey was not without its trials. During the afternoon, the temperature soared to a blistering 35&deg;C, making the dry heat feel like a physical weight. I had to navigate through narrow gorges and dried-up creek beds, constantly checking my map to avoid losing the trail among the shifting sands. By nightfall, the desert transformed completely. The temperature plummeted to near freezing, forcing me to huddle in my thermal sleeping bag. Despite the cold, the clarity of the night sky was unparalleled, revealing a dense canopy of stars and the Milky Way stretching across the firmament like spilled milk.\n\nMy expedition concluded a week later at the Finke River, one of the oldest river systems in the world. Reflecting on the trek, I realized that the Outback is not just a place of extreme conditions, but a sanctuary that humbles the human spirit. Walking through that ancient terrain taught me more about resilience and self-reliance than any urban environment ever could. It was an exhausting ordeal, yet the raw beauty of the desert remains etched in my memory as my most significant adventure.\n\n(adapted from various sources)\n\nWhich of the following were challenges faced by the author during the trek? There is more than one correct answer. Choose all that apply!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "A lack of stars and a cloudy night sky",
+            "Jagged orange rocks and loose spinifex grass",
+            "Extreme heat reaching 35&deg;C in the afternoon",
+            "Dealing with heavy rain and floods at the Finke River.",
+            "Navigating through narrow gorges and dried-up creek beds."
+          ],
+          "jawaban": [
+            1,
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Tantangan yang dihadapi penulis meliputi medan batuan yang tajam (paragraf 2), suhu panas mencapai 35 &deg;C (paragraf 3), serta navigasi di ngarai yang sempit dan sungai kering (paragraf 3). Jalur Cara Gemilang: Challenges = yang dialami/dihadapi; coret yang tidak terjadi di teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nLast winter, I embarked on a solo journey through the Larapinta Trail, a rugged path that winds across the West MacDonnell Ranges in Australia's Northern Territory. Known as the heart of the \"Red Centre,\" the Outback offered a landscape that was as intimidating as it was mesmerizing. I started my trek at Alice Springs, carrying a heavy pack filled with essential supplies, including several liters of water and a satellite phone, as the vastness of the desert leaves no room for logistical errors.\n\nOn the third day, I reached the summit of Mount Sonder just before dawn. The climb was grueling, with loose spinifex grass and jagged orange rocks making every step a challenge. However, as the sun began to rise, the entire horizon ignited in hues of deep crimson and violet. Looking down at the ancient, weathered valleys below, I felt a profound sense of solitude. The silence of the Outback was unlike anything I had ever experienced; it was a heavy, humming stillness that made me acutely aware of my own heartbeat.\n\nThe journey was not without its trials. During the afternoon, the temperature soared to a blistering 35&deg;C, making the dry heat feel like a physical weight. I had to navigate through narrow gorges and dried-up creek beds, constantly checking my map to avoid losing the trail among the shifting sands. By nightfall, the desert transformed completely. The temperature plummeted to near freezing, forcing me to huddle in my thermal sleeping bag. Despite the cold, the clarity of the night sky was unparalleled, revealing a dense canopy of stars and the Milky Way stretching across the firmament like spilled milk.\n\nMy expedition concluded a week later at the Finke River, one of the oldest river systems in the world. Reflecting on the trek, I realized that the Outback is not just a place of extreme conditions, but a sanctuary that humbles the human spirit. Walking through that ancient terrain taught me more about resilience and self-reliance than any urban environment ever could. It was an exhausting ordeal, yet the raw beauty of the desert remains etched in my memory as my most significant adventure.\n\n(adapted from various sources)\n\nCategorize the following conditions based on when they occurred during the author's trek in the Outback. Put a tick (✓) on the correct column!\n(Answer each row by choosing Afternoon / Nighttime.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Afternoon",
+            "Nighttime"
+          ],
+          "baris": [
+            "The temperature plummeted to near freezing levels.",
+            "The heat felt like a physical weight at 35 &deg;C.",
+            "A dense canopy of stars and the Milky Way became visible.",
+            "The author had to navigate through narrow gorges and dry creeks.",
+            "The author huddled inside a thermal sleeping bag for warmth."
+          ],
+          "jawaban": [
+            1,
+            0,
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — NIGHTTIME Baris 2 — AFTERNOON Baris 3 — NIGHTTIME Baris 4 — AFTERNOON Baris 5 — NIGHTTIME Jalur Cara Gemilang: Penanda waktu: matahari terik = afternoon; bintang/dingin = nighttime.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe story of Melati and Isabel Wijsen began in 2013 when they were only 12 and 10 years old. While attending a lesson at the Green School in Bali, they learned about significant world leaders who had made a difference. Inspired by this, they looked at their own surroundings and felt deeply disturbed by the massive amount of plastic waste polluting the beaches of Bali. This realization prompted them to take immediate action, and in that same year, they co-founded a grassroots movement called 'Bye Bye Plastic Bags' (BBPB).\n\nIn the following years, the sisters organized numerous activities to strengthen their cause. They started by organizing large-scale beach clean-ups and delivering educational workshops to local schools across the island. However, they soon realized that to achieve a permanent change, they needed to influence government policy. To get the attention of local authorities, they even went on a symbolic hunger strike. This persistent effort eventually led to a breakthrough when they secured a meeting with the Governor of Bali to discuss the plastic crisis.\n\nA major milestone was reached in 2019, when the Balinese government officially implemented a ban on single-use plastic bags, straws, and styrofoam. This landmark victory was the culmination of six years of tireless campaigning and served as a model for other provinces in Indonesia. After achieving this success in their homeland, the sisters expanded their mission globally. They established 'Youthtopia,' an international platform designed to provide mentorship and tools for young people around the world who wanted to start their own environmental projects.\n\nThe impact of their work was recognized by major organizations such as the United Nations and Time Magazine, which named them among the most influential teenagers in the world. They traveled to various countries to speak at international forums and urged world leaders to adopt similar plastic bans. By turning their local frustration into a global movement, they inspired millions of people to rethink their relationship with plastic. Their journey proved that persistence and a clear vision could spark a massive shift in environmental justice.\n\n(adapted from https://www.byebyeplasticbags.org)\n\nWhich of the following events occurred during the early years of the 'Bye Bye Plastic Bags' movement? There is more than one correct answer. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "The sisters organized large-scale beach clean-ups in Bali.",
+            "They delivered educational workshops to various local schools.",
+            "The United Nations immediately named them world leaders in 2013.",
+            "They went on a symbolic hunger strike to meet the Governor.",
+            "The sisters moved to another country to start their university studies."
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s16-a.svg",
+            "/bagan/bab1-s16-b.svg",
+            "/bagan/bab1-s16-c.svg",
+            "/bagan/bab1-s16-d.svg",
+            "/bagan/bab1-s16-e.svg"
+          ],
+          "jawaban": [
+            0,
+            1,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Peristiwa yang terjadi pada tahun-tahun awal gerakan Bye Bye Plastic Bags meliputi: The sisters organized large-scale beach clean-ups in Bali. (Mengorganisir aksi bersih-bersih pantai skala besar (paragraf 2).) They delivered educational workshops to various local schools. (Memberikan lokakarya edukasi ke sekolah-sekolah lokal (paragraf 2).) They went on a symbolic hunger strike to meet the Governor. (Melakukan mogok makan simbolis untuk menarik perhatian otoritas (paragraf 2).) Jalur Cara Gemilang: Early years = peristiwa awal gerakan; ban plastik 2019 = hasil akhir, bukan awal.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe story of Melati and Isabel Wijsen began in 2013 when they were only 12 and 10 years old. While attending a lesson at the Green School in Bali, they learned about significant world leaders who had made a difference. Inspired by this, they looked at their own surroundings and felt deeply disturbed by the massive amount of plastic waste polluting the beaches of Bali. This realization prompted them to take immediate action, and in that same year, they co-founded a grassroots movement called 'Bye Bye Plastic Bags' (BBPB).\n\nIn the following years, the sisters organized numerous activities to strengthen their cause. They started by organizing large-scale beach clean-ups and delivering educational workshops to local schools across the island. However, they soon realized that to achieve a permanent change, they needed to influence government policy. To get the attention of local authorities, they even went on a symbolic hunger strike. This persistent effort eventually led to a breakthrough when they secured a meeting with the Governor of Bali to discuss the plastic crisis.\n\nA major milestone was reached in 2019, when the Balinese government officially implemented a ban on single-use plastic bags, straws, and styrofoam. This landmark victory was the culmination of six years of tireless campaigning and served as a model for other provinces in Indonesia. After achieving this success in their homeland, the sisters expanded their mission globally. They established 'Youthtopia,' an international platform designed to provide mentorship and tools for young people around the world who wanted to start their own environmental projects.\n\nThe impact of their work was recognized by major organizations such as the United Nations and Time Magazine, which named them among the most influential teenagers in the world. They traveled to various countries to speak at international forums and urged world leaders to adopt similar plastic bans. By turning their local frustration into a global movement, they inspired millions of people to rethink their relationship with plastic. Their journey proved that persistence and a clear vision could spark a massive shift in environmental justice.\n\n(adapted from https://www.byebyeplasticbags.org)\n\nThe author mentioned that the 2019 plastic ban was a \"landmark victory.\" This phrase suggests that the event was",
+          "tipe": "pg",
+          "opsi": [
+            "a minor achievement that only affected a small village in Bali.",
+            "a temporary rule that lasted for only a few months in 2019.",
+            "a failure because the government refused to listen to the sisters.",
+            "an expensive project that required a lot of money from the sisters.",
+            "a significant and historical success that set an important example."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Frasa \"landmark victory\" merujuk pada keberhasilan yang sangat signifikan dan bersejarah karena menjadi model bagi provinsi lain di Indonesia. Informasi ini didukung oleh paragraf ke-3 ( This landmark victory was the culmination of six years of tireless campaigning and served as a model for other provinces in Indonesia ). Jalur Cara Gemilang: Makna frasa = konteks sekitarnya: \"landmark victory\" = bersejarah & jadi model.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe story of Melati and Isabel Wijsen began in 2013 when they were only 12 and 10 years old. While attending a lesson at the Green School in Bali, they learned about significant world leaders who had made a difference. Inspired by this, they looked at their own surroundings and felt deeply disturbed by the massive amount of plastic waste polluting the beaches of Bali. This realization prompted them to take immediate action, and in that same year, they co-founded a grassroots movement called 'Bye Bye Plastic Bags' (BBPB).\n\nIn the following years, the sisters organized numerous activities to strengthen their cause. They started by organizing large-scale beach clean-ups and delivering educational workshops to local schools across the island. However, they soon realized that to achieve a permanent change, they needed to influence government policy. To get the attention of local authorities, they even went on a symbolic hunger strike. This persistent effort eventually led to a breakthrough when they secured a meeting with the Governor of Bali to discuss the plastic crisis.\n\nA major milestone was reached in 2019, when the Balinese government officially implemented a ban on single-use plastic bags, straws, and styrofoam. This landmark victory was the culmination of six years of tireless campaigning and served as a model for other provinces in Indonesia. After achieving this success in their homeland, the sisters expanded their mission globally. They established 'Youthtopia,' an international platform designed to provide mentorship and tools for young people around the world who wanted to start their own environmental projects.\n\nThe impact of their work was recognized by major organizations such as the United Nations and Time Magazine, which named them among the most influential teenagers in the world. They traveled to various countries to speak at international forums and urged world leaders to adopt similar plastic bans. By turning their local frustration into a global movement, they inspired millions of people to rethink their relationship with plastic. Their journey proved that persistence and a clear vision could spark a massive shift in environmental justice.\n\n(adapted from https://www.byebyeplasticbags.org)\n\nWhat idea does the text suggest about the journey of Melati and Isabel?",
+          "tipe": "pg",
+          "opsi": [
+            "The economic benefits of selling recycled plastic bags in Indonesia",
+            "The difficulty of cleaning beaches without the help of local tourists",
+            "The popularity of Bali as the only island with plastic waste problems",
+            "The importance of attending the Green School to become a famous icon",
+            "The success of young people in influencing government environmental policy"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s18-a.svg",
+            "/bagan/bab1-s18-b.svg",
+            "/bagan/bab1-s18-c.svg",
+            "/bagan/bab1-s18-d.svg",
+            "/bagan/bab1-s18-e.svg"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Teks tersebut menunjukkan bagaimana kegigihan dan visi anak muda mampu membawa perubahan nyata serta memengaruhi kebijakan lingkungan pemerintah secara luas. Informasi ini didukung oleh keseluruhan isi teks. Jalur Cara Gemilang: Ide tersirat = pesan besar: kegigihan anak muda membawa perubahan nyata.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe story of Melati and Isabel Wijsen began in 2013 when they were only 12 and 10 years old. While attending a lesson at the Green School in Bali, they learned about significant world leaders who had made a difference. Inspired by this, they looked at their own surroundings and felt deeply disturbed by the massive amount of plastic waste polluting the beaches of Bali. This realization prompted them to take immediate action, and in that same year, they co-founded a grassroots movement called 'Bye Bye Plastic Bags' (BBPB).\n\nIn the following years, the sisters organized numerous activities to strengthen their cause. They started by organizing large-scale beach clean-ups and delivering educational workshops to local schools across the island. However, they soon realized that to achieve a permanent change, they needed to influence government policy. To get the attention of local authorities, they even went on a symbolic hunger strike. This persistent effort eventually led to a breakthrough when they secured a meeting with the Governor of Bali to discuss the plastic crisis.\n\nA major milestone was reached in 2019, when the Balinese government officially implemented a ban on single-use plastic bags, straws, and styrofoam. This landmark victory was the culmination of six years of tireless campaigning and served as a model for other provinces in Indonesia. After achieving this success in their homeland, the sisters expanded their mission globally. They established 'Youthtopia,' an international platform designed to provide mentorship and tools for young people around the world who wanted to start their own environmental projects.\n\nThe impact of their work was recognized by major organizations such as the United Nations and Time Magazine, which named them among the most influential teenagers in the world. They traveled to various countries to speak at international forums and urged world leaders to adopt similar plastic bans. By turning their local frustration into a global movement, they inspired millions of people to rethink their relationship with plastic. Their journey proved that persistence and a clear vision could spark a massive shift in environmental justice.\n\n(adapted from https://www.byebyeplasticbags.org)\n\nWhich detail from the text would best inspire other young people to start their own projects?",
+          "tipe": "pg",
+          "opsi": [
+            "The exact number of people who participated in the 2013 protest.",
+            "The specific types of styrofoam and straws that were banned in Bali.",
+            "The establishment of Youthtopia as a platform for mentorship and tools.",
+            "The weather conditions in Bali that affected the beach clean-up activities.",
+            "The names of the significant world leaders mentioned in their school lesson."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Detail yang paling menginspirasi anak muda untuk memulai proyek sendiri adalah pembentukan Youthtopia sebagai wadah pendampingan dan penyedia alat bantu bagi mereka ( They established \"Youthtopia,\" an international platform designed to provide mentorship and tools for young people around the world who wanted to start their own environmental projects ). Jalur Cara Gemilang: Detail inspiratif = yang bisa ditiru pembaca (platform Youthtopia).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe story of Melati and Isabel Wijsen began in 2013 when they were only 12 and 10 years old. While attending a lesson at the Green School in Bali, they learned about significant world leaders who had made a difference. Inspired by this, they looked at their own surroundings and felt deeply disturbed by the massive amount of plastic waste polluting the beaches of Bali. This realization prompted them to take immediate action, and in that same year, they co-founded a grassroots movement called 'Bye Bye Plastic Bags' (BBPB).\n\nIn the following years, the sisters organized numerous activities to strengthen their cause. They started by organizing large-scale beach clean-ups and delivering educational workshops to local schools across the island. However, they soon realized that to achieve a permanent change, they needed to influence government policy. To get the attention of local authorities, they even went on a symbolic hunger strike. This persistent effort eventually led to a breakthrough when they secured a meeting with the Governor of Bali to discuss the plastic crisis.\n\nA major milestone was reached in 2019, when the Balinese government officially implemented a ban on single-use plastic bags, straws, and styrofoam. This landmark victory was the culmination of six years of tireless campaigning and served as a model for other provinces in Indonesia. After achieving this success in their homeland, the sisters expanded their mission globally. They established 'Youthtopia,' an international platform designed to provide mentorship and tools for young people around the world who wanted to start their own environmental projects.\n\nThe impact of their work was recognized by major organizations such as the United Nations and Time Magazine, which named them among the most influential teenagers in the world. They traveled to various countries to speak at international forums and urged world leaders to adopt similar plastic bans. By turning their local frustration into a global movement, they inspired millions of people to rethink their relationship with plastic. Their journey proved that persistence and a clear vision could spark a massive shift in environmental justice.\n\n(adapted from https://www.byebyeplasticbags.org)\n\nWrite True (T) or False (F) for each statement based on the text!\n(Answer each row by choosing True (T) / False (F).)",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "Melati and Isabel were inspired by a school lesson about world leaders.",
+            "The \"Bye Bye Plastic Bags\" movement was founded in 2019.",
+            "The sisters secured a meeting with the Governor after a hunger strike.",
+            "Youthtopia was created to help adults find jobs in the plastic industry.",
+            "The UN and Time Magazine recognized the impact of the sisters' work."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TRUE (T) Baris 2 — FALSE (F) Baris 3 — TRUE (T) Baris 4 — FALSE (F) Baris 5 — TRUE (T) Jalur Cara Gemilang: Trigger paragraf 1: video gunungan plastik saat mengikuti kegiatan sekolah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Battle of Surabaya began as a series of escalating tensions between Indonesian nationalists and British forces following the end of World War II. After Indonesia proclaimed its independence in August 1945, British troops arrived in Surabaya in October to disarm Japanese forces and release prisoners of war. However, conflict erupted on October 30 after the British commander, Brigadier General A.W.S. Mallaby, was killed during a clash at the Red Bridge. This incident prompted the British to issue a harsh ultimatum, demanding that all Indonesians surrender their weapons by the morning of November 10, 1945.\n\nIn the early hours of November 10, the Indonesian people chose to ignore the ultimatum, sparking a massive military assault by the British. The attack started with a heavy aerial bombardment, followed by naval shelling and a coordinated ground invasion of the city. Despite being significantly outgunned, the Indonesian militias and civilians refused to retreat. They engaged in fierce street-to-street combat, using both modern weapons and traditional bamboo spears to defend their territory against the highly trained Allied forces.\n\nDuring the height of the fighting, a charismatic leader named Sutomo, better known as Bung Tomo, played a crucial role in maintaining the morale of the fighters. Through his fiery and passionate radio broadcasts, he urged the people of Surabaya to fight until the last breath for their freedom. His famous slogan, \"Merdeka atau Mati\" (Freedom or Death), echoed throughout the city and united people from various ethnic and social backgrounds. This collective resistance turned the city into a battlefield that lasted for nearly three weeks, far longer than the British had initially anticipated.\n\nAlthough the British eventually secured the city, the battle became a significant moral victory for the Indonesian National Revolution. The heavy casualties and the immense courage shown by the Indonesians drew international attention and forced the world to recognize the nation's struggle for sovereignty. Today, November 10 is commemorated annually as \"Heroes' Day\" or Hari Pahlawan in Bahasa Indonesia to honor the thousands of souls who fell during this historic confrontation. The battle stands as a lasting symbol of the unwavering determination of the Indonesian people to remain independent.\n\n(adapted from https://www.indonesia.go.id)\n\nWhat is the historical significance of the Battle of Surabaya?",
+          "tipe": "pg",
+          "opsi": [
+            "It was the first time Indonesian leaders met with Japanese forces.",
+            "It served as a symbolic moment that led to the end of World War II.",
+            "It was a pivotal battle that forced the world to recognize Indonesia's struggle.",
+            "It marked the successful peaceful negotiation between Bung Tomo and the British.",
+            "It was a military victory where Indonesians completely defeated the Allied forces."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Signifikansi sejarah dari Pertempuran Surabaya adalah menjadi titik balik yang memaksa dunia internasional mengakui perjuangan kemerdekaan Indonesia. Hal ini didukung oleh informasi pada paragraf terakhir ( The heavy casualties and the immense courage shown by the Indonesians drew international attention and forced the world to recognize the nation's struggle for sovereignty ). Jalur Cara Gemilang: Significance = titik balik yang memaksa dunia memperhatikan perjuangan RI.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Battle of Surabaya began as a series of escalating tensions between Indonesian nationalists and British forces following the end of World War II. After Indonesia proclaimed its independence in August 1945, British troops arrived in Surabaya in October to disarm Japanese forces and release prisoners of war. However, conflict erupted on October 30 after the British commander, Brigadier General A.W.S. Mallaby, was killed during a clash at the Red Bridge. This incident prompted the British to issue a harsh ultimatum, demanding that all Indonesians surrender their weapons by the morning of November 10, 1945.\n\nIn the early hours of November 10, the Indonesian people chose to ignore the ultimatum, sparking a massive military assault by the British. The attack started with a heavy aerial bombardment, followed by naval shelling and a coordinated ground invasion of the city. Despite being significantly outgunned, the Indonesian militias and civilians refused to retreat. They engaged in fierce street-to-street combat, using both modern weapons and traditional bamboo spears to defend their territory against the highly trained Allied forces.\n\nDuring the height of the fighting, a charismatic leader named Sutomo, better known as Bung Tomo, played a crucial role in maintaining the morale of the fighters. Through his fiery and passionate radio broadcasts, he urged the people of Surabaya to fight until the last breath for their freedom. His famous slogan, \"Merdeka atau Mati\" (Freedom or Death), echoed throughout the city and united people from various ethnic and social backgrounds. This collective resistance turned the city into a battlefield that lasted for nearly three weeks, far longer than the British had initially anticipated.\n\nAlthough the British eventually secured the city, the battle became a significant moral victory for the Indonesian National Revolution. The heavy casualties and the immense courage shown by the Indonesians drew international attention and forced the world to recognize the nation's struggle for sovereignty. Today, November 10 is commemorated annually as \"Heroes' Day\" or Hari Pahlawan in Bahasa Indonesia to honor the thousands of souls who fell during this historic confrontation. The battle stands as a lasting symbol of the unwavering determination of the Indonesian people to remain independent.\n\n(adapted from https://www.indonesia.go.id)\n\nWhich of the following lists best summarizes the key stages of the Battle of Surabaya?",
+          "tipe": "pg",
+          "opsi": [
+            "(1) Independence proclamation (2) Arrival of British troops (3) Death of Mallaby (4) Massive military assault on November 10.",
+            "(1) Arrival of Japanese forces (2) Building the Red Bridge (3) Meeting of world leaders (4) Signing a peace treaty",
+            "(1) Protesting in the streets (2) Surrendering all weapons (3) Leaving the city of Surabaya (4) Joining the Allied forces",
+            "(1) Establishing Heroes' Day (2) Disarming Japanese troops (3) Bombing the city of London (4) Releasing all prisoners",
+            "(1) Proclaiming independence (2) Appointing Bung Tomo as General (3) Winning the war in three days (4) Commemorating the victory"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Ringkasan tahapan kunci yang paling akurat berdasarkan teks adalah: (1) Proklamasi kemerdekaan, (2) Kedatangan tentara Inggris, (3) Tewasnya Mallaby, dan (4) Serangan militer besar-besaran pada 10 November. Urutan ini sesuai dengan kronologi yang dijelaskan pada paragraf ke-1 dan ke-2. Jalur Cara Gemilang: Tahapan = proklamasi -> kedatangan Sekutu -> ultimatum -> pertempuran -> peringatan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Battle of Surabaya began as a series of escalating tensions between Indonesian nationalists and British forces following the end of World War II. After Indonesia proclaimed its independence in August 1945, British troops arrived in Surabaya in October to disarm Japanese forces and release prisoners of war. However, conflict erupted on October 30 after the British commander, Brigadier General A.W.S. Mallaby, was killed during a clash at the Red Bridge. This incident prompted the British to issue a harsh ultimatum, demanding that all Indonesians surrender their weapons by the morning of November 10, 1945.\n\nIn the early hours of November 10, the Indonesian people chose to ignore the ultimatum, sparking a massive military assault by the British. The attack started with a heavy aerial bombardment, followed by naval shelling and a coordinated ground invasion of the city. Despite being significantly outgunned, the Indonesian militias and civilians refused to retreat. They engaged in fierce street-to-street combat, using both modern weapons and traditional bamboo spears to defend their territory against the highly trained Allied forces.\n\nDuring the height of the fighting, a charismatic leader named Sutomo, better known as Bung Tomo, played a crucial role in maintaining the morale of the fighters. Through his fiery and passionate radio broadcasts, he urged the people of Surabaya to fight until the last breath for their freedom. His famous slogan, \"Merdeka atau Mati\" (Freedom or Death), echoed throughout the city and united people from various ethnic and social backgrounds. This collective resistance turned the city into a battlefield that lasted for nearly three weeks, far longer than the British had initially anticipated.\n\nAlthough the British eventually secured the city, the battle became a significant moral victory for the Indonesian National Revolution. The heavy casualties and the immense courage shown by the Indonesians drew international attention and forced the world to recognize the nation's struggle for sovereignty. Today, November 10 is commemorated annually as \"Heroes' Day\" or Hari Pahlawan in Bahasa Indonesia to honor the thousands of souls who fell during this historic confrontation. The battle stands as a lasting symbol of the unwavering determination of the Indonesian people to remain independent.\n\n(adapted from https://www.indonesia.go.id)\n\nWhich sentence best captures the main point of the last paragraph?",
+          "tipe": "pg",
+          "opsi": [
+            "The British forces successfully secured the city and ended the revolution.",
+            "The battle stands as a lasting symbol of Indonesian determination and sovereignty.",
+            "International organizations provided weapons to help the Indonesian militias.",
+            "The death of thousands of souls was the only reason the revolution failed.",
+            "November 10 was chosen as a holiday to celebrate the arrival of the British."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Poin utama dari paragraf terakhir adalah bahwa pertempuran tersebut berdiri sebagai simbol abadi tekad dan kedaulatan rakyat Indonesia. Hal ini didukung oleh keseluruhan isi teks. Jalur Cara Gemilang: Paragraf terakhir = simbol abadi tekad; cari kalimat penutup bermakna luas.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Battle of Surabaya began as a series of escalating tensions between Indonesian nationalists and British forces following the end of World War II. After Indonesia proclaimed its independence in August 1945, British troops arrived in Surabaya in October to disarm Japanese forces and release prisoners of war. However, conflict erupted on October 30 after the British commander, Brigadier General A.W.S. Mallaby, was killed during a clash at the Red Bridge. This incident prompted the British to issue a harsh ultimatum, demanding that all Indonesians surrender their weapons by the morning of November 10, 1945.\n\nIn the early hours of November 10, the Indonesian people chose to ignore the ultimatum, sparking a massive military assault by the British. The attack started with a heavy aerial bombardment, followed by naval shelling and a coordinated ground invasion of the city. Despite being significantly outgunned, the Indonesian militias and civilians refused to retreat. They engaged in fierce street-to-street combat, using both modern weapons and traditional bamboo spears to defend their territory against the highly trained Allied forces.\n\nDuring the height of the fighting, a charismatic leader named Sutomo, better known as Bung Tomo, played a crucial role in maintaining the morale of the fighters. Through his fiery and passionate radio broadcasts, he urged the people of Surabaya to fight until the last breath for their freedom. His famous slogan, \"Merdeka atau Mati\" (Freedom or Death), echoed throughout the city and united people from various ethnic and social backgrounds. This collective resistance turned the city into a battlefield that lasted for nearly three weeks, far longer than the British had initially anticipated.\n\nAlthough the British eventually secured the city, the battle became a significant moral victory for the Indonesian National Revolution. The heavy casualties and the immense courage shown by the Indonesians drew international attention and forced the world to recognize the nation's struggle for sovereignty. Today, November 10 is commemorated annually as \"Heroes' Day\" or Hari Pahlawan in Bahasa Indonesia to honor the thousands of souls who fell during this historic confrontation. The battle stands as a lasting symbol of the unwavering determination of the Indonesian people to remain independent.\n\n(adapted from https://www.indonesia.go.id)\n\nWhy did the fighting in Surabaya last much longer than the British had initially anticipated? There is more than one correct answer. Choose all that apply!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "The Indonesian people chose to ignore the ultimatum and fight back.",
+            "Bung Tomo's radio broadcasts successfully united and motivated the fighters.",
+            "The British forces lacked modern weaponry and aerial bombardment.",
+            "People from various ethnic and social backgrounds joined the collective resistance.",
+            "The Indonesian militias surrendered their weapons early on the morning of November 10."
+          ],
+          "jawaban": [
+            0,
+            1,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Pertempuran berlangsung lebih lama dari antisipasi Inggris karena: The Indonesian people chose to ignore the ultimatum and fight back. (Rakyat Indonesia memilih mengabaikan ultimatum dan melawan (paragraf 2).) Bung Tomo's radio broadcasts successfully united and motivated the fighters. (Siaran radio Bung Tomo berhasil menyatukan dan memotivasi para pejuang (paragraf 3).) People from various ethnic and social backgrounds joined the collective resistance. (Masyarakat dari berbagai latar belakang etnis dan sosial bergabung dalam perlawanan kolektif (paragraf 3)). Jalur Cara Gemilang: Why longer = abaikan ultimatum + semangat perlawanan + taktik gerilya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nThe Battle of Surabaya began as a series of escalating tensions between Indonesian nationalists and British forces following the end of World War II. After Indonesia proclaimed its independence in August 1945, British troops arrived in Surabaya in October to disarm Japanese forces and release prisoners of war. However, conflict erupted on October 30 after the British commander, Brigadier General A.W.S. Mallaby, was killed during a clash at the Red Bridge. This incident prompted the British to issue a harsh ultimatum, demanding that all Indonesians surrender their weapons by the morning of November 10, 1945.\n\nIn the early hours of November 10, the Indonesian people chose to ignore the ultimatum, sparking a massive military assault by the British. The attack started with a heavy aerial bombardment, followed by naval shelling and a coordinated ground invasion of the city. Despite being significantly outgunned, the Indonesian militias and civilians refused to retreat. They engaged in fierce street-to-street combat, using both modern weapons and traditional bamboo spears to defend their territory against the highly trained Allied forces.\n\nDuring the height of the fighting, a charismatic leader named Sutomo, better known as Bung Tomo, played a crucial role in maintaining the morale of the fighters. Through his fiery and passionate radio broadcasts, he urged the people of Surabaya to fight until the last breath for their freedom. His famous slogan, \"Merdeka atau Mati\" (Freedom or Death), echoed throughout the city and united people from various ethnic and social backgrounds. This collective resistance turned the city into a battlefield that lasted for nearly three weeks, far longer than the British had initially anticipated.\n\nAlthough the British eventually secured the city, the battle became a significant moral victory for the Indonesian National Revolution. The heavy casualties and the immense courage shown by the Indonesians drew international attention and forced the world to recognize the nation's struggle for sovereignty. Today, November 10 is commemorated annually as \"Heroes' Day\" or Hari Pahlawan in Bahasa Indonesia to honor the thousands of souls who fell during this historic confrontation. The battle stands as a lasting symbol of the unwavering determination of the Indonesian people to remain independent.\n\n(adapted from https://www.indonesia.go.id)\n\nWrite True (T) or False (F) for each statement regarding Bung Tomo's role during the Battle of Surabaya based on the text!\n(Answer each row by choosing True (T) / False (F).)",
+          "tipe": "tabel",
+          "kolom": [
+            "True (T)",
+            "False (F)"
+          ],
+          "baris": [
+            "Bung Tomo used passionate radio broadcasts to urge people to fight.",
+            "Bung Tomo was responsible for maintaining the morale of the Indonesian fighters.",
+            "Bung Tomo commanded the British troops to retreat from the Red Bridge.",
+            "Bung Tomo spread the famous \"Merdeka atau Mati\" slogan throughout the city.",
+            "Bung Tomo negotiated the surrender of Japanese forces before the British arrived."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TRUE (T) Baris 2 — TRUE (T) Baris 3 — FALSE (F) Baris 4 — TRUE (T) Baris 5 — FALSE (F) Jalur Cara Gemilang: Bung Tomo = siaran radio pembakar semangat; cek tiap pernyataan ke perannya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Recount Text (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
