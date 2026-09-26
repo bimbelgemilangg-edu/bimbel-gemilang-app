@@ -20,11 +20,15 @@ import {
   ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, Lightbulb,
   TriangleAlert, Info, Image as IconGambar, RotateCcw, Search, Bell,
   PlayCircle, FileText, MessageCircle, XCircle, BookOpen, Star,
-  Presentation, PanelRight, Crown,
+  Presentation, PanelRight, Crown, History,
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
 // Turn 93: mode baca guru = dokumen bersih (tanpa kartu interaktif siswa).
 import BacaGuruSections, { BacaGuruKuis } from '../../../components/belajar/BacaGuru';
+// Turn 95: tab Riwayat Latihan (pengganti Diskusi) + pencatatan percobaan.
+import RiwayatLatihanPanel from '../../../components/belajar/RiwayatLatihanPanel';
+import { catatRiwayatLatihan } from '../../../services/riwayatLatihanService';
+import PembahasanBox from '../../../components/belajar/PembahasanBox';
 // Turn 91: mode ujian menulis rekap nilai ke subcollection ujian/.
 import { kumpulkanUjian } from '../../../services/sesiService';
 import IsiSections from '../../../components/belajar/IsiSections';
@@ -120,50 +124,6 @@ export function TeksSoal({ teks, style }) {
           </p>
         );
       })}
-    </div>
-  );
-}
-
-// Turn 90 (koreksi owner): pembahasan bukan lagi dinding teks —
-// dipecah jadi dua kartu: "Jalur konsep" (biru; otomatis jadi daftar
-// bernomor bila memuat pola "Baris N —" atau "Pernyataan (N)") dan
-// "Jalur Cara Gemilang" (amber; satu kalimat jurus cepat).
-export function PembahasanBox({ soal }) {
-  const teks = String(soal.pembahasan || '').trim();
-  if (!teks) return null;
-  const iCg = teks.indexOf('Jalur Cara Gemilang:');
-  const konsep = (iCg >= 0 ? teks.slice(0, iCg) : teks).replace(/^Jalur konsep:\s*/, '').trim();
-  const cg = iCg >= 0 ? teks.slice(iCg + 'Jalur Cara Gemilang:'.length).trim() : '';
-  let list = konsep.split(/(?=Baris \d+ —)/).map((x) => x.trim()).filter(Boolean);
-  if (list.length < 2) list = konsep.split(/(?=Pernyataan \(\d+\))/).map((x) => x.trim()).filter(Boolean);
-  if (list.length < 2) list = null;
-  return (
-    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ background: '#EFF6FF', border: '1.5px solid #93C5FD', borderRadius: 14, padding: '10px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 900, color: '#1D4ED8', fontSize: 12, marginBottom: 6 }}>
-          <Lightbulb size={14} /> Jalur konsep
-        </div>
-        {list ? list.map((it, i) => (
-          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 }}>
-            <span style={{
-              flexShrink: 0, width: 20, height: 20, borderRadius: 999, background: '#1D4ED8',
-              color: '#fff', fontSize: 11, fontWeight: 900, marginTop: 1,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>{i + 1}</span>
-            <span style={{ fontSize: 13, lineHeight: 1.7, color: '#1E3A8A' }}><MathText text={it} /></span>
-          </div>
-        )) : (
-          <div style={{ fontSize: 13, lineHeight: 1.8, color: '#1E3A8A' }}><MathText text={konsep} /></div>
-        )}
-      </div>
-      {cg ? (
-        <div style={{ background: '#FFF6DE', border: '1.5px solid #F1E1AE', borderRadius: 14, padding: '10px 12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 900, color: '#8A6D1A', fontSize: 12, marginBottom: 4 }}>
-            <Crown size={14} /> Jalur Cara Gemilang
-          </div>
-          <div style={{ fontSize: 13, lineHeight: 1.7, color: '#8A6D1A' }}><MathText text={cg} /></div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -477,6 +437,17 @@ export default function BelajarReader({ audience = 'student' }) {
     const lebihBaik = !quizTersimpan || nilai > quizTersimpan.nilai;
     const simpan = lebihBaik ? hasil : quizTersimpan;
     setQuizTersimpan(simpan);
+    // Turn 95: simpan percobaan ini ke riwayat latihan siswa (per nomor
+    // kredit + jawaban) supaya bisa diulas kembali dari tab Riwayat.
+    if (!isTeacher) {
+      catatRiwayatLatihan(studentId, {
+        jenis: 'latihan', materiId, babId, babJudul: bab?.judul || '',
+        nilai,
+        benar: kuis.reduce((a, s, ix) => a + kreditSoal(s, baru[ix]), 0),
+        total: kuis.length,
+        perSoal: kuis.map((s, ix) => ({ i: ix, kredit: kreditSoal(s, baru[ix]), jaw: baru[ix] ?? null })),
+      });
+    }
     const xp = XP_BENAR * benar;
     // XP global resmi sekali-sekali (anti-farming): kuis 1x, baca 1x
     const globalKuis = !xpKuisDiberi ? XP_BENAR * benar : 0;
@@ -753,7 +724,9 @@ export default function BelajarReader({ audience = 'student' }) {
                 hide: !bab.pdfUrl,
               },
               { id: 'latihan', label: 'Latihan Soal', ikon: <CheckCircle2 size={14} /> },
-              { id: 'diskusi', label: 'Diskusi', ikon: <MessageCircle size={14} />, soon: true },
+              // Turn 95 (owner): tab Diskusi diganti Riwayat Latihan —
+              // siswa melihat nilai percobaan sebelumnya + nomor yang salah.
+              { id: 'riwayat', label: 'Riwayat Latihan', ikon: <History size={14} /> },
             ].filter((t) => !t.hide).map((t) => (
               <button key={t.id} type="button" role="tab"
                 aria-selected={tabAktifNow === t.id}
@@ -996,7 +969,10 @@ export default function BelajarReader({ audience = 'student' }) {
                   indexes={sesi.posisi.indexes || kuis.map((_, i2) => i2)}
                   sesi={sesi}
                   siswaId={studentId}
-                  nama={localStorage.getItem('studentName') || 'Siswa'} />
+                  nama={localStorage.getItem('studentName') || 'Siswa'}
+                  materiId={materiId}
+                  babId={babId}
+                  babJudul={bab?.judul || ''} />
               ) : ikutAktif && sesi.posisi?.jenis === 'kuis'
                 && kuis[Number(sesi.posisi.index)] ? (
                 <LiveKuis
@@ -1024,6 +1000,19 @@ export default function BelajarReader({ audience = 'student' }) {
                   ulangKuis={ulangKuis}
                 />
               )}
+            </div>
+          )}
+
+          {/* ---------- TAB RIWAYAT LATIHAN (Turn 95) ---------- */}
+          {tabAktifNow === 'riwayat' && (
+            <div style={{ ...kartuDasar, ...S.kartuKonten, ...(sempit ? S.kontenSempit : null) }}>
+              <div style={S.headSeksi}>
+                <span style={lencanaSeksi}><History size={14} /></span>
+                <span style={{ flex: 1, fontWeight: 800, fontSize: 15.5, color: T.judul }}>
+                  Riwayat Latihan & Ujian
+                </span>
+              </div>
+              <RiwayatLatihanPanel studentId={studentId} babId={babId} kuis={kuis} />
             </div>
           )}
 
@@ -1448,7 +1437,7 @@ function fmtKunciSingkat(soal) {
 // Dipakai juga oleh sesi bank-soal (LiveSessionTeacher) sehingga
 // mode lepas-satu-per-satu tidak lagi dipakai untuk sesi baru.
 // ============================================================
-export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama }) {
+export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama, materiId = '', babId = '', babJudul = '' }) {
   const [jw, setJw] = useState({});
   const [hasil, setHasil] = useState(null);
   const [now, setNow] = useState(() => Date.now());
@@ -1478,6 +1467,13 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama 
         siswaId, nama, skor,
         benar: kredit.reduce((a, b) => a + b, 0),
         total: indexes.length, terjawab,
+      });
+      // Turn 95: masuk riwayat latihan siswa (tab Riwayat Latihan).
+      catatRiwayatLatihan(siswaId, {
+        jenis: 'ujian', kode: sesi?.kode || '', materiId, babId, babJudul,
+        nilai: skor, benar: kredit.reduce((a, b) => a + b, 0),
+        total: indexes.length,
+        perSoal: indexes.map((i) => ({ i, kredit: kreditSoal(kuis[i], jw[i] ?? null), jaw: jw[i] ?? null })),
       });
     } catch { /* nilai tetap tampil lokal bila offline */ }
   }

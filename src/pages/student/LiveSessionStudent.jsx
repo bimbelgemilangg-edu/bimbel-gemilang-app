@@ -349,7 +349,10 @@ export default function LiveSessionStudent() {
           indexes={daftarSoal.map((_, i2) => i2)}
           sesi={sesi}
           siswaId={siswaId}
-          nama={nama} />
+          nama={nama}
+          materiId={sesi.materiId || sesi.bukuId || ''}
+          babId={sesi.babId || ''}
+          babJudul={sesi.catatan || 'Sesi Live'} />
       )}
       {soal && (
         <div style={S.card}>

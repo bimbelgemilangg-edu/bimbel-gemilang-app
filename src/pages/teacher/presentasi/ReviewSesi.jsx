@@ -16,7 +16,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { MathText } from '../../../components/MathText';
-import { TeksSoal, PembahasanBox } from '../../student/belajar/BelajarReader';
+import { TeksSoal } from '../../student/belajar/BelajarReader';
+import PembahasanBox from '../../../components/belajar/PembahasanBox';
 import { T, kartuDasar, halamanDasar, tombolPill } from '../../student/belajar/tema';
 import { ArrowLeft, Trophy, RefreshCw, Target, ChevronDown, ChevronUp } from 'lucide-react';
 
