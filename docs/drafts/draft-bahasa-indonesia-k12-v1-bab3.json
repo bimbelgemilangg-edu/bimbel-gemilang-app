@@ -1,0 +1,938 @@
+{
+  "materi": {
+    "judul": "Bahasa Indonesia Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Indonesia",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#E11D48",
+    "emoji": "🎭",
+    "deskripsi": "Materi wajib kelas 12 seri TKA: bab 1 paragraf & pragmatik, bab 2 paragraf lanjutan, bab 3 ejaan-sintaksis-semantik, bab 4 sastra. Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 4,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1-4 dari berkas pindai buku Sukses Tes Kemampuan Akademik SMA – Saintek (bab 3 h.58-59 + kunci/pembahasan); kunci mengikuti cetakan asli.",
+      "Kartu CG-EJAAN, CG-SIMPLEKS, CG-KOMPLEKS, CG-SEMANTIK dan soal Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 3 — Ejaan, Sintaksis (Simpleks-Kompleks), dan Semantik (Edisi Cara Gemilang)",
+      "ringkasan": "Penggunaan kata sesuai KBBI & konteks (imbuhan me-/di-/ke-an), kalimat simpleks (satu inti S-P) vs kompleks (koordinatif 3 hubungan, subordinatif 10 hubungan, variatif), serta semantik (4 makna kata + makna kalimat) — dengan flashcard pola, jodohkan konjungsi, isian rumpang makna, benar/salah, dan 25 soal resmi bank + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 3,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Ejaan: Penggunaan Kata yang Tepat"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Menggunakan kata berarti memakainya dengan tepat sesuai aturan, pedoman, dan konteks — makna harus cocok dengan KBBI dan kalimatnya. Kata dapat berupa kata dasar, berimbuhan, kata ulang, majemuk, atau serapan; pilihan yang meleset membuat kalimat tidak efektif."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Kata itu seperti kunci dan gembok: bentuknya boleh mirip, tetapi hanya satu yang benar-benar membuka makna kalimatnya. Memakai kata yang tidak sesuai konteks sama dengan memaksa kunci salah — kalimat tetap \"terbuka paksa\" tetapi tidak efektif."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Rumpun kata yang wajib dikuasai",
+          "items": [
+            "Kata dasar — bentuk tunggal tanpa imbuhan.",
+            "Kata berimbuhan — me-, di-, ke-an, pe-an, dan lain-lain yang mengubah makna gramatikal.",
+            "Kata ulang — pengulangan penuh atau sebagian.",
+            "Kata majemuk — gabungan bermakna baru.",
+            "Kata serapan — adaptasi dari bahasa asing/daerah sesuai ejaan bahasa Indonesia."
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: penggunaan kata",
+          "items": [
+            {
+              "teks": "Kata yang tidak sesuai konteks kalimat dapat membuat kalimat tidak efektif.",
+              "jawaban": true,
+              "penjelasan": "Sesuai bank h.58."
+            },
+            {
+              "teks": "Pemilihan kata cukup mengikuti kebiasaan tutur, tidak perlu rujukan KBBI.",
+              "jawaban": false,
+              "penjelasan": "Penggunaan kata harus sesuai makna KBBI dan konteks."
+            },
+            {
+              "teks": "Imbuhan di- dipakai bila subjek menjadi pihak yang dikenai pekerjaan.",
+              "jawaban": true,
+              "penjelasan": "Pola pasif; pelaku aktif memakai me-."
+            },
+            {
+              "teks": "Kata serapan bebas ditulis sesuai bahasa aslinya.",
+              "jawaban": false,
+              "penjelasan": "Serapan menyesuaikan ejaan bahasa Indonesia."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-EJAAN: me- aktif, di- pasif, ke-an benda",
+          "teks": "Uji cepat ketepatan kata: siapa subjeknya? Pelaku = me-; yang dikenai = di-; hal/hasil = ke-an atau pe-an.",
+          "items": [
+            "Baca kalimat, tandai subjek: melakukan atau dikenai?",
+            "Cocokkan imbuhan verba; tukar bila terbalik.",
+            "Bila konteksnya hal/benda tetapi terbaca perbuatan, curigai ke-an yang seharusnya me- (pola soal asli #11)."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Soal ketepatan kata sering menyamar sebagai soal makna: opsi berbunyi wajar tetapiimbusannya salah arah (kenaikan vs menaikkan, dinyatakan vs menyatakan). Uji imbuhan dulu, baru makna."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Kata yang maknanya harus selalu dicocokkan dengan kamus resmi dan konteks kalimat disebut soal ...",
+              "opsi": [
+                "penggunaan kata",
+                "ejaan tanda baca",
+                "penulisan angka",
+                "pengucapan",
+                "pemenggalan"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: bank membuka bab ejaan dengan penggunaan kata sesuai KBBI + konteks. Jalur Cara Gemilang: KBBI + konteks = pasangan wajib."
+            },
+            {
+              "soal": "Kalimat berikut yang menggunakan kata berimbuhan tepat adalah ...",
+              "opsi": [
+                "Surat itu sudah dikirim kemarin.",
+                "Surat itu sudah mengirim kemarin.",
+                "Surat itu sudah kiriman kemarin.",
+                "Surat itu sedang ke kirim kemarin.",
+                "Surat itu terkirimkan pengirim kemarin."
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: subjek \"surat\" dikenai pekerjaan → pasif di-. Jalur Cara Gemilang: CG-EJAAN — dikenai = di-."
+            },
+            {
+              "soal": "Penggunaan kata yang tidak tepat membuat kalimat menjadi ...",
+              "opsi": [
+                "tidak efektif",
+                "majemuk",
+                "subordinatif",
+                "konotatif",
+                "elusif"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: bank h.58 menyebut akibatnya kalimat tidak efektif. Jalur Cara Gemilang: kunci salah = gembok macet."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Sintaksis: Kalimat Simpleks"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Kalimat simpleks = satu klausa: satu struktur subjek-predikat, satu informasi utama. Ia boleh panjang oleh keterangan, tetapi keterangan itu frasa, bukan klausa."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Ciri kalimat simpleks (bank h.58)",
+          "items": [
+            "Terdiri atas satu klausa.",
+            "Mengandung satu informasi utama (subjek + predikat).",
+            "Tidak memakai konjungsi yang memperluas klausa.",
+            "Pola: S-P, S-P-K, S-P-O, S-P-O-K, S-P-Pel, S-P-Pel-K, S-P-O-Pel, atau S-P-O-Pel-K."
+          ]
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: mengenali pola simpleks",
+          "items": [
+            {
+              "depan": "S-P",
+              "belakang": "Contoh: \"Adik tidur.\" (keterangan boleh absen)"
+            },
+            {
+              "depan": "S-P-O",
+              "belakang": "Contoh: \"Adik minum susu.\""
+            },
+            {
+              "depan": "S-P-Pel",
+              "belakang": "Contoh: \"Ia menjadi tentor.\" (pelengkap bukan objek)"
+            },
+            {
+              "depan": "S-P-O-K",
+              "belakang": "Contoh: \"Adik minum susu di dapur.\" (K frasa, bukan klausa)"
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-SIMPLEKS: hitung inti S-P",
+          "teks": "Simpleks = tepat SATU inti subjek-predikat. Lebih dari satu inti, atau satu inti + konjungsi penggabung klausa = kompleks.",
+          "items": [
+            "Garisbawahi subjek & predikat; hitung intinya.",
+            "Keterangan berupa frasa (di pasar, kemarin) TIDAK menambah klausa.",
+            "Konjungsi dan/tetapi/karena yang menyambung dua S-P = tanda kompleks."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Kalimat simpleks disebut juga kalimat ...",
+              "opsi": [
+                "majemuk",
+                "tunggal",
+                "bertingkat",
+                "setara",
+                "campuran"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: satu klausa = kalimat tunggal (bank h.58). Jalur Cara Gemilang: simpleks = satu inti."
+            },
+            {
+              "soal": "Manakah kalimat yang merupakan simpleks?",
+              "opsi": [
+                "Adik minum susu di dapur.",
+                "Adik minum susu lalu tidur.",
+                "Karena hujan, adik tidur.",
+                "Adik minum susu dan ayah membaca.",
+                "Meskipun lelah, adik belajar."
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: hanya satu klausa; \"di dapur\" frasa keterangan. Opsi lain memakai konjungsi penggabung klausa. Jalur Cara Gemilang: hitung inti S-P = 1."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Sintaksis: Kalimat Kompleks"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Kalimat kompleks (majemuk) terdiri atas dua klausa atau lebih, dapat dibentuk dari paduan beberapa simpleks. Tiga golongan: koordinatif (setara), subordinatif (bertingkat), dan variatif (gabungan keduanya, minimal tiga inti)."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Koordinatif: tiga hubungan setara",
+          "kolom": [
+            "Hubungan",
+            "Konjungsi",
+            "Catatan"
+          ],
+          "rows": [
+            {
+              "k": "Penjumlahan",
+              "v": "dan, serta",
+              "w": "Menambah informasi setara."
+            },
+            {
+              "k": "Pemilihan",
+              "v": "atau",
+              "w": "Menawarkan pilihan setara."
+            },
+            {
+              "k": "Pertentangan",
+              "v": "tetapi, melainkan, sedangkan",
+              "w": "Menjejerkan hal berlawanan setara."
+            }
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Subordinatif: 10 hubungan & konjungsinya (bank h.58-59)",
+          "kolom": [
+            "Hubungan",
+            "Konjungsi"
+          ],
+          "rows": [
+            {
+              "k": "Waktu",
+              "v": "sejak, saat, sewaktu, ketika, setelah, sampai, manakala"
+            },
+            {
+              "k": "Syarat",
+              "v": "jika, asalkan, apabila, kalau"
+            },
+            {
+              "k": "Tujuan",
+              "v": "agar, supaya, guna, untuk"
+            },
+            {
+              "k": "Konsesif/pertentangan",
+              "v": "walaupun, meskipun, sekalipun, biarpun, kendatipun, sungguhpun"
+            },
+            {
+              "k": "Perbandingan",
+              "v": "ibarat, seperti, laksana"
+            },
+            {
+              "k": "Penyebab",
+              "v": "karena, sebab"
+            },
+            {
+              "k": "Akibat",
+              "v": "sehingga, sampai-sampai, maka"
+            },
+            {
+              "k": "Cara",
+              "v": "dengan, secara"
+            },
+            {
+              "k": "Sangkalan",
+              "v": "seolah-olah, seakan-akan"
+            },
+            {
+              "k": "Perluasan/penjelasan",
+              "v": "yang, bahwa"
+            }
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Kompleks variatif",
+          "items": [
+            "Gabungan koordinatif dan subordinatif dalam satu kalimat.",
+            "Sekurang-kurangnya memuat tiga inti kalimat (tiga klausa).",
+            "Contoh buku: \"Pekerjaan itu telah selesai ketika kakak datang dan ibu selesai memasak.\""
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: konjungsi dan hubungan subordinatif",
+          "items": [
+            {
+              "kiri": "karena, sebab",
+              "kanan": "Penyebab"
+            },
+            {
+              "kiri": "agar, supaya, guna",
+              "kanan": "Tujuan"
+            },
+            {
+              "kiri": "walaupun, meskipun",
+              "kanan": "Konsesif/pertentangan"
+            },
+            {
+              "kiri": "ketika, sejak, manakala",
+              "kanan": "Waktu"
+            },
+            {
+              "kiri": "sehingga, maka",
+              "kanan": "Akibat"
+            },
+            {
+              "kiri": "yang, bahwa",
+              "kanan": "Perluasan/penjelasan"
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: kompleks",
+          "items": [
+            {
+              "teks": "Kalimat kompleks koordinatif menghubungkan klausa-klausa sederajat.",
+              "jawaban": true,
+              "penjelasan": "Definisi bank h.58."
+            },
+            {
+              "teks": "Pada kompleks subordinatif terdapat induk kalimat dan anak kalimat.",
+              "jawaban": true,
+              "penjelasan": "Hubungan tidak sederajat."
+            },
+            {
+              "teks": "Kompleks variatif minimal memuat tiga inti kalimat.",
+              "jawaban": true,
+              "penjelasan": "Gabungan koordinatif + subordinatif."
+            },
+            {
+              "teks": "Konjungsi \"atau\" menandai koordinatif penjumlahan.",
+              "jawaban": false,
+              "penjelasan": "\"atau\" = pemilihan; penjumlahan = dan/serta."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-KOMPLEKS: konjungsi dulu, golongan kemudian",
+          "teks": "Temukan konjungsinya, lalu golongkan: setara (dan/atau/tetapi/melainkan/sedangkan) = koordinatif; bertingkat (10 hubungan) = subordinatif; campur 3 inti = variatif.",
+          "items": [
+            "Tandai konjungsi dalam kalimat.",
+            "Cocokkan dengan tabel 10 subordinatif atau 3 koordinatif.",
+            "Soal \"tujuan\" buru agar/supaya/untuk; soal \"pertentangan setara\" buru tetapi/melainkan/sedangkan."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Sedangkan = koordinatif pertentangan, tetapi walaupun = subordinatif konsesif — keduanya sama-sama \"bernuansa lawan\" tetapi golongannya beda. Soal sering menukarnya."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Kalimat \"Ia belajar supaya lulus seleksi\" termasuk kompleks subordinatif hubungan ...",
+              "opsi": [
+                "syarat",
+                "tujuan",
+                "akibat",
+                "cara",
+                "waktu"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: supaya = konjungsi tujuan. Jalur Cara Gemilang: CG-KOMPLEKS — konjungsi dulu."
+            },
+            {
+              "soal": "Pasangan konjungsi koordinatif pertentangan adalah ...",
+              "opsi": [
+                "dan, serta",
+                "atau, ataupun",
+                "tetapi, melainkan",
+                "jika, apabila",
+                "ketika, sejak"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: bank h.58: pertentangan = tetapi, melainkan, sedangkan. Jalur Cara Gemilang: setara-oposisi."
+            },
+            {
+              "soal": "Kalimat dengan tiga klausa yang menggabungkan pola koordinatif dan subordinatif disebut ...",
+              "opsi": [
+                "simpleks",
+                "kompleks koordinatif",
+                "kompleks subordinatif",
+                "kompleks variatif",
+                "kalimat majemuk rapatan"
+              ],
+              "jawaban": 3,
+              "pembahasan": "Jalur konsep: variatif = gabungan keduanya, minimal tiga inti. Jalur Cara Gemilang: tiga inti + dua pola = variatif."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Semantik: Makna Kata & Makna Kalimat"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Makna kata ada empat: leksikal (kamus), gramatikal (proses imbuhan/ulangan/gabungan), denotasi (lugas), konotasi (kias). Makna kalimat ditentukan makna kata pembentuknya plus hubungan runtunan katanya — dianalisis dari inti kalimat dan sinonimnya."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "4 makna kata dengan contoh buku (ibu)",
+          "kolom": [
+            "Makna",
+            "Sumber makna",
+            "Contoh buku"
+          ],
+          "rows": [
+            {
+              "k": "Leksikal",
+              "v": "Kamus/leksikon",
+              "w": "ibu = wanita yang telah melahirkan seseorang."
+            },
+            {
+              "k": "Gramatikal",
+              "v": "Pengimbuhan / pengulangan / pemajemukan",
+              "w": "keibuan = bersifat seperti ibu; ibu-ibu = wanita dewasa; ibu jari = jempol."
+            },
+            {
+              "k": "Denotasi",
+              "v": "Lugas, apa adanya, sebenarnya",
+              "w": "makna lurus tanpa kiasan."
+            },
+            {
+              "k": "Konotasi",
+              "v": "Kiasan, idiomatis, tambahan",
+              "w": "makna sampingan berperasaan."
+            }
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Makna kalimat lahir dari dua sumber: makna kata-kata pembentuknya dan cara kata-kata itu dirangkai. Karena itu kalimat dianalisis dari intinya (subjek-predikat) lalu dicari sinonim kata kuncinya. Hasilnya bisa bermakna denotatif maupun konotatif."
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: jenis makna",
+          "items": [
+            {
+              "teks": "Makna kata sesuai kamus disebut makna ...",
+              "jawaban": [
+                "leksikal"
+              ],
+              "hint": "Berkaitan dengan leksikon.",
+              "penjelasan": "Leksikal = makna kamus."
+            },
+            {
+              "teks": "Makna yang muncul karena pengimbuhan, pengulangan, atau pemajemukan disebut makna ...",
+              "jawaban": [
+                "gramatikal"
+              ],
+              "hint": "Berkaitan dengan tata bahasa.",
+              "penjelasan": "Gramatikal = hasil proses gramatikal."
+            },
+            {
+              "teks": "Makna kiasan atau idiomatis disebut makna ...",
+              "jawaban": [
+                "konotasi",
+                "konotatif"
+              ],
+              "hint": "Lawan dari lugas.",
+              "penjelasan": "Konotasi = kiasan/sampingan."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-SEMANTIK: Kamus–Proses–Lugas–Kias",
+          "teks": "LEKsikal = kamus; GRAmatikal = proses; DENotasi = lugas; KONotasi = kias. Makna kalimat = inti kalimat + sinonim kata kunci.",
+          "items": [
+            "Soal makna kata: KBBI dulu, lalu uji konteks kalimat.",
+            "Soal makna kalimat: temukan inti S-P, parafrasekan tanpa membuang informasi.",
+            "Ungkapan/idiom (\"naik daun\") selalu bermakna konotatif — terjemahkan ke makna lugasnya."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Makna \"ibu jari\" (= jempol) timbul karena proses ...",
+              "opsi": [
+                "pengimbuhan",
+                "pengulangan",
+                "pemajemukan",
+                "penyerapan",
+                "pemenggalan"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: ibu + jari digabung menjadi makna baru = pemajemukan (bank h.59). Jalur Cara Gemilang: CG-SEMANTIK — proses gabungan."
+            },
+            {
+              "soal": "Makna kalimat dapat dianalisis dengan cara ...",
+              "opsi": [
+                "menghitung jumlah kata",
+                "menganalisis inti kalimat dan sinonim kata-katanya",
+                "melihat panjang pendeknya kalimat",
+                "menebak dari judul teks",
+                "mengubah kalimat menjadi puisi"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: bank h.59: inti kalimat + sinonim kata. Jalur Cara Gemilang: inti + parafrasa."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Bab 3 tuntas — seri lengkap",
+          "teks": "Ejaan (ketepatan kata), sintaksis (simpleks-kompleks), dan semantik (makna) adalah kacamata bahasa untuk membedah kalimat. Bersama bab 1-2 (paragraf) dan bab 4 (sastra), senjata TKA Bahasa Indonesia-mu kini lengkap. Lanjut ke Uji Pemahaman 25 soal!"
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Presiden Prabowo Subianto memimpin rapat terbatas Kabinet Merah Putih di Istana Merdeka pada 7 April 2026. (2) Presiden menginstruksikan kecepatan pembangunan Kampung Nelayan Merah Putih di berbagai wilayah Indonesia. (3) Program ini menargetkan dapat meningkatkan kesejahteraan masyarakat pesisir melalui pembangunan infrastruktur dan penguatan sumber daya manusia. (4) Pemerintah telah membangun sekitar 100 titik Kampung Nelayan Merah Putih yang terdiri atas 65 tahap pertama dan 35 tahap kedua. (5) Seluruh pembangunan tahap awal tersebut diperkirakan akan selesai pada akhir Mei 2026. (6) Selain pembangunan fisik, pemerintah juga menekankan pentingnya pengelolaan dan penguatan kapasitas masyarakat setempat. (7) Hal ini dilakukan agar program tidak hanya berfokus pada infrastruktur, tetapi juga pada keberlanjutan ekonomi masyarakat nelayan. (8) Pemerintah merencanakan pembangunan lanjutan sebanyak 1.000 Kampung Nelayan Merah Putih pada tahun 2026. (9) Program lanjutan tersebut akan dipertajam pada wilayah Indonesia bagian timur sebagai prioritas pembangunan. (10) Selain itu, pemerintah telah berkolaborasi dengan pihak luar negeri untuk pengadaan kapal guna mendukung aktivitas nelayan.\n\n(diadaptasi dari https://poltekkesbanten.ac.id)\n\nPenggunaan kata yang tidak tepat berdasarkan kutipan teks berikut adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "kecepatan (kalimat 2).",
+            "menargetkan (kalimat 3).",
+            "diperkirakan (kalimat 5).",
+            "membangun (kalimat 6).",
+            "pengadaan (kalimat 10)."
+          ],
+          "jawaban": [
+            1,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Penggunaan kata yang tidak tepat berdasarkan kutipan teks berikut adalah menargetkan (kalimat 3). Kata menargetkan seharusnya diganti ditargetkan . membangun (kalimat 6). Kata membangun seharusnya diganti dengan kata pembangunan . Jalur Cara Gemilang: Uji imbuhan: subjek dikenai pekerjaan = verba di-; subjek pelaku = me-. Kata benda ke-an di posisi predikat perbuatan = tanda salah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Presiden Prabowo Subianto memimpin rapat terbatas Kabinet Merah Putih di Istana Merdeka pada 7 April 2026. (2) Presiden menginstruksikan kecepatan pembangunan Kampung Nelayan Merah Putih di berbagai wilayah Indonesia. (3) Program ini menargetkan dapat meningkatkan kesejahteraan masyarakat pesisir melalui pembangunan infrastruktur dan penguatan sumber daya manusia. (4) Pemerintah telah membangun sekitar 100 titik Kampung Nelayan Merah Putih yang terdiri atas 65 tahap pertama dan 35 tahap kedua. (5) Seluruh pembangunan tahap awal tersebut diperkirakan akan selesai pada akhir Mei 2026. (6) Selain pembangunan fisik, pemerintah juga menekankan pentingnya pengelolaan dan penguatan kapasitas masyarakat setempat. (7) Hal ini dilakukan agar program tidak hanya berfokus pada infrastruktur, tetapi juga pada keberlanjutan ekonomi masyarakat nelayan. (8) Pemerintah merencanakan pembangunan lanjutan sebanyak 1.000 Kampung Nelayan Merah Putih pada tahun 2026. (9) Program lanjutan tersebut akan dipertajam pada wilayah Indonesia bagian timur sebagai prioritas pembangunan. (10) Selain itu, pemerintah telah berkolaborasi dengan pihak luar negeri untuk pengadaan kapal guna mendukung aktivitas nelayan.\n\n(diadaptasi dari https://poltekkesbanten.ac.id)\n\nMakna kata infrastruktur dalam kalimat (3) akan lebih jelas jika diartikan sebagai Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "pembangunan prasarana penunjang kehidupan masyarakat pesisir secara fisik.",
+            "penguatan jaringan dan kerja sama antarwilayah untuk mendukung kegiatan pesisir.",
+            "perencanaan program dan kebijakan pemerintah dalam bidang keamanan nasional.",
+            "penyediaan fasilitas dan layanan dasar untuk mendukung aktivitas ekonomi nelayan.",
+            "pengembangan sistem dan teknologi pendukung peningkatan kesejahteraan masyarakat."
+          ],
+          "jawaban": [
+            0,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Berdasarkan KBBI, makna kata infrastruktur adalah 'prasarana'. Berdasarkan KBBI, makna kata prasarana adalah 'segala sesuatu yang merupakan penunjang utama terselenggaranya suatu proses (usaha, pembangunan, proyek, dan sebagainya)'. Kata infrastruktur dalam konteks kalimat (3) merujuk pada segala bentuk fasilitas fisik yang dibangun untuk mendukung kehidupan masyarakat pesisir, seperti jalan, pelabuhan, tempat tinggal, dan sarana penunjang lainnya. Pernyataan (1) benar Klausa (1) menekankan pembangunan sarana dan prasarana secara fisik yang sesuai dengan makna dasar infrastruktur. Pernyataan (2) salah. Pernyataan (3) salah. penyediaan fasilitas dan layanan dasar untuk mendukung aktivitas ekonomi nelayan . Klausa (4) tepat karena menggambarkan fasilitas dan layanan dasar yang berhubungan langsung dengan kegiatan ekonomi masyarakat nelayan. Pernyataan (5) salah. Jalur Cara Gemilang: Makna kata = buka KBBI dulu, baru konteks: infrastruktur = prasarana penunjang.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Presiden Prabowo Subianto memimpin rapat terbatas Kabinet Merah Putih di Istana Merdeka pada 7 April 2026. (2) Presiden menginstruksikan kecepatan pembangunan Kampung Nelayan Merah Putih di berbagai wilayah Indonesia. (3) Program ini menargetkan dapat meningkatkan kesejahteraan masyarakat pesisir melalui pembangunan infrastruktur dan penguatan sumber daya manusia. (4) Pemerintah telah membangun sekitar 100 titik Kampung Nelayan Merah Putih yang terdiri atas 65 tahap pertama dan 35 tahap kedua. (5) Seluruh pembangunan tahap awal tersebut diperkirakan akan selesai pada akhir Mei 2026. (6) Selain pembangunan fisik, pemerintah juga menekankan pentingnya pengelolaan dan penguatan kapasitas masyarakat setempat. (7) Hal ini dilakukan agar program tidak hanya berfokus pada infrastruktur, tetapi juga pada keberlanjutan ekonomi masyarakat nelayan. (8) Pemerintah merencanakan pembangunan lanjutan sebanyak 1.000 Kampung Nelayan Merah Putih pada tahun 2026. (9) Program lanjutan tersebut akan dipertajam pada wilayah Indonesia bagian timur sebagai prioritas pembangunan. (10) Selain itu, pemerintah telah berkolaborasi dengan pihak luar negeri untuk pengadaan kapal guna mendukung aktivitas nelayan.\n\n(diadaptasi dari https://poltekkesbanten.ac.id)\n\nKalimat kompleks yang terdapat pada kutipan teks tersebut terletak pada nomor",
+          "tipe": "pg",
+          "opsi": [
+            "(1).",
+            "(2).",
+            "(5).",
+            "(7).",
+            "(8)."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kalimat kompleks adalah kalimat yang memiliki lebih dari satu klausa atau gagasan yang saling berhubungan, biasanya ditandai dengan penggunaan konjungsi yang menghubungkan dua bagian kalimat. Pada teks tersebut, kalimat (7) mengandung dua klausa yang dihubungkan oleh konjungsi agar dan tetapi sehingga membentuk kalimat kompleks. Jalur Cara Gemilang: Kalimat kompleks = dua klausa atau lebih; cari konjungsi atau S-P kedua.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Presiden Prabowo Subianto memimpin rapat terbatas Kabinet Merah Putih di Istana Merdeka pada 7 April 2026. (2) Presiden menginstruksikan kecepatan pembangunan Kampung Nelayan Merah Putih di berbagai wilayah Indonesia. (3) Program ini menargetkan dapat meningkatkan kesejahteraan masyarakat pesisir melalui pembangunan infrastruktur dan penguatan sumber daya manusia. (4) Pemerintah telah membangun sekitar 100 titik Kampung Nelayan Merah Putih yang terdiri atas 65 tahap pertama dan 35 tahap kedua. (5) Seluruh pembangunan tahap awal tersebut diperkirakan akan selesai pada akhir Mei 2026. (6) Selain pembangunan fisik, pemerintah juga menekankan pentingnya pengelolaan dan penguatan kapasitas masyarakat setempat. (7) Hal ini dilakukan agar program tidak hanya berfokus pada infrastruktur, tetapi juga pada keberlanjutan ekonomi masyarakat nelayan. (8) Pemerintah merencanakan pembangunan lanjutan sebanyak 1.000 Kampung Nelayan Merah Putih pada tahun 2026. (9) Program lanjutan tersebut akan dipertajam pada wilayah Indonesia bagian timur sebagai prioritas pembangunan. (10) Selain itu, pemerintah telah berkolaborasi dengan pihak luar negeri untuk pengadaan kapal guna mendukung aktivitas nelayan.\n\n(diadaptasi dari https://poltekkesbanten.ac.id)\n\nMakna kalimat (9) yang terdapat pada kutipan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Program Pembangunan Kampung Nelayan Merah Putih akan diarahkan pada wilayah yang memiliki tingkat kemiskinan tertinggi.",
+            "Wilayah Indonesia Timur menjadi satu-satunya lokasi pembangunan kampung nelayan pada tahap berikutnya.",
+            "Pemerintah akan memusatkan seluruh pembangunan kampung nelayan di wilayah Indonesia bagian timur secara menyeluruh.",
+            "Pembangunan kampung nelayan tahap lanjutan akan diperluas ke seluruh wilayah Indonesia tanpa pengecualian.",
+            "Program lanjutan pembangunan kampung nelayan akan lebih difokuskan pada wilayah Indonesia bagian timur sebagai prioritas utama."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Kalimat (9) menyatakan bahwa program lanjutan pembangunan 1.000 kampung nelayan akan dipertajam atau difokuskan pada wilayah Indonesia Timur sebagai prioritas pembangunan. Makna kata dipertajam dalam konteks ini adalah memperjelas dan memperkuat fokus pelaksanaan program di wilayah tertentu. Jadi, makna kalimat (9) yang terdapat pada kutipan teks tersebut adalah Program lanjutan pembangunan Kampung Nelayan akan lebih difokuskan pada wilayah Indonesia Timur sebagai prioritas utama . Jalur Cara Gemilang: Makna kalimat = inti + parafrasa lengkap; coret opsi yang hanya memuat separuh informasi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Pemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen. (2) Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar (fuel surcharge) untuk membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar.\n\n(3) Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menyatakan bahwa kebijakan ini juga disertai dengan penghapusan beberapa pajak terkait sektor penerbangan. (4) Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik.\n\n(5) Kebijakan ini merupakan bagian dari strategi pemerintah dalam menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat di tengah tekanan ekonomi global.\n\n(6) Maskapai harus mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan.\n\n(7) Namun demikian, kebijakan kenaikan tarif ini juga berpotensi berdampak pada masyarakat, terutama dalam hal biaya perjalanan udara. (8) Pemerintah harus menjadi penjaga di tengah arus kebijakan dan mengawasi setiap langkah implementasinya agar tidak menjadi beban yang menekan pundak konsumen.\n\n(diadaptasi dari https://www.reuters.com/)\n\nBerdasarkan kutipan teks tersebut, pernyataan yang merupakan kalimat simpleks adalah Tentukan benar atau salah pada setiap pernyataan!\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Pemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen.",
+            "Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar ( fuel surcharge ) untuk membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar.",
+            "Maskapai harus mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan."
+          ],
+          "jawaban": [
+            1,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SALAH: Kalimat ini merupakan kalimat kompleks karena memiliki lebih dari satu klausa, yaitu klausa utama \"Pemerintah Indonesia mengumumkan kebijakan baru\" dan klausa penjelas \"yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen\". Baris 2 — SALAH: Kalimat ini merupakan kalimat kompleks karena mengandung beberapa informasi dengan keterangan tujuan untuk . Baris 3 — BENAR: Kalimat ini merupakan kalimat simpleks karena hanya memiliki satu klausa. Kalimat ini menyampaikan satu informasi inti secara langsung, yaitu harapan terhadap maskapai untuk menjaga operasional dan kualitas layanan. (Catatan: sumber kunci buku tidak seragam untuk butir ini; nilai mengikuti mayoritas tabel kunci ringkas + baris jawaban pembahasan.) Jalur Cara Gemilang: Satu inti S-P = simpleks; ada konjungsi penggabung klausa = kompleks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Pemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen. (2) Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar (fuel surcharge) untuk membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar.\n\n(3) Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menyatakan bahwa kebijakan ini juga disertai dengan penghapusan beberapa pajak terkait sektor penerbangan. (4) Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik.\n\n(5) Kebijakan ini merupakan bagian dari strategi pemerintah dalam menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat di tengah tekanan ekonomi global.\n\n(6) Maskapai harus mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan.\n\n(7) Namun demikian, kebijakan kenaikan tarif ini juga berpotensi berdampak pada masyarakat, terutama dalam hal biaya perjalanan udara. (8) Pemerintah harus menjadi penjaga di tengah arus kebijakan dan mengawasi setiap langkah implementasinya agar tidak menjadi beban yang menekan pundak konsumen.\n\n(diadaptasi dari https://www.reuters.com/)\n\nPenggunaan kata yang tidak tepat berdasarkan kutipan teks tersebut adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "mengumumkan (kalimat 1).",
+            "dinyatakan (kalimat 3).",
+            "mengharapkan (kalimat 4).",
+            "perjalanan (kalimat 7).",
+            "mengawasi (kalimat 8)."
+          ],
+          "jawaban": [
+            1,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan (1) salah Pernyataan (2) salah Pernyataan (3) benar Pada kalimat (3), penggunaan kata dinyatakan tidak tepat karena kata dinyatakan seharusnya digunakan dalam bentuk pasif yang tidak sesuai dengan struktur kalimat tersebut. Kata yang tepat adalah menyatakan karena subjeknya melakukan tindakan menyampaikan informasi. Pernyataan (4) benar Pada kalimat (4), penggunaan kata mengharapkan tidak tepat karena tidak sesuai dengan subjek yang dimaksud sehingga lebih tepat jika menggunakan bentuk pasif diharapkan . Pernyataan (5) salah Jalur Cara Gemilang: Imbuhan lagi: pernyataan tentang pihak pelaku butuh me-, tentang pihak dikenai butuh di-.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Pemerintah Indonesia mengumumkan kebijakan baru yang memperbolehkan maskapai penerbangan menaikkan harga tiket hingga 13 persen. (2) Kebijakan ini dilakukan melalui penyesuaian biaya tambahan bahan bakar (fuel surcharge) untuk membantu maskapai menghadapi kenaikan biaya operasional, khususnya harga bahan bakar.\n\n(3) Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menyatakan bahwa kebijakan ini juga disertai dengan penghapusan beberapa pajak terkait sektor penerbangan. (4) Langkah tersebut diharapkan dapat menjaga stabilitas industri penerbangan nasional sekaligus memastikan layanan kepada masyarakat tetap berjalan dengan baik.\n\n(5) Kebijakan ini merupakan bagian dari strategi pemerintah dalam menjaga keseimbangan antara kebutuhan industri dan daya beli masyarakat di tengah tekanan ekonomi global.\n\n(6) Maskapai harus mampu mempertahankan operasional tanpa mengorbankan kualitas pelayanan.\n\n(7) Namun demikian, kebijakan kenaikan tarif ini juga berpotensi berdampak pada masyarakat, terutama dalam hal biaya perjalanan udara. (8) Pemerintah harus menjadi penjaga di tengah arus kebijakan dan mengawasi setiap langkah implementasinya agar tidak menjadi beban yang menekan pundak konsumen.\n\n(diadaptasi dari https://www.reuters.com/)\n\nMakna kalimat (8) yang terdapat pada kutipan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Pemerintah berperan mengatur kebijakan agar seluruh kebijakan penerbangan berjalan sesuai kepentingan maskapai.",
+            "Pemerintah bertugas mengendalikan kebijakan agar pelaksanaannya tidak merugikan dan memberatkan konsumen.",
+            "Pemerintah berupaya memastikan kenaikan tarif tiket tidak memengaruhi keuntungan perusahaan penerbangan nasional.",
+            "Pemerintah bertanggung jawab mengawasi kebijakan agar seluruh biaya operasional maskapai dapat ditekan maksimal.",
+            "Program lanjutan pembangunan Kampung Nelayan akan lebih difokuskan pada wilayah Indonesia Timur sebagai prioritas utama."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Kalimat (8) menggunakan ungkapan kiasan menjadi penjaga di tengah arus kebijakan dan tidak menjadi beban yang menekan pundak konsumen yang bermakna pemerintah harus mengawasi pelaksanaan kebijakan agar tidak merugikan masyarakat. Makna kalimat tersebut adalah peran pemerintah dalam mengontrol implementasi kebijakan supaya tidak memberatkan konsumen. Jadi, makna kalimat (8) yang terdapat pada kutipan teks tersebut adalah Pemerintah bertugas mengendalikan kebijakan agar pelaksanaannya tidak merugikan dan memberatkan konsumen karena menggambarkan fungsi pengawasan pemerintah agar kebijakan tidak berdampak negatif bagi masyarakat. (Catatan: tabel kunci ringkas buku mencetak \"D\" untuk butir ini, tetapi baris jawaban DAN tubuh pembahasan menyatakan opsi B — kami mengikuti pembahasan.) Jalur Cara Gemilang: Ungkapan kias = terjemahkan ke makna lugas: \"penjaga di tengah arus\" = mengawasi agar tidak memberatkan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Indonesia telah menyelesaikan rencana restrukturisasi untuk proyek kereta cepat yang didanai China, yang kini dinyatakan tuntas oleh pejabat Danantara Indonesia. (2) Pemerintah Indonesia bekerja sama dengan pihak China karena ingin menunjukkan komitmen berkelanjutan dalam inisiatif infrastruktur besar yang memprioritaskan. (3) Penyelesaian restrukturisasi ini diproyeksikan dapat memastikan stabilitas dan keberlanjutan proyek kereta cepat yang menjadi bagian dari prioritas pembangunan nasional. (4) CEO Danantara Indonesia, Dony Oskaria, mengatakan bahwa langkah ini akan memperkuat kredibilitas keuangan dan memberikan kejelasan kepada semua pemangku kepentingan. (5) Restrukturisasi meliputi penyesuaian jadwal pembayaran dan pengaturan kembali kewajiban utang untuk mengamankan kondisi pasar saat ini. (6) Pemerintah juga menilai bahwa penyelesaian masalah keuangan ini membuka ruang untuk penyelesaian fase konstruksi berikutnya. (7) Pejabat mengatakan bahwa keberhasilan restrukturisasi ini dapat menjadi contoh pengelolaan utang proyek infrastruktur lainnya di Indonesia. (8) Proyek kereta cepat tersebut diharapkan tetap menarik investasi asing dan mendukung konektivitas nasional. (9) Kepala Danantara Indonesia menambahkan bahwa kolaborasi lintas negara ini menggambarkan hubungan strategis ekonomi Indonesia–China. (10) Masyarakat dan pelaku usaha berharap bahwa proyek ini akan berjalan sesuai rencana serta membawa manfaat jangka panjang pertumbuhan transportasi di Indonesia.\n\n(diadaptasi dari https://antaranews.com/)\n\nPenggunaan kata istilah yang tidak tepat berdasarkan kutipan teks tersebut terdapat pada",
+          "tipe": "pg",
+          "opsi": [
+            "restrukturisasi (kalimat 1).",
+            "memprioritaskan (kalimat 2).",
+            "diproyeksikan (kalimat 3).",
+            "kredibilitas (kalimat 4).",
+            "fase (kalimat 6)."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Kata rekonstruksi biasanya digunakan untuk membahas pembangunan kembali setelah kerusakan atau bencana sehingga kurang tepat jika digunakan untuk menyebut inisiatif proyek baru atau keberlanjutan proyek yang sedang berjalan. Jadi, kata tersebut seharusnya adalah infrastruktur . Jalur Cara Gemilang: Istilah harus cocok makna KBBI + konteks kalimat; kata berimbuhan me- yang seharusnya pasif = tanda salah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Indonesia telah menyelesaikan rencana restrukturisasi untuk proyek kereta cepat yang didanai China, yang kini dinyatakan tuntas oleh pejabat Danantara Indonesia. (2) Pemerintah Indonesia bekerja sama dengan pihak China karena ingin menunjukkan komitmen berkelanjutan dalam inisiatif infrastruktur besar yang memprioritaskan. (3) Penyelesaian restrukturisasi ini diproyeksikan dapat memastikan stabilitas dan keberlanjutan proyek kereta cepat yang menjadi bagian dari prioritas pembangunan nasional. (4) CEO Danantara Indonesia, Dony Oskaria, mengatakan bahwa langkah ini akan memperkuat kredibilitas keuangan dan memberikan kejelasan kepada semua pemangku kepentingan. (5) Restrukturisasi meliputi penyesuaian jadwal pembayaran dan pengaturan kembali kewajiban utang untuk mengamankan kondisi pasar saat ini. (6) Pemerintah juga menilai bahwa penyelesaian masalah keuangan ini membuka ruang untuk penyelesaian fase konstruksi berikutnya. (7) Pejabat mengatakan bahwa keberhasilan restrukturisasi ini dapat menjadi contoh pengelolaan utang proyek infrastruktur lainnya di Indonesia. (8) Proyek kereta cepat tersebut diharapkan tetap menarik investasi asing dan mendukung konektivitas nasional. (9) Kepala Danantara Indonesia menambahkan bahwa kolaborasi lintas negara ini menggambarkan hubungan strategis ekonomi Indonesia–China. (10) Masyarakat dan pelaku usaha berharap bahwa proyek ini akan berjalan sesuai rencana serta membawa manfaat jangka panjang pertumbuhan transportasi di Indonesia.\n\n(diadaptasi dari https://antaranews.com/)\n\nBerdasarkan kutipan teks tersebut, makna kata restrukturisasi adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Proses pengalihan kepemilikan proyek kepada pihak asing melalui kerja sama investasi.",
+            "Proses penghentian sementara proyek untuk menunggu stabilisasi kondisi ekonomi global.",
+            "Proses penghapusan seluruh kewajiban utang tanpa adanya perjanjian pembayaran kembali.",
+            "Proses penataan ulang kewajiban pembayaran utang agar sesuai dengan kondisi keuangan terkini.",
+            "Proses penambahan jumlah utang untuk mempercepat penyelesaian proyek infrastruktur nasional."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Berdasarkan KBBI, makna kata restrukturisasi adalah 'penataan kembali (supaya struktur atau tatanannya baik)'. Kata restrukturisasi dalam konteks teks merujuk pada penataan ulang atau penyesuaian kembali struktur utang, khususnya terkait jadwal pembayaran dan kewajiban finansial agar sesuai dengan kondisi yang ada. Jadi, makna kata restrukturisasi adalah proses penataan ulang kewajiban pembayaran utang agar sesuai dengan kondisi keuangan terkini . Jalur Cara Gemilang: KBBI: restrukturisasi = penataan kembali (struktur/tatanan) — bukan penghapusan atau penambahan utang.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Indonesia telah menyelesaikan rencana restrukturisasi untuk proyek kereta cepat yang didanai China, yang kini dinyatakan tuntas oleh pejabat Danantara Indonesia. (2) Pemerintah Indonesia bekerja sama dengan pihak China karena ingin menunjukkan komitmen berkelanjutan dalam inisiatif infrastruktur besar yang memprioritaskan. (3) Penyelesaian restrukturisasi ini diproyeksikan dapat memastikan stabilitas dan keberlanjutan proyek kereta cepat yang menjadi bagian dari prioritas pembangunan nasional. (4) CEO Danantara Indonesia, Dony Oskaria, mengatakan bahwa langkah ini akan memperkuat kredibilitas keuangan dan memberikan kejelasan kepada semua pemangku kepentingan. (5) Restrukturisasi meliputi penyesuaian jadwal pembayaran dan pengaturan kembali kewajiban utang untuk mengamankan kondisi pasar saat ini. (6) Pemerintah juga menilai bahwa penyelesaian masalah keuangan ini membuka ruang untuk penyelesaian fase konstruksi berikutnya. (7) Pejabat mengatakan bahwa keberhasilan restrukturisasi ini dapat menjadi contoh pengelolaan utang proyek infrastruktur lainnya di Indonesia. (8) Proyek kereta cepat tersebut diharapkan tetap menarik investasi asing dan mendukung konektivitas nasional. (9) Kepala Danantara Indonesia menambahkan bahwa kolaborasi lintas negara ini menggambarkan hubungan strategis ekonomi Indonesia–China. (10) Masyarakat dan pelaku usaha berharap bahwa proyek ini akan berjalan sesuai rencana serta membawa manfaat jangka panjang pertumbuhan transportasi di Indonesia.\n\n(diadaptasi dari https://antaranews.com/)\n\nPernyataan berikut yang termasuk kalimat kompleks koordinatif adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Proyek kereta cepat tersebut diharapkan tetap menarik investasi asing dan mendukung konektivitas nasional.",
+            "Pemerintah juga menilai bahwa penyelesaian masalah keuangan ini membuka ruang untuk penyelesaian fase konstruksi berikutnya.",
+            "Masyarakat dan pelaku usaha berharap bahwa proyek ini akan berjalan sesuai rencana serta membawa manfaat jangka panjang pertumbuhan transportasi di Indonesia.",
+            "Indonesia telah menyelesaikan rencana restrukturisasi untuk proyek kereta cepat yang didanai China, yang kini dinyatakan tuntas oleh pejabat Danantara Indonesia.",
+            "Pemerintah Indonesia bekerja sama dengan pihak China karena ingin menunjukkan komitmen berkelanjutan dalam inisiatif rekonstruksi besar yang diprioritaskan."
+          ],
+          "jawaban": [
+            0,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Kalimat kompleks koordinatif adalah kalimat yang terdiri atas dua klausa setara yang dihubungkan oleh konjungsi koordinatif, seperti dan , serta , atau , tetapi , sedangkan , dan melainkan . Pernyataan (1) benar Kalimat (1) merupakan kalimat majemuk koordinatif yang ditandai dengan konjungsi dan . Pernyataan (2) salah Pernyataan (3) benar Kalimat (3) merupakan kalimat majemuk koordinatif yang ditandai dengan konjungsi serta . Pernyataan (4) salah Pernyataan (5) salah Jalur Cara Gemilang: Koordinatif = setara: dan, serta, atau, tetapi, melainkan, sedangkan — dua klausa mandiri.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Bacalah teks berikut dengan saksama! (1) Pemerintah Indonesia resmi mengizinkan maskapai penerbangan menaikkan harga tiket hingga 13 persen melalui penyesuaian biaya tambahan bahan bakar ( fuel surcharge ). (2) Langkah ini diumumkan pada 6 April 2026 sebagai bagian dari upaya pemerintah membantu industri penerbangan menghadapi lonjakan biaya operasional, terutama kenaikan harga bahan bakar. (3) Menteri Koordinator Bidang Perekonomian, Airlangga Hartarto, menjelaskan bahwa kebijakan tersebut juga melibatkan penghapusan beberapa pajak sektor penerbangan untuk meringankan beban maskapai. (4) Kebijakan ini dianggap penting untuk menjaga stabilitas industri nasional sambil tetap mempertahankan kualitas pelayanan kepada masyarakat. (5) Meski demikian, pemerintah menegaskan bahwa pengawasan terhadap penerapan kenaikan tarif tetap dilakukan agar tidak memberatkan perekonomian yang menjadi kekhawatiran di tengah tekanan ekonomi global. Penggunaan kata yang tidak tepat pada kutipan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "kenaikan (kalimat 1).",
+            "diumumkan (kalimat 2).",
+            "melibatkan (kalimat 3).",
+            "dianggap (kalimat 4).",
+            "menegaskan (kalimat 5)."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Kesalahan penggunaan kata terdapat pada kalimat (1), yaitu pada kata kenaikan . Kata kenaikan seharusnya diganti dengan kata menaikan . Jalur Cara Gemilang: Nominal ke-an vs verba me-: konteks perbuatan = verba (soal mandiri buku).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan lensa kontak kini sedang naik daun, baik untuk alasan medis maupun estetika. (2) Bagi penderita rabun jauh, rabun dekat, atau astigmatisme, lensa kontak berfungsi membantu ketajaman penglihatan dan dianggap lebih praktis dibandingkan kacamata. (3) Harga lensa kontak tidak terlalu mahal sehingga banyak masyarakat lebih memilih lensa kontak dibandingkan kacamata. (4) Namun, penggunaan yang tidak sesuai aturan, kurang menjaga kebersihan, atau memilih jenis lensa tanpa konsultasi dokter dapat menimbulkan berbagai masalah pada mata. (5) Pengguna harus memahami penyebab bahaya lensa kontak agar tidak sembarangan dalam pemakaiannya.\n\n(6) Di balik manfaatnya, penggunaan lensa kontak yang tidak tepat dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata. (7) Beberapa gangguan yang sering muncul adalah mata merah, kering, iritasi, reaksi alergi, dan luka pada kornea. (8) Jika dibiarkan, kondisi tersebut dapat berkembang menjadi infeksi mata yang serius, seperti keratitis, bahkan ulkus kornea, yang dapat mengancam penglihatan hingga menyebabkan kebutaan. (9) Gejala yang perlu diwaspadai, seperti nyeri pada mata, pandangan buram, mata mudah silau, dan rasa tidak nyaman saat mengenakan softlens.\n\n(10) Untuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik. (11) Lensa kontak harus digunakan sesuai petunjuk dokter dan reduplikasi pada kemasan, rutin dibersihkan dengan cairan khusus, serta tidak digunakan saat tidur, mandi, atau berenang. (12) Tempat penyimpanan lensa juga perlu dibersihkan dan dikeringkan secara berkala. (13) Selain itu, pastikan tangan dalam keadaan bersih sebelum menyentuh lensa. (14) Konsultasi dengan dokter mata sangat dianjurkan agar pengguna memperoleh jenis lensa kontak yang sesuai dan aman bagi kondisi mata masing-masing.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nMakna kata estetika berdasarkan teks tersebut adalah Tentukan Sesuai atau Tidak sesuai pada setiap pernyataan!\n(Tentukan Sesuai/Tidak sesuai untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Sesuai",
+            "Tidak sesuai"
+          ],
+          "baris": [
+            "penggunaan lensa kontak untuk memperindah tampilan visual.",
+            "penggunaan lensa kontak untuk menyesuaikan kondisi medis tertentu pada mata.",
+            "penggunaan lensa kontak untuk menggantikan fungsi kacamata secara menyeluruh."
+          ],
+          "jawaban": [
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SESUAI: Pada kalimat (1) disebutkan bahwa lensa kontak digunakan tidak hanya untuk alasan medis, tetapi juga estetika. Hal ini menunjukkan bahwa lensa kontak memang dapat digunakan untuk memperindah tampilan visual. Baris 2 — TIDAK SESUAI: Pada kalimat (2) dijelaskan bahwa lensa kontak membantu penderita rabun jauh, rabun dekat, dan astigmatisme sehingga berfungsi untuk kebutuhan medis, bukan estetika. Baris 3 — TIDAK SESUAI: Teks tidak menyatakan bahwa lensa kontak sepenuhnya menggantikan kacamata, hanya sebagai alternatif yang lebih praktis, bukan pengganti total. Jalur Cara Gemilang: Makna kata = KBBI + konteks; uji tiap pernyataan satu per satu terhadap keduanya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan lensa kontak kini sedang naik daun, baik untuk alasan medis maupun estetika. (2) Bagi penderita rabun jauh, rabun dekat, atau astigmatisme, lensa kontak berfungsi membantu ketajaman penglihatan dan dianggap lebih praktis dibandingkan kacamata. (3) Harga lensa kontak tidak terlalu mahal sehingga banyak masyarakat lebih memilih lensa kontak dibandingkan kacamata. (4) Namun, penggunaan yang tidak sesuai aturan, kurang menjaga kebersihan, atau memilih jenis lensa tanpa konsultasi dokter dapat menimbulkan berbagai masalah pada mata. (5) Pengguna harus memahami penyebab bahaya lensa kontak agar tidak sembarangan dalam pemakaiannya.\n\n(6) Di balik manfaatnya, penggunaan lensa kontak yang tidak tepat dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata. (7) Beberapa gangguan yang sering muncul adalah mata merah, kering, iritasi, reaksi alergi, dan luka pada kornea. (8) Jika dibiarkan, kondisi tersebut dapat berkembang menjadi infeksi mata yang serius, seperti keratitis, bahkan ulkus kornea, yang dapat mengancam penglihatan hingga menyebabkan kebutaan. (9) Gejala yang perlu diwaspadai, seperti nyeri pada mata, pandangan buram, mata mudah silau, dan rasa tidak nyaman saat mengenakan softlens.\n\n(10) Untuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik. (11) Lensa kontak harus digunakan sesuai petunjuk dokter dan reduplikasi pada kemasan, rutin dibersihkan dengan cairan khusus, serta tidak digunakan saat tidur, mandi, atau berenang. (12) Tempat penyimpanan lensa juga perlu dibersihkan dan dikeringkan secara berkala. (13) Selain itu, pastikan tangan dalam keadaan bersih sebelum menyentuh lensa. (14) Konsultasi dengan dokter mata sangat dianjurkan agar pengguna memperoleh jenis lensa kontak yang sesuai dan aman bagi kondisi mata masing-masing.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nKalimat kompleks yang menyatakan tujuan berdasarkan kutipan teks tersebut terdapat pada kalimat",
+          "tipe": "pg",
+          "opsi": [
+            "Jika dibiarkan, kondisi tersebut dapat berkembang menjadi infeksi mata yang serius, seperti keratitis, bahkan ulkus kornea, yang dapat mengancam penglihatan.",
+            "Untuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik.",
+            "Namun, penggunaan yang tidak sesuai aturan, kurang menjaga kebersihan, atau memilih jenis lensa tanpa konsultasi dokter dapat menimbulkan berbagai masalah pada mata.",
+            "Lensa kontak harus digunakan sesuai petunjuk dokter dan instruksi pada kemasan, rutin dibersihkan dengan cairan khusus, serta tidak digunakan saat tidur, mandi, atau berenang.",
+            "Di balik manfaatnya, penggunaan lensa kontak yang tidak tepat dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Kalimat majemuk yang menyatakan tujuan biasanya ditandai dengan penggunaan kata penghubung, seperti demi , untuk , agar , dan supaya . Kalimat Untuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik merupakan kalimat majemuk yang menyatakan tujuan karena ditandai dengan konjungsi untuk . Jalur Cara Gemilang: Subordinatif tujuan = agar, supaya, untuk, demi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan lensa kontak kini sedang naik daun, baik untuk alasan medis maupun estetika. (2) Bagi penderita rabun jauh, rabun dekat, atau astigmatisme, lensa kontak berfungsi membantu ketajaman penglihatan dan dianggap lebih praktis dibandingkan kacamata. (3) Harga lensa kontak tidak terlalu mahal sehingga banyak masyarakat lebih memilih lensa kontak dibandingkan kacamata. (4) Namun, penggunaan yang tidak sesuai aturan, kurang menjaga kebersihan, atau memilih jenis lensa tanpa konsultasi dokter dapat menimbulkan berbagai masalah pada mata. (5) Pengguna harus memahami penyebab bahaya lensa kontak agar tidak sembarangan dalam pemakaiannya.\n\n(6) Di balik manfaatnya, penggunaan lensa kontak yang tidak tepat dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata. (7) Beberapa gangguan yang sering muncul adalah mata merah, kering, iritasi, reaksi alergi, dan luka pada kornea. (8) Jika dibiarkan, kondisi tersebut dapat berkembang menjadi infeksi mata yang serius, seperti keratitis, bahkan ulkus kornea, yang dapat mengancam penglihatan hingga menyebabkan kebutaan. (9) Gejala yang perlu diwaspadai, seperti nyeri pada mata, pandangan buram, mata mudah silau, dan rasa tidak nyaman saat mengenakan softlens.\n\n(10) Untuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik. (11) Lensa kontak harus digunakan sesuai petunjuk dokter dan reduplikasi pada kemasan, rutin dibersihkan dengan cairan khusus, serta tidak digunakan saat tidur, mandi, atau berenang. (12) Tempat penyimpanan lensa juga perlu dibersihkan dan dikeringkan secara berkala. (13) Selain itu, pastikan tangan dalam keadaan bersih sebelum menyentuh lensa. (14) Konsultasi dengan dokter mata sangat dianjurkan agar pengguna memperoleh jenis lensa kontak yang sesuai dan aman bagi kondisi mata masing-masing.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nPenggunaan kata yang tidak tepat berdasarkan kutipan teks tersebut terdapat pada",
+          "tipe": "pg",
+          "opsi": [
+            "reduplikasi (kalimat 11).",
+            "konsultasi (kalimat 4).",
+            "negatif (kalimat 6).",
+            "ritasi (kalimat 8).",
+            "lensa (kalimat 13)."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Dalam konteks kalimat, hal yang dimaksud ialah petunjuk penggunaan pada kemasan lensa kontak sehingga kata yang tepat adalah instruksi pada kemasan, bukan reduplikasi . Jalur Cara Gemilang: Istilah bidang harus pas konteks: petunjuk kemasan = instruksi, bukan reduplikasi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan lensa kontak kini sedang naik daun, baik untuk alasan medis maupun estetika. (2) Bagi penderita rabun jauh, rabun dekat, atau astigmatisme, lensa kontak berfungsi membantu ketajaman penglihatan dan dianggap lebih praktis dibandingkan kacamata. (3) Harga lensa kontak tidak terlalu mahal sehingga banyak masyarakat lebih memilih lensa kontak dibandingkan kacamata. (4) Namun, penggunaan yang tidak sesuai aturan, kurang menjaga kebersihan, atau memilih jenis lensa tanpa konsultasi dokter dapat menimbulkan berbagai masalah pada mata. (5) Pengguna harus memahami penyebab bahaya lensa kontak agar tidak sembarangan dalam pemakaiannya.\n\n(6) Di balik manfaatnya, penggunaan lensa kontak yang tidak tepat dapat menimbulkan sejumlah dampak negatif bagi kesehatan mata. (7) Beberapa gangguan yang sering muncul adalah mata merah, kering, iritasi, reaksi alergi, dan luka pada kornea. (8) Jika dibiarkan, kondisi tersebut dapat berkembang menjadi infeksi mata yang serius, seperti keratitis, bahkan ulkus kornea, yang dapat mengancam penglihatan hingga menyebabkan kebutaan. (9) Gejala yang perlu diwaspadai, seperti nyeri pada mata, pandangan buram, mata mudah silau, dan rasa tidak nyaman saat mengenakan softlens.\n\n(10) Untuk mencegah bahaya lensa kontak, pengguna perlu mematuhi aturan pemakaian dan menjaga kebersihan dengan baik. (11) Lensa kontak harus digunakan sesuai petunjuk dokter dan reduplikasi pada kemasan, rutin dibersihkan dengan cairan khusus, serta tidak digunakan saat tidur, mandi, atau berenang. (12) Tempat penyimpanan lensa juga perlu dibersihkan dan dikeringkan secara berkala. (13) Selain itu, pastikan tangan dalam keadaan bersih sebelum menyentuh lensa. (14) Konsultasi dengan dokter mata sangat dianjurkan agar pengguna memperoleh jenis lensa kontak yang sesuai dan aman bagi kondisi mata masing-masing.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nMakna kalimat (1) berdasarkan kutipan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Lensa kontak menjadi pilihan utama masyarakat dalam menggantikan fungsi kacamata sehari-hari.",
+            "Penggunaan lensa kontak berkembang pesat karena pengaruh tren kecantikan dan media sosial.",
+            "Masyarakat mulai menggunakan lensa kontak sebagai bagian penting dalam kebutuhan gaya hidup.",
+            "Lensa kontak dianggap lebih efektif dibandingkan kacamata dalam membantu penglihatan pengguna.",
+            "Penggunaan lensa kontak makin diminati masyarakat untuk kebutuhan kesehatan maupun penampilan."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Ungkapan sedang naik daun bermakna makin populer atau banyak diminati oleh masyarakat. Jadi, makna kalimat (1) berdasarkan kutipan teks tersebut adalah Penggunaan lensa kontak makin diminati masyarakat untuk kebutuhan kesehatan maupun penampilan karena menggambarkan bahwa lensa kontak makin banyak digunakan, baik untuk kebutuhan kesehatan mata maupun penampilan. Jalur Cara Gemilang: Ungkapan \"naik daun\" = makin populer/diminati — makna kalimat = parafrasa ungkapan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan kendaraan listrik makin berkembang di berbagai negara sebagai solusi untuk mengurangi polusi udara dan ketergantungan pada bahan bakar fosil. (2) Inovasi ini dianggap sebagai langkah penting dalam menghadapi perubahan iklim dan menciptakan lingkungan yang lebih bersih. (3) Namun, di balik berbagai keunggulannya, kendaraan listrik juga memunculkan perdebatan terkait efektivitas dan dampaknya secara menyeluruh.\n\n(4) Di satu sisi, kendaraan listrik dinilai lebih ramah lingkungan karena tidak menghasilkan emisi gas buang secara langsung, seperti kendaraan berbahan bakar bensin atau diesel. (5) Selain itu, penggunaan energi listrik dapat dikombinasikan dengan sumber energi terbarukan, seperti tenaga surya atau angin, sehingga makin mengurangi jejak karbon. (6) Biaya produktivitas kendaraan listrik juga relatif lebih rendah karena tidak memerlukan bahan bakar konvensional dan memiliki komponen mesin yang lebih sederhana.\n\n(7) Di sisi lain, kendaraan listrik masih menghadapi sejumlah kendala, seperti harga yang relatif mahal dan minimnya stasiun pengisian daya yang menjadi batu sandungan bagi penggunanya. (8) Selain itu, proses produksi baterai yang digunakan dalam kendaraan listrik dapat menimbulkan dampak lingkungan, terutama dalam hal penambangan bahan baku, seperti litium. (9) Hal ini menunjukkan bahwa kendaraan listrik belum sepenuhnya bebas dari masalah lingkungan dan masih memerlukan pengembangan lebih lanjut agar benar-benar menjadi solusi yang berkelanjutan.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nBerdasarkan teks tersebut, makna kata fosil adalah",
+          "tipe": "pg",
+          "opsi": [
+            "jenis energi alternatif yang berasal dari tenaga alam, seperti angin dan matahari.",
+            "bahan bakar yang dihasilkan dari proses kimia sederhana dan mudah diperbarui dalam waktu singkat.",
+            "sumber energi terbarukan yang dihasilkan dari proses alam dan dapat digunakan secara berkelanjutan.",
+            "sumber energi alam yang berasal dari sisa makhluk hidup purba dan digunakan sebagai bahan bakar kendaraan.",
+            "bahan energi modern yang dihasilkan melalui teknologi tinggi untuk menggantikan bahan bakar konvensional."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Berdasarkan KBBI, makna kata fosil adalah 'sisa tulang belulang binatang atau sisa tumbuhan zaman purba yang telah membatu dan tertanam di bawah lapisan tanah'. Dalam teks, kata fosil merujuk pada 'bahan bakar fosil' yang merujuk pada sumber energi seperti bensin atau diesel. Secara makna, bahan bakar fosil berasal dari sisa-sisa makhluk hidup purba yang mengalami proses alam selama jutaan tahun hingga menjadi minyak bumi, batu bara, atau gas alam. Jadi, berdasarkan teks tersebut, makna kata fosil adalah sumber energi alam yang berasal dari sisa makhluk hidup purba dan digunakan sebagai bahan bakar kendaraan . Jalur Cara Gemilang: KBBI: fosil = sisa makhluk purba yang membatu -> energi dari sisa organisme; coret \"terbarukan\".",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan kendaraan listrik makin berkembang di berbagai negara sebagai solusi untuk mengurangi polusi udara dan ketergantungan pada bahan bakar fosil. (2) Inovasi ini dianggap sebagai langkah penting dalam menghadapi perubahan iklim dan menciptakan lingkungan yang lebih bersih. (3) Namun, di balik berbagai keunggulannya, kendaraan listrik juga memunculkan perdebatan terkait efektivitas dan dampaknya secara menyeluruh.\n\n(4) Di satu sisi, kendaraan listrik dinilai lebih ramah lingkungan karena tidak menghasilkan emisi gas buang secara langsung, seperti kendaraan berbahan bakar bensin atau diesel. (5) Selain itu, penggunaan energi listrik dapat dikombinasikan dengan sumber energi terbarukan, seperti tenaga surya atau angin, sehingga makin mengurangi jejak karbon. (6) Biaya produktivitas kendaraan listrik juga relatif lebih rendah karena tidak memerlukan bahan bakar konvensional dan memiliki komponen mesin yang lebih sederhana.\n\n(7) Di sisi lain, kendaraan listrik masih menghadapi sejumlah kendala, seperti harga yang relatif mahal dan minimnya stasiun pengisian daya yang menjadi batu sandungan bagi penggunanya. (8) Selain itu, proses produksi baterai yang digunakan dalam kendaraan listrik dapat menimbulkan dampak lingkungan, terutama dalam hal penambangan bahan baku, seperti litium. (9) Hal ini menunjukkan bahwa kendaraan listrik belum sepenuhnya bebas dari masalah lingkungan dan masih memerlukan pengembangan lebih lanjut agar benar-benar menjadi solusi yang berkelanjutan.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nKalimat kompleks yang menyatakan kausalitas berdasarkan kutipan teks tersebut terdapat pada kalimat",
+          "tipe": "pg",
+          "opsi": [
+            "(1).",
+            "(2).",
+            "(3).",
+            "(4).",
+            "(7)."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kalimat majemuk yang menyatakan kausalitas adalah kalimat yang menunjukkan hubungan sebab akibat yang ditandai dengan konjungsi, seperti karena , sebab , akibat atau sehingga . Kalimat (4) menggunakan konjungsi kausalitas yang ditandai dengan konjungsi karena . (Catatan: tabel kunci ringkas buku mencetak \"B\" untuk butir ini, tetapi baris jawaban DAN tubuh pembahasan menyatakan opsi D — kami mengikuti pembahasan.) Jalur Cara Gemilang: Subordinatif kausal = karena, sebab, sehingga.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan kendaraan listrik makin berkembang di berbagai negara sebagai solusi untuk mengurangi polusi udara dan ketergantungan pada bahan bakar fosil. (2) Inovasi ini dianggap sebagai langkah penting dalam menghadapi perubahan iklim dan menciptakan lingkungan yang lebih bersih. (3) Namun, di balik berbagai keunggulannya, kendaraan listrik juga memunculkan perdebatan terkait efektivitas dan dampaknya secara menyeluruh.\n\n(4) Di satu sisi, kendaraan listrik dinilai lebih ramah lingkungan karena tidak menghasilkan emisi gas buang secara langsung, seperti kendaraan berbahan bakar bensin atau diesel. (5) Selain itu, penggunaan energi listrik dapat dikombinasikan dengan sumber energi terbarukan, seperti tenaga surya atau angin, sehingga makin mengurangi jejak karbon. (6) Biaya produktivitas kendaraan listrik juga relatif lebih rendah karena tidak memerlukan bahan bakar konvensional dan memiliki komponen mesin yang lebih sederhana.\n\n(7) Di sisi lain, kendaraan listrik masih menghadapi sejumlah kendala, seperti harga yang relatif mahal dan minimnya stasiun pengisian daya yang menjadi batu sandungan bagi penggunanya. (8) Selain itu, proses produksi baterai yang digunakan dalam kendaraan listrik dapat menimbulkan dampak lingkungan, terutama dalam hal penambangan bahan baku, seperti litium. (9) Hal ini menunjukkan bahwa kendaraan listrik belum sepenuhnya bebas dari masalah lingkungan dan masih memerlukan pengembangan lebih lanjut agar benar-benar menjadi solusi yang berkelanjutan.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nPenggunaan kata yang tidak tepat berdasarkan kutipan teks tersebut adalah Tentukan Benar atau Salah pada setiap pernyataan!\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "ofektivitas (kalimat 3)",
+            "produktivitas (kalimat 6)",
+            "terbarukan (kalimat 5)"
+          ],
+          "jawaban": [
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SALAH: Penggunaan kata efektivitas sudah tepat. Baris 2 — BENAR: Kata produktivitas tidak sesuai dengan konteks pembahasan karena yang dimaksud ialah biaya penggunaan atau biaya produksi kendaraan listrik. Oleh sebab itu, kata yang lebih tepat digunakan adalah produksi . Baris 3 — SALAH: Penggunaan kata terbarukan sudah tepat. Jalur Cara Gemilang: Ketepatan kata per kalimat: uji imbuhan & makna KBBI pada tiap baris pernyataan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Penggunaan kendaraan listrik makin berkembang di berbagai negara sebagai solusi untuk mengurangi polusi udara dan ketergantungan pada bahan bakar fosil. (2) Inovasi ini dianggap sebagai langkah penting dalam menghadapi perubahan iklim dan menciptakan lingkungan yang lebih bersih. (3) Namun, di balik berbagai keunggulannya, kendaraan listrik juga memunculkan perdebatan terkait efektivitas dan dampaknya secara menyeluruh.\n\n(4) Di satu sisi, kendaraan listrik dinilai lebih ramah lingkungan karena tidak menghasilkan emisi gas buang secara langsung, seperti kendaraan berbahan bakar bensin atau diesel. (5) Selain itu, penggunaan energi listrik dapat dikombinasikan dengan sumber energi terbarukan, seperti tenaga surya atau angin, sehingga makin mengurangi jejak karbon. (6) Biaya produktivitas kendaraan listrik juga relatif lebih rendah karena tidak memerlukan bahan bakar konvensional dan memiliki komponen mesin yang lebih sederhana.\n\n(7) Di sisi lain, kendaraan listrik masih menghadapi sejumlah kendala, seperti harga yang relatif mahal dan minimnya stasiun pengisian daya yang menjadi batu sandungan bagi penggunanya. (8) Selain itu, proses produksi baterai yang digunakan dalam kendaraan listrik dapat menimbulkan dampak lingkungan, terutama dalam hal penambangan bahan baku, seperti litium. (9) Hal ini menunjukkan bahwa kendaraan listrik belum sepenuhnya bebas dari masalah lingkungan dan masih memerlukan pengembangan lebih lanjut agar benar-benar menjadi solusi yang berkelanjutan.\n\n(diadaptasi dari https://www.alodokter.com/)\n\nBerdasarkan teks tersebut, makna kalimat (7) adalah Pilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Kendaraan listrik masih menghadapi rintangan karena harga kendaraan dan fasilitas pengisian daya belum memadai.",
+            "Harga kendaraan listrik yang mahal dan kurangnya stasiun pengisian daya menjadi hambatan bagi pengguna.",
+            "Kendaraan listrik sudah menjadi pilihan utama masyarakat karena lebih berkualitas.",
+            "Kendaraan listrik sudah sepenuhnya mendukung sistem transportasi modern tanpa kendala berarti.",
+            "Kendaraan listrik tidak memiliki dampak lingkungan."
+          ],
+          "jawaban": [
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Kalimat (7) menyatakan kendaraan listrik masih memiliki sejumlah kendala, yaitu harga yang relatif mahal dan minimnya stasiun pengisian daya. Makna tersebut menunjukkan adanya hambatan utama dalam penggunaan kendaraan listrik, baik dari segi biaya maupun infrastruktur pendukung. Jadi, makna kalimat (7) terdapat pada kalimat (1) dan (2) Pernyataan (1) benar Frasa \"menghadapi sejumlah kendala\" dan \"menjadi batu sandungan\" merupakan sinonim atau bentuk kiasan dari menghadapi rintangan atau menjadi hambatan. Pernyataan (2) benar Frasa \"harga yang relatif mahal dan minimnya stasiun pengisian daya\" secara eksplisit bermakna sama dengan harga kendaraan dan fasilitas pengisian daya belum memadai (kurang). Pernyataan (3) salah Pernyataan (4) salah Pernyataan (5) salah Jalur Cara Gemilang: Makna tersirat = gabungkan inti kalimat; coret opsi ekstrem (\"sepenuhnya\", \"tidak ada dampak\").",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Katarak adalah kondisi medis yang ditandai dengan kekeruhan pada lensa mata akibat menggumpal protein sehingga mengganggu kemampuan mata meneruskan cahaya secara normal. (2) Penyakit ini bersifat progresif dan umumnya berkembang seiring bertambahnya usia yang dapat terjadi pada satu atau kedua mata. (3) Banyak orang menderita katarak yang tidak tertangani karena kondisi ekonomi. (4) Meski tidak menular, katarak menjadi penyebab utama kebutaan di Indonesia dan menyumbang 81% kasus gangguan penglihatan. (5) Gejala awal, meliputi, penglihatan kabur, silau terhadap cahaya, kesulitan melihat di malam hari, pandangan ganda, dan perubahan persepsi warna. (6) Deteksi dini melalui pemeriksaan mata rutin sangat penting untuk mencegah kebutaan yang dapat dihindari.\n\n(7) Penuaan merupakan penyebab utama katarak, tetapi berbagai faktor risiko lain turut mempercepat perkembangannya. (8) Paparan sinar ultraviolet, polusi, asap rokok, alkohol, dan zat beracun dapat meningkatkan radikal bebas yang merusak lensa mata. (9) Kondisi kesehatan, seperti diabetes, hipertensi, penggunaan kortikosteroid jangka panjang, riwayat cedera atau operasi mata, serta faktor genetik, juga berperan. (10) Kesehatan mata merupakan hal yang sangat berharga sehingga harus dijaga dengan baik. (11) Analisis dilakukan oleh dokter mata melalui anamnesis, pemeriksaan fisik, dan penunjang, seperti slit-lamp dan tes ketajaman penglihatan. (12) Penanganan tergantung tingkat keparahan, tetapi operasi penggantian lensa dengan lensa intraokular buatan adalah satu-satunya metode yang efektif.\n\n(13) Walaupun katarak tidak dapat dicegah sepenuhnya, gaya hidup sehat dapat memperlambat perkembangannya. (14) Langkah pencegahan yang dapat dilakukan adalah menggunakan kacamata anti-UV, mengonsumsi makanan kaya antioksidan, mengendalikan penyakit kronis, serta menghindari rokok dan alkohol. (15) Seharusnya, pemerintah mencanangkan pemeriksaan mata rutin setiap 2—4 tahun untuk mencegah penyakit tersebut. (16) Penting untuk diingat bahwa katarak tidak bisa disembuhkan dengan obat atau kacamata dan bersifat tidak menular. (17) Dengan deteksi dini dan penanganan yang tepat, kualitas penglihatan dapat dipulihkan dan menjadikan perawatan mata sebagai investasi penting untuk masa depan.\n\n(diadaptasi dari https://www.rspondokindah.co.id/)\n\nPenggunaan kata yang tidak tepat dalam teks tersebut adalah Tentukan Benar atau Salah pada setiap pernyataan!\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "progresif (kalimat 2)",
+            "analisis (kalimat 11)",
+            "investasi (kalimat 17)"
+          ],
+          "jawaban": [
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SALAH: Kata progresif digunakan dengan tepat karena menggambarkan kondisi katarak yang berkembang secara bertahap seiring waktu. Baris 2 — BENAR: Penggunaan kata analisis tidak tepat dalam konteks kalimat tersebut. Kata yang lebih sesuai adalah diagnosis karena dokter melakukan proses identifikasi penyakit melalui pemeriksaan medis. Baris 3 — SALAH: Kata investasi digunakan secara tepat sebagai ungkapan kiasan yang bermakna upaya penting untuk menjaga kesehatan mata demi manfaat jangka panjang di masa depan. Jalur Cara Gemilang: Tabel ketepatan kata = uji satu per satu dengan konteks + KBBI.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Katarak adalah kondisi medis yang ditandai dengan kekeruhan pada lensa mata akibat menggumpal protein sehingga mengganggu kemampuan mata meneruskan cahaya secara normal. (2) Penyakit ini bersifat progresif dan umumnya berkembang seiring bertambahnya usia yang dapat terjadi pada satu atau kedua mata. (3) Banyak orang menderita katarak yang tidak tertangani karena kondisi ekonomi. (4) Meski tidak menular, katarak menjadi penyebab utama kebutaan di Indonesia dan menyumbang 81% kasus gangguan penglihatan. (5) Gejala awal, meliputi, penglihatan kabur, silau terhadap cahaya, kesulitan melihat di malam hari, pandangan ganda, dan perubahan persepsi warna. (6) Deteksi dini melalui pemeriksaan mata rutin sangat penting untuk mencegah kebutaan yang dapat dihindari.\n\n(7) Penuaan merupakan penyebab utama katarak, tetapi berbagai faktor risiko lain turut mempercepat perkembangannya. (8) Paparan sinar ultraviolet, polusi, asap rokok, alkohol, dan zat beracun dapat meningkatkan radikal bebas yang merusak lensa mata. (9) Kondisi kesehatan, seperti diabetes, hipertensi, penggunaan kortikosteroid jangka panjang, riwayat cedera atau operasi mata, serta faktor genetik, juga berperan. (10) Kesehatan mata merupakan hal yang sangat berharga sehingga harus dijaga dengan baik. (11) Analisis dilakukan oleh dokter mata melalui anamnesis, pemeriksaan fisik, dan penunjang, seperti slit-lamp dan tes ketajaman penglihatan. (12) Penanganan tergantung tingkat keparahan, tetapi operasi penggantian lensa dengan lensa intraokular buatan adalah satu-satunya metode yang efektif.\n\n(13) Walaupun katarak tidak dapat dicegah sepenuhnya, gaya hidup sehat dapat memperlambat perkembangannya. (14) Langkah pencegahan yang dapat dilakukan adalah menggunakan kacamata anti-UV, mengonsumsi makanan kaya antioksidan, mengendalikan penyakit kronis, serta menghindari rokok dan alkohol. (15) Seharusnya, pemerintah mencanangkan pemeriksaan mata rutin setiap 2—4 tahun untuk mencegah penyakit tersebut. (16) Penting untuk diingat bahwa katarak tidak bisa disembuhkan dengan obat atau kacamata dan bersifat tidak menular. (17) Dengan deteksi dini dan penanganan yang tepat, kualitas penglihatan dapat dipulihkan dan menjadikan perawatan mata sebagai investasi penting untuk masa depan.\n\n(diadaptasi dari https://www.rspondokindah.co.id/)\n\nKalimat kompleks koordinatif yang menyatakan pertentangan berdasarkan kutipan teks tersebut terdapat pada kalimat",
+          "tipe": "pg",
+          "opsi": [
+            "(9).",
+            "(10).",
+            "(12).",
+            "(13).",
+            "(14)."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Kalimat kompleks koordinatif yang menyatakan pertentangan ditandai dengan penggunaan konjungsi pertentangan, seperti sedangkan , tetapi , atau melainkan . Kalimat (12) merupakan kalimat kompleks koordinatif yang menyatakan pertentangan karena terdapat konjungsi tetapi . Jalur Cara Gemilang: Koordinatif pertentangan = tetapi, melainkan, sedangkan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Katarak adalah kondisi medis yang ditandai dengan kekeruhan pada lensa mata akibat menggumpal protein sehingga mengganggu kemampuan mata meneruskan cahaya secara normal. (2) Penyakit ini bersifat progresif dan umumnya berkembang seiring bertambahnya usia yang dapat terjadi pada satu atau kedua mata. (3) Banyak orang menderita katarak yang tidak tertangani karena kondisi ekonomi. (4) Meski tidak menular, katarak menjadi penyebab utama kebutaan di Indonesia dan menyumbang 81% kasus gangguan penglihatan. (5) Gejala awal, meliputi, penglihatan kabur, silau terhadap cahaya, kesulitan melihat di malam hari, pandangan ganda, dan perubahan persepsi warna. (6) Deteksi dini melalui pemeriksaan mata rutin sangat penting untuk mencegah kebutaan yang dapat dihindari.\n\n(7) Penuaan merupakan penyebab utama katarak, tetapi berbagai faktor risiko lain turut mempercepat perkembangannya. (8) Paparan sinar ultraviolet, polusi, asap rokok, alkohol, dan zat beracun dapat meningkatkan radikal bebas yang merusak lensa mata. (9) Kondisi kesehatan, seperti diabetes, hipertensi, penggunaan kortikosteroid jangka panjang, riwayat cedera atau operasi mata, serta faktor genetik, juga berperan. (10) Kesehatan mata merupakan hal yang sangat berharga sehingga harus dijaga dengan baik. (11) Analisis dilakukan oleh dokter mata melalui anamnesis, pemeriksaan fisik, dan penunjang, seperti slit-lamp dan tes ketajaman penglihatan. (12) Penanganan tergantung tingkat keparahan, tetapi operasi penggantian lensa dengan lensa intraokular buatan adalah satu-satunya metode yang efektif.\n\n(13) Walaupun katarak tidak dapat dicegah sepenuhnya, gaya hidup sehat dapat memperlambat perkembangannya. (14) Langkah pencegahan yang dapat dilakukan adalah menggunakan kacamata anti-UV, mengonsumsi makanan kaya antioksidan, mengendalikan penyakit kronis, serta menghindari rokok dan alkohol. (15) Seharusnya, pemerintah mencanangkan pemeriksaan mata rutin setiap 2—4 tahun untuk mencegah penyakit tersebut. (16) Penting untuk diingat bahwa katarak tidak bisa disembuhkan dengan obat atau kacamata dan bersifat tidak menular. (17) Dengan deteksi dini dan penanganan yang tepat, kualitas penglihatan dapat dipulihkan dan menjadikan perawatan mata sebagai investasi penting untuk masa depan.\n\n(diadaptasi dari https://www.rspondokindah.co.id/)\n\nKata kronis dalam kalimat (14) akan lebih jelas jika diartikan sebagai Tentukan Benar atau Salah pada setiap pernyataan!\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "penyakit yang berlangsung lama dan memerlukan penanganan berkelanjutan.",
+            "penyakit yang dapat sembuh dalam waktu singkat melalui pengobatan sederhana.",
+            "berkaitan dengan kondisi kesehatan yang berlangsung terus-menerus."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — BENAR: Pernyataan ini benar karena dalam konteks kesehatan, kronis merujuk pada penyakit yang berlangsung dalam waktu lama, seperti diabetes atau hipertensi. Baris 2 — SALAH: Pernyataan ini salah karena penyakit kronis justru membutuhkan penanganan jangka panjang dan tidak mudah sembuh dalam waktu singkat. Baris 3 — BENAR: Pernyataan ini benar karena kata kronis digunakan untuk menjelaskan penyakit yang bersifat menetap atau berlangsung lama dalam tubuh seseorang. Jalur Cara Gemilang: KBBI: kronis = berlarut-larut (penyakit/masalah); uji tiap pernyataan terhadap makna itu.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Media sosial telah menjadi bagian penting dalam kehidupan modern karena memberikan banyak manfaat sosial dan kultural yang signifikan. (2) Situs jaringan, seperti Facebook, YouTube, dan Instagram membuat individu tetap terhubung dengan keluarga dan teman dari jarak jauh, memperkuat jaringan sosial, serta menciptakan komunitas berdasarkan minat yang sama tanpa batas geografis. (3) Fungsi media sosial sebagai alat komunikasi dan elaborasi terbukti membantu meningkatkan partisipasi sipil dan politik, terutama di kalangan generasi muda yang kini dapat mengemukakan pendapat dan terlibat dalam diskusi publik secara aktif melalui platform daring ini. (4) Menurut Encyclopaedia Britannica, media sosial juga mendorong inklusivitas serta memberi ruang bagi beragam suara dan identitas untuk ditemukan dan diapresiasi, yang bisa memperkaya pemahaman dan kerja sama antarkelompok berbeda di masyarakat.\n\n(5) Di balik berbagai manfaatnya, media sosial juga memunculkan sejumlah dampak negatif yang perlu menjadi perhatian bersama. (6) Penggunaan yang berlebihan sering dikaitkan dengan kecemasan, gangguan kesehatan mental, seperti kecemasan, depresi, dan perasaan rendah diri akibat perbandingan sosial yang tidak realistis di antara pengguna, terutama remaja.\n\n(7) Aktivitas scrolling tanpa tujuan dapat mengganggu waktu tidur dan memicu pola pikir negatif terhadap diri sendiri ketika seseorang terlalu memfokuskan hidupnya pada respons digital, seperti like dan komentar. (8) Selain itu, ruang ini berpotensi mempermudah penyebaran informasi palsu (misinformation) serta meningkatkan risiko cyberbullying dan pelanggaran privasi yang serius. (9) Dampak-dampak ini menunjukkan bahwa tanpa pengendalian diri dan literasi digital yang matang, penggunaan media sosial dapat merugikan kesejahteraan individu dan hubungan sosial di dunia nyata.\n\n(diadaptasi dari https://apps.detik.com/)\n\nMakna kata kultural berdasarkan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "berkaitan dengan sistem politik dan partisipasi masyarakat dalam ruang publik.",
+            "berkaitan dengan hubungan sosial antarindividu melalui media dan jaringan internet.",
+            "berkaitan dengan keyakinan, nilai, dan pola hidup suatu kelompok masyarakat.",
+            "berkaitan dengan perkembangan teknologi komunikasi digital dalam kehidupan modern.",
+            "berkaitan dengan aktivitas ekonomi dan pertukaran informasi dalam masyarakat global."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Berdasarkan KBBI, kata kultural bermakna 'berkaitan dengan kebudayaan'. Kata kultural dalam konteks teks merujuk pada hal-hal yang berkaitan dengan budaya, yaitu nilai, kebiasaan, dan pola hidup yang berkembang dalam suatu kelompok masyarakat. Dalam kalimat (1), media sosial dijelaskan memiliki manfaat sosial dan kultural yang berarti tidak hanya berdampak pada hubungan sosial, tetapi juga pada aspek budaya masyarakat. Jadi, makna kata kultural berdasarkan teks tersebut adalah berkaitan dengan keyakinan, nilai, dan pola hidup dalam suatu kelompok masyarakat . Jalur Cara Gemilang: KBBI: kultural = berkaitan kebudayaan -> nilai, keyakinan, tradisi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Bacalah kutipan teks berikut dengan saksama!\n\n(1) Media sosial telah menjadi bagian penting dalam kehidupan modern karena memberikan banyak manfaat sosial dan kultural yang signifikan. (2) Situs jaringan, seperti Facebook, YouTube, dan Instagram membuat individu tetap terhubung dengan keluarga dan teman dari jarak jauh, memperkuat jaringan sosial, serta menciptakan komunitas berdasarkan minat yang sama tanpa batas geografis. (3) Fungsi media sosial sebagai alat komunikasi dan elaborasi terbukti membantu meningkatkan partisipasi sipil dan politik, terutama di kalangan generasi muda yang kini dapat mengemukakan pendapat dan terlibat dalam diskusi publik secara aktif melalui platform daring ini. (4) Menurut Encyclopaedia Britannica, media sosial juga mendorong inklusivitas serta memberi ruang bagi beragam suara dan identitas untuk ditemukan dan diapresiasi, yang bisa memperkaya pemahaman dan kerja sama antarkelompok berbeda di masyarakat.\n\n(5) Di balik berbagai manfaatnya, media sosial juga memunculkan sejumlah dampak negatif yang perlu menjadi perhatian bersama. (6) Penggunaan yang berlebihan sering dikaitkan dengan kecemasan, gangguan kesehatan mental, seperti kecemasan, depresi, dan perasaan rendah diri akibat perbandingan sosial yang tidak realistis di antara pengguna, terutama remaja.\n\n(7) Aktivitas scrolling tanpa tujuan dapat mengganggu waktu tidur dan memicu pola pikir negatif terhadap diri sendiri ketika seseorang terlalu memfokuskan hidupnya pada respons digital, seperti like dan komentar. (8) Selain itu, ruang ini berpotensi mempermudah penyebaran informasi palsu (misinformation) serta meningkatkan risiko cyberbullying dan pelanggaran privasi yang serius. (9) Dampak-dampak ini menunjukkan bahwa tanpa pengendalian diri dan literasi digital yang matang, penggunaan media sosial dapat merugikan kesejahteraan individu dan hubungan sosial di dunia nyata.\n\n(diadaptasi dari https://apps.detik.com/)\n\nPenggunaan kata yang tidak tepat berdasarkan kutipan teks tersebut terdapat pada",
+          "tipe": "pg",
+          "opsi": [
+            "jaringan (kalimat 2).",
+            "elaborasi (kalimat 3).",
+            "memunculkan (kalimat 5).",
+            "penyebaran (kalimat 8).",
+            "pengendalian (kalimat 9)."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Kata elaborasi dalam KBBI berarti 'penggarapan secara tekun dan cermat, atau penjelasan mendalam'. Konteks kalimat (3) membahas fungsi media sosial sebagai sarana bagi masyarakat untuk bekerja sama, berpartisipasi, dan berdiskusi secara berkelompok. Kata yang tepat untuk menggantikan elaborasi agar kalimat tersebut menjadi padu adalah kolaborasi (perbuatan kerja sama). Kesalahan ini merupakan bentuk kesalahan diksi (pilihan kata) yang mengganggu kelogisan makna kalimat. Jalur Cara Gemilang: KBBI: elaborasi = penjelasan mendalam; konteks penyebaran informasi butuh kata lain.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Bacalah teks berikut dengan saksama! Tradisi manten kopi adalah ritual budaya unik yang digelar di kebun kopi Karanganyar, Desa Modangan, Kecamatan Nglegok, Kabupaten Blitar, Jawa Timur. Ritual ini menandai dimulainya musim panen raya kopi dan menjadi simbol rasa syukur kepada Tuhan atas hasil bumi yang melimpah. Dalam tradisi ini, dua tangkai kopi, masing-masing disebut lanang (laki-laki) dan wadon (perempuan), dipersatukan layaknya sepasang pengantin, merefleksikan harmoni antara alam, manusia, dan kekuatan spiritual leluhur. Tradisi ini berakar sejak masa kolonial Belanda, tepatnya sejak perkebunan kopi Karanganyar didirikan pada tahun 1874. Sejak itu, ritual manten kopi menjadi bagian tidak terpisahkan dari kehidupan masyarakat sekitar. Menurut catatan sejarah dan penuturan warga setempat, ritual ini awalnya digelar secara tertutup sebagai bentuk penghormatan kepada alam dan doa agar panen berlangsung lancar. Seiring waktu, tradisi ini terus diwariskan dari generasi ke generasi sebagai bagian dari identitas budaya agraris masyarakat Blitar. Makna kata ritual berdasarkan teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "kegiatan adat yang dilakukan secara teratur sebagai bentuk penghormatan dan rasa syukur dalam masyarakat.",
+            "kegiatan hiburan yang dilakukan masyarakat untuk merayakan musim panen dan hasil pertanian.",
+            "kegiatan sosial yang melibatkan masyarakat luas dalam rangka mempererat hubungan antarwarga desa.",
+            "kegiatan ekonomi yang dilakukan petani untuk meningkatkan hasil produksi kopi di perkebunan.",
+            "kegiatan upacara modern yang dilakukan untuk menarik wisatawan ke daerah wisata budaya."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Berdasarkan KBBI, makna kata ritual adalah 'berkaitan dengan ritus; tindakan seremonial'. Kata ritual dalam teks merujuk pada tradisi manten kopi yang merupakan kegiatan budaya yang dilakukan sebagai bentuk rasa syukur kepada Tuhan atas hasil panen. Ritual tersebut juga dilakukan secara turun-temurun dan memiliki makna penghormatan terhadap alam serta leluhur. Jadi, makna kata ritual berdasarkan teks tersebut adalah kegiatan adat yang dilakukan secara teratur sebagai bentuk penghormatan dan rasa syukur dalam masyarakat . Jalur Cara Gemilang: KBBI: ritual = berkenaan dengan ritus/seremonial -> kegiatan adat (soal mandiri buku).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 3 Ejaan-Sintaksis-Semantik h.58-59; kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
