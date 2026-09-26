@@ -1,0 +1,119 @@
+{
+  "materi": {
+    "judul": "CONTOH Widget Materi Interaktif (Turn 87)",
+    "mapel": "Kimia",
+    "kelas": "",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#7C3AED",
+    "emoji": "🎮",
+    "deskripsi": "Draft CONTOH pemakaian 6 widget materi interaktif v1: jodohMini, isianRumpang, flashcard, urutan, benarSalah, video. Silakan impor untuk melihat tampilannya, lalu hapus/ganti dengan materi asli.",
+    "urutan": 999,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bagan penunjang tim Gemilang — draft contoh widget interaktif (Turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Demo: Struktur Atom dengan Widget Interaktif",
+      "ringkasan": "Contoh penempatan 6 widget interaktif di tengah materi: pasangan penemu partikel, isian rumpang, flashcard istilah, urutan kerja, benar/salah miskonsepsi, dan video.",
+      "estimasiMenit": 12,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        { "jenis": "judul", "teks": "Partikel Dasar Atom" },
+        { "jenis": "kilat", "teks": "Atom tersusun dari proton dan neutron di inti, plus elektron yang bergerak di kulit. Nomor atom = jumlah proton; nomor massa = proton + neutron." },
+        { "jenis": "paragraf", "teks": "Bayangkan atom seperti stadion sepak bola. Inti atom adalah bola di titik tengah, sedangkan elektron bagai penonton yang berputar di tribune. Hampir seluruh massa atom terkumpul di inti yang mungil itu." },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: penemu partikel dasar",
+          "keterangan": "Pilih pasangan penemu dan partikelnya, lalu tekan Cek.",
+          "items": [
+            { "kiri": "Penemu elektron", "kanan": "J.J. Thomson", "penjelasan": "Eksperimen tabung sinar katoda, 1897." },
+            { "kiri": "Penemu proton", "kanan": "Eugene Goldstein", "penjelasan": "Sinar kanal/sinar positif, 1886." },
+            { "kiri": "Penemu inti atom", "kanan": "Ernest Rutherford", "penjelasan": "Hamburan sinar alfa pada lempeng emas, 1911." },
+            { "kiri": "Penemu neutron", "kanan": "James Chadwick", "penjelasan": "Radiasi partikel netral, 1932." }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian Rumpang: notasi atom",
+          "items": [
+            {
+              "teks": "Pada notasi atom, angka di kiri BAWAH lambang unsur disebut nomor ...",
+              "jawaban": ["atom", "Z", "nomor atom"],
+              "hint": "Angka ini sama dengan jumlah proton.",
+              "penjelasan": "Nomor atom (Z) = jumlah proton = jumlah elektron pada atom netral."
+            },
+            {
+              "teks": "Selisih nomor massa dan nomor atom menyatakan jumlah ...",
+              "jawaban": ["neutron"],
+              "hint": "Partikel netral di inti.",
+              "penjelasan": "Neutron = A - Z."
+            }
+          ]
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: istilah struktur atom",
+          "items": [
+            { "depan": "Isotop", "belakang": "Atom unsur sama (proton sama), neutron berbeda." },
+            { "depan": "Isobar", "belakang": "Atom berbeda unsur, nomor massa sama." },
+            { "depan": "Isoton", "belakang": "Atom berbeda unsur, jumlah neutron sama." },
+            { "depan": "Ion positif (kation)", "belakang": "Atom yang melepas elektron." },
+            { "depan": "Ion negatif (anion)", "belakang": "Atom yang menangkap elektron." }
+          ]
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun urutan: menentukan partikel dari notasi atom",
+          "keterangan": "Urutkan langkah membaca notasi unsur dari awal sampai akhir.",
+          "items": [
+            "Tulis notasi atom: nomor massa di kiri atas, nomor atom di kiri bawah lambang unsur",
+            "Jumlah proton = nomor atom (Z)",
+            "Pada atom netral, jumlah elektron = jumlah proton",
+            "Jumlah neutron = nomor massa (A) dikurangi nomor atom (Z)",
+            "Bila berupa ion, koreksi jumlah elektron sesuai muatannya"
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Benar atau Salah: cek miskonsepsi",
+          "items": [
+            { "teks": "Massa atom terpusat pada elektron yang mengelilingi inti.", "jawaban": false, "penjelasan": "Massa terpusat di inti (proton + neutron); massa elektron diabaikan." },
+            { "teks": "Isotop-isotop suatu unsur memiliki jumlah proton yang sama.", "jawaban": true, "penjelasan": "Isotop hanya berbeda jumlah neutron." },
+            { "teks": "Ion Na+ memiliki elektron lebih banyak daripada atom Na netral.", "jawaban": false, "penjelasan": "Kation melepas elektron, jadi elektronnya lebih SEDIKIT." },
+            { "teks": "Nomor massa selalu lebih besar atau sama dengan nomor atom.", "jawaban": true, "penjelasan": "A = Z + N, dengan N >= 0 (hidrogen-1 punya N = 0)." }
+          ]
+        },
+        {
+          "jenis": "video",
+          "judul": "🎬 Video: model atom dari masa ke masa",
+          "url": "https://www.youtube.com/watch?v=GANTI-DENGAN-ID-VIDEO-PILIHAN-OWNER",
+          "keterangan": "CATATAN OWNER: ganti url dengan video pilihanmu (YouTube atau berkas mp4 dari Bank File). Tonton 2 menit pertama, lalu kerjakan uji pemahaman di bawah."
+        },
+        { "jenis": "callout", "tipe": "peringatan", "judul": "Jebakan ujian", "teks": "Jangan tertukar: isobar itu NOMOR MASSA sama, isoton itu NEUTRON sama. Hafalkan lewat flashcard di atas sebelum latihan." }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Suatu atom memiliki nomor atom 11 dan nomor massa 23. Jumlah proton, elektron, dan neutron pada atom netral tersebut berturut-turut adalah ...",
+          "tipe": "pg",
+          "opsi": ["11, 11, 12", "11, 12, 11", "12, 11, 11", "23, 11, 12"],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: proton = Z = 11; atom netral maka elektron = proton = 11; neutron = A - Z = 23 - 11 = 12. Jalur Cara Gemilang: netral = proton sama elektron, neutron tinggal kurangi A - Z.",
+          "sumber": "Gemilang Drill (contoh widget interaktif Turn 87)"
+        },
+        {
+          "soal": "Pasangan partikel dasar atom dan penemunya yang tepat adalah ...",
+          "tipe": "pg",
+          "opsi": ["elektron - Rutherford", "neutron - Chadwick", "proton - Thomson", "inti atom - Goldstein"],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: neutron ditemukan James Chadwick (1932). Elektron oleh Thomson, proton oleh Goldstein, inti atom oleh Rutherford. Jalur Cara Gemilang: ingat 'Chadwick = si netral'.",
+          "sumber": "Gemilang Drill (contoh widget interaktif Turn 87)"
+        }
+      ]
+    }
+  ]
+}

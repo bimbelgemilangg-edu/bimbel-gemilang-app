@@ -15,6 +15,7 @@ import VisualBuku, { GambarBuku } from '../../../components/buku/VisualBuku';
 import { bukaPdf, renderHalamanKeCanvas } from '../../../utils/modulPdf';
 import RendererHtmlBab from '../../../components/buku/RendererHtmlBab';
 import ReaderControls from '../../../components/buku/ReaderControls';
+import WidgetInteraktif, { JENIS_INTERAKTIF } from '../../../components/belajar/WidgetInteraktif';
 import '../../../components/buku/buku.css';
 import '../../../components/buku/bukuBookfeel.css'; // Bookfeel v2: ruang baca gaya buku cetak
 
@@ -339,6 +340,12 @@ export default function BukuBacaPage({ audience = 'student' }) {
     else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     else if (blok.tipe === 'tips' && blok.teks) inti = <div style={st.boxTips}><b>Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     else if (blok.tipe === 'gambar' && blok.src) inti = <GambarBuku src={blok.src} alt={blok.alt} caption={blok.caption} />;
+    // 🔥 MATERI INTERAKTIF (Turn 87): dua cara pakai di buku digital —
+    //   (a) blok.tipe = 'interaktif' + blok.widget = {jenis:'flashcard',...}
+    //   (b) blok.tipe langsung nama widget: 'jodohMini' | 'isianRumpang' |
+    //       'flashcard' | 'urutan' | 'benarSalah' | 'video'
+    else if (blok.tipe === 'interaktif' && blok.widget) inti = <WidgetInteraktif widget={blok.widget} />;
+    else if (JENIS_INTERAKTIF.has(blok.tipe)) inti = <WidgetInteraktif widget={{ ...blok, jenis: blok.tipe }} />;
     const visual = blok.visual ? <VisualBuku visual={blok.visual} /> : null;
     if (!inti && !visual) return null;
     return <React.Fragment key={i}>{inti}{visual}</React.Fragment>;

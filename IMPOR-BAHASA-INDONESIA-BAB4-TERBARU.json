@@ -1,0 +1,1138 @@
+{
+  "materi": {
+    "judul": "Bahasa Indonesia Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Indonesia",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#E11D48",
+    "emoji": "🎭",
+    "deskripsi": "Materi wajib kelas 12 — Bab 4 Sastra: unsur intrinsik-ekstrinsik cerpen (TAGALPS), memprediksi peristiwa, jenis & relasi makna kata. Dilengkapi widget MATERI INTERAKTIF (flashcard, jodohkan, susun urutan, benar/salah, isian rumpang) dan 25 soal resmi bank owner dengan 6 cerpen utuh + pembahasan dua jalur.",
+    "urutan": 4,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital \"sastra.html\" dari berkas pindai buku Sukses Tes Kemampuan Akademik SMA – Saintek — Bab 4 Sastra h.64-70 (materi & soal 1-25) dan Bab 5 Pembahasan h.39-42 (kunci & pembahasan); kunci mengikuti cetakan asli.",
+      "Sumber cerpen per buku: \"Cangkir Kopi\" (radarbromo.jawapos.com); ibocahkampus.com; \"Kurir\" Alturridha (bacapetra.co); \"Tanda Baca\" karya Luluk Kamilia (ldntimes.com); \"Pohon Hayat\" (cerpenkompas.wordpress.com). Cerpen bank & kurir tanpa baris sumber sesuai cetakan.",
+      "Kartu definisi jenis makna, detektif latar/sudut pandang, dan mini kamus = bagan penunjang tim Gemilang (dikembangkan dari konsep baku semantik bahasa Indonesia berbasis KBBI).",
+      "Soal Zona Berlatih & widget interaktif = Gemilang Drill (dibuat tim Gemilang mengikuti pola soal TKA bank owner).",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 4 — Sastra: Cerpen, Peristiwa yang Mungkin Terjadi, dan Makna Kata (Edisi Cara Gemilang)",
+      "ringkasan": "Unsur intrinsik (TAGALPS) & ekstrinsik cerpen, langkah sistematis memprediksi peristiwa, 4 jenis makna kata, dan relasi makna — dengan flashcard, jodohkan, susun urutan, benar/salah, isian rumpang, plus 25 soal resmi bank (6 format: PG, PGK-MCMA, PGK kategori Benar/Salah & Sesuai/Tidak Sesuai) berstimulus cerpen utuh dan pembahasan dua jalur.",
+      "estimasiMenit": 90,
+      "urutan": 1,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Cerpen: Unsur Intrinsik dan Ekstrinsik"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Cerpen adalah kisahan pendek, kurang dari 1.000 kata, yang memberikan kesan tunggal yang dominan dan memusatkan diri pada suatu tokoh dalam satu situasi. Pembangunnya ada dua: unsur intrinsik (dari dalam teks) dan unsur ekstrinsik (nilai dari luar teks)."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Teks sastra adalah ladang soal pemahaman membaca di TKA/UTBK Bahasa Indonesia. Pola soal terlarisnya: identifikasi unsur intrinsik (watak, sudut pandang, latar, tema, amanat), menentukan nilai (moral, sosial, budaya), dan memaknai kata. Menguasai unsur cerpen berarti mengubah mayoritas soal sastra dari \"menebak\" menjadi \"memetakan\"."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan cerpen seperti sebuah foto, bukan film. Foto membekukan satu momen penting sehingga kesannya tunggal dan tajam. Karena itu cerpen memusatkan diri pada satu tokoh dalam satu situasi saja."
+        },
+        {
+          "jenis": "poin",
+          "judul": "7 Unsur Intrinsik (membangun dari DALAM teks)",
+          "items": [
+            "Tema — gagasan dasar cerita; ditemukan melalui gagasan-gagasan atau pikiran tokoh.",
+            "Amanat — ajaran atau pesan yang ingin disampaikan pengarang kepada pembaca.",
+            "Gaya bahasa — penggunaan bahasa untuk menciptakan suasana/kekhasan cerita: majas, ungkapan, dialog, diksi; bisa sekaligus menggambarkan karakter tokoh.",
+            "Penokohan (perwatakan) — pelukisan tokoh secara lahir dan batin: rupa, pandangan hidup, keyakinan, adat istiadat, sikap, dan tindak-tanduknya.",
+            "Alur (plot) — rangkaian peristiwa yang saling berkesinambungan dan menyatakan hubungan sebab akibat; jenisnya: alur maju, alur mundur, dan campuran.",
+            "Latar (setting) — tempat (di mana peristiwa terjadi), waktu (kapan), dan suasana (keadaan emosional cerita).",
+            "Sudut pandang (point of view) — posisi pengarang membawakan cerita: orang pertama pelaku utama, orang pertama pelaku sampingan, orang ketiga serbatahu, orang ketiga terbatas."
+          ]
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: hafalkan 7 unsur intrinsik",
+          "keterangan": "Ketuk kartu untuk melihat pengertian. Tandai yang sudah hafal!",
+          "items": [
+            {
+              "depan": "Tema",
+              "belakang": "Gagasan dasar cerita; ditemukan lewat pikiran-pikiran tokoh."
+            },
+            {
+              "depan": "Amanat",
+              "belakang": "Ajaran/pesan pengarang kepada pembaca."
+            },
+            {
+              "depan": "Gaya bahasa",
+              "belakang": "Pemakaian bahasa (majas, diksi, dialog) untuk menciptakan suasana/kekhasan cerita."
+            },
+            {
+              "depan": "Penokohan",
+              "belakang": "Pelukisan tokoh lahir & batin; cara: analitik (langsung) atau dramatik (tak langsung)."
+            },
+            {
+              "depan": "Alur",
+              "belakang": "Rangkaian peristiwa sebab-akibat; jenis: maju, mundur, campuran."
+            },
+            {
+              "depan": "Latar",
+              "belakang": "Tempat, waktu, dan suasana (emosional) cerita."
+            },
+            {
+              "depan": "Sudut pandang",
+              "belakang": "Posisi narator: orang ke-1 pelaku utama/sampingan; orang ke-3 serbatahu/terbatas."
+            }
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Jenis Tokoh & Cara Pelukisan Watak",
+          "kolom": [
+            "Aspek",
+            "Jenis",
+            "Pengertian"
+          ],
+          "rows": [
+            {
+              "k": "Jenis tokoh",
+              "v": "Protagonis",
+              "w": "Tokoh baik; membawa/mendukung penyelesaian cerita."
+            },
+            {
+              "k": "Jenis tokoh",
+              "v": "Antagonis",
+              "w": "Tokoh penentang protagonis; sumber konflik."
+            },
+            {
+              "k": "Jenis tokoh",
+              "v": "Tritagonis",
+              "w": "Tokoh penengah antara protagonis dan antagonis."
+            },
+            {
+              "k": "Cara pelukisan",
+              "v": "Analitik (langsung)",
+              "w": "Pengarang menyebut langsung sifat tokoh (mis. \"ia pemarah\")."
+            },
+            {
+              "k": "Cara pelukisan",
+              "v": "Dramatik (tak langsung)",
+              "w": "Watak tersirat dari tindakan, dialog, pikiran, fisik, atau ucapan tokoh lain."
+            }
+          ]
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: 5 Tahapan Alur Cerpen",
+          "keterangan": "Urutkan tahapan alur dari awal sampai akhir cerita.",
+          "items": [
+            "Orientasi — tahap pengenalan tokoh dan latar",
+            "Rising action — konflik mulai muncul",
+            "Turning point (klimaks) — konflik memuncak",
+            "Antiklimaks — masalah/konflik mulai menurun",
+            "Resolusi — tahap penyelesaian"
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Detektif Latar & Sudut Pandang",
+          "kolom": [
+            "Unsur",
+            "Jenis",
+            "Cara mengenalinya di teks"
+          ],
+          "rows": [
+            {
+              "k": "Latar",
+              "v": "Tempat",
+              "w": "Di mana peristiwa terjadi: rumah, sekolah, desa, kota."
+            },
+            {
+              "k": "Latar",
+              "v": "Waktu",
+              "w": "Kapan peristiwa terjadi: pagi, malam, masa lalu, zaman modern — sering tersirat (mis. \"bapakmu sudah mau berangkat\" = pagi)."
+            },
+            {
+              "k": "Latar",
+              "v": "Suasana",
+              "w": "Keadaan emosional cerita: sedih, tegang, bahagia, cemas."
+            },
+            {
+              "k": "Sudut pandang",
+              "v": "Orang pertama pelaku utama",
+              "w": "Narator \"aku\" = tokoh utama yang mengalami peristiwa."
+            },
+            {
+              "k": "Sudut pandang",
+              "v": "Orang pertama pelaku sampingan",
+              "w": "Narator \"aku\" menceritakan kisah tokoh lain."
+            },
+            {
+              "k": "Sudut pandang",
+              "v": "Orang ketiga serbatahu",
+              "w": "Narator menyebut nama/\"dia\" dan mengetahui isi hati SEMUA tokoh."
+            },
+            {
+              "k": "Sudut pandang",
+              "v": "Orang ketiga terbatas",
+              "w": "Narator hanya menembus pikiran/satu sudut pandang tokoh."
+            }
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: unsur intrinsik dan pengertiannya",
+          "keterangan": "Pilih pasangan yang tepat untuk setiap unsur, lalu tekan Cek.",
+          "items": [
+            {
+              "kiri": "Gagasan dasar cerita",
+              "kanan": "Tema"
+            },
+            {
+              "kiri": "Pesan pengarang untuk pembaca",
+              "kanan": "Amanat"
+            },
+            {
+              "kiri": "Rangkaian peristiwa sebab-akibat",
+              "kanan": "Alur"
+            },
+            {
+              "kiri": "Tempat, waktu, dan suasana",
+              "kanan": "Latar"
+            },
+            {
+              "kiri": "Posisi pengarang membawakan cerita",
+              "kanan": "Sudut pandang"
+            },
+            {
+              "kiri": "Majas, diksi, dan dialog pencipta suasana",
+              "kanan": "Gaya bahasa"
+            }
+          ]
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Unsur ekstrinsik adalah unsur yang membangun karya sastra dari luar dan secara tidak langsung memengaruhinya. Nilai-nilai ini bisa ditemukan dalam cerpen secara eksplisit (tertulis jelas) maupun implisit (harus disimpulkan)."
+        },
+        {
+          "jenis": "poin",
+          "judul": "5 Nilai Unsur Ekstrinsik",
+          "items": [
+            "Nilai moral — etika, akhlak, dan tanggung jawab (mis. perjuangan tokoh menahan lelah demi cita-cita).",
+            "Nilai sosial — hubungan antarmanusia (mis. solidaritas, rasa percaya, empati).",
+            "Nilai budaya — adat dan cara hidup masyarakat (mis. kearifan lokal memandang siklus kehidupan).",
+            "Nilai politik — kekuasaan dan pemerintahan (mis. kritik terhadap layanan birokrasi).",
+            "Nilai agama — hubungan manusia dengan Tuhan (mis. doa, kepasrahan, rasa syukur)."
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-SASTRA: kunci TAGALPS",
+          "teks": "INTRINSIK = TAGALPS: Tema, Amanat, Gaya bahasa, Alur, Latar, Penokohan, Sudut pandang. EKSTRINSIK = nilai luar teks: moral–sosial–budaya–politik–agama.",
+          "items": [
+            "Soal menyebut \"unsur dalam teks\" → sisir 7 slot TAGALPS satu per satu.",
+            "Soal menyebut \"nilai\" atau \"dari luar karya\" → cocokkan dengan 5 nilai ekstrinsik.",
+            "Tokoh: protagonis (baik), antagonis (penentang), tritagonis (penengah); watak dilukiskan analitik (langsung) atau dramatik (lewat tindakan/dialog)."
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: intrinsik vs ekstrinsik",
+          "keterangan": "Gemilang Drill — tandai Benar atau Salah sebelum lanjut ke zona berlatih.",
+          "items": [
+            {
+              "teks": "Gagasan dasar cerita disebut amanat.",
+              "jawaban": false,
+              "penjelasan": "Gagasan dasar = tema; amanat = pesan pengarang untuk pembaca."
+            },
+            {
+              "teks": "Tahapan alur cerpen diawali orientasi dan diakhiri resolusi.",
+              "jawaban": true,
+              "penjelasan": "Urutannya: orientasi → rising action → klimaks → antiklimaks → resolusi."
+            },
+            {
+              "teks": "Melukiskan watak tokoh lewat dialognya dengan tokoh lain adalah cara analitik.",
+              "jawaban": false,
+              "penjelasan": "Itu cara dramatik (tak langsung); analitik = pengarang menyebut sifat tokoh secara langsung."
+            },
+            {
+              "teks": "Nilai agama dan nilai politik termasuk unsur ekstrinsik.",
+              "jawaban": true,
+              "penjelasan": "Ekstrinsik memuat nilai moral, sosial, budaya, politik, dan agama."
+            },
+            {
+              "teks": "Sudut pandang orang ketiga serbatahu berarti narator mengetahui isi hati semua tokoh.",
+              "jawaban": true,
+              "penjelasan": "Serbatahu = narator menembus pikiran/perasaan tokoh mana pun."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Orang pertama pelaku utama vs pelaku sampingan sama-sama memakai \"aku\" — bedanya: pelaku sampingan \"aku\"-nya menceritakan kisah tokoh lain. Jebakan kedua: pernyataan latar sering menukar suasana dengan waktu; selalu cari bukti eksplisit di teks (mis. \"Bapakmu sudah mau berangkat\" = pagi)."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Berikut ini yang termasuk unsur intrinsik cerpen adalah ...",
+              "opsi": [
+                "riwayat hidup pengarang",
+                "kondisi sosial masyarakat saat karya ditulis",
+                "alur",
+                "nilai keagamaan masyarakat pengarang",
+                "sejarah penerbit buku"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: unsur intrinsik membangun dari dalam teks (TAGALPS) — alur termasuk di dalamnya; sisanya faktor luar (ekstrinsik). Jalur Cara Gemilang: hafal TAGALPS, coret yang berbau \"luar teks\"."
+            },
+            {
+              "soal": "Bacalah kutipan berikut! \"Jangan ke sana, Rin!\" teriak Bima. Rina terpaku, jantungnya berdebar kencang. Ia tak pernah melihat Bima semarah itu. Watak Bima pada kutipan tersebut dilukiskan pengarang dengan cara ...",
+              "opsi": [
+                "analitik, karena pengarang menyebut sifat tokoh langsung",
+                "dramatik, karena watak muncul lewat dialog dan reaksi tokoh",
+                "deskripsi fisik oleh narator",
+                "monolog batin tokoh utama",
+                "penjelasan latar suasana"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: kemarahan Bima tidak disebut langsung, melainkan tersirat dari teriakan (dialog) dan efeknya pada Rina — itu cara dramatik. Jalur Cara Gemilang: ada bukti tindakan/dialog = dramatik; disebut terang-terangan = analitik."
+            },
+            {
+              "soal": "Sebuah cerpen memakai narator \"aku\" yang mengisahkan perjuangan Tio, sahabatnya, sebagai tokoh utama. Sudut pandang cerpen tersebut adalah ...",
+              "opsi": [
+                "orang pertama pelaku utama",
+                "orang pertama pelaku sampingan",
+                "orang ketiga serbatahu",
+                "orang ketiga terbatas",
+                "campuran"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: narator \"aku\" hadir, tetapi yang dikisahkan adalah tokoh lain (Tio) → \"aku\" menjadi pelaku sampingan/penyaksi. Jalur Cara Gemilang: \"aku\" cerita dirinya = pelaku utama; \"aku\" cerita orang lain = pelaku sampingan."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri (kebiasaan juara)",
+          "teks": "Tutup materi ini, lalu tuliskan TAGALPS versi bahasamu sendiri di kertas beserta satu contoh buktinya dari cerpen yang baru kamu baca. Menulis ulang rangkuman menguatkan ingatan jauh lebih lama daripada membaca ulang."
+        },
+        {
+          "jenis": "judul",
+          "teks": "Memprediksi Peristiwa yang Mungkin Terjadi"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Menentukan peristiwa yang akan terjadi dalam cerpen bukanlah menebak, melainkan membaca dengan cermat alur cerita dan mengenali tanda-tanda yang ditanamkan pengarang. Tanda itu bisa berupa foreshadowing (pertanda), dialog tokoh, atau deskripsi suasana."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Soal prediksi selalu memakai pola \"hal yang akan terjadi ... bila ...\" atau \"peristiwa yang mungkin terjadi selanjutnya\". Kunci menjawabnya: setiap peristiwa dalam cerpen punya hubungan sebab-akibat. Jawaban yang benar pasti punya jejak di teks, sehebat apa pun opsi lain terdengar."
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: langkah sistematis memprediksi peristiwa",
+          "keterangan": "Urutkan langkah dari bacaan sumber (4.1.2) berikut.",
+          "items": [
+            "Analisis struktur cerita: orientasi, komplikasi/konflik, dan resolusi",
+            "Perhatikan petunjuk teks: foreshadowing (ramalan/pertanda), dialog tokoh, dan deskripsi suasana",
+            "Hubungkan sebab-akibat (kausalitas) antaperistiwa",
+            "Gunakan pola umum cerita: konflik–klimaks–penyelesaian"
+          ]
+        },
+        {
+          "jenis": "istilah",
+          "items": [
+            {
+              "k": "Foreshadowing",
+              "v": "Pertanda/ramalan yang ditanamkan pengarang sejak awal untuk peristiwa yang akan terjadi kemudian."
+            },
+            {
+              "k": "Kausalitas",
+              "v": "Hubungan sebab-akibat antaperistiwa dalam cerita."
+            },
+            {
+              "k": "Komplikasi",
+              "v": "Bagian struktur cerita tempat masalah muncul dan meningkat menuju klimaks."
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Menerapkan jurus prediksi pada pola soal \"bila ... tidak terjadi\". Soal asli #9 bertanya: apa yang terjadi pada tokoh aku bila Lyra tidak menasihatinya. Langkah 1: temukan konflik utama tokoh — ia lelah berlatih dan ingin menyerah dari atletik. Langkah 2: temukan satu-satunya penyemangat di teks — hanya Lyra (\"kalau bukan karena sahabatku Lyra, mungkin aku sudah menyerah\"). Langkah 3: hilangkan peristiwa yang ditanyakan (nasihat Lyra), tarik akibat paling logis — tokoh aku berhenti latihan. Itulah jawaban C pada soal asli #9."
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-RAMAL: Petunjuk–Sebab–Pola",
+          "teks": "Prediksi = petunjuk pengarang + kausalitas. Jawaban benar SELALU berjejak di teks; jawaban salah biasanya memperkenalkan hal baru atau melompati rantai sebab-akibat.",
+          "items": [
+            "Cari petunjuknya: foreshadowing, dialog, deskripsi suasana.",
+            "Tarik garis sebab-akibat: bila A terjadi, B menyusul.",
+            "Eliminasi opsi tanpa jejak teks — seindah apa pun kalimatnya."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Opsi yang paling positif/heroik belum tentu benar. Soal #9 dan #14 di bank ini membuktikan: jawaban mengikuti sifat tokoh dan situasi yang SUDAH dibangun teks, bukan harapan kita untuk tokohnya."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Langkah pertama memprediksi peristiwa yang mungkin terjadi dalam cerpen adalah ...",
+              "opsi": [
+                "menganalisis struktur cerita",
+                "menebak akhir cerita dari judul",
+                "menghitung jumlah tokoh",
+                "membaca kalimat terakhir lebih dulu",
+                "menghafal nama pengarang"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: langkah sistematis dimulai dari analisis struktur (orientasi–komplikasi–resolusi) agar tahu posisi cerita. Jalur Cara Gemilang: CG-RAMAL — struktur dulu, baru petunjuk."
+            },
+            {
+              "soal": "Bacalah kutipan berikut! Sebelum berangkat, ibu menyelipkan payung kecil ke dalam tas Rara. \"Langitnya mendung sekali,\" gumam ibu. Rara hanya mengangguk sambil lalu. Peristiwa yang mungkin terjadi kemudian adalah ...",
+              "opsi": [
+                "Rara kehujanan di jalan pulang",
+                "Ibu membeli payung baru",
+                "Langit cerah sepanjang hari",
+                "Rara kehilangan payung di sekolah",
+                "Ibu tidak jadi pergi"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: pengarang menanam pertanda (payung + langit mendung) — pertanda itu \"dipakai\" kemudian: hujan turun saat Rara di jalan. Jalur Cara Gemilang: foreshadowing = janji pengarang; cari opsi yang menagih janji itu."
+            },
+            {
+              "soal": "Bacalah kutipan berikut! Damar sudah dua kali gagal seleksi. Kata pelatihnya, \"Sekali lagi, itu pun terakhir.\" Malam itu Damar berlatih sampai larut, mengabaikan rasa sakit di lutut kirinya yang mulai bengkak. Peristiwa yang paling mungkin terjadi pada Damar adalah ...",
+              "opsi": [
+                "Damar langsung lolos seleksi karena kerja kerasnya",
+                "Cedera lutut Damar memburuk dan mengancam kesempatan terakhirnya",
+                "Pelatih menambah porsi latihan Damar",
+                "Damar mengundurkan diri sebelum seleksi dimulai",
+                "Lutut Damar sembuh karena terbiasa berlatih"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: petunjuk yang ditanam = lutut bengkak yang DIABAIKAN + latihan berlebihan; rantai sebab-akibat paling logis: cedera memburuk di momen krusial. Jalur Cara Gemilang: petunjuk fisik yang diabaikan tokoh = bom waktu cerita."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Makna Kata: Jenis Makna"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Empat jenis makna wajib dikenali: leksikal (kamus), gramatikal (hasil proses tata bahasa), denotasi (makna sebenarnya), dan konotasi (makna kiasan berperasaan). Soal teks sastra paling sering menguji denotasi vs konotasi."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan makna kata seperti lapisan pakaian. Lapisan paling dalam adalah makna kamus yang telanjang dan objektif. Lapisan luar adalah konteks dan rasa — kata yang sama bisa \"berdandan\" berbeda di tiap kalimat."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "4 Jenis Makna Kata",
+          "kolom": [
+            "Jenis",
+            "Pengertian",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Leksikal",
+              "v": "Makna dasar kata sesuai kamus (KBBI), lepas dari konteks.",
+              "w": "\"Kambing\" = hewan ternak berkaki empat yang mengembik."
+            },
+            {
+              "k": "Gramatikal",
+              "v": "Makna yang timbul akibat proses gramatikal: pengimbuhan, pengulangan, pemajemukan.",
+              "w": "mem- + batu = \"membatu\" (menjadi diam kaku); \"rumah-rumahan\" (menyerupai rumah)."
+            },
+            {
+              "k": "Denotasi",
+              "v": "Makna sebenarnya/lugas; menunjuk objek nyata tanpa kiasan.",
+              "w": "\"Meja\" = perabot berlapis datar berkaki."
+            },
+            {
+              "k": "Konotasi",
+              "v": "Makna kiasan; mengandung nilai rasa/nuansa tambahan di balik makna lugas.",
+              "w": "\"Meja hijau\" = pengadilan; \"bunga desa\" = gadis tercantik di desa."
+            }
+          ]
+        },
+        {
+          "jenis": "contoh",
+          "teks": "Menentukan denotasi/konotasi pada soal teks (pola soal asli #13). Soal menanyakan makna kata dasar \"sulap\" pada kata \"pesulap\" dalam cerpen kurir. Langkah 1: temukan kalimat konteksnya — \"Acara itu memperlihatkan seorang pesulap ... memainkan trik kecepatan tangannya.\" Langkah 2: tes makna sebenarnya — sulap = pertunjukan hiburan dengan trik untuk mengelabui mata; persis dipakai harfiah di teks, bukan sebagai kiasan. Langkah 3: simpulkan bermakna denotasi (jawaban B soal asli #13)."
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: 4 jenis makna",
+          "items": [
+            {
+              "depan": "Makna leksikal",
+              "belakang": "Makna kamus (KBBI), lepas dari konteks."
+            },
+            {
+              "depan": "Makna gramatikal",
+              "belakang": "Makna hasil proses imbuhan/ulangan/pemajemukan."
+            },
+            {
+              "depan": "Denotasi",
+              "belakang": "Makna sebenarnya, lugas, objektif."
+            },
+            {
+              "depan": "Konotasi",
+              "belakang": "Makna kiasan, mengandung nilai rasa."
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: jenis makna",
+          "keterangan": "Gemilang Drill — waspadai pasangan pernyataan menjebak.",
+          "items": [
+            {
+              "teks": "\"Meja hijau\" dalam arti pengadilan bermakna denotasi.",
+              "jawaban": false,
+              "penjelasan": "Itu konotasi — makna kiasan; makna denotatif \"meja hijau\" hanyalah meja berwarna hijau."
+            },
+            {
+              "teks": "Makna leksikal dapat dicari langsung di KBBI.",
+              "jawaban": true,
+              "penjelasan": "Leksikal = makna kamus, dasar, lepas konteks."
+            },
+            {
+              "teks": "Pengimbuhan dapat melahirkan makna gramatikal, misalnya \"memutih\" berarti menjadi putih.",
+              "jawaban": true,
+              "penjelasan": "Proses gramatikal (imbuhan, ulangan, majemuk) melahirkan makna baru."
+            },
+            {
+              "teks": "Konotasi selalu bernuansa negatif.",
+              "jawaban": false,
+              "penjelasan": "Konotasi bisa positif (\"bunga bangsa\" = pahlawan) maupun negatif (\"tikus kantor\" = koruptor)."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-MAKNA: Kamus–Proses–Nyata–Rasa",
+          "teks": "LEKsikal = Kamus; GRAmatikal = Proses (imbuhan-ulangan-majemuk); DENotasi = Nyata/lugas; KONotasi = kiasan berRasa.",
+          "items": [
+            "Tes tunjuk: bisa menunjuk benda/peristiwa nyata sesuai kalimat? → denotasi.",
+            "Ada warna rasa (sindiran, pujian, penghalusan)? → konotasi.",
+            "Maknanya berubah karena imbuhan/ulangan/pemajemukan? → gramatikal."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Selalu uji makna dari kalimat yang DITANYAKAN, bukan dari ingatan umum: kata yang sama bisa denotatif di satu kalimat (\"Ibu menyiram bunga\") dan konotatif di kalimat lain (\"Dia bunga desa\"). Jangan pula tertukar: denotasi-konotasi itu soal lugas/kias, leksikal-gramatikal itu soal asal-usul makna."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Makna kata yang tercantum dalam kamus (KBBI) dan lepas dari konteks disebut makna ...",
+              "opsi": [
+                "gramatikal",
+                "leksikal",
+                "konotasi",
+                "denotasi",
+                "kontekstual"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: leksikal berasal dari kata leksikon = kamus/perbendaharaan kata. Jalur Cara Gemilang: CG-MAKNA — LEK = Kamus."
+            },
+            {
+              "soal": "\"Tangan kanan kepala desa itu mengundurkan diri kemarin.\" Frasa \"tangan kanan\" dalam kalimat tersebut bermakna ...",
+              "opsi": [
+                "denotasi, karena menunjuk anggota tubuh",
+                "konotasi, yaitu orang kepercayaan",
+                "leksikal, sesuai arti di KBBI",
+                "gramatikal, hasil pengimbuhan",
+                "lokasi, menunjukkan posisi duduk"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: \"tangan kanan\" di sini bukan anggota tubuh, melainkan kiasan untuk orang kepercayaan — makna kiasan berperasaan = konotasi. Jalur Cara Gemilang: tes tunjuk gagal (yang mundur bukan tangan sungguhan) → konotasi."
+            },
+            {
+              "soal": "\"Sejak kepala desa kabur, warga seperti ayam kehilangan induk.\" Makna konotatif ungkapan \"ayam kehilangan induk\" adalah ...",
+              "opsi": [
+                "warga yang beternak ayam dan merugi",
+                "kerumunan yang ribut dan saling bertengkar",
+                "kelompok yang tercerai-berai dan kehilangan arah tanpa pemimpin",
+                "warga yang mencari-cari kepala desa ke hutan",
+                "masyarakat yang kembali ke cara hidup tradisional"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: ayam tanpa induk tercerai-berai tanpa arah — kiasan untuk warga yang kehilangan pemimpin sehingga kacau dan tak terarah. Jalur Cara Gemilang: konotasi = petakan sifat kiasannya (induk = pemimpin), pilih opsi yang memuat inti kiasan itu."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Makna Kata: Relasi Makna"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Kata-kata saling berelasi makna: sinonim (sama/mirip), antonim (berlawanan), pasangan kata khusus–kata umum, dan kata teknis (istilah bidang). Masing-masing punya pola soal dan jebakannya sendiri di TKA."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Sinonim: dua jenis (dari bank soal)",
+          "items": [
+            "Sinonim persis/lengkap — saling menggantikan sepenuhnya. Contoh: absurd = janggal.",
+            "Sinonim mirip — maknanya berdekatan tetapi TIDAK selalu saling menggantikan. Contoh: besar = makro = kolosal = raya = agung = akbar (kita menyebut \"Masjid Agung\", bukan \"Masjid Besar\"; \"pertunjukan kolosal\", bukan \"pertunjukan raya\")."
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Antonim, Kata Khusus–Umum, dan Kata Teknis",
+          "items": [
+            "Antonim — kata bermakna berlawanan; dipakai menunjukkan perbedaan kontras. Contoh: besar >< kecil; prominen >< biasa.",
+            "Kata khusus — merujuk objek yang lebih spesifik, terbatas, dan terdefinisi jelas. Contoh: apel, pisang, anggur.",
+            "Kata umum — cakupan luas, tidak merujuk satu jenis tertentu. Contoh: buah (lebih umum dari pisang).",
+            "Kata teknis — arti khusus bidang ilmu/teknologi/profesi tertentu; hanya dipahami penguasa bidangnya. Contoh: algoritma (komputasi), deflasi (ekonomi), litigasi (hukum)."
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: relasi makna dan contohnya",
+          "keterangan": "Semua contoh diambil dari bank soal bab ini.",
+          "items": [
+            {
+              "kiri": "Sinonim persis (saling menggantikan)",
+              "kanan": "absurd = janggal"
+            },
+            {
+              "kiri": "Sinonim mirip (tidak saling menggantikan)",
+              "kanan": "besar ~ kolosal ~ agung"
+            },
+            {
+              "kiri": "Antonim (berlawanan makna)",
+              "kanan": "prominen >< biasa"
+            },
+            {
+              "kiri": "Kata khusus (spesifik)",
+              "kanan": "apel, pisang, anggur"
+            },
+            {
+              "kiri": "Kata umum (cakupan luas)",
+              "kanan": "buah"
+            },
+            {
+              "kiri": "Kata teknis (istilah bidang)",
+              "kanan": "algoritma, deflasi, litigasi"
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: relasi makna",
+          "keterangan": "Ketik jawabanmu (huruf besar/kecil tidak dinilai).",
+          "items": [
+            {
+              "teks": "Antonim dari kata \"prominen\" adalah ...",
+              "jawaban": [
+                "biasa"
+              ],
+              "hint": "Lawan dari menonjol/istimewa.",
+              "penjelasan": "Dari contoh bank soal: prominen >< biasa."
+            },
+            {
+              "teks": "Kata \"absurd\" dan \"janggal\" membentuk relasi sinonim jenis ...",
+              "jawaban": [
+                "persis",
+                "lengkap",
+                "sinonim persis",
+                "sinonim lengkap"
+              ],
+              "hint": "Keduanya bisa saling menggantikan sepenuhnya.",
+              "penjelasan": "Sinonim persis/lengkap = saling menggantikan."
+            },
+            {
+              "teks": "Kata \"deflasi\" adalah contoh kata teknis di bidang ...",
+              "jawaban": [
+                "ekonomi"
+              ],
+              "hint": "Berkaitan dengan harga dan uang.",
+              "penjelasan": "Deflasi = penurunan harga umum; istilah ekonomi."
+            },
+            {
+              "teks": "Kata \"buah\" lebih ... daripada kata \"pisang\".",
+              "jawaban": [
+                "umum"
+              ],
+              "hint": "Cakupannya lebih luas.",
+              "penjelasan": "Pasangan khusus–umum: pisang (khusus) adalah jenis buah (umum)."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-RELASI: SI–LA–KHUS–TEK",
+          "teks": "SInonim = mirip; LAwan (antonim) = berlawanan; KHUSus ⊂ umum; TEKnis = istilah bidang.",
+          "items": [
+            "Tes hierarki: bisa bilang \"X adalah jenis Y\"? → X kata khusus, Y kata umum.",
+            "Tes ganti: ditukar tetap luwes? → sinonim persis; terasa janggal? → sinonim mirip.",
+            "Tes orang awam: hanya paham ahlinya? → kata teknis."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Arah khusus–umum sering dibalik di opsi: \"apel adalah kata umum dari buah\" itu SALAH — apel justru kata khusus. Untuk sinonim mirip, uji dengan frasa nyata (\"Hari Raya\" bukan \"Hari Ageng\") sebelum memutuskan bisa saling menggantikan."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Kata-kata yang memiliki makna sama atau hampir sama disebut ...",
+              "opsi": [
+                "antonim",
+                "sinonim",
+                "homofon",
+                "kata teknis",
+                "hiponim"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: sinonim = relasi kesamaan makna (contoh: absurd = janggal). Jalur Cara Gemilang: CG-RELASI — SI = Sinonim = mirip."
+            },
+            {
+              "soal": "Pasangan kata yang berelasi ANTONIM adalah ...",
+              "opsi": [
+                "besar – agung",
+                "rajin – malas",
+                "apel – buah",
+                "indah – cantik",
+                "meja – kursi"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: antonim = berlawanan makna; rajin >< malas. Opsi A/D sinonim mirip, C pasangan khusus–umum, E sekadar dua benda. Jalur Cara Gemilang: LA = lawan; cari pasangan yang \"tabrakan arah\"."
+            },
+            {
+              "soal": "\"Pengacara terdakwa menegaskan bahwa sengketa ini akan dilanjutkan ke tahap litigasi.\" Kata \"litigasi\" merupakan kata teknis bidang hukum yang bermakna ...",
+              "opsi": [
+                "penyelesaian sengketa di luar pengadilan",
+                "proses penyelesaian sengketa melalui pengadilan",
+                "kesepakatan tertulis antara dua pihak",
+                "musyawarah yang dipimpin tetua adat",
+                "tawar-menawar ganti rugi antarpihak"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: litigasi = jalur penyelesaian perkara melalui pengadilan; lawannya \"non-litigasi\" (di luar pengadilan: mediasi, musyawarah). Jalur Cara Gemilang: TEKNIS = istilah bidang; kalau bingung, ingat pola soal: opsi yang menyebut \"pengadilan\" untuk istilah hukum biasanya kuncinya."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Selesai — siap tempur 25 soal",
+          "teks": "Materi Bab 4 Sastra tuntas. Sebelum masuk Uji Pemahaman (25 soal resmi bank + 6 cerpen utuh), pastikan kamu bisa: (1) menyebut TAGALPS tanpa melihat, (2) membedakan denotasi–konotasi dengan tes tunjuk, dan (3) menerapkan CG-RAMAL Petunjuk–Sebab–Pola. Selamat berlatih!"
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n\"Sugiarto, pergi ke warung dekat masjid. Minta gula!\"\nSeru suara serak di balik tirai yang membatasi antara dapur dan ruang tengah.\n\nSugiarto yang masih meletakkan kepalanya di atas bantal pun tak berniat untuk menggeser posisinya. Apalagi selimut yang seakan menjadi kulitnya itu sudah membungkus tubuhnya dengan rapi.\n\n\"Sugiarto!\" suara itu mulai meninggi. Diiringi dengan kepala yang memiliki rambut yang mulai memutih. Sementara itu, matanya tampak menelisik apakah Sugiarto melakukan tugasnya ataukah tidak.\n\n\"Sugiarto! Cepat pergi! Bapakmu sudah mau berangkat.\"\n\nSugiarto menolehkan kepalanya malas. Ekor matanya masih melirik episode kartun yang menjadi favoritnya selama 15 tahun ini. Ia tak tahu kenapa ia sangat menggemari kartun ini. Bahkan, ia hafal setiap episode yang baru atau yang sudah diputar ulang. Mungkin stasiun TV-nya tengah krisis ide.\n\n\"Uangnya, Mak?\"\n\n\"Kan sudah emak bilang minta dulu. Bapakmu belum ada uang. Kemudian buat bayar tagihan bank. Cepet sana. Keburu bapakmu berangkat.\"\n\nSugiarto melirik bapak yang masih memejamkan matanya di kamar sebelah kemudian beralih pada televisi kecil yang terletak di atas meja kecil dengan setumpuk kertas tagihan utang. Entah itu tagihan untuk bulan depan atau bulan kemarin, Sugiarto tidak peduli. Toh, itu urusan emaknya.\n\n(diadaptasi dari \"Cangkir Kopi\" https://radarbromo.jawapos.com/)\n\nPeristiwa dalam cerita yang masih relevan dengan kehidupan sehari-hari adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Seorang ibu yang menyuruh anaknya membeli gula karena lupa menyetok bahan dapur.",
+            "Seorang anak lebih memilih menikmati hiburan daripada memenuhi permintaan orang tua.",
+            "Seorang anak yang enggan membantu orang tua karena menunggu uang kembalian dari warung.",
+            "Seorang ayah yang sedang menyusun rencana pembayaran tagihan rumah tangga bersama anaknya.",
+            "Seorang anak yang dengan sigap berangkat membeli kebutuhan rumah tangga tanpa diminta dua kali."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Berdasarkan dialog dan karakter tokoh, peristiwa dalam cerita yang masih relevan dengan kehidupan sehari-hari adalah Seorang anak lebih memilih menikmati hiburan daripada memenuhi permintaan orang tua . Sugiarto lebih memilih menonton kartun daripada segera menjalankan perintah ibunya, yang mencerminkan dinamika umum dalam kehidupan sehari-hari. Jalur Cara Gemilang: Soal \"relevan dengan kehidupan sehari-hari\" = cari perilaku tokoh yang paling umum terjadi di sekitarmu; di sini: anak malas yang asyik menonton saat diminta tolong orang tua.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #1)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n\"Sugiarto, pergi ke warung dekat masjid. Minta gula!\"\nSeru suara serak di balik tirai yang membatasi antara dapur dan ruang tengah.\n\nSugiarto yang masih meletakkan kepalanya di atas bantal pun tak berniat untuk menggeser posisinya. Apalagi selimut yang seakan menjadi kulitnya itu sudah membungkus tubuhnya dengan rapi.\n\n\"Sugiarto!\" suara itu mulai meninggi. Diiringi dengan kepala yang memiliki rambut yang mulai memutih. Sementara itu, matanya tampak menelisik apakah Sugiarto melakukan tugasnya ataukah tidak.\n\n\"Sugiarto! Cepat pergi! Bapakmu sudah mau berangkat.\"\n\nSugiarto menolehkan kepalanya malas. Ekor matanya masih melirik episode kartun yang menjadi favoritnya selama 15 tahun ini. Ia tak tahu kenapa ia sangat menggemari kartun ini. Bahkan, ia hafal setiap episode yang baru atau yang sudah diputar ulang. Mungkin stasiun TV-nya tengah krisis ide.\n\n\"Uangnya, Mak?\"\n\n\"Kan sudah emak bilang minta dulu. Bapakmu belum ada uang. Kemudian buat bayar tagihan bank. Cepet sana. Keburu bapakmu berangkat.\"\n\nSugiarto melirik bapak yang masih memejamkan matanya di kamar sebelah kemudian beralih pada televisi kecil yang terletak di atas meja kecil dengan setumpuk kertas tagihan utang. Entah itu tagihan untuk bulan depan atau bulan kemarin, Sugiarto tidak peduli. Toh, itu urusan emaknya.\n\n(diadaptasi dari \"Cangkir Kopi\" https://radarbromo.jawapos.com/)\n\nUnsur intrinsik yang sesuai isi cerpen tersebut adalah\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Kutipan Entah itu tagihan untuk bulan depan atau bulan kemarin, Sugiarto tak peduli. Toh, itu urusan emaknya. menunjukkan karakter Sugiarto yang apatis.",
+            "Latar waktu kutipan cerpen dijelaskan secara tersirat, yakni siang hari.",
+            "Sudut pandang kutipan cerpen tersebut adalah orang pertama serbatahu."
+          ],
+          "jawaban": [
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — BENAR: Sikap \"tidak peduli\" dan \"itu urusan emaknya\" menunjukkan karakter apatis (acuh tak acuh). Baris 2 — SALAH: Latar waktu pagi hari. \"Sugiarto! Cepat pergi! Bapakmu sudah mau berangkat.\" Pernyataan tersebut lebih tepat menunjukkan waktu pagi hari. Baris 3 — SALAH: Kutipan cerpen tersebut melibatkan banyak tokoh yang saling berinteraksi dan tokoh disebut dengan panggilan nama. Sudut pandang yang tepat adalah orang ketiga serbatahu. Jalur Cara Gemilang: CG-SASTRA: watak terlihat dari tindakan (\"tak peduli... urusan emaknya\" = apatis); waktu dicek dari petunjuk (\"Bapakmu sudah mau berangkat\" = pagi); POV = cari kata \"aku\" sebagai pencerita — tidak ada berarti orang ketiga.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #2)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n\"Sugiarto, pergi ke warung dekat masjid. Minta gula!\"\nSeru suara serak di balik tirai yang membatasi antara dapur dan ruang tengah.\n\nSugiarto yang masih meletakkan kepalanya di atas bantal pun tak berniat untuk menggeser posisinya. Apalagi selimut yang seakan menjadi kulitnya itu sudah membungkus tubuhnya dengan rapi.\n\n\"Sugiarto!\" suara itu mulai meninggi. Diiringi dengan kepala yang memiliki rambut yang mulai memutih. Sementara itu, matanya tampak menelisik apakah Sugiarto melakukan tugasnya ataukah tidak.\n\n\"Sugiarto! Cepat pergi! Bapakmu sudah mau berangkat.\"\n\nSugiarto menolehkan kepalanya malas. Ekor matanya masih melirik episode kartun yang menjadi favoritnya selama 15 tahun ini. Ia tak tahu kenapa ia sangat menggemari kartun ini. Bahkan, ia hafal setiap episode yang baru atau yang sudah diputar ulang. Mungkin stasiun TV-nya tengah krisis ide.\n\n\"Uangnya, Mak?\"\n\n\"Kan sudah emak bilang minta dulu. Bapakmu belum ada uang. Kemudian buat bayar tagihan bank. Cepet sana. Keburu bapakmu berangkat.\"\n\nSugiarto melirik bapak yang masih memejamkan matanya di kamar sebelah kemudian beralih pada televisi kecil yang terletak di atas meja kecil dengan setumpuk kertas tagihan utang. Entah itu tagihan untuk bulan depan atau bulan kemarin, Sugiarto tidak peduli. Toh, itu urusan emaknya.\n\n(diadaptasi dari \"Cangkir Kopi\" https://radarbromo.jawapos.com/)\n\nPernyataan yang mendukung nilai sosial pada kutipan cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "meski merasa malu untuk berutang, Sugiarto tetap melaksanakan perintah ibunya tanpa ada paksaan.",
+            "Sugiarto melakukan perintah ibunya dengan tulus dan rela meninggalkan tontonan kesayangannya.",
+            "komunikasi antaranggota keluarga yang disampaikan dengan bahasa sopan dan lembut.",
+            "solidaritas dan rasa percaya saat ibu menyuruh Sugiarto utang gula di warung.",
+            "Interaksi antartokoh terasa hangat sehingga konflik terkesan mengalir."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Unsur ekstrinsik adalah unsur yang membangun karya sastra dari luar yang secara tidak langsung memengaruhi gaya sastra. Berdasarkan kutipan cerpen tersebut, pernyataan yang mendukung nilai sosial pada kutipan cerpen tersebut adalah solidaritas dan rasa percaya saat ibu menyuruh Sugiarto utang gula di warung . Jalur Cara Gemilang: Nilai sosial = hubungan & kepercayaan antarmanusia; ibu bisa berutang gula karena solidaritas dan rasa percaya dengan pemilik warung.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #3)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n\"Sugiarto, pergi ke warung dekat masjid. Minta gula!\"\nSeru suara serak di balik tirai yang membatasi antara dapur dan ruang tengah.\n\nSugiarto yang masih meletakkan kepalanya di atas bantal pun tak berniat untuk menggeser posisinya. Apalagi selimut yang seakan menjadi kulitnya itu sudah membungkus tubuhnya dengan rapi.\n\n\"Sugiarto!\" suara itu mulai meninggi. Diiringi dengan kepala yang memiliki rambut yang mulai memutih. Sementara itu, matanya tampak menelisik apakah Sugiarto melakukan tugasnya ataukah tidak.\n\n\"Sugiarto! Cepat pergi! Bapakmu sudah mau berangkat.\"\n\nSugiarto menolehkan kepalanya malas. Ekor matanya masih melirik episode kartun yang menjadi favoritnya selama 15 tahun ini. Ia tak tahu kenapa ia sangat menggemari kartun ini. Bahkan, ia hafal setiap episode yang baru atau yang sudah diputar ulang. Mungkin stasiun TV-nya tengah krisis ide.\n\n\"Uangnya, Mak?\"\n\n\"Kan sudah emak bilang minta dulu. Bapakmu belum ada uang. Kemudian buat bayar tagihan bank. Cepet sana. Keburu bapakmu berangkat.\"\n\nSugiarto melirik bapak yang masih memejamkan matanya di kamar sebelah kemudian beralih pada televisi kecil yang terletak di atas meja kecil dengan setumpuk kertas tagihan utang. Entah itu tagihan untuk bulan depan atau bulan kemarin, Sugiarto tidak peduli. Toh, itu urusan emaknya.\n\n(diadaptasi dari \"Cangkir Kopi\" https://radarbromo.jawapos.com/)\n\nMakna kata episode sesuai kutipan cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "kisah.",
+            "serial.",
+            "subbab.",
+            "potongan.",
+            "seri cerita."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Berdasarkan KBBI, kata episode bermakna 'bagian riwayat atau peristiwa (yang seakan akan berdiri sendiri); seri cerita'. Jalur Cara Gemilang: Soal makna kata = tes KBBI dulu: episode = bagian riwayat/seri cerita; pilih opsi sinonim terdekat, jangan terkecoh \"kisah\".",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #4)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nLyra adalah sahabatku satu-satunya yang paling setia mendengarkan keluhanku, dia selalu memberikan motivasi jika aku sedang mengeluh. Aku pun mengambil pelajaran dari kegagalanku hari ini menjadi sebuah cerminan dari pertandingan yang akan datang. Sore hari pun tiba, aku mulai latihan seperti biasa. Aku melihat temanku Dara yang mendapatkan medali emas di pertandingan Atletik kemarin. Aku tersenyum dan mengangguk yakin jika suatu saat nanti aku akan tersenyum bangga dengan\n\nBerkalungkan medali emas di leherku. Aku terus berlatih dengan semangat. Aku tidak peduli walaupun sekarang harus menyakitkan, yang terpenting nanti aku harus berhasil, dan aku pun belajar menikmati proses. Langkah tiap langkah aku jalani, keringat pun mulai membasahi seluruh tubuhku, aku mencucurkan air mata, \"Rasanya berat sekali ya Tuhan. Apakah ini yang dinamakan perjuangan?\" Keluhku dalam hati. Program yang diberikan pelatih tidak pernah usai, aku terus saja mengeluh. Capek!\n\nKakiku malas untuk melangkah, Aku bosan! Aku jenuh! dan aku harus menghadapi ini semuanya, tetapi hatiku selalu saja tidak ikhlas. Aku bingung! Bagaimana cara membangunkan raksasa tidur di dalam tubuhku! Agar aku bisa menikmati proses ini dengan senyuman. Sebenarnya aku ingin berhenti latihan Atletik, tetapi mau bagaimana lagi, kalau bukan karena sahabatku Lyra, mungkin aku sudah menyerah. \"Aku cape, aku mau nyerah!\" ucapku kepada Lyra, ketika kami berdua sedang menikmati makan siang di kantin sekolah. Lyra lalu melotot kepadaku, \"Kamu gak boleh gitu!\"\n\n\"Terserah aku dong, soalnya aku udah cape, lihat saja teman-temanku di sana, mereka sudah terlalu hebat, dan aku sulit mengalahkannya.\"\n\n\"Kamu dengar, 'Pelari yang berlari untuk mengalahkan pelari yang lain, akan tertinggal karena sibuk menghitung maju lawan-lawannya' kamu mengerti kan?\" Aku mengangguk, \"Kalau begitu aku akan mengalahkan diriku sendiri, dan menjadikan mereka sebagai motivasiku.\"\n\n(diadaptasi dari https://ibocahkampus.com)\n\nWatak tokoh Lyra sesuai isi cerpen tersebut adalah\n\nPilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "mudah menyerah.",
+            "keras kepala.",
+            "bijaksana.",
+            "skeptis.",
+            "setia."
+          ],
+          "jawaban": [
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Lyra konsisten hadir mendengarkan keluhan dan menyemangati tokoh \"aku\" (setia). Nasihatnya — \"Pelari yang berlari untuk mengalahkan pelari lain akan tertinggal karena sibuk menghitung maju lawan-lawannya\" — menunjukkan kedalaman pikirannya dalam mengarahkan fokus pada pengembangan diri (bijaksana). Jadi watak Lyra: bijaksana dan setia (opsi 3 dan 5). Jalur Cara Gemilang: Watak = tindakan konsisten: menasihati dalam = bijaksana; selalu hadir mendengarkan = setia. Coret opsi yang bertolak belakang dengan tindakan tokoh.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #5)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nLyra adalah sahabatku satu-satunya yang paling setia mendengarkan keluhanku, dia selalu memberikan motivasi jika aku sedang mengeluh. Aku pun mengambil pelajaran dari kegagalanku hari ini menjadi sebuah cerminan dari pertandingan yang akan datang. Sore hari pun tiba, aku mulai latihan seperti biasa. Aku melihat temanku Dara yang mendapatkan medali emas di pertandingan Atletik kemarin. Aku tersenyum dan mengangguk yakin jika suatu saat nanti aku akan tersenyum bangga dengan\n\nBerkalungkan medali emas di leherku. Aku terus berlatih dengan semangat. Aku tidak peduli walaupun sekarang harus menyakitkan, yang terpenting nanti aku harus berhasil, dan aku pun belajar menikmati proses. Langkah tiap langkah aku jalani, keringat pun mulai membasahi seluruh tubuhku, aku mencucurkan air mata, \"Rasanya berat sekali ya Tuhan. Apakah ini yang dinamakan perjuangan?\" Keluhku dalam hati. Program yang diberikan pelatih tidak pernah usai, aku terus saja mengeluh. Capek!\n\nKakiku malas untuk melangkah, Aku bosan! Aku jenuh! dan aku harus menghadapi ini semuanya, tetapi hatiku selalu saja tidak ikhlas. Aku bingung! Bagaimana cara membangunkan raksasa tidur di dalam tubuhku! Agar aku bisa menikmati proses ini dengan senyuman. Sebenarnya aku ingin berhenti latihan Atletik, tetapi mau bagaimana lagi, kalau bukan karena sahabatku Lyra, mungkin aku sudah menyerah. \"Aku cape, aku mau nyerah!\" ucapku kepada Lyra, ketika kami berdua sedang menikmati makan siang di kantin sekolah. Lyra lalu melotot kepadaku, \"Kamu gak boleh gitu!\"\n\n\"Terserah aku dong, soalnya aku udah cape, lihat saja teman-temanku di sana, mereka sudah terlalu hebat, dan aku sulit mengalahkannya.\"\n\n\"Kamu dengar, 'Pelari yang berlari untuk mengalahkan pelari yang lain, akan tertinggal karena sibuk menghitung maju lawan-lawannya' kamu mengerti kan?\" Aku mengangguk, \"Kalau begitu aku akan mengalahkan diriku sendiri, dan menjadikan mereka sebagai motivasiku.\"\n\n(diadaptasi dari https://ibocahkampus.com)\n\nSuasana apa yang menggambarkan watak tokoh sedang emosional adalah",
+          "tipe": "pg",
+          "opsi": [
+            "ketika tokoh merasa bangga melihat Dara mendapatkan medali emas dan bertekad untuk meraihnya juga.",
+            "ketika tokoh mencucurkan air mata dan berkata dalam hati bahwa perjuangan terasa sangat berat.",
+            "ketika tokoh merasa senang berlatih karena program pelatih terasa ringan dan menyenangkan.",
+            "saat tokoh merasa senang meskipun bosan, jenuh, dan ingin menyerah dari latihan atletik.",
+            "saat Lyra memberikan motivasi dan tokoh langsung semangat kembali tanpa ragu."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Suasana yang menggambarkan watak emosional melalui hal tersebut adalah ketika tokoh mencucurkan air mata dan berkata dalam hati bahwa perjuangan terasa sangat berat karena suasana tersebut menunjukkan konflik emosional yang kuat, yaitu air mata, keluhan, rasa putus asa, dan konflik batin yang dialami tokoh aku. Jalur Cara Gemilang: Kata kunci suasana emosional: air mata, keluhan, putus asa — pilih kalimat dengan emosi paling kuat, bukan peristiwa fisik biasa.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #6)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nLyra adalah sahabatku satu-satunya yang paling setia mendengarkan keluhanku, dia selalu memberikan motivasi jika aku sedang mengeluh. Aku pun mengambil pelajaran dari kegagalanku hari ini menjadi sebuah cerminan dari pertandingan yang akan datang. Sore hari pun tiba, aku mulai latihan seperti biasa. Aku melihat temanku Dara yang mendapatkan medali emas di pertandingan Atletik kemarin. Aku tersenyum dan mengangguk yakin jika suatu saat nanti aku akan tersenyum bangga dengan\n\nBerkalungkan medali emas di leherku. Aku terus berlatih dengan semangat. Aku tidak peduli walaupun sekarang harus menyakitkan, yang terpenting nanti aku harus berhasil, dan aku pun belajar menikmati proses. Langkah tiap langkah aku jalani, keringat pun mulai membasahi seluruh tubuhku, aku mencucurkan air mata, \"Rasanya berat sekali ya Tuhan. Apakah ini yang dinamakan perjuangan?\" Keluhku dalam hati. Program yang diberikan pelatih tidak pernah usai, aku terus saja mengeluh. Capek!\n\nKakiku malas untuk melangkah, Aku bosan! Aku jenuh! dan aku harus menghadapi ini semuanya, tetapi hatiku selalu saja tidak ikhlas. Aku bingung! Bagaimana cara membangunkan raksasa tidur di dalam tubuhku! Agar aku bisa menikmati proses ini dengan senyuman. Sebenarnya aku ingin berhenti latihan Atletik, tetapi mau bagaimana lagi, kalau bukan karena sahabatku Lyra, mungkin aku sudah menyerah. \"Aku cape, aku mau nyerah!\" ucapku kepada Lyra, ketika kami berdua sedang menikmati makan siang di kantin sekolah. Lyra lalu melotot kepadaku, \"Kamu gak boleh gitu!\"\n\n\"Terserah aku dong, soalnya aku udah cape, lihat saja teman-temanku di sana, mereka sudah terlalu hebat, dan aku sulit mengalahkannya.\"\n\n\"Kamu dengar, 'Pelari yang berlari untuk mengalahkan pelari yang lain, akan tertinggal karena sibuk menghitung maju lawan-lawannya' kamu mengerti kan?\" Aku mengangguk, \"Kalau begitu aku akan mengalahkan diriku sendiri, dan menjadikan mereka sebagai motivasiku.\"\n\n(diadaptasi dari https://ibocahkampus.com)\n\nNilai yang terkandung dalam kutipan cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "estetika.",
+            "budaya.",
+            "sosial.",
+            "moral.",
+            "religi."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Nilai moral berkaitan dengan etika, akhlak, dan tanggung jawab. Kutipan cerpen tersebut menjelaskan bahwa tokoh aku sedang mengalami kelelahan dalam berlatih. Tokoh aku ingin menyerah. Oleh sebab itu, nilai yang terkandung dalam kutipan cerpen tersebut adalah moral , yakni nilai yang berkaitan dengan etika, akhlak, dan tanggung jawab. Jalur Cara Gemilang: Perjuangan menahan lelah dan ingin menyerah = urusan etika/tanggung jawab diri → nilai moral.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #7)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nLyra adalah sahabatku satu-satunya yang paling setia mendengarkan keluhanku, dia selalu memberikan motivasi jika aku sedang mengeluh. Aku pun mengambil pelajaran dari kegagalanku hari ini menjadi sebuah cerminan dari pertandingan yang akan datang. Sore hari pun tiba, aku mulai latihan seperti biasa. Aku melihat temanku Dara yang mendapatkan medali emas di pertandingan Atletik kemarin. Aku tersenyum dan mengangguk yakin jika suatu saat nanti aku akan tersenyum bangga dengan\n\nBerkalungkan medali emas di leherku. Aku terus berlatih dengan semangat. Aku tidak peduli walaupun sekarang harus menyakitkan, yang terpenting nanti aku harus berhasil, dan aku pun belajar menikmati proses. Langkah tiap langkah aku jalani, keringat pun mulai membasahi seluruh tubuhku, aku mencucurkan air mata, \"Rasanya berat sekali ya Tuhan. Apakah ini yang dinamakan perjuangan?\" Keluhku dalam hati. Program yang diberikan pelatih tidak pernah usai, aku terus saja mengeluh. Capek!\n\nKakiku malas untuk melangkah, Aku bosan! Aku jenuh! dan aku harus menghadapi ini semuanya, tetapi hatiku selalu saja tidak ikhlas. Aku bingung! Bagaimana cara membangunkan raksasa tidur di dalam tubuhku! Agar aku bisa menikmati proses ini dengan senyuman. Sebenarnya aku ingin berhenti latihan Atletik, tetapi mau bagaimana lagi, kalau bukan karena sahabatku Lyra, mungkin aku sudah menyerah. \"Aku cape, aku mau nyerah!\" ucapku kepada Lyra, ketika kami berdua sedang menikmati makan siang di kantin sekolah. Lyra lalu melotot kepadaku, \"Kamu gak boleh gitu!\"\n\n\"Terserah aku dong, soalnya aku udah cape, lihat saja teman-temanku di sana, mereka sudah terlalu hebat, dan aku sulit mengalahkannya.\"\n\n\"Kamu dengar, 'Pelari yang berlari untuk mengalahkan pelari yang lain, akan tertinggal karena sibuk menghitung maju lawan-lawannya' kamu mengerti kan?\" Aku mengangguk, \"Kalau begitu aku akan mengalahkan diriku sendiri, dan menjadikan mereka sebagai motivasiku.\"\n\n(diadaptasi dari https://ibocahkampus.com)\n\nUnsur ekstrinsik yang paling relevan dan membentuk konflik psikologis serta resolusi tokoh utama dalam cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Pengaruh tren media sosial yang memviralkan kegagalan atlet muda sehingga menimbulkan kekhawatiran akan cibiran publik.",
+            "Tradisi keagamaan lokal yang mengajarkan kepasrahan total terhadap takdir sebagai cara mengatasi kelelahan fisik dan mental.",
+            "Budaya kompetisi olahraga sekolah yang cenderung mengagungkan pencapaian rival sehingga memicu inferioritas pada atlet pemula.",
+            "Nilai psikologis ketahanan mental dan filosofi pendidikan jasmani yang menekankan pengembangan diri melalui persaingan internal, bukan eksternal.",
+            "Tekanan sosial dari lingkungan keluarga yang menuntut prestasi instan agar tokoh utama dapat melanjutkan studi ke jenjang yang lebih tinggi, tetapi tokoh merasa usahanya sia-sia."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Unsur ekstrinsik merujuk pada faktor-faktor di luar teks sastra yang memengaruhi penciptaan, makna, atau pesan karya, seperti nilai moral, psikologis, budaya, pendidikan, atau kondisi sosial manusia. Berdasarkan kutipan cerpen tersebut, unsur ekstrinsik yang paling relevan dan membentuk konflik psikologis serta resolusi tokoh utama dalam cerpen tersebut adalah Nilai psikologis ketahanan mental dan filosofi pendidikan jasmani yang menekankan pengembangan diri melalui persaingan internal, bukan eksternal . Jalur Cara Gemilang: Unsur ekstrinsik psikologis = kondisi mental tokoh; cari opsi yang membahas ketahanan diri, bukan tren/media sosial/keluarga yang tak ada di teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #8)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nLyra adalah sahabatku satu-satunya yang paling setia mendengarkan keluhanku, dia selalu memberikan motivasi jika aku sedang mengeluh. Aku pun mengambil pelajaran dari kegagalanku hari ini menjadi sebuah cerminan dari pertandingan yang akan datang. Sore hari pun tiba, aku mulai latihan seperti biasa. Aku melihat temanku Dara yang mendapatkan medali emas di pertandingan Atletik kemarin. Aku tersenyum dan mengangguk yakin jika suatu saat nanti aku akan tersenyum bangga dengan\n\nBerkalungkan medali emas di leherku. Aku terus berlatih dengan semangat. Aku tidak peduli walaupun sekarang harus menyakitkan, yang terpenting nanti aku harus berhasil, dan aku pun belajar menikmati proses. Langkah tiap langkah aku jalani, keringat pun mulai membasahi seluruh tubuhku, aku mencucurkan air mata, \"Rasanya berat sekali ya Tuhan. Apakah ini yang dinamakan perjuangan?\" Keluhku dalam hati. Program yang diberikan pelatih tidak pernah usai, aku terus saja mengeluh. Capek!\n\nKakiku malas untuk melangkah, Aku bosan! Aku jenuh! dan aku harus menghadapi ini semuanya, tetapi hatiku selalu saja tidak ikhlas. Aku bingung! Bagaimana cara membangunkan raksasa tidur di dalam tubuhku! Agar aku bisa menikmati proses ini dengan senyuman. Sebenarnya aku ingin berhenti latihan Atletik, tetapi mau bagaimana lagi, kalau bukan karena sahabatku Lyra, mungkin aku sudah menyerah. \"Aku cape, aku mau nyerah!\" ucapku kepada Lyra, ketika kami berdua sedang menikmati makan siang di kantin sekolah. Lyra lalu melotot kepadaku, \"Kamu gak boleh gitu!\"\n\n\"Terserah aku dong, soalnya aku udah cape, lihat saja teman-temanku di sana, mereka sudah terlalu hebat, dan aku sulit mengalahkannya.\"\n\n\"Kamu dengar, 'Pelari yang berlari untuk mengalahkan pelari yang lain, akan tertinggal karena sibuk menghitung maju lawan-lawannya' kamu mengerti kan?\" Aku mengangguk, \"Kalau begitu aku akan mengalahkan diriku sendiri, dan menjadikan mereka sebagai motivasiku.\"\n\n(diadaptasi dari https://ibocahkampus.com)\n\nHal yang akan terjadi pada tokoh aku bila Lyra tidak menasihatinya adalah",
+          "tipe": "pg",
+          "opsi": [
+            "segera menemukan motivasi baru dari pelatihnya sehingga semangat latihannya pulih dan prestasinya meningkat pesat dalam waktu singkat.",
+            "akan bersaing lebih keras dengan Dara dan teman-temannya hingga berhasil meraih medali emas pada pertandingan atletik berikutnya.",
+            "memutuskan untuk berhenti dari latihan Atletik karena kehilangan satu-satunya penyemangat yang selama ini memberikan dukungan.",
+            "akan mencari sahabat baru pengganti Lyra yang mampu memberikannya nasihat serupa untuk tetap bertahan di dunia olahraga prestasi.",
+            "tokoh aku menyadari pentingnya proses dan mengubah pola pikirnya untuk mengalahkan diri sendiri tanpa bantuan orang lain."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Berdasarkan kutipan cerpen tersebut, tokoh aku ingin menyerah sebab ia merasa letih. Namun, Lyra menguatkan tokoh aku dengan nasihatnya yang bijak. Dengan demikian, hal yang akan terjadi pada tokoh aku bila Lyra tidak menasihatinya adalah memutuskan untuk berhenti dari latihan Atletik karena kehilangan satu-satunya penyemangat yang selama ini memberikan dukungan . Jalur Cara Gemilang: Pola \"bila X tidak terjadi\" = balik sebab-akibatnya: satu-satunya penyemangat hilang → berhenti latihan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #9)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nKetika ia baru saja mematikan motornya, sepasang suami istri itu sedang menonton acara sulap di televisi. Acara itu memperlihatkan seorang dengan wajah menyebalkan yang menghentikan orang-orang yang ia temui di jalan. Pesulap itu kemudian memainkan triknya ke setiap pejalan kaki yang bersedia.\n\nLalu, pesulap itu mengerjai si pejalan kaki dengan trik kecepatan tangannya, membuat hilangnya uang si pejalan kaki.\n\n\"Ada tamu itu,\" kata istrinya begitu mendengar bunyi bel. Lelaki tambun itu membuka gerbang dan bertanya kepentingan tamunya.\n\n\"Maaf, Pak. Saya mau antar paket,\" kata kurir itu.\n\n\"Oh, hari Penjajah Totowatu. Telat sekali. Saya tunggu dari dua hari lalu. Harusnya tadi pagi saya pakai jas itu ke acara nikah sepupu saya. Bagaimana sih kalian ini?\"\n\nBegitu si lelaki tambun menyerahkan uangnya, kurir itu mendapat perasaan tidak menyenangkan. Ia mengajak lelaki itu untuk bersama-sama menghitung uang yang tadi diserahkannya. Si kurir menderetkan lembar demi lembar uang di meja. Uang itu berupa pecahan lima ribu, sepuluh ribu, dan dua puluh ribu. Tidak ada satu pun uang besar. Memang banyak lembarannya, tetapi uang kecil semua.\n\n\"Kamu ngerjain saya, ya?\" kata si lelaki tambun.\n\nKurir itu terkejut. \"Ngerjain bagaimana?\"\n\n\"Tadi jelas-jelas jumlahnya 370 ribu rupiah!\"\n\n\"Sumpah, Pak. Uangnya cuma ini.\" Kurir itu kebingungan. Agaknya orang ini tidak waras pikirannya. Pantas saja kurir-kurir lain tidak ada yang mau diminta antar barang ke sini. Sial betul dirinya, pikir si kurir.\n\n\"Begini saja, coba Bapak lihat lagi uang Bapak di dalam sana. Mungkin uangnya masih ada.\"\n\n\"Tidak, tidak, tidak. Langsung saja keluarkan uang itu. Saya tidak punya waktu untuk lihat pertunjukan sulapmu.\"\n\n\"Pak, saya ini kurir. Bukan pesulap. Saya tidak mengerti maksud Bapak. Saya diminta ke sini untuk antar barang. Jas ini. Saya telat karena saya harus menyelesaikan semua jadwal pengantaran. Saya harus matikan aplikasi, baru datang ke sini. Itu makanya saya datang malam-malam begini.\"\n\n(diadaptasi dari https://www.bacapetra.co/kurir-cerpen-alturridha/)\n\nTema kutipan cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Kehebatan seorang pesulap jalanan yang mampu menghilangkan uang orang lain dengan trik kecepatan tangan yang memukau penonton.",
+            "Kesalahpahaman dan prasangka buruk dalam interaksi sosial yang memicu konflik sepele menjadi tuduhan serius tanpa bukti yang jelas.",
+            "Perjuangan seorang kurir paket yang harus menghadapi tantangan alam dan rintangan fisik demi menyelesaikan tugasnya.",
+            "Kritik tajam terhadap industri jasa pengiriman yang sering mengalami kendala sehingga perlu regulasi pemerintah yang ketat.",
+            "Pengaruh lingkungan dan dampak media sosial terhadap aksi seseorang dalam menghadapi masalah."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Tema merupakan pokok masalah atau cerita. Berdasarkan kutipan cerpen tersebut, tema yang tepat adalah Kesalahpahaman dan prasangka buruk dalam interaksi sosial yang memicu konflik sepele menjadi tuduhan serius tanpa bukti yang jelas . Jalur Cara Gemilang: Tema = persoalan yang mewarnai SELURUH kutipan: tuduhan tanpa bukti akibat prasangka → kesalahpahaman dalam interaksi sosial.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #10)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nKetika ia baru saja mematikan motornya, sepasang suami istri itu sedang menonton acara sulap di televisi. Acara itu memperlihatkan seorang dengan wajah menyebalkan yang menghentikan orang-orang yang ia temui di jalan. Pesulap itu kemudian memainkan triknya ke setiap pejalan kaki yang bersedia.\n\nLalu, pesulap itu mengerjai si pejalan kaki dengan trik kecepatan tangannya, membuat hilangnya uang si pejalan kaki.\n\n\"Ada tamu itu,\" kata istrinya begitu mendengar bunyi bel. Lelaki tambun itu membuka gerbang dan bertanya kepentingan tamunya.\n\n\"Maaf, Pak. Saya mau antar paket,\" kata kurir itu.\n\n\"Oh, hari Penjajah Totowatu. Telat sekali. Saya tunggu dari dua hari lalu. Harusnya tadi pagi saya pakai jas itu ke acara nikah sepupu saya. Bagaimana sih kalian ini?\"\n\nBegitu si lelaki tambun menyerahkan uangnya, kurir itu mendapat perasaan tidak menyenangkan. Ia mengajak lelaki itu untuk bersama-sama menghitung uang yang tadi diserahkannya. Si kurir menderetkan lembar demi lembar uang di meja. Uang itu berupa pecahan lima ribu, sepuluh ribu, dan dua puluh ribu. Tidak ada satu pun uang besar. Memang banyak lembarannya, tetapi uang kecil semua.\n\n\"Kamu ngerjain saya, ya?\" kata si lelaki tambun.\n\nKurir itu terkejut. \"Ngerjain bagaimana?\"\n\n\"Tadi jelas-jelas jumlahnya 370 ribu rupiah!\"\n\n\"Sumpah, Pak. Uangnya cuma ini.\" Kurir itu kebingungan. Agaknya orang ini tidak waras pikirannya. Pantas saja kurir-kurir lain tidak ada yang mau diminta antar barang ke sini. Sial betul dirinya, pikir si kurir.\n\n\"Begini saja, coba Bapak lihat lagi uang Bapak di dalam sana. Mungkin uangnya masih ada.\"\n\n\"Tidak, tidak, tidak. Langsung saja keluarkan uang itu. Saya tidak punya waktu untuk lihat pertunjukan sulapmu.\"\n\n\"Pak, saya ini kurir. Bukan pesulap. Saya tidak mengerti maksud Bapak. Saya diminta ke sini untuk antar barang. Jas ini. Saya telat karena saya harus menyelesaikan semua jadwal pengantaran. Saya harus matikan aplikasi, baru datang ke sini. Itu makanya saya datang malam-malam begini.\"\n\n(diadaptasi dari https://www.bacapetra.co/kurir-cerpen-alturridha/)\n\nUnsur intrinsik yang sesuai dengan kutipan cerpen tersebut adalah\n(Tentukan Sesuai/Tidak Sesuai untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ],
+          "baris": [
+            "Latar waktu yang terdapat dalam kutipan cerpen adalah sore hari.",
+            "Watak kurir dijelaskan melalui dialog antartokoh.",
+            "Sudut pandang kutipan cerita tersebut adalah orang ketiga serbatahu.",
+            "Lelaki tambun merupakan tokoh utama dalam kutipan cerpen tersebut."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — TIDAK SESUAI: Kutipan teks secara eksplisit menyebutkan bahwa latar waktunya adalah malam hari. Hal ini dibuktikan pada kalimat terakhir: \"…itu makanya saya datang malam-malam begini.\" Baris 2 — SESUAI: Watak kurir yang bertanggung jawab, jujur, dan defensif terlihat jelas dari dialognya saat berdebat dan membela diri serta menjelaskan situasinya kepada lelaki tambun (\"Pak, saya ini kurir. Bukan pesulap…\"). Baris 3 — SESUAI: Sudut pandang yang digunakan adalah orang ketiga serbatahu, bukan serbatas. Narator menggunakan kata ganti \"ia\", \"kurir\", dan nama sebutan tokoh lain serta mampu menjabarkan perasaan dan pikiran kurir dari dalam (\"…pikir si kurir\"). Penggunaan sudut pandang orang kedua (seperti menggunakan kata ganti \"Kamu/Kau\" sebagai tokoh utama) tidak ada dalam teks ini. Baris 4 — TIDAK SESUAI: Tokoh utama (fokus sentral) dalam kutipan ini adalah si kurir . Cerita dimulai dari kedatangan sang kurir, konflik berpusat pada tuduhan yang diterima kurir, dan narasi mengeksplorasi emosi serta isi pikiran sang kurir (\"…pikir si kurir\"). Lelaki tambun di sini berperan sebagai tokoh penentang (antagonis). Jalur Cara Gemilang: CG-SASTRA: waktu eksplisit \"datang malam-malam begini\" (bukan sore); watak kurir terbaca dari dialognya; narator menembus pikiran kurir (\"pikir si kurir\") = orang ketiga serbatahu; tokoh utama = yang pikirannya paling dieksplorasi = kurir.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #11)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nKetika ia baru saja mematikan motornya, sepasang suami istri itu sedang menonton acara sulap di televisi. Acara itu memperlihatkan seorang dengan wajah menyebalkan yang menghentikan orang-orang yang ia temui di jalan. Pesulap itu kemudian memainkan triknya ke setiap pejalan kaki yang bersedia.\n\nLalu, pesulap itu mengerjai si pejalan kaki dengan trik kecepatan tangannya, membuat hilangnya uang si pejalan kaki.\n\n\"Ada tamu itu,\" kata istrinya begitu mendengar bunyi bel. Lelaki tambun itu membuka gerbang dan bertanya kepentingan tamunya.\n\n\"Maaf, Pak. Saya mau antar paket,\" kata kurir itu.\n\n\"Oh, hari Penjajah Totowatu. Telat sekali. Saya tunggu dari dua hari lalu. Harusnya tadi pagi saya pakai jas itu ke acara nikah sepupu saya. Bagaimana sih kalian ini?\"\n\nBegitu si lelaki tambun menyerahkan uangnya, kurir itu mendapat perasaan tidak menyenangkan. Ia mengajak lelaki itu untuk bersama-sama menghitung uang yang tadi diserahkannya. Si kurir menderetkan lembar demi lembar uang di meja. Uang itu berupa pecahan lima ribu, sepuluh ribu, dan dua puluh ribu. Tidak ada satu pun uang besar. Memang banyak lembarannya, tetapi uang kecil semua.\n\n\"Kamu ngerjain saya, ya?\" kata si lelaki tambun.\n\nKurir itu terkejut. \"Ngerjain bagaimana?\"\n\n\"Tadi jelas-jelas jumlahnya 370 ribu rupiah!\"\n\n\"Sumpah, Pak. Uangnya cuma ini.\" Kurir itu kebingungan. Agaknya orang ini tidak waras pikirannya. Pantas saja kurir-kurir lain tidak ada yang mau diminta antar barang ke sini. Sial betul dirinya, pikir si kurir.\n\n\"Begini saja, coba Bapak lihat lagi uang Bapak di dalam sana. Mungkin uangnya masih ada.\"\n\n\"Tidak, tidak, tidak. Langsung saja keluarkan uang itu. Saya tidak punya waktu untuk lihat pertunjukan sulapmu.\"\n\n\"Pak, saya ini kurir. Bukan pesulap. Saya tidak mengerti maksud Bapak. Saya diminta ke sini untuk antar barang. Jas ini. Saya telat karena saya harus menyelesaikan semua jadwal pengantaran. Saya harus matikan aplikasi, baru datang ke sini. Itu makanya saya datang malam-malam begini.\"\n\n(diadaptasi dari https://www.bacapetra.co/kurir-cerpen-alturridha/)\n\nReaksi yang ditunjukkan oleh kurir ketika lelaki tambun menuduhnya mengambil uang adalah\n\nPilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "terkejut dan kebingungan atas tuduhan yang berikan padanya.",
+            "mengambil paket dan pergi meninggalkan rumah tanpa berkata apa-apa.",
+            "marah, menuduh lelaki tambun berbohong, dan mengatakan ia tidak waras.",
+            "berusaha menjelaskan bahwa ia tidak mengambil uang seperti yang dituduhkan.",
+            "tertawa dan menganggap tuduhan itu sebagai lelucon mengenai pesulap di TV."
+          ],
+          "jawaban": [
+            0,
+            3
+          ],
+          "pembahasan": "Jalur konsep: Saat dituduh, kurir \"terkejut\" dan bertanya \"Ngerjain bagaimana?\" (terkejut dan kebingungan), lalu membela diri dengan sopan: \"Pak, saya ini kurir. Bukan pesulap...\" (berusaha menjelaskan tidak mengambil uang). Tidak ada bukti di teks bahwa kurir marah, menuduh balik, tertawa, atau pergi diam-diam. Jawaban: opsi 1 dan 4. Jalur Cara Gemilang: Reaksi spontan tokoh: \"Kurir itu terkejut. Ngerjain bagaimana?\" lalu membela diri sopan — jawaban harus ada kutipannya di teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #12)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nKetika ia baru saja mematikan motornya, sepasang suami istri itu sedang menonton acara sulap di televisi. Acara itu memperlihatkan seorang dengan wajah menyebalkan yang menghentikan orang-orang yang ia temui di jalan. Pesulap itu kemudian memainkan triknya ke setiap pejalan kaki yang bersedia.\n\nLalu, pesulap itu mengerjai si pejalan kaki dengan trik kecepatan tangannya, membuat hilangnya uang si pejalan kaki.\n\n\"Ada tamu itu,\" kata istrinya begitu mendengar bunyi bel. Lelaki tambun itu membuka gerbang dan bertanya kepentingan tamunya.\n\n\"Maaf, Pak. Saya mau antar paket,\" kata kurir itu.\n\n\"Oh, hari Penjajah Totowatu. Telat sekali. Saya tunggu dari dua hari lalu. Harusnya tadi pagi saya pakai jas itu ke acara nikah sepupu saya. Bagaimana sih kalian ini?\"\n\nBegitu si lelaki tambun menyerahkan uangnya, kurir itu mendapat perasaan tidak menyenangkan. Ia mengajak lelaki itu untuk bersama-sama menghitung uang yang tadi diserahkannya. Si kurir menderetkan lembar demi lembar uang di meja. Uang itu berupa pecahan lima ribu, sepuluh ribu, dan dua puluh ribu. Tidak ada satu pun uang besar. Memang banyak lembarannya, tetapi uang kecil semua.\n\n\"Kamu ngerjain saya, ya?\" kata si lelaki tambun.\n\nKurir itu terkejut. \"Ngerjain bagaimana?\"\n\n\"Tadi jelas-jelas jumlahnya 370 ribu rupiah!\"\n\n\"Sumpah, Pak. Uangnya cuma ini.\" Kurir itu kebingungan. Agaknya orang ini tidak waras pikirannya. Pantas saja kurir-kurir lain tidak ada yang mau diminta antar barang ke sini. Sial betul dirinya, pikir si kurir.\n\n\"Begini saja, coba Bapak lihat lagi uang Bapak di dalam sana. Mungkin uangnya masih ada.\"\n\n\"Tidak, tidak, tidak. Langsung saja keluarkan uang itu. Saya tidak punya waktu untuk lihat pertunjukan sulapmu.\"\n\n\"Pak, saya ini kurir. Bukan pesulap. Saya tidak mengerti maksud Bapak. Saya diminta ke sini untuk antar barang. Jas ini. Saya telat karena saya harus menyelesaikan semua jadwal pengantaran. Saya harus matikan aplikasi, baru datang ke sini. Itu makanya saya datang malam-malam begini.\"\n\n(diadaptasi dari https://www.bacapetra.co/kurir-cerpen-alturridha/)\n\nAlasan yang tepat mengenai makna kata sulap sebagai kata dasar dari pesulap pada teks tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "memiliki makna konotasi karena bermakna pekerjaan kurir yang mengantarkan paket dengan cepat seperti sulap.",
+            "bermakna denotasi, yakni pertunjukan hiburan yang menggunakan trik tangan untuk menipu mata penonton.",
+            "kebiasaan masyarakat menipu orang lain dalam transaksi uang memiliki makna secara denotasi.",
+            "pekerjaan resmi pemerintah dalam bidang ekonomi merupakan makna denotasi.",
+            "kata denotasi yang bermakna sebuah atraksi menghibur dan menegangkan."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Alasan yang tepat mengenai makna kata sulap sebagai kata dasar dari pesulap pada teks tersebut adalah bermakna denotasi, yakni pertunjukan hiburan yang menggunakan trik tangan untuk menipu mata penonton . Jalur Cara Gemilang: CG-MAKNA: tes tunjuk — sulap bisa ditunjuk sebagai pertunjukan nyata dengan trik tangan → denotasi; konotasi = makna kiasan berperasaan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #13)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n(1) Pagi itu, Pak Slamet, pensiunan pegawai negeri yang telah mengabdi puluhan tahun, melangkahkan kakinya dengan pasti menuju sebuah bank. Kaki tuanya mungkin agak lambat, tetapi semangatnya untuk menyelesaikan urusan administrasi pensiunan tak pernah pudar. Sudah dua bulan tunjangan pensiunnya bermasalah dan hari ini ia bertekad harus selesai.\n\n(2) Di pintu masuk, Pak Slamet menekan mesin antrean digital. Pak Slamet menekan tombol \"Pensiunan/Prioritas\", tetapi yang keluar hanya kertas kosong bertuliskan \"Nomor antrean digital sesi ini telah habis. Harap menuju konter manual.\" Dengan sedikit kekecewaan, ia berjalan ke konter manual di sudut ruangan, tempat tumpukan kertas antrean bernomor besar dan spidol tersedia. Ia menulis sendiri kertas, menuliskan nomor urut 47, lalu duduk di kursi tunggu yang sudah penuh.\n\n(3) Waktu berlalu lambat. Satu jam berlalu, baru sekitar 20-an nomor yang terpanggil. Ruangan bank bernapas cemas dan terasa pengap oleh gerutuan pelan para pensiunan lainnya. Pak Slamet mencoba sabar, sesekali mengelus punggungnya yang mulai pegal.\n\nTiba-tiba, seorang pria muda dengan setelan rapi, mungkin belum genap sebulan, masuk ke bank. Ia langsung menuju mesin digital, menekan beberapa tombol, dan priiit, selembar nomor antrean keluar. Tidak sampai lima menit kemudian, suara merdu petugas bank memanggil, \"Nomor antrean A029, silakan menuju konter tiga.\" Pria muda itu langsung beranjak dan masuk.\n\n(4) Pak Slamet tertegun. Ia melihat nomor manualnya yang masih jauh, lalu melihat pria muda yang sudah duduk di depan meja customer service. Rasa keadilan dalam hatinya terusik. Ia lirik jam dinding, sudah hampir dua jam ia menunggu.\n\n\"Pak, kok bisa dia duluan? Nomor digital katanya habis?\" tanya Pak Slamet pada bapak di sebelahnya yang juga pensiunan.\n\nBapak di sebelahnya menghela napas pasrah. \"Sudah biasa, Pak. Mereka yang pakai digital katanya sistemnya beda, lebih cepat karena terintegrasi. Kita yang manual ini cuma pelengkap atau cadangan kalau sistem digitalnya lagi error total.\"\n\n(5) Setelah 30 menit, akhirnya nomor 47 terpanggil. Dengan langkah gontai, Pak Slamet menuju konter yang ditunjuk. Di sana, seorang petugas muda menyambutnya dengan senyum ramah yang terasa hambar.\n\n(6) Pak Slamet menyerahkan kertas antreannya dan mulai menjelaskan permasalahannya, tetapi pikirannya masih melayang pada layanan yang katanya memprioritaskan kecepatan itu seolah masih seperti sebelumnya. Ia berharap, di masa depan, tidak ada lagi pensiunan yang harus merasakan getirnya menunggu dalam ketidakpastian birokrasi.\n\nHal yang akan terjadi pada Pak Slamet bila ia tidak merasa dicurangi adalah",
+          "tipe": "pg",
+          "opsi": [
+            "tidak akan muncul perasaan kecewa.",
+            "tidak perlu mengambil nomor antrean manual.",
+            "mendapat perlakuan istimewa dari petugas bank.",
+            "langsung dipanggil lebih cepat karena ia pensiunan.",
+            "langsung pulang tanpa menyelesaikan urusan administrasi."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Hal yang akan terjadi pada Pak Slamet bila ia tidak merasa dicurangi adalah tidak akan muncul perasaan kecewa . Hal ini terjadi sebab ia tidak merasa dicurangi sehingga muncul perasaan negatif, seperti marah, kecewa, atau merasa diperlakukan tidak adil tidak akan muncul. Ia akan menerima kenyataan bahwa antrean manual memang lebih lambat dibandingkan antrean digital, lalu menjalani proses dengan sabar sesuai urutan. Jalur Cara Gemilang: Pola \"bila tidak merasa X\" = hilangkan efek emosi itu: tak merasa dicurangi → tak muncul kecewa; antrean tetap dijalani sabar.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #14)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n(1) Pagi itu, Pak Slamet, pensiunan pegawai negeri yang telah mengabdi puluhan tahun, melangkahkan kakinya dengan pasti menuju sebuah bank. Kaki tuanya mungkin agak lambat, tetapi semangatnya untuk menyelesaikan urusan administrasi pensiunan tak pernah pudar. Sudah dua bulan tunjangan pensiunnya bermasalah dan hari ini ia bertekad harus selesai.\n\n(2) Di pintu masuk, Pak Slamet menekan mesin antrean digital. Pak Slamet menekan tombol \"Pensiunan/Prioritas\", tetapi yang keluar hanya kertas kosong bertuliskan \"Nomor antrean digital sesi ini telah habis. Harap menuju konter manual.\" Dengan sedikit kekecewaan, ia berjalan ke konter manual di sudut ruangan, tempat tumpukan kertas antrean bernomor besar dan spidol tersedia. Ia menulis sendiri kertas, menuliskan nomor urut 47, lalu duduk di kursi tunggu yang sudah penuh.\n\n(3) Waktu berlalu lambat. Satu jam berlalu, baru sekitar 20-an nomor yang terpanggil. Ruangan bank bernapas cemas dan terasa pengap oleh gerutuan pelan para pensiunan lainnya. Pak Slamet mencoba sabar, sesekali mengelus punggungnya yang mulai pegal.\n\nTiba-tiba, seorang pria muda dengan setelan rapi, mungkin belum genap sebulan, masuk ke bank. Ia langsung menuju mesin digital, menekan beberapa tombol, dan priiit, selembar nomor antrean keluar. Tidak sampai lima menit kemudian, suara merdu petugas bank memanggil, \"Nomor antrean A029, silakan menuju konter tiga.\" Pria muda itu langsung beranjak dan masuk.\n\n(4) Pak Slamet tertegun. Ia melihat nomor manualnya yang masih jauh, lalu melihat pria muda yang sudah duduk di depan meja customer service. Rasa keadilan dalam hatinya terusik. Ia lirik jam dinding, sudah hampir dua jam ia menunggu.\n\n\"Pak, kok bisa dia duluan? Nomor digital katanya habis?\" tanya Pak Slamet pada bapak di sebelahnya yang juga pensiunan.\n\nBapak di sebelahnya menghela napas pasrah. \"Sudah biasa, Pak. Mereka yang pakai digital katanya sistemnya beda, lebih cepat karena terintegrasi. Kita yang manual ini cuma pelengkap atau cadangan kalau sistem digitalnya lagi error total.\"\n\n(5) Setelah 30 menit, akhirnya nomor 47 terpanggil. Dengan langkah gontai, Pak Slamet menuju konter yang ditunjuk. Di sana, seorang petugas muda menyambutnya dengan senyum ramah yang terasa hambar.\n\n(6) Pak Slamet menyerahkan kertas antreannya dan mulai menjelaskan permasalahannya, tetapi pikirannya masih melayang pada layanan yang katanya memprioritaskan kecepatan itu seolah masih seperti sebelumnya. Ia berharap, di masa depan, tidak ada lagi pensiunan yang harus merasakan getirnya menunggu dalam ketidakpastian birokrasi.\n\nPenggambaran latar yang sesuai kutipan cerita tersebut adalah\n\nPilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "kantor pemerintahan.",
+            "khawatir.",
+            "marah.",
+            "heran.",
+            "pagi."
+          ],
+          "jawaban": [
+            1,
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Cerita berlangsung di bank, bukan kantor pemerintahan (opsi 1 gugur). Suasana cemas terasa dari ruang tunggu yang \"bernapas cemas\" dan penuh gerutuan (khawatir). Pak Slamet \"tertegun\" dan bertanya-tanya mengapa antrean digital lebih cepat padahal katanya habis (heran). Waktu eksplisit: \"Pagi itu, Pak Slamet...\" (pagi). Pak Slamet digambarkan kecewa dan miris, bukan marah. Jawaban: opsi 2, 4, dan 5. Jalur Cara Gemilang: Latar = tempat + waktu + suasana, semuanya dari bukti teks: bank (bukan kantor pemerintahan), \"bernapas cemas\" = khawatir, \"tertegun... bertanya-tanya\" = heran, \"Pagi itu\" = pagi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #15)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n(1) Pagi itu, Pak Slamet, pensiunan pegawai negeri yang telah mengabdi puluhan tahun, melangkahkan kakinya dengan pasti menuju sebuah bank. Kaki tuanya mungkin agak lambat, tetapi semangatnya untuk menyelesaikan urusan administrasi pensiunan tak pernah pudar. Sudah dua bulan tunjangan pensiunnya bermasalah dan hari ini ia bertekad harus selesai.\n\n(2) Di pintu masuk, Pak Slamet menekan mesin antrean digital. Pak Slamet menekan tombol \"Pensiunan/Prioritas\", tetapi yang keluar hanya kertas kosong bertuliskan \"Nomor antrean digital sesi ini telah habis. Harap menuju konter manual.\" Dengan sedikit kekecewaan, ia berjalan ke konter manual di sudut ruangan, tempat tumpukan kertas antrean bernomor besar dan spidol tersedia. Ia menulis sendiri kertas, menuliskan nomor urut 47, lalu duduk di kursi tunggu yang sudah penuh.\n\n(3) Waktu berlalu lambat. Satu jam berlalu, baru sekitar 20-an nomor yang terpanggil. Ruangan bank bernapas cemas dan terasa pengap oleh gerutuan pelan para pensiunan lainnya. Pak Slamet mencoba sabar, sesekali mengelus punggungnya yang mulai pegal.\n\nTiba-tiba, seorang pria muda dengan setelan rapi, mungkin belum genap sebulan, masuk ke bank. Ia langsung menuju mesin digital, menekan beberapa tombol, dan priiit, selembar nomor antrean keluar. Tidak sampai lima menit kemudian, suara merdu petugas bank memanggil, \"Nomor antrean A029, silakan menuju konter tiga.\" Pria muda itu langsung beranjak dan masuk.\n\n(4) Pak Slamet tertegun. Ia melihat nomor manualnya yang masih jauh, lalu melihat pria muda yang sudah duduk di depan meja customer service. Rasa keadilan dalam hatinya terusik. Ia lirik jam dinding, sudah hampir dua jam ia menunggu.\n\n\"Pak, kok bisa dia duluan? Nomor digital katanya habis?\" tanya Pak Slamet pada bapak di sebelahnya yang juga pensiunan.\n\nBapak di sebelahnya menghela napas pasrah. \"Sudah biasa, Pak. Mereka yang pakai digital katanya sistemnya beda, lebih cepat karena terintegrasi. Kita yang manual ini cuma pelengkap atau cadangan kalau sistem digitalnya lagi error total.\"\n\n(5) Setelah 30 menit, akhirnya nomor 47 terpanggil. Dengan langkah gontai, Pak Slamet menuju konter yang ditunjuk. Di sana, seorang petugas muda menyambutnya dengan senyum ramah yang terasa hambar.\n\n(6) Pak Slamet menyerahkan kertas antreannya dan mulai menjelaskan permasalahannya, tetapi pikirannya masih melayang pada layanan yang katanya memprioritaskan kecepatan itu seolah masih seperti sebelumnya. Ia berharap, di masa depan, tidak ada lagi pensiunan yang harus merasakan getirnya menunggu dalam ketidakpastian birokrasi.\n\nGaya bahasa yang digunakan pada kalimat Ruangan bank bernapas cemas dan terasa pengap oleh gerutuan pelan para pensiunan lainnya adalah",
+          "tipe": "pg",
+          "opsi": [
+            "ironi.",
+            "simile.",
+            "sinisme.",
+            "eufimisme.",
+            "personifikasi."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Majas personifikasi adalah gaya bahasa kiasan yang memberikan sifat, perilaku, atau perasaan manusia kepada benda mati, hewan, atau ide abstrak. Oleh sebab itu, gaya bahasa yang digunakan pada kalimat Ruangan bank bernapas cemas dan terasa pengap oleh gerutuan pelan para pensiunan lainnya adalah personifikasi . Jalur Cara Gemilang: Benda mati berperilaku manusia (\"ruangan bernapas cemas\") = personifikasi. CG-MAKNA: cari subjek mati + kata kerja manusia.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #16)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\n(1) Pagi itu, Pak Slamet, pensiunan pegawai negeri yang telah mengabdi puluhan tahun, melangkahkan kakinya dengan pasti menuju sebuah bank. Kaki tuanya mungkin agak lambat, tetapi semangatnya untuk menyelesaikan urusan administrasi pensiunan tak pernah pudar. Sudah dua bulan tunjangan pensiunnya bermasalah dan hari ini ia bertekad harus selesai.\n\n(2) Di pintu masuk, Pak Slamet menekan mesin antrean digital. Pak Slamet menekan tombol \"Pensiunan/Prioritas\", tetapi yang keluar hanya kertas kosong bertuliskan \"Nomor antrean digital sesi ini telah habis. Harap menuju konter manual.\" Dengan sedikit kekecewaan, ia berjalan ke konter manual di sudut ruangan, tempat tumpukan kertas antrean bernomor besar dan spidol tersedia. Ia menulis sendiri kertas, menuliskan nomor urut 47, lalu duduk di kursi tunggu yang sudah penuh.\n\n(3) Waktu berlalu lambat. Satu jam berlalu, baru sekitar 20-an nomor yang terpanggil. Ruangan bank bernapas cemas dan terasa pengap oleh gerutuan pelan para pensiunan lainnya. Pak Slamet mencoba sabar, sesekali mengelus punggungnya yang mulai pegal.\n\nTiba-tiba, seorang pria muda dengan setelan rapi, mungkin belum genap sebulan, masuk ke bank. Ia langsung menuju mesin digital, menekan beberapa tombol, dan priiit, selembar nomor antrean keluar. Tidak sampai lima menit kemudian, suara merdu petugas bank memanggil, \"Nomor antrean A029, silakan menuju konter tiga.\" Pria muda itu langsung beranjak dan masuk.\n\n(4) Pak Slamet tertegun. Ia melihat nomor manualnya yang masih jauh, lalu melihat pria muda yang sudah duduk di depan meja customer service. Rasa keadilan dalam hatinya terusik. Ia lirik jam dinding, sudah hampir dua jam ia menunggu.\n\n\"Pak, kok bisa dia duluan? Nomor digital katanya habis?\" tanya Pak Slamet pada bapak di sebelahnya yang juga pensiunan.\n\nBapak di sebelahnya menghela napas pasrah. \"Sudah biasa, Pak. Mereka yang pakai digital katanya sistemnya beda, lebih cepat karena terintegrasi. Kita yang manual ini cuma pelengkap atau cadangan kalau sistem digitalnya lagi error total.\"\n\n(5) Setelah 30 menit, akhirnya nomor 47 terpanggil. Dengan langkah gontai, Pak Slamet menuju konter yang ditunjuk. Di sana, seorang petugas muda menyambutnya dengan senyum ramah yang terasa hambar.\n\n(6) Pak Slamet menyerahkan kertas antreannya dan mulai menjelaskan permasalahannya, tetapi pikirannya masih melayang pada layanan yang katanya memprioritaskan kecepatan itu seolah masih seperti sebelumnya. Ia berharap, di masa depan, tidak ada lagi pensiunan yang harus merasakan getirnya menunggu dalam ketidakpastian birokrasi.\n\nNilai yang tidak terkandung dalam kutipan cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "moral.",
+            "sosial.",
+            "budaya.",
+            "psikologis.",
+            "ketuhanan."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Nilai yang tidak terkandung dalam kutipan cerpen tersebut adalah ketuhanan . Nilai moral berkaitan dengan etika saat mengantre. Nilai sosial berkaitan dengan ketidakadilan yang terjadi dalam cerita. Sementara itu, nilai budaya berkaitan dengan kebiasaan yang terjadi di masyarakat yang juga berkaitan dengan nilai psikologis tokoh. Jalur Cara Gemilang: Soal \"kecuali/tidak terkandung\" = eliminasi satu per satu dengan bukti teks: moral (antre), sosial (ketidakadilan), budaya (kebiasaan), psikologis (perasaan tokoh) ada; ketuhanan tidak dibahas.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #17)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nAngin berdesir sejuk. Kini, aku bisa berjalan-jalan di kota tanpa merasa pusing. Suara klakson nyaris tak terdengar sebab di sini tidak ada pengatur waktu. Mereka disiplin sehingga jarak tempuh bisa dihitung dengan aman, tenang, dan lancar.\n\nJalan menanjak dan berkelok. Aku sangat menikmati dan belum merasakan pentalan akibat jalan berlubang. Semua terlihat rata.\n\n\"Masih jauh?\" tanyaku menembus desir angin. Aku sedikit berteriak.\n\n\"Sebentar lagi, setelah kita melewati jembatan, Dok.\"\n\nJembatan? Aku membetulkan posisi duduk. Aku yakin, inilah jembatan yang pernah aku tonton di Youtube. Maklum, aku adalah generasi Ora yang selalu ingin tahu. Kalau salah, jembatan itu menghubungkan daratan di antara sungai besar, menambah semangat baru. Aku yakin, aku masih butuh waktu kurang dari sebulan untuk merasa menjadi bagian dari Pulau Kei.\n\nBeberapa transportasi umum melintas. Hanya ada beberapa penumpang. Mereka lebih banyak menggunakan sepeda motor. Di depanku saja, ada lima motor. Salah satu di antara mereka pasti hendak ke pasar. Tas anyaman berwarna hijau dengan isinya penuh. Seorang laki-laki berbaju hijau dengan isinya penuh. Terpaan angin. Aku geli, mengkhawatirkan tangan si ibu lelah lalu ia terbang ditiup angin. Namun, nyatanya tas aman hingga kami belok di sebuah tempat paling padat pengunjung, yakni Pasar Langgur.\n\n\"Kenapa kita ke pasar, Shar?\"\n\n\"Sam, sejak awal aku sudah katakan. Kalau hanya ingin bertanya dan terus nyerocos seperti mulut ABG yang kehabisan kuota, mending kamu diam dan nggak usah ikut.\"\n\n\"Maafkanaku, kenapa kamu suka pasar, Sharena?\"\n\nPerbedaan pertama di tanah Kei. Aku juga tidak paham, mengapa kerap setim dengannya. Apakah usia kami yang tidak terlalu berjarak dianggap aneh memudahkan komunikasi? Nyatanya, jalan kami sering berlawanan. Pinta kami sering bertentangan. Lalu, apa dasar menilai kami tim yang kompak?\n\nSemoga ini perjalanan sementara yang harus kami lalui bersama di Pulau Kei. Aku tidak bisa membayangkan harus bertahan dengan laki-laki yang membuat bau amis dan terik. Tubuh keluar dengan lengan berobot seolah hanya sebagai pembuktian gender. Selebihnya, menurutku, Sammy laki-laki lembek.\n\n\"Shar, amis banget.\"\n\n\"Kamu pikir kita sedang di mal. Ini Pasar, Sam. Tolong mengertilah!\"\n\nSammy menahan muak. Sebelum ada ajuran menggunakan masker saat keluar rumah, ia pun telah menerapkannya. Sayangnya, bau amis terlalu kuat hingga menembus ke sela-sela serat kain.\n\n\"Balik yuk, Shar!\" pintanya saat aku sangat antusias memfoto dan berbincang-bincang dengan pedagang. Tanganku gatal untuk mengukur panjang ikan. Empat kilan, ukuran yang langka aku temukan di pasar biasa, di Jakarta.\n\n\"Laki-laki harus tangguh!\"\n\nAku kembali menyusuri pasar. Kagum semakin merajalela saat aku menemukan jenis ikan yang belum pernah aku temui sebelumnya. Ini pasar, tetapi sangat membuatku tertarik. Apakah memang seperti ini standar norak anak kota?\n\n(diadaptasi dari Tanda Baca karya Luluk Kamilia www.ldntimes.com)\n\nBerdasarkan kutipan cerita tersebut, tema yang tepat adalah",
+          "tipe": "pg",
+          "opsi": [
+            "kehidupan sosial masyarakat di Pulau Kei.",
+            "pengalaman perjalanan dan budaya lokal.",
+            "kehidupan ekonomi di wilayah terpencil.",
+            "ketimpangan gaya hidup di Pulau Kei.",
+            "kehidupan dokter di luar pulau."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Tema merupakan pokok masalah atau cerita. Berdasarkan kutipan cerpen tersebut, tema yang tepat adalah pengalaman perjalanan dan budaya lokal . Jalur Cara Gemilang: Tema dari peristiwa dominan: perjalanan ke Pulau Kei + pengalaman di Pasar Langgur → perjalanan dan budaya lokal.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #18)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nAngin berdesir sejuk. Kini, aku bisa berjalan-jalan di kota tanpa merasa pusing. Suara klakson nyaris tak terdengar sebab di sini tidak ada pengatur waktu. Mereka disiplin sehingga jarak tempuh bisa dihitung dengan aman, tenang, dan lancar.\n\nJalan menanjak dan berkelok. Aku sangat menikmati dan belum merasakan pentalan akibat jalan berlubang. Semua terlihat rata.\n\n\"Masih jauh?\" tanyaku menembus desir angin. Aku sedikit berteriak.\n\n\"Sebentar lagi, setelah kita melewati jembatan, Dok.\"\n\nJembatan? Aku membetulkan posisi duduk. Aku yakin, inilah jembatan yang pernah aku tonton di Youtube. Maklum, aku adalah generasi Ora yang selalu ingin tahu. Kalau salah, jembatan itu menghubungkan daratan di antara sungai besar, menambah semangat baru. Aku yakin, aku masih butuh waktu kurang dari sebulan untuk merasa menjadi bagian dari Pulau Kei.\n\nBeberapa transportasi umum melintas. Hanya ada beberapa penumpang. Mereka lebih banyak menggunakan sepeda motor. Di depanku saja, ada lima motor. Salah satu di antara mereka pasti hendak ke pasar. Tas anyaman berwarna hijau dengan isinya penuh. Seorang laki-laki berbaju hijau dengan isinya penuh. Terpaan angin. Aku geli, mengkhawatirkan tangan si ibu lelah lalu ia terbang ditiup angin. Namun, nyatanya tas aman hingga kami belok di sebuah tempat paling padat pengunjung, yakni Pasar Langgur.\n\n\"Kenapa kita ke pasar, Shar?\"\n\n\"Sam, sejak awal aku sudah katakan. Kalau hanya ingin bertanya dan terus nyerocos seperti mulut ABG yang kehabisan kuota, mending kamu diam dan nggak usah ikut.\"\n\n\"Maafkanaku, kenapa kamu suka pasar, Sharena?\"\n\nPerbedaan pertama di tanah Kei. Aku juga tidak paham, mengapa kerap setim dengannya. Apakah usia kami yang tidak terlalu berjarak dianggap aneh memudahkan komunikasi? Nyatanya, jalan kami sering berlawanan. Pinta kami sering bertentangan. Lalu, apa dasar menilai kami tim yang kompak?\n\nSemoga ini perjalanan sementara yang harus kami lalui bersama di Pulau Kei. Aku tidak bisa membayangkan harus bertahan dengan laki-laki yang membuat bau amis dan terik. Tubuh keluar dengan lengan berobot seolah hanya sebagai pembuktian gender. Selebihnya, menurutku, Sammy laki-laki lembek.\n\n\"Shar, amis banget.\"\n\n\"Kamu pikir kita sedang di mal. Ini Pasar, Sam. Tolong mengertilah!\"\n\nSammy menahan muak. Sebelum ada ajuran menggunakan masker saat keluar rumah, ia pun telah menerapkannya. Sayangnya, bau amis terlalu kuat hingga menembus ke sela-sela serat kain.\n\n\"Balik yuk, Shar!\" pintanya saat aku sangat antusias memfoto dan berbincang-bincang dengan pedagang. Tanganku gatal untuk mengukur panjang ikan. Empat kilan, ukuran yang langka aku temukan di pasar biasa, di Jakarta.\n\n\"Laki-laki harus tangguh!\"\n\nAku kembali menyusuri pasar. Kagum semakin merajalela saat aku menemukan jenis ikan yang belum pernah aku temui sebelumnya. Ini pasar, tetapi sangat membuatku tertarik. Apakah memang seperti ini standar norak anak kota?\n\n(diadaptasi dari Tanda Baca karya Luluk Kamilia www.ldntimes.com)\n\nAmanat berdasarkan cerita tersebut adalah\n\nPilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "hargailah kebiasaan dan cara hidup masyarakat lokal di tempat baru.",
+            "pandai-pandailah beradaptasi dengan lingkungan baru.",
+            "Jangan pernah membandingkan dua kehidupan yang berbeda.",
+            "pahamilah bahwa setiap orang punya cara untuk menyombongkan diri sendiri.",
+            "hindarilah tempat yang tidak disukai agar terhindar dari sebuah konflik."
+          ],
+          "jawaban": [
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Penulis menggambarkan keteraturan hidup warga lokal (\"Mereka disiplin sehingga jarak tempuh bisa dihitung dengan aman, tenang, dan lancar\"); Sharena menghargai keseriusan warga beraktivitas di Pasar Langgur, sementara Sammy dikritik karena tidak mau mengerti situasi pasar tradisional (\"Kamu pikir kita sedang di mal. Ini Pasar, Sam. Tolong mengertilah!\"). Amanat: hargai kebiasaan masyarakat lokal dan pandai-pandailah beradaptasi (opsi 1 dan 2). Jalur Cara Gemilang: Amanat = nasihat hidup yang bisa dipetik pembaca: hargai cara hidup lokal + pandai beradaptasi. Coret opsi ekstrem (\"jangan pernah\", \"hindarilah\") yang tak didukung teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #19)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nAngin berdesir sejuk. Kini, aku bisa berjalan-jalan di kota tanpa merasa pusing. Suara klakson nyaris tak terdengar sebab di sini tidak ada pengatur waktu. Mereka disiplin sehingga jarak tempuh bisa dihitung dengan aman, tenang, dan lancar.\n\nJalan menanjak dan berkelok. Aku sangat menikmati dan belum merasakan pentalan akibat jalan berlubang. Semua terlihat rata.\n\n\"Masih jauh?\" tanyaku menembus desir angin. Aku sedikit berteriak.\n\n\"Sebentar lagi, setelah kita melewati jembatan, Dok.\"\n\nJembatan? Aku membetulkan posisi duduk. Aku yakin, inilah jembatan yang pernah aku tonton di Youtube. Maklum, aku adalah generasi Ora yang selalu ingin tahu. Kalau salah, jembatan itu menghubungkan daratan di antara sungai besar, menambah semangat baru. Aku yakin, aku masih butuh waktu kurang dari sebulan untuk merasa menjadi bagian dari Pulau Kei.\n\nBeberapa transportasi umum melintas. Hanya ada beberapa penumpang. Mereka lebih banyak menggunakan sepeda motor. Di depanku saja, ada lima motor. Salah satu di antara mereka pasti hendak ke pasar. Tas anyaman berwarna hijau dengan isinya penuh. Seorang laki-laki berbaju hijau dengan isinya penuh. Terpaan angin. Aku geli, mengkhawatirkan tangan si ibu lelah lalu ia terbang ditiup angin. Namun, nyatanya tas aman hingga kami belok di sebuah tempat paling padat pengunjung, yakni Pasar Langgur.\n\n\"Kenapa kita ke pasar, Shar?\"\n\n\"Sam, sejak awal aku sudah katakan. Kalau hanya ingin bertanya dan terus nyerocos seperti mulut ABG yang kehabisan kuota, mending kamu diam dan nggak usah ikut.\"\n\n\"Maafkanaku, kenapa kamu suka pasar, Sharena?\"\n\nPerbedaan pertama di tanah Kei. Aku juga tidak paham, mengapa kerap setim dengannya. Apakah usia kami yang tidak terlalu berjarak dianggap aneh memudahkan komunikasi? Nyatanya, jalan kami sering berlawanan. Pinta kami sering bertentangan. Lalu, apa dasar menilai kami tim yang kompak?\n\nSemoga ini perjalanan sementara yang harus kami lalui bersama di Pulau Kei. Aku tidak bisa membayangkan harus bertahan dengan laki-laki yang membuat bau amis dan terik. Tubuh keluar dengan lengan berobot seolah hanya sebagai pembuktian gender. Selebihnya, menurutku, Sammy laki-laki lembek.\n\n\"Shar, amis banget.\"\n\n\"Kamu pikir kita sedang di mal. Ini Pasar, Sam. Tolong mengertilah!\"\n\nSammy menahan muak. Sebelum ada ajuran menggunakan masker saat keluar rumah, ia pun telah menerapkannya. Sayangnya, bau amis terlalu kuat hingga menembus ke sela-sela serat kain.\n\n\"Balik yuk, Shar!\" pintanya saat aku sangat antusias memfoto dan berbincang-bincang dengan pedagang. Tanganku gatal untuk mengukur panjang ikan. Empat kilan, ukuran yang langka aku temukan di pasar biasa, di Jakarta.\n\n\"Laki-laki harus tangguh!\"\n\nAku kembali menyusuri pasar. Kagum semakin merajalela saat aku menemukan jenis ikan yang belum pernah aku temui sebelumnya. Ini pasar, tetapi sangat membuatku tertarik. Apakah memang seperti ini standar norak anak kota?\n\n(diadaptasi dari Tanda Baca karya Luluk Kamilia www.ldntimes.com)\n\nBerdasarkan kutipan cerita tersebut, unsur intrinsik yang tepat adalah\n(Tentukan Benar/Salah untuk setiap pernyataan berikut!)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Tokoh utama dalam kutipan cerita tersebut seorang dokter, Sammy.",
+            "Sudut pandang yang digunakan adalah orang pertama pelaku utama.",
+            "Konflik utama kutipan cerita tersebut adalah perbedaan sifat/pandangan antara Sharena dan Sammy .",
+            "Kutipan Sayangnya, bau amis terlalu kuat hingga menembus ke sela-sela serat kain merupakan majas metafora."
+          ],
+          "jawaban": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SALAH: narator atau tokoh \"aku\" yang digunakan dalam cerita tersebut berprofesi sebagai dokter adalah Sharena, sedangkan Sammy adalah temannya Baris 2 — BENAR: cerita disampaikan secara langsung oleh tokoh Sharena dengan menggunakan kata ganti \"aku\" Baris 3 — BENAR: perdebatan dan ketegangan di antara kedua tokoh terjadi saat mereka tiba di pasar, di mana Sammy merasa jijik dan ingin cepat pulang Baris 4 — SALAH: kalimat \"bau amis terlalu kuat hingga menembus ke sela-sela serat kain\" menggunakan majas hiperbol (melebih-lebihkan), bukan personifikasi (mengumpamakan benda mati berperilaku seperti manusia) (Catatan: pada tabel pembahasan buku asli, posisi centang baris ke-3 tertukar; kunci resmi \"S,B,B,S\" dan keterangan di buku menyatakan BENAR — kami mengikuti kunci resmi.) Jalur Cara Gemilang: Cek per pernyataan dengan bukti teks: dokter-narator = Sharena (bukan Sammy); kata \"aku\" = orang pertama pelaku utama; konflik = beda pandangan Sharena-Sammy di pasar; \"bau amis menembus serat kain\" = hiperbola (melebih-lebihkan), bukan metafora.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #20)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nAngin berdesir sejuk. Kini, aku bisa berjalan-jalan di kota tanpa merasa pusing. Suara klakson nyaris tak terdengar sebab di sini tidak ada pengatur waktu. Mereka disiplin sehingga jarak tempuh bisa dihitung dengan aman, tenang, dan lancar.\n\nJalan menanjak dan berkelok. Aku sangat menikmati dan belum merasakan pentalan akibat jalan berlubang. Semua terlihat rata.\n\n\"Masih jauh?\" tanyaku menembus desir angin. Aku sedikit berteriak.\n\n\"Sebentar lagi, setelah kita melewati jembatan, Dok.\"\n\nJembatan? Aku membetulkan posisi duduk. Aku yakin, inilah jembatan yang pernah aku tonton di Youtube. Maklum, aku adalah generasi Ora yang selalu ingin tahu. Kalau salah, jembatan itu menghubungkan daratan di antara sungai besar, menambah semangat baru. Aku yakin, aku masih butuh waktu kurang dari sebulan untuk merasa menjadi bagian dari Pulau Kei.\n\nBeberapa transportasi umum melintas. Hanya ada beberapa penumpang. Mereka lebih banyak menggunakan sepeda motor. Di depanku saja, ada lima motor. Salah satu di antara mereka pasti hendak ke pasar. Tas anyaman berwarna hijau dengan isinya penuh. Seorang laki-laki berbaju hijau dengan isinya penuh. Terpaan angin. Aku geli, mengkhawatirkan tangan si ibu lelah lalu ia terbang ditiup angin. Namun, nyatanya tas aman hingga kami belok di sebuah tempat paling padat pengunjung, yakni Pasar Langgur.\n\n\"Kenapa kita ke pasar, Shar?\"\n\n\"Sam, sejak awal aku sudah katakan. Kalau hanya ingin bertanya dan terus nyerocos seperti mulut ABG yang kehabisan kuota, mending kamu diam dan nggak usah ikut.\"\n\n\"Maafkanaku, kenapa kamu suka pasar, Sharena?\"\n\nPerbedaan pertama di tanah Kei. Aku juga tidak paham, mengapa kerap setim dengannya. Apakah usia kami yang tidak terlalu berjarak dianggap aneh memudahkan komunikasi? Nyatanya, jalan kami sering berlawanan. Pinta kami sering bertentangan. Lalu, apa dasar menilai kami tim yang kompak?\n\nSemoga ini perjalanan sementara yang harus kami lalui bersama di Pulau Kei. Aku tidak bisa membayangkan harus bertahan dengan laki-laki yang membuat bau amis dan terik. Tubuh keluar dengan lengan berobot seolah hanya sebagai pembuktian gender. Selebihnya, menurutku, Sammy laki-laki lembek.\n\n\"Shar, amis banget.\"\n\n\"Kamu pikir kita sedang di mal. Ini Pasar, Sam. Tolong mengertilah!\"\n\nSammy menahan muak. Sebelum ada ajuran menggunakan masker saat keluar rumah, ia pun telah menerapkannya. Sayangnya, bau amis terlalu kuat hingga menembus ke sela-sela serat kain.\n\n\"Balik yuk, Shar!\" pintanya saat aku sangat antusias memfoto dan berbincang-bincang dengan pedagang. Tanganku gatal untuk mengukur panjang ikan. Empat kilan, ukuran yang langka aku temukan di pasar biasa, di Jakarta.\n\n\"Laki-laki harus tangguh!\"\n\nAku kembali menyusuri pasar. Kagum semakin merajalela saat aku menemukan jenis ikan yang belum pernah aku temui sebelumnya. Ini pasar, tetapi sangat membuatku tertarik. Apakah memang seperti ini standar norak anak kota?\n\n(diadaptasi dari Tanda Baca karya Luluk Kamilia www.ldntimes.com)\n\nNilai moral yang dapat dipetik dari sikap Sharena dalam kutipan cerita tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Kewajiban setiap individu untuk mengedukasi orang lain tentang standar kebersihan dan kesehatan modern agar masyarakat tradisional dapat beradaptasi dengan era global.",
+            "Pentingnya bersikap rendah hati dan terbuka terhadap pengalaman baru sebagai bentuk penghormatan terhadap kearifan lokal yang berbeda dari kebiasaan pribadi.",
+            "Keberanian menyuarakan ketidaknyamanan pribadi di ruang publik sebagai bentuk partisipasi demokratis dalam membangun lingkungan yang lebih inklusif dan nyaman.",
+            "Tanggung jawab generasi muda untuk mendokumentasikan kekayaan budaya nusantara melalui konten digital sebagai upaya pelestarian warisan leluhur bagi masa depan.",
+            "Kepentingan memprioritaskan efisiensi waktu dan kenyamanan pribadi dalam setiap perjalanan agar tujuan wisata dapat dicapai tanpa hambatan berarti."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Nilai moral yang dapat dipetik dari sikap Sharena dalam kutipan cerita tersebut adalah Pentingnya bersikap rendah hati dan terbuka terhadap pengalaman baru sebagai bentuk penghormatan terhadap kearifan lokal yang berbeda dari kebiasaan pribadi. Hal ini ditunjukkan oleh sikap Sharena yang selalu ingin tahu. Selain itu, ia juga mengapresiasi segala hal yang dianggap baru untuknya. Jalur Cara Gemilang: Sikap Sharena = ingin tahu + mengapresiasi hal baru → rendah hati dan terbuka terhadap kearifan lokal.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #21)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nSuatu ketika, aku pernah mendesak nenek untuk mengantarku ke alun-alun kota, untuk melihat langsung pohon itu. Tentu saja tanpa sepengetahuan ibu. Karena, kalau ibu tahu pasti ibu tak akan mengizinkan.\n\nDiam-diam kami pun berangkat, pelan-pelan aku menuntun nenek yang jalannya sudah tidak tegap lagi. Jarak antara rumah dan alun-alun kota sebenarnya tidak terlalu jauh. Kami cukup naik angkutan umum satu kali, tak sampai setengah jam kami sudah sampai.\n\nBegitu sampai di alun-alun kota, nenek langsung mengajakku ke pusat alun-alun, tempat di mana pohon itu berada. Kami berteduh di bawahnya, nenek duduk dengan napasnya yang terdengar ngik-ngik. Kepala nenek menengadah ke atas. Aku pun mengikutannya.\n\n\"Banyak sekali misteri dan kehidupan di atas sana,\" gumam nenek.\n\nLelah menengadahkan kepala, aku pun menunduk. Tampak daun-daun kering berserakan di mana-mana, sebagian terinjak-injak oleh kakiku.\n\n\"Nek,\" aku menjawil lengan nenek.\n\n\"Ya?\"\n\n\"Apakah daun-daun kering yang berserakan di bawah ini adalah jasad orang-orang yang sudah mati?\"\n\n\"Ya, daun-daun itu adalah jasad tilas mereka dari pohon kehidupan.\"\n\n\"Berarti jasad tilas ayah ada di antara daun-daun kering itu?\"\n\n\"Mungkin. Tapi nenek kira, kini, jasad ayahmu sudah menyatu kembali dengan tanah.\"\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Mengapa daun-daun kering itu tidak dibersihkan atau dibakar saja.\"\n\n\"Tak perlu, lambat laun mereka juga akan kembali ke asalnya, tanah, melebur menjadi tanah. Dari tanah kembali ke tanah.\"\n\nKepalaku kembali menengadah, \"Kalau daun-daun kemuning yang ada di atas sana itu siapa?\"\n\n\"Mereka adalah orang-orang tua yang masih hidup di kota ini, mereka-mereka yang sudah lama bertengger di atas pohon kehidupan.\"\n\n\"Apakah mereka akan segera gugur.\"\n\n\"Tentu saja, Nak. Gugur adalah takdir mereka.\"\n\n\"Apa Nenek ada di antara salah satu daun kemuning yang ada di atas sana, yang siap gugur itu?\"\n\n\"Nenek tak tahu. Itu rahasia yang di atas, tak seorang pun berani tahu.\"\n\nAku terus menengadahkan kepala, mencari-cari di mana letak daun milik nenek, milikku, dan juga milik ibu.\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Tunas-tunas daun yang tersemat di pucuk pohon itu, pasti adalah bayi-bayi yang baru lahir di kota ini, ya, kan?\"\n\n\"Ya. Benar, memang kenapa?\"\n\n\"Berarti, sekarang, aku berada di antara daun-daun muda yang bertengger di atas sana?\"\n\n\"Ya. Tentu saja.\"\n\n\"Artinya, masa gugurku masih sangat lama, ya, Nek?\" Nenek mengernyitkan dahi, \"Siapa bilang? Setiap lembar daun kehidupan yang ada di atas sana adalah rahasia. Tak ada seorang pun yang tahu. Gugur adalah hak semua daun, dari yang kemuning, yang masih segar dan hijau, bahkan yang masih tunas pun bisa saja patah dan gugur.\"\n\nAku terdiam. Mencerna kata-kata nenek.\n\n(diadaptasi dari cerpen \"Pohon Hayat\" https://cerpenkompas.wordpress.com/)\n\nNilai budaya yang paling dominan tercermin dalam kutipan cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Adat istiadat yang mewajibkan setiap keluarga membawa anak-anak mereka ke alun-alun setiap minggu untuk memperkuat ikatan emosional antargenerasi.",
+            "Praktik ziarah kubur massal di alun-alun kota sebagai bentuk penghormatan masyarakat terhadap leluhur yang telah berjasa membangun wilayah tersebut.",
+            "Tradisi masyarakat Jawa yang menganggap pohon beringin sebagai tempat keramat sehingga dilarang untuk didekati oleh anak-anak kecil demi menghindari hal-hal mistis.",
+            "Kepercayaan masyarakat urban modern yang mulai meninggalkan nilai-nilai tradisional dan lebih mengandalkan penjelasan ilmiah dalam memahami fenomena kehidupan dan kematian.",
+            "Kearifan lokal dalam memandang siklus kehidupan manusia melalui metafora alam, di mana kelahiran, kehidupan, dan kematian dipandang sebagai proses alami yang saling terhubung."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Nilai budaya yang paling dominan tercermin dalam kutipan cerpen tersebut adalah Kearifan lokal dalam memandang siklus kehidupan manusia melalui metafora alam, di mana kelahiran, kehidupan, dan kematian dipandang sebagai proses alami yang saling terhubung. Teks kutipan menggunakan metafora pohon kehidupan (daun tunas = bayi, daun hijau = manusia hidup, daun kering = yang telah meninggal) untuk merepresentasikan filosofi siklus hidup yang merupakan kearifan lokal. Jalur Cara Gemilang: Metafora alam untuk hidup-mati (tunas = bayi, daun kering = wafat) = kearifan lokal memandang siklus kehidupan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #22)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nSuatu ketika, aku pernah mendesak nenek untuk mengantarku ke alun-alun kota, untuk melihat langsung pohon itu. Tentu saja tanpa sepengetahuan ibu. Karena, kalau ibu tahu pasti ibu tak akan mengizinkan.\n\nDiam-diam kami pun berangkat, pelan-pelan aku menuntun nenek yang jalannya sudah tidak tegap lagi. Jarak antara rumah dan alun-alun kota sebenarnya tidak terlalu jauh. Kami cukup naik angkutan umum satu kali, tak sampai setengah jam kami sudah sampai.\n\nBegitu sampai di alun-alun kota, nenek langsung mengajakku ke pusat alun-alun, tempat di mana pohon itu berada. Kami berteduh di bawahnya, nenek duduk dengan napasnya yang terdengar ngik-ngik. Kepala nenek menengadah ke atas. Aku pun mengikutannya.\n\n\"Banyak sekali misteri dan kehidupan di atas sana,\" gumam nenek.\n\nLelah menengadahkan kepala, aku pun menunduk. Tampak daun-daun kering berserakan di mana-mana, sebagian terinjak-injak oleh kakiku.\n\n\"Nek,\" aku menjawil lengan nenek.\n\n\"Ya?\"\n\n\"Apakah daun-daun kering yang berserakan di bawah ini adalah jasad orang-orang yang sudah mati?\"\n\n\"Ya, daun-daun itu adalah jasad tilas mereka dari pohon kehidupan.\"\n\n\"Berarti jasad tilas ayah ada di antara daun-daun kering itu?\"\n\n\"Mungkin. Tapi nenek kira, kini, jasad ayahmu sudah menyatu kembali dengan tanah.\"\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Mengapa daun-daun kering itu tidak dibersihkan atau dibakar saja.\"\n\n\"Tak perlu, lambat laun mereka juga akan kembali ke asalnya, tanah, melebur menjadi tanah. Dari tanah kembali ke tanah.\"\n\nKepalaku kembali menengadah, \"Kalau daun-daun kemuning yang ada di atas sana itu siapa?\"\n\n\"Mereka adalah orang-orang tua yang masih hidup di kota ini, mereka-mereka yang sudah lama bertengger di atas pohon kehidupan.\"\n\n\"Apakah mereka akan segera gugur.\"\n\n\"Tentu saja, Nak. Gugur adalah takdir mereka.\"\n\n\"Apa Nenek ada di antara salah satu daun kemuning yang ada di atas sana, yang siap gugur itu?\"\n\n\"Nenek tak tahu. Itu rahasia yang di atas, tak seorang pun berani tahu.\"\n\nAku terus menengadahkan kepala, mencari-cari di mana letak daun milik nenek, milikku, dan juga milik ibu.\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Tunas-tunas daun yang tersemat di pucuk pohon itu, pasti adalah bayi-bayi yang baru lahir di kota ini, ya, kan?\"\n\n\"Ya. Benar, memang kenapa?\"\n\n\"Berarti, sekarang, aku berada di antara daun-daun muda yang bertengger di atas sana?\"\n\n\"Ya. Tentu saja.\"\n\n\"Artinya, masa gugurku masih sangat lama, ya, Nek?\" Nenek mengernyitkan dahi, \"Siapa bilang? Setiap lembar daun kehidupan yang ada di atas sana adalah rahasia. Tak ada seorang pun yang tahu. Gugur adalah hak semua daun, dari yang kemuning, yang masih segar dan hijau, bahkan yang masih tunas pun bisa saja patah dan gugur.\"\n\nAku terdiam. Mencerna kata-kata nenek.\n\n(diadaptasi dari cerpen \"Pohon Hayat\" https://cerpenkompas.wordpress.com/)\n\nNilai sosial sesuai kutipan cerita tersebut adalah\n\nPilihlah jawaban yang benar! Jawaban benar lebih dari satu.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Sorotan terhadap kesenjangan ekonomi antara masyarakat yang tinggal di sekitar alun-alun kota dengan mereka yang tinggal di pinggiran yang kurang mendapatkan akses fasilitas publik.",
+            "Refleksi tentang pentingnya ikatan emosional dalam keluarga yang dibangun melalui pengalaman bersama dan dialog reflektif antaranggota keluarga berbeda generasi.",
+            "Gambaran tentang peran penting komunikasi antargenerasi dalam mentransmisikan nilai, makna, dan pemahaman tentang kehidupan dari generasi tua kepada generasi muda.",
+            "Kritik terhadap sistem pendidikan formal yang kurang mengajarkan filosofi kehidupan sehingga anak-anak kota menjadi asing dengan nilai-nilai kearifan lokal dan tradisional.",
+            "Ajakan untuk melestarikan bahasa daerah sebagai media utama berkomunikasi agar identitas budaya lokal tidak tergerus oleh pengaruh globalisasi dan modernisasi."
+          ],
+          "jawaban": [
+            1,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Dialog pohon hayat merefleksikan ikatan emosional keluarga yang dibangun lewat pengalaman bersama dan dialog reflektif antargenerasi (opsi 2), sekaligus menjadi sarana transmisi nilai dan pemahaman kehidupan dari generasi tua ke generasi muda (opsi 3). Kesenjangan ekonomi, kritik pendidikan formal, dan pelestarian bahasa daerah tidak dibahas dalam kutipan. Jawaban: opsi 2 dan 3. Jalur Cara Gemilang: Nilai sosial = hubungan antarmanusia: ikatan emosional nenek-cucu + transmisi nilai antargenerasi lewat dialog. Coret topik yang tak dibahas (kesenjangan ekonomi, kritik pendidikan, bahasa daerah).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #23)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nSuatu ketika, aku pernah mendesak nenek untuk mengantarku ke alun-alun kota, untuk melihat langsung pohon itu. Tentu saja tanpa sepengetahuan ibu. Karena, kalau ibu tahu pasti ibu tak akan mengizinkan.\n\nDiam-diam kami pun berangkat, pelan-pelan aku menuntun nenek yang jalannya sudah tidak tegap lagi. Jarak antara rumah dan alun-alun kota sebenarnya tidak terlalu jauh. Kami cukup naik angkutan umum satu kali, tak sampai setengah jam kami sudah sampai.\n\nBegitu sampai di alun-alun kota, nenek langsung mengajakku ke pusat alun-alun, tempat di mana pohon itu berada. Kami berteduh di bawahnya, nenek duduk dengan napasnya yang terdengar ngik-ngik. Kepala nenek menengadah ke atas. Aku pun mengikutannya.\n\n\"Banyak sekali misteri dan kehidupan di atas sana,\" gumam nenek.\n\nLelah menengadahkan kepala, aku pun menunduk. Tampak daun-daun kering berserakan di mana-mana, sebagian terinjak-injak oleh kakiku.\n\n\"Nek,\" aku menjawil lengan nenek.\n\n\"Ya?\"\n\n\"Apakah daun-daun kering yang berserakan di bawah ini adalah jasad orang-orang yang sudah mati?\"\n\n\"Ya, daun-daun itu adalah jasad tilas mereka dari pohon kehidupan.\"\n\n\"Berarti jasad tilas ayah ada di antara daun-daun kering itu?\"\n\n\"Mungkin. Tapi nenek kira, kini, jasad ayahmu sudah menyatu kembali dengan tanah.\"\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Mengapa daun-daun kering itu tidak dibersihkan atau dibakar saja.\"\n\n\"Tak perlu, lambat laun mereka juga akan kembali ke asalnya, tanah, melebur menjadi tanah. Dari tanah kembali ke tanah.\"\n\nKepalaku kembali menengadah, \"Kalau daun-daun kemuning yang ada di atas sana itu siapa?\"\n\n\"Mereka adalah orang-orang tua yang masih hidup di kota ini, mereka-mereka yang sudah lama bertengger di atas pohon kehidupan.\"\n\n\"Apakah mereka akan segera gugur.\"\n\n\"Tentu saja, Nak. Gugur adalah takdir mereka.\"\n\n\"Apa Nenek ada di antara salah satu daun kemuning yang ada di atas sana, yang siap gugur itu?\"\n\n\"Nenek tak tahu. Itu rahasia yang di atas, tak seorang pun berani tahu.\"\n\nAku terus menengadahkan kepala, mencari-cari di mana letak daun milik nenek, milikku, dan juga milik ibu.\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Tunas-tunas daun yang tersemat di pucuk pohon itu, pasti adalah bayi-bayi yang baru lahir di kota ini, ya, kan?\"\n\n\"Ya. Benar, memang kenapa?\"\n\n\"Berarti, sekarang, aku berada di antara daun-daun muda yang bertengger di atas sana?\"\n\n\"Ya. Tentu saja.\"\n\n\"Artinya, masa gugurku masih sangat lama, ya, Nek?\" Nenek mengernyitkan dahi, \"Siapa bilang? Setiap lembar daun kehidupan yang ada di atas sana adalah rahasia. Tak ada seorang pun yang tahu. Gugur adalah hak semua daun, dari yang kemuning, yang masih segar dan hijau, bahkan yang masih tunas pun bisa saja patah dan gugur.\"\n\nAku terdiam. Mencerna kata-kata nenek.\n\n(diadaptasi dari cerpen \"Pohon Hayat\" https://cerpenkompas.wordpress.com/)\n\nMakna istilah pohon kehidupan dalam konteks kutipan cerpen tersebut adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Simbol kekuasaan raja atau pemimpin adat yang melambangkan kekuatan, keabadian, dan legitimasi pemerintahan yang sah.",
+            "Nama sebuah organisasi sosial yang bergerak di bidang pelestarian budaya dan pemberdayaan masyarakat berbasis kearifan lokal.",
+            "Program pemerintah untuk menanam pohon di alun-alun kota sebagai upaya penghijauan dan pelestarian lingkungan hidup berkelanjutan.",
+            "Metafora tentang siklus eksistensi manusia yang menghubungkan kelahiran, kehidupan, dan kematian sebagai proses alamiah yang saling berkaitan.",
+            "Jenis pohon beringin keramat yang dianggap suci oleh masyarakat lokal dan sering digunakan sebagai tempat ritual spiritual tradisional."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Kata dalam kutipan cerita tersebut dapat bermakna denotasi dan konotasi. Berdasarkan kutipan cerpen tersebut, makna istilah pohon kehidupan dalam konteks kutipan cerpen tersebut adalah Metafora tentang siklus eksistensi manusia yang menghubungkan kelahiran, kehidupan, dan kematian sebagai proses alamiah yang saling berkaitan . Jalur Cara Gemilang: CG-MAKNA: istilah sastra \"pohon kehidupan\" diuji dari konteks — daun tunas/hijau/kering dipetakan ke bayi/hidup/wafat = metafora siklus eksistensi, bukan pohon/organisasi/program harfiah.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #24)"
+        },
+        {
+          "soal": "Bacalah kutipan cerpen berikut dengan saksama!\n\nSuatu ketika, aku pernah mendesak nenek untuk mengantarku ke alun-alun kota, untuk melihat langsung pohon itu. Tentu saja tanpa sepengetahuan ibu. Karena, kalau ibu tahu pasti ibu tak akan mengizinkan.\n\nDiam-diam kami pun berangkat, pelan-pelan aku menuntun nenek yang jalannya sudah tidak tegap lagi. Jarak antara rumah dan alun-alun kota sebenarnya tidak terlalu jauh. Kami cukup naik angkutan umum satu kali, tak sampai setengah jam kami sudah sampai.\n\nBegitu sampai di alun-alun kota, nenek langsung mengajakku ke pusat alun-alun, tempat di mana pohon itu berada. Kami berteduh di bawahnya, nenek duduk dengan napasnya yang terdengar ngik-ngik. Kepala nenek menengadah ke atas. Aku pun mengikutannya.\n\n\"Banyak sekali misteri dan kehidupan di atas sana,\" gumam nenek.\n\nLelah menengadahkan kepala, aku pun menunduk. Tampak daun-daun kering berserakan di mana-mana, sebagian terinjak-injak oleh kakiku.\n\n\"Nek,\" aku menjawil lengan nenek.\n\n\"Ya?\"\n\n\"Apakah daun-daun kering yang berserakan di bawah ini adalah jasad orang-orang yang sudah mati?\"\n\n\"Ya, daun-daun itu adalah jasad tilas mereka dari pohon kehidupan.\"\n\n\"Berarti jasad tilas ayah ada di antara daun-daun kering itu?\"\n\n\"Mungkin. Tapi nenek kira, kini, jasad ayahmu sudah menyatu kembali dengan tanah.\"\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Mengapa daun-daun kering itu tidak dibersihkan atau dibakar saja.\"\n\n\"Tak perlu, lambat laun mereka juga akan kembali ke asalnya, tanah, melebur menjadi tanah. Dari tanah kembali ke tanah.\"\n\nKepalaku kembali menengadah, \"Kalau daun-daun kemuning yang ada di atas sana itu siapa?\"\n\n\"Mereka adalah orang-orang tua yang masih hidup di kota ini, mereka-mereka yang sudah lama bertengger di atas pohon kehidupan.\"\n\n\"Apakah mereka akan segera gugur.\"\n\n\"Tentu saja, Nak. Gugur adalah takdir mereka.\"\n\n\"Apa Nenek ada di antara salah satu daun kemuning yang ada di atas sana, yang siap gugur itu?\"\n\n\"Nenek tak tahu. Itu rahasia yang di atas, tak seorang pun berani tahu.\"\n\nAku terus menengadahkan kepala, mencari-cari di mana letak daun milik nenek, milikku, dan juga milik ibu.\n\n\"Nek.\"\n\n\"Ya?\"\n\n\"Tunas-tunas daun yang tersemat di pucuk pohon itu, pasti adalah bayi-bayi yang baru lahir di kota ini, ya, kan?\"\n\n\"Ya. Benar, memang kenapa?\"\n\n\"Berarti, sekarang, aku berada di antara daun-daun muda yang bertengger di atas sana?\"\n\n\"Ya. Tentu saja.\"\n\n\"Artinya, masa gugurku masih sangat lama, ya, Nek?\" Nenek mengernyitkan dahi, \"Siapa bilang? Setiap lembar daun kehidupan yang ada di atas sana adalah rahasia. Tak ada seorang pun yang tahu. Gugur adalah hak semua daun, dari yang kemuning, yang masih segar dan hijau, bahkan yang masih tunas pun bisa saja patah dan gugur.\"\n\nAku terdiam. Mencerna kata-kata nenek.\n\n(diadaptasi dari cerpen \"Pohon Hayat\" https://cerpenkompas.wordpress.com/)\n\nBerdasarkan filosofi pohon kehidupan yang disampaikan nenek, peristiwa yang paling mungkin terjadi pada tokoh aku di masa depan adalah",
+          "tipe": "pg",
+          "opsi": [
+            "menjadi ahli botani yang meneliti pohon beringin di alun-alun kota dan mempublikasikan temuan ilmiah tentang ekosistem pohon tersebut sebagai bentuk kebanggaan di masa depan.",
+            "melupakan semua nasihat nenek dan hidup secara impulsif tanpa mempertimbangkan makna kehidupan dan kematian yang telah diajarkan oleh nenek moyang.",
+            "memahami bahwa kematian dapat datang kapan saja dan mulai menghargai setiap momen kehidupan dengan lebih bijak serta penuh syukur.",
+            "akan pindah ke kota besar dan memutuskan hubungan dengan keluarga karena merasa terbelenggu oleh nilai-nilai tradisional yang kuno.",
+            "membangun monumen pohon kehidupan di alun-alun sebagai bentuk penghormatan abadi kepada nenek yang telah meninggal dunia."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Berdasarkan filosofi pohon kehidupan yang disampaikan nenek, peristiwa yang paling mungkin terjadi pada tokoh aku di masa depan adalah memahami bahwa kematian dapat datang kapan saja dan mulai menghargai setiap momen kehidupan dengan lebih bijak serta penuh syukur. Jalur Cara Gemilang: Filosofi nenek: \"gugur adalah hak semua daun\" = kematian bisa datang kapan saja → akibat paling logis: tokoh aku menghargai hidup dengan bijak dan bersyukur.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 4 Sastra h.64-70; kunci & pembahasan h.39-42 (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}

@@ -53,6 +53,18 @@ Jenis section yang DIDUKUNG renderer premium v3:
 - zona {items[soal mini]}          → kuis interaktif 3 soal per subbab
 - istilah {items[{k,v}]}, alur {judul, items[]}, rumus {latex|teks}
 
+Widget MATERI INTERAKTIF (Turn 87 — skema penuh: docs/MATERI-INTERAKTIF.md):
+- jodohMini {judul?, keterangan?, items[{kiri,kanan,penjelasan?}]}
+                                   → menjodohkan pasangan, kanan diacak, Cek
+- isianRumpang {judul?, items[{teks, jawaban:string|[varian], hint?, penjelasan?}]}
+                                   → isian singkat, kunci toleran varian
+- flashcard {judul?, items[{depan,belakang}]}  → kartu flip + tandai hafal
+- urutan {judul?, items[string urutan BENAR]}  → susun langkah (tampil diacak)
+- benarSalah {judul?, items[{teks, jawaban:bool, penjelasan?}]}
+- video {judul?, url, keterangan?} → YouTube embed / mp4 player
+Aturan: items TANPA nested array (Firestore); sisipkan setelah caraGemilang,
+sebelum callout jebakan; maksimal 2-3 widget per subbab.
+
 Skema soal (ujiPemahaman): {soal, tipe: pg|pgMulti|tabel|jodoh|isian|uraian,
 opsi[], jawaban (indeks/array/string), pembahasan, sumber,
 soalGambar?, pembahasanGambar?, pembahasanGambarKet?}.
