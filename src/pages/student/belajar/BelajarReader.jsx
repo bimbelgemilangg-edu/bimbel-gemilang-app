@@ -20,7 +20,7 @@ import {
   ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, Lightbulb,
   TriangleAlert, Info, Image as IconGambar, RotateCcw, Search, Bell,
   PlayCircle, FileText, MessageCircle, XCircle, BookOpen, Star,
-  Presentation, PanelRight,
+  Presentation, PanelRight, Crown,
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
 import IsiSections from '../../../components/belajar/IsiSections';
@@ -120,6 +120,50 @@ function TeksSoal({ teks, style }) {
   );
 }
 
+// Turn 90 (koreksi owner): pembahasan bukan lagi dinding teks —
+// dipecah jadi dua kartu: "Jalur konsep" (biru; otomatis jadi daftar
+// bernomor bila memuat pola "Baris N —" atau "Pernyataan (N)") dan
+// "Jalur Cara Gemilang" (amber; satu kalimat jurus cepat).
+function PembahasanBox({ soal }) {
+  const teks = String(soal.pembahasan || '').trim();
+  if (!teks) return null;
+  const iCg = teks.indexOf('Jalur Cara Gemilang:');
+  const konsep = (iCg >= 0 ? teks.slice(0, iCg) : teks).replace(/^Jalur konsep:\s*/, '').trim();
+  const cg = iCg >= 0 ? teks.slice(iCg + 'Jalur Cara Gemilang:'.length).trim() : '';
+  let list = konsep.split(/(?=Baris \d+ —)/).map((x) => x.trim()).filter(Boolean);
+  if (list.length < 2) list = konsep.split(/(?=Pernyataan \(\d+\))/).map((x) => x.trim()).filter(Boolean);
+  if (list.length < 2) list = null;
+  return (
+    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ background: '#EFF6FF', border: '1.5px solid #93C5FD', borderRadius: 14, padding: '10px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 900, color: '#1D4ED8', fontSize: 12, marginBottom: 6 }}>
+          <Lightbulb size={14} /> Jalur konsep
+        </div>
+        {list ? list.map((it, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 }}>
+            <span style={{
+              flexShrink: 0, width: 20, height: 20, borderRadius: 999, background: '#1D4ED8',
+              color: '#fff', fontSize: 11, fontWeight: 900, marginTop: 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>{i + 1}</span>
+            <span style={{ fontSize: 13, lineHeight: 1.7, color: '#1E3A8A' }}><MathText text={it} /></span>
+          </div>
+        )) : (
+          <div style={{ fontSize: 13, lineHeight: 1.8, color: '#1E3A8A' }}><MathText text={konsep} /></div>
+        )}
+      </div>
+      {cg ? (
+        <div style={{ background: '#FFF6DE', border: '1.5px solid #F1E1AE', borderRadius: 14, padding: '10px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 900, color: '#8A6D1A', fontSize: 12, marginBottom: 4 }}>
+            <Crown size={14} /> Jalur Cara Gemilang
+          </div>
+          <div style={{ fontSize: 13, lineHeight: 1.7, color: '#8A6D1A' }}><MathText text={cg} /></div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 const kolomSoal = (s) => (Array.isArray(s?.kolom) && s.kolom.length
   ? s.kolom : ['Benar', 'Salah']);
 const jawabanLengkap = (s, jaw) => {
@@ -140,7 +184,9 @@ const jawabanLengkap = (s, jaw) => {
 const kunciTeks = (s) => {
   const t = tipeSoal(s);
   if (t === 'pgMulti') {
-    return (s.jawaban || []).map((j) => String.fromCharCode(65 + j)).join(', ');
+    // Turn 90 (koreksi owner): checklist tanpa huruf A-E — kunci
+    // ditunjukkan lewat warna hijau setelah koreksi, bukan huruf.
+    return `${(s.jawaban || []).length} pilihan benar (ditandai hijau)`;
   }
   if (t === 'tabel') {
     return (s.jawaban || [])
@@ -1238,11 +1284,28 @@ function PanelKuis({
                   {pil ? <CheckCircle2 size={12} /> : null}
                 </span>
                 <span style={{ flex: 1, fontSize: 13, color: T.teks, lineHeight: 1.55 }}>
-                  <MathText text={op} />
+                  {/* Turn 90: opsi bagan tampil sebagai GAMBAR (svg asli bank),
+                      teks opsi menjadi keterangan kecil di bawahnya. */}
+                  {(soal.opsiGambar || [])[j] ? (
+                    <img src={soal.opsiGambar[j]} alt={`Bagan pilihan ${j + 1}`}
+                      style={{
+                        width: '100%', maxWidth: 300, display: 'block',
+                        margin: '0 auto 6px', background: '#fff',
+                        border: `1px solid ${T.garis}`, borderRadius: 10,
+                        padding: 6, boxSizing: 'border-box',
+                      }} />
+                  ) : null}
+                  <span style={(soal.opsiGambar || [])[j] ? { fontSize: 11.5, color: T.samar } : null}>
+                    <MathText text={op} />
+                  </span>
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 800, color: T.samar }}>
-                  {String.fromCharCode(65 + j)}.
-                </span>
+                {/* Turn 90: huruf A-E hanya untuk pilihan tunggal; checklist
+                    (pgMulti) tanpa huruf sesuai arahan owner. */}
+                {!multi ? (
+                  <span style={{ fontSize: 12, fontWeight: 800, color: T.samar }}>
+                    {String.fromCharCode(65 + j)}.
+                  </span>
+                ) : null}
               </button>
             );
           })}
@@ -1258,7 +1321,7 @@ function PanelKuis({
           <CheckCircle2 size={15} />
           <span>
             <b>Referensikan jawabanmu:</b>
-            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            <PembahasanBox soal={soal} />
           </span>
         </div>
       ) : terkoreksi && kreditSoal(soal, dipilih) === 1 ? (
@@ -1266,7 +1329,7 @@ function PanelKuis({
           <CheckCircle2 size={15} />
           <span>
             <b>Jawaban benar!</b>
-            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            <PembahasanBox soal={soal} />
             {soal.pembahasanGambar && (
               <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
                 style={S.pembahasanImg} loading="lazy" />
@@ -1282,7 +1345,7 @@ function PanelKuis({
           <span>
             <b>Tepat sebagian.</b> Kredit {kreditSoal(soal, dipilih).toFixed(2)}
             {' '}dari 1. Kunci: {kunciTeks(soal)}.
-            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            <PembahasanBox soal={soal} />
           </span>
         </div>
       ) : terkoreksi ? (
@@ -1290,7 +1353,7 @@ function PanelKuis({
           <XCircle size={15} />
           <span>
             <b>Belum tepat.</b> Kunci: {kunciTeks(soal)}.
-            {soal.pembahasan ? <><br />{soal.pembahasan}</> : null}
+            <PembahasanBox soal={soal} />
             {soal.pembahasanGambar && (
               <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
                 style={S.pembahasanImg} loading="lazy" />
@@ -1345,7 +1408,7 @@ function PanelKuis({
 function fmtKunciSingkat(soal) {
   const t = tipeSoal(soal);
   if (t === 'pg') return String.fromCharCode(65 + (soal.jawaban || 0));
-  if (t === 'pgMulti') return (soal.jawaban || []).map((j) => String.fromCharCode(65 + j)).join(', ');
+  if (t === 'pgMulti') return `${(soal.jawaban || []).length} pilihan benar (ditandai hijau)`;
   if (t === 'tabel') return (soal.jawaban || []).map((c, r) => `baris ${r + 1}: ${(soal.kolom || [])[c] || c}`).join('; ');
   if (t === 'jodoh') return (soal.jawaban || []).map((c, r) => `${r + 1}→${String.fromCharCode(65 + c)}`).join(', ');
   return String(soal.jawaban ?? '');
@@ -1465,8 +1528,13 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
                   {Array.isArray(pilihan) && pilihan.includes(j)
                     ? <CheckCircle2 size={13} /> : null}
                 </span>
-                <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
-                <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
+                <span style={{ flex: 1, textAlign: 'left' }}>
+                  {(soal.opsiGambar || [])[j] ? (
+                    <img src={soal.opsiGambar[j]} alt={`Bagan pilihan ${j + 1}`}
+                      style={{ width: '100%', maxWidth: 260, display: 'block', margin: '0 auto 4px', background: '#fff', borderRadius: 8, padding: 4, boxSizing: 'border-box' }} />
+                  ) : null}
+                  <MathText text={op} />
+                </span>
               </button>
             ))}
           </div>
@@ -1502,7 +1570,13 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
               disabled={terkirim}
               onClick={() => kirim(j)}>
               <span style={S.opsiHuruf}>{String.fromCharCode(65 + j)}.</span>
-              <span style={{ flex: 1, textAlign: 'left' }}><MathText text={op} /></span>
+              <span style={{ flex: 1, textAlign: 'left' }}>
+                {(soal.opsiGambar || [])[j] ? (
+                  <img src={soal.opsiGambar[j]} alt={`Bagan pilihan ${j + 1}`}
+                    style={{ width: '100%', maxWidth: 260, display: 'block', margin: '0 auto 4px', background: '#fff', borderRadius: 8, padding: 4, boxSizing: 'border-box' }} />
+                ) : null}
+                <MathText text={op} />
+              </span>
             </button>
           ))}
         </div>
@@ -1524,7 +1598,7 @@ function LiveKuis({ sessionId, soal, idx, total, sesi }) {
       {terkirim && sesi?.kunciTerbuka && (
         <div style={{ ...S.kotakInfoLive, marginTop: 10 }}>
           <b>Kunci:</b> {fmtKunciSingkat(soal)}
-          <div style={{ marginTop: 6, lineHeight: 1.7 }}>{soal.pembahasan}</div>
+          <PembahasanBox soal={soal} />
           {soal.pembahasanGambar && (
             <img src={soal.pembahasanGambar} alt="Gambar pembahasan"
               style={S.pembahasanImg} loading="lazy" />

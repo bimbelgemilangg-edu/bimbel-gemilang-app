@@ -296,6 +296,10 @@ const sections = [
     ],
   },
   {
+    jenis: 'gambar', url: '/bagan/bab2-materi-1.svg',
+    keterangan: 'Bagan buku: cara menyimpulkan teks dengan cepat — kumpulkan "hal yang dibahas" tiap paragraf (kotak 1–3), lalu tarik simpulan yang mencerminkan SELURUH isi teks.',
+  },
+  {
     jenis: 'poin', judul: 'Ciri simpulan yang tepat', items: [
       'Memuat gagasan keseluruhan / semua hal yang dibahas.',
       'Mencerminkan seluruh isi teks, bukan satu paragraf.',
