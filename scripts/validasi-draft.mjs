@@ -4,7 +4,7 @@
 //   node scripts/validasi-draft.mjs [path1.json path2.json ...]
 // Tanpa argumen: validasi semua docs/drafts/*.json
 // ============================================================
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,6 +18,15 @@ const JENIS_SEC = new Set(['judul', 'paragraf', 'rumus', 'callout', 'contoh', 'g
   'jodohMini', 'isianRumpang', 'flashcard', 'urutan', 'benarSalah', 'video']);
 const JENIS_INTERAKTIF = new Set(['jodohMini', 'isianRumpang', 'flashcard', 'urutan', 'benarSalah', 'video']);
 const TIPE_CALLOUT = new Set(['info', 'tips', 'peringatan', 'gemilang', 'guru']);
+// Turn 92: aset lokal (url diawali '/') WAJIB ada di public/ DAN terlacak
+// git (public/ di-gitignore -> file baru harus `git add -f`). Mencegah
+// kejadian gambar pecah/404 di live seperti turn 91.
+const cekAsetLokal = (f, u, label) => {
+  if (typeof u === 'string' && u.startsWith('/')) {
+    const p = join(dirname(fileURLToPath(import.meta.url)), '../public', u);
+    if (!existsSync(p)) salah(f, `${label}: aset lokal tidak ada di public/ -> ${u} (akan 404 di live)`);
+  }
+};
 let masalah = 0;
 const salah = (f, teks) => { masalah += 1; console.log(`   ❌ ${f}: ${teks}`); };
 
@@ -62,6 +71,9 @@ for (const f of files) {
         salah(f, `${label} section[${si}] istilah.items harus objek {k,v} (nested array ditolak Firestore)`);
       }
       if (jenis === 'gambar' && !s.url) salah(f, `${label} section[${si}] gambar tanpa url`);
+      if (jenis === 'gambar' && s.url) cekAsetLokal(f, s.url, `${label} section[${si}] gambar`);
+      if (jenis === 'peta' && s.url) cekAsetLokal(f, s.url, `${label} section[${si}] peta`);
+      if (jenis === 'video' && s.url) cekAsetLokal(f, s.url, `${label} section[${si}] video`);
       if (jenis === 'zona' && !(Array.isArray(s.items) && s.items.length)) salah(f, `${label} section[${si}] zona butuh items soal`);
       if (jenis === 'kilat' && !s.teks) salah(f, `${label} section[${si}] kilat tanpa teks`);
       if (jenis === 'peta' && !s.teks) salah(f, `${label} section[${si}] peta tanpa teks`);
@@ -179,6 +191,10 @@ for (const f of files) {
       if (k.pembahasanGambar && !/^https?:\/\//.test(k.pembahasanGambar)) {
         salah(f, `${label2}: pembahasanGambar harus URL http(s)`);
       }
+      // Turn 92: semua referensi gambar lokal harus ada di public/
+      cekAsetLokal(f, k.soalGambar, `${label2}: soalGambar`);
+      (Array.isArray(k.opsiGambar) ? k.opsiGambar : []).forEach((u, ui) =>
+        cekAsetLokal(f, u, `${label2}: opsiGambar[${ui}]`));
     });
     const adaPdf = b.pdfUrl ? '📄' : '';
     const adaHal = (b.halamanBuku || []).length ? `🖼${b.halamanBuku.length}` : '';

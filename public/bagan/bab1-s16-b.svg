@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 100" role="img" aria-label="Opsi B: aliran kaidah kesehatan fisik, upaya atau usaha untuk mencapai kesehatan fisik, kesimpulan"><style>.lb{font-size:11px;fill:#141414;text-anchor:middle}.lbw{font-size:11px;fill:#fff;text-anchor:middle}.lbs{font-size:10px;fill:#141414;text-anchor:middle}.c1{fill:#9d9d9d;stroke:#4d4d4d;stroke-width:1.6}.c2{fill:#8a8a8a;stroke:#4d4d4d;stroke-width:1.6}.c3{fill:#ababab;stroke:#4d4d4d;stroke-width:1.6}.ar{fill:#111}.arl{stroke:#111;stroke-width:3;fill:none;marker-end:url(#ah)}.cyc{fill:none;stroke-width:10}text{font-family:Arial,Helvetica,sans-serif}</style><rect x="0" y="0" width="100%" height="100%" fill="#ffffff"></rect>
+          <rect class="bx" x="5" y="10" width="80" height="80" rx="9"></rect>
+          <text class="lbw" x="45" y="40">kaidah</text><text class="lbw" x="45" y="54">kesehatan</text><text class="lbw" x="45" y="68">fisik</text>
+          <polygon class="ar" points="92,44 100,44 100,38 112,50 100,62 100,56 92,56"></polygon>
+          <rect class="bxd" x="120" y="6" width="95" height="88" rx="9"></rect>
+          <text class="lbw" x="167" y="30">upaya atau</text><text class="lbw" x="167" y="44">usaha untuk</text><text class="lbw" x="167" y="58">mencapai</text><text class="lbw" x="167" y="72">kesehatan</text><text class="lbw" x="167" y="86">fisik</text>
+          <polygon class="ar" points="222,44 230,44 230,38 242,50 230,62 230,56 222,56"></polygon>
+          <rect class="bxd" x="250" y="10" width="76" height="80" rx="9"></rect>
+          <text class="lbw" x="288" y="54">kesimpulan</text>
+        </svg>

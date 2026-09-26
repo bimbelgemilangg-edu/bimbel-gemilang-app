@@ -1,0 +1,82 @@
+[
+  {
+    "soal": 4,
+    "opsi": "A",
+    "file": "bab1-s4-a.svg"
+  },
+  {
+    "soal": 4,
+    "opsi": "B",
+    "file": "bab1-s4-b.svg"
+  },
+  {
+    "soal": 4,
+    "opsi": "C",
+    "file": "bab1-s4-c.svg"
+  },
+  {
+    "soal": 4,
+    "opsi": "D",
+    "file": "bab1-s4-d.svg"
+  },
+  {
+    "soal": 4,
+    "opsi": "E",
+    "file": "bab1-s4-e.svg"
+  },
+  {
+    "soal": 16,
+    "opsi": "A",
+    "file": "bab1-s16-a.svg"
+  },
+  {
+    "soal": 16,
+    "opsi": "B",
+    "file": "bab1-s16-b.svg"
+  },
+  {
+    "soal": 16,
+    "opsi": "C",
+    "file": "bab1-s16-c.svg"
+  },
+  {
+    "soal": 16,
+    "opsi": "D",
+    "file": "bab1-s16-d.svg"
+  },
+  {
+    "soal": 16,
+    "opsi": "E",
+    "file": "bab1-s16-e.svg"
+  },
+  {
+    "soal": 18,
+    "opsi": "A",
+    "file": "bab1-s18-a.svg"
+  },
+  {
+    "soal": 18,
+    "opsi": "B",
+    "file": "bab1-s18-b.svg"
+  },
+  {
+    "soal": 18,
+    "opsi": "C",
+    "file": "bab1-s18-c.svg"
+  },
+  {
+    "soal": 18,
+    "opsi": "D",
+    "file": "bab1-s18-d.svg"
+  },
+  {
+    "soal": 18,
+    "opsi": "E",
+    "file": "bab1-s18-e.svg"
+  },
+  {
+    "materi": true,
+    "file": "bab1-materi-1.svg",
+    "aria": "Bagan contoh: alur pengembangan produk"
+  }
+]
