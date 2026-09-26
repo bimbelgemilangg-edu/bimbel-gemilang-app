@@ -257,29 +257,54 @@ function ContohLangkah({ teks }) {
 
 function KartuCG({ judul, teks, items }) {
   const [buka, setBuka] = React.useState(false);
+  // Turn 89 (koreksi owner): frame maskot JADI PEMUNGKUS PATEN yang
+  // meng-cover tulisan — rasio asli 3:2 dipertahankan (tanpa distorsi),
+  // isi (judul+rumus+tombol) diletakkan DI DALAM panel putih frame
+  // lewat inset persentase. Jurus langkah-demi-langkah mekar ke panel
+  // tersambung di bawah frame supaya tulisan panjang tetap rapi.
   return (
-    <div style={S.cgBox}>
-      <img src={URL_FRAME_CG} alt="Cara Gemilang" style={S.cgFrame} />
-      <div style={S.cgIsi}>
-        <div style={S.cgJudul}><Crown size={17} /> {judul || 'Cara Gemilang'}</div>
-        {teks ? <div style={S.cgRumus}><MathText text={teks} /></div> : null}
-        {(items || []).length ? (
-          buka ? (
-            <div style={S.cgLangkah}>
-              {(items || []).map((it, i) => (
-                <div key={i} style={S.cgLangkahItem}>
-                  <span style={{ ...S.poinNomor, background: '#6D28D9' }}>{i + 1}</span>
-                  <span><MathText text={it} /></span>
-                </div>
-              ))}
+    <div style={{ margin: '0 0 16px' }}>
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 2', minHeight: 210 }}>
+        <img src={URL_FRAME_CG} alt="" aria-hidden="true"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
+        <div style={{
+          position: 'absolute', inset: '29% 10% 13% 10%',
+          display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+          justifyContent: 'center', gap: 7, textAlign: 'center', overflow: 'hidden',
+        }}>
+          <div style={{ ...S.cgJudul, marginBottom: 0, fontSize: 13.5 }}><Crown size={15} /> {judul || 'Cara Gemilang'}</div>
+          {teks ? (
+            <div style={{ ...S.cgRumus, marginBottom: 0, fontSize: 12.5, lineHeight: 1.55 }}>
+              <MathText text={teks} />
             </div>
-          ) : (
-            <button type="button" style={S.cgTombol} onClick={() => setBuka(true)}>
-              <Zap size={15} /> Buka jurus langkah-demi-langkah
+          ) : null}
+          {(items || []).length ? (
+            <button type="button" style={{ ...S.cgTombol, padding: '8px 10px', fontSize: 12 }}
+              onClick={() => setBuka((v) => !v)}>
+              <Zap size={14} /> {buka ? 'Tutup jurus langkah-demi-langkah' : 'Buka jurus langkah-demi-langkah'}
             </button>
-          )
-        ) : null}
+          ) : null}
+        </div>
       </div>
+      {buka && (items || []).length ? (
+        <div style={{
+          background: '#fff', border: '3px solid #6D28D9', borderTop: 'none',
+          borderRadius: '0 0 18px 18px', padding: '12px 14px 14px', marginTop: -4,
+          boxShadow: '0 12px 24px rgba(109,40,217,.16)',
+        }}>
+          <div style={{ fontWeight: 900, color: '#5B21B6', fontSize: 12.5, marginBottom: 8 }}>
+            ⚡ Jurus langkah-demi-langkah
+          </div>
+          <div style={S.cgLangkah}>
+            {(items || []).map((it, i) => (
+              <div key={i} style={S.cgLangkahItem}>
+                <span style={{ ...S.poinNomor, background: '#6D28D9' }}>{i + 1}</span>
+                <span><MathText text={it} /></span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
