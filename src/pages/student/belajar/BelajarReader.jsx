@@ -23,6 +23,8 @@ import {
   Presentation, PanelRight, Crown,
 } from 'lucide-react';
 import { MathText } from '../../../components/MathText';
+// Turn 93: mode baca guru = dokumen bersih (tanpa kartu interaktif siswa).
+import BacaGuruSections, { BacaGuruKuis } from '../../../components/belajar/BacaGuru';
 // Turn 91: mode ujian menulis rekap nilai ke subcollection ujian/.
 import { kumpulkanUjian } from '../../../services/sesiService';
 import IsiSections from '../../../components/belajar/IsiSections';
@@ -802,14 +804,22 @@ export default function BelajarReader({ audience = 'student' }) {
                 <span style={S.emojiSeksi}>{materi.emoji || '📘'}</span>
               </div>
               {bab.ringkasan && <p style={S.ringkasan}>{bab.ringkasan}</p>}
-              <IsiSections sections={sections} untukGuru={isTeacher} />
-              <button type="button"
-                onClick={tandaiSelesaiBaca}
-                style={selesaiBaca ? tombolPill('hijau') : tombolPill('primer')}>
-                {selesaiBaca
-                  ? <><CheckCircle2 size={16} /> Bagian selesai dibaca</>
-                  : <><CheckCircle2 size={16} /> Sudah kupahami — tandai selesai</>}
-              </button>
+              {isTeacher ? (
+                // Turn 93: mode baca guru = dokumen bersih ala HTML buku,
+                // tanpa kartu interaktif siswa; Cara Gemilang tetap tampil statis.
+                <BacaGuruSections sections={sections} />
+              ) : (
+                <IsiSections sections={sections} />
+              )}
+              {!isTeacher && (
+                <button type="button"
+                  onClick={tandaiSelesaiBaca}
+                  style={selesaiBaca ? tombolPill('hijau') : tombolPill('primer')}>
+                  {selesaiBaca
+                    ? <><CheckCircle2 size={16} /> Bagian selesai dibaca</>
+                    : <><CheckCircle2 size={16} /> Sudah kupahami — tandai selesai</>}
+                </button>
+              )}
             </div>
           )}
 
@@ -977,6 +987,10 @@ export default function BelajarReader({ audience = 'student' }) {
                     Belum ada soal pemantapan untuk bagian ini.
                   </p>
                 </div>
+              ) : isTeacher ? (
+                // Turn 93: guru melihat daftar soal + KUNCI + pembahasan
+                // sebagai dokumen bersih (bukan kuis interaktif).
+                <BacaGuruKuis kuis={kuis} />
               ) : ikutAktif && sesi.posisi?.jenis === 'kuisPaket' ? (
                 <LivePaket sessionId={sesi.id} kuis={kuis}
                   indexes={sesi.posisi.indexes || kuis.map((_, i2) => i2)}

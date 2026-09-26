@@ -13,14 +13,48 @@ import {
   muatDaftarMateri, muatMateriDanBab, sedangModeContoh,
 } from '../../../services/materiV2Service';
 import { cariSesiAktif, bacaIdentitasGuru } from '../../../services/sesiPresentasiService';
+// Turn 93: tab Riwayat Nilai — nilai sesi ujian tersimpan permanen dan
+// bisa dibuka kembali kapan pun (sesi aktif maupun selesai).
+import { listSesiGuru, muatRekapSesi } from '../../../services/sesiService';
 // Turn 91: menu Presentasi & PPT Versiku DIGABUNG — halaman ini kini
 // punya 2 tab: "Panggung & Baca" dan "PPT Versiku" (komponen embed).
 import PptVersiGuru from './PptVersiGuru';
 import { T, kartuDasar, halamanDasar, lingkaranNomor } from '../../student/belajar/tema';
 
+const fmtTgl = (ts, pakaiJam = false) => {
+  const d = ts?.seconds ? new Date(ts.seconds * 1000) : (typeof ts === 'number' ? new Date(ts) : null);
+  if (!d || Number.isNaN(d.getTime())) return '-';
+  return d.toLocaleString('id-ID', {
+    day: '2-digit', month: 'short',
+    ...(pakaiJam ? { hour: '2-digit', minute: '2-digit' } : { year: 'numeric' }),
+  });
+};
+
 export default function DaftarPresentasi() {
   const navigate = useNavigate();
   const [tab, setTab] = useState('panggung');
+  const [riwayat, setRiwayat] = useState(null);
+  const [rekap, setRekap] = useState({});
+
+  const bukaRiwayat = async () => {
+    setRiwayat([]);
+    try { setRiwayat(await listSesiGuru(bacaIdentitasGuru().guruId)); } catch (e) { console.error('Gagal muat riwayat sesi:', e); setRiwayat([]); }
+  };
+  const bukaRekap = async (id) => {
+    if (rekap[id]) { setRekap((r) => ({ ...r, [id]: undefined })); return; }
+    setRekap((r) => ({ ...r, [id]: null }));
+    try {
+      const r2 = await muatRekapSesi(id);
+      setRekap((x) => ({ ...x, [id]: r2 }));
+    } catch (e) {
+      console.error('Gagal muat rekap:', e);
+      setRekap((x) => ({ ...x, [id]: undefined }));
+    }
+  };
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (tab === 'riwayat' && riwayat === null) bukaRiwayat();
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
   const [materiList, setMateriList] = useState([]);
   const [babMap, setBabMap] = useState({});
   const [sesiAktif, setSesiAktif] = useState(null);
@@ -68,9 +102,94 @@ export default function DaftarPresentasi() {
             onClick={() => setTab('pptku')}>
             <BookOpen size={14} /> PPT Versiku
           </button>
+          <button type="button" style={tab === 'riwayat' ? S.tabAktif : S.tab}
+            onClick={() => setTab('riwayat')}>
+             Riwayat Nilai
+          </button>
         </div>
         {tab === 'pptku' ? (
           <PptVersiGuru embed />
+        ) : tab === 'riwayat' ? (
+          <div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
+              <button type="button" style={S.tab} onClick={bukaRiwayat}>🔄 Muat ulang</button>
+              <span style={{ fontSize: 12, color: T.samar }}>
+                Semua sesi kelasmu (aktif & selesai). Nilai ujian tersimpan permanen — buka kapan pun.
+              </span>
+            </div>
+            {riwayat === null || riwayat.length === 0 ? (
+              <div style={S.kosong}>
+                {riwayat === null ? 'Memuat riwayat sesi…' : 'Belum ada sesi kelas tercatat.'}
+              </div>
+            ) : riwayat.map((s2) => (
+              <div key={s2.id} style={{ ...kartuDasar, padding: 12, marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 900, fontSize: 13 }}>Kode {s2.kode || '-'}</span>
+                  <span style={S.chipKecil}>
+                    {s2.mode === 'ujian' ? '📝 Ujian' : s2.mode === 'materi' ? '📖 Materi' : '✍️ Bank'}
+                  </span>
+                  <span style={{
+                    ...S.chipKecil,
+                    background: s2.status === 'aktif' ? T.hijauLatar : '#F1F5F9',
+                    color: s2.status === 'aktif' ? T.hijauTeks : '#64748B',
+                  }}>
+                    {s2.status}
+                  </span>
+                  <span style={{ fontSize: 11.5, color: T.samar }}>{fmtTgl(s2.dibuatAt)}</span>
+                  <span style={{ flex: 1 }} />
+                  {s2.status === 'aktif' && s2.materiId && s2.babId && (
+                    <button type="button" style={S.tab}
+                      onClick={() => navigate(`/guru/presentasi/${s2.materiId}/${s2.babId}`)}>
+                      Buka panggung
+                    </button>
+                  )}
+                  <button type="button" style={S.tabAktif} onClick={() => bukaRekap(s2.id)}>
+                    {rekap[s2.id] ? 'Tutup nilai' : 'Lihat nilai'}
+                  </button>
+                </div>
+                {s2.catatan ? <div style={{ fontSize: 12, color: T.teks, marginTop: 6 }}>{s2.catatan}</div> : null}
+                {s2.mode === 'ujian' && s2.durasiMenit ? (
+                  <div style={{ fontSize: 11.5, color: T.samar, marginTop: 4 }}>Durasi ujian: {s2.durasiMenit} menit</div>
+                ) : null}
+                {rekap[s2.id] === null ? (
+                  <div style={{ fontSize: 12, color: T.samar, marginTop: 8 }}>Memuat rekap nilai…</div>
+                ) : null}
+                {rekap[s2.id] ? (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ fontSize: 12, color: T.samar, marginBottom: 6 }}>
+                      {rekap[s2.id].ujian.length} siswa mengumpulkan • {rekap[s2.id].peserta.length} peserta bergabung
+                    </div>
+                    {rekap[s2.id].ujian.length === 0 ? (
+                      <div style={{ fontSize: 12.5, color: T.samar }}>
+                        Belum ada siswa yang mengumpulkan pada sesi ini.
+                      </div>
+                    ) : (
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                        <thead>
+                          <tr>
+                            {['#', 'Nama', 'Nilai', 'Terjawab', 'Waktu kumpul'].map((h) => (
+                              <th key={h} style={{ textAlign: 'left', borderBottom: `2px solid ${T.garis}`, padding: '6px 8px', fontSize: 12, color: T.samar }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rekap[s2.id].ujian.map((u, i2) => (
+                            <tr key={u.siswaId || i2}>
+                              <td style={{ padding: '6px 8px', borderBottom: `1px solid ${T.garisLembut}` }}>{i2 + 1}</td>
+                              <td style={{ padding: '6px 8px', borderBottom: `1px solid ${T.garisLembut}`, fontWeight: 700 }}>{u.nama || u.siswaId}</td>
+                              <td style={{ padding: '6px 8px', borderBottom: `1px solid ${T.garisLembut}`, fontWeight: 900, color: T.biruDalam }}>{u.skor}</td>
+                              <td style={{ padding: '6px 8px', borderBottom: `1px solid ${T.garisLembut}` }}>{u.terjawab}/{u.total}</td>
+                              <td style={{ padding: '6px 8px', borderBottom: `1px solid ${T.garisLembut}`, fontSize: 12, color: T.samar }}>{fmtTgl(u.selesaiAt, true)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
         ) : (
           <>
         {sesiAktif && (
@@ -157,6 +276,10 @@ export default function DaftarPresentasi() {
 }
 
 const S = {
+  chipKecil: {
+    background: T.kotakBiru, color: T.biruDalam, border: `1px solid ${T.kotakBiruGaris}`,
+    borderRadius: 999, padding: '2px 9px', fontSize: 10.5, fontWeight: 800,
+  },
   tabRow: { display: 'flex', gap: 8, marginBottom: 14 },
   tab: {
     display: 'inline-flex', gap: 7, alignItems: 'center',
