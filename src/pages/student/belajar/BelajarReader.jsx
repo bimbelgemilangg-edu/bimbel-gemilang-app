@@ -1451,15 +1451,21 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
   const habis = sisaMs !== null && sisaMs <= 0;
   const kunci = !!hasil || habis;
 
-  const jawab = (i, v) => setJw((o) => ({ ...o, [i]: v }));
+  const jawab = (i, v) => {
+    setJw((o) => ({ ...o, [i]: v }));
+    // Turn 96: progres dikirim realtime per perubahan jawaban — bila
+    // guru mengakhiri sesi di tengah jalan, jawaban siswa sudah ada
+    // di server dan tetap terkumpul lewat auto-submit.
+    kirimJawabanLive(sessionId, i, v).catch(() => {});
+  };
   const terjawab = indexes.filter((i) => jawabanLengkap(kuis[i], jw[i])).length;
   const lengkapSemua = terjawab === indexes.length;
 
-  async function kumpul() {
+  async function kumpul(auto = false) {
     if (hasil) return;
     const kredit = indexes.map((i) => kreditSoal(kuis[i], jw[i] ?? null));
     const skor = Math.round((kredit.reduce((a, b) => a + b, 0) / Math.max(1, indexes.length)) * 100);
-    const h = { skor, kredit, terjawab, total: indexes.length };
+    const h = { skor, kredit, terjawab, total: indexes.length, auto };
     setHasil(h);
     try {
       await Promise.all(indexes.map((i) => kirimJawabanLive(sessionId, i, jw[i] ?? null)));
@@ -1478,7 +1484,24 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
     } catch { /* nilai tetap tampil lokal bila offline */ }
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
-  useEffect(() => { if (habis && !hasil) kumpul(); }, [habis]);
+  useEffect(() => { if (habis && !hasil) kumpul(true); }, [habis]);
+  // Turn 96: guru mengakhiri ujian/sesi saat siswa masih mengerjakan
+  // -> jawaban yang sudah diisi tetap terkumpul otomatis.
+  const berakhir = sesi?.status === 'selesai' || !!sesi?.ujianSelesaiAt;
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+  useEffect(() => { if (berakhir && !hasil && terjawab > 0) kumpul(true); }, [berakhir]);
+  // Turn 96: jaga-jaga terakhir — komponen dilepas (mis. sesi ditutup
+  // penuh) saat siswa masih mengerjakan: kirim apa yang sudah terisi.
+  const stateRef = useRef({ hasil: null, terjawab: 0 });
+  const kumpulRef = useRef(kumpul);
+  useEffect(() => {
+    stateRef.current = { hasil, terjawab };
+    kumpulRef.current = kumpul;
+  });
+  useEffect(() => () => {
+    const st = stateRef.current;
+    if (!st.hasil && st.terjawab > 0) kumpulRef.current(true);
+  }, []);
 
   const mm = sisaMs !== null ? Math.max(0, Math.floor(sisaMs / 60000)) : null;
   const ss = sisaMs !== null ? Math.max(0, Math.floor((sisaMs % 60000) / 1000)) : null;
@@ -1651,6 +1674,11 @@ export function UjianPaketBoard({ sessionId, kuis, indexes, sesi, siswaId, nama,
             <div style={{ fontSize: 12, color: T.teks }}>
               {hasil.terjawab}/{hasil.total} terjawab • kredit {hasil.kredit.reduce((a, b) => a + b, 0).toFixed(2)}
             </div>
+            {hasil.auto && (
+              <div style={{ fontSize: 11.5, color: '#B45309', background: '#FFF6DE', border: '1px solid #F1E1AE', borderRadius: 10, padding: '6px 10px', marginTop: 8 }}>
+                ⏹ Sesi/waktu berakhir saat kamu masih mengerjakan — jawaban yang sudah terisi terkirim otomatis dan tersimpan di riwayat latihanmu.
+              </div>
+            )}
           </div>
           {indexes.map((i) => {
             const kr = hasil.kredit[indexes.indexOf(i)];
