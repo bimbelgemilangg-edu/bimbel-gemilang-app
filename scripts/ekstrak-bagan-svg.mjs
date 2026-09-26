@@ -17,9 +17,16 @@ if (!src || !outDir || !prefix) { console.error('butuh: <html> <outDir> <prefix>
 const html = readFileSync(src, 'utf-8');
 mkdirSync(outDir, { recursive: true });
 
-// CSS kelas svg dari <style> halaman
+// CSS kelas svg dari <style> halaman — ambil SEMUA rule kelas yang
+// memuat properti bentuk/teks (fill/stroke/font/text-anchor) supaya
+// tidak ada kelas tertinggal (insiden turn 92: v1/v2/v3 & bx/* lolos
+// sehingga lingkaran/batang render hitam polos).
 const pageStyle = (/<style>([\s\S]*?)<\/style>/.exec(html) || [, ''])[1];
-const aturan = pageStyle.split('}').map((s) => s.trim()).filter((s) => /^\.(lb|lbw|lbs|c1|c2|c3|ar|arl|cyc)\b/.test(s)).map((s) => s + '}');
+const aturan = pageStyle.split('}')
+  .map((s) => s.trim())
+  .filter((s) => /^\.?[a-zA-Z0-9_.#-]+\{/.test(s) && /fill|stroke|font|text-anchor/.test(s))
+  .filter((s) => s.startsWith('.'))
+  .map((s) => s + '}');
 aturan.push('text{font-family:Arial,Helvetica,sans-serif}');
 const STYLE = '<style>' + aturan.join('') + '</style>';
 
@@ -75,5 +82,22 @@ svgsMateri.forEach((dm, i) => {
 });
 
 writeFileSync(join(outDir, `${prefix}-map.json`), JSON.stringify(peta, null, 2));
+
+// Guard turn 92: setiap class yang dipakai di dalam svg WAJIB punya
+// rule di <style> yang disematkan — mencegah render hitam polos lagi.
+const semuaStyle = aturan.join('');
+let kelasHilang = 0;
+for (const f of peta) {
+  if (!f.file || !f.file.endsWith('.svg')) continue;
+  const svg = readFileSync(join(outDir, f.file), 'utf-8');
+  for (const m of svg.matchAll(/class="([a-zA-Z0-9_-]+)"/g)) {
+    if (!new RegExp('\\.' + m[1] + '\\{').test(semuaStyle)) {
+      kelasHilang += 1;
+      console.error(`❌ ${f.file}: kelas .${m[1]} tidak punya rule CSS`);
+    }
+  }
+}
+if (kelasHilang) process.exit(1);
+console.log('guard kelas svg: semua ter-cover ✅');
 console.log('bagan tertulis:', peta.length);
 peta.forEach((p) => console.log(' ', p.soal ? `soal ${p.soal} opsi ${p.opsi}` : 'materi', '->', p.file));
