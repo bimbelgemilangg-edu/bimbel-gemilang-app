@@ -1,0 +1,708 @@
+{
+  "materi": {
+    "judul": "Bahasa Inggris Wajib SMA — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Bahasa Inggris",
+    "kelas": "12",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#059669",
+    "emoji": "🗣️",
+    "deskripsi": "Materi wajib kelas 12 seri TKA Bahasa Inggris: narrative, recount, procedure, analytical exposition, dan infographic reading. Impor bab tambahan pakai mode \"tambah\" pada materi ini.",
+    "urutan": 6,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks.",
+      "Kartu Cara Gemilang, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 5 — Hortatory Exposition (Edisi Cara Gemilang)",
+      "ringkasan": "Social function persuade-should, struktur thesis-argument-recommendation, language features (modal, passive, evaluative words), pola soal stated-not stated/rekomendasi/inferensi/kategorisasi — dengan jodohkan struktur, benar/salah hortatory-vs-analytical, isian rumpang, CG-HORTATORY, dan 25 soal resmi bank (sampah, literasi digital, fosil, screen time) + pembahasan dua jalur.",
+      "estimasiMenit": 75,
+      "urutan": 5,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Hortatory Exposition: Arguing for Action"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Hortatory exposition persuades the readers that something SHOULD or SHOULD NOT be done toward a case or issue. Bedanya dengan analytical: analytical berhenti pada \"ini penting/benar\", hortatory menutup dengan REKOMENDASI tindakan."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Teks hortatory adalah pidato kampanye: klaim (thesis), alasan (arguments), lalu ajakan (recommendation). Soal TKA favoritnya: stated/not stated, rekomendasi penulis, inferensi konsekuensi, dan kategorisasi argumen — semuanya dijawab dari peta tiga bagian itu."
+        },
+        {
+          "jenis": "paragraf",
+          "teks": "Bayangkan poster kampanye kebersihan: kepala poster menyatakan masalah (thesis), badan poster memberi alasan mengapa berbahaya (arguments), kaki poster menyerukan apa yang harus dilakukan (recommendation). Hilangkan kakinya, poster jadi analytical."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Generic structure (bank h.92)",
+          "items": [
+            "Thesis — pernyataan posisi/isu yang jadi perhatian penulis.",
+            "Argument — alasan-alasan pendukung posisi (biasanya beberapa paragraf).",
+            "Recommendation — saran tindakan: should/should not/must/ought to."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Language features + contoh",
+          "kolom": [
+            "Fitur",
+            "Contoh"
+          ],
+          "rows": [
+            {
+              "k": "Simple present tense",
+              "v": "Waste clogs the drains and spreads disease."
+            },
+            {
+              "k": "Modal verbs",
+              "v": "should, must, ought to, need to."
+            },
+            {
+              "k": "Passive voice",
+              "v": "The waterways are blocked by plastic waste."
+            },
+            {
+              "k": "Expression of recommendation",
+              "v": "Students should reduce single-use plastic."
+            },
+            {
+              "k": "Evaluative words & thinking verbs",
+              "v": "importantly, unfortunately; think, believe, realize."
+            }
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: struktur dan penandanya",
+          "items": [
+            {
+              "kiri": "Pernyataan posisi/isu di pembuka",
+              "kanan": "Thesis"
+            },
+            {
+              "kiri": "Alasan pendukung berparagraf-paragraf",
+              "kanan": "Argument"
+            },
+            {
+              "kiri": "\"Schools should prioritize digital literacy.\"",
+              "kanan": "Recommendation"
+            },
+            {
+              "kiri": "should, must, ought to",
+              "kanan": "Modal verbs"
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: hortatory vs analytical",
+          "items": [
+            {
+              "teks": "Hortatory exposition ends with a recommendation of what should be done.",
+              "jawaban": true,
+              "penjelasan": "Pembeda utama dari analytical."
+            },
+            {
+              "teks": "Analytical exposition also contains explicit recommendation.",
+              "jawaban": false,
+              "penjelasan": "Analytical berhenti pada reiteration/penegasan tesis."
+            },
+            {
+              "teks": "Stated/Not-stated questions require explicit textual support.",
+              "jawaban": true,
+              "penjelasan": "Not stated = tidak ada kalimat pendukungnya."
+            },
+            {
+              "teks": "Modal verbs like should and must are typical of hortatory text.",
+              "jawaban": true,
+              "penjelasan": "Language features bank h.92."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-HORTATORY: T-A-R + SHOULD TEST",
+          "teks": "Petakan teks ke T-A-R (Thesis-Arguments-Recommendation); uji hortatory dengan SHOULD TEST: ada seruan should/must di penutup? ada = hortatory.",
+          "items": [
+            "Tandai tesis (paragraf 1), daftar argumen per paragraf, garis bawahi rekomendasi penutup.",
+            "Soal stated/not stated: cari kalimat pendukung harfiah; tak ada = not stated.",
+            "Soal rekomendasi/strategi: jawabannya di bagian recommendation, bukan arguments."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Opsi \"not stated\" sering berbunyi masuk akal dan konsisten dengan topik — tetapi bila teks tak pernah mengatakannya, tetap not stated. Sebaliknya, opsi stated harus punya kalimat pendukung, bukan sekadar sinonim topik."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "The part of hortatory exposition that tells what should be done is ...",
+              "opsi": [
+                "thesis",
+                "argument",
+                "recommendation",
+                "re-orientation",
+                "description"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: recommendation = saran tindakan (bank h.92). Jalur Cara Gemilang: SHOULD TEST."
+            },
+            {
+              "soal": "Which sentence uses a recommendation expression?",
+              "opsi": [
+                "Waste clogs the drains.",
+                "Students should bring their own bottles.",
+                "Plastic was invented in the 20th century.",
+                "Many people ignore the issue.",
+                "The river flows into the sea."
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: should + verb = expression of recommendation. Jalur Cara Gemilang: modal should = tanda tangan hortatory."
+            },
+            {
+              "soal": "A text argues that screen time harms children and ends by restating that the harm is real, WITHOUT telling what to do. The text is ...",
+              "opsi": [
+                "hortatory exposition",
+                "analytical exposition",
+                "procedure",
+                "recount",
+                "descriptive"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: tanpa rekomendasi = analytical (tesis-argumen-reiteration). Jalur Cara Gemilang: SHOULD TEST gagal = analytical."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Hortatory Question Patterns"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Pola soal + jurus",
+          "kolom": [
+            "Pola",
+            "Penanda",
+            "Jurus"
+          ],
+          "rows": [
+            {
+              "k": "Stated / Not stated",
+              "v": "\"Which arguments are stated...?\"",
+              "w": "Kalimat pendukung harfiah per pernyataan."
+            },
+            {
+              "k": "Recommendation/strategy",
+              "v": "\"What can ... do based on the text?\"",
+              "w": "Bagian recommendation penutup."
+            },
+            {
+              "k": "Inference/prediction",
+              "v": "\"It can be predicted/inferred...\"",
+              "w": "Kelanjutan logis dampak yang disebut."
+            },
+            {
+              "k": "Categorize argumen",
+              "v": "\"Academic/Career\", \"Natural/Human\"",
+              "w": "Dua kolom aspek dulu, tempel per pernyataan."
+            },
+            {
+              "k": "Summary",
+              "v": "\"The best summary...\"",
+              "w": "Tesis + argumen inti + rekomendasi satu kalimat."
+            },
+            {
+              "k": "Intention/purpose",
+              "v": "\"The author intention...\"",
+              "w": "Mendorong tindakan (should), bukan sekadar informar."
+            }
+          ]
+        },
+        {
+          "jenis": "isianRumpang",
+          "judul": "✍️ Isian rumpang: istilah hortatory",
+          "items": [
+            {
+              "teks": "The opening statement of the writer position on an issue is called ...",
+              "jawaban": [
+                "thesis"
+              ],
+              "hint": "Posisi penulis.",
+              "penjelasan": "Thesis = pernyataan posisi."
+            },
+            {
+              "teks": "The closing part urging action is called ...",
+              "jawaban": [
+                "recommendation"
+              ],
+              "hint": "Berisi should/must.",
+              "penjelasan": "Recommendation = seruan tindakan."
+            },
+            {
+              "teks": "Should, must, and ought to are ... verbs.",
+              "jawaban": [
+                "modal"
+              ],
+              "hint": "Kata bantu.",
+              "penjelasan": "Modal verbs penanda rekomendasi."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "guru",
+          "judul": "Ringkas sendiri",
+          "teks": "Ambil satu isu sekolah (sampah kantin, gadget di kelas), tulis hortatory mini 3 paragraf: thesis-2 argument-recommendation dengan minimal dua modal verb. Tukar dengan teman untuk uji stated/not stated."
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Siap uji pemahaman",
+          "teks": "25 soal resmi bab ini memakai 4 hortatory: manajemen sampah, literasi digital, bahan bakar fosil, dan screen time anak. Peta T-A-R-mu adalah kuncinya."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Read the following text carefully!\n\nWorldwide, more than 2 billion tonnes of municipal solid waste (i.e. waste generated by households or similar waste generated by industry, commerce and institutions) are produced every year. This is projected to increase to nearly 4 billion tonnes annually by 2050. About 54 million tonnes of e-waste are generated globally per year, with an expected increase to 75 million tonnes by 2030. Furthermore, improper waste management can lead to adverse negative outcomes.\n\nImproper waste management can negatively affect health, for example through contamination of water, soil and air, as well as by creating hazardous conditions for those working in the waste management sector. Billions of people live in areas that lack adequate waste collection services and rely on uncontrolled disposal sites. Hazardous or unsafe waste management practices, such as open burning, can directly harm waste-workers or residents of neighbouring communities. Vulnerable groups, including women and children and marginalized communities, are at increased risk of adverse health outcomes.\n\nMoreover, poor waste management leads to environmental pollution, both on land and in aquatic environments, such as lakes and oceans. Drains that are blocked by solid waste can result in flooding, and other types of standing water promote the transmission of cholera and vectorborne diseases, such as malaria and dengue fever. Emissions from uncontrolled waste can reach the food chain and disturb natural ecosystems.\n\nA lack of or poor waste management also has negative socioeconomic effects, including on living standards, economic growth potential and community relations. Governing waste management is complex and requires specialized skills that are often underrepresented in institutional and organizational frameworks, and political decision-making processes.\n\nTherefore, waste prevention should be prioritized, with subsequent steps are to reduce, reuse, recycle, recover and implement controlled disposal. Diverting as much waste from landfills as possible, for example through waste segregation and recycling, should also be done. Separation at the household, commercial and industry levels can assist in optimizing recoverable waste streams; reduce waste flowing to disposal sites; and improve health and safety for those generating, handling, collecting and working with waste.\n\n(adapted from https://cdn.who.int)\n\nBased on the information given, which arguments are stated to support the writer's focus in the text? Choose the Stated or Not Stated option for each statement!\n(Answer each row by choosing Stated / Not Stated.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Stated",
+            "Not Stated"
+          ],
+          "baris": [
+            "Open burning of uncollected waste produces pollutants that are highly damaging locally and globally.",
+            "Poor waste management causes environmental pollution.",
+            "Urban households and businesses produce substantial amounts of solid waste.",
+            "The lack of proper waste management systems and skilled governance makes it difficult to effectively address and control waste-related problems.",
+            "Inadequate waste management negatively affects socioeconomic conditions."
+          ],
+          "jawaban": [
+            1,
+            0,
+            1,
+            0,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — NOT STATED Baris 2 — STATED Baris 3 — NOT STATED Baris 4 — STATED Baris 5 — STATED Jalur Cara Gemilang: Stated = ada kalimat pendukung eksplisit di teks; Not stated = tambahan opini opsi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nWorldwide, more than 2 billion tonnes of municipal solid waste (i.e. waste generated by households or similar waste generated by industry, commerce and institutions) are produced every year. This is projected to increase to nearly 4 billion tonnes annually by 2050. About 54 million tonnes of e-waste are generated globally per year, with an expected increase to 75 million tonnes by 2030. Furthermore, improper waste management can lead to adverse negative outcomes.\n\nImproper waste management can negatively affect health, for example through contamination of water, soil and air, as well as by creating hazardous conditions for those working in the waste management sector. Billions of people live in areas that lack adequate waste collection services and rely on uncontrolled disposal sites. Hazardous or unsafe waste management practices, such as open burning, can directly harm waste-workers or residents of neighbouring communities. Vulnerable groups, including women and children and marginalized communities, are at increased risk of adverse health outcomes.\n\nMoreover, poor waste management leads to environmental pollution, both on land and in aquatic environments, such as lakes and oceans. Drains that are blocked by solid waste can result in flooding, and other types of standing water promote the transmission of cholera and vectorborne diseases, such as malaria and dengue fever. Emissions from uncontrolled waste can reach the food chain and disturb natural ecosystems.\n\nA lack of or poor waste management also has negative socioeconomic effects, including on living standards, economic growth potential and community relations. Governing waste management is complex and requires specialized skills that are often underrepresented in institutional and organizational frameworks, and political decision-making processes.\n\nTherefore, waste prevention should be prioritized, with subsequent steps are to reduce, reuse, recycle, recover and implement controlled disposal. Diverting as much waste from landfills as possible, for example through waste segregation and recycling, should also be done. Separation at the household, commercial and industry levels can assist in optimizing recoverable waste streams; reduce waste flowing to disposal sites; and improve health and safety for those generating, handling, collecting and working with waste.\n\n(adapted from https://cdn.who.int)\n\nHow does poor waste management contribute to the spread of diseases?",
+          "tipe": "pg",
+          "opsi": [
+            "It contains heavy metals, which can pose significant health risks, especially among children in the informal recycling economy.",
+            "It can fragment into progressively smaller particles that increase the risk of contagious diseases.",
+            "It can block drains and create standing water, which becomes a breeding ground for disease-carrying insects.",
+            "It increases the risk of disease outbreaks, particularly in densely populated or impoverished areas.",
+            "It generates hazardous chemicals and diseases, which pose significant long-term threats to public health."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Pengelolaan limbah yang buruk menyebabkan penyumbatan saluran air sehingga menimbulkan genangan air. Genangan ini menjadi tempat berkembang biaknya vektor penyakit seperti nyamuk yang menyebarkan malaria dan demam berdarah. Informasi ini didukung oleh paragraf ke-3, \" Drains that are blocked by solid waste can result in flooding, and other types of standing water promote the transmission of cholera and vectorborne diseases… \" Jalur Cara Gemilang: Rantai sebab-akibat: limbah menyumbat saluran -> genangan -> penyakit.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nWorldwide, more than 2 billion tonnes of municipal solid waste (i.e. waste generated by households or similar waste generated by industry, commerce and institutions) are produced every year. This is projected to increase to nearly 4 billion tonnes annually by 2050. About 54 million tonnes of e-waste are generated globally per year, with an expected increase to 75 million tonnes by 2030. Furthermore, improper waste management can lead to adverse negative outcomes.\n\nImproper waste management can negatively affect health, for example through contamination of water, soil and air, as well as by creating hazardous conditions for those working in the waste management sector. Billions of people live in areas that lack adequate waste collection services and rely on uncontrolled disposal sites. Hazardous or unsafe waste management practices, such as open burning, can directly harm waste-workers or residents of neighbouring communities. Vulnerable groups, including women and children and marginalized communities, are at increased risk of adverse health outcomes.\n\nMoreover, poor waste management leads to environmental pollution, both on land and in aquatic environments, such as lakes and oceans. Drains that are blocked by solid waste can result in flooding, and other types of standing water promote the transmission of cholera and vectorborne diseases, such as malaria and dengue fever. Emissions from uncontrolled waste can reach the food chain and disturb natural ecosystems.\n\nA lack of or poor waste management also has negative socioeconomic effects, including on living standards, economic growth potential and community relations. Governing waste management is complex and requires specialized skills that are often underrepresented in institutional and organizational frameworks, and political decision-making processes.\n\nTherefore, waste prevention should be prioritized, with subsequent steps are to reduce, reuse, recycle, recover and implement controlled disposal. Diverting as much waste from landfills as possible, for example through waste segregation and recycling, should also be done. Separation at the household, commercial and industry levels can assist in optimizing recoverable waste streams; reduce waste flowing to disposal sites; and improve health and safety for those generating, handling, collecting and working with waste.\n\n(adapted from https://cdn.who.int)\n\nParagraph three mainly discussed",
+          "tipe": "pg",
+          "opsi": [
+            "the importance of waste prevention and proper waste management strategies.",
+            "the increasing amount of global waste (municipal waste and e-waste).",
+            "socioeconomic impacts and challenges in waste management governance.",
+            "the negative impacts of improper waste management on human health.",
+            "environmental pollution and disease caused by poor waste management."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Paragraf ketiga berfokus pada dampak lingkungan dan kesehatan akibat pengelolaan limbah yang buruk, termasuk pencemaran air dan penyebaran penyakit melalui genangan air. Jalur Cara Gemilang: \"Mainly discussed\" = fokus dominan paragraf, bukan detail penyerta.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nWorldwide, more than 2 billion tonnes of municipal solid waste (i.e. waste generated by households or similar waste generated by industry, commerce and institutions) are produced every year. This is projected to increase to nearly 4 billion tonnes annually by 2050. About 54 million tonnes of e-waste are generated globally per year, with an expected increase to 75 million tonnes by 2030. Furthermore, improper waste management can lead to adverse negative outcomes.\n\nImproper waste management can negatively affect health, for example through contamination of water, soil and air, as well as by creating hazardous conditions for those working in the waste management sector. Billions of people live in areas that lack adequate waste collection services and rely on uncontrolled disposal sites. Hazardous or unsafe waste management practices, such as open burning, can directly harm waste-workers or residents of neighbouring communities. Vulnerable groups, including women and children and marginalized communities, are at increased risk of adverse health outcomes.\n\nMoreover, poor waste management leads to environmental pollution, both on land and in aquatic environments, such as lakes and oceans. Drains that are blocked by solid waste can result in flooding, and other types of standing water promote the transmission of cholera and vectorborne diseases, such as malaria and dengue fever. Emissions from uncontrolled waste can reach the food chain and disturb natural ecosystems.\n\nA lack of or poor waste management also has negative socioeconomic effects, including on living standards, economic growth potential and community relations. Governing waste management is complex and requires specialized skills that are often underrepresented in institutional and organizational frameworks, and political decision-making processes.\n\nTherefore, waste prevention should be prioritized, with subsequent steps are to reduce, reuse, recycle, recover and implement controlled disposal. Diverting as much waste from landfills as possible, for example through waste segregation and recycling, should also be done. Separation at the household, commercial and industry levels can assist in optimizing recoverable waste streams; reduce waste flowing to disposal sites; and improve health and safety for those generating, handling, collecting and working with waste.\n\n(adapted from https://cdn.who.int)\n\nIt can be predicted that if improper waste management persists, There are more than one correct answers. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "there will be higher costs to build and operate incinerator facilities.",
+            "more people will suffer from health problems due to pollution and unsafe living conditions.",
+            "economic growth may be negatively affected.",
+            "certain pollutants, especially dioxins and furans, might increase rapidly."
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s4-a.svg",
+            "/bagan/bab1-s4-b.svg",
+            "/bagan/bab1-s4-c.svg",
+            "/bagan/bab1-s4-d.svg",
+            "/bagan/bab1-s4-e.svg"
+          ],
+          "jawaban": [
+            1,
+            2
+          ],
+          "pembahasan": "Jalur konsep: more people will suffer from health problems economic growth may be negatively affected Jika pengelolaan limbah yang buruk terus berlangsung, lebih banyak orang akan mengalami masalah kesehatan akibat pencemaran, dan pertumbuhan ekonomi juga akan terganggu karena dampak sosial ekonomi yang negatif. Jalur Cara Gemilang: Prediksi = kelanjutan logis dari dampak yang sudah disebut teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nWorldwide, more than 2 billion tonnes of municipal solid waste (i.e. waste generated by households or similar waste generated by industry, commerce and institutions) are produced every year. This is projected to increase to nearly 4 billion tonnes annually by 2050. About 54 million tonnes of e-waste are generated globally per year, with an expected increase to 75 million tonnes by 2030. Furthermore, improper waste management can lead to adverse negative outcomes.\n\nImproper waste management can negatively affect health, for example through contamination of water, soil and air, as well as by creating hazardous conditions for those working in the waste management sector. Billions of people live in areas that lack adequate waste collection services and rely on uncontrolled disposal sites. Hazardous or unsafe waste management practices, such as open burning, can directly harm waste-workers or residents of neighbouring communities. Vulnerable groups, including women and children and marginalized communities, are at increased risk of adverse health outcomes.\n\nMoreover, poor waste management leads to environmental pollution, both on land and in aquatic environments, such as lakes and oceans. Drains that are blocked by solid waste can result in flooding, and other types of standing water promote the transmission of cholera and vectorborne diseases, such as malaria and dengue fever. Emissions from uncontrolled waste can reach the food chain and disturb natural ecosystems.\n\nA lack of or poor waste management also has negative socioeconomic effects, including on living standards, economic growth potential and community relations. Governing waste management is complex and requires specialized skills that are often underrepresented in institutional and organizational frameworks, and political decision-making processes.\n\nTherefore, waste prevention should be prioritized, with subsequent steps are to reduce, reuse, recycle, recover and implement controlled disposal. Diverting as much waste from landfills as possible, for example through waste segregation and recycling, should also be done. Separation at the household, commercial and industry levels can assist in optimizing recoverable waste streams; reduce waste flowing to disposal sites; and improve health and safety for those generating, handling, collecting and working with waste.\n\n(adapted from https://cdn.who.int)\n\nWhich of the following opinions is supported by example in the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Emissions from uncontrolled waste can reach the food chain and disturb natural ecosystems.",
+            "Vulnerable groups, including women and children and marginalized communities, are at increased risk of adverse health outcomes.",
+            "Poor waste management leads to environmental pollution, both on land and in aquatic environments.",
+            "Billions of people live in areas that lack adequate waste collection services and rely on uncontrolled disposal sites.",
+            "About 54 million tonnes of e-waste are generated globally per year, with an expected increase to 75 million tonnes by 2030."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Pernyataan bahwa pengelolaan limbah yang buruk menyebabkan pencemaran lingkungan didukung oleh contoh konkret seperti penyumbatan saluran air, pencemaran perairan, dan penyebaran penyakit. Jalur Cara Gemilang: Opini didukung contoh = cari opini yang diikuti bukti konkret di teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nWorldwide, more than 2 billion tonnes of municipal solid waste (i.e. waste generated by households or similar waste generated by industry, commerce and institutions) are produced every year. This is projected to increase to nearly 4 billion tonnes annually by 2050. About 54 million tonnes of e-waste are generated globally per year, with an expected increase to 75 million tonnes by 2030. Furthermore, improper waste management can lead to adverse negative outcomes.\n\nImproper waste management can negatively affect health, for example through contamination of water, soil and air, as well as by creating hazardous conditions for those working in the waste management sector. Billions of people live in areas that lack adequate waste collection services and rely on uncontrolled disposal sites. Hazardous or unsafe waste management practices, such as open burning, can directly harm waste-workers or residents of neighbouring communities. Vulnerable groups, including women and children and marginalized communities, are at increased risk of adverse health outcomes.\n\nMoreover, poor waste management leads to environmental pollution, both on land and in aquatic environments, such as lakes and oceans. Drains that are blocked by solid waste can result in flooding, and other types of standing water promote the transmission of cholera and vectorborne diseases, such as malaria and dengue fever. Emissions from uncontrolled waste can reach the food chain and disturb natural ecosystems.\n\nA lack of or poor waste management also has negative socioeconomic effects, including on living standards, economic growth potential and community relations. Governing waste management is complex and requires specialized skills that are often underrepresented in institutional and organizational frameworks, and political decision-making processes.\n\nTherefore, waste prevention should be prioritized, with subsequent steps are to reduce, reuse, recycle, recover and implement controlled disposal. Diverting as much waste from landfills as possible, for example through waste segregation and recycling, should also be done. Separation at the household, commercial and industry levels can assist in optimizing recoverable waste streams; reduce waste flowing to disposal sites; and improve health and safety for those generating, handling, collecting and working with waste.\n\n(adapted from https://cdn.who.int)\n\nHow can students contribute to reducing waste problems based on the text? There are more than one correct answers. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Decomposing waste gases",
+            "Reducing waste",
+            "Reusing materials",
+            "Converting heat into electricity.",
+            "Separating waste at home"
+          ],
+          "jawaban": [
+            1,
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Siswa dapat berkontribusi mengurangi masalah limbah dengan cara: Reducing waste (mengurangi sampah) Reusing materials (menggunakan kembali) Separating waste at home (memilah sampah) Siswa dapat membantu mengurangi masalah limbah dengan cara mengurangi penggunaan barang, menggunakan kembali barang yang masih layak, dan memilah sampah di rumah agar dapat didaur ulang dengan lebih efektif. Jalur Cara Gemilang: Kontribusi siswa = rekomendasi bagian akhir (reduce, reuse, kampanye).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDigital literacy encompasses a range of skills, from basic computer use to advanced problem-solving in digital environments. These skills are integral to what educators often refer to as \"21st-century skills,\" which include critical thinking, creativity, collaboration, and communication. In a world where information is at our fingertips, students must be adept at not only accessing digital information but also evaluating its credibility and using it effectively.\n\nThe integration of technology in education has transformed traditional learning environments. Classrooms are no longer confined to four walls; they are global, connected, and interactive. Digital literacy allows students to participate fully in this new learning paradigm. Students who are proficient in digital skills can leverage technology to enhance their learning experiences. Whether it's using online resources for research, participating in virtual classrooms, or collaborating with peers on digital platforms, digital literacy is key to academic success. Moreover, as digital assessments become more common, students with strong digital skills are better positioned to perform well in these evaluations.\n\nThe modern workplace demands a workforce that is not only familiar with digital tools but is also capable of adapting to new technologies. From basic word processing to advanced data analysis and coding, digital skills are essential across all industries. Employers are increasingly looking for candidates who are not just knowledgeable but are also comfortable using digital tools to solve problems and improve efficiency. Acquiring these digital skills early on offers a significant advantage. It prepares them for internships, college applications, and eventually, their professional careers. Moreover, digital literacy fosters an innovative mindset, encouraging students to think creatively and develop solutions that can drive business success.\n\nIn conclusion, digital literacy is not just a skill; it's a critical component of student success in the 21st century. As technology continues to influence every aspect of our lives, ensuring that students are digitally literate is essential for their academic achievements and future career readiness. Schools must prioritize digital literacy to prepare students for the demands of the modern world.\n\n(adapted from https://icdl.org/)\n\nWhat is the topic discussed in the text?",
+          "tipe": "pg",
+          "opsi": [
+            "The importance of integrating technology in digital literacy",
+            "The positive impact of teaching digital literacy earlier",
+            "The important role of digital literacy in students' future career",
+            "The significance of digital literacy for students",
+            "The benefits and drawbacks of digital literacy"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Topik utama teks adalah pentingnya literasi digital bagi siswa karena dijelaskan bagaimana literasi digital berperan dalam pendidikan, keterampilan abad 21, dan kesiapan karier. Jalur Cara Gemilang: Topik = tesis paragraf 1: pentingnya literasi digital bagi siswa.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDigital literacy encompasses a range of skills, from basic computer use to advanced problem-solving in digital environments. These skills are integral to what educators often refer to as \"21st-century skills,\" which include critical thinking, creativity, collaboration, and communication. In a world where information is at our fingertips, students must be adept at not only accessing digital information but also evaluating its credibility and using it effectively.\n\nThe integration of technology in education has transformed traditional learning environments. Classrooms are no longer confined to four walls; they are global, connected, and interactive. Digital literacy allows students to participate fully in this new learning paradigm. Students who are proficient in digital skills can leverage technology to enhance their learning experiences. Whether it's using online resources for research, participating in virtual classrooms, or collaborating with peers on digital platforms, digital literacy is key to academic success. Moreover, as digital assessments become more common, students with strong digital skills are better positioned to perform well in these evaluations.\n\nThe modern workplace demands a workforce that is not only familiar with digital tools but is also capable of adapting to new technologies. From basic word processing to advanced data analysis and coding, digital skills are essential across all industries. Employers are increasingly looking for candidates who are not just knowledgeable but are also comfortable using digital tools to solve problems and improve efficiency. Acquiring these digital skills early on offers a significant advantage. It prepares them for internships, college applications, and eventually, their professional careers. Moreover, digital literacy fosters an innovative mindset, encouraging students to think creatively and develop solutions that can drive business success.\n\nIn conclusion, digital literacy is not just a skill; it's a critical component of student success in the 21st century. As technology continues to influence every aspect of our lives, ensuring that students are digitally literate is essential for their academic achievements and future career readiness. Schools must prioritize digital literacy to prepare students for the demands of the modern world.\n\n(adapted from https://icdl.org/)\n\nTo whom is the text intended?",
+          "tipe": "pg",
+          "opsi": [
+            "Teachers",
+            "Students",
+            "General readers",
+            "Policy makers",
+            "Education practitioners"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Teks ini ditujukan untuk pembaca umum karena membahas literasi digital secara luas dan relevan bagi siapa saja yang tertarik pada pendidikan dan teknologi. Jalur Cara Gemilang: Audience = siapa yang disapa/dicontohkan teks; pembaca umum bila tanpa sapaan khusus.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDigital literacy encompasses a range of skills, from basic computer use to advanced problem-solving in digital environments. These skills are integral to what educators often refer to as \"21st-century skills,\" which include critical thinking, creativity, collaboration, and communication. In a world where information is at our fingertips, students must be adept at not only accessing digital information but also evaluating its credibility and using it effectively.\n\nThe integration of technology in education has transformed traditional learning environments. Classrooms are no longer confined to four walls; they are global, connected, and interactive. Digital literacy allows students to participate fully in this new learning paradigm. Students who are proficient in digital skills can leverage technology to enhance their learning experiences. Whether it's using online resources for research, participating in virtual classrooms, or collaborating with peers on digital platforms, digital literacy is key to academic success. Moreover, as digital assessments become more common, students with strong digital skills are better positioned to perform well in these evaluations.\n\nThe modern workplace demands a workforce that is not only familiar with digital tools but is also capable of adapting to new technologies. From basic word processing to advanced data analysis and coding, digital skills are essential across all industries. Employers are increasingly looking for candidates who are not just knowledgeable but are also comfortable using digital tools to solve problems and improve efficiency. Acquiring these digital skills early on offers a significant advantage. It prepares them for internships, college applications, and eventually, their professional careers. Moreover, digital literacy fosters an innovative mindset, encouraging students to think creatively and develop solutions that can drive business success.\n\nIn conclusion, digital literacy is not just a skill; it's a critical component of student success in the 21st century. As technology continues to influence every aspect of our lives, ensuring that students are digitally literate is essential for their academic achievements and future career readiness. Schools must prioritize digital literacy to prepare students for the demands of the modern world.\n\n(adapted from https://icdl.org/)\n\nAccording to the text, what are examples of 21st-century skills mentioned?",
+          "tipe": "pg",
+          "opsi": [
+            "Adaptability, leadership, and global awareness",
+            "Critical thinking, creativity, collaboration, and communication",
+            "Analyzing facts, solving problems, and evaluating evidence",
+            "Finding, evaluating, and using information efficiently",
+            "Understanding and questioning the sources, methods, and messaging of the media"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Keterampilan abad 21 yang disebutkan dalam teks adalah berpikir kritis, kreativitas, kolaborasi, dan komunikasi. Informasi ini didukung oleh paragraf ke-1, \" These skills are integral to what educators often refer to as '21st-century skills,' which include critical thinking, creativity, collaboration, and communication. \" Jalur Cara Gemilang: Skills abad 21 = daftar eksplisit: critical thinking, creativity, collaboration.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDigital literacy encompasses a range of skills, from basic computer use to advanced problem-solving in digital environments. These skills are integral to what educators often refer to as \"21st-century skills,\" which include critical thinking, creativity, collaboration, and communication. In a world where information is at our fingertips, students must be adept at not only accessing digital information but also evaluating its credibility and using it effectively.\n\nThe integration of technology in education has transformed traditional learning environments. Classrooms are no longer confined to four walls; they are global, connected, and interactive. Digital literacy allows students to participate fully in this new learning paradigm. Students who are proficient in digital skills can leverage technology to enhance their learning experiences. Whether it's using online resources for research, participating in virtual classrooms, or collaborating with peers on digital platforms, digital literacy is key to academic success. Moreover, as digital assessments become more common, students with strong digital skills are better positioned to perform well in these evaluations.\n\nThe modern workplace demands a workforce that is not only familiar with digital tools but is also capable of adapting to new technologies. From basic word processing to advanced data analysis and coding, digital skills are essential across all industries. Employers are increasingly looking for candidates who are not just knowledgeable but are also comfortable using digital tools to solve problems and improve efficiency. Acquiring these digital skills early on offers a significant advantage. It prepares them for internships, college applications, and eventually, their professional careers. Moreover, digital literacy fosters an innovative mindset, encouraging students to think creatively and develop solutions that can drive business success.\n\nIn conclusion, digital literacy is not just a skill; it's a critical component of student success in the 21st century. As technology continues to influence every aspect of our lives, ensuring that students are digitally literate is essential for their academic achievements and future career readiness. Schools must prioritize digital literacy to prepare students for the demands of the modern world.\n\n(adapted from https://icdl.org/)\n\nAfter reading the text, for senior high school students, what can they do to have good digital literacy? There are more than one correct answers. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Exposing both the benefits and the risks of digital literacy",
+            "Integrating digital literacy into the national curriculum",
+            "Learning basic technical skills, such as coding",
+            "Advancing the work on digital literacy in various research areas",
+            "Participating in online discussions to develop communication skills"
+          ],
+          "jawaban": [
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Hal-hal yang dapat dilakukan siswa untuk memiliki literasi digital yang baik adalah: Learning basic technical skills (belajar keterampilan teknis dasar) Participating in online discussions (berpartisipasi dalam diskusi online) Siswa dapat meningkatkan literasi digital dengan mempelajari keterampilan teknis seperti coding serta aktif berpartisipasi dalam diskusi online untuk melatih komunikasi dan kolaborasi. Jalur Cara Gemilang: Tindakan literasi digital baik = verifikasi info, batasi konten, etika bermedia.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDigital literacy encompasses a range of skills, from basic computer use to advanced problem-solving in digital environments. These skills are integral to what educators often refer to as \"21st-century skills,\" which include critical thinking, creativity, collaboration, and communication. In a world where information is at our fingertips, students must be adept at not only accessing digital information but also evaluating its credibility and using it effectively.\n\nThe integration of technology in education has transformed traditional learning environments. Classrooms are no longer confined to four walls; they are global, connected, and interactive. Digital literacy allows students to participate fully in this new learning paradigm. Students who are proficient in digital skills can leverage technology to enhance their learning experiences. Whether it's using online resources for research, participating in virtual classrooms, or collaborating with peers on digital platforms, digital literacy is key to academic success. Moreover, as digital assessments become more common, students with strong digital skills are better positioned to perform well in these evaluations.\n\nThe modern workplace demands a workforce that is not only familiar with digital tools but is also capable of adapting to new technologies. From basic word processing to advanced data analysis and coding, digital skills are essential across all industries. Employers are increasingly looking for candidates who are not just knowledgeable but are also comfortable using digital tools to solve problems and improve efficiency. Acquiring these digital skills early on offers a significant advantage. It prepares them for internships, college applications, and eventually, their professional careers. Moreover, digital literacy fosters an innovative mindset, encouraging students to think creatively and develop solutions that can drive business success.\n\nIn conclusion, digital literacy is not just a skill; it's a critical component of student success in the 21st century. As technology continues to influence every aspect of our lives, ensuring that students are digitally literate is essential for their academic achievements and future career readiness. Schools must prioritize digital literacy to prepare students for the demands of the modern world.\n\n(adapted from https://icdl.org/)\n\nWhat is the author's intention to write the text?",
+          "tipe": "pg",
+          "opsi": [
+            "To present two points of view about the importance of digital literacy",
+            "To persuade students to improve their digital literacy while in college",
+            "To describe the benefits and challenges of teaching digital literacy at school",
+            "To give real-life examples of how digital literacy helps students in various aspects",
+            "To encourage schools to prioritize developing students' digital literacy"
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Penulis bertujuan untuk mendorong sekolah agar memprioritaskan pengembangan literasi digital karena hal tersebut penting untuk kesuksesan akademik dan karier siswa. Kesimpulan ini didukung oleh paragraf terakhir, \" Schools must prioritize digital literacy to prepare students for the demands of the modern world. \" Jalur Cara Gemilang: Intention hortatory = mendorong tindakan (sekolah memprioritaskan literasi digital).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDigital literacy encompasses a range of skills, from basic computer use to advanced problem-solving in digital environments. These skills are integral to what educators often refer to as \"21st-century skills,\" which include critical thinking, creativity, collaboration, and communication. In a world where information is at our fingertips, students must be adept at not only accessing digital information but also evaluating its credibility and using it effectively.\n\nThe integration of technology in education has transformed traditional learning environments. Classrooms are no longer confined to four walls; they are global, connected, and interactive. Digital literacy allows students to participate fully in this new learning paradigm. Students who are proficient in digital skills can leverage technology to enhance their learning experiences. Whether it's using online resources for research, participating in virtual classrooms, or collaborating with peers on digital platforms, digital literacy is key to academic success. Moreover, as digital assessments become more common, students with strong digital skills are better positioned to perform well in these evaluations.\n\nThe modern workplace demands a workforce that is not only familiar with digital tools but is also capable of adapting to new technologies. From basic word processing to advanced data analysis and coding, digital skills are essential across all industries. Employers are increasingly looking for candidates who are not just knowledgeable but are also comfortable using digital tools to solve problems and improve efficiency. Acquiring these digital skills early on offers a significant advantage. It prepares them for internships, college applications, and eventually, their professional careers. Moreover, digital literacy fosters an innovative mindset, encouraging students to think creatively and develop solutions that can drive business success.\n\nIn conclusion, digital literacy is not just a skill; it's a critical component of student success in the 21st century. As technology continues to influence every aspect of our lives, ensuring that students are digitally literate is essential for their academic achievements and future career readiness. Schools must prioritize digital literacy to prepare students for the demands of the modern world.\n\n(adapted from https://icdl.org/)\n\nPut a tick (✓) on the correct column based on each statement!\n(Answer each row by choosing Academic Benefits / Career Benefits.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Academic Benefits",
+            "Career Benefits"
+          ],
+          "baris": [
+            "Enhances learning experiences through technology.",
+            "Helps students participate in virtual classrooms.",
+            "Prepares students for internships and job opportunities.",
+            "Enables collaboration with peers using digital platforms.",
+            "Encourages innovation and problem-solving in business environments."
+          ],
+          "jawaban": [
+            0,
+            0,
+            1,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — ACADEMIC BENEFITS Baris 2 — ACADEMIC BENEFITS Baris 3 — CAREER BENEFITS Baris 4 — ACADEMIC BENEFITS Baris 5 — CAREER BENEFITS Jalur Cara Gemilang: Akademik = belajar/kolaborasi; karier = peluang kerja/keterampilan profesi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nDigital literacy encompasses a range of skills, from basic computer use to advanced problem-solving in digital environments. These skills are integral to what educators often refer to as \"21st-century skills,\" which include critical thinking, creativity, collaboration, and communication. In a world where information is at our fingertips, students must be adept at not only accessing digital information but also evaluating its credibility and using it effectively.\n\nThe integration of technology in education has transformed traditional learning environments. Classrooms are no longer confined to four walls; they are global, connected, and interactive. Digital literacy allows students to participate fully in this new learning paradigm. Students who are proficient in digital skills can leverage technology to enhance their learning experiences. Whether it's using online resources for research, participating in virtual classrooms, or collaborating with peers on digital platforms, digital literacy is key to academic success. Moreover, as digital assessments become more common, students with strong digital skills are better positioned to perform well in these evaluations.\n\nThe modern workplace demands a workforce that is not only familiar with digital tools but is also capable of adapting to new technologies. From basic word processing to advanced data analysis and coding, digital skills are essential across all industries. Employers are increasingly looking for candidates who are not just knowledgeable but are also comfortable using digital tools to solve problems and improve efficiency. Acquiring these digital skills early on offers a significant advantage. It prepares them for internships, college applications, and eventually, their professional careers. Moreover, digital literacy fosters an innovative mindset, encouraging students to think creatively and develop solutions that can drive business success.\n\nIn conclusion, digital literacy is not just a skill; it's a critical component of student success in the 21st century. As technology continues to influence every aspect of our lives, ensuring that students are digitally literate is essential for their academic achievements and future career readiness. Schools must prioritize digital literacy to prepare students for the demands of the modern world.\n\n(adapted from https://icdl.org/)\n\nWhat is the best summary of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Digital literacy proficiency is needed to fully participate in economic, civic, work, and daily life in developing countries.",
+            "Digital literacy is essential for students to succeed in modern education and prepare for future careers.",
+            "The challenges impacting the development of digital skills depend on children's social environment.",
+            "Schools play a critical role in ensuring that students develop the digital literacy skills necessary for success.",
+            "Digital literacy is often referred to as one essential skill, but it is really one that encompasses several groups of competencies."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Ringkasan paling tepat adalah bahwa literasi digital sangat penting bagi siswa untuk sukses dalam pendidikan modern dan mempersiapkan masa depan karier mereka karena mencakup keterampilan penting yang dibutuhkan di dunia digital saat ini. Jalur Cara Gemilang: Best summary = tesis + argumen inti + rekomendasi dalam SATU kalimat menyeluruh.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nFossil fuels, including coal, oil, and natural gas, are the primary energy sources globally, accounting for around 80% of the world's energy production as of 2023. While they have significantly contributed to modern industrialization, their extraction and combustion are linked to serious environmental degradation. These processes lead to air and water pollution, habitat destruction, and the release of greenhouse gases, particularly carbon dioxide (CO2), which is a major contributor to global warming.\n\nThe major concern in regard to the use of fossil fuels is their emission of carbon dioxide (CO2), one of the greenhouse gases that has been linked to global warming. The burning of fossil fuels produces almost twice as much CO2 as natural processes can absorb each year. When coal is burned, for example, it emits several harmful substances, including sulfur dioxide, nitrogen oxide, mercury, particulates, and carbon dioxide. Sulfur dioxide, nitrogen oxide, and particulates contribute to the formation of acid rain, which can cause respiratory illness.\n\nFurthermore, crude oil or petroleum is composed of hydrogen and carbon compounds. It is a liquid form of fossilized biomass derived from the decomposition of dead plants and animals found in underground reservoirs in sedimentary basins on land areas and in seabeds. Oil is extracted from the earth by pumping, using wells and oil rigs, and it is transported long distances through pipelines or in ships. The major danger to the environment from these activities is the occurrence of oil spills, which have serious impacts on wildlife, especially marine life, seabirds, and sea mammals. Some previously inaccessible oil reserves are extracted through a process known as hydraulic fracturing or fracking, which carries further environmental risks such as contamination of groundwater.\n\nOil's greatest impacts on the environment come from its use as fuel. When oil is burned in any of its forms, it emits several harmful substances into the atmosphere. These include CO2, carbon monoxide (CO), sulfur, and lead. Lead in particulate matter is classified as a carcinogen. Sulfur dioxide contributes to the formation of acid rain, which is harmful to animals, plants, and human beings. The nitrogen oxide and volatile organic compounds found in emissions from the burning of oil are among the causes of ground-level ozone. Many of these pollutants contribute to lung irritation, asthma, bronchitis, and lung disease.\n\nIn conclusion, despite their pervasive use as the world's main energy source, the extraction and use of fossil fuels cause serious environmental and health problems, including pollution, climate change, and damage to ecosystems. Therefore, reducing dependence on fossil fuels and shifting to cleaner energy sources should be done for a healthier and more sustainable future. Governments must pass legislation within their own borders and enter into international agreements to set limits on the amounts of pollutants that may be emitted from fossil fuels and have set targets for reducing greenhouse gas emissions.\n\n(adapted from https://www.ebaco.com)\n\nHow do the first and the last paragraph relate?",
+          "tipe": "pg",
+          "opsi": [
+            "The first paragraph states elaboration of the idea, while the last paragraph gives examples of its environmental impacts.",
+            "Both paragraphs discuss the arguments to support the idea being discussed.",
+            "The first paragraph states the thesis of the passage, while the last paragraph restates the main arguments.",
+            "The first paragraph exemplifies real-life cases, while the last paragraph proposes practical recommendations.",
+            "The first paragraph introduces the topic, while the last paragraph provides a conclusion with suggested actions."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Paragraf pertama berfungsi sebagai pengenalan topik tentang penggunaan bahan bakar fosil dan dampaknya, sedangkan paragraf terakhir memberikan kesimpulan sekaligus menyarankan solusi berupa pengurangan penggunaan bahan bakar fosil dan peralihan ke energi yang lebih bersih. Jalur Cara Gemilang: Eksposisi membuka dengan tesis dan menutup dengan rekomendasi yang mengikat ulang.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nFossil fuels, including coal, oil, and natural gas, are the primary energy sources globally, accounting for around 80% of the world's energy production as of 2023. While they have significantly contributed to modern industrialization, their extraction and combustion are linked to serious environmental degradation. These processes lead to air and water pollution, habitat destruction, and the release of greenhouse gases, particularly carbon dioxide (CO2), which is a major contributor to global warming.\n\nThe major concern in regard to the use of fossil fuels is their emission of carbon dioxide (CO2), one of the greenhouse gases that has been linked to global warming. The burning of fossil fuels produces almost twice as much CO2 as natural processes can absorb each year. When coal is burned, for example, it emits several harmful substances, including sulfur dioxide, nitrogen oxide, mercury, particulates, and carbon dioxide. Sulfur dioxide, nitrogen oxide, and particulates contribute to the formation of acid rain, which can cause respiratory illness.\n\nFurthermore, crude oil or petroleum is composed of hydrogen and carbon compounds. It is a liquid form of fossilized biomass derived from the decomposition of dead plants and animals found in underground reservoirs in sedimentary basins on land areas and in seabeds. Oil is extracted from the earth by pumping, using wells and oil rigs, and it is transported long distances through pipelines or in ships. The major danger to the environment from these activities is the occurrence of oil spills, which have serious impacts on wildlife, especially marine life, seabirds, and sea mammals. Some previously inaccessible oil reserves are extracted through a process known as hydraulic fracturing or fracking, which carries further environmental risks such as contamination of groundwater.\n\nOil's greatest impacts on the environment come from its use as fuel. When oil is burned in any of its forms, it emits several harmful substances into the atmosphere. These include CO2, carbon monoxide (CO), sulfur, and lead. Lead in particulate matter is classified as a carcinogen. Sulfur dioxide contributes to the formation of acid rain, which is harmful to animals, plants, and human beings. The nitrogen oxide and volatile organic compounds found in emissions from the burning of oil are among the causes of ground-level ozone. Many of these pollutants contribute to lung irritation, asthma, bronchitis, and lung disease.\n\nIn conclusion, despite their pervasive use as the world's main energy source, the extraction and use of fossil fuels cause serious environmental and health problems, including pollution, climate change, and damage to ecosystems. Therefore, reducing dependence on fossil fuels and shifting to cleaner energy sources should be done for a healthier and more sustainable future. Governments must pass legislation within their own borders and enter into international agreements to set limits on the amounts of pollutants that may be emitted from fossil fuels and have set targets for reducing greenhouse gas emissions.\n\n(adapted from https://www.ebaco.com)\n\nWhat can be inferred about the future if reliance on fossil fuels continues? There are more than one correct answers. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Environmental degradation and health problems will likely worsen.",
+            "Fossil fuels will disproportionately harm vulnerable communities.",
+            "Fossil fuels will continue to play an important role in the economy of particular countries.",
+            "Eco-friendly fuel use will increase significantly in future.",
+            "Ecosystems and wildlife will face greater destruction, especially from oil spills and habitat damage."
+          ],
+          "jawaban": [
+            0,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Yang dapat disimpulkan tentang masa depan jika ketergantungan pada bahan bakar fosil terus berlanjut adalah: Environmental degradation and health problems will likely worsen (Kerusakan lingkungan dan masalah kesehatan akan semakin parah). Ecosystems and wildlife will face greater destruction (Ekosistem dan satwa akan semakin rusak). Jika penggunaan bahan bakar fosil terus berlanjut, maka kerusakan lingkungan dan masalah kesehatan akan semakin meningkat. Selain itu, ekosistem dan kehidupan satwa juga akan semakin terancam akibat pencemaran dan aktivitas seperti tumpahan minyak. Jalur Cara Gemilang: Inferensi masa depan = konsekuensi lanjutan yang logis dari ketergantungan fosil.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nFossil fuels, including coal, oil, and natural gas, are the primary energy sources globally, accounting for around 80% of the world's energy production as of 2023. While they have significantly contributed to modern industrialization, their extraction and combustion are linked to serious environmental degradation. These processes lead to air and water pollution, habitat destruction, and the release of greenhouse gases, particularly carbon dioxide (CO2), which is a major contributor to global warming.\n\nThe major concern in regard to the use of fossil fuels is their emission of carbon dioxide (CO2), one of the greenhouse gases that has been linked to global warming. The burning of fossil fuels produces almost twice as much CO2 as natural processes can absorb each year. When coal is burned, for example, it emits several harmful substances, including sulfur dioxide, nitrogen oxide, mercury, particulates, and carbon dioxide. Sulfur dioxide, nitrogen oxide, and particulates contribute to the formation of acid rain, which can cause respiratory illness.\n\nFurthermore, crude oil or petroleum is composed of hydrogen and carbon compounds. It is a liquid form of fossilized biomass derived from the decomposition of dead plants and animals found in underground reservoirs in sedimentary basins on land areas and in seabeds. Oil is extracted from the earth by pumping, using wells and oil rigs, and it is transported long distances through pipelines or in ships. The major danger to the environment from these activities is the occurrence of oil spills, which have serious impacts on wildlife, especially marine life, seabirds, and sea mammals. Some previously inaccessible oil reserves are extracted through a process known as hydraulic fracturing or fracking, which carries further environmental risks such as contamination of groundwater.\n\nOil's greatest impacts on the environment come from its use as fuel. When oil is burned in any of its forms, it emits several harmful substances into the atmosphere. These include CO2, carbon monoxide (CO), sulfur, and lead. Lead in particulate matter is classified as a carcinogen. Sulfur dioxide contributes to the formation of acid rain, which is harmful to animals, plants, and human beings. The nitrogen oxide and volatile organic compounds found in emissions from the burning of oil are among the causes of ground-level ozone. Many of these pollutants contribute to lung irritation, asthma, bronchitis, and lung disease.\n\nIn conclusion, despite their pervasive use as the world's main energy source, the extraction and use of fossil fuels cause serious environmental and health problems, including pollution, climate change, and damage to ecosystems. Therefore, reducing dependence on fossil fuels and shifting to cleaner energy sources should be done for a healthier and more sustainable future. Governments must pass legislation within their own borders and enter into international agreements to set limits on the amounts of pollutants that may be emitted from fossil fuels and have set targets for reducing greenhouse gas emissions.\n\n(adapted from https://www.ebaco.com)\n\nWhich arrangement of the topic in each paragraph is correct?",
+          "tipe": "pg",
+          "opsi": [
+            "(1) The global reliance on fossil fuels and their overall environmental impact (2) Carbon dioxide emissions from fossil fuels and their role in global warming and air pollution (3) The nature of crude oil and the environmental risks of its extraction (4) The environmental and health effects of burning oil and the pollutants it releases (5) The need to reduce fossil fuel use and shift to cleaner energy sources, supported by government action",
+            "(1) The common use of fossil fuels (2) A challenge for providing a global estimate of fossil fuel subsidies (3) Stages of fossil fuel production (4) The environmental impact of fossil fuels (5) Strategies applied to overcome the environmental risks of fossil fuels (6) The need to substitute fossil fuels with sustainable alternatives",
+            "(1) The wide-ranging use of fossil fuels was developed during the Industrial Revolution (2) Context for considering carbon capture from fossil fuels (3) How fossil fuels are produced and distributed (4) The role of fossil fuels in medicine for improved human health (5) Some recommendations regarding alternatives for fossil fuels",
+            "(1) Examples of fossil fuels in modern life (2) Research and development conducted on sustainable fossil fuels (3) Greenhouse gas and conventional pollutant emissions from fossil fuels (4) Popularity of gasoline in the transportation industry (5) Examples of effective policies and strategies to decrease the use of fossil fuels",
+            "(1) The dependability, flexibility and affordability of different fuel types (2) Fossil fuels in various modern industries (3) Benefits and drawbacks of fossil fuels (4) Research on more environmentally friendly fuels (5) The advances in technology and the ongoing efforts to produce sustainable fuels"
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s16-a.svg",
+            "/bagan/bab1-s16-b.svg",
+            "/bagan/bab1-s16-c.svg",
+            "/bagan/bab1-s16-d.svg",
+            "/bagan/bab1-s16-e.svg"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Urutan yang benar adalah opsi A karena setiap poin sesuai dengan isi masing-masing paragraf, mulai dari pengenalan, dampak, hingga solusi. Paragraf 1: penggunaan global dan dampak umum Paragraf 2: emisi CO 2 dan polusi udara Paragraf 3: minyak & risiko ekstraksi Paragraf 4: dampak pembakaran minyak Paragraf 5: solusi & kebijakan Jalur Cara Gemilang: Arrangement = cocokkan topik per paragraf sesuai urutan teks.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nFossil fuels, including coal, oil, and natural gas, are the primary energy sources globally, accounting for around 80% of the world's energy production as of 2023. While they have significantly contributed to modern industrialization, their extraction and combustion are linked to serious environmental degradation. These processes lead to air and water pollution, habitat destruction, and the release of greenhouse gases, particularly carbon dioxide (CO2), which is a major contributor to global warming.\n\nThe major concern in regard to the use of fossil fuels is their emission of carbon dioxide (CO2), one of the greenhouse gases that has been linked to global warming. The burning of fossil fuels produces almost twice as much CO2 as natural processes can absorb each year. When coal is burned, for example, it emits several harmful substances, including sulfur dioxide, nitrogen oxide, mercury, particulates, and carbon dioxide. Sulfur dioxide, nitrogen oxide, and particulates contribute to the formation of acid rain, which can cause respiratory illness.\n\nFurthermore, crude oil or petroleum is composed of hydrogen and carbon compounds. It is a liquid form of fossilized biomass derived from the decomposition of dead plants and animals found in underground reservoirs in sedimentary basins on land areas and in seabeds. Oil is extracted from the earth by pumping, using wells and oil rigs, and it is transported long distances through pipelines or in ships. The major danger to the environment from these activities is the occurrence of oil spills, which have serious impacts on wildlife, especially marine life, seabirds, and sea mammals. Some previously inaccessible oil reserves are extracted through a process known as hydraulic fracturing or fracking, which carries further environmental risks such as contamination of groundwater.\n\nOil's greatest impacts on the environment come from its use as fuel. When oil is burned in any of its forms, it emits several harmful substances into the atmosphere. These include CO2, carbon monoxide (CO), sulfur, and lead. Lead in particulate matter is classified as a carcinogen. Sulfur dioxide contributes to the formation of acid rain, which is harmful to animals, plants, and human beings. The nitrogen oxide and volatile organic compounds found in emissions from the burning of oil are among the causes of ground-level ozone. Many of these pollutants contribute to lung irritation, asthma, bronchitis, and lung disease.\n\nIn conclusion, despite their pervasive use as the world's main energy source, the extraction and use of fossil fuels cause serious environmental and health problems, including pollution, climate change, and damage to ecosystems. Therefore, reducing dependence on fossil fuels and shifting to cleaner energy sources should be done for a healthier and more sustainable future. Governments must pass legislation within their own borders and enter into international agreements to set limits on the amounts of pollutants that may be emitted from fossil fuels and have set targets for reducing greenhouse gas emissions.\n\n(adapted from https://www.ebaco.com)\n\nWhat are the three main types of fossil fuels mentioned?",
+          "tipe": "pg",
+          "opsi": [
+            "Biodiesel, hydrogen, and crude oil",
+            "Liquified gas, propane, and furnace oil",
+            "Coal, oil, and natural gas",
+            "Kerosene, gasoline and diesel",
+            "Petroleum, heavy oils, oil shale, and bitumen"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: Tiga jenis utama bahan bakar fosil yang disebutkan adalah batu bara, minyak bumi, dan gas alam. Informasi ini didukung oleh paragraf ke-1, \" Fossil fuels, including coal, oil, and natural gas, are the primary energy sources globally, accounting for around 80% of the world's energy … \" Jalur Cara Gemilang: Tiga jenis fosil = coal, oil, natural gas (daftar eksplisit).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nFossil fuels, including coal, oil, and natural gas, are the primary energy sources globally, accounting for around 80% of the world's energy production as of 2023. While they have significantly contributed to modern industrialization, their extraction and combustion are linked to serious environmental degradation. These processes lead to air and water pollution, habitat destruction, and the release of greenhouse gases, particularly carbon dioxide (CO2), which is a major contributor to global warming.\n\nThe major concern in regard to the use of fossil fuels is their emission of carbon dioxide (CO2), one of the greenhouse gases that has been linked to global warming. The burning of fossil fuels produces almost twice as much CO2 as natural processes can absorb each year. When coal is burned, for example, it emits several harmful substances, including sulfur dioxide, nitrogen oxide, mercury, particulates, and carbon dioxide. Sulfur dioxide, nitrogen oxide, and particulates contribute to the formation of acid rain, which can cause respiratory illness.\n\nFurthermore, crude oil or petroleum is composed of hydrogen and carbon compounds. It is a liquid form of fossilized biomass derived from the decomposition of dead plants and animals found in underground reservoirs in sedimentary basins on land areas and in seabeds. Oil is extracted from the earth by pumping, using wells and oil rigs, and it is transported long distances through pipelines or in ships. The major danger to the environment from these activities is the occurrence of oil spills, which have serious impacts on wildlife, especially marine life, seabirds, and sea mammals. Some previously inaccessible oil reserves are extracted through a process known as hydraulic fracturing or fracking, which carries further environmental risks such as contamination of groundwater.\n\nOil's greatest impacts on the environment come from its use as fuel. When oil is burned in any of its forms, it emits several harmful substances into the atmosphere. These include CO2, carbon monoxide (CO), sulfur, and lead. Lead in particulate matter is classified as a carcinogen. Sulfur dioxide contributes to the formation of acid rain, which is harmful to animals, plants, and human beings. The nitrogen oxide and volatile organic compounds found in emissions from the burning of oil are among the causes of ground-level ozone. Many of these pollutants contribute to lung irritation, asthma, bronchitis, and lung disease.\n\nIn conclusion, despite their pervasive use as the world's main energy source, the extraction and use of fossil fuels cause serious environmental and health problems, including pollution, climate change, and damage to ecosystems. Therefore, reducing dependence on fossil fuels and shifting to cleaner energy sources should be done for a healthier and more sustainable future. Governments must pass legislation within their own borders and enter into international agreements to set limits on the amounts of pollutants that may be emitted from fossil fuels and have set targets for reducing greenhouse gas emissions.\n\n(adapted from https://www.ebaco.com)\n\nRead each sentence and put a tick (✓) in the correct category!\n(Answer each row by choosing Natural process / Human Activities.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Natural process",
+            "Human Activities"
+          ],
+          "baris": [
+            "Oil is transported through pipelines and ships.",
+            "Oil is extracted using wells and rigs.",
+            "Natural systems absorb some carbon dioxide.",
+            "Fracking is used to access underground oil reserves.",
+            "Oil emits several harmful substances into the atmosphere when burned."
+          ],
+          "opsiGambar": [
+            "/bagan/bab1-s18-a.svg",
+            "/bagan/bab1-s18-b.svg",
+            "/bagan/bab1-s18-c.svg",
+            "/bagan/bab1-s18-d.svg",
+            "/bagan/bab1-s18-e.svg"
+          ],
+          "jawaban": [
+            1,
+            1,
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — HUMAN ACTIVITIES Baris 2 — HUMAN ACTIVITIES Baris 3 — NATURAL PROCESS Baris 4 — HUMAN ACTIVITIES Baris 5 — HUMAN ACTIVITIES Jalur Cara Gemilang: Proses alami vs aktivitas manusia: drilling/transport/fracking = manusia.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's world, we spend hours looking at screens – whether it be on computers, TVs, tablets or smartphones. But too much screen time may not be healthy for a growing child.\n\nWhen children play video games or watch TV, they're not building their thinking skills through reading, practicing artistic abilities or problem-solving in the natural environment. Screen-based entertainment can interfere with verbal and nonverbal social skills which develop from talking and interacting with other children and adults.\n\nMoreover, the flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required. If children have access to a screen whenever they want, they will miss important opportunities to practice regulating emotions and sustaining attention and focus.\n\nAdditionally, when children have access to screens, they may have access to content that is not appropriate for their age level, such as violent games or unsafe apps. It's important for parents to be aware of content being accessed by their children and to discuss internet safety guidelines. Screen time can also affect a child's physical health by disrupting sleep habits or increasing risk for obesity. While enjoying screen time, some kids:\n\nParents may be surprised to learn that too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps. This may happen in part because children can become so involved in screen time that other factors take a toll on their digestive and physical health, such as ignoring their body's natural cues and delaying trips to the bathroom.\n\nTherefore, it is important that parents limit screen time by age as strategies to limit screen time for kids:\n\n(adapted from https://www.childrens.com)\n\nWhat is the main idea of the text?",
+          "tipe": "pg",
+          "opsi": [
+            "Excessive screen time can negatively affect children's development, so parents need to limit and manage it appropriately.",
+            "Avoiding screens during early childhood can develop longer attention spans and improve their concentration skills.",
+            "Less screen time means more time for kids to move and be more active, contributing to better physical health and overall well-being.",
+            "Kids are more likely to enjoy deeper and restful sleep, which promotes better health and more energy throughout the day.",
+            "Limiting screen time allows children to engage in activities that boost creativity and problem-solving skills, such as free play and reading."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Ide utama teks adalah bahwa penggunaan layar yang berlebihan dapat berdampak buruk pada perkembangan anak, sehingga orang tua perlu mengatur dan membatasi penggunaannya. Jalur Cara Gemilang: Main idea = dampak buruk kelebihan layar pada anak.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's world, we spend hours looking at screens – whether it be on computers, TVs, tablets or smartphones. But too much screen time may not be healthy for a growing child.\n\nWhen children play video games or watch TV, they're not building their thinking skills through reading, practicing artistic abilities or problem-solving in the natural environment. Screen-based entertainment can interfere with verbal and nonverbal social skills which develop from talking and interacting with other children and adults.\n\nMoreover, the flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required. If children have access to a screen whenever they want, they will miss important opportunities to practice regulating emotions and sustaining attention and focus.\n\nAdditionally, when children have access to screens, they may have access to content that is not appropriate for their age level, such as violent games or unsafe apps. It's important for parents to be aware of content being accessed by their children and to discuss internet safety guidelines. Screen time can also affect a child's physical health by disrupting sleep habits or increasing risk for obesity. While enjoying screen time, some kids:\n\nParents may be surprised to learn that too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps. This may happen in part because children can become so involved in screen time that other factors take a toll on their digestive and physical health, such as ignoring their body's natural cues and delaying trips to the bathroom.\n\nTherefore, it is important that parents limit screen time by age as strategies to limit screen time for kids:\n\n(adapted from https://www.childrens.com)\n\nWhich statement supports the idea that excessive screen time can affect digestion?",
+          "tipe": "pg",
+          "opsi": [
+            "Too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps.",
+            "They will miss important opportunities to practice regulating emotions and sustaining attention and focus.",
+            "They may have access to content that is not appropriate for their age level, such as violent games or unsafe apps.",
+            "The flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required.",
+            "Children will miss important opportunities to practice regulating emotions and sustaining attention and focus if they have access to a screen whenever they want."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Pernyataan yang mendukung adalah bahwa terlalu banyak screen time dapat menyebabkan masalah pencernaan seperti sakit perut dan sembelit. Jalur Cara Gemilang: Pernyataan pendukung = mekanisme gangguan pencernaan akibat layar.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's world, we spend hours looking at screens – whether it be on computers, TVs, tablets or smartphones. But too much screen time may not be healthy for a growing child.\n\nWhen children play video games or watch TV, they're not building their thinking skills through reading, practicing artistic abilities or problem-solving in the natural environment. Screen-based entertainment can interfere with verbal and nonverbal social skills which develop from talking and interacting with other children and adults.\n\nMoreover, the flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required. If children have access to a screen whenever they want, they will miss important opportunities to practice regulating emotions and sustaining attention and focus.\n\nAdditionally, when children have access to screens, they may have access to content that is not appropriate for their age level, such as violent games or unsafe apps. It's important for parents to be aware of content being accessed by their children and to discuss internet safety guidelines. Screen time can also affect a child's physical health by disrupting sleep habits or increasing risk for obesity. While enjoying screen time, some kids:\n\nParents may be surprised to learn that too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps. This may happen in part because children can become so involved in screen time that other factors take a toll on their digestive and physical health, such as ignoring their body's natural cues and delaying trips to the bathroom.\n\nTherefore, it is important that parents limit screen time by age as strategies to limit screen time for kids:\n\n(adapted from https://www.childrens.com)\n\nWhat can be inferred from the text? There are more than one correct answers. Choose every correct answer!",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Constant access to screens reduces opportunities for children to practice patience, emotional regulation, and sustained attention.",
+            "Screen time is not entirely harmful if it is limited and well-managed.",
+            "Issues like obesity, poor sleep, and digestive problems are not caused only by screens themselves, but by behaviors associated with prolonged use.",
+            "Without users' guidance, children may be exposed to harmful content or unhealthy habits.",
+            "Screen time is not a big problem for teenagers and adults."
+          ],
+          "jawaban": [
+            0,
+            1,
+            2
+          ],
+          "pembahasan": "Jalur konsep: Yang dapat disimpulkan dari teks adalah: Constant access to screens reduces opportunities for children to practice patience, emotional regulation, and sustained attention (Akses terus-menerus ke layar mengurangi kesempatan bagi anak-anak untuk melatih kesabaran, pengaturan emosi, dan perhatian yang berkelanjutan). Screen time is not entirely harmful if it is limited and well-managed (Waktu di depan layar tidak sepenuhnya berbahaya jika dibatasi dan dikelola dengan baik). Issues like obesity, poor sleep, and digestive problems are not caused only by screens themselves, but by behaviors associated with prolonged use (Masalah seperti obesitas, kurang tidur, dan masalah pencernaan tidak hanya disebabkan oleh layar itu sendiri, tetapi juga oleh perilaku yang terkait dengan penggunaan yang berkepanjangan). Dapat disimpulkan bahwa screen time tidak selalu buruk jika dibatasi, namun penggunaan berlebihan dapat mengurangi kemampuan mengatur emosi dan memicu masalah kesehatan. Jalur Cara Gemilang: Inferensi: kesempatan mengatur emosi & fokus berkurang karena layar konstan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's world, we spend hours looking at screens – whether it be on computers, TVs, tablets or smartphones. But too much screen time may not be healthy for a growing child.\n\nWhen children play video games or watch TV, they're not building their thinking skills through reading, practicing artistic abilities or problem-solving in the natural environment. Screen-based entertainment can interfere with verbal and nonverbal social skills which develop from talking and interacting with other children and adults.\n\nMoreover, the flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required. If children have access to a screen whenever they want, they will miss important opportunities to practice regulating emotions and sustaining attention and focus.\n\nAdditionally, when children have access to screens, they may have access to content that is not appropriate for their age level, such as violent games or unsafe apps. It's important for parents to be aware of content being accessed by their children and to discuss internet safety guidelines. Screen time can also affect a child's physical health by disrupting sleep habits or increasing risk for obesity. While enjoying screen time, some kids:\n\nParents may be surprised to learn that too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps. This may happen in part because children can become so involved in screen time that other factors take a toll on their digestive and physical health, such as ignoring their body's natural cues and delaying trips to the bathroom.\n\nTherefore, it is important that parents limit screen time by age as strategies to limit screen time for kids:\n\n(adapted from https://www.childrens.com)\n\nIn \"… they will miss important opportunities to practice regulating emotions and sustaining attention and focus\", the word \"sustaining\" is closest in meaning to",
+          "tipe": "pg",
+          "opsi": [
+            "developing.",
+            "maintaining.",
+            "abolishing.",
+            "improving.",
+            "accelerating."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Kata \"sustaining\" berarti mempertahankan , merujuk pada kemampuan menjaga perhatian dan fokus dalam jangka waktu tertentu. Kata ini memiliki makna yang sama secara kontekstual dengan maintain . Jalur Cara Gemilang: Sustaining = mempertahankan (perhatian); substitusi ke kalimat.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's world, we spend hours looking at screens – whether it be on computers, TVs, tablets or smartphones. But too much screen time may not be healthy for a growing child.\n\nWhen children play video games or watch TV, they're not building their thinking skills through reading, practicing artistic abilities or problem-solving in the natural environment. Screen-based entertainment can interfere with verbal and nonverbal social skills which develop from talking and interacting with other children and adults.\n\nMoreover, the flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required. If children have access to a screen whenever they want, they will miss important opportunities to practice regulating emotions and sustaining attention and focus.\n\nAdditionally, when children have access to screens, they may have access to content that is not appropriate for their age level, such as violent games or unsafe apps. It's important for parents to be aware of content being accessed by their children and to discuss internet safety guidelines. Screen time can also affect a child's physical health by disrupting sleep habits or increasing risk for obesity. While enjoying screen time, some kids:\n\nParents may be surprised to learn that too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps. This may happen in part because children can become so involved in screen time that other factors take a toll on their digestive and physical health, such as ignoring their body's natural cues and delaying trips to the bathroom.\n\nTherefore, it is important that parents limit screen time by age as strategies to limit screen time for kids:\n\n(adapted from https://www.childrens.com)\n\nCategorize each statement into Cognitive/Social Effects or Physical/Health Effects!\n(Answer each row by choosing Cognitive/ Social Effects / Physical/ Health Effects.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Cognitive/ Social Effects",
+            "Physical/ Health Effects"
+          ],
+          "baris": [
+            "Children have fewer opportunities to develop communication skills.",
+            "Children may struggle to regulate emotions.",
+            "Reduced attention span and focus.",
+            "Increased risk of obesity due to inactivity.",
+            "Children might neglect their daily routines"
+          ],
+          "jawaban": [
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — COGNITIVE/ SOCIAL EFFECTS Baris 2 — COGNITIVE/ SOCIAL EFFECTS Baris 3 — COGNITIVE/ SOCIAL EFFECTS Baris 4 — PHYSICAL/ HEALTH EFFECTS Baris 5 — PHYSICAL/ HEALTH EFFECTS Jalur Cara Gemilang: Kognitif/sosial = komunikasi, emosi, fokus; fisik = mata, tidur, pencernaan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's world, we spend hours looking at screens – whether it be on computers, TVs, tablets or smartphones. But too much screen time may not be healthy for a growing child.\n\nWhen children play video games or watch TV, they're not building their thinking skills through reading, practicing artistic abilities or problem-solving in the natural environment. Screen-based entertainment can interfere with verbal and nonverbal social skills which develop from talking and interacting with other children and adults.\n\nMoreover, the flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required. If children have access to a screen whenever they want, they will miss important opportunities to practice regulating emotions and sustaining attention and focus.\n\nAdditionally, when children have access to screens, they may have access to content that is not appropriate for their age level, such as violent games or unsafe apps. It's important for parents to be aware of content being accessed by their children and to discuss internet safety guidelines. Screen time can also affect a child's physical health by disrupting sleep habits or increasing risk for obesity. While enjoying screen time, some kids:\n\nParents may be surprised to learn that too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps. This may happen in part because children can become so involved in screen time that other factors take a toll on their digestive and physical health, such as ignoring their body's natural cues and delaying trips to the bathroom.\n\nTherefore, it is important that parents limit screen time by age as strategies to limit screen time for kids:\n\n(adapted from https://www.childrens.com)\n\nAfter reading the text, which strategy parents can use to reduce the negative impacts of screen time while still allowing children to use technology?",
+          "tipe": "pg",
+          "opsi": [
+            "Buying a separate alarm clock to prevent checking phone first thing in the morning.",
+            "Establishing a consistent daily schedule to create discipline.",
+            "Allowing children to use screens only after they buy new gadgets.",
+            "Confiscating all electronic devices from the children's bedrooms.",
+            "Setting clear time limits and schedule screen use."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Strategi yang dapat digunakan orang tua adalah menetapkan batas waktu dan jadwal penggunaan layar. Hal ini sesuai dengan teks yang menyatakan bahwa orang tua perlu membatasi screen time berdasarkan usia anak agar tidak mengganggu kesehatan, tidur, dan aktivitas lainnya. Dengan pengaturan yang jelas, anak tetap dapat menggunakan teknologi secara sehat dan seimbang. Jalur Cara Gemilang: Strategi orang tua = batas waktu + jadwal penggunaan layar.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Read the following text carefully!\n\nIn today's world, we spend hours looking at screens – whether it be on computers, TVs, tablets or smartphones. But too much screen time may not be healthy for a growing child.\n\nWhen children play video games or watch TV, they're not building their thinking skills through reading, practicing artistic abilities or problem-solving in the natural environment. Screen-based entertainment can interfere with verbal and nonverbal social skills which develop from talking and interacting with other children and adults.\n\nMoreover, the flashing colors, lights and sounds of screens capture children's attention, with very little cognitive effort required. If children have access to a screen whenever they want, they will miss important opportunities to practice regulating emotions and sustaining attention and focus.\n\nAdditionally, when children have access to screens, they may have access to content that is not appropriate for their age level, such as violent games or unsafe apps. It's important for parents to be aware of content being accessed by their children and to discuss internet safety guidelines. Screen time can also affect a child's physical health by disrupting sleep habits or increasing risk for obesity. While enjoying screen time, some kids:\n\nParents may be surprised to learn that too much screen time can play a role in gastrointestinal issues, such as abdominal pain, constipation or cramps. This may happen in part because children can become so involved in screen time that other factors take a toll on their digestive and physical health, such as ignoring their body's natural cues and delaying trips to the bathroom.\n\nTherefore, it is important that parents limit screen time by age as strategies to limit screen time for kids:\n\n(adapted from https://www.childrens.com)\n\nWhy might children ignore their body's natural signals, such as the need to go to the bathroom, during screen time?",
+          "tipe": "pg",
+          "opsi": [
+            "They may delay toilet trips because it is not possible for them to stop playing, miss a level, or lose their place in a show.",
+            "Sitting for long periods can make muscles stiff, causing children to ignore physical activities.",
+            "High-engagement games and fast-paced videos makes the brain prioritize physical cues over screen engagement.",
+            "Screens are highly engaging and capture attention, causing children to delay responding to bodily signals in order to continue their activity.",
+            "The evidence of positive neuropsychological effects is stronger in children aged 6 years and up."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Anak-anak dapat mengabaikan sinyal tubuh karena mereka terlalu fokus pada aktivitas layar yang sangat menarik. Teks menjelaskan bahwa keterlibatan yang tinggi ini membuat anak menunda merespons kebutuhan tubuh, seperti pergi ke kamar mandi, sehingga mereka mengabaikan sinyal alami tubuh mereka. Jalur Cara Gemilang: Anak mengabaikan sinyal tubuh karena atensi terserap aktivitas layar.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 5 Hortatory Exposition h.92+ (kunci tabel di HTML, pembahasan di HTML/PDF 08 Pembahasan); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
