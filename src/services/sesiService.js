@@ -102,6 +102,29 @@ export const dengarUjian = (sesiId, cb) =>
   onSnapshot(collection(db, 'sesi_kelas', sesiId, 'ujian'),
     (sn) => cb(sn.docs.map((d) => ({ id: d.id, ...d.data() }))));
 
+// Turn 93: riwayat sesi guru + rekap nilai untuk dilihat KEMBALI
+// kapan pun (sesi aktif maupun yang sudah diakhiri). Data nilai
+// permanen di subcollection ujian/ & jawaban/ per sesi.
+export async function listSesiGuru(guruId, batas = 40) {
+  const q = query(collection(db, 'sesi_kelas'), where('guruId', '==', guruId || ''));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.dibuatAt?.seconds || 0) - (a.dibuatAt?.seconds || 0))
+    .slice(0, batas);
+}
+
+export async function muatRekapSesi(sesiId) {
+  const [uj, pes] = await Promise.all([
+    getDocs(collection(db, 'sesi_kelas', sesiId, 'ujian')),
+    getDocs(collection(db, 'sesi_kelas', sesiId, 'peserta')),
+  ]);
+  return {
+    ujian: uj.docs.map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.skor || 0) - (a.skor || 0)),
+    peserta: pes.docs.map((d) => ({ id: d.id, ...d.data() })),
+  };
+}
+
 export async function kirimTanya(sesiId, { siswaId, nama, teks, eventId }) {
   const safeId = String(eventId || `${siswaId || 'siswa'}_${Date.now()}`)
     .replace(/[^a-zA-Z0-9_-]/g, '_');
