@@ -8,8 +8,8 @@
 // dipakai selama jatahnya masih ada, kalau habis otomatis turun ke Flash-Lite
 // yang jatah hariannya jauh lebih besar (supaya tidak pernah mentok total).
 const GEMINI_MODELS = [
+  'gemini-3.6-flash', // Turn 100: model eksplisit terbukti hidup & cepat via probe
   'gemini-flash-latest',
-  'gemini-flash-lite-latest',
   'gemini-2.5-flash-lite',
 ];
 
@@ -167,7 +167,7 @@ function buildGenerationConfig({ useThinking }) {
   return config;
 }
 
-async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true, useThinking = true) {
+async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true, useThinking = true, timeoutMs = 50000) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
 
   const body = {
@@ -194,6 +194,8 @@ async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true,
     body.tools = [{ google_search: {} }];
   }
 
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -201,7 +203,8 @@ async function callGemini(systemPrompt, userPrompt, modelName, useSearch = true,
       'x-goog-api-key': process.env.GEMINI_API_KEY,
     },
     body: JSON.stringify(body),
-  });
+    signal: ctrl.signal,
+  }).finally(() => clearTimeout(timer));
 
   if (!response.ok) {
     const errText = await response.text();
@@ -427,7 +430,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { topic, mapel, poin, kelas } = req.body;
+  const { topic, mapel, poin, kelas, riset } = req.body;
 
   if (!topic) {
     return res.status(400).json({ error: 'Judul materi wajib diisi' });
@@ -477,25 +480,34 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
   // fitur "mikir dulu" ini murni BONUS kualitas di jalur normal, gak
   // bikin generate gagal total kalau ternyata gak didukung.
   const firstModel = GEMINI_MODELS[0];
-
-  // Percobaan tunggal DENGAN pencarian + DENGAN thinking -- hanya di model pertama.
+  // Turn 100 (owner: "Astro gabisa dipakai"): akar masalahnya BUKAN kuota
+  // Gemini melainkan TIMEOUT Vercel 60 detik — percobaan pertama dulu
+  // WAJIB pencarian internet + thinking bisa makan >60 dtk sendirian,
+  // jadi fungsi ter-cut sebelum sempat menjawab (gejala: 504 / "kena
+  // limit"). Sekarang: jalur cepat TANPA pencarian sebagai default
+  // (pencarian jadi OPSIONAL via body.riset), setiap panggilan punya
+  // timeout sendiri, dan fallback dihentikan bila budget waktu tinggal
+  // sedikit — skenario terburuk tetap di bawah 60 detik.
+  const mulaiMs = Date.now();
+  const TOTAL_BUDGET_MS = 55000;
+  const inginRiset = !!riset;
   try {
-    geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, firstModel, true, true);
-    usedSearch = true;
-    console.log(`generateMateriSection sukses pakai model: ${firstModel} (dengan pencarian + thinking)`);
+    geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, firstModel, inginRiset, true, inginRiset ? 48000 : 50000);
+    usedSearch = inginRiset;
+    console.log(`generateMateriSection sukses pakai model: ${firstModel} (riset=${inginRiset} + thinking)`);
   } catch (e) {
     lastErr = e;
-    console.error(`generateMateriSection gagal pakai model ${firstModel} (dengan pencarian + thinking):`, e.message);
+    console.error(`generateMateriSection gagal pakai model ${firstModel} (riset=${inginRiset}):`, e.message);
   }
-
-  // Kalau percobaan dengan pencarian+thinking gagal/belum dicoba, jalankan
-  // rangkaian TANPA pencarian dan TANPA thinking di SEMUA model (termasuk
-  // model pertama tadi) -- cepat, gak ada jeda buatan, berhenti di
-  // percobaan pertama yang berhasil.
   if (!geminiData) {
     for (const modelName of GEMINI_MODELS) {
+      const sisa = TOTAL_BUDGET_MS - (Date.now() - mulaiMs);
+      if (sisa < 12000) {
+        console.error('generateMateriSection: budget waktu habis, fallback dihentikan');
+        break;
+      }
       try {
-        geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, false, false);
+        geminiData = await callGemini(SYSTEM_PROMPT, userPrompt, modelName, false, false, sisa - 5000);
         lastErr = null;
         usedSearch = false;
         console.log(`generateMateriSection sukses pakai model: ${modelName} (TANPA pencarian, fallback cepat)`);

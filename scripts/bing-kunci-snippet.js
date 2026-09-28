@@ -20,8 +20,9 @@ function kunciTabelRingkas(no, kolom, tipe) {
   if (!raw) return null;
   if (tipe === 'pgMulti') {
     const m = /\(([\d,\s]+)\)/.exec(raw);
-    if (!m) return null;
-    return m[1].split(',').map((x) => Number(x.trim()) - 1);
+    const isi = m ? m[1] : (/^[\d,\s]+$/.test(raw) ? raw : null);
+    if (!isi) return null;
+    return isi.split(',').map((x) => Number(x.trim()) - 1).filter((x) => !Number.isNaN(x));
   }
   if (tipe === 'pg') return /^[A-E]$/i.test(raw) ? [hurufIdx(raw)] : null;
   const toks = raw.split(',').map((x) => x.trim().toUpperCase());

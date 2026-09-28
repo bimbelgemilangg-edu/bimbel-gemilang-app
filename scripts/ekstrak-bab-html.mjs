@@ -17,7 +17,14 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const src = process.argv[2];
 const out = process.argv[3] || '/tmp/ekstrak-bab.json';
 if (!src) { console.error('butuh path file html'); process.exit(1); }
-const html = readFileSync(src, 'utf-8');
+let html = readFileSync(src, 'utf-8');
+// Turn 100 (seri Matematika): flag --matematika mengaktifkan konversi
+// markup rumus buku (frac/sqrt/sup/sub/entitas) -> LaTeX mentah sebelum
+// tag dibuang, supaya renderer KaTeX bisa merender rumus natural.
+if (process.argv.includes('--matematika')) {
+  const { praMatematika } = await import('./latex-utils.mjs');
+  html = praMatematika(html);
+}
 
 const entity = (s) => s
   .replace(/&ldquo;|&rdquo;/g, '"').replace(/&lsquo;|&rsquo;/g, "'")
@@ -36,8 +43,15 @@ const teksBergaris = (s) => entity(s
 const LATIHAN_RE = /<h2 class="hbar"[^>]*>[\s\S]{0,300}?(Latihan Soal|Exercises?)/;
 const mH2 = LATIHAN_RE.exec(html);
 const iMulai = mH2 ? mH2.index : html.indexOf('Latihan Soal');
-const iKunci = html.indexOf('KUNCI DAN PEMBAHASAN');
-const iBahasan = html.indexOf('>Pembahasan<');
+// Turn 100: varian banner kunci antar buku (KUNCI DAN PEMBAHASAN /
+// KUNCI JAWABAN DAN PEMBAHASAN / "Kunci Jawaban dan Pembahasan"
+// gabungan seperti bab statistika). Cari SETELAH heading latihan agar
+// tidak kena entri navigasi daftar isi di awal dokumen.
+let iKunciRel = html.slice(iMulai).search(/KUNCI DAN PEMBAHASAN|KUNCI JAWABAN DAN PEMBAHASAN/);
+let iKunci = iKunciRel >= 0 ? iMulai + iKunciRel : -1;
+if (iKunci < 0) iKunci = html.indexOf('>Kunci Jawaban dan Pembahasan<', iMulai);
+let iBahasan = iKunci >= 0 ? html.indexOf('>Pembahasan<', iKunci) : -1;
+if (iBahasan < 0 && iKunci >= 0) iBahasan = html.indexOf('<ol', iKunci);
 if (iMulai < 0 || iKunci < 0 || iBahasan < 0 || !(iMulai < iKunci && iKunci < iBahasan)) {
   console.error('penanda area tidak ditemukan', { iMulai, iKunci, iBahasan }); process.exit(1);
 }
@@ -131,12 +145,31 @@ function parseSoal(liHtml) {
 
 const soal = [];
 {
-  const reOl = /<ol class="lst"([^>]*)>([\s\S]*?)<\/ol>/g;
-  let mo; let nextNo = 1;
-  while ((mo = reOl.exec(areaSoal))) {
-    const mStart = /start="(\d+)"/.exec(mo[1]);
+  // Turn 100: pemindai <ol class="lst"> SADAR KEDALAMAN — beberapa bab
+  // (Matematika) memiliki <ol> bersarang di dalam li; regex non-greedy
+  // lama terpotong di </ol> pertama sehingga soal hilang.
+  const blokOl = (str, mulai) => {
+    const i = str.indexOf('<ol', mulai);
+    if (i < 0) return null;
+    const tagEnd = str.indexOf('>', i);
+    const reTok = /<ol\b|<\/ol>/g;
+    reTok.lastIndex = i;
+    let mt; let depth = 0; let end = -1;
+    while ((mt = reTok.exec(str))) {
+      if (mt[0] === '</ol>') { depth -= 1; if (depth === 0) { end = mt.index; break; } } else depth += 1;
+    }
+    if (end < 0) return null;
+    return {
+      idx: i, attrs: str.slice(i, tagEnd), isi: str.slice(tagEnd + 1, end), next: end + 5,
+    };
+  };
+  let pos = 0; let nextNo = 1; let mo;
+  while ((mo = blokOl(areaSoal, pos))) {
+    pos = mo.next;
+    if (!/class="lst"/.test(mo.attrs)) continue;
+    const mStart = /start="(\d+)"/.exec(mo.attrs);
     let no = mStart ? Number(mStart[1]) : nextNo;
-    const bagian = ('\n' + mo[2]).split(/^ {4}<li>/m).slice(1);
+    const bagian = ('\n' + mo.isi).split(/^ {4}<li>/m).slice(1);
     for (let b of bagian) {
       b = b.split(/^ {4}<\/li>/m)[0];
       const s = parseSoal(b);
@@ -147,7 +180,7 @@ const soal = [];
       s.mandiri = /^(Bacalah|Read)\b/.test(s.teks) && s.teks.length > 400;
       // grup stimulus: petik terakhir yang posisinya sebelum <ol> ini
       let gi = -1;
-      stimuli.forEach((st, i) => { if (st.pos < mo.index) gi = i; });
+      stimuli.forEach((st, i) => { if (st.pos < mo.idx) gi = i; });
       s.grup = gi;
       soal.push(s);
       no += 1;
@@ -159,9 +192,9 @@ const soal = [];
 // ---------- kunci ringkas ----------
 const kunci = {};
 {
-  const tbl = /<table class="kunci">([\s\S]*?)<\/table>/.exec(areaKunci);
+  const tbl = /<table class="[^"]*kunci[^"]*"[^>]*>([\s\S]*?)<\/table>/.exec(areaKunci);
   if (tbl) {
-    const sel = [...tbl[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((m) => stripTag(m[1])).filter(Boolean);
+    const sel = [...tbl[1].matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g)].map((m) => stripTag(m[1])).filter(Boolean);
     for (const s of sel) {
       const m = /^(\d+)\.\s*(.+)$/.exec(s);
       if (m) kunci[Number(m[1])] = m[2].trim();
@@ -172,19 +205,20 @@ const kunci = {};
 // ---------- pembahasan ----------
 const pembahasan = [];
 {
-  const reLi = /^ {4}<li>([\s\S]*?)^ {4}<\/li>/gm;
-  let m;
-  while ((m = reLi.exec(areaBahas))) {
-    const blok = m[1];
-    const tbl = /<table class="tbl">([\s\S]*?)<\/table>/.exec(blok);
+  // Turn 100: split berbasis pembuka li 4-spasi (penutup bisa inline
+  // seperti di buku statistika); isi di-strip tag kemudian.
+  const bagian = ('\n' + areaBahas).split(/^ {4}<li>/m).slice(1);
+  for (let blok of bagian) {
+    blok = blok.split(/^ {0,4}<\/li>/m)[0];
+    const tbl = /<table class="[^"]*tbl[^"]*"[^>]*>([\s\S]*?)<\/table>/.exec(blok);
     let tabel = null;
     if (tbl) {
       tabel = [...tbl[1].matchAll(/<tr>([\s\S]*?)<\/tr>/g)].slice(1).map((r) => {
-        const per = [...r[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((t) => stripTag(t[1]));
+        const per = [...r[1].matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g)].map((t) => stripTag(t[1]));
         return { pernyataan: per[0] || '', benar: (per[1] || '').includes('✓'), salah: (per[2] || '').includes('✓'), ket: per[3] || '' };
       });
     }
-    const tanpaTbl = blok.replace(/<table class="tbl">[\s\S]*?<\/table>/g, ' ');
+    const tanpaTbl = blok.replace(/<table[^>]*>[\s\S]*?<\/table>/g, ' ');
     pembahasan.push({ teks: stripTag(tanpaTbl), tabel });
   }
 }
