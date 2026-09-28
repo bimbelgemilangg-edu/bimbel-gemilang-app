@@ -9,8 +9,8 @@
 // yang jatah hariannya jauh lebih besar (supaya tidak pernah mentok total).
 const GEMINI_MODELS = [
   'gemini-3.6-flash', // Turn 100: model eksplisit terbukti hidup & cepat via probe
-  'gemini-flash-latest',
-  'gemini-2.5-flash-lite',
+  'gemini-3.5-flash-lite', // rekomendasi resmi Google pengganti 2.5-flash-lite (404 pensiun)
+  'gemini-flash-latest', // cadangan terakhir (kadang 503 high-demand)
 ];
 
 // ============================================================
