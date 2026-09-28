@@ -426,6 +426,24 @@ Sebelum mengirim jawaban, periksa diam-diam satu per satu (ini bagian dari prose
 Kalau ada yang belum terpenuhi, perbaiki dulu sebelum menjawab.`;
 
 export default async function handler(req, res) {
+  // Turn 100: probe diagnostik — GET /api/generateMateriSection?probe=1
+  // menguji endpoint NATIF Gemini per model dengan prompt mini dan
+  // mengembalikan pesan provider apa adanya (buat menelusuri 400/404
+  // tanpa menerka). Tidak memakai kuota berarti.
+  if (req.method === 'GET' && req.query.probe) {
+    const hasil = [];
+    for (const m of GEMINI_MODELS) {
+      for (const variasi of [['tanpa-thinking', false], ['thinking-budget', true]]) {
+        try {
+          await callGemini('Kamu penguji koneksi.', 'Balas tepat: OK', m, false, variasi[1], 15000);
+          hasil.push({ model: m, variasi: variasi[0], status: 'ok' });
+        } catch (e) {
+          hasil.push({ model: m, variasi: variasi[0], status: 'gagal', pesan: String(e.message).slice(0, 300) });
+        }
+      }
+    }
+    return res.status(200).json({ mode: 'probe-materi', hasil });
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
