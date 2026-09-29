@@ -27,10 +27,25 @@ const ENTITAS = {
   '&beta;': '\\beta ', '&gamma;': '\\gamma ', '&theta;': '\\theta ',
   '&lambda;': '\\lambda ', '&Delta;': '\\Delta ', '&sigma;': '\\sigma ',
   '&mu;': '\\mu ', '&phi;': '\\phi ', '&Omega;': '\\Omega ',
+  '&compfn;': '\\circ ', '&function;': '\\circ ', '&Prime;': "'", '&prime;': "'",
+  '&hArr;': '\\Leftrightarrow ', '&#8660;': '\\Leftrightarrow ', '&rArr;': '\\Rightarrow ',
+  '&#8722;': '-', '&infin;': '\\infty ', '&ang;': '\\angle ', '&perp;': '\\perp ',
+  '&cong;': '\\cong ', '&sim;': '\\sim ', '&prop;': '\\propto ', '&#8730;': '\\sqrt{\\phantom{x}}',
 };
 
 export function praMatematika(html) {
   let s = String(html);
+  // Kurung bertingkat "bkt" = ( + tabel isi + ) -> datarkan dulu agar
+  // pemecah sel td tidak terpotong di </td> nested (kasus opsi grid bab 7).
+  s = s.replace(
+    /<span class="bkt">\s*<span class="ang">([^<]*)<\/span>\s*<table[^>]*>[\s\S]*?<td class="mid">([\s\S]*?)<\/td>[\s\S]*?<\/table>\s*<span class="ang">([^<]*)<\/span>\s*<\/span>/g,
+    (m, a, b, c) => a + b + c,
+  );
+  // fungsi sepotong-sepotong ala buku: { baris1<br>baris2 } -> cases LaTeX
+  s = s.replace(/<span class="sys"><span class="b">\{<\/span><span class="rows">([\s\S]*?)<\/span><\/span>/g,
+    (m, rows) => '\\begin{cases} ' + rows.replace(/<br\s*\/?>/g, ' \\\\ ').replace(/<[^>]+>/g, '') + ' \\end{cases}');
+  // baris rumus terpusat -> block math
+  s = s.replace(/<div class="rumc">([\s\S]*?)<\/div>/g, (m, inner) => '\n$' + inner.trim() + '$\n');
   for (let i = 0; i < 6; i++) {
     const before = s;
     s = s.replace(
@@ -101,17 +116,35 @@ const fixTekstDalamMat = (m) => m.replace(/(?<![\\A-Za-z])([a-zA-Z][a-zA-Z ]{1,2
 export function naturalisasi(teks) {
   if (!teks) return teks;
   let t = String(teks);
-  if (t.includes('$')) return t; // sudah ber-LaTeX manual (konten kurasi)
+  if (t.includes('$')) {
+    // Teks sudah membawa $...$ manual (rumus asli buku / konten kurasi).
+    // Bersihkan sisa align kosong ala buku (rantai "$ = + $") yang tak bermakna.
+    return t.replace(/\$[\s=+\\]+\$/g, ' ');
+  }
   let ekor = '';
   const iJ = t.search(/\bJawaban:/);
   if (iJ >= 0) { ekor = ' ' + t.slice(iJ); t = t.slice(0, iJ); }
+  // Satu-pass anti-tumpang-tindih: kumpulkan semua kemunculan pulau valid,
+  // urutkan posisi, rakit ulang sekali jalan — tidak mungkin lahir $$$ dari
+  // pulau-pulau rumus yang saling bersinggungan (kasus pembahasan trigono).
+  const hits = [];
   for (const p of kandidatPulau(t)) {
     let bersih = p.replace(/\s{2,}/g, ' ').trim();
     bersih = bersih.replace(/%/g, '\\%');
     bersih = fixTekstDalamMat(bersih);
     if (!okKatex(bersih)) continue;
-    t = t.split(p).join(`$${bersih}$`);
+    let i = t.indexOf(p);
+    while (i >= 0) { hits.push({ i, j: i + p.length, r: '$' + bersih + '$' }); i = t.indexOf(p, i + 1); }
   }
+  hits.sort((a, b) => a.i - b.i || b.j - a.j);
+  let out = '';
+  let last = 0;
+  for (const h of hits) {
+    if (h.i < last) continue;
+    out += t.slice(last, h.i) + h.r;
+    last = h.j;
+  }
+  t = out + t.slice(last);
   t = t + ekor;
   t = t.split('\n').map((bar) => {
     const b = bar.trim();

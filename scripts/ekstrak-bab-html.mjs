@@ -47,10 +47,11 @@ const iMulai = mH2 ? mH2.index : html.indexOf('Latihan Soal');
 // KUNCI JAWABAN DAN PEMBAHASAN / "Kunci Jawaban dan Pembahasan"
 // gabungan seperti bab statistika). Cari SETELAH heading latihan agar
 // tidak kena entri navigasi daftar isi di awal dokumen.
-let iKunciRel = html.slice(iMulai).search(/KUNCI DAN PEMBAHASAN|KUNCI JAWABAN DAN PEMBAHASAN/);
+let iKunciRel = html.slice(iMulai).search(/KUNCI (DAN|JAWABAN)/);
 let iKunci = iKunciRel >= 0 ? iMulai + iKunciRel : -1;
 if (iKunci < 0) iKunci = html.indexOf('>Kunci Jawaban dan Pembahasan<', iMulai);
 let iBahasan = iKunci >= 0 ? html.indexOf('>Pembahasan<', iKunci) : -1;
+if (iBahasan < 0 && iKunci >= 0) { const kB = html.indexOf('class="ksub">Pembahasan', iKunci); iBahasan = kB >= 0 ? kB : -1; }
 if (iBahasan < 0 && iKunci >= 0) iBahasan = html.indexOf('<ol', iKunci);
 if (iMulai < 0 || iKunci < 0 || iBahasan < 0 || !(iMulai < iKunci && iKunci < iBahasan)) {
   console.error('penanda area tidak ditemukan', { iMulai, iKunci, iBahasan }); process.exit(1);
@@ -109,13 +110,18 @@ function parseSoal(liHtml) {
       .map((m) => stripTag(m[1]).replace(/^Opsi\s+[A-E]\s*:\s*/i, '').trim())
       .filter(Boolean);
     s.opsi = svgs;
+  } else if (/<ol class="lst2"[^>]*type="A"/.test(liHtml)) {
+    // opsi berupa daftar <ol type=A> (huruf implisit urutan)
+    s.tipe = 'pg';
+    const ol2 = /<ol class="lst2"[^>]*>([\s\S]*?)<\/ol>/.exec(liHtml);
+    if (ol2) s.opsi = [...ol2[1].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => stripTag(m[1]));
   } else if (/<table class="grid">/.test(liHtml)) {
     s.tipe = 'pg';
     const grid = /<table class="grid">([\s\S]*?)<\/table>/.exec(liHtml)[1];
     const sel = [...grid.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((m) => stripTag(m[1])).filter(Boolean);
     const pairs = sel.map((c) => { const m = /^\(([A-E])\)\s*([\s\S]*)$/.exec(c); return m ? { L: m[1], t: m[2].trim() } : null; }).filter(Boolean);
     pairs.sort((a, b) => (a.L < b.L ? -1 : 1));
-    s.opsi = pairs.map((p) => p.t);
+    s.opsi = pairs.map((p) => (p.t ? p.t : '(lihat grafik pada gambar)'));
   } else if (liHtml.includes('class="opsi"')) {
     s.tipe = 'pg';
     const reOpt = /<span class="hf">\(([A-E])\)<\/span>\s*<span>([\s\S]*?)<\/span>/g;
@@ -195,7 +201,11 @@ const kunci = {};
   const tbl = /<table class="[^"]*kunci[^"]*"[^>]*>([\s\S]*?)<\/table>/.exec(areaKunci);
   if (tbl) {
     const sel = [...tbl[1].matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g)].map((m) => stripTag(m[1])).filter(Boolean);
+    let pending = null;
     for (const s of sel) {
+      const mp = /^(\d+)\.?$/.exec(s);
+      if (mp) { pending = Number(mp[1]); continue; }
+      if (pending !== null) { kunci[pending] = s.trim(); pending = null; continue; }
       const m = /^(\d+)\.\s*(.+)$/.exec(s);
       if (m) kunci[Number(m[1])] = m[2].trim();
     }
