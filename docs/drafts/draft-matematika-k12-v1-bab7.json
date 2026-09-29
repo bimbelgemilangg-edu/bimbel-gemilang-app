@@ -1,0 +1,908 @@
+{
+  "materi": {
+    "judul": "Matematika — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Matematika",
+    "kelas": "",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#F59E0B",
+    "emoji": "📐",
+    "deskripsi": "Seri Matematika TKA: bilangan-himpunan-eksponen, sistem persamaan, bangun datar-pythagoras-kesebangunan, barisan-deret, statistika-peluang, bangun ruang, dan relasi-fungsi-transformasi-trigonometri. Semua rumus dirender natural (KaTeX) seperti buku. Impor bab tambahan pakai mode \"tambah\".",
+    "urutan": 8,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks.",
+      "Kartu Cara Gemilang, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 7 — Relasi & Fungsi, Transformasi Geometri, dan Trigonometri (Edisi Cara Gemilang)",
+      "ringkasan": "Relasi & fungsi (penyajian, domain-range, injektif/surjektif/bijektif), komposisi & invers (rumus cepat + balik urutan), transformasi geometri (matriks translasi/refleksi/rotasi/dilatasi + pusat bukan O), trigonometri (konversi radian, De-Mi-Sa, sudut istimewa, kuadran, identitas) — semua rumus ditulis LaTeX natural; 25 soal resmi bank (17 pg, 4 pgMulti, 4 tabel B/S) + pembahasan dua jalur ber-LaTeX.",
+      "estimasiMenit": 75,
+      "urutan": 7,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Relasi & Fungsi: dari Diagram ke Sifat"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Relasi adalah hubungan antara dua himpunan; fungsi adalah relasi khusus di mana setiap anggota domain dipasangkan TEPAT SATU anggota kodomain. Tiga penyajian: diagram panah, pasangan terurut, dan diagram Kartesius."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Bab 7 adalah puncak aljabar SMA: fungsi menempel di komposisi-invers, transformasi menempel di geometri koordinat, trigonometri menempel di semua soal sudut. Kuasai tes cepat \"fungsi atau bukan\" dan tabel transformasi — separuh soal bab ini jatuh di sana."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Sifat fungsi (bank 7.2)",
+          "kolom": [
+            "Sifat",
+            "Syarat",
+            "Nama lain"
+          ],
+          "rows": [
+            {
+              "k": "Injektif",
+              "v": "Anggota berbeda punya peta berbeda (tak ada dua panah menuju titik sama).",
+              "w": "Satu-satu (into)."
+            },
+            {
+              "k": "Surjektif",
+              "v": "Setiap anggota kodomain punya pasangan di domain.",
+              "w": "Pada (onto)."
+            },
+            {
+              "k": "Bijektif",
+              "v": "Injektif sekaligus surjektif; korespondensi satu-satu.",
+              "w": "Syarat fungsi punya invers."
+            }
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemahaman: relasi vs fungsi",
+          "keterangan": "Gemilang Drill — gunakan tes cepat CG-FUNGSI buku: fungsi itu disiplin.",
+          "items": [
+            {
+              "teks": "Himpunan ${(1,2), (1,3), (2,4)}$ merupakan fungsi.",
+              "jawaban": false,
+              "penjelasan": "Anggota domain 1 punya dua pasangan — melanggar tepat satu."
+            },
+            {
+              "teks": "Pada fungsi $f: A \\to B$, range adalah himpunan semua peta di B yang benar-benar terpakai.",
+              "jawaban": true,
+              "penjelasan": "Range $\\subseteq$ kodomain."
+            },
+            {
+              "teks": "Fungsi punya invers hanya bila bijektif.",
+              "jawaban": true,
+              "penjelasan": "Syarat invers: korespondensi satu-satu."
+            },
+            {
+              "teks": "Diagram panah dengan anggota domain nganggur tetap fungsi dari A ke B.",
+              "jawaban": false,
+              "penjelasan": "Semua anggota domain harus mendapat tepat satu panah."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-FUNGSI: disiplin anak panah",
+          "teks": "FUNGSI = setiap anggota domain punya TEPAT SATU anak panah. Pasangan terurut: duplikat kolom pertama dengan pasangan beda = bukan fungsi.",
+          "items": [
+            "Diagram panah: cari domain nganggur atau berpanah ganda.",
+            "Pasangan terurut: sorot kolom pertama (domain).",
+            "Grafik: uji garis vertikal (fungsi) & garis horizontal (punya invers)."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Relasi \"faktor dari\" dari $A = {2, 3}$ ke $B = {4, 6, 9}$ disajikan sebagai pasangan terurut ...",
+              "opsi": [
+                "${(2,4), (2,6), (3,9)}$",
+                "${(2,4), (3,6), (3,9)}$",
+                "${(4,2), (6,2), (9,3)}$",
+                "${(2,6), (3,4), (3,9)}$",
+                "${(2,4), (2,6), (2,9)}$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: 2 faktor dari 4 dan 6; 3 faktor dari 9. Jalur Cara Gemilang: uji satu-satu tiap pasangan angka."
+            },
+            {
+              "soal": "Fungsi $f: x \\mapsto 2x - 1$ memetakan $3$ ke ...",
+              "opsi": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: $f(3) = 2(3)-1 = 5$. Jalur Cara Gemilang: substitusi langsung."
+            },
+            {
+              "soal": "Suatu fungsi dikatakan SURJEKTIF apabila ...",
+              "opsi": [
+                "setiap anggota domain berpasangan unik",
+                "setiap anggota kodomain mempunyai prapeta",
+                "domain dan kodomain berjumlah sama",
+                "grafiknya lulus uji garis horizontal",
+                "inversnya ada"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: surjektif = peta menutupi seluruh kodomain. Jalur Cara Gemilang: \"sur\" = semua terpakai."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Fungsi Komposisi & Invers"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Komposisi $(f \\circ g)(x) = f(g(x))$ dikerjakan dari dalam. Invers membalik pemetaan: $(f \\circ g)^{-1} = g^{-1} \\circ f^{-1}$ — urutan dibalik!"
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Rumus invers cepat (bank 7.4)",
+          "kolom": [
+            "Fungsi",
+            "Invers"
+          ],
+          "rows": [
+            {
+              "k": "$f(x) = ax + b$",
+              "v": "$f^{-1}(x) = \\frac{x - b}{a}$"
+            },
+            {
+              "k": "$f(x) = \\frac{ax + b}{cx + d}$",
+              "v": "$f^{-1}(x) = \\frac{-dx + b}{cx - a}$"
+            },
+            {
+              "k": "$f(x) = a^{x}$",
+              "v": "$f^{-1}(x) = \\,^{a}\\log x$"
+            },
+            {
+              "k": "$(f \\circ g)(x)$",
+              "v": "$(f \\circ g)^{-1}(x) = (g^{-1} \\circ f^{-1})(x)$"
+            }
+          ]
+        },
+        {
+          "jenis": "jodohMini",
+          "judul": "🔗 Jodohkan: fungsi dan inversnya",
+          "items": [
+            {
+              "kiri": "$f(x) = 3x - 6$",
+              "kanan": "$f^{-1}(x) = \\frac{x + 6}{3}$"
+            },
+            {
+              "kiri": "$f(x) = \\frac{2x + 1}{x - 3}$",
+              "kanan": "$f^{-1}(x) = \\frac{3x + 1}{x - 2}$"
+            },
+            {
+              "kiri": "$f(x) = 2^{x}$",
+              "kanan": "$f^{-1}(x) = \\,^{2}\\log x$"
+            },
+            {
+              "kiri": "$(f \\circ g)(x)$",
+              "kanan": "$(g^{-1} \\circ f^{-1})(x)$"
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-INVERS: balik & tukar",
+          "teks": "Invers = tukar peran $x$ dan $y$ lalu selesaikan; komposisi invers = BALIK urutan.",
+          "items": [
+            "Linear: pakai $\\frac{x-b}{a}$ langsung.",
+            "Pecahan: silang koefisien $\\frac{-dx+b}{cx-a}$.",
+            "Nilai $f^{-1}(k)$ tanpa rumus: selesaikan $f(x)=k$."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Jika $f(x) = 2x + 3$ dan $g(x) = x^{2} - 1$, maka $(f \\circ g)(2) = $ ...",
+              "opsi": [
+                "3",
+                "6",
+                "9",
+                "11",
+                "13"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: $g(2)=3$, lalu $f(3)=9$. Jalur Cara Gemilang: dari dalam dulu."
+            },
+            {
+              "soal": "Invers dari $f(x) = \\frac{3x - 1}{x + 2}$ adalah ...",
+              "opsi": [
+                "$f^{-1}(x) = \\frac{-2x - 1}{x - 3}$",
+                "$f^{-1}(x) = \\frac{2x + 1}{3 - x}$",
+                "$f^{-1}(x) = \\frac{x + 2}{3x - 1}$",
+                "$f^{-1}(x) = \\frac{3 - x}{2x + 1}$",
+                "$f^{-1}(x) = \\frac{-2x + 1}{x - 3}$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: rumus silang $\\frac{-dx+b}{cx-a}$ dengan $a=3, b=-1, c=1, d=2$: $\\frac{-2x-1}{x-3}$. Jalur Cara Gemilang: CG-INVERS pecahan."
+            },
+            {
+              "soal": "Diketahui $(f \\circ g)(x) = 6x + 3$ dan $g(x) = 2x - 1$. Maka $f(x) = $ ...",
+              "opsi": [
+                "$3x + 6$",
+                "$3x + 3$",
+                "$2x + 6$",
+                "$3x - 6$",
+                "$6x - 3$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: misal $p = 2x-1 \\Rightarrow x = \\frac{p+1}{2}$; $f(p) = 6\\cdot\\frac{p+1}{2}+3 = 3p+6$. Jalur Cara Gemilang: substitusi variabel perantara."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Transformasi Geometri: empat gerak dasar"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Translasi menggeser, refleksi mencermin, rotasi memutar, dilatasi memperbesar/mengecilkan. Semua bisa ditulis matriks sehingga komposisinya tinggal kali matriks."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Matriks transformasi (terhadap pusat O)",
+          "kolom": [
+            "Transformasi",
+            "Notasi",
+            "Matriks / aturan"
+          ],
+          "rows": [
+            {
+              "k": "Translasi",
+              "v": "$T = \\begin{pmatrix} a \\\\ b \\end{pmatrix}$",
+              "w": "$(x,y) \\to (x+a, y+b)$"
+            },
+            {
+              "k": "Refleksi sumbu-x",
+              "v": "$M_x$",
+              "w": "$\\begin{pmatrix} 1 & 0 \\\\ 0 & -1 \\end{pmatrix}$"
+            },
+            {
+              "k": "Refleksi sumbu-y",
+              "v": "$M_y$",
+              "w": "$\\begin{pmatrix} -1 & 0 \\\\ 0 & 1 \\end{pmatrix}$"
+            },
+            {
+              "k": "Rotasi $90^\\circ$",
+              "v": "$R(O,90^\\circ)$",
+              "w": "$\\begin{pmatrix} 0 & -1 \\\\ 1 & 0 \\end{pmatrix}$"
+            },
+            {
+              "k": "Rotasi $180^\\circ$",
+              "v": "$R(O,180^\\circ)$",
+              "w": "$\\begin{pmatrix} -1 & 0 \\\\ 0 & -1 \\end{pmatrix}$"
+            },
+            {
+              "k": "Dilatasi faktor $k$",
+              "v": "$[O, k]$",
+              "w": "$\\begin{pmatrix} k & 0 \\\\ 0 & k \\end{pmatrix}$"
+            }
+          ]
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: langkah komposisi transformasi",
+          "keterangan": "Urutan kerja yang benar saat dua transformasi dilanjutkan.",
+          "items": [
+            "Tulis koordinat titik awal",
+            "Terapkan transformasi PERTAMA lebih dulu",
+            "Hasilnya menjadi masukan transformasi kedua",
+            "Bila pusat bukan O, geser pusat ke O dulu dan kembalikan di akhir"
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-TRANSFORMASI: pusat bukan O? geser dulu",
+          "teks": "Refleksi garis $x=k$: $(2k-x, y)$; garis $y=k$: $(x, 2k-y)$. Rotasi/dilatasi berpusat $P$: kerjakan $A-P$, transformasi, lalu $+P$.",
+          "items": [
+            "Hafal 4 matriks pokok + 2 rumus refleksi garis.",
+            "Komposisi = kali matriks kanan-ke-kiri.",
+            "Luas bayangan dilatasi: $k^{2} \\times$ luas awal."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Bayangan titik $A(3, -2)$ oleh translasi $T = \\begin{pmatrix} -1 \\\\ 4 \\end{pmatrix}$ adalah ...",
+              "opsi": [
+                "$(2, 2)$",
+                "$(4, 2)$",
+                "$(2, -6)$",
+                "$(4, -6)$",
+                "$(-3, 8)$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: $(3-1, -2+4) = (2, 2)$. Jalur Cara Gemilang: translasi = tambah vektor."
+            },
+            {
+              "soal": "Refleksi titik $B(-4, 5)$ terhadap garis $x = 2$ menghasilkan ...",
+              "opsi": [
+                "$(8, 5)$",
+                "$(0, 5)$",
+                "$(-8, 5)$",
+                "$(6, 5)$",
+                "$(4, 5)$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: $(2k-x, y) = (4-(-4), 5) = (8, 5)$. Jalur Cara Gemilang: rumus cermin garis vertikal."
+            },
+            {
+              "soal": "Dilatasi pusat $O$ faktor $-2$ pada titik $C(1, 3)$ menghasilkan ...",
+              "opsi": [
+                "$(2, 6)$",
+                "$(-2, -6)$",
+                "$(-1, -3)$",
+                "$(3, 1)$",
+                "$(-2, 6)$"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: $k(x,y) = -2(1,3) = (-2,-6)$. Jalur Cara Gemilang: faktor negatif = seberang pusat."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Trigonometri: sudut, perbandingan, identitas"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Satuan sudut: $180^\\circ = \\pi$ rad. Perbandingan pada segitiga siku-siku: $\\sin = \\frac{de}{mi}$, $\\cos = \\frac{sa}{mi}$, $\\tan = \\frac{de}{sa}$. Identitas pokok: $\\sin^{2}x + \\cos^{2}x = 1$."
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Nilai sudut istimewa",
+          "kolom": [
+            "Sudut",
+            "$\\sin$",
+            "$\\cos$",
+            "$\\tan$"
+          ],
+          "rows": [
+            {
+              "k": "$0^\\circ$",
+              "v": "$0$",
+              "w": "$1$",
+              "x": "$0$"
+            },
+            {
+              "k": "$30^\\circ$",
+              "v": "$\\frac{1}{2}$",
+              "w": "$\\frac{1}{2}\\sqrt{3}$",
+              "x": "$\\frac{1}{3}\\sqrt{3}$"
+            },
+            {
+              "k": "$45^\\circ$",
+              "v": "$\\frac{1}{2}\\sqrt{2}$",
+              "w": "$\\frac{1}{2}\\sqrt{2}$",
+              "x": "$1$"
+            },
+            {
+              "k": "$60^\\circ$",
+              "v": "$\\frac{1}{2}\\sqrt{3}$",
+              "w": "$\\frac{1}{2}$",
+              "x": "$\\sqrt{3}$"
+            },
+            {
+              "k": "$90^\\circ$",
+              "v": "$1$",
+              "w": "$0$",
+              "x": "tak terdefinisi"
+            }
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Tanda per kuadran & rumus jumlah/selisih",
+          "items": [
+            "Kuadran I semua positif; II hanya $\\sin$; III hanya $\\tan$; IV hanya $\\cos$.",
+            "$\\sin(\\alpha \\pm \\beta) = \\sin\\alpha\\cos\\beta \\pm \\cos\\alpha\\sin\\beta$.",
+            "$\\cos(\\alpha \\pm \\beta) = \\cos\\alpha\\cos\\beta \\mp \\sin\\alpha\\sin\\beta$.",
+            "Konversi: derajat $\\to$ radian kalikan $\\frac{\\pi}{180^\\circ}$; sebaliknya kalikan $\\frac{180^\\circ}{\\pi}$."
+          ]
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: reduksi sudut",
+          "items": [
+            {
+              "depan": "$\\sin(90^\\circ - x)$",
+              "belakang": "$\\cos x$ (ko-fungsi)"
+            },
+            {
+              "depan": "$\\cos(180^\\circ - x)$",
+              "belakang": "$-\\cos x$"
+            },
+            {
+              "depan": "$\\tan(180^\\circ + x)$",
+              "belakang": "$\\tan x$"
+            },
+            {
+              "depan": "$\\sin(360^\\circ - x)$",
+              "belakang": "$-\\sin x$"
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-TRIGO: De-Mi-Sa + kuadran",
+          "teks": "Segitiga siku-siku: $\\sin=\\frac{de}{mi}$, $\\cos=\\frac{sa}{mi}$, $\\tan=\\frac{de}{sa}$. Sudut besar? Reduksi ke kuadran I-IV dulu, baru nilai istimewa.",
+          "items": [
+            "Tulis kuadran sudutnya untuk menentukan tanda.",
+            "Sudut 75/15/105 = paket rumus jumlah/selisih 45 & 30.",
+            "Soal ketinggian/jarak: gambar segitiga, tempel $\\tan$ pada sudut elevasi."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan ujian",
+          "teks": "Tanda minus kuadran adalah pembunuh nilai terbanyak: $\\cos$ di kuadran II negatif, $\\tan$ di kuadran IV negatif. Selalu tulis kuadran sebelum menghitung."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Nilai $\\sin 150^\\circ = $ ...",
+              "opsi": [
+                "$-\\frac{1}{2}$",
+                "$\\frac{1}{2}$",
+                "$\\frac{1}{2}\\sqrt{2}$",
+                "$\\frac{1}{2}\\sqrt{3}$",
+                "$-\\frac{1}{2}\\sqrt{3}$"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: kuadran II, $\\sin(180^\\circ-30^\\circ)=\\sin 30^\\circ=\\frac{1}{2}$. Jalur Cara Gemilang: CG-TRIGO kuadran II sin positif."
+            },
+            {
+              "soal": "Bentuk $\\frac{2\\sin x \\cos x}{\\cos^{2}x - \\sin^{2}x}$ sama dengan ...",
+              "opsi": [
+                "$\\tan x$",
+                "$\\tan 2x$",
+                "$\\sin 2x$",
+                "$\\cot 2x$",
+                "$\\cos 2x$"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: pembilang $=\\sin 2x$, penyebut $=\\cos 2x$; hasil $\\tan 2x$. Jalur Cara Gemilang: kenali pola identitas sudut rangkap."
+            },
+            {
+              "soal": "Sebuah tiang setinggi $6$ m dilihat dari jarak $6\\sqrt{3}$ m. Sudut elevasi pengamat adalah ...",
+              "opsi": [
+                "$15^\\circ$",
+                "$30^\\circ$",
+                "$45^\\circ$",
+                "$60^\\circ$",
+                "$75^\\circ$"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: $\\tan\\theta = \\frac{6}{6\\sqrt{3}} = \\frac{1}{\\sqrt{3}} \\Rightarrow \\theta = 30^\\circ$. Jalur Cara Gemilang: $\\tan$ = depan/samping, cocokkan nilai istimewa."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Bab 7 tuntas",
+          "teks": "Empat keluarga soal bab ini: fungsi & invers, komposisi, transformasi, trigonometri. Saat latihan, beri label keluarga di tiap nomor — pola CG-mu akan terbentuk dalam dua putaran."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Sudut $225^\\circ$ sama dengan … rad.",
+          "tipe": "pg",
+          "opsi": [
+            "$\\frac{5}{4}\\pi$",
+            "$\\frac{6}{4}\\pi$",
+            "$\\frac{7}{4}\\pi$",
+            "$\\frac{4}{6}\\pi$",
+            "$\\frac{7}{6}\\pi$"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: $225^\\circ = 225^\\circ \\cdot \\frac{\\pi }{180^\\circ }$ rad $= \\frac{5}{4}\\pi$ rad Jalur Cara Gemilang: Derajat ke radian: kalikan $\\frac{\\pi}{180^\\circ}$, lalu sederhanakan pecahannya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Diketahui $sin \\theta = \\frac{3}{4}, \\theta$ sudut tumpul. Nilai $tan \\theta$ adalah",
+          "tipe": "pg",
+          "opsi": [
+            "$-\\frac{3}{5}.$",
+            "$-\\frac{3\\sqrt{7}}{7}.$",
+            "$-\\frac{3\\sqrt{5}}{5}.$",
+            "$-\\frac{3\\sqrt{6}}{4}.$",
+            "$-\\frac{3\\sqrt{7}}{2}.$"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: $De 3 Mi 4 Sa \\theta sin \\theta = \\frac{de}{mi} = \\frac{3}{4}$ samping $= \\sqrt{4^{2} - 3^{2}} = \\sqrt{7} tan \\theta = \\frac{de}{sa} = -\\frac{3}{\\sqrt{7}} = -\\frac{3\\sqrt{7}}{7} (\\theta$ tumpul $\\rightarrow$ kuadran $II \\rightarrow tan$ negatif) Jalur Cara Gemilang: De-Mi-Sa (depan-miring-samping) + Pythagoras; sudut tumpul di kuadran II membuat $\\tan$ negatif.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Nilai dari $tan 210^\\circ \\cdot sin 45^\\circ + cos 330^\\circ \\cdot sin 225^\\circ$ adalah",
+          "tipe": "pg",
+          "opsi": [
+            "$-\\frac{7\\sqrt{6}}{12}.$",
+            "$-\\frac{5\\sqrt{6}}{12}.$",
+            "$-\\frac{\\sqrt{6}}{12}.$",
+            "$\\frac{\\sqrt{6}}{12}.$",
+            "$\\frac{5\\sqrt{6}}{12}.$"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: $tan 210^\\circ \\cdot sin 45^\\circ + cos 330^\\circ \\cdot sin 225^\\circ = tan (180^\\circ + 30^\\circ ) \\cdot sin 45^\\circ + cos (360^\\circ - 30^\\circ ) \\cdot sin (180^\\circ + 45^\\circ ) = tan 30^\\circ \\cdot sin 45^\\circ + cos 30^\\circ \\cdot (-sin 45^\\circ ) = \\frac{\\sqrt{3}}{3}\\frac{\\sqrt{2}}{2} + \\frac{\\sqrt{3}}{2}(-\\frac{\\sqrt{2}}{2}) = \\frac{\\sqrt{6}}{6} - \\frac{\\sqrt{6}}{4} = \\frac{2\\sqrt{6} - 3\\sqrt{6}}{12} = -\\frac{\\sqrt{6}}{12}$ Jalur Cara Gemilang: Reduksi tiap sudut ke sudut istimewa lewat aturan kuadran, baru operasikan.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Nilai dari $cos 75^\\circ$ adalah",
+          "tipe": "pg",
+          "opsi": [
+            "$\\frac{1}{4}(\\sqrt{3} - \\sqrt{2}).$",
+            "$\\frac{1}{4}(\\sqrt{6} - \\sqrt{2}).$",
+            "$\\frac{1}{4}(\\sqrt{3} + \\sqrt{2}).$",
+            "$\\frac{1}{4}(\\sqrt{6} + \\sqrt{2}).$",
+            "$\\frac{1}{4}(\\sqrt{6} + \\sqrt{3}).$"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: $cos 75^\\circ = cos (45^\\circ + 30^\\circ ) = cos 45^\\circ \\cdot cos 30^\\circ - sin 45^\\circ \\cdot sin 30^\\circ = \\frac{\\sqrt{2}}{2}\\frac{\\sqrt{3}}{2} - \\frac{\\sqrt{2}}{2}\\frac{1}{2} = \\frac{\\sqrt{6}}{4} - \\frac{\\sqrt{2}}{4} = \\frac{1}{4}(\\sqrt{6} - \\sqrt{2})$ Jalur Cara Gemilang: $\\cos 75^\\circ = \\cos(45^\\circ + 30^\\circ)$ — rumus jumlah sudut.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Darto akan mengukur tinggi tiang bendera menggunakan klinometer. Saat pertama kali berdiri dengan melihat ujung tiang bendera, terlihat pada klinometer menunjuk pada sudut $60^\\circ .$ Kemudian ia bergerak menjauhi tiang bendera sejauh 10 meter dan terlihat pada klinometer sudut $45^\\circ . 60^\\circ 45^\\circ 10 m$ Tinggi tiang bendera adalah",
+          "tipe": "pg",
+          "opsi": [
+            "$(15 + 10\\sqrt{3}) m.$",
+            "$(15 + 5\\sqrt{3}) m.$",
+            "$(15 - 5\\sqrt{3}) m.$",
+            "$(15 - 10\\sqrt{3}) m.$",
+            "$(5 + 5\\sqrt{3}) m.$"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: $45^\\circ 60^\\circ 45^\\circ (x + 10) m x m 10 m tan 60^\\circ = \\frac{x + 10}{x} \\sqrt{3} = \\frac{x + 10}{x} \\sqrt{3}x = x + 10 \\sqrt{3}x - x = 10 (\\sqrt{3} - 1)x = 10 x = \\frac{10}{\\sqrt{3} - 1} \\times \\frac{\\sqrt{3} + 1}{\\sqrt{3} + 1} = 5\\sqrt{3} + 5$ tinggi tiang bendera $= x + 10 = 5\\sqrt{3} + 5 + 10 = 15 + 5\\sqrt{3}$ Jalur Cara Gemilang: Dua sudut elevasi = dua persamaan $\\tan$; eliminasi jaraknya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Tangga dengan panjang 5 meter disandarkan pada dinding yang tegak lurus terhadap lantai$. 60^\\circ$ Jika tangga tersebut membentuk sudut $60^\\circ$ dengan lantai, tinggi dinding yang dapat dicapai ujung atas tangga adalah … m.",
+          "tipe": "pg",
+          "opsi": [
+            "$2\\sqrt{3}$",
+            "$\\frac{5\\sqrt{3}}{2}$",
+            "$3\\sqrt{3}$",
+            "$\\frac{7\\sqrt{3}}{2}$",
+            "$5\\sqrt{3}$"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Misal tinggi dinding yang disentuh ujung atas tangga = t meter $60^\\circ 5$ cm $t sin 60^\\circ = \\frac{t}{5} \\frac{\\sqrt{3}}{2} = \\frac{t}{5} t = \\frac{5\\sqrt{3}}{2}$ Tinggi dinding yang disentuh ujung atas tangga $\\frac{5\\sqrt{3}}{2}$ meter. Jalur Cara Gemilang: Tangga miring = sisi miring: $\\sin 60^\\circ = \\frac{t}{5}$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Perhatikan gambar diagram kartesius berikut! x y O -5 -5 -4 -4 -3 -3 -2 -2 -1 -1 1 1 2 2 3 3 4 4 5 5 A' Titik A' merupakan bayangan dari titik A setelah di rotasi $180^\\circ$ dengan pusat di (0, 0), kemudian ditranslasi sebesar -4 6 . Koordinat titik A adalah",
+          "tipe": "pg",
+          "opsi": [
+            "x y O -5 -5 -4 -4 -3 -3 -2 -2 -1 -1 1 1 2 2 3 3 4 4 5 5 A",
+            "x y O -5 -5 -4 -4 -3 -3 -2 -2 -1 -1 1 1 2 2 3 3 4 4 5 5 A",
+            "x y O -5 -5 -4 -4 -3 -3 -2 -2 -1 -1 1 1 2 2 3 3 4 4 5 5 A",
+            "x y O -5 -5 -4 -4 -3 -3 -2 -2 -1 -1 1 1 2 2 3 3 4 4 5 5 A",
+            "x y O -5 -5 -4 -4 -3 -3 -2 -2 -1 -1 1 1 2 2 3 3 4 4 5 5 A"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Misal koordinat $A(x, y) A(x, y) R(O,180^\\circ ) A'(-x, -y) T A'(-x - 4, -y + 6) -x - 4 = -5 -x = -1 x = 1 -y + 6 = 3 -y = -3 y = 3$ Koordinat titik A(1, 3) x y O -5 -5 -4 -4 -3 -3 -2 -2 -1 -1 1 1 2 2 3 3 4 4 5 5 A Jalur Cara Gemilang: Rotasi $R(O,180^\\circ)$: $(x,y) \\to (-x,-y)$; baca koordinat titik dari diagram.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Bayangan dan titik M(8, -5) yang ditranslasi oleh 4 2 dan dilanjutkan refleksi terhadap garis x = 3 adalah",
+          "tipe": "pg",
+          "opsi": [
+            "M'(-3, 6).",
+            "M'(3, -6).",
+            "M'(-6, -3).",
+            "M'(-6, 3).",
+            "M'(6, -3)."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: $T_{1} =$ translasi $M(8, -5) T M'(8 + 4, -5 + 2) = M'(12, -3) T_{2} =$ refleksi garis $x = 3 M'(12, -3) M_{x=3} M'(2.3 - 12, -3) = M'(-6, -3)$ Jalur Cara Gemilang: Komposisi transformasi: translasi = tambah vektor; refleksi garis $x=k$: $(2k-x,\\, y)$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Bayangan titik P(2, 1) oleh rotasi terhadap titik pusat (-1, 2) sejauh $90^\\circ$ berlawanan arah jarum jam adalah",
+          "tipe": "pg",
+          "opsi": [
+            "(0, 2).",
+            "(0, 3).",
+            "(0, 4).",
+            "(0, 5).",
+            "(0, 6)."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Rotasi $90^{\\circ}$ berlawanan jarum jam pusat $P(-1,2)$: geser $P$ ke origin $(2-(-1), 1-2) = (3,-1)$, putar $(x,y) \\to (-y,x)$ menjadi $(1,3)$, kembalikan $(1+(-1), 3+2) = (0,5)$. Jawaban: D Jalur Cara Gemilang: Rotasi berpusat $(a,b)$: geser ke pusat O, putar, kembalikan: $(x,y) \\to (-(y-b)+a,\\, (x-a)+b)$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Bayangan titik Q(-3, 4) oleh dilatasi dengan pusat (-2, 5) dan faktor skala 3 adalah Q'(p, q). Nilai 3p + 5q adalah",
+          "tipe": "pg",
+          "opsi": [
+            "-5.",
+            "-3.",
+            "1.",
+            "3.",
+            "5."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Dilatasi pusat $P(-2,5)$ faktor $k=3$: $Q' = P + 3(Q-P) = (-2 + 3(-3-(-2)), 5 + 3(4-5)) = (-5, 2)$, jadi $p=-5$ dan $q=2$; maka $3p + 5q = 3(-5) + 5(2) = -5$. Jawaban: A Jalur Cara Gemilang: Dilatasi pusat $P$ faktor $k$: $A' = P + k(A - P)$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Domain dari fungsi $f(x) = \\frac{5}{\\sqrt{x^{2} - 3x - 10}}$ adalah $-2 \\leq x \\leq 5. -2 < x < 5. 0 < x < 5. x < -2$ atau $x > 5. x \\leq -2$ atau $x \\geq 5.$",
+          "tipe": "pg",
+          "opsi": [
+            "$-2 \\leq x \\leq 5.$",
+            "-2 < x < 5.",
+            "0 < x < 5.",
+            "x < -2 atau x > 5.",
+            "$x \\leq -2$ atau $x \\geq 5.$"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: $f(x) = \\frac{5}{\\sqrt{x^{2} - 3x - 10}}$ karena bentuk akhirnya sebagai penyebut, maka $x^{2} - 3x - 10 > 0 (x + 2)(x - 5) > 0 x = -2$ atau x = 5 + - + -2 5 Domain fungsi f(x) adalah x < -2 atau x > 5. Jalur Cara Gemilang: Akar di penyebut: syaratnya RADIKAN > 0 (bukan $\\geq$): selesaikan $x^{2}-3x-10>0$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Di antara gambar fungsi f(x) berikut yang kurvanya merupakan grafik fungsi yang mempunyai invers adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Grafik A (lihat gambar)",
+            "Grafik B (lihat gambar)",
+            "Grafik C (lihat gambar)",
+            "Grafik D (lihat gambar)",
+            "Grafik E (lihat gambar)"
+          ],
+          "opsiGambar": [
+            "gambar-bing/mate7-s12-a.svg",
+            "gambar-bing/mate7-s12-b.svg",
+            "gambar-bing/mate7-s12-c.svg",
+            "gambar-bing/mate7-s12-d.svg",
+            "gambar-bing/mate7-s12-e.svg"
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Grafik fungsi yang mempunyai invers harus merupakan fungsi bijektif. Fungsi bijektif adalah fungsi surjektif sekaligus fungsi injektif. Jalur Cara Gemilang: Grafik punya invers = lulus uji garis horizontal (bijektif).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Diketahui f(x) = x + 3, g(x) = 2x dan $h(x) = x^{2} + 4x - 5.$ Nilai a > -2 yang menyebabkan $(f \\circ g \\circ h)(a) = 3$ adalah",
+          "tipe": "pg",
+          "opsi": [
+            "1.",
+            "2.",
+            "3.",
+            "4.",
+            "5."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: $(f \\circ g \\circ h)(a) = 3 f(g(h(a))) = 3 f(g(a^{2} + 4a - 5)) = 3 f(2a^{2} + 8a - 10) = 3 2a^{2} + 8a - 10 + 3 = 3 2a^{2} + 8a - 10 = 0 ($dibagi $2) a^{2} + 4a - 5 = 0 (a - 1)(a + 5) = 0 a = 1$ atau a = -5 Karena syarat a > -2, maka a = 1. Jalur Cara Gemilang: Komposisi dikerjakan dari DALAM: $h(a) \\to g \\to f$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Jika f(4x + 3) = 2x - 9, hasil dari $f^{-1}(-7)$ adalah",
+          "tipe": "pg",
+          "opsi": [
+            "9.",
+            "7.",
+            "6.",
+            "5.",
+            "4."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: $f(4x + 3) = 2x - 9 \\Leftrightarrow f^{-1}(2x - 9) = 4x + 3$ pilih x = 1 sehingga $f^{-1}(2.1 - 9) = 4.1 + 3 f^{-1}(-7) = 7$ CARA GEMILANG-GEMILANG — jurus tukar nilai (kotak mahkota buku$) f(a) = b \\Leftrightarrow f^{-1}(b) = a —$ langsung tukar, tanpa mencari rumus f atau $f^{-1}!$ Jalur Cara Gemilang: Trik: dari $f(4x+3)=2x-9$, samakan $2x-9=-7$ dulu, lalu $f^{-1}(-7)=4x+3$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Diketahui tabel nilai fungsi sebagai berikut. x 0 1 2 3 f(x) -3 1 5 9 g(x) 5 8 11 14 Nilai $(f \\circ g^{-1})(8) + (f \\circ g^{-1} \\circ f)(2)$ adalah",
+          "tipe": "pg",
+          "opsi": [
+            "-2.",
+            "-1.",
+            "1.",
+            "2.",
+            "3."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: $(f \\circ g^{-1})(8) + (f \\circ g^{-1} \\circ f)(2) = f(g^{-1}(8)) + f(g^{-1}(f(2))) = f(1) + f(g^{-1}(5)) = 1 + f(0) = 1 - 3 = -2$ Jalur Cara Gemilang: Tabel invers: $g^{-1}(8)$ = cari x dengan $g(x)=8$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Sebuah perusahaan taksi online memiliki skema tarif yang memiliki hubungan linear dengan jarak yang ditempuh. Hubungan tersebut dimodelkan sebagai berikut: $T = 4.500j + 10.000,$ di mana j adalah jarak dalam km dan T adalah tarif dalam rupiah. Ane memesan taksi tersebut untuk pergi ke rumah temannya. Jika Ane membayar tarif sebesar Rp64.000,00 maka jarak yang ditempuh Ane adalah",
+          "tipe": "pg",
+          "opsi": [
+            "16 km.",
+            "15 km.",
+            "12 km.",
+            "10 km.",
+            "9 km."
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: T = 64000 4500j + 10000 = 64000 4500j = 54000 j = 12 km Jadi, jarak yang ditempuh Ane adalah 12 km. Jalur Cara Gemilang: Tarif linear $T = a + bj$; substitusi total, selesaikan j.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Sistem ukuran sepatu di dunia menggunakan tiga ukuran standar, yaitu US (Amerika Serikat), UK (Inggris), dan EU (Eropa). Sebuah perusahaan sepatu menggunakan standar EU (Eropa) sebagai basis produksinya. Ukuran sepatu EU (Eropa) dihitung berdasarkan panjang telapak kaki (x) dalam satuan inch dengan rumus: $f(x) = 2,5x + 12,5.$ Adapun konversi dari EU ke US dan UK dirumuskan sebagai berikut: $g(y) = \\begin{cases} y - 32, untuk US \\\\ y - 29,5, untuk UK \\end{cases}.$ Diketahui ketersediaan stok berdasarkan panjang telapak kaki di beberapa gudang sebagai berikut: Gudang Panjang Telapak Kaki A 8 inch B 9 inch C 10 inch D 11 inch Seorang pelanggan memesan sepatu dengan standar US ukuran 8. Berdasarkan data tersebut, di gudang manakah stok sepatu untuk pelanggan tersebut berada? Gudang A. Gudang B. Gudang C. Gudang D. Gudang B atau C.",
+          "tipe": "pg",
+          "opsi": [
+            "Gudang A.",
+            "Gudang B.",
+            "Gudang C.",
+            "Gudang D.",
+            "Gudang B atau C."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Ukuran US g(y) = 8 y - 32 = 8 y = 40 Ukuran EU 40 f(x) = 40 2,5x + 12,5 = 40 2,5x = 27,5 x = 11 inch Stok sepatu untuk pelanggan tersebut berada di gedung D. Jalur Cara Gemilang: Rantai konversi ukuran = rantai fungsi: selesaikan tahap demi tahap.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Diketahui A = {4, 5, 6, 7} dan B = {a, b, c, d, e}. Manakah di antara himpunan pasangan berikut yang merupakan fungsi dari A ke B? Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "{(4, a), (5, b), (6, c)}.",
+            "{(4, a), (5, a), (6, a), (7, a)}.",
+            "{(4, a), (4, b), (4, c), (4, d), (4, e)}.",
+            "{(4, a), (5, b), (6, c), (7, d), (7, e)}.",
+            "{(4, a), (5, b), (6, c), (7, d)}."
+          ],
+          "jawaban": [
+            1,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan 1: Salah Ada anggota domain yang tidak mempunyai pasangan. Pernyataan 2: Benar Semua anggota domain mempunyai tepat satu pasangan. Pernyataan 3: Salah Ada anggota domain yang tidak mempunyai pasangan. Pernyataan 4: Salah Ada anggota domain mempunyai dua pasangan. Pernyataan 5: Benar Semua anggota domain mempunyai tepat satu pasangan. Jalur Cara Gemilang: Fungsi = tiap anggota domain TEPAT SATU pasangan; cek duplikat kolom pertama.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Segitiga PQR dengan titik P(2, 3), Q(4, 6), dan R(5, 1) dicerminkan berturut-turut terhadap garis y = 1 dan sumbu x menghasilkan segitiga P'Q'R'. Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Bayangan titik P(2, 3) adalah P'(2, 1).",
+            "Bayangan titik Q(4, 6) adalah Q'(4, 4).",
+            "Bayangan titik R(5, 1) adalah R'(5, 3).",
+            "Semua daerah segitiga P'Q'R' berada di kuadran I.",
+            "Sebagian daerah segitiga P'Q'R' berada di kuadran IV."
+          ],
+          "jawaban": [
+            0,
+            1,
+            4
+          ],
+          "pembahasan": "Jalur konsep: $A(x, y) M_{y=1} A'(x, 2 - y) M_{sb-x} A'(x, y - 2)$ Pernyataan 1: Benar $P(2, 3) \\rightarrow P'(2, 3 - 2) = P'(2, 1)$ Pernyataan 2: Benar $Q(4, 6) \\rightarrow Q'(4, 6 - 2) = Q'(4, 4)$ Pernyataan 3: Salah $R(5, 1) \\rightarrow R'(5, 1 - 2) = R'(5, -1)$ Pernyataan 4: Salah P'(2, 1) dan Q'(4, 4) berada di kuadran I R'(5, -1) berada di kuadran IV sehingga daerah segitiga P'Q'R' berada di kuadran I dan IV Pernyataan 5: Benar P'(2, 1) dan Q'(4, 4) berada di kuadran I R'(5, -1) berada di kuadran IV sehingga daerah segitiga P'Q'R' berada di kuadran I dan IV Jalur Cara Gemilang: Refleksi $y=1$: $(x, 2-y)$; lanjut sumbu-x: $(x, -(2-y))$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Bentuk yang ekuivalen dengan $cos 275^\\circ$ adalah Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "$-cos 85^\\circ .$",
+            "$-sin 5^\\circ .$",
+            "$cos 85^\\circ .$",
+            "$sin 5^\\circ .$",
+            "$sin 85^\\circ .$"
+          ],
+          "jawaban": [
+            2,
+            3
+          ],
+          "pembahasan": "Jalur konsep: $cos 275^\\circ = cos (360^\\circ - 85^\\circ ) = cos 85^\\circ cos 275^\\circ = cos (270^\\circ + 5^\\circ ) = sin 5^\\circ$ Pernyataan 1: Salah $cos 275^\\circ = cos 85^\\circ .$ Pernyataan 2: Salah $cos 275^\\circ = sin 5^\\circ .$ Pernyataan 3: Benar $cos 275^\\circ = cos 85^\\circ .$ Pernyataan 4: Benar $cos 275^\\circ = sin 5^\\circ .$ Pernyataan 5: Salah $cos 275^\\circ = cos 85^\\circ .$ Jalur Cara Gemilang: Kuadran IV: $\\cos(360^\\circ-85^\\circ)=\\cos 85^\\circ$; ko-fungsi $\\cos 85^\\circ=\\sin 5^\\circ$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Diketahui fungsi $(f \\circ g)(x - 2) = x^{2} - 5x + 6$ dan g(2x + 1) = 2x + 2. Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "tipe": "pgMulti",
+          "opsi": [
+            "f(2) = 0.",
+            "g(1) = 4.",
+            "f(g(2)) = 2.",
+            "$(f \\circ g)(1) = 4.$",
+            "$(g \\circ f)(2) = 1.$"
+          ],
+          "jawaban": [
+            0,
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: $(f \\circ g)(x - 2) = x^{2} - 5x + 6$ Misal$: x - 2 = p \\Rightarrow x = p + 2 (f \\circ g)(p) = (p + 2)^{2} - 5(p + 2) + 6 (f \\circ g)(p) = p^{2} + 4p + 4 - 5p - 10 + 6 (f \\circ g)(p) = p^{2} - p (f \\circ g)(x) = x^{2} - x g(2x + 1) = 2x + 2 = (2x + 1) + 1 \\Rightarrow g(x) = x + 1 f(g(x)) = x^{2} - x \\Rightarrow f(x + 1) = x^{2} - x$ Misal$: x + 1 = u \\Rightarrow x = u - 1 f(u) = (u - 1)^{2} - (u - 1) f(u) = u^{2} - 2u + 1 - u + 1 f(u) = u^{2} - 3u + 2 f(x) = x^{2} - 3x + 2$ Pernyataan 1: Benar $f(2) = 2^{2} - 3.2 + 2 = 0.$ Pernyataan 2: Salah g(1) = 1 + 1 = 2. Pernyataan 3: Benar $f(g(2)) = f(2 + 1) = f(3) = 3^{2} - 3.3 + 2 = 2.$ Pernyataan 4: Salah $(f \\circ g)(1) = f(g(1)) = f(2) = 0.$ Pernyataan 5: Benar $(g \\circ f)(2) = g(f(2)) = g(0) = 0 + 1 = 1.$ Jalur Cara Gemilang: Substitusi $p=x-2$ membuka $(f\\circ g)(p)$; $g$ dari $g(2x+1)$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Perhatikan gambar berikut$! 30^\\circ 45^\\circ \\text{A B C D}$ Diketahui luas segitiga ACD $= 18(1 + \\sqrt{3})$ cm$^{2}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Panjang AD = 12 cm.",
+            "Panjang $CD = 6\\sqrt{6}$ cm.",
+            "Panjang $AB = 6\\sqrt{3}$ cm."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — BENAR Baris 2 — SALAH Baris 3 — BENAR Jalur Cara Gemilang: Dua segitiga siku-siku berbagi sisi: $\\tan 30^\\circ$ & $\\tan 45^\\circ$; luas $=\\frac{1}{2}\\cdot alas\\cdot tinggi$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Diketahui layang-layang ABCD dengan koordinat A(-4, 2), B(2, 6), C(4, 2), dan D(2, -2). Layang-layang tersebut didilatasi terhadap pusat (0, 0) dengan faktor skala $\\frac{1}{2}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Luas layang-layang ABCD adalah 64 satuan luas.",
+            "Luas bayangan layang-layang ABCD adalah 16 satuan luas.",
+            "Perbandingan luas layang-layang ABCD dengan bayangannya adalah 4 : 1."
+          ],
+          "jawaban": [
+            1,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — SALAH Baris 2 — SALAH Baris 3 — BENAR Jalur Cara Gemilang: Diagonal dari koordinat: $d_1=|AC|, d_2=|BD|$; luas layang-layang $=\\frac{1}{2}d_1 d_2$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Diketahui $(h^{-1} \\circ g^{-1} \\circ f^{-1})(x) = x - 2$ dan $(f \\circ g)(x) = \\frac{2x + 1}{x - 3}, x \\neq 3.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "$h(x) = \\frac{3x + 7}{x}.$",
+            "$h^{-1}(x) = \\frac{x + 7}{x - 3}.$",
+            "$h^{-1}(-4) = -1.$"
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — BENAR Baris 2 — SALAH Baris 3 — BENAR Jalur Cara Gemilang: $(h^{-1}\\circ g^{-1}\\circ f^{-1}) = (f\\circ g\\circ h)^{-1}$ — balik urutan, pakai rumus invers yang diberi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Perhatikan gambar berikut$! \\alpha \\beta A 18$ cm B D 9 cm C Diketahui $cos \\alpha = \\frac{4}{5}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "$sin \\beta = \\frac{3\\sqrt{13}}{13}.$",
+            "$cos \\beta = \\frac{2\\sqrt{13}}{13}.$",
+            "$tan \\beta = \\frac{3}{4}.$"
+          ],
+          "jawaban": [
+            0,
+            0,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Baris 1 — BENAR Baris 2 — BENAR Baris 3 — SALAH Jalur Cara Gemilang: $\\cos\\alpha = \\frac{samping}{miring}$; pecah gambar jadi dua segitiga siku-siku.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
