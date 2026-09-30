@@ -753,7 +753,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #17)"
         },
         {
-          "soal": "Diketahui A = {4, 5, 6, 7} dan B = {a, b, c, d, e}. Manakah di antara himpunan pasangan berikut yang merupakan fungsi dari A ke B? Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "soal": "Diketahui A = {4, 5, 6, 7} dan B = {a, b, c, d, e}. Manakah di antara himpunan pasangan berikut yang merupakan fungsi dari A ke B? Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
           "tipe": "pgMulti",
           "opsi": [
             "{(4, a), (5, b), (6, c)}.",
@@ -770,7 +770,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #18)"
         },
         {
-          "soal": "Segitiga PQR dengan titik P(2, 3), Q(4, 6), dan R(5, 1) dicerminkan berturut-turut terhadap garis y = 1 dan sumbu x menghasilkan segitiga P'Q'R'. Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "soal": "Segitiga PQR dengan titik P(2, 3), Q(4, 6), dan R(5, 1) dicerminkan berturut-turut terhadap garis y = 1 dan sumbu x menghasilkan segitiga P'Q'R'. Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
           "tipe": "pgMulti",
           "opsi": [
             "Bayangan titik P(2, 3) adalah P'(2, 1).",
@@ -788,7 +788,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #19)"
         },
         {
-          "soal": "Bentuk yang ekuivalen dengan $cos 275^\\circ$ adalah Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "soal": "Bentuk yang ekuivalen dengan $cos 275^\\circ$ adalah Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
           "tipe": "pgMulti",
           "opsi": [
             "$-cos 85^\\circ .$",
@@ -805,7 +805,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #20)"
         },
         {
-          "soal": "Diketahui fungsi $(f \\circ g)(x - 2) = x^{2} - 5x + 6$ dan g(2x + 1) = 2x + 2. Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)\n\nThere is more than one correct answer. Choose every correct option.",
+          "soal": "Diketahui fungsi $(f \\circ g)(x - 2) = x^{2} - 5x + 6$ dan g(2x + 1) = 2x + 2. Tentukan semua pernyataan berikut yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
           "tipe": "pgMulti",
           "opsi": [
             "f(2) = 0.",
@@ -823,7 +823,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #21)"
         },
         {
-          "soal": "Perhatikan gambar berikut$! 30^\\circ 45^\\circ \\text{A B C D}$ Diketahui luas segitiga ACD $= 18(1 + \\sqrt{3})$ cm$^{2}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "soal": "Perhatikan gambar berikut$! 30^\\circ 45^\\circ \\text{A B C D}$ Diketahui luas segitiga ACD $= 18(1 + \\sqrt{3})$ cm$^{2}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
           "tipe": "tabel",
           "kolom": [
             "Benar",
@@ -843,7 +843,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #22)"
         },
         {
-          "soal": "Diketahui layang-layang ABCD dengan koordinat A(-4, 2), B(2, 6), C(4, 2), dan D(2, -2). Layang-layang tersebut didilatasi terhadap pusat (0, 0) dengan faktor skala $\\frac{1}{2}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "soal": "Diketahui layang-layang ABCD dengan koordinat A(-4, 2), B(2, 6), C(4, 2), dan D(2, -2). Layang-layang tersebut didilatasi terhadap pusat (0, 0) dengan faktor skala $\\frac{1}{2}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
           "tipe": "tabel",
           "kolom": [
             "Benar",
@@ -863,7 +863,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #23)"
         },
         {
-          "soal": "Diketahui $(h^{-1} \\circ g^{-1} \\circ f^{-1})(x) = x - 2$ dan $(f \\circ g)(x) = \\frac{2x + 1}{x - 3}, x \\neq 3.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "soal": "Diketahui $(h^{-1} \\circ g^{-1} \\circ f^{-1})(x) = x - 2$ dan $(f \\circ g)(x) = \\frac{2x + 1}{x - 3}, x \\neq 3.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
           "tipe": "tabel",
           "kolom": [
             "Benar",
@@ -883,7 +883,7 @@
           "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #24)"
         },
         {
-          "soal": "Perhatikan gambar berikut$! \\alpha \\beta A 18$ cm B D 9 cm C Diketahui $cos \\alpha = \\frac{4}{5}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!\n(Answer each row by choosing Benar / Salah.)",
+          "soal": "Perhatikan gambar berikut$! \\alpha \\beta A 18$ cm B D 9 cm C Diketahui $cos \\alpha = \\frac{4}{5}.$ Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
           "tipe": "tabel",
           "kolom": [
             "Benar",

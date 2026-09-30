@@ -12,7 +12,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const E = JSON.parse(readFileSync(process.argv[2] || '../.ekstrak-mate7.json', 'utf-8'));
 
 const OCR_FIX = [
-  ['meneruskan', 'meneruskan'], // placeholder aman
+ [
+  "meneruskan",
+  "meneruskan"
+ ]
 ];
 function perbaiki(t) {
   let s = String(t);
@@ -315,13 +318,13 @@ const ujiPemahaman = E.soal.map((s0) => {
   }
   if (s.tipe === 'pg' && (jawaban < 0 || jawaban >= s.opsi.length)) throw new Error(`soal ${no} kunci pg di luar opsi`);
   if (s.tipe === 'pgMulti' && jawaban.some((j) => j < 0 || j >= s.opsi.length)) throw new Error(`soal ${no} kunci multi di luar opsi`);
-  const kepala = (s.mandiri || s.grup < 0 || !E.stimuli[s.grup]) ? '' : `Read the following text carefully!\n\n${teksStimulus(s.grup)}\n\n`;
+  const kepala = (s.mandiri || s.grup < 0 || !E.stimuli[s.grup]) ? '' : `Bacalah kutipan teks berikut dengan saksama!\n\n${teksStimulus(s.grup)}\n\n`;
   let soalTeks = kepala + s.teks;
-  if (s.tipe === 'pgMulti' && !/more than one correct/.test(soalTeks)) {
-    soalTeks += '\n\nThere is more than one correct answer. Choose every correct option.';
+  if (s.tipe === 'pgMulti' && !/Jawaban benar lebih dari satu|Pilihlah dua jawaban/.test(soalTeks)) {
+    soalTeks += '\n\nPilihlah jawaban yang benar! Jawaban benar lebih dari satu.';
   }
   if (s.tipe === 'tabel') {
-    soalTeks += `\n(Answer each row by choosing ${s.kolom.join(' / ')}.)`;
+    if (!/Benar atau Salah|Tentukan Benar|Setuju|Tentukan setiap/.test(soalTeks)) soalTeks += `\n(Tentukan ${s.kolom[0]}/${s.kolom[1]} untuk setiap pernyataan berikut!)`;
   }
   return {
     soal: soalTeks, tipe: s.tipe,
