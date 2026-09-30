@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { 
-  collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs, writeBatch
+  collection, query, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs, writeBatch
 } from "firebase/firestore";
 import { 
   Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock
@@ -135,7 +135,20 @@ const TransactionHistory = () => {
   }, [transactions, filterType, filterMethod, searchTerm]);
 
   // === TOTALS (mengikuti filter -- ini memang seharusnya per-periode) ===
-  const totalMasuk = filtered.filter(t => t.type === 'Pemasukan').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
+  // 🔥 FIX BUG NYATA (uang kehitung dua kali): perpanjangan jalur cicilan
+  // (method 'Cicilan') tercatat sebagai Pemasukan FULL AMOUNT saat akad --
+  // padahal uangnya belum diterima, dan tiap cicilannya nanti dicatat LAGI
+  // sebagai Pemasukan Tunai/Transfer saat beneran dibayar. Sebelumnya
+  // nominal "hantu" itu ikut dijumlahkan ke "Total Masuk", jadi angkanya
+  // gak pernah cocok dengan uang riil di kas (sumber bingung antara
+  // pemasukan & pengeluaran). Sekarang "Total Masuk" = uang yang BENERAN
+  // diterima; komitmen cicilan tampil terpisah di panel rincian metode.
+  // Pengecualian: kalau admin memang memfilter metode "Cicilan", totalnya
+  // mengikuti hasil filter (itu yang memang diminta dilihat).
+  const totalMasuk = filtered
+    .filter(t => t.type === 'Pemasukan')
+    .filter(t => filterMethod === 'Cicilan' || t.method !== 'Cicilan')
+    .reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
   const totalKeluar = filtered.filter(t => t.type === 'Pengeluaran').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
 
   // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): ringkasan per metode pembayaran
@@ -157,6 +170,18 @@ const TransactionHistory = () => {
     .filter(t => t.method !== 'Tunai' && t.method !== 'Transfer' && t.method !== 'Cicilan')
     .reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
   const namaBulan = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  // 🔥 BARU: batas bulan berjalan (waktu lokal) -- dipakai mengunci input
+  // tanggal di modal edit + validasi saat simpan. Riwayat admin dikunci ke
+  // bulan berjalan, jadi kalau tanggal transaksi dipindah ke bulan lain,
+  // dokumennya gak lagi cocok dengan query halaman ini -- barisnya "HILANG"
+  // dari tabel dan gak bisa diedit/dihapus lagi dari sini (padahal tetap
+  // kehitung di kas Portal Owner). Sebelumnya itu bisa terjadi tanpa
+  // peringatan apa pun.
+  const sekarang = new Date();
+  const batasAwalBulan = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}-01`;
+  const hariTerakhirBulan = new Date(sekarang.getFullYear(), sekarang.getMonth() + 1, 0).getDate();
+  const batasAkhirBulan = `${sekarang.getFullYear()}-${String(sekarang.getMonth() + 1).padStart(2, '0')}-${String(hariTerakhirBulan).padStart(2, '0')}`;
 
   // 🔥 BARU (KUNCI AKSES ADMIN): "Saldo Tunai/Bank (keseluruhan)" DIHAPUS
   // dari halaman admin ini -- itu sama persis dengan "Total Aset" yang
@@ -376,15 +401,26 @@ const TransactionHistory = () => {
       return;
     }
     setPinInput('');
-    // 🔥 Simpan nominal & tipe ASLI (sebelum diubah admin) di field terpisah,
-    // biar nanti pas disimpan bisa dihitung SELISIHNYA buat disesuaikan ke
-    // totalBayar siswa (bukan cuma menimpa dengan nilai baru begitu saja).
-    setEditData({...item, _originalAmount: parseInt(item.amount || 0), _originalType: item.type});
+    // 🔥 Simpan nominal, tipe, & METODE ASLI (sebelum diubah admin) di field
+    // terpisah, biar nanti pas disimpan bisa dihitung perubahan status
+    // "uang diterima"-nya buat disesuaikan ke totalBayar siswa (bukan cuma
+    // menimpa dengan nilai baru begitu saja). `_originalMethod` baru
+    // ditambahkan sekarang -- tanpa itu, koreksi metode Tunai/Transfer <->
+    // Cicilan gak pernah menyesuaikan totalBayar (lihat handleEdit).
+    setEditData({...item, _originalAmount: parseInt(item.amount || 0), _originalType: item.type, _originalMethod: item.method});
     setShowEdit(true);
   };
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    // 🔥 FIX BUG NYATA (baris "menghilang" tanpa jejak): tolak pemindahan
+    // tanggal ke luar bulan berjalan SEBELUM admin repot-repot isi PIN --
+    // transaksi yang tanggalnya di luar bulan gak akan muncul lagi di
+    // halaman ini (query dikunci per bulan), jadi gak bisa dikoreksi balik.
+    if (editData.date < batasAwalBulan || editData.date > batasAkhirBulan) {
+      alert(`⛔ Tanggal tidak bisa dipindah ke luar ${namaBulan}.\n\nRiwayat admin dikunci ke bulan berjalan -- transaksi bertanggal bulan lain akan hilang dari halaman ini dan tidak bisa dikelola lagi dari sini. Kalau tanggalnya salah, HAPUS transaksinya lalu catat ulang dengan tanggal yang benar (tetap di ${namaBulan}).`);
+      return;
+    }
     // 🔥 FIX BUG KEAMANAN (sama seperti handleDelete): PIN kosong tidak
     // boleh lolos hanya karena ownerPin belum termuat.
     if (!pinInput) {
@@ -426,17 +462,33 @@ const TransactionHistory = () => {
       // - Pengeluaran -> Pengeluaran: gak ada dampak ke totalBayar siswa (tetap seperti sebelumnya)
       let pesanTambahan = '';
       if (editData.studentId) {
-        const wasIncome = editData._originalType === 'Pemasukan';
-        const isIncome = editData.type === 'Pemasukan';
+        // 🔥 FIX BUG NYATA (penyempurnaan fix "transisi tipe" sebelumnya):
+        // status "uang pembayaran siswa SUDAH DITERIMA" = tipe 'Pemasukan'
+        // DAN metode BUKAN 'Cicilan' -- karena Pemasukan ber-metode Cicilan
+        // hanyalah KOMITMEN perpanjangan (uang belum masuk; baru tercatat
+        // sendiri saat tiap cicilan dibayar sebagai Tunai/Transfer).
+        // Sebelumnya penyesuaian totalBayar siswa cuma melihat transisi
+        // TIPE -- kalau admin mengoreksi METODE-nya saja (mis. dari Tunai
+        // jadi Cicilan atau sebaliknya), totalBayar tetap nyangkut di nilai
+        // lama → data siswa & buku besar gak sinkron lagi (siswa kelihatan
+        // "sudah bayar" padahal uangnya belum diterima, atau sebaliknya).
+        // Sekarang SEMUA kombinasi transisi dihitung dari status diterima:
+        // - Diterima -> Diterima: sesuaikan SELISIH nominal
+        // - Diterima -> Belum (tipe jadi Pengeluaran / metode jadi Cicilan):
+        //   batalkan SELURUH nominal lama
+        // - Belum -> Diterima: tambahkan SELURUH nominal baru
+        // - Belum -> Belum: gak ada dampak ke totalBayar
+        const diterimaLama = editData._originalType === 'Pemasukan' && editData._originalMethod !== 'Cicilan';
+        const diterimaBaru = editData.type === 'Pemasukan' && editData.method !== 'Cicilan';
         let delta = 0;
-        if (wasIncome && isIncome) {
+        if (diterimaLama && diterimaBaru) {
           delta = newAmount - editData._originalAmount;
-        } else if (wasIncome && !isIncome) {
+        } else if (diterimaLama && !diterimaBaru) {
           delta = -editData._originalAmount;
-        } else if (!wasIncome && isIncome) {
+        } else if (!diterimaLama && diterimaBaru) {
           delta = newAmount;
         }
-        // else: Pengeluaran -> Pengeluaran, delta tetap 0, gak ada aksi
+        // else: belum diterima -> belum diterima, delta 0, gak ada aksi
         if (delta !== 0) {
           await adjustStudentTotalBayar(editData.studentId, delta);
           pesanTambahan = ' Data pembayaran siswa ikut disesuaikan.';
@@ -544,7 +596,7 @@ const TransactionHistory = () => {
       )}
       <div style={styles.summaryRow}>
         <div style={styles.summaryCard('#f0fdf4', '#10b981')}>
-          <span>Total Masuk {sedangDifilter && '(periode ini)'}</span>
+          <span>Total Masuk {sedangDifilter ? '(periode ini)' : '(uang diterima)'}</span>
           <strong>Rp {totalMasuk.toLocaleString()}</strong>
         </div>
         <div style={styles.summaryCard('#fef2f2', '#ef4444')}>
@@ -552,6 +604,17 @@ const TransactionHistory = () => {
           <strong>Rp {totalKeluar.toLocaleString()}</strong>
         </div>
       </div>
+
+      {/* 🔥 BARU: keterangan pencicilan -- "Total Masuk" di atas SENGAJA
+          tidak menghitung komitmen perpanjangan jalur cicilan (uang belum
+          diterima, dan akan tercatat lagi saat tiap cicilan dibayar).
+          Tanpa keterangan ini admin bingung kenapa total gak sama dengan
+          penjumlahan manual semua baris bertipe "Masuk" di tabel. */}
+      {!sedangDifilter && cicilanMasuk > 0 && (
+        <div style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, margin: '-8px 0 12px', lineHeight: 1.5 }}>
+          📋 Total Masuk di atas TIDAK menghitung komitmen perpanjangan cicilan bulan ini yang belum diterima: Rp {cicilanMasuk.toLocaleString()} -- rinciannya ada di panel "Rincian per Metode" dan tabel di bawah (badge 📋 Cicilan).
+        </div>
+      )}
 
       {/* 🔥 BARU (RINCIAN TUNAI vs TRANSFER): sebelumnya admin cuma bisa
           lihat "Total Masuk/Keluar" gabungan -- mau tau berapa yang
@@ -693,7 +756,7 @@ const TransactionHistory = () => {
                   🔗 Transaksi ini terhubung ke siswa: <b>{editData.namaSiswa || editData.studentId}</b>. Kalau nominal diubah, data pembayaran siswa ikut disesuaikan otomatis.
                 </div>
               )}
-              <input type="date" value={editData.date} onChange={e => setEditData(p => ({...p, date: e.target.value}))} style={styles.modalInput} />
+              <input type="date" value={editData.date} min={batasAwalBulan} max={batasAkhirBulan} onChange={e => setEditData(p => ({...p, date: e.target.value}))} style={styles.modalInput} />
               <select value={editData.type} onChange={e => setEditData(p => ({...p, type: e.target.value}))} style={styles.modalInput}>
                 <option value="Pemasukan">💰 Pemasukan</option>
                 <option value="Pengeluaran">📤 Pengeluaran</option>

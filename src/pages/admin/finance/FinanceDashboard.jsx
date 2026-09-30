@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, query, onSnapshot, getDocs, where, orderBy, limit } from "firebase/firestore";
+import { collection, query, onSnapshot, getDocs, where } from "firebase/firestore";
 import { 
   Eye, EyeOff, TrendingUp, TrendingDown,
   CreditCard, AlertCircle, Users, ArrowRight, DollarSign,
@@ -14,7 +14,14 @@ const FinanceDashboard = () => {
   const [loading, setLoading] = useState(true);
   
   // Statistik bulan ini
-  const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0 });
+  // 🔥 FIX BUG NYATA (uang kehitung dua kali): field `pemasukan` di sini
+  // sekarang artinya "uang yang BENERAN DITERIMA bulan ini" (Tunai +
+  // Transfer + data lama tanpa metode) -- TIDAK lagi mencakup komitmen
+  // perpanjangan jalur cicilan yang dicatat full amount saat akad padahal
+  // uangnya belum masuk (dan nanti kehitung sekali lagi waktu tiap
+  // cicilannya beneran dibayar). Komitmen itu sekarang dipisah ke field
+  // `cicilan` dan cuma tampil sebagai keterangan "belum diterima".
+  const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0, cicilan: 0 });
 
   // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): sebelumnya halaman ini cuma
   // nampilin TOTAL "Pemasukan Bulan Ini" & "Pengeluaran Bulan Ini" --
@@ -53,7 +60,7 @@ const FinanceDashboard = () => {
       where('date', '<', bulanDepanAwal),
     );
     const unsubLogs = onSnapshot(qLogs, (snap) => {
-      let pemasukanBulanIni = 0, pengeluaranBulanIni = 0;
+      let pemasukanDiterima = 0, pengeluaranBulanIni = 0, cicilanTercatat = 0;
 
       // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): pecah total bulan ini per
       // metode pembayaran. "Lainnya" = penjaga buat data lama yang
@@ -72,7 +79,15 @@ const FinanceDashboard = () => {
         const amt = parseInt(data.amount || 0);
         const bucket = perMetode[data.method] ? data.method : 'Lainnya';
         if (data.type === 'Pemasukan') {
-          pemasukanBulanIni += amt;
+          // 🔥 FIX BUG NYATA (pemasukan kembar): Pemasukan ber-method
+          // 'Cicilan' itu KOMITMEN perpanjangan yang uangnya belum diterima
+          // -- tiap cicilannya nanti dicatat LAGI sebagai Pemasukan
+          // Tunai/Transfer saat beneran dibayar. Kalau keduanya dijumlahkan
+          // ke satu angka "Pemasukan Bulan Ini", totalnya gak akan pernah
+          // cocok dengan uang riil maupun dengan rincian tunai/transfer di
+          // bawah (persis kebingungan yang dilaporkan). Sekarang dipisah.
+          if (data.method === 'Cicilan') cicilanTercatat += amt;
+          else pemasukanDiterima += amt;
           perMetode[bucket].masuk += amt;
           perMetode[bucket].nMasuk += 1;
         } else {
@@ -82,7 +97,7 @@ const FinanceDashboard = () => {
         }
       });
 
-      setMonthStats({ pemasukan: pemasukanBulanIni, pengeluaran: pengeluaranBulanIni });
+      setMonthStats({ pemasukan: pemasukanDiterima, pengeluaran: pengeluaranBulanIni, cicilan: cicilanTercatat });
       setMethodStats(perMetode);
     });
 
@@ -238,15 +253,26 @@ const FinanceDashboard = () => {
         {/* Pemasukan Bulan Ini */}
         <div style={styles.mediumCard('#f0fdf4', '#10b981')}>
           <TrendingUp size={20} color="#10b981" />
-          <span style={styles.mediumLabel}>Pemasukan Bulan Ini</span>
+          <span style={styles.mediumLabel}>Pemasukan Bulan Ini (uang diterima)</span>
           <h2 style={{...styles.mediumValue, color: '#10b981'}}>{rp(monthStats.pemasukan)}</h2>
           {/* 🔥 BARU: pecahan tunai vs transfer langsung di dalam kartu,
-              biar kelihatan jelas tanpa perlu scroll ke panel rincian. */}
+              biar kelihatan jelas tanpa perlu scroll ke panel rincian.
+              "Lainnya" cuma muncul kalau memang ada data lama tanpa metode,
+              biar jumlah pecahan selalu BISA dicocokkan ke angka besar
+              di atasnya (gak ada selisih misterius). */}
           {methodStats && (
             <div style={styles.cardSplit}>
               <span>💵 Tunai: <b>{rp(methodStats.Tunai.masuk)}</b></span>
               <span>💳 Transfer: <b>{rp(methodStats.Transfer.masuk)}</b></span>
+              {methodStats.Lainnya.masuk > 0 && <span>❔ Lainnya: <b>{rp(methodStats.Lainnya.masuk)}</b></span>}
             </div>
+          )}
+          {/* 🔥 BARU: komitmen cicilan belum diterima -- dipisah dari angka
+              pemasukan di atas (perbaikan bug pemasukan kembar). */}
+          {monthStats.cicilan > 0 && (
+            <span style={{display: 'block', fontSize: 10, color: '#0f766e', fontWeight: 700, marginTop: 6}}>
+              📋 Cicilan tercatat tapi belum diterima: {rp(monthStats.cicilan)} -- TIDAK termasuk angka di atas
+            </span>
           )}
         </div>
 
@@ -260,6 +286,7 @@ const FinanceDashboard = () => {
             <div style={styles.cardSplit}>
               <span>💵 Tunai: <b>{rp(methodStats.Tunai.keluar)}</b></span>
               <span>💳 Transfer: <b>{rp(methodStats.Transfer.keluar)}</b></span>
+              {methodStats.Lainnya.keluar > 0 && <span>❔ Lainnya: <b>{rp(methodStats.Lainnya.keluar)}</b></span>}
             </div>
           )}
         </div>

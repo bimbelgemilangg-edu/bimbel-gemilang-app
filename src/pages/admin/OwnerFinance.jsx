@@ -28,7 +28,7 @@ const OwnerFinance = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [privacyMode, setPrivacyMode] = useState(false);
 
-  const [saldo, setSaldo] = useState({ tunai: 0, bank: 0, total: 0 });
+  const [saldo, setSaldo] = useState({ tunai: 0, bank: 0, tanpaMetode: 0, cicilanBelumDiterima: 0, total: 0 });
   const [piutang, setPiutang] = useState(0);
   const [pendapatanKepake, setPendapatanKepake] = useState(0);
   const [kewajiban, setKewajiban] = useState(0);
@@ -58,7 +58,14 @@ const OwnerFinance = () => {
       setLoading(true);
       try {
         const now = new Date();
-        const bulanIni = now.toISOString().slice(0, 7); // YYYY-MM
+        // 🔥 FIX BUG NYATA (zona waktu): sebelumnya "bulan ini" diambil dari
+        // toISOString() yang berbasis UTC -- buat pengguna WIB (UTC+7), di
+        // jam 00.00-06.59 (terutama tepat di tanggal 1 awal bulan) bulan
+        // berjalan bisa kebaca sebagai BULAN LALU, jadi perhitungan "profit
+        // bulan ini", HPP honor guru, dan pencocokan siswa aktif beda sendiri
+        // dari halaman Keuangan admin (yang pakai waktu lokal). Sekarang
+        // konsisten pakai tahun/bulan lokal perangkat.
+        const bulanIni = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
 
         // ===== 1. AMBIL SETTINGS (biaya tetap & aset) =====
         const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
@@ -78,18 +85,43 @@ const OwnerFinance = () => {
         setTotalPenyusutan(totalDep);
 
         // ===== 2. SALDO KAS (dari SELURUH riwayat finance_logs) =====
+        // 🔥 FIX BUG NYATA (laporan: "balance total keuangan membingungkan"):
+        // sebelumnya SEMUA transaksi yang method-nya bukan persis 'Tunai'
+        // langsung dimasukkan ke "Bank" -- termasuk (a) perpanjangan paket
+        // jalur CICILAN (method 'Cicilan') yang uangnya BELUM diterima, dan
+        // (b) transaksi lama yang field method-nya kosong. Akibatnya:
+        // 1. "Kas Yang Ada Sekarang" terlihat LEBIH BESAR dari uang riil --
+        //    komitmen cicilan dihitung seolah sudah masuk bank.
+        // 2. Uang yang sama KEHITUNG DUA KALI: sekali saat log komitmen
+        //    cicilan dibuat (full amount), lalu sekali lagi saat tiap
+        //    cicilannya beneran dibayar (dicatat sebagai Tunai/Transfer).
+        // Sekarang tiap method masuk embernya masing-masing:
+        // - Tunai          -> kas tunai
+        // - Transfer       -> bank
+        // - Cicilan        -> BUKAN kas; cuma dicatat sebagai "komitmen
+        //                     cicilan belum diterima" (angka informasi)
+        // - Kosong/lainnya -> ember "data lama tanpa metode", tetap dihitung
+        //                     ke total kas (biar nominalnya gak hilang
+        //                     diam-diam) tapi ditampilkan TERPISAH & jelas.
         const logsSnap = await getDocs(collection(db, "finance_logs"));
-        let tunai = 0, bank = 0;
+        let tunai = 0, bank = 0, tanpaMetode = 0, cicilanBelumDiterima = 0;
         logsSnap.forEach(d => {
           const data = d.data();
           const amt = parseInt(data.amount || 0);
-          if (data.type === 'Pemasukan') {
-            if (data.method === 'Tunai') tunai += amt; else bank += amt;
+          const signed = data.type === 'Pemasukan' ? amt : -amt;
+          if (data.method === 'Tunai') {
+            tunai += signed;
+          } else if (data.method === 'Transfer') {
+            bank += signed;
+          } else if (data.method === 'Cicilan') {
+            // Komitmen perpanjangan jalur cicilan -- uang belum diterima,
+            // jadi TIDAK pernah menambah/mengurangi kas.
+            if (data.type === 'Pemasukan') cicilanBelumDiterima += amt;
           } else {
-            if (data.method === 'Tunai') tunai -= amt; else bank -= amt;
+            tanpaMetode += signed;
           }
         });
-        setSaldo({ tunai, bank, total: tunai + bank });
+        setSaldo({ tunai, bank, tanpaMetode, cicilanBelumDiterima, total: tunai + bank + tanpaMetode });
 
         // ===== 3. DATA SISWA: Piutang, Pendapatan Kepake, Kewajiban =====
         const studentsSnap = await getDocs(collection(db, "students"));
@@ -271,7 +303,18 @@ const OwnerFinance = () => {
             <div style={styles.heroDetail}>
               <span>💵 Tunai: {rp(saldo.tunai)}</span>
               <span>💳 Bank: {rp(saldo.bank)}</span>
+              {/* 🔥 BARU: data lama tanpa method ditampilkan terpisah --
+                  sebelumnya diam-diam dicampur ke "Bank". */}
+              {saldo.tanpaMetode !== 0 && <span>❔ Data lama tanpa metode: {rp(saldo.tanpaMetode)}</span>}
             </div>
+            {/* 🔥 BARU: komitmen cicilan TIDAK ikut dihitung ke kas di atas
+                (perbaikan bug saldo kembar). Ditampilkan terpisah biar owner
+                tetap tau ada uang yang belum masuk dari jalur cicilan. */}
+            {saldo.cicilanBelumDiterima > 0 && (
+              <p style={{...styles.heroNote, color: '#fde68a'}}>
+                📋 Komitmen cicilan perpanjangan yang BELUM diterima: {rp(saldo.cicilanBelumDiterima)} -- TIDAK dihitung sebagai kas di atas. Baru masuk kas saat tiap cicilannya dibayar (Tunai/Transfer).
+              </p>
+            )}
             <p style={styles.heroNote}>⚠️ Ini BUKAN profit. Sebagian titipan siswa yang bayar di muka.</p>
           </div>
 

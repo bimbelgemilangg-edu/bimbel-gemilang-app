@@ -2,13 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
-import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 import { 
   Users, GraduationCap, CreditCard, Calendar, Clock, 
   BookOpen, TrendingUp, AlertCircle, CheckCircle, UserX,
   ArrowRight, Bell, RefreshCw, DollarSign, FileText, Plus,
   Eye, ChevronRight, Home, LayoutDashboard
 } from 'lucide-react';
+
+// 🔥 FIX BUG NYATA (zona waktu): sebelumnya `today` & bulan diambil dari
+// toISOString() yang berbasis UTC -- buat pengguna WIB (UTC+7), selama jam
+// 00.00-06.59 tanggal masih kebaca "KEMARIN". Akibatnya tiap pagi Dashboard
+// ini menampilkan jadwal/absensi HARI KEMARIN ("Jadwal Hari Ini" kosong
+// padahal ada kelas, rekap kehadiran salah hari), dan tepat di tanggal 1
+// awal bulan statistik keuangan pun salah bulan -- beda dengan halaman
+// Keuangan yang pakai waktu lokal, jadi angka antar halaman gak cocok dan
+// membingungkan. Sekarang semua tanggal dihitung dari waktu lokal perangkat.
+// (Ditaruh di module scope -- fungsi murni, bukan bagian dari komponen.)
+const tanggalLokalHariIni = () => {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -19,7 +33,7 @@ const Dashboard = () => {
   // Stats
   const [stats, setStats] = useState({ 
     siswa: 0, guru: 0, aktif: 0, piutang: 0, piutangJumlah: 0,
-    pemasukanBulanIni: 0, pengeluaranBulanIni: 0, saldo: 0
+    pemasukanBulanIni: 0, pengeluaranBulanIni: 0, cicilanBulanIni: 0
   });
   
   // Data
@@ -44,8 +58,7 @@ const Dashboard = () => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const thisMonth = new Date().toISOString().slice(0, 7);
+      const today = tanggalLokalHariIni();
 
       // Fetch students
       const snapSiswa = await getDocs(collection(db, "students"));
@@ -152,18 +165,46 @@ const Dashboard = () => {
       setNewStudents(siswaBaruList);
 
       // Finance logs bulan ini
-      let pemasukanBulanIni = 0, pengeluaranBulanIni = 0, saldoTotal = 0;
-      const qFinanceLogs = query(collection(db, "finance_logs"));
+      // 🔥 FIX BUG NYATA #1 (kunci akses admin + pemborosan): sebelumnya
+      // halaman ini menarik SELURUH finance_logs sejak awal berdiri (lalu
+      // bulan ini disaring di sisi browser) -- data lengkap semua bulan tetap
+      // terkirim ke browser admin, melanggar aturan "admin cuma boleh lihat
+      // bulan berjalan" yang sudah diterapkan di halaman Keuangan, dan
+      // di-fetch ulang tiap 60 detik (boros kuota baca Firestore). Sekarang
+      // query-nya DIBATASI bulan berjalan langsung di sumbernya -- pola yang
+      // sama persis dengan FinanceDashboard & TransactionHistory (filter
+      // rentang satu field `date`, tidak butuh composite index).
+      // 🔥 FIX BUG NYATA #2 (uang kehitung dua kali): "Masuk Bulan Ini"
+      // sebelumnya ikut menjumlahkan transaksi perpanjangan jalur CICILAN
+      // (method 'Cicilan') yang dicatat full amount saat akad -- padahal
+      // uangnya BELUM diterima, dan nanti tiap cicilan yang beneran dibayar
+      // tercatat LAGI sebagai Pemasukan Tunai/Transfer. Pemasukan jadi
+      // kembar & gak cocok dengan rincian di halaman Keuangan (sumber
+      // bingung "antara pemasukan dan pengeluaran"). Sekarang komitmen
+      // cicilan dipisah jadi angka keterangan kecil di bawah kartu.
+      // 🔥 Sekalian dibuang: perhitungan `saldoTotal` kumulatif seluruh
+      // riwayat -- angka itu TIDAK PERNAH ditampilkan di halaman ini (dead
+      // code), dan saldo keseluruhan memang ranah Portal Owner.
+      const bulanIniAwal = `${today.slice(0, 7)}-01`;
+      const nowBulan = new Date();
+      const bulanDepan = new Date(nowBulan.getFullYear(), nowBulan.getMonth() + 1, 1);
+      const bulanDepanAwal = `${bulanDepan.getFullYear()}-${String(bulanDepan.getMonth() + 1).padStart(2, '0')}-01`;
+      let pemasukanBulanIni = 0, pengeluaranBulanIni = 0, cicilanBulanIni = 0;
+      const qFinanceLogs = query(
+        collection(db, "finance_logs"),
+        where('date', '>=', bulanIniAwal),
+        where('date', '<', bulanDepanAwal)
+      );
       const snapFinance = await getDocs(qFinanceLogs);
       snapFinance.forEach(d => {
         const data = d.data();
         const amt = parseInt(data.amount || 0);
-        if ((data.date || '').startsWith(thisMonth)) {
-          if (data.type === 'Pemasukan') pemasukanBulanIni += amt;
-          else pengeluaranBulanIni += amt;
+        if (data.type === 'Pemasukan') {
+          if (data.method === 'Cicilan') cicilanBulanIni += amt;
+          else pemasukanBulanIni += amt;
+        } else {
+          pengeluaranBulanIni += amt;
         }
-        if (data.type === 'Pemasukan') saldoTotal += amt;
-        else saldoTotal -= amt;
       });
 
       setStats({
@@ -174,7 +215,7 @@ const Dashboard = () => {
         piutangJumlah,
         pemasukanBulanIni,
         pengeluaranBulanIni,
-        saldo: saldoTotal
+        cicilanBulanIni
       });
 
     } catch (err) { console.error("Dashboard error:", err); }
@@ -184,7 +225,10 @@ const Dashboard = () => {
   useEffect(() => {
     fetchAllData();
     const intervalId = setInterval(fetchAllData, 60000);
-    const today = new Date().toISOString().split('T')[0];
+    // 🔥 FIX (zona waktu): sama seperti di fetchAllData -- tanggal buat
+    // listener absensi ini harus waktu lokal, bukan UTC (toISOString),
+    // biar subuh-subuh tetap memantau absensi HARI INI, bukan kemarin.
+    const today = tanggalLokalHariIni();
     const q = query(collection(db, "attendance"), where("date", "==", today));
     const unsubscribe = onSnapshot(q, () => fetchAllData());
     return () => { clearInterval(intervalId); unsubscribe(); };
@@ -272,14 +316,20 @@ const Dashboard = () => {
             <div style={styles.statIcon('#f0fdf4', '#10b981')}><TrendingUp size={22} /></div>
             <div style={styles.statInfo}>
               <h3 style={{color: '#10b981'}}>Rp {(stats.pemasukanBulanIni / 1000).toFixed(0)}K</h3>
-              <span>Masuk Bulan Ini</span>
+              <span>Uang Masuk (diterima) Bulan Ini</span>
+              {/* 🔥 BARU: komitmen cicilan yang belum diterima ditampilkan
+                  sebagai keterangan kecil -- TIDAK dijumlahkan ke angka di
+                  atas (perbaikan bug pemasukan kembar). */}
+              {stats.cicilanBulanIni > 0 && (
+                <small style={{color: '#0f766e', fontWeight: 700}}>📋 Cicilan belum diterima: +Rp {(stats.cicilanBulanIni / 1000).toFixed(0)}K</small>
+              )}
             </div>
           </div>
           <div style={styles.statCard}>
             <div style={styles.statIcon('#fef2f2', '#ef4444')}><DollarSign size={22} /></div>
             <div style={styles.statInfo}>
               <h3 style={{color: '#ef4444'}}>Rp {(stats.pengeluaranBulanIni / 1000).toFixed(0)}K</h3>
-              <span>Keluar Bulan Ini</span>
+              <span>Uang Keluar Bulan Ini</span>
             </div>
           </div>
         </div>

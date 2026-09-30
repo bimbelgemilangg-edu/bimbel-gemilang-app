@@ -5,7 +5,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { 
   doc, getDoc, collection, query, where, getDocs, 
-  updateDoc, addDoc, serverTimestamp, orderBy, writeBatch
+  updateDoc, addDoc, serverTimestamp, writeBatch
 } from "firebase/firestore";
 import { 
   ArrowLeft, CreditCard, CheckCircle, Clock, AlertCircle,
@@ -13,6 +13,18 @@ import {
   DollarSign, Receipt, TrendingUp, X, Save,
   RefreshCw, PlusCircle, Edit3, ShieldAlert
 } from 'lucide-react';
+
+// 🔥 FIX BUG NYATA (zona waktu): "tanggal hari ini" untuk transaksi harus
+// dihitung dari waktu LOKAL perangkat, bukan toISOString() (UTC) -- selama
+// jam 00.00-06.59 WIB, UTC masih menunjukkan "kemarin", jadi pembayaran/
+// perpanjangan yang dicatat dini hari akan bertanggal mundur sehari, dan
+// tepat di tanggal 1 awal bulan malah jatuh ke BULAN LALU (transaksinya
+// gak kelihatan di halaman admin yang dikunci ke bulan berjalan, tapi
+// tetap kehitung di kas Owner -- angka antar halaman jadi gak cocok).
+const tanggalLokalHariIni = () => {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
 
 const StudentFinance = () => {
   const navigate = useNavigate();
@@ -64,7 +76,7 @@ const StudentFinance = () => {
     durasiTambah: 0,
     metodeBayar: 'Tunai',
     tenor: 1,
-    tanggalCicilan1: new Date().toISOString().split('T')[0],
+    tanggalCicilan1: tanggalLokalHariIni(),
     customDueDates: []
   });
   
@@ -349,7 +361,7 @@ const StudentFinance = () => {
     setIsProcessing(true);
     try {
       const totalPerpanjangan = hitungTotalPerpanjangan();
-      const today = new Date().toISOString().split('T')[0];
+      const today = tanggalLokalHariIni();
       const kodeUnik = student?.studentId || id;
 
       // 1. Hitung tanggal selesai baru
@@ -479,7 +491,7 @@ const StudentFinance = () => {
     setIsProcessing(true);
     try {
       const kodeUnik = student?.studentId || id;
-      const today = new Date().toISOString().split('T')[0];
+      const today = tanggalLokalHariIni();
 
       // 🔥 FIX BUG NYATA #1 (risiko crash): sebelumnya `tagihan.detailCicilan`
       // langsung di-spread (`[...tagihan.detailCicilan]`) atau di-`.map()`
@@ -704,7 +716,7 @@ const StudentFinance = () => {
                   durasiTambah: 0,
                   metodeBayar: 'Tunai',
                   tenor: 1,
-                  tanggalCicilan1: new Date().toISOString().split('T')[0],
+                  tanggalCicilan1: tanggalLokalHariIni(),
                   customDueDates: []
                 });
                 setShowPerpanjangModal(true);
@@ -769,8 +781,24 @@ const StudentFinance = () => {
                         </div>
                       </div>
                       <div style={styles.historyRight}>
-                        <strong style={{color: '#10b981'}}>+ Rp {log.amount?.toLocaleString()}</strong>
-                        <div style={{fontSize: 9, color: '#94a3b8'}}>{log.method}</div>
+                        {/* 🔥 FIX BUG NYATA: log perpanjangan jalur cicilan
+                            (method 'Cicilan') itu KOMITMEN yang uangnya BELUM
+                            diterima -- sebelumnya tampil persis seperti
+                            pembayaran sah ("+ Rp ..." hijau), jadi riwayat
+                            ini menyesatkan (siswa dikira sudah bayar, dan
+                            nominalnya kembar dengan cicilan yang nanti
+                            beneran dibayar). Sekarang dibedakan jelas. */}
+                        {log.method === 'Cicilan' ? (
+                          <>
+                            <strong style={{color: '#0f766e', fontSize: 11}}>📋 Komitmen Cicilan</strong>
+                            <div style={{fontSize: 9, color: '#94a3b8'}}>Rp {log.amount?.toLocaleString()} -- belum diterima</div>
+                          </>
+                        ) : (
+                          <>
+                            <strong style={{color: '#10b981'}}>+ Rp {log.amount?.toLocaleString()}</strong>
+                            <div style={{fontSize: 9, color: '#94a3b8'}}>{log.method}</div>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}

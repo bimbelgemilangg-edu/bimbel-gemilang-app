@@ -21,6 +21,14 @@ const normalisasiNoHp = (raw) => {
   return bersih;
 };
 
+// 🔥 FIX (zona waktu): fallback "tanggal mulai hari ini" harus dari waktu
+// LOKAL, bukan toISOString() (UTC) -- konsisten dengan AddStudent &
+// StudentFinance (selama jam 00.00-06.59 WIB, UTC masih "kemarin").
+const tanggalLokalHariIni = () => {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
+
 const EditStudent = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -104,7 +112,7 @@ const EditStudent = () => {
     jenjang: 'SD', 
     paketId: null,
     englishLevelId: null,
-    tanggalMulai: new Date().toISOString().split('T')[0], 
+    tanggalMulai: tanggalLokalHariIni(), 
     durasiBulan: 3,
     username: '', 
     password: '',
@@ -228,7 +236,7 @@ const EditStudent = () => {
           jenjang: jenjang,
           paketId: paketId,
           englishLevelId: englishLevelId,
-          tanggalMulai: data.tanggalMulai || new Date().toISOString().split('T')[0],
+          tanggalMulai: data.tanggalMulai || tanggalLokalHariIni(),
           durasiBulan: data.durasiBulan || 3,
           username: data.username || '',
           password: data.password || '',

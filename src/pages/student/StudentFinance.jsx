@@ -1,7 +1,7 @@
 // src/pages/student/StudentFinance.jsx
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase'; 
-import { doc, getDoc, query, collection, where, getDocs, onSnapshot, orderBy } from "firebase/firestore";
+import { doc, getDoc, query, collection, where, getDocs, onSnapshot } from "firebase/firestore";
 import { Wallet, Lock, History, ShieldCheck, AlertCircle, Clock, Receipt, CalendarClock } from 'lucide-react';
 
 const StudentFinance = () => {
@@ -343,8 +343,23 @@ const StudentFinance = () => {
                 <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={styles.td}>{item.date ? new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                   <td style={styles.td}>{item.note || item.category || '-'}</td>
-                  <td style={styles.td}>{item.method || '-'}</td>
-                  <td style={styles.td}><b style={{ color: '#10b981' }}>Rp {(item.amount || 0).toLocaleString()}</b></td>
+                  {/* 🔥 FIX BUG NYATA: baris perpanjangan jalur cicilan
+                      (method 'Cicilan') itu KOMITMEN -- uangnya BELUM
+                      diterima, dan tiap cicilan yang beneran dibayar muncul
+                      sebagai baris tersendiri. Sebelumnya baris komitmen ini
+                      tampil persis seperti pembayaran sah (nominal hijau),
+                      jadi siswa/ortu bisa mengira sudah bayar penuh.
+                      Sekarang ditandai jelas sebagai komitmen. */}
+                  <td style={styles.td}>{item.method === 'Cicilan' ? '📋 Cicilan' : (item.method || '-')}</td>
+                  <td style={styles.td}>
+                    {item.method === 'Cicilan' ? (
+                      <span style={{ color: '#0f766e', fontWeight: 700, fontSize: 12 }}>
+                        Rp {(item.amount || 0).toLocaleString()} <small style={{fontWeight: 600}}>(komitmen, belum diterima)</small>
+                      </span>
+                    ) : (
+                      <b style={{ color: '#10b981' }}>Rp {(item.amount || 0).toLocaleString()}</b>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
