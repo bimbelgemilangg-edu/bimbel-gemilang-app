@@ -3,13 +3,39 @@ import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Save, ArrowUpCircle, ArrowDownCircle, X } from 'lucide-react';
 
+// 🔥 FIX BUG NYATA (zona waktu & transaksi "gaib"):
+// (1) Tanggal default form ini sebelumnya pakai toISOString() (UTC) -- buat
+//     pengguna WIB (UTC+7), selama jam 00.00-06.59 defaultnya kebaca
+//     "KEMARIN", dan tepat di tanggal 1 awal bulan malah jatuh ke BULAN
+//     LALU.
+// (2) Tanggal juga bebas dipilih ke bulan lalu/depan -- padahal Riwayat &
+//     Dashboard admin DIKUNCI ke bulan berjalan. Transaksi bertanggal di
+//     luar bulan ini gak akan pernah muncul di halaman admin mana pun
+//     (tapi tetap kehitung di kas Portal Owner) -- angka jadi gak cocok
+//     dan admin bingung mencarinya. Sekarang tanggal dikunci ke bulan
+//     berjalan (min/max di input + validasi saat simpan).
+const tanggalLokalHariIni = () => {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
+const batasBulanBerjalan = () => {
+  const n = new Date();
+  const bln = String(n.getMonth() + 1).padStart(2, '0');
+  const hariTerakhir = new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate();
+  return {
+    awal: `${n.getFullYear()}-${bln}-01`,
+    akhir: `${n.getFullYear()}-${bln}-${String(hariTerakhir).padStart(2, '0')}`,
+    nama: n.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  };
+};
+
 const TransactionForm = () => {
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState(null);
   
   const [form, setForm] = useState({
     type: 'Pemasukan',
-    date: new Date().toISOString().split('T')[0],
+    date: tanggalLokalHariIni(),
     category: '',
     amount: '',
     method: 'Tunai',
@@ -32,6 +58,14 @@ const TransactionForm = () => {
     e.preventDefault();
     if (!form.amount || parseInt(form.amount) <= 0) return showAlert('⚠️ Nominal harus diisi!');
     if (!form.category) return showAlert('⚠️ Pilih kategori!');
+    // 🔥 BARU: validasi tanggal harus di dalam bulan berjalan -- input type=date
+    // memang sudah dibatasi min/max, tapi di beberapa browser (terutama mobile)
+    // pengguna masih bisa mengetik tanggal manual di luar batas, jadi tetap
+    // divalidasi di sini sebelum disimpan.
+    const batas = batasBulanBerjalan();
+    if (!form.date || form.date < batas.awal || form.date > batas.akhir) {
+      return showAlert(`⛔ Tanggal harus di dalam ${batas.nama} -- riwayat admin dikunci ke bulan berjalan. Transaksi bertanggal bulan lain tidak akan muncul di Riwayat.`);
+    }
 
     setLoading(true);
     try {
@@ -107,10 +141,12 @@ const TransactionForm = () => {
         <form onSubmit={handleSubmit}>
           {/* Tanggal */}
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Tanggal</label>
+            <label style={styles.label}>Tanggal <small style={{color: '#94a3b8', fontWeight: 600}}>(dikunci di {batasBulanBerjalan().nama})</small></label>
             <input 
               type="date" 
               value={form.date} 
+              min={batasBulanBerjalan().awal}
+              max={batasBulanBerjalan().akhir}
               onChange={e => setForm(prev => ({...prev, date: e.target.value}))} 
               style={styles.input} 
             />

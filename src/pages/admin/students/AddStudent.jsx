@@ -13,6 +13,17 @@ import {
   Sparkles, Key, Info
 } from 'lucide-react';
 
+// 🔥 FIX BUG NYATA (zona waktu): sama seperti di StudentFinance.jsx admin --
+// "tanggal hari ini" harus dari waktu LOKAL, bukan toISOString() (UTC).
+// Selama jam 00.00-06.59 WIB, UTC masih "kemarin": transaksi Pendaftaran
+// yang dicatat dini hari bakal bertanggal mundur sehari (di tanggal 1 awal
+// bulan malah jatuh ke bulan lalu -- gak kelihatan di riwayat admin yang
+// dikunci per bulan), dan default Tanggal Mulai siswa juga ikut salah.
+const tanggalLokalHariIni = () => {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
+
 const AddStudent = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -51,13 +62,13 @@ const AddStudent = () => {
     jenjang: 'SD',
     paketId: null,
     englishLevelId: null,
-    tanggalMulai: new Date().toISOString().split('T')[0],
+    tanggalMulai: tanggalLokalHariIni(),
     durasiBulan: 1,
     metodeBayar: 'Tunai',
     biayaDaftar: true,
     diskon: 0,
     tenor: 1,
-    tanggalCicilan1: new Date().toISOString().split('T')[0],
+    tanggalCicilan1: tanggalLokalHariIni(),
   });
 
   const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
@@ -367,7 +378,7 @@ const AddStudent = () => {
       const totalTagihan = hitungTotal();
       const tanggalSelesai = getTanggalSelesai();
       const tanggalLahirStr = getTanggalLahirStr();
-      const today = new Date().toISOString().split('T')[0];
+      const today = tanggalLokalHariIni();
 
       const paketName = pkg.name || pkg.id;
       const detailProgram = formData.programType === 'English' 
