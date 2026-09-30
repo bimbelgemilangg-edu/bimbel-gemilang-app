@@ -15,6 +15,17 @@ const FinanceDashboard = () => {
   
   // Statistik bulan ini
   const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0 });
+
+  // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): sebelumnya halaman ini cuma
+  // nampilin TOTAL "Pemasukan Bulan Ini" & "Pengeluaran Bulan Ini" --
+  // uang tunai dan transfer DICAMPUR jadi satu angka, jadi admin gak
+  // pernah bisa lihat jelas "berapa yang masuk lewat tunai, berapa yang
+  // lewat transfer bulan ini" tanpa ngitung manual satu-satu dari tab
+  // Riwayat. Sekarang setiap transaksi bulan berjalan otomatis
+  // dipecah per metode (Tunai / Transfer / Cicilan) dari sumber data
+  // yang SAMA (finance_logs, real-time) -- bukan query tambahan.
+  // null = masih loading (beda dengan "sudah loaded tapi kosong").
+  const [methodStats, setMethodStats] = useState(null);
   
   // Piutang
   const [totalPiutang, setTotalPiutang] = useState(0);
@@ -44,14 +55,35 @@ const FinanceDashboard = () => {
     const unsubLogs = onSnapshot(qLogs, (snap) => {
       let pemasukanBulanIni = 0, pengeluaranBulanIni = 0;
 
+      // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): pecah total bulan ini per
+      // metode pembayaran. "Lainnya" = penjaga buat data lama yang
+      // field method-nya kosong/aneh -- biar nominalnya gak "hilang"
+      // diam-diam dari rincian (total kartu di atas tetap mencakup
+      // semua, jadi rincian di bawah harus bisa dicocokkan ke total).
+      const perMetode = {
+        Tunai:    { masuk: 0, keluar: 0, nMasuk: 0, nKeluar: 0 },
+        Transfer: { masuk: 0, keluar: 0, nMasuk: 0, nKeluar: 0 },
+        Cicilan:  { masuk: 0, keluar: 0, nMasuk: 0, nKeluar: 0 },
+        Lainnya:  { masuk: 0, keluar: 0, nMasuk: 0, nKeluar: 0 },
+      };
+
       snap.forEach(doc => {
         const data = doc.data();
         const amt = parseInt(data.amount || 0);
-        if (data.type === 'Pemasukan') pemasukanBulanIni += amt;
-        else pengeluaranBulanIni += amt;
+        const bucket = perMetode[data.method] ? data.method : 'Lainnya';
+        if (data.type === 'Pemasukan') {
+          pemasukanBulanIni += amt;
+          perMetode[bucket].masuk += amt;
+          perMetode[bucket].nMasuk += 1;
+        } else {
+          pengeluaranBulanIni += amt;
+          perMetode[bucket].keluar += amt;
+          perMetode[bucket].nKeluar += 1;
+        }
       });
 
       setMonthStats({ pemasukan: pemasukanBulanIni, pengeluaran: pengeluaranBulanIni });
+      setMethodStats(perMetode);
     });
 
     // Fetch piutang & siswa baru
@@ -157,6 +189,10 @@ const FinanceDashboard = () => {
 
   const rp = (num) => privacyMode ? "Rp ••••••••" : "Rp " + (num || 0).toLocaleString('id-ID');
 
+  // 🔥 BARU: nama bulan berjalan buat judul panel rincian (mis. "September 2026"),
+  // biar admin selalu tau rincian tunai/transfer yang dilihat itu bulan apa.
+  const namaBulanIni = () => new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
   // 🔥 BARU: bikin link WhatsApp (wa.me) buat ngirim pengingat masa aktif
   // habis -- ini BUKAN integrasi WhatsApp API berbayar, cuma "nitip buka"
   // ke WhatsApp yang udah admin pakai sendiri (Web/App, tergantung
@@ -204,6 +240,14 @@ const FinanceDashboard = () => {
           <TrendingUp size={20} color="#10b981" />
           <span style={styles.mediumLabel}>Pemasukan Bulan Ini</span>
           <h2 style={{...styles.mediumValue, color: '#10b981'}}>{rp(monthStats.pemasukan)}</h2>
+          {/* 🔥 BARU: pecahan tunai vs transfer langsung di dalam kartu,
+              biar kelihatan jelas tanpa perlu scroll ke panel rincian. */}
+          {methodStats && (
+            <div style={styles.cardSplit}>
+              <span>💵 Tunai: <b>{rp(methodStats.Tunai.masuk)}</b></span>
+              <span>💳 Transfer: <b>{rp(methodStats.Transfer.masuk)}</b></span>
+            </div>
+          )}
         </div>
 
         {/* Pengeluaran Bulan Ini */}
@@ -211,6 +255,13 @@ const FinanceDashboard = () => {
           <TrendingDown size={20} color="#ef4444" />
           <span style={styles.mediumLabel}>Pengeluaran Bulan Ini</span>
           <h2 style={{...styles.mediumValue, color: '#ef4444'}}>{rp(monthStats.pengeluaran)}</h2>
+          {/* 🔥 BARU: pecahan tunai vs transfer juga buat pengeluaran. */}
+          {methodStats && (
+            <div style={styles.cardSplit}>
+              <span>💵 Tunai: <b>{rp(methodStats.Tunai.keluar)}</b></span>
+              <span>💳 Transfer: <b>{rp(methodStats.Transfer.keluar)}</b></span>
+            </div>
+          )}
         </div>
 
         {/* Total Piutang */}
@@ -220,6 +271,107 @@ const FinanceDashboard = () => {
           <h2 style={{...styles.mediumValue, color: '#f97316'}}>{rp(totalPiutang)}</h2>
         </div>
       </div>
+
+      {/* === 🔥 BARU: PANEL RINCIAN UANG TUNAI vs TRANSFER BULAN INI ===
+          Ini inti perbaikannya: admin harus bisa lihat JELAS berapa uang
+          yang masuk/keluar LEWAT TUNAI dan LEWAT TRANSFER di bulan
+          berjalan -- sebelumnya dua-duanya cuma dicampur jadi satu angka
+          "Pemasukan Bulan Ini". Panel ini juga memisahkan "Cicilan"
+          (perpanjangan paket yang dibayar nyicil) karena uang itu BELUM
+          tentu sudah diterima -- kalau dicampur ke tunai/transfer,
+          admin bisa salah mengira kas-nya lebih besar dari kenyataan.
+          Data: finance_logs bulan berjalan saja (query sudah dikunci
+          per-bulan di atas), jadi konsisten dengan aturan "admin cuma
+          boleh lihat bulan berjalan". */}
+      {methodStats && (
+        <div style={styles.methodBox}>
+          <div style={styles.methodHeader}>
+            <DollarSign size={18} />
+            <strong>Rincian Uang Bulan Ini per Metode</strong>
+            <span style={styles.methodSub}>{namaBulanIni()}</span>
+          </div>
+          <div style={styles.methodGrid}>
+            {/* --- UANG TUNAI --- */}
+            <div style={styles.methodCard('#fffbeb', '#f59e0b')}>
+              <div style={styles.methodTitle}>
+                <span style={styles.methodIcon('#fef3c7')}>💵</span>
+                Uang Tunai
+              </div>
+              <div style={styles.methodRow}>
+                <span style={{color: '#64748b'}}>Masuk <small>({methodStats.Tunai.nMasuk}x)</small></span>
+                <b style={{color: '#10b981'}}>+ {rp(methodStats.Tunai.masuk)}</b>
+              </div>
+              <div style={styles.methodRow}>
+                <span style={{color: '#64748b'}}>Keluar <small>({methodStats.Tunai.nKeluar}x)</small></span>
+                <b style={{color: '#ef4444'}}>- {rp(methodStats.Tunai.keluar)}</b>
+              </div>
+              <div style={styles.methodNet('#f59e0b')}>
+                Selisih: <b>{rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar)}</b>
+              </div>
+            </div>
+
+            {/* --- TRANSFER --- */}
+            <div style={styles.methodCard('#eef2ff', '#6366f1')}>
+              <div style={styles.methodTitle}>
+                <span style={styles.methodIcon('#e0e7ff')}>💳</span>
+                Transfer
+              </div>
+              <div style={styles.methodRow}>
+                <span style={{color: '#64748b'}}>Masuk <small>({methodStats.Transfer.nMasuk}x)</small></span>
+                <b style={{color: '#10b981'}}>+ {rp(methodStats.Transfer.masuk)}</b>
+              </div>
+              <div style={styles.methodRow}>
+                <span style={{color: '#64748b'}}>Keluar <small>({methodStats.Transfer.nKeluar}x)</small></span>
+                <b style={{color: '#ef4444'}}>- {rp(methodStats.Transfer.keluar)}</b>
+              </div>
+              <div style={styles.methodNet('#6366f1')}>
+                Selisih: <b>{rp(methodStats.Transfer.masuk - methodStats.Transfer.keluar)}</b>
+              </div>
+            </div>
+
+            {/* --- CICILAN (kalau ada) ---
+                Cuma dirender kalau bulan ini memang ada transaksi
+                cicilan, biar panel gak penuh kartu kosong. */}
+            {(methodStats.Cicilan.masuk > 0 || methodStats.Cicilan.nMasuk > 0) && (
+              <div style={styles.methodCard('#f0fdfa', '#14b8a6')}>
+                <div style={styles.methodTitle}>
+                  <span style={styles.methodIcon('#ccfbf1')}>📋</span>
+                  Cicilan
+                  <span style={styles.methodBadgePending}>belum tentu diterima</span>
+                </div>
+                <div style={styles.methodRow}>
+                  <span style={{color: '#64748b'}}>Tercatat <small>({methodStats.Cicilan.nMasuk}x)</small></span>
+                  <b style={{color: '#0f766e'}}>{rp(methodStats.Cicilan.masuk)}</b>
+                </div>
+                <div style={{fontSize: 10, color: '#94a3b8', marginTop: 4, lineHeight: 1.4}}>
+                  Perpanjangan paket jalur cicilan -- uang baru dihitung
+                  masuk saat tiap cicilannya dibayar (metode Tunai/Transfer).
+                </div>
+              </div>
+            )}
+
+            {/* --- LAINNYA (data lama tanpa metode) ---
+                Penjaga: transaksi lawas yang field method-nya kosong
+                tetap kelihatan di sini, gak hilang dari rincian. */}
+            {(methodStats.Lainnya.masuk > 0 || methodStats.Lainnya.keluar > 0) && (
+              <div style={styles.methodCard('#f8fafc', '#94a3b8')}>
+                <div style={styles.methodTitle}>
+                  <span style={styles.methodIcon('#f1f5f9')}>❔</span>
+                  Tanpa Metode (data lama)
+                </div>
+                <div style={styles.methodRow}>
+                  <span style={{color: '#64748b'}}>Masuk</span>
+                  <b style={{color: '#10b981'}}>+ {rp(methodStats.Lainnya.masuk)}</b>
+                </div>
+                <div style={styles.methodRow}>
+                  <span style={{color: '#64748b'}}>Keluar</span>
+                  <b style={{color: '#ef4444'}}>- {rp(methodStats.Lainnya.keluar)}</b>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* === BARU: ALERT SISWA MASA AKTIF HABIS/AKAN HABIS === */}
       {expiringStudents.length > 0 && (
@@ -343,6 +495,21 @@ const styles = {
   mediumCard: (bg, color) => ({ background: bg, padding: 16, borderRadius: 14, border: `1px solid ${color}30` }),
   mediumLabel: { display: 'block', fontSize: 11, color: '#64748b', marginTop: 6 },
   mediumValue: { margin: '6px 0', fontSize: 22, fontWeight: 'bold' },
+
+  // 🔥 BARU: pecahan tunai/transfer kecil di dalam kartu Pemasukan/Pengeluaran
+  cardSplit: { display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 11, color: '#64748b', borderTop: '1px dashed rgba(0,0,0,0.08)', paddingTop: 8, marginTop: 4 },
+
+  // 🔥 BARU: panel rincian uang tunai vs transfer bulan berjalan
+  methodBox: { background: 'white', padding: 16, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', marginBottom: 20 },
+  methodHeader: { display: 'flex', alignItems: 'center', gap: 8, color: '#1e293b', fontSize: 14, marginBottom: 12, flexWrap: 'wrap' },
+  methodSub: { fontSize: 11, color: '#94a3b8', fontWeight: 600, background: '#f8fafc', padding: '3px 10px', borderRadius: 20, border: '1px solid #f1f5f9' },
+  methodGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 12 },
+  methodCard: (bg, color) => ({ background: bg, border: `1px solid ${color}35`, borderRadius: 12, padding: 14 }),
+  methodTitle: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#1e293b', marginBottom: 10, flexWrap: 'wrap' },
+  methodIcon: (bg) => ({ background: bg, width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }),
+  methodRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '4px 0', gap: 8 },
+  methodNet: (color) => ({ marginTop: 8, paddingTop: 8, borderTop: `1px dashed ${color}55`, fontSize: 12, color: '#475569', display: 'flex', justifyContent: 'space-between' }),
+  methodBadgePending: { fontSize: 9, fontWeight: 'bold', color: '#0f766e', background: '#ccfbf1', padding: '2px 8px', borderRadius: 20 },
 
   // Alert Siswa Baru
   alertBox: { background: '#fff7ed', border: '2px solid #f97316', padding: 16, borderRadius: 14, marginBottom: 20 },

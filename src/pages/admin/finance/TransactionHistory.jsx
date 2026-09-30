@@ -138,6 +138,26 @@ const TransactionHistory = () => {
   const totalMasuk = filtered.filter(t => t.type === 'Pemasukan').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
   const totalKeluar = filtered.filter(t => t.type === 'Pengeluaran').reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
 
+  // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): ringkasan per metode pembayaran
+  // buat bulan berjalan. SENGAJA dihitung dari `transactions` (data
+  // sebulan penuh), BUKAN dari `filtered` -- angka ini harus selalu
+  // menjawab "uang tunai & transfer bulan ini berapa?", tidak boleh ikut
+  // berubah saat admin main filter/pencarian (filter tetap berguna buat
+  // menyaring tabel di bawahnya).
+  const jumlahMetode = (tipe, metode) =>
+    transactions
+      .filter(t => t.type === tipe && t.method === metode)
+      .reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
+  const tunaiMasuk = jumlahMetode('Pemasukan', 'Tunai');
+  const tunaiKeluar = jumlahMetode('Pengeluaran', 'Tunai');
+  const transferMasuk = jumlahMetode('Pemasukan', 'Transfer');
+  const transferKeluar = jumlahMetode('Pengeluaran', 'Transfer');
+  const cicilanMasuk = jumlahMetode('Pemasukan', 'Cicilan');
+  const tanpaMetodeTotal = transactions
+    .filter(t => t.method !== 'Tunai' && t.method !== 'Transfer' && t.method !== 'Cicilan')
+    .reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
+  const namaBulan = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
   // 🔥 BARU (KUNCI AKSES ADMIN): "Saldo Tunai/Bank (keseluruhan)" DIHAPUS
   // dari halaman admin ini -- itu sama persis dengan "Total Aset" yang
   // sengaja disembunyikan dari Admin (cuma Owner yang boleh lihat saldo
@@ -499,6 +519,11 @@ const TransactionHistory = () => {
             <option value="Semua">Semua Metode</option>
             <option value="Tunai">💵 Tunai</option>
             <option value="Transfer">💳 Transfer</option>
+            {/* 🔥 BARU: opsi Cicilan -- sebelumnya transaksi perpanjangan
+                jalur cicilan (method 'Cicilan') GAK BISA difilter sama
+                sekali (cuma ada pilihan Tunai/Transfer), padahal datanya
+                nyata ada di tabel. */}
+            <option value="Cicilan">📋 Cicilan</option>
           </select>
         </div>
 
@@ -525,6 +550,54 @@ const TransactionHistory = () => {
         <div style={styles.summaryCard('#fef2f2', '#ef4444')}>
           <span>Total Keluar {sedangDifilter && '(periode ini)'}</span>
           <strong>Rp {totalKeluar.toLocaleString()}</strong>
+        </div>
+      </div>
+
+      {/* 🔥 BARU (RINCIAN TUNAI vs TRANSFER): sebelumnya admin cuma bisa
+          lihat "Total Masuk/Keluar" gabungan -- mau tau berapa yang
+          tunai vs transfer harus filter satu-satu lalu baca ulang
+          angkanya (itu pun totalnya ikut berubah jadi cuma hasil
+          filter). Sekarang rincian per metode buat bulan berjalan
+          selalu tampil jelas di sini, tidak terpengaruh filter. */}
+      <div style={styles.methodSummaryBox}>
+        <div style={styles.methodSummaryTitle}>
+          💰 Rincian per Metode — <b>{namaBulan}</b> <small>(selalu bulan berjalan, tidak mengikuti filter)</small>
+        </div>
+        <div style={styles.methodSummaryGrid}>
+          <div style={styles.methodSummaryCard('#fffbeb', '#f59e0b')}>
+            <div style={styles.methodSummaryLabel}>💵 Uang Tunai</div>
+            <div style={styles.methodSummaryRow}>
+              <span>Masuk</span><b style={{color: '#10b981'}}>+ Rp {tunaiMasuk.toLocaleString()}</b>
+            </div>
+            <div style={styles.methodSummaryRow}>
+              <span>Keluar</span><b style={{color: '#ef4444'}}>- Rp {tunaiKeluar.toLocaleString()}</b>
+            </div>
+          </div>
+          <div style={styles.methodSummaryCard('#eef2ff', '#6366f1')}>
+            <div style={styles.methodSummaryLabel}>💳 Transfer</div>
+            <div style={styles.methodSummaryRow}>
+              <span>Masuk</span><b style={{color: '#10b981'}}>+ Rp {transferMasuk.toLocaleString()}</b>
+            </div>
+            <div style={styles.methodSummaryRow}>
+              <span>Keluar</span><b style={{color: '#ef4444'}}>- Rp {transferKeluar.toLocaleString()}</b>
+            </div>
+          </div>
+          {cicilanMasuk > 0 && (
+            <div style={styles.methodSummaryCard('#f0fdfa', '#14b8a6')}>
+              <div style={styles.methodSummaryLabel}>📋 Cicilan <small style={{fontWeight: 600, color: '#94a3b8'}}>(tercatat, belum tentu diterima)</small></div>
+              <div style={styles.methodSummaryRow}>
+                <span>Perpanjangan jalur cicilan</span><b style={{color: '#0f766e'}}>Rp {cicilanMasuk.toLocaleString()}</b>
+              </div>
+            </div>
+          )}
+          {tanpaMetodeTotal > 0 && (
+            <div style={styles.methodSummaryCard('#f8fafc', '#94a3b8')}>
+              <div style={styles.methodSummaryLabel}>❔ Tanpa Metode <small style={{fontWeight: 600, color: '#94a3b8'}}>(data lama)</small></div>
+              <div style={styles.methodSummaryRow}>
+                <span>Total nominal</span><b style={{color: '#475569'}}>Rp {tanpaMetodeTotal.toLocaleString()}</b>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -569,7 +642,13 @@ const TransactionHistory = () => {
                     </td>
                     <td style={styles.td}>
                       <span style={styles.methodBadge(t.method)}>
-                        {t.method === 'Tunai' ? '💵' : '💳'} {t.method}
+                        {/* 🔥 FIX: sebelumnya semua yang bukan 'Tunai'
+                            dipaksa tampil berikon 💳 ala Transfer --
+                            termasuk transaksi Cicilan, yang jelas bukan
+                            transfer. Sekarang tiap metode punya ikonnya
+                            sendiri, dan data lama tanpa metode gak
+                            lagi render teks "undefined". */}
+                        {t.method === 'Tunai' ? '💵' : t.method === 'Transfer' ? '💳' : t.method === 'Cicilan' ? '📋' : '❔'} {t.method || 'Tanpa Metode'}
                       </span>
                     </td>
                     <td style={styles.td}>{t.category}</td>
@@ -622,6 +701,11 @@ const TransactionHistory = () => {
               <select value={editData.method} onChange={e => setEditData(p => ({...p, method: e.target.value}))} style={styles.modalInput}>
                 <option value="Tunai">💵 Tunai</option>
                 <option value="Transfer">💳 Transfer</option>
+                {/* 🔥 BARU: Cicilan ikut bisa dipilih saat edit -- kalau
+                    transaksi aslinya cicilan tapi dropdown cuma punya
+                    Tunai/Transfer, admin terpaksa "mengubah" metodenya
+                    jadi salah satu dari itu (data jadi gak akurat). */}
+                <option value="Cicilan">📋 Cicilan</option>
               </select>
               <input type="text" value={editData.category} onChange={e => setEditData(p => ({...p, category: e.target.value}))} style={styles.modalInput} placeholder="Kategori" />
               <input type="number" value={editData.amount} onChange={e => setEditData(p => ({...p, amount: e.target.value}))} style={styles.modalInput} placeholder="Nominal" />
@@ -699,6 +783,14 @@ const styles = {
   
   summaryRow: { display: 'flex', gap: 10, marginBottom: 15, flexWrap: 'wrap' },
   summaryCard: (bg, color) => ({ flex: 1, minWidth: 150, background: bg, padding: 14, borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${color}30`, fontSize: 13 }),
+
+  // 🔥 BARU: panel rincian tunai vs transfer bulan berjalan
+  methodSummaryBox: { background: 'white', padding: 14, borderRadius: 12, border: '1px solid #f1f5f9', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', marginBottom: 15 },
+  methodSummaryTitle: { fontSize: 12, color: '#64748b', marginBottom: 10 },
+  methodSummaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 },
+  methodSummaryCard: (bg, color) => ({ background: bg, border: `1px solid ${color}35`, borderRadius: 10, padding: 12 }),
+  methodSummaryLabel: { fontSize: 12, fontWeight: 800, color: '#1e293b', marginBottom: 6 },
+  methodSummaryRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: '#64748b', padding: '2px 0', gap: 8 },
   
   tableCard: { background: 'white', borderRadius: 14, padding: 15, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: 850 },
@@ -711,7 +803,14 @@ const styles = {
   timeText: { fontSize: 10, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3 },
   
   typeBadge: (type) => ({ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold', background: type === 'Pemasukan' ? '#dcfce7' : '#fee2e2', color: type === 'Pemasukan' ? '#166534' : '#991b1b' }),
-  methodBadge: (method) => ({ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold', background: method === 'Tunai' ? '#fef3c7' : '#e0e7ff', color: method === 'Tunai' ? '#b45309' : '#3730a3' }),
+  // 🔥 FIX: badge metode sekarang punya warna khas per metode -- sebelumnya
+  // cuma dua cabang (Tunai kuning / sisanya indigo), jadi Cicilan & data
+  // lama tanpa metode ikut-ikutan tampil indigo ala Transfer (menyesatkan).
+  methodBadge: (method) => ({
+    padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold',
+    background: method === 'Tunai' ? '#fef3c7' : method === 'Transfer' ? '#e0e7ff' : method === 'Cicilan' ? '#ccfbf1' : '#f1f5f9',
+    color: method === 'Tunai' ? '#b45309' : method === 'Transfer' ? '#3730a3' : method === 'Cicilan' ? '#0f766e' : '#475569'
+  }),
   btnIcon: (color) => ({ background: `${color}15`, color, border: 'none', padding: '7px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center' }),
   
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20, backdropFilter: 'blur(2px)' },
