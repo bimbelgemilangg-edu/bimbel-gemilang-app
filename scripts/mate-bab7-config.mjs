@@ -239,3 +239,6 @@ export const KONSEP = {
   9: 'Rotasi $90^{\\circ}$ berlawanan jarum jam pusat $P(-1,2)$: geser $P$ ke origin $(2-(-1), 1-2) = (3,-1)$, putar $(x,y) \\to (-y,x)$ menjadi $(1,3)$, kembalikan $(1+(-1), 3+2) = (0,5)$. Jawaban: D',
   10: 'Dilatasi pusat $P(-2,5)$ faktor $k=3$: $Q\' = P + 3(Q-P) = (-2 + 3(-3-(-2)), 5 + 3(4-5)) = (-5, 2)$, jadi $p=-5$ dan $q=2$; maka $3p + 5q = 3(-5) + 5(2) = -5$. Jawaban: A',
 };
+
+// Turn 102: akhiran soal bahasa Indonesia (pgMulti/tabel) — bukan Inggris.
+export const BAHASA = 'id';

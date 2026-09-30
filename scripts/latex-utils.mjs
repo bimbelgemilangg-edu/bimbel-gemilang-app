@@ -31,6 +31,7 @@ const ENTITAS = {
   '&hArr;': '\\Leftrightarrow ', '&#8660;': '\\Leftrightarrow ', '&rArr;': '\\Rightarrow ',
   '&#8722;': '-', '&infin;': '\\infty ', '&ang;': '\\angle ', '&perp;': '\\perp ',
   '&cong;': '\\cong ', '&sim;': '\\sim ', '&prop;': '\\propto ', '&#8730;': '\\sqrt{\\phantom{x}}',
+  '&asymp;': '\\approx ', '&#8776;': '\\approx ', '&ang;': '\\angle ',
 };
 
 export function praMatematika(html) {
@@ -65,7 +66,7 @@ export function praMatematika(html) {
   return s;
 }
 
-const PERINTAH_RE = /\\frac\{|\\sqrt|\\times|\\cdot|\\leq|\\geq|\\neq|\\in\b|\\notin|\\subset|\\cup|\\cap|\\rightarrow|\\leftrightarrow|\\oplus|\\nabla|\\pi\b|\\circ|\\pm|\\emptyset|\\bullet|\\langle|\\rangle|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\Delta|\\sigma|\\mu\b|\\phi|\^\{|_\{/;
+const PERINTAH_RE = /\\frac\{|\\sqrt|\\times|\\cdot|\\leq|\\geq|\\neq|\\in\b|\\notin|\\subset|\\cup|\\cap|\\rightarrow|\\leftrightarrow|\\oplus|\\nabla|\\pi\b|\\circ|\\pm|\\emptyset|\\bullet|\\langle|\\rangle|\\alpha|\\beta|\\gamma|\\theta|\\lambda|\\Delta|\\sigma|\\mu\b|\\phi|\^\{|_\{|\\\{/;
 const KATA_IND = /\b(adalah|yaitu|yakni|sehingga|dengan|untuk|maka|jadi|jika|bila|apabila|kemudian|dan|atau|yang|dari|ke|pada|dalam|luar|hasil|nilai|banyak|jumlah|persen|satuan|buah|orang|tahun|hari|menit|jam|detik|kg|gram|cm|mm|km|meter|liter|derajat|rupiah|ribu|juta|kali|pertandingan|tim|siswa|kelas|kotak|bola|kartu|dadu|koin|titik|garis|sudut|sisi|rusuk|bidang|volume|luas|keliling|tinggi|panjang|lebar|jari|diameter|kelompok|data|tabel|grafik|gambar|nomor|soal|jawaban|cara|langkah|misalkan|diketahui|ditanya|penyelesaian|perhatikan|berdasarkan|menurut|sebesar|setiap|antara|kedua|ketiga|pertama|tersebut|ini|itu|ada|tidak|bukan|lebih|kurang|sama|besar|kecil|Himpunan|himpunan|anggota|gabungan|irisan|komplemen|barisan|deret|suku|bunga|modal|peluang|kejadian|frekuensi|modus|median|rataan|simpangan|kuartil|jangkauan|persamaan|pertidaksamaan|variabel|koefisien|konstanta|substitusi|eliminasi|grafik|himpuan|irisan|kuadrat|akar|pangkat|bilangan|bulat|pecahan|desimal|persentase)\b/i;
 const FUNGSI = /^(log|ln|sin|cos|tan|sec|csc|cot|lim|max|min|mod|det)$/i;
 
@@ -110,7 +111,10 @@ const okKatex = (math) => {
   try { katex.renderToString(math, { throwOnError: true }); return true; } catch { return false; }
 };
 
-const fixTekstDalamMat = (m) => m.replace(/(?<![\\A-Za-z])([a-zA-Z][a-zA-Z ]{1,20}[a-zA-Z])(?=[}\)]|$)/g,
+// Nama environment LaTeX (matrix, cases, pmatrix, dst) setelah \begin{ / \end{
+// TIDAK boleh dibungkus \text{} — dijaga lookbehind (turn 102: operator kurung
+// matriks bab 1 & fungsi sepotong \begin{cases} bab 7).
+const fixTekstDalamMat = (m) => m.replace(/(?<![\\A-Za-z])(?<!begin\{)(?<!end\{)(?<!text\{)([a-zA-Z][a-zA-Z ]{1,20}[a-zA-Z])(?=[}\)]|$)/g,
   (w) => (FUNGSI.test(w.trim()) ? w : '\\text{' + w.trim() + '}'));
 
 export function naturalisasi(teks) {
