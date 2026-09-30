@@ -90,8 +90,8 @@ function kandidatPulau(teks) {
         let j = i + 1; while (/[a-zA-Z]/.test(seg[j] || '')) j++;
         i = j; continue;
       }
-      if (ch === '{') { if (start < 0) start = i; depth += 1; i += 1; continue; }
-      if (ch === '}') { if (start < 0) start = i; depth -= 1; i += 1; continue; }
+      if (ch === '{') { if (seg[i - 1] === '\\') { i += 1; continue; } if (start < 0) start = i; depth += 1; i += 1; continue; }
+      if (ch === '}') { if (seg[i - 1] === '\\') { i += 1; continue; } if (start < 0) start = i; depth -= 1; i += 1; continue; }
       if (depth === 0 && /[a-zA-Z]/.test(ch)) {
         let j = i; while (/[a-zA-Z]/.test(seg[j] || '')) j++;
         const w = seg.slice(i, j);
@@ -106,6 +106,14 @@ function kandidatPulau(teks) {
   }
   return out;
 }
+
+// "&" telanjang (mis. "Eliminasi (1) & (2)") membuat KaTeX menolak seluruh
+// pulau; di luar environment begin/end selalu berarti "dan" -> escape \&.
+// (Turn 102, kasus pembahasan SPL bab 2 Matematika.)
+const escapeAmpLuarEnv = (s) => s
+  .split(/(\\begin\{[a-zA-Z*]+\}[\s\S]*?\\end\{[a-zA-Z*]+\})/g)
+  .map((p, i) => (i % 2 === 1 ? p : p.split('&').join('\\&')))
+  .join('');
 
 const okKatex = (math) => {
   try { katex.renderToString(math, { throwOnError: true }); return true; } catch { return false; }
@@ -135,6 +143,7 @@ export function naturalisasi(teks) {
   for (const p of kandidatPulau(t)) {
     let bersih = p.replace(/\s{2,}/g, ' ').trim();
     bersih = bersih.replace(/%/g, '\\%');
+    bersih = escapeAmpLuarEnv(bersih);
     bersih = fixTekstDalamMat(bersih);
     if (!okKatex(bersih)) continue;
     let i = t.indexOf(p);

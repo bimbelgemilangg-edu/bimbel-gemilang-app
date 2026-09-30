@@ -291,16 +291,17 @@ const sections = [
 // scripts/ekstrak-bagan-svg.mjs; teks opsi menjadi keterangan kecil.
 const OPSI_GAMBAR = {
   "12": [
-    "gambar-bing/mate7-s12-a.svg",
-    "gambar-bing/mate7-s12-b.svg",
-    "gambar-bing/mate7-s12-c.svg",
-    "gambar-bing/mate7-s12-d.svg",
-    "gambar-bing/mate7-s12-e.svg"
+    "/gambar-bing/mate7-s12-a.svg",
+    "/gambar-bing/mate7-s12-b.svg",
+    "/gambar-bing/mate7-s12-c.svg",
+    "/gambar-bing/mate7-s12-d.svg",
+    "/gambar-bing/mate7-s12-e.svg"
   ]
 };
 const SUMBER = 'Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 7 Relasi-Fungsi, Transformasi Geometri & Trigonometri h.33-39 (kunci h.22-26; rumus buku ber-markup frac/sqrt/sup dikonversi LaTeX otomatis); kunci & pembahasan buku (soal asli #{no})';
 const NAT = true;
 const GAMBAR_GRUP = {};
+const SOAL_GAMBAR = {};
 const OPSI_TEKS = {"12":["Grafik A (lihat gambar)","Grafik B (lihat gambar)","Grafik C (lihat gambar)","Grafik D (lihat gambar)","Grafik E (lihat gambar)"]};
 const OV = {};
 const ujiPemahaman = E.soal.map((s0) => {
@@ -330,7 +331,7 @@ const ujiPemahaman = E.soal.map((s0) => {
     soal: soalTeks, tipe: s.tipe,
     ...(s.tipe === 'tabel' ? { kolom: s.kolom, baris: s.baris } : { opsi: s.opsi }),
     ...(OPSI_GAMBAR[no] ? { opsiGambar: OPSI_GAMBAR[no] } : {}),
-    ...(GAMBAR_GRUP[s.grup] ? { soalGambar: GAMBAR_GRUP[s.grup] } : {}),
+    ...((GAMBAR_GRUP[s.grup] || SOAL_GAMBAR[no]) ? { soalGambar: GAMBAR_GRUP[s.grup] || SOAL_GAMBAR[no] } : {}),
     jawaban,
     pembahasan: buatPembahasan(no, s, jawaban),
     sumber: SUMBER.replace('{no}', String(no)),

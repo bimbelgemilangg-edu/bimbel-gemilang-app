@@ -223,11 +223,11 @@ export const MATERI = {
 // Soal 12: opsi berupa grafik SVG (diekstrak dari buku).
 export const OPSI_GAMBAR = {
   12: [
-    'gambar-bing/mate7-s12-a.svg',
-    'gambar-bing/mate7-s12-b.svg',
-    'gambar-bing/mate7-s12-c.svg',
-    'gambar-bing/mate7-s12-d.svg',
-    'gambar-bing/mate7-s12-e.svg',
+    '/gambar-bing/mate7-s12-a.svg',
+    '/gambar-bing/mate7-s12-b.svg',
+    '/gambar-bing/mate7-s12-c.svg',
+    '/gambar-bing/mate7-s12-d.svg',
+    '/gambar-bing/mate7-s12-e.svg',
   ],
 };
 export const OPSI_TEKS = {

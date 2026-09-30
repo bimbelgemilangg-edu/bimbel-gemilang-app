@@ -672,11 +672,11 @@
             "Grafik E (lihat gambar)"
           ],
           "opsiGambar": [
-            "gambar-bing/mate7-s12-a.svg",
-            "gambar-bing/mate7-s12-b.svg",
-            "gambar-bing/mate7-s12-c.svg",
-            "gambar-bing/mate7-s12-d.svg",
-            "gambar-bing/mate7-s12-e.svg"
+            "/gambar-bing/mate7-s12-a.svg",
+            "/gambar-bing/mate7-s12-b.svg",
+            "/gambar-bing/mate7-s12-c.svg",
+            "/gambar-bing/mate7-s12-d.svg",
+            "/gambar-bing/mate7-s12-e.svg"
           ],
           "jawaban": 3,
           "pembahasan": "Jalur konsep: Grafik fungsi yang mempunyai invers harus merupakan fungsi bijektif. Fungsi bijektif adalah fungsi surjektif sekaligus fungsi injektif. Jalur Cara Gemilang: Grafik punya invers = lulus uji garis horizontal (bijektif).",
