@@ -1,51 +1,62 @@
 // src/pages/admin/OwnerFinance.jsx
-// 🔥 HALAMAN BARU: dashboard keuangan LENGKAP khusus Owner. Beda sama
-// FinanceDashboard.jsx (yang cuma nunjukkin kas & piutang buat kerja
-// harian admin), halaman ini ngasih gambaran "profit yang SESUNGGUHNYA
-// aman diambil" -- bukan cuma kas yang ada di rekening. Konsepnya:
+// 🔥 PUSAT KOMANDO KEUANGAN OWNER (rombak besar, permintaan owner:
+// "posisi sekarang bingung, mau lihat seluruh transaksi & keadaan uang
+// realtime, bisa download analisis laporan lengkap, akhir tahun bisa
+// cek neraca detail bisnis").
 //
-//   Pendapatan yang KEPAKE bulan ini
-//   - HPP (honor guru yang beneran keluar bulan ini)
-//   - Biaya Tetap (sewa, listrik, dll)
-//   - Penyusutan aset (AC, proyektor, dll)
-//   = PROFIT BERSIH (yang aman diambil)
+// Halaman ini sekarang punya 4 tab, semuanya REAL-TIME (onSnapshot --
+// begitu admin mencatat transaksi, angka owner ikut berubah tanpa
+// refresh):
+//   📡 Posisi Real-time  -> posisi uang sekali lirik + feed transaksi
+//                           live + cicilan yang jatuh tempo
+//   🧾 Semua Transaksi   -> SELURUH riwayat sejak awal usaha, filter
+//                           lengkap, download Excel/CSV
+//   📈 Analisis          -> laba rugi 2 basis (kas & akrual), grafik
+//                           tren 12 bulan, kategori, per siswa
+//   🏦 Neraca & Laporan  -> neraca per tanggal (bisa 31 Des buat tutup
+//                           buku), arus kas tahunan, download laporan
+//                           lengkap PDF/Excel
 //
-// Dipisahkan jelas dari "Kewajiban Belum Terpenuhi" -- duit yang UDAH
-// masuk kas tapi masih "milik" sesi belajar yang belum diajarkan (siswa
-// yang bayar 3/6 bulan sekaligus).
-import React, { useState, useEffect } from 'react';
+// Semua perhitungan hidup di ./owner/keuanganOwnerUtils.js (fungsi
+// murni, satu sumber kebenaran). Aturan main uang dipertahankan dari
+// perbaikan bug saldo kembar: pemasukan ber-metode 'Cicilan' adalah
+// KOMITMEN yang belum diterima -- bukan kas; data lama tanpa metode
+// dihitung ke total tapi ditampilkan terpisah; semua tanggal memakai
+// waktu lokal (WIB), bukan UTC.
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { Crown, LogOut, Eye, EyeOff } from 'lucide-react';
 import {
-  Crown, LogOut, Wallet, TrendingUp, TrendingDown, AlertCircle,
-  ShieldCheck, PiggyBank, Receipt, Calculator, Info, Eye, EyeOff
-} from 'lucide-react';
+  normalisasiLog, normalisasiStudent, normalisasiTagihan, normalisasiTeacherLog,
+} from './owner/keuanganOwnerUtils';
+import PanelPosisi from './owner/PanelPosisi';
+import PanelTransaksi from './owner/PanelTransaksi';
+import PanelAnalisis from './owner/PanelAnalisis';
+import PanelNeraca from './owner/PanelNeraca';
+
+const TABS = [
+  { id: 'posisi', label: '📡 Posisi Real-time' },
+  { id: 'transaksi', label: '🧾 Semua Transaksi' },
+  { id: 'analisis', label: '📈 Analisis' },
+  { id: 'neraca', label: '🏦 Neraca & Laporan' },
+];
 
 const OwnerFinance = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [privacyMode, setPrivacyMode] = useState(false);
+  const [tab, setTab] = useState('posisi');
+  const [terakhirUpdate, setTerakhirUpdate] = useState(null);
 
-  const [saldo, setSaldo] = useState({ tunai: 0, bank: 0, tanpaMetode: 0, cicilanBelumDiterima: 0, total: 0 });
-  const [piutang, setPiutang] = useState(0);
-  const [pendapatanKepake, setPendapatanKepake] = useState(0);
-  const [kewajiban, setKewajiban] = useState(0);
-  const [hpp, setHpp] = useState(0);
-  const [totalFixedCost, setTotalFixedCost] = useState(0);
-  const [totalPenyusutan, setTotalPenyusutan] = useState(0);
-  const [jumlahSiswaAktif, setJumlahSiswaAktif] = useState(0);
-  // 🔥 BARU: fitur "Pendapatan Diakui vs Titipan" -- per siswa, bukan
-  // cuma agregat. Ini pelengkap yang lebih detail dari kartu "Kewajiban
-  // Belum Terpenuhi" yang udah ada di atas (konsepnya mirip, tapi ini
-  // per-siswa dengan tabel rinci, dihitung dari totalBayar aktual yang
-  // sudah masuk -- bukan dari totalTagihan/proyeksi ke depan).
-  const [siswaDetail, setSiswaDetail] = useState([]);
-  const [totalSudahJadiHak, setTotalSudahJadiHak] = useState(0);
-  const [totalMasihTitipan, setTotalMasihTitipan] = useState(0);
-  const [fixedCostsList, setFixedCostsList] = useState([]);
-  const [assetsList, setAssetsList] = useState([]);
+  // Data mentah dari listener, lalu dinormalisasi sekali via useMemo.
+  const [logsRaw, setLogsRaw] = useState([]);
+  const [studentsRaw, setStudentsRaw] = useState([]);
+  const [tagihanRaw, setTagihanRaw] = useState([]);
+  const [teacherRaw, setTeacherRaw] = useState([]);
+  const [settings, setSettings] = useState({});
+  const [siap, setSiap] = useState({ logs: false, students: false, tagihan: false, teacher: false, settings: false });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -53,219 +64,86 @@ const OwnerFinance = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 🔥 REAL-TIME: sebelumnya halaman ini cuma getDocs sekali saat dibuka
+  // -- kalau admin mencatat transaksi di tab lain, owner harus refresh
+  // manual (dan sering lupa, ujungnya "angkanya beda, bingung").
+  // Sekarang semua koleksi dipantau live. Query tanpa filter where,
+  // jadi tidak butuh composite index dan biayanya sama seperti dulu.
   useEffect(() => {
-    const hitungSemua = async () => {
-      setLoading(true);
-      try {
-        const now = new Date();
-        // 🔥 FIX BUG NYATA (zona waktu): sebelumnya "bulan ini" diambil dari
-        // toISOString() yang berbasis UTC -- buat pengguna WIB (UTC+7), di
-        // jam 00.00-06.59 (terutama tepat di tanggal 1 awal bulan) bulan
-        // berjalan bisa kebaca sebagai BULAN LALU, jadi perhitungan "profit
-        // bulan ini", HPP honor guru, dan pencocokan siswa aktif beda sendiri
-        // dari halaman Keuangan admin (yang pakai waktu lokal). Sekarang
-        // konsisten pakai tahun/bulan lokal perangkat.
-        const bulanIni = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+    const tandaiSiap = (kunci) => setSiap(prev => ({ ...prev, [kunci]: true }));
 
-        // ===== 1. AMBIL SETTINGS (biaya tetap & aset) =====
-        const settingsSnap = await getDoc(doc(db, "settings", "global_config"));
-        const settingsData = settingsSnap.exists() ? settingsSnap.data() : {};
-        const fixedCosts = settingsData.fixedCosts || [];
-        const assets = settingsData.assets || [];
-        setFixedCostsList(fixedCosts);
-        setAssetsList(assets);
+    const unsubLogs = onSnapshot(collection(db, "finance_logs"), (snap) => {
+      setLogsRaw(snap.docs);
+      setTerakhirUpdate(Date.now());
+      tandaiSiap('logs');
+    }, () => tandaiSiap('logs'));
 
-        const totalFC = fixedCosts.reduce((s, f) => s + (parseInt(f.amountPerMonth) || 0), 0);
-        setTotalFixedCost(totalFC);
+    const unsubStudents = onSnapshot(collection(db, "students"), (snap) => {
+      setStudentsRaw(snap.docs);
+      setTerakhirUpdate(Date.now());
+      tandaiSiap('students');
+    }, () => tandaiSiap('students'));
 
-        const totalDep = assets.reduce((s, a) => {
-          const bulan = parseInt(a.usefulLifeMonths) || 0;
-          return s + (bulan > 0 ? Math.round((parseInt(a.purchasePrice) || 0) / bulan) : 0);
-        }, 0);
-        setTotalPenyusutan(totalDep);
+    const unsubTagihan = onSnapshot(collection(db, "finance_tagihan"), (snap) => {
+      setTagihanRaw(snap.docs);
+      setTerakhirUpdate(Date.now());
+      tandaiSiap('tagihan');
+    }, () => tandaiSiap('tagihan'));
 
-        // ===== 2. SALDO KAS (dari SELURUH riwayat finance_logs) =====
-        // 🔥 FIX BUG NYATA (laporan: "balance total keuangan membingungkan"):
-        // sebelumnya SEMUA transaksi yang method-nya bukan persis 'Tunai'
-        // langsung dimasukkan ke "Bank" -- termasuk (a) perpanjangan paket
-        // jalur CICILAN (method 'Cicilan') yang uangnya BELUM diterima, dan
-        // (b) transaksi lama yang field method-nya kosong. Akibatnya:
-        // 1. "Kas Yang Ada Sekarang" terlihat LEBIH BESAR dari uang riil --
-        //    komitmen cicilan dihitung seolah sudah masuk bank.
-        // 2. Uang yang sama KEHITUNG DUA KALI: sekali saat log komitmen
-        //    cicilan dibuat (full amount), lalu sekali lagi saat tiap
-        //    cicilannya beneran dibayar (dicatat sebagai Tunai/Transfer).
-        // Sekarang tiap method masuk embernya masing-masing:
-        // - Tunai          -> kas tunai
-        // - Transfer       -> bank
-        // - Cicilan        -> BUKAN kas; cuma dicatat sebagai "komitmen
-        //                     cicilan belum diterima" (angka informasi)
-        // - Kosong/lainnya -> ember "data lama tanpa metode", tetap dihitung
-        //                     ke total kas (biar nominalnya gak hilang
-        //                     diam-diam) tapi ditampilkan TERPISAH & jelas.
-        const logsSnap = await getDocs(collection(db, "finance_logs"));
-        let tunai = 0, bank = 0, tanpaMetode = 0, cicilanBelumDiterima = 0;
-        logsSnap.forEach(d => {
-          const data = d.data();
-          const amt = parseInt(data.amount || 0);
-          const signed = data.type === 'Pemasukan' ? amt : -amt;
-          if (data.method === 'Tunai') {
-            tunai += signed;
-          } else if (data.method === 'Transfer') {
-            bank += signed;
-          } else if (data.method === 'Cicilan') {
-            // Komitmen perpanjangan jalur cicilan -- uang belum diterima,
-            // jadi TIDAK pernah menambah/mengurangi kas.
-            if (data.type === 'Pemasukan') cicilanBelumDiterima += amt;
-          } else {
-            tanpaMetode += signed;
-          }
-        });
-        setSaldo({ tunai, bank, tanpaMetode, cicilanBelumDiterima, total: tunai + bank + tanpaMetode });
+    const unsubTeacher = onSnapshot(collection(db, "teacher_logs"), (snap) => {
+      setTeacherRaw(snap.docs);
+      setTerakhirUpdate(Date.now());
+      tandaiSiap('teacher');
+    }, () => tandaiSiap('teacher'));
 
-        // ===== 3. DATA SISWA: Piutang, Pendapatan Kepake, Kewajiban =====
-        const studentsSnap = await getDocs(collection(db, "students"));
-        let totalPiutang = 0;
-        let totalPendapatanKepake = 0;
-        let totalKewajiban = 0;
-        let aktifCount = 0;
-        let totalSudahJadiHakAcc = 0;
-        let totalMasihTitipanAcc = 0;
-        let siswaDetailAcc = [];
+    const unsubSettings = onSnapshot(doc(db, "settings", "global_config"), (snap) => {
+      setSettings(snap.exists() ? snap.data() : {});
+      tandaiSiap('settings');
+    }, () => tandaiSiap('settings'));
 
-        studentsSnap.forEach(d => {
-          const s = d.data();
-          const totalTagihan = parseInt(s.totalTagihan || 0);
-          const totalBayar = parseInt(s.totalBayar || 0);
-          const sisa = totalTagihan - totalBayar;
-          if (sisa > 0) totalPiutang += sisa;
-
-          // 🔥 BARU: "Sudah Jadi Hak vs Masih Titipan" -- dihitung dari
-          // totalBayar AKTUAL yang sudah masuk (bukan proyeksi totalTagihan
-          // ke depan kayak "Kewajiban" di atas). Ditaruh SEBELUM early-return
-          // di bawah supaya tetap kehitung walau siswa itu gak punya
-          // paketHargaBulanan (syarat fitur yang beda).
-          if (s.status === 'Aktif' && s.tanggalMulai && s.durasiBulan && totalBayar > 0) {
-            const durasiBulan = parseInt(s.durasiBulan);
-            const mulaiUtkHak = new Date(s.tanggalMulai);
-            const bayarLunasDiDepan = (s.metodeBayar === 'Tunai' || s.metodeBayar === 'Transfer') && durasiBulan > 1;
-
-            let sudahJadiHak, masihTitipan, bulanBerjalan;
-
-            if (bayarLunasDiDepan) {
-              // bulanBerjalan = jumlah bulan penuh sejak tanggalMulai
-              // sampai hari ini, dibatasi maksimal = durasi paket.
-              let b = (now.getFullYear() - mulaiUtkHak.getFullYear()) * 12 + (now.getMonth() - mulaiUtkHak.getMonth());
-              if (now.getDate() < mulaiUtkHak.getDate()) b -= 1;
-              bulanBerjalan = Math.min(Math.max(b, 0), durasiBulan);
-
-              const jatahPerBulan = totalBayar / durasiBulan;
-              sudahJadiHak = Math.round(jatahPerBulan * bulanBerjalan);
-              masihTitipan = totalBayar - sudahJadiHak;
-            } else {
-              // Cicilan (atau durasi cuma 1 bulan): bayar memang sesuai
-              // jasa berjalan, jadi semuanya sudah jadi hak, gak ada titipan.
-              bulanBerjalan = durasiBulan;
-              sudahJadiHak = totalBayar;
-              masihTitipan = 0;
-            }
-
-            totalSudahJadiHakAcc += sudahJadiHak;
-            totalMasihTitipanAcc += masihTitipan;
-            siswaDetailAcc.push({
-              id: d.id,
-              nama: s.nama || 'Siswa',
-              totalBayar,
-              durasiBulan,
-              bulanBerjalan,
-              sudahJadiHak,
-              masihTitipan,
-              metodeBayar: s.metodeBayar || '-',
-            });
-          }
-
-          const mulai = s.tanggalMulai ? new Date(s.tanggalMulai) : null;
-          const selesai = s.tanggalSelesai ? new Date(s.tanggalSelesai) : null;
-          const nilaiBulanan = parseInt(s.paketHargaBulanan || 0);
-
-          if (!mulai || !selesai || !nilaiBulanan) return;
-
-          // Paket siswa ini "aktif" (nyentuh) bulan ini?
-          const mulaiBulan = mulai.toISOString().slice(0, 7);
-          const selesaiBulan = selesai.toISOString().slice(0, 7);
-          const aktifBulanIni = mulaiBulan <= bulanIni && selesaiBulan >= bulanIni;
-
-          if (aktifBulanIni) {
-            totalPendapatanKepake += nilaiBulanan;
-            aktifCount++;
-          }
-
-          // Kewajiban belum terpenuhi: sisa bulan dari SEKARANG (atau
-          // mulai, mana yang lebih akhir) sampai tanggalSelesai.
-          const acuan = mulai > now ? mulai : now;
-          if (selesai > acuan) {
-            const bulanTersisa = (selesai.getFullYear() - acuan.getFullYear()) * 12 + (selesai.getMonth() - acuan.getMonth());
-            if (bulanTersisa > 0) {
-              totalKewajiban += bulanTersisa * nilaiBulanan;
-            }
-          }
-        });
-
-        setSiswaDetail(siswaDetailAcc.sort((a, b) => b.masihTitipan - a.masihTitipan));
-        setTotalSudahJadiHak(totalSudahJadiHakAcc);
-        setTotalMasihTitipan(totalMasihTitipanAcc);
-        setPiutang(totalPiutang);
-        setPendapatanKepake(totalPendapatanKepake);
-        setKewajiban(totalKewajiban);
-        setJumlahSiswaAktif(aktifCount);
-
-        // ===== 4. HPP: honor guru yang BENERAN keluar bulan ini =====
-        const teacherLogsSnap = await getDocs(collection(db, "teacher_logs"));
-        let totalHpp = 0;
-        teacherLogsSnap.forEach(d => {
-          const data = d.data();
-          const tgl = (data.tanggal || '').split(' ')[0];
-          if (tgl.startsWith(bulanIni)) {
-            totalHpp += parseInt(data.nominal || 0);
-          }
-        });
-        setHpp(totalHpp);
-
-      } catch (error) {
-        console.error("Error hitung keuangan owner:", error);
-      }
-      setLoading(false);
+    return () => {
+      unsubLogs(); unsubStudents(); unsubTagihan(); unsubTeacher(); unsubSettings();
     };
-    hitungSemua();
   }, []);
 
-  const handleLogout = () => {
+  const logs = useMemo(() => logsRaw.map(normalisasiLog), [logsRaw]);
+  const students = useMemo(() => studentsRaw.map(normalisasiStudent), [studentsRaw]);
+  const tagihanList = useMemo(() => tagihanRaw.map(normalisasiTagihan), [tagihanRaw]);
+  const teacherLogs = useMemo(() => teacherRaw.map(normalisasiTeacherLog), [teacherRaw]);
+
+  const handleLogout = useCallback(() => {
     if (window.confirm("Keluar dari Portal Owner?")) {
       localStorage.removeItem("isOwnerLoggedIn");
       localStorage.removeItem("role");
       navigate("/");
     }
-  };
+  }, [navigate]);
 
-  const profitBersih = pendapatanKepake - hpp - totalFixedCost - totalPenyusutan;
-  const rp = (num) => privacyMode ? "Rp ••••••••" : "Rp " + (num || 0).toLocaleString('id-ID');
+  const rp = useCallback((num) => privacyMode
+    ? "Rp ••••••••"
+    : "Rp " + Math.round(num || 0).toLocaleString('id-ID'),
+  [privacyMode]);
 
-  if (loading) {
+  const semuaSiap = siap.logs && siap.students && siap.tagihan && siap.teacher && siap.settings;
+
+  if (!semuaSiap) {
     return (
       <div style={styles.wrapper}>
         <div style={{ textAlign: 'center', padding: 80, color: '#94a3b8' }}>
           <div style={styles.spinner}></div>
-          <p>Menghitung data keuangan dari seluruh sistem...</p>
+          <p>Menyambungkan ke data keuangan real-time...</p>
         </div>
       </div>
     );
   }
 
+  const panelProps = { logs, students, tagihanList, teacherLogs, settings, rp, isMobile };
+
   return (
     <div style={styles.wrapper}>
       <div style={styles.mainContent(isMobile)}>
 
-        {/* HEADER */}
+        {/* HEADER PORTAL OWNER */}
         <div style={styles.ownerTopBar}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={styles.ownerBadge}><Crown size={16} color="#78350f" /></div>
@@ -286,156 +164,45 @@ const OwnerFinance = () => {
 
         <div style={styles.headerRow}>
           <div>
-            <h2 style={styles.pageTitle}>📊 Keuangan Lengkap</h2>
-            <p style={styles.subtitle}>Data ditarik langsung dari transaksi, siswa aktif, honor guru, biaya tetap, dan penyusutan aset.</p>
+            <h2 style={styles.pageTitle}>📊 Pusat Komando Keuangan</h2>
+            <p style={styles.subtitle}>
+              Seluruh transaksi & posisi uang dipantau REAL-TIME — perubahan apa pun yang dicatat admin langsung muncul di sini tanpa refresh.
+            </p>
           </div>
           <button onClick={() => setPrivacyMode(!privacyMode)} style={styles.privacyBtn(privacyMode)}>
             {privacyMode ? <><Eye size={14} /> Tampilkan</> : <><EyeOff size={14} /> Sembunyikan</>}
           </button>
         </div>
 
-        {/* ===== BAGIAN 1: KAS vs PROFIT (ini yang jawab ketakutan utama) ===== */}
-        <div style={styles.heroGrid(isMobile)}>
-          <div style={styles.heroCard('#1e293b')}>
-            <Wallet size={20} color="rgba(255,255,255,0.6)" />
-            <span style={styles.heroLabel}>Kas Yang Ada Sekarang</span>
-            <h1 style={styles.heroValue}>{rp(saldo.total)}</h1>
-            <div style={styles.heroDetail}>
-              <span>💵 Tunai: {rp(saldo.tunai)}</span>
-              <span>💳 Bank: {rp(saldo.bank)}</span>
-              {/* 🔥 BARU: data lama tanpa method ditampilkan terpisah --
-                  sebelumnya diam-diam dicampur ke "Bank". */}
-              {saldo.tanpaMetode !== 0 && <span>❔ Data lama tanpa metode: {rp(saldo.tanpaMetode)}</span>}
-            </div>
-            {/* 🔥 BARU: komitmen cicilan TIDAK ikut dihitung ke kas di atas
-                (perbaikan bug saldo kembar). Ditampilkan terpisah biar owner
-                tetap tau ada uang yang belum masuk dari jalur cicilan. */}
-            {saldo.cicilanBelumDiterima > 0 && (
-              <p style={{...styles.heroNote, color: '#fde68a'}}>
-                📋 Komitmen cicilan perpanjangan yang BELUM diterima: {rp(saldo.cicilanBelumDiterima)} -- TIDAK dihitung sebagai kas di atas. Baru masuk kas saat tiap cicilannya dibayar (Tunai/Transfer).
-              </p>
-            )}
-            <p style={styles.heroNote}>⚠️ Ini BUKAN profit. Sebagian titipan siswa yang bayar di muka.</p>
-          </div>
-
-          <div style={styles.heroCard(profitBersih >= 0 ? '#065f46' : '#7f1d1d')}>
-            <ShieldCheck size={20} color="rgba(255,255,255,0.6)" />
-            <span style={styles.heroLabel}>Profit Bersih Bulan Ini (Aman Diambil)</span>
-            <h1 style={styles.heroValue}>{rp(profitBersih)}</h1>
-            <div style={styles.heroDetail}>
-              <span>Dari {jumlahSiswaAktif} siswa aktif bulan ini</span>
-            </div>
-            <p style={styles.heroNote}>✅ Ini yang sudah "kepake" (diajarkan) dikurangi semua biaya.</p>
-          </div>
+        {/* SUB-TAB */}
+        <div style={styles.subTabBar}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={styles.subTab(tab === t.id)}>
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        {/* ===== BAGIAN 2: KEWAJIBAN & PIUTANG (jawab ketakutan spesifik) ===== */}
-        <div style={styles.warnGrid(isMobile)}>
-          <div style={styles.warnCard('#fff7ed', '#f97316')}>
-            <PiggyBank size={18} color="#f97316" />
-            <span style={styles.warnLabel}>Kewajiban Belum Terpenuhi</span>
-            <h3 style={{...styles.warnValue, color: '#f97316'}}>{rp(kewajiban)}</h3>
-            <p style={styles.warnDesc}>Duit yang SUDAH masuk kas, tapi masih "milik" sesi belajar yang BELUM diajarkan (siswa bayar 3/6 bulan di muka). <b>Jangan diambil dulu</b> -- ini yang bikin was-was selama ini.</p>
-          </div>
-          <div style={styles.warnCard('#fef2f2', '#ef4444')}>
-            <AlertCircle size={18} color="#ef4444" />
-            <span style={styles.warnLabel}>Piutang (Belum Dibayar Siswa)</span>
-            <h3 style={{...styles.warnValue, color: '#ef4444'}}>{rp(piutang)}</h3>
-            <p style={styles.warnDesc}>Tagihan yang belum dilunasi siswa. Ini beda dari Kewajiban di atas -- ini duit yang belum masuk sama sekali.</p>
-          </div>
-        </div>
-
-        {/* ===== BAGIAN BARU: PENDAPATAN DIAKUI vs TITIPAN (per siswa) ===== */}
-        <div style={{...styles.card, marginBottom: 20}}>
-          <h3 style={styles.cardTitle}><Receipt size={16} /> Pendapatan Diakui vs Titipan (per Siswa)</h3>
-          <p style={{ fontSize: 11, color: '#94a3b8', margin: '-8px 0 16px' }}>
-            Beda dari "Kewajiban" di atas (yang itu proyeksi ke depan) -- ini dihitung dari duit yang SUDAH masuk (totalBayar), dipecah mana yang udah jadi hak vs masih titipan siswa.
-          </p>
-
-          <div style={styles.recognizeGrid(isMobile)}>
-            <div style={styles.recognizeCard('#f0fdf4', '#10b981')}>
-              <span style={styles.recognizeLabel}>✅ Sudah Jadi Hak Bulan Ini</span>
-              <h3 style={{...styles.recognizeValue, color: '#10b981'}}>{rp(totalSudahJadiHak)}</h3>
-            </div>
-            <div style={styles.recognizeCard('#fffbeb', '#f59e0b')}>
-              <span style={styles.recognizeLabel}>⏳ Masih Titipan</span>
-              <h3 style={{...styles.recognizeValue, color: '#f59e0b'}}>{rp(totalMasihTitipan)}</h3>
-            </div>
-          </div>
-
-          <div style={styles.warnStrip}>
-            ⚠️ <b>Jangan ambil dari angka Titipan (kuning) untuk gaji/pribadi</b> -- itu masih "milik" sesi belajar yang belum diajarkan ke siswa-siswa itu.
-          </div>
-
-          {siswaDetail.length === 0 ? (
-            <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 20 }}>Belum ada siswa aktif dengan data pembayaran lengkap.</p>
-          ) : (
-            <div style={{ overflowX: 'auto', marginTop: 14 }}>
-              <table style={styles.table}>
-                <thead>
-                  <tr style={styles.thr}>
-                    <th style={styles.th}>Nama Siswa</th>
-                    <th style={styles.th}>Metode</th>
-                    <th style={{...styles.th, textAlign: 'right'}}>Total Bayar</th>
-                    <th style={{...styles.th, textAlign: 'center'}}>Durasi</th>
-                    <th style={{...styles.th, textAlign: 'center'}}>Bulan Berjalan</th>
-                    <th style={{...styles.th, textAlign: 'right'}}>Sudah Jadi Hak</th>
-                    <th style={{...styles.th, textAlign: 'right'}}>Masih Titipan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {siswaDetail.map(row => (
-                    <tr key={row.id} style={styles.tr}>
-                      <td style={styles.td}><b>{row.nama}</b></td>
-                      <td style={styles.td}>{row.metodeBayar}</td>
-                      <td style={{...styles.td, textAlign: 'right'}}>{rp(row.totalBayar)}</td>
-                      <td style={{...styles.td, textAlign: 'center'}}>{row.durasiBulan} bln</td>
-                      <td style={{...styles.td, textAlign: 'center'}}>{row.bulanBerjalan}/{row.durasiBulan}</td>
-                      <td style={{...styles.td, textAlign: 'right', color: '#10b981', fontWeight: 700}}>{rp(row.sudahJadiHak)}</td>
-                      <td style={{...styles.td, textAlign: 'right', color: row.masihTitipan > 0 ? '#f59e0b' : '#cbd5e1', fontWeight: 700}}>{rp(row.masihTitipan)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* ===== BAGIAN 3: RINCIAN PERHITUNGAN PROFIT ===== */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitle}><Calculator size={16} /> Rincian Perhitungan Profit Bulan Ini</h3>
-          <div style={styles.calcRow}>
-            <span>Pendapatan yang Kepake ({jumlahSiswaAktif} siswa × nilai paket bulanan)</span>
-            <b style={{ color: '#10b981' }}>+ {rp(pendapatanKepake)}</b>
-          </div>
-          <div style={styles.calcRow}>
-            <span>HPP — Honor Guru (yang beneran keluar bulan ini)</span>
-            <b style={{ color: '#ef4444' }}>- {rp(hpp)}</b>
-          </div>
-          <div style={styles.calcRow}>
-            <span>Biaya Tetap ({fixedCostsList.length} pos: {fixedCostsList.map(f => f.label).join(', ') || '-'})</span>
-            <b style={{ color: '#ef4444' }}>- {rp(totalFixedCost)}</b>
-          </div>
-          <div style={styles.calcRow}>
-            <span>Penyusutan Aset ({assetsList.length} aset)</span>
-            <b style={{ color: '#ef4444' }}>- {rp(totalPenyusutan)}</b>
-          </div>
-          <div style={styles.calcTotal}>
-            <span>= PROFIT BERSIH</span>
-            <b style={{ color: profitBersih >= 0 ? '#10b981' : '#ef4444' }}>{rp(profitBersih)}</b>
-          </div>
-
-          <div style={styles.infoBoxBlue}>
-            <Info size={14} />
-            <span style={{ fontSize: 11 }}>
-              "Pendapatan yang Kepake" dihitung dari siswa yang paketnya nyentuh bulan berjalan, BUKAN dari kas yang masuk bulan ini. Kalau owner mau atur Biaya Tetap atau Aset, buka tab "⚙️ Pengaturan".
-            </span>
-          </div>
-        </div>
+        {/* PANEL AKTIF */}
+        {tab === 'posisi' && (
+          <PanelPosisi {...panelProps} terakhirUpdate={terakhirUpdate} />
+        )}
+        {tab === 'transaksi' && (
+          <PanelTransaksi logs={logs} rp={rp} isMobile={isMobile} />
+        )}
+        {tab === 'analisis' && (
+          <PanelAnalisis {...panelProps} privacyMode={privacyMode} />
+        )}
+        {tab === 'neraca' && (
+          <PanelNeraca {...panelProps} />
+        )}
 
       </div>
 
-      <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+      `}</style>
     </div>
   );
 };
@@ -452,42 +219,18 @@ const styles = {
   ownerTabActive: { padding: '8px 16px', borderRadius: 8, background: '#1e293b', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'default' },
   ownerTab: { padding: '8px 16px', borderRadius: 8, background: 'white', color: '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer', border: '1px solid #e2e8f0' },
 
-  headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 10 },
+  headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, flexWrap: 'wrap', gap: 10 },
   pageTitle: { margin: 0, color: '#1e293b', fontSize: 20 },
-  subtitle: { color: '#94a3b8', fontSize: 12, margin: '4px 0 0', maxWidth: 480 },
+  subtitle: { color: '#94a3b8', fontSize: 12, margin: '4px 0 0', maxWidth: 560, lineHeight: 1.6 },
   privacyBtn: (on) => ({ padding: '8px 14px', borderRadius: 20, border: '2px solid #1e293b', background: on ? '#1e293b' : 'white', color: on ? 'white' : '#1e293b', cursor: 'pointer', fontWeight: 'bold', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }),
 
-  heroGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: 15, marginBottom: 16 }),
-  heroCard: (bg) => ({ background: bg, padding: 20, borderRadius: 16, color: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.15)' }),
-  heroLabel: { display: 'block', fontSize: 11, opacity: 0.8, marginTop: 8, textTransform: 'uppercase', letterSpacing: 1 },
-  heroValue: { margin: '8px 0', fontSize: 26, fontWeight: 'bold' },
-  heroDetail: { display: 'flex', gap: 16, fontSize: 11, opacity: 0.85, marginBottom: 8, flexWrap: 'wrap' },
-  heroNote: { fontSize: 10, opacity: 0.75, margin: 0, lineHeight: 1.5 },
-
-  warnGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: 15, marginBottom: 20 }),
-  warnCard: (bg, color) => ({ background: bg, padding: 16, borderRadius: 14, border: `1px solid ${color}30` }),
-  warnLabel: { display: 'block', fontSize: 11, color: '#64748b', marginTop: 6, fontWeight: 700 },
-  warnValue: { margin: '6px 0', fontSize: 20, fontWeight: 'bold' },
-  warnDesc: { fontSize: 10.5, color: '#64748b', margin: 0, lineHeight: 1.6 },
-
-  card: { background: 'white', padding: 20, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' },
-  cardTitle: { margin: '0 0 14px', fontSize: 15, fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
-  calcRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f8fafc', fontSize: 12, gap: 10 },
-  calcTotal: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0 4px', marginTop: 6, borderTop: '2px solid #1e293b', fontSize: 15, fontWeight: 900 },
-  infoBoxBlue: { background: '#eff6ff', padding: 12, borderRadius: 8, border: '1px solid #bfdbfe', marginTop: 16, display: 'flex', alignItems: 'flex-start', gap: 8, color: '#1e40af' },
-
-  // 🔥 BARU: style buat kartu Sudah Jadi Hak vs Titipan + tabel detail
-  recognizeGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 12 }),
-  recognizeCard: (bg, color) => ({ background: bg, padding: 16, borderRadius: 12, border: `1px solid ${color}40` }),
-  recognizeLabel: { fontSize: 11, color: '#64748b', fontWeight: 700 },
-  recognizeValue: { margin: '6px 0 0', fontSize: 20, fontWeight: 900 },
-  warnStrip: { background: '#fef2f2', color: '#991b1b', fontSize: 11, padding: '10px 14px', borderRadius: 8, border: '1px solid #fecaca', marginBottom: 6, fontWeight: 600 },
-
-  table: { width: '100%', borderCollapse: 'collapse', minWidth: 650 },
-  thr: { background: '#f8fafc', textAlign: 'left' },
-  th: { padding: '10px 12px', fontSize: 10, color: '#64748b', fontWeight: 800, textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9' },
-  tr: { borderBottom: '1px solid #f1f5f9' },
-  td: { padding: '10px 12px', fontSize: 12 },
+  subTabBar: { display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' },
+  subTab: (aktif) => ({
+    padding: '9px 14px', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 11.5, whiteSpace: 'nowrap',
+    border: aktif ? '1.5px solid #0ea5e9' : '1px solid #e2e8f0',
+    background: aktif ? '#e0f2fe' : 'white',
+    color: aktif ? '#0369a1' : '#64748b',
+  }),
 };
 
 export default OwnerFinance;
