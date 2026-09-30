@@ -8,12 +8,12 @@
 import React, { useMemo } from 'react';
 import {
   Wallet, ShieldCheck, AlertCircle, PiggyBank, Activity,
-  CalendarClock, ArrowUpRight, ArrowDownRight,
+  CalendarClock, ArrowUpRight, ArrowDownRight, ArrowLeftRight, Siren,
 } from 'lucide-react';
 import {
   hitungSaldo, analisisSiswa, analisisTagihan, labaRugiAkrual,
   keyBulanIni, namaBulanDariKey, urutTanggalTerbaru, formatWaktu,
-  tanggalLokalHariIni,
+  tanggalLokalHariIni, alarmDanaKeramat,
 } from './keuanganOwnerUtils';
 
 const PanelPosisi = ({ logs, students, tagihanList, teacherLogs, settings, rp, isMobile, terakhirUpdate }) => {
@@ -30,6 +30,9 @@ const PanelPosisi = ({ logs, students, tagihanList, teacherLogs, settings, rp, i
 
   const { saldo, siswaInfo, tagihanInfo, akrual, feed, bulanIni } = data;
   const profitBersih = akrual.profit;
+  // 🔥 BARU (modul Dana Keramat): alarm keras -- kas tersedia tidak boleh
+  // turun di bawah sisa titipan paket siswa aktif.
+  const danaKeramat = alarmDanaKeramat(saldo, siswaInfo);
 
   return (
     <div>
@@ -63,6 +66,14 @@ const PanelPosisi = ({ logs, students, tagihanList, teacherLogs, settings, rp, i
             <span>💳 Bank: {rp(saldo.bank)}</span>
             {saldo.tanpaMetode !== 0 && <span>❔ Data lama tanpa metode: {rp(saldo.tanpaMetode)}</span>}
           </div>
+          {/* 🔥 BARU (modul setor kas): uang tunai dipecah dua kantong --
+              brankas admin kasir vs kas owner -- biar jelas uang fisiknya
+              ada di tangan siapa. Total tidak berubah. */}
+          <div style={styles.heroDetail}>
+            <span>&nbsp;&nbsp;&nbsp;├ 💵 Brankas admin: {rp(saldo.kasAdmin)}</span>
+            <span>└ 🏠 Kas owner: {rp(saldo.kasOwner)}</span>
+            {saldo.setorKas > 0 && <span>🔁 Total sudah disetor admin: {rp(saldo.setorKas)}</span>}
+          </div>
           {tagihanInfo.belumDiterima > 0 && (
             <p style={{ ...styles.heroNote, color: '#fde68a' }}>
               📋 Cicilan terjadwal yang BELUM diterima: {rp(tagihanInfo.belumDiterima)} ({tagihanInfo.jumlahJadwal} tagihan) — TIDAK dihitung sebagai kas. Baru masuk kas saat tiap cicilannya dibayar.
@@ -80,6 +91,31 @@ const PanelPosisi = ({ logs, students, tagihanList, teacherLogs, settings, rp, i
             <span>Pendapatan kepake: {rp(akrual.pendapatan)}</span>
           </div>
           <p style={styles.heroNote}>✅ Pendapatan yang sudah "kepake" (diajarkan) dikurangi honor guru, biaya tetap, dan penyusutan. Rincian lengkap di tab 📈 Analisis.</p>
+        </div>
+      </div>
+
+      {/* ===== 🔥 ALARM DANA KERAMAT (SISA TITIPAN PAKET SISWA AKTIF) ===== */}
+      {/* Permintaan owner: widget khusus + alarm "saldo bank/kas tidak
+          boleh turun di bawah angka ini". Uang paket masa depan yang
+          belum terlaksana = DANA KERAMAT, bukan hak owner hari ini. */}
+      <div style={danaKeramat.aman ? styles.keramatAman : styles.keramatBahaya}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          {danaKeramat.aman ? <ShieldCheck size={20} color="#047857" /> : <Siren size={20} color="#b91c1c" />}
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <b style={{ fontSize: 13, color: danaKeramat.aman ? '#065f46' : '#7f1d1d' }}>
+              🔐 DANA KERAMAT — Sisa Titipan Paket Siswa Aktif: {rp(danaKeramat.titipan)}
+            </b>
+            <div style={{ fontSize: 11, color: danaKeramat.aman ? '#047857' : '#b91c1c', marginTop: 2, lineHeight: 1.6 }}>
+              {danaKeramat.aman ? (
+                <>Kas tersedia {rp(danaKeramat.kasTersedia)} — surplus <b>{rp(danaKeramat.selisih)}</b> di atas dana keramat. ✅ Aman: uang titipan sesi masa depan masih utuh.</>
+              ) : (
+                <>
+                  ⛔ BAHAYA: kas tersedia {rp(danaKeramat.kasTersedia)} sudah TURUN <b>{rp(danaKeramat.kurang)}</b> di bawah dana keramat!
+                  Artinya uang paket siswa yang belum diajarkan sudah terpakai buat belanja — stop pengeluaran non-wajib sekarang, atau segera tagih piutang.
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -116,19 +152,20 @@ const PanelPosisi = ({ logs, students, tagihanList, teacherLogs, settings, rp, i
               {feed.map((l, i) => (
                 <div key={l.id || i} style={styles.feedRow}>
                   <div style={styles.feedIkon(l.type)}>
-                    {l.type === 'Pemasukan' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                    {l.type === 'Pemasukan' ? <ArrowUpRight size={14} /> : l.type === 'Transfer' ? <ArrowLeftRight size={13} /> : <ArrowDownRight size={14} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
                       {l.category}{l.namaSiswa ? <span style={{ fontWeight: 400, color: '#64748b' }}> — {l.namaSiswa}</span> : null}
                     </div>
                     <div style={{ fontSize: 10, color: '#94a3b8' }}>
-                      {l.date || 'tanpa tanggal'} • {l.methodAsli || 'tanpa metode'}
+                      {l.date || 'tanpa tanggal'} • {l.type === 'Transfer' ? '🔁 setor kas (pindah kantong)' : (l.methodAsli || 'tanpa metode')}
                       {l.methodAsli === 'Cicilan' && l.type === 'Pemasukan' ? ' • komitmen, uang belum diterima' : ''}
+                      {l.type === 'Transfer' && l.statusRekonsiliasi !== 'verified' ? ' • ⏳ menunggu verifikasi' : ''}
                     </div>
                   </div>
-                  <b style={{ fontSize: 12, color: l.type === 'Pemasukan' ? '#059669' : '#dc2626', whiteSpace: 'nowrap' }}>
-                    {l.type === 'Pemasukan' ? '+' : '-'} {rp(l.amount)}
+                  <b style={{ fontSize: 12, color: l.type === 'Pemasukan' ? '#059669' : l.type === 'Transfer' ? '#b45309' : '#dc2626', whiteSpace: 'nowrap' }}>
+                    {l.type === 'Transfer' ? '🔁' : l.type === 'Pemasukan' ? '+' : '-'} {rp(l.amount)}
                   </b>
                 </div>
               ))}
@@ -170,6 +207,10 @@ const PanelPosisi = ({ logs, students, tagihanList, teacherLogs, settings, rp, i
 
 const styles = {
   ringkasBox: { background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 14, padding: '14px 18px', marginBottom: 16 },
+  // 🔥 BARU: strip alarm Dana Keramat -- hijau tenang kalau aman, merah
+  // menyala kalau kas sudah jebol di bawah titipan siswa.
+  keramatAman: { background: '#ecfdf5', border: '1.5px solid #34d399', borderRadius: 14, padding: '13px 16px', marginBottom: 16 },
+  keramatBahaya: { background: '#fef2f2', border: '2px solid #ef4444', borderRadius: 14, padding: '13px 16px', marginBottom: 16, boxShadow: '0 0 0 4px rgba(239,68,68,0.12)' },
   liveBadge: { display: 'inline-flex', alignItems: 'center', gap: 5, background: '#dcfce7', color: '#15803d', fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 20, letterSpacing: 0.5 },
   liveDot: { width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse-dot 1.5s ease-in-out infinite' },
 

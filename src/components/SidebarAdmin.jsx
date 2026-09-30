@@ -11,10 +11,12 @@ import {
   CreditCard, FileText, Settings, LogOut, BookOpen,
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
-  UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive
+  UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
+  Crown, Lock, Receipt
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
+import { isOwnerSession, labelPeran } from '../utils/roleAkses';
 
 const SidebarAdmin = () => {
   const location = useLocation();
@@ -103,9 +105,25 @@ const SidebarAdmin = () => {
   };
 
   const isActive = (path) => {
+    // 🔥 UPGRADE: link dengan query (mis. /admin/finance?tab=kasir)
+    // dianggap aktif hanya kalau pathname + query-nya cocok -- biar
+    // "Tutup Kasir" tidak ikut menyala saat admin buka tab Dashboard.
+    if (path.includes('?')) {
+      return (location.pathname + location.search).startsWith(path);
+    }
     if (path === '/admin') return location.pathname === '/admin';
+    if (path === '/admin/finance' && location.search) {
+      // Tab finance non-default aktif -> menu "Keuangan" biasa tidak menyala.
+      return false;
+    }
     return location.pathname.startsWith(path);
   };
+
+  // 🔥 UPGRADE (pemisahan hak akses): Owner = super admin (lihat semua +
+  // grup OWNER). Admin kasir = menu operasional harian saja; menu yang
+  // membocorkan keuangan besar (Gaji Guru, Pengaturan/global, Portal
+  // Owner) DISEMBUNYIKAN dari kasir.
+  const owner = isOwnerSession();
 
   const menuGroups = [
     {
@@ -136,9 +154,23 @@ const SidebarAdmin = () => {
       label: 'KEUANGAN',
       items: [
         { name: 'Keuangan',  path: '/admin/finance',            icon: <CreditCard size={18} />, badge: badgePiutang > 0 ? badgePiutang : null, badgeColor: '#ef4444' },
-        { name: 'Gaji Guru', path: '/admin/teachers/salaries',  icon: <FileText size={18} /> },
+        // 🔥 BARU (kasir): kwitansi bernomor + logo, bisa dicetak ulang.
+        { name: 'Kwitansi', path: '/admin/finance?tab=kwitansi', icon: <Receipt size={18} /> },
+        // 🔥 BARU (kasir): tutup kas / setor uang fisik ke owner.
+        { name: 'Tutup Kasir', path: '/admin/finance?tab=kasir', icon: <Lock size={18} /> },
+        // Rekap honor guru = data sensitif, HANYA owner yang boleh lihat.
+        ...(owner ? [{ name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: <FileText size={18} /> }] : []),
       ]
     },
+    // 🔥 BARU: grup khusus owner -- jalan pintas ke portal keuangan owner
+    // (posisi uang real-time, rekonsiliasi, honor tentor, neraca).
+    ...(owner ? [{
+      label: '👑 OWNER',
+      items: [
+        { name: 'Portal Keuangan Owner', path: '/owner/finance', icon: <Crown size={18} /> },
+        { name: 'Pengaturan Global', path: '/owner/settings', icon: <Settings size={18} /> },
+      ]
+    }] : []),
     {
       label: '📋 PENDAFTARAN',
       items: [
@@ -180,7 +212,9 @@ const SidebarAdmin = () => {
       label: 'LAINNYA',
       items: [
         { name: 'Blog & Galeri', path: '/admin/blog',     icon: <BookOpen size={18} /> },
-        { name: 'Pengaturan',    path: '/admin/settings', icon: <Settings size={18} /> },
+        // Pengaturan global (harga paket, PIN owner, password admin) =
+        // ranah owner. Kasir tidak perlu (routenya juga sudah dikunci).
+        ...(owner ? [{ name: 'Pengaturan', path: '/admin/settings', icon: <Settings size={18} /> }] : []),
       ]
     }
   ];
@@ -227,10 +261,11 @@ const SidebarAdmin = () => {
 
         <div style={styles.footer}>
           <div style={styles.userInfo}>
-            <div style={styles.userAvatar}>A</div>
+            <div style={styles.userAvatar}>{owner ? '👑' : 'A'}</div>
             <div>
-              <div style={styles.userName}>Admin</div>
-              <div style={styles.userRole}>Super Admin</div>
+              {/* 🔥 UPGRADE: label peran jujur -- owner bukan "Admin". */}
+              <div style={styles.userName}>{owner ? 'Owner' : 'Admin'}</div>
+              <div style={styles.userRole}>{labelPeran()}</div>
             </div>
           </div>
           <button onClick={handleLogout} style={styles.btnLogout}>

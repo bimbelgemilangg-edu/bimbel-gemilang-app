@@ -181,9 +181,16 @@ import TeacherLayout from './pages/teacher/TeacherLayout';
 // ============================================================
 
 const AdminRoute = ({ children }) => {
+  // 🔥 UPGRADE (pemisahan hak akses): area /admin/* boleh dimasuki
+  // Admin Kasir (login password) ATAU Owner (login PIN). Owner adalah
+  // super admin -- dia yang pegang keuangan besar, wajar kalau dia juga
+  // perlu masuk area admin (kelola siswa, gaji guru, pengaturan).
   const isAuth = localStorage.getItem('isLoggedIn') === 'true';
   const role = localStorage.getItem('role');
-  if (!isAuth || role !== 'admin') return <Navigate to="/" replace />;
+  const adminOk = isAuth && role === 'admin';
+  const ownerOk =
+    localStorage.getItem('isOwnerLoggedIn') === 'true' && role === 'owner';
+  if (!adminOk && !ownerOk) return <Navigate to="/" replace />;
   return children;
 };
 
@@ -429,9 +436,12 @@ function App() {
           element={<AdminRoute><StudentFinance /></AdminRoute>}
         />
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
+        {/* 🔥 UPGRADE (pemisahan hak akses): rekap honor/gaji guru adalah
+            data sensitif -- KHUSUS Owner. Admin kasir tidak boleh melihat
+            berapa honor tentor (keuangan besar dipegang owner). */}
         <Route
           path="/admin/teachers/salaries"
-          element={<AdminRoute><TeacherSalaries /></AdminRoute>}
+          element={<OwnerRoute><TeacherSalaries /></OwnerRoute>}
         />
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />

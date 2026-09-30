@@ -10,8 +10,13 @@ import {
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
   CheckCircle, ChevronRight, ChevronLeft, IdCard, Phone,
-  Sparkles, Key, Info
+  Sparkles, Key, Info, Printer, Receipt
 } from 'lucide-react';
+// 🔥 BARU (modul kanal uang, rekonsiliasi & kwitansi + amortisasi paket):
+import { uploadElearningFile } from '../../../services/uploadService';
+import { KANAL } from '../../../utils/kanalUang';
+import { ambilNomorKwitansiBerikutnya, cetakKwitansi, rp } from '../../../utils/kwitansi';
+import { rincianAmortisasi } from '../owner/keuanganOwnerUtils';
 
 // 🔥 FIX BUG NYATA (zona waktu): sama seperti di StudentFinance.jsx admin --
 // "tanggal hari ini" harus dari waktu LOKAL, bukan toISOString() (UTC).
@@ -72,6 +77,19 @@ const AddStudent = () => {
   });
 
   const [tglLahir, setTglLahir] = useState({ hari: '', bulan: '', tahun: '' });
+
+  // 🔥 BARU (modul rekonsiliasi): jejak pembayaran transfer pendaftaran
+  // -- nomor referensi struk / foto bukti (wajib salah satu kalau metode
+  // Transfer, supaya owner bisa mencocokkan mutasi rekening).
+  const [daftarRef, setDaftarRef] = useState('');
+  const [daftarBukti, setDaftarBukti] = useState(null);
+
+  // 🔥 BARU (anti-bingung alur): setelah pendaftaran lunas tersimpan,
+  // JANGAN langsung dilempar ke daftar siswa -- tampilkan panel sukses
+  // berisi rincian amortisasi paket (kas diterima vs omzet diakui vs dana
+  // titipan) + tombol cetak kwitansi, biar admin (dan orang tua yang
+  // melihat layar) paham ke mana perginya uang paket multi-bulan.
+  const [suksesDaftar, setSuksesDaftar] = useState(null);
 
   const [randomSuffix, setRandomSuffix] = useState(() => Math.floor(100 + Math.random() * 900));
 
@@ -372,6 +390,13 @@ const AddStudent = () => {
       return;
     }
 
+    // 🔥 BARU (modul rekonsiliasi): pendaftaran via TRANSFER BANK wajib
+    // meninggalkan jejak -- nomor referensi struk ATAU foto bukti.
+    if (formData.metodeBayar === 'Transfer' && !daftarRef.trim() && !daftarBukti) {
+      showAlert('⛔ Pendaftaran transfer WAJIB diisi No. Referensi struk ATAU upload foto bukti transfer -- buat dicocokkan owner dengan mutasi rekening.');
+      return;
+    }
+
     setLoading(true);
     try {
       const studentId = await generateStudentId();
@@ -379,6 +404,24 @@ const AddStudent = () => {
       const tanggalSelesai = getTanggalSelesai();
       const tanggalLahirStr = getTanggalLahirStr();
       const today = tanggalLokalHariIni();
+
+      // 🔥 Upload bukti transfer dulu (kalau ada) -- gagal upload = batal
+      // semua (batch di bawah belum dijalankan, tidak ada data setengah).
+      let buktiUrl = '';
+      if (daftarBukti) {
+        const hasil = await uploadElearningFile(daftarBukti, `bukti_transfer/${today.replace(/-/g, '')}`);
+        if (hasil?.success && hasil.downloadURL) buktiUrl = hasil.downloadURL;
+        else throw new Error('Upload bukti gagal: ' + (hasil?.error || 'tidak ada URL'));
+      }
+
+      // 🔥 BARU (modul kwitansi): pembayaran LUNAS (Tunai/Transfer) =
+      // uang riil diterima -> terbit kwitansi bernomor otomatis. Jalur
+      // CICILAN = baru komitmen (uang belum masuk) -> TIDAK ada kwitansi
+      // sekarang; kwitansi terbit tiap kali cicilannya beneran dibayar
+      // dari halaman Keuangan Siswa.
+      const noKwitansi = (formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer')
+        ? await ambilNomorKwitansiBerikutnya(new Date(`${today}T00:00:00`))
+        : '';
 
       const paketName = pkg.name || pkg.id;
       const detailProgram = formData.programType === 'English' 
@@ -438,6 +481,15 @@ const AddStudent = () => {
           amount: totalTagihan,
           method: formData.metodeBayar,
           note: `Pendaftaran Baru: ${formData.nama} (${detailProgram}) - LUNAS (${formData.durasiBulan} bulan)`,
+          // 🔥 BARU (modul kanal uang & rekonsiliasi & kwitansi): kanal
+          // eksplisit (Tunai = brankas admin, Transfer = rekening bimbel),
+          // jejak bukti transfer, nomor kwitansi resmi, dan status 'pending'
+          // buat transfer (menunggu dicocokkan owner dengan mutasi bank).
+          kanal: formData.metodeBayar === 'Tunai' ? KANAL.KAS_ADMIN : KANAL.BANK,
+          refTransfer: daftarRef.trim(),
+          buktiUrl,
+          noKwitansi,
+          statusRekonsiliasi: formData.metodeBayar === 'Transfer' ? 'pending' : '',
           createdAt: serverTimestamp()
         });
       } else if (formData.metodeBayar === 'Cicilan') {
@@ -464,11 +516,36 @@ const AddStudent = () => {
 
       await batch.commit();
 
-      showAlert(`✅ Siswa berhasil didaftarkan! ID: ${studentId}`, 5000);
-      
-      setTimeout(() => {
-        navigate('/admin/students');
-      }, 1500);
+      // 🔥 UPGRADE ALUR (anti-bingung pendaftaran): sebelumnya layar cuma
+      // nge-toast "berhasil" lalu 1,5 detik kemudian DILEMPAR OTOMATIS ke
+      // daftar siswa -- admin gak sempat baca, gak sempat cetak kwitansi,
+      // dan gak pernah lihat bagaimana uang paket multi-bulan dipecah
+      // sistem (kas diterima vs omzet diakui vs dana titipan). Sekarang
+      // muncul PANEL SUKSES: rincian lengkap + amortisasi + tombol cetak
+      // kwitansi, dan admin sendiri yang pilih lanjut ke mana.
+      setSuksesDaftar({
+        studentId,
+        studentDocId: studentRef.id,
+        nama: formData.nama,
+        detailProgram,
+        totalTagihan,
+        metodeBayar: formData.metodeBayar,
+        noKwitansi,
+        refTransfer: daftarRef.trim(),
+        durasiBulan: parseInt(formData.durasiBulan) || 1,
+        tanggalMulai: formData.tanggalMulai,
+        tanggalSelesai,
+        username: studentData.username,
+        password: studentData.password,
+        amortisasi: (formData.metodeBayar === 'Tunai' || formData.metodeBayar === 'Transfer')
+          ? rincianAmortisasi(totalTagihan, formData.durasiBulan, formData.tanggalMulai)
+          : null,
+        cicilanPerBulan: formData.metodeBayar === 'Cicilan' ? hitungCicilan() : 0,
+        tenor: formData.tenor,
+        tanggal: today,
+      });
+      setDaftarRef('');
+      setDaftarBukti(null);
 
     } catch (error) {
       console.error("Error:", error);
@@ -798,6 +875,41 @@ const AddStudent = () => {
           </div>
         </div>
 
+        {/* 🔥 BARU (modul rekonsiliasi): pendaftaran transfer wajib
+            meninggalkan jejak -- nomor struk / foto bukti transfer. */}
+        {formData.metodeBayar === 'Transfer' && (
+          <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 14 }}>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>No. Referensi / Struk Transfer <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span></label>
+              <input type="text" style={styles.input} value={daftarRef} onChange={e => setDaftarRef(e.target.value)} placeholder="Contoh: TRF-20260926-889912" />
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Foto Bukti Transfer</label>
+              <input type="file" accept="image/*" style={{ ...styles.input, padding: 8, background: 'white' }} onChange={e => setDaftarBukti(e.target.files?.[0] || null)} />
+            </div>
+            <p style={{ margin: '0 0 10px', fontSize: 10, color: '#1e40af' }}>
+              💡 Masuk antrean Rekonsiliasi Owner (Pending → Verified setelah dicocokkan dengan mutasi rekening).
+            </p>
+          </div>
+        )}
+
+        {/* 🔥 BARU (modul amortisasi SPP paket): penjelasan alur uang SEBELUM
+            admin menyimpan -- akar kebingungan "pendaftaran/perpanjangan
+            paket uangnya ke mana" dijawab di sini, di titik keputusan. */}
+        {selectedPkg && formData.metodeBayar !== 'Cicilan' && (
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 12px', marginBottom: 14, fontSize: 10.5, color: '#166534', lineHeight: 1.7 }}>
+            💡 <b>Alur uang paket LUNAS ({formData.durasiBulan} bulan):</b> Kas diterima hari ini <b>Rp {total.toLocaleString()}</b> + kwitansi otomatis.
+            Tapi omzet yang diakui bulan ini cuma <b>Rp {Math.round(total / (parseInt(formData.durasiBulan) || 1)).toLocaleString()}</b> —
+            sisanya jadi <b>DANA TITIPAN (Keramat)</b> yang cair bertahap ke laporan tiap bulan sampai masa paket habis. Rincian lengkapnya muncul di panel sukses setelah menyimpan.
+          </div>
+        )}
+        {selectedPkg && formData.metodeBayar === 'Cicilan' && (
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px', marginBottom: 14, fontSize: 10.5, color: '#92400e', lineHeight: 1.7 }}>
+            📋 <b>Alur CICILAN:</b> hari ini baru tercatat KOMITMEN — belum ada uang masuk, belum ada kwitansi, siswa mulai belajar dengan jadwal cicilan.
+            Setiap cicilan yang beneran dibayar nanti dicatat (dari halaman Keuangan Siswa) lengkap dengan kwitansinya sendiri.
+          </div>
+        )}
+
         {formData.metodeBayar === 'Cicilan' && (
           <div style={styles.cicilanBox}>
             <label style={styles.label}>Tenor Cicilan</label>
@@ -841,11 +953,143 @@ const AddStudent = () => {
     setStep(step + 1);
   };
 
+  // 🔥 BARU: reset form bersih buat tombol "Daftar Siswa Lagi" di panel
+  // sukses (dulu satu-satunya jalan adalah pindah halaman lalu kembali).
+  const resetFormBersih = () => {
+    setFormData({
+      nama: '', tempatLahir: '', alamat: '', noHp: '', namaAyah: '', namaIbu: '',
+      kelasSekolah: '1 SD', programType: 'Reguler', jenjang: 'SD',
+      paketId: null, englishLevelId: null,
+      tanggalMulai: tanggalLokalHariIni(), durasiBulan: 1, metodeBayar: 'Tunai',
+      biayaDaftar: true, diskon: 0, tenor: 1, tanggalCicilan1: tanggalLokalHariIni(),
+    });
+    setTglLahir({ hari: '', bulan: '', tahun: '' });
+    setSelectedMapelCodes([]);
+    setRandomSuffix(Math.floor(100 + Math.random() * 900));
+    setStep(1);
+    setSuksesDaftar(null);
+  };
+
+  // 🔥 BARU (anti-bingung alur pendaftaran): PANEL SUKSES -- rincian
+  // pendaftaran + PEMECAHAN AMORTISASI paket (Kas Diterima vs Omzet Diakui
+  // vs Dana Titipan) + cetak kwitansi. Admin yang memutuskan lanjut ke mana.
+  const renderSukses = () => {
+    const s = suksesDaftar;
+    const lunas = Boolean(s.amortisasi);
+    return (
+      <div style={styles.suksesOverlay}>
+        <div style={styles.suksesPanel(isMobile)}>
+          <div style={{ textAlign: 'center', marginBottom: 14 }}>
+            <div style={styles.suksesIkon}><CheckCircle size={34} color="#16a34a" /></div>
+            <h2 style={{ margin: '8px 0 2px', fontSize: 19, color: '#166534' }}>Pendaftaran Berhasil! 🎉</h2>
+            <p style={{ margin: 0, fontSize: 12, color: '#64748b' }}>
+              <b>{s.nama}</b> • {s.detailProgram} • ID: <b style={{ fontFamily: 'monospace' }}>{s.studentId}</b>
+            </p>
+          </div>
+
+          {/* Akun login siswa */}
+          <div style={styles.suksesAkunBox}>
+            <span style={{ fontSize: 10.5, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              <Key size={11} /> Akun Login Siswa (catat/beritahu orang tua)
+            </span>
+            <div style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>
+              {s.username} / {s.password}
+            </div>
+          </div>
+
+          {lunas ? (
+            <>
+              {/* 🔥 PECAHAN AMORTISASI (modul SPP paket / deferred revenue) */}
+              <div style={styles.amortBox}>
+                <div style={{ fontSize: 11, fontWeight: 900, color: '#166534', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  💰 Ke Mana Perginya Uang Paket {s.durasiBulan} Bulan?
+                </div>
+                <div style={styles.amortRow('#dcfce7')}>
+                  <span><b>KAS DITERIMA</b> (uang masuk hari ini, {s.metodeBayar})</span>
+                  <b>{rp(s.amortisasi.total)}</b>
+                </div>
+                <div style={styles.amortRow('#eff6ff')}>
+                  <span><b>OMZET DIAKUI</b> bulan ini (hak {s.amortisasi.bulanTerpakai} bulan pertama)</span>
+                  <b>{rp(s.amortisasi.sudahJadiHak)}</b>
+                </div>
+                <div style={styles.amortRow('#fffbeb')}>
+                  <span><b>DANA TITIPAN / KERAMAT</b> (cair {rp(s.amortisasi.hakPerBulan)}/bln ke laporan, s.d. {s.tanggalSelesai})</span>
+                  <b style={{ color: '#b45309' }}>{rp(s.amortisasi.masihTitipan)}</b>
+                </div>
+                <p style={{ margin: '8px 0 0', fontSize: 10, color: '#475569', lineHeight: 1.6 }}>
+                  Uang titipan ini otomatis "cair" jadi omzet {rp(s.amortisasi.hakPerBulan)} tiap bulan seiring sesi belajar
+                  berjalan — terlihat di Portal Owner (Dana Keramat & Analisis). Kas fisiknya TIDAK boleh dipakai semua hari ini.
+                </p>
+              </div>
+
+              {/* Kwitansi */}
+              <div style={styles.kwitansiBox}>
+                <Receipt size={18} color="#7c3aed" />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#5b21b6' }}>
+                    Kwitansi Resmi {s.noKwitansi}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: '#64748b' }}>
+                    {rp(s.totalTagihan)} via {s.metodeBayar}{s.refTransfer ? ` • ref: ${s.refTransfer}` : ''} — berlogo & bernomor, sah sebagai bukti bayar.
+                  </div>
+                </div>
+                <button
+                  onClick={() => cetakKwitansi({
+                    nomor: s.noKwitansi, tanggal: s.tanggal,
+                    diterimaDari: s.nama, studentId: s.studentId,
+                    jumlah: s.totalTagihan,
+                    keperluan: `Pendaftaran Baru ${s.detailProgram} - PAKET ${s.durasiBulan} BULAN (s.d. ${s.tanggalSelesai})`,
+                    metode: s.metodeBayar, refTransfer: s.refTransfer,
+                  })}
+                  style={styles.btnCetakSukses}
+                >
+                  <Printer size={14} /> Cetak Kwitansi
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={styles.amortBox}>
+              <div style={{ fontSize: 11, fontWeight: 900, color: '#92400e', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                📋 Jalur Cicilan — Belum Ada Uang Masuk
+              </div>
+              <div style={styles.amortRow('#fffbeb')}>
+                <span>Komitmen total tagihan</span><b>{rp(s.totalTagihan)}</b>
+              </div>
+              <div style={styles.amortRow('#f8fafc')}>
+                <span>Jadwal: {s.tenor}x cicilan @ {rp(s.cicilanPerBulan)}</span><b>per bulan</b>
+              </div>
+              <p style={{ margin: '8px 0 0', fontSize: 10, color: '#475569', lineHeight: 1.6 }}>
+                Kwitansi BELUM terbit (uangnya belum diterima). Setiap kali cicilan dibayar, catat dari halaman
+                <b> Keuangan Siswa</b> — kwitansi per cicilan terbit otomatis di sana, dan tagihannya berkurang.
+              </p>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
+            <button onClick={resetFormBersih} style={styles.btnSuksesLagi}>
+              <User size={15} /> Daftar Siswa Lagi
+            </button>
+            {s.studentDocId && (
+              <button onClick={() => navigate(`/admin/students/finance/${s.studentDocId}`)} style={styles.btnSuksesKeuangan}>
+                <CreditCard size={15} /> Buka Keuangan Siswa
+              </button>
+            )}
+            <button onClick={() => navigate('/admin/students')} style={styles.btnSuksesDaftar}>
+              Ke Daftar Siswa <ChevronRight size={15} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={styles.wrapper}>
       <SidebarAdmin />
       <div style={styles.mainContent(isMobile)}>
         {alertMsg && <div style={styles.toast}>{alertMsg}</div>}
+        {/* 🔥 PANEL SUKSES PENDAFTARAN (rincian amortisasi + kwitansi) */}
+        {suksesDaftar && renderSukses()}
         <div style={styles.header(isMobile)}>
           <button onClick={() => navigate('/admin/students')} style={styles.backBtn}><ArrowLeft size={16} /> Kembali</button>
           <h2 style={styles.pageTitle(isMobile)}><Sparkles size={20} color="#3b82f6" /> Pendaftaran Siswa Baru</h2>
@@ -951,7 +1195,20 @@ const styles = {
   navButtons: { display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 16, borderTop: '1px solid #f1f5f9', gap: 10 },
   btnPrev: { padding: '12px 20px', borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', color: '#64748b', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 },
   btnNext: { padding: '12px 24px', borderRadius: 10, border: 'none', background: '#3b82f6', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' },
-  btnSave: { padding: '12px 24px', borderRadius: 10, border: 'none', background: '#10b981', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }
+  btnSave: { padding: '12px 24px', borderRadius: 10, border: 'none', background: '#10b981', color: 'white', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' },
+
+  // 🔥 BARU: panel sukses pendaftaran (rincian amortisasi + kwitansi).
+  suksesOverlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' },
+  suksesPanel: (m) => ({ background: 'white', borderRadius: 18, padding: m ? 18 : 28, maxWidth: 560, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', maxHeight: '92vh', overflowY: 'auto' }),
+  suksesIkon: { width: 62, height: 62, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' },
+  suksesAkunBox: { background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 10, padding: '10px 12px', marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 4 },
+  amortBox: { background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12, padding: 14, marginBottom: 12 },
+  amortRow: (bg) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, background: bg, borderRadius: 8, padding: '8px 10px', marginBottom: 6, fontSize: 11.5, color: '#334155' }),
+  kwitansiBox: { display: 'flex', alignItems: 'center', gap: 10, background: '#f5f3ff', border: '1.5px solid #ddd6fe', borderRadius: 12, padding: '12px 14px', flexWrap: 'wrap' },
+  btnCetakSukses: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 16px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 12, whiteSpace: 'nowrap' },
+  btnSuksesLagi: { flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', background: '#10b981', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 12.5, minWidth: 150 },
+  btnSuksesKeuangan: { flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 12.5, minWidth: 150 },
+  btnSuksesDaftar: { flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', background: 'white', color: '#475569', border: '1.5px solid #cbd5e1', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 12.5, minWidth: 150 }
 };
 
 export default AddStudent;

@@ -43,6 +43,10 @@ const Login = () => {
       const correctPassword = docSnap.data().adminPassword;
 
       if (inputPassword === correctPassword) {
+        // 🔥 UPGRADE (pemisahan hak akses): sesi admin & owner saling
+        // meniadakan -- login kasir MENGHAPUS flag owner supaya di
+        // komputer bersama kasir tidak "mewarisi" hak super admin.
+        localStorage.removeItem("isOwnerLoggedIn");
         localStorage.setItem("isLoggedIn", "true"); 
         localStorage.setItem("role", "admin");
         alert("✅ Login Admin Berhasil!");

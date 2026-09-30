@@ -91,12 +91,20 @@ const bukaData = (d) => {
   return d || {};
 };
 
+// 🔥 UPGRADE (modul kanal & rekonsiliasi): type sekarang punya TIGA
+// nilai sah: 'Pemasukan', 'Pengeluaran', dan 'Transfer' (setor kas
+// antar kanal -- BUKAN pemasukan/pengeluaran, tidak boleh masuk total
+// omzet/belanja). Field baru ikut dinormalisasi: kanal (pintu uang),
+// kanalDari/kanalKe (buat setoran), noKwitansi, refTransfer, buktiUrl,
+// statusRekonsiliasi, setoranId, teacherId, periodeHonor.
 export const normalisasiLog = (d) => {
   const data = bukaData(d);
   const methodAsli = data.method || '';
+  const type = data.type === 'Pemasukan' ? 'Pemasukan'
+    : data.type === 'Transfer' ? 'Transfer' : 'Pengeluaran';
   return {
     id: d.id || '',
-    type: data.type === 'Pemasukan' ? 'Pemasukan' : 'Pengeluaran',
+    type,
     date: typeof data.date === 'string' ? data.date : '',
     category: data.category || 'Lainnya',
     amount: parseInt(data.amount || 0) || 0,
@@ -105,7 +113,22 @@ export const normalisasiLog = (d) => {
     method: ['Tunai', 'Transfer', 'Cicilan'].includes(methodAsli) ? methodAsli : 'Lainnya',
     note: data.note || '',
     namaSiswa: data.namaSiswa || '',
+    studentId: data.studentId || '',
     createdAtMs: data.createdAt?.toMillis?.() || (typeof data.createdAt === 'number' ? data.createdAt : 0),
+    // Kanal uang: eksplisit kalau ada, kalau tidak diturunkan dari method.
+    kanal: data.kanal || (methodAsli === 'Tunai' ? 'kasAdmin'
+      : methodAsli === 'Transfer' ? 'bankBimbel'
+      : methodAsli === 'Cicilan' ? '' : 'tanpaMetode'),
+    kanalDari: data.kanalDari || '',
+    kanalKe: data.kanalKe || '',
+    noKwitansi: data.noKwitansi || '',
+    refTransfer: data.refTransfer || '',
+    buktiUrl: data.buktiUrl || '',
+    statusRekonsiliasi: data.statusRekonsiliasi || '',
+    setoranId: data.setoranId || '',
+    durasiTambah: data.durasiTambah || 0,
+    teacherId: data.teacherId || '',
+    periodeHonor: data.periodeHonor || '',
   };
 };
 
@@ -113,11 +136,24 @@ export const normalisasiStudent = (d) => ({ id: d.id, ...bukaData(d) });
 
 export const normalisasiTagihan = (d) => ({ id: d.id, ...bukaData(d) });
 
+// 🔥 UPGRADE (modul honor tentor otomatis): dulu cuma tanggal+nominal
+// yang dipertahankan -- panel honor owner butuh identitas guru & status
+// pembayaran per sesi. Field lama tetap ada, jadi konsumen lama
+// (hppBulan, labaRugiAkrual) tidak berubah perilakunya.
 export const normalisasiTeacherLog = (d) => {
   const data = bukaData(d);
   return {
+    id: d.id || '',
     tanggal: String(data.tanggal || '').split(' ')[0],
     nominal: parseInt(data.nominal || 0) || 0,
+    teacherId: data.teacherId || '',
+    namaGuru: data.namaGuru || 'Tanpa Nama',
+    program: data.program || '',
+    kegiatan: data.kegiatan || '',
+    status: data.status || '',
+    statusDibayar: data.statusDibayar || '',
+    tanggalDibayar: data.tanggalDibayar || '',
+    idPembayaran: data.idPembayaran || '',
   };
 };
 
@@ -129,17 +165,47 @@ export const urutTanggalTerbaru = (a, b) =>
 // Ember kas: Tunai -> kas tunai, Transfer -> bank, Cicilan -> BUKAN kas
 // (cuma komitmen), lainnya -> 'tanpaMetode' (data lama, tetap dihitung
 // ke total tapi ditampilkan terpisah).
+// 🔥 UPGRADE v2 (modul setor kas & kanal uang):
+// - Kas tunai dipecah jadi DUA kantong: kasAdmin (brankas kasir) dan
+//   kasOwner (kas hasil setoran/uang owner sendiri). Field `tunai`
+//   tetap = kasAdmin + kasOwner supaya semua tampilan lama tetap cocok.
+// - Log type 'Transfer' (setor kas) memindahkan uang antar kanal --
+//   TIDAK menambah/mengurangi total, hanya pindah kantong.
+// - Log dengan field `kanal` eksplisit (input owner) masuk kantong
+//   sesuai kanal, bukan sekadar dari method.
 export const hitungSaldo = (logs) => {
-  let tunai = 0, bank = 0, tanpaMetode = 0, komitmenCicilan = 0;
+  let kasAdmin = 0, kasOwner = 0, bank = 0, tanpaMetode = 0;
+  let komitmenCicilan = 0, setorKas = 0;
   for (const l of logs) {
+    if (l.type === 'Transfer') {
+      setorKas += l.amount;
+      const dari = l.kanalDari || 'kasAdmin';
+      const ke = l.kanalKe || 'kasOwner';
+      if (dari === 'kasAdmin') kasAdmin -= l.amount;
+      else if (dari === 'kasOwner') kasOwner -= l.amount;
+      else if (dari === 'bankBimbel') bank -= l.amount;
+      if (ke === 'kasOwner') kasOwner += l.amount;
+      else if (ke === 'bankBimbel') bank += l.amount;
+      else if (ke === 'kasAdmin') kasAdmin += l.amount;
+      continue;
+    }
     const signed = l.type === 'Pemasukan' ? l.amount : -l.amount;
-    if (l.methodAsli === 'Tunai') tunai += signed;
-    else if (l.methodAsli === 'Transfer') bank += signed;
-    else if (l.methodAsli === 'Cicilan') {
+    if (l.methodAsli === 'Cicilan') {
       if (l.type === 'Pemasukan') komitmenCicilan += l.amount;
-    } else tanpaMetode += signed;
+      continue;
+    }
+    const kanal = l.kanal || '';
+    if (kanal === 'kasAdmin') kasAdmin += signed;
+    else if (kanal === 'kasOwner') kasOwner += signed;
+    else if (kanal === 'bankBimbel') bank += signed;
+    else tanpaMetode += signed;
   }
-  return { tunai, bank, tanpaMetode, komitmenCicilan, total: tunai + bank + tanpaMetode };
+  const tunai = kasAdmin + kasOwner;
+  return {
+    tunai, kasAdmin, kasOwner, bank, tanpaMetode,
+    komitmenCicilan, setorKas,
+    total: tunai + bank + tanpaMetode,
+  };
 };
 
 // Saldo kas per tanggal acuan (buat neraca "per 31 Desember" dsb).
@@ -162,7 +228,10 @@ export const agregatBulanan = (logs) => {
     }
     const a = map.get(key);
     a.jumlah += 1;
-    if (l.type === 'Pemasukan') {
+    if (l.type === 'Transfer') {
+      // 🔥 Setor kas antar kanal -- bukan omzet, bukan belanja.
+      a.setorKas = (a.setorKas || 0) + l.amount;
+    } else if (l.type === 'Pemasukan') {
       if (l.methodAsli === 'Cicilan') {
         a.komitmen += l.amount;
       } else {
@@ -186,7 +255,7 @@ export const agregatBulanan = (logs) => {
 export const ringkasKas = (logs, bulanKeys) => {
   const set = bulanKeys ? new Set(bulanKeys) : null;
   const hasil = {
-    masuk: 0, keluar: 0, netto: 0, komitmen: 0, jumlah: 0,
+    masuk: 0, keluar: 0, netto: 0, komitmen: 0, jumlah: 0, setorKas: 0,
     masukTunai: 0, masukTransfer: 0, masukLain: 0,
     keluarTunai: 0, keluarTransfer: 0, keluarLain: 0,
     perKategoriMasuk: {}, perKategoriKeluar: {},
@@ -194,6 +263,12 @@ export const ringkasKas = (logs, bulanKeys) => {
   for (const l of logs) {
     if (set && !set.has((l.date || '').slice(0, 7))) continue;
     hasil.jumlah += 1;
+    if (l.type === 'Transfer') {
+      // 🔥 Setor kas antar kanal -- dicatat terpisah, tidak masuk
+      // omzet maupun belanja (uangnya tidak bertambah/berkurang).
+      hasil.setorKas += l.amount;
+      continue;
+    }
     if (l.type === 'Pemasukan') {
       if (l.methodAsli === 'Cicilan') { hasil.komitmen += l.amount; continue; }
       hasil.masuk += l.amount;
@@ -402,6 +477,47 @@ export const analisisTagihan = (tagihanList, hariIniStr) => {
   return { belumDiterima, jumlahJadwal, rinci, jatuhTempo30 };
 };
 
+// ==================== ALARM DANA KERAMAT (TITIPAN) ====================
+// 🔥 BARU (permintaan owner): "Sisa Titipan Paket Siswa Aktif" adalah
+// alarm keras -- saldo kas+bank TIDAK BOLEH turun di bawah angka ini,
+// karena uang itu "milik" sesi belajar yang belum diberikan. Kalau
+// kas tersedia < titipan, artinya uang paket masa depan sudah terpakai
+// buat belanja hari ini -- bahaya gali lubang tutup lubang.
+export const alarmDanaKeramat = (saldo, siswaInfo) => {
+  const titipan = Math.round(siswaInfo?.totalKewajiban || 0);
+  const kasTersedia = Math.round(saldo?.total || 0);
+  const selisih = kasTersedia - titipan;
+  return {
+    titipan,
+    kasTersedia,
+    selisih,
+    aman: selisih >= 0,
+    kurang: selisih < 0 ? -selisih : 0,
+  };
+};
+
+// Amortisasi paket (deferred revenue) buat satu siswa: memecah uang
+// paket yang diterima di muka jadi "hak omzet bulan ini" vs "dana
+// titipan bulan-bulan depan". Dipakai di layar sukses pendaftaran &
+// perpanjangan biar admin paham alurnya sejak awal.
+export const rincianAmortisasi = (totalUang, durasiBulan, tanggalMulaiStr) => {
+  const total = parseInt(totalUang) || 0;
+  const durasi = parseInt(durasiBulan) || 1;
+  const hakPerBulan = Math.round(total / durasi);
+  const mulai = tanggalMulaiStr ? new Date(tanggalMulaiStr) : new Date();
+  const now = new Date();
+  let bulanTerpakai = (now.getFullYear() - mulai.getFullYear()) * 12
+    + (now.getMonth() - mulai.getMonth());
+  if (now.getDate() < mulai.getDate()) bulanTerpakai -= 1;
+  bulanTerpakai = Math.min(Math.max(bulanTerpakai, 1), durasi);
+  const sudahJadiHak = Math.round(hakPerBulan * bulanTerpakai);
+  return {
+    total, durasi, hakPerBulan, bulanTerpakai,
+    sudahJadiHak: Math.min(sudahJadiHak, total),
+    masihTitipan: Math.max(total - Math.min(sudahJadiHak, total), 0),
+  };
+};
+
 // ==================== NERACA (BALANCE SHEET) ====================
 // Aset = kas (tunai + bank + data lama) + piutang siswa.
 // Kewajiban = titipan siswa (uang jasa sesi yang BELUM diajarkan).
@@ -422,6 +538,10 @@ export const bangunNeraca = ({ saldoPerAcuan, siswaInfo, tagihanInfo, logs, tang
       tunai: saldoPerAcuan.tunai,
       bank: saldoPerAcuan.bank,
       tanpaMetode: saldoPerAcuan.tanpaMetode,
+      // 🔥 BARU: pecahan kas tunai (brankas admin vs kas owner hasil
+      // setor kas) -- total tidak berubah, cuma lebih transparan.
+      kasAdmin: saldoPerAcuan.kasAdmin ?? 0,
+      kasOwner: saldoPerAcuan.kasOwner ?? 0,
       piutang,
       total: totalAset,
     },
@@ -522,12 +642,14 @@ const escCsv = (v) => {
 // CSV dipisah titik-koma -- format yang langsung kebaca rapi oleh Excel
 // locale Indonesia tanpa perlu import wizard. BOM biar huruf tidak aneh.
 export const unduhCSVTransaksi = (rows, namaFile) => {
-  const header = ['Tanggal', 'Jenis', 'Kategori', 'Metode', 'Siswa', 'Nominal', 'Catatan'];
+  const header = ['Tanggal', 'Jenis', 'Kategori', 'Metode', 'No Kwitansi', 'Siswa', 'Nominal', 'Catatan'];
   const lines = [header.join(';')];
   for (const l of rows) {
     lines.push([
-      l.date, l.type, l.category, l.methodAsli || '-', l.namaSiswa || '-',
-      l.type === 'Pemasukan' ? l.amount : -l.amount, (l.note || '').replace(/\n/g, ' '),
+      l.date, l.type, l.category, l.methodAsli || '-', l.noKwitansi || '-',
+      l.namaSiswa || '-',
+      l.type === 'Pemasukan' ? l.amount : (l.type === 'Transfer' ? 0 : -l.amount),
+      (l.note || '').replace(/\n/g, ' '),
     ].map(escCsv).join(';'));
   }
   const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
@@ -539,8 +661,13 @@ export const barisTransaksiExcel = (logs) => logs.map(l => ({
   Jenis: l.type,
   Kategori: l.category,
   Metode: l.methodAsli || '(kosong)',
+  Kanal: l.type === 'Transfer'
+    ? `${l.kanalDari || 'kasAdmin'} -> ${l.kanalKe || 'kasOwner'}`
+    : (l.kanal || '-'),
+  'No Kwitansi': l.noKwitansi || '-',
+  'Ref Transfer': l.refTransfer || '-',
   Siswa: l.namaSiswa || '-',
-  Nominal: l.type === 'Pemasukan' ? l.amount : -l.amount,
+  Nominal: l.type === 'Pemasukan' ? l.amount : (l.type === 'Transfer' ? 0 : -l.amount),
   Catatan: l.note || '',
 }));
 

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { Save, ArrowUpCircle, ArrowDownCircle, X } from 'lucide-react';
+import { Save, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { uploadElearningFile } from '../../../services/uploadService';
+import { KANAL } from '../../../utils/kanalUang';
+import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
 
 // 🔥 FIX BUG NYATA (zona waktu & transaksi "gaib"):
 // (1) Tanggal default form ini sebelumnya pakai toISOString() (UTC) -- buat
@@ -32,7 +35,12 @@ const batasBulanBerjalan = () => {
 const TransactionForm = () => {
   const [loading, setLoading] = useState(false);
   const [alertMsg, setAlertMsg] = useState(null);
-  
+  // 🔥 BARU (modul rekonsiliasi & kwitansi): bukti transfer (nomor ref +
+  // foto struk) dan opsi kwitansi bernomor buat pemasukan.
+  const [refTransfer, setRefTransfer] = useState('');
+  const [buktiFile, setBuktiFile] = useState(null);
+  const [mintaKwitansi, setMintaKwitansi] = useState(false);
+
   const [form, setForm] = useState({
     type: 'Pemasukan',
     date: tanggalLokalHariIni(),
@@ -58,6 +66,13 @@ const TransactionForm = () => {
     e.preventDefault();
     if (!form.amount || parseInt(form.amount) <= 0) return showAlert('⚠️ Nominal harus diisi!');
     if (!form.category) return showAlert('⚠️ Pilih kategori!');
+    // 🔥 BARU (modul rekonsiliasi): pemasukan via TRANSFER BANK wajib
+    // punya jejak -- nomor referensi struk ATAU foto bukti transfer.
+    // Tanpa ini, owner tidak punya bahan buat mencocokkan mutasi
+    // rekening di tab Rekonsiliasi (aturan main: transfer = wajib bukti).
+    if (form.type === 'Pemasukan' && form.method === 'Transfer' && !refTransfer.trim() && !buktiFile) {
+      return showAlert('⛔ Pemasukan transfer WAJIB diisi No. Referensi struk ATAU upload foto bukti transfer -- buat dicocokkan owner dengan mutasi rekening.');
+    }
     // 🔥 BARU: validasi tanggal harus di dalam bulan berjalan -- input type=date
     // memang sudah dibatasi min/max, tapi di beberapa browser (terutama mobile)
     // pengguna masih bisa mengetik tanggal manual di luar batas, jadi tetap
@@ -69,23 +84,63 @@ const TransactionForm = () => {
 
     setLoading(true);
     try {
+      // Upload foto bukti dulu (kalau ada) -- kalau gagal, transaksi tidak
+      // disimpan dulu (lebih baik gagal jelas daripada tersimpan tanpa bukti).
+      let buktiUrl = '';
+      if (buktiFile) {
+        const hasil = await uploadElearningFile(buktiFile, `bukti_transfer/${form.date.replace(/-/g, '')}`);
+        if (hasil?.success && hasil.downloadURL) buktiUrl = hasil.downloadURL;
+        else throw new Error('Upload bukti gagal: ' + (hasil?.error || 'tidak ada URL'));
+      }
+
+      // 🔥 BARU (modul kwitansi): pemasukan uang riil bisa langsung
+      // diterbitkan kwitansi bernomor resmi (KWT-YYYYMM-NNN) -- nomor
+      // dibuat dari urutan bulan TANGGAL TRANSAKSI dan tersimpan permanen
+      // di dokumen (tab Kwitansi bisa mencetak ulangnya kapan saja).
+      let noKwitansi = '';
+      if (form.type === 'Pemasukan' && mintaKwitansi) {
+        noKwitansi = await ambilNomorKwitansiBerikutnya(new Date(`${form.date}T00:00:00`));
+      }
+
       await addDoc(collection(db, "finance_logs"), {
         type: form.type,
         date: form.date,
         category: form.category,
         amount: parseInt(form.amount),
         method: form.method,
+        // 🔥 BARU (modul kanal uang): kanal EKSPLISIT -- Tunai masuk
+        // brankas admin kasir, Transfer masuk rekening bank bimbel.
+        // Semua penghitung saldo (dashboard admin & portal owner) kini
+        // tahu persis pintu masuk/keluar uangnya.
+        kanal: form.method === 'Transfer' ? KANAL.BANK : KANAL.KAS_ADMIN,
         note: form.note,
+        refTransfer: refTransfer.trim(),
+        buktiUrl,
+        noKwitansi,
+        // Pemasukan transfer masuk antrean rekonsiliasi owner (pending).
+        statusRekonsiliasi: (form.type === 'Pemasukan' && form.method === 'Transfer') ? 'pending' : '',
         createdAt: serverTimestamp()
       });
 
-      showAlert(`✅ ${form.type} berhasil dicatat!`);
+      showAlert(`✅ ${form.type} berhasil dicatat!${noKwitansi ? ` Kwitansi ${noKwitansi} dibuat.` : ''}`);
+      const dataKwitansi = noKwitansi ? {
+        nomor: noKwitansi, tanggal: form.date,
+        diterimaDari: form.note || 'Pembayaran Umum',
+        jumlah: parseInt(form.amount), keperluan: form.category,
+        metode: form.method, refTransfer: refTransfer.trim(),
+      } : null;
       setForm(prev => ({
         ...prev,
         amount: '',
         note: '',
         category: ''
       }));
+      setRefTransfer('');
+      setBuktiFile(null);
+      setMintaKwitansi(false);
+      if (dataKwitansi && window.confirm(`Kwitansi ${noKwitansi} sudah dibuat. Cetak sekarang?`)) {
+        cetakKwitansi(dataKwitansi);
+      }
     } catch (error) {
       console.error(error);
       showAlert('❌ Gagal menyimpan: ' + error.message);
@@ -197,7 +252,56 @@ const TransactionForm = () => {
               <option value="Tunai">💵 Tunai</option>
               <option value="Transfer">💳 Transfer</option>
             </select>
+            {/* 🔥 BARU (modul kanal uang): penegas "uang masuk lewat pintu
+                mana" -- biar admin sadar sejak input bahwa tunai = brankas
+                kasir, transfer = rekening bimbel (yang dicocokkan owner). */}
+            <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, marginTop: 6 }}>
+              {form.method === 'Tunai'
+                ? '→ Uang masuk ke: 💵 KAS TUNAI DI ADMIN (brankas kasir). Diserahkan ke owner lewat "Tutup Kasir".'
+                : '→ Uang masuk ke: 🏦 REKENING BANK BIMBEL. Wajib isi bukti di bawah supaya lolos rekonsiliasi owner.'}
+            </div>
           </div>
+
+          {/* 🔥 BARU (modul rekonsiliasi): detail bukti transfer. */}
+          {form.method === 'Transfer' && (
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 14 }}>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>
+                  No. Referensi / Struk Transfer {isPemasukan && <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span>}
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: TRF-20260926-889912"
+                  value={refTransfer}
+                  onChange={e => setRefTransfer(e.target.value)}
+                  style={styles.input}
+                />
+              </div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Foto Struk / Bukti Transfer</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setBuktiFile(e.target.files?.[0] || null)}
+                  style={{ ...styles.input, padding: 8, background: 'white' }}
+                />
+              </div>
+              {isPemasukan && (
+                <p style={{ margin: '0 0 10px', fontSize: 10.5, color: '#1e40af', lineHeight: 1.5 }}>
+                  💡 Transaksi ini masuk antrean <b>Rekonsiliasi Owner</b> dengan status <i>Pending</i> sampai
+                  owner mencocokkannya dengan mutasi rekening.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* 🔥 BARU (modul kwitansi): opsi terbit kwitansi bernomor. */}
+          {isPemasukan && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 700, color: '#475569', marginBottom: 14, cursor: 'pointer' }}>
+              <input type="checkbox" checked={mintaKwitansi} onChange={e => setMintaKwitansi(e.target.checked)} />
+              🧾 Terbitkan kwitansi resmi bernomor (logo + terbilang) — bisa langsung dicetak
+            </label>
+          )}
 
           {/* Keterangan */}
           <div style={styles.inputGroup}>

@@ -30,9 +30,12 @@ const LoginOwner = () => {
       const correctPin = docSnap.data().ownerPin;
 
       if (inputPin === correctPin) {
+        // 🔥 UPGRADE (pemisahan hak akses): sesi owner meniadakan sesi
+        // admin kasir di perangkat ini -- bersih, tidak ada flag nyangkut.
+        localStorage.removeItem("isLoggedIn");
         localStorage.setItem("isOwnerLoggedIn", "true");
         localStorage.setItem("role", "owner");
-        navigate("/owner/settings");
+        navigate("/owner/finance");
       } else {
         alert("⛔ PIN Owner salah!");
       }

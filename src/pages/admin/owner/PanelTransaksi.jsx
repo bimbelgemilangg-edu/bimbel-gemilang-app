@@ -73,20 +73,27 @@ const PanelTransaksi = ({ logs, rp, isMobile }) => {
       if (filterMetode !== 'Semua' && l.method !== filterMetode) return false;
       if (filterKategori !== 'Semua' && l.category !== filterKategori) return false;
       if (q) {
-        const haystack = `${l.namaSiswa} ${l.note} ${l.category}`.toLowerCase();
+        // 🔥 UPGRADE: pencarian ikut mencakup nomor kwitansi & referensi
+        // transfer -- owner bisa cari bukti bayar lewat nomor struk bank.
+        const haystack = `${l.namaSiswa} ${l.note} ${l.category} ${l.noKwitansi} ${l.refTransfer}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
     }).sort(urutTanggalTerbaru);
 
-    let masuk = 0, keluar = 0, komitmen = 0;
+    let masuk = 0, keluar = 0, komitmen = 0, setorKas = 0;
     for (const l of filtered) {
+      // 🔥 FIX (modul setor kas): type 'Transfer' = uang PINDAH kantong
+      // (brankas admin -> kas owner), BUKAN pemasukan/pengeluaran. Kalau
+      // ikut dijumlahkan ke "keluar", total belanja owner menggelembung
+      // palsu tiap admin setor kas.
+      if (l.type === 'Transfer') { setorKas += l.amount; continue; }
       if (l.type === 'Pemasukan') {
         if (l.methodAsli === 'Cicilan') komitmen += l.amount;
         else masuk += l.amount;
       } else keluar += l.amount;
     }
-    return { filtered, masuk, keluar, komitmen, netto: masuk - keluar };
+    return { filtered, masuk, keluar, komitmen, setorKas, netto: masuk - keluar };
   }, [logs, rentang, filterType, filterMetode, filterKategori, cari]);
 
   // Reset pagination lewat handler (bukan useEffect) -- semua setter
@@ -151,6 +158,8 @@ const PanelTransaksi = ({ logs, rp, isMobile }) => {
           <label style={styles.filterLabel}>Jenis</label>
           <select value={filterType} onChange={gantiFilter(setFilterType)} style={styles.select}>
             {['Semua', 'Pemasukan', 'Pengeluaran'].map(o => <option key={o}>{o}</option>)}
+            {/* 🔥 BARU: setoran kas admin (uang pindah kantong, bukan omzet/belanja). */}
+            <option value="Transfer">🔁 Setor Kas</option>
           </select>
         </div>
         <div style={styles.filterGrup}>
@@ -209,6 +218,12 @@ const PanelTransaksi = ({ logs, rp, isMobile }) => {
             <b style={{ fontSize: 15, color: '#d97706' }}>{rp(hasil.komitmen)}</b>
           </div>
         )}
+        {hasil.setorKas > 0 && (
+          <div style={styles.ringkasItem}>
+            <span style={styles.ringkasLabel}>🔁 Setor kas (pindah kantong, bukan belanja)</span>
+            <b style={{ fontSize: 15, color: '#b45309' }}>{rp(hasil.setorKas)}</b>
+          </div>
+        )}
       </div>
 
       {/* ===== TABEL ===== */}
@@ -236,19 +251,25 @@ const PanelTransaksi = ({ logs, rp, isMobile }) => {
                   <tr key={l.id || i} style={styles.tr}>
                     <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>{l.date || <i style={{ color: '#cbd5e1' }}>tanpa tanggal</i>}</td>
                     <td style={styles.td}>
-                      <span style={styles.badgeJenis(l.type)}>{l.type}</span>
+                      <span style={styles.badgeJenis(l.type)}>{l.type === 'Transfer' ? '🔁 Setor Kas' : l.type}</span>
                     </td>
                     <td style={styles.td}>{l.category}</td>
                     <td style={styles.td}>
                       <span style={styles.badgeMetode(l.method)}>{l.methodAsli || '(kosong)'}</span>
+                      {l.noKwitansi && <div style={{ fontSize: 8.5, color: '#7c3aed', fontWeight: 700, marginTop: 2 }}>{l.noKwitansi}</div>}
+                      {l.type === 'Transfer' && l.statusRekonsiliasi !== 'verified' && (
+                        <div style={{ fontSize: 8.5, color: '#d97706', fontWeight: 800, marginTop: 2 }}>⏳ pending</div>
+                      )}
                     </td>
                     <td style={styles.td}>{l.namaSiswa || '-'}</td>
                     <td style={{ ...styles.td, color: '#64748b', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={l.note}>
                       {l.note || '-'}
+                      {l.refTransfer && <div style={{ fontSize: 8.5, color: '#1d4ed8', fontWeight: 700 }}>ref: {l.refTransfer}</div>}
                     </td>
-                    <td style={{ ...styles.td, textAlign: 'right', fontWeight: 800, whiteSpace: 'nowrap', color: l.type === 'Pemasukan' ? (l.methodAsli === 'Cicilan' ? '#d97706' : '#059669') : '#dc2626' }}>
-                      {l.type === 'Pemasukan' ? '+' : '-'} {rp(l.amount)}
+                    <td style={{ ...styles.td, textAlign: 'right', fontWeight: 800, whiteSpace: 'nowrap', color: l.type === 'Transfer' ? '#b45309' : l.type === 'Pemasukan' ? (l.methodAsli === 'Cicilan' ? '#d97706' : '#059669') : '#dc2626' }}>
+                      {l.type === 'Transfer' ? '🔁' : l.type === 'Pemasukan' ? '+' : '-'} {rp(l.amount)}
                       {l.methodAsli === 'Cicilan' && l.type === 'Pemasukan' && <div style={{ fontSize: 8.5, color: '#d97706', fontWeight: 700 }}>komitmen</div>}
+                      {l.type === 'Transfer' && <div style={{ fontSize: 8.5, color: '#b45309', fontWeight: 700 }}>pindah kantong</div>}
                     </td>
                   </tr>
                 ))}
@@ -297,8 +318,8 @@ const styles = {
   td: { padding: '8px 10px', fontSize: 11.5, color: '#334155' },
   badgeJenis: (t) => ({
     fontSize: 9.5, fontWeight: 800, padding: '3px 8px', borderRadius: 20,
-    background: t === 'Pemasukan' ? '#dcfce7' : '#fee2e2',
-    color: t === 'Pemasukan' ? '#15803d' : '#b91c1c',
+    background: t === 'Pemasukan' ? '#dcfce7' : t === 'Transfer' ? '#fef3c7' : '#fee2e2',
+    color: t === 'Pemasukan' ? '#15803d' : t === 'Transfer' ? '#b45309' : '#b91c1c',
   }),
   badgeMetode: (m) => ({
     fontSize: 9.5, fontWeight: 800, padding: '3px 8px', borderRadius: 20,

@@ -199,6 +199,12 @@ const Dashboard = () => {
       snapFinance.forEach(d => {
         const data = d.data();
         const amt = parseInt(data.amount || 0);
+        // 🔥 FIX (modul setor kas): type 'Transfer' = setor kas admin ke
+        // owner -- uang PINDAH kantong, bukan pemasukan/pengeluaran. Tanpa
+        // guard ini setiap setoran kehitung sebagai "Pengeluaran Bulan Ini"
+        // dan angka dashboard admin tidak cocok dengan halaman Keuangan
+        // maupun Portal Owner.
+        if (data.type === 'Transfer') return;
         if (data.type === 'Pemasukan') {
           if (data.method === 'Cicilan') cicilanBulanIni += amt;
           else pemasukanBulanIni += amt;
