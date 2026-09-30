@@ -250,30 +250,50 @@ const FinanceDashboard = () => {
         🔒 Menampilkan statistik bulan berjalan saja. Saldo/aset keseluruhan hanya tersedia di Portal Owner.
       </div>
       <div style={styles.cardGrid}>
-        {/* Pemasukan Bulan Ini */}
+        {/* 🔥 BARU (ANTI-BINGUNG): kartu pertama sekarang "UANG TUNAI DI
+            BRANKAS" = selisih tunai bulan berjalan (masuk tunai dikurang
+            keluar tunai). Sebelumnya kartu pertama adalah "Pemasukan Bulan
+            Ini (uang diterima)" yang menampilkan angka GABUNGAN tunai +
+            transfer (misal 16 juta) -- admin kaget karena uang fisik yang
+            bisa dihitung di brankas cuma porsi tunainya (misal 8,2 juta);
+            angka gabungan itu terbaca seolah-olah uang kas fisik. Sekarang
+            angka gabungan tetap ada tapi pindah ke catatan berlabel jelas
+            di bawah kartu, dan posisi uang riil (brankas & rekening) jadi
+            bintang utamanya. */}
         <div style={styles.mediumCard('#f0fdf4', '#10b981')}>
           <TrendingUp size={20} color="#10b981" />
-          <span style={styles.mediumLabel}>Pemasukan Bulan Ini (uang diterima)</span>
-          <h2 style={{...styles.mediumValue, color: '#10b981'}}>{rp(monthStats.pemasukan)}</h2>
-          {/* 🔥 BARU: pecahan tunai vs transfer langsung di dalam kartu,
-              biar kelihatan jelas tanpa perlu scroll ke panel rincian.
-              "Lainnya" cuma muncul kalau memang ada data lama tanpa metode,
-              biar jumlah pecahan selalu BISA dicocokkan ke angka besar
-              di atasnya (gak ada selisih misterius). */}
+          <span style={styles.mediumLabel}>💵 Uang Tunai di Brankas (selisih bulan ini)</span>
+          <h2 style={{...styles.mediumValue, color: '#10b981'}}>
+            {methodStats ? rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar) : rp(0)}
+          </h2>
           {methodStats && (
             <div style={styles.cardSplit}>
-              <span>💵 Tunai: <b>{rp(methodStats.Tunai.masuk)}</b></span>
-              <span>💳 Transfer: <b>{rp(methodStats.Transfer.masuk)}</b></span>
-              {methodStats.Lainnya.masuk > 0 && <span>❔ Lainnya: <b>{rp(methodStats.Lainnya.masuk)}</b></span>}
+              <span>Masuk tunai: <b>{rp(methodStats.Tunai.masuk)}</b></span>
+              <span>Keluar tunai: <b>{rp(methodStats.Tunai.keluar)}</b></span>
             </div>
           )}
-          {/* 🔥 BARU: komitmen cicilan belum diterima -- dipisah dari angka
-              pemasukan di atas (perbaikan bug pemasukan kembar). */}
-          {monthStats.cicilan > 0 && (
-            <span style={{display: 'block', fontSize: 10, color: '#0f766e', fontWeight: 700, marginTop: 6}}>
-              📋 Cicilan tercatat tapi belum diterima: {rp(monthStats.cicilan)} -- TIDAK termasuk angka di atas
-            </span>
+          <span style={{display: 'block', fontSize: 10, color: '#047857', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
+            Uang fisik yang bisa dihitung di brankas bulan ini -- uang transfer tidak termasuk (masuknya ke rekening).
+          </span>
+        </div>
+
+        {/* 🔥 BARU (ANTI-BINGUNG): kartu uang transfer dipisah dari brankas
+            biar admin tidak menjumlahkannya sebagai uang kas fisik. */}
+        <div style={styles.mediumCard('#eef2ff', '#6366f1')}>
+          <CreditCard size={20} color="#6366f1" />
+          <span style={styles.mediumLabel}>💳 Uang Transfer di Rekening (selisih bulan ini)</span>
+          <h2 style={{...styles.mediumValue, color: '#6366f1'}}>
+            {methodStats ? rp(methodStats.Transfer.masuk - methodStats.Transfer.keluar) : rp(0)}
+          </h2>
+          {methodStats && (
+            <div style={styles.cardSplit}>
+              <span>Masuk transfer: <b>{rp(methodStats.Transfer.masuk)}</b></span>
+              <span>Keluar transfer: <b>{rp(methodStats.Transfer.keluar)}</b></span>
+            </div>
           )}
+          <span style={{display: 'block', fontSize: 10, color: '#4338ca', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
+            Masuknya ke rekening bank, bukan ke brankas -- jadi sengaja dipisah dari kartu hijau.
+          </span>
         </div>
 
         {/* Pengeluaran Bulan Ini */}
@@ -297,6 +317,20 @@ const FinanceDashboard = () => {
           <span style={styles.mediumLabel}>Total Piutang</span>
           <h2 style={{...styles.mediumValue, color: '#f97316'}}>{rp(totalPiutang)}</h2>
         </div>
+      </div>
+
+      {/* 🔥 BARU (ANTI-BINGUNG): total gabungan tetap ditampilkan tapi dgn
+          label eksplisit "gabungan tunai + transfer" plus peringatan bahwa
+          angka itu BUKAN uang fisik di brankas -- biar admin gak kaget
+          lagi saat menghitung uang kas manualmente. */}
+      <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '10px 14px', borderRadius: 10, marginBottom: 16, fontSize: 12, fontWeight: 600, lineHeight: 1.6 }}>
+        📥 Total uang masuk bulan ini (GABUNGAN tunai + transfer): <b>{rp(monthStats.pemasukan)}</b> -- angka gabungan ini BUKAN uang fisik di brankas; uang kas fisik cuma porsi tunai (kartu hijau di atas).
+        {methodStats && (methodStats.Lainnya.masuk > 0 || methodStats.Lainnya.keluar > 0) && (
+          <> ❔ Transaksi lama tanpa metode: masuk {rp(methodStats.Lainnya.masuk)} / keluar {rp(methodStats.Lainnya.keluar)} -- ikut total gabungan, belum masuk brankas/rekening.</>
+        )}
+        {monthStats.cicilan > 0 && (
+          <> 📋 Cicilan tercatat tapi belum diterima: {rp(monthStats.cicilan)} -- TIDAK termasuk total mana pun di atas.</>
+        )}
       </div>
 
       {/* === 🔥 BARU: PANEL RINCIAN UANG TUNAI vs TRANSFER BULAN INI ===
@@ -333,7 +367,7 @@ const FinanceDashboard = () => {
                 <b style={{color: '#ef4444'}}>- {rp(methodStats.Tunai.keluar)}</b>
               </div>
               <div style={styles.methodNet('#f59e0b')}>
-                Selisih: <b>{rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar)}</b>
+                Selisih (kas di brankas): <b>{rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar)}</b>
               </div>
             </div>
 
@@ -352,7 +386,7 @@ const FinanceDashboard = () => {
                 <b style={{color: '#ef4444'}}>- {rp(methodStats.Transfer.keluar)}</b>
               </div>
               <div style={styles.methodNet('#6366f1')}>
-                Selisih: <b>{rp(methodStats.Transfer.masuk - methodStats.Transfer.keluar)}</b>
+                Selisih (di rekening): <b>{rp(methodStats.Transfer.masuk - methodStats.Transfer.keluar)}</b>
               </div>
             </div>
 

@@ -596,7 +596,7 @@ const TransactionHistory = () => {
       )}
       <div style={styles.summaryRow}>
         <div style={styles.summaryCard('#f0fdf4', '#10b981')}>
-          <span>Total Masuk {sedangDifilter ? '(periode ini)' : '(uang diterima)'}</span>
+          <span>Total Masuk {sedangDifilter ? '(periode ini)' : '(GABUNGAN tunai + transfer)'}</span>
           <strong>Rp {totalMasuk.toLocaleString()}</strong>
         </div>
         <div style={styles.summaryCard('#fef2f2', '#ef4444')}>
@@ -605,13 +605,24 @@ const TransactionHistory = () => {
         </div>
       </div>
 
+      {/* 🔥 BARU (ANTI-BINGUNG): admin pernah kaget karena "Total Masuk"
+          (gabungan tunai + transfer, misal 16 jt) dibaca seolah-olah uang
+          fisik di brankas -- padahal kas fisiknya cuma selisih tunai (misal
+          8,2 jt). Catatan ini menempel tepat di bawah total biar gak ada
+          lagi salah baca. */}
+      {!sedangDifilter && (
+        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '8px 12px', borderRadius: 10, fontSize: 11, fontWeight: 700, margin: '-4px 0 12px', lineHeight: 1.5 }}>
+          💵 Uang tunai di brankas bulan ini = masuk tunai − keluar tunai = <b>Rp {(tunaiMasuk - tunaiKeluar).toLocaleString()}</b>. "Total Masuk" di atas adalah gabungan semua metode (tunai + transfer), jadi wajar lebih besar dari uang kas fisik.
+        </div>
+      )}
+
       {/* 🔥 BARU: keterangan pencicilan -- "Total Masuk" di atas SENGAJA
           tidak menghitung komitmen perpanjangan jalur cicilan (uang belum
           diterima, dan akan tercatat lagi saat tiap cicilan dibayar).
           Tanpa keterangan ini admin bingung kenapa total gak sama dengan
           penjumlahan manual semua baris bertipe "Masuk" di tabel. */}
       {!sedangDifilter && cicilanMasuk > 0 && (
-        <div style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, margin: '-8px 0 12px', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, margin: '-4px 0 12px', lineHeight: 1.5 }}>
           📋 Total Masuk di atas TIDAK menghitung komitmen perpanjangan cicilan bulan ini yang belum diterima: Rp {cicilanMasuk.toLocaleString()} -- rinciannya ada di panel "Rincian per Metode" dan tabel di bawah (badge 📋 Cicilan).
         </div>
       )}
@@ -635,6 +646,12 @@ const TransactionHistory = () => {
             <div style={styles.methodSummaryRow}>
               <span>Keluar</span><b style={{color: '#ef4444'}}>- Rp {tunaiKeluar.toLocaleString()}</b>
             </div>
+            {/* 🔥 BARU (ANTI-BINGUNG): baris selisih = uang fisik di brankas,
+                biar admin langsung lihat angka yang cocok dgn hitungan kas. */}
+            <div style={{...styles.methodSummaryRow, borderTop: '1px dashed #f59e0b55', marginTop: 4, paddingTop: 4}}>
+              <span style={{fontWeight: 700, color: '#475569'}}>Selisih (kas di brankas)</span>
+              <b style={{color: '#92400e'}}>Rp {(tunaiMasuk - tunaiKeluar).toLocaleString()}</b>
+            </div>
           </div>
           <div style={styles.methodSummaryCard('#eef2ff', '#6366f1')}>
             <div style={styles.methodSummaryLabel}>💳 Transfer</div>
@@ -643,6 +660,11 @@ const TransactionHistory = () => {
             </div>
             <div style={styles.methodSummaryRow}>
               <span>Keluar</span><b style={{color: '#ef4444'}}>- Rp {transferKeluar.toLocaleString()}</b>
+            </div>
+            {/* 🔥 BARU: selisih transfer = uang di rekening bank. */}
+            <div style={{...styles.methodSummaryRow, borderTop: '1px dashed #6366f155', marginTop: 4, paddingTop: 4}}>
+              <span style={{fontWeight: 700, color: '#475569'}}>Selisih (di rekening)</span>
+              <b style={{color: '#4338ca'}}>Rp {(transferMasuk - transferKeluar).toLocaleString()}</b>
             </div>
           </div>
           {cicilanMasuk > 0 && (
