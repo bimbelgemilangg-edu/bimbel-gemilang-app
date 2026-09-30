@@ -11,8 +11,13 @@ import {
   ArrowLeft, CreditCard, CheckCircle, Clock, AlertCircle,
   Calendar, Home, ChevronRight, Wallet,
   DollarSign, Receipt, TrendingUp, X, Save,
-  RefreshCw, PlusCircle, Edit3, ShieldAlert
+  RefreshCw, PlusCircle, Edit3, ShieldAlert, Printer
 } from 'lucide-react';
+// 🔥 BARU (modul rekonsiliasi & kwitansi): bukti transfer + kwitansi
+// bernomor resmi untuk pembayaran & perpanjangan siswa.
+import { uploadElearningFile } from '../../../services/uploadService';
+import { KANAL } from '../../../utils/kanalUang';
+import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
 
 // 🔥 FIX BUG NYATA (zona waktu): "tanggal hari ini" untuk transaksi harus
 // dihitung dari waktu LOKAL perangkat, bukan toISOString() (UTC) -- selama
@@ -43,6 +48,14 @@ const StudentFinance = () => {
   const [payAmount, setPayAmount] = useState('');
   const [payMethod, setPayMethod] = useState('Tunai');
   const [isProcessing, setIsProcessing] = useState(false);
+  // 🔥 BARU (modul rekonsiliasi): jejak pembayaran transfer -- nomor
+  // referensi struk & foto bukti (wajib salah satu kalau metodenya
+  // Transfer, supaya owner bisa mencocokkan dengan mutasi rekening).
+  const [payRef, setPayRef] = useState('');
+  const [payBukti, setPayBukti] = useState(null);
+  // 🔥 BARU: jejak yang sama buat perpanjangan via transfer.
+  const [perpanjangRef, setPerpanjangRef] = useState('');
+  const [perpanjangBukti, setPerpanjangBukti] = useState(null);
 
   // Modal perpanjangan
   const [showPerpanjangModal, setShowPerpanjangModal] = useState(false);
@@ -358,11 +371,34 @@ const StudentFinance = () => {
       return showAlert('❌ Harga paket tidak ditemukan/Rp 0. Cek pengaturan harga paket di menu Settings sebelum memperpanjang.');
     }
 
+    // 🔥 BARU (modul rekonsiliasi): perpanjangan via TRANSFER BANK wajib
+    // punya jejak (nomor struk atau foto bukti) -- sama seperti pembayaran.
+    if (perpanjangData.metodeBayar === 'Transfer' && !perpanjangRef.trim() && !perpanjangBukti) {
+      return showAlert('⛔ Perpanjangan transfer WAJIB diisi No. Referensi struk ATAU upload foto bukti transfer -- buat dicocokkan owner dengan mutasi rekening.');
+    }
+
     setIsProcessing(true);
     try {
       const totalPerpanjangan = hitungTotalPerpanjangan();
       const today = tanggalLokalHariIni();
       const kodeUnik = student?.studentId || id;
+
+      // 🔥 Upload bukti transfer dulu (kalau ada) -- gagal upload = gagal
+      // semua (writeBatch di bawah belum dijalankan).
+      let buktiUrlPerpanjang = '';
+      if (perpanjangBukti) {
+        const hasil = await uploadElearningFile(perpanjangBukti, `bukti_transfer/${today.replace(/-/g, '')}`);
+        if (hasil?.success && hasil.downloadURL) buktiUrlPerpanjang = hasil.downloadURL;
+        else throw new Error('Upload bukti gagal: ' + (hasil?.error || 'tidak ada URL'));
+      }
+
+      // 🔥 BARU (modul kwitansi & amortisasi): perpanjangan LUNAS (Tunai/
+      // Transfer) = uang riil diterima -> langsung terbit kwitansi bernomor.
+      // Jalur CICILAN = baru komitmen, belum ada uang -> TIDAK ada kwitansi
+      // (kwitansi terbit nanti tiap kali cicilannya beneran dibayar).
+      const noKwitansiPerpanjang = perpanjangData.metodeBayar !== 'Cicilan'
+        ? await ambilNomorKwitansiBerikutnya(new Date(`${today}T00:00:00`))
+        : '';
 
       // 1. Hitung tanggal selesai baru
       const oldSelesai = student.tanggalSelesai || today;
@@ -404,6 +440,15 @@ const StudentFinance = () => {
         amount: totalPerpanjangan,
         method: perpanjangData.metodeBayar,
         note: `Perpanjangan ${perpanjangData.durasiTambah} bulan: ${student?.nama} (s.d ${newSelesaiStr})`,
+        // 🔥 BARU (modul kanal uang & rekonsiliasi & kwitansi): kanal
+        // eksplisit + jejak transfer + nomor kwitansi (lunas saja) +
+        // status rekonsiliasi pending buat transfer.
+        kanal: perpanjangData.metodeBayar === 'Tunai' ? KANAL.KAS_ADMIN
+          : perpanjangData.metodeBayar === 'Transfer' ? KANAL.BANK : '',
+        refTransfer: perpanjangRef.trim(),
+        buktiUrl: buktiUrlPerpanjang,
+        noKwitansi: noKwitansiPerpanjang,
+        statusRekonsiliasi: perpanjangData.metodeBayar === 'Transfer' ? 'pending' : '',
         // 🔥 BARU: field TERSTRUKTUR (bukan cuma nempel di teks catatan)
         // -- dipakai TransactionHistory.jsx buat bisa MEMBALIKIN transaksi
         // ini secara AKURAT & OTOMATIS kalau nanti admin salah input dan
@@ -458,12 +503,64 @@ const StudentFinance = () => {
 
       showAlert(`✅ Perpanjangan ${perpanjangData.durasiTambah} bulan berhasil! Selesai: ${newSelesaiStr}`);
       setShowPerpanjangModal(false);
+      // 🔥 BARU (modul kwitansi): tawarkan cetak kwitansi buat perpanjangan
+      // LUNAS (uang riil diterima). Jalur cicilan tidak ada kwitansi di
+      // titik ini -- uangnya belum diterima (baru komitmen), kwitansi terbit
+      // tiap kali cicilannya dibayar.
+      const dataCetakPerpanjang = noKwitansiPerpanjang ? {
+        nomor: noKwitansiPerpanjang,
+        tanggal: today,
+        diterimaDari: student?.nama || 'Siswa',
+        studentId: kodeUnik,
+        jumlah: totalPerpanjangan,
+        keperluan: `Perpanjangan paket ${perpanjangData.durasiTambah} bulan (s.d. ${newSelesaiStr})`,
+        metode: perpanjangData.metodeBayar,
+        refTransfer: perpanjangRef.trim(),
+      } : null;
+      setPerpanjangRef('');
+      setPerpanjangBukti(null);
       fetchData();
+      if (dataCetakPerpanjang && window.confirm(
+        `✅ Perpanjangan ${perpanjangData.durasiTambah} bulan tercatat!\n\n` +
+        `Uang diterima: Rp ${totalPerpanjangan.toLocaleString()} (kas masuk hari ini).\n` +
+        `Omzet diakui bulan ini: Rp ${Math.round(totalPerpanjangan / perpanjangData.durasiTambah).toLocaleString()}/bulan x masa berjalan -- sisanya DANA TITIPAN yang cair bertahap ke laporan (bukan hak hari ini).\n\n` +
+        `Kwitansi ${noKwitansiPerpanjang} sudah dibuat. Cetak sekarang?`
+      )) {
+        cetakKwitansi(dataCetakPerpanjang);
+      }
     } catch (error) {
       console.error("Error:", error);
       showAlert('❌ Gagal: ' + error.message);
     }
     setIsProcessing(false);
+  };
+
+  // ===== 🔥 CETAK ULANG KWITANSI DARI RIWAYAT PEMBAYARAN =====
+  // Kwitansi yang nomornya sudah tersimpan bisa dicetak ulang kapan saja
+  // (hilang/rusak diminta orang tua). Log lama yang belum bernomor
+  // ditawari dibuatkan nomor dulu -- nomor ikut bulan transaksi aslinya.
+  const cetakUlangKwitansi = async (log) => {
+    let nomor = log.noKwitansi;
+    if (!nomor) {
+      if (!window.confirm('Pembayaran ini belum punya nomor kwitansi (transaksi lama). Buatkan nomor sekarang lalu cetak?')) return;
+      try {
+        const tanggalTransaksi = log.date ? new Date(`${log.date}T00:00:00`) : new Date();
+        nomor = await ambilNomorKwitansiBerikutnya(tanggalTransaksi);
+        await updateDoc(doc(db, "finance_logs", log.id), { noKwitansi: nomor });
+      } catch (e) {
+        return alert('❌ Gagal membuat nomor: ' + e.message);
+      }
+    }
+    cetakKwitansi({
+      nomor,
+      tanggal: log.date || '',
+      diterimaDari: log.namaSiswa || student?.nama || 'Siswa',
+      studentId: log.studentId || student?.studentId || '',
+      jumlah: parseInt(log.amount) || 0,
+      keperluan: log.note || log.category || 'Pembayaran',
+      metode: log.method || '-',
+      refTransfer: log.refTransfer || '',
+    });
   };
 
   // ===== BAYAR CICILAN =====
@@ -479,6 +576,8 @@ const StudentFinance = () => {
       setPayAmount(getSisaTagihan().toString());
     }
     setPayMethod('Tunai');
+    setPayRef('');
+    setPayBukti(null);
     setShowPayModal(true);
   };
 
@@ -487,11 +586,32 @@ const StudentFinance = () => {
     const nominal = parseInt(payAmount);
     if (!nominal || nominal <= 0) return showAlert('⚠️ Nominal tidak valid!');
     if (getSisaTagihan() <= 0 && payingIndex === null) return showAlert('⚠️ Tidak ada tagihan!');
+    // 🔥 BARU (modul rekonsiliasi): pembayaran via TRANSFER BANK wajib
+    // punya jejak -- nomor referensi struk ATAU foto bukti transfer.
+    // Aturan main baru: setiap pintu uang harus bisa dicocokkan owner.
+    if (payMethod === 'Transfer' && !payRef.trim() && !payBukti) {
+      return showAlert('⛔ Pembayaran transfer WAJIB diisi No. Referensi struk ATAU upload foto bukti transfer -- buat dicocokkan owner dengan mutasi rekening.');
+    }
 
     setIsProcessing(true);
     try {
       const kodeUnik = student?.studentId || id;
       const today = tanggalLokalHariIni();
+
+      // 🔥 Upload foto bukti dulu (kalau ada). Kalau gagal, pembayaran
+      // TIDAK dicatat -- lebih baik gagal jelas daripada tercatat tanpa
+      // bukti (owner tidak bisa rekonsiliasi).
+      let buktiUrl = '';
+      if (payBukti) {
+        const hasil = await uploadElearningFile(payBukti, `bukti_transfer/${today.replace(/-/g, '')}`);
+        if (hasil?.success && hasil.downloadURL) buktiUrl = hasil.downloadURL;
+        else throw new Error('Upload bukti gagal: ' + (hasil?.error || 'tidak ada URL'));
+      }
+
+      // 🔥 BARU (modul kwitansi): setiap pembayaran RIIL (bukan komitmen)
+      // otomatis dapat nomor kwitansi resmi KWT-YYYYMM-NNN -- tersimpan
+      // permanen di log, bisa dicetak ulang dari tab Kwitansi.
+      const noKwitansi = await ambilNomorKwitansiBerikutnya(new Date(`${today}T00:00:00`));
 
       // 🔥 FIX BUG NYATA #1 (risiko crash): sebelumnya `tagihan.detailCicilan`
       // langsung di-spread (`[...tagihan.detailCicilan]`) atau di-`.map()`
@@ -536,6 +656,15 @@ const StudentFinance = () => {
         amount: nominal,
         method: payMethod,
         note: payingIndex !== null ? `Cicilan ke-${payingIndex + 1}: ${student?.nama}` : `Pelunasan: ${student?.nama}`,
+        // 🔥 BARU (modul kanal uang & rekonsiliasi & kwitansi): kanal
+        // eksplisit (Tunai = brankas admin, Transfer = rekening bimbel),
+        // jejak transfer, nomor kwitansi resmi, dan status rekonsiliasi
+        // 'pending' buat transfer (menunggu dicocokkan owner).
+        kanal: payMethod === 'Tunai' ? KANAL.KAS_ADMIN : payMethod === 'Transfer' ? KANAL.BANK : '',
+        refTransfer: payRef.trim(),
+        buktiUrl,
+        noKwitansi,
+        statusRekonsiliasi: payMethod === 'Transfer' ? 'pending' : '',
         createdAt: serverTimestamp()
       });
 
@@ -559,9 +688,28 @@ const StudentFinance = () => {
 
       await batch.commit();
 
-      showAlert(`✅ Pembayaran Rp ${nominal.toLocaleString()} berhasil!`);
+      showAlert(`✅ Pembayaran Rp ${nominal.toLocaleString()} berhasil! Kwitansi ${noKwitansi} dibuat.`);
       setShowPayModal(false);
+      // 🔥 BARU (modul kwitansi): langsung tawarkan cetak -- tugas admin
+      // selesai begitu uang tercatat & kwitansi diserahkan ke pembayar.
+      const dataCetak = {
+        nomor: noKwitansi,
+        tanggal: today,
+        diterimaDari: student?.nama || 'Siswa',
+        studentId: kodeUnik,
+        jumlah: nominal,
+        keperluan: payingIndex !== null
+          ? `Pembayaran cicilan ke-${payingIndex + 1} SPP ${student?.nama || ''}`
+          : `Pelunasan tagihan SPP ${student?.nama || ''}`,
+        metode: payMethod,
+        refTransfer: payRef.trim(),
+      };
+      setPayRef('');
+      setPayBukti(null);
       fetchData();
+      if (window.confirm(`✅ Pembayaran tercatat!\n\nKwitansi resmi ${noKwitansi} sudah dibuat.\nCetak kwitansi sekarang untuk diberikan ke pembayar?`)) {
+        cetakKwitansi(dataCetak);
+      }
     } catch (error) { 
       console.error(error); 
       showAlert('❌ Gagal: ' + error.message); 
@@ -719,6 +867,8 @@ const StudentFinance = () => {
                   tanggalCicilan1: tanggalLokalHariIni(),
                   customDueDates: []
                 });
+                setPerpanjangRef('');
+                setPerpanjangBukti(null);
                 setShowPerpanjangModal(true);
               }}
               style={styles.btnPerpanjang}
@@ -796,7 +946,15 @@ const StudentFinance = () => {
                         ) : (
                           <>
                             <strong style={{color: '#10b981'}}>+ Rp {log.amount?.toLocaleString()}</strong>
-                            <div style={{fontSize: 9, color: '#94a3b8'}}>{log.method}</div>
+                            <div style={{fontSize: 9, color: '#94a3b8'}}>
+                              {log.method}
+                              {log.noKwitansi && <span style={{color: '#7c3aed', fontWeight: 800}}> • 🧾 {log.noKwitansi}</span>}
+                            </div>
+                            {/* 🔥 BARU (modul kwitansi): cetak/cetak ulang
+                                kwitansi langsung dari riwayat siswa. */}
+                            <button onClick={() => cetakUlangKwitansi(log)} style={styles.btnKwitansiKecil} title="Cetak kwitansi">
+                              <Printer size={10} /> {log.noKwitansi ? 'Cetak Ulang' : 'Buat Kwitansi'}
+                            </button>
                           </>
                         )}
                       </div>
@@ -831,10 +989,28 @@ const StudentFinance = () => {
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>Metode</label>
                     <select style={styles.input} value={payMethod} onChange={e => setPayMethod(e.target.value)}>
-                      <option value="Tunai">💵 Tunai</option>
-                      <option value="Transfer">💳 Transfer</option>
+                      <option value="Tunai">💵 Tunai — uang masuk brankas admin</option>
+                      <option value="Transfer">💳 Transfer — masuk rekening bimbel</option>
                     </select>
                   </div>
+                  {/* 🔥 BARU (modul rekonsiliasi): bukti transfer wajib
+                      (nomor struk atau foto) -- pembayaran langsung masuk
+                      antrean rekonsiliasi owner dengan status Pending. */}
+                  {payMethod === 'Transfer' && (
+                    <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 12 }}>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>No. Referensi / Struk Transfer <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span></label>
+                        <input type="text" style={styles.input} value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="Contoh: TRF-20260926-889912" />
+                      </div>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>Foto Bukti Transfer</label>
+                        <input type="file" accept="image/*" style={{ ...styles.input, padding: 8, background: 'white' }} onChange={e => setPayBukti(e.target.files?.[0] || null)} />
+                      </div>
+                      <p style={{ margin: '0 0 10px', fontSize: 10, color: '#1e40af' }}>
+                        💡 Owner akan mencocokkan dengan mutasi rekening di tab Rekonsiliasi (Pending → Verified).
+                      </p>
+                    </div>
+                  )}
                   <div style={styles.modalFooter}>
                     <button type="button" onClick={() => setShowPayModal(false)} style={styles.btnCancel}>Batal</button>
                     <button type="submit" style={styles.btnSave} disabled={isProcessing}>
@@ -896,6 +1072,39 @@ const StudentFinance = () => {
                       <button type="button" onClick={() => setPerpanjangData(prev => ({...prev, metodeBayar: 'Cicilan'}))} style={styles.methodBtn(perpanjangData.metodeBayar === 'Cicilan')}>📋 Cicilan</button>
                     </div>
                   </div>
+
+                  {/* 🔥 BARU (modul rekonsiliasi): perpanjangan transfer
+                      wajib meninggalkan jejak (no. struk / foto bukti). */}
+                  {perpanjangData.metodeBayar === 'Transfer' && (
+                    <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '12px 12px 2px', marginBottom: 12 }}>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>No. Referensi / Struk Transfer <span style={{ color: '#ef4444' }}>*wajib (bila tanpa foto)</span></label>
+                        <input type="text" style={styles.input} value={perpanjangRef} onChange={e => setPerpanjangRef(e.target.value)} placeholder="Contoh: TRF-20260926-889912" />
+                      </div>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>Foto Bukti Transfer</label>
+                        <input type="file" accept="image/*" style={{ ...styles.input, padding: 8, background: 'white' }} onChange={e => setPerpanjangBukti(e.target.files?.[0] || null)} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 🔥 BARU (modul amortisasi): penegas alur uang paket --
+                      biar admin paham bedanya jalur lunas vs cicilan
+                      SEBELUM memproses (akar kebingungan alur pendaftaran/
+                      perpanjangan yang dilaporkan owner). */}
+                  {perpanjangData.durasiTambah > 0 && perpanjangData.metodeBayar !== 'Cicilan' && (
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 12px', marginBottom: 12, fontSize: 10.5, color: '#166534', lineHeight: 1.6 }}>
+                      💡 <b>Alur uang paket (lunas):</b> Kas diterima hari ini <b>Rp {hitungTotalPerpanjangan().toLocaleString()}</b> —
+                      tapi omzet yang diakui bulan ini cuma <b>Rp {Math.round(hitungTotalPerpanjangan() / perpanjangData.durasiTambah).toLocaleString()}</b> ({perpanjangData.durasiTambah} bulan pertama);
+                      sisanya jadi <b>DANA TITIPAN</b> yang cair bertahap ke laporan tiap bulan. Kwitansi terbit otomatis.
+                    </div>
+                  )}
+                  {perpanjangData.durasiTambah > 0 && perpanjangData.metodeBayar === 'Cicilan' && (
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px', marginBottom: 12, fontSize: 10.5, color: '#92400e', lineHeight: 1.6 }}>
+                      📋 <b>Alur cicilan:</b> hari ini baru tercatat KOMITMEN — belum ada uang masuk & belum ada kwitansi.
+                      Kwitansi + kas bertambah tiap kali cicilannya beneran dibayar (tombol Bayar di daftar cicilan).
+                    </div>
+                  )}
 
                   {perpanjangData.metodeBayar === 'Cicilan' && (
                     <>
@@ -1079,6 +1288,8 @@ const styles = {
   historyDate: { fontSize: 11, fontWeight: 'bold', color: '#1e293b' },
   historyNote: { fontSize: 9, color: '#94a3b8' },
   historyRight: { textAlign: 'right' },
+  // 🔥 BARU: tombol kecil cetak kwitansi di baris riwayat pembayaran.
+  btnKwitansiKecil: { display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, padding: '3px 8px', background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: 6, cursor: 'pointer', fontWeight: 800, fontSize: 9 },
   
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 },
   modalContent: (m) => ({ background: 'white', borderRadius: 16, padding: 24, width: m ? '95%' : '420px', maxWidth: '500px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }),

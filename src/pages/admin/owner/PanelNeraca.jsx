@@ -106,6 +106,11 @@ const PanelNeraca = ({ logs, students, teacherLogs, settings, tagihanList, rp, i
         <div style={styles.neracaBox}>
           {barisNeraca('ASET (yang dimiliki bisnis)', '', { header: true })}
           {barisNeraca('Kas tunai (uang fisik)', rp(neraca.aset.tunai), { inden: true })}
+          {/* 🔥 BARU (modul setor kas): pecahan kas tunai -- berapa yang
+              masih di brankas admin kasir vs sudah masuk kas owner.
+              Penjumlahannya tetap = baris "Kas tunai" di atas. */}
+          {barisNeraca('├ 💵 Brankas admin kasir', rp(neraca.aset.kasAdmin), { inden: true })}
+          {barisNeraca('└ 🏠 Kas owner (hasil setor kas dll)', rp(neraca.aset.kasOwner), { inden: true })}
           {barisNeraca('Bank / transfer', rp(neraca.aset.bank), { inden: true })}
           {neraca.aset.tanpaMetode !== 0 && barisNeraca('Data lama tanpa metode', rp(neraca.aset.tanpaMetode), { inden: true })}
           {barisNeraca('Piutang siswa (tagihan belum dibayar)', rp(neraca.aset.piutang), { inden: true })}

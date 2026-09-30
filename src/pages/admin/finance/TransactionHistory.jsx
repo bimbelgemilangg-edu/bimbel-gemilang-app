@@ -5,8 +5,9 @@ import {
   collection, query, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs, writeBatch
 } from "firebase/firestore";
 import { 
-  Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock
+  Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock, Printer
 } from 'lucide-react';
+import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -127,6 +128,10 @@ const TransactionHistory = () => {
         (t.note || '').toLowerCase().includes(term) ||
         (t.category || '').toLowerCase().includes(term) ||
         (t.namaSiswa || '').toLowerCase().includes(term) ||
+        // 🔥 BARU: bisa cari lewat nomor kwitansi & referensi transfer --
+        // misalnya orang tua minta "cetak ulang kwitansi KWT-202609-004".
+        (t.noKwitansi || '').toLowerCase().includes(term) ||
+        (t.refTransfer || '').toLowerCase().includes(term) ||
         String(t.amount || '').includes(term)
       );
     }
@@ -168,6 +173,13 @@ const TransactionHistory = () => {
   const cicilanMasuk = jumlahMetode('Pemasukan', 'Cicilan');
   const tanpaMetodeTotal = transactions
     .filter(t => t.method !== 'Tunai' && t.method !== 'Transfer' && t.method !== 'Cicilan')
+    .reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
+  // 🔥 BARU (modul setor kas): uang tunai yang sudah disetor admin ke
+  // owner bulan ini (log type 'Transfer'). BUKAN pemasukan/pengeluaran --
+  // cuma pindah kantong -- jadi sengaja tidak masuk total mana pun, tapi
+  // tetap ditampilkan biar admin paham kenapa brankasnya berkurang.
+  const setorKasBulanIni = transactions
+    .filter(t => t.type === 'Transfer' && (t.kanalDari || 'kasAdmin') === 'kasAdmin')
     .reduce((s, t) => s + (parseInt(t.amount) || 0), 0);
   const namaBulan = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
@@ -387,6 +399,15 @@ const TransactionHistory = () => {
       alert('⚠️ PIN Owner belum diatur. Atur PIN dulu di halaman Pengaturan sebelum bisa mengedit transaksi.');
       return;
     }
+    // 🔥 BARU (modul setor kas): log 'Transfer' = setoran kas -- pasangan
+    // dokumennya ada di koleksi setoran_kas (arsip periode + bukti cetak).
+    // Mengedit nominalnya dari sini akan membuat kedua dokumen tidak
+    // sinkron, jadi dilarang; koreksi dilakukan owner lewat Rekonsiliasi
+    // atau dengan menghapus setoran lalu setor ulang.
+    if (item.type === 'Transfer') {
+      alert('⚠️ Transaksi "Setor Kas" tidak bisa diedit dari sini (nominalnya terkait dengan arsip bukti setor di tab Tutup Kasir).\n\nKalau setorannya keliru, hubungi Owner untuk dikoreksi lewat Portal Owner.');
+      return;
+    }
     // 🔥 FIX BUG TERKAIT: transaksi "Perpanjangan Paket" SENGAJA gak boleh
     // diedit nominalnya langsung dari sini -- satu transaksi ini ngubah 4
     // field sekaligus di data siswa (tagihan/dibayar/tanggal selesai/
@@ -502,6 +523,35 @@ const TransactionHistory = () => {
     }
   };
 
+  // === 🔥 BARU: CETAK KWITANSI DARI BARIS RIWAYAT ===
+  // Tombol printer di tiap baris pemasukan riil. Kalau transaksinya belum
+  // punya nomor kwitansi (data lama / dibuat sebelum fitur kwitansi),
+  // nomor dibuatkan dulu (ikut bulan transaksi aslinya) lalu disimpan
+  // permanen ke dokumen -- baru dicetak.
+  const cetakKwitansiLog = async (t) => {
+    let nomor = t.noKwitansi;
+    if (!nomor) {
+      if (!window.confirm('Transaksi ini belum punya nomor kwitansi. Buatkan nomor sekarang lalu cetak?')) return;
+      try {
+        const tanggalTransaksi = t.date ? new Date(`${t.date}T00:00:00`) : new Date();
+        nomor = await ambilNomorKwitansiBerikutnya(tanggalTransaksi);
+        await updateDoc(doc(db, "finance_logs", t.id), { noKwitansi: nomor });
+      } catch (e) {
+        return alert('❌ Gagal membuat nomor kwitansi: ' + e.message);
+      }
+    }
+    cetakKwitansi({
+      nomor,
+      tanggal: t.date || '',
+      diterimaDari: t.namaSiswa || t.note || 'Pembayaran Umum',
+      studentId: t.studentId || '',
+      jumlah: parseInt(t.amount) || 0,
+      keperluan: t.note || t.category || 'Pembayaran',
+      metode: t.method || '-',
+      refTransfer: t.refTransfer || '',
+    });
+  };
+
   // === FORMAT TIMESTAMP ===
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return '-';
@@ -563,6 +613,8 @@ const TransactionHistory = () => {
             <option value="Semua">Semua Tipe</option>
             <option value="Pemasukan">💰 Pemasukan</option>
             <option value="Pengeluaran">📤 Pengeluaran</option>
+            {/* 🔥 BARU: setoran kas (Tutup Kasir) bisa difilter tersendiri. */}
+            <option value="Transfer">🔁 Setor Kas</option>
           </select>
         </div>
 
@@ -612,7 +664,7 @@ const TransactionHistory = () => {
           lagi salah baca. */}
       {!sedangDifilter && (
         <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '8px 12px', borderRadius: 10, fontSize: 11, fontWeight: 700, margin: '-4px 0 12px', lineHeight: 1.5 }}>
-          💵 Uang tunai di brankas bulan ini = masuk tunai − keluar tunai = <b>Rp {(tunaiMasuk - tunaiKeluar).toLocaleString()}</b>. "Total Masuk" di atas adalah gabungan semua metode (tunai + transfer), jadi wajar lebih besar dari uang kas fisik.
+          💵 Uang tunai di brankas bulan ini = masuk tunai − keluar tunai{setorKasBulanIni > 0 ? ' − setor kas ke owner' : ''} = <b>Rp {(tunaiMasuk - tunaiKeluar - setorKasBulanIni).toLocaleString()}</b>. "Total Masuk" di atas adalah gabungan semua metode (tunai + transfer), jadi wajar lebih besar dari uang kas fisik.
         </div>
       )}
 
@@ -624,6 +676,16 @@ const TransactionHistory = () => {
       {!sedangDifilter && cicilanMasuk > 0 && (
         <div style={{ fontSize: 11, color: '#0f766e', fontWeight: 700, margin: '-4px 0 12px', lineHeight: 1.5 }}>
           📋 Total Masuk di atas TIDAK menghitung komitmen perpanjangan cicilan bulan ini yang belum diterima: Rp {cicilanMasuk.toLocaleString()} -- rinciannya ada di panel "Rincian per Metode" dan tabel di bawah (badge 📋 Cicilan).
+        </div>
+      )}
+
+      {/* 🔥 BARU (modul setor kas): penjelasan baris 🔁 Setor Kas -- uang
+          pindah dari brankas admin ke kas owner, bukan pengeluaran. */}
+      {!sedangDifilter && setorKasBulanIni > 0 && (
+        <div style={{ fontSize: 11, color: '#b45309', fontWeight: 700, margin: '-4px 0 12px', lineHeight: 1.5 }}>
+          🔁 Setor kas ke owner bulan ini: Rp {setorKasBulanIni.toLocaleString()} -- TIDAK dihitung sebagai pengeluaran
+          (uangnya cuma pindah dari brankas admin ke kas owner), tapi MENGURANGI uang fisik di brankas.
+          Bukti setor & riwayatnya ada di tab <b>Tutup Kasir</b>.
         </div>
       )}
 
@@ -647,11 +709,18 @@ const TransactionHistory = () => {
               <span>Keluar</span><b style={{color: '#ef4444'}}>- Rp {tunaiKeluar.toLocaleString()}</b>
             </div>
             {/* 🔥 BARU (ANTI-BINGUNG): baris selisih = uang fisik di brankas,
-                biar admin langsung lihat angka yang cocok dgn hitungan kas. */}
+                biar admin langsung lihat angka yang cocok dgn hitungan kas.
+                Setor kas ke owner ikut dikurangkan -- uangnya sudah pindah
+                ke kas owner (lihat tab Tutup Kasir). */}
             <div style={{...styles.methodSummaryRow, borderTop: '1px dashed #f59e0b55', marginTop: 4, paddingTop: 4}}>
               <span style={{fontWeight: 700, color: '#475569'}}>Selisih (kas di brankas)</span>
-              <b style={{color: '#92400e'}}>Rp {(tunaiMasuk - tunaiKeluar).toLocaleString()}</b>
+              <b style={{color: '#92400e'}}>Rp {(tunaiMasuk - tunaiKeluar - setorKasBulanIni).toLocaleString()}</b>
             </div>
+            {setorKasBulanIni > 0 && (
+              <div style={styles.methodSummaryRow}>
+                <span>🔁 Setor kas ke owner</span><b style={{color: '#b45309'}}>- Rp {setorKasBulanIni.toLocaleString()}</b>
+              </div>
+            )}
           </div>
           <div style={styles.methodSummaryCard('#eef2ff', '#6366f1')}>
             <div style={styles.methodSummaryLabel}>💳 Transfer</div>
@@ -722,7 +791,7 @@ const TransactionHistory = () => {
                     </td>
                     <td style={styles.td}>
                       <span style={styles.typeBadge(t.type)}>
-                        {t.type === 'Pemasukan' ? '💰 Masuk' : '📤 Keluar'}
+                        {t.type === 'Pemasukan' ? '💰 Masuk' : t.type === 'Transfer' ? '🔁 Setor Kas' : '📤 Keluar'}
                       </span>
                     </td>
                     <td style={styles.td}>
@@ -735,6 +804,11 @@ const TransactionHistory = () => {
                             lagi render teks "undefined". */}
                         {t.method === 'Tunai' ? '💵' : t.method === 'Transfer' ? '💳' : t.method === 'Cicilan' ? '📋' : '❔'} {t.method || 'Tanpa Metode'}
                       </span>
+                      {/* 🔥 BARU (modul kwitansi & rekonsiliasi): nomor
+                          kwitansi + referensi transfer tampil di barisnya
+                          -- gampang dicocokkan dengan struk/mutasi. */}
+                      {t.noKwitansi && <div style={{ fontSize: 9, color: '#7c3aed', fontWeight: 800, marginTop: 2, fontFamily: 'monospace' }}>🧾 {t.noKwitansi}</div>}
+                      {t.refTransfer && <div style={{ fontSize: 9, color: '#1d4ed8', fontWeight: 700, marginTop: 1 }}>ref: {t.refTransfer}</div>}
                     </td>
                     <td style={styles.td}>{t.category}</td>
                     <td style={{...styles.td, fontSize: 11, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
@@ -742,15 +816,27 @@ const TransactionHistory = () => {
                     </td>
                     <td style={{
                       ...styles.td, textAlign: 'right', fontWeight: 'bold',
-                      color: t.type === 'Pemasukan' ? '#10b981' : '#ef4444'
+                      color: t.type === 'Pemasukan' ? '#10b981' : t.type === 'Transfer' ? '#b45309' : '#ef4444'
                     }}>
-                      {t.type === 'Pengeluaran' ? '- ' : '+ '}Rp {(parseInt(t.amount) || 0).toLocaleString()}
+                      {/* 🔥 Setor kas bukan +/- (uang tidak bertambah/berkurang,
+                          cuma pindah dari brankas admin ke kas owner). */}
+                      {t.type === 'Pengeluaran' ? '- ' : t.type === 'Pemasukan' ? '+ ' : '🔁 '}Rp {(parseInt(t.amount) || 0).toLocaleString()}
                     </td>
                     <td style={{...styles.td, textAlign: 'center'}}>
                       <div style={{display: 'flex', gap: 4, justifyContent: 'center'}}>
-                        <button onClick={() => openEdit(t)} style={styles.btnIcon('#f59e0b')} title="Edit">
-                          <Edit3 size={13} />
-                        </button>
+                        {/* 🔥 BARU (modul kwitansi): tombol cetak kwitansi di
+                            tiap pemasukan riil (bukan komitmen cicilan, bukan
+                            setor kas). */}
+                        {t.type === 'Pemasukan' && t.method !== 'Cicilan' && (
+                          <button onClick={() => cetakKwitansiLog(t)} style={styles.btnIcon('#7c3aed')} title={t.noKwitansi ? `Cetak kwitansi ${t.noKwitansi}` : 'Buatkan nomor & cetak kwitansi'}>
+                            <Printer size={13} />
+                          </button>
+                        )}
+                        {t.type !== 'Transfer' && (
+                          <button onClick={() => openEdit(t)} style={styles.btnIcon('#f59e0b')} title="Edit">
+                            <Edit3 size={13} />
+                          </button>
+                        )}
                         <button onClick={() => confirmDelete(t)} style={styles.btnIcon('#ef4444')} title="Hapus">
                           <Trash2 size={13} />
                         </button>
@@ -887,7 +973,7 @@ const styles = {
   dateText: { fontSize: 12, fontWeight: 600, color: '#1e293b' },
   timeText: { fontSize: 10, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3 },
   
-  typeBadge: (type) => ({ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold', background: type === 'Pemasukan' ? '#dcfce7' : '#fee2e2', color: type === 'Pemasukan' ? '#166534' : '#991b1b' }),
+  typeBadge: (type) => ({ padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 'bold', background: type === 'Pemasukan' ? '#dcfce7' : type === 'Transfer' ? '#fef3c7' : '#fee2e2', color: type === 'Pemasukan' ? '#166534' : type === 'Transfer' ? '#b45309' : '#991b1b' }),
   // 🔥 FIX: badge metode sekarang punya warna khas per metode -- sebelumnya
   // cuma dua cabang (Tunai kuning / sisanya indigo), jadi Cicilan & data
   // lama tanpa metode ikut-ikutan tampil indigo ala Transfer (menyesatkan).

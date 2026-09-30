@@ -21,7 +21,7 @@ const FinanceDashboard = () => {
   // uangnya belum masuk (dan nanti kehitung sekali lagi waktu tiap
   // cicilannya beneran dibayar). Komitmen itu sekarang dipisah ke field
   // `cicilan` dan cuma tampil sebagai keterangan "belum diterima".
-  const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0, cicilan: 0 });
+  const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0, cicilan: 0, setorKas: 0 });
 
   // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): sebelumnya halaman ini cuma
   // nampilin TOTAL "Pemasukan Bulan Ini" & "Pengeluaran Bulan Ini" --
@@ -61,6 +61,12 @@ const FinanceDashboard = () => {
     );
     const unsubLogs = onSnapshot(qLogs, (snap) => {
       let pemasukanDiterima = 0, pengeluaranBulanIni = 0, cicilanTercatat = 0;
+      // 🔥 BARU (modul setor kas): total uang tunai yang SUDAH DISETOR
+      // admin ke owner bulan ini (log type 'Transfer' kanalDari kasAdmin).
+      // Ini BUKAN pengeluaran -- uangnya cuma pindah dari brankas admin
+      // ke kas owner. Tapi brankas admin jelas berkurang karenanya, jadi
+      // kartu "Uang Tunai di Brankas" di bawah harus mengurangkannya.
+      let setorKasAdmin = 0;
 
       // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): pecah total bulan ini per
       // metode pembayaran. "Lainnya" = penjaga buat data lama yang
@@ -77,6 +83,16 @@ const FinanceDashboard = () => {
       snap.forEach(doc => {
         const data = doc.data();
         const amt = parseInt(data.amount || 0);
+        // 🔥 FIX (modul setor kas): log type 'Transfer' (Tutup Kasir) itu
+        // uang PINDAH kantong, bukan pemasukan/pengeluaran. Sebelumnya
+        // (sebelum fitur setor kas ada) type ini tidak pernah muncul; kalau
+        // dibiarkan masuk cabang else, tiap setoran bakal kehitung sebagai
+        // "Pengeluaran Bulan Ini" -- angka belanja admin menggelembung
+        // palsu dan tidak cocok dengan Portal Owner.
+        if (data.type === 'Transfer') {
+          if ((data.kanalDari || 'kasAdmin') === 'kasAdmin') setorKasAdmin += amt;
+          return;
+        }
         const bucket = perMetode[data.method] ? data.method : 'Lainnya';
         if (data.type === 'Pemasukan') {
           // 🔥 FIX BUG NYATA (pemasukan kembar): Pemasukan ber-method
@@ -97,7 +113,7 @@ const FinanceDashboard = () => {
         }
       });
 
-      setMonthStats({ pemasukan: pemasukanDiterima, pengeluaran: pengeluaranBulanIni, cicilan: cicilanTercatat });
+      setMonthStats({ pemasukan: pemasukanDiterima, pengeluaran: pengeluaranBulanIni, cicilan: cicilanTercatat, setorKas: setorKasAdmin });
       setMethodStats(perMetode);
     });
 
@@ -264,12 +280,19 @@ const FinanceDashboard = () => {
           <TrendingUp size={20} color="#10b981" />
           <span style={styles.mediumLabel}>💵 Uang Tunai di Brankas (selisih bulan ini)</span>
           <h2 style={{...styles.mediumValue, color: '#10b981'}}>
-            {methodStats ? rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar) : rp(0)}
+            {methodStats ? rp(methodStats.Tunai.masuk - methodStats.Tunai.keluar - monthStats.setorKas) : rp(0)}
           </h2>
           {methodStats && (
             <div style={styles.cardSplit}>
               <span>Masuk tunai: <b>{rp(methodStats.Tunai.masuk)}</b></span>
               <span>Keluar tunai: <b>{rp(methodStats.Tunai.keluar)}</b></span>
+              {/* 🔥 BARU (modul setor kas): uang yang sudah disetor ke owner
+                  juga MENGURANGI brankas -- kalau tidak ditampilkan, admin
+                  bingung kenapa hitungan brankas tidak sama dengan
+                  masuk-keluar tunai. Setoran bukan pengeluaran (uangnya
+                  pindah ke kas owner), tapi fisik uangnya memang keluar
+                  dari brankas admin. */}
+              {monthStats.setorKas > 0 && <span>🔁 Sudah disetor ke owner: <b>{rp(monthStats.setorKas)}</b></span>}
             </div>
           )}
           <span style={{display: 'block', fontSize: 10, color: '#047857', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
