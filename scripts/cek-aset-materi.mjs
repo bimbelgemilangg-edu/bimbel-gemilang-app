@@ -38,6 +38,11 @@ function scan(v, sumber) {
       lokal.set(v, [...(lokal.get(v) || []), sumber]);
     } else if (/^https?:\/\//.test(v) && /\.(svg|png|jpe?g|webp|gif|mp4|webm)(\?|#|$)/i.test(v)) {
       remotelist.set(v, [...(remotelist.get(v) || []), sumber]);
+    } else if (/^(gambar|bagan|img|assets|foto)[-/][^\s]*\.(svg|png|jpe?g|webp|gif)$/i.test(v)) {
+      // Turn 102: path gambar RELATIF (tanpa slash depan) pasti 404 di route
+      // bersarang — img src dirender apa adanya oleh BelajarReader.
+      console.log(`❌ ${sumber}: path gambar tanpa slash depan (akan 404): ${v}`);
+      masalah += 1;
     }
   }
 }

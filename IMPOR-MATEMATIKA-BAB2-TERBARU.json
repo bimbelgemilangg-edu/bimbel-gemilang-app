@@ -1,0 +1,815 @@
+{
+  "materi": {
+    "judul": "Matematika — Persiapan TKA 2026 (Edisi Cara Gemilang)",
+    "mapel": "Matematika",
+    "kelas": "",
+    "jenjang": "sma",
+    "program": "semua",
+    "premium": false,
+    "warna": "#F59E0B",
+    "emoji": "📐",
+    "deskripsi": "Seri Matematika TKA: bilangan-himpunan-eksponen, sistem persamaan, bangun datar-pythagoras-kesebangunan, barisan-deret, statistika-peluang, bangun ruang, dan relasi-fungsi-transformasi-trigonometri. Semua rumus dirender natural (KaTeX) seperti buku. Impor bab tambahan pakai mode \"tambah\".",
+    "urutan": 8,
+    "status": "draft",
+    "daftarPustaka": [
+      "Bank owner: salinan digital HTML bab 1,3,4,6,7 buku seri Sukses TKA SMA + tabel kunci di tiap HTML + pembahasan di HTML/PDF \"08 Pembahasan\"; kunci mengikuti cetakan asli.",
+      "Sumber teks adaptasi per stimulus tercantum pada masing-masing teks.",
+      "Kartu Cara Gemilang, tabel pola soal, dan Zona Berlatih = Gemilang Drill tim Gemilang mengikuti pola soal bank owner.",
+      "Skema widget interaktif: docs/MATERI-INTERAKTIF.md (turn 87)."
+    ]
+  },
+  "bab": [
+    {
+      "judul": "Bab 2 — Sistem Persamaan dan Pertidaksamaan Linier (Edisi Cara Gemilang)",
+      "ringkasan": "SPL dua & tiga variabel (eliminasi-substitusi, bentuk kebalikan, syarat banyak penyelesaian), pemodelan soal cerita (harga, umur, perbandingan), pertidaksamaan linier & daerah penyelesaian (titik potong sumbu, uji titik, membaca arsiran), program linier (titik pojok & fungsi tujuan), serta interpretasi grafik garis — semua rumus ditulis LaTeX natural; 25 soal resmi bank (17 pg, 4 pgMulti, 4 tabel Benar/Salah) + pembahasan dua jalur; 4 diagram SVG asli buku (daerah I-V, arsiran, model kaus, grafik penjualan ikan).",
+      "estimasiMenit": 75,
+      "urutan": 2,
+      "tipe": "teks",
+      "sections": [
+        {
+          "jenis": "judul",
+          "teks": "Sistem Persamaan Linier: Dua & Tiga Variabel"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Sistem persamaan linier (SPL) adalah kumpulan persamaan yang berbagi variabel; penyelesaiannya harus memenuhi SEMUA persamaan sekaligus. Dua senjata utama: eliminasi (menghapus satu variabel dengan menjumlahkan/mengurangkan) dan substitusi (memindahkan nilai antar-persamaan)."
+        },
+        {
+          "jenis": "peta",
+          "teks": "Bab 2 adalah kuda-kuda TKA: SPL muncul langsung sebagai hitungan, menyamar di soal cerita (harga, umur, perbandingan), menjadi daerah penyelesaian & program linier, lalu dipakai lagi di bab statistika (rata-rata gabungan) dan bangun ruang (dimensi tak diketahui). Kuasai eliminasi + baca titik potong di sini, separuh bab lain ikut terangkat."
+        },
+        {
+          "jenis": "alur",
+          "judul": "Metode eliminasi-substitusi campuran",
+          "items": [
+            "Pilih variabel yang koefisiennya paling mudah disamakan (idealnya sudah $1$ atau $-1$)",
+            "Kalikan kedua persamaan agar koefisien variabel itu sama",
+            "Jumlahkan atau kurangkan → satu variabel hilang, variabel lain didapat",
+            "Substitusikan nilai itu ke persamaan paling sederhana → variabel kedua",
+            "Uji ke dua persamaan asal (5 detik, penyelamat nilai)"
+          ]
+        },
+        {
+          "jenis": "poin",
+          "judul": "Bentuk-bentuk khusus SPL",
+          "items": [
+            "Variabel di penyebut ($\\frac{1}{x} + \\frac{1}{y} = 10$): misal $p = \\frac{1}{x}$, $q = \\frac{1}{y}$ — selesaikan sebagai SPL biasa, terakhir balik lagi.",
+            "Banyak penyelesaian tak hingga $\\Leftrightarrow \\frac{a_{1}}{a_{2}} = \\frac{b_{1}}{b_{2}} = \\frac{c_{1}}{c_{2}}$ (kedua persamaan sebanding penuh — \"kembar\").",
+            "Yang ditanya kombinasi $ax + by$: sering tak perlu mencari $x$ dan $y$ satuan — bentuk langsung kombinasinya dari operasi antar-persamaan."
+          ]
+        },
+        {
+          "jenis": "tabelinfo",
+          "judul": "Syarat banyak penyelesaian SPL dua variabel",
+          "kolom": [
+            "Perbandingan koefisien",
+            "Banyak penyelesaian",
+            "Arti geometri"
+          ],
+          "rows": [
+            {
+              "k": "$\\frac{a_{1}}{a_{2}} \\neq \\frac{b_{1}}{b_{2}}$",
+              "v": "Tepat satu",
+              "w": "Dua garis berpotongan di satu titik"
+            },
+            {
+              "k": "$\\frac{a_{1}}{a_{2}} = \\frac{b_{1}}{b_{2}} \\neq \\frac{c_{1}}{c_{2}}$",
+              "v": "Tidak ada",
+              "w": "Dua garis sejajar (tak pernah bertemu)"
+            },
+            {
+              "k": "$\\frac{a_{1}}{a_{2}} = \\frac{b_{1}}{b_{2}} = \\frac{c_{1}}{c_{2}}$",
+              "v": "Tak hingga banyak",
+              "w": "Dua garis berimpit (satu garis sama)"
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-SPL: eliminasi strategis",
+          "teks": "Jangan eliminasi asal — pilih variabel dengan koefisien termudah. Bila yang ditanya sebuah kombinasi ($ax + by$), cari jalan pintas: kali-tambah persamaan agar kombinasi itu langsung muncul.",
+          "items": [
+            "Dua persamaan dua variabel: satu kali eliminasi langsung selesai.",
+            "Tiga variabel: eliminasi variabel yang SAMA dari dua pasangan → turun jadi dua variabel.",
+            "Hasil selalu diuji: substitusi balik ke persamaan asal, $2 \\times 5$ detik penyelamat."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Penyelesaian sistem $2x + y = 7$ dan $x - y = 2$ memenuhi $x + y = $ ...",
+              "opsi": [
+                "$3$",
+                "$4$",
+                "$5$",
+                "$6$",
+                "$7$"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: jumlahkan kedua persamaan → $3x = 9 \\Rightarrow x = 3$; substitusi → $y = 1$; jadi $x + y = 4$. Jalur Cara Gemilang: koefisien $y$ sudah $+1$ dan $-1$ — eliminasi termurah, langsung jumlahkan."
+            },
+            {
+              "soal": "Diketahui $\\frac{1}{x} + \\frac{1}{y} = 5$ dan $\\frac{2}{x} - \\frac{1}{y} = 1$. Nilai $x$ adalah ...",
+              "opsi": [
+                "$\\frac{1}{2}$",
+                "$\\frac{1}{3}$",
+                "$1$",
+                "$2$",
+                "$3$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: jumlahkan → $\\frac{3}{x} = 6 \\Rightarrow x = \\frac{1}{2}$. Jalur Cara Gemilang: variabel penyebut tak perlu dimisalkan bila satu kali tambah langsung menumbangkan salah satunya."
+            },
+            {
+              "soal": "Sistem $x + y + z = 6$, $2x - y + z = 3$, dan $x + 2y - z = 2$ mempunyai penyelesaian $x = $ ...",
+              "opsi": [
+                "$1$",
+                "$2$",
+                "$3$",
+                "$4$",
+                "$5$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: (1)+(2) → $3x + 2z = 9$; $2 \\times (1) - (3)$ → $x + 3z = 10$; selesaikan: $z = 3$, $x = 1$, $y = 2$. Jalur Cara Gemilang: eliminasi $y$ dari dua pasangan berbeda, sisanya tangga dua variabel."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Pemodelan Soal Cerita: Harga, Umur, Perbandingan"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Semua soal cerita SPL berpola sama: definisikan variabel, terjemahkan tiap kalimat menjadi satu persamaan, selesaikan, lalu KEMBALI ke pertanyaan. Jebakan tersering: berhenti di $x$ dan $y$ padahal yang diminta kombinasi keduanya."
+        },
+        {
+          "jenis": "urutan",
+          "judul": "🧩 Susun: langkah memodelkan soal cerita",
+          "keterangan": "Urutan baku dari kalimat ke jawaban.",
+          "items": [
+            "Definisikan variabel untuk besaran yang belum diketahui",
+            "Terjemahkan setiap kalimat informasi menjadi satu persamaan",
+            "Selesaikan sistemnya (eliminasi / substitusi / campuran)",
+            "Jawab sesuai pertanyaan — bisa berupa x, y, atau kombinasinya"
+          ]
+        },
+        {
+          "jenis": "alur",
+          "judul": "Contoh berjalan: soal umur (pola soal 3 bank)",
+          "items": [
+            "Definisikan: umur Abdul saat ini $= a$, umur Yoga saat ini $= y$.",
+            "\"Lima tahun lalu Abdul $4$ kali Yoga\": $a - 5 = 4(y - 5) \\Rightarrow a - 4y = -15$ …(1).",
+            "\"Empat tahun lagi, 2 kali Abdul = 3 kali Yoga + 1\": $2(a + 4) = 3(y + 4) + 1 \\Rightarrow 2a - 3y = 5$ …(2).",
+            "Eliminasi: $(1) \\times 2 \\rightarrow 2a - 8y = -30$; kurangkan dengan (2): $-5y = -35 \\Rightarrow y = 7$, lalu $a = 13$.",
+            "Kembali ke pertanyaan: jumlah umur $= a + y = 13 + 7 = 20$ tahun."
+          ]
+        },
+        {
+          "jenis": "benarSalah",
+          "judul": "⚖️ Cek pemodelan",
+          "keterangan": "Gemilang Drill — terjemahkan kalimat dengan disiplin.",
+          "items": [
+            {
+              "teks": "\"Tiga kali bilangan pertama ditambah dua kali bilangan kedua sama dengan 43\" ditulis $3x + 2y = 43$.",
+              "jawaban": true,
+              "penjelasan": "Koefisien menempel pada variabelnya masing-masing."
+            },
+            {
+              "teks": "\"Jumlah dua bilangan adalah 17\" ditulis $x - y = 17$.",
+              "jawaban": false,
+              "penjelasan": "Jumlah $= x + y = 17$; selisih baru $x - y$."
+            },
+            {
+              "teks": "Sistem $2x + 3y = 7$ dan $4x + 6y = 14$ mempunyai tepat satu penyelesaian.",
+              "jawaban": false,
+              "penjelasan": "Koefisien sebanding penuh ($\\frac{2}{4} = \\frac{3}{6} = \\frac{7}{14}$) → berimpit → tak hingga penyelesaian."
+            },
+            {
+              "teks": "Pada soal umur, \"tiga tahun yang akan datang\" untuk umur $a$ ditulis $a + 3$.",
+              "jawaban": true,
+              "penjelasan": "Masa depan menambah, masa lalu mengurangi."
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-CERITA: definisikan, terjemahkan, kembali",
+          "teks": "Kamus terjemahan: \"jumlah\" $= +$, \"selisih\" $= -$, \"kali/perkalian\" $= \\times$, \"perbandingan\" $=$ pecahan. Definisi variabel adalah jangkar — sekali ditetapkan, konsisten sampai akhir.",
+          "items": [
+            "Umur: sekarang $a$; $k$ tahun lalu $= a - k$; $k$ tahun lagi $= a + k$.",
+            "Harga belanjaan: yang ditanya sering kombinasi — cek dulu apakah bisa dirakit langsung dari persamaan.",
+            "Perbandingan $p : q$: misalkan nilainya $pk$ dan $qk$ — hanya satu variabel baru."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Harga $2$ buku dan $1$ pensil Rp8.000,00; harga $1$ buku dan $3$ pensil Rp9.000,00. Harga $1$ buku adalah ...",
+              "opsi": [
+                "Rp2.000,00",
+                "Rp2.500,00",
+                "Rp3.000,00",
+                "Rp3.500,00",
+                "Rp4.000,00"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: $2b + p = 8.000$ dan $b + 3p = 9.000$; eliminasi → $5b = 15.000 \\Rightarrow b = 3.000$. Jalur Cara Gemilang: kali persamaan kedua dengan $2$ agar $b$ langsung rontok bersama pensilnya."
+            },
+            {
+              "soal": "Lima tahun lalu perbandingan umur Ayah dan Budi $7 : 2$. Tahun ini jumlah umur mereka $55$ tahun. Umur Ayah saat ini adalah ...",
+              "opsi": [
+                "$35$ tahun",
+                "$38$ tahun",
+                "$40$ tahun",
+                "$42$ tahun",
+                "$45$ tahun"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: lima tahun lalu $A - 5 = 7k$ dan $B - 5 = 2k$; jumlah sekarang $9k + 10 = 55 \\Rightarrow k = 5$; $A = 7(5) + 5 = 40$. Jalur Cara Gemilang: perbandingan = satu variabel $k$; jangan lupa $+5$ untuk kembali ke \"saat ini\"."
+            },
+            {
+              "soal": "Perbandingan uang Rina dan Tina $3 : 5$. Jika selisih uang mereka Rp18.000,00, maka uang Tina adalah ...",
+              "opsi": [
+                "Rp27.000,00",
+                "Rp36.000,00",
+                "Rp45.000,00",
+                "Rp54.000,00",
+                "Rp72.000,00"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: $5k - 3k = 18.000 \\Rightarrow k = 9.000$; Tina $= 5k = Rp45.000,00$. Jalur Cara Gemilang: selisih perbandingan ($5 - 3 = 2$ bagian) = selisih nyata; satu bagian langsung kebaca."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Pertidaksamaan Linier & Daerah Penyelesaian"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Pertidaksamaan linier dua variabel membagi bidang Cartesius menjadi dua setengah bidang yang dipisah sebuah garis. Sistem pertidaksamaan membentuk daerah layak — irisan semua setengah bidang. Dua keterampilan inti: menggambar garis dari titik potong sumbu dan menentukan tanda dari sisi arsiran."
+        },
+        {
+          "jenis": "poin",
+          "judul": "Garis & setengah bidang",
+          "items": [
+            "Garis melalui $(a, 0)$ dan $(0, b)$: $\\frac{x}{a} + \\frac{y}{b} = 1$ atau $bx + ay = ab$ — hafal pola titik potong, lebih cepat dari gradien.",
+            "Uji titik $(0,0)$: substitusi ke pertidaksamaan; pernyataan benar → sisi memuat titik asal adalah daerah penyelesaian.",
+            "Daerah penyelesaian SISTEM = irisan semua setengah bidang (arsiran yang ditumpuk semua syarat)."
+          ]
+        },
+        {
+          "jenis": "flashcard",
+          "judul": "🃏 Flashcard: aturan tanda pertidaksamaan",
+          "items": [
+            {
+              "depan": "Kedua ruas dikali/dibagi bilangan negatif",
+              "belakang": "Tanda DIBALIK: $-2x < 6 \\Rightarrow x > -3$"
+            },
+            {
+              "depan": "Tanda $\\leq$ atau $\\geq$",
+              "belakang": "Garis batas digambar penuh (tegas); titik batas IKUT penyelesaian"
+            },
+            {
+              "depan": "Tanda $<$ atau $>$",
+              "belakang": "Garis batas putus-putus; titik batas TIDAK ikut"
+            },
+            {
+              "depan": "Bingung sisi mana yang diarsir?",
+              "belakang": "Uji $(0,0)$ — atau titik lain yang jelas tidak di garis"
+            }
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-DAERAH: titik potong + uji titik",
+          "teks": "Gambar garis dari dua titik potong sumbu (jangan hitung gradien). Arsir sisi yang lolos uji titik. Soal terbalik (arsiran → sistem): baca titik potongnya, rakit persamaan $\\frac{x}{a} + \\frac{y}{b} = 1$, tentukan tanda dari sisi arsiran.",
+          "items": [
+            "Syarat $x \\geq 0$, $y \\geq 0$ memotong daerah di kuadran I — hampir selalu ada di soal cerita.",
+            "Titik pojok daerah = perpotongan garis-garis batas; simpan untuk soal program linier.",
+            "Daerah tak terbatas? Wajar untuk $geq$ — yang penting irisan semua syaratnya."
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "peringatan",
+          "judul": "Jebakan pertidaksamaan",
+          "teks": "Mengali atau membagi dengan NEGATIF membalik tanda — pembunuh nilai nomor satu di bab ini. Dan perhatikan batas: $\\leq$ mengikutkan garis (solid), $<$ tidak (putus-putus). Selalu tulis ulang tanda setiap kali memanipulasi ruas."
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Daerah penyelesaian $2x + y \\leq 4$, $x \\geq 0$, $y \\geq 0$ berbentuk ...",
+              "opsi": [
+                "segitiga dengan titik sudut $(0,0)$, $(2,0)$, $(0,4)$",
+                "segitiga dengan titik sudut $(0,0)$, $(4,0)$, $(0,2)$",
+                "persegi panjang di kuadran I",
+                "daerah di kanan atas garis $2x + y = 4$",
+                "seluruh kuadran I"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: titik potong garis $2x + y = 4$ adalah $(2, 0)$ dan $(0, 4)$; uji $(0,0)$: $0 \\leq 4$ benar → sisi titik asal; dipotong $x, y \\geq 0$ → segitiga $(0,0)$, $(2,0)$, $(0,4)$. Jalur Cara Gemilang: titik potong sumbu = dua titik gambar; uji $(0,0)$ penentu sisi."
+            },
+            {
+              "soal": "Titik yang merupakan penyelesaian sistem $x + y \\leq 5$ dan $2x - y \\geq 1$ adalah ...",
+              "opsi": [
+                "$(3, 2)$",
+                "$(1, 3)$",
+                "$(0, 5)$",
+                "$(1, 4)$",
+                "$(4, 4)$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: uji $(3,2)$: $3 + 2 = 5 \\leq 5$ ✓ dan $2(3) - 2 = 4 \\geq 1$ ✓ — memenuhi keduanya. Opsi lain gagal di salah satu syarat. Jalur Cara Gemilang: soal \"titik mana\" = uji cepat tiap opsi ke kedua syarat, mulai dari angka terkecil."
+            },
+            {
+              "soal": "Pertidaksamaan yang daerah penyelesaiannya berada di atas garis melalui $(4, 0)$ dan $(0, 2)$ adalah ...",
+              "opsi": [
+                "$x + 2y \\geq 4$",
+                "$x + 2y \\leq 4$",
+                "$2x + y \\geq 4$",
+                "$2x + y \\leq 4$",
+                "$x + 4y \\geq 2$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: garis titik potong $a = 4$, $b = 2$: $\\frac{x}{4} + \\frac{y}{2} = 1 \\Leftrightarrow x + 2y = 4$; \"di atas\" = nilai lebih besar; uji $(0, 3)$: $6 \\geq 4$ ✓. Jalur Cara Gemilang: rakit $\\frac{x}{a} + \\frac{y}{b} = 1$, tanda dari uji titik di sisi arsiran."
+            }
+          ]
+        },
+        {
+          "jenis": "judul",
+          "teks": "Program Linier & Interpretasi Data"
+        },
+        {
+          "jenis": "kilat",
+          "teks": "Program linier mencari nilai maksimum/minimum fungsi tujuan $f(x, y) = ax + by$ pada daerah layak yang dibatasi pertidaksamaan. Teorema pojok: optimum SELALU dicapai di titik pojok daerah. Soal grafik penjualan = membaca data garis per kategori per tahun."
+        },
+        {
+          "jenis": "alur",
+          "judul": "🧭 Resep program linier lima langkah",
+          "items": [
+            "Definisikan $x$ dan $y$ untuk dua besaran yang diputuskan",
+            "Terjemahkan tiap batas sumber daya jadi pertidaksamaan; tambahkan $x \\geq 0$, $y \\geq 0$",
+            "Tentukan daerah layak dan SEMUA titik pojoknya (termasuk perpotongan dua garis kendala)",
+            "Substitusi tiap pojok ke fungsi tujuan $f(x, y)$",
+            "Terbesar = maksimum, terkecil = minimum — jawab sesuai kalimat pertanyaan"
+          ]
+        },
+        {
+          "jenis": "caraGemilang",
+          "judul": "👑 CG-LP: pojok adalah raja",
+          "teks": "Optimum program linier tidak pernah di tengah daerah — selalu di pojok. Daftar pojok, uji semua ke fungsi tujuan, selesai. Pojok \"tersembunyi\" = perpotongan DUA garis kendala (bukan di sumbu) — sering jadi juara.",
+          "items": [
+            "Kata kunci: \"paling banyak / tidak lebih dari\" → $\\leq$; \"sekurang-kurangnya / minimal\" → $\\geq$.",
+            "Perpotongan dua kendala: selesaikan sebagai SPL dua variabel (bab ini juga!).",
+            "Satuan wajib konsisten: ribu-rupiah, jam, unit — satu model satu satuan."
+          ]
+        },
+        {
+          "jenis": "zona",
+          "items": [
+            {
+              "soal": "Dengan kendala $x + y \\leq 8$, $2x + y \\leq 12$, $x \\geq 0$, $y \\geq 0$, nilai maksimum $f = 3x + 2y$ adalah ...",
+              "opsi": [
+                "$16$",
+                "$18$",
+                "$20$",
+                "$22$",
+                "$24$"
+              ],
+              "jawaban": 2,
+              "pembahasan": "Jalur konsep: pojok: $(0,0) \\to 0$; $(6,0) \\to 18$; $(0,8) \\to 16$; perpotongan $x + y = 8$ dan $2x + y = 12$ → $(4,4) \\to 20$ maksimum. Jalur Cara Gemilang: pojok perpotongan dua kendala diuji terakhir — biasanya sang juara."
+            },
+            {
+              "soal": "Titik potong garis $3x + 4y = 270$ dan $5x + 3y = 340$ adalah ...",
+              "opsi": [
+                "$(40, 35)$",
+                "$(50, 30)$",
+                "$(30, 50)$",
+                "$(60, 20)$",
+                "$(45, 35)$"
+              ],
+              "jawaban": 1,
+              "pembahasan": "Jalur konsep: $(\\times 3)$ vs $(\\times 4)$: $9x + 12y = 810$ dan $20x + 12y = 1.360$ → $-11x = -550 \\Rightarrow x = 50$, $y = 30$. Jalur Cara Gemilang: samakan koefisien $y$ sekali jalan; angka \"kantor\" ($270$, $340$) khas soal program linier."
+            },
+            {
+              "soal": "Lahan parkir $360\\ m^{2}$ muat maksimal $30$ kendaraan. Mobil butuh $6\\ m^{2}$, bus $24\\ m^{2}$. Dengan $x$ = banyak mobil dan $y$ = banyak bus, model matematika yang benar adalah ...",
+              "opsi": [
+                "$x + y \\leq 30$; $x + 4y \\leq 60$; $x \\geq 0$; $y \\geq 0$",
+                "$x + y \\leq 30$; $4x + y \\leq 60$; $x \\geq 0$; $y \\geq 0$",
+                "$x + y \\geq 30$; $x + 4y \\leq 60$; $x \\geq 0$; $y \\geq 0$",
+                "$x + y \\leq 30$; $x + 4y \\leq 360$; $x \\geq 0$; $y \\geq 0$",
+                "$x + y \\leq 360$; $6x + 24y \\leq 30$; $x \\geq 0$; $y \\geq 0$"
+              ],
+              "jawaban": 0,
+              "pembahasan": "Jalur konsep: jumlah kendaraan $x + y \\leq 30$; luas $6x + 24y \\leq 360$ dibagi $6$ menjadi $x + 4y \\leq 60$; jumlah tak pernah negatif. Jalur Cara Gemilang: sederhanakan pertidaksamaan luas dulu (bagi FPB) — opsi pengecoh biasanya lupa menyederhanakan atau menukar koefisien."
+            }
+          ]
+        },
+        {
+          "jenis": "callout",
+          "tipe": "info",
+          "judul": "Bab 2 tuntas",
+          "teks": "Empat keluarga soal bab ini: SPL murni, model cerita (harga-umur-perbandingan), pertidaksamaan & daerah, program linier & data. Labeli tiap nomor latihan dengan keluarganya; bila macet, kembali ke kartu CG yang sesuai."
+        }
+      ],
+      "ujiPemahaman": [
+        {
+          "soal": "Diketahui $x_{1}$ dan $y_{1}$ memenuhi sistem persamaan linier 3x + 4y = 24 dan x + 2y = 10. Nilai dari $\\frac{1}{2}x_{1} + 2y_{1} =$",
+          "tipe": "pg",
+          "opsi": [
+            "4.",
+            "6.",
+            "7.",
+            "8.",
+            "14."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: $\\left\\{ \\begin{matrix} 3x + 4y = 24 \\\\ x + 2y = 10 \\end{matrix} \\right. | \\times 1 | \\times 3 | \\rightarrow \\left\\{ \\begin{matrix} 3x + 4y = 24 \\\\ 3x + 6y = 30 \\end{matrix} \\right. - \\rightarrow -2y = -6 \\rightarrow y = 3; x = 4.$ maka $\\frac{1}{2}x_{1} + 2y_{1} = \\frac{1}{2}(4) + 2(3) = 2 + 6 = 8$ Jalur Cara Gemilang: Eliminasi-substitusi standar: samakan koefisien salah satu variabel, kurangkan, lalu back-substitusi ke persamaan paling sederhana.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #1)"
+        },
+        {
+          "soal": "Nilai x yang memenuhi sistem persamaan $\\left\\{ \\begin{matrix} \\frac{1}{x} + \\frac{1}{y} = 10 \\\\ \\frac{5}{x} - \\frac{3}{y} = 26 \\end{matrix} \\right.$ adalah",
+          "tipe": "pg",
+          "opsi": [
+            "$-\\frac{2}{3}.$",
+            "$-\\frac{1}{6}.$",
+            "$\\frac{1}{7}.$",
+            "$\\frac{1}{2}.$",
+            "$\\frac{3}{4}$"
+          ],
+          "jawaban": 2,
+          "pembahasan": "Jalur konsep: $\\frac{1}{x} + \\frac{1}{y} = 10 |\\times 3| \\rightarrow \\frac{3}{x} + \\frac{3}{y} = 30; \\frac{5}{x} - \\frac{3}{y} = 26 |\\times 1| \\rightarrow + \\rightarrow \\frac{8}{x} = 56 \\rightarrow x = \\frac{8}{56} = \\frac{1}{7}$ Jalur Cara Gemilang: Pecahan di variabel: misal $p = \\frac{1}{x}$ dan $q = \\frac{1}{y}$ — jadi SPL biasa; di akhir balik lagi $x = \\frac{1}{p}$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #2)"
+        },
+        {
+          "soal": "Lima tahun yang lalu umur Abdul sama dengan 4 kali umur Yoga. Empat tahun yang akan datang, dua kali umur Abdul sama dengan 3 kali umur Yoga ditambah 1 tahun. Jumlah umur Abdul dan Yoga saat ini adalah … tahun.",
+          "tipe": "pg",
+          "opsi": [
+            "20",
+            "21",
+            "22",
+            "23",
+            "24"
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Misal: umur Abdul saat ini = a; umur Yoga saat ini $= y. (a - 5) = 4(y - 5) \\rightarrow a - 5 = 4y - 20 \\rightarrow a - 4y = -15 … (1) 2(a + 4) = 3(y + 4) + 1 \\rightarrow 2a + 8 = 3y + 13 \\rightarrow 2a - 3y = 5 … (2)$ Eliminasi $(1) \\& (2): a - 4y = -15 |\\times 2| \\rightarrow 2a - 8y = -30; 2a - 3y = 5 |\\times 1| \\rightarrow -5y = -35 \\rightarrow y = 7.$ Substitusi y = 7 ke $(1): a - 4(7) = -15 \\rightarrow a = 13. a + y = 13 + 7 = 20$ Jalur Cara Gemilang: Soal umur berjangkar ke \"saat ini\": lampau $= a - 5$, depan $= a + 4$; susun dua persamaan lalu eliminasi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #3)"
+        },
+        {
+          "soal": "Diketahui sistem persamaan 4x - y + 3z = 8\n2x + 3y + z = 7\n4x + 2y + 4z = 5 Jika (a, b, c) adalah penyelesaian sistem persamaan tersebut, maka nilai a - 1 =",
+          "tipe": "pg",
+          "opsi": [
+            "1.",
+            "2.",
+            "3.",
+            "4.",
+            "5."
+          ],
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Eliminasi $(1) \\& (2): 4x - y + 3z = 8 |\\times 1|; 2x + 3y + z = 7 |\\times 3| \\rightarrow -2x - 10y = -13 … (4).$ Eliminasi $(2) \\& (3): 2x + 3y + z = 7 |\\times 4| \\rightarrow 8x + 12y + 4z = 28; 4x + 2y + 4z = 5 |\\times 1| \\rightarrow 4x + 10y = 23 … (5).$ Eliminasi $(4) \\& (5): -2x - 10y = -13; 4x + 10y = 23 \\rightarrow 2x = 10 \\rightarrow x = 5. a = 5; a - 1 = 5 - 1 = 4$ Jalur Cara Gemilang: SPL tiga variabel: eliminasi variabel yang sama DUA kali (pasangan berbeda) → SPL dua variabel → tangga substitusi.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #4)"
+        },
+        {
+          "soal": "Perhatikan gambar berikut! Penyelesaian sistem pertidaksamaan $x - 3y \\leq -3, -4x + y + 4 \\leq 0,$ dan $x + y \\leq 5$ ditunjukkan oleh daerah",
+          "tipe": "pg",
+          "opsi": [
+            "Daerah I",
+            "Daerah II",
+            "Daerah III",
+            "Daerah IV",
+            "Daerah V"
+          ],
+          "soalGambar": "/gambar-bing/mate2-s5.svg",
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: $x - 3y \\leq -3:$ titik potong sumbu $x, y = 0 \\rightarrow x = -3 \\rightarrow$ titik (-3, 0); titik potong sumbu $y, x = 0 \\rightarrow y = 1 \\rightarrow$ titik $(0, 1) \\rightarrow$ daerah penyelesaian di kiri garis$. -4x + y + 4 \\leq 0:$ titik potong sumbu $x, y = 0 \\rightarrow x = 1 \\rightarrow$ titik (1, 0); titik potong sumbu $y, x = 0 \\rightarrow y = -4 \\rightarrow$ titik $(0, -4) \\rightarrow$ daerah penyelesaian di kanan garis$. x + y \\leq 5:$ titik potong sumbu $x \\rightarrow (5, 0);$ titik potong sumbu $y \\rightarrow (0, 5) \\rightarrow$ daerah penyelesaian di kiri garis. Daerah arsiran ada di nomor II. Jalur Cara Gemilang: Daerah pertidaksamaan: gambar garis dari titik potong sumbu, uji titik $(0,0)$; jawaban = irisan semua setengah bidang (arsiran yang ditumpuk semua syarat).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #5)"
+        },
+        {
+          "soal": "Andi, Budi, Akram, dan Tono pergi ke toko buku yang sama. Andi membeli 3 pensil dan 2 penghapus seharga Rp15.500,00. Budi membeli 4 pensil, 1 penghapus, dan 1 penggaris seharga Rp20.500,00. Akram membeli 2 pensil dan 1 penghapus seharga Rp11.000,00. Jika Tono membeli 1 pensil, 1 penghapus, dan 1 penggaris, maka Tono harus membayar",
+          "tipe": "pg",
+          "opsi": [
+            "Rp10.000,00.",
+            "Rp11.500,00.",
+            "Rp12.000,00.",
+            "Rp12.500,00.",
+            "Rp13.000,00."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: Misal: x = harga 1 buah pensil; y = harga 1 buah penghapus; z = harga 1 buah penggaris. 3x + 2y = 15.500 …(1); 4x + y + z = 20.500 …(2); 2x + z = 11.000 …(3) Eliminasi (2) & (3): 2x + y = 9.500 … (4). Eliminasi $(1) \\& (4): 3x + 2y = 15.500 |\\times 1|; 2x + y = 9.500 |\\times 2| \\rightarrow -x = -3.500 \\rightarrow x = 3.500; y = 2.500; z = 4.000. x + y + z = 3.500 + 2.500 + 4.000 = Rp10.000,00$ Jalur Cara Gemilang: Belanja = SPL tiga harga; cari harga satuan per variabel lewat eliminasi berpasangan, lalu jumlahkan yang ditanya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #6)"
+        },
+        {
+          "soal": "Daerah yang diarsir pada gambar berikut adalah himpunan penyelesaian dan sistem pertidaksamaan",
+          "tipe": "pg",
+          "opsi": [
+            "$2x + 3y \\leq 12$; $-3x + 2y \\geq -6$; $x \\geq 0$, $y \\geq 0$",
+            "$2x + 3y \\leq 12$; $-3x + 2y \\leq -6$; $x \\geq 0$, $y \\geq 0$",
+            "$2x + 3y \\geq 12$; $-3x + 2y \\geq -6$; $x \\geq 0$, $y \\geq 0$",
+            "$2x + 3y \\geq 12$; $-3x + 2y \\leq -6$; $x \\geq 0$, $y \\geq 0$",
+            "$-2x + 3y \\leq 12$; $3x + 2y \\leq -6$; $x \\geq 0$, $y \\geq 0$"
+          ],
+          "soalGambar": "/gambar-bing/mate2-s7.svg",
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: $4x + 6y \\leq 4 \\cdot 6 \\rightarrow 4x + 6y \\leq 24 \\rightarrow : 2 \\rightarrow 2x + 3y \\leq 12 -3x + 2y \\leq (-3) \\cdot 2 \\rightarrow -3x + 2y \\leq -6 2x + 3y \\leq 12, -3x + 2y \\leq -6, x \\geq 0, y \\geq 0$ Jalur Cara Gemilang: Baca arsiran terbalik: titik potong sumbu $(a, 0)$ dan $(0, b)$ memberi garis $bx + ay = ab$; tanda $\\leq$ atau $\\geq$ ditentukan sisi arsiran (uji titik).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #7)"
+        },
+        {
+          "soal": "Perusahaan konveksi membuat 2 macam kaus. Kedua model kaus tersebut sama-sama menggunakan dua bahan kain polos, yaitu warna hitam dan warna putih. Perusahaan hanya memiliki sebanyak 70 meter kain hitam dan 70 meter kain putih. Berikut adalah model kaus beserta kebutuhan kain Jika banyaknya kaus model I yang dibuat dimisalkan x dan banyaknya kaus model II yang dibuat dimisalkan dengan y, maka model matematika yang sesuai adalah",
+          "tipe": "pg",
+          "opsi": [
+            "$\\begin{cases} 25x + 3y \\leq 70 \\\\ 3x + 25y \\leq 70 \\\\ x \\geq 0 \\\\ y \\geq 0 \\end{cases}$",
+            "$\\begin{cases} 25x + 30y \\leq 70 \\\\ 30x + 25y \\leq 70 \\\\ x \\geq 0 \\\\ y \\geq 0 \\end{cases}$",
+            "$\\begin{cases} 5x - 6y \\leq 70 \\\\ 6x + 5y \\leq 70 \\\\ x \\geq 0 \\\\ y \\geq 0 \\end{cases}$",
+            "$\\begin{cases} 5x + 6y \\leq 140 \\\\ 6x + 5y \\leq 140 \\\\ x \\geq 0 \\\\ y \\geq 0 \\end{cases}$",
+            "$\\begin{cases} 5x + 5y \\leq 140 \\\\ 6x + 6y \\leq 140 \\\\ x \\geq 0 \\\\ y \\geq 0 \\end{cases}$"
+          ],
+          "soalGambar": "/gambar-bing/mate2-s8.svg",
+          "jawaban": 3,
+          "pembahasan": "Jalur konsep: Tabel kebutuhan: Hitam: Model I 2,5; Model II 3; total 70. Putih: Model I 3; Model II 2,5; total $70. 2,5x + 3y \\leq 70 ($dikali $2) \\rightarrow 5x + 6y \\leq 140 3x + 2,5y \\leq 70 ($dikali $2) \\rightarrow 6x + 5y \\leq 140 x \\geq 0; y \\geq 0$ Jalur Cara Gemilang: Bahan terbatas = pertidaksamaan per bahan; hilangkan desimal dengan mengali (misal $\\times 2$), jangan lupa syarat $x \\geq 0$, $y \\geq 0$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #8)"
+        },
+        {
+          "soal": "Sebuah toko menjual tiga jenis kue, yaitu kue cokelat, vanila, dan keju. Berikut daftar konsumen yang membeli kue di toko tersebut pada pagi hari Daftar pembelian (banyak kue cokelat, vanila, keju, lalu total harga) — Konsumen 1: 2, 3, 1 seharga Rp34.500,00; Konsumen 2: 1, 2, 2 seharga Rp25.000,00; Konsumen 3: 1, 2, 1 seharga Rp21.500,00. Jika Anita ingin membeli sama dengan pesanan Konsumen 1, namun ditambah 3 kue rasa cokelat, uang yang dibayarkan Anita adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Rp55.000,00.",
+            "Rp58.500,00.",
+            "Rp65.000,00.",
+            "Rp68.500,00.",
+            "Rp75.000,00."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Misal: harga 1 kue cokelat = x; vanila = y; keju = z. 2x + 3y + z = 34.500 …(1); x + 2y + 2z = 25.000 …(2); x + 2y + z = 21.500 …(3) Eliminasi (2) & (3): z = 3.500. Substitusi z ke $(1) \\& (2): 2x + 3y = 31.000 |\\times 1|; x + 2y = 18.000 |\\times 2| \\rightarrow y = 5.000; x = 8.000.$ Harga konsumen 1 dan 3 cokelat $= Rp34.500,00 + 3 \\cdot Rp8.000,00 = Rp58.500,00$ Jalur Cara Gemilang: Daftar harga = SPL tiga variabel; pesanan Anita = total Konsumen 1 ditambah $3x$ — cari $x$ (cokelat) lebih dulu.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #9)"
+        },
+        {
+          "soal": "Karang Taruna Kampung Bejo akan mengadakan 3 buah lomba yaitu sepak bola, catur, dan bulu tangkis. Untuk melaksanakan ketiga lomba tersebut, pihak karang taruna mendapat sponsor dari tiga perusahaan, yaitu A, B, dan C. Total uang sponsor yang diharapkan dari ketiga perusahaan adalah Rp30.000.000,00 dengan perbandingan uang sponsor berturut-turut 2 : 3 : 1. Uang sponsor dari Perusahaan A 50% digunakan untuk lomba sepak bola. Sisa uang dari Perusahaan A adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Rp5.250.000,00.",
+            "Rp5.000.000,00.",
+            "Rp4.500.000,00.",
+            "Rp4.250.000,00.",
+            "Rp3.000.000,00."
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Mula-mula uang sponsor perusahaan $A = \\frac{2}{2+3+1} \\times Rp30.000.000,00 = Rp10.000.000,00.$ Besar sisa uang perlombaan sepak bola dari perusahaan $A = \\frac{1}{2} \\times Rp10.000.000,00 = Rp5.000.000,00$ Jalur Cara Gemilang: Perbandingan $2 : 3 : 1$ → A mendapat $\\frac{2}{6}$ dari total; sisa setelah terpakai $50\\%$ tinggal $\\frac{1}{2}$-nya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #10)"
+        },
+        {
+          "soal": "Dina membeli 5 kg beras dan 2 liter minyak goreng seharga Rp71.500,00. Di toko yang sama, Budi membeli 3 kg beras dan 4 liter minyak goreng seharga Rp66.000,00. Berapakah harga 1 liter minyak goreng di toko tersebut?",
+          "tipe": "pg",
+          "opsi": [
+            "Rp7.250,00.",
+            "Rp7.500,00.",
+            "Rp7.750,00.",
+            "Rp8.000,00.",
+            "Rp8.250,00."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Misal: harga 1 kg beras = x; harga 1 liter minyak goreng $= y. 5x + 2y = 71.500 |\\times 3| \\rightarrow 15x + 6y = 214.500 3x + 4y = 66.000 |\\times 5| \\rightarrow 15x + 20y = 330.000 \\rightarrow -14y = -115.500 \\rightarrow y = 8.250$ Jadi, harga 1 liter minyak goreng adalah Rp8.250,00. Jalur Cara Gemilang: Eliminasi $x$ (kali silang koefisien $5$ dan $3$) → $y$ langsung didapat tanpa mencari harga beras.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #11)"
+        },
+        {
+          "soal": "Pabrik Berjaya Motor adalah sebuah pabrik yang memproduksi kendaraan berupa mobil dan motor. Berdasarkan laporan produksi, pabrik tersebut telah memproduksi sebanyak 120 kendaraan. Sementara itu, menurut laporan bagian pengadaan, pabrik tersebut telah menggunakan roda sebanyak 300 buah. Setiap mobil dijual seharga Rp100.000.000,00 dan setiap motor dijual seharga Rp20.000.000,00. Jika semua motor terjual, maka hasil yang diperoleh pabrik dari penjualan motor adalah",
+          "tipe": "pg",
+          "opsi": [
+            "Rp1.200.000.000,00",
+            "Rp1.800.000.000,00",
+            "Rp3.000.000.000,00",
+            "Rp4.800.000.000,00",
+            "Rp6.800.000.000,00"
+          ],
+          "jawaban": 1,
+          "pembahasan": "Jalur konsep: Misal: x = banyak mobil yang diproduksi; y = banyak motor yang diproduksi$. x + y = 120 \\rightarrow y = 120 - x … (1); 4x + 2y = 300 … (2)$ Substitusi (1) ke $(2): 4x + 2(120 - x) = 300 \\rightarrow 2x = 60 \\rightarrow x = 30; y = 90.$ Hasil penjualan semua motor $= 90 \\times Rp20.000.000,00 = Rp1.800.000.000,00$ Jalur Cara Gemilang: Kendaraan & roda: $x + y = 120$ dan $4x + 2y = 300$; dapat $y$ (motor) lalu kalikan harga jualnya.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #12)"
+        },
+        {
+          "soal": "Sistem persamaan $\\left\\{ \\begin{matrix} 2x + 7y = 1 \\\\ ax + by = 3 \\end{matrix} \\right.$ memiliki banyak penyelesaian. Nilai 2a - 5b adalah",
+          "tipe": "pg",
+          "opsi": [
+            "-93.",
+            "-82.",
+            "82.",
+            "93.",
+            "100."
+          ],
+          "jawaban": 0,
+          "pembahasan": "Jalur konsep: $\\left\\{ \\begin{matrix} 2x + 7y = 1 \\\\ ax + by = 3 \\end{matrix} \\right.$ agar memiliki banyak penyelesaian, maka $\\frac{a}{2} = \\frac{b}{7} = \\frac{3}{1},$ sehingga a = 6, b = 21. Maka nilai 2a - 5b = 2(6) - 5(21) = -93. Jalur Cara Gemilang: Banyak penyelesaian tak hingga $\\Leftrightarrow \\frac{a}{2} = \\frac{b}{7} = \\frac{3}{1}$ — kedua persamaan \"kembar\" (sebanding penuh).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #13)"
+        },
+        {
+          "soal": "Dua bilangan jika dijumlahkan adalah 17, jika bilangan pertama dikali 3 dan bilangan kedua dikali 2 jumlahnya 43. Bilangan yang dimaksud adalah",
+          "tipe": "pg",
+          "opsi": [
+            "7 dan 8.",
+            "-7 dan 8.",
+            "-7 dan -8.",
+            "9 dan -8.",
+            "9 dan 8."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Misal bilangan pertama $= x$ dan bilangan kedua $= y$: $\\left\\{ \\begin{matrix} x + y = 17 \\\\ 3x + 2y = 43 \\end{matrix} \\right.$. Eliminasi $y$: persamaan pertama $\\times 2$ menjadi $2x + 2y = 34$; kurangkan dari persamaan kedua: $(3x + 2y) - (2x + 2y) = 43 - 34 \\Rightarrow x = 9$, lalu $y = 17 - 9 = 8$. Jadi kedua bilangan itu $9$ dan $8$. Jawaban: E Jalur Cara Gemilang: Terjemahkan kalimat: jumlah $= 17$, kombinasi $3x + 2y = 43$; eliminasi $y$ (kali $2$ vs kali $1$).",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #14)"
+        },
+        {
+          "soal": "Seorang pedagang memproduksi bumbu kari instan dengan mencampur bubuk ketumbar, kunyit, dan cabai dalam perbandingan 4 : 1 : 3. Apabila bumbu yang dihasilkan adalah 12 kg, berapa total berat ketumbar dan kunyit yang digunakan?",
+          "tipe": "pg",
+          "opsi": [
+            "3,5 kg.",
+            "4 kg.",
+            "5 kg.",
+            "6 kg.",
+            "7,5 kg."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: ketumbar + kunyit $= \\frac{4 + 1}{4 + 1 + 3} \\times$ berat total $= \\frac{5}{8} \\times 12$ kg = 7,5 kg. Jadi, total berat ketumbar dan kunyit yang digunakan adalah 7,5 kg . Jalur Cara Gemilang: Perbandingan $4 : 1 : 3$ → ketumbar + kunyit $= \\frac{4 + 1}{4 + 1 + 3} \\times$ berat total.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #15)"
+        },
+        {
+          "soal": "Diketahui sistem persamaan linier -x + 2y + z = 11\n2x - 4y - z = -14 Jika a = -1 dan b = 2, maka nilai ax + by = m. Nilai 2m adalah",
+          "tipe": "pg",
+          "opsi": [
+            "2.",
+            "3.",
+            "4.",
+            "5.",
+            "6."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: $-x + 2y + z = 11; 2x - 4y - z = -14 \\rightarrow + \\rightarrow x - 2y = -3.$ untuk a = -1 dan b = 2, maka m = ax + by = -x + 2y = -(x - 2y) = -(-3) = 3. 2m = 2(3) = 6 (Catatan: cetakan buku menuliskan persamaan pertama $x + 2y + z = 11$, tetapi pembahasan resmi menyelesaikannya sebagai $-x + 2y + z = 11$ — hanya bentuk negatif itu yang menghasilkan $x - 2y = -3$ dan konsisten dengan kunci E. Teks soal di sini dikoreksi mengikuti pembahasan.) Jalur Cara Gemilang: Eliminasi $z$ sekali jalan menghasilkan $x - 2y = -3$; yang ditanya $m = -x + 2y = -(x - 2y)$ — tak perlu mencari $x$, $y$, $z$ satu per satu!",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #16)"
+        },
+        {
+          "soal": "Jika (x, y, z) merupakan penyelesaian dari sistem persamaan$: \\left\\{ \\begin{matrix} \\frac{1}{x} + \\frac{4}{y} + \\frac{3}{z} = 8 \\\\ \\frac{3}{x} - \\frac{1}{y} + \\frac{1}{z} = 3 \\\\ \\frac{2}{x} - \\frac{3}{y} + \\frac{1}{z} = 0 \\end{matrix} \\right.$ maka x : y : z sama dengan",
+          "tipe": "pg",
+          "opsi": [
+            "3 : 2 : 1.",
+            "3 : 1 : 2.",
+            "1 : 2 : 3.",
+            "1 : 1 : 2.",
+            "1 : 1 : 1."
+          ],
+          "jawaban": 4,
+          "pembahasan": "Jalur konsep: Eliminasi $(1) \\& (2): \\frac{1}{x} + \\frac{4}{y} + \\frac{3}{z} = 8 |\\times 1|; \\frac{3}{x} - \\frac{1}{y} + \\frac{1}{z} = 3 |\\times 3| \\rightarrow -\\frac{8}{x} + \\frac{7}{y} = -1 …(4).$ Eliminasi $(2) \\& (3): \\frac{1}{x} + \\frac{2}{y} = 3 …(5).$ Eliminasi $(4) \\& (5): -\\frac{8}{x} + \\frac{7}{y} = -1 |\\times 1|; \\frac{1}{x} + \\frac{2}{y} = 3 |\\times 8| \\rightarrow \\frac{23}{y} = 23 \\rightarrow y = 1; x = 1; z = 1. x : y : z = 1 : 1 : 1$ Jalur Cara Gemilang: Misal $p = \\frac{1}{x}$, $q = \\frac{1}{y}$, $r = \\frac{1}{z}$ → SPL linier tiga variabel biasa; eliminasi berpasangan lalu balik ke $x : y : z$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #17)"
+        },
+        {
+          "soal": "Jumlah kamar untuk menginap di suatu hotel adalah 65 buah. Kamar tersebut terdiri atas dua tipe, yaitu standar dan superior. Jumlah kamar tipe standar adalah dua kali jumlah tipe superior dikurangi 10. Tentukan semua jawaban yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Banyak kamar standar adalah 35.",
+            "Banyak kamar superior adalah 30.",
+            "Selisih dua tipe kamar tersebut adalah 25.",
+            "Jika pihak hotel menambah 5 kamar tipe standar, maka banyak kamar standar menjadi 45.",
+            "Jika pihak hotel merenovasi 3 kamar tipe standar menjadi tipe superior, maka banyak kamar standar dan superior berturut-turut adalah 37 dan 28."
+          ],
+          "jawaban": [
+            3,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Misal: banyak kamar standar = x; banyak kamar superior = y. x + y = 65 …(1); x = 2y - 10 …(2). Substitusi (2) ke $(1): 2y - 10 + y = 65 \\rightarrow 3y = 75 \\rightarrow y = 25, x = 40.$ Pernyataan 1: Salah — Berdasarkan perhitungan, banyak kamar standar adalah 40. Pernyataan 2: Salah — Berdasarkan perhitungan, banyak kamar superior adalah 25. Pernyataan 3: Salah — Selisih dua tipe kamar tersebut = 40 - 25 = 15. Pernyataan 4: Benar — Kamar standar baru = 40 + 5 = 45 Pernyataan 5: Benar — Kamar standar baru = 40 - 3 = 37; kamar superior baru = 25 + 3 = 28 Jalur Cara Gemilang: Modelkan $x + y = 65$ dan $x = 2y - 10$; substitusi → $y = 25$, $x = 40$; uji tiap pernyataan dengan dua angka itu.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #18)"
+        },
+        {
+          "soal": "Bengkel mobil A sedang mengadakan rekrutmen calon mekanik dengan dua macam tes, yaitu kerapian kerja dan kecepatan kerja. Perbandingan bobot nilai tes kerapian kerja dibandingkan kecepatan kerja adalah 2 : 5. Pelamar lolos tes jika memiliki nilai akhir lebih dari 78. Seleksi diikuti oleh lima kandidat mekanik dengan hasil tes sebagai berikut: Kandidat (nilai kerapian kerja, kecepatan kerja): Ambar (85, 65); Bertrand (80, 70); Charlie (75, 75); Dedy (70, 80); Emir (65, 85). Tentukan semua jawaban yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Kandidat dengan nilai terendah adalah Ambar.",
+            "Kandidat dengan nilai tertinggi adalah Charlie.",
+            "Ambar dan Emir memiliki nilai akhir yang sama.",
+            "Bertrand dan Dedy memiliki nilai akhir yang sama.",
+            "Emir dapat dipastikan lolos tes rekrutmen tersebut."
+          ],
+          "jawaban": [
+            0,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Ambar $= \\frac{2(85) + 5(65)}{7} = \\frac{495}{7} ($terendah); Bertrand $= \\frac{510}{7};$ Charlie $= \\frac{525}{7};$ Dedy $= \\frac{540}{7};$ Emir $= \\frac{555}{7} ($tertinggi). Pernyataan 1: Benar — Ambar memperoleh nilai terendah yaitu 495/7. Pernyataan 2: Salah — Kandidat yang memperoleh nilai tertinggi adalah Emir. Pernyataan 3: Salah — Tidak ada kandidat yang memperoleh nilai akhir yang sama. Pernyataan 4: Salah — Tidak ada kandidat yang memperoleh nilai akhir yang sama. Pernyataan 5: Benar — Emir memperoleh nilai lebih dari 78 sehingga dapat dipastikan lolos. Jalur Cara Gemilang: Rata-rata berbobot: nilai akhir $= \\frac{2(\\text{kerapian}) + 5(\\text{kecepatan})}{7}$; hitung kelimanya, baru bandingkan dengan ambang $78$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #19)"
+        },
+        {
+          "soal": "Diberikan sistem persamaan linier tiga variabel berikut $\\left\\{ \\begin{matrix} x - 3y + 2z = -5 \\\\ 2x - 6y = -6 \\\\ 3x + y - z = 22 \\end{matrix} \\right.$ Tentukan semua jawaban yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Nilai x = 6.",
+            "Nilai y = 3.",
+            "Nilai z = 1.",
+            "Nilai x - 3y = -3.",
+            "Nilai 2x + 4y = -24."
+          ],
+          "jawaban": [
+            0,
+            1,
+            3
+          ],
+          "pembahasan": "Jalur konsep: x - 3y + 2z = -5 …(1); 2x - 6y = -6 …(2); 3x + y - z = 22 …(3) Dari persamaan (2): 2x - 6y = -6 (dibagi $2) \\rightarrow x - 3y = -3 …(4)$ Substitusi (4) ke $(1): -3 + 2z = -5 \\rightarrow 2z = -2 \\rightarrow z = -1$ Substitusi z ke $(3): 3x + y + 1 = 22 \\rightarrow 3x + y = 21 …(5)$ Eliminasi $(4) \\& (5): x - 3y = -3 |\\times 3| \\rightarrow 3x - 9y = -9; 3x + y = 21 |\\times 1| \\rightarrow -10y = -30 \\rightarrow y = 3; x = 6$ Pernyataan 1: Benar — x = 6. Pernyataan 2: Benar — y = 3. Pernyataan 3: Salah — z = -1. Pernyataan 4: Benar — x - 3y = 6 - 3(3) = -3. Pernyataan 5: Salah — 2x + 4y = 2(6) + 4(3) = 24. Jalur Cara Gemilang: Persamaan (2) dibagi $2$ langsung memberi $x - 3y = -3$ — substitusi ke (1) dapat $z$, sisanya eliminasi biasa.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #20)"
+        },
+        {
+          "soal": "Perhatikan grafik berikut! Data tersebut menunjukkan hasil penjualan ikan di Peternakan A selama 5 tahun terakhir. Tentukan semua jawaban yang benar berdasarkan informasi tersebut! (Jawaban benar lebih dari satu)",
+          "tipe": "pgMulti",
+          "opsi": [
+            "Hasil penjualan ikan mas selama 5 tahun terakhir selalu meningkat.",
+            "Pendataan tahun 2022, hasil penjualan ikan lele sama dengan ikan mujair.",
+            "Hasil penjualan ikan lele pada tahun 2022—2024 selalu meningkat.",
+            "Hasil penjualan ikan mujair pada tahun 2021—2024 selalu menurun.",
+            "Hasil penjualan ikan mujair paling rendah pada tahun 2023."
+          ],
+          "soalGambar": "/gambar-bing/mate2-s21.svg",
+          "jawaban": [
+            0,
+            2,
+            4
+          ],
+          "pembahasan": "Jalur konsep: Pernyataan 1: Benar — Hasil penjualan ikan mas selalu naik selama 5 tahun terakhir (2020—2024). Pernyataan 2: Salah — Pada tahun 2022, hasil penjualan yang sama adalah ikan mas dan ikan mujair, yaitu 800 kg. Pernyataan 3: Benar — Pada grafik tersebut hasil penjualan ikan lele selalu meningkat pada tahun 2022—2024. Pernyataan 4: Salah — Pada tahun 2023 ke 2024 terdapat kenaikan hasil penjualan ikan mujair. Pernyataan 5: Benar — Pada grafik tersebut hasil penjualan ikan mujair paling rendah pada tahun 2023, yaitu 700 kg. Jalur Cara Gemilang: Grafik garis dibaca per ikan per tahun: \"selalu meningkat\" = tak pernah turun; titik temu dua garis = nilai sama.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #21)"
+        },
+        {
+          "soal": "Kemarin, Ibu Ganesh membeli 4 kg jeruk dan 3 kg apel di toko buah \"3B\" dengan harga Rp98.000,00. Hari ini, Ibu Ganesh kembali membeli 3 kg jeruk dan 2 kg apel di toko yang sama. Ibu Ganesh hanya membayar Rp65.550,00 karena sedang ada promo diskon sebesar 5% untuk pembelian semua jenis buah. Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Harga 1 kg apel sebelum diskon adalah Rp18.000,00.",
+            "Harga 1 kg jeruk setelah promo diskon adalah Rp10.500,00.",
+            "Jika pada kemarin, Ibu Ganesh mendapat promo diskon seperti hari ini, maka selisih harga yang dibayarkan adalah Rp49.000,00."
+          ],
+          "jawaban": [
+            0,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Misal $x$ = harga $1$ kg jeruk dan $y$ = harga $1$ kg apel sebelum diskon. Kemarin: $4x + 3y = 98.000$ …(1). Hari ini diskon $5\\%$: $95\\% \\cdot (3x + 2y) = 65.550$, dikali $\\frac{100}{95}$ menjadi $3x + 2y = 69.000$ …(2). Eliminasi: $(1) \\times 2 \\rightarrow 8x + 6y = 196.000$; $(2) \\times 3 \\rightarrow 9x + 6y = 207.000$; kurangkan: $-x = -11.000 \\Rightarrow x = 11.000$. Substitusi: $4(11.000) + 3y = 98.000 \\Rightarrow 3y = 54.000 \\Rightarrow y = 18.000$. Baris 1 BENAR: harga $1$ kg apel sebelum diskon Rp18.000,00. Baris 2 SALAH: harga jeruk setelah diskon $= 95\\% \\times 11.000 = Rp10.450,00$, bukan Rp10.500,00. Baris 3 SALAH: selisih bayar bila kemarin juga diskon $= 5\\% \\times 98.000 = Rp4.900,00$, bukan Rp49.000,00. Jawaban: Benar, Salah, Salah Jalur Cara Gemilang: Diskon $5\\%$: harga bayar $= 95\\%$ harga asli → bagi $0,95$ dulu untuk mengembalikan harga asli, baru eliminasi normal.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #22)"
+        },
+        {
+          "soal": "Sepasang suami istri memiliki seorang anak yang lahir pada tanggal dan bulan yang sama dengan mereka. Diantara mereka bertiga, ayah adalah yang paling tua dan selisih umurnya dengan ibu adalah empat tahun. Anak lahir saat usia ibu 25 tahun. Saat ini rata-rata usia mereka adalah 29 tahun. Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Usia anak saat ini adalah 10 tahun.",
+            "Usia ibu saat ini adalah 35 tahun.",
+            "Usia ayah saat ini adalah 39 tahun."
+          ],
+          "jawaban": [
+            1,
+            1,
+            1
+          ],
+          "pembahasan": "Jalur konsep: Misal usia anak saat ini $= x$; ibu melahirkan saat berusia $25$ tahun → usia ibu $= x + 25$; ayah lebih tua $4$ tahun dari ibu → usia ayah $= x + 29$. Rata-rata usia $= 29$: $\\frac{x + (x + 25) + (x + 29)}{3} = 29 \\Rightarrow 3x + 54 = 87 \\Rightarrow 3x = 33 \\Rightarrow x = 11$. Jadi usia anak $= 11$ tahun, ibu $= 36$ tahun, ayah $= 40$ tahun. Baris 1 SALAH (anak $11$, bukan $10$); Baris 2 SALAH (ibu $36$, bukan $35$); Baris 3 SALAH (ayah $40$, bukan $39$). Jawaban: Salah, Salah, Salah Jalur Cara Gemilang: Tiga umur berantai: anak $x$, ibu $x + 25$, ayah $x + 29$; rata-rata $29$ → $\\frac{3x + 54}{3} = 29$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #23)"
+        },
+        {
+          "soal": "Sebuah pabrik memproduksi dua jenis produk, yaitu produk A dan produk B. Untuk memproduksi satu unit produk A dibutuhkan$: \\bullet 3$ jam kerja mesin $\\bullet 5$ jam kerja tenaga manusia Untuk memproduksi satu unit produk B dibutuhkan$: \\bullet 4$ jam kerja mesin $\\bullet 3$ jam kerja tenaga manusia Dalam satu minggu, pabrik hanya memiliki$: \\bullet 270$ jam kerja mesin $\\bullet 340$ jam tenaga manusia Keuntungan dari setiap unit produk A adalah Rp35.000,00 dan produk B adalah Rp45.000,00. Jika pabrik tersebut ingin mempunyai laba maksimum per minggu, tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Menjual produk A sebanyak 50 dan produk B sebanyak 30.",
+            "Hanya menjual produk A sebanyak 68.",
+            "Keuntungan maksimum per minggu yang didapatkan oleh pabrik adalah Rp3.100.000,00."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Misal $x$ = banyak produk A dan $y$ = banyak produk B. Kendala: mesin $3x + 4y \\leq 270$; tenaga manusia $5x + 3y \\leq 340$; $x \\geq 0$, $y \\geq 0$. Fungsi tujuan $f(x, y) = 35.000x + 45.000y$. Titik potong antar-garis kendala: $3x + 4y = 270\\ (\\times 3)$ dan $5x + 3y = 340\\ (\\times 4)$ → $9x + 12y = 810$ vs $20x + 12y = 1.360$ → $-11x = -550 \\Rightarrow x = 50$, $y = 30$. Uji titik pojok: $f(0, 0) = 0$; $f(68, 0) = 2.380.000$; $f(0;\\ 67,5) = 3.037.500$; $f(50, 30) = 1.750.000 + 1.350.000 = 3.100.000$ → maksimum di $(50, 30)$. Baris 1 BENAR: menjual $50$ produk A dan $30$ produk B adalah strategi laba maksimum. Baris 2 SALAH: hanya menjual $68$ produk A memberi Rp2.380.000, bukan maksimum. Baris 3 BENAR: keuntungan maksimum per minggu Rp3.100.000,00. Jawaban: Benar, Salah, Benar (Catatan: tabel centang pembahasan pada salinan digital tercacah tidak lengkap — hanya dua baris fragmen tabel kebutuhan sumber daya yang terekam; kunci mengikuti uraian teks pembahasan lengkap dan tabel kunci ringkas \"B,S,B\".) Jalur Cara Gemilang: Program linier: kendala $3x + 4y \\leq 270$ dan $5x + 3y \\leq 340$; uji titik pojok ke $f = 35.000x + 45.000y$ — perpotongan $(50, 30)$ sang juara.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #24)"
+        },
+        {
+          "soal": "Sebuah toko roti membuat paket hampers yang terdiri atas kue kering, cokelat, dan permen dengan perbandingan 4 : 3 : 2. Dalam satu paket tersedia 48 bungkus kue kering. Tentukan Benar atau Salah untuk setiap pernyataan berikut dengan memberi tanda centang (✓)!",
+          "tipe": "tabel",
+          "kolom": [
+            "Benar",
+            "Salah"
+          ],
+          "baris": [
+            "Jumlah cokelat dalam paket adalah 36 bungkus.",
+            "Jumlah permen dalam paket adalah 20 bungkus.",
+            "Total seluruh isi paket adalah 108 bungkus."
+          ],
+          "jawaban": [
+            0,
+            1,
+            0
+          ],
+          "pembahasan": "Jalur konsep: Perbandingan kue kering : cokelat : permen $= 4 : 3 : 2$. Kue kering $4$ bagian $= 48$ bungkus → $1$ bagian $= 12$ bungkus. Cokelat $= 3 \\times 12 = 36$ bungkus; permen $= 2 \\times 12 = 24$ bungkus; total isi paket $= 48 + 36 + 24 = 108$ bungkus. Baris 1 BENAR: cokelat $36$ bungkus. Baris 2 SALAH: permen $24$ bungkus, bukan $20$. Baris 3 BENAR: total $108$ bungkus. Jawaban: Benar, Salah, Benar Jalur Cara Gemilang: Perbandingan $4 : 3 : 2$ dengan $4$ bagian $= 48$ → $1$ bagian $= 12$; cokelat $= 3 \\times 12$, permen $= 2 \\times 12$.",
+          "sumber": "Bank owner: Sukses Tes Kemampuan Akademik SMA/Saintek, Bab 2 Sistem Persamaan & Pertidaksamaan Linier (soal+kunci+pembahasan bawaan HTML bank owner; 4 diagram SVG asli buku diekstrak ke public/gambar-bing/mate2-s5,s7,s8,s21.svg; salah cetak soal 16 dikoreksi mengikuti pembahasan resmi); kunci & pembahasan buku (soal asli #25)"
+        }
+      ]
+    }
+  ]
+}
