@@ -18,7 +18,9 @@ npm run dev       # dev server Vite (HMR) di http://localhost:5173
 npm run build     # build produksi ke dist/
 npm run preview   # pratinjau hasil build
 npm run lint      # periksa gaya & bug statis
-npm test          # uji logika keamanan kredensial admin
+npm test          # 91 uji: logika kredensial admin + logika keuangan
+npm run test:keuangan   # hanya uji logika uang
+npm run test:auth       # hanya uji hash password
 ```
 
 **Butuh Node 20+.** Build produksi memerlukan **RAM ≥ 4 GB** — proyek ini punya
@@ -66,7 +68,7 @@ diizinkan, bukan lewat kerahasiaan `apiKey`.
 │   └── utils/            logika murni: auth, skoring, sanitasi, audit
 ├── scripts/      Pembangun konten materi (Node .mjs & Python). Menghasilkan
 │                 file IMPOR-*.json yang diimpor ke Firestore.
-├── tests/        Uji logika murni. `npm test`.
+├── tests/        Uji logika murni, jalan langsung di Node. `npm test`.
 └── docs/         Rencana, SOP, dan draft konten per mata pelajaran/bab.
 ```
 
@@ -132,6 +134,23 @@ tidak pernah masuk log.
 
 ---
 
+## Keamanan — BACA INI
+
+Hasil pengujian 2026-10-01: **Firestore produksi proyek ini terbuka untuk
+publik** — baca, tulis, dan hapus tanpa login. `ownerPin` dan `adminPassword`
+tersimpan sebagai teks polos dan bisa dibaca siapa pun lewat DevTools, begitu
+juga seluruh data siswa dan catatan keuangan.
+
+- Bukti, dampak, dan urutan perbaikan: **`docs/INSIDEN-KEAMANAN-FIRESTORE-TERBUKA.md`**
+- Langkah eksekusi di Firebase Console & Vercel: **`docs/RUNBOOK-KEAMANAN.md`**
+- Aturan siap pakai (bertahap): `firebase/rules/`
+
+Pemisahan akun admin di repo ini memberi **akuntabilitas**, tapi bukan
+perbaikan keamanan selama Rules masih terbuka. Penjelasannya ada di dokumen
+insiden.
+
+---
+
 ## Menambah Konten Materi
 
 Alurnya: skrip pembangun di `scripts/` → `IMPOR-*.json` → diimpor ke Firestore
@@ -149,6 +168,8 @@ jadi `A = 2,3`). Kalau ragu, jalankan pemeriksa di `tests/`.
 ## Status Kualitas (per audit 2026-10-01)
 
 **Sudah beres:**
+- 6 bug di logika keuangan ditemukan lewat `tests/keuangan.test.mjs` dan
+  diperbaiki (lihat commit `keuangan:`)
 - `.gitignore` ditulis ulang (sebelumnya rusak: berisi markdown code-fence dan
   meng-ignore `public/` yang justru folder aset aplikasi)
 - Seluruh bug `no-undef` diperbaiki: **46 → 0**. Termasuk tiga bug runtime nyata
@@ -172,10 +193,12 @@ jadi `A = 2,3`). Kalau ragu, jalankan pemeriksa di `tests/`.
   perubahan ini.
 - **Komponen raksasa.** `ImportHasilScanPage.jsx` 5.365 baris,
   `api/generateQuizFromTopic.js` 5.848 baris.
-- **Cakupan test masih sempit.** Baru logika hash password. Logika uang
-  (`utils/kanalUang.js`, `utils/kwitansi.js`) dan skoring
-  (`utils/skorSoalTryOut.js`, `utils/skoringSoalKompleks.js`) belum teruji
-  padahal menyangkut honor tentor dan kwitansi.
+- **Cakupan test masih sempit.** 91 uji sudah menutup `passwordHash.js` dan
+  `keuanganOwnerUtils.js` (logika saldo, kanal uang, setor kas, amortisasi,
+  arus kas, neraca). Yang **belum** teruji: `utils/kanalUang.js`,
+  `utils/kwitansi.js` (termasuk `terbilang` yang tercetak di kwitansi resmi —
+  belum bisa diuji karena berkasnya meng-impor Firebase), dan seluruh logika
+  skoring (`utils/skorSoalTryOut.js`, `utils/skoringSoalKompleks.js`).
 - **`AdvancedQuestionExtractor.jsx`: fitur "pagar materi" belum selesai.**
   `babTaksonomi` di-fetch tapi tidak pernah dipakai; dua fungsi yang disebut di
   komentarnya (`buildMasterPrompt`, `buildMasterHTMLPrompt`) tidak ada di berkas

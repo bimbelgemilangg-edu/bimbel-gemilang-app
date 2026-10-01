@@ -38,7 +38,12 @@ export const keyBulanIni = () => keyBulanDariDate(new Date());
 export const namaBulanDariKey = (key) => {
   const [y, m] = String(key || '').split('-');
   const idx = parseInt(m, 10) - 1;
-  if (idx < 0 || idx > 11) return key || '-';
+  // 🔥 FIX BUG (ditemukan tests/keuangan.test.mjs): penjaga lama hanya
+  // menguji `idx < 0 || idx > 11`. Untuk key kosong/null, parseInt
+  // menghasilkan NaN, dan NaN < 0 maupun NaN > 11 dua-duanya FALSE, jadi
+  // penjaganya lolos dan fungsi mengembalikan `${NAMA_BULAN[NaN]} ${y}`
+  // = "undefined " -- teks itu yang muncul di label grafik/laporan owner.
+  if (!Number.isInteger(idx) || idx < 0 || idx > 11) return key || '-';
   return `${NAMA_BULAN[idx]} ${y}`;
 };
 
@@ -181,12 +186,24 @@ export const hitungSaldo = (logs) => {
       setorKas += l.amount;
       const dari = l.kanalDari || 'kasAdmin';
       const ke = l.kanalKe || 'kasOwner';
+      // 🔥 FIX BUG (ditemukan tests/keuangan.test.mjs): kedua rantai if di
+      // bawah dulu TIDAK punya cabang else. Akibatnya log Transfer dengan
+      // kanalDari tak dikenal (mis. 'tanpaMetode' dari data lama) tidak
+      // mengurangi kantong APA PUN, sementara kanalKe tetap menambah --
+      // saldo total MEMBESAR dari ketiadaan. Pada uji, satu setor kas
+      // Rp 50.000 membuat total naik jadi Rp 150.000 dari modal Rp 100.000.
+      //
+      // Invarian setor kas: uang hanya PINDAH kantong, total harus tetap.
+      // Kanal yang tidak dikenali diarahkan ke ember `tanpaMetode` supaya
+      // invarian itu selalu terjaga.
       if (dari === 'kasAdmin') kasAdmin -= l.amount;
       else if (dari === 'kasOwner') kasOwner -= l.amount;
       else if (dari === 'bankBimbel') bank -= l.amount;
+      else tanpaMetode -= l.amount;
       if (ke === 'kasOwner') kasOwner += l.amount;
       else if (ke === 'bankBimbel') bank += l.amount;
       else if (ke === 'kasAdmin') kasAdmin += l.amount;
+      else tanpaMetode += l.amount;
       continue;
     }
     const signed = l.type === 'Pemasukan' ? l.amount : -l.amount;
@@ -210,8 +227,26 @@ export const hitungSaldo = (logs) => {
 
 // Saldo kas per tanggal acuan (buat neraca "per 31 Desember" dsb).
 // Log tanpa tanggal dianggap data lama -> selalu ikut.
-export const hitungSaldoPerTanggal = (logs, tanggalAcuan) =>
-  hitungSaldo(logs.filter(l => !l.date || l.date <= tanggalAcuan));
+export const hitungSaldoPerTanggal = (logs, tanggalAcuan) => {
+  // 🔥 FIX BUG (ditemukan tests/keuangan.test.mjs): kalau `tanggalAcuan`
+  // kosong/undefined, perbandingan `l.date <= undefined` selalu FALSE, jadi
+  // SEMUA log bertanggal tersaring keluar dan saldo jadi Rp 0. Angka nol itu
+  // tampak sah di layar, tidak melempar error apa pun -- neraca owner bisa
+  // menampilkan "kas Rp 0" padahal uangnya ada. Sangat sulit dilacak.
+  //
+  // Sekarang: acuan yang tidak berbentuk YYYY-MM-DD dianggap "tanpa batas"
+  // (hitung semua), dan diperingatkan ke console supaya pemanggil yang lupa
+  // mengisi tetap ketahuan.
+  const acuan = String(tanggalAcuan || '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(acuan)) {
+    console.warn(
+      '[keuangan] hitungSaldoPerTanggal dipanggil dengan tanggalAcuan tidak sah:',
+      JSON.stringify(tanggalAcuan), '-- memakai seluruh log tanpa penyaringan.',
+    );
+    return hitungSaldo(logs);
+  }
+  return hitungSaldo(logs.filter(l => !l.date || l.date <= acuan));
+};
 
 // ==================== AGREGASI PER BULAN & PERIODE ====================
 
@@ -502,19 +537,58 @@ export const alarmDanaKeramat = (saldo, siswaInfo) => {
 // perpanjangan biar admin paham alurnya sejak awal.
 export const rincianAmortisasi = (totalUang, durasiBulan, tanggalMulaiStr) => {
   const total = parseInt(totalUang) || 0;
-  const durasi = parseInt(durasiBulan) || 1;
+
+  // 🔥 FIX BUG (ditemukan tests/keuangan.test.mjs): penjaga lama memakai
+  // `parseInt(durasiBulan) || 1`. Itu hanya menangkap 0 dan NaN -- untuk
+  // durasi NEGATIF, `-1` itu truthy jadi lolos apa adanya, lalu
+  // hakPerBulan = total / -1 menghasilkan angka negatif. Omzet minus per
+  // bulan lalu masuk ke laporan laba rugi.
+  let durasi = parseInt(durasiBulan, 10);
+  if (!Number.isFinite(durasi) || durasi < 1) durasi = 1;
+
   const hakPerBulan = Math.round(total / durasi);
   const mulai = tanggalMulaiStr ? new Date(tanggalMulaiStr) : new Date();
   const now = new Date();
-  let bulanTerpakai = (now.getFullYear() - mulai.getFullYear()) * 12
-    + (now.getMonth() - mulai.getMonth());
-  if (now.getDate() < mulai.getDate()) bulanTerpakai -= 1;
-  bulanTerpakai = Math.min(Math.max(bulanTerpakai, 1), durasi);
-  const sudahJadiHak = Math.round(hakPerBulan * bulanTerpakai);
+
+  // 🔥 FIX BUG: paket yang BELUM mulai dulu tetap dipaksa mengaku 1 bulan.
+  // `bulanTerpakai` negatif di-clamp ke minimal 1, jadi siswa yang
+  // tanggalMulai-nya bulan depan langsung menyumbang satu bulan omzet
+  // padahal jasanya belum diberikan sama sekali. Sekarang: belum mulai = 0.
+  //
+  // Catatan: tanggalMulai selalu 'YYYY-MM-DD' (dari <input type="date"> di
+  // AddStudent/EditStudent), jadi `new Date()` di sini mem-parse tengah
+  // malam UTC. Untuk zona waktu Indonesia (UTC+7) hasilnya tetap tanggal
+  // yang sama, jadi perbandingan di bawah aman.
+  const mulaiValid = !Number.isNaN(mulai.getTime());
+  const acuanMulai = mulaiValid ? mulai : now;
+
+  let bulanTerpakai = 0;
+  if (now >= acuanMulai) {
+    bulanTerpakai = (now.getFullYear() - acuanMulai.getFullYear()) * 12
+      + (now.getMonth() - acuanMulai.getMonth());
+    // Bulan berjalan belum penuh kalau hari ini belum melewati tanggal
+    // mulai bulanan -- aturan lama ini dipertahankan apa adanya.
+    if (now.getDate() < acuanMulai.getDate()) bulanTerpakai -= 1;
+    // Paket yang sudah mulai bulan ini: bulan berjalan dihitung jadi hak.
+    bulanTerpakai = Math.max(bulanTerpakai, 1);
+  }
+  bulanTerpakai = Math.min(bulanTerpakai, durasi);
+
+  // 🔥 FIX BUG: `hakPerBulan` dibulatkan, jadi total yang tidak habis dibagi
+  // durasi menyisakan receh yang TIDAK PERNAH diakui sebagai hak. Contoh
+  // nyata Rp 1.000.000 / 3 = 333.333 per bulan; 3 x 333.333 = 999.999,
+  // sehingga setelah paket selesai masih ada "dana titipan Rp 1" menggantung
+  // selamanya di neraca. Sekarang bulan terakhir mengakui SELURUH sisa.
+  let sudahJadiHak;
+  if (bulanTerpakai <= 0) sudahJadiHak = 0;
+  else if (bulanTerpakai >= durasi) sudahJadiHak = total;
+  else sudahJadiHak = Math.round(hakPerBulan * bulanTerpakai);
+  sudahJadiHak = Math.min(Math.max(sudahJadiHak, 0), total);
+
   return {
     total, durasi, hakPerBulan, bulanTerpakai,
-    sudahJadiHak: Math.min(sudahJadiHak, total),
-    masihTitipan: Math.max(total - Math.min(sudahJadiHak, total), 0),
+    sudahJadiHak,
+    masihTitipan: total - sudahJadiHak,
   };
 };
 
