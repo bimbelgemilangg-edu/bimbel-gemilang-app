@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import {
   tryParseJson,
-  validateAndNormalizeBatch,
   sanitizeRawJsonText,
   parseAndValidateBankSoalJson,
 } from '../../../utils/bankSoalSanitizer';
@@ -353,6 +352,27 @@ export default function MesinBankSoalPage() {
                 Sumber / nama paket
                 <input style={st.input} value={hint.sumber} onChange={(e) => setHint({ ...hint, sumber: e.target.value })} placeholder="09 Prediksi @my99dreams" />
               </label>
+            </div>
+
+            {/* 🔥 BARU: penunjuk kontrak JSON di titik kebutuhan. Sebelumnya
+                standar bentuk file hanya hidup di komentar kode (bahkan
+                dokumen KONTRAK-JSON-BANK-SOAL.md yang dirujuk kode belum
+                pernah ada di repo), sehingga owner bingung menyiapkan file. */}
+            <div style={{
+              marginTop: 10, padding: '9px 12px', borderRadius: 10,
+              background: '#eef2ff', border: '1px solid #c7d2fe',
+              fontSize: 11, color: '#3730a3', lineHeight: 1.6,
+            }}>
+              📜 <b>Format baku:</b> array soal dengan 12 field; tipe hanya{' '}
+              <code>pg_sederhana / pg_kompleks / benar_salah / isian_singkat / menjodohkan</code>;
+              LaTeX wajib backslash ganda. Dokumen lengkap + prompt siap salin untuk AI:{' '}
+              <a
+                href="https://github.com/bimbelgemilangg-edu/bimbel-gemilang-app/blob/main/docs/KONTRAK-JSON-BANK-SOAL.md"
+                target="_blank" rel="noreferrer"
+                style={{ color: '#4338ca', fontWeight: 800 }}
+              >
+                docs/KONTRAK-JSON-BANK-SOAL.md
+              </a>
             </div>
 
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12, alignItems: 'center' }}>
