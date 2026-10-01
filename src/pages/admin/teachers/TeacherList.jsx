@@ -2,6 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
+// 🔥 BARU (pembagian kewenangan): tombol uang hanya untuk Owner. Admin
+// diarahkan ke halaman operasionalnya sendiri (Sesi & Validasi Guru),
+// bukan dibiarkan menabrak rute yang menolak mereka.
+import { isOwnerSession } from '../../../utils/roleAkses';
 import { db, auth } from '../../../firebase';
 import { 
   collection, getDocs, deleteDoc, doc, updateDoc, addDoc, 
@@ -20,7 +24,7 @@ import {
   X, Save, Upload, Phone, MapPin, Camera, Mail, Lock, Eye, EyeOff,
   Key, AlertCircle, CheckCircle, Copy, Hash, Tag, Link as LinkIcon,
   UserPlus, Shield, BadgeCheck, Sparkles, Database, Layers
-} from 'lucide-react';
+, ClipboardCheck } from 'lucide-react';
 
 // ============================================================
 // 🔥 BARU: SATU GURU BISA NGAMPU LEBIH DARI 1 MATA PELAJARAN
@@ -661,9 +665,20 @@ const TeacherList = () => {
             <button onClick={() => navigate('/admin/schedule')} style={styles.btnSchedule(isMobile)}>
               <Calendar size={14} /> Jadwal
             </button>
-            <button onClick={() => navigate('/admin/teachers/salaries')} style={styles.btnSalary(isMobile)}>
-              <DollarSign size={14} /> Gaji
-            </button>
+            {/* 🔥 DIPERBAIKI: dulu tombol ini selalu ke /admin/teachers/salaries
+                yang terkunci Owner -- admin yang klik TERPELANTING ke
+                /login-owner dan bisa kehilangan sesi adminnya. Sekarang
+                tombolnya sadar peran: Owner ke halaman gaji, admin ke
+                halaman sesi & validasi yang memang wilayahnya. */}
+            {isOwnerSession() ? (
+              <button onClick={() => navigate('/admin/teachers/salaries')} style={styles.btnSalary(isMobile)}>
+                <DollarSign size={14} /> Gaji
+              </button>
+            ) : (
+              <button onClick={() => navigate('/admin/teachers/sesi')} style={styles.btnSalary(isMobile)}>
+                <ClipboardCheck size={14} /> Sesi & Validasi
+              </button>
+            )}
             <button onClick={() => { handleCancelEditMapel(); setShowMapelModal(true); }} style={styles.btnMapel(isMobile)}>
               <Layers size={14} /> Mapel
             </button>
@@ -849,12 +864,26 @@ const TeacherList = () => {
                               <Key size={14} />
                             </button>
                           )}
-                          <button 
-                            onClick={() => navigate('/admin/teachers/salaries', { state: { teacher: t } })} 
-                            style={{...styles.btnAction, background: '#f0fdf4', color: '#166534'}}
-                          >
-                            <DollarSign size={14} />
-                          </button>
+                          {/* 🔥 DIPERBAIKI (sama seperti tombol di atas):
+                              admin melihat riwayat sesi guru ini, bukan
+                              menabrak halaman gaji yang terkunci. */}
+                          {isOwnerSession() ? (
+                            <button
+                              onClick={() => navigate('/admin/teachers/salaries', { state: { teacher: t } })}
+                              style={{...styles.btnAction, background: '#f0fdf4', color: '#166534'}}
+                              title="Gaji & honor (Owner)"
+                            >
+                              <DollarSign size={14} />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => navigate(`/admin/teachers/sesi?guru=${t.id}`)}
+                              style={{...styles.btnAction, background: '#f0fdf4', color: '#166534'}}
+                              title="Riwayat sesi & validasi guru ini"
+                            >
+                              <ClipboardCheck size={14} />
+                            </button>
+                          )}
                           <button 
                             onClick={() => handleDelete(t.id, t.nama)} 
                             disabled={deleting === t.id} 

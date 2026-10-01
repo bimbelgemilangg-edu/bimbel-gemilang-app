@@ -12,10 +12,15 @@ import {
   Routes,
   Route,
   Navigate,
-  useParams
+  useParams,
+  useNavigate
 } from 'react-router-dom';
 // v5.3: pengaman layar putih -- error render ditampilkan, bukan ditelan
 import ErrorBoundary from './components/ErrorBoundary';
+// 🔥 BARU: layar "area owner" dipakai OwnerRoute supaya admin yang nyasar
+// tidak dilempar ke halaman login (yang dulu ikut membunuh sesi adminnya).
+import { catatAudit, KATEGORI } from './utils/auditLog';
+import { ambilSesiAdmin, LABEL_PERAN_ADMIN } from './utils/adminAuth';
 
 // ============================================================
 // LOGIN & PUBLIK
@@ -66,6 +71,9 @@ import FinanceLayout from './pages/admin/finance/FinanceLayout';
 
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
+// 🔥 BARU (pembagian kewenangan admin vs owner): tempat kerja admin untuk
+// absensi & riwayat sesi tentor -- validasi fakta sesi TANPA angka uang.
+import SesiGuruPage from './pages/admin/teachers/SesiGuruPage';
 
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 
@@ -238,10 +246,100 @@ const SiswaRoute = ({ children }) => {
   return children;
 };
 
+// 🔥 DIPERBAIKI (keluhan nyata 2026-10-01): dulu admin yang membuka area
+// owner LANGSUNG dilempar ke /login-owner. Selain membingungkan, itu
+// BERBAHAYA: kalau dia menurut dan login owner di sana, sesi admin-nya
+// MATI (sesi admin & owner saling meniadakan) -- pekerjaannya hilang.
+//
+// Sekarang: kalau yang datang adalah admin yang sah, tampilkan layar
+// "area khusus owner" DI DALAM aplikasi. Sesinya utuh, dia bisa kembali
+// ke dashboard dengan satu klik, dan percobaannya tercatat di jejak audit.
+// Yang benar-benar belum login siapa pun tetap diarahkan ke login owner.
+const LayarTerkunciOwner = () => {
+  const navigate = useNavigate();
+  const sesi = ambilSesiAdmin();
+  useEffect(() => {
+    catatAudit('akses.ditolak', {
+      kategori: KATEGORI.AUTH,
+      target: 'Mencoba membuka area khusus Owner',
+      detail: { url: window.location.pathname },
+    });
+  }, []);
+  return (
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', padding: 20,
+      background: 'linear-gradient(135deg, #0f0a1e 0%, #1a1030 50%, #0a0614 100%)',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    }}>
+      <div style={{
+        maxWidth: 460, width: '100%', textAlign: 'center',
+        background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(251,191,36,0.2)',
+        borderRadius: 20, padding: '36px 30px', boxSizing: 'border-box',
+      }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px',
+          background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
+        }}>👑</div>
+        <h2 style={{ color: '#fff', fontSize: 19, fontWeight: 800, margin: '0 0 8px' }}>
+          Area Khusus Owner
+        </h2>
+        <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, lineHeight: 1.65, margin: '0 0 6px' }}>
+          Halaman ini berisi keputusan uang: honor tentor, tarif, pembayaran,
+          dan pengaturan global. Sesuai pembagian kewenangan bimbel, itu
+          wilayah <b style={{ color: '#fbbf24' }}>Owner</b>.
+        </p>
+        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12.5, lineHeight: 1.6, margin: '0 0 20px' }}>
+          Anda masuk sebagai{' '}
+          <b style={{ color: '#93c5fd' }}>
+            {sesi?.nama || 'Admin'} ({LABEL_PERAN_ADMIN[sesi?.peran] || 'Admin'})
+          </b>.
+          Sesi Anda <b>tidak diputus</b> -- kembali saja ke dashboard dan
+          pekerjaan Anda masih ada.
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => navigate('/admin')}
+            style={{
+              background: 'linear-gradient(135deg, #60a5fa, #2563eb)', color: '#06121f',
+              border: 'none', borderRadius: 10, padding: '11px 20px',
+              fontSize: 13, fontWeight: 800, cursor: 'pointer',
+            }}
+          >
+            ← Kembali ke Dashboard Admin
+          </button>
+          <button
+            onClick={() => navigate('/admin/teachers/sesi')}
+            style={{
+              background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.75)',
+              border: '1px solid rgba(255,255,255,0.14)', borderRadius: 10,
+              padding: '11px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Buka Sesi & Validasi Guru
+          </button>
+        </div>
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, lineHeight: 1.6, margin: '18px 0 0' }}>
+          Butuh mengakses halaman ini? Minta Owner membukanya sendiri lewat
+          Portal Owner (PIN) — atau, untuk urusan absensi & riwayat sesi,
+          pakai halaman Sesi & Validasi Guru yang memang untuk admin.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const OwnerRoute = ({ children }) => {
   const isAuth = localStorage.getItem('isOwnerLoggedIn') === 'true';
-  if (!isAuth) return <Navigate to="/login-owner" replace />;
-  return children;
+  if (isAuth) return children;
+
+  const adminOk =
+    localStorage.getItem('isLoggedIn') === 'true' &&
+    localStorage.getItem('role') === 'admin';
+  if (adminOk) return <LayarTerkunciOwner />;
+
+  return <Navigate to="/login-owner" replace />;
 };
 
 // ============================================================
@@ -467,6 +565,12 @@ function App() {
           element={<AdminRoute><StudentFinance /></AdminRoute>}
         />
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
+        {/* 🔥 BARU: tempat kerja admin untuk absensi/riwayat sesi tentor.
+            Fakta sesi + validasi + unduh CSV, TANPA nominal honor. */}
+        <Route
+          path="/admin/teachers/sesi"
+          element={<AdminRoute><SesiGuruPage /></AdminRoute>}
+        />
         {/* 🔥 UPGRADE (pemisahan hak akses): rekap honor/gaji guru adalah
             data sensitif -- KHUSUS Owner. Admin kasir tidak boleh melihat
             berapa honor tentor (keuangan besar dipegang owner). */}
