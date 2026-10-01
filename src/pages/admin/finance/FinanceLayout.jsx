@@ -1,9 +1,13 @@
 // src/pages/admin/finance/FinanceLayout.jsx
 // 🔥 UPGRADE (permintaan owner: kasir butuh kwitansi bernomor + fitur
-// tutup kas/setor kas): tab bertambah dari 3 jadi 5, dan tab awal bisa
-// dipilih lewat query ?tab= (dipakai link sidebar "Kwitansi" &
-// "Tutup Kasir"). Urutan tab = alur kerja kasir sehari-hari:
-//   Dashboard -> Input -> Riwayat -> Kwitansi -> Tutup Kasir
+// serah uang): tab bertambah dari 3 jadi 5, dan tab awal bisa dipilih
+// lewat query ?tab= (dipakai link sidebar "Kwitansi" & tab serah uang).
+// Urutan tab = alur kerja kasir sehari-hari:
+//   Dashboard -> Input -> Riwayat -> Kwitansi -> Serah Uang ke Owner
+// 🔥 DIUBAH 2026-10-01: tab terakhir dulu bernama "Tutup Kasir" (upacara
+// kunci penerimaan akhir giliran + antrean verifikasi owner). Atas keputusan
+// owner ("pilihan 1") ia menjadi catatan serah uang ada-hoc tanpa upacara;
+// lihat kepala berkas SerahUangKeOwner.jsx.
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
@@ -11,8 +15,8 @@ import FinanceDashboard from './FinanceDashboard';
 import TransactionForm from './TransactionForm';
 import TransactionHistory from './TransactionHistory';
 import RiwayatKwitansi from './RiwayatKwitansi';
-import TutupKasir from './TutupKasir';
-import { LayoutDashboard, PlusCircle, List, Receipt, Lock } from 'lucide-react';
+import SerahUangKeOwner from './SerahUangKeOwner';
+import { LayoutDashboard, PlusCircle, List, Receipt, HandCoins } from 'lucide-react';
 
 const TAB_SAH = ['dashboard', 'add', 'history', 'kwitansi', 'kasir'];
 
@@ -39,7 +43,7 @@ const FinanceLayout = () => {
     { key: 'add', label: 'Input Transaksi', icon: <PlusCircle size={16} /> },
     { key: 'history', label: 'Riwayat', icon: <List size={16} /> },
     { key: 'kwitansi', label: 'Kwitansi', icon: <Receipt size={16} /> },
-    { key: 'kasir', label: 'Tutup Kasir', icon: <Lock size={16} /> },
+    { key: 'kasir', label: 'Serah Uang ke Owner', icon: <HandCoins size={16} /> },
   ];
 
   return (
@@ -66,7 +70,7 @@ const FinanceLayout = () => {
           {activeTab === 'add' && <TransactionForm />}
           {activeTab === 'history' && <TransactionHistory />}
           {activeTab === 'kwitansi' && <RiwayatKwitansi />}
-          {activeTab === 'kasir' && <TutupKasir />}
+          {activeTab === 'kasir' && <SerahUangKeOwner />}
         </div>
       </div>
     </div>
@@ -82,7 +86,7 @@ const styles = {
     boxSizing: 'border-box',
     transition: '0.3s'
   }),
-  tabBar: (m) => ({ 
+  tabBar: () => ({ 
     display: 'flex', gap: 8, 
     background: 'white', padding: 6, 
     borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)',

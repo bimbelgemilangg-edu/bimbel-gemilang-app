@@ -205,8 +205,6 @@ const SidebarAdmin = () => {
         { name: 'Keuangan',  path: '/admin/finance',            icon: <CreditCard size={18} />, badge: badgePiutang > 0 ? badgePiutang : null, badgeColor: '#ef4444' },
         // 🔥 BARU (kasir): kwitansi bernomor + logo, bisa dicetak ulang.
         { name: 'Kwitansi', path: '/admin/finance?tab=kwitansi', icon: <Receipt size={18} /> },
-        // 🔥 BARU (kasir): tutup kas / setor uang fisik ke owner.
-        { name: 'Tutup Kasir', path: '/admin/finance?tab=kasir', icon: <Lock size={18} /> },
         // 🔥 DIUBAH (keputusan owner 2026-10-01): rekap gaji guru sekarang
         // wilayah ADMIN OPERASIONAL -- admin yang memegang kendali validasi
         // sesi, nominal, dan tarif. Owner tinggal mengeksekusi pembayaran.
