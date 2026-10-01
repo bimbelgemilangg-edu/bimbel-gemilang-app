@@ -39,8 +39,8 @@ const GRUP = [
     label: 'BANK SOAL',
     keterangan: 'Perkakas pengolahan gudang soal: dari impor mentah sampai terbit ke siswa.',
     items: [
-      { path: '/admin/bank-soal/mesin', nama: 'Mesin Bank Soal', ikon: Sparkles, desc: 'Melihat & mengedit gudang soal per mapel/kelas.' },
-      { path: '/admin/bank-soal/import', nama: 'Import Buku & Soal (AI)', ikon: Brain, desc: 'Upload PDF/buku, AI mengekstraknya jadi soal terstruktur.' },
+      { path: '/admin/bank-soal/mesin', nama: 'Mesin Bank Soal', ikon: Sparkles, desc: 'TEMPAT UPLOAD JSON/TXT SOAL (hasil AI atau scan) — lalu auto-tag jenjang, kelas, mapel, bab. Juga melihat & mengedit gudang soal.' },
+      { path: '/admin/bank-soal/import', nama: 'Import Buku & Soal (AI)', ikon: Brain, desc: 'Upload PDF/buku/HTML (bukan JSON) — AI mengekstraknya jadi soal terstruktur beserta gambarnya.' },
       { path: '/admin/bank-soal/terbitkan', nama: 'Terbitkan Kuis', ikon: Rocket, desc: 'Menerbitkan kuis dari bank soal ke guru/siswa.' },
       { path: '/admin/bank-soal/hasil', nama: 'Hasil Kuis', ikon: ClipboardCheck, desc: 'Rekap jawaban & nilai kuis yang sudah dikerjakan.' },
       { path: '/admin/bank-soal/tryout-otomatis', nama: 'Try Out Otomatis', ikon: Trophy, desc: 'Meracik paket try out otomatis dari bank soal.' },
