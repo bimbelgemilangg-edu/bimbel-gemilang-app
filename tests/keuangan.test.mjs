@@ -44,6 +44,10 @@ import {
   jumlahHariPadaBulan,
   STATUS_SESI_VALID,
   STATUS_SESI_MENUNGGU,
+  deteksiKejanggalanSesi,
+  deteksiTumpangTindih,
+  parseJamMenit,
+  normalisasiTeacherLog,
   namaBulanDariKey,
   tambahHari,
   rpFmt,
@@ -625,6 +629,116 @@ uji('konstanta status sesi konsisten antara halaman admin & panel owner', () => 
   // divalidasi admin tidak akan pernah terbaca "siap dibayar" oleh owner.
   assert.equal(STATUS_SESI_VALID, 'Valid / Sudah Terekap');
   assert.equal(STATUS_SESI_MENUNGGU, 'Menunggu Validasi');
+});
+
+// ============================================================
+bagian('pengawal kecurangan: deteksi kejanggalan sesi');
+// ============================================================
+// Bendera ini tidak memblokir apa pun -- ia menerangi. Tujuannya membuat
+// persekongkolan admin-tentor SULIT DISEMBUNYIKAN: bendera muncul di layar
+// admin SEBELUM validasi dan di layar owner SEBELUM bayar, dan keduanya
+// terekam di jejak audit.
+
+const sesi = (o) => normalisasiTeacherLog({ id: o.id || 's1', ...o });
+const HARI_INI = '2026-10-01';
+
+uji('sesi bersih tidak berbendera', () => {
+  const b = deteksiKejanggalanSesi(sesi({
+    tanggal: '2026-10-01', waktu: '16.30.00', jadwalId: 'j1', siswaHadir: 5,
+    durasiJam: 1.5, nominal: 100000,
+  }), HARI_INI);
+  assert.deepEqual(b, []);
+});
+
+uji('NOL_HADIR: sesi diklaim mengajar tapi 0 siswa hadir', () => {
+  const b = deteksiKejanggalanSesi(sesi({
+    tanggal: '2026-10-01', waktu: '16.30.00', jadwalId: 'j1', siswaHadir: 0,
+  }), HARI_INI);
+  assert.ok(b.includes('NOL_HADIR'));
+});
+
+uji('siswaHadir null (data lama) TIDAK dituduh nol hadir', () => {
+  const b = deteksiKejanggalanSesi(sesi({
+    tanggal: '2026-09-01', waktu: '16.30.00', jadwalId: 'j1',
+  }), HARI_INI);
+  assert.ok(!b.includes('NOL_HADIR'), 'data lama tanpa field siswaHadir tidak boleh ditandai');
+});
+
+uji('TANPA_JADWAL: sesi tanpa rujukan jadwal berbendera', () => {
+  const b = deteksiKejanggalanSesi(sesi({
+    tanggal: '2026-10-01', waktu: '16.30.00', siswaHadir: 3, jadwalId: '',
+  }), HARI_INI);
+  assert.ok(b.includes('TANPA_JADWAL'));
+});
+
+uji('TANGGAL_DEPAN: sesi dated setelah hari ini', () => {
+  const b = deteksiKejanggalanSesi(sesi({
+    tanggal: '2026-10-05', waktu: '16.30.00', jadwalId: 'j1', siswaHadir: 3,
+  }), HARI_INI);
+  assert.ok(b.includes('TANGGAL_DEPAN'));
+});
+
+uji('JAM_TAK_WAJAR: tengah malam / subuh buta', () => {
+  assert.ok(deteksiKejanggalanSesi(sesi({ tanggal: HARI_INI, waktu: '02.15.00', jadwalId: 'j', siswaHadir: 2 }), HARI_INI).includes('JAM_TAK_WAJAR'));
+  assert.ok(deteksiKejanggalanSesi(sesi({ tanggal: HARI_INI, waktu: '23.05.00', jadwalId: 'j', siswaHadir: 2 }), HARI_INI).includes('JAM_TAK_WAJAR'));
+  // jam kerja normal tidak berbendera
+  assert.ok(!deteksiKejanggalanSesi(sesi({ tanggal: HARI_INI, waktu: '07.00.00', jadwalId: 'j', siswaHadir: 2 }), HARI_INI).includes('JAM_TAK_WAJAR'));
+  assert.ok(!deteksiKejanggalanSesi(sesi({ tanggal: HARI_INI, waktu: '20.30.00', jadwalId: 'j', siswaHadir: 2 }), HARI_INI).includes('JAM_TAK_WAJAR'));
+});
+
+uji('parseJamMenit menerima format id-ID (titik) maupun kolon', () => {
+  assert.deepEqual(parseJamMenit('16.30.00'), { jam: 16, menit: 30, totalMenit: 990 });
+  assert.deepEqual(parseJamMenit('16:30:00'), { jam: 16, menit: 30, totalMenit: 990 });
+  assert.equal(parseJamMenit(''), null);
+  assert.equal(parseJamMenit('abc'), null);
+  assert.equal(parseJamMenit('25.00.00'), null);
+});
+
+uji('NOMINAL_MANUAL: nominal yang pernah diubah tangan berbendera', () => {
+  const b = deteksiKejanggalanSesi(sesi({
+    tanggal: HARI_INI, waktu: '16.30.00', jadwalId: 'j1', siswaHadir: 3,
+    nominalDisesuaikan: true, nominalDisesuaikanOleh: 'seseorang', nominalSebelumnya: 80000,
+  }), HARI_INI);
+  assert.ok(b.includes('NOMINAL_MANUAL'));
+});
+
+uji('VALIDASI_INSTAN: disetujui <10 menit setelah sesi dicatat', () => {
+  const dibuat = new Date('2026-10-01T16:00:00Z').getTime();
+  const b = deteksiKejanggalanSesi(sesi({
+    tanggal: HARI_INI, waktu: '16.30.00', jadwalId: 'j1', siswaHadir: 3,
+    createdAt: dibuat, divalidasiPada: '2026-10-01T16:03:00Z',
+  }), HARI_INI);
+  assert.ok(b.includes('VALIDASI_INSTAN'));
+  // validasi keesokan harinya tidak berbendera
+  const b2 = deteksiKejanggalanSesi(sesi({
+    tanggal: HARI_INI, waktu: '16.30.00', jadwalId: 'j1', siswaHadir: 3,
+    createdAt: dibuat, divalidasiPada: '2026-10-02T09:00:00Z',
+  }), HARI_INI);
+  assert.ok(!b2.includes('VALIDASI_INSTAN'));
+});
+
+uji('TUMPANG_TINDIH: guru sama, jam bersinggungan di hari sama', () => {
+  const a = sesi({ id: 'a', teacherId: 't1', tanggal: HARI_INI, waktu: '16.00.00', durasiJam: 2, jadwalId: 'j1', siswaHadir: 3 });
+  const b = sesi({ id: 'b', teacherId: 't1', tanggal: HARI_INI, waktu: '17.00.00', durasiJam: 2, jadwalId: 'j2', siswaHadir: 4 });
+  const c = sesi({ id: 'c', teacherId: 't1', tanggal: HARI_INI, waktu: '19.00.00', durasiJam: 1, jadwalId: 'j3', siswaHadir: 4 });
+  const d = sesi({ id: 'd', teacherId: 't2', tanggal: HARI_INI, waktu: '16.00.00', durasiJam: 2, jadwalId: 'j4', siswaHadir: 4 });
+  const kena = deteksiTumpangTindih([a, b, c, d]);
+  assert.ok(kena.has('a') && kena.has('b'), 'a & b bersinggungan (16-18 vs 17-19)');
+  assert.ok(!kena.has('c'), 'c mulai 19.00 setelah b selesai 19.00 -> tidak tindih');
+  assert.ok(!kena.has('d'), 'guru berbeda tidak saling menindih');
+});
+
+uji('TUMPANG_TINDIH: beda tanggal tidak saling menindih', () => {
+  const a = sesi({ id: 'a', teacherId: 't1', tanggal: '2026-10-01', waktu: '16.00.00', durasiJam: 2 });
+  const b = sesi({ id: 'b', teacherId: 't1', tanggal: '2026-10-02', waktu: '16.00.00', durasiJam: 2 });
+  const kena = deteksiTumpangTindih([a, b]);
+  assert.equal(kena.size, 0);
+});
+
+uji('log tanpa waktu tidak crash dan tidak menindih', () => {
+  const kena = deteksiTumpangTindih([sesi({ id: 'x', teacherId: 't', tanggal: HARI_INI, waktu: '' }), null, undefined]);
+  assert.equal(kena.size, 0);
+  assert.deepEqual(deteksiKejanggalanSesi(null, HARI_INI), []);
 });
 
 // ============================================================

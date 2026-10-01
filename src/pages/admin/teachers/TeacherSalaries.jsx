@@ -3,6 +3,11 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
+// 🔥 BARU (pengawal kecurangan 2026-10-01): perubahan nominal & validasi di
+// halaman ini menulis JEJAK (siapa, kapan, dari berapa ke berapa) sekaligus
+// menandai lognya supaya panel bayar Manajemen menampilkan bendera
+// "nominal disesuaikan manual".
+import { catatAudit, KATEGORI, aktorSaatIni } from '../../../utils/auditLog';
 import { 
   collection, getDocs, doc, addDoc, deleteDoc, updateDoc, getDoc, setDoc,
   serverTimestamp  // 🔥 TAMBAHKAN INI
@@ -389,11 +394,30 @@ const TeacherSalaries = () => {
   // ============================================================
   // 🔥 HANDLE: UPDATE NOMINAL
   // ============================================================
+  // 🔎 Ambil satu baris teacher_logs dari rekap yang sudah dimuat, supaya
+  // perubahan bisa mencatat nilai LAMA (dari -> menjadi) di jejak audit.
+  const cariLog = (id) =>
+    rekap.flatMap(r => r.rincian || []).find(l => l.id === id) || {};
+
   const handleUpdateNominal = async (logId, newNominal) => {
     if (!newNominal) return;
     try {
-      await updateDoc(doc(db, "teacher_logs", logId), { 
-        nominal: parseInt(newNominal) 
+      const lama = cariLog(logId);
+      const aktor = aktorSaatIni();
+      await updateDoc(doc(db, "teacher_logs", logId), {
+        nominal: parseInt(newNominal),
+        // 🔥 Bendera permanen: nominal ini tidak lagi murni hasil hitungan
+        // otomatis sistem. Panel bayar Manajemen menampilkan bendera
+        // "nominal disesuaikan manual" supaya keputusan bayar sadar risiko.
+        nominalDisesuaikan: true,
+        nominalSebelumnya: lama.nominal ?? null,
+        nominalDisesuaikanOleh: aktor.aktorNama || aktor.aktor,
+        nominalDisesuaikanPada: new Date().toISOString(),
+      });
+      catatAudit('gaji.nominal.ubah', {
+        kategori: KATEGORI.KEUANGAN,
+        target: `Sesi ${lama.namaGuru || ''} · ${lama.tanggal || logId}`,
+        detail: { dari: lama.nominal ?? null, menjadi: parseInt(newNominal) },
       });
       showAlert("✅ Nominal berhasil diupdate!");
       fetchData();
@@ -407,8 +431,18 @@ const TeacherSalaries = () => {
   // ============================================================
   const handleApproveLog = async (logId) => {
     try {
+      const aktor = aktorSaatIni();
       await updateDoc(doc(db, "teacher_logs", logId), { 
-        status: "Valid / Sudah Terekap" 
+        status: "Valid / Sudah Terekap",
+        divalidasiOleh: aktor.aktor,
+        divalidasiOlehNama: aktor.aktorNama,
+        divalidasiPeran: aktor.peran,
+        divalidasiPada: new Date().toISOString(),
+      });
+      catatAudit('guru.sesi.setujui', {
+        kategori: KATEGORI.GURU,
+        target: `Sesi ${logId}`,
+        detail: { dari: 'halaman Gaji Guru' },
       });
       showAlert("✅ Log disetujui!");
       fetchData();
@@ -424,7 +458,16 @@ const TeacherSalaries = () => {
     if (!window.confirm("Batalkan validasi untuk merevisi data ini?")) return;
     try {
       await updateDoc(doc(db, "teacher_logs", logId), { 
-        status: "Menunggu Validasi" 
+        status: "Menunggu Validasi",
+        divalidasiOleh: '',
+        divalidasiOlehNama: '',
+        divalidasiPeran: '',
+        divalidasiPada: '',
+      });
+      catatAudit('guru.sesi.batalkan', {
+        kategori: KATEGORI.GURU,
+        target: `Sesi ${logId}`,
+        detail: { dari: 'halaman Gaji Guru' },
       });
       showAlert("🔓 Validasi dibatalkan");
       fetchData();
@@ -439,7 +482,13 @@ const TeacherSalaries = () => {
   const handleDeleteLog = async (logId) => {
     if (!window.confirm("Yakin ingin menghapus baris riwayat ini secara permanen?")) return;
     try {
+      const isi = cariLog(logId);
       await deleteDoc(doc(db, "teacher_logs", logId));
+      catatAudit('gaji.log.hapus', {
+        kategori: KATEGORI.KEUANGAN,
+        target: `Sesi ${isi.namaGuru || ''} · ${isi.tanggal || logId} DIHAPUS permanen`,
+        detail: { nominal: isi.nominal ?? null, status: isi.status || '' },
+      });
       showAlert("🗑️ Log dihapus!");
       fetchData();
     } catch (e) { 

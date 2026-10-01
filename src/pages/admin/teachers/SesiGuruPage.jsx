@@ -35,8 +35,14 @@ import {
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { keyTanggalDariDate } from '../owner/keuanganOwnerUtils';
-import { catatAudit, KATEGORI } from '../../../utils/auditLog';
+import {
+  keyTanggalDariDate,
+  tanggalLokalHariIni,
+  deteksiKejanggalanSesi,
+  deteksiTumpangTindih,
+  LABEL_KEJANGGALAN,
+} from '../owner/keuanganOwnerUtils';
+import { catatAudit, KATEGORI, aktorSaatIni } from '../../../utils/auditLog';
 
 // Status sesi diambil dari satu sumber (keuanganOwnerUtils) supaya halaman
 // admin dan panel bayar owner TIDAK pernah menulis string berbeda.
@@ -92,6 +98,7 @@ const SesiGuruPage = () => {
       if (tanggal < mulai || tanggal > sampai) return false;
       if (guruId && l.teacherId !== guruId) return false;
       if (hanyaMenunggu && l.status === STATUS_VALID) return false;
+      if (hanyaBerbendera && benderaOf(l).length === 0) return false;
       if (k) {
         const gab = [l.namaGuru, l.program, l.kegiatan, l.kelasNama, l.level, l.status]
           .filter(Boolean).join(' ').toLowerCase();
@@ -102,25 +109,62 @@ const SesiGuruPage = () => {
     rows.sort((a, b) => String(b.tanggal).localeCompare(String(a.tanggal))
       || String(b.waktu || '').localeCompare(String(a.waktu || '')));
     return rows;
-  }, [logs, mulai, sampai, cari, hanyaMenunggu, guruId]);
+  }, [logs, mulai, sampai, cari, hanyaMenunggu, hanyaBerbendera, guruId, benderaOf]);
 
   const jumlahMenunggu = useMemo(
     () => tampil.filter((l) => l.status !== STATUS_VALID).length,
     [tampil],
   );
 
+  // 🔥 PENGAWAL KECURANGAN: setiap sesi diperiksa polanya (0 hadir, tanpa
+  // jadwal, tanggal depan, jam tak wajar, nominal manual, validasi instan,
+  // tumpang tindih). Bendera TIDAK memblokir -- ia diterangkan ke admin
+  // SEBELUM menyetujui dan ikut terlihat oleh Manajemen di panel bayar.
+  const hariIni = tanggalLokalHariIni();
+  const tumpang = useMemo(() => deteksiTumpangTindih(tampil), [tampil]);
+  const benderaOf = useCallback(
+    (l) => {
+      const b = deteksiKejanggalanSesi(l, hariIni);
+      if (tumpang.has(l.id)) b.push('TUMPANG_TINDIH');
+      return b;
+    },
+    [hariIni, tumpang],
+  );
+  const jumlahBerbendera = useMemo(
+    () => tampil.filter((l) => benderaOf(l).length > 0).length,
+    [tampil, benderaOf],
+  );
+  const [hanyaBerbendera, setHanyaBerbendera] = useState(false);
+
   // ============================================================
   // AKSI VALIDASI (operasional, BUKAN uang)
   // ============================================================
   const setujui = async (l) => {
+    const b = benderaOf(l);
+    const daftarBendera = b.length
+      ? `\n⚠ BENDERA KEJANGGALAN SESI INI:\n${b.map((k) => `   - ${LABEL_KEJANGGALAN[k] || k}`).join('\n')}\n`
+        + '\nAnda tetap boleh menyetujui kalau ada penjelasan sah '
+        + '(mis. kelas privat yang tidak lewat jadwal). Persetujuan sesi '
+        + 'berbendera tercatat atas nama Anda di jejak audit.\n'
+      : '';
     if (!window.confirm(
-      `Setujui sesi ini sebagai valid?\n\n${l.namaGuru} · ${l.tanggal}\n${l.program || ''} ${l.kelasNama || ''}\n\n` +
-      'Dengan menyetujui, Anda menyatakan sesi ini BENAR terjadi sesuai catatan. ' +
+      `Setujui sesi ini sebagai valid?\n\n${l.namaGuru} · ${l.tanggal}\n${l.program || ''} ${l.kelasNama || ''}\n` +
+      daftarBendera +
+      '\nDengan menyetujui, Anda menyatakan sesi ini BENAR terjadi sesuai catatan. ' +
       'Manajemen memakai status ini sebagai dasar pembayaran honor.',
     )) return;
     setProsesId(l.id);
+    const aktor = aktorSaatIni();
     try {
-      await updateDoc(doc(db, 'teacher_logs', l.id), { status: STATUS_VALID });
+      await updateDoc(doc(db, 'teacher_logs', l.id), {
+        status: STATUS_VALID,
+        // 🔥 Jejak SIAPA yang menyatakan sesi ini sah & kapan. Ini yang
+        // membuat persetujuan bisa dimintai pertanggungjawaban belakangan.
+        divalidasiOleh: aktor.aktor,
+        divalidasiOlehNama: aktor.aktorNama,
+        divalidasiPeran: aktor.peran,
+        divalidasiPada: new Date().toISOString(),
+      });
       catatAudit('guru.sesi.setujui', {
         kategori: KATEGORI.GURU,
         target: `Sesi ${l.namaGuru} · ${l.tanggal}`,
@@ -142,7 +186,15 @@ const SesiGuruPage = () => {
     )) return;
     setProsesId(l.id);
     try {
-      await updateDoc(doc(db, 'teacher_logs', l.id), { status: STATUS_MENUNGGU });
+      await updateDoc(doc(db, 'teacher_logs', l.id), {
+        status: STATUS_MENUNGGU,
+        // Jejak validasi lama dibersihkan: sesi ini belum divalidasi
+        // siapa pun sampai disetujui lagi.
+        divalidasiOleh: '',
+        divalidasiOlehNama: '',
+        divalidasiPeran: '',
+        divalidasiPada: '',
+      });
       catatAudit('guru.sesi.batalkan', {
         kategori: KATEGORI.GURU,
         target: `Sesi ${l.namaGuru} · ${l.tanggal}`,
@@ -244,6 +296,10 @@ const SesiGuruPage = () => {
             <div style={styles.statAngka}>{tampil.length - jumlahMenunggu}</div>
             <div style={styles.statLabel}>Sudah valid</div>
           </div>
+          <div style={{ ...styles.statCard, borderColor: jumlahBerbendera > 0 ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.07)' }}>
+            <div style={{ ...styles.statAngka, color: jumlahBerbendera > 0 ? '#f87171' : '#fff' }}>{jumlahBerbendera}</div>
+            <div style={styles.statLabel}>Berbendera kejanggalan</div>
+          </div>
         </div>
 
         {error && <div style={styles.errorBar}><AlertTriangle size={14} /> {error}</div>}
@@ -281,7 +337,11 @@ const SesiGuruPage = () => {
             )}
             <label style={styles.checkboxLabel}>
               <input type="checkbox" checked={hanyaMenunggu} onChange={(e) => setHanyaMenunggu(e.target.checked)} />
-              Tampilkan yang menunggu validasi saja
+              Menunggu validasi saja
+            </label>
+            <label style={styles.checkboxLabel}>
+              <input type="checkbox" checked={hanyaBerbendera} onChange={(e) => setHanyaBerbendera(e.target.checked)} />
+              Berbendera kejanggalan saja
             </label>
             <div style={{ flex: 1 }} />
             <button style={styles.btnSekunder} onClick={muat} disabled={loading}>
@@ -355,6 +415,17 @@ const SesiGuruPage = () => {
                             {valid ? 'Valid' : 'Menunggu'}
                           </span>
                           {!valid && <div style={styles.kecil}>perlu persetujuan admin</div>}
+                          {benderaOf(l).length > 0 && (
+                            <div
+                              style={styles.benderaBox}
+                              title={benderaOf(l).map((k) => LABEL_KEJANGGALAN[k] || k).join('; ')}
+                            >
+                              ⚑ {benderaOf(l).map((k) => LABEL_KEJANGGALAN[k] || k).join(' · ')}
+                            </div>
+                          )}
+                          {l.divalidasiOlehNama && (
+                            <div style={styles.kecil}>✓ divalidasi {l.divalidasiOlehNama}</div>
+                          )}
                         </td>
                         <td style={{ ...styles.td, textAlign: 'right' }}>
                           {valid ? (
@@ -512,6 +583,11 @@ const styles = {
   linkBukti: {
     color: '#93c5fd', fontSize: 10.5, textDecoration: 'none',
     display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 3,
+  },
+  benderaBox: {
+    marginTop: 5, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)',
+    color: '#fca5a5', fontSize: 9.5, fontWeight: 700, borderRadius: 8,
+    padding: '3px 7px', lineHeight: 1.5,
   },
   pillHijau: { background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 11, fontWeight: 700, padding: '4px 9px', borderRadius: 20 },
   pillKuning: { background: 'rgba(245,158,11,0.15)', color: '#fbbf24', fontSize: 11, fontWeight: 700, padding: '4px 9px', borderRadius: 20 },

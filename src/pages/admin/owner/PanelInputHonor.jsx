@@ -25,7 +25,7 @@
 //    Menu sidebar menuju panel ini muncul untuk owner di 7 hari terakhir
 //    bulan (isJendelaBayar), tapi panelnya sendiri tetap terbuka kapan
 //    pun lewat Portal Keuangan supaya uang tidak terjebak kalender.
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { db } from '../../../firebase';
 import {
   collection, addDoc, doc, writeBatch, serverTimestamp,
@@ -41,6 +41,10 @@ import {
 import {
   tanggalLokalHariIni, namaBulanDariKey, keyBulanIni,
   STATUS_SESI_VALID,
+  // 🔥 PENGAWAL KECURANGAN: bendera kejanggalan ikut sampai ke layar bayar,
+  // supaya keputusan "Bayar Honor" diambil dengan melihat sesi mana yang
+  // polanya janggal -- bukan cuma melihat total rupiah.
+  deteksiKejanggalanSesi, deteksiTumpangTindih, LABEL_KEJANGGALAN,
 } from './keuanganOwnerUtils';
 
 const KATEGORI_MASUK = ['Penjualan Modul/Buku', 'Penjualan Seragam', 'Kantin/Snack', 'Hibah/Donasi', 'Suntikan Modal Owner', 'Lainnya'];
@@ -252,11 +256,20 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
   const [kanalBayar, setKanalBayar] = useState(KANAL.KAS_OWNER);
   const [busyGuru, setBusyGuru] = useState('');
 
+  const hariIni = tanggalLokalHariIni();
+  const tumpang = useMemo(() => deteksiTumpangTindih(teacherLogs), [teacherLogs]);
+  const benderaOf = useCallback((t) => {
+    const b = deteksiKejanggalanSesi(t, hariIni);
+    if (tumpang.has(t.id)) b.push('TUMPANG_TINDIH');
+    return b;
+  }, [hariIni, tumpang]);
+
   // Rekap per guru untuk bulan terpilih. Sesi = 1 baris teacher_logs
   // (nominal per sesi sudah dihitung otomatis oleh sistem absensi kelas:
   // jumlah sesi x tarif). statusDibayar 'Lunas' = sudah dibayarkan lewat
   // tombol di panel ini.
   const rekap = useMemo(() => {
+    // benderaOf stabil lewat useCallback di atas, aman jadi dependency.
     const map = new Map();
     for (const t of teacherLogs) {
       if ((t.tanggal || '').slice(0, 7) !== bulan) continue;
@@ -266,6 +279,7 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
           key, namaGuru: t.namaGuru, sesi: 0, total: 0,
           sesiBelum: 0, totalBelum: 0, logBelum: [],
           sesiTunggu: 0, totalTunggu: 0,
+          bendera: [],
         });
       }
       const r = map.get(key);
@@ -278,6 +292,8 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
           r.sesiBelum += 1;
           r.totalBelum += t.nominal;
           r.logBelum.push(t);
+          const b = benderaOf(t);
+          if (b.length) r.bendera.push({ id: t.id, tanggal: t.tanggal, flags: b });
         } else {
           r.sesiTunggu += 1;
           r.totalTunggu += t.nominal;
@@ -285,7 +301,7 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
       }
     }
     return [...map.values()].sort((a, b) => b.totalBelum - a.totalBelum || b.total - a.total);
-  }, [teacherLogs, bulan]);
+  }, [teacherLogs, bulan, benderaOf]);
 
   const totalSesi = rekap.reduce((s, r) => s + r.sesi, 0);
   const totalHonor = rekap.reduce((s, r) => s + r.total, 0);
@@ -304,8 +320,9 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
       jam: sesiBulan.reduce((s, t) => s + (Number(t.durasiJam) || 0), 0),
       siswa: sesiBulan.reduce((s, t) => s + (Number(t.siswaHadir) || 0), 0),
       guru: new Set(sesiBulan.map((t) => t.teacherId || t.namaGuru)).size,
+      berbendera: sesiBulan.filter((t) => benderaOf(t).length > 0).length,
     };
-  }, [teacherLogs, bulan]);
+  }, [teacherLogs, bulan, benderaOf]);
 
   // Kewajiban LINTAS BULAN yang belum dibayar (bukan cuma bulan terpilih),
   // dipecah: yang SIAP dibayar (sudah validasi admin) vs yang masih
@@ -323,10 +340,18 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
   const bayarHonor = async (r) => {
     // Hanya sesi yang sudah divalidasi admin yang ikut terbawa (logBelum).
     if (r.totalBelum <= 0 || r.logBelum.length === 0) return;
+    const daftarBendera = r.bendera.length
+      ? `\n⚠ ${r.bendera.length} SESI SIAP-BAYAR BERBENDERA KEJANGGALAN:\n` +
+        r.bendera.slice(0, 6).map((x) =>
+          `   - ${x.tanggal}: ${x.flags.map((k) => LABEL_KEJANGGALAN[k] || k).join(', ')}`).join('\n') +
+        (r.bendera.length > 6 ? `\n   ... dan ${r.bendera.length - 6} lagi` : '') +
+        '\nMembayar tetap boleh, tapi keputusan ini tercatat atas nama Owner.\n'
+      : '';
     const konfirmasi = window.confirm(
       `Bayar honor ${r.namaGuru}?\n\n` +
       `Periode: ${namaBulanDariKey(bulan)}\n` +
       `Sesi SUDAH divalidasi admin & belum dibayar: ${r.sesiBelum} sesi\n` +
+      daftarBendera +
       `Total: ${rpFmt(r.totalBelum)}\n` +
       `Lewat: ${LABEL_KANAL_PENDEK[kanalBayar]}\n\n` +
       `Sistem akan mencatat 1 pengeluaran "Gaji Guru/Staf" dan menandai ${r.sesiBelum} sesi menjadi LUNAS (satu batch atomik).`
@@ -440,6 +465,12 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
           <div style={styles.analisisAngka}>{analisis.guru}</div>
           <div style={styles.analisisLabel}>Tentor mengajar</div>
         </div>
+        <div style={{ ...styles.analisisCard, borderColor: analisis.berbendera > 0 ? '#fca5a5' : '#e2e8f0' }}>
+          <div style={{ ...styles.analisisAngka, color: analisis.berbendera > 0 ? '#dc2626' : '#16a34a' }}>
+            {analisis.berbendera}
+          </div>
+          <div style={styles.analisisLabel}>Sesi berbendera</div>
+        </div>
       </div>
       {analisis.menunggu > 0 && (
         <p style={styles.pesanTunggu}>
@@ -494,6 +525,7 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
                   <th style={{ ...styles.th, textAlign: 'center' }}>Siap Dibayar</th>
                   <th style={{ ...styles.th, textAlign: 'right' }}>Nominal Siap</th>
                   <th style={{ ...styles.th, textAlign: 'center' }}>Menunggu Admin</th>
+                  <th style={{ ...styles.th, textAlign: 'center' }}>Bendera</th>
                   <th style={{ ...styles.th, textAlign: 'center' }}>Aksi</th>
                 </tr>
               </thead>
@@ -513,6 +545,18 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
                       {r.sesiTunggu > 0 ? (
                         <span style={styles.badgeTunggu} title="Sesi belum divalidasi admin -- tidak bisa dibayar dulu">
                           {r.sesiTunggu} sesi · {rpFmt(r.totalTunggu)}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>—</span>
+                      )}
+                    </td>
+                    <td style={{ ...styles.td, textAlign: 'center' }}>
+                      {r.bendera.length > 0 ? (
+                        <span
+                          style={styles.badgeBendera}
+                          title={r.bendera.map((x) => `${x.tanggal}: ${x.flags.map((k) => LABEL_KEJANGGALAN[k] || k).join(', ')}`).join('\n')}
+                        >
+                          ⚑ {r.bendera.length} sesi
                         </span>
                       ) : (
                         <span style={{ fontSize: 11, color: '#94a3b8' }}>—</span>
@@ -543,6 +587,9 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
                   <td style={{ ...styles.td, textAlign: 'right', fontWeight: 900, color: '#dc2626' }}>{rpFmt(totalBelum)}</td>
                   <td style={{ ...styles.td, textAlign: 'center', fontWeight: 900, color: totalTunggu > 0 ? '#d97706' : '#94a3b8' }}>
                     {totalTunggu > 0 ? `${totalTunggu} sesi` : '—'}
+                  </td>
+                  <td style={{ ...styles.td, textAlign: 'center', fontWeight: 900, color: '#dc2626' }}>
+                    {rekap.reduce((n, r) => n + r.bendera.length, 0) || '—'}
                   </td>
                   <td></td>
                 </tr>
@@ -575,6 +622,7 @@ const styles = {
   analisisAngka: { fontSize: 20, fontWeight: 900, color: '#1e293b', lineHeight: 1.1 },
   analisisLabel: { fontSize: 9.5, color: '#64748b', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.4, fontWeight: 700 },
   pesanTunggu: { background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', borderRadius: 10, padding: '10px 13px', fontSize: 11.5, lineHeight: 1.6, margin: '0 0 12px' },
+  badgeBendera: { background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: 20, padding: '3px 8px', fontSize: 10.5, fontWeight: 800, cursor: 'help' },
   badgeTunggu: { background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 20, padding: '3px 8px', fontSize: 10.5, fontWeight: 800, cursor: 'help' },
 
   grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 },

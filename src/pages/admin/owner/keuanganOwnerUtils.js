@@ -184,7 +184,117 @@ export const normalisasiTeacherLog = (d) => {
     statusDibayar: data.statusDibayar || '',
     tanggalDibayar: data.tanggalDibayar || '',
     idPembayaran: data.idPembayaran || '',
+    // 🔥 BARU (pengawal kecurangan 2026-10-01): field forensik untuk
+    // deteksi kejanggalan & penelusuran persekongkolan. Semuanya opsional
+    // (data lama tidak mempunyainya) dan konsumen lama mengabaikannya.
+    waktu: String(data.waktu || ''),
+    jadwalId: data.jadwalId || '',
+    siswaHadir: Number.isFinite(data.siswaHadir) ? data.siswaHadir : null,
+    durasiJam: Number.isFinite(data.durasiJam) ? data.durasiJam : null,
+    createdAtMs: data.createdAt?.toMillis?.()
+      || (typeof data.createdAt === 'number' ? data.createdAt : 0),
+    nominalDisesuaikan: data.nominalDisesuaikan === true,
+    nominalDisesuaikanOleh: data.nominalDisesuaikanOleh || '',
+    nominalSebelumnya: Number.isFinite(data.nominalSebelumnya) ? data.nominalSebelumnya : null,
+    divalidasiOleh: data.divalidasiOleh || '',
+    divalidasiOlehNama: data.divalidasiOlehNama || '',
+    divalidasiPada: data.divalidasiPada || '',
   };
+};
+
+// ============================================================
+// 🔥 PENGAWAL KECURANGAN (2026-10-01)
+// ============================================================
+// Pembagian kewenangan memberi admin kendali validasi sesi & nominal.
+// Pertanyaan owner: "menimbulkan kecurangan tidak? contoh admin
+// bersekongkol dengan tentor?" Jawabannya: risikonya ADA, jadi sistem
+// harus membuat kecurangan SULIT DISEMBUNYIKAN, bukan berharap tidak
+// terjadi. Detektor ini menandai sesi yang polanya janggal supaya:
+//   - admin melihatnya SEBELUM menyetujui (tidak bisa pura-pura tidak
+//     tahu ada bendera),
+//   - owner melihatnya SEBELUM membayar (bendera ikut ke panel bayar),
+//   - keduanya terekam, jadi keputusan menyetujui/membayar sesi
+//     berbendera adalah keputusan yang bisa dimintai pertanggungjawaban.
+// Ini deteksi, bukan vonis: sesi sah bisa saja berbendera (mis. kelas
+// benar-benar nol hadir karena siswa sakit serentak). Karena itu bendera
+// tidak memblokir -- ia menerangi.
+// ============================================================
+
+export const LABEL_KEJANGGALAN = {
+  NOL_HADIR: '0 siswa hadir',
+  TANPA_JADWAL: 'tanpa rujukan jadwal',
+  TANGGAL_DEPAN: 'tanggal di masa depan',
+  JAM_TAK_WAJAR: 'jam tidak wajar',
+  TUMPANG_TINDIH: 'tumpang tindih sesi lain',
+  NOMINAL_MANUAL: 'nominal disesuaikan manual',
+  VALIDASI_INSTAN: 'divalidasi <10 menit setelah dibuat',
+};
+
+// Waktu tersimpan sebagai hasil toLocaleTimeString() -- di id-ID bentuknya
+// "12.34.56" (titik), di lingkungan lain bisa "12:34:56". Terima keduanya.
+export const parseJamMenit = (waktuStr) => {
+  const m = String(waktuStr || '').match(/(\d{1,2})[.:](\d{2})/);
+  if (!m) return null;
+  const jam = parseInt(m[1], 10);
+  const menit = parseInt(m[2], 10);
+  if (jam > 23 || menit > 59) return null;
+  return { jam, menit, totalMenit: jam * 60 + menit };
+};
+
+/**
+ * Kejanggalan satu sesi (tanpa membandingkan antar sesi).
+ * @param {object} log  teacher_logs ternormalisasi
+ * @param {string} hariIniStr  'YYYY-MM-DD' -- disuntik supaya bisa diuji
+ * @returns {string[]} kode kejanggalan
+ */
+export const deteksiKejanggalanSesi = (log, hariIniStr) => {
+  const b = [];
+  if (!log) return b;
+  if (log.siswaHadir === 0) b.push('NOL_HADIR');
+  if (!log.jadwalId) b.push('TANPA_JADWAL');
+  if (log.tanggal && hariIniStr && log.tanggal > hariIniStr) b.push('TANGGAL_DEPAN');
+  const jm = parseJamMenit(log.waktu);
+  if (jm && (jm.jam < 5 || jm.jam >= 23)) b.push('JAM_TAK_WAJAR');
+  if (log.nominalDisesuaikan) b.push('NOMINAL_MANUAL');
+  // Validasi yang terjadi hampir seketika setelah sesi dicatat patut
+  // dilihat: validasi seharusnya memeriksa bukti, bukan ikut-ikutan.
+  if (log.divalidasiPada && log.createdAtMs) {
+    const msValidasi = new Date(log.divalidasiPada).getTime();
+    if (!Number.isNaN(msValidasi) && msValidasi - log.createdAtMs >= 0
+      && msValidasi - log.createdAtMs < 10 * 60 * 1000) {
+      b.push('VALIDASI_INSTAN');
+    }
+  }
+  return b;
+};
+
+/**
+ * Tumpang tindih: guru yang sama, tanggal yang sama, rentang waktu
+ * bersinggungan. Satu orang tidak bisa mengajar dua kelas sekaligus --
+ * ini bendera terkuat untuk sesi titipan.
+ * @returns {Set<string>} id log yang bertumpang tindih
+ */
+export const deteksiTumpangTindih = (logs) => {
+  const kena = new Set();
+  const perGuru = new Map();
+  for (const l of logs || []) {
+    if (!l || !l.tanggal) continue;
+    const jm = parseJamMenit(l.waktu);
+    if (!jm) continue;
+    const durasiMenit = Math.round((Number(l.durasiJam) || 0) * 60) || 60;
+    const kunci = `${l.teacherId || l.namaGuru}|${l.tanggal}`;
+    const rentang = { id: l.id, mulai: jm.totalMenit, selesai: jm.totalMenit + durasiMenit };
+    const daftar = perGuru.get(kunci) || [];
+    for (const r of daftar) {
+      if (rentang.mulai < r.selesai && r.mulai < rentang.selesai) {
+        kena.add(rentang.id);
+        kena.add(r.id);
+      }
+    }
+    daftar.push(rentang);
+    perGuru.set(kunci, daftar);
+  }
+  return kena;
 };
 
 export const urutTanggalTerbaru = (a, b) =>
