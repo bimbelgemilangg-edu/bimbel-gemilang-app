@@ -15,7 +15,16 @@ import {
 } from 'lucide-react';
 import { muatMateriDanBab } from '../../../services/materiV2Service';
 // Turn 91: monitor mode ujian (rekap nilai live + akhiri paksa).
-import { dengarUjian, akhiriUjian } from '../../../services/sesiService';
+// 🔥 FIX BUG (2026-10-01, laporan guru: "gabisa diakhiri"): dulu halaman
+// ini mengimpor akhiriUjian dari sesiService -- fungsi itu menulis ke
+// koleksi 'sesi_kelas', padahal sesi presentasi hidup di 'sesi_presentasi'.
+// updateDoc ke dokumen yang tidak ada melempar error, dan errornya DITELAN
+// .catch(() => {}) -- tombol terlihat bisa diklik tapi diam selamanya,
+// dan timer siswa terus berjalan sampai 30 menit habis.
+// Sekarang hanya dengarUjian yang dipakai dari sesiService (subkoleksi
+// jawaban memang di sana); mengakhiri ujian memakai ubahSesi yang menulis
+// ke koleksi yang BENAR.
+import { dengarUjian } from '../../../services/sesiService';
 import {
   cariSesiAktif, pantauSesi, pantauPeserta, pantauJawaban,
   mulaiSesi, akhiriSesi, setPosisiSesi, setModeSesi, ubahSesi,
@@ -144,10 +153,6 @@ export default function PanggungPresentasi() {
     );
   }
 
-  const offsetHuruf = posisi.jenis === 'section'
-    ? sections.slice(0, idx).filter(
-      (s) => String(s.jenis || 'paragraf') === 'judul').length
-    : 0;
 
   return (
     <div style={halamanDasar}>
@@ -211,7 +216,38 @@ export default function PanggungPresentasi() {
                         <TombolAkhiri
                           label="⏹ Akhiri Ujian"
                           detail={`${Math.max(0, peserta.length - ujianList.length)} siswa belum mengumpulkan`}
-                          onConfirm={() => akhiriUjian(sesi.id).catch(() => {})} />
+                          onConfirm={async () => {
+                            try {
+                              await ubahSesi(sesi.id, { ujianSelesaiAt: Date.now() });
+                            } catch (e) {
+                              alert(`❌ Gagal mengakhiri ujian: ${e?.message || e}`);
+                            }
+                          }} />
+                      )}
+                      {/* 🔥 BARU: kendali durasi SAAT ujian berjalan.
+                          Sebelumnya durasi hanya bisa diisi sebelum Mulai
+                          Ujian lewat input kecil yang gampang terlewat --
+                          guru menemukan timer 30 menit "muncul sendiri". */}
+                      {sesi?.mode === 'ujian' && !sesi?.ujianSelesaiAt && (
+                        <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
+                          <button type="button" style={tombolPill('putih')}
+                            title="Kurangi 5 menit"
+                            onClick={() => ubahSesi(sesi.id, {
+                              durasiMenit: Math.max(1, (Number(sesi.durasiMenit) || 30) - 5),
+                            }).catch((e) => alert(`❌ Gagal mengubah durasi: ${e?.message || e}`))}>
+                            −5 mnt
+                          </button>
+                          <span style={{ fontSize: 11.5, color: '#64748b', fontWeight: 700 }}>
+                            {Number(sesi.durasiMenit) || 30} mnt
+                          </span>
+                          <button type="button" style={tombolPill('putih')}
+                            title="Tambah 5 menit"
+                            onClick={() => ubahSesi(sesi.id, {
+                              durasiMenit: Math.min(180, (Number(sesi.durasiMenit) || 30) + 5),
+                            }).catch((e) => alert(`❌ Gagal mengubah durasi: ${e?.message || e}`))}>
+                            +5 mnt
+                          </button>
+                        </span>
                       )}
                       <button type="button" style={tombolPill('hijau')}
                         onClick={() => navigate(`/guru/review-sesi/${sesi.id}`)}>
@@ -467,6 +503,9 @@ export default function PanggungPresentasi() {
             )}
             {sesiAktif && posisi.jenis !== 'kuisPaket' && kuis.length > 0 && (
               <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                <label style={{ fontSize: 11, fontWeight: 800, color: '#64748b' }}>
+                  Durasi (menit):
+                </label>
                 <input
                   type="number" min="1" max="180" value={durasiMenit}
                   aria-label="Durasi ujian (menit)"
@@ -486,7 +525,7 @@ export default function PanggungPresentasi() {
                         ujianMulaiAt: Date.now(),
                         durasiMenit: Number(durasiMenit) || 30,
                         ujianSelesaiAt: null,
-                      }).catch(() => {});
+                      }).catch((e) => alert(`❌ Gagal memulai ujian: ${e?.message || e}`));
                   }}>
                   📝 Mulai Ujian • {kuis.length} soal • {durasiMenit} mnt
                 </button>
@@ -556,8 +595,12 @@ export default function PanggungPresentasi() {
                   ? `${Math.max(0, peserta.length - ujianList.length)} siswa belum mengumpulkan`
                   : 'layar siswa akan tertutup'}
                 onConfirm={async () => {
-                  await akhiriSesi(sesi.id);
-                  setSesi((s) => (s ? { ...s, status: 'selesai' } : s));
+                  try {
+                    await akhiriSesi(sesi.id);
+                    setSesi((s) => (s ? { ...s, status: 'selesai' } : s));
+                  } catch (e) {
+                    alert(`❌ Gagal mengakhiri sesi: ${e?.message || e}`);
+                  }
                 }} />
             </span>
           </>
