@@ -256,20 +256,39 @@ const LoginAdmin = () => {
 
         {saranJalur && (
           <div style={styles.hintBox} role="status">
-            <span style={styles.hintJudul}>Belum punya akun sendiri?</span>
+            <span style={styles.hintJudul}>Kenapa gagal?</span>
             <p style={styles.hintIsi}>
-              Username yang Anda isi tidak cocok dengan akun mana pun. Dua kemungkinan:
+              Username yang Anda isi tidak cocok dengan akun mana pun.
+              Periksa tiga hal ini:
             </p>
             <ol style={styles.hintList}>
               <li>
-                <b>Kosongkan kolom username</b> dan isi password admin yang lama.
-                Itu jalur sementara yang masih dibuka Owner, dan setiap masuk
-                lewat sana tercatat sebagai "akun bersama" di jejak audit.
+                <b>Ejaan username harus persis</b> seperti yang dibuat Owner.
+                Username terlihat berawalan <code style={styles.hintCode}>@</code>{' '}
+                di tabel menu Pengguna Admin. Ketik tanpa spasi; huruf
+                besar/kecil tidak masalah. Contoh: kalau di tabel tertulis{' '}
+                <code style={styles.hintCode}>@zalsabela</code>, mengetik{' '}
+                <code style={styles.hintCode}>zalsa</code> akan ditolak.
               </li>
+              {bolehLegacy ? (
+                <li>
+                  Kalau Anda <b>belum dibuatkan akun</b>: kosongkan kolom
+                  username dan isi password admin yang lama. Itu jalur
+                  sementara yang masih dibuka Owner, dan setiap masuk lewat
+                  sana tercatat sebagai "akun bersama" di jejak audit.
+                </li>
+              ) : (
+                <li>
+                  Kalau Anda <b>belum dibuatkan akun</b>: minta Owner
+                  membuatkan satu. Jalur password bersama <b>sudah
+                  dimatikan</b>, jadi tanpa akun terdaftar tidak ada cara
+                  lain untuk masuk.
+                </li>
+              )}
               <li>
-                Atau minta <b>Owner membuatkan akun</b> untuk Anda: masuk pakai
-                PIN di <code style={styles.hintCode}>/login-owner</code>, lalu menu
-                <b> Pengguna Admin</b> di sidebar.
+                Akun dibuat dan passwordnya direset oleh Owner lewat portal
+                Owner (<code style={styles.hintCode}>/login-owner</code>) →
+                menu <b>Pengguna Admin</b> di sidebar.
               </li>
             </ol>
             <p style={styles.hintIsi}>
