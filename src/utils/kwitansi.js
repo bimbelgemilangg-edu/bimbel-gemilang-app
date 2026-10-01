@@ -300,7 +300,7 @@ export const htmlBuktiSetorKas = (d) => `
       </td>
       <td>
         <div style="font-size: 18px; font-weight: 800; letter-spacing: 1px;">BIMBEL GEMILANG</div>
-        <div style="font-size: 11px; color: #334155;">Bukti Setor Kas — Tutup Kasir Admin</div>
+        <div style="font-size: 11px; color: #334155;">Bukti Setor Kas — Serah Uang Admin ke Owner</div>
       </td>
       <td style="text-align: right; font-size: 12px; font-weight: 700;">
         No: ${d.nomor || '-'}<br />${tanggalPanjang(d.tanggal)}

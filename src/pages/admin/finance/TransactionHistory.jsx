@@ -405,7 +405,7 @@ const TransactionHistory = () => {
     // sinkron, jadi dilarang; koreksi dilakukan owner lewat Rekonsiliasi
     // atau dengan menghapus setoran lalu setor ulang.
     if (item.type === 'Transfer') {
-      alert('⚠️ Transaksi "Setor Kas" tidak bisa diedit dari sini (nominalnya terkait dengan arsip bukti setor di tab Tutup Kasir).\n\nKalau setorannya keliru, hubungi Owner untuk dikoreksi lewat Portal Owner.');
+      alert('⚠️ Transaksi "Setor Kas" tidak bisa diedit dari sini (nominalnya terkait dengan arsip bukti setor di tab Serah Uang ke Owner).\n\nKalau setorannya keliru, hubungi Owner untuk dikoreksi lewat Portal Owner.');
       return;
     }
     // 🔥 FIX BUG TERKAIT: transaksi "Perpanjangan Paket" SENGAJA gak boleh
@@ -685,7 +685,7 @@ const TransactionHistory = () => {
         <div style={{ fontSize: 11, color: '#b45309', fontWeight: 700, margin: '-4px 0 12px', lineHeight: 1.5 }}>
           🔁 Setor kas ke owner bulan ini: Rp {setorKasBulanIni.toLocaleString()} -- TIDAK dihitung sebagai pengeluaran
           (uangnya cuma pindah dari brankas admin ke kas owner), tapi MENGURANGI uang fisik di brankas.
-          Bukti setor & riwayatnya ada di tab <b>Tutup Kasir</b>.
+          Bukti setor & riwayatnya ada di tab <b>Serah Uang ke Owner</b>.
         </div>
       )}
 
@@ -711,7 +711,7 @@ const TransactionHistory = () => {
             {/* 🔥 BARU (ANTI-BINGUNG): baris selisih = uang fisik di brankas,
                 biar admin langsung lihat angka yang cocok dgn hitungan kas.
                 Setor kas ke owner ikut dikurangkan -- uangnya sudah pindah
-                ke kas owner (lihat tab Tutup Kasir). */}
+                ke kas owner (lihat tab Serah Uang ke Owner). */}
             <div style={{...styles.methodSummaryRow, borderTop: '1px dashed #f59e0b55', marginTop: 4, paddingTop: 4}}>
               <span style={{fontWeight: 700, color: '#475569'}}>Selisih (kas di brankas)</span>
               <b style={{color: '#92400e'}}>Rp {(tunaiMasuk - tunaiKeluar - setorKasBulanIni).toLocaleString()}</b>

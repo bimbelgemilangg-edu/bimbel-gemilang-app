@@ -14,6 +14,14 @@
 // Verifikasi = updateDoc satu field di finance_logs (statusRekonsiliasi)
 // -- panel ini live dari onSnapshot shell OwnerFinance, jadi begitu
 // di-klik, semua tampilan ikut terupdate tanpa refresh.
+//
+// 🔥 CATATAN SKEMA (2026-10-01): sejak keputusan owner "pilihan 1", serah
+// uang admin ke owner TIDAK lagi lahir sebagai baris pending di sini.
+// Setoran skema baru memakai statusRekonsiliasi 'tidak-perlu' -- bukti
+// tercetak dianggap sah sebagai arsip kedua pihak saat terjadi. Antrean
+// ini kini hanya berisi: (a) pemasukan transfer bank yang tetap wajib
+// dicocokkan dengan mutasi rekening, dan (b) setoran LAMA berstatus
+// pending yang belum sempat diverifikasi sebelum skema berubah.
 import React, { useState, useMemo } from 'react';
 import { db } from '../../../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
