@@ -501,7 +501,7 @@ export default function LiveSessionTeacher() {
                   <TombolAkhiri
                     label="⏹ Akhiri Ujian"
                     detail={`${Math.max(0, peserta.length - ujianList.length)} siswa belum mengumpulkan`}
-                    onConfirm={() => akhiriUjian(sesi.id)} />
+                    onConfirm={() => akhiriUjian(sesi.id).catch((e) => alert(`❌ Gagal mengakhiri ujian: ${e?.message || e}`))} />
                 )}
               </div>
               <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>
