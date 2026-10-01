@@ -284,51 +284,53 @@ const TIPE_ENUM = [
    * Return: { success, questions, repaired, salvaged, error }
    */
   function tryParseJson(rawText) {
-    // Percobaan 1: langsung
-    try {
-      const parsed = JSON.parse(rawText);
-      return {
-        success: true,
-        questions: Array.isArray(parsed) ? parsed : [parsed],
-        repaired: false,
-        salvaged: false,
-        error: null,
-      };
-    } catch (e1) {
-      // lanjut ke percobaan 2
-    }
-  
-    // Percobaan 2: sanitize lalu parse
+    // 🔥 FIX BUG URUTAN (2026-10-01, ketahuan saat mengonversi file owner):
+    // dulu percobaan pertama parse TEKS MENTAH langsung. Masalahnya backslash
+    // tunggal LaTeX (\frac, \begin, \neq) adalah escape JSON yang SAH
+    // (\f=form-feed, \b=backspace, \n=newline), jadi parse mentah
+    // "BERHASIL" sambil diam-diam mengubah \frac jadi form-feed + "rac".
+    // Logika perbaikan LaTeX di sanitizeRawJsonText tidak pernah tercapai
+    // karena hanya dijalankan saat percobaan pertama MELEMPAR -- persis
+    // bahaya "tanpa error yang kelihatan" yang ditulis di kepala berkas ini.
+    //
+    // Sekarang sanitize jalan DULU. Ini aman untuk JSON yang sudah bersih:
+    // backslash ganda dan escape sah lolos tanpa perubahan (idempoten),
+    // sehingga hanya teks yang memang bermasalah yang berubah.
     const cleaned = sanitizeRawJsonText(rawText);
+    const repaired = cleaned !== String(rawText || '').trim();
+
+    // Percobaan 1: parse hasil sanitize
     try {
       const parsed = JSON.parse(cleaned);
       return {
         success: true,
         questions: Array.isArray(parsed) ? parsed : [parsed],
-        repaired: true,
+        repaired,
         salvaged: false,
         error: null,
       };
-    } catch (e2) {
-      // Percobaan 3: salvage sebagian
-      const salvaged = salvagePartialJsonArray(cleaned);
-      if (salvaged.length > 0) {
-        return {
-          success: true,
-          questions: salvaged,
-          repaired: true,
-          salvaged: true,
-          error: `Sebagian soal terselamatkan (${salvaged.length} soal). Error asli: ${e2.message}`,
-        };
-      }
+    } catch {
+      // lanjut ke percobaan salvage
+    }
+
+    // Percobaan 2: salvage sebagian soal yang utuh
+    const salvaged = salvagePartialJsonArray(cleaned);
+    if (salvaged.length > 0) {
       return {
-        success: false,
-        questions: [],
+        success: true,
+        questions: salvaged,
         repaired: true,
-        salvaged: false,
-        error: e2.message,
+        salvaged: true,
+        error: `Sebagian soal terselamatkan (${salvaged.length} soal).`,
       };
     }
+    return {
+      success: false,
+      questions: [],
+      repaired: true,
+      salvaged: false,
+      error: 'JSON tidak valid bahkan setelah sanitize; tidak ada soal yang bisa diselamatkan.',
+    };
   }
   
   
@@ -372,10 +374,22 @@ const TIPE_ENUM = [
   
   function normalizeGambar(val) {
     if (!Array.isArray(val)) return [];
-    return val.map((item) => ({
-      id: String(item?.id ?? ''),
-      deskripsi: String(item?.deskripsi ?? item?.description ?? ''),
-    }));
+    return val.map((item) => {
+      // 🔥 FIX BUG (2026-10-01): field `url` DIBUANG oleh normalizer ini,
+      // padahal MesinBankSoalPage membangun `gambarUrls` persis dari
+      // `gambar[].url` dan TryOutView merender soal BERDASARKAN gambarUrls.
+      // Akibatnya gambar yang disertakan JSON impor lenyap di tengah jalan
+      // dan siswa melihat soal tanpa gambarnya. url kini dipertahankan;
+      // entri berupa string polos dianggap url langsung.
+      if (typeof item === 'string') {
+        return { id: '', deskripsi: '', url: item };
+      }
+      return {
+        id: String(item?.id ?? ''),
+        deskripsi: String(item?.deskripsi ?? item?.description ?? ''),
+        url: String(item?.url ?? ''),
+      };
+    });
   }
   
   /**
