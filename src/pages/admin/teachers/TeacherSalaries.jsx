@@ -631,17 +631,20 @@ const TeacherSalaries = () => {
             {/* 🔥 BARU (pembagian kewenangan 2026-10-01): halaman ini kini
                 wilayah ADMIN OPERASIONAL (rekap, validasi, nominal, tarif).
                 Eksekusi pembayaran sengaja TIDAK ada di sini -- itu tombol
-                Owner di Portal Owner, muncul di 7 hari terakhir bulan, dan
-                hanya bisa membayar sesi yang sudah divalidasi admin. */}
+                Manajemen (menu Bayar Tentor), muncul di 7 hari terakhir
+                bulan, dan hanya bisa membayar sesi yang sudah divalidasi
+                admin. Penyebutan pihak pembayar di halaman ini memakai
+                istilah "Manajemen" sesuai permintaan owner. */}
             <p style={{
               background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af',
               borderRadius: 10, padding: '9px 13px', fontSize: 11.5, lineHeight: 1.6,
               margin: '10px 0 0',
             }}>
               💼 <b>Pembagian kewenangan:</b> Anda memegang kendali rekap, validasi sesi,
-              nominal, dan tarif. <b>Pembayaran honor dieksekusi Owner</b> di Portal Owner →
-              Bayar Tentor (muncul di minggu terakhir bulan) — dan Owner hanya bisa membayar
-              sesi yang sudah berstatus "Valid / Sudah Terekap" dari menu Sesi & Validasi Guru.
+              nominal, dan tarif. <b>Pembayaran honor dieksekusi Manajemen</b> lewat menu
+              Bayar Tentor (muncul di minggu terakhir bulan) — dan Manajemen hanya bisa
+              membayar sesi yang sudah berstatus "Valid / Sudah Terekap" dari menu
+              Sesi & Validasi Guru.
             </p>
           </div>
           <div style={{display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap'}}>

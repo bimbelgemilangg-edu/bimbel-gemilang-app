@@ -20,7 +20,7 @@
 //            berapa siswa hadir, bukti foto), MENYETUJUI / membatalkan
 //            validasi, dan MENGUNDUH riwayat sesi. TANPA ANGKA UANG.
 //   OWNER  : semua di atas PLUS nominal, tarif, bonus, dan pembayaran
-//            (tetap di halaman Gaji Guru & Portal Owner).
+//            (tetap di halaman Gaji Guru & menu Bayar Tentor).
 //
 // Halaman ini SENGAJA tidak menampilkan field `nominal` teacher_logs
 // sama sekali, dan tidak punya aksi ubah-nominal/hapus-log. Kalau suatu
@@ -116,7 +116,7 @@ const SesiGuruPage = () => {
     if (!window.confirm(
       `Setujui sesi ini sebagai valid?\n\n${l.namaGuru} · ${l.tanggal}\n${l.program || ''} ${l.kelasNama || ''}\n\n` +
       'Dengan menyetujui, Anda menyatakan sesi ini BENAR terjadi sesuai catatan. ' +
-      'Owner memakai status ini sebagai dasar pembayaran honor.',
+      'Manajemen memakai status ini sebagai dasar pembayaran honor.',
     )) return;
     setProsesId(l.id);
     try {
@@ -224,8 +224,8 @@ const SesiGuruPage = () => {
             <b style={{ color: '#93c5fd' }}>Halaman ini sengaja tanpa angka uang.</b>
             <p style={styles.batasText}>
               Rekap nominal & tarif ada di menu <b>Gaji Guru</b> (wilayah admin operasional).
-              Yang bukan wilayah admin adalah <b>eksekusi pembayaran</b>: itu tombol Owner di
-              Portal Owner → Bayar Tentor, dan hanya bisa menekan bayar untuk sesi yang sudah
+              Yang bukan wilayah admin adalah <b>eksekusi pembayaran</b>: itu tombol Manajemen
+              di menu Bayar Tentor, dan hanya bisa menekan bayar untuk sesi yang sudah
               Anda validasi di sini. Status "Valid" Anda adalah pintu pembuka pembayaran itu.
             </p>
           </div>
@@ -391,7 +391,7 @@ const SesiGuruPage = () => {
           <div>
             <b style={{ color: '#fbbf24' }}>Tanggung jawab validasi</b>
             <p style={styles.batasText}>
-              Status "Valid" yang Anda berikan dipakai Owner sebagai dasar membayar honor.
+              Status "Valid" yang Anda berikan dipakai Manajemen sebagai dasar membayar honor.
               Kalau ada sesi yang janggal (durasi tidak masuk akal, siswa hadir nol padahal
               kelas berjalan, bukti foto tidak ada), jangan disetujui dulu — konfirmasi ke
               tentornya. Semua persetujuan & pembatalan Anda tercatat di Jejak Aktivitas.
