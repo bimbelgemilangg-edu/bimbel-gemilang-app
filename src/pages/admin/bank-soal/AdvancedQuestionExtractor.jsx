@@ -15,8 +15,13 @@ import {
   Layers, CheckSquare, Square, RefreshCw, Sparkles,
   X, ArrowRight, Link2, HelpCircle, CloudUpload, Database,
 } from 'lucide-react';
+// 🔥 FIX BUG (audit 2026-10-01): `getDocs`, `query`, dan `where` dipakai
+// untuk memuat taksonomi bab tapi TIDAK di-import. Error-nya tertelan
+// try/catch di useEffect -> `setBabTaksonomi([])`, jadi dropdown daftar
+// bab selalu KOSONG tanpa pernah memunculkan error apa pun (gagal senyap).
 import {
   collection, doc, writeBatch, serverTimestamp,
+  getDocs, query, where,
 } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 
@@ -137,6 +142,23 @@ export default function BankSoalImportPage() {
   //      numpuk ratusan soal (persis skenario yang sudah kejadian).
   // Kalau taksonomi utk mapel/kelas ini belum ada sama sekali, daftar
   // kosong -- sistem tetap jalan seperti biasa (gak maksa isi).
+  // ⚠️ UTANG TEKNIS (ditemukan saat audit 2026-10-01, BUKAN buatan
+  // perubahan ini): `babTaksonomi` di-fetch tapi TIDAK PERNAH dipakai.
+  // Komentar di atas menyebut dua konsumen -- `buildMasterPrompt` dan
+  // `buildMasterHTMLPrompt` -- tapi kedua fungsi itu TIDAK ADA di file
+  // ini. Jadi "pagar materi" (butir 1 & 2 di komentar) belum pernah
+  // benar-ben dibangun; yang ada baru pengambilan datanya.
+  // Bandingkan dengan ImportHasilScanPage.jsx yang sudah menyelesaikan
+  // fitur serupa (dipakai di `meta.babBaku` dan prop `daftarBabValid`).
+  //
+  // Dulu bug ini TERSEMBUNYI karena getDocs/query/where tidak di-import
+  // sehingga fetch-nya selalu gagal senyap dan state tetap []. Sekarang
+  // fetch-nya sudah jalan (import diperbaiki), datanya tersedia -- tapi
+  // tetap belum ada yang memakainya.
+  // TODO(owner produk): putuskan mau disambungkan ke prompt AI seperti
+  // rencana di komentar, atau pengambilan datanya dihapus saja supaya
+  // tidak memboroskan kuota baca Firestore setiap ganti mapel/kelas.
+  // eslint-disable-next-line no-unused-vars
   const [babTaksonomi, setBabTaksonomi] = useState([]);
   useEffect(() => {
     if (!mataPelajaran) { setBabTaksonomi([]); return; }

@@ -31,7 +31,13 @@ const ENTITAS = {
   '&hArr;': '\\Leftrightarrow ', '&#8660;': '\\Leftrightarrow ', '&rArr;': '\\Rightarrow ',
   '&#8722;': '-', '&infin;': '\\infty ', '&ang;': '\\angle ', '&perp;': '\\perp ',
   '&cong;': '\\cong ', '&sim;': '\\sim ', '&prop;': '\\propto ', '&#8730;': '\\sqrt{\\phantom{x}}',
-  '&asymp;': '\\approx ', '&#8776;': '\\approx ', '&ang;': '\\angle ',
+  // 🔥 FIX (audit 2026-10-01): key '&ang;' DITULIS DUA KALI di peta ini
+  // (sekali di baris atas bersama '&infin;', sekali di sini). Nilainya
+  // kebetulan sama-sama '\\angle ' jadi tidak merusak hasil, tapi key
+  // duplikat di object literal = yang kedua diam-diam menimpa yang
+  // pertama, dan itu pola yang gampang menyembunyikan bug kalau suatu
+  // saat nilainya diedit cuma di satu tempat. Duplikatnya dihapus.
+  '&asymp;': '\\approx ', '&#8776;': '\\approx ',
 };
 
 export function praMatematika(html) {

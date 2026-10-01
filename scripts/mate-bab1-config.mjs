@@ -1,3 +1,28 @@
+// ============================================================
+// ⚠️ FILE YATIM (TIDAK DIPAKAI) + ESCAPE LaTeX-NYA RUSAK. JANGAN DICONTOH.
+//
+// Hasil audit 2026-10-01:
+//  1. File ini TIDAK di-import oleh skrip mana pun di repo. Konten yang
+//     benar-benar dipakai untuk membangun IMPOR-MATEMATIKA-BAB*.json sudah
+//     ditulis INLINE di dalam scripts/build-mate-k12-bab*.mjs. File ini
+//     sisa versi awal yang tidak pernah dibersihkan.
+//
+//  2. Kurung kurawal LaTeX di sini ditulis dengan SATU backslash ('\{').
+//     Di string literal JavaScript, '\{' bernilai '{' -- backslash-nya
+//     DITELAN. Skrip build yang benar menulis DUA backslash ('\\{').
+//
+//     Persis kesalahan inilah yang dulu menular ke build-mate-k12-bab7.mjs
+//     saat kontennya disalin dari sini: IMPOR-MATEMATIKA-BAB7 kehilangan
+//     kurung himpunan, sehingga KaTeX merender "$A = {2, 3}$" sebagai
+//     "A = 2, 3" (kurung hilang karena { } dianggap grouping). Sudah
+//     diperbaiki di skrip build + JSON hasilnya. Bab 1 & 2 kebetulan aman
+//     karena skrip build-nya ditulis ulang dengan escape yang benar.
+//
+// KALAU MAU MEMAKAI ISI FILE INI: perbaiki dulu semua '\{' menjadi '\\{'
+// (dan '\}' menjadi '\\}'), atau lebih baik salin langsung dari
+// scripts/build-mate-k12-bab*.mjs yang sudah benar.
+// ============================================================
+
 // Config bab 1 — BILANGAN, HIMPUNAN, DAN EKSPONEN (Matematika K12, turn 102)
 // Konten memakai String.raw agar LaTeX ditulis natural (backslash tunggal);
 // generator men-JSON.stringify sehingga escaping ke builder otomatis benar.

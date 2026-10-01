@@ -129,7 +129,12 @@ const sections = [
     jenis: 'benarSalah', judul: '⚖️ Cek pemahaman: relasi vs fungsi',
     keterangan: 'Gemilang Drill — gunakan tes cepat CG-FUNGSI buku: fungsi itu disiplin.',
     items: [
-      { teks: 'Himpunan ${(1,2), (1,3), (2,4)}$ merupakan fungsi.', jawaban: false, penjelasan: 'Anggota domain 1 punya dua pasangan — melanggar tepat satu.' },
+      // 🔥 FIX BUG KONTEN (audit 2026-10-01): kurung himpunan ditulis
+      // polos. Di JS, '\{' nilainya cuma '{' (backslash ditelan), jadi
+      // JSON hasil build kehilangan kurung dan KaTeX merender "{(1,2),...}"
+      // sebagai GROUPING -> siswa melihat "(1,2), (1,3), (2,4)" tanpa kurung
+      // himpunan. Harus '\\{' agar nilai string-nya benar-benar '\{'.
+      { teks: 'Himpunan $\\{(1,2), (1,3), (2,4)\\}$ merupakan fungsi.', jawaban: false, penjelasan: 'Anggota domain 1 punya dua pasangan — melanggar tepat satu.' },
       { teks: 'Pada fungsi $f: A \\to B$, range adalah himpunan semua peta di B yang benar-benar terpakai.', jawaban: true, penjelasan: 'Range $\\subseteq$ kodomain.' },
       { teks: 'Fungsi punya invers hanya bila bijektif.', jawaban: true, penjelasan: 'Syarat invers: korespondensi satu-satu.' },
       { teks: 'Diagram panah dengan anggota domain nganggur tetap fungsi dari A ke B.', jawaban: false, penjelasan: 'Semua anggota domain harus mendapat tepat satu panah.' },
@@ -146,7 +151,9 @@ const sections = [
   },
   {
     jenis: 'zona', items: [
-      { soal: 'Relasi "faktor dari" dari $A = {2, 3}$ ke $B = {4, 6, 9}$ disajikan sebagai pasangan terurut ...', opsi: ['${(2,4), (2,6), (3,9)}$', '${(2,4), (3,6), (3,9)}$', '${(4,2), (6,2), (9,3)}$', '${(2,6), (3,4), (3,9)}$', '${(2,4), (2,6), (2,9)}$'], jawaban: 0, pembahasan: 'Jalur konsep: 2 faktor dari 4 dan 6; 3 faktor dari 9. Jalur Cara Gemilang: uji satu-satu tiap pasangan angka.' },
+      // 🔥 FIX BUG KONTEN (audit 2026-10-01): sama seperti di atas --
+      // 7 kurung himpunan di soal + 5 opsi ini kehilangan backslash.
+      { soal: 'Relasi "faktor dari" dari $A = \\{2, 3\\}$ ke $B = \\{4, 6, 9\\}$ disajikan sebagai pasangan terurut ...', opsi: ['$\\{(2,4), (2,6), (3,9)\\}$', '$\\{(2,4), (3,6), (3,9)\\}$', '$\\{(4,2), (6,2), (9,3)\\}$', '$\\{(2,6), (3,4), (3,9)\\}$', '$\\{(2,4), (2,6), (2,9)\\}$'], jawaban: 0, pembahasan: 'Jalur konsep: 2 faktor dari 4 dan 6; 3 faktor dari 9. Jalur Cara Gemilang: uji satu-satu tiap pasangan angka.' },
       { soal: 'Fungsi $f: x \\mapsto 2x - 1$ memetakan $3$ ke ...', opsi: ['4', '5', '6', '7', '8'], jawaban: 1, pembahasan: 'Jalur konsep: $f(3) = 2(3)-1 = 5$. Jalur Cara Gemilang: substitusi langsung.' },
       { soal: 'Suatu fungsi dikatakan SURJEKTIF apabila ...', opsi: ['setiap anggota domain berpasangan unik', 'setiap anggota kodomain mempunyai prapeta', 'domain dan kodomain berjumlah sama', 'grafiknya lulus uji garis horizontal', 'inversnya ada'], jawaban: 1, pembahasan: 'Jalur konsep: surjektif = peta menutupi seluruh kodomain. Jalur Cara Gemilang: "sur" = semua terpakai.' },
     ],

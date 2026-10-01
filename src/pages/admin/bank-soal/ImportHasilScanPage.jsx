@@ -3550,7 +3550,12 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
             ...q,
             peringatan: [
               ...(q.peringatan || []),
-              `File ini kelihatan campuran mapel (${jumlahSoalBertandaMapel} soal lain di batch ini punya tag mapel beda), tapi soal ini TIDAK ditandai data-mapel -- cek manual apakah soal ini memang sesuai mapel form (${meta.mataPelajaran}) atau AI-nya kelewat nge-tag.`,
+              // 🔥 FIX BUG (audit 2026-10-01): `meta` TIDAK ADA di scope
+              // `runParse` -- `meta` cuma parameter `buildDoc(q, meta)` dan
+              // variabel lokal di callback lain. State yang benar di sini
+              // adalah `mataPelajaran`. Efeknya dulu: parse PDF campuran
+              // mapel melempar ReferenceError dan seluruh hasil parse hilang.
+              `File ini kelihatan campuran mapel (${jumlahSoalBertandaMapel} soal lain di batch ini punya tag mapel beda), tapi soal ini TIDAK ditandai data-mapel -- cek manual apakah soal ini memang sesuai mapel form (${mataPelajaran || 'yang dipilih di form'}) atau AI-nya kelewat nge-tag.`,
             ],
           };
         });
@@ -3617,7 +3622,10 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       console.error('Parse error:', error);
       setParseError(error?.message || 'Gagal membaca data.');
     }
-  }, [format, runValidasiGambar, htmlPdf24]);
+  // 🔥 FIX (audit): `mataPelajaran` sekarang dibaca di dalam runParse
+  // (pesan peringatan mapel campuran), jadi wajib masuk deps -- kalau
+  // tidak, admin ganti mapel di form tapi pesan tetap menyebut mapel lama.
+  }, [format, runValidasiGambar, htmlPdf24, mataPelajaran]);
 
   const handleParse = useCallback(() => {
     runParse(rawInput, format);

@@ -47,7 +47,7 @@ pos.forEach((p, g) => {
     n += 1;
     const nama = `${prefix}-g${g + 1}${svgs.length > 1 ? '-' + n : ''}.svg`;
     const vb = /viewBox="([^"]+)"/.exec(sv[0]);
-    const style = (/<style>([\s\S]*?)<\/style>/.exec(html) || [, ''])[1];
+    const style = (/<style>([\s\S]*?)<\/style>/.exec(html) || [])[1] || '';
     const kelas = style.split('}').map((s) => s.trim())
       .filter((s) => s.startsWith('.') && /fill|stroke|font|text-anchor/.test(s)).map((s) => s + '}');
     writeFileSync(join(outDir, nama),

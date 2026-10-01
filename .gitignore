@@ -1,97 +1,77 @@
-```gitignore
-# Dependencies
+# ============================================================
+# .gitignore — bimbel-gemilang-app
+# ============================================================
+# 🔥 DIPERBAIKI (audit 2026-10-01): file ini sebelumnya RUSAK TOTAL.
+# Isinya markdown code-fence (```gitignore ... ```), DUA blok gitignore
+# yang saling menimpa (Python + React), dan bahkan teks meta AI
+# ("Wait, let me reconsider...") yang ikut ter-commit.
+#
+# Kerusakan paling merugikan: blok kedua meng-ignore `public/`, padahal
+# itu folder ASET APLIKASI (ikon PWA, bagan SVG materi). Akibatnya setiap
+# aset baru wajib `git add -f` dan berulang kali "hilang" di mesin lain --
+# sampai perlu dibuat skrip pengingat khusus (scripts/cek-aset-materi.mjs).
+#
+# Sekarang `public/` TIDAK di-ignore lagi, jadi aset materi ter-track
+# normal tanpa perlu -f.
+# ============================================================
+
+# --- Dependensi ---
 node_modules/
+.pnp
+.pnp.js
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.ENV
-.venv.bak/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-*.pot
-*.pyc
-*.pyo
-.pytest_cache/
-.mypy_cache/
-.hypothesis/
-
-# Build artifacts
+# --- Hasil build ---
 dist/
+dist-probe/
 build/
-*.egg-info/
-.eggs/
+out/
+*.local
 
-# IDE specific
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Environment variables
+# --- Variabel lingkungan (JANGAN pernah commit secret) ---
 .env
-.env.local
-*.env
 .env.*
+!.env.example
+*.env
 
-# Logs
+# --- Log ---
 *.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Coverage
+# --- Cache tooling ---
+.cache/
+.eslintcache
+.stylelintcache
+.vite/
+.turbo/
+.parcel-cache/
 coverage/
 htmlcov/
 .coverage
+.coverage.*
 
-# Temporary files
-*.tmp
-*.temp
-```
+# --- Python (dipakai sebagian skrip di scripts/) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-Wait, let me reconsider. The only modified file is a JSX file, which suggests this is a JavaScript/React project, not Python. Let me adjust:
-
-```gitignore
-# Dependencies
-node_modules/
-
-# Build artifacts
-dist/
-build/
-*.min.js
-*.min.css
-*.bundle.js
-
-# IDE specific
-.vscode/
+# --- Editor & OS ---
+.vscode/*
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
-
-# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -100,24 +80,10 @@ build/
 ehthumbs.db
 Thumbs.db
 
-# Environment variables
-.env
-.env.local
-*.env
-.env.*
+# --- Vercel ---
+.vercel
 
-# Logs
-*.log
-
-# Temporary files
+# --- File sementara ---
 *.tmp
 *.temp
-
-# React specific
-.next/
-.nuxt/
-public/
-```
-# Turn 92: aset materi (bagan svg dll) WAJIB terlacak meski public/ di-ignore —
-# penambahan file baru pakai: git add -f public/bagan (atau jalankan
-# scripts/cek-aset-materi.mjs yang mengingatkan bila ada yang belum tracked).
+*.bak

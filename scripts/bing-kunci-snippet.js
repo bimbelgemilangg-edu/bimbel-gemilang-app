@@ -1,3 +1,19 @@
+// ============================================================
+// ⚠️ INI POTONGAN KODE (SNIPPET), BUKAN MODUL YANG BISA DIJALANKAN.
+//
+// Sengaja disimpan di repo sebagai referensi/tempel untuk skrip build
+// konten Bahasa Inggris. File ini TIDAK di-export, TIDAK di-import oleh
+// file mana pun, dan MEMANG tidak akan jalan kalau dijalankan langsung.
+//
+// Variabel `E` yang dipakai di sini BUKAN tidak terdefinisi karena bug --
+// `E` disediakan oleh skrip pemanggil di scope tempat snippet ini
+// disisipkan (berisi hasil ekstrak buku: `E.pembahasan`, `E.kunci`, dst).
+//
+// Karena itu file ini dikecualikan dari ESLint di eslint.config.js.
+// Jangan "memperbaiki" `E` dengan menambah import -- itu akan merusak
+// cara snippet ini dipakai.
+// ============================================================
+
 // ---------- kunci (format buku Inggris: huruf, (n,n), T/F, N/O, I/E) ----------
 const hurufIdx = (h) => 'ABCDE'.indexOf(String(h).trim().toUpperCase());
 function kunciDariPembahasan(no, s) {

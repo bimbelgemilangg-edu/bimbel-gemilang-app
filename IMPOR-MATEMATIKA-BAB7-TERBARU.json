@@ -70,7 +70,7 @@
           "keterangan": "Gemilang Drill — gunakan tes cepat CG-FUNGSI buku: fungsi itu disiplin.",
           "items": [
             {
-              "teks": "Himpunan ${(1,2), (1,3), (2,4)}$ merupakan fungsi.",
+              "teks": "Himpunan $\\{(1,2), (1,3), (2,4)\\}$ merupakan fungsi.",
               "jawaban": false,
               "penjelasan": "Anggota domain 1 punya dua pasangan — melanggar tepat satu."
             },
@@ -105,13 +105,13 @@
           "jenis": "zona",
           "items": [
             {
-              "soal": "Relasi \"faktor dari\" dari $A = {2, 3}$ ke $B = {4, 6, 9}$ disajikan sebagai pasangan terurut ...",
+              "soal": "Relasi \"faktor dari\" dari $A = \\{2, 3\\}$ ke $B = \\{4, 6, 9\\}$ disajikan sebagai pasangan terurut ...",
               "opsi": [
-                "${(2,4), (2,6), (3,9)}$",
-                "${(2,4), (3,6), (3,9)}$",
-                "${(4,2), (6,2), (9,3)}$",
-                "${(2,6), (3,4), (3,9)}$",
-                "${(2,4), (2,6), (2,9)}$"
+                "$\\{(2,4), (2,6), (3,9)\\}$",
+                "$\\{(2,4), (3,6), (3,9)\\}$",
+                "$\\{(4,2), (6,2), (9,3)\\}$",
+                "$\\{(2,6), (3,4), (3,9)\\}$",
+                "$\\{(2,4), (2,6), (2,9)\\}$"
               ],
               "jawaban": 0,
               "pembahasan": "Jalur konsep: 2 faktor dari 4 dan 6; 3 faktor dari 9. Jalur Cara Gemilang: uji satu-satu tiap pasangan angka."

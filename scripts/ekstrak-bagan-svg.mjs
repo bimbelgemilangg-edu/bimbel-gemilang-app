@@ -21,7 +21,10 @@ mkdirSync(outDir, { recursive: true });
 // memuat properti bentuk/teks (fill/stroke/font/text-anchor) supaya
 // tidak ada kelas tertinggal (insiden turn 92: v1/v2/v3 & bx/* lolos
 // sehingga lingkaran/batang render hitam polos).
-const pageStyle = (/<style>([\s\S]*?)<\/style>/.exec(html) || [, ''])[1];
+// 🔥 FIX (audit): `|| [, '']` itu array sparse (ada lubang di indeks 0).
+// Berfungsi, tapi `no-sparse-arrays` menandainya dan gampang salah baca.
+// Diganti bentuk setara yang jelas: fallback `[]` lalu `|| ''`.
+const pageStyle = (/<style>([\s\S]*?)<\/style>/.exec(html) || [])[1] || '';
 const aturan = pageStyle.split('}')
   .map((s) => s.trim())
   .filter((s) => /^\.?[a-zA-Z0-9_.#-]+\{/.test(s) && /fill|stroke|font|text-anchor/.test(s))
