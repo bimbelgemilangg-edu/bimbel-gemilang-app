@@ -1,0 +1,107 @@
+# ============================================================
+# CI — GERBANG KUALITAS BIMBEL GEMILANG
+# ============================================================
+# Janji operasional repo ini (lihat docs/SOP-KESELAMATAN-PERUBAHAN.md):
+# tidak ada perubahan yang jadi aplikasi siswa tanpa lolos pemeriksaan
+# independen. Workflow ini adalah pelaksana janji itu.
+#
+# Kapan jalan:
+#   - setiap pull request (gerbang SEBELUM merge)
+#   - setiap push ke main (alarm SESUDAH merge, untuk push langsung)
+#
+# Tiga gerbang keras (merah = merge/build ditolak):
+#   1. test         : 100+ uji logika uang, kredensial, pengawal kecurangan
+#   2. penjaga      : konten LaTeX, nama file janggal, aksara terselip, secret
+#   3. build        : build produksi SUNGGUHAN (runner GitHub punya RAM
+#                     cukup; mesin development kecil tidak sanggup)
+#   + lint berkas berubah: berkas yang disentuh WAJIB lint-bersih.
+#     Utang lint lama (291 error warisan) TIDAK menggagalkan -- itu
+#     dilaporkan terpisah sebagai informasi, supaya gerbang ini tidak
+#     melumpuhkan perbaikan darurat. Menyentuh sebuah berkas berarti
+#     bertanggung jawab membuat berkas itu bersih.
+# ============================================================
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Test + Penjaga + Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Riwayat penuh diperlukan supaya diff "berkas yang berubah"
+          # terhadap basis PR/push bisa dihitung.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Pasang dependensi
+        run: npm ci
+
+      - name: Test logika (uang, kredensial, pengawal kecurangan)
+        run: npm test
+
+      - name: Penjaga gerbang (konten, nama file, aksara, secret)
+        run: node scripts/ci-penjaga-konten.mjs
+
+      - name: Lint berkas yang berubah (wajib bersih)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            BASE="HEAD~1"
+          fi
+          HEAD_SHA=$(git rev-parse HEAD)
+          FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" "$HEAD_SHA" -- '*.js' '*.jsx' '*.mjs' || true)
+          if [ -z "$FILES" ]; then
+            echo "Tidak ada berkas JS/JSX/MJS yang berubah."
+            exit 0
+          fi
+          echo "Berkas berubah yang wajib lint-bersih:"
+          echo "$FILES"
+          echo "$FILES" | xargs npx eslint
+
+      - name: Laporan lint menyeluruh (informasi, tidak menggagalkan)
+        if: always()
+        run: |
+          npx eslint . -f json -o lint.json || true
+          node -e "const r=require('./lint.json');let e=0,w=0;for(const f of r){e+=f.errorCount;w+=f.warningCount;}console.log('Utang lint menyeluruh:',e,'error,',w,'warning. Tidak menggagalkan CI -- lihat roadmap pembersihan di AUDIT-REPO.md.');"
+
+  build:
+    name: Build produksi
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Pasang dependensi
+        run: npm ci
+
+      - name: Build produksi (vite build, termasuk PWA)
+        run: npm run build
+
+      - name: Ringkasan ukuran bundle
+        if: always()
+        run: |
+          if [ -d dist ]; then
+            echo "Sepuluh berkas terbesar di dist:"
+            du -ah dist/assets 2>/dev/null | sort -rh | head -10 || true
+          fi
