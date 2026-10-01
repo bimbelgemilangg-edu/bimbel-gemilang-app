@@ -1,0 +1,100 @@
+// firebase/rules/tahap-1-kredensial.rules
+// ============================================================
+// TAHAP 1 — Kunci kredensial saja. Aplikasi TETAP HIDUP 100%.
+// ============================================================
+//
+// ⚠️ JANGAN DI-DEPLOY SEBELUM `api/verifyStaffLogin.js` AKTIF.
+//    Syaratnya: FIREBASE_SERVICE_ACCOUNT sudah diisi di Vercel dan
+//    endpoint sudah terbukti menjawab (bukan 501). Kalau di-deploy
+//    lebih awal, Owner dan Admin TIDAK BISA LOGIN karena browser
+//    tidak lagi diizinkan membaca PIN/password-nya sendiri.
+//
+// APA YANG BERUBAH
+//   settings/*    -> tidak bisa dibaca/ditulis dari klien lagi
+//   admin_users/* -> tidak bisa dibaca/ditulis dari klien lagi
+//   Lainnya       -> TIDAK BERUBAH (masih terbuka seperti sekarang)
+//
+// MANFAAT
+// Ini menutup vektor paling berbahaya: `ownerPin` dan `adminPassword`
+// (teks polos) berhenti bisa dibaca publik, dan orang asing tidak bisa
+// lagi menyisipkan akun `{peran:'manajer'}` ke `admin_users`.
+// Tanpa downtime, tanpa mengubah kode apa pun di luar yang sudah ada.
+//
+// YANG BELUM DITUTUP (sengaja, itu pekerjaan Tahap 2 & 3)
+// `students`, `teachers`, `finance_logs`, dan ±35 koleksi lain MASIH
+// terbuka. Data pribadi siswa dan seluruh catatan keuangan masih bisa
+// dibaca siapa pun sampai tahap berikutnya selesai. Jadi Tahap 1 adalah
+// pengurangan risiko yang berarti, BUKAN penyelesaian.
+//
+// CARA PASANG
+// Salin isi bagian "RULES" di bawah ke Firebase Console → Firestore
+// Database → Rules → Publish. (Lihat docs/RUNBOOK-KEAMANAN.md.)
+//
+// CATATAN: berkas ini SENGAJA tidak bernama `firestore.rules` di root
+// dan tidak ada `firebase.json` yang menunjuknya, supaya `firebase deploy`
+// tidak pernah menerapkannya secara tidak sengaja.
+// ============================================================
+
+// ------------------------- RULES -------------------------
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- kredensial: TUTUP TOTAL dari klien ---
+    // Hanya api/verifyStaffLogin.js yang membacanya, memakai service
+    // account (Admin SDK menembus Rules, memang begitu seharusnya).
+    match /settings/{document=**} {
+      allow read, write: if false;
+    }
+    match /admin_users/{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- jejak audit: tulis boleh, baca jangan dulu ---
+    // `allow create: if true` sementara diperlukan karena aplikasi belum
+    // punya sesi Firebase Auth untuk admin/owner. Ini berarti orang asing
+    // bisa MENAMBAH baris log palsu (tidak bisa membaca/mengubah/menghapus).
+    // Log palsu mengganggu tapi tidak merusak data bisnis. Diganti jadi
+    // `if request.auth != null` begitu Firebase Auth dipasang (Tahap 3).
+    match /audit_logs/{document=**} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // --- SEMUA koleksi lain: tidak berubah dari keadaan sekarang ---
+    // Baris ini sengaja masih `true`. Mengubahnya jadi `false` akan
+    // mematikan login siswa, login guru, dan seluruh dashboard.
+    // ⚠️ INILAH YANG HARUS DITUTUP DI TAHAP 2 DAN 3.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+// ------------------- AKHIR RULES -------------------
+
+// ============================================================
+// CARA MEMBUKTIKAN TAHAP 1 BERHASIL (setelah Publish)
+// ============================================================
+// Jalankan di DevTools browser pada halaman login aplikasi:
+//
+//   1. PIN/password harus SUDAH tidak terbaca:
+//      firebase.firestore().doc('settings/global_config').get()
+//        .then(()=>console.log('❌ MASIH TERBUKA'))
+//        .catch(e=>console.log('✅ tertutup:', e.code));
+//      (harus mencetak "permission-denied")
+//
+//   2. Login Owner harus TETAP berhasil lewat PIN.
+//      Kalau gagal, berarti verifyStaffLogin belum aktif — SEGERA
+//      kembalikan rules ke `allow read: if true` untuk settings,
+//      atau Owner terkunci di luar.
+//
+//   3. Login Admin, login Siswa, dan login Guru harus tetap berhasil.
+//
+// ============================================================
+// CARA MEMBATALKAN (kalau ada yang terkunci)
+// ============================================================
+// Ganti blok `match /settings/{document=**}` menjadi:
+//      allow read, write: if true;
+// lalu Publish. Berlaku dalam hitungan detik.

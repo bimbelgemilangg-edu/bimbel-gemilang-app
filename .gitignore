@@ -83,6 +83,19 @@ Thumbs.db
 # --- Vercel ---
 .vercel
 
+# --- KREDENSIAL FIREBASE ADMIN (JANGAN PERNAH COMMIT) ---
+# Service account key setara kunci master seluruh database.
+# Diunduh dari Firebase Console -> Project settings -> Service accounts.
+# Nama file bawaannya mirip: gemilangsystem-firebase-adminsdk-xxxxx.json
+*serviceAccount*.json
+*service-account*.json
+*firebase-adminsdk*.json
+*-firebase-adminsdk-*.json
+google-credentials*.json
+gcp-key*.json
+credentials.json
+secrets/
+
 # --- File sementara ---
 *.tmp
 *.temp

@@ -8,6 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc } from "firebase/firestore";
 import { Crown, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+// 🔥 BARU (insiden Firestore terbuka): verifikasi PIN dicoba lewat SERVER
+// lebih dulu, supaya browser tidak perlu lagi membaca `ownerPin`.
+import { verifikasiLewatServer } from '../utils/adminAuth';
+import { catatAudit, KATEGORI } from '../utils/auditLog';
 
 const LoginOwner = () => {
   const navigate = useNavigate();
@@ -15,9 +19,65 @@ const LoginOwner = () => {
   const [showPin, setShowPin] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Simpan sesi owner. Dipisah jadi fungsi karena dipakai oleh dua jalur
+  // (server dan fallback klien) supaya perilakunya tidak bisa berbeda.
+  const masukSebagaiOwner = () => {
+    // 🔥 UPGRADE (pemisahan hak akses): sesi owner meniadakan sesi
+    // admin kasir di perangkat ini -- bersih, tidak ada flag nyangkut.
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("adminSession");
+    localStorage.setItem("isOwnerLoggedIn", "true");
+    localStorage.setItem("role", "owner");
+    catatAudit('login.sukses', {
+      kategori: KATEGORI.AUTH,
+      target: 'Portal Owner',
+      detail: { peran: 'owner' },
+    });
+    navigate("/owner/finance");
+  };
+
+  const catatGagal = (pesan) => {
+    catatAudit('login.gagal', {
+      kategori: KATEGORI.AUTH,
+      aktorOverride: { aktor: 'owner', aktorNama: 'Owner', peran: 'owner' },
+      target: 'Portal Owner',
+      detail: { alasan: pesan },
+    });
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // ============================================================
+    // TAHAP 1 — verifikasi di SERVER (jalur yang benar).
+    // Selama FIREBASE_SERVICE_ACCOUNT belum diisi di Vercel, endpoint
+    // menjawab 501 dan kita jatuh ke Tahap 2 tanpa mengubah perilaku.
+    // ============================================================
+    try {
+      const server = await verifikasiLewatServer({ jalur: 'owner', password: inputPin });
+      if (server.tersedia) {
+        const d = server.data || {};
+        if (d.ok) {
+          masukSebagaiOwner();
+          return;
+        }
+        catatGagal(d.pesan || 'PIN salah');
+        alert(`⛔ ${d.pesan || 'PIN Owner salah!'}`);
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      // Jangan pernah mengunci owner hanya karena jalur server bermasalah.
+      console.warn('[LoginOwner] jalur server gagal, memakai jalur lama:', err);
+    }
+
+    // ============================================================
+    // TAHAP 2 — FALLBACK: baca PIN dari Firestore di browser.
+    // ⚠️ Jalur inilah yang memaksa `settings/global_config` tetap bisa
+    // dibaca publik. Segera aktifkan service account (lihat
+    // docs/RUNBOOK-KEAMANAN.md) supaya jalur ini tidak pernah terpakai.
+    // ============================================================
     try {
       const docSnap = await getDoc(doc(db, "settings", "global_config"));
 
@@ -30,13 +90,9 @@ const LoginOwner = () => {
       const correctPin = docSnap.data().ownerPin;
 
       if (inputPin === correctPin) {
-        // 🔥 UPGRADE (pemisahan hak akses): sesi owner meniadakan sesi
-        // admin kasir di perangkat ini -- bersih, tidak ada flag nyangkut.
-        localStorage.removeItem("isLoggedIn");
-        localStorage.setItem("isOwnerLoggedIn", "true");
-        localStorage.setItem("role", "owner");
-        navigate("/owner/finance");
+        masukSebagaiOwner();
       } else {
+        catatGagal('PIN salah (jalur fallback klien)');
         alert("⛔ PIN Owner salah!");
       }
     } catch (error) {

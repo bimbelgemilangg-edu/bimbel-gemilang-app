@@ -331,6 +331,46 @@ export function hapusSesiAdmin() {
 }
 
 // ------------------------------------------------------------
+// VERIFIKASI LEWAT SERVER (dipakai kalau sudah diaktifkan)
+// ------------------------------------------------------------
+
+/**
+ * Coba verifikasi kredensial ke `api/verifyStaffLogin.js`.
+ *
+ * 🔥 KENAPA ADA FALLBACK: endpoint itu butuh FIREBASE_SERVICE_ACCOUNT di
+ * Vercel. Selama variabelnya belum diisi, endpoint menjawab 501 dan fungsi
+ * ini melapor `tersedia: false`, sehingga klien jatuh ke verifikasi
+ * sisi-browser yang lama. Artinya kode ini AMAN dipasang lebih dulu —
+ * perilaku aplikasi live tidak berubah sampai Owner benar-benar
+ * mengaktifkan service account-nya.
+ *
+ * Setelah aktif, browser tidak lagi perlu membaca `settings/global_config`
+ * maupun `admin_users`, sehingga kedua koleksi itu bisa dikunci total di
+ * Firestore Rules.
+ *
+ * @returns {Promise<{tersedia:boolean, data?:object, alasan?:string}>}
+ */
+export async function verifikasiLewatServer({ jalur, username, password }) {
+  try {
+    const res = await fetch('/api/verifyStaffLogin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jalur, username, password }),
+    });
+    // 501 = belum dikonfigurasi, 503 = Admin SDK gagal siap,
+    // 404 = endpoint belum ter-deploy. Semuanya berarti "pakai jalur lama".
+    if (res.status === 404 || res.status === 501 || res.status === 503) {
+      return { tersedia: false, alasan: `server menjawab ${res.status}` };
+    }
+    const data = await res.json().catch(() => ({}));
+    return { tersedia: true, data };
+  } catch (e) {
+    // Jaringan gagal / CORS / endpoint tak ada -> jangan kunci orang di luar.
+    return { tersedia: false, alasan: String(e?.message || e) };
+  }
+}
+
+// ------------------------------------------------------------
 // LOGIN
 // ------------------------------------------------------------
 
@@ -347,7 +387,45 @@ export function hapusSesiAdmin() {
 export async function loginAdmin({ username, password, izinkanLegacy = true }) {
   const u = normalisasiUsername(username);
 
-  // ---- 1. JALUR BARU: akun bernama -------------------------------
+  // ============================================================
+  // TAHAP 1 — coba verifikasi di SERVER.
+  // Kalau sudah diaktifkan, ini satu-satunya jalur yang dipakai dan
+  // browser tidak menyentuh dokumen kredensial sama sekali.
+  // ============================================================
+  const server = await verifikasiLewatServer({ jalur: 'admin', username: u, password });
+
+  if (server.tersedia) {
+    const d = server.data || {};
+    if (!d.ok) {
+      return { ok: false, pesan: d.pesan || 'Username atau password salah.', jalur: 'server' };
+    }
+    const akun = {
+      username: d.username || '',
+      nama: d.nama || (d.peran === 'legacy' ? 'Admin (akun bersama)' : 'Admin'),
+      jabatan: d.jabatan || '',
+      peran: d.peran || PERAN_ADMIN.KASIR,
+    };
+    const sesi = simpanSesiAdmin(akun, akun.peran);
+    return {
+      ok: true,
+      sesi,
+      akun,
+      // 'server-akun' | 'server-legacy' -- dipakai jejak audit & pesan migrasi
+      jalur: d.jalur === 'admin-legacy' ? 'legacy' : 'baru',
+      lewatServer: true,
+      wajibGantiPassword: d.wajibGantiPassword === true,
+    };
+  }
+
+  // ============================================================
+  // TAHAP 2 — FALLBACK: verifikasi di browser (perilaku lama).
+  // Dipakai selama FIREBASE_SERVICE_ACCOUNT belum diisi di Vercel.
+  // ⚠️ Jalur ini MEMBACA `settings/global_config` dan `admin_users`
+  // dari klien, jadi selama ia yang dipakai, kedua koleksi itu TIDAK
+  // BISA dikunci di Rules. Lihat docs/INSIDEN-KEAMANAN-FIRESTORE-TERBUKA.md
+  // ============================================================
+
+  // ---- 2a. akun bernama di admin_users ----
   if (u) {
     const akun = await cariAdminByUsername(u);
 
@@ -358,9 +436,7 @@ export async function loginAdmin({ username, password, izinkanLegacy = true }) {
     // lengkap di jejak audit, jadi owner tidak kehilangan visibilitas.
     const PESAN_KREDENSIAL_SALAH = 'Username atau password salah.';
 
-    if (!akun) {
-      return { ok: false, pesan: PESAN_KREDENSIAL_SALAH, jalur: 'baru' };
-    }
+    if (!akun) return { ok: false, pesan: PESAN_KREDENSIAL_SALAH, jalur: 'baru' };
     // Dua keadaan di bawah TETAP diberi pesan yang jelas, karena bukan
     // soal kredensial salah -- staf ini memang perlu diarahkan ke orang
     // yang bisa memperbaiki akunnya.
@@ -381,10 +457,10 @@ export async function loginAdmin({ username, password, izinkanLegacy = true }) {
     }).catch(() => {});
 
     const sesi = simpanSesiAdmin(akun, akun.peran || PERAN_ADMIN.KASIR);
-    return { ok: true, sesi, jalur: 'baru', akun };
+    return { ok: true, sesi, jalur: 'baru', akun, lewatServer: false };
   }
 
-  // ---- 2. JALUR WARISAN: password bersama ------------------------
+  // ---- 2b. jalur warisan: password bersama ----
   if (!izinkanLegacy) {
     return {
       ok: false,
@@ -398,7 +474,7 @@ export async function loginAdmin({ username, password, izinkanLegacy = true }) {
   if (!legacyPw) {
     return {
       ok: false,
-      pesan: 'Isi username akun admin Anda. (Belum ada akun? Minta Owner membuatnya di menu Pengguna Admin.)',
+      pesan: 'Isi username akun admin Anda. (Belum punya akun? Minta Owner membuatnya di menu Pengguna Admin.)',
       jalur: 'legacy-kosong',
     };
   }
@@ -413,7 +489,7 @@ export async function loginAdmin({ username, password, izinkanLegacy = true }) {
     peran: 'legacy',
   };
   const sesi = simpanSesiAdmin(akunLegacy, 'legacy');
-  return { ok: true, sesi, jalur: 'legacy', akun: akunLegacy };
+  return { ok: true, sesi, jalur: 'legacy', akun: akunLegacy, lewatServer: false };
 }
 
 /** Ringkasan perangkat untuk jejak audit (bukan fingerprinting agresif). */
@@ -465,5 +541,6 @@ export default {
   peranAdminAktif,
   isManajerSession,
   loginAdmin,
+  verifikasiLewatServer,
   ringkasanPerangkat,
 };

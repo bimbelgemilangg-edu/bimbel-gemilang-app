@@ -357,6 +357,69 @@ await uji('password bukan string ditolak tanpa crash', () => {
 });
 
 // ============================================================
+bagian('Kesepakatan browser <-> server (PENTING)');
+// ============================================================
+// api/verifyStaffLogin.js memverifikasi password memakai
+// crypto.pbkdf2Sync dari Node, sedangkan akun dibuat di browser memakai
+// crypto.subtle. Kalau keduanya tidak menghasilkan byte yang identik,
+// akun yang dibuat dari panel admin TIDAK BISA login lewat server.
+// Uji ini yang menjamin kesetaraan itu.
+
+await uji('crypto.subtle (browser) === crypto.pbkdf2Sync (server) untuk salt hex', async () => {
+  const { pbkdf2Sync } = await import('node:crypto');
+  // Kasus 'あいうえお-unicode' SENGAJA memakai aksara non-ASCII: PBKDF2
+  // bekerja pada byte UTF-8, jadi browser (TextEncoder) dan Node (yang
+  // menerima string) harus sepakat soal encoding-nya. Kalau suatu saat
+  // salah satu sisi keliru menganggapnya latin1, uji ini yang menangkap.
+  // JANGAN "dirapikan" jadi ASCII — itu justru menghilangkan gunanya.
+  for (const pw of ['kopi-pagi-2026', 'p@ssw0rd!panjang', 'あいうえお-unicode', 'a'.repeat(64)]) {
+    for (const iterasi of [1000, 4096, 210000]) {
+      const salt = buatSalt();
+      const dariBrowser = await hashPassword(pw, salt, iterasi);
+      const dariServer = pbkdf2Sync(pw, Buffer.from(salt, 'hex'), iterasi, 32, 'sha256').toString('hex');
+      assert.equal(dariBrowser, dariServer,
+        `hash beda untuk iterasi=${iterasi} (password=${pw.slice(0, 12)}...)`);
+    }
+  }
+});
+
+await uji('akun yang dibuat browser bisa diverifikasi server (simulasi alur nyata)', async () => {
+  const { pbkdf2Sync, timingSafeEqual } = await import('node:crypto');
+
+  // 1. Panel admin di BROWSER membuat akun
+  const salt = buatSalt();
+  const passwordAsli = 'Gemilang-2026!';
+  const akun = {
+    passwordSalt: salt,
+    passwordHash: await hashPassword(passwordAsli, salt, ITERASI_CEPAT),
+    passwordIterations: ITERASI_CEPAT,
+  };
+
+  // 2. SERVER (api/verifyStaffLogin.js) memverifikasi dugaan password
+  const verifikasiDiServer = (dugaan) => {
+    const kandidat = pbkdf2Sync(dugaan, Buffer.from(akun.passwordSalt, 'hex'),
+      akun.passwordIterations, 32, 'sha256').toString('hex');
+    const a = Buffer.from(kandidat);
+    const b = Buffer.from(akun.passwordHash);
+    return a.length === b.length && timingSafeEqual(a, b);
+  };
+
+  assert.equal(verifikasiDiServer(passwordAsli), true, 'server menolak password yang benar');
+  assert.equal(verifikasiDiServer('Gemilang-2026'), false, 'server menerima password yang salah');
+  assert.equal(verifikasiDiServer('gemilang-2026!'), false, 'server tidak peka huruf besar/kecil');
+  assert.equal(verifikasiDiServer(''), false, 'server menerima password kosong');
+});
+
+await uji('vektor PBKDF2 standar juga cocok lewat crypto.pbkdf2Sync Node', async () => {
+  const { pbkdf2Sync } = await import('node:crypto');
+  // Vektor yang sama dengan yang dihitung independen via hashlib Python.
+  assert.equal(
+    pbkdf2Sync('passwd', Buffer.from('73616c74', 'hex'), 4096, 32, 'sha256').toString('hex'),
+    '21943fd5b7a10905c38fad60157ff498e1e81df1e03254325682a74dca3b2be8',
+  );
+});
+
+// ============================================================
 // RINGKASAN
 // ============================================================
 const durasi = Date.now() - mulai;

@@ -1,0 +1,198 @@
+// firebase/rules/tahap-3-final.rules
+// ============================================================
+// TAHAP 3 — Keadaan akhir. JANGAN DI-DEPLOY SEKARANG.
+// ============================================================
+//
+// ⚠️⚠️ INI TARGET, BUKAN SESUATU YANG BISA LANGSUNG DIPASANG. ⚠️⚠️
+//
+// Memasang berkas ini hari ini akan MEMATIKAN APLIKASI TOTAL: login
+// siswa, login guru, semua dashboard, semua fitur. Alasannya: rules ini
+// mensyaratkan `request.auth != null`, padahal aplikasi menyimpan status
+// login di localStorage dan TIDAK PERNAH login ke Firebase Auth untuk
+// peran admin, owner, dan siswa. (Hanya guru yang sudah pakai Firebase
+// Auth — lihat LoginGuru.jsx.)
+//
+// PRA-SYARAT sebelum berkas ini bisa dipakai:
+//   1. Admin & Owner login lewat Firebase Auth + custom claims `peran`.
+//   2. Siswa login lewat Firebase Auth (menggantikan unduhan seluruh
+//      koleksi `students` + perbandingan password teks polos di browser).
+//   3. Semua koleksi di bawah sudah diverifikasi terhadap kode, karena
+//      daftar ini disusun dengan menyisir `collection(db, ...)` di src/
+//      dan BELUM DIUJI terhadap aplikasi yang berjalan.
+//   4. Query gabungan (where + orderBy) sudah didaftarkan index-nya.
+//
+// DAFTAR KOLEKSI disusun dari pemindaian src/ pada 2026-10-01:
+//   40+ koleksi, dengan `students` (55 rujukan) dan `bank_soal` (24)
+//   paling banyak dipakai.
+// ============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------
+    // HELPER
+    // ------------------------------------------------------------
+    function sudahLogin()  { return request.auth != null; }
+    function peran()       { return request.auth.token.peran; }
+
+    // Staf = siapa pun yang bekerja di bimbel (bukan siswa).
+    function staf()        { return sudahLogin() && peran() in ['kasir', 'manajer', 'owner']; }
+    function manajerAtas() { return sudahLogin() && peran() in ['manajer', 'owner']; }
+    function owner()       { return sudahLogin() && peran() == 'owner'; }
+    function guru()        { return sudahLogin() && peran() == 'guru'; }
+    function siswa()       { return sudahLogin() && peran() == 'siswa'; }
+
+    // Guru/siswa hanya boleh menyentuh dokumennya sendiri.
+    function dokumenMilikSendiri() {
+      return sudahLogin() && resource.data.uid == request.auth.uid;
+    }
+
+    // ------------------------------------------------------------
+    // DEFAULT: TOLAK SEMUA.
+    // Baris terpenting di seluruh berkas ini. Koleksi yang lupa
+    // didaftarkan akan TERTUTUP, bukan terbuka — gagal ke arah aman.
+    // ------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ============================================================
+    // KREDENSIAL — tidak boleh disentuh klien, titik.
+    // Dibaca hanya oleh api/verifyStaffLogin.js (Admin SDK).
+    // ============================================================
+    match /settings/{document=**}    { allow read, write: if false; }
+    match /admin_users/{document=**} { allow read, write: if false; }
+
+    // ============================================================
+    // SITUS PUBLIK — dibaca siapa pun, ditulis hanya staf.
+    // Dipakai PublicBlog.jsx lewat onSnapshot TANPA login, jadi
+    // `read: if true` di sini memang diperlukan.
+    // ============================================================
+    match /web_blog/{id}             { allow read: if true; allow write: if staf(); }
+    match /web_berita/{id}           { allow read: if true; allow write: if staf(); }
+    match /web_testimoni/{id}        { allow read: if true; allow write: if staf(); }
+    match /web_teachers_gallery/{id} { allow read: if true; allow write: if staf(); }
+    match /web_penghargaan/{id}      { allow read: if true; allow write: if staf(); }
+    match /web_keunggulan/{id}       { allow read: if true; allow write: if staf(); }
+    match /web_contacts/{id}         { allow read: if true; allow write: if staf(); }
+    match /web_settings/{id}         { allow read: if true; allow write: if staf(); }
+
+    // ============================================================
+    // PENDAFTARAN PUBLIK — orang luar boleh MENGIRIM, tidak boleh
+    // membaca (isinya data pribadi pendaftar), mengubah, atau menghapus.
+    // Dipakai PendaftaranOnline.jsx dan PendaftaranTentor.jsx.
+    //
+    // ⚠️ Batasan `request.resource.data` di bawah hanyalah contoh dan
+    // HARUS disesuaikan dengan field yang benar-benar dikirim formulir.
+    // Tanpa pembatasan, orang bisa mengirim dokumen berukuran 1 MB
+    // berulang-ulang dan menghabiskan kuota Firestore Anda.
+    // ============================================================
+    match /online_registrations/{id} {
+      allow create: if request.resource.data.size() < 40
+                    && request.resource.data.keys().hasAny(['nama'])
+                    && !('paymentStatus' in request.resource.data);
+      allow read, update, delete: if staf();
+    }
+    match /tutor_applications/{id} {
+      allow create: if request.resource.data.size() < 40;
+      allow read, update, delete: if staf();
+    }
+    match /survey_responses/{id} {
+      allow create: if request.resource.data.size() < 30;
+      allow read, update, delete: if staf();
+    }
+    match /web_contacts/{id}_pesan { allow read, write: if false; } // penjaga: tidak dipakai
+
+    // ============================================================
+    // DATA SISWA — sensitif (banyak yang anak di bawah umur).
+    // ============================================================
+    match /students/{id} {
+      allow read: if staf() || guru() || dokumenMilikSendiri();
+      allow write: if staf();
+    }
+    match /siswa_progress/{id}        { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if staf() || siswa(); }
+    match /siswa_soal_progress/{id}   { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if staf() || siswa(); }
+    match /siswa_buku_progress/{id}   { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if staf() || siswa(); }
+    match /siswa_riwayat_latihan/{id} { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if staf() || siswa(); }
+
+    // ============================================================
+    // DATA GURU
+    // ============================================================
+    match /teachers/{id} {
+      allow read: if staf() || dokumenMilikSendiri();
+      allow write: if manajerAtas();
+    }
+    match /teacher_logs/{id} { allow read: if staf() || guru(); allow write: if staf() || guru(); }
+
+    // ============================================================
+    // KEUANGAN — paling sensitif setelah data siswa.
+    // Kasir boleh operasional harian; rekap besar hanya owner.
+    // (Pembagian ini meniru pemisahan yang sudah ada di SidebarAdmin.)
+    // ============================================================
+    match /finance_logs/{id}    { allow read, write: if staf(); }
+    match /finance_tagihan/{id} { allow read: if staf() || dokumenMilikSendiri(); allow write: if staf(); }
+    match /setoran_kas/{id}     { allow read, write: if staf(); }
+    // Honor tentor = data sensitif, sengaja dibatasi ke owner.
+    match /teacher_salaries/{id} { allow read, write: if owner(); }
+
+    // ============================================================
+    // JEJAK AUDIT — bisa ditambah oleh staf, tidak bisa diubah/dihapus.
+    // `allow update, delete: if false` penting: kalau pelaku bisa
+    // menghapus jejaknya sendiri, log-nya tidak berarti apa-apa.
+    // ============================================================
+    match /audit_logs/{id} {
+      allow create: if staf();
+      allow read: if manajerAtas();
+      allow update, delete: if false;
+    }
+
+    // ============================================================
+    // KONTEN & AKADEMIK — dibaca staf/guru/siswa, ditulis staf.
+    // ============================================================
+    match /bank_soal/{id}        { allow read: if sudahLogin(); allow write: if staf(); }
+    match /tryout_paket/{id}     { allow read: if sudahLogin(); allow write: if staf(); }
+    match /tryout_sesi/{id}      { allow read: if sudahLogin(); allow write: if staf(); }
+    match /tryout_izin_ulang/{id}{ allow read: if sudahLogin(); allow write: if staf(); }
+    match /jawaban_kuis/{id}     { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if sudahLogin(); }
+    match /jawaban_tugas/{id}    { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if sudahLogin(); }
+    match /jawaban_soal/{id}     { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if sudahLogin(); }
+    match /grades/{id}           { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if staf() || guru(); }
+
+    match /buku_digital/{id}     { allow read: if sudahLogin(); allow write: if staf(); }
+    match /buku_referensi/{id}   { allow read: if sudahLogin(); allow write: if staf(); }
+    match /bimbel_modul/{id}     { allow read: if sudahLogin(); allow write: if staf(); }
+    match /student_contents/{id} { allow read: if sudahLogin(); allow write: if staf(); }
+    match /sumber_soal/{id}      { allow read: if staf();     allow write: if staf(); }
+    match /mapel/{id}            { allow read: if sudahLogin(); allow write: if staf(); }
+    match /taksonomi_materi/{id} { allow read: if staf();     allow write: if staf(); }
+
+    match /jadwal_bimbel/{id}    { allow read: if sudahLogin(); allow write: if staf() || guru(); }
+    match /attendance/{id}       { allow read: if sudahLogin(); allow write: if staf() || guru(); }
+    match /sesi_kelas/{id}       { allow read: if sudahLogin(); allow write: if staf() || guru(); }
+
+    match /notifications/{id}    { allow read: if sudahLogin(); allow write: if staf(); }
+    match /surveys/{id}          { allow read: if sudahLogin(); allow write: if staf(); }
+    match /admin_daily_logs/{id} { allow read: if staf(); allow write: if staf(); }
+    match /admin_izin/{id}       { allow read: if staf(); allow write: if manajerAtas(); }
+    match /koreksi_data_log/{id} { allow read: if staf(); allow write: if staf(); }
+  }
+}
+
+// ============================================================
+// ⚠️ YANG HARUS DIPERIKSA SEBELUM MEMAKAI BERKAS INI
+// ============================================================
+// 1. `resource.data.uid` — aturan "dokumen milik sendiri" mengandaikan
+//    tiap dokumen siswa/guru punya field `uid` yang cocok dengan
+//    Firebase Auth. HARUS DIVERIFIKASI di data nyata; kalau field-nya
+//    bernama lain (mis. `studentId`), sesuaikan.
+// 2. `teacher_salaries` — nama koleksi ini ditebak dari TeacherSalaries.jsx
+//    yang ternyata menyimpan aturannya di `settings/global_config`.
+//    Kalau tidak ada koleksi seperti itu, bloknya dihapus saja.
+// 3. Query dengan `where` + `orderBy` butuh COMPOSITE INDEX. Setelah
+//    rules dipasang, buka aplikasi dan periksa Console Firestore untuk
+//    tautan pembuatan index yang muncul di error.
+// 4. `onSnapshot` di PublicBlog.jsx memantau 7 koleksi `web_*`. Kalau ada
+//    yang terlewat dari daftar di atas, halaman publik akan error.
+// 5. Uji di proyek Firebase STAGING dulu, bukan produksi.
+// ============================================================
