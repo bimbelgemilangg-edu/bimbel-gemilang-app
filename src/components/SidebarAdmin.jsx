@@ -12,10 +12,13 @@ import {
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
-  Crown, Lock, Receipt, KeyRound, History, Wallet
+  Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox
 } from 'lucide-react';
 import { db } from '../firebase';
-import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
+import {
+  collection, getDocs, query, where, getCountFromServer,
+  doc, setDoc, increment, serverTimestamp,
+} from 'firebase/firestore';
 import { isOwnerSession } from '../utils/roleAkses';
 // 🔥 BARU: jendela bayar honor (7 hari terakhir bulan) untuk menu owner.
 import { isJendelaBayar, tanggalLokalHariIni } from '../pages/admin/owner/keuanganOwnerUtils';
@@ -116,6 +119,24 @@ const SidebarAdmin = () => {
     if (isMobile) setIsOpen(false);
   };
 
+  // 🔥 BARU (beres-beres sidebar 2026-10-01): catat setiap klik menu ke
+  // koleksi `statistik_menu`. Tujuannya sederhana: bulan depan keputusan
+  // "menu ini masih dipakai atau tidak" diambil dari FAKTA klik, bukan
+  // dari rasa bingung. Fire-and-forget: kegagalan mencatat TIDAK boleh
+  // mengganggu navigasi.
+  const rekamKlikMenu = (path, label) => {
+    try {
+      const polos = String(path).replace(/[?#].*$/, '');
+      const slug = polos.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'root';
+      setDoc(doc(db, 'statistik_menu', slug), {
+        path: polos,
+        label,
+        klik: increment(1),
+        terakhir: serverTimestamp(),
+      }, { merge: true }).catch(() => {});
+    } catch { /* navigasi jangan pernah gagal karena statistik */ }
+  };
+
   const isActive = (path) => {
     // 🔥 UPGRADE: link dengan query (mis. /admin/finance?tab=kasir)
     // dianggap aktif hanya kalau pathname + query-nya cocok -- biar
@@ -174,11 +195,8 @@ const SidebarAdmin = () => {
         { name: 'Sesi & Validasi Guru', path: '/admin/teachers/sesi', icon: <ClipboardCheck size={18} /> },
         { name: 'Rapor & Nilai',path: '/admin/grades',           icon: <TrendingUp size={18} /> },
         { name: 'Portal Siswa', path: '/admin/portal',           icon: <Globe size={18} /> },
-        // MATERI v2 (Fase 4): manajer konten baru (upload PPT/PDF/
-        // video + editor bagian + soal). Lihat docs/RENCANA-ROMBAK-MATERI.md
-        { name: 'Materi v2', path: '/admin/materi-v2', icon: <BookMarked size={18} /> },
-        // FASE 4.2: gudang file pusat (upload sekali, pakai berulang)
-        { name: 'Bank Materi', path: '/admin/bank-materi', icon: <Archive size={18} /> },
+        // 🔥 Materi v2 & Bank Materi DIPINDAH ke halaman Perkakas
+        // (/admin/perkakas) -- sidebar terlalu penuh; routenya tetap hidup.
       ]
     },
     {
@@ -231,33 +249,14 @@ const SidebarAdmin = () => {
         { name: 'Lamaran Tentor/Staff',path: '/admin/pendaftaran/tentor',  icon: <Briefcase size={18} />, badge: badgeLamaranTentor > 0 ? badgeLamaranTentor : null, badgeColor: '#8b5cf6' },
       ]
     },
+    // 🔥 BARU (beres-beres sidebar): 21 perkakas yang dulu memenuhi
+    // grup MATERI (5 item) dan BANK SOAL (16 item) kini berada di satu
+    // pintu: halaman Perkakas dengan kartu berdeskripsi + angka klik.
+    // Tidak ada rute yang dihapus -- bookmark lama tetap jalan.
     {
-      label: '📖 MATERI (BUKU DIGITAL)',
+      label: '🧰 KONTEN & PERKAKAS',
       items: [
-        { name: 'Kelola Materi/Modul', path: '/admin/portal/materi', icon: <BookOpen size={18} /> },
-        { name: 'Manajer Buku Digital', path: '/admin/buku', icon: <BookOpen size={18} /> },
-        { name: 'Impor Modul (PDF)', path: '/admin/buku/impor', icon: <UploadCloud size={18} /> },
-      ]
-    },
-    {
-      label: 'BANK SOAL',
-      items: [
-        { name: 'Mesin Bank Soal', path: '/admin/bank-soal/mesin', icon: <Sparkles size={18} /> },
-        { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={18} /> },
-        { name: 'Terbitkan Kuis',       path: '/admin/bank-soal/terbitkan', icon: <Rocket size={18} /> },
-        { name: 'Hasil Kuis',           path: '/admin/bank-soal/hasil',     icon: <ClipboardCheck size={18} /> },
-        { name: 'Try Out Otomatis', path: '/admin/bank-soal/tryout-otomatis', icon: <Trophy size={18} /> },
-        { name: 'Terbitkan Try Out',    path: '/admin/bank-soal/terbitkan-tryout', icon: <Trophy size={18} /> },
-        { name: 'Hasil Try Out',        path: '/admin/bank-soal/hasil-tryout',     icon: <Trophy size={18} /> },
-        { name: 'Aktivitas Latihan',    path: '/admin/bank-soal/aktivitas-latihan', icon: <Sparkles size={18} /> },
-        { name: 'Ranking Siswa',        path: '/admin/bank-soal/ranking-siswa',     icon: <Trophy size={18} /> },
-        { name: 'Audit Materi',         path: '/admin/bank-soal/audit-materi',      icon: <ClipboardList size={18} /> },
-        { name: 'Bersihkan Soal',       path: '/admin/bank-soal/bersihkan-soal',    icon: <Trash2 size={18} /> },
-        { name: 'Rapikan Literasi',     path: '/admin/bank-soal/rapikan-literasi',  icon: <FolderTree size={18} /> },
-        { name: 'Taksonomi Materi',     path: '/admin/bank-soal/taksonomi-materi',  icon: <BookMarked size={18} /> },
-        { name: 'Petakan Materi',       path: '/admin/bank-soal/petakan-matematika', icon: <GitMerge size={18} /> },
-        { name: 'Petakan Mapel (Umum)', path: '/admin/bank-soal/petakan-mapel',      icon: <GitMerge size={18} /> },
-        { name: 'Lemari Soal',          path: '/admin/bank-soal/lemari-soal',       icon: <Archive size={18} /> },
+        { name: 'Bank Soal & Perkakas', path: '/admin/perkakas', icon: <Toolbox size={18} /> },
       ]
     },
     {
@@ -299,7 +298,12 @@ const SidebarAdmin = () => {
               {group.items.map((item) => {
                 const active = isActive(item.path);
                 return (
-                  <Link key={item.path} to={item.path} onClick={handleLinkClick} style={styles.navLink(active)}>
+                  <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => { rekamKlikMenu(item.path, item.name); handleLinkClick(); }}
+                  style={styles.navLink(active)}
+                >
                     <span style={styles.navIcon(active)}>{item.icon}</span>
                     <span style={styles.navText(active)}>{item.name}</span>
                     {item.badge && <span style={styles.badge(item.badgeColor)}>{item.badge}</span>}

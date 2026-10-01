@@ -74,6 +74,9 @@ import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
 // 🔥 BARU (pembagian kewenangan admin vs owner): tempat kerja admin untuk
 // absensi & riwayat sesi tentor -- validasi fakta sesi TANPA angka uang.
 import SesiGuruPage from './pages/admin/teachers/SesiGuruPage';
+// 🔥 BARU: hub perkakas -- rumah baru 21 menu jarang sentuh supaya
+// sidebar ringkas (beres-beres 2026-10-01).
+import PerkakasPage from './pages/admin/PerkakasPage';
 
 import SchedulePage from './pages/admin/schedule/SchedulePage';
 
@@ -570,6 +573,12 @@ function App() {
         <Route
           path="/admin/teachers/sesi"
           element={<AdminRoute><SesiGuruPage /></AdminRoute>}
+        />
+        {/* 🔥 BARU: hub perkakas bank soal & konten (21 menu diringkas
+            jadi satu pintu berdeskripsi + pencatat klik). */}
+        <Route
+          path="/admin/perkakas"
+          element={<AdminRoute><PerkakasPage /></AdminRoute>}
         />
         {/* 🔥 DIUBAH (keputusan owner 2026-10-01): rekap honor/gaji guru
             sekarang wilayah ADMIN OPERASIONAL, bukan owner-only. Pembagian
