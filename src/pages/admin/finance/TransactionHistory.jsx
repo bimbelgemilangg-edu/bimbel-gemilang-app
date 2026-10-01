@@ -1,5 +1,5 @@
 // src/pages/admin/finance/TransactionHistory.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useMemo } from 'react';
 import { db } from '../../../firebase';
 import { 
   collection, query, onSnapshot, doc, deleteDoc, updateDoc, getDoc, where, getDocs, writeBatch
@@ -11,7 +11,7 @@ import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwit
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
   // === FILTER ===
@@ -116,7 +116,12 @@ const TransactionHistory = () => {
   }, []);
 
   // === FILTER LOGIC ===
-  useEffect(() => {
+  // 🔥 FIX (ditangkap CI 2026-10-01): dulu ini useState + useEffect yang
+  // memanggil setFiltered(...) -- pola render berantai yang memang
+  // dilarang aturan react-hooks dan tidak dianjurkan React. Penyaringan
+  // adalah turunan MURNI dari transactions + empat filter, jadi useMemo
+  // adalah wadah benarnya: hasil sama, satu putaran render lebih hemat.
+  const filtered = useMemo(() => {
     let result = [...transactions];
 
     if (filterType !== 'Semua') result = result.filter(t => t.type === filterType);
@@ -136,7 +141,7 @@ const TransactionHistory = () => {
       );
     }
 
-    setFiltered(result);
+    return result;
   }, [transactions, filterType, filterMethod, searchTerm]);
 
   // === TOTALS (mengikuti filter -- ini memang seharusnya per-periode) ===
@@ -573,7 +578,7 @@ const TransactionHistory = () => {
         });
       }
       return '-';
-    } catch (e) {
+    } catch {
       return '-';
     }
   };
