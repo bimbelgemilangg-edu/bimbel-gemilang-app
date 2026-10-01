@@ -49,6 +49,13 @@ const LoginAdmin = () => {
   const [ cooldownAktif, setCooldownAktif ] = useState(false);
   const [detikCooldown, setDetikCooldown] = useState(0);
   const [bolehLegacy, setBolehLegacy] = useState(true);
+  // 🔥 DITAMBAHKAN setelah kejadian nyata 2026-10-01: Owner pertama kali
+  // membuka halaman ini, mengetik username + password lama, dan gagal --
+  // lalu bingung harus bagaimana, karena pesan error SENGAJA generik
+  // (anti user-enumeration). Halaman ini harus menjelaskan dirinya sendiri:
+  // kalau gagal dengan username terisi, tampilkan petunjuk jalur mana yang
+  // seharusnya dipakai.
+  const [saranJalur, setSaranJalur] = useState(false);
   const inputUserRef = useRef(null);
 
   // --------------------------------------------------------
@@ -148,6 +155,7 @@ const LoginAdmin = () => {
       if (hasil.ok) {
         try { localStorage.removeItem(KEY_COOLDOWN); } catch { /* abaikan */ }
         setSisaPercobaan(MAKS_PERCOBAAN);
+        setSaranJalur(false);
 
         if (hasil.jalur === 'legacy') {
           // Dicatat TERPISAH dan mencolok: ini jalur yang mau kita pensiunkan.
@@ -189,6 +197,11 @@ const LoginAdmin = () => {
           sisaPercobaan: Math.max(0, gagalSisa),
         },
       });
+
+      // Username terisi tapi akunnya tidak ketemu -> besar kemungkinan
+      // orang ini BELUM dibuatkan akun dan sedang mencoba password lama.
+      // Tunjukkan petunjuk, bukan biarkan dia menebak-nebak.
+      setSaranJalur(Boolean(u) && hasil.jalur === 'baru');
 
       if (gagalSisa <= 0) {
         aktifkanCooldown();
@@ -238,6 +251,33 @@ const LoginAdmin = () => {
           <div style={styles.errorBox} role="alert">
             <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
             <span>{error}</span>
+          </div>
+        )}
+
+        {saranJalur && (
+          <div style={styles.hintBox} role="status">
+            <span style={styles.hintJudul}>Belum punya akun sendiri?</span>
+            <p style={styles.hintIsi}>
+              Username yang Anda isi tidak cocok dengan akun mana pun. Dua kemungkinan:
+            </p>
+            <ol style={styles.hintList}>
+              <li>
+                <b>Kosongkan kolom username</b> dan isi password admin yang lama.
+                Itu jalur sementara yang masih dibuka Owner, dan setiap masuk
+                lewat sana tercatat sebagai "akun bersama" di jejak audit.
+              </li>
+              <li>
+                Atau minta <b>Owner membuatkan akun</b> untuk Anda: masuk pakai
+                PIN di <code style={styles.hintCode}>/login-owner</code>, lalu menu
+                <b> Pengguna Admin</b> di sidebar.
+              </li>
+            </ol>
+            <p style={styles.hintIsi}>
+              Catatan: username <code style={styles.hintCode}>admin</code>,{' '}
+              <code style={styles.hintCode}>owner</code>, dan{' '}
+              <code style={styles.hintCode}>root</code> dicadangkan sistem dan
+              tidak bisa dipakai sebagai nama akun.
+            </p>
           </div>
         )}
 
@@ -300,15 +340,30 @@ const LoginAdmin = () => {
           </button>
         </form>
 
-        {/* Penjelasan jalur warisan -- hanya muncul saat relevan supaya
-            tidak membingungkan staf yang sudah punya akun. */}
+        {/* 🔥 DIROMBAK setelah kejadian nyata: penjelasan lama terlalu
+            singkat ("masukkan username Anda") sehingga orang yang belum
+            pernah dibuatkan akun tidak tahu harus berbuat apa. Sekarang dua jalur
+            dijelaskan eksplisit, termasuk DI MANA akun dibuat. */}
         {bolehLegacy && (
           <div style={styles.infoBox}>
             <Info size={14} style={{ flexShrink: 0, marginTop: 1 }} />
             <span>
               {modeLegacy
-                ? 'Belum punya akun sendiri? Kosongkan username dan isi password admin lama untuk masuk sementara. Setiap masuk lewat jalur ini TERCATAT sebagai "akun bersama" di jejak audit.'
-                : 'Masuk dengan username Anda supaya setiap aksi tercatat atas nama Anda sendiri.'}
+                ? <>
+                    <b>Jalur password lama (sementara).</b> Username kosong =
+                    masuk pakai password admin yang lama. Setiap masuk lewat
+                    sini TERCATAT sebagai "akun bersama" di jejak audit, jadi
+                    minta Owner membuatkan akun sendiri supaya aksi Anda
+                    tercatat atas nama Anda.
+                  </>
+                : <>
+                    <b>Dua cara masuk.</b> (1) Kalau Owner sudah membuatkan
+                    akun untuk Anda: isi username + password akun itu.
+                    (2) Kalau belum: <b>kosongkan username</b> dan isi password
+                    admin yang lama. Akun dibuat oleh Owner lewat portal Owner
+                    (<code style={styles.hintCode}>/login-owner</code>) → menu
+                    <b> Pengguna Admin</b>.
+                  </>}
             </span>
           </div>
         )}
@@ -416,6 +471,18 @@ const styles = {
     background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.28)',
     borderRadius: 12, padding: '10px 12px', marginBottom: 14,
     color: '#fca5a5', fontSize: 12.5, lineHeight: 1.5,
+  },
+  hintBox: {
+    background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)',
+    borderRadius: 12, padding: '12px 14px', marginBottom: 14,
+    color: 'rgba(255,255,255,0.75)', fontSize: 12, lineHeight: 1.6,
+  },
+  hintJudul: { color: '#fbbf24', fontWeight: 800, fontSize: 12.5 },
+  hintIsi: { margin: '6px 0 0', color: 'rgba(255,255,255,0.6)' },
+  hintList: { margin: '6px 0 0', paddingLeft: 18, color: 'rgba(255,255,255,0.6)', display: 'flex', flexDirection: 'column', gap: 5 },
+  hintCode: {
+    background: 'rgba(0,0,0,0.35)', padding: '1px 5px', borderRadius: 4,
+    fontSize: 11, color: '#fcd34d',
   },
   infoBox: {
     display: 'flex', gap: 8, alignItems: 'flex-start',
