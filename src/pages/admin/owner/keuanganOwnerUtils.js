@@ -25,6 +25,31 @@ export const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni
 export const NAMA_BULAN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
   'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
+// 🔥 BARU (pembagian kewenangan admin vs owner, 2026-10-01):
+// status validasi sesi mengajar. Dipakai bersama oleh halaman kerja admin
+// (Sesi & Validasi Guru) dan panel bayar owner, supaya kedua sisi tidak
+// menulis string yang berbeda dan diam-diam tidak cocok.
+export const STATUS_SESI_VALID = 'Valid / Sudah Terekap';
+export const STATUS_SESI_MENUNGGU = 'Menunggu Validasi';
+
+// 🔥 BARU: jendela bayar honor -- 7 hari terakhir bulan berjalan.
+// Keputusan owner: admin memvalidasi sesi sepanjang bulan, lalu di minggu
+// terakhir bulan menu "Bayar Tentor" muncul untuk owner. Fungsi ini murni
+// (input tanggal string) supaya bisa diuji -- lihat tests/keuangan.test.mjs.
+export const jumlahHariPadaBulan = (tahun, bulan1Based) =>
+  new Date(tahun, bulan1Based, 0).getDate();
+
+export const isJendelaBayar = (tanggalStr) => {
+  const [y, m, d] = String(tanggalStr || '').split('-').map((v) => parseInt(v, 10));
+  if (!y || !m || !d) return false;
+  const akhir = jumlahHariPadaBulan(y, m);
+  // 🔥 Tanggal yang TIDAK ADA di kalender (mis. 2026-02-30) ditolak, bukan
+  // ditebak. Tanpa penjaga ini, string rusak justru lolos sebagai "jendela
+  // bayar" karena nilainya besar -- ditemukan oleh tests/keuangan.test.mjs.
+  if (m < 1 || m > 12 || d < 1 || d > akhir) return false;
+  return d >= akhir - 6; // 7 hari terakhir, termasuk tanggal akhir bulan
+};
+
 export const tanggalLokalHariIni = () => keyTanggalDariDate(new Date());
 
 export const keyTanggalDariDate = (d) =>

@@ -15,6 +15,16 @@
 //    mencatat pengeluaran ke finance_logs DAN menandai sesi-sesinya
 //    LUNAS dalam satu writeBatch (anti setengah-tersimpan). Ada juga
 //    estimasi "Kewajiban Gaji Tentor Bulan Depan".
+//
+//    🔥 DIUBAH (pembagian kewenangan 2026-10-01): yang BOLEH DIBAYAR
+//    sekarang hanya sesi yang SUDAH DIVALIDASI ADMIN di halaman
+//    "Sesi & Validasi Guru" (status 'Valid / Sudah Terekap'). Sesi yang
+//    masih 'Menunggu Validasi' ditampilkan terpisah sebagai "menunggu
+//    approval admin" dan TIDAK bisa dibayar -- owner membayar sesuai
+//    apa yang sudah disetujui admin, bukan menurut penilaiannya sendiri.
+//    Menu sidebar menuju panel ini muncul untuk owner di 7 hari terakhir
+//    bulan (isJendelaBayar), tapi panelnya sendiri tetap terbuka kapan
+//    pun lewat Portal Keuangan supaya uang tidak terjebak kalender.
 import React, { useState, useMemo } from 'react';
 import { db } from '../../../firebase';
 import {
@@ -30,6 +40,7 @@ import {
 } from '../../../utils/kwitansi';
 import {
   tanggalLokalHariIni, namaBulanDariKey, keyBulanIni,
+  STATUS_SESI_VALID,
 } from './keuanganOwnerUtils';
 
 const KATEGORI_MASUK = ['Penjualan Modul/Buku', 'Penjualan Seragam', 'Kantin/Snack', 'Hibah/Donasi', 'Suntikan Modal Owner', 'Lainnya'];
@@ -251,15 +262,26 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
       if ((t.tanggal || '').slice(0, 7) !== bulan) continue;
       const key = t.teacherId || t.namaGuru;
       if (!map.has(key)) {
-        map.set(key, { key, namaGuru: t.namaGuru, sesi: 0, total: 0, sesiBelum: 0, totalBelum: 0, logBelum: [] });
+        map.set(key, {
+          key, namaGuru: t.namaGuru, sesi: 0, total: 0,
+          sesiBelum: 0, totalBelum: 0, logBelum: [],
+          sesiTunggu: 0, totalTunggu: 0,
+        });
       }
       const r = map.get(key);
       r.sesi += 1;
       r.total += t.nominal;
       if (t.statusDibayar !== 'Lunas') {
-        r.sesiBelum += 1;
-        r.totalBelum += t.nominal;
-        r.logBelum.push(t);
+        // Hanya sesi yang SUDAH divalidasi admin yang jadi kewajiban
+        // bayar. Sisanya menunggu approval -- ditampilkan, tidak dibayar.
+        if (t.status === STATUS_SESI_VALID) {
+          r.sesiBelum += 1;
+          r.totalBelum += t.nominal;
+          r.logBelum.push(t);
+        } else {
+          r.sesiTunggu += 1;
+          r.totalTunggu += t.nominal;
+        }
       }
     }
     return [...map.values()].sort((a, b) => b.totalBelum - a.totalBelum || b.total - a.total);
@@ -268,19 +290,43 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
   const totalSesi = rekap.reduce((s, r) => s + r.sesi, 0);
   const totalHonor = rekap.reduce((s, r) => s + r.total, 0);
   const totalBelum = rekap.reduce((s, r) => s + r.totalBelum, 0);
+  const totalTunggu = rekap.reduce((s, r) => s + r.sesiTunggu, 0);
 
-  // Kewajiban LINTAS BULAN yang belum dibayar (bukan cuma bulan terpilih)
-  // -- uang yang tetap harus disisihkan walau bulan rekapnya diganti.
-  const utangHonorSemua = useMemo(() =>
-    teacherLogs.filter(t => t.statusDibayar !== 'Lunas').reduce((s, t) => s + t.nominal, 0),
-  [teacherLogs]);
+  // 🔥 BARU: rangkuman & analisis sesi bulan terpilih -- owner diminta
+  // "klik, melihat semua rangkuman sesi dan analisis, klik bayarkan".
+  const analisis = useMemo(() => {
+    const sesiBulan = teacherLogs.filter((t) => (t.tanggal || '').slice(0, 7) === bulan);
+    const valid = sesiBulan.filter((t) => t.status === STATUS_SESI_VALID);
+    return {
+      sesi: sesiBulan.length,
+      valid: valid.length,
+      menunggu: sesiBulan.length - valid.length,
+      jam: sesiBulan.reduce((s, t) => s + (Number(t.durasiJam) || 0), 0),
+      siswa: sesiBulan.reduce((s, t) => s + (Number(t.siswaHadir) || 0), 0),
+      guru: new Set(sesiBulan.map((t) => t.teacherId || t.namaGuru)).size,
+    };
+  }, [teacherLogs, bulan]);
+
+  // Kewajiban LINTAS BULAN yang belum dibayar (bukan cuma bulan terpilih),
+  // dipecah: yang SIAP dibayar (sudah validasi admin) vs yang masih
+  // menunggu approval admin.
+  const [utangSiap, utangTunggu] = useMemo(() => {
+    let siap = 0; let tunggu = 0;
+    for (const t of teacherLogs) {
+      if (t.statusDibayar === 'Lunas') continue;
+      if (t.status === STATUS_SESI_VALID) siap += t.nominal || 0;
+      else tunggu += t.nominal || 0;
+    }
+    return [siap, tunggu];
+  }, [teacherLogs]);
 
   const bayarHonor = async (r) => {
-    if (r.totalBelum <= 0) return;
+    // Hanya sesi yang sudah divalidasi admin yang ikut terbawa (logBelum).
+    if (r.totalBelum <= 0 || r.logBelum.length === 0) return;
     const konfirmasi = window.confirm(
       `Bayar honor ${r.namaGuru}?\n\n` +
       `Periode: ${namaBulanDariKey(bulan)}\n` +
-      `Sesi belum dibayar: ${r.sesiBelum} sesi\n` +
+      `Sesi SUDAH divalidasi admin & belum dibayar: ${r.sesiBelum} sesi\n` +
       `Total: ${rpFmt(r.totalBelum)}\n` +
       `Lewat: ${LABEL_KANAL_PENDEK[kanalBayar]}\n\n` +
       `Sistem akan mencatat 1 pengeluaran "Gaji Guru/Staf" dan menandai ${r.sesiBelum} sesi menjadi LUNAS (satu batch atomik).`
@@ -324,8 +370,8 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
   };
 
   const unduhCSV = () => {
-    const baris = [['Nama Guru', 'Jumlah Sesi', 'Total Honor', 'Sesi Belum Dibayar', 'Belum Dibayar (Rp)']];
-    for (const r of rekap) baris.push([r.namaGuru, r.sesi, r.total, r.sesiBelum, r.totalBelum]);
+    const baris = [['Nama Guru', 'Jumlah Sesi', 'Total Honor', 'Siap Dibayar (sesi)', 'Nominal Siap (Rp)', 'Menunggu Validasi Admin (sesi)', 'Nominal Menunggu (Rp)']];
+    for (const r of rekap) baris.push([r.namaGuru, r.sesi, r.total, r.sesiBelum, r.totalBelum, r.sesiTunggu, r.totalTunggu]);
     baris.push([]);
     baris.push(['TOTAL', totalSesi, totalHonor, '', totalBelum]);
     const csv = baris.map(b => b.map(x => `"${String(x).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -355,11 +401,54 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
           <span style={styles.heroLabel}>Honor {namaBulanDariKey(bulan)} Belum Dibayar</span>
           <h2 style={styles.heroValue}>{rpFmt(totalBelum)}</h2>
           <p style={styles.heroNote}>
-            Total semua bulan yang belum dibayar: <b>{rpFmt(utangHonorSemua)}</b> — sisihkan uang ini (dana keramat juga,
-            milik tentor yang sudah mengajar).
+            Lintas bulan: siap dibayar (sudah divalidasi admin){' '}
+            <b>{rpFmt(utangSiap)}</b>; masih menunggu validasi admin{' '}
+            <b>{rpFmt(utangTunggu)}</b>. Yang siap dibayar adalah dana keramat —
+            milik tentor yang sudah mengajar dan sudah disetujui admin.
           </p>
         </div>
       </div>
+
+      {/* ===== RANGKUMAN SESI & ANALISIS (bulan terpilih) =====
+          🔥 BARU: owner diminta cukup "klik, lihat semua rangkuman sesi
+          dan analisis, klik bayarkan". Blok ini merangkum fakta operasional
+          bulan itu supaya keputusan bayar diambil dari gambar utuh. */}
+      <div style={styles.analisisRow}>
+        <div style={styles.analisisCard}>
+          <div style={styles.analisisAngka}>{analisis.sesi}</div>
+          <div style={styles.analisisLabel}>Sesi tercatat</div>
+        </div>
+        <div style={styles.analisisCard}>
+          <div style={{ ...styles.analisisAngka, color: '#16a34a' }}>{analisis.valid}</div>
+          <div style={styles.analisisLabel}>Sudah divalidasi admin</div>
+        </div>
+        <div style={styles.analisisCard}>
+          <div style={{ ...styles.analisisAngka, color: analisis.menunggu > 0 ? '#d97706' : '#16a34a' }}>
+            {analisis.menunggu}
+          </div>
+          <div style={styles.analisisLabel}>Menunggu validasi admin</div>
+        </div>
+        <div style={styles.analisisCard}>
+          <div style={styles.analisisAngka}>{analisis.jam}</div>
+          <div style={styles.analisisLabel}>Total jam mengajar</div>
+        </div>
+        <div style={styles.analisisCard}>
+          <div style={styles.analisisAngka}>{analisis.siswa}</div>
+          <div style={styles.analisisLabel}>Siswa hadir (akumulasi)</div>
+        </div>
+        <div style={styles.analisisCard}>
+          <div style={styles.analisisAngka}>{analisis.guru}</div>
+          <div style={styles.analisisLabel}>Tentor mengajar</div>
+        </div>
+      </div>
+      {analisis.menunggu > 0 && (
+        <p style={styles.pesanTunggu}>
+          ⏳ {analisis.menunggu} sesi bulan ini belum divalidasi admin — nominalnya{' '}
+          <b>tidak bisa dibayar dulu</b>. Admin memvalidasinya di menu
+          "Sesi & Validasi Guru"; begitu disetujui, angkanya otomatis masuk
+          kolom siap bayar di sini.
+        </p>
+      )}
 
       {/* ===== KONTROL ===== */}
       <div style={styles.controlRow}>
@@ -402,8 +491,9 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
                   <th style={styles.th}>Guru</th>
                   <th style={{ ...styles.th, textAlign: 'center' }}>Sesi</th>
                   <th style={{ ...styles.th, textAlign: 'right' }}>Total Honor</th>
-                  <th style={{ ...styles.th, textAlign: 'center' }}>Belum Dibayar</th>
-                  <th style={{ ...styles.th, textAlign: 'right' }}>Nominal Belum</th>
+                  <th style={{ ...styles.th, textAlign: 'center' }}>Siap Dibayar</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>Nominal Siap</th>
+                  <th style={{ ...styles.th, textAlign: 'center' }}>Menunggu Admin</th>
                   <th style={{ ...styles.th, textAlign: 'center' }}>Aksi</th>
                 </tr>
               </thead>
@@ -420,10 +510,23 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
                       {rpFmt(r.totalBelum)}
                     </td>
                     <td style={{ ...styles.td, textAlign: 'center' }}>
+                      {r.sesiTunggu > 0 ? (
+                        <span style={styles.badgeTunggu} title="Sesi belum divalidasi admin -- tidak bisa dibayar dulu">
+                          {r.sesiTunggu} sesi · {rpFmt(r.totalTunggu)}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>—</span>
+                      )}
+                    </td>
+                    <td style={{ ...styles.td, textAlign: 'center' }}>
                       {r.totalBelum > 0 ? (
                         <button onClick={() => bayarHonor(r)} disabled={busyGuru === r.key} style={styles.btnBayar(busyGuru === r.key)}>
                           {busyGuru === r.key ? <Loader2 size={13} className="spin" /> : <CheckCircle2 size={13} />} Bayar Honor
                         </button>
+                      ) : r.sesiTunggu > 0 ? (
+                        <span style={{ fontSize: 10.5, color: '#d97706', fontWeight: 700 }}>
+                          ⏳ tunggu validasi admin
+                        </span>
                       ) : (
                         <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 800 }}>✅ LUNAS</span>
                       )}
@@ -438,6 +541,9 @@ const BagianHonor = ({ teacherLogs, rpFmt, isMobile }) => {
                   <td style={{ ...styles.td, textAlign: 'right', fontWeight: 900 }}>{rpFmt(totalHonor)}</td>
                   <td></td>
                   <td style={{ ...styles.td, textAlign: 'right', fontWeight: 900, color: '#dc2626' }}>{rpFmt(totalBelum)}</td>
+                  <td style={{ ...styles.td, textAlign: 'center', fontWeight: 900, color: totalTunggu > 0 ? '#d97706' : '#94a3b8' }}>
+                    {totalTunggu > 0 ? `${totalTunggu} sesi` : '—'}
+                  </td>
                   <td></td>
                 </tr>
               </tfoot>
@@ -464,6 +570,12 @@ const styles = {
   cardTitle: { margin: '0 0 6px', fontSize: 14.5, fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
   ket: { fontSize: 11, color: '#94a3b8', margin: '0 0 14px', lineHeight: 1.7, maxWidth: 780 },
   pesanBox: { background: '#1e293b', color: 'white', padding: '10px 14px', borderRadius: 10, fontSize: 12, fontWeight: 700, marginBottom: 12 },
+  analisisRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginBottom: 12 },
+  analisisCard: { background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 10px', textAlign: 'center' },
+  analisisAngka: { fontSize: 20, fontWeight: 900, color: '#1e293b', lineHeight: 1.1 },
+  analisisLabel: { fontSize: 9.5, color: '#64748b', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.4, fontWeight: 700 },
+  pesanTunggu: { background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', borderRadius: 10, padding: '10px 13px', fontSize: 11.5, lineHeight: 1.6, margin: '0 0 12px' },
+  badgeTunggu: { background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 20, padding: '3px 8px', fontSize: 10.5, fontWeight: 800, cursor: 'help' },
 
   grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 },
   inputGroup: { marginBottom: 10 },

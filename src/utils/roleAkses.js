@@ -47,7 +47,8 @@ export const labelPeran = () => {
     if (raw) {
       const sesi = JSON.parse(raw);
       const peta = {
-        kasir: 'Admin Kasir',
+        operasional: 'Admin Operasional',
+        kasir: 'Admin Operasional', // peran lama, label disamakan
         manajer: 'Admin Manajer',
         owner: 'Owner (Super Admin)',
         legacy: 'Admin (akun lama bersama)',

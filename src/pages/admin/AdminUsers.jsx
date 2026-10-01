@@ -342,8 +342,11 @@ const AdminUsers = () => {
             <div style={styles.statLabel}>Akun aktif</div>
           </div>
           <div style={styles.statCard}>
-            <div style={styles.statAngka}>{daftar.filter((a) => a.aktif !== false && a.peran === PERAN_ADMIN.KASIR).length}</div>
-            <div style={styles.statLabel}>Kasir</div>
+            <div style={styles.statAngka}>
+              {daftar.filter((a) => a.aktif !== false
+                && (a.peran === PERAN_ADMIN.OPERASIONAL || a.peran === PERAN_ADMIN.KASIR)).length}
+            </div>
+            <div style={styles.statLabel}>Operasional</div>
           </div>
           <div style={styles.statCard}>
             <div style={styles.statAngka}>{jumlahManajerAktif}</div>
@@ -497,11 +500,16 @@ const AdminUsers = () => {
                   value={formBaru.peran}
                   onChange={(e) => setFormBaru({ ...formBaru, peran: e.target.value })}
                 >
-                  <option value={PERAN_ADMIN.KASIR}>Kasir — operasional harian saja</option>
-                  <option value={PERAN_ADMIN.MANAJER}>Manajer — + kelola akun & jejak audit</option>
+                  <option value={PERAN_ADMIN.OPERASIONAL}>
+                    Operasional — kendali penuh tentor, siswa, validasi sesi & rekap gaji
+                  </option>
+                  <option value={PERAN_ADMIN.MANAJER}>
+                    Manajer — operasional + kelola akun admin & jejak audit
+                  </option>
                 </select>
                 <small style={styles.hint}>
-                  Kasir TIDAK bisa lihat gaji guru, pengaturan global, atau portal owner.
+                  Operasional TIDAK bisa kelola akun admin, buka jejak audit, pengaturan
+                  global, atau portal owner. Eksekusi pembayaran honor tetap di Owner.
                 </small>
               </div>
 
@@ -648,7 +656,7 @@ const AdminUsers = () => {
                                     onChange={(e) => setEditData({ ...editData, peran: e.target.value })}
                                     disabled={akunSendiri}
                                   >
-                                    <option value={PERAN_ADMIN.KASIR}>Kasir</option>
+                                    <option value={PERAN_ADMIN.OPERASIONAL}>Operasional</option>
                                     <option value={PERAN_ADMIN.MANAJER}>Manajer</option>
                                   </select>
                                 </div>

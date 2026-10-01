@@ -52,7 +52,14 @@ const OwnerFinance = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [privacyMode, setPrivacyMode] = useState(false);
-  const [tab, setTab] = useState('posisi');
+  // 🔥 BARU: dukung deep-link ?tab=honor dll, dipakai menu sidebar owner
+  // "Bayar Tentor" yang muncul di minggu terakhir bulan. Tab yang tidak
+  // dikenal jatuh ke 'posisi' supaya URL salah tidak menampilkan kosong.
+  const [tab, setTab] = useState(() => {
+    const diminta = new URLSearchParams(window.location.search).get('tab');
+    const sah = ['posisi', 'transaksi', 'rekonsiliasi', 'honor', 'analisis', 'neraca'];
+    return sah.includes(diminta) ? diminta : 'posisi';
+  });
   const [terakhirUpdate, setTerakhirUpdate] = useState(null);
 
   // Data mentah dari listener, lalu dinormalisasi sekali via useMemo.

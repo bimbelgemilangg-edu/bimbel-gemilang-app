@@ -571,12 +571,16 @@ function App() {
           path="/admin/teachers/sesi"
           element={<AdminRoute><SesiGuruPage /></AdminRoute>}
         />
-        {/* 🔥 UPGRADE (pemisahan hak akses): rekap honor/gaji guru adalah
-            data sensitif -- KHUSUS Owner. Admin kasir tidak boleh melihat
-            berapa honor tentor (keuangan besar dipegang owner). */}
+        {/* 🔥 DIUBAH (keputusan owner 2026-10-01): rekap honor/gaji guru
+            sekarang wilayah ADMIN OPERASIONAL, bukan owner-only. Pembagian
+            akhirnya: admin memegang kendali (validasi sesi, rekap, nominal,
+            tarif), owner hanya MENGEKSEKUSI PEMBAYARAN di Portal Owner
+            (menu Bayar Tentor, muncul di minggu terakhir bulan).
+            Sebelumnya route ini OwnerRoute dan admin yang klik tombol Gaji
+            terpental ke /login-owner -- keluhan nyata yang memicu perubahan. */}
         <Route
           path="/admin/teachers/salaries"
-          element={<OwnerRoute><TeacherSalaries /></OwnerRoute>}
+          element={<AdminRoute><TeacherSalaries /></AdminRoute>}
         />
         <Route path="/admin/portal" element={<AdminRoute><PortalSiswaHome /></AdminRoute>} />
         <Route path="/admin/portal/poster" element={<AdminRoute><ManagePoster /></AdminRoute>} />

@@ -40,6 +40,10 @@ import {
   daftar12BulanTerakhir,
   keyTanggalDariDate,
   keyBulanDariDate,
+  isJendelaBayar,
+  jumlahHariPadaBulan,
+  STATUS_SESI_VALID,
+  STATUS_SESI_MENUNGGU,
   namaBulanDariKey,
   tambahHari,
   rpFmt,
@@ -584,6 +588,43 @@ uji('urutTanggalTerbaru: tanggal baru dulu, seri dipecah createdAtMs', () => {
   const a = log({ type: 'Pemasukan', amount: 1, method: 'Tunai', date: '2026-01-01' });
   const b = log({ type: 'Pemasukan', amount: 1, method: 'Tunai', date: '2026-06-01' });
   assert.deepEqual([a, b].sort(urutTanggalTerbaru)[0].date, '2026-06-01');
+});
+
+// ============================================================
+bagian('jendela bayar honor (menu owner akhir bulan)');
+// ============================================================
+
+uji('jumlah hari per bulan benar, termasuk kabisat', () => {
+  assert.equal(jumlahHariPadaBulan(2026, 2), 28);
+  assert.equal(jumlahHariPadaBulan(2024, 2), 29);
+  assert.equal(jumlahHariPadaBulan(2026, 12), 31);
+  assert.equal(jumlahHariPadaBulan(2026, 4), 30);
+});
+
+uji('jendela bayar = 7 hari terakhir bulan (termasuk tanggal akhir)', () => {
+  // Februari 2026: 28 hari -> jendela mulai 22 (28-6)
+  assert.equal(isJendelaBayar('2026-02-21'), false);
+  assert.equal(isJendelaBayar('2026-02-22'), true);
+  assert.equal(isJendelaBayar('2026-02-28'), true);
+  // Desember: 31 hari -> jendela mulai 25
+  assert.equal(isJendelaBayar('2026-12-24'), false);
+  assert.equal(isJendelaBayar('2026-12-25'), true);
+  assert.equal(isJendelaBayar('2026-12-31'), true);
+  // Awal bulan jelas di luar jendela
+  assert.equal(isJendelaBayar('2026-03-01'), false);
+});
+
+uji('input rusak tidak melempar dan tidak mengaku jendela', () => {
+  for (const v of [null, undefined, '', 'abc', '2026-13-01', '2026-02-30']) {
+    assert.equal(isJendelaBayar(v), false, `input ${JSON.stringify(v)} harus false`);
+  }
+});
+
+uji('konstanta status sesi konsisten antara halaman admin & panel owner', () => {
+  // Kedua sisi harus memakai string yang PERSIS sama, kalau tidak sesi yang
+  // divalidasi admin tidak akan pernah terbaca "siap dibayar" oleh owner.
+  assert.equal(STATUS_SESI_VALID, 'Valid / Sudah Terekap');
+  assert.equal(STATUS_SESI_MENUNGGU, 'Menunggu Validasi');
 });
 
 // ============================================================

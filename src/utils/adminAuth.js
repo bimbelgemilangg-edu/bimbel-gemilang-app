@@ -66,17 +66,31 @@ import {
 export const COLLECTION_ADMIN = 'admin_users';
 export const KEY_SESSION = 'adminSession';
 
+// 🔥 DIUBAH (keputusan owner 2026-10-01): peran utama staf bukan "kasir"
+// lagi melainkan OPERASIONAL. Staf operasional memegang kendali penuh atas
+// tentor, siswa, validasi sesi, DAN menu gaji -- yang dulu dibatasi dari
+// "kasir". Peran lama 'kasir' tetap diterima dan DIPETAKAN ke operasional
+// supaya akun & sesi lama tidak rusak.
 export const PERAN_ADMIN = {
-  KASIR: 'kasir',
+  KASIR: 'kasir', // legacy -- diperlakukan sama dengan operasional
+  OPERASIONAL: 'operasional',
   MANAJER: 'manajer',
 };
 
 export const LABEL_PERAN_ADMIN = {
-  kasir: 'Admin Kasir',
+  operasional: 'Admin Operasional',
+  kasir: 'Admin Operasional', // label legacy disamakan
   manajer: 'Admin Manajer',
   owner: 'Owner (Super Admin)',
   legacy: 'Admin (akun lama bersama)',
 };
+
+// Satu tempat pemetaan peran lama -> baru. Semua pemeriksaan peran
+// sebaiknya lewat sini supaya tidak ada cabang yang lupa migrasi.
+// (Dinamai normalisasiPeranAdmin, bukan peranEfektif, karena nama itu
+// sudah dipakai sebagai parameter simpanSesiAdmin di berkas ini.)
+export const normalisasiPeranAdmin = (peran) =>
+  (peran === 'kasir' ? PERAN_ADMIN.OPERASIONAL : peran);
 
 // ------------------------------------------------------------
 // LOGIKA HASH & VALIDASI
@@ -184,7 +198,7 @@ export async function buatAdmin({ username, nama, jabatan, peran, password, dibu
     username: u,
     nama: String(nama).trim(),
     jabatan: String(jabatan || '').trim(),
-    peran: peran === PERAN_ADMIN.MANAJER ? PERAN_ADMIN.MANAJER : PERAN_ADMIN.KASIR,
+    peran: peran === PERAN_ADMIN.MANAJER ? PERAN_ADMIN.MANAJER : PERAN_ADMIN.OPERASIONAL,
     aktif: true,
     passwordHash,
     passwordSalt: salt,
@@ -405,7 +419,10 @@ export async function loginAdmin({ username, password, izinkanLegacy = true }) {
       jabatan: d.jabatan || '',
       peran: d.peran || PERAN_ADMIN.KASIR,
     };
-    const sesi = simpanSesiAdmin(akun, akun.peran);
+    const sesi = simpanSesiAdmin(
+      akun,
+      normalisasiPeranAdmin(akun.peran) || PERAN_ADMIN.OPERASIONAL,
+    );
     return {
       ok: true,
       sesi,
@@ -456,7 +473,10 @@ export async function loginAdmin({ username, password, izinkanLegacy = true }) {
       jumlahLogin: (Number(akun.jumlahLogin) || 0) + 1,
     }).catch(() => {});
 
-    const sesi = simpanSesiAdmin(akun, akun.peran || PERAN_ADMIN.KASIR);
+    const sesi = simpanSesiAdmin(
+      akun,
+      normalisasiPeranAdmin(akun.peran) || PERAN_ADMIN.OPERASIONAL,
+    );
     return { ok: true, sesi, jalur: 'baru', akun, lewatServer: false };
   }
 
@@ -540,6 +560,7 @@ export default {
   namaAdminAktif,
   peranAdminAktif,
   isManajerSession,
+  normalisasiPeranAdmin,
   loginAdmin,
   verifikasiLewatServer,
   ringkasanPerangkat,

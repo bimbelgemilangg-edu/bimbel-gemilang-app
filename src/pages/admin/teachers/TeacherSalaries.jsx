@@ -628,6 +628,21 @@ const TeacherSalaries = () => {
           <div>
             <h2 style={styles.pageTitle(isMobile)}><DollarSign size={22} /> Rekap Gaji & Validasi Harian</h2>
             <p style={styles.subtitle(isMobile)}>Kelola honor berdasarkan jenjang dan durasi mengajar.</p>
+            {/* 🔥 BARU (pembagian kewenangan 2026-10-01): halaman ini kini
+                wilayah ADMIN OPERASIONAL (rekap, validasi, nominal, tarif).
+                Eksekusi pembayaran sengaja TIDAK ada di sini -- itu tombol
+                Owner di Portal Owner, muncul di 7 hari terakhir bulan, dan
+                hanya bisa membayar sesi yang sudah divalidasi admin. */}
+            <p style={{
+              background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af',
+              borderRadius: 10, padding: '9px 13px', fontSize: 11.5, lineHeight: 1.6,
+              margin: '10px 0 0',
+            }}>
+              💼 <b>Pembagian kewenangan:</b> Anda memegang kendali rekap, validasi sesi,
+              nominal, dan tarif. <b>Pembayaran honor dieksekusi Owner</b> di Portal Owner →
+              Bayar Tentor (muncul di minggu terakhir bulan) — dan Owner hanya bisa membayar
+              sesi yang sudah berstatus "Valid / Sudah Terekap" dari menu Sesi & Validasi Guru.
+            </p>
           </div>
           <div style={{display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap'}}>
             {/* 🔥 BARU: tombol unduh SEMUA riwayat (semua guru) jadi satu
@@ -1409,7 +1424,7 @@ const styles = {
     transition: '0.2s'
   },
   
-  filterRow: (m) => ({ marginBottom:20, display:'flex', gap:10, alignItems:'flex-end', flexWrap:'wrap' }),
+  filterRow: () => ({ marginBottom:20, display:'flex', gap:10, alignItems:'flex-end', flexWrap:'wrap' }),
   filterGroup: { display:'flex', flexDirection:'column', gap:4 },
   filterLabel: { fontSize:11, fontWeight:'bold', color:'#64748b', display:'flex', alignItems:'center', gap:4 },
   dateInput: (m) => ({ padding: m ? 8 : 10, borderRadius:8, border:'1px solid #e2e8f0', fontSize: m ? 11 : 13 }),

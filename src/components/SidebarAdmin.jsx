@@ -12,11 +12,13 @@ import {
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
-  Crown, Lock, Receipt, KeyRound, History
+  Crown, Lock, Receipt, KeyRound, History, Wallet
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
 import { isOwnerSession } from '../utils/roleAkses';
+// 🔥 BARU: jendela bayar honor (7 hari terakhir bulan) untuk menu owner.
+import { isJendelaBayar, tanggalLokalHariIni } from '../pages/admin/owner/keuanganOwnerUtils';
 // 🔥 BARU (pemisahan akun Admin): sidebar sekarang tahu SIAPA yang
 // sedang login (nama + peran), bukan cuma label generik "Admin".
 import {
@@ -187,8 +189,10 @@ const SidebarAdmin = () => {
         { name: 'Kwitansi', path: '/admin/finance?tab=kwitansi', icon: <Receipt size={18} /> },
         // 🔥 BARU (kasir): tutup kas / setor uang fisik ke owner.
         { name: 'Tutup Kasir', path: '/admin/finance?tab=kasir', icon: <Lock size={18} /> },
-        // Rekap honor guru = data sensitif, HANYA owner yang boleh lihat.
-        ...(owner ? [{ name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: <FileText size={18} /> }] : []),
+        // 🔥 DIUBAH (keputusan owner 2026-10-01): rekap gaji guru sekarang
+        // wilayah ADMIN OPERASIONAL -- admin yang memegang kendali validasi
+        // sesi, nominal, dan tarif. Owner tinggal mengeksekusi pembayaran.
+        { name: 'Gaji Guru', path: '/admin/teachers/salaries', icon: <FileText size={18} /> },
       ]
     },
     // 🔥 BARU: grup khusus owner -- jalan pintas ke portal keuangan owner
@@ -197,6 +201,16 @@ const SidebarAdmin = () => {
       label: '👑 OWNER',
       items: [
         { name: 'Portal Keuangan Owner', path: '/owner/finance', icon: <Crown size={18} /> },
+        // 🔥 BARU (pembagian kewenangan): pintu bayar honor. Muncul di
+        // SIDEBAR hanya pada 7 hari terakhir bulan ("minggu terakhir") --
+        // alur yang diminta owner: admin memvalidasi sesi sepanjang bulan,
+        // lalu owner membayar di akhir bulan. Halaman tujuannya sendiri
+        // tetap bisa dibuka kapan pun lewat Portal Keuangan (tab Honor),
+        // supaya uang tidak pernah terjebak cuma karena kalender.
+        ...(isJendelaBayar(tanggalLokalHariIni()) ? [{
+          name: 'Bayar Tentor', path: '/owner/finance?tab=honor', icon: <Wallet size={18} />,
+          badge: 'akhir bulan', badgeColor: '#f59e0b',
+        }] : []),
         { name: 'Pengaturan Global', path: '/owner/settings', icon: <Settings size={18} /> },
       ]
     }] : []),

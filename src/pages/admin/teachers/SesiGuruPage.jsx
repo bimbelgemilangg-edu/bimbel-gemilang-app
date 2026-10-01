@@ -38,8 +38,12 @@ import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { keyTanggalDariDate } from '../owner/keuanganOwnerUtils';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 
-const STATUS_VALID = 'Valid / Sudah Terekap';
-const STATUS_MENUNGGU = 'Menunggu Validasi';
+// Status sesi diambil dari satu sumber (keuanganOwnerUtils) supaya halaman
+// admin dan panel bayar owner TIDAK pernah menulis string berbeda.
+import {
+  STATUS_SESI_VALID as STATUS_VALID,
+  STATUS_SESI_MENUNGGU as STATUS_MENUNGGU,
+} from '../owner/keuanganOwnerUtils';
 
 const SesiGuruPage = () => {
   const now = new Date();
@@ -219,9 +223,10 @@ const SesiGuruPage = () => {
           <div>
             <b style={{ color: '#93c5fd' }}>Halaman ini sengaja tanpa angka uang.</b>
             <p style={styles.batasText}>
-              Nominal honor, tarif, bonus, dan pembayaran adalah wilayah <b>Owner</b> di halaman
-              Gaji Guru & Portal Owner. Di sini admin memvalidasi <b>fakta sesinya</b> —
-              dan status valid itulah yang dipakai Owner sebagai dasar membayar.
+              Rekap nominal & tarif ada di menu <b>Gaji Guru</b> (wilayah admin operasional).
+              Yang bukan wilayah admin adalah <b>eksekusi pembayaran</b>: itu tombol Owner di
+              Portal Owner → Bayar Tentor, dan hanya bisa menekan bayar untuk sesi yang sudah
+              Anda validasi di sini. Status "Valid" Anda adalah pintu pembuka pembayaran itu.
             </p>
           </div>
         </div>
