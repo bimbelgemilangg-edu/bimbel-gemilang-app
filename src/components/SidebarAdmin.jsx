@@ -12,11 +12,17 @@ import {
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
-  Crown, Lock, Receipt
+  Crown, Lock, Receipt, KeyRound, History
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, getCountFromServer } from 'firebase/firestore';
-import { isOwnerSession, labelPeran } from '../utils/roleAkses';
+import { isOwnerSession } from '../utils/roleAkses';
+// 🔥 BARU (pemisahan akun Admin): sidebar sekarang tahu SIAPA yang
+// sedang login (nama + peran), bukan cuma label generik "Admin".
+import {
+  ambilSesiAdmin, hapusSesiAdmin, isManajerSession, LABEL_PERAN_ADMIN,
+} from '../utils/adminAuth';
+import { catatAudit, KATEGORI } from '../utils/auditLog';
 
 const SidebarAdmin = () => {
   const location = useLocation();
@@ -95,6 +101,10 @@ const SidebarAdmin = () => {
 
   const handleLogout = () => {
     if (window.confirm("Keluar dari Dashboard Admin?")) {
+      // 🔥 BARU: catat siapa yang keluar SEBELUM sesinya dihapus, supaya
+      // jejak audit tetap tahu aktor-nya (bukan "tak-diketahui").
+      catatAudit('logout', { kategori: KATEGORI.AUTH, target: 'Keluar dari Portal Admin' });
+      hapusSesiAdmin();
       localStorage.clear();
       navigate('/');
     }
@@ -124,6 +134,22 @@ const SidebarAdmin = () => {
   // membocorkan keuangan besar (Gaji Guru, Pengaturan/global, Portal
   // Owner) DISEMBUNYIKAN dari kasir.
   const owner = isOwnerSession();
+  // 🔥 BARU (pemisahan akun Admin): identitas staf yang sedang login.
+  // Manajer mendapat grup menu KEAMANAN (kelola akun + jejak audit).
+  const manajer = isManajerSession();
+  const sesiAdmin = ambilSesiAdmin();
+  const namaTampil = owner
+    ? 'Owner'
+    : (sesiAdmin?.nama || (sesiAdmin?.peran === 'legacy' ? 'Admin (akun bersama)' : 'Admin'));
+  const peranTampil = owner
+    ? 'Owner (Super Admin)'
+    : (LABEL_PERAN_ADMIN[sesiAdmin?.peran] || 'Admin Kasir');
+  const inisialNama = (namaTampil || 'A')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('') || 'A';
 
   const menuGroups = [
     {
@@ -169,6 +195,15 @@ const SidebarAdmin = () => {
       items: [
         { name: 'Portal Keuangan Owner', path: '/owner/finance', icon: <Crown size={18} /> },
         { name: 'Pengaturan Global', path: '/owner/settings', icon: <Settings size={18} /> },
+      ]
+    }] : []),
+    // 🔥 BARU (pemisahan akun Admin): grup KEAMANAN -- hanya Owner dan
+    // admin berperan Manajer. Kasir tidak melihat grup ini sama sekali.
+    ...((owner || manajer) ? [{
+      label: '🔐 KEAMANAN',
+      items: [
+        { name: 'Pengguna Admin', path: '/admin/pengguna', icon: <KeyRound size={18} /> },
+        { name: 'Jejak Aktivitas', path: '/admin/audit',  icon: <History size={18} /> },
       ]
     }] : []),
     {
@@ -261,11 +296,19 @@ const SidebarAdmin = () => {
 
         <div style={styles.footer}>
           <div style={styles.userInfo}>
-            <div style={styles.userAvatar}>{owner ? '👑' : 'A'}</div>
-            <div>
-              {/* 🔥 UPGRADE: label peran jujur -- owner bukan "Admin". */}
-              <div style={styles.userName}>{owner ? 'Owner' : 'Admin'}</div>
-              <div style={styles.userRole}>{labelPeran()}</div>
+            {/* 🔥 BARU: avatar inisial nama asli, bukan huruf "A" generik.
+                Sekarang jelas SIAPA yang sedang memegang sesi ini. */}
+            <div style={styles.userAvatar(owner)}>{owner ? '👑' : inisialNama}</div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={styles.userName} title={namaTampil}>{namaTampil}</div>
+              <div style={styles.userRole}>{peranTampil}</div>
+              {/* Peringatan halus selama masih ada yang pakai password
+                  bersama -- identitasnya tidak jelas di jejak audit. */}
+              {!owner && sesiAdmin?.peran === 'legacy' && (
+                <div style={styles.warnLegacy} title="Anda masuk tanpa username, jadi aksi Anda tercatat sebagai 'akun bersama'. Minta Owner/Manajer membuatkan akun sendiri.">
+                  ⚠ akun bersama
+                </div>
+              )}
             </div>
           </div>
           <button onClick={handleLogout} style={styles.btnLogout}>
@@ -311,9 +354,26 @@ const styles = {
   badge: (color) => ({ background: color, color: 'white', padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 'bold', minWidth: 20, textAlign: 'center' }),
   footer: { padding: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', gap: 12 },
   userInfo: { display: 'flex', alignItems: 'center', gap: 10 },
-  userAvatar: { width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 14 },
-  userName: { color: '#e2e8f0', fontSize: 12, fontWeight: '600' },
-  userRole: { color: '#64748b', fontSize: 10 },
+  // 🔥 BARU: warna avatar membedakan Owner (emas) dari staf admin (biru),
+  // jadi sekali lirik langsung kelihatan siapa yang pegang sesi ini.
+  userAvatar: (owner) => ({
+    width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+    background: owner ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : 'linear-gradient(135deg, #60a5fa, #2563eb)',
+    color: owner ? '#0f172a' : '#ffffff',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontWeight: 'bold', fontSize: owner ? 14 : 12, letterSpacing: 0.3,
+  }),
+  // Nama asli bisa panjang -> dipotong rapi, jangan mendesak tombol Keluar.
+  userName: {
+    color: '#e2e8f0', fontSize: 12, fontWeight: '600',
+    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150,
+  },
+  userRole: { color: '#64748b', fontSize: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 150 },
+  warnLegacy: {
+    color: '#fbbf24', fontSize: 9, fontWeight: 700, marginTop: 2,
+    background: 'rgba(245,158,11,0.13)', border: '1px solid rgba(245,158,11,0.3)',
+    borderRadius: 5, padding: '1px 5px', display: 'inline-block', cursor: 'help',
+  },
   btnLogout: { width: '100%', padding: '10px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, cursor: 'pointer', fontWeight: '600', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: '0.2s' }
 };
 

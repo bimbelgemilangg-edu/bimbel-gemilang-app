@@ -1,65 +1,22 @@
 // src/pages/Login.jsx
-import React, { useState, useEffect } from 'react';
+// Halaman landing publik: pilih portal (Guru / Siswa) + pintu ke Portal
+// Admin. 🔥 Login admin TIDAK lagi dilakukan di sini -- dipindah ke
+// halaman sendiri (/login-admin, LoginAdmin.jsx) yang mendukung akun
+// per staf (username + password).
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
-import { 
-  Users, GraduationCap, Shield, LogIn, ArrowRight, 
-  ChevronRight, Sparkles, Rocket, Star, Moon, Sun
+import {
+  Users, GraduationCap, Shield, ArrowRight, Moon, Sun
 } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   
   // STATE
-  const [isAdminMode, setIsAdminMode] = useState(false); 
-  const [inputPassword, setInputPassword] = useState(""); 
-  const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState('dark');
 
   const isDark = theme === 'dark';
 
-  // ============================================================
-  // LOGIN ADMIN
-  // ============================================================
-  const handleAdminLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const docRef = doc(db, "settings", "global_config");
-      const docSnap = await getDoc(docRef);
-      
-      // 🔥 FIX KEAMANAN: sebelumnya ada default "admin123" hardcoded di
-      // kode -- siapa aja yang baca source code bisa masuk pakai itu kalau
-      // adminPassword belum pernah diatur di database. Sekarang: kalau
-      // belum diatur, login diblokir total (bukan diam-diam nerima
-      // password yang gampang ditebak).
-      if (!docSnap.exists() || !docSnap.data().adminPassword) {
-        alert("⚠️ Password Admin belum diatur di sistem. Hubungi Owner untuk mengatur lewat Portal Owner.");
-        setLoading(false);
-        return;
-      }
-      const correctPassword = docSnap.data().adminPassword;
-
-      if (inputPassword === correctPassword) {
-        // 🔥 UPGRADE (pemisahan hak akses): sesi admin & owner saling
-        // meniadakan -- login kasir MENGHAPUS flag owner supaya di
-        // komputer bersama kasir tidak "mewarisi" hak super admin.
-        localStorage.removeItem("isOwnerLoggedIn");
-        localStorage.setItem("isLoggedIn", "true"); 
-        localStorage.setItem("role", "admin");
-        alert("✅ Login Admin Berhasil!");
-        navigate("/admin"); 
-      } else {
-        alert("⛔ Password Admin Salah!");
-      }
-    } catch (error) {
-      console.error("Login Error:", error);
-      alert("Gagal koneksi ke server.");
-    }
-    setLoading(false);
-  };
 
   // ============================================================
   // RENDER
@@ -127,123 +84,74 @@ const Login = () => {
           </p>
         </div>
 
-        {isAdminMode ? (
-          /* ============================================================ */
-          /* LOGIN ADMIN */
-          /* ============================================================ */
-          <form onSubmit={handleAdminLogin} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label style={{ ...styles.label, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                <Shield size={14} /> Password Admin
-              </label>
-              <input 
-                type="password" 
-                value={inputPassword} 
-                onChange={e => setInputPassword(e.target.value)} 
-                style={{ 
-                  ...styles.input,
-                  background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                  color: isDark ? '#ffffff' : '#1a1a2e',
-                  border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)'
-                }} 
-                placeholder="Masukkan Password..." 
-                autoFocus
-              />
-            </div>
-            
-            <button 
-              type="submit" 
-              disabled={loading}
-              style={{
-                ...styles.btnPrimary,
-                background: isDark ? 'linear-gradient(135deg, #f39c12, #e67e22)' : 'linear-gradient(135deg, #1a237e, #283593)',
-                opacity: loading ? 0.7 : 1
+        <>
+          <p style={{ ...styles.portalLabel, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+            Silakan pilih portal login Anda:
+          </p>
+          
+          <div style={styles.portalGrid}>
+            {/* Portal Guru */}
+            <div 
+              style={styles.portalCard(isDark)} 
+              onClick={() => navigate('/login-guru')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = isDark ? '0 12px 40px rgba(139,92,246,0.15)' : '0 12px 40px rgba(0,0,0,0.08)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              {loading ? '⏳ Memproses...' : '🚀 Masuk Dashboard'}
-            </button>
-            
-            <button 
-              type="button" 
-              onClick={() => setIsAdminMode(false)} 
-              style={{ ...styles.btnLink, color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
+              <div style={styles.portalIcon('guru')}>
+                <Users size={28} />
+              </div>
+              <h3 style={styles.portalName}>Portal Guru</h3>
+              <p style={styles.portalDesc}>Manajemen kelas & absensi</p>
+              <div style={styles.portalArrow}>
+                <ArrowRight size={16} />
+              </div>
+            </div>
+
+            {/* Portal Siswa */}
+            <div 
+              style={styles.portalCard(isDark)} 
+              onClick={() => navigate('/login-siswa')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = isDark ? '0 12px 40px rgba(16,185,129,0.15)' : '0 12px 40px rgba(0,0,0,0.08)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
-              ← Kembali ke Menu
+              <div style={styles.portalIcon('siswa')}>
+                <GraduationCap size={28} />
+              </div>
+              <h3 style={styles.portalName}>Portal Siswa</h3>
+              <p style={styles.portalDesc}>Rapor & jadwal belajar</p>
+              <div style={styles.portalArrow}>
+                <ArrowRight size={16} />
+              </div>
+            </div>
+          </div>
+
+          {/* Admin Link */}
+          {/* 🔥 Tombol "Portal Owner" sengaja DIHAPUS dari sini -- biar
+              halaman login publik cuma nunjukkin Admin/Guru/Siswa, lebih
+              profesional. Rute /login-owner TETAP JALAN normal, cuma
+              gak ada tombol/link ke situ dari halaman manapun. Cuma
+              bisa diakses siapa yang tau alamatnya langsung. */}
+          <div style={styles.adminArea}>
+            <button 
+              onClick={() => navigate('/login-admin')} 
+              style={{ ...styles.adminLink, color: isDark ? '#f39c12' : '#1a237e' }}
+            >
+              <Shield size={14} /> Login Admin
             </button>
-          </form>
-        ) : (
-          /* ============================================================ */
-          /* MENU PILIHAN PORTAL */
-          /* ============================================================ */
-          <>
-            <p style={{ ...styles.portalLabel, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
-              Silakan pilih portal login Anda:
-            </p>
-            
-            <div style={styles.portalGrid}>
-              {/* Portal Guru */}
-              <div 
-                style={styles.portalCard(isDark)} 
-                onClick={() => navigate('/login-guru')}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-6px)';
-                  e.currentTarget.style.boxShadow = isDark ? '0 12px 40px rgba(139,92,246,0.15)' : '0 12px 40px rgba(0,0,0,0.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={styles.portalIcon('guru')}>
-                  <Users size={28} />
-                </div>
-                <h3 style={styles.portalName}>Portal Guru</h3>
-                <p style={styles.portalDesc}>Manajemen kelas & absensi</p>
-                <div style={styles.portalArrow}>
-                  <ArrowRight size={16} />
-                </div>
-              </div>
-
-              {/* Portal Siswa */}
-              <div 
-                style={styles.portalCard(isDark)} 
-                onClick={() => navigate('/login-siswa')}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-6px)';
-                  e.currentTarget.style.boxShadow = isDark ? '0 12px 40px rgba(16,185,129,0.15)' : '0 12px 40px rgba(0,0,0,0.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={styles.portalIcon('siswa')}>
-                  <GraduationCap size={28} />
-                </div>
-                <h3 style={styles.portalName}>Portal Siswa</h3>
-                <p style={styles.portalDesc}>Rapor & jadwal belajar</p>
-                <div style={styles.portalArrow}>
-                  <ArrowRight size={16} />
-                </div>
-              </div>
-            </div>
-
-            {/* Admin Link */}
-            {/* 🔥 Tombol "Portal Owner" sengaja DIHAPUS dari sini -- biar
-                halaman login publik cuma nunjukkin Admin/Guru/Siswa, lebih
-                profesional. Rute /login-owner TETAP JALAN normal, cuma
-                gak ada tombol/link ke situ dari halaman manapun. Cuma
-                bisa diakses siapa yang tau alamatnya langsung. */}
-            <div style={styles.adminArea}>
-              <button 
-                onClick={() => setIsAdminMode(true)} 
-                style={{ ...styles.adminLink, color: isDark ? '#f39c12' : '#1a237e' }}
-              >
-                <Shield size={14} /> Login Admin
-              </button>
-            </div>
-          </>
-        )}
+          </div>
+        </>
 
         <div style={styles.footer}>
           <small style={{ color: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' }}>

@@ -9,7 +9,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { Save, Lock, Info, Shield, Eye, EyeOff, Plus, Trash2, Crown, LogOut } from 'lucide-react';
+import { Save, Lock, Info, Shield, Eye, EyeOff, Plus, Trash2, Crown, LogOut, KeyRound, AlertTriangle } from 'lucide-react';
+// 🔥 BARU (pemisahan akun Admin): halaman ini cuma mengurus PASSWORD
+// BERSAMA yang lama. Akun per staf dikelola di /admin/pengguna.
+import { ambilSemuaAdmin } from '../../utils/adminAuth';
+import { catatAudit, KATEGORI } from '../../utils/auditLog';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -82,6 +86,11 @@ const Settings = () => {
   const [adminPassword, setAdminPassword] = useState("");
   const [showAdminPw, setShowAdminPw] = useState(false);
   const [showOwnerPin, setShowOwnerPin] = useState(false);
+  // 🔥 BARU (pemisahan akun Admin): apakah login pakai password bersama
+  // masih diizinkan? Default true supaya update ini TIDAK mengunci staf
+  // yang belum dibuatkan akun.
+  const [izinkanLegacy, setIzinkanLegacy] = useState(true);
+  const [jumlahAkunAdmin, setJumlahAkunAdmin] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -115,6 +124,8 @@ const Settings = () => {
           if (data.adminPassword) setAdminPassword(data.adminPassword);
           if (Array.isArray(data.fixedCosts)) setFixedCosts(data.fixedCosts);
           if (Array.isArray(data.assets)) setAssets(data.assets);
+          // 🔥 BARU: hanya false eksplisit yang mematikan jalur warisan.
+          setIzinkanLegacy(data.izinkanLoginAdminLegacy !== false);
         } else {
           // 🔥 FIX KEAMANAN: sebelumnya kalau dokumen belum ada, sistem
           // otomatis bikin PIN default "2003" yang tertanam di kode --
@@ -123,9 +134,17 @@ const Settings = () => {
           // DIWAJIBKAN gantinya sebelum bisa dipakai (lihat peringatan
           // di bawah).
           const pinAcak = String(Math.floor(1000 + Math.random() * 9000));
+          // 🔥 FIX BUG (audit 2026-10-01): `defaultSalaryRules` dipakai di
+          // sini tapi TIDAK PERNAH didefinisikan/di-import di file ini --
+          // sisa refactor waktu aturan honor dipindah ke TeacherSalaries.jsx.
+          // Akibatnya cabang ini melempar ReferenceError, tertelan catch di
+          // bawah, sehingga bootstrap settings GAGAL TOTAL: PIN owner tidak
+          // pernah terbuat dan admin cuma melihat alert error generik.
+          // Field `salaryRules` memang bukan urusan halaman ini lagi --
+          // TeacherSalaries.jsx yang membaca (dengan pengaman `if (sr)`)
+          // dan menulisnya sendiri, jadi aman untuk tidak diset di sini.
           await setDoc(doc(db, "settings", "global_config"), {
             prices: defaultPrices,
-            salaryRules: defaultSalaryRules,
             ownerPin: pinAcak,
             biayaPendaftaran: 25000
           });
@@ -140,12 +159,27 @@ const Settings = () => {
       finally { setLoading(false); }
     };
     fetchSettings();
+
+    // 🔥 BARU (pemisahan akun Admin): hitung berapa akun per staf yang
+    // sudah dibuat, untuk menentukan apakah password bersama aman dimatikan.
+    // Gagal hitung tidak boleh menghalangi halaman ini tampil.
+    (async () => {
+      try {
+        const semua = await ambilSemuaAdmin();
+        setJumlahAkunAdmin(semua.filter((a) => a.aktif !== false).length);
+      } catch (e) {
+        console.warn('Gagal menghitung akun admin:', e?.message || e);
+        setJumlahAkunAdmin(null);
+      }
+    })();
   }, []);
 
   // 🔥 handleUnlock udah gak dipakai lagi -- gerbang akses sekarang di
   // level rute (OwnerRoute), bukan layar kunci internal di komponen ini.
   const handleLogout = () => {
     if (window.confirm("Keluar dari Portal Owner?")) {
+      // 🔥 BARU: catat SEBELUM sesi dihapus supaya aktor-nya tetap 'owner'.
+      catatAudit('logout', { kategori: KATEGORI.AUTH, target: 'Keluar dari Portal Owner' });
       localStorage.removeItem("isOwnerLoggedIn");
       localStorage.removeItem("role");
       navigate("/");
@@ -154,13 +188,50 @@ const Settings = () => {
 
   const handleSaveData = async () => {
     if (ownerPin.length < 4) return alert("⚠️ PIN Owner minimal 4 karakter!");
+
+    // 🔥 PENGAMAN (pemisahan akun Admin): jangan sampai Owner mematikan
+    // password bersama padahal belum ada satu pun akun per staf -- itu
+    // akan mengunci SEMUA staf admin keluar.
+    //
+    // Sengaja memakai `!jumlahAkunAdmin`, BUKAN `jumlahAkunAdmin === 0`.
+    // `jumlahAkunAdmin` bernilai `null` kalau pembacaan koleksi admin_users
+    // gagal (jaringan/kuota). Kalau yang diuji hanya `=== 0`, keadaan `null`
+    // itu lolos dan Owner bisa mengunci seluruh staf hanya karena satu
+    // pembacaan yang gagal. Dengan `!`, null dan 0 sama-sama menahan.
+    if (!izinkanLegacy && !jumlahAkunAdmin) {
+      return alert(
+        "⛔ Tidak bisa menyimpan.\n\n" +
+        (jumlahAkunAdmin === null
+          ? "Jumlah akun admin per staf GAGAL dibaca, jadi sistem tidak bisa memastikan ada akun yang bisa dipakai masuk.\n"
+            + "Muat ulang halaman ini dan coba lagi.\n\n"
+          : "Anda mematikan 'Password Admin Bersama' tapi belum ada akun admin per staf yang aktif.\n"
+            + "Buat dulu akunnya di menu Pengguna Admin, kalau tidak semua staf akan terkunci.\n\n")
+        + "(Owner tetap bisa masuk lewat PIN, tapi staf admin tidak.)"
+      );
+    }
+
     if (!window.confirm("Simpan semua perubahan pengaturan?")) return;
-    
+
     setSaving(true);
     try {
       await setDoc(doc(db, "settings", "global_config"), {
-        prices, ownerPin, biayaPendaftaran, adminPassword, fixedCosts, assets
+        prices, ownerPin, biayaPendaftaran, adminPassword, fixedCosts, assets,
+        izinkanLoginAdminLegacy: izinkanLegacy,
       }, { merge: true });
+
+      // 🔥 BARU: perubahan kredensial = wajib tercatat di jejak audit.
+      // Isi password & PIN TIDAK dikirim -- catatAudit juga menyaringnya.
+      catatAudit('pengaturan.ubah', {
+        kategori: KATEGORI.AKUN,
+        target: 'Pengaturan global (kredensial & harga)',
+        detail: {
+          pinOwnerDiubah: true,
+          passwordBersamaDiubah: true,
+          izinkanLoginAdminLegacy: izinkanLegacy,
+          jumlahAkunAdminAktif: jumlahAkunAdmin,
+        },
+      });
+
       alert("✅ Pengaturan Berhasil Disimpan!");
     } catch (error) {
       alert("❌ Gagal menyimpan: " + error.message);
@@ -492,18 +563,63 @@ const Settings = () => {
             </div>
             <p style={{fontSize: 10, color: '#94a3b8', marginTop: 2, marginBottom: 10}}>Dipakai buat login Portal Owner ini, dan buat otorisasi hapus/edit transaksi keuangan di sisi Admin.</p>
 
-            {/* 🔥 BARU: sebelumnya field ini dibaca Login.jsx tapi gak ada
-                tempat ngaturnya sama sekali dari UI. */}
-            <div style={styles.fieldRow}>
-              <span><Shield size={14} /> Password Admin</span>
-              <div style={{ position: 'relative' }}>
-                <input type={showAdminPw ? 'text' : 'password'} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} style={{...styles.input, paddingRight: 30}} placeholder="Password login Admin" />
-                <button type="button" onClick={() => setShowAdminPw(!showAdminPw)} style={styles.miniEyeBtn}>
-                  {showAdminPw ? <EyeOff size={13} /> : <Eye size={13} />}
-                </button>
+            {/* ============================================================
+                🔥 DIROMBAK (pemisahan akun Admin): field ini dulunya SATU-
+                SATUNYA cara staf admin masuk -- satu password dipakai
+                bersama oleh semua orang, tanpa username. Akibatnya tidak
+                bisa diketahui siapa yang melakukan perubahan apa.
+
+                Sekarang akun per staf dikelola di menu "Pengguna Admin"
+                (/admin/pengguna). Field di bawah DIPERTAHANKAN sebagai
+                JALUR WARISAN supaya tidak ada staf yang terkunci saat
+                update dipasang -- dan bisa dimatikan di sini begitu semua
+                staf sudah punya akun sendiri.
+                ============================================================ */}
+            <div style={styles.legacyBox}>
+              <div style={styles.legacyHead}>
+                <AlertTriangle size={15} color="#fbbf24" />
+                <span style={styles.legacyTitle}>
+                  Password Admin Bersama <span style={styles.legacyTag}>JALUR LAMA</span>
+                </span>
               </div>
+              <p style={styles.legacyText}>
+                Semua staf masuk pakai password yang sama, tanpa username — jadi aksi mereka
+                tercatat sebagai "akun bersama" dan tidak bisa dipastikan siapa pelakunya.
+                Pindahkan staf ke akun masing-masing, lalu matikan jalur ini.
+              </p>
+
+              <div style={styles.fieldRow}>
+                <span><Shield size={14} /> Password Bersama</span>
+                <div style={{ position: 'relative' }}>
+                  <input type={showAdminPw ? 'text' : 'password'} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} style={{...styles.input, paddingRight: 30}} placeholder="Password login Admin (lama)" disabled={!izinkanLegacy} />
+                  <button type="button" onClick={() => setShowAdminPw(!showAdminPw)} style={styles.miniEyeBtn}>
+                    {showAdminPw ? <EyeOff size={13} /> : <Eye size={13} />}
+                  </button>
+                </div>
+              </div>
+
+              <label style={styles.toggleRow}>
+                <input
+                  type="checkbox"
+                  checked={izinkanLegacy}
+                  onChange={e => setIzinkanLegacy(e.target.checked)}
+                />
+                <span>
+                  Izinkan staf login dengan password bersama (tanpa username)
+                  <small style={styles.toggleHint}>
+                    {jumlahAkunAdmin === null
+                      ? 'Memuat jumlah akun per staf...'
+                      : jumlahAkunAdmin === 0
+                        ? '⚠ Belum ada akun per staf — jangan dimatikan dulu, nanti semua staf terkunci.'
+                        : `Ada ${jumlahAkunAdmin} akun per staf yang aktif. Aman dimatikan kalau semua staf sudah tahu username-nya.`}
+                  </small>
+                </span>
+              </label>
+
+              <button type="button" style={styles.btnKeAkun} onClick={() => navigate('/admin/pengguna')}>
+                <KeyRound size={14} /> Kelola Akun Admin per Staf
+              </button>
             </div>
-            <p style={{fontSize: 10, color: '#ef4444', marginTop: 2}}>⚠️ Ini password yang dipakai staf Admin buat login sehari-hari. Beda sama PIN Owner di atas.</p>
           </div>
 
           {/* === BIAYA TETAP & ASET/PENYUSUTAN (BARU) === */}
@@ -621,7 +737,9 @@ const styles = {
   eyeBtn: { position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' },
   btnUnlock: { width: '100%', padding: 14, background: '#1e293b', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 'bold', fontSize: 14 },
 
-  header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12, background: 'white', padding: 20, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }),
+  // 🔥 FIX (audit): parameter `m` tidak pernah dipakai di dalam style ini,
+  // memicu error no-unused-vars. Pemanggil yang mengirim argumen tetap aman.
+  header: () => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12, background: 'white', padding: 20, borderRadius: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }),
   pageTitle: { margin: 0, color: '#1e293b', fontSize: 20 },
   subtitle: { color: '#64748b', fontSize: 12, margin: '4px 0 0' },
   btnSave: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#1e293b', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 'bold', fontSize: 14 },
@@ -647,6 +765,32 @@ const styles = {
   input: { width: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', textAlign: 'right', fontSize: 13, fontWeight: 'bold', background: '#f8fafc' },
   divider: { height: 1, background: '#f1f5f9', margin: '12px 0' },
   miniEyeBtn: { position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 2, display: 'flex' },
+
+  // 🔥 BARU (pemisahan akun Admin): kotak "jalur lama" untuk password
+  // bersama. Sengaja diberi warna kuning/tanda peringatan supaya Owner
+  // langsung paham ini bukan cara login yang dianjurkan lagi.
+  legacyBox: {
+    marginTop: 14, padding: '13px 14px', borderRadius: 12,
+    background: '#fffbeb', border: '1px solid #fcd34d',
+  },
+  legacyHead: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 },
+  legacyTitle: { fontSize: 13, fontWeight: 800, color: '#92400e', display: 'flex', alignItems: 'center', gap: 7 },
+  legacyTag: {
+    background: '#f59e0b', color: '#fff', fontSize: 8.5, fontWeight: 800,
+    padding: '2px 6px', borderRadius: 5, letterSpacing: 0.5,
+  },
+  legacyText: { fontSize: 11.5, color: '#a16207', lineHeight: 1.6, margin: '0 0 8px' },
+  toggleRow: {
+    display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer',
+    padding: '9px 0', fontSize: 12, color: '#78350f', fontWeight: 600,
+    borderTop: '1px dashed #fcd34d',
+  },
+  toggleHint: { display: 'block', fontWeight: 400, fontSize: 10.5, color: '#a16207', marginTop: 3, lineHeight: 1.5 },
+  btnKeAkun: {
+    display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 4,
+    background: '#1e293b', color: '#fff', border: 'none', borderRadius: 9,
+    padding: '9px 15px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+  },
   infoBox: { background: '#f0fdf4', padding: 12, borderRadius: 8, border: '1px solid #bbf7d0', marginTop: 16, fontSize: 12, color: '#065f46', display: 'flex', alignItems: 'flex-start', gap: 6, flexDirection: 'column' }
 };
 

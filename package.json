@@ -1,13 +1,17 @@
 {
-  "name": "vite-react-starter",
+  "name": "bimbel-gemilang-app",
+  "version": "3.0.0",
+  "description": "Gemilang Super App — aplikasi pembelajaran & manajemen operasional Bimbel Gemilang (admin, guru, siswa, owner).",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "lint:fix": "eslint . --fix",
+    "test": "node tests/passwordHash.test.mjs",
+    "test:all": "node tests/passwordHash.test.mjs"
   },
   "dependencies": {
     "@lottiefiles/react-lottie-player": "^3.6.0",

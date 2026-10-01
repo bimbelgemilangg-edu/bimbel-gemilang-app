@@ -33,7 +33,32 @@ export const isAdminSession = () =>
 export const bolehMasukAreaAdmin = () => isAdminSession() || isOwnerSession();
 
 // Label peran buat tampilan (footer sidebar, dsb).
-export const labelPeran = () => (isOwnerSession() ? 'Owner (Super Admin)' : 'Admin Kasir');
+// 🔥 DIPERBARUI (pemisahan akun Admin): dulunya fungsi ini hanya mengenal
+// dua keadaan -- owner atau "Admin Kasir". Sekarang akun admin punya peran
+// 'kasir' dan 'manajer', jadi labelnya diambil dari LABEL_PERAN_ADMIN di
+// adminAuth supaya tidak ada DUA sumber kebenaran yang bisa berbeda.
+//
+// Tidak di-impor di tingkat atas untuk menghindari ketergantungan siklik
+// (adminAuth -> firebase; roleAkses dipakai banyak komponen).
+export const labelPeran = () => {
+  if (isOwnerSession()) return 'Owner (Super Admin)';
+  try {
+    const raw = window.localStorage.getItem('adminSession');
+    if (raw) {
+      const sesi = JSON.parse(raw);
+      const peta = {
+        kasir: 'Admin Kasir',
+        manajer: 'Admin Manajer',
+        owner: 'Owner (Super Admin)',
+        legacy: 'Admin (akun lama bersama)',
+      };
+      return peta[sesi?.peran] || 'Admin Kasir';
+    }
+  } catch {
+    /* sesi rusak -> pakai fallback di bawah */
+  }
+  return 'Admin Kasir';
+};
 
 export default {
   isOwnerSession,

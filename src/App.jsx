@@ -21,6 +21,11 @@ import ErrorBoundary from './components/ErrorBoundary';
 // LOGIN & PUBLIK
 // ============================================================
 import Login from './pages/Login';
+// 🔥 BARU (pemisahan akun Admin): portal admin punya halaman login
+// sendiri dengan username + password per staf, terpisah dari halaman
+// landing publik. Login admin lama (password bersama, tanpa username)
+// masih diterima sebagai jalur warisan sampai Owner mematikannya.
+import LoginAdmin from './pages/LoginAdmin';
 import LoginOwner from './pages/LoginOwner';
 import LoginGuru from './pages/LoginGuru';
 import LoginSiswa from './pages/LoginSiswa';
@@ -45,6 +50,10 @@ import ManageTentorRegistration from './pages/admin/pendaftaran/ManageTentorRegi
 import Dashboard from './pages/admin/Dashboard';
 import Settings from './pages/admin/Settings';
 import OwnerFinance from './pages/admin/OwnerFinance';
+// 🔥 BARU (pemisahan akun Admin): kelola akun staf admin + jejak audit.
+// Keduanya dikunci ManajerRoute di bawah -- hanya Owner & Manajer.
+import AdminUsers from './pages/admin/AdminUsers';
+import AuditLogPage from './pages/admin/AuditLogPage';
 
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
@@ -190,7 +199,25 @@ const AdminRoute = ({ children }) => {
   const adminOk = isAuth && role === 'admin';
   const ownerOk =
     localStorage.getItem('isOwnerLoggedIn') === 'true' && role === 'owner';
-  if (!adminOk && !ownerOk) return <Navigate to="/" replace />;
+  if (!adminOk && !ownerOk) return <Navigate to="/login-admin" replace />;
+  return children;
+};
+
+// 🔥 BARU (pemisahan akun Admin): guard untuk halaman yang membocorkan
+// identitas & aktivitas staf -- kelola akun admin dan jejak audit.
+//
+// Guard ini hanya memastikan pengunjung sudah login sebagai admin/owner.
+// Pemeriksaan peran (harus 'manajer' atau owner) dilakukan DI DALAM
+// komponennya, supaya kasir yang iseng membuka URL melihat penjelasan
+// "Akses Ditolak -- akun Anda berperan Kasir", bukan dilempar diam-diam
+// ke halaman lain tanpa tahu sebabnya.
+const ManajerRoute = ({ children }) => {
+  const role = localStorage.getItem('role');
+  const ownerOk =
+    localStorage.getItem('isOwnerLoggedIn') === 'true' && role === 'owner';
+  const adminOk =
+    localStorage.getItem('isLoggedIn') === 'true' && role === 'admin';
+  if (!ownerOk && !adminOk) return <Navigate to="/login-admin" replace />;
   return children;
 };
 
@@ -406,6 +433,10 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login-guru" element={<LoginGuru />} />
         <Route path="/login-siswa" element={<LoginSiswa />} />
+        {/* 🔥 BARU: portal admin punya jalur login sendiri (username +
+            password per staf). Route lama "/" tetap jalan, tapi tombol
+            "Login Admin" di sana sekarang mengarah ke sini. */}
+        <Route path="/login-admin" element={<LoginAdmin />} />
         <Route path="/login-owner" element={<LoginOwner />} />
         <Route path="/aktivitas" element={<PublicBlog />} />
         <Route path="/pendaftaran" element={<PendaftaranOnline />} />
@@ -576,6 +607,24 @@ function App() {
           path="/admin/bank-soal/batalkan-uji-coba"
           element={<AdminRoute><BatalkanUjiCobaPage /></AdminRoute>}
         />
+
+        {/* 🔥 BARU (pemisahan akun Admin): kelola akun staf admin dan
+            jejak aktivitas. Dikunci ManajerRoute + pengecekan peran di
+            dalam komponennya (hanya Owner & admin 'manajer'). */}
+        <Route
+          path="/admin/pengguna"
+          element={<ManajerRoute><AdminUsers /></ManajerRoute>}
+        />
+        <Route
+          path="/admin/audit"
+          element={<ManajerRoute><AuditLogPage /></ManajerRoute>}
+        />
+        <Route
+          path="/admin/pengguna-admin"
+          element={<Navigate to="/admin/pengguna" replace />}
+        />
+        {/* Alias lama yang mungkin sudah terlanjur dibagikan/dibookmark. */}
+        <Route path="/admin/login" element={<Navigate to="/login-admin" replace />} />
 
         {/* OWNER / SETTINGS */}
         <Route path="/admin/settings" element={<OwnerRoute><Settings /></OwnerRoute>} />
