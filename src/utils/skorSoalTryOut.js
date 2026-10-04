@@ -14,7 +14,7 @@
 // BENAR. Dengan 1 file bersama ini, itu tidak mungkin terjadi.
 // ============================================================
 
-import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from './skoringSoalKompleks';
+import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from './skoringSoalKompleks.js';
 
 // 🔥 BARU: 1 fungsi bersama buat "apa soal ini beneran tidak dijawab
 // sama sekali" -- dipakai BARENG oleh RendererPgSederhana/PgKompleks/
@@ -23,8 +23,34 @@ import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from './sk
 // tiap soal). Sebelumnya logika ini KETULIS ULANG beda-beda tipis di
 // 4 tempat -- SEKARANG cuma 1 sumber, biar siswa & admin selalu lihat
 // kesimpulan yang PERSIS sama soal mana yang beneran di-skip.
+// 🔥 BARU (esai 2026-10-04): skala nilai manual per soal esai, 0-100.
+// Admin menilai di halaman Hasil Try Out; poinnya masuk total lewat
+// hitungTotalSkor(..., nilaiEsai).
+export const SKALA_NILAI_ESAI = 100;
+
+export const isSoalEsai = (soal) => (soal?.tipe || '') === 'esai';
+
+/**
+ * Poin esai yang sudah dinilai admin, dinormalkan ke 0..1 (setara bobot
+ * satu soal pilihan ganda). null kalau belum dinilai.
+ * Bentuk nilaiEsai: { [soalId]: { poin: 0-100, penilai, pada } }
+ */
+export function poinEsai(soal, nilaiEsai) {
+  const v = nilaiEsai?.[soal?.id];
+  if (!v || v.poin === undefined || v.poin === null || v.poin === '') return null;
+  const p = Number(v.poin);
+  if (!Number.isFinite(p)) return null;
+  return Math.min(Math.max(p, 0), SKALA_NILAI_ESAI) / SKALA_NILAI_ESAI;
+}
+
 export function soalBelumDijawab(soal, jawaban) {
   const tipe = soal.tipe || 'pg_sederhana';
+  // 🔥 BARU: esai dianggap terjawab kalau ADA TEKS atau ADA FOTO --
+  // dua-duanya jalur jawaban yang sah sesuai permintaan owner.
+  if (tipe === 'esai') {
+    const j = jawaban && typeof jawaban === 'object' ? jawaban : { teks: jawaban };
+    return !String(j?.teks ?? '').trim() && !String(j?.foto ?? '').trim();
+  }
   if (tipe === 'pg_kompleks') return safeArrayLokal(jawaban).length === 0;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return safeArrayLokal(jawaban).filter(Boolean).length === 0;
   // 🔥 BARU: isian_singkat & numerik -- jawabannya teks bebas, dianggap
@@ -69,6 +95,9 @@ function cocokJawabanSingkat(soal, jawabanSiswa) {
 
 export function skorSatuSoal(soal, jawaban) {
   const tipe = soal.tipe || 'pg_sederhana';
+  // 🔥 BARU: esai TIDAK punya skor otomatis. Kontribusi nilainya datang
+  // dari penilaian manual admin (poinEsai), bukan dari fungsi ini.
+  if (tipe === 'esai') return 0;
   if (jawaban === undefined || jawaban === null) return 0;
   try {
     if (tipe === 'pg_kompleks') return hitungSkorPgKompleks(soal.kunciJawaban, jawaban);
@@ -92,9 +121,28 @@ export function skorSatuSoal(soal, jawaban) {
  * jawaban yang sudah tersimpan (baik pas submit pertama kali maupun
  * pas mau dihitung ulang belakangan).
  */
-export function hitungTotalSkor(daftarSoal, jawaban) {
+export function hitungTotalSkor(daftarSoal, jawaban, nilaiEsai = null) {
+  const daftar = daftarSoal || [];
+  const soalAuto = daftar.filter((s) => !isSoalEsai(s));
   let totalSkor = 0;
-  daftarSoal.forEach((s) => { totalSkor += skorSatuSoal(s, jawaban[s.id]); });
-  const totalSkorPersen = daftarSoal.length > 0 ? Math.round((totalSkor / daftarSoal.length) * 100) : 0;
-  return { totalSkor, totalSkorPersen };
+  soalAuto.forEach((s) => { totalSkor += skorSatuSoal(s, jawaban?.[s.id]); });
+
+  // Esai masuk penyebut HANYA kalau sudah dinilai admin. Sebelum dinilai,
+  // persentase mencerminkan bagian yang bisa dinilai otomatis -- dan layar
+  // hasil siswa memberi catatan bahwa esainya masih menunggu guru.
+  let penyebut = soalAuto.length;
+  let esaiTernilai = 0;
+  for (const s of daftar) {
+    if (!isSoalEsai(s)) continue;
+    const p = poinEsai(s, nilaiEsai);
+    if (p !== null) {
+      totalSkor += p;
+      penyebut += 1;
+      esaiTernilai += 1;
+    }
+  }
+
+  const jumlahEsai = daftar.length - soalAuto.length;
+  const totalSkorPersen = penyebut > 0 ? Math.round((totalSkor / penyebut) * 100) : 0;
+  return { totalSkor, totalSkorPersen, jumlahEsai, esaiTernilai };
 }

@@ -42,6 +42,8 @@ import RenderTable from '../../../components/RenderTable';
 import MaskotAstronot from '../../../components/MaskotAstronot';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
+// 🔥 BARU (esai 2026-10-04): kotak teks + tombol kamera untuk soal uraian.
+import RendererEsai from './RendererEsai';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
@@ -55,6 +57,7 @@ function RendererSoal(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
+  if (tipe === 'esai') return <RendererEsai {...props} />;
   return <RendererPgSederhana {...props} />;
 }
 
@@ -116,7 +119,10 @@ export default function TryOutView() {
   const videoPrepRef = React.useRef(null);
   const streamPrepRef = React.useRef(null);
   const [statusKameraPrep, setStatusKameraPrep] = useState('memuat'); // 'memuat' | 'aktif' | 'ditolak'
-  const [errorKameraPrep, setErrorKameraPrep] = useState(null); // nama error asli dari browser
+  // Nama error kamera disimpan untuk diagnostik (ditulis oleh hook kamera)
+  // tapi tidak ditampilkan langsung di halaman ini -- jadi hanya setter-nya
+  // yang dipakai. Destructuring kosong di kiri menjaga niat itu terbaca.
+  const [, setErrorKameraPrep] = useState(null);
   // 🔥 BARU: counter percobaan -- setiap admin/siswa klik "Coba Lagi",
   // angka ini naik, effect di bawah otomatis jalan ulang (minta izin
   // kamera dari nol lagi). Ini buat kasus siswa TADINYA klik "Block"
@@ -339,7 +345,7 @@ export default function TryOutView() {
 
   // ---------------- ANTI-CHEAT ----------------
   const {
-    pelanggaran, showPeringatan, tutupPeringatan, statusKamera, jumlahFotoTersimpan, videoRef, cobaAmbilFoto,
+    pelanggaran, showPeringatan, tutupPeringatan, statusKamera, videoRef, cobaAmbilFoto,
   } = useDeteksiKecuranganTryOut({
     aktif: tahap === 'mengerjakan',
     wajibKamera: !!paket?.wajibKamera,
@@ -802,7 +808,7 @@ export default function TryOutView() {
             <button
               key={s.id}
               type="button"
-              onClick={() => { setIndexSoalAktif(i); try { cobaAmbilFoto(); } catch (_) {} }}
+              onClick={() => { setIndexSoalAktif(i); try { cobaAmbilFoto(); } catch { /* foto pengawasan gagal jangan menghalangi navigasi */ } }}
               style={{
                 width: 34, height: 34, borderRadius: 10,
                 border: active ? '2px solid #5B2ECC' : '1px solid #e2e8f0',
@@ -889,7 +895,7 @@ export default function TryOutView() {
       {/* NAVIGASI */}
       <div style={{ display: 'flex', gap: 10 }}>
         <button
-          onClick={() => { try { cobaAmbilFoto(); } catch (_) {} setIndexSoalAktif((i) => Math.max(0, i - 1)); }}
+          onClick={() => { try { cobaAmbilFoto(); } catch { /* foto pengawasan gagal jangan menghalangi navigasi */ } setIndexSoalAktif((i) => Math.max(0, i - 1)); }}
           disabled={indexSoalAktif === 0}
           style={{ ...st.tombolSekunder, opacity: indexSoalAktif === 0 ? 0.4 : 1 }}
         >

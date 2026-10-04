@@ -45,6 +45,9 @@ const TIPE_ENUM = [
     'benar_salah',
     'isian_singkat',
     'menjodohkan',
+    // 🔥 BARU (2026-10-04): esai/uraian -- siswa mengetik atau memotret
+    // jawaban; penilaian manual oleh admin (skala 0-100 per soal).
+    'esai',
   ];
   
   const FIELD_WAJIB = [
@@ -454,6 +457,13 @@ const TIPE_ENUM = [
     const kunciJawaban = String(q.kunciJawaban ?? q.kunci_jawaban ?? '').trim();
   
     // --- topik/subtopik ---
+    // 🔥 BARU: esai tanpa kunciJawaban berarti admin menilai tanpa
+    // rujukan/rubrik dari pembuat soal. Tidak ditolak (esai sah tanpa
+    // kunci), tapi diperingatkan supaya kelihatan sebelum diterbitkan.
+    if (tipe === 'esai' && !String(q.kunciJawaban ?? q.kunci_jawaban ?? '').trim()) {
+      warnings.push('esai tanpa kunciJawaban (jawaban rujukan/rubrik) -- penilaian manual tanpa patokan');
+    }
+
     const topik = String(q.topik ?? '').trim();
     const subtopik = String(q.subtopik ?? '').trim();
     const topikBaru = Boolean(q.topikBaru);

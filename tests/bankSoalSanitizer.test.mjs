@@ -100,10 +100,28 @@ uji('tipe tak dikenal jatuh ke pg_sederhana + warning', () => {
   assert.ok(warnings.some(w => w.includes('pg_sederhana')));
 });
 
-uji('enum tipe persis lima nilai', () => {
+uji('enum tipe persis enam nilai (esai masuk 2026-10-04)', () => {
   assert.deepEqual(TIPE_ENUM, [
-    'pg_sederhana', 'pg_kompleks', 'benar_salah', 'isian_singkat', 'menjodohkan',
+    'pg_sederhana', 'pg_kompleks', 'benar_salah', 'isian_singkat', 'menjodohkan', 'esai',
   ]);
+});
+
+uji('esai tanpa opsiJawaban TIDAK diperingatkan (memang tidak butuh opsi)', () => {
+  const { normalized, warnings } = validateQuestion({
+    tipe: 'esai', teksSoal: 'Jelaskan proses fotosintesis.',
+    kunciJawaban: 'Klorofil menangkap cahaya...', topik: 'Biologi',
+  }, 0);
+  assert.equal(normalized.tipe, 'esai');
+  assert.ok(!warnings.some(w => w.includes('opsiJawaban')));
+});
+
+uji('esai tanpa kunci/rubrik diperingatkan tapi tetap masuk', () => {
+  const { normalized, warnings, valid } = validateQuestion({
+    tipe: 'esai', teksSoal: 'Jelaskan.', kunciJawaban: '', topik: 't',
+  }, 0);
+  assert.equal(normalized.tipe, 'esai');
+  assert.equal(valid, false);
+  assert.ok(warnings.some(w => w.includes('rubrik')));
 });
 
 uji('pg_kompleks tanpa pernyataan diberi warning, tidak dibuang', () => {

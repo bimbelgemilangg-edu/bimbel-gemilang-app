@@ -32,6 +32,7 @@ import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
+import RendererEsai from '../../student/tryout/RendererEsai';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
 import {
@@ -78,7 +79,9 @@ function parseTeksKisiKisi(teks) {
 // skorSoalTryOut.js. menjodohkan & uraian MASIH belum, sengaja tetap
 // diblokir (menjodohkan butuh UI pasangan yang beda total, uraian itu
 // esai yang gak bisa dinilai otomatis -- keduanya nunggu giliran).
-const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik'];
+// 🔥 BARU (esai 2026-10-04): 'esai' masuk daftar didukung -- siswa mengetik
+// atau memotret jawaban, admin menilai manual di Hasil Try Out.
+const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik', 'esai'];
 function tipeDidukung(soal) {
   return TIPE_TERDUKUNG.includes(soal.tipe || 'pg_sederhana');
 }
@@ -123,6 +126,7 @@ function RendererSoalPreview({ soal }) {
   if (tipe === 'pg_kompleks') return <RendererPgKompleks soal={soal} disabled modeTinjau />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah soal={soal} disabled modeTinjau />;
   if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat soal={soal} disabled modeTinjau />;
+  if (tipe === 'esai') return <RendererEsai soal={soal} disabled modeTinjau />;
   return <RendererPgSederhana soal={soal} disabled modeTinjau />;
 }
 
@@ -487,14 +491,12 @@ export default function TerbitkanTryOutPage() {
     return Array.from(set);
   }, [keranjang]);
 
-  // Isi default durasi subtes (30 menit) tiap kali ada mapel baru masuk keranjang.
-  useEffect(() => {
-    setDurasiSubtes((prev) => {
-      const next = { ...prev };
-      daftarMapelDiKeranjang.forEach((m) => { if (!(m in next)) next[m] = 30; });
-      return next;
-    });
-  }, [daftarMapelDiKeranjang]);
+  // 🔥 FIX (ditangkap aturan react-hooks saat fitur esai masuk): dulu ada
+  // useEffect yang menyetel default durasi 30 menit ke state setiap kali
+  // keranjang berubah -- setState sinkron di dalam effect. Itu TIDAK
+  // PERLU: kedua pembaca durasi sudah punya fallback bawaan
+  // (`Number(durasiSubtes[mapel]) || 30` dan `durasiSubtes[mapel] ?? 30`),
+  // jadi kunci yang belum ada memang otomatis berarti 30 menit.
 
   // 🔥 Anti-cheat -- nyambung ke useDeteksiKecuranganTryOut.js
   const [antiCheatAktif, setAntiCheatAktif] = useState(true);
@@ -523,20 +525,33 @@ export default function TerbitkanTryOutPage() {
   const [daftarTerbit, setDaftarTerbit] = useState([]);
   const [loadingDaftarTerbit, setLoadingDaftarTerbit] = useState(true);
 
-  const muatDaftarTerbit = useCallback(async () => {
-    setLoadingDaftarTerbit(true);
-    try {
-      const snap = await getDocs(collection(db, 'tryout_paket'));
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      list.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
-      setDaftarTerbit(list);
-    } catch (e) {
-      console.error('Gagal ambil daftar try out terbit:', e);
-    }
-    setLoadingDaftarTerbit(false);
-  }, []);
+  // 🔥 FIX (aturan react-hooks/set-state-in-effect): fetch daftar terbit
+  // didefinisikan DI DALAM effect (pola yang sama dengan Settings.jsx yang
+  // lolos aturan ini), dan muat ulang manual dilakukan lewat counter
+  // `versiMuat` -- tombol hanya menaikkan counter, effect yang bekerja.
+  // Tidak ada setState sinkron di badan effect sama sekali.
+  const [versiMuat, setVersiMuat] = useState(0);
+  useEffect(() => {
+    let batal = false;
+    const jalan = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'tryout_paket'));
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        list.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+        if (!batal) setDaftarTerbit(list);
+      } catch (e) {
+        console.error('Gagal ambil daftar try out terbit:', e);
+      }
+      if (!batal) setLoadingDaftarTerbit(false);
+    };
+    jalan();
+    return () => { batal = true; };
+  }, [versiMuat]);
 
-  useEffect(() => { muatDaftarTerbit(); }, [muatDaftarTerbit]);
+  const muatDaftarTerbit = useCallback(() => {
+    setLoadingDaftarTerbit(true);
+    setVersiMuat((v) => v + 1);
+  }, []);
 
   const nonaktifkanTryOut = useCallback(async (paket) => {
     const aksi = paket.status === 'aktif' ? 'nonaktifkan' : 'aktifkan';
