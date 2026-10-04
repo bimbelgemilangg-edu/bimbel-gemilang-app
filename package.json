@@ -10,10 +10,11 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node tests/passwordHash.test.mjs && node tests/keuangan.test.mjs && node tests/bankSoalSanitizer.test.mjs",
+    "test": "node tests/passwordHash.test.mjs && node tests/keuangan.test.mjs && node tests/bankSoalSanitizer.test.mjs && node tests/skorSoalTryOut.test.mjs",
     "test:auth": "node tests/passwordHash.test.mjs",
     "test:keuangan": "node tests/keuangan.test.mjs",
-    "test:banksoal": "node tests/bankSoalSanitizer.test.mjs"
+    "test:banksoal": "node tests/bankSoalSanitizer.test.mjs",
+    "test:skor": "node tests/skorSoalTryOut.test.mjs"
   },
   "dependencies": {
     "@lottiefiles/react-lottie-player": "^3.6.0",

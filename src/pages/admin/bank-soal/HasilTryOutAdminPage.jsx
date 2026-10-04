@@ -16,11 +16,16 @@ import {
 } from 'lucide-react';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
-import { tambahXpMingguan, kunciMingguIni } from '../../../utils/mingguIni';
+import { tambahXpMingguan } from '../../../utils/mingguIni';
 import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
+// 🔥 BARU (esai 2026-10-04): lihat jawaban esai siswa (teks + foto) dan
+// beri nilai manual 0-100 per soal; nilai masuk total & XP siswa.
+import RendererEsai from '../../student/tryout/RendererEsai';
+import { isSoalEsai, poinEsai, SKALA_NILAI_ESAI } from '../../../utils/skorSoalTryOut';
+import { catatAudit, KATEGORI, aktorSaatIni } from '../../../utils/auditLog';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
 
@@ -29,6 +34,7 @@ function RendererSoalAdmin(props) {
   if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
   if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat {...props} />;
+  if (tipe === 'esai') return <RendererEsai {...props} />;
   return <RendererPgSederhana {...props} />;
 }
 
@@ -206,11 +212,75 @@ export default function HasilTryOutAdminPage() {
     setSedangIzinkanUlang(null);
   }, [paketTerpilih]);
 
+  // 🔥 BARU: simpan nilai manual satu soal esai, lalu hitung ulang total
+  // skor & XP siswa dengan pola YANG SAMA seperti hitungUlangSatuSiswa
+  // (selisih XP saja, supaya XP aktivitas lain tidak tertimpa).
+  const simpanNilaiEsai = useCallback(async (item, soal, poinInput) => {
+    const poin = Number(poinInput);
+    if (!Number.isFinite(poin) || poin < 0 || poin > SKALA_NILAI_ESAI) {
+      alert(`Nilai harus angka 0-${SKALA_NILAI_ESAI}.`);
+      return;
+    }
+    const aktor = aktorSaatIni();
+    const entri = { poin, penilai: aktor.aktorNama || aktor.aktor, pada: new Date().toISOString() };
+    const nilaiEsaiBaru = { ...(item.sesi.nilaiEsai || {}), [soal.id]: entri };
+    try {
+      const { totalSkor, totalSkorPersen } = hitungTotalSkor(
+        paketTerpilih.daftarSoal, item.sesi.jawaban || {}, nilaiEsaiBaru,
+      );
+      const xpMentahBaru = Math.round(totalSkor * 10);
+      const { xpFinal: xpFinalBaru } = terapkanPotonganXP(xpMentahBaru, item.sesi.pelanggaran || []);
+      const selisihXp = xpFinalBaru - (item.sesi.xpFinal || 0);
+
+      await updateDoc(doc(db, 'tryout_sesi', item.sesi.id), {
+        [`nilaiEsai.${soal.id}`]: entri,
+        totalSkor, totalSkorPersen,
+        xpMentah: xpMentahBaru, xpFinal: xpFinalBaru,
+        esaiDinilaiPada: serverTimestamp(),
+      });
+
+      if (selisihXp !== 0) {
+        const studentId = item.student.studentId || item.student.id;
+        const progRef = doc(db, 'siswa_progress', studentId);
+        const snapProg = await getDoc(progRef);
+        const existing = snapProg.exists() ? snapProg.data() : {};
+        const { xpMingguIni, xpMingguIniKunci } = tambahXpMingguan(existing.xpMingguIni, existing.xpMingguIniKunci, selisihXp);
+        await updateDoc(progRef, {
+          xp: Math.max(0, (existing.xp || 0) + selisihXp),
+          xpMingguIni: Math.max(0, xpMingguIni),
+          xpMingguIniKunci,
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      catatAudit('tryout.esai.nilai', {
+        kategori: KATEGORI.AKADEMIK ?? KATEGORI.LAINNYA,
+        target: `Esai ${soal.id} • ${item.student.nama}`,
+        detail: { poin, paket: paketTerpilih.nama || paketTerpilih.id, totalBaru: totalSkorPersen },
+      });
+
+      setBaris((prev) => prev.map((b) => (
+        b.student.id === item.student.id
+          ? { ...b, sesi: { ...b.sesi, nilaiEsai: nilaiEsaiBaru, totalSkor, totalSkorPersen, xpMentah: xpMentahBaru, xpFinal: xpFinalBaru } }
+          : b
+      )));
+      setSiswaDetailDibuka((prev) => (prev && prev.student.id === item.student.id
+        ? { ...prev, sesi: { ...prev.sesi, nilaiEsai: nilaiEsaiBaru, totalSkor, totalSkorPersen, xpMentah: xpMentahBaru, xpFinal: xpFinalBaru } }
+        : prev));
+      alert(`✅ Nilai esai tersimpan: ${poin}/${SKALA_NILAI_ESAI}. Total ${item.student.nama} sekarang ${totalSkorPersen}% (${xpFinalBaru} XP).`);
+    } catch (e) {
+      console.error('Gagal menyimpan nilai esai:', e);
+      alert(`Gagal menyimpan nilai: ${e?.message || e}`);
+    }
+  }, [paketTerpilih]);
+
   const hitungUlangSatuSiswa = useCallback(async (item) => {
     if (!paketTerpilih || !item.sesi || item.sesi.status !== 'selesai') return;
     setSedangHitungUlang(item.student.studentId || item.student.id);
     try {
-      const { totalSkor, totalSkorPersen } = hitungTotalSkor(paketTerpilih.daftarSoal, item.sesi.jawaban || {});
+      const { totalSkor, totalSkorPersen } = hitungTotalSkor(
+        paketTerpilih.daftarSoal, item.sesi.jawaban || {}, item.sesi.nilaiEsai || null,
+      );
       const xpMentahBaru = Math.round(totalSkor * 10); // XP_PER_SOAL, konsisten sama TryOutView.jsx
       const { xpFinal: xpFinalBaru } = terapkanPotonganXP(xpMentahBaru, item.sesi.pelanggaran || []);
 
@@ -495,10 +565,18 @@ export default function HasilTryOutAdminPage() {
                 const jwb = siswaDetailDibuka.sesi.jawaban?.[s.id];
                 const skor = skorSatuSoal(s, jwb);
                 const belumDijawab = soalBelumDijawab(s, jwb);
+                const esai = isSoalEsai(s);
+                const poinEsaiSiswa = esai ? poinEsai(s, siswaDetailDibuka.sesi.nilaiEsai) : null;
                 return (
                   <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 14 }}>
-                    <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
-                      Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
+                    <div style={{ fontSize: 11.5, color: esai
+                      ? (poinEsaiSiswa !== null ? '#16a34a' : '#d97706')
+                      : (skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626'), fontWeight: 700, marginBottom: 6 }}>
+                      {esai
+                        ? (poinEsaiSiswa !== null
+                          ? `Soal ${i + 1} -- ESAI • nilai ${Math.round(poinEsaiSiswa * SKALA_NILAI_ESAI)}/${SKALA_NILAI_ESAI}`
+                          : `Soal ${i + 1} -- ESAI • ${belumDijawab ? 'tidak dijawab' : 'MENUNGGU PENILAIAN ANDA'}`)
+                        : `Soal ${i + 1} -- skor ${Math.round(skor * 100)}%${belumDijawab ? ' (Tidak dijawab)' : ''}`}
                     </div>
                     {s.bacaan?.teks && (
                       <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}><RenderMath text={s.bacaan.teks} /></div>
@@ -513,6 +591,36 @@ export default function HasilTryOutAdminPage() {
                     )}
                     {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                     <RendererSoalAdmin soal={s} jawabanTerpilih={jwb} modeTinjau />
+                    {esai && !belumDijawab && (
+                      <div style={{ marginTop: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: 12 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#92400e', marginBottom: 8 }}>
+                          ✍️ Penilaian manual esai (skala 0-{SKALA_NILAI_ESAI})
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                          <input
+                            type="number" min="0" max={SKALA_NILAI_ESAI}
+                            defaultValue={poinEsaiSiswa !== null ? Math.round(poinEsaiSiswa * SKALA_NILAI_ESAI) : ''}
+                            placeholder="nilai"
+                            id={`nilai-esai-${s.id}`}
+                            style={{ width: 90, padding: '8px 10px', borderRadius: 8, border: '1px solid #d97706', fontSize: 14, fontWeight: 800 }}
+                          />
+                          <button
+                            onClick={() => {
+                              const el = document.getElementById(`nilai-esai-${s.id}`);
+                              simpanNilaiEsai(siswaDetailDibuka, s, el?.value);
+                            }}
+                            style={{ background: '#b45309', color: 'white', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+                          >
+                            Simpan Nilai
+                          </button>
+                          {poinEsaiSiswa !== null && (
+                            <span style={{ fontSize: 11, color: '#92400e' }}>
+                              terakhir: {Math.round(poinEsaiSiswa * SKALA_NILAI_ESAI)} oleh {siswaDetailDibuka.sesi.nilaiEsai?.[s.id]?.penilai || '?'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     {s.pembahasan && (
                       <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
                         <b>💡 Pembahasan:</b> <RenderMath text={s.pembahasan} />

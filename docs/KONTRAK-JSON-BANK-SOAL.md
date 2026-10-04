@@ -61,6 +61,7 @@ validator menormalkannya, tidak menolak.
 | `benar_salah` | tabel pernyataan, siswa memilih benar/salah per baris |
 | `isian_singkat` | isian teks pendek |
 | `menjodohkan` | menjodohkan kiri–kanan |
+| `esai` | uraian bebas: siswa mengetik di kotak jawaban ATAU memotret jawaban tulisan tangan; dinilai MANUAL oleh admin (0–100) di Hasil Try Out |
 
 ## 3. Format `kunciJawaban` per tipe (ini yang paling sering salah)
 
@@ -71,6 +72,7 @@ validator menormalkannya, tidak menolak.
 | `benar_salah` | tidak dipakai (kunci ada di tiap baris `tabelBenarSalah`) | `""` |
 | `menjodohkan` | tidak dipakai (kunci = pemetaan `pasangan`) | `""` |
 | `isian_singkat` | teks jawaban persis | `"fotosintesis"` |
+| `esai` | teks jawaban rujukan/rubrik penilai (tidak untuk mencocokkan otomatis) | `"memuat istilah klorofil, cahaya, glukosa"` |
 
 - Untuk `isian_singkat` sediakan juga `jawabanEkuivalen: ["...","..."]`
   (array string) bila ada ejaan/sinonim yang juga benar — mesin skor
@@ -142,6 +144,14 @@ validator menormalkannya, tidak menolak.
   },
   {
     "nomor": 5,
+    "tipe": "esai",
+    "teksSoal": "Sebuah kubus memiliki rusuk 6 cm. Jelaskan langkah menentukan volumenya tanpa rumus jadi.",
+    "opsiJawaban": [], "pernyataan": [], "tabelBenarSalah": [], "pasangan": [],
+    "kunciJawaban": "Rubrik: menyebut rusuk×rusuk×rusuk atau 6×6×6 (=216 cm³) dan satuan benar",
+    "gambar": [], "topik": "Bangun Ruang", "subtopik": "Kubus", "topikBaru": false
+  },
+  {
+    "nomor": 6,
     "tipe": "menjodohkan",
     "teksSoal": "Pasangkan tokoh dengan penemuannya.",
     "opsiJawaban": [], "pernyataan": [], "tabelBenarSalah": [],
@@ -183,7 +193,8 @@ TANPA pengecualian:
    pernyataan, tabelBenarSalah, pasangan, kunciJawaban, gambar, topik,
    subtopik, topikBaru. Field yang tidak dipakai diisi [] atau "" atau false.
 3. Nilai tipe hanya: pg_sederhana | pg_kompleks | benar_salah |
-   isian_singkat | menjodohkan.
+   isian_singkat | menjodohkan | esai. Untuk tipe esai: kunciJawaban diisi
+   RUBRIK/jawaban rujukan untuk penilai manusia (bukan pencocok otomatis).
 4. kunciJawaban: pg_sederhana = satu huruf besar; pg_kompleks = array huruf;
    isian_singkat = teks persis (+ jawabanEkuivalen bila ada sinonim);
    benar_salah & menjodohkan = "" (kunci ada di tabelBenarSalah / pasangan).
@@ -202,7 +213,8 @@ TANPA pengecualian:
 
 Sekarang buat 20 soal: MAPEL=..., KELAS=..., BAB=..., SUMBER=....
 Sebar tipe: minimal 12 pg_sederhana, 4 pg_kompleks, 2 benar_salah,
-2 isian_singkat. Tingkat kesulitan: 6 mudah, 10 sedang, 4 sulit.
+2 isian_singkat. Bila diminta owner, tambah maksimal 2 esai dengan rubrik
+penilaian yang jelas di kunciJawaban. Tingkat kesulitan: 6 mudah, 10 sedang, 4 sulit.
 ```
 
 Setelah JSON kembali dari AI: upload di
