@@ -30,6 +30,13 @@ bukan lubang yang belum kelihatan.
    Tanpa ini, risk acceptance berubah menjadi taruhan eksistensial.
    Bentuk paling murah: ekspor manual mingguan dari Firebase Console;
    bentuk terbaik: fungsi terjadwal setelah service account ada.
+   Status Okt 2026: dijalankan oleh GitHub Actions
+   (.github/workflows/backup-mingguan.yml -> scripts/backupFirestore.mjs),
+   Sabtu 20.00 UTC. Awalnya function Vercel, dipindah karena build Vercel
+   proyek ini mentok di 13 function (function ke-14 membuat semua deploy
+   gagal, terbukti lewat branch probe). Backup baru benar-benar jalan
+   setelah secret FIREBASE_SERVICE_ACCOUNT diisi di GitHub Actions;
+   sampai saat itu workflow hijau tapi melewati backup dengan peringatan.
 
 2. **Password siswa teks polos TIDAK ikut diterima sebagai risiko.**
    Dampaknya keluar dari pagar bimbel: password dipakai ulang di layanan
