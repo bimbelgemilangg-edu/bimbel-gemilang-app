@@ -1,0 +1,32 @@
+# Backup mingguan Firestore -> Firebase Storage.
+# Pengganti cron Vercel yang dilepas Okt 2026: build Vercel proyek ini
+# mentok di 13 function (lihat kepala scripts/backupFirestore.mjs),
+# jadi backup pindah ke sini agar deploy aplikasi tetap hijau.
+#
+# Secret yang dipakai (GitHub -> Settings -> Secrets and variables -> Actions):
+#   FIREBASE_SERVICE_ACCOUNT  (wajib; tanpa ini job hijau tapi backup dilewati)
+#   FIREBASE_STORAGE_BUCKET   (opsional)
+name: Backup mingguan Firestore
+
+on:
+  schedule:
+    # Sabtu 20.00 UTC = Minggu 03.00 WIB (jam sepi, sebelum kelas Senin)
+    - cron: '0 20 * * 6'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Pasang firebase-admin saja (cepat, tidak perlu npm ci penuh)
+        run: npm install --no-save --no-audit --no-fund firebase-admin
+      - name: Jalankan backup
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+        run: node scripts/backupFirestore.mjs
