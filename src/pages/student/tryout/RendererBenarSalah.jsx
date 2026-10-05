@@ -76,7 +76,7 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
         <tbody>
           {baris.map((item, i) => {
             const teks = typeof item === 'object' ? (item.pernyataan || item.teks || '') : String(item);
-            const kunci = String(item?.jawaban || '').toLowerCase().trim();
+            const kunci = String(item?.jawaban ?? item?.kunci ?? '').toLowerCase().trim();
             const jawabanSiswa = String(jawabanTerpilih[i] || '').toLowerCase().trim();
 
             const renderSel = (labelSel) => {

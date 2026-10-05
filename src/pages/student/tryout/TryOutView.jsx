@@ -415,7 +415,8 @@ export default function TryOutView() {
     if (!paket) return;
     setSedangMengirimAkhir(true);
     setGagalKirimAkhir(false);
-    const { totalSkor, totalSkorPersen } = hitungTotalSkor(paket.daftarSoal, jawaban);
+    const { totalSkor, totalSkorPersen, jumlahTidakBisaDinilai } =
+      hitungTotalSkor(paket.daftarSoal, jawaban);
     const xpMentah = Math.round(totalSkor * XP_PER_SOAL);
     const { xpFinal } = terapkanPotonganXP(xpMentah, pelanggaran);
 
@@ -431,6 +432,11 @@ export default function TryOutView() {
           xpFinal,
           pelanggaran,
           fotoPengawasan,
+          // 🔥 BARU (audit keluhan siswa): jumlah soal yang DIKELUARKAN dari
+          // penilaian karena datanya rusak (mis. baris benar/salah tanpa
+          // kunci). Disimpan di sesi supaya layar hasil & admin bisa
+          // menjelaskan ke siswa: ini bukan kesalahan mereka.
+          jumlahSoalRusak: jumlahTidakBisaDinilai || 0,
           waktuSelesai: serverTimestamp(),
         });
       }
@@ -452,7 +458,7 @@ export default function TryOutView() {
         });
       }
 
-      setHasilAkhir({ xpMentah, xpFinal, totalSkorPersen, pelanggaran });
+      setHasilAkhir({ xpMentah, xpFinal, totalSkorPersen, pelanggaran, jumlahSoalRusak: jumlahTidakBisaDinilai || 0 });
       setTahap('selesai');
     } catch (e) {
       console.error(`Gagal menyimpan hasil try out (percobaan ke-${percobaanKe}):`, e);
@@ -693,6 +699,18 @@ export default function TryOutView() {
             keterangan={paket.judul}
             xp={hasilAkhir?.xpFinal}
           />
+          {(hasilAkhir?.jumlahSoalRusak || 0) > 0 && (
+            <div style={{
+              marginTop: 12, background: '#fffbeb', border: '1px solid #fcd34d',
+              color: '#92400e', borderRadius: 12, padding: '10px 14px',
+              fontSize: 12.5, lineHeight: 1.6,
+            }}>
+              ⚠️ {hasilAkhir.jumlahSoalRusak} soal tidak ikut dinilai karena data
+              soalnya tidak lengkap — <b>ini bukan kesalahanmu</b> dan tidak
+              mengurangi skormu. Guru sudah diberi tahu untuk memperbaiki
+              soal-soal itu.
+            </div>
+          )}
         </div>
 
         <RingkasanPelanggaran

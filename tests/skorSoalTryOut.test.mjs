@@ -16,8 +16,13 @@ import {
   soalBelumDijawab,
   isSoalEsai,
   poinEsai,
+  soalBisaDinilai,
   SKALA_NILAI_ESAI,
 } from '../src/utils/skorSoalTryOut.js';
+import {
+  hitungSkorBenarSalah,
+  kunciBarisBenarSalah,
+} from '../src/utils/skoringSoalKompleks.js';
 
 let lulus = 0, gagal = 0;
 const kegagalan = [];
@@ -123,6 +128,44 @@ uji('paket tanpa esai tidak berubah perilakunya (regresi)', () => {
   assert.equal(r.jumlahEsai, 0);
   const kosong = hitungTotalSkor([], {});
   assert.equal(kosong.totalSkorPersen, 0);
+});
+
+bagian('benar/salah: keadilan saat kunci baris hilang (bug produksi 194 soal)');
+
+const bsSehat = { id: 'bs1', tipe: 'benar_salah', pernyataan: [
+  { teks: 'a', jawaban: 'benar' }, { teks: 'b', jawaban: 'salah' },
+] };
+const bsSebagian = { id: 'bs2', tipe: 'benar_salah', pernyataan: [
+  { teks: 'a', jawaban: 'benar' }, { teks: 'b', jawaban: '' },
+] };
+const bsRusak = { id: 'bs3', tipe: 'benar_salah', pernyataan: [
+  { teks: 'a', jawaban: '' }, { teks: 'b', jawaban: '' },
+] };
+
+uji('baris sehat dinilai penuh seperti biasa', () => {
+  assert.equal(hitungSkorBenarSalah(bsSehat.pernyataan, ['benar', 'salah']), 1);
+  assert.equal(hitungSkorBenarSalah(bsSehat.pernyataan, ['benar', 'benar']), 0.5);
+  assert.equal(soalBisaDinilai(bsSehat), true);
+});
+
+uji('baris tanpa kunci TIDAK menghukum siswa (penyebut mengecil)', () => {
+  // siswa menjawab baris berkunci dengan BENAR; baris rusak diabaikan
+  assert.equal(hitungSkorBenarSalah(bsSebagian.pernyataan, ['benar', 'salah']), 1);
+  assert.equal(soalBisaDinilai(bsSebagian), true);
+});
+
+uji('semua baris tanpa kunci -> soal dikeluarkan dari penilaian', () => {
+  assert.equal(soalBisaDinilai(bsRusak), false);
+  const daftar = [pg('s1', 'A'), bsRusak];
+  const r = hitungTotalSkor(daftar, { s1: 0, bs3: ['benar', 'benar'] });
+  assert.equal(r.jumlahTidakBisaDinilai, 1);
+  assert.equal(r.totalSkorPersen, 100, 'soal rusak tidak boleh menurunkan persen siswa');
+});
+
+uji('dialek kunci baris via field `kunci` (sanitizer) tetap terbaca', () => {
+  const baris = [{ pernyataan: 'x', kunci: 'benar' }];
+  assert.equal(kunciBarisBenarSalah(baris[0]), 'benar');
+  assert.equal(hitungSkorBenarSalah(baris, ['benar']), 1);
 });
 
 console.log(`\n${'='.repeat(56)}\n  LULUS : ${lulus}\n  GAGAL : ${gagal}\n${'='.repeat(56)}`);

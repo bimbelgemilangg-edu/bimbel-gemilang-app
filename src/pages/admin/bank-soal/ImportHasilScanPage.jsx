@@ -3627,6 +3627,27 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         });
       });
 
+      // 🔥 BARU (audit keluhan siswa 2026-10-05): baris benar/salah TANPA
+      // kunci adalah cacat impor yang dulu lolos diam-diam -- soal jadi
+      // selalu bernilai 0 apapun jawaban siswa (194 soal produksi terbukti
+      // terkena). Sekarang diperingatkan di preview SEBELUM disimpan.
+      normalized.forEach((q) => {
+        if (q.tipe !== 'benar_salah' && q.tipe !== 'pg_kategori') return;
+        const baris = (Array.isArray(q.tabel_benar_salah) && q.tabel_benar_salah.length) ? q.tabel_benar_salah
+          : (Array.isArray(q.tabelBenarSalah) && q.tabelBenarSalah.length) ? q.tabelBenarSalah
+          : (Array.isArray(q.pernyataan) ? q.pernyataan : []);
+        if (!baris.length) return;
+        const kosong = baris.filter((b) => !String(b?.jawaban ?? b?.kunci ?? '').trim()).length;
+        if (kosong > 0) {
+          q.peringatan = q.peringatan || [];
+          q.peringatan.push(
+            `${kosong} baris benar/salah TANPA kunci jawaban -- baris itu tidak ` +
+            'bisa dinilai dan soal bisa dikeluarkan dari penjumlahan total. ' +
+            'Lengkapi kunci per baris dulu (atau tolak soal ini).',
+          );
+        }
+      });
+
       const warningList = normalized
         .filter(q => !q.valid)
         .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${q.errors.join(' ')}`);
