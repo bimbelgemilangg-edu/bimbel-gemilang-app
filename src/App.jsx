@@ -21,6 +21,10 @@ import ErrorBoundary from './components/ErrorBoundary';
 // tidak dilempar ke halaman login (yang dulu ikut membunuh sesi adminnya).
 import { catatAudit, KATEGORI } from './utils/auditLog';
 import { ambilSesiAdmin, LABEL_PERAN_ADMIN } from './utils/adminAuth';
+// 🔥 BARU (2026-10-05, keluhan owner: nama yang dibenarkan admin tidak
+// berubah di HP siswa): profil siswa kini dibaca lewat satu pintu yang
+// MENYEGARKAN diri dari Firestore, bukan salinan localStorage saat login.
+import { useProfilSiswa } from './utils/profilSiswa';
 
 // ============================================================
 // LOGIN & PUBLIK
@@ -354,6 +358,9 @@ const SiswaLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('dashboard');
+  // Profil segar: nama/kelas ikut berubah begitu admin memperbaikinya,
+  // tanpa siswa perlu logout-login. Lihat src/utils/profilSiswa.js.
+  const profilSiswa = useProfilSiswa();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
@@ -381,7 +388,7 @@ const SiswaLayout = ({ children }) => {
             </div>
           </div>
           <div style={gayaAvatarSiswa}>
-            {localStorage.getItem('studentName')?.charAt(0) || 'S'}
+            {profilSiswa.nama?.charAt(0) || 'S'}
           </div>
         </header>
         <div style={gayaIsiSiswa(isMobile)}>
