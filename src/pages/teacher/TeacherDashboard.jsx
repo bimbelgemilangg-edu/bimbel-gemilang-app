@@ -20,6 +20,7 @@ import {
   RefreshCw, Loader2, Eye, EyeOff, Radio
 } from 'lucide-react';
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
+import { daftarIdGuru } from '../../utils/identitasGuru';
 
 // ============================================================
 // LOGO COMPONENT - Menggunakan gambar dari folder public
@@ -78,10 +79,13 @@ const TeacherDashboard = () => {
     let batal = false;
     (async () => {
       try {
-        const g = JSON.parse(localStorage.getItem('teacherData') || '{}');
-        const gid = String(g.guruId || g.id || '');
-        if (!gid) return;
-        const snap = await getDocs(query(collection(db, 'tryout_paket'), where('tentorId', '==', gid)));
+        // FIX 2026-10: admin menyimpan `tentorId` = docId Firestore, sementara
+        // kode lama di sini hanya mencari kode `guruId` (GURU-0xx) → banner
+        // tidak pernah muncul. Kini KEDUA identitas dicari sekaligus
+        // (lihat src/utils/identitasGuru.js).
+        const ids = daftarIdGuru();
+        if (ids.length === 0) return;
+        const snap = await getDocs(query(collection(db, 'tryout_paket'), where('tentorId', 'in', ids)));
         if (batal) return;
         setTryoutTerhubung(snap.docs
           .map((d) => ({ id: d.id, ...d.data() }))

@@ -24,6 +24,7 @@ import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, isSoalEsai, poinEsai, 
 import { terapkanPotonganXP } from '../../utils/potonganXPTryOut';
 import { tambahXpMingguan } from '../../utils/mingguIni';
 import { catatAudit, KATEGORI } from '../../utils/auditLog';
+import { bacaIdentitasGuru, guruCocokDenganTentor } from '../../utils/identitasGuru';
 import RenderMath from '../../components/RenderMath';
 import RenderTable from '../../components/RenderTable';
 import RendererPgSederhana from '../student/tryout/RendererPgSederhana';
@@ -67,14 +68,15 @@ export default function GuruPantauTryOut() {
     (async () => {
       setMemuat(true);
       try {
-        const g = JSON.parse(localStorage.getItem('teacherData') || '{}');
-        const gid = String(g.guruId || g.id || '');
-        setGuru({ guruId: gid, guruNama: g.nama || g.teacherName || 'Guru' });
+        const idt = bacaIdentitasGuru();
+        setGuru({ guruId: idt.semuaId[0] || '', guruNama: idt.guruNama });
         const snap = await getDoc(doc(db, 'tryout_paket', paketId));
         if (batal) return;
         if (!snap.exists()) { setPesan({ tipe: 'err', teks: 'Paket tidak ditemukan.' }); setMemuat(false); return; }
         const d = snap.data();
-        if (String(d.tentorId || '') !== gid) {
+        // FIX 2026-10: terima docId MAUPUN kode GURU-0xx (admin menyimpan
+        // docId; kode lama cuma menerima guruId → guru sah ditolak masuk).
+        if (!guruCocokDenganTentor(d.tentorId)) {
           setPesan({ tipe: 'err', teks: 'Try out ini tidak terhubung ke akun Anda. Hubungi admin bila ini keliru.' });
           setMemuat(false); return;
         }

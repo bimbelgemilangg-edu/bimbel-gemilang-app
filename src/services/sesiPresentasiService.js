@@ -20,6 +20,7 @@
 // (bukan per scroll).
 // ============================================================
 import { db } from '../firebase';
+import { bacaIdentitasGuru as identitasDariStorage } from '../utils/identitasGuru';
 import {
   collection, doc, getDoc, getDocs, query, setDoc, where, limit,
   onSnapshot, serverTimestamp,
@@ -34,15 +35,14 @@ const kodeSesiAcak = () =>
   Array.from({ length: 6 }, () => ABJ_SESI[Math.floor(Math.random() * ABJ_SESI.length)]).join('');
 
 const bacaGuru = () => {
-  try {
-    const d = JSON.parse(localStorage.getItem('teacherData') || '{}');
-    return {
-      guruId: d.guruId || d.id || d.nama || 'guru',
-      guruNama: d.nama || d.teacherName || 'Guru Gemilang',
-    };
-  } catch {
-    return { guruId: 'guru', guruNama: 'Guru Gemilang' };
-  }
+  // Delegasi ke satu sumber kebenaran (src/utils/identitasGuru.js).
+  // Semantik lama dipertahankan persis: fallback 'guru' bila tidak ada
+  // data login, supaya sesi_presentasi yang sudah berjalan tetap cocok.
+  const idt = identitasDariStorage();
+  return {
+    guruId: idt.guruId || 'guru',
+    guruNama: idt.guruNama,
+  };
 };
 
 /** Identitas guru login (dipakai halaman PPT versi guru & panggung). */
