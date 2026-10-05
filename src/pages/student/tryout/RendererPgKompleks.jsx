@@ -30,7 +30,7 @@ function safeArray(v) {
   return [];
 }
 
-export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false }) {
+export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
   const opsi = soal.opsiJawaban || [];
   const kunci = safeArray(soal.kunciJawaban).map((h) => String(h).toUpperCase().trim());
   const dipilih = new Set(safeArray(jawabanTerpilih).map((h) => String(h).toUpperCase().trim()));
@@ -104,7 +104,16 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
                   {gambarOpsi.map((g, gi) => {
                     const src = g.uploadedUrl || g.url || '';
                     if (!src) return null;
-                    return <img key={gi} src={src} alt={`Gambar opsi ${huruf}`} style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                    return (
+                      <img
+                        key={gi}
+                        src={src}
+                        alt={`Gambar opsi ${huruf}`}
+                        onClick={onKlikGambar ? () => onKlikGambar(src) : undefined}
+                        title={onKlikGambar ? 'Klik untuk memperbesar' : undefined}
+                        style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid #e2e8f0', cursor: onKlikGambar ? 'zoom-in' : 'default' }}
+                      />
+                    );
                   })}
                 </div>
               )}

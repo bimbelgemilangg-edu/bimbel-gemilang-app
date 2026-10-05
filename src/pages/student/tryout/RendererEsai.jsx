@@ -36,6 +36,7 @@ export default function RendererEsai({
   onChange,
   modeTinjau = false,
   disabled = false,
+  onKlikGambar = null,
 }) {
   const [busyFoto, setBusyFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState('');
@@ -165,7 +166,9 @@ export default function RendererEsai({
           <img
             src={foto}
             alt="Foto jawaban"
-            style={{ maxWidth: 260, width: '100%', borderRadius: 10, border: '1px solid #e2e8f0', display: 'block' }}
+            onClick={onKlikGambar ? () => onKlikGambar(foto) : undefined}
+            title={onKlikGambar ? 'Klik untuk memperbesar' : undefined}
+            style={{ maxWidth: 260, width: '100%', borderRadius: 10, border: '1px solid #e2e8f0', display: 'block', cursor: onKlikGambar ? 'zoom-in' : 'default' }}
           />
         </div>
       )}
