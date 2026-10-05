@@ -81,7 +81,7 @@ function parseTeksKisiKisi(teks) {
 // esai yang gak bisa dinilai otomatis -- keduanya nunggu giliran).
 // 🔥 BARU (esai 2026-10-04): 'esai' masuk daftar didukung -- siswa mengetik
 // atau memotret jawaban, admin menilai manual di Hasil Try Out.
-const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik', 'esai'];
+const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik', 'esai', 'uraian'];
 function tipeDidukung(soal) {
   return TIPE_TERDUKUNG.includes(soal.tipe || 'pg_sederhana');
 }
@@ -126,7 +126,7 @@ function RendererSoalPreview({ soal }) {
   if (tipe === 'pg_kompleks') return <RendererPgKompleks soal={soal} disabled modeTinjau />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah soal={soal} disabled modeTinjau />;
   if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat soal={soal} disabled modeTinjau />;
-  if (tipe === 'esai') return <RendererEsai soal={soal} disabled modeTinjau />;
+  if (tipe === 'esai' || tipe === 'uraian') return <RendererEsai soal={soal} disabled modeTinjau />;
   return <RendererPgSederhana soal={soal} disabled modeTinjau />;
 }
 

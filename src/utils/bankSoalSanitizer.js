@@ -1,3 +1,6 @@
+// Perbaikan otomatis kurung himpunan LaTeX (lihat src/utils/kurungLatex.js).
+import { perbaikiKurungHimpunanLatex } from './kurungLatex.js';
+
 // ============================================================
 // bankSoalSanitizer.js
 // ============================================================
@@ -414,20 +417,30 @@ const TIPE_ENUM = [
   
     // --- tipe ---
     let tipe = String(q.tipe || '').trim();
+    // 🔥 JEMBATAN (2026-10-05): pipeline HTML Master memakai kata 'uraian'
+    // (lihat prompt di ImportHasilScanPage), sedangkan kontrak JSON &
+    // fitur penilaian manual memakai 'esai'. Keduanya SATU tipe yang sama:
+    // jawaban bebas yang dinilai manusia. Disamakan di pintu masuk supaya
+    // tidak ada lagi soal yang jatuh ke pg_sederhana tanpa opsi.
+    if (tipe === 'uraian') tipe = 'esai';
     if (!TIPE_ENUM.includes(tipe)) {
       warnings.push(`tipe "${q.tipe}" tidak dikenal, di-default ke "pg_sederhana"`);
       tipe = 'pg_sederhana';
     }
   
-    // --- teksSoal ---
-    const teksSoal = String(q.teksSoal ?? q.teks_soal ?? '').trim();
+    // --- teksSoal (kurung himpunan polos diperbaiki otomatis) ---
+    const teksSoal = perbaikiKurungHimpunanLatex(String(q.teksSoal ?? q.teks_soal ?? '').trim());
     if (!teksSoal) warnings.push('teksSoal kosong');
   
     // --- field per tipe (dinormalisasi semua, dikosongkan sesuai tipe) ---
-    const opsiJawaban = normalizeOpsiJawaban(q.opsiJawaban ?? q.opsi_jawaban);
-    const pernyataan = Array.isArray(q.pernyataan) ? q.pernyataan.map(String) : [];
-    const tabelBenarSalah = normalizeTabelBenarSalah(q.tabelBenarSalah ?? q.tabel_benar_salah);
-    const pasangan = normalizePasangan(q.pasangan);
+    const opsiJawaban = normalizeOpsiJawaban(q.opsiJawaban ?? q.opsi_jawaban)
+      .map(perbaikiKurungHimpunanLatex);
+    const pernyataan = Array.isArray(q.pernyataan)
+      ? q.pernyataan.map((x) => perbaikiKurungHimpunanLatex(String(x))) : [];
+    const tabelBenarSalah = normalizeTabelBenarSalah(q.tabelBenarSalah ?? q.tabel_benar_salah)
+      .map((r) => ({ ...r, pernyataan: perbaikiKurungHimpunanLatex(r.pernyataan) }));
+    const pasangan = normalizePasangan(q.pasangan)
+      .map((r) => ({ ...r, kiri: perbaikiKurungHimpunanLatex(r.kiri), kanan: perbaikiKurungHimpunanLatex(r.kanan) }));
     const gambar = normalizeGambar(q.gambar);
   
     // --- validasi silang: field wajib per tipe harus terisi ---
