@@ -767,6 +767,34 @@ function App() {
         <Route path="/guru/modul/quiz" element={<GuruPage><ManageQuiz /></GuruPage>} />
         <Route path="/guru/cek-tugas" element={<GuruPage><CekTugasSiswa /></GuruPage>} />
         <Route path="/guru/alat-bantu" element={<GuruPage><TeacherLearningAid /></GuruPage>} />
+        {/* 🔥 FIX (2026-10-05, laporan owner: "membuka menunya dimana?"):
+            fitur "Try Out terhubung tentor" (#106) menambahkan IMPOR
+            GuruPantauTryOut di baris 74 dan banner di TeacherDashboard yang
+            menavigasi ke /guru/tryout-monitor/:paketId -- tapi <Route>-nya
+            TIDAK PERNAH DIDAFTARKAN. Akibatnya klik banner jatuh ke fallback
+            <Route path="*"> dan dilempar balik ke "/", jadi halaman pantau
+            281 baris itu mati total di produksi: tidak bisa dibuka dari mana
+            pun. Penilaian esai oleh guru tidak pernah bisa dipakai.
+
+            Kenapa CI hijau padahal fitur mati? eslint.config.js memakai
+            `varsIgnorePattern: '^[A-Z_]'` -- workaround WAJIB karena ESLint di
+            setup ini tidak menghitung pemakaian JSX (terverifikasi: komponen
+            yang benar dipakai di JSX tetap dilaporkan "never used"), jadi
+            tanpa pola itu ada ±2.000 error palsu. Efek sampingnya: impor
+            komponen yang nganggur jadi tak terlihat. Penggantinya bukan
+            mencabut pola itu, tapi penjaga khusus `scripts/ci-penjaga-rute.mjs`
+            yang memastikan setiap komponen di App.jsx terpakai dan setiap
+            tujuan navigate() punya rute.
+
+            Pakai GuruRoute (BUKAN GuruPage): GuruPantauTryOut sudah merender
+            <SidebarGuru /> sendiri di baris 153, sementara GuruPage =
+            GuruRoute + TeacherLayout yang JUGA merender <SidebarGuru /> di
+            baris 29 -- dibungkus GuruPage berarti dua sidebar bertumpuk.
+            Pola yang sama sudah dipakai /guru/sesi-live di bawah. */}
+        <Route
+          path="/guru/tryout-monitor/:paketId"
+          element={<GuruRoute><GuruPantauTryOut /></GuruRoute>}
+        />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
         {/* MATERI v2 FASE 3 -- panggung presentasi sinkron.
             Panggung full-screen (tanpa layout) supaya bersih

@@ -19,30 +19,41 @@
 import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
-// ---------- TERBILANG (angka -> kata-kata rupiah) ----------
-const SATUAN = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh',
-  'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
-
-export const terbilang = (n) => {
-  let angka = Math.floor(Math.abs(parseInt(n) || 0));
-  if (angka === 0) return 'Nol';
-  if (angka < 12) return SATUAN[angka];
-  if (angka < 20) return `${terbilang(angka - 10)} Belas`;
-  if (angka < 100) return `${terbilang(Math.floor(angka / 10))} Puluh${angka % 10 ? ' ' + terbilang(angka % 10) : ''}`;
-  if (angka < 200) return `Seratus${angka - 100 ? ' ' + terbilang(angka - 100) : ''}`;
-  if (angka < 1000) return `${terbilang(Math.floor(angka / 100))} Ratus${angka % 100 ? ' ' + terbilang(angka % 100) : ''}`;
-  if (angka < 2000) return `Seribu${angka - 1000 ? ' ' + terbilang(angka - 1000) : ''}`;
-  if (angka < 1000000) return `${terbilang(Math.floor(angka / 1000))} Ribu${angka % 1000 ? ' ' + terbilang(angka % 1000) : ''}`;
-  if (angka < 1000000000) return `${terbilang(Math.floor(angka / 1000000))} Juta${angka % 1000000 ? ' ' + terbilang(angka % 1000000) : ''}`;
-  return `${terbilang(Math.floor(angka / 1000000000))} Miliar${angka % 1000000000 ? ' ' + terbilang(angka % 1000000000) : ''}`;
+// ---------- TERBILANG & FORMAT RUPIAH ----------
+// 🔥 DIPINDAH (2026-10-05) ke src/utils/uangTeks.js supaya bisa diuji di
+// Node: berkas ini mengimpor `db` dari '../firebase' di bawah, dan itu
+// membuat SELURUH isinya -- termasuk terbilang yang tercetak di kwitansi
+// resmi -- tidak bisa diimpor oleh test. Logika murninya sekarang di sana
+// dan di-re-export di sini, jadi semua pemanggil lama
+// (`import { rp, terbilang } from '.../utils/kwitansi'`) tetap jalan
+// tanpa diubah. Alasan pemisahannya dan bug yang diperbaiki tercatat di
+// kepala src/utils/uangTeks.js.
+export {
+  angkaRupiah,
+  terbilang,
+  rp,
+  rpFmt,
+  angkaFmt,
+  tanggalPanjang,
+  prefixKwitansiBulan,
+  TEKS_NOMINAL_TIDAK_SAH,
+  RP_NOMINAL_TIDAK_SAH,
 };
 
-// ---------- NOMOR KWITANSI ----------
-export const prefixKwitansiBulan = (date = new Date()) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  return `KWT-${y}${m}-`;
-};
+// Diimpor sebagai binding lokal juga (bukan cuma `export ... from`), karena
+// berkas ini masih MEMAKAI prefixKwitansiBulan/rp/terbilang di bawah --
+// `export ... from` tidak membuat nama yang bisa dipakai di berkas ini.
+import {
+  angkaRupiah,
+  terbilang,
+  rp,
+  rpFmt,
+  angkaFmt,
+  tanggalPanjang,
+  prefixKwitansiBulan,
+  TEKS_NOMINAL_TIDAK_SAH,
+  RP_NOMINAL_TIDAK_SAH,
+} from './uangTeks.js';
 
 // Hitung nomor urut berikutnya untuk bulan berjalan.
 // Dipanggil SEBELUM addDoc/updateDoc yang menulis noKwitansi.
@@ -67,18 +78,14 @@ export const ambilNomorKwitansiBerikutnya = async (date = new Date()) => {
   return `${prefix}${String(maks + 1).padStart(3, '0')}`;
 };
 
-// ---------- FORMAT TANGGAL ----------
-const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-
-export const tanggalPanjang = (tanggalStr) => {
-  if (!tanggalStr) return new Date().toLocaleDateString('id-ID');
-  const [y, m, d] = String(tanggalStr).split('-').map(Number);
-  if (!y || !m || !d) return tanggalStr;
-  return `${d} ${NAMA_BULAN[m - 1]} ${y}`;
-};
-
-export const rp = (n) => 'Rp ' + (parseInt(n) || 0).toLocaleString('id-ID');
+// ---------- FORMAT TANGGAL & RUPIAH ----------
+// 🔥 `tanggalPanjang` dan `rp` sekarang datang dari './uangTeks.js' lewat
+// re-export di kepala berkas ini. Definisi lamanya DIHAPUS dari sini --
+// membiarkan keduanya berarti ekspor ganda (SyntaxError) sekaligus
+// mempertahankan bug lama: `rp` memakai parseInt sehingga MEMOTONG
+// nominal pecahan, berbeda dari `rpFmt` di keuanganOwnerUtils yang
+// membulatkan. Nominal yang sama bisa tercetak beda di kwitansi dan di
+// layar owner.
 
 // ---------- CETAK LEWAT IFRAME ----------
 // srcdoc dipakai agar style print tidak bocor ke halaman utama.

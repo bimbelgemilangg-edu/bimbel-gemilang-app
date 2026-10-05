@@ -78,8 +78,24 @@ export const tambahHari = (tanggalStr, n) => {
   return keyTanggalDariDate(d);
 };
 
-export const rpFmt = (n) => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
-export const angkaFmt = (n) => Math.round(n || 0).toLocaleString('id-ID');
+// 🔥 DISATUKAN (2026-10-05) ke src/utils/uangTeks.js. Sebelumnya berkas
+// ini dan src/utils/kwitansi.js masing-masing punya formatter rupiah
+// sendiri yang TIDAK SEPAKAT: di sini Math.round (membulatkan), di sana
+// parseInt (memotong). Nominal pecahan -- yang nyata muncul dari
+// amortisasi paket dan perhitungan laba -- tercetak beda antara layar
+// owner dan kwitansi resmi: rp(250000.6) = "Rp 250.000" sementara
+// rpFmt(250000.6) = "Rp 250.001". Sekarang satu sumber.
+//
+// Perilaku yang diandalkan test TIDAK BERUBAH: rpFmt(null) = "Rp 0",
+// rpFmt(1500.6) = "Rp 1.501", angkaFmt(undefined) = "0"
+// (tests/keuangan.test.mjs:579). Yang berubah hanya nominal tak-hingga:
+// dulu "Rp ∞" (bisa ikut tercetak ke PDF owner), sekarang ditolak.
+export { rpFmt, angkaFmt };
+// Diimpor sebagai binding lokal juga, BUKAN `export ... from`: berkas ini
+// masih memanggil angkaFmt/rpFmt di dalamnya (mis. `const fmt = (n) =>
+// angkaFmt(n)` di pembangun PDF), dan `export ... from` tidak membuat nama
+// yang bisa dipakai di berkas ini sendiri.
+import { rpFmt, angkaFmt } from '../../../utils/uangTeks.js';
 
 export const formatWaktu = (ms) => {
   if (!ms) return '-';

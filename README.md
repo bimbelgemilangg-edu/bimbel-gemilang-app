@@ -18,8 +18,9 @@ npm run dev       # dev server Vite (HMR) di http://localhost:5173
 npm run build     # build produksi ke dist/
 npm run preview   # pratinjau hasil build
 npm run lint      # periksa gaya & bug statis
-npm test          # 91 uji: logika kredensial admin + logika keuangan
+npm test          # 184 uji: kredensial, keuangan, kwitansi, bank soal, skoring, LaTeX, identitas guru
 npm run test:keuangan   # hanya uji logika uang
+npm run test:kwitansi   # hanya uji nominal -> teks yang tercetak di kwitansi
 npm run test:auth       # hanya uji hash password
 ```
 
@@ -165,9 +166,28 @@ jadi `A = 2,3`). Kalau ragu, jalankan pemeriksa di `tests/`.
 
 ---
 
-## Status Kualitas (per audit 2026-10-01)
+## Status Kualitas (audit 2026-10-01, diperbarui 2026-10-05)
 
 **Sudah beres:**
+- **CI sekarang ada dan hijau.** `.github/workflows/ci.yml` menjalankan test +
+  tiga penjaga + lint berkas berubah + build produksi sungguhan pada setiap PR
+  dan setiap push ke `main`. (Sebelum 2026-10-01 repo ini tidak punya CI sama
+  sekali; bagian "Masih menjadi utang" di bawah dulu mencantumkan itu.)
+- **Rute `/guru/tryout-monitor/:paketId` didaftarkan** (2026-10-05). Fitur
+  "Try Out terhubung tentor" dari PR #106 sebelumnya **mati total di produksi**:
+  impornya ada, halamannya ada, banner di dashboard guru ada — tapi `<Route>`-nya
+  tidak pernah didaftarkan, sehingga klik banner jatuh ke fallback dan dilempar
+  balik ke beranda. Penjaga baru `scripts/ci-penjaga-rute.mjs` memastikan kelas
+  bug ini tidak bisa terulang diam-diam.
+- **Nominal kwitansi diperbaiki** (2026-10-05): tanda minus tidak lagi hilang
+  dari `terbilang`, `parseInt` pada notasi eksponen tidak lagi mencetak "Satu"
+  untuk 1e21, nominal rusak (`Infinity`/`NaN`) tidak lagi menyamar jadi "Rp 0",
+  dan `rp`/`rpFmt` tidak lagi saling bertentangan. Logika murninya dipindah ke
+  `utils/uangTeks.js` supaya bisa diuji — 22 uji invarian di
+  `tests/kwitansi.test.mjs`.
+- **`AUDIT-REPO.md` akhirnya ada.** `ci.yml` merujuknya sejak awal tapi
+  berkasnya tidak pernah dibuat, jadi pesan CI menyuruh developer membaca
+  roadmap yang tidak eksis.
 - 6 bug di logika keuangan ditemukan lewat `tests/keuangan.test.mjs` dan
   diperbaiki (lihat commit `keuangan:`)
 - `.gitignore` ditulis ulang (sebelumnya rusak: berisi markdown code-fence dan
@@ -186,19 +206,31 @@ jadi `A = 2,3`). Kalau ragu, jalankan pemeriksa di `tests/`.
   Seluruh panel admin ikut terunduh ke HP siswa. Ini penyebab build boros memori
   dan alasan `vite.config.js` punya `manualChunks` manual serta limit workbox
   yang pernah dinaikkan ke 6 MB.
-- **Tidak ada CI.** Belum ada `.github/workflows/`, jadi lint & test belum
-  menjadi gerbang wajib sebelum merge.
-- **291 error ESLint tersisa**, didominasi `no-unused-vars` (234) dan
-  `react-hooks/exhaustive-deps` (68) — hampir semuanya warisan, bukan dari
-  perubahan ini.
-- **Komponen raksasa.** `ImportHasilScanPage.jsx` 5.365 baris,
+- **Utang lint membuat 74 dari 262 berkas jadi "ranjau CI".** CI melint berkas
+  yang *disentuh* dan mewajibkannya bersih, jadi menyentuh salah satu dari 74
+  berkas itu berarti CI merah lebih dulu karena error warisan yang tidak ada
+  hubungannya dengan perbaikan kita. Angka terukur, peta per rule, dan roadmap
+  pembersihannya (74 → 24 berkas kotor hanya dengan membereskan 226 error
+  mekanis): **`AUDIT-REPO.md`**.
+- **`varsIgnorePattern: '^[A-Z_]'` membuat impor komponen mati tak terlihat.**
+  Pola itu workaround wajib (ESLint di setup ini tidak menghitung pemakaian
+  JSX — terverifikasi lewat probe), tapi efek sampingnya nyata: PR #106 merge
+  dengan CI hijau padahal `<Route>` untuk `GuruPantauTryOut` tidak pernah
+  didaftarkan. Penggantinya `scripts/ci-penjaga-rute.mjs`, gerbang ke-3 di CI.
+  Penjelasan di `AUDIT-REPO.md`.
+- **259 error ESLint tersisa**, didominasi `no-unused-vars` (214) dan
+  `react-hooks/exhaustive-deps` (67 warning) — hampir semuanya warisan, bukan
+  dari perubahan ini.
+- **Komponen raksasa.** `ImportHasilScanPage.jsx` 5.410 baris,
   `api/generateQuizFromTopic.js` 5.848 baris.
-- **Cakupan test masih sempit.** 91 uji sudah menutup `passwordHash.js` dan
-  `keuanganOwnerUtils.js` (logika saldo, kanal uang, setor kas, amortisasi,
-  arus kas, neraca). Yang **belum** teruji: `utils/kanalUang.js`,
-  `utils/kwitansi.js` (termasuk `terbilang` yang tercetak di kwitansi resmi —
-  belum bisa diuji karena berkasnya meng-impor Firebase), dan seluruh logika
-  skoring (`utils/skorSoalTryOut.js`, `utils/skoringSoalKompleks.js`).
+- **Cakupan test masih sempit.** 184 uji sudah menutup `passwordHash.js`,
+  `keuanganOwnerUtils.js` (saldo, kanal uang, setor kas, amortisasi, arus kas,
+  neraca), `utils/uangTeks.js` (`terbilang` & `rp` yang tercetak di kwitansi
+  resmi — 22 uji invarian, ditambah adu 3.035 nilai ke referensi independen),
+  `bankSoalSanitizer.js`, `skorSoalTryOut.js`, `kurungLatex.js`, dan
+  `identitasGuru.js`. Yang **belum** teruji: `utils/kanalUang.js` dan
+  `utils/skoringSoalKompleks.js` (dipakai tidak langsung lewat
+  `skorSoalTryOut`, tapi belum punya uji sendiri).
 - **`AdvancedQuestionExtractor.jsx`: fitur "pagar materi" belum selesai.**
   `babTaksonomi` di-fetch tapi tidak pernah dipakai; dua fungsi yang disebut di
   komentarnya (`buildMasterPrompt`, `buildMasterHTMLPrompt`) tidak ada di berkas
