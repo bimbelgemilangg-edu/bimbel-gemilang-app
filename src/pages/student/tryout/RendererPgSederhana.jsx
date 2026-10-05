@@ -11,7 +11,7 @@ import { cariIndexBenar } from '../../../utils/skoringSoalKompleks';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import RenderMath from '../../../components/RenderMath';
 
-export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false }) {
+export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
   const opsi = soal.opsiJawaban || [];
   const indexBenar = cariIndexBenar(soal);
   const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
@@ -71,7 +71,16 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
                   {gambarOpsi.map((g, gi) => {
                     const src = g.uploadedUrl || g.url || '';
                     if (!src) return null;
-                    return <img key={gi} src={src} alt={`Gambar opsi ${huruf}`} style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid #e2e8f0' }} />;
+                    return (
+                      <img
+                        key={gi}
+                        src={src}
+                        alt={`Gambar opsi ${huruf}`}
+                        onClick={onKlikGambar ? () => onKlikGambar(src) : undefined}
+                        title={onKlikGambar ? 'Klik untuk memperbesar' : undefined}
+                        style={{ maxWidth: 160, maxHeight: 120, borderRadius: 8, border: '1px solid #e2e8f0', cursor: onKlikGambar ? 'zoom-in' : 'default' }}
+                      />
+                    );
                   })}
                 </div>
               )}

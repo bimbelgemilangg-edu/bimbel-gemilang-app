@@ -28,6 +28,7 @@ import { catatAudit, KATEGORI } from '../../utils/auditLog';
 import { bacaIdentitasGuru, guruCocokDenganTentor } from '../../utils/identitasGuru';
 import RenderMath from '../../components/RenderMath';
 import RenderTable from '../../components/RenderTable';
+import LihatGambar from '../../components/LihatGambar';
 import RendererPgSederhana from '../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../student/tryout/RendererBenarSalah';
@@ -98,6 +99,11 @@ export default function GuruPantauTryOut() {
   // TeacherGradeManager.jsx:93) -- marginLeft 260px + width calc di desktop,
   // nol di mobile.
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // 🔥 BARU (permintaan owner 2026-10-05: "bisa gak guru klik gambarnya biar
+  // jelas"): URL gambar yang sedang diperbesar di lightbox, atau null.
+  // Thumbnail soal hanya 200px dan foto jawaban esai 260px -- cukup untuk
+  // mengenali, tidak untuk membaca label diagram atau tulisan tangan siswa.
+  const [gambarDibuka, setGambarDibuka] = useState(null);
   useEffect(() => {
     const saatResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', saatResize);
@@ -288,12 +294,19 @@ export default function GuruPantauTryOut() {
                       {(s.gambarUrls || []).length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
                           {s.gambarUrls.map((url, gi) => (
-                            <img key={gi} src={url} alt={`Gambar soal ${gi + 1}`} style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                            <img
+                              key={gi}
+                              src={url}
+                              alt={`Gambar soal ${gi + 1}`}
+                              onClick={() => setGambarDibuka(url)}
+                              title="Klik untuk memperbesar"
+                              style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'zoom-in' }}
+                            />
                           ))}
                         </div>
                       )}
                       {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
-                      <RendererSoalGuru soal={s} jawabanTerpilih={jwb} modeTinjau />
+                      <RendererSoalGuru soal={s} jawabanTerpilih={jwb} modeTinjau onKlikGambar={setGambarDibuka} />
                       {/* 🔥 BARU (permintaan owner 2026-10-05): "harusnya tentor
                           bisa melihat soal dan pembahasan lengkap untuk dibahas".
                           Sebelumnya berkas ini TIDAK menyebut `pembahasan` sama
@@ -350,6 +363,14 @@ export default function GuruPantauTryOut() {
         )}
         </div>
       </main>
+      {gambarDibuka && (
+        <LihatGambar
+          src={gambarDibuka}
+          alt="Gambar diperbesar"
+          caption="Gambar soal / opsi / foto jawaban"
+          onClose={() => setGambarDibuka(null)}
+        />
+      )}
     </div>
   );
 }
