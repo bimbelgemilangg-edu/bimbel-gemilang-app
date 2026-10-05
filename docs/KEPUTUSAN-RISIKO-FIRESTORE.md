@@ -33,7 +33,7 @@ bukan lubang yang belum kelihatan.
    Status Okt 2026: dijalankan oleh GitHub Actions
    (.github/workflows/backup-mingguan.yml -> scripts/backupFirestore.mjs),
    Sabtu 20.00 UTC. Awalnya function Vercel, dipindah karena build Vercel
-   proyek ini mentok di 13 function (function ke-14 membuat semua deploy
+   proyek ini mentok di 12 function (function ke-13 membuat semua deploy
    gagal, terbukti lewat branch probe). Backup baru benar-benar jalan
    setelah secret FIREBASE_SERVICE_ACCOUNT diisi di GitHub Actions;
    sampai saat itu workflow hijau tapi melewati backup dengan peringatan.

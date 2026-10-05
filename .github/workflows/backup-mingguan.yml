@@ -1,6 +1,6 @@
 # Backup mingguan Firestore -> Firebase Storage.
 # Pengganti cron Vercel yang dilepas Okt 2026: build Vercel proyek ini
-# mentok di 13 function (lihat kepala scripts/backupFirestore.mjs),
+# mentok di 12 function (lihat kepala scripts/backupFirestore.mjs),
 # jadi backup pindah ke sini agar deploy aplikasi tetap hijau.
 #
 # Secret yang dipakai (GitHub -> Settings -> Secrets and variables -> Actions):

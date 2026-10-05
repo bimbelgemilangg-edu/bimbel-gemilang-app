@@ -11,9 +11,9 @@
 // KENAPA TIDAK DI VERCEL LAGI (sejarah Okt 2026, penting):
 //   Backup ini awalnya function Vercel (api/backupFirestore.js, PR #105).
 //   Sejak itu SEMUA deploy Vercel merah. Delapan branch probe membuktikan:
-//   isi file tidak berpengaruh -- function KE-14 apa pun (bahkan isi trivial
+//   isi file tidak berpengaruh -- function KE-13 apa pun (bahkan isi trivial
 //   satu baris, bahkan salinan persis function lain) membuat build Vercel
-//   gagal; semua pohon berisi 13 function hijau. Proyek ini mentok di 13
+//   gagal; semua pohon berisi 12 function hijau. Batas aman proyek ini: 12
 //   function pada mesin build Vercel paket sekarang. Menghapus 1 function
 //   (file ini menggantikannya di luar Vercel) membuka lagi deploy, termasuk
 //   fitur tryout-terhubung-tentor yang tertahan sejak PR #106.
