@@ -9,5 +9,11 @@
     "api/**/*.js": {
       "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/backupFirestore",
+      "schedule": "0 20 * * 6"
+    }
+  ]
 }
