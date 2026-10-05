@@ -12,7 +12,13 @@
 # Tiga gerbang keras (merah = merge/build ditolak):
 #   1. test         : 100+ uji logika uang, kredensial, pengawal kecurangan
 #   2. penjaga      : konten LaTeX, nama file janggal, aksara terselip, secret
-#   3. build        : build produksi SUNGGUHAN (runner GitHub punya RAM
+#   3. penjaga rute : fitur mati karena <Route> lupa didaftarkan (insiden
+#                     GuruPantauTryOut 2026-10-05 -- lihat kepala
+#                     scripts/ci-penjaga-rute.mjs). Perlu gerbang sendiri
+#                     karena ESLint di setup ini tidak bisa menangkapnya:
+#                     varsIgnorePattern '^[A-Z_]' membuat impor komponen
+#                     yang nganggur tak terlihat.
+#   4. build        : build produksi SUNGGUHAN (runner GitHub punya RAM
 #                     cukup; mesin development kecil tidak sanggup)
 #   + lint berkas berubah: berkas yang disentuh WAJIB lint-bersih.
 #     Utang lint lama (291 error warisan) TIDAK menggagalkan -- itu
@@ -53,6 +59,9 @@ jobs:
 
       - name: Penjaga gerbang (konten, nama file, aksara, secret)
         run: node scripts/ci-penjaga-konten.mjs
+
+      - name: Penjaga rute (fitur mati karena <Route> lupa didaftarkan)
+        run: node scripts/ci-penjaga-rute.mjs
 
       - name: Lint berkas yang berubah (wajib bersih)
         run: |
