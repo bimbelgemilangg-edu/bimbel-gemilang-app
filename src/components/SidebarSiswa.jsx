@@ -6,6 +6,7 @@ import {
   Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck,
   Hash, Library
 } from 'lucide-react';
+import { useProfilSiswa } from '../utils/profilSiswa';
 
 // Logo dari folder public
 const LogoBimbel = "/logo-gemilang.png";
@@ -14,14 +15,16 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
-  // Inisialisasi langsung dari localStorage lewat lazy initializer --
-  // tanpa setState di dalam effect (aturan react-hooks repo ini).
-  const [studentData] = useState(() => ({
-    name: localStorage.getItem('studentName') || 'Siswa',
+  // 🔥 BARU (2026-10-05): nama & kelas diambil dari profil yang MENYEGARKAN
+  // diri dari Firestore (src/utils/profilSiswa.js), bukan salinan
+  // localStorage saat login -- sebelumnya nama yang dibenarkan admin tidak
+  // pernah berubah di sidebar sampai siswa logout-login.
+  const profil = useProfilSiswa();
+  const studentData = {
+    name: profil.nama || 'Siswa',
     nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '',
-    kelas: localStorage.getItem('studentKelas') ||
-          localStorage.getItem('studentGrade') || '',
-  }));
+    kelas: profil.kelas || localStorage.getItem('studentGrade') || '',
+  };
 
   // ===== EFFECTS =====
   useEffect(() => {
