@@ -71,6 +71,7 @@ import FinanceLayout from './pages/admin/finance/FinanceLayout';
 
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
+import GuruPantauTryOut from './pages/teacher/GuruPantauTryOut';
 // 🔥 BARU (pembagian kewenangan admin vs owner): tempat kerja admin untuk
 // absensi & riwayat sesi tentor -- validasi fakta sesi TANPA angka uang.
 import SesiGuruPage from './pages/admin/teachers/SesiGuruPage';

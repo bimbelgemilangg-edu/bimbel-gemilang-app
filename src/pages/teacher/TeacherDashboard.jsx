@@ -72,6 +72,25 @@ const LogoGemilang = ({ size = "medium", variant = "default", showText = true })
 // ============================================================
 const TeacherDashboard = () => {
   const navigate = useNavigate();
+  // ── Try Out yang terhubung ke guru ini (dipilih admin di halaman Terbitkan) ──
+  const [tryoutTerhubung, setTryoutTerhubung] = useState([]);
+  useEffect(() => {
+    let batal = false;
+    (async () => {
+      try {
+        const g = JSON.parse(localStorage.getItem('teacherData') || '{}');
+        const gid = String(g.guruId || g.id || '');
+        if (!gid) return;
+        const snap = await getDocs(query(collection(db, 'tryout_paket'), where('tentorId', '==', gid)));
+        if (batal) return;
+        setTryoutTerhubung(snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((p) => p.status !== 'nonaktif')
+          .sort((a, b) => (b.tentorDihubungkanPada || '').localeCompare(a.tentorDihubungkanPada || '')));
+      } catch { /* tampilkan kosong */ }
+    })();
+    return () => { batal = true; };
+  }, []);
   
   // ===== STATES =====
   const [guru, setGuru] = useState(null);
@@ -148,7 +167,7 @@ const TeacherDashboard = () => {
           setGuru(fullData);
           return fullData;
         }
-      } catch (e) {
+      } catch {
         console.log("Using cached teacher data");
       }
       
@@ -215,7 +234,7 @@ const TeacherDashboard = () => {
         } else {
           setDailyCode('');
         }
-      } catch (e) {
+      } catch {
         setDailyCode('');
       }
 
@@ -228,7 +247,7 @@ const TeacherDashboard = () => {
       const snapLogs = await getDocs(qLogs);
       
       const logs = snapLogs.docs.map(d => {
-        const { nominal, ...rest } = d.data();
+        const { nominal: _nominal, ...rest } = d.data(); // _nominal sengaja dibuang dari log
         return { id: d.id, ...rest };
       });
 
@@ -414,6 +433,30 @@ const TeacherDashboard = () => {
 
   return (
     <div style={styles.container}>
+      {/* ═══ BANNER: TRY OUT TERHUBUNG (dipinta owner 2026-10) ═══
+          Guru yang dipilih admin sebagai tentor pemantau melihat kartu ini;
+          isinya: pantau peserta, soal, jawaban, skor, dan menilai esai. */}
+      {tryoutTerhubung.length > 0 && (
+        <div style={{ margin: '0 0 16px', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg,#eef2ff,#faf5ff)', border: '1px solid #c7d2fe' }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#3730a3', marginBottom: 8 }}>
+            🎯 Try Out yang Dipercayakan Kepada Anda ({tryoutTerhubung.length})
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 8 }}>
+            {tryoutTerhubung.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => navigate(`/guru/tryout-monitor/${p.id}`)}
+                style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '1px solid #c7d2fe', background: 'white', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1e1b4b' }}>{p.judul}</div>
+                <div style={{ fontSize: 10.5, color: '#6b7280', marginTop: 2 }}>
+                  {p.totalSoal || p.daftarSoal?.length || 0} soal · {p.targetKelas} — pantau peserta, nilai esai, lihat skor →
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {/* ===== HEADER ===== */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>

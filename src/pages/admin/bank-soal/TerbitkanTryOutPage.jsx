@@ -28,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { notifyStudents } from '../../../utils/notifications';
+import { catatAudit } from '../../../utils/auditLog';
 import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
@@ -523,6 +524,13 @@ export default function TerbitkanTryOutPage() {
   // sama sekali cara buat admin lihat "yang tadi udah diterbitkan
   // kemana". Muat ulang tiap kali habis terbitkan yang baru juga.
   const [daftarTerbit, setDaftarTerbit] = useState([]);
+  const [daftarGuru, setDaftarGuru] = useState([]);
+  const [tentorPublish, setTentorPublish] = useState('');
+  useEffect(() => {
+    getDocs(collection(db, 'teachers'))
+      .then((snap) => setDaftarGuru(snap.docs.map((d) => ({ id: d.id, nama: d.data().nama || d.id }))))
+      .catch(() => setDaftarGuru([]));
+  }, []);
   const [loadingDaftarTerbit, setLoadingDaftarTerbit] = useState(true);
 
   // 🔥 FIX (aturan react-hooks/set-state-in-effect): fetch daftar terbit
@@ -693,6 +701,10 @@ export default function TerbitkanTryOutPage() {
         waktuBuka: pakaiJadwalBuka ? new Date(waktuBuka).toISOString() : null,
         waktuTutup: pakaiDeadline ? new Date(waktuTutup).toISOString() : null,
         dibuatOleh: 'admin',
+        // ── Tentor terhubung (opsional) ──
+        tentorId: tentorPublish || null,
+        tentorNama: (daftarGuru.find((g)=>g.id===tentorPublish)?.nama) || null,
+        tentorDihubungkanPada: tentorPublish ? new Date().toISOString() : null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -776,6 +788,36 @@ export default function TerbitkanTryOutPage() {
                     </div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 700, color: st.warna, whiteSpace: 'nowrap' }}>{st.label}</span>
+                  {/* Ganti/hubungkan tentor untuk paket terbit */}
+                  <select
+                    value={p.tentorId || ''}
+                    title="Tentor pemantau try out ini"
+                    onChange={async (e) => {
+                      const baru = e.target.value;
+                      const guru = daftarGuru.find((g) => g.id === baru);
+                      try {
+                        await updateDoc(doc(db, 'tryout_paket', p.id), {
+                          tentorId: baru || null,
+                          tentorNama: guru?.nama || null,
+                          tentorDihubungkanPada: baru ? new Date().toISOString() : null,
+                          updatedAt: serverTimestamp(),
+                        });
+                        await catatAudit({
+                          aksi: baru ? 'tryout.tentor-hubung' : 'tryout.tentor-lepas',
+                          kategori: 'tryout',
+                          targetTipe: 'tryout_paket',
+                          targetId: p.id,
+                          targetLabel: p.judul,
+                          detail: { tentor: guru?.nama || null },
+                        });
+                        setDaftarTerbit((lama) => lama.map((x) => (x.id === p.id ? { ...x, tentorId: baru || null, tentorNama: guru?.nama || null } : x)));
+                      } catch (err) { alert('Gagal memperbarui tentor: ' + err.message); }
+                    }}
+                    style={{ fontSize: 10.5, padding: '3px 6px', borderRadius: 6, border: '1px solid #d1d5db', background: p.tentorId ? '#eef2ff' : 'white', maxWidth: 140 }}
+                  >
+                    <option value="">🔗 Tanpa tentor</option>
+                    {daftarGuru.map((g) => (<option key={g.id} value={g.id}>{g.nama}</option>))}
+                  </select>
                   <button
                     onClick={() => nonaktifkanTryOut(p)}
                     style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: p.status === 'aktif' ? '#dc2626' : '#16a34a', whiteSpace: 'nowrap' }}
@@ -1242,6 +1284,18 @@ export default function TerbitkanTryOutPage() {
               </label>
             </div>
 
+            {/* ── HUBUNGKAN TENTOR (dipinta owner 2026-10): tentor terpilih
+                dapat banner pemantauan di dashboard guru (lihat, soal, jawaban,
+                skor, menilai esai) untuk paket ini. ── */}
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+              <span style={{ fontSize:12, fontWeight:700, color:'#334155', whiteSpace:'nowrap' }}>🔗 Konekkan dengan tentor (opsional)</span>
+              <select value={tentorPublish} onChange={(e)=>setTentorPublish(e.target.value)}
+                      style={{ flex:1, maxWidth:320, padding:'7px 10px', borderRadius:6, border:'1px solid #d1d5db', fontSize:12 }}>
+                <option value="">— Tidak terhubung —</option>
+                {daftarGuru.map((g)=>(<option key={g.id} value={g.id}>{g.nama}</option>))}
+              </select>
+              <span style={{ fontSize:10.5, color:'#94a3b8' }}>Tentor bisa memantau & menilai try out ini dari dashboardnya</span>
+            </div>
             <button onClick={handleTerbitkan} disabled={menerbitkan} style={btnPrimary}>
               {menerbitkan ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
               {menerbitkan ? 'Menerbitkan...' : `Terbitkan ${keranjang.size} Soal ke Siswa`}
