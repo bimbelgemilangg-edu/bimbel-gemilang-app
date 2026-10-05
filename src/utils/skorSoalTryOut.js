@@ -14,7 +14,10 @@
 // BENAR. Dengan 1 file bersama ini, itu tidak mungkin terjadi.
 // ============================================================
 
-import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from './skoringSoalKompleks.js';
+import {
+  hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar,
+  barisBenarSalahBisaDinilai,
+} from './skoringSoalKompleks.js';
 
 // 🔥 BARU: 1 fungsi bersama buat "apa soal ini beneran tidak dijawab
 // sama sekali" -- dipakai BARENG oleh RendererPgSederhana/PgKompleks/
@@ -97,6 +100,27 @@ function cocokJawabanSingkat(soal, jawabanSiswa) {
   return kandidat.some((k) => rapikan(k) === rapikan(jawaban)) ? 1 : 0;
 }
 
+// Satu sumber pemilihan baris benar/salah (dialek tabel_benar_salah /
+// tabelBenarSalah / pernyataan), dipakai skoring DAN pengecekan kelayakan.
+export function pilihBarisBenarSalah(soal) {
+  if (Array.isArray(soal?.tabel_benar_salah) && soal.tabel_benar_salah.length) return soal.tabel_benar_salah;
+  if (Array.isArray(soal?.tabelBenarSalah) && soal.tabelBenarSalah.length) return soal.tabelBenarSalah;
+  return Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
+}
+
+// 🔥 BARU (audit keluhan siswa): soal yang TIDAK BISA dinilai karena
+// datanya rusak (baris benar/salah tanpa kunci sama sekali) dikeluarkan
+// dari penyebut total -- kesalahan sistem tidak boleh mengurangi nilai
+// siswa. Admin melihat jumlahnya lewat jumlahTidakBisaDinilai dan bisa
+// memperbaiki datanya lewat catatan admin di bank soal.
+export function soalBisaDinilai(soal) {
+  const tipe = soal?.tipe || 'pg_sederhana';
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+    return barisBenarSalahBisaDinilai(pilihBarisBenarSalah(soal));
+  }
+  return true;
+}
+
 export function skorSatuSoal(soal, jawaban) {
   const tipe = soal.tipe || 'pg_sederhana';
   // 🔥 BARU: esai TIDAK punya skor otomatis. Kontribusi nilainya datang
@@ -106,7 +130,7 @@ export function skorSatuSoal(soal, jawaban) {
   try {
     if (tipe === 'pg_kompleks') return hitungSkorPgKompleks(soal.kunciJawaban, jawaban);
     if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
-      const baris = soal.tabel_benar_salah?.length ? soal.tabel_benar_salah : soal.pernyataan || [];
+      const baris = pilihBarisBenarSalah(soal);
       return hitungSkorBenarSalah(baris, jawaban);
     }
     if (tipe === 'isian_singkat' || tipe === 'numerik') return cocokJawabanSingkat(soal, jawaban);
@@ -127,7 +151,8 @@ export function skorSatuSoal(soal, jawaban) {
  */
 export function hitungTotalSkor(daftarSoal, jawaban, nilaiEsai = null) {
   const daftar = daftarSoal || [];
-  const soalAuto = daftar.filter((s) => !isSoalEsai(s));
+  const soalAuto = daftar.filter((s) => !isSoalEsai(s) && soalBisaDinilai(s));
+  const jumlahTidakBisaDinilai = daftar.filter((s) => !isSoalEsai(s) && !soalBisaDinilai(s)).length;
   let totalSkor = 0;
   soalAuto.forEach((s) => { totalSkor += skorSatuSoal(s, jawaban?.[s.id]); });
 
@@ -146,7 +171,7 @@ export function hitungTotalSkor(daftarSoal, jawaban, nilaiEsai = null) {
     }
   }
 
-  const jumlahEsai = daftar.length - soalAuto.length;
+  const jumlahEsai = daftar.filter((s) => isSoalEsai(s)).length;
   const totalSkorPersen = penyebut > 0 ? Math.round((totalSkor / penyebut) * 100) : 0;
-  return { totalSkor, totalSkorPersen, jumlahEsai, esaiTernilai };
+  return { totalSkor, totalSkorPersen, jumlahEsai, esaiTernilai, jumlahTidakBisaDinilai };
 }

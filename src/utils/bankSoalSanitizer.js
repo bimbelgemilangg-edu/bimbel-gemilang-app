@@ -453,6 +453,22 @@ const TIPE_ENUM = [
     if (tipe === 'benar_salah' && tabelBenarSalah.length === 0) {
       warnings.push('tipe "benar_salah" seharusnya punya tabelBenarSalah, tapi kosong');
     }
+    // 🔥 BARU (audit keluhan siswa 2026-10-05): baris benar/salah TANPA kunci
+    // adalah cacat impor yang dulu lolos diam-diam dan membuat soal selalu
+    // bernilai 0 apapun jawaban siswa (194 soal produksi terkena). Sekarang
+    // diperingatkan keras di preview impor supaya admin memperbaikinya
+    // SEBELUM masuk bank soal.
+    if (tipe === 'benar_salah' && tabelBenarSalah.length > 0) {
+      const barisTanpaKunci = tabelBenarSalah.filter((r) => !String(r.kunci || '').trim()).length;
+      if (barisTanpaKunci > 0) {
+        warnings.push(
+          `benar_salah: ${barisTanpaKunci} baris TANPA kunci jawaban -- `
+          + 'baris itu tidak akan dinilai, dan kalau semua baris tanpa kunci '
+          + 'soal dikeluarkan dari penilaian total. Lengkapi kunci per baris '
+          + 'sebelum disimpan.',
+        );
+      }
+    }
     if (tipe === 'menjodohkan' && pasangan.length === 0) {
       warnings.push('tipe "menjodohkan" seharusnya punya pasangan, tapi kosong');
     }

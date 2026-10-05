@@ -60,18 +60,40 @@ export function hitungSkorPgKompleks(kunciJawaban, jawabanSiswa) {
  * @param {string[]} jawabanSiswaPerBaris - jawaban siswa per baris, indeks sejajar dengan `baris`
  * @returns {number} skor 0..1
  */
+// 🔥 BARU (audit keluhan siswa 2026-10-05): ambil kunci satu baris
+// benar/salah dengan TOLERAN terhadap dialek penyimpanan: importer lama
+// menulis field `jawaban`, sanitizer JSON menulis `kunci`, dan ada data
+// produksi yang keduanya kosong (itulah bug yang membuat 194 soal selalu
+// bernilai 0 apapun jawaban siswa).
+export function kunciBarisBenarSalah(baris) {
+  return String(baris?.jawaban ?? baris?.kunci ?? baris?.value ?? '').trim();
+}
+
+export function barisBenarSalahBisaDinilai(baris) {
+  return safeArray(baris).some((b) => kunciBarisBenarSalah(b) !== '');
+}
+
 export function hitungSkorBenarSalah(baris, jawabanSiswaPerBaris) {
   const daftar = safeArray(baris);
   if (daftar.length === 0) return 0;
 
+  // 🔥 FIX ADIL: baris yang KUNCINYA HILANG (kesalahan sistem/impor, bukan
+  // kesalahan siswa) TIDAK BOLEH menghukum siswa -- dikeluarkan dari
+  // penyebut. Sebelumnya penyebut = semua baris, jadi soal dengan kunci
+  // hilang bernilai 0 sekalipun siswa menjawab sempurna baris lain.
+  const berKunci = daftar
+    .map((b, i) => [b, i])
+    .filter(([b]) => kunciBarisBenarSalah(b) !== '');
+  if (berKunci.length === 0) return 0;
+
   let jumlahBenar = 0;
-  daftar.forEach((b, i) => {
-    const kunci = String(b?.jawaban || '').toLowerCase().trim();
+  for (const [b, i] of berKunci) {
+    const kunci = kunciBarisBenarSalah(b).toLowerCase();
     const jawabanSiswa = String(safeArray(jawabanSiswaPerBaris)[i] || '').toLowerCase().trim();
     if (kunci && jawabanSiswa && kunci === jawabanSiswa) jumlahBenar += 1;
-  });
+  }
 
-  return jumlahBenar / daftar.length;
+  return jumlahBenar / berKunci.length;
 }
 
 // 🔥 BARU (BUG SERIUS DITEMUKAN): sebelumnya kode di 2 tempat beda
