@@ -57,7 +57,7 @@ function RendererSoal(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
-  if (tipe === 'esai') return <RendererEsai {...props} />;
+  if (tipe === 'esai' || tipe === 'uraian') return <RendererEsai {...props} />;
   return <RendererPgSederhana {...props} />;
 }
 

@@ -49,6 +49,11 @@ import {
 } from 'firebase/firestore';
 
 import { db, auth } from '../../../firebase';
+// 🔥 BARU (2026-10-05): perbaikan otomatis kurung himpunan LaTeX pada
+// teks yang DIRENDER (soal, opsi, pembahasan). File HTML Master owner
+// menulis "{(3, 2)}" polos -- di KaTeX kurungnya hilang. Diperbaiki di
+// pintu masuk, bukan minta setiap AI penulis file tidak pernah lupa.
+import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
 
 // ============================================================
 // CONSTANT
@@ -85,6 +90,7 @@ const TIPE_LABELS = {
   numerik: 'Jawaban Numerik + Satuan',
   menjodohkan: 'Menjodohkan',
   uraian: 'Uraian / Esai',
+  esai: 'Uraian / Esai',
 };
 
 // Kunci-kunci yang dikenali sebagai "grup paket" di level JSON teratas.
@@ -276,7 +282,7 @@ Tulis semua rumus dalam LaTeX. Ada 2 mode, PILIH SESUAI BENTUK RUMUSNYA — ini 
 
 Sistem merender LaTeX ini otomatis (KaTeX) — jangan biarkan karakter rusak hasil OCR, tulis ulang jadi LaTeX bersih.
 
-Untuk FISIKA/KIMIA, tulis besaran dan satuan secara profesional: gunakan \`$v=5\\,\\mathrm{m\\,s^{-1}}$\`, \`$F=20\\,\\mathrm{N}$\`, \`$I=2\\,\\mathrm{A}$\`, dan \`$\\mu_0=4\\pi\\times10^{-7}\\,\\mathrm{T\,m\,A^{-1}}$\`. Jangan memakai karakter OCR seperti \`m.s-1\`, \`oC\`, atau \`x 105\`; normalisasikan menjadi LaTeX yang benar.
+Untuk FISIKA/KIMIA, tulis besaran dan satuan secara profesional: gunakan \`$v=5\\,\\mathrm{m\\,s^{-1}}$\`, \`$F=20\\,\\mathrm{N}$\`, \`$I=2\\,\\mathrm{A}$\`, dan \`$\\mu_0=4\\pi\\times10^{-7}\\,\\mathrm{T\\,m\\,A^{-1}}$\`. Jangan memakai karakter OCR seperti \`m.s-1\`, \`oC\`, atau \`x 105\`; normalisasikan menjadi LaTeX yang benar.
 
 ## 7A. JENIS STIMULUS, GRAFIK, TABEL, DAN DIAGRAM
 
@@ -550,13 +556,13 @@ function tryParseJSON(text) {
     const lastArray = cleaned.lastIndexOf(']');
     if (firstArray >= 0 && lastArray > firstArray) {
       const candidate = cleaned.slice(firstArray, lastArray + 1);
-      try { return JSON.parse(candidate); } catch (_) { /* lanjut */ }
+      try { return JSON.parse(candidate); } catch { /* lanjut ke kandidat berikut */ }
     }
     const firstObject = cleaned.indexOf('{');
     const lastObject = cleaned.lastIndexOf('}');
     if (firstObject >= 0 && lastObject > firstObject) {
       const candidate = cleaned.slice(firstObject, lastObject + 1);
-      try { return JSON.parse(candidate); } catch (_) { /* pakai error asli */ }
+      try { return JSON.parse(candidate); } catch { /* pakai error asli */ }
     }
     throw new Error(`JSON tidak valid: ${firstError.message}`);
   }
@@ -672,8 +678,11 @@ function normalizeTipe(value) {
     numeric: 'numerik',
     menjodohkan: 'menjodohkan',
     matching: 'menjodohkan',
-    uraian: 'uraian',
-    esai: 'uraian',
+    // 🔥 2026-10-05: kanon penyimpanan disamakan ke 'esai' (kontrak JSON).
+    // Dokumen lama bertipe 'uraian' tetap dibaca karena semua konsumen
+    // memperlakukan keduanya identik.
+    uraian: 'esai',
+    esai: 'esai',
     essay: 'uraian',
   };
   return aliases[raw] || 'pg_sederhana';
@@ -1657,7 +1666,7 @@ function parseHTMLMaster(raw) {
   return nodes.map((node, index) => {
     const nomor = Number(node.getAttribute('data-nomor') || node.getAttribute('data-number')) || index + 1;
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
-    const teksSoalGabungan = getAllFieldsText(node, 'teks_soal', 'soal', 'question');
+    const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
     const imageNode = getField(node, 'gambar', 'images', 'image');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
@@ -1693,7 +1702,7 @@ function parseHTMLMaster(raw) {
     const opsi_jawaban = optionNodes.map(optionNode => {
       const images = parseHTMLImages(optionNode);
       const table = parseHTMLTableElement(optionNode.querySelector('table'));
-      const teks = htmlNodeText(optionNode).replace(/\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi, '').trim();
+      const teks = perbaikiKurungHimpunanLatex(htmlNodeText(optionNode).replace(/\{\{\s*GAMBAR(?:_\d+)?\s*\}\}/gi, '')).trim();
       return {
         teks,
         gambar: images,
@@ -1740,7 +1749,7 @@ function parseHTMLMaster(raw) {
       // (konsisten sama instruksi prompt: "true adalah default"). Cuma
       // jadi false kalau AI eksplisit nulis data-value="false".
       kunci_terverifikasi: verifNode ? safeString(verifNode.getAttribute?.('data-value') || verifNode.textContent || '').toLowerCase().trim() !== 'false' : true,
-      pembahasan: htmlNodeText(explanationNode),
+      pembahasan: perbaikiKurungHimpunanLatex(htmlNodeText(explanationNode)),
       pernyataan: parseHTMLStatements(tfNode),
       tabel_benar_salah: parseHTMLStatements(categoryNode),
       pasangan: parseHTMLPairs(matchingNode),
@@ -2231,17 +2240,20 @@ function cobaMuatGambar(src, timeoutMs = 6000) {
 // ============================================================
 
 function useSafeKaTeX() {
-  const [ready, setReady] = useState(false);
+  // 🔥 FIX (react-hooks/set-state-in-effect): pemeriksaan sinkron "KaTeX
+  // sudah ada?" dulu dilakukan DI DALAM effect lewat setReady(true) --
+  // pola setState sinkron yang dilarang dan memicu render beruntun.
+  // Dipindah ke initializer state: nilai sudah benar sejak render
+  // pertama, dan effect hanya mengurus jalur memuat async.
+  const [ready, setReady] = useState(
+    () => typeof window !== 'undefined' && Boolean(window.katex),
+  );
 
   useEffect(() => {
     let cancelled = false;
+    if (ready) return undefined; // sudah tersedia -- tidak ada yang dimuat
 
     try {
-      if (typeof window !== 'undefined' && window.katex) {
-        setReady(true);
-        return undefined;
-      }
-
       const existingCss = document.querySelector('link[data-gemilang-katex]');
       if (!existingCss) {
         const css = document.createElement('link');
@@ -2266,12 +2278,16 @@ function useSafeKaTeX() {
       script.onload = () => { if (!cancelled && window.katex) setReady(true); };
       script.onerror = () => { if (!cancelled) setReady(false); };
       document.body.appendChild(script);
-    } catch (_) {
-      if (!cancelled) setReady(false);
+    } catch {
+      // Ditunda satu tick: setState di jalur sinkron catch termasuk pola
+      // yang dilarang react-hooks/set-state-in-effect, dan penundaan ini
+      // memang lebih jujur -- gagal memuat KaTeX bukan keadaan yang
+      // perlu memutuskan render pertama.
+      if (!cancelled) setTimeout(() => setReady(false), 0);
     }
 
     return () => { cancelled = true; };
-  }, []);
+  }, [ready]);
 
   return ready;
 }
@@ -2303,7 +2319,7 @@ function renderTextWithMath(text, mathReady) {
     if (katex) {
       try {
         return katex.renderToString(math, { displayMode, throwOnError: false, output: 'html' });
-      } catch (_) {
+      } catch {
         return `<span class="math-fallback">${escapeHtml(math)}</span>`;
       }
     }
@@ -3884,7 +3900,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         });
 
         let result = null;
-        try { result = await response.json(); } catch (_) { result = null; }
+        try { result = await response.json(); } catch { result = null; }
 
         if (!response.ok) {
           throw new Error(result?.error || `Server upload mengembalikan HTTP ${response.status}`);

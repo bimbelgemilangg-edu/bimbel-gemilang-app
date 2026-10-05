@@ -28,7 +28,11 @@ import { hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar } from './sk
 // hitungTotalSkor(..., nilaiEsai).
 export const SKALA_NILAI_ESAI = 100;
 
-export const isSoalEsai = (soal) => (soal?.tipe || '') === 'esai';
+// 'uraian' = alias lama dari pipeline HTML Master; diperlakukan identik.
+export const isSoalEsai = (soal) => {
+  const t = soal?.tipe || '';
+  return t === 'esai' || t === 'uraian';
+};
 
 /**
  * Poin esai yang sudah dinilai admin, dinormalkan ke 0..1 (setara bobot

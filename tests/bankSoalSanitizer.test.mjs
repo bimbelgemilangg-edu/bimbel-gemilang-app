@@ -115,6 +115,16 @@ uji('esai tanpa opsiJawaban TIDAK diperingatkan (memang tidak butuh opsi)', () =
   assert.ok(!warnings.some(w => w.includes('opsiJawaban')));
 });
 
+uji('alias lama "uraian" (pipeline HTML Master) disamakan ke esai', () => {
+  const { normalized, valid, warnings } = validateQuestion({
+    nomor: 19, tipe: 'uraian', teksSoal: 'Jelaskan langkah grafik.',
+    kunciJawaban: 'rubrik...', topik: 'SPLDV',
+  }, 0);
+  assert.deepEqual(warnings, [], 'tidak boleh ada warning sama sekali');
+  assert.equal(normalized.tipe, 'esai');
+  assert.equal(valid, true, 'uraian dengan rubrik tidak boleh kena warning');
+});
+
 uji('esai tanpa kunci/rubrik diperingatkan tapi tetap masuk', () => {
   const { normalized, warnings, valid } = validateQuestion({
     tipe: 'esai', teksSoal: 'Jelaskan.', kunciJawaban: '', topik: 't',

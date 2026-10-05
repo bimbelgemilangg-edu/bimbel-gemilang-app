@@ -48,8 +48,9 @@ uji('jawaban index benar = 1, salah = 0', () => {
 
 bagian('esai: dasar');
 
-uji('isSoalEsai mengenali tipe esai saja', () => {
+uji('isSoalEsai mengenali tipe esai dan alias uraian', () => {
   assert.equal(isSoalEsai(esai('x')), true);
+  assert.equal(isSoalEsai({ id: 'u', tipe: 'uraian' }), true);
   assert.equal(isSoalEsai(pg('y', 'A')), false);
   assert.equal(isSoalEsai(null), false);
 });
