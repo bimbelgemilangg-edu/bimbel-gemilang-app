@@ -20,7 +20,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc, getDocs, query, collection, where, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, isSoalEsai, poinEsai, SKALA_NILAI_ESAI } from '../../utils/skorSoalTryOut';
+import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, isSoalEsai, poinEsai, pilihBarisBenarSalah, SKALA_NILAI_ESAI } from '../../utils/skorSoalTryOut';
+import { cariIndexBenar, kunciBarisBenarSalah } from '../../utils/skoringSoalKompleks';
 import { terapkanPotonganXP } from '../../utils/potonganXPTryOut';
 import { tambahXpMingguan } from '../../utils/mingguIni';
 import { catatAudit, KATEGORI } from '../../utils/auditLog';
@@ -44,6 +45,38 @@ function RendererSoalGuru(props) {
   return <RendererPgSederhana {...props} />;
 }
 
+// 🔥 BARU (permintaan owner 2026-10-05): kunci jawaban sebagai TEKS.
+// Sorotan warna dari renderer (hijau ✔️ / merah ✖️) cukup untuk melihat
+// sekilas, tapi tidak cukup saat tentor MEMBAHAS soal di depan kelas --
+// ia perlu bisa menyebut "kuncinya B" atau "baris 2 Salah" langsung.
+// Fungsi ini menormalkan semua dialek penyimpanan kunci yang memang
+// beraneka di repo ini (huruf tunggal, indeks angka, teks jawaban, array
+// untuk pg_kompleks, string "AC", dan field jawaban/kunci per baris untuk
+// benar_salah) -- toleransi yang sama dengan yang dipakai skoring.
+function teksKunci(soal) {
+  const tipe = soal?.tipe || 'pg_sederhana';
+  if (tipe === 'esai' || tipe === 'uraian') return 'penilaian manual guru (0-100)';
+  if (tipe === 'pg_sederhana') {
+    const idx = cariIndexBenar(soal);
+    return idx >= 0 ? String.fromCharCode(65 + idx) : '(kunci tidak tersedia)';
+  }
+  if (tipe === 'pg_kompleks') {
+    const mentah = soal?.kunciJawaban;
+    const kunci = Array.isArray(mentah) ? mentah
+      : (typeof mentah === 'string' && mentah.trim() ? mentah.replace(/[\s,]+/g, '').split('') : []);
+    return kunci.length ? kunci.map((h) => String(h).toUpperCase()).join(', ') : '(kunci tidak tersedia)';
+  }
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+    const baris = pilihBarisBenarSalah(soal);
+    const isi = baris.map((b, i) => `${i + 1}: ${kunciBarisBenarSalah(b) || '?'}`).join(', ');
+    return isi || '(kunci tidak tersedia)';
+  }
+  // isian_singkat / numerik: kunci utama plus jawaban ekuivalen yang diterima
+  const utama = String(soal?.kunciJawaban ?? '').trim();
+  const ekuivalen = Array.isArray(soal?.jawabanEkuivalen) ? soal.jawabanEkuivalen.filter(Boolean).map(String) : [];
+  return [utama, ...ekuivalen].filter(Boolean).join(' / ') || '(kunci tidak tersedia)';
+}
+
 export default function GuruPantauTryOut() {
   const { paketId } = useParams();
   const [paket, setPaket] = useState(null);
@@ -54,6 +87,22 @@ export default function GuruPantauTryOut() {
   const [memuat, setMemuat] = useState(true);
   const [pesan, setPesan] = useState({ tipe: null, teks: '' });
   const [guru, setGuru] = useState({ guruId: '', guruNama: 'Guru' });
+
+  // 🔥 FIX TAMPILAN (2026-10-05, laporan owner: "gak kelihatan"): halaman ini
+  // merender <SidebarGuru /> sendiri, dan sidebar itu position:fixed lebar
+  // 260px -- jadi ia TIDAK ikut mengalir di layout flex. Tanpa kompensasi
+  // margin, <main> melebar sepenuh viewport dan kotak maxWidth 980 yang
+  // di-center jatuh SEPARUHNYA DI BAWAH sidebar: judul, kartu "Peserta", dan
+  // tombol kembali tertutup. Pola kompensasinya disalin persis dari halaman
+  // lain yang juga merender sidebar sendiri (TeacherInputGrade.jsx:364 dan
+  // TeacherGradeManager.jsx:93) -- marginLeft 260px + width calc di desktop,
+  // nol di mobile.
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const saatResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', saatResize);
+    return () => window.removeEventListener('resize', saatResize);
+  }, []);
 
   const muatSesi = useCallback(async () => {
     try {
@@ -151,7 +200,14 @@ export default function GuruPantauTryOut() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <SidebarGuru />
-      <main style={{ flex: 1, padding: 20, maxWidth: 980, margin: '0 auto' }}>
+      <main style={{
+        marginLeft: isMobile ? '0' : '260px',
+        padding: isMobile ? '10px' : '20px',
+        width: isMobile ? '100%' : 'calc(100% - 260px)',
+        boxSizing: 'border-box',
+        transition: 'all 0.3s ease',
+      }}>
+        <div style={{ width: '100%', maxWidth: 980, margin: '0 auto' }}>
         <Link to="/guru/dashboard" style={{ fontSize: 12, color: '#2563eb' }}>← Kembali ke Dashboard</Link>
         <h2 style={{ margin: '8px 0 4px', fontSize: 18 }}>🎯 Pantau Try Out</h2>
         {pesan.teks && <div style={{ margin: '8px 0', fontSize: 12, color: pesan.tipe === 'err' ? '#b91c1c' : '#15803d', background: pesan.tipe === 'err' ? '#fef2f2' : '#f0fdf4', border: '1px solid ' + (pesan.tipe === 'err' ? '#fecaca' : '#bbf7d0'), padding: '6px 10px', borderRadius: 8 }}>{pesan.teks}</div>}
@@ -238,6 +294,23 @@ export default function GuruPantauTryOut() {
                       )}
                       {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                       <RendererSoalGuru soal={s} jawabanTerpilih={jwb} modeTinjau />
+                      {/* 🔥 BARU (permintaan owner 2026-10-05): "harusnya tentor
+                          bisa melihat soal dan pembahasan lengkap untuk dibahas".
+                          Sebelumnya berkas ini TIDAK menyebut `pembahasan` sama
+                          sekali, padahal padanan adminnya
+                          (HasilTryOutAdminPage.jsx:624) sudah menampilkannya --
+                          jadi klaim "tampilan sama persis dgn admin" di commit
+                          #106 tidak berlaku untuk pembahasan. Kotak pembahasan
+                          disalin persis gaya admin (ungu, RenderMath) supaya
+                          dua portal tidak punya dua bahasa visual. */}
+                      <div style={{ marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 12, color: '#166534' }}>
+                        <b>🔑 Kunci:</b> {teksKunci(s)}
+                      </div>
+                      {s.pembahasan && (
+                        <div style={{ marginTop: 8, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
+                          <b>💡 Pembahasan:</b> <RenderMath text={s.pembahasan} />
+                        </div>
+                      )}
                       {esai && !belumDijawab && (
                         <div style={{ marginTop: 10, background: poinEsaiSiswa !== null ? '#f0fdf4' : '#fffbeb', border: '1px solid ' + (poinEsaiSiswa !== null ? '#bbf7d0' : '#fcd34d'), borderRadius: 10, padding: 12 }}>
                           {poinEsaiSiswa !== null ? (
@@ -275,6 +348,7 @@ export default function GuruPantauTryOut() {
             )}
           </>
         )}
+        </div>
       </main>
     </div>
   );
