@@ -28,7 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { notifyStudents } from '../../../utils/notifications';
-import { catatAudit } from '../../../utils/auditLog';
+import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
@@ -802,13 +802,10 @@ export default function TerbitkanTryOutPage() {
                           tentorDihubungkanPada: baru ? new Date().toISOString() : null,
                           updatedAt: serverTimestamp(),
                         });
-                        await catatAudit({
-                          aksi: baru ? 'tryout.tentor-hubung' : 'tryout.tentor-lepas',
-                          kategori: 'tryout',
-                          targetTipe: 'tryout_paket',
-                          targetId: p.id,
-                          targetLabel: p.judul,
-                          detail: { tentor: guru?.nama || null },
+                        catatAudit(baru ? 'tryout.tentor.hubung' : 'tryout.tentor.lepas', {
+                          kategori: KATEGORI.LAINNYA,
+                          target: p.judul,
+                          detail: { paketId: p.id, tentor: guru?.nama || null, tentorId: baru || null },
                         });
                         setDaftarTerbit((lama) => lama.map((x) => (x.id === p.id ? { ...x, tentorId: baru || null, tentorNama: guru?.nama || null } : x)));
                       } catch (err) { alert('Gagal memperbarui tentor: ' + err.message); }
