@@ -1,10 +1,12 @@
 // src/pages/student/StudentAttendance.jsx
 // Riwayat kehadiran siswa — tampilan 1 minggu penuh (Senin–Minggu),
 // navigasi minggu sebelumnya/berikutnya, ringkasan Hadir/Izin/Sakit/Alpha.
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { useProfilSiswa } from '../../utils/profilSiswa';
+import { daftarQueryAbsensi, gabungkanDokUnik } from '../../utils/identitasAbsensi';
 
 function startOfWeek(d) {
   const x = new Date(d);
@@ -55,43 +57,55 @@ const StudentAttendance = () => {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
 
   const studentId = localStorage.getItem('studentId');
-  const studentNameLS = localStorage.getItem('studentName');
+  const studentDocId = localStorage.getItem('studentDocId');
+  // Nama SEGAR (bukan salinan login): setelah admin membenarkan nama,
+  // catatan absensi yang ditulis dengan nama baru tetap ketemu lewat
+  // query nama, sedangkan catatan lama tetap ketemu lewat studentId/
+  // docId. Lihat src/utils/identitasAbsensi.js untuk kenapa ada empat
+  // kemungkinan field identitas.
+  const profil = useProfilSiswa();
+
+  const muatAbsensi = useCallback(async () => {
+    const daftar = daftarQueryAbsensi({ studentId, docId: studentDocId, nama: profil.nama });
+    if (!daftar.length) return;
+    setLoading(true);
+    try {
+      const snaps = await Promise.all(
+        daftar.map((q) => getDocs(query(collection(db, 'attendance'), where(q.field, '==', q.nilai)))
+          .catch(() => ({ docs: [] })))
+      );
+      const data = gabungkanDokUnik(snaps.map((s) => s.docs));
+      data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      setAttendance(data);
+    } catch (e) {
+      console.error('Gagal memuat absensi:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, [studentId, studentDocId, profil.nama]);
 
   useEffect(() => {
-    const fetchAttendance = async () => {
-      if (!studentId && !studentNameLS) return;
-      setLoading(true);
-      try {
-        const queries = [
-          studentId
-            ? getDocs(query(collection(db, 'attendance'), where('studentId', '==', studentId)))
-            : Promise.resolve({ docs: [] }),
-          studentNameLS
-            ? getDocs(query(collection(db, 'attendance'), where('studentName', '==', studentNameLS)))
-            : Promise.resolve({ docs: [] }),
-          studentNameLS
-            ? getDocs(query(collection(db, 'attendance'), where('namaSiswa', '==', studentNameLS)))
-            : Promise.resolve({ docs: [] }),
-        ];
-        const [snapById, snapByName1, snapByName2] = await Promise.all(
-          queries.map((p) => p.catch(() => ({ docs: [] })))
-        );
+    muatAbsensi();
+  }, [muatAbsensi]);
 
-        const merged = new Map();
-        [...snapById.docs, ...snapByName1.docs, ...snapByName2.docs].forEach((d) =>
-          merged.set(d.id, { id: d.id, ...d.data() })
-        );
-        const data = Array.from(merged.values());
-        data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-        setAttendance(data);
-      } catch (e) {
-        console.error('Gagal memuat absensi:', e);
-      } finally {
-        setLoading(false);
-      }
+  // 🔥 BARU (2026-10-05, keluhan owner: "admin udah ganti status absensi,
+  // di siswa tetap"): sebelumnya halaman ini mengambil SEKALI saat mount.
+  // Di PWA yang tetap hidup di latar belakang, perubahan status oleh admin
+  // baru kelihatan kalau siswa pindah halaman atau reload -- terasa seperti
+  // "data tidak konek". Sekarang diambil ulang setiap aplikasi kembali
+  // terlihat. Hanya saat menjadi visible, supaya tidak menembak Firestore
+  // setiap kali tab disembunyikan.
+  useEffect(() => {
+    const jalan = () => {
+      if (document.visibilityState === 'visible') muatAbsensi();
     };
-    fetchAttendance();
-  }, [studentId, studentNameLS]);
+    window.addEventListener('focus', jalan);
+    document.addEventListener('visibilitychange', jalan);
+    return () => {
+      window.removeEventListener('focus', jalan);
+      document.removeEventListener('visibilitychange', jalan);
+    };
+  }, [muatAbsensi]);
 
   const days = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
