@@ -584,7 +584,7 @@ Susun modul lengkapnya sekarang sesuai semua aturan di atas. Ingat: siswa akan m
           if (depth === 0 && start !== -1) {
             try {
               objects.push(JSON.parse(text.slice(start, i + 1)));
-            } catch (e) {
+            } catch {
               // objek ini rusak, lewati saja
             }
             start = -1;

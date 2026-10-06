@@ -57,7 +57,7 @@ async function parseDocxStructured(arrayBuffer, onProgress) {
   let zip;
   try {
     zip = await JSZip.loadAsync(arrayBuffer);
-  } catch (e) {
+  } catch {
     throw new Error('File bukan format .docx yang valid (mungkin sebenarnya .doc lama, atau filenya rusak). Buka di Word lalu Save As ➜ pilih .docx, baru upload lagi.');
   }
 

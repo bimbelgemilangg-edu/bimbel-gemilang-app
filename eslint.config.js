@@ -47,7 +47,24 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // `varsIgnorePattern: '^[A-Z_]'` adalah WORKAROUND WAJIB, bukan
+      // kelalaian: ESLint pada setup ini tidak menghitung pemakaian JSX
+      // (terverifikasi lewat probe 2026-10-05 -- komponen yang benar
+      // dipakai di JSX tetap dilaporkan "never used"), jadi mencabut pola
+      // ini menghasilkan ±2.000 error palsu. Efek sampingnya tercatat di
+      // AUDIT-REPO.md: impor komponen yang nganggur tak terlihat; yang
+      // menangkapnya scripts/ci-penjaga-rute.mjs, BUKAN rule ini.
+      //
+      // `argsIgnorePattern` & `caughtErrorsIgnorePattern` '^_' disamakan
+      // dengan blok api/ dan scripts/ (baris 71-75 & 99-103): parameter dan
+      // catch yang SENGAJA diabaikan ditandai garis bawah. Tanpa ini,
+      // `catch (e)` yang memang harus menelan error tidak punya cara sah
+      // untuk menyatakan niatnya, dan repo menyimpan 81 error palsu.
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^[A-Z_]',
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      }],
     },
   },
 

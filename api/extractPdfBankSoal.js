@@ -268,7 +268,7 @@ async function testProvider(cfg, signal) {
   const raw = await resp.text();
   if (!resp.ok) {
     let msg = raw;
-    try { msg = JSON.parse(raw)?.error?.message || raw; } catch {}
+    try { msg = JSON.parse(raw)?.error?.message || raw; } catch { /* body respons bukan JSON; pakai teks mentah sebagai pesan error */ }
     throw Object.assign(new Error(msg.slice(0, 500)), { status: resp.status });
   }
   return { text: raw };

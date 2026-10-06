@@ -10,7 +10,7 @@ import React from 'react';
 import { ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { LABEL_PELANGGARAN, hitungPotonganXP } from '../../../utils/potonganXPTryOut';
 
-export default function RingkasanPelanggaran({ pelanggaran, jumlahFotoTersimpan, fotoPengawasan = [], xpMentah, xpFinal }) {
+export default function RingkasanPelanggaran({ pelanggaran, _jumlahFotoTersimpan, fotoPengawasan = [], xpMentah, xpFinal }) {
   const { totalPoin, persenPotongan } = hitungPotonganXP(pelanggaran);
 
   if (pelanggaran.length === 0) {

@@ -12,7 +12,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import {
   ArrowLeft, ClipboardCheck, CheckCircle2, XCircle, Loader2,
   ChevronDown, ChevronUp, Users, Trophy,

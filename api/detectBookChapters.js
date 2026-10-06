@@ -124,10 +124,10 @@ const GEMINI_MODELS = [
       let chapters = [];
       try {
         chapters = JSON.parse(rawText);
-      } catch (e) {
+      } catch {
         const match = rawText.match(/\[[\s\S]*\]/);
         if (match) {
-          try { chapters = JSON.parse(match[0]); } catch (e2) { chapters = []; }
+          try { chapters = JSON.parse(match[0]); } catch { chapters = []; }
         }
       }
   

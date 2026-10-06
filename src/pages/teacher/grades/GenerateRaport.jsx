@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, doc, updateDoc } from 'firebase/firestore';
 import { syncAllScoresToRaport, exportToRaportScores } from '../../../services/raportService';
 import { RAPORT_COLLECTIONS, KOMPONEN_LABEL, ATURAN_NILAI } from '../../../firebase/raportCollection';
 import { ArrowLeft, RefreshCw, CheckCircle, AlertTriangle, Database, FileText, Send, Info } from 'lucide-react';
@@ -75,7 +75,7 @@ const GenerateRaport = () => {
       if (result.success) {
         // Tandai sebagai exported
         const colName = item.source === 'kuis' ? 'jawaban_kuis' : 'jawaban_tugas';
-        try { await updateDoc(doc(db, colName, item.id), { exportedToRaport: true }); } catch (e) {}
+        try { await updateDoc(doc(db, colName, item.id), { exportedToRaport: true }); } catch { /* penandaan "sudah diekspor" gagal: nilai tetap terimpor, penandaan bisa diulang manual */ }
         
         alert(`✅ Nilai ${item.studentName || item.userName} berhasil diekspor ke ${teacherData.mapel || 'Umum'}!`);
         fetchPendingExports();

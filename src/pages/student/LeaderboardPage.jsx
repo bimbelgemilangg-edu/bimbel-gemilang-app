@@ -14,7 +14,7 @@ import { db } from '../../firebase';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ArrowLeft, Trophy, Flame } from 'lucide-react';
 import { kunciMingguIni } from '../../utils/mingguIni'
-import { filterSiswaLeaderboard, isAkunBelajarAktif } from '../../utils/statusAkunSiswa';
+import { filterSiswaLeaderboard } from '../../utils/statusAkunSiswa';
 
 // Avatar bulat berisi inisial nama, warnanya konsisten per nama (hash
 // sederhana) -- biar tiap siswa punya "identitas visual" walau kita

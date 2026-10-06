@@ -76,7 +76,7 @@ export default function PanelSesiLiveSiswa() {
         try {
           const b = await getDoc(doc(db, 'buku_digital', s.bukuId, 'bab', s.babId));
           if (b.exists()) setNamaBab((m) => ({ ...m, [s.id]: b.data().judul || 'Bab modul' }));
-        } catch (e) { /* abaikan */ }
+        } catch { /* abaikan */ }
       })();
     });
   }, [sesiList]);

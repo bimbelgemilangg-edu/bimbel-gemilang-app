@@ -7,11 +7,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 // bukan dibiarkan menabrak rute yang menolak mereka.
 import { isOwnerSession } from '../../../utils/roleAkses';
 import { db, auth } from '../../../firebase';
-import { 
-  collection, getDocs, deleteDoc, doc, updateDoc, addDoc, 
-  query, where, orderBy, limit, startAfter, runTransaction,
-  setDoc, getDoc, serverTimestamp
-} from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, query, where, runTransaction, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { 
   createUserWithEmailAndPassword, 
   sendPasswordResetEmail 
@@ -192,7 +188,7 @@ const TeacherList = () => {
         fetchTeachers(),
         fetchMapel()
       ]);
-    } catch (error) {
+    } catch {
       showAlert("❌ Gagal memuat data", true);
     }
     setLoading(false);
@@ -262,7 +258,7 @@ const TeacherList = () => {
       });
 
       return `${prefix}-${String(newNumber).padStart(3, '0')}`;
-    } catch (error) {
+    } catch {
       // Fallback tetap dipertahankan: kalau transaction gagal (misal offline),
       // tetap bisa lanjut kerja pakai ID berbasis timestamp.
       const timestamp = Date.now().toString().slice(-6);
@@ -497,7 +493,7 @@ const TeacherList = () => {
     try {
       const teacher = teachers.find(t => t.id === id);
       if (teacher?.fotoUrl) {
-        try { const fotoRef = ref(storage, `teachers/${id}`); await deleteObject(fotoRef); } catch (e) {}
+        try { const fotoRef = ref(storage, `teachers/${id}`); await deleteObject(fotoRef); } catch { /* foto di Storage mungkin sudah tidak ada; penghapusan dokumen tetap harus lanjut */ }
       }
       await deleteDoc(doc(db, "teachers", id));
       showAlert(`🗑️ "${nama}" berhasil dihapus!`);
@@ -515,7 +511,7 @@ const TeacherList = () => {
     setUploading(true);
     try {
       if (editForm.fotoUrl) {
-        try { const oldFotoRef = ref(storage, `teachers/${editModal}`); await deleteObject(oldFotoRef); } catch (e) {}
+        try { const oldFotoRef = ref(storage, `teachers/${editModal}`); await deleteObject(oldFotoRef); } catch { /* foto lama mungkin sudah tidak ada; upload pengganti tetap jalan */ }
       }
       const fotoRef = ref(storage, `teachers/${editModal}`);
       await uploadBytes(fotoRef, file);
@@ -1330,7 +1326,7 @@ const styles = {
     marginBottom: 20, flexDirection: m ? 'column' : 'row', gap: m ? 8 : 0 
   }),
   breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
-  breadcrumbActions: (m) => ({ display: 'flex', gap: 8, flexWrap: 'wrap' }),
+  breadcrumbActions: (_m) => ({ display: 'flex', gap: 8, flexWrap: 'wrap' }),
   
   // Buttons
   btnSchedule: (m) => ({ 
@@ -1390,7 +1386,7 @@ const styles = {
   },
   searchInput: { border: 'none', outline: 'none', width: '100%', fontSize: 14, background: 'transparent' },
   clearBtn: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 },
-  btnRefresh: (m) => ({ 
+  btnRefresh: (_m) => ({ 
     background: 'white', border: '1px solid #e2e8f0', padding: '10px 15px', 
     borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, 
     fontSize: 13, color: '#64748b' 

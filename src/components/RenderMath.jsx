@@ -29,16 +29,16 @@ export default function RenderMath({ text }) {
     <>
       {parts.map((part, i) => {
         if (part.startsWith('$$') && part.endsWith('$$')) {
-          try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+          try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch { return <span key={i}>{part}</span>; }
         }
         if (part.startsWith('$') && part.endsWith('$')) {
-          try { return <InlineMath key={i} math={part.slice(1, -1)} />; } catch (e) { return <span key={i}>{part}</span>; }
+          try { return <InlineMath key={i} math={part.slice(1, -1)} />; } catch { return <span key={i}>{part}</span>; }
         }
         if (part.startsWith('\\[') && part.endsWith('\\]')) {
-          try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+          try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch { return <span key={i}>{part}</span>; }
         }
         if (part.startsWith('\\(') && part.endsWith('\\)')) {
-          try { return <InlineMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+          try { return <InlineMath key={i} math={part.slice(2, -2)} />; } catch { return <span key={i}>{part}</span>; }
         }
         return <React.Fragment key={i}>{part}</React.Fragment>;
       })}
