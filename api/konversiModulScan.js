@@ -25,6 +25,21 @@ export const config = {
   };
   
   const PROVIDERS = [
+    // 🔥 BARU (2026-10-06): Gemini dimasukkan PERTAMA supaya kunci yang
+    // sudah dimiliki owner (GEMINI_API_KEY, dan kunci khusus bank soal
+    // lewat BANKSOAL_AI_API_KEY) ikut menggerakkan konversi modul scan ->
+    // bab HTML bersih. Sebelumnya daftar ini mulai dari groq, sehingga
+    // pemilik kunci Gemini tidak bisa memakai konversi ini sama sekali.
+    // Endpoint OpenAI-compatible dipakai supaya bentuk request sama dengan
+    // penyedia lain di bawah (panggilModel tidak perlu cabang khusus).
+    {
+      nama: 'gemini',
+      key: () => process.env.GEMINI_API_KEY || process.env.BANKSOAL_AI_API_KEY,
+      base: 'https://generativelanguage.googleapis.com/v1beta/openai',
+      models: () => String(process.env.GEMINI_MODELS || '')
+        .split(',').map((x) => x.trim()).filter(Boolean)
+        .concat(['gemini-2.0-flash', 'gemini-1.5-flash']),
+    },
     {
       nama: 'groq',
       key: () => process.env.GROQ_API_KEY,
