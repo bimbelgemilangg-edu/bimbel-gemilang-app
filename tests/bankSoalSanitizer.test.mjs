@@ -57,19 +57,19 @@ uji('objek ber-key soal diterima', () => {
 
 bagian('normalisasi field kontrak');
 
-// 🔥 2026-10-06: kontrak bertambah dari 12 menjadi 14 field dengan masuknya
+// 🔥 2026-10-06/07: kontrak bertambah 12 -> 14 (pembahasan) -> 18 field dengan
 // pembahasan & pembahasanAsal (paten prompt Gemini). Test ini diperbarui
 // SENGAJA: penambahan field aditif, dan kunci ini yang menjaga agar field
 // baru tidak hilang lagi diam-diam di kemudian hari.
-uji('hasil normalisasi memuat persis 14 field kontrak', () => {
+uji('hasil normalisasi memuat persis 18 field kontrak', () => {
   const { normalized } = validateQuestion({
     nomor: '3', tipe: 'pg_sederhana', teksSoal: ' ber spasi ',
     opsiJawaban: ['A. satu', 'B. dua'], kunciJawaban: 'b', topik: ' Topik ',
   }, 0);
   assert.deepEqual(Object.keys(normalized).sort(), [
-    'gambar', 'kunciJawaban', 'nomor', 'opsiJawaban', 'pasangan', 'pembahasan',
-    'pembahasanAsal', 'pernyataan', 'subtopik', 'tabelBenarSalah', 'teksSoal',
-    'tipe', 'topik', 'topikBaru',
+    'capaian', 'elemen', 'fase', 'gambar', 'kurikulum', 'kunciJawaban', 'nomor',
+    'opsiJawaban', 'pasangan', 'pembahasan', 'pembahasanAsal', 'pernyataan',
+    'subtopik', 'tabelBenarSalah', 'teksSoal', 'tipe', 'topik', 'topikBaru',
   ].sort());
   assert.equal(normalized.nomor, 3);
   assert.equal(normalized.teksSoal, 'ber spasi');

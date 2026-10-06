@@ -42,6 +42,14 @@ STRUKTUR WAJIB (class & atribut persis, tanpa variasi):
 7. Jangan pernah membuang soal: jika satu halaman memuat 10 nomor, keluaran memuat 10 question-card. Jika gambar buram tak terbaca, tetap buat kartunya dan tulis di pembahasan: [gambar tidak terbaca].
 8. Bahasa keluaran: Indonesia untuk pembahasan; teks soal mengikuti sumber sebagaimana adanya.
 
-Periksa dirimu sebelum menjawab: (a) jumlah question-card == jumlah nomor di sumber; (b) setiap kartu punya data-kunci dan .pembahasan; (c) tidak ada tag terlarang. Tuliskan hasil pemeriksaan itu sebagai komentar HTML di baris pertama berkas.`;
+9. TAKSONOMI KURIKULUM MERDEKA (WAJIB per kartu, supaya sistem menerima berkas yang SUDAH terklasifikasi dan tidak perlu menebak):
+   - data-kurikulum="merdeka" bila sumber mengikuti Kurikulum Merdeka, atau "legacy" bila KTSP/K13 (tetap diterima; penanda untuk pemetaan).
+   - data-fase: Fase A/B/C (SD), D (SMP kelas 7-9), E/F (SMA/SMK kelas 10-12) -- turunkan dari kelas yang tercetak; bila sumber hanya menulis jenjang, pakai fase tengah jenjang itu dan akui di pembahasan bila ragu.
+   - data-kelas: angka kelas bila tercetak (7..12), selain itu ""
+   - data-elemen: nama ELEMEN Capaian Pembelajaran resmi mapel itu yang paling tepat untuk bab ini (contoh IPA: "Pemahaman Sains"; Matematika: "Aljabar"; Bahasa Inggris: "Menyimak-Membaca"; IPS/Geografi: "Pemahaman Konsep Ruang"), selain itu ""
+   - data-capaian: kutipan singkat Capaian Pembelajaran (CP) terdekat BILA tercetak di sumber, selain itu ""
+   - data-bab: nama bab sebagaimana tercetak; sistem menyamakan sinonimnya sendiri.
+
+Periksa dirimu sebelum menjawab: (a) jumlah question-card == jumlah nomor di sumber; (b) setiap kartu punya data-kunci dan .pembahasan; (c) tidak ada tag terlarang; (d) setiap kartu memuat data-fase dan data-kurikulum. Tuliskan hasil pemeriksaan itu sebagai komentar HTML di baris pertama berkas.`;
 
 export default { PROMPT_PATEN_GEMINI };

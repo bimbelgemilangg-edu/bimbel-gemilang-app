@@ -101,7 +101,7 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
     const asalPembahasan = ENUM_ASAL_PEMBAHASAN.has(atribut(tagAttr, 'data-asal-pembahasan'))
       ? atribut(tagAttr, 'data-asal-pembahasan')
       : 'tercetak';
-    const bab = atribut(tagAttr, 'data-bab') || babAktif;
+    const bab = atribut(tagAttr, 'data-bab') || babAktif; // data-bab menang atas section-header
 
     if (!ENUM_TIPE.has(tipe)) {
       kesalahan.push(`${pref}kartu ${id}: data-tipe "${tipe || '(kosong)'}" bukan enum paten (${[...ENUM_TIPE].join(', ')}).`);
@@ -172,6 +172,14 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
       materi: bab,
       pembahasan,
       pembahasanAsal: asalPembahasan,
+      // 🔥 TAKSONOMI KURIKULUM MERDEKA dari Gemini (paten butir 9): sistem
+      // menerima berkas yang SUDAH terklasifikasi; Perpustakaan, cetak per
+      // minggu, dan try out otomatis tidak perlu menebak-nebak lagi.
+      kurikulum: atribut(tagAttr, 'data-kurikulum') || '',
+      fase: atribut(tagAttr, 'data-fase') || '',
+      kelas: atribut(tagAttr, 'data-kelas') || '',
+      elemen: atribut(tagAttr, 'data-elemen') || '',
+      capaian: atribut(tagAttr, 'data-capaian') || '',
       gambarUrls: [],
     };
     if (tipe === 'benar_salah' || tipe === 'menjodohkan') {

@@ -38,6 +38,11 @@ export function dokumenDariButir(butir = {}, konteks = {}) {
     bacaan: butir.bacaan || null,
     pembahasan: butir.pembahasan || '',
     pembahasanAsal: butir.pembahasanAsal || 'tercetak',
+    kurikulum: butir.kurikulum || '',
+    fase: butir.fase || '',
+    kelas: butir.kelas || '',
+    elemen: butir.elemen || '',
+    capaian: butir.capaian || '',
     sumber: butir.sumber || '',
     status: 'aktif',
     sumberFile: konteks.fileName || 'impor-html-gemini',
@@ -49,6 +54,13 @@ export function dokumenDariButir(butir = {}, konteks = {}) {
     bab: butir.materi || konteks.bab || '',
   });
   const dok = terapkanTaksonomi(norm, tak, { force: true });
+  // Taksonomi Kurikulum Merdeka yang DIAKU Gemini dipertahankan apa adanya
+  // (deteksi otomatis hanya mengisi yang Gemini tinggalkan kosong).
+  dok.kurikulum = butir.kurikulum || dok.kurikulum || '';
+  dok.fase = butir.fase || dok.fase || '';
+  dok.elemen = butir.elemen || dok.elemen || '';
+  dok.capaian = butir.capaian || dok.capaian || '';
+  if (butir.kelas && !dok.kelas) dok.kelas = String(butir.kelas);
 
   // Lemari Soal & Perpustakaan & Cetak Latihan membaca `materi`;
   // taksonomi menulis `bab`. Samakan keduanya supaya tidak ada halaman

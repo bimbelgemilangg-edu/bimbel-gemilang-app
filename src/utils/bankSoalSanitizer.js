@@ -508,12 +508,21 @@ const TIPE_ENUM = [
     const pembahasanAsal =
       (q.pembahasan_asal === 'penalaran' || q.pembahasanAsal === 'penalaran') ? 'penalaran' : 'tercetak';
 
+    // 🔥 TAKSONOMI KURIKULUM MERDEKA (paten 2026-10-07): field klasifikasi
+    // yang diakui Gemini ikut kontrak secara ADITIF -- berkas lama tanpa
+    // field ini tetap lolos tanpa warning.
+    const kurikulum = String(q.kurikulum ?? '').trim();
+    const fase = String(q.fase ?? '').trim();
+    const elemen = String(q.elemen ?? '').trim();
+    const capaian = String(q.capaian ?? '').trim();
+
     const normalized = {
       nomor, tipe, teksSoal,
       opsiJawaban, pernyataan, tabelBenarSalah, pasangan,
       kunciJawaban, gambar,
       topik, subtopik, topikBaru,
       pembahasan, pembahasanAsal,
+      kurikulum, fase, elemen, capaian,
     };
   
     return {

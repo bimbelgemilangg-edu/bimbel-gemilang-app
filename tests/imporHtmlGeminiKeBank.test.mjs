@@ -82,6 +82,18 @@ uji('kunci, opsi, pembahasan, dan pengakuan penalaran utuh', () => {
   assert.equal(d.pembahasanAsal, 'penalaran');
 });
 
+uji('taksonomi Merdeka dari Gemini bertahan sampai dokumen bank', () => {
+  const d = dokumenDariButir({
+    ...BUTIR, kurikulum: 'merdeka', fase: 'E', kelas: '10',
+    elemen: 'Pemahaman Sains', capaian: 'CP-001',
+  }, KONTEKS);
+  assert.equal(d.kurikulum, 'merdeka');
+  assert.equal(d.fase, 'E');
+  assert.equal(d.kelas, '10');
+  assert.equal(d.elemen, 'Pemahaman Sains');
+  assert.equal(d.capaian, 'CP-001');
+});
+
 uji('teks soal ganda-di field soal & teksSoal (dua generasi reader)', () => {
   const d = dokumenDariButir(BUTIR, KONTEKS);
   assert.equal(d.soal, d.teksSoal);
