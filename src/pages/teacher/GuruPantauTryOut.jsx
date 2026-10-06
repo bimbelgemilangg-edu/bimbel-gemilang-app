@@ -30,6 +30,7 @@ import { teksKunciSoal as teksKunci } from '../../utils/teksKunciSoal';
 import RenderMath from '../../components/RenderMath';
 import RenderTable from '../../components/RenderTable';
 import LihatGambar from '../../components/LihatGambar';
+import TeksSoalBergambar from '../../components/TeksSoalBergambar';
 import RendererPgSederhana from '../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../student/tryout/RendererBenarSalah';
@@ -324,21 +325,13 @@ export default function GuruPantauTryOut() {
                       {s.bacaan?.teks && (
                         <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}><RenderMath text={s.bacaan.teks} /></div>
                       )}
-                      <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
-                      {(s.gambarUrls || []).length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
-                          {s.gambarUrls.map((url, gi) => (
-                            <img
-                              key={gi}
-                              src={url}
-                              alt={`Gambar soal ${gi + 1}`}
-                              onClick={() => setGambarDibuka(url)}
-                              title="Klik untuk memperbesar"
-                              style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'zoom-in' }}
-                            />
-                          ))}
-                        </div>
-                      )}
+                      <TeksSoalBergambar
+                        teks={s.soal || s.teks_soal}
+                        gambarUrls={s.gambarUrls}
+                        onKlikGambar={setGambarDibuka}
+                        gayaTeks={{ marginBottom: 10 }}
+                        gayaGambar={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, margin: '8px 0 10px' }}
+                      />
                       {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                       <RendererSoalGuru soal={s} jawabanTerpilih={jwb} modeTinjau onKlikGambar={setGambarDibuka} />
                       {/* 🔥 BARU (permintaan owner 2026-10-05): "harusnya tentor
@@ -418,21 +411,13 @@ export default function GuruPantauTryOut() {
                       {s.bacaan?.teks && (
                         <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}><RenderMath text={s.bacaan.teks} /></div>
                       )}
-                      <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
-                      {(s.gambarUrls || []).length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
-                          {s.gambarUrls.map((url, gi) => (
-                            <img
-                              key={gi}
-                              src={url}
-                              alt={`Gambar soal ${gi + 1}`}
-                              onClick={() => setGambarDibuka(url)}
-                              title="Klik untuk memperbesar"
-                              style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'zoom-in' }}
-                            />
-                          ))}
-                        </div>
-                      )}
+                      <TeksSoalBergambar
+                        teks={s.soal || s.teks_soal}
+                        gambarUrls={s.gambarUrls}
+                        onKlikGambar={setGambarDibuka}
+                        gayaTeks={{ marginBottom: 10 }}
+                        gayaGambar={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, margin: '8px 0 10px' }}
+                      />
                       {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                       <RendererSoalGuru soal={s} jawabanTerpilih={jwb} modeTinjau onKlikGambar={setGambarDibuka} />
                       <div style={{ marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 12, color: '#166534' }}>

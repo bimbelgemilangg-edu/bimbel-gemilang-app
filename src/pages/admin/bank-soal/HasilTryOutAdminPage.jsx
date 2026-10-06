@@ -28,6 +28,7 @@ import { isSoalEsai, poinEsai, SKALA_NILAI_ESAI } from '../../../utils/skorSoalT
 import { catatAudit, KATEGORI, aktorSaatIni } from '../../../utils/auditLog';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
+import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 
 function RendererSoalAdmin(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
@@ -581,14 +582,12 @@ export default function HasilTryOutAdminPage() {
                     {s.bacaan?.teks && (
                       <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}><RenderMath text={s.bacaan.teks} /></div>
                     )}
-                    <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
-                    {(s.gambarUrls || []).length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
-                        {s.gambarUrls.map((url, gi) => (
-                          <img key={gi} src={url} alt={`Gambar soal ${gi + 1}`} style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                        ))}
-                      </div>
-                    )}
+                    <TeksSoalBergambar
+                      teks={s.soal || s.teks_soal}
+                      gambarUrls={s.gambarUrls}
+                      gayaTeks={{ marginBottom: 10 }}
+                      gayaGambar={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, margin: '8px 0 10px' }}
+                    />
                     {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
                     <RendererSoalAdmin soal={s} jawabanTerpilih={jwb} modeTinjau />
                     {esai && !belumDijawab && (
