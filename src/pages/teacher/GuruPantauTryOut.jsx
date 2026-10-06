@@ -26,6 +26,7 @@ import { terapkanPotonganXP } from '../../utils/potonganXPTryOut';
 import { tambahXpMingguan } from '../../utils/mingguIni';
 import { catatAudit, KATEGORI } from '../../utils/auditLog';
 import { bacaIdentitasGuru, guruCocokDenganTentor } from '../../utils/identitasGuru';
+import { teksKunciSoal as teksKunci } from '../../utils/teksKunciSoal';
 import RenderMath from '../../components/RenderMath';
 import RenderTable from '../../components/RenderTable';
 import LihatGambar from '../../components/LihatGambar';
@@ -44,38 +45,6 @@ function RendererSoalGuru(props) {
   if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat {...props} />;
   if (tipe === 'esai' || tipe === 'uraian') return <RendererEsai {...props} />;
   return <RendererPgSederhana {...props} />;
-}
-
-// 🔥 BARU (permintaan owner 2026-10-05): kunci jawaban sebagai TEKS.
-// Sorotan warna dari renderer (hijau ✔️ / merah ✖️) cukup untuk melihat
-// sekilas, tapi tidak cukup saat tentor MEMBAHAS soal di depan kelas --
-// ia perlu bisa menyebut "kuncinya B" atau "baris 2 Salah" langsung.
-// Fungsi ini menormalkan semua dialek penyimpanan kunci yang memang
-// beraneka di repo ini (huruf tunggal, indeks angka, teks jawaban, array
-// untuk pg_kompleks, string "AC", dan field jawaban/kunci per baris untuk
-// benar_salah) -- toleransi yang sama dengan yang dipakai skoring.
-function teksKunci(soal) {
-  const tipe = soal?.tipe || 'pg_sederhana';
-  if (tipe === 'esai' || tipe === 'uraian') return 'penilaian manual guru (0-100)';
-  if (tipe === 'pg_sederhana') {
-    const idx = cariIndexBenar(soal);
-    return idx >= 0 ? String.fromCharCode(65 + idx) : '(kunci tidak tersedia)';
-  }
-  if (tipe === 'pg_kompleks') {
-    const mentah = soal?.kunciJawaban;
-    const kunci = Array.isArray(mentah) ? mentah
-      : (typeof mentah === 'string' && mentah.trim() ? mentah.replace(/[\s,]+/g, '').split('') : []);
-    return kunci.length ? kunci.map((h) => String(h).toUpperCase()).join(', ') : '(kunci tidak tersedia)';
-  }
-  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
-    const baris = pilihBarisBenarSalah(soal);
-    const isi = baris.map((b, i) => `${i + 1}: ${kunciBarisBenarSalah(b) || '?'}`).join(', ');
-    return isi || '(kunci tidak tersedia)';
-  }
-  // isian_singkat / numerik: kunci utama plus jawaban ekuivalen yang diterima
-  const utama = String(soal?.kunciJawaban ?? '').trim();
-  const ekuivalen = Array.isArray(soal?.jawabanEkuivalen) ? soal.jawabanEkuivalen.filter(Boolean).map(String) : [];
-  return [utama, ...ekuivalen].filter(Boolean).join(' / ') || '(kunci tidak tersedia)';
 }
 
 // 🔥 BARU (mode tinjau paket): kunci disuapkan SEOLAH-OLAH sebagai jawaban

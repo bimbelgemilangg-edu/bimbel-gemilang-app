@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, User, BookOpen, Edit,
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
-  Database, GraduationCap, Projector, Presentation,
+  Database, GraduationCap, Projector, Presentation, Printer,
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -39,6 +39,9 @@ const SidebarGuru = () => {
     // belajar yang grounded ke buku yang diupload. Tidak tampil ke siswa.
     { name: 'Alat Bantu Guru', path: '/guru/alat-bantu', icon: <GraduationCap size={20} /> },
     { name: 'Pemeriksaan Tugas', path: '/guru/cek-tugas', icon: <ClipboardCheck size={20} /> },
+    // 🔥 BARU (Fase 3 skema buku-kliping): cetak paket latihan siap gunting
+    // + kunci tentor + lembar catatan buku progres.
+    { name: 'Cetak Latihan', path: '/guru/cetak-latihan', icon: <Printer size={20} /> },
     { name: 'Input Nilai / Rapor', path: '/guru/grades/input', icon: <Edit size={20} /> },
     { name: 'Generate Raport', path: '/guru/generate-raport', icon: <Database size={20} /> },
     { name: 'Riwayat Sesi', path: '/guru/history', icon: <History size={20} /> },
