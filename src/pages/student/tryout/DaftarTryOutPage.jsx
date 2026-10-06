@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { ArrowLeft, Target, Clock, CheckCircle2, PlayCircle } from 'lucide-react';
+import { useSegarSaatTerlihat } from '../../../utils/useSegarSaatTerlihat';
 
 export default function DaftarTryOutPage() {
   const navigate = useNavigate();
@@ -17,6 +18,12 @@ export default function DaftarTryOutPage() {
 
   const [loading, setLoading] = useState(true);
   const [daftar, setDaftar] = useState([]);
+
+  // 🔥 BARU (Tahap 1 peta sinkronisasi): try out yang BARU diterbitkan
+  // admin harus muncul tanpa siswa perlu reload -- ini keluhan yang
+  // paling sering terdengar saat pengumuman try out. Ambil ulang saat
+  // aplikasi kembali terlihat. Lihat useSegarSaatTerlihat.
+  const versiSegar = useSegarSaatTerlihat();
 
   useEffect(() => {
     (async () => {
@@ -51,7 +58,7 @@ export default function DaftarTryOutPage() {
       }
       setLoading(false);
     })();
-  }, [studentId]);
+  }, [studentId, versiSegar]);
 
   return (
     <div style={{ maxWidth: 640, margin: '0 auto', padding: 16 }}>
