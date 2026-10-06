@@ -39,6 +39,7 @@ import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
+import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 import MaskotAstronot from '../../../components/MaskotAstronot';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
@@ -735,14 +736,12 @@ export default function TryOutView() {
                   <RenderMath text={s.bacaan.teks} />
                 </div>
               )}
-              <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10, lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}><RenderMath text={s.soal || s.teks_soal} /></div>
-              {(s.gambarUrls || []).length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
-                  {s.gambarUrls.map((url, i) => (
-                    <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ maxWidth: '100%', maxHeight: 280, borderRadius: 10, border: '1px solid #e2e8f0' }} />
-                  ))}
-                </div>
-              )}
+              <TeksSoalBergambar
+                teks={s.soal || s.teks_soal}
+                gambarUrls={s.gambarUrls}
+                gayaTeks={{ marginBottom: 10 }}
+                gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
+              />
               {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
               <PenahanErrorSoal soalId={s.id}>
                 <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
@@ -883,19 +882,12 @@ export default function TryOutView() {
             )}
           </div>
         )}
-        <div style={{ fontSize: 14, color: '#1e293b', marginBottom: 16, lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}><RenderMath text={soalAktif.soal || soalAktif.teks_soal} /></div>
-        {/* 🔥 BARU (celah serius ditemukan): gambar yang nempel LANGSUNG
-            di soal (bukan di bacaan) -- mis. diagram, grafik, gambar
-            gunung dll -- SEBELUMNYA GAK PERNAH DIRENDER SAMA SEKALI di
-            Try Out. Kalau soalnya butuh liat gambar buat jawab, siswa
-            gak akan pernah bisa jawab tanpa ini. */}
-        {(soalAktif.gambarUrls || []).length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
-            {soalAktif.gambarUrls.map((url, i) => (
-              <img key={i} src={url} alt={`Gambar soal ${i + 1}`} style={{ display: 'block', maxWidth: '100%', maxHeight: 320, borderRadius: 10, border: '1px solid #e2e8f0' }} />
-            ))}
-          </div>
-        )}
+        <TeksSoalBergambar
+          teks={soalAktif.soal || soalAktif.teks_soal}
+          gambarUrls={soalAktif.gambarUrls}
+          gayaTeks={{ fontSize: 14, marginBottom: 16 }}
+          gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
+        />
         {/* 🔥 BARU (celah serius lain ditemukan): tabel yang nempel di
             soal (mis. kunci determinasi biologi) -- SAMA SEKALI GAK
             PERNAH DIRENDER, padahal komponennya udah lama ada, cuma

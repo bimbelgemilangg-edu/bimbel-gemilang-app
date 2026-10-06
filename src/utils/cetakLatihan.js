@@ -25,6 +25,7 @@
 
 import katex from 'katex';
 import { teksKunciSoal } from './teksKunciSoal.js';
+import { pisahTeksDanGambar } from './penempatanGambar.js';
 
 /** Escape HTML -- soal berasal dari bank yang isinya bebas. */
 export function escapeHtml(s) {
@@ -106,9 +107,16 @@ function kepalaHtml(paket, judulDok) {
   </div>`;
 }
 
-function gambarHtml(soal) {
-  const urls = Array.isArray(soal?.gambarUrls) ? soal.gambarUrls : [];
-  return urls.map((u) => `<img class="gbr" src="${escapeHtml(u)}" alt="Gambar soal" />`).join('');
+// Badan soal dengan gambar DI POSISI placeholder-nya ({{GAMBAR}} dst.).
+// Sebelum 2026-10-06 gambar ditumpuk di akhir dan token placeholder ikut
+// tercetak mentah di kalimat -- lembar cetak menyebut "perhatikan gambar
+// {{GAMBAR}} di atas" tanpa gambar di tempat yang ditunjuk.
+function stemHtml(soal) {
+  return pisahTeksDanGambar(soal?.soal || soal?.teks_soal, soal?.gambarUrls)
+    .map((sg) => (sg.jenis === 'teks'
+      ? `<div class="soal">${teksKeHtml(sg.isi)}</div>`
+      : `<img class="gbr" src="${escapeHtml(sg.url)}" alt="Gambar soal ${sg.indeks + 1}" />`))
+    .join('\n      ');
 }
 
 function opsiHtml(soal) {
@@ -127,8 +135,7 @@ export function htmlPaketSiswa(paket = {}, soalList = []) {
   const kotak = soalList
     .map((s, i) => `<div class="kotak">
       <span class="nomor">${i + 1}</span><b>${escapeHtml(String(s?.tipe || 'pg_sederhana').replace(/_/g, ' '))}</b>
-      <div class="soal">${teksKeHtml(s?.soal || s?.teks_soal)}</div>
-      ${gambarHtml(s)}
+      ${stemHtml(s)}
       ${opsiHtml(s)}
     </div>`)
     .join('\n');
