@@ -40,6 +40,13 @@ uji('multi-bab & math & larangan keamanan tertulis', () => {
   assert.ok(P.includes('<script>') || P.includes('<script'));
   assert.ok(P.includes('position:fixed'));
 });
+uji('taksonomi Kurikulum Merdeka diwajibkan per kartu', () => {
+  assert.ok(P.includes('data-fase'));
+  assert.ok(P.includes('data-kurikulum'));
+  assert.ok(P.includes('data-elemen'));
+  assert.ok(P.includes('KURIKULUM MERDEKA'));
+});
+
 uji('pemeriksaan diri diwajibkan di akhir prompt', () => {
   assert.ok(P.includes('Periksa dirimu'));
   assert.ok(P.includes('[gambar tidak terbaca]'));

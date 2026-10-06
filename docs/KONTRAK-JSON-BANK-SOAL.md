@@ -34,6 +34,13 @@ petunjuk di halaman upload** (itu yang memenangkan taksonomi), bukan di dalam fi
 
 ## 2. Kontrak field per soal
 
+> **Tambahan paten 2026-10-07 (taksonomi Kurikulum Merdeka):** `kurikulum`
+> (`"merdeka"` | `"legacy"`), `fase` (Fase A–F), `elemen` (nama elemen CP
+> resmi mapel), dan `capaian` (kutipan CP bila tercetak). Semuanya opsional
+> untuk berkas lama, tetapi WAJIB diisi jalur AI: sistem menerima berkas
+> yang SUDAH terklasifikasi, sehingga Perpustakaan, cetak per minggu, dan
+> try out otomatis tidak menebak-nebak.
+>
 > **Tambahan paten 2026-10-06:** `pembahasan` (string) dan `pembahasan_asal`
 > (`"tercetak"` | `"penalaran"`) kini ikut kontrak. Keduanya OPSIONAL untuk
 > berkas lama (tidak memicu warning), tetapi WAJIB diisi oleh jalur AI

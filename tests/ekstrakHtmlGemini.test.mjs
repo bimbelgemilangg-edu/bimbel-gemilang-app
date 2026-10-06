@@ -231,6 +231,22 @@ uji('pesan kesalahan membawa nama berkasnya (tahu mana yang diulang)', () => {
   assert.ok(h.kesalahan.join(' ').includes('bag1.html'));
 });
 
+uji('taksonomi Kurikulum Merdeka per kartu terbawa ke butir', () => {
+  const h = ekstrakHtmlGemini(`<body>
+<div class="section-header" id="s"><h2>SISTEM RESPIRASI</h2></div>
+<div class="question-card" id="soal-1" data-tipe="pg_sederhana" data-kunci="B" data-kurikulum="merdeka" data-fase="E" data-kelas="10" data-elemen="Pemahaman Sains" data-capaian="CP-001">
+  <div class="q-body">Teks.</div>
+  <div class="options-list"><label class="option-item"><input type="radio" value="A"><span class="option-text">A) satu</span></label><label class="option-item"><input type="radio" value="B"><span class="option-text">B) dua</span></label></div>
+  <div class="pembahasan">Karena B.</div>
+</div></body>`);
+  const b = h.soal[0];
+  assert.equal(b.kurikulum, 'merdeka');
+  assert.equal(b.fase, 'E');
+  assert.equal(b.kelas, '10');
+  assert.equal(b.elemen, 'Pemahaman Sains');
+  assert.equal(b.capaian, 'CP-001');
+});
+
 uji('pembahasan hasil penalaran DIPERINGATKAN, bukan ditolak maupun didiamkan', () => {
   const h = ekstrakBanyakHtml([{ nama: 'b.html', html: berkasB }]);
   const soalPenalaran = h.soal.find((s) => s.nomor === 3);
