@@ -56,6 +56,11 @@ export default function CetakPaketLatihan() {
 
   const [mapelAktif, setMapelAktif] = useState('');
   const [babAktif, setBabAktif] = useState('');
+  // 🔥 DITAMBAHKAN (2026-10-06, pertanyaan owner: "jenjangnya?"): tingkat
+  // pertama hirarki adalah JENJANG, persis LemariSoalPage admin. Tanpa ini
+  // mapel bernama sama di jenjang berbeda (Matematika SMP vs SMA) tercampur
+  // dalam satu pill, dan lembar cetak bisa berisi soal lintas jenjang.
+  const [jenjangAktif, setJenjangAktif] = useState('');
   const [tercentang, setTercentang] = useState([]);    // id butir terpilih
   const [tanpaEsai, setTanpaEsai] = useState(false);
 
@@ -87,33 +92,46 @@ export default function CetakPaketLatihan() {
 
   useEffect(() => { muatSemua(); }, [muatSemua, versiSegar]);
 
-  // ---- hirarki bank: mapel -> bab, persis pola Lemari Soal admin ----
-  const daftarMapel = useMemo(() => {
+  // ---- hirarki bank: jenjang -> mapel -> bab, persis pola Lemari Soal admin ----
+  const daftarJenjang = useMemo(() => {
     const hitung = new Map();
     for (const s of bankSoal) {
-      const k = (s.mataPelajaran || '').trim() || BELUM;
+      const k = (s.jenjang || '').trim() || BELUM;
       hitung.set(k, (hitung.get(k) || 0) + 1);
     }
     return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
   }, [bankSoal]);
 
-  const daftarBab = useMemo(() => {
-    if (!mapelAktif) return [];
+  const daftarMapel = useMemo(() => {
+    if (!jenjangAktif) return [];
     const hitung = new Map();
     for (const s of bankSoal) {
+      if (((s.jenjang || '').trim() || BELUM) !== jenjangAktif) continue;
+      const k = (s.mataPelajaran || '').trim() || BELUM;
+      hitung.set(k, (hitung.get(k) || 0) + 1);
+    }
+    return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
+  }, [bankSoal, jenjangAktif]);
+
+  const daftarBab = useMemo(() => {
+    if (!jenjangAktif || !mapelAktif) return [];
+    const hitung = new Map();
+    for (const s of bankSoal) {
+      if (((s.jenjang || '').trim() || BELUM) !== jenjangAktif) continue;
       if (((s.mataPelajaran || '').trim() || BELUM) !== mapelAktif) continue;
       const k = (s.materi || '').trim() || BELUM;
       hitung.set(k, (hitung.get(k) || 0) + 1);
     }
     return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
-  }, [bankSoal, mapelAktif]);
+  }, [bankSoal, jenjangAktif, mapelAktif]);
 
   const soalDiBab = useMemo(() => {
-    if (!mapelAktif || !babAktif) return [];
+    if (!jenjangAktif || !mapelAktif || !babAktif) return [];
     return bankSoal.filter((s) =>
+      ((s.jenjang || '').trim() || BELUM) === jenjangAktif &&
       ((s.mataPelajaran || '').trim() || BELUM) === mapelAktif &&
       ((s.materi || '').trim() || BELUM) === babAktif);
-  }, [bankSoal, mapelAktif, babAktif]);
+  }, [bankSoal, jenjangAktif, mapelAktif, babAktif]);
 
   const soalBankTampil = useMemo(
     () => (tanpaEsai ? soalDiBab.filter((s) => !['esai', 'uraian'].includes(s.tipe)) : soalDiBab),
@@ -131,7 +149,7 @@ export default function CetakPaketLatihan() {
 
   const siap = sumber === 'bank' ? terpilihBank : soalPaket;
   const meta = sumber === 'bank'
-    ? { judul: `${mapelAktif} — ${babAktif}`, mapel: mapelAktif, targetKelas: '', bab: babAktif }
+    ? { judul: `${jenjangAktif} ${mapelAktif} — ${babAktif}`, mapel: mapelAktif, targetKelas: jenjangAktif, bab: babAktif }
     : { judul: paket?.judul || '', mapel: paket?.targetKategori || '', targetKelas: paket?.targetKelas || '', bab: paket?.babJudul || '' };
 
   const centang = (id, on) => setTercentang((lama) => (on ? [...lama, id] : lama.filter((x) => x !== id)));
@@ -155,20 +173,33 @@ export default function CetakPaketLatihan() {
       {sumber === 'bank' && !memuat && (
         <>
           <div style={gayaKartu}>
-            <div style={gayaJudulKartu}>1 · Mata pelajaran</div>
+            <div style={gayaJudulKartu}>1 · Jenjang</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {daftarJenjang.map(([j, n]) => (
+                <button key={j} style={gayaPill(jenjangAktif === j)} onClick={() => { setJenjangAktif(j); setMapelAktif(''); setBabAktif(''); setTercentang([]); }}>
+                  {j} <span style={{ opacity: 0.6 }}>({n})</span>
+                </button>
+              ))}
+              {daftarJenjang.length === 0 && <span style={{ fontSize: 12, color: '#94a3b8' }}>Bank soal masih kosong.</span>}
+            </div>
+          </div>
+
+          {jenjangAktif && (
+          <div style={gayaKartu}>
+            <div style={gayaJudulKartu}>2 · Mata pelajaran pada {jenjangAktif}</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {daftarMapel.map(([m, n]) => (
                 <button key={m} style={gayaPill(mapelAktif === m)} onClick={() => { setMapelAktif(m); setBabAktif(''); setTercentang([]); }}>
                   {m} <span style={{ opacity: 0.6 }}>({n})</span>
                 </button>
               ))}
-              {daftarMapel.length === 0 && <span style={{ fontSize: 12, color: '#94a3b8' }}>Bank soal masih kosong.</span>}
             </div>
           </div>
+          )}
 
           {mapelAktif && (
             <div style={gayaKartu}>
-              <div style={gayaJudulKartu}>2 · Bab / materi pada {mapelAktif}</div>
+              <div style={gayaJudulKartu}>3 · Bab / materi pada {mapelAktif}</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {daftarBab.map(([b, n]) => (
                   <button key={b} style={gayaPill(babAktif === b)} onClick={() => { setBabAktif(b); setTercentang([]); }}>
@@ -182,7 +213,7 @@ export default function CetakPaketLatihan() {
           {babAktif && (
             <div style={gayaKartu}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={gayaJudulKartu}>3 · Centang butir yang akan dicetak ({terpilihBank.length}/{soalBankTampil.length})</div>
+                <div style={gayaJudulKartu}>4 · Centang butir yang akan dicetak ({terpilihBank.length}/{soalBankTampil.length})</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 5, alignItems: 'center' }}>
                     <input type="checkbox" checked={tanpaEsai} onChange={(e) => setTanpaEsai(e.target.checked)} /> lewati esai
@@ -236,7 +267,7 @@ export default function CetakPaketLatihan() {
 
       {!memuat && (
         <div style={gayaKartu}>
-          <div style={gayaJudulKartu}>4 · Cetak ({siap.length} butir)</div>
+          <div style={gayaJudulKartu}>5 · Cetak ({siap.length} butir)</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button style={gayaTombol('#2563eb', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlPaketSiswa(meta, siap), 'Paket Siswa')}>✂️ PAKET-SISWA</button>
             <button style={gayaTombol('#b91c1c', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlKunciTentor(meta, siap), 'Kunci Tentor')}>🔑 KUNCI-TENTOR</button>
