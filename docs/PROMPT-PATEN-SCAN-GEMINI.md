@@ -38,6 +38,17 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 >    - benar_salah / menjodohkan (per baris, urut): mis. `B,S,B` atau `1-A,2-C`
 >    - isian_singkat: teks jawaban, alternatif dipisah ` / `
 >    - esai: kosong `""` (rubrik masuk pembahasan)
+> 4b. **WAJIB tambahan:** setiap kartu memuat atribut
+>    `data-asal-pembahasan="tercetak"` bila pembahasan memang tercetak di
+>    sumber, atau `data-asal-pembahasan="penalaran"` bila sumber TIDAK
+>    memuat pembahasan dan kamu MENALAR-nya sendiri dari soal + kunci +
+>    gambar. Jangan pernah menyembunyikan perbedaan ini: guru harus tahu
+>    mana penjelasan buku dan mana penjelasan model.
+> 4c. Bila sumber memuat beberapa bab (ebook kompilasi), setiap pergantian
+>    bab WAJIB ditandai `section-header` sebelum kartu pertama bab itu;
+>    boleh juga menambah `data-bab="NAMA BAB"` per kartu sebagai penguat.
+>    Sistem mengelompokkan bank soal berdasar penanda ini, bukan berdasar
+>    nama berkas.
 > 5. Matematika ditulis `$...$` untuk inline dan `$$...$$` untuk blok,
 >    persis seperti tercetak (jangan dikonversi jadi kata).
 > 6. DILARANG: tag `<script>`, `<iframe>`, atribut `on*` (onclick dll.),
@@ -88,3 +99,39 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 4. Cek ringkasan: jumlah kartu == jumlah nomor sumber; semua kartu punya
    kunci & pembahasan. Bila ada yang ditolak ekstraktor, perbaiki hanya
    kartu yang disebut — tidak perlu mengulang seluruh bab.
+
+---
+
+## 5. Kasus nyata yang sudah dijawab paten ini
+
+### a) Satu berkas berisi banyak bab (ebook kompilasi TKA)
+Tidak masalah dan tidak perlu dipecah manual: tiap `section-header`
+menjadi pembatas bab, dan ekstraktor menandai setiap kartu dengan bab
+terdekat di atasnya (`field materi` di bank soal). Perpustakaan
+(#143) kemudian menampilkan jumlahnya per bab tanpa admin mengelompokkan
+sendiri.
+
+### b) Satu buku penuh digenerate sekaligus (mis. bank Matematika SMP 7/8/9)
+Boleh, dengan dua pagar:
+1. **Bagi unggahan ke Gemini per ±10 halaman** supaya kuota gratis tidak
+   menolak di tengah jalan; tiap bagian tetap mematuhi paten yang sama.
+2. Serahkan SEMUA berkas bagian ke ekstraktor sekaligus
+   (`ekstrakBanyakHtml`): ia menggabungkan, membuang duplikat
+   (bab+nomor+sumber+isi), dan memberi prefiks nama berkas pada setiap
+   pesan kesalahan — jadi bila bagian 3 gagal, yang diulang hanya bagian 3.
+
+### c) Buku yang HANYA mencetak kunci tanpa pembahasan
+Gemini DIPERBOLEHKAN menalar pembahasan, termasuk menjelaskan gambar/
+diagram yang ia lihat ("pada diagram, bagian B adalah bronkus karena ..."),
+dengan syarat jujur: `data-asal-pembahasan="penalaran"`. Ekstraktor
+menyimpan pengakuan itu di field `pembahasanAsal` dan mengeluarkan
+**peringatan** (bukan kesalahan) per kartu, supaya guru memeriksa sebelum
+memakai di kelas. Pembahasan tercetak vs karangan model tidak boleh
+bercampur tanpa tanda — itu perbedaan antara mengajar dan menebak.
+
+### d) Gambar buram / tabel rusak di sumber
+Kartu tetap dibuat; pembahasan wajib menulis `[gambar tidak terbaca]`
+atau `[tabel tidak terbaca]` alih-alih mengarang isi gambar. Ekstraktor
+tidak menolak kartu semacam ini (menolak = membuang soal yang masih
+bisa dipakai teksnya), tetapi peringatan "penalaran" akan menandainya
+bila Gemini memilih mengisi dengan terkaan.

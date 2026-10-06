@@ -18,7 +18,7 @@
 // ============================================================
 
 import assert from 'node:assert/strict';
-import { ekstrakHtmlGemini, bersihkanHtmlBahaya, htmlKeTeks } from '../src/utils/ekstrakHtmlGemini.js';
+import { ekstrakHtmlGemini, ekstrakBanyakHtml, bersihkanHtmlBahaya, htmlKeTeks } from '../src/utils/ekstrakHtmlGemini.js';
 
 const PNG_1PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
@@ -183,6 +183,61 @@ uji('htmlKeTeks mempertahankan rumus $...$ dan merapikan baris', () => {
   const t = htmlKeTeks('  Jika $x^2=4$ <br> maka <b>x</b> = 2  ');
   assert.ok(t.includes('$x^2=4$'));
   assert.ok(!t.includes('<b>'));
+});
+
+
+// ============================================================
+bagian('5. BANYAK BAB, BANYAK BERKAS, DAN KEJUJURAN PENALARAN');
+// ============================================================
+
+const kartu = (id, tipe, kunci, opts = {}) => `
+<div class="question-card" id="${id}" data-tipe="${tipe}" data-kunci="${kunci}"${opts.asal ? ` data-asal-pembahasan="${opts.asal}"` : ''}>
+  <div class="question-meta"><span class="q-number">No. ${id.replace('soal-', '')}</span><span class="q-source">SRC</span><span class="q-type-badge">x</span></div>
+  <div class="q-body">${opts.badan || 'Teks soal contoh.'}</div>
+  <div class="options-list"><label class="option-item"><input type="radio" value="A"><span class="option-text">A) satu</span></label><label class="option-item"><input type="radio" value="B"><span class="option-text">B) dua</span></label></div>
+  <div class="pembahasan">${opts.pembahasan || 'Karena demikianlah adanya.'}</div>
+</div>`;
+
+const berkasA = `<body>
+<div class="section-header" id="sec-1"><h2>SISTEM RESPIRASI</h2></div>
+${kartu('soal-1', 'pg_sederhana', 'B')}
+<div class="section-header" id="sec-2"><h2>SISTEM SIRKULASI</h2></div>
+${kartu('soal-2', 'pg_sederhana', 'A')}
+</body>`;
+
+const berkasB = `<body>
+<div class="section-header" id="sec-1"><h2>SISTEM RESPIRASI</h2></div>
+${kartu('soal-1', 'pg_sederhana', 'B')}
+${kartu('soal-3', 'pg_sederhana', 'C', { asal: 'penalaran', pembahasan: 'Sumber hanya mencetak kunci; penjelasan ini hasil penalaran model.' })}
+</body>`;
+
+uji('bab tiap kartu diambil dari section-header terdekat (ebook multi-bab)', () => {
+  const h = ekstrakHtmlGemini(berkasA);
+  assert.equal(h.soal[0].materi, 'SISTEM RESPIRASI');
+  assert.equal(h.soal[1].materi, 'SISTEM SIRKULASI');
+});
+
+uji('banyak berkas digabung & duplikat antar-berkas dibuang', () => {
+  const h = ekstrakBanyakHtml([{ nama: 'bag1.html', html: berkasA }, { nama: 'bag2.html', html: berkasB }]);
+  const nomor = h.soal.map((s) => s.nomor).sort((a, b) => a - b);
+  assert.deepEqual(nomor, [1, 2, 3], 'soal-1 duplikat harus dibuang, sisanya masuk');
+  assert.equal(h.duplikat, 1);
+  assert.ok(h.peringatan.join(' ').includes('duplikat'));
+});
+
+uji('pesan kesalahan membawa nama berkasnya (tahu mana yang diulang)', () => {
+  const rusak = berkasA.replace('data-kunci="B"', 'data-kunci=""');
+  const h = ekstrakBanyakHtml([{ nama: 'bag1.html', html: rusak }]);
+  assert.ok(h.kesalahan.join(' ').includes('bag1.html'));
+});
+
+uji('pembahasan hasil penalaran DIPERINGATKAN, bukan ditolak maupun didiamkan', () => {
+  const h = ekstrakBanyakHtml([{ nama: 'b.html', html: berkasB }]);
+  const soalPenalaran = h.soal.find((s) => s.nomor === 3);
+  assert.equal(soalPenalaran.pembahasanAsal, 'penalaran');
+  assert.ok(h.peringatan.join(' ').includes('PENALARAN'));
+  const soalTercetak = h.soal.find((s) => s.nomor === 1);
+  assert.equal(soalTercetak.pembahasanAsal, 'tercetak');
 });
 
 // ============================================================
