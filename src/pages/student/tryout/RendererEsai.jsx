@@ -25,6 +25,7 @@ import React, { useState } from 'react';
 import imageCompression from 'browser-image-compression';
 import { Camera, Trash2, Image as ImageIcon } from 'lucide-react';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import KameraBelakang from '../../../components/KameraBelakang';
 
 // Batas aman data-URI foto di dalam dokumen tryout_sesi (Firestore max 1 MB
 // per dokumen, dan dokumen itu juga memuat seluruh jawaban teks + metadata).
@@ -40,6 +41,8 @@ export default function RendererEsai({
 }) {
   const [busyFoto, setBusyFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState('');
+  // Overlay kamera belakang di dalam halaman (lihat KameraBelakang.jsx).
+  const [bukaKamera, setBukaKamera] = useState(false);
 
   const nilai = jawabanTerpilih && typeof jawabanTerpilih === 'object'
     ? jawabanTerpilih
@@ -116,19 +119,40 @@ export default function RendererEsai({
       {/* ===== TOMBOL KAMERA ===== */}
       {!modeTinjau && !disabled && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
+          {/* 🔥 BARU (2026-10-05, keluhan owner: siswa terkena pelanggaran
+              karena keluar halaman saat memfoto jawaban): tombol UTAMA kini
+              membuka kamera belakang DI DALAM HALAMAN lewat getUserMedia.
+              Tidak ada momen halaman menjadi hidden/blur, jadi tidak ada
+              pelanggaran yang tercipta. Pemilih berkas di sampingnya turun
+              menjadi jalur cadangan. */}
+          <button
+            type="button"
+            disabled={busyFoto}
+            onClick={() => setBukaKamera(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              background: '#eef2ff', border: '1.5px solid #c7d2fe', color: '#3730a3',
+              borderRadius: 10, padding: '9px 14px', fontSize: 12.5, fontWeight: 800,
+              cursor: busyFoto ? 'wait' : 'pointer',
+            }}
+          >
+            <Camera size={15} />
+            {busyFoto ? 'Memproses foto...' : foto ? 'Ganti foto jawaban (kamera)' : '📷 Foto jawaban pakai kamera'}
+          </button>
           <label style={{
             display: 'inline-flex', alignItems: 'center', gap: 7, cursor: busyFoto ? 'wait' : 'pointer',
-            background: '#eef2ff', border: '1.5px solid #c7d2fe', color: '#3730a3',
-            borderRadius: 10, padding: '9px 14px', fontSize: 12.5, fontWeight: 800,
+            background: 'white', border: '1px solid #cbd5e1', color: '#475569',
+            borderRadius: 10, padding: '9px 12px', fontSize: 11.5, fontWeight: 700,
           }}>
-            <Camera size={15} />
-            {busyFoto ? 'Memproses foto...' : foto ? 'Ganti foto jawaban' : 'Foto jawaban tulisan tangan'}
-            {/* capture="environment" = di HP langsung membuka kamera belakang;
-                di desktop jatuh ke pemilih file biasa. */}
+            <ImageIcon size={14} />
+            Pilih dari galeri/berkas
+            {/* Jalur CADANGAN: di HP ini menyerahkan kendali ke aplikasi
+                kamera/galeri OS, sehingga halaman bisa tercatat keluar
+                (pelanggaran) pada try out berpengawasan. Karena itu ia
+                bukan lagi jalur utama. */}
             <input
               type="file"
               accept="image/*"
-              capture="environment"
               style={{ display: 'none' }}
               disabled={busyFoto}
               onChange={(e) => {
@@ -138,6 +162,12 @@ export default function RendererEsai({
               }}
             />
           </label>
+          {bukaKamera && (
+            <KameraBelakang
+              onHasil={(file) => { setBukaKamera(false); ambilFoto(file); }}
+              onClose={() => setBukaKamera(false)}
+            />
+          )}
           {foto && (
             <button
               type="button"

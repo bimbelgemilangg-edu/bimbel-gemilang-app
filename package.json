@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node tests/passwordHash.test.mjs && node tests/keuangan.test.mjs && node tests/kwitansi.test.mjs && node tests/profilSiswa.test.mjs && node tests/identitasAbsensi.test.mjs && node tests/bankSoalSanitizer.test.mjs && node tests/skorSoalTryOut.test.mjs && node tests/kurungLatex.test.mjs && node tests/identitasGuru.test.mjs",
+    "test": "node tests/passwordHash.test.mjs && node tests/keuangan.test.mjs && node tests/kwitansi.test.mjs && node tests/profilSiswa.test.mjs && node tests/identitasAbsensi.test.mjs && node tests/ukuranFoto.test.mjs && node tests/bankSoalSanitizer.test.mjs && node tests/skorSoalTryOut.test.mjs && node tests/kurungLatex.test.mjs && node tests/identitasGuru.test.mjs",
     "test:auth": "node tests/passwordHash.test.mjs",
     "test:keuangan": "node tests/keuangan.test.mjs",
     "test:kwitansi": "node tests/kwitansi.test.mjs",
