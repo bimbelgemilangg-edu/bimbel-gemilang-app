@@ -160,4 +160,20 @@ export function saringPohon(pohon = [], query = '') {
   return keluar;
 }
 
-export default { normMapel, normJenjang, identitasKonten, bangunPohon, saringPohon };
+/**
+ * Sebaran jumlah soal per kelas dalam satu kumpulan (mis. satu bab).
+ * Kompilasi TKA mencampur kelas 10-12; angka ini yang ditampilkan
+ * Perpustakaan dan dipakai saringan di Cetak Latihan, supaya guru yang
+ * memilih -- bukan sistem yang menebak.
+ */
+export function sebaranKelas(soalList = []) {
+  const daftar = Array.isArray(soalList) ? soalList : [];
+  const hitung = new Map();
+  for (const s of daftar) {
+    const k = String(s?.kelas ?? '').trim() || '(tanpa kelas)';
+    hitung.set(k, (hitung.get(k) || 0) + 1);
+  }
+  return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
+}
+
+export default { normMapel, normJenjang, identitasKonten, bangunPohon, saringPohon, sebaranKelas };

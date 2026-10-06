@@ -26,7 +26,7 @@ import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { ekstrakBanyakHtml } from '../../../utils/ekstrakHtmlGemini';
 import { dokumenDariButir, ringkasanImpor } from '../../../utils/imporHtmlGeminiKeBank';
-import { PROMPT_PATEN_GEMINI } from '../../../utils/promptPatenGemini';
+import { PROMPT_PATEN_GEMINI, PROMPT_KONVERSI_ULANG } from '../../../utils/promptPatenGemini';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { jalurBankSoal } from '../../../utils/jalurStorage';
 
@@ -55,7 +55,7 @@ export default function ImporHtmlGeminiPage() {
   const [pesan, setPesan] = useState('');
   const [busy, setBusy] = useState(false);
   const [progres, setProgres] = useState('');
-  const [tersalin, setTersalin] = useState(false);
+  const [tersalin, setTersalin] = useState('');
   // 🔥 FIX (2026-10-07, keluhan owner: "sidebar tetap gak ada"): di repo ini
   // AdminRoute HANYA menjaga akses, tidak merender layout. Halaman admin
   // tingkat-atas WAJIB merender <SidebarAdmin /> sendiri (lihat TeacherList,
@@ -67,11 +67,12 @@ export default function ImporHtmlGeminiPage() {
   // src/utils/promptPatenGemini.js), supaya owner tidak berburu ke
   // dokumen/markdown lagi -- pertanyaan nyata 2026-10-06: "dimana
   // menemukan prompt untuk gemini?"
-  const salinPrompt = async () => {
+  const salinPrompt = async (macam = 'paten') => {
+    const teks = macam === 'konversi' ? PROMPT_KONVERSI_ULANG : PROMPT_PATEN_GEMINI;
     try {
-      await navigator.clipboard.writeText(PROMPT_PATEN_GEMINI);
-      setTersalin(true);
-      setTimeout(() => setTersalin(false), 2500);
+      await navigator.clipboard.writeText(teks);
+      setTersalin(macam);
+      setTimeout(() => setTersalin(''), 2500);
     } catch {
       setPesan('⚠️ Browser menolak salin otomatis: buka lipatan prompt, blok isinya (Ctrl+A di kotak), salin manual.');
     }
@@ -175,14 +176,22 @@ export default function ImporHtmlGeminiPage() {
           📋 Prompt paten untuk Gemini — buka lipatan ini dulu sebelum memindai
         </summary>
         <div style={{ display: 'flex', gap: 8, margin: '10px 0', flexWrap: 'wrap', alignItems: 'center' }}>
-          <button onClick={salinPrompt} style={gayaTombol('#7c3aed', false)}>
-            {tersalin ? '✅ Tersalin! Tempel ke Gemini' : 'Salin Prompt'}
+          <button onClick={() => salinPrompt('paten')} style={gayaTombol('#7c3aed', false)}>
+            {tersalin === 'paten' ? '✅ Tersalin!' : 'Salin Prompt Paten (scan ulang)'}
+          </button>
+          <button onClick={() => salinPrompt('konversi')} style={gayaTombol('#0e7490', false)}>
+            {tersalin === 'konversi' ? '✅ Tersalin!' : 'Salin Prompt Konversi (HTML lama → paten)'}
           </button>
           <span style={{ fontSize: 11, color: '#64748b' }}>
-            Tempel ke Gemini bersama halaman scan, maksimal ±10 halaman per putaran.
+            Scan ulang = paling setia. Konversi = hemat kuota untuk HTML lama;
+            konverter DILARANG mengarang kunci/pembahasan yang tidak ada di masukan.
           </span>
         </div>
         <pre style={{ whiteSpace: 'pre-wrap', fontSize: 10.5, lineHeight: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 10, maxHeight: 280, overflow: 'auto' }}>{PROMPT_PATEN_GEMINI}</pre>
+        <details style={{ marginTop: 8 }}>
+          <summary style={{ fontSize: 11.5, fontWeight: 700, cursor: 'pointer', color: '#0e7490' }}>Prompt varian: konversi ulang HTML lama</summary>
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 10.5, lineHeight: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 10, maxHeight: 220, overflow: 'auto', marginTop: 6 }}>{PROMPT_KONVERSI_ULANG}</pre>
+        </details>
       </details>
 
       <div style={gayaKartu}>

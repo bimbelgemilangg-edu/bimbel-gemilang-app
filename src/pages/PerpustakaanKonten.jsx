@@ -22,7 +22,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import SidebarAdmin from '../components/SidebarAdmin';
 import { useNavigate } from 'react-router-dom';
 import { ambilKonten } from '../utils/sumberKonten';
-import { bangunPohon, saringPohon } from '../utils/petaKonten';
+import { bangunPohon, saringPohon, sebaranKelas } from '../utils/petaKonten';
 import { useSegarSaatTerlihat } from '../utils/useSegarSaatTerlihat';
 
 const gayaKartu = { background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, marginBottom: 12 };
@@ -129,7 +129,13 @@ export default function PerpustakaanKonten({ peran = 'admin' }) {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <button onClick={() => setBabAktif(babAktif === b.bab ? '' : b.bab)} style={{ flex: 1, minWidth: 180, textAlign: 'left', background: 'none', border: 'none', fontSize: 12.5, fontWeight: 700, color: '#1e293b', cursor: 'pointer' }}>
                   {babAktif === b.bab ? '▾' : '▸'} {b.bab}
-                  <span style={{ fontSize: 10.5, color: '#64748b', fontWeight: 400 }}> — {b.soal} soal{b.paket ? `, ${b.paket} paket` : ''}</span>
+                  <span style={{ fontSize: 10.5, color: '#64748b', fontWeight: 400 }}>
+                    {' '}— {b.soal} soal{b.paket ? `, ${b.paket} paket` : ''}
+                    {/* 🔥 BARU (2026-10-07): kompilasi TKA mencampur kelas
+                        10-12 dalam satu bab; sebarannya ditampilkan supaya
+                        guru tahu isi bab SEBELUM membuka atau mencetak. */}
+                    {sebaranKelas(konten.soal.filter((s) => ((s.mataPelajaran || '').trim() || '(Belum dikelompokkan)') === simpul.mapel && ((s.materi || '').trim() || '(Belum dikelompokkan)') === b.bab)).slice(0, 4).map(([k, j]) => ` · kls ${k}: ${j}`).join('')}
+                  </span>
                 </button>
                 {peran === 'guru' && b.soal > 0 && (
                   <button style={gayaAksi('#2563eb')} onClick={() => navigate(`/guru/cetak-latihan?jenjang=${encodeURIComponent(jenjangAktif)}&mapel=${encodeURIComponent(simpul.mapel)}&bab=${encodeURIComponent(b.bab)}`)}>

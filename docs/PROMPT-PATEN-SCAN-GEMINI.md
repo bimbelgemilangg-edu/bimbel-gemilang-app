@@ -107,6 +107,27 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 
 ---
 
+## 4b. Varian prompt: KONVERSI ULANG HTML lama (jalan hemat kuota)
+
+Bila Anda sudah punya keluaran Gemini format lama dan tidak ingin memindai
+ulang scan-nya, pakai `PROMPT_KONVERSI_ULANG` (tersedia juga sebagai tombol
+salin terpisah di halaman impor). Aturan kerasnya: konverter boleh merapikan
+**STRUKTUR**, tidak boleh menciptakan **ISI** — kunci/pembahasan yang tidak
+ada di masukan tidak boleh dikarang; gambar dibawa apa adanya; nomor &
+urutan dipertahankan; penambahan penjelasan wajib mengaku `penalaran`.
+Urutan preferensi tetap: **(1) scan ulang dengan prompt paten** (paling
+setia), (2) konversi ulang HTML lama, (3) untuk beberapa nomor yang bolong
+saja, kirim nomor + halaman kunci.
+
+## 4c. Kompilasi lintas kelas (TKA 10-12): kelas dipatenkan PER KARTU
+
+Buku kompilasi TKA mencampur materi kelas 10-12 dalam satu berkas. Itu
+**aman dan justru diinginkan**: pengelompokan utama tetap BAB, sedangkan
+`data-kelas` per kartu menjadi **saringan** bagi guru (cetak semua kelas
+atau satu kelas saja, di menu Cetak Latihan; sebarannya tampil di
+Perpustakaan per bab). Prompt melarang memisahkan berkas per kelas --
+biarkan sistem yang menyaring, bukan manusia yang mengingat.
+
 ## 5. Kasus nyata yang sudah dijawab paten ini
 
 ### a) Satu berkas berisi banyak bab (ebook kompilasi TKA)

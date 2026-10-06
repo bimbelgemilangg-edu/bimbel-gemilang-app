@@ -45,11 +45,26 @@ STRUKTUR WAJIB (class & atribut persis, tanpa variasi):
 9. TAKSONOMI KURIKULUM MERDEKA (WAJIB per kartu, supaya sistem menerima berkas yang SUDAH terklasifikasi dan tidak perlu menebak):
    - data-kurikulum="merdeka" bila sumber mengikuti Kurikulum Merdeka, atau "legacy" bila KTSP/K13 (tetap diterima; penanda untuk pemetaan).
    - data-fase: Fase A/B/C (SD), D (SMP kelas 7-9), E/F (SMA/SMK kelas 10-12) -- turunkan dari kelas yang tercetak; bila sumber hanya menulis jenjang, pakai fase tengah jenjang itu dan akui di pembahasan bila ragu.
-   - data-kelas: angka kelas bila tercetak (7..12), selain itu ""
+   - data-kelas: WAJIB per kartu bila sumber mencampur beberapa kelas (kompilasi TKA 10-12): isi angka kelas yang paling tepat menurut capaian/fase/isinya; bila sungguh tak bisa ditentukan, "" dan guru yang memilih lewat saringan kelas di sistem. JANGAN memisahkan berkas per kelas -- biarkan per kartu.
    - data-elemen: nama ELEMEN Capaian Pembelajaran resmi mapel itu yang paling tepat untuk bab ini (contoh IPA: "Pemahaman Sains"; Matematika: "Aljabar"; Bahasa Inggris: "Menyimak-Membaca"; IPS/Geografi: "Pemahaman Konsep Ruang"), selain itu ""
    - data-capaian: kutipan singkat Capaian Pembelajaran (CP) terdekat BILA tercetak di sumber, selain itu ""
    - data-bab: nama bab sebagaimana tercetak; sistem menyamakan sinonimnya sendiri.
 
 Periksa dirimu sebelum menjawab: (a) jumlah question-card == jumlah nomor di sumber; (b) setiap kartu punya data-kunci dan .pembahasan; (c) tidak ada tag terlarang; (d) setiap kartu memuat data-fase dan data-kurikulum. Tuliskan hasil pemeriksaan itu sebagai komentar HTML di baris pertama berkas.`;
 
-export default { PROMPT_PATEN_GEMINI };
+// ============================================================
+// VARIAN: KONVERSI ULANG HTML LAMA -> HTML PATEN (jalan hemat kuota).
+// Dipakai bila owner sudah punya keluaran Gemini format lama dan tidak
+// ingin memindai ulang scan-nya. Aturan anti-karang dijaga ketat:
+// konverter boleh merapikan STRUKTUR, tidak boleh menciptakan ISI.
+// ============================================================
+export const PROMPT_KONVERSI_ULANG = `Kamu adalah KONVERTOR FORMAT, bukan penulis materi. Kamu menerima berkas HTML soal keluaran versi lama dan harus mengembalikannya sebagai HTML paten berikut. ATURAN KERAS:
+1. Jangan mengarang kunci jawaban atau pembahasan yang TIDAK ada di masukan. Bila masukan tanpa pembahasan, isi .pembahasan dengan teks: "Kunci tidak tercetak di sumber." dan set data-asal-pembahasan="penalaran" HANYA bila kamu menambahkan penjelasan dari penalaranmu sendiri -- dan itu pun hanya boleh bila kunci tersedia di masukan.
+2. Bawa SELURUH gambar (base64 maupun URL) apa adanya ke figure-container pada posisi semula; jangan membuat gambar baru.
+3. Pertahankan nomor soal, sumber, dan urutan sebagaimana masukan; jangan menggabungkan atau membuang kartu.
+4. Lengkapi atribut paten: data-tipe (enum: pg_sederhana | pg_kompleks | benar_salah | menjodohkan | isian_singkat | esai), data-kunci, data-asal-pembahasan, data-kurikulum, data-fase, data-kelas, data-elemen, data-bab bila dapat ditentukan dari isi; selain itu "".
+5. Struktur keluaran persis paten: section-header per bab, question-card per soal, question-meta, q-body, statements-box bila ada, figure-container bila ada, options-list, dan .pembahasan.
+6. DILARANG: script, iframe, atribut on*, javascript:, position:fixed.
+7. Akhiri dengan komentar pemeriksaan: jumlah kartu masukan == jumlah kartu keluaran.`;
+
+export default { PROMPT_PATEN_GEMINI, PROMPT_KONVERSI_ULANG };
