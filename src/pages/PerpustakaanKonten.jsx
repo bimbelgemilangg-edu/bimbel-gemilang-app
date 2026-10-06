@@ -19,6 +19,7 @@
 // ============================================================
 
 import React, { useState, useEffect, useMemo } from 'react';
+import SidebarAdmin from '../components/SidebarAdmin';
 import { useNavigate } from 'react-router-dom';
 import { ambilKonten } from '../utils/sumberKonten';
 import { bangunPohon, saringPohon } from '../utils/petaKonten';
@@ -65,7 +66,9 @@ export default function PerpustakaanKonten({ peran = 'admin' }) {
   const mapelList = (jenjangList.find((j) => j.jenjang === jenjangAktif) || {}).mapel || [];
   const simpul = mapelList.find((m) => m.mapel === mapelAktif) || null;
 
-  return (
+  // Mode admin merender sidebar sendiri (AdminRoute hanya menjaga akses);
+  // mode guru sudah dibungkus GuruPage yang membawa SidebarGuru.
+  const isi = (
     <div style={{ maxWidth: 980, margin: '0 auto' }}>
       <h2 style={{ margin: '4px 0 4px', fontSize: 18 }}>📚 Perpustakaan Konten</h2>
       <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
@@ -161,4 +164,16 @@ export default function PerpustakaanKonten({ peran = 'admin' }) {
       )}
     </div>
   );
+
+  if (peran === 'admin') {
+    return (
+      <div style={{ display: 'flex', background: '#f8fafc', minHeight: '100vh' }}>
+        <SidebarAdmin />
+        <main style={{ marginLeft: window.innerWidth <= 1024 ? '0' : '250px', padding: window.innerWidth <= 1024 ? '15px' : '30px', width: '100%', boxSizing: 'border-box' }}>
+          {isi}
+        </main>
+      </div>
+    );
+  }
+  return isi;
 }

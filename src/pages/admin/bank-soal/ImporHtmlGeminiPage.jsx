@@ -21,6 +21,7 @@
 // ============================================================
 
 import React, { useState } from 'react';
+import SidebarAdmin from '../../../components/SidebarAdmin';
 import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { ekstrakBanyakHtml } from '../../../utils/ekstrakHtmlGemini';
@@ -55,6 +56,12 @@ export default function ImporHtmlGeminiPage() {
   const [busy, setBusy] = useState(false);
   const [progres, setProgres] = useState('');
   const [tersalin, setTersalin] = useState(false);
+  // 🔥 FIX (2026-10-07, keluhan owner: "sidebar tetap gak ada"): di repo ini
+  // AdminRoute HANYA menjaga akses, tidak merender layout. Halaman admin
+  // tingkat-atas WAJIB merender <SidebarAdmin /> sendiri (lihat TeacherList,
+  // SchedulePage). Halaman ini lupa, sehingga tampil telanjang tanpa
+  // sidebar dan menu-menu baru terasa "tidak pernah ada".
+  const [isMobile] = useState(window.innerWidth <= 1024);
 
   // 🔥 BARU: prompt paten hidup DI SINI (sumber tunggal
   // src/utils/promptPatenGemini.js), supaya owner tidak berburu ke
@@ -71,13 +78,13 @@ export default function ImporHtmlGeminiPage() {
   };
 
   const tambahBerkas = async (files) => {
-    const list = Array.from(files || []).filter((f) => /\.html?$/i.test(f.name) || f.type === 'text/html');
+    const list = Array.from(files || []).filter((f) => /\.(html?|txt|md)$/i.test(f.name) || /html|plain/.test(f.type));
     if (!list.length) { setPesan('⚠️ Hanya berkas .html yang diterima.'); return; }
     const baru = [];
     for (const f of list) baru.push({ nama: f.name, teks: await f.text() });
     setBerkas((lama) => [...lama, ...baru]);
     setHasil(null);
-    setPesan(`✅ ${baru.length} berkas masuk antrean.`);
+    setPesan(`✅ ${baru.length} berkas masuk antrean. (.html/.txt/.md semua diterima — isinya yang ditagih paten, bukan ekstensinya.)`);
   };
 
   const pratinjau = () => {
@@ -152,6 +159,9 @@ export default function ImporHtmlGeminiPage() {
   const ringkas = hasil ? ringkasanImpor(hasil.soal) : null;
 
   return (
+    <div style={{ display: 'flex', background: '#f8fafc', minHeight: '100vh' }}>
+      <SidebarAdmin />
+      <main style={{ marginLeft: isMobile ? '0' : '250px', padding: isMobile ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }}>
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
       <h2 style={{ margin: '4px 0', fontSize: 18 }}>📥 Impor HTML Gemini</h2>
       <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
@@ -177,7 +187,7 @@ export default function ImporHtmlGeminiPage() {
 
       <div style={gayaKartu}>
         <div style={gayaJudul}>1 · Berkas HTML dari Gemini</div>
-        <input type="file" accept=".html,.htm,text/html" multiple onChange={(e) => { tambahBerkas(e.target.files); e.target.value = ''; }} />
+        <input type="file" accept=".html,.htm,.txt,.md,text/html,text/plain" multiple onChange={(e) => { tambahBerkas(e.target.files); e.target.value = ''; }} />
         <textarea
           value={tempelan}
           onChange={(e) => setTempelan(e.target.value)}
@@ -238,6 +248,8 @@ export default function ImporHtmlGeminiPage() {
           )}
         </div>
       )}
+    </div>
+      </main>
     </div>
   );
 }
