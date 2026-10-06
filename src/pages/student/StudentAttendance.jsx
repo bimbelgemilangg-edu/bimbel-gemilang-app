@@ -1,12 +1,13 @@
 // src/pages/student/StudentAttendance.jsx
 // Riwayat kehadiran siswa — tampilan 1 minggu penuh (Senin–Minggu),
 // navigasi minggu sebelumnya/berikutnya, ringkasan Hadir/Izin/Sakit/Alpha.
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { useProfilSiswa } from '../../utils/profilSiswa';
 import { daftarQueryAbsensi, gabungkanDokUnik } from '../../utils/identitasAbsensi';
+import { kebijakanGagalMuat } from '../../utils/keputusanMuat';
 
 function startOfWeek(d) {
   const x = new Date(d);
@@ -54,6 +55,10 @@ const STATUS_STYLE = {
 const StudentAttendance = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pesanError, setPesanError] = useState('');
+  // ref = cermin data terbaru untuk dipakai di dalam callback tanpa
+  // menjadikannya dependency (menghindari closure basi & warning lint).
+  const adaDataRef = useRef(false);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
 
   const studentId = localStorage.getItem('studentId');
@@ -77,8 +82,12 @@ const StudentAttendance = () => {
       const data = gabungkanDokUnik(snaps.map((s) => s.docs));
       data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
       setAttendance(data);
+      adaDataRef.current = data.length > 0;
     } catch (e) {
+      // 🔥 LAPIS 0 (audit kuota 2026-10-06): gagal muat tidak boleh diam --
+      // siswa dulu melihat minggu kosong dan mengira absensinya hilang.
       console.error('Gagal memuat absensi:', e);
+      setPesanError(kebijakanGagalMuat(adaDataRef.current, e?.message || '').pesan);
     } finally {
       setLoading(false);
     }
@@ -130,6 +139,11 @@ const StudentAttendance = () => {
 
   return (
     <div style={styles.mainContent}>
+      {pesanError && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, padding: '8px 12px', fontSize: 12, marginBottom: 10 }}>
+          ⚠️ {pesanError}
+        </div>
+      )}
       <div style={styles.header}>
         <h2 style={{ margin: 0 }}>📝 Kehadiran Minggu Ini</h2>
         <p style={{ color: '#666', marginTop: 5 }}>Pantau kehadiranmu Senin–Minggu, termasuk izin, sakit, dan alpha.</p>
