@@ -153,7 +153,13 @@ export const uploadElearningFile = async (file, customPath = 'materi', opsi = {}
     }
 
     // 🔥 BUILD FILE PATH YANG AMAN
-    const filePath = `${folderPath}${timestamp}_${sanitizedFileName}`;
+    // 🔥 BARU (2026-10-06): pemanggil BOLEH memberi jalur lengkap berstruktur
+    // lewat opsi.jalur (konvensi src/utils/jalurStorage.js -- dipakai fitur
+    // baru: buku progres, pemilah PDF, bank soal per bab). TANPA itu,
+    // perilaku lama dipertahankan PERSIS: folder datar gambar//pdf//dokumen/
+    // -- URL lama tidak boleh berubah arti, dan migrasi objek lama adalah
+    // proyek tersendiri (lihat docs/TATA-LETAK-STORAGE.md).
+    const filePath = opsi.jalur || `${folderPath}${timestamp}_${sanitizedFileName}`;
 
     console.log('📤 Uploading:', {
       original: file.name,
