@@ -256,6 +256,15 @@ uji('pembahasan hasil penalaran DIPERINGATKAN, bukan ditolak maupun didiamkan', 
   assert.equal(soalTercetak.pembahasanAsal, 'tercetak');
 });
 
+uji('pg_kompleks berkunci kosong -> array kosong, bukan [""] yang lolos sebagai kunci', () => {
+  const h = ekstrakHtmlGemini(`<body><div class="question-card" id="soal-9" data-tipe="pg_kompleks" data-kunci="">
+    <div class="q-body">Teks.</div>
+    <div class="options-list"><label class="option-item"><input type="radio" value="A"><span class="option-text">A) satu</span></label><label class="option-item"><input type="radio" value="B"><span class="option-text">B) dua</span></label></div>
+    <div class="pembahasan">Karena.</div></div></body>`);
+  assert.deepEqual(h.soal[0].kunciJawaban, []);
+  assert.ok(h.kesalahan.join(' ').includes('soal-9'));
+});
+
 // ============================================================
 console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);

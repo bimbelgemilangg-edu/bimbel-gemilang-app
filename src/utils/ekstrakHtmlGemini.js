@@ -189,7 +189,7 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
       butir.kunciJawaban = kunciMentah;
     } else if (tipe === 'pg_kompleks') {
       butir.opsiJawaban = opsi;
-      butir.kunciJawaban = kunciMentah.split(',').map((x) => x.trim().toUpperCase());
+      butir.kunciJawaban = kunciMentah.split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
     } else if (tipe === 'esai') {
       butir.kunciJawaban = '';
     } else {
