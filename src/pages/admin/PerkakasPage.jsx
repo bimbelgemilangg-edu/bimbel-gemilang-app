@@ -28,6 +28,7 @@ import {
   Toolbox, Sparkles, Brain, Rocket, ClipboardCheck, Trophy, Activity,
   ScrollText, ShieldCheck, Trash2, FolderTree, BookMarked, GitMerge,
   Archive, BookOpen, UploadCloud, Library, MousePointerClick,
+  FileUp,
 } from 'lucide-react';
 import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -41,6 +42,11 @@ const GRUP = [
     items: [
       { path: '/admin/bank-soal/mesin', nama: 'Mesin Bank Soal', ikon: Sparkles, desc: 'TEMPAT UPLOAD JSON/TXT SOAL (hasil AI atau scan) — lalu auto-tag jenjang, kelas, mapel, bab. Juga melihat & mengedit gudang soal.' },
       { path: '/admin/bank-soal/import', nama: 'Import Buku & Soal (AI)', ikon: Brain, desc: 'Upload PDF/buku/HTML (bukan JSON) — AI mengekstraknya jadi soal terstruktur beserta gambarnya.' },
+      // 🔥 BARU (2026-10-07, keluhan owner: menu baru "tidak pernah terlihat"):
+      // perkakas baru WAJIB punya kartu di hub ini SELAIN entri sidebar,
+      // sebab kebiasaan lama admin adalah membuka hub perkakas.
+      { path: '/admin/bank-soal/impor-html-gemini', nama: 'Impor HTML Gemini', ikon: FileUp, desc: 'Tempel/unggah HTML keluaran prompt paten (tombol Salin Prompt ada di dalamnya). Multi-berkas untuk satu buku; kunci & pembahasan ditagih, bab otomatis dari section.' },
+      { path: '/admin/perpustakaan', nama: 'Perpustakaan Konten', ikon: Library, desc: 'SATU pohon jenjang → mapel → bab untuk mencari soal, buku digital, dan paket try out dari tiga sumber sekaligus.' },
       { path: '/admin/bank-soal/terbitkan', nama: 'Terbitkan Kuis', ikon: Rocket, desc: 'Menerbitkan kuis dari bank soal ke guru/siswa.' },
       { path: '/admin/bank-soal/hasil', nama: 'Hasil Kuis', ikon: ClipboardCheck, desc: 'Rekap jawaban & nilai kuis yang sudah dikerjakan.' },
       { path: '/admin/bank-soal/tryout-otomatis', nama: 'Try Out Otomatis', ikon: Trophy, desc: 'Meracik paket try out otomatis dari bank soal.' },

@@ -4,6 +4,17 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev
 export default defineConfig({
+  // 🔥 BARU (2026-10-07): stempel commit yang TERLIHAT di sidebar, supaya
+  // "menu baru tidak muncul" bisa dibedakan dalam 2 detik antara
+  // (a) browser masih memegang bundle lama dan (b) menu benar-benar
+  // tidak ada. Keluhan owner berulang selalu berakhir di (a): PWA
+  // autoUpdate baru mengganti bundle setelah reload, sementara admin
+  // bekerja berjam-jam tanpa menutup tab.
+  define: {
+    __BUILD_STAMP__: JSON.stringify(
+      (process.env.VERCEL_GIT_COMMIT || process.env.CF_PAGES_COMMIT_SHA || 'lokal-dev').slice(0, 7)
+    ),
+  },
   plugins: [
     react(),
     VitePWA({
