@@ -27,6 +27,7 @@ import { tambahXpMingguan } from '../../utils/mingguIni';
 import { catatAudit, KATEGORI } from '../../utils/auditLog';
 import { bacaIdentitasGuru, guruCocokDenganTentor } from '../../utils/identitasGuru';
 import { teksKunciSoal as teksKunci } from '../../utils/teksKunciSoal';
+import { kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import RenderMath from '../../components/RenderMath';
 import RenderTable from '../../components/RenderTable';
 import LihatGambar from '../../components/LihatGambar';
@@ -117,7 +118,13 @@ export default function GuruPantauTryOut() {
       const snap = await getDocs(query(collection(db, 'tryout_sesi'), where('paketId', '==', paketId)));
       setSesiList(snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) =>
         String(b.selesaiPada || b.updatedAt || '').localeCompare(String(a.selesaiPada || a.updatedAt || ''))));
-    } catch { setSesiList([]); }
+    } catch (e) {
+      // 🔥 LAPIS 0 (audit kuota 2026-10-06): gagal baca TIDAK BOLEH tampil
+      // sebagai "belum ada peserta" -- itu kebohongan yang membuat orang
+      // menyimpulkan datanya hilang. Daftar lama dipertahankan (tidak di-reset
+      // di sini), dan pesan jujur ditampilkan.
+      setPesan({ tipe: 'err', teks: kebijakanGagalMuat(true, e?.message || '').pesan });
+    }
   }, [paketId]);
 
   useEffect(() => {

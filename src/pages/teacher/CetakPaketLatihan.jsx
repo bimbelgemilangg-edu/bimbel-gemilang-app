@@ -30,11 +30,19 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
+import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
 import { cetakLewatIframe } from '../../utils/kwitansi';
 import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
 
 const BELUM = '(Belum diatur)';
+// Cache modul-level: satu tab menyapu bank_soal sekali per TTL, bukan sekali
+// per mount/focus. Lihat komentar di muatSemua() untuk alasan kuotanya.
+const TTL_CACHE_MS = 10 * 60 * 1000;
+let cacheBank = null;
+let waktuCacheBank = 0;
+let cachePaket = null;
+let waktuCachePaket = 0;
 const gayaKartu = { background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, marginBottom: 12 };
 const gayaJudulKartu = { fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8 };
 const gayaTombol = (warna, mati) => ({
@@ -66,25 +74,51 @@ export default function CetakPaketLatihan() {
 
   const [paketId, setPaketId] = useState('');
   const [maksPaket, setMaksPaket] = useState(0);
+  // 🔥 BARU (Lapis 0, audit kuota 2026-10-06): bank_soal adalah koleksi
+  // besar; menyapunya tiap mount + tiap focus adalah penyedot kuota yang
+  // membuat proyek pernah menjawab 429 RESOURCE_EXHAUSTED. Cache modul-level
+  // dengan TTL membuat penyegaran tetap ada tanpa menembak server berulang.
+  const [pesanError, setPesanError] = useState('');
 
   const versiSegar = useSegarSaatTerlihat();
 
-  const muatSemua = useCallback(async () => {
+  const muatSemua = useCallback(async (paksa = false) => {
+    const kini = Date.now();
+    const bankMasihMuda = !perluSegar({ waktuCacheMs: waktuCacheBank, ttlMs: TTL_CACHE_MS, sekarangMs: kini, paksa });
+    const paketMasihMuda = !perluSegar({ waktuCacheMs: waktuCachePaket, ttlMs: TTL_CACHE_MS, sekarangMs: kini, paksa });
+    if (bankMasihMuda && paketMasihMuda && cacheBank && cachePaket) {
+      setBankSoal(cacheBank);
+      setPaketList(cachePaket);
+      setPesanError('');
+      return;
+    }
     setMemuat(true);
     try {
-      const [snapBank, snapPaket] = await Promise.all([
-        getDocs(collection(db, 'bank_soal')),
-        (async () => {
+      const tugas = [];
+      if (!bankMasihMuda) tugas.push(['bank', getDocs(collection(db, 'bank_soal'))]);
+      if (!paketMasihMuda) {
+        tugas.push(['paket', (async () => {
           const idt = bacaIdentitasGuru();
           if (!idt.semuaId.length) return { docs: [] };
           return getDocs(query(collection(db, 'tryout_paket'), where('tentorId', 'in', idt.semuaId)));
-        })(),
-      ]);
-      setBankSoal(snapBank.docs.map((d) => ({ id: d.id, ...d.data() })));
-      setPaketList(snapPaket.docs.map((d) => ({ id: d.id, ...d.data() })));
-    } catch {
-      setBankSoal([]);
-      setPaketList([]);
+        })()]);
+      }
+      const hasil = await Promise.all(tugas.map(([, p]) => p.catch((e) => e)));
+      hasil.forEach((h, i) => {
+        const jenis = tugas[i][0];
+        if (h instanceof Error) throw h;
+        const list = h.docs.map((d) => ({ id: d.id, ...d.data() }));
+        if (jenis === 'bank') { cacheBank = list; waktuCacheBank = Date.now(); setBankSoal(list); }
+        else { cachePaket = list; waktuCachePaket = Date.now(); setPaketList(list); }
+      });
+      setPesanError('');
+    } catch (e) {
+      // 🔥 KEBIJAKAN BARU: gagal baca TIDAK BOLEH menghapus data lama dan
+      // tidak boleh diam. Daftar kosong dulu membuat kuota habis terlihat
+      // seperti "soalnya hilang".
+      const k = kebijakanGagalMuat(!!cacheBank, e?.code || e?.message || '');
+      if (!k.pertahankanDataLama) { setBankSoal(cacheBank || []); setPaketList(cachePaket || []); }
+      setPesanError(k.pesan);
     } finally {
       setMemuat(false);
     }
@@ -162,6 +196,15 @@ export default function CetakPaketLatihan() {
         tiga dokumen terpisah: lembar siswa siap gunting, kunci pegangan tentor,
         dan lembar catatan buku progres.
       </p>
+
+      {pesanError && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 10, padding: '10px 12px', fontSize: 12, marginBottom: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ flex: 1, minWidth: 200 }}>⚠️ {pesanError}</span>
+          <button onClick={() => muatSemua(true)} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#b91c1c', color: 'white', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' }}>
+            🔄 Coba lagi
+          </button>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button style={gayaPill(sumber === 'bank')} onClick={() => setSumber('bank')}>🗂️ Bank Soal (per mapel → bab)</button>
