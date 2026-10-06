@@ -1,0 +1,126 @@
+// tests/imporHtmlGeminiKeBank.test.mjs
+// ============================================================
+// Test jembatan ekstraktor HTML Gemini -> dokumen bank_soal
+// (src/utils/imporHtmlGeminiKeBank.js).
+//
+//     node tests/imporHtmlGeminiKeBank.test.mjs
+//
+// KENAPA INI PENTING
+// Salah memetakan SATU field di sini berarti soal yang masuk bank tidak
+// terbaca oleh satu halaman tertentu (skoring, cetak, perpustakaan,
+// lemari) sementara halaman lain baik-baik saja -- cacat yang baru
+// kelihatan berhari-hari kemudian. Test ini mengunci field-field yang
+// menjadi tanggungan tiap halaman.
+// ============================================================
+
+import assert from 'node:assert/strict';
+import { dokumenDariButir, ringkasanImpor } from '../src/utils/imporHtmlGeminiKeBank.js';
+
+let lulus = 0;
+let gagal = 0;
+const kegagalan = [];
+function uji(nama, fn) {
+  try {
+    fn();
+    lulus += 1;
+    console.log(`  ✓ ${nama}`);
+  } catch (e) {
+    gagal += 1;
+    const pesan = String(e && e.message ? e.message : e);
+    kegagalan.push({ nama, pesan });
+    console.log(`  ✗ ${nama}`);
+    console.log(`      ${pesan.split('\n').join('\n      ').slice(0, 400)}`);
+  }
+}
+function bagian(j) { console.log(`\n${j}`); }
+
+const BUTIR = {
+  nomor: 7,
+  tipe: 'pg_sederhana',
+  soal: 'Perhatikan diagram berikut! {{GAMBAR_1}} Bagian B adalah....',
+  opsiJawaban: ['bronkus', 'alveolus'],
+  kunciJawaban: 'B',
+  pembahasan: 'Cabang utama trakea adalah bronkus.',
+  pembahasanAsal: 'penalaran',
+  materi: 'SISTEM RESPIRASI',
+  sumber: 'TKA 2020/44',
+  gambarUrls: [],
+};
+const KONTEKS = { fileName: 'biologi-bag1.html', mapel: 'Biologi', jenjang: 'SMA', kelas: '10' };
+
+console.log('imporHtmlGeminiKeBank — jembatan ekstraktor -> bank_soal');
+
+// ============================================================
+bagian('1. FIELD YANG MENJADI TANGGUNGAN TIAP HALAMAN');
+// ============================================================
+
+uji('status aktif & asalImpor tertandai (audit & saringan terbit)', () => {
+  const d = dokumenDariButir(BUTIR, KONTEKS);
+  assert.equal(d.status, 'aktif');
+  assert.equal(d.asalImpor, 'html-gemini');
+  assert.equal(d.sumberFile, 'biologi-bag1.html');
+});
+
+uji('bab dari section-header sampai ke `bab` DAN `materi` (dibaca halaman berbeda)', () => {
+  const d = dokumenDariButir(BUTIR, KONTEKS);
+  assert.equal(d.bab, 'SISTEM RESPIRASI');
+  assert.equal(d.materi, 'SISTEM RESPIRASI');
+});
+
+uji('mapel & jenjang konteks menang dan ternormalisasi', () => {
+  const d = dokumenDariButir(BUTIR, { ...KONTEKS, mapel: 'bio' });
+  assert.equal(d.mataPelajaran, 'Biologi');
+  assert.equal(d.mapel, 'Biologi');
+  assert.equal(d.jenjang, 'SMA');
+});
+
+uji('kunci, opsi, pembahasan, dan pengakuan penalaran utuh', () => {
+  const d = dokumenDariButir(BUTIR, KONTEKS);
+  assert.equal(d.kunciJawaban, 'B');
+  assert.deepEqual(d.opsiJawaban, ['bronkus', 'alveolus']);
+  assert.ok(d.pembahasan.includes('bronkus'));
+  assert.equal(d.pembahasanAsal, 'penalaran');
+});
+
+uji('teks soal ganda-di field soal & teksSoal (dua generasi reader)', () => {
+  const d = dokumenDariButir(BUTIR, KONTEKS);
+  assert.equal(d.soal, d.teksSoal);
+  assert.ok(d.soal.includes('{{GAMBAR_1}}'));
+});
+
+// ============================================================
+bagian('2. RINGKASAN PRAKIRIM: BENDERA YANG HARUS DILIHAT ADMIN');
+// ============================================================
+
+uji('jumlah per bab untuk pratinjau', () => {
+  const r = ringkasanImpor([BUTIR, { ...BUTIR, materi: 'SISTEM SIRKULASI' }, { ...BUTIR, materi: 'SISTEM RESPIRASI' }]);
+  assert.equal(r.jumlah, 3);
+  assert.deepEqual(r.perBab, [['SISTEM RESPIRASI', 2], ['SISTEM SIRKULASI', 1]]);
+});
+
+uji('pembahasan penalaran dihitung sebagai bendera review guru', () => {
+  const r = ringkasanImpor([BUTIR, { ...BUTIR, pembahasanAsal: 'tercetak' }]);
+  assert.equal(r.penalaran, 1);
+});
+
+uji('soal pg tanpa kunci dibenderai; esai tanpa kunci TIDAK (memang begitu)', () => {
+  const r = ringkasanImpor([
+    { ...BUTIR, kunciJawaban: '' },
+    { ...BUTIR, tipe: 'esai', kunciJawaban: '' },
+    { ...BUTIR, tipe: 'pg_kompleks', kunciJawaban: [] },
+  ]);
+  assert.equal(r.tanpaKunci, 2);
+});
+
+// ============================================================
+console.log(`\n${'='.repeat(60)}`);
+console.log(`  LULUS : ${lulus}`);
+console.log(`  GAGAL : ${gagal}`);
+console.log('='.repeat(60));
+if (gagal > 0) {
+  console.log('\nRingkasan kegagalan:');
+  kegagalan.forEach((k, i) => console.log(`  ${i + 1}. ${k.nama}\n     ${k.pesan.split('\n')[0]}`));
+  console.error('\n❌ ADA TEST YANG GAGAL.');
+  process.exit(1);
+}
+console.log('\n✅ Semua test lulus.');

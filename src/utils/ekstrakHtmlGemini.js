@@ -126,7 +126,7 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
       const src = (/<img[^>]*src="([^"]+)"/.exec(wilayahImg) || [])[1] || '';
       const caption = iCap === -1 ? '' : htmlKeTeks(chunk.slice(iCap + '<div class="figure-caption">'.length, chunk.indexOf('</div>', iCap)));
       if (!src) return;
-      gambar.push({ kartu: `${pref}${id}`, urutan: i + 1, src, caption });
+      gambar.push({ kartu: id, urutan: i + 1, src, caption });
       teksSoal += `\n{{GAMBAR_${i + 1}}}`;
     });
     if (daftarPernyataan.length) {
@@ -164,6 +164,7 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
 
     // ---- pemetaan ke KONTRAK-JSON-BANK-SOAL ----
     const butir = {
+      idKartu: id,
       nomor: Number(nomor) || jumlah,
       tipe: ENUM_TIPE.has(tipe) ? tipe : 'pg_sederhana',
       soal: teksSoal,
@@ -224,12 +225,12 @@ export function ekstrakBanyakHtml(berkasList = []) {
     kesalahan.push(...h.kesalahan);
     peringatan.push(...h.peringatan);
     h.seksi.forEach((s) => seksi.add(s));
-    h.gambar.forEach((g) => gambar.push({ ...g, kartu: `${label}:${g.kartu.replace(`${label}:`, '')}` }));
+    h.gambar.forEach((g) => gambar.push({ ...g, berkas: label, kartu: `${label}::${g.kartu}` }));
     for (const s of h.soal) {
       const kunciTeks = `${s.materi}|${s.sumber}|${s.nomor}|${s.soal.slice(0, 120)}`;
       if (terlihat.has(kunciTeks)) { duplikat += 1; continue; }
       terlihat.add(kunciTeks);
-      soal.push({ ...s, asalBerkas: label });
+      soal.push({ ...s, asalBerkas: label, idKartu: `${label}::${s.idKartu}` });
     }
   });
 
