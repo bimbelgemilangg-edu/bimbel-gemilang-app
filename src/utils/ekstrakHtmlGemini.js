@@ -10,16 +10,32 @@
 // mewajibkan keduanya; berkas ini MENOLAK kartu yang tidak patuh,
 // dengan pesan bernomor kartu supaya yang diperbaiki hanya yang salah.
 //
-// MURNI & TERUJI di Node (tests/ekstrakHtmlGemini.test.mjs): tidak
-// menyentuh DOM, Firestore, maupun React -- parser sengaja berbasis
-// pemotongan string terhadap class/atribut paten, karena kontraknya
-// KITA yang menetapkan (bukan HTML bebas), jadi parser sederhana justru
-// lebih jujur: menyimpang dari kontrak = ditolak, bukan ditebak.
+// KEMAMPUAN TAMBAHAN (permintaan owner, putaran kedua):
+//   1. SATU BERKAS BISA BERISI BANYAK BAB (ebook kompilasi TKA): bab tiap
+//      kartu diambil dari section-header terdekat di atasnya, jadi
+//      pengelompokan tidak mengandalkan nama file atau ingatan admin.
+//   2. BANYAK BERKAS SEKALIGUS (satu buku penuh digenerate per bagian):
+//      ekstrakBanyakHtml() menggabungkan, membuang duplikat
+//      (bab+nomor+sumber+isi), dan memberi prefiks nomor berkas pada
+//      setiap pesan kesalahan supaya tahu mana yang harus diulang.
+//   3. BUKU YANG HANYA PUNYA KUNCI TANPA PEMBAHASAN: Gemini boleh
+//      MENALAR pembahasan, tetapi WAJIB mengaku lewat
+//      data-asal-pembahasan="penalaran" (vs "tercetak"). Ekstraktor
+//      menyimpan pengakuan itu di field pembahasanAsal -- guru harus
+//      bisa membedakan penjelasan yang dicetak buku dari penjelasan
+//      yang dikarang model.
+//
+// MURNI & TERUJI di Node (tests/ekstrakHtmlGemini.test.mjs): parser
+// berbasis pemotongan string terhadap class/atribut paten, karena
+// kontraknya KITA yang menetapkan -- menyimpang dari kontrak = ditolak,
+// bukan ditebak.
 // ============================================================
 
 const ENUM_TIPE = new Set([
   'pg_sederhana', 'pg_kompleks', 'benar_salah', 'menjodohkan', 'isian_singkat', 'esai',
 ]);
+
+const ENUM_ASAL_PEMBAHASAN = new Set(['tercetak', 'penalaran']);
 
 /** Buang segala yang tidak dipercaya dari HTML masukan (pertahanan pertama). */
 export function bersihkanHtmlBahaya(html) {
@@ -54,54 +70,55 @@ function atribut(tag, nama) {
   return m ? m[1] : '';
 }
 
-/**
- * Ekstrak HTML paten -> daftar soal KONTRAK-JSON-BANK-SOAL + gambar
- * terpisah + daftar kesalahan per kartu.
- *
- * @returns {{soal: object[], gambar: object[], kesalahan: string[], peringatan: string[], seksi: string[]}}
- */
-export function ekstrakHtmlGemini(htmlMentah) {
+const RE_JALAN = /<div class="section-header"[^>]*>[\s\S]*?<h2>([\s\S]*?)<\/h2>|<div class="question-card"([^>]*)>([\s\S]*?)(?=<div class="question-card"|<div class="section-header"|<\/body>|$)/g;
+
+function ekstrakSatu(htmlMentah, labelBerkas = '') {
   const html = bersihkanHtmlBahaya(htmlMentah);
   const soal = [];
   const gambar = [];
   const kesalahan = [];
   const peringatan = [];
   const seksi = [];
+  const pref = labelBerkas ? `${labelBerkas}: ` : '';
 
-  for (const m of html.matchAll(/<div class="section-header"[^>]*>[\s\S]*?<h2>([\s\S]*?)<\/h2>/gi)) {
-    seksi.push(htmlKeTeks(m[1]));
-  }
-
-  const kartuRe = /<div class="question-card"([^>]*)>([\s\S]*?)(?=<div class="question-card"|<div class="section-header"|<\/body>|$)/g;
+  let babAktif = '';
+  RE_JALAN.lastIndex = 0;
   let jumlah = 0;
-  for (const m of html.matchAll(kartuRe)) {
+
+  for (const m of html.matchAll(RE_JALAN)) {
+    if (m[1] !== undefined) {
+      babAktif = htmlKeTeks(m[1]);
+      seksi.push(babAktif);
+      continue;
+    }
+
     jumlah += 1;
-    const tagAttr = m[1];
-    const inner = m[2];
+    const tagAttr = m[2];
+    const inner = m[3];
     const id = atribut(tagAttr, 'id') || `soal-${jumlah}`;
     const tipe = atribut(tagAttr, 'data-tipe');
     const kunciMentah = atribut(tagAttr, 'data-kunci');
+    const asalPembahasan = ENUM_ASAL_PEMBAHASAN.has(atribut(tagAttr, 'data-asal-pembahasan'))
+      ? atribut(tagAttr, 'data-asal-pembahasan')
+      : 'tercetak';
+    const bab = atribut(tagAttr, 'data-bab') || babAktif;
 
     if (!ENUM_TIPE.has(tipe)) {
-      kesalahan.push(`kartu ${id}: data-tipe "${tipe || '(kosong)'}" bukan enum paten (${[...ENUM_TIPE].join(', ')}).`);
+      kesalahan.push(`${pref}kartu ${id}: data-tipe "${tipe || '(kosong)'}" bukan enum paten (${[...ENUM_TIPE].join(', ')}).`);
     }
 
     const nomor = (htmlKeTeks((/<span class="q-number">([\s\S]*?)<\/span>/.exec(inner) || [])[1] || '')).replace(/\D+/g, '') || String(jumlah);
     const sumber = htmlKeTeks((/<span class="q-source">([\s\S]*?)<\/span>/.exec(inner) || [])[1] || '');
-    let badan = (/<div class="q-body">([\s\S]*?)<\/div>\s*(?:<div class="statements-box"|<div class="figure-container"|<div class="options-list"|<table|<div class="pembahasan")/.exec(inner) || [])[1];
-    if (badan === undefined) badan = (/<div class="q-body">([\s\S]*?)<\/div>/.exec(inner) || [])[1] || '';
+    const badan = (/<div class="q-body">([\s\S]*?)<\/div>/.exec(inner) || [])[1] || '';
 
-    // pernyataan bernomor
     const statements = /<div class="statements-box">([\s\S]*?)<\/div>\s*(?:<div class="figure-container"|<div class="options-list"|<table|<div class="pembahasan")/.exec(inner);
     const daftarPernyataan = statements
       ? [...statements[1].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((x) => htmlKeTeks(x[1]))
       : [];
 
-    // gambar: ganti posisinya dengan placeholder {{GAMBAR_n}} (kontrak
-    // penempatanGambar.js), base64-nya disimpan terpisah untuk diunggah UI.
+    // gambar: base64 dipisah (dokumen Firestore tidak boleh memuatnya),
+    // posisinya di teks diganti placeholder {{GAMBAR_n}}.
     let teksSoal = htmlKeTeks(badan);
-    // Gambar dipotong dengan split (bukan regex bersarang): variasi
-    // ada/tidaknya caption dan jarak antar tag tidak boleh mengubah hasil.
     const potonganFig = inner.split('<div class="figure-container">').slice(1);
     potonganFig.forEach((chunk, i) => {
       const iCap = chunk.indexOf('<div class="figure-caption">');
@@ -109,40 +126,40 @@ export function ekstrakHtmlGemini(htmlMentah) {
       const src = (/<img[^>]*src="([^"]+)"/.exec(wilayahImg) || [])[1] || '';
       const caption = iCap === -1 ? '' : htmlKeTeks(chunk.slice(iCap + '<div class="figure-caption">'.length, chunk.indexOf('</div>', iCap)));
       if (!src) return;
-      gambar.push({ kartu: id, urutan: i + 1, src, caption });
+      gambar.push({ kartu: `${pref}${id}`, urutan: i + 1, src, caption });
       teksSoal += `\n{{GAMBAR_${i + 1}}}`;
     });
     if (daftarPernyataan.length) {
       teksSoal += '\n' + daftarPernyataan.map((p, i) => `${i + 1}) ${p}`).join('\n');
     }
 
-    // opsi
     const opsi = [...inner.matchAll(/<span class="option-text">([\s\S]*?)<\/span>/g)]
       .map((x) => htmlKeTeks(x[1]).replace(/^[A-E][).]\s*/, ''));
 
-    // tabel matrix (benar/salah, menjodohkan)
     const barisMatrix = /<table class="matrix-box">([\s\S]*?)<\/table>/.exec(inner);
     const pernyataanMatrix = barisMatrix
       ? [...barisMatrix[1].matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map((r) => htmlKeTeks(r[1]))
       : [];
 
-    // pembahasan
-    const pembahasan = htmlKeTeks((/<div class="pembahasan">([\s\S]*?)<\/div>\s*(?:<\/div>\s*)?$/.exec(inner.trim()) || [])[1]
-      || (/<div class="pembahasan">([\s\S]*?)<\/div>/.exec(inner) || [])[1] || '');
+    const pembahasan = htmlKeTeks((/<div class="pembahasan">([\s\S]*?)<\/div>/.exec(inner) || [])[1] || '');
 
     // ---- penegakan paten ----
-    const butuhKunci = tipe !== 'esai';
-    if (butuhKunci && !kunciMentah.trim()) {
-      kesalahan.push(`kartu ${id}: data-kunci kosong padahal tipe ${tipe || '?'} wajib berkunci.`);
+    if (tipe !== 'esai' && !kunciMentah.trim()) {
+      kesalahan.push(`${pref}kartu ${id}: data-kunci kosong padahal tipe ${tipe || '?'} wajib berkunci.`);
     }
     if (!pembahasan) {
-      kesalahan.push(`kartu ${id}: blok .pembahasan tidak ada atau kosong.`);
+      kesalahan.push(`${pref}kartu ${id}: blok .pembahasan tidak ada atau kosong.`);
+    } else if (asalPembahasan === 'penalaran') {
+      peringatan.push(`${pref}kartu ${id}: pembahasan hasil PENALARAN AI (tidak tercetak di sumber) — perlu diperiksa guru sebelum dipakai mengajar.`);
     }
     if ((tipe === 'pg_sederhana' || tipe === 'pg_kompleks') && opsi.length < 2) {
-      kesalahan.push(`kartu ${id}: tipe ${tipe} tapi opsi terbaca ${opsi.length}.`);
+      kesalahan.push(`${pref}kartu ${id}: tipe ${tipe} tapi opsi terbaca ${opsi.length}.`);
     }
     if ((tipe === 'benar_salah' || tipe === 'menjodohkan') && !pernyataanMatrix.length && !daftarPernyataan.length) {
-      peringatan.push(`kartu ${id}: tipe ${tipe} tanpa tabel/pernyataan terbaca; pernyataan mungkin menyatu di badan soal.`);
+      peringatan.push(`${pref}kartu ${id}: tipe ${tipe} tanpa tabel/pernyataan terbaca; pernyataan mungkin menyatu di badan soal.`);
+    }
+    if (!bab) {
+      peringatan.push(`${pref}kartu ${id}: tidak berada di bawah section-header mana pun — bab akan kosong dan soal sulit dicari di Perpustakaan.`);
     }
 
     // ---- pemetaan ke KONTRAK-JSON-BANK-SOAL ----
@@ -151,7 +168,9 @@ export function ekstrakHtmlGemini(htmlMentah) {
       tipe: ENUM_TIPE.has(tipe) ? tipe : 'pg_sederhana',
       soal: teksSoal,
       sumber,
+      materi: bab,
       pembahasan,
+      pembahasanAsal: asalPembahasan,
       gambarUrls: [],
     };
     if (tipe === 'benar_salah' || tipe === 'menjodohkan') {
@@ -172,9 +191,52 @@ export function ekstrakHtmlGemini(htmlMentah) {
   }
 
   if (jumlah === 0) {
-    kesalahan.push('tidak ada satu pun .question-card terbaca — berkas bukan keluaran prompt paten.');
+    kesalahan.push(`${pref}tidak ada satu pun .question-card terbaca — berkas bukan keluaran prompt paten.`);
   }
   return { soal, gambar, kesalahan, peringatan, seksi };
 }
 
-export default { ekstrakHtmlGemini, bersihkanHtmlBahaya, htmlKeTeks };
+/** Ekstrak satu berkas HTML paten. */
+export function ekstrakHtmlGemini(htmlMentah) {
+  return ekstrakSatu(htmlMentah, '');
+}
+
+/**
+ * Ekstrak BANYAK berkas (satu buku penuh yang digenerate per bagian)
+ * lalu gabungkan: duplikat (bab+nomor+sumber+isi) dibuang, gambar dan
+ * pesan kesalahan membawa identitas berkasnya.
+ *
+ * @param {Array<{nama: string, html: string}>} berkasList
+ */
+export function ekstrakBanyakHtml(berkasList = []) {
+  const soal = [];
+  const gambar = [];
+  const kesalahan = [];
+  const peringatan = [];
+  const seksi = new Set();
+  const terlihat = new Set();
+  let duplikat = 0;
+
+  berkasList.forEach((b, i) => {
+    const label = b.nama || `berkas-${i + 1}`;
+    const h = ekstrakSatu(b.html, label);
+    h.kesalahan.push(...kesalahan.length ? [] : []);
+    kesalahan.push(...h.kesalahan);
+    peringatan.push(...h.peringatan);
+    h.seksi.forEach((s) => seksi.add(s));
+    h.gambar.forEach((g) => gambar.push({ ...g, kartu: `${label}:${g.kartu.replace(`${label}:`, '')}` }));
+    for (const s of h.soal) {
+      const kunciTeks = `${s.materi}|${s.sumber}|${s.nomor}|${s.soal.slice(0, 120)}`;
+      if (terlihat.has(kunciTeks)) { duplikat += 1; continue; }
+      terlihat.add(kunciTeks);
+      soal.push({ ...s, asalBerkas: label });
+    }
+  });
+
+  if (duplikat > 0) {
+    peringatan.push(`${duplikat} butir duplikat antar-berkas dibuang otomatis (bab+nomor+sumber+isi sama).`);
+  }
+  return { soal, gambar, kesalahan, peringatan, seksi: [...seksi], duplikat };
+}
+
+export default { ekstrakHtmlGemini, ekstrakBanyakHtml, bersihkanHtmlBahaya, htmlKeTeks };
