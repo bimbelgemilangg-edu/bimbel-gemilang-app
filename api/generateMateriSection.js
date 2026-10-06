@@ -1,4 +1,4 @@
-import { kunciGeminiUntuk } from './kunciGemini.js';
+import { kunciGeminiUntuk } from '../lib/kunciGemini.js';
 // api/generateMateriSection.js
 // 🔥 BUKU DIGITAL BIMBEL GEMILANG — sekali panggil AI, jadi SATU MODUL LENGKAP.
 //

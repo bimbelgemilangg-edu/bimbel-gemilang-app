@@ -139,6 +139,37 @@ for (const d of ['src', 'api', 'scripts', 'tests']) {
 console.log('   selesai.');
 
 // ------------------------------------------------------------
+// 4. JUMLAH FUNCTION VERCEL TIDAK BOLEH LEWAT 12.
+//    Insiden 2026-10-06: helper murni api/kunciGemini.js ditambahkan,
+//    dan Vercel menganggap SETIAP berkas di api/ sebagai serverless
+//    function. Function ke-13 membuat SEMUA deploy gagal (build GitHub
+//    tetap hijau -- ia tidak menghitung function Vercel). Proyek ini
+//    sudah pernah kehilangan backup mingguan karena batas yang sama
+//    (lihat docs/KEPUTUSAN-RISIKO-FIRESTORE.md), sampai backup dipindah
+//    ke GitHub Actions. Penjaga ini menutup lubang itu selamanya:
+//    kode bersama hidup di lib/ atau src/utils/, BUKAN di api/.
+// ------------------------------------------------------------
+console.log('4) Jumlah function Vercel (berkas di api/)...');
+const MAKS_FUNCTION = 12;
+const isiApi = existsSync(join(ROOT, 'api')) ? readdirSync(join(ROOT, 'api')) : [];
+const berkasFunction = isiApi.filter((n) => /\.(js|mjs|ts)$/.test(n));
+if (berkasFunction.length > MAKS_FUNCTION) {
+  lapor('function-vercel', 'api/',
+    `${berkasFunction.length} berkas function (maks ${MAKS_FUNCTION}): deploy Vercel akan GAGAL untuk semua orang. `
+    + `Pindahkan helper ke lib/ atau src/utils/; yang boleh tinggal di api/ hanya titik masuk endpoint.`);
+} else {
+  console.log(`   ${berkasFunction.length}/${MAKS_FUNCTION} function terpakai.`);
+}
+for (const n of berkasFunction) {
+  const isi = readFileSync(join(ROOT, 'api', n), 'utf8');
+  if (!/export\s+default\s+(async\s+)?function|module\.exports/.test(isi)) {
+    lapor('function-vercel', `api/${n}`,
+      'berkas di api/ tanpa handler endpoint = akan tetap dihitung Vercel sebagai function. Pindah ke lib/.');
+  }
+}
+console.log('   selesai.');
+
+// ------------------------------------------------------------
 console.log('');
 if (temuan > 0) {
   console.error(`❌ PENJAGA GERBANG: ${temuan} temuan. Perbaiki sebelum merge.`);

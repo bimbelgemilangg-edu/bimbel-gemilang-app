@@ -15,7 +15,7 @@
 // ============================================================
 
 import assert from 'node:assert/strict';
-import { kunciGeminiUntuk, pesanKunciBelumAda } from '../api/kunciGemini.js';
+import { kunciGeminiUntuk, pesanKunciBelumAda } from '../lib/kunciGemini.js';
 
 let lulus = 0;
 let gagal = 0;

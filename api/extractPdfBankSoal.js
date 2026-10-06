@@ -1,4 +1,4 @@
-import { kunciGeminiUntuk } from './kunciGemini.js';
+import { kunciGeminiUntuk } from '../lib/kunciGemini.js';
 // api/extractPdfBankSoal.js
 // ============================================================
 // BANK SOAL AI EXTRACTOR — v2.0
