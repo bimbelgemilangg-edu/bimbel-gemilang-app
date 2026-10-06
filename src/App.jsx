@@ -76,6 +76,7 @@ import FinanceLayout from './pages/admin/finance/FinanceLayout';
 import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
 import GuruPantauTryOut from './pages/teacher/GuruPantauTryOut';
+import CetakPaketLatihan from './pages/teacher/CetakPaketLatihan';
 // 🔥 BARU (pembagian kewenangan admin vs owner): tempat kerja admin untuk
 // absensi & riwayat sesi tentor -- validasi fakta sesi TANPA angka uang.
 import SesiGuruPage from './pages/admin/teachers/SesiGuruPage';
@@ -801,6 +802,15 @@ function App() {
         <Route
           path="/guru/tryout-monitor/:paketId"
           element={<GuruRoute><GuruPantauTryOut /></GuruRoute>}
+        />
+        {/* 🔥 BARU (Fase 3 skema buku-kliping, 2026-10-06): tentor memilih
+            paket lalu mencetak 3 dokumen terpisah (paket siswa siap
+            gunting / kunci tentor / lembar catatan). Pakai GuruPage karena
+            halaman ini TIDAK merender sidebar sendiri -- kesalahan yang
+            dulu membuat halaman pantau tertutup sidebar. */}
+        <Route
+          path="/guru/cetak-latihan"
+          element={<GuruPage><CetakPaketLatihan /></GuruPage>}
         />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
         {/* MATERI v2 FASE 3 -- panggung presentasi sinkron.

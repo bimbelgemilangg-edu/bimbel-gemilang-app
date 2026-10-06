@@ -1,0 +1,186 @@
+// src/utils/cetakLatihan.js
+// ============================================================
+// MESIN CETAK PAKET LATIHAN (Fase 3 skema buku-kliping, lihat
+// docs/KERANGKA-KONTEN-BUKU.md). MURNI: masukan daftar soal + identitas
+// paket, keluaran string HTML siap masuk cetakLewatIframe().
+//
+// Menghasilkan TIGA dokumen yang WAJIB terpisah:
+//   1. htmlPaketSiswa     : kotak soal siap gunting, TANPA kunci/pembahasan
+//   2. htmlKunciTentor    : kunci + pembahasan, berkepala peringatan keras
+//   3. htmlLembarCatatan  : lembar tempel + kolom catatan pengerjaan
+//
+// ATURAN CETAK RAMAH KERTAS BEKAS (dibakukan di kerangka, ditegakkan di
+// sini karena percuma ada aturan kalau mesinnya tidak menaati):
+//   - satu muka, tanpa background berwarna/abu (hemat toner, tetap
+//     terbaca di atas tinta lama di sisi belakang)
+//   - tiap butir = satu kotak berborder tegas + nomor besar + garis
+//     potong putus-putus di tepi
+//   - margin luar >= 10mm supaya gunting tidak memakan nomor
+//   - kunci TIDAK PERNAH muncul di dokumen siswa (dikunci oleh test)
+//
+// Fungsi-fungsi di sini murni dan diuji di Node oleh
+// tests/cetakLatihan.test.mjs -- sebab dokumen yang salah cetak biayanya
+// nyata: kertas, toner, dan waktu tentor.
+// ============================================================
+
+import katex from 'katex';
+import { teksKunciSoal } from './teksKunciSoal.js';
+
+/** Escape HTML -- soal berasal dari bank yang isinya bebas. */
+export function escapeHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Teks soal -> HTML: bagian $...$ dirender sebagai rumus KaTeX, sisanya
+ * diescape. Placeholder {{GAMBAR}} dibuang karena gambar dicetak terpisah
+ * sebagai <img> di bawah teks (placeholder itu konvensi pipeline impor
+ * yang tidak pernah dikonsumsi renderer -- lihat commit #133).
+ */
+export function teksKeHtml(teks) {
+  const bersih = String(teks ?? '').replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ').replace(/\s+/g, ' ').trim();
+  const bagian = bersih.split(/(\$[^$]+\$)/g);
+  return bagian
+    .map((b) => {
+      if (b.startsWith('$') && b.endsWith('$') && b.length > 2) {
+        try {
+          return katex.renderToString(b.slice(1, -1), { throwOnError: false });
+        } catch {
+          return escapeHtml(b);
+        }
+      }
+      return escapeHtml(b);
+    })
+    .join('');
+}
+
+/**
+ * Pilih butir yang ikut cetak.
+ * @param {Array} daftar   daftar soal paket
+ * @param {object} [opsi]  { maks: number, tanpaEsai: boolean }
+ */
+export function pilihSoalUntukCetak(daftar = [], opsi = {}) {
+  let hasil = Array.isArray(daftar) ? [...daftar] : [];
+  if (opsi.tanpaEsai) hasil = hasil.filter((s) => !['esai', 'uraian'].includes(s?.tipe));
+  if (Number.isFinite(opsi.maks) && opsi.maks > 0) hasil = hasil.slice(0, Math.floor(opsi.maks));
+  return hasil;
+}
+
+const GAYA_DASAR = `
+  @page { size: A4; margin: 10mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; margin: 0; font-size: 12px; }
+  .kepala { border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+  .kepala h1 { font-size: 15px; margin: 0 0 2px; }
+  .kepala .meta { font-size: 10.5px; }
+  .identitas { display: flex; gap: 16px; font-size: 11px; margin: 8px 0 12px; }
+  .identitas span { border-bottom: 1px solid #000; min-width: 120px; padding-bottom: 8px; }
+  .kotak { border: 1.5pt solid #000; border-radius: 4px; padding: 8px 10px; margin: 0 0 12px;
+           page-break-inside: avoid; position: relative; }
+  .kotak::after { content: '✂'; position: absolute; top: -9px; right: 6px; background: #fff;
+                  font-size: 10px; padding: 0 3px; color: #000; }
+  .nomor { display: inline-block; font-size: 15px; font-weight: 800; border: 1.5pt solid #000;
+           border-radius: 50%; width: 26px; height: 26px; line-height: 23px; text-align: center;
+           margin-right: 8px; }
+  .soal { margin: 6px 0; line-height: 1.5; }
+  .opsi { margin: 3px 0 3px 34px; line-height: 1.45; }
+  img.gbr { max-width: 70mm; max-height: 55mm; border: 1pt solid #000; margin: 6px 0 6px 34px; display: block; }
+  .kunci-teks { font-size: 11px; margin: 4px 0 4px 34px; }
+  .peringatan { border: 2pt solid #000; padding: 6px 10px; font-size: 12px; font-weight: 800;
+                margin-bottom: 10px; text-align: center; letter-spacing: 0.5px; }
+  table.catat { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  table.catat td, table.catat th { border: 1pt solid #000; padding: 6px; font-size: 10.5px; vertical-align: top; }
+  .tempel { border: 1.5pt dashed #000; height: 42mm; margin: 4px 0; font-size: 10px; color: #000;
+            display: flex; align-items: center; justify-content: center; }
+`;
+
+function kepalaHtml(paket, judulDok) {
+  return `<div class="kepala">
+    <h1>${escapeHtml(judulDok)}</h1>
+    <div class="meta">${escapeHtml(paket.judul || 'Paket Latihan')} · ${escapeHtml(paket.mapel || paket.targetKategori || '')} · ${escapeHtml(paket.targetKelas || '')}${paket.bab ? ` · ${escapeHtml(paket.bab)}` : ''}</div>
+  </div>`;
+}
+
+function gambarHtml(soal) {
+  const urls = Array.isArray(soal?.gambarUrls) ? soal.gambarUrls : [];
+  return urls.map((u) => `<img class="gbr" src="${escapeHtml(u)}" alt="Gambar soal" />`).join('');
+}
+
+function opsiHtml(soal) {
+  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  return opsi
+    .map((o, i) => {
+      const huruf = String.fromCharCode(65 + i);
+      const teks = typeof o === 'string' ? o : o?.teks || '';
+      return `<div class="opsi"><b>${huruf}.</b> ${teksKeHtml(teks)}</div>`;
+    })
+    .join('');
+}
+
+/** DOKUMEN 1 — paket siswa: kotak soal siap gunting, TANPA kunci. */
+export function htmlPaketSiswa(paket = {}, soalList = []) {
+  const kotak = soalList
+    .map((s, i) => `<div class="kotak">
+      <span class="nomor">${i + 1}</span><b>${escapeHtml(String(s?.tipe || 'pg_sederhana').replace(/_/g, ' '))}</b>
+      <div class="soal">${teksKeHtml(s?.soal || s?.teks_soal)}</div>
+      ${gambarHtml(s)}
+      ${opsiHtml(s)}
+    </div>`)
+    .join('\n');
+  return `<html><head><meta charset="utf-8" /><style>${GAYA_DASAR}</style></head><body>
+    ${kepalaHtml(paket, 'LEMBAR LATIHAN SISWA')}
+    <div class="identitas"><span>Nama: </span><span>Kelas: </span><span>Tanggal: </span></div>
+    <div style="font-size:10.5px;margin-bottom:10px;">Gunting setiap kotak sesuai garis putus-putus, lalu tempel di buku progresmu.</div>
+    ${kotak}
+  </body></html>`;
+}
+
+/** DOKUMEN 2 — kunci tentor: TIDAK untuk dicetak sebagai berkas siswa. */
+export function htmlKunciTentor(paket = {}, soalList = []) {
+  const baris = soalList
+    .map((s, i) => {
+      const kunci = escapeHtml(teksKunciSoal(s));
+      const pembahasan = s?.pembahasan ? `<div class="kunci-teks"><b>Pembahasan:</b> ${teksKeHtml(s.pembahasan)}</div>` : '';
+      return `<div class="kotak"><span class="nomor">${i + 1}</span><b>Kunci:</b> ${kunci || '-'}${pembahasan}</div>`;
+    })
+    .join('\n');
+  return `<html><head><meta charset="utf-8" /><style>${GAYA_DASAR}</style></head><body>
+    <div class="peringatan">PEGANGAN TENTOR — JANGAN DICETAK UNTUK SISWA</div>
+    ${kepalaHtml(paket, 'KUNCI & PEMBAHASAN')}
+    ${baris}
+  </body></html>`;
+}
+
+/** DOKUMEN 3 — lembar catatan: area tempel + kolom pengerjaan per butir. */
+export function htmlLembarCatatan(paket = {}, soalList = []) {
+  const baris = soalList
+    .map((s, i) => `<tr>
+      <td style="width:10mm;text-align:center;font-weight:800;">${i + 1}</td>
+      <td><div class="tempel">tempel potongan soal di sini</div></td>
+      <td style="width:22mm;">&nbsp;</td>
+      <td style="width:34mm;">&nbsp;</td>
+    </tr>`)
+    .join('\n');
+  return `<html><head><meta charset="utf-8" /><style>${GAYA_DASAR}</style></head><body>
+    ${kepalaHtml(paket, 'LEMBAR CATATAN PENGERJAAN')}
+    <div class="identitas"><span>Nama: </span><span>Kelas: </span><span>Tanggal: </span></div>
+    <table class="catat">
+      <tr><th>No</th><th>Area tempel soal</th><th>Langkah pikir</th><th>Kesimpulan / hasil</th></tr>
+      ${baris}
+    </table>
+  </body></html>`;
+}
+
+export default {
+  escapeHtml,
+  teksKeHtml,
+  pilihSoalUntukCetak,
+  htmlPaketSiswa,
+  htmlKunciTentor,
+  htmlLembarCatatan,
+};
