@@ -48,6 +48,10 @@ ATURAN WAJIB:
 10. Nomor soal sesuai yang tercetak. Jika tidak terbaca, gunakan urutan relatif.
 11. Jika halaman tidak berisi soal, kembalikan array kosong [].
 12. Balas HANYA JSON. Tidak boleh ada markdown, code fence, atau penjelasan tambahan.
+13. WAJIB isi "pembahasan" untuk SETIAP soal: penjelasan lengkap mengapa kunci itu benar, termasuk penjelasan gambar/diagram bila sumber menjelaskannya. Ini paten pemilik sistem: soal tanpa pembahasan tidak bisa dipakai mengajar.
+14. WAJIB isi "pembahasan_asal": "tercetak" bila pembahasan memang ada di halaman sumber, atau "penalaran" bila sumber TIDAK memuat pembahasan dan kamu menalar-nya sendiri dari soal + kunci + gambar. Jangan pernah menyembunyikan perbedaan ini; guru harus tahu mana penjelasan buku dan mana penjelasan model.
+15. Bila gambar buram/tak terbaca, JANGAN mengarang isinya: tulis "[gambar tidak terbaca]" di pembahasan dan tetap keluarkan soalnya.
+16. Bila kunci tercetak di halaman terpisah yang ikut dikirim pada panggilan yang sama, pasang kunci itu ke nomor yang sesuai; jangan mengosongkan kunci selama kuncinya benar-benar ada di berkas yang kamu terima.
 
 FORMAT JSON (mulai dengan [ dan akhiri dengan ]):
 [
@@ -60,6 +64,8 @@ FORMAT JSON (mulai dengan [ dan akhiri dengan ]):
     "tabel_benar_salah": [],
     "pasangan": [],
     "kunci_jawaban": "",
+    "pembahasan": "penjelasan lengkap mengapa kunci itu benar",
+    "pembahasan_asal": "tercetak",
     "gambar": []
   }
 ]

@@ -55,6 +55,8 @@ function keDokumenBank(soalNorm, taksonomi, meta) {
     gambar: soalNorm.gambar || [],
     gambarUrls: (soalNorm.gambar || []).map((g) => (typeof g === 'string' ? g : g?.url)).filter(Boolean),
     bacaan: soalNorm.bacaan || null,
+    pembahasan: soalNorm.pembahasan || '',
+    pembahasanAsal: soalNorm.pembahasanAsal || 'tercetak',
     stimulusGrup: soalNorm.stimulusGrup || soalNorm.bacaan?.grup || null,
     stimulusRentang: soalNorm.stimulusRentang || soalNorm.bacaan?.rentang || null,
     idLokal: soalNorm.idLokal || null,

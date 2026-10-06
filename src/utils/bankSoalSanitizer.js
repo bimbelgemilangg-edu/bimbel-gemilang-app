@@ -498,11 +498,22 @@ const TIPE_ENUM = [
     const topikBaru = Boolean(q.topikBaru);
     if (!topik) warnings.push('topik kosong');
   
+    // 🔥 BARU (paten 2026-10-06): pembahasan ikut kontrak. Sebelumnya field
+    // ini DIBUANG diam-diam di sini, sehingga walau AI mengirim penjelasan,
+    // bank soal tetap buta pembahasan -- persis cacat yang owner keluhkan
+    // pada keluaran Gemini. Opsional untuk berkas lama (tidak warning agar
+    // impor lama tidak berubah status); WAJIB ditegakkan oleh prompt paten
+    // di jalur Gemini/scan, bukan oleh sanitizer ini.
+    const pembahasan = String(q.pembahasan ?? '').trim();
+    const pembahasanAsal =
+      (q.pembahasan_asal === 'penalaran' || q.pembahasanAsal === 'penalaran') ? 'penalaran' : 'tercetak';
+
     const normalized = {
       nomor, tipe, teksSoal,
       opsiJawaban, pernyataan, tabelBenarSalah, pasangan,
       kunciJawaban, gambar,
       topik, subtopik, topikBaru,
+      pembahasan, pembahasanAsal,
     };
   
     return {
