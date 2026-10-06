@@ -25,6 +25,7 @@ import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { ekstrakBanyakHtml } from '../../../utils/ekstrakHtmlGemini';
 import { dokumenDariButir, ringkasanImpor } from '../../../utils/imporHtmlGeminiKeBank';
+import { PROMPT_PATEN_GEMINI } from '../../../utils/promptPatenGemini';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { jalurBankSoal } from '../../../utils/jalurStorage';
 
@@ -53,6 +54,21 @@ export default function ImporHtmlGeminiPage() {
   const [pesan, setPesan] = useState('');
   const [busy, setBusy] = useState(false);
   const [progres, setProgres] = useState('');
+  const [tersalin, setTersalin] = useState(false);
+
+  // 🔥 BARU: prompt paten hidup DI SINI (sumber tunggal
+  // src/utils/promptPatenGemini.js), supaya owner tidak berburu ke
+  // dokumen/markdown lagi -- pertanyaan nyata 2026-10-06: "dimana
+  // menemukan prompt untuk gemini?"
+  const salinPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(PROMPT_PATEN_GEMINI);
+      setTersalin(true);
+      setTimeout(() => setTersalin(false), 2500);
+    } catch {
+      setPesan('⚠️ Browser menolak salin otomatis: buka lipatan prompt, blok isinya (Ctrl+A di kotak), salin manual.');
+    }
+  };
 
   const tambahBerkas = async (files) => {
     const list = Array.from(files || []).filter((f) => /\.html?$/i.test(f.name) || f.type === 'text/html');
@@ -143,6 +159,21 @@ export default function ImporHtmlGeminiPage() {
         Banyak berkas sekaligus boleh — satu buku yang digenerate per bagian akan
         digabung dan duplikatnya dibuang otomatis.
       </p>
+
+      <details style={gayaKartu}>
+        <summary style={{ fontSize: 12, fontWeight: 800, cursor: 'pointer', color: '#5b21b6' }}>
+          📋 Prompt paten untuk Gemini — buka lipatan ini dulu sebelum memindai
+        </summary>
+        <div style={{ display: 'flex', gap: 8, margin: '10px 0', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button onClick={salinPrompt} style={gayaTombol('#7c3aed', false)}>
+            {tersalin ? '✅ Tersalin! Tempel ke Gemini' : 'Salin Prompt'}
+          </button>
+          <span style={{ fontSize: 11, color: '#64748b' }}>
+            Tempel ke Gemini bersama halaman scan, maksimal ±10 halaman per putaran.
+          </span>
+        </div>
+        <pre style={{ whiteSpace: 'pre-wrap', fontSize: 10.5, lineHeight: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 10, maxHeight: 280, overflow: 'auto' }}>{PROMPT_PATEN_GEMINI}</pre>
+      </details>
 
       <div style={gayaKartu}>
         <div style={gayaJudul}>1 · Berkas HTML dari Gemini</div>

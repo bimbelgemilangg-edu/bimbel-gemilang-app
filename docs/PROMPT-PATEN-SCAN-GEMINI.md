@@ -1,6 +1,11 @@
 # PROMPT PATEN SCAN → HTML (Gemini sebagai pemindai, Gemilang sebagai ekstraktor)
 
 **Ditetapkan:** 2026-10-06 · mesin pembaca: `src/utils/ekstrakHtmlGemini.js` (teruji)
+**SUMBER TUNGGAL PROMPT:** `src/utils/promptPatenGemini.js` — dan tombol
+**"Salin Prompt"** di admin → *Impor HTML Gemini*. Blok prompt di dokumen ini
+adalah cerminan untuk dibaca manusia; bila suatu hari berbeda dengan berkas
+util, **yang benar adalah berkas util**. Penanda wajib di dalam prompt dikunci
+oleh `tests/promptPaten.test.mjs` supaya paten tidak menyusut diam-diam.
 **Pembagian kerja yang owner pilih:** *Gemini unggul membaca scan, jadi Gemini
 jadi PEMINDAI; Sistem Gemilang jadi EKSTRAKTOR yang mematenkan format.*
 Artinya: Gemini boleh pintar apa pun, keluarannya wajib lolos cetakan di
