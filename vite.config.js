@@ -12,7 +12,7 @@ export default defineConfig({
   // bekerja berjam-jam tanpa menutup tab.
   define: {
     __BUILD_STAMP__: JSON.stringify(
-      (process.env.VERCEL_GIT_COMMIT || process.env.CF_PAGES_COMMIT_SHA || 'lokal-dev').slice(0, 7)
+      (process.env.VERCEL_GIT_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.CF_PAGES_COMMIT_SHA || 'lokal-dev').slice(0, 7)
     ),
   },
   plugins: [
