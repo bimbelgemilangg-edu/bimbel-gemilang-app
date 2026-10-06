@@ -32,7 +32,14 @@ Salah satu dari tiga bentuk ini (validator menerima semuanya):
 Tidak perlu bungkus metadata lain. Mapel/jenjang/kelas diisi lewat **kolom
 petunjuk di halaman upload** (itu yang memenangkan taksonomi), bukan di dalam file.
 
-## 2. Kontrak 12 field per soal
+## 2. Kontrak field per soal
+
+> **Tambahan paten 2026-10-06:** `pembahasan` (string) dan `pembahasan_asal`
+> (`"tercetak"` | `"penalaran"`) kini ikut kontrak. Keduanya OPSIONAL untuk
+> berkas lama (tidak memicu warning), tetapi WAJIB diisi oleh jalur AI
+> (prompt paten Gemini & ekstraksi scan dalam sistem): soal tanpa pembahasan
+> tidak bisa dipakai mengajar, dan pembahasan hasil penalaran model harus
+> mengaku supaya guru memeriksa dulu.
 
 | Field | Tipe | Wajib untuk | Isi |
 |---|---|---|---|

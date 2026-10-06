@@ -55,16 +55,21 @@ uji('objek ber-key soal diterima', () => {
   assert.equal(r.report.total, 1);
 });
 
-bagian('normalisasi 12 field');
+bagian('normalisasi field kontrak');
 
-uji('hasil normalisasi memuat persis 12 field kontrak', () => {
+// 🔥 2026-10-06: kontrak bertambah dari 12 menjadi 14 field dengan masuknya
+// pembahasan & pembahasanAsal (paten prompt Gemini). Test ini diperbarui
+// SENGAJA: penambahan field aditif, dan kunci ini yang menjaga agar field
+// baru tidak hilang lagi diam-diam di kemudian hari.
+uji('hasil normalisasi memuat persis 14 field kontrak', () => {
   const { normalized } = validateQuestion({
     nomor: '3', tipe: 'pg_sederhana', teksSoal: ' ber spasi ',
     opsiJawaban: ['A. satu', 'B. dua'], kunciJawaban: 'b', topik: ' Topik ',
   }, 0);
   assert.deepEqual(Object.keys(normalized).sort(), [
-    'gambar', 'kunciJawaban', 'nomor', 'opsiJawaban', 'pasangan', 'pernyataan',
-    'subtopik', 'tabelBenarSalah', 'teksSoal', 'tipe', 'topik', 'topikBaru',
+    'gambar', 'kunciJawaban', 'nomor', 'opsiJawaban', 'pasangan', 'pembahasan',
+    'pembahasanAsal', 'pernyataan', 'subtopik', 'tabelBenarSalah', 'teksSoal',
+    'tipe', 'topik', 'topikBaru',
   ].sort());
   assert.equal(normalized.nomor, 3);
   assert.equal(normalized.teksSoal, 'ber spasi');
@@ -193,6 +198,26 @@ uji('backslash TUNGGAL di file (kesalahan umum AI) diselamatkan sanitize', () =>
   const r = parseAndValidateBankSoalJson(raw);
   assert.equal(r.success, true);
   assert.equal(r.report.hasil[0].teksSoal, 'Hitung $\\frac{3}{4}$');
+});
+
+uji('PATEN 2026-10-06: pembahasan & pengakuan penalaran ikut kontrak, tidak dibuang', () => {
+  const { normalized } = validateQuestion({
+    nomor: 1, tipe: 'pg_sederhana', teksSoal: 'Soal', opsiJawaban: ['a', 'b'],
+    kunciJawaban: 'A', topik: 't',
+    pembahasan: 'Karena A benar.', pembahasan_asal: 'penalaran',
+  });
+  assert.equal(normalized.pembahasan, 'Karena A benar.');
+  assert.equal(normalized.pembahasanAsal, 'penalaran');
+});
+
+uji('berkas lama TANPA pembahasan tetap lolos (kontrak aditif, bukan merusak)', () => {
+  const { normalized, warnings } = validateQuestion({
+    nomor: 2, tipe: 'pg_sederhana', teksSoal: 'Soal lama', opsiJawaban: ['a', 'b'],
+    kunciJawaban: 'B', topik: 't',
+  });
+  assert.equal(normalized.pembahasan, '');
+  assert.equal(normalized.pembahasanAsal, 'tercetak');
+  assert.ok(!warnings.some((w) => w.includes('pembahasan')), 'berkas lama tidak boleh dihukum');
 });
 
 console.log(`\n${'='.repeat(56)}\n  LULUS : ${lulus}\n  GAGAL : ${gagal}\n${'='.repeat(56)}`);
