@@ -9,6 +9,7 @@ import {
   LayoutDashboard, User, BookOpen, Edit,
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
   Database, GraduationCap, Projector, Presentation, Printer,
+  Library,
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -27,6 +28,7 @@ const SidebarGuru = () => {
   }, []);
 
   const menu = [
+    { name: 'Perpustakaan', path: '/guru/perpustakaan', icon: <Library size={20} /> },
     { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20} /> },
     { name: 'E-Learning', path: '/guru/modul', icon: <BookOpen size={20} /> },
