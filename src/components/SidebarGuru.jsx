@@ -1,3 +1,4 @@
+/* global __BUILD_STAMP__ */
 // src/components/SidebarGuru.jsx
 // Sidebar guru — menu ASLI repo, tanpa path baru.
 // ClassSession (absensi guru+siswa + sesi kelas) SENGAJA tidak diberi menu
@@ -255,7 +256,7 @@ const SidebarGuru = () => {
             <LogOut size={16} /> Keluar Sistem
           </button>
           <div style={{ textAlign: 'center', marginTop: 8, fontSize: 8, color: '#475569', letterSpacing: 0.5 }}>
-            v2.0 • Gemilang Edu
+            v2.0 • Gemilang Edu • build {typeof __BUILD_STAMP__ !== 'undefined' ? __BUILD_STAMP__ : 'dev'}
           </div>
         </div>
       </div>

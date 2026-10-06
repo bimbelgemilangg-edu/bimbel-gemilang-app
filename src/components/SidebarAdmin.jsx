@@ -1,3 +1,4 @@
+/* global __BUILD_STAMP__ */
 // src/components/SidebarAdmin.jsx
 // ============================================================
 // Sidebar admin -- termasuk menu BARU "Manajer Buku Digital"
@@ -288,7 +289,7 @@ const SidebarAdmin = () => {
           <img src="/pwa-192x192.png" alt="Logo" style={styles.logoImg} />
           <div>
             <h3 style={styles.logoTitle}>BIMBEL GEMILANG</h3>
-            <p style={styles.logoSub}>Admin Panel v2.0</p>
+            <p style={styles.logoSub}>Admin Panel v2.0 · build {typeof __BUILD_STAMP__ !== 'undefined' ? __BUILD_STAMP__ : 'dev'}</p>
           </div>
         </div>
 
