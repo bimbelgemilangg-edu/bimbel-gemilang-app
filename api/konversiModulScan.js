@@ -38,7 +38,7 @@ export const config = {
       base: 'https://generativelanguage.googleapis.com/v1beta/openai',
       models: () => String(process.env.GEMINI_MODELS || '')
         .split(',').map((x) => x.trim()).filter(Boolean)
-        .concat(['gemini-2.0-flash', 'gemini-1.5-flash']),
+        .concat(['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.5-flash-lite']),
     },
     {
       nama: 'groq',
@@ -46,12 +46,12 @@ export const config = {
       base: 'https://api.groq.com/openai/v1',
       models: () => String(process.env.GROQ_MODELS || '')
         .split(',').map((x) => x.trim()).filter(Boolean)
-        .concat([
-          'meta-llama/llama-4-scout-17b-16e-instruct',
-          'llama-4-scout-17b-16e-instruct',
-          'meta-llama/llama-4-maverick-17b-128e-instruct',
-          'llama-3.2-90b-vision-preview',
-        ]),
+// 🔥 2026-10-06: daftar vision hard-coded groq DIHAPUS -- llama-4-scout,
+        // llama-4-maverick, dan llama-3.2-90b-vision sudah dipensiunkan Groq
+        // (404 saat owner mencoba konversi modul). Groq 2026 tidak lagi
+        // menyelenggarakan model vision, jadi biarkan kosong dan hanya
+        // hormati GROQ_MODELS bila owner mengisi sendiri model yang hidup.
+        .concat(String(process.env.GROQ_MODELS_VISION || '').split(',').map((x) => x.trim()).filter(Boolean)),
     },
     {
       nama: 'openrouter',
