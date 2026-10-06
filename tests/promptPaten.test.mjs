@@ -5,7 +5,7 @@
 // penagihan ekstraktor secara halus. Jadi penandanya diuji.
 //     node tests/promptPaten.test.mjs
 import assert from 'node:assert/strict';
-import { PROMPT_PATEN_GEMINI } from '../src/utils/promptPatenGemini.js';
+import { PROMPT_PATEN_GEMINI, PROMPT_KONVERSI_ULANG } from '../src/utils/promptPatenGemini.js';
 
 let lulus = 0, gagal = 0;
 const kegagalan = [];
@@ -45,6 +45,17 @@ uji('taksonomi Kurikulum Merdeka diwajibkan per kartu', () => {
   assert.ok(P.includes('data-kurikulum'));
   assert.ok(P.includes('data-elemen'));
   assert.ok(P.includes('KURIKULUM MERDEKA'));
+});
+
+uji('kelas WAJIB per kartu untuk kompilasi lintas kelas (TKA 10-12)', () => {
+  assert.ok(P.includes('data-kelas: WAJIB per kartu'));
+  assert.ok(P.includes('JANGAN memisahkan berkas per kelas'));
+});
+
+uji('varian KONVERSI ULANG ada dan anti-karang', () => {
+  assert.ok(PROMPT_KONVERSI_ULANG.includes('KONVERTOR FORMAT'));
+  assert.ok(PROMPT_KONVERSI_ULANG.includes('Jangan mengarang kunci'));
+  assert.ok(PROMPT_KONVERSI_ULANG.includes('data-asal-pembahasan'));
 });
 
 uji('pemeriksaan diri diwajibkan di akhir prompt', () => {

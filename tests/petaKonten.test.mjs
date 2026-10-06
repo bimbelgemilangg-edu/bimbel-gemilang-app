@@ -16,7 +16,7 @@
 // ============================================================
 
 import assert from 'node:assert/strict';
-import { normMapel, normJenjang, bangunPohon, saringPohon } from '../src/utils/petaKonten.js';
+import { normMapel, normJenjang, bangunPohon, saringPohon, sebaranKelas } from '../src/utils/petaKonten.js';
 
 let lulus = 0;
 let gagal = 0;
@@ -123,6 +123,22 @@ uji('kata kunci ngawur -> pohon kosong, bukan error', () => {
 uji('query kosong = pohon utuh (tidak ada yang terbuang)', () => {
   const pohon = bangunPohon({ soal, buku, paket });
   assert.equal(saringPohon(pohon, '').length, pohon.length);
+});
+
+// ============================================================
+bagian('4. SEBARAN KELAS (kompilasi TKA 10-12)');
+// ============================================================
+
+uji('sebaran kelas dihitung per kumpulan soal', () => {
+  const r = sebaranKelas([
+    { kelas: '10' }, { kelas: '10' }, { kelas: '12' }, { kelas: '' },
+  ]);
+  assert.deepEqual(r, [['(tanpa kelas)', 1], ['10', 2], ['12', 1]]);
+});
+
+uji('kumpulan kosong tidak melempar', () => {
+  assert.deepEqual(sebaranKelas([]), []);
+  assert.deepEqual(sebaranKelas(null), []);
 });
 
 // ============================================================

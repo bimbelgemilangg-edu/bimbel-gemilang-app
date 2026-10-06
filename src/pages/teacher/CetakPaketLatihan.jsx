@@ -35,6 +35,7 @@ import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
 import { cetakLewatIframe } from '../../utils/kwitansi';
 import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
+import { sebaranKelas } from '../../utils/petaKonten';
 
 const BELUM = '(Belum diatur)';
 // Cache modul-level: satu tab menyapu bank_soal sekali per TTL, bukan sekali
@@ -65,6 +66,9 @@ export default function CetakPaketLatihan() {
 
   const [mapelAktif, setMapelAktif] = useState('');
   const [babAktif, setBabAktif] = useState('');
+  // 🔥 BARU (2026-10-07): kompilasi TKA mencampur kelas 10-12 dalam satu
+  // bab. GURU yang memilih: cetak semua kelas atau satu kelas saja.
+  const [kelasFilter, setKelasFilter] = useState('');
   // 🔥 DITAMBAHKAN (2026-10-06, pertanyaan owner: "jenjangnya?"): tingkat
   // pertama hirarki adalah JENJANG, persis LemariSoalPage admin. Tanpa ini
   // mapel bernama sama di jenjang berbeda (Matematika SMP vs SMA) tercampur
@@ -182,9 +186,16 @@ export default function CetakPaketLatihan() {
       ((s.materi || '').trim() || BELUM) === babAktif);
   }, [bankSoal, jenjangAktif, mapelAktif, babAktif]);
 
+  const daftarKelas = useMemo(() => sebaranKelas(soalDiBab), [soalDiBab]);
+
+  const soalDiBabTerfilter = useMemo(
+    () => (kelasFilter ? soalDiBab.filter((s) => String(s.kelas || '').trim() === kelasFilter) : soalDiBab),
+    [soalDiBab, kelasFilter]
+  );
+
   const soalBankTampil = useMemo(
-    () => (tanpaEsai ? soalDiBab.filter((s) => !['esai', 'uraian'].includes(s.tipe)) : soalDiBab),
-    [soalDiBab, tanpaEsai]
+    () => (tanpaEsai ? soalDiBabTerfilter.filter((s) => !['esai', 'uraian'].includes(s.tipe)) : soalDiBabTerfilter),
+    [soalDiBabTerfilter, tanpaEsai]
   );
 
   const terpilihBank = useMemo(
@@ -260,7 +271,7 @@ export default function CetakPaketLatihan() {
               <div style={gayaJudulKartu}>3 · Bab / materi pada {mapelAktif}</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {daftarBab.map(([b, n]) => (
-                  <button key={b} style={gayaPill(babAktif === b)} onClick={() => { setBabAktif(b); setTercentang([]); }}>
+                  <button key={b} style={gayaPill(babAktif === b)} onClick={() => { setBabAktif(b); setTercentang([]); setKelasFilter(''); }}>
                     {b} <span style={{ opacity: 0.6 }}>({n})</span>
                   </button>
                 ))}
@@ -273,6 +284,12 @@ export default function CetakPaketLatihan() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <div style={gayaJudulKartu}>4 · Centang butir yang akan dicetak ({terpilihBank.length}/{soalBankTampil.length})</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {daftarKelas.length > 1 && (
+                    <select value={kelasFilter} onChange={(e) => { setKelasFilter(e.target.value); setTercentang([]); }} style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                      <option value="">semua kelas ({soalDiBab.length})</option>
+                      {daftarKelas.map(([k, n]) => <option key={k} value={k === '(tanpa kelas)' ? '' : k}>{k} ({n})</option>)}
+                    </select>
+                  )}
                   <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 5, alignItems: 'center' }}>
                     <input type="checkbox" checked={tanpaEsai} onChange={(e) => setTanpaEsai(e.target.checked)} /> lewati esai
                   </label>
