@@ -78,6 +78,32 @@ function teksKunci(soal) {
   return [utama, ...ekuivalen].filter(Boolean).join(' / ') || '(kunci tidak tersedia)';
 }
 
+// 🔥 BARU (mode tinjau paket): kunci disuapkan SEOLAH-OLAH sebagai jawaban
+// siswa, supaya renderer menyorot opsi yang benar (hijau ✔️) persis seperti
+// yang dilihat siswa setelah menjawab benar. Tentor belajar dari tampilan
+// yang sama dengan yang akan dilihat siswa, bukan dari tabel kunci yang
+// abstrak. Untuk esai tidak ada jawaban otomatis, jadi null.
+function kunciSebagaiJawaban(soal) {
+  const tipe = soal?.tipe || 'pg_sederhana';
+  if (tipe === 'pg_sederhana') {
+    const idx = cariIndexBenar(soal);
+    return idx >= 0 ? idx : null;
+  }
+  if (tipe === 'pg_kompleks') {
+    const mentah = soal?.kunciJawaban;
+    if (Array.isArray(mentah)) return mentah.map((h) => String(h).toUpperCase());
+    if (typeof mentah === 'string' && mentah.trim()) {
+      return mentah.replace(/[\s,]+/g, '').split('').map((h) => h.toUpperCase());
+    }
+    return [];
+  }
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+    return pilihBarisBenarSalah(soal).map((b) => kunciBarisBenarSalah(b));
+  }
+  if (tipe === 'isian_singkat' || tipe === 'numerik') return String(soal?.kunciJawaban ?? '');
+  return null;
+}
+
 export default function GuruPantauTryOut() {
   const { paketId } = useParams();
   const [paket, setPaket] = useState(null);
@@ -104,6 +130,12 @@ export default function GuruPantauTryOut() {
   // Thumbnail soal hanya 200px dan foto jawaban esai 260px -- cukup untuk
   // mengenali, tidak untuk membaca label diagram atau tulisan tangan siswa.
   const [gambarDibuka, setGambarDibuka] = useState(null);
+  // 🔥 BARU (2026-10-06, permintaan owner): sebelumnya soal & pembahasan
+  // hanya bisa dilihat LEWAT sesi siswa (`detail`), jadi tentor harus
+  // MENUNGGU ada siswa yang mengerjakan dulu baru bisa membaca soalnya --
+  // padahal justru sebelum itulah tentor butuh mempelajarinya untuk
+  // mengajar. Tab 'tinjau' menampilkan paket langsung dari bank soal.
+  const [tab, setTab] = useState('peserta');
   useEffect(() => {
     const saatResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', saatResize);
@@ -242,7 +274,40 @@ export default function GuruPantauTryOut() {
               </div>
             </div>
 
-            {sesiList.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>Belum ada peserta yang mengerjakan. Data muncul setelah siswa mulai/selesai; gunakan tombol Muat ulang.</div>}
+            {/* 🔥 BARU: dua mode. "Peserta" = aliran lama (menunggu sesi
+                siswa). "Tinjau" = baca paket LANGSUNG dari bank soal, tanpa
+                menunggu siapa pun mengerjakan -- jawaban atas keluhan
+                owner 2026-10-06. */}
+            <div style={{ display: 'flex', gap: 8, margin: '12px 0', flexWrap: 'wrap' }}>
+              {[
+                ['peserta', `👥 Peserta & Penilaian (${sesiList.length})`],
+                ['tinjau', `📖 Tinjau Soal & Pembahasan (${daftar.length})`],
+              ].map(([k, lbl]) => (
+                <button
+                  key={k}
+                  onClick={() => setTab(k)}
+                  style={{
+                    padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                    border: tab === k ? '1.5px solid #3730a3' : '1px solid #d1d5db',
+                    background: tab === k ? '#eef2ff' : 'white',
+                    color: tab === k ? '#3730a3' : '#475569',
+                  }}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'peserta' && (<>
+            {sesiList.length === 0 && (
+              <div style={{ fontSize: 12, color: '#94a3b8', background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                Belum ada peserta yang mengerjakan. Data muncul setelah siswa mulai/selesai; gunakan tombol Muat ulang.
+                {' '}Ingin membaca soalnya sekarang untuk bahan mengajar?{' '}
+                <button onClick={() => setTab('tinjau')} style={{ fontSize: 11.5, fontWeight: 800, color: '#3730a3', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>
+                  Buka 📖 Tinjau Soal & Pembahasan
+                </button>
+              </div>
+            )}
             {sesiList.map((s) => {
               const belumDinilai = daftar.filter((so) => isSoalEsai(so) && poinEsai(so, s.nilaiEsai) === null).length;
               return (
@@ -352,6 +417,61 @@ export default function GuruPantauTryOut() {
                             </button>
                             <span style={{ fontSize: 10.5, color: '#6b7280' }}>Total skor & XP siswa terhitung ulang otomatis (termasuk potongan anti-curang).</span>
                           </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            </>)}
+
+            {tab === 'tinjau' && (
+              <div>
+                <div style={{ fontSize: 12, color: '#4338ca', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
+                  📖 Mode tinjau: menampilkan SELURUH soal paket beserta kunci dan
+                  pembahasan langsung dari bank soal, TANPA menunggu ada siswa yang
+                  mengerjakan. Opsi benar disorot hijau seolah sudah dijawab, supaya
+                  tentor bisa mempelajari alur soal sebelum mengajar.
+                </div>
+                {daftar.length === 0 && (
+                  <div style={{ fontSize: 12, color: '#94a3b8', background: 'white', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                    Paket ini tidak memuat daftar soal.
+                  </div>
+                )}
+                {daftar.map((s, i) => {
+                  const jwb = kunciSebagaiJawaban(s);
+                  return (
+                    <div key={s.id || i} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, color: '#6b7280', fontWeight: 700, marginBottom: 6 }}>
+                        Soal {i + 1} · {String(s.tipe || '').replace(/_/g, ' ')}
+                      </div>
+                      {s.bacaan?.teks && (
+                        <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}><RenderMath text={s.bacaan.teks} /></div>
+                      )}
+                      <div style={{ fontSize: 13, color: '#1e293b', marginBottom: 10 }}><RenderMath text={s.soal || s.teks_soal} /></div>
+                      {(s.gambarUrls || []).length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
+                          {s.gambarUrls.map((url, gi) => (
+                            <img
+                              key={gi}
+                              src={url}
+                              alt={`Gambar soal ${gi + 1}`}
+                              onClick={() => setGambarDibuka(url)}
+                              title="Klik untuk memperbesar"
+                              style={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'zoom-in' }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      {s.tabelSoal && <RenderTable table={s.tabelSoal} />}
+                      <RendererSoalGuru soal={s} jawabanTerpilih={jwb} modeTinjau onKlikGambar={setGambarDibuka} />
+                      <div style={{ marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 10, fontSize: 12, color: '#166534' }}>
+                        <b>🔑 Kunci:</b> {teksKunci(s)}
+                      </div>
+                      {s.pembahasan && (
+                        <div style={{ marginTop: 8, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
+                          <b>💡 Pembahasan:</b> <RenderMath text={s.pembahasan} />
                         </div>
                       )}
                     </div>
