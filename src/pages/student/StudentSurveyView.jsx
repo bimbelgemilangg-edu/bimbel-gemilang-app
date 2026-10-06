@@ -10,6 +10,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { doc, getDoc, collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
+import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
 import { ArrowLeft, CheckCircle, Send, AlertCircle } from 'lucide-react';
 
 const StudentSurveyView = () => {
@@ -26,6 +27,11 @@ const StudentSurveyView = () => {
   const studentId = localStorage.getItem('studentId') || '';
   const studentName = localStorage.getItem('studentName') || 'Siswa';
   const studentNim = localStorage.getItem('studentNim') || studentId;
+
+  // 🔥 BARU (Tahap 1 peta sinkronisasi): survei diterbitkan/diubah admin.
+  // Ambil ulang saat aplikasi kembali terlihat supaya survei yang baru
+  // terbit tidak "gaib" sampai siswa me-reload. Lihat useSegarSaatTerlihat.
+  const versiSegar = useSegarSaatTerlihat();
 
   useEffect(() => {
     const fetchSurvey = async () => {
@@ -55,7 +61,7 @@ const StudentSurveyView = () => {
       setLoading(false);
     };
     fetchSurvey();
-  }, [id, studentNim]);
+  }, [id, studentNim, versiSegar]);
 
   const handleAnswer = (qIndex, value) => {
     setAnswers(prev => ({ ...prev, [qIndex]: value }));

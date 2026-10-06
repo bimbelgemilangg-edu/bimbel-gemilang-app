@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
 
 const StudentSchedule = () => {
   const [mySchedules, setMySchedules] = useState([]);
@@ -24,6 +25,13 @@ const StudentSchedule = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // 🔥 BARU (Tahap 1 peta sinkronisasi): jadwal adalah data yang diubah
+  // admin rutin. Sebelumnya halaman ini mengambil sekali saat mount, jadi
+  // perubahan jadwal baru kelihatan setelah reload. Sekarang diambil ulang
+  // setiap aplikasi kembali terlihat -- tanpa remount, jadi state halaman
+  // tetap utuh. Lihat src/utils/useSegarSaatTerlihat.js.
+  const versiSegar = useSegarSaatTerlihat();
 
   useEffect(() => {
     const fetchMySchedules = async () => {
@@ -55,7 +63,7 @@ const StudentSchedule = () => {
     };
 
     fetchMySchedules();
-  }, [studentId]);
+  }, [studentId, versiSegar]);
 
   // 🔥 FIX BUG ARSITEKTUR (sama persis dengan yang ditemukan di
   // StudentDashboard.jsx): komponen ini sebelumnya render <SidebarSiswa>
