@@ -157,9 +157,18 @@ uji('esai boleh berkunci kosong (rubriknya di pembahasan)', () => {
   assert.equal(hasil.soal[3].kunciJawaban, '');
 });
 
-uji('tipe di luar enum ditolak, bukan dipaksa masuk', () => {
+uji('tipe di luar enum DINORMALKAN oleh adaptor, bukan menolak berkas', () => {
+  // Keputusan adaptor 2026-10-07: struktur boleh beragam, ISI yang ditagih.
+  // Tipe bebas dipetakan heuristik (pg_sederhana bila ada opsi) supaya satu
+  // kata aneh dari Gemini tidak membuang seluruh berkas; prompt paten tetap
+  // mewajibkan enum, dan pelanggaran isi (kunci/pembahasan) tetap menolak.
   const h = ekstrakHtmlGemini(HTML_FIXTURE.replace('data-tipe="pg_sederhana" data-kunci="b"', 'data-tipe="tebak-tebakan" data-kunci="b"'));
-  assert.ok(h.kesalahan.join(' ').includes('enum paten'));
+  assert.equal(h.soal[0].tipe, 'pg_sederhana');
+  // kartu soal-3 memang durhaka pada DUA isi paten sekaligus: tanpa
+  // pembahasan DAN opsi kurang dari dua -- keduanya kesalahan ISI, bukan
+  // kesalahan struktur, dan keduanya harus disebut.
+  assert.equal(h.kesalahan.length, 2);
+  assert.ok(h.kesalahan.join(' ').includes('soal-3'));
 });
 
 // ============================================================
