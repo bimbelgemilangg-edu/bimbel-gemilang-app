@@ -78,6 +78,7 @@ import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
 import GuruPantauTryOut from './pages/teacher/GuruPantauTryOut';
 import CetakPaketLatihan from './pages/teacher/CetakPaketLatihan';
 import PerpustakaanKonten from './pages/PerpustakaanKonten';
+import ImporHtmlGeminiPage from './pages/admin/bank-soal/ImporHtmlGeminiPage';
 // 🔥 BARU (pembagian kewenangan admin vs owner): tempat kerja admin untuk
 // absensi & riwayat sesi tentor -- validasi fakta sesi TANPA angka uang.
 import SesiGuruPage from './pages/admin/teachers/SesiGuruPage';
@@ -581,6 +582,13 @@ function App() {
             jawaban atas "admin saja kesulitan mencari materi, apalagi
             guru". Pohon jenjang->mapel->bab dari tiga sumber sekaligus. */}
         <Route path="/admin/perpustakaan" element={<AdminRoute><PerpustakaanKonten peran="admin" /></AdminRoute>} />
+        {/* 🔥 BARU (Lapis 1b, 2026-10-06): keluaran prompt paten Gemini masuk
+            bank soal tanpa lewat tim IT. Penagihan kontrak di ekstraktor,
+            pemetaan di imporHtmlGeminiKeBank -- halaman hanya urusan klik. */}
+        <Route
+          path="/admin/bank-soal/impor-html-gemini"
+          element={<AdminRoute><ImporHtmlGeminiPage /></AdminRoute>}
+        />
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
         {/* 🔥 BARU: tempat kerja admin untuk absensi/riwayat sesi tentor.
             Fakta sesi + validasi + unduh CSV, TANPA nominal honor. */}
