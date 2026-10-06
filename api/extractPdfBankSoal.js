@@ -141,7 +141,7 @@ function getProviderConfig(body) {
   // Default config per provider
   if (provider === 'gemini') {
     baseUrl = baseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-    model   = model   || 'gemini-1.5-flash';   // quota paling lapang di free tier
+    model   = model   || 'gemini-flash-latest'; // alias = selalu model flash terkini; bebas dari pensiunnya nama model
   }
   if (provider === 'openai') {
     baseUrl = baseUrl || 'https://api.openai.com/v1/chat/completions';
@@ -149,7 +149,7 @@ function getProviderConfig(body) {
   }
   if (provider === 'groq') {
     baseUrl = baseUrl || 'https://api.groq.com/openai/v1/chat/completions';
-    model   = model   || 'llama-3.2-90b-vision-preview';
+    model   = model   || String(process.env.GROQ_MODEL || '').trim(); // groq 2026 tak punya model vision bawaan; hormati env saja
   }
   if (provider === 'anthropic') {
     model = model || 'claude-3-5-sonnet-20241022';
