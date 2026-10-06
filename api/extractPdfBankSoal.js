@@ -1,3 +1,4 @@
+import { kunciGeminiUntuk } from './kunciGemini.js';
 // api/extractPdfBankSoal.js
 // ============================================================
 // BANK SOAL AI EXTRACTOR — v2.0
@@ -131,7 +132,7 @@ function getProviderConfig(body) {
       provider === 'groq'      ? process.env.GROQ_API_KEY     || '' :
       provider === 'openai'    ? process.env.OPENAI_API_KEY   || '' :
       provider === 'anthropic' ? process.env.ANTHROPIC_API_KEY || '' :
-      provider === 'gemini'    ? process.env.GEMINI_API_KEY   || '' :
+      provider === 'gemini'    ? kunciGeminiUntuk(process.env, 'soal')   || '' :
                                  process.env.BANKSOAL_AI_API_KEY || ''
     ).trim();
 
