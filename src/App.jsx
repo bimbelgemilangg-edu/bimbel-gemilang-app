@@ -77,6 +77,7 @@ import TeacherList from './pages/admin/teachers/TeacherList';
 import TeacherSalaries from './pages/admin/teachers/TeacherSalaries';
 import GuruPantauTryOut from './pages/teacher/GuruPantauTryOut';
 import CetakPaketLatihan from './pages/teacher/CetakPaketLatihan';
+import PerpustakaanKonten from './pages/PerpustakaanKonten';
 // 🔥 BARU (pembagian kewenangan admin vs owner): tempat kerja admin untuk
 // absensi & riwayat sesi tentor -- validasi fakta sesi TANPA angka uang.
 import SesiGuruPage from './pages/admin/teachers/SesiGuruPage';
@@ -576,6 +577,10 @@ function App() {
           path="/admin/students/finance/:id"
           element={<AdminRoute><StudentFinance /></AdminRoute>}
         />
+        {/* 🔥 BARU (2026-10-06): satu tempat mencari seluruh konten --
+            jawaban atas "admin saja kesulitan mencari materi, apalagi
+            guru". Pohon jenjang->mapel->bab dari tiga sumber sekaligus. */}
+        <Route path="/admin/perpustakaan" element={<AdminRoute><PerpustakaanKonten peran="admin" /></AdminRoute>} />
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
         {/* 🔥 BARU: tempat kerja admin untuk absensi/riwayat sesi tentor.
             Fakta sesi + validasi + unduh CSV, TANPA nominal honor. */}
@@ -812,6 +817,7 @@ function App() {
           path="/guru/cetak-latihan"
           element={<GuruPage><CetakPaketLatihan /></GuruPage>}
         />
+        <Route path="/guru/perpustakaan" element={<GuruPage><PerpustakaanKonten peran="guru" /></GuruPage>} />
         <Route path="/guru/sesi-live" element={<GuruRoute><LiveSessionTeacher /></GuruRoute>} />
         {/* MATERI v2 FASE 3 -- panggung presentasi sinkron.
             Panggung full-screen (tanpa layout) supaya bersih

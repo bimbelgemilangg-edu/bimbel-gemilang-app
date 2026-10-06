@@ -27,6 +27,7 @@
 // ============================================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
@@ -81,6 +82,10 @@ export default function CetakPaketLatihan() {
   const [pesanError, setPesanError] = useState('');
 
   const versiSegar = useSegarSaatTerlihat();
+  // 🔥 BARU: bisa dibuka dengan bab sudah terpilih dari Perpustakaan
+  // (/guru/cetak-latihan?jenjang=..&mapel=..&bab=..), supaya alur
+  // "cari materi -> cetak" tidak meminta tentor memilih ulang dari nol.
+  const [params] = useSearchParams();
 
   const muatSemua = useCallback(async (paksa = false) => {
     const kini = Date.now();
@@ -125,6 +130,16 @@ export default function CetakPaketLatihan() {
   }, []);
 
   useEffect(() => { muatSemua(); }, [muatSemua, versiSegar]);
+
+  useEffect(() => {
+    const pj = params.get('jenjang');
+    const pm = params.get('mapel');
+    const pb = params.get('bab');
+    if (!pm || mapelAktif) return;
+    if (pj) setJenjangAktif(pj);
+    setMapelAktif(pm);
+    if (pb) setBabAktif(pb);
+  }, [params, bankSoal, mapelAktif]);
 
   // ---- hirarki bank: jenjang -> mapel -> bab, persis pola Lemari Soal admin ----
   const daftarJenjang = useMemo(() => {

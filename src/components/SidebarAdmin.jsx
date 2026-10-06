@@ -12,7 +12,8 @@ import {
   ClipboardList, Globe, TrendingUp, UserPlus, DollarSign,
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
-  Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox
+  Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox,
+  Library,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -178,7 +179,8 @@ const SidebarAdmin = () => {
     {
       label: 'UTAMA',
       items: [
-        { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
+        { name: 'Perpustakaan', path: '/admin/perpustakaan', icon: <Library size={20} /> },
+    { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
         { name: 'Dashboard Analisis', path: '/admin/analisis', icon: <BarChart3 size={18} /> },
         { name: 'Jadwal Harian',path: '/admin/schedule',   icon: <Calendar size={18} /> },
         { name: 'Log Harian',   path: '/admin/daily-log',  icon: <ClipboardList size={18} /> },
