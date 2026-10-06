@@ -1,4 +1,4 @@
-import { kunciGeminiUntuk } from './kunciGemini.js';
+import { kunciGeminiUntuk } from '../lib/kunciGemini.js';
 // api/generateGuruLearningAid.js
 //
 // 🔥 ALAT BANTU GURU — WAJIB DIGROUNDING ke teks buku paket yang guru

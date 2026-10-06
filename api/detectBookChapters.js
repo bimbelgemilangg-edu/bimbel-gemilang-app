@@ -1,4 +1,4 @@
-import { kunciGeminiUntuk } from './kunciGemini.js';
+import { kunciGeminiUntuk } from '../lib/kunciGemini.js';
 // api/detectBookChapters.js
 //
 // 🔥 DETEKSI STRUKTUR BAB OTOMATIS — dipanggil SEKALI saat guru upload buku

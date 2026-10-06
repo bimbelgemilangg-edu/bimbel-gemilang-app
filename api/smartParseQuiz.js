@@ -1,4 +1,4 @@
-import { kunciGeminiUntuk } from './kunciGemini.js';
+import { kunciGeminiUntuk } from '../lib/kunciGemini.js';
 // api/smartParseQuiz.js
 // ============================================================
 // SMART PARSE QUIZ -- ROMBAK TOTAL (lihat riwayat di bawah)
