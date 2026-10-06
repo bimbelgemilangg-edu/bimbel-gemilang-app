@@ -1,3 +1,4 @@
+import { kunciGeminiUntuk } from './kunciGemini.js';
 // api/detectBookChapters.js
 //
 // 🔥 DETEKSI STRUKTUR BAB OTOMATIS — dipanggil SEKALI saat guru upload buku
@@ -24,7 +25,7 @@ const GEMINI_MODELS = [
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-goog-api-key': process.env.GEMINI_API_KEY,
+        'x-goog-api-key': kunciGeminiUntuk(process.env, 'umum'),
       },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt }] },

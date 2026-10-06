@@ -1,3 +1,4 @@
+import { kunciGeminiUntuk } from './kunciGemini.js';
 // api/smartParseQuiz.js
 // ============================================================
 // SMART PARSE QUIZ -- ROMBAK TOTAL (lihat riwayat di bawah)
@@ -64,7 +65,7 @@ const GEMINI_TIMEOUT_MS = 50_000;
 // vision (inline_data base64) bareng promptnya. Kalau tidak, Gemini
 // dipanggil mode teks murni (dipakai untuk mode default/potong teks).
 async function callGemini(systemPrompt, userText, imageDataUrl) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = kunciGeminiUntuk(process.env, 'soal');
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY belum di-setting di Vercel.');
   }
@@ -463,7 +464,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!kunciGeminiUntuk(process.env, 'soal')) {
     return res.status(500).json({
       success: false,
       error: 'GEMINI_API_KEY belum di-setting di Vercel. Daftar gratis di aistudio.google.com, tempel API key-nya sebagai environment variable GEMINI_API_KEY.',
