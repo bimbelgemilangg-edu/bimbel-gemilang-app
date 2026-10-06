@@ -2,25 +2,31 @@
 // ============================================================
 // CETAK PAKET LATIHAN (Fase 3 skema buku-kliping, docs/KERANGKA-KONTEN-BUKU.md)
 //
-// Menjawab loop operasional owner: bank soal terus diisi admin -> tentor
-// MEMILIH soal sesuai bab/minggu -> tentor MENCETAK sendiri secara rapi ->
-// siswa menggunting dan menempel di buku progres. Sebelum halaman ini ada,
-// mata rantai "mencetak rapi" tidak ada: tentor terpaksa menyalin manual
-// ke Word, dan di situlah kunci sering ikut tercetak ke siswa.
+// Loop operasional owner: bank soal terus diisi admin -> tentor MEMILIH
+// soal sesuai bab/minggu -> tentor MENCETAK sendiri secara rapi -> siswa
+// menggunting dan menempel di buku progres.
+//
+// 🔥 DIROMBAK (2026-10-06, arahan owner: "harusnya per mapel jelas lalu
+// dibuka per bab"): pemilihan semula berupa SATU daftar datar paket try
+// out, padahal unit alami skema mingguan adalah MAPEL lalu BAB. Sekarang
+// ada dua sumber dengan hirarki yang sama seperti Lemari Soal admin
+// (jenjang -> mapel -> materi/bab):
+//   - "Bank Soal"  : jelajah mapel -> bab -> centang butir -> cetak
+//   - "Paket Saya" : paket try out yang terhubung ke tentor (perilaku lama)
 //
 // Menghasilkan TIGA dokumen terpisah (aturan kerangka):
 //   1. PAKET-SISWA   : kotak soal siap gunting, TANPA kunci
 //   2. KUNCI-TENTOR  : kunci + pembahasan, berkepala peringatan keras
-//   3. LEMBAR-CATATAN: area tempel + kolom langkah pikir / kesimpulan
-// Seluruh tata letak (satu muka, border tegas, garis potong, tanpa
-// background berwarna) hidup di src/utils/cetakLatihan.js supaya bisa
-// diuji di Node dan dipakai ulang halaman lain kelak.
+//   3. LEMBAR-CATATAN: area tempel + kolom catatan pengerjaan
+// Tata letak hidup di src/utils/cetakLatihan.js (murni, teruji).
 //
-// AKSES: sama dengan halaman pantau (#125) -- hanya paket yang terhubung
-// ke tentor login. Mencetak paket orang lain tetap urusan admin.
+// AKSES: mode paket mengikuti aturan halaman pantau (#125) -- hanya paket
+// terhubung ke tentor login. Mode bank bersifat baca+cetak saja (tidak
+// mengubah atau menilai apa pun), jadi terbuka untuk semua guru seperti
+// lemari soal itu sendiri.
 // ============================================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
@@ -28,119 +34,219 @@ import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan
 import { cetakLewatIframe } from '../../utils/kwitansi';
 import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
 
+const BELUM = '(Belum diatur)';
 const gayaKartu = { background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, marginBottom: 12 };
-const gayaTombol = (warna) => ({
+const gayaJudulKartu = { fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8 };
+const gayaTombol = (warna, mati) => ({
   padding: '10px 16px', borderRadius: 10, border: 'none', background: warna,
-  color: 'white', fontSize: 12.5, fontWeight: 800, cursor: 'pointer',
+  color: 'white', fontSize: 12.5, fontWeight: 800,
+  cursor: mati ? 'not-allowed' : 'pointer', opacity: mati ? 0.5 : 1,
+});
+const gayaPill = (aktif) => ({
+  padding: '7px 12px', borderRadius: 999, fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+  border: aktif ? '1.5px solid #3730a3' : '1px solid #d1d5db',
+  background: aktif ? '#eef2ff' : 'white', color: aktif ? '#3730a3' : '#475569',
 });
 
 export default function CetakPaketLatihan() {
+  const [sumber, setSumber] = useState('bank');       // 'bank' | 'paket'
+  const [bankSoal, setBankSoal] = useState([]);
   const [paketList, setPaketList] = useState([]);
-  const [paketId, setPaketId] = useState('');
-  const [maks, setMaks] = useState(0);          // 0 = semua soal paket
-  const [tanpaEsai, setTanpaEsai] = useState(false);
   const [memuat, setMemuat] = useState(true);
+
+  const [mapelAktif, setMapelAktif] = useState('');
+  const [babAktif, setBabAktif] = useState('');
+  const [tercentang, setTercentang] = useState([]);    // id butir terpilih
+  const [tanpaEsai, setTanpaEsai] = useState(false);
+
+  const [paketId, setPaketId] = useState('');
+  const [maksPaket, setMaksPaket] = useState(0);
+
   const versiSegar = useSegarSaatTerlihat();
 
-  const muatPaket = useCallback(async () => {
+  const muatSemua = useCallback(async () => {
     setMemuat(true);
     try {
-      const idt = bacaIdentitasGuru();
-      if (!idt.semuaId.length) { setPaketList([]); return; }
-      const snap = await getDocs(query(collection(db, 'tryout_paket'), where('tentorId', 'in', idt.semuaId)));
-      setPaketList(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const [snapBank, snapPaket] = await Promise.all([
+        getDocs(collection(db, 'bank_soal')),
+        (async () => {
+          const idt = bacaIdentitasGuru();
+          if (!idt.semuaId.length) return { docs: [] };
+          return getDocs(query(collection(db, 'tryout_paket'), where('tentorId', 'in', idt.semuaId)));
+        })(),
+      ]);
+      setBankSoal(snapBank.docs.map((d) => ({ id: d.id, ...d.data() })));
+      setPaketList(snapPaket.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch {
+      setBankSoal([]);
       setPaketList([]);
     } finally {
       setMemuat(false);
     }
   }, []);
 
-  useEffect(() => { muatPaket(); }, [muatPaket, versiSegar]);
+  useEffect(() => { muatSemua(); }, [muatSemua, versiSegar]);
 
+  // ---- hirarki bank: mapel -> bab, persis pola Lemari Soal admin ----
+  const daftarMapel = useMemo(() => {
+    const hitung = new Map();
+    for (const s of bankSoal) {
+      const k = (s.mataPelajaran || '').trim() || BELUM;
+      hitung.set(k, (hitung.get(k) || 0) + 1);
+    }
+    return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
+  }, [bankSoal]);
+
+  const daftarBab = useMemo(() => {
+    if (!mapelAktif) return [];
+    const hitung = new Map();
+    for (const s of bankSoal) {
+      if (((s.mataPelajaran || '').trim() || BELUM) !== mapelAktif) continue;
+      const k = (s.materi || '').trim() || BELUM;
+      hitung.set(k, (hitung.get(k) || 0) + 1);
+    }
+    return [...hitung.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id'));
+  }, [bankSoal, mapelAktif]);
+
+  const soalDiBab = useMemo(() => {
+    if (!mapelAktif || !babAktif) return [];
+    return bankSoal.filter((s) =>
+      ((s.mataPelajaran || '').trim() || BELUM) === mapelAktif &&
+      ((s.materi || '').trim() || BELUM) === babAktif);
+  }, [bankSoal, mapelAktif, babAktif]);
+
+  const soalBankTampil = useMemo(
+    () => (tanpaEsai ? soalDiBab.filter((s) => !['esai', 'uraian'].includes(s.tipe)) : soalDiBab),
+    [soalDiBab, tanpaEsai]
+  );
+
+  const terpilihBank = useMemo(
+    () => soalBankTampil.filter((s) => tercentang.includes(s.id)),
+    [soalBankTampil, tercentang]
+  );
+
+  // ---- mode paket (perilaku #134) ----
   const paket = paketList.find((p) => p.id === paketId) || null;
-  const meta = paket
-    ? { judul: paket.judul, mapel: paket.targetKategori, targetKelas: paket.targetKelas, bab: paket.babJudul || '' }
-    : {};
-  const soal = pilihSoalUntukCetak(paket?.daftarSoal, { maks: maks || undefined, tanpaEsai });
+  const soalPaket = pilihSoalUntukCetak(paket?.daftarSoal, { maks: maksPaket || undefined, tanpaEsai });
+
+  const siap = sumber === 'bank' ? terpilihBank : soalPaket;
+  const meta = sumber === 'bank'
+    ? { judul: `${mapelAktif} — ${babAktif}`, mapel: mapelAktif, targetKelas: '', bab: babAktif }
+    : { judul: paket?.judul || '', mapel: paket?.targetKategori || '', targetKelas: paket?.targetKelas || '', bab: paket?.babJudul || '' };
+
+  const centang = (id, on) => setTercentang((lama) => (on ? [...lama, id] : lama.filter((x) => x !== id)));
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto' }}>
       <h2 style={{ margin: '4px 0 4px', fontSize: 18 }}>🖨️ Cetak Paket Latihan</h2>
       <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
-        Pilih paket yang terhubung ke Anda, atur isinya, lalu cetak tiga dokumen terpisah:
-        lembar siswa siap gunting, kunci pegangan tentor, dan lembar catatan buku progres.
+        Pilih per mapel lalu buka per bab, centang butir yang mau dicetak, dan terima
+        tiga dokumen terpisah: lembar siswa siap gunting, kunci pegangan tentor,
+        dan lembar catatan buku progres.
       </p>
 
-      <div style={gayaKartu}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>1 · Pilih paket</div>
-        {memuat && <div style={{ fontSize: 12, color: '#6b7280' }}>Memuat paket…</div>}
-        {!memuat && paketList.length === 0 && (
-          <div style={{ fontSize: 12, color: '#94a3b8' }}>
-            Belum ada paket yang terhubung ke akun Anda. Minta admin menghubungkan tentor
-            di halaman Terbitkan Try Out.
-          </div>
-        )}
-        {!memuat && paketList.length > 0 && (
-          <select
-            value={paketId}
-            onChange={(e) => setPaketId(e.target.value)}
-            style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5 }}
-          >
-            <option value="">— pilih paket —</option>
-            {paketList.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.judul} · {p.targetKelas} · {(p.daftarSoal || []).length} soal
-              </option>
-            ))}
-          </select>
-        )}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        <button style={gayaPill(sumber === 'bank')} onClick={() => setSumber('bank')}>🗂️ Bank Soal (per mapel → bab)</button>
+        <button style={gayaPill(sumber === 'paket')} onClick={() => setSumber('paket')}>📦 Paket Try Out saya ({paketList.length})</button>
       </div>
 
-      {paket && (
-        <div style={gayaKartu}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>2 · Atur isi cetak</div>
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontSize: 12 }}>
-            <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              Jumlah soal maksimum
-              <input
-                type="number" min="0" value={maks || ''}
-                placeholder="semua"
-                onChange={(e) => setMaks(Number(e.target.value) || 0)}
-                style={{ width: 80, padding: '7px 8px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12 }}
-              />
-            </label>
-            <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <input type="checkbox" checked={tanpaEsai} onChange={(e) => setTanpaEsai(e.target.checked)} />
-              lewati soal esai (dinilai manual, tidak cocok untuk lembar gunting)
-            </label>
-            <span style={{ color: '#64748b' }}>
-              akan tercetak <b>{soal.length}</b> dari {(paket.daftarSoal || []).length} soal
-            </span>
+      {memuat && <div style={{ fontSize: 12, color: '#6b7280' }}>Memuat bank soal…</div>}
+
+      {sumber === 'bank' && !memuat && (
+        <>
+          <div style={gayaKartu}>
+            <div style={gayaJudulKartu}>1 · Mata pelajaran</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {daftarMapel.map(([m, n]) => (
+                <button key={m} style={gayaPill(mapelAktif === m)} onClick={() => { setMapelAktif(m); setBabAktif(''); setTercentang([]); }}>
+                  {m} <span style={{ opacity: 0.6 }}>({n})</span>
+                </button>
+              ))}
+              {daftarMapel.length === 0 && <span style={{ fontSize: 12, color: '#94a3b8' }}>Bank soal masih kosong.</span>}
+            </div>
           </div>
+
+          {mapelAktif && (
+            <div style={gayaKartu}>
+              <div style={gayaJudulKartu}>2 · Bab / materi pada {mapelAktif}</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {daftarBab.map(([b, n]) => (
+                  <button key={b} style={gayaPill(babAktif === b)} onClick={() => { setBabAktif(b); setTercentang([]); }}>
+                    {b} <span style={{ opacity: 0.6 }}>({n})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {babAktif && (
+            <div style={gayaKartu}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <div style={gayaJudulKartu}>3 · Centang butir yang akan dicetak ({terpilihBank.length}/{soalBankTampil.length})</div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 5, alignItems: 'center' }}>
+                    <input type="checkbox" checked={tanpaEsai} onChange={(e) => setTanpaEsai(e.target.checked)} /> lewati esai
+                  </label>
+                  <button style={gayaPill(false)} onClick={() => setTercentang(soalBankTampil.map((s) => s.id))}>pilih semua</button>
+                  <button style={gayaPill(false)} onClick={() => setTercentang([])}>bersihkan</button>
+                </div>
+              </div>
+              <div style={{ maxHeight: 380, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, padding: 8 }}>
+                {soalBankTampil.map((s, i) => (
+                  <label key={s.id} style={{ display: 'flex', gap: 8, padding: '7px 6px', borderBottom: '1px solid #f1f5f9', fontSize: 12, cursor: 'pointer', alignItems: 'flex-start' }}>
+                    <input type="checkbox" checked={tercentang.includes(s.id)} onChange={(e) => centang(s.id, e.target.checked)} style={{ marginTop: 2 }} />
+                    <span>
+                      <b style={{ color: '#3730a3' }}>{i + 1}.</b>{' '}
+                      <span style={{ color: '#64748b', fontSize: 10.5 }}>[{String(s.tipe || 'pg_sederhana').replace(/_/g, ' ')}]</span>{' '}
+                      {String(s.soal || s.teks_soal || '').slice(0, 110)}
+                    </span>
+                  </label>
+                ))}
+                {soalBankTampil.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: 8 }}>Tidak ada butir di bab ini setelah saringan.</div>}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {sumber === 'paket' && !memuat && (
+        <div style={gayaKartu}>
+          <div style={gayaJudulKartu}>Paket try out yang terhubung ke Anda</div>
+          {paketList.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8' }}>Belum ada paket terhubung. Minta admin menghubungkan tentor di halaman Terbitkan Try Out.</div>}
+          <select value={paketId} onChange={(e) => setPaketId(e.target.value)} style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5 }}>
+            <option value="">— pilih paket —</option>
+            {paketList.map((p) => (
+              <option key={p.id} value={p.id}>{p.judul} · {p.targetKelas} · {(p.daftarSoal || []).length} soal</option>
+            ))}
+          </select>
+          {paket && (
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 10, fontSize: 12 }}>
+              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                jumlah maks
+                <input type="number" min="0" value={maksPaket || ''} placeholder="semua" onChange={(e) => setMaksPaket(Number(e.target.value) || 0)} style={{ width: 80, padding: '7px 8px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12 }} />
+              </label>
+              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input type="checkbox" checked={tanpaEsai} onChange={(e) => setTanpaEsai(e.target.checked)} /> lewati esai
+              </label>
+              <span style={{ color: '#64748b' }}>akan tercetak <b>{soalPaket.length}</b> dari {(paket.daftarSoal || []).length} soal</span>
+            </div>
+          )}
         </div>
       )}
 
-      {paket && (
+      {!memuat && (
         <div style={gayaKartu}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>3 · Cetak</div>
+          <div style={gayaJudulKartu}>4 · Cetak ({siap.length} butir)</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <button style={gayaTombol('#2563eb')} onClick={() => cetakLewatIframe(htmlPaketSiswa(meta, soal), 'Paket Siswa')}>
-              ✂️ PAKET-SISWA (siap gunting)
-            </button>
-            <button style={gayaTombol('#b91c1c')} onClick={() => cetakLewatIframe(htmlKunciTentor(meta, soal), 'Kunci Tentor')}>
-              🔑 KUNCI-TENTOR (jangan untuk siswa)
-            </button>
-            <button style={gayaTombol('#15803d')} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, soal), 'Lembar Catatan')}>
-              📝 LEMBAR-CATATAN (buku progres)
-            </button>
+            <button style={gayaTombol('#2563eb', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlPaketSiswa(meta, siap), 'Paket Siswa')}>✂️ PAKET-SISWA</button>
+            <button style={gayaTombol('#b91c1c', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlKunciTentor(meta, siap), 'Kunci Tentor')}>🔑 KUNCI-TENTOR</button>
+            <button style={gayaTombol('#15803d', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
           </div>
           <div style={{ fontSize: 11, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>
             Aturan kertas bekas (docs/KERANGKA-KONTEN-BUKU.md): cetak SATU muka; bekas jadwal
-            atau draft internal boleh, tetapi bekas absensi bernama / kwitansi / berkas keuangan
-            TIDAK BOLEH (sisi belakang lembar soal tidak boleh memuat data pribadi).
-            Layout sudah hemat toner: tanpa background berwarna, kotak berborder tegas,
-            garis potong di tepi tiap butir.
+            atau draft internal boleh, bekas absensi bernama / kwitansi / berkas keuangan
+            TIDAK BOLEH. Layout hemat toner: tanpa background berwarna, kotak berborder
+            tegas, garis potong di tepi tiap butir.
           </div>
         </div>
       )}
