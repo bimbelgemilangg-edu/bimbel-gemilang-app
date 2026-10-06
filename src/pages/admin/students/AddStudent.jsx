@@ -3,10 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { 
-  collection, addDoc, getDocs, query, orderBy, limit, 
-  doc, getDoc, serverTimestamp, where, writeBatch, runTransaction, setDoc
-} from "firebase/firestore";
+import { collection, getDocs, query, doc, getDoc, serverTimestamp, where, writeBatch, runTransaction, setDoc } from "firebase/firestore";
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
   CheckCircle, ChevronRight, ChevronLeft, IdCard, Phone,
@@ -108,7 +105,7 @@ const AddStudent = () => {
             if (!batal && coba !== randomSuffix) setRandomSuffix(coba);
             return;
           }
-        } catch (e) {
+        } catch {
           return;
         }
         coba = Math.floor(100 + Math.random() * 900);
@@ -1132,10 +1129,10 @@ const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
   mainContent: (m) => ({ marginLeft: m ? '0' : '250px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
   toast: { position: 'fixed', top: 20, right: 20, zIndex: 9999, background: '#1e293b', color: 'white', padding: '14px 24px', borderRadius: 12, fontWeight: 'bold', fontSize: 14, boxShadow: '0 10px 30px rgba(0,0,0,0.2)', animation: 'toastIn 0.3s ease' },
-  header: (m) => ({ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, flexWrap: 'wrap' }),
+  header: (_m) => ({ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20, flexWrap: 'wrap' }),
   backBtn: { background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' },
   pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
-  stepIndicator: (m) => ({ display: 'flex', justifyContent: 'center', marginBottom: 20, gap: 0 }),
+  stepIndicator: (_m) => ({ display: 'flex', justifyContent: 'center', marginBottom: 20, gap: 0 }),
   stepItem: { display: 'flex', alignItems: 'center', flex: 1, maxWidth: 200 },
   stepCircle: (active, done) => ({ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 'bold', background: done ? '#10b981' : active ? '#3b82f6' : '#e2e8f0', color: done || active ? 'white' : '#94a3b8', flexShrink: 0 }),
   stepLabel: (active) => ({ fontSize: 11, fontWeight: active ? 'bold' : '500', color: active ? '#1e293b' : '#94a3b8', marginLeft: 6, marginRight: 6, whiteSpace: 'nowrap' }),

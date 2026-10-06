@@ -54,11 +54,11 @@ const renderMathInHtml = (html) => {
   let result = html;
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (m, expr) => {
     try { return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true }); }
-    catch (e) { return m; }
+    catch { return m; }
   });
   result = result.replace(/\$([^$\n]+?)\$/g, (m, expr) => {
     try { return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false }); }
-    catch (e) { return m; }
+    catch { return m; }
   });
   return result;
 };

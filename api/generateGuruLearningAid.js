@@ -167,10 +167,10 @@ const GEMINI_MODELS = [
       let parsed;
       try {
         parsed = JSON.parse(rawText);
-      } catch (e) {
+      } catch {
         const match = rawText.match(/\{[\s\S]*\}/);
         if (match) {
-          try { parsed = JSON.parse(match[0]); } catch (e2) { /* biarkan parsed undefined */ }
+          try { parsed = JSON.parse(match[0]); } catch { /* biarkan parsed undefined */ }
         }
       }
   

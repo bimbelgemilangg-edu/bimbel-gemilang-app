@@ -87,7 +87,7 @@ const ClassSession = () => {
         const fd = await getDoc(doc(db, 'settings', 'google_forms'));
         if (fd.exists()) setGoogleForms(fd.data());
         setLoading(false);
-      } catch (e) { alert('❌ Gagal memuat data kelas'); navigate('/guru/dashboard'); }
+      } catch { alert('❌ Gagal memuat data kelas'); navigate('/guru/dashboard'); }
     };
     if (id) fetchData();
   }, [id, navigate]);
@@ -149,7 +149,7 @@ const ClassSession = () => {
         keterangan: next ? 'Input Manual Guru' : 'Siswa tidak hadir',
         mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
       }, { merge: true });
-    } catch (e) { setAttendanceMap((p) => ({ ...p, [student.id]: cur })); }
+    } catch { setAttendanceMap((p) => ({ ...p, [student.id]: cur })); }
   };
 
   const hitungHonor = () => {
@@ -375,7 +375,7 @@ const st = {
   btnSave: (m, l) => ({ flex: 1, padding: m ? 12 : 14, background: l ? '#bdc3c7' : '#2c3e50', color: 'white', border: 'none', borderRadius: 10, fontWeight: 'bold', cursor: l ? 'not-allowed' : 'pointer', fontSize: m ? 12 : 14 }),
   uploadOptionsRow: (m) => ({ display: 'flex', gap: 8, flexDirection: m ? 'column' : 'row' }),
   uploadBoxImport: (m, l) => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: m ? 14 : 16, borderRadius: 10, border: '2px dashed #94a3b8', color: '#64748b', fontWeight: 'bold', fontSize: m ? 12 : 13, cursor: l ? 'not-allowed' : 'pointer', opacity: l ? 0.6 : 1, background: '#f8fafc', flex: 1 }),
-  step1TabRow: (m) => ({ display: 'flex', gap: 8, marginBottom: 12 }),
+  step1TabRow: (_m) => ({ display: 'flex', gap: 8, marginBottom: 12 }),
   step1TabBtn: (a) => ({ flex: 1, padding: '10px 14px', borderRadius: 10, border: a ? '2px solid #2c3e50' : '1px solid #e2e8f0', background: a ? '#2c3e50' : 'white', color: a ? 'white' : '#64748b', fontWeight: 'bold', fontSize: 13, cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }),
   tabDot: { width: 7, height: 7, borderRadius: '50%', background: '#ef4444' },
   tabSafeNote: (m) => ({ fontSize: m ? 10 : 11, color: '#10b981', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', marginBottom: 12 }),
@@ -384,12 +384,12 @@ const st = {
   absensiHint: (m) => ({ fontSize: m ? 11 : 12, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }),
   uploadBox: (m, l) => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: m ? 14 : 16, borderRadius: 10, border: '2px dashed #3498db', color: '#3498db', fontWeight: 'bold', fontSize: m ? 12 : 13, cursor: l ? 'not-allowed' : 'pointer', opacity: l ? 0.6 : 1, background: '#f8fbff', flex: 1 }),
   uploadBoxSecondary: (m, l) => ({ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10, borderRadius: 8, border: '1px dashed #cbd5e1', color: '#64748b', fontWeight: 600, fontSize: m ? 11 : 12, cursor: l ? 'not-allowed' : 'pointer', opacity: l ? 0.6 : 1 }),
-  absensiSuccessBox: (m) => ({ display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 10, border: '1px solid #bbf7d0', background: '#f0fdf4' }),
+  absensiSuccessBox: (_m) => ({ display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 10, border: '1px solid #bbf7d0', background: '#f0fdf4' }),
   absensiThumb: { width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' },
   btnGantiFoto: { marginTop: 4, background: 'none', border: 'none', color: '#3498db', fontSize: 11, fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline', padding: 0 },
   absensiErrorText: { color: '#ef4444', fontSize: 12, marginTop: 8 },
   btnDisabled: { background: '#cbd5e1', color: '#64748b', cursor: 'not-allowed' },
-  lampiranBox: (m) => ({ marginBottom: 16 }),
+  lampiranBox: (_m) => ({ marginBottom: 16 }),
 };
 
 export default ClassSession;

@@ -51,7 +51,7 @@ export async function muatStatusSiswa() {
       const student = { id: langsung.id, ...langsung.data() };
       return { studentId, student, aktif: isAkunBelajarAktif(student) };
     }
-  } catch (_) { /* lanjut query */ }
+  } catch { /* lanjut query */ }
 
   // Query field studentId
   try {
@@ -61,7 +61,7 @@ export async function muatStatusSiswa() {
       const student = { id: d.id, ...d.data() };
       return { studentId, student, aktif: isAkunBelajarAktif(student) };
     }
-  } catch (_) { /* ignore */ }
+  } catch { /* ignore */ }
 
   // Query field nim
   try {
@@ -71,7 +71,7 @@ export async function muatStatusSiswa() {
       const student = { id: d.id, ...d.data() };
       return { studentId, student, aktif: isAkunBelajarAktif(student) };
     }
-  } catch (_) { /* ignore */ }
+  } catch { /* ignore */ }
 
   return { studentId, student: null, aktif: false };
 }

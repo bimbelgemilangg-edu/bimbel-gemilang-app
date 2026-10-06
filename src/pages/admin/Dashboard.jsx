@@ -478,10 +478,10 @@ const styles = {
   spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
 
   // Header
-  header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }),
+  header: (_m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }),
   pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
   pageDate: (m) => ({ margin: '4px 0 0', color: '#64748b', fontSize: m ? 11 : 13 }),
-  headerActions: (m) => ({ display: 'flex', gap: 8 }),
+  headerActions: (_m) => ({ display: 'flex', gap: 8 }),
   btnRefresh: (m) => ({ background: 'white', border: '1px solid #e2e8f0', padding: m ? '8px 12px' : '10px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' }),
   btnQuickAdd: (m) => ({ background: '#3b82f6', color: 'white', border: 'none', padding: m ? '8px 12px' : '10px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }),
 
@@ -508,7 +508,7 @@ const styles = {
 
   // Attendance
   attendanceGrid: (m) => ({ display: 'grid', gridTemplateColumns: m ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }),
-  attendanceCard: (m) => ({ background: '#f8fafc', padding: 14, borderRadius: 12, cursor: 'pointer', border: '1px solid #f1f5f9' }),
+  attendanceCard: (_m) => ({ background: '#f8fafc', padding: 14, borderRadius: 12, cursor: 'pointer', border: '1px solid #f1f5f9' }),
   classHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   className: { margin: 0, fontSize: 13, color: '#1e293b', fontWeight: 'bold' },
   roomBadge: { background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: 10, fontSize: 9, fontWeight: 'bold' },

@@ -60,7 +60,7 @@ const AIGenerateMateri = ({ subject, onGenerated, onClose }) => {
               imageUrl = imgData.url;
               imageCredit = imgData.credit;
             }
-          } catch (e) {
+          } catch {
             // foto gagal -> lanjut tanpa foto, materi tetap jadi
           }
         }

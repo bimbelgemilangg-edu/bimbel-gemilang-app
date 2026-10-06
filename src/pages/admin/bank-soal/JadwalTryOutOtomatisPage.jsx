@@ -3,21 +3,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import {
-  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, where,
-} from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import {
   Calendar, Plus, Trash2, Save, Play, RefreshCw, Sparkles, Send, EyeOff, Settings2,
 } from 'lucide-react';
-import {
-  COL_TEMPLATE,
-  COL_PAKET,
-  DEFAULT_TEMPLATE_SMA,
-  siapkanDrafMingguIni,
-  terbitkanDraf,
-  nonaktifkanPaket,
-  hitungSlotMingguIni,
-} from '../../../utils/mesinTryOutOtomatis';
+import { COL_TEMPLATE, COL_PAKET, DEFAULT_TEMPLATE_SMA, siapkanDrafMingguIni, terbitkanDraf, nonaktifkanPaket } from '../../../utils/mesinTryOutOtomatis';
 import { KATALOG_MAPEL } from '../../../utils/mesinTaksonomiSoal';
 
 const HARI = [

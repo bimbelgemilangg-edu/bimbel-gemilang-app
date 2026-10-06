@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { 
-  doc, getDoc, collection, query, where, getDocs, 
-  addDoc, updateDoc, deleteDoc, serverTimestamp, orderBy 
-} from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { 
   ArrowLeft, Home, ChevronRight, UserCheck, UserX, UserPlus, 
   Calendar, BookOpen, Edit3, Trash2, Save, X, CheckCircle,
@@ -244,7 +241,7 @@ const StudentAttendance = () => {
       await deleteDoc(doc(db, "attendance", itemId));
       showAlert('🗑️ Data dihapus!');
       fetchData();
-    } catch (error) {
+    } catch {
       showAlert('❌ Gagal menghapus');
     }
   };
@@ -270,7 +267,7 @@ const StudentAttendance = () => {
       XLSX.utils.book_append_sheet(wb, ws, "Absensi");
       XLSX.writeFile(wb, `Absensi_${student?.nama || 'Siswa'}_${filterMonth}.xlsx`);
       showAlert('✅ Export berhasil!');
-    } catch (error) {
+    } catch {
       showAlert('❌ Gagal export');
     }
   };
@@ -571,7 +568,7 @@ const styles = {
   spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
 
   // Breadcrumb
-  breadcrumb: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }),
+  breadcrumb: (_m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }),
   backBtn: { background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' },
   breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
 
@@ -590,19 +587,19 @@ const styles = {
   statCard: (bg, color) => ({ flex: 1, minWidth: 80, background: bg, padding: 12, borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, border: `1px solid ${color}20` }),
 
   // Filter
-  filterBar: (m) => ({ display: 'flex', gap: 8, marginBottom: 15, flexWrap: 'wrap', alignItems: 'flex-end' }),
+  filterBar: (_m) => ({ display: 'flex', gap: 8, marginBottom: 15, flexWrap: 'wrap', alignItems: 'flex-end' }),
   filterGroup: { display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 120 },
   filterLabel: { fontSize: 10, fontWeight: 'bold', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4 },
   filterInput: { padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: 'white', width: '100%', boxSizing: 'border-box' },
-  btnExport: (m) => ({ padding: '8px 14px', borderRadius: 8, background: '#10b981', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }),
-  btnRefresh: (m) => ({ padding: '8px', borderRadius: 8, background: 'white', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', alignItems: 'center' }),
+  btnExport: (_m) => ({ padding: '8px 14px', borderRadius: 8, background: '#10b981', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }),
+  btnRefresh: (_m) => ({ padding: '8px', borderRadius: 8, background: 'white', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', alignItems: 'center' }),
 
   // Toggle Form
   toggleFormBtn: { width: '100%', padding: '10px', background: 'white', color: '#3b82f6', border: '2px dashed #cbd5e1', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 13, marginBottom: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 
   // Form
   addForm: (m) => ({ background: 'white', padding: m ? 15 : 20, borderRadius: 14, marginBottom: 20, border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }),
-  formGrid: (m) => ({ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }),
+  formGrid: (_m) => ({ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }),
   formField: { display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: '120px' },
   formLabel: { fontSize: 11, fontWeight: 'bold', color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 },
   formInput: { padding: '10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, width: '100%', boxSizing: 'border-box', background: '#f8fafc' },

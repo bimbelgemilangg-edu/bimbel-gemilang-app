@@ -1238,7 +1238,7 @@ const styles = {
   loadingState: { textAlign: 'center', padding: 80, color: '#94a3b8' },
   spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
   
-  breadcrumb: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }),
+  breadcrumb: (_m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }),
   backBtn: { background: 'white', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, color: '#64748b' },
   breadcrumbTrail: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 },
   

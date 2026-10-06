@@ -27,9 +27,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import {
-  collection, query, where, getDocs, doc, getDoc, setDoc, deleteDoc, writeBatch, Timestamp,
-} from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, setDoc, writeBatch, Timestamp } from 'firebase/firestore';
 import { ArrowLeft, Search, AlertTriangle, Trash2, Loader2, ShieldAlert } from 'lucide-react';
 
 function formatWaktu(ts) {

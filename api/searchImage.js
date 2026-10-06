@@ -94,7 +94,7 @@ export default async function handler(req, res) {
           credit: 'Wikimedia Commons',
           sourcePage: `https://commons.wikimedia.org/wiki/${encodeURIComponent(candidate.title)}`,
         });
-      } catch (e) {
+      } catch {
         continue; // kandidat ini gagal diproses, coba yang berikutnya
       }
     }

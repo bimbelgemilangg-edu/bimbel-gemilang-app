@@ -179,7 +179,7 @@ async function findImageRegions(page, pdfjsLib) {
 }
 
 // Kelompokkan region gambar yang sejajar (y mirip) dan ukurannya mirip → kemungkinan opsi bergambar
-function clusterOptionImages(regions, pageHeight) {
+function clusterOptionImages(regions, _pageHeight) {
   if (regions.length < 2) return null;
   const sorted = [...regions].sort((a, b) => b.y - a.y);
   const groups = [];
@@ -644,7 +644,7 @@ const SmartImportPanel = ({ onParsed, onClose }) => {
             </div>
 
             <div style={{ overflowY: 'auto', flex: 1, marginBottom: 12 }}>
-              {detected.map((q, idx) => (
+              {detected.map((q, _idx) => (
                 <div key={q.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: '#673ab7' }}>Soal {q.number} (hal. {q.page})</span>

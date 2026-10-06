@@ -2,7 +2,7 @@
 import React from 'react';
 import { Trophy, Medal, Crown, TrendingUp, TrendingDown, BookOpen } from 'lucide-react';
 
-const RelativeLeaderboard = ({ leaderboardData, studentId, studentName }) => {
+const RelativeLeaderboard = ({ leaderboardData, studentId, _studentName }) => {
   if (!leaderboardData) {
     return (
       <div style={{ textAlign: 'center', padding: 40, background: 'white', borderRadius: 16, border: '1px solid #e2e8f0' }}>

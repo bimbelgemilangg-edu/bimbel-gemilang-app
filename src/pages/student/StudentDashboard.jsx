@@ -1,7 +1,7 @@
 // src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
-import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, deleteDoc, addDoc, serverTimestamp, where, limit } from "firebase/firestore";
+import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, deleteDoc, serverTimestamp, where, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from 'react-router-dom';
@@ -313,7 +313,7 @@ const StudentDashboard = () => {
           try {
             if (enrolledSubjectsVal) localStorage.setItem('studentEnrolledSubjects', JSON.stringify(enrolledSubjectsVal));
             else localStorage.removeItem('studentEnrolledSubjects');
-          } catch (e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
+          } catch { /* localStorage penuh/gak tersedia -- gak fatal */ }
         }
 
         const [
@@ -498,7 +498,7 @@ const StudentDashboard = () => {
   const markNotifRead = async (notif) => {
     if (!notif.isRead) {
       setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
-      try { await setDoc(doc(db, "notifications", notif.id), { isRead: true }, { merge: true }); } catch (e) {}
+      try { await setDoc(doc(db, "notifications", notif.id), { isRead: true }, { merge: true }); } catch { /* gagal menandai baca di jaringan: tampilan lokal sudah benar, tidak layak mengganggu siswa */ }
     }
     if (notif.link) navigate(notif.link);
     setShowNotifPanel(false);
@@ -507,7 +507,7 @@ const StudentDashboard = () => {
   const deleteNotification = async (e, notifId) => {
     e.stopPropagation();
     setNotifications(prev => prev.filter(n => n.id !== notifId));
-    try { await deleteDoc(doc(db, "notifications", notifId)); } catch (e) {}
+    try { await deleteDoc(doc(db, "notifications", notifId)); } catch { /* dokumen notifikasi mungkin sudah hilang di server; anggap penghapusan selesai */ }
   };
 
   const dismissOptionalSurvey = (surveyId) => {
@@ -546,14 +546,14 @@ const StudentDashboard = () => {
               }, { merge: true });
               alert('✅ Absen: ' + d.mapel);
               stop();
-            } catch (e) {}
+            } catch { /* error di dalam callback pemindai ditelan agar loop QR tidak mati */ }
           },
-          (err) => {}
+          (_err) => {}
         );
-      } catch (e) {}
+      } catch { /* kegagalan jalur absen QR tidak boleh menghentikan pemindahan layar */ }
     };
     const stop = async () => {
-      if (qr && qr.isScanning) { try { await qr.stop(); qr.clear(); } catch (e) {} }
+      if (qr && qr.isScanning) { try { await qr.stop(); qr.clear(); } catch { /* penghentian scanner gagal: state tetap dipaksa berhenti di baris berikutnya */ } }
       setIsScanning(false);
     };
     start();

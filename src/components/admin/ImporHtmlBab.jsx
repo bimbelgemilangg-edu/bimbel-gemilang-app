@@ -305,7 +305,7 @@ export default function ImporHtmlBab({ terbuka, tutup, bukuId, jumlahBab = 0 }) 
                   setBusy(true);
                   try {
                     await simpanSatu(row);
-                  } catch (e) {
+                  } catch {
                     /* pesan sudah di-set di simpanSatu */
                   }
                   setBusy(false);
