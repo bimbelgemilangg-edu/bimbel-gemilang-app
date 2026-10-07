@@ -31,7 +31,7 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 >    - `<div class="question-meta"><span class="q-number">No. <n></span><span class="q-source">SUMBER</span><span class="q-type-badge">LABEL MANUSIA</span></div>`
 >    - `<div class="q-body">teks soal lengkap</div>`
 >    - bila ada pernyataan bernomor: `<div class="statements-box"><ol><li>...</li></ol></div>`
->    - bila ada gambar: `<div class="figure-container"><img src="data:image/...;base64,..." alt=""><div class="figure-caption">KETERANGAN</div></div>` (gambar boleh lebih dari satu; tempel DI POSISI ia disebut)
+>    - bila ada gambar: `<div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="ALAMAT-HALAMAN-SUMBER"><img src="URL-GAMBAR-ASLI" alt=""><div class="figure-caption">KETERANGAN — Sumber: NAMA-SITUS</div></div>` atau, bila gambar asli tidak ditemukan: `<div class="figure-container" data-gambar-sumber="petunjuk-potongan"><div class="figure-caption">{{GAMBAR: petunjuk potongan presisi}}</div></div>` — gambar boleh lebih dari satu; tempel DI POSISI ia disebut; WAJIB menaati TANGGA GAMBAR ASLI di aturan 10
 >    - pilihan ganda: `<div class="options-list">` berisi `<label class="option-item"><input type="radio" name="q<n>" value="A"><span class="option-text">A) teks</span></label>` untuk tiap opsi
 >    - tabel benar/salah atau menjodohkan: `<table class="matrix-box">` dengan baris `<tr><td>pernyataan</td></tr>`
 >    - **WAJIB:** `<div class="pembahasan">PENJELASAN LENGKAP mengapa kunci itu benar, termasuk pembahasan gambar/diagram bila sumber menjelaskannya</div>`
@@ -64,11 +64,44 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 >    tetap buat kartunya dan tulis di pembahasan: `[gambar tidak terbaca]`.
 > 8. Bahasa keluaran: Indonesia untuk pembahasan; teks soal mengikuti
 >    sumber sebagaimana adanya.
+> 9. TAKSONOMI KURIKULUM MERDEKA (WAJIB per kartu): `data-kurikulum`
+>    ("merdeka"/"legacy"), `data-fase` (A–F), `data-kelas` (WAJIB per
+>    kartu untuk kompilasi lintas kelas — JANGAN memisahkan berkas per
+>    kelas), `data-elemen`, `data-capaian`, `data-bab`.
+> 10. **TANGGA GAMBAR ASLI** (WAJIB — gambar adalah bagian yang paling
+>    sering dipalsukan model, jadi aturan ini keras):
+>    **DILARANG MEMBUAT GAMBAR.** Tidak boleh menggambar, melukis ulang,
+>    merender, membuat tiruan SVG, maupun memasang
+>    `<img src="data:image/...;base64,...">` hasil bikinan sendiri —
+>    sistem menandai base64 tanpa pengakuan asal sebagai TERINDIKASI
+>    PEMALSUAN. Untuk SETIAP gambar/diagram/grafik/ilustrasi yang tercetak
+>    pada soal, ikuti tangga berikut BERURUTAN, dan **MAKSIMALKAN anak
+>    tangga (1) — cari sungguh-sungguh dulu — sebelum turun ke (2):**
+>    1. **CARI GAMBAR ASLI YANG BEREDAR.** Soal-soal ini umumnya berasal
+>       dari sumber beredar luas (UN/UTBK/SNBT/TKA/OSN/buku cetak/situs
+>       edukasi), sehingga gambar aslinya sering masih beredar di
+>       internet. Boleh dipakai HANYA bila **PERSIS SAMA** dengan yang
+>       tercetak di scan (bentuk, label, angka, orientasi identik —
+>       "mirip" atau versi gambar-ulang situs lain TIDAK sah) DAN
+>       berkualitas **HD**. Pasang dengan
+>       `data-gambar-sumber="url-asli"` + `data-gambar-asal="alamat
+>       halaman tempat gambar ditemukan"` + caption menyebut sumbernya.
+>       JANGAN mengarang URL. Bila ragu tidak persis/kurang HD — turun
+>       ke (2).
+>    2. **PETUNJUK POTONGAN PRESISI** dari berkas ASLI:
+>       `<div class="figure-container" data-gambar-sumber="petunjuk-potongan"><div class="figure-caption">{{GAMBAR: halaman <n>, posisi <...>, isi: <deskripsi lengkap figur — semua label/angka yang tercetak>}}</div></div>`
+>       — tim yang memotong gambar asli dari berkas scan pemilik.
+>    3. Figur buram/tak terbaca: tetap buat petunjuk-potongan berisi
+>       "figur tidak terbaca di scan" dan tulis di pembahasan:
+>       `[gambar tidak terbaca]`. Jangan pernah membuat pengganti.
 >
 > Periksa dirimu sebelum menjawab: (a) jumlah `question-card` == jumlah
 > nomor di sumber; (b) setiap kartu punya `data-kunci` dan `.pembahasan`;
-> (c) tidak ada tag terlarang. Tuliskan hasil pemeriksaan itu sebagai
-> komentar HTML di baris pertama berkas.
+> (c) tidak ada tag terlarang; (d) setiap kartu memuat `data-fase` dan
+> `data-kurikulum`; (e) TIDAK ADA satu pun gambar bikinanmu (data:image
+> base64) — setiap `figure-container` memakai url-asli +
+> `data-gambar-asal`, atau petunjuk-potongan. Tuliskan hasil pemeriksaan
+> itu sebagai komentar HTML di baris pertama berkas.
 
 ## 2. Kenapa patennya berbentuk begini
 
@@ -76,7 +109,7 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 |---|---|
 | kunci & pembahasan sebagai **atribut/class mesin-baca** (`data-kunci`, `.pembahasan`) | hasil scan Gemini sebelumnya (kumpulan_soal_tka_biologi.html, 81 kartu) indah dibaca manusia tapi **nol kunci & nol pembahasan** → tidak bisa masuk bank soal. Atribut tidak mengganggu keindahan tampilan |
 | enum `data-tipe` tertutup | enum ini = enum mesin skoring (`skorSoalTryOut.js`); tipe bebas = soal yang tidak bisa dinilai |
-| gambar base64 di dalam `figure-container` | ekstraktor Gemilang yang mengunggah ke Supabase & mengganti dengan URL + jalur berstruktur (`jalurBankSoal`), sehingga dokumen Firestore tidak jebol batas 1 MB |
+| **tangga gambar asli**: cari URL gambar beredar yang PERSIS SAMA & HD → bila tidak ada, petunjuk potongan presisi `{{GAMBAR: ...}}`; model DILARANG membuat gambar | permintaan owner 2026-10-07: "gambar asli persis di soal asli atau gambar asli di internet, wajib sama dan HD, tapi dilarang membuat; kalau tidak ada baru crop presisi dari fileku — maksimalkan cari dulu". Alasan teknis: model bahasa tidak bisa memproduksi byte gambar asli; base64 "tempelan" model hampir pasti gambar bikinan. Base64 SAH hanya yang mengaku `warisan`/`potongan-asli` (potongan manusia), dan tetap diunggah ekstraktor ke Supabase (`jalurBankSoal`) supaya dokumen Firestore tidak jebol batas 1 MB |
 | math `$...$` dipertahankan | reader & lembar cetak merender KaTeX; mengonversi ke kata = merusak rumus |
 | larangan script/on*/iframe | HTML dari AI adalah masukan tak dipercaya; ekstraktor juga membuang semuanya lagi (pertahanan ganda) |
 | komentar pemeriksaan diri di baris pertama | memaksa model menghitung ulang jumlahnya; mengurangi soal yang diam-diam tercecer |
@@ -91,12 +124,23 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 4. memetakan ke **KONTRAK-JSON-BANK-SOAL** (12 field) sehingga hasilnya
    langsung bisa dinilai mesin skoring & dicetak mesin cetak;
 5. memisahkan gambar base64 ke daftar tersendiri untuk diunggah ke
-   Supabase oleh lapisan UI (tidak pernah disimpan inline di Firestore).
+   Supabase oleh lapisan UI (tidak pernah disimpan inline di Firestore);
+6. menagih **ASAL-USUL GAMBAR** (aturan 10): `data-gambar-sumber="url-asli"`
+   (+ `data-gambar-asal`) disimpan apa adanya beserta meta-nya
+   (`gambarMeta` di dokumen bank soal); `petunjuk-potongan`
+   `{{GAMBAR: ...}}` masuk antrean `potongan` dan TIDAK PERNAH bocor ke
+   teks soal siswa (teruji), disimpan di dokumen sebagai
+   `potonganTertunda`; base64 tanpa pengakuan asal diberi peringatan
+   **"TERINDIKASI DIBUAT MODEL"** (bukan penolakan — berkas era sebelum
+   aturan ini bisa memuat potongan asli tanpa atribut).
 
 ## 4. Alur kerja owner malam ini
 
 1. Buka Gemini, tempel prompt paten di atas + unggah halaman scan (per bab,
-   ≤ 10 halaman per putaran agar kuota gratis aman).
+   ≤ 10 halaman per putaran agar kuota gratis aman). **Bila tersedia,
+   aktifkan fitur pencarian Google (grounding) di Gemini** — tanpa itu
+   tangga (1) "cari gambar asli yang beredar" tidak bisa jalan dan Gemini
+   akan langsung menulis petunjuk potongan.
 2. Simpan keluaran sebagai `.html`.
 3. Serahkan ke Sistem: (sekarang) kirim berkasnya ke tim IT untuk dikonversi
    & diimpor; (setelah UI impor HTML Gemini merge) tempel langsung di
@@ -161,3 +205,47 @@ atau `[tabel tidak terbaca]` alih-alih mengarang isi gambar. Ekstraktor
 tidak menolak kartu semacam ini (menolak = membuang soal yang masih
 bisa dipakai teksnya), tetapi peringatan "penalaran" akan menandainya
 bila Gemini memilih mengisi dengan terkaan.
+
+---
+
+## 6. Aturan gambar asli (2026-10-07) — tangga, penandaan, dan batas jujurnya
+
+**Permintaan owner (verbatim):** "gambar asli persis di soal asli atau gambar
+asli di internet wajib sama dan HD untuk sistem, tapi dilarang membuat; kalau
+gak ada baru crop presisi; kalau gak ada baru ambil presisi di fileku — tapi
+maksimalkan untuk cari dulu."
+
+### Tangga yang dipatenkan (aturan 10 prompt)
+
+| Anak tangga | Bentuk keluaran Gemini | Yang dilakukan sistem |
+|---|---|---|
+| **(1) Gambar asli yang beredar** — dicari dulu, sungguh-sungguh; syarat: PERSIS SAMA (bukan mirip) & HD | `<img src="URL">` + `data-gambar-sumber="url-asli"` + `data-gambar-asal="alamat halaman sumber"` | URL disimpan apa adanya di `gambarUrls`, asal-usulnya di `gambarMeta`; admin melihat jumlah "gambar URL asli" di pratinjau |
+| **(2) Petunjuk potongan presisi** — bila (1) tidak ada / tidak persis / tidak HD | `{{GAMBAR: halaman n, posisi ..., isi: semua label/angka}}` + `data-gambar-sumber="petunjuk-potongan"` | masuk antrean `potongan` di pratinjau ✂️ + tersimpan di dokumen (`potonganTertunda`); tim memotong gambar ASLI dari berkas scan owner (alat: `potongGambar.js`/EditorBab) |
+| **(3) Figur tak terbaca** | petunjuk-potongan "tidak terbaca" + `[gambar tidak terbaca]` di pembahasan | tidak ada gambar pengganti; kartu tetap masuk bank |
+| **DILARANG: membuat gambar** | base64/SVG bikinan model | base64 TANPA pengakuan asal → peringatan ⚠️ **"TERINDIKASI DIBUAT MODEL"** per kartu di pratinjau; base64 yang mengaku `warisan`/`potongan-asli` diterima (potongan manusia yang sah) |
+
+### Batas jujur yang harus diketahui owner
+
+1. **Gemini tidak bisa mengunduh gambar ke dalam berkas HTML.** Yang bisa ia
+   serahkan hanyalah URL gambar asli hasil pencarian (tangga 1). Sistem
+   menampilkan gambar lewat URL itu.
+2. **URL luar bisa mati / menolak hotlink / berhak cipta.** Karena itu
+   `data-gambar-asal` wajib (sumber tercatat), dan untuk soal yang akan
+   dipakai massal (try out, cetak) gambar penting sebaiknya DICERMINKAN:
+   diunduh ulang lalu diunggah ke Supabase kita. Hari ini pencerminkan
+   dilakukan admin secara manual; otomasinya adalah kandidat fitur
+   berikutnya (menumpang fungsi `uploadBankSoalImages.js` yang sudah ada —
+   tanpa menambah fungsi Vercel ke-13).
+3. **Gemini tidak bisa memotong gambar.** Maka tangga (2) berbentuk
+   PETUNJUK presisi (halaman + posisi + isi), dan yang memotong adalah tim
+   dari berkas asli owner — hasilnya potongan 100% asli & HD, bukan tiruan.
+4. **Kenapa peringatan, bukan penolakan?** Berkas lama (sebelum aturan ini)
+   bisa memuat base64 potongan asli yang belum beratribut; menolak seluruh
+   berkas = membuang soal yang sah. Gambar mencurigakan ditandai per kartu
+   di pratinjau, admin yang memutuskan. Bila owner menginginkan gerbang
+   keras (base64 tanpa asal = berkas ditolak), itu perubahan satu baris di
+   ekstraktor — katakan saja.
+5. **Siswa tidak pernah melihat petunjuk potongan** (token `{{GAMBAR: ...}}`
+   tidak bocor ke teks soal — dikunci test). Soal yang gambarnya masih
+   menunggu potongan tampil tanpa gambar sampai tim melengkapi; daftar
+   tunggakannya terlihat saat impor dan tersimpan di dokumen soal.

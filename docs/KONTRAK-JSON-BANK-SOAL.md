@@ -236,3 +236,18 @@ Setelah JSON kembali dari AI: upload di
 (mapel/jenjang/kelas), lihat ringkasan "perlu dicek" — periksa soal
 ber-warning sebelum menyimpan ke bank soal. Dari bank soal, racik try out
 lewat kartu **Try Out Otomatis**, lalu **Terbitkan Try Out**.
+
+---
+
+## Catatan: field tambahan pada dokumen asal impor HTML-Gemini
+
+Soal yang masuk lewat **Admin → Impor HTML Gemini** (`asalImpor:
+"html-gemini"`) mematuhi kontrak 12 field yang sama, plus field jujur
+berikut (semuanya opsional, pembaca lama tidak terpengaruh):
+
+| Field | Tipe | Isi |
+|---|---|---|
+| `pembahasanAsal` | string | `"tercetak"` / `"penalaran"` — pengakuan asal pembahasan |
+| `gambarMeta` | object[] | sejajar indeks `gambarUrls`: `{ sumber: "url-asli"/"warisan"/…, asal: "alamat sumber", caption }` — asal-usul tiap gambar (tangga gambar asli, lihat `docs/PROMPT-PATEN-SCAN-GEMINI.md` §6) |
+| `potonganTertunda` | object[] | `{ urutan, petunjuk }` — figur yang masih menunggu DIPOTONG PRESISI dari berkas scan asli; soal sengaja boleh tersimpan lebih dulu, siswa belum melihat gambarnya |
+| `kurikulum`/`fase`/`kelas`/`elemen`/`capaian` | string | taksonomi Kurikulum Merdeka pengakuan Gemini |

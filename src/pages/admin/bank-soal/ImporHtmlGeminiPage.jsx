@@ -11,9 +11,17 @@
 //      kunci/pembahasan DITOLAK dengan menyebut nama berkas + nomor
 //      kartunya, jadi yang diulang hanya bagian yang salah;
 //   3. Simpan: gambar base64 diunggah ke Supabase lebih dulu (dokumen
-//      Firestore tidak boleh memuat base64: batas 1 MB), lalu dokumen
-//      bank_soal ditulis per batch dengan taksonomi yang sama seperti
-//      jalur impor JSON lama.
+//      Firestore tidak boleh memuat base64: batas 1 MB), gambar URL-asli
+//      disimpan apa adanya, lalu dokumen bank_soal ditulis per batch
+//      dengan taksonomi yang sama seperti jalur impor JSON lama.
+//
+// 🔥 2026-10-07 — TANGGA GAMBAR ASLI (aturan 10 prompt paten): Gemini
+// dilarang MEMBUAT gambar; ia wajib (1) memasang URL gambar asli yang
+// beredar (persis sama + HD, sumber dicatat di data-gambar-asal), atau
+// (2) menulis petunjuk {{GAMBAR: ...}} agar tim memotong presisi dari
+// berkas scan asli. Halaman ini menampilkan kedua-duanya di pratinjau:
+// base64 tanpa pengakuan asal = ⚠️ terindikasi buatan; petunjuk potongan
+// = ✂️ antrean potong (tersimpan di dokumen sebagai potonganTertunda).
 //
 // Tidak ada logika pemetaan di halaman ini: semuanya di
 // utils/ekstrakHtmlGemini.js & utils/imporHtmlGeminiKeBank.js (murni,
@@ -117,18 +125,32 @@ export default function ImporHtmlGeminiPage() {
         if (up.success) urlGambar.set(`${g.kartu}|${g.urutan}`, up.downloadURL || up.url);
       }
 
-      // 2) rangkai gambar ke butirnya sesuai urutan kemunculan
+      // 2) rangkai gambar ke butirnya sesuai urutan kemunculan —
+      //    gambarMeta sejajar INDEKS dengan gambarUrls (asal-usul tiap
+      //    gambar: url-asli/warisan/… + alamat sumber), dan
+      //    potonganTertunda menyimpan antrean figur yang masih harus
+      //    dipotong presisi dari berkas asli pemilik.
       const soalSiap = hasil.soal.map((s) => {
-        const urls = hasil.gambar
+        const milik = hasil.gambar
           .filter((g) => g.kartu === s.idKartu)
+          .sort((a, b) => a.urutan - b.urutan);
+        const urls = [];
+        const meta = [];
+        for (const g of milik) {
+          const u = urlGambar.get(`${g.kartu}|${g.urutan}`);
+          if (!u) continue;
+          urls.push(u);
+          meta.push({ sumber: g.gambarSumber || '', asal: g.gambarAsal || '', caption: g.caption || '' });
+        }
+        const potonganTertunda = (hasil.potongan || [])
+          .filter((p) => p.kartu === s.idKartu)
           .sort((a, b) => a.urutan - b.urutan)
-          .map((g) => urlGambar.get(`${g.kartu}|${g.urutan}`))
-          .filter(Boolean);
-        return { ...s, gambarUrls: urls };
+          .map((p) => ({ urutan: p.urutan, petunjuk: p.petunjuk || p.caption || '' }));
+        return { ...s, gambarUrls: urls, gambarMeta: meta, potonganTertunda };
       });
 
       // 3) tulis ke bank_soal per batch
-      const ringkasan = ringkasanImpor(soalSiap);
+      const ringkasan = ringkasanImpor(soalSiap, hasil.gambar, hasil.potongan);
       let tersimpan = 0;
       for (let i = 0; i < soalSiap.length; i += BATCH_MAX) {
         const slice = soalSiap.slice(i, i + BATCH_MAX);
@@ -145,7 +167,7 @@ export default function ImporHtmlGeminiPage() {
         await batch.commit();
         tersimpan += slice.length;
       }
-      setPesan(`✅ ${tersimpan} soal tersimpan di ${ringkasan.perBab.length} bab.${ringkasan.penalaran ? ` ${ringkasan.penalaran} pembahasan hasil penalaran AI — periksa sebelum dipakai mengajar.` : ''} Lihat sebarannya di Perpustakaan.`);
+      setPesan(`✅ ${tersimpan} soal tersimpan di ${ringkasan.perBab.length} bab.${ringkasan.penalaran ? ` ${ringkasan.penalaran} pembahasan hasil penalaran AI — periksa sebelum dipakai mengajar.` : ''}${ringkasan.menungguPotongan ? ` ✂️ ${ringkasan.menungguPotongan} gambar masih MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuknya tersimpan di tiap soal (potonganTertunda).` : ''}${ringkasan.terindikasiBuatan ? ` ⚠️ ${ringkasan.terindikasiBuatan} gambar base64 terindikasi buatan model — periksa sebelum dipakai.` : ''} Lihat sebarannya di Perpustakaan.`);
       setHasil(null);
       setBerkas([]);
       setTempelan('');
@@ -157,7 +179,7 @@ export default function ImporHtmlGeminiPage() {
     }
   };
 
-  const ringkas = hasil ? ringkasanImpor(hasil.soal) : null;
+  const ringkas = hasil ? ringkasanImpor(hasil.soal, hasil.gambar, hasil.potongan) : null;
 
   return (
     <div style={{ display: 'flex', background: '#f8fafc', minHeight: '100vh' }}>
@@ -185,6 +207,11 @@ export default function ImporHtmlGeminiPage() {
           <span style={{ fontSize: 11, color: '#64748b' }}>
             Scan ulang = paling setia. Konversi = hemat kuota untuk HTML lama;
             konverter DILARANG mengarang kunci/pembahasan yang tidak ada di masukan.
+            <br />
+            <b>Aturan gambar (baru):</b> Gemini WAJIB mencari dulu gambar ASLI yang
+            beredar (persis sama + HD, sumbernya dicatat) — bila tidak ketemu, ia
+            menulis petunjuk POTONGAN PRESISI dari berkas scan Anda. Membuat gambar
+            DILARANG; base64 tanpa pengakuan asal ditandai ⚠️ terindikasi buatan.
           </span>
         </div>
         <pre style={{ whiteSpace: 'pre-wrap', fontSize: 10.5, lineHeight: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 10, maxHeight: 280, overflow: 'auto' }}>{PROMPT_PATEN_GEMINI}</pre>
@@ -237,8 +264,18 @@ export default function ImporHtmlGeminiPage() {
         <div style={gayaKartu}>
           <div style={gayaJudul}>3 · Hasil penagihan paten</div>
           <div style={{ fontSize: 12, marginBottom: 8 }}>
-            <b>{ringkas.jumlah}</b> soal lolos · <b>{ringkas.perBab.length}</b> bab · <b>{hasil.gambar.length}</b> gambar · <b>{ringkas.penalaran}</b> pembahasan penalaran AI · <b>{hasil.duplikat || 0}</b> duplikat dibuang
+            <b>{ringkas.jumlah}</b> soal lolos · <b>{ringkas.perBab.length}</b> bab · <b>{hasil.gambar.length}</b> gambar{ringkas.urlAsli ? ` (${ringkas.urlAsli} URL asli beredar)` : ''} · <b>{ringkas.penalaran}</b> pembahasan penalaran AI · <b>{hasil.duplikat || 0}</b> duplikat dibuang
           </div>
+          {(ringkas.terindikasiBuatan > 0 || ringkas.menungguPotongan > 0) && (
+            <div style={{ fontSize: 11.5, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
+              {ringkas.terindikasiBuatan > 0 && (
+                <div>⚠️ <b>{ringkas.terindikasiBuatan}</b> gambar base64 TANPA pengakuan asal — TERINDIKASI DIBUAT MODEL (prompt paten melarang membuat gambar). Lihat kartunya di daftar peringatan; bila gambarnya tidak persis seperti di scan, buang dan minta Gemini mengulang dengan petunjuk potongan.</div>
+              )}
+              {ringkas.menungguPotongan > 0 && (
+                <div>✂️ <b>{ringkas.menungguPotongan}</b> gambar menunggu <b>POTONGAN PRESISI</b> dari berkas asli — petunjuk (halaman + posisi + isi) ada di daftar peringatan dan ikut tersimpan di tiap soal; siswa belum melihat gambar ini sampai tim memotongnya.</div>
+              )}
+            </div>
+          )}
           <div style={{ fontSize: 11.5, color: '#475569', marginBottom: 8 }}>
             {ringkas.perBab.map(([b, n]) => `${b} (${n})`).join(' · ')}
           </div>

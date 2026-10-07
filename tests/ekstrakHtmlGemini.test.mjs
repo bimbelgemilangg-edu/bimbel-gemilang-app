@@ -266,6 +266,104 @@ uji('pembahasan hasil penalaran DIPERINGATKAN, bukan ditolak maupun didiamkan', 
 });
 
 // ============================================================
+bagian('6. ASAL-USUL GAMBAR — CARI DULU, POTONG PRESISI, DILARANG MEMBUAT');
+// ============================================================
+// Aturan 10 prompt paten (2026-10-07, permintaan owner): gambar WAJIB
+// asli — (1) URL gambar beredar yang persis sama & HD + data-gambar-asal,
+// (2) bila tidak ada: petunjuk {{GAMBAR: ...}} agar tim memotong presisi
+// dari berkas scan asli, (3) membuat gambar DILARANG. base64 tanpa
+// pengakuan asal = terindikasi buatan model (peringatan keras, bukan
+// penolakan — berkas lama bisa memuat potongan asli tanpa atribut).
+
+const HTML_GAMBAR = `<body>
+<div class="section-header" id="sec-g"><h2>SOAL GAMBAR ASLI</h2></div>
+
+<div class="question-card" id="soal-url" data-tipe="pg_sederhana" data-kunci="A">
+  <div class="q-body">Perhatikan diagram berikut!</div>
+  <div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="https://contoh.contoh/soal-44"><img src="https://cdn.contoh/diagram-paru.jpg" alt="Diagram paru"><div class="figure-caption">Diagram paru — Sumber: contoh.contoh</div></div>
+  <div class="options-list"><label class="option-item"><input type="radio" value="A"><span class="option-text">A) satu</span></label><label class="option-item"><input type="radio" value="B"><span class="option-text">B) dua</span></label></div>
+  <div class="pembahasan">Karena A.</div>
+</div>
+
+<div class="question-card" id="soal-potongan" data-tipe="pg_sederhana" data-kunci="B">
+  <div class="q-body">Berdasarkan gambar penampang di atas, nomor yang menunjukkan xilem adalah....</div>
+  <div class="figure-container" data-gambar-sumber="petunjuk-potongan"><div class="figure-caption">{{GAMBAR: halaman 12, posisi kiri bawah; patokan: di bawah teks "penampang batang"; isi: diagram penampang batang bernomor 1-4 dengan label epidermis/korteks/xilem/floem}}</div></div>
+  <div class="options-list"><label class="option-item"><input type="radio" value="A"><span class="option-text">A) 1</span></label><label class="option-item"><input type="radio" value="B"><span class="option-text">B) 3</span></label></div>
+  <div class="pembahasan">Xilem adalah nomor 3.</div>
+</div>
+
+<div class="question-card" id="soal-warisan" data-tipe="pg_sederhana" data-kunci="A">
+  <div class="q-body">Gambar warisan potongan manusia.</div>
+  <div class="figure-container" data-gambar-sumber="warisan"><img src="${PNG_1PX}" alt=""><div class="figure-caption">Potongan asli</div></div>
+  <div class="options-list"><label class="option-item"><input type="radio" value="A"><span class="option-text">A) satu</span></label><label class="option-item"><input type="radio" value="B"><span class="option-text">B) dua</span></label></div>
+  <div class="pembahasan">Karena A.</div>
+</div>
+
+<div class="question-card" id="soal-palsu" data-tipe="pg_sederhana" data-kunci="B">
+  <div class="q-body">Gambar tanpa pengakuan asal.</div>
+  <div class="figure-container"><img src="${PNG_1PX}" alt=""><div class="figure-caption">Entah dari mana</div></div>
+  <div class="options-list"><label class="option-item"><input type="radio" value="A"><span class="option-text">A) satu</span></label><label class="option-item"><input type="radio" value="B"><span class="option-text">B) dua</span></label></div>
+  <div class="pembahasan">Karena B.</div>
+</div>
+</body>`;
+
+const hGambar = ekstrakHtmlGemini(HTML_GAMBAR);
+
+uji('gambar URL asli: provenance + alamat sumber tercatat, tanpa tuduhan', () => {
+  const g = hGambar.gambar.find((x) => x.kartu === 'soal-url');
+  assert.ok(g, 'gambar url-asli harus terbaca');
+  assert.equal(g.gambarSumber, 'url-asli');
+  assert.equal(g.gambarAsal, 'https://contoh.contoh/soal-44');
+  assert.equal(g.src, 'https://cdn.contoh/diagram-paru.jpg');
+  assert.ok(!hGambar.peringatan.join(' ').includes('soal-url'));
+});
+
+uji('petunjuk potongan masuk antrean `potongan`, TIDAK bocor ke teks soal siswa', () => {
+  assert.equal(hGambar.potongan.length, 1);
+  const p = hGambar.potongan[0];
+  assert.equal(p.kartu, 'soal-potongan');
+  assert.ok(p.petunjuk.includes('halaman 12'), p.petunjuk);
+  assert.ok(p.petunjuk.includes('xilem'), p.petunjuk);
+  const butir = hGambar.soal.find((s) => s.idKartu === 'soal-potongan');
+  assert.ok(!butir.soal.includes('{{GAMBAR:'), 'petunjuk potongan tidak boleh tercetak ke siswa');
+  assert.ok(hGambar.peringatan.join(' ').includes('MENUNGGU POTONGAN PRESISI'));
+});
+
+uji('base64 warisan yang mengaku (data-gambar-sumber="warisan") sah, tak dituduh', () => {
+  const g = hGambar.gambar.find((x) => x.kartu === 'soal-warisan');
+  assert.equal(g.gambarSumber, 'warisan');
+  const pesan = hGambar.peringatan.filter((w) => w.includes('soal-warisan')).join(' ');
+  assert.ok(!pesan.includes('TERINDIKASI DIBUAT MODEL'), pesan);
+});
+
+uji('base64 TANPA pengakuan asal = TERINDIKASI DIBUAT MODEL (dilarang membuat)', () => {
+  const g = hGambar.gambar.find((x) => x.kartu === 'soal-palsu');
+  assert.equal(g.gambarSumber, 'base64-tanpa-asal');
+  const pesan = hGambar.peringatan.filter((w) => w.includes('soal-palsu')).join(' ');
+  assert.ok(pesan.includes('TERINDIKASI DIBUAT MODEL'), pesan);
+});
+
+uji('URL luar tanpa data-gambar-asal diingatkan untuk diverifikasi', () => {
+  const h = ekstrakHtmlGemini(HTML_GAMBAR.replace(' data-gambar-asal="https://contoh.contoh/soal-44"', ''));
+  const pesan = h.peringatan.filter((w) => w.includes('soal-url')).join(' ');
+  assert.ok(pesan.includes('data-gambar-asal'), pesan);
+});
+
+uji('berkas era lama (figur tanpa atribut) tetap terbaca — ditandai, bukan ditolak', () => {
+  assert.equal(hasil.gambar[0].caption, 'Diagram paru');
+  assert.equal(hasil.gambar[0].gambarSumber, 'base64-tanpa-asal');
+  assert.ok(hasil.peringatan.join(' ').includes('TERINDIKASI DIBUAT MODEL'));
+  assert.equal(hasil.kesalahan.filter((k) => k.includes('soal-2')).length, 0);
+});
+
+uji('antrean potongan ikut digabung berlabel berkas di mode banyak-berkas', () => {
+  const h = ekstrakBanyakHtml([{ nama: 'bag-g.html', html: HTML_GAMBAR }]);
+  assert.equal(h.potongan.length, 1);
+  assert.equal(h.potongan[0].berkas, 'bag-g.html');
+  assert.ok(h.potongan[0].kartu.startsWith('bag-g.html::'));
+});
+
+// ============================================================
 console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);
 console.log(`  GAGAL : ${gagal}`);
