@@ -23,7 +23,7 @@
 // belakangan kalau memang kepake buat try out juga.
 // ============================================================
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
@@ -37,6 +37,11 @@ import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
 import RendererEsai from '../../student/tryout/RendererEsai';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
+// 🔥 BARU (2026-10, permintaan owner "terbitkan try out langsung satu
+// folder"): pagar tipe soal + penghitung rincian keranjang sekarang
+// tinggal di src/utils/keranjangTryOut.js biar bisa di-test otomatis
+// (tests/keranjangTryOut.test.mjs) dan dipakai tombol BARU "＋ 1 Folder".
+import { tipeDidukung, hitungRincianMasukKeranjang, teksRincianKeranjang } from '../../../utils/keranjangTryOut';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
@@ -68,25 +73,10 @@ function parseTeksKisiKisi(teks) {
     .filter(Boolean);
 }
 
-// 🔥 BARU (mencegah, bukan cuma nambal): daftar tipe soal yang Try Out
-// BENERAN bisa render dengan benar. Kalau ada tipe di luar ini
-// (menjodohkan, uraian dst), soal itu TIDAK BOLEH masuk keranjang
-// sama sekali -- lebih aman "gak bisa dipilih" (jelas kelihatan
-// kenapa) daripada "kepilih tapi tampil rusak diam-diam" pas siswa
-// asli ngerjain. Kalau nanti tipe baru mau didukung, tinggal bikin
-// Renderer-nya + tambahin nama tipe-nya ke daftar ini.
-//
-// 🔥 isian_singkat & numerik BARU DITAMBAHKAN ke daftar ini -- udah
-// punya RendererIsianSingkat.jsx + logika penilaian di
-// skorSoalTryOut.js. menjodohkan & uraian MASIH belum, sengaja tetap
-// diblokir (menjodohkan butuh UI pasangan yang beda total, uraian itu
-// esai yang gak bisa dinilai otomatis -- keduanya nunggu giliran).
-// 🔥 BARU (esai 2026-10-04): 'esai' masuk daftar didukung -- siswa mengetik
-// atau memotret jawaban, admin menilai manual di Hasil Try Out.
-const TIPE_TERDUKUNG = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik', 'esai', 'uraian'];
-function tipeDidukung(soal) {
-  return TIPE_TERDUKUNG.includes(soal.tipe || 'pg_sederhana');
-}
+// 🔥 PAGAR TIPE SOAL dipindah ke src/utils/keranjangTryOut.js (lihat
+// import di atas) -- isinya SAMA PERSIS, cuma pindah rumah biar bisa
+// di-test node tanpa browser dan dipakai rame-rame oleh tombol
+// "＋ Tambah Semua" per bab maupun tombol BARU "＋ 1 Folder".
 
 // 🔥 BARU: warna badge per mapel -- biar di folder yang campur mapel,
 // admin bisa sekali lirik tau soal ini mapel apa, gak perlu baca teks
@@ -185,6 +175,13 @@ export default function TerbitkanTryOutPage() {
   const [folderDibuka, setFolderDibuka] = useState(null);
   const [cacheSoalFolder, setCacheSoalFolder] = useState({});
   const [loadingSoalFolder, setLoadingSoalFolder] = useState(false);
+  // 🔥 BARU (2026-10): state buat tombol "＋ 1 Folder" -- spinner di
+  // tombol saat soal folder lagi diambil di latar belakang (folder
+  // TIDAK perlu dibuka dulu), plus toast konfirmasi berisi rincian
+  // jujur (berapa baru / sudah ada / dilewati).
+  const [folderSedangDimuat, setFolderSedangDimuat] = useState(null);
+  const [infoTambah, setInfoTambah] = useState('');
+  const timerInfoTambah = useRef(null);
   const [babDibuka, setBabDibuka] = useState(null);
 
   useEffect(() => {
@@ -200,19 +197,18 @@ export default function TerbitkanTryOutPage() {
     })();
   }, []);
 
-  const bukaFolder = useCallback(async (folderId) => {
-    if (folderDibuka === folderId) { setFolderDibuka(null); return; }
-    setFolderDibuka(folderId);
-    setBabDibuka(null);
-    if (cacheSoalFolder[folderId]) return;
-    setLoadingSoalFolder(true);
+  // 🔥 BARU (2026-10): pengambilan soal folder DIPISAH dari bukaFolder
+  // biar tombol "＋ 1 Folder" bisa memuat soal di LATAR BELAKANG tanpa
+  // ikut membuka/menutup foldernya. Cache-nya SAMA, jadi klik folder
+  // setelahnya tetap instan (gak dobel query Firestore -- hemat kuota
+  // free tier, lihat docs/POLICY-ERROR-DAN-KUOTA.md).
+  const muatSoalFolder = useCallback(async (folderId) => {
+    if (cacheSoalFolder[folderId]) return cacheSoalFolder[folderId];
     try {
       let list;
       if (folderId === '__tanpa_folder__') {
-        // 🔥 BARU: soal lama dari SEBELUM sistem Folder Sumber ada --
-        // dulu gak kesimpen di folder mana pun, jadi gak pernah
-        // kelihatan lagi di tab "Jelajah per Folder" (yang cuma baca
-        // per sumberSoalId). Di sini ambil SEMUA soal aktif, terus
+        // Soal lama dari SEBELUM sistem Folder Sumber ada -- dulu gak
+        // kesimpen di folder mana pun. Ambil SEMUA soal aktif, terus
         // saring sendiri yang sumberSoalId-nya kosong/gak ada.
         const snap = await getDocs(query(collection(db, 'bank_soal'), where('status', '==', 'aktif')));
         list = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((s) => !s.sumberSoalId);
@@ -223,12 +219,40 @@ export default function TerbitkanTryOutPage() {
       }
       list.sort((a, b) => (Number(a.nomor) || 0) - (Number(b.nomor) || 0));
       setCacheSoalFolder((prev) => ({ ...prev, [folderId]: list }));
+      return list;
     } catch (e) {
       console.error('Gagal ambil soal folder:', e);
       alert('Gagal mengambil soal folder: ' + e.message);
+      return [];
     }
+  }, [cacheSoalFolder]);
+
+  const bukaFolder = useCallback(async (folderId) => {
+    if (folderDibuka === folderId) { setFolderDibuka(null); return; }
+    setFolderDibuka(folderId);
+    setBabDibuka(null);
+    if (cacheSoalFolder[folderId]) return;
+    setLoadingSoalFolder(true);
+    await muatSoalFolder(folderId);
     setLoadingSoalFolder(false);
-  }, [folderDibuka, cacheSoalFolder]);
+  }, [folderDibuka, cacheSoalFolder, muatSoalFolder]);
+
+  // 🔥 BARU (2026-10, permintaan owner): SEKALI KLIK masukan SEMUA soal
+  // satu folder ke keranjang -- gak perlu buka folder lalu klik
+  // "＋ Tambah Semua" per bab satu-satu. Pagar tipe soal TETAP dipakai
+  // (tambahBanyakKeKeranjang menyaring tipe belum didukung), dan soal
+  // yang sudah ada di keranjang gak diduplikasi (keranjang itu Map).
+  const masukkanSemuaFolder = useCallback(async (folderId) => {
+    if (folderSedangDimuat) return; // 🔒 satu proses muat pada satu waktu
+    setFolderSedangDimuat(folderId);
+    const list = await muatSoalFolder(folderId);
+    const rincian = hitungRincianMasukKeranjang(keranjang, list);
+    tambahBanyakKeKeranjang(list);
+    setInfoTambah(teksRincianKeranjang(rincian));
+    if (timerInfoTambah.current) clearTimeout(timerInfoTambah.current);
+    timerInfoTambah.current = setTimeout(() => setInfoTambah(''), 4500);
+    setFolderSedangDimuat(null);
+  }, [folderSedangDimuat, muatSoalFolder, keranjang, tambahBanyakKeKeranjang]);
 
   const babDalamFolder = useMemo(() => {
     if (!folderDibuka || !cacheSoalFolder[folderDibuka]) return [];
@@ -753,6 +777,15 @@ export default function TerbitkanTryOutPage() {
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: `24px 16px ${keranjang.size === 0 ? 24 : keranjangDibuka ? 200 : 70}px`, fontFamily: 'sans-serif' }}>
+      {/* 🔥 BARU (2026-10): toast konfirmasi JUJUR tombol "＋ 1 Folder" --
+          bilang berapa soal yang benar-benar baru masuk, berapa yang
+          memang sudah ada, dan berapa yang dilewati karena tipe belum
+          didukung. Hilang sendiri setelah 4,5 detik. */}
+      {infoTambah && (
+        <div style={{ position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', backgroundColor: '#16a34a', color: 'white', padding: '10px 16px', borderRadius: 10, fontSize: 12.5, fontWeight: 700, zIndex: 80, boxShadow: '0 4px 14px rgba(0,0,0,0.18)', maxWidth: '90vw', textAlign: 'center' }}>
+          {infoTambah}
+        </div>
+      )}
       <button onClick={() => navigate('/admin/bank-soal')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontSize: 13 }}>
         <ArrowLeft size={16} /> Kembali ke Bank Soal
       </button>
@@ -864,6 +897,15 @@ export default function TerbitkanTryOutPage() {
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#6d28d9' }}>📄 Soal Tanpa Folder</div>
                     <div style={{ fontSize: 11, color: '#9ca3af' }}>Soal lama dari sebelum sistem Folder Sumber ada</div>
                   </div>
+                  {/* 🔥 BARU (2026-10): sekali klik = SEMUA soal masuk keranjang */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); masukkanSemuaFolder('__tanpa_folder__'); }}
+                    disabled={folderSedangDimuat === '__tanpa_folder__'}
+                    title="Masukkan SEMUA soal tanpa folder ke keranjang sekali klik"
+                    style={{ fontSize: 11, padding: '6px 10px', borderRadius: 8, border: '1px solid #7c3aed', backgroundColor: '#7c3aed', color: 'white', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  >
+                    {folderSedangDimuat === '__tanpa_folder__' ? 'Memuat…' : '🛒 ＋ 1 Folder'}
+                  </button>
                   {folderDibuka === '__tanpa_folder__' ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 </div>
                 {folderDibuka === '__tanpa_folder__' && (
@@ -932,6 +974,20 @@ export default function TerbitkanTryOutPage() {
                       <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{f.judul}</div>
                       <div style={{ fontSize: 11, color: '#9ca3af' }}>{f.mataPelajaran} · {f.jenisUjian} · {f.jenjang} · {f.jumlahSoal || 0} soal</div>
                     </div>
+                    {/* 🔥 BARU (2026-10, permintaan owner "bisa gak
+                        langsung satu folder"): tombol ini masukan SEMUA
+                        soal folder ke keranjang SEKALI KLIK -- gak perlu
+                        buka folder lalu klik "＋ Tambah Semua" per bab.
+                        stopPropagation biar foldernya gak ikut terbuka/
+                        tertutup pas tombol dipencet. */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); masukkanSemuaFolder(f.id); }}
+                      disabled={folderSedangDimuat === f.id}
+                      title="Masukkan SEMUA soal folder ini ke keranjang sekali klik"
+                      style={{ fontSize: 11, padding: '6px 10px', borderRadius: 8, border: '1px solid #7c3aed', backgroundColor: '#7c3aed', color: 'white', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      {folderSedangDimuat === f.id ? 'Memuat…' : '🛒 ＋ 1 Folder'}
+                    </button>
                     {folderDibuka === f.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                   </div>
 
