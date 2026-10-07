@@ -40,6 +40,9 @@ import {
   collection, getDocs, addDoc, query, where, serverTimestamp, deleteDoc, doc, writeBatch,
 } from 'firebase/firestore';
 import { notifyStudents } from '../../../utils/notifications';
+// 🔥 BARU (2026-10-07): soal yang telanjur tersimpan dengan src bungkus
+// markdown "[url](url)" tetap harus menampilkan gambarnya di kuis siswa.
+import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 import {
   Rocket, Filter, CheckSquare, Square, Loader2, Send, ArrowLeft,
   AlertTriangle, CheckCircle2, BookOpen, Folder, FolderOpen, ChevronDown,
@@ -85,7 +88,7 @@ function konversiSoalKeQuiz(soal) {
     id: soal.id || `bs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     type: tipeKuis,
     question: soal.soal || soal.teks_soal || '',
-    questionImage: (soal.gambarUrls && soal.gambarUrls[0]) || '',
+    questionImage: lepasBungkusanSrcGambar((soal.gambarUrls && soal.gambarUrls[0]) || ''),
     options: (tipeKuis === 'multiple' || tipeKuis === 'multiselect') ? (opsiTeks.length ? opsiTeks : ['', '', '', '']) : ['', '', '', ''],
     optionImages: ['', '', '', ''],
     correctAnswer: tipeKuis === 'multiselect' ? null : (indexKunci[0] ?? 0),

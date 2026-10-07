@@ -36,6 +36,8 @@
 // MURNI & TERUJI (tests/ekstrakHtmlGemini.test.mjs).
 // ============================================================
 
+import { lepasBungkusanSrcGambar } from './normalisasiSrcGambar.js';
+
 const ENUM_TIPE = new Set([
   'pg_sederhana', 'pg_kompleks', 'benar_salah', 'menjodohkan', 'isian_singkat', 'esai',
 ]);
@@ -287,7 +289,11 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
       const chunk = inner.slice(tf.index + tf[0].length, akhirDiv);
       const attrWadah = tf[1] || '';
       const imgTag = (/<img[^>]*>/i.exec(chunk) || [])[0] || '';
-      const src = atribut(imgTag, 'src');
+      // 🔥 BARU (2026-10-07): Gemini Canvas kadang menulis src gaya
+      // tautan markdown "[url](url)" -- lepas bungkusnya di sini supaya
+      // cek urlLuar/base64 di bawah menilai alamat ASLINYA, bukan
+      // bungkusnya (kalau tidak, gambar url-asli jatuh ke "tak-dikenal").
+      const src = lepasBungkusanSrcGambar(atribut(imgTag, 'src'));
       const caption = htmlKeTeks((/<div[^>]*\bclass="[^"]*figure-caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i.exec(chunk) || [])[1] || '');
       const sumberDeklarasi = (atribut(attrWadah, 'data-gambar-sumber') || atribut(imgTag, 'data-gambar-sumber')).toLowerCase();
       const asalDeklarasi = atribut(attrWadah, 'data-gambar-asal') || atribut(imgTag, 'data-gambar-asal');
