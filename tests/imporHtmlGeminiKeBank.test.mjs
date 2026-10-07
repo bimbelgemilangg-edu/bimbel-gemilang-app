@@ -125,6 +125,52 @@ uji('soal pg tanpa kunci dibenderai; esai tanpa kunci TIDAK (memang begitu)', ()
 });
 
 // ============================================================
+bagian('3. ASAL-USUL GAMBAR: META & ANTREAN POTONGAN IKUT KE DOKUMEN');
+// ============================================================
+
+uji('gambarMeta & potonganTertunda terbawa utuh (sejajar gambarUrls)', () => {
+  const d = dokumenDariButir({
+    ...BUTIR,
+    gambarUrls: ['https://supabase.contoh/x.jpg'],
+    gambarMeta: [{ sumber: 'url-asli', asal: 'https://contoh.contoh/soal', caption: 'Diagram paru' }],
+    potonganTertunda: [{ urutan: 2, petunjuk: 'halaman 12, kiri bawah, penampang batang' }],
+  }, KONTEKS);
+  assert.deepEqual(d.gambarUrls, ['https://supabase.contoh/x.jpg']);
+  assert.deepEqual(d.gambarMeta, [{ sumber: 'url-asli', asal: 'https://contoh.contoh/soal', caption: 'Diagram paru' }]);
+  assert.deepEqual(d.potonganTertunda, [{ urutan: 2, petunjuk: 'halaman 12, kiri bawah, penampang batang' }]);
+});
+
+uji('butir lama tanpa meta gambar tetap sah (kompatibel ke belakang)', () => {
+  const d = dokumenDariButir(BUTIR, KONTEKS);
+  assert.deepEqual(d.gambarMeta, []);
+  assert.deepEqual(d.potonganTertunda, []);
+});
+
+uji('ringkasanImpor menghitung tangga gambar: URL asli / terindikasi buatan / menunggu potongan', () => {
+  const r = ringkasanImpor(
+    [{ materi: 'BAB', kunciJawaban: 'B', tipe: 'pg_sederhana', pembahasanAsal: 'tercetak' }],
+    [
+      { src: 'https://cdn.contoh/a.jpg', gambarSumber: 'url-asli' },
+      { src: 'data:image/png;base64,xx', gambarSumber: 'base64-tanpa-asal' },
+      { src: 'data:image/png;base64,yy', gambarSumber: 'warisan' },
+    ],
+    [{ kartu: 'x', urutan: 1, petunjuk: 'halaman 3' }],
+  );
+  assert.equal(r.jumlah, 1);
+  assert.equal(r.urlAsli, 1);
+  assert.equal(r.terindikasiBuatan, 1);
+  assert.equal(r.menungguPotongan, 1);
+});
+
+uji('pemanggilan ringkasanImpor gaya lama (satu argumen) tidak rusak', () => {
+  const r = ringkasanImpor([{ materi: 'B', kunciJawaban: 'A', tipe: 'pg_sederhana' }]);
+  assert.equal(r.jumlah, 1);
+  assert.equal(r.urlAsli, 0);
+  assert.equal(r.terindikasiBuatan, 0);
+  assert.equal(r.menungguPotongan, 0);
+});
+
+// ============================================================
 console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);
 console.log(`  GAGAL : ${gagal}`);

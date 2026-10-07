@@ -35,6 +35,12 @@ export function dokumenDariButir(butir = {}, konteks = {}) {
     kunciJawaban: butir.kunciJawaban ?? '',
     gambar: [],
     gambarUrls: butir.gambarUrls || [],
+    // 🔥 2026-10-07 — asal-usul gambar (tangga gambar asli prompt paten):
+    // gambarMeta sejajar indeks dengan gambarUrls ({sumber, asal, caption}),
+    // potonganTertunda = daftar figur yang masih menunggu dipotong presisi
+    // dari berkas asli (soal sengaja boleh tersimpan lebih dulu).
+    gambarMeta: butir.gambarMeta || [],
+    potonganTertunda: butir.potonganTertunda || [],
     bacaan: butir.bacaan || null,
     pembahasan: butir.pembahasan || '',
     pembahasanAsal: butir.pembahasanAsal || 'tercetak',
@@ -70,7 +76,7 @@ export function dokumenDariButir(butir = {}, konteks = {}) {
 }
 
 /** Ringkasan prakirim untuk layar pratinjau: jumlah per bab + bendera. */
-export function ringkasanImpor(soal = []) {
+export function ringkasanImpor(soal = [], gambar = [], potongan = []) {
   const perBab = new Map();
   let penalaran = 0;
   let tanpaKunci = 0;
@@ -83,11 +89,20 @@ export function ringkasanImpor(soal = []) {
       || (Array.isArray(k) && k.length === 0);
     if (kosong && s.tipe !== 'esai') tanpaKunci += 1;
   }
+  // tangga gambar asli: berapa yang URL asli, berapa base64 tanpa pengakuan
+  // asal (terindikasi buatan model), berapa figur yang menunggu potongan.
+  const daftarGambar = Array.isArray(gambar) ? gambar : [];
+  const urlAsli = daftarGambar.filter((g) => /^https?:\/\//i.test(g?.src || '')).length;
+  const terindikasiBuatan = daftarGambar.filter((g) => g?.gambarSumber === 'base64-tanpa-asal').length;
+  const menungguPotongan = Array.isArray(potongan) ? potongan.length : 0;
   return {
     jumlah: soal.length,
     perBab: [...perBab.entries()].sort((a, b) => a[0].localeCompare(b[0], 'id')),
     penalaran,
     tanpaKunci,
+    urlAsli,
+    terindikasiBuatan,
+    menungguPotongan,
   };
 }
 

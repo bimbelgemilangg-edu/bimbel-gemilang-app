@@ -25,6 +25,14 @@
 //   D. pembahasan berlabel: paragraf/blok berawalan "Pembahasan:"
 //   E. opsi tanpa .option-text: <li> dalam list, atau baris "A. "/"A) "
 //
+// ASAL-USUL GAMBAR (2026-10-07, aturan 10 prompt paten): Gemini DILARANG
+// membuat gambar. Setiap figure-container mengaku lewat
+// data-gambar-sumber: "url-asli" (gambar beredar persis sama & HD, sumber
+// di data-gambar-asal), "petunjuk-potongan" ({{GAMBAR: ...}} -> antrean
+// `potongan` agar tim memotong presisi dari berkas asli), atau
+// "warisan"/"potongan-asli" (base64 sah). base64 TANPA pengakuan asal
+// ditandai TERINDIKASI DIBUAT MODEL lewat `peringatan`.
+//
 // MURNI & TERUJI (tests/ekstrakHtmlGemini.test.mjs).
 // ============================================================
 
@@ -32,6 +40,9 @@ const ENUM_TIPE = new Set([
   'pg_sederhana', 'pg_kompleks', 'benar_salah', 'menjodohkan', 'isian_singkat', 'esai',
 ]);
 const ENUM_ASAL_PEMBAHASAN = new Set(['tercetak', 'penalaran']);
+// Pengakuan asal yang membuat base64 SAH (gambar hasil potongan manusia /
+// warisan berkas lama), lihat aturan 10 prompt paten (tangga gambar asli).
+const SUMBER_GAMBAR_SAHIH = new Set(['warisan', 'potongan-asli', 'asli-scan']);
 
 const TOKEN_KARTU = new Set(['question-card', 'soal-card', 'card-soal', 'question', 'soal', 'card']);
 const TOKEN_SEKSI = new Set(['section-header', 'section', 'bab-header', 'bab']);
@@ -164,6 +175,7 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
   const html = bersihkanHtmlBahaya(htmlMentah);
   const soal = [];
   const gambar = [];
+  const potongan = [];
   const kesalahan = [];
   const peringatan = [];
   const seksi = [];
@@ -208,14 +220,53 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
       teksSoal += '\n' + daftarPernyataan.map((p, i) => `${i + 1}) ${p}`).join('\n');
     }
 
-    // gambar: base64/url dipisah; posisi di teks jadi {{GAMBAR_n}}
-    const potonganFig = inner.split(/<div[^>]*\bclass="[^"]*figure-container[^"]*"[^>]*>/i).slice(1);
-    potonganFig.forEach((chunk, i) => {
-      const src = (/<img[^>]*src="([^"]+)"/i.exec(chunk) || [])[1] || '';
+    // gambar: base64/url dipisah; posisi di teks jadi {{GAMBAR_n}}.
+    // 🔥 2026-10-07 — ASAL-USUL GAMBAR (tangga gambar asli, aturan 10
+    // prompt paten): setiap figure-container mengaku lewat atribut
+    // data-gambar-sumber:
+    //   url-asli          = gambar beredar yang PERSIS SAMA & HD; alamat
+    //                       halaman sumbernya dicatat di data-gambar-asal
+    //   petunjuk-potongan = {{GAMBAR: ...}} — tim memotong presisi dari
+    //                       berkas scan ASLI milik owner (antrean `potongan`)
+    //   warisan/potongan-asli/asli-scan = base64 SAH (potongan manusia /
+    //                       bawaan berkas lama yang dikonversi ulang)
+    // base64 TANPA pengakuan asal = TERINDIKASI DIBUAT MODEL -> peringatan
+    // keras (bukan penolakan: berkas era sebelum aturan ini bisa memuat
+    // base64 potongan asli yang belum sempat diberi atribut).
+    const titikFig = [...inner.matchAll(/<div([^>]*\bclass="[^"]*figure-container[^"]*"[^>]*)>/gi)];
+    titikFig.forEach((tf, i) => {
+      const akhir = i + 1 < titikFig.length ? titikFig[i + 1].index : inner.length;
+      const chunk = inner.slice(tf.index + tf[0].length, akhir);
+      const attrWadah = tf[1] || '';
+      const imgTag = (/<img[^>]*>/i.exec(chunk) || [])[0] || '';
+      const src = atribut(imgTag, 'src');
       const caption = htmlKeTeks((/<div[^>]*\bclass="[^"]*figure-caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i.exec(chunk) || [])[1] || '');
-      if (!src) return;
-      gambar.push({ kartu: id, urutan: i + 1, src, caption });
-      teksSoal += `\n{{GAMBAR_${i + 1}}}`;
+      const sumberDeklarasi = (atribut(attrWadah, 'data-gambar-sumber') || atribut(imgTag, 'data-gambar-sumber')).toLowerCase();
+      const asalDeklarasi = atribut(attrWadah, 'data-gambar-asal') || atribut(imgTag, 'data-gambar-asal');
+
+      if (src) {
+        const base64 = /^data:image\//i.test(src);
+        const urlLuar = /^https?:\/\//i.test(src);
+        let gambarSumber = sumberDeklarasi;
+        if (!gambarSumber) {
+          gambarSumber = urlLuar ? 'url-asli' : (base64 ? 'base64-tanpa-asal' : 'tak-dikenal');
+        }
+        gambar.push({ kartu: id, urutan: i + 1, src, caption, gambarSumber, gambarAsal: asalDeklarasi });
+        teksSoal += `\n{{GAMBAR_${i + 1}}}`;
+        if (base64 && !SUMBER_GAMBAR_SAHIH.has(sumberDeklarasi)) {
+          peringatan.push(`${pref}kartu ${id}: gambar ke-${i + 1} adalah base64 TANPA pengakuan asal (data-gambar-sumber="warisan"/"potongan-asli") — TERINDIKASI DIBUAT MODEL; prompt paten MELARANG gambar buatan. Periksa gambarnya sebelum soal dipakai mengajar.`);
+        }
+        if (urlLuar && !asalDeklarasi) {
+          peringatan.push(`${pref}kartu ${id}: gambar ke-${i + 1} memakai URL luar tanpa data-gambar-asal — verifikasi keaslian dan sumbernya sebelum dipakai.`);
+        }
+        return;
+      }
+      const petunjuk = (/\{\{\s*GAMBAR\s*:([\s\S]*?)\}\}/i.exec(htmlKeTeks(chunk)) || [])[1];
+      if (petunjuk || sumberDeklarasi === 'petunjuk-potongan') {
+        const teksPetunjuk = String(petunjuk || caption || '').trim();
+        potongan.push({ kartu: id, urutan: i + 1, petunjuk: teksPetunjuk, caption });
+        peringatan.push(`${pref}kartu ${id}: gambar ke-${i + 1} MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuk: "${teksPetunjuk.slice(0, 140)}${teksPetunjuk.length > 140 ? '…' : ''}". Soal tersimpan TANPA gambar ini sampai tim memotongnya.`);
+      }
     });
 
     const opsi = cariOpsi(inner);
@@ -278,7 +329,7 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
   if (jumlah === 0) {
     kesalahan.push(`${pref}tidak ada satu pun blok soal terbaca (dicari: ${[...TOKEN_KARTU].join('/')}) — berkas kemungkinan bukan HTML soal.`);
   }
-  return { soal, gambar, kesalahan, peringatan, seksi };
+  return { soal, gambar, potongan, kesalahan, peringatan, seksi };
 }
 
 /** Ekstrak satu berkas HTML. */
@@ -293,6 +344,7 @@ export function ekstrakHtmlGemini(htmlMentah) {
 export function ekstrakBanyakHtml(berkasList = []) {
   const soal = [];
   const gambar = [];
+  const potongan = [];
   const kesalahan = [];
   const peringatan = [];
   const seksi = new Set();
@@ -306,6 +358,7 @@ export function ekstrakBanyakHtml(berkasList = []) {
     peringatan.push(...h.peringatan);
     h.seksi.forEach((s) => seksi.add(s));
     h.gambar.forEach((g) => gambar.push({ ...g, berkas: label, kartu: `${label}::${g.kartu}` }));
+    h.potongan.forEach((p) => potongan.push({ ...p, berkas: label, kartu: `${label}::${p.kartu}` }));
     for (const s of h.soal) {
       const kunciTeks = `${s.materi}|${s.sumber}|${s.nomor}|${s.soal.slice(0, 120)}`;
       if (terlihat.has(kunciTeks)) { duplikat += 1; continue; }
@@ -317,7 +370,7 @@ export function ekstrakBanyakHtml(berkasList = []) {
   if (duplikat > 0) {
     peringatan.push(`${duplikat} butir duplikat antar-berkas dibuang otomatis (bab+nomor+sumber+isi sama).`);
   }
-  return { soal, gambar, kesalahan, peringatan, seksi: [...seksi], duplikat };
+  return { soal, gambar, potongan, kesalahan, peringatan, seksi: [...seksi], duplikat };
 }
 
 export default { ekstrakHtmlGemini, ekstrakBanyakHtml, bersihkanHtmlBahaya, htmlKeTeks };

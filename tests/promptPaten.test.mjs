@@ -58,6 +58,38 @@ uji('varian KONVERSI ULANG ada dan anti-karang', () => {
   assert.ok(PROMPT_KONVERSI_ULANG.includes('data-asal-pembahasan'));
 });
 
+uji('TANGGA GAMBAR ASLI dipatenkan: cari dulu, potong presisi, DILARANG MEMBUAT', () => {
+  // Permintaan owner 2026-10-07: gambar wajib ASLI yang beredar (persis
+  // sama + HD), kalau tidak ada baru potongan presisi dari berkasnya,
+  // dan model DILARANG membuat gambar. Penanda-penanda ini dikunci.
+  assert.ok(P.includes('DILARANG MEMBUAT GAMBAR'));
+  assert.ok(P.includes('MAKSIMALKAN anak tangga (1)'));
+  assert.ok(P.includes('PERSIS SAMA'));
+  assert.ok(P.includes('HD'));
+  assert.ok(P.includes('data-gambar-sumber="url-asli"'));
+  assert.ok(P.includes('data-gambar-asal'));
+  assert.ok(P.includes('petunjuk-potongan'));
+  assert.ok(P.includes('{{GAMBAR:'));
+  assert.ok(P.includes('JANGAN mengarang URL'));
+});
+
+uji('perintah lama "tempel base64 bikinan" sudah DICABUT dari prompt paten', () => {
+  // Prompt lama menyuruh <img src="data:image/...;base64,..." alt="">.
+  // Model tidak bisa memproduksi byte gambar asli, jadi perintah itu =
+  // menyuruh memalsukan gambar. Pastikan ia tidak kembali diam-diam.
+  assert.ok(!P.includes('src="data:image/...;base64,..." alt=""'));
+});
+
+uji('pemeriksaan diri mencakup larangan gambar buatan (poin e)', () => {
+  assert.ok(P.includes('(e) TIDAK ADA satu pun gambar bikinanmu'));
+});
+
+uji('konversi ulang: gambar warisan jujur, tetap dilarang membuat gambar', () => {
+  assert.ok(PROMPT_KONVERSI_ULANG.includes('data-gambar-sumber="warisan"'));
+  assert.ok(PROMPT_KONVERSI_ULANG.includes('DILARANG membuat gambar baru'));
+  assert.ok(PROMPT_KONVERSI_ULANG.includes('petunjuk-potongan'));
+});
+
 uji('pemeriksaan diri diwajibkan di akhir prompt', () => {
   assert.ok(P.includes('Periksa dirimu'));
   assert.ok(P.includes('[gambar tidak terbaca]'));

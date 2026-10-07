@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node tests/passwordHash.test.mjs && node tests/keuangan.test.mjs && node tests/kwitansi.test.mjs && node tests/profilSiswa.test.mjs && node tests/identitasAbsensi.test.mjs && node tests/ukuranFoto.test.mjs && node tests/cetakLatihan.test.mjs && node tests/penempatanGambar.test.mjs && node tests/jalurStorage.test.mjs && node tests/konversiAiClient.test.mjs && node tests/bankSoalSanitizer.test.mjs && node tests/skorSoalTryOut.test.mjs && node tests/kurungLatex.test.mjs && node tests/identitasGuru.test.mjs",
+    "test": "node tests/passwordHash.test.mjs && node tests/keuangan.test.mjs && node tests/kwitansi.test.mjs && node tests/profilSiswa.test.mjs && node tests/identitasAbsensi.test.mjs && node tests/ukuranFoto.test.mjs && node tests/cetakLatihan.test.mjs && node tests/penempatanGambar.test.mjs && node tests/jalurStorage.test.mjs && node tests/konversiAiClient.test.mjs && node tests/bankSoalSanitizer.test.mjs && node tests/skorSoalTryOut.test.mjs && node tests/kurungLatex.test.mjs && node tests/identitasGuru.test.mjs && node tests/promptPaten.test.mjs && node tests/ekstrakHtmlGemini.test.mjs && node tests/imporHtmlGeminiKeBank.test.mjs && node tests/petaKonten.test.mjs && node tests/keputusanMuat.test.mjs && node tests/kunciGemini.test.mjs",
     "test:auth": "node tests/passwordHash.test.mjs",
     "test:keuangan": "node tests/keuangan.test.mjs",
     "test:kwitansi": "node tests/kwitansi.test.mjs",
