@@ -119,15 +119,39 @@ function stemHtml(soal) {
     .join('\n      ');
 }
 
+// 🔥 2026-10-07 (kajian PDF Kinematika): opsi KAYA {teks, gambar[]} ikut
+// dicetak gambarnya -- modul TKA nyata memakai pilihan berupa grafik, dan
+// lembar cetak yang hanya mencetak teksnya membuat tentor mencetak soal
+// yang pilihannya kosong.
 function opsiHtml(soal) {
   const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
   return opsi
     .map((o, i) => {
       const huruf = String.fromCharCode(65 + i);
       const teks = typeof o === 'string' ? o : o?.teks || '';
-      return `<div class="opsi"><b>${huruf}.</b> ${teksKeHtml(teks)}</div>`;
+      const gambar = (o && typeof o === 'object' && Array.isArray(o.gambar)) ? o.gambar : [];
+      const gambarHtml = gambar
+        .map((g) => {
+          const src = g?.uploadedUrl || g?.url || '';
+          return src ? `<img class="gbr" src="${escapeHtml(src)}" alt="Gambar opsi ${huruf}" />` : '';
+        })
+        .join('');
+      return `<div class="opsi"><b>${huruf}.</b> ${teksKeHtml(teks)}${gambarHtml}</div>`;
     })
     .join('');
+}
+
+// Pembahasan kunci tentor: gambar DI POSISI placeholder-nya ({{GAMBAR_n}}),
+// sama seperti badan soal -- diagram bertahap di pembahasan modul scan
+// tidak boleh lenyap dari pegangan tentor.
+function pembahasanHtml(soal) {
+  if (!soal?.pembahasan) return '';
+  const isi = pisahTeksDanGambar(soal.pembahasan, soal?.gambarUrls)
+    .map((sg) => (sg.jenis === 'teks'
+      ? teksKeHtml(sg.isi)
+      : `<img class="gbr" src="${escapeHtml(sg.url)}" alt="Gambar pembahasan ${sg.indeks + 1}" />`))
+    .join(' ');
+  return `<div class="kunci-teks"><b>Pembahasan:</b> ${isi}</div>`;
 }
 
 /** DOKUMEN 1 — paket siswa: kotak soal siap gunting, TANPA kunci. */
@@ -152,7 +176,7 @@ export function htmlKunciTentor(paket = {}, soalList = []) {
   const baris = soalList
     .map((s, i) => {
       const kunci = escapeHtml(teksKunciSoal(s));
-      const pembahasan = s?.pembahasan ? `<div class="kunci-teks"><b>Pembahasan:</b> ${teksKeHtml(s.pembahasan)}</div>` : '';
+      const pembahasan = pembahasanHtml(s);
       return `<div class="kotak"><span class="nomor">${i + 1}</span><b>Kunci:</b> ${kunci || '-'}${pembahasan}</div>`;
     })
     .join('\n');

@@ -16,6 +16,7 @@ function uji(nama, fn) {
 console.log('promptPaten — penanda wajib tidak boleh menyusut');
 
 const P = PROMPT_PATEN_GEMINI;
+const K = PROMPT_KONVERSI_ULANG;
 uji('struktur kartu & section dipatenkan', () => {
   assert.ok(P.includes('question-card'));
   assert.ok(P.includes('section-header'));
@@ -93,6 +94,43 @@ uji('konversi ulang: gambar warisan jujur, tetap dilarang membuat gambar', () =>
 uji('pemeriksaan diri diwajibkan di akhir prompt', () => {
   assert.ok(P.includes('Periksa dirimu'));
   assert.ok(P.includes('[gambar tidak terbaca]'));
+});
+
+// 🔥 2026-10-07 (kajian PDF Kinematika @my99dreams): pasar modul scan nyata
+// memakai dua kolom, pilihan berupa grafik, diagram di dalam pembahasan,
+// kotak rumus, dan kode asal soal (TKA 2020/39). Prompt paten wajib menyebut
+// semuanya supaya keluaran Gemini langsung lolos ekstraktor sadar-region.
+uji('region gambar dipatenkan: badan soal / dalam pilihan / dalam pembahasan', () => {
+  assert.ok(P.includes('DI DALAM <li> pilihan bila milik suatu pilihan'));
+  assert.ok(P.includes('figure-container pembahasan diletakkan DI POSISI ia disebut di dalam .pembahasan'));
+  assert.ok(P.includes('BILA SUATU PILIHAN BERUPA GAMBAR/GRAFIK'));
+});
+
+uji('kotak rumus adalah TEKS LaTeX, bukan gambar untuk dipotong', () => {
+  assert.ok(P.includes('Kotak rumus/persamaan bervektor/pecahan pada scan adalah TEKS BERKAS'));
+});
+
+uji('halaman dua kolom: baca kiri lalu kanan, urutan akhir mengikuti nomor', () => {
+  assert.ok(P.includes('BILA HALAMAN BERDUA KOLOM'));
+  assert.ok(P.includes('JANGAN membaca selang-seling'));
+});
+
+uji('kode asal soal (TKA 2020/39 dst.) wajib disalin ke q-source', () => {
+  assert.ok(P.includes('TKA 2020/39'));
+  assert.ok(P.includes('q-source'));
+});
+
+uji('jawaban benar lebih dari satu = pg_kompleks dengan kunci koma', () => {
+  assert.ok(P.includes('jawaban benar lebih dari satu'));
+  assert.ok(P.includes('SEMUA huruf/nilai benar dipisah koma'));
+});
+
+uji('pemeriksaan diri mencakup region gambar (poin f)', () => {
+  assert.ok(P.includes('(f) setiap figure-container berada di region yang benar'));
+});
+
+uji('konversi ulang mempertahankan region gambar warisan', () => {
+  assert.ok(K.includes('TERMASUK region-nya'));
 });
 
 console.log(`\n  LULUS : ${lulus}\n  GAGAL : ${gagal}`);

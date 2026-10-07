@@ -31,10 +31,10 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 >    - `<div class="question-meta"><span class="q-number">No. <n></span><span class="q-source">SUMBER</span><span class="q-type-badge">LABEL MANUSIA</span></div>`
 >    - `<div class="q-body">teks soal lengkap</div>`
 >    - bila ada pernyataan bernomor: `<div class="statements-box"><ol><li>...</li></ol></div>`
->    - bila ada gambar: `<div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="ALAMAT-HALAMAN-SUMBER"><img src="URL-GAMBAR-ASLI" alt=""><div class="figure-caption">KETERANGAN — Sumber: NAMA-SITUS</div></div>` atau, bila gambar asli tidak ditemukan: `<div class="figure-container" data-gambar-sumber="petunjuk-potongan"><div class="figure-caption">{{GAMBAR: petunjuk potongan presisi}}</div></div>` — gambar boleh lebih dari satu; tempel DI POSISI ia disebut; WAJIB menaati TANGGA GAMBAR ASLI di aturan 10
->    - pilihan ganda: `<div class="options-list">` berisi `<label class="option-item"><input type="radio" name="q<n>" value="A"><span class="option-text">A) teks</span></label>` untuk tiap opsi
+>    - bila ada gambar: `<div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="ALAMAT-HALAMAN-SUMBER"><img src="URL-GAMBAR-ASLI" alt=""><div class="figure-caption">KETERANGAN — Sumber: NAMA-SITUS</div></div>` atau, bila gambar asli tidak ditemukan: `<div class="figure-container" data-gambar-sumber="petunjuk-potongan"><div class="figure-caption">{{GAMBAR: petunjuk potongan presisi}}</div></div>` — gambar boleh lebih dari satu; tempel DI POSISI ia disebut (DI DALAM `.q-body` bila milik badan soal, DI DALAM `<li>` pilihan bila milik suatu pilihan, DI DALAM `.pembahasan` bila milik penjelasan); WAJIB menaati TANGGA GAMBAR ASLI di aturan 10
+>    - pilihan ganda: `<div class="options-list">` berisi `<label class="option-item"><input type="radio" name="q<n>" value="A"><span class="option-text">A) teks</span></label>` untuk tiap opsi; BILA SUATU PILIHAN BERUPA GAMBAR/GRAFIK (modus umum modul TKA), letakkan figure-container milik pilihan itu DI DALAM `<li>`/label pilihan tersebut — sistem mengikat gambar ke pilihannya, jadi jangan menaruhnya di badan soal
 >    - tabel benar/salah atau menjodohkan: `<table class="matrix-box">` dengan baris `<tr><td>pernyataan</td></tr>`
->    - **WAJIB:** `<div class="pembahasan">PENJELASAN LENGKAP mengapa kunci itu benar, termasuk pembahasan gambar/diagram bila sumber menjelaskannya</div>`
+>    - **WAJIB:** `<div class="pembahasan">PENJELASAN LENGKAP mengapa kunci itu benar, termasuk pembahasan gambar/diagram bila sumber menjelaskannya — figure-container pembahasan diletakkan DI POSISI ia disebut di dalam .pembahasan, bukan di badan soal</div>`
 > 3. Nilai `data-tipe` HANYA boleh salah satu enum ini:
 >    `pg_sederhana` | `pg_kompleks` | `benar_salah` | `menjodohkan` | `isian_singkat` | `esai`
 > 4. Nilai `data-kunci`:
@@ -95,13 +95,27 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 >       "figur tidak terbaca di scan" dan tulis di pembahasan:
 >       `[gambar tidak terbaca]`. Jangan pernah membuat pengganti.
 >
+> 11. BILA HALAMAN BERDUA KOLOM: baca kolom kiri dari atas ke bawah, lalu
+> kolom kanan dari atas ke bawah; JANGAN membaca selang-seling antar
+> kolom. Urutan akhir kartu mengikuti NOMOR soal, bukan posisi visual.
+> 12. Bila sumber mencetak kode asal soal (mis. "TKA 2020/39", "SIMULASI
+> TKA 2025/FISIKA/01", "TKA 1992/Rayon B"), salin PERSIS ke
+> `<span class="q-source">` supaya bank soal menyimpan asal-usul tiap
+> butir; bila tidak tercetak, isi dengan nama berkas scan.
+> 13. Soal berketerangan "jawaban benar lebih dari satu" atau berdaftar
+> kotak centang (checklist) adalah pg_kompleks: data-kunci memuat SEMUA
+> huruf/nilai benar dipisah koma (mis. A,D), dan tabel centang kondisi
+> ditulis sebagai matrix-box bila bentuknya baris benar/salah.
+>
 > Periksa dirimu sebelum menjawab: (a) jumlah `question-card` == jumlah
 > nomor di sumber; (b) setiap kartu punya `data-kunci` dan `.pembahasan`;
 > (c) tidak ada tag terlarang; (d) setiap kartu memuat `data-fase` dan
 > `data-kurikulum`; (e) TIDAK ADA satu pun gambar bikinanmu (data:image
 > base64) — setiap `figure-container` memakai url-asli +
-> `data-gambar-asal`, atau petunjuk-potongan. Tuliskan hasil pemeriksaan
-> itu sebagai komentar HTML di baris pertama berkas.
+> `data-gambar-asal`, atau petunjuk-potongan; (f) setiap figure-container
+> berada di region yang benar sesuai posisi tercetaknya (badan soal / di
+> dalam pilihan / di dalam pembahasan). Tuliskan hasil pemeriksaan itu
+> sebagai komentar HTML di baris pertama berkas.
 
 ## 2. Kenapa patennya berbentuk begini
 
@@ -119,6 +133,12 @@ berimprovisasi — supaya konten baru tidak pernah lagi memaksa merge/deploy.
 `ekstrakHtmlGemini.js` (murni, teruji di Node):
 1. membuang script/style/atribut berbahaya;
 2. memotong per `question-card`, membaca `data-tipe`, `data-kunci`, meta, body, statements, figure, options, matrix, pembahasan;
+   🔥 2026-10-07: ekstraksi **SADAR-REGION** — tiap figure-container diganti
+   token `{{GAMBAR_n}}` PERSIS di posisi fisiknya, dan region-nya dicatat:
+   badan soal (token masuk `teksSoal`), opsi (gambar diikat ke pilihan menjadi
+   opsi kaya `{teks, gambar[]}`), pembahasan (token masuk `pembahasan`).
+   Caption/petunjuk potongan TIDAK lagi bocor menjadi teks bacaan siswa;
+   satu `<li>` = satu pilihan sehingga soal berpilihan grafik tidak menyusut;
 3. menolak kartu yang melanggar paten dengan **pesan bernomor kartu**
    ("kartu soal-7: data-kunci kosong untuk tipe pg_sederhana");
 4. memetakan ke **KONTRAK-JSON-BANK-SOAL** (12 field) sehingga hasilnya
@@ -198,6 +218,14 @@ menyimpan pengakuan itu di field `pembahasanAsal` dan mengeluarkan
 **peringatan** (bukan kesalahan) per kartu, supaya guru memeriksa sebelum
 memakai di kelas. Pembahasan tercetak vs karangan model tidak boleh
 bercampur tanpa tanda — itu perbedaan antara mengajar dan menebak.
+
+### d0) Modul scan dua kolom berpilihan grafik (kajian PDF Kinematika, 2026-10-07)
+Kajian `docs/KAJIAN-PASAR-MODUL-SCAN.md`: modul TKA nyata memakai halaman dua
+kolom tanpa lapisan teks, pilihan berupa 5 grafik, tabel centang benar/salah,
+kotak rumus, diagram di dalam pembahasan, dan kode asal soal (TKA 2020/39).
+Patennya kini menyebut semua pola itu (aturan 2 region gambar, 5 kotak rumus
+= LaTeX, 11 dua kolom, 12 q-source, 13 multi-centang), dan ekstraktor +
+renderer + mesin cetak sudah mengonsumsi opsi kaya serta token pembahasan.
 
 ### d) Gambar buram / tabel rusak di sumber
 Kartu tetap dibuat; pembahasan wajib menulis `[gambar tidak terbaca]`

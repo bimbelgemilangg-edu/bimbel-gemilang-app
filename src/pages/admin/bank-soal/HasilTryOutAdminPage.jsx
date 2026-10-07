@@ -584,7 +584,7 @@ export default function HasilTryOutAdminPage() {
                     )}
                     <TeksSoalBergambar
                       teks={s.soal || s.teks_soal}
-                      gambarUrls={s.gambarUrls}
+                      gambarUrls={s.gambarUrls} gambarMeta={s.gambarMeta || null}
                       gayaTeks={{ marginBottom: 10 }}
                       gayaGambar={{ maxWidth: 200, maxHeight: 160, borderRadius: 8, margin: '8px 0 10px' }}
                     />
@@ -622,7 +622,7 @@ export default function HasilTryOutAdminPage() {
                     )}
                     {s.pembahasan && (
                       <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
-                        <b>💡 Pembahasan:</b> <RenderMath text={s.pembahasan} />
+                        <b>💡 Pembahasan:</b> <TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" />
                       </div>
                     )}
                   </div>

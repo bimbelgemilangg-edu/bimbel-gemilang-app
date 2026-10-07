@@ -18,6 +18,7 @@
 // ============================================================
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, writeBatch } from 'firebase/firestore';
@@ -66,7 +67,10 @@ export default function LemariSoalPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { muat(); }, [muat]);
+  // Muat awal dilewatkan rantai promise supaya setState TIDAK berjalan
+  // sinkron di badan effect (aturan react-hooks/set-state-in-effect);
+  // perilaku tetap sama: muat sekali saat halaman terbuka.
+  useEffect(() => { Promise.resolve().then(muat); }, [muat]);
 
   const daftarJenjang = useMemo(() => {
     const peta = new Map();
@@ -189,7 +193,7 @@ export default function LemariSoalPage() {
             <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 14 }}>{hasilCari.length} soal ditemukan (maks 100 ditampilkan). Kosongkan kotak cari buat balik jelajah normal.</div>
             {hasilCari.map((s) => (
               <div key={s.id} style={{ padding: '10px 14px', borderRadius: 10, background: '#f8fafc', marginBottom: 6 }}>
-                <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.soal || '(teks kosong)'}</div>
+                <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{String(s.soal || '').replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' [gambar] ').trim() || '(teks kosong)'}</div>
                 <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 3 }}>{s.mataPelajaran || '-'} · {s.jenjang || '-'} · Kelas {s.tingkatKelas || 'Semua'} · <b style={{ color: '#5B2ECC' }}>{s.materi || '(belum diatur)'}</b></div>
               </div>
             ))}
@@ -260,7 +264,7 @@ export default function LemariSoalPage() {
                     <div key={s.id} style={{ borderRadius: 10, background: '#f8fafc', marginBottom: 8, overflow: 'hidden', border: terbuka ? '1px solid #ddd6fe' : '1px solid transparent' }}>
                       <div style={{ padding: '10px 14px', cursor: 'pointer' }} onClick={() => setSoalTerbuka(terbuka ? null : s.id)}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                          <div style={{ fontSize: 12.5, color: '#1e293b', flex: 1, ...(terbuka ? {} : { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }) }}>{s.soal || '(teks kosong)'}</div>
+                          <div style={{ fontSize: 12.5, color: '#1e293b', flex: 1, ...(terbuka ? {} : { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }) }}><TeksSoalBergambar teks={s.soal || '(teks kosong)'} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} /></div>
                           <ChevronRight size={14} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2, transform: terbuka ? 'rotate(90deg)' : 'none', transition: '0.15s' }} />
                         </div>
                         <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -282,6 +286,18 @@ export default function LemariSoalPage() {
                                   <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', borderRadius: 8, background: benar ? '#f0fdf4' : 'transparent', marginBottom: 4 }}>
                                     <span style={{ fontWeight: 800, color: benar ? '#16a34a' : '#9ca3af', minWidth: 18 }}>{huruf}.</span>
                                     <span style={{ fontSize: 12.5, color: benar ? '#166534' : '#374151', fontWeight: benar ? 700 : 400 }}>{opsi?.teks || String(opsi || '')}</span>
+                                    {/* 🔥 2026-10-07: opsi kaya berpilihan grafik (modul TKA) —
+                                        admin memverifikasi gambar pilihan di sini sebelum soal
+                                        diterbitkan; tanpa ini pilihan terlihat "kosong". */}
+                                    {Array.isArray(opsi?.gambar) && opsi.gambar.length > 0 && (
+                                      <span style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {opsi.gambar.map((g, gi) => {
+                                          const src = g?.uploadedUrl || g?.url || '';
+                                          if (!src) return null;
+                                          return <img key={gi} src={src} alt={`Gambar opsi ${huruf}`} style={{ maxWidth: 120, maxHeight: 90, borderRadius: 6, border: '1px solid #e2e8f0' }} />;
+                                        })}
+                                      </span>
+                                    )}
                                     {benar && <span style={{ fontSize: 10.5, color: '#16a34a', fontWeight: 800 }}>✓ kunci</span>}
                                   </div>
                                 );
@@ -320,7 +336,7 @@ export default function LemariSoalPage() {
 
                           {s.pembahasan && (
                             <div style={{ marginTop: 12, padding: '10px 12px', background: '#fefce8', border: '1px solid #fde68a', borderRadius: 8, fontSize: 12, color: '#78350f' }}>
-                              <b>Pembahasan:</b> {s.pembahasan}
+                              <b>Pembahasan:</b> <TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" />
                             </div>
                           )}
                           {s.catatanAdmin && (

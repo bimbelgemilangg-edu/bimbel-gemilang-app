@@ -364,6 +364,77 @@ uji('antrean potongan ikut digabung berlabel berkas di mode banyak-berkas', () =
 });
 
 // ============================================================
+bagian('7. POSISI GAMBAR PENUH: BADAN, OPSI, PEMBAHASAN (kajian PDF Kinematika)');
+// ============================================================
+
+const URL_G = 'https://cdn.contoh/g.png';
+const kartuPosisi = `
+<div class="question-card" id="soal-70" data-tipe="pg_kompleks" data-kunci="A,D" data-asal-pembahasan="tercetak">
+  <div class="q-body">Perhatikan tabel berikut!
+    <div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="https://contoh.contoh/t"><img src="${URL_G}" alt=""><div class="figure-caption">Tabel data — Sumber: contoh.contoh</div></div>
+    Manakah grafik yang tepat? Jawaban benar lebih dari satu.</div>
+  <div class="options-list">
+    <li><div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="https://contoh.contoh/a"><img src="${URL_G}" alt=""></div></li>
+    <li><div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="https://contoh.contoh/b"><img src="${URL_G}" alt=""></div></li>
+    <li><span class="option-text">C. teks biasa</span></li>
+  </div>
+  <div class="pembahasan">Kecepatan berubah terhadap waktu.
+    <div class="figure-container" data-gambar-sumber="url-asli" data-gambar-asal="https://contoh.contoh/p"><img src="${URL_G}" alt=""><div class="figure-caption">Grafik linier — Sumber: contoh.contoh</div></div>
+    Jadi percepatannya konstan, $a = 2$ m/s$^2$.</div>
+</div>`;
+
+uji('gambar di BADAN soal: token DI POSISI, caption tidak bocor jadi teks siswa', () => {
+  const h = ekstrakHtmlGemini(kartuPosisi);
+  const s = h.soal[0];
+  assert.ok(s.soal.includes('Perhatikan tabel berikut!\n{{GAMBAR_1}}'), s.soal);
+  assert.ok(s.soal.includes('{{GAMBAR_1}}\nManakah grafik'), 'token harus di tengah kalimat');
+  assert.ok(!s.soal.includes('Tabel data — Sumber'), 'caption tidak boleh bocor ke badan soal');
+});
+
+uji('q-body ber-div bersarang TIDAK lagi tercemar opsi & pembahasan (regresi blokKelas)', () => {
+  const h = ekstrakHtmlGemini(kartuPosisi);
+  const s = h.soal[0];
+  assert.ok(!s.soal.includes('teks biasa'), 'opsi tidak boleh masuk badan soal');
+  assert.ok(!s.soal.includes('Kecepatan berubah'), 'pembahasan tidak boleh masuk badan soal');
+});
+
+uji('gambar DI DALAM OPSI diikat jadi opsi kaya, pilihan tidak menyusut', () => {
+  const h = ekstrakHtmlGemini(kartuPosisi);
+  const s = h.soal[0];
+  assert.equal(s.opsiJawaban.length, 3);
+  assert.deepEqual(s.opsiJawaban[0].gambarRefs, [2]);
+  assert.deepEqual(s.opsiJawaban[1].gambarRefs, [3]);
+  assert.equal(s.opsiJawaban[2], 'teks biasa');
+  assert.equal(h.kesalahan.length, 0, h.kesalahan.join('; '));
+});
+
+uji('gambar DI DALAM PEMBAHASAN: token bernomor masuk pembahasan, bukan badan soal', () => {
+  const h = ekstrakHtmlGemini(kartuPosisi);
+  const s = h.soal[0];
+  assert.ok(s.pembahasan.includes('{{GAMBAR_4}}'), s.pembahasan);
+  assert.ok(!s.soal.includes('{{GAMBAR_4}}'), 'gambar pembahasan tidak boleh nyasar ke badan soal');
+  assert.ok(!s.pembahasan.includes('Grafik linier — Sumber'), 'caption tidak bocor di pembahasan');
+});
+
+uji('gambar opsi menunggu potongan: pilihan TETAP ADA dengan penanda jujur', () => {
+  const kartuPotongOpsi = `
+<div class="question-card" id="soal-71" data-tipe="pg_sederhana" data-kunci="B" data-asal-pembahasan="tercetak">
+  <div class="q-body">Pilih grafik yang benar.</div>
+  <div class="options-list">
+    <li><span class="option-text">A. satu</span></li>
+    <li><div class="figure-container" data-gambar-sumber="petunjuk-potongan"><div class="figure-caption">{{GAMBAR: halaman 3, posisi atas, isi: grafik menurun}}</div></div></li>
+  </div>
+  <div class="pembahasan">Karena GLBB.</div>
+</div>`;
+  const h = ekstrakHtmlGemini(kartuPotongOpsi);
+  const s = h.soal[0];
+  assert.equal(s.opsiJawaban.length, 2, 'opsi gambar potongan tidak boleh lenyap (kunci bergeser)');
+  assert.ok(String(s.opsiJawaban[1]).includes('MENUNGGU POTONGAN'));
+  assert.equal(h.potongan.length, 1);
+  assert.equal(h.potongan[0].region, 'opsi');
+});
+
+// ============================================================
 console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);
 console.log(`  GAGAL : ${gagal}`);

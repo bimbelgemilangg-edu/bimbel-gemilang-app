@@ -120,6 +120,53 @@ uji('gambar kosong/null di daftar diabaikan', () => {
 });
 
 // ============================================================
+bagian('4. TOKEN BERNOMOR DI TEKS MANAPUN (kajian PDF Kinematika)');
+// ============================================================
+
+uji('pembahasan menyebut {{GAMBAR_3}} memakai gambarUrls[2], bukan gambar pertama', () => {
+  const urls = ['u1', 'u2', 'u3'];
+  const meta = [{ region: 'opsi' }, { region: 'opsi' }, { region: 'pembahasan' }];
+  const seg = pisahTeksDanGambar(
+    'Tahap pertama sudah jelas. {{GAMBAR_3}} Selanjutnya gradien dihitung.',
+    urls,
+    { meta, region: 'pembahasan' },
+  );
+  assert.equal(jenis(seg), 'teks,gambar,teks');
+  assert.equal(seg[1].url, 'u3');
+  assert.equal(seg[1].indeks, 2);
+});
+
+uji('gambar sisa region lain TIDAK menumpuk di teks ini (grafik opsi tidak nyasar ke pembahasan)', () => {
+  const urls = ['u1', 'u2', 'u3'];
+  const meta = [{ region: 'opsi' }, { region: 'opsi' }, { region: 'pembahasan' }];
+  const seg = pisahTeksDanGambar('Hanya {{GAMBAR_3}} di sini.', urls, { meta, region: 'pembahasan' });
+  assert.deepEqual(seg.filter((s) => s.jenis === 'gambar').map((s) => s.url), ['u3']);
+});
+
+uji('tanpa meta (berkas lama) gambar sisa tetap di akhir teks', () => {
+  const seg = pisahTeksDanGambar('Hanya {{GAMBAR_3}} di sini.', ['u1', 'u2', 'u3']);
+  assert.deepEqual(seg.filter((s) => s.jenis === 'gambar').map((s) => s.url), ['u3', 'u1', 'u2']);
+});
+
+uji('token polos dan bernomor bercampur: polos memakai gambar belum terpakai', () => {
+  const urls = ['u1', 'u2', 'u3'];
+  const seg = pisahTeksDanGambar('{{GAMBAR_2}} lalu {{GAMBAR}} lalu {{GAMBAR}}', urls);
+  assert.deepEqual(seg.filter((s) => s.jenis === 'gambar').map((s) => s.url), ['u2', 'u1', 'u3']);
+});
+
+uji('nomor tanpa gambar padanannya dibuang senyap, gambar sisa ke akhir', () => {
+  const seg = pisahTeksDanGambar('Teks {{GAMBAR_9}} lanjut.', ['u1']);
+  assert.equal(jenis(seg), 'teks,gambar');
+  assert.equal(seg[1].url, 'u1');
+  assert.ok(!JSON.stringify(seg).includes('{{GAMBAR'));
+});
+
+uji('adaPlaceholderBocor mendeteksi nomor di luar jangkauan', () => {
+  assert.equal(adaPlaceholderBocor('lihat {{GAMBAR_4}}', ['u1', 'u2']), true);
+  assert.equal(adaPlaceholderBocor('lihat {{GAMBAR_2}}', ['u1', 'u2']), false);
+});
+
+// ============================================================
 // RINGKASAN
 // ============================================================
 console.log(`\n${'='.repeat(60)}`);

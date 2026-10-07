@@ -24,6 +24,7 @@
 // ============================================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, serverTimestamp } from 'firebase/firestore';
@@ -1356,7 +1357,7 @@ export default function TerbitkanTryOutPage() {
                   <RendererSoalPreview soal={s} />
                   {s.pembahasan && (
                     <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12, color: '#4c1d95' }}>
-                      <b>💡 Pembahasan:</b> <RenderMath text={s.pembahasan} />
+                      <b>💡 Pembahasan:</b> <TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" />
                     </div>
                   )}
                 </div>

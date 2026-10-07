@@ -23,12 +23,40 @@ import { deteksiTaksonomiSoal, terapkanTaksonomi } from './mesinTaksonomiSoal.js
  * @returns {object} dokumen siap writeBatch ke koleksi bank_soal
  */
 export function dokumenDariButir(butir = {}, konteks = {}) {
+  // 🔥 2026-10-07 (kajian PDF Kinematika): opsi kaya hasil ikatan
+  // ekstraktor ({teks, gambarRefs:[n]}) diselesaikan DI SINI menjadi
+  // {teks, gambar:[{url,sumber,asal,caption}]} sejajar gambarUrls, supaya
+  // renderer siswa (RendererPgSederhana/PgKompleks) yang sudah memahami
+  // opsi bergambar sejak jalur impor JSON lama langsung menampilkan
+  // grafik pada pilihannya. Referensi tanpa url (gambar masih menunggu
+  // potongan) dibuang agar opsi tidak memuat gambar rusak.
+  const urlsButir = butir.gambarUrls || [];
+  const metaButir = butir.gambarMeta || [];
+  const opsiJawabanSiap = (butir.opsiJawaban || []).map((o) => {
+    if (!o || typeof o !== 'object' || !Array.isArray(o.gambarRefs)) return o;
+    const gambar = o.gambarRefs
+      .map((n) => {
+        const url = urlsButir[Number(n) - 1] || '';
+        if (!url) return null;
+        const mt = metaButir[Number(n) - 1] || {};
+        return {
+          url,
+          sumber: mt.sumber || '',
+          asal: mt.asal || '',
+          caption: mt.caption || '',
+        };
+      })
+      .filter(Boolean);
+    const { gambarRefs: _gambarRefs, ...sisanya } = o;
+    return { ...sisanya, gambar: [...(Array.isArray(o.gambar) ? o.gambar : []), ...gambar] };
+  });
+
   const norm = {
     nomor: butir.nomor ?? null,
     tipe: butir.tipe || 'pg_sederhana',
     teksSoal: butir.soal || '',
     soal: butir.soal || '',
-    opsiJawaban: butir.opsiJawaban || [],
+    opsiJawaban: opsiJawabanSiap,
     pernyataan: butir.pernyataan || [],
     tabelBenarSalah: butir.tabel_benar_salah || [],
     pasangan: butir.pasangan || [],

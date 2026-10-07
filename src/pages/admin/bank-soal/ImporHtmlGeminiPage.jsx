@@ -140,7 +140,7 @@ export default function ImporHtmlGeminiPage() {
           const u = urlGambar.get(`${g.kartu}|${g.urutan}`);
           if (!u) continue;
           urls.push(u);
-          meta.push({ sumber: g.gambarSumber || '', asal: g.gambarAsal || '', caption: g.caption || '' });
+          meta.push({ sumber: g.gambarSumber || '', asal: g.gambarAsal || '', caption: g.caption || '', region: g.region || 'badan' });
         }
         const potonganTertunda = (hasil.potongan || [])
           .filter((p) => p.kartu === s.idKartu)
