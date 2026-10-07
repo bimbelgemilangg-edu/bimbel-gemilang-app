@@ -28,7 +28,7 @@ import {
   Toolbox, Sparkles, Brain, Rocket, ClipboardCheck, Trophy, Activity,
   ScrollText, ShieldCheck, Trash2, FolderTree, BookMarked, GitMerge,
   Archive, BookOpen, UploadCloud, Library, MousePointerClick,
-  FileUp,
+  FileUp, Scissors,
 } from 'lucide-react';
 import { db } from '../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -46,6 +46,9 @@ const GRUP = [
       // perkakas baru WAJIB punya kartu di hub ini SELAIN entri sidebar,
       // sebab kebiasaan lama admin adalah membuka hub perkakas.
       { path: '/admin/bank-soal/impor-html-gemini', nama: 'Impor HTML Gemini', ikon: FileUp, desc: 'Tempel/unggah HTML keluaran prompt paten (tombol Salin Prompt ada di dalamnya). Multi-berkas untuk satu buku; kunci & pembahasan ditagih, bab otomatis dari section.' },
+      // 🔥 BARU (2026-10-07): tindak lanjut langsung dari antrean ✂️ dan
+      // flag ⚠️ hasil Impor HTML Gemini — wajib punya kartu di hub ini.
+      { path: '/admin/bank-soal/potong-presisi', nama: 'Potong Presisi Gambar Soal', ikon: Scissors, desc: '✂️ Melengkapi gambar soal dari scan/PDF ASLI: seret kotak di halaman asli, dibantu snap-tinta, langsung dipasang menggantikan gambar buatan AI (⚠️) atau mengisi petunjuk yang menunggu potongan (✂️).' },
       { path: '/admin/perpustakaan', nama: 'Perpustakaan Konten', ikon: Library, desc: 'SATU pohon jenjang → mapel → bab untuk mencari soal, buku digital, dan paket try out dari tiga sumber sekaligus.' },
       { path: '/admin/bank-soal/terbitkan', nama: 'Terbitkan Kuis', ikon: Rocket, desc: 'Menerbitkan kuis dari bank soal ke guru/siswa.' },
       { path: '/admin/bank-soal/hasil', nama: 'Hasil Kuis', ikon: ClipboardCheck, desc: 'Rekap jawaban & nilai kuis yang sudah dikerjakan.' },

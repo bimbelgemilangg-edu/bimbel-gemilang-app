@@ -14,7 +14,7 @@ import {
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
   Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox,
-  Library,
+  Library, Scissors,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -182,6 +182,9 @@ const SidebarAdmin = () => {
       items: [
         { name: 'Perpustakaan', path: '/admin/perpustakaan', icon: <Library size={20} /> },
     { name: 'Impor HTML Gemini', path: '/admin/bank-soal/impor-html-gemini', icon: <FileUp size={20} /> },
+    // 🔥 BARU (2026-10-07): tindak lanjut antrean ✂️ potonganTertunda &
+    // gambar ⚠️ buatan model — potong presisi dari berkas scan asli.
+    { name: 'Potong Presisi Gambar', path: '/admin/bank-soal/potong-presisi', icon: <Scissors size={20} /> },
     { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
         { name: 'Dashboard Analisis', path: '/admin/analisis', icon: <BarChart3 size={18} /> },
         { name: 'Jadwal Harian',path: '/admin/schedule',   icon: <Calendar size={18} /> },
