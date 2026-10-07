@@ -16,6 +16,11 @@
 
 import RenderMath from './RenderMath';
 import { pisahTeksDanGambar } from '../utils/penempatanGambar';
+// 🔥 BARU (2026-10-07): jaring pengaman tampilan -- dokumen bank_soal yang
+// telanjur tersimpan dengan src bungkus markdown "[url](url)" (keluhan
+// owner "gambar dari Gemini gak muncul") tetap bisa ditampilkan karena
+// bungkusnya dilepas tepat sebelum <img> dirender.
+import { lepasBungkusanSrcGambar } from '../utils/normalisasiSrcGambar';
 
 export default function TeksSoalBergambar({
   teks,
@@ -39,24 +44,26 @@ export default function TeksSoalBergambar({
 
   return (
     <>
-      {segmen.map((sg, i) => (
-        sg.jenis === 'teks'
-          ? (
+      {segmen.map((sg, i) => {
+        if (sg.jenis === 'teks') {
+          return (
             <div key={i} style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left', ...gayaTeks }}>
               <RenderMath text={sg.isi} />
             </div>
-          )
-          : (
-            <img
-              key={i}
-              src={sg.url}
-              alt={`Gambar soal ${sg.indeks + 1}`}
-              onClick={onKlikGambar ? () => onKlikGambar(sg.url) : undefined}
-              title={onKlikGambar ? 'Klik untuk memperbesar' : undefined}
-              style={{ ...gayaGambarFinal, cursor: onKlikGambar ? 'zoom-in' : 'default' }}
-            />
-          )
-      ))}
+          );
+        }
+        const urlBersih = lepasBungkusanSrcGambar(sg.url);
+        return (
+          <img
+            key={i}
+            src={urlBersih}
+            alt={`Gambar soal ${sg.indeks + 1}`}
+            onClick={onKlikGambar ? () => onKlikGambar(urlBersih) : undefined}
+            title={onKlikGambar ? 'Klik untuk memperbesar' : undefined}
+            style={{ ...gayaGambarFinal, cursor: onKlikGambar ? 'zoom-in' : 'default' }}
+          />
+        );
+      })}
     </>
   );
 }

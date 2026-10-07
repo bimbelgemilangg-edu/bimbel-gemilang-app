@@ -54,6 +54,11 @@ import { db, auth } from '../../../firebase';
 // menulis "{(3, 2)}" polos -- di KaTeX kurungnya hilang. Diperbaiki di
 // pintu masuk, bukan minta setiap AI penulis file tidak pernah lupa.
 import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
+// 🔥 BARU (2026-10-07): keluhan owner "gambar dari Gemini gak muncul
+// semua". Akarnya: Gemini Canvas menulis src="[url](url)" gaya tautan
+// markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
+// alamatnya benar. Bungkusnya dilepas di pintu masuk parse ini.
+import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 
 // ============================================================
 // CONSTANT
@@ -151,7 +156,7 @@ Sistem TIDAK memakai folder atau referensi silang antar soal — tiap soal disim
 - Kalau ada BACAAN/TEKS PANJANG/DATA yang dipakai bersama beberapa nomor (mis. 1 bacaan untuk soal 5-8), JANGAN buat objek terpisah yang direferensikan. SALIN UTUH ke field \`bacaan\` di SETIAP soal yang memakainya.
 - Kalau ada GAMBAR yang menyertai sebuah soal, gambar itu MELEKAT langsung pada soal tersebut (field \`gambar\`), bukan disimpan terpisah lalu ditautkan.
 - Kalau kamu bisa membaca/mengekstrak gambar dari dokumen, embed sebagai base64 data URL di field \`dataUrl\` (format: "data:image/png;base64,...."). Ini paling ideal karena soal jadi mandiri tanpa file terpisah.
-- Kalau TIDAK bisa mengekstrak gambar aslinya, JANGAN mengarang URL. Kosongkan \`dataUrl\`/\`url\`, isi \`deskripsi\` dengan penjelasan detail gambar (apa yang digambarkan, angka-angka penting di dalamnya).
+- Kalau TIDAK bisa mengekstrak gambar aslinya, JANGAN mengarang URL. Kosongkan \`dataUrl\`/\`url\`, isi \`deskripsi\` dengan penjelasan detail gambar (apa yang digambarkan, angka-angka penting di dalamnya). Kalau mengisi \`url\`, tulis alamat POLOS tanpa bungkus kurung siku/bundar gaya markdown ([alamat](alamat) itu SALAH -- browser gak bisa memuatnya).
 
 ## 2. FORMAT JSON KESELURUHAN (WAJIB — ini yang dibaca sistem)
 
@@ -420,7 +425,7 @@ Kualitas produksi: pihak ketiga AI HARUS menjaga nomor berurutan, opsi lengkap, 
 ATURAN WAJIB:
 1. Setiap soal wajib berada di <article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1">.
 2. Pertanyaan utama berada di <div data-field="teks_soal">...</div>.
-3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Kalau kamu bisa mengisolasi persis gambar/grafik/diagram soal itu saja, embed itu. KALAU TIDAK BISA mengisolasi dengan presisi (mis. grafik menyatu dengan teks di layout PDF), JANGAN dilewatkan/dikosongkan begitu saja -- sertakan screenshot SATU HALAMAN PENUH tempat gambar itu berada sebagai fallback, dan tulis di alt/deskripsi: "Perlu di-crop admin, gambar asli ada di halaman ini". Sistem punya fitur crop bawaan (drag-pilih area), jadi admin bisa memotong sendiri dari screenshot halaman penuh itu -- jangan pernah mengarang gambar atau URL yang tidak benar-benar ada.
+3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Kalau kamu bisa mengisolasi persis gambar/grafik/diagram soal itu saja, embed itu. KALAU TIDAK BISA mengisolasi dengan presisi (mis. grafik menyatu dengan teks di layout PDF), JANGAN dilewatkan/dikosongkan begitu saja -- sertakan screenshot SATU HALAMAN PENUH tempat gambar itu berada sebagai fallback, dan tulis di alt/deskripsi: "Perlu di-crop admin, gambar asli ada di halaman ini". Sistem punya fitur crop bawaan (drag-pilih area), jadi admin bisa memotong sendiri dari screenshot halaman penuh itu -- jangan pernah mengarang gambar atau URL yang tidak benar-benar ada. WAJIB: atribut src ditulis POLOS apa adanya (contoh: src="https://contoh.org/g.png" atau src="data:image/png;base64,...") -- DILARANG membungkus alamat dengan kurung siku/kurung bundar gaya tautan markdown seperti src="[url](url)", karena browser tidak bisa memuat alamat yang terbungkus dan gambar akan terlihat rusak/palsu di halaman impor.
 4. Rumus harus dipertahankan sebagai LaTeX, misalnya $x^2+1$, \\(x^2+1\\), atau <span data-latex="x^2+1">...</span>. WAJIB: setiap notasi matematika (termasuk simbol akar, pangkat, atau perintah LaTeX seperti \\log, \\frac, \\sqrt) HARUS ada DI DALAM salah satu pembungkus itu ($...$ dsb) -- JANGAN PERNAH menulis kode LaTeX mentah tanpa pembungkus (menulis "^3\\log 81" polos di luar tanda $ itu SALAH, sistem gak bisa merender jadi rumus, siswa lihat kode mentahnya apa adanya; yang benar: "$^3\\log 81$"). Kalau ragu, lebih aman dibungkus $ daripada dibiarkan polos.
 5. Pilihan jawaban berada di <ol data-field="opsi_jawaban"><li>...</li></ol>. Setiap <li> boleh berisi gambar dan tabel.
 6. Kunci ditulis di <meta data-field="kunci_jawaban" data-value="B" />. 🔥 KEBIJAKAN BARU: kalau dokumen sumber menyertakan kunci resmi, SELALU pakai itu. TAPI kalau kunci tidak ditemukan di sumber ATAU kunci sumber tampak salah (bertentangan dengan hasil analisismu sendiri terhadap soal itu), JANGAN dikosongkan — SELESAIKAN soal itu sendiri langkah demi langkah (persis seperti guru mengerjakan soal), tulis kunci hasil analisismu di data-value, lalu tandai dengan <meta data-field="kunci_terverifikasi" data-value="false" />. Kalau kunci dari sumber dipakai apa adanya tanpa keraguan, tulis <meta data-field="kunci_terverifikasi" data-value="true" /> (atau boleh tidak ditulis sama sekali, true adalah default).
@@ -698,19 +703,22 @@ function normalizeImage(image, index = 0) {
   }
 
   if (typeof image === 'string') {
-    const isData = image.startsWith('data:image');
+    // 🔥 BARU (2026-10-07): string polos pun bisa datang dari AI sebagai
+    // "[url](url)" -- lepas bungkusnya dulu supaya tidak dicap rusak.
+    const bersih = lepasBungkusanSrcGambar(image);
+    const isData = bersih.startsWith('data:image');
     return {
       id: `gambar-${index + 1}`,
-      url: isData ? '' : image,
-      dataUrl: isData ? image : '',
+      url: isData ? '' : bersih,
+      dataUrl: isData ? bersih : '',
       uploadedUrl: '',
       deskripsi: '',
       nomor: index + 1,
     };
   }
 
-  const dataUrl = safeString(image.dataUrl || image.base64 || image.data || '');
-  const url = safeString(image.url || image.src || image.imageUrl || '');
+  const dataUrl = lepasBungkusanSrcGambar(safeString(image.dataUrl || image.base64 || image.data || ''));
+  const url = lepasBungkusanSrcGambar(safeString(image.url || image.src || image.imageUrl || ''));
 
   return {
     id: safeString(image.id, `gambar-${index + 1}`),
@@ -1399,7 +1407,10 @@ function htmlNodeText(node) {
 }
 
 function htmlImageToObject(img, index = 0) {
-  const src = safeString(img?.getAttribute?.('src') || img?.src || '').trim();
+  // 🔥 BARU (2026-10-07): src dilepas dulu dari bungkus markdown gaya
+  // Gemini Canvas ("[url](url)") -- tanpa ini alamat dibaca apa adanya,
+  // gagal dimuat browser, dan gambar asli dicap "rusak/palsu dari AI".
+  const src = lepasBungkusanSrcGambar(safeString(img?.getAttribute?.('src') || img?.src || '').trim());
   const alt = safeString(img?.getAttribute?.('alt') || img?.getAttribute?.('data-description') || '').trim();
   const isData = src.startsWith('data:image');
   return {
@@ -2177,7 +2188,12 @@ function parseTeX(raw) {
 
 function getImageSrc(gambar) {
   if (!gambar) return '';
-  return gambar.uploadedUrl || gambar.url || gambar.dataUrl || '';
+  // 🔥 BARU (2026-10-07): pembersihan bungkus markdown di sini jadi
+  // JARING PENGAMAN untuk state lama/dokumen tersimpan yang telanjur
+  // memuat src "[url](url)" -- preview, validasi Image(), export, dan
+  // upload massal semuanya lewat fungsi ini. Idempoten, jadi aman buat
+  // nilai yang sudah bersih sejak parse.
+  return lepasBungkusanSrcGambar(gambar.uploadedUrl || gambar.url || gambar.dataUrl || '');
 }
 
 // ============================================================
@@ -2501,6 +2517,17 @@ function ImageCropModal({ src, onCancel, onSave }) {
   const [dragStart, setDragStart] = useState(null);
   const containerRef = React.useRef(null);
 
+  // 🔥 (2026-10-07): onCancel disimpan di ref. Effect pemuat gambar di
+  // bawah SEMENGAJA hanya bergantung `src` (muat ulang cuma saat sumber
+  // berubah). Kalau onCancel (fungsi inline dari induk) masuk deps,
+  // effect jalan ulang tiap render induk dan gambar reloadData tanpa
+  // henti. Pola ref ini memuaskan react-hooks/exhaustive-deps tanpa
+  // efek samping muat ulang itu.
+  const onCancelRef = React.useRef(onCancel);
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+
   useEffect(() => {
     const img = new Image();
     // Skip crossOrigin untuk data: URI (base64) -- tidak perlu dan
@@ -2524,7 +2551,7 @@ function ImageCropModal({ src, onCancel, onSave }) {
         '(bukan gambar asli), bukan soal CORS. Gunakan tombol "Upload Gambar Manual" di bawah untuk ' +
         'mengganti dengan file gambar asli dari komputer kamu.'
       );
-      onCancel();
+      onCancelRef.current();
     };
     img.src = src;
   }, [src]);
@@ -2736,6 +2763,12 @@ function ImageWithCrop({ image, onCropped, status }) {
           textAlign: 'center', padding: '4px', fontSize: '10px', color: '#9ca3af', fontWeight: '700',
         }}>
           ⬜ Belum ada gambar
+        </div>
+      )}
+
+      {rusak && src && /^https?:\/\//i.test(src) && (
+        <div style={{ fontSize: '10px', color: '#b91c1c', maxWidth: '150px', lineHeight: 1.4 }}>
+          Alamat luar ini gagal dimuat: kemungkinan alamat DIKARANG AI atau berkasnya sudah dihapus dari situs sumber. Ganti dengan gambar asli (tombol di bawah) atau Potong Presisi.
         </div>
       )}
 
@@ -3005,6 +3038,24 @@ ${options ? `<ol data-field="opsi_jawaban">${options}</ol>` : ''}
 // MAIN COMPONENT
 // ============================================================
 
+// 🔥 BARU: peta Fase Kurikulum Merdeka -- sistem SEBELUMNYA sama
+// sekali gak ngerti konsep ini (cuma kenal angka kelas 1-12 lepas).
+// Ini SPESIFIK dipakai di mode "Generate Langsung" karena paling
+// relevan buat soal Penguatan Dasar yang emang biasa disusun per
+// Fase, bukan per kelas tunggal.
+// 🔥 DIPINDAH ke lingkup modul (2026-10-07): dulu dideklarasikan DI DALAM
+// komponen sehingga useMemo generatedPrompt kena warning eslint
+// react-hooks/exhaustive-deps (PETA_FASE dianggap dependency yang hilang).
+// Isinya konstanta tetap -- aman dan lebih hemat dibuat sekali saja.
+const PETA_FASE = {
+  'A (kelas 1-2 SD)': { jenjang: 'SD/MI', kelasAwal: '1', kelasAkhir: '2' },
+  'B (kelas 3-4 SD)': { jenjang: 'SD/MI', kelasAwal: '3', kelasAkhir: '4' },
+  'C (kelas 5-6 SD)': { jenjang: 'SD/MI', kelasAwal: '5', kelasAkhir: '6' },
+  'D (kelas 7-9 SMP)': { jenjang: 'SMP/MTs', kelasAwal: '7', kelasAkhir: '9' },
+  'E (kelas 10 SMA)': { jenjang: 'SMA/MA', kelasAwal: '10', kelasAkhir: '10' },
+  'F (kelas 11-12 SMA)': { jenjang: 'SMA/MA', kelasAwal: '11', kelasAkhir: '12' },
+};
+
 export default function ImportHasilScanPage() {
   const mathReady = useSafeKaTeX();
 
@@ -3241,19 +3292,6 @@ export default function ImportHasilScanPage() {
   // sendiri dari pengetahuannya, langsung dari topik yang diketik admin,
   // JAUH lebih cepat daripada proses cari-buku-scan-ekstrak yang lama.
   const [sumberSoal, setSumberSoal] = useState('ekstrak'); // 'ekstrak' | 'generate'
-  // 🔥 BARU: peta Fase Kurikulum Merdeka -- sistem SEBELUMNYA sama
-  // sekali gak ngerti konsep ini (cuma kenal angka kelas 1-12 lepas).
-  // Ini SPESIFIK dipakai di mode "Generate Langsung" karena paling
-  // relevan buat soal Penguatan Dasar yang emang biasa disusun per
-  // Fase, bukan per kelas tunggal.
-  const PETA_FASE = {
-    'A (kelas 1-2 SD)': { jenjang: 'SD/MI', kelasAwal: '1', kelasAkhir: '2' },
-    'B (kelas 3-4 SD)': { jenjang: 'SD/MI', kelasAwal: '3', kelasAkhir: '4' },
-    'C (kelas 5-6 SD)': { jenjang: 'SD/MI', kelasAwal: '5', kelasAkhir: '6' },
-    'D (kelas 7-9 SMP)': { jenjang: 'SMP/MTs', kelasAwal: '7', kelasAkhir: '9' },
-    'E (kelas 10 SMA)': { jenjang: 'SMA/MA', kelasAwal: '10', kelasAkhir: '10' },
-    'F (kelas 11-12 SMA)': { jenjang: 'SMA/MA', kelasAwal: '11', kelasAkhir: '12' },
-  };
   const [fasePilihan, setFasePilihan] = useState('');
   const [topikGenerate, setTopikGenerate] = useState('');
   const [jumlahSoalGenerate, setJumlahSoalGenerate] = useState(10);
@@ -4527,7 +4565,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                         onClick={() => setShowModalGambarMassal(true)}
                         style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px', backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '8px', fontSize: '12px', fontWeight: '700', border: '1px solid #fbbf24' }}
                       >
-                        📤 Upload Gambar Massal ({soalButuhGambar.length} soal butuh gambar)
+                        📤 Upload Gambar Massal ({soalButuhGambar.length} soal belum punya gambar)
                       </button>
                     )}
                     <button
