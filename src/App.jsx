@@ -79,6 +79,7 @@ import GuruPantauTryOut from './pages/teacher/GuruPantauTryOut';
 import CetakPaketLatihan from './pages/teacher/CetakPaketLatihan';
 import PerpustakaanKonten from './pages/PerpustakaanKonten';
 import ImporHtmlGeminiPage from './pages/admin/bank-soal/ImporHtmlGeminiPage';
+import PotongPresisiPage from './pages/admin/bank-soal/PotongPresisiPage';
 // 🔥 BARU (pembagian kewenangan admin vs owner): tempat kerja admin untuk
 // absensi & riwayat sesi tentor -- validasi fakta sesi TANPA angka uang.
 import SesiGuruPage from './pages/admin/teachers/SesiGuruPage';
@@ -588,6 +589,14 @@ function App() {
         <Route
           path="/admin/bank-soal/impor-html-gemini"
           element={<AdminRoute><ImporHtmlGeminiPage /></AdminRoute>}
+        />
+        {/* 🔥 BARU (2026-10-07, keluhan owner "gambar soal tidak presisi"):
+            editor potong presisi — manusia memotong figur dari scan/PDF
+            asli dibantu snap-tinta, hasilnya menggantikan gambar berflag
+            ⚠️ atau mengisi antrean ✂️ potonganTertunda di bank_soal. */}
+        <Route
+          path="/admin/bank-soal/potong-presisi"
+          element={<AdminRoute><PotongPresisiPage /></AdminRoute>}
         />
         <Route path="/admin/teachers" element={<AdminRoute><TeacherList /></AdminRoute>} />
         {/* 🔥 BARU: tempat kerja admin untuk absensi/riwayat sesi tentor.

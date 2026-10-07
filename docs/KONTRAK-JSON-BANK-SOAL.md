@@ -248,6 +248,6 @@ berikut (semuanya opsional, pembaca lama tidak terpengaruh):
 | Field | Tipe | Isi |
 |---|---|---|
 | `pembahasanAsal` | string | `"tercetak"` / `"penalaran"` — pengakuan asal pembahasan |
-| `gambarMeta` | object[] | sejajar indeks `gambarUrls`: `{ sumber: "url-asli"/"warisan"/…, asal: "alamat sumber", caption, region }` — asal-usul tiap gambar (tangga gambar asli, lihat `docs/PROMPT-PATEN-SCAN-GEMINI.md` §6). `region` = `"badan"` / `"opsi"` / `"pembahasan"`: tempat gambar disebut; renderer memakai region agar gambar sisa tidak nyasar ke teks region lain |
+| `gambarMeta` | object[] | sejajar indeks `gambarUrls`: `{ sumber: "url-asli"/"warisan"/…, asal: "alamat sumber", caption, region }` — asal-usul tiap gambar (tangga gambar asli, lihat `docs/PROMPT-PATEN-SCAN-GEMINI.md` §6). `region` = `"badan"` / `"opsi"` / `"pembahasan"`: tempat gambar disebut; renderer memakai region agar gambar sisa tidak nyasar ke teks region lain. Setelah diperbaiki lewat editor ✂️ Potong Presisi, entri dicap `asal: "potongan-asli"` + `dipotongPresisi: { alat: "potong-presisi", ts }` (audit: kapan & alat apa yang memasangnya — lihat `docs/ALUR-POTONG-PRESISI.md`) |
 | `potonganTertunda` | object[] | `{ urutan, petunjuk }` — figur yang masih menunggu DIPOTONG PRESISI dari berkas scan asli; soal sengaja boleh tersimpan lebih dulu, siswa belum melihat gambarnya |
 | `kurikulum`/`fase`/`kelas`/`elemen`/`capaian` | string | taksonomi Kurikulum Merdeka pengakuan Gemini |

@@ -29,6 +29,7 @@
 // ============================================================
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
@@ -167,7 +168,7 @@ export default function ImporHtmlGeminiPage() {
         await batch.commit();
         tersimpan += slice.length;
       }
-      setPesan(`✅ ${tersimpan} soal tersimpan di ${ringkasan.perBab.length} bab.${ringkasan.penalaran ? ` ${ringkasan.penalaran} pembahasan hasil penalaran AI — periksa sebelum dipakai mengajar.` : ''}${ringkasan.menungguPotongan ? ` ✂️ ${ringkasan.menungguPotongan} gambar masih MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuknya tersimpan di tiap soal (potonganTertunda).` : ''}${ringkasan.terindikasiBuatan ? ` ⚠️ ${ringkasan.terindikasiBuatan} gambar base64 terindikasi buatan model — periksa sebelum dipakai.` : ''} Lihat sebarannya di Perpustakaan.`);
+      setPesan(`✅ ${tersimpan} soal tersimpan di ${ringkasan.perBab.length} bab.${ringkasan.penalaran ? ` ${ringkasan.penalaran} pembahasan hasil penalaran AI — periksa sebelum dipakai mengajar.` : ''}${ringkasan.menungguPotongan ? ` ✂️ ${ringkasan.menungguPotongan} gambar masih MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuknya tersimpan di tiap soal (potonganTertunda). Selesaikan lewat menu ✂️ Potong Presisi.` : ''}${ringkasan.terindikasiBuatan ? ` ⚠️ ${ringkasan.terindikasiBuatan} gambar base64 terindikasi buatan model — periksa sebelum dipakai.` : ''} Lihat sebarannya di Perpustakaan.`);
       setHasil(null);
       setBerkas([]);
       setTempelan('');
@@ -272,7 +273,7 @@ export default function ImporHtmlGeminiPage() {
                 <div>⚠️ <b>{ringkas.terindikasiBuatan}</b> gambar base64 TANPA pengakuan asal — TERINDIKASI DIBUAT MODEL (prompt paten melarang membuat gambar). Lihat kartunya di daftar peringatan; bila gambarnya tidak persis seperti di scan, buang dan minta Gemini mengulang dengan petunjuk potongan.</div>
               )}
               {ringkas.menungguPotongan > 0 && (
-                <div>✂️ <b>{ringkas.menungguPotongan}</b> gambar menunggu <b>POTONGAN PRESISI</b> dari berkas asli — petunjuk (halaman + posisi + isi) ada di daftar peringatan dan ikut tersimpan di tiap soal; siswa belum melihat gambar ini sampai tim memotongnya.</div>
+                <div>✂️ <b>{ringkas.menungguPotongan}</b> gambar menunggu <b>POTONGAN PRESISI</b> dari berkas asli — petunjuk (halaman + posisi + isi) ada di daftar peringatan dan ikut tersimpan di tiap soal; siswa belum melihat gambar ini sampai tim memotongnya. <Link to="/admin/bank-soal/potong-presisi" style={{ fontWeight: 800, color: '#b45309' }}>Buka ✂️ Potong Presisi untuk menyelesaikannya →</Link></div>
               )}
             </div>
           )}
