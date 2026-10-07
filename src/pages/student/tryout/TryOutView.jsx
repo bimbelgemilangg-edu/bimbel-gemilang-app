@@ -256,9 +256,16 @@ export default function TryOutView() {
     }
   }, [paketId, studentId]);
 
+  // Effect mount sengaja hanya bergantung paketId/studentId:
+  // muatPaketDanSesi dibuat ulang tiap render, memasukkannya ke deps
+  // berarti efek memanggil dirinya tanpa henti. Perilaku ini dikuji
+  // manual lewat alur try out siswa; penonaktifan peringatan terbatas
+  // satu baris ini saja.
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     muatPaketDanSesi();
   }, [paketId, studentId]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   // Daftar soal yang SEDANG BOLEH dikerjakan -- kalau mode per-subtes,
   // cuma soal di subtes aktif (soal di subtes lain/sebelumnya TIDAK
@@ -738,7 +745,7 @@ export default function TryOutView() {
               )}
               <TeksSoalBergambar
                 teks={s.soal || s.teks_soal}
-                gambarUrls={s.gambarUrls}
+                gambarUrls={s.gambarUrls} gambarMeta={s.gambarMeta || null}
                 gayaTeks={{ marginBottom: 10 }}
                 gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
               />
@@ -749,7 +756,7 @@ export default function TryOutView() {
               {s.pembahasan && (
                 <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
                   <b>💡 Pembahasan</b>
-                  <div style={{ marginTop: 4 }}><RenderMath text={s.pembahasan} /></div>
+                  <div style={{ marginTop: 4 }}><TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" /></div>
                 </div>
               )}
             </div>
@@ -884,7 +891,7 @@ export default function TryOutView() {
         )}
         <TeksSoalBergambar
           teks={soalAktif.soal || soalAktif.teks_soal}
-          gambarUrls={soalAktif.gambarUrls}
+          gambarUrls={soalAktif.gambarUrls} gambarMeta={soalAktif.gambarMeta || null}
           gayaTeks={{ fontSize: 14, marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
         />

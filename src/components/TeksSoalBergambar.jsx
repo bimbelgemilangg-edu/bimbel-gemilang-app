@@ -20,11 +20,13 @@ import { pisahTeksDanGambar } from '../utils/penempatanGambar';
 export default function TeksSoalBergambar({
   teks,
   gambarUrls = [],
+  gambarMeta = null,
+  region = 'badan',
   onKlikGambar = null,
   gayaTeks = {},
   gayaGambar = {},
 }) {
-  const segmen = pisahTeksDanGambar(teks, gambarUrls);
+  const segmen = pisahTeksDanGambar(teks, gambarUrls, { meta: gambarMeta, region });
   const gayaGambarFinal = {
     display: 'block',
     maxWidth: '100%',

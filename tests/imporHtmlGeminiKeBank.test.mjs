@@ -171,6 +171,44 @@ uji('pemanggilan ringkasanImpor gaya lama (satu argumen) tidak rusak', () => {
 });
 
 // ============================================================
+bagian('4. OPSI KAYA: gambarRefs DISELESAIKAN JADI gambar (kajian PDF Kinematika)');
+
+uji('opsi {teks, gambarRefs} jadi {teks, gambar:[{url,...}]} sejajar gambarUrls', () => {
+  const dok = dokumenDariButir({
+    nomor: 42,
+    tipe: 'pg_kompleks',
+    soal: 'Manakah grafik yang tepat?',
+    opsiJawaban: [
+      { teks: '', gambar: [], gambarRefs: [2] },
+      'E. teks polos',
+    ],
+    kunciJawaban: ['A', 'D'],
+    gambarUrls: ['https://cdn.contoh/a.png', 'https://cdn.contoh/b.png'],
+    gambarMeta: [
+      { sumber: 'url-asli', asal: 'https://x/a', caption: '', region: 'opsi' },
+      { sumber: 'url-asli', asal: 'https://x/b', caption: '', region: 'opsi' },
+    ],
+  }, { fileName: 'kinematika.html', mapel: 'fisika' });
+  assert.equal(dok.opsiJawaban.length, 2);
+  assert.equal(dok.opsiJawaban[0].gambar.length, 1);
+  assert.equal(dok.opsiJawaban[0].gambar[0].url, 'https://cdn.contoh/b.png');
+  assert.equal(dok.opsiJawaban[0].gambar[0].asal, 'https://x/b');
+  assert.equal(dok.opsiJawaban[0].gambarRefs, undefined, 'referensi internal tidak boleh ikut tersimpan');
+  assert.equal(dok.opsiJawaban[1], 'E. teks polos');
+});
+
+uji('gambarRefs tanpa url (menunggu potongan) dibuang, opsi tetap ada', () => {
+  const dok = dokumenDariButir({
+    nomor: 71,
+    tipe: 'pg_sederhana',
+    soal: 'Pilih.',
+    opsiJawaban: [{ teks: '', gambar: [], gambarRefs: [5] }],
+    kunciJawaban: 'A',
+    gambarUrls: [],
+  }, { fileName: 'kinematika.html', mapel: 'fisika' });
+  assert.deepEqual(dok.opsiJawaban[0], { teks: '', gambar: [] });
+});
+
 console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);
 console.log(`  GAGAL : ${gagal}`);

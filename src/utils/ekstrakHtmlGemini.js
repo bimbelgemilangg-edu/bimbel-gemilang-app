@@ -104,46 +104,101 @@ function blokBerurutan(html) {
   return keluar;
 }
 
-/** Ambil isi elemen pertama ber-class token tertentu (kedalaman dihitung). */
-function blokKelas(inner, token) {
+/**
+ * Rentang elemen pertama ber-class token tertentu: {mulai, akhir, isi}.
+ *
+ * 🔥 FIX BUG (2026-10-07, kajian PDF Kinematika @my99dreams): pemindai
+ * kedalaman lama membandingkan exec() dua regex terpisah, sehingga tag
+ * pembuka yang "terlewat" saat cabang penutup diambil tidak pernah
+ * dihitung -- akibatnya q-body yang MEMUAT div bersarang (figure-container
+ * = pasti ada bila soal bergambar) tidak pernah tertutup dan isinya melar
+ * sampai AKHIR kartu: teks soal tercemar opsi + pembahasan. Kini satu
+ * sapuan regex gabungan pembuka/penutup; kedalaman pasti benar.
+ */
+function rentangBlok(inner, token) {
   const re = new RegExp(`<([a-z]+)\\b[^>]*\\bclass\\s*=\\s*"[^"]*\\b${token}\\b[^"]*"[^>]*>`, 'i');
   const m = re.exec(inner);
-  if (!m) return '';
+  if (!m) return null;
   const tag = m[1];
   const mulai = m.index + m[0].length;
-  const reBuka = new RegExp(`<${tag}\\b`, 'gi');
-  const reTutup = new RegExp(`</${tag}>`, 'gi');
+  const reTag = new RegExp(`<(\\/)?${tag}\\b[^>]*>`, 'gi');
+  reTag.lastIndex = mulai;
   let kedalaman = 1;
-  let i = mulai;
-  reBuka.lastIndex = mulai;
-  reTutup.lastIndex = mulai;
-  while (kedalaman > 0 && i < inner.length) {
-    const b = reBuka.exec(inner);
-    const t = reTutup.exec(inner);
-    if (!t) break;
-    if (b && b.index < t.index) { kedalaman += 1; i = b.index + 2; continue; }
-    kedalaman -= 1;
-    i = t.index + tag.length + 3;
-    if (kedalaman === 0) return inner.slice(mulai, t.index);
+  let t;
+  while ((t = reTag.exec(inner)) !== null) {
+    if (t[1]) kedalaman -= 1; else kedalaman += 1;
+    if (kedalaman === 0) return { mulai, akhir: t.index, isi: inner.slice(mulai, t.index) };
   }
-  return inner.slice(mulai);
+  return { mulai, akhir: inner.length, isi: inner.slice(mulai) };
+}
+
+/** Ambil isi elemen pertama ber-class token tertentu (kedalaman dihitung). */
+function blokKelas(inner, token) {
+  const r = rentangBlok(inner, token);
+  return r ? r.isi : '';
+}
+
+/** Rentang (awal..akhir tag penutup) div yang TAG PEMBUKANYA berada di idx. */
+function rentangDivPada(inner, idx) {
+  const m = /^<([a-z]+)\b[^>]*>/i.exec(inner.slice(idx));
+  if (!m) return idx;
+  const tag = m[1];
+  const mulaiIsi = idx + m[0].length;
+  const reTag = new RegExp(`<(\\/)?${tag}\\b[^>]*>`, 'gi');
+  reTag.lastIndex = mulaiIsi;
+  let kedalaman = 1;
+  let t;
+  while ((t = reTag.exec(inner)) !== null) {
+    if (t[1]) kedalaman -= 1; else kedalaman += 1;
+    if (kedalaman === 0) return t.index + t[0].length;
+  }
+  return inner.length;
 }
 
 function cariOpsi(inner) {
+  // 🔥 2026-10-07 (kajian PDF Kinematika): SATU <li> = SATU pilihan, titik.
+  // Urutan lama (span option-text se-kartu dulu) membuat <li> yang hanya
+  // berisi grafik -- pola nyata modul TKA -- TIDAK TERHITUNG sebagai opsi,
+  // sehingga soal 5 pilihan terbaca 1-2 pilihan dan huruf kunci bergeser.
+  // Span option-text tetap dihormati BILA ADA di dalam li-nya (struktur
+  // paten prompt), kalau tidak ada isi li itulah teks pilihannya.
+  const list = blokKelas(inner, 'options-list') || blokKelas(inner, 'options') || '';
+  if (list) {
+    const lewatLi = [...list.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+      .map((x) => {
+        const span = (/<span class="[^"]*option-text[^"]*">([\s\S]*?)<\/span>/i.exec(x[1]) || [])[1];
+        return htmlKeTeks(span !== undefined ? span : x[1]).replace(/^[A-E][).]\s*/, '');
+      })
+      .filter((t) => t.trim().length > 0);
+    if (lewatLi.length) return lewatLi;
+  }
   const lewatSpan = [...inner.matchAll(/<span class="[^"]*option-text[^"]*">([\s\S]*?)<\/span>/gi)]
     .map((x) => htmlKeTeks(x[1]).replace(/^[A-E][).]\s*/, ''));
   if (lewatSpan.length) return lewatSpan;
-  const list = blokKelas(inner, 'options-list') || blokKelas(inner, 'options') || '';
-  const lewatLi = [...list.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
-    .map((x) => htmlKeTeks(x[1]).replace(/^[A-E][).]\s*/, ''))
-    .filter((t) => t.length > 0);
-  if (lewatLi.length) return lewatLi;
   // dialek teks polos: baris berawalan huruf pilihan
   return htmlKeTeks(inner)
     .split('\n')
     .map((x) => /^([A-E])[).]\s*(.+)$/.exec(x))
     .filter(Boolean)
     .map((m) => m[2].trim());
+}
+
+/**
+ * Ikat token {{GAMBAR_n}} di dalam string opsi menjadi OPSI KAYA
+ * {teks, gambarRefs} supaya gambar pilihan (mis. lima grafik sebagai
+ * pilihan A-E di modul TKA) menempel pada pilihannya, bukan menumpuk di
+ * akhir badan soal. gambarRefs diisi dokumenDariButir menjadi
+ * `gambar: [{url,...}]` sejajar gambarUrls setelah unggahan selesai.
+ * Opsi tanpa token tetap string polos (perilaku lama dipertahankan).
+ */
+const RE_TOKEN_GAMBAR_OPSI = /\{\{GAMBAR_(\d+)\}\}/g;
+function ikatOpsiBergambar(opsi) {
+  return opsi.map((str) => {
+    const refs = [...String(str).matchAll(RE_TOKEN_GAMBAR_OPSI)].map((m) => Number(m[1]));
+    if (!refs.length) return str;
+    const teks = String(str).replace(RE_TOKEN_GAMBAR_OPSI, ' ').replace(/\s+/g, ' ').trim();
+    return { teks, gambar: [], gambarRefs: refs };
+  });
 }
 
 function cariKunci(inner, attrKunci) {
@@ -209,40 +264,35 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
     const nomor = nomorAttr || (nomorTeks.replace(/\D+/g, '') || String(jumlah));
     const sumber = htmlKeTeks(blokKelas(inner, 'q-source') || blokKelas(inner, 'source'));
 
-    const badanBlok = blokKelas(inner, 'q-body') || blokKelas(inner, 'body') || blokKelas(inner, 'stem');
-    let teksSoal = htmlKeTeks(badanBlok || inner.split('<div class="options-list"')[0]);
+    // ── GAMBAR: tokenisasi SADAR-REGION (kajian PDF Kinematika 2026-10-07) ──
+    // Pasar soal nyata (modul scan TKA) menaruh figur di TIGA region: badan
+    // soal, DI DALAM opsi (pilihan berupa grafik), dan DI DALAM pembahasan
+    // (diagram bertahap). Kontrak lama meratakan semuanya: placeholder
+    // ditempel di AKHIR teks soal, caption/petunjuk potongan bocor menjadi
+    // teks bacaan siswa, dan opsi bergambar terbaca sebagai opsi kosong.
+    // Kini setiap figure-container DIGANTI token {{GAMBAR_n}} persis di
+    // posisi fisiknya; region menentukan token itu ikut ke teksSoal, ke
+    // string opsi (diikat jadi opsi kaya {teks, gambarRefs}), atau ke
+    // pembahasan. Nomor token = urutan gambar BER-SRC (sejajar gambarUrls).
+    const rentangOps = rentangBlok(inner, 'options-list') || rentangBlok(inner, 'options');
+    const rentangPemb = rentangBlok(inner, 'pembahasan')
+      || rentangBlok(inner, 'explanation') || rentangBlok(inner, 'solution');
+    const dalamRentang = (idx, r) => Boolean(r) && idx >= r.mulai && idx <= r.akhir;
 
-    const statements = blokKelas(inner, 'statements-box') || blokKelas(inner, 'statements');
-    const daftarPernyataan = statements
-      ? [...statements.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map((x) => htmlKeTeks(x[1]))
-      : [];
-    if (daftarPernyataan.length) {
-      teksSoal += '\n' + daftarPernyataan.map((p, i) => `${i + 1}) ${p}`).join('\n');
-    }
-
-    // gambar: base64/url dipisah; posisi di teks jadi {{GAMBAR_n}}.
-    // 🔥 2026-10-07 — ASAL-USUL GAMBAR (tangga gambar asli, aturan 10
-    // prompt paten): setiap figure-container mengaku lewat atribut
-    // data-gambar-sumber:
-    //   url-asli          = gambar beredar yang PERSIS SAMA & HD; alamat
-    //                       halaman sumbernya dicatat di data-gambar-asal
-    //   petunjuk-potongan = {{GAMBAR: ...}} — tim memotong presisi dari
-    //                       berkas scan ASLI milik owner (antrean `potongan`)
-    //   warisan/potongan-asli/asli-scan = base64 SAH (potongan manusia /
-    //                       bawaan berkas lama yang dikonversi ulang)
-    // base64 TANPA pengakuan asal = TERINDIKASI DIBUAT MODEL -> peringatan
-    // keras (bukan penolakan: berkas era sebelum aturan ini bisa memuat
-    // base64 potongan asli yang belum sempat diberi atribut).
     const titikFig = [...inner.matchAll(/<div([^>]*\bclass="[^"]*figure-container[^"]*"[^>]*)>/gi)];
+    const sulaman = [];
+    let nomorSrc = 0;
     titikFig.forEach((tf, i) => {
-      const akhir = i + 1 < titikFig.length ? titikFig[i + 1].index : inner.length;
-      const chunk = inner.slice(tf.index + tf[0].length, akhir);
+      const akhirDiv = rentangDivPada(inner, tf.index);
+      const chunk = inner.slice(tf.index + tf[0].length, akhirDiv);
       const attrWadah = tf[1] || '';
       const imgTag = (/<img[^>]*>/i.exec(chunk) || [])[0] || '';
       const src = atribut(imgTag, 'src');
       const caption = htmlKeTeks((/<div[^>]*\bclass="[^"]*figure-caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i.exec(chunk) || [])[1] || '');
       const sumberDeklarasi = (atribut(attrWadah, 'data-gambar-sumber') || atribut(imgTag, 'data-gambar-sumber')).toLowerCase();
       const asalDeklarasi = atribut(attrWadah, 'data-gambar-asal') || atribut(imgTag, 'data-gambar-asal');
+      const region = dalamRentang(tf.index, rentangOps) ? 'opsi'
+        : dalamRentang(tf.index, rentangPemb) ? 'pembahasan' : 'badan';
 
       if (src) {
         const base64 = /^data:image\//i.test(src);
@@ -251,8 +301,9 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
         if (!gambarSumber) {
           gambarSumber = urlLuar ? 'url-asli' : (base64 ? 'base64-tanpa-asal' : 'tak-dikenal');
         }
-        gambar.push({ kartu: id, urutan: i + 1, src, caption, gambarSumber, gambarAsal: asalDeklarasi });
-        teksSoal += `\n{{GAMBAR_${i + 1}}}`;
+        nomorSrc += 1;
+        gambar.push({ kartu: id, urutan: nomorSrc, src, caption, gambarSumber, gambarAsal: asalDeklarasi, region });
+        sulaman.push({ mulai: tf.index, akhir: akhirDiv, ganti: `{{GAMBAR_${nomorSrc}}}` });
         if (base64 && !SUMBER_GAMBAR_SAHIH.has(sumberDeklarasi)) {
           peringatan.push(`${pref}kartu ${id}: gambar ke-${i + 1} adalah base64 TANPA pengakuan asal (data-gambar-sumber="warisan"/"potongan-asli") — TERINDIKASI DIBUAT MODEL; prompt paten MELARANG gambar buatan. Periksa gambarnya sebelum soal dipakai mengajar.`);
         }
@@ -264,17 +315,61 @@ function ekstrakSatu(htmlMentah, labelBerkas = '') {
       const petunjuk = (/\{\{\s*GAMBAR\s*:([\s\S]*?)\}\}/i.exec(htmlKeTeks(chunk)) || [])[1];
       if (petunjuk || sumberDeklarasi === 'petunjuk-potongan') {
         const teksPetunjuk = String(petunjuk || caption || '').trim();
-        potongan.push({ kartu: id, urutan: i + 1, petunjuk: teksPetunjuk, caption });
-        peringatan.push(`${pref}kartu ${id}: gambar ke-${i + 1} MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuk: "${teksPetunjuk.slice(0, 140)}${teksPetunjuk.length > 140 ? '…' : ''}". Soal tersimpan TANPA gambar ini sampai tim memotongnya.`);
+        potongan.push({ kartu: id, urutan: i + 1, petunjuk: teksPetunjuk, caption, region });
+        // Opsi yang gambarnya masih menunggu potongan HARUS tetap ada
+        // sebagai pilihan (kalau lenyap, huruf kunci A-E bergeser dan soal
+        // jadi salah kunci). Pakai penanda jujur yang terlihat admin/siswa
+        // sampai gambarnya dipotong dan ditempel manual.
+        sulaman.push({
+          mulai: tf.index,
+          akhir: akhirDiv,
+          ganti: region === 'opsi' ? '[GAMBAR OPSI MENUNGGU POTONGAN]' : ' ',
+        });
+        peringatan.push(`${pref}kartu ${id}: gambar ke-${i + 1}${region === 'opsi' ? ' (GAMBAR OPSI PILIHAN)' : region === 'pembahasan' ? ' (di pembahasan)' : ''} MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuk: "${teksPetunjuk.slice(0, 140)}${teksPetunjuk.length > 140 ? '…' : ''}". Soal tersimpan TANPA gambar ini sampai tim memotongnya.`);
+      } else {
+        // figure-container tanpa src dan tanpa petunjuk: buang wadahnya
+        // supaya caption mentah tidak bocor jadi teks bacaan siswa.
+        sulaman.push({ mulai: tf.index, akhir: akhirDiv, ganti: ' ' });
       }
     });
+    let innerBertoken = inner;
+    for (const s of [...sulaman].sort((a, b) => b.mulai - a.mulai)) {
+      innerBertoken = innerBertoken.slice(0, s.mulai) + s.ganti + innerBertoken.slice(s.akhir);
+    }
 
-    const opsi = cariOpsi(inner);
-    const barisMatrix = /<table[^>]*\bclass="[^"]*matrix-box[^"]*"[\s\S]*?<\/table>/i.exec(inner);
+    const badanBlok = blokKelas(innerBertoken, 'q-body') || blokKelas(innerBertoken, 'body') || blokKelas(innerBertoken, 'stem');
+    let teksSoal = htmlKeTeks(badanBlok || innerBertoken.split('<div class="options-list"')[0]);
+
+    const statements = blokKelas(innerBertoken, 'statements-box') || blokKelas(innerBertoken, 'statements');
+    const daftarPernyataan = statements
+      ? [...statements.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map((x) => htmlKeTeks(x[1]))
+      : [];
+    if (daftarPernyataan.length) {
+      teksSoal += '\n' + daftarPernyataan.map((p, i) => `${i + 1}) ${p}`).join('\n');
+    }
+
+    // Figur region BADAN yang fisiknya berada DI LUAR blok q-body (mis.
+    // figure-container saudara kandung q-body, gaya penulisan berkas era
+    // lama) tidak ikut terbawa htmlKeTeks(badanBlok) -- token mereka
+    // disusul ke akhir teks soal supaya gambarnya tidak lenyap.
+    for (const g of gambar) {
+      if (g.kartu !== id || g.region !== 'badan') continue;
+      const token = `{{GAMBAR_${g.urutan}}}`;
+      if (!teksSoal.includes(token)) teksSoal += `\n${token}`;
+    }
+
+    // Asal-usul gambar (tangga gambar asli, aturan 10 prompt paten) sudah
+    // dicatat di entri `gambar`/`potongan` pada blok tokenisasi di atas;
+    // token {{GAMBAR_n}} sudah disulam ke innerBertoken PADA POSISI FISIK
+    // figur (badan soal / opsi / pembahasan), jadi tidak ada lagi caption
+    // atau petunjuk potongan yang bocor menjadi teks bacaan siswa.
+
+    const opsi = ikatOpsiBergambar(cariOpsi(innerBertoken));
+    const barisMatrix = /<table[^>]*\bclass="[^"]*matrix-box[^"]*"[\s\S]*?<\/table>/i.exec(innerBertoken);
     const pernyataanMatrix = barisMatrix
       ? [...barisMatrix[0].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].map((r) => htmlKeTeks(r[1])).filter(Boolean)
       : [];
-    const pembahasan = cariPembahasan(inner);
+    const pembahasan = cariPembahasan(innerBertoken);
     const tipe = normTipe(tipeMentah, opsi.length);
 
     // ---- penegakan ISI paten (struktur boleh beda, isi tidak) ----

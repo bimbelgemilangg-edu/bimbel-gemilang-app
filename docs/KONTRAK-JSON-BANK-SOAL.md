@@ -53,7 +53,7 @@ petunjuk di halaman upload** (itu yang memenangkan taksonomi), bukan di dalam fi
 | `nomor` | number | semua | nomor urut. Hilang → diisi otomatis urutan file + warning |
 | `tipe` | string | semua | salah satu dari 5 enum di bawah |
 | `teksSoal` | string | semua | teks soal. LaTeX pakai **backslash ganda** (lihat §4) |
-| `opsiJawaban` | string[] | `pg_sederhana`, `pg_kompleks` | daftar pilihan, tanpa huruf "A." di depan |
+| `opsiJawaban` | (string \| object)[] | `pg_sederhana`, `pg_kompleks` | daftar pilihan, tanpa huruf "A." di depan. Entri boleh OBJEK KAYA `{teks, gambar:[{url,sumber,asal,caption}]}` bila pilihan berupa gambar/grafik (kontrak 2026-10-07, kajian PDF Kinematika); renderer siswa & mesin cetak sudah merender gambar pilihan, mesin skoring hanya membaca huruf kunci |
 | `pernyataan` | string[] | `pg_kompleks` | pernyataan yang dinilai benar/salah oleh siswa |
 | `tabelBenarSalah` | object[] | `benar_salah` | `[{ "pernyataan": "...", "kunci": "benar"\|"salah" }]` |
 | `pasangan` | object[] | `menjodohkan` | `[{ "kiri": "...", "kanan": "..." }]` = pasangan BENARnya |
@@ -105,7 +105,7 @@ validator menormalkannya, tidak menolak.
    (Insiden nyata: Matematika Bab 7 tayang sebagai "A = 2, 3".)
 3. D kutip di dalam teks soal harus di-escape: `\"`.
 4. Tidak boleh ada aksara CJK (China/Jepang/Korea) terselip — penjaga CI menolak.
-5. Gambar: tempatkan placeholder `{{GAMBAR_1}}` di `teksSoal` PERSIS sama
+5. Gambar: tempatkan placeholder `{{GAMBAR_1}}` di `teksSoal` PERSIS sama (sejak 2026-10-07 placeholder bernomor juga BOLEH muncul di `pembahasan`; nomornya selalu indeks `gambarUrls` bagi seluruh butir, bukan indeks per-teks)
    dengan `id` di field `gambar`. Placeholder tanpa pasangan = warning.
 
 ## 5. Contoh minimal per tipe
@@ -248,6 +248,6 @@ berikut (semuanya opsional, pembaca lama tidak terpengaruh):
 | Field | Tipe | Isi |
 |---|---|---|
 | `pembahasanAsal` | string | `"tercetak"` / `"penalaran"` — pengakuan asal pembahasan |
-| `gambarMeta` | object[] | sejajar indeks `gambarUrls`: `{ sumber: "url-asli"/"warisan"/…, asal: "alamat sumber", caption }` — asal-usul tiap gambar (tangga gambar asli, lihat `docs/PROMPT-PATEN-SCAN-GEMINI.md` §6) |
+| `gambarMeta` | object[] | sejajar indeks `gambarUrls`: `{ sumber: "url-asli"/"warisan"/…, asal: "alamat sumber", caption, region }` — asal-usul tiap gambar (tangga gambar asli, lihat `docs/PROMPT-PATEN-SCAN-GEMINI.md` §6). `region` = `"badan"` / `"opsi"` / `"pembahasan"`: tempat gambar disebut; renderer memakai region agar gambar sisa tidak nyasar ke teks region lain |
 | `potonganTertunda` | object[] | `{ urutan, petunjuk }` — figur yang masih menunggu DIPOTONG PRESISI dari berkas scan asli; soal sengaja boleh tersimpan lebih dulu, siswa belum melihat gambarnya |
 | `kurikulum`/`fase`/`kelas`/`elemen`/`capaian` | string | taksonomi Kurikulum Merdeka pengakuan Gemini |
