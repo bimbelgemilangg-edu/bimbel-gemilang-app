@@ -124,6 +124,9 @@ import AuditMateriPage from './pages/admin/bank-soal/AuditMateriPage';
 // 🔥 BARU (2026-10-08, syarat pembukaan fitur tentor akses bank soal):
 // audit identitas + kesehatan butir. Baca dulu, tulis hanya atas perintah.
 import AuditIdentitasSoalPage from './pages/admin/bank-soal/AuditIdentitasSoalPage';
+// 🔥 Fase 2 (2026-10-08): tentor merakit try out -> admin menyetujui.
+import RakitTryOutGuruPage from './pages/teacher/RakitTryOutGuruPage';
+import ApprovalTryOutPage from './pages/admin/bank-soal/ApprovalTryOutPage';
 import BersihkanSoalPage from './pages/admin/bank-soal/BersihkanSoalPage';
 import RapikanLiterasiPage from './pages/admin/bank-soal/RapikanLiterasiPage';
 import TaksonomiMateriPage from './pages/admin/bank-soal/TaksonomiMateriPage';
@@ -728,6 +731,18 @@ function App() {
         <Route
           path="/admin/bank-soal/audit-identitas"
           element={<AdminRoute><AuditIdentitasSoalPage /></AdminRoute>}
+        />
+        {/* 🔥 Fase 2: antrean persetujuan usulan try out tentor. Paket yang
+            belum disetujui TIDAK boleh terbit ke siswa. */}
+        <Route
+          path="/admin/bank-soal/approval-tryout"
+          element={<AdminRoute><ApprovalTryOutPage /></AdminRoute>}
+        />
+        {/* 🔥 Fase 2: tentor merakit try out dari bank soal. Dipakai lewat
+            GuruPage (bukan GuruRoute) seperti Cetak Latihan. */}
+        <Route
+          path="/guru/rakit-tryout"
+          element={<GuruPage><RakitTryOutGuruPage /></GuruPage>}
         />
         <Route
           path="/admin/bank-soal/bersihkan-soal"

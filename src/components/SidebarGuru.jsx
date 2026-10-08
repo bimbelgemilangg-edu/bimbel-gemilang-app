@@ -10,7 +10,7 @@ import {
   LayoutDashboard, User, BookOpen, Edit,
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
   Database, GraduationCap, Projector, Presentation, Printer,
-  Library,
+  Library, Layers,
 } from 'lucide-react';
 
 const SidebarGuru = () => {
@@ -45,6 +45,12 @@ const SidebarGuru = () => {
     // 🔥 BARU (Fase 3 skema buku-kliping): cetak paket latihan siap gunting
     // + kunci tentor + lembar catatan buku progres.
     { name: 'Cetak Latihan', path: '/guru/cetak-latihan', icon: <Printer size={20} /> },
+    // 🔥 Fase 2 (2026-10-08): tentor merakit try out dari bank soal lalu
+    // mengirimnya untuk persetujuan admin. Sengaja ditaruh tepat di bawah
+    // Cetak Latihan karena keduanya berangkat dari tempat yang sama:
+    // memilih butir dari bank. Bedanya, yang satu jadi kertas, yang ini
+    // jadi paket yang dikerjakan siswa di layar.
+    { name: 'Rakit Try Out', path: '/guru/rakit-tryout', icon: <Layers size={20} />, badge: null },
     { name: 'Input Nilai / Rapor', path: '/guru/grades/input', icon: <Edit size={20} /> },
     { name: 'Generate Raport', path: '/guru/generate-raport', icon: <Database size={20} /> },
     { name: 'Riwayat Sesi', path: '/guru/history', icon: <History size={20} /> },

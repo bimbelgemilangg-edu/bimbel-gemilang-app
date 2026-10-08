@@ -11,6 +11,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { saringPaketTerbit } from '../../../utils/statusTryOutPaket';
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
 } from 'lucide-react';
@@ -68,7 +69,10 @@ export default function HasilTryOutAdminPage() {
     (async () => {
       try {
         const snap = await getDocs(collection(db, 'tryout_paket'));
-        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        // 🔥 2026-10-08 (Fase 2): usulan tentor yang belum disetujui tidak
+        // punya hasil dan tidak boleh memenuhkan daftar ini. Antreannya ada
+        // di halaman Persetujuan Try Out.
+        const list = saringPaketTerbit(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
         list.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
         setDaftarPaket(list);
       } catch (e) {

@@ -26,7 +26,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Toolbox, Sparkles, Brain, Rocket, ClipboardCheck, Trophy, Activity,
-  ScrollText, ShieldCheck, Trash2, FolderTree, BookMarked, GitMerge,
+  ScrollText, ShieldCheck, Trash2, FolderTree, BookMarked, GitMerge, Inbox,
   Archive, BookOpen, UploadCloud, Library, MousePointerClick,
   FileUp,
 } from 'lucide-react';
@@ -56,6 +56,8 @@ const GRUP = [
       { path: '/admin/bank-soal/ranking-siswa', nama: 'Ranking Siswa', ikon: Trophy, desc: 'Papan peringkat siswa lintas latihan/try out.' },
       { path: '/admin/bank-soal/audit-materi', nama: 'Audit Materi', ikon: ScrollText, desc: 'Periksa keselarasan materi & soal terhadap kurikulum.' },
       // 🔥 BARU (2026-10-08): prasyarat fitur tentor akses bank soal.
+      // 🔥 Fase 2 (2026-10-08): pintu keputusan atas usulan try out tentor.
+      { path: '/admin/bank-soal/approval-tryout', nama: 'Persetujuan Try Out Tentor', ikon: Inbox, desc: 'Usulan try out dari tentor TIDAK terbit sendiri. Periksa butir & subtesnya, tentukan jadwal buka/deadline, lalu TERBITKAN atau TOLAK dengan alasan (wajib, minimal 10 huruf). Tiap keputusan masuk jejak audit + riwayat paket.' },
       { path: '/admin/bank-soal/audit-identitas', nama: 'Audit Identitas Soal', ikon: ShieldCheck, desc: 'CEK SEBELUM BUKA FITUR TENTOR: apakah tiap butir punya jenjang→mapel→materi (termasuk yang "tersembunyi" karena beda kosakata/alias) dan apakah ada butir rusak. Sekali baca, biaya kuota dinyatakan jujur, hasil bisa diunduh CSV.' },
       { path: '/admin/bank-soal/bersihkan-soal', nama: 'Bersihkan Soal', ikon: Trash2, desc: 'Bersihkan soal duplikat/rusak dari gudang.' },
       { path: '/admin/bank-soal/rapikan-literasi', nama: 'Rapikan Literasi', ikon: FolderTree, desc: 'Rapikan teks bacaan/literasi soal yang berantakan.' },
