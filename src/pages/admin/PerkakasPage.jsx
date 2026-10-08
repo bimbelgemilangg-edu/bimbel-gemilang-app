@@ -55,6 +55,8 @@ const GRUP = [
       { path: '/admin/bank-soal/aktivitas-latihan', nama: 'Aktivitas Latihan', ikon: Activity, desc: 'Pantau latihan mandiri yang dikerjakan siswa.' },
       { path: '/admin/bank-soal/ranking-siswa', nama: 'Ranking Siswa', ikon: Trophy, desc: 'Papan peringkat siswa lintas latihan/try out.' },
       { path: '/admin/bank-soal/audit-materi', nama: 'Audit Materi', ikon: ScrollText, desc: 'Periksa keselarasan materi & soal terhadap kurikulum.' },
+      // 🔥 BARU (2026-10-08): prasyarat fitur tentor akses bank soal.
+      { path: '/admin/bank-soal/audit-identitas', nama: 'Audit Identitas Soal', ikon: ShieldCheck, desc: 'CEK SEBELUM BUKA FITUR TENTOR: apakah tiap butir punya jenjang→mapel→materi (termasuk yang "tersembunyi" karena beda kosakata/alias) dan apakah ada butir rusak. Sekali baca, biaya kuota dinyatakan jujur, hasil bisa diunduh CSV.' },
       { path: '/admin/bank-soal/bersihkan-soal', nama: 'Bersihkan Soal', ikon: Trash2, desc: 'Bersihkan soal duplikat/rusak dari gudang.' },
       { path: '/admin/bank-soal/rapikan-literasi', nama: 'Rapikan Literasi', ikon: FolderTree, desc: 'Rapikan teks bacaan/literasi soal yang berantakan.' },
       { path: '/admin/bank-soal/taksonomi-materi', nama: 'Taksonomi Materi', ikon: BookMarked, desc: 'Daftar bab resmi per mapel — pagar agar materi tidak beranak.' },

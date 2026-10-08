@@ -28,9 +28,15 @@ import {
   ringkasKartuSoal,
   PROMPT_IDENTITAS_SOAL_AI,
 } from '../../../utils/mesinIdentitasSoal';
+// 🔥 2026-10-08: penjaga kosakata jenjang. Alur "Rapikan" dulu MELEWATI
+// soal yang jenjangnya 'SMA' (bukan 'SMA/MA') karena menganggapnya sudah
+// lengkap -- padahal nilai itulah yang membuat soal tak terjangkau
+// penyaring hierarki. Lihat src/utils/jenjangBaku.js.
+import { sudahBaku } from '../../../utils/jenjangBaku';
 
 const COL = 'bank_soal';
 const BATCH_MAX = 400;
+const BATAS_RAPIKAN = 2000; // batas satu sapuan; lebih dari ini tidak ikut dirapikan
 
 function ambilArraySoal(parsed) {
   if (!parsed) return [];
@@ -201,13 +207,27 @@ export default function MesinBankSoalPage() {
     setPesan('');
     setProgres('Mengambil soal dari bank…');
     try {
-      const snap = await getDocs(query(collection(db, COL), limit(2000)));
+      const snap = await getDocs(query(collection(db, COL), limit(BATAS_RAPIKAN)));
       const semua = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      // Jujur soal cakupan (SOP janji #7): kalau hasilnya persis di batas,
+      // hampir pasti bank lebih besar dan sisanya TIDAK ikut dirapikan.
+      const terpotong = semua.length >= BATAS_RAPIKAN;
       setProgres(`Mendeteksi taksonomi ${semua.length} soal…`);
 
       const diubah = [];
       for (const s of semua) {
-        const sudahLengkap = s.jenjang && (s.mapel || s.mataPelajaran) && (s.bab || s.topik) && s.kelompok;
+        // 🔥 DIPERKETAT 2026-10-08. Syarat lama (jenjang + mapel + bab +
+        // kelompok) meloloskan dua cacat yang membuat soal LENYAP dari
+        // hierarki tentor tanpa error apa pun:
+        //   a) jenjang 'SMA' -- penyaring membandingkan string persis
+        //      dengan 'SMA/MA', jadi soal tak pernah muncul;
+        //   b) `materi` kosong padahal `bab` terisi -- Lemari Soal, Cetak
+        //      Latihan, dan Perpustakaan membaca `materi`, bukan `bab`.
+        const sudahLengkap = s.jenjang && sudahBaku(s.jenjang)
+          && (s.mapel || s.mataPelajaran)
+          && (s.bab || s.topik)
+          && s.kelompok
+          && String(s.materi || '').trim();
         if (sudahLengkap && s.taksonomiAuto) continue;
 
         const tak = deteksiTaksonomiSoal(s, {
@@ -225,6 +245,7 @@ export default function MesinBankSoalPage() {
           merged.mapel !== s.mapel ||
           merged.mataPelajaran !== s.mataPelajaran ||
           merged.bab !== s.bab ||
+          merged.materi !== s.materi ||
           merged.kelompok !== s.kelompok ||
           merged.kelas !== s.kelas;
         if (berubah || !s.taksonomiAuto) {
@@ -233,10 +254,13 @@ export default function MesinBankSoalPage() {
       }
 
       setPreview(tautkanStimulusBersama(diubah));
+      const catatanBatas = terpotong
+        ? ` ⚠️ Hanya ${BATAS_RAPIKAN.toLocaleString('id-ID')} soal pertama yang disapu — bank Anda lebih besar dari itu, sisanya BELUM diperiksa. Jalankan lagi setelah menyimpan untuk melanjutkan ke bagian berikutnya.`
+        : '';
       setPesan(
         diubah.length
-          ? `🔍 ${diubah.length} dari ${semua.length} soal akan dirapikan (metadata kosong/tidak lengkap). Review lalu simpan.`
-          : `✅ Semua ${semua.length} soal sudah punya metadata cukup. Tidak ada yang perlu diubah.`
+          ? `🔍 ${diubah.length} dari ${semua.length} soal akan dirapikan (metadata kosong/tidak lengkap/jenjang belum baku/materi kosong). Review lalu simpan.${catatanBatas}`
+          : `✅ Semua ${semua.length} soal yang tersapu sudah punya metadata cukup. Tidak ada yang perlu diubah.${catatanBatas}`
       );
       setTab('impor'); // pakai preview yang sama
     } catch (err) {

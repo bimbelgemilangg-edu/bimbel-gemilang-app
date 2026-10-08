@@ -43,6 +43,15 @@ export const GAP_KOLOM_MM = 6;      // jarak antar kolom, cukup untuk jempol men
 export const FOOTER_MM = 8;         // pita nomor halaman di kaki tiap halaman
 export const SLACK_KOLOM_MM = 2;    // cadangan anti-tumpah: pengukuran layar meleset ±1mm
 
+// 🔥 2026-10-08: pembaca field sadar-alias + konstanta watermark dipusatkan
+// di fieldButirSoal.js supaya mesin cetak dan kartu baca layar tidak punya
+// dua pengertian berbeda soal "teks soal" dan "bacaan".
+import { teksSoalDari, bacaanDari, WATERMARK } from './fieldButirSoal.js';
+
+// Di-re-export supaya pemakai mesin cetak cukup mengimpor dari satu berkas,
+// dan supaya test bisa memaku bahwa layar & cetak memakai konstanta yang sama.
+export { WATERMARK };
+
 export function kertasDariKode(kode) {
   return DAFTAR_KERTAS.find((k) => k.kode === String(kode || '').toUpperCase()) || DAFTAR_KERTAS[0];
 }
@@ -213,6 +222,18 @@ export const GAYA_NASKAH = `
 .naskah .nsk-opsi { display: grid; gap: 0.8mm 5mm; margin: 1.5mm 0 0 7.5mm; }
 .naskah .nsk-opsi > span { break-inside: avoid; }
 .naskah .nsk-kunci-baris { font-size: 10.8px; }
+/* 2026-10-08: blok BACAAN/wacana. Sebelumnya mesin cetak TIDAK merender
+   field bacaan sama sekali, sehingga soal literasi tercetak tanpa teks
+   yang harus dibaca -- siswa disuruh menjawab pertanyaan tentang wacana
+   yang tidak ada di lembar. (Komentar ini berada di dalam template
+   literal GAYA_NASKAH, jadi sengaja tidak memakai backtick.) */
+.naskah .nsk-bacaan { border-left: 3pt solid #000; border-top: 0.6pt dashed #64748b;
+  border-bottom: 0.6pt dashed #64748b; padding: 5pt 6pt; margin: 0 0 5pt;
+  font-size: 10.5pt; line-height: 1.5; text-align: justify;
+  break-inside: avoid; page-break-inside: avoid; }
+.naskah .nsk-bacaan-judul { font-size: 8.5pt; font-weight: bold; letter-spacing: .4pt;
+  text-transform: uppercase; margin-bottom: 3pt; }
+.naskah .nsk-bacaan img { max-width: 100%; }
 .naskah .nsk-footer { position: absolute; left: 0; right: 0; bottom: 2.5mm; text-align: center; font-size: 10px; color: #000; }
 .naskah .katex { font-size: 1.02em; }
 `;
@@ -233,8 +254,34 @@ export const RASIO_BAWAAN_GAMBAR = 1.3;
 // (lebar/tinggi piksel asli) yang diisi halaman saat gambar dimuat;
 // tanpa peta ini ukuran gambar jatuh ke rasio bawaan.
  */
+/**
+ * Blok bacaan/wacana untuk naskah cetak.
+ * Kosong bila butir memang tidak punya bacaan.
+ */
+export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
+  const bacaan = bacaanDari(soal);
+  if (!bacaan) return '';
+  const segmen = pisahTeksDanGambar(bacaan.teks, bacaan.gambar);
+  const isi = segmen
+    .map((sg) => {
+      if (sg.jenis === 'teks') return `<div>${teksKeHtml(sg.isi)}</div>`;
+      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const ukuran = ukuranGambarNaskah(r, 1, lebarKolom) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
+      return imgNaskahHtml(sg.url, `Gambar bacaan nomor ${nomor}`, ukuran);
+    })
+    .join('');
+  const rentang = bacaan.rentang
+    ? ` (untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai})`
+    : '';
+  return `<div class="nsk-bacaan"><div class="nsk-bacaan-judul">Bacalah teks berikut${rentang}</div>${isi}</div>`;
+}
+
 export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
-  const segmen = pisahTeksDanGambar(soal?.soal || soal?.teks_soal, soal?.gambarUrls);
+  // Bacaan DIDAHULUKAN: soal literasi merujuk "teks di atas", jadi wacana
+  // harus tercetak sebelum pertanyaannya, bukan di belakang atau tidak sama
+  // sekali. Teks soal dibaca sadar-alias (soal/teksSoal/teks_soal).
+  const bacaanHtml = bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
+  const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
   const badan = segmen
     .map((sg) => {
       if (sg.jenis === 'teks') return `<div>${teksKeHtml(sg.isi)}</div>`;
@@ -263,7 +310,7 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
       return `<span>(${huruf}) ${teksKeHtml(t)}${gbr}</span>`;
     })
     .join('');
-  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}</div></div>`;
+  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}</div></div>`;
 }
 
 export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
@@ -314,8 +361,14 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
     const panjang = String(soal?.pembahasan || '').length + 20;
     return Math.round((Math.ceil(panjang / hurufSebaris) * 4.3) + 4);
   }
-  const teks = String(soal?.soal || soal?.teks_soal || '');
+  const teks = teksSoalDari(soal);
   const gambar = Array.isArray(soal?.gambarUrls) ? soal.gambarUrls.filter(Boolean) : [];
+  // Bacaan panjang menambah tinggi blok secara nyata. Bila tidak dihitung,
+  // mesin akan menumpuk terlalu banyak butir per kolom dan naskah meluber
+  // ke halaman berikutnya (pratinjau layar != hasil cetak).
+  const bacaan = bacaanDari(soal);
+  const teksBacaan = bacaan ? String(bacaan.teks || '') : '';
+  const gambarBacaan = bacaan && Array.isArray(bacaan.gambar) ? bacaan.gambar.filter(Boolean) : [];
   const tinggiGambar = gambar.reduce((acc, url) => {
     const r = rasioGambar[url] ?? RASIO_BAWAAN_GAMBAR;
     const u = ukuranGambarNaskah(r, 1, lebarKolom);
@@ -325,13 +378,83 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
   const nKolomOpsi = kolomPilihanNaskah(opsi, lebarKolom);
   const barisOpsi = Math.ceil(opsi.length / nKolomOpsi) * 4.6;
   const barisTeks = Math.ceil(Math.max(1, teks.length) / hurufSebaris) * 4.6;
-  return Math.round(barisTeks + tinggiGambar + barisOpsi + 4);
+  const tinggiGambarBacaan = gambarBacaan.reduce((acc, url) => {
+    const src = typeof url === 'string' ? url : (url?.uploadedUrl || url?.url || '');
+    if (!src) return acc;
+    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+    const u = ukuranGambarNaskah(r, 1, lebarKolom);
+    return acc + (u ? u.tinggiMm + 2 : 30);
+  }, 0);
+  const barisBacaan = teksBacaan
+    ? Math.ceil(teksBacaan.length / hurufSebaris) * 4.0 + 8 // +8: padding & judul blok
+    : 0;
+  return Math.round(barisTeks + tinggiGambar + tinggiGambarBacaan + barisBacaan + barisOpsi + 4);
 }
 
 /**
  * Penyusun akhir: blok HTML + tinggi tiap blok -> fragmen siap cetak
  * (halaman-kolom eksplisit, nomor halaman di kaki).
  */
+// ============================================================
+// WATERMARK LOGO GEMILANG
+// ============================================================
+// Permintaan owner 2026-10-08: kartu baca tentor dan lembar yang dicetak
+// harus membawa logo Gemilang di belakangnya. Ini bukan hiasan -- lembar
+// latihan yang beredar di luar kelas harus kelihatan asal-usulnya, dan
+// tangkapan layar kartu baca tidak bisa diklaim sebagai buatan sendiri.
+//
+// Logonya SENGAJA sama dengan yang dipakai kwitansi (`kwitansi.js` baris
+// `const logo = '/pwa-192x192.png'`), supaya satu identitas di semua
+// dokumen Gemilang dan tidak ada berkas logo keempat yang hilang
+// (tiga berkas di repo ini merujuk `/logo-gemilang.png.png` yang
+// TIDAK ADA di public/ -- selamat oleh onError, jadi logonya diam-diam
+// tidak pernah tampil).
+//
+// Dua cara pasang, karena dua bentuk dokumen:
+//   'halaman' -> satu watermark per .nsk-hal (naskah dua kolom, tiap
+//                halaman memang sebuah kotak berukuran kertas)
+//   'tetap'   -> position:fixed, otomatis diulang Chrome di setiap
+//                halaman cetak (dokumen mengalir ala lembar gunting)
+// ============================================================
+
+/** Logo resmi Gemilang — sama dengan yang dipakai kwitansi. */
+export const LOGO_WATERMARK = WATERMARK.logo;
+
+/**
+ * @param {object} [o]
+ * @param {'halaman'|'tetap'} [o.mode]
+ * @param {number} [o.opacity] 0..1 — cukup terlihat tanpa mengganggu baca
+ * @param {number} [o.ukuranMm]
+ * @returns {string} CSS
+ */
+export function gayaWatermark(o = {}) {
+  // Default DICETAK: opacity 0.12 dan 95mm (dulu 0.07 / 62mm).
+  // Owner 2026-10-08: "watermark besarkan lagi gapapa, opasitasnya agak
+  // dijelaskin". Tetap di bawah 0.2 supaya teks soal tidak kalah.
+  const opacity = Number.isFinite(o.opacity) ? o.opacity : WATERMARK.opacityCetak;
+  const ukuran = Number.isFinite(o.ukuranMm) ? o.ukuranMm : WATERMARK.ukuranMm;
+  const posisi = o.mode === 'tetap'
+    ? 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);'
+    : 'position: absolute; inset: 0;';
+  return `
+.wm-gemilang { ${posisi} display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 0; overflow: hidden; }
+.wm-gemilang img { width: ${ukuran}mm; height: ${ukuran}mm; object-fit: contain; opacity: ${opacity}; }
+.nsk-kolomwrap, .kotak, .kepala, .identitas { position: relative; z-index: 1; }
+@media print { .wm-gemilang { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+`;
+}
+
+/**
+ * @param {object} [o] { logo, mode, opacity, ukuranMm, teks }
+ * @returns {string} HTML watermark (aria-hidden: hiasan, bukan konten)
+ */
+export function watermarkHtml(o = {}) {
+  const logo = o.logo || LOGO_WATERMARK;
+  const mode = o.mode === 'tetap' ? ' tetap' : '';
+  return `<div class="wm-gemilang${mode}" aria-hidden="true"><img src="${escapeHtml(logo)}" alt="" /></div>`;
+}
+
 export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const kertas = kertasDariKode(opsi.kertas);
   const nKolom = opsi.jumlahKolom > 0 ? opsi.jumlahKolom : kolomOtomatis(kertas);
@@ -341,22 +464,31 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
     : blokHtml.map((_, i) => (i === 0 ? 26 : (Array.isArray(opsi.tinggiPerkiraanMm) ? opsi.tinggiPerkiraanMm[i - 1] : 40)));
   const { halaman, peringatan } = susunKeKolom(tinggi, kapasitas, nKolom);
   const totalHal = Math.max(1, halaman.length);
+  // Watermark default HIDUP. Dimatikan hanya dengan `watermark: false`
+  // eksplisit (mis. dokumen internal yang tidak akan beredar).
+  const denganWatermark = opsi.watermark !== false;
   const isiHalaman = halaman
     .map((kolomLista, h) => {
       const kolom = kolomLista.map((indeks) => `<div class="nsk-kolom">${indeks.map((b) => blokHtml[b]).join('')}</div>`).join('');
       const lebarHal = kertas.lebarMm;
       const tinggiHal = kertas.tinggiMm;
       return `<div class="nsk-hal" style="width:${lebarHal}mm;height:${tinggiHal}mm;">
+        ${denganWatermark ? watermarkHtml({ ...opsi, mode: 'halaman' }) : ''}
         <div class="nsk-kolomwrap">${kolom}</div>
         <div class="nsk-footer">— ${h + 1} / ${totalHal} —</div>
       </div>`;
     })
     .join('');
-  const fragmen = `<style>${cssPage(kertas)}${opsi.cssTambahan || ''}${GAYA_NASKAH}</style><div class="naskah">${isiHalaman}</div>`;
+  const gayaWm = denganWatermark ? gayaWatermark({ ...opsi, mode: 'halaman' }) : '';
+  const fragmen = `<style>${cssPage(kertas)}${opsi.cssTambahan || ''}${GAYA_NASKAH}${gayaWm}</style><div class="naskah">${isiHalaman}</div>`;
   return { fragmen, jumlahHalaman: totalHal, jumlahKolom: nKolom, peringatan, lebarKolomMm: lebarKolomMm(kertas, nKolom) };
 }
 
 export default {
+  bacaanNaskahHtml,
+  LOGO_WATERMARK,
+  gayaWatermark,
+  watermarkHtml,
   DAFTAR_KERTAS,
   kertasDariKode,
   lebarKolomMm,

@@ -43,6 +43,23 @@ import { db } from '../../firebase';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
+// 🔥 2026-10-08 (Fase 1 cetak biru bank soal): keranjang yang BERTAHAN.
+// Dulu `tercentang` berisi id dan DIHAPUS setiap ganti filter
+// (setTercentang([]) di pill jenjang/mapel/bab/kelas), jadi tentor yang
+// sudah memilih 15 soal lalu pindah bab kehilangan semuanya tanpa
+// peringatan -- dan merakit soal lintas bab mustahil. Sekarang keranjang
+// menyimpan BUTIR dalam array berurutan: nomor urutnya = nomor naskah.
+import {
+  masukKeranjang,
+  masukKeranjangBanyak,
+  keluarKeranjang,
+  pindahUrutan,
+  ringkasKeranjang,
+  judulDariKeranjang,
+  teksRincianMasuk,
+  teksSoalDari,
+} from '../../utils/keranjangSoalGuru';
+import KartuKeranjangSoal from '../../components/guru/KartuKeranjangSoal';
 import {
   DAFTAR_KERTAS,
   kertasDariKode,
@@ -123,10 +140,12 @@ function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja }) {
   );
 }
 
-// teks soal bisa tersimpan di dua nama kolom (impor lama vs baru)
-function teksSoalMentah(soal) {
-  return soal?.soal || soal?.teks_soal || '';
-}
+// 🔥 DIPERBAIKI 2026-10-08: teks soal bisa tersimpan di TIGA nama kolom
+// (Import Hasil Scan menulis `soal`; Mesin Bank Soal & Impor HTML Gemini
+// menulis `soal` DAN `teksSoal`; draf lama `teks_soal`). Membaca dua saja
+// membuat butir sehat tampil kosong. Kini lewat util teruji yang sama
+// dengan keranjang, supaya tidak ada dua pembaca yang berbeda pendapat.
+const teksSoalMentah = teksSoalDari;
 
 export default function CetakPaketLatihan() {
   const [sumber, setSumber] = useState('bank');       // 'bank' | 'paket'
@@ -144,7 +163,13 @@ export default function CetakPaketLatihan() {
   // mapel bernama sama di jenjang berbeda (Matematika SMP vs SMA) tercampur
   // dalam satu pill, dan lembar cetak bisa berisi soal lintas jenjang.
   const [jenjangAktif, setJenjangAktif] = useState('');
-  const [tercentang, setTercentang] = useState([]);    // id butir terpilih
+  // Keranjang: array BUTIR (bukan id) supaya kartu tetap bisa dirender
+  // setelah tentor pindah bab dan butirnya tak lagi ada di daftar tampil.
+  const [keranjang, setKeranjang] = useState([]);
+  const [pesanKeranjang, setPesanKeranjang] = useState('');
+  // Kartu keranjang boleh dibaca dalam dua mode: dengan kunci+pembahasan
+  // (memeriksa sebelum mencetak) atau tanpa (meniru lembar siswa).
+  const [tampilKunci, setTampilKunci] = useState(true);
   const [tanpaEsai, setTanpaEsai] = useState(false);
 
   const [paketId, setPaketId] = useState('');
@@ -282,10 +307,9 @@ export default function CetakPaketLatihan() {
     [soalDiBabTerfilter, tanpaEsai]
   );
 
-  const terpilihBank = useMemo(
-    () => soalBankTampil.filter((s) => tercentang.includes(s.id)),
-    [soalBankTampil, tercentang]
-  );
+  // Keranjang adalah sumber kebenaran pilihan, bukan irisan daftar tampil.
+  const terpilihBank = keranjang;
+  const ringkasanKeranjang = useMemo(() => ringkasKeranjang(keranjang), [keranjang]);
 
   // ---- mode paket (perilaku #134) ----
   const paket = paketList.find((p) => p.id === paketId) || null;
@@ -295,12 +319,35 @@ export default function CetakPaketLatihan() {
   // KENAPA useMemo: objek meta ikut jadi dependencia memo blok naskah;
   // tanpa ini objek baru tiap render membuat lapisan ukur disusun ulang
   // tanpa henti (eslint react-hooks/exhaustive-deps).
+  // Judul naskah diambil dari ISI KERANJANG, bukan dari filter yang sedang
+  // aktif. Keranjang lintas bab tidak boleh mengaku satu bab -- lembar
+  // cetak yang berbohong soal isinya lebih berbahaya daripada lembar yang
+  // judulnya kurang cantik.
   const meta = useMemo(() => (sumber === 'bank'
-    ? { judul: `${jenjangAktif} ${mapelAktif} — ${babAktif}`, mapel: mapelAktif, targetKelas: jenjangAktif, bab: babAktif }
+    ? {
+      judul: judulDariKeranjang(keranjang),
+      mapel: ringkasanKeranjang.perMapel.length === 1 ? ringkasanKeranjang.perMapel[0].nama : `${ringkasanKeranjang.perMapel.length} mapel`,
+      targetKelas: ringkasanKeranjang.perJenjang.length === 1 ? ringkasanKeranjang.perJenjang[0].nama : `${ringkasanKeranjang.perJenjang.length} jenjang`,
+      bab: ringkasanKeranjang.perMateri.length === 1 ? ringkasanKeranjang.perMateri[0].nama : `${ringkasanKeranjang.perMateri.length} materi`,
+    }
     : { judul: paket?.judul || '', mapel: paket?.targetKategori || '', targetKelas: paket?.targetKelas || '', bab: paket?.babJudul || '' }),
-  [sumber, jenjangAktif, mapelAktif, babAktif, paket]);
+  [sumber, keranjang, ringkasanKeranjang, paket]);
 
-  const centang = (id, on) => setTercentang((lama) => (on ? [...lama, id] : lama.filter((x) => x !== id)));
+  const inKeranjang = (id) => keranjang.some((s) => String(s?.id) === String(id));
+
+  const centang = (soal, on) => {
+    if (on) {
+      setKeranjang((lama) => masukKeranjang(lama, soal).keranjang);
+    } else {
+      setKeranjang((lama) => keluarKeranjang(lama, soal?.id));
+    }
+  };
+
+  const pilihSemuaTampil = () => {
+    const hasil = masukKeranjangBanyak(keranjang, soalBankTampil);
+    setKeranjang(hasil.keranjang);
+    setPesanKeranjang(teksRincianMasuk(hasil.rincian));
+  };
 
   // ---- 🔥 BARU: mesin naskah (ukur -> susun -> pratinjau -> cetak) ----
   const kertas = kertasDariKode(kodeKertas);
@@ -411,7 +458,7 @@ export default function CetakPaketLatihan() {
             <div style={gayaJudulKartu}>1 · Jenjang</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {daftarJenjang.map(([j, n]) => (
-                <button key={j} style={gayaPill(jenjangAktif === j)} onClick={() => { setJenjangAktif(j); setMapelAktif(''); setBabAktif(''); setTercentang([]); }}>
+                <button key={j} style={gayaPill(jenjangAktif === j)} onClick={() => { setJenjangAktif(j); setMapelAktif(''); setBabAktif(''); }}>
                   {j} <span style={{ opacity: 0.6 }}>({n})</span>
                 </button>
               ))}
@@ -424,7 +471,7 @@ export default function CetakPaketLatihan() {
             <div style={gayaJudulKartu}>2 · Mata pelajaran pada {jenjangAktif}</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {daftarMapel.map(([m, n]) => (
-                <button key={m} style={gayaPill(mapelAktif === m)} onClick={() => { setMapelAktif(m); setBabAktif(''); setTercentang([]); }}>
+                <button key={m} style={gayaPill(mapelAktif === m)} onClick={() => { setMapelAktif(m); setBabAktif(''); }}>
                   {m} <span style={{ opacity: 0.6 }}>({n})</span>
                 </button>
               ))}
@@ -437,7 +484,7 @@ export default function CetakPaketLatihan() {
               <div style={gayaJudulKartu}>3 · Bab / materi pada {mapelAktif}</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {daftarBab.map(([b, n]) => (
-                  <button key={b} style={gayaPill(babAktif === b)} onClick={() => { setBabAktif(b); setTercentang([]); setKelasFilter(''); }}>
+                  <button key={b} style={gayaPill(babAktif === b)} onClick={() => { setBabAktif(b); setKelasFilter(''); }}>
                     {b} <span style={{ opacity: 0.6 }}>({n})</span>
                   </button>
                 ))}
@@ -448,10 +495,10 @@ export default function CetakPaketLatihan() {
           {babAktif && (
             <div style={gayaKartu}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={gayaJudulKartu}>4 · Baca lengkap lalu centang butir yang akan dicetak ({terpilihBank.length}/{soalBankTampil.length})</div>
+                <div style={gayaJudulKartu}>4 · Baca lengkap lalu centang butir untuk keranjang ({keranjang.length} di keranjang · {soalBankTampil.length} tampil)</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   {daftarKelas.length > 1 && (
-                    <select value={kelasFilter} onChange={(e) => { setKelasFilter(e.target.value); setTercentang([]); }} style={gayaSelect}>
+                    <select value={kelasFilter} onChange={(e) => setKelasFilter(e.target.value)} style={gayaSelect}>
                       <option value="">semua kelas ({soalDiBab.length})</option>
                       {daftarKelas.map(([k, n]) => <option key={k} value={k === '(tanpa kelas)' ? '' : k}>{k} ({n})</option>)}
                     </select>
@@ -459,19 +506,83 @@ export default function CetakPaketLatihan() {
                   <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 5, alignItems: 'center' }}>
                     <input type="checkbox" checked={tanpaEsai} onChange={(e) => setTanpaEsai(e.target.checked)} /> lewati esai
                   </label>
-                  <button style={gayaPill(false)} onClick={() => setTercentang(soalBankTampil.map((s) => s.id))}>pilih semua</button>
-                  <button style={gayaPill(false)} onClick={() => setTercentang([])}>bersihkan</button>
+                  <button style={gayaPill(false)} onClick={pilihSemuaTampil}>+ semua yang tampil</button>
+                  <button style={gayaPill(false)} onClick={() => { setKeranjang([]); setPesanKeranjang('Keranjang dikosongkan.'); }}>kosongkan keranjang</button>
                 </div>
               </div>
               <div style={{ maxHeight: 560, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, padding: 8, background: '#f8fafc' }}>
                 {soalBankTampil.map((s, i) => (
-                  <KartuBacaSoal key={s.id} soal={s} nomor={i + 1} tercentang={tercentang.includes(s.id)} onCentang={(on) => centang(s.id, on)} />
+                  <KartuBacaSoal key={s.id} soal={s} nomor={i + 1} tercentang={inKeranjang(s.id)} onCentang={(on) => centang(s, on)} />
                 ))}
                 {soalBankTampil.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: 8 }}>Tidak ada butir di bab ini setelah saringan.</div>}
               </div>
             </div>
           )}
         </>
+      )}
+
+      {/* ====================================================
+          5 · KERANJANG BACA — kartu-kartu soal lengkap + gambar,
+          dengan watermark logo Gemilang di belakangnya.
+          Permintaan owner 2026-10-08: "kotak-kotak kartu berisi soal
+          lengkap gambarnya, jadi dibaca dahulu, tetapi tetap ada
+          watermark logo gemilang di belakangnya".
+          Keranjang ini HIDUP LINTAS FILTER: pindah jenjang/mapel/bab
+          tidak menghapusnya lagi. Urutannya = nomor naskah yang dicetak.
+          ==================================================== */}
+      {sumber === 'bank' && !memuat && keranjang.length > 0 && (
+        <div style={gayaKartu}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+            <div style={gayaJudulKartu}>5 · Keranjang baca ({keranjang.length} soal)</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 5, alignItems: 'center' }}>
+                <input type="checkbox" checked={tampilKunci} onChange={(e) => setTampilKunci(e.target.checked)} />
+                tampilkan kunci &amp; pembahasan
+              </label>
+              <button style={gayaPill(false)} onClick={() => { setKeranjang([]); setPesanKeranjang('Keranjang dikosongkan.'); }}>kosongkan</button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, fontSize: 11 }}>
+            {ringkasanKeranjang.perJenjang.map((j) => (
+              <span key={j.nama} style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 999, padding: '3px 9px', fontWeight: 700 }}>{j.nama} · {j.jumlah}</span>
+            ))}
+            {ringkasanKeranjang.perMapel.map((m) => (
+              <span key={m.nama} style={{ background: '#f1f5f9', color: '#334155', borderRadius: 999, padding: '3px 9px' }}>{m.nama} · {m.jumlah}</span>
+            ))}
+            {ringkasanKeranjang.perMateri.map((b) => (
+              <span key={b.nama} style={{ background: '#f0fdf4', color: '#166534', borderRadius: 999, padding: '3px 9px' }}>{b.nama} · {b.jumlah}</span>
+            ))}
+            {ringkasanKeranjang.berbendera > 0 && (
+              <span style={{ background: '#fffbeb', color: '#92400e', borderRadius: 999, padding: '3px 9px', fontWeight: 700 }}>⚠ {ringkasanKeranjang.berbendera} perlu diperiksa</span>
+            )}
+          </div>
+
+          {pesanKeranjang && <div style={{ fontSize: 12, color: '#166534', marginBottom: 8 }}>{pesanKeranjang}</div>}
+
+          <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 10, lineHeight: 1.6 }}>
+            Baca dulu di sini sebelum mencetak. Panah ↑ ↓ menentukan <b>nomor urut di naskah</b>.
+            Keranjang tetap utuh walau Bapak/Ibu pindah jenjang, mapel, atau bab.
+            {ringkasanKeranjang.tanpaIdentitas > 0 && (
+              <b style={{ color: '#b45309' }}> {ringkasanKeranjang.tanpaIdentitas} butir belum punya identitas lengkap — laporkan ke admin lewat Audit Identitas Soal.</b>
+            )}
+          </div>
+
+          <div style={{ maxHeight: 720, overflowY: 'auto', paddingRight: 4 }}>
+            {keranjang.map((s, i) => (
+              <KartuKeranjangSoal
+                key={String(s?.id ?? i)}
+                soal={s}
+                nomor={i + 1}
+                jumlah={keranjang.length}
+                tanpaKunci={!tampilKunci}
+                onHapus={() => { setKeranjang((lama) => keluarKeranjang(lama, s.id)); setPesanKeranjang(`Soal nomor ${i + 1} dikeluarkan dari keranjang.`); }}
+                onNaik={() => setKeranjang((lama) => pindahUrutan(lama, s.id, -1))}
+                onTurun={() => setKeranjang((lama) => pindahUrutan(lama, s.id, 1))}
+              />
+            ))}
+          </div>
+        </div>
       )}
 
       {sumber === 'paket' && !memuat && (

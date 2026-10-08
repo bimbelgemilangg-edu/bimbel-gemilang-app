@@ -121,6 +121,9 @@ import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
 import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
 import RankingSiswaPage from './pages/admin/bank-soal/RankingSiswaPage';
 import AuditMateriPage from './pages/admin/bank-soal/AuditMateriPage';
+// 🔥 BARU (2026-10-08, syarat pembukaan fitur tentor akses bank soal):
+// audit identitas + kesehatan butir. Baca dulu, tulis hanya atas perintah.
+import AuditIdentitasSoalPage from './pages/admin/bank-soal/AuditIdentitasSoalPage';
 import BersihkanSoalPage from './pages/admin/bank-soal/BersihkanSoalPage';
 import RapikanLiterasiPage from './pages/admin/bank-soal/RapikanLiterasiPage';
 import TaksonomiMateriPage from './pages/admin/bank-soal/TaksonomiMateriPage';
@@ -717,6 +720,14 @@ function App() {
         <Route
           path="/admin/bank-soal/audit-materi"
           element={<AdminRoute><AuditMateriPage /></AdminRoute>}
+        />
+        {/* 🔥 BARU 2026-10-08: prasyarat fitur "tentor bisa akses bank soal".
+            Menjawab "apakah semua soal punya identitas & ada soal rusak?"
+            dari DATA, bukan perkiraan. Tidak menyapu otomatis saat dibuka
+            (docs/POLICY-ERROR-DAN-KUOTA.md). */}
+        <Route
+          path="/admin/bank-soal/audit-identitas"
+          element={<AdminRoute><AuditIdentitasSoalPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/bersihkan-soal"

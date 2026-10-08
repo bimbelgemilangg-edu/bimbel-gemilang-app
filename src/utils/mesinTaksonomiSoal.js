@@ -3,6 +3,8 @@
 // jenjang, kelas, mapel, bab, subBab, topik, capaian, kelompok, level.
 // Dipakai saat impor baru DAN saat merapikan soal yang sudah terlanjur upload.
 
+import { jenjangBaku } from './jenjangBaku.js';
+
 const NORM = (s) => String(s || '')
   .toLowerCase()
   .normalize('NFKD')
@@ -262,13 +264,41 @@ export function terapkanTaksonomi(docSoal, taksonomi, { force = false } = {}) {
       out[field] = value;
     }
   };
-  set('jenjang', taksonomi.jenjang);
+
+  // 🔥 2026-10-08 — kanonisasi `jenjang` di TITIK TULIS.
+  // Dua kosakata hidup berdampingan ('SMA' dari deteksi taksonomi vs
+  // 'SMA/MA' dari form impor scan), padahal Lemari Soal / Cetak Latihan /
+  // Perpustakaan menyaring dengan perbandingan string PERSIS. Soal
+  // ber-jenjang 'SMA' tidak pernah muncul saat tentor memilih 'SMA/MA' —
+  // lenyap tanpa error. Kanonisasi ditaruh di sini (bukan di
+  // deteksiJenjangKelas) karena deteksi itu dipakai petaKonten.js yang
+  // teruji dan membandingkan 'SMA' secara internal.
+  // Nilai lama TIDAK dibuang: disimpan di `jenjangSebelumBaku`.
+  const nilaiJenjang = taksonomi.jenjang || out.jenjang || '';
+  const kanon = jenjangBaku(nilaiJenjang);
+  if (kanon.baku) {
+    if (out.jenjang && out.jenjang !== kanon.baku) out.jenjangSebelumBaku = out.jenjang;
+    out.jenjang = kanon.baku;
+  } else {
+    // Tidak dikenali: jangan mengarang. Tulis apa adanya supaya jejaknya
+    // tetap ada dan halaman Audit Identitas bisa melaporkannya.
+    set('jenjang', taksonomi.jenjang);
+  }
+
   set('kelas', taksonomi.kelas);
   set('tingkatKelas', taksonomi.kelas); // alias lama
   set('mapel', taksonomi.mapel);
   set('mataPelajaran', taksonomi.mapel); // alias lama
   set('kodeMapel', taksonomi.kodeMapel);
   set('bab', taksonomi.bab);
+  // 🔥 2026-10-08 — `materi` adalah field yang BENAR-BENAR dibaca
+  // penyaring hierarki (Lemari Soal, Cetak Latihan, Perpustakaan),
+  // sedangkan taksonomi menulis `bab`. Jalur Impor HTML Gemini sudah
+  // menyamakan keduanya secara manual; jalur impor JSON belum, sehingga
+  // soal hasil Mesin Bank Soal tampil sebagai "(Belum diatur)".
+  // `set` hanya mengisi yang kosong, jadi nilai `materi` yang sudah
+  // dipilih admin tidak pernah ditimpa.
+  set('materi', out.materi || taksonomi.bab || taksonomi.topik);
   set('subBab', taksonomi.subBab);
   set('topik', taksonomi.topik);
   set('subtopik', taksonomi.subtopik);

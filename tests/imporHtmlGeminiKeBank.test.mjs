@@ -71,7 +71,20 @@ uji('mapel & jenjang konteks menang dan ternormalisasi', () => {
   const d = dokumenDariButir(BUTIR, { ...KONTEKS, mapel: 'bio' });
   assert.equal(d.mataPelajaran, 'Biologi');
   assert.equal(d.mapel, 'Biologi');
-  assert.equal(d.jenjang, 'SMA');
+  // 🔥 DIPERBARUI 2026-10-08 (dulu mengharapkan 'SMA').
+  // `terapkanTaksonomi` kini mengkanonisasi jenjang ke kosakata baku
+  // 'SMA/MA' di TITIK TULIS. Alasannya: semua penyaring hierarki
+  // (Lemari Soal, Cetak Latihan, Perpustakaan) membandingkan string
+  // PERSIS, sedangkan jalur impor scan menulis 'SMA/MA'. Soal ber-jenjang
+  // 'SMA' tidak pernah muncul saat tentor memilih 'SMA/MA' — lenyap tanpa
+  // error. Rinciannya: src/utils/jenjangBaku.js + tests/taksonomiIdentitas.test.mjs.
+  assert.equal(d.jenjang, 'SMA/MA');
+  // `jenjangSebelumBaku` SENGAJA tidak ada di sini: nilai 'SMA' datang
+  // dari deteksi taksonomi, bukan dari dokumen yang sudah tersimpan, jadi
+  // tidak ada yang ditimpa dan tidak ada yang perlu diselamatkan.
+  // Jejak itu hanya ditulis bila nilai lama dokumen benar-benar diganti
+  // (diuji di tests/taksonomiIdentitas.test.mjs).
+  assert.equal(d.jenjangSebelumBaku, undefined);
 });
 
 uji('kunci, opsi, pembahasan, dan pengakuan penalaran utuh', () => {
