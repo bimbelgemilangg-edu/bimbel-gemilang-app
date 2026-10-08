@@ -32,6 +32,27 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { Trash2, Loader2, ScanSearch, AlertTriangle, Copy, ShieldQuestion, CheckSquare, Square } from 'lucide-react';
+// 🔥 2026-10-08 (Fase 0 cetak biru bank soal): pagar ledakan.
+// Halaman ini adalah SATU-SATUNYA fitur yang menghapus soal berdasarkan
+// heuristik otomatis. Dulu ia mencentang otomatis SEMUA temuan -- termasuk
+// yang tidak pernah tampil di layar ("...dan N lainnya tetap ikut tercentang
+// & terhapus") -- tanpa ambang kewajaran. Bila detektornya yang keliru, satu
+// klik bisa menyapu seluruh bank. Sekarang: yang di luar layar tidak pernah
+// ikut tercentang, dan tuduhan massal mematikan centang otomatis total.
+import {
+  putusanPembersihan,
+  centangAman,
+  teksKonfirmasiHapus,
+  BATAS_TAYANG_RUSAK,
+  BATAS_TAYANG_DUPLIKAT,
+} from '../../../utils/pagarBersihkanSoal';
+
+// Teks soal dibaca sadar-alias. Jalur tulis di repo ini tidak seragam:
+// Import Hasil Scan & Advanced Extractor menulis `soal`, Mesin Bank Soal &
+// Impor HTML Gemini menulis `soal` DAN `teksSoal`. Membaca `s.soal` saja
+// berarti butir yang hanya punya `teksSoal` dituduh "Teks soal kosong" --
+// lalu ter-soft-delete berdasarkan tuduhan itu.
+const teksSoalDari = (s) => String(s?.soal || s?.teksSoal || s?.teks_soal || '').trim();
 
 const TIPE_BUTUH_OPSI = ['pg_sederhana', 'pg_kompleks'];
 const TIPE_BUTUH_KUNCI = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik'];
@@ -56,7 +77,7 @@ function deteksiRusak(s) {
   const alasan = [];
   const tipe = s.tipe || 'pg_sederhana';
 
-  if (!String(s.soal || '').trim()) alasan.push('Teks soal kosong');
+  if (!teksSoalDari(s)) alasan.push('Teks soal kosong');
 
   if (TIPE_BUTUH_OPSI.includes(tipe)) {
     const jumlahOpsi = Array.isArray(s.opsiJawaban) ? s.opsiJawaban.filter((o) => String(o?.teks ?? o ?? '').trim()).length : 0;
@@ -100,6 +121,8 @@ export default function BersihkanSoalPage() {
   const [tercentang, setTercentang] = useState(new Set()); // id soal yang akan dihapus
   const [menghapus, setMenghapus] = useState(false);
   const [statusHapus, setStatusHapus] = useState('');
+  // Putusan pagar ledakan (lihat src/utils/pagarBersihkanSoal.js)
+  const [putusan, setPutusan] = useState(null);
 
   const pindai = useCallback(async () => {
     setLoading(true);
@@ -135,7 +158,7 @@ export default function BersihkanSoalPage() {
       // sama cuma "berapa hasilnya" tanpa angka spesifik di teks utama).
       const peta = new Map();
       kandidatDuplikat.forEach((s) => {
-        const teks = normalisasiTeks(s.data.soal);
+        const teks = normalisasiTeks(teksSoalDari(s.data));
         if (teks.length < 15) return;
         const kunci = `${s.data.mataPelajaran || ''}|||${s.data.jenjang || ''}|||${s.data.tingkatKelas || ''}|||${teks}`;
         if (!peta.has(kunci)) peta.set(kunci, []);
@@ -149,15 +172,24 @@ export default function BersihkanSoalPage() {
           return { kunci, anggota: diurut, idDisimpan: diurut[0].id };
         });
 
-      // Default centang: semua yang rusak + semua anggota duplikat
-      // KECUALI yang disimpan per grup.
-      const centangAwal = new Set();
-      rusak.forEach((s) => centangAwal.add(s.id));
-      grup.forEach((g) => g.anggota.forEach((a) => { if (a.id !== g.idDisimpan) centangAwal.add(a.id); }));
+      // 🔥 DIPERKETAT 2026-10-08. Dulu: SEMUA temuan dicentang otomatis,
+      // termasuk yang tidak pernah tampil di layar. Sekarang putusan diambil
+      // dari util murni teruji, dan yang boleh tercentang HANYA yang benar-
+      // benar disodorkan ke layar (potongan batas tayang).
+      const jumlahDuplikat = grup.reduce((acc, g) => acc + g.anggota.length - 1, 0);
+      const putusan = putusanPembersihan({
+        totalDiaudit: semua.length,
+        jumlahRusak: rusak.length,
+        jumlahDuplikatBerlebih: jumlahDuplikat,
+      });
+      const rusakTampil = rusak.slice(0, BATAS_TAYANG_RUSAK);
+      const grupTampil = grup.slice(0, BATAS_TAYANG_DUPLIKAT);
+      const centangAwal = centangAman(rusakTampil, grupTampil, putusan);
 
       setDaftarRusak(rusak);
       setGrupDuplikat(grup);
       setCekManual(cekManual);
+      setPutusan(putusan);
       setTercentang(centangAwal);
       setTotalSoal(semua.length);
       setSudahPindai(true);
@@ -178,10 +210,15 @@ export default function BersihkanSoalPage() {
 
   const jumlahDuplikatBerlebih = useMemo(() => grupDuplikat.reduce((acc, g) => acc + g.anggota.length - 1, 0), [grupDuplikat]);
 
+  // Diangkat jadi variabel supaya dependensi useCallback eksplisit:
+  // React Compiler menolak memoization manual yang dependensinya tidak
+  // cocok dengan yang terbaca di badan fungsi.
+  const mencurigakan = putusan?.mencurigakan ?? false;
+
   const hapusYangTercentang = useCallback(async () => {
     const idList = [...tercentang];
     if (idList.length === 0) return alert('Belum ada yang dicentang.');
-    if (!window.confirm(`Tandai ${idList.length} soal sebagai dihapus (soft-delete, bisa dipulihkan lewat Firestore kalau perlu)? Soal ini langsung hilang dari Latihan Harian, Try Out, dan Audit Materi.`)) return;
+    if (!window.confirm(teksKonfirmasiHapus(idList.length, { mencurigakan }))) return;
 
     setMenghapus(true);
     try {
@@ -212,7 +249,7 @@ export default function BersihkanSoalPage() {
       setStatusHapus('❌ Gagal: ' + e.message);
     }
     setMenghapus(false);
-  }, [tercentang, daftarRusak]);
+  }, [tercentang, daftarRusak, mencurigakan]);
 
   const wrapper = { display: 'flex', background: '#f8fafc', minHeight: '100vh' };
   const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box' };
@@ -275,21 +312,56 @@ export default function BersihkanSoalPage() {
             </div>
             {statusHapus && <div style={{ fontSize: 12.5, color: '#374151', marginBottom: 14 }}>{statusHapus}</div>}
 
+            {/* 🔥 Pagar ledakan: putusan jujur sebelum ada yang dihapus.
+                Bila porsi tuduhan tidak wajar, yang paling mungkin salah
+                adalah detektornya -- bukan banknya. */}
+            {putusan && (
+              <div style={{
+                borderRadius: 12, padding: '12px 14px', marginBottom: 16, fontSize: 12.5, lineHeight: 1.65,
+                background: putusan.mencurigakan ? '#fef2f2' : '#f0fdf4',
+                border: `1px solid ${putusan.mencurigakan ? '#fecaca' : '#bbf7d0'}`,
+                color: putusan.mencurigakan ? '#991b1b' : '#166534',
+              }}>
+                <div style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+                  <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <div style={{ fontWeight: 700, marginBottom: 3 }}>
+                      {putusan.mencurigakan ? 'Pagar ledakan AKTIF' : 'Hasil pindai'}
+                      {' · '}{putusan.totalDiaudit.toLocaleString('id-ID')} butir dipindai
+                      {' · '}{putusan.jumlahRusak.toLocaleString('id-ID')} dituduh rusak ({putusan.persenRusak}%)
+                      {' · '}{putusan.jumlahDuplikatBerlebih.toLocaleString('id-ID')} duplikat berlebih
+                      {' · '}<b>{tercentang.size} tercentang</b>
+                    </div>
+                    <div>{putusan.pesan}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {daftarRusak.length > 0 && (
               <div style={cardStyle}>
                 <div style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 4 }}>⚠️ Soal rusak/tidak lengkap</div>
-                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 14 }}>Semua sudah tercentang otomatis -- uncheck kalau ada yang menurutmu masih layak disimpan.</div>
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 14 }}>
+                  {putusan?.bolehAutoCentang
+                    ? `Yang tampil di layar tercentang otomatis (maksimal ${BATAS_TAYANG_RUSAK}) — uncheck kalau ada yang masih layak disimpan.`
+                    : 'Centang otomatis DIMATIKAN karena porsi temuan tidak wajar. Periksa dulu sebelum mencentang sendiri.'}
+                </div>
                 {daftarRusak.slice(0, 300).map((s) => (
                   <div key={s.id} style={rowStyle(tercentang.has(s.id))} onClick={() => toggleCentang(s.id)}>
                     {tercentang.has(s.id) ? <CheckSquare size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} /> : <Square size={16} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2 }} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.data.soal || '(teks soal kosong)'}</div>
+                      <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{teksSoalDari(s.data) || '(teks soal kosong)'}</div>
                       <div style={{ fontSize: 11, color: '#dc2626', marginTop: 2 }}>{s.alasan.join(' · ')}</div>
                       <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 2 }}>{s.data.mataPelajaran || '(kosong)'} · {s.data.jenjang || '(kosong)'} · Kelas {s.data.tingkatKelas || 'Semua'}</div>
                     </div>
                   </div>
                 ))}
-                {daftarRusak.length > 300 && <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8 }}>...dan {daftarRusak.length - 300} lainnya (tetap ikut tercentang & terhapus).</div>}
+                {daftarRusak.length > BATAS_TAYANG_RUSAK && (
+                  <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8 }}>
+                    ...dan {daftarRusak.length - BATAS_TAYANG_RUSAK} lainnya.{' '}
+                    <b style={{ color: '#166534' }}>TIDAK ikut tercentang</b> — tidak ada butir yang dihapus tanpa terlihat lebih dulu.
+                  </div>
+                )}
               </div>
             )}
 
@@ -309,12 +381,17 @@ export default function BersihkanSoalPage() {
                         ) : (
                           <Square size={16} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2 }} />
                         )}
-                        <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{a.data.soal}</div>
+                        <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{teksSoalDari(a.data) || '(teks soal kosong)'}</div>
                       </div>
                     ))}
                   </div>
                 ))}
-                {grupDuplikat.length > 100 && <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8 }}>...dan {grupDuplikat.length - 100} grup lainnya (tetap ikut tercentang & terhapus).</div>}
+                {grupDuplikat.length > BATAS_TAYANG_DUPLIKAT && (
+                  <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 8 }}>
+                    ...dan {grupDuplikat.length - BATAS_TAYANG_DUPLIKAT} grup lainnya.{' '}
+                    <b style={{ color: '#166534' }}>TIDAK ikut tercentang</b> — periksa dulu bila memang mau dibersihkan.
+                  </div>
+                )}
               </div>
             )}
 
