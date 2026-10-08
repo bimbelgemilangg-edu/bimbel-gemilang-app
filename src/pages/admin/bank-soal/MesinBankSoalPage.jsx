@@ -39,6 +39,7 @@ import { sudahBaku, jenjangBaku } from '../../../utils/jenjangBaku';
 // daftar datar 22 nama. Ini perbaikan di AKAR: sebelumnya tidak ada yang
 // mencegah dokumen SD tertag Biologi.
 import { daftarMapelUntuk, petakanNamaMapel } from '../../../utils/kurikulumMerdeka';
+import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
 
 const COL = 'bank_soal';
 const BATCH_MAX = 400;
@@ -185,7 +186,22 @@ export default function MesinBankSoalPage() {
       return d;
     });
     setPreview(tautkanStimulusBersama(hasil));
-    setPesan(`✅ ${hasil.length} soal siap. Cek kelompok di bawah, lalu simpan.`);
+    // 🔥 2026-10-08: deteksi duplikat di HULU juga untuk jalur JSON — sesama
+    // batch, tanpa bacaan Firestore ekstra (kuota). Perbandingan terhadap
+    // bank dilakukan saat simpan di jalur scan; di sini setidaknya tempel
+    // dobel dalam satu berkas ketahuan sebelum masuk.
+    const dup = bandingkanDuplikat(hasil, []);
+    const bagianPesan = [`✅ ${hasil.length} soal siap. Cek kelompok di bawah, lalu simpan.`];
+    if (dup.duplikatPersis.length) {
+      bagianPesan.push(`⚠️ ${dup.duplikatPersis.length} butir SAMA PERSIS (teks+gambar+isi+kunci) di dalam berkas ini — kemungkinan tempel dobel.`);
+    }
+    if (dup.kembarBedaKunci.length) {
+      bagianPesan.push(`🟡 ${dup.kembarBedaKunci.length} butir kembar teks+gambar+isi tetapi KUNCINYA berbeda — periksa mana yang benar, jangan dibuang.`);
+    }
+    if (dup.teksSamaGambarBeda) {
+      bagianPesan.push(`ℹ️ ${dup.teksSamaGambarBeda} butir berbagi perintah yang sama tetapi gambar/isi berbeda — itu soal berbeda, tidak ditandai apa-apa.`);
+    }
+    setPesan(bagianPesan.join(' '));
   }
 
   async function onFile(e) {

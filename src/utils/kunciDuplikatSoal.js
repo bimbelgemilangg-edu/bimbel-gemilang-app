@@ -91,7 +91,46 @@ function sidikJariIsi(soal) {
  * @returns {string|null} null berarti butir ini TIDAK ikut diperiksa
  *   (teks terlalu pendek — menuduh berdasarkan 14 karakter terlalu berisiko)
  */
+/**
+ * Untuk PENGELOMPOKAN di halaman pembersih kunci jawaban TIDAK ikut: dua butir
+ * kembar yang salah satunya salah ketik kunci tetap duplikat yang harus
+ * disatukan (yang salah dibuang). Untuk PERINGATAN DI HULU dipakai
+ * kunciDuplikatKetat + kunciKembarTanpaKunci, supaya perbedaan jawaban justru
+ * terlihat, bukan ditelan.
+ */
 export function kunciDuplikat(soal) {
+  return kunciKembarTanpaKunci(soal);
+}
+
+/**
+ * Sidik jari kunci jawaban, dinormalkan.
+ * Huruf besar/kecil dan spasi disamakan; array diurutkan supaya ["A","C"]
+ * dan ["C","A"] dianggap sama.
+ */
+export function sidikJariKunci(soal) {
+  const k = soal?.kunciJawaban;
+  if (Array.isArray(k)) return [...k].map((x) => normTeks(x)).sort().join(',');
+  return normTeks(k);
+}
+
+/**
+ * TIGA TINGKAT KEMIRIPAN.
+ * Owner 2026-10-08: "detektor duplikat harusnya ada di awal saat scan soal,
+ * pastikan dilihat dari jawaban kan juga kadang jawaban beda". Maka keputusan
+ * duplikat dibuat BERJENJANG, bukan biner:
+ *
+ *   kunciDuplikatKetat()     teks + gambar + isi + KUNCI
+ *                            sama semua  -> DUPLIKAT PERSIS
+ *   kunciKembarTanpaKunci()  teks + gambar + isi, kunci TIDAK ikut
+ *                            sama di sini tapi beda di tingkat atas
+ *                            -> KEMBAR BEDA KUNCI: JANGAN dihapus; salah satu
+ *                               hampir pasti salah kunci. Periksa manusia.
+ *   kunciTeksSaja()          teks perintah saja
+ *                            sama di sini tapi beda di tingkat tengah
+ *                            -> BEDA GAMBAR/ISI: BUKAN duplikat dan TIDAK BOLEH
+ *                               diperingatkan (inilah kasus poster-kembar).
+ */
+export function kunciKembarTanpaKunci(soal) {
   const teks = normTeks(teksSoalDari(soal));
   if (teks.length < MIN_TEKS_DUPLIKAT) return null;
   return [
@@ -102,6 +141,112 @@ export function kunciDuplikat(soal) {
     sidikJariGambar(soal),
     sidikJariIsi(soal),
   ].join('|||');
+}
+
+export function kunciTeksSaja(soal) {
+  const teks = normTeks(teksSoalDari(soal));
+  if (teks.length < MIN_TEKS_DUPLIKAT) return null;
+  return [
+    String(soal?.mataPelajaran || soal?.mapel || '').trim(),
+    String(soal?.jenjang || '').trim(),
+    String(soal?.tingkatKelas || soal?.kelas || '').trim(),
+    teks,
+  ].join('|||');
+}
+
+/** Kunci duplikat ketat: ikut menghitung kunci jawaban. */
+export function kunciDuplikatKetat(soal) {
+  const tengah = kunciKembarTanpaKunci(soal);
+  if (!tengah) return null;
+  return `${tengah}|||k=${sidikJariKunci(soal)}`;
+}
+
+/**
+ * Bandingkan daftar baru terhadap bank yang sudah ada DAN sesama batch.
+ * Dipakai di HULU (saat scan/impor) supaya soal beranak dicegah sebelum
+ * masuk, bukan dibersihkan sesudah masuk.
+ *
+ * @param {Array} daftarBaru butir yang akan disimpan
+ * @param {Array} [bank] butir yang sudah ada di bank_soal
+ * @returns {{duplikatPersis:Array, kembarBedaKunci:Array, teksSamaGambarBeda:number}}
+ */
+export function bandingkanDuplikat(daftarBaru, bank = []) {
+  const bankKetat = new Map();
+  const bankTengah = new Map();
+  const bankTeks = new Set();
+  for (const b of Array.isArray(bank) ? bank : []) {
+    const k1 = kunciDuplikatKetat(b);
+    if (k1 && !bankKetat.has(k1)) bankKetat.set(k1, b);
+    const k2 = kunciKembarTanpaKunci(b);
+    if (k2 && !bankTengah.has(k2)) bankTengah.set(k2, b);
+    const k3 = kunciTeksSaja(b);
+    if (k3) bankTeks.add(k3);
+  }
+
+  const duplikatPersis = [];
+  const kembarBedaKunci = [];
+  let teksSamaGambarBeda = 0;
+  const batchKetat = new Map();
+  const batchTengah = new Map();
+  const batchTeks = new Set();
+
+  const potong = (s) => normTeks(teksSoalDari(s)).slice(0, 70);
+
+  for (const q of Array.isArray(daftarBaru) ? daftarBaru : []) {
+    const k1 = kunciDuplikatKetat(q);
+    const k2 = kunciKembarTanpaKunci(q);
+    const k3 = kunciTeksSaja(q);
+    if (!k1 || !k2 || !k3) continue;
+
+    const lawanBank = bankKetat.get(k1);
+    const lawanBatch = batchKetat.get(k1);
+    if (lawanBank || lawanBatch) {
+      duplikatPersis.push({ baru: q, lawan: lawanBank || lawanBatch, sumber: lawanBank ? 'bank' : 'batch', pratinjau: potong(q) });
+    } else if (bankTengah.has(k2) || batchTengah.has(k2)) {
+      kembarBedaKunci.push({ baru: q, lawan: bankTengah.get(k2) || batchTengah.get(k2), sumber: bankTengah.has(k2) ? 'bank' : 'batch', pratinjau: potong(q) });
+    } else if (bankTeks.has(k3) || batchTeks.has(k3)) {
+      // Perintah sama tetapi gambar/isi beda: BUKAN duplikat. Dihitung supaya
+      // halaman bisa mengaku jujur "ini sengaja tidak diperingatkan".
+      teksSamaGambarBeda += 1;
+    }
+
+    if (!batchKetat.has(k1)) batchKetat.set(k1, q);
+    if (!batchTengah.has(k2)) batchTengah.set(k2, q);
+    batchTeks.add(k3);
+  }
+
+  return { duplikatPersis, kembarBedaKunci, teksSamaGambarBeda };
+}
+
+/**
+ * Bandingkan dua butir: apa yang SAMA dan apa yang BEDA, dalam frasa pendek
+ * yang bisa langsung dibaca admin.
+ *
+ * Owner 2026-10-08: "bisa gak itu aku baca soal full biar tahu". Membaca
+ * penuh saja belum cukup cepat bila perbedaannya harus dicari mata sendiri
+ * di dua kartu; maka perbedaan utamanya disebut lebih dulu.
+ *
+ * @returns {{sama:string[], beda:string[]}}
+ */
+export function bandingkanDuaButir(a, b) {
+  const sama = [];
+  const beda = [];
+  const cek = (label, va, vb) => {
+    if (va === vb) { if (va) sama.push(label); }
+    else beda.push(label);
+  };
+  cek('teks perintah', normTeks(teksSoalDari(a)), normTeks(teksSoalDari(b)));
+  const ga = sidikJariGambar(a);
+  const gb = sidikJariGambar(b);
+  if (ga === gb) { if (ga) sama.push(`gambar (${ga.split(' ').length})`); }
+  else if (!ga && !gb) { /* keduanya tanpa gambar: bukan pembeda */ }
+  else if (!ga || !gb) beda.push('hanya satu yang punya gambar');
+  else beda.push(`gambar berbeda (${ga.split(' ').length} vs ${gb.split(' ').length})`);
+  cek('pilihan/pernyataan', sidikJariIsi(a), sidikJariIsi(b));
+  cek('kunci jawaban', sidikJariKunci(a), sidikJariKunci(b));
+  cek('mapel', String(a?.mataPelajaran || a?.mapel || ''), String(b?.mataPelajaran || b?.mapel || ''));
+  cek('materi', String(a?.materi || a?.bab || ''), String(b?.materi || b?.bab || ''));
+  return { sama, beda };
 }
 
 /**
@@ -115,4 +260,8 @@ export function alasanDuplikat(soal) {
     : 'teks sama dan tidak ada gambar di keduanya';
 }
 
-export default { MIN_TEKS_DUPLIKAT, sidikJariGambar, sidikJariIsi, kunciDuplikat, alasanDuplikat };
+export default {
+  MIN_TEKS_DUPLIKAT, sidikJariGambar, sidikJariIsi, sidikJariKunci,
+  kunciDuplikat, kunciDuplikatKetat, kunciKembarTanpaKunci, kunciTeksSaja,
+  bandingkanDuplikat, bandingkanDuaButir, alasanDuplikat,
+};

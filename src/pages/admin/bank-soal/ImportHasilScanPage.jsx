@@ -54,6 +54,11 @@ import { db, auth } from '../../../firebase';
 // menulis "{(3, 2)}" polos -- di KaTeX kurungnya hilang. Diperbaiki di
 // pintu masuk, bukan minta setiap AI penulis file tidak pernah lupa.
 import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
+// 🔥 2026-10-08: deteksi duplikat di HULU (saat scan) kini berjenjang dan
+// sadar gambar+kunci. Detektor lama membandingkan TEKS PERINTAH SAJA, jadi
+// dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
+// sementara pasangan kembar ber-kunci berbeda lolos tanpa diperiksa.
+import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
 // 🔥 BARU (2026-10-07): keluhan owner "gambar dari Gemini gak muncul
 // semua". Akarnya: Gemini Canvas menulis src="[url](url)" gaya tautan
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
@@ -488,15 +493,6 @@ CONTOH (perhatikan: angka/nilai di bawah ini cuma ilustrasi STRUKTUR tag. Materi
 // terhadap variasi kecil yang WAJAR terjadi antar hasil scan AI (spasi
 // beda, huruf besar/kecil, simbol kali "×" vs huruf "x", tanda baca
 // beda gaya) tapi TETAP ketat mendeteksi isi yang SEBENARNYA sama.
-function normalisasiTeksDuplikat(t) {
-  return String(t || '')
-    .toLowerCase()
-    .replace(/[×✕]/g, 'x')
-    .replace(/[÷]/g, ':')
-    .replace(/[^a-z0-9:]+/g, ' ')
-    .trim()
-    .replace(/\s+/g, ' ');
-}
 
 function safeString(value, fallback = '') {
   if (value === null || value === undefined) return fallback;
@@ -3827,26 +3823,23 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
     // di DALAM batch yang mau disimpan ini (jaga-jaga kalau admin gak
     // sadar menempel konten yang sama 2x dalam 1 sesi import).
     let peringatanDuplikat = [];
+    let jumlahBedaGambar = 0;
     try {
       const existingSnap = await getDocs(collection(db, 'bank_soal'));
-      const existingSet = new Map(); // teks ternormalisasi -> nomor soal lama (buat pesan)
-      existingSnap.forEach(d => {
-        const data = d.data();
-        const teks = normalisasiTeksDuplikat(data.soal || data.teksSoal || '');
-        if (teks) existingSet.set(teks, data.nomor || '?');
-      });
+      const bank = existingSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const hasil = bandingkanDuplikat(validSoal, bank);
 
-      const dalamBatchSet = new Set();
-      validSoal.forEach(q => {
-        const teks = normalisasiTeksDuplikat(q.teks_soal);
-        if (!teks) return;
-        if (existingSet.has(teks)) {
-          peringatanDuplikat.push(`Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: mirip/sama dengan soal yang SUDAH ADA di Bank Soal (nomor ${existingSet.get(teks)}).`);
-        } else if (dalamBatchSet.has(teks)) {
-          peringatanDuplikat.push(`Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: sama dengan soal LAIN di batch import ini juga -- kemungkinan tempel dobel.`);
-        }
-        dalamBatchSet.add(teks);
+      hasil.duplikatPersis.forEach((x) => {
+        peringatanDuplikat.push(
+          `DUPLIKAT PERSIS (teks+gambar+isi+kunci sama): soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ''} -- "${x.pratinjau}…" sudah ada di ${x.sumber === 'bank' ? 'Bank Soal' : 'batch ini juga'}.`
+        );
       });
+      hasil.kembarBedaKunci.forEach((x) => {
+        peringatanDuplikat.push(
+          `KEMBAR TAPI JAWABAN BEDA: soal ${x.baru.nomor}${x.baru.paket ? ` (Paket ${x.baru.paket})` : ''} -- "${x.pratinjau}…" sama teks+gambar+isi dengan soal di ${x.sumber === 'bank' ? 'Bank Soal' : 'batch ini'}, tetapi KUNCINYA BERBEDA. Ini BUKAN duplikat yang aman dibuang: salah satunya hampir pasti salah kunci. Periksa dulu.`
+        );
+      });
+      jumlahBedaGambar = hasil.teksSamaGambarBeda;
     } catch (e) {
       console.error('Gagal cek duplikat (dilewati, tidak menghalangi simpan):', e);
     }
@@ -3855,6 +3848,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       const proceed = window.confirm(
         `⚠️ Terdeteksi ${peringatanDuplikat.length} kemungkinan soal DUPLIKAT:\n\n${peringatanDuplikat.slice(0, 8).join('\n')}` +
         (peringatanDuplikat.length > 8 ? `\n...dan ${peringatanDuplikat.length - 8} lainnya.` : '') +
+        (jumlahBedaGambar ? `\n\nℹ️ ${jumlahBedaGambar} butir punya perintah sama tetapi GAMBAR/ISI berbeda — itu soal BERBEDA dan sengaja tidak diperingatkan.` : '') +
         `\n\nKlik OK untuk TETAP simpan semua (termasuk yang mirip di atas), atau Cancel untuk batal dan cek manual dulu.`,
       );
       if (!proceed) return;
