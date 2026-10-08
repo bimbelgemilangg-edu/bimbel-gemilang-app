@@ -42,6 +42,7 @@ import {
   JATAH_BACA_HARIAN,
 } from '../../../utils/auditIdentitasSoal';
 import { kebijakanGagalMuat } from '../../../utils/keputusanMuat';
+import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 import {
   ScanSearch, Loader2, Download, AlertTriangle, ShieldCheck, ShieldAlert,
   Wrench, FileWarning, RefreshCw, CheckCircle2, XCircle,
@@ -96,6 +97,10 @@ export default function AuditIdentitasSoalPage() {
   const [memuat, setMemuat] = useState(false);
   const [progres, setProgres] = useState('');
   const [laporan, setLaporan] = useState(null);
+  // 🔥 2026-10-09: sapuan mentah disimpan supaya tombol unduh tidak perlu
+  // membaca Firestore sekali lagi (kuota). Owner minta jalan mengirim SELURUH
+  // isi bank soal untuk dianalisis di luar aplikasi.
+  const [daftarMentah, setDaftarMentah] = useState([]);
   const [error, setError] = useState('');
   const [biaya, setBiaya] = useState(null);
   const [ikutDikecualikan, setIkutDikecualikan] = useState(false);
@@ -119,6 +124,7 @@ export default function AuditIdentitasSoalPage() {
       setProgres(`Menganalisis identitas & kesehatan ${daftar.length} butir…`);
       const hasil = auditBankSoal(daftar, { ikutDikecualikan });
       setLaporan(hasil);
+      setDaftarMentah(daftar);
       setBiaya(hitungBiayaBaca(daftar.length));
       setTab('ringkasan');
     } catch (e) {
@@ -138,6 +144,45 @@ export default function AuditIdentitasSoalPage() {
       setProgres('');
     }
   }, [ikutDikecualikan, laporan]);
+
+  /**
+   * Ekspor SELURUH butir yang tersimpan (teks, opsi, kunci, pembahasan,
+   * gambar, bacaan, identitas, status) — jalan untuk membaca bank soal di
+   * luar aplikasi, misalnya menyerahkannya untuk dianalisis.
+   */
+  const unduhButirLengkap = useCallback(() => {
+    if (!daftarMentah.length) return;
+    const isi = daftarMentah.map(({ id, data }) => ({
+      id,
+      status: data?.status || 'aktif',
+      teksSoal: data?.soal || data?.teksSoal || '',
+      tipe: data?.tipe || '',
+      opsiJawaban: data?.opsiJawaban || [],
+      pernyataan: data?.pernyataan || [],
+      tabelBenarSalah: data?.tabelBenarSalah || [],
+      pasangan: data?.pasangan || [],
+      kunciJawaban: data?.kunciJawaban ?? '',
+      pembahasan: data?.pembahasan || '',
+      pembahasanAsal: data?.pembahasanAsal || '',
+      gambarUrls: data?.gambarUrls || [],
+      bacaan: data?.bacaan || null,
+      identitas: {
+        mapel: data?.mataPelajaran || data?.mapel || '',
+        jenjang: data?.jenjang || '',
+        kelas: data?.tingkatKelas || data?.kelas || '',
+        materi: data?.materi || data?.bab || data?.topik || '',
+      },
+      sumberSoalId: data?.sumberSoalId || null,
+      asalImpor: data?.asalImpor || '',
+    }));
+    const blob = new Blob([JSON.stringify(isi, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bank-soal-lengkap-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [daftarMentah]);
 
   // ----------------------------------------------------------
   // Eksekusi rencana perbaikan (hanya atas perintah owner)
@@ -172,6 +217,14 @@ export default function AuditIdentitasSoalPage() {
         selesai += potongan.length;
         setProgres(`Menulis ${selesai}/${rencana.length} dokumen…`);
       }
+      catatAudit('banksoal.identitas.perbaiki', {
+        kategori: KATEGORI.KONTEN,
+        target: `${selesai} butir bank_soal`,
+        detail: {
+          jumlah: selesai,
+          jenis: 'rencana perbaikan identitas (alias kosong diisi, jenjang dibakukan)',
+        },
+      });
       setHasilTulis(`✅ ${selesai} dokumen diperbarui. Jalankan audit ulang untuk memastikan angkanya turun.`);
       setSetujuTulis(false);
     } catch (e) {
@@ -223,6 +276,12 @@ export default function AuditIdentitasSoalPage() {
               />
               Ikut audit butir ber-status <code>nonaktif</code>/<code>dihapus</code>
             </label>
+
+            {daftarMentah.length > 0 && (
+              <button style={st.tombolAbu} onClick={unduhButirLengkap}>
+                <Download size={14} /> Unduh seluruh bank soal (JSON lengkap)
+              </button>
+            )}
 
             {laporan && (
               <span style={st.pill(siap ? '#16a34a' : '#dc2626')}>
