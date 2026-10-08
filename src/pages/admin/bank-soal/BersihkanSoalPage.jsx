@@ -53,7 +53,13 @@ import {
 // grup "2 soal identik" berisi dua poster berbeda; dan "37 soal ditandai
 // dihapus" sudah terlanjur terjadi). Gambar, pilihan, pernyataan, dan
 // pasangan kini ikut masuk kunci.
-import { kunciDuplikat, alasanDuplikat } from '../../../utils/kunciDuplikatSoal';
+import { kunciDuplikat, alasanDuplikat, bandingkanDuaButir } from '../../../utils/kunciDuplikatSoal';
+// 🔥 2026-10-08: "bisa gak itu aku baca soal full biar tahu". Baris daftar
+// dulu hanya SATU baris teks terpotong (nowrap+ellipsis) -- mustahil menilai
+// apakah dua butir benar-benar kembar, apalagi melihat posternya berbeda.
+// Kini tiap baris punya thumbnail gambar, tombol baca lengkap, dan di grup
+// duplikat ada baris "yang sama / yang beda" terhadap butir yang DISIMPAN.
+import KartuBacaSoalLengkap from '../../../components/admin/KartuBacaSoalLengkap';
 
 // Teks soal dibaca sadar-alias. Jalur tulis di repo ini tidak seragam:
 // Import Hasil Scan & Advanced Extractor menulis `soal`, Mesin Bank Soal &
@@ -109,6 +115,35 @@ function skorKelengkapan(s) {
   return skor;
 }
 
+/** Thumbnail gambar butir — perbedaan poster harus kelihatan tanpa klik. */
+function StripGambar({ soal }) {
+  const url = (Array.isArray(soal?.gambarUrls) ? soal.gambarUrls : []).filter(Boolean);
+  if (!url.length) {
+    return <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 5 }}>tidak ada gambar di butir ini</div>;
+  }
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+      {url.slice(0, 4).map((u, i) => (
+        <img key={i} src={u} alt={`Gambar ${i + 1}`} style={{ width: 72, height: 72, objectFit: 'cover', border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff' }} />
+      ))}
+      {url.length > 4 && <span style={{ fontSize: 10.5, color: '#64748b', alignSelf: 'center' }}>+{url.length - 4} gambar</span>}
+    </div>
+  );
+}
+
+/** Tombol kecil untuk membentangkan kartu baca penuh. */
+function TombolBaca({ terbuka, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{ marginTop: 6, border: '1px solid #c7d2fe', background: terbuka ? '#eef2ff' : '#fff', color: '#3730a3', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+    >
+      {terbuka ? 'tutup bacaan penuh' : 'baca soal lengkap'}
+    </button>
+  );
+}
+
 export default function BersihkanSoalPage() {
   const [isMobile] = useState(window.innerWidth < 1024);
   const [loading, setLoading] = useState(false);
@@ -122,6 +157,8 @@ export default function BersihkanSoalPage() {
   const [statusHapus, setStatusHapus] = useState('');
   // Putusan pagar ledakan (lihat src/utils/pagarBersihkanSoal.js)
   const [putusan, setPutusan] = useState(null);
+  // id butir yang kartunya sedang dibentangkan untuk dibaca penuh
+  const [baca, setBaca] = useState(new Set());
 
   const pindai = useCallback(async () => {
     setLoading(true);
@@ -347,12 +384,19 @@ export default function BersihkanSoalPage() {
                     : 'Centang otomatis DIMATIKAN karena porsi temuan tidak wajar. Periksa dulu sebelum mencentang sendiri.'}
                 </div>
                 {daftarRusak.slice(0, 300).map((s) => (
-                  <div key={s.id} style={rowStyle(tercentang.has(s.id))} onClick={() => toggleCentang(s.id)}>
-                    {tercentang.has(s.id) ? <CheckSquare size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} /> : <Square size={16} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2 }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{teksSoalDari(s.data) || '(teks soal kosong)'}</div>
-                      <div style={{ fontSize: 11, color: '#dc2626', marginTop: 2 }}>{s.alasan.join(' · ')}</div>
-                      <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 2 }}>{s.data.mataPelajaran || '(kosong)'} · {s.data.jenjang || '(kosong)'} · Kelas {s.data.tingkatKelas || 'Semua'}</div>
+                  <div key={s.id} style={rowStyle(tercentang.has(s.id))}>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => toggleCentang(s.id)}>
+                      {tercentang.has(s.id) ? <CheckSquare size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} /> : <Square size={16} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, color: '#1e293b', lineHeight: 1.55 }}>{(teksSoalDari(s.data) || '(teks soal kosong)').slice(0, 240)}</div>
+                        <div style={{ fontSize: 11, color: '#dc2626', marginTop: 2 }}>{s.alasan.join(' · ')}</div>
+                        <div style={{ fontSize: 10.5, color: '#9ca3af', marginTop: 2 }}>{s.data.mataPelajaran || '(kosong)'} · {s.data.jenjang || '(kosong)'} · Kelas {s.data.tingkatKelas || 'Semua'}</div>
+                      </div>
+                    </div>
+                    <div style={{ paddingLeft: 26 }}>
+                      <StripGambar soal={s.data} />
+                      <TombolBaca terbuka={baca.has(s.id)} onClick={() => setBaca((l) => { const n = new Set(l); if (n.has(s.id)) n.delete(s.id); else n.add(s.id); return n; })} />
+                      {baca.has(s.id) && <KartuBacaSoalLengkap soal={s.data} />}
                     </div>
                   </div>
                 ))}
@@ -379,18 +423,44 @@ export default function BersihkanSoalPage() {
                       {g.anggota.length} soal identik -- {g.anggota[0].data.mataPelajaran || '(kosong)'} · {g.anggota[0].data.jenjang || '(kosong)'} · Kelas {g.anggota[0].data.tingkatKelas || 'Semua'}
                       <span style={{ fontWeight: 400, color: '#a16207' }}> · dinilai identik karena {alasanDuplikat(g.anggota[0].data)}</span>
                     </div>
-                    {g.anggota.map((a) => (
-                      <div key={a.id} style={rowStyle(tercentang.has(a.id))} onClick={() => a.id !== g.idDisimpan && toggleCentang(a.id)}>
-                        {a.id === g.idDisimpan ? (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#166534', background: '#dcfce7', borderRadius: 999, padding: '2px 8px', flexShrink: 0 }}>DISIMPAN</span>
-                        ) : tercentang.has(a.id) ? (
-                          <CheckSquare size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} />
-                        ) : (
-                          <Square size={16} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2 }} />
-                        )}
-                        <div style={{ fontSize: 12.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{teksSoalDari(a.data) || '(teks soal kosong)'}</div>
-                      </div>
-                    ))}
+                    {g.anggota.map((a) => {
+                      const disimpan = g.anggota.find((x) => x.id === g.idDisimpan);
+                      const beda = a.id !== g.idDisimpan && disimpan
+                        ? bandingkanDuaButir(disimpan.data, a.data)
+                        : null;
+                      return (
+                        <div key={a.id} style={rowStyle(tercentang.has(a.id))}>
+                          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: a.id === g.idDisimpan ? 'default' : 'pointer' }} onClick={() => a.id !== g.idDisimpan && toggleCentang(a.id)}>
+                            {a.id === g.idDisimpan ? (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: '#166534', background: '#dcfce7', borderRadius: 999, padding: '2px 8px', flexShrink: 0 }}>DISIMPAN</span>
+                            ) : tercentang.has(a.id) ? (
+                              <CheckSquare size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} />
+                            ) : (
+                              <Square size={16} color="#9ca3af" style={{ flexShrink: 0, marginTop: 2 }} />
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 12.5, color: '#1e293b', lineHeight: 1.55 }}>{(teksSoalDari(a.data) || '(teks soal kosong)').slice(0, 240)}</div>
+                              {beda && (
+                                <div style={{ fontSize: 11, marginTop: 4, lineHeight: 1.6, color: '#92400e' }}>
+                                  <b>vs yang DISIMPAN</b> — sama: {beda.sama.join(', ') || '(tidak ada)'}
+                                  {' · '}<b style={{ color: '#b91c1c' }}>beda: {beda.beda.join(', ') || '(tidak ada)'}</b>
+                                </div>
+                              )}
+                              {beda && beda.beda.some((x) => /gambar/.test(x)) && (
+                                <div style={{ fontSize: 10.5, color: '#166534', marginTop: 3, fontWeight: 700 }}>
+                                  Gambar keduanya berbeda — ini BUKAN duplikat yang aman dibuang. Batalkan centangnya bila memang soal berbeda.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ paddingLeft: 10 }}>
+                            <StripGambar soal={a.data} />
+                            <TombolBaca terbuka={baca.has(a.id)} onClick={() => setBaca((l) => { const n = new Set(l); if (n.has(a.id)) n.delete(a.id); else n.add(a.id); return n; })} />
+                            {baca.has(a.id) && <KartuBacaSoalLengkap soal={a.data} />}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ))}
                 {grupDuplikat.length > BATAS_TAYANG_DUPLIKAT && (

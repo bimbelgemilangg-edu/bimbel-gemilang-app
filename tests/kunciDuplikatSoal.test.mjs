@@ -23,6 +23,7 @@ import {
   kunciKembarTanpaKunci,
   kunciTeksSaja,
   bandingkanDuplikat,
+  bandingkanDuaButir,
   alasanDuplikat,
 } from '../src/utils/kunciDuplikatSoal.js';
 
@@ -210,4 +211,36 @@ test('tiga tingkat kunci benar-benar bertingkat', () => {
 test('alasan duplikat menyebut gambar bila ada, dan jujur bila tidak', () => {
   assert.match(alasanDuplikat(butirPoster('https://a/x.png')), /1 gambar sama/);
   assert.match(alasanDuplikat({ soal: PERINTAH }), /tidak ada gambar/);
+});
+
+// ------------------------------------------------------------
+// 6. Perbandingan dua butir: apa yang sama, apa yang beda
+// ------------------------------------------------------------
+test('perbedaan poster disebut eksplisit, perintah disebut sama', () => {
+  const h = bandingkanDuaButir(poster('https://a/1.png', 'B'), poster('https://a/2.png', 'B'));
+  assert.ok(h.sama.some((x) => /teks perintah/.test(x)));
+  assert.ok(h.beda.some((x) => /gambar berbeda/.test(x)), 'perbedaan gambar harus disebut');
+  assert.ok(!h.beda.some((x) => /kunci/.test(x)));
+});
+
+test('kembar beda kunci: kunci masuk daftar beda, gambar masuk daftar sama', () => {
+  const h = bandingkanDuaButir(poster('https://a/1.png', 'B'), poster('https://a/1.png', 'D'));
+  assert.ok(h.beda.some((x) => /kunci jawaban/.test(x)));
+  assert.ok(h.sama.some((x) => /gambar/.test(x)));
+});
+
+test('dua butir identik: tidak ada yang beda', () => {
+  const h = bandingkanDuaButir(poster('https://a/1.png', 'B'), poster('https://a/1.png', 'B'));
+  assert.deepEqual(h.beda, []);
+  assert.ok(h.sama.length >= 3);
+});
+
+test('satu punya gambar satu tidak: disebut jujur, bukan "sama"', () => {
+  const h = bandingkanDuaButir(poster('https://a/1.png', 'B'), poster('', 'B'));
+  assert.ok(h.beda.some((x) => /hanya satu yang punya gambar/.test(x)));
+});
+
+test('perbandingan input janggal tidak melempar', () => {
+  assert.deepEqual(bandingkanDuaButir(null, null).beda, []);
+  assert.ok(Array.isArray(bandingkanDuaButir({}, {}).sama));
 });

@@ -219,6 +219,37 @@ export function bandingkanDuplikat(daftarBaru, bank = []) {
 }
 
 /**
+ * Bandingkan dua butir: apa yang SAMA dan apa yang BEDA, dalam frasa pendek
+ * yang bisa langsung dibaca admin.
+ *
+ * Owner 2026-10-08: "bisa gak itu aku baca soal full biar tahu". Membaca
+ * penuh saja belum cukup cepat bila perbedaannya harus dicari mata sendiri
+ * di dua kartu; maka perbedaan utamanya disebut lebih dulu.
+ *
+ * @returns {{sama:string[], beda:string[]}}
+ */
+export function bandingkanDuaButir(a, b) {
+  const sama = [];
+  const beda = [];
+  const cek = (label, va, vb) => {
+    if (va === vb) { if (va) sama.push(label); }
+    else beda.push(label);
+  };
+  cek('teks perintah', normTeks(teksSoalDari(a)), normTeks(teksSoalDari(b)));
+  const ga = sidikJariGambar(a);
+  const gb = sidikJariGambar(b);
+  if (ga === gb) { if (ga) sama.push(`gambar (${ga.split(' ').length})`); }
+  else if (!ga && !gb) { /* keduanya tanpa gambar: bukan pembeda */ }
+  else if (!ga || !gb) beda.push('hanya satu yang punya gambar');
+  else beda.push(`gambar berbeda (${ga.split(' ').length} vs ${gb.split(' ').length})`);
+  cek('pilihan/pernyataan', sidikJariIsi(a), sidikJariIsi(b));
+  cek('kunci jawaban', sidikJariKunci(a), sidikJariKunci(b));
+  cek('mapel', String(a?.mataPelajaran || a?.mapel || ''), String(b?.mataPelajaran || b?.mapel || ''));
+  cek('materi', String(a?.materi || a?.bab || ''), String(b?.materi || b?.bab || ''));
+  return { sama, beda };
+}
+
+/**
  * Penjelasan manusiawi kenapa dua butir masuk grup yang sama — ditampilkan
  * di halaman supaya admin tidak diminta mempercayai mesin begitu saja.
  */
@@ -232,5 +263,5 @@ export function alasanDuplikat(soal) {
 export default {
   MIN_TEKS_DUPLIKAT, sidikJariGambar, sidikJariIsi, sidikJariKunci,
   kunciDuplikat, kunciDuplikatKetat, kunciKembarTanpaKunci, kunciTeksSaja,
-  bandingkanDuplikat, alasanDuplikat,
+  bandingkanDuplikat, bandingkanDuaButir, alasanDuplikat,
 };
