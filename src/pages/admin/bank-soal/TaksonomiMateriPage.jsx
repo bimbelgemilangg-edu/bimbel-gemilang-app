@@ -34,6 +34,11 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, writeBatch, setDoc } from 'firebase/firestore';
 import { BookMarked, Loader2, Sparkles, Plus, X, Save } from 'lucide-react';
+// 🔥 2026-10-08: draf bab baku Literasi & Bahasa Inggris. Datanya
+// menunjukkan keduanya paling butuh perapian (B.Inggris SMP: 90 butir di 81
+// nilai materi; Literasi SMA: 97 butir di 1 nilai). Drafnya hidup di util
+// supaya bisa diuji & dikoreksi tanpa menyentuh halaman ini.
+import { SEED_TAMBAHAN } from '../../../utils/taksonomiBaku';
 
 // ============================================================
 // SEED MATEMATIKA -- 12 kelas, dipatok ke Fase & Elemen CP resmi
@@ -100,6 +105,7 @@ const SEMUA_SEED = {
   'Bahasa Indonesia': SEED_BAHASA_INDONESIA,
   Sosiologi: SEED_SOSIOLOGI,
   Geografi: SEED_GEOGRAFI,
+  ...SEED_TAMBAHAN,
 };
 
 export default function TaksonomiMateriPage() {
