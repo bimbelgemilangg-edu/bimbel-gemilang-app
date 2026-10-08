@@ -46,6 +46,14 @@ import {
   BATAS_TAYANG_RUSAK,
   BATAS_TAYANG_DUPLIKAT,
 } from '../../../utils/pagarBersihkanSoal';
+// 🔥 2026-10-08: sidik jari duplikat yang SADAR GAMBAR. Detektor lama
+// membangun kunci dari TEKS SAJA, sehingga dua soal infografis dengan
+// kalimat perintah yang sama persis tetapi POSTER berbeda dituduh identik
+// dan salah satunya tercentang untuk dihapus (tangkapan layar owner:
+// grup "2 soal identik" berisi dua poster berbeda; dan "37 soal ditandai
+// dihapus" sudah terlanjur terjadi). Gambar, pilihan, pernyataan, dan
+// pasangan kini ikut masuk kunci.
+import { kunciDuplikat, alasanDuplikat } from '../../../utils/kunciDuplikatSoal';
 
 // Teks soal dibaca sadar-alias. Jalur tulis di repo ini tidak seragam:
 // Import Hasil Scan & Advanced Extractor menulis `soal`, Mesin Bank Soal &
@@ -56,15 +64,6 @@ const teksSoalDari = (s) => String(s?.soal || s?.teksSoal || s?.teks_soal || '')
 
 const TIPE_BUTUH_OPSI = ['pg_sederhana', 'pg_kompleks'];
 const TIPE_BUTUH_KUNCI = ['pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'numerik'];
-
-function normalisasiTeks(s) {
-  return String(s || '')
-    .toLowerCase()
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/[^\w\s]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function kunciKosong(kunci) {
   if (kunci == null) return true;
@@ -158,9 +157,10 @@ export default function BersihkanSoalPage() {
       // sama cuma "berapa hasilnya" tanpa angka spesifik di teks utama).
       const peta = new Map();
       kandidatDuplikat.forEach((s) => {
-        const teks = normalisasiTeks(teksSoalDari(s.data));
-        if (teks.length < 15) return;
-        const kunci = `${s.data.mataPelajaran || ''}|||${s.data.jenjang || ''}|||${s.data.tingkatKelas || ''}|||${teks}`;
+        // null = teks terlalu pendek untuk dituduh dengan aman. Kunci kini
+        // memuat gambar + isi per tipe, bukan teks perintah saja.
+        const kunci = kunciDuplikat(s.data);
+        if (!kunci) return;
         if (!peta.has(kunci)) peta.set(kunci, []);
         peta.get(kunci).push(s);
       });
@@ -368,10 +368,17 @@ export default function BersihkanSoalPage() {
             {grupDuplikat.length > 0 && (
               <div style={cardStyle}>
                 <div style={{ fontWeight: 800, fontSize: 14, color: '#1e293b', marginBottom: 4 }}>📋 Soal duplikat</div>
-                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 14 }}>1 soal per grup DISIMPAN otomatis (yang paling lengkap: kunci terverifikasi, ada pembahasan/gambar) -- sisanya tercentang untuk dihapus.</div>
+                <div style={{ fontSize: 11.5, color: '#9ca3af', marginBottom: 14 }}>
+                  1 soal per grup DISIMPAN otomatis (yang paling lengkap: kunci terverifikasi, ada pembahasan/gambar) -- sisanya tercentang untuk dihapus.
+                  Sejak 2026-10-08 dua butir hanya dianggap identik bila <b>teks, gambar, dan isi (pilihan/pernyataan/pasangan)</b> sama — soal infografis
+                  dengan perintah sama tetapi gambar berbeda TIDAK lagi dituduh duplikat.
+                </div>
                 {grupDuplikat.slice(0, 100).map((g) => (
                   <div key={g.kunci} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #f1f5f9' }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e', marginBottom: 6 }}>{g.anggota.length} soal identik -- {g.anggota[0].data.mataPelajaran || '(kosong)'} · {g.anggota[0].data.jenjang || '(kosong)'} · Kelas {g.anggota[0].data.tingkatKelas || 'Semua'}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#92400e', marginBottom: 6 }}>
+                      {g.anggota.length} soal identik -- {g.anggota[0].data.mataPelajaran || '(kosong)'} · {g.anggota[0].data.jenjang || '(kosong)'} · Kelas {g.anggota[0].data.tingkatKelas || 'Semua'}
+                      <span style={{ fontWeight: 400, color: '#a16207' }}> · dinilai identik karena {alasanDuplikat(g.anggota[0].data)}</span>
+                    </div>
                     {g.anggota.map((a) => (
                       <div key={a.id} style={rowStyle(tercentang.has(a.id))} onClick={() => a.id !== g.idDisimpan && toggleCentang(a.id)}>
                         {a.id === g.idDisimpan ? (
