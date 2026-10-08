@@ -3,7 +3,7 @@
 // 1) Impor JSON hasil AI / scan → auto-tag jenjang, kelas, mapel, bab, capaian
 // 2) Rapikan soal yang sudah terlanjur upload (scan ulang metadata)
 // 3) Preview kelompok rapi sebelum simpan
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import {
@@ -32,7 +32,13 @@ import {
 // soal yang jenjangnya 'SMA' (bukan 'SMA/MA') karena menganggapnya sudah
 // lengkap -- padahal nilai itulah yang membuat soal tak terjangkau
 // penyaring hierarki. Lihat src/utils/jenjangBaku.js.
-import { sudahBaku } from '../../../utils/jenjangBaku';
+import { sudahBaku, jenjangBaku } from '../../../utils/jenjangBaku';
+// 🔥 2026-10-08 (keluhan owner: "ketika aku tekan SD, mapel yang muncul
+// sesuai Kurikulum Merdeka — biologi, sosiologi gak muncul"): dropdown
+// mapel kini DITURUNKAN dari peta kurikulum per jenjang/kelas, bukan
+// daftar datar 22 nama. Ini perbaikan di AKAR: sebelumnya tidak ada yang
+// mencegah dokumen SD tertag Biologi.
+import { daftarMapelUntuk, petakanNamaMapel } from '../../../utils/kurikulumMerdeka';
 
 const COL = 'bank_soal';
 const BATCH_MAX = 400;
@@ -97,6 +103,23 @@ export default function MesinBankSoalPage() {
   const [progres, setProgres] = useState('');
   const [filterKey, setFilterKey] = useState('');
 
+  // Daftar mapel yang SAH untuk jenjang/kelas yang sedang dipilih.
+  // Jenjang dinormalkan dulu (form masih memakai kosakata pendek 'SMA').
+  const opsiMapel = useMemo(() => {
+    const jenjangBk = jenjangBaku(hint.jenjang).baku || '';
+    return daftarMapelUntuk({ jenjang: jenjangBk, kelas: hint.kelas });
+  }, [hint.jenjang, hint.kelas]);
+
+  // Bila jenjang/kelas berganti sehingga mapel pilihan jadi tidak sah,
+  // pilihan itu dilepas dan alasannya dikatakan — bukan diam-diam diganti.
+  useEffect(() => {
+    if (!hint.mapel) return;
+    if (!opsiMapel.some((m) => m.nama === hint.mapel)) {
+      setHint((h) => ({ ...h, mapel: '' }));
+      setPesan(`ℹ️ Mapel "${hint.mapel}" tidak diajarkan di ${hint.jenjang || 'jenjang'} kelas ${hint.kelas || '-'} menurut Kurikulum Merdeka, jadi pilihan dilepas. Silakan pilih ulang.`);
+    }
+  }, [opsiMapel, hint.mapel, hint.jenjang, hint.kelas]);
+
   const buckets = useMemo(() => kelompokkanSoal(preview), [preview]);
   const bucketsTampil = useMemo(() => {
     if (!filterKey) return buckets;
@@ -148,8 +171,11 @@ export default function MesinBankSoalPage() {
       const item = norm.soal || norm.question || norm;
       const tak = deteksiTaksonomiSoal(item, konteks);
       if (hint.mapel) {
-        tak.mapel = hint.mapel;
-        tak.kodeMapel = KATALOG_MAPEL.find((m) => m.nama === hint.mapel)?.kode || tak.kodeMapel;
+        // Selaraskan ke peta kurikulum SEBELUM ditulis, supaya pilihan admin
+        // yang tidak sah untuk jenjang itu tidak lolos ke dokumen.
+        const peta = petakanNamaMapel(hint.mapel, { jenjang: jenjangBaku(hint.jenjang).baku, kelas: hint.kelas });
+        tak.mapel = peta.nama;
+        tak.kodeMapel = peta.kode || KATALOG_MAPEL.find((m) => m.nama === peta.nama)?.kode || tak.kodeMapel;
       }
       if (hint.jenjang) tak.jenjang = hint.jenjang;
       if (hint.kelas) tak.kelas = hint.kelas;
@@ -355,9 +381,14 @@ export default function MesinBankSoalPage() {
                   onChange={(e) => setHint({ ...hint, mapel: e.target.value })}
                 >
                   <option value="">— deteksi otomatis —</option>
-                  {KATALOG_MAPEL.map((m) => (
-                    <option key={m.kode} value={m.nama}>{m.nama}</option>
+                  {opsiMapel.map((m) => (
+                    <option key={m.kode} value={m.nama}>
+                      {m.nama}{m.kelompok === 'pilihan' ? ' (pilihan)' : ''}
+                    </option>
                   ))}
+                  {hint.mapel && !opsiMapel.some((m) => m.nama === hint.mapel) && (
+                    <option value={hint.mapel}>{hint.mapel} (tidak sah di jenjang ini)</option>
+                  )}
                 </select>
               </label>
               <label style={st.label}>

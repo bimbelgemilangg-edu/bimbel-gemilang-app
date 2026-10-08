@@ -51,6 +51,11 @@
 // yang sedang kita ukur.
 
 import { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku } from './jenjangBaku.js';
+// 🔥 2026-10-08: keselarasan Kurikulum Merdeka ikut diaudit. Data lama bisa
+// saja tertag 'Biologi' untuk jenjang SD atau 'Matematika Wajib' (penamaan
+// K13) — identitasnya "ada" tapi tidak selaras dengan kurikulum yang dipakai
+// sekolah, jadi tetap perlu ditemukan dan dibereskan.
+import { peringatanKeselarasanKurikulum } from './kurikulumMerdeka.js';
 
 export { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku };
 
@@ -192,6 +197,14 @@ export function periksaIdentitas(dok) {
 
   if (!id.kelas) hilang.push('kelas');
 
+  // Keselarasan kurikulum: TIDAK dihitung sebagai "hilang" (identitasnya
+  // ada), tapi dilaporkan terpisah supaya bisa dibereskan tanpa menakutkan.
+  const kurikulum = peringatanKeselarasanKurikulum({
+    mapel: id.mapel,
+    jenjang: id.jenjangBaku || id.jenjang,
+    kelas: id.kelas,
+  });
+
   // `lengkap` mengabaikan alias/kosakata: yang ditanya "informasinya ada?"
   const lengkap = Boolean(id.mapel) && Boolean(id.jenjangDikenal) && Boolean(id.materi || id.materiCadangan);
   // `terjangkau` menuntut bentuk yang benar-benar dibaca penyaring.
@@ -199,7 +212,7 @@ export function periksaIdentitas(dok) {
     && Boolean(id.jenjangBaku) && !id.jenjangDiubah
     && Boolean(id.materi);
 
-  return { identitas: id, lengkap, terjangkau, hilang, takBaku, hanyaAlias };
+  return { identitas: id, lengkap, terjangkau, hilang, takBaku, hanyaAlias, kurikulum };
 }
 
 // ------------------------------------------------------------
@@ -484,6 +497,7 @@ export function auditBankSoal(daftar, opsi = {}) {
   const butirRusak = [];
   const butirCekManual = [];
   const petaKelompok = new Map();
+  const daftarTakSelarasKurikulum = [];
   let identitasLengkap = 0; // informasi ada (walau mungkin tak terbaca penyaring)
   let tersembunyi = 0;      // lengkap tapi tak terjangkau hierarki tentor
 
@@ -532,6 +546,17 @@ export function auditBankSoal(daftar, opsi = {}) {
       });
     }
     if (hasil.lengkap && !hasil.terjangkau) tersembunyi += 1;
+    if (hasil.kurikulum.length) {
+      cacah.kurikulum += 1;
+      daftarTakSelarasKurikulum.push({
+        id,
+        pratinjau,
+        mapel: idn.mapel || '(kosong)',
+        jenjang: idn.jenjang || '(kosong)',
+        kelas: idn.kelas || '-',
+        pesan: hasil.kurikulum,
+      });
+    }
     if (kesehatan.rusak.length) {
       butirRusak.push({ id, pratinjau, tipe: idn.tipe || 'pg_sederhana', alasan: kesehatan.rusak });
     } else if (kesehatan.perluDicek.length) {
@@ -616,6 +641,7 @@ export function auditBankSoal(daftar, opsi = {}) {
     },
     mapel: [...petaMapel.entries()].map(([nama, jumlah]) => ({ nama, jumlah })).sort((a, b) => b.jumlah - a.jumlah),
     tanpaIdentitas,
+    takSelarasKurikulum: daftarTakSelarasKurikulum,
     butirRusak,
     butirCekManual,
     perKelompok,
@@ -630,6 +656,7 @@ export function auditBankSoal(daftar, opsi = {}) {
       terjangkau: total - tanpaIdentitas.length,
       persenTerjangkau: persen(total - tanpaIdentitas.length),
       tersembunyi,
+      takSelarasKurikulum: cacah.kurikulum,
       rusak: butirRusak.length,
       perluDicek: butirCekManual.length,
       materiLewatBab: cacah.materiLewatBab,
