@@ -201,6 +201,10 @@ export const GAYA_NASKAH = `
 .naskah .nsk-identitas { display: flex; gap: 8mm; font-size: 10.5px; margin-top: 2.5mm; }
 .naskah .nsk-identitas span { border-bottom: 0.35mm solid #000; min-width: 45mm; padding-bottom: 2.5mm; }
 .naskah .nsk-peringatan { border: 0.7mm solid #000; padding: 1.5mm 3mm; font-size: 11.5px; font-weight: 800; text-align: center; margin-bottom: 3mm; letter-spacing: 0.5px; break-inside: avoid; }
+/* 🔥 BARU (2026-10-08): kepala seksi subtes di naskah try out (lihat
+   seksiNaskahTryOut.js) -- pita tipis berbingkai, tidak boleh terbelah
+   kolom, dan terpisah jelas dari butir pertama seksinya. */
+.naskah .nsk-seksi { border: 0.4mm solid #000; padding: 1mm 2.5mm; font-size: 11.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; margin: 0 0 2.5mm; break-inside: avoid; }
 .naskah .nsk-butir { margin: 0 0 4mm; break-inside: avoid; display: flex; gap: 2mm; }
 .naskah .nsk-butir > .nsk-no { flex: 0 0 5.5mm; font-weight: 800; text-align: left; }
 .naskah .nsk-butir > .nsk-isi { flex: 1 1 auto; min-width: 0; }

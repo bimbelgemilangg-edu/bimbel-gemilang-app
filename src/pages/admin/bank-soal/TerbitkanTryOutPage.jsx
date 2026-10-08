@@ -53,8 +53,17 @@ import { resetSesiTryOut } from '../../../services/resetSesiTryOut.js';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
-  Pencil, RotateCcw,
+  Pencil, RotateCcw, Printer,
 } from 'lucide-react';
+// 🔥 BARU (2026-10-08, permintaan owner sambil mengirim tangkapan layar
+// halaman ini: "selain terbit ke siswa aku mau kasih tombol print soal
+// yang udah di tata sesuai kanan kiri seperti sebelumnya kita diskusikan
+// tinggal print"): tombol 🖨️ di kartu paket terbit & di panel keranjang
+// membuka dialog naskah model ujian (dua kolom rapi) -- mesin naskahnya
+// sama dengan halaman guru, kepala seksi subtes dari util murni yang
+// diuji otomatis (utils/seksiNaskahTryOut.js).
+import DialogCetakNaskah from '../../../components/DialogCetakNaskah';
+import { bangunSubtesKeranjang } from '../../../utils/seksiNaskahTryOut';
 
 const inputStyle = { padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none' };
 const btnPrimary = {
@@ -549,6 +558,11 @@ export default function TerbitkanTryOutPage() {
   // PgKompleks/BenarSalah), biar admin lihat PERSIS gimana tampilan
   // yang bakal dilihat siswa, bukan cuma potongan teks.
   const [showPreview, setShowPreview] = useState(false);
+  // 🔥 BARU (2026-10-08): input dialog cetak naskah (bentuk paket). null =
+  // dialog tertutup. Diisi dari kartu paket terbit (paket apa adanya) atau
+  // dari panel keranjang (soal keranjang + struktur subtes yang SAMA dengan
+  // yang akan disimpan tombol Terbitkan).
+  const [cetakInput, setCetakInput] = useState(null);
   // 🔥 BARU (masalah nyata ditemukan): panel keranjang dulu SELALU
   // full terbuka (position fixed, isi semua form) begitu ada 1 soal
   // aja di keranjang -- nutup sebagian besar layar, bikin susah lanjut
@@ -853,19 +867,11 @@ export default function TerbitkanTryOutPage() {
       // 'mapel' (lama, kelompokkan per mataPelajaran, cocok gaya UTBK)
       // atau 'soal' (BARU, 1 subtes = 1 soal, buat kasus "X menit per
       // soal" yang gak bisa direpresentasikan lewat granularitas mapel).
-      const subtes = modeTimer === 'per-subtes'
-        ? (granularitasSubtes === 'soal'
-            ? soalDipilih.map((s, i) => ({
-                nama: `Soal ${i + 1}`,
-                durasiMenit: Number(durasiPerSoal) || 3,
-                soalIds: [s.id],
-              }))
-            : daftarMapelDiKeranjang.map((mapel) => ({
-                nama: mapel,
-                durasiMenit: Number(durasiSubtes[mapel]) || 30,
-                soalIds: soalDipilih.filter((s) => (s.mataPelajaran || 'Umum') === mapel).map((s) => s.id),
-              })))
-        : [];
+      // 🔥 BARU (2026-10-08): rumus ini dipindah ke util murni
+      // bangunSubtesKeranjang (utils/seksiNaskahTryOut.js) supaya tombol
+      // cetak di panel keranjang menampilkan struktur yang SAMA persis
+      // dengan yang disimpan tombol ini, dan rumusnya bisa diuji Node.
+      const subtes = bangunSubtesKeranjang(soalDipilih, { modeTimer, granularitasSubtes, durasiPerSoal, durasiSubtes });
 
       const payload = {
         judul: judulTryOut.trim(),
@@ -1035,6 +1041,19 @@ export default function TerbitkanTryOutPage() {
                     </div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 700, color: st.warna, whiteSpace: 'nowrap' }}>{st.label}</span>
+                  {/* 🔥 BARU (2026-10-08, permintaan owner: "selain terbit
+                      ke siswa aku mau kasih tombol print soal yang udah
+                      di tata ... tinggal print"): satu klik dari kartu
+                      paket terbit membuka dialog naskah model ujian dua
+                      kolom -- tidak perlu lagi ke halaman guru lalu pilih
+                      ulang soal dari bank. */}
+                  <button
+                    onClick={() => setCetakInput(p)}
+                    title="Cetak naskah paket ini (dua kolom rapi, tinggal pilih kertas lalu print)"
+                    style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #bfdbfe', background: '#eff6ff', cursor: 'pointer', color: '#1d4ed8', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <Printer size={12} /> Print
+                  </button>
                   {/* 🔥 BARU (2026-10-08): jawab keluhan owner "cara edit
                       tryout yang terbit gimana?" & "mengembalikan soal dan
                       poin XP anak biar bisa kerjain ulang" -- dua tombol
@@ -1434,7 +1453,30 @@ export default function TerbitkanTryOutPage() {
               {!keranjangDibuka && (
                 <span style={{ fontSize: 11.5, color: '#9ca3af' }}>-- klik buat atur & terbitkan</span>
               )}
-              <button onClick={(e) => { e.stopPropagation(); setShowPreview(true); }} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#0e7490', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // 🔥 BARU (2026-10-08): cetak naskah LANGSUNG dari keranjang,
+                  // sebelum maupun tanpa menerbitkan -- struktur subtes diambil
+                  // dari rumus yang SAMA dengan tombol Terbitkan supaya yang
+                  // dilihat di pratinjau cetak = yang akan diterima siswa.
+                  const soalDipilih = Array.from(keranjang.values());
+                  setCetakInput({
+                    judul: judulTryOut.trim() || 'Naskah Soal (belum diterbitkan)',
+                    targetKelas,
+                    targetKategori,
+                    daftarSoal: soalDipilih,
+                    modeTimer,
+                    subtes: bangunSubtesKeranjang(soalDipilih, { modeTimer, granularitasSubtes, durasiPerSoal, durasiSubtes }),
+                    soalAcak,
+                  });
+                }}
+                title="Cetak naskah isi keranjang (dua kolom rapi, tinggal pilih kertas lalu print)"
+                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#1d4ed8', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+              >
+                <Printer size={14} /> Print Naskah
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setShowPreview(true); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#0e7490', background: 'none', border: 'none', cursor: 'pointer' }}>
                 👁️ Preview
               </button>
               <button onClick={(e) => { e.stopPropagation(); kosongkanKeranjang(); }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -1735,6 +1777,15 @@ export default function TerbitkanTryOutPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 🔥 BARU (2026-10-08): dialog cetak naskah model ujian -- dibuka
+          dari tombol 🖨️ Print di kartu paket terbit & tombol Print Naskah
+          di panel keranjang. Komponennya tidak menyimpan apa pun ke
+          Firestore; murni menata (dua kolom, ukuran gambar, kepala seksi
+          subtes, nomor halaman) lalu mencetak lewat dialog browser. */}
+      {cetakInput && (
+        <DialogCetakNaskah input={cetakInput} onClose={() => setCetakInput(null)} />
       )}
     </div>
   );
