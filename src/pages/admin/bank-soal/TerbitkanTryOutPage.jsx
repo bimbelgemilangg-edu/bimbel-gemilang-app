@@ -42,9 +42,18 @@ import RenderTable from '../../../components/RenderTable';
 // tinggal di src/utils/keranjangTryOut.js biar bisa di-test otomatis
 // (tests/keranjangTryOut.test.mjs) dan dipakai tombol BARU "＋ 1 Folder".
 import { tipeDidukung, hitungRincianMasukKeranjang, teksRincianKeranjang } from '../../../utils/keranjangTryOut';
+// 🔥 BARU (2026-10-08, permintaan owner "cara edit tryout yang terbit
+// gimana?" & "mengembalikan soal dan poin XP anak biar bisa kerjain
+// ulang"): MODE EDIT paket terbit + panel RESET SESI. Logika murninya
+// (tebak granularitas subtes, konversi ISO ke input jadwal, kalimat
+// konfirmasi reset) tinggal di util yang di-test otomatis.
+import { deteksiGranularitasSubtes, isoKeDatetimeLocal } from '../../../utils/logikaSubtesTryOut.js';
+import { teksKonfirmasiResetSesi } from '../../../utils/pemulihanXPTryOut.js';
+import { resetSesiTryOut } from '../../../services/resetSesiTryOut.js';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
+  Pencil, RotateCcw,
 } from 'lucide-react';
 
 const inputStyle = { padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none' };
@@ -148,7 +157,9 @@ export default function TerbitkanTryOutPage() {
   }, []);
 
 
-  const kosongkanKeranjang = () => setKeranjang(new Map());
+  // 🔥 BARU: dibungkus useCallback (dulu fungsi biasa) biar boleh masuk
+  // deps useCallback lain (batalkanEdit) tanpa peringatan react-hooks.
+  const kosongkanKeranjang = useCallback(() => setKeranjang(new Map()), []);
 
   // 🔥 BARU: 4 tab, sama pola kayak TerbitkanKuisPage.jsx -- keranjang
   // yang SAMA dipakai lintas tab, biar bisa campur soal dari folder +
@@ -558,6 +569,24 @@ export default function TerbitkanTryOutPage() {
   }, []);
   const [loadingDaftarTerbit, setLoadingDaftarTerbit] = useState(true);
 
+  // ── MODE EDIT PAKET TERBIT (BARU 2026-10-08) ── sebelumnya gak ada
+  // cara sama sekali buat memperbaiki paket yang SUDAH terbit (cuma
+  // nonaktifkan/hapus) -- padahal kebutuhan nyata: jadwal meleset,
+  // durasi per soal salah isi, judul typo. Dulu satu-satunya jalan
+  // hapus & terbitkan ulang, dan HASIL SISWA yang udah ngerjain ikut
+  // kehilangan paketnya. Sekarang tombol "✏️ Edit" mengisi form ini
+  // dengan isi paket, dan tombol terbitkan berubah jadi "Simpan
+  // Perubahan" (updateDoc ke dokumen yang sama, bukan addDoc baru).
+  const [editPaketId, setEditPaketId] = useState(null);
+  const [editJudulAsli, setEditJudulAsli] = useState('');
+  // ── PANEL RESET SESI (BARU 2026-10-08) ── daftar sesi siswa per
+  // paket + tombol reset biar siswa bisa kerjain ulang dari nol sambil
+  // XP lama ditarik balik biar gak dobel (services/resetSesiTryOut.js).
+  const [resetPaket, setResetPaket] = useState(null);
+  const [daftarSesiReset, setDaftarSesiReset] = useState([]);
+  const [loadingSesiReset, setLoadingSesiReset] = useState(false);
+  const [sedangResetSesi, setSedangResetSesi] = useState(null); // id sesi | 'semua'
+
   // 🔥 FIX (aturan react-hooks/set-state-in-effect): fetch daftar terbit
   // didefinisikan DI DALAM effect (pola yang sama dengan Settings.jsx yang
   // lolos aturan ini), dan muat ulang manual dilakukan lewat counter
@@ -672,6 +701,140 @@ export default function TerbitkanTryOutPage() {
     })();
   }, []);
 
+  // ---------------- MODE EDIT: isi form dari paket terbit ----------------
+  const mulaiEditPaket = useCallback((p) => {
+    setEditPaketId(p.id);
+    setEditJudulAsli(p.judul || '');
+    setJudulTryOut(p.judul || '');
+    setTargetKelas(p.targetKelas || 'Semua');
+    setTargetKategori(p.targetKategori || 'Semua');
+    setPakaiJadwalBuka(!!p.waktuBuka);
+    setWaktuBuka(isoKeDatetimeLocal(p.waktuBuka));
+    setPakaiDeadline(!!p.waktuTutup);
+    setWaktuTutup(isoKeDatetimeLocal(p.waktuTutup));
+    setModeTimer(p.modeTimer || 'total');
+    setDurasiTotalMenit(p.durasiTotalMenit || 60);
+    // Tebak granularitas dari bentuk subtes aslinya (util teruji) biar
+    // radio "Per soal individual" ter-centang sesuai kondisi paket.
+    const gran = deteksiGranularitasSubtes(p);
+    setGranularitasSubtes(gran || 'mapel');
+    if (gran === 'soal') setDurasiPerSoal(p.subtes?.[0]?.durasiMenit || 3);
+    const durMap = {};
+    (p.subtes || []).forEach((sub) => {
+      if ((sub.soalIds || []).length !== 1) durMap[sub.nama] = sub.durasiMenit ?? 30;
+    });
+    setDurasiSubtes(durMap);
+    setAntiCheatAktif(p.antiCheatAktif !== false);
+    setWajibKamera(!!p.wajibKamera);
+    setSoalAcak(p.soalAcak !== false);
+    setTentorPublish(p.tentorId || '');
+    setKeranjang(new Map((p.daftarSoal || []).map((soal) => [soal.id, soal])));
+    setKeranjangDibuka(true);
+    setHasil(null);
+    setShowPreview(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const batalkanEdit = useCallback(() => {
+    setEditPaketId(null);
+    setEditJudulAsli('');
+    kosongkanKeranjang();
+    setJudulTryOut('');
+    setHasil(null);
+  }, [kosongkanKeranjang]);
+
+  // ---------------- RESET SESI: biar siswa bisa kerjain ulang ----------------
+  const bukaResetSesi = useCallback(async (p) => {
+    setResetPaket(p);
+    setDaftarSesiReset([]);
+    setLoadingSesiReset(true);
+    try {
+      const [snapSesi, snapSiswa] = await Promise.all([
+        getDocs(query(collection(db, 'tryout_sesi'), where('paketId', '==', p.id))),
+        getDocs(collection(db, 'students')),
+      ]);
+      const namaPerStudentId = {};
+      snapSiswa.docs.forEach((d) => {
+        const s = { id: d.id, ...d.data() };
+        namaPerStudentId[s.studentId || s.id] = s.nama || s.studentId || s.id;
+      });
+      const list = snapSesi.docs.map((d) => ({ id: d.id, ...d.data() }));
+      list.sort((a, b) => ((b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0)));
+      setDaftarSesiReset(list.map((s) => ({ ...s, namaSiswa: namaPerStudentId[s.studentId] || s.studentId || '?' })));
+    } catch (e) {
+      console.error('Gagal memuat daftar sesi:', e);
+      alert('Gagal memuat daftar sesi: ' + e.message);
+    }
+    setLoadingSesiReset(false);
+  }, []);
+
+  // Inti reset satu sesi (TANPA konfirmasi) -- dipakai tombol per-siswa
+  // maupun tombol massal. Urutan kritis (XP -> hapus sesi -> izin)
+  // tinggal di services/resetSesiTryOut.js.
+  const lakukanResetSesi = useCallback(async (sesi) => {
+    const hasilReset = await resetSesiTryOut({
+      paketId: resetPaket.id,
+      sesiId: sesi.id,
+      studentId: sesi.studentId,
+      xpFinal: sesi.xpFinal || 0,
+    });
+    setDaftarSesiReset((lama) => lama.filter((x) => x.id !== sesi.id));
+    return hasilReset;
+  }, [resetPaket]);
+
+  const resetSatuSesi = useCallback(async (sesi) => {
+    if (!resetPaket) return;
+    const deadlineLewat = !!resetPaket.waktuTutup && new Date() > new Date(resetPaket.waktuTutup);
+    if (!window.confirm(teksKonfirmasiResetSesi({
+      namaSiswa: sesi.namaSiswa, xpFinal: sesi.xpFinal || 0, statusSesi: sesi.status, deadlineLewat,
+    }))) return;
+    setSedangResetSesi(sesi.id);
+    try {
+      const { xpDikembalikan, izinSampai } = await lakukanResetSesi(sesi);
+      catatAudit('tryout.sesi.reset', {
+        kategori: KATEGORI.SISWA,
+        target: `${sesi.namaSiswa} • ${resetPaket.judul}`,
+        detail: { paketId: resetPaket.id, sesiId: sesi.id, xpDikembalikan, izinSampai },
+      });
+      alert(`✅ ${sesi.namaSiswa} bisa kerjain ulang dari soal nomor 1${xpDikembalikan > 0 ? ` (XP lama ${xpDikembalikan} sudah ditarik balik biar gak dobel)` : ''}, berlaku sampai ${new Date(izinSampai).toLocaleString('id-ID')}.`);
+    } catch (e) {
+      console.error('Gagal reset sesi:', e);
+      alert('Gagal reset sesi: ' + e.message);
+    }
+    setSedangResetSesi(null);
+  }, [resetPaket, lakukanResetSesi]);
+
+  const resetSemuaSesi = useCallback(async () => {
+    if (!resetPaket || daftarSesiReset.length === 0) return;
+    const totalXp = daftarSesiReset.reduce((a, s) => a + Math.max(0, Number(s.xpFinal) || 0), 0);
+    if (!window.confirm(
+      `Reset SEMUA ${daftarSesiReset.length} sesi try out "${resetPaket.judul}"?\n\n`
+      + '• Semua siswa yang terdaftar di daftar ini bisa kerjain ulang dari soal nomor 1 (izin 3 jam menembus deadline diberi otomatis).\n'
+      + `• Total ${totalXp} XP dari pengerjaan lama ditarik balik biar gak dobel.\n`
+      + '• Tindakan ini TIDAK bisa dibatalkan.'
+    )) return;
+    setSedangResetSesi('semua');
+    let ok = 0; let gagal = 0;
+    for (const sesi of daftarSesiReset) {
+      try {
+        await lakukanResetSesi(sesi);
+        ok += 1;
+      } catch (e) {
+        console.error('Gagal reset sesi', sesi.id, e);
+        gagal += 1;
+      }
+    }
+    catatAudit('tryout.sesi.reset.massal', {
+      kategori: KATEGORI.SISWA,
+      target: resetPaket.judul,
+      detail: { paketId: resetPaket.id, berhasil: ok, gagal },
+    });
+    alert(gagal === 0
+      ? `✅ ${ok} sesi direset -- siswa bersangkutan bisa kerjain ulang.`
+      : `Selesai: ${ok} berhasil, ${gagal} gagal (cek koneksi, ulang lagi kalau perlu).`);
+    setSedangResetSesi(null);
+  }, [resetPaket, daftarSesiReset, lakukanResetSesi]);
+
   const handleTerbitkan = async () => {
     if (!judulTryOut.trim()) return alert('Judul try out wajib diisi.');
     if (keranjang.size === 0) return alert('Keranjang masih kosong -- pilih minimal 1 soal dulu.');
@@ -733,6 +896,56 @@ export default function TerbitkanTryOutPage() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
+
+      // ── MODE EDIT (BARU 2026-10-08): simpan ke dokumen yang SAMA ──
+      // bukan addDoc paket baru. Konsekuensi yang dijelaskan jujur ke
+      // admin lewat konfirmasi: siswa yang BELUM mulai melihat susunan
+      // & jadwal baru; hasil siswa yang SUDAH selesai TIDAK dihitung
+      // ulang; siswa yang SEDANG mengerjakan jawabannya aman (posisi
+      // subtesnya disesuaikan otomatis oleh TryOutView.jsx).
+      if (editPaketId) {
+        let jumlahBerjalan = 0;
+        try {
+          const snapBerjalan = await getDocs(query(
+            collection(db, 'tryout_sesi'),
+            where('paketId', '==', editPaketId),
+            where('status', '==', 'berjalan'),
+          ));
+          jumlahBerjalan = snapBerjalan.size;
+        } catch (eCek) {
+          console.warn('Gagal cek sesi berjalan (dilanjutkan tanpa angka):', eCek);
+        }
+        const peringatanBerjalan = jumlahBerjalan > 0
+          ? `\n\n⚠️ ${jumlahBerjalan} siswa SEDANG mengerjakan sekarang. Jawaban tersimpan mereka aman; posisi subtesnya disesuaikan otomatis oleh aplikasi.`
+          : '';
+        if (!window.confirm(
+          `Simpan perubahan ke try out terbit "${editJudulAsli}"?\n\n`
+          + 'Siswa yang belum mulai akan melihat susunan & jadwal yang baru. '
+          + 'Hasil siswa yang sudah selesai tetap tersimpan apa adanya (tidak dihitung ulang).'
+          + peringatanBerjalan
+        )) {
+          setMenerbitkan(false);
+          return;
+        }
+        const payloadUpdate = { ...payload };
+        delete payloadUpdate.createdAt; // createdAt paket lama jangan tertimpa
+        await updateDoc(doc(db, 'tryout_paket', editPaketId), payloadUpdate);
+        catatAudit('tryout.paket.edit', {
+          kategori: KATEGORI.KONTEN,
+          target: judulTryOut.trim(),
+          detail: {
+            paketId: editPaketId, judulLama: editJudulAsli, totalSoal: soalDipilih.length, modeTimer,
+          },
+        });
+        setHasil({ success: true, message: `Perubahan try out "${judulTryOut.trim()}" tersimpan ke paket yang sudah terbit.` });
+        setEditPaketId(null);
+        setEditJudulAsli('');
+        setJudulTryOut('');
+        kosongkanKeranjang();
+        muatDaftarTerbit();
+        setMenerbitkan(false);
+        return;
+      }
 
       const docRef = await addDoc(collection(db, 'tryout_paket'), payload);
 
@@ -822,6 +1035,24 @@ export default function TerbitkanTryOutPage() {
                     </div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 700, color: st.warna, whiteSpace: 'nowrap' }}>{st.label}</span>
+                  {/* 🔥 BARU (2026-10-08): jawab keluhan owner "cara edit
+                      tryout yang terbit gimana?" & "mengembalikan soal dan
+                      poin XP anak biar bisa kerjain ulang" -- dua tombol
+                      ini dulu tidak ada sama sekali. */}
+                  <button
+                    onClick={() => mulaiEditPaket(p)}
+                    title="Edit judul, jadwal, mode timer, susunan soal paket terbit ini"
+                    style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #c7d2fe', background: '#eef2ff', cursor: 'pointer', color: '#4338ca', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <Pencil size={12} /> Edit
+                  </button>
+                  <button
+                    onClick={() => bukaResetSesi(p)}
+                    title="Lihat siapa saja yang sudah/ sedang mengerjakan; reset supaya bisa kerjain ulang + XP lama ditarik balik"
+                    style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #fde68a', background: '#fffbeb', cursor: 'pointer', color: '#b45309', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <RotateCcw size={12} /> Kerjain Ulang
+                  </button>
                   {/* Ganti/hubungkan tentor untuk paket terbit */}
                   <select
                     value={p.tentorId || ''}
@@ -1214,6 +1445,15 @@ export default function TerbitkanTryOutPage() {
 
             {keranjangDibuka && (
               <>
+            {editPaketId && (
+              <div style={{ background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: '10px 12px', marginBottom: 10, fontSize: 12.5, color: '#3730a3', lineHeight: 1.6 }}>
+                <div style={{ fontWeight: 800, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Pencil size={14} /> MODE EDIT: paket terbit "{editJudulAsli}"
+                </div>
+                Perubahan disimpan ke paket YANG SAMA (bukan try out baru). Siswa yang sudah selesai tidak dihitung ulang; siswa yang belum mulai melihat susunan & jadwal yang baru.
+                <button onClick={batalkanEdit} style={{ marginLeft: 8, fontSize: 11, padding: '3px 8px', borderRadius: 6, border: '1px solid #c7d2fe', background: 'white', cursor: 'pointer', color: '#4338ca' }}>Batal edit</button>
+              </div>
+            )}
             <input
               placeholder="Judul try out (mis. Try Out TKA Matematika Paket 1)"
               value={judulTryOut}
@@ -1350,10 +1590,24 @@ export default function TerbitkanTryOutPage() {
               </select>
               <span style={{ fontSize:10.5, color:'#94a3b8' }}>Tentor bisa memantau & menilai try out ini dari dashboardnya</span>
             </div>
-            <button onClick={handleTerbitkan} disabled={menerbitkan} style={btnPrimary}>
-              {menerbitkan ? <Loader2 size={15} className="spin" /> : <Send size={15} />}
-              {menerbitkan ? 'Menerbitkan...' : `Terbitkan ${keranjang.size} Soal ke Siswa`}
+            <button
+              onClick={handleTerbitkan}
+              disabled={menerbitkan}
+              style={editPaketId ? { ...btnPrimary, backgroundColor: '#4338ca' } : btnPrimary}
+            >
+              {menerbitkan ? <Loader2 size={15} className="spin" /> : (editPaketId ? <CheckCircle2 size={15} /> : <Send size={15} />)}
+              {menerbitkan
+                ? (editPaketId ? 'Menyimpan perubahan...' : 'Menerbitkan...')
+                : (editPaketId ? `Simpan Perubahan (${keranjang.size} soal)` : `Terbitkan ${keranjang.size} Soal ke Siswa`)}
             </button>
+            {editPaketId && (
+              <button
+                onClick={batalkanEdit}
+                style={{ ...btnPrimary, backgroundColor: '#fff', color: '#4338ca', border: '1px solid #c7d2fe', marginLeft: 8 }}
+              >
+                Batal edit
+              </button>
+            )}
               </>
             )}
           </div>
@@ -1418,6 +1672,66 @@ export default function TerbitkanTryOutPage() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 BARU (2026-10-08): PANEL RESET SESI -- jawaban keluhan owner
+          "mengembalikan soal dan poin XP dll anak ke semula biar bisa
+          kerjain ulang". Per siswa: reset = XP lama ditarik balik
+          secukupnya + sesi dihapus + izin 3 jam menembus deadline.
+          Ada juga tombol massal buat kasus "seperti banyak bug,
+          kembalikan semua anak". */}
+      {resetPaket && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 110, display: 'flex', justifyContent: 'center', padding: '24px 16px', overflowY: 'auto' }}>
+          <div style={{ background: 'white', borderRadius: 16, maxWidth: 640, width: '100%', height: 'fit-content', padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>🔄 Sesi pengerjaan: {resetPaket.judul}</div>
+              <button onClick={() => setResetPaket(null)} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Tutup</button>
+            </div>
+            <p style={{ fontSize: 11.5, color: '#64748b', lineHeight: 1.6, marginBottom: 12 }}>
+              Reset = jawaban lama dibuang, XP lama ditarik balik secukupnya (biar gak dobel),
+              dan siswa diberi izin 3 jam mengerjakan ulang dari soal nomor 1 -- tetap bisa walau
+              deadline paket sudah lewat. Siswa lain tidak kesenggol.
+            </p>
+            {loadingSesiReset ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#64748b', padding: '12px 0' }}><Loader2 size={16} className="spin" /> Memuat daftar sesi...</div>
+            ) : daftarSesiReset.length === 0 ? (
+              <div style={{ fontSize: 12.5, color: '#9ca3af', padding: '8px 0 4px' }}>Belum ada siswa yang mulai mengerjakan try out ini.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 320, overflowY: 'auto', marginBottom: 12 }}>
+                {daftarSesiReset.map((sesi) => (
+                  <div key={sesi.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: '#f9fafb' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{sesi.namaSiswa}</div>
+                      <div style={{ fontSize: 11, color: '#9ca3af' }}>
+                        {sesi.status === 'selesai'
+                          ? `Selesai · skor ${sesi.totalSkorPersen ?? 0}% · ${sesi.xpFinal ?? 0} XP`
+                          : 'Sedang berjalan / belum dikumpulkan'}
+                        {sesi.createdAt?.toMillis?.() ? ` · mulai ${new Date(sesi.createdAt.toMillis()).toLocaleString('id-ID')}` : ''}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => resetSatuSesi(sesi)}
+                      disabled={sedangResetSesi !== null}
+                      style={{ fontSize: 11, padding: '5px 10px', borderRadius: 6, border: '1px solid #fde68a', background: '#fffbeb', cursor: sedangResetSesi !== null ? 'wait' : 'pointer', color: '#b45309', whiteSpace: 'nowrap', opacity: sedangResetSesi !== null && sedangResetSesi !== sesi.id ? 0.5 : 1 }}
+                    >
+                      {sedangResetSesi === sesi.id ? 'Mereset...' : '🔄 Reset & izinkan ulang'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button
+                onClick={resetSemuaSesi}
+                disabled={sedangResetSesi !== null || daftarSesiReset.length === 0}
+                style={{ ...btnPrimary, backgroundColor: '#b45309', opacity: (sedangResetSesi !== null || daftarSesiReset.length === 0) ? 0.5 : 1 }}
+              >
+                {sedangResetSesi === 'semua' ? <Loader2 size={14} className="spin" /> : <RotateCcw size={14} />}
+                {sedangResetSesi === 'semua' ? 'Mereset semua...' : `Reset semua sesi (${daftarSesiReset.length})`}
+              </button>
             </div>
           </div>
         </div>

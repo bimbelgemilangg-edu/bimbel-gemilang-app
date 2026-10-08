@@ -10,13 +10,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
 } from 'lucide-react';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
+// 🔥 BARU (2026-10-08): urutan reset sesi (tarik XP -> hapus sesi ->
+// izin nembus deadline) tinggal SATU kali di layanan ini, dipakai juga
+// halaman Terbitkan Try Out.
+import { resetSesiTryOut } from '../../../services/resetSesiTryOut.js';
 import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
@@ -170,42 +174,22 @@ export default function HasilTryOutAdminPage() {
 
     setSedangIzinkanUlang(studentId);
     try {
-      // 1. Tarik balik XP dari hasil lama (kalau ada) -- SELISIHNYA
-      //    doang, bukan reset ke 0, biar aktivitas lain siswa gak
-      //    ikut kesenggol.
-      const xpLama = item.sesi.xpFinal || 0;
-      if (xpLama !== 0) {
-        const progRef = doc(db, 'siswa_progress', studentId);
-        const snapProg = await getDoc(progRef);
-        const existing = snapProg.exists() ? snapProg.data() : {};
-        const { xpMingguIni, xpMingguIniKunci } = tambahXpMingguan(existing.xpMingguIni, existing.xpMingguIniKunci, -xpLama);
-        await updateDoc(progRef, {
-          xp: Math.max(0, (existing.xp || 0) - xpLama),
-          xpMingguIni: Math.max(0, xpMingguIni),
-          xpMingguIniKunci,
-          updatedAt: serverTimestamp(),
-        });
-      }
-
-      // 2. Hapus sesi lama yang bermasalah -- PERMANEN.
-      await deleteDoc(doc(db, 'tryout_sesi', item.sesi.id));
-
-      // 3. Kasih izin ulang khusus, 3 jam dari sekarang -- ini yang
-      //    bikin TryOutView.jsx ngizinin dia mulai lagi walau deadline
-      //    paket udah lewat (lihat pengecekan di TryOutView.jsx).
-      const waktuBerlakuSampai = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
-      await setDoc(doc(db, 'tryout_izin_ulang', `${paketTerpilih.id}_${studentId}`), {
+      // 🔥 BARU (2026-10-08): urutan kritis (tarik XP secukupnya ->
+      // hapus sesi PERMANEN -> kasih izin nembus deadline 3 jam) kini
+      // tinggal SATU kali di services/resetSesiTryOut.js -- dipakai
+      // juga oleh tombol reset di halaman Terbitkan Try Out, biar gak
+      // ada dua versi urutan yang pelan-pelan berbeda.
+      const { xpDikembalikan, izinSampai } = await resetSesiTryOut({
         paketId: paketTerpilih.id,
+        sesiId: item.sesi.id,
         studentId,
-        waktuBerlakuSampai,
-        diberikanOleh: 'admin',
-        createdAt: serverTimestamp(),
+        xpFinal: item.sesi.xpFinal || 0,
       });
 
       setBaris((prev) => prev.map((b) => (
-        b.student.id === item.student.id ? { ...b, sesi: null, izinUlang: { waktuBerlakuSampai } } : b
+        b.student.id === item.student.id ? { ...b, sesi: null, izinUlang: { waktuBerlakuSampai: izinSampai } } : b
       )));
-      alert(`${item.student.nama} sekarang bisa mulai ulang try out ini dari nol, sampai ${new Date(waktuBerlakuSampai).toLocaleString('id-ID')}.`);
+      alert(`${item.student.nama} sekarang bisa mulai ulang try out ini dari nol (XP lama ${xpDikembalikan} sudah ditarik balik biar gak dobel), sampai ${new Date(izinSampai).toLocaleString('id-ID')}.`);
     } catch (e) {
       console.error('Gagal izinkan ulang:', e);
       alert('Gagal memproses: ' + e.message);

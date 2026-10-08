@@ -45,6 +45,17 @@ export function useTimerTryOut({
 }) {
   const [sisaMs, setSisaMs] = useState(0);
   const sudahLaporHabis = useRef(false);
+  // 🔥 BARU (bug kehilangan jawaban ditemukan 2026-10-08): callback
+  // `onHabis` DIPANGGIL LEWAT REF, bukan lewat closure interval. Kalau
+  // dipakai langsung, interval (yang cuma dibuat ulang saat `aktif`
+  // atau `hitungUlang` berubah) memegang onHabis VERSI LAMA -- dan
+  // onHabis try out menutup `jawaban` di dalamnya. Akibatnya waktu
+  // habis di saat siswa sudah menjawab, Firestore DITIMPA lagi pakai
+  // peta jawaban lama yang belum memuat jawaban terakhir itu (siswa:
+  // "aku udah jawab kok hasilnya hilang"). Lewat ref, yang dipanggil
+  // selalu versi TERBARU tanpa perlu membuat ulang interval tiap ketik.
+  const onHabisRef = useRef(onHabis);
+  useEffect(() => { onHabisRef.current = onHabis; });
 
   const hitungUlang = useCallback(() => {
     const sekarang = Date.now();
@@ -58,6 +69,10 @@ export function useTimerTryOut({
   useEffect(() => {
     if (!aktif) return;
     sudahLaporHabis.current = false;
+    // SENGAJA: tanpa set awal ini, timer menampilkan "00:00" selama 1
+    // detik pertama tiap pindah subtes (interval pertama baru menandai
+    // 1 detik kemudian) -- siswa panik mengira waktunya habis.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSisaMs(hitungUlang());
 
     const interval = setInterval(() => {
@@ -65,12 +80,13 @@ export function useTimerTryOut({
       setSisaMs(sisa);
       if (sisa <= 0 && !sudahLaporHabis.current) {
         sudahLaporHabis.current = true;
-        onHabis?.();
+        onHabisRef.current?.();
       }
     }, 1000);
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // onHabis DIPANGGIL LEWAT REF (lihat atas) jadi sengaja TIDAK masuk
+    // deps: interval gak perlu dibuat ulang tiap jawaban berubah.
   }, [aktif, hitungUlang]);
 
   const menit = Math.floor(sisaMs / 60000);

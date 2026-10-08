@@ -51,6 +51,14 @@ import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
+// 🔥 BARU (2026-10-08, keluhan owner "siswa finish mendadak di soal 4"
+// & "soalnya gak keluar"): keputusan "tombol hijau ini sebenarnya harus
+// ngapain" + pengamanan indeks subtes resume + penyaringan subtes kosong
+// dipindah ke util murni logikaSubtesTryOut.js biar di-test otomatis
+// (tests/logikaSubtesTryOut.test.mjs) dan gak bisa regression diam-diam.
+import {
+  putusanTombolLanjut, indexSubtesAman, filterSubtesMenurutSoalTersedia,
+} from '../../../utils/logikaSubtesTryOut.js';
 
 const XP_PER_SOAL = 10; // konsisten sama XP_PER_BENAR di Latihan Harian
 
@@ -112,6 +120,24 @@ export default function TryOutView() {
   const [siapPeraturan, setSiapPeraturan] = useState(false);
   const [hasilAkhir, setHasilAkhir] = useState(null); // { xpMentah, xpFinal, totalSkorPersen, ... }
   const [fotoPengawasan, setFotoPengawasan] = useState([]);
+
+  // 🔥 BARU (2026-10-08): pesan transisi subtes NON-MEMBLOKIR. Dulu
+  // perpindahan subtes (waktu habis / klik "Selesai Subtes Ini") pakai
+  // alert() yang MEMBLOKIR layar: jam terus jalan sementara siswa masih
+  // membaca/menutup alert, dan di HP yang layarannya terkunci rentetan
+  // alert bisa membuat beberapa soal "tertelan" sekaligus (keluhan
+  // "soalnya gak keluar"). Sekarang pesannya banner biasa yang hilang
+  // sendiri setelah 7 detik -- waktu subtes berikutnya mulai jalan
+  // BERSAMAAN dengan siswa melihat soalnya, bukan setelah dia menutup
+  // popup.
+  const [pesanTransisi, setPesanTransisi] = useState(null);
+  const timerPesanRef = React.useRef(null);
+  const tampilPesanTransisi = useCallback((teks) => {
+    setPesanTransisi(teks);
+    if (timerPesanRef.current) clearTimeout(timerPesanRef.current);
+    timerPesanRef.current = setTimeout(() => setPesanTransisi(null), 7000);
+  }, []);
+  useEffect(() => () => clearTimeout(timerPesanRef.current), []);
 
   // 🔥 BARU: layar "Siapkan Kamera" -- state & videoRef-nya didefinisikan
   // di sini, tapi fungsi lanjutSetelahCekKamera() ditaruh SETELAH
@@ -186,10 +212,12 @@ export default function TryOutView() {
         setPaket({ ...dataPaket, daftarSoal: [], _filterMapelPesan: filterMapel.alasan });
       } else {
         const idOk = new Set(filterMapel.soal.map((s) => s.id));
-        const subtes = (dataPaket.subtes || []).map((sub) => ({
-          ...sub,
-          soalIds: (sub.soalIds || []).filter((id) => idOk.has(id)),
-        })).filter((sub) => (sub.soalIds || []).length > 0);
+        // 🔥 BARU: penyaringan subtes yang soalnya habis tersaring
+        // dipindah ke util murni (logikaSubtesTryOut.js) biar perilaku
+        // "subtes kosong dibuang" teruji otomatis -- dulu inline di
+        // sini dan itulah jalan bikin siswa melihat subtes TANPA soal
+        // ("soalnya gak keluar").
+        const subtes = filterSubtesMenurutSoalTersedia(dataPaket.subtes, idOk);
         setPaket({
           ...dataPaket,
           daftarSoal: filterMapel.soal,
@@ -217,10 +245,25 @@ export default function TryOutView() {
           });
           setTahap('selesai');
         } else {
-          setSubtesAktifIndex(sesi.subtesAktifIndex || 0);
+          // 🔥 BARU (keluhan "soalnya gak keluar"): indeks subtes yang
+          // tersimpan di sesi bisa MENUNJUK KELUAR ARRAY kalau susunan
+          // subtes berubah setelah sesi dimulai (mis. akses mapel siswa
+          // diperbarui admin). Dulu itu bikin layar stuck selamanya di
+          // "Memuat soal..." atau timer langsung habis beruntun.
+          // Sekarang indeksnya di-clamp ke rentang yang ADA dan siswa
+          // dikasih tahu jujur lewat banner.
+          const idTersedia = new Set(filterMapel.soal.map((sx) => sx.id));
+          const subtesTerpakai = dataPaket.modeTimer === 'per-subtes'
+            ? filterSubtesMenurutSoalTersedia(dataPaket.subtes, idTersedia)
+            : (dataPaket.subtes || []);
+          const posisiAman = indexSubtesAman(sesi.subtesAktifIndex || 0, subtesTerpakai.length);
+          setSubtesAktifIndex(posisiAman.index);
           setWaktuMulaiMs(sesi.waktuMulaiMs || Date.now());
           setWaktuMulaiSubtesMs(sesi.waktuMulaiSubtesMs || Date.now());
           setTahap('mengerjakan');
+          if (posisiAman.disesuaikan) {
+            tampilPesanTransisi('🧭 Posisi subtesmu disesuaikan karena susunan try out berubah setelah sesimu dimulai. Jawaban tersimpanmu tetap aman.');
+          }
         }
       } else {
         // Cek jadwal buka/deadline SEBELUM kasih tahap 'mulai'. Jaga-
@@ -254,7 +297,7 @@ export default function TryOutView() {
       }
       setTahap('gagal');
     }
-  }, [paketId, studentId]);
+  }, [paketId, studentId, tampilPesanTransisi]);
 
   // Effect mount sengaja hanya bergantung paketId/studentId:
   // muatPaketDanSesi dibuat ulang tiap render, memasukkannya ke deps
@@ -295,6 +338,20 @@ export default function TryOutView() {
   }, [paket, subtesAktifIndex, studentId, paketId]);
 
   const soalAktif = daftarSoalAktif[indexSoalAktif];
+
+  // 🔥 BARU (2026-10-08, BUG SERIUS): keputusan tombol hijau utama kini
+  // dari util murni yang DI-TEST (logikaSubtesTryOut.js). Dulu tombol
+  // berlabel "Selesai Subtes Ini" ISI-nya selesaikanTryOut() -- siswa
+  // mode "per soal individual" yang cuma mau lanjut ke soal berikutnya
+  // malah finish mendadak (keluhan: "kerjain soal dapat 4 tiba-tiba
+  // selesai"). Sekarang: masih ada subtes berikutnya = pindah subtes.
+  const putusanNav = putusanTombolLanjut({
+    modeTimer: paket?.modeTimer,
+    indexSoalAktif,
+    jumlahSoalAktif: daftarSoalAktif.length,
+    subtesAktifIndex,
+    jumlahSubtes: paket?.subtes?.length || 0,
+  });
 
   // 🔥 BARU (BUG SERIUS DITEMUKAN): sebelumnya kalau updateDoc gagal
   // (mis. koneksi lemot/padat -- WAJAR kejadian pas banyak siswa
@@ -484,7 +541,11 @@ export default function TryOutView() {
   }, [paket, jawaban, pelanggaran, sesiId, fotoPengawasan, studentId]);
 
   // ---------------- TIMER ----------------
-  const pindahSubtesBerikutnya = useCallback(() => {
+  // 🔥 BARU (2026-10-08): terima opsi { manual } -- dipanggil dari tombol
+  // "Selesai Subtes Ini" (siswa sengaja menutup subtes lebih awal) ATAU
+  // dari timer yang habis sendiri. Keduanya pakai banner non-memblokir,
+  // BUKAN alert() (lihat catatan pesanTransisi di atas).
+  const pindahSubtesBerikutnya = useCallback((opsi = {}) => {
     if (!paket) return;
     const berikutnya = subtesAktifIndex + 1;
     if (berikutnya >= paket.subtes.length) {
@@ -492,12 +553,16 @@ export default function TryOutView() {
       return;
     }
     const sekarang = Date.now();
+    const namaLama = paket.subtes[subtesAktifIndex]?.nama || `Subtes ${subtesAktifIndex + 1}`;
+    const namaBaru = paket.subtes[berikutnya]?.nama || `Subtes ${berikutnya + 1}`;
     setSubtesAktifIndex(berikutnya);
     setWaktuMulaiSubtesMs(sekarang);
     setIndexSoalAktif(0);
     simpanProgres(jawaban, berikutnya, sekarang);
-    alert(`Waktu subtes "${paket.subtes[subtesAktifIndex].nama}" habis. Lanjut ke subtes "${paket.subtes[berikutnya].nama}".`);
-  }, [paket, subtesAktifIndex, jawaban, simpanProgres, selesaikanTryOut]);
+    tampilPesanTransisi(opsi.manual
+      ? `✅ Subtes "${namaLama}" dikumpulkan. Sekarang subtes "${namaBaru}" -- waktunya mulai lagi dari awal, dan kamu tidak bisa balik ke subtes sebelumnya.`
+      : `⏰ Waktu subtes "${namaLama}" habis. OTOMATIS lanjut ke subtes "${namaBaru}" -- kamu tidak bisa balik ke subtes sebelumnya.`);
+  }, [paket, subtesAktifIndex, jawaban, simpanProgres, selesaikanTryOut, tampilPesanTransisi]);
 
   const { teksWaktu, hampirHabis } = useTimerTryOut({
     aktif: tahap === 'mengerjakan',
@@ -767,7 +832,35 @@ export default function TryOutView() {
   }
 
   // ---------------- MENGERJAKAN ----------------
-  if (!soalAktif) return <div style={st.pusat}>Memuat soal...</div>;
+  // 🔥 BARU (keluhan "soalnya gak keluar"): dulu baris ini cuma
+  // "Memuat soal..." SELAMANYA kalau posisi soal tidak ada (subtes
+  // kosong / indeks keluar rentang). Sekarang siswa dikasih layar yang
+  // JUJUR + jalan keluar: kumpulkan jawaban yang sudah tersimpan, atau
+  // kembali ke daftar. Jawaban mereka tidak dibuang diam-diam.
+  if (!soalAktif) {
+    const tidakAdaSoalSamasekali = (paket?.daftarSoal || []).length === 0;
+    return (
+      <div style={{ ...st.pusat, flexDirection: 'column', gap: 10, padding: 20 }}>
+        <div style={{ fontSize: 40 }}>{tidakAdaSoalSamasekali ? '📚' : '🧭'}</div>
+        <div style={{ fontWeight: 800, color: '#1e293b', fontSize: 16 }}>
+          {tidakAdaSoalSamasekali ? 'Tidak ada soal yang cocok untukmu' : 'Posisi soalmu tidak ditemukan'}
+        </div>
+        <div style={{ fontSize: 12.5, color: '#64748b', maxWidth: 440, textAlign: 'center', lineHeight: 1.6 }}>
+          {tidakAdaSoalSamasekali
+            ? 'Paket try out ini tidak memuat soal dari mapel yang kamu ikuti, atau akses mapelmu berubah setelah sesi dimulai. Jawaban yang sudah tersimpan tetap aman.'
+            : 'Susunan subtes try out ini berubah setelah sesimu dimulai (misalnya akses mapel diperbarui admin), jadi posisi soal terakhirmu sudah tidak ada. Jawaban yang sudah tersimpan tetap aman.'}
+        </div>
+        <button
+          onClick={() => selesaikanTryOut()}
+          disabled={sedangMengirimAkhir}
+          style={{ ...st.tombolUtama, width: 'auto', padding: '10px 24px', background: '#16a34a', opacity: sedangMengirimAkhir ? 0.6 : 1 }}
+        >
+          {sedangMengirimAkhir ? 'Mengirim...' : '📦 Kumpulkan Jawaban Tersimpan'}
+        </button>
+        <button onClick={() => navigate('/siswa/tryout')} style={st.tombolSekunder}>Kembali ke daftar try out</button>
+      </div>
+    );
+  }
 
   return (
     <div style={st.shell}>
@@ -810,6 +903,20 @@ export default function TryOutView() {
           </span>
         </div>
       </div>
+
+      {/* 🔥 BARU: banner transisi subtes NON-MEMBLOKIR (pengganti alert)
+          -- pindah subtes karena waktu habis atau karena siswa sendiri
+          yang menutup subtes. Hilang sendiri setelah 7 detik. */}
+      {pesanTransisi && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, background: '#eef2ff',
+          border: '1px solid #c7d2fe', borderRadius: 10, padding: '10px 14px',
+          marginBottom: 12, fontSize: 12.5, color: '#3730a3', fontWeight: 700,
+        }}
+        >
+          {pesanTransisi}
+        </div>
+      )}
 
       {/* 🔥 BARU: peringatan JELAS kalau progres gagal kesimpen -- jangan
           reload/tutup app sampai ini ilang, biar jawaban gak "kelewat" */}
@@ -909,7 +1016,8 @@ export default function TryOutView() {
         </PenahanErrorSoal>
       </div>
 
-      {/* NAVIGASI */}
+      {/* NAVIGASI -- tombol hijau mengikuti putusanNav (util teruji):
+          'soal-berikutnya' | 'subtes-berikutnya' | 'selesai'. */}
       <div style={{ display: 'flex', gap: 10 }}>
         <button
           onClick={() => { try { cobaAmbilFoto(); } catch { /* foto pengawasan gagal jangan menghalangi navigasi */ } setIndexSoalAktif((i) => Math.max(0, i - 1)); }}
@@ -918,13 +1026,26 @@ export default function TryOutView() {
         >
           Sebelumnya
         </button>
-        {indexSoalAktif < daftarSoalAktif.length - 1 ? (
+        {putusanNav.aksi === 'soal-berikutnya' ? (
           <button onClick={() => { cobaAmbilFoto(); setIndexSoalAktif((i) => i + 1); }} style={{ ...st.tombolUtama, flex: 1 }}>Selanjutnya</button>
         ) : (
-          <button onClick={() => selesaikanTryOut()} disabled={sedangMengirimAkhir} style={{ ...st.tombolUtama, flex: 1, background: '#16a34a', opacity: sedangMengirimAkhir ? 0.6 : 1 }}>
+          <button
+            onClick={() => (putusanNav.aksi === 'subtes-berikutnya'
+              ? pindahSubtesBerikutnya({ manual: true })
+              : selesaikanTryOut())}
+            disabled={sedangMengirimAkhir}
+            style={{
+              ...st.tombolUtama, flex: 1,
+              // hijau cuma buat tombol kumpul terakhir; tombol pindah
+              // subtes tetap ungu khas tombol utama (jangan kasih
+              // `background: undefined` -- itu malah MENGHAPUS gradien)
+              ...(putusanNav.aksi === 'selesai' ? { background: '#16a34a' } : {}),
+              opacity: sedangMengirimAkhir ? 0.6 : 1,
+            }}
+          >
             {sedangMengirimAkhir ? 'Mengirim...' : (
               <>
-                <CheckCircle2 size={16} /> {paket.modeTimer === 'per-subtes' && subtesAktifIndex < paket.subtes.length - 1 ? 'Selesai Subtes Ini' : 'Kumpulkan Try Out'}
+                <CheckCircle2 size={16} /> {putusanNav.label}
               </>
             )}
           </button>
