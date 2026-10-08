@@ -290,6 +290,26 @@ test('INVARIAN: nilai berbeda yang sama-sama terisi TIDAK PERNAH ditimpa', () =>
   assert.equal(perubahan.tingkatKelas, undefined);
 });
 
+test('rencana: mapel salah jenjang dipetakan ke padanan Kurikulum Merdeka', () => {
+  // Kasus nyata owner: butir SMP tertag Sosiologi padahal IPS.
+  const rencana = rencanaPerbaikanIdentitas([{
+    id: 'sos1',
+    data: soalSehat({ mataPelajaran: 'Sosiologi', mapel: 'Sosiologi', jenjang: 'SMP/MTs', materi: 'Interaksi Sosial' }),
+  }]);
+  assert.equal(rencana.length, 1);
+  assert.equal(rencana[0].perubahan.mapel, 'IPS');
+  assert.equal(rencana[0].perubahan.mataPelajaran, 'IPS');
+  assert.equal(rencana[0].perubahan.mapelSebelumKurikulum, 'Sosiologi', 'nilai lama tidak boleh hilang');
+});
+
+test('rencana: mapel yang SAH untuk jenjangnya tidak disentuh', () => {
+  const rencana = rencanaPerbaikanIdentitas([
+    { id: 'ok1', data: soalSehat({ mataPelajaran: 'Biologi', mapel: 'Biologi', jenjang: 'SMA/MA' }) },
+    { id: 'ok2', data: soalSehat({ mataPelajaran: 'Sosiologi', mapel: 'Sosiologi', jenjang: 'SMA/MA' }) },
+  ]);
+  assert.deepEqual(rencana, []);
+});
+
 test('rencana: dokumen yang sudah utuh tidak menghasilkan perubahan apa pun', () => {
   assert.deepEqual(rencanaPerbaikanIdentitas([{ id: 'x4', data: soalSehat() }]), []);
 });
