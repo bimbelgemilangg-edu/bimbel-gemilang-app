@@ -4,21 +4,29 @@
 //
 // Loop operasional owner: bank soal terus diisi admin -> tentor MEMILIH
 // soal sesuai bab/minggu -> tentor MENCETAK sendiri secara rapi -> siswa
-// menggunting dan menempel di buku progres.
+// mengerjakan / menggunting dan menempel di buku progres.
 //
-// 🔥 DIROMBAK (2026-10-06, arahan owner: "harusnya per mapel jelas lalu
-// dibuka per bab"): pemilihan semula berupa SATU daftar datar paket try
-// out, padahal unit alami skema mingguan adalah MAPEL lalu BAB. Sekarang
-// ada dua sumber dengan hirarki yang sama seperti Lemari Soal admin
-// (jenjang -> mapel -> materi/bab):
-//   - "Bank Soal"  : jelajah mapel -> bab -> centang butir -> cetak
-//   - "Paket Saya" : paket try out yang terhubung ke tentor (perilaku lama)
+// 🔥 2026-10-08 (arahan owner sambil mengirim tangkapan layar naskah TKA
+// dua kolom): "pastikan guru bisa membaca dulu lengkap memilih soal dan
+// sistem menata layout print seperti ini, rapi dengan gambar disesuaikan
+// tidak terlalu kecil dan besar, sistem menata secara otomatis, tentor
+// tinggal pilih ukuran kertas lalu print". Maka halaman ini sekarang:
+//   1. BACA DULU: daftar butir ditampilkan LENGKAP (teks utuh + rumus
+//      KaTeX + gambar + pilihan), bukan potongan 110 huruf, supaya guru
+//      memilih dengan tahu isi soal, bukan menebak.
+//   2. DUA GAYA LEMBAR: "kotak siap gunting" (perilaku lama, buku progres)
+//      dan "naskah model ujian" dua kolom rapi ala naskah TKA asli
+//      (mesinnya di src/utils/naskahSoal.js).
+//   3. UKURAN KERTAS dipilih guru (A4/F4/Letter/A5); susunan kolom,
+//      ukuran gambar, dan nomor halaman ditata sistem otomatis.
+//   4. PRATINJAU di layar = yang tercetak: iframe memuat fragmen yang
+//      persis sama dengan yang dikirim ke dialog cetak.
 //
 // Menghasilkan TIGA dokumen terpisah (aturan kerangka):
-//   1. PAKET-SISWA   : kotak soal siap gunting, TANPA kunci
-//   2. KUNCI-TENTOR  : kunci + pembahasan, berkepala peringatan keras
-//   3. LEMBAR-CATATAN: area tempel + kolom catatan pengerjaan
-// Tata letak hidup di src/utils/cetakLatihan.js (murni, teruji).
+//   1. PAKET-SISWA / NASKAH-SISWA : soal TANPA kunci
+//   2. KUNCI-TENTOR               : kunci + pembahasan, kepala peringatan
+//   3. LEMBAR-CATATAN             : area tempel + kolom catatan pengerjaan
+// Tata letak hidup di src/utils/cetakLatihan.js & naskahSoal.js (murni, teruji).
 //
 // AKSES: mode paket mengikuti aturan halaman pantau (#125) -- hanya paket
 // terhubung ke tentor login. Mode bank bersifat baca+cetak saja (tidak
@@ -26,13 +34,27 @@
 // lemari soal itu sendiri.
 // ============================================================
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import 'katex/dist/katex.min.css';
+import katexCssInline from 'katex/dist/katex.min.css?inline';
 import { db } from '../../firebase';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { perluSegar, kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import { pilihSoalUntukCetak, htmlPaketSiswa, htmlKunciTentor, htmlLembarCatatan } from '../../utils/cetakLatihan';
+import {
+  DAFTAR_KERTAS,
+  kertasDariKode,
+  kolomOtomatis,
+  lebarKolomMm,
+  daftarBlokNaskah,
+  estimasiTinggiBlokMm,
+  susunNaskahDariBlok,
+  teksKeHtml,
+  GAYA_NASKAH,
+} from '../../utils/naskahSoal';
+import { pisahTeksDanGambar } from '../../utils/penempatanGambar';
 import { cetakLewatIframe } from '../../utils/kwitansi';
 import { useSegarSaatTerlihat } from '../../utils/useSegarSaatTerlihat';
 import { sebaranKelas } from '../../utils/petaKonten';
@@ -57,6 +79,54 @@ const gayaPill = (aktif) => ({
   border: aktif ? '1.5px solid #3730a3' : '1px solid #d1d5db',
   background: aktif ? '#eef2ff' : 'white', color: aktif ? '#3730a3' : '#475569',
 });
+const gayaSelect = { padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12, background: 'white' };
+const PX_PER_MM = 96 / 25.4;
+
+// Kartu baca-lengkap: guru melihat isi butir utuh sebelum memutuskan
+// mencentang. Gambar dibatasi tinggi 140px di layar supaya daftar tetap
+// mudah digulir; ukuran cetak sesungguhnya dihitung mesin naskah.
+function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja }) {
+  const segmen = pisahTeksDanGambar(teksSoalMentah(soal), soal?.gambarUrls);
+  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  return (
+    <div style={{ border: `1.5px solid ${tercentang ? '#3730a3' : '#e2e8f0'}`, background: tercentang ? '#eef2ff' : 'white', borderRadius: 10, padding: '10px 12px', marginBottom: 8 }}>
+      <label style={{ display: 'flex', gap: 10, cursor: 'pointer', alignItems: 'flex-start' }}>
+        <input type="checkbox" checked={tercentang} disabled={bacaSaja} onChange={(e) => onCentang(e.target.checked)} style={{ marginTop: 3 }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10.5, color: '#64748b', marginBottom: 4 }}>
+            <b style={{ color: '#3730a3', fontSize: 12 }}>No. {nomor}</b> · [{String(soal?.tipe || 'pg_sederhana').replace(/_/g, ' ')}]
+            {soal?.kelas ? ` · kelas ${soal.kelas}` : ''}
+          </div>
+          {segmen.map((sg, i) => (sg.jenis === 'teks'
+            ? <div key={i} style={{ fontSize: 12.5, lineHeight: 1.55, color: '#0f172a' }} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
+            : <img key={i} src={sg.url} alt={`Gambar soal ${nomor}`} style={{ maxHeight: 140, maxWidth: '100%', border: '1px solid #cbd5e1', borderRadius: 6, margin: '4px 0' }} />))}
+          {opsi.length > 0 && (
+            <div style={{ marginTop: 6, display: 'grid', gap: 3 }}>
+              {opsi.map((o, i) => {
+                const huruf = String.fromCharCode(65 + i);
+                const teks = typeof o === 'string' ? o : o?.teks || '';
+                const gbr = (o && typeof o === 'object' && Array.isArray(o.gambar)) ? o.gambar : [];
+                return (
+                  <div key={i} style={{ fontSize: 12, color: '#1e293b' }}>
+                    <b>({huruf})</b> <span dangerouslySetInnerHTML={{ __html: teksKeHtml(teks) }} />
+                    {gbr.map((g, j) => (g?.uploadedUrl || g?.url
+                      ? <img key={j} src={g.uploadedUrl || g.url} alt={`Gambar pilihan ${huruf}`} style={{ maxHeight: 90, border: '1px solid #cbd5e1', borderRadius: 6, marginLeft: 6, verticalAlign: 'middle' }} />
+                      : null))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </label>
+    </div>
+  );
+}
+
+// teks soal bisa tersimpan di dua nama kolom (impor lama vs baru)
+function teksSoalMentah(soal) {
+  return soal?.soal || soal?.teks_soal || '';
+}
 
 export default function CetakPaketLatihan() {
   const [sumber, setSumber] = useState('bank');       // 'bank' | 'paket'
@@ -84,6 +154,20 @@ export default function CetakPaketLatihan() {
   // membuat proyek pernah menjawab 429 RESOURCE_EXHAUSTED. Cache modul-level
   // dengan TTL membuat penyegaran tetap ada tanpa menembak server berulang.
   const [pesanError, setPesanError] = useState('');
+
+  // 🔥 BARU (2026-10-08): gaya lembar, ukuran kertas, dan paksaan kolom.
+  // 'naskah' = dua kolom rapi ala naskah TKA; 'kotak' = perilaku lama.
+  const [gayaLembar, setGayaLembar] = useState('naskah');
+  const [kodeKertas, setKodeKertas] = useState('A4');
+  const [kolomPaksa, setKolomPaksa] = useState(0);     // 0 = otomatis
+  const [tabPratinjau, setTabPratinjau] = useState('siswa');
+  // Rasio piksel asli tiap url gambar, diisi saat gambar lapisan ukur
+  // selesai dimuat -- bahan mesin menghitung ukuran cetak yang wajar.
+  const [rasioGambar, setRasioGambar] = useState({});
+  const [tinggiSiswa, setTinggiSiswa] = useState([]);
+  const [tinggiKunci, setTinggiKunci] = useState([]);
+  const refUkurSiswa = useRef(null);
+  const refUkurKunci = useRef(null);
 
   const versiSegar = useSegarSaatTerlihat();
   // 🔥 BARU: bisa dibuka dengan bab sudah terpilih dari Perpustakaan
@@ -208,19 +292,101 @@ export default function CetakPaketLatihan() {
   const soalPaket = pilihSoalUntukCetak(paket?.daftarSoal, { maks: maksPaket || undefined, tanpaEsai });
 
   const siap = sumber === 'bank' ? terpilihBank : soalPaket;
-  const meta = sumber === 'bank'
+  // KENAPA useMemo: objek meta ikut jadi dependencia memo blok naskah;
+  // tanpa ini objek baru tiap render membuat lapisan ukur disusun ulang
+  // tanpa henti (eslint react-hooks/exhaustive-deps).
+  const meta = useMemo(() => (sumber === 'bank'
     ? { judul: `${jenjangAktif} ${mapelAktif} — ${babAktif}`, mapel: mapelAktif, targetKelas: jenjangAktif, bab: babAktif }
-    : { judul: paket?.judul || '', mapel: paket?.targetKategori || '', targetKelas: paket?.targetKelas || '', bab: paket?.babJudul || '' };
+    : { judul: paket?.judul || '', mapel: paket?.targetKategori || '', targetKelas: paket?.targetKelas || '', bab: paket?.babJudul || '' }),
+  [sumber, jenjangAktif, mapelAktif, babAktif, paket]);
 
   const centang = (id, on) => setTercentang((lama) => (on ? [...lama, id] : lama.filter((x) => x !== id)));
 
+  // ---- 🔥 BARU: mesin naskah (ukur -> susun -> pratinjau -> cetak) ----
+  const kertas = kertasDariKode(kodeKertas);
+  const jumlahKolom = kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas);
+  const lebarKolom = lebarKolomMm(kertas, jumlahKolom);
+
+  const blokSiswa = useMemo(
+    () => (siap.length ? daftarBlokNaskah('siswa', meta, siap, lebarKolom, rasioGambar) : []),
+    [siap, meta, lebarKolom, rasioGambar]
+  );
+  const blokKunci = useMemo(
+    () => (siap.length ? daftarBlokNaskah('kunci', meta, siap, lebarKolom, rasioGambar) : []),
+    [siap, meta, lebarKolom, rasioGambar]
+  );
+
+  // Lapisan ukur tersembunyi: tinggi sungguhan tiap blok (mm) dibaca dari
+  // DOM setelah gaya & lebar kolom sama persis dengan dokumen cetak.
+  // KENAPA tidak memakai estimasi teks saja: rumus KaTeX dan gambar membuat
+  // tinggi nyata sering jauh berbeda dari taksiran huruf.
+  useLayoutEffect(() => {
+    const ukur = (ref, setter, jumlahBlok) => {
+      const node = ref.current;
+      if (!node) { setter([]); return; }
+      const anak = [...node.children];
+      if (anak.length !== jumlahBlok) { setter([]); return; }
+      const mm = anak.map((el) => Math.round((el.offsetHeight / PX_PER_MM) * 10) / 10);
+      setter((lama) => (lama.length === mm.length && lama.every((v, i) => v === mm[i]) ? lama : mm));
+    };
+    ukur(refUkurSiswa, setTinggiSiswa, blokSiswa.length);
+    ukur(refUkurKunci, setTinggiKunci, blokKunci.length);
+  }, [blokSiswa, blokKunci]);
+
+  // Rasio piksel asli gambar: ditempeli listener saat lapisan ukur_mount.
+  useEffect(() => {
+    const wadah = [refUkurSiswa.current, refUkurKunci.current].filter(Boolean);
+    const pasang = [];
+    wadah.forEach((w) => {
+      w.querySelectorAll('img').forEach((img) => {
+        const catat = () => {
+          if (!img.naturalWidth || !img.naturalHeight) return;
+          const r = img.naturalWidth / img.naturalHeight;
+          setRasioGambar((lama) => (Math.abs((lama[img.src] ?? 0) - r) < 0.001 ? lama : { ...lama, [img.src]: r }));
+        };
+        if (img.complete) catat();
+        else { img.addEventListener('load', catat, { once: true }); pasang.push([img, catat]); }
+      });
+    });
+    return () => pasang.forEach(([img, catat]) => img.removeEventListener('load', catat));
+  }, [blokSiswa, blokKunci]);
+
+  const perkiraanSiswa = useMemo(
+    () => siap.map((s) => estimasiTinggiBlokMm('siswa', s, lebarKolom, rasioGambar)),
+    [siap, lebarKolom, rasioGambar]
+  );
+  const perkiraanKunci = useMemo(
+    () => siap.map((s) => estimasiTinggiBlokMm('kunci', s, lebarKolom, rasioGambar)),
+    [siap, lebarKolom, rasioGambar]
+  );
+
+  const naskahSiswa = useMemo(() => (blokSiswa.length
+    ? susunNaskahDariBlok(blokSiswa, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiSiswa, tinggiPerkiraanMm: perkiraanSiswa, cssTambahan: katexCssInline })
+    : null), [blokSiswa, kodeKertas, jumlahKolom, tinggiSiswa, perkiraanSiswa]);
+  const naskahKunci = useMemo(() => (blokKunci.length
+    ? susunNaskahDariBlok(blokKunci, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiKunci, tinggiPerkiraanMm: perkiraanKunci, cssTambahan: katexCssInline })
+    : null), [blokKunci, kodeKertas, jumlahKolom, tinggiKunci, perkiraanKunci]);
+
+  const docPratinjau = (fragmen) => `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8" />
+    <style>html{background:#cbd5e1}body{margin:0;padding:4mm;display:flex;flex-direction:column;align-items:center;gap:3mm}</style>
+    </head><body>${fragmen}</body></html>`;
+  const fragmenAktif = tabPratinjau === 'kunci' ? naskahKunci?.fragmen : naskahSiswa?.fragmen;
+
+  const cetakNaskah = (mode) => {
+    const hasil = mode === 'kunci' ? naskahKunci : naskahSiswa;
+    if (!hasil) return;
+    cetakLewatIframe(hasil.fragmen, mode === 'kunci' ? 'Kunci & Pembahasan (Pegangan Guru)' : 'Naskah Soal Siswa');
+  };
+
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto' }}>
+      {/* gaya naskah dipakai juga oleh lapisan ukur tersembunyi di bawah */}
+      <style>{GAYA_NASKAH}</style>
       <h2 style={{ margin: '4px 0 4px', fontSize: 18 }}>🖨️ Cetak Paket Latihan</h2>
       <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
-        Pilih per mapel lalu buka per bab, centang butir yang mau dicetak, dan terima
-        tiga dokumen terpisah: lembar siswa siap gunting, kunci pegangan tentor,
-        dan lembar catatan buku progres.
+        Baca dulu isi soal lengkap di daftar bawah, centang yang mau dicetak, lalu
+        lihat pratinjau susunan naskah sebelum mencetak. Sistem yang menata kolom,
+        ukuran gambar, dan nomor halaman; Bapak/Ibu tinggal memilih ukuran kertas.
       </p>
 
       {pesanError && (
@@ -282,10 +448,10 @@ export default function CetakPaketLatihan() {
           {babAktif && (
             <div style={gayaKartu}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={gayaJudulKartu}>4 · Centang butir yang akan dicetak ({terpilihBank.length}/{soalBankTampil.length})</div>
+                <div style={gayaJudulKartu}>4 · Baca lengkap lalu centang butir yang akan dicetak ({terpilihBank.length}/{soalBankTampil.length})</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   {daftarKelas.length > 1 && (
-                    <select value={kelasFilter} onChange={(e) => { setKelasFilter(e.target.value); setTercentang([]); }} style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 11.5 }}>
+                    <select value={kelasFilter} onChange={(e) => { setKelasFilter(e.target.value); setTercentang([]); }} style={gayaSelect}>
                       <option value="">semua kelas ({soalDiBab.length})</option>
                       {daftarKelas.map(([k, n]) => <option key={k} value={k === '(tanpa kelas)' ? '' : k}>{k} ({n})</option>)}
                     </select>
@@ -297,16 +463,9 @@ export default function CetakPaketLatihan() {
                   <button style={gayaPill(false)} onClick={() => setTercentang([])}>bersihkan</button>
                 </div>
               </div>
-              <div style={{ maxHeight: 380, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, padding: 8 }}>
+              <div style={{ maxHeight: 560, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, padding: 8, background: '#f8fafc' }}>
                 {soalBankTampil.map((s, i) => (
-                  <label key={s.id} style={{ display: 'flex', gap: 8, padding: '7px 6px', borderBottom: '1px solid #f1f5f9', fontSize: 12, cursor: 'pointer', alignItems: 'flex-start' }}>
-                    <input type="checkbox" checked={tercentang.includes(s.id)} onChange={(e) => centang(s.id, e.target.checked)} style={{ marginTop: 2 }} />
-                    <span>
-                      <b style={{ color: '#3730a3' }}>{i + 1}.</b>{' '}
-                      <span style={{ color: '#64748b', fontSize: 10.5 }}>[{String(s.tipe || 'pg_sederhana').replace(/_/g, ' ')}]</span>{' '}
-                      {String(s.soal || s.teks_soal || '').slice(0, 110)}
-                    </span>
-                  </label>
+                  <KartuBacaSoal key={s.id} soal={s} nomor={i + 1} tercentang={tercentang.includes(s.id)} onCentang={(on) => centang(s.id, on)} />
                 ))}
                 {soalBankTampil.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: 8 }}>Tidak ada butir di bab ini setelah saringan.</div>}
               </div>
@@ -337,22 +496,98 @@ export default function CetakPaketLatihan() {
               <span style={{ color: '#64748b' }}>akan tercetak <b>{soalPaket.length}</b> dari {(paket.daftarSoal || []).length} soal</span>
             </div>
           )}
+          {paket && soalPaket.length > 0 && (
+            <div style={{ maxHeight: 420, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, padding: 8, marginTop: 10, background: '#f8fafc' }}>
+              {soalPaket.map((s, i) => <KartuBacaSoal key={s.id || i} soal={s} nomor={i + 1} tercentang bacaSaja onCentang={() => {}} />)}
+            </div>
+          )}
         </div>
       )}
 
       {!memuat && (
         <div style={gayaKartu}>
-          <div style={gayaJudulKartu}>5 · Cetak ({siap.length} butir)</div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <button style={gayaTombol('#2563eb', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlPaketSiswa(meta, siap), 'Paket Siswa')}>✂️ PAKET-SISWA</button>
-            <button style={gayaTombol('#b91c1c', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlKunciTentor(meta, siap), 'Kunci Tentor')}>🔑 KUNCI-TENTOR</button>
-            <button style={gayaTombol('#15803d', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
+          <div style={gayaJudulKartu}>5 · Tata letak & cetak ({siap.length} butir)</div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 6, alignItems: 'center' }}>
+              gaya lembar
+              <select value={gayaLembar} onChange={(e) => setGayaLembar(e.target.value)} style={gayaSelect}>
+                <option value="naskah">📄 naskah model ujian (kolom rapi)</option>
+                <option value="kotak">✂️ kotak siap gunting (buku progres)</option>
+              </select>
+            </label>
+            <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 6, alignItems: 'center' }}>
+              ukuran kertas
+              <select value={kodeKertas} onChange={(e) => setKodeKertas(e.target.value)} style={gayaSelect}>
+                {DAFTAR_KERTAS.map((k) => <option key={k.kode} value={k.kode}>{k.label}</option>)}
+              </select>
+            </label>
+            {gayaLembar === 'naskah' && (
+              <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 6, alignItems: 'center' }}>
+                kolom
+                <select value={kolomPaksa} onChange={(e) => setKolomPaksa(Number(e.target.value))} style={gayaSelect}>
+                  <option value={0}>otomatis ({kolomOtomatis(kertas)} kolom)</option>
+                  <option value={1}>1 kolom</option>
+                  <option value={2}>2 kolom</option>
+                </select>
+              </label>
+            )}
           </div>
+
+          {gayaLembar === 'naskah' && siap.length > 0 && naskahSiswa && (
+            <>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+                <button style={gayaPill(tabPratinjau === 'siswa')} onClick={() => setTabPratinjau('siswa')}>👀 pratinjau lembar siswa</button>
+                <button style={gayaPill(tabPratinjau === 'kunci')} onClick={() => setTabPratinjau('kunci')}>🔑 pratinjau kunci guru</button>
+                <span style={{ fontSize: 11, color: '#64748b' }}>
+                  {naskahSiswa.jumlahHalaman} halaman · {jumlahKolom} kolom · lebar kolom {naskahSiswa.lebarKolomMm}mm
+                </span>
+              </div>
+              {naskahSiswa.peringatan.length > 0 && (
+                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', borderRadius: 8, padding: '8px 10px', fontSize: 11.5, marginBottom: 8 }}>
+                  ⚠️ Butir nomor {naskahSiswa.peringatan.filter((i) => i > 0).join(', ')} lebih tinggi dari satu kolom; sistem memberinya satu kolom utuh supaya tidak terpotong.
+                </div>
+              )}
+              <iframe
+                title="Pratinjau naskah cetak"
+                srcDoc={docPratinjau(fragmenAktif || '')}
+                style={{ width: '100%', height: 680, border: '1px solid #cbd5e1', borderRadius: 10, background: '#cbd5e1' }}
+              />
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+                <button style={gayaTombol('#2563eb', false)} onClick={() => cetakNaskah('siswa')}>📄 CETAK NASKAH SISWA</button>
+                <button style={gayaTombol('#b91c1c', false)} onClick={() => cetakNaskah('kunci')}>🔑 CETAK KUNCI (PEGANGAN GURU)</button>
+                <button style={gayaTombol('#15803d', false)} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap, { kertas: kodeKertas }), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
+              </div>
+            </>
+          )}
+
+          {gayaLembar === 'kotak' && (
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button style={gayaTombol('#2563eb', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlPaketSiswa(meta, siap, { kertas: kodeKertas }), 'Paket Siswa')}>✂️ PAKET-SISWA</button>
+              <button style={gayaTombol('#b91c1c', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlKunciTentor(meta, siap, { kertas: kodeKertas }), 'Kunci Tentor')}>🔑 KUNCI-TENTOR</button>
+              <button style={gayaTombol('#15803d', siap.length === 0)} disabled={siap.length === 0} onClick={() => cetakLewatIframe(htmlLembarCatatan(meta, siap, { kertas: kodeKertas }), 'Lembar Catatan')}>📝 LEMBAR-CATATAN</button>
+            </div>
+          )}
+
           <div style={{ fontSize: 11, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>
-            Aturan kertas bekas (docs/KERANGKA-KONTEN-BUKU.md): cetak SATU muka; bekas jadwal
-            atau draft internal boleh, bekas absensi bernama / kwitansi / berkas keuangan
-            TIDAK BOLEH. Layout hemat toner: tanpa background berwarna, kotak berborder
-            tegas, garis potong di tepi tiap butir.
+            Di dialog cetak, pilih ukuran kertas yang SAMA dengan pilihan di atas dan
+            biarkan margin “Default” supaya susunan yang Bapak/Ibu lihat di pratinjau
+            persis pindah ke kertas. Aturan kertas bekas (docs/KERANGKA-KONTEN-BUKU.md):
+            cetak SATU muka; bekas jadwal atau draft internal boleh, bekas absensi
+            bernama / kwitansi / berkas keuangan TIDAK BOLEH.
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 LAPISAN UKUR: blok naskah dirender sembunyi-sembunyi dengan lebar
+          kolom sesungguhnya; tinggi tiap blok dibaca untuk penyusun halaman.
+          visibility:hidden supaya tidak terlihat tetapi layout tetap dihitung. */}
+      {gayaLembar === 'naskah' && siap.length > 0 && (
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', top: 0, visibility: 'hidden', pointerEvents: 'none' }}>
+          <div className="naskah" ref={refUkurSiswa} style={{ width: `${lebarKolom}mm` }}>
+            {blokSiswa.map((b, i) => <div key={`s${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: b }} />)}
+          </div>
+          <div className="naskah" ref={refUkurKunci} style={{ width: `${lebarKolom}mm` }}>
+            {blokKunci.map((b, i) => <div key={`k${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: b }} />)}
           </div>
         </div>
       )}
