@@ -43,6 +43,7 @@ import {
 } from '../../../utils/auditIdentitasSoal';
 import { kebijakanGagalMuat } from '../../../utils/keputusanMuat';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
+import JSZip from 'jszip';
 import {
   ScanSearch, Loader2, Download, AlertTriangle, ShieldCheck, ShieldAlert,
   Wrench, FileWarning, RefreshCw, CheckCircle2, XCircle,
@@ -150,9 +151,20 @@ export default function AuditIdentitasSoalPage() {
    * gambar, bacaan, identitas, status) — jalan untuk membaca bank soal di
    * luar aplikasi, misalnya menyerahkannya untuk dianalisis.
    */
-  const unduhButirLengkap = useCallback(() => {
+  const unduhButirLengkap = useCallback(async () => {
     if (!daftarMentah.length) return;
-    const isi = daftarMentah.map(({ id, data }) => ({
+    // 🔥 2026-10-09: ekspor pretty-print pertama menghasilkan 5,4 MB dan
+    // MACET saat diunggah ke chat. Kini (1) field kosong dibuang —
+    // pernyataan/tabel/pasangan/bacaan kosong adalah mayoritas byte yang tidak
+    // membawa informasi, (2) JSON ditulis KOMPAK, (3) dibungkus ZIP lewat
+    // JSZip (sudah jadi dependensi repo): teks biasanya menyusut 8-10x.
+    // Bila zip gagal, jatuh ke JSON kompak polos.
+    const kosong = (v) => v === undefined || v === null || v === ''
+      || (Array.isArray(v) && v.length === 0)
+      || (typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0);
+    const rampingkan = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => !kosong(v)));
+
+    const isi = daftarMentah.map(({ id, data }) => rampingkan({
       id,
       status: data?.status || 'aktif',
       teksSoal: data?.soal || data?.teksSoal || '',
@@ -166,22 +178,41 @@ export default function AuditIdentitasSoalPage() {
       pembahasanAsal: data?.pembahasanAsal || '',
       gambarUrls: data?.gambarUrls || [],
       bacaan: data?.bacaan || null,
-      identitas: {
+      identitas: rampingkan({
         mapel: data?.mataPelajaran || data?.mapel || '',
         jenjang: data?.jenjang || '',
         kelas: data?.tingkatKelas || data?.kelas || '',
         materi: data?.materi || data?.bab || data?.topik || '',
-      },
+      }),
       sumberSoalId: data?.sumberSoalId || null,
       asalImpor: data?.asalImpor || '',
     }));
-    const blob = new Blob([JSON.stringify(isi, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `bank-soal-lengkap-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    const tanggal = new Date().toISOString().slice(0, 10);
+    const jsonKompak = JSON.stringify(isi);
+    const unduh = (blob, nama) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nama;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    try {
+      const zip = new JSZip();
+      zip.file(`bank-soal-lengkap-${tanggal}.json`, jsonKompak);
+      zip.file('BACA-INI.txt', [
+        `Ekspor bank soal Bimbel Gemilang — ${tanggal}`,
+        `Jumlah butir: ${isi.length} (centang "ikut audit nonaktif/dihapus" menambah baris berstatus itu)`,
+        'Field kosong dibuang untuk menghemat ukuran; tidak ada field = kosong.',
+        'identitas = alias yang dibaca penyaring, sudah disatukan.',
+      ].join('\n'));
+      const blobZip = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+      unduh(blobZip, `bank-soal-lengkap-${tanggal}.zip`);
+    } catch (e) {
+      console.warn('Zip gagal, jatuh ke JSON kompak:', e);
+      unduh(new Blob([jsonKompak], { type: 'application/json' }), `bank-soal-lengkap-${tanggal}.json`);
+    }
   }, [daftarMentah]);
 
   // ----------------------------------------------------------
@@ -279,7 +310,7 @@ export default function AuditIdentitasSoalPage() {
 
             {daftarMentah.length > 0 && (
               <button style={st.tombolAbu} onClick={unduhButirLengkap}>
-                <Download size={14} /> Unduh seluruh bank soal (JSON lengkap)
+                <Download size={14} /> Unduh seluruh bank soal (ZIP, JSON kompak)
               </button>
             )}
 
