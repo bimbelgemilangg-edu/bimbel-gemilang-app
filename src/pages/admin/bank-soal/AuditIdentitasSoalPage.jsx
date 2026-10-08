@@ -193,9 +193,9 @@ export default function AuditIdentitasSoalPage() {
   const siap = laporan?.kesiapanTentor?.siap ?? false;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
-      <div style={{ flex: 1, padding: isMobile ? 14 : 26, maxWidth: 1240, margin: '0 auto', width: '100%' }}>
+      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? 14 : 26, width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', maxWidth: 1240 }}>
         <div style={{ marginBottom: 16 }}>
           <h1 style={{ fontSize: 21, fontWeight: 800, color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
             <ScanSearch size={21} color="#5B2ECC" /> Audit Identitas Bank Soal
