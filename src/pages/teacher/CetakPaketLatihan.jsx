@@ -60,6 +60,7 @@ import {
   teksSoalDari,
 } from '../../utils/keranjangSoalGuru';
 import KartuKeranjangSoal from '../../components/guru/KartuKeranjangSoal';
+import { saringPaketTerbit } from '../../utils/statusTryOutPaket';
 import {
   DAFTAR_KERTAS,
   kertasDariKode,
@@ -227,7 +228,10 @@ export default function CetakPaketLatihan() {
         if (h instanceof Error) throw h;
         const list = h.docs.map((d) => ({ id: d.id, ...d.data() }));
         if (jenis === 'bank') { cacheBank = list; waktuCacheBank = Date.now(); setBankSoal(list); }
-        else { cachePaket = list; waktuCachePaket = Date.now(); setPaketList(list); }
+        // 🔥 2026-10-08: usulan tentor yang BELUM disetujui admin tidak boleh
+        // muncul di dropdown "Paket Try Out saya" lalu tercetak seolah sudah
+        // terbit. Disaring di satu tempat ini, bukan di tiap pemakai.
+        else { const terbit = saringPaketTerbit(list); cachePaket = terbit; waktuCachePaket = Date.now(); setPaketList(terbit); }
       });
       setPesanError('');
     } catch (e) {
