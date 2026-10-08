@@ -64,4 +64,13 @@ test('teks konfirmasi menyebut nama, XP, dan peringatan deadline', () => {
   });
   assert.match(teksBerjalan, /sedang berjalan/);
   assert.doesNotMatch(teksBerjalan, /DEADLINE/);
+  // 🔥 BARU (2026-10-08): reset sesi 'berjalan' wajib menyebut akibat ke
+  // layar anak yang masih terbuka (ditahan aman + ditawari mulai ulang),
+  // biar owner gak kaget waktu anak laporan lihat layar error.
+  assert.match(teksBerjalan, /ditahan aman/);
+  assert.match(teksBerjalan, /mulai ulang dari awal/);
+  const teksSelesaiBaru = teksKonfirmasiResetSesi({
+    namaSiswa: 'Cica', xpFinal: 50, statusSesi: 'selesai', deadlineLewat: false,
+  });
+  assert.doesNotMatch(teksSelesaiBaru, /ditahan aman/);
 });

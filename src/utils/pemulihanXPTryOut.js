@@ -76,6 +76,16 @@ export function teksKonfirmasiResetSesi({
       ? `XP ${potong} dari pengerjaan lama akan DIKEMBALIKAN (dikurangi lagi dari total & XP mingguan), lalu sesi dihapus supaya siswa bisa kerjain ulang dari soal nomor 1.`
       : 'Sesi akan dihapus supaya siswa bisa kerjain ulang dari soal nomor 1 (sesi ini tidak punya XP).',
   ];
+  // 🔥 BARU (keluhan owner 2026-10-08: "anak-anak banyak yang lihat
+  // layar Gagal Mengirim Hasil setelah aku ulangi"): admin harus TAHU
+  // akibat reset ke layar yang MASIH TERBUKA sebelum klik, biar kejadian
+  // itu bukan kejutan. Layar siswa kini memang sengaja menawarkan mulai
+  // ulang + menahan jawaban akhir (lihat utils/pulihKirimHasilTryOut.js).
+  if (statusSesi === 'berjalan') {
+    kalimat.push(
+      '⚠️ Sesi ini masih BERJALAN -- kalau layar anak masih terbuka, layar itu tidak akan bisa menyimpan lagi setelah reset; sistem akan menawarkan dia mulai ulang dari awal dan jawaban akhirnya ditahan aman (panel "Jawaban Tertahan" di halaman Hasil), bukan hilang.',
+    );
+  }
   if (deadlineLewat) {
     kalimat.push('⚠️ Paket ini SUDAH LEWAT DEADLINE -- setelah reset siswa tetap tidak bisa masuk sampai deadline diperpanjang lewat tombol Edit.');
   }

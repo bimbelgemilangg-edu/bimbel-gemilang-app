@@ -30,7 +30,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { filterSoalTryOutByMapelSiswa } from '../../../utils/aksesKontenSiswa';
 import {
-  doc, getDoc, addDoc, updateDoc, collection, query, where, getDocs, serverTimestamp,
+  doc, getDoc, addDoc, updateDoc, setDoc, collection, query, where, getDocs, serverTimestamp,
 } from 'firebase/firestore';
 import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2 } from 'lucide-react';
 
@@ -59,6 +59,17 @@ import { tambahXpMingguan } from '../../../utils/mingguIni';
 import {
   putusanTombolLanjut, indexSubtesAman, filterSubtesMenurutSoalTersedia,
 } from '../../../utils/logikaSubtesTryOut.js';
+// 🔥 BARU (2026-10-08, keluhan owner "anak-anak banyak yang lihat layar
+// Gagal Mengirim Hasil setelah aku ulangi"): akar masalahnya ada di
+// kode: reset admin MENGHAPUS dokumen tryout_sesi, sedangkan layar yang
+// masih terbuka kirim hasil pakai updateDoc ke id lama -- gagal SELAMANYA
+// berapa kali pun "Coba Kirim Lagi" diklik. Keputusan pemulihannya kini
+// di util murni pulihKirimHasilTryOut.js (di-test otomatis), dan jawaban
+// yang gak sempat masuk sesi DITAHAN di koleksi tryout_hasil_tertahan
+// biar janji "Jawabanmu AMAN, belum hilang" beneran benar.
+import {
+  kodeGagalKirim, putusanPemulihanKirim, pilihSesiUtama,
+} from '../../../utils/pulihKirimHasilTryOut.js';
 
 const XP_PER_SOAL = 10; // konsisten sama XP_PER_BENAR di Latihan Harian
 
@@ -235,7 +246,11 @@ export default function TryOutView() {
       ));
 
       if (!snapSesi.empty) {
-        const sesi = { id: snapSesi.docs[0].id, ...snapSesi.docs[0].data() };
+        // 🔥 BARU: dulu selalu docs[0] -- kalau suatu saat ada dua dokumen
+        // sesi (lama selesai + ulang berjalan), urutannya acak ikut id dan
+        // siswa bisa terkunci di layar hasil lama. Sekarang pilih lewat
+        // util murni pilihSesiUtama (berjalan menang, lalu yang terbaru).
+        const sesi = pilihSesiUtama(snapSesi.docs.map((d) => ({ id: d.id, ...d.data() })));
         setSesiId(sesi.id);
         setJawaban(sesi.jawaban || {});
         setFotoPengawasan(sesi.fotoPengawasan || []);
@@ -365,8 +380,18 @@ export default function TryOutView() {
   // koneksi & gak boleh reload sampai itu ilang.
   const [gagalSimpanProgres, setGagalSimpanProgres] = useState(false);
 
+  // 🔥 BARU (2026-10-08): beda kan "jaringan putus" vs "dokumen sesinya
+  // sudah tidak ada lagi di server" (dihapus reset admin). Kalau yang
+  // kedua, mengulang updateDoc itu sia-sia -- malah bikin anak bingung
+  // lihat peringatan terus-terusan. Sekali ketahuan not-found, pasang
+  // banner jujur ini dan setop menulis ke dokumen yang sudah almarhum;
+  // jawaban tetap aman di memori perangkat sampai kirim akhir (yang
+  // akan menahan hasilnya di tryout_hasil_tertahan).
+  const [sesiHilangDiServer, setSesiHilangDiServer] = useState(false);
+  const sesiHilangRef = React.useRef(false);
+
   const simpanProgres = useCallback(async (jawabanBaru, subtesIndexBaru, waktuSubtesBaru, sudahDicoba = false) => {
-    if (!sesiId) return;
+    if (!sesiId || sesiHilangRef.current) return;
     try {
       await updateDoc(doc(db, 'tryout_sesi', sesiId), {
         jawaban: jawabanBaru,
@@ -376,6 +401,11 @@ export default function TryOutView() {
       });
       setGagalSimpanProgres(false);
     } catch (e) {
+      if (kodeGagalKirim(e) === 'not-found') {
+        sesiHilangRef.current = true;
+        setSesiHilangDiServer(true);
+        return;
+      }
       console.error('Gagal menyimpan progres try out:', e);
       if (!sudahDicoba) {
         // Coba sekali lagi setelah jeda singkat -- banyak kegagalan
@@ -475,6 +505,59 @@ export default function TryOutView() {
   // JELAS + tombol coba lagi -- BUKAN diam-diam dianggap selesai.
   const [gagalKirimAkhir, setGagalKirimAkhir] = useState(false);
   const [sedangMengirimAkhir, setSedangMengirimAkhir] = useState(false);
+  // 🔥 BARU (2026-10-08): layar jujur buat kasus "dokumen sesi sudah gak
+  // ada lagi di server" (biasanya direset guru/admin biar bisa kerjain
+  // ulang). Isinya: jawaban ditahan aman + tombol muat ulang -- BUKAN
+  // layar merah "cek koneksi" yang tombol coba-laginya gak pernah menang.
+  const [layarKirimDireset, setLayarKirimDireset] = useState(null); // null | 'tahan-mulai-lagi' | 'tahan-lanjutkan-lain'
+
+  // Cek keadaan siswa ini di server setelah dokumen sesinya ketahuan
+  // hilang: apakah dia sudah punya sesi BARU yang masih berjalan (mis.
+  // sudah mulai ulang dari tab lain setelah reset)? Jawaban itu yang
+  // menentukan apakah layar menawarkan "mulai dari awal" atau
+  // "lanjutkan sesi terbarumu".
+  const bacaKonteksSesiHilang = useCallback(async () => {
+    let adaSesiLainBerjalan = false;
+    try {
+      const snapSesi = await getDocs(query(
+        collection(db, 'tryout_sesi'),
+        where('paketId', '==', paketId),
+        where('studentId', '==', studentId),
+      ));
+      adaSesiLainBerjalan = snapSesi.docs.some((d) => d.id !== sesiId && d.data().status === 'berjalan');
+    } catch (e) {
+      console.warn('Gagal cek sesi lain saat pemulihan kirim:', e);
+    }
+    return { adaSesiLainBerjalan };
+  }, [paketId, studentId, sesiId]);
+
+  // Tahan SELURUH hasil pengerjaan di koleksi tryout_hasil_tertahan
+  // (dokumen terpisah, TIDAK menimpa sesi baru siapa pun) biar janji
+  // "Jawabanmu AMAN, belum hilang" beneran benar walau sesinya sudah
+  // dihapus reset. Admin bisa melihat isinya di panel "Jawaban Tertahan"
+  // halaman Hasil Try Out.
+  const tahanHasilTertahan = useCallback(async (putusan, konteks, skor) => {
+    if (!sesiId) return false;
+    try {
+      await setDoc(doc(db, 'tryout_hasil_tertahan', sesiId), {
+        paketId,
+        studentId,
+        sesiIdAsal: sesiId,
+        jawaban,
+        fotoPengawasan,
+        pelanggaran,
+        ...skor,
+        alasan: 'dokumen-sesi-hilang-saat-kirim',
+        putusan,
+        konteks,
+        waktuTahan: new Date().toISOString(),
+      }, { merge: true });
+      return true;
+    } catch (eTahan) {
+      console.error('Gagal menahan hasil try out:', eTahan);
+      return false;
+    }
+  }, [paketId, studentId, sesiId, jawaban, fotoPengawasan, pelanggaran]);
 
   const selesaikanTryOut = useCallback(async (percobaanKe = 1) => {
     if (!paket) return;
@@ -484,26 +567,47 @@ export default function TryOutView() {
       hitungTotalSkor(paket.daftarSoal, jawaban);
     const xpMentah = Math.round(totalSkor * XP_PER_SOAL);
     const { xpFinal } = terapkanPotonganXP(xpMentah, pelanggaran);
+    const skorRingkas = {
+      totalSkorPersen,
+      xpMentah,
+      xpFinal,
+      jumlahSoalRusak: jumlahTidakBisaDinilai || 0,
+    };
 
     try {
       // Penyimpanan yang BENERAN kritis (jawaban + skor final) --
       // ini yang WAJIB berhasil sebelum siswa dikasih tau "selesai".
       if (sesiId) {
-        await updateDoc(doc(db, 'tryout_sesi', sesiId), {
-          status: 'selesai',
-          jawaban,
-          totalSkorPersen,
-          xpMentah,
-          xpFinal,
-          pelanggaran,
-          fotoPengawasan,
-          // 🔥 BARU (audit keluhan siswa): jumlah soal yang DIKELUARKAN dari
-          // penilaian karena datanya rusak (mis. baris benar/salah tanpa
-          // kunci). Disimpan di sesi supaya layar hasil & admin bisa
-          // menjelaskan ke siswa: ini bukan kesalahan mereka.
-          jumlahSoalRusak: jumlahTidakBisaDinilai || 0,
-          waktuSelesai: serverTimestamp(),
-        });
+        try {
+          await updateDoc(doc(db, 'tryout_sesi', sesiId), {
+            status: 'selesai',
+            jawaban,
+            totalSkorPersen,
+            xpMentah,
+            xpFinal,
+            pelanggaran,
+            fotoPengawasan,
+            // 🔥 BARU (audit keluhan siswa): jumlah soal yang DIKELUARKAN dari
+            // penilaian karena datanya rusak (mis. baris benar/salah tanpa
+            // kunci). Disimpan di sesi supaya layar hasil & admin bisa
+            // menjelaskan ke siswa: ini bukan kesalahan mereka.
+            jumlahSoalRusak: jumlahTidakBisaDinilai || 0,
+            waktuSelesai: serverTimestamp(),
+          });
+        } catch (eUpd) {
+          // 🔥 BARU (2026-10-08): 'not-found' di sini artinya dokumen sesi
+          // sudah DIHAPUS (reset admin) sementara layar ini masih terbuka.
+          // updateDoc ke dokumen almarhum gak akan pernah sukses berapa
+          // kali pun dicoba -- jadi JANGAN masuk antrean retry jaringan;
+          // langsung lempar ke jalur pemulihan (tahan jawaban + layar jujur).
+          if (kodeGagalKirim(eUpd) !== 'not-found') throw eUpd;
+          const konteks = await bacaKonteksSesiHilang();
+          const putusan = putusanPemulihanKirim({ kode: 'not-found', ...konteks });
+          const errPulih = new Error('Dokumen sesi sudah tidak ada saat kirim hasil');
+          errPulih.putusanPulih = putusan;
+          errPulih.konteksKirim = konteks;
+          throw errPulih;
+        }
       }
 
       // Nambah XP -- kalau ini gagal, gak apa-apa dilanjut (bisa
@@ -518,7 +622,6 @@ export default function TryOutView() {
         await updateDoc(progRef, {
           xp: (existing.xp || 0) + xpFinal, xpMingguIni, xpMingguIniKunci, updatedAt: serverTimestamp(),
         }).catch(async () => {
-          const { setDoc } = await import('firebase/firestore');
           await setDoc(progRef, { xp: xpFinal, xpMingguIni, xpMingguIniKunci, updatedAt: serverTimestamp() }, { merge: true });
         });
       }
@@ -526,6 +629,19 @@ export default function TryOutView() {
       setHasilAkhir({ xpMentah, xpFinal, totalSkorPersen, pelanggaran, jumlahSoalRusak: jumlahTidakBisaDinilai || 0 });
       setTahap('selesai');
     } catch (e) {
+      if (e && e.putusanPulih) {
+        // Tahan dulu jawabannya biar gak hilang; kalau MENAHAN-nya aja
+        // gagal (mis. beneran offline total), jatuh ke layar lama yang
+        // punya tombol coba lagi -- jawaban tetap aman di memori.
+        const okTahan = await tahanHasilTertahan(e.putusanPulih, e.konteksKirim || {}, skorRingkas);
+        if (okTahan) {
+          setLayarKirimDireset(e.putusanPulih);
+        } else {
+          setGagalKirimAkhir(true);
+        }
+        setSedangMengirimAkhir(false);
+        return;
+      }
       console.error(`Gagal menyimpan hasil try out (percobaan ke-${percobaanKe}):`, e);
       if (percobaanKe < 3) {
         // Coba lagi otomatis, jeda makin lama tiap gagal (1.5s, 3s).
@@ -538,7 +654,29 @@ export default function TryOutView() {
       setGagalKirimAkhir(true);
     }
     setSedangMengirimAkhir(false);
-  }, [paket, jawaban, pelanggaran, sesiId, fotoPengawasan, studentId]);
+  }, [paket, jawaban, pelanggaran, sesiId, fotoPengawasan, studentId, bacaKonteksSesiHilang, tahanHasilTertahan]);
+
+  // 🔥 BARU (2026-10-08): tombol di layar "sesimu sudah direset" --
+  // bersihkan state sesi LAMA di perangkat, lalu muat ulang lewat jalur
+  // RESMI muatPaketDanSesi() (yang ikut mengecek deadline & izin ulang,
+  // jadi layar ini gak bisa dipakai buat menerobos deadline). Kalau
+  // siswa ternyata sudah punya sesi baru, jalur yang sama bakal
+  // melanjutkannya (pilihSesiUtama menang-kan yang 'berjalan').
+  const muatUlangSetelahDireset = useCallback(() => {
+    setLayarKirimDireset(null);
+    setGagalKirimAkhir(false);
+    setGagalSimpanProgres(false);
+    setSesiHilangDiServer(false);
+    sesiHilangRef.current = false;
+    setSesiId(null);
+    setJawaban({});
+    setFotoPengawasan([]);
+    setSubtesAktifIndex(0);
+    setIndexSoalAktif(0);
+    setHasilAkhir(null);
+    setTahap('memuat');
+    muatPaketDanSesi();
+  }, [muatPaketDanSesi]);
 
   // ---------------- TIMER ----------------
   // 🔥 BARU (2026-10-08): terima opsi { manual } -- dipanggil dari tombol
@@ -926,6 +1064,18 @@ export default function TryOutView() {
         </div>
       )}
 
+      {/* 🔥 BARU (2026-10-08): banner jujur kalau dokumen sesi ternyata
+          sudah tidak ada lagi di server (biasanya direset guru biar bisa
+          kerjain ulang). Beda sama banner merah di atas: ini BUKAN salah
+          koneksi, jadi anak gak disuruh cek internet sia-sia -- dia cuma
+          perlu tahu jawabannya masih aman di perangkat dan akan ditahan
+          aman sistem di akhir pengerjaan. */}
+      {sesiHilangDiServer && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '10px 14px', marginBottom: 12, fontSize: 12, color: '#92400e', fontWeight: 700 }}>
+          ⚠️ Sesi try out-mu sudah tidak ada lagi di server (biasanya karena direset guru/admin supaya kamu bisa kerjain ulang). JANGAN tutup halaman ini -- jawabanmu masih aman di perangkat ini dan akan ditahan aman sebagai cadangan saat kamu selesai.
+        </div>
+      )}
+
       {/* PALET NOMOR SOAL */}
       <div style={{
         display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14, padding: 12,
@@ -1066,6 +1216,31 @@ export default function TryOutView() {
             </div>
             <button onClick={() => selesaikanTryOut()} disabled={sedangMengirimAkhir} style={st.tombolUtama}>
               {sedangMengirimAkhir ? 'Mengirim...' : '🔄 Coba Kirim Lagi'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 BARU (2026-10-08, keluhan owner "anak-anak banyak yang lihat
+          Gagal Mengirim Hasil setelah aku ulangi"): layar jujur buat kasus
+          dokumen sesi sudah dihapus reset sementara layar anak masih
+          terbuka. Tombol "Coba Kirim Lagi" di layar merah gak akan pernah
+          menang di kasus ini (updateDoc ke dokumen yang sudah tidak ada),
+          jadi di sini jawabannya DITAHAN dulu di tryout_hasil_tertahan,
+          lalu anak ditawari muat ulang: mulai dari awal, atau melanjutkan
+          sesi terbarunya kalau dia sudah sempat mulai ulang. */}
+      {layarKirimDireset && (
+        <div style={st.overlay}>
+          <div style={st.modal}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>🧭</div>
+            <div style={{ fontWeight: 800, color: '#b45309', marginBottom: 6 }}>Sesi Try Out-mu Sudah Direset</div>
+            <div style={{ fontSize: 12.5, color: '#78350f', marginBottom: 14 }}>
+              {layarKirimDireset === 'tahan-lanjutkan-lain'
+                ? 'Jawabanmu di layar lama ini TIDAK hilang -- sistem sudah menahannya dengan aman sebagai cadangan. Kamu ternyata sudah punya sesi yang lebih baru di server. Klik tombol di bawah untuk melanjutkan sesi terbarumu itu.'
+                : 'Guru/admin mereset sesi try out-mu supaya kamu bisa mengerjakan ulang dari awal. Jawaban di layar ini TIDAK hilang -- sistem sudah menahannya dengan aman sebagai cadangan. Klik tombol di bawah untuk memuat ulang sesimu.'}
+            </div>
+            <button onClick={muatUlangSetelahDireset} style={st.tombolUtama}>
+              {layarKirimDireset === 'tahan-lanjutkan-lain' ? '➡️ Lanjutkan Sesi Terbaruku' : '🔄 Muat Ulang & Mulai Dari Soal 1'}
             </button>
           </div>
         </div>
