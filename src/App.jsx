@@ -127,6 +127,10 @@ import AuditIdentitasSoalPage from './pages/admin/bank-soal/AuditIdentitasSoalPa
 // 🔥 Fase 2 (2026-10-08): tentor merakit try out -> admin menyetujui.
 import RakitTryOutGuruPage from './pages/teacher/RakitTryOutGuruPage';
 import ApprovalTryOutPage from './pages/admin/bank-soal/ApprovalTryOutPage';
+// 🔥 2026-10-08: pemulihan soft-delete. Sebelumnya hanya bisa lewat
+// Firestore Console; setelah 37 soal terlanjur ditandai dihapus oleh
+// detektor duplikat yang belum sadar gambar, itu bukan jawaban manusiawi.
+import PulihkanSoalPage from './pages/admin/bank-soal/PulihkanSoalPage';
 import BersihkanSoalPage from './pages/admin/bank-soal/BersihkanSoalPage';
 import RapikanLiterasiPage from './pages/admin/bank-soal/RapikanLiterasiPage';
 import TaksonomiMateriPage from './pages/admin/bank-soal/TaksonomiMateriPage';
@@ -737,6 +741,10 @@ function App() {
         <Route
           path="/admin/bank-soal/approval-tryout"
           element={<AdminRoute><ApprovalTryOutPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/pulihkan-soal"
+          element={<AdminRoute><PulihkanSoalPage /></AdminRoute>}
         />
         {/* 🔥 Fase 2: tentor merakit try out dari bank soal. Dipakai lewat
             GuruPage (bukan GuruRoute) seperti Cetak Latihan. */}
