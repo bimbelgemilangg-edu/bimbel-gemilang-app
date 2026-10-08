@@ -55,7 +55,7 @@ import { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku } from './jenjangBaku.js';
 // saja tertag 'Biologi' untuk jenjang SD atau 'Matematika Wajib' (penamaan
 // K13) — identitasnya "ada" tapi tidak selaras dengan kurikulum yang dipakai
 // sekolah, jadi tetap perlu ditemukan dan dibereskan.
-import { peringatanKeselarasanKurikulum } from './kurikulumMerdeka.js';
+import { peringatanKeselarasanKurikulum, petakanNamaMapel } from './kurikulumMerdeka.js';
 
 export { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku };
 
@@ -400,6 +400,24 @@ export function rencanaPerbaikanIdentitas(daftar) {
       perubahan.jenjang = idn.jenjangBaku;
       perubahan.jenjangSebelumBaku = idn.jenjang;
       alasan.push(`jenjang "${idn.jenjang}" diseragamkan jadi "${idn.jenjangBaku}"`);
+    }
+
+    // 5.1b mapel tidak selaras Kurikulum Merdeka untuk jenjangnya.
+    // Kasus nyata owner 2026-10-08: butir SMP tertag "Sosiologi" karena
+    // saat impor tidak ada waktu membenahi mesin -- padahal di Kurikulum
+    // Merdeka SMP rumpun sosial adalah IPS. Dipetakan lewat peta kurikulum,
+    // nilai lama disimpan di `mapelSebelumKurikulum` (tidak hilang).
+    if (idn.mapel) {
+      const petaMapel = petakanNamaMapel(idn.mapel, {
+        jenjang: idn.jenjangBaku || idn.jenjang,
+        kelas: idn.kelas,
+      });
+      if (petaMapel.diubah) {
+        perubahan.mapel = petaMapel.nama;
+        perubahan.mataPelajaran = petaMapel.nama;
+        perubahan.mapelSebelumKurikulum = idn.mapel;
+        alasan.push(petaMapel.alasan);
+      }
     }
 
     // 5.2 materi kosong padahal bab/topik ada -> penyaring bisa melihatnya
