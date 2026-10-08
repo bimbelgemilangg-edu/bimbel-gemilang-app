@@ -21,6 +21,12 @@ import { tambahXpMingguan } from '../../../utils/mingguIni';
 // izin nembus deadline) tinggal SATU kali di layanan ini, dipakai juga
 // halaman Terbitkan Try Out.
 import { resetSesiTryOut } from '../../../services/resetSesiTryOut.js';
+// 🔥 BARU (2026-10-08, keluhan owner "anak-anak banyak yang lihat Gagal
+// Mengirim Hasil setelah aku ulangi"): reset menghapus dokumen sesi,
+// jadi kalau layarnya masih terbuka jawaban akhirnya DITAHAN di koleksi
+// tryout_hasil_tertahan. Panel di halaman ini membuatnya TERLIHAT biar
+// gak ada data anak yang "hilang tanpa jejak".
+import { pilihSesiUtama, peringatanSesiBerjalan } from '../../../utils/pulihKirimHasilTryOut.js';
 import RendererPgSederhana from '../../student/tryout/RendererPgSederhana';
 import RendererPgKompleks from '../../student/tryout/RendererPgKompleks';
 import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
@@ -52,6 +58,11 @@ export default function HasilTryOutAdminPage() {
 
   const [loadingHasil, setLoadingHasil] = useState(false);
   const [baris, setBaris] = useState([]); // { student, sesi|null }
+  // 🔥 BARU (2026-10-08): jawaban yang DITAHAN sistem karena sesi anak
+  // direset saat layarnya masih terbuka (lihat utils/pulihKirimHasilTryOut.js).
+  // Dideklarasikan di SINI (sebelum bukaHasil) karena rule React Compiler
+  // melarang state dipakai lebih dulu dari deklarasinya.
+  const [daftarTertahan, setDaftarTertahan] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -71,6 +82,7 @@ export default function HasilTryOutAdminPage() {
     setPaketTerpilih(paket);
     setLoadingHasil(true);
     setBaris([]);
+    setDaftarTertahan([]);
     try {
       // Ambil target siswa (yang MEMANG jadi sasaran paket ini), biar
       // yang "belum mengerjakan" juga ikut kelihatan -- bukan cuma yang
@@ -84,8 +96,34 @@ export default function HasilTryOutAdminPage() {
       });
 
       const snapSesi = await getDocs(query(collection(db, 'tryout_sesi'), where('paketId', '==', paket.id)));
+      // 🔥 BARU (2026-10-08): dulu baris per anak selalu pakai dokumen
+      // pertama yang ketemu -- kalau suatu saat ada dua dokumen sesi
+      // (lama 'selesai' + ulang 'berjalan'), yang tampil bisa sesi lama
+      // dan anak kelihatan "sudah selesai" padahal sedang mengerjakan
+      // ulang. Sekarang pilihan diserahkan ke util murni pilihSesiUtama
+      // (status 'berjalan' menang, lalu yang mulai paling baru).
+      const kumpulanPerStudent = {};
+      snapSesi.forEach((d) => {
+        const dataSesi = { id: d.id, ...d.data() };
+        if (!kumpulanPerStudent[dataSesi.studentId]) kumpulanPerStudent[dataSesi.studentId] = [];
+        kumpulanPerStudent[dataSesi.studentId].push(dataSesi);
+      });
       const sesiPerStudent = {};
-      snapSesi.forEach((d) => { sesiPerStudent[d.data().studentId] = { id: d.id, ...d.data() }; });
+      Object.keys(kumpulanPerStudent).forEach((kunci) => {
+        sesiPerStudent[kunci] = pilihSesiUtama(kumpulanPerStudent[kunci]);
+      });
+
+      // 🔥 BARU (2026-10-08): muat jawaban TERTAHAN (sesi direset saat
+      // layar anak masih terbuka) biar gak ada data anak yang hilang
+      // tanpa jejak -- ditampilkan di panel kuning bawah.
+      try {
+        const snapTertahan = await getDocs(query(collection(db, 'tryout_hasil_tertahan'), where('paketId', '==', paket.id)));
+        const tertahan = snapTertahan.docs.map((d) => ({ id: d.id, ...d.data() }));
+        tertahan.sort((a, b) => String(b.waktuTahan || '').localeCompare(String(a.waktuTahan || '')));
+        setDaftarTertahan(tertahan);
+      } catch (eTertahan) {
+        console.warn('Gagal memuat jawaban tertahan:', eTertahan);
+      }
 
       const hasil = targetSiswa.map((s) => ({
         student: s,
@@ -165,7 +203,11 @@ export default function HasilTryOutAdminPage() {
       `- Hasil lama (skor ${item.sesi.totalSkorPersen}%, ${item.sesi.xpFinal || 0} XP) akan DIHAPUS PERMANEN.\n` +
       `- XP yang sempat masuk dari sesi lama akan ditarik balik (biar gak dobel).\n` +
       `- Dia akan bisa mulai lagi dari nol selama 3 jam ke depan, WALAU deadline try out ini udah lewat -- ` +
-      `siswa lain TIDAK ikut kesenggol/TIDAK dibukakan deadline-nya.`
+      `siswa lain TIDAK ikut kesenggol/TIDAK dibukakan deadline-nya.` +
+      // 🔥 BARU (2026-10-08): kalau sesinya masih 'berjalan', kemungkinan
+      // layar anak masih terbuka -- admin wajib tahu akibatnya sebelum
+      // mengetik nama (lihat utils/pulihKirimHasilTryOut.js).
+      (item.sesi?.status === 'berjalan' ? `\n\n${peringatanSesiBerjalan(1)}` : '')
     );
     if (konfirmasi !== item.student.nama) {
       if (konfirmasi !== null) alert('Nama yang diketik tidak cocok persis -- dibatalkan.');
@@ -375,6 +417,40 @@ export default function HasilTryOutAdminPage() {
                   <span>⏳ {jumlahBerjalan} sedang mengerjakan</span>
                   <span>⬜ {baris.length - jumlahSelesai - jumlahBerjalan} belum mulai</span>
                 </div>
+
+                {/* 🔥 BARU (2026-10-08): panel jawaban TERTAHAN -- data anak
+                    yang sesinya direset saat layarnya masih terbuka. Sebelum
+                    perbaikan ini, jawaban itu cuma jadi error "Gagal Mengirim
+                    Hasil" di HP anak dan tidak ada wujudnya di admin. */}
+                {daftarTertahan.length > 0 && (
+                  <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: '#92400e', marginBottom: 6 }}>
+                      🗃️ Jawaban Tertahan ({daftarTertahan.length})
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#78350f', marginBottom: 8 }}>
+                      Muncul kalau sesi anak direset saat layarnya masih terbuka -- jawaban akhir anak
+                      TIDAK hilang, sistem menahannya di sini dengan aman. Isinya tidak masuk ranking
+                      resmi; kalau mau dijadikan resmi, kabari developer supaya dipindahkan ke sesi.
+                    </div>
+                    {daftarTertahan.map((t) => {
+                      const namaTertahan = baris.find((b) => (b.student.studentId || b.student.id) === t.studentId)?.student?.nama || t.studentId;
+                      const jumlahTerjawab = Object.keys(t.jawaban || {}).length;
+                      return (
+                        <div key={t.id} style={{ background: 'white', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginBottom: 6, fontSize: 12, color: '#1e293b' }}>
+                          <b>{namaTertahan}</b>
+                          {' · skor '}
+                          {t.totalSkorPersen ?? '-'}%
+                          {' · '}
+                          {t.xpFinal ?? 0}
+                          {' XP · '}
+                          {jumlahTerjawab}
+                          {' jawaban · ditahan '}
+                          {t.waktuTahan ? new Date(t.waktuTahan).toLocaleString('id-ID') : '-'}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>

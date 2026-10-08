@@ -87,12 +87,49 @@ Kalau hanya mau memberi kesempatan tambahan TANPA membuang hasil lama,
 pakai fitur "Izinkan Ulang" di halaman **Hasil Try Out** yang sekarang
 memakai jalur layanan yang sama (`src/services/resetSesiTryOut.js`).
 
-## 4. Batas jujur fitur ini
+## 4. Kalau anak melihat layar "Gagal Mengirim Hasil" setelah reset (sudah diperbaiki 2026-10-08)
+
+**Kejadian aslinya:** setelah owner menekan reset / "Kerjain Ulang",
+banyak siswa melihat layar merah "Gagal Mengirim Hasil" yang tombol
+"Coba Kirim Lagi"-nya tidak pernah berhasil. Penyebabnya ditemukan di
+kode: reset memang menghapus dokumen sesi di server, tapi layar anak
+yang MASIH TERBUKA (belum di-refresh) tetap mencoba mengirim hasil ke
+dokumen yang sudah tidak ada itu — jadi gagal terus selamanya.
+
+**Perilaku BARU setelah perbaikan ini:**
+
+- Layar yang masih terbuka mendapat banner kuning jujur: sesinya sudah
+  tidak ada di server, jawaban masih aman di perangkat, dan akan
+  ditahan aman sebagai cadangan saat selesai. Anak tidak lagi disuruh
+  "cek koneksi internet" untuk masalah yang bukan salah koneksi.
+- Saat anak selesai/submit, jawabannya DITAHAN otomatis di koleksi
+  `tryout_hasil_tertahan` (tidak menimpa sesi baru siapa pun), lalu
+  muncul layar "Sesi Try Out-mu Sudah Direset" dengan tombol muat
+  ulang: mulai dari soal 1, atau melanjutkan sesi terbarunya kalau dia
+  sudah sempat mulai ulang di tempat lain.
+- Di halaman **Hasil Try Out**, jawaban tertahan itu TERLIHAT di panel
+  kuning "🗃️ Jawaban Tertahan" (nama, skor, jumlah jawaban, waktu
+  ditahan). Isinya tidak masuk ranking resmi; kalau mau dijadikan
+  resmi, kabari developer supaya dipindahkan ke dokumen sesi.
+- Konfirmasi reset (per siswa maupun massal) sekarang memperingatkan
+  DULU kalau masih ada sesi berstatus "sedang berjalan", supaya admin
+  tahu akibatnya ke layar yang masih terbuka sebelum klik.
+
+**Buat anak yang LANJUT melihat layar merah lama** (kejadiannya sebelum
+perbaikan ini terpasang): jawabannya masih ada di HP anak selama
+halamannya belum ditutup. Setelah perbaikan ini terpasang, minta anak
+membuka ulang link try out-nya: dia bisa mulai dari soal 1 lagi (izin
+ulang 3 jam dari reset masih berlaku; kalau sudah kedaluwarsa, tinggal
+reset/izinkan ulang lagi).
+
+## 5. Batas jujur fitur ini
 
 - Edit paket TIDAK menghitung ulang hasil siswa yang sudah selesai
   (nilai mereka milik susunan soal yang mereka kerjakan).
-- Reset tidak bisa dibatalkan — jawaban lama benar-benar dibuang.
-  Karena itu tiap reset minta konfirmasi berisi nama + angka XP.
+- Reset tidak bisa dibatalkan — jawaban lama dibuang dari hasil resmi.
+  Sejak perbaikan 2026-10-08, jawaban dari layar yang MASIH TERBUKA
+  saat reset tidak ikut hilang: sistem menahannya di panel "Jawaban
+  Tertahan" (lihat bagian 4).
 - Izin ulang 3 jam per reset; kalau siswa belum sempat mengulang sampai
   izin habis, tinggal reset/izinkan ulang lagi (XP tidak dipotong dua kali
   karena sesi lamanya sudah tidak ada).

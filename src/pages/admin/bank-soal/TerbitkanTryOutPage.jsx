@@ -50,6 +50,9 @@ import { tipeDidukung, hitungRincianMasukKeranjang, teksRincianKeranjang } from 
 import { deteksiGranularitasSubtes, isoKeDatetimeLocal } from '../../../utils/logikaSubtesTryOut.js';
 import { teksKonfirmasiResetSesi } from '../../../utils/pemulihanXPTryOut.js';
 import { resetSesiTryOut } from '../../../services/resetSesiTryOut.js';
+// 🔥 BARU (2026-10-08): peringatan jujur soal akibat reset ke layar anak
+// yang masih terbuka (lihat utils/pulihKirimHasilTryOut.js).
+import { peringatanSesiBerjalan } from '../../../utils/pulihKirimHasilTryOut.js';
 import {
   ArrowLeft, Loader2, Send, ShoppingCart, Trash2, CheckCircle2, AlertTriangle,
   Timer, ShieldAlert, Camera, ListChecks, Layers, Folder, FolderOpen, ChevronDown, ChevronUp, ChevronRight, Sparkles,
@@ -821,11 +824,20 @@ export default function TerbitkanTryOutPage() {
   const resetSemuaSesi = useCallback(async () => {
     if (!resetPaket || daftarSesiReset.length === 0) return;
     const totalXp = daftarSesiReset.reduce((a, s) => a + Math.max(0, Number(s.xpFinal) || 0), 0);
+    // 🔥 BARU (2026-10-08, keluhan owner "anak-anak banyak yang lihat
+    // Gagal Mengirim Hasil setelah aku ulangi"): kalau masih ada sesi
+    // 'berjalan', kemungkinan layar anak masih terbuka -- owner wajib
+    // tahu AKIBATNYA sebelum klik (layar lama ditawari mulai ulang,
+    // jawaban akhir ditahan aman), bukan kaget sesudahnya.
+    const peringatanBerjalan = peringatanSesiBerjalan(
+      daftarSesiReset.filter((s) => s.status === 'berjalan').length,
+    );
     if (!window.confirm(
       `Reset SEMUA ${daftarSesiReset.length} sesi try out "${resetPaket.judul}"?\n\n`
       + '• Semua siswa yang terdaftar di daftar ini bisa kerjain ulang dari soal nomor 1 (izin 3 jam menembus deadline diberi otomatis).\n'
       + `• Total ${totalXp} XP dari pengerjaan lama ditarik balik biar gak dobel.\n`
       + '• Tindakan ini TIDAK bisa dibatalkan.'
+      + (peringatanBerjalan ? `\n\n${peringatanBerjalan}` : '')
     )) return;
     setSedangResetSesi('semua');
     let ok = 0; let gagal = 0;
