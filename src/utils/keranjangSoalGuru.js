@@ -38,27 +38,12 @@
 
 import { tipeDidukung } from './keranjangTryOut.js';
 
-/**
- * Teks soal, sadar-alias.
- * Jalur tulis di repo ini tidak seragam: Import Hasil Scan & Advanced
- * Extractor menulis `soal`; Mesin Bank Soal & Impor HTML Gemini menulis
- * `soal` DAN `teksSoal`. Membaca satu nama saja berarti butir sehat
- * terlihat "(teks soal kosong)" — dan di halaman Bersihkan Soal dulu
- * tuduhan itu berujung soft-delete.
- */
-export function teksSoalDari(soal) {
-  return String(soal?.soal || soal?.teksSoal || soal?.teks_soal || soal?.pertanyaan || '').trim();
-}
-
-/** Identitas butir, sadar-alias (`materi` vs `bab` vs `topik`, dst). */
-export function identitasDari(soal) {
-  return {
-    mapel: String(soal?.mataPelajaran || soal?.mapel || '').trim() || '(tanpa mapel)',
-    jenjang: String(soal?.jenjang || '').trim() || '(tanpa jenjang)',
-    materi: String(soal?.materi || soal?.bab || soal?.topik || '').trim() || '(tanpa materi)',
-    kelas: String(soal?.tingkatKelas || soal?.kelas || '').trim(),
-  };
-}
+// 🔥 2026-10-08: pembaca field (teks soal / identitas / bacaan) DIPINDAH ke
+// src/utils/fieldButirSoal.js supaya mesin cetak, kartu baca, mesin audit, dan
+// halaman pembersih memakai pengertian yang SAMA. Di sini hanya di-re-export
+// agar pemanggil lama tidak patah.
+export { teksSoalDari, identitasDari, bacaanDari } from './fieldButirSoal.js';
+import { teksSoalDari, identitasDari } from './fieldButirSoal.js';
 
 /** Bendera mutu yang perlu dilihat tentor SEBELUM mencetak. */
 export function benderaButir(soal) {

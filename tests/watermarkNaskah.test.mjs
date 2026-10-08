@@ -30,6 +30,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
+  WATERMARK,
   LOGO_WATERMARK,
   gayaWatermark,
   watermarkHtml,
@@ -85,11 +86,29 @@ test('mode tetap memakai position:fixed supaya diulang tiap halaman cetak', () =
   assert.match(gayaWatermark({ mode: 'halaman' }), /position: absolute/);
 });
 
-test('opacity default rendah tapi tidak nol (harus tetap terlihat)', () => {
+test('opacity default CUKUP JELAS tapi tidak menutupi teks (permintaan owner)', () => {
+  // Owner 2026-10-08: "watermark besarkan lagi gapapa, opasitasnya agak
+  // dijelaskin". Bawah 0.10 nyaris tak terlihat (dulu 0.07); atas 0.20
+  // mulai mengalahkan teks soal. Angka ini dipaku supaya tidak diam-diam
+  // dikembalikan ke nilai lama.
   const css = gayaWatermark();
   const opacity = Number(css.match(/opacity:\s*([0-9.]+)/)[1]);
-  assert.ok(opacity > 0, 'opacity 0 = watermark tidak berguna');
+  assert.ok(opacity >= 0.10, `opacity ${opacity} terlalu samar — owner minta lebih jelas`);
   assert.ok(opacity <= 0.2, `opacity ${opacity} terlalu pekat, akan mengganggu baca`);
+});
+
+test('ukuran cetak default diperbesar (dulu 62mm, kini >= 90mm)', () => {
+  const css = gayaWatermark();
+  const mm = Number(css.match(/width:\s*([0-9.]+)mm/)[1]);
+  assert.ok(mm >= 90, `watermark ${mm}mm terlalu kecil untuk lembar cetak`);
+  assert.ok(mm <= 140, `watermark ${mm}mm akan mendominasi halaman`);
+});
+
+test('ukuran kartu layar & cetak berasal dari SATU konstanta', () => {
+  assert.equal(WATERMARK.logo, LOGO_WATERMARK);
+  assert.ok(WATERMARK.ukuranPx >= 200, 'kartu layar: owner minta lebih besar');
+  assert.ok(WATERMARK.opacityLayar >= 0.10);
+  assert.ok(WATERMARK.opacityLayar <= 0.2);
 });
 
 test('watermarkHtml menandai diri sebagai hiasan (aria-hidden) dan meng-escape logo', () => {

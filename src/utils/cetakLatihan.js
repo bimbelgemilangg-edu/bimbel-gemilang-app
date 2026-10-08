@@ -33,6 +33,10 @@ import { pisahTeksDanGambar } from './penempatanGambar.js';
 // seperti di naskah dua kolom. Logika & logonya SATU sumber di
 // naskahSoal.js supaya dua mesin cetak ini tidak punya dua identitas.
 import { escapeHtml, teksKeHtml, kertasDariKode, gayaWatermark, watermarkHtml } from './naskahSoal.js';
+// 🔥 2026-10-08: pembaca field sadar-alias + bacaan. Mesin lembar gunting
+// ini dulu membaca `soal?.soal || soal?.teks_soal` saja dan TIDAK merender
+// wacana sama sekali -- soal literasi tercetak tanpa teks yang harus dibaca.
+import { teksSoalDari, bacaanDari } from './fieldButirSoal.js';
 
 export { escapeHtml, teksKeHtml };
 
@@ -62,6 +66,17 @@ function gayaDasar(kodeKertas, opsi = {}) {
   .identitas span { border-bottom: 1px solid #000; min-width: 120px; padding-bottom: 8px; }
   .kotak { border: 1.5pt solid #000; border-radius: 4px; padding: 8px 10px; margin: 0 0 12px;
            page-break-inside: avoid; position: relative; }
+  /* TANPA background: uji "tata letak ramah kertas bekas" di
+     tests/cetakLatihan.test.mjs melarang blok berwarna/abu di CSS cetak --
+     bimbel mencetak di atas kertas bertinta lama, jadi isian warna
+     memboroskan toner dan menutupi tulisan lama. Pemisah wacana memakai
+     garis kiri + garis putus atas-bawah, bukan blok abu. */
+  .bacaan { border-left: 3pt solid #000; border-top: 0.6pt dashed #64748b;
+            border-bottom: 0.6pt dashed #64748b; padding: 6px 8px;
+            margin: 0 0 7px; font-size: 11px; line-height: 1.55; text-align: justify; }
+  .bacaan-judul { font-size: 9px; font-weight: bold; letter-spacing: .4px;
+            text-transform: uppercase; margin-bottom: 3px; }
+  .bacaan img { max-width: 100%; }
   .kotak::after { content: '✂'; position: absolute; top: -9px; right: 6px; background: #fff;
                   font-size: 10px; padding: 0 3px; color: #000; }
   .nomor { display: inline-block; font-size: 15px; font-weight: 800; border: 1.5pt solid #000;
@@ -92,7 +107,20 @@ function kepalaHtml(paket, judulDok) {
 // tercetak mentah di kalimat -- lembar cetak menyebut "perhatikan gambar
 // {{GAMBAR}} di atas" tanpa gambar di tempat yang ditunjuk.
 function stemHtml(soal) {
-  return pisahTeksDanGambar(soal?.soal || soal?.teks_soal, soal?.gambarUrls)
+  const bacaan = bacaanDari(soal);
+  const bacaanHtml = bacaan
+    ? `<div class="bacaan"><div class="bacaan-judul">Bacalah teks berikut${
+      bacaan.rentang ? ` (untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai})` : ''
+    }</div>${
+      pisahTeksDanGambar(bacaan.teks, bacaan.gambar)
+        .map((sg) => (sg.jenis === 'teks'
+          ? `<div>${teksKeHtml(sg.isi)}</div>`
+          : `<img src="${escapeHtml(sg.url)}" alt="Gambar bacaan" />`))
+        .join('')
+    }</div>`
+    : '';
+  // Bacaan DIDAHULUKAN: soal literasi merujuk "teks di atas".
+  return bacaanHtml + pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls)
     .map((sg) => (sg.jenis === 'teks'
       ? `<div class="soal">${teksKeHtml(sg.isi)}</div>`
       : `<img class="gbr" src="${escapeHtml(sg.url)}" alt="Gambar soal ${sg.indeks + 1}" />`))

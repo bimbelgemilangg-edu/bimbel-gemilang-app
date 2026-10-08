@@ -25,11 +25,17 @@
 
 import React from 'react';
 import { Trash2, ArrowUp, ArrowDown, AlertTriangle, KeyRound, BookOpen } from 'lucide-react';
+// KaTeX CSS wajib ikut: teksKeHtml() memanggil katex.renderToString, dan
+// tanpa CSS-nya rumus tampil dengan font & spasi yang salah (pecah).
+// Halaman Cetak Latihan sudah memuatnya, tapi komponen ini tidak boleh
+// bergantung pada halaman mana ia dipasang.
+import 'katex/dist/katex.min.css';
 import { teksKeHtml } from '../../utils/naskahSoal';
 import { pisahTeksDanGambar } from '../../utils/penempatanGambar';
-import { teksSoalDari, identitasDari, benderaButir } from '../../utils/keranjangSoalGuru';
+import { benderaButir } from '../../utils/keranjangSoalGuru';
+import { teksSoalDari, identitasDari, bacaanDari, WATERMARK } from '../../utils/fieldButirSoal';
 
-const LOGO = '/pwa-192x192.png';
+const LOGO = WATERMARK.logo;
 
 const gaya = {
   kartu: {
@@ -41,14 +47,18 @@ const gaya = {
     marginBottom: 12,
     boxShadow: '0 1px 2px rgba(15,23,42,0.05)',
   },
+  // 🔥 Owner 2026-10-08: "watermark besarkan lagi gapapa, opasitasnya agak
+  // dijelaskin". Angka dipatok di fieldButirSoal.WATERMARK supaya layar dan
+  // hasil cetak tidak punya dua identitas. Tetap pointer-events:none dan
+  // di z-index 0 supaya tidak pernah menghalangi klik atau menutupi teks.
   watermark: {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 150,
-    height: 150,
-    opacity: 0.07,
+    width: WATERMARK.ukuranPx,
+    height: WATERMARK.ukuranPx,
+    opacity: WATERMARK.opacityLayar,
     pointerEvents: 'none',
     zIndex: 0,
     objectFit: 'contain',
@@ -63,10 +73,23 @@ const gaya = {
     padding: '3px 9px', fontSize: 12, fontWeight: 800, flexShrink: 0,
   },
   identitas: { fontSize: 11, color: '#64748b', lineHeight: 1.5 },
-  teks: { fontSize: 13, lineHeight: 1.65, color: '#0f172a' },
+  // fontSize & lineHeight dinaikkan: bacaan literasi bisa ratusan kata, dan
+  // overflowWrap mencegah rumus/URL panjang memecah tata letak kartu.
+  teks: { fontSize: 13.5, lineHeight: 1.75, color: '#0f172a', overflowWrap: 'break-word' },
+  bacaan: {
+    borderLeft: '3px solid #94a3b8', background: '#f8fafc', borderRadius: 8,
+    padding: '10px 12px', marginBottom: 10, fontSize: 13, lineHeight: 1.75,
+    color: '#1e293b', textAlign: 'justify', overflowWrap: 'break-word',
+  },
+  bacaanJudul: {
+    fontSize: 10, fontWeight: 800, letterSpacing: 0.5, textTransform: 'uppercase',
+    color: '#475569', marginBottom: 5,
+  },
+  // Gambar diperbesar: diagram/grafik harus terbaca tanpa harus membuka
+  // tab baru. Tinggi maksimum dinaikkan 220 -> 340px.
   gambar: {
-    maxWidth: '100%', maxHeight: 220, border: '1px solid #cbd5e1',
-    borderRadius: 8, margin: '6px 0', display: 'block',
+    maxWidth: '100%', maxHeight: 340, border: '1px solid #cbd5e1',
+    borderRadius: 8, margin: '8px 0', display: 'block',
   },
   opsi: { fontSize: 12.5, color: '#1e293b', padding: '3px 0', lineHeight: 1.55 },
   tombol: {
@@ -105,6 +128,8 @@ export default function KartuKeranjangSoal({ soal, nomor, jumlah = 0, tanpaKunci
   if (!soal) return null;
   const identitas = identitasDari(soal);
   const bendera = benderaButir(soal);
+  const bacaan = bacaanDari(soal);
+  const segmenBacaan = bacaan ? pisahTeksDanGambar(bacaan.teks, bacaan.gambar) : [];
   const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
   const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
   const pernyataan = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
@@ -150,6 +175,21 @@ export default function KartuKeranjangSoal({ soal, nomor, jumlah = 0, tanpaKunci
           </div>
         </div>
 
+        {/* 🔥 BACAAN / wacana DIDAHULUKAN. Soal literasi merujuk "teks di
+            atas", jadi wacana harus muncul sebelum pertanyaannya. Sebelumnya
+            kartu ini (dan kedua mesin cetak) tidak merender bacaan sama
+            sekali -- siswa/tentor melihat perintah tanpa teksnya. */}
+        {bacaan && (
+          <div style={gaya.bacaan}>
+            <div style={gaya.bacaanJudul}>
+              Bacalah teks berikut{bacaan.rentang ? ` (untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai})` : ''}
+            </div>
+            {segmenBacaan.map((sg, i) => (sg.jenis === 'teks'
+              ? <div key={i} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
+              : <img key={i} src={sg.url} alt={`Gambar bacaan nomor ${nomor}`} style={gaya.gambar} />))}
+          </div>
+        )}
+
         {/* teks soal + gambar di badan soal */}
         {segmen.map((sg, i) => (sg.jenis === 'teks'
           ? <div key={i} style={gaya.teks} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
@@ -172,7 +212,7 @@ export default function KartuKeranjangSoal({ soal, nomor, jumlah = 0, tanpaKunci
                   <b>({huruf})</b>{' '}
                   <span dangerouslySetInnerHTML={{ __html: teksKeHtml(teks) }} />
                   {gambarOpsi.map((g, j) => (g?.uploadedUrl || g?.url
-                    ? <img key={j} src={g.uploadedUrl || g.url} alt={`Gambar pilihan ${huruf}`} style={{ ...gaya.gambar, maxHeight: 110, display: 'inline-block', verticalAlign: 'middle', marginLeft: 6 }} />
+                    ? <img key={j} src={g.uploadedUrl || g.url} alt={`Gambar pilihan ${huruf}`} style={{ ...gaya.gambar, maxHeight: 160, display: 'inline-block', verticalAlign: 'middle', marginLeft: 6 }} />
                     : null))}
                 </div>
               );
