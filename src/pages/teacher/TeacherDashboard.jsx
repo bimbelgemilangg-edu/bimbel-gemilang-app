@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 import { daftarIdGuru } from '../../utils/identitasGuru';
+import { bolehTampilUmum } from '../../utils/statusTryOutPaket';
 
 // ============================================================
 // LOGO COMPONENT - Menggunakan gambar dari folder public
@@ -89,7 +90,12 @@ const TeacherDashboard = () => {
         if (batal) return;
         setTryoutTerhubung(snap.docs
           .map((d) => ({ id: d.id, ...d.data() }))
-          .filter((p) => p.status !== 'nonaktif')
+          // 🔥 2026-10-08: filter lama hanya membuang 'nonaktif'. Begitu ada
+          // status 'menunggu_approval'/'draf'/'ditolak' (Fase 2: tentor
+          // mengusulkan try out), usulan yang belum disetujui akan masuk banner
+          // dan terlihat seperti paket aktif. Pakai penyaring yang sama dengan
+          // Perpustakaan supaya tidak ada dua daftar status.
+          .filter((p) => bolehTampilUmum(p.status))
           .sort((a, b) => (b.tentorDihubungkanPada || '').localeCompare(a.tentorDihubungkanPada || '')));
       } catch { /* tampilkan kosong */ }
     })();

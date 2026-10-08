@@ -37,6 +37,7 @@ melainkan **data identitas** dan **pagar pengaman saat data diubah massal**.
 | R3 | **Dua kosakata `jenjang` + alias `materi`/`bab`** | Soal lenyap dari hierarki tanpa error. **Sudah diperbaiki di titik tulis** (commit `0963b0b`); data lama masih perlu disapu lewat Audit Identitas → Rencana Perbaikan. | `jenjangBaku.js`, `mesinTaksonomiSoal.js` |
 | R4 | **Satu jalur tulis tanpa identitas materi sama sekali** | Butir dari Advanced Question Extractor pasti jatuh ke "(Belum diatur)". `babTaksonomi` di-fetch tapi tak dipakai — "pagar materi" belum selesai dibangun. | `AdvancedQuestionExtractor.jsx` |
 | R5 | **Kuota baca Firestore habis (429)** | Halaman yang menyapu koleksi penuh membuat aplikasi mati pelan-pelan, dan kegagalan lama ditelan sebagai "daftar kosong" sehingga terlihat seperti "soalnya hilang". | lihat `POLICY-ERROR-DAN-KUOTA.md` |
+| R7 | **Empat jalur menampilkan paket tanpa menyaring status** | `sumberKonten.js` (Perpustakaan admin+guru), `TeacherDashboard`, `CetakPaketLatihan`, dan `HasilTryOutAdminPage` membaca `tryout_paket` tanpa saringan status. Daftar siswa (`DaftarTryOutPage`) sudah aman karena memakai `where('status','==','aktif')`, tetapi begitu ada status `menunggu_approval`, usulan tentor akan muncul di Perpustakaan, banner dasbor guru, dropdown cetak, dan daftar hasil — terlihat seperti paket terbit. |
 | R6 | **Pilihan tentor lenyap saat ganti filter** | Setiap ganti jenjang/mapel/bab memanggil `setTercentang([])`. Tentor yang sudah mencentang 15 soal lalu pindah bab **kehilangan semuanya tanpa peringatan** — dan memang mustahil merakit soal lintas bab. Inilah inti "menu pilih membingungkan". | `CetakPaketLatihan.jsx` |
 
 R1 dan R2 adalah alasan ketakutanmu **benar**. R6 adalah alasan keluhan
@@ -68,47 +69,64 @@ Tidak ada fase yang menulis ke data produksi tanpa pagar.
 **Selesai bila:** menjalankan Bersihkan Soal pada bank yang sehat tidak menghapus
 apa pun, dan audit identitas melaporkan 0 butir tersembunyi.
 
-### FASE 1 — Rombak menu pilih tentor (R6)
+### FASE 1 — Rombak menu pilih tentor (R6) ✅ SELESAI 2026-10-08
 *Target: tentor bisa merakit 40 soal dari 3 bab berbeda tanpa kehilangan pilihan.*
 
-- [ ] **1.1 Keranjang yang bertahan**: ganti `tercentang` (array yang dihapus tiap
+- [x] **1.1 Keranjang yang bertahan**: ganti `tercentang` (array yang dihapus tiap
       ganti filter) dengan **keranjang Map `id → soal`** yang hidup lintas
       jenjang/mapel/bab. Pakai ulang `hitungRincianMasukKeranjang` +
       `teksRincianKeranjang` dari `keranjangTryOut.js` (sudah teruji) supaya
       bahasanya sama dengan halaman admin — satu sumber kebenaran.
-- [ ] **1.2 Bilah keranjang selalu terlihat**: "🧺 23 soal terpilih · 4 bab ·
+- [x] **1.2 Bilah keranjang selalu terlihat**: "🧺 23 soal terpilih · 4 bab ·
       2 mapel" + tombol buka/ninjau/hapus satu-satu/kosongkan. Tentor selalu tahu
       apa yang sudah ia kumpulkan.
-- [ ] **1.3 Pagar tipe di pintu**: butir yang tipenya tak bisa dirender
+- [x] **1.3 Pagar tipe di pintu**: butir yang tipenya tak bisa dirender
       (`tipeDidukung` = false) **tidak bisa dicentang**, dengan alasan terlihat —
       bukan bisa dipilih lalu tampil rusak.
-- [ ] **1.4 Bendera mutu saat memilih**: butir dengan `kunciTerverifikasi === false`,
+- [x] **1.4 Bendera mutu saat memilih**: butir dengan `kunciTerverifikasi === false`,
       pembahasan `penalaran`, atau `potonganTertunda` diberi tanda kuning. Ini
       menghubungkan Fase 0 ke layar tentor: mutu bank terlihat **saat** memilih.
-- [ ] **1.5 Urutan & nomor**: naik/turun/hapus per butir di dalam keranjang, dan
+- [x] **1.5 Urutan & nomor**: naik/turun/hapus per butir di dalam keranjang, dan
       nomor urut mengikuti keranjang (bukan nomor asli bank).
 
 **Selesai bila:** tentor memilih dari 3 bab berbeda, pindah-pindah filter, dan
 keranjangnya utuh; cetak naskah memuat persis isi keranjang.
 
-### FASE 2 — Tentor merakit try out, admin menyetujui
+### FASE 2 — Tentor merakit try out, admin menyetujui ✅ SELESAI 2026-10-08
 *Target: wewenang baru tanpa risiko baru.*
 
-- [ ] **2.1 Simpan keranjang jadi draf paket** (`tryout_paket` dengan
+- [x] **2.1 Simpan keranjang jadi draf paket** (`tryout_paket` dengan
       `status: 'menunggu_approval'`, `dibuatOleh: <uid guru>`, `daftarSoal`).
       Draf **tidak pernah** terlihat siswa.
-- [ ] **2.2 Antrean approval di admin**: daftar draf → pratinjau naskah →
+- [x] **2.2 Antrean approval di admin**: daftar draf → pratinjau naskah →
       **Setujui** (status `aktif`, terbit) / **Tolak dengan alasan** (kembali ke
       tentor, tidak hilang). Jejak audit siapa menyetujui apa.
-- [ ] **2.3 Pakai ulang pagar yang sudah ada**: `TIPE_TERDUKUNG`, granularitas
+- [x] **2.3 Pakai ulang pagar yang sudah ada**: `TIPE_TERDUKUNG`, granularitas
       & jadwal dari `TerbitkanTryOutPage`, dan `mesinTryOutOtomatis` — jangan
       membangun mesin terbit kedua.
-- [ ] **2.4 Batas wewenang yang jujur**: tentor hanya melihat paket miliknya
+- [x] **2.4 Batas wewenang yang jujur**: tentor hanya melihat paket miliknya
       (`GuruPantauTryOut` sudah punya pola `guruCocokDenganTentor`); admin melihat
       semua.
 
 **Selesai bila:** satu draf tentor bisa disetujui admin dan langsung bisa
 dikerjakan siswa, dengan jejak audit lengkap.
+
+**Yang benar-benar dibangun (2026-10-08):**
+
+| Berkas | Isi |
+|---|---|
+| `src/utils/statusTryOutPaket.js` | SATU sumber kebenaran status paket + mesin transisi (siapa boleh apa). `bolehTampilUmum()` memakai daftar HITAM, bukan putih, supaya paket warisan tanpa field `status` tidak hilang dari Perpustakaan (SOP janji #1). |
+| `src/utils/rakitTryOutTentor.js` | Pengelompokan subtes, pagar kirim draf, pembentuk payload yang mengikuti skema `tryout_paket` yang sudah dibaca `TryOutView.jsx`, putusan approve/tolak, ringkasan untuk antrean. |
+| `src/pages/teacher/RakitTryOutGuruPage.jsx` | `/guru/rakit-tryout` — dua kolom supaya tidak membingungkan: KIRI memilih (filter jenjang→mapel→materi→kelas→tipe→kesulitan→kata kunci, daftar BERKELOMPOK per materi dengan tombol pilih/buang sekelompok), KANAN merakit (judul, granularitas subtes + pratinjau jumlahnya, timer, anti-cheat, catatan, putusan kirim, riwayat usulan sendiri). |
+| `src/pages/admin/bank-soal/ApprovalTryOutPage.jsx` | `/admin/bank-soal/approval-tryout` — antrean menunggu/ditolak, periksa butir & subtes & bendera mutu, isi jadwal, TERBITKAN atau TOLAK dengan alasan wajib. |
+| `tests/rakitTryOutTentor.test.mjs` | 38 uji. Termasuk invarian: tentor TIDAK bisa menerbitkan paketnya sendiri; draf tidak tampil di daftar umum; paket warisan tanpa status tetap tampil; jadwal tidak jadi efek samping usulan; tipe yang tak bisa dirender DITOLAK (bukan dibenderai). |
+
+**R7 ditutup bersamaan** — keempat jalur itu kini menyaring lewat
+`saringPaketTerbit()` / `bolehTampilUmum()` dari modul status yang sama.
+
+**Kuota:** halaman tentor mengambil bank soal lewat `ambilKonten()` yang sudah
+ber-cache TTL 10 menit dan dipakai Perpustakaan — tidak membuka jalur sapuan
+baru (R5).
 
 ### FASE 3 — Menu berkaitan (hasil analisisku, bukan tebakan)
 
@@ -150,7 +168,9 @@ Bukan perasaan — angka yang bisa dijalankan ulang:
 |---|---|---|
 | Butir tak terjangkau hierarki | Audit Identitas Soal | **0** |
 | Butir rusak | Audit Identitas Soal | diketahui & tertangani |
-| Dokumen terhapus oleh pembersih saat bank sehat | test baru 0.5 | **0** |
+| Dokumen terhapus oleh pembersih saat bank sehat | `tests/pagarBersihkanSoal.test.mjs` | **0** (terkunci 13 uji) |
+| Draf usulan bocor ke daftar umum | `tests/rakitTryOutTentor.test.mjs` | **0** (terkunci invarian) |
+| Tentor bisa menerbitkan paketnya sendiri | `transisiStatus(..., 'tentor')` | **ditolak** (terkunci uji) |
 | Butir tanpa `materi` dari jalur extractor | Audit (cakupan field) | **0** |
 | Rute terdaftar / komponen | `scripts/ci-penjaga-rute.mjs` | tetap hijau |
 | `npm test` | CI | tetap hijau |

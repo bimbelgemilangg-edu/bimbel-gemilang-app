@@ -17,6 +17,14 @@
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { perluSegar, kebijakanGagalMuat } from './keputusanMuat.js';
+// 🔥 2026-10-08 (Fase 2): begitu tentor boleh MENGUSULKAN paket try out,
+// koleksi tryout_paket punya status yang belum boleh dilihat umum
+// (draf / menunggu_approval / ditolak). Berkas ini memasok Perpustakaan
+// untuk admin DAN guru, jadi penyaringannya ditaruh di sini — satu titik
+// sempit, bukan diserahkan ke tiap halaman. Paket warisan tanpa field
+// status TETAP lolos (lihat bolehTampilUmum), supaya tidak ada paket lama
+// yang hilang dari Perpustakaan.
+import { saringPaketTerbit } from './statusTryOutPaket.js';
 
 const TTL_MS = 10 * 60 * 1000;
 let cache = null;
@@ -42,7 +50,7 @@ export async function ambilKonten({ paksa = false } = {}) {
         getDocs(collection(db, 'buku_digital')),
         getDocs(collection(db, 'tryout_paket')),
       ]);
-      cache = { soal: peta(s), buku: peta(b), paket: peta(p) };
+      cache = { soal: peta(s), buku: peta(b), paket: saringPaketTerbit(peta(p)) };
       waktuCache = Date.now();
       return { ...cache, dariCache: false, pesan: '' };
     } catch (e) {
