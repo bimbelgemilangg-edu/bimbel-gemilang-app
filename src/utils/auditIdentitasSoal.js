@@ -56,6 +56,11 @@ import { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku } from './jenjangBaku.js';
 // K13) — identitasnya "ada" tapi tidak selaras dengan kurikulum yang dipakai
 // sekolah, jadi tetap perlu ditemukan dan dibereskan.
 import { peringatanKeselarasanKurikulum } from './kurikulumMerdeka.js';
+// 🔥 2026-10-08: audit dijadikan GENERAL CHECKUP. Satu sapuan yang sama kini
+// juga menjawab dua pertanyaan fondasi lain: apakah ada butir kembar yang
+// lolos masuk (sidik jari sadar gambar+kunci), dan seberapa pecah pohon
+// materi yang akan dilihat tentor. Tanpa bacaan Firestore tambahan.
+import { bandingkanDuplikat } from './kunciDuplikatSoal.js';
 
 export { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku };
 
@@ -601,6 +606,29 @@ export function auditBankSoal(daftar, opsi = {}) {
     { field: 'pembahasan', terisi: cacah.pembahasan, wajib: false },
   ].map((c) => ({ ...c, kosong: total - c.terisi, persen: persen(c.terisi) }));
 
+  // ---- GENERAL CHECKUP: duplikat & fragmentasi materi ----
+  const dup = bandingkanDuplikat(termasuk.map((t) => ({ ...t.data, id: t.id })), []);
+  const petaSimpul = new Map();
+  for (const { data } of termasuk) {
+    const idn = bacaIdentitas(data);
+    const simpul = `${idn.jenjangBaku || idn.jenjang || '(jenjang?)'}|||${idn.mapel || '(mapel?)'}|||${idn.materi || '(materi?)'}`;
+    petaSimpul.set(simpul, (petaSimpul.get(simpul) || 0) + 1);
+  }
+  const simpulSatuButir = [...petaSimpul.values()].filter((n) => n === 1).length;
+  const perMapelPecah = new Map();
+  for (const [simpul, n] of petaSimpul) {
+    const [, mapel] = simpul.split('|||');
+    const acc = perMapelPecah.get(mapel) || { simpul: 0, butir: 0, satuButir: 0 };
+    acc.simpul += 1;
+    acc.butir += n;
+    if (n === 1) acc.satuButir += 1;
+    perMapelPecah.set(mapel, acc);
+  }
+  const materiTerpecah = [...perMapelPecah.entries()]
+    .map(([mapel, v]) => ({ mapel, ...v, rata: v.simpul ? Math.round((v.butir / v.simpul) * 10) / 10 : 0 }))
+    .filter((v) => v.rata < 4)
+    .sort((a, b) => a.rata - b.rata || b.simpul - a.simpul);
+
   const jenjangTakBaku = [...petaJenjangTakBaku.entries()]
     .map(([nilai, jumlah]) => ({ nilai, jumlah, seharusnya: jenjangBaku(nilai).baku || '(tak dikenali)' }))
     .sort((a, b) => b.jumlah - a.jumlah);
@@ -645,6 +673,20 @@ export function auditBankSoal(daftar, opsi = {}) {
     butirRusak,
     butirCekManual,
     perKelompok,
+    checkup: {
+      duplikatPersis: dup.duplikatPersis.length,
+      kembarBedaKunci: dup.kembarBedaKunci.length,
+      perintahSamaGambarBeda: dup.teksSamaGambarBeda,
+      contohKembarBedaKunci: dup.kembarBedaKunci.slice(0, 10).map((x) => ({
+        id: x.baru?.id || '',
+        pratinjau: x.pratinjau,
+        sumber: x.sumber,
+      })),
+      simpulMateri: petaSimpul.size,
+      simpulSatuButir,
+      rataButirPerSimpul: petaSimpul.size ? Math.round((total / petaSimpul.size) * 100) / 100 : 0,
+      materiTerpecah,
+    },
     rencanaPerbaikan: rencanaPerbaikanIdentitas(termasuk),
     kesiapanTentor: { siap: siapTentor, penghalang },
     ringkasan: {
