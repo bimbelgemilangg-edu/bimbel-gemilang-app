@@ -19,6 +19,10 @@ import {
   MIN_TEKS_DUPLIKAT,
   sidikJariGambar,
   kunciDuplikat,
+  kunciDuplikatKetat,
+  kunciKembarTanpaKunci,
+  kunciTeksSaja,
+  bandingkanDuplikat,
   alasanDuplikat,
 } from '../src/utils/kunciDuplikatSoal.js';
 
@@ -130,6 +134,78 @@ test('alias field teks dihormati (teksSoal vs soal)', () => {
 // ------------------------------------------------------------
 // 4. Alasan yang manusiawi
 // ------------------------------------------------------------
+
+// ------------------------------------------------------------
+// 5. Deteksi di HULU: bandingkan batch terhadap bank
+// ------------------------------------------------------------
+
+const POSTER = 'Berdasarkan gambar poster di atas, tentukan apakah setiap pernyataan berikut Benar atau Salah!';
+const poster = (url, kunci = '') => ({
+  soal: POSTER, tipe: 'benar_salah', gambarUrls: [url], kunciJawaban: kunci,
+  tabelBenarSalah: [{ pernyataan: 'Pernyataan tentang poster ini', kunci: 'benar' }],
+  mataPelajaran: 'Bahasa Indonesia', jenjang: 'SMP/MTs', tingkatKelas: '8',
+});
+
+test('hulu: butir yang sama persis dengan bank dilaporkan sebagai duplikat persis', () => {
+  const bank = [poster('https://a/1.png', 'B')];
+  const r = bandingkanDuplikat([poster('https://a/1.png', 'B')], bank);
+  assert.equal(r.duplikatPersis.length, 1);
+  assert.equal(r.duplikatPersis[0].sumber, 'bank');
+  assert.equal(r.kembarBedaKunci.length, 0);
+});
+
+test('hulu: perintah sama + gambar beda TIDAK diperingatkan sama sekali', () => {
+  const bank = [poster('https://a/1.png', 'B')];
+  const r = bandingkanDuplikat([poster('https://a/2.png', 'B')], bank);
+  assert.equal(r.duplikatPersis.length, 0, 'gambar beda bukan duplikat');
+  assert.equal(r.kembarBedaKunci.length, 0, 'gambar beda bukan kembar beda kunci');
+  assert.equal(r.teksSamaGambarBeda, 1, 'tapi dihitung jujur sebagai "sengaja tidak diperingatkan"');
+});
+
+test('hulu: semuanya sama kecuali KUNCI = kembar beda kunci, bukan duplikat', () => {
+  const bank = [poster('https://a/1.png', 'B')];
+  const r = bandingkanDuplikat([poster('https://a/1.png', 'D')], bank);
+  assert.equal(r.duplikatPersis.length, 0, 'jangan hapus: salah satunya mungkin salah kunci');
+  assert.equal(r.kembarBedaKunci.length, 1);
+  assert.equal(r.kembarBedaKunci[0].sumber, 'bank');
+});
+
+test('hulu: kembar beda kunci SESAMA batch juga tertangkap', () => {
+  const r = bandingkanDuplikat([
+    { soal: POSTER, tipe: 'pg_sederhana', opsiJawaban: ['a', 'b'], kunciJawaban: 'A' },
+    { soal: POSTER, tipe: 'pg_sederhana', opsiJawaban: ['a', 'b'], kunciJawaban: 'B' },
+  ], []);
+  assert.equal(r.duplikatPersis.length, 0);
+  assert.equal(r.kembarBedaKunci.length, 1);
+  assert.equal(r.kembarBedaKunci[0].sumber, 'batch');
+});
+
+test('hulu: dua butir baru yang sama-sama menduplikat bank dilaporkan dua-duanya', () => {
+  const bank = [poster('https://a/1.png', 'B')];
+  const r = bandingkanDuplikat([poster('https://a/1.png', 'B'), poster('https://a/1.png', 'B')], bank);
+  assert.equal(r.duplikatPersis.length, 2);
+});
+
+test('hulu: array kunci dengan urutan berbeda tetap sama', () => {
+  const a = { soal: POSTER, tipe: 'pg_kompleks', pernyataan: ['x', 'y'], kunciJawaban: ['A', 'C'] };
+  const b = { soal: POSTER, tipe: 'pg_kompleks', pernyataan: ['x', 'y'], kunciJawaban: ['C', 'A'] };
+  assert.equal(kunciDuplikatKetat(a), kunciDuplikatKetat(b));
+});
+
+test('hulu: input kosong tidak melempar', () => {
+  assert.deepEqual(bandingkanDuplikat([], []), { duplikatPersis: [], kembarBedaKunci: [], teksSamaGambarBeda: 0 });
+  assert.deepEqual(bandingkanDuplikat(null, null).duplikatPersis, []);
+});
+
+test('tiga tingkat kunci benar-benar bertingkat', () => {
+  const a = poster('https://a/1.png', 'B');
+  const b = poster('https://a/1.png', 'D');
+  const c = poster('https://a/2.png', 'B');
+  assert.notEqual(kunciDuplikatKetat(a), kunciDuplikatKetat(b), 'ketat memisahkan beda kunci');
+  assert.equal(kunciKembarTanpaKunci(a), kunciKembarTanpaKunci(b), 'tengah mengabaikan kunci');
+  assert.notEqual(kunciKembarTanpaKunci(a), kunciKembarTanpaKunci(c), 'tengah memisahkan beda gambar');
+  assert.equal(kunciTeksSaja(a), kunciTeksSaja(c), 'teks saja mengabaikan gambar');
+});
 
 test('alasan duplikat menyebut gambar bila ada, dan jujur bila tidak', () => {
   assert.match(alasanDuplikat(butirPoster('https://a/x.png')), /1 gambar sama/);

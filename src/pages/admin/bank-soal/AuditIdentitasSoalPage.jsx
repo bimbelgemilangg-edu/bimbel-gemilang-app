@@ -469,6 +469,49 @@ export default function AuditIdentitasSoalPage() {
                   </div>
                 </div>
 
+                {/* general checkup */}
+                <div style={st.kartu}>
+                  <h2 style={st.judul}>General checkup fondasi</h2>
+                  <p style={{ ...st.kecil, marginBottom: 11 }}>
+                    Dihitung dari sapuan yang sama — tidak ada bacaan Firestore tambahan.
+                    Tiga angka pertama menjawab &quot;apakah ada soal beranak yang lolos masuk&quot;;
+                    tiga angka belakang menjawab &quot;apakah pohon materi masih bisa dinavigasi tentor&quot;.
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(6, 1fr)', gap: 10 }}>
+                    {[
+                      { l: 'Duplikat persis', v: laporan.checkup.duplikatPersis, baik: laporan.checkup.duplikatPersis === 0 },
+                      { l: 'Kembar beda kunci', v: laporan.checkup.kembarBedaKunci, baik: laporan.checkup.kembarBedaKunci === 0 },
+                      { l: 'Perintah sama, gambar beda', v: laporan.checkup.perintahSamaGambarBeda, baik: true, netral: true },
+                      { l: 'Simpul materi', v: laporan.checkup.simpulMateri, baik: true, netral: true },
+                      { l: 'Simpul berisi 1 soal', v: laporan.checkup.simpulSatuButir, baik: laporan.checkup.simpulSatuButir === 0 },
+                      { l: 'Rata-rata butir/simpul', v: laporan.checkup.rataButirPerSimpul, baik: laporan.checkup.rataButirPerSimpul >= 4 },
+                    ].map((k) => (
+                      <div key={k.l} style={{ background: k.netral ? '#f8fafc' : k.baik ? '#f0fdf4' : '#fef2f2', border: `1px solid ${k.netral ? '#e2e8f0' : k.baik ? '#bbf7d0' : '#fecaca'}`, borderRadius: 10, padding: '9px 10px' }}>
+                        <div style={{ fontSize: 20, fontWeight: 800, color: k.netral ? '#334155' : k.baik ? '#166534' : '#dc2626' }}>{k.v}</div>
+                        <div style={{ fontSize: 10.5, color: '#6b7280', lineHeight: 1.4 }}>{k.l}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {laporan.checkup.kembarBedaKunci > 0 && (
+                    <div style={{ marginTop: 10, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 9, padding: '9px 11px', lineHeight: 1.6 }}>
+                      <b>Kembar tapi jawaban berbeda.</b> Ini BUKAN duplikat yang aman dibuang — salah satunya hampir pasti
+                      salah kunci. Periksa: {laporan.checkup.contohKembarBedaKunci.map((c) => `"${c.pratinjau}…"`).join(', ')}.
+                    </div>
+                  )}
+                  {laporan.checkup.materiTerpecah.length > 0 && (
+                    <div style={{ marginTop: 10, fontSize: 12, color: '#334155', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 9, padding: '9px 11px', lineHeight: 1.7 }}>
+                      <b>Pohon materi terpecah</b> (rata-rata &lt; 4 butir per simpul) — tentor akan melihat banyak tombol
+                      berisi sedikit soal:
+                      <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                        {laporan.checkup.materiTerpecah.slice(0, 8).map((m) => (
+                          <li key={m.mapel}>{m.mapel}: {m.simpul} simpul untuk {m.butir} butir (rata-rata {m.rata}; {m.satuButir} simpul berisi 1 soal)</li>
+                        ))}
+                      </ul>
+                      Rapikan lewat Taksonomi Materi + Petakan Mapel; daftar kerja per simpul ada di hasil unduhan.
+                    </div>
+                  )}
+                </div>
+
                 {/* peta mapel */}
                 <div style={st.kartu}>
                   <h2 style={st.judul}>Sebaran per mata pelajaran</h2>

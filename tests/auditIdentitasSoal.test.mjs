@@ -425,6 +425,48 @@ test('laporan: dokumen tanpa pembungkus {id,data} tetap terbaca', () => {
 // 7. Ekspor CSV
 // ------------------------------------------------------------
 
+test('checkup: butir kembar persis terhitung sebagai duplikat', () => {
+  const l = auditBankSoal([
+    { id: 'd1', data: soalSehat() },
+    { id: 'd2', data: soalSehat() },
+  ]);
+  assert.equal(l.checkup.duplikatPersis, 1);
+  assert.equal(l.checkup.kembarBedaKunci, 0);
+});
+
+test('checkup: perintah sama + gambar beda BUKAN duplikat, dan dihitung jujur', () => {
+  const denganGambar = (url) => soalSehat({ gambarUrls: [url], gambar: [{ id: 'GAMBAR_1', deskripsi: 'x' }] });
+  const l = auditBankSoal([
+    { id: 'g1', data: denganGambar('https://a/1.png') },
+    { id: 'g2', data: denganGambar('https://a/2.png') },
+  ]);
+  assert.equal(l.checkup.duplikatPersis, 0);
+  assert.equal(l.checkup.perintahSamaGambarBeda, 1);
+});
+
+test('checkup: kembar tapi kunci beda tidak dituduh duplikat', () => {
+  const l = auditBankSoal([
+    { id: 'k1', data: soalSehat() },
+    { id: 'k2', data: soalSehat({ kunciJawaban: 'D' }) },
+  ]);
+  assert.equal(l.checkup.duplikatPersis, 0);
+  assert.equal(l.checkup.kembarBedaKunci, 1);
+});
+
+test('checkup: fragmentasi materi terukur dari sapuan yang sama', () => {
+  const l = auditBankSoal([
+    { id: 'f1', data: soalSehat({ materi: 'A' }) },
+    { id: 'f2', data: soalSehat({ materi: 'B' }) },
+    { id: 'f3', data: soalSehat({ materi: 'C' }) },
+    { id: 'f4', data: soalSehat({ materi: 'D' }) },
+  ]);
+  assert.equal(l.checkup.simpulMateri, 4);
+  assert.equal(l.checkup.simpulSatuButir, 4);
+  assert.equal(l.checkup.rataButirPerSimpul, 1);
+  assert.equal(l.checkup.materiTerpecah.length, 1);
+  assert.equal(l.checkup.materiTerpecah[0].rata, 1);
+});
+
 test('CSV meng-escape tanda kutip dan memuat kepala kolom', () => {
   const l = auditBankSoal([{ id: 'c1', data: soalSehat({ mataPelajaran: '', mapel: '', soal: 'Soal "berkutip" tanpa mapel.' }) }]);
   const csv = keCsvTanpaIdentitas(l);
