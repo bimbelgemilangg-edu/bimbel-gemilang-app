@@ -23,42 +23,15 @@
 // nyata: kertas, toner, dan waktu tentor.
 // ============================================================
 
-import katex from 'katex';
 import { teksKunciSoal } from './teksKunciSoal.js';
 import { pisahTeksDanGambar } from './penempatanGambar.js';
+// 2026-10-08: renderer teks (escape + KaTeX) dan tabel ukuran kertas
+// pindah ke src/utils/naskahSoal.js supaya mesin kotak (berkas ini) dan
+// mesin naskah dua kolom memakai SATU renderer yang sama. Diekspor ulang
+// di sini agar impor lama (halaman & test) tidak patah.
+import { escapeHtml, teksKeHtml, kertasDariKode } from './naskahSoal.js';
 
-/** Escape HTML -- soal berasal dari bank yang isinya bebas. */
-export function escapeHtml(s) {
-  return String(s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-/**
- * Teks soal -> HTML: bagian $...$ dirender sebagai rumus KaTeX, sisanya
- * diescape. Placeholder {{GAMBAR}} dibuang karena gambar dicetak terpisah
- * sebagai <img> di bawah teks (placeholder itu konvensi pipeline impor
- * yang tidak pernah dikonsumsi renderer -- lihat commit #133).
- */
-export function teksKeHtml(teks) {
-  const bersih = String(teks ?? '').replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ').replace(/\s+/g, ' ').trim();
-  const bagian = bersih.split(/(\$[^$]+\$)/g);
-  return bagian
-    .map((b) => {
-      if (b.startsWith('$') && b.endsWith('$') && b.length > 2) {
-        try {
-          return katex.renderToString(b.slice(1, -1), { throwOnError: false });
-        } catch {
-          return escapeHtml(b);
-        }
-      }
-      return escapeHtml(b);
-    })
-    .join('');
-}
+export { escapeHtml, teksKeHtml };
 
 /**
  * Pilih butir yang ikut cetak.
@@ -72,8 +45,10 @@ export function pilihSoalUntukCetak(daftar = [], opsi = {}) {
   return hasil;
 }
 
-const GAYA_DASAR = `
-  @page { size: A4; margin: 10mm; }
+function gayaDasar(kodeKertas) {
+  const k = kertasDariKode(kodeKertas);
+  return `
+  @page { size: ${k.lebarMm}mm ${k.tinggiMm}mm; margin: 10mm; }
   * { box-sizing: border-box; }
   body { font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; margin: 0; font-size: 12px; }
   .kepala { border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
@@ -99,6 +74,7 @@ const GAYA_DASAR = `
   .tempel { border: 1.5pt dashed #000; height: 42mm; margin: 4px 0; font-size: 10px; color: #000;
             display: flex; align-items: center; justify-content: center; }
 `;
+}
 
 function kepalaHtml(paket, judulDok) {
   return `<div class="kepala">
@@ -155,7 +131,7 @@ function pembahasanHtml(soal) {
 }
 
 /** DOKUMEN 1 — paket siswa: kotak soal siap gunting, TANPA kunci. */
-export function htmlPaketSiswa(paket = {}, soalList = []) {
+export function htmlPaketSiswa(paket = {}, soalList = [], opsi = {}) {
   const kotak = soalList
     .map((s, i) => `<div class="kotak">
       <span class="nomor">${i + 1}</span><b>${escapeHtml(String(s?.tipe || 'pg_sederhana').replace(/_/g, ' '))}</b>
@@ -163,7 +139,7 @@ export function htmlPaketSiswa(paket = {}, soalList = []) {
       ${opsiHtml(s)}
     </div>`)
     .join('\n');
-  return `<html><head><meta charset="utf-8" /><style>${GAYA_DASAR}</style></head><body>
+  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas)}</style></head><body>
     ${kepalaHtml(paket, 'LEMBAR LATIHAN SISWA')}
     <div class="identitas"><span>Nama: </span><span>Kelas: </span><span>Tanggal: </span></div>
     <div style="font-size:10.5px;margin-bottom:10px;">Gunting setiap kotak sesuai garis putus-putus, lalu tempel di buku progresmu.</div>
@@ -172,7 +148,7 @@ export function htmlPaketSiswa(paket = {}, soalList = []) {
 }
 
 /** DOKUMEN 2 — kunci tentor: TIDAK untuk dicetak sebagai berkas siswa. */
-export function htmlKunciTentor(paket = {}, soalList = []) {
+export function htmlKunciTentor(paket = {}, soalList = [], opsi = {}) {
   const baris = soalList
     .map((s, i) => {
       const kunci = escapeHtml(teksKunciSoal(s));
@@ -180,7 +156,7 @@ export function htmlKunciTentor(paket = {}, soalList = []) {
       return `<div class="kotak"><span class="nomor">${i + 1}</span><b>Kunci:</b> ${kunci || '-'}${pembahasan}</div>`;
     })
     .join('\n');
-  return `<html><head><meta charset="utf-8" /><style>${GAYA_DASAR}</style></head><body>
+  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas)}</style></head><body>
     <div class="peringatan">PEGANGAN TENTOR — JANGAN DICETAK UNTUK SISWA</div>
     ${kepalaHtml(paket, 'KUNCI & PEMBAHASAN')}
     ${baris}
@@ -188,7 +164,7 @@ export function htmlKunciTentor(paket = {}, soalList = []) {
 }
 
 /** DOKUMEN 3 — lembar catatan: area tempel + kolom pengerjaan per butir. */
-export function htmlLembarCatatan(paket = {}, soalList = []) {
+export function htmlLembarCatatan(paket = {}, soalList = [], opsi = {}) {
   const baris = soalList
     .map((s, i) => `<tr>
       <td style="width:10mm;text-align:center;font-weight:800;">${i + 1}</td>
@@ -197,7 +173,7 @@ export function htmlLembarCatatan(paket = {}, soalList = []) {
       <td style="width:34mm;">&nbsp;</td>
     </tr>`)
     .join('\n');
-  return `<html><head><meta charset="utf-8" /><style>${GAYA_DASAR}</style></head><body>
+  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas)}</style></head><body>
     ${kepalaHtml(paket, 'LEMBAR CATATAN PENGERJAAN')}
     <div class="identitas"><span>Nama: </span><span>Kelas: </span><span>Tanggal: </span></div>
     <table class="catat">
