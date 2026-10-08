@@ -29,7 +29,10 @@ import { pisahTeksDanGambar } from './penempatanGambar.js';
 // pindah ke src/utils/naskahSoal.js supaya mesin kotak (berkas ini) dan
 // mesin naskah dua kolom memakai SATU renderer yang sama. Diekspor ulang
 // di sini agar impor lama (halaman & test) tidak patah.
-import { escapeHtml, teksKeHtml, kertasDariKode } from './naskahSoal.js';
+// 🔥 2026-10-08: watermark logo Gemilang ikut di lembar gunting, sama
+// seperti di naskah dua kolom. Logika & logonya SATU sumber di
+// naskahSoal.js supaya dua mesin cetak ini tidak punya dua identitas.
+import { escapeHtml, teksKeHtml, kertasDariKode, gayaWatermark, watermarkHtml } from './naskahSoal.js';
 
 export { escapeHtml, teksKeHtml };
 
@@ -45,9 +48,10 @@ export function pilihSoalUntukCetak(daftar = [], opsi = {}) {
   return hasil;
 }
 
-function gayaDasar(kodeKertas) {
+function gayaDasar(kodeKertas, opsi = {}) {
   const k = kertasDariKode(kodeKertas);
-  return `
+  const wm = opsi.watermark === false ? '' : gayaWatermark({ ...opsi, mode: 'tetap' });
+  return `${wm}
   @page { size: ${k.lebarMm}mm ${k.tinggiMm}mm; margin: 10mm; }
   * { box-sizing: border-box; }
   body { font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; margin: 0; font-size: 12px; }
@@ -139,7 +143,8 @@ export function htmlPaketSiswa(paket = {}, soalList = [], opsi = {}) {
       ${opsiHtml(s)}
     </div>`)
     .join('\n');
-  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas)}</style></head><body>
+  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas, opsi)}</style></head><body>
+    ${opsi.watermark === false ? '' : watermarkHtml({ ...opsi, mode: 'tetap' })}
     ${kepalaHtml(paket, 'LEMBAR LATIHAN SISWA')}
     <div class="identitas"><span>Nama: </span><span>Kelas: </span><span>Tanggal: </span></div>
     <div style="font-size:10.5px;margin-bottom:10px;">Gunting setiap kotak sesuai garis putus-putus, lalu tempel di buku progresmu.</div>
@@ -156,7 +161,8 @@ export function htmlKunciTentor(paket = {}, soalList = [], opsi = {}) {
       return `<div class="kotak"><span class="nomor">${i + 1}</span><b>Kunci:</b> ${kunci || '-'}${pembahasan}</div>`;
     })
     .join('\n');
-  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas)}</style></head><body>
+  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas, opsi)}</style></head><body>
+    ${opsi.watermark === false ? '' : watermarkHtml({ ...opsi, mode: 'tetap' })}
     <div class="peringatan">PEGANGAN TENTOR — JANGAN DICETAK UNTUK SISWA</div>
     ${kepalaHtml(paket, 'KUNCI & PEMBAHASAN')}
     ${baris}
@@ -173,7 +179,8 @@ export function htmlLembarCatatan(paket = {}, soalList = [], opsi = {}) {
       <td style="width:34mm;">&nbsp;</td>
     </tr>`)
     .join('\n');
-  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas)}</style></head><body>
+  return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas, opsi)}</style></head><body>
+    ${opsi.watermark === false ? '' : watermarkHtml({ ...opsi, mode: 'tetap' })}
     ${kepalaHtml(paket, 'LEMBAR CATATAN PENGERJAAN')}
     <div class="identitas"><span>Nama: </span><span>Kelas: </span><span>Tanggal: </span></div>
     <table class="catat">

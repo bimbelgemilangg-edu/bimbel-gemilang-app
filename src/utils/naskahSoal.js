@@ -332,6 +332,63 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
  * Penyusun akhir: blok HTML + tinggi tiap blok -> fragmen siap cetak
  * (halaman-kolom eksplisit, nomor halaman di kaki).
  */
+// ============================================================
+// WATERMARK LOGO GEMILANG
+// ============================================================
+// Permintaan owner 2026-10-08: kartu baca tentor dan lembar yang dicetak
+// harus membawa logo Gemilang di belakangnya. Ini bukan hiasan -- lembar
+// latihan yang beredar di luar kelas harus kelihatan asal-usulnya, dan
+// tangkapan layar kartu baca tidak bisa diklaim sebagai buatan sendiri.
+//
+// Logonya SENGAJA sama dengan yang dipakai kwitansi (`kwitansi.js` baris
+// `const logo = '/pwa-192x192.png'`), supaya satu identitas di semua
+// dokumen Gemilang dan tidak ada berkas logo keempat yang hilang
+// (tiga berkas di repo ini merujuk `/logo-gemilang.png.png` yang
+// TIDAK ADA di public/ -- selamat oleh onError, jadi logonya diam-diam
+// tidak pernah tampil).
+//
+// Dua cara pasang, karena dua bentuk dokumen:
+//   'halaman' -> satu watermark per .nsk-hal (naskah dua kolom, tiap
+//                halaman memang sebuah kotak berukuran kertas)
+//   'tetap'   -> position:fixed, otomatis diulang Chrome di setiap
+//                halaman cetak (dokumen mengalir ala lembar gunting)
+// ============================================================
+
+/** Logo resmi Gemilang — sama dengan yang dipakai kwitansi. */
+export const LOGO_WATERMARK = '/pwa-192x192.png';
+
+/**
+ * @param {object} [o]
+ * @param {'halaman'|'tetap'} [o.mode]
+ * @param {number} [o.opacity] 0..1 — cukup terlihat tanpa mengganggu baca
+ * @param {number} [o.ukuranMm]
+ * @returns {string} CSS
+ */
+export function gayaWatermark(o = {}) {
+  const opacity = Number.isFinite(o.opacity) ? o.opacity : 0.07;
+  const ukuran = Number.isFinite(o.ukuranMm) ? o.ukuranMm : 62;
+  const posisi = o.mode === 'tetap'
+    ? 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);'
+    : 'position: absolute; inset: 0;';
+  return `
+.wm-gemilang { ${posisi} display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 0; overflow: hidden; }
+.wm-gemilang img { width: ${ukuran}mm; height: ${ukuran}mm; object-fit: contain; opacity: ${opacity}; }
+.nsk-kolomwrap, .kotak, .kepala, .identitas { position: relative; z-index: 1; }
+@media print { .wm-gemilang { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+`;
+}
+
+/**
+ * @param {object} [o] { logo, mode, opacity, ukuranMm, teks }
+ * @returns {string} HTML watermark (aria-hidden: hiasan, bukan konten)
+ */
+export function watermarkHtml(o = {}) {
+  const logo = o.logo || LOGO_WATERMARK;
+  const mode = o.mode === 'tetap' ? ' tetap' : '';
+  return `<div class="wm-gemilang${mode}" aria-hidden="true"><img src="${escapeHtml(logo)}" alt="" /></div>`;
+}
+
 export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const kertas = kertasDariKode(opsi.kertas);
   const nKolom = opsi.jumlahKolom > 0 ? opsi.jumlahKolom : kolomOtomatis(kertas);
@@ -341,22 +398,30 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
     : blokHtml.map((_, i) => (i === 0 ? 26 : (Array.isArray(opsi.tinggiPerkiraanMm) ? opsi.tinggiPerkiraanMm[i - 1] : 40)));
   const { halaman, peringatan } = susunKeKolom(tinggi, kapasitas, nKolom);
   const totalHal = Math.max(1, halaman.length);
+  // Watermark default HIDUP. Dimatikan hanya dengan `watermark: false`
+  // eksplisit (mis. dokumen internal yang tidak akan beredar).
+  const denganWatermark = opsi.watermark !== false;
   const isiHalaman = halaman
     .map((kolomLista, h) => {
       const kolom = kolomLista.map((indeks) => `<div class="nsk-kolom">${indeks.map((b) => blokHtml[b]).join('')}</div>`).join('');
       const lebarHal = kertas.lebarMm;
       const tinggiHal = kertas.tinggiMm;
       return `<div class="nsk-hal" style="width:${lebarHal}mm;height:${tinggiHal}mm;">
+        ${denganWatermark ? watermarkHtml({ ...opsi, mode: 'halaman' }) : ''}
         <div class="nsk-kolomwrap">${kolom}</div>
         <div class="nsk-footer">— ${h + 1} / ${totalHal} —</div>
       </div>`;
     })
     .join('');
-  const fragmen = `<style>${cssPage(kertas)}${opsi.cssTambahan || ''}${GAYA_NASKAH}</style><div class="naskah">${isiHalaman}</div>`;
+  const gayaWm = denganWatermark ? gayaWatermark({ ...opsi, mode: 'halaman' }) : '';
+  const fragmen = `<style>${cssPage(kertas)}${opsi.cssTambahan || ''}${GAYA_NASKAH}${gayaWm}</style><div class="naskah">${isiHalaman}</div>`;
   return { fragmen, jumlahHalaman: totalHal, jumlahKolom: nKolom, peringatan, lebarKolomMm: lebarKolomMm(kertas, nKolom) };
 }
 
 export default {
+  LOGO_WATERMARK,
+  gayaWatermark,
+  watermarkHtml,
   DAFTAR_KERTAS,
   kertasDariKode,
   lebarKolomMm,
