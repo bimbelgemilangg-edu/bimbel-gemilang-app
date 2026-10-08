@@ -325,6 +325,28 @@ export default function AuditIdentitasSoalPage() {
                       {siap ? 'Bank soal siap dibuka untuk tentor' : 'Bank soal BELUM siap dibuka untuk tentor'}
                     </h2>
                   </div>
+                  {laporan.ringkasan.takSelarasKurikulum > 0 && (
+                    <div style={{ marginTop: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 13px' }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#92400e', marginBottom: 6 }}>
+                        ⚠️ {laporan.ringkasan.takSelarasKurikulum} butir tidak selaras dengan Kurikulum Merdeka
+                      </div>
+                      <div style={{ fontSize: 11.5, color: '#a16207', lineHeight: 1.7 }}>
+                        Identitasnya ada, tapi mapelnya tidak sah untuk jenjangnya (mis. Biologi untuk SD,
+                        atau penamaan K13 &quot;Matematika Wajib/Minat&quot;). Unduh CSV butir tanpa identitas untuk
+                        daftarnya, lalu rapikan lewat Mesin Bank Soal → tab Rapikan.
+                      </div>
+                      <ul style={{ margin: '7px 0 0', paddingLeft: 18, fontSize: 11.5, color: '#92400e' }}>
+                        {laporan.takSelarasKurikulum.slice(0, 8).map((t) => (
+                          <li key={t.id}>
+                            <code>{t.mapel}</code> di {t.jenjang} kelas {t.kelas} — {t.pesan[0]}
+                          </li>
+                        ))}
+                      </ul>
+                      {laporan.takSelarasKurikulum.length > 8 && (
+                        <div style={{ fontSize: 11, color: '#a16207', marginTop: 5 }}>…dan {laporan.takSelarasKurikulum.length - 8} lainnya.</div>
+                      )}
+                    </div>
+                  )}
                   {laporan.kesiapanTentor.penghalang.length === 0 ? (
                     <div style={st.kecil}>
                       Setiap butir punya jenjang baku, mapel, dan materi, serta tidak ada yang rusak.

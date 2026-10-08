@@ -4,6 +4,10 @@
 // Dipakai saat impor baru DAN saat merapikan soal yang sudah terlanjur upload.
 
 import { jenjangBaku } from './jenjangBaku.js';
+// 🔥 2026-10-08 (keluhan owner: "salah dari akarnya"): deteksi mapel kini
+// diselaraskan ke peta Kurikulum Merdeka. Sebelumnya skor kata kunci bebas
+// menagih 'Biologi' pada berkas SD karena tidak mengenal jenjang sama sekali.
+import { petakanNamaMapel } from './kurikulumMerdeka.js';
 
 const NORM = (s) => String(s || '')
   .toLowerCase()
@@ -94,11 +98,31 @@ function skorKeys(teks, keys) {
   return s;
 }
 
+/**
+ * Selaraskan hasil deteksi ke peta Kurikulum Merdeka bila jenjang/kelas
+ * diketahui. Kepercayaan diturunkan sedikit karena ini hasil pemetaan,
+ * bukan pembacaan langsung — dan alasannya disimpan supaya bisa ditampilkan.
+ */
+function selaraskanKeKurikulum(hasil, hint) {
+  const jenjang = String(hint?.jenjang || '').trim();
+  const kelas = String(hint?.kelas || hint?.tingkatKelas || '').trim();
+  if ((!jenjang && !kelas) || !hasil?.nama) return hasil;
+  const peta = petakanNamaMapel(hasil.nama, { jenjang, kelas });
+  if (!peta.diubah) return hasil;
+  return {
+    ...hasil,
+    nama: peta.nama,
+    kode: peta.kode || hasil.kode,
+    yakin: Math.min(hasil.yakin, 0.8),
+    alasanKurikulum: peta.alasan,
+  };
+}
+
 export function deteksiMapel(teksGabungan, hint = {}) {
   if (hint.mapel || hint.mataPelajaran) {
     const h = NORM(hint.mapel || hint.mataPelajaran);
     const hit = KATALOG_MAPEL.find((m) => m.nama.toLowerCase() === h || m.keys.some((k) => h.includes(k)) || h.includes(m.kode));
-    if (hit) return { kode: hit.kode, nama: hit.nama, yakin: 0.95 };
+    if (hit) return selaraskanKeKurikulum({ kode: hit.kode, nama: hit.nama, yakin: 0.95 }, hint);
   }
   const t = NORM(teksGabungan);
   let best = null;
@@ -108,7 +132,7 @@ export function deteksiMapel(teksGabungan, hint = {}) {
     if (s > bestS) { bestS = s; best = m; }
   }
   if (!best || bestS === 0) return { kode: '', nama: hint.mapel || '', yakin: 0 };
-  return { kode: best.kode, nama: best.nama, yakin: Math.min(0.95, 0.4 + bestS * 0.1) };
+  return selaraskanKeKurikulum({ kode: best.kode, nama: best.nama, yakin: Math.min(0.95, 0.4 + bestS * 0.1) }, hint);
 }
 
 export function deteksiJenjangKelas(teksGabungan, hint = {}) {
