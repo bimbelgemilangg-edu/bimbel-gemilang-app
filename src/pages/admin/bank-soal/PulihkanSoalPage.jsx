@@ -30,7 +30,12 @@ import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } fr
 import { teksSoalDari, identitasDari } from '../../../utils/fieldButirSoal';
 import { sidikJariGambar } from '../../../utils/kunciDuplikatSoal';
 import { kebijakanGagalMuat } from '../../../utils/keputusanMuat';
-import { History, Loader2, RefreshCw, RotateCcw, Image as ImageIcon, AlertTriangle } from 'lucide-react';
+import { History, Loader2, RefreshCw, RotateCcw, Image as ImageIcon, AlertTriangle, Download, BookOpen } from 'lucide-react';
+// 🔥 2026-10-09: owner bertanya "bisa gak baca full soal dan jawaban?" --
+// jawaban di dalam aplikasi: kartu baca penuh (termasuk kunci & pembahasan)
+// bisa dibentangkan per baris. Jawaban untuk analisis di luar aplikasi:
+// tombol unduh JSON berisi butir utuh.
+import KartuBacaSoalLengkap from '../../../components/admin/KartuBacaSoalLengkap';
 
 const st = {
   kartu: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16, marginBottom: 14 },
@@ -63,6 +68,7 @@ export default function PulihkanSoalPage() {
   const [tercentang, setTercentang] = useState(new Set());
   const [sibuk, setSibuk] = useState(false);
   const [pesan, setPesan] = useState('');
+  const [baca, setBaca] = useState(new Set());
 
   const muat = useCallback(async () => {
     setMemuat(true);
@@ -132,10 +138,40 @@ export default function PulihkanSoalPage() {
 
   const jumlahDuplikat = daftar.filter((d) => /duplikat/i.test(d.dihapusAlasan || '')).length;
 
+  // Unduh butir UTUH (teks, opsi, kunci, pembahasan, url gambar, identitas,
+  // alasan hapus) untuk saringan yang sedang tampil. Berguna untuk dibaca
+  // tenang-tenang di luar aplikasi atau diserahkan untuk dianalisis.
+  const unduhLengkap = () => {
+    const isi = tampilan.map((d) => ({
+      id: d.id,
+      teksSoal: teksSoalDari(d),
+      tipe: d.tipe || 'pg_sederhana',
+      opsiJawaban: d.opsiJawaban || [],
+      pernyataan: d.pernyataan || [],
+      tabelBenarSalah: d.tabelBenarSalah || [],
+      pasangan: d.pasangan || [],
+      kunciJawaban: d.kunciJawaban ?? '',
+      pembahasan: d.pembahasan || '',
+      pembahasanAsal: d.pembahasanAsal || '',
+      gambarUrls: d.gambarUrls || [],
+      bacaan: d.bacaan || null,
+      identitas: identitasDari(d),
+      alasanDihapus: d.dihapusAlasan || '',
+      waktuDihapus: d.dihapusPada || null,
+    }));
+    const blob = new Blob([JSON.stringify(isi, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `butir-dihapus-lengkap-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
-      <div style={{ flex: 1, padding: isMobile ? 14 : 26, width: '100%', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? 14 : 26, width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', maxWidth: 1100 }}>
         <div style={{ marginBottom: 14 }}>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
             <History size={20} color="#5B2ECC" /> Pulihkan Soal yang Dihapus
@@ -173,6 +209,7 @@ export default function PulihkanSoalPage() {
           <button style={st.pill(filter === 'rusak')} onClick={() => setFilter('rusak')}>alasan rusak ({daftar.length - jumlahDuplikat})</button>
           <div style={{ flex: 1 }} />
           <button style={st.pill(false)} onClick={muat} disabled={memuat}><RefreshCw size={12} style={{ verticalAlign: -2 }} /> Muat ulang</button>
+          <button style={st.pill(false)} onClick={unduhLengkap} disabled={!tampilan.length}><Download size={12} style={{ verticalAlign: -2 }} /> Unduh butir lengkap (JSON)</button>
           <button
             style={{ ...st.pill(tercentang.size > 0), background: tercentang.size ? '#16a34a' : '#e5e7eb', color: tercentang.size ? '#fff' : '#9ca3af', cursor: tercentang.size && !sibuk ? 'pointer' : 'not-allowed' }}
             onClick={pulihkan}
@@ -207,6 +244,14 @@ export default function PulihkanSoalPage() {
                   <div style={{ fontSize: 11, color: lewatDuplikat ? '#b45309' : '#64748b', marginTop: 4 }}>
                     <b>Alasan:</b> {d.dihapusAlasan || '(tidak tercatat)'} · {waktuBaca(d.dihapusPada)}
                   </div>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setBaca((l) => { const n = new Set(l); if (n.has(d.id)) n.delete(d.id); else n.add(d.id); return n; }); }}
+                    style={{ marginTop: 6, border: '1px solid #c7d2fe', background: baca.has(d.id) ? '#eef2ff' : '#fff', color: '#3730a3', borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', gap: 5, alignItems: 'center' }}
+                  >
+                    <BookOpen size={12} /> {baca.has(d.id) ? 'tutup bacaan penuh' : 'baca soal + jawaban lengkap'}
+                  </button>
+                  {baca.has(d.id) && <KartuBacaSoalLengkap soal={d} />}
                 </div>
               </div>
             );

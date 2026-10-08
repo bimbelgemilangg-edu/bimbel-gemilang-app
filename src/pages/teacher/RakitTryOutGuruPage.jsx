@@ -275,9 +275,9 @@ export default function RakitTryOutGuruPage() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarGuru />
-      <div style={{ flex: 1, padding: isMobile ? 14 : 22, marginLeft: isMobile ? 0 : 0, width: '100%', maxWidth: 1500 }}>
+      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? 14 : 22, width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', maxWidth: 1500 }}>
         <div style={{ marginBottom: 14 }}>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
             <Layers size={20} color="#5B2ECC" /> Rakit Try Out
