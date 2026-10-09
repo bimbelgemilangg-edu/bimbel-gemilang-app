@@ -209,6 +209,14 @@ test('penamaan K13 tetap diperingatkan walau sudah bisa dipetakan', () => {
   assert.ok(p.some((x) => /Kurikulum Merdeka menyebutnya "Matematika"/.test(x)));
 });
 
+test('Literasi adalah mapel sah di semua jenjang (664 butir nyata di bank)', () => {
+  assert.deepEqual(peringatanKeselarasanKurikulum({ mapel: 'Literasi', jenjang: 'SD/MI', kelas: '4' }), []);
+  assert.deepEqual(peringatanKeselarasanKurikulum({ mapel: 'Literasi', jenjang: 'SMP/MTs', kelas: '8' }), []);
+  assert.deepEqual(peringatanKeselarasanKurikulum({ mapel: 'Literasi', jenjang: 'SMA/MA', kelas: '11' }), []);
+  assert.ok(namaDari(daftarMapelUntuk({ jenjang: 'SD/MI' })).includes('Literasi'));
+  assert.ok(namaDari(daftarMapelUntuk({ jenjang: 'SMA/MA' })).includes('Literasi'));
+});
+
 test('mapel kosong tidak dituduh apa-apa di sini (urusan alat identitas)', () => {
   assert.deepEqual(peringatanKeselarasanKurikulum({ mapel: '', jenjang: 'SD/MI' }), []);
   assert.deepEqual(peringatanKeselarasanKurikulum({}), []);
