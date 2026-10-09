@@ -32,7 +32,7 @@ import { pisahTeksDanGambar } from './penempatanGambar.js';
 // 🔥 2026-10-08: watermark logo Gemilang ikut di lembar gunting, sama
 // seperti di naskah dua kolom. Logika & logonya SATU sumber di
 // naskahSoal.js supaya dua mesin cetak ini tidak punya dua identitas.
-import { escapeHtml, teksKeHtml, kertasDariKode, gayaWatermark, watermarkHtml } from './naskahSoal.js';
+import { escapeHtml, teksKeHtml, kertasDariKode, gayaWatermark, watermarkHtml, barisBenarSalah, kunciPerBaris } from './naskahSoal.js';
 // 🔥 2026-10-08: pembaca field sadar-alias + bacaan. Mesin lembar gunting
 // ini dulu membaca `soal?.soal || soal?.teks_soal` saja dan TIDAK merender
 // wacana sama sekali -- soal literasi tercetak tanpa teks yang harus dibaca.
@@ -76,6 +76,19 @@ function gayaDasar(kodeKertas, opsi = {}) {
             margin: 0 0 7px; font-size: 11px; line-height: 1.55; text-align: justify; }
   .bacaan-rentang { font-size: 8.5px; font-style: italic; margin-bottom: 3px; }
   .bacaan img { max-width: 100%; }
+  table.bs { width: 100%; border-collapse: collapse; margin: 6px 0 0 4px; font-size: 11px; }
+  table.bs th { font-size: 10px; border-bottom: 1px solid #000; padding: 2px 4px; }
+  table.bs th:nth-child(2), table.bs th:nth-child(3), td.bs-kotak { text-align: center; width: 46px; }
+  td.bs-teks { padding: 4px; border-bottom: 1px dotted #94a3b8; text-align: left; }
+  td.bs-kotak { padding: 4px; border-bottom: 1px dotted #94a3b8; }
+  td.bs-kotak::after { content: ""; display: inline-block; width: 14px; height: 14px; border: 1px solid #000; border-radius: 3px; vertical-align: middle; }
+  .plx { margin: 6px 0 0 4px; font-size: 11.5px; }
+  .plx > div { padding: 2px 0; }
+  .jodoh { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 6px 0 0 4px; font-size: 11.5px; }
+  .jodoh div div { padding: 2px 0; border-bottom: 1px dotted #94a3b8; }
+  .isian { margin: 8px 0 0 4px; font-size: 11.5px; }
+  .esai { margin: 8px 0 0 4px; }
+  .esai > div { border-bottom: 1px solid #64748b; height: 22px; }
   .kotak::after { content: '✂'; position: absolute; top: -9px; right: 6px; background: #fff;
                   font-size: 10px; padding: 0 3px; color: #000; }
   .nomor { display: inline-block; font-size: 15px; font-weight: 800; border: 1.5pt solid #000;
@@ -105,6 +118,34 @@ function kepalaHtml(paket, judulDok) {
 // Sebelum 2026-10-06 gambar ditumpuk di akhir dan token placeholder ikut
 // tercetak mentah di kalimat -- lembar cetak menyebut "perhatikan gambar
 // {{GAMBAR}} di atas" tanpa gambar di tempat yang ditunjuk.
+// 🔥 2026-10-09: lembar gunting punya penyakit yang sama dengan naskah --
+// hanya merender opsiJawaban. Baris benar/salah, pernyataan pg_kompleks,
+// pasangan menjodohkan, dan tempat jawab isian/esai tidak pernah tercetak.
+function isiJawabanKotak(soal) {
+  const tipe = String(soal?.tipe || 'pg_sederhana');
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+    const baris = barisBenarSalah(soal);
+    if (!baris.length) return '';
+    const rows = baris.map((b, i) => `<tr><td class="bs-teks">${i + 1}. ${teksKeHtml(b.teks)}</td><td class="bs-kotak"></td><td class="bs-kotak"></td></tr>`).join('');
+    return `<table class="bs"><thead><tr><th></th><th>Benar</th><th>Salah</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  if (tipe === 'pg_kompleks') {
+    const per = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
+    if (!per.length) return '';
+    return `<div class="plx">${per.map((q, i) => `<div>(${String.fromCharCode(65 + i)}) ${teksKeHtml(typeof q === 'string' ? q : (q?.teks || ''))}</div>`).join('')}</div>`;
+  }
+  if (tipe === 'menjodohkan') {
+    const pas = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
+    if (!pas.length) return '';
+    const kiri = pas.map((q, i) => `<div>${i + 1}. ${teksKeHtml(String(q?.kiri || ''))}</div>`).join('');
+    const kanan = pas.map((q, i) => `<div>${String.fromCharCode(65 + i)}. ${teksKeHtml(String(q?.kanan || ''))}</div>`).join('');
+    return `<div class="jodoh"><div>${kiri}</div><div>${kanan}</div></div>`;
+  }
+  if (tipe === 'isian_singkat' || tipe === 'numerik') return '<div class="isian">Jawaban: ............................................</div>';
+  if (tipe === 'esai' || tipe === 'uraian') return '<div class="esai"><div></div><div></div><div></div><div></div></div>';
+  return '';
+}
+
 function stemHtml(soal) {
   const bacaan = bacaanDari(soal);
   const bacaanHtml = bacaan
@@ -168,6 +209,7 @@ export function htmlPaketSiswa(paket = {}, soalList = [], opsi = {}) {
       <span class="nomor">${i + 1}</span><b>${escapeHtml(String(s?.tipe || 'pg_sederhana').replace(/_/g, ' '))}</b>
       ${stemHtml(s)}
       ${opsiHtml(s)}
+      ${isiJawabanKotak(s)}
     </div>`)
     .join('\n');
   return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas, opsi)}</style></head><body>
@@ -185,7 +227,8 @@ export function htmlKunciTentor(paket = {}, soalList = [], opsi = {}) {
     .map((s, i) => {
       const kunci = escapeHtml(teksKunciSoal(s));
       const pembahasan = pembahasanHtml(s);
-      return `<div class="kotak"><span class="nomor">${i + 1}</span><b>Kunci:</b> ${kunci || '-'}${pembahasan}</div>`;
+      const perBaris = kunciPerBaris(s);
+      return `<div class="kotak"><span class="nomor">${i + 1}</span><b>Kunci:</b> ${kunci || '-'}${perBaris ? ` · ${perBaris}` : ''}${pembahasan}</div>`;
     })
     .join('\n');
   return `<html><head><meta charset="utf-8" /><style>${gayaDasar(opsi.kertas, opsi)}</style></head><body>
