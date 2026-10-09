@@ -67,6 +67,14 @@ export const MAPEL_KURIKULUM = [
   { kode: 'seni', nama: 'Seni dan Budaya', fase: ['A', 'B', 'C', 'D', 'E', 'F'], kelompok: 'wajib', alias: ['seni budaya', 'seni', 'sbdp', 'seni rupa', 'seni musik'] },
   { kode: 'pai', nama: 'Pendidikan Agama', fase: ['A', 'B', 'C', 'D', 'E', 'F'], kelompok: 'wajib', alias: ['pai', 'agama islam', 'pendidikan agama', 'agama'] },
 
+  // 🔥 DITAMBAHKAN 2026-10-09 setelah MEMBACA SELURUH BANK (2.900 butir):
+  // 'Literasi' adalah mapel SUNGGUHAN di bank ini (664 butir, gaya AKM, ada di
+  // SD/SMP/SMA) — tetapi tidak ada di peta, sehingga audit menerbitkan 664
+  // peringatan palsu "tidak ada di peta Kurikulum Merdeka". Yang salah adalah
+  // petanya, bukan datanya. Bila kelak owner memutuskan Literasi dilebur ke
+  // Bahasa Indonesia, cukup hapus baris ini dan peta ulang 664 butir itu.
+  { kode: 'lit', nama: 'Literasi', fase: ['A', 'B', 'C', 'D', 'E', 'F'], kelompok: 'wajib', alias: ['literasi', 'literasi indonesia', 'akm literasi', 'literasi numerasi'] },
+
   // ---- SD/MI: hanya IPAS, TIDAK ADA IPA/IPS/Biologi/Fisika/Kimia terpisah ----
   { kode: 'ipas', nama: 'IPAS', fase: ['B', 'C'], kelompok: 'wajib', alias: ['ipas', 'ilmu pengetahuan alam dan sosial', 'ipa sd', 'ips sd'] },
 
