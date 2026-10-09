@@ -36,7 +36,6 @@
 // ============================================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import SidebarGuru from '../../components/SidebarGuru';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ambilKonten } from '../../utils/sumberKonten';
@@ -103,7 +102,13 @@ export default function RakitTryOutGuruPage() {
 
   // ---- filter ----
   const [fJenjang, setFJenjang] = useState('');
-  const [fMapel, setFMapel] = useState('');
+  // 🔥 2026-10-09 (owner): "harusnya di awal tentor udah memilih mapelnya
+  // dahulu... gak mungkin mencampur mapel, tetapi tidak menutup kemungkinan
+  // kasih tombol tambahkan mapel lain". Maka mapel jadi LANGKAH PERTAMA dan
+  // tunggal; mapel lain hanya masuk lewat tombol eksplisit.
+  const [mapelPaket, setMapelPaket] = useState('');
+  const [mapelTambahan, setMapelTambahan] = useState([]);
+  const [bukaTambah, setBukaTambah] = useState(false);
   const [fMateri, setFMateri] = useState('');
   const [fKelas, setFKelas] = useState('');
   const [fTipe, setFTipe] = useState('');
@@ -166,9 +171,11 @@ export default function RakitTryOutGuruPage() {
     return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'id'));
   }, [semuaSoal]);
 
-  const daftarJenjang = useMemo(() => opsiUnik((s) => identitasDari(s).jenjang !== '(tanpa jenjang)' ? identitasDari(s).jenjang : ''), [opsiUnik]);
-  const daftarMapel = useMemo(() => opsiUnik((s) => (!fJenjang || identitasDari(s).jenjang === fJenjang) && identitasDari(s).mapel !== '(tanpa mapel)' ? identitasDari(s).mapel : ''), [opsiUnik, fJenjang]);
-  const daftarMateri = useMemo(() => opsiUnik((s) => (!fJenjang || identitasDari(s).jenjang === fJenjang) && (!fMapel || identitasDari(s).mapel === fMapel) && identitasDari(s).materi !== '(tanpa materi)' ? identitasDari(s).materi : ''), [opsiUnik, fJenjang, fMapel]);
+  const daftarMapelPaket = useMemo(() => opsiUnik((s) => identitasDari(s).mapel !== '(tanpa mapel)' ? identitasDari(s).mapel : ''), [opsiUnik]);
+  const cakupanMapel = useMemo(() => (mapelPaket ? [mapelPaket, ...mapelTambahan] : []), [mapelPaket, mapelTambahan]);
+  const dalamCakupan = useCallback((s) => cakupanMapel.includes(identitasDari(s).mapel), [cakupanMapel]);
+  const daftarJenjang = useMemo(() => opsiUnik((s) => dalamCakupan(s) && identitasDari(s).jenjang !== '(tanpa jenjang)' ? identitasDari(s).jenjang : ''), [opsiUnik, dalamCakupan]);
+  const daftarMateri = useMemo(() => opsiUnik((s) => dalamCakupan(s) && (!fJenjang || identitasDari(s).jenjang === fJenjang) && identitasDari(s).materi !== '(tanpa materi)' ? identitasDari(s).materi : ''), [opsiUnik, dalamCakupan, fJenjang]);
   const daftarKelas = useMemo(() => opsiUnik((s) => identitasDari(s).kelas), [opsiUnik]);
 
   // ----------------------------------------------------------
@@ -180,8 +187,9 @@ export default function RakitTryOutGuruPage() {
     const q = fCari.trim().toLowerCase();
     return semuaSoal.filter((s) => {
       const id = identitasDari(s);
+      if (!cakupanMapel.length) return false; // mapel paket belum dipilih
+      if (!cakupanMapel.includes(id.mapel)) return false;
       if (fJenjang && id.jenjang !== fJenjang) return false;
-      if (fMapel && id.mapel !== fMapel) return false;
       if (fMateri && id.materi !== fMateri) return false;
       if (fKelas && id.kelas !== fKelas) return false;
       if (fTipe && String(s.tipe || 'pg_sederhana') !== fTipe) return false;
@@ -190,7 +198,7 @@ export default function RakitTryOutGuruPage() {
       if (q && !`${teksSoalDari(s)} ${id.mapel} ${id.materi}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [semuaSoal, fJenjang, fMapel, fMateri, fKelas, fTipe, fKesulitan, fCari, hanyaBelum, idTerpilih]);
+  }, [semuaSoal, cakupanMapel, fJenjang, fMateri, fKelas, fTipe, fKesulitan, fCari, hanyaBelum, idTerpilih]);
 
   const kelompok = useMemo(() => {
     const m = new Map();
@@ -204,7 +212,7 @@ export default function RakitTryOutGuruPage() {
       || a.mapel.localeCompare(b.mapel, 'id') || a.materi.localeCompare(b.materi, 'id'));
   }, [tersaring]);
 
-  const jumlahFilterAktif = [fJenjang, fMapel, fMateri, fKelas, fTipe, fKesulitan, fCari].filter(Boolean).length;
+  const jumlahFilterAktif = [fJenjang, fMateri, fKelas, fTipe, fKesulitan, fCari].filter(Boolean).length + mapelTambahan.length;
 
   // ----------------------------------------------------------
   // Subtes & putusan kirim
@@ -212,8 +220,8 @@ export default function RakitTryOutGuruPage() {
   const subtes = useMemo(() => kelompokkanJadiSubtes(keranjang, granularitas), [keranjang, granularitas]);
   const putusan = useMemo(() => putusanKirimDraf({
     judul, daftarSoal: keranjang, modeTimer, durasiTotalMenit: durasi,
-    granularitas, targetKelas: fJenjang, targetKategori: fMapel,
-  }), [judul, keranjang, modeTimer, durasi, granularitas, fJenjang, fMapel]);
+    granularitas, targetKelas: fJenjang, targetKategori: mapelPaket,
+  }), [judul, keranjang, modeTimer, durasi, granularitas, fJenjang, mapelPaket]);
 
   const tambah = (daftar) => {
     const hasil = masukKeranjangBanyak(keranjang, daftar);
@@ -232,7 +240,7 @@ export default function RakitTryOutGuruPage() {
     try {
       const payload = bangunPayloadDraf({
         judul, daftarSoal: keranjang, modeTimer, durasiTotalMenit: durasi,
-        granularitas, targetKelas: fJenjang, targetKategori: fMapel,
+        granularitas, targetKelas: fJenjang, targetKategori: mapelPaket,
         antiCheatAktif: antiCheat, wajibKamera, soalAcak, catatanUntukAdmin: catatan,
         guru: { id: identitas.docId || identitas.guruId, nama: identitas.guruNama },
       });
@@ -249,7 +257,7 @@ export default function RakitTryOutGuruPage() {
     } finally {
       setMengirim(false);
     }
-  }, [putusan.boleh, mengirim, judul, keranjang, subtes.length, modeTimer, durasi, granularitas, fJenjang, fMapel, antiCheat, wajibKamera, soalAcak, catatan, identitas, muat]);
+  }, [putusan.boleh, mengirim, judul, keranjang, subtes.length, modeTimer, durasi, granularitas, fJenjang, mapelPaket, antiCheat, wajibKamera, soalAcak, catatan, identitas, muat]);
 
   const kirimUlang = useCallback(async (paket) => {
     if (!window.confirm(`Kirim ulang "${paket.judul}" untuk persetujuan admin? Perubahan yang Anda buat di Firestore Console akan ikut terkirim apa adanya.`)) return;
@@ -276,8 +284,10 @@ export default function RakitTryOutGuruPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <SidebarGuru />
-      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? 14 : 22, width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', maxWidth: 1500 }}>
+      {/* Sidebar & padding datang dari TeacherLayout (pembungkus GuruPage).
+          Merender SidebarGuru lagi di sini membuat offset dobel: konten
+          terdorong ke tengah dan sebagian jatuh ke pinggir layar. */}
+      <div style={{ padding: isMobile ? 14 : 22, width: '100%', maxWidth: 1500, margin: '0 auto' }}>
         <div style={{ marginBottom: 14 }}>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
             <Layers size={20} color="#5B2ECC" /> Rakit Try Out
@@ -300,11 +310,46 @@ export default function RakitTryOutGuruPage() {
           {/* ================= KOLOM KIRI: MEMILIH ================= */}
           <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
             <div style={st.kartu}>
-              <div style={st.judulKartu}><Filter size={13} style={{ verticalAlign: -2 }} /> 1 · Saring bank soal</div>
+              <div style={st.judulKartu}><Filter size={13} style={{ verticalAlign: -2 }} /> 1 · Pilih mapel paket, lalu saring</div>
 
-              <BarisPill label="Jenjang" nilai={fJenjang} opsi={daftarJenjang} onPilih={(v) => { setFJenjang(v); setFMapel(''); setFMateri(''); }} />
-              <BarisPill label="Mapel" nilai={fMapel} opsi={daftarMapel} onPilih={(v) => { setFMapel(v); setFMateri(''); }} />
-              <BarisPill label="Materi" nilai={fMateri} opsi={daftarMateri.slice(0, 14)} onPilih={setFMateri} />
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: mapelPaket ? '#64748b' : '#b91c1c', marginBottom: 6 }}>
+                  MAPEL PAKET INI {mapelPaket ? '' : '— pilih dulu; satu paket try out = satu mapel'}
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {daftarMapelPaket.map(([nama, jumlah]) => (
+                    <button key={nama} style={st.pill(mapelPaket === nama)} onClick={() => { setMapelPaket(nama); setMapelTambahan([]); setFJenjang(''); setFMateri(''); }}>
+                      {nama} <span style={{ opacity: 0.65 }}>{jumlah}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {mapelPaket && (
+                <>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+                    <button style={st.tombolKecil} onClick={() => setBukaTambah((v) => !v)}>
+                      {bukaTambah ? 'tutup pilihan mapel lain' : '＋ tambahkan mapel lain'}
+                    </button>
+                    {mapelTambahan.length > 0 && (
+                      <span style={{ fontSize: 11, color: '#b45309', fontWeight: 700 }}>
+                        paket campuran: {mapelPaket} + {mapelTambahan.join(' + ')} — admin akan melihatnya
+                      </span>
+                    )}
+                  </div>
+                  {bukaTambah && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 8 }}>
+                      {daftarMapelPaket.filter(([nama]) => nama !== mapelPaket).map(([nama, jumlah]) => (
+                        <button key={nama} style={st.pill(mapelTambahan.includes(nama))} onClick={() => setMapelTambahan((l) => (l.includes(nama) ? l.filter((x) => x !== nama) : [...l, nama]))}>
+                          {nama} <span style={{ opacity: 0.65 }}>{jumlah}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <BarisPill label="Jenjang" nilai={fJenjang} opsi={daftarJenjang} onPilih={(v) => { setFJenjang(v); setFMateri(''); }} />
+                  <BarisPill label="Materi" nilai={fMateri} opsi={daftarMateri.slice(0, 14)} onPilih={setFMateri} />
+                </>
+              )}
 
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10, alignItems: 'center' }}>
                 <select style={st.select} value={fKelas} onChange={(e) => setFKelas(e.target.value)}>
@@ -328,7 +373,7 @@ export default function RakitTryOutGuruPage() {
                   <input type="checkbox" checked={hanyaBelum} onChange={(e) => setHanyaBelum(e.target.checked)} /> hanya yang belum terpilih
                 </label>
                 {jumlahFilterAktif > 0 && (
-                  <button style={st.tombolKecil} onClick={() => { setFJenjang(''); setFMapel(''); setFMateri(''); setFKelas(''); setFTipe(''); setFKesulitan(''); setFCari(''); }}>
+                  <button style={st.tombolKecil} onClick={() => { setFJenjang(''); setFMateri(''); setFKelas(''); setFTipe(''); setFKesulitan(''); setFCari(''); }}>
                     bersihkan {jumlahFilterAktif} saringan
                   </button>
                 )}
@@ -351,7 +396,11 @@ export default function RakitTryOutGuruPage() {
               </div>
 
               {kelompok.length === 0 && !memuat && (
-                <div style={st.kecil}>Tidak ada butir yang cocok dengan saringan ini.</div>
+                <div style={st.kecil}>
+                  {mapelPaket
+                    ? 'Tidak ada butir yang cocok dengan saringan ini.'
+                    : 'Pilih mapel paket di atas dulu — sesudah itu kelompok materi akan muncul di sini.'}
+                </div>
               )}
 
               {kelompok.map((g) => {
@@ -407,6 +456,12 @@ export default function RakitTryOutGuruPage() {
           <div style={{ width: isMobile ? '100%' : 400, flexShrink: 0, position: isMobile ? 'static' : 'sticky', top: 16 }}>
             <div style={st.kartu}>
               <div style={st.judulKartu}>3 · Paket saya ({keranjang.length} butir)</div>
+              {mapelPaket && (
+                <div style={{ fontSize: 11.5, color: '#334155', marginBottom: 8 }}>
+                  Mapel paket: <b>{mapelPaket}</b>
+                  {mapelTambahan.length > 0 && <span style={{ color: '#b45309' }}> + {mapelTambahan.join(' + ')} (campuran)</span>}
+                </div>
+              )}
 
               {keranjang.length === 0 ? (
                 <div style={st.kecil}>Belum ada butir. Pilih dari kelompok di kiri — keranjang tetap utuh walau Anda berpindah filter.</div>
