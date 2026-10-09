@@ -272,6 +272,31 @@ test('INVARIAN: opsi yang beda tanda minus/koma desimal BUKAN opsi identik', () 
   assert.ok(!h2.perluDicek.some((p) => /identik/.test(p)));
 });
 
+test('INVARIAN: beda HURUF KAPITAL bukan opsi identik — itu sering justru soalnya', () => {
+  // Soal ejaan: keempat opsi sama persis kecuali kapitalisasi. Menormalkan
+  // huruf kecil membuat detektor menuduh butir sehat sebagai ambigu.
+  const ejaan = deteksiSoalRusak({
+    tipe: 'pg_sederhana',
+    soal: 'Penulisan huruf kapital yang tepat adalah ....',
+    opsiJawaban: [
+      'Kerja bakti diadakan setiap minggu pertama.',
+      'Kerja bakti diadakan setiap Minggu pertama.',
+      'Kerja bakti diadakan setiap Minggu Pertama.',
+      'kerja bakti diadakan setiap Minggu pertama.',
+    ],
+    kunciJawaban: 'B',
+  });
+  assert.ok(!ejaan.perluDicek.some((p) => /identik/.test(p)));
+  // Notasi ilmiah: besar/kecil huruf adalah makna (genotip, unsur kimia).
+  const genotip = deteksiSoalRusak({
+    tipe: 'pg_sederhana',
+    soal: 'Genotip F1 yang berfenotip besar-pendek adalah ....',
+    opsiJawaban: ['BBTT', 'BBTt', 'BbTt', 'Bbtt'],
+    kunciJawaban: 'D',
+  });
+  assert.ok(!genotip.perluDicek.some((p) => /identik/.test(p)));
+});
+
 test('opsi yang benar-benar sama tetap dibenderai', () => {
   const h = deteksiSoalRusak({
     tipe: 'pg_sederhana',
