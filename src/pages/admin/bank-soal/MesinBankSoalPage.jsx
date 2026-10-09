@@ -389,6 +389,19 @@ export default function MesinBankSoalPage() {
         {tab === 'impor' && (
           <div style={st.card}>
             <div style={st.hintGrid}>
+              {/* Jenjang DIDAHULUKAN (owner 2026-10-09): daftar mapel
+                  menyaring diri mengikuti jenjang, jadi jenjang harus sudah
+                  diketahui sebelum mapel ditawarkan. */}
+              <label style={st.label}>
+                Jenjang
+                <select style={st.input} value={hint.jenjang} onChange={(e) => setHint({ ...hint, jenjang: e.target.value })}>
+                  <option value="">— auto —</option>
+                  <option value="SD">SD</option>
+                  <option value="SMP">SMP</option>
+                  <option value="SMA">SMA</option>
+                  <option value="SMK">SMK</option>
+                </select>
+              </label>
               <label style={st.label}>
                 Mapel (opsional — kosongkan = auto)
                 <select
@@ -405,16 +418,6 @@ export default function MesinBankSoalPage() {
                   {hint.mapel && !opsiMapel.some((m) => m.nama === hint.mapel) && (
                     <option value={hint.mapel}>{hint.mapel} (tidak sah di jenjang ini)</option>
                   )}
-                </select>
-              </label>
-              <label style={st.label}>
-                Jenjang
-                <select style={st.input} value={hint.jenjang} onChange={(e) => setHint({ ...hint, jenjang: e.target.value })}>
-                  <option value="">— auto —</option>
-                  <option value="SD">SD</option>
-                  <option value="SMP">SMP</option>
-                  <option value="SMA">SMA</option>
-                  <option value="SMK">SMK</option>
                 </select>
               </label>
               <label style={st.label}>
