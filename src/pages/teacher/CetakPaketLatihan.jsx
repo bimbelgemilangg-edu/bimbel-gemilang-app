@@ -68,9 +68,11 @@ import {
   kolomOtomatis,
   lebarKolomMm,
   daftarBlokNaskah,
+  daftarBlokPenuh,
   daftarTinggiPerkiraan,
   kapasitasKolomMm,
   susunNaskahDariBlok,
+  MARGIN_MM,
   teksKeHtml,
   GAYA_NASKAH,
   WATERMARK,
@@ -201,8 +203,15 @@ export default function CetakPaketLatihan() {
   // selesai dimuat -- bahan mesin menghitung ukuran cetak yang wajar.
   const [rasioGambar, setRasioGambar] = useState({});
   const [tinggiSiswa, setTinggiSiswa] = useState([]);
+  // Tinggi SUNGGUHAN blok lebar penuh, diukur pada lebar isi kertas (bukan
+  // lebar kolom). Tanpa ini tinggi pita hanya ditaksir (x0.55) dan taksiran
+  // itu sengaja melebihkan -> halaman jadi boros.
+  const [tinggiLebarSiswa, setTinggiLebarSiswa] = useState([]);
+  const [tinggiLebarKunci, setTinggiLebarKunci] = useState([]);
   const [tinggiKunci, setTinggiKunci] = useState([]);
   const refUkurSiswa = useRef(null);
+  const refUkurLebarSiswa = useRef(null);
+  const refUkurLebarKunci = useRef(null);
   const refUkurKunci = useRef(null);
 
   const versiSegar = useSegarSaatTerlihat();
@@ -374,6 +383,8 @@ export default function CetakPaketLatihan() {
   const kertas = kertasDariKode(kodeKertas);
   const jumlahKolom = kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas);
   const lebarKolom = lebarKolomMm(kertas, jumlahKolom);
+  // Lebar isi kertas (untuk mengukur blok yang dicetak lebar penuh).
+  const lebarIsiKertas = Math.round((kertas.lebarMm - 2 * MARGIN_MM) * 10) / 10;
   // 🔥 2026-10-09: wacana bersama kini jadi BLOK TERSENDIRI (dicetak sekali
   // untuk sekelompok soal), jadi jumlah blok != jumlah soal. Taksiran tinggi
   // harus sejajar dengan blok, bukan dengan soal, supaya penyusun kolom tidak
@@ -381,12 +392,31 @@ export default function CetakPaketLatihan() {
   const kapasitasMm = useMemo(() => kapasitasKolomMm(kertas), [kertas]);
 
   const blokSiswa = useMemo(
-    () => (siap.length ? daftarBlokNaskah('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm) : []),
-    [siap, meta, lebarKolom, rasioGambar, kapasitasMm]
+    () => (siap.length ? daftarBlokNaskah('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom) : []),
+    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
   );
   const blokKunci = useMemo(
-    () => (siap.length ? daftarBlokNaskah('kunci', meta, siap, lebarKolom, rasioGambar) : []),
-    [siap, meta, lebarKolom, rasioGambar]
+    () => (siap.length ? daftarBlokNaskah('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom) : []),
+    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
+  );
+  // 🔥 2026-10-09 (owner: "khusus bacaan panjang gausah kanan kiri"):
+  // blok berwacana panjang ditandai supaya (a) diukur pada lebar kertas penuh,
+  // bukan lebar kolom, dan (b) diberi halaman lebar penuh oleh penyusun kolom.
+  const blokPenuhSiswa = useMemo(
+    () => (siap.length ? daftarBlokPenuh('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom) : []),
+    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
+  );
+  const blokPenuhKunci = useMemo(
+    () => (siap.length ? daftarBlokPenuh('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom) : []),
+    [siap, meta, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
+  );
+  const indeksLebarSiswa = useMemo(
+    () => blokPenuhSiswa.map((v, i) => (v ? i : -1)).filter((i) => i >= 0),
+    [blokPenuhSiswa]
+  );
+  const indeksLebarKunci = useMemo(
+    () => blokPenuhKunci.map((v, i) => (v ? i : -1)).filter((i) => i >= 0),
+    [blokPenuhKunci]
   );
 
   // Lapisan ukur tersembunyi: tinggi sungguhan tiap blok (mm) dibaca dari
@@ -408,6 +438,23 @@ export default function CetakPaketLatihan() {
     ukur(refUkurKunci, setTinggiKunci, blokKunci.length);
   }, [blokSiswa, blokKunci]);
 
+  // Pengukuran KEDUA: hanya blok yang akan dicetak lebar penuh, pada lebar isi
+  // kertas. Hasilnya dikirim ke penyusun kolom sebagai `tinggiLebarMm` supaya
+  // tinggi pita jujur (bukan taksiran) dan sisa halaman bisa dipakai soal.
+  useLayoutEffect(() => {
+    const ukurLebar = (ref, indeks, setter, jumlahBlok) => {
+      const node = ref.current;
+      if (!node || !indeks.length) { setter((l) => (l.length ? [] : l)); return; }
+      const anak = [...node.children];
+      if (anak.length !== indeks.length) { setter((l) => (l.length ? [] : l)); return; }
+      const arr = new Array(jumlahBlok).fill(0);
+      anak.forEach((el, k) => { arr[indeks[k]] = Math.round((el.offsetHeight / PX_PER_MM) * 10) / 10; });
+      setter((lama) => (lama.length === arr.length && lama.every((v, i) => v === arr[i]) ? lama : arr));
+    };
+    ukurLebar(refUkurLebarSiswa, indeksLebarSiswa, setTinggiLebarSiswa, blokSiswa.length);
+    ukurLebar(refUkurLebarKunci, indeksLebarKunci, setTinggiLebarKunci, blokKunci.length);
+  }, [blokSiswa, blokKunci, indeksLebarSiswa, indeksLebarKunci]);
+
   // Rasio piksel asli gambar: ditempeli listener saat lapisan ukur_mount.
   useEffect(() => {
     const wadah = [refUkurSiswa.current, refUkurKunci.current].filter(Boolean);
@@ -427,20 +474,20 @@ export default function CetakPaketLatihan() {
   }, [blokSiswa, blokKunci]);
 
   const perkiraanSiswa = useMemo(
-    () => daftarTinggiPerkiraan('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm),
-    [meta, siap, lebarKolom, rasioGambar, kapasitasMm]
+    () => daftarTinggiPerkiraan('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom),
+    [meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
   );
   const perkiraanKunci = useMemo(
-    () => daftarTinggiPerkiraan('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm),
-    [meta, siap, lebarKolom, rasioGambar, kapasitasMm]
+    () => daftarTinggiPerkiraan('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom),
+    [meta, siap, lebarKolom, rasioGambar, kapasitasMm, jumlahKolom]
   );
 
   const naskahSiswa = useMemo(() => (blokSiswa.length
-    ? susunNaskahDariBlok(blokSiswa, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiSiswa, tinggiPerkiraanMm: perkiraanSiswa, cssTambahan: katexCssInline })
-    : null), [blokSiswa, kodeKertas, jumlahKolom, tinggiSiswa, perkiraanSiswa]);
+    ? susunNaskahDariBlok(blokSiswa, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiSiswa, tinggiPerkiraanMm: perkiraanSiswa, blokPenuh: blokPenuhSiswa, tinggiLebarMm: tinggiLebarSiswa, cssTambahan: katexCssInline })
+    : null), [blokSiswa, kodeKertas, jumlahKolom, tinggiSiswa, perkiraanSiswa, blokPenuhSiswa, tinggiLebarSiswa]);
   const naskahKunci = useMemo(() => (blokKunci.length
-    ? susunNaskahDariBlok(blokKunci, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiKunci, tinggiPerkiraanMm: perkiraanKunci, cssTambahan: katexCssInline })
-    : null), [blokKunci, kodeKertas, jumlahKolom, tinggiKunci, perkiraanKunci]);
+    ? susunNaskahDariBlok(blokKunci, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiKunci, tinggiPerkiraanMm: perkiraanKunci, blokPenuh: blokPenuhKunci, tinggiLebarMm: tinggiLebarKunci, cssTambahan: katexCssInline })
+    : null), [blokKunci, kodeKertas, jumlahKolom, tinggiKunci, perkiraanKunci, blokPenuhKunci, tinggiLebarKunci]);
 
   const docPratinjau = (fragmen) => `<!DOCTYPE html><html lang="id"><head><meta charset="utf-8" />
     <style>html{background:#cbd5e1}body{margin:0;padding:4mm;display:flex;flex-direction:column;align-items:center;gap:3mm}</style>
@@ -774,9 +821,14 @@ export default function CetakPaketLatihan() {
                   {naskahSiswa.jumlahHalaman} halaman · {jumlahKolom} kolom · lebar kolom {naskahSiswa.lebarKolomMm}mm
                 </span>
               </div>
+              {(naskahSiswa.halamanLebarPenuh?.length || 0) > 0 && (
+                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', borderRadius: 8, padding: '8px 10px', fontSize: 11.5, marginBottom: 8 }}>
+                  📖 Wacana panjang dicetak <b>lebar penuh tanpa dua kolom</b> di halaman {naskahSiswa.halamanLebarPenuh.join(', ')} — huruf bacaan di kolom lain diperkecil supaya rapi.
+                </div>
+              )}
               {naskahSiswa.peringatan.length > 0 && (
                 <div style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', borderRadius: 8, padding: '8px 10px', fontSize: 11.5, marginBottom: 8 }}>
-                  ⚠️ Butir nomor {naskahSiswa.peringatan.filter((i) => i > 0).join(', ')} lebih tinggi dari satu kolom; sistem memberinya satu kolom utuh supaya tidak terpotong.
+                  ⚠️ Blok nomor {naskahSiswa.peringatan.filter((i) => i > 0).join(', ')} lebih tinggi dari satu halaman penuh meski sudah dilebarkan; isinya akan mengalir ke halaman berikutnya. Periksa pratinjau sebelum mencetak.
                 </div>
               )}
               <iframe
@@ -818,11 +870,26 @@ export default function CetakPaketLatihan() {
           visibility:hidden supaya tidak terlihat tetapi layout tetap dihitung. */}
       {gayaLembar === 'naskah' && siap.length > 0 && (
         <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', top: 0, visibility: 'hidden', pointerEvents: 'none' }}>
+          {/* CATATAN: semua blok tetap diukur pada LEBAR KOLOM, termasuk yang
+              nanti dicetak lebar penuh. Alasannya: bila lebar ukur ikut
+              berubah mengikuti hasil ukur, tinggi -> tanda -> lebar -> tinggi
+              bisa berosilasi tanpa henti. Tinggi kolom adalah satuan baku;
+              penyusun kolom sendiri yang menaksir tinggi versi lebar penuh
+              lewat FAKTOR_TINGGI_LEBAR_PENUH. */}
           <div className="naskah" ref={refUkurSiswa} style={{ width: `${lebarKolom}mm` }}>
             {blokSiswa.map((b, i) => <div key={`s${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: b }} />)}
           </div>
           <div className="naskah" ref={refUkurKunci} style={{ width: `${lebarKolom}mm` }}>
             {blokKunci.map((b, i) => <div key={`k${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: b }} />)}
+          </div>
+          {/* Lapisan ukur LEBAR PENUH: hanya blok berpita, diukur pada lebar
+              isi kertas. Blok mana yang berpita diputus dari TAKSIRAN (bukan
+              dari hasil ukur), jadi tidak ada osilasi ukur -> tanda -> ukur. */}
+          <div className="naskah" ref={refUkurLebarSiswa} style={{ width: `${lebarIsiKertas}mm` }}>
+            {indeksLebarSiswa.map((i) => <div key={`sl${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: blokSiswa[i] }} />)}
+          </div>
+          <div className="naskah" ref={refUkurLebarKunci} style={{ width: `${lebarIsiKertas}mm` }}>
+            {indeksLebarKunci.map((i) => <div key={`kl${i}`} style={{ overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: blokKunci[i] }} />)}
           </div>
         </div>
       )}

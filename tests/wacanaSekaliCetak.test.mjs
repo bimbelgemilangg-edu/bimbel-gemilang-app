@@ -28,6 +28,7 @@ import {
   blokBacaanNaskah,
   daftarBlokNaskah,
   daftarTinggiPerkiraan,
+  tinggiLebarPenuhMm,
 } from '../src/utils/naskahSoal.js';
 
 const WACANA = 'Perundungan masih menjadi tantangan serius dalam dunia pendidikan Indonesia. '
@@ -109,12 +110,21 @@ test('lembar kunci tidak membawa wacana', () => {
 // 3. Wacana panjang: dipecah per paragraf, tidak diremas
 // ------------------------------------------------------------
 
+// 2026-10-09: wacana melebihi kapasitas kini dicetak LEBAR PENUH (pita di atas
+// halaman), bukan diremas di kolom; pemecahan per paragraf tinggal cadangan bila
+// wacana masih lebih panjang dari satu halaman penuh. `chunk.tinggi` pun
+// dilaporkan dalam satuan LEBAR KOLOM (satuan baku mesin), jadi yang harus muat
+// kapasitas adalah versi lebarnya = tinggiLebarPenuhMm(chunk.tinggi).
 test('wacana melebihi kapasitas dipecah dengan penanda lanjutan', () => {
   const unit = { jenis: 'bacaan', bacaan: { teks: WACANA_PANJANG, gambar: [] }, dari: 1, sampai: 4 };
   const chunks = blokBacaanNaskah(unit, 92, {}, 120);
   assert.ok(chunks.length >= 2, `wacana sangat panjang harus terpecah, dapat ${chunks.length}`);
   assert.match(chunks[1].html, /lanjutan/);
-  chunks.forEach((c) => assert.ok(c.tinggi <= 120 + 12, 'tiap potongan harus muat kapasitas'));
+  chunks.forEach((c) => {
+    assert.ok(c.penuh === true, 'potongan wacana panjang ditandai lebar penuh');
+    assert.ok(tinggiLebarPenuhMm(c.tinggi) <= 120 + 12,
+      `tiap potongan harus muat satu halaman saat lebar penuh, dapat ${tinggiLebarPenuhMm(c.tinggi)}`);
+  });
 });
 
 test('pemecahan tidak membelah di tengah kalimat', () => {
