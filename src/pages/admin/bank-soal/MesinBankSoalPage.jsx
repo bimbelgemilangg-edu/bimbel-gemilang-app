@@ -38,7 +38,7 @@ import { sudahBaku, jenjangBaku } from '../../../utils/jenjangBaku';
 // mapel kini DITURUNKAN dari peta kurikulum per jenjang/kelas, bukan
 // daftar datar 22 nama. Ini perbaikan di AKAR: sebelumnya tidak ada yang
 // mencegah dokumen SD tertag Biologi.
-import { daftarMapelUntuk, petakanNamaMapel } from '../../../utils/kurikulumMerdeka';
+import { daftarMapelUntuk, petakanNamaMapel, jenjangDipetakan } from '../../../utils/kurikulumMerdeka';
 import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
 
 const COL = 'bank_soal';
@@ -108,6 +108,7 @@ export default function MesinBankSoalPage() {
   // Jenjang dinormalkan dulu (form masih memakai kosakata pendek 'SMA').
   const opsiMapel = useMemo(() => {
     const jenjangBk = jenjangBaku(hint.jenjang).baku || '';
+    if (jenjangBk && !jenjangDipetakan(jenjangBk)) return daftarMapelUntuk({});
     return daftarMapelUntuk({ jenjang: jenjangBk, kelas: hint.kelas });
   }, [hint.jenjang, hint.kelas]);
 

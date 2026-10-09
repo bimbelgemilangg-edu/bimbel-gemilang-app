@@ -178,6 +178,17 @@ export function daftarMapelUntuk({ jenjang = '', kelas = '' } = {}) {
 }
 
 /**
+ * Apakah jenjang ini dimodelkan oleh peta kurikulum?
+ * SMK dan UTBK/SNBT belum: struktur mapelnya tidak mengikuti fase A-F yang
+ * sama. Untuk jenjang yang belum dipetakan, form HARUS menawarkan daftar
+ * lengkap seperti sebelumnya — memperlihatkan daftar hampir kosong justru
+ * menjebak pengguna ke jalan buntu.
+ */
+export function jenjangDipetakan(jenjang) {
+  return Object.values(JENJANG_PER_FASE).includes(String(jenjang ?? '').trim());
+}
+
+/**
  * Petakan sebuah nama mapel (dari form, berkas impor, atau dokumen lama)
  * ke nama yang SAH untuk jenjang/kelas tersebut.
  * @returns {{nama:string, kode:string, diubah:boolean, alasan:string}}
@@ -252,5 +263,5 @@ export function peringatanKeselarasanKurikulum({ mapel = '', jenjang = '', kelas
 export default {
   FASE_PER_KELAS, JENJANG_PER_FASE, MAPEL_KURIKULUM,
   faseDariKelas, jenjangDariKelas, mapelBerlaku, daftarMapelUntuk,
-  petakanNamaMapel, peringatanKeselarasanKurikulum,
+  jenjangDipetakan, petakanNamaMapel, peringatanKeselarasanKurikulum,
 };

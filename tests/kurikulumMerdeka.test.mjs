@@ -23,6 +23,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  jenjangDipetakan,
   FASE_PER_KELAS,
   faseDariKelas,
   jenjangDariKelas,
@@ -127,6 +128,26 @@ test('rumpun ilmu SMA ditawarkan di Fase E dan F', () => {
   for (const rumpun of ['Fisika', 'Kimia', 'Biologi', 'Sosiologi', 'Ekonomi', 'Geografi', 'Sejarah']) {
     assert.ok(nama.includes(rumpun), `${rumpun} harus ada di SMA`);
   }
+});
+
+test('IPAS hanya SD, IPA & IPS hanya SMP, rumpun ilmu hanya SMA', () => {
+  // Keluhan lama owner: "gak ada mapel sesuai IPS SMP gitu atau IPAS".
+  assert.ok(daftarMapelUntuk({ jenjang: 'SD/MI' }).some((m) => m.nama === 'IPAS'));
+  assert.ok(!daftarMapelUntuk({ jenjang: 'SD/MI' }).some((m) => m.nama === 'IPA'));
+  assert.ok(daftarMapelUntuk({ jenjang: 'SMP/MTs' }).some((m) => m.nama === 'IPA'));
+  assert.ok(daftarMapelUntuk({ jenjang: 'SMP/MTs' }).some((m) => m.nama === 'IPS'));
+  assert.ok(!daftarMapelUntuk({ jenjang: 'SMP/MTs' }).some((m) => m.nama === 'IPAS'));
+  assert.ok(daftarMapelUntuk({ jenjang: 'SMA/MA' }).some((m) => m.nama === 'Kimia'));
+  assert.ok(!daftarMapelUntuk({ jenjang: 'SMA/MA' }).some((m) => m.nama === 'IPA'));
+});
+
+test('jenjang yang belum dipetakan diakui jujur, bukan dipaksa kosong', () => {
+  assert.equal(jenjangDipetakan('SD/MI'), true);
+  assert.equal(jenjangDipetakan('SMP/MTs'), true);
+  assert.equal(jenjangDipetakan('SMA/MA'), true);
+  assert.equal(jenjangDipetakan('SMK'), false);
+  assert.equal(jenjangDipetakan('UTBK/SNBT'), false);
+  assert.equal(jenjangDipetakan(''), false);
 });
 
 test('kelompok wajib didahulukan dalam daftar (urutan yang enak dibaca)', () => {

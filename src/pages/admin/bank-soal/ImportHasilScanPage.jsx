@@ -65,7 +65,7 @@ import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
 // Kimia. Kini jenjang lebih dulu dan daftar mapel menyaring diri lewat peta
 // Kurikulum Merdeka. Nama di luar peta (TPS/Penalaran Umum, Penguatan Dasar)
 // tetap tersedia karena memang bukan mapel kurikulum.
-import { daftarMapelUntuk, petakanNamaMapel } from '../../../utils/kurikulumMerdeka';
+import { daftarMapelUntuk, petakanNamaMapel, jenjangDipetakan } from '../../../utils/kurikulumMerdeka';
 // 🔥 BARU (2026-10-07): keluhan owner "gambar dari Gemini gak muncul
 // semua". Akarnya: Gemini Canvas menulis src="[url](url)" gaya tautan
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
@@ -3170,6 +3170,10 @@ export default function ImportHasilScanPage() {
   // kan karena memang bukan mapel kurikulum dan tidak boleh lenyap.
   const opsiMapelForm = useMemo(() => {
     if (!jenjang) return DAFTAR_MAPEL;
+    // Jenjang yang belum dimodelkan peta kurikulum (SMK, UTBK/SNBT) mendapat
+    // daftar lengkap seperti sebelumnya + keterangan jujur, bukan daftar
+    // hampir kosong yang menjebak.
+    if (!jenjangDipetakan(jenjang)) return DAFTAR_MAPEL;
     const dariKurikulum = daftarMapelUntuk({ jenjang }).map(m => m.nama);
     const luarPeta = DAFTAR_MAPEL.filter(n => petakanNamaMapel(n, { jenjang }).kode === '');
     return [...new Set([...dariKurikulum, ...luarPeta])];
@@ -4847,6 +4851,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                         {opsiMapelForm.map(mapel => <option key={mapel} value={mapel}>{mapel}</option>)}
                       </select>
                       {!jenjang && !folderAktif && <div style={{ fontSize: '11px', color: '#b45309', marginTop: '4px' }}>Pilih jenjang dulu supaya daftar ini hanya menampilkan mapel yang sah menurut Kurikulum Merdeka (SD tidak akan menampilkan Kimia, dst.).</div>}
+                      {jenjang && !jenjangDipetakan(jenjang) && <div style={{ fontSize: '11px', color: '#b45309', marginTop: '4px' }}>{jenjang} belum dipetakan ke fase Kurikulum Merdeka di sistem ini, jadi daftar lengkap ditawarkan seperti semula.</div>}
                       {pesanMapel && <div style={{ fontSize: '11px', color: '#b45309', marginTop: '4px' }}>{pesanMapel}</div>}
                       {folderAktif && <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Terkunci oleh folder aktif. Klik "Ganti Folder" untuk mengubah.</div>}
                     </Field>
