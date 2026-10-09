@@ -23,6 +23,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  jenjangDipetakan,
   FASE_PER_KELAS,
   faseDariKelas,
   jenjangDariKelas,
@@ -127,6 +128,39 @@ test('rumpun ilmu SMA ditawarkan di Fase E dan F', () => {
   for (const rumpun of ['Fisika', 'Kimia', 'Biologi', 'Sosiologi', 'Ekonomi', 'Geografi', 'Sejarah']) {
     assert.ok(nama.includes(rumpun), `${rumpun} harus ada di SMA`);
   }
+});
+
+test('IPAS hanya SD, IPA & IPS hanya SMP, rumpun ilmu hanya SMA', () => {
+  // Keluhan lama owner: "gak ada mapel sesuai IPS SMP gitu atau IPAS".
+  assert.ok(daftarMapelUntuk({ jenjang: 'SD/MI' }).some((m) => m.nama === 'IPAS'));
+  assert.ok(!daftarMapelUntuk({ jenjang: 'SD/MI' }).some((m) => m.nama === 'IPA'));
+  assert.ok(daftarMapelUntuk({ jenjang: 'SMP/MTs' }).some((m) => m.nama === 'IPA'));
+  assert.ok(daftarMapelUntuk({ jenjang: 'SMP/MTs' }).some((m) => m.nama === 'IPS'));
+  assert.ok(!daftarMapelUntuk({ jenjang: 'SMP/MTs' }).some((m) => m.nama === 'IPAS'));
+  assert.ok(daftarMapelUntuk({ jenjang: 'SMA/MA' }).some((m) => m.nama === 'Kimia'));
+  assert.ok(!daftarMapelUntuk({ jenjang: 'SMA/MA' }).some((m) => m.nama === 'IPA'));
+});
+
+test('SMK setara SMA/MA untuk daftar mapel (keputusan owner)', () => {
+  // Owner 2026-10-09: "SEBENARNYA SMA DAN SMK ITU SAMA."
+  const smk = daftarMapelUntuk({ jenjang: 'SMK' }).map((m) => m.nama);
+  const sma = daftarMapelUntuk({ jenjang: 'SMA/MA' }).map((m) => m.nama);
+  assert.deepEqual(smk, sma, 'daftar mapel SMK harus sama dengan SMA/MA');
+  assert.ok(smk.includes('Kimia'));
+  assert.ok(smk.includes('Matematika Tingkat Lanjut'));
+  assert.ok(!smk.includes('IPA'), 'rumpun utuh IPA adalah mapel SMP, bukan SMK');
+  assert.equal(mapelBerlaku('Fisika', { jenjang: 'SMK' }), true);
+  assert.equal(petakanNamaMapel('Biologi', { jenjang: 'SMK' }).nama, 'Biologi');
+  assert.equal(petakanNamaMapel('IPAS', { jenjang: 'SMK' }).diubah, false, 'IPAS di SMK tetap dikembalikan ke manusia');
+});
+
+test('jenjang yang belum dipetakan diakui jujur, bukan dipaksa kosong', () => {
+  assert.equal(jenjangDipetakan('SD/MI'), true);
+  assert.equal(jenjangDipetakan('SMP/MTs'), true);
+  assert.equal(jenjangDipetakan('SMA/MA'), true);
+  assert.equal(jenjangDipetakan('SMK'), true, 'SMK setara SMA/MA sejak 2026-10-09');
+  assert.equal(jenjangDipetakan('UTBK/SNBT'), false);
+  assert.equal(jenjangDipetakan(''), false);
 });
 
 test('kelompok wajib didahulukan dalam daftar (urutan yang enak dibaca)', () => {

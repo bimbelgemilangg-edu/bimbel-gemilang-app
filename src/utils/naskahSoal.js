@@ -329,6 +329,19 @@ export const GAYA_NASKAH = `
 .naskah .nsk-gbr-blok { display: block; margin: 1.5mm auto; }
 .naskah .nsk-opsi { display: grid; gap: 0.8mm 5mm; margin: 1.5mm 0 0 7.5mm; }
 .naskah .nsk-opsi > span { break-inside: avoid; }
+.naskah .nsk-bs { margin: 1.5mm 0 0 7.5mm; }
+.naskah .nsk-bs-head, .naskah .nsk-bs-row { display: grid; grid-template-columns: 1fr 14mm 14mm; gap: 2mm; align-items: start; }
+.naskah .nsk-bs-head { font-size: 8.5pt; font-weight: bold; border-bottom: 0.4pt solid #000; padding-bottom: 1mm; }
+.naskah .nsk-bs-head > span:nth-child(2), .naskah .nsk-bs-head > span:nth-child(3),
+.naskah .nsk-bs-row > span:nth-child(2), .naskah .nsk-bs-row > span:nth-child(3) { text-align: center; }
+.naskah .nsk-bs-row { padding: 1.1mm 0; border-bottom: 0.3pt dotted #94a3b8; break-inside: avoid; }
+.naskah .nsk-bs-kotak { width: 6mm; height: 6mm; border: 0.5pt solid #000; border-radius: 1mm; justify-self: center; }
+.naskah .nsk-jodoh { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin: 1.5mm 0 0 7.5mm; }
+.naskah .nsk-jodoh-kol { display: grid; gap: 1.2mm; }
+.naskah .nsk-jodoh-kol > span { break-inside: avoid; border-bottom: 0.3pt dotted #94a3b8; padding-bottom: 1mm; }
+.naskah .nsk-isian { margin: 2mm 0 0 7.5mm; font-size: 10.5pt; }
+.naskah .nsk-esai { margin: 2mm 0 0 7.5mm; }
+.naskah .nsk-esai > div { border-bottom: 0.4pt solid #64748b; height: 7mm; }
 .naskah .nsk-kunci-baris { font-size: 10.8px; }
 /* 2026-10-08: blok BACAAN/wacana. Sebelumnya mesin cetak TIDAK merender
    field bacaan sama sekali, sehingga soal literasi tercetak tanpa teks
@@ -408,6 +421,85 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
   return `<div class="nsk-bacaan">${rentang}${isi}</div>`;
 }
 
+export function barisBenarSalah(soal) {
+  const tabel = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
+  if (tabel.length) {
+    return tabel.map((r) => ({ teks: String(r?.pernyataan || ''), kunci: String(r?.kunci || '') }));
+  }
+  const per = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
+  return per.map((r) => (typeof r === 'string'
+    ? { teks: r, kunci: '' }
+    : { teks: String(r?.teks || ''), kunci: String(r?.jawaban || r?.kunci || '') }));
+}
+
+function gambarDalamTeks(teks, gambarUrls, nomor, rasioGambar, lebarKolom) {
+  return pisahTeksDanGambar(teks, gambarUrls)
+    .map((sg) => {
+      if (sg.jenis === 'teks') return teksKeHtml(sg.isi);
+      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const u = ukuranGambarNaskah(r, 1, lebarKolom * 0.9) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
+      return imgNaskahHtml(sg.url, `Gambar nomor ${nomor}`, u);
+    })
+    .join('');
+}
+
+/**
+ * Isi jawaban per tipe untuk LEMBAR SISWA (tanpa kunci).
+ * @returns {string} HTML tambahan setelah badan soal
+ */
+export function isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar = {}) {
+  const tipe = String(soal?.tipe || 'pg_sederhana');
+  const rg = rasioGambar;
+
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+    const baris = barisBenarSalah(soal);
+    if (!baris.length) return '';
+    const rows = baris.map((b, i) => `<div class="nsk-bs-row"><span class="nsk-bs-teks">${i + 1}. ${gambarDalamTeks(b.teks, [], nomor, rg, lebarKolom)}</span><span class="nsk-bs-kotak"></span><span class="nsk-bs-kotak"></span></div>`).join('');
+    return `<div class="nsk-bs"><div class="nsk-bs-head"><span></span><span>Benar</span><span>Salah</span></div>${rows}</div>`;
+  }
+
+  if (tipe === 'pg_kompleks') {
+    const per = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
+    if (!per.length) return '';
+    const items = per.map((q, i) => `<span>(${String.fromCharCode(65 + i)}) ${gambarDalamTeks(typeof q === 'string' ? q : (q?.teks || ''), [], nomor, rg, lebarKolom)}</span>`).join('');
+    return `<div class="nsk-opsi" style="grid-template-columns:1fr;">${items}</div>`;
+  }
+
+  if (tipe === 'menjodohkan') {
+    const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
+    if (!pasangan.length) return '';
+    const kiri = pasangan.map((q, i) => `<span>${i + 1}. ${gambarDalamTeks(String(q?.kiri || ''), [], nomor, rg, lebarKolom)}</span>`).join('');
+    const kanan = pasangan.map((q, i) => `<span>${String.fromCharCode(65 + i)}. ${gambarDalamTeks(String(q?.kanan || ''), [], nomor, rg, lebarKolom)}</span>`).join('');
+    return `<div class="nsk-jodoh"><div class="nsk-jodoh-kol">${kiri}</div><div class="nsk-jodoh-kol">${kanan}</div></div>`;
+  }
+
+  if (tipe === 'isian_singkat' || tipe === 'numerik') {
+    return '<div class="nsk-isian">Jawaban: ............................................</div>';
+  }
+
+  if (tipe === 'esai' || tipe === 'uraian') {
+    return '<div class="nsk-esai"><div></div><div></div><div></div><div></div></div>';
+  }
+
+  return '';
+}
+
+/** Kunci per baris untuk LEMBAR KUNCI (benar/salah & menjodohkan). */
+export function kunciPerBaris(soal) {
+  const tipe = String(soal?.tipe || 'pg_sederhana');
+  if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
+    const baris = barisBenarSalah(soal).filter((b) => b.kunci);
+    if (!baris.length) return '';
+    return baris.map((b, i) => `${i + 1}. ${String(b.kunci).toUpperCase()}`).join(', ');
+  }
+  if (tipe === 'menjodohkan') {
+    const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
+    if (!pasangan.length) return '';
+    return pasangan.map((q, i) => `${i + 1}-${String.fromCharCode(65 + i)}`).join(', ');
+  }
+  return '';
+}
+
 export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiButir = {}) {
   // Bacaan DIDAHULUKAN bila butir ini MEMBAWA bacaannya sendiri. Bila wacana
   // sudah dicetak sebagai blok stimulus terpisah (lihat kelompokkanStimulus),
@@ -442,7 +534,12 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
       return `<span>(${huruf}) ${teksKeHtml(t)}${gbr}</span>`;
     })
     .join('');
-  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}</div></div>`;
+  // 🔥 bagian jawaban per tipe (diport dari main #183): benar/salah mendapat
+  // tabelnya, pg_kompleks pernyataannya, menjodohkan pasangannya, isian &
+  // esai tempat menjawabnya -- siswa tidak lagi disuruh menjawab di ruang
+  // yang tidak tercetak.
+  const isiJawaban = isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar);
+  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
 }
 
 export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
@@ -469,7 +566,9 @@ export function kunciButirNaskahHtml(soal, nomor) {
       .map((sg) => (sg.jenis === 'teks' ? teksKeHtml(sg.isi) : ''))
       .join(' ')
     : '';
-  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunci}${pembahasan ? ` — ${pembahasan}` : ''}</div></div>`;
+  const perBaris = kunciPerBaris(soal);
+  const kunciTampil = perBaris ? `${kunci}${kunci ? ' · ' : ''}${perBaris}` : kunci;
+  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? ` — ${pembahasan}` : ''}</div></div>`;
 }
 
 /**
@@ -726,7 +825,25 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, o
   const barisBacaan = teksBacaan
     ? Math.ceil(teksBacaan.length / hurufSebaris) * 4.0 + 8 // +8: padding & judul blok
     : 0;
-  return Math.round(barisTeks + tinggiGambar + tinggiGambarBacaan + barisBacaan + barisOpsi + 4);
+  // 🔥 Isi per tipe ikut dihitung (diport dari main #183): sebelumnya tinggi
+  // benar_salah/menjodohkan/esai ditaksir tanpa baris jawabannya, sehingga
+  // kolom meluber dan halaman terlihat berantakan di kertas.
+  const tipeSoal = String(soal?.tipe || 'pg_sederhana');
+  let tinggiIsi = 0;
+  if (tipeSoal === 'benar_salah' || tipeSoal === 'pg_kategori') {
+    tinggiIsi = barisBenarSalah(soal).reduce((acc, b) => acc + Math.max(6, Math.ceil(Math.max(1, String(b.teks || '').length) / hurufSebaris) * 4.6), 6);
+  } else if (tipeSoal === 'pg_kompleks') {
+    const per = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
+    tinggiIsi = per.reduce((acc, q) => acc + Math.ceil(Math.max(1, String(typeof q === 'string' ? q : q?.teks || '').length) / hurufSebaris) * 4.6, 0);
+  } else if (tipeSoal === 'menjodohkan') {
+    const pas = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
+    tinggiIsi = Math.ceil(pas.length / 2) * 6 + 4;
+  } else if (tipeSoal === 'isian_singkat' || tipeSoal === 'numerik') {
+    tinggiIsi = 8;
+  } else if (tipeSoal === 'esai' || tipeSoal === 'uraian') {
+    tinggiIsi = 30;
+  }
+  return Math.round(barisTeks + tinggiGambar + tinggiGambarBacaan + barisBacaan + barisOpsi + tinggiIsi + 4);
 }
 
 /**

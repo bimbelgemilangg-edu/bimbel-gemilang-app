@@ -51,6 +51,21 @@ export const JENJANG_PER_FASE = {
 };
 
 /**
+ * 🔥 Owner 2026-10-09: "SEBENARNYA SMA DAN SMK ITU SAMA."
+ * Untuk urusan DAFTAR MAPEL, SMK diperlakukan setara SMA/MA (fase E-F).
+ * Nilai jenjang yang TERSIMPAN di data tetap 'SMK' — kesetaraan ini hanya
+ * dipakai saat menyaring/memetakan mapel, bukan menulis ulang identitas.
+ */
+export const JENJANG_SETARA = {
+  SMK: 'SMA/MA',
+};
+
+function jenjangEfektif(j) {
+  const t = String(j ?? '').trim();
+  return JENJANG_SETARA[t] || t;
+}
+
+/**
  * Kelompok mapel:
  *  - 'wajib'   : diikuti semua siswa di fase itu
  *  - 'pilihan' : mata pelajaran pilihan (Fase F SMA, atau opsional di SD)
@@ -152,8 +167,9 @@ export function mapelBerlaku(kodeAtauNama, { jenjang = '', kelas = '' } = {}) {
     const f = faseDariKelas(kelas);
     if (f) return m.fase.includes(f);
   }
-  if (jenjang) {
-    return m.fase.some((f) => JENJANG_PER_FASE[f] === jenjang);
+  const j = jenjangEfektif(jenjang);
+  if (j) {
+    return m.fase.some((f) => JENJANG_PER_FASE[f] === j);
   }
   return true;
 }
@@ -170,11 +186,22 @@ export function daftarMapelUntuk({ jenjang = '', kelas = '' } = {}) {
         const f = faseDariKelas(kelas);
         if (f) return m.fase.includes(f);
       }
-      if (jenjang) return m.fase.some((f) => JENJANG_PER_FASE[f] === jenjang);
+      if (jenjang) return m.fase.some((f) => JENJANG_PER_FASE[f] === jenjangEfektif(jenjang));
       return true;
     })
     .sort((a, b) => urut.indexOf(a.kelompok) - urut.indexOf(b.kelompok) || a.nama.localeCompare(b.nama, 'id'))
     .map((m) => ({ kode: m.kode, nama: m.nama, kelompok: m.kelompok, fase: [...m.fase] }));
+}
+
+/**
+ * Apakah jenjang ini dimodelkan oleh peta kurikulum?
+ * SMK dan UTBK/SNBT belum: struktur mapelnya tidak mengikuti fase A-F yang
+ * sama. Untuk jenjang yang belum dipetakan, form HARUS menawarkan daftar
+ * lengkap seperti sebelumnya — memperlihatkan daftar hampir kosong justru
+ * menjebak pengguna ke jalan buntu.
+ */
+export function jenjangDipetakan(jenjang) {
+  return Object.values(JENJANG_PER_FASE).includes(jenjangEfektif(jenjang));
 }
 
 /**
@@ -188,11 +215,11 @@ export function petakanNamaMapel(nama, { jenjang = '', kelas = '' } = {}) {
   const m = cari(nama);
   if (!m) return { nama: String(nama || '').trim(), kode: '', diubah: false, alasan: 'nama tidak dikenal peta kurikulum' };
 
-  const jenjangEfektif = jenjang || jenjangDariKelas(kelas);
-  if (!jenjangEfektif) return { nama: m.nama, kode: m.kode, diubah: m.nama !== String(nama).trim(), alasan: m.nama !== String(nama).trim() ? 'nama dinormalkan' : '' };
+  const jenjangTujuan = jenjangEfektif(jenjang) || jenjangDariKelas(kelas);
+  if (!jenjangTujuan) return { nama: m.nama, kode: m.kode, diubah: m.nama !== String(nama).trim(), alasan: m.nama !== String(nama).trim() ? 'nama dinormalkan' : '' };
 
   // Sudah sah di jenjang ini?
-  if (m.fase.some((f) => JENJANG_PER_FASE[f] === jenjangEfektif)) {
+  if (m.fase.some((f) => JENJANG_PER_FASE[f] === jenjangTujuan)) {
     // Tapi cek fase kelasnya: mis. "Matematika Tingkat Lanjut" untuk kelas 10.
     if (kelas) {
       const f = faseDariKelas(kelas);
@@ -207,21 +234,21 @@ export function petakanNamaMapel(nama, { jenjang = '', kelas = '' } = {}) {
   }
 
   // Tidak sah di jenjang ini — coba padanan lintas jenjang.
-  const tujuan = PINDAH_JENJANG[m.kode]?.[jenjangEfektif];
+  const tujuan = PINDAH_JENJANG[m.kode]?.[jenjangTujuan];
   if (tujuan) {
     const t = cari(tujuan);
     return {
       nama: t.nama, kode: t.kode, diubah: true,
-      alasan: `${m.nama} tidak ada di ${jenjangEfektif}; padanan Kurikulum Merdeka: ${t.nama}`,
+      alasan: `${m.nama} tidak ada di ${jenjangTujuan}; padanan Kurikulum Merdeka: ${t.nama}`,
     };
   }
   if (tujuan === null) {
     return {
       nama: m.nama, kode: m.kode, diubah: false,
-      alasan: `${m.nama} adalah mapel ${jenjangEfektif === 'SD/MI' ? 'setelah SD' : 'jenjang SD'} — periksa kembali jenjang dokumennya`,
+      alasan: `${m.nama} adalah mapel ${jenjangTujuan === 'SD/MI' ? 'setelah SD' : 'jenjang SD'} — periksa kembali jenjang dokumennya`,
     };
   }
-  return { nama: m.nama, kode: m.kode, diubah: false, alasan: `${m.nama} tidak dikenal di ${jenjangEfektif}` };
+  return { nama: m.nama, kode: m.kode, diubah: false, alasan: `${m.nama} tidak dikenal di ${jenjangTujuan}` };
 }
 
 /**
@@ -250,7 +277,7 @@ export function peringatanKeselarasanKurikulum({ mapel = '', jenjang = '', kelas
 }
 
 export default {
-  FASE_PER_KELAS, JENJANG_PER_FASE, MAPEL_KURIKULUM,
+  FASE_PER_KELAS, JENJANG_PER_FASE, JENJANG_SETARA, MAPEL_KURIKULUM,
   faseDariKelas, jenjangDariKelas, mapelBerlaku, daftarMapelUntuk,
-  petakanNamaMapel, peringatanKeselarasanKurikulum,
+  jenjangDipetakan, petakanNamaMapel, peringatanKeselarasanKurikulum,
 };
