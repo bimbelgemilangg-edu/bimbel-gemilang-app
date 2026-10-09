@@ -97,15 +97,6 @@ export const FIELD_DIANJURKAN = ['kelas', 'kelompok', 'topik'];
 // 2. PEMBACA SADAR-ALIAS
 // ------------------------------------------------------------
 
-function normKunci(s) {
-  return String(s || '')
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '')
-    .trim();
-}
-
 function adaIsi(v) {
   if (v === null || v === undefined) return false;
   if (Array.isArray(v)) return v.length > 0;
@@ -374,8 +365,15 @@ export function deteksiSoalRusak(dok) {
   }
 
   // --- opsi ganda identik (siswa tak bisa memilih dengan pasti) ---
+  // 🔥 2026-10-09: dibandingkan sebagai TEKS UTUH (trim + huruf kecil), BUKAN
+  // lewat normKunci yang membuang tanda baca & tanda minus. Verifikasi
+  // terhadap data produksi membuktikan normKuni membuat "-21" vs "21" dan
+  // "62,8 cm" vs "6,28 cm" dituduh identik — 138 alarm palsu. Pada pilihan
+  // ganda, koma desimal dan tanda minus ADALAH MAKNA.
   if (Array.isArray(d.opsiJawaban) && d.opsiJawaban.length > 1) {
-    const teks = d.opsiJawaban.map((o) => normKunci(typeof o === 'string' ? o : o?.teks)).filter(Boolean);
+    const teks = d.opsiJawaban
+      .map((o) => String(typeof o === 'string' ? o : (o?.teks || '')).trim().toLowerCase())
+      .filter(Boolean);
     if (new Set(teks).size !== teks.length) perluDicek.push('Ada opsi jawaban yang identik');
   }
 
