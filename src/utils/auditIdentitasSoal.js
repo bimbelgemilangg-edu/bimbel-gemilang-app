@@ -56,6 +56,7 @@ import { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku } from './jenjangBaku.js';
 // K13) — identitasnya "ada" tapi tidak selaras dengan kurikulum yang dipakai
 // sekolah, jadi tetap perlu ditemukan dan dibereskan.
 import { peringatanKeselarasanKurikulum, petakanNamaMapel } from './kurikulumMerdeka.js';
+import { soalBawaPenandaKunci } from './bersihkanGlifKunci.js';
 // 🔥 2026-10-08: audit dijadikan GENERAL CHECKUP. Satu sapuan yang sama kini
 // juga menjawab dua pertanyaan fondasi lain: apakah ada butir kembar yang
 // lolos masuk (sidik jari sadar gambar+kunci), dan seberapa pecah pohon
@@ -323,6 +324,15 @@ export function deteksiSoalRusak(dok) {
   const kunciKosong = !adaIsi(kunci);
   const opsi = panjangDaftarOpsi(d);
   const pernyataan = Array.isArray(d.pernyataan) ? d.pernyataan.filter((p) => adaIsi(typeof p === 'string' ? p : p?.teks)).length : 0;
+
+  // 🔥 2026-10-09: penanda kunci (☑/☐) di AWAL teks opsi = warisan impor
+  // dari dokumen sumber yang menandai kunci dengan kotak tercentang.
+  // Lapisan tampil & cetak sudah melepasnya (bersihkanGlifKunci.js),
+  // tapi data mentahnya tetap ditandai di sini supaya kelihatan di
+  // halaman audit dan bisa dibersihkan terpisah (butuh konfirmasi).
+  if (soalBawaPenandaKunci(d)) {
+    perluDicek.push('Teks opsi membawa penanda kunci ☑/☐ dari sumber impor (tampilan sudah aman; data menunggu pembersihan terkonfirmasi)');
+  }
 
   if (tipe === 'pg_sederhana') {
     if (opsi < 2) rusak.push(`Opsi jawaban kurang dari 2 (ada ${opsi})`);

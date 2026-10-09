@@ -16,6 +16,7 @@
 // ============================================================
 
 import { deteksiTaksonomiSoal, terapkanTaksonomi } from './mesinTaksonomiSoal.js';
+import { bersihkanTeksOpsi } from './bersihkanGlifKunci.js';
 
 /**
  * @param {object} butir   keluaran ekstrakHtmlGemini (kontrak 12 field + materi/pembahasan)
@@ -33,7 +34,13 @@ export function dokumenDariButir(butir = {}, konteks = {}) {
   const urlsButir = butir.gambarUrls || [];
   const metaButir = butir.gambarMeta || [];
   const opsiJawabanSiap = (butir.opsiJawaban || []).map((o) => {
-    if (!o || typeof o !== 'object' || !Array.isArray(o.gambarRefs)) return o;
+    // 🔥 2026-10-09: teks opsi dilepas dari glif penanda kunci (☑/☐)
+    // bawaan dokumen sumber -- jangan sampai masuk bank dan bocor ke
+    // lembar siswa (lihat bersihkanGlifKunci.js).
+    if (typeof o === 'string') return bersihkanTeksOpsi(o);
+    if (!o || typeof o !== 'object' || !Array.isArray(o.gambarRefs)) {
+      return o && typeof o === 'object' ? { ...o, teks: bersihkanTeksOpsi(o.teks || '') } : o;
+    }
     const gambar = o.gambarRefs
       .map((n) => {
         const url = urlsButir[Number(n) - 1] || '';
@@ -48,7 +55,7 @@ export function dokumenDariButir(butir = {}, konteks = {}) {
       })
       .filter(Boolean);
     const { gambarRefs: _gambarRefs, ...sisanya } = o;
-    return { ...sisanya, gambar: [...(Array.isArray(o.gambar) ? o.gambar : []), ...gambar] };
+    return { ...sisanya, teks: bersihkanTeksOpsi(sisanya.teks || ''), gambar: [...(Array.isArray(o.gambar) ? o.gambar : []), ...gambar] };
   });
 
   const norm = {

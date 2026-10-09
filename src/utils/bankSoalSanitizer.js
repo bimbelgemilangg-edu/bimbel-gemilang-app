@@ -1,5 +1,7 @@
 // Perbaikan otomatis kurung himpunan LaTeX (lihat src/utils/kurungLatex.js).
 import { perbaikiKurungHimpunanLatex } from './kurungLatex.js';
+// 🔥 2026-10-09: lepas glif penanda kunci (☑/☐) dari teks opsi hasil scan.
+import { bersihkanTeksOpsi } from './bersihkanGlifKunci.js';
 
 // ============================================================
 // bankSoalSanitizer.js
@@ -352,11 +354,15 @@ const TIPE_ENUM = [
   function normalizeOpsiJawaban(val) {
     if (!Array.isArray(val)) return [];
     return val.map((item) => {
-      if (typeof item === 'string') return item;
+      // 🔥 2026-10-09: glif penanda kunci (☑/☐) di awal teks dilepas di
+      // PINTU MASUK -- sumber dokumen suka menandai kunci dengan kotak
+      // tercentang dan dulu itu lolos sampai lembar siswa (kebocoran
+      // kunci). Lihat bersihkanGlifKunci.js.
+      if (typeof item === 'string') return bersihkanTeksOpsi(item);
       if (item && typeof item === 'object') {
-        return String(item.text ?? item.opsi ?? item.value ?? JSON.stringify(item));
+        return bersihkanTeksOpsi(String(item.text ?? item.opsi ?? item.value ?? JSON.stringify(item)));
       }
-      return String(item ?? '');
+      return bersihkanTeksOpsi(String(item ?? ''));
     });
   }
   

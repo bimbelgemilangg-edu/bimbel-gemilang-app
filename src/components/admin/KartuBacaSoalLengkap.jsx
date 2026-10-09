@@ -21,6 +21,7 @@ import React from 'react';
 import { teksKeHtml } from '../../utils/naskahSoal';
 import { pisahTeksDanGambar } from '../../utils/penempatanGambar';
 import { teksSoalDari, bacaanDari } from '../../utils/fieldButirSoal';
+import { opsiTampilDari } from '../../utils/bersihkanGlifKunci.js';
 
 const gaya = {
   wadah: {
@@ -54,7 +55,7 @@ export default function KartuBacaSoalLengkap({ soal, tanpaKunci = false }) {
   if (!soal) return null;
   const bacaan = bacaanDari(soal);
   const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
-  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  const opsi = opsiTampilDari(soal);
   const pernyataan = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
   const tabel = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
   const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
