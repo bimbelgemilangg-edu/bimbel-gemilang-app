@@ -59,6 +59,13 @@ import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
 // dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
 // sementara pasangan kembar ber-kunci berbeda lolos tanpa diperiksa.
 import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
+// 🔥 2026-10-09 (owner): "waktu tekan mata pelajaran harusnya yang awal muncul
+// jenjang — contoh SD, kan masa udah ada Kimia?" Form ini dulu menanyakan
+// mapel SEBELUM jenjang dan menawarkan daftar datar, sehingga SD bisa tertag
+// Kimia. Kini jenjang lebih dulu dan daftar mapel menyaring diri lewat peta
+// Kurikulum Merdeka. Nama di luar peta (TPS/Penalaran Umum, Penguatan Dasar)
+// tetap tersedia karena memang bukan mapel kurikulum.
+import { daftarMapelUntuk, petakanNamaMapel } from '../../../utils/kurikulumMerdeka';
 // 🔥 BARU (2026-10-07): keluhan owner "gambar dari Gemini gak muncul
 // semua". Akarnya: Gemini Canvas menulis src="[url](url)" gaya tautan
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
@@ -3096,6 +3103,7 @@ export default function ImportHasilScanPage() {
   const [mataPelajaran, setMataPelajaran] = useState('');
   const [tingkatKelas, setTingkatKelas] = useState('');
   const [jenjang, setJenjang] = useState('');
+  const [pesanMapel, setPesanMapel] = useState('');
   // 🔥 BARU: pembeda jenis ujian -- TANPA ini, "TKA Bahasa Indonesia
   // SMP kelas 8" dan "Ulangan Harian Bahasa Indonesia SMP kelas 8"
   // punya metadata IDENTIK di database, tidak bisa dibedakan sama
@@ -3156,6 +3164,16 @@ export default function ImportHasilScanPage() {
   // diganti) jadi hilang karena cukup diisi SEKALI saat folder dibuat.
   const [daftarFolder, setDaftarFolder] = useState([]);
   const [folderAktif, setFolderAktif] = useState(null); // { id, judul, coverUrl, mataPelajaran, jenisUjian, jenjang }
+
+  // Daftar mapel yang sah untuk jenjang terpilih. Nama yang tidak dikenal
+  // peta kurikulum (TPS/Penalaran Umum, Penguatan Dasar, ...) tetap ditawar-
+  // kan karena memang bukan mapel kurikulum dan tidak boleh lenyap.
+  const opsiMapelForm = useMemo(() => {
+    if (!jenjang) return DAFTAR_MAPEL;
+    const dariKurikulum = daftarMapelUntuk({ jenjang }).map(m => m.nama);
+    const luarPeta = DAFTAR_MAPEL.filter(n => petakanNamaMapel(n, { jenjang }).kode === '');
+    return [...new Set([...dariKurikulum, ...luarPeta])];
+  }, [jenjang]);
   const [modeFolder, setModeFolder] = useState('pilih'); // 'pilih' | 'baru'
   const [judulFolderBaru, setJudulFolderBaru] = useState('');
   const [coverFolderBaru, setCoverFolderBaru] = useState('');
@@ -4801,11 +4819,35 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                   <h3 style={{ fontWeight: '700', color: '#374151', marginBottom: '12px' }}>Metadata Soal</h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', gap: '12px' }}>
-                    <Field label="Mata Pelajaran *">
-                      <select value={mataPelajaran} onChange={e => setMataPelajaran(e.target.value)} disabled={!!folderAktif} className="input" style={{ color: mataPelajaran ? undefined : '#9ca3af' }}>
-                        <option value="">-- Pilih mata pelajaran --</option>
-                        {DAFTAR_MAPEL.map(mapel => <option key={mapel} value={mapel}>{mapel}</option>)}
+                    <Field label="Jenjang *">
+                      <select value={jenjang} onChange={e => {
+                        const j = e.target.value;
+                        setJenjang(j);
+                        // Bila mapel yang sudah dipilih tidak sah di jenjang
+                        // baru, lepas dengan pesan jujur -- bukan diam-diam.
+                        if (mataPelajaran && j) {
+                          const sah = daftarMapelUntuk({ jenjang: j }).some(m => m.nama === mataPelajaran)
+                            || petakanNamaMapel(mataPelajaran, { jenjang: j }).kode === '';
+                          if (!sah) {
+                            setMataPelajaran('');
+                            setPesanMapel(`Mapel "${mataPelajaran}" tidak diajarkan di ${j} menurut Kurikulum Merdeka, jadi pilihan dilepas. Silakan pilih ulang.`);
+                          } else {
+                            setPesanMapel('');
+                          }
+                        }
+                      }} disabled={!!folderAktif} className="input" style={{ color: jenjang ? undefined : '#9ca3af' }}>
+                        <option value="">-- Pilih jenjang dulu --</option>
+                        {DAFTAR_JENJANG.map(item => <option key={item} value={item}>{item}</option>)}
                       </select>
+                    </Field>
+
+                    <Field label="Mata Pelajaran *">
+                      <select value={mataPelajaran} onChange={e => { setMataPelajaran(e.target.value); setPesanMapel(''); }} disabled={!!folderAktif} className="input" style={{ color: mataPelajaran ? undefined : '#9ca3af' }}>
+                        <option value="">-- Pilih mata pelajaran --</option>
+                        {opsiMapelForm.map(mapel => <option key={mapel} value={mapel}>{mapel}</option>)}
+                      </select>
+                      {!jenjang && !folderAktif && <div style={{ fontSize: '11px', color: '#b45309', marginTop: '4px' }}>Pilih jenjang dulu supaya daftar ini hanya menampilkan mapel yang sah menurut Kurikulum Merdeka (SD tidak akan menampilkan Kimia, dst.).</div>}
+                      {pesanMapel && <div style={{ fontSize: '11px', color: '#b45309', marginTop: '4px' }}>{pesanMapel}</div>}
                       {folderAktif && <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Terkunci oleh folder aktif. Klik "Ganti Folder" untuk mengubah.</div>}
                     </Field>
 
@@ -4820,13 +4862,6 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                         <option value="SNBT/UTBK">SNBT/UTBK</option>
                         <option value="Reguler">Reguler (Ulangan/Kurikulum Sekolah)</option>
                         <option value="Lainnya">Lainnya</option>
-                      </select>
-                    </Field>
-
-                    <Field label="Jenjang *">
-                      <select value={jenjang} onChange={e => setJenjang(e.target.value)} disabled={!!folderAktif} className="input" style={{ color: jenjang ? undefined : '#9ca3af' }}>
-                        <option value="">-- Pilih jenjang --</option>
-                        {DAFTAR_JENJANG.map(item => <option key={item} value={item}>{item}</option>)}
                       </select>
                     </Field>
 
