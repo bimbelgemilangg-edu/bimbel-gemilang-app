@@ -365,14 +365,18 @@ export function deteksiSoalRusak(dok) {
   }
 
   // --- opsi ganda identik (siswa tak bisa memilih dengan pasti) ---
-  // 🔥 2026-10-09: dibandingkan sebagai TEKS UTUH (trim + huruf kecil), BUKAN
-  // lewat normKunci yang membuang tanda baca & tanda minus. Verifikasi
-  // terhadap data produksi membuktikan normKuni membuat "-21" vs "21" dan
-  // "62,8 cm" vs "6,28 cm" dituduh identik — 138 alarm palsu. Pada pilihan
-  // ganda, koma desimal dan tanda minus ADALAH MAKNA.
+  // 🔥 2026-10-09 (dua kali dikoreksi oleh data produksi):
+  //   percobaan 1 memakai normKunci -> "-21" vs "21" dan "62,8" vs "6,28"
+  //     dituduh identik (138 alarm palsu);
+  //   percobaan 2 memakai trim+lowercase -> SOAL HURUF KAPITAL kehilangan
+  //     satu-satunya pembeda opsinya ("Kerja bakti..." vs "Kerja Bakti...")
+  //     dan genotip "BBTT" vs "BBTt" terlihat kembar, sehingga 10 butir sehat
+  //     dituduh ambigu.
+  // Kesimpulan: opsi dibandingkan PEKA HURUF dan peka tanda baca. Huruf
+  // kapital, tanda minus, dan koma desimal ADALAH MAKNA pada pilihan ganda.
   if (Array.isArray(d.opsiJawaban) && d.opsiJawaban.length > 1) {
     const teks = d.opsiJawaban
-      .map((o) => String(typeof o === 'string' ? o : (o?.teks || '')).trim().toLowerCase())
+      .map((o) => String(typeof o === 'string' ? o : (o?.teks || '')).trim())
       .filter(Boolean);
     if (new Set(teks).size !== teks.length) perluDicek.push('Ada opsi jawaban yang identik');
   }
