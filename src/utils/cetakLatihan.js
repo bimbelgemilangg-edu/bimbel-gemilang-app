@@ -74,8 +74,7 @@ function gayaDasar(kodeKertas, opsi = {}) {
   .bacaan { border-left: 3pt solid #000; border-top: 0.6pt dashed #64748b;
             border-bottom: 0.6pt dashed #64748b; padding: 6px 8px;
             margin: 0 0 7px; font-size: 11px; line-height: 1.55; text-align: justify; }
-  .bacaan-judul { font-size: 9px; font-weight: bold; letter-spacing: .4px;
-            text-transform: uppercase; margin-bottom: 3px; }
+  .bacaan-rentang { font-size: 8.5px; font-style: italic; margin-bottom: 3px; }
   .bacaan img { max-width: 100%; }
   .kotak::after { content: '✂'; position: absolute; top: -9px; right: 6px; background: #fff;
                   font-size: 10px; padding: 0 3px; color: #000; }
@@ -109,9 +108,9 @@ function kepalaHtml(paket, judulDok) {
 function stemHtml(soal) {
   const bacaan = bacaanDari(soal);
   const bacaanHtml = bacaan
-    ? `<div class="bacaan"><div class="bacaan-judul">Bacalah teks berikut${
-      bacaan.rentang ? ` (untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai})` : ''
-    }</div>${
+    ? `<div class="bacaan">${
+      bacaan.rentang ? `<div class="bacaan-rentang">untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai}</div>` : ''
+    }${
       pisahTeksDanGambar(bacaan.teks, bacaan.gambar)
         .map((sg) => (sg.jenis === 'teks'
           ? `<div>${teksKeHtml(sg.isi)}</div>`

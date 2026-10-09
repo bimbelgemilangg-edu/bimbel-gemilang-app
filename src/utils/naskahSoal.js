@@ -187,7 +187,14 @@ export function teksKeHtml(teks) {
     .map((b) => {
       if (b.startsWith('$') && b.endsWith('$') && b.length > 2) {
         try {
-          return katex.renderToString(b.slice(1, -1), { throwOnError: false });
+          // 🔥 2026-10-09 (komplain guru matematika: "rumus gak seperti di
+          // buku"). KaTeX merender matematika INLINE dalam textstyle, sehingga
+          // pecahan/akar muncul kecil dan gepeng. Buku pelajaran mencetaknya
+          // dalam displaystyle. Prefix \displaystyle hanya disisipkan bila
+          // rumusnya memang memuat konstruksi bertingkat.
+          const isi = b.slice(1, -1);
+          const bertingkat = /\\(frac|dfrac|tfrac|sqrt|sum|prod|int|oint|lim|binom|begin\{)/.test(isi);
+          return katex.renderToString(bertingkat ? `\\displaystyle ${isi}` : isi, { throwOnError: false });
         } catch {
           return escapeHtml(b);
         }
@@ -231,8 +238,8 @@ export const GAYA_NASKAH = `
   border-bottom: 0.6pt dashed #64748b; padding: 5pt 6pt; margin: 0 0 5pt;
   font-size: 10.5pt; line-height: 1.5; text-align: justify;
   break-inside: avoid; page-break-inside: avoid; }
-.naskah .nsk-bacaan-judul { font-size: 8.5pt; font-weight: bold; letter-spacing: .4pt;
-  text-transform: uppercase; margin-bottom: 3pt; }
+.naskah .nsk-bacaan-rentang { font-size: 8pt; font-style: italic; color: #475569;
+  margin-bottom: 3pt; }
 .naskah .nsk-bacaan img { max-width: 100%; }
 .naskah .nsk-footer { position: absolute; left: 0; right: 0; bottom: 2.5mm; text-align: center; font-size: 10px; color: #000; }
 .naskah .katex { font-size: 1.02em; }
@@ -270,10 +277,15 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
       return imgNaskahHtml(sg.url, `Gambar bacaan nomor ${nomor}`, ukuran);
     })
     .join('');
+  // 🔥 2026-10-09: label "Bacalah teks berikut" DIHAPUS dari lembar cetak atas
+  // permintaan owner ("hilangkan identitas soal di atas... membuat space",
+  // kertas kedepannya dipotong). Blok bergaris kiri tetap menandai wacana;
+  // rentang nomor disisipkan ringkas di akhir bila ada, karena ia informasi
+  // yang dibutuhkan siswa, bukan hiasan.
   const rentang = bacaan.rentang
-    ? ` (untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai})`
+    ? `<div class="nsk-bacaan-rentang">untuk soal ${bacaan.rentang.dari}–${bacaan.rentang.sampai}</div>`
     : '';
-  return `<div class="nsk-bacaan"><div class="nsk-bacaan-judul">Bacalah teks berikut${rentang}</div>${isi}</div>`;
+  return `<div class="nsk-bacaan">${rentang}${isi}</div>`;
 }
 
 export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
@@ -314,12 +326,16 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
 }
 
 export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
-  const meta = [paket?.mapel || paket?.targetKategori || '', paket?.targetKelas || '', paket?.bab || '']
-    .filter(Boolean)
-    .map(escapeHtml)
-    .join(' · ');
+  const bagianMeta = [paket?.mapel || paket?.targetKategori || '', paket?.targetKelas || '', paket?.bab || '']
+    .filter(Boolean);
+  const judulPaket = String(paket?.judul || '');
+  // 🔥 2026-10-09: judul keranjang sudah berbentuk "jenjang · mapel · materi".
+  // Menambah baris meta yang sama = identitas tertulis dua kali dan memakan
+  // ruang kertas yang menurut owner "kedepannya bakal dipotong". Meta hanya
+  // ditulis bila ia membawa informasi BARU di luar judul.
+  const meta = bagianMeta.filter((b) => !judulPaket.includes(String(b))).map(escapeHtml).join(' · ');
   return `<div class="nsk-kop"><h1>${escapeHtml(judulDok)}</h1>
-    <div class="nsk-meta">${escapeHtml(paket?.judul || 'Naskah Soal')} ${meta ? `— ${meta}` : ''}</div>
+    <div class="nsk-meta">${escapeHtml(judulPaket || 'Naskah Soal')}${meta ? ` — ${meta}` : ''}</div>
     ${denganIdentitas ? '<div class="nsk-identitas"><span>Nama:</span><span>Kelas:</span><span>No. Absen:</span></div>' : ''}
   </div>`;
 }
@@ -455,6 +471,31 @@ export function watermarkHtml(o = {}) {
   return `<div class="wm-gemilang${mode}" aria-hidden="true"><img src="${escapeHtml(logo)}" alt="" /></div>`;
 }
 
+/**
+ * Sebarkan blok halaman terakhir ke semua kolom supaya tinggi kolom
+ * sedatar mungkin (greedy: blok berikutnya masuk kolom terpendek).
+ * Halaman selain terakhir TIDAK disentuh — keduanya sudah penuh oleh
+ * kapasitas, dan mengutak-atiknya bisa membelah butir.
+ */
+export function seimbangkanHalamanTerakhir(halaman, tinggi, kolomPerHalaman) {
+  const n = kolomPerHalaman > 1 ? kolomPerHalaman : 1;
+  if (!halaman.length || n < 2) return halaman;
+  const terakhir = halaman[halaman.length - 1];
+  if (terakhir.length < 2) return halaman;
+  const urut = terakhir.flat().sort((a, b) => a - b); // jaga urutan nomor
+  const kolom = Array.from({ length: n }, () => []);
+  const tinggiKolom = new Array(n).fill(0);
+  for (const idx of urut) {
+    let p = 0;
+    for (let k = 1; k < n; k += 1) if (tinggiKolom[k] < tinggiKolom[p]) p = k;
+    kolom[p].push(idx);
+    tinggiKolom[p] += Number.isFinite(tinggi[idx]) ? tinggi[idx] : 10;
+  }
+  // jangan sampai ada kolom kosong sementara kolom lain penuh
+  if (kolom.some((k) => k.length === 0)) return halaman;
+  return [...halaman.slice(0, -1), kolom];
+}
+
 export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const kertas = kertasDariKode(opsi.kertas);
   const nKolom = opsi.jumlahKolom > 0 ? opsi.jumlahKolom : kolomOtomatis(kertas);
@@ -462,7 +503,13 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const tinggi = Array.isArray(opsi.tinggiBlokMm) && opsi.tinggiBlokMm.length === blokHtml.length
     ? opsi.tinggiBlokMm
     : blokHtml.map((_, i) => (i === 0 ? 26 : (Array.isArray(opsi.tinggiPerkiraanMm) ? opsi.tinggiPerkiraanMm[i - 1] : 40)));
-  const { halaman, peringatan } = susunKeKolom(tinggi, kapasitas, nKolom);
+  const hasilKolom = susunKeKolom(tinggi, kapasitas, nKolom);
+  const peringatan = hasilKolom.peringatan;
+  // 🔥 2026-10-09 (owner: "jangan sampai ada sisa"): halaman TERAKHIR
+  // diseimbangkan antar kolom. Menyisakan setengah kolom kosong terlihat
+  // seperti kesalahan tata letak, padahal hanya akhir dokumen. Blok tetap
+  // utuh (tidak dipotong) dan URUTAN nomor tetap dijaga per kolom.
+  const halaman = seimbangkanHalamanTerakhir(hasilKolom.halaman, tinggi, nKolom);
   const totalHal = Math.max(1, halaman.length);
   // Watermark default HIDUP. Dimatikan hanya dengan `watermark: false`
   // eksplisit (mis. dokumen internal yang tidak akan beredar).
@@ -485,6 +532,7 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
 }
 
 export default {
+  seimbangkanHalamanTerakhir,
   bacaanNaskahHtml,
   LOGO_WATERMARK,
   gayaWatermark,

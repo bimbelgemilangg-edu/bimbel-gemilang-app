@@ -149,6 +149,7 @@ function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja }) {
 const teksSoalMentah = teksSoalDari;
 
 export default function CetakPaketLatihan() {
+  const [isMobile] = useState(window.innerWidth < 1024);
   const [sumber, setSumber] = useState('bank');       // 'bank' | 'paket'
   const [bankSoal, setBankSoal] = useState([]);
   const [paketList, setPaketList] = useState([]);
@@ -317,7 +318,14 @@ export default function CetakPaketLatihan() {
 
   // ---- mode paket (perilaku #134) ----
   const paket = paketList.find((p) => p.id === paketId) || null;
-  const soalPaket = pilihSoalUntukCetak(paket?.daftarSoal, { maks: maksPaket || undefined, tanpaEsai });
+  // 🔥 2026-10-09 (CRASH React #185): tanpa useMemo, array BARU tercipta
+  // setiap render -> blok naskah ikut baru -> efek pengukur jalan tiap render
+  // -> setter menulis [] baru -> render lagi -> loop tak berakhir. Terjadi
+  // saat tab "Paket Try Out saya" dibuka dengan 0 paket.
+  const soalPaket = useMemo(
+    () => pilihSoalUntukCetak(paket?.daftarSoal, { maks: maksPaket || undefined, tanpaEsai }),
+    [paket, maksPaket, tanpaEsai]
+  );
 
   const siap = sumber === 'bank' ? terpilihBank : soalPaket;
   // KENAPA useMemo: objek meta ikut jadi dependencia memo blok naskah;
@@ -374,9 +382,11 @@ export default function CetakPaketLatihan() {
   useLayoutEffect(() => {
     const ukur = (ref, setter, jumlahBlok) => {
       const node = ref.current;
-      if (!node) { setter([]); return; }
+      // Jangan pernah menulis array BARU bila keadaan sudah kosong:
+      // identitas state yang stabil memutus loop render lapisan ukur.
+      if (!node) { setter((lama2) => (lama2.length ? [] : lama2)); return; }
       const anak = [...node.children];
-      if (anak.length !== jumlahBlok) { setter([]); return; }
+      if (anak.length !== jumlahBlok) { setter((lama2) => (lama2.length ? [] : lama2)); return; }
       const mm = anak.map((el) => Math.round((el.offsetHeight / PX_PER_MM) * 10) / 10);
       setter((lama) => (lama.length === mm.length && lama.every((v, i) => v === mm[i]) ? lama : mm));
     };
@@ -449,6 +459,12 @@ export default function CetakPaketLatihan() {
         </div>
       )}
 
+      {/* 🔥 2026-10-09 (permintaan owner): dua panel. KIRI memilih, KANAN
+          adalah KERTAS HIDUP yang menempel (sticky) — guru tidak lagi scroll
+          naik-turun untuk melihat akibat centangannya. Pilihan kertas & kolom
+          ada di samping kertas, seperti canvas kosong. */}
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
+      <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button style={gayaPill(sumber === 'bank')} onClick={() => setSumber('bank')}>🗂️ Bank Soal (per mapel → bab)</button>
         <button style={gayaPill(sumber === 'paket')} onClick={() => setSumber('paket')}>📦 Paket Try Out saya ({paketList.length})</button>
@@ -619,6 +635,8 @@ export default function CetakPaketLatihan() {
         </div>
       )}
 
+      </div>
+      <div style={{ width: isMobile ? '100%' : 620, flexShrink: 0, position: isMobile ? 'static' : 'sticky', top: 12, maxHeight: '92vh', overflowY: 'auto', paddingBottom: 8 }}>
       {!memuat && (
         <div style={gayaKartu}>
           <div style={gayaJudulKartu}>5 · Tata letak & cetak ({siap.length} butir)</div>
@@ -692,6 +710,9 @@ export default function CetakPaketLatihan() {
           </div>
         </div>
       )}
+
+      </div>
+      </div>
 
       {/* 🔥 LAPISAN UKUR: blok naskah dirender sembunyi-sembunyi dengan lebar
           kolom sesungguhnya; tinggi tiap blok dibaca untuk penyusun halaman.
