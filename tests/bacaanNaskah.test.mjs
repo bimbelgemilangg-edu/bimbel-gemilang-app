@@ -78,7 +78,15 @@ test('bacaan tercetak di naskah, LENGKAP dengan isi wacananya', () => {
   const html = butirNaskahHtml(soalLiterasi(), 1, 92);
   assert.match(html, /nsk-bacaan/);
   assert.ok(html.includes('berdiri tahun 2015'), 'isi wacana harus tercetak, bukan cuma kotaknya');
-  assert.match(html, /Bacalah teks berikut/);
+});
+
+test('label "Bacalah teks berikut" TIDAK ikut tercetak (hemat ruang potong)', () => {
+  // Permintaan owner 2026-10-09: identitas/label di atas soal dibuang karena
+  // kertas kedepannya dipotong dan label memakan ruang. Rentang nomor tetap
+  // ada karena ia informasi, bukan hiasan.
+  const html = butirNaskahHtml(soalLiterasi(), 1, 92);
+  assert.ok(!/Bacalah teks berikut/i.test(html), 'label harus hilang dari lembar cetak');
+  assert.match(html, /untuk soal 1–5/, 'rentang nomor tetap informatif');
 });
 
 test('rentang nomor ikut tertulis supaya siswa tahu wacana untuk soal mana', () => {

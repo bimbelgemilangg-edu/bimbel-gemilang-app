@@ -18,6 +18,7 @@
 
 import assert from 'node:assert/strict';
 import {
+  seimbangkanHalamanTerakhir,
   DAFTAR_KERTAS,
   kertasDariKode,
   lebarKolomMm,
@@ -32,6 +33,7 @@ import {
   estimasiTinggiBlokMm,
   susunNaskahDariBlok,
   teksKeHtml,
+  kopNaskahHtml,
   escapeHtml,
 } from '../src/utils/naskahSoal.js';
 
@@ -193,6 +195,48 @@ uji('renderer teks bersama: escape & katex tetap jalan', () => {
 });
 
 console.log('============================================================');
+// ---- 2026-10-09: keseimbangan halaman terakhir, kop tanpa duplikat, displaystyle ----
+uji('halaman terakhir diseimbangkan antar kolom, halaman penuh tidak disentuh', () => {
+  const tinggi = [100, 100, 100, 40, 20];
+  const halaman = [[ [0,1] ], [ [2], [3,4] ]]; // halaman 2: kolom A tinggi 100, kolom B 60
+  const hasil = seimbangkanHalamanTerakhir(halaman, tinggi, 2);
+  assert.equal(hasil.length, 2);
+  const terakhir = hasil[1];
+  const tA = terakhir[0].reduce((a, i) => a + tinggi[i], 0);
+  const tB = terakhir[1].reduce((a, i) => a + tinggi[i], 0);
+  assert.ok(Math.abs(tA - tB) <= 60, `selisih kolom harus menyempit, dapat ${tA} vs ${tB}`);
+  // urutan nomor tetap menaik di tiap kolom
+  for (const kol of terakhir) assert.deepEqual(kol, [...kol].sort((a, b) => a - b));
+});
+
+uji('halaman terakhir berisi satu kolom tidak diubah', () => {
+  const halaman = [[ [0,1] ], [ [2] ]];
+  assert.deepEqual(seimbangkanHalamanTerakhir(halaman, [10, 10, 10], 2), halaman);
+});
+
+uji('kop tidak menulis ulang identitas yang sudah ada di judul', () => {
+  const paket = { judul: 'SMA/MA · Bahasa Inggris · Agreement and Disagreement', mapel: 'Bahasa Inggris', targetKelas: 'SMA/MA', bab: 'Agreement and Disagreement' };
+  const html = kopNaskahHtml(paket, 'NASKAH SOAL', true);
+  const jumlah = (html.match(/Bahasa Inggris/g) || []).length;
+  assert.equal(jumlah, 1, `mapel hanya boleh muncul sekali, muncul ${jumlah}x`);
+});
+
+uji('kop tetap menulis meta bila judul tidak memuatnya', () => {
+  const html = kopNaskahHtml({ judul: 'Latihan Pekan 3', mapel: 'Matematika', targetKelas: 'SMA/MA', bab: 'Lingkaran' }, 'NASKAH SOAL', true);
+  assert.match(html, /Matematika/);
+  assert.match(html, /Lingkaran/);
+});
+
+uji('pecahan inline dirender displaystyle (seperti buku), teks biasa tidak', () => {
+  const pecahan = teksKeHtml('Nilai $\\frac{1}{2}$ adalah');
+  assert.match(pecahan, /displaystyle|katex-display|mfrac/, 'pecahan harus dirender bertingkat');
+  assert.match(pecahan, /mfractype|class="mfrac"|displaystyle/);
+  const polos = teksKeHtml('Nilai $x + 2$ adalah');
+  assert.ok(!polos.includes('displaystyle'), 'rumus sederhana tidak perlu displaystyle');
+});
+
+
+
 console.log(`naskahSoal: lulus ${lulus}, gagal ${gagal}`);
 if (gagal) {
   kegagalan.forEach((k) => console.log('  ❌', k));
