@@ -253,6 +253,35 @@ test('aksara CJK dan aksara kontrol = rusak', () => {
   assert.ok(deteksiSoalRusak({ tipe: 'esai', soal: 'Nilai dari \bfrac{1}{2} adalah', kunciJawaban: 'rubrik' }).rusak.some((r) => /aksara kontrol/.test(r)));
 });
 
+test('INVARIAN: opsi yang beda tanda minus/koma desimal BUKAN opsi identik', () => {
+  // 138 alarm palsu di data produksi lahir dari normalisasi yang membuang
+  // tanda baca. Bagi siswa, -21 dan 21 adalah dua jawaban berbeda.
+  const h = deteksiSoalRusak({
+    tipe: 'pg_sederhana',
+    soal: 'Hasil dari -12 - 9 adalah ....',
+    opsiJawaban: ['-21', '-9', '9', '21'],
+    kunciJawaban: 'A',
+  });
+  assert.ok(!h.perluDicek.some((p) => /identik/.test(p)));
+  const h2 = deteksiSoalRusak({
+    tipe: 'pg_sederhana',
+    soal: 'Keliling lingkaran berjari-jari 10 cm adalah ....',
+    opsiJawaban: ['62,8 cm', '6,28 cm', '314 cm', '31,4 cm'],
+    kunciJawaban: 'A',
+  });
+  assert.ok(!h2.perluDicek.some((p) => /identik/.test(p)));
+});
+
+test('opsi yang benar-benar sama tetap dibenderai', () => {
+  const h = deteksiSoalRusak({
+    tipe: 'pg_sederhana',
+    soal: 'Ibu kota Jawa Timur adalah ....',
+    opsiJawaban: ['Surabaya', 'Surabaya', 'Malang', 'Kediri'],
+    kunciJawaban: 'A',
+  });
+  assert.ok(h.perluDicek.some((p) => /identik/.test(p)));
+});
+
 test('dokumen kosong/null tidak melempar', () => {
   for (const d of [null, undefined, {}]) {
     assert.ok(Array.isArray(deteksiSoalRusak(d).rusak));

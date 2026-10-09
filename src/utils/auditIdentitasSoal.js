@@ -61,6 +61,7 @@ import { peringatanKeselarasanKurikulum, petakanNamaMapel } from './kurikulumMer
 // lolos masuk (sidik jari sadar gambar+kunci), dan seberapa pecah pohon
 // materi yang akan dilihat tentor. Tanpa bacaan Firestore tambahan.
 import { bandingkanDuplikat } from './kunciDuplikatSoal.js';
+import { perbaikiKurungHimpunanLatex } from './kurungLatex.js';
 
 export { JENJANG_BAKU, URUTAN_JENJANG, jenjangBaku };
 
@@ -95,15 +96,6 @@ export const FIELD_DIANJURKAN = ['kelas', 'kelompok', 'topik'];
 // ------------------------------------------------------------
 // 2. PEMBACA SADAR-ALIAS
 // ------------------------------------------------------------
-
-function normKunci(s) {
-  return String(s || '')
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '')
-    .trim();
-}
 
 function adaIsi(v) {
   if (v === null || v === undefined) return false;
@@ -225,7 +217,7 @@ export function periksaIdentitas(dok) {
 // ------------------------------------------------------------
 
 const RE_CJK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/;
-const RE_HIMPUNAN_TANPA_ESCAPE = /(?<![\\$])\{\s*-?\d+(?:\s*,\s*-?\d+)*\s*\}/;
+
 const RE_PLACEHOLDER_GAMBAR = /\{\{\s*GAMBAR_(\d+)\s*\}\}/gi;
 const RE_HTML_MENTAH = /<(?:p|div|span|br|table|img|figure)\b/i;
 
@@ -281,8 +273,13 @@ export function deteksiSoalRusak(dok) {
     if (RE_CJK.test(id.teksSoal)) {
       rusak.push('Teks soal memuat aksara China/Jepang/Korea (ditolak penjaga CI)');
     }
-    if (RE_HIMPUNAN_TANPA_ESCAPE.test(id.teksSoal)) {
-      perluDicek.push('Kurung himpunan LaTeX tidak di-escape (risiko tayang sebagai "A = 2, 3")');
+    // 🔥 2026-10-09: peringatan kini memakai MESIN PERBAIKAN itu sendiri
+    // sebagai sumber kebenaran. Regex lama menandai juga kurung di luar
+    // span matematika (teks biasa) sehingga menerbitkan 51 alarm palsu di
+    // data produksi. Sekarang: diperingatkan hanya bila perbaikan benar-
+    // benar akan mengubah sesuatu.
+    if (perbaikiKurungHimpunanLatex(id.teksSoal) !== id.teksSoal) {
+      perluDicek.push('Kurung himpunan LaTeX tidak di-escape di dalam rumus (risiko tayang sebagai "A = 2, 3")');
     }
     if (RE_HTML_MENTAH.test(id.teksSoal)) {
       perluDicek.push('Teks soal memuat tag HTML mentah');
@@ -368,8 +365,15 @@ export function deteksiSoalRusak(dok) {
   }
 
   // --- opsi ganda identik (siswa tak bisa memilih dengan pasti) ---
+  // 🔥 2026-10-09: dibandingkan sebagai TEKS UTUH (trim + huruf kecil), BUKAN
+  // lewat normKunci yang membuang tanda baca & tanda minus. Verifikasi
+  // terhadap data produksi membuktikan normKuni membuat "-21" vs "21" dan
+  // "62,8 cm" vs "6,28 cm" dituduh identik — 138 alarm palsu. Pada pilihan
+  // ganda, koma desimal dan tanda minus ADALAH MAKNA.
   if (Array.isArray(d.opsiJawaban) && d.opsiJawaban.length > 1) {
-    const teks = d.opsiJawaban.map((o) => normKunci(typeof o === 'string' ? o : o?.teks)).filter(Boolean);
+    const teks = d.opsiJawaban
+      .map((o) => String(typeof o === 'string' ? o : (o?.teks || '')).trim().toLowerCase())
+      .filter(Boolean);
     if (new Set(teks).size !== teks.length) perluDicek.push('Ada opsi jawaban yang identik');
   }
 
