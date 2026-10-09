@@ -159,6 +159,47 @@ service cloud.firestore {
     match /jawaban_soal/{id}     { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if sudahLogin(); }
     match /grades/{id}           { allow read: if staf() || guru() || dokumenMilikSendiri(); allow write: if staf() || guru(); }
 
+    // ============================================================
+    // PAKET SOAL SISWA — belajar manual di Buku Progress (2026-10-09).
+    // DUA KOLEKSI, dan ini disengaja:
+    //   paket_soal/{id}        dokumen kerja tentor, MEMUAT KUNCI jawaban.
+    //                          Siswa dilarang membaca — titik.
+    //   paket_soal_siswa/{id}  NASKAH hasil bangunNaskahSiswa()
+    //                          (src/utils/paketSoal.js): salinan soal
+    //                          TANPA kunci/pembahasan dalam dialek apa pun
+    //                          (dikunci oleh tests/paketSoal.test.mjs).
+    //                          Hanya ini yang dibaca halaman siswa.
+    // Kenapa dipisah koleksinya: Firestore Rules TIDAK BISA menyembunyikan
+    // FIELD per peran; satu-satunya cara menegakkan "kunci tidak pernah
+    // sampai ke browser siswa" di level database adalah memisahkan
+    // dokumennya. Penyaringan "paket MILIKKU" tetap lewat query
+    // targetSiswa/targetKelas — naskah tidak memuat rahasia, jadi
+    // read: sudahLogin() di sini tidak membocorkan apa pun.
+    // ============================================================
+    match /paket_soal/{id} {
+      allow read, write: if staf() || guru();
+    }
+    match /paket_soal_siswa/{id} {
+      allow read: if sudahLogin();
+      allow write: if staf() || guru();
+
+      // Buku Progress per siswa. Siswa hanya boleh menyentuh KLAIM-nya
+      // sendiri (satu field); statusPeriksa/catatan adalah wewenang
+      // tentor — "selesai" tidak pernah bisa dipasang siswa sendiri
+      // (spec F: jangan nyatakan selesai tanpa verifikasi).
+      match /progress/{studentId} {
+        allow read: if staf() || guru() || (siswa() && resource.data.uid == request.auth.uid);
+        allow create: if siswa()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['uid', 'studentId', 'namaSiswa', 'kelas', 'klaimSelesaiPada']);
+        allow update: if (siswa() && resource.data.uid == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['klaimSelesaiPada']))
+          || staf() || guru();
+        allow delete: if staf() || guru();
+      }
+    }
+
     match /buku_digital/{id}     { allow read: if sudahLogin(); allow write: if staf(); }
     match /buku_referensi/{id}   { allow read: if sudahLogin(); allow write: if staf(); }
     match /bimbel_modul/{id}     { allow read: if sudahLogin(); allow write: if staf(); }
