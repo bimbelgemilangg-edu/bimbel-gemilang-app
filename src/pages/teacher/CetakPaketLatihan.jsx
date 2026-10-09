@@ -68,7 +68,8 @@ import {
   kolomOtomatis,
   lebarKolomMm,
   daftarBlokNaskah,
-  estimasiTinggiBlokMm,
+  daftarTinggiPerkiraan,
+  kapasitasKolomMm,
   susunNaskahDariBlok,
   teksKeHtml,
   GAYA_NASKAH,
@@ -373,10 +374,15 @@ export default function CetakPaketLatihan() {
   const kertas = kertasDariKode(kodeKertas);
   const jumlahKolom = kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas);
   const lebarKolom = lebarKolomMm(kertas, jumlahKolom);
+  // 🔥 2026-10-09: wacana bersama kini jadi BLOK TERSENDIRI (dicetak sekali
+  // untuk sekelompok soal), jadi jumlah blok != jumlah soal. Taksiran tinggi
+  // harus sejajar dengan blok, bukan dengan soal, supaya penyusun kolom tidak
+  // diam-diam jatuh ke taksiran buta.
+  const kapasitasMm = useMemo(() => kapasitasKolomMm(kertas), [kertas]);
 
   const blokSiswa = useMemo(
-    () => (siap.length ? daftarBlokNaskah('siswa', meta, siap, lebarKolom, rasioGambar) : []),
-    [siap, meta, lebarKolom, rasioGambar]
+    () => (siap.length ? daftarBlokNaskah('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm) : []),
+    [siap, meta, lebarKolom, rasioGambar, kapasitasMm]
   );
   const blokKunci = useMemo(
     () => (siap.length ? daftarBlokNaskah('kunci', meta, siap, lebarKolom, rasioGambar) : []),
@@ -421,12 +427,12 @@ export default function CetakPaketLatihan() {
   }, [blokSiswa, blokKunci]);
 
   const perkiraanSiswa = useMemo(
-    () => siap.map((s) => estimasiTinggiBlokMm('siswa', s, lebarKolom, rasioGambar)),
-    [siap, lebarKolom, rasioGambar]
+    () => daftarTinggiPerkiraan('siswa', meta, siap, lebarKolom, rasioGambar, kapasitasMm),
+    [meta, siap, lebarKolom, rasioGambar, kapasitasMm]
   );
   const perkiraanKunci = useMemo(
-    () => siap.map((s) => estimasiTinggiBlokMm('kunci', s, lebarKolom, rasioGambar)),
-    [siap, lebarKolom, rasioGambar]
+    () => daftarTinggiPerkiraan('kunci', meta, siap, lebarKolom, rasioGambar, kapasitasMm),
+    [meta, siap, lebarKolom, rasioGambar, kapasitasMm]
   );
 
   const naskahSiswa = useMemo(() => (blokSiswa.length

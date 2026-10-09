@@ -234,9 +234,9 @@ export const GAYA_NASKAH = `
    yang harus dibaca -- siswa disuruh menjawab pertanyaan tentang wacana
    yang tidak ada di lembar. (Komentar ini berada di dalam template
    literal GAYA_NASKAH, jadi sengaja tidak memakai backtick.) */
-.naskah .nsk-bacaan { border-left: 3pt solid #000; border-top: 0.6pt dashed #64748b;
-  border-bottom: 0.6pt dashed #64748b; padding: 5pt 6pt; margin: 0 0 5pt;
-  font-size: 10.5pt; line-height: 1.5; text-align: justify;
+.naskah .nsk-bacaan { border-left: 3pt solid #000; border-top: 0.8pt solid #000;
+  border-bottom: 0.8pt solid #000; padding: 5pt 6pt; margin: 0 0 5pt;
+  font-size: 10.5pt; line-height: 1.55; text-align: left;
   break-inside: avoid; page-break-inside: avoid; }
 .naskah .nsk-bacaan-rentang { font-size: 8pt; font-style: italic; color: #475569;
   margin-bottom: 3pt; }
@@ -288,11 +288,11 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
   return `<div class="nsk-bacaan">${rentang}${isi}</div>`;
 }
 
-export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
-  // Bacaan DIDAHULUKAN: soal literasi merujuk "teks di atas", jadi wacana
-  // harus tercetak sebelum pertanyaannya, bukan di belakang atau tidak sama
-  // sekali. Teks soal dibaca sadar-alias (soal/teksSoal/teks_soal).
-  const bacaanHtml = bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
+export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiButir = {}) {
+  // Bacaan DIDAHULUKAN bila butir ini MEMBAWA bacaannya sendiri. Bila wacana
+  // sudah dicetak sebagai blok stimulus terpisah (lihat kelompokkanStimulus),
+  // butir menerima opsiButir.tanpaBacaan supaya teks tidak TERULANG per nomor.
+  const bacaanHtml = opsiButir.tanpaBacaan ? '' : bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
   const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
   const badan = segmen
     .map((sg) => {
@@ -357,21 +357,159 @@ export function kunciButirNaskahHtml(soal, nomor) {
  * sisanya butir. Halaman guru mengukur tinggi tiap blok dari daftar
  * ini, lalu menyerahkannya kembali ke susunNaskahDariBlok.
  */
-export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar = {}) {
+/**
+ * Kelompokkan butir yang berbagi wacana yang sama menjadi SATU unit stimulus
+ * diikuti butir-butirnya — persis seperti naskah ujian sesungguhnya:
+ * teks dicetak SEKALI, lalu "untuk soal nomor 3-5", lalu soal 3, 4, 5 tanpa
+ * mengulang teks.
+ *
+ * Kesamaan stimulus dilihat dari `stimulusGrup`/`bacaan.grup` bila ada,
+ * selain itu dari sidik jari teks+gambar (karena tidak semua jalur impor
+ * mengisi grup). Hanya butir BERURUTAN yang digabung; wacana yang muncul lagi
+ * jauh di belakang memang layak dicetak ulang (siswa tidak disuruh membuka
+ * halaman sebelumnya).
+ */
+export function kelompokkanStimulus(daftar) {
+  const kunci = (s) => {
+    const b = bacaanDari(s);
+    if (!b) return '';
+    const grup = s?.stimulusGrup || b.grup;
+    if (grup) return String(grup);
+    return `teks:${String(b.teks || '').replace(/\s+/g, ' ').slice(0, 160)}|${(b.gambar || []).join(',')}`;
+  };
+  const units = [];
+  const daftarSoal = Array.isArray(daftar) ? daftar : [];
+  let i = 0;
+  while (i < daftarSoal.length) {
+    const k = kunci(daftarSoal[i]);
+    if (!k) {
+      units.push({ jenis: 'butir', soal: daftarSoal[i], nomor: i + 1, tanpaBacaan: false });
+      i += 1;
+      continue;
+    }
+    let j = i;
+    while (j < daftarSoal.length && kunci(daftarSoal[j]) === k) j += 1;
+    units.push({ jenis: 'bacaan', bacaan: bacaanDari(daftarSoal[i]), dari: i + 1, sampai: j });
+    for (let q = i; q < j; q += 1) units.push({ jenis: 'butir', soal: daftarSoal[q], nomor: q + 1, tanpaBacaan: true });
+    i = j;
+  }
+  return units;
+}
+
+/** Tinggi taksiran sebuah blok bacaan (mm) pada lebar kolom tertentu. */
+export function estimasiTinggiBacaan(bacaan, lebarKolom, rasioGambar = {}) {
+  const hurufSebaris = Math.max(20, (lebarKolom - 8) / MM_PER_HURUF);
+  const teks = String(bacaan?.teks || '');
+  const baris = Math.ceil(Math.max(1, teks.length) / hurufSebaris) * 4.4;
+  const gambar = (Array.isArray(bacaan?.gambar) ? bacaan.gambar : []).reduce((acc, g) => {
+    const src = typeof g === 'string' ? g : (g?.url || g?.uploadedUrl || '');
+    if (!src) return acc;
+    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+    const u = ukuranGambarNaskah(r, 1, lebarKolom);
+    return acc + (u ? u.tinggiMm + 2 : 30);
+  }, 0);
+  return Math.round(baris + gambar + 10); // +judul blok & padding
+}
+
+/**
+ * Blok bacaan untuk naskah, DIPECAH per paragraf bila lebih tinggi dari
+ * kapasitas kolom. Pemecahan hanya pada batas paragraf dan tiap potongan
+ * diberi penanda "(lanjutan)" — teks tidak pernah terbelah di tengah kalimat,
+ * dan tidak pernah diremas ke kolom yang tidak muat (owner: "kalau siswa
+ * print pun akan jadi satu halaman penuh" -> diberi ruang secukupnya).
+ */
+export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm = 0) {
+  const bacaan = unit?.bacaan;
+  if (!bacaan) return [];
+  const rentang = unit.dari && unit.sampai && unit.sampai > unit.dari
+    ? ` untuk soal ${unit.dari}–${unit.sampai}`
+    : (unit.dari ? ` untuk soal ${unit.dari}` : '');
+  const segmen = pisahTeksDanGambar(bacaan.teks, bacaan.gambar);
+  const judul = (lanjutanKe) => `<div class="nsk-bacaan-judul">Bacalah teks berikut${rentang}${lanjutanKe ? ` (lanjutan ${lanjutanKe})` : ''}</div>`;
+
+  const kapasitas = kapasitasMm > 0 ? kapasitasMm : 100000;
+  const chunks = [];
+  let isiSekarang = '';
+  let tinggiSekarang = 8;
+  let nomorChunk = 0;
+  const tutup = () => {
+    if (!isiSekarang) return;
+    nomorChunk += 1;
+    chunks.push({ html: `<div class="nsk-bacaan">${judul(nomorChunk > 1 ? nomorChunk : 0)}${isiSekarang}</div>`, tinggi: tinggiSekarang });
+    isiSekarang = '';
+    tinggiSekarang = 8;
+  };
+  for (const sg of segmen) {
+    let html;
+    let tinggi;
+    if (sg.jenis === 'teks') {
+      // pecah per paragraf/kalimat panjang supaya titik potong rapi
+      const paragraf = String(sg.isi).split(/(?<=[.!?])\s+(?=[A-Z"“])/).filter(Boolean);
+      for (const par of paragraf) {
+        const hPar = Math.ceil(Math.max(1, par.length) / Math.max(20, (lebarKolom - 8) / MM_PER_HURUF)) * 4.4;
+        if (tinggiSekarang + hPar > kapasitas && isiSekarang) tutup();
+        isiSekarang += `<div>${teksKeHtml(par)}</div>`;
+        tinggiSekarang += hPar;
+      }
+      continue;
+    } else {
+      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const u = ukuranGambarNaskah(r, 1, lebarKolom) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
+      html = imgNaskahHtml(sg.url, 'Gambar bacaan', u);
+      tinggi = u.tinggiMm + 2;
+    }
+    if (tinggiSekarang + tinggi > kapasitas && isiSekarang) tutup();
+    isiSekarang += html;
+    tinggiSekarang += tinggi;
+  }
+  tutup();
+  return chunks;
+}
+
+export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0) {
   const daftar = Array.isArray(soalList) ? soalList : [];
   const kop = mode === 'kunci'
     ? `<div class="nsk-peringatan">PEGANGAN GURU — JANGAN DICETAK UNTUK SISWA</div>${kopNaskahHtml(paket, 'KUNCI & PEMBAHASAN', false)}`
     : kopNaskahHtml(paket, 'NASKAH SOAL', true);
-  return [
-    kop,
-    ...daftar.map((s, i) => (mode === 'kunci'
-      ? kunciButirNaskahHtml(s, i + 1)
-      : butirNaskahHtml(s, i + 1, lebarKolom, rasioGambar))),
-  ];
+  if (mode === 'kunci') {
+    return [kop, ...daftar.map((s, i) => kunciButirNaskahHtml(s, i + 1))];
+  }
+  const blok = [kop];
+  for (const unit of kelompokkanStimulus(daftar)) {
+    if (unit.jenis === 'bacaan') {
+      for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm)) blok.push(chunk.html);
+    } else {
+      blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+    }
+  }
+  return blok;
+}
+
+/**
+ * Tinggi perkiraan (mm) yang SEJAJAR dengan keluaran daftarBlokNaskah —
+ * dipakai sebagai cadangan bila lapisan ukur DOM belum siap. Panjangnya
+ * selalu sama dengan jumlah blok, supaya penyusun kolom tidak diam-diam
+  * jatuh ke taksiran buta.
+ */
+export function daftarTinggiPerkiraan(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0) {
+  const daftar = Array.isArray(soalList) ? soalList : [];
+  const tinggi = [mode === 'kunci' ? 30 : 26];
+  if (mode === 'kunci') {
+    for (const s of daftar) tinggi.push(estimasiTinggiBlokMm('kunci', s, lebarKolom, rasioGambar));
+    return tinggi;
+  }
+  for (const unit of kelompokkanStimulus(daftar)) {
+    if (unit.jenis === 'bacaan') {
+      for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm)) tinggi.push(chunk.tinggi);
+    } else {
+      tinggi.push(estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+    }
+  }
+  return tinggi;
 }
 
 /** Tinggi taksiran (mm) sebelum pengukuran layar tersedia. */
-export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
+export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, opsiEstimasi = {}) {
   const hurufSebaris = Math.max(20, (lebarKolom - 8) / MM_PER_HURUF);
   if (mode === 'kunci') {
     const panjang = String(soal?.pembahasan || '').length + 20;
@@ -382,7 +520,7 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
   // Bacaan panjang menambah tinggi blok secara nyata. Bila tidak dihitung,
   // mesin akan menumpuk terlalu banyak butir per kolom dan naskah meluber
   // ke halaman berikutnya (pratinjau layar != hasil cetak).
-  const bacaan = bacaanDari(soal);
+  const bacaan = opsiEstimasi.tanpaBacaan ? null : bacaanDari(soal);
   const teksBacaan = bacaan ? String(bacaan.teks || '') : '';
   const gambarBacaan = bacaan && Array.isArray(bacaan.gambar) ? bacaan.gambar.filter(Boolean) : [];
   const tinggiGambar = gambar.reduce((acc, url) => {
