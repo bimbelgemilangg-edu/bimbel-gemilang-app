@@ -43,6 +43,39 @@ export const GAP_KOLOM_MM = 6;      // jarak antar kolom, cukup untuk jempol men
 export const FOOTER_MM = 8;         // pita nomor halaman di kaki tiap halaman
 export const SLACK_KOLOM_MM = 2;    // cadangan anti-tumpah: pengukuran layar meleset ±1mm
 
+// 🔥 2026-10-09 (owner: "perkecil font bacaan dan rapikan agar muat kanan
+// kiri, atau khusus bacaan panjang gausah kanan kiri").
+// WACANA PANJANG tidak boleh diremas ke dalam satu kolom: di kertas hasil
+// cetak owner, butir berwacana raksasa masuk kolom sendirian, kolom sebelahnya
+// kosong, lalu isinya meluber lewat kaki halaman (opsi A/B terpotong).
+// Aturan baru:
+//   - blok yang lebih tinggi dari satu kolom  -> HALAMAN LEBAR PENUH
+//     (satu kolom yang melebar selebar isi kertas, tanpa kanan-kiri);
+//   - blok bacaan yang lebih tinggi dari AMBANG_BACAAN_PANJANG bagian kolom
+//     juga dicetak lebar penuh, karena lebar penuh memangkas tingginya
+//     hampir separuh dan barisnya jauh lebih enak dibaca;
+//   - FAKTOR_TINGGI_LEBAR_PENUH dipakai menaksir tinggi blok setelah
+//     melebar (teks 2x lebih lebar ~= tinggi 0.55x).
+export const AMBANG_BACAAN_PANJANG = 0.62;
+export const FAKTOR_TINGGI_LEBAR_PENUH = 0.55;
+
+/** Tinggi ambang (mm): bacaan di atas ini dianggap "panjang". */
+export function ambangBacaanPanjangMm(kapasitasMm) {
+  return (kapasitasMm > 0 ? kapasitasMm : 240) * AMBANG_BACAAN_PANJANG;
+}
+
+/** Taksiran tinggi sebuah blok bila dicetak melebar sepenuh isi kertas. */
+export function tinggiLebarPenuhMm(tinggiKolomMm) {
+  const h = Number(tinggiKolomMm);
+  return Number.isFinite(h) && h > 0 ? h * FAKTOR_TINGGI_LEBAR_PENUH : 0;
+}
+
+/** Blok ini tidak mungkin muat di satu kolom -> wajib halaman lebar penuh. */
+export function butuhLebarPenuh(tinggiKolomMm, kapasitasMm) {
+  const h = Number(tinggiKolomMm);
+  return Number.isFinite(h) && h > (kapasitasMm > 0 ? kapasitasMm : 240);
+}
+
 // 🔥 2026-10-08: pembaca field sadar-alias + konstanta watermark dipusatkan
 // di fieldButirSoal.js supaya mesin cetak dan kartu baca layar tidak punya
 // dua pengertian berbeda soal "teks soal" dan "bacaan".
@@ -135,37 +168,105 @@ export function kolomPilihanNaskah(daftarTeksOpsi, lebarKolom) {
  * halaman -> kolom -> indeks blok. Aturan:
  *   - blok tidak pernah dibelah: tidak muat di kolom ini => kolom baru;
  *   - kolom penuh => halaman baru;
- *   - blok lebih tinggi dari satu kolom tetap diberi kolom sendiri
- *     dan dicatat di `peringatan` supaya guru tahu ada butir raksasa.
+ *   - blok WACANA PANJANG (di atas ambangBacaanPanjangMm, atau lebih tinggi
+ *     dari satu kolom) naik ke PITA LEBAR PENUH di atas halamannya sendiri,
+ *     lalu soal-soal berikutnya tetap dua kolom di bawah pita itu. Bila masih
+ *     lebih tinggi dari satu halaman penuh, dicatat di `peringatan`.
  */
-export function susunKeKolom(tinggiBlokMm, kapasitasMm, kolomPerHalaman) {
+export function susunKeKolom(tinggiBlokMm, kapasitasMm, kolomPerHalaman, opsiSusun = {}) {
   const kapasitas = kapasitasMm > 0 ? kapasitasMm : 100;
   const perHal = kolomPerHalaman > 1 ? kolomPerHalaman : 1;
-  const halaman = [];
-  const peringatan = [];
+  const penuhDitandai = Array.isArray(opsiSusun.blokPenuh) ? opsiSusun.blokPenuh : [];
+  // Tinggi SUNGGUHAN versi lebar penuh (diukur browser pada lebar isi kertas).
+  // Bila ada, ini yang dipakai; kalau belum terukur, jatuh ke taksiran
+  // FAKTOR_TINGGI_LEBAR_PENUH yang sengaja konservatif (lebih tinggi).
+  const tinggiLebarTerukur = Array.isArray(opsiSusun.tinggiLebarMm) ? opsiSusun.tinggiLebarMm : null;
+  // Satu kolom (A5) memang sudah selebar isi kertas; tidak ada "kanan-kiri"
+  // untuk dihindari, jadi pita lebar penuh hanya untuk tata letak dua kolom.
+  const pakaiPita = perHal > 1;
+  const daftar = Array.isArray(tinggiBlokMm) ? tinggiBlokMm : [];
+  const halaman = [];       // [[indeksBlok,...], ...] per kolom
+  const lebarHalaman = [];  // PITA lebar penuh per halaman (sejajar `halaman`)
+  const modeHalaman = [];   // 'kolom' | 'lebar'
+  const luapan = [];        // halaman yang pitanya melewati satu halaman penuh
+  const peringatan = [];    // blok yang MASIH lebih tinggi dari satu halaman penuh
   let kolomSaatIni = [];
   let tinggiSaatIni = 0;
+  let tinggiPita = 0;
+  let kapAktif = kapasitas; // sisa tinggi kolom pada halaman aktif (dipotong pita)
 
+  const aktif = () => halaman[halaman.length - 1];
+  const pitaAktif = () => lebarHalaman[lebarHalaman.length - 1] || [];
+  const bukaHalaman = (mode = 'kolom') => {
+    halaman.push([]);
+    lebarHalaman.push([]);
+    modeHalaman.push(mode);
+    luapan.push(false);
+    tinggiPita = 0;
+    kapAktif = kapasitas;
+  };
   const tutupKolom = () => {
     if (!kolomSaatIni.length) return;
-    let hal = halaman[halaman.length - 1];
-    if (!hal || hal.length >= perHal) { hal = []; halaman.push(hal); }
-    hal.push(kolomSaatIni);
+    if (!aktif() || aktif().length >= perHal) bukaHalaman();
+    aktif().push(kolomSaatIni);
     kolomSaatIni = [];
     tinggiSaatIni = 0;
   };
+  // Pita lebar penuh: wacana panjang membentang selebar isi kertas di ATAS
+  // halaman, lalu soal-soalnya menyusul dua kolom di bawahnya (persis susunan
+  // buku ujian: baca dulu, baru kerjakan). Tidak ada kertas terbuang.
+  const tambahPita = (i, hLebar) => {
+    if (!aktif() || aktif().length > 0 || tinggiPita + hLebar > kapasitas) {
+      tutupKolom();
+      bukaHalaman('lebar');
+    }
+    pitaAktif().push(i);
+    tinggiPita += hLebar;
+    kapAktif = Math.max(0, kapasitas - tinggiPita);
+    modeHalaman[modeHalaman.length - 1] = 'lebar';
+    // Wacana lebih panjang dari satu halaman penuh: halamannya dibiarkan
+    // MENGALIR (tinggi otomatis) supaya teksnya tidak terpotong diam-diam.
+    if (tinggiPita > kapasitas) luapan[luapan.length - 1] = true;
+  };
 
-  (Array.isArray(tinggiBlokMm) ? tinggiBlokMm : []).forEach((tinggi, i) => {
+  daftar.forEach((tinggi, i) => {
     const h = Number.isFinite(tinggi) && tinggi > 0 ? tinggi : 10;
-    if (h > kapasitas) peringatan.push(i);
-    const muat = tinggiSaatIni + h <= kapasitas;
-    if (!muat && kolomSaatIni.length) tutupKolom();
-    kolomSaatIni.push(i);
-    tinggiSaatIni += h;
-    if (tinggiSaatIni >= kapasitas) tutupKolom();
+    // Gerbang ganda: (1) tingginya memang di atas ambang "panjang", DAN
+    // (2) ditandai daftarBlokPenuh ATAU tinggi nyata melewati satu kolom.
+    // Tanpa gerbang (1) blok yang ditaksir panjang tapi terukur pendek akan
+    // membuang satu halaman; tanpa (2) wacana raksasa tetap diremas di kolom.
+    const lebarPenuh = pakaiPita
+      && h > ambangBacaanPanjangMm(kapasitas)
+      && (!!penuhDitandai[i] || butuhLebarPenuh(h, kapasitas));
+
+    if (!lebarPenuh) {
+      if (!aktif()) bukaHalaman();
+      if (tinggiSaatIni + h > kapAktif) {
+        if (kolomSaatIni.length) tutupKolom();
+        // kolom baru pun tak akan muat di bawah pita -> halaman baru tanpa pita
+        else if (pitaAktif().length && h > kapAktif) bukaHalaman();
+      }
+      kolomSaatIni.push(i);
+      tinggiSaatIni += h;
+      if (tinggiSaatIni >= kapAktif) tutupKolom();
+      return;
+    }
+
+    const terukur = tinggiLebarTerukur ? Number(tinggiLebarTerukur[i]) : 0;
+    const hLebar = terukur > 0 ? terukur : tinggiLebarPenuhMm(h);
+    if (hLebar > kapasitas) peringatan.push(i);
+    const tinggiKop = Number(daftar[0]) > 0 ? Number(daftar[0]) : 26;
+    // Kepala dokumen yang masih "terbuka" ikut naik ke pita: tanpa ini ada
+    // halaman yang isinya cuma kop (separuh kertas terbuang).
+    const kopTerbuka = i > 0 && tinggiKop + hLebar <= kapasitas
+      && kolomSaatIni.length === 1 && kolomSaatIni[0] === 0 && !(aktif() && aktif().length);
+    if (kopTerbuka) { kolomSaatIni = []; tinggiSaatIni = 0; }
+    else tutupKolom();
+    if (kopTerbuka) tambahPita(0, tinggiKop);
+    tambahPita(i, hLebar);
   });
   tutupKolom();
-  return { halaman, peringatan };
+  return { halaman, peringatan, modeHalaman, lebarHalaman, luapan };
 }
 
 // ---- render teks: escape + KaTeX (dipindah dari cetakLatihan.js supaya
@@ -247,10 +348,29 @@ export const GAYA_NASKAH = `
    yang harus dibaca -- siswa disuruh menjawab pertanyaan tentang wacana
    yang tidak ada di lembar. (Komentar ini berada di dalam template
    literal GAYA_NASKAH, jadi sengaja tidak memakai backtick.) */
-.naskah .nsk-bacaan { border-left: 3pt solid #000; border-top: 0.6pt dashed #64748b;
-  border-bottom: 0.6pt dashed #64748b; padding: 5pt 6pt; margin: 0 0 5pt;
-  font-size: 10.5pt; line-height: 1.5; text-align: justify;
+/* 2026-10-09 (owner: "perkecil font bacaan dan rapikan agar muat kanan kiri"):
+   bacaan di dalam kolom memakai huruf lebih kecil + baris lebih rapat supaya
+   muat rapi dalam kolom tanpa meluber ke kaki halaman. */
+.naskah .nsk-bacaan { border-left: 3pt solid #000; border-top: 0.8pt solid #000;
+  border-bottom: 0.8pt solid #000; padding: 4pt 5pt; margin: 0 0 4pt;
+  font-size: 9.5pt; line-height: 1.45; text-align: left;
   break-inside: avoid; page-break-inside: avoid; }
+/* 🔥 PITA LEBAR PENUH — khusus wacana panjang: "khusus bacaan panjang gausah
+   kanan kiri". Wacana membentang selebar isi kertas di atas halaman (baris
+   panjang, enak dibaca), soal-soalnya tetap dua kolom di bawah pita. Halaman
+   jadi kolom flex vertikal supaya pita dan kolom tidak saling menimpa. */
+.naskah .nsk-hal--lebar { display: flex; flex-direction: column; }
+.naskah .nsk-hal--lebar .nsk-kolomwrap { flex: 1 1 auto; min-height: 0; height: auto; }
+.naskah .nsk-band { width: 100%; margin-bottom: 2.5mm; }
+.naskah .nsk-band .nsk-butir, .naskah .nsk-band .nsk-bacaan { break-inside: auto; page-break-inside: auto; }
+.naskah .nsk-band .nsk-bacaan { font-size: 10pt; line-height: 1.48; padding: 5pt 7pt; }
+.naskah .nsk-band .nsk-butir { font-size: 10.8px; line-height: 1.42; }
+.naskah .nsk-band .nsk-opsi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Wacana yang bahkan setelah dilebarkan masih lebih panjang dari satu halaman:
+   tinggi otomatis + overflow terlihat, jadi teks MENGALIR ke halaman fisik
+   berikutnya dan tidak ada satu huruf pun yang terpotong. Nomor halaman di
+   kaki bisa bergeser; guru sudah diperingatkan di layar. */
+.naskah .nsk-hal--luapan { height: auto !important; overflow: visible !important; }
 .naskah .nsk-bacaan-rentang { font-size: 8pt; font-style: italic; color: #475569;
   margin-bottom: 3pt; }
 .naskah .nsk-bacaan img { max-width: 100%; }
@@ -301,16 +421,6 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
   return `<div class="nsk-bacaan">${rentang}${isi}</div>`;
 }
 
-// ============================================================
-// ISI PER TIPE SOAL (2026-10-09)
-// Owner: "jawaban gak muncul... ada jawaban bentuk gambar dll".
-// Selama ini mesin naskah hanya merender `opsiJawaban`. Untuk benar_salah
-// baris pernyataannya tidak pernah tercetak (siswa melihat perintah tanpa
-// tabel), pg_kompleks kehilangan pernyataannya, menjodohkan kehilangan
-// pasangan, isian & esai kehilangan tempat menjawab.
-// ============================================================
-
-/** Baris benar/salah dari dua bentuk penyimpanan yang beredar. */
 export function barisBenarSalah(soal) {
   const tabel = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
   if (tabel.length) {
@@ -390,11 +500,11 @@ export function kunciPerBaris(soal) {
   return '';
 }
 
-export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
-  // Bacaan DIDAHULUKAN: soal literasi merujuk "teks di atas", jadi wacana
-  // harus tercetak sebelum pertanyaannya, bukan di belakang atau tidak sama
-  // sekali. Teks soal dibaca sadar-alias (soal/teksSoal/teks_soal).
-  const bacaanHtml = bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
+export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiButir = {}) {
+  // Bacaan DIDAHULUKAN bila butir ini MEMBAWA bacaannya sendiri. Bila wacana
+  // sudah dicetak sebagai blok stimulus terpisah (lihat kelompokkanStimulus),
+  // butir menerima opsiButir.tanpaBacaan supaya teks tidak TERULANG per nomor.
+  const bacaanHtml = opsiButir.tanpaBacaan ? '' : bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
   const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
   const badan = segmen
     .map((sg) => {
@@ -424,6 +534,10 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
       return `<span>(${huruf}) ${teksKeHtml(t)}${gbr}</span>`;
     })
     .join('');
+  // 🔥 bagian jawaban per tipe (diport dari main #183): benar/salah mendapat
+  // tabelnya, pg_kompleks pernyataannya, menjodohkan pasangannya, isian &
+  // esai tempat menjawabnya -- siswa tidak lagi disuruh menjawab di ruang
+  // yang tidak tercetak.
   const isiJawaban = isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar);
   return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
 }
@@ -462,21 +576,223 @@ export function kunciButirNaskahHtml(soal, nomor) {
  * sisanya butir. Halaman guru mengukur tinggi tiap blok dari daftar
  * ini, lalu menyerahkannya kembali ke susunNaskahDariBlok.
  */
-export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar = {}) {
+/**
+ * Kelompokkan butir yang berbagi wacana yang sama menjadi SATU unit stimulus
+ * diikuti butir-butirnya — persis seperti naskah ujian sesungguhnya:
+ * teks dicetak SEKALI, lalu "untuk soal nomor 3-5", lalu soal 3, 4, 5 tanpa
+ * mengulang teks.
+ *
+ * Kesamaan stimulus dilihat dari `stimulusGrup`/`bacaan.grup` bila ada,
+ * selain itu dari sidik jari teks+gambar (karena tidak semua jalur impor
+ * mengisi grup). Hanya butir BERURUTAN yang digabung; wacana yang muncul lagi
+ * jauh di belakang memang layak dicetak ulang (siswa tidak disuruh membuka
+ * halaman sebelumnya).
+ */
+export function kelompokkanStimulus(daftar) {
+  const kunci = (s) => {
+    const b = bacaanDari(s);
+    if (!b) return '';
+    const grup = s?.stimulusGrup || b.grup;
+    if (grup) return String(grup);
+    return `teks:${String(b.teks || '').replace(/\s+/g, ' ').slice(0, 160)}|${(b.gambar || []).join(',')}`;
+  };
+  const units = [];
+  const daftarSoal = Array.isArray(daftar) ? daftar : [];
+  let i = 0;
+  while (i < daftarSoal.length) {
+    const k = kunci(daftarSoal[i]);
+    if (!k) {
+      units.push({ jenis: 'butir', soal: daftarSoal[i], nomor: i + 1, tanpaBacaan: false });
+      i += 1;
+      continue;
+    }
+    let j = i;
+    while (j < daftarSoal.length && kunci(daftarSoal[j]) === k) j += 1;
+    units.push({ jenis: 'bacaan', bacaan: bacaanDari(daftarSoal[i]), dari: i + 1, sampai: j });
+    for (let q = i; q < j; q += 1) units.push({ jenis: 'butir', soal: daftarSoal[q], nomor: q + 1, tanpaBacaan: true });
+    i = j;
+  }
+  return units;
+}
+
+/** Tinggi taksiran sebuah blok bacaan (mm) pada lebar kolom tertentu. */
+export function estimasiTinggiBacaan(bacaan, lebarKolom, rasioGambar = {}) {
+  const hurufSebaris = Math.max(20, (lebarKolom - 8) / MM_PER_HURUF);
+  const teks = String(bacaan?.teks || '');
+  const baris = Math.ceil(Math.max(1, teks.length) / hurufSebaris) * 4.4;
+  const gambar = (Array.isArray(bacaan?.gambar) ? bacaan.gambar : []).reduce((acc, g) => {
+    const src = typeof g === 'string' ? g : (g?.url || g?.uploadedUrl || '');
+    if (!src) return acc;
+    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+    const u = ukuranGambarNaskah(r, 1, lebarKolom);
+    return acc + (u ? u.tinggiMm + 2 : 30);
+  }, 0);
+  return Math.round(baris + gambar + 10); // +judul blok & padding
+}
+
+/**
+ * Blok bacaan untuk naskah.
+ *   - bacaan pendek  -> blok kolom biasa, huruf diperkecil (9.5pt) supaya
+ *     rapi "muat kanan kiri";
+ *   - bacaan PANJANG (lebih tinggi dari ambangBacaanPanjangMm) -> SATU blok
+ *     lebar penuh dengan penanda `penuh: true`; penyusun kolom memberinya
+ *     halaman sendiri sehingga tidak ada kanan-kiri (owner: "khusus bacaan
+ *     panjang gausah kanan kiri"). Tinggi yang dikembalikan adalah tinggi
+ *     pada lebar penuh, bukan pada lebar kolom.
+ * Pemecahan per paragraf kini hanya cadangan terakhir: bila wacana masih
+ * lebih tinggi dari satu halaman penuh. Titik potong tetap di batas paragraf
+ * dan tiap potongan diberi penanda "(lanjutan)" — tidak pernah di tengah
+ * kalimat.
+ */
+export function blokBacaanNaskah(unit, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2) {
+  const bacaan = unit?.bacaan;
+  if (!bacaan) return [];
+  const nKolom = kolomPerHalaman > 1 ? kolomPerHalaman : 1;
+  const lebarHalaman = lebarKolom * nKolom + (nKolom - 1) * GAP_KOLOM_MM;
+  const kapasitas = kapasitasMm > 0 ? kapasitasMm : 100000;
+  // 🔥 2026-10-09 (owner: "perkecil font bacaan dan rapikan agar muat kanan
+  // kiri, atau khusus bacaan panjang gausah kanan kiri").
+  // Bacaan yang di kolom lebih tinggi dari ambang "panjang" dicetak sebagai
+  // PITA LEBAR PENUH (barisnya selebar isi kertas). Pemecahan per paragraf
+  // kini hanya cadangan terakhir: bila wacana masih lebih tinggi dari satu
+  // halaman penuh meski sudah dilebarkan.
+  const lebarPenuh = estimasiTinggiBacaan(bacaan, lebarKolom, rasioGambar) > ambangBacaanPanjangMm(kapasitas);
+  const lebarCetak = lebarPenuh ? lebarHalaman : lebarKolom;
+  const rentang = unit.dari && unit.sampai && unit.sampai > unit.dari
+    ? ` untuk soal ${unit.dari}–${unit.sampai}`
+    : (unit.dari ? ` untuk soal ${unit.dari}` : '');
+  const segmen = pisahTeksDanGambar(bacaan.teks, bacaan.gambar);
+  const classBlok = lebarPenuh ? 'nsk-bacaan nsk-bacaan-panjang' : 'nsk-bacaan';
+  const judul = (lanjutanKe) => `<div class="nsk-bacaan-judul">Bacalah teks berikut${rentang}${lanjutanKe ? ` (lanjutan ${lanjutanKe})` : ''}</div>`;
+
+  const baris = (teks, lebar) => Math.ceil(Math.max(1, teks.length) / Math.max(20, (lebar - 8) / MM_PER_HURUF)) * 4.4;
+  const chunks = [];
+  let isiSekarang = '';
+  // DUA tinggi dihitung sekaligus:
+  //   tCetak  = tinggi pada lebar cetaknya (dipakai memutuskan pemecahan);
+  //   tLapor  = tinggi pada LEBAR KOLOM (yang dilaporkan ke atas).
+  // Kenapa tLapor versi kolom: seluruh mesin — lapisan ukur DOM di halaman
+  // Cetak maupun susunKeKolom — memakai tinggi versi kolom sebagai satuan
+  // baku, lalu menaksir versi lebar penuh lewat FAKTOR_TINGGI_LEBAR_PENUH.
+  // Kalau yang dilaporkan versi lebar, gerbang ambang di susunKeKolom akan
+  // menolak blok yang seharusnya naik ke pita.
+  let tCetak = 8;
+  let tLapor = 8;
+  let nomorChunk = 0;
+  const tutup = () => {
+    if (!isiSekarang) return;
+    nomorChunk += 1;
+    chunks.push({
+      html: `<div class="${classBlok}">${judul(nomorChunk > 1 ? nomorChunk : 0)}${isiSekarang}</div>`,
+      tinggi: Math.round(tLapor * 10) / 10,
+      penuh: lebarPenuh,
+    });
+    isiSekarang = '';
+    tCetak = 8;
+    tLapor = 8;
+  };
+  for (const sg of segmen) {
+    let html;
+    let hCetak;
+    let hLapor;
+    if (sg.jenis === 'teks') {
+      // pecah per paragraf/kalimat panjang supaya titik potong rapi
+      const paragraf = String(sg.isi).split(/(?<=[.!?])\s+(?=[A-Z"“])/).filter(Boolean);
+      for (const par of paragraf) {
+        hCetak = baris(par, lebarCetak);
+        hLapor = lebarPenuh ? baris(par, lebarKolom) : hCetak;
+        if (tCetak + hCetak > kapasitas && isiSekarang) tutup();
+        isiSekarang += `<div>${teksKeHtml(par)}</div>`;
+        tCetak += hCetak;
+        tLapor += hLapor;
+      }
+      continue;
+    } else {
+      const r = rasioGambar[sg.url] ?? RASIO_BAWAAN_GAMBAR;
+      const u = ukuranGambarNaskah(r, 1, lebarCetak) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
+      html = imgNaskahHtml(sg.url, 'Gambar bacaan', u);
+      hCetak = u.tinggiMm + 2;
+      const uKolom = ukuranGambarNaskah(r, 1, lebarKolom) || { mode: 'blok', lebarMm: 40, tinggiMm: 30 };
+      hLapor = lebarPenuh ? uKolom.tinggiMm + 2 : hCetak;
+    }
+    if (tCetak + hCetak > kapasitas && isiSekarang) tutup();
+    isiSekarang += html;
+    tCetak += hCetak;
+    tLapor += hLapor;
+  }
+  tutup();
+  return chunks;
+}
+
+export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2) {
   const daftar = Array.isArray(soalList) ? soalList : [];
   const kop = mode === 'kunci'
     ? `<div class="nsk-peringatan">PEGANGAN GURU — JANGAN DICETAK UNTUK SISWA</div>${kopNaskahHtml(paket, 'KUNCI & PEMBAHASAN', false)}`
     : kopNaskahHtml(paket, 'NASKAH SOAL', true);
-  return [
-    kop,
-    ...daftar.map((s, i) => (mode === 'kunci'
-      ? kunciButirNaskahHtml(s, i + 1)
-      : butirNaskahHtml(s, i + 1, lebarKolom, rasioGambar))),
-  ];
+  if (mode === 'kunci') {
+    return [kop, ...daftar.map((s, i) => kunciButirNaskahHtml(s, i + 1))];
+  }
+  const blok = [kop];
+  for (const unit of kelompokkanStimulus(daftar)) {
+    if (unit.jenis === 'bacaan') {
+      for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) blok.push(chunk.html);
+    } else {
+      blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+    }
+  }
+  return blok;
+}
+
+/**
+ * Tinggi perkiraan (mm) yang SEJAJAR dengan keluaran daftarBlokNaskah —
+ * dipakai sebagai cadangan bila lapisan ukur DOM belum siap. Panjangnya
+ * selalu sama dengan jumlah blok, supaya penyusun kolom tidak diam-diam
+  * jatuh ke taksiran buta.
+ */
+/**
+ * Bendera "blok ini halaman lebar penuh", SEJAJAR (indeks sama, panjang sama)
+ * dengan keluaran daftarBlokNaskah. Dipakai dua tempat:
+ *   1. lapisan ukur di halaman Cetak — blok lebar penuh harus diukur pada
+ *      lebar kertas, bukan lebar kolom, supaya tingginya jujur;
+ *   2. susunKeKolom — supaya blok itu tidak diselipkan ke kolom biasa.
+ */
+export function daftarBlokPenuh(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2) {
+  const daftar = Array.isArray(soalList) ? soalList : [];
+  if (mode === 'kunci') return [false, ...daftar.map(() => false)];
+  const tanda = [false]; // kop
+  for (const unit of kelompokkanStimulus(daftar)) {
+    if (unit.jenis === 'bacaan') {
+      for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) tanda.push(!!chunk.penuh);
+    } else {
+      const t = estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan });
+      // Butir berwacana raksasa (wacana menempel di stem — pola impor HTML
+      // Master/Tinitus) ikut lebar penuh: di kolom 92 mm teks semacam itu jadi
+      // dinding huruf sempit dan di kertas owner meluber lewat kaki halaman.
+      tanda.push(butuhLebarPenuh(t, ambangBacaanPanjangMm(kapasitasMm)));
+    }
+  }
+  return tanda;
+}
+
+export function daftarTinggiPerkiraan(mode, paket, soalList, lebarKolom, rasioGambar = {}, kapasitasMm = 0, kolomPerHalaman = 2) {
+  const daftar = Array.isArray(soalList) ? soalList : [];
+  const tinggi = [mode === 'kunci' ? 30 : 26];
+  if (mode === 'kunci') {
+    for (const s of daftar) tinggi.push(estimasiTinggiBlokMm('kunci', s, lebarKolom, rasioGambar));
+    return tinggi;
+  }
+  for (const unit of kelompokkanStimulus(daftar)) {
+    if (unit.jenis === 'bacaan') {
+      for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) tinggi.push(chunk.tinggi);
+    } else {
+      tinggi.push(estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+    }
+  }
+  return tinggi;
 }
 
 /** Tinggi taksiran (mm) sebelum pengukuran layar tersedia. */
-export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
+export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}, opsiEstimasi = {}) {
   const hurufSebaris = Math.max(20, (lebarKolom - 8) / MM_PER_HURUF);
   if (mode === 'kunci') {
     const panjang = String(soal?.pembahasan || '').length + 20;
@@ -487,7 +803,7 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
   // Bacaan panjang menambah tinggi blok secara nyata. Bila tidak dihitung,
   // mesin akan menumpuk terlalu banyak butir per kolom dan naskah meluber
   // ke halaman berikutnya (pratinjau layar != hasil cetak).
-  const bacaan = bacaanDari(soal);
+  const bacaan = opsiEstimasi.tanpaBacaan ? null : bacaanDari(soal);
   const teksBacaan = bacaan ? String(bacaan.teks || '') : '';
   const gambarBacaan = bacaan && Array.isArray(bacaan.gambar) ? bacaan.gambar.filter(Boolean) : [];
   const tinggiGambar = gambar.reduce((acc, url) => {
@@ -499,9 +815,19 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
   const nKolomOpsi = kolomPilihanNaskah(opsi, lebarKolom);
   const barisOpsi = Math.ceil(opsi.length / nKolomOpsi) * 4.6;
   const barisTeks = Math.ceil(Math.max(1, teks.length) / hurufSebaris) * 4.6;
-  // 🔥 Isi per tipe ikut dihitung: sebelumnya tinggi benar_salah/menjodohkan/
-  // esai ditaksir tanpa baris jawabannya, sehingga kolom meluber dan halaman
-  // terlihat berantakan di kertas.
+  const tinggiGambarBacaan = gambarBacaan.reduce((acc, url) => {
+    const src = typeof url === 'string' ? url : (url?.uploadedUrl || url?.url || '');
+    if (!src) return acc;
+    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
+    const u = ukuranGambarNaskah(r, 1, lebarKolom);
+    return acc + (u ? u.tinggiMm + 2 : 30);
+  }, 0);
+  const barisBacaan = teksBacaan
+    ? Math.ceil(teksBacaan.length / hurufSebaris) * 4.0 + 8 // +8: padding & judul blok
+    : 0;
+  // 🔥 Isi per tipe ikut dihitung (diport dari main #183): sebelumnya tinggi
+  // benar_salah/menjodohkan/esai ditaksir tanpa baris jawabannya, sehingga
+  // kolom meluber dan halaman terlihat berantakan di kertas.
   const tipeSoal = String(soal?.tipe || 'pg_sederhana');
   let tinggiIsi = 0;
   if (tipeSoal === 'benar_salah' || tipeSoal === 'pg_kategori') {
@@ -517,16 +843,6 @@ export function estimasiTinggiBlokMm(mode, soal, lebarKolom, rasioGambar = {}) {
   } else if (tipeSoal === 'esai' || tipeSoal === 'uraian') {
     tinggiIsi = 30;
   }
-  const tinggiGambarBacaan = gambarBacaan.reduce((acc, url) => {
-    const src = typeof url === 'string' ? url : (url?.uploadedUrl || url?.url || '');
-    if (!src) return acc;
-    const r = rasioGambar[src] ?? RASIO_BAWAAN_GAMBAR;
-    const u = ukuranGambarNaskah(r, 1, lebarKolom);
-    return acc + (u ? u.tinggiMm + 2 : 30);
-  }, 0);
-  const barisBacaan = teksBacaan
-    ? Math.ceil(teksBacaan.length / hurufSebaris) * 4.0 + 8 // +8: padding & judul blok
-    : 0;
   return Math.round(barisTeks + tinggiGambar + tinggiGambarBacaan + barisBacaan + barisOpsi + tinggiIsi + 4);
 }
 
@@ -579,7 +895,7 @@ export function gayaWatermark(o = {}) {
 .wm-gemilang { ${posisi} display: flex; align-items: center; justify-content: center;
   pointer-events: none; z-index: 0; overflow: hidden; }
 .wm-gemilang img { width: ${ukuran}mm; height: ${ukuran}mm; object-fit: contain; opacity: ${opacity}; }
-.nsk-kolomwrap, .kotak, .kepala, .identitas { position: relative; z-index: 1; }
+.nsk-kolomwrap, .nsk-band, .kotak, .kepala, .identitas { position: relative; z-index: 1; }
 @media print { .wm-gemilang { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 `;
 }
@@ -626,24 +942,41 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const tinggi = Array.isArray(opsi.tinggiBlokMm) && opsi.tinggiBlokMm.length === blokHtml.length
     ? opsi.tinggiBlokMm
     : blokHtml.map((_, i) => (i === 0 ? 26 : (Array.isArray(opsi.tinggiPerkiraanMm) ? opsi.tinggiPerkiraanMm[i - 1] : 40)));
-  const hasilKolom = susunKeKolom(tinggi, kapasitas, nKolom);
+  const hasilKolom = susunKeKolom(tinggi, kapasitas, nKolom, {
+    blokPenuh: opsi.blokPenuh,
+    tinggiLebarMm: opsi.tinggiLebarMm,
+  });
   const peringatan = hasilKolom.peringatan;
+  const pitaHalaman = Array.isArray(hasilKolom.lebarHalaman) ? hasilKolom.lebarHalaman : [];
+  const luapan = Array.isArray(hasilKolom.luapan) ? hasilKolom.luapan : [];
   // 🔥 2026-10-09 (owner: "jangan sampai ada sisa"): halaman TERAKHIR
   // diseimbangkan antar kolom. Menyisakan setengah kolom kosong terlihat
   // seperti kesalahan tata letak, padahal hanya akhir dokumen. Blok tetap
   // utuh (tidak dipotong) dan URUTAN nomor tetap dijaga per kolom.
-  const halaman = seimbangkanHalamanTerakhir(hasilKolom.halaman, tinggi, nKolom);
+  // Halaman terakhir yang punya PITA lebar penuh tidak diseimbangkan: ruang
+  // kolomnya sudah dipotong tinggi pita, dan menyebar blok ke kolom lain bisa
+  // membuat isinya meluber di bawah pita.
+  const pitaTerakhir = pitaHalaman[hasilKolom.halaman.length - 1] || [];
+  const halaman = pitaTerakhir.length
+    ? hasilKolom.halaman
+    : seimbangkanHalamanTerakhir(hasilKolom.halaman, tinggi, nKolom);
   const totalHal = Math.max(1, halaman.length);
   // Watermark default HIDUP. Dimatikan hanya dengan `watermark: false`
   // eksplisit (mis. dokumen internal yang tidak akan beredar).
   const denganWatermark = opsi.watermark !== false;
   const isiHalaman = halaman
     .map((kolomLista, h) => {
+      // 🔥 PITA LEBAR PENUH: wacana panjang membentang selebar isi kertas di
+      // ATAS halaman (tanpa kanan-kiri), soal-soalnya tetap dua kolom di
+      // bawahnya — persis buku ujian: baca dulu, baru kerjakan.
+      const pita = pitaHalaman[h] || [];
       const kolom = kolomLista.map((indeks) => `<div class="nsk-kolom">${indeks.map((b) => blokHtml[b]).join('')}</div>`).join('');
       const lebarHal = kertas.lebarMm;
       const tinggiHal = kertas.tinggiMm;
-      return `<div class="nsk-hal" style="width:${lebarHal}mm;height:${tinggiHal}mm;">
+      const kelasHal = `nsk-hal${pita.length ? ' nsk-hal--lebar' : ''}${luapan[h] ? ' nsk-hal--luapan' : ''}`;
+      return `<div class="${kelasHal}" style="width:${lebarHal}mm;height:${tinggiHal}mm;">
         ${denganWatermark ? watermarkHtml({ ...opsi, mode: 'halaman' }) : ''}
+        ${pita.length ? `<div class="nsk-band">${pita.map((b) => blokHtml[b]).join('')}</div>` : ''}
         <div class="nsk-kolomwrap">${kolom}</div>
         <div class="nsk-footer">— ${h + 1} / ${totalHal} —</div>
       </div>`;
@@ -651,13 +984,24 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
     .join('');
   const gayaWm = denganWatermark ? gayaWatermark({ ...opsi, mode: 'halaman' }) : '';
   const fragmen = `<style>${cssPage(kertas)}${opsi.cssTambahan || ''}${GAYA_NASKAH}${gayaWm}</style><div class="naskah">${isiHalaman}</div>`;
-  return { fragmen, jumlahHalaman: totalHal, jumlahKolom: nKolom, peringatan, lebarKolomMm: lebarKolomMm(kertas, nKolom) };
+  return {
+    fragmen,
+    jumlahHalaman: totalHal,
+    jumlahKolom: nKolom,
+    peringatan,
+    lebarKolomMm: lebarKolomMm(kertas, nKolom),
+    // nomor halaman (1-based) yang dicetak lebar penuh karena wacana panjang
+    halamanLebarPenuh: pitaHalaman.map((q, i) => (q.length ? i + 1 : 0)).filter(Boolean),
+  };
 }
 
 export default {
-  barisBenarSalah,
-  isiJawabanNaskah,
-  kunciPerBaris,
+  daftarBlokPenuh,
+  ambangBacaanPanjangMm,
+  tinggiLebarPenuhMm,
+  butuhLebarPenuh,
+  AMBANG_BACAAN_PANJANG,
+  FAKTOR_TINGGI_LEBAR_PENUH,
   seimbangkanHalamanTerakhir,
   bacaanNaskahHtml,
   LOGO_WATERMARK,

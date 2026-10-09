@@ -144,11 +144,18 @@ uji('halaman tidak pernah berisi kolom lebih dari yang diminta', () => {
   const { halaman } = susunKeKolom([30, 30, 30, 30, 30, 30], 60, 2);
   for (const hal of halaman) assert.ok(hal.length <= 2);
 });
-uji('butir raksasa diberi kolom sendiri dan masuk peringatan', () => {
-  const { halaman, peringatan } = susunKeKolom([20, 300, 20], 100, 2);
-  assert.deepEqual(peringatan, [1]);
-  const sendiri = halaman.flat(1).some((kol) => kol.length === 1 && kol[0] === 1);
-  assert.ok(sendiri);
+// 2026-10-09: perilaku lama "butir raksasa diberi kolom sendiri" DICABUT.
+// Di kertas owner (Bimbel Gemilang System test.pdf) kolom sendiri itu membuat
+// separuh halaman kosong dan isinya tetap meluber lewat kaki halaman (opsi
+// terpotong). Penggantinya: wacana/butir raksasa naik ke PITA LEBAR PENUH di
+// atas halaman, soal berikutnya tetap dua kolom di bawahnya.
+// Lihat tests/bacaanLebarPenuh.test.mjs untuk uji lengkap perilaku baru.
+uji('butir raksasa naik ke pita lebar penuh (tidak lagi diremas di kolom)', () => {
+  const { halaman, lebarHalaman, peringatan, luapan } = susunKeKolom([20, 300, 20], 100, 2);
+  assert.deepEqual(peringatan, [1], '300 mm di kolom = 165 mm saat lebar: masih > kapasitas 100 mm');
+  assert.ok(lebarHalaman.flat().includes(1), 'blok raksasa harus berada di pita lebar penuh');
+  assert.ok(!halaman.flat(2).includes(1), 'blok raksasa tidak boleh masuk kolom biasa');
+  assert.equal(luapan.some(Boolean), true, 'halamannya ditandai mengalir supaya tidak terpotong');
 });
 uji('daftar kosong tetap menghasilkan susunan sah (tanpa crash)', () => {
   const { halaman } = susunKeKolom([], 100, 2);
