@@ -97,6 +97,17 @@ diperbarui di `tests/naskahSoal.test.mjs`, perilaku baru dijaga
 Biaya yang jujur: paket yang dulu 3 halaman (dengan opsi terpotong) bisa jadi 4
 halaman. Yang dikejar adalah tidak ada satu huruf pun yang hilang di kertas.
 
+## pg_kompleks: kotak centang kosong di lembar siswa (2026-10-09)
+
+Butir pg_kompleks (jawaban benar lebih dari satu) dicetak dengan KOTAK
+KOSONG di depan tiap pilihan — siswa mencentang kotaknya di kertas.
+Kotaknya dibuat mesin cetak, bukan diambil dari data: dulu ada butir yang
+teks opsinya membawa glif ☑/☐ bawaan dokumen sumber dan glif itu sudah
+tercentang persis sesuai kunci (kebocoran kunci). Sekarang glif bawaan
+data dilepas di semua lapisan tampil (`src/utils/bersihkanGlifKunci.js`)
+dan kotak kosong selalu tersedia, jadi lembar siswa tidak pernah lagi
+membocorkan kunci lewat kotak tercentang.
+
 ## Batas jujur fitur ini
 
 - Pratinjau memakai font browser guru; tinggi cetak bisa meleset ±1mm, sudah

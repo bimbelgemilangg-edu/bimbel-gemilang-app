@@ -19,6 +19,10 @@
 import React from 'react';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import RenderMath from '../../../components/RenderMath';
+// 🔥 2026-10-09: teks opsi tampil TANPA glif penanda kunci (☑/☐)
+// yang terbawa impor -- dulu siswa melihat kotak sudah tercentang
+// persis di opsi yang benar (kunci bocor sebelum dijawab).
+import { opsiTampilDari } from '../../../utils/bersihkanGlifKunci.js';
 
 // 🔥 BARU (bug freeze/blank putih ditemukan): jangan percaya
 // kunciJawaban PASTI array -- kalau ada data soal yang formatnya
@@ -31,7 +35,7 @@ function safeArray(v) {
 }
 
 export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
-  const opsi = soal.opsiJawaban || [];
+  const opsi = opsiTampilDari(soal);
   const kunci = safeArray(soal.kunciJawaban).map((h) => String(h).toUpperCase().trim());
   const dipilih = new Set(safeArray(jawabanTerpilih).map((h) => String(h).toUpperCase().trim()));
   // 🔥 BARU: sama kayak RendererPgSederhana.jsx -- biar jelas beda

@@ -33,6 +33,7 @@ import 'katex/dist/katex.min.css';
 import { teksKeHtml } from '../../utils/naskahSoal';
 import { pisahTeksDanGambar } from '../../utils/penempatanGambar';
 import { benderaButir } from '../../utils/keranjangSoalGuru';
+import { opsiTampilDari } from '../../utils/bersihkanGlifKunci.js';
 import { teksSoalDari, identitasDari, bacaanDari, WATERMARK } from '../../utils/fieldButirSoal';
 
 const LOGO = WATERMARK.logo;
@@ -131,7 +132,7 @@ export default function KartuKeranjangSoal({ soal, nomor, jumlah = 0, tanpaKunci
   const bacaan = bacaanDari(soal);
   const segmenBacaan = bacaan ? pisahTeksDanGambar(bacaan.teks, bacaan.gambar) : [];
   const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
-  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  const opsi = opsiTampilDari(soal);
   const pernyataan = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
   const tabelBS = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
   const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan : [];

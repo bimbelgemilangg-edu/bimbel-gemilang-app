@@ -107,3 +107,34 @@ berjenjang berjalan saat scan, dan pagar ledakan menahan penghapusan massal.
 2. Setelah tiap impor besar, lihat kartu checkup sekali (satu sapuan, murah).
 3. Bila checkup menunjuk angka merah, berhenti menambah; bereskan dulu.
    Soal beranak lebih murah dicegah saat masuk daripada diburu sesudah masuk.
+4. Dokumen sumber jangan menandai kunci dengan kotak tercentang (☑) di
+   depan pilihan. Jalur impor sekarang melepas penanda itu otomatis
+   (lihat bagian 8), tapi sumber yang bersih tetap lebih murah.
+
+## 8. Glif penanda kunci di teks opsi (ditemukan 2026-10-09)
+
+Gejala: lembar cetak & kuis siswa pg_kompleks menampilkan kotak yang
+SUDAH tercentang pada pilihan yang benar — kunci jawaban bocor ke siswa.
+Akar: 23 butir aktif menyimpan glif ☑/☐ DI DALAM teks opsinya warisan
+dokumen sumber; dicek satu per satu, pola centangnya sama persis dengan
+field kunciJawaban (23/23).
+
+Status setelah PR glif-penanda-kunci:
+- Tampilan & cetak AMAN: semua lapisan tampil (mesin cetak, kuis siswa,
+  kartu baca tentor, keranjang) melepas glif lewat
+  `src/utils/bersihkanGlifKunci.js`; lembar pg_kompleks mendapat kotak
+  KOSONG dari mesin cetak supaya format centang siswa tetap jelas.
+- Pintu impor AMAN: sanitizer & impor HTML melepas glif sebelum masuk bank.
+- Audit menandai: butir yang datanya masih kotor masuk daftar
+  "perlu dicek" di halaman audit (bukan "rusak" — tidak ada yang dihapus).
+
+Kerjaan data MENUNGGU KONFIRMASI OWNER (pembersihan field di Firestore,
+23 butir, tanpa mengubah kunci/penilaian):
+1Eui7w7hCP7Oh1AAm2S3, 5ALQ8vDv265nwImwpC9G, 6PPOOqFH2Ad0THWQoTnj,
+AbpRZp1xqFZZWSBEKKgD, FPHNBnAv6yWsXcaKrY4N, GxuD9Wu0aH48JZ2rPPV5,
+IfkQJV2GKhqeSQoOQnf5, JzvfkeYHHlvGlitRxddp, KucEyOmbU3ssUWNOUJHW,
+LX6HppBhcAaoc2Og78Hb, MUSUq9V33B7dGTGNBtw3, NlGPf0DGmOuCJLlkQQPM,
+SRnR0PLRPnPWj3frLOJE, SZTIr7ztWG3efEK0Fxk3, UUu8vsaEfR7GUwV968HU,
+UdsRukgXuCJUzO5Vrjnx, ZCEQ4T7VAmGCwIOcEe9N, bM7RKtOdO61H3nycQQuw,
+jiBBxnBUShuxrWKML3VX, kDsR478rwJEeove0kbrZ, rvSwcHRhzwbSkkR9jw0m,
+wZ1gfgDQJBmvP1VXljdA, zRRXiQ2V50HHag4ldZa1.

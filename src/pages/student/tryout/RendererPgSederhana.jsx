@@ -10,9 +10,10 @@ import React from 'react';
 import { cariIndexBenar } from '../../../utils/skoringSoalKompleks';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import RenderMath from '../../../components/RenderMath';
+import { opsiTampilDari } from '../../../utils/bersihkanGlifKunci.js';
 
 export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
-  const opsi = soal.opsiJawaban || [];
+  const opsi = opsiTampilDari(soal);
   const indexBenar = cariIndexBenar(soal);
   const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
 

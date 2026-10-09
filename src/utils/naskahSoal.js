@@ -26,6 +26,7 @@
 
 import katex from 'katex';
 import { pisahTeksDanGambar } from './penempatanGambar.js';
+import { bersihkanTeksOpsi } from './bersihkanGlifKunci.js';
 
 // ---- geometri kertas (milimeter) ----
 // Ukuran yang ditawarkan dipilih dari kertas yang benar-benar ada di
@@ -329,6 +330,12 @@ export const GAYA_NASKAH = `
 .naskah .nsk-gbr-blok { display: block; margin: 1.5mm auto; }
 .naskah .nsk-opsi { display: grid; gap: 0.8mm 5mm; margin: 1.5mm 0 0 7.5mm; }
 .naskah .nsk-opsi > span { break-inside: avoid; }
+/* 🔥 2026-10-09: kotak centang KOSONG untuk pg_kompleks di lembar siswa.
+   Sebelumnya satu-satunya "kotak" di lembar adalah glif ☑/☐ yang terbawa
+   dari teks opsi impor -- dan glif itu sudah tercentang sesuai kunci
+   (kebocoran kunci). Sekarang mesin cetak menyediakan kotaknya sendiri
+   (kotak kosong berbingkai), terlepas dari bersih/kotor datanya. */
+.naskah .nsk-kotak-centang { display: inline-block; width: 3.2mm; height: 3.2mm; border: 0.35mm solid #1f2937; border-radius: 0.5mm; margin: 0 1.4mm 0 0; vertical-align: -0.5mm; }
 .naskah .nsk-bs { margin: 1.5mm 0 0 7.5mm; }
 .naskah .nsk-bs-head, .naskah .nsk-bs-row { display: grid; grid-template-columns: 1fr 14mm 14mm; gap: 2mm; align-items: start; }
 .naskah .nsk-bs-head { font-size: 8.5pt; font-weight: bold; border-bottom: 0.4pt solid #000; padding-bottom: 1mm; }
@@ -461,7 +468,9 @@ export function isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar = {}) {
   if (tipe === 'pg_kompleks') {
     const per = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
     if (!per.length) return '';
-    const items = per.map((q, i) => `<span>(${String.fromCharCode(65 + i)}) ${gambarDalamTeks(typeof q === 'string' ? q : (q?.teks || ''), [], nomor, rg, lebarKolom)}</span>`).join('');
+    // kotak centang kosong + teks pernyataan yang sudah dilepas dari
+    // glif penanda kunci (lihat bersihkanGlifKunci.js)
+    const items = per.map((q, i) => `<span><i class="nsk-kotak-centang" aria-hidden="true"></i>(${String.fromCharCode(65 + i)}) ${gambarDalamTeks(bersihkanTeksOpsi(typeof q === 'string' ? q : (q?.teks || '')), [], nomor, rg, lebarKolom)}</span>`).join('');
     return `<div class="nsk-opsi" style="grid-template-columns:1fr;">${items}</div>`;
   }
 
@@ -515,8 +524,21 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
     })
     .join('');
   const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
-  const teksOpsi = opsi.map((o) => (typeof o === 'string' ? o : o?.teks || ''));
+  // 🔥 2026-10-09: teks opsi dilepas dari glif penanda kunci (☑/☐) yang
+  // terbawa impor -- di data produksi glif itu persis sama dengan kunci
+  // jawaban, jadi lembar siswa yang mencetaknya berarti membocorkan
+  // kunci. Lihat src/utils/bersihkanGlifKunci.js.
+  const teksOpsi = opsi.map((o) => bersihkanTeksOpsi(typeof o === 'string' ? o : o?.teks || ''));
   const nKolomOpsi = kolomPilihanNaskah(teksOpsi, lebarKolom);
+  // pg_kompleks tanpa daftar pernyataan: pilihannyalah permukaan centang
+  // siswa, jadi tiap baris mendapat kotak KOSONG dari mesin cetak (bukan
+  // dari data). Kalau ada pernyataan, kotaknya dipasang di blok jawaban
+  // (isiJawabanNaskah) supaya tidak dobel.
+  const tipeButir = String(soal?.tipe || 'pg_sederhana');
+  const adaPernyataan = Array.isArray(soal?.pernyataan) && soal.pernyataan.length > 0;
+  const kotakCentang = tipeButir === 'pg_kompleks' && !adaPernyataan
+    ? '<i class="nsk-kotak-centang" aria-hidden="true"></i>'
+    : '';
   const opsiHtml = teksOpsi
     .map((t, i) => {
       const huruf = String.fromCharCode(65 + i);
@@ -531,7 +553,7 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
           })
           .join('')
         : '';
-      return `<span>(${huruf}) ${teksKeHtml(t)}${gbr}</span>`;
+      return `<span>${kotakCentang}(${huruf}) ${teksKeHtml(t)}${gbr}</span>`;
     })
     .join('');
   // 🔥 bagian jawaban per tipe (diport dari main #183): benar/salah mendapat
