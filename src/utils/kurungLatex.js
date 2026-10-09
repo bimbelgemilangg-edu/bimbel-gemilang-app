@@ -26,6 +26,12 @@ const PERINTAH_ARG = new Set(['text', 'frac', 'dfrac', 'tfrac', 'sqrt', 'mathrm'
 
 function curiga(isi, i) {
   if (isi[i] !== '{') return false;
+  // 🔥 2026-10-09: grup KOSONG `{}` adalah konstruksi LaTeX yang sah dan
+  // disengaja — misalnya notasi logaritma basis Indonesia `{}^3\log x`.
+  // Meng-escape-nya menjadi `\{\}` merusak rumus. Ditemukan saat rencana
+  // perbaikan massal diuji terhadap data produksi nyata: satu-satunya
+  // "perbaikan" yang diusulkan justru korupsi rumus logaritma.
+  if (isi[i + 1] === '}') return false;
   const prev = i > 0 ? isi[i - 1] : '';
   if (prev === '\\' || prev === '}' || prev === '^' || prev === '_') return false;
   let j = i - 1;

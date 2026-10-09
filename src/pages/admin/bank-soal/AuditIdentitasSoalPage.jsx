@@ -42,6 +42,11 @@ import {
   JATAH_BACA_HARIAN,
 } from '../../../utils/auditIdentitasSoal';
 import { kebijakanGagalMuat } from '../../../utils/keputusanMuat';
+// 🔥 2026-10-09: perbaikan kurung himpunan LaTeX untuk DATA LAMA sebagai
+// rencana dry-run. Mesin perbaiknya sudah ada & teruji (kurungLatex.js,
+// dipasang di jalur impor sejak 2026-10-05); 51 butir warisan masuk sebelum
+// pagar itu ada. Di sini manusia melihat sebelum/sesudah sebelum menerapkan.
+import { rencanaPerbaikanLatex, hitungFieldBerubah } from '../../../utils/perbaikanLatexMassal';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 import JSZip from 'jszip';
 import {
@@ -222,6 +227,7 @@ export default function AuditIdentitasSoalPage() {
   // `|| []` membuat array BARU setiap render, sehingga dependensi
   // useCallback ikut berubah tiap render (peringatan exhaustive-deps).
   const rencana = useMemo(() => laporan?.rencanaPerbaikan || [], [laporan]);
+  const rencanaLatex = useMemo(() => rencanaPerbaikanLatex(daftarMentah), [daftarMentah]);
 
   const terapkanRencana = useCallback(async () => {
     if (!rencana.length) return;
@@ -265,6 +271,51 @@ export default function AuditIdentitasSoalPage() {
       setProgres('');
     }
   }, [rencana]);
+
+  const terapkanLatex = useCallback(async () => {
+    if (!rencanaLatex.length || menulis) return;
+    const kalimat = `Terapkan ${rencanaLatex.length} perbaikan kurung himpunan LaTeX `
+      + `(${hitungFieldBerubah(rencanaLatex)} field) ke koleksi ${COL}?\n\n`
+      + 'Hanya kurung himpunan DI DALAM span matematika yang diubah. Nilai lama disimpan '
+      + 'di latexSebelumPerbaikan, jadi bisa diperiksa atau dikembalikan kapan pun.';
+    if (!window.confirm(kalimat)) return;
+
+    setMenulis(true);
+    setHasilTulis('');
+    try {
+      let selesai = 0;
+      for (let i = 0; i < rencanaLatex.length; i += UKURAN_BATCH) {
+        const potongan = rencanaLatex.slice(i, i + UKURAN_BATCH);
+        const batch = writeBatch(db);
+        potongan.forEach((r) => {
+          batch.update(doc(db, COL, r.id), {
+            ...r.perubahan,
+            latexSebelumPerbaikan: r.sebelum,
+            latexDiperbaikiPada: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+        selesai += potongan.length;
+        setProgres(`Menulis ${selesai}/${rencanaLatex.length} dokumen…`);
+      }
+      catatAudit('banksoal.latex.perbaiki', {
+        kategori: KATEGORI.KONTEN,
+        target: `${selesai} butir bank_soal`,
+        detail: { jumlah: selesai, field: hitungFieldBerubah(rencanaLatex), jenis: 'escape kurung himpunan LaTeX data lama' },
+      });
+      // perbarui sapuan di memori supaya tab langsung menunjukkan sisa 0
+      setDaftarMentah((lama) => lama.map((b) => {
+        const r = rencanaLatex.find((x) => x.id === b.id);
+        return r ? { ...b, data: { ...b.data, ...r.perubahan } } : b;
+      }));
+      setHasilTulis(`✅ ${selesai} butir diperbaiki kurung LaTeX-nya. Siswa kini melihat {2, 3} sebagai himpunan, bukan "2, 3".`);
+    } catch (e) {
+      setHasilTulis(`❌ Gagal menulis: ${e?.message || e}. Sebagian dokumen mungkin sudah berubah — jalankan audit ulang untuk melihat keadaan sebenarnya.`);
+    } finally {
+      setMenulis(false);
+      setProgres('');
+    }
+  }, [rencanaLatex, menulis]);
 
   const daftarIdentitas = useMemo(() => {
     const semua = laporan?.tanpaIdentitas || [];
@@ -373,6 +424,7 @@ export default function AuditIdentitasSoalPage() {
                 ['identitas', `Tanpa Identitas (${laporan.tanpaIdentitas.length})`],
                 ['rusak', `Butir Rusak (${laporan.butirRusak.length})`],
                 ['rencana', `Rencana Perbaikan (${laporan.rencanaPerbaikan.length})`],
+                ['latex', `Perbaikan LaTeX (${rencanaLatex.length})`],
               ].map(([k, label]) => (
                 <button
                   key={k}
@@ -614,6 +666,65 @@ export default function AuditIdentitasSoalPage() {
                   </div>
                 </div>
               </>
+            )}
+
+            {/* ================= PERBAIKAN LATEX ================= */}
+            {tab === 'latex' && (
+              <div style={st.kartu}>
+                <h2 style={st.judul}>Perbaikan kurung himpunan LaTeX (data lama)</h2>
+                <p style={{ ...st.kecil, marginBottom: 12 }}>
+                  Di KaTeX, <code>{'{'}</code> adalah <i>grouping</i>: kurungnya tidak dirender. Notasi himpunan
+                  wajib <code>{'\\{'}</code>. Mesin perbaiknya sudah dipakai di jalur impor sejak 2026-10-05;
+                  daftar di bawah adalah butir warisan yang masuk SEBELUM pagar itu ada. Hanya kurung di dalam
+                  span matematika (<code>$…$</code>) yang diubah — kurung di luar span adalah teks biasa dan dibiarkan.
+                </p>
+
+                {rencanaLatex.length === 0 ? (
+                  <div style={{ fontSize: 13, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <CheckCircle2 size={16} /> Tidak ada kurung himpunan yang perlu diperbaiki.
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ maxHeight: 420, overflow: 'auto', marginBottom: 14 }}>
+                      {rencanaLatex.slice(0, 300).map((r) => {
+                        const f = r.perubahan.soal ? 'soal' : r.perubahan.teksSoal ? 'teksSoal' : Object.keys(r.perubahan)[0];
+                        return (
+                          <div key={r.id} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: '9px 11px', marginBottom: 8 }}>
+                            <div style={{ fontSize: 10.5, color: '#9ca3af', marginBottom: 4 }}>
+                              {r.id.slice(0, 10)} · berubah: {r.alasan.join(', ')}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: '#b91c1c', background: '#fef2f2', borderRadius: 7, padding: '6px 8px', marginBottom: 4, overflowWrap: 'break-word' }}>
+                              sebelum: {String(r.sebelum[f] ?? JSON.stringify(r.sebelum)).slice(0, 220)}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: '#166534', background: '#f0fdf4', borderRadius: 7, padding: '6px 8px', overflowWrap: 'break-word' }}>
+                              sesudah: {String(r.perubahan[f] ?? JSON.stringify(r.perubahan)).slice(0, 220)}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {rencanaLatex.length > 300 && (
+                        <div style={st.kecil}>Menampilkan 300 dari {rencanaLatex.length}. Semuanya ikut terterapkan bila Anda melanjutkan.</div>
+                      )}
+                    </div>
+
+                    <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: 13 }}>
+                      <label style={{ fontSize: 12.5, color: '#9a3412', display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontWeight: 600 }}>
+                        <input type="checkbox" checked={setujuTulis} onChange={(e) => setSetujuTulis(e.target.checked)} style={{ marginTop: 3 }} />
+                        Saya sudah membaca contoh sebelum/sesudah di atas dan mengerti nilai lama disimpan di
+                        <code>latexSebelumPerbaikan</code>.
+                      </label>
+                      <button
+                        style={{ ...st.tombol, marginTop: 11, opacity: setujuTulis && !menulis ? 1 : 0.45, cursor: setujuTulis && !menulis ? 'pointer' : 'not-allowed', width: 'auto' }}
+                        onClick={terapkanLatex}
+                        disabled={!setujuTulis || menulis}
+                      >
+                        {menulis ? <Loader2 size={16} className="animate-spin" /> : <Wrench size={16} />}
+                        Terapkan {rencanaLatex.length} perbaikan ({hitungFieldBerubah(rencanaLatex)} field)
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
 
             {/* ================= TANPA IDENTITAS ================= */}

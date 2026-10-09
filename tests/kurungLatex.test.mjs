@@ -38,6 +38,19 @@ uji('kurung tak berpasangan dibiarkan (jangan merusak)', () => {
   assert.equal(fix('$ {(3, 2) $'), '$ {(3, 2) $');
 });
 
+// 🔥 2026-10-09: grup kosong adalah konstruksi LaTeX sah (logaritma basis
+// Indonesia `{}^3\\log x`). Ditemukan saat rencana perbaikan massal diuji
+// terhadap data produksi: satu-satunya "perbaikan" yang diusulkan justru
+// korupsi rumus logaritma.
+uji('grup kosong {} TIDAK di-escape (notasi {}^3 log)', () => {
+  const masuk = 'Daerah asal $f(x) = {}^3\\log(x^2 - 9)$ adalah ....';
+  assert.equal(fix(masuk), masuk);
+});
+
+uji('himpunan berisi angka di dalam span tetap diperbaiki', () => {
+  assert.match(fix('HP: ${2, 3}$.'), /\\\{2, 3\\\}/);
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
