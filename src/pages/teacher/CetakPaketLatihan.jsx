@@ -53,7 +53,6 @@ import {
   masukKeranjang,
   masukKeranjangBanyak,
   keluarKeranjang,
-  pindahUrutan,
   ringkasKeranjang,
   judulDariKeranjang,
   teksRincianMasuk,
@@ -151,7 +150,6 @@ function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja }) {
 const teksSoalMentah = teksSoalDari;
 
 export default function CetakPaketLatihan() {
-  const [isMobile] = useState(window.innerWidth < 1024);
   const [sumber, setSumber] = useState('bank');       // 'bank' | 'paket'
   const [bankSoal, setBankSoal] = useState([]);
   const [paketList, setPaketList] = useState([]);
@@ -173,7 +171,6 @@ export default function CetakPaketLatihan() {
   const [pesanKeranjang, setPesanKeranjang] = useState('');
   // Kartu keranjang boleh dibaca dalam dua mode: dengan kunci+pembahasan
   // (memeriksa sebelum mencetak) atau tanpa (meniru lembar siswa).
-  const [tampilKunci, setTampilKunci] = useState(true);
   const [tanpaEsai, setTanpaEsai] = useState(false);
 
   const [paketId, setPaketId] = useState('');
@@ -194,6 +191,13 @@ export default function CetakPaketLatihan() {
   // daftar panjang yang mengharuskan scroll naik-turun. Daftar lama tetap
   // tersedia di balik toggle "daftar".
   const [modeTampil, setModeTampil] = useState('preview');
+  // 🔥 2026-10-09 (desain ulang atas keluhan owner): dua LANGKAH, satu layar
+  // tiap langkah. "Keranjang" sebagai panel terpisah dihapus -- isinya sama
+  // dengan yang tercetak, jadi perantara itu hanya menambah pusing. Langkah 1
+  // memilih, langkah 2 adalah KERTASnya lebar penuh.
+  const [langkah, setLangkah] = useState(1);
+  const refKanvas = useRef(null);
+  const [skala, setSkala] = useState(1);
   const [indeksPreview, setIndeksPreview] = useState(0);
   const [cariMateri, setCariMateri] = useState('');
   // Rasio piksel asli tiap url gambar, diisi saat gambar lapisan ukur
@@ -402,6 +406,20 @@ export default function CetakPaketLatihan() {
     ukur(refUkurKunci, setTinggiKunci, blokKunci.length);
   }, [blokSiswa, blokKunci]);
 
+  // Skala kanvas pratinjau: iframe dirender pada ukuran mm sesungguhnya lalu
+  // dikecilkan sebesar wadah, supaya halaman tidak lagi "meluber" keluar
+  // kotak seperti tangkapan layar owner 2026-10-09.
+  useLayoutEffect(() => {
+    const hitung = () => {
+      const w = refKanvas.current?.clientWidth || 0;
+      const pagePx = kertas.lebarMm * PX_PER_MM;
+      if (w > 0 && pagePx > 0) setSkala((lama) => { const b = Math.min(1, (w - 2) / pagePx); return Math.abs(b - lama) > 0.01 ? b : lama; });
+    };
+    hitung();
+    window.addEventListener('resize', hitung);
+    return () => window.removeEventListener('resize', hitung);
+  }, [kertas.lebarMm]);
+
   // Rasio piksel asli gambar: ditempeli listener saat lapisan ukur_mount.
   useEffect(() => {
     const wadah = [refUkurSiswa.current, refUkurKunci.current].filter(Boolean);
@@ -467,12 +485,10 @@ export default function CetakPaketLatihan() {
         </div>
       )}
 
-      {/* 🔥 2026-10-09 (permintaan owner): dua panel. KIRI memilih, KANAN
-          adalah KERTAS HIDUP yang menempel (sticky) — guru tidak lagi scroll
-          naik-turun untuk melihat akibat centangannya. Pilihan kertas & kolom
-          ada di samping kertas, seperti canvas kosong. */}
-      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
-      <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+      {/* 🔥 2026-10-09 (desain ulang): LANGKAH 1 = memilih. Tidak ada panel
+          keranjang terpisah; bar terpilih menempel di bawah layar. */}
+      {langkah === 1 && (<>
+      <div style={{ width: '100%' }}>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button style={gayaPill(sumber === 'bank')} onClick={() => setSumber('bank')}>🗂️ Bank Soal (per mapel → bab)</button>
         <button style={gayaPill(sumber === 'paket')} onClick={() => setSumber('paket')}>📦 Paket Try Out saya ({paketList.length})</button>
@@ -634,70 +650,6 @@ export default function CetakPaketLatihan() {
         </>
       )}
 
-      {/* ====================================================
-          5 · KERANJANG BACA — kartu-kartu soal lengkap + gambar,
-          dengan watermark logo Gemilang di belakangnya.
-          Permintaan owner 2026-10-08: "kotak-kotak kartu berisi soal
-          lengkap gambarnya, jadi dibaca dahulu, tetapi tetap ada
-          watermark logo gemilang di belakangnya".
-          Keranjang ini HIDUP LINTAS FILTER: pindah jenjang/mapel/bab
-          tidak menghapusnya lagi. Urutannya = nomor naskah yang dicetak.
-          ==================================================== */}
-      {sumber === 'bank' && !memuat && keranjang.length > 0 && (
-        <div style={gayaKartu}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
-            <div style={gayaJudulKartu}>5 · Keranjang baca ({keranjang.length} soal)</div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-              <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 5, alignItems: 'center' }}>
-                <input type="checkbox" checked={tampilKunci} onChange={(e) => setTampilKunci(e.target.checked)} />
-                tampilkan kunci &amp; pembahasan
-              </label>
-              <button style={gayaPill(false)} onClick={() => { setKeranjang([]); setPesanKeranjang('Keranjang dikosongkan.'); }}>kosongkan</button>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, fontSize: 11 }}>
-            {ringkasanKeranjang.perJenjang.map((j) => (
-              <span key={j.nama} style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 999, padding: '3px 9px', fontWeight: 700 }}>{j.nama} · {j.jumlah}</span>
-            ))}
-            {ringkasanKeranjang.perMapel.map((m) => (
-              <span key={m.nama} style={{ background: '#f1f5f9', color: '#334155', borderRadius: 999, padding: '3px 9px' }}>{m.nama} · {m.jumlah}</span>
-            ))}
-            {ringkasanKeranjang.perMateri.map((b) => (
-              <span key={b.nama} style={{ background: '#f0fdf4', color: '#166534', borderRadius: 999, padding: '3px 9px' }}>{b.nama} · {b.jumlah}</span>
-            ))}
-            {ringkasanKeranjang.berbendera > 0 && (
-              <span style={{ background: '#fffbeb', color: '#92400e', borderRadius: 999, padding: '3px 9px', fontWeight: 700 }}>⚠ {ringkasanKeranjang.berbendera} perlu diperiksa</span>
-            )}
-          </div>
-
-          {pesanKeranjang && <div style={{ fontSize: 12, color: '#166534', marginBottom: 8 }}>{pesanKeranjang}</div>}
-
-          <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 10, lineHeight: 1.6 }}>
-            Baca dulu di sini sebelum mencetak. Panah ↑ ↓ menentukan <b>nomor urut di naskah</b>.
-            Keranjang tetap utuh walau Bapak/Ibu pindah jenjang, mapel, atau bab.
-            {ringkasanKeranjang.tanpaIdentitas > 0 && (
-              <b style={{ color: '#b45309' }}> {ringkasanKeranjang.tanpaIdentitas} butir belum punya identitas lengkap — laporkan ke admin lewat Audit Identitas Soal.</b>
-            )}
-          </div>
-
-          <div style={{ maxHeight: 720, overflowY: 'auto', paddingRight: 4 }}>
-            {keranjang.map((s, i) => (
-              <KartuKeranjangSoal
-                key={String(s?.id ?? i)}
-                soal={s}
-                nomor={i + 1}
-                jumlah={keranjang.length}
-                tanpaKunci={!tampilKunci}
-                onHapus={() => { setKeranjang((lama) => keluarKeranjang(lama, s.id)); setPesanKeranjang(`Soal nomor ${i + 1} dikeluarkan dari keranjang.`); }}
-                onNaik={() => setKeranjang((lama) => pindahUrutan(lama, s.id, -1))}
-                onTurun={() => setKeranjang((lama) => pindahUrutan(lama, s.id, 1))}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
       {sumber === 'paket' && !memuat && (
         <div style={gayaKartu}>
           <div style={gayaJudulKartu}>Paket try out yang terhubung ke Anda</div>
@@ -728,8 +680,35 @@ export default function CetakPaketLatihan() {
         </div>
       )}
 
+        {/* bar terpilih menempel: guru selalu tahu berapa yang terkumpul
+            tanpa panel perantara, dan satu klik membawanya ke kertas */}
+        <div style={{ position: 'sticky', bottom: 10, zIndex: 5, background: '#0f172a', color: '#fff', borderRadius: 14, padding: '10px 14px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 14, boxShadow: '0 6px 18px rgba(15,23,42,.28)' }}>
+          <div style={{ fontSize: 12.5 }}>
+            <b style={{ fontSize: 15 }}>{keranjang.length}</b> butir terpilih
+            {ringkasanKeranjang.jumlah > 0 && <> · {ringkasanKeranjang.perMateri.length} materi · {ringkasanKeranjang.perJenjang.map((j) => j.nama).join(', ')}</>}
+          </div>
+          <div style={{ flex: 1 }} />
+          {pesanKeranjang && <span style={{ fontSize: 11, color: '#a7f3d0' }}>{pesanKeranjang}</span>}
+          <button
+            style={{ background: keranjang.length ? '#5B2ECC' : '#475569', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 12.5, fontWeight: 800, cursor: keranjang.length ? 'pointer' : 'not-allowed' }}
+            disabled={!keranjang.length}
+            onClick={() => { setLangkah(2); window.scrollTo(0, 0); }}
+          >
+            Lihat kertas →
+          </button>
+        </div>
       </div>
-      <div style={{ width: isMobile ? '100%' : 620, flexShrink: 0, position: isMobile ? 'static' : 'sticky', top: 12, maxHeight: '92vh', overflowY: 'auto', paddingBottom: 8 }}>
+      </>)}
+
+      {/* LANGKAH 2 = KERTAS, lebar penuh. */}
+      {langkah === 2 && (
+      <div style={{ width: '100%' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+          <button style={{ ...gayaPill(false), padding: '8px 14px' }} onClick={() => { setLangkah(1); window.scrollTo(0, 0); }}>← kembali memilih</button>
+          <div style={{ fontSize: 13, color: '#334155' }}>
+            <b>{keranjang.length}</b> butir akan dicetak{ sumber === 'bank' ? ` · ${judulDariKeranjang(keranjang)}` : '' }
+          </div>
+        </div>
       {!memuat && (
         <div style={gayaKartu}>
           <div style={gayaJudulKartu}>5 · Tata letak & cetak ({siap.length} butir)</div>
@@ -773,11 +752,21 @@ export default function CetakPaketLatihan() {
                   ⚠️ Butir nomor {naskahSiswa.peringatan.filter((i) => i > 0).join(', ')} lebih tinggi dari satu kolom; sistem memberinya satu kolom utuh supaya tidak terpotong.
                 </div>
               )}
-              <iframe
-                title="Pratinjau naskah cetak"
-                srcDoc={docPratinjau(fragmenAktif || '')}
-                style={{ width: '100%', height: 680, border: '1px solid #cbd5e1', borderRadius: 10, background: '#cbd5e1' }}
-              />
+              <div ref={refKanvas} style={{ width: '100%', overflow: 'hidden', position: 'relative', background: '#cbd5e1', borderRadius: 10, height: Math.round((naskahSiswa.jumlahHalaman * kertas.tinggiMm + 12) * PX_PER_MM * skala) }}>
+                <iframe
+                  title="Pratinjau naskah cetak"
+                  srcDoc={docPratinjau(fragmenAktif || '')}
+                  style={{
+                    width: `${Math.round(kertas.lebarMm * PX_PER_MM)}px`,
+                    height: `${Math.round((naskahSiswa.jumlahHalaman * kertas.tinggiMm + 12) * PX_PER_MM)}px`,
+                    border: 'none', background: '#cbd5e1',
+                    transform: `scale(${skala})`, transformOrigin: 'top left',
+                  }}
+                />
+              </div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 6 }}>
+                Pratinjau discaling {Math.round(skala * 100)}% agar muat layar; ukuran cetak sesungguhnya tetap {kertas.lebarMm}×{kertas.tinggiMm} mm.
+              </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
                 <button style={gayaTombol('#2563eb', false)} onClick={() => cetakNaskah('siswa')}>📄 CETAK NASKAH SISWA</button>
                 <button style={gayaTombol('#b91c1c', false)} onClick={() => cetakNaskah('kunci')}>🔑 CETAK KUNCI (PEGANGAN GURU)</button>
@@ -805,7 +794,7 @@ export default function CetakPaketLatihan() {
       )}
 
       </div>
-      </div>
+      )}
 
       {/* 🔥 LAPISAN UKUR: blok naskah dirender sembunyi-sembunyi dengan lebar
           kolom sesungguhnya; tinggi tiap blok dibaca untuk penyusun halaman.
