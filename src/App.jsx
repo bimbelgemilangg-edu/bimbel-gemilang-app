@@ -429,7 +429,7 @@ const gayaHeaderSiswa = {
 
 const gayaMainSiswa = (isMobile) => ({
   flex: 1,
-  marginLeft: isMobile ? 0 : '260px',
+  marginLeft: isMobile ? 0 : '216px',
   transition: 'margin-left 0.3s ease',
   width: '100%',
   maxWidth: '100vw',

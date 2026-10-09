@@ -351,7 +351,7 @@ export default function MesinBankSoalPage() {
       <main
         style={{
           flex: 1,
-          marginLeft: isMobile ? 0 : 260,
+          marginLeft: isMobile ? 0 : 216,
           padding: isMobile ? '70px 14px 32px' : '24px 28px',
           boxSizing: 'border-box',
         }}

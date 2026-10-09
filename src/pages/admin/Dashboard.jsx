@@ -473,7 +473,7 @@ const Dashboard = () => {
 
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '260px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
+  mainContent: (m) => ({ marginLeft: m ? '0' : '216px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', transition: '0.3s' }),
   loadingBox: { textAlign: 'center', padding: 80, color: '#94a3b8' },
   spinner: { width: 40, height: 40, border: '4px solid #e2e8f0', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 15px' },
 

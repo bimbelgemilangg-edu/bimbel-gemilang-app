@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase'; 
-import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
 import SidebarGuru from '../../../components/SidebarGuru';
 import { 
   CheckCircle, Search, User, BookOpen, 
@@ -55,14 +55,14 @@ const TeacherInputGrade = () => {
   const [loadingTasks, setLoadingTasks] = useState(false);
   
   const [stats, setStats] = useState({ total: 0, sudah: 0, sebagian: 0, belum: 0 });
-  const [currentPeriode, setCurrentPeriode] = useState(() => {
+  const [currentPeriode] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   });
 
   const [showStudentDetail, setShowStudentDetail] = useState(false);
   const [studentScores, setStudentScores] = useState(null);
-  const [loadingStudentData, setLoadingStudentData] = useState(false);
+  const [, setLoadingStudentData] = useState(false);
 
   // Ikon untuk tiap dimensi
   const dimensiIcons = {
@@ -293,7 +293,7 @@ const TeacherInputGrade = () => {
       
       if (result.success) {
         const colName = item.source === 'kuis' ? 'jawaban_kuis' : 'jawaban_tugas';
-        try { await updateDoc(doc(db, colName, item.id), { exportedToRaport: true }); } catch (e) {}
+        try { await updateDoc(doc(db, colName, item.id), { exportedToRaport: true }); } catch { /* gagal menandai ekspor tidak boleh menghentikan alur utama */ }
         alert(`✅ ${item.source === 'kuis' ? 'Kuis' : 'Tugas'} berhasil diimpor ke ${selectedMapel}!`);
         fetchStudentDetail(selectedStudent.id);
         fetchAllStudents();
@@ -309,7 +309,7 @@ const TeacherInputGrade = () => {
   };
   
   const komponenList = ['kuis', 'tugas', 'ujian'];
-  const formatDate = (ts) => { 
+  const _formatDate = (ts) => { 
     if (!ts) return "-"; 
     try { const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }); } 
     catch { return "-"; } 
@@ -361,9 +361,9 @@ const TeacherInputGrade = () => {
     <div style={{ display: 'flex', background: '#f1f5f9', minHeight: '100vh' }}>
       <SidebarGuru />
       <div style={{ 
-        marginLeft: isMobile ? '0' : '260px', 
+        marginLeft: isMobile ? '0' : '216px', 
         padding: isMobile ? '10px' : '20px', 
-        width: isMobile ? '100%' : 'calc(100% - 260px)', 
+        width: isMobile ? '100%' : 'calc(100% - 216px)', 
         boxSizing: 'border-box', 
         transition: 'all 0.3s ease' 
       }}>

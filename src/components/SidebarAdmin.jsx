@@ -345,7 +345,7 @@ const SidebarAdmin = () => {
 
 const styles = {
   hamburger: (open) => ({
-    position: 'fixed', top: 12, left: open ? 220 : 12, zIndex: 1100,
+    position: 'fixed', top: 12, left: open ? 176 : 12, zIndex: 1100,
     background: '#1e293b', color: '#fbbf24', border: '2px solid #fbbf24',
     borderRadius: 10, padding: '8px 10px', cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -356,7 +356,7 @@ const styles = {
     background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)', zIndex: 999
   },
   sidebar: (open, mobile) => ({
-    width: 260, backgroundColor: '#0f172a', height: '100vh',
+    width: 216, backgroundColor: '#0f172a', height: '100vh',
     position: 'fixed', left: 0, top: 0, zIndex: 1000,
     display: 'flex', flexDirection: 'column',
     transform: mobile ? (open ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',

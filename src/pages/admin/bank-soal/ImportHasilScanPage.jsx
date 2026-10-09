@@ -4118,7 +4118,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       <main
         style={{
           flex: 1,
-          marginLeft: isMobile ? 0 : 260,
+          marginLeft: isMobile ? 0 : 216,
           minHeight: '100vh',
           transition: 'margin-left .2s',
         }}

@@ -238,7 +238,7 @@ export default function JadwalTryOutOtomatisPage() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
       <main style={{
-        flex: 1, marginLeft: isMobile ? 0 : 260,
+        flex: 1, marginLeft: isMobile ? 0 : 216,
         padding: isMobile ? '70px 14px 32px' : '24px 28px',
       }}
       >

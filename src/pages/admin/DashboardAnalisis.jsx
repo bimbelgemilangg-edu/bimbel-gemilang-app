@@ -127,10 +127,12 @@ export default function DashboardAnalisis() {
     setLoading(false);
   };
 
-  useEffect(() => { muatData(); }, []);
+  // setState tidak boleh sinkron di dalam effect (react-hooks/set-state-in-effect);
+  // microtask menjaga urutan tetap "setelah mount" tanpa render beruntun.
+  useEffect(() => { void Promise.resolve().then(muatData); }, []);
 
   const wrapper = { display: 'flex', background: '#f8fafc', minHeight: '100vh' };
-  const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', transition: '0.3s' };
+  const mainContent = { marginLeft: isMobile ? '0' : '216px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 216px)', boxSizing: 'border-box', transition: '0.3s' };
 
   if (loading) {
     return (

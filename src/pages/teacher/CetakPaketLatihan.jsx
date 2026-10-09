@@ -60,6 +60,7 @@ import {
   teksSoalDari,
 } from '../../utils/keranjangSoalGuru';
 import KartuKeranjangSoal from '../../components/guru/KartuKeranjangSoal';
+import KartuBacaSoalLengkap from '../../components/admin/KartuBacaSoalLengkap';
 import { saringPaketTerbit } from '../../utils/statusTryOutPaket';
 import {
   DAFTAR_KERTAS,
@@ -71,6 +72,7 @@ import {
   susunNaskahDariBlok,
   teksKeHtml,
   GAYA_NASKAH,
+  WATERMARK,
 } from '../../utils/naskahSoal';
 import { pisahTeksDanGambar } from '../../utils/penempatanGambar';
 import { cetakLewatIframe } from '../../utils/kwitansi';
@@ -188,6 +190,12 @@ export default function CetakPaketLatihan() {
   const [kodeKertas, setKodeKertas] = useState('A4');
   const [kolomPaksa, setKolomPaksa] = useState(0);     // 0 = otomatis
   const [tabPratinjau, setTabPratinjau] = useState('siswa');
+  // 🔥 2026-10-09 (desain owner): pratinjau SATU soal dengan pager, bukan
+  // daftar panjang yang mengharuskan scroll naik-turun. Daftar lama tetap
+  // tersedia di balik toggle "daftar".
+  const [modeTampil, setModeTampil] = useState('preview');
+  const [indeksPreview, setIndeksPreview] = useState(0);
+  const [cariMateri, setCariMateri] = useState('');
   // Rasio piksel asli tiap url gambar, diisi saat gambar lapisan ukur
   // selesai dimuat -- bahan mesin menghitung ukuran cetak yang wajar.
   const [rasioGambar, setRasioGambar] = useState({});
@@ -501,13 +509,33 @@ export default function CetakPaketLatihan() {
 
           {mapelAktif && (
             <div style={gayaKartu}>
-              <div style={gayaJudulKartu}>3 · Bab / materi pada {mapelAktif}</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {daftarBab.map(([b, n]) => (
-                  <button key={b} style={gayaPill(babAktif === b)} onClick={() => { setBabAktif(b); setKelasFilter(''); }}>
-                    {b} <span style={{ opacity: 0.6 }}>({n})</span>
-                  </button>
-                ))}
+              <div style={gayaJudulKartu}>3 · Pilih topik / materi pada {mapelAktif}</div>
+              <input
+                value={cariMateri}
+                onChange={(e) => setCariMateri(e.target.value)}
+                placeholder="cari materi…"
+                style={{ width: '100%', padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: 10, fontSize: 12.5, marginBottom: 10 }}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(215px, 1fr))', gap: 10 }}>
+                {daftarBab
+                  .filter(([b]) => !cariMateri.trim() || b.toLowerCase().includes(cariMateri.trim().toLowerCase()))
+                  .map(([b, n]) => (
+                    <button
+                      key={b}
+                      onClick={() => { setBabAktif(b); setKelasFilter(''); setIndeksPreview(0); }}
+                      style={{
+                        textAlign: 'left', borderRadius: 12, padding: '11px 13px', cursor: 'pointer',
+                        border: `1.5px solid ${babAktif === b ? '#5B2ECC' : '#e5e7eb'}`,
+                        background: babAktif === b ? '#f5f3ff' : '#fff',
+                      }}
+                    >
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>{b}</div>
+                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 3 }}>{n} soal</div>
+                    </button>
+                  ))}
+                {daftarBab.filter(([b]) => !cariMateri.trim() || b.toLowerCase().includes(cariMateri.trim().toLowerCase())).length === 0 && (
+                  <div style={{ fontSize: 12, color: '#94a3b8' }}>Tidak ada materi yang cocok dengan pencarian.</div>
+                )}
               </div>
             </div>
           )}
@@ -515,10 +543,14 @@ export default function CetakPaketLatihan() {
           {babAktif && (
             <div style={gayaKartu}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={gayaJudulKartu}>4 · Baca lengkap lalu centang butir untuk keranjang ({keranjang.length} di keranjang · {soalBankTampil.length} tampil)</div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={gayaJudulKartu}>
+                  4 · {modeTampil === 'preview'
+                    ? `Preview soal ${soalBankTampil.length ? Math.min(indeksPreview, soalBankTampil.length - 1) + 1 : 0}/${soalBankTampil.length}`
+                    : `Baca lengkap & centang (${keranjang.length} di keranjang · ${soalBankTampil.length} tampil)`}
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   {daftarKelas.length > 1 && (
-                    <select value={kelasFilter} onChange={(e) => setKelasFilter(e.target.value)} style={gayaSelect}>
+                    <select value={kelasFilter} onChange={(e) => { setKelasFilter(e.target.value); setIndeksPreview(0); }} style={gayaSelect}>
                       <option value="">semua kelas ({soalDiBab.length})</option>
                       {daftarKelas.map(([k, n]) => <option key={k} value={k === '(tanpa kelas)' ? '' : k}>{k} ({n})</option>)}
                     </select>
@@ -526,18 +558,79 @@ export default function CetakPaketLatihan() {
                   <label style={{ fontSize: 11.5, color: '#475569', display: 'flex', gap: 5, alignItems: 'center' }}>
                     <input type="checkbox" checked={tanpaEsai} onChange={(e) => setTanpaEsai(e.target.checked)} /> lewati esai
                   </label>
+                  <button style={gayaPill(modeTampil === 'preview')} onClick={() => setModeTampil('preview')}>preview</button>
+                  <button style={gayaPill(modeTampil === 'daftar')} onClick={() => setModeTampil('daftar')}>daftar</button>
                   <button style={gayaPill(false)} onClick={pilihSemuaTampil}>+ semua yang tampil</button>
-                  <button style={gayaPill(false)} onClick={() => { setKeranjang([]); setPesanKeranjang('Keranjang dikosongkan.'); }}>kosongkan keranjang</button>
                 </div>
               </div>
-              <div style={{ maxHeight: 560, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, padding: 8, background: '#f8fafc' }}>
-                {soalBankTampil.map((s, i) => (
-                  <KartuBacaSoal key={s.id} soal={s} nomor={i + 1} tercentang={inKeranjang(s.id)} onCentang={(on) => centang(s, on)} />
-                ))}
-                {soalBankTampil.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: 8 }}>Tidak ada butir di bab ini setelah saringan.</div>}
-              </div>
+
+              {modeTampil === 'preview' ? (
+                soalBankTampil.length === 0 ? (
+                  <div style={{ fontSize: 12, color: '#94a3b8', padding: 10 }}>Tidak ada butir di bab ini setelah saringan.</div>
+                ) : (
+                  <div style={{ position: 'relative', overflow: 'hidden', border: '1px solid #e2e8f0', borderRadius: 14, background: '#fff', padding: '16px 18px', marginTop: 10 }}>
+                    <img
+                      src={WATERMARK.logo}
+                      alt=""
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute', top: '50%', left: '50%', width: WATERMARK.ukuranPx + 120, height: WATERMARK.ukuranPx + 120,
+                        transform: 'translate(-50%, -50%) rotate(-24deg)', opacity: WATERMARK.opacityLayar,
+                        pointerEvents: 'none', zIndex: 0, objectFit: 'contain',
+                      }}
+                    />
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+                        <span style={{ background: '#eef2ff', color: '#3730a3', borderRadius: 999, padding: '3px 11px', fontSize: 11, fontWeight: 800 }}>
+                          {mapelAktif} · {jenjangAktif}{kelasFilter ? ` kelas ${kelasFilter}` : ''}
+                        </span>
+                        <span style={{ background: '#f1f5f9', color: '#334155', borderRadius: 999, padding: '3px 11px', fontSize: 11 }}>{babAktif}</span>
+                      </div>
+                      <KartuBacaSoalLengkap soal={soalBankTampil[Math.min(indeksPreview, soalBankTampil.length - 1)]} tanpaKunci />
+                      <div style={{ display: 'flex', gap: 9, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 10 }}>
+                        <button
+                          style={gayaPill(false)}
+                          onClick={() => setIndeksPreview((i) => Math.max(0, i - 1))}
+                          disabled={Math.min(indeksPreview, soalBankTampil.length - 1) === 0}
+                        >
+                          ← soal sebelumnya
+                        </button>
+                        <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>
+                          {Math.min(indeksPreview, soalBankTampil.length - 1) + 1} / {soalBankTampil.length}
+                        </span>
+                        <button
+                          style={gayaPill(false)}
+                          onClick={() => setIndeksPreview((i) => Math.min(soalBankTampil.length - 1, i + 1))}
+                          disabled={Math.min(indeksPreview, soalBankTampil.length - 1) >= soalBankTampil.length - 1}
+                        >
+                          soal berikutnya →
+                        </button>
+                      </div>
+                      <button
+                        style={{ ...gayaTombol(inKeranjang(soalBankTampil[Math.min(indeksPreview, soalBankTampil.length - 1)].id) ? '#b91c1c' : '#16a34a', false), marginTop: 10 }}
+                        onClick={() => {
+                          const sNow = soalBankTampil[Math.min(indeksPreview, soalBankTampil.length - 1)];
+                          centang(sNow, !inKeranjang(sNow.id));
+                        }}
+                      >
+                        {inKeranjang(soalBankTampil[Math.min(indeksPreview, soalBankTampil.length - 1)].id)
+                          ? '− keluarkan dari keranjang'
+                          : '＋ masukkan ke keranjang'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div style={{ maxHeight: 560, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10, padding: 8, background: '#f8fafc', marginTop: 10 }}>
+                  {soalBankTampil.map((s, i) => (
+                    <KartuBacaSoal key={s.id} soal={s} nomor={i + 1} tercentang={inKeranjang(s.id)} onCentang={(on) => centang(s, on)} />
+                  ))}
+                  {soalBankTampil.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8', padding: 8 }}>Tidak ada butir di bab ini setelah saringan.</div>}
+                </div>
+              )}
             </div>
           )}
+
         </>
       )}
 

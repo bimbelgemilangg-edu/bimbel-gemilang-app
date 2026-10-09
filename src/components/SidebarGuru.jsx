@@ -102,7 +102,7 @@ const SidebarGuru = () => {
 
       <div
         style={{
-          width: '260px',
+          width: '216px',
           background: '#1a252f',
           color: 'white',
           height: '100vh',

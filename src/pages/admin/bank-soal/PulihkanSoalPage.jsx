@@ -171,7 +171,7 @@ export default function PulihkanSoalPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
-      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? 14 : 26, width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', maxWidth: 1100 }}>
+      <div style={{ marginLeft: isMobile ? 0 : 216, padding: isMobile ? 14 : 26, width: isMobile ? '100%' : 'calc(100% - 216px)', boxSizing: 'border-box', maxWidth: 1100 }}>
         <div style={{ marginBottom: 14 }}>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
             <History size={20} color="#5B2ECC" /> Pulihkan Soal yang Dihapus

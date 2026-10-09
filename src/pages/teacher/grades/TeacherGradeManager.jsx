@@ -18,7 +18,7 @@ const TeacherGradeManager = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [isTablet, setIsTablet] = useState(window.innerWidth <= 1024 && window.innerWidth > 768);
+  const [, setIsTablet] = useState(window.innerWidth <= 1024 && window.innerWidth > 768);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMapel, setFilterMapel] = useState("Semua");
 
@@ -61,7 +61,7 @@ const TeacherGradeManager = () => {
       await deleteDoc(doc(db, "grades", id));
       alert("✅ Data nilai berhasil dihapus");
       fetchGrades();
-    } catch (err) {
+    } catch {
       alert("Gagal menghapus data.");
     }
   };
@@ -90,9 +90,9 @@ const TeacherGradeManager = () => {
     <div style={{ display: 'flex', background: '#f4f7f6', minHeight: '100vh' }}>
       <SidebarGuru />
       <div style={{ 
-        marginLeft: isMobile ? '0' : '260px', 
+        marginLeft: isMobile ? '0' : '216px', 
         padding: isMobile ? '15px' : '20px', 
-        width: isMobile ? '100%' : 'calc(100% - 260px)',
+        width: isMobile ? '100%' : 'calc(100% - 216px)',
         boxSizing: 'border-box',
         transition: 'all 0.3s ease'
       }}>

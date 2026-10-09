@@ -45,7 +45,6 @@ const INDONESIAN_HOLIDAYS = {
   '2026-12-25': { name: 'Hari Raya Natal', type: 'nasional' },
 };
 
-const isHoliday = (dateStr) => INDONESIAN_HOLIDAYS[dateStr] || null;
 
 const AdminDailyLog = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -68,7 +67,7 @@ const AdminDailyLog = () => {
   const [calendarData, setCalendarData] = useState({});
   const [selectedDayDetail, setSelectedDayDetail] = useState(null);
   const [showDayDetail, setShowDayDetail] = useState(false);
-  const [holidaysLoaded, setHolidaysLoaded] = useState(false);
+  const [, setHolidaysLoaded] = useState(false);
 
   // === IZIN ===
   const [showIzinModal, setShowIzinModal] = useState(false);
@@ -133,7 +132,7 @@ const AdminDailyLog = () => {
           }
         });
       }
-    } catch (err) { console.log('Menggunakan data libur nasional statis'); }
+    } catch { console.log('Menggunakan data libur nasional statis'); }
     finally { setHolidaysLoaded(true); }
   };
 
@@ -646,7 +645,7 @@ const AdminDailyLog = () => {
 // ============================================================
 const styles = {
   wrapper: { display: 'flex', background: '#f8fafc', minHeight: '100vh' },
-  mainContent: (m) => ({ marginLeft: m ? '0' : '260px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden', transition: '0.3s' }),
+  mainContent: (m) => ({ marginLeft: m ? '0' : '216px', padding: m ? '15px' : '30px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden', transition: '0.3s' }),
   header: (m) => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: m ? 15 : 25, flexWrap: 'wrap', gap: 10 }),
   pageTitle: (m) => ({ margin: 0, color: '#1e293b', fontSize: m ? 18 : 22, display: 'flex', alignItems: 'center', gap: 8 }),
   headerButtons: (m) => ({ display: 'flex', alignItems: 'center', gap: m ? 8 : 10, flexWrap: 'wrap' }),
