@@ -239,7 +239,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
 // ============================================================
 const styles = {
   sidebar: {
-    width: '260px',
+    width: '216px',
     height: '100vh',
     maxHeight: '100dvh',
     background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',

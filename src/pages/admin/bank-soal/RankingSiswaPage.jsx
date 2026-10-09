@@ -100,7 +100,9 @@ export default function RankingSiswaPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { muatData(); }, [muatData]);
+  // setState tidak boleh sinkron di dalam effect (react-hooks/set-state-in-effect);
+  // microtask menjaga urutan tetap "setelah mount" tanpa render beruntun.
+  useEffect(() => { void Promise.resolve().then(muatData); }, [muatData]);
 
   // Daftar jenjang yang benar-benar ada datanya, SD-SMP-SMA dulu baru
   // sisanya (mis. "English") -- daripada urutan acak sesuai urutan
@@ -126,7 +128,9 @@ export default function RankingSiswaPage() {
   // Reset pilihan kelas ke "semua" tiap kali jenjang diganti, biar
   // gak nyangkut milih kelas dari jenjang sebelumnya yang gak ada di
   // jenjang baru.
-  useEffect(() => { setFilterKelas('semua'); }, [filterJenjang]);
+  // Reset kelas dipindah ke onChange select jenjang (lihat di bawah): setState
+  // sinkron di dalam effect ditolak react-hooks/set-state-in-effect, dan reset
+  // di handler lebih tepat -- hanya terjadi karena tindakan manusia.
 
   const daftarTerfilter = useMemo(() => {
     return semuaSiswa
@@ -161,7 +165,7 @@ export default function RankingSiswaPage() {
   };
 
   const wrapper = { display: 'flex', background: '#f8fafc', minHeight: '100vh' };
-  const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', transition: '0.3s' };
+  const mainContent = { marginLeft: isMobile ? '0' : '216px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 216px)', boxSizing: 'border-box', transition: '0.3s' };
   const selectStyle = { padding: '9px 12px', borderRadius: 10, border: '1px solid #e5e7eb', fontSize: 12.5, fontWeight: 600, color: '#1e293b', background: 'white', cursor: 'pointer' };
 
   if (loading) {
@@ -191,7 +195,7 @@ export default function RankingSiswaPage() {
 
         {/* Filter jenjang + kelas + tombol download */}
         <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: 16, padding: 16, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <select value={filterJenjang} onChange={(e) => setFilterJenjang(e.target.value)} style={selectStyle}>
+          <select value={filterJenjang} onChange={(e) => { setFilterJenjang(e.target.value); setFilterKelas('semua'); }} style={selectStyle}>
             {daftarJenjang.length === 0 && <option value="">Belum ada data</option>}
             {daftarJenjang.map((j) => <option key={j} value={j}>{j}</option>)}
           </select>

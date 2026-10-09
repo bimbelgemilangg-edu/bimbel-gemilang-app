@@ -33,7 +33,7 @@ const ManagePoster = () => {
         return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       }
       return url;
-    } catch (err) { return url; }
+    } catch { return url; }
   };
 
   const fetchPosters = async () => {
@@ -44,7 +44,9 @@ const ManagePoster = () => {
     } catch (err) { console.error("Gagal ambil data:", err); }
   };
 
-  useEffect(() => { fetchPosters(); }, []);
+  // setState tidak boleh sinkron di dalam effect (react-hooks/set-state-in-effect);
+  // microtask menjaga urutan tetap "setelah mount" tanpa render beruntun.
+  useEffect(() => { void Promise.resolve().then(fetchPosters); }, []);
 
   // --- 2. COMPRESSION ENGINE (FIXED: onload BEFORE src) ---
   const handleImageChange = (e) => {
@@ -278,7 +280,7 @@ const styles = {
     selectIcon: { position: 'absolute', left: '12px', color: '#2563eb' },
     fullSelect: { width: '100%', padding: '12px 12px 12px 35px', borderRadius: '10px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', fontWeight: '800', fontSize: '12px', color: '#1e293b', appearance: 'none', cursor: 'pointer' },
 
-    mediaBox: { border: '2px dashed #cbd5e1', borderRadius: '20px', padding: '20px', backgroundColor: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '260px', position: 'relative' },
+    mediaBox: { border: '2px dashed #cbd5e1', borderRadius: '20px', padding: '20px', backgroundColor: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '216px', position: 'relative' },
     placeholderMedia: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' },
     uploadLabel: { cursor: 'pointer', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' },
     uploadCircle: { width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '15px' },

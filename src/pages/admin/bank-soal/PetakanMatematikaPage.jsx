@@ -196,7 +196,7 @@ export default function PetakanMatematikaPage() {
   }, [kelompok, jumlahAkanDiubah]);
 
   const wrapper = { display: 'flex', background: '#f8fafc', minHeight: '100vh' };
-  const mainContent = { marginLeft: isMobile ? '0' : '260px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box' };
+  const mainContent = { marginLeft: isMobile ? '0' : '216px', padding: isMobile ? '15px' : '30px', width: isMobile ? '100%' : 'calc(100% - 216px)', boxSizing: 'border-box' };
   const cardStyle = { background: 'white', border: '1px solid #e5e7eb', borderRadius: 16, padding: 20, marginBottom: 20 };
   const selectStyle = { padding: '6px 10px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12, fontWeight: 600, color: '#1e293b', background: 'white', cursor: 'pointer', maxWidth: 260 };
 

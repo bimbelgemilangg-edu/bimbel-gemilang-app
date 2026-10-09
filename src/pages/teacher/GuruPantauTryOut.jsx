@@ -216,9 +216,9 @@ export default function GuruPantauTryOut() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <SidebarGuru />
       <main style={{
-        marginLeft: isMobile ? '0' : '260px',
+        marginLeft: isMobile ? '0' : '216px',
         padding: isMobile ? '10px' : '20px',
-        width: isMobile ? '100%' : 'calc(100% - 260px)',
+        width: isMobile ? '100%' : 'calc(100% - 216px)',
         boxSizing: 'border-box',
         transition: 'all 0.3s ease',
       }}>

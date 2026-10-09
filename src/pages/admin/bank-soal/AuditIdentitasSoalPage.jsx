@@ -330,7 +330,7 @@ export default function AuditIdentitasSoalPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
-      <div style={{ marginLeft: isMobile ? 0 : 260, padding: isMobile ? 14 : 26, width: isMobile ? '100%' : 'calc(100% - 260px)', boxSizing: 'border-box', maxWidth: 1240 }}>
+      <div style={{ marginLeft: isMobile ? 0 : 216, padding: isMobile ? 14 : 26, width: isMobile ? '100%' : 'calc(100% - 216px)', boxSizing: 'border-box', maxWidth: 1240 }}>
         <div style={{ marginBottom: 16 }}>
           <h1 style={{ fontSize: 21, fontWeight: 800, color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
             <ScanSearch size={21} color="#5B2ECC" /> Audit Identitas Bank Soal

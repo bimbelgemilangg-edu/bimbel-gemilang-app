@@ -12,26 +12,28 @@ const TeacherLayout = ({ children }) => { // ← PAKAI children, BUKAN Outlet
   }, []);
 
   // Ambil data guru dari localStorage
-  const [guru, setGuru] = useState(null);
-  useEffect(() => {
+  // Lazy initializer, bukan effect: membaca localStorage tidak butuh siklus
+  // render tambahan, dan setState sinkron di dalam effect ditolak aturan
+  // react-hooks/set-state-in-effect.
+  const [guru] = useState(() => {
     const stored = localStorage.getItem('teacherData');
-    if (stored) {
-      try {
-        setGuru(JSON.parse(stored));
-      } catch (e) {
-        console.error("Error parsing teacher data:", e);
-      }
+    if (!stored) return null;
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error("Error parsing teacher data:", e);
+      return null;
     }
-  }, []);
+  });
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: '#f8fafc' }}>
       <SidebarGuru />
       <main style={{
         flex: 1,
-        marginLeft: isMobile ? 0 : '260px',
+        marginLeft: isMobile ? 0 : '216px',
         transition: 'margin-left 0.3s ease',
-        width: isMobile ? '100%' : 'calc(100% - 260px)',
+        width: isMobile ? '100%' : 'calc(100% - 216px)',
         maxWidth: '100vw',
         overflowX: 'hidden'
       }}>

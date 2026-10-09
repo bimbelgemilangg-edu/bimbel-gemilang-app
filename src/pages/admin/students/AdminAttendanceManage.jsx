@@ -233,7 +233,7 @@ const AdminAttendanceManage = () => {
       <div
         style={{
           flex: 1,
-          marginLeft: isMobile ? 0 : 260,
+          marginLeft: isMobile ? 0 : 216,
           padding: isMobile ? '70px 12px 24px' : '24px 28px',
           boxSizing: 'border-box',
         }}
