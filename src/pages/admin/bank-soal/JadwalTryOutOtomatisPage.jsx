@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { COL_TEMPLATE, COL_PAKET, DEFAULT_TEMPLATE_SMA, siapkanDrafMingguIni, terbitkanDraf, nonaktifkanPaket } from '../../../utils/mesinTryOutOtomatis';
 import { KATALOG_MAPEL } from '../../../utils/mesinTaksonomiSoal';
+// 🔥 BARU (audit 2026-10-10): normalisasi bentuk targetKelas/targetKategori
+// saat template disimpan. Lihat kepala utils/cocokkanTargetPaket.js.
+import { bentukKanonikTarget } from '../../../utils/cocokkanTargetPaket';
 
 const HARI = [
   { v: 1, l: 'Sen' }, { v: 2, l: 'Sel' }, { v: 3, l: 'Rab' },
@@ -85,8 +88,8 @@ export default function JadwalTryOutOtomatisPage() {
         nama: edit.nama.trim(),
         jenjang: edit.jenjang || 'SMA',
         kelas: edit.kelas || '',
-        targetKelas: edit.targetKelas || ['Semua'],
-        targetKategori: edit.targetKategori || ['Semua'],
+        targetKelas: bentukKanonikTarget(edit.targetKelas),
+        targetKategori: bentukKanonikTarget(edit.targetKategori),
         komposisi: edit.komposisi || [],
         hariDalamMinggu: edit.hariDalamMinggu || [1, 4],
         jamBuka: edit.jamBuka || '07:00',

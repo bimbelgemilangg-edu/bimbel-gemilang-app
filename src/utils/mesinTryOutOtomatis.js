@@ -13,6 +13,14 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+// 🔥 BARU (audit 2026-10-10): targetKelas/targetKategori DINORMALKAN saat
+// ditulis. Sebelumnya berkas ini menulis ARRAY (['Semua']) sementara
+// rakitTryOutTentor.js & TerbitkanTryOutPage.jsx menulis STRING, dan semua
+// pembacanya membandingkan dengan === terhadap string. ['Semua'] === 'Semua'
+// bernilai false -- paket dari jadwal otomatis bisa tidak pernah muncul ke
+// siswa tanpa error. Pembacanya sekarang toleran (utils/cocokkanTargetPaket.js),
+// dan penulisnya dinormalkan supaya dokumen baru tidak menambah variasi bentuk.
+import { bentukKanonikTarget } from './cocokkanTargetPaket.js';
 
 export const COL_BANK = 'bank_soal';
 export const COL_PAKET = 'tryout_paket';
@@ -107,7 +115,11 @@ export async function ambilSoalDariBank(opts) {
     snap = await getDocs(
       query(collection(db, COL_BANK), where('status', '==', 'aktif'), limit(1500))
     );
-  } catch (e) {
+  } catch (_e) {
+    // Sengaja ditelan: query pertama menyaring status 'aktif' dan butuh index
+    // gabungan. Kalau indexnya belum ada Firestore melempar error, dan
+    // mengambil tanpa saringan tetap lebih berguna daripada gagal total --
+    // penyaringan status lalu dilakukan di sisi pemanggil.
     snap = await getDocs(query(collection(db, COL_BANK), limit(1500)));
   }
 
@@ -241,7 +253,15 @@ export async function susunSoalDariKomposisi(template, excludeIds) {
   return { daftarSoal: hasil, grupMapel, kekurangan };
 }
 
-export function hitungSlotMingguIni(hariDalamMinggu, jamBuka, durasiMenit) {
+// TODO(audit 2026-10-10): parameter ke-3 TIDAK PERNAH DIPAKAI -- waktuTutup
+// slot selalu dihardcode 23:59, berapa pun durasi try out-nya. Artinya try out
+// 90 menit yang dibuka 07:00 tetap "buka" sampai tengah malam. Kemungkinan
+// besar ini niat yang belum terlaksana (durasi seharusnya ikut menentukan
+// batas pengerjaan), jadi parameter TIDAK dihapus -- hanya ditandai '_' supaya
+// lint jujur soal keadaannya. Memakai durasi untuk menutup slot lebih awal
+// adalah PERUBAHAN PERILAKU pada try out yang sudah berjalan: keputusan owner,
+// bukan efek samping pembersihan lint.
+export function hitungSlotMingguIni(hariDalamMinggu, jamBuka, _durasiMenit) {
   const hari = hariDalamMinggu || [1, 4];
   const jam = jamBuka || '07:00';
   const now = new Date();
@@ -351,8 +371,8 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   const payload = {
     judul,
     status: 'draf',
-    targetKelas: template.targetKelas || ['Semua'],
-    targetKategori: template.targetKategori || ['Semua'],
+    targetKelas: bentukKanonikTarget(template.targetKelas),
+    targetKategori: bentukKanonikTarget(template.targetKategori),
     daftarSoal,
     totalSoal: daftarSoal.length,
     modeTimer,
@@ -388,6 +408,13 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     id: ref.id,
     judul,
     totalSoal: daftarSoal.length,
+    // 🔥 BARU (audit 2026-10-10): `kekurangan` sebelumnya dihitung oleh
+    // susunSoalDariKomposisi lalu DIBUANG di sini -- jadi paket yang kekurangan
+    // soal dibuat tanpa satu pun laporan. Field tambahan ini tidak mengubah
+    // perilaku pemanggil yang sudah ada (mereka membaca ok/id/judul/totalSoal),
+    // tapi membuat admin bisa tahu bahwa "30 soal diminta, 22 didapat".
+    // TODO: tampilkan di log hasil JadwalTryOutOtomatisPage.
+    kekurangan,
     ringkas: payload.ringkas,
     slot,
     status: 'draf',
@@ -487,8 +514,9 @@ export const DEFAULT_TEMPLATE_SMA = {
   nama: 'Try Out Otomatis SMA',
   jenjang: 'SMA',
   kelas: '12',
-  targetKelas: ['Semua'],
-  targetKategori: ['Semua'],
+  // STRING, bukan array -- lihat catatan impor bentukKanonikTarget di atas.
+  targetKelas: 'Semua',
+  targetKategori: 'Semua',
   komposisi: [
     { mapel: 'Bahasa Inggris', jumlah: 30, durasiMenit: 35 },
     { mapel: 'Bahasa Indonesia', jumlah: 20, durasiMenit: 25 },
