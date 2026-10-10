@@ -157,6 +157,24 @@ export default function TryOutView() {
   }, []);
   useEffect(() => () => clearTimeout(timerPesanRef.current), []);
 
+  // 🔥 (2026-10-10, restyle responsif): latar layar dibuat penuh sekeliling
+  // viewport dengan kolom konten di tengah, supaya di laptop/tablet tidak
+  // terlihat seperti pita warna mengambang di halaman putih. Lebar kolom
+  // mengikuti viewport lewat state ini.
+  const [lebar, setLebar] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1024));
+  useEffect(() => {
+    const saatDiubah = () => setLebar(window.innerWidth);
+    window.addEventListener('resize', saatDiubah);
+    return () => window.removeEventListener('resize', saatDiubah);
+  }, []);
+  const kolom = (maks) => ({
+    width: '100%',
+    maxWidth: lebar < 640 ? '100%' : maks,
+    margin: '0 auto',
+    padding: lebar < 640 ? '14px 12px 34px' : '20px 24px 44px',
+    boxSizing: 'border-box',
+  });
+
   // 🔥 BARU: layar "Siapkan Kamera" -- state & videoRef-nya didefinisikan
   // di sini, tapi fungsi lanjutSetelahCekKamera() ditaruh SETELAH
   // mulaiTryOut() didefinisikan (lihat di bawah), biar gak kena error
@@ -747,46 +765,46 @@ export default function TryOutView() {
   });
 
   // ================= RENDER =================
-  if (tahap === 'memuat') return <div style={st.pusat}>Memuat try out...</div>;
-  if (tahap === 'tidak-ditemukan') return <div style={st.pusat}>Try out tidak ditemukan.</div>;
+  if (tahap === 'memuat') return <div style={st.latarTerang}><div style={st.pusat}>Memuat try out...</div></div>;
+  if (tahap === 'tidak-ditemukan') return <div style={st.latarTerang}><div style={st.pusat}>Try out tidak ditemukan.</div></div>;
   if (tahap === 'belum-dibuka') {
     return (
-      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
+      <div style={st.latarTerang}><div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
         <div style={{ fontSize: 40 }}>🔒</div>
         <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini belum dibuka</div>
         <div style={{ fontSize: 12.5 }}>Dibuka {new Date(paket.waktuBuka).toLocaleString('id-ID')}</div>
         <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
-      </div>
+      </div></div>
     );
   }
   if (tahap === 'lewat-deadline') {
     return (
-      <div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
+      <div style={st.latarTerang}><div style={{ ...st.pusat, flexDirection: 'column', gap: 8 }}>
         <div style={{ fontSize: 40 }}>⏰</div>
         <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini sudah lewat deadline</div>
         <div style={{ fontSize: 12.5 }}>Ditutup {new Date(paket.waktuTutup).toLocaleString('id-ID')}</div>
         <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>Kalau kamu merasa ini keliru, minta admin/gurumu buat cek ulang.</div>
         <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
-      </div>
+      </div></div>
     );
   }
   if (tahap === 'gagal') {
     return (
-      <div style={{ ...st.pusat, flexDirection: 'column', gap: 10 }}>
+      <div style={st.latarTerang}><div style={{ ...st.pusat, flexDirection: 'column', gap: 10 }}>
         <div style={{ fontSize: 40 }}>📡</div>
         <div style={{ fontWeight: 700, color: '#1e293b' }}>Gagal memuat try out</div>
         <div style={{ fontSize: 12.5, color: '#94a3b8' }}>Kemungkinan koneksi internetmu lagi lambat/putus.</div>
         <button onClick={() => { setTahap('memuat'); muatPaketDanSesi(); }} style={{ ...st.tombolUtama, width: 'auto', padding: '10px 24px' }}>
           🔄 Coba Lagi
         </button>
-      </div>
+      </div></div>
     );
   }
 
   if (tahap === 'mulai') {
     if (paket && Array.isArray(paket.daftarSoal) && paket.daftarSoal.length === 0) {
       return (
-        <div style={st.shellTerang}>
+        <div style={st.latarTerang}><div style={kolom(560)}>
           <div style={{ ...st.soalCard, textAlign: 'center', padding: 28 }}>
             <div style={{ fontSize: 40, marginBottom: 10 }}>📚</div>
             <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a' }}>Tidak ada soal untuk mapelmu</h2>
@@ -795,7 +813,7 @@ export default function TryOutView() {
             </p>
             <button type="button" onClick={() => window.history.back()} style={st.tombolSekunder}>Kembali</button>
           </div>
-        </div>
+        </div></div>
       );
     }
 
@@ -806,7 +824,7 @@ export default function TryOutView() {
     const menitPerSoal = paket.totalSoal ? Math.max(1, Math.round(totalMenit / paket.totalSoal)) : 0;
 
     return (
-      <div style={st.shellTerang}>
+      <div style={st.latarTerang}><div style={kolom(620)}>
         <button onClick={() => navigate(-1)} style={st.backBtn}><ChevronLeft size={20} /></button>
         <h1 style={st.judulTerang}>{paket.judul}</h1>
         <p style={st.subJudul}>Try out resmi Bimbel Gemilang · diawasi sistem & pembimbing</p>
@@ -851,14 +869,14 @@ export default function TryOutView() {
         >
           Mulai Try Out
         </button>
-      </div>
+      </div></div>
     );
   }
 
   if (tahap === 'cek-kamera') {
 
     return (
-      <div style={{ maxWidth: 420, margin: '40px auto', padding: 20, textAlign: 'center' }}>
+      <div style={st.latarTerang}><div style={{ ...kolom(460), paddingTop: 40, textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
         <h1 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>Siapkan Kameramu</h1>
         <p style={{ color: '#6b7280', fontSize: 12.5, margin: '8px 0 16px' }}>
@@ -915,14 +933,14 @@ export default function TryOutView() {
             🔄 Coba Izinkan Lagi
           </button>
         )}
-      </div>
+      </div></div>
     );
   }
 
   if (tahap === 'selesai') {
     const skalaOtomatis = hitungSkalaSesi({ status: 'selesai', jawaban }, paket);
     return (
-      <div style={st.shellUjian}>
+      <div style={st.latarUjian}><div style={kolom(680)}>
         <div style={{ textAlign: 'center', color: '#fff', fontSize: 14, fontWeight: 700, margin: '18px 0 14px' }}>
           Hasil Try Out Kamu
         </div>
@@ -1023,7 +1041,7 @@ export default function TryOutView() {
         <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>
           Kembali ke Dashboard
         </button>
-      </div>
+      </div></div>
     );
   }
 
@@ -1036,7 +1054,7 @@ export default function TryOutView() {
   if (!soalAktif) {
     const tidakAdaSoalSamasekali = (paket?.daftarSoal || []).length === 0;
     return (
-      <div style={{ ...st.pusat, flexDirection: 'column', gap: 10, padding: 20 }}>
+      <div style={st.latarTerang}><div style={{ ...st.pusat, flexDirection: 'column', gap: 10, padding: 20 }}>
         <div style={{ fontSize: 40 }}>{tidakAdaSoalSamasekali ? '📚' : '🧭'}</div>
         <div style={{ fontWeight: 800, color: '#1e293b', fontSize: 16 }}>
           {tidakAdaSoalSamasekali ? 'Tidak ada soal yang cocok untukmu' : 'Posisi soalmu tidak ditemukan'}
@@ -1054,7 +1072,7 @@ export default function TryOutView() {
           {sedangMengirimAkhir ? 'Mengirim...' : '📦 Kumpulkan Jawaban Tersimpan'}
         </button>
         <button onClick={() => navigate('/siswa/tryout')} style={st.tombolSekunder}>Kembali ke daftar try out</button>
-      </div>
+      </div></div>
     );
   }
 
@@ -1064,7 +1082,7 @@ export default function TryOutView() {
   const pctSisa = totalMsSubtes > 0 ? Math.max(0, Math.min(100, (sisaMs / totalMsSubtes) * 100)) : 0;
 
   return (
-    <div style={st.shellUjian}>
+    <div style={st.latarUjian}><div style={kolom(lebar < 640 ? 640 : 820)}>
       {/* Kamera: PiP terlihat = bukti nyala + sumber foto */}
       {paket.wajibKamera && (
         <div style={st.camPip} title="Kamera pengawasan aktif">
@@ -1345,7 +1363,7 @@ export default function TryOutView() {
           </div>
         </div>
       )}
-    </div>
+    </div></div>
   );
 }
 
@@ -1355,6 +1373,8 @@ export default function TryOutView() {
 // timer teal. Logika tidak berubah; ini murni kulit.
 // ============================================================
 const st = {
+  latarUjian: { minHeight: '100vh', background: 'linear-gradient(180deg, #3949AB 0%, #3D4DB7 55%, #3949AB 100%)' },
+  latarTerang: { minHeight: '100vh', background: '#F4F6FB' },
   pusat: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: '#64748b', fontSize: 13 },
   backBtn: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginBottom: 14, fontSize: 13, fontWeight: 700, padding: 0 },
   tombolUtama: {
