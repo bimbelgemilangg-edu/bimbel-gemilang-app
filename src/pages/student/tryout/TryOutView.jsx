@@ -53,7 +53,7 @@ import RendererEsai from './RendererEsai';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
-import { hitungSkalaSesi } from '../../../utils/skorSkalaUtbk';
+import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import { teksSoalDari } from '../../../utils/fieldButirSoal';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';

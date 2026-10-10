@@ -100,3 +100,4 @@ secrets/
 *.tmp
 *.temp
 *.bak
+.penjaga-impor-tmp
