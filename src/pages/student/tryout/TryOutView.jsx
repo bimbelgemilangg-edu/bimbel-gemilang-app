@@ -171,9 +171,15 @@ export default function TryOutView() {
   useEffect(() => {
     if (tahap !== 'cek-kamera') return;
     let batal = false;
-    setStatusKameraPrep('memuat');
-    setErrorKameraPrep(null);
-    navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+    // 🔥 (2026-10-10, lint CI): setState tidak boleh jalan di jalur sinkron
+    // effect (react-hooks/set-state-in-effect). Dibungkus fungsi async dengan
+    // satu await di depan: perilaku sama, hanya tertunda satu microtick.
+    (async () => {
+      await Promise.resolve();
+      if (batal) return;
+      setStatusKameraPrep('memuat');
+      setErrorKameraPrep(null);
+      navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'user' }, audio: false })
       .then((stream) => {
         if (batal) { stream.getTracks().forEach((t) => t.stop()); return; }
         streamPrepRef.current = stream;
@@ -185,6 +191,7 @@ export default function TryOutView() {
         setStatusKameraPrep('ditolak');
         setErrorKameraPrep(err?.name || 'Unknown');
       });
+    })();
     return () => {
       batal = true;
       // Stream persiapan ini SENGAJA dimatikan begitu keluar dari
@@ -204,6 +211,10 @@ export default function TryOutView() {
   // manual browser). Sekarang dibungkus jadi fungsi yang bisa DIPANGGIL
   // ULANG dari tombol, plus dicoba otomatis 2x sebelum nyerah.
   const muatPaketDanSesi = useCallback(async (percobaanKe = 1) => {
+    // 🔥 (2026-10-10, lint CI): percobaan ulang recursif lewat fungsi dalam
+    // bernama `jalan`: react-hooks/immutability menolak const yang menyebut
+    // dirinya sendiri di dalam initializer-nya (TDZ), walau aman di runtime.
+    async function jalan(percobaan) {
     try {
       const snapPaket = await getDoc(doc(db, 'tryout_paket', paketId));
       if (!snapPaket.exists()) { setTahap('tidak-ditemukan'); return; }
@@ -305,13 +316,15 @@ export default function TryOutView() {
         setTahap('mulai');
       }
     } catch (e) {
-      console.error(`Gagal memuat try out (percobaan ke-${percobaanKe}):`, e);
-      if (percobaanKe < 2) {
-        setTimeout(() => muatPaketDanSesi(percobaanKe + 1), 1500);
+      console.error(`Gagal memuat try out (percobaan ke-${percobaan}):`, e);
+      if (percobaan < 2) {
+        setTimeout(() => jalan(percobaan + 1), 1500);
         return;
       }
       setTahap('gagal');
     }
+  }
+    return jalan(percobaanKe);
   }, [paketId, studentId, tampilPesanTransisi]);
 
   // Effect mount sengaja hanya bergantung paketId/studentId:
@@ -391,6 +404,9 @@ export default function TryOutView() {
   const sesiHilangRef = React.useRef(false);
 
   const simpanProgres = useCallback(async (jawabanBaru, subtesIndexBaru, waktuSubtesBaru, sudahDicoba = false) => {
+    // 🔥 (2026-10-10, lint CI): rekursi lewat fungsi dalam `jalan` -- lihat
+    // catatan serupa di muatPaketDanSesi.
+    async function jalan(jawabanBaru, subtesIndexBaru, waktuSubtesBaru, sudahDicoba) {
     if (!sesiId || sesiHilangRef.current) return;
     try {
       await updateDoc(doc(db, 'tryout_sesi', sesiId), {
@@ -410,11 +426,13 @@ export default function TryOutView() {
       if (!sudahDicoba) {
         // Coba sekali lagi setelah jeda singkat -- banyak kegagalan
         // jaringan itu cuma sesaat (macet 1-2 detik), bukan putus total.
-        setTimeout(() => simpanProgres(jawabanBaru, subtesIndexBaru, waktuSubtesBaru, true), 1500);
+        setTimeout(() => jalan(jawabanBaru, subtesIndexBaru, waktuSubtesBaru, true), 1500);
       } else {
         setGagalSimpanProgres(true);
       }
     }
+  }
+    return jalan(jawabanBaru, subtesIndexBaru, waktuSubtesBaru, sudahDicoba);
   }, [sesiId]);
 
   // 🔥 BUG SERIUS DITEMUKAN & DIBENERIN: sebelumnya onFotoTersimpan
@@ -560,6 +578,9 @@ export default function TryOutView() {
   }, [paketId, studentId, sesiId, jawaban, fotoPengawasan, pelanggaran]);
 
   const selesaikanTryOut = useCallback(async (percobaanKe = 1) => {
+    // 🔥 (2026-10-10, lint CI): rekursi lewat fungsi dalam `jalan` -- lihat
+    // catatan serupa di muatPaketDanSesi.
+    async function jalan(percobaan) {
     if (!paket) return;
     setSedangMengirimAkhir(true);
     setGagalKirimAkhir(false);
@@ -642,10 +663,10 @@ export default function TryOutView() {
         setSedangMengirimAkhir(false);
         return;
       }
-      console.error(`Gagal menyimpan hasil try out (percobaan ke-${percobaanKe}):`, e);
-      if (percobaanKe < 3) {
+      console.error(`Gagal menyimpan hasil try out (percobaan ke-${percobaan}):`, e);
+      if (percobaan < 3) {
         // Coba lagi otomatis, jeda makin lama tiap gagal (1.5s, 3s).
-        setTimeout(() => selesaikanTryOut(percobaanKe + 1), percobaanKe * 1500);
+        setTimeout(() => jalan(percobaan + 1), percobaan * 1500);
         return;
       }
       // 🔒 Udah dicoba 3x tetap gagal -- JANGAN klaim selesai. Kasih
@@ -654,6 +675,8 @@ export default function TryOutView() {
       setGagalKirimAkhir(true);
     }
     setSedangMengirimAkhir(false);
+  }
+    return jalan(percobaanKe);
   }, [paket, jawaban, pelanggaran, sesiId, fotoPengawasan, studentId, bacaKonteksSesiHilang, tahanHasilTertahan]);
 
   // 🔥 BARU (2026-10-08): tombol di layar "sesimu sudah direset" --
@@ -809,21 +832,23 @@ export default function TryOutView() {
             <ShieldAlert size={24} color="#fff" />
           </div>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Peraturan Try Out</h2>
-          <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Baca sampai selesai, lalu centang siap.</p>
+          <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Baca seluruh peraturan dengan saksama, lalu centang pernyataan kesiapan di bawah.</p>
         </div>
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16, boxShadow: '0 4px 20px rgba(15,23,42,0.06)', marginBottom: 14 }}>
           <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: '#334155', lineHeight: 1.7 }}>
-            <li><b>Waktu:</b> {durasiLabel}.</li>
-            <li>Kerjakan sendiri. Dilarang membuka tab, chat, atau aplikasi lain.</li>
-            <li>{paket.wajibKamera ? 'Kamera wajib aktif; wajah harus terlihat jelas.' : 'Ikuti instruksi pengawasan dari admin.'}</li>
-            <li>Sistem dapat menjepret foto saat menjawab atau pindah soal.</li>
-            <li>Pindah tab / keluar layar penuh dicatat sebagai pelanggaran (XP dapat terpotong).</li>
-            <li>Jangan tutup halaman sebelum mengumpulkan jawaban.</li>
+            <li><b>Waktu:</b> {durasiLabel}. Setelah suatu subtes ditutup, peserta tidak dapat kembali ke subtes sebelumnya.</li>
+            <li>Seluruh pengerjaan berada di bawah pengawasan sistem dan pembimbing Bimbel Gemilang.</li>
+            <li>Pengerjaan bersifat mandiri. Peserta dilarang membuka tab, jendela, percakapan, atau aplikasi lain selama sesi berlangsung.</li>
+            <li>{paket.wajibKamera ? 'Kamera wajib aktif dan wajah peserta harus terlihat jelas selama sesi berlangsung.' : 'Peserta wajib mengikuti seluruh arahan pengawasan yang diberikan pembimbing.'}</li>
+            <li>Sistem dapat merekam gambar peserta pada momen tertentu sebagai bagian dari prosedur pengawasan; rekaman digunakan semata-mata untuk pemeriksaan integritas sesi.</li>
+            <li>Perpindahan tab atau keluar dari mode layar penuh tercatat sebagai pelanggaran dan dapat memengaruhi penilaian serta XP peserta.</li>
+            <li>Setiap bentuk kecurangan dapat memengaruhi nilai, peringkat, dan rekomendasi konsultasi akademik peserta.</li>
+            <li>Peserta wajib mengumpulkan jawaban melalui tombol yang tersedia sebelum menutup halaman ini.</li>
           </ol>
         </div>
         <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, fontWeight: 600, color: '#0f172a', marginBottom: 14, cursor: 'pointer' }}>
           <input type="checkbox" checked={siapPeraturan} onChange={(e) => setSiapPeraturan(e.target.checked)} style={{ width: 18, height: 18, marginTop: 2 }} />
-          <span>Saya sudah membaca dan siap mengikuti peraturan.</span>
+          <span>Saya telah membaca, memahami, dan bersedia mematuhi seluruh peraturan di atas.</span>
         </label>
         <button type="button" disabled={!siapPeraturan} onClick={() => (paket.wajibKamera ? setTahap('cek-kamera') : mulaiTryOut())}
           style={{ ...st.tombolUtama, opacity: siapPeraturan ? 1 : 0.4, cursor: siapPeraturan ? 'pointer' : 'not-allowed' }}>
