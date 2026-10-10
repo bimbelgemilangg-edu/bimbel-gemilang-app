@@ -35,15 +35,22 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
         const gambarOpsi = typeof opt === 'object' ? (opt?.gambar || []) : [];
         const dipilih = jawabanTerpilih === i;
 
-        let border = '#e2e8f0';
-        let bg = dipilih ? '#f5f3ff' : 'white';
-        let ikon = null;
+        // 🔥 (2026-10-10, restyle mockup owner): format menjawab diubah --
+        // teks opsi di kiri (berawalan huruf), radio bulat di KANAN seperti
+        // lembar jawaban digital pada mockup. Mode tinjau memakai hijau/merah
+        // dengan ikon centang/silang di radio yang sama.
+        let border = '#E3E6F0';
+        let bg = 'white';
+        let radio = { border: '#C7CBE0', dot: null, ikon: null };
 
         if (modeTinjau) {
-          if (i === indexBenar) { border = '#22c55e'; bg = '#f0fdf4'; ikon = '✔️'; }
-          else if (dipilih) { border = '#ef4444'; bg = '#fef2f2'; ikon = '✖️'; }
+          if (i === indexBenar) { border = '#22c55e'; bg = '#f0fdf4'; radio = { border: '#22c55e', dot: '#22c55e', ikon: '✓' }; }
+          else if (dipilih) { border = '#ef4444'; bg = '#fef2f2'; radio = { border: '#ef4444', dot: '#ef4444', ikon: '✕' }; }
+          else radio = { border: '#d1d5db', dot: null, ikon: null };
         } else if (dipilih) {
-          border = '#7c3aed';
+          border = '#3949AB';
+          bg = '#EEF0FB';
+          radio = { border: '#3949AB', dot: '#3949AB', ikon: null };
         }
 
         return (
@@ -53,20 +60,17 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
             disabled={disabled || modeTinjau}
             onClick={() => !modeTinjau && !disabled && onChange?.(i)}
             style={{
-              display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
-              padding: '13px 14px', borderRadius: 12, border: `2px solid ${border}`, marginBottom: 9,
-              background: bg, cursor: modeTinjau || disabled ? 'default' : 'pointer', fontSize: 13.5, color: '#1e293b',
+              display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left',
+              padding: '13px 14px', borderRadius: 12, border: `1.5px solid ${border}`, marginBottom: 10,
+              background: bg, cursor: modeTinjau || disabled ? 'default' : 'pointer',
+              fontSize: 13.5, color: '#1f2937', fontWeight: dipilih && !modeTinjau ? 700 : 500,
             }}
           >
-            <span style={{
-              width: 26, height: 26, borderRadius: '50%', border: `2px solid ${modeTinjau ? border : (dipilih ? '#7c3aed' : '#cbd5e1')}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0,
-              color: modeTinjau ? border : '#7c3aed',
-            }}>
-              {huruf}
-            </span>
             <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {teksOpsi && <RenderMath text={teksOpsi} />}
+              <span style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}>
+                <b style={{ color: '#3949AB', fontWeight: 800 }}>{huruf}.</b>
+                {teksOpsi ? <RenderMath text={teksOpsi} /> : null}
+              </span>
               {gambarOpsi.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {gambarOpsi.map((g, gi) => {
@@ -86,7 +90,15 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
                 </div>
               )}
             </span>
-            {modeTinjau && ikon && <span style={{ fontSize: 14 }}>{ikon}</span>}
+            <span style={{
+              width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+              border: `2px solid ${radio.border}`, background: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: 11, fontWeight: 900,
+            }}
+            >
+              {radio.ikon || (radio.dot && !modeTinjau ? <span style={{ width: 10, height: 10, borderRadius: '50%', background: radio.dot }} /> : '')}
+            </span>
           </button>
         );
       })}

@@ -32,7 +32,7 @@ import { filterSoalTryOutByMapelSiswa } from '../../../utils/aksesKontenSiswa';
 import {
   doc, getDoc, addDoc, updateDoc, setDoc, collection, query, where, getDocs, serverTimestamp,
 } from 'firebase/firestore';
-import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2  , FileText, Award, Timer, ChevronLeft, ChevronDown } from 'lucide-react';
 
 import { useTimerTryOut } from './useTimerTryOut';
 import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
@@ -53,6 +53,7 @@ import RendererEsai from './RendererEsai';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import { hitungSkalaSesi } from '../../../utils/skorSkalaUtbk';
 import { teksSoalDari } from '../../../utils/fieldButirSoal';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
@@ -173,6 +174,9 @@ export default function TryOutView() {
   // gak sengaja, terus dia benerin izinnya lewat setting browser --
   // tanpa tombol ini, satu-satunya cara ngulang adalah reload manual.
   const [percobaanKeKamera, setPercobaanKeKamera] = useState(0);
+  // 🔥 (2026-10-10, restyle UI): palet nomor kini tersembunyi di balik
+  // tombol di header -- format menjawab mengikuti mockup owner: linear.
+  const [lihatPalet, setLihatPalet] = useState(false);
 
   useEffect(() => {
     if (tahap !== 'cek-kamera') return;
@@ -731,7 +735,7 @@ export default function TryOutView() {
       : `⏰ Waktu subtes "${namaLama}" habis. OTOMATIS lanjut ke subtes "${namaBaru}" -- kamu tidak bisa balik ke subtes sebelumnya.`);
   }, [paket, subtesAktifIndex, jawaban, simpanProgres, selesaikanTryOut, tampilPesanTransisi]);
 
-  const { teksWaktu, hampirHabis } = useTimerTryOut({
+  const { teksWaktu, hampirHabis, sisaMs } = useTimerTryOut({
     aktif: tahap === 'mengerjakan',
     modeTimer: paket?.modeTimer,
     waktuMulaiMs,
@@ -782,85 +786,71 @@ export default function TryOutView() {
   if (tahap === 'mulai') {
     if (paket && Array.isArray(paket.daftarSoal) && paket.daftarSoal.length === 0) {
       return (
-        <div style={{ maxWidth: 420, margin: '40px auto', padding: 24, textAlign: 'center' }}>
-          <div style={{ fontSize: 40, marginBottom: 10 }}>📚</div>
-          <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a' }}>Tidak ada soal untuk mapelmu</h2>
-          <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, margin: '10px 0 16px' }}>
-            {paket._filterMapelPesan || 'Paket ini tidak berisi soal dari mapel yang kamu ikuti. Minta admin cek "Akses Mapel" di data siswa dan komposisi try out.'}
-          </p>
-          <button type="button" onClick={() => window.history.back()} style={st.tombolSekunder}>Kembali</button>
+        <div style={st.shellTerang}>
+          <div style={{ ...st.soalCard, textAlign: 'center', padding: 28 }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>📚</div>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a' }}>Tidak ada soal untuk mapelmu</h2>
+            <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, margin: '10px 0 16px' }}>
+              {paket._filterMapelPesan || 'Paket ini tidak berisi soal dari mapel yang kamu ikuti. Minta admin cek "Akses Mapel" di data siswa dan komposisi try out.'}
+            </p>
+            <button type="button" onClick={() => window.history.back()} style={st.tombolSekunder}>Kembali</button>
+          </div>
         </div>
       );
     }
 
+    const jumlahSubtes = (paket.subtes || []).length;
+    const totalMenit = paket.modeTimer === 'total'
+      ? (paket.durasiTotalMenit || 0)
+      : (paket.subtes || []).reduce((a, b) => a + (b.durasiMenit || 0), 0);
+    const menitPerSoal = paket.totalSoal ? Math.max(1, Math.round(totalMenit / paket.totalSoal)) : 0;
+
     return (
-      <div style={{ maxWidth: 560, margin: '40px auto', padding: 20, textAlign: 'center' }}>
-        <button onClick={() => navigate(-1)} style={st.backBtn}><ArrowLeft size={16} /> Kembali</button>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
-          <MaskotAstronot size={84} />
-        </div>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1e293b' }}>{paket.judul}</h1>
-        <p style={{ color: '#6b7280', fontSize: 13, margin: '10px 0 20px' }}>
-          {paket.totalSoal} soal · {paket.modeTimer === 'total' ? `${paket.durasiTotalMenit} menit total` : `${paket.subtes.length} subtes, tiap subtes ada batas waktu sendiri`}
-        </p>
-        {paket.antiCheatAktif && (
-          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12, fontSize: 12, color: '#92400e', marginBottom: 20, textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, marginBottom: 4 }}>
-              <ShieldAlert size={14} /> Try out ini diawasi
-            </div>
-            Pindah tab/aplikasi, keluar fullscreen{paket.wajibKamera ? ', dan kamera mati' : ''} akan tercatat sebagai pelanggaran dan memotong XP kamu.
-            {paket.wajibKamera && ' Pastikan kamera perangkatmu menyala dan wajahmu kelihatan jelas.'}
+      <div style={st.shellTerang}>
+        <button onClick={() => navigate(-1)} style={st.backBtn}><ChevronLeft size={20} /></button>
+        <h1 style={st.judulTerang}>{paket.judul}</h1>
+        <p style={st.subJudul}>Try out resmi Bimbel Gemilang · diawasi sistem & pembimbing</p>
+
+        <div style={st.statList}>
+          <div style={st.statItem}>
+            <span style={st.statIkon}><FileText size={16} /></span>
+            <div><b style={st.statAngka}>{paket.totalSoal}</b><span style={st.statLabel}>soal pilihan ganda & variasi</span></div>
           </div>
-        )}
+          <div style={st.statItem}>
+            <span style={st.statIkon}><Timer size={16} /></span>
+            <div><b style={st.statAngka}>{menitPerSoal} menit</b><span style={st.statLabel}>rata-rata per soal{jumlahSubtes ? ` · ${jumlahSubtes} subtes` : ''}</span></div>
+          </div>
+          <div style={st.statItem}>
+            <span style={st.statIkon}><Award size={16} /></span>
+            <div><b style={st.statAngka}>XP & lencana</b><span style={st.statLabel}>menanti hasil terbaikmu</span></div>
+          </div>
+        </div>
+
+        <div style={st.kartuAturan}>
+          <b style={{ fontSize: 13.5, color: '#0f172a' }}>Sebelum kamu mulai</b>
+          <ol style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#334155', lineHeight: 1.75 }}>
+            <li><b>Waktu:</b> {paket.modeTimer === 'total' ? `${paket.durasiTotalMenit} menit untuk seluruh paket` : 'timer berjalan per subtes; setelah subtes ditutup, kamu tidak dapat kembali ke subtes sebelumnya'}. Sesi dikerjakan sekali duduk — pastikan koneksi internetmu stabil.</li>
+            <li>Seluruh pengerjaan berada di bawah pengawasan sistem dan pembimbing Bimbel Gemilang.</li>
+            <li>Pengerjaan bersifat mandiri. Peserta dilarang membuka tab, jendela, percakapan, atau aplikasi lain selama sesi berlangsung.</li>
+            <li>{paket.wajibKamera ? 'Kamera wajib aktif dan wajah peserta harus terlihat jelas selama sesi.' : 'Sistem dapat merekam gambar peserta pada momen tertentu sebagai bagian dari prosedur pengawasan.'}</li>
+            <li>Perpindahan tab atau keluar dari mode layar penuh tercatat sebagai pelanggaran dan dapat memengaruhi penilaian serta XP peserta.</li>
+            <li>Setiap bentuk kecurangan dapat memengaruhi nilai, peringkat, dan rekomendasi konsultasi akademik peserta.</li>
+          </ol>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginTop: 12, fontSize: 12.5, fontWeight: 700, color: '#0f172a', cursor: 'pointer' }}>
+            <input type="checkbox" checked={siapPeraturan} onChange={(e) => setSiapPeraturan(e.target.checked)} style={{ width: 18, height: 18, marginTop: 1 }} />
+            <span>Saya telah membaca, memahami, dan bersedia mematuhi seluruh peraturan di atas.</span>
+          </label>
+        </div>
+
+        <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: 11.5, color: '#94a3b8', margin: '10px 0 12px' }}>SELAMAT BERJUANG — KERJAKAN TERBAIKMU!</p>
         <button
-          onClick={() => { setSiapPeraturan(false); setTahap('peraturan'); }}
-          style={st.tombolUtama}
+          type="button"
+          disabled={!siapPeraturan}
+          onClick={() => (paket.wajibKamera ? setTahap('cek-kamera') : mulaiTryOut())}
+          style={{ ...st.tombolUtama, opacity: siapPeraturan ? 1 : 0.45, cursor: siapPeraturan ? 'pointer' : 'not-allowed' }}
         >
           Mulai Try Out
         </button>
-      </div>
-    );
-  }
-
-  // 🔥 BARU: layar "Siapkan Kamera" -- muncul dulu SEBELUM try out
-  // beneran mulai (timer belum jalan sama sekali di sini), khusus
-  // buat paket yang wajibKamera. Siswa WAJIB lihat preview wajahnya
-  // dulu sebelum lanjut, biar gak langsung ke-catat "kamera tidak
-  // aktif" gara-gara belum sempat klik izinkan di browser.
-  if (tahap === 'peraturan') {
-    const durasiLabel = paket.modeTimer === 'per-subtes'
-      ? 'Timer per mapel/subtes (tidak bisa kembali ke subtes sebelumnya)'
-      : `Timer total ${paket.durasiTotalMenit || 90} menit untuk seluruh try out`;
-    return (
-      <div style={{ maxWidth: 440, margin: '0 auto', padding: '24px 16px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 18 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg,#5B2ECC,#7c3aed)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-            <ShieldAlert size={24} color="#fff" />
-          </div>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Peraturan Try Out</h2>
-          <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Baca seluruh peraturan dengan saksama, lalu centang pernyataan kesiapan di bawah.</p>
-        </div>
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 16, boxShadow: '0 4px 20px rgba(15,23,42,0.06)', marginBottom: 14 }}>
-          <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: '#334155', lineHeight: 1.7 }}>
-            <li><b>Waktu:</b> {durasiLabel}. Setelah suatu subtes ditutup, peserta tidak dapat kembali ke subtes sebelumnya.</li>
-            <li>Seluruh pengerjaan berada di bawah pengawasan sistem dan pembimbing Bimbel Gemilang.</li>
-            <li>Pengerjaan bersifat mandiri. Peserta dilarang membuka tab, jendela, percakapan, atau aplikasi lain selama sesi berlangsung.</li>
-            <li>{paket.wajibKamera ? 'Kamera wajib aktif dan wajah peserta harus terlihat jelas selama sesi berlangsung.' : 'Peserta wajib mengikuti seluruh arahan pengawasan yang diberikan pembimbing.'}</li>
-            <li>Sistem dapat merekam gambar peserta pada momen tertentu sebagai bagian dari prosedur pengawasan; rekaman digunakan semata-mata untuk pemeriksaan integritas sesi.</li>
-            <li>Perpindahan tab atau keluar dari mode layar penuh tercatat sebagai pelanggaran dan dapat memengaruhi penilaian serta XP peserta.</li>
-            <li>Setiap bentuk kecurangan dapat memengaruhi nilai, peringkat, dan rekomendasi konsultasi akademik peserta.</li>
-            <li>Peserta wajib mengumpulkan jawaban melalui tombol yang tersedia sebelum menutup halaman ini.</li>
-          </ol>
-        </div>
-        <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, fontWeight: 600, color: '#0f172a', marginBottom: 14, cursor: 'pointer' }}>
-          <input type="checkbox" checked={siapPeraturan} onChange={(e) => setSiapPeraturan(e.target.checked)} style={{ width: 18, height: 18, marginTop: 2 }} />
-          <span>Saya telah membaca, memahami, dan bersedia mematuhi seluruh peraturan di atas.</span>
-        </label>
-        <button type="button" disabled={!siapPeraturan} onClick={() => (paket.wajibKamera ? setTahap('cek-kamera') : mulaiTryOut())}
-          style={{ ...st.tombolUtama, opacity: siapPeraturan ? 1 : 0.4, cursor: siapPeraturan ? 'pointer' : 'not-allowed' }}>
-          {paket.wajibKamera ? 'Lanjut cek kamera' : 'Mulai try out'}
-        </button>
-        <button type="button" onClick={() => setTahap('mulai')} style={{ ...st.tombolSekunder, width: '100%', marginTop: 8 }}>Kembali</button>
       </div>
     );
   }
@@ -930,17 +920,46 @@ export default function TryOutView() {
   }
 
   if (tahap === 'selesai') {
+    const skalaOtomatis = hitungSkalaSesi({ status: 'selesai', jawaban }, paket);
     return (
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: 20 }}>
-        <button onClick={() => navigate('/siswa/dashboard')} style={st.backBtn}><ArrowLeft size={16} /> Kembali ke Dashboard</button>
+      <div style={st.shellUjian}>
+        <div style={{ textAlign: 'center', color: '#fff', fontSize: 14, fontWeight: 700, margin: '18px 0 14px' }}>
+          Hasil Try Out Kamu
+        </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <LencanaPencapaian
-            tipe="skor"
-            nilai={hasilAkhir?.totalSkorPersen}
-            keterangan={paket.judul}
-            xp={hasilAkhir?.xpFinal}
-          />
+        {/* TIKET HASIL -- gaya mockup: kartu putih berlekuk dengan garis putus */}
+        <div style={st.tiket}>
+          <span style={st.tiketLekukKiri} /><span style={st.tiketLekukKanan} />
+          <div style={{ textAlign: 'center', padding: '22px 18px 14px' }}>
+            <div style={{ fontSize: 13.5, color: '#334155', fontWeight: 700 }}>
+              {hasilAkhir?.totalSkorPersen >= 70 ? 'Selamat! Kerja bagus.' : 'Terima kasih sudah berjuang.'} Skormu
+            </div>
+            <div style={{ fontSize: 44, fontWeight: 900, color: '#0f172a', margin: '6px 0 2px' }}>
+              {hasilAkhir?.totalSkorPersen ?? 0}%
+            </div>
+            <div style={{ fontSize: 11.5, color: '#64748b' }}>{paket.judul}</div>
+            {skalaOtomatis.total !== null && (
+              <div style={{ marginTop: 10, fontSize: 12, color: '#3949AB', background: '#eef0fb', borderRadius: 10, padding: '8px 10px', fontWeight: 700 }}>
+                Skala Gemilang gaya UTBK: {skalaOtomatis.total}
+                <div style={{ fontSize: 10, fontWeight: 500, color: '#64748b', marginTop: 2 }}>
+                  {skalaOtomatis.perSubtes.map((x) => `${x.kode} ${x.skala}`).join(' · ')}
+                </div>
+              </div>
+            )}
+          </div>
+          <div style={st.tiketGaris} />
+          <div style={{ padding: '14px 18px 20px', textAlign: 'center' }}>
+            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Kamu mendapatkan lencana</div>
+            <LencanaPencapaian
+              tipe="skor"
+              nilai={hasilAkhir?.totalSkorPersen}
+              keterangan={paket.judul}
+              xp={hasilAkhir?.xpFinal}
+            />
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
           {(hasilAkhir?.jumlahSoalRusak || 0) > 0 && (
             <div style={{
               marginTop: 12, background: '#fffbeb', border: '1px solid #fcd34d',
@@ -963,12 +982,12 @@ export default function TryOutView() {
           xpFinal={hasilAkhir?.xpFinal}
         />
 
-        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#64748b', margin: '20px 0 10px' }}>📋 TINJAU JAWABAN</div>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', margin: '20px 0 10px', letterSpacing: 0.4 }}>📋 TINJAU JAWABAN</div>
         {paket.daftarSoal.map((s, i) => {
           const skor = skorSatuSoal(s, jawaban[s.id]);
           const belumDijawab = soalBelumDijawab(s, jawaban[s.id]);
           return (
-            <div key={s.id} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 14, marginBottom: 12 }}>
+            <div key={s.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: '0 2px 10px rgba(15,23,42,0.08)' }}>
               <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
                 Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
               </div>
@@ -988,14 +1007,22 @@ export default function TryOutView() {
                 <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
               </PenahanErrorSoal>
               {s.pembahasan && (
-                <div style={{ marginTop: 10, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
-                  <b>💡 Pembahasan</b>
-                  <div style={{ marginTop: 4 }}><TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" /></div>
-                </div>
+                <details style={{ marginTop: 10 }}>
+                  <summary style={{ fontSize: 12.5, fontWeight: 800, color: '#3949AB', cursor: 'pointer' }}>
+                    Lihat pembahasan ▾
+                  </summary>
+                  <div style={{ marginTop: 8, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
+                    <div style={{ marginTop: 4 }}><TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" /></div>
+                  </div>
+                </details>
               )}
             </div>
           );
         })}
+
+        <button type="button" onClick={() => navigate('/siswa/dashboard')} style={st.tombolUtama}>
+          Kembali ke Dashboard
+        </button>
       </div>
     );
   }
@@ -1031,8 +1058,13 @@ export default function TryOutView() {
     );
   }
 
+  const totalMsSubtes = (paket.modeTimer === 'total'
+    ? (paket.durasiTotalMenit || 0)
+    : (paket.subtes?.[subtesAktifIndex]?.durasiMenit || 0)) * 60000;
+  const pctSisa = totalMsSubtes > 0 ? Math.max(0, Math.min(100, (sisaMs / totalMsSubtes) * 100)) : 0;
+
   return (
-    <div style={st.shell}>
+    <div style={st.shellUjian}>
       {/* Kamera: PiP terlihat = bukti nyala + sumber foto */}
       {paket.wajibKamera && (
         <div style={st.camPip} title="Kamera pengawasan aktif">
@@ -1056,21 +1088,34 @@ export default function TryOutView() {
         <video ref={videoRef} autoPlay muted playsInline style={{ display: 'none' }} />
       )}
 
-      {/* HEADER: timer + status kamera */}
+      {/* HEADER gaya mockup: baris judul + bar timer teal */}
       <div style={st.headerBar}>
-        <div style={{ color: 'white', fontSize: 12.5 }}>
-          {paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : paket.judul}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            type="button"
+            onClick={() => setLihatPalet((v) => !v)}
+            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 4 }}
+            title={lihatPalet ? 'Sembunyikan palet nomor' : 'Lihat palet nomor soal'}
+          >
+            <ChevronLeft size={20} style={{ transform: lihatPalet ? 'rotate(-90deg)' : 'rotate(90deg)' }} />
+          </button>
+          <div style={{ color: 'white', fontSize: 14, fontWeight: 800 }}>
+            {paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : paket.judul}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {paket.wajibKamera && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: statusKamera === 'aktif' ? '#4ade80' : '#f87171' }}>
-              <Camera size={13} /> {statusKamera === 'aktif' ? 'Aktif' : statusKamera === 'memuat' ? 'Memuat...' : 'Tidak aktif'}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10.5, color: statusKamera === 'aktif' ? '#4ade80' : '#f87171', fontWeight: 700 }}>
+              <Camera size={12} /> {statusKamera === 'aktif' ? 'AKTIF' : statusKamera === 'memuat' ? '...' : 'OFF'}
             </span>
           )}
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'monospace', fontWeight: 800, fontSize: 15, color: hampirHabis ? '#f87171' : 'white' }}>
-            <Clock size={14} /> {teksWaktu}
-          </span>
         </div>
+      </div>
+      <div style={st.timerTrack}>
+        <div style={{ ...st.timerFill, width: `${pctSisa}%`, background: hampirHabis ? '#f87171' : '#2DD4A8' }} />
+        <span style={st.timerTeks}>
+          <Clock size={13} /> {teksWaktu}
+        </span>
       </div>
 
       {/* 🔥 BARU: banner transisi subtes NON-MEMBLOKIR (pengganti alert)
@@ -1107,10 +1152,12 @@ export default function TryOutView() {
         </div>
       )}
 
-      {/* PALET NOMOR SOAL */}
+      {/* PALET NOMOR SOAL -- tersembunyi sesuai format linear mockup;
+          dibuka lewat tombol di header bila peserta ingin melompat. */}
+      {lihatPalet && (
       <div style={{
         display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14, padding: 12,
-        background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0',
+        background: 'rgba(255,255,255,0.95)', borderRadius: 14, border: '1px solid #e2e8f0',
       }}
       >
         {daftarSoalAktif.map((s, i) => {
@@ -1135,10 +1182,18 @@ export default function TryOutView() {
           );
         })}
       </div>
+      )}
 
       {/* SOAL */}
       <div style={st.soalCard}>
-        <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9', textTransform: 'uppercase', letterSpacing: 0.3, fontWeight: 700 }}>{soalAktif.materi}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
+          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>
+            Soal {indexSoalAktif + 1}/{daftarSoalAktif.length}
+          </span>
+          <span style={{ fontSize: 10.5, color: '#3949AB', background: '#eef0fb', borderRadius: 999, padding: '3px 10px', fontWeight: 800 }}>
+            {soalAktif.materi || (paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : '')}
+          </span>
+        </div>
         {(soalAktif.bacaan?.teks || (soalAktif.bacaan?.gambar || []).length > 0) && (
           <div style={{
             background: 'linear-gradient(180deg, #f8fafc 0%, #fff 100%)',
@@ -1199,7 +1254,7 @@ export default function TryOutView() {
 
       {/* NAVIGASI -- tombol hijau mengikuti putusanNav (util teruji):
           'soal-berikutnya' | 'subtes-berikutnya' | 'selesai'. */}
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
         <button
           onClick={() => { try { cobaAmbilFoto(); } catch { /* foto pengawasan gagal jangan menghalangi navigasi */ } setIndexSoalAktif((i) => Math.max(0, i - 1)); }}
           disabled={indexSoalAktif === 0}
@@ -1294,36 +1349,61 @@ export default function TryOutView() {
   );
 }
 
+// ============================================================
+// TOKEN DESAIN (2026-10-10): mengikuti mockup owner -- latar indigo untuk
+// layar ujian & hasil, kartu putih, aksen pink untuk tombol utama, bar
+// timer teal. Logika tidak berubah; ini murni kulit.
+// ============================================================
 const st = {
   pusat: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: '#64748b', fontSize: 13 },
-  backBtn: { display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginBottom: 16, fontSize: 13, fontWeight: 600 },
+  backBtn: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginBottom: 14, fontSize: 13, fontWeight: 700, padding: 0 },
   tombolUtama: {
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
     padding: '14px 20px', borderRadius: 12, border: 'none',
-    background: 'linear-gradient(135deg, #5B2ECC 0%, #7c3aed 100%)',
+    background: '#F4547E',
     color: 'white', fontWeight: 800, fontSize: 14, cursor: 'pointer', width: '100%',
-    boxShadow: '0 4px 14px rgba(91,46,204,0.35)',
+    boxShadow: '0 6px 18px rgba(244,84,126,0.35)',
   },
   tombolSekunder: {
-    padding: '13px 20px', borderRadius: 12, border: '1px solid #e2e8f0',
-    background: '#fff', color: '#334155', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+    padding: '13px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.55)',
+    background: 'rgba(255,255,255,0.12)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer',
   },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, backdropFilter: 'blur(4px)' },
-  modal: { background: 'white', borderRadius: 18, padding: 28, maxWidth: 360, textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' },
-  shell: { maxWidth: 720, margin: '0 auto', padding: '12px 14px 28px', minHeight: '100vh', background: 'linear-gradient(180deg, #f1f5f9 0%, #f8fafc 40%, #fff 100%)' },
+  modal: { background: 'white', borderRadius: 20, padding: 28, maxWidth: 360, textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' },
+  // layar terang (intro, error, kamera)
+  shellTerang: { maxWidth: 560, margin: '0 auto', padding: '18px 18px 34px', minHeight: '100vh', background: '#F4F6FB' },
+  judulTerang: { fontSize: 21, fontWeight: 900, color: '#0f172a', margin: '2px 0 4px', letterSpacing: -0.2 },
+  subJudul: { fontSize: 12, color: '#8a94a6', margin: '0 0 18px' },
+  statList: { background: '#fff', borderRadius: 16, border: '1px solid #eceff7', padding: '6px 16px', marginBottom: 14 },
+  statItem: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid #f1f3fa' },
+  statIkon: { width: 38, height: 38, borderRadius: 999, border: '1.5px solid #3949AB', color: '#3949AB', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  statAngka: { display: 'block', fontSize: 14.5, fontWeight: 800, color: '#1e2a78', lineHeight: 1.2 },
+  statLabel: { display: 'block', fontSize: 11.5, color: '#8a94a6' },
+  kartuAturan: { background: '#fff', borderRadius: 16, border: '1px solid #eceff7', padding: 16, marginBottom: 8 },
+  // layar ujian & hasil: latar indigo mockup
+  shellUjian: { maxWidth: 720, margin: '0 auto', padding: '12px 14px 30px', minHeight: '100vh', background: 'linear-gradient(180deg, #3949AB 0%, #3D4DB7 55%, #3949AB 100%)' },
   headerBar: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-    padding: '12px 14px', borderRadius: 14,
-    background: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 100%)',
-    color: '#fff', marginBottom: 12, boxShadow: '0 8px 24px rgba(30,58,138,0.25)',
+    padding: '6px 2px 8px', color: '#fff',
+  },
+  timerTrack: { position: 'relative', height: 34, borderRadius: 999, background: 'rgba(13,23,77,0.55)', overflow: 'hidden', marginBottom: 14 },
+  timerFill: { position: 'absolute', top: 0, left: 0, bottom: 0, borderRadius: 999, transition: 'width 1s linear' },
+  timerTeks: {
+    position: 'absolute', right: 12, top: 0, bottom: 0, display: 'flex', alignItems: 'center', gap: 5,
+    color: '#fff', fontFamily: 'monospace', fontWeight: 800, fontSize: 14,
   },
   soalCard: {
-    background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 18,
-    marginBottom: 14, boxShadow: '0 2px 12px rgba(15,23,42,0.04)',
+    background: '#fff', border: '1px solid #e6e9f5', borderRadius: 16, padding: 18,
+    marginBottom: 14, boxShadow: '0 6px 22px rgba(13,23,77,0.18)',
   },
+  tiket: { position: 'relative', background: '#fff', borderRadius: 18, boxShadow: '0 10px 30px rgba(13,23,77,0.28)', maxWidth: 460, margin: '0 auto' },
+  tiketGaris: { borderTop: '2px dashed #d3d8e8', margin: '0 14px' },
+  tiketLekukKiri: { position: 'absolute', left: -11, top: '50%', transform: 'translateY(-50%)', width: 22, height: 22, borderRadius: 999, background: '#3D4DB7' },
+  tiketLekukKanan: { position: 'absolute', right: -11, top: '50%', transform: 'translateY(-50%)', width: 22, height: 22, borderRadius: 999, background: '#3D4DB7' },
   camPip: {
     position: 'fixed', right: 12, bottom: 12, width: 104, height: 78, borderRadius: 12,
     overflow: 'hidden', border: '2px solid #fff', boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
     zIndex: 40, background: '#0f172a',
   },
+
 };
