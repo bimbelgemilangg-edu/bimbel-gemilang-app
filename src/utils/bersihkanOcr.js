@@ -31,14 +31,37 @@ const RE_SLOGAN_BUKU = /^\s*(belajar|has[ij]l|hbsil|mbksimal|winimal)\s*(minimal
 const PUNCAKUS_AKHIR = /[.!?:;…)\]"']$/;
 
 function barisGarbar(baris) {
-  const huruf = baris.replace(/[^a-zA-Z]/g, '');
+  const t = String(baris ?? '').trim();
+  const huruf = t.replace(/[^a-zA-Z]/g, '');
   if (huruf.length < 3) return false;
   const vokal = (huruf.match(/[aeiouAEIOU]/g) || []).length;
-  // Ambang 1/3: baris pendek yang sepertiga hurufnya saja bukan vokal
-  // hampir pasti rácak OCR ("m5 Om>", "Glsd VeIdiiVUl"). Batas 24 karakter
-  // menjaga kalimat sungguhan tidak pernah masuk sini, dan yang dibuang
-  // tetap DICATAT supaya admin bisa melihat apa yang dibuang.
-  return vokal / huruf.length < 0.34 && baris.trim().length <= 24;
+  const rasioVokal = vokal / huruf.length;
+
+  // 🔥 ATURAN 1 -- baris PENDEK yang sebagian isinya bukan huruf.
+  // Rácak kolom OCR hampir selalu berbentuk begini: "m5 Om>", "xP ~ xQ",
+  // "= Jawaban f", "9 9". Baris pendek yang SELURUHNYA huruf adalah frasa sah
+  // ("yang benar?", "kencang.") dan tidak boleh disentuh.
+  if (t.length <= 24) {
+    const bukanHuruf = t.replace(/[a-zA-Z\s]/g, '').length;
+    if (bukanHuruf / t.length >= 0.25 && rasioVokal < 0.34) return true;
+    // Potongan kolom super pendek ("m sil", "m5 Om>") tidak punya cukup huruf
+    // untuk dinilai rasio vokalnya secara adil; frasa Indonesia sungguhan
+    // sepanjang <= 4 huruf hampir selalu punya >= 2 vokal ("pada", "bila",
+    // "kalian", "ion", "pH" aman karena panjang/rasionya beda).
+    if (huruf.length <= 4 && rasioVokal < 0.34) return true;
+  }
+
+  // 🔥 ATURAN 2 -- rasio vokal sangat rendah di baris berapa pun panjangnya.
+  // Ambang lama 0.34 MEMAKAN TEKS ASLI soal (insiden nyata 2026-10-10, berkas
+  // bab 1 UTBK TPS-PU):
+  //   - soal 48 kehilangan baris "yang PALING TEPAT?"  (4 vokal / 15 huruf)
+  //   - soal 32 kehilangan baris "yang benar?"          (3 / 11)
+  //   - soal 35 kehilangan baris "kencang."             (3 / 8)
+  // Soal tanpa kalimat pertanyaan jauh lebih mahal daripada sampah OCR yang
+  // lolos. Bahasa Indonesia tidak mungkin menghasilkan baris dengan rasio
+  // vokal < 0.20, sedangkan rácak kolom ("m sil", "AAL-SOAL", "xP ~ xQ")
+  // semuanya di bawah itu. Yang dibuang tetap DICATAT, tidak pernah diam-diam.
+  return rasioVokal < 0.2;
 }
 
 function barisTerpotong(baris) {
@@ -50,12 +73,20 @@ function barisTerpotong(baris) {
 /**
  * Bersihkan satu bidang teks (teks soal / opsi / bacaan / pembahasan).
  * @param {string} teks
+ * @param {{jagaBaris?: boolean}} [opsi] `jagaBaris: true` melewatkan reflow
+ *   (penyambungan baris yang belum berakhir tanda baca). Dipakai untuk
+ *   PEMBAHASAN: tata letak barisnya adalah bagian dari isi buku — baris
+ *   "Semua A, B" / "Kesimpulan : ..." / "Jawaban C" harus tetap berdiri
+ *   sendiri supaya bisa dirender bergaya buku (utils/strukturPembahasan.js).
+ *   Bila disambung, struktur itu hancur jadi satu paragraf panjang
+ *   (insiden 2026-10-10: owner membandingkan preview dengan PDF buku).
  * @returns {{teks: string, catatan: string[]}}
  */
-export function bersihkanOcrTeks(teks) {
+export function bersihkanOcrTeks(teks, opsi = {}) {
   const catatan = [];
   const asli = String(teks ?? '');
   if (!asli.trim()) return { teks: asli, catatan };
+  const jagaBaris = Boolean(opsi.jagaBaris);
 
   const baris = asli.split(/\n/);
   const sisa = [];
@@ -107,6 +138,11 @@ export function bersihkanOcrTeks(teks) {
   // tidak pernah disambung. Teks yang terpotong OCR tetap rusak sesudah
   // disambung -- kerusakannya sudah dicatat di atas, penyambungan tidak
   // menyembunyikannya dan tidak memperbaikinya dengan mengarang.
+  // DILEWATI untuk pembahasan (jagaBaris) -- lihat catatan di atas fungsi.
+  if (jagaBaris) {
+    return { teks: sisa.join('\n').replace(/\n{3,}/g, '\n\n').trim(), catatan };
+  }
+
   const gabung = [];
   for (const baris of sisa) {
     if (baris.trim() === '') { gabung.push(''); continue; }
@@ -139,31 +175,50 @@ const normLong = (t) => String(t ?? '').toLowerCase()
 export function buangDuplikatOpsiDariTeks(teksSoal, daftarOpsi = []) {
   let teks = String(teksSoal ?? '');
   const catatan = [];
+  // 🔥 PAGAR KESELAMATAN (insiden nyata 2026-10-10, bab 1 soal 32): aturan
+  // lama berbunyi "buang baris yang normalisasinya MENGANDUNG opsi", tanpa
+  // batas. Begitu teks soal sudah disambung jadi SATU baris panjang (reflow),
+  // satu baris itu "mengandung" opsi E ("Kakek membaca koran di ruang tamu.")
+  // karena kalimat pengantar soal memang mengutip frasa tersebut -> SELURUH
+  // isi soal terhapus dan preview menampilkan soal kosong. Dua pagar kini:
+  //   1. baris panjang cuma boleh dibuang bila isinya HAMPIR HANYA opsi itu
+  //      (sisa kata di luar teks opsi <= 6 kata), dan
+  //   2. satu sapuan tidak boleh membuang lebih dari 60% baris -- kalau
+  //      iya, detektornya yang dicurigai, bukan teksnya: pembuangan dibatalkan
+  //      dan DICATAT supaya admin memeriksa manual.
+  const hampirHanyaOpsi = (nb, o) => {
+    const sisa = nb.split(o).join(' ').trim();
+    return sisa.split(/\s+/).filter(Boolean).length <= 6;
+  };
+  const jumlahBarisAwal = teks.split('\n').filter((b) => b.trim() !== '').length;
   for (const opsi of daftarOpsi) {
     const o = normLong(opsi);
     if (o.length < 20) continue; // opsi terlalu pendek: risiko menghapus kalimat sah
-    const t = normLong(teks);
-    const idx = t.indexOf(o);
-    if (idx === -1) continue;
-    // Hapus dari teks ASLI: cari rentang karakter asli yang cocok secara
-    // longgar dengan mengambil panjang yang sama di teks ternormalisasi
-    // lalu memetakannya kembali -- lebih sederhana: hapus per baris gabung
-    // yang normalisasinya MENGANDUNG atau SAMA dengan opsi.
+    if (!normLong(teks).includes(o)) continue;
     const baris = teks.split('\n');
     const sisaBaris = [];
     let buang = 0;
     for (const b of baris) {
       const nb = normLong(b);
-      if (nb && (nb === o || nb.includes(o) || o.includes(nb) && nb.length >= 20)) {
-        buang += 1;
-        continue;
-      }
+      const cocok = Boolean(nb) && (
+        nb === o
+        || (nb.includes(o) && hampirHanyaOpsi(nb, o))
+        || (o.includes(nb) && nb.length >= 20 && hampirHanyaOpsi(o, nb))
+      );
+      if (cocok) { buang += 1; continue; }
       sisaBaris.push(b);
     }
     if (buang > 0) {
+      const sisaAda = sisaBaris.some((b) => b.trim() !== '');
+      const terlaluBanyak = jumlahBarisAwal > 0 && buang / jumlahBarisAwal > 0.6;
+      if (!sisaAda || terlaluBanyak) {
+        catatan.push(
+          `diduga salinan opsi "${String(opsi).slice(0, 50)}..." di dalam teks soal, tetapi pembuangannya akan mengosongkan/menggerus teks soal (${buang} dari ${jumlahBarisAwal} baris) -- TIDAK dibuang otomatis, PERIKSA MANUAL`,
+        );
+        continue;
+      }
       teks = sisaBaris.join('\n');
       catatan.push(`salinan opsi jawaban dibuang dari teks soal (${buang} baris): "${String(opsi).slice(0, 60)}..."`);
-      void idx;
     }
   }
   // Sisa token punctual yatim hasil penghapusan (mis. ". _") dibersihkan.
@@ -223,4 +278,105 @@ export function penandaiKualitasOcr({ teksSoal = '', opsi = [], pembahasan = '' 
   return catatan;
 }
 
-export default { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks };
+/**
+ * Lengkapi ekor pembahasan yang putus di mesin OCR.
+ *
+ * 🔥 KENAPA ADA (kasus nyata berkas bab 1 UTBK TPS-PU, 2026-10-10): kolom
+ * buku memotong huruf terakhir baris penutup pembahasan, jadi yang masuk ke
+ * sistem adalah "Jawaba", "Jawabai", "Jawabat", "Jawabar", "Jawabe",
+ * "Jawaban |", "c Jawaban #", "= Jawaban f", "Jawaban (" -- baris yang
+ * TIDAK BISA diakui sebagai jawaban (dan memang sengaja tidak diakui:
+ * menebak huruf dari "Jawaba" berarti mengklaim A). Akibatnya pembahasan
+ * kehilangan penutup "Jawaban: X" yang di buku selalu ada.
+ *
+ * Fungsi ini TIDAK menebak. Huruf diambil dari `kunciJawaban` soal itu
+ * sendiri, dan HANYA bila baris terakhir pembahasan memang fragmen kata
+ * "jawab" (huruf-huruf lain di sekitarnya sudah dibersihkan lebih dulu).
+ * Hasilnya dicatat, jadi admin tahu penutup itu dilengkapi sistem.
+ *
+ * @param {string} teks pembahasan yang sudah dibersihkan (baris terjaga)
+ * @param {string} kunciJawaban huruf kunci soal, mis. "C"
+ * @returns {{teks: string, catatan: string[]}}
+ */
+export function lengkapEkorJawaban(teks, kunciJawaban) {
+  const catatan = [];
+  const huruf = String(kunciJawaban ?? '').trim().toUpperCase();
+  const asli = String(teks ?? '');
+  if (!asli.trim() || !/^[A-E]$/.test(huruf)) return { teks: asli, catatan };
+
+  // Satu baris diakui sebagai EKOR JAWABAN bila isinya cuma kata
+  // "jawab"/"jawaban" (boleh dipotong OCR di ujungnya) ditambah sampah
+  // simbol di depan/belakang. Contoh nyata berkas owner: "Jawaba'",
+  // "Jawabai", "Jawabat", "Jawabar", "Jawabe", "Jawaban |", "Jawaban (",
+  // "c Jawaban #", "= Jawaban f", "Jawaban", "Jawaban B", "Jawaban: D".
+  // Bila ada KATA lain ("Jawaban yang tepat adalah C") baris itu kalimat
+  // biasa dan tidak disentuh.
+  const ekorJawaban = (baris) => {
+    const t = String(baris ?? '').trim();
+    if (!t || t.length > 40) return null;
+    const norm = t.replace(/\s+/g, ' ');
+    const depan = /^[^A-Za-z]*/.exec(norm)[0];
+    // Sampah depan maksimal 4 karakter ("= ", "c ", "_.j "); lebih dari itu
+    // berarti baris tersebut kalimat biasa yang kebetulan menyebut "jawab".
+    if (depan.length > 4) return null;
+    const m = /^jawab(an)?/i.exec(norm.slice(depan.length));
+    if (!m) return null;
+    let sisa = norm.slice(depan.length + m[0].length);
+    let punyaAn = Boolean(m[1]);
+    // "Jawaba'" = "Jawaban" yang "n"-nya putus jadi tanda kutip: sisa dimulai
+    // huruf 'a'/'n' lalu langsung sampah (bukan kata baru) -> tetap ekor putus.
+    if (!punyaAn && /^[an](?![A-Za-z])/i.test(sisa)) {
+      punyaAn = true;
+      sisa = sisa.slice(1);
+    }
+    sisa = sisa.replace(/^[^A-Za-z]+/, ''); // buang pemisah (: | . # ( dsb.)
+    if (!sisa) return { fragmen: t, ekorHuruf: '' };
+    const ekor = /^[A-Za-z]{1,3}(?![A-Za-z])/.exec(sisa);
+    if (!ekor) return null;               // ada kata lain -> kalimat biasa
+    const belakang = sisa.slice(ekor[0].length).trim();
+    if (/[A-Za-z]/.test(belakang)) return null;
+    return { fragmen: t, ekorHuruf: ekor[0].toUpperCase() };
+  };
+
+  const baris = asli.split('\n');
+  // Cari dari belakang (maks. 3 baris terakhir): OCR kadang menyisakan
+  // baris kosong/titik/simbol di bawah baris jawaban.
+  let idx = -1;
+  let ketemu = null;
+  for (let i = baris.length - 1; i >= 0 && i >= baris.length - 3; i -= 1) {
+    if (!baris[i].trim()) continue;
+    const hasil = ekorJawaban(baris[i]);
+    if (hasil) { idx = i; ketemu = hasil; }
+    break; // baris berisi terakhir sudah diperiksa, apa pun hasilnya
+  }
+  if (idx === -1) return { teks: asli, catatan };
+
+  // 🔥 ATURAN JUJUR: satu huruf A-E setelah "jawab" bisa berarti DUA hal --
+  // jawaban yang tercetak ("Jawaban B") ATAU kata "Jawaban" yang huruf
+  // terakhirnya putus di OCR ("Jawaba" = "Jawaban" tanpa n). Keduanya tidak
+  // bisa dibedakan dari teks saja, jadi baris seperti itu TIDAK PERNAH
+  // ditulis ulang. Yang dilakukan hanya menormalkan bentuknya menjadi
+  // "Jawaban: X" BILA hurufnya sama dengan kunci soal ini. Bila hurufnya
+  // beda dari kunci, itu dugaan kunci yang tidak cocok: urusan admin, dan
+  // tidak boleh ditimpa diam-diam.
+  if (/^[A-E]$/.test(ketemu.ekorHuruf)) {
+    if (ketemu.ekorHuruf !== huruf) return { teks: asli, catatan };
+    if (ketemu.fragmen === `Jawaban: ${huruf}`) return { teks: asli, catatan };
+    baris[idx] = `Jawaban: ${huruf}`;
+    catatan.push(
+      `baris penutup pembahasan ("${ketemu.fragmen}") dinormalkan menjadi "Jawaban: ${huruf}" (hurufnya sama dengan kunci soal ini)`,
+    );
+    return { teks: baris.join('\n').replace(/\n{3,}/g, '\n\n').trim(), catatan };
+  }
+
+  // Ekor yang BUKAN huruf A-E ("Jawaba'", "Jawabat", "Jawabar", "Jawabe",
+  // "Jawaban |", "= Jawaban f", "Jawaban") adalah potongan OCR: huruf
+  // penutupnya diisi dari kunci soal ini, dan DICATAT.
+  baris[idx] = `Jawaban: ${huruf}`;
+  catatan.push(
+    `baris penutup pembahasan terpotong OCR ("${ketemu.fragmen}") dilengkapi dari kunci jawaban soal ini menjadi "Jawaban: ${huruf}"`,
+  );
+  return { teks: baris.join('\n').replace(/\n{3,}/g, '\n\n').trim(), catatan };
+}
+
+export default { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks, lengkapEkorJawaban };

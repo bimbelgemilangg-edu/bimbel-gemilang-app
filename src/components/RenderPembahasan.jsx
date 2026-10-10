@@ -12,6 +12,7 @@
 import React from 'react';
 import RenderMath from './RenderMath';
 import { strukturPembahasan, pecahHighlight } from '../utils/strukturPembahasan';
+import { lengkapEkorJawaban } from '../utils/bersihkanOcr';
 
 const S = {
   kode: {
@@ -47,8 +48,17 @@ function Baris({ teks }) {
   );
 }
 
-export default function RenderPembahasan({ teks }) {
-  const blok = strukturPembahasan(teks);
+/**
+ * @param {{teks: string, kunci?: string}} props
+ *   `kunci` (opsional) = huruf kunci jawaban soal ini. Dipakai HANYA untuk
+ *   melengkapi baris penutup yang putus di mesin OCR ("Jawaba", "Jawaban |",
+ *   "= Jawaban f") supaya bentuknya sama dengan buku. Bukan tebakan: hurufnya
+ *   diambil dari kunci soal itu sendiri, dan bila kunci tidak ada baris
+ *   fragmen itu dibiarkan apa adanya (tidak pernah mengarang huruf).
+ */
+export default function RenderPembahasan({ teks, kunci = '' }) {
+  const ekor = kunci ? lengkapEkorJawaban(teks, kunci) : { teks: teks ?? '', catatan: [] };
+  const blok = strukturPembahasan(ekor.teks);
   if (!blok.length) return null;
   return (
     <div>

@@ -57,7 +57,11 @@ import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
 // 🔥 BARU (2026-10-10): pembersih sisa OCR + penandai kualitas. Sampah
 // struktural dibuang otomatis; yang meragukan (kata terpotong, opsi
 // kebocoran lintas kolom) DICATAT untuk mata admin, tidak ditebak.
-import { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks } from '../../../utils/bersihkanOcr';
+import { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks, lengkapEkorJawaban } from '../../../utils/bersihkanOcr';
+// Pembahasan dirender bergaya BUKU (kode sumber -> premis/logika ->
+// kesimpulan bergaris -> "Jawaban: X") supaya preview admin sama dengan
+// yang dilihat siswa & yang tercetak di naskah kunci.
+import RenderPembahasan from '../../../components/RenderPembahasan';
 // Kode sumber = "akar" soal: tanpa baris ini tidak tahu soal berasal dari
 // buku/tahun mana. Dipakai untuk chip di kepala kartu preview (insiden
 // 2026-10-10: pemilik bertanya "mana?" karena kode tidak kelihatan).
@@ -1452,11 +1456,58 @@ function parseHTMLTableElement(table) {
   if (!table) return null;
   const rows = Array.from(table.querySelectorAll('tr'));
   if (!rows.length) return null;
-  const firstCells = Array.from(rows[0].querySelectorAll(':scope > th, :scope > td'));
-  const header = firstCells.map(cell => htmlNodeText(cell));
-  const bodyRowsMentah = rows.slice(1).map(row =>
-    Array.from(row.querySelectorAll(':scope > th, :scope > td')).map(cell => htmlNodeText(cell)),
-  );
+  // 🔥 BARU (kasus nyata 2026-10-10, soal 40 bab 1 UTBK TPS-PU): tabel buku
+  // punya KEPALA DUA BARIS ("Tahun" rowspan=2 | "Daerah Tempat Tinggal"
+  // colspan=2, lalu "Perkotaan" | "Perdesaan"). Aturan lama hanya membaca
+  // baris pertama sebagai kepala, jadi baris "Perkotaan/Perdesaan" jatuh ke
+  // BADAN tabel dan tercetak sebagai data -- nama kolom hilang. Kepala kini
+  // dibaca sebanyak baris yang tercakup rowspan, dan digabung per kolom
+  // ("Daerah Tempat Tinggal — Perkotaan") karena model tabel internal hanya
+  // punya satu baris kepala.
+  const selBaris = (row) => Array.from(row.querySelectorAll(':scope > th, :scope > td'));
+  const angka = (cell, nama) => Number(cell.getAttribute(nama)) || cell[nama === 'rowspan' ? 'rowSpan' : 'colSpan'] || 1;
+  // Berapa baris yang menjadi KEPALA: sebanyak rowspan terbesar di baris
+  // pertama (kepala dua baris = rowspan 2), dibatasi jumlah baris yang ada.
+  const rentangKepala = (() => {
+    let maks = 1;
+    for (const cell of selBaris(rows[0])) {
+      const rs = angka(cell, 'rowspan');
+      if (rs > maks) maks = rs;
+    }
+    return Math.min(Math.max(maks, 1), rows.length);
+  })();
+  // Susun tabel jadi kisi per kolom (algoritma tabel HTML baku: sel dengan
+  // rowspan menempati baris di bawahnya, colspan menempati kolom di kanannya).
+  const kisi = [];
+  rows.forEach((row, r) => {
+    kisi[r] = kisi[r] || [];
+    let c = 0;
+    for (const cell of selBaris(row)) {
+      while (kisi[r][c] !== undefined) c += 1;
+      const rs = Math.max(angka(cell, 'rowspan'), 1);
+      const cs = Math.max(angka(cell, 'colspan'), 1);
+      const teks = htmlNodeText(cell);
+      for (let i = 0; i < rs; i += 1) {
+        for (let j = 0; j < cs; j += 1) {
+          kisi[r + i] = kisi[r + i] || [];
+          kisi[r + i][c + j] = teks;
+        }
+      }
+      c += cs;
+    }
+  });
+  const lebar = kisi.reduce((maks, row) => Math.max(maks, (row || []).length), 0);
+  const kepalaKolom = Array.from({ length: lebar }, (_, c) => {
+    const bagian = [];
+    for (let r = 0; r < rentangKepala; r += 1) {
+      const t = (kisi[r] || [])[c];
+      if (t && !bagian.includes(t)) bagian.push(t);
+    }
+    return bagian.join(' — ');
+  });
+  const firstCells = kepalaKolom;
+  const header = firstCells;
+  const bodyRowsMentah = rows.slice(rentangKepala).map(row => selBaris(row).map(cell => htmlNodeText(cell)));
   const hasHeader = Boolean(rows[0].querySelector(':scope > th')) || table.getAttribute('data-has-header') === 'true';
   const bodyRowsArray = hasHeader ? bodyRowsMentah : [header, ...bodyRowsMentah];
 
@@ -1782,6 +1833,10 @@ function parseHTMLMaster(raw) {
     // per mapel dulu sebelum import atau import ulang berkali-kali.
     const mapelRaw = safeString(node.getAttribute('data-mapel') || node.getAttribute('data-mata-pelajaran')).trim();
 
+    // Catatan tambahan yang lahir SAAT membangun objek soal (mis. ekor
+    // pembahasan yang dilengkapi dari kunci) -- digabung ke catatan_ocr.
+    const catatanEkorJawaban = [];
+
     return {
       nomor,
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
@@ -1794,7 +1849,17 @@ function parseHTMLMaster(raw) {
       // (konsisten sama instruksi prompt: "true adalah default"). Cuma
       // jadi false kalau AI eksplisit nulis data-value="false".
       kunci_terverifikasi: verifNode ? safeString(verifNode.getAttribute?.('data-value') || verifNode.textContent || '').toLowerCase().trim() !== 'false' : true,
-      pembahasan: perbaikiKurungHimpunanLatex(bersihkanOcrTeks(htmlNodeText(explanationNode)).teks),
+      // 🔥 2026-10-10: pembahasan diperlakukan KHUSUS -- barisnya TIDAK
+      // disambung (jagaBaris) karena tata letak baris = struktur buku
+      // (premis / kesimpulan / jawaban), lalu ekor "Jawaba/Jawabat/..."
+      // yang putus di OCR dilengkapi dari kunci soal itu sendiri (bukan
+      // ditebak) dan DICATAT di catatan_ocr.
+      pembahasan: (() => {
+        const mentah = perbaikiKurungHimpunanLatex(bersihkanOcrTeks(htmlNodeText(explanationNode), { jagaBaris: true }).teks);
+        const ekor = lengkapEkorJawaban(mentah, normalizeAnswerKey(keyRaw));
+        catatanEkorJawaban.push(...ekor.catatan);
+        return ekor.teks;
+      })(),
       pernyataan: parseHTMLStatements(tfNode),
       tabel_benar_salah: parseHTMLStatements(categoryNode),
       pasangan: parseHTMLPairs(matchingNode),
@@ -1816,6 +1881,7 @@ function parseHTMLMaster(raw) {
           opsi: opsi_jawaban.map((o) => o.teks),
           pembahasan: htmlNodeText(explanationNode),
         }),
+        ...catatanEkorJawaban,
       ],
     };
   });
@@ -5493,11 +5559,15 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
         </div>
       )}
 
-      {/* PEMBAHASAN */}
+      {/* PEMBAHASAN -- dirender SAMA seperti yang dilihat siswa & tercetak di
+          naskah kunci (komponen RenderPembahasan): kode sumber jadi kepala,
+          premis/logika jadi blok, "Kesimpulan :" bergaris atas, "Jawaban: X"
+          tebal rata kanan. Dulu kotak ini memakai RichText polos sehingga
+          owner membandingkannya dengan PDF buku dan melihat bentuk yang beda. */}
       {q.pembahasan && (
-        <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', borderColor: '#a5f3fc', backgroundColor: '#ecfeff', padding: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: '#0e7490', marginBottom: '8px' }}>💡 PEMBAHASAN</div>
-          <RichText text={q.pembahasan} gambar={[]} mathReady={mathReady} />
+        <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e7e5e4', borderLeft: '4px solid #7c3aed', backgroundColor: '#fffdf7', padding: '14px 16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: '800', letterSpacing: 0.6, color: '#6d28d9', marginBottom: '10px' }}>💡 PEMBAHASAN <span style={{ fontWeight: 500, color: '#a8a29e', letterSpacing: 0 }}>(tampilan sama dengan layar siswa & naskah cetak)</span></div>
+          <RenderPembahasan teks={q.pembahasan} kunci={q.kunci_jawaban} />
         </div>
       )}
 

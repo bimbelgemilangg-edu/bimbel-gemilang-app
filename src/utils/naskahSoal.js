@@ -85,6 +85,7 @@ import { teksSoalDari, bacaanDari, WATERMARK } from './fieldButirSoal.js';
 // kode sumber jadi kepala butir, pembahasan berstruktur (premis, kesimpulan
 // bergaris, jawaban tebal). Parser strukturnya murni & teruji.
 import { pisahKodeSumber, strukturPembahasan } from './strukturPembahasan.js';
+import { lengkapEkorJawaban } from './bersihkanOcr.js';
 
 // Di-re-export supaya pemakai mesin cetak cukup mengimpor dari satu berkas,
 // dan supaya test bisa memaku bahwa layar & cetak memakai konstanta yang sama.
@@ -596,10 +597,14 @@ export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
 // Pembahasan jadi blok-blok bergaya buku: kode sumber, premis/logika
 // berblok tengah, kesimpulan bergaris atas, jawaban tebal rata kanan, dan
 // highlight ==teks== / <mark> jadi sorotan seperti stabilo tentor.
-function htmlBlokPembahasan(teks) {
+function htmlBlokPembahasan(teks, kunciHuruf = '') {
   const sorot = (t) => escapeHtml(t).replace(/==([^=]+)==|&lt;mark&gt;(.*?)&lt;\/mark&gt;/gi,
     (m, a, b) => `<span class="nsk-bhs-mark">${a ?? b}</span>`);
-  return strukturPembahasan(teks).map((b) => {
+  // Ekor pembahasan yang putus di OCR ("Jawaba", "= Jawaban f") dilengkapi
+  // dari kunci soal itu sendiri -- aturan yang sama dengan layar siswa &
+  // preview impor, supaya naskah kunci guru identik bentuknya dengan buku.
+  const lengkap = lengkapEkorJawaban(teks, kunciHuruf);
+  return strukturPembahasan(lengkap.teks).map((b) => {
     if (b.jenis === 'kode') return `<div class="nsk-bhs-kode">${escapeHtml(b.teks)}</div>`;
     if (b.jenis === 'logika') return `<div class="nsk-bhs-logika">${b.baris.map(sorot).join('<br/>')}</div>`;
     if (b.jenis === 'kesimpulan') return `<div class="nsk-bhs-kesimpulan">${sorot(b.teks)}</div>`;
@@ -612,7 +617,9 @@ export function kunciButirNaskahHtml(soal, nomor) {
   const kunci = Array.isArray(soal?.kunciJawaban)
     ? soal.kunciJawaban.map((k) => String.fromCharCode(65 + Number(k))).join(', ')
     : escapeHtml(String(soal?.kunci ?? soal?.kunciJawaban ?? '-'));
-  const pembahasan = soal?.pembahasan ? htmlBlokPembahasan(soal.pembahasan) : '';
+  const pembahasan = soal?.pembahasan
+    ? htmlBlokPembahasan(soal.pembahasan, Array.isArray(soal?.kunciJawaban) ? '' : String(soal?.kunci ?? soal?.kunciJawaban ?? ''))
+    : '';
   const perBaris = kunciPerBaris(soal);
   const kunciTampil = perBaris ? `${kunci}${kunci ? ' · ' : ''}${perBaris}` : kunci;
   return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? `<div class="nsk-bhs">${pembahasan}</div>` : ''}</div></div>`;

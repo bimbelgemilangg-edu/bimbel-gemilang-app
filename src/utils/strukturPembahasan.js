@@ -38,10 +38,24 @@ export function pisahKodeSumber(teks) {
 // sebagai jawaban A -- mengklaim huruf yang tidak ada di sumber.
 const RE_JAWABAN = /^\s*(?:\d+\s*)?(?:jawaban|jawab)(?:\s*[:.]\s*|\s+)([A-E])\s*$/i;
 const RE_KESIMPULAN = /^\s*kesimpulan\s*:/i;
-const RE_PREMIS = /^\s*premis\s*(?:\d+|i+v?|i+)\s*:/i;
+const RE_PREMIS = /^\s*premis\s*(?:\d+|i+v?|i+)?\s*:/i;
 const RE_LOGIKA_SIMBOL = /^\s*~?\s*[pqrs]\s*[>→7\-o]+\s*~?\s*[\w,()]+/i;
-const RE_LOGIKA_KUANTOR = /^\s*(semua|sebagian|beberapa)\s+[A-Z]\s*(,\s*(~?\s*[A-Z]|bukan\s+[A-Z])[.,]?)?\s*$/i;
+// 🔥 2026-10-10: aturan lama hanya menerima SATU huruf di tiap sisi
+// ("Semua A, B"), padahal buku sumber owner menulis bentuk nyata seperti
+//   "Kesimpulan : Sebagian A, B dan Bukan C"   (bab 1 soal 1 & 6)
+//   "Kesimpulan : Semua A yang C, B"           (bab 1 soal 10 & 19)
+//   "Kesimpulan : Sebagian yang C, bukan A"    (bab 1 soal 22)
+//   "Premis 1: Semua A,B" / "beberapa B,C"     (bab 1 soal 46, tanpa spasi)
+// Baris yang tidak dikenali jatuh jadi paragraf biasa, jadi blok logika di
+// preview/cetak tidak pernah mirip buku -- keluhan owner "tampilan gak sama
+// dengan pdf pembahasan".
+const RE_TOKEN_SIMBOL = String.raw`(?:yang\s+)?(?:bukan\s+)?[A-Z](?:\s*(?:,|\bdan\b)\s*(?:yang\s+)?(?:bukan\s+)?[A-Z])*`;
+const RE_LOGIKA_KUANTOR = new RegExp(String.raw`^\s*(?:semua|sebagian|beberapa|seluruh)\s+` + RE_TOKEN_SIMBOL + String.raw`\s*[.,:]?\s*$`, 'i');
 const RE_LOGIKA_PENDEK = /^\s*(p|q|r|s|pq|qr|pr|por|pqr)\s*$/i;
+// Penanda ala buku di margin ("PU: ...", "PK: ...", "K: ...", "Rumus :").
+// Hanya diakui bila PENDEK; bila diikuti prosa panjang ia kalimat biasa.
+const RE_PENANDA_BUKU = /^\s*(?:PU|PK|K|Rumus)\s*:/i;
+const BATAS_PENANDA_BUKU = 40;
 
 /**
  * @param {string} teks pembahasan mentah
@@ -67,7 +81,13 @@ export function strukturPembahasan(teks) {
     const j = b.match(RE_JAWABAN);
     if (j) { flushLogika(); blok.push({ jenis: 'jawaban', huruf: j[1].toUpperCase() }); continue; }
     if (RE_KESIMPULAN.test(b)) { flushLogika(); blok.push({ jenis: 'kesimpulan', teks: b }); continue; }
-    if (RE_PREMIS.test(b) || RE_LOGIKA_SIMBOL.test(b) || RE_LOGIKA_KUANTOR.test(b) || RE_LOGIKA_PENDEK.test(b)) {
+    if (
+      RE_PREMIS.test(b)
+      || RE_LOGIKA_SIMBOL.test(b)
+      || RE_LOGIKA_KUANTOR.test(b)
+      || RE_LOGIKA_PENDEK.test(b)
+      || (RE_PENANDA_BUKU.test(b) && b.length <= BATAS_PENANDA_BUKU)
+    ) {
       logikaBuffer.push(b);
       continue;
     }
