@@ -82,11 +82,15 @@ export function susunBannerTarget(target, perbandingan, o = {}) {
   const [p1, p2] = perbandingan.pilihan || [];
   const skor = perbandingan.skorSiswa;
 
+  // 🔥 2026-10-10 (keputusan owner): label verifikasi & sanggahan TIDAK tampil
+  // di dashboard siswa -- penjelasannya disampaikan admin/konselor langsung
+  // saat konsultasi. Kartu siswa adalah alat motivasi; kejujuran datanya
+  // hidup di sisi admin, di catatan kaki surat PDF, dan di test.
   const baris = [];
   if (skor === null || skor === undefined) {
-    baris.push('Skor try out skala UTBK belum diinput pembimbing — zona kesiapan belum bisa dihitung.');
+    baris.push('Skor try out terakhir belum ada — zona kesiapan belum bisa dihitung.');
   } else {
-    baris.push(`Skor try out skala UTBK terakhir: ${skor} (input pembimbing, bukan skor UTBK resmi).`);
+    baris.push(`Skor try out terakhir: ${skor}.`);
   }
   // Urutan cek PENTING: prodi tidak terdata -> skor siswa belum ada -> skor
   // acuan belum ada -> zona. Membaliknya menghasilkan pesan yang menyalahkan
@@ -114,8 +118,7 @@ export function susunBannerTarget(target, perbandingan, o = {}) {
     pilihan: perbandingan.pilihan || [],
     formasi: perbandingan.formasi || null,
     baris,
-    disclaimer: 'Skor acuan adalah estimasi, bukan passing grade resmi panitia. '
-      + 'Skor try out Gemilang tidak otomatis setara skor UTBK. '
+    penunjuk: 'Detail angka acuan dibahas langsung bersama pembimbing Gemilang. '
       + 'Pilihan final tetap keputusanmu bersama orang tua dan pembimbing.',
     keteranganSkor: o.keteranganSkor || null,
   };

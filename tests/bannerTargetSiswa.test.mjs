@@ -119,24 +119,26 @@ uji('kartu menyebut kedua pilihan, zona, dan pengingat keputusan', () => {
   assert.ok(b.baris.some((x) => /Pilihan 1/.test(x)));
   assert.ok(b.baris.some((x) => /Pilihan 2/.test(x) && /jaring pengaman/.test(x)));
   assert.ok(b.baris.some((x) => /Zona/.test(x)));
-  assert.match(b.disclaimer, /bukan passing grade resmi/i);
-  assert.match(b.disclaimer, /orang tua/);
+  assert.match(b.penunjuk, /orang tua/);
   assert.match(b.judul, /2027/);
 });
 
 uji('INVARIAN: tanpa skor, kartu mengaku belum bisa menghitung zona', () => {
   const t = target();
   const b = susunBannerTarget(t, banding(t, null));
-  assert.ok(b.baris.some((x) => /belum diinput/.test(x)), 'jangan tampil zona tanpa skor');
+  assert.ok(b.baris.some((x) => /belum ada/.test(x)), 'jangan tampil zona tanpa skor');
   assert.ok(!b.baris.some((x) => /Zona (Hijau|Kuning|Merah)/.test(x)), 'tidak boleh ada zona palsu');
 });
 
-uji('INVARIAN: skor acuan selalu disebut sebagai estimasi di kartu', () => {
+uji('INVARIAN (keputusan owner 2026-10-10): dashboard siswa bersih dari label verifikasi', () => {
+  // Verifikasi dijelaskan admin langsung saat konsultasi; kartu siswa adalah
+  // alat motivasi. Kejujuran datanya hidup di sisi admin, catatan kaki surat
+  // PDF, dan test -- bukan di layar anak.
   const t = target();
   const b = susunBannerTarget(t, banding(t, 685));
-  const semua = b.baris.join(' ') + b.disclaimer;
-  assert.match(semua, /estimasi|acuan/i);
-  assert.ok(!/passing grade/i.test(b.baris.join(' ')), 'istilah terlarang tidak boleh muncul');
+  const semua = `${b.baris.join(' ')} ${b.penunjuk} ${b.chip}`;
+  assert.ok(!/belum_verifikasi|verifikasi|estimasi|passing grade/i.test(semua), semua);
+  assert.match(b.penunjuk, /pembimbing/, 'penjelasan dialihkan ke pembimbing, bukan dihapus');
 });
 
 uji('kartu untuk prodi yang belum terdata tetap jujur, bukan kosong', () => {

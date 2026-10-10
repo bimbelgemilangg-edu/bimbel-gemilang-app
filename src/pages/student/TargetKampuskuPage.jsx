@@ -10,10 +10,13 @@
 // ============================================================
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, PlayCircle, Trophy } from 'lucide-react';
+import { Target, PlayCircle, Trophy, FileDown } from 'lucide-react';
 import { KartuTargetSiswa } from '../../components/BannerTargetSiswa';
-import { useDataTargetKampus } from '../../services/dataTargetKampus';
+import { useDataTargetKampus, muatDataTargetKampus } from '../../services/dataTargetKampus';
 import { useProfilSiswa } from '../../utils/profilSiswa';
+import { muatStatusSiswa } from '../../utils/statusAkunSiswa';
+import { isiSuratTarget } from '../../utils/isiSuratTarget';
+import { ambilAsetSurat, unduhSuratTarget } from '../../utils/suratTargetPdf';
 
 const S = {
   wrap: { maxWidth: 760, margin: '0 auto', padding: 16 },
@@ -56,6 +59,20 @@ export default function TargetKampuskuPage() {
       </p>
       <KartuTargetSiswa studentId={studentId} profil={profil} />
       <div style={{ marginTop: 14 }}>
+        <button type="button" style={S.pintu} onClick={async () => {
+          const [st, data] = await Promise.all([muatStatusSiswa(), muatDataTargetKampus(studentId)]);
+          if (!data) return;
+          const isi = isiSuratTarget({
+            siswa: st?.student || {},
+            target: data.target,
+            pilihan: keadaan.perbandingan?.pilihan || [],
+            skor: data.target?.skorTerakhirUtbk?.nilai ?? null,
+          });
+          const aset = await ambilAsetSurat();
+          await unduhSuratTarget(isi, aset);
+        }}>
+          <FileDown size={18} color="#7c3aed" /> Unduh Surat Komitmenku (PDF resmi Gemilang)
+        </button>
         <button type="button" style={S.pintu} onClick={() => navigate('/siswa/tryout')}>
           <PlayCircle size={18} color="#7c3aed" /> Kerjakan try out — skormu menggeser zona kesiapan
         </button>

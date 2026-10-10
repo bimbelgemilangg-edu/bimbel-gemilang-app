@@ -35,13 +35,15 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   collection, collectionGroup, query, where, getDocs, doc, setDoc, addDoc, updateDoc, serverTimestamp,
 } from 'firebase/firestore';
-import { Search, Save, ShieldAlert, Landmark, Pencil, CheckCircle2 } from 'lucide-react';
+import { Search, Save, ShieldAlert, Landmark, Pencil, CheckCircle2, FileDown } from 'lucide-react';
 import { db } from '../../../firebase';
 import { bolehMasukAreaAdmin } from '../../../utils/roleAkses';
 import { ambilSesiAdmin } from '../../../utils/adminAuth';
 import { LINGKUNGAN_FIREBASE } from '../../../firebase';
 import { ekstrakAngkaKelas } from '../../../utils/aksesKontenSiswa';
-import { bentukTarget, validasiTarget, buatVersiBaru } from '../../../utils/targetKampus';
+import { bentukTarget, validasiTarget, buatVersiBaru, susunPerbandingan } from '../../../utils/targetKampus';
+import { isiSuratTarget } from '../../../utils/isiSuratTarget';
+import { ambilAsetSurat, unduhSuratTarget } from '../../../utils/suratTargetPdf';
 import { bandingkanSkor, nilaiFormasi, ZONA } from '../../../utils/zonaKesiapan';
 import { labelUntukTampilan, sanggahanSkor, bungkusSkorHasilEdit, validasiEditProdi } from '../../../utils/statusDataPtn';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
@@ -282,6 +284,36 @@ export default function TargetKampusSiswaPage() {
       setPesanEdit('Tersimpan. Semua layar yang membaca prodi ini akan memakai angka baru.');
     } catch (e) {
       setPesanEdit(`Gagal menyimpan: ${e.message}`);
+    }
+  }
+
+  // Surat PDF bisa dicetak SEBELUM maupun sesudah simpan: saat konsultasi
+  // berlangsung, admin sering butuh kertasnya di tangan orang tua dulu.
+  async function cetakSurat() {
+    const d1 = dariKunci(p1);
+    const d2 = dariKunci(p2);
+    if (!d1 || !siswaTerpilih) return;
+    try {
+      const peta = {};
+      [d1, d2].filter(Boolean).forEach((d) => { peta[`${d.idPtn}|${d.id}`] = d; });
+      const sementara = bentukTarget({
+        studentId: siswaTerpilih.studentId || siswaTerpilih.id,
+        tahunSeleksi: targetLama?.tahunSeleksi || new Date().getFullYear() + 1,
+        versi: targetLama?.versi || 1,
+        pilihan: [
+          { urutan: 1, idPtn: d1.idPtn, idProdi: d1.id },
+          ...(d2 ? [{ urutan: 2, idPtn: d2.idPtn, idProdi: d2.id }] : []),
+        ],
+      });
+      const perb = susunPerbandingan(sementara, peta, skorAngka);
+      const isi = isiSuratTarget({
+        siswa: siswaTerpilih, target: sementara, pilihan: perb.pilihan, skor: skorAngka,
+        meta: { namaKonselor: ambilSesiAdmin()?.nama || '' },
+      });
+      const aset = await ambilAsetSurat();
+      await unduhSuratTarget(isi, aset);
+    } catch (e) {
+      setPesan(`Gagal mencetak surat: ${e.message}`);
     }
   }
 
@@ -589,6 +621,9 @@ export default function TargetKampusSiswaPage() {
             <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
               <button type="button" style={(!p1 || sibuk) ? S.tombolMati : S.tombol} disabled={!p1 || sibuk} onClick={simpan}>
                 <Save size={16} /> {targetLama ? `Simpan sebagai versi ${(targetLama.versi || 0) + 1}` : 'Daftarkan target (versi 1)'}
+              </button>
+              <button type="button" style={!p1 ? S.tombolMati : { ...S.tombol, background: '#7c3aed' }} disabled={!p1} onClick={cetakSurat}>
+                <FileDown size={16} /> Cetak Surat Target (PDF)
               </button>
               <span style={S.kecil}>{sanggahanSkor()}</span>
             </div>

@@ -96,7 +96,6 @@ export function KartuTargetSiswa({ studentId, profil }) {
                   <b>min {p.skorReferensi?.minimum?.nilai ?? '—'}</b>
                   {' · rata-rata '}{p.skorReferensi?.rataRata?.nilai ?? '—'}
                   {' · maks '}{p.skorReferensi?.maksimum?.nilai ?? '—'}
-                  {' '}<i>(estimasi, bukan angka resmi)</i>
                 </div>
                 <div>Daya tampung {p.dayaTampung?.nilai ?? '—'} · peminat {p.peminat?.nilai ?? '—'}</div>
                 {p.syaratKhusus && p.syaratKhusus !== 'Tidak Ada Syarat Khusus' && (
@@ -123,7 +122,7 @@ export function KartuTargetSiswa({ studentId, profil }) {
         <div style={{ fontSize: 11, color: '#7c77a8', marginTop: 6 }}>Skor: {banner.keteranganSkor}</div>
       )}
       <div style={{ fontSize: 10.5, color: '#8b85b8', marginTop: 8, lineHeight: 1.6 }}>
-        {banner.disclaimer}
+        {banner.penunjuk}
       </div>
     </div>
   );
