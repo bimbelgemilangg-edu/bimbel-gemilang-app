@@ -47,7 +47,14 @@ export function normJenjangSiswa(jenjang) {
  */
 export function layakTampilTarget({ fiturAktif, jenjang, kelasSekolah, target }) {
   if (fiturAktif !== true) return { layak: false, alasan: 'fitur target kampus belum aktif untuk siswa ini' };
-  if (normJenjangSiswa(jenjang) !== 'sma') return { layak: false, alasan: `jenjang ${jenjang || '(kosong)'} tidak mengikuti rasionalisasi kampus` };
+  // jenjang efektif: dokumen students punya field jenjang, tapi profil sisi
+  // siswa (utils/profilSiswa.js) sengaja hanya membawa nama & kelas. Nilai
+  // kelas seperti "12 SMA" sudah memuat jenjangnya, jadi dipakai sebagai
+  // cadangan -- tanpa ini, menu sidebar & halaman siswa tidak pernah muncul
+  // padahal dashboard muncul (bug yang tertangkap screenshot owner
+  // 2026-10-10: kartu ada, menu TARGET KAMPUS tidak).
+  const jenjangEfektif = normJenjangSiswa(jenjang) || normJenjangSiswa(kelasSekolah);
+  if (jenjangEfektif !== 'sma') return { layak: false, alasan: `jenjang ${jenjang || kelasSekolah || '(kosong)'} tidak mengikuti rasionalisasi kampus` };
   if (ekstrakAngkaKelas(kelasSekolah) !== '12') return { layak: false, alasan: `kelas ${kelasSekolah || '(kosong)'} bukan kelas 12` };
   if (!target || typeof target !== 'object') return { layak: false, alasan: 'siswa belum didaftarkan konsultasi target kampus' };
   if (!Array.isArray(target.pilihan) || target.pilihan.length < 1) return { layak: false, alasan: 'target belum punya pilihan prodi' };

@@ -88,6 +88,15 @@ uji('target tanpa pilihan tidak tampil (dokumen nyasar/rusak)', () => {
   assert.equal(r.layak, false);
 });
 
+uji('profil tanpa field jenjang tetap layak bila kelasnya menyebut SMA', () => {
+  // Kasus nyata: profil sisi siswa hanya membawa nama & kelas. Menu sidebar
+  // pernah hilang karena gate meminta field yang tidak ada di profil itu.
+  const r = layakTampilTarget({ fiturAktif: true, jenjang: undefined, kelasSekolah: '12 SMA', target: target() });
+  assert.equal(r.layak, true, r.alasan);
+  const r2 = layakTampilTarget({ fiturAktif: true, jenjang: undefined, kelasSekolah: '9 SMP', target: target() });
+  assert.equal(r2.layak, false, 'SMP tetap tidak tersentuh');
+});
+
 uji('normJenjangSiswa mengenali varian penulisan yang ada di data', () => {
   assert.equal(normJenjangSiswa('SMA'), 'sma');
   assert.equal(normJenjangSiswa('MA'), 'sma');
