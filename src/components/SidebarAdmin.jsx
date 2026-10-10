@@ -14,7 +14,7 @@ import {
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
   Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox,
-  Library,
+  Library, Landmark,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -241,6 +241,17 @@ const SidebarAdmin = () => {
       items: [
         { name: 'Pengguna Admin', path: '/admin/pengguna', icon: <KeyRound size={18} /> },
         { name: 'Jejak Aktivitas', path: '/admin/audit',  icon: <History size={18} /> },
+      ]
+    }] : []),
+    // 🔥 BARU (2026-10-10): database kampus & program studi. Hanya Owner &
+    // Manajer, sama seperti grup KEAMANAN: isinya data strategis yang dipakai
+    // konsultasi kelas 12, bukan operasional harian kasir. Rutenya ikut
+    // dikunci di App.jsx (ManajerRoute) -- menyembunyikan menu saja tidak
+    // cukup, mengikuti prinsip repo sendiri.
+    ...((owner || manajer) ? [{
+      label: '🎯 TARGET KAMPUS',
+      items: [
+        { name: 'Impor Database PTN', path: '/admin/ptn/impor', icon: <Landmark size={18} /> },
       ]
     }] : []),
     {

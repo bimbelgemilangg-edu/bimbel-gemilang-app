@@ -63,6 +63,10 @@ import OwnerFinance from './pages/admin/OwnerFinance';
 // Keduanya dikunci ManajerRoute di bawah -- hanya Owner & Manajer.
 import AdminUsers from './pages/admin/AdminUsers';
 import AuditLogPage from './pages/admin/AuditLogPage';
+// 🔥 BARU (2026-10-10): pintu masuk database PTN & prodi ke Firestore.
+// Dikunci ManajerRoute + cek peran di dalam komponen, sama seperti
+// kelola akun admin: mengelola database kampus bukan kerja kasir.
+import ImporDatabasePtnPage from './pages/admin/ptn/ImporDatabasePtnPage';
 
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
@@ -791,6 +795,14 @@ function App() {
         <Route
           path="/admin/audit"
           element={<ManajerRoute><AuditLogPage /></ManajerRoute>}
+        />
+        {/* 🔥 BARU (2026-10-10): impor database PTN & prodi. Gerbangnya dua
+            lapis seperti halaman manajer lain: rute dikunci ManajerRoute DAN
+            komponennya memeriksa peran sendiri, supaya kasir yang membuka
+            URL melihat penjelasan, bukan layar kosong. */}
+        <Route
+          path="/admin/ptn/impor"
+          element={<ManajerRoute><ImporDatabasePtnPage /></ManajerRoute>}
         />
         <Route
           path="/admin/pengguna-admin"

@@ -232,16 +232,48 @@ Bukan kartu kosong, bukan error, dan bukan angka karangan.
 | # | Pekerjaan | Perkiraan |
 |---|---|---|
 | 1 | Koleksi `target_kampus_siswa` + `target_kampus_riwayat` (bentuk di `docs/RANCANGAN-DATABASE-PTN.md` §4.4) | ½ hari |
-| 2 | **Panel admin impor PTN** — upload `IMPOR-PTN-2026.json`, pratinjau + **tampilkan `masalah[]`**, konfirmasi, tulis Firestore. Mengikuti pola `MesinBankSoalPage.jsx` | 1–2 hari |
+| 2 | ~~Panel admin impor PTN~~ **SELESAI 2026-10-10**: `/admin/ptn/impor` (rute + menu terkunci Owner/Manajer), pratinjau + daftar `masalah[]` + konfirmasi ganda + tulis batch + jejak audit. Lihat §4.3 | — |
 | 3 | **Panel admin target siswa** — pilih PTN/prodi untuk siswa kelas 12, wajib `alasanPerubahan`, catat ke `audit_logs` | 1 hari |
 | 4 | **Halaman verifikasi data** — antrean prodi `belum_verifikasi`; admin buka portal SNPMB, isi `sumberUrl` + `diambilPada` + `resmi`. **Ini yang mengubah §2.1 dokumen audit dari masalah jadi proses** | 1 hari |
 | 5 | **Layar siswa "Target Kampusku"** (§4.1) | 2 hari |
 | 6 | **Pembanding prodi** — pilih 2 dari database, lihat berdampingan | 1 hari |
 | 7 | Semua di atas **di belakang `sakelarFitur`** (`docs/MODE-UJI-COBA-FITUR.md` §2) | — |
 
-**Syarat sebelum layar siswa dibuat:** butir 2 harus jalan dulu, karena layar
-siswa membaca dari Firestore dan sampai sekarang `IMPOR-PTN-2026.json` masih
-berupa berkas di repo.
+**Syarat sebelum layar siswa dibuat:** butir 2 harus DIJALANKAN dulu terhadap
+database dev (layar siswa membaca dari Firestore; sampai impor dijalankan,
+`IMPOR-PTN-2026.json` masih berupa berkas di repo). Lihat §4.3 untuk cara
+menjalankannya dengan aman.
+
+### 4.3 Halaman `/admin/ptn/impor` — cara pakai yang aman
+
+Halaman ini sudah ada di branch `fitur/infrastruktur-pilot` dan lolos kedua
+penjaga CI sungguhan. Empat pengamannya (rinci di kepala berkas halamannya):
+
+1. **Peran.** Hanya Owner & Manajer. Kasir yang membuka URL-nya melihat layar
+   "Akses Ditolak" berisi penjelasan — tidak dilempar diam-diam.
+2. **Pita lingkungan.** Bila aplikasi menunjuk Firestore **produksi**, pita
+   MERAH tampil tepat di atas tombol tulis. Bila dev, pita biru.
+3. **Konfirmasi ganda.** Centang "seluruh skor berstatus estimasi" wajib;
+   centang kedua wajib bila berkas membawa catatan error. Tanpa centang,
+   tombol tulis tidak aktif.
+4. **Jejak audit.** Impor yang berhasil tercatat di `audit_logs`
+   (`ptn.impor`) bersama nama akun, jumlah dokumen, nama berkas, dan
+   lingkungannya.
+
+Urutan menjalankan yang disarankan:
+
+```
+1. npm run dev dengan .env.local menunjuk proyek Firebase dev
+2. buka /admin/ptn/impor, unggah IMPOR-PTN-2026.json, periksa pratinjau
+3. tulis -> periksa isi Firestore dev di Console
+4. ulangi impor yang sama sekali lagi -> jumlah dokumen harus TETAP
+   (idempoten: ID dokumen berasal dari ID berkas, impor ulang menimpa)
+5. baru setelah itu jalankan terhadap produksi, dengan kesadaran penuh
+```
+
+Impor **tidak menghapus** prodi yang tidak ada di berkas. Menjadikan database
+"persis seperti berkas" termasuk membuang data verifikasi manusia adalah
+tindakan terpisah yang belum dibangun — sengaja.
 
 **`api/` tidak boleh disentuh** — repo sudah di **12/12** function Vercel;
 function ke-13 membuat **semua deploy gagal**. Panel impor harus berjalan di
