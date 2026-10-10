@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from 'react-router-dom';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
+import { ChipTargetSiswa, KartuTargetSiswa } from '../../components/BannerTargetSiswa';
 import StudentDigitalCard from '../../components/StudentDigitalCard';
 import MaskotAstronot from '../../components/MaskotAstronot';
 import {
@@ -582,11 +583,15 @@ const StudentDashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
           <div>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>{greeting.icon} {greeting.text}</p>
-            <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 20 : 25, fontWeight: 800, color: '#1e293b' }}>{studentName}!</h1>
+            <h1 style={{ margin: '2px 0 0', fontSize: isMobile ? 20 : 25, fontWeight: 800, color: '#1e293b' }}><ChipTargetSiswa studentId={studentId} profil={studentProfile} />{studentName}!</h1>
             <p style={{ color: '#64748b', marginTop: 5, fontSize: 12 }}>
               {(studentProfile?.kategori || studentProgram || 'Reguler')} • Kelas {studentProfile?.kelasSekolah || studentKelas || '-'}
               {studentNim && <span style={{ marginLeft: 8, fontSize: 10, background: '#eef2ff', color: '#4338ca', padding: '2px 8px', borderRadius: 20, fontWeight: 700 }}>🆔 {studentNim}</span>}
             </p>
+            {/* 🔥 BARU (2026-10-10): kartu target rasionalisasi kampus. Me-render
+                null untuk siswa yang tidak didaftarkan admin, jadi dashboard
+                SD/SMP/kelas 10-11 tidak berubah sedikit pun. */}
+            <KartuTargetSiswa studentId={studentId} profil={studentProfile} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
             <button
