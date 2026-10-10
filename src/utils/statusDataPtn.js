@@ -124,7 +124,65 @@ export function labelUntukTampilan(bungkus) {
   };
 }
 
+/**
+ * Bungkus skor hasil EDIT ADMIN di halaman target.
+ *
+ * Bedanya dari bungkusAngka() saat impor: di sini admin bisa mengisi sumber
+ * resmi + tanggal pengecekan, sehingga statusnya BOLEH naik jadi
+ * 'terverifikasi'. Naik hanya bila ketiganya ada (resmi + sumberUrl +
+ * diambilPada) -- setengah verifikasi tetap 'belum_verifikasi', karena
+ * "saya yakin angka ini benar" bukan sumber.
+ */
+export function bungkusSkorHasilEdit({ nilai, sumberUrl = null, diambilPada = null, tahunSeleksi = null, resmi = false }) {
+  const n = Number(nilai);
+  const sah = nilai !== null && nilai !== undefined && nilai !== '' && Number.isFinite(n);
+  const lengkap = resmi === true && !!sumberUrl && !!diambilPada;
+  return {
+    nilai: sah ? n : null,
+    statusData: !sah
+      ? STATUS_DATA.BELUM_TERSEDIA
+      : (lengkap ? STATUS_DATA.TERVERIFIKASI : STATUS_DATA.BELUM_VERIFIKASI),
+    resmi: resmi === true,
+    sumber: 'edit admin',
+    sumberUrl: sumberUrl || null,
+    diambilPada: diambilPada || null,
+    tahunSeleksi: tahunSeleksi ?? null,
+  };
+}
+
+/**
+ * Periksa isian form edit prodi sebelum ditulis.
+ * @returns {string[]} daftar masalah; kosong berarti sah
+ */
+export function validasiEditProdi({ skorMinimum = null, skorRataRata = null, skorMaksimum = null, sumberUrl = null, diambilPada = null, tahunSeleksi = null } = {}) {
+  const masalah = [];
+  const angkaSkor = [skorMinimum, skorRataRata, skorMaksimum];
+  for (const [i, v] of angkaSkor.entries()) {
+    if (v === null || v === undefined || v === '') continue;
+    const n = Number(v);
+    if (!Number.isFinite(n) || n < 0 || n > 1000) {
+      masalah.push(`skor ke-${i + 1} "${v}" di luar rentang wajar 0-1000`);
+    }
+  }
+  const [mn, rt, mx] = angkaSkor.map((v) => (v === null || v === undefined || v === '' ? null : Number(v)));
+  if (mn !== null && rt !== null && mx !== null && !(mn <= rt && rt <= mx)) {
+    masalah.push('urutan skor harus minimum <= rata-rata <= maksimum');
+  }
+  if (sumberUrl && !/^https?:\/\//.test(String(sumberUrl))) {
+    masalah.push('sumberUrl harus diawali http:// atau https://');
+  }
+  if (diambilPada && !/^\d{4}-\d{2}-\d{2}$/.test(String(diambilPada))) {
+    masalah.push('diambilPada harus berformat YYYY-MM-DD');
+  }
+  if (tahunSeleksi !== null && tahunSeleksi !== undefined && tahunSeleksi !== '') {
+    const t = Number(tahunSeleksi);
+    if (!Number.isInteger(t) || t < 2020 || t > 2040) masalah.push('tahunSeleksi tidak wajar');
+  }
+  return masalah;
+}
+
 export default {
   STATUS_DATA, LABEL_STATUS, bolehTampilTanpaPeringatan,
   bungkusAngka, sanggahanSkor, labelUntukTampilan,
+  bungkusSkorHasilEdit, validasiEditProdi,
 };
