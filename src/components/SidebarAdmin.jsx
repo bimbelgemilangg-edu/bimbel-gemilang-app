@@ -14,7 +14,7 @@ import {
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
   Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox,
-  Library, Landmark,
+  Library, Landmark, Target,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -252,6 +252,7 @@ const SidebarAdmin = () => {
       label: '🎯 TARGET KAMPUS',
       items: [
         { name: 'Impor Database PTN', path: '/admin/ptn/impor', icon: <Landmark size={18} /> },
+        { name: 'Target Kampus Siswa', path: '/admin/ptn/target', icon: <Target size={18} /> },
       ]
     }] : []),
     {

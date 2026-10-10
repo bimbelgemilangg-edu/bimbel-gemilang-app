@@ -67,6 +67,8 @@ import AuditLogPage from './pages/admin/AuditLogPage';
 // Dikunci ManajerRoute + cek peran di dalam komponen, sama seperti
 // kelola akun admin: mengelola database kampus bukan kerja kasir.
 import ImporDatabasePtnPage from './pages/admin/ptn/ImporDatabasePtnPage';
+import TargetKampusSiswaPage from './pages/admin/ptn/TargetKampusSiswaPage';
+import TargetKampuskuPage from './pages/student/TargetKampuskuPage';
 
 import StudentList from './pages/admin/students/StudentList';
 import AddStudent from './pages/admin/students/AddStudent';
@@ -805,6 +807,10 @@ function App() {
           element={<ManajerRoute><ImporDatabasePtnPage /></ManajerRoute>}
         />
         <Route
+          path="/admin/ptn/target"
+          element={<ManajerRoute><TargetKampusSiswaPage /></ManajerRoute>}
+        />
+        <Route
           path="/admin/pengguna-admin"
           element={<Navigate to="/admin/pengguna" replace />}
         />
@@ -941,6 +947,11 @@ function App() {
         <Route path="/siswa/rapor" element={<SiswaPage><StudentGrades /></SiswaPage>} />
         <Route path="/siswa/smart-rapor" element={<SiswaPage><StudentSmartReport /></SiswaPage>} />
         <Route path="/siswa/leaderboard" element={<SiswaFiturBelajar fitur="Papan Peringkat"><LeaderboardPage /></SiswaFiturBelajar>} />
+        {/* 🔥 BARU (2026-10-10): halaman target kampus siswa. Terbuka untuk
+            semua siswa yang login (SiswaPage), tapi isinya menjaga sendiri:
+            siswa yang tidak didaftarkan melihat penjelasan, bukan kartu
+            kosong -- jadi SD/SMP tidak "tersentuh" walau tahu URL-nya. */}
+        <Route path="/siswa/target-kampus" element={<SiswaPage><TargetKampuskuPage /></SiswaPage>} />
         <Route
           path="/siswa/leaderboard-raport"
           element={<SiswaPage><StudentLeaderboard /></SiswaPage>}
