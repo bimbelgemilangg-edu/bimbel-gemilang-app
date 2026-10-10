@@ -125,5 +125,5 @@ yang layak satu commit khusus. Sampai saat itu: **satu klik admin tiap pekan**
    dari sheet KOMPONEN yang sudah dipetakan `kunciSubtesPtn.js`).
 4. Penskoran sesi try out menulis `skalaUtbk` lewat `skorSkalaUtbk.js`, dan
    halaman target membaca itu bila ada (input manual jadi cadangan).
-5. Uji端到端 dengan akun uji: paket Sabtu draf → terbitkan → kerjakan sebagai
+5. Uji ujung-ke-ujung dengan akun uji: paket Sabtu draf → terbitkan → kerjakan sebagai
    `uji12` → skor skala muncul di kartu target Kaka tanpa diketik siapa pun.
