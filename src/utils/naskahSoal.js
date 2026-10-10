@@ -81,6 +81,10 @@ export function butuhLebarPenuh(tinggiKolomMm, kapasitasMm) {
 // di fieldButirSoal.js supaya mesin cetak dan kartu baca layar tidak punya
 // dua pengertian berbeda soal "teks soal" dan "bacaan".
 import { teksSoalDari, bacaanDari, WATERMARK } from './fieldButirSoal.js';
+// 🔥 BARU (2026-10-10, permintaan owner): naskah cetak bergaya buku sumber --
+// kode sumber jadi kepala butir, pembahasan berstruktur (premis, kesimpulan
+// bergaris, jawaban tebal). Parser strukturnya murni & teruji.
+import { pisahKodeSumber, strukturPembahasan } from './strukturPembahasan.js';
 
 // Di-re-export supaya pemakai mesin cetak cukup mengimpor dari satu berkas,
 // dan supaya test bisa memaku bahwa layar & cetak memakai konstanta yang sama.
@@ -350,6 +354,14 @@ export const GAYA_NASKAH = `
 .naskah .nsk-esai { margin: 2mm 0 0 7.5mm; }
 .naskah .nsk-esai > div { border-bottom: 0.4pt solid #64748b; height: 7mm; }
 .naskah .nsk-kunci-baris { font-size: 10.8px; }
+/* 2026-10-10: gaya buku untuk kode sumber & pembahasan (permintaan owner). */
+.naskah .nsk-kode { font-weight: 800; font-size: 10.5pt; margin: 0 0 1mm 7.5mm; }
+.naskah .nsk-bhs { margin: 0.8mm 0 0 7.5mm; font-size: 10.2px; line-height: 1.55; }
+.naskah .nsk-bhs-kode { font-weight: 800; margin-top: 1mm; }
+.naskah .nsk-bhs-logika { text-align: center; font-family: 'Courier New', monospace; background: #f8fafc; border: 0.4pt solid #cbd5e1; border-radius: 1mm; padding: 1mm 2mm; margin: 1mm 0; }
+.naskah .nsk-bhs-kesimpulan { font-weight: 800; border-top: 0.7pt solid #0f172a; display: inline-block; padding-top: 0.6mm; margin-top: 0.8mm; }
+.naskah .nsk-bhs-jawaban { font-weight: 800; text-align: right; }
+.naskah .nsk-bhs-mark { background: #fef08a; padding: 0 1px; }
 /* 2026-10-08: blok BACAAN/wacana. Sebelumnya mesin cetak TIDAK merender
    field bacaan sama sekali, sehingga soal literasi tercetak tanpa teks
    yang harus dibaca -- siswa disuruh menjawab pertanyaan tentang wacana
@@ -514,7 +526,9 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   // sudah dicetak sebagai blok stimulus terpisah (lihat kelompokkanStimulus),
   // butir menerima opsiButir.tanpaBacaan supaya teks tidak TERULANG per nomor.
   const bacaanHtml = opsiButir.tanpaBacaan ? '' : bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar);
-  const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
+  const kodeSrc = pisahKodeSumber(teksSoalDari(soal));
+  const kodeHtml = kodeSrc.kode ? `<div class="nsk-kode">${escapeHtml(kodeSrc.kode)}</div>` : '';
+  const segmen = pisahTeksDanGambar(kodeSrc.teks, soal?.gambarUrls);
   const badan = segmen
     .map((sg) => {
       if (sg.jenis === 'teks') return `<div>${teksKeHtml(sg.isi)}</div>`;
@@ -561,7 +575,7 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   // esai tempat menjawabnya -- siswa tidak lagi disuruh menjawab di ruang
   // yang tidak tercetak.
   const isiJawaban = isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar);
-  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
+  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${kodeHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
 }
 
 export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
@@ -579,18 +593,29 @@ export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
   </div>`;
 }
 
+// Pembahasan jadi blok-blok bergaya buku: kode sumber, premis/logika
+// berblok tengah, kesimpulan bergaris atas, jawaban tebal rata kanan, dan
+// highlight ==teks== / <mark> jadi sorotan seperti stabilo tentor.
+function htmlBlokPembahasan(teks) {
+  const sorot = (t) => escapeHtml(t).replace(/==([^=]+)==|&lt;mark&gt;(.*?)&lt;\/mark&gt;/gi,
+    (m, a, b) => `<span class="nsk-bhs-mark">${a ?? b}</span>`);
+  return strukturPembahasan(teks).map((b) => {
+    if (b.jenis === 'kode') return `<div class="nsk-bhs-kode">${escapeHtml(b.teks)}</div>`;
+    if (b.jenis === 'logika') return `<div class="nsk-bhs-logika">${b.baris.map(sorot).join('<br/>')}</div>`;
+    if (b.jenis === 'kesimpulan') return `<div class="nsk-bhs-kesimpulan">${sorot(b.teks)}</div>`;
+    if (b.jenis === 'jawaban') return `<div class="nsk-bhs-jawaban">Jawaban: ${escapeHtml(b.huruf)}</div>`;
+    return `<div class="nsk-bhs-teks">${sorot(b.teks)}</div>`;
+  }).join('');
+}
+
 export function kunciButirNaskahHtml(soal, nomor) {
   const kunci = Array.isArray(soal?.kunciJawaban)
     ? soal.kunciJawaban.map((k) => String.fromCharCode(65 + Number(k))).join(', ')
     : escapeHtml(String(soal?.kunci ?? soal?.kunciJawaban ?? '-'));
-  const pembahasan = soal?.pembahasan
-    ? pisahTeksDanGambar(soal.pembahasan, soal?.gambarUrls)
-      .map((sg) => (sg.jenis === 'teks' ? teksKeHtml(sg.isi) : ''))
-      .join(' ')
-    : '';
+  const pembahasan = soal?.pembahasan ? htmlBlokPembahasan(soal.pembahasan) : '';
   const perBaris = kunciPerBaris(soal);
   const kunciTampil = perBaris ? `${kunci}${kunci ? ' · ' : ''}${perBaris}` : kunci;
-  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? ` — ${pembahasan}` : ''}</div></div>`;
+  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? `<div class="nsk-bhs">${pembahasan}</div>` : ''}</div></div>`;
 }
 
 /**

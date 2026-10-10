@@ -54,6 +54,8 @@ import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
+import { pisahKodeSumber } from '../../../utils/strukturPembahasan';
+import RenderPembahasan from '../../../components/RenderPembahasan';
 import { teksSoalDari } from '../../../utils/fieldButirSoal';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
@@ -1014,8 +1016,11 @@ export default function TryOutView() {
                   <RenderMath text={s.bacaan.teks} />
                 </div>
               )}
+              {pisahKodeSumber(teksSoalDari(s)).kode && (
+                <div style={st.kodeChip}>{pisahKodeSumber(teksSoalDari(s)).kode}</div>
+              )}
               <TeksSoalBergambar
-                teks={teksSoalDari(s)}
+                teks={pisahKodeSumber(teksSoalDari(s)).teks}
                 gambarUrls={s.gambarUrls} gambarMeta={s.gambarMeta || null}
                 gayaTeks={{ marginBottom: 10 }}
                 gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
@@ -1030,7 +1035,7 @@ export default function TryOutView() {
                     Lihat pembahasan ▾
                   </summary>
                   <div style={{ marginTop: 8, background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
-                    <div style={{ marginTop: 4 }}><TeksSoalBergambar teks={s.pembahasan} gambarUrls={s.gambarUrls || []} gambarMeta={s.gambarMeta || null} region="pembahasan" /></div>
+                    <div style={{ marginTop: 4 }}><RenderPembahasan teks={s.pembahasan} /></div>
                   </div>
                 </details>
               )}
@@ -1204,6 +1209,10 @@ export default function TryOutView() {
 
       {/* SOAL */}
       <div style={st.soalCard}>
+        {(() => {
+          const kodeSrc = pisahKodeSumber(teksSoalDari(soalAktif));
+          return kodeSrc.kode ? <div style={st.kodeChip}>{kodeSrc.kode}</div> : null;
+        })()}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
           <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>
             Soal {indexSoalAktif + 1}/{daftarSoalAktif.length}
@@ -1251,7 +1260,7 @@ export default function TryOutView() {
           </div>
         )}
         <TeksSoalBergambar
-          teks={teksSoalDari(soalAktif)}
+          teks={pisahKodeSumber(teksSoalDari(soalAktif)).teks}
           gambarUrls={soalAktif.gambarUrls} gambarMeta={soalAktif.gambarMeta || null}
           gayaTeks={{ fontSize: 14, marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
@@ -1417,6 +1426,11 @@ const st = {
     marginBottom: 14, boxShadow: '0 6px 22px rgba(13,23,77,0.18)',
   },
   tiket: { position: 'relative', background: '#fff', borderRadius: 18, boxShadow: '0 10px 30px rgba(13,23,77,0.28)', maxWidth: 460, margin: '0 auto' },
+  kodeChip: {
+    display: 'inline-block', fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4,
+    color: '#0f172a', borderLeft: '3px solid #7c3aed', paddingLeft: 8,
+    marginBottom: 8, textTransform: 'uppercase',
+  },
   tiketGaris: { borderTop: '2px dashed #d3d8e8', margin: '0 14px' },
   tiketLekukKiri: { position: 'absolute', left: -11, top: '50%', transform: 'translateY(-50%)', width: 22, height: 22, borderRadius: 999, background: '#3D4DB7' },
   tiketLekukKanan: { position: 'absolute', right: -11, top: '50%', transform: 'translateY(-50%)', width: 22, height: 22, borderRadius: 999, background: '#3D4DB7' },
