@@ -63,6 +63,15 @@ export function bersihkanOcrTeks(teks) {
   let potong = 0;
 
   for (const b of baris) {
+    // Baris kode sumber ([SNMPTN 2009/TPA/392/22] dst.) KERAS terhadap
+    // semua aturan buang: rasio vokalnya rendah (banyak konsonan kapital),
+    // sehingga pernah tertelan aturan baris-garbar -- insiden 2026-10-10
+    // yang membuat preview kehilangan kepala soal. Kode sumber adalah
+    // sidik jari soal; kehilangannya lebih mahal daripada salah simpan.
+    if (RE_KODE_SUMBER.test(b) && b.trim().length < 60) {
+      sisa.push(b);
+      continue;
+    }
     if (
       RE_PENANDA_HALAMAN.test(b)
       || RE_NOMOR_YATIM.test(b)

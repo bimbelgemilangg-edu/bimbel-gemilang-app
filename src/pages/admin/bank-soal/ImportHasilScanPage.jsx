@@ -58,6 +58,10 @@ import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
 // struktural dibuang otomatis; yang meragukan (kata terpotong, opsi
 // kebocoran lintas kolom) DICATAT untuk mata admin, tidak ditebak.
 import { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks } from '../../../utils/bersihkanOcr';
+// Kode sumber = "akar" soal: tanpa baris ini tidak tahu soal berasal dari
+// buku/tahun mana. Dipakai untuk chip di kepala kartu preview (insiden
+// 2026-10-10: pemilik bertanya "mana?" karena kode tidak kelihatan).
+import { pisahKodeSumber } from '../../../utils/strukturPembahasan';
 // 🔥 2026-10-08: deteksi duplikat di HULU (saat scan) kini berjenjang dan
 // sadar gambar+kunci. Detektor lama membandingkan TEKS PERINTAH SAJA, jadi
 // dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
@@ -5178,6 +5182,11 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
   const jumlahRusak = statusPerGambar.filter(s => s === 'broken').length;
   const jumlahDicek = statusPerGambar.filter(s => s === 'checking').length;
 
+  // Kepala kode sumber dipisah SEKALI di sini: chip di header menjamin kode
+  // selalu kelihatan di awal kartu, dan badan teks menampilkan sisanya saja
+  // (kontrak render yang sama dengan layar siswa & cetak naskah).
+  const kepalaKode = pisahKodeSumber(q.teks_soal || '');
+
   return (
     <div
       style={{
@@ -5189,6 +5198,14 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
     >
       {/* HEADER */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+        {kepalaKode.kode && (
+          <span
+            title="Kode sumber soal -- akar/asal soal ini (tahun ujian & nomor asli di buku)"
+            style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fef9c3', color: '#854d0e', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', border: '1px solid #fde047' }}
+          >
+            📖 {kepalaKode.kode}
+          </span>
+        )}
         <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#dbeafe', color: '#1d4ed8', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
           Soal {q.nomor}
         </span>
@@ -5306,7 +5323,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
       )}
 
       {/* QUESTION */}
-      <RichText text={q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
+      <RichText text={kepalaKode.kode ? kepalaKode.teks : q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
 
       {q.tabel_soal && <QuestionTable table={q.tabel_soal} mathReady={mathReady} />}
 

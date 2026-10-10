@@ -164,6 +164,20 @@ uji('pembahasan yang kodonya cocok tidak dituduh', () => {
   assert.ok(!catatan.some((c) => /tertukar/.test(c)));
 });
 
+uji('REGRESI: baris kode sumber tidak boleh tertelan aturan garbar', () => {
+  // Insiden 2026-10-10: "[SNMPTN 2009/TPA/392/22]" punya rasio vokal rendah
+  // sehingga dikira rácak OCR dan dibuang -- preview kehilangan kepala soal.
+  for (const kode of [
+    '[SNMPTN 2009/TPA/392/22]',
+    'SNMPTN 2010/TPA/942/17',
+    '[SBMPTN 2019/UTBK I/TPS/PU/01]',
+    'UTBK2024/TPS/PU/GEL.2/63',
+  ]) {
+    const r = bersihkanOcrTeks(`${kode}\nIkan A hidup di air tawar.\nIkan C hidup di air laut.`);
+    assert.ok(r.teks.includes(kode), `kode hilang: ${kode} -> ${r.teks}`);
+  }
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
