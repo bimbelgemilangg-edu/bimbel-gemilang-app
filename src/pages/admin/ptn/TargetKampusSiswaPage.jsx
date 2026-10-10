@@ -41,6 +41,7 @@ import { bolehMasukAreaAdmin } from '../../../utils/roleAkses';
 import { ambilSesiAdmin } from '../../../utils/adminAuth';
 import { LINGKUNGAN_FIREBASE } from '../../../firebase';
 import { ekstrakAngkaKelas } from '../../../utils/aksesKontenSiswa';
+import { saringProdi } from '../../../utils/saringProdi';
 import { bentukTarget, validasiTarget, buatVersiBaru, susunPerbandingan } from '../../../utils/targetKampus';
 import { isiSuratTarget } from '../../../utils/isiSuratTarget';
 import { ambilAsetSurat, unduhSuratTarget } from '../../../utils/suratTargetPdf';
@@ -180,15 +181,13 @@ export default function TargetKampusSiswaPage() {
     return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   }, [prodiPtn]);
 
-  const daftarProdi = useMemo(() => {
-    const q = cari.toLowerCase().trim();
-    let list = prodiPtn;
-    if (fakultas) list = list.filter((p) => p.fakultas === fakultas);
-    if (q) {
-      list = prodi.filter((p) => `${p.namaProdi} ${p.namaPtn} ${p.id}`.toLowerCase().includes(q)).slice(0, 40);
-    }
-    return [...list].sort((a, b) => String(a.namaProdi).localeCompare(String(b.namaProdi)));
-  }, [prodiPtn, prodi, fakultas, cari]);
+  // 🔥 2026-10-10 (bug laporan owner): pencarian dulu MELOMPAT ke seluruh
+  // Indonesia walau kampus sudah dipilih. Kini pencarian menyempitkan
+  // cascading yang sedang aktif; menyeluruh hanya saat kampus belum dipilih.
+  const daftarProdi = useMemo(
+    () => saringProdi({ prodi, ptnId, fakultas, cari }),
+    [prodi, ptnId, fakultas, cari],
+  );
 
   const formasi = docP1 && docP2
     ? nilaiFormasi(bandingkanSkor(skorAngka, docP1.skorReferensi), bandingkanSkor(skorAngka, docP2.skorReferensi))
@@ -463,7 +462,7 @@ export default function TargetKampusSiswaPage() {
 
         <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center' }}>
           <Search size={15} style={{ color: '#94a3b8' }} />
-          <input style={S.input} value={cari} onChange={(e) => setCari(e.target.value)} placeholder="jalan pintas: ketik nama prodi / kampus / kode untuk melompati tingkat di atas" />
+          <input style={S.input} value={cari} onChange={(e) => setCari(e.target.value)} placeholder={ptnId ? `cari di dalam ${ptn.find((t) => t.id === ptnId)?.singkatan || 'kampus terpilih'}: nama prodi / fakultas / kampus cabang` : 'jalan pintas: ketik nama prodi / kampus untuk memulai'} />
         </div>
 
         <div style={{ marginTop: 10, maxHeight: 300, overflow: 'auto', border: '1px solid #e2e8f0', borderRadius: 10 }}>
