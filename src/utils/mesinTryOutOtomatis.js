@@ -12,7 +12,20 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../firebase';
+// 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
+// Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
+// Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
+// akan menulis draf ke database produksi tanpa pagar. Dengan injeksi ini,
+// skrip wajib membawa instansinya sendiri dan menolak produksi secara eksplisit.
+import { db as dbBawaan } from '../firebase';
+
+let dbPakai = dbBawaan;
+
+/** Ganti instansi Firestore (untuk skrip). Kembalikan ke bawaan bila null. */
+export function pakaiDb(instansi) {
+  dbPakai = instansi || dbBawaan;
+  return dbPakai;
+}
 // 🔥 BARU (audit 2026-10-10): targetKelas/targetKategori DINORMALKAN saat
 // ditulis. Sebelumnya berkas ini menulis ARRAY (['Semua']) sementara
 // rakitTryOutTentor.js & TerbitkanTryOutPage.jsx menulis STRING, dan semua
@@ -85,14 +98,14 @@ export async function ambilSoalDariBank(opts) {
   let snap;
   try {
     snap = await getDocs(
-      query(collection(db, COL_BANK), where('status', '==', 'aktif'), limit(1500))
+      query(collection(dbPakai, COL_BANK), where('status', '==', 'aktif'), limit(1500))
     );
   } catch (_e) {
     // Sengaja ditelan: query pertama menyaring status 'aktif' dan butuh index
     // gabungan. Kalau indexnya belum ada Firestore melempar error, dan
     // mengambil tanpa saringan tetap lebih berguna daripada gagal total --
     // penyaringan status lalu dilakukan di sisi pemanggil.
-    snap = await getDocs(query(collection(db, COL_BANK), limit(1500)));
+    snap = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
   }
 
   let pool = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -130,7 +143,7 @@ export async function ambilSoalDariBank(opts) {
   pool = acakArray(pool);
 
   if (pool.length < jumlah) {
-    const snap2 = await getDocs(query(collection(db, COL_BANK), limit(1500)));
+    const snap2 = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
     let extra = snap2.docs.map((d) => ({ id: d.id, ...d.data() }));
     if (mapel) {
       extra = extra.filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
@@ -151,7 +164,7 @@ export async function ambilSoalDariBank(opts) {
 }
 
 export async function idSoalBaruDipakai(jenjang, batasPaket = 10) {
-  const snap = await getDocs(collection(db, COL_PAKET));
+  const snap = await getDocs(collection(dbPakai, COL_PAKET));
   const paket = snap.docs
     .map((d) => ({ id: d.id, ...d.data() }))
     .filter((p) => {
@@ -374,7 +387,7 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     sumber: 'mesin-otomatis',
   };
 
-  const ref = await addDoc(collection(db, COL_PAKET), payload);
+  const ref = await addDoc(collection(dbPakai, COL_PAKET), payload);
   return {
     ok: true,
     id: ref.id,
@@ -409,12 +422,12 @@ export async function terbitkanDraf(paketId, rulesOverride) {
   if (ro.waktuBuka) patch.waktuBuka = ro.waktuBuka;
   if (ro.waktuTutup) patch.waktuTutup = ro.waktuTutup;
 
-  await updateDoc(doc(db, COL_PAKET, paketId), patch);
+  await updateDoc(doc(dbPakai, COL_PAKET, paketId), patch);
   return { ok: true, id: paketId };
 }
 
 export async function nonaktifkanPaket(paketId) {
-  await updateDoc(doc(db, COL_PAKET, paketId), {
+  await updateDoc(doc(dbPakai, COL_PAKET, paketId), {
     status: 'nonaktif',
     updatedAt: serverTimestamp(),
   });
@@ -431,7 +444,7 @@ export async function siapkanDrafMingguIni(template, rules) {
     r.jamBuka || template.jamBuka || '07:00',
     r.durasiTotalMenit || template.durasiTotalMenit || 90
   );
-  const existing = await getDocs(collection(db, COL_PAKET));
+  const existing = await getDocs(collection(dbPakai, COL_PAKET));
   const byJudul = new Map();
   existing.docs.forEach((d) => {
     byJudul.set(d.data().judul, { id: d.id, ...d.data() });

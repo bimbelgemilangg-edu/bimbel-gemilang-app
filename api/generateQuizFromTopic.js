@@ -110,6 +110,7 @@ import {
   kunciGeminiUntuk, kelompokUntukMapel, peringatanIsolasi, pesanKunciBelumAda,
 } from '../lib/kunciGemini.js';
 import { MAPEL_UTBK } from '../src/utils/mesinTaksonomiSoal.js';
+import { blokPromptUtbk } from '../lib/promptUtbk.js';
 
 export const maxDuration = 60;
 
@@ -3659,6 +3660,11 @@ function buildUserPrompt({
     `TOPIK: ${topic}`,
 
     `MAPEL: ${mapel}`,
+
+    // 🔥 BARU (2026-10-10): bila mapelnya subtes UTBK, tempelkan blok karakter
+    // & jebakan khas subtes itu (lib/promptUtbk.js, angka dari sheet KOMPONEN
+    // owner). String kosong untuk mapel kurikulum -> perilaku lama utuh.
+    ...(blokPromptUtbk(mapel) ? [blokPromptUtbk(mapel), ''] : []),
 
     `KELAS: ${kelas}`,
 

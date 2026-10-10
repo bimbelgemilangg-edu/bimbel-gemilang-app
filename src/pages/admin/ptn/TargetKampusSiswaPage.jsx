@@ -33,7 +33,7 @@
 // ============================================================
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  collection, collectionGroup, query, where, getDocs, doc, setDoc, addDoc, updateDoc, serverTimestamp,
+  collection, collectionGroup, query, where, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { Search, Save, ShieldAlert, Landmark, Pencil, CheckCircle2, FileDown } from 'lucide-react';
 import { db } from '../../../firebase';
@@ -49,6 +49,7 @@ import { bandingkanSkor, nilaiFormasi, ZONA } from '../../../utils/zonaKesiapan'
 import { labelUntukTampilan, sanggahanSkor, bungkusSkorHasilEdit, validasiEditProdi } from '../../../utils/statusDataPtn';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 import { segarkanDataTargetKampus } from '../../../services/dataTargetKampus';
+import { hitungSkalaSesi, sesiTerbaru } from '../../../utils/hitungSkalaSesi';
 
 const WARNA_ZONA = {
   [ZONA.HIJAU_AMAN]: '#16a34a',
@@ -109,6 +110,7 @@ export default function TargetKampusSiswaPage() {
   const [skor, setSkor] = useState('');
   const [keteranganSkor, setKeteranganSkor] = useState('');
   const [alasan, setAlasan] = useState('');
+  const [skalaOtomatis, setSkalaOtomatis] = useState(null);
   const [sibuk, setSibuk] = useState(false);
   const [pesan, setPesan] = useState('');
 
@@ -213,6 +215,30 @@ export default function TargetKampusSiswaPage() {
       setP1(''); setP2(''); setSkor(''); setKeteranganSkor('');
     }
     setAlasan('');
+    setSkalaOtomatis(null);
+    // Skala UTBK otomatis: ambil sesi tryout selesai terbaru siswa ini, bila
+    // paketnya paket subtes UTBK hitung skala 300-800 dari jawabannya.
+    // Admin tinggal klik "pakai angka ini" -- tidak ada lagi input manual
+    // yang bisa salah ketik.
+    (async () => {
+      try {
+        const sid = siswa.find((x) => x.id === id)?.studentId || id;
+        const snapSesi = await getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', sid)));
+        const ter = sesiTerbaru(snapSesi.docs.map((d) => ({ id: d.id, ...d.data() })));
+        if (!ter?.paketId) return;
+        const snapPaket = await getDoc(doc(db, 'tryout_paket', ter.paketId));
+        const paket = snapPaket.exists() ? { id: snapPaket.id, ...snapPaket.data() } : null;
+        const h = hitungSkalaSesi(ter, paket);
+        if (h.total === null) return;
+        setSkalaOtomatis({
+          total: h.total,
+          judul: paket?.judul || ter.paketId,
+          pada: ter.waktuMulaiMs ? new Date(Number(ter.waktuMulaiMs)).toISOString().slice(0, 10) : '',
+        });
+      } catch (e) {
+        console.warn('[target] skala otomatis dilewati:', e?.message || e);
+      }
+    })();
   }
 
   function bukaDetail(p) {
@@ -572,9 +598,23 @@ export default function TargetKampusSiswaPage() {
               <input style={{ ...S.input, flex: '0 0 120px' }} type="number" value={skor} onChange={(e) => setSkor(e.target.value)} placeholder="mis. 685" />
               <input style={{ ...S.input, flex: '1 1 240px' }} value={keteranganSkor} onChange={(e) => setKeteranganSkor(e.target.value)} placeholder="keterangan wajib: mis. TO 4 Gemilang, 22 Jan 2027" />
             </div>
+            {skalaOtomatis && (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12, color: '#15803d', fontWeight: 700 }}>
+                  ⚡ Skala otomatis tersedia: {skalaOtomatis.total} dari {skalaOtomatis.judul}{skalaOtomatis.pada ? ` (${skalaOtomatis.pada})` : ''}
+                </span>
+                <button
+                  type="button"
+                  style={S.tombolKecil}
+                  onClick={() => { setSkor(String(skalaOtomatis.total)); setKeteranganSkor(`Skala otomatis try out: ${skalaOtomatis.judul}${skalaOtomatis.pada ? `, ${skalaOtomatis.pada}` : ''}`); }}
+                >
+                  Pakai angka ini
+                </button>
+              </div>
+            )}
             <div style={{ ...S.kecil, marginTop: 6 }}>
-              Angka ini BUKAN skor UTBK resmi dan bukan hasil perhitungan aplikasi — ia catatan
-              konsultasi. Karena itu keterangannya wajib diisi.
+              Angka ini BUKAN skor UTBK resmi: ia skala internal 300-800 yang menyerupai rentang
+              UTBK, atau catatan konsultasi bila diisi manual. Karena itu keterangannya wajib diisi.
             </div>
           </div>
 
