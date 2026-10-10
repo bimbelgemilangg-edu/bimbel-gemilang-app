@@ -57,7 +57,7 @@ import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
 // 🔥 BARU (2026-10-10): pembersih sisa OCR + penandai kualitas. Sampah
 // struktural dibuang otomatis; yang meragukan (kata terpotong, opsi
 // kebocoran lintas kolom) DICATAT untuk mata admin, tidak ditebak.
-import { bersihkanOcrTeks, penandaiKualitasOcr } from '../../../utils/bersihkanOcr';
+import { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks } from '../../../utils/bersihkanOcr';
 // 🔥 2026-10-08: deteksi duplikat di HULU (saat scan) kini berjenjang dan
 // sadar gambar+kunci. Detektor lama membandingkan TEKS PERINTAH SAJA, jadi
 // dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
@@ -1693,6 +1693,15 @@ function parseHTMLMaster(raw) {
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
     const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
+    // Cacat khas OCR dua kolom: blok opsi terpindah JUGA ke dalam teks soal
+    // (terlihat di soal 2 berkas owner 2026-10-10). Duplikatnya dibuang
+    // deterministik -- bukan tebakan, karena teksnya identik dengan opsi.
+    const tanpaDuplikat = buangDuplikatOpsiDariTeks(
+      bersihTeksSoal.teks,
+      opsi_jawaban.map((o) => o.teks),
+    );
+    bersihTeksSoal.teks = tanpaDuplikat.teks;
+    bersihTeksSoal.catatan.push(...tanpaDuplikat.catatan);
     const imageNode = getField(node, 'gambar', 'images', 'image');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');

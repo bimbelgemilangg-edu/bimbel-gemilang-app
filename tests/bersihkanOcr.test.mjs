@@ -3,7 +3,7 @@
 // Semua contoh sampah di bawah DISALIN dari berkas nyata yang diimpor owner
 // (50 soal UTBK TPS-PU, 2026-10-10), bukan dikarang.
 import assert from 'node:assert/strict';
-import { bersihkanOcrTeks, penandaiKualitasOcr } from '../src/utils/bersihkanOcr.js';
+import { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks } from '../src/utils/bersihkanOcr.js';
 
 let lulus = 0, gagal = 0;
 function uji(n, f) {
@@ -83,6 +83,54 @@ uji('string kosong/null aman', () => {
     assert.deepEqual(r.catatan, []);
   }
   assert.deepEqual(penandaiKualitasOcr(), []);
+});
+
+uji('REGRESI kasus nyata soal 2: salinan opsi di dalam teks soal dibuang', () => {
+  // Disalin dari berkas owner: Gemini menaruh kelima opsi JUGA di dalam
+  // teks_soal (tanpa awalan huruf, satu opsi terpotong pergantian baris,
+  // satu baris bersampah ". _").
+  const teks = [
+    'Di akhir pekan, keluarga Sumadi selalu pergi',
+    'berwisata.',
+    'Tidak semua tempat wisata yang dikunjungi terletak',
+    'di luar kota.',
+    'Simpulan yang tepat tentang kegiatan keluarga',
+    'Sumadi di akhir pekan, adalah...',
+    'selalu pergi berwisata bukan di luar kota.',
+    '. _ selalu pergi berwisata di luar kota.',
+    'tidak selalu berwisata, kecuali bukan di luar',
+    'kota',
+    'tidak selalu berwisata, kecuali di luar kota.',
+    'selalu pergi berwisata, di luar kota atau bukan',
+    'di luar kota.',
+  ].join('\n');
+  const opsi = [
+    'selalu pergi berwisata bukan di luar kota.',
+    'selalu pergi berwisata di luar kota.',
+    'tidak selalu berwisata, kecuali bukan di luar kota.',
+    'tidak selalu berwisata, kecuali di luar kota.',
+    'selalu pergi berwisata, di luar kota atau bukan di luar kota.',
+  ];
+  const bersih = bersihkanOcrTeks(teks);
+  const hasil = buangDuplikatOpsiDariTeks(bersih.teks, opsi);
+  assert.ok(!/berwisata bukan di luar kota/.test(hasil.teks), 'salinan opsi harus hilang');
+  assert.ok(hasil.teks.includes('Di akhir pekan, keluarga Sumadi selalu pergi berwisata.'), 'reflow menyambung potongan baris');
+  assert.ok(hasil.teks.includes('Simpulan yang tepat tentang kegiatan keluarga Sumadi di akhir pekan, adalah...'));
+  assert.ok(hasil.catatan.some((c) => /salinan opsi/.test(c)));
+});
+
+uji('INVARIAN: teks yang tidak menduplikat opsi tidak berubah', () => {
+  const teks = 'Semua tanaman memiliki buah.\nSebagian tanaman berbunga merah.\nSimpulan yang tepat adalah ...';
+  const hasil = buangDuplikatOpsiDariTeks(teks, ['semua tanaman yang memiliki buah, berbunga merah.', 'x'.repeat(40)]);
+  assert.equal(hasil.teks, teks);
+  assert.deepEqual(hasil.catatan, []);
+});
+
+uji('opsi pendek tidak dipakai sebagai pisau bedah', () => {
+  // Opsi < 20 karakter bisa saja kebetulan menjadi bagian kalimat sah.
+  const teks = 'Berapakah hasil dari 2 + 2? Jelaskan langkahnya.';
+  const hasil = buangDuplikatOpsiDariTeks(teks, ['2 + 2', '4']);
+  assert.equal(hasil.teks, teks);
 });
 
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);

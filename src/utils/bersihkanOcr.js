@@ -86,7 +86,84 @@ export function bersihkanOcrTeks(teks) {
     catatan.push(`${potong} baris diduga terpotong potongan kolom OCR (kata putus di akhir baris) -- PERIKSA MANUAL, tidak ditebak`);
   }
 
-  return { teks: sisa.join('\n').replace(/\n{3,}/g, '\n\n').trim(), catatan };
+  // Reflow AMAN: baris yang berakhir tanpa tanda baca akhir disambung ke
+  // baris berikutnya (itu potongan pergantian baris/kolom, bukan kalimat
+  // baru). Baris yang berakhir tanda baca dipertahankan sebagai barisnya
+  // sendiri -- premis silogisme harus tetap terpisah. Paragraf (\n\n)
+  // tidak pernah disambung. Teks yang terpotong OCR tetap rusak sesudah
+  // disambung -- kerusakannya sudah dicatat di atas, penyambungan tidak
+  // menyembunyikannya dan tidak memperbaikinya dengan mengarang.
+  const gabung = [];
+  for (const baris of sisa) {
+    if (baris.trim() === '') { gabung.push(''); continue; }
+    const prev = gabung[gabung.length - 1];
+    if (prev !== undefined && prev !== '' && !PUNCAKUS_AKHIR.test(prev.trim())) {
+      gabung[gabung.length - 1] = `${prev.trim()} ${baris.trim()}`;
+    } else {
+      gabung.push(baris);
+    }
+  }
+
+  return { teks: gabung.join('\n').replace(/\n{3,}/g, '\n\n').trim(), catatan };
+}
+
+const normLong = (t) => String(t ?? '').toLowerCase()
+  .replace(/[^a-z0-9\s]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+/**
+ * Buang baris/baris-gabung di dalam teks soal yang ternyata SALINAN dari
+ * opsi jawaban (cacat khas OCR dua kolom: blok opsi terpindah juga ke dalam
+ * teks soal). Pencocokan memakai teks normalisasi dan penghapusan substring,
+ * supaya opsi yang terpotong pergantian baris di dalam teks tetap tertangkap.
+ *
+ * @param {string} teksSoal
+ * @param {string[]} daftarOpsi teks opsi apa adanya
+ * @returns {{teks: string, catatan: string[]}}
+ */
+export function buangDuplikatOpsiDariTeks(teksSoal, daftarOpsi = []) {
+  let teks = String(teksSoal ?? '');
+  const catatan = [];
+  for (const opsi of daftarOpsi) {
+    const o = normLong(opsi);
+    if (o.length < 20) continue; // opsi terlalu pendek: risiko menghapus kalimat sah
+    const t = normLong(teks);
+    const idx = t.indexOf(o);
+    if (idx === -1) continue;
+    // Hapus dari teks ASLI: cari rentang karakter asli yang cocok secara
+    // longgar dengan mengambil panjang yang sama di teks ternormalisasi
+    // lalu memetakannya kembali -- lebih sederhana: hapus per baris gabung
+    // yang normalisasinya MENGANDUNG atau SAMA dengan opsi.
+    const baris = teks.split('\n');
+    const sisaBaris = [];
+    let buang = 0;
+    for (const b of baris) {
+      const nb = normLong(b);
+      if (nb && (nb === o || nb.includes(o) || o.includes(nb) && nb.length >= 20)) {
+        buang += 1;
+        continue;
+      }
+      sisaBaris.push(b);
+    }
+    if (buang > 0) {
+      teks = sisaBaris.join('\n');
+      catatan.push(`salinan opsi jawaban dibuang dari teks soal (${buang} baris): "${String(opsi).slice(0, 60)}..."`);
+      void idx;
+    }
+  }
+  // Sisa token punctual yatim hasil penghapusan (mis. ". _") dibersihkan.
+  // Yang dibuang HANYA token puntual-sisa seperti ". _" hasil penghapusan
+    // duplikat. Simbol bermakna (+ = < > / × %) DIPERTAHANKAN -- teks soal
+    // matematika penuh simbol dan filter buta akan melukainya.
+  teks = teks
+    .split('\n')
+    .map((b) => b.split(/\s+/).filter((w) => !(/^[._\-–—~•·'`",;:]{1,2}$/.test(w) && w !== '…')).join(' '))
+    .filter((b, i, arr) => b.trim() !== '' || (i > 0 && arr[i - 1].trim() !== ''))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return { teks, catatan };
 }
 
 /**
@@ -114,4 +191,4 @@ export function penandaiKualitasOcr({ teksSoal = '', opsi = [], pembahasan = '' 
   return catatan;
 }
 
-export default { bersihkanOcrTeks, penandaiKualitasOcr };
+export default { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks };
