@@ -21,6 +21,16 @@ import { db } from '../firebase';
 // siswa tanpa error. Pembacanya sekarang toleran (utils/cocokkanTargetPaket.js),
 // dan penulisnya dinormalkan supaya dokumen baru tidak menambah variasi bentuk.
 import { bentukKanonikTarget } from './cocokkanTargetPaket.js';
+// 🔥 BARU (2026-10-10): alias mapel UTBK diambil dari MAPEL_UTBK, bukan
+// ditulis ulang di sini. Urutan PENTING: entri UTBK harus dicocokkan sebelum
+// bind/bing/mtk, karena nama UTBK mengandung nama mapel kurikulum
+// ('Literasi/Bahasa Indonesia' mengandung 'bahasa indonesia').
+// kodeMapel & cocokkanMapel dipindah ke util murni supaya bisa diuji
+// tanpa Firestore (2026-10-10). Diimpor SEKALIGUS di-re-export supaya
+// pemakai lama tidak perlu mengubah impornya.
+import { kodeMapel, cocokkanMapel } from './aliasMapel.js';
+
+export { kodeMapel, cocokkanMapel };
 
 export const COL_BANK = 'bank_soal';
 export const COL_PAKET = 'tryout_paket';
@@ -49,46 +59,8 @@ export function normJenjang(s) {
   return t;
 }
 
-const ALIAS_MAPEL = [
-  { kode: 'bing_tl', keys: ['bahasa inggris tingkat lanjut', 'inggris tingkat lanjut', 'english advanced'] },
-  { kode: 'bind_tl', keys: ['bahasa indonesia tingkat lanjut', 'indonesia tingkat lanjut'] },
-  { kode: 'mtk_tl', keys: ['matematika tingkat lanjut', 'matematika lanjut', 'mtk tingkat lanjut', 'mtk lanjut'] },
-  { kode: 'bing', keys: ['bahasa inggris', 'english', 'b inggris', 'binggris', 'b.inggris'] },
-  { kode: 'bind', keys: ['bahasa indonesia', 'b indonesia', 'bindo', 'b.indonesia'] },
-  { kode: 'mtk', keys: ['matematika', 'math', 'mtk', 'matematik'] },
-  { kode: 'fis', keys: ['fisika', 'physics'] },
-  { kode: 'kim', keys: ['kimia', 'chemistry'] },
-  { kode: 'bio', keys: ['biologi', 'biology'] },
-  { kode: 'geo', keys: ['geografi', 'geography', 'geo'] },
-  { kode: 'sos', keys: ['sosiologi', 'sociology', 'sosio'] },
-  { kode: 'sej', keys: ['sejarah', 'history'] },
-  { kode: 'eko', keys: ['ekonomi', 'economy'] },
-  { kode: 'pkn', keys: ['ppkn', 'pkn', 'pendidikan kewarganegaraan'] },
-  { kode: 'ipa', keys: ['ipa', 'ilmu pengetahuan alam'] },
-  { kode: 'ips', keys: ['ips', 'ilmu pengetahuan sosial'] },
-  { kode: 'ipas', keys: ['ipas'] },
-];
 
-export function kodeMapel(nama) {
-  const n = norm(nama);
-  if (!n) return '';
-  for (const row of ALIAS_MAPEL) {
-    if (row.keys.some((k) => n === k || n.includes(k))) return row.kode;
-  }
-  return n;
-}
 
-export function cocokkanMapel(soalNama, targetNama) {
-  const a = norm(soalNama);
-  const b = norm(targetNama);
-  if (!b) return true;
-  if (!a) return false;
-  if (a === b) return true;
-  const ka = kodeMapel(a);
-  const kb = kodeMapel(b);
-  if (ka && kb && ka === kb) return true;
-  return false;
-}
 
 export function cocokkanJenjang(soalJenjang, targetJenjang) {
   const t = normJenjang(targetJenjang);

@@ -33,7 +33,7 @@
 // teks yang tidak dikenali dilaporkan lewat `takDikenali`, bukan ditebak.
 // ============================================================
 
-import { KATALOG_MAPEL } from './mesinTaksonomiSoal.js';
+import { KATALOG_MAPEL, MAPEL_UTBK } from './mesinTaksonomiSoal.js';
 
 /** 7 subtes UTBK-SNBT. `id` dipakai sebagai kunci stabil di seluruh fitur. */
 export const SUBTES_UTBK = [
@@ -89,35 +89,45 @@ const POLA_PORTOFOLIO = [
 ];
 
 /**
- * Pemetaan subtes UTBK -> kode mapel Bank Soal Gemilang.
+ * Pemetaan subtes UTBK -> mapel Bank Soal Gemilang.
  *
- * ⚠️ BACA INI SEBELUM MEMAKAINYA UNTUK MENAMPILKAN SKOR.
- * Bank soal Gemilang memakai taksonomi MAPEL KURIKULUM (KATALOG_MAPEL, 22
- * entri: bing, bind, mtk, fis, kim, ...), BUKAN 7 subtes UTBK. Keduanya
- * tumpang tindih tapi tidak sama:
+ * 🔥 BERUBAH 2026-10-10 (permintaan owner: "tambahkan mapel utbk untuk aku
+ * scan soal utbk html"). Sejak tujuh subtes UTBK punya mapel sendiri di bank
+ * soal (MAPEL_UTBK di mesinTaksonomiSoal), pemetaan ini tidak lagi menulis
+ * tangan kode: bagian UTBK-nya DIAMBIL dari field `subtes` di MAPEL_UTBK,
+ * supaya kode bank soal dan id subtes tidak bisa berbeda sendiri.
  *
- *   - PK (Pengetahuan Kuantitatif) dan PM (Penalaran Matematika) dua-duanya
- *     jatuh ke `mtk` di bank soal kita, padahal di UTBK keduanya subtes
- *     terpisah dengan karakter soal berbeda.
- *   - PU (Penalaran Umum) tidak punya padanan mapel sama sekali.
- *   - LBI/LBE mendekati `bind`/`bing`, tapi UTBK menguji literasi teks
- *     akademik, bukan tata bahasa kurikulum.
+ * Bagian KURIKULUM tetap ada sebagai padanan kedua, dan tetap dengan
+ * peringatan lamanya: bank soal kurikulum memakai taksonomi mapel per bab,
+ * sedangkan UTBK menguji literasi & penalaran lintas materi. PK dan PM
+ * dua-duanya masih jatuh ke `mtk` di sisi kurikulum. Jadi urutan hasilnya
+ * selalu: [mapel UTBK yang sepadan] lalu [padanan kurikulum], dan UI boleh
+ * memakai yang pertama untuk "latih soal UTBK-nya" dan yang kedua untuk
+ * "perkuat materi dasarnya".
  *
- * Jadi pemetaan ini SAH untuk menunjukkan ARAH BELAJAR ("prodi ini menekankan
- * kuantitatif, perkuat latihan matematika") dan TIDAK SAH untuk mengubah skor
- * try out internal menjadi perkiraan skor subtes UTBK. Blueprint §3C:
- * "Skor tryout internal Gemilang tidak boleh dianggap otomatis setara dengan
- * skor UTBK resmi."
+ * ⚠️ Tetap berlaku: pemetaan ini sah untuk ARAH BELAJAR, tidak sah untuk
+ * mengubah skor try out internal menjadi perkiraan skor subtes UTBK
+ * (blueprint §3C).
  */
-export const PEMETAAN_SUBTES_KE_MAPEL = {
+const PADANAN_KURIKULUM = {
   PM: ['mtk', 'mtk_tl'],
   PK: ['mtk'],
-  PU: [],                       // tidak ada padanan di taksonomi mapel kita
+  PU: [],                       // tidak ada padanan kurikulum untuk penalaran umum
   PPU: ['bind'],
   PBM: ['bind'],
   LBI: ['bind'],
   LBE: ['bing'],
 };
+
+/** Kode mapel UTBK untuk satu subtes; [] bila memang tidak ada. */
+export function kodeUtbkUntuk(idSubtes) {
+  return MAPEL_UTBK.filter((m) => m.subtes === idSubtes).map((m) => m.kode);
+}
+
+/** Bentuk lama yang dipertahankan untuk kompatibilitas: subtes -> daftar kode. */
+export const PEMETAAN_SUBTES_KE_MAPEL = Object.fromEntries(
+  SUBTES_UTBK.map((s) => [s.id, [...kodeUtbkUntuk(s.id), ...(PADANAN_KURIKULUM[s.id] || [])]]),
+);
 
 /**
  * Uraikan teks subtesKunci.
@@ -174,16 +184,23 @@ export function labelSubtes(id) {
   return NAMA_SUBTES[id] ? `${id} — ${NAMA_SUBTES[id]}` : String(id ?? '');
 }
 
-/** Kode mapel Bank Soal Gemilang yang relevan untuk sebuah subtes. */
+/**
+ * Mapel Bank Soal Gemilang yang relevan untuk sebuah subtes.
+ * Entri UTBK ditandai jenis:'utbk', padanan kurikulum jenis:'kurikulum' --
+ * supaya UI bisa membedakan "latih soal UTBK-nya" dari "perkuat dasarnya".
+ */
 export function mapelGemilangUntuk(idSubtes) {
-  const kode = PEMETAAN_SUBTES_KE_MAPEL[idSubtes] || [];
-  return kode
+  const utbk = MAPEL_UTBK
+    .filter((m) => m.subtes === idSubtes)
+    .map((m) => ({ kode: m.kode, nama: m.nama, jenis: 'utbk' }));
+  const kurikulum = (PADANAN_KURIKULUM[idSubtes] || [])
     .map((k) => KATALOG_MAPEL.find((m) => m.kode === k))
     .filter(Boolean)
-    .map((m) => ({ kode: m.kode, nama: m.nama }));
+    .map((m) => ({ kode: m.kode, nama: m.nama, jenis: 'kurikulum' }));
+  return [...utbk, ...kurikulum];
 }
 
 export default {
-  SUBTES_UTBK, PEMETAAN_SUBTES_KE_MAPEL,
-  uraikanKunciSubtes, labelSubtes, mapelGemilangUntuk,
+  SUBTES_UTBK, PEMETAAN_SUBTES_KE_MAPEL, PADANAN_KURIKULUM,
+  uraikanKunciSubtes, labelSubtes, mapelGemilangUntuk, kodeUtbkUntuk,
 };

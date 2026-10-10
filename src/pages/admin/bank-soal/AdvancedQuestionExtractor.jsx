@@ -24,6 +24,7 @@ import {
   getDocs, query, where,
 } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { NAMA_MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 
 /* ============================================================
    KONSTANTA
@@ -31,11 +32,13 @@ import { db, auth } from '../../../firebase';
 
 const BANK_SOAL_COLLECTION = 'bank_soal';
 
+// Daftar mapel SATU SUMBER dengan ImportHasilScanPage: kurikulum + tujuh
+// subtes UTBK (utils/mesinTaksonomiSoal -> MAPEL_UTBK) + Lainnya.
 const DAFTAR_MAPEL = [
   'Matematika','Fisika','Kimia','Biologi',
   'Bahasa Indonesia','Bahasa Inggris',
   'Ekonomi','Geografi','Sosiologi','Sejarah',
-  'PKN','TPS/Penalaran Umum','Lainnya',
+  'PKN', ...NAMA_MAPEL_UTBK, 'Lainnya',
 ];
 const DAFTAR_JENJANG  = ['SD/MI','SMP/MTs','SMA/MA','SMK','UTBK/SNBT'];
 const DAFTAR_KELAS    = ['1','2','3','4','5','6','7','8','9','10','11','12','Semua'];

@@ -10,7 +10,7 @@
 import assert from 'node:assert/strict';
 import {
   SUBTES_UTBK, uraikanKunciSubtes, labelSubtes, mapelGemilangUntuk,
-  PEMETAAN_SUBTES_KE_MAPEL,
+  PEMETAAN_SUBTES_KE_MAPEL, kodeUtbkUntuk,
 } from '../src/utils/kunciSubtesPtn.js';
 import { KATALOG_MAPEL } from '../src/utils/mesinTaksonomiSoal.js';
 
@@ -139,14 +139,27 @@ uji('pemetaan ke mapel Gemilang hanya merujuk kode yang benar-benar ada di KATAL
     }
     assert.equal(mapelGemilangUntuk(subtes).length, kode.length, subtes);
   }
-  assert.deepEqual(mapelGemilangUntuk('PU'), [], 'PU memang tidak punya padanan mapel');
 });
 
-uji('setiap subtes UTBK terdaftar di pemetaan (boleh kosong, tapi harus eksplisit)', () => {
-  // Yang kosong (PU) harus tertulis sebagai [], bukan hilang — supaya jelas
-  // itu keputusan, bukan kelupaan.
+uji('sejak mapel UTBK ada, setiap subtes punya rumah sendiri di bank soal', () => {
+  // 2026-10-10: dulu PU tidak punya padanan sama sekali (PEMETAAN-nya []).
+  // Sekarang tujuh subtes punya kode utbk_* sendiri; padanan kurikulum tetap
+  // ada sebagai lapis kedua untuk "perkuat materi dasarnya".
   for (const s of SUBTES_UTBK) {
-    assert.ok(s.id in PEMETAAN_SUBTES_KE_MAPEL, `${s.id} belum dipetakan`);
+    const m = mapelGemilangUntuk(s.id);
+    const utbk = m.filter((x) => x.jenis === 'utbk');
+    assert.equal(utbk.length, 1, `${s.id} harus punya tepat satu mapel UTBK`);
+    assert.match(utbk[0].kode, /^utbk_/);
+  }
+  assert.deepEqual(mapelGemilangUntuk('PU').filter((x) => x.jenis === 'kurikulum'), [],
+    'PU tetap tanpa padanan kurikulum — itu fakta taksonominya, bukan kelupaan');
+  assert.deepEqual(mapelGemilangUntuk('PM').map((x) => x.kode), ['utbk_pm', 'mtk', 'mtk_tl']);
+});
+
+uji('kode UTBK diambil dari field subtes MAPEL_UTBK, bukan ditulis tangan lagi', () => {
+  // Satu sumber: kalau kode di mesinTaksonomiSoal berubah, pemetaan ikut.
+  for (const s of SUBTES_UTBK) {
+    assert.deepEqual(kodeUtbkUntuk(s.id), PEMETAAN_SUBTES_KE_MAPEL[s.id].slice(0, 1));
   }
   assert.equal(SUBTES_UTBK.length, 7);
 });

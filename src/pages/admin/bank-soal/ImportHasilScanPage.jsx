@@ -66,6 +66,7 @@ import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
 // Kurikulum Merdeka. Nama di luar peta (TPS/Penalaran Umum, Penguatan Dasar)
 // tetap tersedia karena memang bukan mapel kurikulum.
 import { daftarMapelUntuk, petakanNamaMapel, jenjangDipetakan } from '../../../utils/kurikulumMerdeka';
+import { NAMA_MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 // 🔥 BARU (2026-10-07): keluhan owner "gambar dari Gemini gak muncul
 // semua". Akarnya: Gemini Canvas menulis src="[url](url)" gaya tautan
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
@@ -78,10 +79,16 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 
 const BANK_SOAL_COLLECTION = 'bank_soal';
 
+// 🔥 BARU (2026-10-10): tujuh subtes UTBK-SNBT ikut jadi pilihan mapel scan.
+// Sebelumnya hanya 'TPS/Penalaran Umum' yang ada; enam subtes lain tidak
+// punya rumah sehingga soal hasil scan menumpuk di mapel kurikulum yang
+// berbeda karakter soalnya. Daftarnya SATU SUMBER di utils/mesinTaksonomiSoal
+// (MAPEL_UTBK) supaya halaman ini dan AdvancedQuestionExtractor tidak bisa
+// berbeda daftar lagi.
 const DAFTAR_MAPEL = [
   'Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Indonesia',
   'Bahasa Inggris', 'Ekonomi', 'Geografi', 'Sosiologi', 'Sejarah',
-  'PKN', 'TPS/Penalaran Umum',
+  'PKN', ...NAMA_MAPEL_UTBK,
   // 🔥 BARU: "Penguatan Dasar" -- BUKAN mapel kurikulum spesifik, tapi
   // latihan kemampuan dasar (baca, hitung, nalar) yang bisa di-generate
   // AI LANGSUNG (gak perlu buku sumber sama sekali, beda dari mapel di
