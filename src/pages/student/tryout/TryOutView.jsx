@@ -52,7 +52,7 @@ import RendererBenarSalah from './RendererBenarSalah';
 import RendererEsai from './RendererEsai';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
-import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryout';
+import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { teksSoalDari } from '../../../utils/fieldButirSoal';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
