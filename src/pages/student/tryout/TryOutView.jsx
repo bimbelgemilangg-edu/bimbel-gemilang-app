@@ -40,6 +40,11 @@ import RendererPgSederhana from './RendererPgSederhana';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
 import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
+// 🔥 (2026-10-10) pembaca teks soal SADAR-ALIAS. Layar ujian ini dulu membaca
+// `soal || teks_soal` saja, sehingga butir yang menyimpan teksnya di `teksSoal`
+// (nama field KONTRAK-JSON-BANK-SOAL!) dirender KOSONG di depan siswa. Persis
+// kelas bug yang melahirkan fieldButirSoal.js: pembaca yang hanya mengenal
+// satu nama field kehilangan isi diam-diam. Sekarang satu sumber.
 import MaskotAstronot from '../../../components/MaskotAstronot';
 import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
@@ -47,7 +52,8 @@ import RendererBenarSalah from './RendererBenarSalah';
 import RendererEsai from './RendererEsai';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
-import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryout';
+import { teksSoalDari } from '../../../utils/fieldButirSoal';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -972,7 +978,7 @@ export default function TryOutView() {
                 </div>
               )}
               <TeksSoalBergambar
-                teks={s.soal || s.teks_soal}
+                teks={teksSoalDari(s)}
                 gambarUrls={s.gambarUrls} gambarMeta={s.gambarMeta || null}
                 gayaTeks={{ marginBottom: 10 }}
                 gayaGambar={{ maxHeight: 280, marginBottom: 10 }}
@@ -1172,7 +1178,7 @@ export default function TryOutView() {
           </div>
         )}
         <TeksSoalBergambar
-          teks={soalAktif.soal || soalAktif.teks_soal}
+          teks={teksSoalDari(soalAktif)}
           gambarUrls={soalAktif.gambarUrls} gambarMeta={soalAktif.gambarMeta || null}
           gayaTeks={{ fontSize: 14, marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
