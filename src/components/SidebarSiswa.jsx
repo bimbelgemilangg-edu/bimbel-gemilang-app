@@ -7,7 +7,7 @@ import {
   Hash, Library, Target
 } from 'lucide-react';
 import { useProfilSiswa } from '../utils/profilSiswa';
-import { useDataTargetKampus } from './BannerTargetSiswa';
+import { useDataTargetKampus } from '../services/dataTargetKampus';
 
 // Logo dari folder public
 const LogoBimbel = "/logo-gemilang.png";

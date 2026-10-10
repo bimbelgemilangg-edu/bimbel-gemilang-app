@@ -157,8 +157,13 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [studentName, setStudentName] = useState(() => localStorage.getItem('studentName') || 'Siswa');
-  const [studentId, setStudentId] = useState(null);
-  const [studentDocId, setStudentDocId] = useState(null); // docId Firestore asli (beda dari NIS)
+  // 🔥 (2026-10-10, lint CI): tiga nilai ini dulu disalin dari localStorage
+  // di dalam effect mount -- setState sinkron di effect melanggar rule
+  // react-hooks/set-state-in-effect dan membuang satu render. Initializer
+  // lazy membaca nilai yang sama pada mount, hasil akhirnya identik.
+  const isLoggedInAwal = localStorage.getItem('isSiswaLoggedIn') === 'true';
+  const [studentId, setStudentId] = useState(() => (isLoggedInAwal ? localStorage.getItem('studentId') : null));
+  const [studentDocId, setStudentDocId] = useState(() => (isLoggedInAwal ? localStorage.getItem('studentDocId') : null)); // docId Firestore asli (beda dari NIS)
   const [studentProfile, setStudentProfile] = useState(null);
   const [studentKelas, setStudentKelas] = useState(() => localStorage.getItem('studentKelas') || '');
   const [studentProgram, setStudentProgram] = useState(() => localStorage.getItem('studentProgram') || 'Reguler');
@@ -169,7 +174,7 @@ const StudentDashboard = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [teksCariMateri, setTeksCariMateri] = useState('');
-  const [authReady, setAuthReady] = useState(false);
+  const [authReady, setAuthReady] = useState(() => isLoggedInAwal && !!localStorage.getItem('studentId'));
   const [authError, setAuthError] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
@@ -249,13 +254,10 @@ const StudentDashboard = () => {
   useEffect(() => {
     const storedId = localStorage.getItem('studentId');
     const storedName = localStorage.getItem('studentName');
-    const storedDocId = localStorage.getItem('studentDocId');
     const isLoggedIn = localStorage.getItem('isSiswaLoggedIn') === 'true';
     if (isLoggedIn && storedId) {
-      setStudentId(storedId);
-      setStudentDocId(storedDocId || null);
-      setStudentName(storedName || "Siswa");
-      setAuthReady(true);
+      // State sudah benar dari initializer lazy di atas; effect cukup tidak
+      // memasang listener auth (perilaku lama dipertahankan persis).
       return;
     }
     const unsubscribe = onAuthStateChanged(auth, (user) => {

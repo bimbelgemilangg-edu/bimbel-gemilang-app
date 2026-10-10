@@ -33,7 +33,7 @@ import { bentukTarget, validasiTarget, buatVersiBaru } from '../../../utils/targ
 import { bandingkanSkor, nilaiFormasi, ZONA } from '../../../utils/zonaKesiapan';
 import { labelUntukTampilan, sanggahanSkor } from '../../../utils/statusDataPtn';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
-import { segarkanDataTargetKampus } from '../../../components/BannerTargetSiswa';
+import { segarkanDataTargetKampus } from '../../../services/dataTargetKampus';
 
 const WARNA_ZONA = {
   [ZONA.HIJAU_AMAN]: '#16a34a',

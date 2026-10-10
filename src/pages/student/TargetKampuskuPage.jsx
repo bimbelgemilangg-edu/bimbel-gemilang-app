@@ -11,7 +11,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Target, PlayCircle, Trophy } from 'lucide-react';
-import { KartuTargetSiswa, useDataTargetKampus } from '../../components/BannerTargetSiswa';
+import { KartuTargetSiswa } from '../../components/BannerTargetSiswa';
+import { useDataTargetKampus } from '../../services/dataTargetKampus';
 import { useProfilSiswa } from '../../utils/profilSiswa';
 
 const S = {

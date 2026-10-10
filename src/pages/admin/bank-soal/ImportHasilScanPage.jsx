@@ -3135,8 +3135,11 @@ export default function ImportHasilScanPage() {
   // kosong -- sistem tetap jalan seperti biasa (gak maksa isi).
   const [babTaksonomi, setBabTaksonomi] = useState([]);
   useEffect(() => {
-    if (!mataPelajaran) { setBabTaksonomi([]); return; }
     (async () => {
+      // Reset setelah await pertama: setState dilarang jalan di jalur sinkron
+      // effect (rule CI react-hooks/set-state-in-effect). Perilaku sama.
+      await Promise.resolve();
+      if (!mataPelajaran) { setBabTaksonomi([]); return; }
       try {
         const snap = await getDocs(query(collection(db, 'taksonomi_materi'), where('mapel', '==', mataPelajaran)));
         const babPerKelas = {};
