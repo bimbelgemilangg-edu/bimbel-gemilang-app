@@ -9,9 +9,12 @@
 // (tests/parsePtnExcel.test.mjs, tests/rencanaImporPtn.test.mjs).
 //
 // 🔥 EMPAT PENGAMAN DI HALAMAN INI
-// 1. PERAN. Hanya Owner & Manajer. Kasir/Operasional yang membuka URL-nya
-//    melihat penjelasan, bukan dilempar diam-diam -- mengikuti pola komentar
-//    ManajerRoute di App.jsx. Mengelola database kampus bukan kerja harian kasir.
+// 1. PERAN. Seluruh akun area admin (operasional ke atas) + Owner, sesuai
+//    keputusan owner 2026-10-10: "admin kan yang memegang data siswa" --
+//    pendaftaran target & database kampus adalah kelanjutan data siswa
+//    (blueprint Tahap 1), bukan kerja khusus manajer. Pemeriksaan tetap dua
+//    lapis: rute AdminRoute DI App.jsx + cek sesi di sini, supaya sesi yang
+//    kedaluwarsa melihat penjelasan, bukan layar kosong.
 // 2. LINGKUNGAN. Pita penanda apakah aplikasi sedang menunjuk Firestore
 //    produksi atau dev. Menulis 437 dokumen ke database yang salah adalah
 //    kecelakaan yang paling mungkin terjadi di halaman ini, jadi penandanya
@@ -32,8 +35,7 @@ import React, { useMemo, useState } from 'react';
 import {
   Database, FileUp, AlertTriangle, CheckCircle2, Loader2, ShieldAlert, Landmark,
 } from 'lucide-react';
-import { isOwnerSession } from '../../../utils/roleAkses';
-import { isManajerSession } from '../../../utils/adminAuth';
+import { bolehMasukAreaAdmin } from '../../../utils/roleAkses';
 import { LINGKUNGAN_FIREBASE } from '../../../firebase';
 import { periksaBerkasImpor, rencanaPenulisan, contohBaris } from '../../../utils/rencanaImporPtn';
 import { tulisRencanaPtn } from '../../../services/imporPtnService';
@@ -85,8 +87,8 @@ function LayarTolakAkses() {
         <h2 style={{ fontSize: 17, fontWeight: 800, color: '#1e293b', margin: '0 0 8px' }}>Akses Ditolak</h2>
         <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, maxWidth: 460, margin: '0 auto' }}>
           Database perguruan tinggi hanya dikelola Owner dan Admin Manajer.
-          Akun Anda berperan Operasional/Kasir. Bila Anda yang seharusnya
-          mengerjakan impor ini, minta Manajer atau Owner membukanya.
+          Sesi admin Anda tidak terbaca. Silakan login ulang di halaman login
+          admin, lalu kembali ke halaman ini.
         </p>
       </div>
     </div>
@@ -94,7 +96,7 @@ function LayarTolakAkses() {
 }
 
 export default function ImporDatabasePtnPage() {
-  const boleh = isOwnerSession() || isManajerSession();
+  const boleh = bolehMasukAreaAdmin();
 
   const [berkas, setBerkas] = useState(null);       // { nama, json }
   const [galatParse, setGalatParse] = useState('');

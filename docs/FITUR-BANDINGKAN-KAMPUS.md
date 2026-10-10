@@ -285,8 +285,10 @@ menjalankannya dengan aman.
 Halaman ini sudah ada di branch `fitur/infrastruktur-pilot` dan lolos kedua
 penjaga CI sungguhan. Empat pengamannya (rinci di kepala berkas halamannya):
 
-1. **Peran.** Hanya Owner & Manajer. Kasir yang membuka URL-nya melihat layar
-   "Akses Ditolak" berisi penjelasan — tidak dilempar diam-diam.
+1. **Peran.** Seluruh akun area admin (operasional ke atas) + Owner — keputusan
+   owner 2026-10-10: "admin kan yang memegang data siswa", jadi pendaftaran
+   target adalah kerja operasional, bukan kewenangan khusus manajer. Sesi yang
+   tidak terbaca melihat layar penjelasan, bukan layar kosong.
 2. **Pita lingkungan.** Bila aplikasi menunjuk Firestore **produksi**, pita
    MERAH tampil tepat di atas tombol tulis. Bila dev, pita biru.
 3. **Konfirmasi ganda.** Centang "seluruh skor berstatus estimasi" wajib;

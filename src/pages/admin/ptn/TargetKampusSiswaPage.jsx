@@ -19,14 +19,16 @@
 // 3. PERUBAHAN MEMBUTUHKAN ALASAN. Target lama disimpan sebagai riwayat
 //    (utils/targetKampus.js). Tanpa alasan, grafik perkembangan siswa tidak
 //    bisa membedakan "skornya naik" dari "targetnya diganti".
-// 4. PERAN: Owner & Manajer saja, seperti halaman impor database PTN.
+// 4. PERAN: seluruh akun area admin + Owner (keputusan owner 2026-10-10:
+//    adminlah yang memegang data siswa, jadi pendaftaran target adalah kerja
+//    operasional admin, bukan khusus manajer).
 // ============================================================
 import React, { useEffect, useMemo, useState } from 'react';
 import { collection, collectionGroup, query, where, getDocs, doc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Search, Save, ShieldAlert, Users, Landmark } from 'lucide-react';
 import { db } from '../../../firebase';
-import { isOwnerSession } from '../../../utils/roleAkses';
-import { isManajerSession, ambilSesiAdmin } from '../../../utils/adminAuth';
+import { bolehMasukAreaAdmin } from '../../../utils/roleAkses';
+import { ambilSesiAdmin } from '../../../utils/adminAuth';
 import { LINGKUNGAN_FIREBASE } from '../../../firebase';
 import { ekstrakAngkaKelas } from '../../../utils/aksesKontenSiswa';
 import { bentukTarget, validasiTarget, buatVersiBaru } from '../../../utils/targetKampus';
@@ -100,7 +102,7 @@ function KartuProdi({ judul, prodi, skor }) {
 }
 
 export default function TargetKampusSiswaPage() {
-  const boleh = isOwnerSession() || isManajerSession();
+  const boleh = bolehMasukAreaAdmin();
 
   const [siswa, setSiswa] = useState([]);
   const [prodi, setProdi] = useState([]);
@@ -168,7 +170,7 @@ export default function TargetKampusSiswaPage() {
         <div style={{ ...S.kartu, textAlign: 'center', padding: 40 }}>
           <ShieldAlert size={34} color="#dc2626" style={{ margin: '0 auto 12px' }} />
           <h2 style={{ fontSize: 17, fontWeight: 800, color: '#1e293b' }}>Akses Ditolak</h2>
-          <p style={S.kecil}>Pendaftaran target kampus hanya untuk Owner dan Admin Manajer.</p>
+          <p style={S.kecil}>Sesi admin tidak terdeteksi. Silakan login ulang lalu kembali ke halaman ini.</p>
         </div>
       </div>
     );
@@ -216,7 +218,7 @@ export default function TargetKampusSiswaPage() {
         if (!alasan.trim()) { setPesan('Target lama ada. Isi ALASAN perubahan dulu — riwayat tanpa alasan tidak berguna saat konsultasi berikutnya.'); setSibuk(false); return; }
         const r = buatVersiBaru(targetLama, perubahan, {
           alasanPerubahan: alasan.trim(),
-          diubahOleh: ambilSesiAdmin()?.nama || (isOwnerSession() ? 'owner' : 'admin'),
+          diubahOleh: ambilSesiAdmin()?.nama || 'owner',
         });
         if (r.ditolak) { setPesan(`Ditolak: ${r.ditolak.alasan}`); setSibuk(false); return; }
         targetBaru = r.target;

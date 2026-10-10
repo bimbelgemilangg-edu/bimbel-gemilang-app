@@ -110,7 +110,7 @@ Skrip ini **menolak berjalan** bila konfigurasi menunjuk produksi
 
 ## 5. Isi database PTN (satu kali, lewat halaman admin)
 
-1. Login admin: `ujimanajer` / `uji12345` → http://localhost:5173/login-admin
+1. Login admin (akun operasional/manajer mana pun, atau Owner) → halaman login admin
 2. Menu **🎯 TARGET KAMPUS → Impor Database PTN** (`/admin/ptn/impor`)
 3. Unggah `IMPOR-PTN-2026.json` dari root repo → periksa pratinjau
    (157 PTN, 266 prodi, 4 catatan error yang memang rusak di Excel) → centang

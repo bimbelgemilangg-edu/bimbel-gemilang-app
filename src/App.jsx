@@ -798,17 +798,17 @@ function App() {
           path="/admin/audit"
           element={<ManajerRoute><AuditLogPage /></ManajerRoute>}
         />
-        {/* 🔥 BARU (2026-10-10): impor database PTN & prodi. Gerbangnya dua
-            lapis seperti halaman manajer lain: rute dikunci ManajerRoute DAN
-            komponennya memeriksa peran sendiri, supaya kasir yang membuka
-            URL melihat penjelasan, bukan layar kosong. */}
+        {/* 🔥 BARU (2026-10-10): impor database PTN & pendaftaran target
+            siswa. Gerbangnya AdminRoute (seluruh akun area admin + owner),
+            sesuai keputusan owner: adminlah yang memegang data siswa.
+            Komponennya tetap memeriksa sesinya sendiri sebagai lapis kedua. */}
         <Route
           path="/admin/ptn/impor"
-          element={<ManajerRoute><ImporDatabasePtnPage /></ManajerRoute>}
+          element={<AdminRoute><ImporDatabasePtnPage /></AdminRoute>}
         />
         <Route
           path="/admin/ptn/target"
-          element={<ManajerRoute><TargetKampusSiswaPage /></ManajerRoute>}
+          element={<AdminRoute><TargetKampusSiswaPage /></AdminRoute>}
         />
         <Route
           path="/admin/pengguna-admin"
