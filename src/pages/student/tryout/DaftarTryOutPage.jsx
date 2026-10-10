@@ -11,6 +11,15 @@ import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { ArrowLeft, Target, Clock, CheckCircle2, PlayCircle } from 'lucide-react';
 import { useSegarSaatTerlihat } from '../../../utils/useSegarSaatTerlihat';
+// 🔥 BARU (audit 2026-10-10): pencocokan target dipindah ke util bersama.
+// Sebelumnya halaman ini membandingkan `p.targetKelas === 'Semua'`, padahal
+// mesinTryOutOtomatis MENULIS field itu sebagai ARRAY (['Semua']) sementara
+// rakitTryOutTentor & TerbitkanTryOutPage menulisnya sebagai STRING.
+// ['Semua'] === 'Semua' bernilai false -- jadi paket dari Jadwal Try Out
+// Otomatis bisa tidak pernah muncul ke siswa, tanpa error dan tanpa jejak.
+// Lihat kepala utils/cocokkanTargetPaket.js dan
+// tests/cocokkanTargetPaket.test.mjs.
+import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 
 export default function DaftarTryOutPage() {
   const navigate = useNavigate();
@@ -35,11 +44,9 @@ export default function DaftarTryOutPage() {
         let paketList = snapPaket.docs.map((d) => ({ id: d.id, ...d.data() }));
 
         // Filter target kelas/kategori -- 'Semua' selalu lolos.
-        paketList = paketList.filter((p) => {
-          const cocokKelas = p.targetKelas === 'Semua' || p.targetKelas === siswa?.kelasSekolah;
-          const cocokKategori = p.targetKategori === 'Semua' || p.targetKategori === siswa?.kategori;
-          return cocokKelas && cocokKategori;
-        });
+        // Lewat cocokkanTargetPaket() supaya toleran terhadap kedua bentuk
+        // data (array & string) yang sudah terlanjur ada di Firestore.
+        paketList = paketList.filter((p) => cocokkanTargetPaket(p, siswa).cocok);
 
         const snapSesi = await getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId)));
         const sesiPerPaket = {};

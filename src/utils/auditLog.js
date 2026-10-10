@@ -78,6 +78,11 @@ export const LABEL_AKSI = {
   'keuangan.setorkas': 'Setor / tutup kas',
   'keuangan.honor.ubah': 'Ubah honor tentor',
   'pengaturan.ubah': 'Ubah pengaturan global',
+  // 🔥 BARU (2026-10-10): impor database PTN mengubah dasar konsultasi
+  // kelas 12, jadi wajib meninggalkan jejak siapa & berkas apa.
+  'ptn.impor': 'Impor database PTN & prodi',
+  'ptn.target.buat': 'Daftarkan target kampus siswa (versi 1)',
+  'ptn.target.perbarui': 'Perbarui target kampus siswa (versi baru)',
 };
 
 /**

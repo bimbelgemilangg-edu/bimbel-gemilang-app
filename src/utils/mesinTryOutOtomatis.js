@@ -12,7 +12,38 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../firebase';
+// 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
+// Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
+// Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
+// akan menulis draf ke database produksi tanpa pagar. Dengan injeksi ini,
+// skrip wajib membawa instansinya sendiri dan menolak produksi secara eksplisit.
+import { db as dbBawaan } from '../firebase';
+
+let dbPakai = dbBawaan;
+
+/** Ganti instansi Firestore (untuk skrip). Kembalikan ke bawaan bila null. */
+export function pakaiDb(instansi) {
+  dbPakai = instansi || dbBawaan;
+  return dbPakai;
+}
+// 🔥 BARU (audit 2026-10-10): targetKelas/targetKategori DINORMALKAN saat
+// ditulis. Sebelumnya berkas ini menulis ARRAY (['Semua']) sementara
+// rakitTryOutTentor.js & TerbitkanTryOutPage.jsx menulis STRING, dan semua
+// pembacanya membandingkan dengan === terhadap string. ['Semua'] === 'Semua'
+// bernilai false -- paket dari jadwal otomatis bisa tidak pernah muncul ke
+// siswa tanpa error. Pembacanya sekarang toleran (utils/cocokkanTargetPaket.js),
+// dan penulisnya dinormalkan supaya dokumen baru tidak menambah variasi bentuk.
+import { bentukKanonikTarget } from './cocokkanTargetPaket.js';
+// 🔥 BARU (2026-10-10): alias mapel UTBK diambil dari MAPEL_UTBK, bukan
+// ditulis ulang di sini. Urutan PENTING: entri UTBK harus dicocokkan sebelum
+// bind/bing/mtk, karena nama UTBK mengandung nama mapel kurikulum
+// ('Literasi/Bahasa Indonesia' mengandung 'bahasa indonesia').
+// kodeMapel & cocokkanMapel dipindah ke util murni supaya bisa diuji
+// tanpa Firestore (2026-10-10). Diimpor SEKALIGUS di-re-export supaya
+// pemakai lama tidak perlu mengubah impornya.
+import { kodeMapel, cocokkanMapel } from './aliasMapel.js';
+
+export { kodeMapel, cocokkanMapel };
 
 export const COL_BANK = 'bank_soal';
 export const COL_PAKET = 'tryout_paket';
@@ -41,46 +72,8 @@ export function normJenjang(s) {
   return t;
 }
 
-const ALIAS_MAPEL = [
-  { kode: 'bing_tl', keys: ['bahasa inggris tingkat lanjut', 'inggris tingkat lanjut', 'english advanced'] },
-  { kode: 'bind_tl', keys: ['bahasa indonesia tingkat lanjut', 'indonesia tingkat lanjut'] },
-  { kode: 'mtk_tl', keys: ['matematika tingkat lanjut', 'matematika lanjut', 'mtk tingkat lanjut', 'mtk lanjut'] },
-  { kode: 'bing', keys: ['bahasa inggris', 'english', 'b inggris', 'binggris', 'b.inggris'] },
-  { kode: 'bind', keys: ['bahasa indonesia', 'b indonesia', 'bindo', 'b.indonesia'] },
-  { kode: 'mtk', keys: ['matematika', 'math', 'mtk', 'matematik'] },
-  { kode: 'fis', keys: ['fisika', 'physics'] },
-  { kode: 'kim', keys: ['kimia', 'chemistry'] },
-  { kode: 'bio', keys: ['biologi', 'biology'] },
-  { kode: 'geo', keys: ['geografi', 'geography', 'geo'] },
-  { kode: 'sos', keys: ['sosiologi', 'sociology', 'sosio'] },
-  { kode: 'sej', keys: ['sejarah', 'history'] },
-  { kode: 'eko', keys: ['ekonomi', 'economy'] },
-  { kode: 'pkn', keys: ['ppkn', 'pkn', 'pendidikan kewarganegaraan'] },
-  { kode: 'ipa', keys: ['ipa', 'ilmu pengetahuan alam'] },
-  { kode: 'ips', keys: ['ips', 'ilmu pengetahuan sosial'] },
-  { kode: 'ipas', keys: ['ipas'] },
-];
 
-export function kodeMapel(nama) {
-  const n = norm(nama);
-  if (!n) return '';
-  for (const row of ALIAS_MAPEL) {
-    if (row.keys.some((k) => n === k || n.includes(k))) return row.kode;
-  }
-  return n;
-}
 
-export function cocokkanMapel(soalNama, targetNama) {
-  const a = norm(soalNama);
-  const b = norm(targetNama);
-  if (!b) return true;
-  if (!a) return false;
-  if (a === b) return true;
-  const ka = kodeMapel(a);
-  const kb = kodeMapel(b);
-  if (ka && kb && ka === kb) return true;
-  return false;
-}
 
 export function cocokkanJenjang(soalJenjang, targetJenjang) {
   const t = normJenjang(targetJenjang);
@@ -105,10 +98,14 @@ export async function ambilSoalDariBank(opts) {
   let snap;
   try {
     snap = await getDocs(
-      query(collection(db, COL_BANK), where('status', '==', 'aktif'), limit(1500))
+      query(collection(dbPakai, COL_BANK), where('status', '==', 'aktif'), limit(1500))
     );
-  } catch (e) {
-    snap = await getDocs(query(collection(db, COL_BANK), limit(1500)));
+  } catch (_e) {
+    // Sengaja ditelan: query pertama menyaring status 'aktif' dan butuh index
+    // gabungan. Kalau indexnya belum ada Firestore melempar error, dan
+    // mengambil tanpa saringan tetap lebih berguna daripada gagal total --
+    // penyaringan status lalu dilakukan di sisi pemanggil.
+    snap = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
   }
 
   let pool = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -146,7 +143,7 @@ export async function ambilSoalDariBank(opts) {
   pool = acakArray(pool);
 
   if (pool.length < jumlah) {
-    const snap2 = await getDocs(query(collection(db, COL_BANK), limit(1500)));
+    const snap2 = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
     let extra = snap2.docs.map((d) => ({ id: d.id, ...d.data() }));
     if (mapel) {
       extra = extra.filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
@@ -167,7 +164,7 @@ export async function ambilSoalDariBank(opts) {
 }
 
 export async function idSoalBaruDipakai(jenjang, batasPaket = 10) {
-  const snap = await getDocs(collection(db, COL_PAKET));
+  const snap = await getDocs(collection(dbPakai, COL_PAKET));
   const paket = snap.docs
     .map((d) => ({ id: d.id, ...d.data() }))
     .filter((p) => {
@@ -241,7 +238,15 @@ export async function susunSoalDariKomposisi(template, excludeIds) {
   return { daftarSoal: hasil, grupMapel, kekurangan };
 }
 
-export function hitungSlotMingguIni(hariDalamMinggu, jamBuka, durasiMenit) {
+// TODO(audit 2026-10-10): parameter ke-3 TIDAK PERNAH DIPAKAI -- waktuTutup
+// slot selalu dihardcode 23:59, berapa pun durasi try out-nya. Artinya try out
+// 90 menit yang dibuka 07:00 tetap "buka" sampai tengah malam. Kemungkinan
+// besar ini niat yang belum terlaksana (durasi seharusnya ikut menentukan
+// batas pengerjaan), jadi parameter TIDAK dihapus -- hanya ditandai '_' supaya
+// lint jujur soal keadaannya. Memakai durasi untuk menutup slot lebih awal
+// adalah PERUBAHAN PERILAKU pada try out yang sudah berjalan: keputusan owner,
+// bukan efek samping pembersihan lint.
+export function hitungSlotMingguIni(hariDalamMinggu, jamBuka, _durasiMenit) {
   const hari = hariDalamMinggu || [1, 4];
   const jam = jamBuka || '07:00';
   const now = new Date();
@@ -351,8 +356,8 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   const payload = {
     judul,
     status: 'draf',
-    targetKelas: template.targetKelas || ['Semua'],
-    targetKategori: template.targetKategori || ['Semua'],
+    targetKelas: bentukKanonikTarget(template.targetKelas),
+    targetKategori: bentukKanonikTarget(template.targetKategori),
     daftarSoal,
     totalSoal: daftarSoal.length,
     modeTimer,
@@ -382,12 +387,19 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     sumber: 'mesin-otomatis',
   };
 
-  const ref = await addDoc(collection(db, COL_PAKET), payload);
+  const ref = await addDoc(collection(dbPakai, COL_PAKET), payload);
   return {
     ok: true,
     id: ref.id,
     judul,
     totalSoal: daftarSoal.length,
+    // 🔥 BARU (audit 2026-10-10): `kekurangan` sebelumnya dihitung oleh
+    // susunSoalDariKomposisi lalu DIBUANG di sini -- jadi paket yang kekurangan
+    // soal dibuat tanpa satu pun laporan. Field tambahan ini tidak mengubah
+    // perilaku pemanggil yang sudah ada (mereka membaca ok/id/judul/totalSoal),
+    // tapi membuat admin bisa tahu bahwa "30 soal diminta, 22 didapat".
+    // TODO: tampilkan di log hasil JadwalTryOutOtomatisPage.
+    kekurangan,
     ringkas: payload.ringkas,
     slot,
     status: 'draf',
@@ -410,12 +422,12 @@ export async function terbitkanDraf(paketId, rulesOverride) {
   if (ro.waktuBuka) patch.waktuBuka = ro.waktuBuka;
   if (ro.waktuTutup) patch.waktuTutup = ro.waktuTutup;
 
-  await updateDoc(doc(db, COL_PAKET, paketId), patch);
+  await updateDoc(doc(dbPakai, COL_PAKET, paketId), patch);
   return { ok: true, id: paketId };
 }
 
 export async function nonaktifkanPaket(paketId) {
-  await updateDoc(doc(db, COL_PAKET, paketId), {
+  await updateDoc(doc(dbPakai, COL_PAKET, paketId), {
     status: 'nonaktif',
     updatedAt: serverTimestamp(),
   });
@@ -432,7 +444,7 @@ export async function siapkanDrafMingguIni(template, rules) {
     r.jamBuka || template.jamBuka || '07:00',
     r.durasiTotalMenit || template.durasiTotalMenit || 90
   );
-  const existing = await getDocs(collection(db, COL_PAKET));
+  const existing = await getDocs(collection(dbPakai, COL_PAKET));
   const byJudul = new Map();
   existing.docs.forEach((d) => {
     byJudul.set(d.data().judul, { id: d.id, ...d.data() });
@@ -487,8 +499,9 @@ export const DEFAULT_TEMPLATE_SMA = {
   nama: 'Try Out Otomatis SMA',
   jenjang: 'SMA',
   kelas: '12',
-  targetKelas: ['Semua'],
-  targetKategori: ['Semua'],
+  // STRING, bukan array -- lihat catatan impor bentukKanonikTarget di atas.
+  targetKelas: 'Semua',
+  targetKategori: 'Semua',
   komposisi: [
     { mapel: 'Bahasa Inggris', jumlah: 30, durasiMenit: 35 },
     { mapel: 'Bahasa Indonesia', jumlah: 20, durasiMenit: 25 },

@@ -17,8 +17,82 @@ const NORM = (s) => String(s || '')
   .replace(/\s+/g, ' ')
   .trim();
 
-/** Katalog mapel → kode + sinonim deteksi */
+/**
+ * 🔥 BARU (2026-10-10): tujuh subtes UTBK-SNBT sebagai MAPEL BANK SOAL.
+ *
+ * KENAPA INI ADA: owner men-scan soal UTBK lewat halaman Impor HTML, tapi
+ * daftar mapel sebelumnya hanya punya 'TPS/Penalaran Umum' -- enam subtes
+ * lain tidak punya rumah, jadi soal hasil scan terpaksa ditumpukkan ke
+ * mapel kurikulum yang SALAH (Penalaran Matematika jadi "Matematika",
+ * Literasi Bahasa Inggris jadi "Bahasa Inggris"). Padahal karakter soalnya
+ * berbeda: UTBK menguji literasi teks akademik & penalaran, bukan materi
+ * kurikulum per bab.
+ *
+ * Nama memakai awalan kelompok tes (TPS/ atau Literasi/) mengikuti struktur
+ * resmi UTBK dan meneruskan gaya entri yang sudah ada ('TPS/Penalaran
+ * Umum'). 'TPS/Penalaran Umum' SENGAJA tidak diganti nama -- soal yang sudah
+ * terlanjur ter-tag nama itu di bank tidak boleh jadi yatim.
+ *
+ * Field `subtes` menghubungkan kode bank soal dengan id subtes di
+ * utils/kunciSubtesPtn.js, supaya pemetaan subtes->mapel tidak ditulis tangan
+ * dua kali dan tidak bisa berbeda sendiri.
+ *
+ * Keys ditulis dalam BENTUK TERNORMALISASI (tanpa '&', huruf kecil) karena
+ * dicocokkan terhadap teks yang sudah lewat NORM(). Keys panjang sengaja
+ * lebih dari satu: skorKeys() memberi bobot lebih pada key panjang, dan
+ * seri bobot dimenangkan oleh entri yang lebih dulu di KATALOG -- keduanya
+ * membuat entri UTBK menang atas mapel kurikulum yang namanya terserap di
+ * dalam nama UTBK ("... Bahasa Indonesia", "... Matematika").
+ */
+export const MAPEL_UTBK = [
+  {
+    kode: 'utbk_pu', nama: 'TPS/Penalaran Umum', subtes: 'PU',
+    keys: ['tps/penalaran umum', 'penalaran umum', 'tps pu', 'subtes pu'],
+  },
+  {
+    kode: 'utbk_ppu', nama: 'TPS/Pengetahuan & Pemahaman Umum', subtes: 'PPU',
+    keys: ['pengetahuan pemahaman umum', 'pengetahuan dan pemahaman umum', 'tps ppu', 'subtes ppu'],
+  },
+  {
+    kode: 'utbk_pbm', nama: 'TPS/Pemahaman Bacaan & Menulis', subtes: 'PBM',
+    keys: ['pemahaman bacaan menulis', 'pemahaman bacaan dan menulis', 'tps pbm', 'subtes pbm'],
+  },
+  {
+    kode: 'utbk_pk', nama: 'TPS/Pengetahuan Kuantitatif', subtes: 'PK',
+    keys: ['pengetahuan kuantitatif', 'tps pk', 'subtes pk'],
+  },
+  {
+    kode: 'utbk_lbi', nama: 'Literasi/Bahasa Indonesia', subtes: 'LBI',
+    keys: ['literasi bahasa indonesia', 'literasi/bahasa indonesia', 'literasi b indonesia', 'subtes lbi'],
+  },
+  {
+    kode: 'utbk_lbe', nama: 'Literasi/Bahasa Inggris', subtes: 'LBE',
+    keys: ['literasi bahasa inggris', 'literasi/bahasa inggris', 'literasi b inggris', 'subtes lbe'],
+  },
+  {
+    kode: 'utbk_pm', nama: 'Literasi/Penalaran Matematika', subtes: 'PM',
+    // 'penalaran matematik' (tanpa a akhir) bukan hiasan: skorKeys() menjumlah
+    // SETIAP key yang cocok, dan teks "Penalaran Matematika" juga menyerap dua
+    // key milik mtk ('matematika' + 'matematik'). Tanpa key kedua ini, mtk
+    // menang skor 4 lawan 3 dan soal UTBK masuk mapel kurikulum.
+    keys: ['penalaran matematika', 'penalaran matematik', 'literasi matematika', 'subtes pm'],
+  },
+];
+
+/** Nama mapel UTBK untuk dropdown halaman impor/scan. */
+export const NAMA_MAPEL_UTBK = MAPEL_UTBK.map((m) => m.nama);
+
+/** True bila kode adalah mapel UTBK (bukan mapel kurikulum). */
+export function isMapelUtbk(kode) {
+  return MAPEL_UTBK.some((m) => m.kode === kode);
+}
+
+/** Katalog mapel → kode + sinonim deteksi.
+ * Entri UTBK ditaruh DI DEPAN: pada skor seri, entri lebih dulu menang, dan
+ * nama UTBK memang lebih spesifik daripada mapel kurikulum yang terkandung
+ * di dalamnya. */
 export const KATALOG_MAPEL = [
+  ...MAPEL_UTBK.map(({ kode, nama, keys }) => ({ kode, nama, keys })),
   { kode: 'bing', nama: 'Bahasa Inggris', keys: ['bahasa inggris', 'english', 'b.inggris', 'b inggris', 'binggris', 'toeic', 'toefl'] },
   { kode: 'bind', nama: 'Bahasa Indonesia', keys: ['bahasa indonesia', 'b.indonesia', 'b indonesia', 'bindo', 'literasi indonesia'] },
   { kode: 'mtk', nama: 'Matematika', keys: ['matematika', 'math', 'matematik', 'mtk', 'aljabar', 'geometri', 'kalkulus'] },
@@ -122,7 +196,14 @@ export function deteksiMapel(teksGabungan, hint = {}) {
   if (hint.mapel || hint.mataPelajaran) {
     const h = NORM(hint.mapel || hint.mataPelajaran);
     const hit = KATALOG_MAPEL.find((m) => m.nama.toLowerCase() === h || m.keys.some((k) => h.includes(k)) || h.includes(m.kode));
-    if (hit) return selaraskanKeKurikulum({ kode: hit.kode, nama: hit.nama, yakin: 0.95 }, hint);
+    if (hit) {
+      const hasil = { kode: hit.kode, nama: hit.nama, yakin: 0.95 };
+      // Mapel UTBK BUKAN mapel kurikulum: penyelaras kurikulum mencocokkan
+      // alias sebagai SUBSTRING, sehingga "Literasi/Bahasa Indonesia" akan
+      // "dikoreksi" jadi Bahasa Indonesia dan "Penalaran Matematika" jadi
+      // Matematika -- persis salah-tumpuk yang mau dicegah fitur ini.
+      return isMapelUtbk(hit.kode) ? hasil : selaraskanKeKurikulum(hasil, hint);
+    }
   }
   const t = NORM(teksGabungan);
   let best = null;
@@ -132,7 +213,8 @@ export function deteksiMapel(teksGabungan, hint = {}) {
     if (s > bestS) { bestS = s; best = m; }
   }
   if (!best || bestS === 0) return { kode: '', nama: hint.mapel || '', yakin: 0 };
-  return selaraskanKeKurikulum({ kode: best.kode, nama: best.nama, yakin: Math.min(0.95, 0.4 + bestS * 0.1) }, hint);
+  const hasil = { kode: best.kode, nama: best.nama, yakin: Math.min(0.95, 0.4 + bestS * 0.1) };
+  return isMapelUtbk(best.kode) ? hasil : selaraskanKeKurikulum(hasil, hint);
 }
 
 export function deteksiJenjangKelas(teksGabungan, hint = {}) {
@@ -353,6 +435,7 @@ export function kelompokkanSoal(daftar) {
 }
 
 export default {
+  MAPEL_UTBK, NAMA_MAPEL_UTBK, isMapelUtbk,
   KATALOG_MAPEL,
   KATALOG_BAB,
   deteksiTaksonomiSoal,

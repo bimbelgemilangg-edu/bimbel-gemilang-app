@@ -24,6 +24,7 @@ import {
   getDocs, query, where,
 } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { NAMA_MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 
 /* ============================================================
    KONSTANTA
@@ -31,11 +32,13 @@ import { db, auth } from '../../../firebase';
 
 const BANK_SOAL_COLLECTION = 'bank_soal';
 
+// Daftar mapel SATU SUMBER dengan ImportHasilScanPage: kurikulum + tujuh
+// subtes UTBK (utils/mesinTaksonomiSoal -> MAPEL_UTBK) + Lainnya.
 const DAFTAR_MAPEL = [
   'Matematika','Fisika','Kimia','Biologi',
   'Bahasa Indonesia','Bahasa Inggris',
   'Ekonomi','Geografi','Sosiologi','Sejarah',
-  'PKN','TPS/Penalaran Umum','Lainnya',
+  'PKN', ...NAMA_MAPEL_UTBK, 'Lainnya',
 ];
 const DAFTAR_JENJANG  = ['SD/MI','SMP/MTs','SMA/MA','SMK','UTBK/SNBT'];
 const DAFTAR_KELAS    = ['1','2','3','4','5','6','7','8','9','10','11','12','Semua'];
@@ -107,7 +110,9 @@ function buildBankSoalDoc(q, meta) {
 
 export default function BankSoalImportPage() {
   const [isPdfReady,   setIsPdfReady]   = useState(false);
-  const [isMathReady,  setIsMathReady]  = useState(false);
+  // KaTeX mungkin sudah dimuat komponen lain sebelumnya; initializer membaca
+  // keadaan itu langsung supaya effect tidak perlu setState sinkron.
+  const [isMathReady,  setIsMathReady]  = useState(() => typeof window !== 'undefined' && !!window.katex);
   const [file,         setFile]         = useState(null);
   const [appState,     setAppState]     = useState('idle');
   const [logs,         setLogs]         = useState([]);
@@ -161,8 +166,12 @@ export default function BankSoalImportPage() {
   // eslint-disable-next-line no-unused-vars
   const [babTaksonomi, setBabTaksonomi] = useState([]);
   useEffect(() => {
-    if (!mataPelajaran) { setBabTaksonomi([]); return; }
     (async () => {
+      // Reset dipindah SETELAH await pertama: setState tidak boleh jalan di
+      // jalur sinkron effect (rule CI react-hooks/set-state-in-effect).
+      // Perilaku sama -- selisih satu microtick tidak terlihat oleh manusia.
+      await Promise.resolve();
+      if (!mataPelajaran) { setBabTaksonomi([]); return; }
       try {
         const snap = await getDocs(query(collection(db, 'taksonomi_materi'), where('mapel', '==', mataPelajaran)));
         const babPerKelas = {};
@@ -216,7 +225,7 @@ export default function BankSoalImportPage() {
     css.href = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css';
     document.head.appendChild(css);
 
-    if (window.katex) { setIsMathReady(true); return; }
+    if (window.katex) return; // sudah siap: state true dari initializer
 
     const script = document.createElement('script');
     script.src   = 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js';
@@ -229,10 +238,15 @@ export default function BankSoalImportPage() {
 
   useEffect(() => { logsEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [logs]);
 
-  const addLog = (message, type = 'info') => {
+  // Deklarasi fungsi (hoisted), bukan const arrow: effect pemuat script di
+  // bawah menyebut addLog di callback onload, dan rule react-hooks/immutability
+  // membaca const arrow yang dideklarasikan belakangan sebagai akses TDZ
+  // ("cannot access variable before declaration"). Hoisting menyelesaikan
+  // itu tanpa mengubah perilaku satu pun.
+  function addLog(message, type = 'info') {
     const t = new Date().toLocaleTimeString('id-ID', { hour12: false });
     setLogs(prev => [...prev, { id: Date.now() + Math.random(), time: t, message, type }]);
-  };
+  }
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   /* ============================================================

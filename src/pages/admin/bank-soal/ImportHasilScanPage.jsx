@@ -54,6 +54,10 @@ import { db, auth } from '../../../firebase';
 // menulis "{(3, 2)}" polos -- di KaTeX kurungnya hilang. Diperbaiki di
 // pintu masuk, bukan minta setiap AI penulis file tidak pernah lupa.
 import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
+// 🔥 BARU (2026-10-10): pembersih sisa OCR + penandai kualitas. Sampah
+// struktural dibuang otomatis; yang meragukan (kata terpotong, opsi
+// kebocoran lintas kolom) DICATAT untuk mata admin, tidak ditebak.
+import { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks } from '../../../utils/bersihkanOcr';
 // 🔥 2026-10-08: deteksi duplikat di HULU (saat scan) kini berjenjang dan
 // sadar gambar+kunci. Detektor lama membandingkan TEKS PERINTAH SAJA, jadi
 // dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
@@ -66,6 +70,7 @@ import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
 // Kurikulum Merdeka. Nama di luar peta (TPS/Penalaran Umum, Penguatan Dasar)
 // tetap tersedia karena memang bukan mapel kurikulum.
 import { daftarMapelUntuk, petakanNamaMapel, jenjangDipetakan } from '../../../utils/kurikulumMerdeka';
+import { NAMA_MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 // 🔥 BARU (2026-10-07): keluhan owner "gambar dari Gemini gak muncul
 // semua". Akarnya: Gemini Canvas menulis src="[url](url)" gaya tautan
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
@@ -78,10 +83,16 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 
 const BANK_SOAL_COLLECTION = 'bank_soal';
 
+// 🔥 BARU (2026-10-10): tujuh subtes UTBK-SNBT ikut jadi pilihan mapel scan.
+// Sebelumnya hanya 'TPS/Penalaran Umum' yang ada; enam subtes lain tidak
+// punya rumah sehingga soal hasil scan menumpuk di mapel kurikulum yang
+// berbeda karakter soalnya. Daftarnya SATU SUMBER di utils/mesinTaksonomiSoal
+// (MAPEL_UTBK) supaya halaman ini dan AdvancedQuestionExtractor tidak bisa
+// berbeda daftar lagi.
 const DAFTAR_MAPEL = [
   'Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Indonesia',
   'Bahasa Inggris', 'Ekonomi', 'Geografi', 'Sosiologi', 'Sejarah',
-  'PKN', 'TPS/Penalaran Umum',
+  'PKN', ...NAMA_MAPEL_UTBK,
   // 🔥 BARU: "Penguatan Dasar" -- BUKAN mapel kurikulum spesifik, tapi
   // latihan kemampuan dasar (baca, hitung, nalar) yang bisa di-generate
   // AI LANGSUNG (gak perlu buku sumber sama sekali, beda dari mapel di
@@ -1681,6 +1692,7 @@ function parseHTMLMaster(raw) {
     const nomor = Number(node.getAttribute('data-nomor') || node.getAttribute('data-number')) || index + 1;
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
+    const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
     const imageNode = getField(node, 'gambar', 'images', 'image');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
@@ -1722,10 +1734,25 @@ function parseHTMLMaster(raw) {
         gambar: images,
         tabel: table ? normalizeTabel(table.baris.map((row, i) => ({ kolom: table.header[i] || `Kolom ${i + 1}`, isi: row.join(' | ') }))) : [],
       };
-    }).filter(opt => !optionIsEmpty(opt));
+    }).filter(opt => !optionIsEmpty(opt)).map((opt) => {
+      const bersih = bersihkanOcrTeks(opt.teks || '');
+      return { ...opt, teks: bersih.teks };
+    });
+    // Cacat khas OCR dua kolom: blok opsi terpindah JUGA ke dalam teks soal
+    // (soal 2 berkas bab 1 & banyak soal bab 2). Duplikatnya dibuang
+    // deterministik -- bukan tebakan, karena teksnya identik dengan opsi.
+    // CATATAN URUTAN: blok ini WAJIB setelah opsi_jawaban terdefinisi;
+    // versi pertama menaruhnya di atas dan melempar TDZ saat parse
+    // ("Cannot access 'K' before initialization", insiden 2026-10-10).
+    const tanpaDuplikat = buangDuplikatOpsiDariTeks(
+      bersihTeksSoal.teks,
+      opsi_jawaban.map((o) => o.teks),
+    );
+    bersihTeksSoal.teks = tanpaDuplikat.teks;
+    bersihTeksSoal.catatan.push(...tanpaDuplikat.catatan);
 
     const bacaan = bacaanNode ? {
-      teks: htmlNodeText(bacaanNode),
+      teks: bersihkanOcrTeks(htmlNodeText(bacaanNode)).teks,
       gambar: parseHTMLImages(bacaanNode),
       // 🔥 BARU: penanda grup bacaan (mis. "bacaan_1") -- kalau beberapa
       // soal berbagi bacaan yang sama, mereka wajib punya nilai grup
@@ -1756,14 +1783,14 @@ function parseHTMLMaster(raw) {
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
       tipe,
       bacaan,
-      teks_soal: teksSoalGabungan,
+      teks_soal: bersihTeksSoal.teks,
       opsi_jawaban,
       kunci_jawaban: normalizeAnswerKey(keyRaw),
       // 🔥 BARU: default TRUE kalau AI gak nulis field ini sama sekali
       // (konsisten sama instruksi prompt: "true adalah default"). Cuma
       // jadi false kalau AI eksplisit nulis data-value="false".
       kunci_terverifikasi: verifNode ? safeString(verifNode.getAttribute?.('data-value') || verifNode.textContent || '').toLowerCase().trim() !== 'false' : true,
-      pembahasan: perbaikiKurungHimpunanLatex(htmlNodeText(explanationNode)),
+      pembahasan: perbaikiKurungHimpunanLatex(bersihkanOcrTeks(htmlNodeText(explanationNode)).teks),
       pernyataan: parseHTMLStatements(tfNode),
       tabel_benar_salah: parseHTMLStatements(categoryNode),
       pasangan: parseHTMLPairs(matchingNode),
@@ -1776,6 +1803,16 @@ function parseHTMLMaster(raw) {
       kelas: kelasRaw,
       mapel: mapelRaw,
       referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || null } : null,
+      // Catatan kualitas OCR untuk badge preview + tersimpan di dokumen
+      // supaya audit di kemudian hari tahu bagian mana yang dulu diragukan.
+      catatan_ocr: [
+        ...bersihTeksSoal.catatan,
+        ...penandaiKualitasOcr({
+          teksSoal: bersihTeksSoal.teks,
+          opsi: opsi_jawaban.map((o) => o.teks),
+          pembahasan: htmlNodeText(explanationNode),
+        }),
+      ],
     };
   });
 }
@@ -2903,6 +2940,7 @@ function buildDoc(q, meta) {
     kunciTerverifikasi: q.kunci_terverifikasi,
     pembahasan: bersihkanJejakTeknis(q.pembahasan),
     catatanAdmin: q.catatan_admin || '',
+    catatanOcr: Array.isArray(q.catatan_ocr) ? q.catatan_ocr : [],
     gambarUrls,
     tabelSoal: amankanTabelDariNestedArray(q.tabel_soal) || null,
     referensiSumber: q.referensi_sumber || null,
@@ -3128,8 +3166,11 @@ export default function ImportHasilScanPage() {
   // kosong -- sistem tetap jalan seperti biasa (gak maksa isi).
   const [babTaksonomi, setBabTaksonomi] = useState([]);
   useEffect(() => {
-    if (!mataPelajaran) { setBabTaksonomi([]); return; }
     (async () => {
+      // Reset setelah await pertama: setState dilarang jalan di jalur sinkron
+      // effect (rule CI react-hooks/set-state-in-effect). Perilaku sama.
+      await Promise.resolve();
+      if (!mataPelajaran) { setBabTaksonomi([]); return; }
       try {
         const snap = await getDocs(query(collection(db, 'taksonomi_materi'), where('mapel', '==', mataPelajaran)));
         const babPerKelas = {};
@@ -5178,6 +5219,14 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#cffafe', color: '#0e7490', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>💡 Pembahasan</span>
         )}
 
+        {(q.catatan_ocr || []).length > 0 && (
+          <span
+            title={q.catatan_ocr.join(' | ')}
+            style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#9a3412', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', cursor: 'help' }}
+          >
+            ⚠ {q.catatan_ocr.length} catatan OCR
+          </span>
+        )}
         {q.materi && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#c2410c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             📘 {q.materi}

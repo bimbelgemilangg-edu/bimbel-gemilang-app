@@ -4,9 +4,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LogOut, X, Home, BarChart2, BookOpen, Wallet, 
   Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck,
-  Hash, Library
+  Hash, Library, Target
 } from 'lucide-react';
 import { useProfilSiswa } from '../utils/profilSiswa';
+import { useDataTargetKampus } from '../services/dataTargetKampus';
 
 // Logo dari folder public
 const LogoBimbel = "/logo-gemilang.png";
@@ -40,6 +41,15 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   // kegunaan sehari-hari, dari yang paling sering dipakai ke yang paling
   // jarang: BELAJAR (aktivitas harian) -> PERFORMA (pantau hasil) ->
   // LAINNYA (administratif, jarang dibuka).
+  // 🔥 BARU (2026-10-10): menu Target Kampusku hanya muncul bila siswa
+  // benar-benar didaftarkan admin (kelas 12 + fitur aktif + dokumen target
+  // ada). SD/SMP/kelas lain: hook mengembalikan null dan grup ini tidak
+  // pernah ada -- mereka tidak "tersentuh" sama sekali.
+  const keadaanTarget = useDataTargetKampus(
+    localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '',
+    { jenjang: profil.jenjang, kelasSekolah: profil.kelasSekolah || profil.kelas },
+  );
+
   const menuGroups = [
     {
       label: null,
@@ -47,6 +57,12 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} />, path: '/siswa/dashboard', color: '#3b82f6' },
       ],
     },
+    ...(keadaanTarget.status === 'siap' ? [{
+      label: 'TARGET KAMPUS',
+      items: [
+        { id: 'target-kampus', label: 'Target Kampusku', icon: <Target size={18} />, path: '/siswa/target-kampus', color: '#7c3aed' },
+      ],
+    }] : []),
     {
       label: 'BELAJAR',
       items: [
