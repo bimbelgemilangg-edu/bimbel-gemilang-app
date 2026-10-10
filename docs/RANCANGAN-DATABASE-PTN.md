@@ -362,6 +362,22 @@ contoh baris, bukan terhadap berkas Excel utuh.
 
 ---
 
+## 5b. SUDAH DIBANGUN SETELAH DOKUMEN INI: mesin perbandingan
+
+Logika untuk fitur "siswa membandingkan kampus & memasang Pilihan 1–2" sudah
+dibangun dan teruji (58 uji): matriks 4 zona dari `SOP_GEMBLENGAN_TRYOUT`,
+aturan formasi dari sheet `SIMULATOR_EVALUASI_SISWA`, penguraian kolom
+`subtesKunci`, dan target berversi + riwayat.
+
+Rancangan, batas yang harus diketahui, dan sisa pekerjaannya:
+**`docs/FITUR-BANDINGKAN-KAMPUS.md`**.
+
+Yang TETAP belum dibangun dan masih jadi prasyarat: butir 1 & 2 di bawah
+(koleksi target + panel impor), karena tanpa itu data di dokumen ini masih
+berupa berkas JSON di repo, bukan isi Firestore.
+
+---
+
 ## 6. YANG BELUM DIBANGUN
 
 | # | Pekerjaan | Catatan |
