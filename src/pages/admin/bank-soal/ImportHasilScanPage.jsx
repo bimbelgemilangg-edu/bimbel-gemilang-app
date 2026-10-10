@@ -54,6 +54,10 @@ import { db, auth } from '../../../firebase';
 // menulis "{(3, 2)}" polos -- di KaTeX kurungnya hilang. Diperbaiki di
 // pintu masuk, bukan minta setiap AI penulis file tidak pernah lupa.
 import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
+// 🔥 BARU (2026-10-10): pembersih sisa OCR + penandai kualitas. Sampah
+// struktural dibuang otomatis; yang meragukan (kata terpotong, opsi
+// kebocoran lintas kolom) DICATAT untuk mata admin, tidak ditebak.
+import { bersihkanOcrTeks, penandaiKualitasOcr } from '../../../utils/bersihkanOcr';
 // 🔥 2026-10-08: deteksi duplikat di HULU (saat scan) kini berjenjang dan
 // sadar gambar+kunci. Detektor lama membandingkan TEKS PERINTAH SAJA, jadi
 // dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
@@ -1688,6 +1692,7 @@ function parseHTMLMaster(raw) {
     const nomor = Number(node.getAttribute('data-nomor') || node.getAttribute('data-number')) || index + 1;
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
+    const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
     const imageNode = getField(node, 'gambar', 'images', 'image');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
@@ -1729,10 +1734,13 @@ function parseHTMLMaster(raw) {
         gambar: images,
         tabel: table ? normalizeTabel(table.baris.map((row, i) => ({ kolom: table.header[i] || `Kolom ${i + 1}`, isi: row.join(' | ') }))) : [],
       };
-    }).filter(opt => !optionIsEmpty(opt));
+    }).filter(opt => !optionIsEmpty(opt)).map((opt) => {
+      const bersih = bersihkanOcrTeks(opt.teks || '');
+      return { ...opt, teks: bersih.teks };
+    });
 
     const bacaan = bacaanNode ? {
-      teks: htmlNodeText(bacaanNode),
+      teks: bersihkanOcrTeks(htmlNodeText(bacaanNode)).teks,
       gambar: parseHTMLImages(bacaanNode),
       // 🔥 BARU: penanda grup bacaan (mis. "bacaan_1") -- kalau beberapa
       // soal berbagi bacaan yang sama, mereka wajib punya nilai grup
@@ -1763,14 +1771,14 @@ function parseHTMLMaster(raw) {
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
       tipe,
       bacaan,
-      teks_soal: teksSoalGabungan,
+      teks_soal: bersihTeksSoal.teks,
       opsi_jawaban,
       kunci_jawaban: normalizeAnswerKey(keyRaw),
       // 🔥 BARU: default TRUE kalau AI gak nulis field ini sama sekali
       // (konsisten sama instruksi prompt: "true adalah default"). Cuma
       // jadi false kalau AI eksplisit nulis data-value="false".
       kunci_terverifikasi: verifNode ? safeString(verifNode.getAttribute?.('data-value') || verifNode.textContent || '').toLowerCase().trim() !== 'false' : true,
-      pembahasan: perbaikiKurungHimpunanLatex(htmlNodeText(explanationNode)),
+      pembahasan: perbaikiKurungHimpunanLatex(bersihkanOcrTeks(htmlNodeText(explanationNode)).teks),
       pernyataan: parseHTMLStatements(tfNode),
       tabel_benar_salah: parseHTMLStatements(categoryNode),
       pasangan: parseHTMLPairs(matchingNode),
@@ -1783,6 +1791,16 @@ function parseHTMLMaster(raw) {
       kelas: kelasRaw,
       mapel: mapelRaw,
       referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || null } : null,
+      // Catatan kualitas OCR untuk badge preview + tersimpan di dokumen
+      // supaya audit di kemudian hari tahu bagian mana yang dulu diragukan.
+      catatan_ocr: [
+        ...bersihTeksSoal.catatan,
+        ...penandaiKualitasOcr({
+          teksSoal: bersihTeksSoal.teks,
+          opsi: opsi_jawaban.map((o) => o.teks),
+          pembahasan: htmlNodeText(explanationNode),
+        }),
+      ],
     };
   });
 }
@@ -2910,6 +2928,7 @@ function buildDoc(q, meta) {
     kunciTerverifikasi: q.kunci_terverifikasi,
     pembahasan: bersihkanJejakTeknis(q.pembahasan),
     catatanAdmin: q.catatan_admin || '',
+    catatanOcr: Array.isArray(q.catatan_ocr) ? q.catatan_ocr : [],
     gambarUrls,
     tabelSoal: amankanTabelDariNestedArray(q.tabel_soal) || null,
     referensiSumber: q.referensi_sumber || null,
@@ -5188,6 +5207,14 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#cffafe', color: '#0e7490', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>💡 Pembahasan</span>
         )}
 
+        {(q.catatan_ocr || []).length > 0 && (
+          <span
+            title={q.catatan_ocr.join(' | ')}
+            style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#9a3412', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', cursor: 'help' }}
+          >
+            ⚠ {q.catatan_ocr.length} catatan OCR
+          </span>
+        )}
         {q.materi && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#c2410c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             📘 {q.materi}
