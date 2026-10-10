@@ -57,10 +57,27 @@ mewajibkan pesan manusiawi saat 429, bukan daftar kosong.
    tidak nama, tidak NIM, tidak jawaban anak. Yang dikirim hanya spesifikasi
    topik ("subtes PK, kelas 12, level sedang, konteks grafik keuangan").
    Pipa yang ada sudah begitu — pertahankan.
-2. **Kunci tetap di server.** `GEMINI_API_KEY` dibaca hanya di `api/*.js`.
-   Jangan pernah memindahkannya ke `VITE_*` supaya tidak ikut terbundel ke
-   browser siswa. Tempel key gratis owner di **Vercel → Environment
-   Variables** (environment Production & Preview), bukan di kode.
+2. **Kunci tetap di server.** Semua kunci Gemini dibaca hanya di `api/*.js`
+   lewat satu pintu `lib/kunciGemini.js`. Jangan pernah memindahkannya ke
+   `VITE_*` supaya tidak ikut terbundel ke browser siswa.
+
+### Skema TIGA kelompok kunci (keputusan owner 2026-10-10)
+
+| Env | Akun Google | Beban |
+|---|---|---|
+| `GEMINI_API_KEY` | akun Gemilang | fungsi umum: materi, bab, alat bantu guru, narasi |
+| `GEMINI_SOAL` | akun Gemilang | ekstrak bank soal, parse quiz, pembuat kuis kurikulum |
+| `GEMINI_UTBK` | **akun pribadi owner** | khusus try out UTBK (generasi subtes & pensi) |
+
+Catatan kejujuran yang sudah tertulis di `lib/kunciGemini.js` sejak 2026-10-06
+dan tetap berlaku: kuota gratis menempel pada **akun/proyek Google**, bukan
+pada nama kunci. Dua kunci dari akun yang sama berbagi satu kolam — maka
+isolasi sungguhan hanya terjadi karena `GEMINI_UTBK` memang dibuat dari akun
+yang berbeda, persis rencana owner. Rantai jatuh-balik
+`GEMINI_UTBK -> GEMINI_SOAL -> GEMINI_API_KEY` tetap ada supaya deploy yang
+belum mengisi kunci baru tidak kehilangan AI — tetapi setiap jatuh balik
+**bersuara** di log Vercel lewat `peringatanIsolasi()`, jadi isolasi yang
+bocor tidak akan pernah diam-diam.
 
 ## 3. Arsitektur: tidak ada function Vercel baru
 
@@ -119,7 +136,9 @@ yang layak satu commit khusus. Sampai saat itu: **satu klik admin tiap pekan**
 
 ## 7. Urutan pengerjaan yang disarankan
 
-1. Owner menempel `GEMINI_API_KEY` gratisnya di Vercel (Production + Preview).
+1. Owner menempel `GEMINI_UTBK` (key gratis dari akun Google pribadi) di
+   Vercel → Environment Variables (Production + Preview). Kunci Gemilang
+   (`GEMINI_API_KEY`/`GEMINI_SOAL`) dibiarkan seperti sekarang.
 2. Commit refactor injeksi `db` ke mesin try out (membuka jalan cron nanti).
 3. Mode UTBK di `generateQuizFromTopic` (prompt 7 subtes, pakai jebakan khas
    dari sheet KOMPONEN yang sudah dipetakan `kunciSubtesPtn.js`).

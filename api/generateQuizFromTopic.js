@@ -102,6 +102,15 @@
 //
 // ============================================================
 
+// 🔥 BARU (2026-10-10): pemilihan kunci Gemini SATU PINTU lewat lib/
+// (skema tiga kelompok: umum / soal / utbk). Sebelumnya berkas ini membaca
+// process.env.GEMINI_API_KEY langsung di dua tempat -- persis pola yang
+// diberantas lib/kunciGemini.js di endpoint lain.
+import {
+  kunciGeminiUntuk, kelompokUntukMapel, peringatanIsolasi, pesanKunciBelumAda,
+} from '../lib/kunciGemini.js';
+import { MAPEL_UTBK } from '../src/utils/mesinTaksonomiSoal.js';
+
 export const maxDuration = 60;
 
 // ============================================================
@@ -658,7 +667,10 @@ async function callTavilyImageSearch(
 // Tavily -- dijalankan SETELAH quality gate (baris soal sudah final),
 // SEBELUM dikirim ke ManageQuiz. Dibatasi MAX_TAVILY_CALLS_PER_REQUEST
 // biar kredit bulanan gak jebol dalam 1 request.
-async function enrichQuestionsWithRealImages(
+// TODO(audit 2026-10-10): pipeline pengayaan gambar nyata ini BELUM dipanggil
+// alur mana pun -- niat yang belum terlaksana, jadi ditandai '_' supaya lint
+// jujur, bukan dihapus (pedoman AUDIT-REPO.md Tahap 1 langkah 3).
+async function _enrichQuestionsWithRealImages(
   questions,
   tavilyApiKey,
   topic,
@@ -950,6 +962,10 @@ const SUPPORTED_TYPES = new Set([
 function cleanText(value = '') {
   return String(value ?? '')
     .replace(
+      // SENGAJA: cleanText() memang bertugas membuang karakter kontrol
+      // (0x00-0x1F, 0x7F) dari keluaran AI sebelum masuk bank soal;
+      // kelas kontrol inilah isi regexnya.
+      // eslint-disable-next-line no-control-regex
       /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,
       ' ',
     )
@@ -3419,7 +3435,9 @@ function validateAgainstBlueprint(
 
 function buildSystemPrompt({
   allowedTypes,
-  enableBrowserSearch,
+  // TODO(audit 2026-10-10): sakelar pencarian browser belum dipakai badan
+  // fungsi ini; ditandai '_' supaya lint jujur, bukan dibuang.
+  _enableBrowserSearch,
 }) {
   return [
     'Kamu adalah Otak Akademik Bimbel Gemilang.',
@@ -4600,8 +4618,10 @@ async function handleModelDiagnostics(
   req,
   res,
 ) {
-  const apiKey =
-    process.env.GEMINI_API_KEY;
+  const kelompokDiag = kelompokUntukMapel(
+    String((req.query || {}).mapel || ''), MAPEL_UTBK,
+  );
+  const apiKey = kunciGeminiUntuk(process.env, kelompokDiag);
 
   if (!apiKey) {
     return res
@@ -5071,7 +5091,10 @@ export default async function handler(
   // akhir -- supaya total kerja (AI + gambar) gak pernah melewati
   // maxDuration 60 detik Vercel dan bikin hasil yang sudah jadi
   // hilang percuma.
-  const requestStartedAt =
+  // TODO(audit 2026-10-10): anggaran waktu untuk langkah pencarian gambar
+  // (lihat komentar di atas) belum dibaca siapa pun; ditandai '_' supaya
+  // lint jujur, bukan dihapus -- niatnya tercatat di komentar itu.
+  const _requestStartedAt =
     Date.now();
 
   // ==========================================================
@@ -5237,11 +5260,15 @@ export default async function handler(
   }
 
   // ==========================================================
-  // API KEY
+  // API KEY -- routing tiga kelompok (umum/soal/utbk).
+  // Mapel subtes UTBK memakai GEMINI_UTBK (akun Google pribadi owner)
+  // supaya beban tryout Sabtu tidak memakan kuota pembuatan kuis harian.
   // ==========================================================
 
-  const apiKey =
-    process.env.GEMINI_API_KEY;
+  const kelompok = kelompokUntukMapel(effectiveMapel, MAPEL_UTBK);
+  const apiKey = kunciGeminiUntuk(process.env, kelompok);
+  const isolasi = peringatanIsolasi(process.env, kelompok);
+  if (isolasi) console.warn(`[generateQuizFromTopic] ${isolasi}`);
 
   if (!apiKey) {
     return res
@@ -5249,8 +5276,7 @@ export default async function handler(
       .json({
         success: false,
 
-        error:
-          'GEMINI_API_KEY belum dikonfigurasi di Vercel. Ambil key GRATIS di https://aistudio.google.com/apikey (login akun Google, tanpa kartu kredit), lalu simpan sebagai environment variable GEMINI_API_KEY di Vercel -> Settings -> Environment Variables.',
+        error: pesanKunciBelumAda(kelompok),
       });
   }
 
