@@ -125,7 +125,7 @@ akan menyimpulkan hal yang salah.
 
 ## 3. ⚠️ Batas yang harus diketahui sebelum UI dibangun
 
-### 3.1 7 subtes UTBK ≠ taksonomi mapel Bank Soal Gemilang
+### 3.1 7 subtes UTBK vs taksonomi mapel Bank Soal Gemilang — **SEBAGIAN SELESAI 2026-10-10**
 
 `kunciSubtesPtn.js` memetakan subtes UTBK ke `KATALOG_MAPEL` (22 mapel
 kurikulum) yang dipakai bank soal kita. **Pemetaan itu tumpang tindih, bukan
@@ -143,8 +143,44 @@ sama:**
 ("prodi ini menekankan kuantitatif → perkuat latihan matematika"). **Tidak
 sah** untuk mengubah skor try out internal menjadi perkiraan skor subtes UTBK.
 
-Kalau mau serius soal per-subtes, yang dibutuhkan adalah **melabeli bank soal
-dengan 7 subtes UTBK** — pekerjaan konten, bukan kode.
+**Update 2026-10-10 (permintaan owner):** tujuh subtes UTBK **sudah menjadi
+mapel bank soal sendiri** — kode `utbk_pu` … `utbk_pm` di `MAPEL_UTBK`
+(utils/mesinTaksonomiSoal), satu sumber untuk: dropdown kedua halaman scan
+(`...NAMA_MAPEL_UTBK`), kunci deteksi otomatis, dan alias mesin try out.
+Artinya soal hasil scan UTBK sekarang punya rumah yang benar, dan
+`mapelGemilangUntuk()` mengembalikan `[mapel UTBK, padanan kurikulum]` —
+UI boleh memakai yang pertama untuk "latih soal UTBK-nya" dan yang kedua
+untuk "perkuat materi dasarnya".
+
+Dua hal yang ikut dibereskan karena terpaksa (dan ada testnya):
+
+- `selaraskanKeKurikulum()` dulu "mengoreksi" nama UTBK jadi mapel kurikulum
+  lewat pencocokan alias substring ("Literasi/Bahasa Indonesia" → Bahasa
+  Indonesia). Mapel UTBK kini dilewatkan dari penyelaras itu.
+- `kodeMapel` & `cocokkanMapel` dipindah ke `utils/aliasMapel.js` (util murni)
+  karena berkas lamanya mengimpor Firestore sehingga tidak bisa diuji di Node.
+
+Yang **belum** berubah: soal-soal lama di bank masih bertag mapel kurikulum;
+hanya scan BARU yang masuk mapel `utbk_*`. Melabeli ulang bank lama adalah
+pekerjaan konten terpisah, lewat halaman Perkakas dengan pemeriksaan manusia,
+bukan skrip buta.
+
+### 3.1b Akses siswa ke soal UTBK di Latihan Harian
+
+Try Out **tidak** digate oleh mapel (hanya `targetKelas`/`targetKategori`), jadi
+paket try out UTBK langsung terlihat sesuai targetnya. Tapi **Latihan Harian**
+memakai `cocokkanAksesMapel()`: soal `utbk_*` hanya muncul bagi siswa yang
+`enrolledSubjects`-nya memuat kode itu (atau 'semua'). Konsekuensi operasional:
+
+1. Koleksi `mapel` di Firestore perlu punya dokumen dengan `namaMapel` persis
+   sama dengan nama di `MAPEL_UTBK` dan `kodeMapel` = kode `utbk_*` — itu yang
+   dipakai AddStudent/EditStudent mengisi pilihan Akses Mapel.
+2. Atau, untuk kelas 12 yang memang persiapan UTBK, set Akses Mapel = 'semua'.
+
+Tanpa salah satu dari itu, soal UTBK yang sudah diimpor **tidak muncul** di
+Latihan Harian — bukan bug akses, tapi pagarnya bekerja sebagaimana dirancang.
+Test tidak bisa menangkap ini karena pagarnya benar; yang butuh tahu adalah
+orang yang menyiapkan data.
 
 ### 3.2 Kolom `subtesKunci` di sumber itu teks bebas
 
