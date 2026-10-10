@@ -1693,15 +1693,6 @@ function parseHTMLMaster(raw) {
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
     const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
-    // Cacat khas OCR dua kolom: blok opsi terpindah JUGA ke dalam teks soal
-    // (terlihat di soal 2 berkas owner 2026-10-10). Duplikatnya dibuang
-    // deterministik -- bukan tebakan, karena teksnya identik dengan opsi.
-    const tanpaDuplikat = buangDuplikatOpsiDariTeks(
-      bersihTeksSoal.teks,
-      opsi_jawaban.map((o) => o.teks),
-    );
-    bersihTeksSoal.teks = tanpaDuplikat.teks;
-    bersihTeksSoal.catatan.push(...tanpaDuplikat.catatan);
     const imageNode = getField(node, 'gambar', 'images', 'image');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
@@ -1747,6 +1738,18 @@ function parseHTMLMaster(raw) {
       const bersih = bersihkanOcrTeks(opt.teks || '');
       return { ...opt, teks: bersih.teks };
     });
+    // Cacat khas OCR dua kolom: blok opsi terpindah JUGA ke dalam teks soal
+    // (soal 2 berkas bab 1 & banyak soal bab 2). Duplikatnya dibuang
+    // deterministik -- bukan tebakan, karena teksnya identik dengan opsi.
+    // CATATAN URUTAN: blok ini WAJIB setelah opsi_jawaban terdefinisi;
+    // versi pertama menaruhnya di atas dan melempar TDZ saat parse
+    // ("Cannot access 'K' before initialization", insiden 2026-10-10).
+    const tanpaDuplikat = buangDuplikatOpsiDariTeks(
+      bersihTeksSoal.teks,
+      opsi_jawaban.map((o) => o.teks),
+    );
+    bersihTeksSoal.teks = tanpaDuplikat.teks;
+    bersihTeksSoal.catatan.push(...tanpaDuplikat.catatan);
 
     const bacaan = bacaanNode ? {
       teks: bersihkanOcrTeks(htmlNodeText(bacaanNode)).teks,

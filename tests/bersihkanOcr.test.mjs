@@ -133,6 +133,37 @@ uji('opsi pendek tidak dipakai sebagai pisau bedah', () => {
   assert.equal(hasil.teks, teks);
 });
 
+uji('watermark slogan buku dibuang (kasus nyata bab 2)', () => {
+  const masuk = [
+    'Jika seorang guru menjadi idola para murid, guru',
+    'tersebut santun dalam bertutur kata.',
+    'HASIL MBKSIMAL',
+    'Jika seorang guru berkata kasar, mementingkan',
+    'BELAJAR MINIMAL,',
+    'dirinya sendiri.',
+  ].join('\n');
+  const { teks, catatan } = bersihkanOcrTeks(masuk);
+  assert.ok(!/MBKSIMAL|MINIMAL,/.test(teks), 'slogan harus hilang');
+  assert.ok(teks.includes('tersebut santun dalam bertutur kata.'));
+  assert.ok(catatan.some((c) => /struktural/.test(c)));
+});
+
+uji('pembahasan tertukar terdeteksi dari kode sumbernya', () => {
+  const catatan = penandaiKualitasOcr({
+    teksSoal: '[UTBK2024/TPS/PU/GEL.2/63] Eksploitasi minyak bumi di Pulau X ...',
+    pembahasan: 'UTBK2024/TPS/PU/GEL.2/69 Apabila jumlah pengunjung ...',
+  });
+  assert.ok(catatan.some((c) => /tertukar/.test(c)), catatan.join(' | '));
+});
+
+uji('pembahasan yang kodonya cocok tidak dituduh', () => {
+  const catatan = penandaiKualitasOcr({
+    teksSoal: '[UTBK2024/TPS/PU/GEL.2/63] Eksploitasi minyak bumi ...',
+    pembahasan: 'UTBK2024/TPS/PU/GEL.2/63 Eksploitasi minyak bumi di Pulau X menyebabkan ...',
+  });
+  assert.ok(!catatan.some((c) => /tertukar/.test(c)));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');

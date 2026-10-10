@@ -23,6 +23,10 @@ const RE_NOMOR_YATIM = /^\s*\d{1,3}\s*[.,)]?\s*$/;
 const RE_NOMOR_GANDA = /^\s*\d{1,2}(\s+\d{1,2})+\s*$/;
 const RE_SIMBOL_SAHAJA = /^\s*[^a-zA-Z0-9]{1,8}\s*$/;
 const RE_JUDUL_KOLOM_RUSAK = /^\s*a{1,2}al-?soal\s*$/i;
+// Slogan/watermark buku yang ikut ter-OCR sebagai baris teks ("BELAJAR
+// MINIMAL, HASIL MAKSIMAL" dan varian rusaknya: HBSIL, MBKSIMAL, WINIMAL).
+// Baris sepanjang ini yang ISINYA hanya slogan tidak mungkin bagian kalimat.
+const RE_SLOGAN_BUKU = /^\s*(belajar|has[ij]l|hbsil|mbksimal|winimal)\s*(minimal|maksimal|minima[,.]?|maksima[,.]?|mbksimal|hbsil)?[,.]?\s*$/i;
 
 const PUNCAKUS_AKHIR = /[.!?:;…)\]"']$/;
 
@@ -65,6 +69,7 @@ export function bersihkanOcrTeks(teks) {
       || RE_NOMOR_GANDA.test(b)
       || RE_SIMBOL_SAHAJA.test(b)
       || RE_JUDUL_KOLOM_RUSAK.test(b)
+      || RE_SLOGAN_BUKU.test(b)
     ) {
       buangStruktural += 1;
       continue;
@@ -171,8 +176,26 @@ export function buangDuplikatOpsiDariTeks(teksSoal, daftarOpsi = []) {
  * @param {{teksSoal?: string, opsi?: Array, pembahasan?: string}} q
  * @returns {string[]}
  */
+// Sidik jari sumber soal: "SNMPTN 2012/TPA/ 213/24", "UTBK2024/TPS/PU/GEL.2/63",
+// dengan atau tanpa kurung siku. Spasi diabaikan karena OCR sering
+// menyelipkan/membuang spasi di dalam kode.
+const RE_KODE_SUMBER = /(SNMPTN|SBMPTN|UTBK)\s*\d{4}(?:\s*\/\s*[\w.-]+)+/;
+
+function kodeSumber(teks) {
+  const m = String(teks || '').match(RE_KODE_SUMBER);
+  return m ? m[0].replace(/\s+/g, '').toUpperCase() : null;
+}
+
 export function penandaiKualitasOcr({ teksSoal = '', opsi = [], pembahasan = '' } = {}) {
   const catatan = [];
+  // Pembahasan tertukar antar-soal (kasus nyata berkas bab 2: pembahasan
+  // soal 31 berisi kode soal 33, dst.). Kode sumber di awal pembahasan adalah
+  // sidik jari yang murah dan pasti untuk menangkapnya.
+  const kodeSoal = kodeSumber(teksSoal);
+  const kodeBahasan = kodeSumber(pembahasan);
+  if (kodeSoal && kodeBahasan && kodeSoal !== kodeBahasan) {
+    catatan.push(`kode sumber di pembahasan (${kodeBahasan}) BERBEDA dari kode di soal (${kodeSoal}) -- pembahasan diduga tertukar dengan soal lain; PERIKSA MANUAL`);
+  }
   const g = (t, label) => {
     const r = bersihkanOcrTeks(t);
     for (const c of r.catatan) catatan.push(`${label}: ${c}`);
