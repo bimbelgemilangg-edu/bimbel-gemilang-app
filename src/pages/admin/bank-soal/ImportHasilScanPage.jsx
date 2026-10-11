@@ -98,6 +98,8 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan } from '../../../utils/bersihkanArtefakScan';
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
+import PanduImpor from '../../../components/admin/PanduImpor';
+import { teksPanduan } from '../../../utils/panduImpor';
 
 // ============================================================
 // CONSTANT
@@ -3226,6 +3228,12 @@ export default function ImportHasilScanPage() {
   }, []);
 
   const [format, setFormat] = useState('html'); // default HTML Master -- lihat catatan di bawah
+  // 🔥 BARU (2026-10-11, permintaan owner): wizard depan "mau impor apa"
+  // supaya admin lain tidak bingung menghadap form panjang. panduMeta=null
+  // berarti wizard masih tampil; begitu selesai, metadata mesin disetel
+  // dari pilihan dan banner hijau menjelaskan mengapa form terisi sendiri.
+  const [panduMeta, setPanduMeta] = useState(null);
+  const [panduLewati, setPanduLewati] = useState(false);
   const [rawInput, setRawInput] = useState('');
   const [sumberAI, setSumberAI] = useState('Gemini Canvas');
 
@@ -4328,6 +4336,26 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
           </div>
 
           {/* PROMPT AI KHUSUS */}
+          {!panduMeta && !panduLewati && soalList.length === 0 && (
+            <PanduImpor
+              onLewati={() => setPanduLewati(true)}
+              onSelesai={(meta) => {
+                if (meta.pintuLain) { window.location.href = meta.pintuLain; return; }
+                setJenisUjian(meta.jenisUjian);
+                setFormat(meta.format);
+                if (meta.mapel) setMataPelajaran(meta.mapel);
+                if (meta.jenjang) setJenjang(meta.jenjang);
+                if (meta.kelas) setTingkatKelas(meta.kelas);
+                setPanduMeta(meta);
+              }}
+            />
+          )}
+          {panduMeta && (
+            <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#065f46', borderRadius: 12, padding: '10px 14px', fontSize: 12.5 }}>
+              🧭 {teksPanduan(panduMeta)}{' '}
+              <button type="button" onClick={() => setPanduMeta(null)} style={{ background: 'none', border: 'none', color: '#047857', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }}>ubah pilihan</button>
+            </div>
+          )}
           <div style={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid #1e293b', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div>
