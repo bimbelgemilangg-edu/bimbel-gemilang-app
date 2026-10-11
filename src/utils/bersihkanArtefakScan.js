@@ -41,8 +41,51 @@ const RE_MARKER_KOLOM = /={3,}\s*PAGE\s*\d+(?:\s*COL\s*\d+)?\s*={3,}(?:\s*\d{1,3
 /** Baris yang ISINYA hanya nomor urut & tanda baca (milik kolom sebelah). */
 const RE_BARIS_NOMOR = /^\s*(?:\d{1,3}\s*[.,;]?\s*){1,8}$/;
 
+// Sisa 1-2 huruf kapital lepas ("Ps") yang tertinggal setelah watermark
+// inline dibuang. Huruf kecil ("pq", baris logika) TIDAK disentuh.
+const RE_BARIS_HURUF_LEPAS = /^\s*[A-Z]{1,2}\s*$/;
+
 /** Baris sampah pemisah kolom: didominasi garis/dash/box ("————EEE"). */
 const RE_BARIS_GARIS = /^\s*[—–―\-_=|]{4,}\s*[A-Z0-9]{0,6}\s*$/;
+
+// Penanda halaman & watermark varian BARU yang ditemukan di sampel kedua
+// owner (2026-10-11, "03 Penalaran Deduktif-Induktif", 47 soal): buku yang
+// berbeda memakai watermark yang berbeda pula ("Wangsit Om Jero" dan varian
+// salah-bacanya) dan penanda halaman gaya lain ("Page 45", "34 of 310").
+// Pola watermark dibuat FUZZY dengan jangkar kata yang tidak mungkin muncul
+// di teks soal asli (wangsit/belajar-minimal/hasil-maksimal).
+const RE_INLINE_SAMPAH = [
+  /\bpage\s*\d{1,3}[a-z]{0,3}\b/gi,          // "Page 3it", "Page 45"
+  /\b\d{1,3}\s+of\s+\d{3,4}\b/gi,          // "34 of 310" (total >=100 = kaki halaman)
+  /wangsit\s+om\s+jer\w*/gi,                   // watermark buku om jero
+  // inline HANYA bila pasangan lengkap (belajar..+hasil..): kalimat asli
+  // seperti "Belajar minimal dua jam" tidak boleh ikut terpotong.
+  /bel\w{0,3}jar\s+mi\w{0,5}(?:mal|nal)\s+\w{0,4}\s+hasil\s+m\w{0,7}(?:mal|nal)/gi,
+];
+
+// Watermark lepas yang ejaannya SALAH (ciri OCR watermark, bukan kalimat):
+// "Hasil Maksirnal", "hasil mveksimnal". Ejaan benar ("maksimal") dibiarkan
+// karena bisa saja isi kalimat sungguhan; versi baris-utuh tetap dibuang
+// oleh barisWatermark() walau ejaannya benar.
+const RE_HASIL_SALAH_EJA = /hasil\s+m(\w{0,7})(?:mal|nal)/gi;
+
+/**
+ * Buang awalan sampah pada teks OPSI jalur master: garbage margin OCR +
+ * huruf opsi yang tertulis DOBEL di dalam <li> ("S (A) Simpulan ...",
+ * "yy (C) ...", "3 <{ (A) ...", "1 ©) ...", "(A) ...", "A) ...").
+ * Aman untuk opsi polos: kata sungguhan di awal ("Simpulan ...",
+ * "Energi ...") tidak cocok pola satu-huruf-diikuti-penutup.
+ * @param {string} teks
+ * @returns {string}
+ */
+export function bersihkanAwalanOpsi(teks) {
+  const t = String(teks ?? '').trim();
+  // Penutup (")", "]", ".", ":") WAJIB ada: tanpa itu opsi bahasa Inggris
+  // yang diawali artikel "A " akan ikut terpotong.
+  const m = /^\s*(?:[^\sA-Za-z0-9]+\s*|\d{1,2}\s+|[a-zA-Z]{1,2}\s+){0,4}[([]?(?:([A-E])|©|®|§)\s*[)\].:]\s+/.exec(t);
+  if (!m) return t;
+  return t.slice(m[0].length).trim();
+}
 
 /** Huruf saja, kapital — untuk membandingkan watermark yang salah-baca OCR. */
 function hurufKapital(teks) {
@@ -90,10 +133,16 @@ export function bersihkanArtefakTeks(teks) {
   let t = String(teks ?? '');
   if (!t.trim()) return t;
   t = t.replace(RE_MARKER_KOLOM, ' ');
+  for (const re of RE_INLINE_SAMPAH) {
+    re.lastIndex = 0;
+    t = t.replace(re, ' ');
+  }
+  t = t.replace(RE_HASIL_SALAH_EJA, (m, tengah) => (tengah === 'aksi' ? m : ' '));
   t = t
     .split('\n')
     .map((baris) => {
       if (RE_BARIS_NOMOR.test(baris)) return '';
+      if (RE_BARIS_HURUF_LEPAS.test(baris)) return '';
       if (RE_BARIS_GARIS.test(baris)) return '';
       if (barisWatermark(baris)) return '';
       return baris;
@@ -107,9 +156,10 @@ export function bersihkanArtefakTeks(teks) {
 }
 
 function bersihkanOpsi(opsi) {
-  if (typeof opsi === 'string') return bersihkanArtefakTeks(opsi);
+  // artefak dulu, lalu awalan huruf opsi dobel + garbage margin
+  if (typeof opsi === 'string') return bersihkanAwalanOpsi(bersihkanArtefakTeks(opsi));
   if (opsi && typeof opsi === 'object') {
-    return { ...opsi, teks: bersihkanArtefakTeks(opsi.teks ?? '') };
+    return { ...opsi, teks: bersihkanAwalanOpsi(bersihkanArtefakTeks(opsi.teks ?? '')) };
   }
   return opsi;
 }
@@ -316,6 +366,7 @@ export function pindahkanBacaanTerjebak(daftar) {
 
 export default {
   bersihkanArtefakTeks,
+  bersihkanAwalanOpsi,
   bersihkanArtefakSoal,
   cariPotonganTerjebak,
   tandaiBacaanTerjebak,

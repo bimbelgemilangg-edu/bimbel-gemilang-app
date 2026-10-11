@@ -24,6 +24,7 @@ import {
   tandaiBacaanTerjebak,
   hitungKandidatBacaan,
   pindahkanBacaanTerjebak,
+  bersihkanAwalanOpsi,
 } from '../src/utils/bersihkanArtefakScan.js';
 
 let lulus = 0;
@@ -270,6 +271,45 @@ uji('masukan tidak dimutasi', () => {
   pindahkanBacaanTerjebak(asal);
   assert.ok(asal[0].opsi_jawaban[4].includes('Industri batik'), 'opsi asal termutasi');
   assert.equal(asal[1].bacaan, null, 'bacaan asal termutasi');
+});
+
+// ============================================================
+bagian('7. SAMPEL KEDUA (47 soal): huruf opsi dobel, page-foot, watermark buku lain');
+// ============================================================
+
+uji('huruf opsi dobel + garbage margin dibuang dari teks opsi', () => {
+  const kasus = [
+    ['S (A) Simpulan pasti benar.', 'Simpulan pasti benar.'],
+    ['yy (C) Simpulan pasti salah.', 'Simpulan pasti salah.'],
+    ['3 <{ (A) Hanya bidang usaha', 'Hanya bidang usaha'],
+    ['1 ©) Hanya tarian X', 'Hanya tarian X'],
+    ['_.§ (B) Hampir semua usaha', 'Hampir semua usaha'],
+    ['(A) Simpulan pasti benar.', 'Simpulan pasti benar.'],
+    ['A) Simpulan pasti benar.', 'Simpulan pasti benar.'],
+  ];
+  for (const [masuk, harap] of kasus) assert.equal(bersihkanAwalanOpsi(masuk), harap, masuk);
+});
+
+uji('opsi polos TIDAK dipotong (termasuk opsi bahasa Inggris berawal "A ")', () => {
+  for (const t of ['Simpulan mungkin benar.', 'Energi terbarukan meningkat.', 'A study shows growth.', '2020 terjadi pandemi.']) {
+    assert.equal(bersihkanAwalanOpsi(t), t, t);
+  }
+});
+
+uji('page-foot & watermark buku lain dibuang inline', () => {
+  const t = bersihkanArtefakTeks('Berdasarkan paragraf. Page 45 ge 34 of 310 Wangsit Om Jerg Belojar Minimal dan Hasil mveksimnal Jadi jawaban C.');
+  assert.ok(!t.includes('Page 45'), t);
+  assert.ok(!t.includes('34 of 310'), t);
+  assert.ok(!t.includes('Wangsit'), t);
+  assert.ok(!t.includes('mveksimnal'), t);
+  assert.ok(t.includes('Jadi jawaban C.'), t);
+});
+
+uji('kalimat asli yang mirip watermark TIDAK dipotong', () => {
+  const asli = 'Belajar minimal dua jam setiap hari meningkatkan hasil.';
+  assert.equal(bersihkanArtefakTeks(asli), asli);
+  const asli2 = 'Usaha itu mencapai hasil maksimal pada 2020.';
+  assert.equal(bersihkanArtefakTeks(asli2), asli2);
 });
 
 console.log(`\n${'='.repeat(60)}`);

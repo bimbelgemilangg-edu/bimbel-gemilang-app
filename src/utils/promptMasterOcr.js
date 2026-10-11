@@ -243,6 +243,26 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
       luar = A, irisan = B"> — bukan gambar sumber, verifikasi dulu.</div>
     Deskripsi itu hanya terlihat guru; TIDAK boleh masuk teks_soal, opsi,
     maupun pembahasan yang dibaca siswa.
+
+37. SATU <li> = SATU PILIHAN, TANPA SAMPAH MARGIN. Tulis isi pilihan MULAI
+    dari kata pertama pilihan itu sendiri. DILARANG menyalin:
+    - huruf pilihan yang tertulis dobel di dalam <li> ("(A) ", "A) ",
+      "1 ©)") -- huruf pilihan sudah diwakili urutan <li>, tidak perlu
+      ditulis lagi di dalam teks;
+    - garbage margin OCR di awal baris ("S ", "yy ", "3 <{ ", "_.§ ",
+      "a ", "x ", "Zz ") yaitu 1-3 karakter lepas yang bukan kata.
+    Contoh SALAH: <li>S (A) Simpulan pasti benar.</li>
+    Contoh BENAR: <li>Simpulan pasti benar.</li>
+
+38. PERLUASAN PENANDA SCAN (melengkapi aturan 31). Selain "=== PAGE n
+    COL m ===", juga DILARANG menyalin: penanda halaman gaya lain
+    ("Page 45", "Page 3it"), kaki halaman bernomor ("34 of 310",
+    "e 46 of 310"), dan watermark buku apa pun beserta varian
+    salah-bacanya ("Wangsit Om Jero", "Belojar Minimal dan Hasil
+    mveksimnal", "Belajar Mintrnal dan Hasil Maksirnal Ps"). Watermark
+    tiap buku BERBEDA-BEDA: kenali sebagai watermark bila teks pendek
+    yang berulang di banyak halaman dan tidak nyambung dengan kalimat
+    soal -- bila ragu, sebutkannya di catatan_admin, jangan di teks soal.
 `;
 
 export default ATURAN_OCR_MASTER;

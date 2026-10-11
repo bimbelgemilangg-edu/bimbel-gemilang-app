@@ -154,6 +154,14 @@ uji('tangga pembahasan + larangan sketsa raster (aturan 36)', () => {
   assert.ok(P.includes('DIAGRAM PEMBAHASAN perlu dipotong'));
 });
 
+uji('opsi bersih sampah margin + perluasan penanda scan (aturan 37-38)', () => {
+  assert.ok(P.includes('SATU <li> = SATU PILIHAN, TANPA SAMPAH MARGIN'));
+  assert.ok(P.includes('S (A) Simpulan pasti benar.'));
+  assert.ok(P.includes('PERLUASAN PENANDA SCAN'));
+  assert.ok(P.includes('34 of 310'));
+  assert.ok(P.includes('Wangsit Om Jero'));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
