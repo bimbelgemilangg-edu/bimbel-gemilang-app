@@ -1,5 +1,7 @@
 # CETAK BIRU BANK SOAL & MENU TENTOR — urutan bangun yang aman
 
+> **Catatan 2026-10-11:** `AdvancedQuestionExtractor.jsx` yang disebut di beberapa baris dokumen ini **sudah dihapus** atas putusan owner (komponen yatim: tidak direferensi rute/komponen mana pun). Baris-baris yang menyebutnya adalah catatan historis. Niat "pagar materi" yang dulu belum selesai kini dijaga `utils/mesinTaksonomiSoal.js` (`deteksiTaksonomiSoal` + `terapkanTaksonomi` force) yang dipakai kedua pintu impor, plus halaman Audit Identitas Soal ini.
+
 **Disusun:** 2026-10-08 · **Dasar:** pembacaan kode + audit `docs/AUDIT-IDENTITAS-BANK-SOAL.md`
 **Keputusan owner yang jadi acuan:** tentor boleh *baca → pilih → cetak*; menu pilih
 dirombak karena membingungkan; tentor boleh membuat try out **tapi perlu approval**.

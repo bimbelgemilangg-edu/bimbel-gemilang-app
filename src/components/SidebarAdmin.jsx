@@ -182,6 +182,13 @@ const SidebarAdmin = () => {
       items: [
         { name: 'Perpustakaan', path: '/admin/perpustakaan', icon: <Library size={20} /> },
     { name: 'Impor HTML Gemini', path: '/admin/bank-soal/impor-html-gemini', icon: <FileUp size={20} /> },
+    // 🔥 BARU (2026-10-11, kebingungan owner "emang ada di mana aja sih
+    // import ini?"): pintu impor yang PALING dipakai sehari-hari (scan
+    // PDF/buku -> HTML/JSON) dulu hanya reachable lewat kartu di halaman
+    // Bank Soal & Perkakas, TIDAK ada di sidebar -- sedangkan saudaranya
+    // yang ber-dialek beda justru terpajang. Kini keduanya berdampingan
+    // supaya salah pintu jadi kelihatan, bukan jadi misteri.
+    { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={20} /> },
     { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
         { name: 'Dashboard Analisis', path: '/admin/analisis', icon: <BarChart3 size={18} /> },
         { name: 'Jadwal Harian',path: '/admin/schedule',   icon: <Calendar size={18} /> },

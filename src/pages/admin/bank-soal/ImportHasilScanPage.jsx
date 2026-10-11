@@ -95,7 +95,7 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 // soal. Selain itu wacana yang tercecer jadi ekor sebuah opsi hanya bisa
 // ditemukan dengan berburu manual di puluhan soal. Keduanya kini ditangani
 // util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
-import { bersihkanArtefakSoal, tandaiBacaanTerjebak } from '../../../utils/bersihkanArtefakScan';
+import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan } from '../../../utils/bersihkanArtefakScan';
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 
 // ============================================================
@@ -4694,6 +4694,30 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                   <div key={index} style={{ fontSize: '12px', color: '#b45309' }}>{warning}</div>
                 ))}
               </div>
+              {/* 🔥 BARU (2026-10-11, sampel owner "02 Silogisme"): wacana yang
+                  tercecer di wadah salah (kasus nyata: batik milik soal 20-22
+                  jadi ekor opsi E soal 19) kini bisa dipindahkan SATU KLIK ke
+                  soal yang membutuhkannya. Aksinya fungsi murni teruji
+                  (pindahkanBacaanTerjebak): memotong dari wadah asal, membagi
+                  ke runtutan soal yatim, memberi catatan admin "VERIFIKASI
+                  MANUAL" -- jadi bukan perbaikan senyap. */}
+              {hitungKandidatBacaan(soalList) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const { daftar, diselamatkan } = pindahkanBacaanTerjebak(soalList);
+                    setSoalList(daftar);
+                    setWarnings(daftar
+                      .filter(q => !q.valid)
+                      .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${q.errors.join(' ')}`));
+                    const nomorTujuan = diselamatkan.map(d => d.nomor).join(', ');
+                    window.alert(`🩹 ${diselamatkan.length} soal mendapat bacaan selamatan: nomor ${nomorTujuan}.\nBacaan dipotong dari wadah salahnya dan diberi catatan "VERIFIKASI MANUAL" di tiap soal. Buka kartu soal tersebut untuk membaca ulang sebelum disimpan.`);
+                  }}
+                  style={{ marginTop: '10px', padding: '8px 14px', borderRadius: '8px', border: '1px solid #b45309', background: '#fffbeb', color: '#92400e', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  🩹 Selamatkan bacaan terjebak ({hitungKandidatBacaan(soalList)} soal) — potong dari wadah salahnya & jadikan bacaan bersama
+                </button>
+              )}
               <div style={{ fontSize: '12px', color: '#b45309', marginTop: '12px' }}>Soal yang valid tetap bisa disimpan.</div>
             </div>
           )}

@@ -22,6 +22,8 @@ import {
   bersihkanArtefakSoal,
   cariPotonganTerjebak,
   tandaiBacaanTerjebak,
+  hitungKandidatBacaan,
+  pindahkanBacaanTerjebak,
 } from '../src/utils/bersihkanArtefakScan.js';
 
 let lulus = 0;
@@ -205,6 +207,69 @@ uji('soal yang tidak menunjuk bacaan TIDAK dicari-cari kandidatnya', () => {
   }];
   const hasil = tandaiBacaanTerjebak(daftar);
   assert.deepEqual(hasil[0].errors, ['kunci kosong']);
+});
+
+// ============================================================
+bagian('6. AKSI SATU KLIK — pindahkanBacaanTerjebak');
+// ============================================================
+
+function daftarKasusBatik() {
+  return [
+    { nomor: 19, paket: 1, teks_soal: 'Simpulan apa yang dapat ditarik dari paragraf 3?', bacaan: null, opsi_jawaban: ['a', 'b', 'c', 'd', OPSI_E_SOAL_19], errors: [], valid: true },
+    ...[20, 21, 22].map((n) => ({
+      nomor: n,
+      paket: 1,
+      teks_soal: `Berdasarkan paragraf 3, manakah simpulan nomor ${n} yang BENAR?`,
+      bacaan: null,
+      opsi_jawaban: ['a', 'b', 'c', 'd', 'e'],
+      errors: ['Soal ini menunjuk "teks/bacaan tersebut" tapi TIDAK punya bacaan sama sekali (field bacaan kosong, teks_soal pendek) -- x'],
+      valid: false,
+    })),
+    { nomor: 23, paket: 1, teks_soal: 'Soal biasa tanpa penunjuk bacaan.', bacaan: null, opsi_jawaban: ['a', 'b'], errors: [], valid: true },
+  ];
+}
+
+uji('hitungKandidatBacaan menghitung runtutan yatim yang punya kandidat', () => {
+  assert.equal(hitungKandidatBacaan(daftarKasusBatik()), 3);
+});
+
+uji('bacaan DIPOTONG dari opsi E soal 19 (tidak ada dua salinan)', () => {
+  const { daftar } = pindahkanBacaanTerjebak(daftarKasusBatik());
+  const opsiE = daftar[0].opsi_jawaban[4];
+  assert.ok(!opsiE.includes('Industri batik'), `wacana masih ada di opsi: ${opsiE.slice(-80)}`);
+  assert.ok(opsiE.startsWith('Semakin tinggi kemungkinan'), 'teks opsi asli harus tetap utuh');
+});
+
+uji('bacaan dibagikan ke SELURUH runtutan yatim (20, 21, 22), bukan cuma satu', () => {
+  const { daftar, diselamatkan } = pindahkanBacaanTerjebak(daftarKasusBatik());
+  assert.deepEqual(diselamatkan.map((d) => d.nomor), [20, 21, 22]);
+  for (const i of [1, 2, 3]) {
+    assert.ok(daftar[i].bacaan && daftar[i].bacaan.teks.includes('Industri batik'), `soal ${daftar[i].nomor} belum dapat bacaan`);
+    assert.equal(daftar[i].bacaanDiselamatkan, true);
+    assert.ok(daftar[i].catatan_admin.includes('VERIFIKASI MANUAL'), 'catatan verifikasi wajib ada');
+    assert.ok(!daftar[i].errors.some((e) => e.includes('TIDAK punya bacaan')), 'error yatim harus tuntas');
+    assert.equal(daftar[i].valid, true, 'soal harus jadi valid setelah diselamatkan');
+  }
+});
+
+uji('soal BUKAN yatim di belakang runtutan tidak ikut mendapat bacaan', () => {
+  const { daftar } = pindahkanBacaanTerjebak(daftarKasusBatik());
+  assert.equal(daftar[4].bacaan, null, 'soal 23 tidak boleh kebagian bacaan');
+  assert.equal(daftar[4].bacaanDiselamatkan, undefined);
+});
+
+uji('sesudah diselamatkan tidak ada kandidat tersisa (idempoten)', () => {
+  const sekali = pindahkanBacaanTerjebak(daftarKasusBatik());
+  assert.equal(hitungKandidatBacaan(sekali.daftar), 0);
+  const dua = pindahkanBacaanTerjebak(sekali.daftar);
+  assert.equal(dua.diselamatkan.length, 0);
+});
+
+uji('masukan tidak dimutasi', () => {
+  const asal = daftarKasusBatik();
+  pindahkanBacaanTerjebak(asal);
+  assert.ok(asal[0].opsi_jawaban[4].includes('Industri batik'), 'opsi asal termutasi');
+  assert.equal(asal[1].bacaan, null, 'bacaan asal termutasi');
 });
 
 console.log(`\n${'='.repeat(60)}`);

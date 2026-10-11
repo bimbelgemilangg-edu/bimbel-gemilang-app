@@ -188,6 +188,45 @@ function hurufOpsi(i) {
 }
 
 /**
+ * Cari kandidat bacaan terjebak BAGI soal ke-i (soal yatim).
+ * Dipakai bersama oleh tandaiBacaanTerjebak (pesan) dan
+ * pindahkanBacaanTerjebak (aksi satu klik) supaya keduanya tidak pernah
+ * berbeda pendapat tentang apa itu "kandidat".
+ * @returns {{sumberIdx:number, lokasi:string, potong:{teks:string,mulai:number}, bidang:'opsi'|'teks'}|null}
+ */
+function kandidatBagi(daftar, i) {
+  const s = daftar[i];
+  const teksSoal = String(s?.teks_soal ?? '');
+  const punyaBacaan = Boolean(s?.bacaan && (String(s.bacaan.teks || '').trim() || (s.bacaan.gambar || []).length));
+  const yatim = (RE_MENUNJUK_BACAAN.test(teksSoal) || RE_BERDASARKAN_PARAGRAF.test(teksSoal))
+    && !punyaBacaan && teksSoal.length < 400;
+  if (!yatim) return null;
+
+  // Jendela 4 soal ke belakang: kasus nyata owner, wacana batik milik
+  // 20-22 tercecer di opsi E soal 19 -- bagi soal 22 itu 3 langkah mundur.
+  // Kandidatnya sendiri sangat spesifik (penanda kolom + prosa panjang,
+  // atau string jauh lebih panjang dari opsi saudaranya), jadi jendela
+  // lebar tidak berarti tuduhan sembarangan.
+  for (let mundur = 1; mundur <= 4; mundur += 1) {
+    const sumberIdx = i - mundur;
+    const sumber = daftar[sumberIdx];
+    if (!sumber) break;
+    const opsi = Array.isArray(sumber.opsi_jawaban) ? sumber.opsi_jawaban : [];
+    const panjangTengah = opsi.length
+      ? opsi.map((o) => String(typeof o === 'string' ? o : o?.teks || '').length).sort((a, b) => a - b)[Math.floor(opsi.length / 2)] || 0
+      : 0;
+    for (let k = 0; k < opsi.length; k += 1) {
+      const isi = String(typeof opsi[k] === 'string' ? opsi[k] : opsi[k]?.teks || '');
+      const potong = cariPotonganTerjebak(isi, panjangTengah);
+      if (potong) return { sumberIdx, lokasi: `opsi ${hurufOpsi(k)} soal nomor ${sumber.nomor}`, potong, bidang: 'opsi', indeksOpsi: k };
+    }
+    const potongTeks = cariPotonganTerjebak(String(sumber.teks_soal || ''), panjangTengah);
+    if (potongTeks) return { sumberIdx, lokasi: `teks_soal soal nomor ${sumber.nomor}`, potong: potongTeks, bidang: 'teks' };
+  }
+  return null;
+}
+
+/**
  * Untuk tiap soal YATIM (menunjuk bacaan tapi bacaannya kosong), tunjuk
  * PERSIS di mana bacaan itu terperangkap di soal sekitarnya.
  * TIDAK memindahkan teks — hanya menambah satu baris errors yang berisi
@@ -198,35 +237,81 @@ function hurufOpsi(i) {
 export function tandaiBacaanTerjebak(daftar) {
   const list = Array.isArray(daftar) ? daftar : [];
   return list.map((s, i) => {
-    const teksSoal = String(s?.teks_soal ?? '');
-    const punyaBacaan = Boolean(s?.bacaan && (String(s.bacaan.teks || '').trim() || (s.bacaan.gambar || []).length));
-    const yatim = (RE_MENUNJUK_BACAAN.test(teksSoal) || RE_BERDASARKAN_PARAGRAF.test(teksSoal))
-      && !punyaBacaan && teksSoal.length < 400;
-    if (!yatim) return s;
-
-    for (let mundur = 1; mundur <= 2; mundur += 1) {
-      const sumber = list[i - mundur];
-      if (!sumber) break;
-      const opsi = Array.isArray(sumber.opsi_jawaban) ? sumber.opsi_jawaban : [];
-      const panjangTengah = opsi.length
-        ? opsi.map((o) => String(typeof o === 'string' ? o : o?.teks || '').length).sort((a, b) => a - b)[Math.floor(opsi.length / 2)] || 0
-        : 0;
-      for (let k = 0; k < opsi.length; k += 1) {
-        const isi = String(typeof opsi[k] === 'string' ? opsi[k] : opsi[k]?.teks || '');
-        const potong = cariPotonganTerjebak(isi, panjangTengah);
-        if (potong) {
-          const extra = `KANDIDAT BACAAN KETEMU: ±${potong.teks.length} karakter bacaan TERJEBAK di opsi ${hurufOpsi(k)} soal nomor ${sumber.nomor} (setelah penanda kolom / jauh lebih panjang dari opsi saudaranya). Potong teks itu dari opsi tersebut dan tempel sebagai bacaan soal ini -- besar kemungkinan memang miliknya.`;
-          return { ...s, errors: [...(s.errors || []), extra] };
-        }
-      }
-      const potongTeks = cariPotonganTerjebak(String(sumber.teks_soal || ''), panjangTengah);
-      if (potongTeks) {
-        const extra = `KANDIDAT BACAAN KETEMU: ±${potongTeks.teks.length} karakter bacaan menempel di teks_soal soal nomor ${sumber.nomor}. Potong dan tempel sebagai bacaan soal ini.`;
-        return { ...s, errors: [...(s.errors || []), extra] };
-      }
-    }
-    return s;
+    const k = kandidatBagi(list, i);
+    if (!k) return s;
+    const extra = `KANDIDAT BACAAN KETEMU: ±${k.potong.teks.length} karakter bacaan TERJEBAK di ${k.lokasi}. Tekan tombol "Selamatkan bacaan terjebak" untuk memindahkannya ke soal ini sebagai bacaan bersama, atau potong-tempel manual bila ragu.`;
+    return { ...s, errors: [...(s.errors || []), extra] };
   });
+}
+
+/** Berapa soal yang punya kandidat bacaan terjebak (untuk label tombol). */
+export function hitungKandidatBacaan(daftar) {
+  const list = Array.isArray(daftar) ? daftar : [];
+  let n = 0;
+  for (let i = 0; i < list.length; i += 1) if (kandidatBagi(list, i)) n += 1;
+  return n;
+}
+
+/**
+ * AKSI SATU KLIK: pindahkan bacaan terjebak dari wadah salahnya ke soal
+ * yatim yang membutuhkannya.
+ *
+ * AturanMainnya sengaja konservatif:
+ *   - potongan DIPOTONG dari wadah aslinya (opsi/teks_soal sumber) supaya
+ *     tidak ada dua salinan yang beranak di bank;
+ *   - bacaan hasil selamatan dibagikan ke soal yatim BERTURUT-TURUT setelah
+ *     sumber (kasus nyata: wacana batik milik 20-22 tercecer di opsi E 19);
+ *   - tiap butir yang diselamatkan diberi `bacaanDiselamatkan: true` dan
+ *     catatan admin, supaya asal-usulnya terlihat dan bisa dibatalkan
+ *     manusia; error yatim & pesan KANDIDAT dibuang karena sudah tuntas.
+ * TIDAK mutasi masukan.
+ * @returns {{daftar:Array<object>, diselamatkan:Array<object>}}
+ */
+export function pindahkanBacaanTerjebak(daftar) {
+  const list = (Array.isArray(daftar) ? daftar : []).map((s) => ({ ...s }));
+  const diselamatkan = [];
+
+  for (let i = 0; i < list.length; i += 1) {
+    const k = kandidatBagi(list, i);
+    if (!k) continue;
+    const sumber = list[k.sumberIdx];
+    const teksBacaan = bersihkanArtefakTeks(k.potong.teks);
+    if (!teksBacaan) continue;
+
+    if (k.bidang === 'opsi') {
+      const opsi = [...(Array.isArray(sumber.opsi_jawaban) ? sumber.opsi_jawaban : [])];
+      const asli = opsi[k.indeksOpsi];
+      const sisa = String(typeof asli === 'string' ? asli : asli?.teks || '')
+        .slice(0, k.potong.mulai)
+        .trim();
+      opsi[k.indeksOpsi] = typeof asli === 'string' ? sisa : { ...asli, teks: sisa };
+      sumber.opsi_jawaban = opsi;
+    } else {
+      sumber.teks_soal = String(sumber.teks_soal || '').slice(0, k.potong.mulai).trim();
+    }
+
+    // bagikan ke runtutan soal yatim sesudah sumber (termasuk i)
+    let j = k.sumberIdx + 1;
+    while (j < list.length) {
+      const t = list[j];
+      const teksT = String(t?.teks_soal ?? '');
+      const masihYatim = (RE_MENUNJUK_BACAAN.test(teksT) || RE_BERDASARKAN_PARAGRAF.test(teksT))
+        && !(t?.bacaan && String(t.bacaan.teks || '').trim()) && teksT.length < 400;
+      if (!masihYatim) break;
+      t.bacaan = { teks: teksBacaan, gambar: [], grup: `selamatan-${sumber.nomor}`, diselamatkan: true };
+      t.bacaanDiselamatkan = true;
+      t.catatan_admin = String(t.catatan_admin || '')
+        + ` Bacaan diisi otomatis 2026-10-11 dari ${k.lokasi} (tombol selamatkan bacaan terjebak) — VERIFIKASI MANUAL apakah memang milik soal ini.`;
+      t.errors = (t.errors || []).filter((e) => !e.includes('TIDAK punya bacaan sama sekali') && !e.includes('KANDIDAT BACAAN KETEMU'));
+      t.valid = (t.errors || []).length === 0;
+      diselamatkan.push({ nomor: t.nomor, sumberNomor: sumber.nomor, lokasi: k.lokasi });
+      j += 1;
+    }
+    // sumber juga tidak boleh lagi memuat pesan kandidat yang sudah tuntas
+    sumber.errors = (sumber.errors || []).filter((e) => !e.includes('KANDIDAT BACAAN KETEMU'));
+    i = j - 1; // lewati runtutan yang baru saja diisi
+  }
+  return { daftar: list, diselamatkan };
 }
 
 export default {
@@ -234,4 +319,6 @@ export default {
   bersihkanArtefakSoal,
   cariPotonganTerjebak,
   tandaiBacaanTerjebak,
+  hitungKandidatBacaan,
+  pindahkanBacaanTerjebak,
 };

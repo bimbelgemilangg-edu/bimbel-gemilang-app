@@ -1,7 +1,9 @@
 // api/uploadBankSoalImages.js
 // ============================================================
-// Upload gambar diagram (base64) dari AdvancedQuestionExtractor
-// ke Supabase Storage bucket "materi-bimbel/bank-soal/gambar/".
+// Upload gambar diagram (base64) ke Supabase Storage bucket
+// "materi-bimbel/bank-soal/gambar/". Pemanggilnya kini
+// ImportHasilScan.jsx->ImportHasilScanPage.jsx; pemanggil lama
+// AdvancedQuestionExtractor dihapus 2026-10-11 (komponen yatim).
 //
 // Dipanggil dari frontend saat "Simpan ke Bank Soal".
 // API key (secret) aman di server — tidak pernah ke browser.
@@ -94,7 +96,7 @@ export default async function handler(req, res) {
       }
 
       const ext      = mimeType.includes('png') ? 'png' : 'jpg';
-      const safeName = String(key).replace(/[^a-z0-9\-]/gi, '_').slice(0, 80);
+      const safeName = String(key).replace(/[^a-z0-9-]/gi, '_').slice(0, 80);
       const filePath = `${FOLDER}/${Date.now()}_${safeName}.${ext}`;
 
       const { error: upErr } = await supabase.storage
