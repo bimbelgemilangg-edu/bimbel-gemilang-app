@@ -1,0 +1,125 @@
+// src/utils/promptMasterOcr.js
+// ============================================================
+// Aturan tambahan prompt HTML Master untuk dokumen hasil SCAN BUKU/OCR.
+//
+// 🔥 KENAPA DIPISAH KE UTIL (bukan ditulis langsung di halaman impor):
+// prompt adalah kontrak dengan model di luar kendali kita. Kalau ia berubah,
+// keluaran Gemini ikut berubah secara halus dan kerusakan barunya baru
+// kelihatan setelah admin mengimpor ratusan soal. Karena itu aturannya
+// dikunci test (tests/promptMasterOcr.test.mjs) — pola yang sama dengan
+// promptPatenGemini.js. Util ini juga tidak menambah serverless function
+// (kuota Vercel sudah 12/12), jadi aman dari sisi arsitektur.
+//
+// Setiap butir di bawah lahir dari kerusakan NYATA pada berkas owner,
+// bukan dari asumsi:
+//   - opsi E soal 40 kemasukan teks bacaan soal 41-42 (bocor lintas kolom)
+//   - pembahasan soal 40 hancur ("<{_", "perem juan ya menich ¢ di")
+//   - baris "Jawaba'", "Jawabat", "= Jawaban f" (penutup jawaban putus)
+//   - opsi ikut tertulis di dalam teks soal (soal 2, 12, 15, 34, 35)
+//   - kepala tabel dua baris (soal 40) kehilangan nama kolomnya
+// ============================================================
+
+export const ATURAN_OCR_MASTER = `
+
+## ATURAN KHUSUS DOKUMEN HASIL SCAN / FOTO BUKU (WAJIB DIBACA SAMPAI HABIS)
+
+Dokumen yang dipindai dari buku dua kolom hampir selalu membawa cacat OCR.
+Tugasmu BUKAN menutupi cacat itu, melainkan: (a) menyalin apa yang benar-benar
+terbaca, (b) menata ulang struktur yang berantakan, (c) MENANDAI yang tidak
+terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
+==jangan pernah menyambung kata yang putus dengan tebakan tanpa tanda==.
+
+21. KATA TERPOTONG POTONGAN KOLOM (ciri: kalimat berhenti di tengah kata,
+    mis. "berbunc", "menerir", "pant", "menyimpan data besar Cdilengkapi").
+    - SALIN APA ADANYA di field yang benar. JANGAN menyambung/melengkapi kata
+      itu secara diam-diam, dan JANGAN membuang barisnya.
+    - WAJIB tambahkan <div data-field="catatan_admin">Kata terpotong OCR:
+      "..." (dugaan: "...") — cek buku asli halaman ...</div>. Dugaan boleh
+      ditulis HANYA di dalam catatan_admin, tidak pernah di dalam teks soal,
+      opsi, atau pembahasan yang dibaca siswa.
+    - Kalau potongan itu membuat SOAL TIDAK BISA DIJAWAB (mis. seluruh premis
+      hilang), kosongkan kunci_jawaban, isi kunci_terverifikasi="false", dan
+      tulis di catatan_admin apa yang hilang.
+
+22. TEKS SALAH KAMAR (bocor lintas kolom): tulisan milik soal/bagian lain yang
+    ikut tercetak di dalam opsi, teks soal, atau pembahasan.
+    - KEMBALIKAN ke tempat asalnya (mis. potongan wacana batik yang menempel di
+      opsi E soal 40 dikembalikan ke <div data-field="bacaan"> soal 41-42),
+      lalu HAPUS dari tempat yang salah.
+    - Opsi yang jadi pendek akibatnya TIDAK BOLEH dibiarkan menggantung:
+      lengkapi dari naskah opsi yang benar bila terbaca di tempat lain pada
+      sumber; bila tidak terbaca, tulis di catatan_admin "opsi E terpotong,
+      lanjutan tidak terbaca di sumber".
+    - Jangan pernah membuang teks hanya karena posisinya aneh.
+
+23. OPSI HANYA DI DALAM <ol data-field="opsi_jawaban">. Sumber OCR sering
+    mencetak daftar opsi DUA KALI: sekali sebagai (A)...(E) di kolom soal dan
+    sekali terbawa ke dalam paragraf teks soal. Kalau itu terjadi, teks_soal
+    HARUS dibersihkan dari salinan opsi tersebut (sisakan kalimat pertanyaannya
+    saja) dan kelima opsi ditulis utuh di <li>.
+
+24. KODE SUMBER SOAL WAJIB JADI BARIS PERTAMA. Kode seperti
+    [SNMPTN 2010/TPA/942/17], [SBMPTN 2019/UTBK I/TPS/PU/01],
+    [UTBK2024/TPS/PU/GEL.1/4] ditulis apa adanya di:
+    - baris pertama <div data-field="teks_soal">, dibungkus <p><strong>...</strong></p>
+    - baris pertama <div data-field="pembahasan">
+    Sistem memakai kode ini sebagai sidik jari soal (chip 📖) dan untuk
+    mendeteksi pembahasan yang tertukar antar nomor. Kalau kode sumbernya
+    hilang, soal kehilangan asal-usulnya dan tidak bisa diaudit.
+
+25. PEMBAHASAN HARUS SATU BARIS PER LANGKAH, seperti tata letak buku. Pakai
+    <br/> atau <p> per baris; JANGAN merangkumnya jadi satu paragraf panjang.
+    Urutan baku buku sumber:
+      baris 1  : kode sumber (lihat aturan 24)
+      baris 2+ : premis/kutipan soal
+      lalu     : baris rumus/kuantor ("Semua A, B", "Sebagian B, C",
+                 "Premis 1 : p>q", "Rumus :", "PU:", "PK:", "K:")
+      lalu     : "Kesimpulan : ..."
+      terakhir : "Jawaban: X"
+    Sistem merender baris-baris itu bergaya buku (rumus jadi blok, kesimpulan
+    bergaris, jawaban tebal rata kanan). Bila semuanya kamu gabung jadi satu
+    paragraf, tampilan siswa tidak akan pernah sama dengan buku.
+
+26. PENUTUP "Jawaban: X" WAJIB ADA di setiap pembahasan dan hurufnya HARUS
+    sama dengan kunci_jawaban soal itu. JANGAN menulis penutup yang putus atau
+    rusak ("Jawaba", "Jawabat", "Jawaban |", "= Jawaban f", "c Jawaban #") —
+    itu cacat OCR sumber, bukan sesuatu yang perlu dilestarikan.
+
+27. PEMBAHASAN SUMBER YANG HANCUR OCR (mis. "<{_ Tips menentukan...",
+    "Premis 1: *Semua perem juan ya menich ¢ di", "fanaa", "ifn cet iai Re"):
+    JANGAN menyalin fragmen rusak itu apa adanya ke field pembahasan — siswa
+    akan membaca sampah. Tulis ulang penjelasannya sebagai guru yang
+    menerangkan soal itu langkah demi langkah (tetap memakai kunci jawaban
+    sumber, jangan mengganti kunci), lalu tandai:
+      <meta data-field="kunci_terverifikasi" data-value="true" />  (kunci tetap dari sumber)
+      <div data-field="catatan_admin">Pembahasan sumber rusak OCR; penjelasan
+      ditulis ulang dari isi soal. Cek tentor terhadap buku asli sebelum soal
+      dipakai try out bernilai.</div>
+
+28. TABEL disalin sebagai <table> di <div data-field="tabel_soal"> dengan
+    rowspan/colspan APA ADANYA (kepala tabel dua baris seperti
+    "Tahun" rowspan=2 | "Daerah Tempat Tinggal" colspan=2 harus tetap begitu —
+    sistem membaca kepala per kolom). Jangan membuang baris/kolom terakhir
+    tabel, dan jangan mengubah tabel menjadi kalimat yang kehilangan pasangan
+    kolomnya.
+
+29. GAMBAR/GRAFIK yang disebut teks ("Gambar 1 menyajikan data ...") tapi tidak
+    terbaca/tidak bisa diisolasi: sertakan screenshot SATU HALAMAN PENUH
+    sebagai fallback (lihat aturan 3) dan tulis di catatan_admin bahwa gambar
+    itu perlu di-crop manual. JANGAN mengarang angka, label, atau bentuk
+    grafiknya.
+
+30. CEK MANDIRI SEBELUM MENGEMBALIKAN DOKUMEN (per nomor, bukan seluruh file sekaligus):
+    a. teks_soal punya kalimat pertanyaan/perintah yang UTUH (tidak berhenti di
+       tengah kata) — kecuali soalnya memang berbentuk premis silogisme;
+    b. jumlah <li> opsi sesuai sumber (5 untuk A-E) dan tidak ada opsi yang
+       terpotong;
+    c. ada kunci_jawaban dan pembahasan yang ditutup "Jawaban: X";
+    d. bacaan bersama disalin IDENTIK di semua soal segrup (data-grup sama);
+    e. tabel/gambar/kode sumber tidak ada yang hilang.
+    Soal yang tidak bisa memenuhi poin-poin itu JANGAN diloloskan diam-diam:
+    tulis <div data-field="catatan_admin"> yang menjelaskan apa yang kurang,
+    supaya guru tahu persis apa yang harus diperiksa.
+`;
+
+export default ATURAN_OCR_MASTER;

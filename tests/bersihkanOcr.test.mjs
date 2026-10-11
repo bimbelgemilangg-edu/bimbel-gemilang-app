@@ -259,6 +259,15 @@ uji('jagaBaris: baris pembahasan tidak disambung (struktur buku bertahan)', () =
   assert.ok(tanpaJaga.teks.split('\n').length < 4, 'tanpa jagaBaris barisnya memang tersambung (itu yang merusak tampilan buku)');
 });
 
+uji('pembahasan tanpa penutup "Jawaban: X" dicatat (bukan diperbaiki diam-diam)', () => {
+  const tanpa = penandaiKualitasOcr({ pembahasan: 'Penjelasannya panjang lebar.\nSampai dua baris.' });
+  assert.ok(tanpa.some((c) => c.includes('penutup "Jawaban: X"')), JSON.stringify(tanpa));
+  const dengan = penandaiKualitasOcr({ pembahasan: 'Penjelasannya panjang lebar.\nJawaban: C' });
+  assert.ok(!dengan.some((c) => c.includes('penutup "Jawaban: X"')));
+  const kosong = penandaiKualitasOcr({ pembahasan: '' });
+  assert.ok(!kosong.some((c) => c.includes('penutup "Jawaban: X"')), 'pembahasan kosong tidak boleh dituduh');
+});
+
 uji('lengkapEkorJawaban: fragmen "Jawaba/Jawabat/..." dilengkapi dari kunci, bukan ditebak', () => {
   // Hanya fragmen yang ekornya BUKAN satu huruf A-E: satu huruf bisa jadi
   // jawaban tercetak, jadi tidak boleh diklaim ulang (lihat uji di bawah).

@@ -260,6 +260,15 @@ export function penandaiKualitasOcr({ teksSoal = '', opsi = [], pembahasan = '' 
   if (kodeSoal && kodeBahasan && kodeSoal !== kodeBahasan) {
     catatan.push(`kode sumber di pembahasan (${kodeBahasan}) BERBEDA dari kode di soal (${kodeSoal}) -- pembahasan diduga tertukar dengan soal lain; PERIKSA MANUAL`);
   }
+  // Penutup jawaban di pembahasan: di buku sumber SELALU ada baris
+  // "Jawaban X" di akhir pembahasan. Bila baris itu hilang (atau putus jadi
+  // "Jawaba"), siswa tidak melihat penegasan jawaban dan admin tidak tahu
+  // bahwa sumbernya rusak. Dicatat, tidak diperbaiki di sini -- pelengkapannya
+  // (dari kunci soal itu sendiri) dilakukan lengkapEkorJawaban().
+  const teksBahasan = String(pembahasan ?? '');
+  if (teksBahasan.trim() && !/jawab/i.test(teksBahasan.split('\n').slice(-3).join(' '))) {
+    catatan.push('pembahasan tidak punya baris penutup "Jawaban: X" -- siswa tidak melihat penegasan jawaban; PERIKSA MANUAL');
+  }
   const g = (t, label) => {
     const r = bersihkanOcrTeks(t);
     for (const c of r.catatan) catatan.push(`${label}: ${c}`);
