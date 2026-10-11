@@ -98,6 +98,7 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan } from '../../../utils/bersihkanArtefakScan';
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
+import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
 import PanduImpor from '../../../components/admin/PanduImpor';
 import { teksPanduan } from '../../../utils/panduImpor';
 
@@ -1270,6 +1271,28 @@ function normalizeSoal(qMasuk, idx) {
   });
   if (tuduhTertukar) errors.push(tuduhTertukar);
 
+  // 🔥 BARU (2026-10-11): Sinyal 8 -- ASAL & KEABSENAN PEMBAHASAN sebagai
+  // antrean review tentor. Tidak semua soal punya pembahasan tercetak;
+  // yang karangan AI WAJIB kelihatan sebagai karangan AI di semua layar
+  // (pintu prompt paten sudah lama begitu, pintu master belum). Penanda
+  // dibaca util murni asalPembahasan.js; di sini hanya dipasang sinyal
+  // LUNAK (tidak memblokir penyimpanan) karena pembahasan penalaran yang
+  // benar tetap berguna -- yang berbahaya adalah yang TIDAK DIAKUI.
+  const pembahasanMentah = safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || '');
+  const asalBahasan = deteksiAsalPembahasan({
+    pembahasan: pembahasanMentah,
+    asalEksplisit: q.asal_pembahasan || q.asalPembahasan || '',
+  });
+  if (!pembahasanMentah.trim()) {
+    peringatanLunak.push(
+      'soal TANPA pembahasan -- masuk antrean review tentor sebelum dipakai mengajar atau sebelum kunci dibuka ke siswa.',
+    );
+  } else if (asalBahasan.asal === 'penalaran') {
+    peringatanLunak.push(
+      'pembahasan adalah PENALARAN AI (tidak tercetak di sumber) -- bendera penalaran ikut tersimpan dan soal masuk antrean review tentor.',
+    );
+  }
+
   // 🔥 BARU: Sinyal 6 -- BAHASA RAGU DARI AI SENDIRI. Ditemukan kasus
   // nyata: AI (DeepSeek) kadang menyisipkan penanda ragu LANGSUNG di
   // teks soal yang di-generate, mis. "Perhatikan gambar (perlu dicek)!"
@@ -1320,7 +1343,11 @@ function normalizeSoal(qMasuk, idx) {
     kunci_terverifikasi: safeBoolean(
       q.kunci_terverifikasi ?? q.kunciTerverifikasi ?? q.verifiedAnswer ?? false,
     ),
-    pembahasan: safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || ''),
+    // 🔥 BARU (2026-10-11): teks pembahasan dibersihkan dari penanda
+    // mesin dan ASALNYA disimpan, supaya bendera "hasil penalaran AI"
+    // hidup juga untuk soal dari pintu master (lihat asalPembahasan.js).
+    pembahasan: asalBahasan.teksBersih,
+    pembahasanAsal: asalBahasan.asal,
     catatan_admin: safeString(q.catatan_admin || q.catatanAdmin || q.admin_note || ''),
     gambar,
     tabel_soal: q.tabel_soal || q.tabelSoal || null,

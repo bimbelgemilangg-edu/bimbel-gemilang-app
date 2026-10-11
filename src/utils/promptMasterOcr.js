@@ -209,6 +209,40 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
     Sistem menolak otomatis soal yang sidik jari soal dan pembahasannya
     tidak cocok, jadi menempelkan pembahasan tertukar hanya membuang
     waktu impor orang lain.
+
+36. TANGGA PEMBAHASAN (WAJIB BERURUT — pembahasan adalah bagian yang paling
+    berbahaya bila dikarang, sebab siswa DAN guru belajar menalar dari sini).
+    Untuk SETIAP nomor, turuni tangga ini BERURUT dan akui anak tangga mana
+    yang kamu pakai:
+    (1) TERCETAK. Sumber memuat pembahasan -> salin apa adanya (aturan 25-27)
+        dan tulis <meta data-field="asal_pembahasan" data-value="tercetak" />.
+    (2) TERCETAK TAPI BERCAMPUR DIAGRAM. Pembahasan tercetak memuat diagram/
+        grafik/sketsa yang tidak bisa dipertahankan sebagai teks -> salin
+        TEKSnya apa adanya, dan untuk diagramnya pakai mekanisme potongan:
+        <div data-field="catatan_admin">DIAGRAM PEMBAHASAN perlu dipotong:
+        halaman <n>, posisi <...>, isi <deskripsi lengkap figur></div>.
+        JANGAN menggambarnya ulang.
+    (3) TIDAK ADA DI SUMBER. Tidak semua soal punya pembahasan, dan itu
+        BUKAN alasan untuk mengarang seolah tercetak. Tulis penjelasan
+        sendiri sebagai guru yang menerangkan langkah demi langkah (kunci
+        tetap dari sumber; bila kunci pun tidak tercetak, kosongkan
+        kunci_jawaban dan set kunci_terverifikasi="false"), lalu WAJIB
+        tandai dua hal:
+          <meta data-field="asal_pembahasan" data-value="penalaran" />
+          baris pertama pembahasan: "PEMBAHASAN PENALARAN AI:"
+        Sistem membaca penanda itu: menampilkan bendera "hasil penalaran AI
+        — periksa dulu" di semua layar dan memasukkan soal ke antrean
+        review tentor. Jangan pernah menyembunyikan perbedaan ini.
+    DILARANG MEMBUAT GAMBAR ATAU SKETSA RASTER dalam bentuk apa pun (base64,
+    SVG bikinan, "ilustrasi") untuk pembahasan maupun soal — sketsa yang
+    salah lebih berbahaya daripada tanpa sketsa, karena ia terlihat
+    meyakinkan. Bila visual benar-benar membantu, satu-satunya bentuk yang
+    diizinkan adalah DESKRIPSI SKETSA untuk guru, di catatan admin:
+      <div data-field="catatan_admin">SKETSA AI: <deskripsi verbal yang bisa
+      diguru gambarkan di papan, mis. "dua lingkaran beririsan, lingkaran
+      luar = A, irisan = B"> — bukan gambar sumber, verifikasi dulu.</div>
+    Deskripsi itu hanya terlihat guru; TIDAK boleh masuk teks_soal, opsi,
+    maupun pembahasan yang dibaca siswa.
 `;
 
 export default ATURAN_OCR_MASTER;

@@ -146,6 +146,14 @@ uji('baris logika wajib panah utuh + garis inferensi (aturan 35)', () => {
   assert.ok(P.includes('panah "→" dan tumpukannya'));
 });
 
+uji('tangga pembahasan + larangan sketsa raster (aturan 36)', () => {
+  assert.ok(P.includes('TANGGA PEMBAHASAN'));
+  assert.ok(P.includes('PEMBAHASAN PENALARAN AI:'));
+  assert.ok(P.includes('DILARANG MEMBUAT GAMBAR ATAU SKETSA RASTER'));
+  assert.ok(P.includes('SKETSA AI:'));
+  assert.ok(P.includes('DIAGRAM PEMBAHASAN perlu dipotong'));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
