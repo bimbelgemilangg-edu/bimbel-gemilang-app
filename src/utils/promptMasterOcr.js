@@ -124,7 +124,10 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
        ada wacana, tidak ada kode sumber nomor lain, tidak ada kalimat milik
        nomor berikutnya (aturan 33);
     h. setiap nomor yang menyebut "paragraf/bacaan/teks/puisi tersebut" punya
-       <div data-field="bacaan"> yang TIDAK kosong (aturan 20 & 33).
+       <div data-field="bacaan"> yang TIDAK kosong (aturan 20 & 33);
+    i. kode sumber di baris pertama pembahasan SAMA PERSIS dengan kode di
+       baris pertama teks_soal untuk nomor yang sama (aturan 34) — bila
+       berbeda, pembahasan itu milik nomor lain dan wajib dilepas.
     Soal yang tidak bisa memenuhi poin-poin itu JANGAN diloloskan diam-diam:
     tulis <div data-field="catatan_admin"> yang menjelaskan apa yang kurang,
     supaya guru tahu persis apa yang harus diperiksa.
@@ -169,6 +172,25 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
     Satu <li> opsi hanya boleh memuat teks opsi itu sendiri (lazimnya satu
     kalimat); ia tidak boleh memuat wacana, kode sumber nomor lain
     ([SNMPTN ...], [UTBK ...]), atau kalimat milik nomor berikutnya.
+
+34. PEMBAHASAN WAJIB BERSIDIK JARI SAMA DENGAN SOALNYA.
+    Kode sumber (aturan 24) dicetak buku di kepala soal DAN di kepala
+    pembahasan, jadi ia adalah SIDIK JARI yang membuktikan penjelasan itu
+    milik nomor yang mana. Sebelum menempel pembahasan ke sebuah nomor:
+    - bandingkan kodenya; [UTBK2024/TPS/PU/GEL.2/63] di teks_soal WAJIB
+      bertemu kepala pembahasan [UTBK2024/TPS/PU/GEL.2/63] juga;
+    - bila kode pembahasan milik nomor lain (kasus nyata: tiga nomor
+      berurutan mendapat pembahasan yang berputar -- 63 mendapat 69, 65
+      mendapat 63, 69 mendapat 65), itu PEMBAHASAN TERTUKAR: JANGAN
+      ditempel ke soal itu. Cari dulu pembahasan yang sidik jarinya cocok
+      di tempat lain pada sumber; bila ketemu, pakai yang cocok itu;
+    - bila tidak ketemu, tulis penjelasan sendiri sebagai guru yang
+      menerangkan (aturan 27, kunci tetap dari sumber) dan tulis
+      <div data-field="catatan_admin">Pembahasan sumber tertukar antar
+      nomor; penjelasan ditulis ulang dari isi soal.</div>.
+    Sistem menolak otomatis soal yang sidik jari soal dan pembahasannya
+    tidak cocok, jadi menempelkan pembahasan tertukar hanya membuang
+    waktu impor orang lain.
 `;
 
 export default ATURAN_OCR_MASTER;

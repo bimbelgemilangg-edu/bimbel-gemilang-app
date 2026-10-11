@@ -129,6 +129,16 @@ uji('cek mandiri kini memuat penanda scan, kebocoran opsi, dan bacaan kosong', (
   assert.ok(P.includes('yang TIDAK kosong'));
 });
 
+uji('pembahasan wajib bersidik jari sama dengan soalnya (aturan 34)', () => {
+  // Kasus nyata sampel owner: tiga nomor berurutan mendapat pembahasan
+  // yang berputar (63<-69, 65<-63, 69<-65). Prompt lama tidak menyebut
+  // sidik jari kode sumber sebagai alat verifikasi sama sekali.
+  assert.ok(P.includes('PEMBAHASAN WAJIB BERSIDIK JARI SAMA DENGAN SOALNYA'));
+  assert.ok(P.includes('PEMBAHASAN TERTUKAR'));
+  assert.ok(P.includes('GEL.2/63'));
+  assert.ok(P.includes('kode sumber di baris pertama pembahasan SAMA PERSIS'));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');

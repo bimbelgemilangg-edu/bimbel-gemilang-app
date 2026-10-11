@@ -97,6 +97,7 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 // util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
 import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan } from '../../../utils/bersihkanArtefakScan';
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
+import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 
 // ============================================================
 // CONSTANT
@@ -1249,6 +1250,23 @@ function normalizeSoal(qMasuk, idx) {
       'Soal ini menunjuk "teks/bacaan tersebut" tapi TIDAK punya bacaan sama sekali (field bacaan kosong, teks_soal pendek) -- kemungkinan bacaan cuma ditulis di soal SEBELUMNYA dan tidak disalin ke soal ini. Kalau soal ini nanti dipakai sendirian, siswa tidak akan bisa menjawab. Cek soal-soal di sekitarnya untuk bacaan yang seharusnya disalin ke sini.',
     );
   }
+
+  // 🔥 BARU (2026-10-11): Sinyal 7 -- PEMBAHASAN TERTUKAR ANTAR NOMOR.
+  // Sampel nyata owner ("02 Silogisme", 40 soal): pembahasan berputar
+  // antar nomor dan kelihatan dari sidik jari kode sumbernya -- soal 31
+  // [UTBK2024/.../GEL.2/63] mendapat pembahasan berkepala GEL.2/69, soal
+  // 32 (.../65) mendapat .../63, soal 33 (.../69) mendapat .../65. Kode
+  // sumber dicetak buku di kepala soal DAN kepala pembahasan, jadi
+  // ketidakcocokan keduanya adalah bukti mekanis, bukan tebakan.
+  // HARD ERROR: siswa yang belajar dari penjelasan nomor lain lebih rugi
+  // daripada siswa tanpa penjelasan -- yang satu bingung, yang lain
+  // yakin pada yang salah. Detektornya murni & teruji (kodeSumberSoal.js)
+  // dan hanya menuding; menukar-balik otomatis adalah tebakan dua arah.
+  const tuduhTertukar = pesanPembahasanTertukar({
+    teks_soal: teksSoal,
+    pembahasan: safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || ''),
+  });
+  if (tuduhTertukar) errors.push(tuduhTertukar);
 
   // 🔥 BARU: Sinyal 6 -- BAHASA RAGU DARI AI SENDIRI. Ditemukan kasus
   // nyata: AI (DeepSeek) kadang menyisipkan penanda ragu LANGSUNG di
