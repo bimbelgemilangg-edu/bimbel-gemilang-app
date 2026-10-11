@@ -194,7 +194,14 @@ function opsiHtml(soal) {
 // tidak boleh lenyap dari pegangan tentor.
 function pembahasanHtml(soal) {
   if (!soal?.pembahasan) return '';
-  const isi = pisahTeksDanGambar(soal.pembahasan, soal?.gambarUrls)
+  // 🔥 FIX (2026-10-11): `meta`+`region` WAJIB diteruskan. Tanpa keduanya
+  // penempatanGambar memakai perilaku lama: SEMUA gambar sisa (milik badan
+  // soal DAN grafik opsi A-E) ditumpuk di akhir pembahasan -- kunci tentor
+  // jadi tercemar gambar yang bukan milik penjelasan.
+  const isi = pisahTeksDanGambar(soal.pembahasan, soal?.gambarUrls, {
+    meta: Array.isArray(soal?.gambarMeta) ? soal.gambarMeta : null,
+    region: 'pembahasan',
+  })
     .map((sg) => (sg.jenis === 'teks'
       ? teksKeHtml(sg.isi)
       : `<img class="gbr" src="${escapeHtml(sg.url)}" alt="Gambar pembahasan ${sg.indeks + 1}" />`))
