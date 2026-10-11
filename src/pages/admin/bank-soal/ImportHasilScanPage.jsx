@@ -96,6 +96,7 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 // ditemukan dengan berburu manual di puluhan soal. Keduanya kini ditangani
 // util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
 import { bersihkanArtefakSoal, tandaiBacaanTerjebak } from '../../../utils/bersihkanArtefakScan';
+import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 
 // ============================================================
 // CONSTANT
@@ -1736,7 +1737,16 @@ function parseHTMLMaster(raw) {
 
   const doc = new DOMParser().parseFromString(source, 'text/html');
   const nodes = Array.from(doc.querySelectorAll('[data-gemilang-question], article.gemilang-question, article[data-soal]'));
-  if (!nodes.length) throw new Error('Tidak ditemukan soal. Setiap soal harus memakai <article data-gemilang-question>.');
+  if (!nodes.length) {
+    // 🔥 BARU (2026-10-11): berkas prompt-paten (.question-card) yang salah
+    // masuk ke pintu ini dulu dibalas "Tidak ditemukan soal" tanpa petunjuk.
+    // Kini pesan menunjuk pintu yang benar -- berkasnya sah, hanya pintunya
+    // yang berbeda.
+    const rambu = pesanSalahPintu(source, URL_PINTU_SCAN);
+    throw new Error(rambu
+      ? `Tidak ditemukan soal ber-dialek halaman ini. ${rambu}`
+      : 'Tidak ditemukan soal. Setiap soal harus memakai <article data-gemilang-question>.');
+  }
 
   const getField = (node, ...names) => {
     for (const name of names) {

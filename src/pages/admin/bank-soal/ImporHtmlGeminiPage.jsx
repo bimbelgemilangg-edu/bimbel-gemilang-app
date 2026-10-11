@@ -34,6 +34,7 @@ import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { ekstrakBanyakHtml } from '../../../utils/ekstrakHtmlGemini';
 import { dokumenDariButir, ringkasanImpor, rapikanGambarButir } from '../../../utils/imporHtmlGeminiKeBank';
+import { pesanSalahPintu, URL_PINTU_PATEN } from '../../../utils/kenaliDialekImpor';
 import { PROMPT_PATEN_GEMINI, PROMPT_KONVERSI_ULANG } from '../../../utils/promptPatenGemini';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { jalurBankSoal } from '../../../utils/jalurStorage';
@@ -102,9 +103,19 @@ export default function ImporHtmlGeminiPage() {
     if (!semua.length) { setPesan('⚠️ Belum ada berkas HTML.'); return; }
     const h = ekstrakBanyakHtml(semua);
     setHasil(h);
-    setPesan(h.kesalahan.length
-      ? `⛔ ${h.kesalahan.length} pelanggaran paten — perbaiki berkas yang disebut, lalu pratinjau lagi.`
-      : `✅ ${h.soal.length} soal lolos paten, siap disimpan.`);
+    // 🔥 BARU (2026-10-11, kebingungan owner "aku yang salah jangan
+    // jangan?"): pintu ini dan /admin/bank-soal/import menerima DIALEK HTML
+    // yang saling tidak kompatibel. Berkas sah yang salah pintu terbaca NOL
+    // kartu dan dulu dibalas "bukan keluaran prompt paten" -- benar secara
+    // harfiah, useless secara praktis. Kini pesan menunjuk pintu yang benar.
+    const rambu = h.soal.length === 0
+      ? pesanSalahPintu(semua.map((b) => b.teks).join('\n'), URL_PINTU_PATEN)
+      : null;
+    setPesan(rambu
+      ? `🚪 ${rambu}`
+      : (h.kesalahan.length
+        ? `⛔ ${h.kesalahan.length} pelanggaran paten — perbaiki berkas yang disebut, lalu pratinjau lagi.`
+        : `✅ ${h.soal.length} soal lolos paten, siap disimpan.`));
   };
 
   const simpan = async () => {
