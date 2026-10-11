@@ -99,6 +99,8 @@ import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hi
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
+import imageCompression from 'browser-image-compression';
+import { putuskanCover } from '../../../utils/batasCoverFirestore';
 import PanduImpor from '../../../components/admin/PanduImpor';
 import { teksPanduan } from '../../../utils/panduImpor';
 
@@ -3451,9 +3453,14 @@ export default function ImportHasilScanPage() {
 
     setMembuatFolder(true);
     try {
+      const putusanCover = putuskanCover(coverFolderBaru);
       const payload = {
         judul: judulFolderBaru.trim(),
-        coverUrl: coverFolderBaru || '',
+        // 🔥 FIX (2026-10-11): cover itu OPSIONAL -- ia tidak boleh lagi
+        // menggagalkan SELURUH pembuatan folder (bug: field base64 lewat
+        // 1.048.487 byte dan addDoc melempar). Cover yang tidak aman dibuang
+        // di sini, folder tetap dibuat, admin diberitahu sesudahnya.
+        coverUrl: putusanCover.aman ? (coverFolderBaru || '') : '',
         mataPelajaran,
         jenisUjian,
         jenjang,
@@ -3463,6 +3470,9 @@ export default function ImportHasilScanPage() {
       };
       const docRef = await addDoc(collection(db, 'sumber_soal'), payload);
       const folderBaru = { id: docRef.id, ...payload };
+      if (!putusanCover.aman && coverFolderBaru) {
+        alert(`Folder berhasil dibuat TANPA cover: ${putusanCover.alasan}. Gambar perlu dikompres lebih kecil atau diunggah ke storage terpisah sebelum disimpan sebagai cover.`);
+      }
       setDaftarFolder(prev => [folderBaru, ...prev]);
       setFolderAktif(folderBaru);
       setModeFolder('pilih');
@@ -3475,14 +3485,33 @@ export default function ImportHasilScanPage() {
     setMembuatFolder(false);
   }, [judulFolderBaru, coverFolderBaru, mataPelajaran, jenisUjian, jenjang]);
 
-  const handleCoverFolderUpload = (e) => {
+  const handleCoverFolderUpload = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     if (!file.type.startsWith('image/')) return alert('Cover harus berupa gambar.');
-    const reader = new FileReader();
-    reader.onload = () => setCoverFolderBaru(reader.result);
-    reader.readAsDataURL(file);
+    // 🔥 FIX (2026-10-11, bug nyata: "coverUrl longer than 1048487 bytes"):
+    // cover dulu disimpan sebagai base64 MENTAH ke Firestore. Kini dikompres
+    // DULU di browser (thumbnail 480px, mutu 0.7) sebelum masuk state, supaya
+    // unggahan cepat dan field tidak pernah mendekati batas 1 MiB Firestore.
+    try {
+      const kecil = await imageCompression.compress(file, {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 480,
+        useWebWorker: true,
+        initialQuality: 0.7,
+      });
+      const reader = new FileReader();
+      reader.onload = () => setCoverFolderBaru(reader.result);
+      reader.readAsDataURL(kecil);
+    } catch (err) {
+      // Kompresi gagal -> jatuh ke pembacaan mentah; pagar putuskanCover()
+      // di pembuatan folder yang akan menjaga batas Firestore.
+      console.warn('Kompresi cover gagal, memakai berkas asli:', err);
+      const reader = new FileReader();
+      reader.onload = () => setCoverFolderBaru(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const [saving, setSaving] = useState(false);
