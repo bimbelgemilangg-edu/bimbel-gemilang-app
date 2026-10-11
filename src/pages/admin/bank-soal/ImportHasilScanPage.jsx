@@ -89,6 +89,13 @@ import { NAMA_MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
 // alamatnya benar. Bungkusnya dilepas di pintu masuk parse ini.
 import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
+// 🔥 BARU (2026-10-11, sampel owner "02 Silogisme"): penanda kolom pemindai
+// ("=== PAGE 3 COL 1 ==="), watermark berkas ("BELAJAR MINIMAL,"/"HASIL
+// MAKSIMAL"), dan nomor urut kolom sebelah dulu LOLOS apa adanya ke bank
+// soal. Selain itu wacana yang tercecer jadi ekor sebuah opsi hanya bisa
+// ditemukan dengan berburu manual di puluhan soal. Keduanya kini ditangani
+// util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
+import { bersihkanArtefakSoal, tandaiBacaanTerjebak } from '../../../utils/bersihkanArtefakScan';
 
 // ============================================================
 // CONSTANT
@@ -915,7 +922,12 @@ function isiUlangBacaanSegrup(daftarSoal) {
   });
 }
 
-function normalizeSoal(q, idx) {
+function normalizeSoal(qMasuk, idx) {
+  // 🔥 BARU (2026-10-11): lepas artefak scan DULU, sebelum validasi sinyal,
+  // deteksi duplikat, dan penulisan field -- supaya penanda kolom pemindai,
+  // watermark berkas, dan nomor urut kolom sebelah tidak ikut tersimpan ke
+  // bank soal dan tidak mengotori pembanding duplikat.
+  const q = bersihkanArtefakSoal(qMasuk);
   if (!q || typeof q !== 'object') {
     return {
       nomor: idx + 1,
@@ -3723,6 +3735,16 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       // salah ke-flag "bacaan kosong" kalau sebenarnya bisa diisi
       // otomatis dari soal segrup lainnya.
       normalized = isiUlangBacaanSegrup(normalized);
+
+      // 🔥 BARU (2026-10-11, sampel owner "02 Silogisme"): soal yatim yang
+      // bacaannya TIDAK bisa diisi otomatis (bacaannya tidak ada di field
+      // mana pun -- kasus nyata: wacana batik tercecer jadi EKOR OPSI E soal
+      // 19, padahal milik soal 20-22) kini diberi PETUNJUK LOKASI persis,
+      // bukan sekadar "cek soal di sekitarnya". TandaiBacaanTerjebak TIDAK
+      // memindahkan teks apa pun: memindahkan bacaan lintas soal adalah
+      // keputusan manusia, dan perbaikan senyap yang salah jauh lebih
+      // berbahaya daripada peringatan yang keras.
+      normalized = tandaiBacaanTerjebak(normalized);
 
       // 🔥 BARU: kalau SEBAGIAN soal di batch ini punya data-mapel
       // (berarti AI sudah nganggep filenya campuran), tapi ADA soal
