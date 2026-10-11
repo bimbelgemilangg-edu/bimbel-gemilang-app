@@ -312,6 +312,15 @@ uji('kalimat asli yang mirip watermark TIDAK dipotong', () => {
   assert.equal(bersihkanArtefakTeks(asli2), asli2);
 });
 
+uji('kaki halaman distributor & watermark pemindai pihak ketiga dibuang', () => {
+  const t = bersihkanArtefakTeks('Page 5 of 282 Personal use only | scanned by @my99dreams ebook rapi & halaman lengkap hanya di 0878 8548 0008 Isi asli tetap ada.');
+  assert.ok(!t.includes('Page 5'), t);
+  assert.ok(!t.includes('of 282'), t);
+  assert.ok(!t.includes('scanned by'), t);
+  assert.ok(!t.includes('0878'), t);
+  assert.ok(t.includes('Isi asli tetap ada.'), `isi ikut terbuang: ${t}`);
+});
+
 console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);
 console.log(`  GAGAL : ${gagal}`);

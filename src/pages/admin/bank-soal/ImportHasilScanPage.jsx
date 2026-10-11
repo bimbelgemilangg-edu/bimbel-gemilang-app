@@ -99,6 +99,7 @@ import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hi
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
+import { bacaKualitas, pesanKualitas } from '../../../utils/kualitasButir';
 import imageCompression from 'browser-image-compression';
 import { putuskanCover } from '../../../utils/batasCoverFirestore';
 import PanduImpor from '../../../components/admin/PanduImpor';
@@ -1273,6 +1274,16 @@ function normalizeSoal(qMasuk, idx) {
   });
   if (tuduhTertukar) errors.push(tuduhTertukar);
 
+  // 🔥 BARU (2026-10-11): Sinyal 9 -- LAPORAN KUALITAS DIRI AI.
+  // Otomatisasi yang aman = AI wajib mengaku, sistem yang menyortir:
+  // buram/terpotong jadi HARD ERROR (masuk review, tidak bisa disimpan),
+  // tanpa-pembahasan jadi peringatan lunak (sudah punya antrean sendiri).
+  const pesanKual = pesanKualitas(bacaKualitas(q.kualitas || q.kualitasButir || ''));
+  if (pesanKual) {
+    if (pesanKual.keras) errors.push(pesanKual.teks);
+    else peringatanLunak.push(pesanKual.teks);
+  }
+
   // 🔥 BARU (2026-10-11): Sinyal 8 -- ASAL & KEABSENAN PEMBAHASAN sebagai
   // antrean review tentor. Tidak semua soal punya pembahasan tercetak;
   // yang karangan AI WAJIB kelihatan sebagai karangan AI di semua layar
@@ -1821,6 +1832,8 @@ function parseHTMLMaster(raw) {
 
   return nodes.map((node, index) => {
     const nomor = Number(node.getAttribute('data-nomor') || node.getAttribute('data-number')) || index + 1;
+    // 🔥 BARU (2026-10-11): laporan kualitas diri AI (aturan 42 prompt).
+    const kualitas = node.getAttribute('data-kualitas') || '';
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
     const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
@@ -1915,6 +1928,7 @@ function parseHTMLMaster(raw) {
 
     return {
       nomor,
+      kualitas,
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
       tipe,
       bacaan,

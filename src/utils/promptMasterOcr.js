@@ -263,6 +263,88 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
     tiap buku BERBEDA-BEDA: kenali sebagai watermark bila teks pendek
     yang berulang di banyak halaman dan tidak nyambung dengan kalimat
     soal -- bila ragu, sebutkannya di catatan_admin, jangan di teks soal.
+
+    Contoh kaki halaman yang wajib dilewati: "Page 5 of 282",
+    "Personal use only | scanned by @...", "ebook rapi & halaman lengkap
+    hanya di 08xx-xxxx-xxxx" beserta nomor telepon promo distributor.
+
+39. MATEMATIKA DITULIS SEBAGAI LaTeX, BUKAN TEBAKAN BENTUK. Buku matematika
+    (barisan, aritmatika, statistik) mencetak pecahan bertumpuk, akar,
+    pangkat, dan tabel angka. Aturan:
+    - pecahan bertumpuk -> $\\frac{pembilang}{penyebut}$; pecahan campuran
+      -> $a\\frac{b}{c}$; pangkat -> $x^{n}$; akar -> $\\sqrt{...}$;
+    - barisan angka disalin utuh dengan koma pemisah ("3, 4, 10, 11, 22, ...");
+      tanda "...." akhir barisan WAJIB dipertahankan (itu penanda soal
+      "bilangan berikutnya");
+    - tabel angka/statistik -> <table> di data-field="tabel_soal" dengan
+      kepala kolom utuh; grafik batang/garis yang angka-angkanya tidak
+      terbaca -> catatan_admin "grafik perlu dipotong" + petunjuk potongan,
+      JANGAN mengarang angkanya;
+    - JANGAN menebak angka yang buram: tulis catatan_admin "angka buram di
+      sumber" dan kosongkan kunci_jawaban bila soal jadi tidak bisa
+      dikerjakan.
+
+40. PENANDA WACANA BERNOMOR ADALAH HADIAH, PAKAI. Banyak buku menulis kalimat
+    penanda seperti "Teks berikut digunakan untuk menjawab soal nomor 1
+    sampai dengan 7" atau "Tabel untuk soal nomor 5 dan 6". Bila kalimat
+    itu ada: paragraf/tabel SETELAHnya adalah bacaan bersama; salin ke
+    <div data-field="bacaan" data-grup="bacaan_N" data-rentang-soal="1-7">
+    di SETIAP soal rentang itu, dan kalimat penandanya sendiri TIDAK ikut
+    menjadi isi bacaan maupun teks_soal. Bila tidak ada penanda bernomor
+    tetapi beberapa soal menunjuk "paragraf tersebut", pakai aturan 20/33
+    dengan rentang yang disimpulkan dari nomor-nomor yang menunjuknya.
+    STABILO/SOROTAN WARNA di sumber (kuning, biru, hijau) DIABAIKAN:
+    jangan mengeluarkan markup warna dan jangan menganggap teks tersorot
+    lebih penting; bila sorotan menandai kunci, itu sudah diwakili field
+    kunci_jawaban -- jangan menduplikasinya jadi teks tambahan.
+
+41. PEMBAHASAN SERING BERADA DI HALAMAN TERPISAH. Banyak buku menaruh semua
+    pembahasan di bagian belakang ("PEMBAHASAN" sebagai judul bagian), bukan
+    di bawah soalnya. Pasangkan BERDASARKAN KODE SUMBER (aturan 24/34), bukan
+    berdasarkan urutan halaman atau nomor urut cetak: nomor urut cetak di
+    bagian pembahasan sering mulai dari 1 lagi dan TIDAK sama dengan nomor
+    urut di bagian soal. Bila sebuah kode soal tidak menemukan pembahasan
+    berkode sama di mana pun, turuni tangga pembahasan (aturan 36) -- jangan
+    menempel pembahasan kode lain hanya karena letaknya bersebelahan.
+
+42. LAPORKAN KUALITAS DIRIMU SENDIRI PER BUTIR (WAJIB). Sistem menyortir
+    otomatis berdasar pengakuanmu, jadi berbohong di sini lebih buruk
+    daripada mengaku kurang. Isi atribut data-kualitas pada setiap
+    <article data-gemilang-question ...> dengan SALAH SATU:
+      data-kualitas="ok"               semua terbaca utuh;
+      data-kualitas="buram"           ada angka/teks penting buram tak terbaca;
+      data-kualitas="terpotong"       ada bagian putus yang tak bisa dipulihkan;
+      data-kualitas="tanpa-pembahasan" sumber tanpa pembahasan (tangga 36.3).
+    Butir yang kamu akui "buram"/"terpotong" otomatis DITAHAN sistem untuk
+    review manusia -- itu bukan hukuman, itu melindungi siswa dari soal
+    yang tidak bisa dijawab. Butir tanpa data-kualitas dianggap belum
+    diaudit dan akan diperlakukan lebih ketat oleh reviewer.
+
+43. CONTOH SATU KARTU YANG BENAR (tiru persis struktur & kebersihannya):
+    <article data-gemilang-question data-nomor="4" data-tipe="pg_sederhana"
+             data-paket="1" data-kesulitan="sedang" data-kualitas="ok">
+      <div data-field="materi">Penalaran Deduktif-Induktif</div>
+      <div data-field="teks_soal">
+        <p><strong>[UTBK 2020/TPS/PU/37]</strong></p>
+        <p>Manakah informasi berikut yang dapat memperkuat pernyataan
+        "Mahalnya harga kayu jati tidak menurunkan permintaan kayu jati"?</p>
+      </div>
+      <ol data-field="opsi_jawaban">
+        <li>Kayu jati adalah salah satu komoditas penting bagi negara.</li>
+        <li>Mebel berbahan kayu jati yang dibuat perajin selalu habis terjual.</li>
+      </ol>
+      <meta data-field="kunci_jawaban" data-value="B" />
+      <meta data-field="kunci_terverifikasi" data-value="true" />
+      <div data-field="pembahasan">
+        <p><strong>[UTBK 2020/TPS/PU/37]</strong><br/>
+        Kalimat (4) dan (5) memuat alasan mengapa permintaan kayu jati tetap
+        tinggi meski harganya mahal.<br/>
+        Jawaban: B</p>
+      </div>
+    </article>
+    Perhatikan: tanpa garbage margin, tanpa huruf opsi dobel di dalam <li>,
+    tanpa penanda halaman/watermark, kode sumber di baris pertama teks_soal
+    DAN pembahasan, dan data-kualitas diisi jujur.
 `;
 
 export default ATURAN_OCR_MASTER;

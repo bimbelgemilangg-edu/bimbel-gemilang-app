@@ -162,6 +162,14 @@ uji('opsi bersih sampah margin + perluasan penanda scan (aturan 37-38)', () => {
   assert.ok(P.includes('Wangsit Om Jero'));
 });
 
+uji('laporan kualitas diri per butir + contoh kartu benar (aturan 42-43)', () => {
+  assert.ok(P.includes('LAPORKAN KUALITAS DIRIMU SENDIRI PER BUTIR'));
+  assert.ok(P.includes('data-kualitas="buram"'));
+  assert.ok(P.includes('data-kualitas="tanpa-pembahasan"'));
+  assert.ok(P.includes('CONTOH SATU KARTU YANG BENAR'));
+  assert.ok(P.includes('data-kualitas="ok"'));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');

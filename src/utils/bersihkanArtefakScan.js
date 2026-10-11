@@ -55,12 +55,22 @@ const RE_BARIS_GARIS = /^\s*[—–―\-_=|]{4,}\s*[A-Z0-9]{0,6}\s*$/;
 // Pola watermark dibuat FUZZY dengan jangkar kata yang tidak mungkin muncul
 // di teks soal asli (wangsit/belajar-minimal/hasil-maksimal).
 const RE_INLINE_SAMPAH = [
+  // URUTAN PENTING: "Page N of M" harus dicek SEBELUM "Page N", sonst
+  // aturan pendek memakan "Page 5" dan meninggalkan "of 282".
+  /page\s*\d{1,4}\s+of\s+\d{2,5}/gi,          // "Page 5 of 282"
   /\bpage\s*\d{1,3}[a-z]{0,3}\b/gi,          // "Page 3it", "Page 45"
   /\b\d{1,3}\s+of\s+\d{3,4}\b/gi,          // "34 of 310" (total >=100 = kaki halaman)
   /wangsit\s+om\s+jer\w*/gi,                   // watermark buku om jero
   // inline HANYA bila pasangan lengkap (belajar..+hasil..): kalimat asli
   // seperti "Belajar minimal dua jam" tidak boleh ikut terpotong.
   /bel\w{0,3}jar\s+mi\w{0,5}(?:mal|nal)\s+\w{0,4}\s+hasil\s+m\w{0,7}(?:mal|nal)/gi,
+  // Sampel buku ketiga dst (06 Statistik, 07 Barisan, 08 Aritmatika):
+  // kaki halaman gaya distributor & watermark pemindai pihak ketiga.
+  /page\s*\d{1,4}\s+of\s+\d{2,5}/gi,          // "Page 5 of 282"
+  /personal\s+use\s+only[^|\n]*\|?\s*scanned\s+by\s*@[\w.-]+/gi, // "Personal use only | scanned by @..."
+  /scanned\s+by\s*@[\w.-]+/gi,                  // "scanned by @my99dreams" lepas
+  /ebook\s+rapi[\s\S]{0,60}?08\d{2,4}[\s.-]?\d{3,5}[\s.-]?\d{3,5}/gi, // "ebook rapi ... hanya di 08xx..." (berhenti di nomor HP)
+  /\b08\d{2,4}[\s.-]?\d{3,5}[\s.-]?\d{3,5}\b/g, // nomor HP promo distributor
 ];
 
 // Watermark lepas yang ejaannya SALAH (ciri OCR watermark, bukan kalimat):
