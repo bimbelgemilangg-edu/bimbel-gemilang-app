@@ -127,7 +127,9 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
        <div data-field="bacaan"> yang TIDAK kosong (aturan 20 & 33);
     i. kode sumber di baris pertama pembahasan SAMA PERSIS dengan kode di
        baris pertama teks_soal untuk nomor yang sama (aturan 34) — bila
-       berbeda, pembahasan itu milik nomor lain dan wajib dilepas.
+       berbeda, pembahasan itu milik nomor lain dan wajib dilepas;
+    j. setiap baris logika silogisme memakai panah "→" dan tumpukannya
+       punya garis inferensi "—————" sebelum baris kesimpulan (aturan 35).
     Soal yang tidak bisa memenuhi poin-poin itu JANGAN diloloskan diam-diam:
     tulis <div data-field="catatan_admin"> yang menjelaskan apa yang kurang,
     supaya guru tahu persis apa yang harus diperiksa.
@@ -172,6 +174,22 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
     Satu <li> opsi hanya boleh memuat teks opsi itu sendiri (lazimnya satu
     kalimat); ia tidak boleh memuat wacana, kode sumber nomor lain
     ([SNMPTN ...], [UTBK ...]), atau kalimat milik nomor berikutnya.
+
+35. BARIS LOGIKA SILOGISME WAJIB PAKAI PANAH "→" DAN GARIS INFERENSI.
+    Tumpukan penarikan kesimpulan ditulis PERSIS seperti buku, satu baris
+    per implikasi, dengan garis pemisah sebagai baris tersendiri sebelum
+    baris kesimpulan:
+        p → q
+        q → r
+        —————
+        p → r
+    Panah memakai karakter "→" (atau $p \\rightarrow q$ bila perlu LaTeX).
+    DILARANG mengeluarkan bentuk rusak OCR seperti "p-q", "p>q", "pq",
+    "por", "q7rT" — bila sumber tercetak rusak begitu, KEMBALIKAN ke bentuk
+    kanonik di atas. Ini pengecualian tunggal atas aturan "jangan
+    memperbaiki teks": mengembalikan simbol panah yang hilang tidak
+    mengubah makna satu pun pernyataan, hanya membuat guru bisa membaca
+    penarikan kesimpulannya seperti di buku.
 
 34. PEMBAHASAN WAJIB BERSIDIK JARI SAMA DENGAN SOALNYA.
     Kode sumber (aturan 24) dicetak buku di kepala soal DAN di kepala

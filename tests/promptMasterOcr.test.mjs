@@ -139,6 +139,13 @@ uji('pembahasan wajib bersidik jari sama dengan soalnya (aturan 34)', () => {
   assert.ok(P.includes('kode sumber di baris pertama pembahasan SAMA PERSIS'));
 });
 
+uji('baris logika wajib panah utuh + garis inferensi (aturan 35)', () => {
+  assert.ok(P.includes('BARIS LOGIKA SILOGISME WAJIB PAKAI PANAH'));
+  assert.ok(P.includes('—————'));
+  assert.ok(P.includes('por'));
+  assert.ok(P.includes('panah "→" dan tumpukannya'));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
