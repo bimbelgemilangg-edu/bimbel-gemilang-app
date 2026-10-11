@@ -116,10 +116,59 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
        terpotong;
     c. ada kunci_jawaban dan pembahasan yang ditutup "Jawaban: X";
     d. bacaan bersama disalin IDENTIK di semua soal segrup (data-grup sama);
-    e. tabel/gambar/kode sumber tidak ada yang hilang.
+    e. tabel/gambar/kode sumber tidak ada yang hilang;
+    f. TIDAK ADA penanda scan di field mana pun: tidak ada "=== PAGE ... ===",
+       tidak ada baris watermark/slogan berkas, tidak ada baris yang hanya
+       berisi nomor urut, tidak ada garis pemisah kolom (aturan 31);
+    g. TIDAK ADA <li> opsi yang memuat lebih dari teks opsinya sendiri: tidak
+       ada wacana, tidak ada kode sumber nomor lain, tidak ada kalimat milik
+       nomor berikutnya (aturan 33);
+    h. setiap nomor yang menyebut "paragraf/bacaan/teks/puisi tersebut" punya
+       <div data-field="bacaan"> yang TIDAK kosong (aturan 20 & 33).
     Soal yang tidak bisa memenuhi poin-poin itu JANGAN diloloskan diam-diam:
     tulis <div data-field="catatan_admin"> yang menjelaskan apa yang kurang,
     supaya guru tahu persis apa yang harus diperiksa.
+
+31. PENANDA SCAN DILARANG MASUK KELUARAN. Berkas hasil scan membawa perancah
+    yang BUKAN isi buku, dan semuanya wajib dilewati TANPA disalin ke field
+    mana pun (juga ke catatan_admin):
+    - penanda halaman/kolom pemindai: "=== PAGE 3 COL 1 ===",
+      "=== PAGE 8 COL 2 ===", termasuk nomor urut yang ikut terseret di
+      belakangnya ("=== PAGE 7 COL 1 === 31 32. 33.");
+    - watermark/slogan berkas sumber, mis. "BELAJAR MINIMAL," /
+      "HASIL MAKSIMAL" dan varian salah-bacanya ("BELAJAR WINIMAL",
+      "HBSIL MAKSIMAL");
+    - nomor urut kolom sebelah yang lepas jadi baris sendiri: "12.", "13.",
+      "35,", "24, 25 26.";
+    - garis sampah pemisah kolom: "————EEE", "-----", dan sejenisnya.
+    Kalau perancah itu MENIMPA atau memutus isi (mis. satu kata hilang karena
+    tertimpa penanda), salin isi yang terbaca dan tulis catatan_admin —
+    tetapi perancahnya sendiri tetap tidak boleh ikut tersalin.
+
+32. DISIPLIN URUTAN KOLOM (akar dari hampir semua bocor lintas kolom).
+    Baca dokumen KOLOM PER KOLOM: habiskan kolom pertama dari atas ke bawah
+    SEBELUM menyentuh kolom kedua; jangan pernah menyelang-nyeling.
+    - Kalimat yang terpotong di TEPI BAWAH sebuah kolom dilanjutkan di PUNCAK
+      kolom berikutnya, bukan di tengah-tengahnya.
+    - Baris-baris pertama kolom berikutnya TIDAK BOLEH ditempelkan ke opsi,
+      teks soal, atau pembahasan terakhir kolom sebelumnya -- ini persis
+      cara wacana batik masuk ke opsi E dan cara nomor urut kolom sebelah
+      masuk ke pembahasan.
+    - Bila ragu suatu fragmen milik nomor mana, tempelkan fragmen itu ke
+      nomor terdekat yang kalimatnya belum lengkap, DAN tulis catatan_admin
+      "fragmen kolom belum pasti pemiliknya".
+
+33. WACANA TIDAK BOLEH MENGINAP DI OPSI ATAU TEKS_SOAL.
+    Bila di aliran scan terlihat potongan PANJANG (lebih dari kira-kira 500
+    karakter, atau dua paragraf lebih, atau diawali "Teks berikut"/"Perhatikan
+    teks/bacaan") menempel pada sebuah <li> opsi atau pada teks_soal, hampir
+    pasti itu WACANA BERSAMA milik nomor-nomor sesudahnya, bukan bagian dari
+    opsi itu: pindahkan ke <div data-field="bacaan" data-grup="bacaan_N"
+    data-rentang-soal="A-B"> di SETIAP soal yang memakainya (aturan 20), lalu
+    HAPUS dari opsi/teks_soal tempat ia menempel.
+    Satu <li> opsi hanya boleh memuat teks opsi itu sendiri (lazimnya satu
+    kalimat); ia tidak boleh memuat wacana, kode sumber nomor lain
+    ([SNMPTN ...], [UTBK ...]), atau kalimat milik nomor berikutnya.
 `;
 
 export default ATURAN_OCR_MASTER;

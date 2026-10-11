@@ -98,6 +98,37 @@ uji('prompt induk benar-benar menyisipkan aturan ini', async () => {
   assert.ok(src.includes('${ATURAN_OCR_MASTER}'), 'aturan tidak disisipkan ke template prompt');
 });
 
+uji('penanda scan DILARANG masuk keluaran (sampel owner 2026-10-11)', () => {
+  // Berkas nyata owner memuat "=== PAGE 3 COL 1 ===", watermark
+  // "BELAJAR MINIMAL,/HASIL MAKSIMAL", dan baris nomor kolom sebelah
+  // ("24, 25 26.") yang semuanya lolos jadi isi soal. Prompt versi lama
+  // tidak pernah menyebutnya, jadi model tidak tahu itu bukan isi buku.
+  assert.ok(P.includes('PENANDA SCAN DILARANG MASUK KELUARAN'));
+  assert.ok(P.includes('=== PAGE 3 COL 1 ==='));
+  assert.ok(P.includes('HASIL MAKSIMAL'));
+  assert.ok(P.includes('24, 25 26.'));
+  assert.ok(P.includes('————EEE'));
+});
+
+uji('disiplin urutan kolom disebut sebagai akar bocor lintas kolom', () => {
+  assert.ok(P.includes('DISIPLIN URUTAN KOLOM'));
+  assert.ok(P.includes('KOLOM PER KOLOM'));
+  assert.ok(P.includes('PUNCAK'));
+  assert.ok(P.includes('fragmen kolom belum pasti pemiliknya'));
+});
+
+uji('wacana dilarang menginap di opsi/teks_soal + wajib jadi elemen bacaan', () => {
+  assert.ok(P.includes('WACANA TIDAK BOLEH MENGINAP DI OPSI ATAU TEKS_SOAL'));
+  assert.ok(P.includes('data-rentang-soal'));
+  assert.ok(P.includes('WACANA BERSAMA milik nomor-nomor sesudahnya'));
+});
+
+uji('cek mandiri kini memuat penanda scan, kebocoran opsi, dan bacaan kosong', () => {
+  assert.ok(P.includes('TIDAK ADA penanda scan di field mana pun'));
+  assert.ok(P.includes('TIDAK ADA <li> opsi yang memuat lebih dari teks opsinya sendiri'));
+  assert.ok(P.includes('yang TIDAK kosong'));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
