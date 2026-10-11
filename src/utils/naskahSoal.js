@@ -597,20 +597,46 @@ export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
 // Pembahasan jadi blok-blok bergaya buku: kode sumber, premis/logika
 // berblok tengah, kesimpulan bergaris atas, jawaban tebal rata kanan, dan
 // highlight ==teks== / <mark> jadi sorotan seperti stabilo tentor.
-function htmlBlokPembahasan(teks, kunciHuruf = '') {
+function htmlBlokPembahasan(teks, kunciHuruf = '', gambar = null) {
   const sorot = (t) => escapeHtml(t).replace(/==([^=]+)==|&lt;mark&gt;(.*?)&lt;\/mark&gt;/gi,
     (m, a, b) => `<span class="nsk-bhs-mark">${a ?? b}</span>`);
   // Ekor pembahasan yang putus di OCR ("Jawaba", "= Jawaban f") dilengkapi
   // dari kunci soal itu sendiri -- aturan yang sama dengan layar siswa &
   // preview impor, supaya naskah kunci guru identik bentuknya dengan buku.
   const lengkap = lengkapEkorJawaban(teks, kunciHuruf);
-  return strukturPembahasan(lengkap.teks).map((b) => {
+  const urls = Array.isArray(gambar?.urls) ? gambar.urls : [];
+  const meta = Array.isArray(gambar?.meta) ? gambar.meta : [];
+  const imgHtml = (i) => `<img class="nsk-gbr-blok" src="${escapeHtml(urls[i])}" alt="Gambar pembahasan ${i + 1}" style="max-width:70mm;max-height:55mm;object-fit:contain;" />`;
+  let html = strukturPembahasan(lengkap.teks).map((b) => {
     if (b.jenis === 'kode') return `<div class="nsk-bhs-kode">${escapeHtml(b.teks)}</div>`;
     if (b.jenis === 'logika') return `<div class="nsk-bhs-logika">${b.baris.map(sorot).join('<br/>')}</div>`;
     if (b.jenis === 'kesimpulan') return `<div class="nsk-bhs-kesimpulan">${sorot(b.teks)}</div>`;
     if (b.jenis === 'jawaban') return `<div class="nsk-bhs-jawaban">Jawaban: ${escapeHtml(b.huruf)}</div>`;
     return `<div class="nsk-bhs-teks">${sorot(b.teks)}</div>`;
   }).join('');
+  // 🔥 2026-10-11 (integrasi renderer bergaya buku PR #188 dengan perbaikan
+  // gambar pembahasan): blok buku ini dulunya memproses pembahasan sebagai
+  // teks polos, jadi token {{GAMBAR_n}} ikut ter-escape dan tercetak mentah
+  // atau lenyap -- diagram pembahasan tidak pernah sampai ke naskah kunci
+  // guru. Token kini DISULAM jadi <img> persis di posisi kalimatnya, dan
+  // HANYA untuk gambar yang region-nya memang 'pembahasan' (grafik milik
+  // badan soal/opsi tidak boleh nyasar ke sini).
+  const terpakai = new Set();
+  html = html.replace(/\{\{GAMBAR_(\d+)\}\}/g, (token, n) => {
+    const i = Number(n) - 1;
+    if (!(i >= 0 && i < urls.length) || !urls[i]) return '';
+    if (String(meta[i]?.region || 'badan') !== 'pembahasan') return '';
+    terpakai.add(i);
+    return imgHtml(i);
+  });
+  // gambar region pembahasan TANPA token (berkas lama) tetap ditampilkan
+  // di akhir blok, sesuai kontrak penempatanGambar.
+  for (let i = 0; i < urls.length; i += 1) {
+    if (terpakai.has(i) || !urls[i]) continue;
+    if (String(meta[i]?.region || 'badan') !== 'pembahasan') continue;
+    html += imgHtml(i);
+  }
+  return html;
 }
 
 export function kunciButirNaskahHtml(soal, nomor) {
@@ -618,7 +644,11 @@ export function kunciButirNaskahHtml(soal, nomor) {
     ? soal.kunciJawaban.map((k) => String.fromCharCode(65 + Number(k))).join(', ')
     : escapeHtml(String(soal?.kunci ?? soal?.kunciJawaban ?? '-'));
   const pembahasan = soal?.pembahasan
-    ? htmlBlokPembahasan(soal.pembahasan, Array.isArray(soal?.kunciJawaban) ? '' : String(soal?.kunci ?? soal?.kunciJawaban ?? ''))
+    ? htmlBlokPembahasan(
+      soal.pembahasan,
+      Array.isArray(soal?.kunciJawaban) ? '' : String(soal?.kunci ?? soal?.kunciJawaban ?? ''),
+      { urls: soal?.gambarUrls, meta: soal?.gambarMeta },
+    )
     : '';
   const perBaris = kunciPerBaris(soal);
   const kunciTampil = perBaris ? `${kunci}${kunci ? ' · ' : ''}${perBaris}` : kunci;
