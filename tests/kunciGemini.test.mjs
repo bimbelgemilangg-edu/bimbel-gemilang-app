@@ -15,7 +15,11 @@
 // ============================================================
 
 import assert from 'node:assert/strict';
-import { kunciGeminiUntuk, pesanKunciBelumAda } from '../lib/kunciGemini.js';
+import {
+  kunciGeminiUntuk, pesanKunciBelumAda, apakahMapelUtbk,
+  kelompokUntukMapel, peringatanIsolasi,
+} from '../lib/kunciGemini.js';
+import { MAPEL_UTBK } from '../src/utils/mesinTaksonomiSoal.js';
 
 let lulus = 0;
 let gagal = 0;
@@ -91,6 +95,46 @@ uji('pesan kelompok umum menyebut GEMINI_API_KEY saja', () => {
 // ============================================================
 // RINGKASAN
 // ============================================================
+// ============================================================
+// 🔥 BARU (2026-10-10): kelompok kunci ketiga, GEMINI_UTBK.
+// Keputusan owner: kunci tryout UTBK berasal dari AKUN GOOGLE PRIBADI yang
+// berbeda dari akun Gemilang, supaya beban tryout Sabtu tidak pernah antre
+// di kuota yang sama dengan pembuatan kuis harian tentor. Kuota gratis
+// menempel pada akun/proyek Google, jadi beda akun = beda kolam sungguhan.
+// ============================================================
+const ENV_TIGA = { GEMINI_API_KEY: 'umum', GEMINI_SOAL: 'soal', GEMINI_UTBK: 'utbk' };
+
+uji('tujuh nama resmi subtes UTBK dikenali; mapel kurikulum tidak', () => {
+  for (const m of MAPEL_UTBK) assert.equal(apakahMapelUtbk(m.nama, MAPEL_UTBK), true, m.nama);
+  assert.equal(apakahMapelUtbk('utbk_pm', MAPEL_UTBK), true);
+  assert.equal(apakahMapelUtbk('UTBK/SNBT', MAPEL_UTBK), true);
+  for (const n of ['Matematika', 'Bahasa Indonesia', 'Kimia', 'Literasi', '', null]) {
+    assert.equal(apakahMapelUtbk(n, MAPEL_UTBK), false, String(n));
+  }
+});
+
+uji('routing kelompok: subtes UTBK -> utbk, lainnya -> soal', () => {
+  assert.equal(kelompokUntukMapel('TPS/Pengetahuan Kuantitatif', MAPEL_UTBK), 'utbk');
+  assert.equal(kelompokUntukMapel('Literasi/Bahasa Inggris', MAPEL_UTBK), 'utbk');
+  assert.equal(kelompokUntukMapel('Matematika', MAPEL_UTBK), 'soal');
+  assert.equal(kelompokUntukMapel('', MAPEL_UTBK), 'soal', 'perilaku lama dipertahankan');
+});
+
+uji('kunci utbk dipakai untuk kelompok utbk; rantai jatuh-balik utuh', () => {
+  assert.equal(kunciGeminiUntuk(ENV_TIGA, 'utbk'), 'utbk');
+  assert.equal(kunciGeminiUntuk({ GEMINI_SOAL: 'soal', GEMINI_API_KEY: 'umum' }, 'utbk'), 'soal');
+  assert.equal(kunciGeminiUntuk({ GEMINI_API_KEY: 'umum' }, 'utbk'), 'umum');
+  assert.equal(kunciGeminiUntuk(ENV_TIGA, 'soal'), 'soal', 'beban kuis tidak boleh nyasar ke kunci pribadi');
+  assert.equal(kunciGeminiUntuk(ENV_TIGA, 'umum'), 'umum');
+});
+
+uji('INVARIAN: isolasi kuota yang rusak WAJIB bersuara', () => {
+  assert.equal(peringatanIsolasi(ENV_TIGA, 'utbk'), null);
+  const rusak = peringatanIsolasi({ GEMINI_SOAL: 'soal' }, 'utbk');
+  assert.match(rusak, /isolasi kuota TIDAK aktif/);
+  assert.equal(peringatanIsolasi({ GEMINI_SOAL: 'soal' }, 'soal'), null, 'kelompok lain tidak ikut ribut');
+});
+
 console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);
 console.log(`  GAGAL : ${gagal}`);

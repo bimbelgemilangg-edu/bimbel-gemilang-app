@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { COL_TEMPLATE, COL_PAKET, DEFAULT_TEMPLATE_SMA, siapkanDrafMingguIni, terbitkanDraf, nonaktifkanPaket } from '../../../utils/mesinTryOutOtomatis';
 import { KATALOG_MAPEL } from '../../../utils/mesinTaksonomiSoal';
+// 🔥 BARU (audit 2026-10-10): normalisasi bentuk targetKelas/targetKategori
+// saat template disimpan. Lihat kepala utils/cocokkanTargetPaket.js.
+import { bentukKanonikTarget } from '../../../utils/cocokkanTargetPaket';
 
 const HARI = [
   { v: 1, l: 'Sen' }, { v: 2, l: 'Sel' }, { v: 3, l: 'Rab' },
@@ -41,25 +44,36 @@ export default function JadwalTryOutOtomatisPage() {
   const [pesan, setPesan] = useState('');
   const [log, setLog] = useState([]);
 
+  //Pengambilan data dipisah ke fungsi modul TANPA setState sama sekali.
+  // Rule CI react-hooks/set-state-in-effect menelusuri masuk ke fungsi yang
+  // dipanggil effect, jadi satu-satunya pola yang bersih: effect memanggil
+  // fungsi murni ini lalu setState sendiri SETELAH await (pola yang sama
+  // dengan DaftarTryOutPage.jsx).
+  async function ambilTemplateDanDraf() {
+    const [st, sp] = await Promise.all([
+      getDocs(collection(db, COL_TEMPLATE)),
+      getDocs(collection(db, COL_PAKET)),
+    ]);
+    const paket = sp.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const otomatis = paket
+      .filter((p) => p.otomatis)
+      .sort((a, b) => {
+        const ta = new Date(a.waktuBuka || 0).getTime();
+        const tb = new Date(b.waktuBuka || 0).getTime();
+        return tb - ta;
+      })
+      .slice(0, 30);
+    return { templates: st.docs.map((d) => ({ id: d.id, ...d.data() })), otomatis };
+  }
+
+  // Pemanggilan manual (tombol): spinner disetel di event handler, tempat
+  // setState memang diperbolehkan.
   const muat = useCallback(async () => {
     setLoading(true);
     try {
-      const [st, sp] = await Promise.all([
-        getDocs(collection(db, COL_TEMPLATE)),
-        getDocs(collection(db, COL_PAKET)),
-      ]);
-      setTemplates(st.docs.map((d) => ({ id: d.id, ...d.data() })));
-      const paket = sp.docs.map((d) => ({ id: d.id, ...d.data() }));
-      // draf + otomatis minggu ini
-      const otomatis = paket
-        .filter((p) => p.otomatis)
-        .sort((a, b) => {
-          const ta = new Date(a.waktuBuka || 0).getTime();
-          const tb = new Date(b.waktuBuka || 0).getTime();
-          return tb - ta;
-        })
-        .slice(0, 30);
-      setDrafList(otomatis);
+      const d = await ambilTemplateDanDraf();
+      setTemplates(d.templates);
+      setDrafList(d.otomatis);
     } catch (e) {
       setPesan('❌ ' + e.message);
     } finally {
@@ -67,7 +81,22 @@ export default function JadwalTryOutOtomatisPage() {
     }
   }, []);
 
-  useEffect(() => { muat(); }, [muat]);
+  useEffect(() => {
+    let hidup = true;
+    (async () => {
+      try {
+        const d = await ambilTemplateDanDraf();
+        if (!hidup) return;
+        setTemplates(d.templates);
+        setDrafList(d.otomatis);
+      } catch (e) {
+        if (hidup) setPesan('❌ ' + e.message);
+      } finally {
+        if (hidup) setLoading(false);
+      }
+    })();
+    return () => { hidup = false; };
+  }, []);
 
   function toggleHari(v) {
     setEdit((prev) => {
@@ -85,8 +114,8 @@ export default function JadwalTryOutOtomatisPage() {
         nama: edit.nama.trim(),
         jenjang: edit.jenjang || 'SMA',
         kelas: edit.kelas || '',
-        targetKelas: edit.targetKelas || ['Semua'],
-        targetKategori: edit.targetKategori || ['Semua'],
+        targetKelas: bentukKanonikTarget(edit.targetKelas),
+        targetKategori: bentukKanonikTarget(edit.targetKategori),
         komposisi: edit.komposisi || [],
         hariDalamMinggu: edit.hariDalamMinggu || [1, 4],
         jamBuka: edit.jamBuka || '07:00',

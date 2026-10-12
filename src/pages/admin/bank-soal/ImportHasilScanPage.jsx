@@ -54,6 +54,23 @@ import { db, auth } from '../../../firebase';
 // menulis "{(3, 2)}" polos -- di KaTeX kurungnya hilang. Diperbaiki di
 // pintu masuk, bukan minta setiap AI penulis file tidak pernah lupa.
 import { perbaikiKurungHimpunanLatex } from '../../../utils/kurungLatex';
+// 🔥 BARU (2026-10-10): pembersih sisa OCR + penandai kualitas. Sampah
+// struktural dibuang otomatis; yang meragukan (kata terpotong, opsi
+// kebocoran lintas kolom) DICATAT untuk mata admin, tidak ditebak.
+import { bersihkanOcrTeks, penandaiKualitasOcr, buangDuplikatOpsiDariTeks, lengkapEkorJawaban } from '../../../utils/bersihkanOcr';
+// Pembahasan dirender bergaya BUKU (kode sumber -> premis/logika ->
+// kesimpulan bergaris -> "Jawaban: X") supaya preview admin sama dengan
+// yang dilihat siswa & yang tercetak di naskah kunci.
+import RenderPembahasan from '../../../components/RenderPembahasan';
+// Kode sumber = "akar" soal: tanpa baris ini tidak tahu soal berasal dari
+// buku/tahun mana. Dipakai untuk chip di kepala kartu preview (insiden
+// 2026-10-10: pemilik bertanya "mana?" karena kode tidak kelihatan).
+import { pisahKodeSumber } from '../../../utils/strukturPembahasan';
+// Aturan tambahan prompt HTML Master untuk dokumen hasil SCAN BUKU/OCR.
+// Dipisah ke util supaya bisa dikunci test (prompt = kontrak dengan
+// model di luar kendali kita; perubahan halus baru ketahuan setelah
+// ratusan soal terimpor salah).
+import { ATURAN_OCR_MASTER } from '../../../utils/promptMasterOcr';
 // 🔥 2026-10-08: deteksi duplikat di HULU (saat scan) kini berjenjang dan
 // sadar gambar+kunci. Detektor lama membandingkan TEKS PERINTAH SAJA, jadi
 // dua soal infografis ber-poster berbeda diperingatkan sebagai duplikat,
@@ -66,6 +83,7 @@ import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
 // Kurikulum Merdeka. Nama di luar peta (TPS/Penalaran Umum, Penguatan Dasar)
 // tetap tersedia karena memang bukan mapel kurikulum.
 import { daftarMapelUntuk, petakanNamaMapel, jenjangDipetakan } from '../../../utils/kurikulumMerdeka';
+import { NAMA_MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 // 🔥 BARU (2026-10-07): keluhan owner "gambar dari Gemini gak muncul
 // semua". Akarnya: Gemini Canvas menulis src="[url](url)" gaya tautan
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
@@ -78,10 +96,16 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 
 const BANK_SOAL_COLLECTION = 'bank_soal';
 
+// 🔥 BARU (2026-10-10): tujuh subtes UTBK-SNBT ikut jadi pilihan mapel scan.
+// Sebelumnya hanya 'TPS/Penalaran Umum' yang ada; enam subtes lain tidak
+// punya rumah sehingga soal hasil scan menumpuk di mapel kurikulum yang
+// berbeda karakter soalnya. Daftarnya SATU SUMBER di utils/mesinTaksonomiSoal
+// (MAPEL_UTBK) supaya halaman ini dan AdvancedQuestionExtractor tidak bisa
+// berbeda daftar lagi.
 const DAFTAR_MAPEL = [
   'Matematika', 'Fisika', 'Kimia', 'Biologi', 'Bahasa Indonesia',
   'Bahasa Inggris', 'Ekonomi', 'Geografi', 'Sosiologi', 'Sejarah',
-  'PKN', 'TPS/Penalaran Umum',
+  'PKN', ...NAMA_MAPEL_UTBK,
   // 🔥 BARU: "Penguatan Dasar" -- BUKAN mapel kurikulum spesifik, tapi
   // latihan kemampuan dasar (baca, hitung, nalar) yang bisa di-generate
   // AI LANGSUNG (gak perlu buku sumber sama sekali, beda dari mapel di
@@ -475,7 +499,7 @@ Setiap soal dianalisis SENDIRI-SENDIRI, bukan dipukul rata untuk satu file. Tamb
 17. Nama atribut \`data-field\` dan \`data-gemilang-question\` HARUS ditulis PERSIS seperti contoh, huruf kecil semua, tanpa spasi tambahan. Jangan mengganti "teks_soal" jadi "teksSoal"/"soal"/nama lain.
 18. Satu <article> = satu soal. Jangan menaruh dua nomor soal dalam satu <article>, dan jangan memecah satu soal jadi dua <article>.
 19. Jangan menambahkan komentar, penjelasan, atau teks apa pun di luar blok HTML.
-20. 🔥 WAJIB — BACAAN YANG DIPAKAI BERSAMA BEBERAPA SOAL (mis. "Perhatikan teks berikut untuk soal nomor 1-2!"): setiap soal itu adalah DOKUMEN MANDIRI yang nantinya bisa dipakai SENDIRI-SENDIRI tanpa soal lain di sebelahnya. Karena itu, bacaan/teks/puisi/tabel bersama itu HARUS DISALIN UTUH ke field \`data-field="bacaan"\` di SETIAP soal yang terkait — BUKAN cuma ditulis sekali di soal pertama lalu soal berikutnya dibiarkan kosong tanpa bacaan. Contoh SALAH: soal 1 punya bacaan lengkap, soal 2 cuma "Ciri Komodo yang tepat sesuai teks tersebut adalah..." tanpa bacaan sama sekali -- ini bikin soal 2 TIDAK BISA DIJAWAB kalau dipakai sendirian. Contoh BENAR: soal 1 DAN soal 2 sama-sama punya \`<div data-field="bacaan" data-grup="bacaan_1">...teks Taman Nasional Komodo lengkap, PERSIS SAMA di kedua soal, tidak diringkas sedikit pun...</div>\`, isinya identik persis di keduanya. Tambahkan atribut \`data-grup="bacaan_N"\` (N = nomor urut grup bacaan dalam dokumen ini) di elemen bacaan itu — WAJIB SAMA PERSIS untuk semua soal yang memakai bacaan yang sama, supaya sistem bisa otomatis mendeteksi kalau kamu tidak sengaja meringkas/memotong bacaan di salah satu soal (dibandingkan panjangnya antar soal segrup). \`data-field="teks_soal"\` cukup berisi PERTANYAANNYA SAJA (tanpa bacaan), \`data-field="bacaan"\` berisi bacaannya (boleh sama persis berulang di beberapa soal, itu memang disengaja).
+20. 🔥 WAJIB — BACAAN YANG DIPAKAI BERSAMA BEBERAPA SOAL (mis. "Perhatikan teks berikut untuk soal nomor 1-2!"): setiap soal itu adalah DOKUMEN MANDIRI yang nantinya bisa dipakai SENDIRI-SENDIRI tanpa soal lain di sebelahnya. Karena itu, bacaan/teks/puisi/tabel bersama itu HARUS DISALIN UTUH ke field \`data-field="bacaan"\` di SETIAP soal yang terkait — BUKAN cuma ditulis sekali di soal pertama lalu soal berikutnya dibiarkan kosong tanpa bacaan. Contoh SALAH: soal 1 punya bacaan lengkap, soal 2 cuma "Ciri Komodo yang tepat sesuai teks tersebut adalah..." tanpa bacaan sama sekali -- ini bikin soal 2 TIDAK BISA DIJAWAB kalau dipakai sendirian. Contoh BENAR: soal 1 DAN soal 2 sama-sama punya \`<div data-field="bacaan" data-grup="bacaan_1">...teks Taman Nasional Komodo lengkap, PERSIS SAMA di kedua soal, tidak diringkas sedikit pun...</div>\`, isinya identik persis di keduanya. Tambahkan atribut \`data-grup="bacaan_N"\` (N = nomor urut grup bacaan dalam dokumen ini) di elemen bacaan itu — WAJIB SAMA PERSIS untuk semua soal yang memakai bacaan yang sama, supaya sistem bisa otomatis mendeteksi kalau kamu tidak sengaja meringkas/memotong bacaan di salah satu soal (dibandingkan panjangnya antar soal segrup). \`data-field="teks_soal"\` cukup berisi PERTANYAANNYA SAJA (tanpa bacaan), \`data-field="bacaan"\` berisi bacaannya (boleh sama persis berulang di beberapa soal, itu memang disengaja).${ATURAN_OCR_MASTER}
 
 CONTOH (perhatikan: angka/nilai di bawah ini cuma ilustrasi STRUKTUR tag. Materi, kesulitan, dan kelas yang kamu isi harus hasil analisismu sendiri terhadap SETIAP soal asli, bukan disalin dari contoh ini):
 <!doctype html>
@@ -1437,11 +1461,58 @@ function parseHTMLTableElement(table) {
   if (!table) return null;
   const rows = Array.from(table.querySelectorAll('tr'));
   if (!rows.length) return null;
-  const firstCells = Array.from(rows[0].querySelectorAll(':scope > th, :scope > td'));
-  const header = firstCells.map(cell => htmlNodeText(cell));
-  const bodyRowsMentah = rows.slice(1).map(row =>
-    Array.from(row.querySelectorAll(':scope > th, :scope > td')).map(cell => htmlNodeText(cell)),
-  );
+  // 🔥 BARU (kasus nyata 2026-10-10, soal 40 bab 1 UTBK TPS-PU): tabel buku
+  // punya KEPALA DUA BARIS ("Tahun" rowspan=2 | "Daerah Tempat Tinggal"
+  // colspan=2, lalu "Perkotaan" | "Perdesaan"). Aturan lama hanya membaca
+  // baris pertama sebagai kepala, jadi baris "Perkotaan/Perdesaan" jatuh ke
+  // BADAN tabel dan tercetak sebagai data -- nama kolom hilang. Kepala kini
+  // dibaca sebanyak baris yang tercakup rowspan, dan digabung per kolom
+  // ("Daerah Tempat Tinggal — Perkotaan") karena model tabel internal hanya
+  // punya satu baris kepala.
+  const selBaris = (row) => Array.from(row.querySelectorAll(':scope > th, :scope > td'));
+  const angka = (cell, nama) => Number(cell.getAttribute(nama)) || cell[nama === 'rowspan' ? 'rowSpan' : 'colSpan'] || 1;
+  // Berapa baris yang menjadi KEPALA: sebanyak rowspan terbesar di baris
+  // pertama (kepala dua baris = rowspan 2), dibatasi jumlah baris yang ada.
+  const rentangKepala = (() => {
+    let maks = 1;
+    for (const cell of selBaris(rows[0])) {
+      const rs = angka(cell, 'rowspan');
+      if (rs > maks) maks = rs;
+    }
+    return Math.min(Math.max(maks, 1), rows.length);
+  })();
+  // Susun tabel jadi kisi per kolom (algoritma tabel HTML baku: sel dengan
+  // rowspan menempati baris di bawahnya, colspan menempati kolom di kanannya).
+  const kisi = [];
+  rows.forEach((row, r) => {
+    kisi[r] = kisi[r] || [];
+    let c = 0;
+    for (const cell of selBaris(row)) {
+      while (kisi[r][c] !== undefined) c += 1;
+      const rs = Math.max(angka(cell, 'rowspan'), 1);
+      const cs = Math.max(angka(cell, 'colspan'), 1);
+      const teks = htmlNodeText(cell);
+      for (let i = 0; i < rs; i += 1) {
+        for (let j = 0; j < cs; j += 1) {
+          kisi[r + i] = kisi[r + i] || [];
+          kisi[r + i][c + j] = teks;
+        }
+      }
+      c += cs;
+    }
+  });
+  const lebar = kisi.reduce((maks, row) => Math.max(maks, (row || []).length), 0);
+  const kepalaKolom = Array.from({ length: lebar }, (_, c) => {
+    const bagian = [];
+    for (let r = 0; r < rentangKepala; r += 1) {
+      const t = (kisi[r] || [])[c];
+      if (t && !bagian.includes(t)) bagian.push(t);
+    }
+    return bagian.join(' — ');
+  });
+  const firstCells = kepalaKolom;
+  const header = firstCells;
+  const bodyRowsMentah = rows.slice(rentangKepala).map(row => selBaris(row).map(cell => htmlNodeText(cell)));
   const hasHeader = Boolean(rows[0].querySelector(':scope > th')) || table.getAttribute('data-has-header') === 'true';
   const bodyRowsArray = hasHeader ? bodyRowsMentah : [header, ...bodyRowsMentah];
 
@@ -1681,6 +1752,7 @@ function parseHTMLMaster(raw) {
     const nomor = Number(node.getAttribute('data-nomor') || node.getAttribute('data-number')) || index + 1;
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
+    const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
     const imageNode = getField(node, 'gambar', 'images', 'image');
     const bacaanNode = getField(node, 'bacaan', 'stimulus', 'reading');
     const optionsNode = getField(node, 'opsi_jawaban', 'options', 'choices');
@@ -1722,10 +1794,25 @@ function parseHTMLMaster(raw) {
         gambar: images,
         tabel: table ? normalizeTabel(table.baris.map((row, i) => ({ kolom: table.header[i] || `Kolom ${i + 1}`, isi: row.join(' | ') }))) : [],
       };
-    }).filter(opt => !optionIsEmpty(opt));
+    }).filter(opt => !optionIsEmpty(opt)).map((opt) => {
+      const bersih = bersihkanOcrTeks(opt.teks || '');
+      return { ...opt, teks: bersih.teks };
+    });
+    // Cacat khas OCR dua kolom: blok opsi terpindah JUGA ke dalam teks soal
+    // (soal 2 berkas bab 1 & banyak soal bab 2). Duplikatnya dibuang
+    // deterministik -- bukan tebakan, karena teksnya identik dengan opsi.
+    // CATATAN URUTAN: blok ini WAJIB setelah opsi_jawaban terdefinisi;
+    // versi pertama menaruhnya di atas dan melempar TDZ saat parse
+    // ("Cannot access 'K' before initialization", insiden 2026-10-10).
+    const tanpaDuplikat = buangDuplikatOpsiDariTeks(
+      bersihTeksSoal.teks,
+      opsi_jawaban.map((o) => o.teks),
+    );
+    bersihTeksSoal.teks = tanpaDuplikat.teks;
+    bersihTeksSoal.catatan.push(...tanpaDuplikat.catatan);
 
     const bacaan = bacaanNode ? {
-      teks: htmlNodeText(bacaanNode),
+      teks: bersihkanOcrTeks(htmlNodeText(bacaanNode)).teks,
       gambar: parseHTMLImages(bacaanNode),
       // 🔥 BARU: penanda grup bacaan (mis. "bacaan_1") -- kalau beberapa
       // soal berbagi bacaan yang sama, mereka wajib punya nilai grup
@@ -1751,19 +1838,33 @@ function parseHTMLMaster(raw) {
     // per mapel dulu sebelum import atau import ulang berkali-kali.
     const mapelRaw = safeString(node.getAttribute('data-mapel') || node.getAttribute('data-mata-pelajaran')).trim();
 
+    // Catatan tambahan yang lahir SAAT membangun objek soal (mis. ekor
+    // pembahasan yang dilengkapi dari kunci) -- digabung ke catatan_ocr.
+    const catatanEkorJawaban = [];
+
     return {
       nomor,
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
       tipe,
       bacaan,
-      teks_soal: teksSoalGabungan,
+      teks_soal: bersihTeksSoal.teks,
       opsi_jawaban,
       kunci_jawaban: normalizeAnswerKey(keyRaw),
       // 🔥 BARU: default TRUE kalau AI gak nulis field ini sama sekali
       // (konsisten sama instruksi prompt: "true adalah default"). Cuma
       // jadi false kalau AI eksplisit nulis data-value="false".
       kunci_terverifikasi: verifNode ? safeString(verifNode.getAttribute?.('data-value') || verifNode.textContent || '').toLowerCase().trim() !== 'false' : true,
-      pembahasan: perbaikiKurungHimpunanLatex(htmlNodeText(explanationNode)),
+      // 🔥 2026-10-10: pembahasan diperlakukan KHUSUS -- barisnya TIDAK
+      // disambung (jagaBaris) karena tata letak baris = struktur buku
+      // (premis / kesimpulan / jawaban), lalu ekor "Jawaba/Jawabat/..."
+      // yang putus di OCR dilengkapi dari kunci soal itu sendiri (bukan
+      // ditebak) dan DICATAT di catatan_ocr.
+      pembahasan: (() => {
+        const mentah = perbaikiKurungHimpunanLatex(bersihkanOcrTeks(htmlNodeText(explanationNode), { jagaBaris: true }).teks);
+        const ekor = lengkapEkorJawaban(mentah, normalizeAnswerKey(keyRaw));
+        catatanEkorJawaban.push(...ekor.catatan);
+        return ekor.teks;
+      })(),
       pernyataan: parseHTMLStatements(tfNode),
       tabel_benar_salah: parseHTMLStatements(categoryNode),
       pasangan: parseHTMLPairs(matchingNode),
@@ -1776,6 +1877,17 @@ function parseHTMLMaster(raw) {
       kelas: kelasRaw,
       mapel: mapelRaw,
       referensi_sumber: sourceNode ? { keterangan: htmlNodeText(sourceNode), halaman_pdf: Number(sourceNode.getAttribute('data-halaman')) || null } : null,
+      // Catatan kualitas OCR untuk badge preview + tersimpan di dokumen
+      // supaya audit di kemudian hari tahu bagian mana yang dulu diragukan.
+      catatan_ocr: [
+        ...bersihTeksSoal.catatan,
+        ...penandaiKualitasOcr({
+          teksSoal: bersihTeksSoal.teks,
+          opsi: opsi_jawaban.map((o) => o.teks),
+          pembahasan: htmlNodeText(explanationNode),
+        }),
+        ...catatanEkorJawaban,
+      ],
     };
   });
 }
@@ -2903,6 +3015,7 @@ function buildDoc(q, meta) {
     kunciTerverifikasi: q.kunci_terverifikasi,
     pembahasan: bersihkanJejakTeknis(q.pembahasan),
     catatanAdmin: q.catatan_admin || '',
+    catatanOcr: Array.isArray(q.catatan_ocr) ? q.catatan_ocr : [],
     gambarUrls,
     tabelSoal: amankanTabelDariNestedArray(q.tabel_soal) || null,
     referensiSumber: q.referensi_sumber || null,
@@ -3128,8 +3241,11 @@ export default function ImportHasilScanPage() {
   // kosong -- sistem tetap jalan seperti biasa (gak maksa isi).
   const [babTaksonomi, setBabTaksonomi] = useState([]);
   useEffect(() => {
-    if (!mataPelajaran) { setBabTaksonomi([]); return; }
     (async () => {
+      // Reset setelah await pertama: setState dilarang jalan di jalur sinkron
+      // effect (rule CI react-hooks/set-state-in-effect). Perilaku sama.
+      await Promise.resolve();
+      if (!mataPelajaran) { setBabTaksonomi([]); return; }
       try {
         const snap = await getDocs(query(collection(db, 'taksonomi_materi'), where('mapel', '==', mataPelajaran)));
         const babPerKelas = {};
@@ -5137,6 +5253,11 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
   const jumlahRusak = statusPerGambar.filter(s => s === 'broken').length;
   const jumlahDicek = statusPerGambar.filter(s => s === 'checking').length;
 
+  // Kepala kode sumber dipisah SEKALI di sini: chip di header menjamin kode
+  // selalu kelihatan di awal kartu, dan badan teks menampilkan sisanya saja
+  // (kontrak render yang sama dengan layar siswa & cetak naskah).
+  const kepalaKode = pisahKodeSumber(q.teks_soal || '');
+
   return (
     <div
       style={{
@@ -5148,6 +5269,14 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
     >
       {/* HEADER */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+        {kepalaKode.kode && (
+          <span
+            title="Kode sumber soal -- akar/asal soal ini (tahun ujian & nomor asli di buku)"
+            style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#fef9c3', color: '#854d0e', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', border: '1px solid #fde047' }}
+          >
+            📖 {kepalaKode.kode}
+          </span>
+        )}
         <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#dbeafe', color: '#1d4ed8', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
           Soal {q.nomor}
         </span>
@@ -5178,6 +5307,14 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#cffafe', color: '#0e7490', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>💡 Pembahasan</span>
         )}
 
+        {(q.catatan_ocr || []).length > 0 && (
+          <span
+            title={q.catatan_ocr.join(' | ')}
+            style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#9a3412', fontSize: '12px', fontWeight: '700', borderRadius: '9999px', cursor: 'help' }}
+          >
+            ⚠ {q.catatan_ocr.length} catatan OCR
+          </span>
+        )}
         {q.materi && (
           <span style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '4px', paddingBottom: '4px', backgroundColor: '#ffedd5', color: '#c2410c', fontSize: '12px', fontWeight: '700', borderRadius: '9999px' }}>
             📘 {q.materi}
@@ -5257,7 +5394,7 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
       )}
 
       {/* QUESTION */}
-      <RichText text={q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
+      <RichText text={kepalaKode.kode ? kepalaKode.teks : q.teks_soal} gambar={q.gambar} mathReady={mathReady} />
 
       {q.tabel_soal && <QuestionTable table={q.tabel_soal} mathReady={mathReady} />}
 
@@ -5427,11 +5564,15 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
         </div>
       )}
 
-      {/* PEMBAHASAN */}
+      {/* PEMBAHASAN -- dirender SAMA seperti yang dilihat siswa & tercetak di
+          naskah kunci (komponen RenderPembahasan): kode sumber jadi kepala,
+          premis/logika jadi blok, "Kesimpulan :" bergaris atas, "Jawaban: X"
+          tebal rata kanan. Dulu kotak ini memakai RichText polos sehingga
+          owner membandingkannya dengan PDF buku dan melihat bentuk yang beda. */}
       {q.pembahasan && (
-        <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e5e7eb', borderColor: '#a5f3fc', backgroundColor: '#ecfeff', padding: '16px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: '#0e7490', marginBottom: '8px' }}>💡 PEMBAHASAN</div>
-          <RichText text={q.pembahasan} gambar={[]} mathReady={mathReady} />
+        <div style={{ marginTop: '16px', borderRadius: '12px', border: '1px solid #e7e5e4', borderLeft: '4px solid #7c3aed', backgroundColor: '#fffdf7', padding: '14px 16px' }}>
+          <div style={{ fontSize: '11px', fontWeight: '800', letterSpacing: 0.6, color: '#6d28d9', marginBottom: '10px' }}>💡 PEMBAHASAN <span style={{ fontWeight: 500, color: '#a8a29e', letterSpacing: 0 }}>(tampilan sama dengan layar siswa & naskah cetak)</span></div>
+          <RenderPembahasan teks={q.pembahasan} kunci={q.kunci_jawaban} />
         </div>
       )}
 

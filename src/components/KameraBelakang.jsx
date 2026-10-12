@@ -50,9 +50,14 @@ export default function KameraBelakang({ onHasil, onClose, judul = 'Foto jawaban
   // Nyalakan kamera belakang saat overlay dibuka; matikan saat ditutup.
   useEffect(() => {
     let batal = false;
+    // 🔥 (2026-10-10, lint CI): pemeriksaan dukungan boleh sinkron, tetapi
+    // setState-nya tidak (react-hooks/set-state-in-effect). Dijadwalkan lewat
+    // microtask: perilaku sama, jalur sinkron effect bersih.
     if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      setStatus('gagal');
-      setPesanGagal('Perangkat atau browser ini tidak mendukung kamera di dalam halaman.');
+      Promise.resolve().then(() => {
+        setStatus('gagal');
+        setPesanGagal('Perangkat atau browser ini tidak mendukung kamera di dalam halaman.');
+      });
       return undefined;
     }
     navigator.mediaDevices
@@ -90,7 +95,7 @@ export default function KameraBelakang({ onHasil, onClose, judul = 'Foto jawaban
       canvas.getContext('2d').drawImage(video, 0, 0, lebar, tinggi);
       setPratinjau(canvas.toDataURL('image/jpeg', KUALITAS_JPEG));
     } catch (e) {
-      setPesanGagal(`Gagal menjepret: ${e?.message || e}`);
+      setPesanGagal(`Gagal merekam gambar: ${e?.message || e}`);
     }
   }, []);
 

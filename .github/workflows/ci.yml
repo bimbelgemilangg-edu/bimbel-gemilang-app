@@ -63,6 +63,9 @@ jobs:
       - name: Penjaga rute (fitur mati karena <Route> lupa didaftarkan)
         run: node scripts/ci-penjaga-rute.mjs
 
+      - name: Penjaga impor (impor/ekspor lintas modul harus resolve)
+        run: node scripts/ci-penjaga-impor.mjs
+
       - name: Lint berkas yang berubah (wajib bersih)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then

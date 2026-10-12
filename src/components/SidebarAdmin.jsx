@@ -14,7 +14,7 @@ import {
   FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy,
   UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive,
   Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox,
-  Library,
+  Library, Landmark, Target,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -243,6 +243,19 @@ const SidebarAdmin = () => {
         { name: 'Jejak Aktivitas', path: '/admin/audit',  icon: <History size={18} /> },
       ]
     }] : []),
+    // 🔥 BARU (2026-10-10): database kampus & pendaftaran target siswa.
+    // Terbuka untuk seluruh akun area admin + Owner: keputusan owner,
+    // "admin kan yang memegang data siswa" -- ini kelanjutan kerja data
+    // siswa (blueprint Tahap 1), bukan kewenangan khusus manajer. Rutenya
+    // tetap dikunci AdminRoute di App.jsx; menyembunyikan menu saja tidak
+    // cukup, mengikuti prinsip repo sendiri.
+    {
+      label: '🎯 TARGET KAMPUS',
+      items: [
+        { name: 'Impor Database PTN', path: '/admin/ptn/impor', icon: <Landmark size={18} /> },
+        { name: 'Target Kampus Siswa', path: '/admin/ptn/target', icon: <Target size={18} /> },
+      ]
+    },
     {
       label: '📋 PENDAFTARAN',
       items: [
