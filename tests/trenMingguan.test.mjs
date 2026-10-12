@@ -1,6 +1,6 @@
 // tests/trenMingguan.test.mjs
 import assert from 'node:assert/strict';
-import { kunciMinggu, hitungTrenMingguan, kalimatDelta } from '../src/utils/trenMingguan.js';
+import { kunciMinggu, hitungTrenMingguan, kalimatDelta, targetPoinDariSiswa } from '../src/utils/trenMingguan.js';
 let lulus = 0, gagal = 0;
 function uji(n, f) { try { f(); lulus++; console.log(`  ✓ ${n}`); } catch (e) { gagal++; console.log(`  ✗ ${n}\n      ${e.message}`); } }
 
@@ -39,6 +39,14 @@ uji('kalimat delta berbahasa tindakan & menyebut target', () => {
 uji('tanpa data -> kalimat garis start, bukan error', () => {
   assert.ok(kalimatDelta(hitungTrenMingguan([])).includes('garis startmu'));
 });
+uji('target poin sadar-alias & kosong=null', () => {
+  assert.equal(targetPoinDariSiswa({ targetSkor: 700 }), 700);
+  assert.equal(targetPoinDariSiswa({ target: { skor: 650 } }), 650);
+  assert.equal(targetPoinDariSiswa({ targetKampus: { skorMinimal: 680 } }), 680);
+  assert.equal(targetPoinDariSiswa({}), null);
+  assert.equal(targetPoinDariSiswa({ targetSkor: 'abc' }), null);
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');

@@ -40,7 +40,7 @@ import { useSegarSaatTerlihat } from '../../../utils/useSegarSaatTerlihat';
 // tests/cocokkanTargetPaket.test.mjs.
 import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { kodePaketTampil } from '../../../utils/kodePaket';
-import { hitungTrenMingguan, kalimatDelta } from '../../../utils/trenMingguan';
+import { hitungTrenMingguan, kalimatDelta, targetPoinDariSiswa } from '../../../utils/trenMingguan';
 
 const fmt = (t) => new Date(t).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -51,6 +51,7 @@ export default function DaftarTryOutPage() {
   const [loading, setLoading] = useState(true);
   const [daftar, setDaftar] = useState([]);
   const [sesiList, setSesiList] = useState([]);
+  const [siswaAktif, setSiswaAktif] = useState(null);
 
   // 🔥 BARU (Tahap 1 peta sinkronisasi): try out yang BARU diterbitkan
   // admin harus muncul tanpa siswa perlu reload -- ini keluhan yang
@@ -63,6 +64,7 @@ export default function DaftarTryOutPage() {
       try {
         const snapSiswa = await getDocs(query(collection(db, 'students'), where('studentId', '==', studentId)));
         const siswa = snapSiswa.docs[0]?.data();
+        setSiswaAktif(siswa || null);
 
         const snapPaket = await getDocs(query(collection(db, 'tryout_paket'), where('status', '==', 'aktif')));
         let paketList = snapPaket.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -203,7 +205,7 @@ export default function DaftarTryOutPage() {
                     </div>
                   ))}
                 </div>
-                <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.6 }}>{kalimatDelta(tren, null)}</div>
+                <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.6 }}>{kalimatDelta(tren, targetPoinDariSiswa(siswaAktif))}</div>
               </div>
             );
           })()}

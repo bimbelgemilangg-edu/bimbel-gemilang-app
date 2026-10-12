@@ -117,6 +117,7 @@ import ImporModul from './pages/admin/buku/ImporModul';
 import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
 import DasborKesiapanStokPage from './pages/admin/bank-soal/DasborKesiapanStokPage';
 import RiwayatPaketPage from './pages/admin/bank-soal/RiwayatPaketPage';
+import LaporanOrangTuaPage from './pages/admin/LaporanOrangTuaPage';
 import MesinBankSoalPage from './pages/admin/bank-soal/MesinBankSoalPage';
 import JadwalTryOutOtomatisPage from './pages/admin/bank-soal/JadwalTryOutOtomatisPage';
 import DashboardAnalisis from './pages/admin/DashboardAnalisis';
@@ -715,6 +716,10 @@ function App() {
         <Route
           path="/admin/bank-soal/riwayat-paket"
           element={<AdminRoute><RiwayatPaketPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/laporan-orang-tua"
+          element={<AdminRoute><LaporanOrangTuaPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/terbitkan"

@@ -100,4 +100,24 @@ export function kalimatDelta(tren = {}, targetPoin = null) {
   return `${awal}${sasaran}`;
 }
 
-export default { kunciMinggu, hitungTrenMingguan, kalimatDelta };
+/**
+ * Target poin siswa dari dokumen siswa, sadar-alias (pola fieldButirSoal):
+ * setiap jalur tulis lama mungkin memakai nama berbeda; yang kosong/null
+ * berarti "belum punya target" dan kalimat delta berjalan tanpa sasaran.
+ * @param {object} siswa
+ * @returns {number|null}
+ */
+export function targetPoinDariSiswa(siswa = {}) {
+  const kandidat = [
+    siswa?.targetSkor, siswa?.target_skor, siswa?.targetPoin, siswa?.target_poin,
+    siswa?.target?.skor, siswa?.target?.poin, siswa?.targetKampus?.skorMinimal,
+    siswa?.targetProdi?.skorMinimal, siswa?.minimalSkor,
+  ];
+  for (const v of kandidat) {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
+
+export default { kunciMinggu, hitungTrenMingguan, kalimatDelta, targetPoinDariSiswa };

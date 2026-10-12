@@ -207,6 +207,7 @@ const SidebarAdmin = () => {
         // absensi tentor -- validasi sesi & unduh riwayat, tanpa uang.
         { name: 'Sesi & Validasi Guru', path: '/admin/teachers/sesi', icon: <ClipboardCheck size={18} /> },
         { name: 'Rapor & Nilai',path: '/admin/grades',           icon: <TrendingUp size={18} /> },
+        { name: 'Laporan Orang Tua', path: '/admin/laporan-orang-tua', icon: <Receipt size={18} /> },
         { name: 'Portal Siswa', path: '/admin/portal',           icon: <Globe size={18} /> },
         // 🔥 Materi v2 & Bank Materi DIPINDAH ke halaman Perkakas
         // (/admin/perkakas) -- sidebar terlalu penuh; routenya tetap hidup.
