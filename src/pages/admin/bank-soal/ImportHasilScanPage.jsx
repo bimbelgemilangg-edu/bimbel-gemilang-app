@@ -95,7 +95,7 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 // soal. Selain itu wacana yang tercecer jadi ekor sebuah opsi hanya bisa
 // ditemukan dengan berburu manual di puluhan soal. Keduanya kini ditangani
 // util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
-import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan } from '../../../utils/bersihkanArtefakScan';
+import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan, wariskanBacaanYatim } from '../../../utils/bersihkanArtefakScan';
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
@@ -3850,6 +3850,10 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       // memindahkan teks apa pun: memindahkan bacaan lintas soal adalah
       // keputusan manusia, dan perbaikan senyap yang salah jauh lebih
       // berbahaya daripada peringatan yang keras.
+      // 🔥 BARU (2026-10-12, bab 4 owner): wariskan wacana rentang yang hanya
+      // dipasang di soal pertama SEBELUM penagihan yatim, supaya Sinyal 5
+      // tidak menagih soal yang wacananya sebenarnya ada di soal sebelumnya.
+      normalized = wariskanBacaanYatim(normalized);
       normalized = tandaiBacaanTerjebak(normalized);
 
       // 🔥 BARU: kalau SEBAGIAN soal di batch ini punya data-mapel

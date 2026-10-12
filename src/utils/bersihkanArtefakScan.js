@@ -374,6 +374,55 @@ export function pindahkanBacaanTerjebak(daftar) {
   return { daftar: list, diselamatkan };
 }
 
+/**
+ * WARISKAN BACAAN KE SOAL YATIM DARI PEMBAWA TERDEKAT DI BELAKANGNYA.
+ *
+ * KENAPA ADA (bab 4 owner, 2026-10-12): AI sudah menaati aturan 20 untuk
+ * beberapa grup (data-field="bacaan" + data-grup), tetapi pada grup lain
+ * elemen bacaan hanya dipasang di SOAL PERTAMA rentang -- persis cara
+ * buku mencetak wacana -- sementara soal berikutnya tidak membawa penanda
+ * grup sama sekali. Backfill berbasis grup (isiUlangBacaanSegrup) tidak
+ * bisa bekerja tanpa penanda grup, dan Sinyal 5 menagih soal 31/45 sebagai
+ * yatim walau wacananya ADA di soal sebelumnya.
+ *
+ * Aturan warisan sengaja konservatif:
+ *   - hanya untuk soal yatim (menunjuk bacaan, bacaan kosong, teks pendek);
+ *   - sumber = soal TERDEKAT di belakang (maks `jendela`) yang punya bacaan
+ *     berisi; tidak melompati soal pembawa bacaan lain;
+ *   - hasil warisan DIBENDERAI (bacaanWarisan + catatan_admin "verifikasi
+ *     rentang") dan error yatim diganti peringatan lunak -- manusia tetap
+ *     melihatnya, tetapi soal tidak lagi ditahan seolah tanpa jalan keluar.
+ * TIDAK mutasi masukan. MURNI & TERUJI (tests/bersihkanArtefakScan.test.mjs).
+ */
+export function wariskanBacaanYatim(daftar, jendela = 6) {
+  const list = (Array.isArray(daftar) ? daftar : []).map((s) => ({ ...s }));
+  const punyaBacaan = (s) => Boolean(s?.bacaan && String(s.bacaan.teks || '').trim());
+  const yatim = (s) => {
+    const t = String(s?.teks_soal ?? '');
+    return (RE_MENUNJUK_BACAAN.test(t) || RE_BERDASARKAN_PARAGRAF.test(t))
+      && !punyaBacaan(s) && t.length < 400;
+  };
+  for (let i = 0; i < list.length; i += 1) {
+    if (!yatim(list[i])) continue;
+    let sumber = null;
+    for (let j = i - 1; j >= 0 && j >= i - jendela; j -= 1) {
+      if (punyaBacaan(list[j])) { sumber = list[j]; break; }
+    }
+    if (!sumber) continue;
+    list[i].bacaan = { ...sumber.bacaan, diwariskanDari: sumber.nomor };
+    list[i].bacaanWarisan = true;
+    list[i].catatan_admin = String(list[i].catatan_admin || '')
+      + ` Bacaan diwariskan otomatis dari soal nomor ${sumber.nomor} (wacana rentang tidak membawa penanda grup) — VERIFIKASI rentang nomornya.`;
+    list[i].errors = (list[i].errors || [])
+      .filter((e) => !e.includes('TIDAK punya bacaan sama sekali'))
+      .concat(['BACAAN WARISAN: bacaan soal ini disalin dari soal nomor '
+        + `${sumber.nomor} karena wacana rentang tidak membawa penanda grup. `
+        + 'Periksa sekali bahwa rentang nomornya benar sebelum disimpan.']);
+    list[i].valid = false; // tetap butuh mata manusia, tapi dengan jalan keluar
+  }
+  return list;
+}
+
 export default {
   bersihkanArtefakTeks,
   bersihkanAwalanOpsi,
@@ -381,5 +430,6 @@ export default {
   cariPotonganTerjebak,
   tandaiBacaanTerjebak,
   hitungKandidatBacaan,
+  wariskanBacaanYatim,
   pindahkanBacaanTerjebak,
 };

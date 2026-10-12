@@ -24,6 +24,7 @@ import {
   tandaiBacaanTerjebak,
   hitungKandidatBacaan,
   pindahkanBacaanTerjebak,
+  wariskanBacaanYatim,
   bersihkanAwalanOpsi,
 } from '../src/utils/bersihkanArtefakScan.js';
 
@@ -319,6 +320,45 @@ uji('kaki halaman distributor & watermark pemindai pihak ketiga dibuang', () => 
   assert.ok(!t.includes('scanned by'), t);
   assert.ok(!t.includes('0878'), t);
   assert.ok(t.includes('Isi asli tetap ada.'), `isi ikut terbuang: ${t}`);
+});
+
+// ============================================================
+bagian('8. WARISAN BACAAN (kasus bab 4: wacana hanya di soal pertama rentang)');
+// ============================================================
+
+const BACAAN_JATI = { teks: 'Jati yang tumbuh di Indonesia, terutama di Pulau Jawa, telah diakui kualitasnya...', gambar: [], grup: 'bacaan_2' };
+
+uji('soal yatim mewarisi bacaan dari pembawa terdekat & dibenderai', () => {
+  const daftar = [
+    { nomor: 30, teks_soal: 'Teks panjang pembawa wacana.', bacaan: BACAAN_JATI, opsi_jawaban: ['a'], errors: [], valid: true },
+    { nomor: 31, teks_soal: 'Berdasarkan paragraf 3, manakah simpulan yang BENAR?', bacaan: null, opsi_jawaban: ['a', 'b'], errors: ['Soal ini menunjuk "teks/bacaan tersebut" tapi TIDAK punya bacaan sama sekali (field bacaan kosong, teks_soal pendek) -- x'], valid: false },
+  ];
+  const hasil = wariskanBacaanYatim(daftar);
+  assert.ok(hasil[1].bacaan && hasil[1].bacaan.teks.includes('Jati yang tumbuh'), 'bacaan tidak diwariskan');
+  assert.equal(hasil[1].bacaanWarisan, true);
+  assert.equal(hasil[1].bacaan.diwariskanDari, 30);
+  assert.ok(!hasil[1].errors.some((e) => e.includes('TIDAK punya bacaan sama sekali')), 'error yatim harus diganti');
+  assert.ok(hasil[1].errors.some((e) => e.includes('BACAAN WARISAN')), 'peringatan warisan wajib ada');
+  assert.equal(hasil[1].valid, false, 'tetap butuh mata manusia');
+  assert.ok(hasil[1].catatan_admin.includes('VERIFIKASI rentang'), hasil[1].catatan_admin);
+});
+
+uji('tidak mewarisi lintas pembawa bacaan lain & di luar jendela', () => {
+  const yatimJauh = { nomor: 45, teks_soal: 'Berdasarkan bacaan tersebut, manakah yang benar?', bacaan: null, opsi_jawaban: ['a'], errors: ['x'], valid: false };
+  const jarak = Array.from({ length: 7 }, (_, k) => ({ nomor: 38 + k, teks_soal: 'Soal biasa tanpa penunjuk.', bacaan: null, opsi_jawaban: ['a'], errors: [], valid: true }));
+  const daftar = [{ nomor: 37, teks_soal: 'pembawa.', bacaan: BACAAN_JATI, opsi_jawaban: ['a'], errors: [], valid: true }, ...jarak, yatimJauh];
+  const hasil = wariskanBacaanYatim(daftar);
+  assert.equal(hasil[hasil.length - 1].bacaan, null, 'jendela 6 tidak boleh dilompati');
+});
+
+uji('soal yang punya bacaan sendiri tidak disentuh', () => {
+  const daftar = [
+    { nomor: 1, teks_soal: 'x', bacaan: BACAAN_JATI, opsi_jawaban: ['a'], errors: [], valid: true },
+    { nomor: 2, teks_soal: 'Berdasarkan paragraf 3, manakah yang BENAR?', bacaan: { teks: 'milik sendiri', grup: 'bacaan_9' }, opsi_jawaban: ['a'], errors: [], valid: true },
+  ];
+  const hasil = wariskanBacaanYatim(daftar);
+  assert.equal(hasil[1].bacaan.teks, 'milik sendiri');
+  assert.equal(hasil[1].bacaanWarisan, undefined);
 });
 
 console.log(`\n${'='.repeat(60)}`);
