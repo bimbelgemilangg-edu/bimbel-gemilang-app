@@ -27,6 +27,7 @@
 // ============================================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { labelSasaran } from '../../../utils/cocokkanTargetPaket';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -69,6 +70,7 @@ export default function ApprovalTryOutPage() {
   const [alasanTolak, setAlasanTolak] = useState('');
   const [tab, setTab] = useState('menunggu'); // menunggu | ditolak
   const [sibuk, setSibuk] = useState('');
+  const [konfirmasiSasaran, setKonfirmasiSasaran] = useState(false);
   const [pesan, setPesan] = useState('');
   const [punyaDaftar, setPunyaDaftar] = useState(false);
 
@@ -310,7 +312,18 @@ export default function ApprovalTryOutPage() {
                   <div style={st.kartu}>
                     <div style={st.judul}>Keputusan</div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 11, marginBottom: 12 }}>
+                    <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 9, padding: '10px 12px', marginBottom: 11 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#075985', marginBottom: 4 }}>🎯 Sasaran paket ini (cek ulang sebelum menyetujui)</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0c4a6e' }}>{labelSasaran(terpilih)}</div>
+                    <div style={{ fontSize: 10.5, color: '#0369a1', marginTop: 3 }}>
+                      tersimpan sebagai targetKelas={JSON.stringify(terpilih.targetKelas ?? null)} · targetKategori={JSON.stringify(terpilih.targetKategori ?? null)}
+                    </div>
+                    <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 8, fontSize: 11.5, color: '#0c4a6e', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={konfirmasiSasaran} onChange={(e) => setKonfirmasiSasaran(e.target.checked)} style={{ marginTop: 2 }} />
+                      <span>Saya sudah memeriksa sasaran kelas & program di atas dan menyatakan SESUAI dengan tujuan penerbitan paket ini.</span>
+                    </label>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 11, marginBottom: 12 }}>
                       <div>
                         <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>JADWAL BUKA (kosongkan = langsung bisa dikerjakan)</label>
                         <input style={st.input} type="datetime-local" value={jadwalBuka} onChange={(e) => setJadwalBuka(e.target.value)} />
@@ -331,7 +344,7 @@ export default function ApprovalTryOutPage() {
                     )}
 
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                      <button style={st.tombol('#16a34a', !(putusanSetuju?.boleh) || sibuk === 'setuju')} onClick={() => eksekusi('setuju')} disabled={!(putusanSetuju?.boleh) || !!sibuk}>
+                      <button style={st.tombol('#16a34a', !(putusanSetuju?.boleh) || sibuk === 'setuju')} onClick={() => eksekusi('setuju')} disabled={!(putusanSetuju?.boleh) || !!sibuk || !konfirmasiSasaran}>
                         {sibuk === 'setujui' ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />} Terbitkan
                       </button>
 
