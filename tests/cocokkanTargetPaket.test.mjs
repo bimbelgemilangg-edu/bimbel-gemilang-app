@@ -155,3 +155,23 @@ uji('INVARIAN: bentuk kanonik selalu cocok untuk target yang sama', () => {
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
+
+// ---- 2026-10-12: pencocokan kelas toleran (insiden paket tak terlihat) ----
+import { cocokkanTargetPaket as cocok2, hitungSiswaCocok } from '../src/utils/cocokkanTargetPaket.js';
+uji('target "9 SMP" cocok dengan siswa kelas "9"', () => {
+  assert.equal(cocok2({ targetKelas: '9 SMP' }, { kelasSekolah: '9' }).cocok, true);
+});
+uji('target "SMP 9" & "kelas 9" juga cocok; beda kelas tetap tolak', () => {
+  assert.equal(cocok2({ targetKelas: 'SMP 9' }, { kelasSekolah: '9' }).cocok, true);
+  assert.equal(cocok2({ targetKelas: 'kelas 9' }, { kelasSekolah: '9' }).cocok, true);
+  assert.equal(cocok2({ targetKelas: '10 SMA' }, { kelasSekolah: '9' }).cocok, false);
+});
+uji('jenjang saja: "SMP" cocok semua siswa SMP, tolak SMA', () => {
+  assert.equal(cocok2({ targetKelas: 'SMP' }, { kelasSekolah: '8' }).cocok, true);
+  assert.equal(cocok2({ targetKelas: 'SMP' }, { kelasSekolah: '10' }).cocok, false);
+});
+uji('hitungSiswaCocok mendeteksi paket tak terlihat oleh siapa pun', () => {
+  const siswa = [{ kelasSekolah: '9' }, { kelasSekolah: '9' }, { kelasSekolah: '7' }];
+  assert.equal(hitungSiswaCocok({ targetKelas: '12' }, siswa), 0);
+  assert.equal(hitungSiswaCocok({ targetKelas: '9' }, siswa), 2);
+});
