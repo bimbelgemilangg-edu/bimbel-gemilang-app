@@ -27,6 +27,7 @@ import { db } from '../../../firebase';
 import { kodePaketTampil, cocokPencarianPaket } from '../../../utils/kodePaket';
 import { hitungSiswaCocok } from '../../../utils/cocokkanTargetPaket';
 import { putusanEditPaket } from '../../../utils/aturanEditPaket';
+import { sumberPaket } from '../../../utils/sumberPaket';
 import { siapkanDrafDariTemplate, COL_TEMPLATE } from '../../../utils/mesinTryOutOtomatis';
 import DialogCetakNaskah from '../../../components/DialogCetakNaskah';
 
@@ -158,7 +159,7 @@ export default function RiwayatPaketPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 860 }}>
             <thead>
               <tr style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
-                {['Kode paket', 'Judul', 'Jenjang', 'Status', 'Dibuka', 'Soal', 'Peserta', 'Jangkauan', 'Aksi'].map((h) => (
+                {['Kode paket', 'Judul', 'Sumber', 'Jenjang', 'Status', 'Dibuka', 'Soal', 'Peserta', 'Jangkauan', 'Aksi'].map((h) => (
                   <th key={h} style={{ padding: '8px 10px', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
@@ -168,6 +169,9 @@ export default function RiwayatPaketPage() {
                 <tr key={p.id}>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 800, whiteSpace: 'nowrap', fontFamily: 'ui-monospace, monospace', fontSize: 11 }}>{kodePaketTampil(p)}</td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>{p.judul}</td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', fontSize: 11, color: sumberPaket(p).label.includes('Mesin') ? '#b45309' : '#64748b', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                    {sumberPaket(p).ikon} {sumberPaket(p).label}
+                  </td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>{p.jenjangTemplate || p.jenjang || '—'}</td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>
                     <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: 10.5, fontWeight: 800, background: p.status === 'aktif' ? '#f0fdf4' : p.status === 'draf' ? '#fffbeb' : '#f1f5f9', color: p.status === 'aktif' ? '#166534' : p.status === 'draf' ? '#92400e' : '#334155', border: '1px solid #e2e8f0' }}>{p.status}</span>
@@ -193,7 +197,7 @@ export default function RiwayatPaketPage() {
                 </tr>
               ))}
               {tampil.length === 0 && (
-                <tr><td colSpan={9} style={{ padding: 22, textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>Tidak ada paket yang cocok dengan pencarian.</td></tr>
+                <tr><td colSpan={10} style={{ padding: 22, textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>Tidak ada paket yang cocok dengan pencarian.</td></tr>
               )}
             </tbody>
           </table>
