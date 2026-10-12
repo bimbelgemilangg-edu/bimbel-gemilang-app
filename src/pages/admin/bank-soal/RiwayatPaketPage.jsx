@@ -25,6 +25,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { collection, getDocs, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { kodePaketTampil, cocokPencarianPaket } from '../../../utils/kodePaket';
+import { hitungSiswaCocok } from '../../../utils/cocokkanTargetPaket';
 import { putusanEditPaket } from '../../../utils/aturanEditPaket';
 import { siapkanDrafDariTemplate, COL_TEMPLATE } from '../../../utils/mesinTryOutOtomatis';
 import DialogCetakNaskah from '../../../components/DialogCetakNaskah';
@@ -38,6 +39,7 @@ const fmt = (t) => (t ? new Date(t).toLocaleString('id-ID', { day: '2-digit', mo
 
 export default function RiwayatPaketPage() {
   const [paket, setPaket] = useState([]);
+  const [siswaList, setSiswaList] = useState([]);
   const [jumlahSesi, setJumlahSesi] = useState({});
   const [kueri, setKueri] = useState('');
   const [statusMuat, setStatusMuat] = useState('');
@@ -54,6 +56,8 @@ export default function RiwayatPaketPage() {
       const snapP = await getDocs(collection(db, 'tryout_paket'));
       const daftar = snapP.docs.map((d) => ({ id: d.id, ...d.data() }));
       daftar.sort((a, b) => String(b.kodePaket || b.createdAt?.seconds || 0).localeCompare(String(a.kodePaket || a.createdAt?.seconds || 0)));
+      const snapSis = await getDocs(collection(db, 'students'));
+      setSiswaList(snapSis.docs.map((d) => ({ id: d.id, ...d.data() })));
       const snapS = await getDocs(collection(db, 'tryout_sesi'));
       const hitung = {};
       snapS.forEach((d) => { const pid = d.data().paketId; hitung[pid] = (hitung[pid] || 0) + 1; });
@@ -154,7 +158,7 @@ export default function RiwayatPaketPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 860 }}>
             <thead>
               <tr style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
-                {['Kode paket', 'Judul', 'Jenjang', 'Status', 'Dibuka', 'Soal', 'Peserta', 'Aksi'].map((h) => (
+                {['Kode paket', 'Judul', 'Jenjang', 'Status', 'Dibuka', 'Soal', 'Peserta', 'Jangkauan', 'Aksi'].map((h) => (
                   <th key={h} style={{ padding: '8px 10px', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
@@ -171,6 +175,16 @@ export default function RiwayatPaketPage() {
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>{fmt(p.waktuBuka)}</td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>{p.totalSoal}</td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>{jumlahSesi[p.id] || 0}</td>
+                  {/* 🔥 BARU (2026-10-12): penolakan target TIDAK BOLEH senyap
+                      lagi -- paket aktif yang tidak cocok ke siswa mana pun
+                      berbendera merah beserta jumlah jangkauannya. */}
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>
+                    {p.status === 'aktif' && siswaList.length > 0 && hitungSiswaCocok(p, siswaList) === 0 ? (
+                      <span style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 999, padding: '2px 8px', fontSize: 10, fontWeight: 800 }}>⚠️ 0 siswa cocok — periksa target</span>
+                    ) : p.status === 'aktif' ? (
+                      <span style={{ color: '#166534', fontSize: 11, fontWeight: 700 }}>{hitungSiswaCocok(p, siswaList)} siswa</span>
+                    ) : '—'}
+                  </td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
                     <button onClick={() => setCetak(p)} style={{ ...gayaTombol('#0e7490', false), marginRight: 6 }}>🖨️ PDF</button>
                     <button onClick={() => bukaEdit(p)} style={{ ...gayaTombol('#334155', false), marginRight: 6 }}>✏️ Edit</button>
@@ -179,7 +193,7 @@ export default function RiwayatPaketPage() {
                 </tr>
               ))}
               {tampil.length === 0 && (
-                <tr><td colSpan={8} style={{ padding: 22, textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>Tidak ada paket yang cocok dengan pencarian.</td></tr>
+                <tr><td colSpan={9} style={{ padding: 22, textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>Tidak ada paket yang cocok dengan pencarian.</td></tr>
               )}
             </tbody>
           </table>
