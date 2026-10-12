@@ -72,7 +72,13 @@ export default function DasborKesiapanStokPage() {
   return (
     <div style={{ display: 'flex', background: '#f8fafc', minHeight: '100vh' }}>
       <SidebarAdmin />
-      <main style={{ marginLeft: isMobile ? '0' : '250px', padding: isMobile ? '15px' : '28px', width: '100%', boxSizing: 'border-box' }}>
+      <main style={{ marginLeft: isMobile ? '0' : '250px', padding: isMobile ? '15px' : '28px', boxSizing: 'border-box', minWidth: 0, maxWidth: '100%' }}>
+        {/* 🔥 FIX (2026-10-12, "ada bagian tertutup"): dulu main memakai
+            width:'100%' BERSELISIH dengan marginLeft 250px, sehingga lebar
+            total = viewport + 250px dan kolom kanan tabel (Target/Kurang)
+            jatuh di luar layar tanpa tepi kartu yang menahan scroll. Blok
+            tanpa width mengisi sisa ruang dengan benar; tabel kini scroll
+            DI DALAM kartunya. */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 18 }}>📦 Kesiapan Stok Lemari Soal</h2>
@@ -125,7 +131,7 @@ export default function DasborKesiapanStokPage() {
         </div>
 
         <div style={{ ...gayaKartu, padding: 0, overflow: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <table style={{ width: '100%', minWidth: 1080, borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                 {['Status', 'Jenjang', 'Mapel', 'Jenis ujian', 'Aktif', 'Berkunci', 'Tercetak', 'Penalaran', 'Tanpa bahas', 'Gambar tertunda', 'Rasio tercetak', 'Target', 'Kurang'].map((h) => (
