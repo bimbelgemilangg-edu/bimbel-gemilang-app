@@ -88,8 +88,48 @@ export function cocokkanTarget(nilaiTarget, nilaiSiswa) {
  *   mengikuti bentuk auditKecocokanSoal() di aksesKontenSiswa.js supaya
  *   halaman bisa menjelaskan KENAPA, bukan cuma true/false polos.
  */
+// 🔥 BARU (2026-10-12, insiden "try out tentor tidak muncul di siswa"):
+// pencocokan kelas dulu membandingkan STRING PERSIS, sehingga target
+// "9 SMP" / "SMP 9" / "kelas 9" tidak pernah sama dengan "9" milik siswa --
+// paket TERBIT tetapi tak cocok ke siapa pun, dan penolakannya SENYAP.
+// Kini kelas dibandingkan secara toleran: angka kelas + jenjang bila disebut.
+function angkaKelas(v) {
+  const m = /(\d{1,2})/.exec(String(v ?? ''));
+  return m ? Number(m[1]) : null;
+}
+function jenjangKelas(v) {
+  const t = norm(v);
+  if (/(\b|[^a-z])smk([^a-z]|$)/.test(t)) return 'smk';
+  if (t.includes('smp') || t.includes('mts')) return 'smp';
+  if (t.includes('sma') || /(^|[^a-z])ma([^a-z]|$)/.test(t)) return 'sma';
+  if (t.includes(' sd') || t.startsWith('sd') || t.includes('mi')) return 'sd';
+  return null;
+}
+function cocokKelasToleran(nilaiTarget, siswa) {
+  if (targetUntukSemua(nilaiTarget)) return true;
+  const kelasSiswa = angkaKelas(siswa?.kelasSekolah);
+  // jenjang dibaca dari teks; bila siswa hanya menyimpan angka kelas,
+  // jenjang disimpulkan dari rentang umum (1-6 SD, 7-9 SMP, 10-12 SMA/SMK).
+  const jenjangDariAngka = (n) => (n == null ? null : n <= 6 ? 'sd' : n <= 9 ? 'smp' : 'sma');
+  const jenjangSiswa = jenjangKelas(siswa?.kelasSekolah) || jenjangKelas(siswa?.jenjang) || jenjangDariAngka(kelasSiswa);
+  if (kelasSiswa == null && !jenjangSiswa) return false;
+  return daftarTarget(nilaiTarget).some((t) => {
+    if (t === norm(siswa?.kelasSekolah)) return true;
+    const a = angkaKelas(t);
+    const j = jenjangKelas(t);
+    const angkaCocok = a == null || a === kelasSiswa;
+    const jenjangCocok = j == null || j === jenjangSiswa || (jenjangSiswa === 'sma' && j === 'smk') || (jenjangSiswa === 'smk' && j === 'sma');
+    return (a != null && angkaCocok && jenjangCocok) || (a == null && j != null && jenjangCocok);
+  });
+}
+
+/** Berapa banyak siswa yang cocok dengan paket ini (0 = paket tak terlihat oleh siapa pun). */
+export function hitungSiswaCocok(paket, daftarSiswa = []) {
+  return (Array.isArray(daftarSiswa) ? daftarSiswa : []).filter((s) => cocokkanTargetPaket(paket, s).cocok).length;
+}
+
 export function cocokkanTargetPaket(paket, siswa) {
-  if (!cocokkanTarget(paket?.targetKelas, siswa?.kelasSekolah)) {
+  if (!cocokKelasToleran(paket?.targetKelas, siswa)) {
     return {
       cocok: false,
       alasan: `Target kelas paket ("${paket?.targetKelas ?? '(kosong)'}") tidak mencakup kelas siswa ("${siswa?.kelasSekolah || '(kosong)'}")`,
@@ -125,7 +165,7 @@ export function bentukKanonikTarget(nilai) {
   return Array.isArray(nilai) ? nilai.map((x) => String(x).trim()).filter(Boolean) : d;
 }
 
-export default {
+export default { hitungSiswaCocok,
   daftarTarget,
   targetUntukSemua,
   cocokkanTarget,
