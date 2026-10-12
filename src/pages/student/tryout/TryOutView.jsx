@@ -1066,7 +1066,7 @@ export default function TryOutView() {
                   TERBUKA + pembanding jawabanmu-vs-kunci (inilah letak
                   evaluasi); soal benar tetap terlipat supaya halaman tidak
                   jadi gulungan panjang yang dilewati siswa. */}
-              {s.pembahasan && skor <= 0 && (
+              {s.pembahasan && skor <= 0 && paket.tampilkanPembahasan !== false && (
                 <div style={{ marginTop: 10 }}>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
                     <span style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
@@ -1082,7 +1082,17 @@ export default function TryOutView() {
                   </div>
                 </div>
               )}
-              {s.pembahasan && skor > 0 && (
+              {/* 🔥 S3 (KEPUTUSAN FINAL 2026-10-12): try out formal TIDAK
+                  membuka pembahasan di layar siswa. Siswa membawa KODE PAKET
+                  ke tentor; pembahasan hidup di naskah kunci berlogo. */}
+              {s.pembahasan && skor <= 0 && paket.tampilkanPembahasan === false && (
+                <div style={{ marginTop: 10, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '9px 12px', fontSize: 11.5, color: '#075985', lineHeight: 1.6 }}>
+                  💡 Pembahasan try out tidak dibuka di aplikasi. Catat nomor soal ini dan
+                  sebutkan kode paket <b>{kodePaketTampil(paket)}</b> ke tentormu untuk
+                  membahasnya bersama.
+                </div>
+              )}
+              {s.pembahasan && skor > 0 && paket.tampilkanPembahasan !== false && (
                 <details style={{ marginTop: 10 }}>
                   <summary style={{ fontSize: 12.5, fontWeight: 800, color: '#3949AB', cursor: 'pointer' }}>
                     Lihat pembahasan ▾

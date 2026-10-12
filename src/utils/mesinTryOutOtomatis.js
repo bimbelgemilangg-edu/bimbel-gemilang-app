@@ -338,6 +338,29 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   }
 
   const kekurangan = susunan.kekurangan || [];
+
+  // 🔥 S2 (KEPUTUSAN FINAL 2026-10-12): PAGAR IDENTITAS & GERBANG STOK.
+  // (1) Template jenjang sekolah (SD/SMP/SMA/SMK) WAJIB punya targetKelas
+  //     spesifik: paket ber-target "Semua" adalah paket yang tadi malam
+  //     terlihat oleh semua jenjang atau tidak terlihat sama sekali.
+  // (2) Draf DIBLOKIR bila ada mapel kekurangan butir terhadap komposisi:
+  //     mesin berhenti "menerbit apa adanya". Pelintas sadar:
+  //     rules.izinkanKurang=true / rules.izinkanSemua=true.
+  const jenjangSekolah = /\b(SD|SMP|SMA|SMK)\b/i.test(String(template.jenjang || ''));
+  const targetKanonik = bentukKanonikTarget(template.targetKelas);
+  if (jenjangSekolah && targetKanonik === 'Semua' && r.izinkanSemua !== true) {
+    return {
+      ok: false,
+      error: 'PAGAR IDENTITAS: template jenjang sekolah wajib punya targetKelas spesifik (bukan "Semua"). Paket tanpa sasaran = paket yang salah sasaran atau tak terlihat. Isi targetKelas template, atau rules.izinkanSemua=true bila sungguh sadar.',
+    };
+  }
+  if (kekurangan.length && r.izinkanKurang !== true) {
+    return {
+      ok: false,
+      kekurangan,
+      error: `GERBANG STOK: mapel kekurangan butir untuk komposisi paket ini: ${kekurangan.map((k) => `${k.mapel} (${k.dapat}/${k.butuh})`).join(', ')}. Render stok dulu (Dasbor Kesiapan Stok menunjukkan urutannya), atau rules.izinkanKurang=true bila sungguh sadar.`,
+    };
+  }
   if (!daftarSoal.length) {
     const rinci = (template.komposisi || [])
       .map((b) => b.mapel)

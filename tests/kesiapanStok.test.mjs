@@ -112,14 +112,14 @@ uji('ringkasan menjumlah lintas grup & mengurutkan termiskin dulu', () => {
   // target bawaan kini berbeda per grup (UTBK 150 vs TKA pilihan 120),
   // jadi urutan termiskin dulu = kelompok UTBK.
   assert.equal(baris[0].jenjang, 'UTBK/SNBT');
-  assert.equal(baris[0].kekurangan, 149);
-  assert.equal(baris[1].kekurangan, 119);
+  assert.equal(baris[0].kekurangan, 239); // 240 - 1 (target final owner)
+  assert.equal(baris[1].kekurangan, 79);  // 80 - 1
 });
 
 uji('target bawaan mengikuti usulan taksonomi (UTBK/TKA wajib/TKA pilihan/reguler)', () => {
-  assert.equal(targetBawaan({ jenjang: 'UTBK/SNBT', mapel: 'TPS/Penalaran Umum' }).min, 150);
-  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Matematika', jenisUjian: 'TKA' }).min, 200);
-  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Fisika', jenisUjian: 'TKA' }).min, 120);
+  assert.equal(targetBawaan({ jenjang: 'UTBK/SNBT', mapel: 'TPS/Penalaran Umum' }).min, 240);
+  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Matematika', jenisUjian: 'TKA' }).min, 240);
+  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Fisika', jenisUjian: 'TKA' }).min, 80);
   assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Matematika', jenisUjian: 'Reguler' }).min, 60);
 });
 
@@ -134,3 +134,9 @@ if (gagal > 0) {
   process.exit(1);
 }
 console.log('\n✅ Semua test lulus.');
+
+uji('target final owner: UTBK & TKA wajib 240, pilihan 80', () => {
+  assert.equal(targetBawaan({ jenjang: 'UTBK/SNBT', mapel: 'TPS/Penalaran Umum' }).min, 240);
+  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Matematika', jenisUjian: 'TKA' }).min, 240);
+  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Geografi', jenisUjian: 'TKA' }).min, 80);
+});

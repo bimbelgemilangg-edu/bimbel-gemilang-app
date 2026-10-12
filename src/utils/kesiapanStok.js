@@ -85,11 +85,12 @@ export function targetBawaan(baris = {}) {
   const jenjang = String(baris.jenjang || '');
   const mapel = String(baris.mapel || '');
   const ujian = String(baris.jenisUjian || '');
-  if (jenjang.includes('UTBK')) return { min: 150, rasioTerCetak: 0.6 };
+  // 🔥 2026-10-12 KEPUTUSAN FINAL owner: 20 butir/mapel/pekan x 12 pekan.
+  if (jenjang.includes('UTBK')) return { min: 240, rasioTerCetak: 0.6 };
   if (ujian === 'TKA') {
     return MAPEL_TKA_WAJIB_SMA.includes(mapel)
-      ? { min: 200, rasioTerCetak: 0.6 }
-      : { min: 120, rasioTerCetak: 0.6 };
+      ? { min: 240, rasioTerCetak: 0.6 }
+      : { min: 80, rasioTerCetak: 0.6 };
   }
   if (ujian === 'Reguler') return { min: 60, rasioTerCetak: 0.5 };
   return TARGET_STOK_DEFAULT;
@@ -157,4 +158,25 @@ export function hitungKesiapanStok(butir = [], target = {}) {
   return { baris, ringkasan };
 }
 
-export default { hitungKesiapanStok, kunciGrup, TARGET_STOK_DEFAULT, STATUS_STOK, targetBawaan, MAPEL_TKA_WAJIB_SMA };
+/**
+ * GERBANG STOK TEMPLATE (keputusan final 2026-10-12): draf try out otomatis
+ * DIBLOKIR bila ada mapel yang stok aktifnya tidak cukup untuk sisa musim
+ * (butir per paket x sisa pekan). Mesin berhenti menjadi "menerbit apa
+ * adanya" dan menjadi "menerbit bila bahan cukup".
+ * @param {object} args { komposisi: [{mapel, jumlah}], stokAktifPerMapel: {mapel: n}, sisaPekan }
+ * @returns {{lolos:boolean, kekurangan:Array<{mapel, butuh, punya}>}}
+ */
+export function gerbangStokTemplate({ komposisi = [], stokAktifPerMapel = {}, sisaPekan = 12 } = {}) {
+  const kekurangan = [];
+  for (const k of Array.isArray(komposisi) ? komposisi : []) {
+    const mapel = String(k?.mapel || k?.nama || '');
+    if (!mapel) continue;
+    const perPaket = Number(k.jumlah || k.durasiMenit ? k.jumlah : 0) || 0;
+    const butuh = perPaket * Math.max(1, Number(sisaPekan) || 1);
+    const punya = Number(stokAktifPerMapel[mapel] || 0);
+    if (punya < butuh) kekurangan.push({ mapel, butuh, punya });
+  }
+  return { lolos: kekurangan.length === 0, kekurangan };
+}
+
+export default { hitungKesiapanStok, kunciGrup, TARGET_STOK_DEFAULT, STATUS_STOK, targetBawaan, MAPEL_TKA_WAJIB_SMA, gerbangStokTemplate };
