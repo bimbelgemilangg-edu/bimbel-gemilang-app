@@ -645,7 +645,7 @@ const StudentList = () => {
                               style={{...styles.btnAction, background: '#fee2e2', color: '#991b1b'}}
                               title="Revisi pembayaran (koreksi berjejak audit)"
                             >
-                              <Edit size={14} />
+                              <Edit3 size={14} />
                             </button>
                             <button 
                               onClick={() => navigate(`/admin/students/edit/${s.id}`)} 
