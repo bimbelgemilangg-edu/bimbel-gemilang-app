@@ -26,6 +26,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
 import { useNavigate } from 'react-router-dom';
+import { sumberPaket } from '../../../utils/sumberPaket';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { notifyStudents } from '../../../utils/notifications';
@@ -142,6 +143,8 @@ function RendererSoalPreview({ soal }) {
   if (tipe === 'esai' || tipe === 'uraian') return <RendererEsai soal={soal} disabled modeTinjau />;
   return <RendererPgSederhana soal={soal} disabled modeTinjau />;
 }
+
+const sumberInfo = (p) => sumberPaket(p);
 
 export default function TerbitkanTryOutPage() {
   const navigate = useNavigate();
@@ -636,7 +639,20 @@ export default function TerbitkanTryOutPage() {
     const aksi = paket.status === 'aktif' ? 'nonaktifkan' : 'aktifkan';
     if (!window.confirm(`${aksi === 'nonaktifkan' ? 'Nonaktifkan' : 'Aktifkan lagi'} try out "${paket.judul}"?`)) return;
     try {
-      await updateDoc(doc(db, 'tryout_paket', paket.id), { status: aksi === 'nonaktifkan' ? 'nonaktif' : 'aktif' });
+      // 🔥 BARU (2026-10-12): aktivasi/nonaktivasi WAJIB berjejak. Kasus
+      // nyata: paket mesin 3 soal berstatus aktif dengan riwayatStatus
+      // kosong -- tidak ada yang tahu siapa menerbitkannya. Jejak ini yang
+      // dibaca sumberPaket() untuk menampilkan "diaktifkan oleh siapa".
+      await updateDoc(doc(db, 'tryout_paket', paket.id), {
+        status: aksi === 'nonaktifkan' ? 'nonaktif' : 'aktif',
+        diaktifkanOleh: 'admin',
+        diaktifkanPada: new Date().toISOString(),
+        riwayatStatus: [...(paket.riwayatStatus || []), {
+          status: aksi === 'nonaktifkan' ? 'nonaktif' : 'aktif',
+          oleh: 'admin', peran: 'admin', pada: new Date().toISOString(),
+          catatan: aksi === 'nonaktifkan' ? 'Dinonaktifkan admin' : 'Diaktifkan admin',
+        }],
+      });
       muatDaftarTerbit();
     } catch (e) {
       console.error('Gagal ubah status try out:', e);
@@ -1048,6 +1064,12 @@ export default function TerbitkanTryOutPage() {
                 <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: '#f9fafb' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{p.judul}</div>
+                    {/* 🔥 BARU (2026-10-12): provenans wajib terlihat di tiap
+                        baris daftar -- permintaan owner setelah paket mesin
+                        tanpa identitas sempat terbit. */}
+                    <div style={{ fontSize: 10.5, color: sumberInfo(p).label.includes('Mesin') ? '#b45309' : '#64748b', marginTop: 2, fontWeight: 700 }}>
+                      {sumberInfo(p).ikon} {sumberInfo(p).label}{sumberInfo(p).detail ? ` · ${sumberInfo(p).detail}` : ''}
+                    </div>
                     <div style={{ fontSize: 11, color: '#9ca3af' }}>
                       {p.totalSoal} soal · {p.targetKelas} · {p.targetKategori} · {p.modeTimer === 'total' ? `${p.durasiTotalMenit} menit` : `${p.subtes?.length || 0} subtes`}
                     </div>
