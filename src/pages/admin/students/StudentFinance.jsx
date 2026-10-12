@@ -290,6 +290,17 @@ const StudentFinance = () => {
     setShowKoreksiModal(true);
   };
 
+  // 🔥 BARU (2026-10-12): pintu masuk revisi dari DAFTAR SISWA.
+  // ?koreksi=1 membuka panel koreksi begitu data siswa termuat, sehingga
+  // admin tidak perlu berburu tombol di dalam halaman keuangan.
+  useEffect(() => {
+    if (!student) return;
+    if (new URLSearchParams(window.location.search).get('koreksi') !== '1') return;
+    if (koreksiData) return;
+    openKoreksiModal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [student]);
+
   // 🔥 BARU: simpan koreksi -- MENIMPA LANGSUNG field-field paket siswa ke
   // nilai yang admin masukkan, TANPA menyentuh riwayat transaksi
   // (finance_logs) sama sekali. Ini SENGAJA beda dari "hapus transaksi di
@@ -1292,7 +1303,11 @@ const styles = {
   btnKwitansiKecil: { display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, padding: '3px 8px', background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: 6, cursor: 'pointer', fontWeight: 800, fontSize: 9 },
   
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 },
-  modalContent: (m) => ({ background: 'white', borderRadius: 16, padding: 24, width: m ? '95%' : '420px', maxWidth: '500px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }),
+  // 🔥 FIX (2026-10-12, keluhan owner: "gabisa diskrol, tulisannya
+  // ketutupan"): modal ini TIDAK punya batas tinggi & scroll, sehingga di
+  // layar pendek form perpanjang + panel koreksi terpotong dan TAK BISA
+  // digulir -- bagian revisi pembayaran sama sekali tidak terjangkau.
+  modalContent: (m) => ({ background: 'white', borderRadius: 16, padding: 24, width: m ? '95%' : '420px', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease' }),
   modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 12, borderBottom: '1px solid #f1f5f9' },
   modalTitle: { margin: 0, fontSize: 16, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 },
   modalClose: { background: '#f1f5f9', border: 'none', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' },
