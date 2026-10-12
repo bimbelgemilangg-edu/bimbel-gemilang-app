@@ -313,6 +313,14 @@ export function ringkasSoalUntukAdmin(daftarSoal) {
 export async function siapkanDrafDariTemplate(template, slot, rules) {
   const r = rules || {};
     const exclude = await idSoalBaruDipakai(template.jenjang, 10);
+  // 🔥 BARU (2026-10-12, paket SUSULAN): pemanggil boleh menyuntik id yang
+  // wajib dilewati -- dipakai alur siswa telat: paket susulan memakai
+  // template yang sama tetapi TIDAK boleh memuat butir paket asli yang
+  // masih hidup (kebijakan anti-bocor REKAM-PAKET-&-DESAIN-MOTIVASI.md).
+  for (const idTambahan of (r.excludeIds || [])) {
+    if (exclude && typeof exclude.add === 'function') exclude.add(idTambahan);
+    else if (Array.isArray(exclude)) exclude.push(idTambahan);
+  }
   const susunan = await susunSoalDariKomposisi(template, exclude);
   let daftarSoal = susunan.daftarSoal || [];
   const grupMapel = susunan.grupMapel || [];
@@ -422,6 +430,9 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     // tapi membuat admin bisa tahu bahwa "30 soal diminta, 22 didapat".
     // TODO: tampilkan di log hasil JadwalTryOutOtomatisPage.
     kekurangan,
+    // 🔥 BARU: kode ledger dikembalikan supaya pemanggil (halaman Riwayat
+    // Paket / alur susulan) bisa langsung menyebut paket barunya.
+    kodePaket: payload.kodePaket,
     ringkas: payload.ringkas,
     slot,
     status: 'draf',

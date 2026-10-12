@@ -190,6 +190,7 @@ const SidebarAdmin = () => {
     // supaya salah pintu jadi kelihatan, bukan jadi misteri.
     { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={20} /> },
     { name: 'Kesiapan Stok', path: '/admin/bank-soal/stok', icon: <Archive size={18} /> },
+    { name: 'Riwayat Paket', path: '/admin/bank-soal/riwayat-paket', icon: <History size={18} /> },
     { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },
         { name: 'Dashboard Analisis', path: '/admin/analisis', icon: <BarChart3 size={18} /> },
         { name: 'Jadwal Harian',path: '/admin/schedule',   icon: <Calendar size={18} /> },
