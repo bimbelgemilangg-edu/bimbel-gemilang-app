@@ -115,6 +115,7 @@ import ImporModul from './pages/admin/buku/ImporModul';
 // 🔥 BANK SOAL
 // ============================================================
 import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
+import DasborKesiapanStokPage from './pages/admin/bank-soal/DasborKesiapanStokPage';
 import MesinBankSoalPage from './pages/admin/bank-soal/MesinBankSoalPage';
 import JadwalTryOutOtomatisPage from './pages/admin/bank-soal/JadwalTryOutOtomatisPage';
 import DashboardAnalisis from './pages/admin/DashboardAnalisis';
@@ -705,6 +706,10 @@ function App() {
         <Route
           path="/admin/bank-soal/import"
           element={<AdminRoute><ImportHasilScanPage /></AdminRoute>}
+        />
+        <Route
+          path="/admin/bank-soal/stok"
+          element={<AdminRoute><DasborKesiapanStokPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/terbitkan"

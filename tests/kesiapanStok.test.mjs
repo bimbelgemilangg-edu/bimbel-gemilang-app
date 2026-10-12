@@ -15,7 +15,7 @@
 // ============================================================
 
 import assert from 'node:assert/strict';
-import { hitungKesiapanStok, kunciGrup, STATUS_STOK } from '../src/utils/kesiapanStok.js';
+import { hitungKesiapanStok, kunciGrup, STATUS_STOK, targetBawaan } from '../src/utils/kesiapanStok.js';
 
 let lulus = 0;
 let gagal = 0;
@@ -109,7 +109,18 @@ uji('ringkasan menjumlah lintas grup & mengurutkan termiskin dulu', () => {
   ]);
   assert.equal(ringkasan.jumlahGrup, 2);
   assert.equal(ringkasan.totalAktif, 2);
-  assert.equal(baris[0].kekurangan, baris[1].kekurangan, 'target default sama -> kekurangan sama');
+  // target bawaan kini berbeda per grup (UTBK 150 vs TKA pilihan 120),
+  // jadi urutan termiskin dulu = kelompok UTBK.
+  assert.equal(baris[0].jenjang, 'UTBK/SNBT');
+  assert.equal(baris[0].kekurangan, 149);
+  assert.equal(baris[1].kekurangan, 119);
+});
+
+uji('target bawaan mengikuti usulan taksonomi (UTBK/TKA wajib/TKA pilihan/reguler)', () => {
+  assert.equal(targetBawaan({ jenjang: 'UTBK/SNBT', mapel: 'TPS/Penalaran Umum' }).min, 150);
+  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Matematika', jenisUjian: 'TKA' }).min, 200);
+  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Fisika', jenisUjian: 'TKA' }).min, 120);
+  assert.equal(targetBawaan({ jenjang: 'SMA/MA', mapel: 'Matematika', jenisUjian: 'Reguler' }).min, 60);
 });
 
 console.log(`\n${'='.repeat(60)}`);

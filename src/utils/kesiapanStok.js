@@ -70,6 +70,31 @@ function adaPembahasan(b) {
  *        peta kunciGrup -> target; kunci 'default' dipakai bila grup tak terdaftar
  * @returns {{baris:Array<object>, ringkasan:object}}
  */
+// Mapel wajib TKA SMA (3 wajib vs pilihan) -- keterangan owner 2026-10-11.
+// Daftar pilihan & daftar TKA SMP/SD MENUNGGU pengesahan owner; sampai saat
+// itu pilihan diperlakukan seragam 120 butir.
+export const MAPEL_TKA_WAJIB_SMA = ['Matematika', 'Bahasa Indonesia', 'Bahasa Inggris'];
+
+/**
+ * Target bawaan per grup bila owner belum mengesahkan angka spesifik.
+ * Angka = usulan di TAKSONOMI-&-TARGET-STOK.md (belum mengikat).
+ * @param {object} baris { jenjang, mapel, jenisUjian }
+ * @returns {{min:number, rasioTerCetak:number}}
+ */
+export function targetBawaan(baris = {}) {
+  const jenjang = String(baris.jenjang || '');
+  const mapel = String(baris.mapel || '');
+  const ujian = String(baris.jenisUjian || '');
+  if (jenjang.includes('UTBK')) return { min: 150, rasioTerCetak: 0.6 };
+  if (ujian === 'TKA') {
+    return MAPEL_TKA_WAJIB_SMA.includes(mapel)
+      ? { min: 200, rasioTerCetak: 0.6 }
+      : { min: 120, rasioTerCetak: 0.6 };
+  }
+  if (ujian === 'Reguler') return { min: 60, rasioTerCetak: 0.5 };
+  return TARGET_STOK_DEFAULT;
+}
+
 export function hitungKesiapanStok(butir = [], target = {}) {
   const peta = new Map();
   for (const b of Array.isArray(butir) ? butir : []) {
@@ -95,9 +120,8 @@ export function hitungKesiapanStok(butir = [], target = {}) {
     if ((b?.potonganTertunda || []).length > 0) g.gambarTertunda += 1;
   }
 
-  const defaultTarget = target.default || TARGET_STOK_DEFAULT;
   const baris = [...peta.values()].map((g) => {
-    const t = target[g.kunci] || defaultTarget;
+    const t = target[g.kunci] || target.default || targetBawaan(g);
     const rasio = g.aktif ? g.tercetak / g.aktif : 0;
     let status;
     if (g.aktif === 0) status = STATUS_STOK.KOSONG;
@@ -133,4 +157,4 @@ export function hitungKesiapanStok(butir = [], target = {}) {
   return { baris, ringkasan };
 }
 
-export default { hitungKesiapanStok, kunciGrup, TARGET_STOK_DEFAULT, STATUS_STOK };
+export default { hitungKesiapanStok, kunciGrup, TARGET_STOK_DEFAULT, STATUS_STOK, targetBawaan, MAPEL_TKA_WAJIB_SMA };
