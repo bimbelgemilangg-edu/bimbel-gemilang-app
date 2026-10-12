@@ -39,6 +39,7 @@ import { useSegarSaatTerlihat } from '../../../utils/useSegarSaatTerlihat';
 // Lihat kepala utils/cocokkanTargetPaket.js dan
 // tests/cocokkanTargetPaket.test.mjs.
 import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
+import { kodePaketTampil } from '../../../utils/kodePaket';
 
 const fmt = (t) => new Date(t).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -138,7 +139,7 @@ export default function DaftarTryOutPage() {
               </div>
               <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{utama.p.judul}</div>
               <div style={{ fontSize: 12, color: '#e0e7ff', marginBottom: 4 }}>
-                {metaPaket(utama.p)}{utama.p.kodePaket ? ` · kode ${utama.p.kodePaket}` : ''}
+                {metaPaket(utama.p)} · kode {kodePaketTampil(utama.p)}
               </div>
               {utama.p.waktuTutup && (
                 <div style={{ fontSize: 11.5, color: '#fde68a', marginBottom: 12 }}>
@@ -204,7 +205,7 @@ export default function DaftarTryOutPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{x.p.judul}</div>
                       <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                        {x.p.kodePaket ? `${x.p.kodePaket} · ` : ''}{metaPaket(x.p)}
+                        {kodePaketTampil(x.p)} · {metaPaket(x.p)}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>

@@ -84,6 +84,7 @@ export function cocokkanJenjang(soalJenjang, targetJenjang) {
 }
 
 import { layakUntukTryOut } from './layakTryOut.js';
+import { buatKodePaket } from './kodePaket.js';
 export { layakUntukTryOut };
 
 export async function ambilSoalDariBank(opts) {
@@ -394,6 +395,18 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     sumber: 'mesin-otomatis',
+    // 🔥 BARU (2026-10-12, ledger paket): kode terbaca manusia supaya paket
+    // bisa disebut siswa di WA, dicari admin per kode/tanggal, dan kelak
+    // dicetak ulang setelah arsip. Dibentuk dari jenjang+jenis+waktu buka
+    // slot (unik per menit); keunikan keras tetap di id dokumen. Lihat
+    // utils/kodePaket.js & REKAM-PAKET-&-DESAIN-MOTIVASI.md.
+    kodePaket: buatKodePaket({
+      jenjang: template.jenjang || '',
+      jenisUjian: template.jenisUjian || r.jenisUjian || '',
+      tanggal: slot?.waktuBuka
+        ? (typeof slot.waktuBuka.toDate === 'function' ? slot.waktuBuka.toDate() : new Date(slot.waktuBuka))
+        : new Date(),
+    }),
   };
 
   const ref = await addDoc(collection(dbPakai, COL_PAKET), payload);
