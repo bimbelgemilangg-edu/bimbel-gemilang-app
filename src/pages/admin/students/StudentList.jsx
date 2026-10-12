@@ -20,10 +20,10 @@ const StudentList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('semua');
   const [filterStatus, setFilterStatus] = useState('semua');
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [_isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [alertMsg, setAlertMsg] = useState(null);
   const [deleting, setDeleting] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [_showFilters, _setShowFilters] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [sendingAccess, setSendingAccess] = useState(false);
@@ -236,7 +236,7 @@ const StudentList = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       showAlert(`✅ Akses login dikirim ke ${selectedStudent.nama}`);
       setShowAccessModal(false);
-    } catch (error) {
+    } catch (_error) {
       showAlert('❌ Gagal mengirim akses');
     }
     setSendingAccess(false);
@@ -636,6 +636,16 @@ const StudentList = () => {
                               title="Keuangan"
                             >
                               <CreditCard size={14} />
+                            </button>
+                            {/* 🔥 BARU (2026-10-12): revisi kesalahan pembayaran
+                                langsung dari daftar siswa -- membuka halaman
+                                keuangan DENGAN panel koreksi terbuka. */}
+                            <button
+                              onClick={() => navigate(`/admin/students/finance/${s.id}?koreksi=1`)}
+                              style={{...styles.btnAction, background: '#fee2e2', color: '#991b1b'}}
+                              title="Revisi pembayaran (koreksi berjejak audit)"
+                            >
+                              <Edit size={14} />
                             </button>
                             <button 
                               onClick={() => navigate(`/admin/students/edit/${s.id}`)} 
