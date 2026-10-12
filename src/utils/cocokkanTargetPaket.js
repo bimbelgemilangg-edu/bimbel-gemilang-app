@@ -128,6 +128,18 @@ export function hitungSiswaCocok(paket, daftarSiswa = []) {
   return (Array.isArray(daftarSiswa) ? daftarSiswa : []).filter((s) => cocokkanTargetPaket(paket, s).cocok).length;
 }
 
+// Kosakata yang MEMANG bermakna program/audiens siswa.
+const KOSAKATA_AUDIENS = new Set(['reguler', 'intensif', 'online', 'offline', 'kelas', 'privat', 'bimbel', 'semua']);
+// Token yang menandakan nilai itu sebenarnya label ISI (mapel/jenjang/ujian).
+const TOKEN_ISI = /(ipa|ips|sains|matematika|mat|bahasa|inggris|indonesia|sosiologi|geografi|fisika|kimia|biologi|ekonomi|sejarah|tka|utbk|snbt|smp|sma|sd|smk)/;
+
+/** True bila nilai targetKategori bermakna audiens (harus dicocokkan). */
+export function kategoriMembatasiAudiens(nilai) {
+  const d = daftarTarget(nilai);
+  if (d.length === 0) return false;
+  return d.every((t) => KOSAKATA_AUDIENS.has(t) || (!TOKEN_ISI.test(t) && t.length <= 12));
+}
+
 export function cocokkanTargetPaket(paket, siswa) {
   if (!cocokKelasToleran(paket?.targetKelas, siswa)) {
     return {
@@ -135,7 +147,15 @@ export function cocokkanTargetPaket(paket, siswa) {
       alasan: `Target kelas paket ("${paket?.targetKelas ?? '(kosong)'}") tidak mencakup kelas siswa ("${siswa?.kelasSekolah || '(kosong)'}")`,
     };
   }
-  if (!cocokkanTarget(paket?.targetKategori, siswa?.kategori)) {
+  // 🔥 BARU (2026-10-12, insiden paket tentor tak terlihat): field
+  // targetKategori sering DIISALAHKAN sebagai label ISI paket ("IPA",
+  // "Matematika") padahal maknanya PROGRAM/AUDIENS siswa ("Reguler",
+  // "Intensif"). Membandingkan label isi dengan program siswa membuat
+  // paket terbit tak cocok ke siapa pun. Label isi TIDAK membatasi
+  // audiens: ia dilewati dalam pencocokan siswa (tetap tampil sebagai
+  // label bagi admin).
+  if (kategoriMembatasiAudiens(paket?.targetKategori)
+    && !cocokkanTarget(paket?.targetKategori, siswa?.kategori)) {
     return {
       cocok: false,
       alasan: `Target kategori paket ("${paket?.targetKategori ?? '(kosong)'}") tidak mencakup program siswa ("${siswa?.kategori || '(kosong)'}")`,
