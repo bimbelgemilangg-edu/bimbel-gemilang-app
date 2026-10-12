@@ -80,6 +80,8 @@ import {
   kodeGagalKirim, putusanPemulihanKirim, pilihSesiUtama,
 } from '../../../utils/pulihKirimHasilTryOut.js';
 import { daftarSalahUntukTentor, teksSalinUntukTentor, kunciTampil } from '../../../utils/ringkasReviewHasil';
+import { kodePaketTampil } from '../../../utils/kodePaket';
+import { WATERMARK } from '../../../utils/fieldButirSoal';
 
 const XP_PER_SOAL = 10; // konsisten sama XP_PER_BENAR di Latihan Harian
 
@@ -1175,6 +1177,13 @@ export default function TryOutView() {
           </button>
           <div style={{ color: 'white', fontSize: 14, fontWeight: 800 }}>
             {paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : paket.judul}
+          </div>
+          {/* 🔥 BARU (2026-10-12): identitas paket terlihat SELAMA mengerjakan
+              (pojok atas): kode paket + logo Gemilang, supaya lembar cetak,
+              layar, dan chat siswa-tentor menyebut paket yang sama. */}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 999, padding: '3px 10px', color: '#fff', fontSize: 10.5, fontWeight: 800, whiteSpace: 'nowrap' }}>
+            <img src={WATERMARK.logo} alt="" style={{ width: 14, height: 14, objectFit: 'contain' }} />
+            {kodePaketTampil(paket)}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

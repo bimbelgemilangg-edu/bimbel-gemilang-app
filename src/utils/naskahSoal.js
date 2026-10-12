@@ -81,6 +81,7 @@ export function butuhLebarPenuh(tinggiKolomMm, kapasitasMm) {
 // di fieldButirSoal.js supaya mesin cetak dan kartu baca layar tidak punya
 // dua pengertian berbeda soal "teks soal" dan "bacaan".
 import { teksSoalDari, bacaanDari, WATERMARK } from './fieldButirSoal.js';
+import { kodePaketTampil } from './kodePaket.js';
 // 🔥 BARU (2026-10-10, permintaan owner): naskah cetak bergaya buku sumber --
 // kode sumber jadi kepala butir, pembahasan berstruktur (premis, kesimpulan
 // bergaris, jawaban tebal). Parser strukturnya murni & teruji.
@@ -321,6 +322,15 @@ export const GAYA_NASKAH = `
 .naskah .nsk-kop { border-bottom: 0.8mm solid #000; padding-bottom: 2mm; margin-bottom: 3mm; break-inside: avoid; }
 .naskah .nsk-kop h1 { font-size: 14px; margin: 0 0 1mm; letter-spacing: 0.4px; }
 .naskah .nsk-kop .nsk-meta { font-size: 10.5px; color: #000; }
+/* 🔥 BARU (2026-10-12, arahan owner): kode paket + logo di POJOK ATAS setiap
+   naskah, dan chip logo+kode di setiap kepala seksi/subtes -- supaya lembar
+   yang terlepas dari tumpukan tetap tahu asal paketnya. Posisi absolute/
+   float TIDAK mengubah kotak blok, jadi estimasi tinggi kolom tetap sah. */
+.naskah .nsk-kop { position: relative; }
+.naskah .nsk-kop-kode { position: absolute; top: 0; right: 0; display: flex; align-items: center; gap: 1.2mm; font-size: 8.5px; font-weight: 800; color: #334155; border: 0.3mm solid #94a3b8; border-radius: 1mm; padding: 0.8mm 1.6mm; background: #fff; }
+.naskah .nsk-kop-kode img { width: 5mm; height: 5mm; object-fit: contain; }
+.naskah .nsk-seksi-kode { float: right; display: inline-flex; align-items: center; gap: 1mm; font-size: 8px; font-weight: 800; letter-spacing: 0.3px; color: #334155; text-transform: none; }
+.naskah .nsk-seksi-kode img { width: 4mm; height: 4mm; object-fit: contain; }
 .naskah .nsk-identitas { display: flex; gap: 8mm; font-size: 10.5px; margin-top: 2.5mm; }
 .naskah .nsk-identitas span { border-bottom: 0.35mm solid #000; min-width: 45mm; padding-bottom: 2.5mm; }
 .naskah .nsk-peringatan { border: 0.7mm solid #000; padding: 1.5mm 3mm; font-size: 11.5px; font-weight: 800; text-align: center; margin-bottom: 3mm; letter-spacing: 0.5px; break-inside: avoid; }
@@ -588,7 +598,7 @@ export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
   // ruang kertas yang menurut owner "kedepannya bakal dipotong". Meta hanya
   // ditulis bila ia membawa informasi BARU di luar judul.
   const meta = bagianMeta.filter((b) => !judulPaket.includes(String(b))).map(escapeHtml).join(' · ');
-  return `<div class="nsk-kop"><h1>${escapeHtml(judulDok)}</h1>
+  return `<div class="nsk-kop"><div class="nsk-kop-kode"><img src="${WATERMARK.logo}" alt="" />${escapeHtml(kodePaketTampil(paket))}</div><h1>${escapeHtml(judulDok)}</h1>
     <div class="nsk-meta">${escapeHtml(judulPaket || 'Naskah Soal')}${meta ? ` — ${meta}` : ''}</div>
     ${denganIdentitas ? '<div class="nsk-identitas"><span>Nama:</span><span>Kelas:</span><span>No. Absen:</span></div>' : ''}
   </div>`;
