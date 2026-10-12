@@ -40,6 +40,7 @@ import { useSegarSaatTerlihat } from '../../../utils/useSegarSaatTerlihat';
 // tests/cocokkanTargetPaket.test.mjs.
 import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { kodePaketTampil } from '../../../utils/kodePaket';
+import { hitungTrenMingguan, kalimatDelta } from '../../../utils/trenMingguan';
 
 const fmt = (t) => new Date(t).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -49,6 +50,7 @@ export default function DaftarTryOutPage() {
 
   const [loading, setLoading] = useState(true);
   const [daftar, setDaftar] = useState([]);
+  const [sesiList, setSesiList] = useState([]);
 
   // 🔥 BARU (Tahap 1 peta sinkronisasi): try out yang BARU diterbitkan
   // admin harus muncul tanpa siswa perlu reload -- ini keluhan yang
@@ -81,6 +83,7 @@ export default function DaftarTryOutPage() {
         const izinPerPaket = {};
         snapIzin.forEach((d) => { izinPerPaket[d.data().paketId] = d.data(); });
 
+        setSesiList(snapSesi.docs.map((d) => d.data()));
         setDaftar(paketList.map((p) => ({ ...p, sesi: sesiPerPaket[p.id] || null, izinUlang: izinPerPaket[p.id] || null })));
       } catch (e) {
         console.error('Gagal memuat daftar try out:', e);
@@ -163,6 +166,47 @@ export default function DaftarTryOutPage() {
               <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>Paket Sabtu berikutnya akan muncul otomatis di sini.</div>
             </div>
           )}
+
+          {/* ============ 1b. PERJALANANMU: tren delta mingguan ============ */}
+          {(() => {
+            const namaPaket = Object.fromEntries(daftar.map((p) => [p.id, p.judul || '']));
+            const tren = hitungTrenMingguan(sesiList
+              .filter((x) => x.status === 'selesai')
+              .map((x) => ({
+                skor: Number(x.totalSkorPersen),
+                waktu: x.updatedAt || x.waktuSelesai || x.createdAt,
+                mapel: namaPaket[x.paketId] || '',
+              })));
+            if (!tren.seri.length) return null;
+            const enam = tren.seri.slice(-6);
+            const maks = Math.max(...enam.map((b) => b.rataSkor), 100);
+            return (
+              <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: '#334155' }}>📈 Perjalananmu</div>
+                  {tren.terakhir.delta !== null && (
+                    <span style={{
+                      borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 900,
+                      background: tren.terakhir.delta >= 0 ? '#f0fdf4' : '#fef2f2',
+                      border: `1px solid ${tren.terakhir.delta >= 0 ? '#bbf7d0' : '#fecaca'}`,
+                      color: tren.terakhir.delta >= 0 ? '#166534' : '#991b1b',
+                    }}>
+                      {tren.terakhir.delta > 0 ? '▲' : '▼'} {Math.abs(tren.terakhir.delta)} poin
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 54, margin: '10px 0 6px' }}>
+                  {enam.map((b) => (
+                    <div key={b.kunci} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', gap: 3 }}>
+                      <div style={{ fontSize: 9, color: '#64748b', fontWeight: 700 }}>{Math.round(b.rataSkor)}</div>
+                      <div style={{ width: '100%', maxWidth: 34, height: Math.max(6, (b.rataSkor / maks) * 38), borderRadius: 5, background: 'linear-gradient(180deg,#a78bfa,#6d28d9)' }} />
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.6 }}>{kalimatDelta(tren, null)}</div>
+              </div>
+            );
+          })()}
 
           {/* ============ 2. AKAN DATANG ============ */}
           {akanDatang.length > 0 && (
