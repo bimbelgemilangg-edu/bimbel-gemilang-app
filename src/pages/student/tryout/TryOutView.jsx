@@ -79,6 +79,7 @@ import {
 import {
   kodeGagalKirim, putusanPemulihanKirim, pilihSesiUtama,
 } from '../../../utils/pulihKirimHasilTryOut.js';
+import { daftarSalahUntukTentor, teksSalinUntukTentor, kunciTampil } from '../../../utils/ringkasReviewHasil';
 
 const XP_PER_SOAL = 10; // konsisten sama XP_PER_BENAR di Latihan Harian
 
@@ -139,6 +140,7 @@ export default function TryOutView() {
   const [indexSoalAktif, setIndexSoalAktif] = useState(0);
   const [siapPeraturan, setSiapPeraturan] = useState(false);
   const [hasilAkhir, setHasilAkhir] = useState(null); // { xpMentah, xpFinal, totalSkorPersen, ... }
+  const [tersalinTentor, setTersalinTentor] = useState(false);
   const [fotoPengawasan, setFotoPengawasan] = useState([]);
 
   // 🔥 BARU (2026-10-08): pesan transisi subtes NON-MEMBLOKIR. Dulu
@@ -1003,6 +1005,35 @@ export default function TryOutView() {
         />
 
         <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', margin: '20px 0 10px', letterSpacing: 0.4 }}>📋 TINJAU JAWABAN</div>
+        {/* 🔥 ROMBAK (2026-10-12, arahan owner): evaluasi hanya terjadi bila
+            siswa benar-benar melihat LETAK salahnya. Tombol ini menyusun
+            daftar nomor salah + sidik jari kode sumbernya secara mekanis
+            (ringkasReviewHasil.js) supaya bawaan ke tentor tidak lagi
+            "nomor 3" yang ambigu antar paket. */}
+        {(() => {
+          const daftar = daftarSalahUntukTentor(paket.daftarSoal.map((s2, i2) => ({
+            nomor: i2 + 1,
+            skor: skorSatuSoal(s2, jawaban[s2.id]),
+            kode: pisahKodeSumber(teksSoalDari(s2)).kode || '',
+          })));
+          if (!daftar.length) return null;
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(teksSalinUntukTentor(daftar, { paket: paket.nama || paket.judul || '', siswa: '' }))
+                    .then(() => { setTersalinTentor(true); setTimeout(() => setTersalinTentor(false), 2500); })
+                    .catch(() => setTersalinTentor(false));
+                }}
+                style={{ padding: '9px 14px', borderRadius: 10, border: '1px solid #fbbf24', background: '#fffbeb', color: '#92400e', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+              >
+                🙋 {tersalinTentor ? 'Tersalin!' : `Salin ${daftar.length} nomor salah untuk dibahas tentor`}
+              </button>
+              <span style={{ fontSize: 11, color: '#cbd5e1' }}>tempel di chat tentor / grup kelas supaya pembahasan tepat sasaran</span>
+            </div>
+          );
+        })()}
         {paket.daftarSoal.map((s, i) => {
           const skor = skorSatuSoal(s, jawaban[s.id]);
           const belumDijawab = soalBelumDijawab(s, jawaban[s.id]);
@@ -1029,7 +1060,27 @@ export default function TryOutView() {
               <PenahanErrorSoal soalId={s.id}>
                 <RendererSoal soal={s} jawabanTerpilih={jawaban[s.id]} modeTinjau />
               </PenahanErrorSoal>
-              {s.pembahasan && (
+              {/* 🔥 ROMBAK (2026-10-12): soal SALAH mendapat pembahasan
+                  TERBUKA + pembanding jawabanmu-vs-kunci (inilah letak
+                  evaluasi); soal benar tetap terlipat supaya halaman tidak
+                  jadi gulungan panjang yang dilewati siswa. */}
+              {s.pembahasan && skor <= 0 && (
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                    <span style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                      jawabanmu: {belumDijawab ? '—' : 'lihat tandai merah di pilihan'}
+                    </span>
+                    <span style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 999, padding: '2px 9px', fontSize: 11, fontWeight: 800 }}>
+                      kunci: {kunciTampil(s.kunciJawaban)}
+                    </span>
+                  </div>
+                  <div style={{ background: '#f5f3ff', borderRadius: 8, padding: 10, fontSize: 12.5, color: '#4c1d95' }}>
+                    <div style={{ fontWeight: 800, marginBottom: 4 }}>❗ Kamu salah di sini — simak pembahasannya:</div>
+                    <RenderPembahasan teks={s.pembahasan} />
+                  </div>
+                </div>
+              )}
+              {s.pembahasan && skor > 0 && (
                 <details style={{ marginTop: 10 }}>
                   <summary style={{ fontSize: 12.5, fontWeight: 800, color: '#3949AB', cursor: 'pointer' }}>
                     Lihat pembahasan ▾
