@@ -185,3 +185,11 @@ uji('hitungSiswaCocok mendeteksi paket tak terlihat oleh siapa pun', () => {
   assert.equal(hitungSiswaCocok({ targetKelas: '12' }, siswa), 0);
   assert.equal(hitungSiswaCocok({ targetKelas: '9' }, siswa), 2);
 });
+
+// ---- label sasaran untuk form tentor & konfirmasi admin ----
+import { labelSasaran } from '../src/utils/cocokkanTargetPaket.js';
+uji('labelSasaran membaca target jadi kalimat manusia', () => {
+  assert.equal(labelSasaran({ targetKelas: '9 SMP', targetKategori: 'IPA' }), '9 SMP · Semua program');
+  assert.equal(labelSasaran({ targetKelas: 'Semua', targetKategori: 'Intensif' }), 'Semua kelas · INTENSIF');
+  assert.equal(labelSasaran({}), 'Semua kelas · Semua program');
+});

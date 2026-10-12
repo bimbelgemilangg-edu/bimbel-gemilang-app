@@ -185,6 +185,15 @@ export function bentukKanonikTarget(nilai) {
   return Array.isArray(nilai) ? nilai.map((x) => String(x).trim()).filter(Boolean) : d;
 }
 
+/** Label sasaran terbaca manusia untuk form tentor & konfirmasi admin. */
+export function labelSasaran(paket = {}) {
+  const k = daftarTarget(paket.targetKelas);
+  const kelas = (k.length === 0 || k.includes('semua')) ? 'Semua kelas' : k.join(', ').toUpperCase();
+  const kat = daftarTarget(paket.targetKategori);
+  const prog = (kategoriMembatasiAudiens(paket.targetKategori) && kat.length) ? kat.join(', ').toUpperCase() : 'Semua program';
+  return `${kelas} · ${prog}`;
+}
+
 export default { hitungSiswaCocok,
   daftarTarget,
   targetUntukSemua,
