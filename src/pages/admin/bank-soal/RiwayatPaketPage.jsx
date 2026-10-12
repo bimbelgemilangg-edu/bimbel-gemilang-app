@@ -22,9 +22,10 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { kodePaketTampil, cocokPencarianPaket } from '../../../utils/kodePaket';
+import { putusanEditPaket } from '../../../utils/aturanEditPaket';
 import { siapkanDrafDariTemplate, COL_TEMPLATE } from '../../../utils/mesinTryOutOtomatis';
 import DialogCetakNaskah from '../../../components/DialogCetakNaskah';
 
@@ -41,6 +42,9 @@ export default function RiwayatPaketPage() {
   const [kueri, setKueri] = useState('');
   const [statusMuat, setStatusMuat] = useState('');
   const [cetak, setCetak] = useState(null);
+  const [edit, setEdit] = useState(null); // paket yang sedang diedit metadatanya
+  const [formEdit, setFormEdit] = useState({ judul: '', buka: '', tutup: '' });
+  const [pesanEdit, setPesanEdit] = useState('');
   const [busy, setBusy] = useState(false);
   const [isMobile] = useState(window.innerWidth <= 1024);
 
@@ -64,6 +68,39 @@ export default function RiwayatPaketPage() {
   useEffect(() => { muat(); }, [muat]);
 
   const tampil = useMemo(() => paket.filter((p) => cocokPencarianPaket(p, kueri)), [paket, kueri]);
+
+  const keInputWaktu = (v) => {
+    const d = v?.toDate ? v.toDate() : (v ? new Date(v) : null);
+    if (!d || Number.isNaN(d.getTime())) return '';
+    const dua = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${dua(d.getMonth() + 1)}-${dua(d.getDate())}T${dua(d.getHours())}:${dua(d.getMinutes())}`;
+  };
+
+  const bukaEdit = (p) => {
+    setEdit(p);
+    setPesanEdit('');
+    setFormEdit({ judul: p.judul || '', buka: keInputWaktu(p.waktuBuka), tutup: keInputWaktu(p.waktuTutup) });
+  };
+
+  const simpanEdit = async () => {
+    if (!edit) return;
+    const perubahan = [];
+    const patch = {};
+    if (formEdit.judul.trim() && formEdit.judul.trim() !== edit.judul) { patch.judul = formEdit.judul.trim(); perubahan.push('judul'); }
+    if (formEdit.buka) { const ms = new Date(formEdit.buka).getTime(); if (ms !== new Date(edit.waktuBuka || 0).getTime()) { patch.waktuBuka = ms; perubahan.push('waktuBuka'); } }
+    if (formEdit.tutup) { const ms = new Date(formEdit.tutup).getTime(); if (ms !== new Date(edit.waktuTutup || 0).getTime()) { patch.waktuTutup = ms; perubahan.push('waktuTutup'); } }
+    if (!perubahan.length) { setPesanEdit('Tidak ada perubahan.'); return; }
+    patch.editLog = [...(edit.editLog || []), { pada: new Date().toISOString(), oleh: 'admin', perubahan }];
+    patch.updatedAt = serverTimestamp();
+    try {
+      await updateDoc(doc(db, 'tryout_paket', edit.id), patch);
+      setPesanEdit(`✅ Tersimpan: ${perubahan.join(', ')}`);
+      setEdit(null);
+      muat();
+    } catch (e) {
+      setPesanEdit(`❌ Gagal menyimpan: ${e?.message || e}`);
+    }
+  };
 
   const buatSusulan = async (p) => {
     if (busy) return;
@@ -136,6 +173,7 @@ export default function RiwayatPaketPage() {
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>{jumlahSesi[p.id] || 0}</td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
                     <button onClick={() => setCetak(p)} style={{ ...gayaTombol('#0e7490', false), marginRight: 6 }}>🖨️ PDF</button>
+                    <button onClick={() => bukaEdit(p)} style={{ ...gayaTombol('#334155', false), marginRight: 6 }}>✏️ Edit</button>
                     <button onClick={() => buatSusulan(p)} disabled={busy || p.status === 'draf'} style={gayaTombol('#7c3aed', busy || p.status === 'draf')}>🎟️ Susulan</button>
                   </td>
                 </tr>
@@ -154,6 +192,39 @@ export default function RiwayatPaketPage() {
         </div>
 
         {cetak && <DialogCetakNaskah input={cetak} onClose={() => setCetak(null)} />}
+
+        {edit && (() => {
+          const putusan = putusanEditPaket({ status: edit.status, jumlahSesi: jumlahSesi[edit.id] || 0 });
+          return (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+              <div style={{ ...gayaKartu, width: '100%', maxWidth: 460, maxHeight: '90vh', overflowY: 'auto' }}>
+                <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>✏️ Edit paket {kodePaketTampil(edit)}</div>
+                <div style={{ fontSize: 11, color: '#64748b', marginBottom: 10, lineHeight: 1.6 }}>{putusan.alasan}</div>
+                <label style={{ fontSize: 11.5, color: '#475569', display: 'block', marginBottom: 8 }}>Judul paket
+                  <input value={formEdit.judul} onChange={(e) => setFormEdit({ ...formEdit, judul: e.target.value })} style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5 }} />
+                </label>
+                <label style={{ fontSize: 11.5, color: '#475569', display: 'block', marginBottom: 8 }}>Waktu buka
+                  <input type="datetime-local" value={formEdit.buka} onChange={(e) => setFormEdit({ ...formEdit, buka: e.target.value })} style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5 }} />
+                </label>
+                <label style={{ fontSize: 11.5, color: '#475569', display: 'block', marginBottom: 10 }}>Waktu tutup
+                  <input type="datetime-local" value={formEdit.tutup} onChange={(e) => setFormEdit({ ...formEdit, tutup: e.target.value })} style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, padding: '8px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12.5 }} />
+                </label>
+                {!putusan.bolehIsi && (
+                  <div style={{ fontSize: 11, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginBottom: 10, lineHeight: 1.6 }}>
+                    Isi soal paket ini TIDAK dapat ditimpa (skor {jumlahSesi[edit.id] || 0} siswa terlindungi).
+                    Untuk perbaikan isi, gunakan tombol 🎟️ Susulan pada baris paket: paket revisi berkode baru terbit,
+                    paket lama membeku sebagai arsip berskor, dan siswa melihat keduanya terpisah di menu Try Out.
+                  </div>
+                )}
+                {pesanEdit && <div style={{ fontSize: 11.5, marginBottom: 8, color: pesanEdit.startsWith('❌') ? '#b91c1c' : '#15803d' }}>{pesanEdit}</div>}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={simpanEdit} style={gayaTombol('#16a34a', false)}>💾 Simpan metadata</button>
+                  <button onClick={() => setEdit(null)} style={gayaTombol('#94a3b8', false)}>Tutup</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </main>
     </div>
   );
