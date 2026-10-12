@@ -104,6 +104,8 @@ export default function RakitTryOutGuruPage() {
 
   // ---- filter ----
   const [fJenjang, setFJenjang] = useState('');
+  const [tKelas, setTKelas] = useState('Semua');
+  const [tProgram, setTProgram] = useState('Semua');
   // 🔥 2026-10-09 (owner): "harusnya di awal tentor udah memilih mapelnya
   // dahulu... gak mungkin mencampur mapel, tetapi tidak menutup kemungkinan
   // kasih tombol tambahkan mapel lain". Maka mapel jadi LANGKAH PERTAMA dan
@@ -200,6 +202,7 @@ export default function RakitTryOutGuruPage() {
       if (q && !`${teksSoalDari(s)} ${id.mapel} ${id.materi}`.toLowerCase().includes(q)) return false;
       return true;
     });
+   
   }, [semuaSoal, cakupanMapel, fJenjang, fMateri, fKelas, fTipe, fKesulitan, fCari, hanyaBelum, idTerpilih]);
 
   const kelompok = useMemo(() => {
@@ -222,7 +225,8 @@ export default function RakitTryOutGuruPage() {
   const subtes = useMemo(() => kelompokkanJadiSubtes(keranjang, granularitas), [keranjang, granularitas]);
   const putusan = useMemo(() => putusanKirimDraf({
     judul, daftarSoal: keranjang, modeTimer, durasiTotalMenit: durasi,
-    granularitas, targetKelas: fJenjang, targetKategori: mapelPaket,
+    granularitas, targetKelas: sasaranKelas(), targetKategori: tProgram,
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- sasaranKelas&tProgram turunan tKelas/fJenjang; identitas fungsi di deps membuat memo sia-sia
   }), [judul, keranjang, modeTimer, durasi, granularitas, fJenjang, mapelPaket]);
 
   const tambah = (daftar) => {
@@ -230,6 +234,14 @@ export default function RakitTryOutGuruPage() {
     setKeranjang(hasil.keranjang);
     setPesanKirim(`✓ ${hasil.rincian.baru} butir masuk keranjang${hasil.rincian.sudahAda ? `, ${hasil.rincian.sudahAda} sudah ada` : ''}${hasil.rincian.dilewati ? `, ${hasil.rincian.dilewati} dilewati` : ''}.`);
   };
+
+  const SHORT_JENJANG = { 'SD/MI': 'SD', 'SMP/MTs': 'SMP', 'SMA/MA': 'SMA', SMK: 'SMK', 'UTBK/SNBT': 'UTBK' };
+  // 🔥 BARU (2026-10-12): sasaran kelas & program dipilih EKSPLISIT. Sebelumnya
+  // form mengirim JENJANG sebagai targetKelas dan MAPEL sebagai targetKategori
+  // -- akar insiden paket terbit tak terlihat oleh siapa pun.
+  const sasaranKelas = () => (tKelas === 'Semua'
+    ? (fJenjang || 'Semua')
+    : `${tKelas}${fJenjang ? ` ${SHORT_JENJANG[fJenjang] || fJenjang}` : ''}`);
 
   const kirimUsulan = useCallback(async () => {
     if (!putusan.boleh || mengirim) return;
@@ -242,7 +254,7 @@ export default function RakitTryOutGuruPage() {
     try {
       const payload = bangunPayloadDraf({
         judul, daftarSoal: keranjang, modeTimer, durasiTotalMenit: durasi,
-        granularitas, targetKelas: fJenjang, targetKategori: mapelPaket,
+        granularitas, targetKelas: sasaranKelas(), targetKategori: tProgram,
         antiCheatAktif: antiCheat, wajibKamera, soalAcak, catatanUntukAdmin: catatan,
         guru: { id: identitas.docId || identitas.guruId, nama: identitas.guruNama },
       });
@@ -259,6 +271,7 @@ export default function RakitTryOutGuruPage() {
     } finally {
       setMengirim(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- sasaranKelas&tProgram turunan state yang sudah tercakup
   }, [putusan.boleh, mengirim, judul, keranjang, subtes.length, modeTimer, durasi, granularitas, fJenjang, mapelPaket, antiCheat, wajibKamera, soalAcak, catatan, identitas, muat]);
 
   const kirimUlang = useCallback(async (paket) => {
@@ -540,7 +553,22 @@ export default function RakitTryOutGuruPage() {
               </div>
 
               <div style={{ marginTop: 11 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>CATATAN UNTUK ADMIN (opsional)</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}><label style={{ display: 'block', fontSize: 11.5, fontWeight: 800, color: '#475569', marginBottom: 6 }}>
+                  KELAS TUJUAN TRY OUT (wajib dipilih sadar)
+                  <select value={tKelas} onChange={(e) => setTKelas(e.target.value)} style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, background: '#fff' }}>
+                    {['Semua', '7', '8', '9', '10', '11', '12'].map((k) => <option key={k} value={k}>{k === 'Semua' ? 'Semua kelas' : `Kelas ${k}`}</option>)}
+                  </select>
+                </label>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 800, color: '#475569', marginBottom: 10 }}>
+                  PROGRAM SISWA YANG MENGERJAKAN
+                  <select value={tProgram} onChange={(e) => setTProgram(e.target.value)} style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, background: '#fff' }}>
+                    {['Semua', 'Reguler', 'Intensif'].map((k) => <option key={k} value={k}>{k === 'Semua' ? 'Semua program' : k}</option>)}
+                  </select>
+                </label>
+                <div style={{ fontSize: 11, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '7px 9px', marginBottom: 10 }}>
+                  🎯 Sasaran paket ini: <b>{tKelas === 'Semua' ? (fJenjang || 'semua kelas') : `kelas ${tKelas}${fJenjang ? ' ' + (SHORT_JENJANG[fJenjang] || fJenjang) : ''}`}</b> · {tProgram === 'Semua' ? 'semua program' : `program ${tProgram}`}. Admin akan mengonfirmasi sasaran ini sebelum menyetujui.
+                </div>
+                CATATAN UNTUK ADMIN (opsional)</label>
                 <textarea style={{ ...st.input, minHeight: 54, resize: 'vertical' }} value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="mis. butir 12-15 memakai wacana yang sama" />
               </div>
 
