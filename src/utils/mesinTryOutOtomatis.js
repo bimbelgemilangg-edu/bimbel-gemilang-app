@@ -83,6 +83,9 @@ export function cocokkanJenjang(soalJenjang, targetJenjang) {
   return s === t;
 }
 
+import { layakUntukTryOut } from './layakTryOut.js';
+export { layakUntukTryOut };
+
 export async function ambilSoalDariBank(opts) {
   const {
     mapel,
@@ -109,6 +112,9 @@ export async function ambilSoalDariBank(opts) {
   }
 
   let pool = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // defensif: bila query pertama jatuh ke fallback tanpa saringan status,
+  // gerbang kelayakan di sini yang menahan butir non-aktif.
+  pool = pool.filter(layakUntukTryOut);
 
   if (mapel) {
     pool = pool.filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
@@ -145,6 +151,9 @@ export async function ambilSoalDariBank(opts) {
   if (pool.length < jumlah) {
     const snap2 = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
     let extra = snap2.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // 🔥 FIX (2026-10-12): jalur extra dulu TIDAK menyaring status --
+    // butir terhapus/nonaktif bisa masuk draf saat pool utama kekurangan.
+    extra = extra.filter(layakUntukTryOut);
     if (mapel) {
       extra = extra.filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
     }
@@ -199,7 +208,7 @@ export async function susunSoalDariKomposisi(template, excludeIds) {
   const dipakai = new Set(excludeIds || []);
   for (const baris of template.komposisi || []) {
     const butuh = Number(baris.jumlah) || 10;
-    // eslint-disable-next-line no-await-in-loop
+     
     const ambil = await ambilSoalDariBank({
       mapel: baris.mapel,
       jenjang: template.jenjang,
@@ -464,7 +473,7 @@ export async function siapkanDrafMingguIni(template, rules) {
         status: ada.status,
         alasan: 'sudah ada (' + ada.status + ')',
       });
-      // eslint-disable-next-line no-continue
+       
       continue;
     }
     if (new Date(slot.waktuTutup) < new Date(Date.now() - 24 * 3600 * 1000)) {
@@ -474,10 +483,10 @@ export async function siapkanDrafMingguIni(template, rules) {
         judul,
         alasan: 'slot sudah lewat',
       });
-      // eslint-disable-next-line no-continue
+       
       continue;
     }
-    // eslint-disable-next-line no-await-in-loop
+     
     const res = await siapkanDrafDariTemplate(template, slot, r);
     hasil.push(res);
   }
