@@ -154,6 +154,16 @@ uji('INVARIAN: bentuk kanonik selalu cocok untuk target yang sama', () => {
 
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
+
+// ---- 2026-10-12: kategori ISI paket tidak membatasi audiens ----
+uji('targetKategori "IPA" (label isi) tidak menolak siswa "Reguler"', () => {
+  assert.equal(cocokkanTargetPaket({ targetKelas: 'SMP/MTs', targetKategori: 'IPA' }, { kelasSekolah: '9', kategori: 'Reguler' }).cocok, true);
+});
+uji('targetKategori audiens "Intensif" tetap membatasi', () => {
+  assert.equal(cocokkanTargetPaket({ targetKategori: 'Intensif' }, { kelasSekolah: '9', kategori: 'Reguler' }).cocok, false);
+  assert.equal(cocokkanTargetPaket({ targetKategori: 'Intensif' }, { kelasSekolah: '9', kategori: 'Intensif' }).cocok, true);
+});
+
 console.log('✅ Semua test lulus.');
 
 // ---- 2026-10-12: pencocokan kelas toleran (insiden paket tak terlihat) ----
