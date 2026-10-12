@@ -26,6 +26,7 @@ import { terapkanPotonganXP } from '../../utils/potonganXPTryOut';
 import { tambahXpMingguan } from '../../utils/mingguIni';
 import { catatAudit, KATEGORI } from '../../utils/auditLog';
 import { bacaIdentitasGuru, guruCocokDenganTentor } from '../../utils/identitasGuru';
+import DialogCetakNaskah from '../../components/DialogCetakNaskah';
 import { teksKunciSoal as teksKunci } from '../../utils/teksKunciSoal';
 import { kebijakanGagalMuat } from '../../utils/keputusanMuat';
 import RenderMath from '../../components/RenderMath';
@@ -78,6 +79,11 @@ function kunciSebagaiJawaban(soal) {
 export default function GuruPantauTryOut() {
   const { paketId } = useParams();
   const [paket, setPaket] = useState(null);
+  // 🔥 BARU (2026-10-12, permintaan owner): tentor yang paketnya sudah
+  // terbit perlu MEMBACA ULANG soal+kuncinya untuk bahan belajar/mengajar
+  // ("guru mau klik lagi soalnya"). Sebelumnya dialog naskah hanya ada di
+  // sisi admin; tentor hanya bisa memantau skor. Dialog ini baca-saja.
+  const [bukaNaskah, setBukaNaskah] = useState(false);
   const [sesiList, setSesiList] = useState([]);
   const [detail, setDetail] = useState(null);
   const [inputEsai, setInputEsai] = useState({});
@@ -224,7 +230,18 @@ export default function GuruPantauTryOut() {
       }}>
         <div style={{ width: '100%', maxWidth: 980, margin: '0 auto' }}>
         <Link to="/guru/dashboard" style={{ fontSize: 12, color: '#2563eb' }}>← Kembali ke Dashboard</Link>
-        <h2 style={{ margin: '8px 0 4px', fontSize: 18 }}>🎯 Pantau Try Out</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+          <h2 style={{ margin: '8px 0 4px', fontSize: 18 }}>🎯 Pantau Try Out</h2>
+          {paket && (
+            <button
+              type="button"
+              onClick={() => setBukaNaskah(true)}
+              style={{ padding: '8px 14px', borderRadius: 10, border: 'none', background: '#0e7490', color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+            >
+              📖 Lihat naskah soal & kunci
+            </button>
+          )}
+        </div>
         {pesan.teks && <div style={{ margin: '8px 0', fontSize: 12, color: pesan.tipe === 'err' ? '#b91c1c' : '#15803d', background: pesan.tipe === 'err' ? '#fef2f2' : '#f0fdf4', border: '1px solid ' + (pesan.tipe === 'err' ? '#fecaca' : '#bbf7d0'), padding: '6px 10px', borderRadius: 8 }}>{pesan.teks}</div>}
         {memuat && <div style={{ fontSize: 12, color: '#6b7280' }}>Memuat...</div>}
         {paket && (
@@ -451,6 +468,9 @@ export default function GuruPantauTryOut() {
           caption="Gambar soal / opsi / foto jawaban"
           onClose={() => setGambarDibuka(null)}
         />
+      )}
+      {bukaNaskah && paket && (
+        <DialogCetakNaskah input={paket} onClose={() => setBukaNaskah(false)} />
       )}
     </div>
   );
