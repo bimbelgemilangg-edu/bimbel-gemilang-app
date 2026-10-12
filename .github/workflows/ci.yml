@@ -86,6 +86,24 @@ jobs:
           echo "$FILES"
           echo "$FILES" | xargs npx eslint
 
+      - name: Penjaga komponen JSX (berkas berubah, wajib bersih)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            BASE="HEAD~1"
+          fi
+          HEAD_SHA=$(git rev-parse HEAD)
+          FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" "$HEAD_SHA" -- '*.js' '*.jsx' || true)
+          if [ -z "$FILES" ]; then
+            echo "Tidak ada berkas JS/JSX yang berubah."
+            exit 0
+          fi
+          echo "$FILES" | xargs node scripts/ci-penjaga-komponen.mjs
+
       - name: Laporan lint menyeluruh (informasi, tidak menggagalkan)
         if: always()
         run: |
