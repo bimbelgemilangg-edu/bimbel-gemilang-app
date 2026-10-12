@@ -36,6 +36,7 @@
 // ============================================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ambilKonten } from '../../utils/sumberKonten';
@@ -91,6 +92,7 @@ const st = {
 };
 
 export default function RakitTryOutGuruPage() {
+  const navigate = useNavigate();
   const [isMobile] = useState(window.innerWidth < 1024);
   const identitas = useMemo(() => bacaIdentitasGuru(), []);
 
@@ -588,6 +590,19 @@ export default function RakitTryOutGuruPage() {
                       {p.totalSoal ?? (p.daftarSoal?.length || 0)} butir · {Array.isArray(p.subtes) ? p.subtes.length : 0} subtes
                       {p.waktuTutup ? ` · deadline ${new Date(p.waktuTutup).toLocaleDateString('id-ID')}` : ''}
                     </div>
+                    {/* 🔥 BARU (2026-10-12, keluhan owner "lihat ini dimana? guru
+                        mau ceknya"): pintu ke Pantau Try Out + naskah soal &
+                        kunci diletakkan TEPAT di baris usulan tentor, bukan
+                        hanya di Dashboard guru yang jarang dibuka. */}
+                    {(p.status === STATUS_PAKET.AKTIF || p.status === STATUS_PAKET.NONAKTIF) && (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/guru/tryout-monitor/${p.id}`)}
+                        style={{ ...st.tombolKecil, marginTop: 6, background: '#0e7490', color: '#fff' }}
+                      >
+                        🎯 Pantau hasil & 📖 naskah soal+kunci
+                      </button>
+                    )}
                     {p.status === STATUS_PAKET.DITOLAK && p.ditolakAlasan && (
                       <div style={{ marginTop: 6, fontSize: 11, color: '#991b1b', background: '#fef2f2', borderRadius: 7, padding: '6px 8px', lineHeight: 1.55 }}>
                         <b>Alasan admin:</b> {p.ditolakAlasan}
