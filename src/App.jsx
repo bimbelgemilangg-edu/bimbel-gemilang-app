@@ -124,7 +124,7 @@ import DashboardAnalisis from './pages/admin/DashboardAnalisis';
 import TerbitkanKuisPage from './pages/admin/bank-soal/TerbitkanKuisPage';
 import TerbitkanTryOutPage from './pages/admin/bank-soal/TerbitkanTryOutPage';
 import HasilTryOutAdminPage from './pages/admin/bank-soal/HasilTryOutAdminPage';
-import DaftarTryOutPage from './pages/student/tryout/DaftarTryOutPage';
+import PilihTampilanTryOut from './pages/student/tryout/PilihTampilanTryOut';
 import TryOutView from './pages/student/tryout/TryOutView';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
 import LatihanAktivitasPage from './pages/admin/bank-soal/LatihanAktivitasPage';
@@ -928,7 +928,7 @@ function App() {
             SISWA
             ==================================================== */}
         <Route path="/siswa/dashboard" element={<SiswaPage><StudentDashboard /></SiswaPage>} />
-        <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><DaftarTryOutPage /></SiswaPageBelajar>} />
+        <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><PilihTampilanTryOut /></SiswaPageBelajar>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaFiturBelajar fitur="Try Out"><TryOutView /></SiswaFiturBelajar>} />
         <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
         {/* MATERI v2 -- tampilan materi belajar baru (fase 1-2,

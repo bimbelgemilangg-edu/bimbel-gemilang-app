@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { layakUntukTryOut, cocokKelasBank } from './layakTryOut.js';
 import { buatKodePaket } from './kodePaket.js';
+import { buatDeskripsiPaket } from './papanJelajah.js';
 import { ringkasButirUntukAi, validasiPilihanAi } from './pilihSoalAi.js';
 import { kisiKisiUntuk } from './kisiKisiTkaUtbk.js';
 // 🔥 RESTORASI (2026-10-13): pagar identitas & gerbang stok (S2, 77102e5)
@@ -487,6 +488,17 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     // audit nanti bisa menjawab "kenapa sasaran/materinya begini?".
     jenisUjian: template.jenisUjian || '',
     komposisi: template.komposisi || [],
+    // 🚀 BARU (2026-10-13, papan jelajah owner): deskripsi kartu pos berbasis CP
+    // Kemendikbudristek ikut tersimpan di draf supaya layar siswa tak menghitung
+    // ulang tiap render; deterministik, tanpa memanggil AI (pagar kuota).
+    deskripsi: buatDeskripsiPaket({
+      jenjang: template.jenjang || '',
+      jenisUjian: template.jenisUjian || '',
+      komposisi: template.komposisi || [],
+      durasiMenit: durasi,
+      jumlahSubtes: subtes.length,
+      tampilkanPembahasan: pembahasan,
+    }),
     rulesSnapshot: {
       soalAcak,
       antiCheatAktif: antiCheat,
