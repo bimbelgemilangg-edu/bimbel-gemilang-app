@@ -391,6 +391,26 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   // (kasus nyata: draf UTBK 3/155 soal yang harus dinonaktifkan manual).
   const gerbang = gerbangStokDraf(kekurangan, r.izinkanKurang === true);
   if (!gerbang.ok) return gerbang;
+  // 🔥 S5+ (2026-10-13): JEJAK AI PER MAPEL untuk log admin yang jujur.
+  // Status mungkin: "dipakai" (usulan AI lolos validator), "fallback: <alasan>"
+  // (AI gagal/melanggar kontrak, mesin kembali ke acak deterministik), atau
+  // "tidak dipanggil" (stok == jumlah yang diminta, tidak ada yang bisa dipilih).
+  const aiAktif = r.pakaiAi !== false && template.pakaiAi !== false;
+  const aiJejak = {};
+  if (aiAktif) {
+    const perId = new Map(daftarSoal.map((s) => [s.id, s]));
+    for (const g of grupMapel) {
+      const contoh = (g.soalIds || []).map((id) => perId.get(id)).find((s) => s && s.aiSelection);
+      if (contoh) {
+        const a = contoh.aiSelection;
+        aiJejak[g.mapel] = a.status === 'dipakai'
+          ? 'dipakai' + (a.model ? ` (${a.model})` : '')
+          : 'fallback: ' + String(a.alasan || 'tanpa alasan').slice(0, 80);
+      } else {
+        aiJejak[g.mapel] = 'tidak dipanggil (stok pas-pasan)';
+      }
+    }
+  }
   if (!daftarSoal.length) {
     const rinci = (template.komposisi || [])
       .map((b) => b.mapel)
@@ -465,6 +485,9 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
         ? (typeof slot.waktuBuka.toDate === 'function' ? slot.waktuBuka.toDate() : new Date(slot.waktuBuka))
         : new Date(),
     }),
+    // 🔥 S5+ (2026-10-13): jejak AI per mapel ikut disimpan di dokumen paket
+    // supaya bisa diaudit kemudian (mis. "kenapa butir ini yang dipilih?").
+    ...(Object.keys(aiJejak).length ? { aiJejak } : {}),
   };
 
   const ref = await addDoc(collection(dbPakai, COL_PAKET), payload);
@@ -478,8 +501,10 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     // soal dibuat tanpa satu pun laporan. Field tambahan ini tidak mengubah
     // perilaku pemanggil yang sudah ada (mereka membaca ok/id/judul/totalSoal),
     // tapi membuat admin bisa tahu bahwa "30 soal diminta, 22 didapat".
-    // TODO: tampilkan di log hasil JadwalTryOutOtomatisPage.
+    // 2026-10-13: kekurangan kini DIBLOKIR GERBANG STOK (pagarTryOutOtomatis),
+    //    jadi field ini hanya terisi bila rules.izinkanKurang=true dipakai sadar.
     kekurangan,
+    aiJejak,
     ringkas: payload.ringkas,
     slot,
     status: 'draf',

@@ -18,6 +18,12 @@ const HARI = [
   { v: 4, l: 'Kam' }, { v: 5, l: 'Jum' }, { v: 6, l: 'Sab' }, { v: 0, l: 'Min' },
 ];
 
+// 🔥 S5+ (2026-10-13): log draf WAJIB mengaku AI-nya dipakai atau tidak.
+// "AI mengusulkan, sistem memutuskan" tidak berarti keputusannya disembunyikan.
+const teksAiJejak = (h) => (h?.aiJejak && Object.keys(h.aiJejak).length
+  ? ' · 🤖 AI: ' + Object.entries(h.aiJejak).map(([m, v]) => `${m}=${v}`).join(', ')
+  : '');
+
 const kosong = () => ({
   ...DEFAULT_TEMPLATE_SMA,
   nama: 'Try Out Otomatis',
@@ -176,7 +182,7 @@ export default function JadwalTryOutOtomatisPage() {
         const pm = h.ringkas?.perMapel
           ? Object.entries(h.ringkas.perMapel).map(([k, v]) => `${v} ${k}`).join(', ')
           : '';
-        return `📝 DRAF ${h.judul} · ${h.totalSoal} soal (${pm}) — belum tampil siswa`;
+        return `📝 DRAF ${h.judul} · ${h.totalSoal} soal (${pm})${teksAiJejak(h)} — belum tampil siswa`;
       }));
       setPesan('Draf disiapkan. Klik TERBITKAN agar siswa melihat.');
       await muat();
@@ -207,7 +213,7 @@ export default function JadwalTryOutOtomatisPage() {
         for (const h of hasil) {
           if (h.skipped) logs.push(`⏭️ [${t.nama}] ${h.judul} — ${h.alasan}`);
           else if (!h.ok) logs.push(`❌ [${t.nama}] ${h.error}`);
-          else logs.push(`📝 [${t.nama}] DRAF ${h.judul} · ${h.totalSoal} soal`);
+          else logs.push(`📝 [${t.nama}] DRAF ${h.judul} · ${h.totalSoal} soal${teksAiJejak(h)}`);
         }
       }
       setLog(logs);
