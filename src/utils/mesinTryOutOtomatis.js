@@ -21,6 +21,10 @@ import { kisiKisiUntuk } from './kisiKisiTkaUtbk.js';
 // kini hidup di modul murni terpisah + test sendiri supaya kehilangan
 // serupa berteriak di npm test, bukan di produksi hari Sabtu.
 import { pagarIdentitasTemplate, gerbangStokDraf, kisiKisiUntukBaris } from './pagarTryOutOtomatis.js';
+// 🔥 ROMBAK 2026-10-13: jenis ujian (TKA/Reguler/UTBK) menurunkan cakupan
+// materi & sasaran otomatis SEBELUM pagar & penyusunan soal — satu sumber
+// kebenaran dengan form admin (src/utils/aturanJenisUjian.js).
+import { terapkanJenisUjian } from './aturanJenisUjian.js';
 // 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
 // Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
 // Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
@@ -362,6 +366,11 @@ export function ringkasSoalUntukAdmin(daftarSoal) {
  */
 export async function siapkanDrafDariTemplate(template, slot, rules) {
   const r = rules || {};
+  // 🔥 ROMBAK 2026-10-13: TERAPKAN aturan jenis ujian lebih dulu (TKA =
+  // bank satu jenjang penuh + sasaran kelas akhir; UTBK = kelas 12).
+  // Tanpa ini template warisan bisa menyusupkan sasaran "Semua" atau
+  // menyaring bank per kelas padahal mode ujian butuh bank penuh.
+  template = terapkanJenisUjian(template || {});
   // 🔥 RESTORASI (2026-10-13): PAGAR IDENTITAS (S2) — dijalankan SEBELUM
   // baca Firestore & panggil AI: template cacat tidak boleh memakan kuota
   // Gemini maupun melahirkan draf bersasaran "Semua".
@@ -474,6 +483,9 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     otomatis: true,
     templateId: template.id || null,
     jenjangTemplate: template.jenjang || '',
+    // 🔥 ROMBAK 2026-10-13: jenis ujian ikut tersimpan di paket supaya
+    // audit nanti bisa menjawab "kenapa sasaran/materinya begini?".
+    jenisUjian: template.jenisUjian || '',
     komposisi: template.komposisi || [],
     rulesSnapshot: {
       soalAcak,
@@ -578,7 +590,7 @@ export async function siapkanDrafMingguIni(template, rules) {
         judul,
         id: ada.id,
         status: ada.status,
-        alasan: 'sudah ada (' + ada.status + ')',
+        alasan: 'sudah ada (' + ada.status + ') — hapus draf dulu bila ingin menyusun ulang',
       });
        
       continue;

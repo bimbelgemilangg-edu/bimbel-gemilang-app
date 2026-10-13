@@ -23,6 +23,11 @@
 // ============================================================
 import { bentukKanonikTarget } from './cocokkanTargetPaket.js';
 import { kisiKisiUntuk } from './kisiKisiTkaUtbk.js';
+// 🔥 ROMBAK 2026-10-13 (keputusan owner): jenis ujian menurunkan sasaran &
+// cakupan materi secara OTOMATIS (TKA = kelas akhir jenjang + bank penuh).
+// Pagar ikut membaca penurunan itu supaya template warisan ber-sasaran
+// "Semua" yang sebenarnya TKA tidak lagi ditolak maupun lolos salah sasaran.
+import { terapkanJenisUjian } from './aturanJenisUjian.js';
 
 /**
  * PAGAR IDENTITAS: template jenjang sekolah (SD/SMP/SMA/SMK) wajib punya
@@ -32,15 +37,22 @@ import { kisiKisiUntuk } from './kisiKisiTkaUtbk.js';
  * @returns {{ok:true}|{ok:false,error:string}}
  */
 export function pagarIdentitasTemplate(template = {}, izinkanSemua = false) {
-  const jenjangSekolah = /\b(SD|SMP|SMA|SMK)\b/i.test(String(template.jenjang || ''));
-  const targetKanonik = bentukKanonikTarget(template.targetKelas);
+  // 🔥 ROMBAK 2026-10-13: jenis ujian TKA/UTBK menurunkan sasaran otomatis
+  // (kelas akhir jenjang), jadi template warisan nama-TKA ber-"Semua"
+  // dinilai SETELAH penurunan — bukan ditolak, bukan juga lolos buta.
+  const t = terapkanJenisUjian(template || {});
+  const jenjangSekolah = /\b(SD|SMP|SMA|SMK)\b/i.test(String(t.jenjang || ''));
+  const targetKanonik = bentukKanonikTarget(t.targetKelas);
   if (jenjangSekolah && targetKanonik === 'Semua' && izinkanSemua !== true) {
     return {
       ok: false,
+      singkat: 'sasaran kelas masih "Semua"',
+      solusi: 'Edit rules → pilih Jenis ujian (TKA/UTBK mengisi sasaran otomatis), atau 💤 tidurkan template ini',
       error:
         'PAGAR IDENTITAS: template jenjang sekolah wajib punya targetKelas spesifik (bukan "Semua"). '
         + 'Paket tanpa sasaran = paket yang salah sasaran atau tak terlihat. '
-        + 'Isi "Sasaran kelas siswa" di form Edit rules, atau rules.izinkanSemua=true bila sungguh sadar.',
+        + 'Pilih "Jenis ujian" di form Edit rules (TKA/UTBK mengisi sasaran otomatis), '
+        + 'atau rules.izinkanSemua=true bila sungguh sadar.',
     };
   }
   return { ok: true };
@@ -59,6 +71,8 @@ export function gerbangStokDraf(kekurangan = [], izinkanKurang = false) {
     return {
       ok: false,
       kekurangan: kurang,
+      singkat: `stok soal kurang: ${kurang.map((k) => `${k.mapel} (${k.dapat}/${k.butuh})`).join(', ')}`,
+      solusi: 'impor stok soal dulu (Dasbor Kesiapan Stok menunjukkan urutannya)',
       error:
         `GERBANG STOK: mapel kekurangan butir untuk komposisi paket ini: `
         + `${kurang.map((k) => `${k.mapel} (${k.dapat}/${k.butuh})`).join(', ')}. `

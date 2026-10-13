@@ -14,6 +14,20 @@ uji('PAGAR IDENTITAS: jenjang sekolah + sasaran "Semua" DITOLAK', () => {
   assert.equal(pagarIdentitasTemplate({ jenjang: 'SD', targetKelas: ['Semua'] }).ok, false);
   assert.equal(pagarIdentitasTemplate({ jenjang: 'SMA', targetKelas: undefined }).ok, false);
 });
+uji('PAGAR IDENTITAS: template nama-TKA warisan ber-"Semua" lolos VIA penurunan jenis ujian', () => {
+  const h = pagarIdentitasTemplate({ jenjang: 'SMP', nama: 'TRY OUT PEMAHAMAN TKA SMP', targetKelas: 'Semua' });
+  assert.equal(h.ok, true); // jenis ujian TKA menurunkan sasaran kelas 9 otomatis
+  // template Reguler (nama tanpa TKA/UTBK) tetap ditolak walau bernama mirip
+  assert.equal(pagarIdentitasTemplate({ jenjang: 'SMA', nama: 'Try Out Wajib', targetKelas: ['Semua'] }).ok, false);
+});
+uji('PAGAR IDENTITAS: pesan penolakan punya ringkasan & cara perbaikan', () => {
+  const h = pagarIdentitasTemplate({ jenjang: 'SMP', targetKelas: 'Semua' });
+  assert.match(h.singkat, /sasaran kelas masih/);
+  assert.match(h.solusi, /Jenis ujian/);
+  const g = gerbangStokDraf([{ mapel: 'Matematika', butuh: 20, dapat: 4 }]);
+  assert.match(g.singkat, /stok soal kurang/);
+  assert.match(g.solusi, /Kesiapan Stok/);
+});
 uji('PAGAR IDENTITAS: sasaran spesifik lolos; izinkanSemua sadar lolos', () => {
   assert.equal(pagarIdentitasTemplate({ jenjang: 'SMP', targetKelas: '9' }).ok, true);
   assert.equal(pagarIdentitasTemplate({ jenjang: 'SMP/MTs', targetKelas: 'Kelas 9' }).ok, true);

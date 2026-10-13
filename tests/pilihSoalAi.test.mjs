@@ -24,7 +24,11 @@ uji('kisi-kisi resmi: SD/SMP dua mapel, SMA 3+7, UTBK 7 subtes', () => {
   assert.deepEqual(MAPEL_TKA_RESMI.SMP, ['Matematika', 'Bahasa Indonesia']);
   assert.equal(MAPEL_TKA_RESMI.SMA.pilihan.length, 7);
   assert.ok(VERSI_KISI.startsWith('2026'));
-  assert.ok(kisiKisiUntuk('SMP/MTs', 'TKA', 'Matematika').includes('materi kelas 7-9'));
+  // 🔥 ROMBAK 2026-10-13 (keputusan owner): prompt AI TKA TIDAK menyebut
+  // rentang kelas; AI diberitahu kolamnya bank soal jenjang seluruhnya.
+  const kisiTka = kisiKisiUntuk('SMP/MTs', 'TKA', 'Matematika');
+  assert.ok(kisiTka.includes('BANK SOAL'));
+  assert.equal(kisiTka.includes('7-9'), false);
 });
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
