@@ -106,6 +106,14 @@ export default function RakitTryOutGuruPage() {
   const [fJenjang, setFJenjang] = useState('');
   const [tKelas, setTKelas] = useState('Semua');
   const [tProgram, setTProgram] = useState('Semua');
+  const SHORT_JENJANG = { 'SD/MI': 'SD', 'SMP/MTs': 'SMP', 'SMA/MA': 'SMA', SMK: 'SMK', 'UTBK/SNBT': 'UTBK' };
+  // 🔥 BARU (2026-10-12): sasaran kelas & program dipilih EKSPLISIT. Sebelumnya
+  // form mengirim JENJANG sebagai targetKelas dan MAPEL sebagai targetKategori
+  // -- akar insiden paket terbit tak terlihat oleh siapa pun.
+  const sasaranKelas = () => (tKelas === 'Semua'
+    ? (fJenjang || 'Semua')
+    : `${tKelas}${fJenjang ? ` ${SHORT_JENJANG[fJenjang] || fJenjang}` : ''}`);
+
   // 🔥 2026-10-09 (owner): "harusnya di awal tentor udah memilih mapelnya
   // dahulu... gak mungkin mencampur mapel, tetapi tidak menutup kemungkinan
   // kasih tombol tambahkan mapel lain". Maka mapel jadi LANGKAH PERTAMA dan
@@ -234,14 +242,6 @@ export default function RakitTryOutGuruPage() {
     setKeranjang(hasil.keranjang);
     setPesanKirim(`✓ ${hasil.rincian.baru} butir masuk keranjang${hasil.rincian.sudahAda ? `, ${hasil.rincian.sudahAda} sudah ada` : ''}${hasil.rincian.dilewati ? `, ${hasil.rincian.dilewati} dilewati` : ''}.`);
   };
-
-  const SHORT_JENJANG = { 'SD/MI': 'SD', 'SMP/MTs': 'SMP', 'SMA/MA': 'SMA', SMK: 'SMK', 'UTBK/SNBT': 'UTBK' };
-  // 🔥 BARU (2026-10-12): sasaran kelas & program dipilih EKSPLISIT. Sebelumnya
-  // form mengirim JENJANG sebagai targetKelas dan MAPEL sebagai targetKategori
-  // -- akar insiden paket terbit tak terlihat oleh siapa pun.
-  const sasaranKelas = () => (tKelas === 'Semua'
-    ? (fJenjang || 'Semua')
-    : `${tKelas}${fJenjang ? ` ${SHORT_JENJANG[fJenjang] || fJenjang}` : ''}`);
 
   const kirimUsulan = useCallback(async () => {
     if (!putusan.boleh || mengirim) return;
