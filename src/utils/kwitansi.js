@@ -17,6 +17,10 @@
 // ============================================================
 
 import { db } from '../firebase';
+// Template cetak kwitansi dipindah ke modul murni (bisa diuji tanpa Firebase).
+import {
+  KERTAS_A4, KERTAS_KWITANSI, cssAturanPage, htmlKwitansi,
+} from './kwitansiTemplate';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 // ---------- TERBILANG & FORMAT RUPIAH ----------
@@ -90,7 +94,9 @@ export const ambilNomorKwitansiBerikutnya = async (date = new Date()) => {
 // ---------- CETAK LEWAT IFRAME ----------
 // srcdoc dipakai agar style print tidak bocor ke halaman utama.
 // Logo /pwa-192x192.png ikut ke-print karena iframe satu origin.
-export const cetakLewatIframe = (htmlIsi, judulDokumen = 'Cetak') => {
+// opsi.kertas: ukuran halaman (default A4; kwitansi memakai KERTAS_KWITANSI).
+export const cetakLewatIframe = (htmlIsi, judulDokumen = 'Cetak', opsi = {}) => {
+  const kertas = opsi.kertas || KERTAS_A4;
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
   iframe.style.right = '0';
@@ -107,8 +113,8 @@ export const cetakLewatIframe = (htmlIsi, judulDokumen = 'Cetak') => {
 <title>${judulDokumen}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: 24px; }
-  @page { size: A4; margin: 14mm; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: ${kertas === KERTAS_KWITANSI ? '10px' : '24px'}; }
+  ${cssAturanPage(kertas)}
   @media print { body { padding: 0; } .no-print { display: none !important; } }
   .tombol-cetak { position: fixed; top: 10px; right: 10px; padding: 10px 18px;
     background: #1e293b; color: #fff; border: none; border-radius: 8px;
@@ -127,92 +133,8 @@ ${htmlIsi}
   setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 60000);
 };
 
-// ---------- TEMPLATE KWITANSI ----------
-// data: { nomor, tanggal, diterimaDari, studentId, jumlah, keperluan,
-//         metode, refTransfer, catatanTambahan, penandaTangan }
-export const htmlKwitansi = (data) => {
-  const jumlah = parseInt(data.jumlah) || 0;
-  const logo = '/pwa-192x192.png';
-  return `
-<div style="max-width: 720px; margin: 0 auto; border: 3px double #0f172a; padding: 22px 26px;">
-  <table style="width:100%; border-collapse: collapse;">
-    <tr>
-      <td style="width:74px; vertical-align: top;">
-        <img src="${logo}" alt="Logo Bimbel Gemilang"
-             style="width:64px; height:64px; border-radius:50%; border:2px solid #0f172a;" />
-      </td>
-      <td style="vertical-align: top; padding-left: 12px;">
-        <div style="font-size: 20px; font-weight: 800; letter-spacing: 1px;">BIMBEL GEMILANG</div>
-        <div style="font-size: 11px; color: #334155;">Bimbingan Belajar &amp; Platform Edukasi Digital</div>
-        <div style="font-size: 11px; color: #334155;">Sistem Keuangan Resmi — Kwitansi Pembayaran</div>
-      </td>
-      <td style="text-align: right; vertical-align: top;">
-        <div style="font-size: 15px; font-weight: 800;">KWITANSI</div>
-        <div style="font-size: 12px; font-weight: 700; border: 1px solid #0f172a; display: inline-block; padding: 3px 8px; margin-top: 4px;">
-          No: ${data.nomor || '(tanpa nomor)'}
-        </div>
-      </td>
-    </tr>
-  </table>
-
-  <hr style="border: none; border-top: 2px solid #0f172a; margin: 14px 0;" />
-
-  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-    <tr>
-      <td style="width: 160px; padding: 5px 0; vertical-align: top; font-weight: 700;">Tanggal</td>
-      <td style="padding: 5px 0;">: ${tanggalPanjang(data.tanggal)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 5px 0; vertical-align: top; font-weight: 700;">Sudah Terima Dari</td>
-      <td style="padding: 5px 0;">: <b>${data.diterimaDari || '-'}</b>${data.studentId ? ` &nbsp;<span style="color:#475569;">(ID Siswa: ${data.studentId})</span>` : ''}</td>
-    </tr>
-    <tr>
-      <td style="padding: 5px 0; vertical-align: top; font-weight: 700;">Jumlah Uang</td>
-      <td style="padding: 5px 0;">: <b style="font-size: 14px; text-decoration: underline;">${terbilang(jumlah)} Rupiah</b></td>
-    </tr>
-    <tr>
-      <td style="padding: 5px 0; vertical-align: top; font-weight: 700;">Untuk Pembayaran</td>
-      <td style="padding: 5px 0;">: ${data.keperluan || '-'}</td>
-    </tr>
-    <tr>
-      <td style="padding: 5px 0; vertical-align: top; font-weight: 700;">Metode Bayar</td>
-      <td style="padding: 5px 0;">: ${data.metode || '-'}${data.refTransfer ? ` — No. Struk/Ref Bank: <b>${data.refTransfer}</b>` : ''}</td>
-    </tr>
-    ${data.catatanTambahan ? `
-    <tr>
-      <td style="padding: 5px 0; vertical-align: top; font-weight: 700;">Catatan</td>
-      <td style="padding: 5px 0;">: ${data.catatanTambahan}</td>
-    </tr>` : ''}
-  </table>
-
-  <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-    <tr>
-      <td></td>
-      <td style="width: 260px; text-align: right;">
-        <div style="border: 2px solid #0f172a; padding: 8px 12px; background: #f8fafc;">
-          <div style="font-size: 11px; font-weight: 700;">JUMLAH</div>
-          <div style="font-size: 19px; font-weight: 800;">${rp(jumlah)}</div>
-        </div>
-      </td>
-    </tr>
-  </table>
-
-  <table style="width: 100%; border-collapse: collapse; margin-top: 34px; font-size: 12px; text-align: center;">
-    <tr>
-      <td style="width: 50%; padding-bottom: 60px;">Pembayar / Orang Tua,<br /><br /><br /><br />( ______________________ )</td>
-      <td style="width: 50%; padding-bottom: 60px;">${data.penandaTangan || 'Admin Keuangan'},<br /><br /><br /><br />( ______________________ )</td>
-    </tr>
-  </table>
-
-  <div style="font-size: 9.5px; color: #64748b; border-top: 1px dashed #94a3b8; padding-top: 6px; margin-top: 4px;">
-    Dokumen ini dicetak otomatis oleh sistem Bimbel Gemilang dan sah sebagai bukti pembayaran.
-    Simpan kwitansi ini baik-baik. Nomor kwitansi tercatat permanen di sistem (bisa diverifikasi ke admin).
-  </div>
-</div>`;
-};
-
 export const cetakKwitansi = (data) => {
-  cetakLewatIframe(htmlKwitansi(data), `Kwitansi ${data.nomor || ''}`);
+  cetakLewatIframe(htmlKwitansi(data), `Kwitansi ${data.nomor || ''}`, { kertas: KERTAS_KWITANSI });
 };
 
 // Bangun data kwitansi dari dokumen finance_logs (mentah/normalisasi).
@@ -342,6 +264,7 @@ export const cetakBuktiSetorKas = (d) => {
 export default {
   terbilang, ambilNomorKwitansiBerikutnya, prefixKwitansiBulan,
   tanggalPanjang, rp, cetakLewatIframe, htmlKwitansi, cetakKwitansi,
+  KERTAS_A4, KERTAS_KWITANSI, cssAturanPage,
   kwitansiDariLog, htmlRingkasanKwitansi, cetakRingkasanKwitansi,
   htmlBuktiSetorKas, cetakBuktiSetorKas,
 };
