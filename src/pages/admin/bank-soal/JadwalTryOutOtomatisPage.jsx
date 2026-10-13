@@ -137,6 +137,7 @@ export default function JadwalTryOutOtomatisPage() {
         wajibKamera: !!edit.wajibKamera,
         soalAcak: edit.soalAcak !== false,
         tampilkanPembahasan: edit.tampilkanPembahasan !== false,
+        pakaiAi: edit.pakaiAi !== false,
         aktif: edit.aktif !== false,
         updatedAt: serverTimestamp(),
       };
@@ -371,6 +372,10 @@ export default function JadwalTryOutOtomatisPage() {
             <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 13 }}>
               <label style={st.check}><input type="checkbox" checked={edit.soalAcak !== false} onChange={(e) => setEdit({ ...edit, soalAcak: e.target.checked })} /> Soal acak</label>
               <label style={st.check}><input type="checkbox" checked={edit.antiCheatAktif !== false} onChange={(e) => setEdit({ ...edit, antiCheatAktif: e.target.checked })} /> Anti-cheat</label>
+              <label style={{ display: 'flex', gap: 7, alignItems: 'center', fontSize: 12, color: '#334155', marginBottom: 6 }}>
+                <input type="checkbox" checked={edit.pakaiAi !== false} onChange={(e) => setEdit({ ...edit, pakaiAi: e.target.checked })} />
+                🤖 AI memilih soal sesuai kisi-kisi CP TKA/UTBK (bila dimatikan: acak deterministik)
+              </label>
               <label style={st.check}><input type="checkbox" checked={!!edit.wajibKamera} onChange={(e) => setEdit({ ...edit, wajibKamera: e.target.checked })} /> Wajib kamera</label>
               <label style={st.check}><input type="checkbox" checked={edit.tampilkanPembahasan !== false} onChange={(e) => setEdit({ ...edit, tampilkanPembahasan: e.target.checked })} /> Pembahasan setelah selesai</label>
             </div>

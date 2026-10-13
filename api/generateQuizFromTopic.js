@@ -392,7 +392,7 @@ async function callTavilyResearchSearch(
     );
 
     try {
-      // eslint-disable-next-line no-await-in-loop
+       
       const response = await fetch(
         TAVILY_SEARCH_URL,
         {
@@ -5088,10 +5088,45 @@ function stripExamFormatMention(
 // MAIN HANDLER
 // ============================================================
 
+// 🔥 S5 (2026-10-13): MODE PEMILIH SOAL BER-KISI-KISI. AI hanya memilih &
+// mengurutkan id dari kolam yang dikirim sistem; tidak mengarang soal.
+// Kunci memakai routing kelompok yang SUDAH ADA (GEMINI_UTBK untuk subtes
+// UTBK, sehingga beban Sabtu tidak memakan kuota kuis harian).
+async function modePilihDariBank(req, res) {
+  const { ringkas = [], jumlah = 10, kisiKisi = '', kelompok = 'soal' } = req.body || {};
+  const apiKey = kunciGeminiUntuk(process.env, kelompok);
+  if (!apiKey) return res.status(500).json({ error: 'Kunci Gemini kelompok ' + kelompok + ' tidak tersedia.' });
+  const model = process.env.GEMINI_MODEL_PILIH || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const prompt = [
+    'Kamu adalah PEMILIH SOAL bank soal bimbel. Pilih TEPAT', jumlah, 'butir dari kolam berikut.',
+    'KISI-KISI:', kisiKisi,
+    'ATURAN: hanya boleh memakai id dari kolam; urutkan dari paling mewakili kisi-kisi;',
+    'beri alasan <= 25 kata per pilihan; tandai id yang kamu ragukan di "ragu".',
+    'Balas HANYA JSON: {"pilihan":[{"id":"...","alasan":"..."}],"ragu":["..."]}',
+    'KOLAM:', JSON.stringify(ringkas),
+  ].join('\n');
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
+      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.2 }),
+    });
+    const j = await r.json();
+    const teks = j?.choices?.[0]?.message?.content || '';
+    const m = /\{[\s\S]*\}/.exec(teks);
+    const parsed = m ? JSON.parse(m[0]) : {};
+    return res.status(200).json({ ...parsed, model });
+  } catch (e) {
+    return res.status(200).json({ pilihan: [], error: String(e?.message || e), model });
+  }
+}
+
 export default async function handler(
   req,
   res,
 ) {
+  if (req.method === 'POST' && req.body?.mode === 'pilih-dari-bank') return modePilihDariBank(req, res);
+
   // 🔥 BARU: catat kapan request ini mulai, dipakai buat menghitung
   // sisa waktu yang aman untuk langkah pencarian gambar Tavily di
   // akhir -- supaya total kerja (AI + gambar) gak pernah melewati

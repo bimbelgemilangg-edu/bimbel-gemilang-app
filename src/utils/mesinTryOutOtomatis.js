@@ -14,6 +14,8 @@ import {
 } from 'firebase/firestore';
 import { layakUntukTryOut, cocokKelasBank } from './layakTryOut.js';
 import { buatKodePaket } from './kodePaket.js';
+import { ringkasButirUntukAi, validasiPilihanAi } from './pilihSoalAi.js';
+import { kisiKisiUntuk } from './kisiKisiTkaUtbk.js';
 // 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
 // Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
 // Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
@@ -94,6 +96,8 @@ export async function ambilSoalDariBank(opts) {
     level,
     jumlah = 10,
     excludeIds = new Set(),
+    pakaiAi = false,
+    kisiKisi = '',
     kelompok,
   } = opts || {};
 
@@ -137,7 +141,43 @@ export async function ambilSoalDariBank(opts) {
   }
 
   pool = pool.filter((s) => !excludeIds.has(s.id));
-  pool = acakArray(pool);
+
+  // 🔥 S5 (2026-10-13): AI PEMILIH SOAL DALAM PAGAR. AI hanya boleh
+  // memilih & mengurutkan dari kolam tervalidasi ini, dengan alasan per
+  // butir; keluaran yang tidak lolos validasi dibuang dan mesin jatuh ke
+  // acak deterministik. Jejak disimpan per butir (aiSelection/alasanAi)
+  // sehingga tiap pilihan bisa diaudit dan ditinjau tentor.
+  let aiSelection = null;
+  if (pakaiAi && pool.length > jumlah && typeof fetch === 'function') {
+    try {
+      const resp = await fetch('/api/generateQuizFromTopic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'pilih-dari-bank',
+          kelompok: /UTBK|SNBT/i.test(String(mapel)) ? 'utbk' : 'soal',
+          kisiKisi: kisiKisi || kisiKisiUntuk('', '', String(mapel)),
+          jumlah,
+          ringkas: pool.slice(0, 300).map(ringkasButirUntukAi),
+        }),
+      });
+      const j = await resp.json();
+      const v = validasiPilihanAi(j, new Set(pool.map((x) => x.id)), jumlah);
+      if (v.ok) {
+        const peta = new Map(pool.map((x) => [x.id, x]));
+        pool = v.urutan.map((u) => ({ ...peta.get(u.id), alasanAi: u.alasan }));
+        aiSelection = { status: 'dipakai', model: j.model || '', ragu: v.ragu, kisiKisi: kisiKisi || '' };
+      } else {
+        aiSelection = { status: 'fallback', alasan: v.alasanGagal };
+      }
+    } catch (e) {
+      aiSelection = { status: 'fallback', alasan: String(e?.message || e) };
+    }
+  }
+  if (aiSelection) pool = pool.map((x) => ({ ...x, aiSelection }));
+  // urutan pilihan AI TIDAK diacak ulang (urutan = bagian dari keputusan AI);
+  // acak hanya berlaku untuk jalur deterministik/fallback.
+  if (!(pakaiAi && aiSelection?.status === 'dipakai')) pool = acakArray(pool);
 
   if (pool.length < jumlah) {
     const snap2 = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
@@ -189,7 +229,7 @@ export async function idSoalBaruDipakai(jenjang, batasPaket = 10) {
   return ids;
 }
 
-export async function susunSoalDariKomposisi(template, excludeIds) {
+export async function susunSoalDariKomposisi(template, excludeIds, opts = {}) {
   const hasil = [];
   const grupMapel = [];
   const kekurangan = [];
@@ -205,6 +245,8 @@ export async function susunSoalDariKomposisi(template, excludeIds) {
       level: baris.level || null,
       jumlah: butuh,
       excludeIds: dipakai,
+      pakaiAi: opts.pakaiAi === true,
+      kisiKisi: opts.kisiKisi || '',
       kelompok: baris.kelompok || template.kelompokBank || null,
     });
     const ids = [];
@@ -305,7 +347,10 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     if (exclude && typeof exclude.add === 'function') exclude.add(idTambahan);
     else if (Array.isArray(exclude)) exclude.push(idTambahan);
   }
-  const susunan = await susunSoalDariKomposisi(template, exclude);
+  const susunan = await susunSoalDariKomposisi(template, exclude, {
+    pakaiAi: r.pakaiAi !== false && template.pakaiAi !== false,
+    kisiKisi: kisiKisiUntuk(template.jenjang, template.jenisUjian || r.jenisUjian || ''),
+  });
   let daftarSoal = susunan.daftarSoal || [];
   const grupMapel = susunan.grupMapel || [];
   const soalAcak = r.soalAcak !== false && template.soalAcak !== false;
