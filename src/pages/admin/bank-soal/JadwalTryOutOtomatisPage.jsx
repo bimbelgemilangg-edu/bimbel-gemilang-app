@@ -47,13 +47,20 @@ export default function JadwalTryOutOtomatisPage() {
   //Pengambilan data dipisah ke fungsi modul TANPA setState sama sekali.
   // Rule CI react-hooks/set-state-in-effect menelusuri masuk ke fungsi yang
   // dipanggil effect, jadi satu-satunya pola yang bersih: effect memanggil
+  // 🔥 BARU (2026-10-13): dropdown sasaran diisi dari KELAS YANG SUNGGUH
+  // ADA di data siswa, bukan teks bebas -- permintaan owner supaya admin
+  // tidak menebak-nebak nilai kelas.
+  const [kelasSiswa, setKelasSiswa] = useState([]);
   // fungsi murni ini lalu setState sendiri SETELAH await (pola yang sama
   // dengan DaftarTryOutPage.jsx).
   async function ambilTemplateDanDraf() {
-    const [st, sp] = await Promise.all([
+    const [st, sp, ss] = await Promise.all([
       getDocs(collection(db, COL_TEMPLATE)),
       getDocs(collection(db, COL_PAKET)),
+      getDocs(collection(db, 'students')),
     ]);
+    const unikKelas = new Set();
+    ss.forEach((d) => { const k = String(d.data().kelasSekolah || '').trim(); if (k) unikKelas.add(k); });
     const paket = sp.docs.map((d) => ({ id: d.id, ...d.data() }));
     const otomatis = paket
       .filter((p) => p.otomatis)
@@ -63,7 +70,7 @@ export default function JadwalTryOutOtomatisPage() {
         return tb - ta;
       })
       .slice(0, 30);
-    return { templates: st.docs.map((d) => ({ id: d.id, ...d.data() })), otomatis };
+    return { templates: st.docs.map((d) => ({ id: d.id, ...d.data() , kelasSiswa: [...unikKelas].sort((a,b)=>a.localeCompare(b,'id',{numeric:true})) })), otomatis };
   }
 
   // Pemanggilan manual (tombol): spinner disetel di event handler, tempat
@@ -74,6 +81,7 @@ export default function JadwalTryOutOtomatisPage() {
       const d = await ambilTemplateDanDraf();
       setTemplates(d.templates);
       setDrafList(d.otomatis);
+      setKelasSiswa(d.kelasSiswa || []);
     } catch (e) {
       setPesan('❌ ' + e.message);
     } finally {
@@ -333,8 +341,22 @@ export default function JadwalTryOutOtomatisPage() {
                   <option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option>
                 </select>
               </label>
-              <label style={st.label}>Kelas filter bank<input style={st.input} value={edit.kelas || ''} onChange={(e) => setEdit({ ...edit, kelas: e.target.value })} placeholder="12" /></label>
-              <label style={st.label}>Sasaran kelas siswa (audience)<input style={st.input} value={edit.targetKelas || ''} onChange={(e) => setEdit({ ...edit, targetKelas: e.target.value })} placeholder={edit.kelas ? `${edit.kelas} ${edit.jenjang || ''}`.trim() : 'kosongkan = ikut kelas filter'} /></label>
+              <label style={st.label}>Cakupan materi bank (isi soal)
+                {/* 🔥 2026-10-13 (riset owner): TKA/UJIAN kelas 9 menguji materi
+                    kelas 7-9, jadi menyaring isi ke satu kelas SALAH untuk mode
+                    ujian. Default ujian = satu jenjang penuh; mode satu kelas
+                    disediakan untuk ulangan berjalan. */}
+                <select style={st.input} value={edit.kelas || ''} onChange={(e) => setEdit({ ...edit, kelas: e.target.value })}>
+                  <option value="">Satu jenjang penuh (TKA SMP = materi kelas 7-9)</option>
+                  {kelasSiswa.map((k) => <option key={k} value={k}>Hanya kelas {k} (ulangan berjalan)</option>)}
+                </select>
+              </label>
+              <label style={st.label}>Sasaran kelas siswa (audience)
+                <select style={st.input} value={edit.targetKelas || ''} onChange={(e) => setEdit({ ...edit, targetKelas: e.target.value })}>
+                  <option value="">Semua kelas (pagar identitas menolak ini untuk jenjang sekolah)</option>
+                  {kelasSiswa.map((k) => <option key={k} value={k}>Kelas {k} (sesuai data siswa)</option>)}
+                </select>
+              </label>
               <label style={st.label}>Sasaran program/kategori<input style={st.input} value={edit.targetKategori || ''} onChange={(e) => setEdit({ ...edit, targetKategori: e.target.value })} placeholder="Semua / Reguler / Intensif" /></label>
               <label style={st.label}>Jam buka<input style={st.input} type="time" value={edit.jamBuka || '07:00'} onChange={(e) => setEdit({ ...edit, jamBuka: e.target.value })} /></label>
               <label style={st.label}>Durasi (menit)<input style={st.input} type="number" value={edit.durasiTotalMenit || 90} onChange={(e) => setEdit({ ...edit, durasiTotalMenit: Number(e.target.value) })} /></label>
