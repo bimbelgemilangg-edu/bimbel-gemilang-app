@@ -207,9 +207,14 @@ export default function JadwalTryOutOtomatisPage() {
     }
   }
 
+  // 🔥 BARU (2026-10-13): konfirmasi terbit WAJIB memperlihatkan sasaran,
+  // jumlah, jendela, dan sumber -- insiden paket 3 soal ber-target "Semua"
+  // terjadi karena tombol terbit tidak menanyakan apa-apa yang berisi angka.
+  const barisSasaran = (p) => `• ${p.judul || '(tanpa judul)'}\n    sasaran: ${p.targetKelas || '(kosong)'} / ${p.targetKategori || '(kosong)'} · ${p.totalSoal} soal\n    jendela: ${p.waktuBuka ? new Date(p.waktuBuka).toLocaleString('id-ID') : '-'} s.d. ${p.waktuTutup ? new Date(p.waktuTutup).toLocaleString('id-ID') : '-'}\n    sumber: ${p.sumber === 'mesin-otomatis' ? '🤖 mesin otomatis' : p.dibuatOleh === 'tentor' ? '🧑‍ tentor' : '🛠️ admin'}`;
+
   async function klikTerbitkan(paket) {
     if (!window.confirm(
-      `Terbitkan "${paket.judul}"?\n\nSiswa akan melihat try out ini.\nIsi soal tetap dikunci sistem (tidak bisa diubah).`
+      `Terbitkan paket ini ke siswa?\n\n${barisSasaran(paket)}\n\nSiswa akan melihat try out ini. Isi soal tetap dikunci sistem (tidak bisa diubah). Periksa SASARAN & JUMLAH sebelum OK.`
     )) return;
     setBusy(true);
     try {
@@ -232,7 +237,7 @@ export default function JadwalTryOutOtomatisPage() {
   async function terbitkanSemuaDraf() {
     const draf = drafList.filter((p) => p.status === 'draf');
     if (!draf.length) return setPesan('Tidak ada draf menunggu.');
-    if (!window.confirm(`Terbitkan ${draf.length} draf sekaligus ke siswa?`)) return;
+    if (!window.confirm(`Terbitkan ${draf.length} draf sekaligus ke siswa?\n\n${draf.map(barisSasaran).join('\n')}\n\nPERIKSA SATU PER SATU: sasaran, jumlah soal, jendela waktu. Batal bila ada yang tidak Anda kenali.`)) return;
     setBusy(true);
     try {
       for (const p of draf) {
