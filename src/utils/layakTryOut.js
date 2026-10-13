@@ -35,4 +35,21 @@ export function layakUntukTryOut(s = {}) {
   return true;
 }
 
-export default { layakUntukTryOut };
+/**
+ * Saringan KELAS untuk pengambilan soal mesin try out.
+ * 🔥 BARU (2026-10-13): sebelumnya filter kelas hanya dipakai di pool utama;
+ * jalur cadangan (saat pool kurang) TIDAK menyaring kelas maupun kelayakan,
+ * sehingga butir kelas 7/8 bocor ke paket kelas 9 (terbukti pada audit draf
+ * "UJI TKA SMP": 7:7, 8:10, 9:43). Kini satu fungsi dipakai kedua jalur.
+ * Butir TANPA field kelas tetap lolos bila jenjangnya cocok (stok lama
+ * banyak yang tidak berkkelas) -- tetapi dilaporkan dasbor sebagai '?'.
+ */
+export function cocokKelasBank(s = {}, kelas = null) {
+  const k = String(kelas ?? '').trim();
+  if (!k) return true;
+  const sk = String(s.kelas ?? s.tingkatKelas ?? '').trim();
+  if (!sk) return true;
+  return sk === k || sk.includes(k) || k.includes(sk);
+}
+
+export default { layakUntukTryOut, cocokKelasBank };

@@ -12,6 +12,8 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
+import { layakUntukTryOut, cocokKelasBank } from './layakTryOut.js';
+import { buatKodePaket } from './kodePaket.js';
 // 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
 // Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
 // Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
@@ -83,10 +85,6 @@ export function cocokkanJenjang(soalJenjang, targetJenjang) {
   return s === t;
 }
 
-import { layakUntukTryOut } from './layakTryOut.js';
-import { buatKodePaket } from './kodePaket.js';
-export { layakUntukTryOut };
-
 export async function ambilSoalDariBank(opts) {
   const {
     mapel,
@@ -113,9 +111,6 @@ export async function ambilSoalDariBank(opts) {
   }
 
   let pool = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  // defensif: bila query pertama jatuh ke fallback tanpa saringan status,
-  // gerbang kelayakan di sini yang menahan butir non-aktif.
-  pool = pool.filter(layakUntukTryOut);
 
   if (mapel) {
     pool = pool.filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
@@ -123,13 +118,8 @@ export async function ambilSoalDariBank(opts) {
   if (jenjang) {
     pool = pool.filter((s) => cocokkanJenjang(s.jenjang, jenjang));
   }
-  if (kelas) {
-    const k = String(kelas);
-    pool = pool.filter((s) => {
-      const sk = String(s.kelas || s.tingkatKelas || '');
-      return !sk || sk === k || sk.includes(k);
-    });
-  }
+  pool = pool.filter(layakUntukTryOut);
+  if (kelas) pool = pool.filter((s) => cocokKelasBank(s, kelas));
   if (bab) {
     const b = norm(bab);
     pool = pool.filter((s) => {
@@ -152,11 +142,8 @@ export async function ambilSoalDariBank(opts) {
   if (pool.length < jumlah) {
     const snap2 = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
     let extra = snap2.docs.map((d) => ({ id: d.id, ...d.data() }));
-    // 🔥 FIX (2026-10-12): jalur extra dulu TIDAK menyaring status --
-    // butir terhapus/nonaktif bisa masuk draf saat pool utama kekurangan.
-    extra = extra.filter(layakUntukTryOut);
     if (mapel) {
-      extra = extra.filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
+      extra = extra.filter((x) => layakUntukTryOut(x) && cocokKelasBank(x, kelas)).filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
     }
     if (jenjang) {
       extra = extra.filter((s) => cocokkanJenjang(s.jenjang, jenjang));
@@ -313,10 +300,7 @@ export function ringkasSoalUntukAdmin(daftarSoal) {
 export async function siapkanDrafDariTemplate(template, slot, rules) {
   const r = rules || {};
     const exclude = await idSoalBaruDipakai(template.jenjang, 10);
-  // 🔥 BARU (2026-10-12, paket SUSULAN): pemanggil boleh menyuntik id yang
-  // wajib dilewati -- dipakai alur siswa telat: paket susulan memakai
-  // template yang sama tetapi TIDAK boleh memuat butir paket asli yang
-  // masih hidup (kebijakan anti-bocor REKAM-PAKET-&-DESAIN-MOTIVASI.md).
+  // fitur preview: paket SUSULAN menyuntik id yang wajib dilewati
   for (const idTambahan of (r.excludeIds || [])) {
     if (exclude && typeof exclude.add === 'function') exclude.add(idTambahan);
     else if (Array.isArray(exclude)) exclude.push(idTambahan);
@@ -338,29 +322,6 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   }
 
   const kekurangan = susunan.kekurangan || [];
-
-  // 🔥 S2 (KEPUTUSAN FINAL 2026-10-12): PAGAR IDENTITAS & GERBANG STOK.
-  // (1) Template jenjang sekolah (SD/SMP/SMA/SMK) WAJIB punya targetKelas
-  //     spesifik: paket ber-target "Semua" adalah paket yang tadi malam
-  //     terlihat oleh semua jenjang atau tidak terlihat sama sekali.
-  // (2) Draf DIBLOKIR bila ada mapel kekurangan butir terhadap komposisi:
-  //     mesin berhenti "menerbit apa adanya". Pelintas sadar:
-  //     rules.izinkanKurang=true / rules.izinkanSemua=true.
-  const jenjangSekolah = /\b(SD|SMP|SMA|SMK)\b/i.test(String(template.jenjang || ''));
-  const targetKanonik = bentukKanonikTarget(template.targetKelas);
-  if (jenjangSekolah && targetKanonik === 'Semua' && r.izinkanSemua !== true) {
-    return {
-      ok: false,
-      error: 'PAGAR IDENTITAS: template jenjang sekolah wajib punya targetKelas spesifik (bukan "Semua"). Paket tanpa sasaran = paket yang salah sasaran atau tak terlihat. Isi targetKelas template, atau rules.izinkanSemua=true bila sungguh sadar.',
-    };
-  }
-  if (kekurangan.length && r.izinkanKurang !== true) {
-    return {
-      ok: false,
-      kekurangan,
-      error: `GERBANG STOK: mapel kekurangan butir untuk komposisi paket ini: ${kekurangan.map((k) => `${k.mapel} (${k.dapat}/${k.butuh})`).join(', ')}. Render stok dulu (Dasbor Kesiapan Stok menunjukkan urutannya), atau rules.izinkanKurang=true bila sungguh sadar.`,
-    };
-  }
   if (!daftarSoal.length) {
     const rinci = (template.komposisi || [])
       .map((b) => b.mapel)
@@ -426,14 +387,11 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     sumber: 'mesin-otomatis',
-    // 🔥 BARU (2026-10-12, ledger paket): kode terbaca manusia supaya paket
-    // bisa disebut siswa di WA, dicari admin per kode/tanggal, dan kelak
-    // dicetak ulang setelah arsip. Dibentuk dari jenjang+jenis+waktu buka
-    // slot (unik per menit); keunikan keras tetap di id dokumen. Lihat
-    // utils/kodePaket.js & REKAM-PAKET-&-DESAIN-MOTIVASI.md.
+    // 🔥 BARU (2026-10-13): kode paket ledger ikut ke produksi supaya tiap
+    // draf mesin bisa disebut siswa/tentor/admin dengan bahasa yang sama.
     kodePaket: buatKodePaket({
       jenjang: template.jenjang || '',
-      jenisUjian: template.jenisUjian || r.jenisUjian || '',
+      jenisUjian: template.jenisUjian || '',
       tanggal: slot?.waktuBuka
         ? (typeof slot.waktuBuka.toDate === 'function' ? slot.waktuBuka.toDate() : new Date(slot.waktuBuka))
         : new Date(),
@@ -453,9 +411,6 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     // tapi membuat admin bisa tahu bahwa "30 soal diminta, 22 didapat".
     // TODO: tampilkan di log hasil JadwalTryOutOtomatisPage.
     kekurangan,
-    // 🔥 BARU: kode ledger dikembalikan supaya pemanggil (halaman Riwayat
-    // Paket / alur susulan) bisa langsung menyebut paket barunya.
-    kodePaket: payload.kodePaket,
     ringkas: payload.ringkas,
     slot,
     status: 'draf',
