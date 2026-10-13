@@ -18,6 +18,10 @@ import {
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
+// 🔥 BARU (hotfix 2026-10-13): pintu koreksi SATU baris buku besar (diskon /
+// salah nominal / salah metode) + detektor "dua buku tidak cocok".
+import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
+import { selisihRingkasanVsLedger, validasiAlasanKoreksi } from '../../../utils/koreksiNominalTransaksi';
 
 // 🔥 FIX BUG NYATA (zona waktu): "tanggal hari ini" untuk transaksi harus
 // dihitung dari waktu LOKAL perangkat, bukan toISOString() (UTC) -- selama
@@ -71,6 +75,13 @@ const StudentFinance = () => {
   const [showKoreksiModal, setShowKoreksiModal] = useState(false);
   const [koreksiData, setKoreksiData] = useState(null);
   const [isKoreksiProcessing, setIsKoreksiProcessing] = useState(false);
+  // 🔥 BARU: log buku besar yang sedang dikoreksi nominal/metodenya lewat
+  // pintu baru (DialogKoreksiTransaksi) -- null = dialog tertutup.
+  const [koreksiTransaksiLog, setKoreksiTransaksiLog] = useState(null);
+  // 🔥 BARU: error alasan koreksi ditampilkan INLINE (merah, nempel di field),
+  // bukan cuma toast 3,5 detik yang gampang kelewat (akar keluhan "klik
+  // Simpan tapi gak terjadi apa-apa").
+  const [alasanError, setAlasanError] = useState('');
   const [perpanjangData, setPerpanjangData] = useState({
     // 🔥 FIX BUG NYATA & BERBAHAYA (laporan langsung: "harusnya perpanjang
     // 1 bulan, kepencet jadi 3 bulan"): sebelumnya default `durasiTambah`
@@ -199,14 +210,17 @@ const StudentFinance = () => {
     setLoading(false);
   };
 
-  useEffect(() => { 
-    if (id) fetchData(); 
-  }, [id]);
+  // fetchData sengaja cuma dipicu perubahan route id; memasukkannya ke deps
+  // bikin loop (fetchData direcreate tiap render).
+  useEffect(() => {
+    if (id) fetchData();
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 🔥 Fetch harga paket setelah student tersedia
+  // Harga paket cuma perlu dimuat ulang saat ganti siswa, bukan tiap render.
   useEffect(() => {
     if (student) fetchHargaPaket();
-  }, [student]);
+  }, [student]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ===== HELPER =====
   const isAlreadyLunas = () => {
@@ -313,9 +327,13 @@ const StudentFinance = () => {
   // sendiri semua field, tentuin nilai yang BENAR, dan sistem cuma
   // nyimpen itu -- gak nebak-nebak.
   const handleSimpanKoreksi = async () => {
-    if (!koreksiData.alasan.trim()) {
-      return showAlert('⚠️ Isi dulu alasan koreksi (buat jejak audit, biar jelas kenapa datanya diubah manual).');
+    const alasanErr = validasiAlasanKoreksi(koreksiData.alasan);
+    if (alasanErr) {
+      setAlasanError(alasanErr);
+      showAlert('⚠️ ' + alasanErr);
+      return;
     }
+    setAlasanError('');
     setIsKoreksiProcessing(true);
     try {
       const payload = {
@@ -749,6 +767,10 @@ const StudentFinance = () => {
   const sisa = getSisaTagihan();
   const isLunas = isAlreadyLunas();
   const masa = getMasaStatus();
+  // 🔥 BARU: detektor "dua buku tidak cocok" -- ringkasan (field siswa) vs
+  // buku besar (finance_logs). Kalau tidak nol, hampir pasti ada diskon /
+  // salah input / koreksi lama yang belum tuntas di sisi buku besar.
+  const selisihBuku = selisihRingkasanVsLedger({ logs: financeLogs, totalBayar: student.totalBayar });
 
   return (
     <div style={styles.wrapper}>
@@ -792,6 +814,18 @@ const StudentFinance = () => {
             </div>
           </div>
         </div>
+
+        {selisihBuku !== 0 && (
+          <div style={styles.bannerSelisih}>
+            <AlertCircle size={15} style={{ flexShrink: 0 }} />
+            <div>
+              <strong>Ringkasan & buku besar tidak cocok (selisih Rp {Math.abs(selisihBuku).toLocaleString()}).</strong>{' '}
+              Biasanya ada diskon / salah nominal / salah metode pada salah satu baris Riwayat Pembayaran yang belum
+              dikoreksi dari sisi buku besar. Klik ✏️ Koreksi pada baris riwayat yang salah -- JANGAN pakai
+              "Koreksi Data" untuk menutupi selisih ini (koreksi itu hanya menimpa ringkasan, buku besar & kwitansi tetap).
+            </div>
+          </div>
+        )}
 
         <div style={styles.gridContainer(isMobile)}>
           {/* KIRI - Ringkasan */}
@@ -953,6 +987,9 @@ const StudentFinance = () => {
                           <>
                             <strong style={{color: '#0f766e', fontSize: 11}}>📋 Komitmen Cicilan</strong>
                             <div style={{fontSize: 9, color: '#94a3b8'}}>Rp {log.amount?.toLocaleString()} -- belum diterima</div>
+                            <button onClick={() => setKoreksiTransaksiLog(log)} style={styles.btnKwitansiKecil} title="Koreksi nominal/metode transaksi ini">
+                              <Edit3 size={10} /> Koreksi
+                            </button>
                           </>
                         ) : (
                           <>
@@ -965,6 +1002,13 @@ const StudentFinance = () => {
                                 kwitansi langsung dari riwayat siswa. */}
                             <button onClick={() => cetakUlangKwitansi(log)} style={styles.btnKwitansiKecil} title="Cetak kwitansi">
                               <Printer size={10} /> {log.noKwitansi ? 'Cetak Ulang' : 'Buat Kwitansi'}
+                            </button>
+                            {/* 🔥 BARU: pintu koreksi nominal/metode per baris
+                                buku besar (diskon, salah input, salah metode) --
+                                termasuk baris bulan lama yang tidak muncul di
+                                halaman Riwayat Transaksi (terkunci bulan berjalan). */}
+                            <button onClick={() => setKoreksiTransaksiLog(log)} style={styles.btnKwitansiKecil} title="Koreksi nominal/metode transaksi ini">
+                              <Edit3 size={10} /> Koreksi
                             </button>
                           </>
                         )}
@@ -1163,6 +1207,9 @@ const StudentFinance = () => {
                     Ini buat MEMBETULKAN data yang salah input (bukan buat perpanjangan beneran).
                     Nilai di bawah ini akan LANGSUNG MENIMPA data siswa, tanpa nambah/kurang riwayat transaksi.
                     Wajib isi alasan di bawah -- ini bakal dicatat sebagai jejak audit.
+                    ⚠️ Baris Riwayat Pembayaran & kwitansi TIDAK ikut berubah dari sini -- kalau yang salah
+                    adalah NOMINAL/METODE satu transaksi (mis. diskon perpanjangan), pakai tombol
+                    ✏️ Koreksi pada baris riwayat tersebut di kartu sebelah kanan.
                   </span>
                 </div>
 
@@ -1216,10 +1263,13 @@ const StudentFinance = () => {
                   <label style={styles.label}>Alasan Koreksi <span style={{ color: '#ef4444' }}>*wajib</span></label>
                   <textarea
                     value={koreksiData.alasan}
-                    onChange={e => setKoreksiData(p => ({ ...p, alasan: e.target.value }))}
+                    onChange={e => { setKoreksiData(p => ({ ...p, alasan: e.target.value })); if (alasanError) setAlasanError(''); }}
                     placeholder="Contoh: salah pilih metode bayar pas pendaftaran, seharusnya Tunai bukan Cicilan"
-                    style={{ ...styles.input, minHeight: 60, resize: 'vertical', fontFamily: 'inherit' }}
+                    style={{ ...styles.input, minHeight: 60, resize: 'vertical', fontFamily: 'inherit', borderColor: alasanError ? '#ef4444' : undefined }}
                   />
+                  {alasanError && (
+                    <p style={{ fontSize: 10.5, color: '#dc2626', fontWeight: 700, margin: '4px 0 0' }}>⚠️ {alasanError}</p>
+                  )}
                 </div>
 
                 <div style={styles.modalFooter}>
@@ -1231,6 +1281,24 @@ const StudentFinance = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* 🔥 BARU: PINTU KOREKSI TRANSAKSI (diskon / salah nominal / salah
+            metode per baris buku besar) -- menulis buku besar + data siswa
+            atomik, wajib PIN Owner + alasan, tercatat di koreksi_data_log. */}
+        {koreksiTransaksiLog && (
+          <DialogKoreksiTransaksi
+            log={koreksiTransaksiLog}
+            siswa={student}
+            siswaId={id}
+            namaSiswa={student?.nama}
+            onClose={() => setKoreksiTransaksiLog(null)}
+            onSukses={() => {
+              setKoreksiTransaksiLog(null);
+              showAlert('✅ Transaksi dikoreksi -- buku besar & data siswa sudah sinkron.');
+              fetchData();
+            }}
+          />
         )}
 
       </div>
@@ -1300,6 +1368,7 @@ const styles = {
   historyNote: { fontSize: 9, color: '#94a3b8' },
   historyRight: { textAlign: 'right' },
   // 🔥 BARU: tombol kecil cetak kwitansi di baris riwayat pembayaran.
+  bannerSelisih: { display: 'flex', gap: 10, alignItems: 'flex-start', background: '#fff7ed', border: '1.5px solid #f59e0b', borderRadius: 12, padding: '10px 12px', marginBottom: 14, fontSize: 11.5, color: '#7c2d12', lineHeight: 1.55 },
   btnKwitansiKecil: { display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4, padding: '3px 8px', background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: 6, cursor: 'pointer', fontWeight: 800, fontSize: 9 },
   
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 },

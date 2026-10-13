@@ -8,6 +8,9 @@ import {
   Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock, Printer
 } from 'lucide-react';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
+// 🔥 BARU (hotfix 2026-10-13): pintu koreksi nominal/metode transaksi
+// (diskon / salah input) dengan kaskade atomik ke data siswa + jejak audit.
+import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState([]);
@@ -22,6 +25,8 @@ const TransactionHistory = () => {
   // === EDIT ===
   const [showEdit, setShowEdit] = useState(false);
   const [editData, setEditData] = useState(null);
+  // 🔥 BARU: pintu koreksi nominal/metode transaksi (diskon / salah input).
+  const [koreksiLog, setKoreksiLog] = useState(null);
 
   // === PIN ===
   const [ownerPin, setOwnerPin] = useState('');
@@ -422,8 +427,14 @@ const TransactionHistory = () => {
     // cara yang BENAR & AMAN adalah HAPUS transaksi ini (otomatis
     // membalikkan SEMUA field terkait, lihat reversePerpanjangan()) lalu
     // ulangi "Perpanjang Paket" dengan input yang benar dari awal.
+    // 🔥 BARU (hotfix 2026-10-13, kasus nyata: perpanjangan DIDISKON owner
+    // jadi 900rb tapi tidak ada pintu buat mengoreksi nominalnya): kategori
+    // ini tidak lagi diblokir total -- dialihkan ke PINTU KOREKSI TRANSAKSI
+    // (DialogKoreksiTransaksi) yang mengoreksi nominal/metode dengan kaskade
+    // atomik ke data siswa + PIN Owner + alasan berjejak audit. Durasi &
+    // tanggal selesai tetap tidak berubah (koreksi diskon = urusan uang).
     if (item.category === 'Perpanjangan Paket') {
-      alert('⚠️ Transaksi "Perpanjangan Paket" tidak bisa diedit langsung di sini (nominalnya terkait ke tanggal selesai & durasi paket siswa).\n\nKalau ada kesalahan input, HAPUS transaksi ini (klik ikon tempat sampah) -- sistem akan otomatis membalikkan tagihan, tanggal selesai, dan durasi paket siswa ke posisi semula. Setelah itu, ulangi "Perpanjang Paket" dari halaman Keuangan Siswa dengan input yang benar.');
+      setKoreksiLog(item);
       return;
     }
     setPinInput('');
@@ -934,6 +945,21 @@ const TransactionHistory = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 🔥 BARU: pintu koreksi nominal/metode transaksi -- buku besar +
+          data siswa ditulis atomik, wajib PIN Owner + alasan. */}
+      {koreksiLog && (
+        <DialogKoreksiTransaksi
+          log={koreksiLog}
+          onClose={() => setKoreksiLog(null)}
+          onSukses={() => {
+            setKoreksiLog(null);
+            alert('✅ Transaksi dikoreksi -- buku besar & data siswa sudah sinkron.');
+            // Daftar transaksi di halaman ini pakai onSnapshot (live) --
+            // tidak perlu refetch manual.
+          }}
+        />
       )}
 
       <style>{`
