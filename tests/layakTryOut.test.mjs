@@ -38,3 +38,23 @@ uji('cocokKelasBank: tepat, mengandung, dan butir tanpa kelas', () => {
   assert.equal(cocokKelasBank({}, '9'), true, 'butir lama tanpa kelas tetap lolos');
   assert.equal(cocokKelasBank({ kelas: '9' }, ''), true);
 });
+
+// ---- 2026-10-13: PAGAR TIPE -- mesin memakai pagar yang sama dengan keranjang ----
+// Insiden draf Sabtu: 6 butir menjodohkan lolos ke paket karena mesin tidak
+// berkonsultasi ke TIPE_TERDUKUNG; layar siswa merendernya sebagai PG kosong.
+uji('menjodohkan DITOLAK walau berkunci & berpasangan (layar siswa belum punya renderer)', () => {
+  assert.equal(layakUntukTryOut({
+    status: 'aktif', tipe: 'menjodohkan', kunciJawaban: [0, 1, 2],
+    pasangan: [{ kiri: 'fotosintesis', kanan: 'daun' }],
+  }), false);
+});
+uji('isian_singkat & numerik berkunci layak (renderer + penilaian sudah ada)', () => {
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'isian_singkat', kunciJawaban: 'fotosintesis' }), true);
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'numerik', kunciJawaban: '12' }), true);
+});
+uji('tipe didukung lain tetap layak (pagar tidak menyempit)', () => {
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'pg_sederhana', kunciJawaban: 'A' }), true);
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'pg_kompleks', kunciJawaban: [0, 2] }), true);
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'benar_salah', kunciJawaban: [true, false] }), true);
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'esai' }), true);
+});

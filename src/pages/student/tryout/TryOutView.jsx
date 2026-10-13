@@ -50,6 +50,11 @@ import RendererPgKompleks from './RendererPgKompleks';
 import RendererBenarSalah from './RendererBenarSalah';
 // 🔥 BARU (esai 2026-10-04): kotak teks + tombol kamera untuk soal uraian.
 import RendererEsai from './RendererEsai';
+// 🔒 BARU (2026-10-13, pagar tipe mesin): soal isian_singkat/numerik dulu JATUH
+// ke renderer PG di layar ini (opsi kosong -> siswa tak bisa mengetik jawab),
+// padahal RendererIsianSingkat.jsx + penilaiannya (cocokJawabanSingkat) sudah
+// ada dan layar hasil admin SUDAH memakai cabang ini. Kini layar ujian sama.
+import RendererIsianSingkat from './RendererIsianSingkat';
 import RingkasanPelanggaran from './RingkasanPelanggaran';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
@@ -89,6 +94,7 @@ function RendererSoal(props) {
   const tipe = props.soal.tipe || 'pg_sederhana';
   if (tipe === 'pg_kompleks') return <RendererPgKompleks {...props} />;
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') return <RendererBenarSalah {...props} />;
+  if (tipe === 'isian_singkat' || tipe === 'numerik') return <RendererIsianSingkat {...props} />;
   if (tipe === 'esai' || tipe === 'uraian') return <RendererEsai {...props} />;
   return <RendererPgSederhana {...props} />;
 }
