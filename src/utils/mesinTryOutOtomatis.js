@@ -12,6 +12,8 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
+import { layakUntukTryOut, cocokKelasBank } from './layakTryOut.js';
+import { buatKodePaket } from './kodePaket.js';
 // 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
 // Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
 // Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
@@ -116,13 +118,8 @@ export async function ambilSoalDariBank(opts) {
   if (jenjang) {
     pool = pool.filter((s) => cocokkanJenjang(s.jenjang, jenjang));
   }
-  if (kelas) {
-    const k = String(kelas);
-    pool = pool.filter((s) => {
-      const sk = String(s.kelas || s.tingkatKelas || '');
-      return !sk || sk === k || sk.includes(k);
-    });
-  }
+  pool = pool.filter(layakUntukTryOut);
+  if (kelas) pool = pool.filter((s) => cocokKelasBank(s, kelas));
   if (bab) {
     const b = norm(bab);
     pool = pool.filter((s) => {
@@ -146,7 +143,7 @@ export async function ambilSoalDariBank(opts) {
     const snap2 = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
     let extra = snap2.docs.map((d) => ({ id: d.id, ...d.data() }));
     if (mapel) {
-      extra = extra.filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
+      extra = extra.filter((x) => layakUntukTryOut(x) && cocokKelasBank(x, kelas)).filter((s) => cocokkanMapel(s.mapel || s.mataPelajaran, mapel));
     }
     if (jenjang) {
       extra = extra.filter((s) => cocokkanJenjang(s.jenjang, jenjang));
@@ -199,7 +196,7 @@ export async function susunSoalDariKomposisi(template, excludeIds) {
   const dipakai = new Set(excludeIds || []);
   for (const baris of template.komposisi || []) {
     const butuh = Number(baris.jumlah) || 10;
-    // eslint-disable-next-line no-await-in-loop
+     
     const ambil = await ambilSoalDariBank({
       mapel: baris.mapel,
       jenjang: template.jenjang,
@@ -385,6 +382,15 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     sumber: 'mesin-otomatis',
+    // 🔥 BARU (2026-10-13): kode paket ledger ikut ke produksi supaya tiap
+    // draf mesin bisa disebut siswa/tentor/admin dengan bahasa yang sama.
+    kodePaket: buatKodePaket({
+      jenjang: template.jenjang || '',
+      jenisUjian: template.jenisUjian || '',
+      tanggal: slot?.waktuBuka
+        ? (typeof slot.waktuBuka.toDate === 'function' ? slot.waktuBuka.toDate() : new Date(slot.waktuBuka))
+        : new Date(),
+    }),
   };
 
   const ref = await addDoc(collection(dbPakai, COL_PAKET), payload);
@@ -464,7 +470,7 @@ export async function siapkanDrafMingguIni(template, rules) {
         status: ada.status,
         alasan: 'sudah ada (' + ada.status + ')',
       });
-      // eslint-disable-next-line no-continue
+       
       continue;
     }
     if (new Date(slot.waktuTutup) < new Date(Date.now() - 24 * 3600 * 1000)) {
@@ -474,10 +480,10 @@ export async function siapkanDrafMingguIni(template, rules) {
         judul,
         alasan: 'slot sudah lewat',
       });
-      // eslint-disable-next-line no-continue
+       
       continue;
     }
-    // eslint-disable-next-line no-await-in-loop
+     
     const res = await siapkanDrafDariTemplate(template, slot, r);
     hasil.push(res);
   }

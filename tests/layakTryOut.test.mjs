@@ -27,3 +27,14 @@ uji('butir bergambar belum dipotong DITOLAK (siswa tak bisa menjawab)', () => {
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
+
+// ---- 2026-10-13: saringan kelas dipakai pool utama DAN jalur cadangan ----
+import { cocokKelasBank } from '../src/utils/layakTryOut.js';
+uji('cocokKelasBank: tepat, mengandung, dan butir tanpa kelas', () => {
+  assert.equal(cocokKelasBank({ kelas: '9' }, '9'), true);
+  assert.equal(cocokKelasBank({ kelas: '9 SMP' }, '9'), true);
+  assert.equal(cocokKelasBank({ kelas: '7' }, '9'), false);
+  assert.equal(cocokKelasBank({ kelas: '8' }, '9'), false);
+  assert.equal(cocokKelasBank({}, '9'), true, 'butir lama tanpa kelas tetap lolos');
+  assert.equal(cocokKelasBank({ kelas: '9' }, ''), true);
+});
