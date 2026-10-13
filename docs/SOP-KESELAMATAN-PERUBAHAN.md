@@ -35,12 +35,20 @@ perubahan diperlakukan seperti obat yang masuk ke tubuh pasien:
    (ditegakkan CI). Semua berkas yang berubah wajib lolos parse/transform
    sebelum commit.
 
-5. **Tidak menulis ke database produksi dari kode atau skrip tanpa alasan.**
+5. **Peringatan react-hooks tentang identifier BARU adalah alarm urutan, bukan gangguan.**
+   Insiden 2026-10-13: helper yang dideklarasikan SETELAH useMemo yang
+   memanggilnya meledak sebagai ReferenceError (TDZ) di produksi halaman
+   Rakit Try Out; gejalanya sempat tampil sebagai warning exhaustive-deps
+   lalu dibungkam eslint-disable. Aturan: bila eslint menyebut identifier
+   yang baru Anda tambah sebagai missing dependency, PERIKSA URUTAN
+   DEKLARASI dulu (pindahkan deklarasi ke atas pemakai); disable hanya
+   sesudah urutan benar, dengan alasan tertulis.
+6. **Tidak menulis ke database produksi dari kode atau skrip tanpa alasan.**
    Diagnosis boleh membaca. Probe tulis hanya ke koleksi scratch yang
    langsung dihapus. Perubahan data produksi adalah keputusan owner, bukan
    efek samping deploy.
 
-6. **Secret tidak pernah masuk commit, termasuk "sekadar untuk test".**
+7. **Secret tidak pernah masuk commit, termasuk "sekadar untuk test".**
    Penjaga gerbang CI menolak pola PAT/kunci/private key. Konfigurasi lewat
    environment variable yang terdaftar di `.env.example`.
 

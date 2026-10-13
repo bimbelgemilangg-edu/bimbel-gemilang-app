@@ -1,0 +1,26 @@
+{
+  "_catatan": "CONTOH template try out otomatis TKA per jenjang (KEPUTUSAN FINAL 2026-10-12). BELUM DITULIS ke Firestore; penulisan dilakukan lewat skrip ber-flag setelah owner menyalakan sakelar fitur. Koleksi: tryout_template_otomatis.",
+  "templates": [
+    {
+      "jenjang": "SD/MI", "jenisUjian": "TKA", "targetKelas": "6 SD",
+      "judulPola": "TKA SD · {mapel} · Pekan {pekan} · {tanggal}",
+      "komposisi": [{ "mapel": "Matematika", "jumlah": 20, "durasiMenit": 25 }, { "mapel": "Bahasa Indonesia", "jumlah": 20, "durasiMenit": 25 }]
+    },
+    {
+      "jenjang": "SMP/MTs", "jenisUjian": "TKA", "targetKelas": "9 SMP",
+      "judulPola": "TKA SMP · {mapel} · Pekan {pekan} · {tanggal}",
+      "komposisi": [{ "mapel": "Matematika", "jumlah": 20, "durasiMenit": 20 }, { "mapel": "Bahasa Indonesia", "jumlah": 20, "durasiMenit": 20 }, { "mapel": "Bahasa Inggris", "jumlah": 20, "durasiMenit": 20 }, { "mapel": "IPA", "jumlah": 20, "durasiMenit": 20 }, { "mapel": "IPS", "jumlah": 20, "durasiMenit": 20 }]
+    },
+    {
+      "jenjang": "SMA/MA", "jenisUjian": "TKA", "targetKelas": "12 SMA",
+      "judulPola": "TKA SMA · {mapel} · Pekan {pekan} · {tanggal}",
+      "komposisi": [{ "mapel": "Matematika", "jumlah": 20, "durasiMenit": 20 }, { "mapel": "Bahasa Indonesia", "jumlah": 20, "durasiMenit": 20 }, { "mapel": "Bahasa Inggris", "jumlah": 20, "durasiMenit": 20 }, { "mapel": "{pilihanBergilir}", "jumlah": 20, "durasiMenit": 20 }]
+    },
+    {
+      "jenjang": "UTBK/SNBT", "jenisUjian": "SNBT/UTBK", "targetKelas": "Semua",
+      "judulPola": "UTBK · {subtes} · Pekan {pekan} · {tanggal}",
+      "komposisi": [{ "mapel": "{2subtesBergilir}", "jumlah": 20, "durasiMenit": 30 }],
+      "_izinSemua": "targetKelas Semua SAH hanya untuk jenjang UTBK/SNBT (pagar identitas mengecualikannya)"
+    }
+  ]
+}
