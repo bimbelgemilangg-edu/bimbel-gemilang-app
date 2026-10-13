@@ -166,14 +166,25 @@ export async function ambilSoalDariBank(opts) {
           ringkas: pool.slice(0, 300).map(ringkasButirUntukAi),
         }),
       });
-      const j = await resp.json();
-      const v = validasiPilihanAi(j, new Set(pool.map((x) => x.id)), jumlah);
-      if (v.ok) {
-        const peta = new Map(pool.map((x) => [x.id, x]));
-        pool = v.urutan.map((u) => ({ ...peta.get(u.id), alasanAi: u.alasan }));
-        aiSelection = { status: 'dipakai', model: j.model || '', ragu: v.ragu, kisiKisi: kisiKisi || '' };
+      // 🔥 KEJUJURAN LOG (2026-10-13): balasan bukan JSON (mis. halaman
+      // error platform) dan field `error` dari server TIDAK boleh lagi
+      // ditelan — keduanya ditempel ke alasan fallback supaya admin tahu
+      // sebab sebenarnya, bukan cuma "AI tidak mengembalikan daftar pilihan".
+      const j = await resp.json().catch(() => null);
+      if (!j || typeof j !== 'object') {
+        aiSelection = { status: 'fallback', alasan: `server membalas HTTP ${resp.status} tanpa JSON yang bisa dibaca` };
       } else {
-        aiSelection = { status: 'fallback', alasan: v.alasanGagal };
+        const v = validasiPilihanAi(j, new Set(pool.map((x) => x.id)), jumlah);
+        if (v.ok) {
+          const peta = new Map(pool.map((x) => [x.id, x]));
+          pool = v.urutan.map((u) => ({ ...peta.get(u.id), alasanAi: u.alasan }));
+          aiSelection = { status: 'dipakai', model: j.model || '', ragu: v.ragu, kisiKisi: kisiKisi || '' };
+        } else {
+          const dariServer = typeof j.error === 'string' && j.error.trim()
+            ? ` | server: ${j.error.trim().slice(0, 180)}`
+            : '';
+          aiSelection = { status: 'fallback', alasan: v.alasanGagal + dariServer };
+        }
       }
     } catch (e) {
       aiSelection = { status: 'fallback', alasan: String(e?.message || e) };

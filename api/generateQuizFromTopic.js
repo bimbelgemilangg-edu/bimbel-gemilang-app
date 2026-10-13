@@ -109,6 +109,12 @@
 import {
   kunciGeminiUntuk, kelompokUntukMapel, peringatanIsolasi, pesanKunciBelumAda,
 } from '../lib/kunciGemini.js';
+// 🔥 PERBAIKAN (2026-10-13): mode pilih-dari-bank dulu merakit panggilan
+// AI sendiri dengan model 'gemini-2.5-flash' (sudah ditutup Google untuk
+// akun baru → 404 yang DITELAN diam-diam). Sekarang logika model/error-nya
+// hidup di modul murni lib/modelPilih.js dan eksekusinya menumpang rantai
+// callAIWithFallback yang sudah terbukti — satu sumber kebenaran.
+import { rantaiModelPilih, uraiBalasanPilihAi, teksErrorAi } from '../lib/modelPilih.js';
 import { MAPEL_UTBK } from '../src/utils/mesinTaksonomiSoal.js';
 import { blokPromptUtbk } from '../lib/promptUtbk.js';
 
@@ -4102,11 +4108,20 @@ function isRateLimitedError(
 async function callAIWithFallback(
   args,
 ) {
+  // 🔥 BARU (2026-10-13): `args.models` opsional — caller khusus (mis.
+  // modePilihDariBank) boleh menyodorkan rantainya sendiri (hasil
+  // rantaiModelPilih()). Kalau tidak dikirim, perilaku LAMA persis:
+  // AI_MODEL diikuti AI_MODEL_FALLBACKS.
   const modelsToTry =
-    [
-      AI_MODEL,
-      ...AI_MODEL_FALLBACKS,
-    ].filter(
+    (
+      Array.isArray(args?.models) &&
+      args.models.length
+        ? args.models
+        : [
+            AI_MODEL,
+            ...AI_MODEL_FALLBACKS,
+          ]
+    ).filter(
       (m, i, arr) =>
         m &&
         arr.indexOf(m) === i,
@@ -5092,11 +5107,20 @@ function stripExamFormatMention(
 // mengurutkan id dari kolam yang dikirim sistem; tidak mengarang soal.
 // Kunci memakai routing kelompok yang SUDAH ADA (GEMINI_UTBK untuk subtes
 // UTBK, sehingga beban Sabtu tidak memakan kuota kuis harian).
+// 🔥 DIPERBAIKI (2026-10-13, bug fallback senyap): versi pertama memakai
+// fetch rakitan dengan model 'gemini-2.5-flash' — model itu ditutup Google
+// untuk akun baru, provider membalas 404, dan 404-nya DITELAN (handler
+// tetap 200 tanpa "pilihan"/"error"), sehingga mesin jatuh ke fallback
+// dengan alasan generik. Sekarang: (a) model menumpang rantai terbukti
+// AI_MODEL → AI_MODEL_FALLBACKS lewat callAIWithFallback (env
+// GEMINI_MODEL_PILIH/GEMINI_MODEL tetap dihormati sebagai override),
+// (b) SETIAP kegagalan pulang membawa teks error jujur (lib/modelPilih.js)
+// yang diteruskan mesin ke log draf admin.
 async function modePilihDariBank(req, res) {
   const { ringkas = [], jumlah = 10, kisiKisi = '', kelompok = 'soal' } = req.body || {};
   const apiKey = kunciGeminiUntuk(process.env, kelompok);
-  if (!apiKey) return res.status(500).json({ error: 'Kunci Gemini kelompok ' + kelompok + ' tidak tersedia.' });
-  const model = process.env.GEMINI_MODEL_PILIH || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  if (!apiKey) return res.status(500).json({ error: pesanKunciBelumAda(kelompok) });
+  const models = rantaiModelPilih(process.env, AI_MODEL, AI_MODEL_FALLBACKS);
   const prompt = [
     'Kamu adalah PEMILIH SOAL bank soal bimbel. Pilih TEPAT', jumlah, 'butir dari kolam berikut.',
     'KISI-KISI:', kisiKisi,
@@ -5106,18 +5130,28 @@ async function modePilihDariBank(req, res) {
     'KOLAM:', JSON.stringify(ringkas),
   ].join('\n');
   try {
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
-      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.2 }),
+    const hasil = await callAIWithFallback({
+      apiKey,
+      systemPrompt: 'Kamu membalas HANYA dengan JSON valid, tanpa teks lain.',
+      userPrompt: prompt,
+      // Keluaran mode pilih kecil (maks ~300 id + alasan pendek);
+      // 6000 token jauh di atas kebutuhan dan di bawah plafon lunak.
+      maxTokens: Math.min(6000, SOFT_MAX_TOKENS_CEILING),
+      models,
     });
-    const j = await r.json();
-    const teks = j?.choices?.[0]?.message?.content || '';
-    const m = /\{[\s\S]*\}/.exec(teks);
-    const parsed = m ? JSON.parse(m[0]) : {};
-    return res.status(200).json({ ...parsed, model });
+    const { parsed, error } = uraiBalasanPilihAi(hasil?.content);
+    if (error) {
+      return res.status(200).json({ pilihan: [], error, model: hasil?.model || models[0] });
+    }
+    return res.status(200).json({
+      ...parsed,
+      model: hasil?.model || models[0],
+      ...(hasil?.fallbackUsed
+        ? { fallbackUsed: true, fallbackFromModel: hasil.fallbackFromModel || models[0] }
+        : {}),
+    });
   } catch (e) {
-    return res.status(200).json({ pilihan: [], error: String(e?.message || e), model });
+    return res.status(200).json({ pilihan: [], error: teksErrorAi(e), model: e?.attemptedModel || models[0] });
   }
 }
 
