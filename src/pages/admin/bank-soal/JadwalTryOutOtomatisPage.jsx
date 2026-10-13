@@ -114,8 +114,12 @@ export default function JadwalTryOutOtomatisPage() {
         nama: edit.nama.trim(),
         jenjang: edit.jenjang || 'SMA',
         kelas: edit.kelas || '',
-        targetKelas: bentukKanonikTarget(edit.targetKelas),
-        targetKategori: bentukKanonikTarget(edit.targetKategori),
+        // 🔥 FIX (2026-10-13): form dulu TIDAK punya input sasaran, sehingga
+        // targetKelas tersimpan undefined -> kanonik "Semua" -> paket SMP
+        // berpotensi terlihat siswa SD/SMA. Bila kosong, sasaran diturunkan
+        // dari kelas+jenjang yang diisi admin; input eksplisit tetap ada.
+        targetKelas: bentukKanonikTarget(edit.targetKelas || (edit.kelas ? `${edit.kelas} ${edit.jenjang || ''}`.trim() : (edit.jenjang || ''))),
+        targetKategori: bentukKanonikTarget(edit.targetKategori || 'Semua'),
         komposisi: edit.komposisi || [],
         hariDalamMinggu: edit.hariDalamMinggu || [1, 4],
         jamBuka: edit.jamBuka || '07:00',
@@ -325,6 +329,8 @@ export default function JadwalTryOutOtomatisPage() {
                 </select>
               </label>
               <label style={st.label}>Kelas filter bank<input style={st.input} value={edit.kelas || ''} onChange={(e) => setEdit({ ...edit, kelas: e.target.value })} placeholder="12" /></label>
+              <label style={st.label}>Sasaran kelas siswa (audience)<input style={st.input} value={edit.targetKelas || ''} onChange={(e) => setEdit({ ...edit, targetKelas: e.target.value })} placeholder={edit.kelas ? `${edit.kelas} ${edit.jenjang || ''}`.trim() : 'kosongkan = ikut kelas filter'} /></label>
+              <label style={st.label}>Sasaran program/kategori<input style={st.input} value={edit.targetKategori || ''} onChange={(e) => setEdit({ ...edit, targetKategori: e.target.value })} placeholder="Semua / Reguler / Intensif" /></label>
               <label style={st.label}>Jam buka<input style={st.input} type="time" value={edit.jamBuka || '07:00'} onChange={(e) => setEdit({ ...edit, jamBuka: e.target.value })} /></label>
               <label style={st.label}>Durasi (menit)<input style={st.input} type="number" value={edit.durasiTotalMenit || 90} onChange={(e) => setEdit({ ...edit, durasiTotalMenit: Number(e.target.value) })} /></label>
               <label style={st.label}>Mode waktu
