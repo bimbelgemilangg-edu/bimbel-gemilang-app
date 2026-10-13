@@ -55,7 +55,12 @@ const diRepo = join(dirname(fileURLToPath(import.meta.url)), '..');
 // ------------------------------------------------------------
 
 test('logo watermark = logo yang dipakai kwitansi (satu identitas)', () => {
-  const kwitansi = readFileSync(join(diRepo, 'src/utils/kwitansi.js'), 'utf8');
+  // Template cetak kwitansi kini tinggal di kwitansiTemplate.js (modul murni,
+  // bisa diuji tanpa Firebase); kwitansi.js tinggal mesin cetak + re-export.
+  // Keduanya dibaca supaya invariant "satu identitas logo" tidak lolos diam-diam.
+  const kwitansi = ['src/utils/kwitansiTemplate.js', 'src/utils/kwitansi.js']
+    .map((rel) => readFileSync(join(diRepo, rel), 'utf8'))
+    .join('\n');
   const dipakaiKwitansi = kwitansi.match(/const logo = '([^']+)'/);
   assert.ok(dipakaiKwitansi, 'kwitansi harus punya konstanta logo');
   assert.equal(LOGO_WATERMARK, dipakaiKwitansi[1]);
