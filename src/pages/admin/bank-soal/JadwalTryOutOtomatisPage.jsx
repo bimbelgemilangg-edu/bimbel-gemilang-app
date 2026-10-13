@@ -514,6 +514,23 @@ export default function JadwalTryOutOtomatisPage() {
                   <button type="button" style={st.btnPrimary} disabled={busy} onClick={() => klikTerbitkan(p)}>
                     <Send size={14} /> Terbitkan
                   </button>
+                  {/* 🔥 BARU (2026-10-13): draf cacat (mis. warisan sebelum pagar
+                      identitas dipulihkan) harus bisa dibersihkan admin sendiri.
+                      Hanya DRAF — paket aktif punya tombol Nonaktifkan sendiri. */}
+                  <button type="button" style={st.iconDanger} title="Hapus draf" disabled={busy} onClick={async () => {
+                    if (!window.confirm(`Hapus DRAF "${p.judul}"?\n\nDraf belum terlihat siswa. Menghapus draf tidak menyentuh paket yang sudah aktif/terbit.`)) return;
+                    setBusy(true);
+                    try {
+                      await deleteDoc(doc(db, COL_PAKET, p.id));
+                      await muat();
+                      setPesan('🗑️ Draf dihapus.');
+                    } catch (e) {
+                      setPesan('❌ ' + e.message);
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}><Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             ))}
