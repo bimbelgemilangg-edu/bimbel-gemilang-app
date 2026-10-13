@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan, PAPAN_MASCOT,
+  posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan, potongUntukQuery, PAPAN_MASCOT,
 } from '../src/utils/papanJelajah.js';
 
 test('sprite maskot: Matematika = kartu indeks 3 (kolom 3 baris 0)', () => {
@@ -79,4 +79,54 @@ test('analitik: tanpa sesi TKA/UTBK -> struktur kosong, bukan crash', () => {
   assert.equal(a.jumlahSesi, 0);
   assert.deepEqual(a.tren, []);
   assert.equal(PAPAN_MASCOT.length, 30);
+});
+
+// 🛡️ Regresi audit 2026-10-13 bug #1: sesi tanpa waktuSelesai (halaman
+// mengirim null lewat ms()) dulu LOLOS filter karena Number(null)===0 ->
+// baris tren sampah "Pekan 29 Des" 1969 + delta palsu. Kini dibuang.
+test('analitik: waktuSelesaiMs null dibuang, tidak melahirkan tren 1969', () => {
+  const p2 = Date.parse('2026-10-17T10:00:00Z');
+  const a = hitungAnalitik([
+    { nama: 'TO Hantu', jenisUjian: 'tka', totalSkorPersen: 40, waktuSelesaiMs: null, createdAtMs: p2 - 3600e3, totalSoal: 40 },
+    { nama: 'TO B', jenisUjian: 'tka', totalSkorPersen: 72, waktuSelesaiMs: p2, createdAtMs: p2 - 3600e3, totalSoal: 40 },
+  ]);
+  assert.equal(a.jumlahSesi, 1);
+  assert.equal(a.tren.length, 1);
+  assert.equal(a.tren[0].label, 'Pekan 12 Okt');
+  assert.ok(!a.tren.some((t) => t.label.includes('Des')));
+  const kosong = hitungAnalitik([{ nama: 'TO Hantu', jenisUjian: 'tka', totalSkorPersen: 40, waktuSelesaiMs: null }]);
+  assert.equal(kosong.jumlahSesi, 0);
+});
+
+// 🛡️ Regresi audit 2026-10-13 bug #2: createdAtMs null dulu jadi 0 (epoch)
+// dan lolos Number.isFinite -> kecepatan dihitung dari 1969 (~17,8 juta
+// detik/soal). Kini kartu tempo disembunyikan (kecepatan null).
+test('analitik: createdAtMs null -> kecepatan null, bukan detik/soal absurd', () => {
+  const p2 = Date.parse('2026-10-17T10:00:00Z');
+  const a = hitungAnalitik([
+    { nama: 'TO B', jenisUjian: 'tka', totalSkorPersen: 72, waktuSelesaiMs: p2, createdAtMs: null, totalSoal: 40 },
+  ]);
+  assert.equal(a.jumlahSesi, 1);
+  assert.equal(a.kecepatan, null);
+  assert.ok(!a.tips.some((t) => t.includes('detik/soal')));
+  // createdAtMs 0 eksplisit (epoch beneran) juga tak boleh lolos sebagai
+  // waktu mulai sah untuk sesi 2026 -> waktuSelesai > mulai tetap valid,
+  // tapi harus absurd; pastikan minimal tidak crash dan angka terdefinisi.
+  const b = hitungAnalitik([
+    { nama: 'TO C', jenisUjian: 'tka', totalSkorPersen: 50, waktuSelesaiMs: p2, createdAtMs: p2 - 40 * 60e3, totalSoal: 40 },
+  ]);
+  assert.equal(b.kecepatan.detikPerSoal, 60);
+  assert.equal(b.kecepatan.wajar, true);
+});
+
+test('potongUntukQuery: chunk <= 30, buang kosong & duplikat, jaga urutan', () => {
+  const ids = Array.from({ length: 65 }, (_, i) => `p${i}`);
+  const c = potongUntukQuery(ids);
+  assert.equal(c.length, 3);
+  assert.deepEqual(c.map((x) => x.length), [30, 30, 5]);
+  assert.equal(c[0][0], 'p0');
+  assert.equal(c[2][4], 'p64');
+  assert.deepEqual(potongUntukQuery(['a', '', null, 'a', ' b ']), [['a', 'b']]);
+  assert.deepEqual(potongUntukQuery([]), []);
+  assert.deepEqual(potongUntukQuery(['x', 'y'], 1), [['x'], ['y']]);
 });

@@ -134,8 +134,13 @@ export function labelPekan(ms) {
  */
 export function hitungAnalitik(baris = []) {
   const kosong = { tren: [], kecepatan: null, subtesRata: [], tips: [], evaluasi: '', jumlahSesi: 0 };
+  // 🛡️ AUDIT 2026-10-13: waktuSelesaiMs WAJIB ada (!= null) -- dulu cuma
+  // dicek Number.isFinite(Number(x)), padahal Number(null) === 0 sehingga
+  // sesi tanpa cap waktu selesai LOLOS filter dan melahirkan baris tren
+  // sampah "Pekan 29 Des" (epoch 1969) + delta palsu. Sesi begini lebih
+  // baik diabaikan daripada merusak grafik.
   const tka = (Array.isArray(baris) ? baris : [])
-    .filter((b) => /tka|utbk/i.test(String(b?.jenisUjian || '')) && Number.isFinite(Number(b?.waktuSelesaiMs)))
+    .filter((b) => /tka|utbk/i.test(String(b?.jenisUjian || '')) && b?.waktuSelesaiMs != null && Number.isFinite(Number(b.waktuSelesaiMs)))
     .map((b) => ({ ...b, waktuSelesaiMs: Number(b.waktuSelesaiMs), skor: Math.round(Number(b.totalSkorPersen) || 0) }))
     .sort((a, b) => a.waktuSelesaiMs - b.waktuSelesaiMs);
   if (!tka.length) return kosong;
@@ -153,7 +158,11 @@ export function hitungAnalitik(baris = []) {
 
   const terakhir = tka[tka.length - 1];
   let kecepatan = null;
-  const mulai = Number(terakhir.createdAtMs);
+  // 🛡️ AUDIT 2026-10-13: createdAtMs null -> NaN (bukan 0!). Dulu
+  // Number(null) === 0 lolos Number.isFinite sehingga kecepatan dihitung
+  // dari epoch 1969: "~17 juta detik/soal". Tanpa waktu mulai yang sah,
+  // kartu tempo disembunyikan (kecepatan tetap null).
+  const mulai = terakhir.createdAtMs != null ? Number(terakhir.createdAtMs) : NaN;
   if (Number.isFinite(mulai) && terakhir.waktuSelesaiMs > mulai && Number(terakhir.totalSoal) > 0) {
     const detikPerSoal = Math.round((terakhir.waktuSelesaiMs - mulai) / 1000 / Number(terakhir.totalSoal));
     kecepatan = { detikPerSoal, wajar: detikPerSoal <= IDEAL_DETIK_PER_SOAL, nama: String(terakhir.nama || 'try out terakhir') };
@@ -191,4 +200,22 @@ export function hitungAnalitik(baris = []) {
   return { tren, kecepatan, subtesRata, tips, evaluasi, jumlahSesi: tka.length };
 }
 
-export default { PAPAN_MASCOT, posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan, IDEAL_DETIK_PER_SOAL };
+/**
+ * Potong daftar id jadi chunk kecil untuk query Firestore `where(documentId(), 'in', ...)`.
+ * Firestore membatasi operator 'in' maksimal 30 nilai per query; halaman
+ * Papan Jelajah memakainya untuk mengambil paket RIWAYAT (arsip/nonaktif)
+ * milik sesi lama siswa supaya jenisUjian/totalSoal analitik tidak hilang.
+ * Murni + deterministik: id kosong dibuang, duplikat dirapikan, urutan dijaga.
+ * @param {Array<string>} ids
+ * @param {number} [batas=30]
+ * @returns {Array<Array<string>>}
+ */
+export function potongUntukQuery(ids, batas = 30) {
+  const bersih = [...new Set((Array.isArray(ids) ? ids : []).map((x) => String(x ?? '').trim()).filter(Boolean))];
+  const n = Number.isFinite(Number(batas)) && Number(batas) > 0 ? Math.floor(Number(batas)) : 30;
+  const hasil = [];
+  for (let i = 0; i < bersih.length; i += n) hasil.push(bersih.slice(i, i + n));
+  return hasil;
+}
+
+export default { PAPAN_MASCOT, posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan, potongUntukQuery, IDEAL_DETIK_PER_SOAL };

@@ -11,9 +11,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, documentId, getDocs, query, where } from 'firebase/firestore';
 import { Rocket, CalendarDays, ChevronDown, Sparkles, Timer, Target } from 'lucide-react';
-import { posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik } from '../../../utils/papanJelajah.js';
+import { posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, potongUntukQuery } from '../../../utils/papanJelajah.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
 
 const SPRITE = '/mascot/mascot-mapel.png';
@@ -112,6 +112,7 @@ function KartuMisi({ paket, sesi, onBuka, besar = false, kini = WAKTU_MUAT }) {
 export default function PapanJelajahPage({ studentId = '' }) {
   const navigate = useNavigate();
   const [paket, setPaket] = useState([]);
+  const [paketRiwayat, setPaketRiwayat] = useState([]);
   const [sesi, setSesi] = useState([]);
   const [nama, setNama] = useState('');
   const [kelas, setKelas] = useState('');
@@ -130,8 +131,32 @@ export default function PapanJelajahPage({ studentId = '' }) {
         if (!hidup) return;
         setNama(dS.nama || dS.name || studentId);
         setKelas(dS.kelas || dS.kelasSekolah || '');
-        setPaket(snapPaket.docs.map((d) => ({ id: d.id, ...d.data() })));
-        setSesi(snapSesi.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const paketAktif = snapPaket.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const sesiList = snapSesi.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setPaket(paketAktif);
+        setSesi(sesiList);
+        // 🛡️ AUDIT 2026-10-13 (bug arsip): sesi lama menunjuk paket yang
+        // sudah 'arsip'/'nonaktif' -- di luar hasil query status=='aktif'.
+        // Tanpa dokumen paketnya, jenisUjian/totalSoal hilang dan sesi itu
+        // DIAM-DIAM terbuang dari Papan Analitik. Ambil paket yang kurang
+        // per chunk (batas operator 'in' Firestore) ke state TERPISAH:
+        // hanya untuk memperkaya analitik, TIDAK ikut daftar misi/arsip.
+        const idAktif = new Set(paketAktif.map((p) => p.id));
+        const idKurang = [...new Set(
+          sesiList
+            .filter((s) => s.status === 'selesai')
+            .map((s) => s.paketId || s.tryoutId)
+            .filter((id) => id && !idAktif.has(id)),
+        )];
+        if (idKurang.length) {
+          const riwayat = [];
+          for (const chunk of potongUntukQuery(idKurang)) {
+            const snapR = await getDocs(query(collection(db, 'tryout_paket'), where(documentId(), 'in', chunk)));
+            snapR.docs.forEach((d) => riwayat.push({ id: d.id, ...d.data() }));
+            if (!hidup) return;
+          }
+          if (hidup) setPaketRiwayat(riwayat);
+        }
       } catch (e) {
         console.error('Gagal memuat papan jelajah:', e);
       } finally {
@@ -166,9 +191,14 @@ export default function PapanJelajahPage({ studentId = '' }) {
     return { mendatang, arsip };
   }, [paket, sesiPerPaket, kini]);
 
+  // 🛡️ AUDIT 2026-10-13: analitik boleh melihat paket riwayat (arsip/
+  // nonaktif) supaya sesi lama tidak hilang dari tren; daftar misi & arsip
+  // di tab sebelah TETAP hanya dari paket aktif.
+  const paketUntukAnalitik = useMemo(() => [...paket, ...paketRiwayat], [paket, paketRiwayat]);
+
   const analitik = useMemo(() => hitungAnalitik(
     [...sesiPerPaket.values()].map((s) => {
-      const p = paket.find((x) => x.id === (s.paketId || s.tryoutId));
+      const p = paketUntukAnalitik.find((x) => x.id === (s.paketId || s.tryoutId));
       const daftar = p?.daftarSoal || [];
       const subtes = (p?.subtes || []).map((sb) => {
         const ids = new Set(sb.soalIds || sb.daftarSoal || []);
@@ -186,7 +216,7 @@ export default function PapanJelajahPage({ studentId = '' }) {
         subtes,
       };
     }),
-  ), [sesiPerPaket, paket]);
+  ), [sesiPerPaket, paketUntukAnalitik]);
 
   if (muat) return <div style={{ padding: 30, color: '#9aa3d6' }}>🛰️ Menyiapkan papan jelajah…</div>;
 

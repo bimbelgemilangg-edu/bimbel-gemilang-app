@@ -26,6 +26,7 @@
 // ============================================================
 
 import { tipeDidukung } from './keranjangTryOut.js';
+import { soalBisaDinilai } from './skorSoalTryOut.js';
 
 /**
  * @param {object} s butir bank_soal
@@ -44,6 +45,12 @@ export function layakUntukTryOut(s = {}) {
     ? true
     : (Array.isArray(k) ? k.length > 0 : String(k ?? '').trim().length > 0);
   if (!berkunci) return false;
+  // 🛡️ AUDIT 2026-10-13 (paket Sabtu): kunci "ADA" belum cukup -- kunci
+  // harus BISA DINILAI. 4 butir pg_sederhana ber-kunci ganda ("A,D",
+  // sisa impor yang seharusnya pg_kompleks) lolos pagar lama, masuk paket
+  // terbit, dan membuat skor maksimal siswa terpangkas (jawaban apa pun =
+  // 0). Satu sumber kebenaran dengan skoring: soalBisaDinilai().
+  if (tipe !== 'esai' && tipe !== 'uraian' && !soalBisaDinilai(s)) return false;
   if ((s.potonganTertunda || []).length > 0) return false;
   return true;
 }

@@ -21,9 +21,24 @@
 // reload) -- bukan cuma soal itu doang yang gagal, SELURUH try out
 // ikut mati. safeArray() mastiin kita SELALU dapat array beneran,
 // apapun bentuk data aslinya.
-function safeArray(v) {
+// 🛡️ AUDIT 2026-10-13 (paket Sabtu): split per-huruf saja TIDAK cukup --
+// data produksi banyak menyimpan kunci "B,C" / "A,D" (pakai pemisah
+// koma). Split per-huruf melahirkan ',' sebagai "kunci" yang tak bisa
+// dicentang siswa -> skor maksimal 2/3 walau centangan sempurna, dan
+// layar tinjauan tak pernah menunjuk kunci lengkap. Sekarang: ada
+// pemisah (,;/| atau spasi) -> split per pemisah; "AC" polos tanpa
+// pemisah -> tetap split per-huruf (perilaku lama terjaga).
+export function safeArray(v) {
   if (Array.isArray(v)) return v;
-  if (typeof v === 'string' && v.trim()) return v.split('').map((c) => c.trim()).filter(Boolean); // "AC" -> ["A","C"]
+  if (typeof v === 'string' && v.trim()) {
+    const t = v.trim();
+    const bagian = /[,;/|]/.test(t)
+      ? t.split(/[,;/|\s]+/)
+      : /\s/.test(t)
+        ? t.split(/\s+/)
+        : t.split('');
+    return bagian.map((c) => c.trim()).filter(Boolean);
+  }
   return [];
 }
 
