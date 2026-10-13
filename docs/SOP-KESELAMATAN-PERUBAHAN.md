@@ -96,3 +96,12 @@ perbaikan darurat saat CI sendiri masih baru.
    komentar "🔥 FIX ..." yang menjelaskan MENGAPA adalah aset, bukan sampah.
 3. Tambahkan test yang akan menangkap bug itu selamanya. Bug yang pernah
    terjadi dua kali adalah kegagalan proses, bukan kegagalan orang.
+
+## Bentuk cetak dokumen resmi (keputusan owner, 2026-10-11)
+
+Bentuk fisik dokumen resmi bukan selera tampilan — ia diputuskan owner dan dijaga test.
+
+- **Kwitansi** dicetak di kertas **setengah A4** (A4 dipotong melintang = 210mm x 148,5mm, `@page` mengikuti) dan **tanpa garis hitam**: tidak ada bingkai, `<hr>`, atau kotak bergaris, karena hasil potongan A4 terlihat kotor dan boros tinta. Blok penting (JUMLAH, nomor kwitansi) cukup diberi latar abu sangat muda.
+- **Laporan keuangan, bukti setor kas, dan naskah soal** tetap A4 formal dengan garis seperti sekarang.
+- Template kwitansi ada di `src/utils/kwitansiTemplate.js` (modul murni, bisa diuji tanpa Firebase) dan dijaga `tests/kwitansiTemplate.test.mjs`: ukuran kertas, larangan garis hitam, kelengkapan isi, dan tipografi yang muat setengah A4.
+- Mau mengubah ukuran kertas atau mengembalikan garis? Ubah keputusannya bersama owner dulu, lalu ubah test-nya. Jangan diam-diam.
