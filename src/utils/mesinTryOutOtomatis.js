@@ -16,6 +16,11 @@ import { layakUntukTryOut, cocokKelasBank } from './layakTryOut.js';
 import { buatKodePaket } from './kodePaket.js';
 import { ringkasButirUntukAi, validasiPilihanAi } from './pilihSoalAi.js';
 import { kisiKisiUntuk } from './kisiKisiTkaUtbk.js';
+// 🔥 RESTORASI (2026-10-13): pagar identitas & gerbang stok (S2, 77102e5)
+// pernah HILANG diam-diam saat merge 45dc70b menyerap main #199. Keduanya
+// kini hidup di modul murni terpisah + test sendiri supaya kehilangan
+// serupa berteriak di npm test, bukan di produksi hari Sabtu.
+import { pagarIdentitasTemplate, gerbangStokDraf, kisiKisiUntukBaris } from './pagarTryOutOtomatis.js';
 // 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
 // Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
 // Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
@@ -246,7 +251,12 @@ export async function susunSoalDariKomposisi(template, excludeIds, opts = {}) {
       jumlah: butuh,
       excludeIds: dipakai,
       pakaiAi: opts.pakaiAi === true,
-      kisiKisi: opts.kisiKisi || '',
+      // 🔥 FIX (2026-10-13): kisi-kisi dihitung PER BARIS MAPEL. Sebelumnya
+      // mesin mengirim satu teks generik (mapel "(umum)") untuk semua subtes,
+      // sehingga AI memilih Matematika & Bahasa Indonesia dengan kisi-kisi
+      // yang sama — janji S5 "AI memilih ber-kisi-kisi CP" tidak terjadi.
+      // Override eksplisit (opts.kisiKisi) tetap dihormati untuk skrip.
+      kisiKisi: opts.kisiKisi || kisiKisiUntukBaris(template, opts.jenisUjian || '', baris),
       kelompok: baris.kelompok || template.kelompokBank || null,
     });
     const ids = [];
@@ -341,6 +351,11 @@ export function ringkasSoalUntukAdmin(daftarSoal) {
  */
 export async function siapkanDrafDariTemplate(template, slot, rules) {
   const r = rules || {};
+  // 🔥 RESTORASI (2026-10-13): PAGAR IDENTITAS (S2) — dijalankan SEBELUM
+  // baca Firestore & panggil AI: template cacat tidak boleh memakan kuota
+  // Gemini maupun melahirkan draf bersasaran "Semua".
+  const pagar = pagarIdentitasTemplate(template, r.izinkanSemua === true);
+  if (!pagar.ok) return pagar;
     const exclude = await idSoalBaruDipakai(template.jenjang, 10);
   // fitur preview: paket SUSULAN menyuntik id yang wajib dilewati
   for (const idTambahan of (r.excludeIds || [])) {
@@ -349,7 +364,11 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   }
   const susunan = await susunSoalDariKomposisi(template, exclude, {
     pakaiAi: r.pakaiAi !== false && template.pakaiAi !== false,
-    kisiKisi: kisiKisiUntuk(template.jenjang, template.jenisUjian || r.jenisUjian || ''),
+    // 🔥 FIX (2026-10-13): kisi-kisi per mapel dihitung di dalam
+    // susunSoalDariKomposisi (kisiKisiUntukBaris). rules.kisiKisi hanya
+    // untuk override eksplisit (skrip/susulan), bukan lagi teks generik.
+    kisiKisi: r.kisiKisi || '',
+    jenisUjian: template.jenisUjian || r.jenisUjian || '',
   });
   let daftarSoal = susunan.daftarSoal || [];
   const grupMapel = susunan.grupMapel || [];
@@ -367,6 +386,11 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   }
 
   const kekurangan = susunan.kekurangan || [];
+  // 🔥 RESTORASI (2026-10-13): GERBANG STOK (S2) — draf DIBLOKIR bila ada
+  // mapel kekurangan butir; mesin tidak lagi melahirkan paket timpang
+  // (kasus nyata: draf UTBK 3/155 soal yang harus dinonaktifkan manual).
+  const gerbang = gerbangStokDraf(kekurangan, r.izinkanKurang === true);
+  if (!gerbang.ok) return gerbang;
   if (!daftarSoal.length) {
     const rinci = (template.komposisi || [])
       .map((b) => b.mapel)
