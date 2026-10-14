@@ -18,6 +18,7 @@
 import assert from 'node:assert/strict';
 import {
   daftarTarget, targetUntukSemua, cocokkanTarget, cocokkanTargetPaket, bentukKanonikTarget,
+  saringPaketUntukSiswa,
 } from '../src/utils/cocokkanTargetPaket.js';
 
 let lulus = 0, gagal = 0;
@@ -192,4 +193,27 @@ uji('labelSasaran membaca target jadi kalimat manusia', () => {
   assert.equal(labelSasaran({ targetKelas: '9 SMP', targetKategori: 'IPA' }), '9 SMP · Semua program');
   assert.equal(labelSasaran({ targetKelas: 'Semua', targetKategori: 'Intensif' }), 'Semua kelas · INTENSIF');
   assert.equal(labelSasaran({}), 'Semua kelas · Semua program');
+});
+
+// ------------------------------------------------------------
+// saringPaketUntukSiswa — satu pintu anti-nyasar (owner 14 Okt 21.00:
+// paket TKA kelas 9 terlihat oleh kelas 7 di Papan Jelajah)
+// ------------------------------------------------------------
+uji('saringPaketUntukSiswa: TKA sasaran kelas 9 tidak nyasar ke kelas 7', () => {
+  const paket = [
+    { id: 'tka9', judul: 'TRY OUT PEMAHAMAN TKA SMP', jenisUjian: 'TKA', targetKelas: '9', targetKategori: 'Semua' },
+    { id: 'semua', judul: 'Latihan bersama', targetKelas: 'Semua', targetKategori: 'Semua' },
+    { id: 't7', judul: 'Try Out 7 SMP Bahasa Inggris', targetKelas: '7', targetKategori: 'Semua' },
+  ];
+  const anak7 = saringPaketUntukSiswa(paket, { studentId: 'A', kelasSekolah: '7' });
+  assert.deepEqual(anak7.map((p) => p.id), ['semua', 't7']);
+  const anak9 = saringPaketUntukSiswa(paket, { studentId: 'B', kelasSekolah: '9' });
+  assert.deepEqual(anak9.map((p) => p.id), ['tka9', 'semua']);
+});
+
+uji('saringPaketUntukSiswa: toleran bentuk target array & string warisan', () => {
+  const paket = [{ id: 'x', targetKelas: ['9'], targetKategori: ['Semua'] }];
+  assert.equal(saringPaketUntukSiswa(paket, { kelasSekolah: '9' }).length, 1);
+  assert.equal(saringPaketUntukSiswa(paket, { kelasSekolah: '8' }).length, 0);
+  assert.deepEqual(saringPaketUntukSiswa(null, { kelasSekolah: '9' }), []);
 });

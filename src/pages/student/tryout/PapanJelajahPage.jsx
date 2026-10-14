@@ -27,6 +27,7 @@ import {
   hitungAnalitik, potongUntukQuery, bolaMascotUntukMapel, kunciTanggal, jenisUjianUntukAnalitik,
 } from '../../../utils/papanJelajah.js';
 import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut.js';
+import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
 
 const ms = (v) => (typeof v?.toDate === 'function' ? v.toDate().getTime() : v ? new Date(v).getTime() : null);
@@ -179,7 +180,13 @@ export default function PapanJelajahPage({ studentId = '' }) {
         if (!hidup) return;
         setNama(dS.nama || dS.name || studentId);
         setKelas(dS.kelas || dS.kelasSekolah || '');
-        const paketAktif = snapPaket.docs.map((d) => ({ id: d.id, ...d.data() }));
+        // 🔥 14 Okt 2026 (owner: "jangan semua tryout nyasar"): Papan Jelajah
+        // dulu menampilkan SEMUA paket aktif ke SEMUA siswa. Sekarang difilter
+        // target yang sama dengan Daftar Try Out lewat satu pintu util.
+        const paketAktif = saringPaketUntukSiswa(
+          snapPaket.docs.map((d) => ({ id: d.id, ...d.data() })),
+          dS,
+        );
         const sesiList = snapSesi.docs.map((d) => ({ id: d.id, ...d.data() }));
         setPaket(paketAktif);
         setSesi(sesiList);
