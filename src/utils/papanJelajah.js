@@ -56,6 +56,37 @@ const ALIAS_MASCOT = [
 export const KOLOM_MASCOT = 6;
 export const BARIS_MASCOT = 5;
 
+// 🔥 BARU (14 Okt 2026, permintaan owner): maskot PER-MAPEL berkas terpisah
+// resolusi penuh supaya TULISAN PAPAN MAPEL terbaca di kartu (potongan sprite
+// 6x5 terlalu kecil untuk teks). Berkas ada di public/mascot/<slug>.png;
+// mapel yang belum punya berkas tetap dilayani potongan sprite (fallback).
+// Kunci terpanjang DIDULUKAN supaya "bahasa inggris tingkat lanjut" tidak
+// nyasar ke berkas "bahasa inggris" bila suatu saat keduanya punya berkas.
+const BERKAS_MASCOT = {
+  'matematika tingkat lanjut': '/mascot/matematika.png', // sementara: papan Matematika
+  'bahasa indonesia tingkat lanjut': '/mascot/bahasa-indonesia.png',
+  'bahasa inggris tingkat lanjut': '/mascot/bahasa-inggris.png',
+  matematika: '/mascot/matematika.png',
+  'bahasa indonesia': '/mascot/bahasa-indonesia.png',
+  'bahasa inggris': '/mascot/bahasa-inggris.png',
+  kimia: '/mascot/kimia.png',
+  fisika: '/mascot/fisika.png',
+  biologi: '/mascot/biologi.png',
+  sosiologi: '/mascot/sosiologi.png',
+  geografi: '/mascot/geografi.png',
+  sejarah: '/mascot/sejarah.png',
+  ekonomi: '/mascot/ekonomi.png',
+};
+const KUNCI_MASCOT = Object.keys(BERKAS_MASCOT).sort((a, b) => b.length - a.length);
+
+/** URL berkas maskot per mapel, atau null bila belum ada berkasnya. */
+export function berkasMascotUntukMapel(nama = '') {
+  const h = String(nama || '').trim().toLowerCase();
+  if (!h) return null;
+  const hit = KUNCI_MASCOT.find((k) => h.includes(k));
+  return hit ? BERKAS_MASCOT[hit] : null;
+}
+
 /**
  * Posisi potong sprite maskot untuk sebuah nama mapel/subtes.
  * @param {string} nama nama mapel / subtes UTBK / judul bebas bersinonim

@@ -13,7 +13,9 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, documentId, getDocs, query, where } from 'firebase/firestore';
 import { Rocket, CalendarDays, ChevronDown, Sparkles, Timer, Target } from 'lucide-react';
-import { posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, potongUntukQuery } from '../../../utils/papanJelajah.js';
+import { posisiMascotUntukMapel, hitungAnalitik, potongUntukQuery } from '../../../utils/papanJelajah.js';
+import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut.js';
+import TumpukanDokumenTryOut from '../../../components/student/TumpukanDokumenTryOut.jsx';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
 
 const SPRITE = '/mascot/mascot-mapel.png';
@@ -51,63 +53,12 @@ const st = {
     width: ukuran, height: ukuran, borderRadius: 14, flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
     background: 'linear-gradient(135deg,#312e81,#7c3aed)', fontSize: ukuran / 2.4, border: '1px solid rgba(255,255,255,.25)',
   }),
-  lingkaranTanggal: {
-    width: 78, height: 78, borderRadius: '50%', flex: '0 0 auto', display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center', background: 'conic-gradient(#f97316,#7c3aed,#f97316)', padding: 3,
-  },
-  lingkaranDalam: {
-    width: '100%', height: '100%', borderRadius: '50%', background: '#10163c', display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center',
-  },
   chip: (warna = '#7c3aed') => ({
     display: 'inline-block', padding: '3px 10px', borderRadius: 999, fontSize: 11.5, fontWeight: 700,
     background: `${warna}22`, color: '#fff', border: `1px solid ${warna}88`, marginRight: 6,
   }),
-  tombol: {
-    marginTop: 10, padding: '10px 18px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 800,
-    background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontSize: 14,
-  },
   deskripsi: { color: '#c3c9ef', fontSize: 12.5, lineHeight: 1.55, margin: '6px 0 0' },
 };
-
-function KartuMisi({ paket, sesi, onBuka, besar = false, kini = WAKTU_MUAT }) {
-  const buka = ms(paket.waktuBuka);
-  const pos = posisiMascotUntukMapel((paket.komposisi || [])[0]?.mapel || paket.judul || '');
-  const berlangsung = buka !== null && kini >= buka && kini <= (ms(paket.waktuTutup) ?? kini);
-  const deskripsi = paket.deskripsi || buatDeskripsiPaket({
-    jenjang: paket.jenjangTemplate, jenisUjian: paket.jenisUjian, komposisi: paket.komposisi,
-    durasiMenit: paket.durasiTotalMenit, jumlahSubtes: (paket.subtes || []).length, tampilkanPembahasan: paket.tampilkanPembahasan,
-  });
-  return (
-    <div style={{ ...st.kartu, flexDirection: besar ? 'row' : 'row', boxShadow: besar ? '0 14px 40px rgba(124,58,237,.35)' : undefined }}>
-      {besar ? (
-        <div style={st.lingkaranTanggal}>
-          <div style={st.lingkaranDalam}>
-            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{buka ? new Date(buka).getDate() : '?'}</span>
-            <span style={{ fontSize: 11, color: '#ffb27d', fontWeight: 800 }}>{buka ? BULAN[new Date(buka).getMonth()].toUpperCase() : ''}</span>
-          </div>
-        </div>
-      ) : (
-        <div style={st.mascot(pos)}>{pos ? null : '🚀'}<span style={{ display: pos ? 'none' : undefined }} /></div>
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 800, fontSize: besar ? 17 : 14.5 }}>{paket.judul}</div>
-        <div style={{ marginTop: 5 }}>
-          <span style={st.chip(berlangsung ? '#16a34a' : '#f97316')}>{berlangsung ? 'SEDANG BERLANGSUNG' : `Dibuka ${tgl(buka)}`}</span>
-          <span style={st.chip('#7c3aed')}>{paket.totalSoal} soal</span>
-          <span style={st.chip('#0ea5e9')}>{(paket.subtes || []).length} subtes</span>
-          {sesi ? <span style={st.chip('#16a34a')}>skor {Math.round(sesi.totalSkorPersen || 0)}%</span> : null}
-        </div>
-        <p style={st.deskripsi}>{deskripsi}</p>
-        {besar ? (
-          <button type="button" style={st.tombol} onClick={() => onBuka(paket.id)}>
-            {berlangsung ? '🚀 Mulai misi sekarang' : '🗓️ Ingatkan saya hari-H'}
-          </button>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
 export default function PapanJelajahPage({ studentId = '' }) {
   const navigate = useNavigate();
@@ -191,6 +142,15 @@ export default function PapanJelajahPage({ studentId = '' }) {
     return { mendatang, arsip };
   }, [paket, sesiPerPaket, kini]);
 
+  // 📄 14 Okt 2026 (permintaan owner): daftar misi = TUMPUKAN DOKUMEN,
+  // satu dokumen = SATU test (subtes). Paket 3 subtes tampil sebagai 3
+  // lembar berurutan; kunci urutan & skor per test dihitung util murni
+  // dokumenTryOut.js (teruji), bukan di komponen ini.
+  const dokumenMisi = useMemo(
+    () => tergolong.mendatang.flatMap((p) => bangunDokumenTryOut(p, { kini, sesi: sesiPerPaket.get(p.id) || null })),
+    [tergolong, sesiPerPaket, kini],
+  );
+
   // 🛡️ AUDIT 2026-10-13: analitik boleh melihat paket riwayat (arsip/
   // nonaktif) supaya sesi lama tidak hilang dari tren; daftar misi & arsip
   // di tab sebelah TETAP hanya dari paket aktif.
@@ -220,7 +180,6 @@ export default function PapanJelajahPage({ studentId = '' }) {
 
   if (muat) return <div style={{ padding: 30, color: '#9aa3d6' }}>🛰️ Menyiapkan papan jelajah…</div>;
 
-  const hero = tergolong.mendatang[0];
   return (
     <div style={st.bungkus}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -236,13 +195,11 @@ export default function PapanJelajahPage({ studentId = '' }) {
 
       {tab === 'misi' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {hero ? <KartuMisi besar kini={kini} paket={hero} sesi={sesiPerPaket.get(hero.id)} onBuka={(id) => navigate(`/siswa/tryout/${id}`)} />
-            : <div style={st.kartu}>🌙 Belum ada misi mendatang. Try out biasanya dibuka setiap Sabtu pagi.</div>}
-          {tergolong.mendatang.slice(1).map((p, i) => (
-            <div key={p.id} style={{ transform: `rotate(${i % 2 === 0 ? -0.6 : 0.6}deg) translateX(${i % 2 === 0 ? 6 : -6}px)` }}>
-              <KartuMisi kini={kini} paket={p} sesi={sesiPerPaket.get(p.id)} onBuka={(id) => navigate(`/siswa/tryout/${id}`)} />
-            </div>
-          ))}
+          {dokumenMisi.length ? (
+            <TumpukanDokumenTryOut dokumen={dokumenMisi} onBuka={(d) => navigate(`/siswa/tryout/${d.paketId}`)} />
+          ) : (
+            <div style={st.kartu}>🌙 Belum ada misi mendatang. Try out biasanya dibuka setiap Sabtu pagi.</div>
+          )}
           {tergolong.arsip.length ? (
             <div style={{ marginTop: 8 }}>
               <button
