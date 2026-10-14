@@ -129,6 +129,25 @@ const BOLA_MAPEL = {
   geografi: '/mascot/bola-geografi.png',
   sejarah: '/mascot/bola-sejarah.png',
   ekonomi: '/mascot/bola-ekonomi.png',
+  // gelombang kedua (14 Okt 2026 sore): sisa mapel sekolah inti
+  'ilmu pengetahuan alam': '/mascot/bola-ipa.png',
+  ipa: '/mascot/bola-ipa.png',
+  'ilmu pengetahuan sosial': '/mascot/bola-ips.png',
+  ips: '/mascot/bola-ips.png',
+  pjok: '/mascot/bola-pjok.png',
+  penjaskes: '/mascot/bola-pjok.png',
+  olahraga: '/mascot/bola-pjok.png',
+  seni: '/mascot/bola-seni.png',
+  informatika: '/mascot/bola-informatika.png',
+  'bahasa arab': '/mascot/bola-bahasa-arab.png',
+  arab: '/mascot/bola-bahasa-arab.png',
+  pancasila: '/mascot/bola-pancasila.png',
+  agama: '/mascot/bola-agama.png',
+  'budi pekerti': '/mascot/bola-agama.png',
+  'muatan lokal': '/mascot/bola-muatan-lokal.png',
+  mulok: '/mascot/bola-muatan-lokal.png',
+  koding: '/mascot/bola-koding.png',
+  'kecerdasan artifisial': '/mascot/bola-koding.png',
 };
 const KUNCI_BOLA = Object.keys(BOLA_MAPEL).sort((a, b) => b.length - a.length);
 

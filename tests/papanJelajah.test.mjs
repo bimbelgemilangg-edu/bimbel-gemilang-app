@@ -172,5 +172,8 @@ test('kunciTanggal stabil untuk kalender lokal', () => {
 test('bola mapel: 10 mapel inti punya berkas, lainnya null (fallback bola warna)', () => {
   assert.equal(bolaMascotUntukMapel('Matematika'), '/mascot/bola-matematika.png');
   assert.equal(bolaMascotUntukMapel('Bahasa Indonesia Tingkat Lanjut'), '/mascot/bola-bahasa-indonesia.png');
-  assert.equal(bolaMascotUntukMapel('PJOK'), null);
+  assert.equal(bolaMascotUntukMapel('PJOK'), '/mascot/bola-pjok.png');
+  assert.equal(bolaMascotUntukMapel('IPAS'), '/mascot/bola-ipa.png');
+  assert.equal(bolaMascotUntukMapel('Matematika').includes('bola-matematika'), true);
+  assert.equal(bolaMascotUntukMapel('Astrologi'), null);
 });
