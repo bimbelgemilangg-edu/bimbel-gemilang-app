@@ -46,6 +46,7 @@ import { benderaButir, masukKeranjangBanyak, keluarKeranjang, pindahUrutan } fro
 import {
   GRANULARITAS, MIN_BUTIR, MAKS_BUTIR,
   kelompokkanJadiSubtes, putusanKirimDraf, bangunPayloadDraf,
+  opsiJenjangDariSiswa, kelasDariSiswaUntukJenjang, jenjangDariKelasSiswa,
 } from '../../utils/rakitTryOutTentor';
 import { labelStatus, warnaStatus, STATUS_PAKET } from '../../utils/statusTryOutPaket';
 import { kebijakanGagalMuat } from '../../utils/keputusanMuat';
@@ -101,9 +102,13 @@ export default function RakitTryOutGuruPage() {
   const [semuaSoal, setSemuaSoal] = useState([]);
   const [keranjang, setKeranjang] = useState([]);
   const [usulan, setUsulan] = useState([]);
+  const [daftarSiswa, setDaftarSiswa] = useState([]);
+  const [editId, setEditId] = useState('');
+  const [editAsalStatus, setEditAsalStatus] = useState('');
 
   // ---- filter ----
   const [fJenjang, setFJenjang] = useState('');
+  const [tJenjang, setTJenjang] = useState('');
   const [tKelas, setTKelas] = useState('Semua');
   const [tProgram, setTProgram] = useState('Semua');
   const SHORT_JENJANG = { 'SD/MI': 'SD', 'SMP/MTs': 'SMP', 'SMA/MA': 'SMA', SMK: 'SMK', 'UTBK/SNBT': 'UTBK' };
@@ -159,6 +164,11 @@ export default function RakitTryOutGuruPage() {
           .sort((a, b) => String(b.disetujuiPada || b.diusulkanPada || '').localeCompare(String(a.disetujuiPada || a.diusulkanPada || '')));
         setUsulan(daftar);
       }
+      // 🔥 14 Okt 2026 (keputusan owner): pilihan jenjang sasaran datang
+      // dari DATA SISWA sungguhan, bukan hardcode — mustahil mengusulkan
+      // try out untuk jenjang yang tidak punya murid.
+      const snapSiswa = await getDocs(collection(db, 'students'));
+      setDaftarSiswa(snapSiswa.docs.map((d) => d.data()));
       if (konten.pesan) setError(konten.pesan);
     } catch (e) {
       // POLICY: jangan menelan. Data lama dipertahankan.
@@ -187,6 +197,8 @@ export default function RakitTryOutGuruPage() {
   const cakupanMapel = useMemo(() => (mapelPaket ? [mapelPaket, ...mapelTambahan] : []), [mapelPaket, mapelTambahan]);
   const dalamCakupan = useCallback((s) => cakupanMapel.includes(identitasDari(s).mapel), [cakupanMapel]);
   const daftarJenjang = useMemo(() => opsiUnik((s) => dalamCakupan(s) && identitasDari(s).jenjang !== '(tanpa jenjang)' ? identitasDari(s).jenjang : ''), [opsiUnik, dalamCakupan]);
+  const opsiJenjangSiswa = useMemo(() => opsiJenjangDariSiswa(daftarSiswa), [daftarSiswa]);
+  const opsiKelasJenjang = useMemo(() => kelasDariSiswaUntukJenjang(daftarSiswa, tJenjang), [daftarSiswa, tJenjang]);
   const daftarMateri = useMemo(() => opsiUnik((s) => dalamCakupan(s) && (!fJenjang || identitasDari(s).jenjang === fJenjang) && identitasDari(s).materi !== '(tanpa materi)' ? identitasDari(s).materi : ''), [opsiUnik, dalamCakupan, fJenjang]);
   const daftarKelas = useMemo(() => opsiUnik((s) => identitasDari(s).kelas), [opsiUnik]);
 
@@ -234,8 +246,8 @@ export default function RakitTryOutGuruPage() {
   const putusan = useMemo(() => putusanKirimDraf({
     judul, daftarSoal: keranjang, modeTimer, durasiTotalMenit: durasi,
     granularitas, targetKelas: sasaranKelas(), targetKategori: tProgram,
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- sasaranKelas&tProgram turunan tKelas/fJenjang; identitas fungsi di deps membuat memo sia-sia
-  }), [judul, keranjang, modeTimer, durasi, granularitas, fJenjang, mapelPaket]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- sasaranKelas&tProgram turunan tKelas/tJenjang; identitas fungsi di deps membuat memo sia-sia
+  }), [judul, keranjang, modeTimer, durasi, granularitas, fJenjang, mapelPaket, tJenjang, tKelas, tProgram]);
 
   const tambah = (daftar) => {
     const hasil = masukKeranjangBanyak(keranjang, daftar);
@@ -243,9 +255,43 @@ export default function RakitTryOutGuruPage() {
     setPesanKirim(`✓ ${hasil.rincian.baru} butir masuk keranjang${hasil.rincian.sudahAda ? `, ${hasil.rincian.sudahAda} sudah ada` : ''}${hasil.rincian.dilewati ? `, ${hasil.rincian.dilewati} dilewati` : ''}.`);
   };
 
+  // ----------------------------------------------------------
+  // 🔥 14 Okt 2026 (keputusan owner): usulan yang DIKEMBALIKAN admin
+  // harus bisa diperbaiki tentor dari halaman ini — bukan lewat
+  // Firestore Console seperti dulu. Muat dokumen ke formulir, simpan
+  // menimpa dokumen yang sama, status kembali menunggu_approval.
+  // ----------------------------------------------------------
+  const mulaiEdit = (p) => {
+    setEditId(p.id || '');
+    setEditAsalStatus(p.status || '');
+    setJudul(p.judul || '');
+    setCatatan(p.catatanUntukAdmin || '');
+    setGranularitas(p.granularitas || GRANULARITAS.MAPEL);
+    setModeTimer(p.modeTimer || 'total');
+    setDurasi(Number(p.durasiTotalMenit) || 60);
+    setAntiCheat(!!p.antiCheatAktif);
+    setWajibKamera(!!p.wajibKamera);
+    setSoalAcak(!!p.soalAcak);
+    const butirMuat = Array.isArray(p.daftarSoal) ? p.daftarSoal : [];
+    setKeranjang(butirMuat);
+    const mp = butirMuat.length ? identitasDari(butirMuat[0]).mapel : '';
+    setMapelPaket(mp && mp !== '(tanpa mapel)' ? mp : '');
+    setMapelTambahan([]);
+    const tk = String(Array.isArray(p.targetKelas) ? (p.targetKelas[0] || '') : (p.targetKelas || '')).trim();
+    if (/^\d/.test(tk)) { setTKelas(tk); setTJenjang(jenjangDariKelasSiswa(tk)); }
+    else { setTJenjang(tk); setTKelas('Semua'); }
+    setPesanKirim(`✏️ Mode perbaiki: "${p.judul || '(tanpa judul)'}" dimuat ke formulir. Betulkan sasaran/jenjangnya, lalu tekan tombol kirim di bawah.`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const batalEdit = () => {
+    setEditId(''); setEditAsalStatus(''); setKeranjang([]); setJudul(''); setCatatan(''); setPesanKirim('');
+  };
+
   const kirimUsulan = useCallback(async () => {
     if (!putusan.boleh || mengirim) return;
-    const kalimat = `Kirim "${judul.trim()}" (${keranjang.length} butir, ${subtes.length} subtes) untuk persetujuan admin?\n\n`
+    const kalimat = (editId ? 'SIMPAN PERBAIKAN & KIRIM ULANG\n' : '')
+      + `Kirim "${judul.trim()}" (${keranjang.length} butir, ${subtes.length} subtes) untuk persetujuan admin?\n\n`
       + 'Paket ini BELUM terbit dan tidak terlihat siswa sampai admin menyetujuinya. Jadwal buka & deadline ditentukan admin.';
     if (!window.confirm(kalimat)) return;
 
@@ -258,13 +304,32 @@ export default function RakitTryOutGuruPage() {
         antiCheatAktif: antiCheat, wajibKamera, soalAcak, catatanUntukAdmin: catatan,
         guru: { id: identitas.docId || identitas.guruId, nama: identitas.guruNama },
       });
-      payload.createdAt = serverTimestamp();
-      payload.updatedAt = serverTimestamp();
-      await addDoc(collection(db, 'tryout_paket'), payload);
-      setPesanKirim(`✅ Terkirim. Statusnya "${labelStatus(STATUS_PAKET.MENUNGGU)}" — belum terbit, siswa belum melihatnya. Admin yang menentukan jadwal.`);
+      if (editId) {
+        const asli = usulan.find((u) => u.id === editId);
+        delete payload.createdAt;
+        payload.status = STATUS_PAKET.MENUNGGU;
+        payload.updatedAt = serverTimestamp();
+        payload.riwayatStatus = [
+          ...(Array.isArray(asli?.riwayatStatus) ? asli.riwayatStatus : []),
+          {
+            status: STATUS_PAKET.MENUNGGU, oleh: identitas.guruNama, peran: 'tentor',
+            pada: new Date().toISOString(),
+            catatan: editAsalStatus === STATUS_PAKET.DITOLAK ? 'Perbaikan setelah dikembalikan admin' : 'Dikirim ulang oleh tentor',
+          },
+        ];
+        await updateDoc(doc(db, 'tryout_paket', editId), payload);
+        setPesanKirim(`✅ Perbaikan tersimpan & terkirim ulang. Statusnya "${labelStatus(STATUS_PAKET.MENUNGGU)}".`);
+      } else {
+        payload.createdAt = serverTimestamp();
+        payload.updatedAt = serverTimestamp();
+        await addDoc(collection(db, 'tryout_paket'), payload);
+        setPesanKirim(`✅ Terkirim. Statusnya "${labelStatus(STATUS_PAKET.MENUNGGU)}" — belum terbit, siswa belum melihatnya. Admin yang menentukan jadwal.`);
+      }
       setKeranjang([]);
       setJudul('');
       setCatatan('');
+      setEditId('');
+      setEditAsalStatus('');
       await muat(true);
     } catch (e) {
       setPesanKirim(`❌ Gagal mengirim: ${e?.message || e}. Keranjang Anda TIDAK dihapus — coba lagi.`);
@@ -272,25 +337,9 @@ export default function RakitTryOutGuruPage() {
       setMengirim(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- sasaranKelas&tProgram turunan state yang sudah tercakup
-  }, [putusan.boleh, mengirim, judul, keranjang, subtes.length, modeTimer, durasi, granularitas, fJenjang, mapelPaket, antiCheat, wajibKamera, soalAcak, catatan, identitas, muat]);
+  }, [putusan.boleh, mengirim, judul, keranjang, subtes.length, modeTimer, durasi, granularitas, fJenjang, mapelPaket, antiCheat, wajibKamera, soalAcak, catatan, identitas, muat, editId, editAsalStatus, usulan]);
 
-  const kirimUlang = useCallback(async (paket) => {
-    if (!window.confirm(`Kirim ulang "${paket.judul}" untuk persetujuan admin? Perubahan yang Anda buat di Firestore Console akan ikut terkirim apa adanya.`)) return;
-    try {
-      await updateDoc(doc(db, 'tryout_paket', paket.id), {
-        status: STATUS_PAKET.MENUNGGU,
-        updatedAt: serverTimestamp(),
-        riwayatStatus: [
-          ...(Array.isArray(paket.riwayatStatus) ? paket.riwayatStatus : []),
-          { status: STATUS_PAKET.MENUNGGU, oleh: identitas.guruNama, peran: 'tentor', pada: new Date().toISOString(), catatan: 'Dikirim ulang setelah ditolak' },
-        ],
-      });
-      setPesanKirim('✅ Dikirim ulang untuk persetujuan admin.');
-      await muat(true);
-    } catch (e) {
-      setPesanKirim(`❌ Gagal mengirim ulang: ${e?.message || e}`);
-    }
-  }, [identitas.guruNama, muat]);
+
 
   const pilih = (soal, on) => {
     if (on) tambah([soal]);
@@ -320,6 +369,73 @@ export default function RakitTryOutGuruPage() {
             <button style={st.tombolKecil} onClick={() => muat(true)} disabled={memuat}><RefreshCw size={12} style={{ verticalAlign: -2 }} /> Muat ulang</button>
           </div>
         )}
+
+        {/* ============================================================
+            📚 RIWAYAT & STATUS TRY OUT SAYA — dipindah ke DEPAN
+            (keputusan owner 14 Okt 2026): hal pertama yang dilihat
+            tentor adalah nasib usulan-usulannya: terbit / pending /
+            dikembalikan (beserta alasan + tombol perbaiki) / draf.
+            ============================================================ */}
+        <div style={st.kartu}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+            <div style={{ ...st.judulKartu, marginBottom: 0 }}>📚 Riwayat try out saya ({usulan.length})</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {[['aktif', 'Terbit'], ['menunggu_approval', 'Pending'], ['ditolak', 'Dikembalikan'], ['draf', 'Draf']].map(([kode, label]) => {
+                const n = usulan.filter((u) => (u.status || 'aktif') === kode).length;
+                const w = warnaStatus(kode);
+                return (
+                  <span key={kode} style={{ background: w.latar, color: w.teks, borderRadius: 999, padding: '3px 10px', fontSize: 10.5, fontWeight: 800 }}>
+                    {label} · {n}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+          {usulan.length === 0 && (
+            <div style={st.kecil}>Belum ada usulan. Rakit try out di bawah ini — setelah dikirim, admin yang menyetujui & menentukan jadwal terbit.</div>
+          )}
+          {usulan.slice(0, 8).map((p) => {
+            const w = warnaStatus(p.status);
+            return (
+              <div key={p.id} style={{ border: '1px solid #eef2f7', borderRadius: 10, padding: '9px 11px', marginBottom: 7, background: p.status === STATUS_PAKET.DITOLAK ? '#fff7f7' : '#fff' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0f172a', flex: 1, minWidth: 0 }}>{p.judul || '(tanpa judul)'}</div>
+                  <span style={{ background: w.latar, color: w.teks, borderRadius: 999, padding: '2px 9px', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' }}>{labelStatus(p.status)}</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 3 }}>
+                  {p.totalSoal ?? (p.daftarSoal?.length || 0)} butir · {Array.isArray(p.subtes) ? p.subtes.length : 0} subtes · sasaran{' '}
+                  <b style={{ color: Array.isArray(p.targetKelas) || String(p.targetKelas || '').trim() ? '#475569' : '#b91c1c' }}>
+                    {Array.isArray(p.targetKelas) ? p.targetKelas.join(', ') : (String(p.targetKelas || '').trim() || 'TIDAK ADA (warisan lama)')}
+                  </b>
+                </div>
+                {p.status === STATUS_PAKET.DITOLAK && p.ditolakAlasan && (
+                  <div style={{ marginTop: 6, fontSize: 11, color: '#991b1b', background: '#fef2f2', borderRadius: 7, padding: '6px 8px', lineHeight: 1.55 }}>
+                    <b>Alasan admin:</b> {p.ditolakAlasan}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 6, marginTop: 7, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {(p.status === STATUS_PAKET.DITOLAK || p.status === STATUS_PAKET.DRAF) && (
+                    <button type="button" style={{ ...st.tombolKecil, background: '#5B2ECC', color: '#fff', borderColor: '#5B2ECC', fontWeight: 800 }} onClick={() => mulaiEdit(p)}>
+                      ✏️ Perbaiki & kirim ulang
+                    </button>
+                  )}
+                  {(p.status === STATUS_PAKET.AKTIF || p.status === STATUS_PAKET.NONAKTIF) && (
+                    <button type="button" onClick={() => navigate(`/guru/tryout-monitor/${p.id}`)} style={{ ...st.tombolKecil, background: '#0e7490', color: '#fff', borderColor: '#0e7490' }}>
+                      🎯 Pantau hasil & naskah soal
+                    </button>
+                  )}
+                  {p.status === STATUS_PAKET.MENUNGGU && (
+                    <span style={{ fontSize: 10.5, color: '#92400e', fontWeight: 700 }}>⏳ menunggu keputusan admin…</span>
+                  )}
+                  {editId === p.id && <span style={{ fontSize: 10.5, color: '#3730a3', fontWeight: 800 }}>sedang diperbaiki di formulir ↓</span>}
+                </div>
+              </div>
+            );
+          })}
+          {usulan.length > 8 && (
+            <div style={st.kecil}>+ {usulan.length - 8} usulan lain tidak ditampilkan — yang butuh tindakan selalu ada di atas.</div>
+          )}
+        </div>
 
         <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
           {/* ================= KOLOM KIRI: MEMILIH ================= */}
@@ -506,6 +622,12 @@ export default function RakitTryOutGuruPage() {
                 </>
               )}
 
+              {editId ? (
+                <div style={{ background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 9, padding: '8px 10px', fontSize: 11.5, color: '#3730a3', marginBottom: 10, display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span style={{ flex: 1, lineHeight: 1.5 }}>✏️ Mode perbaiki: menyimpan akan MENIMPA dokumen usulan yang sama & mengirimnya ulang ke admin.</span>
+                  <button type="button" style={st.tombolKecil} onClick={batalEdit}>batal</button>
+                </div>
+              ) : null}
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>JUDUL PAKET</label>
               <input style={st.input} value={judul} onChange={(e) => setJudul(e.target.value)} placeholder="mis. Try Out TKA Matematika SMA — Pekan 3" />
 
@@ -538,38 +660,47 @@ export default function RakitTryOutGuruPage() {
                 </div>
               )}
 
-              <div style={{ marginTop: 11, display: 'grid', gap: 6 }}>
-                <label style={{ fontSize: 11.5, color: '#374151', display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <input type="checkbox" checked={soalAcak} onChange={(e) => setSoalAcak(e.target.checked)} /> acak urutan soal per siswa
-                </label>
-                <label style={{ fontSize: 11.5, color: '#374151', display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <input type="checkbox" checked={antiCheat} onChange={(e) => setAntiCheat(e.target.checked)} /> aktifkan pengawas anti-cheat
-                </label>
-                {antiCheat && (
-                  <label style={{ fontSize: 11.5, color: '#374151', display: 'flex', gap: 6, alignItems: 'center', paddingLeft: 20 }}>
-                    <input type="checkbox" checked={wajibKamera} onChange={(e) => setWajibKamera(e.target.checked)} /> wajib kamera
-                  </label>
-                )}
-              </div>
-
               <div style={{ marginTop: 11 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 4 }}><label style={{ display: 'block', fontSize: 11.5, fontWeight: 800, color: '#475569', marginBottom: 6 }}>
-                  KELAS TUJUAN TRY OUT (wajib dipilih sadar)
-                  <select value={tKelas} onChange={(e) => setTKelas(e.target.value)} style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, background: '#fff' }}>
-                    {['Semua', '7', '8', '9', '10', '11', '12'].map((k) => <option key={k} value={k}>{k === 'Semua' ? 'Semua kelas' : `Kelas ${k}`}</option>)}
+                {/* 🔥 14 Okt 2026: opsi "Semua jenjang" DIHAPUS. Tentor wajib
+                    memilih SATU jenjang yang benar-benar punya siswa; kelas
+                    di dalamnya boleh semua atau salah satu kelas nyata. */}
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: '#475569', marginBottom: 4 }}>
+                  JENJANG SASARAN — WAJIB (dari data siswa)
+                  <select
+                    value={tJenjang}
+                    onChange={(e) => { setTJenjang(e.target.value); setTKelas('Semua'); }}
+                    style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: `1px solid ${tJenjang ? '#cbd5e1' : '#fca5a5'}`, fontSize: 12.5, background: tJenjang ? '#fff' : '#fef2f2', color: '#111827' }}
+                  >
+                    <option value="">— pilih satu jenjang —</option>
+                    {opsiJenjangSiswa.map((jng) => <option key={jng} value={jng}>{jng}</option>)}
+                    {tJenjang && !opsiJenjangSiswa.includes(tJenjang) ? <option value={tJenjang}>{tJenjang}</option> : null}
                   </select>
                 </label>
-                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 800, color: '#475569', marginBottom: 10 }}>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: '#475569', marginBottom: 4, marginTop: 9 }}>
+                  KELAS YANG MENGERJAKAN
+                  <select
+                    value={tKelas}
+                    onChange={(e) => setTKelas(e.target.value)}
+                    disabled={!tJenjang}
+                    style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, background: '#fff', color: '#111827' }}
+                  >
+                    <option value="Semua">Semua kelas {tJenjang || ''}</option>
+                    {opsiKelasJenjang.map((k) => <option key={k} value={k}>Kelas {k}</option>)}
+                  </select>
+                </label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: '#475569', marginBottom: 4, marginTop: 9 }}>
                   PROGRAM SISWA YANG MENGERJAKAN
-                  <select value={tProgram} onChange={(e) => setTProgram(e.target.value)} style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, background: '#fff' }}>
+                  <select value={tProgram} onChange={(e) => setTProgram(e.target.value)} style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, background: '#fff', color: '#111827' }}>
                     {['Semua', 'Reguler', 'Intensif'].map((k) => <option key={k} value={k}>{k === 'Semua' ? 'Semua program' : k}</option>)}
                   </select>
                 </label>
-                <div style={{ fontSize: 11, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '7px 9px', marginBottom: 10 }}>
-                  🎯 Sasaran paket ini: <b>{tKelas === 'Semua' ? (fJenjang || 'semua kelas') : `kelas ${tKelas}${fJenjang ? ' ' + (SHORT_JENJANG[fJenjang] || fJenjang) : ''}`}</b> · {tProgram === 'Semua' ? 'semua program' : `program ${tProgram}`}. Admin akan mengonfirmasi sasaran ini sebelum menyetujui.
+                <div style={{ fontSize: 11, color: sasaranKelas() ? '#0369a1' : '#b91c1c', background: sasaranKelas() ? '#f0f9ff' : '#fef2f2', border: `1px solid ${sasaranKelas() ? '#bae6fd' : '#fecaca'}`, borderRadius: 8, padding: '7px 9px', marginTop: 10 }}>
+                  🎯 Sasaran paket ini: <b>{sasaranKelas() || '— jenjang BELUM dipilih (wajib) —'}</b> · {tProgram === 'Semua' ? 'semua program' : `program ${tProgram}`}. Admin mengonfirmasi sasaran ini sebelum menyetujui.
                 </div>
-                CATATAN UNTUK ADMIN (opsional)</label>
-                <textarea style={{ ...st.input, minHeight: 54, resize: 'vertical' }} value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="mis. butir 12-15 memakai wacana yang sama" />
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 800, color: '#475569', marginTop: 10 }}>
+                  CATATAN UNTUK ADMIN (opsional)
+                  <textarea style={{ ...st.input, minHeight: 54, resize: 'vertical', marginTop: 4 }} value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="mis. butir 12-15 memakai wacana yang sama" />
+                </label>
               </div>
 
               {/* putusan: pembatal vs peringatan dipisah jelas */}
@@ -592,7 +723,7 @@ export default function RakitTryOutGuruPage() {
 
               <button style={{ ...st.tombol(!putusan.boleh || mengirim), marginTop: 12 }} onClick={kirimUsulan} disabled={!putusan.boleh || mengirim}>
                 {mengirim ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-                Kirim untuk persetujuan admin
+                {editId ? 'Simpan perbaikan & kirim ulang' : 'Kirim untuk persetujuan admin'}
               </button>
               <div style={{ ...st.kecil, marginTop: 7, textAlign: 'center' }}>
                 Minimal {MIN_BUTIR} butir, maksimal {MAKS_BUTIR}.
@@ -602,45 +733,6 @@ export default function RakitTryOutGuruPage() {
               )}
             </div>
 
-            {/* riwayat usulan */}
-            <div style={st.kartu}>
-              <div style={st.judulKartu}>4 · Usulan saya ({usulan.length})</div>
-              {usulan.length === 0 && <div style={st.kecil}>Belum ada usulan.</div>}
-              {usulan.slice(0, 25).map((p) => {
-                const w = warnaStatus(p.status);
-                return (
-                  <div key={p.id} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: '9px 11px', marginBottom: 7 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', flex: 1, minWidth: 0 }}>{p.judul || '(tanpa judul)'}</div>
-                      <span style={{ background: w.latar, color: w.teks, borderRadius: 999, padding: '2px 8px', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' }}>{labelStatus(p.status)}</span>
-                    </div>
-                    <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 3 }}>
-                      {p.totalSoal ?? (p.daftarSoal?.length || 0)} butir · {Array.isArray(p.subtes) ? p.subtes.length : 0} subtes
-                      {p.waktuTutup ? ` · deadline ${new Date(p.waktuTutup).toLocaleDateString('id-ID')}` : ''}
-                    </div>
-                    {/* 🔥 BARU (2026-10-12, keluhan owner "lihat ini dimana? guru
-                        mau ceknya"): pintu ke Pantau Try Out + naskah soal &
-                        kunci diletakkan TEPAT di baris usulan tentor, bukan
-                        hanya di Dashboard guru yang jarang dibuka. */}
-                    {(p.status === STATUS_PAKET.AKTIF || p.status === STATUS_PAKET.NONAKTIF) && (
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/guru/tryout-monitor/${p.id}`)}
-                        style={{ ...st.tombolKecil, marginTop: 6, background: '#0e7490', color: '#fff' }}
-                      >
-                        🎯 Pantau hasil & 📖 naskah soal+kunci
-                      </button>
-                    )}
-                    {p.status === STATUS_PAKET.DITOLAK && p.ditolakAlasan && (
-                      <div style={{ marginTop: 6, fontSize: 11, color: '#991b1b', background: '#fef2f2', borderRadius: 7, padding: '6px 8px', lineHeight: 1.55 }}>
-                        <b>Alasan admin:</b> {p.ditolakAlasan}
-                        <button style={{ ...st.tombolKecil, marginLeft: 8 }} onClick={() => kirimUlang(p)}>kirim ulang</button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>
