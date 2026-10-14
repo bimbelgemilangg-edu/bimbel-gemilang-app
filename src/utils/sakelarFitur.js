@@ -68,6 +68,13 @@ const norm = (s) => String(s ?? '').trim().toLowerCase();
  * @returns {{aktif: boolean, alasan: string}} alasan selalu terisi supaya UI
  *   bisa menjelaskan kenapa fitur tidak muncul, bukan diam saja.
  */
+// 🔥 KEPUTUSAN OWNER 14 Okt 2026: fitur di daftar ini SUDAH ROLLOUT ke
+// SEMUA siswa — sakelar berubah peran dari GERBANG menjadi REM DARURAT:
+// konfigurasi belum ada / fitur belum terdaftar => NYALA; hanya cfg.aktif
+// === false yang mematikan. Fitur LAIN tetap memakai invarian lama
+// (konfigurasi tidak ada => MATI) supaya keamanan pilot tidak melunak.
+export const FITUR_DEFAULT_NYALA = ['papanJelajah'];
+
 export function putuskanAksesFitur(konfigurasi, namaFitur, siswa = {}, opsi = {}) {
   if (opsi && opsi.aktif === false) {
     return { aktif: false, alasan: 'fitur dimatikan paksa oleh pemanggil' };
@@ -75,15 +82,22 @@ export function putuskanAksesFitur(konfigurasi, namaFitur, siswa = {}, opsi = {}
   const nama = norm(namaFitur);
   if (!nama) return { aktif: false, alasan: 'nama fitur kosong' };
 
+  const defaultNyala = FITUR_DEFAULT_NYALA.includes(nama);
   const peta = konfigurasi && typeof konfigurasi === 'object' ? konfigurasi : null;
-  if (!peta) return { aktif: false, alasan: 'konfigurasi fiturPilot belum ada' };
+  if (!peta) {
+    return defaultNyala
+      ? { aktif: true, alasan: 'fitur default nyala untuk semua siswa; konfigurasi fiturPilot belum ada' }
+      : { aktif: false, alasan: 'konfigurasi fiturPilot belum ada' };
+  }
 
   // Kunci fitur boleh ditulis dengan kapitalisasi apa pun oleh admin; dicari
   // tanpa peduli huruf besar/kecil supaya tidak gagal cuma karena 'RasionalisasiKampus'.
   const kunciAsli = Object.keys(peta).find((k) => norm(k) === nama);
   const cfg = kunciAsli ? peta[kunciAsli] : null;
   if (!cfg || typeof cfg !== 'object') {
-    return { aktif: false, alasan: `fitur "${namaFitur}" belum terdaftar di fiturPilot` };
+    return defaultNyala
+      ? { aktif: true, alasan: `fitur default nyala untuk semua siswa; "${namaFitur}" belum terdaftar di fiturPilot` }
+      : { aktif: false, alasan: `fitur "${namaFitur}" belum terdaftar di fiturPilot` };
   }
   if (cfg.aktif !== true) {
     return { aktif: false, alasan: `fitur "${namaFitur}" dalam keadaan nonaktif` };
