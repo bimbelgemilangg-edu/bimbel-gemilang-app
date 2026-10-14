@@ -15,6 +15,8 @@ import {
   UploadCloud, Scissors, ToggleLeft, Sparkles
 } from 'lucide-react';
 import { konversiModulKeBab } from '../../../utils/konversiAiClient';
+import { htmlUnduhMateriGemilang } from '../../../utils/templateUnduhMateri';
+import { cetakLewatIframe } from '../../../utils/kwitansi';
 import PemotongGambar from '../../../components/buku/PemotongGambar';
 import '../../../components/buku/buku.css';
 import EditorBab from '../../../components/admin/EditorBab';
@@ -639,6 +641,22 @@ export default function ManajerBuku() {
         </div>
       )}
 
+      {editBab && bukuDipilih && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          {/* 🔥 14 Okt 2026 (owner): guru mengunduh materi dengan template
+              berlogo Gemilang — cetak/save-PDF lewat iframe cetak bersama. */}
+          <button
+            onClick={() => cetakLewatIframe(htmlUnduhMateriGemilang({
+              judulBuku: bukuDipilih.judul || '', mapel: bukuDipilih.mapel || '',
+              jenjang: bukuDipilih.jenjang || '', kelas: bukuDipilih.kelas || '',
+              bab: editBab.bab || {}, diunduhOleh: 'admin',
+            }), `Materi ${editBab.bab?.judul || ''}`)}
+            style={{ border: '1px solid #c4b5fd', background: '#f5f3ff', color: '#5b21b6', borderRadius: 9, padding: '7px 12px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' }}
+          >
+            🖨️ Unduh materi template Gemilang
+          </button>
+        </div>
+      )}
       {editBab && bukuDipilih && (
         <EditorBab
           buku={bukuDipilih}

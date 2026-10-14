@@ -17,11 +17,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, addDoc, setDoc, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, setDoc, doc, writeBatch, query, where, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, BookUp, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
 } from '../../../utils/pecahBukuHtml';
+import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 
 const JENJANG = ['SD', 'SMP', 'SMA/MA', 'SMK'];
 
@@ -35,6 +36,7 @@ const st = {
     display: 'inline-flex', alignItems: 'center', gap: 8,
   }),
   log: (ok) => ({ fontSize: 11.5, color: ok ? '#166534' : '#991b1b', padding: '3px 0' }),
+  tombolKecilBorderless: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 8, padding: '3px 9px', fontSize: 11, fontWeight: 700, cursor: 'pointer', color: '#334155' },
 };
 
 export default function ImporBukuHtmlPage() {
@@ -52,6 +54,7 @@ export default function ImporBukuHtmlPage() {
   const [sibuk, setSibuk] = useState(false);
   const [log, setLog] = useState([]);
   const [pratinjau, setPratinjau] = useState(null); // {babs:[{grup,bab,provider}], butir:[]}
+  const [saran, setSaran] = useState(null);
 
   const tambahLog = (teks, ok = true) => setLog((l) => [...l, { teks, ok }]);
 
@@ -63,6 +66,19 @@ export default function ImporBukuHtmlPage() {
     setInv(inventarisBukuHtml(teks));
     setPratinjau(null);
     setLog([]);
+  };
+
+  // "Aku gak tau materi kelas 10/11/12" (owner): sistem yang menyarankan,
+  // diambil dari modus kelas butir bank_soal bermateri sama + fase kurikulum.
+  const tanyaSaranKelas = async () => {
+    if (!identitas.materi) { setSaran({ kelas: '', alasan: 'Isi materi/bab dulu.', kandidat: [] }); return; }
+    try {
+      const snap = await getDocs(query(collection(db, 'bank_soal'), where('mataPelajaran', '==', identitas.mapel)));
+      const sampel = snap.docs.map((d) => d.data());
+      setSaran(saranKelasUntukMateri({ mapel: identitas.mapel, materi: identitas.materi, sampelBank: sampel }));
+    } catch (e) {
+      setSaran({ kelas: '', alasan: `Gagal membaca bank soal: ${e?.message || e}`, kandidat: [] });
+    }
   };
 
   const muatDaftarBuku = async () => {
@@ -208,6 +224,11 @@ export default function ImporBukuHtmlPage() {
           <label style={st.label}>Kelas
             <input style={st.input} value={identitas.kelas} onChange={(e) => setIdentitas({ ...identitas, kelas: e.target.value })} />
           </label>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+            <button type="button" style={{ ...st.tombol(false), padding: '8px 12px', fontSize: 11.5, background: '#0e7490' }} onClick={tanyaSaranKelas}>
+              ❓ Saran kelas dari sistem
+            </button>
+          </div>
           <label style={st.label}>Materi / bab buku
             <input style={st.input} placeholder="mis. Persamaan Kuadrat" value={identitas.materi} onChange={(e) => setIdentitas({ ...identitas, materi: e.target.value })} />
           </label>
@@ -229,6 +250,14 @@ export default function ImporBukuHtmlPage() {
             </label>
           )}
         </div>
+        {saran && (
+          <div style={{ marginTop: 10, fontSize: 11.5, color: saran.kelas ? '#166534' : '#92400e', background: saran.kelas ? '#f0fdf4' : '#fffbeb', border: `1px solid ${saran.kelas ? '#bbf7d0' : '#fde68a'}`, borderRadius: 8, padding: '7px 10px' }}>
+            {saran.kelas ? `Saran sistem: kelas ${saran.kelas} — ${saran.alasan}` : saran.alasan}
+            {saran.kelas ? (
+              <button type="button" style={{ ...st.tombolKecilBorderless, marginLeft: 8 }} onClick={() => setIdentitas({ ...identitas, kelas: saran.kelas })}>pakai</button>
+            ) : null}
+          </div>
+        )}
         <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12.5, color: '#374151', marginTop: 12 }}>
           <input type="checkbox" checked={ikutBank} onChange={(e) => setIkutBank(e.target.checked)} />
           soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
