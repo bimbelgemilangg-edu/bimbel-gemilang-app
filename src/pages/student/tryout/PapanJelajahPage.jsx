@@ -24,7 +24,7 @@ import {
   ChevronLeft, ChevronRight, Lock, Play, CheckCircle2, Hourglass,
 } from 'lucide-react';
 import {
-  hitungAnalitik, potongUntukQuery, bolaMascotUntukMapel, kunciTanggal,
+  hitungAnalitik, potongUntukQuery, bolaMascotUntukMapel, kunciTanggal, jenisUjianUntukAnalitik,
 } from '../../../utils/papanJelajah.js';
 import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
@@ -264,7 +264,7 @@ export default function PapanJelajahPage({ studentId = '' }) {
       }).filter((x) => x.skorPersen !== null);
       return {
         nama: p?.judul || 'Try out',
-        jenisUjian: p?.jenisUjian || '',
+        jenisUjian: jenisUjianUntukAnalitik(p),
         totalSkorPersen: s.totalSkorPersen,
         waktuSelesaiMs: ms(s.waktuSelesai),
         createdAtMs: ms(s.createdAt),

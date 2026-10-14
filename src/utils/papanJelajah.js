@@ -187,6 +187,23 @@ export function hitungStreak(msList = [], kini = Date.now()) {
   return { jumlah, amanHariIni };
 }
 
+// 🔥 BARU (14 Okt 2026, permintaan owner: SEMUA siswa mendapat analitik
+// TKA/UTBK masing-masing secara AKURAT): jalur tentor & terbit manual tidak
+// menulis field jenisUjian (hanya mesin otomatis yang menulis), sehingga
+// paket berjudulkan TKA/UTBK dari jalur itu DIAM-DIAM hilang dari analitik.
+// Inferensi baca-sisi ini menutup celah itu tanpa mengubah data lama:
+// eksplisit menang, lalu kode paket (GM-SMP-TKA-...), lalu judul.
+export function jenisUjianUntukAnalitik(paket = {}) {
+  const eksplisit = String(paket.jenisUjian || '').trim();
+  if (eksplisit) return eksplisit;
+  const kode = String(paket.kodePaket || '').toUpperCase();
+  const mKode = kode.match(/-(TKA|UTBK)-/);
+  if (mKode) return mKode[1];
+  const judul = String(paket.judul || '').toUpperCase();
+  const mJudul = judul.match(/\b(TKA|UTBK)\b/);
+  return mJudul ? mJudul[1] : '';
+}
+
 const RENTANG_KELAS = { SD: 'kelas 1-6', SMP: 'kelas 7-9', SMA: 'kelas 10-12', SMK: 'kelas 10-12' };
 
 /**

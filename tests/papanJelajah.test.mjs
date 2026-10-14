@@ -177,3 +177,46 @@ test('bola mapel: 10 mapel inti punya berkas, lainnya null (fallback bola warna)
   assert.equal(bolaMascotUntukMapel('Matematika').includes('bola-matematika'), true);
   assert.equal(bolaMascotUntukMapel('Astrologi'), null);
 });
+
+// ------------------------------------------------------------
+// Analitik AKURAT untuk semua siswa (owner 14 Okt 2026):
+// paket jalur tentor/manual tidak menulis jenisUjian -> inferensi
+// ------------------------------------------------------------
+import { jenisUjianUntukAnalitik } from '../src/utils/papanJelajah.js';
+
+test('jenisUjianUntukAnalitik: eksplisit menang atas kode & judul', () => {
+  assert.equal(jenisUjianUntukAnalitik({ jenisUjian: 'UTBK', kodePaket: 'GM-SMP-TKA-20261017-0700' }), 'UTBK');
+  assert.equal(jenisUjianUntukAnalitik({ jenisUjian: 'TKA' }), 'TKA');
+});
+
+test('jenisUjianUntukAnalitik: tanpa field, kode paket menyelamatkan analitik', () => {
+  assert.equal(jenisUjianUntukAnalitik({ kodePaket: 'GM-SMP-TKA-20261017-0700' }), 'TKA');
+  assert.equal(jenisUjianUntukAnalitik({ kodePaket: 'gm-sma-utbk-20261010-0700' }), 'UTBK');
+});
+
+test('jenisUjianUntukAnalitik: tanpa field & kode, judul yang memutuskan', () => {
+  assert.equal(jenisUjianUntukAnalitik({ judul: 'TRY OUT PEMAHAMAN TKA SMP - Sabtu' }), 'TKA');
+  assert.equal(jenisUjianUntukAnalitik({ judul: 'Simulasi UTBK Gemilang' }), 'UTBK');
+});
+
+test('jenisUjianForAnalitik: paket non-TKA tetap keluar dari analitik TKA/UTBK', () => {
+  assert.equal(jenisUjianUntukAnalitik({ judul: 'Try Out IPA 7 SMP', kodePaket: 'GM-ARSIP-UMU-UMUM-20261014-NXDC' }), '');
+  assert.equal(jenisUjianUntukAnalitik({}), '');
+});
+
+test('analitik menangkap sesi paket tentor berjudulkan TKA walau jenisUjian kosong', () => {
+  const paket = { judul: 'TRY OUT TKA SMP BAHASA INGGRIS', kodePaket: 'GM-ARSIP-UMU-UMUM-20261014-ABCD' };
+  const baris = [{
+    nama: paket.judul,
+    jenisUjian: jenisUjianUntukAnalitik(paket),
+    totalSkorPersen: 80,
+    waktuSelesaiMs: new Date(2026, 9, 12, 9, 0).getTime(),
+    createdAtMs: new Date(2026, 9, 12, 7, 30).getTime(),
+    totalSoal: 30,
+    subtes: [],
+  }];
+  const a = hitungAnalitik(baris);
+  assert.equal(a.jumlahSesi, 1, 'sesi TKA jalur tentor wajib masuk analitik');
+  assert.equal(a.tren[0].skor, 80);
+  assert.equal(a.kecepatan.detikPerSoal, 180); // (09.00-07.30) = 5400 s / 30 soal
+});
