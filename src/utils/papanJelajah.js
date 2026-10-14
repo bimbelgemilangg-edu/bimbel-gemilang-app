@@ -127,6 +127,92 @@ export function labelPekan(ms) {
   return `Pekan ${senin.getUTCDate()} ${BULAN_ID[senin.getUTCMonth()]}`;
 }
 
+const PEKAN_MS = 7 * 86400000;
+
+/** Awal pekan (Senin 00.00 UTC) dalam ms -- kunci baris berlian misi. */
+export function awalPekanMs(ms) {
+  if (!Number.isFinite(ms)) return null;
+  const d = new Date(ms);
+  const hari = (d.getUTCDay() + 6) % 7;
+  d.setUTCHours(0, 0, 0, 0);
+  // 🛡️ Regression (ditangkap uji 14 Okt 2026): mundur `hari` HARI, bukan
+  // `hari` pekan -- sempat tertulis hari * PEKAN_MS sehingga Sabtu 17 Okt
+  // dihitung sebagai "pekan 12 Sep" dan seluruh berlian rangkaian kacau.
+  return d.getTime() - hari * 86400000;
+}
+
+/** Label pendek berlian misi: tanggal Senin pekan itu, mis. "13 Okt". */
+export function labelMisiPekan(ms) {
+  const awal = awalPekanMs(ms);
+  if (awal === null) return '-';
+  const d = new Date(awal);
+  return `${d.getUTCDate()} ${BULAN_ID[d.getUTCMonth()]}`;
+}
+
+/**
+ * Baris berlian "rangkaian misi" ala streak Duolingo versi pekanan:
+ * satu berlian per pekan (Senin UTC), menyala bila pekan itu siswa
+ * menyelesaikan >=1 misi try out. `beruntun` = jumlah pekan berturut
+ * yang aktif, ujungnya pekan ini; bila pekan ini belum ada misi tapi
+ * pekan lalu aktif, rantai DIANGGAP MASIH HIDUP (misi Sabtu belum
+ * tiba) -- putus hanya kalau pekan lalu pun kosong.
+ *
+ * @param {Array<number>} selesaiMsList daftar waktuSelesai (ms) sesi selesai
+ * @param {number} kiniMs jam sekarang (ms) -- disuntik supaya murni & bisa diuji
+ * @param {number} [jumlahPekan=6] banyaknya berlian yang ditampilkan
+ * @returns {{pekan:Array<{awalMs:number,label:string,aktif:boolean,pekanIni:boolean}>,beruntun:number,totalAktif:number}}
+ */
+export function rangkaianMisi(selesaiMsList = [], kiniMs = 0, jumlahPekan = 6) {
+  const kunci = new Set(
+    (Array.isArray(selesaiMsList) ? selesaiMsList : [])
+      .filter((m) => Number.isFinite(m) && m !== null)
+      .map((m) => awalPekanMs(m))
+      .filter((m) => m !== null),
+  );
+  const awalKini = awalPekanMs(Number.isFinite(kiniMs) ? kiniMs : 0) ?? 0;
+  const pekan = [];
+  for (let i = jumlahPekan - 1; i >= 0; i -= 1) {
+    const awal = awalPekanMs(awalKini - i * PEKAN_MS) ?? awalKini - i * PEKAN_MS;
+    pekan.push({
+      awalMs: awal,
+      label: labelMisiPekan(awal),
+      aktif: kunci.has(awal),
+      pekanIni: i === 0,
+    });
+  }
+  const ujung = kunci.has(awalKini) ? awalKini : (kunci.has(awalKini - PEKAN_MS) ? awalKini - PEKAN_MS : null);
+  let beruntun = 0;
+  let kur = ujung;
+  while (kur !== null && kunci.has(kur)) { beruntun += 1; kur -= PEKAN_MS; }
+  return { pekan, beruntun, totalAktif: kunci.size };
+}
+
+/**
+ * Status JUJUR satu misi untuk seorang siswa -- satu-satunya tempat yang
+ * boleh memutuskan nasib kartu (pola statusTryOutPaket.js). Urutan prioritas
+ * sama dengan DaftarTryOutPage lama supaya tidak ada siswa yang "kehilangan"
+ * lanjutan / kesempatan kedua / kabar terlewatnya:
+ * selesai > berjalan > mendatang (belum dibuka) > terlewat > izin > berlangsung.
+ *
+ * @param {{waktuBukaMs?:number|null,waktuTutupMs?:number|null,sesiStatus?:string|null,izinSampaiMs?:number|null,kiniMs:number}} p
+ * @returns {{keadaan:'selesai'|'berjalan'|'mendatang'|'terlewat'|'izin'|'berlangsung',terkunci:boolean,izinBerlaku:boolean,lewatTutup:boolean,belumDibuka:boolean}}
+ */
+export function statusMisi(p = {}) {
+  const kini = Number.isFinite(p.kiniMs) ? p.kiniMs : 0;
+  const izinSampai = Number.isFinite(p.izinSampaiMs) ? p.izinSampaiMs : null;
+  const izinBerlaku = izinSampai !== null && kini < izinSampai;
+  const belumDibuka = Number.isFinite(p.waktuBukaMs) && kini < p.waktuBukaMs;
+  const lewatTutup = Number.isFinite(p.waktuTutupMs) && kini > p.waktuTutupMs;
+  let keadaan;
+  if (p.sesiStatus === 'selesai') keadaan = 'selesai';
+  else if (p.sesiStatus === 'berjalan') keadaan = 'berjalan';
+  else if (belumDibuka) keadaan = 'mendatang';
+  else if (lewatTutup && !izinBerlaku) keadaan = 'terlewat';
+  else if (izinBerlaku) keadaan = 'izin';
+  else keadaan = 'berlangsung';
+  return { keadaan, terkunci: keadaan === 'mendatang' || keadaan === 'terlewat', izinBerlaku, lewatTutup, belumDibuka };
+}
+
 /**
  * Ringkasan analitik TKA/UTBK seorang siswa (pengganti leaderboard).
  * @param {Array<{nama?:string,jenisUjian?:string,totalSkorPersen?:number,waktuSelesaiMs?:number,createdAtMs?:number,totalSoal?:number,subtes?:Array<{nama:string,skorPersen?:number}>}>} baris
@@ -218,4 +304,7 @@ export function potongUntukQuery(ids, batas = 30) {
   return hasil;
 }
 
-export default { PAPAN_MASCOT, posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan, potongUntukQuery, IDEAL_DETIK_PER_SOAL };
+export default {
+  PAPAN_MASCOT, posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan,
+  potongUntukQuery, IDEAL_DETIK_PER_SOAL, awalPekanMs, labelMisiPekan, rangkaianMisi, statusMisi,
+};

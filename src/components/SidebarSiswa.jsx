@@ -4,10 +4,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LogOut, X, Home, BarChart2, BookOpen, Wallet, 
   Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck,
-  Hash, Library, Target
+  Hash, Library, Target, Rocket, Sparkles
 } from 'lucide-react';
 import { useProfilSiswa } from '../utils/profilSiswa';
 import { useDataTargetKampus } from '../services/dataTargetKampus';
+import { fiturAktifUntuk } from '../services/sakelarFiturService';
 
 // Logo dari folder public
 const LogoBimbel = "/logo-gemilang.png";
@@ -21,6 +22,10 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   // localStorage saat login -- sebelumnya nama yang dibenarkan admin tidak
   // pernah berubah di sidebar sampai siswa logout-login.
   const profil = useProfilSiswa();
+  // 🚀 ROMBAK TOTAL 14 Okt 2026: menu "Papan Jelajah" & "Papan Analitik"
+  // hanya muncul untuk siswa yang DINYALAKAN sakelar fitur 'papanJelajah'
+  // (default MATI). Siswa lain tidak melihat perubahan apa pun di sidebar.
+  const [papanAktif, setPapanAktif] = useState(false);
   const studentData = {
     name: profil.nama || 'Siswa',
     nim: localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '',
@@ -33,6 +38,17 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    let hidup = true;
+    fiturAktifUntuk('papanJelajah', {
+      studentId: localStorage.getItem('studentId') || localStorage.getItem('studentNim') || '',
+      kelasSekolah: profil.kelas || '',
+    })
+      .then((p) => { if (hidup) setPapanAktif(!!p?.aktif); })
+      .catch(() => { if (hidup) setPapanAktif(false); });
+    return () => { hidup = false; };
+  }, [profil.kelas]);
 
   // ===== MENU — DIKELOMPOKKAN & DIURUTKAN ULANG =====
   // 🔥 Sebelumnya menu ditumpuk berurutan tanpa pengelompokan (Dashboard,
@@ -63,6 +79,15 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         { id: 'target-kampus', label: 'Target Kampusku', icon: <Target size={18} />, path: '/siswa/target-kampus', color: '#7c3aed' },
       ],
     }] : []),
+    // 🚀 ROMBAK TOTAL 14 Okt 2026: grup MISI hanya ada untuk siswa yang
+    // sakelar 'papanJelajah'-nya NYALA (mode whitelist/kelas/semua dari
+    // owner). Isinya pintu masuk tampilan baru bertema luar angkasa.
+    ...(papanAktif ? [{
+      label: 'MISI',
+      items: [
+        { id: 'papan-jelajah', label: 'Papan Jelajah', icon: <Rocket size={18} />, path: '/siswa/tryout', color: '#7c3aed', badge: 'BARU' },
+      ],
+    }] : []),
     {
       label: 'BELAJAR',
       items: [
@@ -82,7 +107,13 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
       items: [
         { id: 'smart-rapor', label: 'Smart Raport', icon: <TrendingUp size={18} />, path: '/siswa/smart-rapor', color: '#8b5cf6' },
         { id: 'rapor', label: 'Nilai & Progres', icon: <BarChart2 size={18} />, path: '/siswa/rapor', color: '#ef4444' },
-        { id: 'leaderboard', label: 'Papan Peringkat', icon: <Trophy size={18} />, path: '/siswa/leaderboard', color: '#f59e0b' },
+        // 🚀 ROMBAK TOTAL 14 Okt 2026: bagi siswa yang sakelar 'papanJelajah'-nya
+        // NYALA, "Papan Peringkat" DIGANTI "Papan Analitik" (tren skor TKA/UTBK
+        // pribadi per pekan + tempo + evaluasi -- bukan perlombaan antar siswa).
+        // Siswa lain tetap melihat papan peringkat lama, tidak berubah apa pun.
+        ...(papanAktif
+          ? [{ id: 'papan-analitik', label: 'Papan Analitik', icon: <Sparkles size={18} />, path: '/siswa/tryout?tab=analitik', color: '#0ea5e9', badge: 'BARU' }]
+          : [{ id: 'leaderboard', label: 'Papan Peringkat', icon: <Trophy size={18} />, path: '/siswa/leaderboard', color: '#f59e0b' }]),
       ],
     },
     {
@@ -94,6 +125,19 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
   ];
 
   // ===== HANDLERS =====
+  // 🚀 ROMBAK TOTAL 14 Okt 2026: path menu kini boleh membawa ?query (contoh:
+  // Papan Analitik -> /siswa/tryout?tab=analitik), sehingga DUA menu bisa
+  // berbagi basis path yang sama. Aturannya: item ber-query harus cocok
+  // PERSIS (path + query); item polos aktif hanya bila path cocok dan tidak
+  // ada saudara ber-query di basis yang sama sedang membuka halamannya.
+  const pathCocok = (path) => {
+    if (!path) return false;
+    if (path.includes('?')) return location.pathname + location.search === path;
+    if (location.pathname !== path) return false;
+    const adaSaudaraQuery = menuGroups.some((g) => g.items.some((it) => it.path && it.path.startsWith(`${path}?`)));
+    return !(adaSaudaraQuery && location.search);
+  };
+
   const handleMenuClick = (item) => {
     if (typeof setActiveMenu === 'function') {
       setActiveMenu(item.id);
@@ -200,7 +244,7 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
                 <div style={styles.sectionLabel}>{group.label}</div>
               )}
               {group.items.map((item) => {
-                const isActive = activeMenu === item.id || location.pathname === item.path;
+                const isActive = activeMenu === item.id || pathCocok(item.path);
                 return (
                   <div
                     key={item.id}
