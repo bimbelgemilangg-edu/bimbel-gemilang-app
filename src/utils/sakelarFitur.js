@@ -74,6 +74,11 @@ const norm = (s) => String(s ?? '').trim().toLowerCase();
 // === false yang mematikan. Fitur LAIN tetap memakai invarian lama
 // (konfigurasi tidak ada => MATI) supaya keamanan pilot tidak melunak.
 export const FITUR_DEFAULT_NYALA = ['papanJelajah'];
+// Pembandingan SELALU lewat norm(): nama fitur dinormalkan kecil sebelum
+// dicocokkan (bug 14 Okt: daftar camelCase vs nama ternormalkan membuat
+// default-nyala diam-diam tidak pernah aktif dan pilot whitelist lama
+// tetap memfilter siswa).
+const DEFAULT_NYALA_NORM = new Set(FITUR_DEFAULT_NYALA.map((x) => norm(x)));
 
 export function putuskanAksesFitur(konfigurasi, namaFitur, siswa = {}, opsi = {}) {
   if (opsi && opsi.aktif === false) {
@@ -82,7 +87,7 @@ export function putuskanAksesFitur(konfigurasi, namaFitur, siswa = {}, opsi = {}
   const nama = norm(namaFitur);
   if (!nama) return { aktif: false, alasan: 'nama fitur kosong' };
 
-  const defaultNyala = FITUR_DEFAULT_NYALA.includes(nama);
+  const defaultNyala = DEFAULT_NYALA_NORM.has(nama);
   const peta = konfigurasi && typeof konfigurasi === 'object' ? konfigurasi : null;
   if (!peta) {
     return defaultNyala
@@ -98,6 +103,17 @@ export function putuskanAksesFitur(konfigurasi, namaFitur, siswa = {}, opsi = {}
     return defaultNyala
       ? { aktif: true, alasan: `fitur default nyala untuk semua siswa; "${namaFitur}" belum terdaftar di fiturPilot` }
       : { aktif: false, alasan: `fitur "${namaFitur}" belum terdaftar di fiturPilot` };
+  }
+  // 🔥 14 Okt 2026 (bug rollout): konfigurasi PILOT LAMA di produksi masih
+  // berisi mode whitelist berisi segelintir siswa, sehingga fitur default
+  // nyala tetap ter-filter dan siswa lain melihat tampilan lama. Untuk
+  // fitur DEFAULT NYALA: mode pilot diabaikan — SEMUA siswa mendapat fitur;
+  // satu-satunya cara mematikan adalah rem darurat cfg.aktif === false.
+  if (defaultNyala) {
+    if (cfg.aktif === false) {
+      return { aktif: false, alasan: `rem darurat: fitur "${namaFitur}" dimatikan eksplisit di fiturPilot` };
+    }
+    return { aktif: true, alasan: 'fitur default nyala untuk semua siswa (rollout); sisa konfigurasi pilot diabaikan' };
   }
   if (cfg.aktif !== true) {
     return { aktif: false, alasan: `fitur "${namaFitur}" dalam keadaan nonaktif` };
