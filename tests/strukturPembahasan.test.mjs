@@ -152,4 +152,28 @@ uji('varian jawaban bergaya buku dikenali', () => {
 
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
+
+uji('panah OCR rusak dipulihkan ke bentuk kanonik buku (sampel owner)', () => {
+  // PDF halaman 9 mencetak: p → q / q → r / garis / p → r.
+  // OCR/AI pihak ketiga merusaknya jadi "p-q", "qr", "por".
+  const blok = strukturPembahasan('p-q\nqr\npor');
+  assert.equal(blok.length, 1);
+  assert.deepEqual(blok[0].baris, ['p → q', 'q → r', '—————', 'p → r']);
+});
+
+uji('varian panah rusak lain (-, 7, o, >, tempel) semuanya pulih', () => {
+  const blok = strukturPembahasan('p7q\nqor\np>r\npq');
+  assert.deepEqual(blok[0].baris.slice(0, 2), ['p → q', 'q → r']);
+});
+
+uji('kuantor & baris berprefiks Premis TIDAK diubah isinya', () => {
+  const blok = strukturPembahasan('Premis 1 : p>q\nSemua A, B\nSebagian B, C');
+  assert.deepEqual(blok[0].baris, ['Premis 1 : p>q', 'Semua A, B', 'Sebagian B, C']);
+});
+
+uji('garis inferensi hanya untuk tumpukan implikasi murni >=3 baris', () => {
+  const dua = strukturPembahasan('p-q\nqr');
+  assert.deepEqual(dua[0].baris, ['p → q', 'q → r'], 'dua baris tidak boleh dapat garis');
+});
+
 console.log('✅ Semua test lulus.');

@@ -98,6 +98,78 @@ uji('prompt induk benar-benar menyisipkan aturan ini', async () => {
   assert.ok(src.includes('${ATURAN_OCR_MASTER}'), 'aturan tidak disisipkan ke template prompt');
 });
 
+uji('penanda scan DILARANG masuk keluaran (sampel owner 2026-10-11)', () => {
+  // Berkas nyata owner memuat "=== PAGE 3 COL 1 ===", watermark
+  // "BELAJAR MINIMAL,/HASIL MAKSIMAL", dan baris nomor kolom sebelah
+  // ("24, 25 26.") yang semuanya lolos jadi isi soal. Prompt versi lama
+  // tidak pernah menyebutnya, jadi model tidak tahu itu bukan isi buku.
+  assert.ok(P.includes('PENANDA SCAN DILARANG MASUK KELUARAN'));
+  assert.ok(P.includes('=== PAGE 3 COL 1 ==='));
+  assert.ok(P.includes('HASIL MAKSIMAL'));
+  assert.ok(P.includes('24, 25 26.'));
+  assert.ok(P.includes('————EEE'));
+});
+
+uji('disiplin urutan kolom disebut sebagai akar bocor lintas kolom', () => {
+  assert.ok(P.includes('DISIPLIN URUTAN KOLOM'));
+  assert.ok(P.includes('KOLOM PER KOLOM'));
+  assert.ok(P.includes('PUNCAK'));
+  assert.ok(P.includes('fragmen kolom belum pasti pemiliknya'));
+});
+
+uji('wacana dilarang menginap di opsi/teks_soal + wajib jadi elemen bacaan', () => {
+  assert.ok(P.includes('WACANA TIDAK BOLEH MENGINAP DI OPSI ATAU TEKS_SOAL'));
+  assert.ok(P.includes('data-rentang-soal'));
+  assert.ok(P.includes('WACANA BERSAMA milik nomor-nomor sesudahnya'));
+});
+
+uji('cek mandiri kini memuat penanda scan, kebocoran opsi, dan bacaan kosong', () => {
+  assert.ok(P.includes('TIDAK ADA penanda scan di field mana pun'));
+  assert.ok(P.includes('TIDAK ADA <li> opsi yang memuat lebih dari teks opsinya sendiri'));
+  assert.ok(P.includes('yang TIDAK kosong'));
+});
+
+uji('pembahasan wajib bersidik jari sama dengan soalnya (aturan 34)', () => {
+  // Kasus nyata sampel owner: tiga nomor berurutan mendapat pembahasan
+  // yang berputar (63<-69, 65<-63, 69<-65). Prompt lama tidak menyebut
+  // sidik jari kode sumber sebagai alat verifikasi sama sekali.
+  assert.ok(P.includes('PEMBAHASAN WAJIB BERSIDIK JARI SAMA DENGAN SOALNYA'));
+  assert.ok(P.includes('PEMBAHASAN TERTUKAR'));
+  assert.ok(P.includes('GEL.2/63'));
+  assert.ok(P.includes('kode sumber di baris pertama pembahasan SAMA PERSIS'));
+});
+
+uji('baris logika wajib panah utuh + garis inferensi (aturan 35)', () => {
+  assert.ok(P.includes('BARIS LOGIKA SILOGISME WAJIB PAKAI PANAH'));
+  assert.ok(P.includes('—————'));
+  assert.ok(P.includes('por'));
+  assert.ok(P.includes('panah "→" dan tumpukannya'));
+});
+
+uji('tangga pembahasan + larangan sketsa raster (aturan 36)', () => {
+  assert.ok(P.includes('TANGGA PEMBAHASAN'));
+  assert.ok(P.includes('PEMBAHASAN PENALARAN AI:'));
+  assert.ok(P.includes('DILARANG MEMBUAT GAMBAR ATAU SKETSA RASTER'));
+  assert.ok(P.includes('SKETSA AI:'));
+  assert.ok(P.includes('DIAGRAM PEMBAHASAN perlu dipotong'));
+});
+
+uji('opsi bersih sampah margin + perluasan penanda scan (aturan 37-38)', () => {
+  assert.ok(P.includes('SATU <li> = SATU PILIHAN, TANPA SAMPAH MARGIN'));
+  assert.ok(P.includes('S (A) Simpulan pasti benar.'));
+  assert.ok(P.includes('PERLUASAN PENANDA SCAN'));
+  assert.ok(P.includes('34 of 310'));
+  assert.ok(P.includes('Wangsit Om Jero'));
+});
+
+uji('laporan kualitas diri per butir + contoh kartu benar (aturan 42-43)', () => {
+  assert.ok(P.includes('LAPORKAN KUALITAS DIRIMU SENDIRI PER BUTIR'));
+  assert.ok(P.includes('data-kualitas="buram"'));
+  assert.ok(P.includes('data-kualitas="tanpa-pembahasan"'));
+  assert.ok(P.includes('CONTOH SATU KARTU YANG BENAR'));
+  assert.ok(P.includes('data-kualitas="ok"'));
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');

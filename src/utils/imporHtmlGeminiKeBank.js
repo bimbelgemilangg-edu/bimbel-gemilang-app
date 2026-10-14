@@ -19,6 +19,84 @@ import { deteksiTaksonomiSoal, terapkanTaksonomi } from './mesinTaksonomiSoal.js
 import { bersihkanTeksOpsi } from './bersihkanGlifKunci.js';
 
 /**
+ * Selaraskan token `{{GAMBAR_n}}` (dan `gambarRefs` milik opsi) dengan
+ * `gambarUrls` yang BENAR-BENAR berhasil diunggah.
+ *
+ * KENAPA ADA (2026-10-11, keluhan owner "hasil impor gak seperti PDF asli"):
+ * halaman impor dulu melewati gambar yang gagal diunggah dengan `continue`,
+ * sehingga `gambarUrls` MENYUSUT dan BERGESER — sementara token di teks soal,
+ * token di pembahasan, dan `gambarRefs` opsi tetap menunjuk nomor URUTAN ASLI.
+ * `penempatanGambar.js` menerjemahkan `{{GAMBAR_n}}` sebagai `gambarUrls[n-1]`
+ * dan `dokumenDariButir` sebagai `urlsButir[n-1]`, jadi satu upload gagal saja
+ * membuat SEMUA gambar sesudahnya nyasar satu posisi. Tidak ada error yang
+ * muncul — gambar salah tampil dengan tenang.
+ *
+ * Di sini token DITULIS ULANG ke indeks baru yang padat; token milik gambar
+ * yang tidak punya url dihapus (jangan mencetak token mentah, jangan menempel
+ * gambar yang salah).
+ *
+ * MURNI & TERUJI (tests/imporHtmlGeminiKeBank.test.mjs).
+ *
+ * @param {object} butir          butir keluaran ekstraktor
+ * @param {Array<{urutan:number,url:string,sumber?:string,asal?:string,caption?:string,region?:string}>} daftarGambar
+ *        SELURUH figur milik butir ini, TERMASUK yang url-nya kosong (gagal
+ *        unggah) — justru nomor urut mereka yang dipakai menyusun peta.
+ * @returns {object} butir dengan gambarUrls/gambarMeta padat + token terselaraskan
+ */
+export function rapikanGambarButir(butir = {}, daftarGambar = []) {
+  const urut = (Array.isArray(daftarGambar) ? [...daftarGambar] : [])
+    .sort((a, b) => (Number(a?.urutan) || 0) - (Number(b?.urutan) || 0));
+
+  const gambarUrls = [];
+  const gambarMeta = [];
+  /** urutan ASLI (1-based) -> urutan BARU (1-based) di array padat */
+  const peta = new Map();
+  let gagalUnggah = 0;
+
+  for (const g of urut) {
+    const url = String(g?.url || '').trim();
+    if (!url) { gagalUnggah += 1; continue; }
+    peta.set(Number(g.urutan), gambarUrls.length + 1);
+    gambarUrls.push(url);
+    gambarMeta.push({
+      sumber: g.sumber || '',
+      asal: g.asal || '',
+      caption: g.caption || '',
+      region: g.region || 'badan',
+    });
+  }
+
+  // Token BERNOMOR ditulis ulang; token POLOS {{GAMBAR}} dibiarkan karena
+  // maknanya "gambar berikutnya yang belum terpakai" dan tetap benar pada
+  // array yang padat.
+  const sulihToken = (teks) => String(teks ?? '').replace(
+    /\{\{GAMBAR_(\d+)\}\}/g,
+    (token, n) => {
+      const baru = peta.get(Number(n));
+      return baru ? `{{GAMBAR_${baru}}}` : ' ';
+    },
+  );
+
+  const opsiJawaban = (butir.opsiJawaban || []).map((o) => {
+    if (!o || typeof o !== 'object' || !Array.isArray(o.gambarRefs)) return o;
+    const refs = o.gambarRefs
+      .map((n) => peta.get(Number(n)) || 0)
+      .filter((n) => n > 0);
+    return { ...o, gambarRefs: refs };
+  });
+
+  return {
+    ...butir,
+    gambarUrls,
+    gambarMeta,
+    soal: sulihToken(butir.soal),
+    pembahasan: sulihToken(butir.pembahasan),
+    opsiJawaban,
+    gambarGagalUnggah: gagalUnggah,
+  };
+}
+
+/**
  * @param {object} butir   keluaran ekstrakHtmlGemini (kontrak 12 field + materi/pembahasan)
  * @param {object} konteks { fileName, mapel, jenjang, kelas, sumber }
  * @returns {object} dokumen siap writeBatch ke koleksi bank_soal
@@ -141,4 +219,4 @@ export function ringkasanImpor(soal = [], gambar = [], potongan = []) {
   };
 }
 
-export default { dokumenDariButir, ringkasanImpor };
+export default { dokumenDariButir, ringkasanImpor, rapikanGambarButir };

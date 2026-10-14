@@ -1,5 +1,7 @@
 # AUDIT IDENTITAS BANK SOAL — prasyarat fitur "tentor bisa akses bank soal"
 
+> **Catatan 2026-10-11:** `AdvancedQuestionExtractor.jsx` yang disebut di beberapa baris dokumen ini **sudah dihapus** atas putusan owner (komponen yatim: tidak direferensi rute/komponen mana pun). Baris-baris yang menyebutnya adalah catatan historis. Niat "pagar materi" yang dulu belum selesai kini dijaga `utils/mesinTaksonomiSoal.js` (`deteksiTaksonomiSoal` + `terapkanTaksonomi` force) yang dipakai kedua pintu impor, plus halaman Audit Identitas Soal ini.
+
 **Dibuat:** 2026-10-08 · **Pemicu:** permintaan owner — *"kedepannya kan kita buka
 fitur tentor bisa akses bank soal, maka nanti tentor pilih mapel, jenjang, materi,
 soal. Kita harus cek apakah semua soal udah punya identitas, apakah ada soal rusak."*

@@ -638,6 +638,13 @@ export default function TerbitkanTryOutPage() {
   const nonaktifkanTryOut = useCallback(async (paket) => {
     const aksi = paket.status === 'aktif' ? 'nonaktifkan' : 'aktifkan';
     if (!window.confirm(`${aksi === 'nonaktifkan' ? 'Nonaktifkan' : 'Aktifkan lagi'} try out "${paket.judul}"?`)) return;
+    // 🔥 S4 (KEPUTUSAN FINAL 2026-10-12): aktivasi paket MESIN wajib melalui
+    // pemeriksaan sasaran manual -- insiden paket 3 soal ber-target "Semua"
+    // terjadi karena tombol Aktifkan tidak menanyakan apa pun.
+    if (paket.sumber === 'mesin-otomatis' && aksi !== 'nonaktifkan') {
+      const sasaran = `Sasaran: ${paket.targetKelas || '(kosong)'} / ${paket.targetKategori || '(kosong)'}\nJumlah soal: ${paket.totalSoal}\nJendela: ${paket.waktuBuka ? new Date(paket.waktuBuka).toLocaleString('id-ID') : '-'} s.d. ${paket.waktuTutup ? new Date(paket.waktuTutup).toLocaleString('id-ID') : '-'}`;
+      if (!window.confirm(`PAKET MESIN OTOMATIS — PERIKSA SEBELUM AKTIF:\n${sasaran}\n\nAktifkan hanya bila sasaran, jumlah soal, dan jendela waktu sudah benar.`)) return;
+    }
     try {
       // 🔥 BARU (2026-10-12): aktivasi/nonaktivasi WAJIB berjejak. Kasus
       // nyata: paket mesin 3 soal berstatus aktif dengan riwayatStatus

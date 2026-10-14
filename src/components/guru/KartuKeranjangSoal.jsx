@@ -35,6 +35,7 @@ import { pisahTeksDanGambar } from '../../utils/penempatanGambar';
 import { benderaButir } from '../../utils/keranjangSoalGuru';
 import { opsiTampilDari } from '../../utils/bersihkanGlifKunci.js';
 import { teksSoalDari, identitasDari, bacaanDari, WATERMARK } from '../../utils/fieldButirSoal';
+import { lepasBungkusanSrcGambar } from '../../utils/normalisasiSrcGambar.js';
 
 const LOGO = WATERMARK.logo;
 
@@ -131,15 +132,30 @@ export default function KartuKeranjangSoal({ soal, nomor, jumlah = 0, tanpaKunci
   const bendera = benderaButir(soal);
   const bacaan = bacaanDari(soal);
   const segmenBacaan = bacaan ? pisahTeksDanGambar(bacaan.teks, bacaan.gambar) : [];
-  const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
+  // 🔥 FIX (2026-10-11): meta+region diteruskan ke penempatanGambar. Tanpa
+  // keduanya diagram PEMBAHASAN bisa nyasar ke badan soal dan grafik opsi
+  // menumpuk di akhir teks (perilaku lama: semua gambar sisa ditumpuk).
+  const metaGambar = Array.isArray(soal?.gambarMeta) ? soal.gambarMeta : null;
+  const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls, { meta: metaGambar, region: 'badan' });
   const opsi = opsiTampilDari(soal);
   const pernyataan = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
   const tabelBS = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
   const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
-  const gambarButir = Array.isArray(soal?.gambarUrls) ? soal.gambarUrls.filter(Boolean) : [];
+  // 🔥 FIX (2026-10-11): `gambarButir` dulunya `.filter(Boolean)`, yang
+  // MENGGESER indeks terhadap `metaGambar` (meta sejajar indeks dengan
+  // gambarUrls). Disimpan berpasangan {url, i} agar region-nya tetap benar.
+  const gambarButir = (Array.isArray(soal?.gambarUrls) ? soal.gambarUrls : [])
+    .map((url, i) => ({ url, i }))
+    .filter((g) => Boolean(g.url));
 
   const kunci = Array.isArray(soal?.kunciJawaban) ? soal.kunciJawaban.join(', ') : String(soal?.kunciJawaban ?? '');
   const pembahasan = String(soal?.pembahasan || '').trim();
+  // 🔥 FIX (2026-10-11, keluhan owner "gak support pembahasan bentuk gambar"):
+  // pembahasan dulunya lewat teksKeHtml() yang menghapus token {{GAMBAR_n}}
+  // jadi spasi -- diagram pembahasan lenyap senyap dari kartu baca guru.
+  const segmenPembahasan = pembahasan
+    ? pisahTeksDanGambar(pembahasan, soal?.gambarUrls, { meta: metaGambar, region: 'pembahasan' })
+    : [];
   const penalaran = soal?.pembahasanAsal === 'penalaran';
 
   return (
@@ -196,10 +212,15 @@ export default function KartuKeranjangSoal({ soal, nomor, jumlah = 0, tanpaKunci
           ? <div key={i} style={gaya.teks} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
           : <img key={i} src={sg.url} alt={`Gambar soal nomor ${nomor}`} style={gaya.gambar} />))}
 
-        {/* gambar yang tidak tertanam sebagai placeholder tetap ditampilkan */}
-        {segmen.every((sg) => sg.jenis !== 'gambar') && gambarButir.map((url, i) => (
-          <img key={i} src={url} alt={`Gambar soal nomor ${nomor}`} style={gaya.gambar} />
-        ))}
+        {/* gambar yang tidak tertanam sebagai placeholder tetap ditampilkan.
+            🔥 FIX (2026-10-11): DIBATASI ke region 'badan' -- sebelumnya
+            fallback ini menumpuk SEMUA gambar butir (termasuk diagram milik
+            pembahasan dan grafik milik opsi) ke akhir badan soal. */}
+        {segmen.every((sg) => sg.jenis !== 'gambar') && gambarButir
+          .filter((g) => !metaGambar || String(metaGambar[g.i]?.region || 'badan') === 'badan')
+          .map((g) => (
+            <img key={g.i} src={g.url} alt={`Gambar soal nomor ${nomor}`} style={gaya.gambar} />
+          ))}
 
         {/* pilihan ganda (teks + gambar pilihan) */}
         {opsi.length > 0 && (
@@ -271,7 +292,9 @@ export default function KartuKeranjangSoal({ soal, nomor, jumlah = 0, tanpaKunci
               <BookOpen size={13} /> Pembahasan
               {penalaran && <span style={{ background: '#fef3c7', color: '#92400e', borderRadius: 999, padding: '1px 7px', fontSize: 10 }}>hasil penalaran AI — periksa dulu</span>}
             </div>
-            <span dangerouslySetInnerHTML={{ __html: teksKeHtml(pembahasan) }} />
+            {segmenPembahasan.map((sg, i) => (sg.jenis === 'teks'
+              ? <div key={i} style={gaya.teks} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
+              : <img key={i} src={lepasBungkusanSrcGambar(sg.url)} alt="Gambar pembahasan" style={gaya.gambar} />))}
           </div>
         )}
 

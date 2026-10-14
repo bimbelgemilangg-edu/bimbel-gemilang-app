@@ -52,6 +52,47 @@ const RE_LOGIKA_SIMBOL = /^\s*~?\s*[pqrs]\s*[>→7\-o]+\s*~?\s*[\w,()]+/i;
 const RE_TOKEN_SIMBOL = String.raw`(?:yang\s+)?(?:bukan\s+)?[A-Z](?:\s*(?:,|\bdan\b)\s*(?:yang\s+)?(?:bukan\s+)?[A-Z])*`;
 const RE_LOGIKA_KUANTOR = new RegExp(String.raw`^\s*(?:semua|sebagian|beberapa|seluruh)\s+` + RE_TOKEN_SIMBOL + String.raw`\s*[.,:]?\s*$`, 'i');
 const RE_LOGIKA_PENDEK = /^\s*(p|q|r|s|pq|qr|pr|por|pqr)\s*$/i;
+
+// 🔥 BARU (2026-10-11, sampel owner "02 Silogisme" vs PDF halaman 9):
+// buku mencetak tumpukan silogisme dengan panah asli:
+//     p → q
+//     q → r
+//     —————
+//     p → r
+// tetapi OCR/AI pihak ketiga merusaknya jadi "p-q", "q7rT", "por", "pq"
+// (panah terbaca sebagai -, 7, o, atau hilang). Klasifikasi blok logika
+// sudah benar sejak lama; yang tampil membingungkan guru adalah ISI
+// barisnya. Karena itu baris logika DIPULIHKAN ke bentuk kanonik
+// "X → Y" sebelum dirender — hanya baris yang SELURUH isinya cocok pola
+// implikasi satu huruf, tidak pernah baris berprefiks "Premis 1 :" atau
+// kuantor ("Semua A, B") yang memang sudah terbaca.
+const RE_IMPLIKASI_RUSAK = /^\s*(~?)\s*([pqrs])\s*(?:->|[-–>7o])\s*(~?)\s*([pqrs])\s*[A-Z]?\s*$/i;
+const RE_IMPLIKASI_TIGA_HURUF = /^\s*(~?)\s*([pqrs])\s*[o7]\s*(~?)\s*([pqrs])\s*$/i;
+const RE_IMPLIKASI_TEMPEL = /^\s*(~?)\s*([pqrs])\s*(~?)\s*([pqrs])\s*$/i;
+const RE_IMPLIKASI_BERSIH = /^~?[pqrs]\s*→\s*~?[pqrs]$/;
+const GARIS_INFERENSI = '—————';
+
+/**
+ * Pulihkan baris blok logika ke bentuk kanonik buku.
+ * @param {string[]} baris baris mentah satu blok logika
+ * @returns {string[]} baris siap render (panah utuh + garis inferensi)
+ */
+export function rapikanBarisLogika(baris) {
+  const rapikan = (b) => {
+    let m = RE_IMPLIKASI_RUSAK.exec(b) || RE_IMPLIKASI_TIGA_HURUF.exec(b);
+    if (!m && RE_IMPLIKASI_TEMPEL.test(b)) m = RE_IMPLIKASI_TEMPEL.exec(b);
+    if (!m) return b;
+    const [, n1, a, n2, c] = m;
+    return `${n1}${a} → ${n2}${c}`;
+  };
+  const keluar = (Array.isArray(baris) ? baris : []).map(rapikan);
+  // Tumpukan implikasi murni (premis-premis-kesimpulan) mendapat garis
+  // inferensi sebelum baris terakhir, persis seperti buku mencetaknya.
+  if (keluar.length >= 3 && keluar.every((b) => RE_IMPLIKASI_BERSIH.test(b))) {
+    keluar.splice(keluar.length - 1, 0, GARIS_INFERENSI);
+  }
+  return keluar;
+}
 // Penanda ala buku di margin ("PU: ...", "PK: ...", "K: ...", "Rumus :").
 // Hanya diakui bila PENDEK; bila diikuti prosa panjang ia kalimat biasa.
 const RE_PENANDA_BUKU = /^\s*(?:PU|PK|K|Rumus)\s*:/i;
@@ -68,7 +109,8 @@ export function strukturPembahasan(teks) {
 
   const flushLogika = () => {
     if (logikaBuffer.length) {
-      blok.push({ jenis: 'logika', baris: [...logikaBuffer] });
+      // baris dipulihkan dulu (panah OCR rusak -> bentuk kanonik buku)
+      blok.push({ jenis: 'logika', baris: rapikanBarisLogika(logikaBuffer) });
       logikaBuffer = [];
     }
   };
@@ -118,4 +160,4 @@ export function pecahHighlight(teks) {
   return bagian.length ? bagian : [{ teks: String(teks ?? ''), highlight: false }];
 }
 
-export default { RE_KODE_SUMBER, pisahKodeSumber, strukturPembahasan, pecahHighlight };
+export default { RE_KODE_SUMBER, pisahKodeSumber, strukturPembahasan, pecahHighlight, rapikanBarisLogika, GARIS_INFERENSI };

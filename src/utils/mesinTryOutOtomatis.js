@@ -14,6 +14,18 @@ import {
 } from 'firebase/firestore';
 import { layakUntukTryOut, cocokKelasBank } from './layakTryOut.js';
 import { buatKodePaket } from './kodePaket.js';
+import { buatDeskripsiPaket } from './papanJelajah.js';
+import { ringkasButirUntukAi, validasiPilihanAi } from './pilihSoalAi.js';
+import { kisiKisiUntuk } from './kisiKisiTkaUtbk.js';
+// 🔥 RESTORASI (2026-10-13): pagar identitas & gerbang stok (S2, 77102e5)
+// pernah HILANG diam-diam saat merge 45dc70b menyerap main #199. Keduanya
+// kini hidup di modul murni terpisah + test sendiri supaya kehilangan
+// serupa berteriak di npm test, bukan di produksi hari Sabtu.
+import { pagarIdentitasTemplate, gerbangStokDraf, kisiKisiUntukBaris } from './pagarTryOutOtomatis.js';
+// 🔥 ROMBAK 2026-10-13: jenis ujian (TKA/Reguler/UTBK) menurunkan cakupan
+// materi & sasaran otomatis SEBELUM pagar & penyusunan soal — satu sumber
+// kebenaran dengan form admin (src/utils/aturanJenisUjian.js).
+import { terapkanJenisUjian } from './aturanJenisUjian.js';
 // 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
 // Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
 // Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
@@ -94,6 +106,8 @@ export async function ambilSoalDariBank(opts) {
     level,
     jumlah = 10,
     excludeIds = new Set(),
+    pakaiAi = false,
+    kisiKisi = '',
     kelompok,
   } = opts || {};
 
@@ -137,7 +151,54 @@ export async function ambilSoalDariBank(opts) {
   }
 
   pool = pool.filter((s) => !excludeIds.has(s.id));
-  pool = acakArray(pool);
+
+  // 🔥 S5 (2026-10-13): AI PEMILIH SOAL DALAM PAGAR. AI hanya boleh
+  // memilih & mengurutkan dari kolam tervalidasi ini, dengan alasan per
+  // butir; keluaran yang tidak lolos validasi dibuang dan mesin jatuh ke
+  // acak deterministik. Jejak disimpan per butir (aiSelection/alasanAi)
+  // sehingga tiap pilihan bisa diaudit dan ditinjau tentor.
+  let aiSelection = null;
+  if (pakaiAi && pool.length > jumlah && typeof fetch === 'function') {
+    try {
+      const resp = await fetch('/api/generateQuizFromTopic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'pilih-dari-bank',
+          kelompok: /UTBK|SNBT/i.test(String(mapel)) ? 'utbk' : 'soal',
+          kisiKisi: kisiKisi || kisiKisiUntuk('', '', String(mapel)),
+          jumlah,
+          ringkas: pool.slice(0, 300).map(ringkasButirUntukAi),
+        }),
+      });
+      // 🔥 KEJUJURAN LOG (2026-10-13): balasan bukan JSON (mis. halaman
+      // error platform) dan field `error` dari server TIDAK boleh lagi
+      // ditelan — keduanya ditempel ke alasan fallback supaya admin tahu
+      // sebab sebenarnya, bukan cuma "AI tidak mengembalikan daftar pilihan".
+      const j = await resp.json().catch(() => null);
+      if (!j || typeof j !== 'object') {
+        aiSelection = { status: 'fallback', alasan: `server membalas HTTP ${resp.status} tanpa JSON yang bisa dibaca` };
+      } else {
+        const v = validasiPilihanAi(j, new Set(pool.map((x) => x.id)), jumlah);
+        if (v.ok) {
+          const peta = new Map(pool.map((x) => [x.id, x]));
+          pool = v.urutan.map((u) => ({ ...peta.get(u.id), alasanAi: u.alasan }));
+          aiSelection = { status: 'dipakai', model: j.model || '', ragu: v.ragu, kisiKisi: kisiKisi || '' };
+        } else {
+          const dariServer = typeof j.error === 'string' && j.error.trim()
+            ? ` | server: ${j.error.trim().slice(0, 180)}`
+            : '';
+          aiSelection = { status: 'fallback', alasan: v.alasanGagal + dariServer };
+        }
+      }
+    } catch (e) {
+      aiSelection = { status: 'fallback', alasan: String(e?.message || e) };
+    }
+  }
+  if (aiSelection) pool = pool.map((x) => ({ ...x, aiSelection }));
+  // urutan pilihan AI TIDAK diacak ulang (urutan = bagian dari keputusan AI);
+  // acak hanya berlaku untuk jalur deterministik/fallback.
+  if (!(pakaiAi && aiSelection?.status === 'dipakai')) pool = acakArray(pool);
 
   if (pool.length < jumlah) {
     const snap2 = await getDocs(query(collection(dbPakai, COL_BANK), limit(1500)));
@@ -189,7 +250,7 @@ export async function idSoalBaruDipakai(jenjang, batasPaket = 10) {
   return ids;
 }
 
-export async function susunSoalDariKomposisi(template, excludeIds) {
+export async function susunSoalDariKomposisi(template, excludeIds, opts = {}) {
   const hasil = [];
   const grupMapel = [];
   const kekurangan = [];
@@ -205,6 +266,13 @@ export async function susunSoalDariKomposisi(template, excludeIds) {
       level: baris.level || null,
       jumlah: butuh,
       excludeIds: dipakai,
+      pakaiAi: opts.pakaiAi === true,
+      // 🔥 FIX (2026-10-13): kisi-kisi dihitung PER BARIS MAPEL. Sebelumnya
+      // mesin mengirim satu teks generik (mapel "(umum)") untuk semua subtes,
+      // sehingga AI memilih Matematika & Bahasa Indonesia dengan kisi-kisi
+      // yang sama — janji S5 "AI memilih ber-kisi-kisi CP" tidak terjadi.
+      // Override eksplisit (opts.kisiKisi) tetap dihormati untuk skrip.
+      kisiKisi: opts.kisiKisi || kisiKisiUntukBaris(template, opts.jenisUjian || '', baris),
       kelompok: baris.kelompok || template.kelompokBank || null,
     });
     const ids = [];
@@ -299,8 +367,30 @@ export function ringkasSoalUntukAdmin(daftarSoal) {
  */
 export async function siapkanDrafDariTemplate(template, slot, rules) {
   const r = rules || {};
+  // 🔥 ROMBAK 2026-10-13: TERAPKAN aturan jenis ujian lebih dulu (TKA =
+  // bank satu jenjang penuh + sasaran kelas akhir; UTBK = kelas 12).
+  // Tanpa ini template warisan bisa menyusupkan sasaran "Semua" atau
+  // menyaring bank per kelas padahal mode ujian butuh bank penuh.
+  template = terapkanJenisUjian(template || {});
+  // 🔥 RESTORASI (2026-10-13): PAGAR IDENTITAS (S2) — dijalankan SEBELUM
+  // baca Firestore & panggil AI: template cacat tidak boleh memakan kuota
+  // Gemini maupun melahirkan draf bersasaran "Semua".
+  const pagar = pagarIdentitasTemplate(template, r.izinkanSemua === true);
+  if (!pagar.ok) return pagar;
     const exclude = await idSoalBaruDipakai(template.jenjang, 10);
-  const susunan = await susunSoalDariKomposisi(template, exclude);
+  // fitur preview: paket SUSULAN menyuntik id yang wajib dilewati
+  for (const idTambahan of (r.excludeIds || [])) {
+    if (exclude && typeof exclude.add === 'function') exclude.add(idTambahan);
+    else if (Array.isArray(exclude)) exclude.push(idTambahan);
+  }
+  const susunan = await susunSoalDariKomposisi(template, exclude, {
+    pakaiAi: r.pakaiAi !== false && template.pakaiAi !== false,
+    // 🔥 FIX (2026-10-13): kisi-kisi per mapel dihitung di dalam
+    // susunSoalDariKomposisi (kisiKisiUntukBaris). rules.kisiKisi hanya
+    // untuk override eksplisit (skrip/susulan), bukan lagi teks generik.
+    kisiKisi: r.kisiKisi || '',
+    jenisUjian: template.jenisUjian || r.jenisUjian || '',
+  });
   let daftarSoal = susunan.daftarSoal || [];
   const grupMapel = susunan.grupMapel || [];
   const soalAcak = r.soalAcak !== false && template.soalAcak !== false;
@@ -317,6 +407,31 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   }
 
   const kekurangan = susunan.kekurangan || [];
+  // 🔥 RESTORASI (2026-10-13): GERBANG STOK (S2) — draf DIBLOKIR bila ada
+  // mapel kekurangan butir; mesin tidak lagi melahirkan paket timpang
+  // (kasus nyata: draf UTBK 3/155 soal yang harus dinonaktifkan manual).
+  const gerbang = gerbangStokDraf(kekurangan, r.izinkanKurang === true);
+  if (!gerbang.ok) return gerbang;
+  // 🔥 S5+ (2026-10-13): JEJAK AI PER MAPEL untuk log admin yang jujur.
+  // Status mungkin: "dipakai" (usulan AI lolos validator), "fallback: <alasan>"
+  // (AI gagal/melanggar kontrak, mesin kembali ke acak deterministik), atau
+  // "tidak dipanggil" (stok == jumlah yang diminta, tidak ada yang bisa dipilih).
+  const aiAktif = r.pakaiAi !== false && template.pakaiAi !== false;
+  const aiJejak = {};
+  if (aiAktif) {
+    const perId = new Map(daftarSoal.map((s) => [s.id, s]));
+    for (const g of grupMapel) {
+      const contoh = (g.soalIds || []).map((id) => perId.get(id)).find((s) => s && s.aiSelection);
+      if (contoh) {
+        const a = contoh.aiSelection;
+        aiJejak[g.mapel] = a.status === 'dipakai'
+          ? 'dipakai' + (a.model ? ` (${a.model})` : '')
+          : 'fallback: ' + String(a.alasan || 'tanpa alasan').slice(0, 80);
+      } else {
+        aiJejak[g.mapel] = 'tidak dipanggil (stok pas-pasan)';
+      }
+    }
+  }
   if (!daftarSoal.length) {
     const rinci = (template.komposisi || [])
       .map((b) => b.mapel)
@@ -369,7 +484,21 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     otomatis: true,
     templateId: template.id || null,
     jenjangTemplate: template.jenjang || '',
+    // 🔥 ROMBAK 2026-10-13: jenis ujian ikut tersimpan di paket supaya
+    // audit nanti bisa menjawab "kenapa sasaran/materinya begini?".
+    jenisUjian: template.jenisUjian || '',
     komposisi: template.komposisi || [],
+    // 🚀 BARU (2026-10-13, papan jelajah owner): deskripsi kartu pos berbasis CP
+    // Kemendikbudristek ikut tersimpan di draf supaya layar siswa tak menghitung
+    // ulang tiap render; deterministik, tanpa memanggil AI (pagar kuota).
+    deskripsi: buatDeskripsiPaket({
+      jenjang: template.jenjang || '',
+      jenisUjian: template.jenisUjian || '',
+      komposisi: template.komposisi || [],
+      durasiMenit: durasi,
+      jumlahSubtes: subtes.length,
+      tampilkanPembahasan: pembahasan,
+    }),
     rulesSnapshot: {
       soalAcak,
       antiCheatAktif: antiCheat,
@@ -391,6 +520,9 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
         ? (typeof slot.waktuBuka.toDate === 'function' ? slot.waktuBuka.toDate() : new Date(slot.waktuBuka))
         : new Date(),
     }),
+    // 🔥 S5+ (2026-10-13): jejak AI per mapel ikut disimpan di dokumen paket
+    // supaya bisa diaudit kemudian (mis. "kenapa butir ini yang dipilih?").
+    ...(Object.keys(aiJejak).length ? { aiJejak } : {}),
   };
 
   const ref = await addDoc(collection(dbPakai, COL_PAKET), payload);
@@ -404,8 +536,10 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
     // soal dibuat tanpa satu pun laporan. Field tambahan ini tidak mengubah
     // perilaku pemanggil yang sudah ada (mereka membaca ok/id/judul/totalSoal),
     // tapi membuat admin bisa tahu bahwa "30 soal diminta, 22 didapat".
-    // TODO: tampilkan di log hasil JadwalTryOutOtomatisPage.
+    // 2026-10-13: kekurangan kini DIBLOKIR GERBANG STOK (pagarTryOutOtomatis),
+    //    jadi field ini hanya terisi bila rules.izinkanKurang=true dipakai sadar.
     kekurangan,
+    aiJejak,
     ringkas: payload.ringkas,
     slot,
     status: 'draf',
@@ -468,7 +602,7 @@ export async function siapkanDrafMingguIni(template, rules) {
         judul,
         id: ada.id,
         status: ada.status,
-        alasan: 'sudah ada (' + ada.status + ')',
+        alasan: 'sudah ada (' + ada.status + ') — hapus draf dulu bila ingin menyusun ulang',
       });
        
       continue;

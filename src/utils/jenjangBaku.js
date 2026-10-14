@@ -10,7 +10,11 @@
 //   'SMA' / 'SMP' / 'SD' / 'SMK'        <- keluaran deteksiTaksonomiSoal
 //                                          (Mesin Bank Soal, Impor HTML Gemini)
 //   'SMA/MA' / 'SMP/MTs' / 'SD/MI' /... <- DAFTAR_JENJANG di ImportHasilScanPage
-//                                          & AdvancedQuestionExtractor
+//                                          (AdvancedQuestionExtractor dulu
+//                                          disebut di sini; berkasnya yatim
+//                                          -- tidak direferensi rute/manapun --
+//                                          dan dihapus 2026-10-11 atas putusan
+//                                          owner)
 //
 // Sementara itu SEMUA penyaring hierarki membandingkan string PERSIS:
 //   LemariSoalPage    : (s.jenjang || '(Belum diatur)') === jenjangAktif

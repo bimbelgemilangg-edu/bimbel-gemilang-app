@@ -102,6 +102,11 @@ menyentuh hampir semua halaman tidak lagi berarti membayar utang lama.
    materi" yang belum selesai, bukan sampah. **Sebelum menghapus, tanyakan
    "ini sampah, atau niat yang belum terlaksana?"** Kalau yang kedua, tandai
    `TODO`, jangan dihapus.
+   *(Catatan 2026-10-11: pertanyaan itu akhirnya diajukan ke owner dan
+   jawabannya "hapus" — berkasnya yatim, tidak tersambung ke rute mana pun,
+   dan membingungkan. Niat "pagar materi" tidak ikut dibuang: penerusnya
+   `mesinTaksonomiSoal.js` + Audit Identitas Soal. Jadi kaidahnya tetap
+   benar: menghapus boleh, setelah niatnya punya penerus yang disebut.)*
 4. Untuk `no-empty`: jangan isi dengan komentar kosong. Tulis MENGAPA
    exception-nya ditelan, atau tangani sungguh-sungguh.
 5. Jalankan `npm test` + kedua penjaga + `eslint` per berkas sebelum commit.

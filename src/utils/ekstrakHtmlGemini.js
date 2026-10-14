@@ -61,17 +61,62 @@ export function bersihkanHtmlBahaya(html) {
 
 const ENTITAS = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&nbsp;': ' ' };
 
+// 🔥 BARU (2026-10-11, keluhan owner "hasil impor gak seperti PDF asli"):
+// htmlKeTeks dulu membuang SEMUA tag tanpa jejak lewat /<[^>]+>/g. Akibatnya
+// konstruk yang justru paling padat informasi di soal UTBK Kimia/Fisika
+// lenyap diam-diam:
+//     H<sub>2</sub>O        -> "H2O"     (bukan lagi rumus kimia yang sama)
+//     m/s<sup>2</sup>       -> "m/s2"
+//     SO<sub>4</sub><sup>2-</sup> -> "SO42-"   (benar-benar tak terbaca)
+//     <td>A</td><td>B</td>  -> "AB"      (sel tabel MENEMPEL jadi satu)
+// Sub/superscript dipetakan ke Unicode supaya tetap terbaca di teks polos
+// (pipeline ini merender LaTeX hanya di dalam $...$, jadi tidak bisa
+// mengandalkan KaTeX). Isi yang tidak punya padanan Unicode TIDAK dibuang —
+// ditulis apa adanya dalam bentuk _{...} / ^{...} supaya hilang-nya terlihat
+// dan bisa diperbaiki, bukan lenyap senyap.
+const PETA_SUB = {
+  0: '₀', 1: '₁', 2: '₂', 3: '₃', 4: '₄', 5: '₅', 6: '₆', 7: '₇', 8: '₈', 9: '₉',
+  '+': '₊', '-': '₋', '=': '₌', '(': '₍', ')': '₎',
+  a: 'ₐ', e: 'ₑ', h: 'ₕ', i: 'ᵢ', j: 'ⱼ', k: 'ₖ', l: 'ₗ', m: 'ₘ', n: 'ₙ',
+  o: 'ₒ', p: 'ₚ', r: 'ᵣ', s: 'ₛ', t: 'ₜ', u: 'ᵤ', v: 'ᵥ', x: 'ₓ',
+};
+const PETA_SUP = {
+  0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹',
+  '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾', i: 'ⁱ', n: 'ⁿ',
+};
+
+function keAksen(isi, peta, bungkus) {
+  const mentah = String(isi ?? '').trim();
+  if (!mentah) return '';
+  const hurufKecil = mentah.toLowerCase();
+  let hasil = '';
+  for (const ch of hurufKecil) {
+    if (!peta[ch]) return `${bungkus[0]}{${mentah}}${bungkus[1]}`;
+    hasil += peta[ch];
+  }
+  return hasil;
+}
+
 /** HTML -> teks: tag dibuang, $...$ & baris baru dipertahankan. */
 export function htmlKeTeks(inner) {
   let t = String(inner || '');
   t = t.replace(/<br\s*\/?>/gi, '\n');
-  t = t.replace(/<\/(li|p|div|tr)>/gi, '\n');
+  // Sub/superscript -> Unicode SEBELUM tag dibuang (kalau tidak, isinya
+  // menyatu dengan teks sekitarnya tanpa penanda apa pun).
+  t = t.replace(/<sub\b[^>]*>([\s\S]*?)<\/sub>/gi, (_m, isi) => keAksen(isi, PETA_SUB, ['_', '']));
+  t = t.replace(/<sup\b[^>]*>([\s\S]*?)<\/sup>/gi, (_m, isi) => keAksen(isi, PETA_SUP, ['^', '']));
+  // Sel tabel diberi pemisah yang TERLIHAT: tanpa ini <td>A</td><td>B</td>
+  // jadi "AB" dan tabel data (sangat umum di UTBK) tak bisa dibaca lagi.
+  t = t.replace(/<\/t[dh]>\s*/gi, ' | ');
+  t = t.replace(/<\/(li|p|div|tr|table)>/gi, '\n');
   t = t.replace(/<li[^>]*>/gi, '\n- ');
   t = t.replace(/<[^>]+>/g, '');
   for (const [k, v] of Object.entries(ENTITAS)) t = t.split(k).join(v);
   return t
     .split('\n')
     .map((x) => x.replace(/[ \t]+/g, ' ').trim())
+    // pemisah sel yang menggantung di tepi baris dibuang
+    .map((x) => x.replace(/^\|\s*/, '').replace(/\s*\|$/, '').trim())
     .filter((x) => x !== '')
     .join('\n')
     .trim();
@@ -225,7 +270,14 @@ function normTipe(mentah, jumlahOpsi) {
   if (/benar|salah/.test(t)) return 'benar_salah';
   if (/jodoh|pasang/.test(t)) return 'menjodohkan';
   if (/isian|singkat|esai|uraian/.test(t)) return /esai|uraian/.test(t) ? 'esai' : 'isian_singkat';
-  return jumlahOpsi > 0 ? 'pg_sederhana' : 'pg_sederhana';
+  // 🔥 FIX (2026-10-11): kedua cabang ternary ini dulunya IDENTIK
+  // ('pg_sederhana' : 'pg_sederhana'). Soal yang data-tipe-nya tidak terbaca
+  // dan TIDAK punya opsi (isian singkat / esai) dipaksa jadi pg_sederhana,
+  // lalu langsung ditolak penegakan isi di bawah: "tipe pg_sederhana tapi
+  // opsi terbaca 0" -- soal SAH gagal impor karena tebakan tipe yang salah.
+  // Tanpa opsi, dugaan paling aman adalah isian_singkat (masih punya kunci,
+  // jadi tidak melanggar paten "wajib kunci kecuali esai").
+  return jumlahOpsi > 0 ? 'pg_sederhana' : 'isian_singkat';
 }
 
 function ekstrakSatu(htmlMentah, labelBerkas = '') {

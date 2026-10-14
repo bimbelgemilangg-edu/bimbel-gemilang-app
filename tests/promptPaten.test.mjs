@@ -129,6 +129,16 @@ uji('pemeriksaan diri mencakup region gambar (poin f)', () => {
   assert.ok(P.includes('(f) setiap figure-container berada di region yang benar'));
 });
 
+uji('penanda scan dilarang masuk keluaran (poin g + aturan 14)', () => {
+  // Sampel nyata owner 2026-10-11: penanda kolom, watermark berkas, dan
+  // nomor urut kolom sebelah lolos jadi isi soal karena prompt tidak
+  // pernah menyebutnya sebagai "bukan isi buku".
+  assert.ok(P.includes('PENANDA SCAN BUKAN ISI BUKU'));
+  assert.ok(P.includes('=== PAGE 3 COL 1 ==='));
+  assert.ok(P.includes('BELAJAR MINIMAL,'));
+  assert.ok(P.includes('(g) TIDAK ADA penanda scan'));
+});
+
 uji('konversi ulang mempertahankan region gambar warisan', () => {
   assert.ok(K.includes('TERMASUK region-nya'));
 });

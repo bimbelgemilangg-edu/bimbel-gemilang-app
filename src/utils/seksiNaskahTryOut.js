@@ -32,12 +32,19 @@ import {
   kunciButirNaskahHtml,
   kopNaskahHtml,
   escapeHtml,
+  WATERMARK,
   estimasiTinggiBlokMm,
 } from './naskahSoal.js';
 
 /** Kepala seksi naskah (pita berbingkai tipis, tidak boleh terbelah kolom). */
-export function judulSeksiHtml(judul) {
-  return `<div class="nsk-seksi">${escapeHtml(judul)}</div>`;
+export function judulSeksiHtml(judul, kodePaket = '') {
+  // 🔥 BARU (2026-10-12): chip logo+kode paket di SETIAP kepala seksi,
+  // supaya tiap bagian soal membawa identitas paketnya (permintaan owner:
+  // "logo atau watermark di setiap bagian soal").
+  const chip = kodePaket
+    ? `<span class="nsk-seksi-kode"><img src="${WATERMARK.logo}" alt="" />${escapeHtml(kodePaket)}</span>`
+    : '';
+  return `<div class="nsk-seksi">${escapeHtml(judul)}${chip}</div>`;
 }
 
 /**
@@ -118,7 +125,7 @@ export function blokNaskahDariSeksi(mode, meta, seksi, lebarKolom, rasioGambar =
   const blok = [kop];
   let nomor = 1;
   (Array.isArray(seksi) ? seksi : []).forEach((sec) => {
-    if (sec.judul) blok.push(judulSeksiHtml(sec.judul));
+    if (sec.judul) blok.push(judulSeksiHtml(sec.judul, meta?.kodePaket || meta?.paket?.kodePaket || ''));
     (sec.soalList || []).forEach((s) => {
       blok.push(mode === 'kunci'
         ? kunciButirNaskahHtml(s, nomor)

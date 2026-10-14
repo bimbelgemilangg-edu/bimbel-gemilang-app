@@ -479,14 +479,44 @@ const TIPE_ENUM = [
       warnings.push('tipe "menjodohkan" seharusnya punya pasangan, tapi kosong');
     }
   
-    // --- placeholder gambar {{GAMBAR_n}} harus match dengan field gambar ---
-    const placeholderIds = [...teksSoal.matchAll(/\{\{(GAMBAR_\d+)\}\}/g)].map(m => m[1]);
-    const gambarIds = gambar.map(g => g.id);
-    for (const pid of placeholderIds) {
-      if (!gambarIds.includes(pid)) {
-        warnings.push(`placeholder {{${pid}}} ada di teksSoal tapi tidak ada di field gambar`);
+    // --- placeholder gambar {{GAMBAR_n}} harus punya pasangan ---
+    // 🔥 FIX (2026-10-11): pemeriksaan ini BUTA terhadap jalur impor HTML
+    // Gemini. dokumenDariButir() menulis `gambar: []` (kosong) dan menyimpan
+    // URL di `gambarUrls` + `gambarMeta`, sehingga `gambarIds` selalu [] dan
+    // SETIAP placeholder memicu warning palsu -- pagarnya berubah jadi derau
+    // yang menutupi warning asli. Yang diperiksa juga hanya `teksSoal`:
+    // placeholder di PEMBAHASAN dan `gambarRefs` di OPSI tidak pernah
+    // divalidasi, padahal justru di sana cacat senyap bersembunyi (gambar
+    // pembahasan hilang, gambar nyasar satu posisi).
+    const urlsGambar = Array.isArray(q.gambarUrls) ? q.gambarUrls.filter(Boolean) : [];
+    const jumlahGambar = Math.max(gambar.length, urlsGambar.length);
+    const pakaiId = gambar.some((g) => g.id);
+
+    const periksaPlaceholder = (teks, asal) => {
+      for (const m of String(teks ?? '').matchAll(/\{\{GAMBAR_(\d+)\}\}/g)) {
+        const n = Number(m[1]);
+        // Berkas lama menamai gambarnya (id 'GAMBAR_1'); jalur baru menyimpan
+        // URL berurutan sehingga acuannya JUMLAH gambar, bukan id.
+        const sah = pakaiId ? gambar.some((g) => g.id === m[1]) : (n >= 1 && n <= jumlahGambar);
+        if (!sah) {
+          warnings.push(`placeholder {{GAMBAR_${n}}} ada di ${asal} tapi tidak ada di field gambar (tersedia ${jumlahGambar})`);
+        }
       }
-    }
+    };
+    periksaPlaceholder(teksSoal, 'teksSoal');
+    periksaPlaceholder(q.pembahasan, 'pembahasan');
+
+    // gambarRefs milik opsi menunjuk gambarUrls secara 1-based; referensi
+    // keluar rentang = opsi tampil tanpa gambar (grafik pilihan lenyap).
+    (Array.isArray(q.opsiJawaban) ? q.opsiJawaban : []).forEach((o, i) => {
+      if (!o || typeof o !== 'object' || !Array.isArray(o.gambarRefs)) return;
+      for (const r of o.gambarRefs) {
+        const n = Number(r);
+        if (!(n >= 1 && n <= jumlahGambar)) {
+          warnings.push(`opsi ke-${i + 1} menunjuk gambarRefs ${r} tapi hanya ada ${jumlahGambar} gambar`);
+        }
+      }
+    });
   
     // --- kunciJawaban ---
     const kunciJawaban = String(q.kunciJawaban ?? q.kunci_jawaban ?? '').trim();

@@ -193,8 +193,8 @@ jadi `A = 2,3`). Kalau ragu, jalankan pemeriksa di `tests/`.
 - `.gitignore` ditulis ulang (sebelumnya rusak: berisi markdown code-fence dan
   meng-ignore `public/` yang justru folder aset aplikasi)
 - Seluruh bug `no-undef` diperbaiki: **46 → 0**. Termasuk tiga bug runtime nyata
-  yang gagal senyap (`Settings.jsx`, `AdvancedQuestionExtractor.jsx`,
-  `ImportHasilScanPage.jsx`)
+  yang gagal senyap (`Settings.jsx`, `AdvancedQuestionExtractor.jsx`
+  [berkasnya dihapus 2026-10-11], `ImportHasilScanPage.jsx`)
 - Konfigurasi ESLint dipisah per lingkungan runtime (browser / Node / CommonJS),
   sehingga 38 error palsu hilang dan 30 berkas `.mjs` di `scripts/` yang
   sebelumnya **tidak pernah dilint** sekarang tercakup
@@ -231,10 +231,13 @@ jadi `A = 2,3`). Kalau ragu, jalankan pemeriksa di `tests/`.
   `identitasGuru.js`. Yang **belum** teruji: `utils/kanalUang.js` dan
   `utils/skoringSoalKompleks.js` (dipakai tidak langsung lewat
   `skorSoalTryOut`, tapi belum punya uji sendiri).
-- **`AdvancedQuestionExtractor.jsx`: fitur "pagar materi" belum selesai.**
-  `babTaksonomi` di-fetch tapi tidak pernah dipakai; dua fungsi yang disebut di
-  komentarnya (`buildMasterPrompt`, `buildMasterHTMLPrompt`) tidak ada di berkas
-  itu. Ditandai `TODO` di tempat.
+- **`AdvancedQuestionExtractor.jsx` DIHAPUS 2026-10-11 atas putusan owner.**
+  Berkas 988 baris itu tidak direferensi rute maupun komponen mana pun
+  (komponen yatim yang terlihat seperti fitur, dan terbukti membingungkan).
+  Niat "pagar materi" yang belum selesai di dalamnya TIDAK ikut mati:
+  penerusnya `utils/mesinTaksonomiSoal.js` (`deteksiTaksonomiSoal` +
+  `terapkanTaksonomi` force) yang dipakai kedua pintu impor, dropdown mapel
+  Kurikulum Merdeka, dan halaman Audit Identitas Soal.
 - **`xlsx` dan `exceljs` dua-duanya terpasang** (fungsi tumpang tindih, dua-duanya
   besar). `@supabase/supabase-js` nyaris tak terpakai di frontend.
 - **21 berkas `IMPOR-*.json` (±1,3 MB) di root repo**, tercampur dengan kode.

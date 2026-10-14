@@ -14,8 +14,19 @@
 // yang membuat soal TIDAK bisa dijawab siswa juga ditahan: tanpa kunci,
 // dan gambar yang masih menunggu potongan.
 //
+// KENAPA PAGAR TIPE IKUT DI SINI (insiden draf Sabtu 17 Okt 2026): draf mesin
+// lolos audit berisi 6 butir "menjodohkan" -- tipe yang MEMANG belum punya
+// renderer di layar siswa (TryOutView.jsx) sehingga jatuh ke renderer PG
+// dengan opsi kosong: siswa tak bisa menjawab & skor tak berarti. Pagar tipe
+// sebelumnya hanya menjaga keranjang tentor (keranjangTryOut.js), sedangkan
+// mesin try out otomatis TIDAK berkonsultasi kepadanya. Kini kedua jalur
+// memakai satu pagar yang sama: tipe tanpa renderer = tidak layak try out.
+//
 // MURNI & TERUJI (tests/layakTryOut.test.mjs).
 // ============================================================
+
+import { tipeDidukung } from './keranjangTryOut.js';
+import { soalBisaDinilai } from './skorSoalTryOut.js';
 
 /**
  * @param {object} s butir bank_soal
@@ -25,12 +36,21 @@ export function layakUntukTryOut(s = {}) {
   const status = String(s.status ?? 'aktif').toLowerCase();
   if (status !== 'aktif') return false;
   const tipe = String(s.tipe || 'pg_sederhana');
+  // 🔒 PAGAR TIPE: butir yang tipenya tak bisa dirender layar siswa DITOLAK
+  // (menjodohkan dst) -- sama persis dengan pagar keranjang tentor.
+  if (!tipeDidukung(s)) return false;
   const k = s.kunciJawaban;
   // esai sah tanpa kunci huruf: rubrik penilaiannya hidup di pembahasan.
   const berkunci = tipe === 'esai'
     ? true
     : (Array.isArray(k) ? k.length > 0 : String(k ?? '').trim().length > 0);
   if (!berkunci) return false;
+  // 🛡️ AUDIT 2026-10-13 (paket Sabtu): kunci "ADA" belum cukup -- kunci
+  // harus BISA DINILAI. 4 butir pg_sederhana ber-kunci ganda ("A,D",
+  // sisa impor yang seharusnya pg_kompleks) lolos pagar lama, masuk paket
+  // terbit, dan membuat skor maksimal siswa terpangkas (jawaban apa pun =
+  // 0). Satu sumber kebenaran dengan skoring: soalBisaDinilai().
+  if (tipe !== 'esai' && tipe !== 'uraian' && !soalBisaDinilai(s)) return false;
   if ((s.potonganTertunda || []).length > 0) return false;
   return true;
 }

@@ -89,6 +89,21 @@ import { NAMA_MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 // markdown, dibaca apa adanya -> gambar dicap rusak/palsu padahal
 // alamatnya benar. Bungkusnya dilepas di pintu masuk parse ini.
 import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
+// 🔥 BARU (2026-10-11, sampel owner "02 Silogisme"): penanda kolom pemindai
+// ("=== PAGE 3 COL 1 ==="), watermark berkas ("BELAJAR MINIMAL,"/"HASIL
+// MAKSIMAL"), dan nomor urut kolom sebelah dulu LOLOS apa adanya ke bank
+// soal. Selain itu wacana yang tercecer jadi ekor sebuah opsi hanya bisa
+// ditemukan dengan berburu manual di puluhan soal. Keduanya kini ditangani
+// util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
+import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan, wariskanBacaanYatim } from '../../../utils/bersihkanArtefakScan';
+import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
+import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
+import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
+import { bacaKualitas, pesanKualitas } from '../../../utils/kualitasButir';
+import imageCompression from 'browser-image-compression';
+import { putuskanCover } from '../../../utils/batasCoverFirestore';
+import PanduImpor from '../../../components/admin/PanduImpor';
+import { teksPanduan } from '../../../utils/panduImpor';
 
 // ============================================================
 // CONSTANT
@@ -915,7 +930,12 @@ function isiUlangBacaanSegrup(daftarSoal) {
   });
 }
 
-function normalizeSoal(q, idx) {
+function normalizeSoal(qMasuk, idx) {
+  // 🔥 BARU (2026-10-11): lepas artefak scan DULU, sebelum validasi sinyal,
+  // deteksi duplikat, dan penulisan field -- supaya penanda kolom pemindai,
+  // watermark berkas, dan nomor urut kolom sebelah tidak ikut tersimpan ke
+  // bank soal dan tidak mengotori pembanding duplikat.
+  const q = bersihkanArtefakSoal(qMasuk);
   if (!q || typeof q !== 'object') {
     return {
       nomor: idx + 1,
@@ -1237,6 +1257,55 @@ function normalizeSoal(q, idx) {
     );
   }
 
+  // 🔥 BARU (2026-10-11): Sinyal 7 -- PEMBAHASAN TERTUKAR ANTAR NOMOR.
+  // Sampel nyata owner ("02 Silogisme", 40 soal): pembahasan berputar
+  // antar nomor dan kelihatan dari sidik jari kode sumbernya -- soal 31
+  // [UTBK2024/.../GEL.2/63] mendapat pembahasan berkepala GEL.2/69, soal
+  // 32 (.../65) mendapat .../63, soal 33 (.../69) mendapat .../65. Kode
+  // sumber dicetak buku di kepala soal DAN kepala pembahasan, jadi
+  // ketidakcocokan keduanya adalah bukti mekanis, bukan tebakan.
+  // HARD ERROR: siswa yang belajar dari penjelasan nomor lain lebih rugi
+  // daripada siswa tanpa penjelasan -- yang satu bingung, yang lain
+  // yakin pada yang salah. Detektornya murni & teruji (kodeSumberSoal.js)
+  // dan hanya menuding; menukar-balik otomatis adalah tebakan dua arah.
+  const tuduhTertukar = pesanPembahasanTertukar({
+    teks_soal: teksSoal,
+    pembahasan: safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || ''),
+  });
+  if (tuduhTertukar) errors.push(tuduhTertukar);
+
+  // 🔥 BARU (2026-10-11): Sinyal 9 -- LAPORAN KUALITAS DIRI AI.
+  // Otomatisasi yang aman = AI wajib mengaku, sistem yang menyortir:
+  // buram/terpotong jadi HARD ERROR (masuk review, tidak bisa disimpan),
+  // tanpa-pembahasan jadi peringatan lunak (sudah punya antrean sendiri).
+  const pesanKual = pesanKualitas(bacaKualitas(q.kualitas || q.kualitasButir || ''));
+  if (pesanKual) {
+    if (pesanKual.keras) errors.push(pesanKual.teks);
+    else peringatanLunak.push(pesanKual.teks);
+  }
+
+  // 🔥 BARU (2026-10-11): Sinyal 8 -- ASAL & KEABSENAN PEMBAHASAN sebagai
+  // antrean review tentor. Tidak semua soal punya pembahasan tercetak;
+  // yang karangan AI WAJIB kelihatan sebagai karangan AI di semua layar
+  // (pintu prompt paten sudah lama begitu, pintu master belum). Penanda
+  // dibaca util murni asalPembahasan.js; di sini hanya dipasang sinyal
+  // LUNAK (tidak memblokir penyimpanan) karena pembahasan penalaran yang
+  // benar tetap berguna -- yang berbahaya adalah yang TIDAK DIAKUI.
+  const pembahasanMentah = safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || '');
+  const asalBahasan = deteksiAsalPembahasan({
+    pembahasan: pembahasanMentah,
+    asalEksplisit: q.asal_pembahasan || q.asalPembahasan || '',
+  });
+  if (!pembahasanMentah.trim()) {
+    peringatanLunak.push(
+      'soal TANPA pembahasan -- masuk antrean review tentor sebelum dipakai mengajar atau sebelum kunci dibuka ke siswa.',
+    );
+  } else if (asalBahasan.asal === 'penalaran') {
+    peringatanLunak.push(
+      'pembahasan adalah PENALARAN AI (tidak tercetak di sumber) -- bendera penalaran ikut tersimpan dan soal masuk antrean review tentor.',
+    );
+  }
+
   // 🔥 BARU: Sinyal 6 -- BAHASA RAGU DARI AI SENDIRI. Ditemukan kasus
   // nyata: AI (DeepSeek) kadang menyisipkan penanda ragu LANGSUNG di
   // teks soal yang di-generate, mis. "Perhatikan gambar (perlu dicek)!"
@@ -1287,7 +1356,11 @@ function normalizeSoal(q, idx) {
     kunci_terverifikasi: safeBoolean(
       q.kunci_terverifikasi ?? q.kunciTerverifikasi ?? q.verifiedAnswer ?? false,
     ),
-    pembahasan: safeString(q.pembahasan || q.penjelasan || q.explanation || q.solusi || ''),
+    // 🔥 BARU (2026-10-11): teks pembahasan dibersihkan dari penanda
+    // mesin dan ASALNYA disimpan, supaya bendera "hasil penalaran AI"
+    // hidup juga untuk soal dari pintu master (lihat asalPembahasan.js).
+    pembahasan: asalBahasan.teksBersih,
+    pembahasanAsal: asalBahasan.asal,
     catatan_admin: safeString(q.catatan_admin || q.catatanAdmin || q.admin_note || ''),
     gambar,
     tabel_soal: q.tabel_soal || q.tabelSoal || null,
@@ -1724,7 +1797,16 @@ function parseHTMLMaster(raw) {
 
   const doc = new DOMParser().parseFromString(source, 'text/html');
   const nodes = Array.from(doc.querySelectorAll('[data-gemilang-question], article.gemilang-question, article[data-soal]'));
-  if (!nodes.length) throw new Error('Tidak ditemukan soal. Setiap soal harus memakai <article data-gemilang-question>.');
+  if (!nodes.length) {
+    // 🔥 BARU (2026-10-11): berkas prompt-paten (.question-card) yang salah
+    // masuk ke pintu ini dulu dibalas "Tidak ditemukan soal" tanpa petunjuk.
+    // Kini pesan menunjuk pintu yang benar -- berkasnya sah, hanya pintunya
+    // yang berbeda.
+    const rambu = pesanSalahPintu(source, URL_PINTU_SCAN);
+    throw new Error(rambu
+      ? `Tidak ditemukan soal ber-dialek halaman ini. ${rambu}`
+      : 'Tidak ditemukan soal. Setiap soal harus memakai <article data-gemilang-question>.');
+  }
 
   const getField = (node, ...names) => {
     for (const name of names) {
@@ -1750,6 +1832,8 @@ function parseHTMLMaster(raw) {
 
   return nodes.map((node, index) => {
     const nomor = Number(node.getAttribute('data-nomor') || node.getAttribute('data-number')) || index + 1;
+    // 🔥 BARU (2026-10-11): laporan kualitas diri AI (aturan 42 prompt).
+    const kualitas = node.getAttribute('data-kualitas') || '';
     const tipe = normalizeTipe(node.getAttribute('data-tipe') || node.getAttribute('data-type') || 'pg_sederhana');
     const teksSoalGabungan = perbaikiKurungHimpunanLatex(getAllFieldsText(node, 'teks_soal', 'soal', 'question'));
     const bersihTeksSoal = bersihkanOcrTeks(teksSoalGabungan);
@@ -1844,6 +1928,7 @@ function parseHTMLMaster(raw) {
 
     return {
       nomor,
+      kualitas,
       paket: paketRaw ? (Number(paketRaw) || paketRaw) : null,
       tipe,
       bacaan,
@@ -3186,6 +3271,12 @@ export default function ImportHasilScanPage() {
   }, []);
 
   const [format, setFormat] = useState('html'); // default HTML Master -- lihat catatan di bawah
+  // 🔥 BARU (2026-10-11, permintaan owner): wizard depan "mau impor apa"
+  // supaya admin lain tidak bingung menghadap form panjang. panduMeta=null
+  // berarti wizard masih tampil; begitu selesai, metadata mesin disetel
+  // dari pilihan dan banner hijau menjelaskan mengapa form terisi sendiri.
+  const [panduMeta, setPanduMeta] = useState(null);
+  const [panduLewati, setPanduLewati] = useState(false);
   const [rawInput, setRawInput] = useState('');
   const [sumberAI, setSumberAI] = useState('Gemini Canvas');
 
@@ -3376,9 +3467,14 @@ export default function ImportHasilScanPage() {
 
     setMembuatFolder(true);
     try {
+      const putusanCover = putuskanCover(coverFolderBaru);
       const payload = {
         judul: judulFolderBaru.trim(),
-        coverUrl: coverFolderBaru || '',
+        // 🔥 FIX (2026-10-11): cover itu OPSIONAL -- ia tidak boleh lagi
+        // menggagalkan SELURUH pembuatan folder (bug: field base64 lewat
+        // 1.048.487 byte dan addDoc melempar). Cover yang tidak aman dibuang
+        // di sini, folder tetap dibuat, admin diberitahu sesudahnya.
+        coverUrl: putusanCover.aman ? (coverFolderBaru || '') : '',
         mataPelajaran,
         jenisUjian,
         jenjang,
@@ -3388,6 +3484,9 @@ export default function ImportHasilScanPage() {
       };
       const docRef = await addDoc(collection(db, 'sumber_soal'), payload);
       const folderBaru = { id: docRef.id, ...payload };
+      if (!putusanCover.aman && coverFolderBaru) {
+        alert(`Folder berhasil dibuat TANPA cover: ${putusanCover.alasan}. Gambar perlu dikompres lebih kecil atau diunggah ke storage terpisah sebelum disimpan sebagai cover.`);
+      }
       setDaftarFolder(prev => [folderBaru, ...prev]);
       setFolderAktif(folderBaru);
       setModeFolder('pilih');
@@ -3400,14 +3499,33 @@ export default function ImportHasilScanPage() {
     setMembuatFolder(false);
   }, [judulFolderBaru, coverFolderBaru, mataPelajaran, jenisUjian, jenjang]);
 
-  const handleCoverFolderUpload = (e) => {
+  const handleCoverFolderUpload = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     if (!file.type.startsWith('image/')) return alert('Cover harus berupa gambar.');
-    const reader = new FileReader();
-    reader.onload = () => setCoverFolderBaru(reader.result);
-    reader.readAsDataURL(file);
+    // 🔥 FIX (2026-10-11, bug nyata: "coverUrl longer than 1048487 bytes"):
+    // cover dulu disimpan sebagai base64 MENTAH ke Firestore. Kini dikompres
+    // DULU di browser (thumbnail 480px, mutu 0.7) sebelum masuk state, supaya
+    // unggahan cepat dan field tidak pernah mendekati batas 1 MiB Firestore.
+    try {
+      const kecil = await imageCompression.compress(file, {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 480,
+        useWebWorker: true,
+        initialQuality: 0.7,
+      });
+      const reader = new FileReader();
+      reader.onload = () => setCoverFolderBaru(reader.result);
+      reader.readAsDataURL(kecil);
+    } catch (err) {
+      // Kompresi gagal -> jatuh ke pembacaan mentah; pagar putuskanCover()
+      // di pembuatan folder yang akan menjaga batas Firestore.
+      console.warn('Kompresi cover gagal, memakai berkas asli:', err);
+      const reader = new FileReader();
+      reader.onload = () => setCoverFolderBaru(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const [saving, setSaving] = useState(false);
@@ -3723,6 +3841,20 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       // salah ke-flag "bacaan kosong" kalau sebenarnya bisa diisi
       // otomatis dari soal segrup lainnya.
       normalized = isiUlangBacaanSegrup(normalized);
+
+      // 🔥 BARU (2026-10-11, sampel owner "02 Silogisme"): soal yatim yang
+      // bacaannya TIDAK bisa diisi otomatis (bacaannya tidak ada di field
+      // mana pun -- kasus nyata: wacana batik tercecer jadi EKOR OPSI E soal
+      // 19, padahal milik soal 20-22) kini diberi PETUNJUK LOKASI persis,
+      // bukan sekadar "cek soal di sekitarnya". TandaiBacaanTerjebak TIDAK
+      // memindahkan teks apa pun: memindahkan bacaan lintas soal adalah
+      // keputusan manusia, dan perbaikan senyap yang salah jauh lebih
+      // berbahaya daripada peringatan yang keras.
+      // 🔥 BARU (2026-10-12, bab 4 owner): wariskan wacana rentang yang hanya
+      // dipasang di soal pertama SEBELUM penagihan yatim, supaya Sinyal 5
+      // tidak menagih soal yang wacananya sebenarnya ada di soal sebelumnya.
+      normalized = wariskanBacaanYatim(normalized);
+      normalized = tandaiBacaanTerjebak(normalized);
 
       // 🔥 BARU: kalau SEBAGIAN soal di batch ini punya data-mapel
       // (berarti AI sudah nganggep filenya campuran), tapi ADA soal
@@ -4278,6 +4410,26 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
           </div>
 
           {/* PROMPT AI KHUSUS */}
+          {!panduMeta && !panduLewati && soalList.length === 0 && (
+            <PanduImpor
+              onLewati={() => setPanduLewati(true)}
+              onSelesai={(meta) => {
+                if (meta.pintuLain) { window.location.href = meta.pintuLain; return; }
+                setJenisUjian(meta.jenisUjian);
+                setFormat(meta.format);
+                if (meta.mapel) setMataPelajaran(meta.mapel);
+                if (meta.jenjang) setJenjang(meta.jenjang);
+                if (meta.kelas) setTingkatKelas(meta.kelas);
+                setPanduMeta(meta);
+              }}
+            />
+          )}
+          {panduMeta && (
+            <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#065f46', borderRadius: 12, padding: '10px 14px', fontSize: 12.5 }}>
+              🧭 {teksPanduan(panduMeta)}{' '}
+              <button type="button" onClick={() => setPanduMeta(null)} style={{ background: 'none', border: 'none', color: '#047857', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }}>ubah pilihan</button>
+            </div>
+          )}
           <div style={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid #1e293b', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div>
@@ -4662,6 +4814,30 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                   <div key={index} style={{ fontSize: '12px', color: '#b45309' }}>{warning}</div>
                 ))}
               </div>
+              {/* 🔥 BARU (2026-10-11, sampel owner "02 Silogisme"): wacana yang
+                  tercecer di wadah salah (kasus nyata: batik milik soal 20-22
+                  jadi ekor opsi E soal 19) kini bisa dipindahkan SATU KLIK ke
+                  soal yang membutuhkannya. Aksinya fungsi murni teruji
+                  (pindahkanBacaanTerjebak): memotong dari wadah asal, membagi
+                  ke runtutan soal yatim, memberi catatan admin "VERIFIKASI
+                  MANUAL" -- jadi bukan perbaikan senyap. */}
+              {hitungKandidatBacaan(soalList) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const { daftar, diselamatkan } = pindahkanBacaanTerjebak(soalList);
+                    setSoalList(daftar);
+                    setWarnings(daftar
+                      .filter(q => !q.valid)
+                      .map(q => `Soal ${q.nomor}${q.paket ? ` (Paket ${q.paket})` : ''}: ${q.errors.join(' ')}`));
+                    const nomorTujuan = diselamatkan.map(d => d.nomor).join(', ');
+                    window.alert(`🩹 ${diselamatkan.length} soal mendapat bacaan selamatan: nomor ${nomorTujuan}.\nBacaan dipotong dari wadah salahnya dan diberi catatan "VERIFIKASI MANUAL" di tiap soal. Buka kartu soal tersebut untuk membaca ulang sebelum disimpan.`);
+                  }}
+                  style={{ marginTop: '10px', padding: '8px 14px', borderRadius: '8px', border: '1px solid #b45309', background: '#fffbeb', color: '#92400e', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  🩹 Selamatkan bacaan terjebak ({hitungKandidatBacaan(soalList)} soal) — potong dari wadah salahnya & jadikan bacaan bersama
+                </button>
+              )}
               <div style={{ fontSize: '12px', color: '#b45309', marginTop: '12px' }}>Soal yang valid tetap bisa disimpan.</div>
             </div>
           )}

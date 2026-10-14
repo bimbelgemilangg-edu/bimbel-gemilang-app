@@ -24,15 +24,12 @@ import RenderMath from '../../../components/RenderMath';
 // persis di opsi yang benar (kunci bocor sebelum dijawab).
 import { opsiTampilDari } from '../../../utils/bersihkanGlifKunci.js';
 
-// 🔥 BARU (bug freeze/blank putih ditemukan): jangan percaya
-// kunciJawaban PASTI array -- kalau ada data soal yang formatnya
-// beda (string polos, bukan array), .map() langsung crash React
-// TOTAL. Lihat penjelasan lengkap di skoringSoalKompleks.js.
-function safeArray(v) {
-  if (Array.isArray(v)) return v;
-  if (typeof v === 'string' && v.trim()) return v.split('').map((c) => c.trim()).filter(Boolean);
-  return [];
-}
+// 🛡️ AUDIT 2026-10-13: safeArray kini DIIMPOR dari sumber kanonik
+// skoringSoalKompleks.js (dulu salinan lokal per-huruf yang membuat
+// kunci "B,C" terpecah jadi ['B',',','C'] -- koma ikut terhitung kunci
+// di skoring dan centang hijau di layar tinjauan tidak lengkap).
+// Satu fungsi, satu perilaku: renderer & skoring selalu sepakat.
+import { safeArray } from '../../../utils/skoringSoalKompleks.js';
 
 export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
   const opsi = opsiTampilDari(soal);

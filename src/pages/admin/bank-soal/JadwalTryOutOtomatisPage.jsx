@@ -12,11 +12,21 @@ import { KATALOG_MAPEL } from '../../../utils/mesinTaksonomiSoal';
 // 🔥 BARU (audit 2026-10-10): normalisasi bentuk targetKelas/targetKategori
 // saat template disimpan. Lihat kepala utils/cocokkanTargetPaket.js.
 import { bentukKanonikTarget } from '../../../utils/cocokkanTargetPaket';
+// 🔥 ROMBAK 2026-10-13 (keputusan owner): JENIS UJIAN menentukan peserta &
+// materi secara otomatis. Form tidak lagi meminta admin mengisi dua
+// dropdown kelas yang membingungkan ("cakupan materi" vs "audience").
+import { jenisUjianBaku, aturanJenisUjian, PILIHAN_JENIS_UJIAN } from '../../../utils/aturanJenisUjian';
 
 const HARI = [
   { v: 1, l: 'Sen' }, { v: 2, l: 'Sel' }, { v: 3, l: 'Rab' },
   { v: 4, l: 'Kam' }, { v: 5, l: 'Jum' }, { v: 6, l: 'Sab' }, { v: 0, l: 'Min' },
 ];
+
+// 🔥 S5+ (2026-10-13): log draf WAJIB mengaku AI-nya dipakai atau tidak.
+// "AI mengusulkan, sistem memutuskan" tidak berarti keputusannya disembunyikan.
+const teksAiJejak = (h) => (h?.aiJejak && Object.keys(h.aiJejak).length
+  ? ' · 🤖 AI: ' + Object.entries(h.aiJejak).map(([m, v]) => `${m}=${v}`).join(', ')
+  : '');
 
 const kosong = () => ({
   ...DEFAULT_TEMPLATE_SMA,
@@ -70,7 +80,16 @@ export default function JadwalTryOutOtomatisPage() {
         return tb - ta;
       })
       .slice(0, 30);
-    return { templates: st.docs.map((d) => ({ id: d.id, ...d.data() , kelasSiswa: [...unikKelas].sort((a,b)=>a.localeCompare(b,'id',{numeric:true})) })), otomatis };
+    // 🔥 FIX 2026-10-13: kelasSiswa dulu diselipkan di DALAM tiap dokumen
+    // template dan tidak pernah sampai ke state (d.kelasSiswa undefined),
+    // sehingga dropdown kelas hanya berisi satu opsi dan sasaran tersimpan
+    // terlihat seperti "Semua kelas" di layar admin. Kini dikembalikan
+    // sebagai field tingkat atas dan disetel oleh kedua pemanggil.
+    return {
+      templates: st.docs.map((d) => ({ id: d.id, ...d.data() })),
+      otomatis,
+      kelasSiswa: [...unikKelas].sort((a, b) => a.localeCompare(b, 'id', { numeric: true })),
+    };
   }
 
   // Pemanggilan manual (tombol): spinner disetel di event handler, tempat
@@ -97,6 +116,7 @@ export default function JadwalTryOutOtomatisPage() {
         if (!hidup) return;
         setTemplates(d.templates);
         setDrafList(d.otomatis);
+        setKelasSiswa(d.kelasSiswa || []);
       } catch (e) {
         if (hidup) setPesan('❌ ' + e.message);
       } finally {
@@ -116,17 +136,25 @@ export default function JadwalTryOutOtomatisPage() {
 
   async function simpanTemplate() {
     if (!edit?.nama?.trim()) return setPesan('Nama wajib.');
+    // 🔥 ROMBAK 2026-10-13: sasaran & cakupan materi DITURUNKAN dari jenis
+    // ujian, bukan diketik manual. Mode Reguler tanpa kelas = ditolak di
+    // sini (lebih ramah daripada ditolak pagar saat menyiapkan draf).
+    const at = aturanJenisUjian(edit);
+    if (!at.otomatis && !at.targetKelas) {
+      return setPesan('❌ Jenis ujian Reguler wajib memilih satu kelas (peserta & materi). Bila maksudnya ujian akhir jenjang, pilih jenis ujian TKA/UTBK.');
+    }
     setBusy(true);
     try {
       const payload = {
         nama: edit.nama.trim(),
         jenjang: edit.jenjang || 'SMA',
-        kelas: edit.kelas || '',
+        jenisUjian: at.jenisUjian,
+        kelas: at.kelasCakupan,
         // 🔥 FIX (2026-10-13): form dulu TIDAK punya input sasaran, sehingga
         // targetKelas tersimpan undefined -> kanonik "Semua" -> paket SMP
-        // berpotensi terlihat siswa SD/SMA. Bila kosong, sasaran diturunkan
-        // dari kelas+jenjang yang diisi admin; input eksplisit tetap ada.
-        targetKelas: bentukKanonikTarget(edit.targetKelas || (edit.kelas ? `${edit.kelas} ${edit.jenjang || ''}`.trim() : (edit.jenjang || ''))),
+        // berpotensi terlihat siswa SD/SMA. Kini sasaran selalu hasil
+        // penurunan jenis ujian (TKA/UTBK otomatis; Reguler = kelas pilihan).
+        targetKelas: bentukKanonikTarget(at.targetKelas),
         targetKategori: bentukKanonikTarget(edit.targetKategori || 'Semua'),
         komposisi: edit.komposisi || [],
         hariDalamMinggu: edit.hariDalamMinggu || [1, 4],
@@ -137,6 +165,7 @@ export default function JadwalTryOutOtomatisPage() {
         wajibKamera: !!edit.wajibKamera,
         soalAcak: edit.soalAcak !== false,
         tampilkanPembahasan: edit.tampilkanPembahasan !== false,
+        pakaiAi: edit.pakaiAi !== false,
         aktif: edit.aktif !== false,
         updatedAt: serverTimestamp(),
       };
@@ -171,11 +200,11 @@ export default function JadwalTryOutOtomatisPage() {
       });
       setLog(hasil.map((h) => {
         if (h.skipped) return `⏭️ ${h.judul} — ${h.alasan}`;
-        if (!h.ok) return `❌ ${h.error}`;
+        if (!h.ok) return `❌ ${h.judul || 'Draf'} DILEWATI: ${h.singkat || h.error}${h.solusi ? ` · 🔧 ${h.solusi}` : ''}`;
         const pm = h.ringkas?.perMapel
           ? Object.entries(h.ringkas.perMapel).map(([k, v]) => `${v} ${k}`).join(', ')
           : '';
-        return `📝 DRAF ${h.judul} · ${h.totalSoal} soal (${pm}) — belum tampil siswa`;
+        return `📝 DRAF ${h.judul} · ${h.totalSoal} soal (${pm})${teksAiJejak(h)} — belum tampil siswa`;
       }));
       setPesan('Draf disiapkan. Klik TERBITKAN agar siswa melihat.');
       await muat();
@@ -205,8 +234,8 @@ export default function JadwalTryOutOtomatisPage() {
         });
         for (const h of hasil) {
           if (h.skipped) logs.push(`⏭️ [${t.nama}] ${h.judul} — ${h.alasan}`);
-          else if (!h.ok) logs.push(`❌ [${t.nama}] ${h.error}`);
-          else logs.push(`📝 [${t.nama}] DRAF ${h.judul} · ${h.totalSoal} soal`);
+          else if (!h.ok) logs.push(`❌ [${t.nama}] DILEWATI: ${h.singkat || h.error}${h.solusi ? ` · 🔧 ${h.solusi}` : ''}`);
+          else logs.push(`📝 [${t.nama}] DRAF ${h.judul} · ${h.totalSoal} soal${teksAiJejak(h)}`);
         }
       }
       setLog(logs);
@@ -307,10 +336,13 @@ export default function JadwalTryOutOtomatisPage() {
         </div>
 
         <div style={st.infoBox}>
-          <b>Model hybrid (disarankan):</b> sistem yang memilih & mengacak soal dari bank.
-          Admin hanya mengatur <b>rules</b> (jam, kamera, acak, pembahasan, komposisi jumlah per mapel)
-          lalu wajib klik <b>Terbitkan</b>. Tanpa terbit → try out <b>tidak muncul</b> di siswa hari itu.
-          Isi soal tidak bisa diedit manual.
+          <b>Cara kerja mesin ini (3 langkah):</b>
+          <br />1️⃣ <b>Rules template</b> — pilih <b>Jenis ujian</b>: TKA/UTBK = peserta & materi otomatis
+          (kelas akhir jenjang + bank soal satu jenjang penuh, AI memilih sesuai CP per mapel);
+          Reguler = ulangan satu kelas. Admin tidak pernah mengisi isi soal.
+          <br />2️⃣ <b>Siapkan draf</b> — sistem mengisi soal dari bank; status masih DRAF, <b>tersembunyi dari siswa</b>.
+          <br />3️⃣ <b>Terbitkan</b> — try out baru muncul di siswa pada hari/jam yang terjadwal.
+          <br /><span style={{ opacity: 0.85 }}>Arti log: 📝 draf tercipta · ⏭️ dilewati (mis. draf sudah ada — hapus dulu bila ingin menyusun ulang) · ❌ dilewati pagar keselamatan (selalu disertai cara perbaikan) · 💤 template tidur (tidak ikut antrian).</span>
         </div>
 
         {pesan && (
@@ -341,22 +373,34 @@ export default function JadwalTryOutOtomatisPage() {
                   <option>SD</option><option>SMP</option><option>SMA</option><option>SMK</option>
                 </select>
               </label>
-              <label style={st.label}>Cakupan materi bank (isi soal)
-                {/* 🔥 2026-10-13 (riset owner): TKA/UJIAN kelas 9 menguji materi
-                    kelas 7-9, jadi menyaring isi ke satu kelas SALAH untuk mode
-                    ujian. Default ujian = satu jenjang penuh; mode satu kelas
-                    disediakan untuk ulangan berjalan. */}
-                <select style={st.input} value={edit.kelas || ''} onChange={(e) => setEdit({ ...edit, kelas: e.target.value })}>
-                  <option value="">Satu jenjang penuh (TKA SMP = materi kelas 7-9)</option>
-                  {kelasSiswa.map((k) => <option key={k} value={k}>Hanya kelas {k} (ulangan berjalan)</option>)}
+              <label style={st.label}>Jenis ujian
+                {/* 🔥 ROMBAK 2026-10-13 (keputusan owner): satu pilihan ini
+                    menggantikan dua dropdown kelas yang membingungkan.
+                    TKA/UTBK = peserta & materi otomatis (kelas akhir jenjang
+                    + bank satu jenjang penuh, AI pilih sesuai CP per mapel).
+                    Reguler = ulangan berjalan satu kelas. */}
+                <select style={st.input} value={jenisUjianBaku(edit)} onChange={(e) => setEdit({ ...edit, jenisUjian: e.target.value })}>
+                  {PILIHAN_JENIS_UJIAN.map((p) => <option key={p.nilai} value={p.nilai}>{p.label}</option>)}
                 </select>
               </label>
-              <label style={st.label}>Sasaran kelas siswa (audience)
-                <select style={st.input} value={edit.targetKelas || ''} onChange={(e) => setEdit({ ...edit, targetKelas: e.target.value })}>
-                  <option value="">Semua kelas (pagar identitas menolak ini untuk jenjang sekolah)</option>
-                  {kelasSiswa.map((k) => <option key={k} value={k}>Kelas {k} (sesuai data siswa)</option>)}
-                </select>
-              </label>
+              {aturanJenisUjian(edit).otomatis ? (
+                <label style={st.label}>Peserta & materi (otomatis dari jenis ujian)
+                  <span style={{
+                    ...st.input, background: '#f0fdf4', borderColor: '#bbf7d0', color: '#166534',
+                    fontSize: 12, lineHeight: 1.5, display: 'block',
+                  }}
+                  >
+                    👥 {aturanJenisUjian(edit).pesertaTeks}<br />📚 {aturanJenisUjian(edit).materiTeks}
+                  </span>
+                </label>
+              ) : (
+                <label style={st.label}>Kelas (peserta & materi)
+                  <select style={st.input} value={edit.targetKelas || edit.kelas || ''} onChange={(e) => setEdit({ ...edit, targetKelas: e.target.value, kelas: e.target.value })}>
+                    <option value="">— pilih kelas —</option>
+                    {kelasSiswa.map((k) => <option key={k} value={k}>Kelas {k}</option>)}
+                  </select>
+                </label>
+              )}
               <label style={st.label}>Sasaran program/kategori<input style={st.input} value={edit.targetKategori || ''} onChange={(e) => setEdit({ ...edit, targetKategori: e.target.value })} placeholder="Semua / Reguler / Intensif" /></label>
               <label style={st.label}>Jam buka<input style={st.input} type="time" value={edit.jamBuka || '07:00'} onChange={(e) => setEdit({ ...edit, jamBuka: e.target.value })} /></label>
               <label style={st.label}>Durasi (menit)<input style={st.input} type="number" value={edit.durasiTotalMenit || 90} onChange={(e) => setEdit({ ...edit, durasiTotalMenit: Number(e.target.value) })} /></label>
@@ -371,6 +415,10 @@ export default function JadwalTryOutOtomatisPage() {
             <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 13 }}>
               <label style={st.check}><input type="checkbox" checked={edit.soalAcak !== false} onChange={(e) => setEdit({ ...edit, soalAcak: e.target.checked })} /> Soal acak</label>
               <label style={st.check}><input type="checkbox" checked={edit.antiCheatAktif !== false} onChange={(e) => setEdit({ ...edit, antiCheatAktif: e.target.checked })} /> Anti-cheat</label>
+              <label style={{ display: 'flex', gap: 7, alignItems: 'center', fontSize: 12, color: '#334155', marginBottom: 6 }}>
+                <input type="checkbox" checked={edit.pakaiAi !== false} onChange={(e) => setEdit({ ...edit, pakaiAi: e.target.checked })} />
+                🤖 AI memilih soal sesuai kisi-kisi CP TKA/UTBK (bila dimatikan: acak deterministik)
+              </label>
               <label style={st.check}><input type="checkbox" checked={!!edit.wajibKamera} onChange={(e) => setEdit({ ...edit, wajibKamera: e.target.checked })} /> Wajib kamera</label>
               <label style={st.check}><input type="checkbox" checked={edit.tampilkanPembahasan !== false} onChange={(e) => setEdit({ ...edit, tampilkanPembahasan: e.target.checked })} /> Pembahasan setelah selesai</label>
             </div>
@@ -503,6 +551,23 @@ export default function JadwalTryOutOtomatisPage() {
                   <button type="button" style={st.btnPrimary} disabled={busy} onClick={() => klikTerbitkan(p)}>
                     <Send size={14} /> Terbitkan
                   </button>
+                  {/* 🔥 BARU (2026-10-13): draf cacat (mis. warisan sebelum pagar
+                      identitas dipulihkan) harus bisa dibersihkan admin sendiri.
+                      Hanya DRAF — paket aktif punya tombol Nonaktifkan sendiri. */}
+                  <button type="button" style={st.iconDanger} title="Hapus draf" disabled={busy} onClick={async () => {
+                    if (!window.confirm(`Hapus DRAF "${p.judul}"?\n\nDraf belum terlihat siswa. Menghapus draf tidak menyentuh paket yang sudah aktif/terbit.`)) return;
+                    setBusy(true);
+                    try {
+                      await deleteDoc(doc(db, COL_PAKET, p.id));
+                      await muat();
+                      setPesan('🗑️ Draf dihapus.');
+                    } catch (e) {
+                      setPesan('❌ ' + e.message);
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}><Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -540,9 +605,15 @@ export default function JadwalTryOutOtomatisPage() {
               <div key={t.id} style={st.card}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                   <div style={{ flex: 1, minWidth: 180 }}>
-                    <div style={{ fontWeight: 800, fontSize: 14 }}>{t.nama}</div>
+                    <div style={{ fontWeight: 800, fontSize: 14 }}>
+                      {t.nama}{' '}
+                      <span style={st.badge}>{jenisUjianBaku(t)}</span>
+                      {t.aktif === false && (
+                        <span style={{ ...st.badge, background: '#f1f5f9', color: '#64748b' }}>💤 tidur</span>
+                      )}
+                    </div>
                     <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
-                      {t.jenjang} · {(t.hariDalamMinggu || []).map((h) => HARI.find((x) => x.v === h)?.l).join(', ')} · {t.jamBuka} · {t.durasiTotalMenit} mnt
+                      {t.jenjang} · 👥 {aturanJenisUjian(t).pesertaTeks} · {(t.hariDalamMinggu || []).map((h) => HARI.find((x) => x.v === h)?.l).join(', ')} · {t.jamBuka} · {t.durasiTotalMenit} mnt
                       {' · '}{t.soalAcak !== false ? 'acak' : 'urut'} · {t.wajibKamera ? 'kamera' : 'tanpa kamera'}
                     </div>
                     <div style={{ marginTop: 6 }}>
@@ -551,8 +622,28 @@ export default function JadwalTryOutOtomatisPage() {
                       ))}
                     </div>
                   </div>
-                  <button type="button" style={st.btnSecondary} disabled={busy} onClick={() => siapkanDraf(t)}>
+                  <button type="button" style={st.btnSecondary} disabled={busy || t.aktif === false} onClick={() => siapkanDraf(t)}>
                     <Sparkles size={14} /> Siapkan draf
+                  </button>
+                  {/* 🔥 ROMBAK 2026-10-13: template lama yang stoknya belum
+                      siap (SD/UTBK/SMA) bisa DITIDURKAN admin sendiri supaya
+                      antrian minggu ini tidak penuh baris ❌ — tanpa perlu
+                      engineer menyentuh data produksi. */}
+                  <button type="button" style={st.btnGhost} disabled={busy} onClick={async () => {
+                    setBusy(true);
+                    try {
+                      await updateDoc(doc(db, COL_TEMPLATE, t.id), {
+                        aktif: t.aktif === false,
+                        updatedAt: serverTimestamp(),
+                      });
+                      await muat();
+                    } catch (e) {
+                      setPesan('❌ ' + e.message);
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                  >{t.aktif === false ? '✅ Bangunkan' : '💤 Tidurkan'}
                   </button>
                   <button type="button" style={st.btnGhost} onClick={() => setEdit({ ...t })}>Edit rules</button>
                   <button type="button" style={st.iconDanger} onClick={async () => {

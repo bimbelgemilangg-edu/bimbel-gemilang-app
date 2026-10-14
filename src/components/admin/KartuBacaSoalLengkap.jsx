@@ -22,6 +22,7 @@ import { teksKeHtml } from '../../utils/naskahSoal';
 import { pisahTeksDanGambar } from '../../utils/penempatanGambar';
 import { teksSoalDari, bacaanDari } from '../../utils/fieldButirSoal';
 import { opsiTampilDari } from '../../utils/bersihkanGlifKunci.js';
+import { lepasBungkusanSrcGambar } from '../../utils/normalisasiSrcGambar.js';
 
 const gaya = {
   wadah: {
@@ -48,19 +49,34 @@ const gaya = {
 function Segmen({ daftar, alt }) {
   return daftar.map((sg, i) => (sg.jenis === 'teks'
     ? <div key={i} style={gaya.teks} dangerouslySetInnerHTML={{ __html: teksKeHtml(sg.isi) }} />
-    : <img key={i} src={sg.url} alt={alt} style={gaya.gambar} />));
+    // 🔥 FIX (2026-10-11): lepas bungkus markdown "[url](url)" yang kadang
+    // ditulis Gemini Canvas, sama seperti jaring pengaman di
+    // TeksSoalBergambar -- tanpa ini gambar ada di data tapi tidak tampil.
+    : <img key={i} src={lepasBungkusanSrcGambar(sg.url)} alt={alt} style={gaya.gambar} />));
 }
 
 export default function KartuBacaSoalLengkap({ soal, tanpaKunci = false }) {
   if (!soal) return null;
   const bacaan = bacaanDari(soal);
-  const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls);
+  // 🔥 FIX (2026-10-11): meta+region diteruskan. Tanpa keduanya gambar sisa
+  // milik PEMBAHASAN ikut ditempel di akhir badan soal (dan sebaliknya),
+  // karena penempatanGambar jatuh ke perilaku lama "tumpuk semua di akhir".
+  const metaGambar = Array.isArray(soal?.gambarMeta) ? soal.gambarMeta : null;
+  const segmen = pisahTeksDanGambar(teksSoalDari(soal), soal?.gambarUrls, { meta: metaGambar, region: 'badan' });
   const opsi = opsiTampilDari(soal);
   const pernyataan = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
   const tabel = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
   const pasangan = Array.isArray(soal?.pasangan) ? soal.pasangan : [];
   const kunci = Array.isArray(soal?.kunciJawaban) ? soal.kunciJawaban.join(', ') : String(soal?.kunciJawaban ?? '');
   const pembahasan = String(soal?.pembahasan || '').trim();
+  // 🔥 FIX (2026-10-11, keluhan owner "gak support pembahasan bentuk gambar"):
+  // pembahasan dulunya dirender lewat teksKeHtml() yang MENGHAPUS token
+  // {{GAMBAR_n}} jadi spasi -- diagram pembahasan lenyap SENYAP di layar yang
+  // justru dipakai admin memverifikasi hasil impor. Kini lewat Segmen yang
+  // sadar-region, sama seperti badan soal.
+  const segmenPembahasan = pembahasan
+    ? pisahTeksDanGambar(pembahasan, soal?.gambarUrls, { meta: metaGambar, region: 'pembahasan' })
+    : [];
 
   return (
     <div style={gaya.wadah}>
@@ -139,8 +155,8 @@ export default function KartuBacaSoalLengkap({ soal, tanpaKunci = false }) {
 
       {!tanpaKunci && pembahasan && (
         <div style={gaya.kotak('abu', '#334155')}>
-          <b>Pembahasan{soal?.pembahasanAsal === 'penalaran' ? ' (hasil penalaran AI — periksa dulu)' : ''}:</b>{' '}
-          <span dangerouslySetInnerHTML={{ __html: teksKeHtml(pembahasan) }} />
+          <b>Pembahasan{soal?.pembahasanAsal === 'penalaran' ? ' (hasil penalaran AI — periksa dulu)' : ''}:</b>
+          <Segmen daftar={segmenPembahasan} alt="Gambar pembahasan" />
         </div>
       )}
     </div>

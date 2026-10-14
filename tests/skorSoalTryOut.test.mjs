@@ -21,6 +21,7 @@ import {
 } from '../src/utils/skorSoalTryOut.js';
 import {
   hitungSkorBenarSalah,
+  hitungSkorPgKompleks,
   kunciBarisBenarSalah,
 } from '../src/utils/skoringSoalKompleks.js';
 
@@ -69,6 +70,18 @@ uji('esai dianggap dijawab kalau ada TEKS atau FOTO', () => {
   assert.equal(soalBelumDijawab(esai('e1'), { teks: '', foto: 'data:image/jpeg;base64,x' }), false);
   assert.equal(soalBelumDijawab(esai('e1'), { teks: '   ', foto: '' }), true);
   assert.equal(soalBelumDijawab(esai('e1'), null), true);
+});
+
+// 🛡️ Regresi audit 2026-10-13: alias lama 'uraian' (pipeline HTML Master)
+// dulu tidak dikenali soalBelumDijawab -> uraian berfoto salah dilabeli
+// "belum dijawab". Wajib diperlakukan identik dengan 'esai'.
+uji('uraian (alias esai) juga dianggap dijawab kalau ada TEKS atau FOTO', () => {
+  const uraian = (id) => ({ id, tipe: 'uraian' });
+  assert.equal(soalBelumDijawab(uraian('u1'), { teks: 'ada', foto: '' }), false);
+  assert.equal(soalBelumDijawab(uraian('u1'), { teks: '', foto: 'data:image/jpeg;base64,x' }), false);
+  assert.equal(soalBelumDijawab(uraian('u1'), { teks: '   ', foto: '' }), true);
+  assert.equal(soalBelumDijawab(uraian('u1'), null), true);
+  assert.equal(soalBelumDijawab(uraian('u1'), 'jawaban string polos'), false);
 });
 
 bagian('esai: total skor sebelum & sesudah penilaian');
@@ -166,6 +179,54 @@ uji('dialek kunci baris via field `kunci` (sanitizer) tetap terbaca', () => {
   const baris = [{ pernyataan: 'x', kunci: 'benar' }];
   assert.equal(kunciBarisBenarSalah(baris[0]), 'benar');
   assert.equal(hitungSkorBenarSalah(baris, ['benar']), 1);
+});
+
+bagian('🛡️ audit 2026-10-13: kunci tak ternilai & dialek kunci pg_kompleks');
+
+// Kasus NYATA paket Sabtu 17 Okt (4BCDVVX7xwcGfxj58BHq): 4 butir
+// pg_sederhana ber-kunci ganda ("A,D" -- sisa impor yang seharusnya
+// pg_kompleks). Jawaban siswa apa pun = 0, tapi dulu tetap ikut
+// penyebut -> skor maksimal paket terpanggang 87,5%.
+uji('pg_sederhana ber-kunci ganda TIDAK bisa dinilai & keluar dari penyebut', () => {
+  const rusak = pg('r1', 'A,D');
+  assert.equal(soalBisaDinilai(rusak), false);
+  const r = hitungTotalSkor([pg('s1', 'B'), rusak], { s1: 1, r1: 0 });
+  assert.equal(r.jumlahTidakBisaDinilai, 1);
+  assert.equal(r.totalSkorPersen, 100, 'soal kunci-rusak tidak boleh menurunkan persen siswa');
+});
+
+uji('pg_sederhana kunci sehat tetap bisa dinilai (regresi pagar baru)', () => {
+  assert.equal(soalBisaDinilai(pg('s1', 'B')), true);
+  assert.equal(soalBisaDinilai(pg('s2', 2)), true); // kunci index angka
+  assert.equal(soalBisaDinilai(pg('s3', 'b')), true); // huruf kecil
+  assert.equal(soalBisaDinilai({ id: 's4', tipe: 'pg_sederhana', opsiJawaban: ['fotosintesis', 'daun'], kunciJawaban: 'daun' }), true); // kunci teks lengkap
+  assert.equal(soalBisaDinilai(pg('s5', '')), false); // tanpa kunci
+});
+
+uji('kunci pg_kompleks dialek string "B,C" kini dinilai penuh (split pemisah)', () => {
+  const pgk = { id: 'k1', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b', 'c', 'd'], kunciJawaban: 'B,C' };
+  assert.equal(soalBisaDinilai(pgk), true);
+  assert.equal(skorSatuSoal(pgk, ['B', 'C']), 1);
+  assert.equal(skorSatuSoal(pgk, ['B']), 0.5);
+  // dialek lama tanpa pemisah tetap jalan (split per-huruf)
+  assert.equal(hitungSkorPgKompleks('AC', ['A', 'C']), 1);
+  // array tetap sumber utama
+  assert.equal(hitungSkorPgKompleks(['A', 'D'], ['A', 'D']), 1);
+});
+
+uji('pg_kompleks ber-kunci angka (tak pernah bisa dicentang siswa) TIDAK dinilai', () => {
+  const pgk = { id: 'k2', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b', 'c', 'd', 'e'], kunciJawaban: '1, 3, 5' };
+  assert.equal(soalBisaDinilai(pgk), false);
+  const kosong = { id: 'k3', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b'], kunciJawaban: [] };
+  assert.equal(soalBisaDinilai(kosong), false);
+  const hurufLuarRentang = { id: 'k4', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b'], kunciJawaban: ['A', 'D'] };
+  assert.equal(soalBisaDinilai(hurufLuarRentang), false);
+});
+
+uji('isian_singkat/numerik tanpa kunci sama sekali TIDAK dinilai', () => {
+  assert.equal(soalBisaDinilai({ id: 'i1', tipe: 'isian_singkat', kunciJawaban: '' }), false);
+  assert.equal(soalBisaDinilai({ id: 'i2', tipe: 'isian_singkat', kunciJawaban: 'fotosintesis' }), true);
+  assert.equal(soalBisaDinilai({ id: 'i3', tipe: 'numerik', kunciJawaban: '', jawabanEkuivalen: ['12'] }), true);
 });
 
 console.log(`\n${'='.repeat(56)}\n  LULUS : ${lulus}\n  GAGAL : ${gagal}\n${'='.repeat(56)}`);

@@ -16,7 +16,7 @@
 
 import {
   hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar,
-  barisBenarSalahBisaDinilai,
+  barisBenarSalahBisaDinilai, safeArray,
 } from './skoringSoalKompleks.js';
 
 // 🔥 BARU: 1 fungsi bersama buat "apa soal ini beneran tidak dijawab
@@ -54,7 +54,11 @@ export function soalBelumDijawab(soal, jawaban) {
   const tipe = soal.tipe || 'pg_sederhana';
   // 🔥 BARU: esai dianggap terjawab kalau ADA TEKS atau ADA FOTO --
   // dua-duanya jalur jawaban yang sah sesuai permintaan owner.
-  if (tipe === 'esai') {
+  // 🛡️ AUDIT 2026-10-13: pakai isSoalEsai() supaya alias lama 'uraian'
+  // (pipeline HTML Master) ikut terlayani -- dulu cuma 'esai' yang dicek
+  // sehingga uraian berfoto bisa salah dilabeli "belum dijawab" di layar
+  // siswa & ringkasan admin, padahal keranjang + renderer menerimanya.
+  if (isSoalEsai(soal)) {
     const j = jawaban && typeof jawaban === 'object' ? jawaban : { teks: jawaban };
     return !String(j?.teks ?? '').trim() && !String(j?.foto ?? '').trim();
   }
@@ -113,10 +117,36 @@ export function pilihBarisBenarSalah(soal) {
 // dari penyebut total -- kesalahan sistem tidak boleh mengurangi nilai
 // siswa. Admin melihat jumlahnya lewat jumlahTidakBisaDinilai dan bisa
 // memperbaiki datanya lewat catatan admin di bank soal.
+// 🛡️ AUDIT 2026-10-13 (paket Sabtu 17 Okt): cakupan diperluas. Kasus
+// nyata yang lolos dari versi lama: 4 soal pg_sederhana ber-kunci ganda
+// ("A,D" -- impor salah tipe, seharusnya pg_kompleks) -> cariIndexBenar
+// = -1 -> jawaban siswa APA PUN selalu 0 padahal ikut penyebut (skor
+// maksimal paket terpanggang jadi 87,5%). Kriteria "bisa dinilai" kini
+// = "ada jalur jawaban siswa yang bisa menghasilkan skor > 0":
+// - pg_sederhana : kunci harus memetakan ke salah satu opsi (index >= 0)
+// - pg_kompleks  : kunci (setelah normalisasi safeArray) harus huruf
+//                  yang berada dalam rentang opsi -- kunci angka "1,3,5"
+//                  tak pernah bisa dicentang siswa (renderer pakai huruf)
+// - isian/numerik: minimal ada kunci atau jawaban ekuivalen
 export function soalBisaDinilai(soal) {
   const tipe = soal?.tipe || 'pg_sederhana';
   if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
     return barisBenarSalahBisaDinilai(pilihBarisBenarSalah(soal));
+  }
+  if (tipe === 'pg_sederhana') {
+    return cariIndexBenar(soal) >= 0;
+  }
+  if (tipe === 'pg_kompleks') {
+    const kunci = safeArray(soal?.kunciJawaban).map((h) => String(h).toUpperCase().trim());
+    if (!kunci.length) return false;
+    const nOpsi = (Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : []).length;
+    return kunci.every((h) => /^[A-Z]$/.test(h) && h.charCodeAt(0) - 65 < nOpsi);
+  }
+  if (tipe === 'isian_singkat' || tipe === 'numerik') {
+    const utama = String(soal?.kunciJawaban ?? '').trim();
+    const ekuivalen = (Array.isArray(soal?.jawabanEkuivalen) ? soal.jawabanEkuivalen : [])
+      .some((k) => String(k ?? '').trim() !== '');
+    return utama !== '' || ekuivalen;
   }
   return true;
 }

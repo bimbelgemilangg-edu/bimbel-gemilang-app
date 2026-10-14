@@ -33,7 +33,8 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { collection, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { ekstrakBanyakHtml } from '../../../utils/ekstrakHtmlGemini';
-import { dokumenDariButir, ringkasanImpor } from '../../../utils/imporHtmlGeminiKeBank';
+import { dokumenDariButir, ringkasanImpor, rapikanGambarButir } from '../../../utils/imporHtmlGeminiKeBank';
+import { pesanSalahPintu, URL_PINTU_PATEN } from '../../../utils/kenaliDialekImpor';
 import { PROMPT_PATEN_GEMINI, PROMPT_KONVERSI_ULANG } from '../../../utils/promptPatenGemini';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { jalurBankSoal } from '../../../utils/jalurStorage';
@@ -102,9 +103,19 @@ export default function ImporHtmlGeminiPage() {
     if (!semua.length) { setPesan('⚠️ Belum ada berkas HTML.'); return; }
     const h = ekstrakBanyakHtml(semua);
     setHasil(h);
-    setPesan(h.kesalahan.length
-      ? `⛔ ${h.kesalahan.length} pelanggaran paten — perbaiki berkas yang disebut, lalu pratinjau lagi.`
-      : `✅ ${h.soal.length} soal lolos paten, siap disimpan.`);
+    // 🔥 BARU (2026-10-11, kebingungan owner "aku yang salah jangan
+    // jangan?"): pintu ini dan /admin/bank-soal/import menerima DIALEK HTML
+    // yang saling tidak kompatibel. Berkas sah yang salah pintu terbaca NOL
+    // kartu dan dulu dibalas "bukan keluaran prompt paten" -- benar secara
+    // harfiah, useless secara praktis. Kini pesan menunjuk pintu yang benar.
+    const rambu = h.soal.length === 0
+      ? pesanSalahPintu(semua.map((b) => b.teks).join('\n'), URL_PINTU_PATEN)
+      : null;
+    setPesan(rambu
+      ? `🚪 ${rambu}`
+      : (h.kesalahan.length
+        ? `⛔ ${h.kesalahan.length} pelanggaran paten — perbaiki berkas yang disebut, lalu pratinjau lagi.`
+        : `✅ ${h.soal.length} soal lolos paten, siap disimpan.`));
   };
 
   const simpan = async () => {
@@ -134,20 +145,36 @@ export default function ImporHtmlGeminiPage() {
         const milik = hasil.gambar
           .filter((g) => g.kartu === s.idKartu)
           .sort((a, b) => a.urutan - b.urutan);
-        const urls = [];
-        const meta = [];
-        for (const g of milik) {
-          const u = urlGambar.get(`${g.kartu}|${g.urutan}`);
-          if (!u) continue;
-          urls.push(u);
-          meta.push({ sumber: g.gambarSumber || '', asal: g.gambarAsal || '', caption: g.caption || '', region: g.region || 'badan' });
-        }
+        // 🔥 FIX (2026-10-11): SEMUA figur diteruskan — termasuk yang url-nya
+        // kosong karena gagal diunggah. Dulu gambar gagal dilewati dengan
+        // `continue` sehingga gambarUrls MENYUSUT & BERGESER, sementara token
+        // {{GAMBAR_n}} di teks/pembahasan/opsi tetap menunjuk nomor asli:
+        // satu upload gagal membuat semua gambar sesudahnya nyasar satu
+        // posisi, tanpa error apa pun. Penyelarasan token dikerjakan
+        // rapikanGambarButir() (murni & teruji), bukan di halaman ini.
+        const daftarGambar = milik.map((g) => ({
+          urutan: g.urutan,
+          url: urlGambar.get(`${g.kartu}|${g.urutan}`) || '',
+          sumber: g.gambarSumber,
+          asal: g.gambarAsal,
+          caption: g.caption,
+          region: g.region,
+        }));
+        // 🔥 FIX (2026-10-11): `region` & `caption` antrean potongan dulu
+        // DIBUANG di sini. Padahal region ('opsi'|'pembahasan'|'badan') justru
+        // yang menentukan ke mana tim harus menempelkan gambar hasil potongan.
         const potonganTertunda = (hasil.potongan || [])
           .filter((p) => p.kartu === s.idKartu)
           .sort((a, b) => a.urutan - b.urutan)
-          .map((p) => ({ urutan: p.urutan, petunjuk: p.petunjuk || p.caption || '' }));
-        return { ...s, gambarUrls: urls, gambarMeta: meta, potonganTertunda };
+          .map((p) => ({
+            urutan: p.urutan,
+            petunjuk: p.petunjuk || p.caption || '',
+            region: p.region || 'badan',
+            caption: p.caption || '',
+          }));
+        return rapikanGambarButir({ ...s, potonganTertunda }, daftarGambar);
       });
+      const totalGagalUnggah = soalSiap.reduce((n, s) => n + (s.gambarGagalUnggah || 0), 0);
 
       // 3) tulis ke bank_soal per batch
       const ringkasan = ringkasanImpor(soalSiap, hasil.gambar, hasil.potongan);
@@ -167,7 +194,7 @@ export default function ImporHtmlGeminiPage() {
         await batch.commit();
         tersimpan += slice.length;
       }
-      setPesan(`✅ ${tersimpan} soal tersimpan di ${ringkasan.perBab.length} bab.${ringkasan.penalaran ? ` ${ringkasan.penalaran} pembahasan hasil penalaran AI — periksa sebelum dipakai mengajar.` : ''}${ringkasan.menungguPotongan ? ` ✂️ ${ringkasan.menungguPotongan} gambar masih MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuknya tersimpan di tiap soal (potonganTertunda).` : ''}${ringkasan.terindikasiBuatan ? ` ⚠️ ${ringkasan.terindikasiBuatan} gambar base64 terindikasi buatan model — periksa sebelum dipakai.` : ''} Lihat sebarannya di Perpustakaan.`);
+      setPesan(`✅ ${tersimpan} soal tersimpan di ${ringkasan.perBab.length} bab.${totalGagalUnggah ? ` ⚠️ ${totalGagalUnggah} gambar GAGAL DIUNGGAH dan dibuang — token {{GAMBAR_n}} di soal/pembahasan/opsi sudah diselaraskan ulang supaya gambar yang tersisa TIDAK nyasar, tapi soal itu kini kehilangan gambarnya: impor ulang atau tempel manual lewat Perpustakaan.` : ''}${ringkasan.penalaran ? ` ${ringkasan.penalaran} pembahasan hasil penalaran AI — periksa sebelum dipakai mengajar.` : ''}${ringkasan.menungguPotongan ? ` ✂️ ${ringkasan.menungguPotongan} gambar masih MENUNGGU POTONGAN PRESISI dari berkas asli — petunjuknya tersimpan di tiap soal (potonganTertunda).` : ''}${ringkasan.terindikasiBuatan ? ` ⚠️ ${ringkasan.terindikasiBuatan} gambar base64 terindikasi buatan model — periksa sebelum dipakai.` : ''} Lihat sebarannya di Perpustakaan.`);
       setHasil(null);
       setBerkas([]);
       setTempelan('');

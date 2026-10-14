@@ -85,6 +85,26 @@ perbaikan darurat saat CI sendiri masih baru.
   konsisten dipakai) — itu wilayah review manusia/owner.
 - Kebocoran lewat database yang terbuka — itu wilayah runbook keamanan,
   bukan CI. Lihat `docs/KEPUTUSAN-RISIKO-FIRESTORE.md`.
+- Fitur keselamatan yang hilang saat MERGE — git tidak melaporkan konflik
+  bila seluruh hunk diambil dari satu sisi. Lihat kaidah di bawah.
+
+## Seusai merge main → preview: fitur preview WAJIB diabsen (insiden 2026-10-13)
+
+Kasus nyata: merge `45dc70b` (menyerap PR #199 ke preview) mengambil berkas
+`mesinTryOutOtomatis.js` sisi main bulat-bulat, sehingga PAGAR IDENTITAS &
+GERBANG STOK (S2, `77102e5`) hilang TANPA konflik. Akibatnya draf "UJI TKA
+SMP" bersasaran "Semua" lahir lagi di produksi. Bugnya ditemukan lewat
+simulasi read-only, bukan oleh git.
+
+Kaidah baru:
+
+1. Setiap kali merge main ke branch preview, ABSEN fitur preview lewat
+   grep penanda di hasil merge (mis. `PAGAR IDENTITAS`, `GERBANG STOK`,
+   `pakaiAi`, `kodePaket`), lalu jalankan `npm test` penuh.
+2. Fitur keselamatan ditempatkan di MODUL MURNI TERPISAH + test sendiri
+   (contoh: `src/utils/pagarTryOutOtomatis.js` +
+   `tests/pagarTryOutOtomatis.test.mjs`). Bila hilang saat merge, rantai
+   test yang berteriak — bukan siswa yang menemukan hari Sabtu.
 
 ---
 

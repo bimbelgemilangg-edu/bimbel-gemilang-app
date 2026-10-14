@@ -116,10 +116,235 @@ terbaca supaya guru tahu apa yang harus diperiksa. Satu aturan emas:
        terpotong;
     c. ada kunci_jawaban dan pembahasan yang ditutup "Jawaban: X";
     d. bacaan bersama disalin IDENTIK di semua soal segrup (data-grup sama);
-    e. tabel/gambar/kode sumber tidak ada yang hilang.
+    e. tabel/gambar/kode sumber tidak ada yang hilang;
+    f. TIDAK ADA penanda scan di field mana pun: tidak ada "=== PAGE ... ===",
+       tidak ada baris watermark/slogan berkas, tidak ada baris yang hanya
+       berisi nomor urut, tidak ada garis pemisah kolom (aturan 31);
+    g. TIDAK ADA <li> opsi yang memuat lebih dari teks opsinya sendiri: tidak
+       ada wacana, tidak ada kode sumber nomor lain, tidak ada kalimat milik
+       nomor berikutnya (aturan 33);
+    h. setiap nomor yang menyebut "paragraf/bacaan/teks/puisi tersebut" punya
+       <div data-field="bacaan"> yang TIDAK kosong (aturan 20 & 33);
+    i. kode sumber di baris pertama pembahasan SAMA PERSIS dengan kode di
+       baris pertama teks_soal untuk nomor yang sama (aturan 34) — bila
+       berbeda, pembahasan itu milik nomor lain dan wajib dilepas;
+    j. setiap baris logika silogisme memakai panah "→" dan tumpukannya
+       punya garis inferensi "—————" sebelum baris kesimpulan (aturan 35).
     Soal yang tidak bisa memenuhi poin-poin itu JANGAN diloloskan diam-diam:
     tulis <div data-field="catatan_admin"> yang menjelaskan apa yang kurang,
     supaya guru tahu persis apa yang harus diperiksa.
+
+31. PENANDA SCAN DILARANG MASUK KELUARAN. Berkas hasil scan membawa perancah
+    yang BUKAN isi buku, dan semuanya wajib dilewati TANPA disalin ke field
+    mana pun (juga ke catatan_admin):
+    - penanda halaman/kolom pemindai: "=== PAGE 3 COL 1 ===",
+      "=== PAGE 8 COL 2 ===", termasuk nomor urut yang ikut terseret di
+      belakangnya ("=== PAGE 7 COL 1 === 31 32. 33.");
+    - watermark/slogan berkas sumber, mis. "BELAJAR MINIMAL," /
+      "HASIL MAKSIMAL" dan varian salah-bacanya ("BELAJAR WINIMAL",
+      "HBSIL MAKSIMAL");
+    - nomor urut kolom sebelah yang lepas jadi baris sendiri: "12.", "13.",
+      "35,", "24, 25 26.";
+    - garis sampah pemisah kolom: "————EEE", "-----", dan sejenisnya.
+    Kalau perancah itu MENIMPA atau memutus isi (mis. satu kata hilang karena
+    tertimpa penanda), salin isi yang terbaca dan tulis catatan_admin —
+    tetapi perancahnya sendiri tetap tidak boleh ikut tersalin.
+
+32. DISIPLIN URUTAN KOLOM (akar dari hampir semua bocor lintas kolom).
+    Baca dokumen KOLOM PER KOLOM: habiskan kolom pertama dari atas ke bawah
+    SEBELUM menyentuh kolom kedua; jangan pernah menyelang-nyeling.
+    - Kalimat yang terpotong di TEPI BAWAH sebuah kolom dilanjutkan di PUNCAK
+      kolom berikutnya, bukan di tengah-tengahnya.
+    - Baris-baris pertama kolom berikutnya TIDAK BOLEH ditempelkan ke opsi,
+      teks soal, atau pembahasan terakhir kolom sebelumnya -- ini persis
+      cara wacana batik masuk ke opsi E dan cara nomor urut kolom sebelah
+      masuk ke pembahasan.
+    - Bila ragu suatu fragmen milik nomor mana, tempelkan fragmen itu ke
+      nomor terdekat yang kalimatnya belum lengkap, DAN tulis catatan_admin
+      "fragmen kolom belum pasti pemiliknya".
+
+33. WACANA TIDAK BOLEH MENGINAP DI OPSI ATAU TEKS_SOAL.
+    Bila di aliran scan terlihat potongan PANJANG (lebih dari kira-kira 500
+    karakter, atau dua paragraf lebih, atau diawali "Teks berikut"/"Perhatikan
+    teks/bacaan") menempel pada sebuah <li> opsi atau pada teks_soal, hampir
+    pasti itu WACANA BERSAMA milik nomor-nomor sesudahnya, bukan bagian dari
+    opsi itu: pindahkan ke <div data-field="bacaan" data-grup="bacaan_N"
+    data-rentang-soal="A-B"> di SETIAP soal yang memakainya (aturan 20), lalu
+    HAPUS dari opsi/teks_soal tempat ia menempel.
+    Satu <li> opsi hanya boleh memuat teks opsi itu sendiri (lazimnya satu
+    kalimat); ia tidak boleh memuat wacana, kode sumber nomor lain
+    ([SNMPTN ...], [UTBK ...]), atau kalimat milik nomor berikutnya.
+
+35. BARIS LOGIKA SILOGISME WAJIB PAKAI PANAH "→" DAN GARIS INFERENSI.
+    Tumpukan penarikan kesimpulan ditulis PERSIS seperti buku, satu baris
+    per implikasi, dengan garis pemisah sebagai baris tersendiri sebelum
+    baris kesimpulan:
+        p → q
+        q → r
+        —————
+        p → r
+    Panah memakai karakter "→" (atau $p \\rightarrow q$ bila perlu LaTeX).
+    DILARANG mengeluarkan bentuk rusak OCR seperti "p-q", "p>q", "pq",
+    "por", "q7rT" — bila sumber tercetak rusak begitu, KEMBALIKAN ke bentuk
+    kanonik di atas. Ini pengecualian tunggal atas aturan "jangan
+    memperbaiki teks": mengembalikan simbol panah yang hilang tidak
+    mengubah makna satu pun pernyataan, hanya membuat guru bisa membaca
+    penarikan kesimpulannya seperti di buku.
+
+34. PEMBAHASAN WAJIB BERSIDIK JARI SAMA DENGAN SOALNYA.
+    Kode sumber (aturan 24) dicetak buku di kepala soal DAN di kepala
+    pembahasan, jadi ia adalah SIDIK JARI yang membuktikan penjelasan itu
+    milik nomor yang mana. Sebelum menempel pembahasan ke sebuah nomor:
+    - bandingkan kodenya; [UTBK2024/TPS/PU/GEL.2/63] di teks_soal WAJIB
+      bertemu kepala pembahasan [UTBK2024/TPS/PU/GEL.2/63] juga;
+    - bila kode pembahasan milik nomor lain (kasus nyata: tiga nomor
+      berurutan mendapat pembahasan yang berputar -- 63 mendapat 69, 65
+      mendapat 63, 69 mendapat 65), itu PEMBAHASAN TERTUKAR: JANGAN
+      ditempel ke soal itu. Cari dulu pembahasan yang sidik jarinya cocok
+      di tempat lain pada sumber; bila ketemu, pakai yang cocok itu;
+    - bila tidak ketemu, tulis penjelasan sendiri sebagai guru yang
+      menerangkan (aturan 27, kunci tetap dari sumber) dan tulis
+      <div data-field="catatan_admin">Pembahasan sumber tertukar antar
+      nomor; penjelasan ditulis ulang dari isi soal.</div>.
+    Sistem menolak otomatis soal yang sidik jari soal dan pembahasannya
+    tidak cocok, jadi menempelkan pembahasan tertukar hanya membuang
+    waktu impor orang lain.
+
+36. TANGGA PEMBAHASAN (WAJIB BERURUT — pembahasan adalah bagian yang paling
+    berbahaya bila dikarang, sebab siswa DAN guru belajar menalar dari sini).
+    Untuk SETIAP nomor, turuni tangga ini BERURUT dan akui anak tangga mana
+    yang kamu pakai:
+    (1) TERCETAK. Sumber memuat pembahasan -> salin apa adanya (aturan 25-27)
+        dan tulis <meta data-field="asal_pembahasan" data-value="tercetak" />.
+    (2) TERCETAK TAPI BERCAMPUR DIAGRAM. Pembahasan tercetak memuat diagram/
+        grafik/sketsa yang tidak bisa dipertahankan sebagai teks -> salin
+        TEKSnya apa adanya, dan untuk diagramnya pakai mekanisme potongan:
+        <div data-field="catatan_admin">DIAGRAM PEMBAHASAN perlu dipotong:
+        halaman <n>, posisi <...>, isi <deskripsi lengkap figur></div>.
+        JANGAN menggambarnya ulang.
+    (3) TIDAK ADA DI SUMBER. Tidak semua soal punya pembahasan, dan itu
+        BUKAN alasan untuk mengarang seolah tercetak. Tulis penjelasan
+        sendiri sebagai guru yang menerangkan langkah demi langkah (kunci
+        tetap dari sumber; bila kunci pun tidak tercetak, kosongkan
+        kunci_jawaban dan set kunci_terverifikasi="false"), lalu WAJIB
+        tandai dua hal:
+          <meta data-field="asal_pembahasan" data-value="penalaran" />
+          baris pertama pembahasan: "PEMBAHASAN PENALARAN AI:"
+        Sistem membaca penanda itu: menampilkan bendera "hasil penalaran AI
+        — periksa dulu" di semua layar dan memasukkan soal ke antrean
+        review tentor. Jangan pernah menyembunyikan perbedaan ini.
+    DILARANG MEMBUAT GAMBAR ATAU SKETSA RASTER dalam bentuk apa pun (base64,
+    SVG bikinan, "ilustrasi") untuk pembahasan maupun soal — sketsa yang
+    salah lebih berbahaya daripada tanpa sketsa, karena ia terlihat
+    meyakinkan. Bila visual benar-benar membantu, satu-satunya bentuk yang
+    diizinkan adalah DESKRIPSI SKETSA untuk guru, di catatan admin:
+      <div data-field="catatan_admin">SKETSA AI: <deskripsi verbal yang bisa
+      diguru gambarkan di papan, mis. "dua lingkaran beririsan, lingkaran
+      luar = A, irisan = B"> — bukan gambar sumber, verifikasi dulu.</div>
+    Deskripsi itu hanya terlihat guru; TIDAK boleh masuk teks_soal, opsi,
+    maupun pembahasan yang dibaca siswa.
+
+37. SATU <li> = SATU PILIHAN, TANPA SAMPAH MARGIN. Tulis isi pilihan MULAI
+    dari kata pertama pilihan itu sendiri. DILARANG menyalin:
+    - huruf pilihan yang tertulis dobel di dalam <li> ("(A) ", "A) ",
+      "1 ©)") -- huruf pilihan sudah diwakili urutan <li>, tidak perlu
+      ditulis lagi di dalam teks;
+    - garbage margin OCR di awal baris ("S ", "yy ", "3 <{ ", "_.§ ",
+      "a ", "x ", "Zz ") yaitu 1-3 karakter lepas yang bukan kata.
+    Contoh SALAH: <li>S (A) Simpulan pasti benar.</li>
+    Contoh BENAR: <li>Simpulan pasti benar.</li>
+
+38. PERLUASAN PENANDA SCAN (melengkapi aturan 31). Selain "=== PAGE n
+    COL m ===", juga DILARANG menyalin: penanda halaman gaya lain
+    ("Page 45", "Page 3it"), kaki halaman bernomor ("34 of 310",
+    "e 46 of 310"), dan watermark buku apa pun beserta varian
+    salah-bacanya ("Wangsit Om Jero", "Belojar Minimal dan Hasil
+    mveksimnal", "Belajar Mintrnal dan Hasil Maksirnal Ps"). Watermark
+    tiap buku BERBEDA-BEDA: kenali sebagai watermark bila teks pendek
+    yang berulang di banyak halaman dan tidak nyambung dengan kalimat
+    soal -- bila ragu, sebutkannya di catatan_admin, jangan di teks soal.
+
+    Contoh kaki halaman yang wajib dilewati: "Page 5 of 282",
+    "Personal use only | scanned by @...", "ebook rapi & halaman lengkap
+    hanya di 08xx-xxxx-xxxx" beserta nomor telepon promo distributor.
+
+39. MATEMATIKA DITULIS SEBAGAI LaTeX, BUKAN TEBAKAN BENTUK. Buku matematika
+    (barisan, aritmatika, statistik) mencetak pecahan bertumpuk, akar,
+    pangkat, dan tabel angka. Aturan:
+    - pecahan bertumpuk -> $\\frac{pembilang}{penyebut}$; pecahan campuran
+      -> $a\\frac{b}{c}$; pangkat -> $x^{n}$; akar -> $\\sqrt{...}$;
+    - barisan angka disalin utuh dengan koma pemisah ("3, 4, 10, 11, 22, ...");
+      tanda "...." akhir barisan WAJIB dipertahankan (itu penanda soal
+      "bilangan berikutnya");
+    - tabel angka/statistik -> <table> di data-field="tabel_soal" dengan
+      kepala kolom utuh; grafik batang/garis yang angka-angkanya tidak
+      terbaca -> catatan_admin "grafik perlu dipotong" + petunjuk potongan,
+      JANGAN mengarang angkanya;
+    - JANGAN menebak angka yang buram: tulis catatan_admin "angka buram di
+      sumber" dan kosongkan kunci_jawaban bila soal jadi tidak bisa
+      dikerjakan.
+
+40. PENANDA WACANA BERNOMOR ADALAH HADIAH, PAKAI. Banyak buku menulis kalimat
+    penanda seperti "Teks berikut digunakan untuk menjawab soal nomor 1
+    sampai dengan 7" atau "Tabel untuk soal nomor 5 dan 6". Bila kalimat
+    itu ada: paragraf/tabel SETELAHnya adalah bacaan bersama; salin ke
+    <div data-field="bacaan" data-grup="bacaan_N" data-rentang-soal="1-7">
+    di SETIAP soal rentang itu, dan kalimat penandanya sendiri TIDAK ikut
+    menjadi isi bacaan maupun teks_soal. Bila tidak ada penanda bernomor
+    tetapi beberapa soal menunjuk "paragraf tersebut", pakai aturan 20/33
+    dengan rentang yang disimpulkan dari nomor-nomor yang menunjuknya.
+    STABILO/SOROTAN WARNA di sumber (kuning, biru, hijau) DIABAIKAN:
+    jangan mengeluarkan markup warna dan jangan menganggap teks tersorot
+    lebih penting; bila sorotan menandai kunci, itu sudah diwakili field
+    kunci_jawaban -- jangan menduplikasinya jadi teks tambahan.
+
+41. PEMBAHASAN SERING BERADA DI HALAMAN TERPISAH. Banyak buku menaruh semua
+    pembahasan di bagian belakang ("PEMBAHASAN" sebagai judul bagian), bukan
+    di bawah soalnya. Pasangkan BERDASARKAN KODE SUMBER (aturan 24/34), bukan
+    berdasarkan urutan halaman atau nomor urut cetak: nomor urut cetak di
+    bagian pembahasan sering mulai dari 1 lagi dan TIDAK sama dengan nomor
+    urut di bagian soal. Bila sebuah kode soal tidak menemukan pembahasan
+    berkode sama di mana pun, turuni tangga pembahasan (aturan 36) -- jangan
+    menempel pembahasan kode lain hanya karena letaknya bersebelahan.
+
+42. LAPORKAN KUALITAS DIRIMU SENDIRI PER BUTIR (WAJIB). Sistem menyortir
+    otomatis berdasar pengakuanmu, jadi berbohong di sini lebih buruk
+    daripada mengaku kurang. Isi atribut data-kualitas pada setiap
+    <article data-gemilang-question ...> dengan SALAH SATU:
+      data-kualitas="ok"               semua terbaca utuh;
+      data-kualitas="buram"           ada angka/teks penting buram tak terbaca;
+      data-kualitas="terpotong"       ada bagian putus yang tak bisa dipulihkan;
+      data-kualitas="tanpa-pembahasan" sumber tanpa pembahasan (tangga 36.3).
+    Butir yang kamu akui "buram"/"terpotong" otomatis DITAHAN sistem untuk
+    review manusia -- itu bukan hukuman, itu melindungi siswa dari soal
+    yang tidak bisa dijawab. Butir tanpa data-kualitas dianggap belum
+    diaudit dan akan diperlakukan lebih ketat oleh reviewer.
+
+43. CONTOH SATU KARTU YANG BENAR (tiru persis struktur & kebersihannya):
+    <article data-gemilang-question data-nomor="4" data-tipe="pg_sederhana"
+             data-paket="1" data-kesulitan="sedang" data-kualitas="ok">
+      <div data-field="materi">Penalaran Deduktif-Induktif</div>
+      <div data-field="teks_soal">
+        <p><strong>[UTBK 2020/TPS/PU/37]</strong></p>
+        <p>Manakah informasi berikut yang dapat memperkuat pernyataan
+        "Mahalnya harga kayu jati tidak menurunkan permintaan kayu jati"?</p>
+      </div>
+      <ol data-field="opsi_jawaban">
+        <li>Kayu jati adalah salah satu komoditas penting bagi negara.</li>
+        <li>Mebel berbahan kayu jati yang dibuat perajin selalu habis terjual.</li>
+      </ol>
+      <meta data-field="kunci_jawaban" data-value="B" />
+      <meta data-field="kunci_terverifikasi" data-value="true" />
+      <div data-field="pembahasan">
+        <p><strong>[UTBK 2020/TPS/PU/37]</strong><br/>
+        Kalimat (4) dan (5) memuat alasan mengapa permintaan kayu jati tetap
+        tinggi meski harganya mahal.<br/>
+        Jawaban: B</p>
+      </div>
+    </article>
+    Perhatikan: tanpa garbage margin, tanpa huruf opsi dobel di dalam <li>,
+    tanpa penanda halaman/watermark, kode sumber di baris pertama teks_soal
+    DAN pembahasan, dan data-kualitas diisi jujur.
 `;
 
 export default ATURAN_OCR_MASTER;
