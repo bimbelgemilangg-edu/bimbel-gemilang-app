@@ -160,7 +160,18 @@ export default function RiwayatPaketPage() {
             <thead>
               <tr style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
                 {['Kode paket', 'Judul', 'Sumber', 'Jenjang', 'Status', 'Dibuka', 'Soal', 'Peserta', 'Jangkauan', 'Aksi'].map((h) => (
-                  <th key={h} style={{ padding: '8px 10px', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th
+                    key={h}
+                    style={{
+                      padding: '8px 10px', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap',
+                      // 🔥 14 Okt 2026 (owner: kolom Aksi "tertutup"): Aksi
+                      // sticky di kanan supaya selalu terlihat walau tabel
+                      // dilebar gulir horizontal.
+                      ...(h === 'Aksi' ? { position: 'sticky', right: 0, background: '#f8fafc', boxShadow: '-6px 0 8px rgba(15,23,42,.08)', zIndex: 2 } : null),
+                    }}
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -189,7 +200,7 @@ export default function RiwayatPaketPage() {
                       <span style={{ color: '#166534', fontSize: 11, fontWeight: 700 }}>{hitungSiswaCocok(p, siswaList)} siswa</span>
                     ) : '—'}
                   </td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap', position: 'sticky', right: 0, background: '#fff', boxShadow: '-6px 0 8px rgba(15,23,42,.08)', zIndex: 1 }}>
                     <button onClick={() => setCetak(p)} style={{ ...gayaTombol('#0e7490', false), marginRight: 6 }}>🖨️ PDF</button>
                     <button onClick={() => bukaEdit(p)} style={{ ...gayaTombol('#334155', false), marginRight: 6 }}>✏️ Edit</button>
                     <button onClick={() => buatSusulan(p)} disabled={busy || p.status === 'draf'} style={gayaTombol('#7c3aed', busy || p.status === 'draf')}>🎟️ Susulan</button>
