@@ -38,7 +38,7 @@ import { useSegarSaatTerlihat } from '../../../utils/useSegarSaatTerlihat';
 // Otomatis bisa tidak pernah muncul ke siswa, tanpa error dan tanpa jejak.
 // Lihat kepala utils/cocokkanTargetPaket.js dan
 // tests/cocokkanTargetPaket.test.mjs.
-import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
+import { saringPaketUntukSiswa } from '../../../utils/cocokkanTargetPaket';
 import { kodePaketTampil } from '../../../utils/kodePaket';
 import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut';
 import TumpukanDokumenTryOut from '../../../components/student/TumpukanDokumenTryOut.jsx';
@@ -74,7 +74,7 @@ export default function DaftarTryOutPage() {
         // Filter target kelas/kategori -- 'Semua' selalu lolos.
         // Lewat cocokkanTargetPaket() supaya toleran terhadap kedua bentuk
         // data (array & string) yang sudah terlanjur ada di Firestore.
-        paketList = paketList.filter((p) => cocokkanTargetPaket(p, siswa).cocok);
+        paketList = saringPaketUntukSiswa(paketList, siswa);
 
         const snapSesi = await getDocs(query(collection(db, 'tryout_sesi'), where('studentId', '==', studentId)));
         const sesiPerPaket = {};

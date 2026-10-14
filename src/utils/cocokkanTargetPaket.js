@@ -123,6 +123,16 @@ function cocokKelasToleran(nilaiTarget, siswa) {
   });
 }
 
+/**
+ * SATU PINTU penyaringan daftar paket untuk seorang siswa (14 Okt 2026):
+ * dipakai Papan Jelajah, Daftar Try Out, dan banner dashboard supaya tidak
+ * ada lagi layar siswa yang lupa menyaring target (insiden paket TKA kelas 9
+ * terlihat oleh kelas 7 di Papan Jelajah).
+ */
+export function saringPaketUntukSiswa(daftar, siswa) {
+  return (Array.isArray(daftar) ? daftar : []).filter((p) => cocokkanTargetPaket(p, siswa).cocok);
+}
+
 /** Berapa banyak siswa yang cocok dengan paket ini (0 = paket tak terlihat oleh siapa pun). */
 export function hitungSiswaCocok(paket, daftarSiswa = []) {
   return (Array.isArray(daftarSiswa) ? daftarSiswa : []).filter((s) => cocokkanTargetPaket(paket, s).cocok).length;
