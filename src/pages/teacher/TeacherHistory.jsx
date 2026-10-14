@@ -54,7 +54,7 @@ const TeacherHistory = () => {
   // awal setelah data diambil dari Firestore -- berapapun nominalnya,
   // gak pernah nyampe ke sisi guru.
   const stripNominal = (docs) => docs.map(d => {
-    const { nominal, ...rest } = d.data();
+    const { _nominal, ...rest } = d.data();
     return { id: d.id, ...rest };
   });
 

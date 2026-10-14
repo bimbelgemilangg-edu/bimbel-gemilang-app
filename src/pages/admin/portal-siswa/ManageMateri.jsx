@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../../../firebase';
 import { 
   collection, addDoc, doc, getDoc, updateDoc, serverTimestamp, 
-  getDocs, deleteDoc, query, where, orderBy, limit, runTransaction
+  getDocs, deleteDoc, query, where, orderBy, limit
 } from "firebase/firestore";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { uploadElearningFile, deleteFile, supabase } from '../../../services/uploadService';
@@ -160,10 +160,11 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
       case 'italic': newText = value.substring(0, start) + `*${selectedText}*` + value.substring(end); break;
       case 'underline': newText = value.substring(0, start) + `<u>${selectedText}</u>` + value.substring(end); break;
       case 'list': newText = value.substring(0, start) + `\n- ${selectedText}` + value.substring(end); break;
-      case 'link':
+      case 'link': {
         const url = prompt('Masukkan URL:', 'https://');
         if (url) newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
         break;
+      }
       default: break;
     }
     
@@ -217,13 +218,13 @@ const ManageMateri = () => {
   const [saving, setSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
+  const [_uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
   
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [savingQuiz, setSavingQuiz] = useState(false);
   
-  const [guruData, setGuruData] = useState(null);
+  const [_guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
   const [kodeMapel, setKodeMapel] = useState('');
   const [guruName, setGuruName] = useState('');
@@ -254,10 +255,10 @@ const ManageMateri = () => {
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
-  const [showStudentPicker, setShowStudentPicker] = useState(false);
+  const [_showStudentPicker, setShowStudentPicker] = useState(false);
   const [sendToSpecificStudents, setSendToSpecificStudents] = useState(false);
   
-  const [stats, setStats] = useState({ totalSiswa: 0, totalJadwal: 0, totalMapel: 0, totalKonten: 0 });
+  const [_stats, setStats] = useState({ totalSiswa: 0, totalJadwal: 0, totalMapel: 0, totalKonten: 0 });
   const [quizData, setQuizData] = useState([]);
   
   const [availableClasses, setAvailableClasses] = useState([]);
@@ -628,7 +629,7 @@ const ManageMateri = () => {
     }))]);
   };
 
-  const getStudentInitials = (name) => {
+  const _getStudentInitials = (name) => {
     if (!name) return '?';
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
   };
@@ -735,7 +736,7 @@ const ManageMateri = () => {
     setSaving(false);
   };
 
-  const formatFileSize = (bytes) => {
+  const _formatFileSize = (bytes) => {
     if (!bytes) return '0 B';
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';

@@ -41,12 +41,12 @@ const PendaftaranTentor = () => {
     bidangDiminati: '', // 🔥 bebas ketik -- bisa mapel spesifik (kalau Tentor) atau bidang lain (kalau Admin/Support)
   });
 
-  const [cvFile, setCvFile] = useState(null);
+  const [_cvFile, setCvFile] = useState(null);
   const [cvUploadedUrl, setCvUploadedUrl] = useState('');
   const [cvFileName, setCvFileName] = useState('');
   const [uploadingCv, setUploadingCv] = useState(false);
 
-  const [fotoFile, setFotoFile] = useState(null);
+  const [_fotoFile, setFotoFile] = useState(null);
   const [fotoPreviewUrl, setFotoPreviewUrl] = useState('');
   const [fotoUploadedUrl, setFotoUploadedUrl] = useState('');
   const [uploadingFoto, setUploadingFoto] = useState(false);

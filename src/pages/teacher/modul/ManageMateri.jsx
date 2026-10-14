@@ -67,14 +67,14 @@ const renderMathInHtml = (html) => {
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
-    } catch (e) {
+    } catch (_e) {
       return match;
     }
   });
   result = result.replace(/\$([^$\n]+?)\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false });
-    } catch (e) {
+    } catch (_e) {
       return match;
     }
   });
@@ -83,7 +83,7 @@ const renderMathInHtml = (html) => {
     (match) => {
       try {
         return katex.renderToString(match, { throwOnError: false, displayMode: true });
-      } catch (e) {
+      } catch (_e) {
         return match;
       }
     }
@@ -245,10 +245,11 @@ const SimpleEditor = ({ value, onChange, placeholder }) => {
       case 'italic': newText = value.substring(0, start) + `*${selectedText}*` + value.substring(end); break;
       case 'underline': newText = value.substring(0, start) + `<u>${selectedText}</u>` + value.substring(end); break;
       case 'list': newText = value.substring(0, start) + `\n- ${selectedText}` + value.substring(end); break;
-      case 'link':
+      case 'link': {
         const url = prompt('Masukkan URL:', 'https://');
         if (url) newText = value.substring(0, start) + `[${selectedText}](${url})` + value.substring(end);
         break;
+      }
       default: break;
     }
     
@@ -487,7 +488,7 @@ const ManageMateri = () => {
   const alreadyNotifiedRef = useRef(!!editId);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
+  const [_uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
   
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showAIGenerate, setShowAIGenerate] = useState(false);
@@ -496,7 +497,7 @@ const ManageMateri = () => {
   // 🔥 BARU: toggle modal "Lihat seperti Siswa"
   const [showStudentPreview, setShowStudentPreview] = useState(false);
   
-  const [guruData, setGuruData] = useState(null);
+  const [_guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
   const [kodeMapel, setKodeMapel] = useState('');
   const [guruName, setGuruName] = useState('');
@@ -538,7 +539,7 @@ const ManageMateri = () => {
   const [showStudentPicker, setShowStudentPicker] = useState(false);
   const [sendToSpecificStudents, setSendToSpecificStudents] = useState(false);
   
-  const [stats, setStats] = useState({ totalSiswa: 0, totalJadwal: 0, totalMapel: 0, totalKonten: 0 });
+  const [_stats, setStats] = useState({ totalSiswa: 0, totalJadwal: 0, totalMapel: 0, totalKonten: 0 });
   const [quizData, setQuizData] = useState([]);
   
   const [availableClasses, setAvailableClasses] = useState([]);
@@ -636,7 +637,7 @@ const ManageMateri = () => {
     }
   }, []);
 
-  const fetchStudentsFromSchedules = useCallback(async (teacherName) => {
+  const _fetchStudentsFromSchedules = useCallback(async (teacherName) => {
     if (!teacherName) return [];
     
     try {
@@ -699,7 +700,7 @@ const ManageMateri = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const { teacherName, kodeMapel: kodeMapelVal } = await fetchTeacherData();
+        const { _teacherName, kodeMapel: _kodeMapelVal } = await fetchTeacherData();
 
         // 🔥 FIX BUG PENTING: sebelumnya daftar siswa buat "kirim ke siswa
         // tertentu" diambil lewat fetchStudentsFromSchedules() — yang cuma
@@ -1052,7 +1053,7 @@ const ManageMateri = () => {
     }))]);
   };
 
-  const getStudentInitials = (name) => {
+  const _getStudentInitials = (name) => {
     if (!name) return '?';
     return name.split(' ').map(w => w[0]?.toUpperCase()).slice(0, 2).join('');
   };
@@ -1313,7 +1314,7 @@ const ManageMateri = () => {
     }
   };
 
-  const formatFileSize = (bytes) => {
+  const _formatFileSize = (bytes) => {
     if (!bytes) return '0 B';
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -2261,7 +2262,7 @@ const ManageMateri = () => {
                 // 🔥 Simpan konten yang udah diisi (diam-diam, gak ada alert)
                 // sebelum lanjut ke Langkah 3, biar gak ilang kalau guru
                 // refresh/nutup tab di tengah jalan.
-                try { await autoSaveModulSilently(); } catch (e) { /* modulId pasti udah ada di titik ini, harusnya gak gagal */ }
+                try { await autoSaveModulSilently(); } catch (_e) { /* modulId pasti udah ada di titik ini, harusnya gak gagal */ }
                 setStep(3);
               }}
               style={{ ...styles.btnFooterSave, marginLeft: 'auto' }}

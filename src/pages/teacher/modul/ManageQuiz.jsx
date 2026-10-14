@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { collection, addDoc, doc, getDoc, getDocs, updateDoc, deleteDoc, serverTimestamp, query, orderBy, where } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, getDocs, updateDoc, deleteDoc, serverTimestamp, query, where } from "firebase/firestore";
 import { 
   Plus, Trash2, CheckCircle, ArrowLeft, Save, FileText, X, 
   Calculator, Target, BookOpen, Users, Send, Settings, 
@@ -62,10 +61,10 @@ const renderMath = (text) => {
   return parts.map((part, i) => {
     if (part.startsWith('$$') && part.endsWith('$$')) {
       try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
-      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+      catch (_e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     } else if (part.startsWith('$') && part.endsWith('$')) {
       try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
-      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+      catch (_e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     }
     // 🔥 FIX: bagian non-math -- prompt AI sekarang udah dilarang pakai
     // markdown, TAPI ini lapis jaga-jaga kedua kalau suatu saat masih
@@ -305,7 +304,7 @@ const generateQuizAnswerKeyPDF = async (quizTitle, quizSubject, questions, quizM
         try {
           doc.addImage(img.dataUrl, 'PNG', marginX, y, w, h);
           y += h + 4;
-        } catch (e) {
+        } catch (_e) {
           doc.setFontSize(8);
           doc.setTextColor(148, 163, 184);
           doc.text('[Gambar gagal ditempel - buka link di editor kuis]', marginX, y);
@@ -506,7 +505,7 @@ const ManageQuiz = () => {
   // sama proses simpan.
   const [pdfDownloading, setPdfDownloading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [_uploadProgress, setUploadProgress] = useState(0);
   const [uploadTarget, setUploadTarget] = useState(null);
   
   // 🔥 MODE KUIS
@@ -712,7 +711,7 @@ const ManageQuiz = () => {
             localStorage.removeItem(draftKey);
           }
         }
-      } catch (e) { /* abaikan draft rusak */ }
+      } catch (_e) { /* abaikan draft rusak */ }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

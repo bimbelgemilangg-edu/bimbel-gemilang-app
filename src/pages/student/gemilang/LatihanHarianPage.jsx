@@ -40,16 +40,16 @@ const renderMath = (text) => {
   const parts = String(text).split(/(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\))/g);
   return parts.map((part, i) => {
     if (part.startsWith('$$') && part.endsWith('$$')) {
-      try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+      try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (_e) { return <span key={i}>{part}</span>; }
     }
     if (part.startsWith('$') && part.endsWith('$')) {
-      try { return <InlineMath key={i} math={part.slice(1, -1)} />; } catch (e) { return <span key={i}>{part}</span>; }
+      try { return <InlineMath key={i} math={part.slice(1, -1)} />; } catch (_e) { return <span key={i}>{part}</span>; }
     }
     if (part.startsWith('\\[') && part.endsWith('\\]')) {
-      try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+      try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch (_e) { return <span key={i}>{part}</span>; }
     }
     if (part.startsWith('\\(') && part.endsWith('\\)')) {
-      try { return <InlineMath key={i} math={part.slice(2, -2)} />; } catch (e) { return <span key={i}>{part}</span>; }
+      try { return <InlineMath key={i} math={part.slice(2, -2)} />; } catch (_e) { return <span key={i}>{part}</span>; }
     }
     return <React.Fragment key={i}>{part}</React.Fragment>;
   });
@@ -184,7 +184,7 @@ function hitungStreakBaru(lastActiveDateStr, hariIniStr) {
 // Snapchat streak). Efeknya psikologis: makin panjang streak, makin
 // "sayang" kalau diputus (loss aversion) -- dan ada milestone yang
 // kerasa levelnya naik, bukan cuma angka doang.
-function tingkatApi(streak) {
+function _tingkatApi(streak) {
   if (streak >= 30) return { emoji: '🔥', ukuran: 26, label: 'Legendaris', warna: '#a855f7' };
   if (streak >= 14) return { emoji: '🔥', ukuran: 23, label: 'Membara', warna: '#dc2626' };
   if (streak >= 7) return { emoji: '🔥', ukuran: 20, label: 'Menyala', warna: '#ea580c' };
@@ -262,7 +262,7 @@ function buatKalenderStreak(streak, lastActiveDateStr, hariIniStr, jumlahHari = 
 // Deteksi "streak BARU AJA putus" -- dipanggil sekali pas data
 // progres pertama kali dimuat, buat kasih tau siswa lewat notifikasi
 // 😢 (bukan cuma diam-diam ke-reset tanpa penjelasan).
-function cekStreakBaruPutus(streakLama, lastActiveDateStr, hariIniStr) {
+function _cekStreakBaruPutus(streakLama, lastActiveDateStr, hariIniStr) {
   if (!lastActiveDateStr || streakLama <= 0) return false;
   const lastMs = new Date(lastActiveDateStr).getTime();
   const iniMs = new Date(hariIniStr).getTime();
@@ -326,7 +326,7 @@ export default function LatihanHarianPage() {
   // dari server dipakai buat progress bar "X/target soal hari ini".
   const [targetHarianSaatIni, setTargetHarianSaatIni] = useState(null);
   const [soalHariIniCountSaatIni, setSoalHariIniCountSaatIni] = useState(0);
-  const [sedangSimpanTarget, setSedangSimpanTarget] = useState(false);
+  const [_sedangSimpanTarget, setSedangSimpanTarget] = useState(false);
 
   const [tahap, setTahap] = useState('memuat'); // memuat | pilih-mapel | pilih-mode | mengerjakan | selesai | jatah-habis
   const [semuaSoal, setSemuaSoal] = useState([]);
@@ -561,7 +561,7 @@ export default function LatihanHarianPage() {
 
   // 🔥 BARU: begitu mapel dipilih, hitung daftar materi/bab HANYA dari
   // mapel itu (bukan campuran semua mapel seperti sebelumnya).
-  const pilihMapel = useCallback((mapel) => {
+  const _pilihMapel = useCallback((mapel) => {
     setMapelDipilih(mapel);
     const soalMapelIni = semuaSoal.filter((s) => (s.mataPelajaran || 'Lainnya') === mapel);
     setDaftarMateri(hitungPenguasaanPerMateri(soalMapelIni, progressMap).sort((a, b) => (a.persentase ?? -1) - (b.persentase ?? -1)));
@@ -783,7 +783,7 @@ export default function LatihanHarianPage() {
   // ---------------- SELESAI SESI: XP + STREAK + JATAH HARIAN ----------------
   // Simpan pilihan target komitmen harian siswa -- sekali pilih, bisa
   // diganti kapan aja lewat tombol kecil di strip streak.
-  const pilihTargetHarian = useCallback(async (nilai) => {
+  const _pilihTargetHarian = useCallback(async (nilai) => {
     setSedangSimpanTarget(true);
     try {
       await setDoc(doc(db, 'siswa_progress', studentId), { targetHarian: nilai }, { merge: true });
