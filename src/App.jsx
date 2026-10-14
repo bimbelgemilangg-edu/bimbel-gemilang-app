@@ -124,6 +124,7 @@ import DashboardAnalisis from './pages/admin/DashboardAnalisis';
 import TerbitkanKuisPage from './pages/admin/bank-soal/TerbitkanKuisPage';
 import TerbitkanTryOutPage from './pages/admin/bank-soal/TerbitkanTryOutPage';
 import HasilTryOutAdminPage from './pages/admin/bank-soal/HasilTryOutAdminPage';
+import AnalitikBelajarPage from './pages/admin/analitik/AnalitikBelajarPage';
 import PilihTampilanTryOut from './pages/student/tryout/PilihTampilanTryOut';
 import TryOutView from './pages/student/tryout/TryOutView';
 import HasilKuisAdminPage from './pages/admin/bank-soal/HasilKuisAdminPage';
@@ -732,6 +733,12 @@ function App() {
         <Route
           path="/admin/bank-soal/hasil-tryout"
           element={<AdminRoute><HasilTryOutAdminPage /></AdminRoute>}
+        />
+        {/* 📊 14 Okt 2026 (owner): dashboard analitik belajar TKA/UTBK —
+            kecepatan, kekuatan/kelemahan, progres per siswa. */}
+        <Route
+          path="/admin/analitik-belajar"
+          element={<AdminRoute><AnalitikBelajarPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/hasil"
