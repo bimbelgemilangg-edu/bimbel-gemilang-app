@@ -1,0 +1,284 @@
+// src/pages/admin/buku/ImporBukuHtmlPage.jsx
+// ============================================================
+// 📚 IMPOR BUKU HTML (fitur baru, permintaan owner 14 Okt 2026):
+// buku Gemilang hasil scan yang sudah owner konversi jadi HTML
+// (pdf2html: satu gambar per halaman) masuk sistem SEKALI jalan:
+//   1. inventaris berkas (jumlah halaman gambar, ukuran, kelayakan),
+//   2. ekstraksi MATERI per kelompok halaman lewat api/konversiModulScan
+//      (AI vision rantai gratis) -> bab skema buku digital,
+//   3. simpan DRAF buku interaktif (buku_digital + subkoleksi bab) supaya
+//      materi bisa jadi materi online / ebook / tinggal cetak,
+//   4. opsi: soal ujiPemahaman hasil ekstraksi masuk bank_soal per bab
+//      (identitas mapel/jenjang/materi lengkap) -> langsung bisa dipanggil
+//      mesin try out otomatis, rakit tentor, kuis, maupun cetak.
+// Kunci AI TIDAK ada di klien: endpoint memakai env server (rantai provider
+// gratis). Klien hanya mengirim gambar halaman + identitas.
+// ============================================================
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { db } from '../../../firebase';
+import { collection, getDocs, addDoc, setDoc, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { ArrowLeft, BookUp, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import {
+  inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
+} from '../../../utils/pecahBukuHtml';
+
+const JENJANG = ['SD', 'SMP', 'SMA/MA', 'SMK'];
+
+const st = {
+  kartu: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16, marginBottom: 14 },
+  label: { display: 'block', fontSize: 11, fontWeight: 800, color: '#475569', marginBottom: 4 },
+  input: { width: '100%', padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, boxSizing: 'border-box' },
+  tombol: (mati) => ({
+    background: mati ? '#cbd5e1' : '#5B2ECC', color: '#fff', border: 'none', borderRadius: 10,
+    padding: '10px 16px', fontSize: 13, fontWeight: 800, cursor: mati ? 'not-allowed' : 'pointer',
+    display: 'inline-flex', alignItems: 'center', gap: 8,
+  }),
+  log: (ok) => ({ fontSize: 11.5, color: ok ? '#166534' : '#991b1b', padding: '3px 0' }),
+};
+
+export default function ImporBukuHtmlPage() {
+  const navigate = useNavigate();
+  const [namaFile, setNamaFile] = useState('');
+  const [inv, setInv] = useState(null);
+  const [gambar, setGambar] = useState([]);
+  const [identitas, setIdentitas] = useState({
+    mapel: 'Matematika', jenjang: 'SMA/MA', kelas: '10', materi: '', judulBuku: '',
+  });
+  const [targetBuku, setTargetBuku] = useState('baru');
+  const [bukuId, setBukuId] = useState('');
+  const [daftarBuku, setDaftarBuku] = useState([]);
+  const [ikutBank, setIkutBank] = useState(true);
+  const [sibuk, setSibuk] = useState(false);
+  const [log, setLog] = useState([]);
+  const [pratinjau, setPratinjau] = useState(null); // {babs:[{grup,bab,provider}], butir:[]}
+
+  const tambahLog = (teks, ok = true) => setLog((l) => [...l, { teks, ok }]);
+
+  const bacaBerkas = async (f) => {
+    const teks = await f.text();
+    const gambarHalaman = ekstrakGambarHalamanDariHtml(teks);
+    setNamaFile(f.name);
+    setGambar(gambarHalaman);
+    setInv(inventarisBukuHtml(teks));
+    setPratinjau(null);
+    setLog([]);
+  };
+
+  const muatDaftarBuku = async () => {
+    if (daftarBuku.length) return;
+    const snap = await getDocs(collection(db, 'buku_digital'));
+    setDaftarBuku(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  };
+
+  const prosesAi = async () => {
+    if (sibuk || gambar.length === 0) return;
+    setSibuk(true); setLog([]); setPratinjau(null);
+    const grup = kelompokkanHalamanUntukAi(gambar);
+    const babs = [];
+    for (const g of grup) {
+      try {
+        tambahLog(`Memanggil AI untuk halaman ${g.halamanMulai}-${g.halamanSelesai}…`);
+        const r = await fetch('/api/konversiModulScan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            images: g.images,
+            placeholders: [],
+            meta: {
+              judul: `${identitas.materi || identitas.mapel} — halaman ${g.halamanMulai}-${g.halamanSelesai}`,
+              mapel: identitas.mapel, jenjang: identitas.jenjang,
+            },
+          }),
+        });
+        const j = await r.json();
+        if (!j?.success || !j.bab) throw new Error(j?.error || 'respons tidak valid');
+        babs.push({ grup: g, bab: j.bab, provider: j.provider });
+        tambahLog(`✓ halaman ${g.halamanMulai}-${g.halamanSelesai}: ${j.bab.sections?.length || 0} seksi, ${j.bab.ujiPemahaman?.length || 0} soal (via ${j.provider})`);
+      } catch (e) {
+        tambahLog(`✗ halaman ${g.halamanMulai}-${g.halamanSelesai}: ${e?.message || e}`, false);
+      }
+    }
+    const butir = [];
+    babs.forEach((b) => {
+      (b.bab.ujiPemahaman || []).forEach((item) => {
+        const butirSatu = butirBankDariUjiPemahaman(item, {
+          mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
+          materi: identitas.materi, sumber: namaFile,
+        }, b.grup.halamanMulai);
+        if (butirSatu) butir.push({ ...butirSatu, dipilih: true, asal: `hal ${b.grup.halamanMulai}-${b.grup.halamanSelesai}` });
+      });
+    });
+    setPratinjau({ babs, butir });
+    tambahLog(`Pratinjau siap: ${babs.length} bab, ${butir.length} soal pg siap masuk bank (multi/bs dilewati untuk input manual).`);
+    setSibuk(false);
+  };
+
+  const simpan = async () => {
+    if (sibuk || !pratinjau) return;
+    setSibuk(true);
+    try {
+      let idBuku = bukuId;
+      if (targetBuku === 'baru' || !idBuku) {
+        const ref = await addDoc(collection(db, 'buku_digital'), {
+          judul: identitas.judulBuku || `${identitas.mapel} — ${identitas.materi || 'Buku impor'}`,
+          mapel: identitas.mapel,
+          jenjang: identitas.jenjang,
+          kelas: identitas.kelas,
+          deskripsi: `Impor buku HTML ${namaFile} (scan -> AI). Materi draf, tinjau sebelum publish.`,
+          sumber: namaFile,
+          status: 'draft',
+          createdAt: serverTimestamp(),
+        });
+        idBuku = ref.id;
+        tambahLog(`✓ Buku digital draf dibuat (${idBuku}).`);
+      }
+      for (let i = 0; i < pratinjau.babs.length; i += 1) {
+        const b = pratinjau.babs[i];
+        const ref = doc(collection(db, 'buku_digital', idBuku, 'bab'));
+        await setDoc(ref, {
+          ...b.bab,
+          judul: b.bab.judul || `${identitas.materi || identitas.mapel} bagian ${i + 1}`,
+          urutan: i + 1,
+          tipe: 'teks',
+          status: 'draft',
+          sumberImpor: 'buku-html',
+          halamanSumber: [b.grup.halamanMulai, b.grup.halamanSelesai],
+          providerAi: b.provider || '',
+          updatedAt: serverTimestamp(),
+        });
+        tambahLog(`✓ Bab ${i + 1} (hal ${b.grup.halamanMulai}-${b.grup.halamanSelesai}) tersimpan sebagai draf.`);
+      }
+      if (ikutBank) {
+        const dipilih = pratinjau.butir.filter((b) => b.dipilih);
+        for (let i = 0; i < dipilih.length; i += 400) {
+          const batch = writeBatch(db);
+          dipilih.slice(i, i + 400).forEach((b) => {
+            const { dipilih: _d, asal: _a, ...butir } = b;
+            batch.set(doc(collection(db, 'bank_soal')), { ...butir, createdAt: serverTimestamp(), createdBy: 'impor-buku-html' });
+          });
+          await batch.commit();
+        }
+        tambahLog(`✓ ${pratinjau.butir.filter((b) => b.dipilih).length} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
+      }
+      tambahLog('SELESAI. Tinjau draf buku di Admin → Buku; stok soal baru terlihat di Kesiapan Stok & filter materi.');
+    } catch (e) {
+      tambahLog(`✗ Gagal menyimpan: ${e?.message || e}`, false);
+    } finally {
+      setSibuk(false);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px' }}>
+      <button onClick={() => navigate('/admin/buku')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 14, fontSize: 13 }}>
+        <ArrowLeft size={16} /> Ke Manajer Buku
+      </button>
+      <h1 style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 21, fontWeight: 800, color: '#1e293b', margin: '0 0 6px' }}>
+        <BookUp size={22} color="#5B2ECC" /> Impor Buku HTML (scan → materi + soal)
+      </h1>
+      <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 16px', lineHeight: 1.6 }}>
+        Untuk buku Gemilang hasil scan yang sudah dikonversi jadi HTML (satu gambar per halaman).
+        Materi tersimpan sebagai draf buku interaktif (ebook/materi online/cetak); soal pemantapan
+        masuk bank soal per bab — langsung bisa dipanggil mesin try out otomatis, rakit tentor, kuis, dan cetak.
+      </p>
+
+      <div style={st.kartu}>
+        <div style={st.label}>1 · BERKAS BUKU HTML</div>
+        <input type="file" accept=".html,.htm" onChange={(e) => e.target.files?.[0] && bacaBerkas(e.target.files[0])} />
+        {inv && (
+          <div style={{ marginTop: 10, fontSize: 12, color: '#374151', lineHeight: 1.7 }}>
+            <div><b>{namaFile}</b> · {(inv.ukuranByte / 1024 / 1024).toFixed(1)} MB · {inv.jumlahGambarHalaman} halaman gambar · teks layer: {inv.adaTeksLayer ? 'ada' : 'tidak (murni scan)'}</div>
+            <div style={{ color: inv.saran === 'OK' ? '#166534' : '#92400e' }}>ℹ️ {inv.saran}</div>
+          </div>
+        )}
+      </div>
+
+      <div style={st.kartu}>
+        <div style={st.label}>2 · IDENTITAS BUKU (wajib lengkap supaya soal tidak nyasar)</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <label style={st.label}>Mata pelajaran
+            <input style={st.input} value={identitas.mapel} onChange={(e) => setIdentitas({ ...identitas, mapel: e.target.value })} />
+          </label>
+          <label style={st.label}>Jenjang
+            <select style={st.input} value={identitas.jenjang} onChange={(e) => setIdentitas({ ...identitas, jenjang: e.target.value })}>
+              {JENJANG.map((j) => <option key={j}>{j}</option>)}
+            </select>
+          </label>
+          <label style={st.label}>Kelas
+            <input style={st.input} value={identitas.kelas} onChange={(e) => setIdentitas({ ...identitas, kelas: e.target.value })} />
+          </label>
+          <label style={st.label}>Materi / bab buku
+            <input style={st.input} placeholder="mis. Persamaan Kuadrat" value={identitas.materi} onChange={(e) => setIdentitas({ ...identitas, materi: e.target.value })} />
+          </label>
+          <label style={st.label}>Judul buku (sumber)
+            <input style={st.input} placeholder="mis. Buku Gemilang Vol.1" value={identitas.judulBuku} onChange={(e) => setIdentitas({ ...identitas, judulBuku: e.target.value })} />
+          </label>
+          <label style={st.label}>Simpan materi ke
+            <select style={st.input} value={targetBuku} onChange={(e) => { setTargetBuku(e.target.value); if (e.target.value === 'ada') muatDaftarBuku(); }}>
+              <option value="baru">Buku digital baru (draf)</option>
+              <option value="ada">Bab buku yang sudah ada</option>
+            </select>
+          </label>
+          {targetBuku === 'ada' && (
+            <label style={{ ...st.label, gridColumn: 'span 2' }}>Pilih buku
+              <select style={st.input} value={bukuId} onChange={(e) => setBukuId(e.target.value)}>
+                <option value="">— pilih —</option>
+                {daftarBuku.map((b) => <option key={b.id} value={b.id}>{b.judul}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12.5, color: '#374151', marginTop: 12 }}>
+          <input type="checkbox" checked={ikutBank} onChange={(e) => setIkutBank(e.target.checked)} />
+          soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
+        </label>
+        <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+          <button style={st.tombol(sibuk || gambar.length === 0 || !identitas.materi)} disabled={sibuk || gambar.length === 0 || !identitas.materi} onClick={prosesAi}>
+            {sibuk ? <Loader2 size={15} className="animate-spin" /> : <BookUp size={15} />} Ekstrak materi & soal (AI per 10 halaman)
+          </button>
+          {pratinjau && (
+            <button style={st.tombol(sibuk)} disabled={sibuk} onClick={simpan}>
+              <CheckCircle2 size={15} /> Simpan draf buku{ikutBank ? ' + bank soal' : ''}
+            </button>
+          )}
+        </div>
+        {!identitas.materi && gambar.length > 0 && (
+          <div style={{ ...st.log(false), marginTop: 8 }}><AlertTriangle size={12} style={{ verticalAlign: -2 }} /> Isi materi/bab dulu — identitas ini yang membuat soal terpanggil per bab dan tidak nyasar.</div>
+        )}
+      </div>
+
+      {pratinjau && (
+        <div style={st.kartu}>
+          <div style={st.label}>3 · PRATINJAU HASIL EKSTRAKSI</div>
+          {pratinjau.babs.map((b, i) => (
+            <div key={i} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: '8px 10px', marginBottom: 8, fontSize: 12 }}>
+              <b>Bab {i + 1}:</b> {b.bab.judul || `${identitas.materi} bagian ${i + 1}`} · hal {b.grup.halamanMulai}-{b.grup.halamanSelesai} · {b.bab.sections?.length || 0} seksi · {b.bab.ujiPemahaman?.length || 0} soal · via {b.provider}
+            </div>
+          ))}
+          {pratinjau.butir.length > 0 && (
+            <details style={{ fontSize: 12, color: '#374151' }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Tinjau {pratinjau.butir.length} soal yang akan masuk bank (klik untuk membuka)</summary>
+              {pratinjau.butir.map((b, i) => (
+                <label key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 0', borderTop: '1px solid #f8fafc' }}>
+                  <input type="checkbox" checked={b.dipilih} onChange={(e) => {
+                    const next = { ...pratinjau, butir: pratinjau.butir.map((x, xi) => (xi === i ? { ...x, dipilih: e.target.checked } : x)) };
+                    setPratinjau(next);
+                  }} />
+                  <span><b>[{b.asal}]</b> {b.soal.slice(0, 140)} <i style={{ color: '#6b7280' }}>· kunci {b.kunciJawaban}</i></span>
+                </label>
+              ))}
+            </details>
+          )}
+        </div>
+      )}
+
+      {log.length > 0 && (
+        <div style={st.kartu}>
+          <div style={st.label}>LOG PROSES</div>
+          {log.map((l, i) => <div key={i} style={st.log(l.ok)}>{l.teks}</div>)}
+        </div>
+      )}
+    </div>
+  );
+}
