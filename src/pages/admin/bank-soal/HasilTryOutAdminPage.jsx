@@ -10,13 +10,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
+import { createPortal } from 'react-dom';
 import { saringPaketTerbit } from '../../../utils/statusTryOutPaket';
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
 } from 'lucide-react';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
+import { validasiNilaiSusulan, bangunSesiSusulan, SUMBER_NILAI_SUSULAN } from '../../../utils/catatNilaiSusulan';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
 // 🔥 BARU (2026-10-08): urutan reset sesi (tarik XP -> hapus sesi ->
 // izin nembus deadline) tinggal SATU kali di layanan ini, dipakai juga
@@ -198,6 +200,16 @@ export default function HasilTryOutAdminPage() {
   //      sesuai jadwal asli TIDAK ikut kesenggol / TIDAK dibukakan
   //      deadline-nya, tetap adil.
   const [sedangIzinkanUlang, setSedangIzinkanUlang] = useState(null);
+  // 🎟️ NILAI SUSULAN OFFLINE (owner 14 Okt 2026): pengganti tombol Susulan
+  // di Riwayat Paket yang DIHAPUS karena menggandakan paket. Siswa tertinggal
+  // menerima naskah PDF; admin mencatat nilai kertasnya di sini supaya masuk
+  // riwayat, analitik, dan XP seperti peserta online — berpenanda jujur.
+  const [susulanBuka, setSusulanBuka] = useState(false);
+  const [susulanSiswa, setSusulanSiswa] = useState('');
+  const [susulanSkor, setSusulanSkor] = useState('');
+  const [susulanCatatan, setSusulanCatatan] = useState('');
+  const [busySusulan, setBusySusulan] = useState(false);
+  const [pesanSusulan, setPesanSusulan] = useState('');
 
   const izinkanUlangSatuSiswa = useCallback(async (item) => {
     if (!item.sesi) return;
@@ -373,6 +385,32 @@ export default function HasilTryOutAdminPage() {
     setSedangHitungUlang(null);
   }, [paketTerpilih]);
 
+  const simpanSusulan = async () => {
+    if (!paketTerpilih || busySusulan) return;
+    const sudahAda = baris.some((b) => (b.student.studentId || b.student.id) === susulanSiswa && b.sesi);
+    const jumlahSoal = paketTerpilih.totalSoal || (paketTerpilih.daftarSoal || []).length;
+    const v = validasiNilaiSusulan({ skorPersen: susulanSkor, sudahAdaSesi: sudahAda, jumlahSoal });
+    if (!v.boleh) { setPesanSusulan(v.alasan.join(' ')); return; }
+    setBusySusulan(true);
+    try {
+      await addDoc(collection(db, 'tryout_sesi'), bangunSesiSusulan({
+        paketId: paketTerpilih.id,
+        studentId: susulanSiswa,
+        skorPersen: Number(susulanSkor),
+        jumlahSoal,
+        catatan: susulanCatatan,
+        dicatatOleh: localStorage.getItem('adminName') || 'admin',
+        padaMs: Date.now(),
+      }));
+      setSusulanBuka(false);
+      bukaHasil(paketTerpilih);
+    } catch (e) {
+      setPesanSusulan(`❌ Gagal menyimpan: ${e?.message || e}`);
+    } finally {
+      setBusySusulan(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px', fontFamily: 'sans-serif' }}>
       <button onClick={() => navigate('/admin/bank-soal')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', marginBottom: 16, fontSize: 13 }}>
@@ -381,6 +419,20 @@ export default function HasilTryOutAdminPage() {
       <h1 style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 22, fontWeight: 800, color: '#1e293b', margin: '0 0 16px' }}>
         <Trophy size={24} color="#d97706" /> Hasil & Rangking Try Out
       </h1>
+
+      {paketTerpilih && (
+        <div style={{ marginBottom: 12 }}>
+          <button
+            onClick={() => { setSusulanBuka(true); setSusulanSiswa(''); setSusulanSkor(''); setSusulanCatatan(''); setPesanSusulan(''); }}
+            style={{ padding: '9px 14px', borderRadius: 10, border: '1px solid #c4b5fd', background: '#f5f3ff', color: '#5b21b6', fontWeight: 800, fontSize: 12.5, cursor: 'pointer' }}
+          >
+            🎟️ Catat Nilai Susulan (PDF offline)
+          </button>
+          <span style={{ fontSize: 11, color: '#6b7280', marginLeft: 8 }}>
+            Untuk siswa tertinggal: kirim naskah PDF, lalu catat nilai kertasnya di sini — masuk riwayat, analitik & XP seperti peserta online.
+          </span>
+        </div>
+      )}
 
       {loadingPaket ? (
         <Loader2 size={18} className="spin" />
@@ -486,7 +538,14 @@ export default function HasilTryOutAdminPage() {
                                 : <XCircle size={14} color="#cbd5e1" style={{ display: 'inline' }} />}
                             </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 700 }}>
-                              {selesai ? `${b.sesi.totalSkorPersen}%` : '-'}
+                              {selesai ? (
+                                <>
+                                  {b.sesi.totalSkorPersen}%
+                                  {b.sesi.sumberNilai === SUMBER_NILAI_SUSULAN ? (
+                                    <span title={`Nilai susulan offline${b.sesi.catatanSusulan ? `: ${b.sesi.catatanSusulan}` : ''} · dicatat ${b.sesi.dicatatOleh || 'admin'}`} style={{ marginLeft: 4, background: '#f5f3ff', border: '1px solid #c4b5fd', color: '#5b21b6', borderRadius: 999, padding: '1px 7px', fontSize: 10, fontWeight: 800 }}>🎟️ susulan</span>
+                                  ) : null}
+                                </>
+                              ) : '-'}
                             </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               {selesai ? b.sesi.xpFinal : '-'}
@@ -696,6 +755,60 @@ export default function HasilTryOutAdminPage() {
           </div>
         </div>
       )}
+      {susulanBuka && createPortal(
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: '#fff', borderRadius: 14, width: 'min(480px, 94vw)', maxHeight: '90vh', overflow: 'auto', padding: 18, boxShadow: '0 10px 40px rgba(0,0,0,.3)' }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>🎟️ Nilai susulan — {paketTerpilih?.judul || ''}</div>
+            <div style={{ fontSize: 11.5, color: '#6b7280', margin: '6px 0 12px', lineHeight: 1.55 }}>
+              Nilai kertas disimpan sebagai sesi SELESAI berpenanda «susulan PDF offline»:
+              masuk riwayat paket, analitik, dan XP siswa — jujur berbeda dari pengerjaan online.
+            </div>
+            <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 10 }}>
+              SISWA YANG BELUM MENGERJAKAN
+              <select
+                value={susulanSiswa}
+                onChange={(e) => setSusulanSiswa(e.target.value)}
+                style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5, background: '#fff' }}
+              >
+                <option value="">— pilih siswa —</option>
+                {baris.filter((b) => !b.sesi).map((b) => (
+                  <option key={b.student.id} value={b.student.studentId || b.student.id}>
+                    {b.student.nama} ({b.student.kelasSekolah || '-'})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 10 }}>
+              NILAI KERTAS (0-100)
+              <input
+                type="number" min="0" max="100" value={susulanSkor}
+                onChange={(e) => setSusulanSkor(e.target.value)}
+                style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 13 }}
+              />
+            </label>
+            <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 12 }}>
+              CATATAN (opsional)
+              <input
+                value={susulanCatatan}
+                onChange={(e) => setSusulanCatatan(e.target.value)}
+                placeholder="mis. dikerjakan susulan di ruang tentor, 20 Okt"
+                style={{ display: 'block', width: '100%', marginTop: 4, padding: '9px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12.5 }}
+              />
+            </label>
+            {pesanSusulan ? (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 8, padding: '8px 10px', fontSize: 11.5, marginBottom: 10 }}>{pesanSusulan}</div>
+            ) : null}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setSusulanBuka(false)} style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 9, padding: '9px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Batal</button>
+              <button onClick={simpanSusulan} disabled={busySusulan} style={{ border: 'none', background: busySusulan ? '#c4b5fd' : '#5b21b6', color: '#fff', borderRadius: 9, padding: '9px 16px', fontSize: 12, fontWeight: 800, cursor: busySusulan ? 'not-allowed' : 'pointer' }}>
+                {busySusulan ? 'Menyimpan…' : 'Simpan nilai & XP'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+
     </div>
   );
 }
