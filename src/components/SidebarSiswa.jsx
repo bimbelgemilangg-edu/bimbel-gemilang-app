@@ -1,10 +1,8 @@
 // src/components/SidebarSiswa.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  LogOut, X, Home, BarChart2, BookOpen, Wallet, 
-  Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck,
-  Hash, Library, Target
+import {
+  LogOut, X, Home, BarChart2, BookOpen, Wallet, Trophy, TrendingUp, GraduationCap, Calendar, ClipboardCheck, Hash, Library, Target, Rocket, Flame,
 } from 'lucide-react';
 import { useProfilSiswa } from '../utils/profilSiswa';
 import { useDataTargetKampus } from '../services/dataTargetKampus';
@@ -69,6 +67,12 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         // MATERI v2 (mockup Gemilang Biru) -- route /siswa/belajar.
         // Menu lama (E-Learning, Buku Digital via dashboard) tetap ada
         // sampai switch Fase 5; lihat docs/RENCANA-ROMBAK-MATERI.md.
+        // 🔥 14 Okt 2026 (owner): menu Try Out & Latihan Harian AI sebelumnya
+        // TIDAK ADA di sidebar padahal rute & halamannya hidup — siswa hanya
+        // bisa masuk lewat kartu dashboard. Visi super app: latihan harian
+        // ala Duolingo (AI) adalah pintu latihan TKA→UTBK sehari-hari.
+        { id: 'tryout', label: 'Try Out & Misi', icon: <Rocket size={18} />, path: '/siswa/tryout', color: '#f97316' },
+        { id: 'latihan-harian', label: 'Latihan Harian AI', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626', badge: 'AI' },
         { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0', badge: 'BARU' },
         { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },

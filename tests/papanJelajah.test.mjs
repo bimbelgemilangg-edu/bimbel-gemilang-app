@@ -130,3 +130,47 @@ test('potongUntukQuery: chunk <= 30, buang kosong & duplikat, jaga urutan', () =
   assert.deepEqual(potongUntukQuery([]), []);
   assert.deepEqual(potongUntukQuery(['x', 'y'], 1), [['x'], ['y']]);
 });
+
+// ------------------------------------------------------------
+// Streak harian & ikon bola & kunci tanggal (rombakan 14 Okt 2026)
+// ------------------------------------------------------------
+import { hitungStreak, kunciTanggal, bolaMascotUntukMapel } from '../src/utils/papanJelajah.js';
+
+const HARI = 86400000;
+// Bebas-TZ: semua timestamp dibangun dari komponen LOKAL, karena
+// kunciTanggal memang memakai kalender lokal siswa.
+const KINI = new Date(2026, 9, 14, 10, 0, 0).getTime();
+
+test('streak: hari ini aktif + 2 hari sebelumnya = 3 beruntun & aman', () => {
+  const s = hitungStreak([KINI - 2 * HARI, KINI - HARI, KINI - 3600_000], KINI);
+  assert.equal(s.jumlah, 3);
+  assert.equal(s.amanHariIni, true);
+});
+
+test('streak: belum aktif hari ini = grace kemarin, ditandai belum aman', () => {
+  const s = hitungStreak([KINI - HARI, KINI - 2 * HARI], KINI);
+  assert.equal(s.jumlah, 2);
+  assert.equal(s.amanHariIni, false);
+});
+
+test('streak: putus di tengah dihitung dari ujung terdekat saja', () => {
+  const s = hitungStreak([KINI, KINI - HARI, KINI - 5 * HARI], KINI);
+  assert.equal(s.jumlah, 2);
+});
+
+test('streak: tanpa sesi = 0 dan tidak crash', () => {
+  assert.deepEqual(hitungStreak([], KINI), { jumlah: 0, amanHariIni: false });
+  assert.deepEqual(hitungStreak([null, NaN], KINI), { jumlah: 0, amanHariIni: false });
+});
+
+test('kunciTanggal stabil untuk kalender lokal', () => {
+  assert.equal(kunciTanggal(KINI), '2026-10-14');
+  assert.equal(kunciTanggal(new Date(2026, 0, 1, 0, 30).getTime()), '2026-01-01');
+  assert.equal(kunciTanggal(new Date(2026, 0, 1, 23, 59).getTime()), '2026-01-01');
+});
+
+test('bola mapel: 10 mapel inti punya berkas, lainnya null (fallback bola warna)', () => {
+  assert.equal(bolaMascotUntukMapel('Matematika'), '/mascot/bola-matematika.png');
+  assert.equal(bolaMascotUntukMapel('Bahasa Indonesia Tingkat Lanjut'), '/mascot/bola-bahasa-indonesia.png');
+  assert.equal(bolaMascotUntukMapel('PJOK'), null);
+});
