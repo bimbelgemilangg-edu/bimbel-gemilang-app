@@ -6,9 +6,11 @@
 //   - baris bendera "popular languages" DIGANTI KALENDER BULANAN:
 //     lingkaran tanggal yang bisa digeser; siswa MEMILIH TANGGAL, bukan
 //     membuka arsip — misi lama & hasilnya tetap hidup di tanggalnya;
+//   - kartu streak api/beruntun TIDAK ada di sini: itu milik menu
+//     Latihan Harian (keputusan owner 14 Okt 2026 sore).
 //   - daftar misi di BAWAH tanggal terpilih: satu kartu = satu test
 //     (subtes), ikon BOLA 3D per mapel (astronot dinilai "kurang pas");
-//   - tanggal kosong menawarkan LATIHAN HARIAN AI (/siswa/latihan-harian)
+//   - tanggal kosong menawarkan LATIHAN HARIAN (/siswa/latihan-harian)
 //     karena visi owner: latihan harian ala Duolingo untuk TKA→UTBK.
 // Tab "Papan Analitik" (pengganti leaderboard) TIDAK berubah perilaku.
 // Hidup di balik sakelar fitur 'papanJelajah' (default MATI).
@@ -18,11 +20,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, documentId, getDocs, query, where } from 'firebase/firestore';
 import {
-  Flame, CalendarDays, Sparkles, Target, Timer, Rocket, Gem,
+  CalendarDays, Sparkles, Target, Timer, Rocket, Gem,
   ChevronLeft, ChevronRight, Lock, Play, CheckCircle2, Hourglass,
 } from 'lucide-react';
 import {
-  hitungAnalitik, potongUntukQuery, bolaMascotUntukMapel, kunciTanggal, hitungStreak,
+  hitungAnalitik, potongUntukQuery, bolaMascotUntukMapel, kunciTanggal,
 } from '../../../utils/papanJelajah.js';
 import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
@@ -232,11 +234,6 @@ export default function PapanJelajahPage({ studentId = '' }) {
     return map;
   }, [paket, sesiPerPaket, kini]);
 
-  const streak = useMemo(() => hitungStreak(
-    sesi.filter((s) => s.status === 'selesai').map((s) => ms(s.waktuSelesai)).filter(Boolean),
-    kini,
-  ), [sesi, kini]);
-
   const xp = useMemo(() => sesi.reduce((a, s) => a + (Number(s.xpFinal) || Number(s.xpMentah) || 0), 0), [sesi]);
   const level = 1 + Math.floor(xp / 100);
 
@@ -280,12 +277,6 @@ export default function PapanJelajahPage({ studentId = '' }) {
   if (muat) return <div style={{ padding: 30, color: '#9aa3d6' }}>🛰️ Menyiapkan papan jelajah…</div>;
 
   const misiTanggalIni = dokumenPerTanggal.get(tanggal) || [];
-  const tujuhHari = Array.from({ length: 7 }, (_, i) => {
-    const t = kini - (6 - i) * 86400000;
-    const key = kunciTanggal(t);
-    const aktif = sesi.some((s) => s.status === 'selesai' && kunciTanggal(ms(s.waktuSelesai)) === key);
-    return { key, tanggal: new Date(t).getDate(), aktif, hariIni: key === kunciTanggal(kini) };
-  });
   const inisial = String(nama || 'S').trim().split(/\s+/).map((x) => x[0]).slice(0, 2).join('').toUpperCase();
 
   return (
@@ -313,44 +304,6 @@ export default function PapanJelajahPage({ studentId = '' }) {
 
       {tab === 'misi' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 14 }}>
-          {/* ---------- kartu streak ala Duolingo ---------- */}
-          <div style={{ background: 'linear-gradient(135deg,#f97316,#ea580c)', borderRadius: 20, padding: 16, boxShadow: '0 14px 40px rgba(249,115,22,.35)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-              <div style={{ fontWeight: 900, fontSize: 17 }}>
-                <Flame size={19} style={{ verticalAlign: -4 }} /> {streak.jumlah} hari beruntun!
-              </div>
-              <span style={{ background: 'rgba(255,255,255,.2)', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 800 }}>
-                {streak.amanHariIni ? '🔥 aman hari ini' : '⚠️ belum aman hari ini'}
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              {tujuhHari.map((h) => (
-                <button
-                  key={h.key}
-                  type="button"
-                  onClick={() => { setTanggal(h.key); setBulan({ y: new Date(h.key).getFullYear(), m: new Date(h.key).getMonth() }); }}
-                  title={h.key}
-                  style={{
-                    flex: 1, borderRadius: 14, padding: '9px 0', cursor: 'pointer',
-                    background: h.aktif ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.12)',
-                    border: h.hariIni ? '2px solid #fff' : '2px solid transparent',
-                    color: '#fff', textAlign: 'center',
-                  }}
-                >
-                  <div style={{ fontSize: 17 }}>{h.aktif ? '🔥' : '·'}</div>
-                  <div style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>{h.tanggal}</div>
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => { setTanggal(kunciTanggal(kini)); setBulan({ y: new Date(kini).getFullYear(), m: new Date(kini).getMonth() }); }}
-              style={{ marginTop: 12, width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', background: '#fff', color: '#ea580c', fontWeight: 900, fontSize: 13, cursor: 'pointer' }}
-            >
-              {streak.amanHariIni ? 'Lihat misi hari ini' : 'Kerjakan misi hari ini biar api tidak padam!'}
-            </button>
-          </div>
-
           {/* ---------- kalender bulanian: geser tanggal ---------- */}
           <div style={st.kartu}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
@@ -397,16 +350,16 @@ export default function PapanJelajahPage({ studentId = '' }) {
             </div>
             {misiTanggalIni.length === 0 ? (
               <div style={st.kartu}>
-                <div style={{ fontWeight: 700, fontSize: 13.5 }}>🌙 Tidak ada misi try out pada tanggal ini.</div>
+                <div style={{ fontWeight: 700, fontSize: 13.5 }}>🌙 Belum ada try out untuk kamu.</div>
                 <p style={st.deskripsi}>
-                  Try out bersama biasanya dibuka setiap Sabtu. Untuk latihan harian ala Duolingo
-                  (soal dibuat AI, melatih TKA sampai UTBK), masuk ke Latihan Harian:
+                  Yuk kerjakan misi harianmu! Latihan singkat setiap hari
+                  melatih kemampuanmu dari TKA sampai UTBK.
                 </p>
                 <Link
                   to="/siswa/latihan-harian"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '10px 16px', borderRadius: 12, background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontWeight: 900, fontSize: 13, textDecoration: 'none' }}
                 >
-                  <Rocket size={14} /> Latihan Harian AI
+                  <Rocket size={14} /> Latihan Harian
                 </Link>
               </div>
             ) : misiTanggalIni.map((d) => (
