@@ -1,8 +1,8 @@
 // PilihTampilanTryOut.jsx
-// Gerbang sakelar fitur: bila 'papanJelajah' dinyalakan untuk siswa ini
-// (settings/global_config.fiturPilot), pakai PapanJelajahPage baru;
-// selain itu (termasuk saat konfigurasi gagal dibaca) pakai tampilan lama.
-// DEFAULT MATI = try out Sabtu 17 Okt di produksi tidak boleh berubah rasa.
+// Sakelar fitur: 'papanJelajah' sejak keputusan owner 14 Okt 2026 adalah
+// FITUR DEFAULT NYALA untuk SEMUA siswa (sakelar hanya rem darurat:
+// settings/global_config.fiturPilot.papanJelajah.aktif === false mematikan).
+// Siswa tanpa konfigurasi apa pun tetap melihat PapanJelajahPage baru.
 import React, { useEffect, useState } from 'react';
 import { fiturAktifUntuk } from '../../../services/sakelarFiturService';
 import DaftarTryOutPage from './DaftarTryOutPage';

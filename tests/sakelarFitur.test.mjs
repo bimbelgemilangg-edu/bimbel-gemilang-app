@@ -222,3 +222,25 @@ uji('INVARIAN: hasil bentukKonfigurasiFitur selalu bisa diputuskan tanpa error',
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');
+
+// ------------------------------------------------------------
+// Fitur DEFAULT NYALA (keputusan owner 14 Okt 2026: rollout semua siswa)
+// ------------------------------------------------------------
+uji('papanJelajah NYALA tanpa konfigurasi apa pun (rollout semua siswa)', () => {
+  const r = putuskanAksesFitur(null, 'papanJelajah', { studentId: 'STD-1', kelasSekolah: '7' });
+  assert.equal(r.aktif, true);
+  const r2 = putuskanAksesFitur({}, 'papanJelajah', { studentId: 'STD-1' });
+  assert.equal(r2.aktif, true);
+  const r3 = putuskanAksesFitur({ fiturLain: { aktif: true, mode: 'semua' } }, 'papanJelajah', { studentId: 'STD-1' });
+  assert.equal(r3.aktif, true, 'tak terdaftar = nyala karena default nyala');
+});
+
+uji('REM DARURAT: cfg.aktif=false mematikan fitur default nyala', () => {
+  const r = putuskanAksesFitur({ papanJelajah: { aktif: false } }, 'papanJelajah', { studentId: 'STD-1' });
+  assert.equal(r.aktif, false);
+});
+
+uji('INVARIAN lama utuh: fitur di luar daftar default tetap MATI tanpa konfigurasi', () => {
+  const r = putuskanAksesFitur(null, 'fiturBaruLain', { studentId: 'STD-1' });
+  assert.equal(r.aktif, false);
+});
