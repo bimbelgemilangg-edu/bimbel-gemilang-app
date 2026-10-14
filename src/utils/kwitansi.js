@@ -113,7 +113,7 @@ export const cetakLewatIframe = (htmlIsi, judulDokumen = 'Cetak', opsi = {}) => 
 <title>${judulDokumen}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: ${kertas === KERTAS_KWITANSI ? '10px' : '24px'}; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: ${kertas === KERTAS_KWITANSI ? '0' : '24px'}; }
   ${cssAturanPage(kertas)}
   @media print { body { padding: 0; } .no-print { display: none !important; } }
   .tombol-cetak { position: fixed; top: 10px; right: 10px; padding: 10px 18px;

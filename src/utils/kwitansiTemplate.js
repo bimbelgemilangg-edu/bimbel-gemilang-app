@@ -5,9 +5,12 @@
 // bentuk dokumen resmi (ukuran kertas, ada/tidaknya garis) adalah
 // keputusan bisnis yang harus dijaga test, bukan sekadar tampilan.
 //
-// KEBIJAKAN CETAK (keputusan owner, 11 Okt 2026):
-//   • Kwitansi dicetak di kertas SETENGAH A4 — A4 dipotong melintang
-//     (210mm x 148,5mm). Ukuran halaman @page mengikuti kertas itu.
+// KEBIJAKAN CETAK (keputusan owner, 11 Okt 2026; DIPERJELAS 14 Okt 2026):
+//   • Kwitansi dicetak SETENGAH A4 POTRET TEGAK: halaman @page tetap
+//     A4 PORTRAIT (dulu size 210x148.5mm membuat Chrome memutar isi 90°
+//     saat kertasnya A4 potret = "miring"); isi kwitansi dikunci di
+//     SETENGAH ATAS halaman (tinggi 148,5mm) supaya sesudah dicetak
+//     kertas tinggal dipotong melintang jadi dua.
 //   • TANPA GARIS HITAM (bingkai double, <hr>, kotak JUMLAH bergaris):
 //     hasil potongan A4 terlihat kotor dan boros tinta. Blok penting
 //     cukup diberi latar abu sangat muda.
@@ -18,7 +21,9 @@ import { terbilang, rp, tanggalPanjang } from './uangTeks.js';
 // Kwitansi dicetak di kertas SETENGAH A4 (A4 dipotong melintang = 210mm x 148,5mm),
 // jadi ukuran halaman ikut setengah A4 dan tanpa garis hitam (hemat tinta & rapi dipotong).
 export const KERTAS_A4 = { size: 'A4', margin: '14mm' };
-export const KERTAS_KWITANSI = { size: '210mm 148.5mm', margin: '8mm' };
+// Halaman A4 POTRET tegak; tinggi blok kwitansi = setengah A4 (148,5mm).
+export const KERTAS_KWITANSI = { size: 'A4 portrait', margin: '0mm' };
+export const TINGGI_SETENGGAH_A4_MM = 148.5;
 
 export const cssAturanPage = (kertas = KERTAS_A4) =>
   `@page { size: ${kertas.size}; margin: ${kertas.margin}; }`;
@@ -32,6 +37,7 @@ export const htmlKwitansi = (data) => {
   // Catatan cetak: tanpa garis/bingkai hitam (permintaan owner — kertas setengah A4
   // dipotong manual, garis hitam membuat hasil potong terlihat kotor & boros tinta).
   return `
+<div style="width: 210mm; height: ${TINGGI_SETENGGAH_A4_MM}mm; padding: 8mm 10mm; box-sizing: border-box; overflow: hidden; page-break-after: always;">
 <div style="max-width: 100%; margin: 0 auto; padding: 2mm 1mm;">
   <table style="width:100%; border-collapse: collapse;">
     <tr>
@@ -106,6 +112,7 @@ export const htmlKwitansi = (data) => {
     Dokumen ini dicetak otomatis oleh sistem Bimbel Gemilang dan sah sebagai bukti pembayaran.
     Simpan kwitansi ini baik-baik. Nomor kwitansi tercatat permanen di sistem (bisa diverifikasi ke admin).
   </div>
+</div>
 </div>`;
 };
 
