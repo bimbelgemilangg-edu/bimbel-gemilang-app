@@ -27,10 +27,13 @@ const contoh = {
   penandaTangan: 'Admin Keuangan',
 };
 
-test('kertas kwitansi = setengah A4 (210mm x 148,5mm), dokumen lain tetap A4', () => {
-  assert.equal(KERTAS_KWITANSI.size, '210mm 148.5mm');
+test('kertas kwitansi = A4 POTRET tegak, isi terkunci setengah atas (148,5mm)', () => {
+  // 14 Okt 2026: size lanskap 210x148.5mm membuat Chrome memutar isi 90°
+  // saat kertas A4 potret ("miring"). Halaman wajib potret tegak; setengah
+  // A4 didapat dari tinggi blok isi, bukan dari size halaman.
+  assert.equal(KERTAS_KWITANSI.size, 'A4 portrait');
   assert.equal(KERTAS_A4.size, 'A4');
-  assert.match(cssAturanPage(KERTAS_KWITANSI), /@page \{ size: 210mm 148\.5mm; margin: 8mm; \}/);
+  assert.match(cssAturanPage(KERTAS_KWITANSI), /@page \{ size: A4 portrait; margin: 0mm; \}/);
   assert.match(cssAturanPage(), /@page \{ size: A4; margin: 14mm; \}/);
 });
 
@@ -59,4 +62,11 @@ test('tipografi muat di setengah A4: tidak ada teks lebih dari 17px', () => {
   const ukuran = [...html.matchAll(/font-size:\s*([\d.]+)px/gi)].map((m) => parseFloat(m[1]));
   assert.ok(ukuran.length > 5, 'font-size tidak terbaca — template berubah?');
   assert.ok(Math.max(...ukuran) <= 17, `ada teks terlalu besar untuk setengah A4: ${Math.max(...ukuran)}px`);
+});
+
+test('blok kwitansi terkunci di setengah atas halaman & putus halaman sesudahnya', () => {
+  const html = htmlKwitansi({ nomor: 'KWT-202610-001', jumlah: 150000, diterimaDari: 'X', keperluan: 'Y', metode: 'Tunai', tanggal: '2026-10-14' });
+  assert.match(html, /height: 148\.5mm/, 'tinggi blok = setengah A4');
+  assert.match(html, /page-break-after: always/, 'satu kwitansi = satu setengah halaman');
+  assert.match(html, /overflow: hidden/, 'isi tidak boleh meluber ke setengah bawah');
 });
