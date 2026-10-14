@@ -347,19 +347,10 @@ export function hitungSlotMingguIni(hariDalamMinggu, jamBuka, _durasiMenit) {
   return slots;
 }
 
-export function ringkasSoalUntukAdmin(daftarSoal) {
-  const byMapel = {};
-  const list = daftarSoal || [];
-  for (let i = 0; i < list.length; i += 1) {
-    const s = list[i];
-    const m = s.mapel || s.mataPelajaran || 'Lainnya';
-    byMapel[m] = (byMapel[m] || 0) + 1;
-  }
-  return {
-    total: list.length,
-    perMapel: byMapel,
-  };
-}
+// Dipindah ke util murni supaya teruji di Node polos (lihat berkasnya).
+import { ringkasSoalUntukAdmin } from './ringkasSoalAdmin.js';
+
+export { ringkasSoalUntukAdmin };
 
 /**
  * Siapkan DRAF paket (status: draf) - siswa BELUM melihat.
