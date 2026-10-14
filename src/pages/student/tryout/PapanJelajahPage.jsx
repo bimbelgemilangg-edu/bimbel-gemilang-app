@@ -1,110 +1,154 @@
 // PapanJelajahPage.jsx
 // ============================================================
-// 🚀 Tampilan BARU daftar try out siswa (permintaan owner 13 Okt 2026):
-// tema luar angkasa, kartu pos maskot astronot pegang papan mapel (sprite
-// 6x5 dari asset postcard owner), hanya misi mendatang/hari itu yang tampil
-// besar, arsip rapi terlipat, dan tab "Papan Analitik" pengganti leaderboard
-// (tren pekan, tempo, evaluasi subtes, tips) khusus TKA/UTBK.
-// Hidup hanya lewat sakelar fitur 'papanJelajah' (default MATI) sehingga
-// try out Sabtu 17 Okt di produksi tidak terganggu sama sekali.
+// 🎯 ROMBAK TOTAL 14 Okt 2026 (permintaan owner, referensi Duolingo):
+//   - profil + level + gem XP di atas;
+//   - kartu STREAK oranye dengan api 7 hari (ala Duolingo streak);
+//   - baris bendera "popular languages" DIGANTI KALENDER BULANAN:
+//     lingkaran tanggal yang bisa digeser; siswa MEMILIH TANGGAL, bukan
+//     membuka arsip — misi lama & hasilnya tetap hidup di tanggalnya;
+//   - daftar misi di BAWAH tanggal terpilih: satu kartu = satu test
+//     (subtes), ikon BOLA 3D per mapel (astronot dinilai "kurang pas");
+//   - tanggal kosong menawarkan LATIHAN HARIAN AI (/siswa/latihan-harian)
+//     karena visi owner: latihan harian ala Duolingo untuk TKA→UTBK.
+// Tab "Papan Analitik" (pengganti leaderboard) TIDAK berubah perilaku.
+// Hidup di balik sakelar fitur 'papanJelajah' (default MATI).
 // ============================================================
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, documentId, getDocs, query, where } from 'firebase/firestore';
-import { Rocket, CalendarDays, ChevronDown, Sparkles, Timer, Target } from 'lucide-react';
-import { posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, potongUntukQuery } from '../../../utils/papanJelajah.js';
+import {
+  Flame, CalendarDays, Sparkles, Target, Timer, Rocket, Gem,
+  ChevronLeft, ChevronRight, Lock, Play, CheckCircle2, Hourglass,
+} from 'lucide-react';
+import {
+  hitungAnalitik, potongUntukQuery, bolaMascotUntukMapel, kunciTanggal, hitungStreak,
+} from '../../../utils/papanJelajah.js';
+import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
 
-const SPRITE = '/mascot/mascot-mapel.png';
 const ms = (v) => (typeof v?.toDate === 'function' ? v.toDate().getTime() : v ? new Date(v).getTime() : null);
-const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-const tgl = (m) => (m ? `${new Date(m).getDate()} ${BULAN[new Date(m).getMonth()]}` : '-');
-// Jam dibaca SATU KALI saat modul dimuat: aturan eslint react-hooks/purity
-// melarang Date.now() dipanggil di dalam render (hasilnya bisa berubah-ubah
-// antar render). Untuk pengelompokan misi, jam saat halaman dibuka cukup.
-
+const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const BULAN_P = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const tglPendek = (m) => (m ? `${new Date(m).getDate()} ${BULAN_P[new Date(m).getMonth()]}` : '-');
+// Jam dibaca SATU KALI saat modul dimuat (eslint react-hooks/purity).
 const WAKTU_MUAT = Date.now();
+
+const WARNA_MAPEL = {
+  matematika: '#F59E0B', 'bahasa indonesia': '#2563EB', 'bahasa inggris': '#0EA5E9',
+  kimia: '#EC4899', fisika: '#4F46E5', biologi: '#22C55E', sosiologi: '#8B5CF6',
+  geografi: '#0284C7', sejarah: '#D97706', ekonomi: '#06B6D4',
+};
+const KUNCI_WARNA = Object.keys(WARNA_MAPEL).sort((a, b) => b.length - a.length);
+const warnaMapel = (nama) => {
+  const h = String(nama || '').toLowerCase();
+  const k = KUNCI_WARNA.find((x) => h.includes(x));
+  return k ? WARNA_MAPEL[k] : '#7C3AED';
+};
 
 const st = {
   bungkus: {
-    minHeight: '100%', padding: '20px 16px 60px', color: '#eef1ff',
+    minHeight: '100%', padding: '18px 14px 60px', color: '#eef1ff', borderRadius: 18,
     background: 'radial-gradient(1200px 500px at 80% -10%, rgba(124,58,237,.35), transparent 60%), radial-gradient(900px 420px at 10% 0%, rgba(249,115,22,.22), transparent 55%), linear-gradient(180deg,#0b1030 0%,#141a45 55%,#0b1030 100%)',
-    backgroundImage: 'radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.7), transparent), radial-gradient(1.5px 1.5px at 70% 12%, rgba(255,255,255,.55), transparent), radial-gradient(1.5px 1.5px at 45% 70%, rgba(255,255,255,.4), transparent), radial-gradient(1200px 500px at 80% -10%, rgba(124,58,237,.35), transparent 60%), linear-gradient(180deg,#0b1030 0%,#141a45 55%,#0b1030 100%)',
-    borderRadius: 18,
   },
-  judul: { margin: 0, fontSize: 26, fontWeight: 800, letterSpacing: .4 },
-  sub: { margin: '4px 0 16px', color: '#9aa3d6', fontSize: 13 },
+  kartu: {
+    background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.14)', borderRadius: 16,
+    padding: 14, backdropFilter: 'blur(6px)',
+  },
   tab: (aktif) => ({
     padding: '8px 18px', borderRadius: 999, border: '1px solid rgba(255,255,255,.18)', cursor: 'pointer',
     background: aktif ? 'linear-gradient(90deg,#7c3aed,#f97316)' : 'transparent', color: '#fff', fontWeight: 700, fontSize: 13,
   }),
-  kartu: {
-    background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.14)', borderRadius: 16,
-    padding: 14, display: 'flex', gap: 14, alignItems: 'center', backdropFilter: 'blur(6px)',
-  },
-  mascot: (pos, ukuran = 74) => (pos ? {
-    width: ukuran, height: ukuran, borderRadius: 14, flex: '0 0 auto',
-    backgroundImage: `url(${SPRITE})`, backgroundSize: '600% 500%', backgroundPosition: `${pos.xPct}% ${pos.yPct}%`,
-    backgroundRepeat: 'no-repeat', border: '1px solid rgba(255,255,255,.25)', boxShadow: '0 6px 18px rgba(0,0,0,.35)',
-  } : {
-    width: ukuran, height: ukuran, borderRadius: 14, flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'linear-gradient(135deg,#312e81,#7c3aed)', fontSize: ukuran / 2.4, border: '1px solid rgba(255,255,255,.25)',
-  }),
-  lingkaranTanggal: {
-    width: 78, height: 78, borderRadius: '50%', flex: '0 0 auto', display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center', background: 'conic-gradient(#f97316,#7c3aed,#f97316)', padding: 3,
-  },
-  lingkaranDalam: {
-    width: '100%', height: '100%', borderRadius: '50%', background: '#10163c', display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center',
-  },
   chip: (warna = '#7c3aed') => ({
-    display: 'inline-block', padding: '3px 10px', borderRadius: 999, fontSize: 11.5, fontWeight: 700,
+    display: 'inline-block', padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700,
     background: `${warna}22`, color: '#fff', border: `1px solid ${warna}88`, marginRight: 6,
   }),
-  tombol: {
-    marginTop: 10, padding: '10px 18px', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 800,
-    background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontSize: 14,
-  },
   deskripsi: { color: '#c3c9ef', fontSize: 12.5, lineHeight: 1.55, margin: '6px 0 0' },
 };
 
-function KartuMisi({ paket, sesi, onBuka, besar = false, kini = WAKTU_MUAT }) {
-  const buka = ms(paket.waktuBuka);
-  const pos = posisiMascotUntukMapel((paket.komposisi || [])[0]?.mapel || paket.judul || '');
-  const berlangsung = buka !== null && kini >= buka && kini <= (ms(paket.waktuTutup) ?? kini);
-  const deskripsi = paket.deskripsi || buatDeskripsiPaket({
-    jenjang: paket.jenjangTemplate, jenisUjian: paket.jenisUjian, komposisi: paket.komposisi,
-    durasiMenit: paket.durasiTotalMenit, jumlahSubtes: (paket.subtes || []).length, tampilkanPembahasan: paket.tampilkanPembahasan,
-  });
+function BolaMapel({ mapel, ukuran = 68 }) {
+  const src = bolaMascotUntukMapel(mapel);
+  const warna = warnaMapel(mapel);
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={`Bola ${mapel}`}
+        style={{ width: ukuran, height: ukuran, objectFit: 'contain', flex: '0 0 auto', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,.35))' }}
+      />
+    );
+  }
+  const inisial = String(mapel || '?').trim().slice(0, 2).toUpperCase();
   return (
-    <div style={{ ...st.kartu, flexDirection: besar ? 'row' : 'row', boxShadow: besar ? '0 14px 40px rgba(124,58,237,.35)' : undefined }}>
-      {besar ? (
-        <div style={st.lingkaranTanggal}>
-          <div style={st.lingkaranDalam}>
-            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{buka ? new Date(buka).getDate() : '?'}</span>
-            <span style={{ fontSize: 11, color: '#ffb27d', fontWeight: 800 }}>{buka ? BULAN[new Date(buka).getMonth()].toUpperCase() : ''}</span>
-          </div>
-        </div>
-      ) : (
-        <div style={st.mascot(pos)}>{pos ? null : '🚀'}<span style={{ display: pos ? 'none' : undefined }} /></div>
-      )}
+    <div
+      aria-label={`Bola ${mapel}`}
+      style={{
+        width: ukuran, height: ukuran, borderRadius: '50%', flex: '0 0 auto',
+        background: `radial-gradient(circle at 32% 28%, #ffffffcc 0 12%, ${warna} 45%, ${warna}88 100%)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontWeight: 900, fontSize: ukuran / 3.2, boxShadow: '0 4px 10px rgba(0,0,0,.35)',
+      }}
+    >
+      {inisial}
+    </div>
+  );
+}
+
+function KartuMisiBola({ dok, onBuka }) {
+  const warna = warnaMapel(dok.mapel);
+  const selesai = dok.statusPaket === 'selesai';
+  const labelTombol = dok.bisaDibuka
+    ? (dok.stamp === 'SEDANG DIKERJAKAN' ? 'LANJUTKAN TEST' : 'MULAI TEST')
+    : selesai ? 'LIHAT HASIL' : dok.terkunci ? 'TERKUNCI' : dok.stamp === 'TERJADWAL' ? `DIBUKA ${tglPendek(dok.waktuBuka)}` : dok.stamp;
+  const bisaKlik = dok.bisaDibuka || selesai;
+  return (
+    <div style={{
+      background: `${warna}1f`, border: `1px solid ${warna}66`, borderRadius: 18, padding: 14,
+      display: 'flex', gap: 12, alignItems: 'center', opacity: dok.terkunci ? 0.62 : 1,
+    }}
+    >
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 800, fontSize: besar ? 17 : 14.5 }}>{paket.judul}</div>
-        <div style={{ marginTop: 5 }}>
-          <span style={st.chip(berlangsung ? '#16a34a' : '#f97316')}>{berlangsung ? 'SEDANG BERLANGSUNG' : `Dibuka ${tgl(buka)}`}</span>
-          <span style={st.chip('#7c3aed')}>{paket.totalSoal} soal</span>
-          <span style={st.chip('#0ea5e9')}>{(paket.subtes || []).length} subtes</span>
-          {sesi ? <span style={st.chip('#16a34a')}>skor {Math.round(sesi.totalSkorPersen || 0)}%</span> : null}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          {dok.urutan ? (
+            <span style={{ background: warna, color: '#fff', borderRadius: 6, padding: '2px 8px', fontSize: 10.5, fontWeight: 900 }}>
+              TEST {dok.urutan.ke}/{dok.urutan.dari}
+            </span>
+          ) : null}
+          <span style={{
+            border: `2px solid ${selesai ? '#4ade80' : dok.terkunci ? '#f87171' : '#fbbf24'}`,
+            color: selesai ? '#4ade80' : dok.terkunci ? '#f87171' : '#fbbf24',
+            borderRadius: 4, padding: '1px 7px', fontSize: 10, fontWeight: 900, letterSpacing: 1, transform: 'rotate(-2deg)',
+          }}
+          >
+            {dok.stamp}
+          </span>
         </div>
-        <p style={st.deskripsi}>{deskripsi}</p>
-        {besar ? (
-          <button type="button" style={st.tombol} onClick={() => onBuka(paket.id)}>
-            {berlangsung ? '🚀 Mulai misi sekarang' : '🗓️ Ingatkan saya hari-H'}
-          </button>
+        <div style={{ fontWeight: 900, fontSize: 16, marginTop: 6 }}>{dok.judul}</div>
+        {dok.judulPaket && dok.judulPaket !== dok.judul ? (
+          <div style={{ fontSize: 11.5, color: '#c3c9ef', marginTop: 2 }}>{dok.judulPaket}</div>
         ) : null}
+        <div style={{ marginTop: 7 }}>
+          <span style={st.chip(warna)}>{dok.jumlahSoal} soal</span>
+          {dok.durasiMenit ? <span style={st.chip(warna)}>{dok.durasiMenit} mnt</span> : null}
+          {dok.skor !== null && dok.skor !== undefined ? <span style={st.chip('#16a34a')}>skor {Math.round(dok.skor)}%</span> : null}
+        </div>
+        {dok.catatan ? <div style={{ ...st.deskripsi, fontSize: 11.5 }}>{dok.catatan}</div> : null}
+        <button
+          type="button"
+          disabled={!bisaKlik}
+          onClick={() => onBuka(dok)}
+          style={{
+            marginTop: 10, padding: '10px 18px', borderRadius: 12, border: 'none',
+            cursor: bisaKlik ? 'pointer' : 'not-allowed', fontWeight: 900, fontSize: 13,
+            background: bisaKlik ? `linear-gradient(90deg, ${warna}, #7c3aed)` : 'rgba(255,255,255,.12)',
+            color: '#fff', display: 'inline-flex', alignItems: 'center', gap: 7,
+          }}
+        >
+          {dok.terkunci ? <Lock size={14} /> : selesai ? <CheckCircle2 size={14} /> : <Play size={14} />}
+          {labelTombol}
+        </button>
       </div>
+      <BolaMapel mapel={dok.mapel} />
     </div>
   );
 }
@@ -117,8 +161,10 @@ export default function PapanJelajahPage({ studentId = '' }) {
   const [nama, setNama] = useState('');
   const [kelas, setKelas] = useState('');
   const [tab, setTab] = useState('misi');
-  const [arsipBuka, setArsipBuka] = useState(false);
   const [muat, setMuat] = useState(true);
+  const kini = WAKTU_MUAT;
+  const [bulan, setBulan] = useState(() => ({ y: new Date(kini).getFullYear(), m: new Date(kini).getMonth() }));
+  const [tanggal, setTanggal] = useState(() => kunciTanggal(kini));
 
   useEffect(() => {
     let hidup = true;
@@ -135,16 +181,11 @@ export default function PapanJelajahPage({ studentId = '' }) {
         const sesiList = snapSesi.docs.map((d) => ({ id: d.id, ...d.data() }));
         setPaket(paketAktif);
         setSesi(sesiList);
-        // 🛡️ AUDIT 2026-10-13 (bug arsip): sesi lama menunjuk paket yang
-        // sudah 'arsip'/'nonaktif' -- di luar hasil query status=='aktif'.
-        // Tanpa dokumen paketnya, jenisUjian/totalSoal hilang dan sesi itu
-        // DIAM-DIAM terbuang dari Papan Analitik. Ambil paket yang kurang
-        // per chunk (batas operator 'in' Firestore) ke state TERPISAH:
-        // hanya untuk memperkaya analitik, TIDAK ikut daftar misi/arsip.
+        // 🛡️ AUDIT 2026-10-13: paket riwayat (arsip/nonaktif) milik sesi lama
+        // diambil terpisah supaya analitik tidak kehilangan jenisUjian.
         const idAktif = new Set(paketAktif.map((p) => p.id));
         const idKurang = [...new Set(
-          sesiList
-            .filter((s) => s.status === 'selesai')
+          sesiList.filter((s) => s.status === 'selesai')
             .map((s) => s.paketId || s.tryoutId)
             .filter((id) => id && !idAktif.has(id)),
         )];
@@ -166,7 +207,6 @@ export default function PapanJelajahPage({ studentId = '' }) {
     return () => { hidup = false; };
   }, [studentId]);
 
-  const kini = WAKTU_MUAT;
   const sesiPerPaket = useMemo(() => {
     const m = new Map();
     sesi.filter((s) => s.status === 'selesai').forEach((s) => {
@@ -176,26 +216,45 @@ export default function PapanJelajahPage({ studentId = '' }) {
     return m;
   }, [sesi]);
 
-  const tergolong = useMemo(() => {
-    const mendatang = [];
-    const arsip = [];
+  // Satu dokumen = satu test (subtes). Semua paket aktif dipecah, lalu
+  // dikelompokkan per tanggal buka -> bahan kalender & daftar misi.
+  const dokumenPerTanggal = useMemo(() => {
+    const map = new Map();
     paket.forEach((p) => {
-      const tutup = ms(p.waktuTutup);
-      const selesai = sesiPerPaket.has(p.id);
-      const lewat = tutup !== null && kini > tutup;
-      if (selesai || lewat) arsip.push(p);
-      else mendatang.push(p);
+      bangunDokumenTryOut(p, { kini, sesi: sesiPerPaket.get(p.id) || null }).forEach((d) => {
+        const key = d.waktuBuka ? kunciTanggal(d.waktuBuka) : null;
+        if (!key) return;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(d);
+      });
     });
-    mendatang.sort((a, b) => (ms(a.waktuBuka) || 0) - (ms(b.waktuBuka) || 0));
-    arsip.sort((a, b) => (ms(b.waktuBuka) || 0) - (ms(a.waktuBuka) || 0));
-    return { mendatang, arsip };
+    map.forEach((arr) => arr.sort((a, b) => (a.urutan?.ke || 1) - (b.urutan?.ke || 1)));
+    return map;
   }, [paket, sesiPerPaket, kini]);
 
-  // 🛡️ AUDIT 2026-10-13: analitik boleh melihat paket riwayat (arsip/
-  // nonaktif) supaya sesi lama tidak hilang dari tren; daftar misi & arsip
-  // di tab sebelah TETAP hanya dari paket aktif.
-  const paketUntukAnalitik = useMemo(() => [...paket, ...paketRiwayat], [paket, paketRiwayat]);
+  const streak = useMemo(() => hitungStreak(
+    sesi.filter((s) => s.status === 'selesai').map((s) => ms(s.waktuSelesai)).filter(Boolean),
+    kini,
+  ), [sesi, kini]);
 
+  const xp = useMemo(() => sesi.reduce((a, s) => a + (Number(s.xpFinal) || Number(s.xpMentah) || 0), 0), [sesi]);
+  const level = 1 + Math.floor(xp / 100);
+
+  const hariBulan = useMemo(() => {
+    const jumlah = new Date(bulan.y, bulan.m + 1, 0).getDate();
+    return Array.from({ length: jumlah }, (_, i) => {
+      const key = `${bulan.y}-${String(bulan.m + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
+      const dok = dokumenPerTanggal.get(key) || [];
+      return {
+        key, tanggal: i + 1,
+        adaMisi: dok.length > 0,
+        selesaiSemua: dok.length > 0 && dok.every((d) => d.statusPaket === 'selesai'),
+        hariIni: key === kunciTanggal(kini),
+      };
+    });
+  }, [bulan, dokumenPerTanggal, kini]);
+
+  const paketUntukAnalitik = useMemo(() => [...paket, ...paketRiwayat], [paket, paketRiwayat]);
   const analitik = useMemo(() => hitungAnalitik(
     [...sesiPerPaket.values()].map((s) => {
       const p = paketUntukAnalitik.find((x) => x.id === (s.paketId || s.tryoutId));
@@ -220,119 +279,194 @@ export default function PapanJelajahPage({ studentId = '' }) {
 
   if (muat) return <div style={{ padding: 30, color: '#9aa3d6' }}>🛰️ Menyiapkan papan jelajah…</div>;
 
-  const hero = tergolong.mendatang[0];
+  const misiTanggalIni = dokumenPerTanggal.get(tanggal) || [];
+  const tujuhHari = Array.from({ length: 7 }, (_, i) => {
+    const t = kini - (6 - i) * 86400000;
+    const key = kunciTanggal(t);
+    const aktif = sesi.some((s) => s.status === 'selesai' && kunciTanggal(ms(s.waktuSelesai)) === key);
+    return { key, tanggal: new Date(t).getDate(), aktif, hariIni: key === kunciTanggal(kini) };
+  });
+  const inisial = String(nama || 'S').trim().split(/\s+/).map((x) => x[0]).slice(0, 2).join('').toUpperCase();
+
   return (
     <div style={st.bungkus}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <div>
-          <h2 style={st.judul}>🪐 Papan Jelajah</h2>
-          <p style={st.sub}>{nama}{kelas ? ` · ${kelas}` : ''} — misi try out & analitik TKA/UTBK-mu</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#f97316)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 16, color: '#fff',
+          }}
+          >
+            {inisial}
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>{nama}</div>
+            <div style={{ fontSize: 11.5, color: '#9aa3d6' }}>Level {level}{kelas ? ` · ${kelas}` : ''}</div>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span style={{ ...st.chip('#f97316'), display: 'inline-flex', alignItems: 'center', gap: 5 }}><Gem size={13} /> {xp} XP</span>
           <button type="button" style={st.tab(tab === 'misi')} onClick={() => setTab('misi')}><CalendarDays size={14} style={{ verticalAlign: -2 }} /> Misi</button>
           <button type="button" style={st.tab(tab === 'analitik')} onClick={() => setTab('analitik')}><Sparkles size={14} style={{ verticalAlign: -2 }} /> Papan Analitik</button>
         </div>
       </div>
 
       {tab === 'misi' ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {hero ? <KartuMisi besar kini={kini} paket={hero} sesi={sesiPerPaket.get(hero.id)} onBuka={(id) => navigate(`/siswa/tryout/${id}`)} />
-            : <div style={st.kartu}>🌙 Belum ada misi mendatang. Try out biasanya dibuka setiap Sabtu pagi.</div>}
-          {tergolong.mendatang.slice(1).map((p, i) => (
-            <div key={p.id} style={{ transform: `rotate(${i % 2 === 0 ? -0.6 : 0.6}deg) translateX(${i % 2 === 0 ? 6 : -6}px)` }}>
-              <KartuMisi kini={kini} paket={p} sesi={sesiPerPaket.get(p.id)} onBuka={(id) => navigate(`/siswa/tryout/${id}`)} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 14 }}>
+          {/* ---------- kartu streak ala Duolingo ---------- */}
+          <div style={{ background: 'linear-gradient(135deg,#f97316,#ea580c)', borderRadius: 20, padding: 16, boxShadow: '0 14px 40px rgba(249,115,22,.35)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontWeight: 900, fontSize: 17 }}>
+                <Flame size={19} style={{ verticalAlign: -4 }} /> {streak.jumlah} hari beruntun!
+              </div>
+              <span style={{ background: 'rgba(255,255,255,.2)', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 800 }}>
+                {streak.amanHariIni ? '🔥 aman hari ini' : '⚠️ belum aman hari ini'}
+              </span>
             </div>
-          ))}
-          {tergolong.arsip.length ? (
-            <div style={{ marginTop: 8 }}>
-              <button
-                type="button"
-                onClick={() => setArsipBuka((v) => !v)}
-                style={{ ...st.tab(false), display: 'inline-flex', alignItems: 'center', gap: 6 }}
-              >
-                🗄️ Arsip misi ({tergolong.arsip.length}) <ChevronDown size={14} style={{ transform: arsipBuka ? 'rotate(180deg)' : undefined }} />
-              </button>
-              {arsipBuka ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
-                  {tergolong.arsip.map((p) => {
-                    const s = sesiPerPaket.get(p.id);
-                    const skor = s ? Math.round(s.totalSkorPersen || 0) : null;
-                    return (
-                      <div key={p.id} style={{ ...st.kartu, padding: 10 }}>
-                        <div style={st.mascot(posisiMascotUntukMapel((p.komposisi || [])[0]?.mapel || p.judul || ''), 46)} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: 13.5 }}>{p.judul}</div>
-                          <div style={{ color: '#9aa3d6', fontSize: 11.5 }}>{tgl(ms(p.waktuBuka))}</div>
-                        </div>
-                        <span style={st.chip(skor === null ? '#64748b' : skor >= 70 ? '#16a34a' : '#f97316')}>
-                          {skor === null ? 'terlewat' : `${skor}%`}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              {tujuhHari.map((h) => (
+                <button
+                  key={h.key}
+                  type="button"
+                  onClick={() => { setTanggal(h.key); setBulan({ y: new Date(h.key).getFullYear(), m: new Date(h.key).getMonth() }); }}
+                  title={h.key}
+                  style={{
+                    flex: 1, borderRadius: 14, padding: '9px 0', cursor: 'pointer',
+                    background: h.aktif ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.12)',
+                    border: h.hariIni ? '2px solid #fff' : '2px solid transparent',
+                    color: '#fff', textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 17 }}>{h.aktif ? '🔥' : '·'}</div>
+                  <div style={{ fontSize: 10, fontWeight: 800, marginTop: 2 }}>{h.tanggal}</div>
+                </button>
+              ))}
             </div>
-          ) : null}
+            <button
+              type="button"
+              onClick={() => { setTanggal(kunciTanggal(kini)); setBulan({ y: new Date(kini).getFullYear(), m: new Date(kini).getMonth() }); }}
+              style={{ marginTop: 12, width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', background: '#fff', color: '#ea580c', fontWeight: 900, fontSize: 13, cursor: 'pointer' }}
+            >
+              {streak.amanHariIni ? 'Lihat misi hari ini' : 'Kerjakan misi hari ini biar api tidak padam!'}
+            </button>
+          </div>
+
+          {/* ---------- kalender bulanian: geser tanggal ---------- */}
+          <div style={st.kartu}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <button type="button" style={st.tab(false)} onClick={() => setBulan((b) => (b.m === 0 ? { y: b.y - 1, m: 11 } : { y: b.y, m: b.m - 1 }))}><ChevronLeft size={14} /></button>
+              <div style={{ fontWeight: 800, fontSize: 14 }}>{BULAN[bulan.m]} {bulan.y}</div>
+              <button type="button" style={st.tab(false)} onClick={() => setBulan((b) => (b.m === 11 ? { y: b.y + 1, m: 0 } : { y: b.y, m: b.m + 1 }))}><ChevronRight size={14} /></button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6 }}>
+              {hariBulan.map((h) => (
+                <button
+                  key={h.key}
+                  type="button"
+                  onClick={() => setTanggal(h.key)}
+                  style={{
+                    width: 46, height: 46, borderRadius: '50%', flex: '0 0 auto', cursor: 'pointer',
+                    background: tanggal === h.key ? 'linear-gradient(135deg,#7c3aed,#f97316)' : h.adaMisi ? 'rgba(124,58,237,.25)' : 'rgba(255,255,255,.07)',
+                    border: h.hariIni ? '2px solid #f97316' : '2px solid rgba(255,255,255,.15)',
+                    color: '#fff', fontWeight: 800, fontSize: 13, position: 'relative',
+                  }}
+                >
+                  {h.tanggal}
+                  {h.adaMisi ? (
+                    <span style={{
+                      position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, borderRadius: '50%',
+                      background: h.selesaiSemua ? '#16a34a' : '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9,
+                    }}
+                    >
+                      {h.selesaiSemua ? '✓' : '•'}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: '#9aa3d6', marginTop: 6 }}>
+              ↕ Geser tanggal: lingkaran ber-titik = ada misi, ✓ hijau = semua misi tanggal itu selesai. Tidak ada arsip — misi lama hidup di tanggalnya.
+            </div>
+          </div>
+
+          {/* ---------- daftar misi tanggal terpilih ---------- */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontWeight: 800, fontSize: 14 }}>
+              📅 Misi {new Date(tanggal).getDate()} {BULAN[new Date(tanggal).getMonth()]}
+              {misiTanggalIni.length ? ` · ${misiTanggalIni.length} test` : ''}
+            </div>
+            {misiTanggalIni.length === 0 ? (
+              <div style={st.kartu}>
+                <div style={{ fontWeight: 700, fontSize: 13.5 }}>🌙 Tidak ada misi try out pada tanggal ini.</div>
+                <p style={st.deskripsi}>
+                  Try out bersama biasanya dibuka setiap Sabtu. Untuk latihan harian ala Duolingo
+                  (soal dibuat AI, melatih TKA sampai UTBK), masuk ke Latihan Harian:
+                </p>
+                <Link
+                  to="/siswa/latihan-harian"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 10, padding: '10px 16px', borderRadius: 12, background: 'linear-gradient(90deg,#f97316,#7c3aed)', color: '#fff', fontWeight: 900, fontSize: 13, textDecoration: 'none' }}
+                >
+                  <Rocket size={14} /> Latihan Harian AI
+                </Link>
+              </div>
+            ) : misiTanggalIni.map((d) => (
+              <KartuMisiBola key={d.id} dok={d} onBuka={(x) => navigate(`/siswa/tryout/${x.paketId}`)} />
+            ))}
+          </div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 14 }}>
           {analitik.jumlahSesi === 0 ? (
             <div style={st.kartu}>🛰️ Papan Analitik khusus try out TKA & UTBK. Selesaikan misi TKA/UTBK pertamamu, tren nilai pekananmu akan muncul di sini.</div>
           ) : (
             <>
               <div style={st.kartu}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: 14 }}><Target size={15} style={{ verticalAlign: -3 }} /> Tren skor TKA/UTBK per pekan</div>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
-                    {analitik.tren.map((t) => (
-                      <div key={t.label} style={{ background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '8px 12px', textAlign: 'center', border: '1px solid rgba(255,255,255,.14)' }}>
-                        <div style={{ fontSize: 20, fontWeight: 900 }}>{t.skor}</div>
-                        <div style={{ fontSize: 10.5, color: '#9aa3d6' }}>{t.label}</div>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: t.delta === null ? '#9aa3d6' : t.delta >= 0 ? '#4ade80' : '#f87171' }}>
-                          {t.delta === null ? '—' : `${t.delta >= 0 ? '▲ +' : '▼ '}${t.delta}`}
-                        </div>
+                <div style={{ fontWeight: 800, fontSize: 14 }}><Target size={15} style={{ verticalAlign: -3 }} /> Tren skor TKA/UTBK per pekan</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                  {analitik.tren.map((t) => (
+                    <div key={t.label} style={{ background: 'rgba(255,255,255,.08)', borderRadius: 12, padding: '8px 12px', textAlign: 'center', border: '1px solid rgba(255,255,255,.14)' }}>
+                      <div style={{ fontSize: 20, fontWeight: 900 }}>{t.skor}</div>
+                      <div style={{ fontSize: 10.5, color: '#9aa3d6' }}>{t.label}</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: t.delta === null ? '#9aa3d6' : t.delta >= 0 ? '#4ade80' : '#f87171' }}>
+                        {t.delta === null ? '—' : `${t.delta >= 0 ? '▲ +' : '▼ '}${t.delta}`}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
               {analitik.kecepatan ? (
                 <div style={st.kartu}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 14 }}><Timer size={15} style={{ verticalAlign: -3 }} /> Tempo kerja (misi terakhir)</div>
-                    <div style={{ fontSize: 13, marginTop: 6, color: '#c3c9ef' }}>
-                      ~<b style={{ fontSize: 20, color: analitik.kecepatan.wajar ? '#4ade80' : '#f87171' }}>{analitik.kecepatan.detikPerSoal}</b> detik/soal
-                      {' '}(target ≤ 90). Perekam tempo per subtes dipasang setelah try out Sabtu.
-                    </div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}><Timer size={15} style={{ verticalAlign: -3 }} /> Tempo kerja (misi terakhir)</div>
+                  <div style={{ fontSize: 13, marginTop: 6, color: '#c3c9ef' }}>
+                    ~<b style={{ fontSize: 20, color: analitik.kecepatan.wajar ? '#4ade80' : '#f87171' }}>{analitik.kecepatan.detikPerSoal}</b> detik/soal
+                    {' '}(target ≤ 90) pada {analitik.kecepatan.nama}.
                   </div>
                 </div>
               ) : null}
               {analitik.subtesRata.length ? (
                 <div style={st.kartu}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 14 }}>📊 Rata-rata skor per subtes</div>
-                    {analitik.subtesRata.map((s) => (
-                      <div key={s.nama} style={{ marginTop: 8 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#c3c9ef' }}>
-                          <span>{s.nama}</span><b>{s.skor}%</b>
-                        </div>
-                        <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,.12)', marginTop: 3 }}>
-                          <div style={{ height: '100%', width: `${Math.min(100, s.skor)}%`, borderRadius: 999, background: 'linear-gradient(90deg,#f97316,#7c3aed)' }} />
-                        </div>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>📊 Rata-rata skor per subtes</div>
+                  {analitik.subtesRata.map((s) => (
+                    <div key={s.nama} style={{ marginTop: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#c3c9ef' }}>
+                        <span>{s.nama}</span><b>{s.skor}%</b>
                       </div>
-                    ))}
-                  </div>
+                      <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,.12)', marginTop: 3 }}>
+                        <div style={{ height: '100%', width: `${Math.min(100, s.skor)}%`, borderRadius: 999, background: 'linear-gradient(90deg,#f97316,#7c3aed)' }} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : null}
               <div style={st.kartu}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: 14 }}><Rocket size={15} style={{ verticalAlign: -3 }} /> Evaluasi & tips pintar</div>
-                  {analitik.evaluasi ? <p style={st.deskripsi}>{analitik.evaluasi}</p> : null}
-                  <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#c3c9ef', lineHeight: 1.7 }}>
-                    {analitik.tips.map((t) => <li key={t}>{t}</li>)}
-                  </ul>
-                </div>
+                <div style={{ fontWeight: 800, fontSize: 14 }}><Rocket size={15} style={{ verticalAlign: -3 }} /> Evaluasi & tips pintar</div>
+                {analitik.evaluasi ? <p style={st.deskripsi}>{analitik.evaluasi}</p> : null}
+                <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12.5, color: '#c3c9ef', lineHeight: 1.7 }}>
+                  {analitik.tips.map((t) => <li key={t}>{t}</li>)}
+                </ul>
+              </div>
+              <div style={{ ...st.kartu, display: 'flex', gap: 8, alignItems: 'center', fontSize: 11.5, color: '#9aa3d6' }}>
+                <Hourglass size={13} /> Analitik dihitung dari {analitik.jumlahSesi} sesi TKA/UTBK selesai milikmu.
               </div>
             </>
           )}

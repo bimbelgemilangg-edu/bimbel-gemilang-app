@@ -81,6 +81,62 @@ export function posisiMascotUntukMapel(nama = '') {
   };
 }
 
+// 🔥 BARU (14 Okt 2026, keputusan owner): ikon BOLA 3D gaya Duolingo
+// (inspirasi bola pizza/bumi di referensi owner) menggantikan astronot di
+// kartu misi — owner menilai astronot "kurang pas" untuk kartu latihan.
+const BOLA_MAPEL = {
+  'matematika tingkat lanjut': '/mascot/bola-matematika.png',
+  'bahasa indonesia tingkat lanjut': '/mascot/bola-bahasa-indonesia.png',
+  'bahasa inggris tingkat lanjut': '/mascot/bola-bahasa-inggris.png',
+  matematika: '/mascot/bola-matematika.png',
+  'bahasa indonesia': '/mascot/bola-bahasa-indonesia.png',
+  'bahasa inggris': '/mascot/bola-bahasa-inggris.png',
+  kimia: '/mascot/bola-kimia.png',
+  fisika: '/mascot/bola-fisika.png',
+  biologi: '/mascot/bola-biologi.png',
+  sosiologi: '/mascot/bola-sosiologi.png',
+  geografi: '/mascot/bola-geografi.png',
+  sejarah: '/mascot/bola-sejarah.png',
+  ekonomi: '/mascot/bola-ekonomi.png',
+};
+const KUNCI_BOLA = Object.keys(BOLA_MAPEL).sort((a, b) => b.length - a.length);
+
+/** URL ikon bola per mapel, atau null bila belum ada (UI pakai bola warna). */
+export function bolaMascotUntukMapel(nama = '') {
+  const h = String(nama || '').trim().toLowerCase();
+  if (!h) return null;
+  const hit = KUNCI_BOLA.find((k) => h.includes(k));
+  return hit ? BOLA_MAPEL[hit] : null;
+}
+
+/** Kunci kalender lokal 'YYYY-MM-DD' untuk sebuah timestamp. */
+export function kunciTanggal(ms) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/**
+ * Streak harian ala Duolingo: berapa hari beruntun siswa aktif (ada sesi
+ * selesai) sampai hari ini. Bila hari ini belum aktif, streak dihitung
+ * sampai kemarin dan ditandai BELUM aman (api bisa padam malam nanti).
+ * @param {Array<number>} msList timestamp selesai (ms)
+ * @param {number} [kini]
+ * @returns {{jumlah:number, amanHariIni:boolean}}
+ */
+export function hitungStreak(msList = [], kini = Date.now()) {
+  const hari = new Set(
+    (Array.isArray(msList) ? msList : [])
+      .filter((x) => x != null && Number.isFinite(Number(x)))
+      .map((x) => kunciTanggal(Number(x))),
+  );
+  const SATU_HARI = 86400000;
+  const amanHariIni = hari.has(kunciTanggal(kini));
+  let cursor = amanHariIni ? kini : kini - SATU_HARI; // grace: kemarin nyala
+  let jumlah = 0;
+  while (hari.has(kunciTanggal(cursor))) { jumlah += 1; cursor -= SATU_HARI; }
+  return { jumlah, amanHariIni };
+}
+
 const RENTANG_KELAS = { SD: 'kelas 1-6', SMP: 'kelas 7-9', SMA: 'kelas 10-12', SMK: 'kelas 10-12' };
 
 /**
