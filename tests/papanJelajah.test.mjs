@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan, potongUntukQuery, PAPAN_MASCOT,
   awalPekanMs, labelMisiPekan, rangkaianMisi, statusMisi,
+  urlMascotUntukMapel, SLUG_MASCOT, awalHariMs, geserHariMs, kunciTanggal, msDariKunci,
+  tanggalMisiMs, keadaanSel, kalenderMisi, JENDELA_KALENDER_HARI,
 } from '../src/utils/papanJelajah.js';
 
 test('sprite maskot: Matematika = kartu indeks 3 (kolom 3 baris 0)', () => {
@@ -253,4 +255,107 @@ test('statusMisi: batas waktu inklusif (kini == buka/tutup = berlangsung) & inpu
   // kiniMs rusak dianggap epoch 0: paket 2026 apa pun jadi "mendatang".
   const rusak = statusMisi({ waktuBukaMs: buka, waktuTutupMs: tutup, kiniMs: 'nonsense' });
   assert.equal(rusak.keadaan, 'mendatang');
+});
+
+// ============================================================
+// Uji desain v3 (14 Okt 2026): maskot UTUH per mapel + strip kalender
+// harian pengganti arsip lipatan (permintaan owner: geser ke samping).
+// ============================================================
+const KINI = new Date(2026, 9, 14, 10, 0, 0).getTime(); // Rab 14 Okt 2026 10.00 lokal
+const pagi = (y, m, d) => new Date(y, m - 1, d, 8, 0, 0).getTime();
+
+test('maskot utuh: tiap mapel punya file PNG sendiri (bukan crop sprite)', () => {
+  assert.equal(SLUG_MASCOT.length, 30);
+  assert.equal(urlMascotUntukMapel('Matematika').url, '/mascot/mapel/matematika.png');
+  assert.equal(urlMascotUntukMapel('Bahasa Indonesia Tingkat Lanjut').slug, 'bahasa-indonesia-lanjut');
+  assert.equal(urlMascotUntukMapel('Astrologi'), null);
+});
+
+test('kunci tanggal lokal bolak-balik stabil', () => {
+  const k = kunciTanggal(KINI);
+  assert.equal(k, '2026-10-14');
+  assert.equal(msDariKunci(k), awalHariMs(KINI));
+  assert.equal(kunciTanggal(null), null);
+  assert.equal(msDariKunci('asal'), null);
+});
+
+test('geser hari aman lintas bulan', () => {
+  assert.equal(kunciTanggal(geserHariMs(awalHariMs(KINI), 20)), '2026-11-03');
+  assert.equal(kunciTanggal(geserHariMs(awalHariMs(KINI), -20)), '2026-09-24');
+});
+
+test('tanggal misi: selesai=hari dikerjakan, terbuka=hari ini, mendatang/terlewat=hari buka', () => {
+  const buka = pagi(2026, 10, 17);
+  const selesai = pagi(2026, 10, 8);
+  assert.equal(tanggalMisiMs({ keadaan: 'selesai', bukaMs: buka, selesaiMs: selesai, kiniMs: KINI }), awalHariMs(selesai));
+  assert.equal(tanggalMisiMs({ keadaan: 'selesai', bukaMs: buka, selesaiMs: null, kiniMs: KINI }), awalHariMs(buka));
+  assert.equal(tanggalMisiMs({ keadaan: 'berlangsung', bukaMs: pagi(2026, 10, 8), kiniMs: KINI }), awalHariMs(KINI));
+  assert.equal(tanggalMisiMs({ keadaan: 'izin', bukaMs: buka, kiniMs: KINI }), awalHariMs(KINI));
+  assert.equal(tanggalMisiMs({ keadaan: 'mendatang', bukaMs: buka, kiniMs: KINI }), awalHariMs(buka));
+  assert.equal(tanggalMisiMs({ keadaan: 'terlewat', bukaMs: buka, kiniMs: KINI }), awalHariMs(buka));
+});
+
+test('keadaan sel: terbuka > mendatang > selesai > terlewat > kosong', () => {
+  assert.equal(keadaanSel([{ keadaan: 'selesai' }, { keadaan: 'berlangsung' }]), 'berlangsung');
+  assert.equal(keadaanSel([{ keadaan: 'selesai' }, { keadaan: 'mendatang' }]), 'mendatang');
+  assert.equal(keadaanSel([{ keadaan: 'terlewat' }, { keadaan: 'selesai' }]), 'selesai');
+  assert.equal(keadaanSel([{ keadaan: 'terlewat' }]), 'terlewat');
+  assert.equal(keadaanSel([]), 'kosong');
+});
+
+test('kalender misi: rentang dari misi terlama sampai hari ini + sebulan', () => {
+  const misi = [
+    { id: 'a', tanggalMs: pagi(2026, 10, 8), keadaan: 'selesai' },
+    { id: 'b', tanggalMs: pagi(2026, 10, 17), keadaan: 'mendatang' },
+  ];
+  const k = kalenderMisi(misi, KINI);
+  assert.equal(k.hari[0].kunci, '2026-10-08');
+  assert.equal(k.hari[k.hari.length - 1].kunci, '2026-11-17'); // hari ini + 34 hari
+  assert.equal(k.hari.length, JENDELA_KALENDER_HARI + 6);
+  assert.equal(k.kunciHariIni, '2026-10-14');
+  const sel17 = k.hari.find((h) => h.kunci === '2026-10-17');
+  assert.equal(sel17.misi.length, 1);
+  assert.equal(sel17.keadaan, 'mendatang');
+  assert.equal(k.hari.find((h) => h.kunci === '2026-10-14').keadaan, 'kosong');
+});
+
+test('kalender misi: jadwal jauh di luar sebulan tetap terjangkau geser', () => {
+  const misi = [{ id: 'z', tanggalMs: pagi(2026, 12, 5), keadaan: 'mendatang' }];
+  const k = kalenderMisi(misi, KINI);
+  assert.equal(k.hari[k.hari.length - 1].kunci, '2026-12-05');
+});
+
+test('kalender misi: tanpa masa lalu strip mulai hari ini', () => {
+  const k = kalenderMisi([{ id: 'b', tanggalMs: pagi(2026, 10, 17), keadaan: 'mendatang' }], KINI);
+  assert.equal(k.hari[0].kunci, '2026-10-14');
+});
+
+test('pilihan tanggal default: hari ini bermisi -> hari ini', () => {
+  const k = kalenderMisi([
+    { id: 'a', tanggalMs: pagi(2026, 10, 14), keadaan: 'berlangsung' },
+    { id: 'b', tanggalMs: pagi(2026, 10, 17), keadaan: 'mendatang' },
+  ], KINI);
+  assert.equal(k.kunciPilihan, '2026-10-14');
+  assert.equal(k.hari[k.indeksPilihan].kunci, '2026-10-14');
+});
+
+test('pilihan tanggal default: hari ini kosong -> mendatang terdekat, lalu masa lalu terakhir', () => {
+  const depan = kalenderMisi([{ id: 'b', tanggalMs: pagi(2026, 10, 17), keadaan: 'mendatang' }], KINI);
+  assert.equal(depan.kunciPilihan, '2026-10-17');
+  const lalu = kalenderMisi([
+    { id: 'a', tanggalMs: pagi(2026, 10, 8), keadaan: 'selesai' },
+    { id: 'a2', tanggalMs: pagi(2026, 10, 10), keadaan: 'terlewat' },
+  ], KINI);
+  assert.equal(lalu.kunciPilihan, '2026-10-10');
+  const kosong = kalenderMisi([], KINI);
+  assert.equal(kosong.kunciPilihan, '2026-10-14');
+  assert.equal(kosong.indeksPilihan, 0);
+});
+
+test('satu tanggal bisa memuat lebih dari satu misi (kartu bertumpuk)', () => {
+  const k = kalenderMisi([
+    { id: 'a', tanggalMs: pagi(2026, 10, 17), keadaan: 'mendatang' },
+    { id: 'b', tanggalMs: pagi(2026, 10, 17) + 3600000, keadaan: 'mendatang' },
+  ], KINI);
+  assert.equal(k.hari.find((h) => h.kunci === '2026-10-17').misi.length, 2);
 });

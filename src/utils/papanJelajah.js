@@ -57,6 +57,30 @@ export const KOLOM_MASCOT = 6;
 export const BARIS_MASCOT = 5;
 
 /**
+ * Nama file maskot UTUH per indeks kartu (hasil scripts/pecah-mascot.py).
+ * Desain v3 (14 Okt 2026): owner melarang maskot di-CROP lewat CSS sprite
+ * (kepala terpotong); tiap mapel kini memakai satu file PNG maskot utuh.
+ */
+export const SLUG_MASCOT = [
+  'pendidikan-agama', 'pendidikan-pancasila', 'bahasa-indonesia', 'matematika', 'ipa', 'ips',
+  'pjok', 'seni-budaya', 'bahasa-inggris', 'muatan-lokal', 'koding-ka', 'bahasa-arab',
+  'fisika', 'kimia', 'biologi', 'matematika-lanjut', 'informatika', 'ekonomi',
+  'sosiologi', 'geografi', 'sejarah', 'antropologi', 'bahasa-indonesia-lanjut', 'bahasa-inggris-lanjut',
+  'bahasa-jerman', 'bahasa-prancis', 'bahasa-jepang', 'bahasa-korea', 'bahasa-mandarin', 'produk-kreatif',
+];
+
+/**
+ * URL maskot utuh untuk sebuah nama mapel/subtes.
+ * @param {string} nama
+ * @returns {{url:string,slug:string,label:string,indeks:number}|null} null bila tak ada padanan.
+ */
+export function urlMascotUntukMapel(nama = '') {
+  const pos = posisiMascotUntukMapel(nama);
+  if (!pos) return null;
+  return { url: `/mascot/mapel/${SLUG_MASCOT[pos.indeks]}.png`, slug: SLUG_MASCOT[pos.indeks], label: pos.label, indeks: pos.indeks };
+}
+
+/**
  * Posisi potong sprite maskot untuk sebuah nama mapel/subtes.
  * @param {string} nama nama mapel / subtes UTBK / judul bebas bersinonim
  * @returns {{indeks:number,kolom:number,baris:number,xPct:number,yPct:number,label:string}|null}
@@ -304,7 +328,127 @@ export function potongUntukQuery(ids, batas = 30) {
   return hasil;
 }
 
+// ============================================================
+// KALENDER MISI (desain v3, 14 Okt 2026): owner minta arsip TIDAK lagi
+// jadi seção lipatan di bawah; seluruh riwayat & jadwal masuk satu strip
+// kalender HARIAN yang bisa digeser: ke kiri tanggal-tanggal try out
+// sebelumnya, ke kanan sampai sebulan ke depan. Semuanya murni & teruji.
+// ============================================================
+
+/** Jumlah hari ke depan yang selalu disiapkan strip kalender (~sebulan). */
+export const JENDELA_KALENDER_HARI = 35;
+
+/** Awal hari (tengah malam lokal) dalam ms -- kunci sel kalender harian. */
+export function awalHariMs(ms) {
+  if (!Number.isFinite(ms)) return null;
+  const d = new Date(ms);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+/** Geser awal hari sejauh n hari (aman zona waktu & DST lewat Date lokal). */
+export function geserHariMs(awalMs, n = 0) {
+  if (!Number.isFinite(awalMs)) return null;
+  const d = new Date(awalMs);
+  d.setDate(d.getDate() + (Number.isFinite(n) ? n : 0));
+  return d.getTime();
+}
+
+/** Kunci tanggal lokal 'YYYY-MM-DD' untuk sel strip kalender. */
+export function kunciTanggal(ms) {
+  const awal = awalHariMs(ms);
+  if (awal === null) return null;
+  const d = new Date(awal);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Kebalikan kunciTanggal: 'YYYY-MM-DD' -> ms tengah malam lokal. */
+export function msDariKunci(kunci = '') {
+  const [y, m, d] = String(kunci).split('-').map((x) => Number(x));
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return null;
+  return new Date(y, m - 1, d).getTime();
+}
+
+/**
+ * Tanggal "hari misi" sebuah paket untuk sel kalender:
+ * selesai -> hari dikerjakan (waktuSelesai), sedang terbuka/berjalan/izin ->
+ * HARI INI (bisa dikerjakan hari ini), mendatang/terlewat -> hari buka paket.
+ * @param {{keadaan:string,bukaMs?:number|null,selesaiMs?:number|null,kiniMs:number}} p
+ * @returns {number|null}
+ */
+export function tanggalMisiMs(p = {}) {
+  const kini = Number.isFinite(p.kiniMs) ? p.kiniMs : 0;
+  const buka = Number.isFinite(p.bukaMs) ? p.bukaMs : null;
+  const selesai = Number.isFinite(p.selesaiMs) ? p.selesaiMs : null;
+  switch (p.keadaan) {
+    case 'selesai': return awalHariMs(selesai ?? buka ?? kini);
+    case 'berjalan':
+    case 'izin':
+    case 'berlangsung': return awalHariMs(kini);
+    case 'mendatang':
+    case 'terlewat': return awalHariMs(buka ?? kini);
+    default: return awalHariMs(buka ?? kini);
+  }
+}
+
+const KEADAAN_SEL_PRIORITAS = ['berjalan', 'berlangsung', 'izin', 'mendatang', 'selesai', 'terlewat'];
+
+/** Keadaan visual satu sel tanggal (satu tanggal bisa berisi >1 misi). */
+export function keadaanSel(misiArr = []) {
+  const daftar = Array.isArray(misiArr) ? misiArr : [];
+  for (const k of KEADAAN_SEL_PRIORITAS) {
+    if (daftar.some((m) => m?.keadaan === k)) return k;
+  }
+  return 'kosong';
+}
+
+/**
+ * Strip kalender harian untuk "Rangkaian misimu": satu sel per tanggal dari
+ * misi terlama siswa s.d. max(hari ini + sebulan, misi terjadwal terjauh).
+ * Sel yang punya misi menampung daftar misinya supaya kartu bisa dibuka
+ * per tanggal (pengganti arsip lipatan desain v2).
+ *
+ * @param {Array<{id:string,tanggalMs:number,keadaan:string}>} misiList
+ * @param {number} kiniMs
+ * @returns {{hari:Array<{kunci:string,awalMs:number,misi:Array<object>,keadaan:string}>,kunciHariIni:string,kunciPilihan:string,indeksPilihan:number}}
+ */
+export function kalenderMisi(misiList = [], kiniMs = 0) {
+  const kini = Number.isFinite(kiniMs) ? kiniMs : 0;
+  const hariIni = awalHariMs(kini) ?? 0;
+  const perKunci = new Map();
+  (Array.isArray(misiList) ? misiList : []).forEach((m) => {
+    const awal = awalHariMs(m?.tanggalMs);
+    if (awal === null) return;
+    const kunci = kunciTanggal(awal);
+    if (!perKunci.has(kunci)) perKunci.set(kunci, []);
+    perKunci.get(kunci).push(m);
+  });
+  const awalBermisi = [...perKunci.keys()].map(msDariKunci).filter((x) => x !== null);
+  const lampau = awalBermisi.filter((t) => t < hariIni);
+  const depan = awalBermisi.filter((t) => t >= hariIni);
+  const dari = lampau.length ? Math.min(...lampau) : hariIni;
+  const batasBawaan = geserHariMs(hariIni, JENDELA_KALENDER_HARI - 1) ?? hariIni;
+  const sampai = Math.max(batasBawaan, ...depan.length ? [Math.max(...depan)] : [batasBawaan]);
+  const hari = [];
+  for (let kur = dari; kur <= sampai; kur = geserHariMs(kur, 1)) {
+    const kunci = kunciTanggal(kur);
+    const misi = perKunci.get(kunci) || [];
+    hari.push({ kunci, awalMs: kur, misi, keadaan: keadaanSel(misi) });
+  }
+  const kunciHariIni = kunciTanggal(hariIni);
+  let kunciPilihan = kunciHariIni;
+  if (!perKunci.has(kunciHariIni)) {
+    const mendatangTerdekat = hari.find((h) => h.awalMs >= hariIni && h.misi.length);
+    const lampauTerakhir = [...hari].reverse().find((h) => h.awalMs < hariIni && h.misi.length);
+    kunciPilihan = (mendatangTerdekat || lampauTerakhir || { kunci: kunciHariIni }).kunci;
+  }
+  const indeksPilihan = Math.max(0, hari.findIndex((h) => h.kunci === kunciPilihan));
+  return { hari, kunciHariIni, kunciPilihan, indeksPilihan };
+}
+
 export default {
   PAPAN_MASCOT, posisiMascotUntukMapel, buatDeskripsiPaket, hitungAnalitik, labelPekan,
   potongUntukQuery, IDEAL_DETIK_PER_SOAL, awalPekanMs, labelMisiPekan, rangkaianMisi, statusMisi,
+  SLUG_MASCOT, urlMascotUntukMapel, JENDELA_KALENDER_HARI, awalHariMs, geserHariMs, kunciTanggal,
+  msDariKunci, tanggalMisiMs, keadaanSel, kalenderMisi,
 };
