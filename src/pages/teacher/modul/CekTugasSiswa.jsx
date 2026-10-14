@@ -25,10 +25,10 @@ const renderMath = (text) => {
   return parts.map((part, i) => {
     if (part.startsWith('$$') && part.endsWith('$$')) {
       try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
-      catch (e) { return <span key={i}>{part}</span>; }
+      catch (_e) { return <span key={i}>{part}</span>; }
     } else if (part.startsWith('$') && part.endsWith('$')) {
       try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
-      catch (e) { return <span key={i}>{part}</span>; }
+      catch (_e) { return <span key={i}>{part}</span>; }
     }
     // 🔥 FIX: sama seperti di ManageQuiz.jsx/StudentQuizView.jsx -- biar
     // guru cek jawaban siswa juga gak liat markdown mentah kayak **bold**.
@@ -545,7 +545,7 @@ const generateAstroGemilangReport = async (item) => {
 };
 
 const CekTugasSiswa = () => {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   
   const [tasks, setTasks] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
@@ -557,7 +557,7 @@ const CekTugasSiswa = () => {
   const [editingScore, setEditingScore] = useState(null);
   const [newScore, setNewScore] = useState('');
   const [filterStatus, setFilterStatus] = useState('Semua');
-  const [showFilters, setShowFilters] = useState(false);
+  const [_showFilters, _setShowFilters] = useState(false);
   
   const [guruData, setGuruData] = useState(null);
   const [guruId, setGuruId] = useState('');
@@ -1222,7 +1222,7 @@ const CekTugasSiswa = () => {
                             tStr = d.toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
                           }
                         }
-                      } catch(e) { /* biarkan '-' */ }
+                      } catch(_e) { /* biarkan '-' */ }
                       
                       const sc = item.score;
                       const scColor = sc>=75?'#10b981':sc>=50?'#f59e0b':'#ef4444';

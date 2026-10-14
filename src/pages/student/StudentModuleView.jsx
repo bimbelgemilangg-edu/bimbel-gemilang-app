@@ -145,13 +145,13 @@ const renderMath = (text) => {
     if (!part) return null;
     if (part.startsWith('$$') && part.endsWith('$$')) {
       try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
-      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+      catch (_e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     } else if (part.startsWith('$') && part.endsWith('$')) {
       try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
-      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+      catch (_e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     } else if (part.startsWith('\\begin{')) {
       try { return <BlockMath key={i} math={part} />; }
-      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+      catch (_e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     }
     return <span key={i}>{part}</span>;
   });
@@ -190,14 +190,14 @@ const renderMathInHtml = (html) => {
   result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: true });
-    } catch (e) {
+    } catch (_e) {
       return match;
     }
   });
   result = result.replace(/\$([^$\n]+?)\$/g, (match, expr) => {
     try {
       return katex.renderToString(expr.trim(), { throwOnError: false, displayMode: false });
-    } catch (e) {
+    } catch (_e) {
       return match;
     }
   });
@@ -211,7 +211,7 @@ const renderMathInHtml = (html) => {
     (match) => {
       try {
         return katex.renderToString(match, { throwOnError: false, displayMode: true });
-      } catch (e) {
+      } catch (_e) {
         return match;
       }
     }
@@ -222,7 +222,7 @@ const renderMathInHtml = (html) => {
 // ============================================================
 // HELPERS
 // ============================================================
-const formatDate = (ts) => {
+const _formatDate = (ts) => {
   if (!ts) return "-";
   const d = ts.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
@@ -264,7 +264,7 @@ const getLinkType = (url) => {
 // ============================================================
 // 🔥 RENDER FILE - LANGSUNG TAMPIL DENGAN CARD
 // ============================================================
-const FileViewer = ({ url, fileName, fileType, fileSize, title }) => {
+const FileViewer = ({ url, fileName, _fileType, fileSize, title }) => {
   const linkType = getLinkType(url);
   
   const getIcon = () => {
@@ -896,7 +896,6 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         
         const nim = studentNim || localStorage.getItem('studentNim') || localStorage.getItem('studentId') || '';
         const kelas = studentKelas || localStorage.getItem('studentKelas') || '';
-        const program = studentProgram || localStorage.getItem('studentProgram') || 'Reguler';
         // 🔥 BERUBAH: daftar mapel yang dibayar siswa ini SEKARANG HANYA
         // dari field manual `enrolledSubjects` (prop studentData atau cache
         // localStorage) -- turunan otomatis dari jadwal_bimbel DIHAPUS
@@ -905,7 +904,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         // lengkap kenapa ini sengaja dibalik jadi ketat.
         let enrolledSubjectsRaw = studentData?.enrolledSubjects || localStorage.getItem('studentEnrolledSubjects');
         if (typeof enrolledSubjectsRaw === 'string') {
-          try { enrolledSubjectsRaw = JSON.parse(enrolledSubjectsRaw); } catch (e) { enrolledSubjectsRaw = null; }
+          try { enrolledSubjectsRaw = JSON.parse(enrolledSubjectsRaw); } catch (_e) { enrolledSubjectsRaw = null; }
         }
         
         let hasAccess = false;
@@ -990,7 +989,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
         dispatch({ type: 'SET_MODUL', payload: data });
 
         // 🔥 Simpan ke cache buat kunjungan BERIKUTNYA (bukan yang sekarang)
-        try { localStorage.setItem(cacheKey, JSON.stringify({ data, cachedAt: Date.now() })); } catch (e) { /* penuh/gak tersedia, gak fatal */ }
+        try { localStorage.setItem(cacheKey, JSON.stringify({ data, cachedAt: Date.now() })); } catch (_e) { /* penuh/gak tersedia, gak fatal */ }
 
         // 🔥 AMBIL STATUS KUIS — PARALEL
         if (nim) {
@@ -1061,7 +1060,7 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
           hasCachedVersion = true;
         }
       }
-    } catch (e) { /* cache rusak, abaikan */ }
+    } catch (_e) { /* cache rusak, abaikan */ }
 
     fetchAll(hasCachedVersion);
     return () => { cancelled = true; };
@@ -1580,7 +1579,7 @@ const styles = {
   // 🔥 Kartu kuis
   quizCard: (tier) => ({ padding: tier === 'sd' ? 22 : 18, borderRadius: tier === 'sd' ? 20 : 16, marginBottom: 14 }),
   quizActiveBg: (tier) => tier === 'sd' ? '#f5f3ff' : '#faf9ff',
-  quizActiveBorder: (tier) => '#8b5cf6',
+  quizActiveBorder: (_tier) => '#8b5cf6',
 };
 
 export default StudentModuleView;

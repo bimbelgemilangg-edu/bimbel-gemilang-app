@@ -103,7 +103,6 @@ const ManagePaketHarga = () => {
     setSaving(false);
   };
 
-  const formatRp = (num) => 'Rp ' + (num || 0).toLocaleString('id-ID');
 
   if (loading) return (
     <div style={s.wrap}><SidebarAdmin /><div style={s.main(isMobile)}><div style={s.center}><div style={s.spin}></div><p>Memuat data...</p></div></div><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>

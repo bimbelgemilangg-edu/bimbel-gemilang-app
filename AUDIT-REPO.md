@@ -241,3 +241,56 @@ pembersihan lint mana pun:
 2. **Hash password siswa.** Pengawal #2 menyatakan ini **WAJIB** dan di luar
    pagar risk acceptance, karena dampaknya keluar dari bimbel (password dipakai
    ulang di layanan lain) dan sebagian pemiliknya anak-anak.
+
+---
+
+## Pembaruan 2026-10-14 — Tahap 1 LUNAS (branch `rapi/fondasi-super-app-fase1`)
+
+Diukur ulang sesudah codemod mekanis:
+
+```
+Berkas kotor : 35 -> 16
+Error        : 146 -> 55   (sisa: 24 perilaku react-hooks/react-refresh
+                            + 31 no-unused-vars yang MENUMPUK di 9 berkas
+                            berperilaku — sengaja tidak disentuh branch ini,
+                            lihat catatan gerbang CI di bawah)
+no-unused-vars        118 -> 31
+no-case-declarations    2 -> 0
+no-useless-escape       1 -> 0
+no-control-regex        1 -> 0 (disable beralasan: pembersih aksara kontrol C0 di api/generateStudentNarrative.js)
+```
+
+**Catatan gerbang CI.** CI menuntut *berkas yang disentuh wajib lint-bersih*.
+Sembilan berkas yang masih menyimpan error `react-hooks` karenanya DITANGGUHKAN
+dari branch ini supaya PR fondasi tetap hijau & murni mekanis:
+`IsiSections.jsx`, `GradeReport.jsx`, `ManageOnlineRegistration.jsx`,
+`StudentElearning.jsx`, `StudentFinance.jsx`, `BelajarReader.jsx`,
+`TeacherAttendance.jsx`, `TeacherSchedule.jsx`, `ManageTugas.jsx`.
+Utang mekanis mereka dilunasi BERSAMA utang perilakunya di PR Tahap 2
+per-berkas (satu berkas satu PR, sesuai kaidah repo).
+
+**Metode (nol perubahan perilaku, diverifikasi 85 berkas uji / 351 subtest):**
+- impor mati dibuang (specifier atau seluruh statement);
+- variabel mati satu baris ber-inisialisasi murni (literal/arrow/objek) dihapus;
+- elemen destructuring `useState`, parameter, dan `catch` di-rename berawalan `_`
+  (config memang mengabaikan `^_`; panggilan hook TIDAK dibuang supaya urutan
+  hook React tetap utuh);
+- badan `case 'link'` dibungkus blok `{}` (2 berkas).
+
+Codemod bersifat satu-kali (tidak disimpan di repo); pengukuran ulang cukup
+`npx eslint . -f json` lalu hitung per ruleId.
+
+**Runner uji baru.** `npm test` kini = `node scripts/run-tests.mjs`: mendeteksi
+SEMUA `tests/*.test.mjs` otomatis dan menjalankannya paralel. Sebelumnya rantai
+manual di package.json MELUPAKAN 9 berkas uji (asalPembahasan,
+batasCoverFirestore, bersihkanArtefakScan, gambarPembahasanImpor,
+kenaliDialekImpor, kesiapanStok, kodeSumberSoal, kualitasButir, panduImpor) —
+semuanya lulus dan kini ikut terjaga. Uji baru cukup disimpan di `tests/`.
+
+**Tahap 2 (belum dikerjakan, butuh pertimbangan perilaku):** 24 error perilaku —
+`react-hooks/immutability` 12, `react-hooks/set-state-in-effect` 9,
+`react-hooks/refs` 1, `react-hooks/purity` 1, `react-refresh/only-export-components` 1
+— tersebar di 15 berkas (terbanyak: IsiSections.jsx, slideMateri.jsx,
+LatihanAktivitasPage.jsx, ManageBlog.jsx, ManageSurvey.jsx), ditambah 31
+`no-unused-vars` yang menumpang di 9 berkas berperilaku di atas. Urutan kerja:
+satu berkas per PR, mekanis + perilaku sekaligus, supaya gerbang CI hijau.

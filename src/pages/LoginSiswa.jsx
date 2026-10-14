@@ -20,7 +20,7 @@ const LoginSiswa = () => {
   const [loading, setLoading] = useState(false);
   const [posters, setPosters] = useState([]);
   const [selectedPoster, setSelectedPoster] = useState(null);
-  const [theme] = useState('dark');
+  const [_theme] = useState('dark');
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
   // 🔥 BARU: "tetap login" -- kalau siswa buka halaman ini padahal
   // sesinya masih aktif (mis. lewat bookmark lama, tombol back browser,
@@ -48,7 +48,7 @@ const LoginSiswa = () => {
 
   // ===== GAME STATE =====
   const [showGame, setShowGame] = useState(false);
-  const [gameWords, setGameWords] = useState([
+  const [gameWords, _setGameWords] = useState([
     { word: 'BINTANG', hint: '🌌 Cahaya di langit malam' },
     { word: 'PLANET', hint: '🪐 Pengeliling matahari' },
     { word: 'ROKET', hint: '🚀 Kendaraan ke luar angkasa' },

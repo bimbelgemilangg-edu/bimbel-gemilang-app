@@ -11,7 +11,7 @@ import {
 const FinanceDashboard = () => {
   const navigate = useNavigate();
   const [privacyMode, setPrivacyMode] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   
   // Statistik bulan ini
   // 🔥 FIX BUG NYATA (uang kehitung dua kali): field `pemasukan` di sini

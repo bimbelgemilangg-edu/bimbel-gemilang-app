@@ -31,7 +31,7 @@ const ModulManager = () => {
   const [filterMapel, setFilterMapel] = useState("Semua");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [filterGuru, setFilterGuru] = useState("saya");
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [_isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [viewMode, setViewMode] = useState('grid');
   const [availableClasses, setAvailableClasses] = useState([]);
   const [availableSubjects, setAvailableSubjects] = useState([]);
@@ -309,7 +309,6 @@ const ModulManager = () => {
 
   const getTypeInfo = (item) => {
     // 🔥 CEK APAKAH ADA QUIZ DI DALAM MODUL
-    const hasQuiz = item.blocks?.some(b => b.type === 'quiz' && b.quizId);
     const hasQuizData = item.quizData?.length > 0;
     
     if (item.type === 'kuis_mandiri') {
@@ -729,7 +728,6 @@ const ModulManager = () => {
               const canDelete = canDeleteContent(item, isMine);
               const isDeleting = deletingId === item.id;
               const hasQuizInside = item.blocks?.some(b => b.type === 'quiz' && b.quizId);
-              const guruName = item.guruName || item.authorName || item.createdBy || 'Admin';
               
               const CardComponent = () => (
                 <div 

@@ -18,7 +18,8 @@ npm run dev       # dev server Vite (HMR) di http://localhost:5173
 npm run build     # build produksi ke dist/
 npm run preview   # pratinjau hasil build
 npm run lint      # periksa gaya & bug statis
-npm test          # 184 uji: kredensial, keuangan, kwitansi, bank soal, skoring, LaTeX, identitas guru
+npm test          # SEMUA uji logika: terdeteksi otomatis dari tests/*.test.mjs, paralel
+npm test -- kwitansi  # hanya berkas uji yang namanya mengandung 'kwitansi'
 npm run test:keuangan   # hanya uji logika uang
 npm run test:kwitansi   # hanya uji nominal -> teks yang tercetak di kwitansi
 npm run test:auth       # hanya uji hash password
@@ -70,6 +71,8 @@ diizinkan, bukan lewat kerahasiaan `apiKey`.
 ├── scripts/      Pembangun konten materi (Node .mjs & Python). Menghasilkan
 │                 file IMPOR-*.json yang diimpor ke Firestore.
 ├── tests/        Uji logika murni, jalan langsung di Node. `npm test`.
+│                 Berkas uji baru OTOMATIS terdeteksi runner
+│                 (scripts/run-tests.mjs) — tidak perlu edit package.json.
 └── docs/         Rencana, SOP, dan draft konten per mata pelajaran/bab.
 ```
 
@@ -218,12 +221,13 @@ jadi `A = 2,3`). Kalau ragu, jalankan pemeriksa di `tests/`.
   dengan CI hijau padahal `<Route>` untuk `GuruPantauTryOut` tidak pernah
   didaftarkan. Penggantinya `scripts/ci-penjaga-rute.mjs`, gerbang ke-3 di CI.
   Penjelasan di `AUDIT-REPO.md`.
-- **259 error ESLint tersisa**, didominasi `no-unused-vars` (214) dan
-  `react-hooks/exhaustive-deps` (67 warning) — hampir semuanya warisan, bukan
-  dari perubahan ini.
+- **Utang ESLint perilaku tersisa** (24 error: `react-hooks/*` 23 +
+  `react-refresh` 1 di 15 berkas) — butuh pertimbangan perilaku, dipetakan di
+  `AUDIT-REPO.md` Tahap 2. Utang mekanis (`no-unused-vars` dkk.) sudah lunas
+  2026-10-14 lewat codemod kolom-presis tanpa perubahan perilaku.
 - **Komponen raksasa.** `ImportHasilScanPage.jsx` 5.410 baris,
   `api/generateQuizFromTopic.js` 5.848 baris.
-- **Cakupan test masih sempit.** 184 uji sudah menutup `passwordHash.js`,
+- **Cakupan test masih sempit.** 351 subtest dalam 85 berkas sudah menutup `passwordHash.js`,
   `keuanganOwnerUtils.js` (saldo, kanal uang, setor kas, amortisasi, arus kas,
   neraca), `utils/uangTeks.js` (`terbilang` & `rp` yang tercetak di kwitansi
   resmi — 22 uji invarian, ditambah adu 3.035 nilai ke referensi independen),
