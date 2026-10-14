@@ -40,6 +40,8 @@ import { useSegarSaatTerlihat } from '../../../utils/useSegarSaatTerlihat';
 // tests/cocokkanTargetPaket.test.mjs.
 import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { kodePaketTampil } from '../../../utils/kodePaket';
+import { bangunDokumenTryOut } from '../../../utils/dokumenTryOut';
+import TumpukanDokumenTryOut from '../../../components/student/TumpukanDokumenTryOut.jsx';
 import { hitungTrenMingguan, kalimatDelta, targetPoinDariSiswa } from '../../../utils/trenMingguan';
 
 const fmt = (t) => new Date(t).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -114,6 +116,15 @@ export default function DaftarTryOutPage() {
   const riwayat = berInfo.filter((x) => x.status === 'selesai');
   const akanDatang = berInfo.filter((x) => x.belumDibuka);
 
+  // 📄 14 Okt 2026 (permintaan owner): aksi utama dirender sebagai
+  // TUMPUKAN DOKUMEN per test (subtes) + dokumen terjadwal di bawahnya.
+  // Logika kunci urutan/skor ada di util murni dokumenTryOut.js.
+  const kiniMs = sekarang.getTime();
+  const tumpukan = [
+    ...(utama ? bangunDokumenTryOut(utama.p, { sesi: utama.p.sesi || null, kini: kiniMs }) : []),
+    ...akanDatang.flatMap((x) => bangunDokumenTryOut(x.p, { sesi: x.p.sesi || null, kini: kiniMs })),
+  ];
+
   const metaPaket = (p) => `${p.totalSoal} soal · ${p.modeTimer === 'total' ? `${p.durasiTotalMenit} menit` : `${p.subtes?.length || 0} subtes`}`;
 
   return (
@@ -136,30 +147,13 @@ export default function DaftarTryOutPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* ============ 1. SATU AKSI UTAMA ============ */}
-          {utama ? (
-            <div style={{ background: 'linear-gradient(135deg, #6d28d9 0%, #4f46e5 100%)', borderRadius: 20, padding: 20, color: '#fff', boxShadow: '0 10px 30px rgba(79,70,229,0.35)' }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#ddd6fe', marginBottom: 6 }}>
-                {utama.status === 'berjalan' ? '⏳ lanjutanmu menunggu' : utama.izinBerlaku ? '🎟️ kesempatan kedua untukmu' : '🎯 wajib minggu ini'}
+          {/* ============ 1. TUMPUKAN DOKUMEN: satu aksi utama, per test ============ */}
+          {tumpukan.length ? (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#7c3aed', marginBottom: 8 }}>
+                {utama?.status === 'berjalan' ? '⏳ Lanjutanmu menunggu' : utama?.izinBerlaku ? '🎟️ Kesempatan kedua untukmu' : '🎯 Wajib minggu ini — satu dokumen = satu test'}
               </div>
-              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{utama.p.judul}</div>
-              <div style={{ fontSize: 12, color: '#e0e7ff', marginBottom: 4 }}>
-                {metaPaket(utama.p)} · kode {kodePaketTampil(utama.p)}
-              </div>
-              {utama.p.waktuTutup && (
-                <div style={{ fontSize: 11.5, color: '#fde68a', marginBottom: 12 }}>
-                  ⏰ ditutup {fmt(utama.p.waktuTutup)} — kerjakan sebelum lewat
-                </div>
-              )}
-              <button
-                onClick={() => navigate(`/siswa/tryout/${utama.p.id}`)}
-                style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: 'none', background: '#fff', color: '#4f46e5', fontSize: 15, fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,0.18)' }}
-              >
-                {utama.status === 'berjalan' ? 'LANJUTKAN SEKARANG' : utama.izinBerlaku ? 'PAKAI KESEMPATAN KEDUA' : 'MULAI TRY OUT'}
-              </button>
-              <div style={{ fontSize: 10.5, color: '#c7d2fe', marginTop: 8, textAlign: 'center' }}>
-                Satu-satunya tombol yang perlu kamu tekan minggu ini.
-              </div>
+              <TumpukanDokumenTryOut dokumen={tumpukan} onBuka={(d) => navigate(`/siswa/tryout/${d.paketId}`)} />
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 28, color: '#64748b', fontSize: 13, border: '1px dashed #e2e8f0', borderRadius: 16, background: '#fff' }}>
@@ -209,13 +203,6 @@ export default function DaftarTryOutPage() {
               </div>
             );
           })()}
-
-          {/* ============ 2. AKAN DATANG ============ */}
-          {akanDatang.length > 0 && (
-            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 14, padding: '10px 14px', fontSize: 12, color: '#92400e' }}>
-              🔓 Akan dibuka: {akanDatang.map((x) => `${x.p.judul} (${fmt(x.p.waktuBuka)})`).join(' · ')}
-            </div>
-          )}
 
           {/* ============ 3. TELAT: jalur jujur, bukan paksa buka ============ */}
           {telat.length > 0 && (

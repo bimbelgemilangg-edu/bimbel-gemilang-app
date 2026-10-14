@@ -42,7 +42,7 @@ export function bangunIdentitasSoal(soal, idx = 0, meta = {}) {
   const nomor = Number(soal.nomor) || Number(soal.no) || idx + 1;
   const teksSoal = String(soal.teksSoal || soal.soal || soal.teks_soal || '').trim();
   const bacaan = normalisasiBacaan(soal.bacaan || soal.stimulus || soal.wacana);
-  const idLokal = soal.idLokal || soal.id || [meta.fileName || 'batch', meta.mapel || soal.mapel || 'mapel', nomor, idx].join('_').replace(/[^a-zA-Z0-9_\-]/g, '_');
+  const idLokal = soal.idLokal || soal.id || [meta.fileName || 'batch', meta.mapel || soal.mapel || 'mapel', nomor, idx].join('_').replace(/[^a-zA-Z0-9_-]/g, '_');
   return {
     idLokal,
     nomor,

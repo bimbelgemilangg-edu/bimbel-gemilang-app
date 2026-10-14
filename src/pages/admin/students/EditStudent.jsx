@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
-import { doc, getDoc, updateDoc, setDoc, collection, getDocs, deleteField } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, collection, getDocs } from "firebase/firestore";
 import { uploadElearningFile } from '../../../services/uploadService';
 import { 
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
@@ -47,7 +47,7 @@ const EditStudent = () => {
     sma: { packages: [] },
     english: { levels: [] }
   });
-  const [biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
+  const [_biayaPendaftaran, setBiayaPendaftaran] = useState(25000);
 
   // ============================================================
   // 🔥 BARU: AKSES MAPEL MANUAL (OPSIONAL) — pelengkap sistem akses
@@ -62,7 +62,7 @@ const EditStudent = () => {
   // perubahan "kodeMapel-only" yang sudah diterapkan di ketiga file itu.
   const [mapelList, setMapelList] = useState([]);
   const [selectedMapelCodes, setSelectedMapelCodes] = useState([]);
-  const [hadManualOverride, setHadManualOverride] = useState(false);
+  const [_hadManualOverride, setHadManualOverride] = useState(false);
 
   // ============================================================
   // TANGGAL LAHIR DROPDOWNS
@@ -311,7 +311,7 @@ const EditStudent = () => {
       await setDoc(doc(db, 'students', id), { fotoDiubahOlehSiswa: false }, { merge: true });
       setFotoDiubahOlehSiswa(false);
       showAlert('✅ Siswa bisa ganti foto sendiri sekali lagi');
-    } catch (err) {
+    } catch (_err) {
       showError('❌ Gagal mengatur ulang jatah foto');
     }
   };
@@ -355,7 +355,7 @@ const EditStudent = () => {
   // ============================================================
   // VALIDASI & SIMPAN
   // ============================================================
-  const validateTotalTagihan = (value) => {
+  const _validateTotalTagihan = (value) => {
     const newTotal = parseInt(value) || 0;
     const bayar = parseInt(formData.totalBayar) || 0;
     if (newTotal < bayar) {
@@ -990,7 +990,7 @@ const styles = {
     margin: '0 auto 15px' 
   },
 
-  header: (m) => ({ 
+  header: (_m) => ({ 
     display: 'flex', 
     alignItems: 'center', 
     gap: 15, 

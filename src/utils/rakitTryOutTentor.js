@@ -42,6 +42,65 @@ export const MAKS_MENIT = 300;
 /** Alasan penolakan admin harus berarti, bukan "ok" atau titik. */
 export const MIN_PANJANG_ALASAN_TOLAK = 10;
 
+// ------------------------------------------------------------
+// SASARAN JENJANG DARI DATA SISWA (keputusan owner 14 Okt 2026)
+// ------------------------------------------------------------
+// Tentor WAJIB memilih satu jenjang; pilihannya bukan hardcode melainkan
+// jenjang yang BENAR-BENAR punya siswa aktif, supaya mustahil mengusulkan
+// try out untuk jenjang yang tidak ada muridnya.
+export const URUTAN_JENJANG = ['SD', 'SMP', 'SMA', 'SMK'];
+
+/** Jenjang dari nilai kelas siswa: '7'/'Kelas 7' -> SMP, '11' -> SMA, dst. */
+export function jenjangDariKelasSiswa(kelas = '') {
+  const k = String(kelas || '').trim();
+  const up = k.toUpperCase();
+  if (up.includes('SMK')) return 'SMK';
+  const m = k.match(/(\d{1,2})/);
+  if (m) {
+    const n = Number(m[1]);
+    if (n >= 1 && n <= 6) return 'SD';
+    if (n >= 7 && n <= 9) return 'SMP';
+    if (n >= 10 && n <= 12) return 'SMA';
+  }
+  return URUTAN_JENJANG.includes(up) ? up : '';
+}
+
+/** Jenjang yang punya siswa, urut SD..SMK — isi dropdown sasaran tentor. */
+export function opsiJenjangDariSiswa(daftarSiswa = []) {
+  const ada = new Set();
+  (Array.isArray(daftarSiswa) ? daftarSiswa : []).forEach((s) => {
+    const j = jenjangDariKelasSiswa(s?.kelas || s?.kelasSekolah);
+    if (j) ada.add(j);
+  });
+  return URUTAN_JENJANG.filter((j) => ada.has(j));
+}
+
+/** Kelas-kelas nyata pada satu jenjang (untuk opsi "kelas berapa"). */
+export function kelasDariSiswaUntukJenjang(daftarSiswa = [], jenjang = '') {
+  const ada = new Set();
+  (Array.isArray(daftarSiswa) ? daftarSiswa : []).forEach((s) => {
+    const k = String(s?.kelas || s?.kelasSekolah || '').trim();
+    if (k && jenjangDariKelasSiswa(k) === jenjang) ada.add(k);
+  });
+  return [...ada].sort((a, b) => {
+    const na = Number((a.match(/(\d{1,2})/) || [])[1]) || 0;
+    const nb = Number((b.match(/(\d{1,2})/) || [])[1]) || 0;
+    return na - nb || a.localeCompare(b, 'id');
+  });
+}
+
+/**
+ * Sahkah sasaran jenjang/kelas sebuah usulan?
+ * Kosong dan "Semua" (varian apa pun) DITOLAK — itulah pintu kecelakaan
+ * draf "untuk semua jenjang" yang dikembalikan admin.
+ */
+export function sasaranJenjangSah(targetKelas) {
+  const t = String(targetKelas ?? '').trim();
+  if (!t) return false;
+  if (/^semua(\s.*)?$/i.test(t)) return false;
+  return true;
+}
+
 export const GRANULARITAS = {
   MAPEL: 'mapel',
   MATERI: 'materi',
@@ -166,6 +225,15 @@ export function putusanKirimDraf({
   const tanpaTeks = soal.filter((s) => !teksSoalDari(s)).length;
   if (tanpaTeks) alasan.push(`${tanpaTeks} butir tidak punya teks soal — tidak boleh masuk ujian.`);
 
+  // --- SASARAN JENJANG (keputusan owner 14 Okt 2026) ---
+  // Pilihan "semua jenjang" DIHAPUS dari form tentor: kasus nyata draf
+  // berjudul "kelas 7 SMP" tertuju semua jenjang sehingga dikembalikan
+  // admin. Target wajib SATU jenjang/kelas yang sadar dipilih; halaman
+  // mengisi pilihan ini dari data siswa (lihat opsiJenjangDariSiswa).
+  if (!sasaranJenjangSah(targetKelas)) {
+    alasan.push('Sasaran jenjang WAJIB satu pilihan sesuai data siswa — opsi "semua jenjang" dihapus per keputusan owner 14 Okt 2026 (draf berjudul satu kelas pernah tertuju semua jenjang).');
+  }
+
   // --- sasaran paket: lintas jenjang/mapel tanpa target yang dinyatakan ---
   // Bukan pembatal (try out campuran TKA memang lintas mapel), tetapi admin
   // perlu melihatnya jelas sebelum menyetujui, dan tentor perlu sadar bahwa
@@ -173,8 +241,8 @@ export function putusanKirimDraf({
   const semuaIdentitas = soal.map(identitasDari);
   const jenjangUnik = [...new Set(semuaIdentitas.map((i) => i.jenjang))];
   const mapelUnik = [...new Set(semuaIdentitas.map((i) => i.mapel))];
-  if (!String(targetKelas || '').trim() && jenjangUnik.length > 1) {
-    peringatan.push(`Butir berasal dari ${jenjangUnik.length} jenjang berbeda (${jenjangUnik.join(', ')}) tetapi sasaran kelas belum diisi. Admin akan menanyakannya.`);
+  if (jenjangUnik.length > 1 && sasaranJenjangSah(targetKelas)) {
+    peringatan.push(`Butir berasal dari ${jenjangUnik.length} jenjang berbeda (${jenjangUnik.join(', ')}) sementara sasaran paket "${String(targetKelas).trim()}". Admin akan memverifikasi kecakupannya.`);
   }
   if (!String(targetKategori || '').trim() && mapelUnik.length > 3) {
     peringatan.push(`Paket mencampur ${mapelUnik.length} mata pelajaran tanpa kategori yang dinyatakan.`);

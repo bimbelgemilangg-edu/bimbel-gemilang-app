@@ -690,7 +690,7 @@ export const getRankingGabungan = async (periode) => {
 // HELPER
 // ============================================================
 
-function getPreviousMonth(periode) {
+function _getPreviousMonth(periode) {
   const [year, month] = periode.split('-');
   let prevMonth = parseInt(month) - 1;
   let prevYear = parseInt(year);

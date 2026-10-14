@@ -482,7 +482,7 @@ const AIGenerateQuiz = ({
   ] = useState([]);
 
   const [
-    diagnostics,
+    _diagnostics,
     setDiagnostics,
   ] = useState(null);
 

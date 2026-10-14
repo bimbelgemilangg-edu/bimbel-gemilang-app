@@ -36,6 +36,7 @@ const AI_TIMEOUT_MS = 12_000; // pendek sengaja -- ini fitur pemolesan, bukan in
 
 function cleanText(value = '') {
   return String(value ?? '')
+    // eslint-disable-next-line no-control-regex -- sengaja: membuang aksara kontrol C0 dari teks mentah AI supaya tidak ikut tercetak/tersimpan
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();

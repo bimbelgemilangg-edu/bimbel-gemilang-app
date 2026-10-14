@@ -146,10 +146,10 @@ const renderMath = (text) => {
   return parts.map((part, i) => {
     if (part.startsWith('$$') && part.endsWith('$$')) {
       try { return <BlockMath key={i} math={part.substring(2, part.length - 2)} />; }
-      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+      catch (_e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     } else if (part.startsWith('$') && part.endsWith('$')) {
       try { return <InlineMath key={i} math={part.substring(1, part.length - 1)} />; }
-      catch (e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
+      catch (_e) { return <span key={i} style={{color:'red'}}>{part}</span>; }
     }
     // 🔥 FIX: sama seperti di ManageQuiz.jsx -- kalau AI kelolos nyelipin
     // markdown (**tebal**, baris baru), siswa yang ngerjain soal TETAP
@@ -213,9 +213,9 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const [flaggedQuestions, setFlaggedQuestions] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [results, setResults] = useState(null);
+  const [_results, setResults] = useState(null);
   const [studentInfo, setStudentInfo] = useState({ nim: '', name: '', kelas: '', program: '', enrolledSubjects: null });
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [_isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   // 🔥 BARU: dipakai buat dropdown "Menjodohkan" versi custom (bukan
   // `<select>` bawaan) -- lihat penjelasan lengkap kenapa ini WAJIB diganti
   // di dekat renderQuestionBody(), tipe 'matching'.
@@ -266,7 +266,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     if (Object.keys(answers).length === 0) return; // jangan timpa draft lama dengan kosongan
     try {
       localStorage.setItem(quizDraftKey, JSON.stringify(answers));
-    } catch (e) { /* localStorage penuh/gak tersedia -- diamkan, gak fatal */ }
+    } catch (_e) { /* localStorage penuh/gak tersedia -- diamkan, gak fatal */ }
   }, [answers, quizDraftKey]);
 
   // ===== RESPONSIVE =====
@@ -291,7 +291,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
       try {
         const raw = localStorage.getItem('studentEnrolledSubjects');
         enrolledSubjects = raw ? JSON.parse(raw) : null;
-      } catch (e) { enrolledSubjects = null; }
+      } catch (_e) { enrolledSubjects = null; }
     }
     setStudentInfo({ nim, name, kelas, program, enrolledSubjects });
   }, [studentData]);
@@ -372,7 +372,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
           try {
             const parentSnap = await getDoc(doc(db, "bimbel_modul", data.parentModulId));
             if (parentSnap.exists()) targetingSource = parentSnap.data();
-          } catch (e) { /* gagal ambil induk -> pakai data kuis sendiri sbg fallback di bawah */ }
+          } catch (_e) { /* gagal ambil induk -> pakai data kuis sendiri sbg fallback di bawah */ }
         }
         if (cancelled) return; // 🔥 eksekusi ini sudah basi -- abaikan sebelum masuk ke keputusan akses final
 
@@ -472,7 +472,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
                   setAnswers(parsedDraft);
                 }
               }
-            } catch (e) { /* draft rusak/gak valid -- abaikan, jangan sampai error */ }
+            } catch (_e) { /* draft rusak/gak valid -- abaikan, jangan sampai error */ }
           }
           
           if (existing > 0) {
@@ -1334,7 +1334,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
       // 🔥 Submit sukses -- draft di localStorage udah gak diperlukan lagi,
       // bersihkan biar gak numpuk.
       if (quizDraftKey) {
-        try { localStorage.removeItem(quizDraftKey); } catch (e) { /* abaikan */ }
+        try { localStorage.removeItem(quizDraftKey); } catch (_e) { /* abaikan */ }
       }
 
       // Keluar dari fullscreen setelah submit (kalau tadi diaktifkan)
@@ -1939,10 +1939,10 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
   const progress = getProgress();
   const isLastQuestion = currentIndex === questions.length - 1;
   const isFirstQuestion = currentIndex === 0;
-  const questionStatus = getQuestionStatus(currentQuestion.id);
+  const _questionStatus = getQuestionStatus(currentQuestion.id);
 
   // 🔥 TIPE IKON
-  const typeIcons = {
+  const _typeIcons = {
     multiple: <CheckCircle size={14} />,
     truefalse: <Table size={14} />,
     multiselect: <CheckSquare size={14} />,
@@ -1952,7 +1952,7 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     matching: <Grid size={14} />
   };
 
-  const typeLabels = {
+  const _typeLabels = {
     multiple: 'Pilihan Ganda',
     truefalse: 'Benar/Salah',
     multiselect: 'Pilih > 1',

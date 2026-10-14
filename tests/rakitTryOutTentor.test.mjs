@@ -195,14 +195,14 @@ test('INVARIAN: tipe yang tak bisa dirender try out DITOLAK (bukan sekadar diben
 test('durasi di luar batas ditolak', () => {
   assert.equal(putusanKirimDraf({ judul: 'Try Out Valid', daftarSoal: paketButir(10), durasiTotalMenit: 0 }).boleh, false);
   assert.equal(putusanKirimDraf({ judul: 'Try Out Valid', daftarSoal: paketButir(10), durasiTotalMenit: 9999 }).boleh, false);
-  assert.equal(putusanKirimDraf({ judul: 'Try Out Valid', daftarSoal: paketButir(10), durasiTotalMenit: 120 }).boleh, true);
+  assert.equal(putusanKirimDraf({ judul: 'Try Out Valid', daftarSoal: paketButir(10), durasiTotalMenit: 120, targetKelas: 'SMA' }).boleh, true);
 });
 
 test('mode per-subtes tanpa durasi per subtes ditolak', () => {
   const p = putusanKirimDraf({ judul: 'Try Out Subtes', daftarSoal: paketButir(10), modeTimer: 'per-subtes', subtes: [{ nama: 'Matematika' }] });
   assert.equal(p.boleh, false);
   assert.match(p.alasan.join(' '), /belum punya durasi/);
-  const q = putusanKirimDraf({ judul: 'Try Out Subtes', daftarSoal: paketButir(10), modeTimer: 'per-subtes', subtes: [{ nama: 'Matematika', durasiMenit: 30 }] });
+  const q = putusanKirimDraf({ judul: 'Try Out Subtes', daftarSoal: paketButir(10), modeTimer: 'per-subtes', subtes: [{ nama: 'Matematika', durasiMenit: 30 }], targetKelas: 'SMA' });
   assert.equal(q.boleh, true);
 });
 
@@ -219,13 +219,23 @@ test('butir tanpa teks soal ditolak; butir berbendera hanya diperingatkan', () =
   assert.ok(berbendera.peringatan.some((p) => /bendera mutu/.test(p)));
 });
 
-test('paket lintas jenjang tanpa sasaran kelas diperingatkan, bukan ditolak', () => {
+test('paket lintas jenjang BER-SASARAN diperingatkan, bukan ditolak', () => {
+  const p = putusanKirimDraf({
+    judul: 'Try Out Campur Jenjang',
+    daftarSoal: [...paketButir(4), ...paketButir(4).map((s, i) => ({ ...s, id: `b${i}`, jenjang: 'SMP/MTs' }))],
+    targetKelas: 'SMA',
+  });
+  assert.equal(p.boleh, true);
+  assert.ok(p.peringatan.some((w) => /jenjang berbeda/.test(w)));
+});
+
+test('paket lintas jenjang TANPA sasaran: ditolak (bukan cuma diperingatkan) sejak 14 Okt 2026', () => {
   const p = putusanKirimDraf({
     judul: 'Try Out Campur Jenjang',
     daftarSoal: [...paketButir(4), ...paketButir(4).map((s, i) => ({ ...s, id: `b${i}`, jenjang: 'SMP/MTs' }))],
   });
-  assert.equal(p.boleh, true);
-  assert.ok(p.peringatan.some((w) => /jenjang berbeda/.test(w)));
+  assert.equal(p.boleh, false);
+  assert.ok(p.alasan.some((a) => /jenjang/i.test(a)));
 });
 
 // ------------------------------------------------------------
@@ -359,4 +369,67 @@ test('ringkasan draf memberi admin gambaran sekali pandang', () => {
 test('ringkasan paket kosong/janggal tidak melempar', () => {
   assert.equal(ringkasDraf({}).judul, '(tanpa judul)');
   assert.equal(ringkasDraf(null).jumlahButir, 0);
+});
+
+// ------------------------------------------------------------
+// 7. Sasaran jenjang WAJIB (keputusan owner 14 Okt 2026)
+// ------------------------------------------------------------
+import {
+  sasaranJenjangSah, jenjangDariKelasSiswa, opsiJenjangDariSiswa,
+  kelasDariSiswaUntukJenjang,
+} from '../src/utils/rakitTryOutTentor.js';
+
+const drafValid = (targetKelas) => putusanKirimDraf({
+  judul: 'Try Out Matematika Kelas 7',
+  daftarSoal: paketButir(6),
+  modeTimer: 'total',
+  durasiTotalMenit: 60,
+  granularitas: GRANULARITAS.MAPEL,
+  targetKelas,
+  targetKategori: 'Reguler',
+});
+
+test('IN VARIAN: sasaran "Semua" DITOLAK — pintu draf semua-jenjang tertutup', () => {
+  for (const sasaran of ['Semua', 'semua', 'SEMUA', '  Semua ', '']) {
+    const p = drafValid(sasaran);
+    assert.equal(p.boleh, false, `sasaran "${sasaran}" harusnya ditolak`);
+    assert.ok(p.alasan.some((a) => /jenjang/i.test(a)), 'alasan wajib menyebut jenjang');
+  }
+});
+
+test('sasaran satu jenjang/kelas lolos dari aturan jenjang', () => {
+  for (const sasaran of ['SMP', '7', 'Kelas 7', 'SMA']) {
+    const p = drafValid(sasaran);
+    assert.equal(p.boleh, true, `sasaran "${sasaran}" harusnya boleh: ${p.alasan.join('; ')}`);
+  }
+});
+
+test('sasaranJenjangSah: kosong & semua varian "semua" tidak sah', () => {
+  assert.equal(sasaranJenjangSah(''), false);
+  assert.equal(sasaranJenjangSah(null), false);
+  assert.equal(sasaranJenjangSah('Semua'), false);
+  assert.equal(sasaranJenjangSah('semua jenjang'), false);
+  assert.equal(sasaranJenjangSah('SMP'), true);
+  assert.equal(sasaranJenjangSah('12'), true);
+});
+
+test('jenjangDariKelasSiswa memetakan kelas nyata ke jenjang', () => {
+  assert.equal(jenjangDariKelasSiswa('6'), 'SD');
+  assert.equal(jenjangDariKelasSiswa('7'), 'SMP');
+  assert.equal(jenjangDariKelasSiswa('Kelas 9'), 'SMP');
+  assert.equal(jenjangDariKelasSiswa('10'), 'SMA');
+  assert.equal(jenjangDariKelasSiswa('12 IPA'), 'SMA');
+  assert.equal(jenjangDariKelasSiswa('SMK 11'), 'SMK');
+  assert.equal(jenjangDariKelasSiswa(''), '');
+});
+
+test('opsiJenjangDariSiswa & kelas per jenjang datang dari data siswa', () => {
+  const siswa = [
+    { kelas: '7' }, { kelas: '7' }, { kelas: '8' },
+    { kelas: '10' }, { kelas: '11' }, { kelas: 'SMK 11' },
+  ];
+  assert.deepEqual(opsiJenjangDariSiswa(siswa), ['SMP', 'SMA', 'SMK']);
+  assert.deepEqual(kelasDariSiswaUntukJenjang(siswa, 'SMP'), ['7', '8']);
+  assert.deepEqual(kelasDariSiswaUntukJenjang(siswa, 'SD'), []);
+  assert.deepEqual(opsiJenjangDariSiswa([]), []);
 });

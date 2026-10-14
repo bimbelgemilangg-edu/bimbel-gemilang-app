@@ -27,7 +27,7 @@ const PendaftaranOnline = () => {
 
   // ===== CEK PEMBAYARAN =====
   const [showCekBayar, setShowCekBayar] = useState(false);
-  const [cekNama, setCekNama] = useState('');
+  const [_cekNama, _setCekNama] = useState('');
   const [cekWA, setCekWA] = useState('');
   const [cekLoading, setCekLoading] = useState(false);
   const [cekResult, setCekResult] = useState(null);
@@ -162,7 +162,7 @@ const PendaftaranOnline = () => {
           });
         }
       }
-    } catch (e) {
+    } catch (_e) {
       setCekError('Gagal mengecek data. Silakan coba lagi.');
       setTimeout(() => setCekError(''), 4000);
     }
