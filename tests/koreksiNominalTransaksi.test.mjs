@@ -91,3 +91,6 @@ uji('deteksi dua buku tidak cocok (banner sinkronisasi)', () => {
 
 console.log(`\nkoreksiNominalTransaksi: ${lulus} lulus, ${gagal} gagal`);
 process.exit(gagal ? 1 : 0);
+
+// Gerbang CI: harness wajib exit non-zero bila ada kegagalan (14 Okt 2026).
+if (typeof gagal !== "undefined" && gagal > 0) process.exit(1);

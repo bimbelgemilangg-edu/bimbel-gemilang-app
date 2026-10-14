@@ -244,3 +244,17 @@ uji('INVARIAN lama utuh: fitur di luar daftar default tetap MATI tanpa konfigura
   const r = putuskanAksesFitur(null, 'fiturBaruLain', { studentId: 'STD-1' });
   assert.equal(r.aktif, false);
 });
+
+uji('BUG ROLLOUT: sisa pilot whitelist TIDAK boleh memfilter fitur default nyala', () => {
+  // Kasus nyata 14 Okt 2026: produksi menyimpan fiturPilot.papanJelajah =
+  // {aktif:true, mode:whitelist, daftarSiswaUji:[Tasya]} sehingga siswa lain
+  // tetap melihat tampilan lama walau fitur sudah di-rollout.
+  const cfg = { papanJelajah: { aktif: true, mode: 'whitelist', daftarSiswaUji: ['STD-0926070002'] } };
+  const lain = putuskanAksesFitur(cfg, 'papanJelajah', { studentId: 'STD-0726070004', kelasSekolah: '7' });
+  assert.equal(lain.aktif, true, 'siswa di luar whitelist pilot tetap harus dapat fitur rollout');
+  const rem = putuskanAksesFitur({ papanJelajah: { aktif: false } }, 'papanJelajah', { studentId: 'STD-1' });
+  assert.equal(rem.aktif, false, 'rem darurat tetap berfungsi');
+  // fitur non-default tetap patuh whitelist (invarian pilot lama utuh)
+  const ketat = putuskanAksesFitur({ fiturLain: { aktif: true, mode: 'whitelist', daftarSiswaUji: ['STD-1'] } }, 'fiturLain', { studentId: 'STD-2' });
+  assert.equal(ketat.aktif, false);
+});
