@@ -22,6 +22,8 @@ import { ArrowLeft, BookUp, Loader2, CheckCircle2, AlertTriangle } from 'lucide-
 import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
   kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
+  klasifikasiGagalEkstraksi, parseResponsEkstraksi,
+  saringButirDuplikat, saringBabDuplikat,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 
@@ -104,6 +106,42 @@ export default function ImporBukuHtmlPage() {
     try { localStorage.setItem(key, JSON.stringify(next)); } catch (_e) { /* kuota penuh: progres tetap di memori */ }
   };
 
+  // Panggil AI untuk satu kelompok halaman; TAHAN BANTING (15 Okt):
+  //  - respons teks/non-JSON diparse defensif (parseResponsEkstraksi);
+  //  - kelas 'payload' -> kelompok dipecah dua & dicoba lagi (maks 2 level);
+  //  - kelas 'kuota'   -> lempar kode khusus supaya loop luar JEDA rapi.
+  const panggilAi = async (g, kedalaman = 0) => {
+    const res = await fetch('/api/konversiModulScan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        images: keGambarAi(g.dataUris || g.images),
+        placeholders: [],
+        meta: {
+          judul: `${identitas.materi || identitas.mapel} — halaman ${g.halamanMulai}-${g.halamanSelesai}`,
+          mapel: identitas.mapel, jenjang: identitas.jenjang,
+        },
+      }),
+    });
+    const pr = parseResponsEkstraksi(await res.text());
+    if (pr.ok) return [{ grup: g, bab: pr.json.bab, provider: pr.json.provider }];
+    const jenis = klasifikasiGagalEkstraksi(pr.pesan);
+    const du = g.dataUris || [];
+    if (jenis === 'payload' && kedalaman < 2 && du.length > 4) {
+      const setengah = Math.ceil(du.length / 2);
+      tambahLog(`↪ hal ${g.halamanMulai}-${g.halamanSelesai}: payload ditolak -> dipecah dua & dicoba lagi.`);
+      const g1 = { ...g, dataUris: du.slice(0, setengah), halamanSelesai: g.halamanMulai + setengah - 1 };
+      const g2 = { ...g, dataUris: du.slice(setengah), halamanMulai: g.halamanMulai + setengah };
+      return [...(await panggilAi(g1, kedalaman + 1)), ...(await panggilAi(g2, kedalaman + 1))];
+    }
+    if (jenis === 'kuota') {
+      const e = new Error(`KUOTA/rate-limit tercapai: ${pr.pesan.slice(0, 140)}`);
+      e.kode = 'kuota';
+      throw e;
+    }
+    throw new Error(pr.pesan.slice(0, 200));
+  };
+
   const prosesAi = async () => {
     if (sibuk || gambar.length === 0) return;
     setSibuk(true); setLog([]); setPratinjau(null);
@@ -113,8 +151,10 @@ export default function ImporBukuHtmlPage() {
     const babs = [];
     let lokal = { ...progres };
     for (const g of grup) {
-      if (lokal[g.urutan]?.status === 'ok' && lokal[g.urutan].bab) {
-        babs.push({ grup: g, bab: lokal[g.urutan].bab, provider: lokal[g.urutan].provider || 'progres tersimpan' });
+      const kProgres = String(g.halamanMulai);
+      if (lokal[kProgres]?.status === 'ok' && lokal[kProgres].bab) {
+        const t = lokal[kProgres];
+        babs.push({ grup: { ...g, halamanMulai: t.halamanMulai ?? g.halamanMulai, halamanSelesai: t.halamanSelesai ?? g.halamanSelesai }, bab: t.bab, provider: t.provider || 'progres tersimpan' });
         tambahLog(`→ hal ${g.halamanMulai}-${g.halamanSelesai}: lewati (sudah selesai sebelumnya).`);
         continue;
       }
@@ -124,26 +164,19 @@ export default function ImporBukuHtmlPage() {
       }
       try {
         tambahLog(`Memanggil AI untuk halaman ${g.halamanMulai}-${g.halamanSelesai}…`);
-        const r = await fetch('/api/konversiModulScan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            images: keGambarAi(g.dataUris || g.images),
-            placeholders: [],
-            meta: {
-              judul: `${identitas.materi || identitas.mapel} — halaman ${g.halamanMulai}-${g.halamanSelesai}`,
-              mapel: identitas.mapel, jenjang: identitas.jenjang,
-            },
-          }),
+        const hasil = await panggilAi(g);
+        hasil.forEach((h) => {
+          babs.push(h);
+          lokal = { ...lokal, [String(h.grup.halamanMulai)]: { status: 'ok', bab: h.bab, provider: h.provider, halamanMulai: h.grup.halamanMulai, halamanSelesai: h.grup.halamanSelesai } };
         });
-        const j = await r.json();
-        if (!j?.success || !j.bab) throw new Error(j?.error || 'respons tidak valid');
-        babs.push({ grup: g, bab: j.bab, provider: j.provider });
-        lokal = { ...lokal, [g.urutan]: { status: 'ok', bab: j.bab, provider: j.provider } };
         simpanProgres(keyProgres, lokal);
-        tambahLog(`✓ halaman ${g.halamanMulai}-${g.halamanSelesai}: ${j.bab.sections?.length || 0} seksi, ${j.bab.ujiPemahaman?.length || 0} soal (via ${j.provider})`);
+        hasil.forEach((h) => tambahLog(`✓ halaman ${h.grup.halamanMulai}-${h.grup.halamanSelesai}: ${h.bab.sections?.length || 0} seksi, ${h.bab.ujiPemahaman?.length || 0} soal (via ${h.provider})`));
       } catch (e) {
-        lokal = { ...lokal, [g.urutan]: { status: 'gagal' } };
+        if (e?.kode === 'kuota') {
+          tambahLog(`⏸ ${e.message} — JEDA OTOMATIS. Lanjutkan nanti (kuota free tier biasanya pulih); kelompok sukses tetap tersimpan.`, false);
+          break;
+        }
+        lokal = { ...lokal, [kProgres]: { status: 'gagal' } };
         simpanProgres(keyProgres, lokal);
         tambahLog(`✗ halaman ${g.halamanMulai}-${g.halamanSelesai}: ${e?.message || e}`, false);
       }
@@ -161,10 +194,11 @@ export default function ImporBukuHtmlPage() {
         if (butirSatu) butir.push({ ...butirSatu, dipilih: true, babIndex: bi, asal: `hal ${b.halamanMulai}-${b.halamanSelesai}` });
       });
     });
-    setPratinjau({ babs: gabungan.map((b) => ({ ...b, judulEdit: b.judul || '' })), butir });
+    setPratinjau({ babs: gabungan.map((b) => ({ ...b, judulEdit: b.judul || '', disertakan: true })), butir });
     tambahLog(`Pratinjau siap: ${gabungan.length} bab (digabung otomatis dari ${babs.length} potongan), ${butir.length} soal pg siap masuk bank (multi/bs dilewati untuk input manual).`);
     setSibuk(false);
   };
+
 
   const simpan = async () => {
     if (sibuk || !pratinjau) return;
@@ -185,32 +219,50 @@ export default function ImporBukuHtmlPage() {
         idBuku = ref.id;
         tambahLog(`✓ Buku digital draf dibuat (${idBuku}).`);
       }
-      for (let i = 0; i < pratinjau.babs.length; i += 1) {
-        const b = pratinjau.babs[i];
+      const dipakaiIdx = pratinjau.babs.map((b, i2) => (b.disertakan === false ? -1 : i2)).filter((i2) => i2 >= 0);
+      let babPayloads = dipakaiIdx.map((idx, ii) => {
+        const b = pratinjau.babs[idx];
+        return {
+          payload: {
+            judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${ii + 1}`,
+            sections: b.sections || [],
+            ujiPemahaman: b.ujiPemahaman || [],
+            urutan: ii + 1,
+            tipe: 'teks',
+            status: 'draft',
+            sumberImpor: 'buku-html',
+            halamanSumber: [b.halamanMulai, b.halamanSelesai],
+            providerAi: (b.provider || []).join('/'),
+            updatedAt: serverTimestamp(),
+          },
+        };
+      });
+      // 🔥 ANTI-DUPLIKAT (owner 15 Okt): simpan kedua / lanjutan kelompok
+      // gagal tidak mendobel bab maupun butir; yang dilewati dilaporkan.
+      if (targetBuku === 'ada' && idBuku) {
+        const snapBab = await getDocs(collection(db, 'buku_digital', idBuku, 'bab'));
+        const eksBab = snapBab.docs.map((d) => d.data());
+        const sebelumBab = babPayloads.length;
+        babPayloads = saringBabDuplikat(babPayloads.map((x) => x.payload), eksBab).map((payload) => ({ payload }));
+        if (sebelumBab - babPayloads.length > 0) tambahLog(`↷ ${sebelumBab - babPayloads.length} bab dilewati karena sudah ada di buku ini (anti-duplikat).`);
+      }
+      for (let ii = 0; ii < babPayloads.length; ii += 1) {
         const ref = doc(collection(db, 'buku_digital', idBuku, 'bab'));
-        await setDoc(ref, {
-          judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${i + 1}`,
-          sections: b.sections || [],
-          ujiPemahaman: b.ujiPemahaman || [],
-          urutan: i + 1,
-          tipe: 'teks',
-          status: 'draft',
-          sumberImpor: 'buku-html',
-          halamanSumber: [b.halamanMulai, b.halamanSelesai],
-          providerAi: (b.provider || []).join('/'),
-          updatedAt: serverTimestamp(),
-        });
-        tambahLog(`✓ Bab ${i + 1} "${b.judulEdit || b.judul}" (hal ${b.halamanMulai}-${b.halamanSelesai}) tersimpan sebagai draf.`);
+        await setDoc(ref, babPayloads[ii].payload);
+        tambahLog(`✓ Bab "${babPayloads[ii].payload.judul}" (hal ${babPayloads[ii].payload.halamanSumber[0]}-${babPayloads[ii].payload.halamanSumber[1]}) tersimpan sebagai draf.`);
       }
       if (ikutBank) {
-        const dipilih = pratinjau.butir.filter((b) => b.dipilih);
+        let dipilih = pratinjau.butir.filter((b) => b.dipilih && dipakaiIdx.includes(b.babIndex));
+        const snapBank = await getDocs(query(collection(db, 'bank_soal'), where('sumberFile', '==', namaFile)));
+        const eksButir = snapBank.docs.map((d) => d.data());
+        const sebelumButir = dipilih.length;
+        dipilih = saringButirDuplikat(dipilih, eksButir);
+        if (sebelumButir - dipilih.length > 0) tambahLog(`↷ ${sebelumButir - dipilih.length} soal dilewati karena sudah ada di bank (anti-duplikat).`);
         for (let i = 0; i < dipilih.length; i += 400) {
           const batch = writeBatch(db);
           dipilih.slice(i, i + 400).forEach((b) => {
             const { dipilih: _d, asal: _a, babIndex, ...butir } = b;
-            // Identitas materi butir MENGIKUTI nama bab yang diedit operator
-            // (fallback materi identitas) — supaya soal terpanggil per bab.
-            const judulBab = (pratinjau.babs[babIndex]?.judulEdit || pratinjau.babs[babIndex]?.judul || identitas.materi || '').trim();
+            const judulBab = (pratinjau.babs[babIndex]?.judulEdit || pratinjau.babs[babIndex]?.judul || identitas.materi || `${identitas.mapel} Kelas ${identitas.kelas}`).trim();
             batch.set(doc(collection(db, 'bank_soal')), {
               ...butir,
               materi: judulBab,
@@ -221,7 +273,7 @@ export default function ImporBukuHtmlPage() {
           });
           await batch.commit();
         }
-        tambahLog(`✓ ${pratinjau.butir.filter((b) => b.dipilih).length} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
+        tambahLog(`✓ ${dipilih.length} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
       }
       try { localStorage.removeItem(kunciProgresImpor(namaFile, html ? html.length : 0)); } catch (_e) { /* abaikan */ }
       setProgres({});
@@ -343,6 +395,10 @@ export default function ImporBukuHtmlPage() {
           {pratinjau.babs.map((b, i) => (
             <div key={i} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: '8px 10px', marginBottom: 8, fontSize: 12 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <label style={{ display: 'inline-flex', gap: 5, alignItems: 'center', fontSize: 11, color: '#475569', whiteSpace: 'nowrap' }}>
+                  <input type="checkbox" checked={b.disertakan !== false} onChange={(e) => setPratinjau((prev) => ({ ...prev, babs: prev.babs.map((x, xi) => (xi === i ? { ...x, disertakan: e.target.checked } : x)) }))} />
+                  ikut
+                </label>
                 <b style={{ whiteSpace: 'nowrap' }}>Bab {i + 1} · hal {b.halamanMulai}-{b.halamanSelesai}:</b>
                 <input
                   value={b.judulEdit}

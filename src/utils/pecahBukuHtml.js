@@ -212,3 +212,72 @@ export function keGambarAi(list = []) {
     })
     .filter((g) => g.data.length > 0);
 }
+
+/**
+ * Klasifikasi pesan gagal ekstraksi AI supaya klien bisa bersikap tepat
+ * (insiden 15 Okt: 18 kelompok gagal campur aduk kuota & payload):
+ *  - 'kuota'   : 429/503/rate-limit -> JEDA, lanjut nanti (resume melewatkan yang sukses)
+ *  - 'payload' : respons bukan JSON / 413 / body terlalu besar -> pecah kelompok lebih kecil & coba lagi
+ *  - 'lain'    : cetak apa adanya ke log
+ */
+export function klasifikasiGagalEkstraksi(pesan = '') {
+  const t = String(pesan || '');
+  if (/429|quota|rate-?limit|503|UNAVAILABLE|high demand/i.test(t)) return 'kuota';
+  if (/413|payload|too large|not valid JSON|Unexpected token|ENTITY_TOO_LARGE/i.test(t)) return 'payload';
+  return 'lain';
+}
+
+/**
+ * Parse respons endpoint ekstraksi dengan defensif: endpoint pernah
+ * mengembalikan teks polos ("An error occurred…") sehingga r.json()
+ * melempar dan log owner jadi sampah. Kembalikan objek seragam.
+ * @returns {{ok:boolean, json:object|null, pesan:string}}
+ */
+export function parseResponsEkstraksi(teks = '') {
+  const t = String(teks ?? '');
+  try {
+    const json = JSON.parse(t);
+    if (json && json.success && json.bab) return { ok: true, json, pesan: '' };
+    return { ok: false, json: json || null, pesan: json?.error || 'respons tanpa bab/success' };
+  } catch (_e) {
+    return { ok: false, json: null, pesan: t.slice(0, 300) || 'respons kosong' };
+  }
+}
+
+// ------------------------------------------------------------
+// ANTI-DUPLIKAT IMPOR (owner 15 Okt: "nanti dobel jadinya?"):
+// penyimpanan kedua (melanjutkan kelompok gagal) atau pengulangan
+// penuh dari nol TIDAK boleh mendobel bab/butir. Kunci identitas
+// deterministic: berkas + halaman + teks soal ternormalisasi.
+// ------------------------------------------------------------
+const normTeks = (s) => String(s ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** Kunci identitas butir impor (bandingnya murah & stabil). */
+export function kunciButirImpor(b = {}) {
+  return `${normTeks(b.sumberFile)}|${b.sumberHalaman ?? ''}|${normTeks(b.soal)}`;
+}
+
+/** Buang butir yang sudah ada di bank (berkas+halaman+teks sama). */
+export function saringButirDuplikat(butirBaru = [], butirEksisting = []) {
+  const ada = new Set((Array.isArray(butirEksisting) ? butirEksisting : []).map(kunciButirImpor));
+  return (Array.isArray(butirBaru) ? butirBaru : []).filter((b) => !ada.has(kunciButirImpor(b)));
+}
+
+/** True bila dua rentang halaman [a1,a2] & [b1,b2] bertumpang tindih. */
+export function rentangBertumpangTindih(a = [], b = []) {
+  const [a1, a2] = [Number(a[0]), Number(a[1])];
+  const [b1, b2] = [Number(b[0]), Number(b[1])];
+  if (![a1, a2, b1, b2].every((x) => Number.isFinite(x))) return false;
+  return a1 <= b2 && b1 <= a2;
+}
+
+/** Buang bab yang judulnya sama ATAU rentang halamannya tumpang tindih. */
+export function saringBabDuplikat(babBaru = [], babEksisting = []) {
+  const judulAda = new Set((Array.isArray(babEksisting) ? babEksisting : []).map((b) => normTeks(b?.judul)));
+  const rentangAda = (Array.isArray(babEksisting) ? babEksisting : [])
+    .map((b) => b?.halamanSumber || []).filter((r) => r.length === 2);
+  return (Array.isArray(babBaru) ? babBaru : []).filter((b) => {
+    if (judulAda.has(normTeks(b?.judul))) return false;
+    return !rentangAda.some((r) => rentangBertumpangTindih(b?.halamanSumber || [], r));
+  });
+}
