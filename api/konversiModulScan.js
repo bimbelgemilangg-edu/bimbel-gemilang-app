@@ -20,6 +20,8 @@
 // Supabase; AI hanya boleh MEMAKAI placeholder itu.
 // ============================================================
 
+import { keGambarAi } from '../src/utils/pecahBukuHtml.js';
+
 export const config = {
     maxDuration: 60,
   };
@@ -60,9 +62,10 @@ export const config = {
       models: () => String(process.env.OPENROUTER_MODELS || '')
         .split(',').map((x) => x.trim()).filter(Boolean)
         .concat([
+          // 15 Okt 2026: inkling:free (403 agentic-only) dan ling-3.0-flash-vl:free
+          // (404 gratisan ditutup) DIBUANG dari rantai default — buang waktu &
+          // memadatkan log error owner.
           'google/gemma-4-31b-it:free',
-          'thinkingmachines/inkling:free',
-          'inclusionai/ling-3.0-flash-vl:free',
           'nex-agi/nex-n2.5-pro:free',
           'google/gemma-4-26b-a4b-it:free',
         ]),
@@ -219,7 +222,9 @@ export const config = {
   
   Tulis ulang SELURUH isi halaman-halaman ini menjadi satu bab JSON sesuai aturan.`;
   
-    const dataUrls = images.map((im) => `data:${im.mime || 'image/jpeg'};base64,${im.data}`);
+    // 🔥 15 Okt 2026: toleran terhadap klien yang mengirim string data-URI /
+    // base64 polos (insiden "base64,undefined"), dinormalkan ke {mime,data}.
+    const dataUrls = keGambarAi(images).map((im) => `data:${im.mime || 'image/jpeg'};base64,${im.data}`);
   
     const kesalahan = [];
     for (const provider of tersedia) {
