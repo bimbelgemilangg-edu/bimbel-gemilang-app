@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ekstrakGambarHalamanDariHtml, dataUriKeBase64, adaTeksLayer,
   inventarisBukuHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
-  kunciProgresImpor, perkiraanPanggilanAi,
+  kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -76,4 +76,37 @@ test('perkiraanPanggilanAi: 576 halaman -> 58 panggilan (10/panggilan)', () => {
   assert.equal(perkiraanPanggilanAi(576), 58);
   assert.equal(perkiraanPanggilanAi(0), 0);
   assert.equal(perkiraanPanggilanAi(0) || 0, 0);
+});
+
+test('gabungkanBabBerjudul: potongan satu bab melebur, bab beda tetappisah', () => {
+  const h = (mulai, selesai, judul, nSec = 1, nUji = 1) => ({
+    grup: { urutan: mulai, halamanMulai: mulai, halamanSelesai: selesai, images: [] },
+    bab: {
+      judul,
+      sections: Array.from({ length: nSec }, (_, i) => ({ judul: `S${mulai}.${i}`, blocks: [] })),
+      ujiPemahaman: Array.from({ length: nUji }, () => ({ tipe: 'pg', soal: `soal ${mulai}`, pilihan: ['a', 'b'], benar: 0 })),
+    },
+    provider: 'groq',
+  });
+  const gab = gabungkanBabBerjudul([
+    h(1, 10, 'BAB 2 PERSAMAAN KUADRAT', 2, 3),
+    h(11, 20, 'Bab 2 Persamaan Kuadrat', 1, 2),   // judul sama, beda huruf/spasi
+    h(21, 30, 'BAB 3 TRIGONOMETRI', 1, 4),
+  ]);
+  assert.equal(gab.length, 2);
+  assert.equal(gab[0].judul, 'BAB 2 PERSAMAAN KUADRAT');
+  assert.equal(gab[0].halamanMulai, 1);
+  assert.equal(gab[0].halamanSelesai, 20);
+  assert.equal(gab[0].sections.length, 3);
+  assert.equal(gab[0].ujiPemahaman.length, 5);
+  assert.equal(gab[1].judul, 'BAB 3 TRIGONOMETRI');
+});
+
+test('gabungkanBabBerjudul: judul kosong tidak melebur jadi satu', () => {
+  const h = (mulai, selesai) => ({
+    grup: { urutan: mulai, halamanMulai: mulai, halamanSelesai: selesai, images: [] },
+    bab: { judul: '', sections: [{ judul: 'x', blocks: [] }], ujiPemahaman: [] },
+  });
+  const gab = gabungkanBabBerjudul([h(1, 10), h(11, 20)]);
+  assert.equal(gab.length, 2, 'judul tak terbaca = bab terpisah (jujur, jangan menelek gabung)');
 });
