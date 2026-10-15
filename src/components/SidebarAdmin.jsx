@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox, Library, Landmark, Target, LineChart,
+  Menu, X, LayoutDashboard, Users, GraduationCap, Calendar, CreditCard, FileText, Settings, LogOut, BookOpen, ClipboardList, Globe, TrendingUp, UserPlus, DollarSign, FileUp, Briefcase, Brain, Rocket, ClipboardCheck, Sparkles, BarChart3, Trophy, UploadCloud, Trash2, FolderTree, BookMarked, GitMerge, Archive, Crown, Lock, Receipt, KeyRound, History, Wallet, Toolbox, Library, Landmark, Target, LineChart, BookUp,
 } from 'lucide-react';
 import { db } from '../firebase';
 import {
@@ -183,6 +183,8 @@ const SidebarAdmin = () => {
     // yang ber-dialek beda justru terpajang. Kini keduanya berdampingan
     // supaya salah pintu jadi kelihatan, bukan jadi misteri.
     { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={20} /> },
+        // 📚 14 Okt 2026: buku scan/HTML -> draf materi + bank soal per bab.
+        { name: 'Impor Buku HTML', path: '/admin/buku/impor-html', icon: <BookUp size={20} /> },
     { name: 'Kesiapan Stok', path: '/admin/bank-soal/stok', icon: <Archive size={18} /> },
     { name: 'Riwayat Paket', path: '/admin/bank-soal/riwayat-paket', icon: <History size={18} /> },
     { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },

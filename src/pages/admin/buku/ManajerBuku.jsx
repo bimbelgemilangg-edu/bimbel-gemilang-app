@@ -399,6 +399,9 @@ export default function ManajerBuku() {
             Tambah buku/bab + upload gambar + impor HTML — terbit ke siswa tanpa deploy.
           </div>
         </div>
+        <button onClick={() => navigate('/admin/buku/impor-html')} style={st.btnImport} title="Buku scan/HTML -> draf materi + bank soal per bab">
+          📚 Impor Buku HTML
+        </button>
         <button onClick={() => navigate('/admin/buku/impor')} style={st.btnImport} title="Impor banyak PDF modul sekaligus">
           <UploadCloud size={15} /> Impor Modul
         </button>
