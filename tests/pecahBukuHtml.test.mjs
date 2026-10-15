@@ -8,6 +8,7 @@ import {
   klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat,
   angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor,
+  labelBabTersimpan,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -194,4 +195,23 @@ test('aksiModeImpor: setiap mode punya tombol aksinya (regresi tombol hilang)', 
   assert.equal(aksiModeImpor('folder').perluEkstrakVision, true);
   assert.equal(aksiModeImpor('gambar').perluEkstrakVision, true);
   assert.equal(aksiModeImpor('pdf').perluEkstrakVision, false);
+});
+
+test('labelBabTersimpan: halaman sumber opsional (regresi simpan-crash mode teks 15 Okt 2026)', () => {
+  // Mode TEKS/PDF-OCR menyimpan bab dengan halamanSumber null. Log simpan
+  // dulu membaca `[0]` langsung -> TypeError -> bab pertama tersimpan tapi
+  // sisanya + bank soal tidak pernah tertulis.
+  assert.equal(
+    labelBabTersimpan({ judul: 'Vektor', halamanSumber: [151, 170] }),
+    '✓ Bab "Vektor" (hal 151-170) tersimpan sebagai draf.',
+  );
+  assert.equal(
+    labelBabTersimpan({ judul: 'Bab OCR', halamanSumber: null }),
+    '✓ Bab "Bab OCR" tersimpan sebagai draf.',
+  );
+  assert.equal(
+    labelBabTersimpan({ halamanSumber: null }),
+    '✓ Bab "tanpa judul" tersimpan sebagai draf.',
+  );
+  assert.equal(labelBabTersimpan(), '✓ Bab "tanpa judul" tersimpan sebagai draf.');
 });

@@ -321,3 +321,19 @@ export function aksiModeImpor(mode = '') {
     perluEkstrakVision: mode === 'gambar' || mode === 'folder',
   };
 }
+
+/**
+ * Label log "bab tersimpan" untuk alur simpan Impor Buku HTML.
+ * (Regresi 15 Okt 2026: halaman log membaca `payload.halamanSumber[0]`
+ * langsung, padahal mode TEKS/PDF-OCR tidak punya nomor halaman
+ * (halamanSumber = null). Akibatnya simpan MELEDAK dengan TypeError
+ * tepat setelah bab PERTAMA tersimpan — bab sisanya dan seluruh bank
+ * soal tidak pernah tertulis. Util ini memaku perilakunya: halaman
+ * sumber opsional, label tetap jujur.)
+ */
+export function labelBabTersimpan(payload = {}) {
+  const hs = Array.isArray(payload?.halamanSumber) && payload.halamanSumber.length === 2
+    ? ` (hal ${payload.halamanSumber[0]}-${payload.halamanSumber[1]})`
+    : '';
+  return `✓ Bab "${payload?.judul || 'tanpa judul'}"${hs} tersimpan sebagai draf.`;
+}

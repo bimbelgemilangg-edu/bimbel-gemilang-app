@@ -27,7 +27,7 @@ import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
   keGambarAi, klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat, gabungkanBabBerjudul, perkiraanPanggilanAi,
-  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor,
+  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor, labelBabTersimpan,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
@@ -271,15 +271,32 @@ export default function ImporBukuHtmlPage() {
     setPratinjau(null);
     setLog([]);
     tambahLog(`Melanjutkan pekerjaan ${j.namaFile} (${j.selesai || 0}/${j.jumlahKelompok} kelompok selesai).`);
+    if (!j.urls) tambahLog('⚠ Job ini belum punya halaman mentah (unggahan sebelumnya terputus). Pilih ulang berkas sumber yang sama — halaman diunggah ke job ini, tidak membuat job baru.', false);
   };
 
   const buatJobDanUnggah = async () => {
-    const ref = await addDoc(collection(db, COL_JOB), {
+    // ⛔ PENJAGA (15 Okt 2026): melanjutkan job lewat tombol "Lanjutkan"
+    // hanya membawa PENANDA jumlah halaman (string kosong), byte aslinya
+    // ada di berkas sumber. Tanpa penjaga ini fetch('') mengunggah HTML
+    // halaman aplikasi seolah-olah gambar buku.
+    if (gambar.some((g) => !g)) {
+      throw new Error('Byte halaman mentah tidak lagi ada di memori browser. Pilih ulang berkas/folder sumber yang sama untuk melanjutkan pekerjaan ini — halaman akan diunggah ke job yang sama.');
+    }
+    // 🔁 PAKAI ULANG JOB (15 Okt 2026): dulu setiap retry pasca-gagal unggah
+    // addDoc job BARU sehingga daftar "Pekerjaan belum selesai" membengkak
+    // oleh duplikat tanpa halaman mentah. Job terpilih yang belum punya
+    // `urls` diperbarui dokumennya, bukan digandakan.
+    const dataJob = {
       namaFile, ukuranByte: inv.ukuranByte, jumlahHalaman: gambar.length,
       jumlahKelompok: kelompokkanHalamanUntukAi(gambar).length, selesai: 0,
       identitas, targetBuku, bukuId: targetBuku === 'ada' ? bukuId : '',
-      status: 'mengunggah', dibuatPada: serverTimestamp(), diperbaruiPada: serverTimestamp(),
-    });
+      status: 'mengunggah', diperbaruiPada: serverTimestamp(),
+    };
+    const lanjutJobLama = Boolean(jobAktif?.id && !jobAktif.urls);
+    const ref = lanjutJobLama
+      ? doc(db, COL_JOB, jobAktif.id)
+      : await addDoc(collection(db, COL_JOB), { ...dataJob, dibuatPada: serverTimestamp() });
+    if (lanjutJobLama) await updateDoc(ref, dataJob);
     // 🔥 Migrasi progres localStorage lama (pra-#228, milik browser ini)
     // supaya kelompok yang SUDAH sukses kemarin tidak diekstrak ulang
     // (hemat kuota AI owner).
@@ -425,13 +442,22 @@ export default function ImporBukuHtmlPage() {
     try {
       let idBuku = bukuId;
       if (targetBuku === 'baru' || !idBuku) {
+        const judulBaru = identitas.judulBuku || `${identitas.mapel} — ${identitas.materi || 'Buku impor'}`;
         const ref = await addDoc(collection(db, 'buku_digital'), {
-          judul: identitas.judulBuku || `${identitas.mapel} — ${identitas.materi || 'Buku impor'}`,
+          judul: judulBaru,
           mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
           deskripsi: `Impor buku HTML ${namaFile} (scan -> AI). Materi draf, tinjau sebelum publish.`,
           sumber: namaFile, status: 'draft', createdAt: serverTimestamp(),
         });
         idBuku = ref.id;
+        // 🔒 PENJAGA IDEMPOTEN (15 Okt 2026): tombol "Simpan" yang tertekan
+        // dua kali dulu melahirkan BUKU KEDUA (anti-duplikat bab hanya jalan
+        // untuk target 'ada'). Begitu draf pertama dibuat, target langsung
+        // dialihkan ke buku itu sehingga simpan ulang melewati
+        // saringBabDuplikat + saringButirDuplikat, bukan mendobel.
+        setTargetBuku('ada');
+        setBukuId(idBuku);
+        setDaftarBuku((d) => (d.some((x) => x.id === idBuku) ? d : [...d, { id: idBuku, judul: judulBaru }]));
         tambahLog(`✓ Buku digital draf dibuat (${idBuku.slice(0, 6)}).`);
       }
       const dipakaiIdx = pratinjau.babs.map((b, i2) => (b.disertakan === false ? -1 : i2)).filter((i2) => i2 >= 0);
@@ -458,7 +484,12 @@ export default function ImporBukuHtmlPage() {
       }
       for (let ii = 0; ii < babPayloads.length; ii += 1) {
         await setDoc(doc(collection(db, 'buku_digital', idBuku, 'bab')), babPayloads[ii].payload);
-        tambahLog(`✓ Bab "${babPayloads[ii].payload.judul}" (hal ${babPayloads[ii].payload.halamanSumber[0]}-${babPayloads[ii].payload.halamanSumber[1]}) tersimpan sebagai draf.`);
+        // 🔥 FIX REGRESI (15 Okt 2026): dulu baris log membaca
+        // `payload.halamanSumber[0]` langsung — di mode TEKS/PDF-OCR
+        // halamanSumber bernilai null sehingga simpan crash setelah bab
+        // pertama (bank soal tidak pernah masuk). Label kini lewat util
+        // murni `labelBabTersimpan` yang diuji di tests/pecahBukuHtml.
+        tambahLog(labelBabTersimpan(babPayloads[ii].payload));
       }
       if (ikutBank) {
         let dipilih = pratinjau.butir.filter((b) => b.dipilih && dipakaiIdx.includes(b.babIndex));

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -15,12 +15,12 @@
       rel="stylesheet"
     />
 
-    <!-- 🔥 TAMBAHAN UTAMA: Library Resmi Midtrans Snap (Mode Sandbox untuk Simulasi) -->
-    <script 
-      type="text/javascript" 
-      src="https://midtrans.com" 
-      data-client-key="sb-client-Z7XyUnUniqueKeyBimbelAnda">
-    </script>
+    <!-- Pembayaran Midtrans TIDAK butuh snap.js di sisi klien: alur resmi
+         aplikasi ini adalah api/create-payment.js (server) -> Snap API ->
+         `redirect_url` dibuka di tab baru (lihat PendaftaranOnline.jsx).
+         Script lama `src="https://midtrans.com"` (15 Okt 2026 dihapus)
+         memuat HALAMAN HTML midtrans sebagai JS: render-blocking di setiap
+         pageview siswa + error konsol, dan client-key-nya masih placeholder. -->
   </head>
   <body>
     <div id="root"></div>
