@@ -21,7 +21,7 @@ import { collection, getDocs, addDoc, setDoc, doc, writeBatch, query, where, ser
 import { ArrowLeft, BookUp, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
-  kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul,
+  kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 
@@ -128,7 +128,7 @@ export default function ImporBukuHtmlPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            images: g.images,
+            images: keGambarAi(g.dataUris || g.images),
             placeholders: [],
             meta: {
               judul: `${identitas.materi || identitas.mapel} — halaman ${g.halamanMulai}-${g.halamanSelesai}`,
