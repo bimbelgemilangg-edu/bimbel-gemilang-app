@@ -14,13 +14,14 @@
 // Kunci AI TIDAK ada di klien: endpoint memakai env server (rantai provider
 // gratis). Klien hanya mengirim gambar halaman + identitas.
 // ============================================================
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, addDoc, setDoc, doc, writeBatch, query, where, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, BookUp, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
+  kunciProgresImpor, perkiraanPanggilanAi,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 
@@ -42,6 +43,7 @@ const st = {
 export default function ImporBukuHtmlPage() {
   const navigate = useNavigate();
   const [namaFile, setNamaFile] = useState('');
+  const [html, setHtml] = useState('');
   const [inv, setInv] = useState(null);
   const [gambar, setGambar] = useState([]);
   const [identitas, setIdentitas] = useState({
@@ -55,6 +57,8 @@ export default function ImporBukuHtmlPage() {
   const [log, setLog] = useState([]);
   const [pratinjau, setPratinjau] = useState(null); // {babs:[{grup,bab,provider}], butir:[]}
   const [saran, setSaran] = useState(null);
+  const [progres, setProgres] = useState({}); // {urutanGrup: {status, bab, provider}}
+  const jedaRef = useRef(false);
 
   const tambahLog = (teks, ok = true) => setLog((l) => [...l, { teks, ok }]);
 
@@ -62,10 +66,18 @@ export default function ImporBukuHtmlPage() {
     const teks = await f.text();
     const gambarHalaman = ekstrakGambarHalamanDariHtml(teks);
     setNamaFile(f.name);
+    setHtml(teks);
     setGambar(gambarHalaman);
     setInv(inventarisBukuHtml(teks));
     setPratinjau(null);
     setLog([]);
+    jedaRef.current = false;
+    // Progres lama (bila berkas sama pernah diproses) dipulihkan.
+    try {
+      const key = kunciProgresImpor(f.name, teks.length);
+      const tersimpan = JSON.parse(localStorage.getItem(key) || '{}');
+      setProgres(tersimpan || {});
+    } catch (_e) { setProgres({}); }
   };
 
   // "Aku gak tau materi kelas 10/11/12" (owner): sistem yang menyarankan,
@@ -87,12 +99,29 @@ export default function ImporBukuHtmlPage() {
     setDaftarBuku(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
   };
 
+  const simpanProgres = (key, next) => {
+    setProgres(next);
+    try { localStorage.setItem(key, JSON.stringify(next)); } catch (_e) { /* kuota penuh: progres tetap di memori */ }
+  };
+
   const prosesAi = async () => {
     if (sibuk || gambar.length === 0) return;
     setSibuk(true); setLog([]); setPratinjau(null);
+    jedaRef.current = false;
+    const keyProgres = kunciProgresImpor(namaFile, html ? html.length : 0);
     const grup = kelompokkanHalamanUntukAi(gambar);
     const babs = [];
+    let lokal = { ...progres };
     for (const g of grup) {
+      if (lokal[g.urutan]?.status === 'ok' && lokal[g.urutan].bab) {
+        babs.push({ grup: g, bab: lokal[g.urutan].bab, provider: lokal[g.urutan].provider || 'progres tersimpan' });
+        tambahLog(`→ hal ${g.halamanMulai}-${g.halamanSelesai}: lewati (sudah selesai sebelumnya).`);
+        continue;
+      }
+      if (jedaRef.current) {
+        tambahLog(`⏸ Dijeda setelah ${babs.length} kelompok. Progres tersimpan — tekan Ekstrak lagi untuk melanjutkan.`);
+        break;
+      }
       try {
         tambahLog(`Memanggil AI untuk halaman ${g.halamanMulai}-${g.halamanSelesai}…`);
         const r = await fetch('/api/konversiModulScan', {
@@ -110,22 +139,26 @@ export default function ImporBukuHtmlPage() {
         const j = await r.json();
         if (!j?.success || !j.bab) throw new Error(j?.error || 'respons tidak valid');
         babs.push({ grup: g, bab: j.bab, provider: j.provider });
+        lokal = { ...lokal, [g.urutan]: { status: 'ok', bab: j.bab, provider: j.provider } };
+        simpanProgres(keyProgres, lokal);
         tambahLog(`✓ halaman ${g.halamanMulai}-${g.halamanSelesai}: ${j.bab.sections?.length || 0} seksi, ${j.bab.ujiPemahaman?.length || 0} soal (via ${j.provider})`);
       } catch (e) {
+        lokal = { ...lokal, [g.urutan]: { status: 'gagal' } };
+        simpanProgres(keyProgres, lokal);
         tambahLog(`✗ halaman ${g.halamanMulai}-${g.halamanSelesai}: ${e?.message || e}`, false);
       }
     }
     const butir = [];
-    babs.forEach((b) => {
+    babs.forEach((b, bi) => {
       (b.bab.ujiPemahaman || []).forEach((item) => {
         const butirSatu = butirBankDariUjiPemahaman(item, {
           mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
           materi: identitas.materi, sumber: namaFile,
         }, b.grup.halamanMulai);
-        if (butirSatu) butir.push({ ...butirSatu, dipilih: true, asal: `hal ${b.grup.halamanMulai}-${b.grup.halamanSelesai}` });
+        if (butirSatu) butir.push({ ...butirSatu, dipilih: true, babIndex: bi, asal: `hal ${b.grup.halamanMulai}-${b.grup.halamanSelesai}` });
       });
     });
-    setPratinjau({ babs, butir });
+    setPratinjau({ babs: babs.map((b) => ({ ...b, judulEdit: b.bab.judul || '' })), butir });
     tambahLog(`Pratinjau siap: ${babs.length} bab, ${butir.length} soal pg siap masuk bank (multi/bs dilewati untuk input manual).`);
     setSibuk(false);
   };
@@ -154,7 +187,7 @@ export default function ImporBukuHtmlPage() {
         const ref = doc(collection(db, 'buku_digital', idBuku, 'bab'));
         await setDoc(ref, {
           ...b.bab,
-          judul: b.bab.judul || `${identitas.materi || identitas.mapel} bagian ${i + 1}`,
+          judul: b.judulEdit || b.bab.judul || `${identitas.materi || identitas.mapel} bagian ${i + 1}`,
           urutan: i + 1,
           tipe: 'teks',
           status: 'draft',
@@ -170,13 +203,24 @@ export default function ImporBukuHtmlPage() {
         for (let i = 0; i < dipilih.length; i += 400) {
           const batch = writeBatch(db);
           dipilih.slice(i, i + 400).forEach((b) => {
-            const { dipilih: _d, asal: _a, ...butir } = b;
-            batch.set(doc(collection(db, 'bank_soal')), { ...butir, createdAt: serverTimestamp(), createdBy: 'impor-buku-html' });
+            const { dipilih: _d, asal: _a, babIndex, ...butir } = b;
+            // Identitas materi butir MENGIKUTI nama bab yang diedit operator
+            // (fallback materi identitas) — supaya soal terpanggil per bab.
+            const judulBab = (pratinjau.babs[babIndex]?.judulEdit || pratinjau.babs[babIndex]?.bab?.judul || identitas.materi || '').trim();
+            batch.set(doc(collection(db, 'bank_soal')), {
+              ...butir,
+              materi: judulBab,
+              tags: ['buku', judulBab].filter(Boolean),
+              createdAt: serverTimestamp(),
+              createdBy: 'impor-buku-html',
+            });
           });
           await batch.commit();
         }
         tambahLog(`✓ ${pratinjau.butir.filter((b) => b.dipilih).length} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
       }
+      try { localStorage.removeItem(kunciProgresImpor(namaFile, html ? html.length : 0)); } catch (_e) { /* abaikan */ }
+      setProgres({});
       tambahLog('SELESAI. Tinjau draf buku di Admin → Buku; stok soal baru terlihat di Kesiapan Stok & filter materi.');
     } catch (e) {
       tambahLog(`✗ Gagal menyimpan: ${e?.message || e}`, false);
@@ -197,6 +241,9 @@ export default function ImporBukuHtmlPage() {
         Untuk buku Gemilang hasil scan yang sudah dikonversi jadi HTML (satu gambar per halaman).
         Materi tersimpan sebagai draf buku interaktif (ebook/materi online/cetak); soal pemantapan
         masuk bank soal per bab — langsung bisa dipanggil mesin try out otomatis, rakit tentor, kuis, dan cetak.
+        <b>Aturan pecah berkas: SATU berkas = SATU jenjang = SATU buku</b> (identitas diisi sekali per unggah).
+        Tidak perlu pecah per bab — nama bab ditulis di pratinjau hasil ekstraksi. Ukuran berkas berapa pun
+        aman: HTML mentah tidak disimpan, hanya hasil ekstraksi; proses bisa dijeda & dilanjutkan.
       </p>
 
       <div style={st.kartu}>
@@ -205,7 +252,7 @@ export default function ImporBukuHtmlPage() {
         {inv && (
           <div style={{ marginTop: 10, fontSize: 12, color: '#374151', lineHeight: 1.7 }}>
             <div><b>{namaFile}</b> · {(inv.ukuranByte / 1024 / 1024).toFixed(1)} MB · {inv.jumlahGambarHalaman} halaman gambar · teks layer: {inv.adaTeksLayer ? 'ada' : 'tidak (murni scan)'}</div>
-            <div style={{ color: inv.saran === 'OK' ? '#166534' : '#92400e' }}>ℹ️ {inv.saran}</div>
+            <div style={{ color: inv.saran === 'OK' ? '#166534' : '#92400e' }}>ℹ️ {inv.saran}{inv.jumlahGambarHalaman > 0 ? ` Ekstraksi tetap aman: otomatis dicicil ±${perkiraanPanggilanAi(inv.jumlahGambarHalaman)} panggilan AI, progres tersimpan & bisa dijeda.` : ''}</div>
           </div>
         )}
       </div>
@@ -264,8 +311,13 @@ export default function ImporBukuHtmlPage() {
         </label>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
           <button style={st.tombol(sibuk || gambar.length === 0 || !identitas.materi)} disabled={sibuk || gambar.length === 0 || !identitas.materi} onClick={prosesAi}>
-            {sibuk ? <Loader2 size={15} className="animate-spin" /> : <BookUp size={15} />} Ekstrak materi & soal (AI per 10 halaman)
+            {sibuk ? <Loader2 size={15} className="animate-spin" /> : <BookUp size={15} />} {sibuk ? 'Melanjutkan ekstraksi…' : 'Ekstrak materi & soal (AI per 10 halaman)'}
           </button>
+          {sibuk && (
+            <button style={{ ...st.tombol(false), background: '#b45309' }} onClick={() => { jedaRef.current = true; }}>
+              ⏸ Jeda (progres tersimpan)
+            </button>
+          )}
           {pratinjau && (
             <button style={st.tombol(sibuk)} disabled={sibuk} onClick={simpan}>
               <CheckCircle2 size={15} /> Simpan draf buku{ikutBank ? ' + bank soal' : ''}
@@ -282,9 +334,19 @@ export default function ImporBukuHtmlPage() {
           <div style={st.label}>3 · PRATINJAU HASIL EKSTRAKSI</div>
           {pratinjau.babs.map((b, i) => (
             <div key={i} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: '8px 10px', marginBottom: 8, fontSize: 12 }}>
-              <b>Bab {i + 1}:</b> {b.bab.judul || `${identitas.materi} bagian ${i + 1}`} · hal {b.grup.halamanMulai}-{b.grup.halamanSelesai} · {b.bab.sections?.length || 0} seksi · {b.bab.ujiPemahaman?.length || 0} soal · via {b.provider}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <b style={{ whiteSpace: 'nowrap' }}>Bab {i + 1} · hal {b.grup.halamanMulai}-{b.grup.halamanSelesai}:</b>
+                <input
+                  value={b.judulEdit}
+                  onChange={(e) => setPratinjau((prev) => ({ ...prev, babs: prev.babs.map((x, xi) => (xi === i ? { ...x, judulEdit: e.target.value } : x)) }))}
+                  placeholder={b.bab.judul || `nama bab asli buku ini (mis. Bab 3 Trigonometri)`}
+                  style={{ flex: 1, minWidth: 220, padding: '5px 8px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12 }}
+                />
+                <span style={{ color: '#6b7280', fontSize: 11 }}>{b.bab.sections?.length || 0} seksi · {b.bab.ujiPemahaman?.length || 0} soal · via {b.provider}</span>
+              </div>
             </div>
           ))}
+          <div style={{ fontSize: 11, color: '#6b7280' }}>Isi nama bab SESUAI buku asli supaya soal terpanggil per bab dengan benar di mesin/rakit/kuis.</div>
           {pratinjau.butir.length > 0 && (
             <details style={{ fontSize: 12, color: '#374151' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Tinjau {pratinjau.butir.length} soal yang akan masuk bank (klik untuk membuka)</summary>

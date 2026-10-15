@@ -75,6 +75,17 @@ menebak-nebak. Tidak ada kode baru yang dibutuhkan untuk langkah inti.
 
 ---
 
+## Aturan pecah berkas (keputusan 14 Okt 2026, sesudah berkas per-jenjang owner)
+
+- **SATU berkas = SATU jenjang = SATU buku.** Identitas (mapel/jenjang/kelas/
+  judul) diisi sekali per unggah; berkas campur jenjang akan membuat sebagian
+  soal salah sasaran.
+- **TIDAK perlu pecah per bab**: nama bab ditulis operator di pratinjau wizard
+  (tiap kelompok 10 halaman) dan nama itu menjadi identitas materi butir bank.
+- **Ukuran berkas bebas**: HTML mentah tidak pernah disimpan ke Firestore
+  (batas 1MB hanya berlaku bila menyimpan utuh); ekstraksi dicicil ≤10 halaman
+  per panggilan AI, progres tersimpan, bisa dijeda/dilanjutkan (#224).
+
 ## Celah jujur yang TERSISA (belum ada, diusulkan bertahap)
 
 1. **Belum ada tombol satu-klik "scan → draf buku interaktif"**: materi masih

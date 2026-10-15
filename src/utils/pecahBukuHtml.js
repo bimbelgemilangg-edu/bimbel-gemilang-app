@@ -126,3 +126,19 @@ export function butirBankDariUjiPemahaman(item, identitas = {}, halamanSumber = 
     status: 'aktif',
   };
 }
+
+/**
+ * Kunci penyimpanan progres impor di localStorage — spesifik per berkas
+ * (nama + ukuran) supaya ganti berkas tidak memakai progres lama.
+ * (File jenjang 576 halaman = ±58 panggilan AI: wajib bisa dijeda &
+ * dilanjutkan tanpa mengulang kuota.)
+ */
+export function kunciProgresImpor(namaFile = '', ukuranByte = 0) {
+  return `imporBukuHtml:${String(namaFile).toLowerCase()}:${Number(ukuranByte) || 0}`;
+}
+
+/** Perkiraan jumlah panggilan AI untuk sejumlah halaman gambar. */
+export function perkiraanPanggilanAi(jumlahHalaman = 0, perPanggilan = BATAS_HALAMAN_PER_PANGGILAN) {
+  const n = Math.max(1, Math.min(Number(perPanggilan) || 10, 14));
+  return Math.ceil(Math.max(0, Number(jumlahHalaman) || 0) / n);
+}
