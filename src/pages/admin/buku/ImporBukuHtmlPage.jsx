@@ -29,6 +29,7 @@ import {
   keGambarAi, klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat, gabungkanBabBerjudul, perkiraanPanggilanAi,
   angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor, labelBabTersimpan,
+  pesanRingkasanSimpan,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 import { normalkanBabUntukReader } from '../../../utils/normalisasiBabReader';
@@ -78,6 +79,7 @@ export default function ImporBukuHtmlPage() {
   const [figurFiles, setFigurFiles] = useState([]);
   const [figsPerHalaman, setFigsPerHalaman] = useState(new Map());
   const [teksBuku, setTeksBuku] = useState('');
+  const [ringkasan, setRingkasan] = useState(null);
   const jedaRef = useRef(false);
 
   const tambahLog = (teks, ok = true) => setLog((l) => [...l, { teks, ok }]);
@@ -113,7 +115,7 @@ export default function ImporBukuHtmlPage() {
     setFigurFiles(figur);
     setTeksBuku('');
     setInv({ jumlahGambarHalaman: halamanUris.length, ukuranByte: totalByte, adaTeksLayer: false, layakSimpanUtuhDiFirestore: false, saran: `Folder terbaca: ${halamanUris.length} gambar halaman + ${figur.length} gambar figur (figur disimpan terpisah sebagai aset, tidak diekstraksi jadi teks).` });
-    setPratinjau(null); setLog([]); setJobAktif(null);
+    setPratinjau(null); setRingkasan(null); setLog([]); setJobAktif(null);
     tambahLog(`Folder dimuat: ${halamanUris.length} halaman urut ${terurut.length ? angkaBerkas(terurut[0]) : '-'}..${terurut.length ? angkaBerkas(terurut[terurut.length - 1]) : '-'} + ${figur.length} figur.`);
   };
 
@@ -178,7 +180,7 @@ export default function ImporBukuHtmlPage() {
   // lapisan teks hasil OCR (PDF24/Google Docs) dibaca langsung di browser
   // lewat pdfjs — TANPA panggilan AI vision, tanpa kuota model.
   const bacaPdf = async (f) => {
-    setSibuk(true); setLog([]); setPratinjau(null);
+    setSibuk(true); setLog([]); setPratinjau(null); setRingkasan(null);
     try {
       const lib = await muatLibPdf();
       const doc = await lib.getDocument({ data: await f.arrayBuffer() }).promise;
@@ -258,13 +260,13 @@ export default function ImporBukuHtmlPage() {
     if (modeSumber === 'teks') {
       setNamaFile(f.name);
       setTeksBuku(/\.html?$/i.test(f.name) ? htmlKeTeks(teks) : teks);
-      setInv(null); setGambar([]); setPratinjau(null); setLog([]); setJobAktif(null);
+      setInv(null); setGambar([]); setPratinjau(null); setRingkasan(null); setLog([]); setJobAktif(null);
       return;
     }
     setNamaFile(f.name);
     setGambar(ekstrakGambarHalamanDariHtml(teks));
     setInv(inventarisBukuHtml(teks));
-    setPratinjau(null);
+    setPratinjau(null); setRingkasan(null);
     setLog([]);
     const cocok = jobs.find((j) => j.namaFile === f.name && j.ukuranByte === teks.length);
     setJobAktif(cocok || null);
@@ -277,7 +279,7 @@ export default function ImporBukuHtmlPage() {
     setInv({ jumlahGambarHalaman: j.jumlahHalaman, ukuranByte: j.ukuranByte, adaTeksLayer: false, saran: 'Pekerjaan lanjutan dari penyimpanan sistem.' });
     if (j.identitas) setIdentitas(j.identitas);
     setGambar(Array.from({ length: j.jumlahHalaman }, () => '')); // penanda jumlah saja; byte diambil dari Supabase
-    setPratinjau(null);
+    setPratinjau(null); setRingkasan(null);
     setLog([]);
     tambahLog(`Melanjutkan pekerjaan ${j.namaFile} (${j.selesai || 0}/${j.jumlahKelompok} kelompok selesai).`);
     if (!j.urls) tambahLog('⚠ Job ini belum punya halaman mentah (unggahan sebelumnya terputus). Pilih ulang berkas sumber yang sama — halaman diunggah ke job ini, tidak membuat job baru.', false);
@@ -386,7 +388,7 @@ export default function ImporBukuHtmlPage() {
 
   const prosesAi = async () => {
     if (sibuk) return;
-    setSibuk(true); setLog((l) => l); setPratinjau(null);
+    setSibuk(true); setLog((l) => l); setPratinjau(null); setRingkasan(null);
     jedaRef.current = false;
     try {
       let job = jobAktif;
@@ -488,12 +490,14 @@ export default function ImporBukuHtmlPage() {
         // dalam bentuk yang tak bisa dirender siswa.
         return { payload: normalkanBabUntukReader(mentah, mentah.judul) };
       });
+      let babLewat = 0;
       if (targetBuku === 'ada' && idBuku) {
         const snapBab = await getDocs(collection(db, 'buku_digital', idBuku, 'bab'));
         const eksBab = snapBab.docs.map((d) => d.data());
         const sebelum = babPayloads.length;
         babPayloads = saringBabDuplikat(babPayloads.map((x) => x.payload), eksBab).map((payload) => ({ payload }));
-        if (sebelum - babPayloads.length > 0) tambahLog(`↷ ${sebelum - babPayloads.length} bab dilewati karena sudah ada di buku ini (anti-duplikat).`);
+        babLewat = sebelum - babPayloads.length;
+        if (babLewat > 0) tambahLog(`↷ ${babLewat} bab dilewati karena sudah ada di buku ini (anti-duplikat).`);
       }
       for (let ii = 0; ii < babPayloads.length; ii += 1) {
         await setDoc(doc(collection(db, 'buku_digital', idBuku, 'bab')), babPayloads[ii].payload);
@@ -504,12 +508,15 @@ export default function ImporBukuHtmlPage() {
         // murni `labelBabTersimpan` yang diuji di tests/pecahBukuHtml.
         tambahLog(labelBabTersimpan(babPayloads[ii].payload));
       }
+      let soalBaru = 0;
+      let soalLewat = 0;
       if (ikutBank) {
         let dipilih = pratinjau.butir.filter((b) => b.dipilih && dipakaiIdx.includes(b.babIndex));
         const snapBank = await getDocs(query(collection(db, 'bank_soal'), where('sumberFile', '==', namaFile)));
         const sebelum = dipilih.length;
         dipilih = saringButirDuplikat(dipilih, snapBank.docs.map((d) => d.data()));
-        if (sebelum - dipilih.length > 0) tambahLog(`↷ ${sebelum - dipilih.length} soal dilewati karena sudah ada di bank (anti-duplikat).`);
+        soalLewat = sebelum - dipilih.length;
+        if (soalLewat > 0) tambahLog(`↷ ${soalLewat} soal dilewati karena sudah ada di bank (anti-duplikat).`);
         for (let i = 0; i < dipilih.length; i += 400) {
           const batch = writeBatch(db);
           dipilih.slice(i, i + 400).forEach((b) => {
@@ -522,8 +529,16 @@ export default function ImporBukuHtmlPage() {
           });
           await batch.commit();
         }
-        tambahLog(`✓ ${dipilih.length} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
+        soalBaru = dipilih.length;
+        if (soalBaru > 0) tambahLog(`✓ ${soalBaru} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
+        else tambahLog('↷ Tidak ada soal BARU untuk bank_soal (semua sudah ada sebelumnya atau tidak dicentang).');
       }
+      // 🔥 BANNER RINGKASAN (15 Okt 2026): owner menekan Simpan dua kali dan
+      // mengira gagal karena konfirmasi hanya ada di log bawah. Ringkasan
+      // jujur (baru vs dilewati) kini tampil menonjol di atas halaman.
+      const ringkas = pesanRingkasanSimpan({ babBaru: babPayloads.length, babLewat, soalBaru, soalLewat });
+      setRingkasan(ringkas);
+      tambahLog(ringkas);
       if (jobAktif && pratinjau.selesaiKelompok >= pratinjau.semuaKelompok) {
         await updateDoc(doc(db, COL_JOB, jobAktif.id), { status: 'selesai', diperbaruiPada: serverTimestamp() });
         tambahLog('✓ Pekerjaan impor ditandai SELESAI (semua kelompok terekstrak).');
@@ -576,6 +591,14 @@ export default function ImporBukuHtmlPage() {
         {' '}— harus sama dengan commit terbaru di GitHub main. Bila berbeda, tab ini
         memegang bundle lama: muat ulang paksa (Ctrl/Cmd+Shift+R) sebelum mengimpor.
       </p>
+      {ringkasan && (
+        <div style={{ ...st.kartu, background: ringkasan.startsWith('✓') ? '#f0fdf4' : '#fffbeb', border: `1px solid ${ringkasan.startsWith('✓') ? '#bbf7d0' : '#fde68a'}` }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: ringkasan.startsWith('✓') ? '#166534' : '#92400e' }}>{ringkasan}</div>
+          <div style={{ fontSize: 11.5, color: '#6b7280', marginTop: 4 }}>
+            Ringkasan ini juga tercatat di LOG PROSES di bawah. Menekan Simpan lagi tetap aman: anti-duplikat mencegah dobel.
+          </div>
+        </div>
+      )}
 
       {jobs.length > 0 && (
         <div style={st.kartu}>
