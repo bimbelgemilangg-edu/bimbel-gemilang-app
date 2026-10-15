@@ -241,6 +241,9 @@ export default function ImporBukuHtmlPage() {
         Untuk buku Gemilang hasil scan yang sudah dikonversi jadi HTML (satu gambar per halaman).
         Materi tersimpan sebagai draf buku interaktif (ebook/materi online/cetak); soal pemantapan
         masuk bank soal per bab — langsung bisa dipanggil mesin try out otomatis, rakit tentor, kuis, dan cetak.
+        <b>Aturan pecah berkas: SATU berkas = SATU jenjang = SATU buku</b> (identitas diisi sekali per unggah).
+        Tidak perlu pecah per bab — nama bab ditulis di pratinjau hasil ekstraksi. Ukuran berkas berapa pun
+        aman: HTML mentah tidak disimpan, hanya hasil ekstraksi; proses bisa dijeda & dilanjutkan.
       </p>
 
       <div style={st.kartu}>
