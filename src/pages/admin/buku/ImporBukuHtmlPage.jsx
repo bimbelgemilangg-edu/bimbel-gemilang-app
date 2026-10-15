@@ -1,4 +1,5 @@
 // src/pages/admin/buku/ImporBukuHtmlPage.jsx
+/* global __BUILD_STAMP__ */
 // ============================================================
 // 📚 IMPOR BUKU HTML — MESIN FINAL (owner 14-15 Okt 2026):
 // buku scan terkonversi HTML (satu gambar per halaman) masuk sistem:
@@ -552,6 +553,16 @@ export default function ImporBukuHtmlPage() {
         Unggah sekali: halaman mentah tersimpan di penyimpanan sistem, ekstraksi AI dicicil per ≤10 halaman
         dan bisa <b>dilanjutkan dari perangkat mana pun sampai 100%</b>. Bab dilebur otomatis dari judul tercetak;
         soal masuk bank per bab. Aturan berkas: SATU berkas = SATU jenjang = SATU buku.
+      </p>
+      {/* 🔥 15 Okt 2026: stempel bundle DITAMPIL DI HALAMAN INI juga, bukan
+          hanya di sidebar. Keluhan berulang owner ("sudah kucoba lagi,
+          hasilnya sama") hampir selalu = tab lama memegang bundle pra-fix
+          (PWA autoUpdate baru ganti setelah reload). Dengan stempel ini
+          keadaan itu terlihat dalam 2 detik tanpa mencari sidebar. */}
+      <p style={{ fontSize: 11, color: '#94a3b8', margin: '-10px 0 16px' }}>
+        Versi halaman ini: <b>{typeof __BUILD_STAMP__ !== 'undefined' ? __BUILD_STAMP__ : 'dev'}</b>
+        {' '}— harus sama dengan commit terbaru di GitHub main. Bila berbeda, tab ini
+        memegang bundle lama: muat ulang paksa (Ctrl/Cmd+Shift+R) sebelum mengimpor.
       </p>
 
       {jobs.length > 0 && (
