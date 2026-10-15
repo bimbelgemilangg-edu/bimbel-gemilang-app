@@ -115,7 +115,7 @@ export function butirBankDariUjiPemahaman(item, identitas = {}, halamanSumber = 
     kunciJawaban: String.fromCharCode(65 + idx),
     kunciTerverifikasi: false,
     pembahasan: String(item.pembahasan || ''),
-    gambarUrls: [],
+    gambarUrls: Array.isArray(item.gambarUrls) ? item.gambarUrls : [],
     mataPelajaran: identitas.mapel || '',
     materi: identitas.materi || '',
     tingkatKelas: identitas.kelas || '',
@@ -280,4 +280,32 @@ export function saringBabDuplikat(babBaru = [], babEksisting = []) {
     if (judulAda.has(normTeks(b?.judul))) return false;
     return !rentangAda.some((r) => rentangBertumpangTindih(b?.halamanSumber || [], r));
   });
+}
+
+// ------------------------------------------------------------
+// MASUKAN FOLDER GAMBAR (owner 15 Okt: "aku dikirimi folder isinya
+// banyak gambar, apakah bisa dimasukkan sistem?"): BISA — gambar
+// halaman adalah bahan mentah yang sama dengan isi HTML pdf2html.
+// Util di bawah menyiapkan urutan & memisahkan HALAMAN vs FIGUR.
+// ------------------------------------------------------------
+
+/** Angka urutan dari nama berkas ("372.jpg"->372, "1_372.jpg"->372). */
+export function angkaBerkas(nama = '') {
+  const grup = String(nama).match(/\d+/g);
+  return grup && grup.length ? Number(grup[grup.length - 1]) : 0;
+}
+
+/** Urutkan nama berkas gambar secara natural sesuai nomor halaman. */
+export function urutkanBerkasGambar(namaList = []) {
+  return [...(Array.isArray(namaList) ? namaList : [])]
+    .sort((a, b) => angkaBerkas(a) - angkaBerkas(b) || String(a).localeCompare(String(b), 'id'));
+}
+
+/**
+ * Kelas sebuah gambar: HALAMAN buku (potret, lebar >= 1000px) atau
+ * FIGUR (potongan diagram/grafik) — figur disimpan terpisah sebagai
+ * aset gambar, tidak ikut diekstraksi jadi teks.
+ */
+export function klasifikasiGambarHalaman(width = 0, height = 0) {
+  return width >= 1000 && height > width ? 'halaman' : 'figur';
 }
