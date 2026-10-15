@@ -130,3 +130,16 @@ test('kelompokkanHalamanUntukAi menyimpan dataUris asli ber-mime', () => {
   assert.deepEqual(g[0].dataUris, [uri(1), uri(2)]);
   assert.deepEqual(keGambarAi(g[0].dataUris), [{ mime: 'image/png', data: 'aGVsbG81' }, { mime: 'image/png', data: 'aGVsbG82' }]);
 });
+
+test('round-trip payload endpoint identik dengan byte sumber (validasi berkas owner 72MB)', () => {
+  // Bukti lapangan 15 Okt: tool tools/verifikasi-buku-html.mjs menjalankan
+  // pipeline ini terhadap berkas buku owner sesungguhnya (576 halaman,
+  // 390 png + 186 jpeg) dan SELURUH payload round-trip identik + magic
+  // bytes cocok. Uji ini memaku properti itu pada fixture.
+  const asli = [uri(1), 'data:image/jpeg;base64,/9j/4AAQ'];
+  const objs = keGambarAi(asli);
+  objs.forEach((o, i) => {
+    assert.equal(`data:${o.mime};base64,${o.data}`, asli[i]);
+  });
+  assert.equal(objs[1].mime, 'image/jpeg');
+});
