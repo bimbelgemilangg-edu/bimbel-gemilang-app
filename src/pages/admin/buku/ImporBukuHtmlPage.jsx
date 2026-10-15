@@ -276,8 +276,8 @@ export default function ImporBukuHtmlPage() {
               ❓ Saran kelas dari sistem
             </button>
           </div>
-          <label style={st.label}>Materi / bab buku
-            <input style={st.input} placeholder="mis. Persamaan Kuadrat" value={identitas.materi} onChange={(e) => setIdentitas({ ...identitas, materi: e.target.value })} />
+          <label style={st.label}>Materi / cakupan — OPSIONAL untuk buku lengkap
+            <input style={st.input} placeholder="kosongkan bila buku berisi semua bab (nama bab dibaca otomatis)" value={identitas.materi} onChange={(e) => setIdentitas({ ...identitas, materi: e.target.value })} />
           </label>
           <label style={st.label}>Judul buku (sumber)
             <input style={st.input} placeholder="mis. Buku Gemilang Vol.1" value={identitas.judulBuku} onChange={(e) => setIdentitas({ ...identitas, judulBuku: e.target.value })} />
@@ -310,7 +310,7 @@ export default function ImporBukuHtmlPage() {
           soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
         </label>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
-          <button style={st.tombol(sibuk || gambar.length === 0 || !identitas.materi)} disabled={sibuk || gambar.length === 0 || !identitas.materi} onClick={prosesAi}>
+          <button style={st.tombol(sibuk || gambar.length === 0)} disabled={sibuk || gambar.length === 0} onClick={prosesAi}>
             {sibuk ? <Loader2 size={15} className="animate-spin" /> : <BookUp size={15} />} {sibuk ? 'Melanjutkan ekstraksi…' : 'Ekstrak materi & soal (AI per 10 halaman)'}
           </button>
           {sibuk && (
@@ -324,8 +324,12 @@ export default function ImporBukuHtmlPage() {
             </button>
           )}
         </div>
-        {!identitas.materi && gambar.length > 0 && (
-          <div style={{ ...st.log(false), marginTop: 8 }}><AlertTriangle size={12} style={{ verticalAlign: -2 }} /> Isi materi/bab dulu — identitas ini yang membuat soal terpanggil per bab dan tidak nyasar.</div>
+        {gambar.length > 0 && (
+          <div style={{ fontSize: 11.5, color: identitas.materi ? '#92400e' : '#166534', background: identitas.materi ? '#fffbeb' : '#f0fdf4', border: `1px solid ${identitas.materi ? '#fde68a' : '#bbf7d0'}`, borderRadius: 8, padding: '7px 10px', marginTop: 10 }}>
+            {identitas.materi
+              ? `Materi diisi manual: "${identitas.materi}" — nama bab otomatis tetap dipakai bila terbaca, isi ini jadi cadangan.`
+              : 'Buku berisi semua bab? Biarkan kosong — nama bab dibaca otomatis dari tulisan tercetak di scan dan menjadi identitas soal per bab (jenjang & kelas tetap wajib karena itu sasaran siswa).'}
+          </div>
         )}
       </div>
 
