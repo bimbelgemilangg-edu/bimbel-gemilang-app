@@ -142,3 +142,47 @@ export function perkiraanPanggilanAi(jumlahHalaman = 0, perPanggilan = BATAS_HAL
   const n = Math.max(1, Math.min(Number(perPanggilan) || 10, 14));
   return Math.ceil(Math.max(0, Number(jumlahHalaman) || 0) / n);
 }
+
+/** Normalisasi judul bab untuk pengelompokan (huruf/spasi/tanda diseragamkan). */
+export function normJudulBab(s = '') {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+/**
+ * GABUNGKAN potongan 10-halaman menjadi BAB sesungguhnya (owner 15 Okt:
+ * "sistem yang pecah babnya — aku upload kelas 10 dengan semua bab").
+ * Endpoint konversiModulScan sudah mengembalikan `bab.judul` = judul bab
+ * SEPERTI TERCETAK di halaman (dibaca AI vision); potongan berurutan dengan
+ * judul ternormalisasi sama dilebur jadi satu bab: sections & ujiPemahaman
+ * digabung, rentang halaman diperlebar. Judul kosong/tak terbaca tetap
+ * menjadi bab sendiri (fallback nama kelompok halaman).
+ * @param {Array<{grup:object, bab:object, provider?:string}>} hasilBerurutan
+ * @returns {Array<object>} bab gabungan urut
+ */
+export function gabungkanBabBerjudul(hasilBerurutan = []) {
+  const gabung = [];
+  (Array.isArray(hasilBerurutan) ? hasilBerurutan : []).forEach((h) => {
+    const judul = String(h?.bab?.judul || '').trim();
+    const kunci = normJudulBab(judul);
+    const terakhir = gabung[gabung.length - 1];
+    if (kunci && terakhir && terakhir.kunciJudul === kunci) {
+      terakhir.sections.push(...(Array.isArray(h.bab.sections) ? h.bab.sections : []));
+      terakhir.ujiPemahaman.push(...(Array.isArray(h.bab.ujiPemahaman) ? h.bab.ujiPemahaman : []));
+      terakhir.halamanSelesai = h.grup.halamanSelesai;
+      terakhir.grupGabungan.push(h.grup);
+      terakhir.provider = [...new Set([...terakhir.provider, h.provider || ''])].filter(Boolean);
+      return;
+    }
+    gabung.push({
+      judul: judul || `Kelompok halaman ${h.grup.halamanMulai}-${h.grup.halamanSelesai}`,
+      kunciJudul: kunci || `hal-${h.grup.halamanMulai}`,
+      halamanMulai: h.grup.halamanMulai,
+      halamanSelesai: h.grup.halamanSelesai,
+      sections: [...(Array.isArray(h.bab.sections) ? h.bab.sections : [])],
+      ujiPemahaman: [...(Array.isArray(h.bab.ujiPemahaman) ? h.bab.ujiPemahaman : [])],
+      grupGabungan: [h.grup],
+      provider: h.provider ? [h.provider] : [],
+    });
+  });
+  return gabung;
+}

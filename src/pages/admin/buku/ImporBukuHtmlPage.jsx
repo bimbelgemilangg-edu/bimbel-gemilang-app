@@ -21,7 +21,7 @@ import { collection, getDocs, addDoc, setDoc, doc, writeBatch, query, where, ser
 import { ArrowLeft, BookUp, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
-  kunciProgresImpor, perkiraanPanggilanAi,
+  kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 
@@ -148,18 +148,21 @@ export default function ImporBukuHtmlPage() {
         tambahLog(`✗ halaman ${g.halamanMulai}-${g.halamanSelesai}: ${e?.message || e}`, false);
       }
     }
+    // 🔥 15 Okt 2026 (owner: "sistem yang pecah babnya"): potongan 10-halaman
+    // dengan judul bab TERCETAK yang sama dilebur jadi satu bab otomatis.
+    const gabungan = gabungkanBabBerjudul(babs);
     const butir = [];
-    babs.forEach((b, bi) => {
-      (b.bab.ujiPemahaman || []).forEach((item) => {
+    gabungan.forEach((b, bi) => {
+      (b.ujiPemahaman || []).forEach((item) => {
         const butirSatu = butirBankDariUjiPemahaman(item, {
           mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
-          materi: identitas.materi, sumber: namaFile,
-        }, b.grup.halamanMulai);
-        if (butirSatu) butir.push({ ...butirSatu, dipilih: true, babIndex: bi, asal: `hal ${b.grup.halamanMulai}-${b.grup.halamanSelesai}` });
+          materi: b.judul || identitas.materi, sumber: namaFile,
+        }, b.halamanMulai);
+        if (butirSatu) butir.push({ ...butirSatu, dipilih: true, babIndex: bi, asal: `hal ${b.halamanMulai}-${b.halamanSelesai}` });
       });
     });
-    setPratinjau({ babs: babs.map((b) => ({ ...b, judulEdit: b.bab.judul || '' })), butir });
-    tambahLog(`Pratinjau siap: ${babs.length} bab, ${butir.length} soal pg siap masuk bank (multi/bs dilewati untuk input manual).`);
+    setPratinjau({ babs: gabungan.map((b) => ({ ...b, judulEdit: b.judul || '' })), butir });
+    tambahLog(`Pratinjau siap: ${gabungan.length} bab (digabung otomatis dari ${babs.length} potongan), ${butir.length} soal pg siap masuk bank (multi/bs dilewati untuk input manual).`);
     setSibuk(false);
   };
 
@@ -186,17 +189,18 @@ export default function ImporBukuHtmlPage() {
         const b = pratinjau.babs[i];
         const ref = doc(collection(db, 'buku_digital', idBuku, 'bab'));
         await setDoc(ref, {
-          ...b.bab,
-          judul: b.judulEdit || b.bab.judul || `${identitas.materi || identitas.mapel} bagian ${i + 1}`,
+          judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${i + 1}`,
+          sections: b.sections || [],
+          ujiPemahaman: b.ujiPemahaman || [],
           urutan: i + 1,
           tipe: 'teks',
           status: 'draft',
           sumberImpor: 'buku-html',
-          halamanSumber: [b.grup.halamanMulai, b.grup.halamanSelesai],
-          providerAi: b.provider || '',
+          halamanSumber: [b.halamanMulai, b.halamanSelesai],
+          providerAi: (b.provider || []).join('/'),
           updatedAt: serverTimestamp(),
         });
-        tambahLog(`✓ Bab ${i + 1} (hal ${b.grup.halamanMulai}-${b.grup.halamanSelesai}) tersimpan sebagai draf.`);
+        tambahLog(`✓ Bab ${i + 1} "${b.judulEdit || b.judul}" (hal ${b.halamanMulai}-${b.halamanSelesai}) tersimpan sebagai draf.`);
       }
       if (ikutBank) {
         const dipilih = pratinjau.butir.filter((b) => b.dipilih);
@@ -206,7 +210,7 @@ export default function ImporBukuHtmlPage() {
             const { dipilih: _d, asal: _a, babIndex, ...butir } = b;
             // Identitas materi butir MENGIKUTI nama bab yang diedit operator
             // (fallback materi identitas) — supaya soal terpanggil per bab.
-            const judulBab = (pratinjau.babs[babIndex]?.judulEdit || pratinjau.babs[babIndex]?.bab?.judul || identitas.materi || '').trim();
+            const judulBab = (pratinjau.babs[babIndex]?.judulEdit || pratinjau.babs[babIndex]?.judul || identitas.materi || '').trim();
             batch.set(doc(collection(db, 'bank_soal')), {
               ...butir,
               materi: judulBab,
@@ -335,18 +339,18 @@ export default function ImporBukuHtmlPage() {
           {pratinjau.babs.map((b, i) => (
             <div key={i} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: '8px 10px', marginBottom: 8, fontSize: 12 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <b style={{ whiteSpace: 'nowrap' }}>Bab {i + 1} · hal {b.grup.halamanMulai}-{b.grup.halamanSelesai}:</b>
+                <b style={{ whiteSpace: 'nowrap' }}>Bab {i + 1} · hal {b.halamanMulai}-{b.halamanSelesai}:</b>
                 <input
                   value={b.judulEdit}
                   onChange={(e) => setPratinjau((prev) => ({ ...prev, babs: prev.babs.map((x, xi) => (xi === i ? { ...x, judulEdit: e.target.value } : x)) }))}
-                  placeholder={b.bab.judul || `nama bab asli buku ini (mis. Bab 3 Trigonometri)`}
+                  placeholder={`nama bab (otomatis terbaca; koreksi bila perlu)`}
                   style={{ flex: 1, minWidth: 220, padding: '5px 8px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12 }}
                 />
-                <span style={{ color: '#6b7280', fontSize: 11 }}>{b.bab.sections?.length || 0} seksi · {b.bab.ujiPemahaman?.length || 0} soal · via {b.provider}</span>
+                <span style={{ color: '#6b7280', fontSize: 11 }}>{b.sections?.length || 0} seksi · {b.ujiPemahaman?.length || 0} soal · via {(b.provider || []).join('/') || '-'}</span>
               </div>
             </div>
           ))}
-          <div style={{ fontSize: 11, color: '#6b7280' }}>Isi nama bab SESUAI buku asli supaya soal terpanggil per bab dengan benar di mesin/rakit/kuis.</div>
+          <div style={{ fontSize: 11, color: '#6b7280' }}>Nama bab terbaca OTOMATIS dari tulisan tercetak di halaman scan; kolom ini hanya untuk KOREKSI bila bacaan AI meleset.</div>
           {pratinjau.butir.length > 0 && (
             <details style={{ fontSize: 12, color: '#374151' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Tinjau {pratinjau.butir.length} soal yang akan masuk bank (klik untuk membuka)</summary>
