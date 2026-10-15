@@ -27,7 +27,7 @@ import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
   keGambarAi, klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat, gabungkanBabBerjudul, perkiraanPanggilanAi,
-  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman,
+  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
@@ -612,17 +612,17 @@ export default function ImporBukuHtmlPage() {
           soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
         </label>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
-          {modeSumber === 'teks' && (
+          {aksiModeImpor(modeSumber).perluPratinjauTeks && (
             <button style={st.tombol(sibuk || !teksBuku)} disabled={sibuk || !teksBuku} onClick={bangunPratinjauTeks}>
               <BookUp size={15} /> Pratinjau hasil teks (tanpa AI)
             </button>
           )}
-          {modeSumber === 'gambar' && (
+          {aksiModeImpor(modeSumber).perluEkstrakVision && (
           <button style={st.tombol(sibuk || gambar.length === 0)} disabled={sibuk || gambar.length === 0} onClick={prosesAi}>
             {sibuk ? <Loader2 size={15} className="animate-spin" /> : <BookUp size={15} />} {sibuk ? 'Memproses…' : jobAktif ? 'Lanjutkan ekstraksi sampai selesai' : 'Ekstrak materi & soal (unggah mentah dulu)'}
           </button>
           )}
-          {sibuk && modeSumber === 'gambar' && <button style={{ ...st.tombol(false), background: '#b45309' }} onClick={() => { jedaRef.current = true; }}>⏸ Jeda (progres di sistem)</button>}
+          {sibuk && aksiModeImpor(modeSumber).perluEkstrakVision && <button style={{ ...st.tombol(false), background: '#b45309' }} onClick={() => { jedaRef.current = true; }}>⏸ Jeda (progres di sistem)</button>}
           {pratinjau && (
             <button style={st.tombol(sibuk)} disabled={sibuk} onClick={simpan}>
               <CheckCircle2 size={15} /> Simpan draf buku{ikutBank ? ' + bank soal' : ''}

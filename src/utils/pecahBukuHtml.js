@@ -309,3 +309,15 @@ export function urutkanBerkasGambar(namaList = []) {
 export function klasifikasiGambarHalaman(width = 0, height = 0) {
   return width >= 1000 && height > width ? 'halaman' : 'figur';
 }
+
+/**
+ * Tombol aksi mana yang wajib tampil per mode sumber impor.
+ * (Regresi 15 Okt: mode 'pdf' & 'folder' sempat TIDAK punya tombol aksi
+ * sama sekali karena kondisi render hanya memeriksa 'teks'/'gambar'.)
+ */
+export function aksiModeImpor(mode = '') {
+  return {
+    perluPratinjauTeks: mode === 'teks' || mode === 'pdf',
+    perluEkstrakVision: mode === 'gambar' || mode === 'folder',
+  };
+}

@@ -7,7 +7,7 @@ import {
   kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
   klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat,
-  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman,
+  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -186,4 +186,12 @@ test('folder gambar: urutan natural & pemisahan halaman vs figur', () => {
   assert.equal(klasifikasiGambarHalaman(1700, 2400), 'halaman');
   assert.equal(klasifikasiGambarHalaman(500, 466), 'figur');
   assert.equal(klasifikasiGambarHalaman(900, 1200), 'figur', 'lebar <1000 dianggap figur');
+});
+
+test('aksiModeImpor: setiap mode punya tombol aksinya (regresi tombol hilang)', () => {
+  assert.equal(aksiModeImpor('pdf').perluPratinjauTeks, true);
+  assert.equal(aksiModeImpor('teks').perluPratinjauTeks, true);
+  assert.equal(aksiModeImpor('folder').perluEkstrakVision, true);
+  assert.equal(aksiModeImpor('gambar').perluEkstrakVision, true);
+  assert.equal(aksiModeImpor('pdf').perluEkstrakVision, false);
 });
