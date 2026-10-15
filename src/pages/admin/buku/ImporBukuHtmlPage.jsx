@@ -23,6 +23,7 @@ import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
   kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
   klasifikasiGagalEkstraksi, parseResponsEkstraksi,
+  saringButirDuplikat, saringBabDuplikat,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 
@@ -218,34 +219,50 @@ export default function ImporBukuHtmlPage() {
         idBuku = ref.id;
         tambahLog(`✓ Buku digital draf dibuat (${idBuku}).`);
       }
-      const dipakaiIdx = pratinjau.babs.map((b, i) => (b.disertakan === false ? -1 : i)).filter((i) => i >= 0);
-      for (let ii = 0; ii < dipakaiIdx.length; ii += 1) {
-        const b = pratinjau.babs[dipakaiIdx[ii]];
-        const i = ii;
+      const dipakaiIdx = pratinjau.babs.map((b, i2) => (b.disertakan === false ? -1 : i2)).filter((i2) => i2 >= 0);
+      let babPayloads = dipakaiIdx.map((idx, ii) => {
+        const b = pratinjau.babs[idx];
+        return {
+          payload: {
+            judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${ii + 1}`,
+            sections: b.sections || [],
+            ujiPemahaman: b.ujiPemahaman || [],
+            urutan: ii + 1,
+            tipe: 'teks',
+            status: 'draft',
+            sumberImpor: 'buku-html',
+            halamanSumber: [b.halamanMulai, b.halamanSelesai],
+            providerAi: (b.provider || []).join('/'),
+            updatedAt: serverTimestamp(),
+          },
+        };
+      });
+      // 🔥 ANTI-DUPLIKAT (owner 15 Okt): simpan kedua / lanjutan kelompok
+      // gagal tidak mendobel bab maupun butir; yang dilewati dilaporkan.
+      if (targetBuku === 'ada' && idBuku) {
+        const snapBab = await getDocs(collection(db, 'buku_digital', idBuku, 'bab'));
+        const eksBab = snapBab.docs.map((d) => d.data());
+        const sebelumBab = babPayloads.length;
+        babPayloads = saringBabDuplikat(babPayloads.map((x) => x.payload), eksBab).map((payload) => ({ payload }));
+        if (sebelumBab - babPayloads.length > 0) tambahLog(`↷ ${sebelumBab - babPayloads.length} bab dilewati karena sudah ada di buku ini (anti-duplikat).`);
+      }
+      for (let ii = 0; ii < babPayloads.length; ii += 1) {
         const ref = doc(collection(db, 'buku_digital', idBuku, 'bab'));
-        await setDoc(ref, {
-          judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${i + 1}`,
-          sections: b.sections || [],
-          ujiPemahaman: b.ujiPemahaman || [],
-          urutan: i + 1,
-          tipe: 'teks',
-          status: 'draft',
-          sumberImpor: 'buku-html',
-          halamanSumber: [b.halamanMulai, b.halamanSelesai],
-          providerAi: (b.provider || []).join('/'),
-          updatedAt: serverTimestamp(),
-        });
-        tambahLog(`✓ Bab ${i + 1} "${b.judulEdit || b.judul}" (hal ${b.halamanMulai}-${b.halamanSelesai}) tersimpan sebagai draf.`);
+        await setDoc(ref, babPayloads[ii].payload);
+        tambahLog(`✓ Bab "${babPayloads[ii].payload.judul}" (hal ${babPayloads[ii].payload.halamanSumber[0]}-${babPayloads[ii].payload.halamanSumber[1]}) tersimpan sebagai draf.`);
       }
       if (ikutBank) {
-        const dipilih = pratinjau.butir.filter((b) => b.dipilih && dipakaiIdx.includes(b.babIndex));
+        let dipilih = pratinjau.butir.filter((b) => b.dipilih && dipakaiIdx.includes(b.babIndex));
+        const snapBank = await getDocs(query(collection(db, 'bank_soal'), where('sumberFile', '==', namaFile)));
+        const eksButir = snapBank.docs.map((d) => d.data());
+        const sebelumButir = dipilih.length;
+        dipilih = saringButirDuplikat(dipilih, eksButir);
+        if (sebelumButir - dipilih.length > 0) tambahLog(`↷ ${sebelumButir - dipilih.length} soal dilewati karena sudah ada di bank (anti-duplikat).`);
         for (let i = 0; i < dipilih.length; i += 400) {
           const batch = writeBatch(db);
           dipilih.slice(i, i + 400).forEach((b) => {
             const { dipilih: _d, asal: _a, babIndex, ...butir } = b;
-            // Identitas materi butir MENGIKUTI nama bab yang diedit operator
-            // (fallback materi identitas) — supaya soal terpanggil per bab.
-            const judulBab = (pratinjau.babs[babIndex]?.judulEdit || pratinjau.babs[babIndex]?.judul || identitas.materi || '').trim();
+            const judulBab = (pratinjau.babs[babIndex]?.judulEdit || pratinjau.babs[babIndex]?.judul || identitas.materi || `${identitas.mapel} Kelas ${identitas.kelas}`).trim();
             batch.set(doc(collection(db, 'bank_soal')), {
               ...butir,
               materi: judulBab,
@@ -256,7 +273,7 @@ export default function ImporBukuHtmlPage() {
           });
           await batch.commit();
         }
-        tambahLog(`✓ ${pratinjau.butir.filter((b) => b.dipilih).length} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
+        tambahLog(`✓ ${dipilih.length} soal masuk bank_soal (kunci belum terverifikasi — QC sampel dulu).`);
       }
       try { localStorage.removeItem(kunciProgresImpor(namaFile, html ? html.length : 0)); } catch (_e) { /* abaikan */ }
       setProgres({});

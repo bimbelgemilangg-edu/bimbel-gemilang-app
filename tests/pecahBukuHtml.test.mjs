@@ -6,6 +6,7 @@ import {
   inventarisBukuHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
   kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
   klasifikasiGagalEkstraksi, parseResponsEkstraksi,
+  saringButirDuplikat, saringBabDuplikat,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -160,4 +161,19 @@ test('parseResponsEkstraksi: teks polos tidak lagi meledakkan klien', () => {
   const baik = parseResponsEkstraksi(JSON.stringify({ success: true, bab: { sections: [] }, provider: 'gemini' }));
   assert.equal(baik.ok, true);
   assert.equal(parseResponsEkstraksi(JSON.stringify({ error: 'stok habis' })).pesan, 'stok habis');
+});
+
+test('anti-duplikat: butir berkas+halaman+teks sama disaring', () => {
+  const b = { sumberFile: 'B.html', sumberHalaman: 11, soal: 'Akar  x^2-9=0?' };
+  const eksisting = [{ sumberFile: 'b.html', sumberHalaman: 11, soal: 'akar x^2-9=0?' }];
+  assert.equal(saringButirDuplikat([b], eksisting).length, 0, 'beda huruf/spasi tetap dianggap sama');
+  assert.equal(saringButirDuplikat([{ ...b, sumberHalaman: 21 }], eksisting).length, 1);
+  assert.equal(saringButirDuplikat([{ ...b, soal: 'Soal lain?' }], eksisting).length, 1);
+});
+
+test('anti-duplikat: bab judul sama atau rentang halaman tindih disaring', () => {
+  const lama = [{ judul: 'Vektor', halamanSumber: [151, 170] }];
+  assert.equal(saringBabDuplikat([{ judul: 'vektor', halamanSumber: [999, 999] }], lama).length, 0);
+  assert.equal(saringBabDuplikat([{ judul: 'Baru', halamanSumber: [160, 180] }], lama).length, 0, 'rentang tindih');
+  assert.equal(saringBabDuplikat([{ judul: 'Baru', halamanSumber: [171, 180] }], lama).length, 1);
 });
