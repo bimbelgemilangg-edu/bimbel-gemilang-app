@@ -468,6 +468,11 @@ export default function ManajerBuku() {
                   <span style={{ color: b.status === 'aktif' ? '#16a34a' : '#d97706', fontWeight: 700 }}>{b.status}</span>
                 </div>
               </div>
+              {/* 📖 16 Okt 2026: owner butuh membaca isi draf & mengunduh PDF
+                  tanpa login siswa (pembedahan alur impor-ke-pakai). */}
+              <button onClick={() => navigate(`/admin/buku/${b.id}/baca`)} style={st.btnSmall} title="Baca pratinjau & unduh PDF">
+                <Eye size={13} /> Baca
+              </button>
               <button onClick={() => bukaBuku(b)} style={st.btnSmall}><Layers size={13} /> Kelola Bab</button>
               <button onClick={() => { setModeFormBuku(b); setFormBuku({ ...b }); }} style={st.iconBtn} title="Edit buku"><Pencil size={14} /></button>
               <button onClick={() => hapusBuku(b)} style={{ ...st.iconBtn, color: '#dc2626' }} title="Hapus buku"><Trash2 size={14} /></button>
