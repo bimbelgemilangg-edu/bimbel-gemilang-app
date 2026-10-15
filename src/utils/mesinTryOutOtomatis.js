@@ -77,25 +77,10 @@ export function acakArray(arr) {
 const norm = (s) => String(s || '').toLowerCase().trim();
 
 /** SMA == SMA/MA == SMA-MA; SMP == SMP/MTs */
-export function normJenjang(s) {
-  const t = norm(s).replace(/[^a-z0-9]/g, '');
-  if (!t) return '';
-  if (t.startsWith('sma') || t === 'ma' || t.includes('smama')) return 'sma';
-  if (t.startsWith('smp') || t.includes('mts')) return 'smp';
-  if (t.startsWith('sd') || t === 'mi' || t.startsWith('sdmi')) return 'sd';
-  return t;
-}
+// Dipindah ke util murni supaya teruji Node polos; re-export agar pemakai lama tetap jalan.
+import { normJenjang, cocokkanJenjang } from './cocokkanJenjang.js';
 
-
-
-
-export function cocokkanJenjang(soalJenjang, targetJenjang) {
-  const t = normJenjang(targetJenjang);
-  if (!t) return true;
-  const s = normJenjang(soalJenjang);
-  if (!s) return true;
-  return s === t;
-}
+export { normJenjang, cocokkanJenjang };
 
 export async function ambilSoalDariBank(opts) {
   const {
