@@ -77,12 +77,14 @@ export function kelompokkanHalamanUntukAi(dataUris = [], batas = BATAS_HALAMAN_P
       halamanMulai: i + 1,
       halamanSelesai: i + slice.length,
       images: slice.map(dataUriKeBase64),
+      dataUris: slice, // asli ber-mime: bahan keGambarAi untuk endpoint vision
     });
   }
   return out;
 }
 
 export default {
+  keGambarAi,
   ekstrakGambarHalamanDariHtml,
   dataUriKeBase64,
   adaTeksLayer,
@@ -185,4 +187,28 @@ export function gabungkanBabBerjudul(hasilBerurutan = []) {
     });
   });
   return gabung;
+}
+
+/**
+ * Normalisasi masukan gambar untuk endpoint vision (konversiModulScan dll).
+ * Kontrak endpoint: array OBJECT {mime, data}. Klien lama/keliru bisa mengirim
+ * string data-URI atau base64 polos — di sini semuanya diseragamkan supaya
+ * tidak lagi lahir payload "base64,undefined" (insiden 15 Okt: semua provider
+ * 400 karena wizard mengirim string).
+ * @param {Array<string|{mime:string,data:string}>} list
+ * @returns {Array<{mime:string,data:string}>}
+ */
+export function keGambarAi(list = []) {
+  return (Array.isArray(list) ? list : [])
+    .map((im) => {
+      if (im && typeof im === 'object') {
+        const data = String(im.data || '').replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
+        return { mime: String(im.mime || 'image/jpeg'), data };
+      }
+      const str = String(im || '');
+      const m = str.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/s);
+      if (m) return { mime: m[1], data: m[2] };
+      return { mime: 'image/jpeg', data: str }; // base64 polos: mime terbaik-tebakan
+    })
+    .filter((g) => g.data.length > 0);
 }

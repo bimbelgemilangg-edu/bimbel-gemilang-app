@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ekstrakGambarHalamanDariHtml, dataUriKeBase64, adaTeksLayer,
   inventarisBukuHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
-  kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul,
+  kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -109,4 +109,24 @@ test('gabungkanBabBerjudul: judul kosong tidak melebur jadi satu', () => {
   });
   const gab = gabungkanBabBerjudul([h(1, 10), h(11, 20)]);
   assert.equal(gab.length, 2, 'judul tak terbaca = bab terpisah (jujur, jangan menelek gabung)');
+});
+
+test('keGambarAi: data-URI, base64 polos, dan object diseragamkan (anti "base64,undefined")', () => {
+  const out = keGambarAi([
+    'data:image/png;base64,aGVsbG8x',
+    'aGVsbG8y',
+    { mime: 'image/jpeg', data: 'aGVsbG8z' },
+    '',
+  ]);
+  assert.deepEqual(out, [
+    { mime: 'image/png', data: 'aGVsbG8x' },
+    { mime: 'image/jpeg', data: 'aGVsbG8y' },
+    { mime: 'image/jpeg', data: 'aGVsbG8z' },
+  ]);
+});
+
+test('kelompokkanHalamanUntukAi menyimpan dataUris asli ber-mime', () => {
+  const g = kelompokkanHalamanUntukAi([uri(1), uri(2)]);
+  assert.deepEqual(g[0].dataUris, [uri(1), uri(2)]);
+  assert.deepEqual(keGambarAi(g[0].dataUris), [{ mime: 'image/png', data: 'aGVsbG81' }, { mime: 'image/png', data: 'aGVsbG82' }]);
 });
