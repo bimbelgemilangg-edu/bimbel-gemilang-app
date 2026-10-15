@@ -188,6 +188,7 @@ export const config = {
   }
   
   export default async function handler(req, res) {
+  try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method hanya POST' });
     }
@@ -247,4 +248,8 @@ export const config = {
     return res.status(500).json({
       error: `Semua provider gagal: ${kesalahan.slice(0, 6).join(' | ')}`,
     });
+    } catch (e) {
+    // 15 Okt 2026: jangan pernah balas teks polos — klien memparse JSON.
+    return res.status(500).json({ success: false, error: `Endpoint konversi gagal: ${e?.message || e}` });
   }
+}

@@ -212,3 +212,34 @@ export function keGambarAi(list = []) {
     })
     .filter((g) => g.data.length > 0);
 }
+
+/**
+ * Klasifikasi pesan gagal ekstraksi AI supaya klien bisa bersikap tepat
+ * (insiden 15 Okt: 18 kelompok gagal campur aduk kuota & payload):
+ *  - 'kuota'   : 429/503/rate-limit -> JEDA, lanjut nanti (resume melewatkan yang sukses)
+ *  - 'payload' : respons bukan JSON / 413 / body terlalu besar -> pecah kelompok lebih kecil & coba lagi
+ *  - 'lain'    : cetak apa adanya ke log
+ */
+export function klasifikasiGagalEkstraksi(pesan = '') {
+  const t = String(pesan || '');
+  if (/429|quota|rate-?limit|503|UNAVAILABLE|high demand/i.test(t)) return 'kuota';
+  if (/413|payload|too large|not valid JSON|Unexpected token|ENTITY_TOO_LARGE/i.test(t)) return 'payload';
+  return 'lain';
+}
+
+/**
+ * Parse respons endpoint ekstraksi dengan defensif: endpoint pernah
+ * mengembalikan teks polos ("An error occurred…") sehingga r.json()
+ * melempar dan log owner jadi sampah. Kembalikan objek seragam.
+ * @returns {{ok:boolean, json:object|null, pesan:string}}
+ */
+export function parseResponsEkstraksi(teks = '') {
+  const t = String(teks ?? '');
+  try {
+    const json = JSON.parse(t);
+    if (json && json.success && json.bab) return { ok: true, json, pesan: '' };
+    return { ok: false, json: json || null, pesan: json?.error || 'respons tanpa bab/success' };
+  } catch (_e) {
+    return { ok: false, json: null, pesan: t.slice(0, 300) || 'respons kosong' };
+  }
+}

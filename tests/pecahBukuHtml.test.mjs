@@ -5,6 +5,7 @@ import {
   ekstrakGambarHalamanDariHtml, dataUriKeBase64, adaTeksLayer,
   inventarisBukuHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
   kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
+  klasifikasiGagalEkstraksi, parseResponsEkstraksi,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -142,4 +143,21 @@ test('round-trip payload endpoint identik dengan byte sumber (validasi berkas ow
     assert.equal(`data:${o.mime};base64,${o.data}`, asli[i]);
   });
   assert.equal(objs[1].mime, 'image/jpeg');
+});
+
+test('klasifikasiGagalEkstraksi: kuota vs payload vs lain', () => {
+  assert.equal(klasifikasiGagalEkstraksi('HTTP_429: You exceeded your current quota'), 'kuota');
+  assert.equal(klasifikasiGagalEkstraksi('code 503 UNAVAILABLE high demand'), 'kuota');
+  assert.equal(klasifikasiGagalEkstraksi('Unexpected token \'A\', "An error o"... is not valid JSON'), 'payload');
+  assert.equal(klasifikasiGagalEkstraksi('413 ENTITY_TOO_LARGE'), 'payload');
+  assert.equal(klasifikasiGagalEkstraksi('model mati aneh'), 'lain');
+});
+
+test('parseResponsEkstraksi: teks polos tidak lagi meledakkan klien', () => {
+  const buruk = parseResponsEkstraksi('An error occurred while processing.');
+  assert.equal(buruk.ok, false);
+  assert.match(buruk.pesan, /An error occurred/);
+  const baik = parseResponsEkstraksi(JSON.stringify({ success: true, bab: { sections: [] }, provider: 'gemini' }));
+  assert.equal(baik.ok, true);
+  assert.equal(parseResponsEkstraksi(JSON.stringify({ error: 'stok habis' })).pesan, 'stok habis');
 });
