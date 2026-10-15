@@ -7,6 +7,7 @@ import {
   kunciProgresImpor, perkiraanPanggilanAi, gabungkanBabBerjudul, keGambarAi,
   klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat,
+  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -176,4 +177,13 @@ test('anti-duplikat: bab judul sama atau rentang halaman tindih disaring', () =>
   assert.equal(saringBabDuplikat([{ judul: 'vektor', halamanSumber: [999, 999] }], lama).length, 0);
   assert.equal(saringBabDuplikat([{ judul: 'Baru', halamanSumber: [160, 180] }], lama).length, 0, 'rentang tindih');
   assert.equal(saringBabDuplikat([{ judul: 'Baru', halamanSumber: [171, 180] }], lama).length, 1);
+});
+
+test('folder gambar: urutan natural & pemisahan halaman vs figur', () => {
+  assert.deepEqual(urutkanBerkasGambar(['1_375.png', '372.jpg', '1_374.jpg', '1_373.png']),
+    ['372.jpg', '1_373.png', '1_374.jpg', '1_375.png']);
+  assert.equal(angkaBerkas('2_374.jpg'), 374);
+  assert.equal(klasifikasiGambarHalaman(1700, 2400), 'halaman');
+  assert.equal(klasifikasiGambarHalaman(500, 466), 'figur');
+  assert.equal(klasifikasiGambarHalaman(900, 1200), 'figur', 'lebar <1000 dianggap figur');
 });

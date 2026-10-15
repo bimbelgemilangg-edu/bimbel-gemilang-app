@@ -27,8 +27,10 @@ import {
   inventarisBukuHtml, ekstrakGambarHalamanDariHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
   keGambarAi, klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat, gabungkanBabBerjudul, perkiraanPanggilanAi,
+  angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
+import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
 import { uploadElearningFile } from '../../../services/uploadService';
 
 const COL_JOB = 'impor_buku_jobs';
@@ -70,6 +72,10 @@ export default function ImporBukuHtmlPage() {
   const [pratinjau, setPratinjau] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [jobAktif, setJobAktif] = useState(null);
+  const [modeSumber, setModeSumber] = useState('gambar'); // 'gambar' | 'teks' | 'folder'
+  const [figurFiles, setFigurFiles] = useState([]);
+  const [figsPerHalaman, setFigsPerHalaman] = useState(new Map());
+  const [teksBuku, setTeksBuku] = useState('');
   const jedaRef = useRef(false);
 
   const tambahLog = (teks, ok = true) => setLog((l) => [...l, { teks, ok }]);
@@ -84,8 +90,168 @@ export default function ImporBukuHtmlPage() {
   };
   useEffect(() => { muatJobs(); }, []);
 
+  const bacaFolder = async (fileList) => {
+    const files = Array.from(fileList || []).filter((f) => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const terurut = urutkanBerkasGambar(files.map((f) => f.name));
+    const byName = new Map(files.map((f) => [f.name, f]));
+    const halamanUris = [];
+    const figur = [];
+    let totalByte = 0;
+    for (const nama of terurut) {
+      const f = byName.get(nama);
+      totalByte += f.size;
+      const dataUri = await new Promise((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsDataURL(f); });
+      const dim = await new Promise((res) => { const im = new Image(); im.onload = () => res({ w: im.naturalWidth, h: im.naturalHeight }); im.onerror = () => res({ w: 0, h: 0 }); im.src = dataUri; });
+      if (klasifikasiGambarHalaman(dim.w, dim.h) === 'halaman') halamanUris.push(dataUri);
+      else figur.push(f);
+    }
+    setNamaFile(`${terurut.length} gambar (${files[0].name.slice(0, 12)}…)`);
+    setGambar(halamanUris);
+    setFigurFiles(figur);
+    setTeksBuku('');
+    setInv({ jumlahGambarHalaman: halamanUris.length, ukuranByte: totalByte, adaTeksLayer: false, layakSimpanUtuhDiFirestore: false, saran: `Folder terbaca: ${halamanUris.length} gambar halaman + ${figur.length} gambar figur (figur disimpan terpisah sebagai aset, tidak diekstraksi jadi teks).` });
+    setPratinjau(null); setLog([]); setJobAktif(null);
+    tambahLog(`Folder dimuat: ${halamanUris.length} halaman urut ${terurut.length ? angkaBerkas(terurut[0]) : '-'}..${terurut.length ? angkaBerkas(terurut[terurut.length - 1]) : '-'} + ${figur.length} figur.`);
+  };
+
+  const muatLibPdf = () => new Promise((resolve) => {
+    if (window.pdfjsLib) { resolve(window.pdfjsLib); return; }
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.async = true;
+    script.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    document.head.appendChild(script);
+  });
+
+  //  FIGUR OTOMATIS dari PDF: rect gambar diambil dari operator list
+  // (transform terakhir sebelum paintImage*), dipotong dari render halaman,
+  // diunggah ke Supabase, lalu DITEMPEL otomatis ke soal/blok halaman yang
+  // sama — jawaban atas "biar final tersimpan rapi" tanpa tempel manual.
+  const ekstrakFigurHalaman = async (lib, page, nomorHal) => {
+    const opList = await page.getOperatorList();
+    const viewport = page.getViewport({ scale: 1 });
+    const areaPage = viewport.width * viewport.height;
+    let ctm = null;
+    const rects = [];
+    for (let k = 0; k < opList.fnArray.length; k += 1) {
+      const fn = opList.fnArray[k];
+      if (fn === lib.OPS.transform) { ctm = opList.argsArray[k]; continue; }
+      if ((fn === lib.OPS.paintImageXObject || fn === lib.OPS.paintJpegXObject) && ctm) {
+        const [a, , , d, e, f] = ctm;
+        const w = Math.abs(a); const hgt = Math.abs(d);
+        if (w < 1 || hgt < 1) continue;
+        const r = viewport.convertToViewportRectangle([e, f, e + w, f + hgt]);
+        const rect = { x: Math.min(r[0], r[2]), y: Math.min(r[1], r[3]), w: Math.abs(r[2] - r[0]), h: Math.abs(r[3] - r[1]) };
+        const luas = rect.w * rect.h;
+        if (rect.w > 60 && rect.h > 60 && luas > areaPage * 0.015 && luas < areaPage * 0.7) rects.push(rect);
+      }
+    }
+    if (!rects.length) return [];
+    const skala = 2;
+    const vp = page.getViewport({ scale: skala });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    const urls = [];
+    for (let ri = 0; ri < rects.length; ri += 1) {
+      const r = rects[ri];
+      const off = document.createElement('canvas');
+      off.width = Math.max(8, Math.ceil(r.w * skala)); off.height = Math.max(8, Math.ceil(r.h * skala));
+      off.getContext('2d').drawImage(canvas, r.x * skala, r.y * skala, r.w * skala, r.h * skala, 0, 0, off.width, off.height);
+      const blob = await new Promise((res) => off.toBlob(res, 'image/png'));
+      if (!blob) continue;
+      const file = new File([blob], `figur-hal${nomorHal}-${ri + 1}.png`, { type: 'image/png' });
+      const hasil = await uploadElearningFile(file, `impor-buku/figur-${Date.now()}`, { kompres: false, contentType: 'image/png' });
+      if (hasil?.success && hasil.downloadURL) urls.push(hasil.downloadURL);
+    }
+    return urls;
+  };
+
+  // 📑 MODE PDF BERTEKS (owner 15 Okt: "aku tinggal upload pdf ocr"):
+  // lapisan teks hasil OCR (PDF24/Google Docs) dibaca langsung di browser
+  // lewat pdfjs — TANPA panggilan AI vision, tanpa kuota model.
+  const bacaPdf = async (f) => {
+    setSibuk(true); setLog([]); setPratinjau(null);
+    try {
+      const lib = await muatLibPdf();
+      const doc = await lib.getDocument({ data: await f.arrayBuffer() }).promise;
+      const keluar = [];
+      const figs = new Map();
+      for (let i = 1; i <= doc.numPages; i += 1) {
+        const page = await doc.getPage(i);
+        const tc = await page.getTextContent();
+        keluar.push(`--- HALAMAN ${i} ---`);
+        keluar.push(bersihkanTeksOcr(susunTeksDariItem(tc.items)));
+        try {
+          const urls = await ekstrakFigurHalaman(lib, page, i);
+          if (urls.length) figs.set(i, urls);
+        } catch (_e) { /* halaman tanpa figur bukan masalah */ }
+        page.cleanup();
+        if (i % 50 === 0) tambahLog(`… membaca teks+figur halaman ${i}/${doc.numPages}`);
+      }
+      await doc.destroy();
+      setNamaFile(f.name);
+      setTeksBuku(keluar.join('\n'));
+      setInv(null); setGambar([]); setFigurFiles([]); setJobAktif(null);
+      setFigsPerHalaman(figs);
+      const jmlFig = [...figs.values()].reduce((a, b) => a + b.length, 0);
+      tambahLog(`✓ PDF ${doc.numPages} halaman terbaca: teks OCR + ${jmlFig} figur diekstrak & akan ditempel otomatis ke soal/blok halamannya (mode bebas kuota).`);
+    } catch (e) {
+      tambahLog(`✗ Gagal membaca PDF: ${e?.message || e}. Bila PDF murni scan (tanpa lapisan teks), pakai mode gambar/folder atau OCR dulu di PDF24.`, false);
+    } finally {
+      setSibuk(false);
+    }
+  };
+
+  const bangunPratinjauTeks = () => {
+    const bersih = teksBuku.split('\n').filter((l) => !/^--- HALAMAN \d+ ---$/.test(l.trim())).join('\n');
+    const { bab } = parseTeksBuku(bersih);
+    // tempel figur otomatis: blok materi & soal menerima gambar halamannya
+    bab.forEach((b) => {
+      b.sections = (b.sections || []).map((sek) => {
+        const blocks = [];
+        (sek.blocks || []).forEach((bl) => {
+          blocks.push(bl);
+          (figsPerHalaman.get(bl.halaman) || []).forEach((url) => blocks.push({ jenis: 'gambar', src: url, alt: `figur halaman ${bl.halaman}` }));
+        });
+        return { ...sek, blocks };
+      });
+      b.ujiPemahaman = (b.ujiPemahaman || []).map((soal) => ({
+        ...soal,
+        gambarUrls: figsPerHalaman.get(soal.halaman) || [],
+      }));
+    });
+    const babs = bab.map((b) => ({
+      judul: b.judul, judulEdit: b.judul, sections: b.sections, ujiPemahaman: b.ujiPemahaman,
+      halamanMulai: null, halamanSelesai: null, provider: ['teks-ocr'], disertakan: true,
+    }));
+    const butir = [];
+    babs.forEach((b, bi) => {
+      (b.ujiPemahaman || []).forEach((item) => {
+        const satu = butirBankDariUjiPemahaman(item, {
+          mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
+          materi: b.judul || identitas.materi, sumber: namaFile,
+        }, null);
+        if (satu) butir.push({ ...satu, dipilih: true, babIndex: bi, asal: 'teks OCR' });
+      });
+    });
+    setPratinjau({ babs, butir, semuaKelompok: babs.length, selesaiKelompok: babs.length });
+    tambahLog(`Mode teks: ${babs.length} bab & ${butir.length} soal pg terparse TANPA panggilan AI. Soal tanpa kunci OCR dibuang jujur.`);
+  };
+
   const bacaBerkas = async (f) => {
     const teks = await f.text();
+    if (modeSumber === 'teks') {
+      setNamaFile(f.name);
+      setTeksBuku(/\.html?$/i.test(f.name) ? htmlKeTeks(teks) : teks);
+      setInv(null); setGambar([]); setPratinjau(null); setLog([]); setJobAktif(null);
+      return;
+    }
     setNamaFile(f.name);
     setGambar(ekstrakGambarHalamanDariHtml(teks));
     setInv(inventarisBukuHtml(teks));
@@ -144,7 +310,13 @@ export default function ImporBukuHtmlPage() {
       urls.push({ url: hasil.downloadURL, mime });
       if ((i + 1) % 50 === 0) tambahLog(`… mengunggah halaman mentah ${i + 1}/${gambar.length} ke penyimpanan sistem.`);
     }
-    await updateDoc(ref, { urls, status: 'berjalan', diperbaruiPada: serverTimestamp() });
+    const figurUrls = [];
+    for (const f of figurFiles) {
+      const hasil = await uploadElearningFile(f, `impor-buku/${ref.id}/figur`, { kompres: false, contentType: f.type });
+      if (hasil?.success && hasil.downloadURL) figurUrls.push({ url: hasil.downloadURL, nama: f.name });
+    }
+    if (figurUrls.length) tambahLog(`✓ ${figurUrls.length} gambar figur tersimpan sebagai aset (tempelkan ke bab/soal lewat Manajer Buku bila perlu).`);
+    await updateDoc(ref, { urls, figurUrls, status: 'berjalan', diperbaruiPada: serverTimestamp() });
     const job = { id: ref.id, namaFile, ukuranByte: inv.ukuranByte, jumlahHalaman: gambar.length, jumlahKelompok: kelompokkanHalamanUntukAi(gambar).length, selesai: 0, identitas, urls, status: 'berjalan' };
     setJobAktif(job);
     tambahLog(`✓ ${gambar.length} halaman mentah tersimpan di penyimpanan sistem (job ${ref.id.slice(0, 6)}). Ekstraksi bisa dilanjutkan dari perangkat mana pun.${migrasi ? ` ${migrasi} kelompok sukses lama dimigrasikan — tidak diekstrak ulang.` : ''}`);
@@ -269,8 +441,9 @@ export default function ImporBukuHtmlPage() {
           payload: {
             judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${ii + 1}`,
             sections: b.sections || [], ujiPemahaman: b.ujiPemahaman || [],
-            urutan: ii + 1, tipe: 'teks', status: 'draft', sumberImpor: 'buku-html',
-            halamanSumber: [b.halamanMulai, b.halamanSelesai],
+            urutan: ii + 1, tipe: 'teks', status: 'draft',
+            halamanSumber: b.halamanMulai != null ? [b.halamanMulai, b.halamanSelesai] : null,
+            sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : 'buku-html',
             providerAi: (b.provider || []).join('/'),
             updatedAt: serverTimestamp(),
           },
@@ -364,7 +537,24 @@ export default function ImporBukuHtmlPage() {
 
       <div style={st.kartu}>
         <div style={st.label}>1 · BERKAS BUKU HTML</div>
-        <input type="file" accept=".html,.htm" onChange={(e) => e.target.files?.[0] && bacaBerkas(e.target.files[0])} />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+          <button type="button" style={{ ...st.kecil, background: modeSumber === 'gambar' ? '#5B2ECC' : '#fff', color: modeSumber === 'gambar' ? '#fff' : '#334155' }} onClick={() => setModeSumber('gambar')}>🖼 Gambar halaman (AI vision)</button>
+          <button type="button" style={{ ...st.kecil, background: modeSumber === 'teks' ? '#0e7490' : '#fff', color: modeSumber === 'teks' ? '#fff' : '#334155' }} onClick={() => setModeSumber('teks')}>📄 Teks OCR (.txt/.html — bebas kuota)</button>
+          <button type="button" style={{ ...st.kecil, background: modeSumber === 'folder' ? '#b45309' : '#fff', color: modeSumber === 'folder' ? '#fff' : '#334155' }} onClick={() => setModeSumber('folder')}>📁 Folder gambar halaman</button>
+          <button type="button" style={{ ...st.kecil, background: modeSumber === 'pdf' ? '#166534' : '#fff', color: modeSumber === 'pdf' ? '#fff' : '#334155' }} onClick={() => setModeSumber('pdf')}>📑 PDF berteks (hasil OCR)</button>
+        </div>
+        {modeSumber === 'pdf' ? (
+          <input type="file" accept="application/pdf,.pdf" onChange={(e) => e.target.files?.[0] && bacaPdf(e.target.files[0])} />
+        ) : modeSumber === 'folder' ? (
+          <input type="file" multiple accept="image/*" onChange={(e) => bacaFolder(e.target.files)} />
+        ) : (
+          <input type="file" accept={modeSumber === 'teks' ? '.txt,.text,.html,.htm' : '.html,.htm'} onChange={(e) => e.target.files?.[0] && bacaBerkas(e.target.files[0])} />
+        )}
+        {modeSumber === 'teks' && teksBuku && (
+          <div style={{ marginTop: 8, fontSize: 12, color: '#0f172a' }}>
+            <b>{namaFile}</b> · {teksBuku.length.toLocaleString('id-ID')} karakter teks OCR terbaca.
+          </div>
+        )}
         {inv && (
           <div style={{ marginTop: 10, fontSize: 12, color: '#374151', lineHeight: 1.7 }}>
             <div><b>{namaFile}</b> · {(inv.ukuranByte / 1024 / 1024).toFixed(1)} MB · {inv.jumlahGambarHalaman} halaman gambar · teks layer: {inv.adaTeksLayer ? 'ada' : 'tidak (murni scan)'}</div>
@@ -422,10 +612,17 @@ export default function ImporBukuHtmlPage() {
           soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
         </label>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+          {modeSumber === 'teks' && (
+            <button style={st.tombol(sibuk || !teksBuku)} disabled={sibuk || !teksBuku} onClick={bangunPratinjauTeks}>
+              <BookUp size={15} /> Pratinjau hasil teks (tanpa AI)
+            </button>
+          )}
+          {modeSumber === 'gambar' && (
           <button style={st.tombol(sibuk || gambar.length === 0)} disabled={sibuk || gambar.length === 0} onClick={prosesAi}>
             {sibuk ? <Loader2 size={15} className="animate-spin" /> : <BookUp size={15} />} {sibuk ? 'Memproses…' : jobAktif ? 'Lanjutkan ekstraksi sampai selesai' : 'Ekstrak materi & soal (unggah mentah dulu)'}
           </button>
-          {sibuk && <button style={{ ...st.tombol(false), background: '#b45309' }} onClick={() => { jedaRef.current = true; }}>⏸ Jeda (progres di sistem)</button>}
+          )}
+          {sibuk && modeSumber === 'gambar' && <button style={{ ...st.tombol(false), background: '#b45309' }} onClick={() => { jedaRef.current = true; }}>⏸ Jeda (progres di sistem)</button>}
           {pratinjau && (
             <button style={st.tombol(sibuk)} disabled={sibuk} onClick={simpan}>
               <CheckCircle2 size={15} /> Simpan draf buku{ikutBank ? ' + bank soal' : ''}
