@@ -26,9 +26,13 @@ const berkas = process.argv.slice(2).filter((f) => /\.jsx?$/.test(f));
 
 function namaTerimpor(teks) {
   const keluar = new Set();
+  // 🔧 16 Okt 2026 (insiden PR #235): bentuk CAMPUR `import Default,
+  // { Named } from` dulu tak terbaca => false-positive "komponen tidak
+  // diimpor". Pola campur default & named kini didukung.
   for (const m of teks.matchAll(/import\s+([A-Z][A-Za-z0-9_]*)\s+from/gs)) keluar.add(m[1]);
+  for (const m of teks.matchAll(/import\s+([A-Z][A-Za-z0-9_]*)\s*,\s*\{/gs)) keluar.add(m[1]);
   for (const m of teks.matchAll(/import\s*\*\s*as\s*([A-Za-z][A-Za-z0-9_]*)/gs)) keluar.add(m[1]);
-  for (const m of teks.matchAll(/import\s*\{([^}]*)\}\s*from/gs)) {
+  for (const m of teks.matchAll(/import\s*(?:[A-Za-z0-9_]+\s*,\s*)?\{([^}]*)\}\s*from/gs)) {
     for (const bagian of m[1].split(',')) {
       const lokal = bagian.split(/\bas\b/).pop().trim();
       if (/^[A-Za-z][A-Za-z0-9_]*$/.test(lokal)) keluar.add(lokal);

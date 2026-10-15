@@ -16,8 +16,12 @@ import { collection, getDoc, getDocs, doc } from 'firebase/firestore';
 import { ArrowLeft, BookOpen, FileDown, Loader2 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { MathText, MathBlock } from '../../../components/MathText';
-import VisualBuku, { GambarBuku } from '../../../components/buku/VisualBuku';
-import WidgetInteraktif, { JENIS_INTERAKTIF } from '../../../components/belajar/WidgetInteraktif';
+// Impor dipisah (default vs named): pola campur `import X, { Y } from`
+// tidak terbaca ci-penjaga-komponen (false-positive <X>/<Y> tak diimpor).
+import VisualBuku from '../../../components/buku/VisualBuku';
+import { GambarBuku } from '../../../components/buku/VisualBuku';
+import WidgetInteraktif from '../../../components/belajar/WidgetInteraktif';
+import { JENIS_INTERAKTIF } from '../../../components/belajar/WidgetInteraktif';
 import { susunBarisPdfBab, namaFilePdfBuku } from '../../../utils/pdfBukuDigital';
 
 const st = {
