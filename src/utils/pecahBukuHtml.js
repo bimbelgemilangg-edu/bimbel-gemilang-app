@@ -337,3 +337,28 @@ export function labelBabTersimpan(payload = {}) {
     : '';
   return `✓ Bab "${payload?.judul || 'tanpa judul'}"${hs} tersimpan sebagai draf.`;
 }
+
+/**
+ * Ringkasan SIMPAN impor buku dalam bahasa jujur (pembedahan 15 Okt
+ * 2026): owner menekan Simpan dua kali dan mengira gagal karena tidak
+ * ada konfirmasi menonjol — pesan sukses hanya ada di log bawah, dan
+ * tekanan kedua memang wajar berujung "semua dilewati anti-duplikat".
+ * Fungsi ini memaku bahasanya: berapa yang BARU tersimpan vs berapa
+ * yang DILEWATI karena sudah ada.
+ */
+export function pesanRingkasanSimpan(s = {}) {
+  const { babBaru = 0, babLewat = 0, soalBaru = 0, soalLewat = 0 } = s;
+  const baru = [
+    babBaru ? `${babBaru} bab baru` : '',
+    soalBaru ? `${soalBaru} soal baru masuk bank` : '',
+  ].filter(Boolean).join(' + ');
+  const lewat = [
+    babLewat ? `${babLewat} bab` : '',
+    soalLewat ? `${soalLewat} soal` : '',
+  ].filter(Boolean).join(' & ');
+  if (!baru && lewat) {
+    return `↷ TIDAK ADA YANG BARU: ${lewat} sudah tersimpan sebelumnya — anti-duplikat bekerja, tidak ada yang didobel.`;
+  }
+  if (!baru) return '↷ Tidak ada bab/soal yang lolos untuk disimpan (periksa centang "ikut" pada pratinjau).';
+  return `✓ TERSIMPAN: ${baru}${lewat ? ` · ${lewat} dilewati karena sudah ada (anti-duplikat)` : ''}. Tinjau di Admin → Buku.`;
+}

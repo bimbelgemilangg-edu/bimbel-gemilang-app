@@ -8,7 +8,7 @@ import {
   klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat,
   angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor,
-  labelBabTersimpan,
+  labelBabTersimpan, pesanRingkasanSimpan,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -214,4 +214,13 @@ test('labelBabTersimpan: halaman sumber opsional (regresi simpan-crash mode teks
     '✓ Bab "tanpa judul" tersimpan sebagai draf.',
   );
   assert.equal(labelBabTersimpan(), '✓ Bab "tanpa judul" tersimpan sebagai draf.');
+});
+
+test('pesanRingkasanSimpan: bahasa jujur baru vs anti-duplikat (regresi "teken dua kali dikira gagal")', () => {
+  assert.match(pesanRingkasanSimpan({ babBaru: 8, soalBaru: 57 }), /^✓ TERSIMPAN: 8 bab baru \+ 57 soal baru masuk bank\./);
+  const dobel = pesanRingkasanSimpan({ babLewat: 8, soalLewat: 57 });
+  assert.match(dobel, /^↷ TIDAK ADA YANG BARU: 8 bab & 57 soal sudah tersimpan sebelumnya/);
+  const campur = pesanRingkasanSimpan({ babBaru: 2, babLewat: 6, soalBaru: 0, soalLewat: 57 });
+  assert.match(campur, /^✓ TERSIMPAN: 2 bab baru · 6 bab & 57 soal dilewati/);
+  assert.match(pesanRingkasanSimpan({}), /periksa centang/);
 });
