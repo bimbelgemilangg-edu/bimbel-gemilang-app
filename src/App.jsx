@@ -109,6 +109,7 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 // 🔥 BARU: Manajer Buku Digital (CRUD buku + bab, paste JSON, validasi)
 import ManajerBuku from './pages/admin/buku/ManajerBuku';
 import ImporBukuHtmlPage from './pages/admin/buku/ImporBukuHtmlPage';
+import PratinjauBukuAdmin from './pages/admin/buku/PratinjauBukuAdmin';
 // 🔥 v5: Impor Modul massal (banyak PDF sekaligus -> bab terbit otomatis)
 import ImporModul from './pages/admin/buku/ImporModul';
 
@@ -646,6 +647,8 @@ function App() {
         <Route path="/admin/buku" element={<AdminRoute><ManajerBuku /></AdminRoute>} />
         {/* 📚 14 Okt 2026 (owner): buku scan/HTML -> draf materi + bank soal per bab. */}
         <Route path="/admin/buku/impor-html" element={<AdminRoute><ImporBukuHtmlPage /></AdminRoute>} />
+        {/* 📖 16 Okt 2026 (owner): isi buku draf bisa DIBACA & DIUNDUH PDF oleh admin tanpa login siswa. */}
+        <Route path="/admin/buku/:bukuId/baca" element={<AdminRoute><PratinjauBukuAdmin /></AdminRoute>} />
         {/* MATERI v2 FASE 4 -- manajer konten baru (aditif) */}
         <Route
           path="/admin/materi-v2"
