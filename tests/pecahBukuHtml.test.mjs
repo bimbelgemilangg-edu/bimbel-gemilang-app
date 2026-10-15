@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ekstrakGambarHalamanDariHtml, dataUriKeBase64, adaTeksLayer,
   inventarisBukuHtml, kelompokkanHalamanUntukAi, butirBankDariUjiPemahaman,
+  kunciProgresImpor, perkiraanPanggilanAi,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -62,4 +63,17 @@ test('butirBankDariUjiPemahaman: multi/bs/kunci lepas dipetakan null (jalan manu
   assert.equal(butirBankDariUjiPemahaman({ tipe: 'bs', soal: 'x', pernyataan: ['a'], benar: [true] }), null);
   assert.equal(butirBankDariUjiPemahaman({ tipe: 'pg', soal: 'x', pilihan: ['a', 'b'], benar: 5 }), null);
   assert.equal(butirBankDariUjiPemahaman({ tipe: 'pg', soal: '  ', pilihan: ['a', 'b'], benar: 0 }), null);
+});
+
+test('kunciProgresImpor spesifik per berkas+ukuran', () => {
+  const a = kunciProgresImpor('BUKU.html', 123);
+  assert.equal(a, kunciProgresImpor('buku.html', 123));
+  assert.notEqual(a, kunciProgresImpor('buku.html', 124));
+  assert.notEqual(a, kunciProgresImpor('lain.html', 123));
+});
+
+test('perkiraanPanggilanAi: 576 halaman -> 58 panggilan (10/panggilan)', () => {
+  assert.equal(perkiraanPanggilanAi(576), 58);
+  assert.equal(perkiraanPanggilanAi(0), 0);
+  assert.equal(perkiraanPanggilanAi(0) || 0, 0);
 });
