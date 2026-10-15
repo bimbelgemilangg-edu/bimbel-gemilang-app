@@ -26,6 +26,60 @@ const RE_OPSI = /^(?:\(?([a-eA-E])[.)]?\s+)(.+)$/;
 const RE_KUNCI = /^(?:kunci(?:\s+jawaban)?|jawaban)\s*[:=]?\s*\(?([a-eA-E])\)?.*$/i;
 const RE_BAHAS = /^pembahasan\s*[:.-]?\s*(.*)$/i;
 
+// ------------------------------------------------------------
+// DIALEK BUKU SCAN (owner 15 Okt 2026, buku Matematika Fase E):
+// halaman DAFTAR ISI mencetak "Bab 3 Vektor dan Operasinya Bab 14:
+// Vektor Hal. 112 Hal. 329-" dan seksi KUNCI mencetak "BAB 24
+// RELATIVITAS" di atas kolom huruf jawaban. Keduanya dulu lolos
+// RE_BAB sehingga pratinjau penuh bab palsu + satu bab raksasa.
+// Aturan baru (deterministik & teruji):
+//   • baris daftar isi  -> kamus judul, BUKAN penanda bab;
+//   • baris >1 penanda  -> noise daftar isi, dilewati;
+//   • penanda yg diikuti kolom jawaban -> kepala seksi kunci, dilewati;
+//   • judul CAPS di badan buku dicocokkan ke kamus daftar isi
+//     (jangkar kata pertama) -> bab asli membuka di tempat benar.
+// ------------------------------------------------------------
+const RE_DAFTAR_ISI = /^bab\s+(\d+)[.:)-]?\s*(.+?)\s+bab\s+\d+[.:):]-?\s*.+?\bhal\.\s*\d+/i;
+const RE_MULTI_BAB = /(bab\s+\d+)/gi;
+const RE_JUDUL_CAPS = /^[A-Z][A-Z\s]{3,50}(?:\s\d{1,2})?$/;
+
+/** Baris kolom jawaban kunci ("D Cc E", "3 E D", "ol B B B"): mayoritas token huruf A-E pendek. */
+export function barisKolomKunci(l = '') {
+  const token = norm(l).split(' ').filter(Boolean);
+  if (token.length < 2 || token.length > 6) return false;
+  const huruf = token.filter((t) => /^[A-Ea-e]{1,2}$/.test(t)).length;
+  return huruf >= Math.ceil(token.length * 0.6);
+}
+
+/** Entri daftar isi dari baris TOC buku scan; null bila bukan baris TOC. */
+export function entriDaftarIsi(l = '') {
+  const m = norm(l).match(RE_DAFTAR_ISI);
+  if (!m) return null;
+  return { nomor: Number(m[1]), judul: bersihkanJudulBab(`Bab ${m[1]} ${m[2]}`) };
+}
+
+/**
+ * Judul bab bersih: buang gema daftar isi / nomor halaman yang ikut
+ * terpindai satu baris ("Bab 8 Teori Peluang Bab 23: Teori Peluang
+ * Hal. 353 Hal. 657-" -> "Bab 8 Teori Peluang").
+ */
+export function bersihkanJudulBab(judul = '') {
+  let t = norm(judul);
+  t = t.replace(/\s+bab\s+\d+[.:):]-?\s.*$/i, '');
+  t = t.replace(/\s+hal\.\s*[\d].*$/i, '');
+  t = t.replace(/[,;:\-–]+$/, '');
+  return norm(t);
+}
+
+/** Baris sampah OCR pendek ("Im", "H£YU", "w le)"): penanda seksi kunci rusak.
+ *  Baris pendek yang SAH (opsi "b. dua", "Kunci: A") tidak dihitung sampah. */
+export function barisSampahPendek(l = '') {
+  const t = norm(l);
+  if (!t || t.length > 8) return false;
+  return !(RE_SOAL.test(t) || RE_OPSI.test(t) || RE_KUNCI.test(t)
+    || RE_BAHAS.test(t) || RE_SUBBAB.test(t) || RE_CONTOH.test(t));
+}
+
 /**
  * @param {string} teks
  * @returns {{bab: Array<object>}} bab: [{judul, sections:[{judul,blocks}], ujiPemahaman:[{tipe,soal,pilihan,benar,pembahasan}]}]
@@ -40,6 +94,19 @@ export function parseTeksBuku(teks = '') {
   let mode = 'materi'; // materi | contoh | soal | bahas
   let soalAktif = null;
   let buffer = [];
+
+  // Pralintasan: kamus daftar isi (jangkar kata pertama -> entri bab).
+  const daftarIsi = [];
+  const anchorTerpakai = new Set();
+  for (const l of baris) {
+    const e = entriDaftarIsi(l);
+    if (e && !daftarIsi.some((x) => x.nomor === e.nomor)) daftarIsi.push(e);
+  }
+  const anchorOf = (judul = '') => {
+    const w = norm(judul).split(' ');
+    const i = w.length > 2 && /^bab$/i.test(w[0]) && /^\d+$/.test(w[1]) ? 2 : 0;
+    return (w[i] || '').replace(/[^A-Za-z]/g, '').toLowerCase();
+  };
 
   const flushParagraf = () => {
     const t = norm(buffer.join(' '));
@@ -66,13 +133,44 @@ export function parseTeksBuku(teks = '') {
     let m;
     if ((m = l.match(RE_PENANDA_HAL))) { halamanKini = Number(m[1]); continue; }
     if ((m = l.match(RE_BAB))) {
+      // baris DAFTAR ISI (gema judul + nomor halaman): kamus, bukan pembuka bab
+      if (entriDaftarIsi(l)) continue;
+      // dua penanda bab lebih dalam satu baris: noise daftar isi/kunci
+      if ((l.match(RE_MULTI_BAB) || []).length >= 2) continue;
+      // kepala seksi KUNCI JAWABAN (diikuti kolom huruf jawaban atau
+      // sampah OCR pendek): bukan pembuka bab
+      if (antrian.filter((x) => norm(x)).slice(0, 4)
+        .filter((x) => barisKolomKunci(x) || barisSampahPendek(x)).length >= 3) continue;
       flushParagraf(); tutupSoal();
-      bab = { judul: m[0], sections: [], ujiPemahaman: [] };
+      bab = { judul: bersihkanJudulBab(m[0]), sections: [], ujiPemahaman: [] };
       babList.push(bab);
       seksi = { judul: '', blocks: [] };
       bab.sections.push(seksi);
       mode = 'materi';
       continue;
+    }
+    // Judul bab CAPS di badan buku scan (tanpa prefiks "BAB", kadang
+    // pecah dua baris): buka bab HANYA bila kata pertamanya berjangkar
+    // ke daftar isi, supaya garbage OCR ("VTNITNCN") tidak ikut.
+    if (daftarIsi.length && RE_JUDUL_CAPS.test(l)) {
+      const pertama = l.trim().split(/\s+/)[0].toLowerCase();
+      const entri = daftarIsi.find((e) => anchorOf(e.judul) === pertama && !anchorTerpakai.has(e.nomor));
+      if (entri) {
+        flushParagraf(); tutupSoal();
+        bab = { judul: entri.judul, sections: [], ujiPemahaman: [] };
+        babList.push(bab);
+        anchorTerpakai.add(entri.nomor);
+        seksi = { judul: '', blocks: [] };
+        bab.sections.push(seksi);
+        mode = 'materi';
+        // baris CAPS berikutnya = lanjutan judul yang pecah ("SISTEM" + "PERSAMAAN")
+        const w = norm(entri.judul).split(' ');
+        const i0 = w.length > 2 && /^bab$/i.test(w[0]) && /^\d+[\].:)-]*$/i.test(w[1]) ? 2 : 0;
+        const kedua = (w[i0 + 1] || '').replace(/[^A-Za-z]/g, '').toLowerCase();
+        const nxt = norm(antrian[0] || '');
+        if (kedua && RE_JUDUL_CAPS.test(nxt) && nxt.split(' ')[0].toLowerCase() === kedua) antrian.shift();
+        continue;
+      }
     }
     if (!bab) continue; // teks sebelum bab pertama dibuang (sampul dll)
     if (mode === 'bahas' && RE_SOAL.test(l)) mode = 'materi'; // pembahasan selesai, soal baru mulai
