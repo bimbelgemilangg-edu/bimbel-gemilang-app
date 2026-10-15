@@ -7,7 +7,11 @@ import { Wallet, Lock, History, ShieldCheck, AlertCircle, Clock, Receipt, Calend
 const StudentFinance = () => {
   const [student, setStudent] = useState(null);
   const [tagihan, setTagihan] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // 🔥 Fase-1 lint: identitas dibaca DULU supaya loading bisa diinisialisasi
+  // tanpa setState sinkron di efek (gerbang react-hooks/set-state-in-effect).
+  const studentNimAwal = localStorage.getItem("studentNim") || localStorage.getItem("studentId") || '';
+  const studentDocIdAwal = localStorage.getItem("studentId") || '';
+  const [loading, setLoading] = useState(Boolean(studentNimAwal || studentDocIdAwal));
   const [expiryInfo, setExpiryInfo] = useState({ daysLeft: null, status: 'normal' });
   // 🔥 BARU: riwayat pembayaran (finance_logs milik siswa ini) -- beda dari
   // `tagihan.detailCicilan` yang cuma nunjukkin JADWAL cicilan, ini
@@ -17,12 +21,11 @@ const StudentFinance = () => {
   const [paymentHistory, setPaymentHistory] = useState([]);
 
   // 🔥 AMBIL NIM & DOC ID DARI LOCALSTORAGE
-  const studentNim = localStorage.getItem("studentNim") || localStorage.getItem("studentId") || '';
-  const studentDocId = localStorage.getItem("studentId") || '';
+  const studentNim = studentNimAwal;
+  const studentDocId = studentDocIdAwal;
 
   useEffect(() => {
     if (!studentNim && !studentDocId) {
-      setLoading(false);
       return;
     }
 
@@ -50,13 +53,13 @@ const StudentFinance = () => {
           const q = query(collection(db, "students"), where("studentId", "==", studentNim));
           const snap = await getDocs(q);
           if (!snap.empty) resolvedDocId = snap.docs[0].id;
-        } catch (e) { /* lanjut ke fallback */ }
+        } catch (_e) { /* lanjut ke fallback */ }
       }
       if (!resolvedDocId && studentDocId) {
         try {
           const sSnap = await getDoc(doc(db, "students", studentDocId));
           if (sSnap.exists()) resolvedDocId = sSnap.id;
-        } catch (e) { /* ignore */ }
+        } catch (_e) { /* ignore */ }
       }
 
       if (!resolvedDocId || cancelled) {

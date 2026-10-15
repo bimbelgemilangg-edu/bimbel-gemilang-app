@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -7,7 +7,7 @@ import {
     Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis 
 } from 'recharts';
 import { RAPORT_COLLECTIONS, DIMENSI_CONFIG, DIMENSI_KEYS } from '../../../firebase/raportCollection';
-import { generateCharacterNarasi, generateDimensiNarasi } from '../../../services/raportService';
+import { generateCharacterNarasi } from '../../../services/raportService';
 
 // LIBRARY CETAK PDF HD
 import jsPDF from 'jspdf';
@@ -18,8 +18,16 @@ const GradeReport = () => {
   const [isPrinting, setIsPrinting] = useState(false);
 
   const [students, setStudents] = useState([]);
-  const [filteredStudents, setFilteredStudents] = useState([]); 
   const [searchTerm, setSearchTerm] = useState(""); 
+  // Fase-1 lint: hasil pencarian = derived state (useMemo), bukan setState
+  // sinkron di dalam efek.
+  const filteredStudents = useMemo(() => {
+    if (searchTerm === '') return students;
+    const lower = searchTerm.toLowerCase();
+    return students.filter((s) =>
+      (s.nama || '').toLowerCase().includes(lower)
+      || String(s.kelasSekolah || '').toLowerCase().includes(lower));
+  }, [searchTerm, students]);
 
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); 
@@ -40,23 +48,10 @@ const GradeReport = () => {
     getDocs(collection(db, "students")).then(snap => {
         const data = snap.docs.map(d => ({id: d.id, ...d.data()}));
         setStudents(data);
-        setFilteredStudents(data);
     });
   }, []);
 
-  // 2. LOGIKA PENCARIAN SISWA
-  useEffect(() => {
-    if (searchTerm === "") {
-        setFilteredStudents(students);
-    } else {
-        const lower = searchTerm.toLowerCase();
-        const results = students.filter(s => 
-            s.nama.toLowerCase().includes(lower) || 
-            s.kelasSekolah?.toLowerCase().includes(lower)
-        );
-        setFilteredStudents(results);
-    }
-  }, [searchTerm, students]);
+
 
   // --- FUNGSI CETAK PDF HD ---
   const handleDownloadPDF = async () => {

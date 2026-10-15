@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
-  collection, query, where, getDocs, doc, getDoc, onSnapshot 
+  collection, query, where, getDocs, doc, getDoc 
 } from "firebase/firestore";
 import { 
   Calendar, ChevronLeft, ChevronRight, Clock, MapPin, 
@@ -57,16 +57,26 @@ const DEFAULT_ACADEMIC_EVENTS = [
 // MAIN COMPONENT
 // ============================================================
 const TeacherSchedule = () => {
-  const navigate = useNavigate();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [loading, setLoading] = useState(true);
+  const _navigate = useNavigate(); // Fase-1 lint: belum dipakai UI
+  const [_isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // Fase-1 lint: teacherData dibaca SEKALI lewat lazy initializer (bukan
+  // setState sinkron di efek); loading mengikuti ada/tidaknya data guru.
+  const [teacherData, _setTeacherData] = useState(() => {
+    try {
+      const stored = localStorage.getItem('teacherData');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      console.error('Error parsing teacher data:', e);
+      return null;
+    }
+  });
+  const [_loading, setLoading] = useState(Boolean(teacherData && teacherData.nama));
   const [schedules, setSchedules] = useState([]);
   const [customEvents, setCustomEvents] = useState(DEFAULT_ACADEMIC_EVENTS);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [viewMode, setViewMode] = useState('monthly');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [teacherData, setTeacherData] = useState(null);
   const [dailyCode, setDailyCode] = useState("");
   const [teacherStats, setTeacherStats] = useState({
     totalStudents: 0,
@@ -81,24 +91,22 @@ const TeacherSchedule = () => {
   // ============================================================
   // EFFECTS
   // ============================================================
+  // Fase-1 lint: function declaration (hoisted) supaya pemakai di atas
+  // definisi tidak dianggap akses-sebelum-deklarasi oleh react-hooks.
+  function getDateStr(dateObj) {
+    if (!dateObj) return "";
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Ambil data guru dari localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('teacherData');
-    if (stored) {
-      try {
-        const data = JSON.parse(stored);
-        setTeacherData(data);
-      } catch (e) {
-        console.error("Error parsing teacher data:", e);
-      }
-    }
-  }, []);
 
   // Fetch data jadwal & custom events
   useEffect(() => {
@@ -137,7 +145,6 @@ const TeacherSchedule = () => {
 
     // 3. Ambil jadwal (jika ada data guru)
     if (!teacherData?.nama) {
-      setLoading(false);
       return;
     }
 
@@ -205,13 +212,6 @@ const TeacherSchedule = () => {
   // ============================================================
   // HELPER FUNCTIONS
   // ============================================================
-  const getDateStr = (dateObj) => {
-    if (!dateObj) return "";
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
 
   const isHoliday = (dateStr) => INDONESIAN_HOLIDAYS[dateStr] || null;
   const isSunday = (dateObj) => dateObj.getDay() === 0;
@@ -224,19 +224,7 @@ const TeacherSchedule = () => {
     return schedules.filter(s => s.dateStr === dateStr);
   };
 
-  const getWeekDates = (currDate) => {
-    const dates = [];
-    const current = new Date(currDate);
-    const day = current.getDay();
-    const diff = current.getDate() - day + (day === 0 ? -6 : 1);
-    const startOfWeek = new Date(current.setDate(diff));
-    for (let i = 0; i < 7; i++) {
-      const nextDate = new Date(startOfWeek);
-      nextDate.setDate(startOfWeek.getDate() + i);
-      dates.push(getDateStr(nextDate));
-    }
-    return dates;
-  };
+
 
   const getMonthDays = () => {
     const year = currentMonth.getFullYear();
@@ -282,7 +270,6 @@ const TeacherSchedule = () => {
           const holiday = isHoliday(dateStr);
           const customEvent = getCustomEvent(dateStr);
           const daySchedules = getDaySchedules(dateStr);
-          const isRed = holiday || isSunday(day);
           const isWeekend = isSunday(day);
 
           let bgColor = 'white';
