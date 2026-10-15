@@ -112,11 +112,15 @@ export function parseTeksBuku(teks = '') {
     const t = norm(buffer.join(' '));
     buffer = [];
     if (!t || !seksi) return;
-    seksi.blocks.push({ jenis: mode === 'contoh' ? 'contoh' : 'p', teks: t, halaman: halamanKini });
+    // KONTRAK READER (pembedahan 15 Okt 2026): block memakai field `tipe`
+    // (bukan `jenis`) — BukuBacaPage.renderBlok hanya membaca `tipe`.
+    seksi.blocks.push({ tipe: mode === 'contoh' ? 'contoh' : 'p', teks: t, halaman: halamanKini });
   };
 
   const tutupSoal = () => {
     if (soalAktif && soalAktif.pilihan.length >= 2 && bab) {
+      // id stabil per bab: kunci jawaban quiz reader (jawaban[q.id])
+      if (!soalAktif.id) soalAktif.id = `q${bab.ujiPemahaman.length + 1}`;
       bab.ujiPemahaman.push(soalAktif);
     }
     soalAktif = null;
@@ -144,7 +148,7 @@ export function parseTeksBuku(teks = '') {
       flushParagraf(); tutupSoal();
       bab = { judul: bersihkanJudulBab(m[0]), sections: [], ujiPemahaman: [] };
       babList.push(bab);
-      seksi = { judul: '', blocks: [] };
+      seksi = { id: `s${bab.sections.length + 1}`, judul: '', blocks: [] };
       bab.sections.push(seksi);
       mode = 'materi';
       continue;
@@ -160,7 +164,7 @@ export function parseTeksBuku(teks = '') {
         bab = { judul: entri.judul, sections: [], ujiPemahaman: [] };
         babList.push(bab);
         anchorTerpakai.add(entri.nomor);
-        seksi = { judul: '', blocks: [] };
+        seksi = { id: `s${bab.sections.length + 1}`, judul: '', blocks: [] };
         bab.sections.push(seksi);
         mode = 'materi';
         // baris CAPS berikutnya = lanjutan judul yang pecah ("SISTEM" + "PERSAMAAN")
@@ -176,7 +180,7 @@ export function parseTeksBuku(teks = '') {
     if (mode === 'bahas' && RE_SOAL.test(l)) mode = 'materi'; // pembahasan selesai, soal baru mulai
     if ((m = l.match(RE_SUBBAB)) && mode !== 'soal') {
       flushParagraf();
-      seksi = { judul: l, blocks: [] };
+      seksi = { id: `s${bab.sections.length + 1}`, judul: l, blocks: [] };
       bab.sections.push(seksi);
       mode = 'materi';
       continue;

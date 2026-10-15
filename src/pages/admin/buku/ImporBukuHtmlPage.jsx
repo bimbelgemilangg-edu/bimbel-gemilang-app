@@ -31,6 +31,7 @@ import {
   angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor, labelBabTersimpan,
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
+import { normalkanBabUntukReader } from '../../../utils/normalisasiBabReader';
 import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
 import { uploadElearningFile } from '../../../services/uploadService';
 
@@ -218,14 +219,21 @@ export default function ImporBukuHtmlPage() {
         const blocks = [];
         (sek.blocks || []).forEach((bl) => {
           blocks.push(bl);
-          (figsPerHalaman.get(bl.halaman) || []).forEach((url) => blocks.push({ jenis: 'gambar', src: url, alt: `figur halaman ${bl.halaman}` }));
+          // KONTRAK READER: block gambar memakai `tipe` + `caption`
+          (figsPerHalaman.get(bl.halaman) || []).forEach((url) => blocks.push({ tipe: 'gambar', src: url, alt: `figur halaman ${bl.halaman}`, caption: `figur halaman ${bl.halaman}` }));
         });
         return { ...sek, blocks };
       });
-      b.ujiPemahaman = (b.ujiPemahaman || []).map((soal) => ({
-        ...soal,
-        gambarUrls: figsPerHalaman.get(soal.halaman) || [],
-      }));
+      b.ujiPemahaman = (b.ujiPemahaman || []).map((soal, qi) => {
+        const figs = figsPerHalaman.get(soal.halaman) || [];
+        return {
+          ...soal,
+          id: soal.id || `q${qi + 1}`,
+          gambarUrls: figs,
+          // reader membaca gambar tunggal; bank soal memakai gambarUrls
+          ...(figs[0] ? { gambar: { src: figs[0], alt: `figur soal halaman ${soal.halaman}`, caption: '' } } : {}),
+        };
+      });
     });
     const babs = bab.map((b) => ({
       judul: b.judul, judulEdit: b.judul, sections: b.sections, ujiPemahaman: b.ujiPemahaman,
@@ -464,17 +472,21 @@ export default function ImporBukuHtmlPage() {
       const dipakaiIdx = pratinjau.babs.map((b, i2) => (b.disertakan === false ? -1 : i2)).filter((i2) => i2 >= 0);
       let babPayloads = dipakaiIdx.map((idx, ii) => {
         const b = pratinjau.babs[idx];
-        return {
-          payload: {
-            judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${ii + 1}`,
-            sections: b.sections || [], ujiPemahaman: b.ujiPemahaman || [],
-            urutan: ii + 1, tipe: 'teks', status: 'draft',
-            halamanSumber: b.halamanMulai != null ? [b.halamanMulai, b.halamanSelesai] : null,
-            sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : 'buku-html',
-            providerAi: (b.provider || []).join('/'),
-            updatedAt: serverTimestamp(),
-          },
+        const mentah = {
+          judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${ii + 1}`,
+          sections: b.sections || [], ujiPemahaman: b.ujiPemahaman || [],
+          urutan: ii + 1, tipe: 'teks', status: 'draft',
+          halamanSumber: b.halamanMulai != null ? [b.halamanMulai, b.halamanSelesai] : null,
+          sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : 'buku-html',
+          providerAi: (b.provider || []).join('/'),
+          updatedAt: serverTimestamp(),
         };
+        // 🔒 JARING KONTRAK READER (pembedahan 15 Okt 2026): apa pun
+        // sumber babnya (teks OCR / vision AI / modul), payload dinormalkan
+        // ke kontrak BukuBacaPage (block `tipe`, id seksi & soal, gambar
+        // tunggal) SEBELUM masuk Firestore — materi tidak boleh tersimpan
+        // dalam bentuk yang tak bisa dirender siswa.
+        return { payload: normalkanBabUntukReader(mentah, mentah.judul) };
       });
       if (targetBuku === 'ada' && idBuku) {
         const snapBab = await getDocs(collection(db, 'buku_digital', idBuku, 'bab'));

@@ -37,8 +37,10 @@ test('bab, subbab, contoh, dan paragraf terbaca', () => {
   const judulSeksi = bab[0].sections.map((s) => s.judul);
   assert.ok(judulSeksi.some((j) => /Definisi/.test(j)));
   const semuaBlok = bab[0].sections.flatMap((s) => s.blocks);
-  assert.ok(semuaBlok.some((b) => b.jenis === 'contoh'), 'blok contoh terdeteksi');
-  assert.ok(semuaBlok.some((b) => b.jenis === 'p' && /Bentuk umumnya/.test(b.teks)));
+  assert.ok(semuaBlok.some((b) => b.tipe === 'contoh'), 'blok contoh terdeteksi (kontrak reader: field tipe)');
+  assert.ok(semuaBlok.some((b) => b.tipe === 'p' && /Bentuk umumnya/.test(b.teks)));
+  assert.ok(bab[0].sections.every((s2) => s2.id), 'setiap seksi punya id (navigasi reader)');
+  assert.ok(bab[0].ujiPemahaman.every((q) => q.id), 'setiap soal punya id (kunci jawaban quiz)');
 });
 
 test('soal pg: pilihan a-d dan (A)-(D), kunci & pembahasan tertangkap', () => {
