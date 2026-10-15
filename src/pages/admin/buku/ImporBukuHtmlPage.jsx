@@ -114,6 +114,25 @@ export default function ImporBukuHtmlPage() {
       identitas, targetBuku, bukuId: targetBuku === 'ada' ? bukuId : '',
       status: 'mengunggah', dibuatPada: serverTimestamp(), diperbaruiPada: serverTimestamp(),
     });
+    // 🔥 Migrasi progres localStorage lama (pra-#228, milik browser ini)
+    // supaya kelompok yang SUDAH sukses kemarin tidak diekstrak ulang
+    // (hemat kuota AI owner).
+    let migrasi = 0;
+    try {
+      const kunciLama = `imporBukuHtml:${String(namaFile).toLowerCase()}:${inv.ukuranByte}`;
+      const lama = JSON.parse(localStorage.getItem(kunciLama) || '{}');
+      const entriLama = Object.entries(lama).filter(([, v]) => v?.status === 'ok' && v?.bab);
+      if (entriLama.length) {
+        for (const [k, v] of entriLama) {
+          await setDoc(doc(db, COL_JOB, ref.id, 'kelompok', k), {
+            halamanMulai: Number(v.halamanMulai || k), halamanSelesai: Number(v.halamanSelesai || k),
+            status: 'ok', bab: v.bab, provider: v.provider || 'progres lama browser', pada: serverTimestamp(),
+          });
+          migrasi += 1;
+        }
+        localStorage.removeItem(kunciLama);
+      }
+    } catch (_e) { /* tanpa localStorage: abaikan */ }
     const urls = [];
     for (let i = 0; i < gambar.length; i += 1) {
       const mime = (gambar[i].match(/^data:(image\/[a-zA-Z0-9.+-]+);/) || [])[1] || 'image/jpeg';
@@ -128,7 +147,7 @@ export default function ImporBukuHtmlPage() {
     await updateDoc(ref, { urls, status: 'berjalan', diperbaruiPada: serverTimestamp() });
     const job = { id: ref.id, namaFile, ukuranByte: inv.ukuranByte, jumlahHalaman: gambar.length, jumlahKelompok: kelompokkanHalamanUntukAi(gambar).length, selesai: 0, identitas, urls, status: 'berjalan' };
     setJobAktif(job);
-    tambahLog(`✓ ${gambar.length} halaman mentah tersimpan di penyimpanan sistem (job ${ref.id.slice(0, 6)}). Ekstraksi bisa dilanjutkan dari perangkat mana pun.`);
+    tambahLog(`✓ ${gambar.length} halaman mentah tersimpan di penyimpanan sistem (job ${ref.id.slice(0, 6)}). Ekstraksi bisa dilanjutkan dari perangkat mana pun.${migrasi ? ` ${migrasi} kelompok sukses lama dimigrasikan — tidak diekstrak ulang.` : ''}`);
     return job;
   };
 
