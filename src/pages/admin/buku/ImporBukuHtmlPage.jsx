@@ -34,6 +34,7 @@ import {
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 import { normalkanBabUntukReader } from '../../../utils/normalisasiBabReader';
 import { adaptorBukuLatex } from '../../../utils/adaptorBukuLatex';
+import { adaptorBukuJson, rencanakanUpsertBab } from '../../../utils/adaptorBukuJson';
 import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
 import { uploadElearningFile } from '../../../services/uploadService';
 
@@ -306,6 +307,22 @@ export default function ImporBukuHtmlPage() {
 
   const bacaBerkas = async (f) => {
     const teks = await f.text();
+    if (modeSumber === 'json') {
+      let hasil;
+      try {
+        hasil = adaptorBukuJson(JSON.parse(teks));
+      } catch (e) {
+        setNamaFile(f.name);
+        tambahLog(`✗ JSON tidak terbaca: ${e?.message || e}`, false);
+        return;
+      }
+      setNamaFile(f.name);
+      setLatexHasil(hasil);
+      setInv(null); setGambar([]); setPratinjau(null); setLog([]); setJobAktif(null); setRingkasan(null);
+      const menyusul = hasil.statistik.babTanpaLatihan.length ? ` · latihan menyusul (bertahap): ${hasil.statistik.babTanpaLatihan.slice(0, 3).join(', ')}${hasil.statistik.babTanpaLatihan.length > 3 ? '…' : ''}` : '';
+      tambahLog(`✓ JSON ekstraksi terbaca: ${hasil.statistik.bab} bab · ${hasil.statistik.soalContoh} contoh berpembahasan + ${hasil.statistik.soalLatihan} latihan (${hasil.statistik.soalBerkunci} berkunci resmi) · ${hasil.statistik.gambar} gambar${menyusul}. Impor ulang berkas JSON baru akan MEMPERBARUI bab ber-id sama.`);
+      return;
+    }
     if (modeSumber === 'latex') {
       const hasil = adaptorBukuLatex(teks);
       setNamaFile(f.name);
@@ -536,8 +553,9 @@ export default function ImporBukuHtmlPage() {
           judul: b.judulEdit || b.judul || `${identitas.materi || identitas.mapel} bagian ${ii + 1}`,
           sections: b.sections || [], ujiPemahaman: b.ujiPemahaman || [],
           urutan: ii + 1, tipe: 'teks', status: 'draft',
+          kodeSumber: b.kodeSumber || '',
           halamanSumber: b.halamanMulai != null ? [b.halamanMulai, b.halamanSelesai] : null,
-          sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : modeSumber === 'latex' ? 'latex-html' : 'buku-html',
+          sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : modeSumber === 'latex' ? 'latex-html' : modeSumber === 'json' ? 'json-bertahap' : 'buku-html',
           providerAi: (b.provider || []).join('/'),
           updatedAt: serverTimestamp(),
         };
@@ -549,13 +567,29 @@ export default function ImporBukuHtmlPage() {
         return { payload: normalkanBabUntukReader(mentah, mentah.judul) };
       });
       let babLewat = 0;
+      let babPerbarui = 0;
       if (targetBuku === 'ada' && idBuku) {
         const snapBab = await getDocs(collection(db, 'buku_digital', idBuku, 'bab'));
-        const eksBab = snapBab.docs.map((d) => d.data());
-        const sebelum = babPayloads.length;
-        babPayloads = saringBabDuplikat(babPayloads.map((x) => x.payload), eksBab).map((payload) => ({ payload }));
-        babLewat = sebelum - babPayloads.length;
-        if (babLewat > 0) tambahLog(`↷ ${babLewat} bab dilewati karena sudah ada di buku ini (anti-duplikat).`);
+        const eksBab = snapBab.docs.map((d) => ({ ...d.data(), __id: d.id }));
+        if (modeSumber === 'json' || modeSumber === 'latex') {
+          // 🔁 IMPOR BERTAHAP (16 Okt 2026): ekstraksi owner datang
+          // berangsur (bab Logaritma & Barisan-Deret menyusul). Bab
+          // ber-kodeSumber sama DIPERBARUI di tempat, bukan didobel
+          // atau dibuang; bab hasil kerja manual editor tidak ditimpa.
+          const rencana = rencanakanUpsertBab(babPayloads.map((x) => x.payload), eksBab);
+          babPerbarui = rencana.perbarui.length;
+          for (const u of rencana.perbarui) {
+            await setDoc(doc(db, 'buku_digital', idBuku, 'bab', u.idEks), u.payload);
+            tambahLog(`↻ Bab "${u.payload.judul}" DIPERBARUI di tempat (versi ekstraksi terbaru).`);
+          }
+          babPayloads = rencana.tambah.map((payload) => ({ payload }));
+          if (babPerbarui > 0) tambahLog(`↻ ${babPerbarui} bab diperbarui — impor bertahap aman diulang kapan pun.`);
+        } else {
+          const sebelum = babPayloads.length;
+          babPayloads = saringBabDuplikat(babPayloads.map((x) => x.payload), eksBab.map(({ __id, ...d }) => d)).map((payload) => ({ payload }));
+          babLewat = sebelum - babPayloads.length;
+          if (babLewat > 0) tambahLog(`↷ ${babLewat} bab dilewati karena sudah ada di buku ini (anti-duplikat).`);
+        }
       }
       for (let ii = 0; ii < babPayloads.length; ii += 1) {
         await setDoc(doc(collection(db, 'buku_digital', idBuku, 'bab')), babPayloads[ii].payload);
@@ -594,7 +628,7 @@ export default function ImporBukuHtmlPage() {
       // 🔥 BANNER RINGKASAN (15 Okt 2026): owner menekan Simpan dua kali dan
       // mengira gagal karena konfirmasi hanya ada di log bawah. Ringkasan
       // jujur (baru vs dilewati) kini tampil menonjol di atas halaman.
-      const ringkas = pesanRingkasanSimpan({ babBaru: babPayloads.length, babLewat, soalBaru, soalLewat });
+      const ringkas = pesanRingkasanSimpan({ babBaru: babPayloads.length, babLewat, soalBaru, soalLewat, babPerbarui });
       setRingkasan(ringkas);
       tambahLog(ringkas);
       if (jobAktif && pratinjau.selesaiKelompok >= pratinjau.semuaKelompok) {
@@ -678,13 +712,14 @@ export default function ImporBukuHtmlPage() {
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'folder' ? '#b45309' : '#fff', color: modeSumber === 'folder' ? '#fff' : '#334155' }} onClick={() => setModeSumber('folder')}>📁 Folder gambar halaman</button>
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'pdf' ? '#166534' : '#fff', color: modeSumber === 'pdf' ? '#fff' : '#334155' }} onClick={() => setModeSumber('pdf')}>📑 PDF berteks (hasil OCR)</button>
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'latex' ? '#0f767e' : '#fff', color: modeSumber === 'latex' ? '#fff' : '#334155' }} onClick={() => setModeSumber('latex')}>🧮 HTML LaTeX (crop presisi)</button>
+          <button type="button" style={{ ...st.kecil, background: modeSumber === 'json' ? '#7c3aed' : '#fff', color: modeSumber === 'json' ? '#fff' : '#334155' }} onClick={() => setModeSumber('json')}>📦 JSON ekstraksi (bertahap)</button>
         </div>
         {modeSumber === 'pdf' ? (
           <input type="file" accept="application/pdf,.pdf" onChange={(e) => e.target.files?.[0] && bacaPdf(e.target.files[0])} />
         ) : modeSumber === 'folder' ? (
           <input type="file" multiple accept="image/*" onChange={(e) => bacaFolder(e.target.files)} />
         ) : (
-          <input type="file" accept={modeSumber === 'teks' ? '.txt,.text,.html,.htm' : '.html,.htm'} onChange={(e) => e.target.files?.[0] && bacaBerkas(e.target.files[0])} />
+          <input type="file" accept={modeSumber === 'teks' ? '.txt,.text,.html,.htm' : modeSumber === 'json' ? '.json,application/json' : '.html,.htm'} onChange={(e) => e.target.files?.[0] && bacaBerkas(e.target.files[0])} />
         )}
         {modeSumber === 'teks' && teksBuku && (
           <div style={{ marginTop: 8, fontSize: 12, color: '#0f172a' }}>
@@ -748,7 +783,7 @@ export default function ImporBukuHtmlPage() {
           soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
         </label>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
-          {modeSumber === 'latex' && latexHasil && (
+          {(modeSumber === 'latex' || modeSumber === 'json') && latexHasil && (
             <button style={st.tombol(sibuk)} disabled={sibuk} onClick={bangunPratinjauLatex}>
               <BookUp size={15} /> Pratinjau HTML LaTeX (unggah gambar, tanpa AI)
             </button>
