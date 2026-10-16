@@ -84,6 +84,25 @@ export function barisSampahPendek(l = '') {
  * @param {string} teks
  * @returns {{bab: Array<object>}} bab: [{judul, sections:[{judul,blocks}], ujiPemahaman:[{tipe,soal,pilihan,benar,pembahasan}]}]
  */
+/**
+ * Pecah dinding teks jadi paragraf manusiwi (batas kalimat, ±max karakter).
+ * Dipakai parser saat parse, dan reader (siswa & pratinjau admin) saat
+ * merender block 'p' warisan yang tersimpan sebelum fix 16 Okt 2026 —
+ * sehingga data lama ikut rapi tanpa impor ulang. Murni & teruji.
+ */
+export function pecahParagraf(teks = '', max = 320) {
+  const t = String(teks || '').replace(/\s+/g, ' ').trim();
+  if (!t) return [];
+  const kalimat = (t.match(/[^.!?]+[.!?]*/g) || [t]).map((x) => x.trim()).filter(Boolean);
+  const keluar = [];
+  let cur = '';
+  for (const k of kalimat) {
+    if (cur && (cur + ' ' + k).length > max) { keluar.push(cur); cur = k; } else cur = cur ? `${cur} ${k}` : k;
+  }
+  if (cur) keluar.push(cur);
+  return keluar;
+}
+
 export function parseTeksBuku(teks = '') {
   const baris = String(teks || '').split(/\r?\n/).map((l) => l.replace(/\s+$/g, ''));
   const RE_PENANDA_HAL = /^---\s*HALAMAN\s+(\d+)\s*---$/i;
@@ -112,9 +131,13 @@ export function parseTeksBuku(teks = '') {
     const t = norm(buffer.join(' '));
     buffer = [];
     if (!t || !seksi) return;
-    // KONTRAK READER (pembedahan 15 Okt 2026): block memakai field `tipe`
-    // (bukan `jenis`) — BukuBacaPage.renderBlok hanya membaca `tipe`.
-    seksi.blocks.push({ tipe: mode === 'contoh' ? 'contoh' : 'p', teks: t, halaman: halamanKini });
+    // 🔧 16 Okt 2026 (keluhan owner: "tampilannya gak rapi"): teks OCR
+    // tidak punya baris kosong, sehingga tanpa pemecahan satu seksi
+    // menjadi SATU dinding paragraf raksasa. Pecah pada batas kalimat
+    // per ±320 karakter supaya kolom baca manusiawi. murni & teruji.
+    for (const potongan of pecahParagraf(t)) {
+      seksi.blocks.push({ tipe: mode === 'contoh' ? 'contoh' : 'p', teks: potongan, halaman: halamanKini });
+    }
   };
 
   const tutupSoal = () => {

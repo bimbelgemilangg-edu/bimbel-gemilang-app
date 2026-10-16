@@ -108,3 +108,14 @@ test('bersihkanTeksOcr: spasi ganda, nomor halaman, hyphen putus', () => {
   assert.match(bersih, /kata ganda/);
   assert.match(bersih, /potongbarís/);
 });
+
+test('dinding teks OCR dipecah pada batas kalimat (regresi keluhan 16 Okt)', () => {
+  const panjang = 'Satu dua tiga. Empat lima enam. Tujuh delapan sembilan sepuluh sekali.';
+  const dinding = Array.from({ length: 8 }, () => panjang).join(' ');
+  const teks = `BAB 1 UJI\nA. Sub\n${dinding}\n`;
+  const { bab } = parseTeksBuku(teks);
+  const blok = bab[0].sections.flatMap((s) => s.blocks).filter((b) => b.tipe === 'p');
+  assert.ok(blok.length >= 2, 'satu seksi tidak lagi jadi satu dinding paragraf');
+  assert.ok(blok.every((b) => b.teks.length <= 400), 'tiap paragraf manusiwi');
+  assert.equal(blok.map((b) => b.teks).join(' '), dinding, 'isi tidak hilang sepatah pun');
+});

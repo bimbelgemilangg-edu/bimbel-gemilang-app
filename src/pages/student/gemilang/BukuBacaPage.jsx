@@ -11,6 +11,7 @@ import {
   ZoomIn, ZoomOut, BookOpen, Loader2, AlertTriangle,
 } from 'lucide-react';
 import { MathText, MathBlock } from '../../../components/MathText';
+import { pecahParagraf } from '../../../utils/parseTeksBuku';
 import VisualBuku, { GambarBuku } from '../../../components/buku/VisualBuku';
 import { bukaPdf, renderHalamanKeCanvas } from '../../../utils/modulPdf';
 import RendererHtmlBab from '../../../components/buku/RendererHtmlBab';
@@ -334,7 +335,7 @@ export default function BukuBacaPage({ audience = 'student' }) {
 
   const renderBlok = (blok, i) => {
     let inti = null;
-    if (blok.tipe === 'p' && blok.teks) inti = <p style={st.paragraf}><MathText text={blok.teks} /></p>;
+    if (blok.tipe === 'p' && blok.teks) inti = <React.Fragment>{pecahParagraf(blok.teks).map((t2, i2) => <p key={i2} style={st.paragraf}><MathText text={t2} /></p>)}</React.Fragment>;
     else if (blok.tipe === 'list' && Array.isArray(blok.items) && blok.items.length) inti = <ul style={st.list}>{blok.items.map((it, j) => <li key={j} style={{ marginBottom: 6 }}><MathText text={it} /></li>)}</ul>;
     else if (blok.tipe === 'math' && blok.teks) inti = <div style={st.boxMath}><MathBlock text={blok.teks} /></div>;
     else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
