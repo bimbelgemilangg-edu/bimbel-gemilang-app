@@ -247,11 +247,16 @@ export default function ImporBukuHtmlPage() {
       }));
       const butir = [];
       babs.forEach((b, bi) => (b.ujiPemahaman || []).forEach((item) => {
+        // 🔁 IMPOR BERTAHAP (16 Okt 2026): kunci anti-duplikat bank soal
+        // memakai sumberFile — bila tiap tahap JSON bernama berkas beda,
+        // soal sama akan DOBEL. Untuk mode json, sumber dikunci ke JUDUL
+        // DOKUMEN (stabil lintas tahap/berkas), bukan nama berkas.
+        const sumberButir = modeSumber === 'json' ? `json-bertahap:${latexHasil.judulBuku || namaFile}` : namaFile;
         const satu = butirBankDariUjiPemahaman(item, {
           mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
-          materi: b.judul || identitas.materi, sumber: namaFile,
+          materi: b.judul || identitas.materi, sumber: sumberButir,
         }, null);
-        if (satu) butir.push({ ...satu, dipilih: true, babIndex: bi, asal: `latex · ${String(b.judul).slice(0, 24)}` });
+        if (satu) butir.push({ ...satu, dipilih: true, babIndex: bi, asal: `${modeSumber} · ${String(b.judul).slice(0, 24)}` });
       }));
       setPratinjau({ babs, butir, semuaKelompok: babs.length, selesaiKelompok: babs.length });
       tambahLog(`Pratinjau LaTeX: ${babs.length} bab & ${butir.length} soal siap bank (kunci RESMI buku). Tinjau lalu Simpan.`);
@@ -604,7 +609,8 @@ export default function ImporBukuHtmlPage() {
       let soalLewat = 0;
       if (ikutBank) {
         let dipilih = pratinjau.butir.filter((b) => b.dipilih && dipakaiIdx.includes(b.babIndex));
-        const snapBank = await getDocs(query(collection(db, 'bank_soal'), where('sumberFile', '==', namaFile)));
+        const sumberBank = modeSumber === 'json' ? `json-bertahap:${latexHasil?.judulBuku || namaFile}` : namaFile;
+        const snapBank = await getDocs(query(collection(db, 'bank_soal'), where('sumberFile', '==', sumberBank)));
         const sebelum = dipilih.length;
         dipilih = saringButirDuplikat(dipilih, snapBank.docs.map((d) => d.data()));
         soalLewat = sebelum - dipilih.length;
