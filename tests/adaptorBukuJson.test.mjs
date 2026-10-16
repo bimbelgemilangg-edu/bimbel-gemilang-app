@@ -16,7 +16,12 @@ const DOC = {
       latihan_soal: [{ nomor: 1, pertanyaan: 'L1?', opsi: { A: '1', B: '2', C: '3' } }],
       kunci_jawaban_latihan: { 1: 'C' },
     },
-    { id_bab: 'k10-bab-03', nomor_bab_buku: 3, judul_bab: 'Logaritma', materi: [{ judul: 'Dasar', penjelasan: '$\\log x$.' }], latihan_soal: [] },
+    {
+      id_bab: 'k10-bab-03', nomor_bab_buku: 3, judul_bab: 'Logaritma',
+      materi: [{ judul: 'Dasar', penjelasan: '$\\log x$.' }],
+      contoh_soal: [{ nomor: 1, pertanyaan: 'Tentukan penyelesaian: (a) $x=1$ (b) $x=2$', pembahasan: 'casewise.' }],
+      latihan_soal: [],
+    },
   ],
 };
 
@@ -27,7 +32,8 @@ test('adaptorBukuJson: seksi, rumus math, gambar data-URI, contoh berpembahasan'
   assert.equal(bab[0].kodeSumber, 'k10-bab-01');
   const blocks = bab[0].sections[0].blocks.map((b) => b.tipe).join(',');
   assert.equal(blocks, 'p,math,gambar');
-  assert.match(blocks && bab[0].sections[0].blocks[2].src, /^data:image\/png;base64,iVBORw0K$/);
+  assert.equal(bab[0].sections[0].blocks[1].teks, 'a^n', 'pembungkus $$ dilucuti (regresi teks merah KaTeX)');
+  assert.match(bab[0].sections[0].blocks[2].src, /^data:image\/png;base64,iVBORw0K$/);
   assert.equal(statistik.soalContoh, 1);
   assert.equal(statistik.soalLatihan, 1);
   assert.equal(statistik.soalBerkunci, 2);
@@ -40,6 +46,16 @@ test('adaptorBukuJson: kunci dari peta kunci_jawaban_latihan bila item tak punya
   const l = bab[0].ujiPemahaman[1];
   assert.equal(l.benar, 2, 'peta 1:C');
   assert.equal(l.kunciResmiBuku, true);
+});
+
+test('adaptorBukuJson: soal tanpa opsi jadi uraian (tidak dibuang), bab urut nomor buku', () => {
+  const { bab, statistik } = adaptorBukuJson(DOC);
+  assert.equal(statistik.soalUraian, 1);
+  const log = bab.find((b) => b.kodeSumber === 'k10-bab-03');
+  assert.equal(log.ujiPemahaman.length, 0, 'uraian tidak masuk kuis reader');
+  assert.equal(log.soalUraian.length, 1);
+  assert.match(log.soalUraian[0].pembahasan, /casewise/);
+  assert.equal(bab[0].kodeSumber, 'k10-bab-01', 'urut nomor_bab_buku walau berkas acak');
 });
 
 test('rencanakanUpsertBab: id sama diperbarui, bab manual tidak ditimpa', () => {

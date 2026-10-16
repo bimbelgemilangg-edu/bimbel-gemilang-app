@@ -14,9 +14,45 @@
 
 const HURUF = ['A', 'B', 'C', 'D', 'E'];
 
+/**
+ * Lucut pembungkus display-math ($$...$$ / \[...\]) agar blok `math`
+ * menerima latex MURNI. Regresi 16 Okt: MathBlock menerima '$$...$$'
+ * utuh -> KaTeX error -> rumus tampil sebagai teks merah di reader.
+ */
+export function latexMurni(teks = '') {
+  const t = String(teks || '').trim();
+  if (t.startsWith('$$') && t.endsWith('$$') && t.length > 4) return t.slice(2, -2).trim();
+  if (t.startsWith('\\[') && t.endsWith('\\]') && t.length > 4) return t.slice(2, -2).trim();
+  return t;
+}
+
 const keDataUri = (v) => (String(v || '').startsWith('data:') ? String(v) : `data:image/png;base64,${v}`);
 
 const normJudul = (s) => String(s ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** Butir bank tipe URAIAN (soal ber-subbab tanpa opsi A-E): masuk bank
+ *  & cetak/tryout esai, TIDAK masuk kuis reader (quiz hanya pg/multi/bs). */
+export function butirUraianDari(item = {}, identitas = {}) {
+  const teks = String(item.soal || '').trim();
+  if (!teks) return null;
+  return {
+    tipe: 'uraian',
+    soal: teks,
+    pembahasan: String(item.pembahasan || ''),
+    gambarUrls: [],
+    mataPelajaran: identitas.mapel || '',
+    materi: identitas.materi || '',
+    tingkatKelas: identitas.kelas || '',
+    jenjang: identitas.jenjang || 'SMA/MA',
+    kategori: 'Buku',
+    tags: ['buku', identitas.materi || ''].filter(Boolean),
+    tingkatKesulitan: 'sedang',
+    sumberFile: identitas.sumber || '',
+    sumberHalaman: null,
+    status: 'aktif',
+    kunciTerverifikasi: true,
+  };
+}
 
 /** Satu soal JSON (contoh/latihan) -> soal kontrak reader. */
 function soalDari(item = {}, opts = {}) {
@@ -45,12 +81,12 @@ function soalDari(item = {}, opts = {}) {
 export function adaptorBukuJson(obj = {}) {
   const daftar = Array.isArray(obj.daftar_bab) ? obj.daftar_bab : [];
   const bab = [];
-  const statistik = { bab: 0, seksi: 0, soalContoh: 0, soalLatihan: 0, soalBerkunci: 0, gambar: 0, babTanpaLatihan: [] };
+  const statistik = { bab: 0, seksi: 0, soalContoh: 0, soalLatihan: 0, soalBerkunci: 0, soalUraian: 0, gambar: 0, babTanpaLatihan: [] };
   for (const b of daftar) {
     const sections = (Array.isArray(b.materi) ? b.materi : []).map((m, mi) => {
       const blocks = [];
       if (m.penjelasan) blocks.push({ tipe: 'p', teks: String(m.penjelasan) });
-      for (const r of Array.isArray(m.rumus_latex) ? m.rumus_latex : []) blocks.push({ tipe: 'math', teks: String(r) });
+      for (const r of Array.isArray(m.rumus_latex) ? m.rumus_latex : []) blocks.push({ tipe: 'math', teks: latexMurni(r) });
       if (m.gambar_base64) {
         blocks.push({ tipe: 'gambar', src: keDataUri(m.gambar_base64), alt: m.judul || '', caption: m.judul || '' });
         statistik.gambar += 1;
@@ -59,11 +95,18 @@ export function adaptorBukuJson(obj = {}) {
       return { id: `${b.id_bab || 'bab'}-s${mi + 1}`, judul: `${m.kode_subbab ? `${m.kode_subbab}. ` : ''}${m.judul || ''}`, blocks };
     });
     const uji = [];
+    const uraian = [];
+    const masukUraian = (item, asal) => {
+      uraian.push({ nomor: Number(item.nomor || 0), soal: String(item.pertanyaan || item.soal || '').trim(), pembahasan: String(item.pembahasan || item.jawaban || ''), asalJenis: asal });
+      statistik.soalUraian += 1;
+    };
     for (const c of Array.isArray(b.contoh_soal) ? b.contoh_soal : []) {
+      if (!c.opsi || Object.keys(c.opsi).length < 2) { masukUraian(c, 'contoh'); continue; }
       const q = soalDari(c, { asal: 'contoh' });
       if (q) { uji.push(q); statistik.soalContoh += 1; if (q.benar !== null) statistik.soalBerkunci += 1; }
     }
     for (const l of Array.isArray(b.latihan_soal) ? b.latihan_soal : []) {
+      if (!l.opsi || Object.keys(l.opsi).length < 2) { masukUraian(l, 'latihan'); continue; }
       const q = soalDari(l, { asal: 'latihan', kunciMap: b.kunci_jawaban_latihan });
       if (q) { uji.push(q); statistik.soalLatihan += 1; if (q.benar !== null) statistik.soalBerkunci += 1; }
     }
@@ -71,12 +114,17 @@ export function adaptorBukuJson(obj = {}) {
     statistik.bab += 1;
     bab.push({
       judul: `Bab ${b.nomor_bab_buku ?? ''} ${b.judul_bab || ''}`.replace(/\s+/g, ' ').trim(),
+      nomorBab: Number(b.nomor_bab_buku || 0),
+      soalUraian: uraian,
       kodeSumber: b.id_bab || '',
       metaSumber: { semester: b.semester, domain: b.domain_kurikulum_merdeka, halamanBuku: b.halaman_buku },
       sections,
       ujiPemahaman: uji,
     });
   }
+  // RAPI (16 Okt): urutan bab mengikuti NOMOR BUKU, bukan urutan berkas
+  // (ekstraksi bertahap sering datang acak: 1,2,3,16,14,...).
+  bab.sort((a, b2) => (a.nomorBab || 999) - (b2.nomorBab || 999));
   return { bab, statistik, judulBuku: obj.metadata?.judul_dokumen || '' };
 }
 
