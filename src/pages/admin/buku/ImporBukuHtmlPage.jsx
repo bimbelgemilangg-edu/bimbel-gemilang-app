@@ -34,7 +34,7 @@ import {
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 import { normalkanBabUntukReader } from '../../../utils/normalisasiBabReader';
 import { adaptorBukuLatex } from '../../../utils/adaptorBukuLatex';
-import { adaptorBukuJson, rencanakanUpsertBab } from '../../../utils/adaptorBukuJson';
+import { adaptorBukuJson, rencanakanUpsertBab, butirUraianDari } from '../../../utils/adaptorBukuJson';
 import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
 import { uploadElearningFile } from '../../../services/uploadService';
 
@@ -245,21 +245,32 @@ export default function ImporBukuHtmlPage() {
         sections: (b.sections || []).map((s2) => ({ ...s2, blocks: (s2.blocks || []).map((bl) => (bl.tipe === 'gambar' ? { ...bl, src: ganti(bl.src) } : bl)) })),
         ujiPemahaman: (b.ujiPemahaman || []).map((q) => ({ ...q, gambarUrls: (q.gambarUrls || []).map(ganti) })),
       }));
+      // 🔁 IMPOR BERTAHAP (16 Okt 2026): kunci anti-duplikat bank soal
+      // memakai sumberFile — bila tiap tahap JSON bernama berkas beda,
+      // soal sama akan DOBEL. Untuk mode json, sumber dikunci ke JUDUL
+      // DOKUMEN (stabil lintas tahap/berkas), bukan nama berkas.
+      const sumberButir = modeSumber === 'json' ? `json-bertahap:${latexHasil.judulBuku || namaFile}` : namaFile;
       const butir = [];
-      babs.forEach((b, bi) => (b.ujiPemahaman || []).forEach((item) => {
-        // 🔁 IMPOR BERTAHAP (16 Okt 2026): kunci anti-duplikat bank soal
-        // memakai sumberFile — bila tiap tahap JSON bernama berkas beda,
-        // soal sama akan DOBEL. Untuk mode json, sumber dikunci ke JUDUL
-        // DOKUMEN (stabil lintas tahap/berkas), bukan nama berkas.
-        const sumberButir = modeSumber === 'json' ? `json-bertahap:${latexHasil.judulBuku || namaFile}` : namaFile;
+      babs.forEach((b, bi) => {
+        (b.ujiPemahaman || []).forEach((item) => {
         const satu = butirBankDariUjiPemahaman(item, {
           mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
           materi: b.judul || identitas.materi, sumber: sumberButir,
         }, null);
         if (satu) butir.push({ ...satu, dipilih: true, babIndex: bi, asal: `${modeSumber} · ${String(b.judul).slice(0, 24)}` });
-      }));
+        });
+        // soal ber-subbab tanpa opsi (uraian) masuk BANK & cetak/tryout
+        // esai, tidak masuk kuis reader (quiz hanya pg/multi/bs)
+        (b.soalUraian || []).forEach((u) => {
+          const butirU = butirUraianDari(u, {
+            mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
+            materi: b.judul || identitas.materi, sumber: sumberButir,
+          });
+          if (butirU) butir.push({ ...butirU, dipilih: true, babIndex: bi, asal: `${modeSumber} · uraian · ${String(b.judul).slice(0, 18)}` });
+        });
+      });
       setPratinjau({ babs, butir, semuaKelompok: babs.length, selesaiKelompok: babs.length });
-      tambahLog(`Pratinjau LaTeX: ${babs.length} bab & ${butir.length} soal siap bank (kunci RESMI buku). Tinjau lalu Simpan.`);
+      tambahLog(`Pratinjau: ${babs.length} bab & ${butir.length} soal siap bank (${butir.filter((x) => x.tipe === 'uraian').length} di antaranya uraian; kunci RESMI buku). Tinjau lalu Simpan.`);
     } catch (e) {
       tambahLog(`✗ ${e?.message || e}`, false);
     } finally {
@@ -325,7 +336,7 @@ export default function ImporBukuHtmlPage() {
       setLatexHasil(hasil);
       setInv(null); setGambar([]); setPratinjau(null); setLog([]); setJobAktif(null); setRingkasan(null);
       const menyusul = hasil.statistik.babTanpaLatihan.length ? ` · latihan menyusul (bertahap): ${hasil.statistik.babTanpaLatihan.slice(0, 3).join(', ')}${hasil.statistik.babTanpaLatihan.length > 3 ? '…' : ''}` : '';
-      tambahLog(`✓ JSON ekstraksi terbaca: ${hasil.statistik.bab} bab · ${hasil.statistik.soalContoh} contoh berpembahasan + ${hasil.statistik.soalLatihan} latihan (${hasil.statistik.soalBerkunci} berkunci resmi) · ${hasil.statistik.gambar} gambar${menyusul}. Impor ulang berkas JSON baru akan MEMPERBARUI bab ber-id sama.`);
+      tambahLog(`✓ JSON ekstraksi terbaca: ${hasil.statistik.bab} bab · ${hasil.statistik.soalContoh} contoh berpembahasan + ${hasil.statistik.soalLatihan} latihan (${hasil.statistik.soalBerkunci} berkunci resmi) · ${hasil.statistik.soalUraian} uraian · ${hasil.statistik.gambar} gambar${menyusul}. Impor ulang berkas JSON baru akan MEMPERBARUI bab ber-id sama.`);
       return;
     }
     if (modeSumber === 'latex') {
@@ -841,7 +852,7 @@ export default function ImporBukuHtmlPage() {
               {pratinjau.butir.map((b, i) => (
                 <label key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 0', borderTop: '1px solid #f8fafc' }}>
                   <input type="checkbox" checked={b.dipilih} onChange={(e) => setPratinjau((prev) => ({ ...prev, butir: prev.butir.map((x, xi) => (xi === i ? { ...x, dipilih: e.target.checked } : x)) }))} />
-                  <span><b>[{b.asal}]</b> {b.soal.slice(0, 140)} <i style={{ color: '#6b7280' }}>· kunci {b.kunciJawaban} · {b.materi}</i></span>
+                  <span><b>[{b.asal}]</b> {b.soal.slice(0, 140)} <i style={{ color: '#6b7280' }}>· {b.tipe === 'uraian' ? 'uraian (bank & cetak)' : `kunci ${b.kunciJawaban}`} · {b.materi}</i></span>
                 </label>
               ))}
             </details>

@@ -55,10 +55,17 @@ export function MathText({ text }) {
 
 export function MathBlock({ text }) {
   if (!text) return null;
+  // 🔧 16 Okt 2026: data tersimpan dari adaptor awal masih membawa
+  // pembungkus '$$...$$' -> KaTeX error (teks merah). Lucut di sini
+  // supaya dokumen lama ikut sembuh tanpa impor ulang.
+  const t = String(text).trim();
+  const raw = (t.startsWith('$$') && t.endsWith('$$') && t.length > 4) || (t.startsWith('\\[') && t.endsWith('\\]') && t.length > 4)
+    ? t.slice(2, -2).trim()
+    : t;
   return (
     <div style={{ overflowX: 'auto', padding: '8px 0', textAlign: 'center' }}>
-      <MathSafe fallback={text}>
-        <BlockMath math={text} />
+      <MathSafe fallback={raw}>
+        <BlockMath math={raw} />
       </MathSafe>
     </div>
   );
