@@ -138,7 +138,7 @@ export function adaptorBukuJson(obj = {}) {
  * @param {Array} eksBab bab tersimpan, tiap entri punya __id doc
  */
 export function rencanakanUpsertBab(babBaru = [], eksBab = []) {
-  const KELUARGA_OTOMATIS = new Set(['json-bertahap', 'latex-html']);
+  const KELUARGA_OTOMATIS = new Set(['json-bertahap', 'latex-html', 'scan-proyek']);
   const keyOf = (b) => b?.kodeSumber || normJudul(b?.judul);
   const indeks = new Map();
   for (const e of Array.isArray(eksBab) ? eksBab : []) {

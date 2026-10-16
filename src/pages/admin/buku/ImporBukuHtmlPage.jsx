@@ -35,6 +35,7 @@ import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 import { normalkanBabUntukReader } from '../../../utils/normalisasiBabReader';
 import { adaptorBukuLatex } from '../../../utils/adaptorBukuLatex';
 import { adaptorBukuJson, rencanakanUpsertBab, butirUraianDari } from '../../../utils/adaptorBukuJson';
+import { gabungProyekScan } from '../../../utils/adaptorProyekScan';
 import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
 import { uploadElearningFile } from '../../../services/uploadService';
 
@@ -83,6 +84,10 @@ export default function ImporBukuHtmlPage() {
   const [teksBuku, setTeksBuku] = useState('');
   const [ringkasan, setRingkasan] = useState(null);
   const [latexHasil, setLatexHasil] = useState(null);
+  // 📂 PROYEK SCAN (17 Okt): beberapa folder diakumulasi jadi satu
+  // kesatuan; File disimpan di ref (ratusan MB tak boleh masuk state).
+  const proyekRef = useRef(new Map()); // root -> Map(relPath -> File)
+  const [daftarProyek, setDaftarProyek] = useState([]);
   const jedaRef = useRef(false);
 
   const tambahLog = (teks, ok = true) => setLog((l) => [...l, { teks, ok }]);
@@ -210,6 +215,84 @@ export default function ImporBukuHtmlPage() {
       tambahLog(`✓ PDF ${doc.numPages} halaman terbaca: teks OCR + ${jmlFig} figur diekstrak & akan ditempel otomatis ke soal/blok halamannya (mode bebas kuota).`);
     } catch (e) {
       tambahLog(`✗ Gagal membaca PDF: ${e?.message || e}. Bila PDF murni scan (tanpa lapisan teks), pakai mode gambar/folder atau OCR dulu di PDF24.`, false);
+    } finally {
+      setSibuk(false);
+    }
+  };
+
+  const bacaFolderProyek = (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    for (const f of files) {
+      const rel = String(f.webkitRelativePath || f.name);
+      const bagian = rel.split('/');
+      const root = bagian.length > 1 ? bagian[0] : '(root)';
+      const path = bagian.length > 1 ? bagian.slice(1).join('/') : rel;
+      if (!proyekRef.current.has(root)) proyekRef.current.set(root, new Map());
+      proyekRef.current.get(root).set(path, f);
+    }
+    const daftar = [...proyekRef.current.entries()].map(([root, map]) => ({
+      root,
+      jumlahFile: map.size,
+      punyaJson: [...map.keys()].some((k) => k.endsWith('document.json')),
+      punyaTex: [...map.keys()].some((k) => k.endsWith('main.tex')),
+    }));
+    setDaftarProyek(daftar);
+    setPratinjau(null); setRingkasan(null);
+    tambahLog(`📂 Folder diakumulasi: ${daftar.map((d) => `${d.root} (${d.jumlahFile} berkas${d.punyaJson ? ', document.json ✓' : ''}${d.punyaTex ? ', main.tex ✓' : ''})`).join(' + ')}. Tekan pratinjau untuk menggabungkan.`);
+  };
+
+  const bangunPratinjauProyek = async () => {
+    if (sibuk || !proyekRef.current.size) return;
+    setSibuk(true);
+    try {
+      const listProyek = [];
+      for (const [root, map] of proyekRef.current.entries()) {
+        const cari = (nama) => [...map.entries()].find(([k]) => k === nama || k.endsWith(`/${nama}`));
+        const jf = cari('document.json');
+        const tf = cari('main.tex');
+        const dokumen = jf ? JSON.parse(await jf[1].text()) : null;
+        const tex = tf ? await tf[1].text() : '';
+        if (!dokumen && !tex) { tambahLog(`⚠ root ${root}: tanpa document.json & main.tex — dilewati.`, false); continue; }
+        listProyek.push({ root, dokumen, tex });
+      }
+      const gab = gabungProyekScan(listProyek);
+      tambahLog(`📂 Manifes: ${gab.statistik.halaman} halaman utuh + ${gab.statistik.figur} figur lintas ${gab.statistik.root} root; ${gab.statistik.fallback ? 'SEBAGIAN fallback buku-halaman (tex tak dikenali)' : 'konten dari main.tex'}.`);
+      const urlPerRoot = new Map();
+      for (const [root, paths] of gab.gambarPerRoot) {
+        const map = proyekRef.current.get(root) || new Map();
+        const petaUrl = new Map();
+        let i = 0;
+        for (const path of paths) {
+          const f = map.get(path);
+          if (!f) { tambahLog(`⚠ ${root}/${path} tidak ada di folder — blok gambar dilewati.`, false); continue; }
+          const hasil = await uploadElearningFile(f, `impor-buku/proyek-${root}`, { kompres: false, contentType: f.type || 'image/png' });
+          if (hasil?.success && hasil.downloadURL) petaUrl.set(path, hasil.downloadURL);
+          i += 1;
+          if (i % 25 === 0) tambahLog(`… mengunggah gambar proyek ${root}: ${i}/${paths.length}`);
+        }
+        urlPerRoot.set(root, petaUrl);
+      }
+      const babs = gab.bab.map((b) => {
+        const petaUrl = urlPerRoot.get(b.rootAsal) || new Map();
+        return {
+          ...b,
+          kodeSumber: `${b.rootAsal}::${b.judul}`,
+          judulEdit: b.judul,
+          disertakan: true,
+          halamanMulai: null,
+          halamanSelesai: null,
+          provider: ['scan-proyek'],
+          sections: (b.sections || []).map((sek) => ({
+            ...sek,
+            blocks: (sek.blocks || []).map((bl) => (bl.tipe === 'gambar' && String(bl.src).startsWith('rel:') ? { ...bl, src: petaUrl.get(String(bl.src).slice(4)) || '' } : bl)).filter((bl) => bl.src !== ''),
+          })),
+        };
+      });
+      setPratinjau({ babs, butir: [], semuaKelompok: babs.length, selesaiKelompok: babs.length });
+      tambahLog(`Pratinjau proyek scan: ${babs.length} bab gabungan siap simpan (impor ulang folder yang diperbarui = bab diperbarui di tempat).`);
+    } catch (e) {
+      tambahLog(`✗ ${e?.message || e}`, false);
     } finally {
       setSibuk(false);
     }
@@ -571,7 +654,7 @@ export default function ImporBukuHtmlPage() {
           urutan: ii + 1, tipe: 'teks', status: 'draft',
           kodeSumber: b.kodeSumber || '',
           halamanSumber: b.halamanMulai != null ? [b.halamanMulai, b.halamanSelesai] : null,
-          sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : modeSumber === 'latex' ? 'latex-html' : modeSumber === 'json' ? 'json-bertahap' : 'buku-html',
+          sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : modeSumber === 'latex' ? 'latex-html' : modeSumber === 'json' ? 'json-bertahap' : modeSumber === 'proyek' ? 'scan-proyek' : 'buku-html',
           providerAi: (b.provider || []).join('/'),
           updatedAt: serverTimestamp(),
         };
@@ -730,8 +813,21 @@ export default function ImporBukuHtmlPage() {
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'pdf' ? '#166534' : '#fff', color: modeSumber === 'pdf' ? '#fff' : '#334155' }} onClick={() => setModeSumber('pdf')}>📑 PDF berteks (hasil OCR)</button>
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'latex' ? '#0f767e' : '#fff', color: modeSumber === 'latex' ? '#fff' : '#334155' }} onClick={() => setModeSumber('latex')}>🧮 HTML LaTeX (crop presisi)</button>
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'json' ? '#7c3aed' : '#fff', color: modeSumber === 'json' ? '#fff' : '#334155' }} onClick={() => setModeSumber('json')}>📦 JSON ekstraksi (bertahap)</button>
+          <button type="button" style={{ ...st.kecil, background: modeSumber === 'proyek' ? '#be185d' : '#fff', color: modeSumber === 'proyek' ? '#fff' : '#334155' }} onClick={() => setModeSumber('proyek')}>📂 Folder proyek scan (gabungan)</button>
         </div>
-        {modeSumber === 'pdf' ? (
+        {modeSumber === 'proyek' ? (
+          <div>
+            <input
+              type="file"
+              multiple
+              ref={(el) => { if (el) el.setAttribute('webkitdirectory', ''); }}
+              onChange={(e) => bacaFolderProyek(e.target.files)}
+            />
+            <div style={{ marginTop: 8, fontSize: 12, color: '#374151' }}>
+              {daftarProyek.length ? daftarProyek.map((d) => `${d.root}: ${d.jumlahFile} berkas${d.punyaJson ? ' · document.json ✓' : ' · document.json ✗'}${d.punyaTex ? ' · main.tex ✓' : ' · main.tex ✗'}`).join(' | ') : 'Pilih folder proyek scan (boleh beberapa kali; semua root digabung).'}
+            </div>
+          </div>
+        ) : modeSumber === 'pdf' ? (
           <input type="file" accept="application/pdf,.pdf" onChange={(e) => e.target.files?.[0] && bacaPdf(e.target.files[0])} />
         ) : modeSumber === 'folder' ? (
           <input type="file" multiple accept="image/*" onChange={(e) => bacaFolder(e.target.files)} />
@@ -800,6 +896,11 @@ export default function ImporBukuHtmlPage() {
           soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
         </label>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+          {modeSumber === 'proyek' && daftarProyek.length > 0 && (
+            <button style={st.tombol(sibuk)} disabled={sibuk} onClick={bangunPratinjauProyek}>
+              <BookUp size={15} /> Pratinjau proyek scan gabungan (unggah gambar)
+            </button>
+          )}
           {(modeSumber === 'latex' || modeSumber === 'json') && latexHasil && (
             <button style={st.tombol(sibuk)} disabled={sibuk} onClick={bangunPratinjauLatex}>
               <BookUp size={15} /> Pratinjau HTML LaTeX (unggah gambar, tanpa AI)
