@@ -349,9 +349,10 @@ export function labelBabTersimpan(payload = {}) {
  * yang DILEWATI karena sudah ada.
  */
 export function pesanRingkasanSimpan(s = {}) {
-  const { babBaru = 0, babLewat = 0, soalBaru = 0, soalLewat = 0 } = s;
+  const { babBaru = 0, babLewat = 0, soalBaru = 0, soalLewat = 0, babPerbarui = 0 } = s;
   const baru = [
     babBaru ? `${babBaru} bab baru` : '',
+    babPerbarui ? `${babPerbarui} bab diperbarui (impor bertahap)` : '',
     soalBaru ? `${soalBaru} soal baru masuk bank` : '',
   ].filter(Boolean).join(' + ');
   const lewat = [
