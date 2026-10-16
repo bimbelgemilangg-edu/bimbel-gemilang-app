@@ -113,7 +113,9 @@ export function butirBankDariUjiPemahaman(item, identitas = {}, halamanSumber = 
     soal: teks,
     opsiJawaban: item.pilihan.map((x) => String(x)),
     kunciJawaban: String.fromCharCode(65 + idx),
-    kunciTerverifikasi: false,
+    // 16 Okt 2026: kunci RESMI buku (adaptor latex) layak dipercaya;
+    // kunci tebakan OCR/AI tetap false sampai QC.
+    kunciTerverifikasi: Boolean(item.kunciResmiBuku),
     pembahasan: String(item.pembahasan || ''),
     gambarUrls: Array.isArray(item.gambarUrls) ? item.gambarUrls : [],
     mataPelajaran: identitas.mapel || '',

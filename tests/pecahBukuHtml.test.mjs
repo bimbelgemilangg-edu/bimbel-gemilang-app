@@ -224,3 +224,10 @@ test('pesanRingkasanSimpan: bahasa jujur baru vs anti-duplikat (regresi "teken d
   assert.match(campur, /^✓ TERSIMPAN: 2 bab baru · 6 bab & 57 soal dilewati/);
   assert.match(pesanRingkasanSimpan({}), /periksa centang/);
 });
+
+test('butirBank: kunci RESMI buku menyalakan kunciTerverifikasi (adaptor latex 16 Okt)', () => {
+  const item = { tipe: 'pg', soal: 'x?', pilihan: ['a', 'b'], benar: 1, kunciResmiBuku: true };
+  assert.equal(butirBankDariUjiPemahaman(item, { mapel: 'Matematika' }, null).kunciTerverifikasi, true);
+  const tebakan = { ...item, kunciResmiBuku: undefined };
+  assert.equal(butirBankDariUjiPemahaman(tebakan, { mapel: 'Matematika' }, null).kunciTerverifikasi, false);
+});
