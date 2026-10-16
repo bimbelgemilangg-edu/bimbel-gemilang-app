@@ -23,6 +23,7 @@ import { GambarBuku } from '../../../components/buku/VisualBuku';
 import WidgetInteraktif from '../../../components/belajar/WidgetInteraktif';
 import { JENIS_INTERAKTIF } from '../../../components/belajar/WidgetInteraktif';
 import { susunBarisPdfBab, namaFilePdfBuku } from '../../../utils/pdfBukuDigital';
+import { pecahParagraf } from '../../../utils/parseTeksBuku';
 
 const st = {
   kartu: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16, marginBottom: 14 },
@@ -66,7 +67,7 @@ export default function PratinjauBukuAdmin() {
   // Cermin renderBlok reader siswa (kontrak: block.tipe) — tanpa progres/XP.
   const renderBlok = (blok, i) => {
     let inti = null;
-    if (blok.tipe === 'p' && blok.teks) inti = <p style={st.paragraf}><MathText text={blok.teks} /></p>;
+    if (blok.tipe === 'p' && blok.teks) inti = <React.Fragment>{pecahParagraf(blok.teks).map((t2, i2) => <p key={i2} style={st.paragraf}><MathText text={t2} /></p>)}</React.Fragment>;
     else if (blok.tipe === 'list' && Array.isArray(blok.items)) inti = <ul style={{ margin: '8px 0', paddingLeft: 20 }}>{blok.items.map((it, j) => <li key={j} style={{ marginBottom: 5, fontSize: 13.5 }}><MathText text={it} /></li>)}</ul>;
     else if (blok.tipe === 'math' && blok.teks) inti = <div style={{ margin: '8px 0' }}><MathBlock text={blok.teks} /></div>;
     else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
@@ -180,7 +181,14 @@ export default function PratinjauBukuAdmin() {
         <div style={st.kartu}>
           {bab ? (
             <>
-              <h2 style={{ fontSize: 17, fontWeight: 800, color: '#312e81', margin: '0 0 10px' }}>{bab.judul}</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, color: '#312e81', margin: '0 0 10px' }}>
+                {bab.judul}
+                {/ocr/.test(String(bab.sumberImpor || '')) && (
+                  <span style={{ background: '#fffbeb', color: '#92400e', border: '1px solid #fde68a', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 700, marginLeft: 8, whiteSpace: 'nowrap' }}>
+                    ⚠ sumber: teks OCR — materi perlu QC; jalur vision/AI memberi versi rapi
+                  </span>
+                )}
+              </h2>
               {(bab.sections || []).map((sek, si) => (
                 <div key={sek.id || si} style={{ marginBottom: 12 }}>
                   {sek.judul && <h3 style={{ fontSize: 14, fontWeight: 800, color: '#5b4b8a', margin: '10px 0 4px' }}>{sek.judul}</h3>}
