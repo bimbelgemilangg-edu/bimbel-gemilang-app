@@ -33,6 +33,7 @@ import {
 } from '../../../utils/pecahBukuHtml';
 import { saranKelasUntukMateri } from '../../../utils/saranKelasUntukMateri';
 import { normalkanBabUntukReader } from '../../../utils/normalisasiBabReader';
+import { adaptorBukuLatex } from '../../../utils/adaptorBukuLatex';
 import { parseTeksBuku, htmlKeTeks, susunTeksDariItem, bersihkanTeksOcr } from '../../../utils/parseTeksBuku';
 import { uploadElearningFile } from '../../../services/uploadService';
 
@@ -80,6 +81,7 @@ export default function ImporBukuHtmlPage() {
   const [figsPerHalaman, setFigsPerHalaman] = useState(new Map());
   const [teksBuku, setTeksBuku] = useState('');
   const [ringkasan, setRingkasan] = useState(null);
+  const [latexHasil, setLatexHasil] = useState(null);
   const jedaRef = useRef(false);
 
   const tambahLog = (teks, ok = true) => setLog((l) => [...l, { teks, ok }]);
@@ -212,6 +214,53 @@ export default function ImporBukuHtmlPage() {
     }
   };
 
+  const bangunPratinjauLatex = async () => {
+    if (sibuk || !latexHasil) return;
+    setSibuk(true);
+    try {
+      const peta = new Map();
+      const kumpul = (src) => { if (String(src).startsWith('data:') && !peta.has(src)) peta.set(src, null); };
+      latexHasil.bab.forEach((b) => {
+        (b.sections || []).forEach((s2) => (s2.blocks || []).forEach((bl) => { if (bl.tipe === 'gambar') kumpul(bl.src); }));
+        (b.ujiPemahaman || []).forEach((q) => (q.gambarUrls || []).forEach(kumpul));
+      });
+      if (peta.size) tambahLog(`… mengunggah ${peta.size} gambar crop ke penyimpanan sistem …`);
+      let i = 0;
+      for (const key of [...peta.keys()]) {
+        const blob = await (await fetch(key)).blob();
+        const file = new File([blob], `latex-${i}-${Date.now()}.png`, { type: blob.type || 'image/png' });
+        const hasil = await uploadElearningFile(file, 'impor-buku/latex', { kompres: false, contentType: blob.type || 'image/png' });
+        if (hasil?.success && hasil.downloadURL) peta.set(key, hasil.downloadURL);
+        i += 1;
+      }
+      const ganti = (src) => peta.get(src) || src;
+      const babs = latexHasil.bab.map((b) => ({
+        ...b,
+        judulEdit: b.judul,
+        disertakan: true,
+        halamanMulai: null,
+        halamanSelesai: null,
+        provider: ['latex-html'],
+        sections: (b.sections || []).map((s2) => ({ ...s2, blocks: (s2.blocks || []).map((bl) => (bl.tipe === 'gambar' ? { ...bl, src: ganti(bl.src) } : bl)) })),
+        ujiPemahaman: (b.ujiPemahaman || []).map((q) => ({ ...q, gambarUrls: (q.gambarUrls || []).map(ganti) })),
+      }));
+      const butir = [];
+      babs.forEach((b, bi) => (b.ujiPemahaman || []).forEach((item) => {
+        const satu = butirBankDariUjiPemahaman(item, {
+          mapel: identitas.mapel, jenjang: identitas.jenjang, kelas: identitas.kelas,
+          materi: b.judul || identitas.materi, sumber: namaFile,
+        }, null);
+        if (satu) butir.push({ ...satu, dipilih: true, babIndex: bi, asal: `latex · ${String(b.judul).slice(0, 24)}` });
+      }));
+      setPratinjau({ babs, butir, semuaKelompok: babs.length, selesaiKelompok: babs.length });
+      tambahLog(`Pratinjau LaTeX: ${babs.length} bab & ${butir.length} soal siap bank (kunci RESMI buku). Tinjau lalu Simpan.`);
+    } catch (e) {
+      tambahLog(`✗ ${e?.message || e}`, false);
+    } finally {
+      setSibuk(false);
+    }
+  };
+
   const bangunPratinjauTeks = () => {
     const bersih = teksBuku.split('\n').filter((l) => !/^--- HALAMAN \d+ ---$/.test(l.trim())).join('\n');
     const { bab } = parseTeksBuku(bersih);
@@ -257,6 +306,15 @@ export default function ImporBukuHtmlPage() {
 
   const bacaBerkas = async (f) => {
     const teks = await f.text();
+    if (modeSumber === 'latex') {
+      const hasil = adaptorBukuLatex(teks);
+      setNamaFile(f.name);
+      setLatexHasil(hasil);
+      setInv(null); setGambar([]); setPratinjau(null); setLog([]); setJobAktif(null); setRingkasan(null);
+      tambahLog(`✓ HTML LaTeX terbaca: ${hasil.statistik.bab} bab · ${hasil.statistik.seksi} seksi · ${hasil.statistik.soal} soal (${hasil.statistik.soalBerkunci} berkunci RESMI buku) · ${hasil.statistik.gambar} gambar crop · ${hasil.statistik.tabel} tabel. Tekan "Pratinjau HTML LaTeX" untuk mengunggah gambar & meninjau.`);
+      return;
+    }
+    setLatexHasil(null);
     if (modeSumber === 'teks') {
       setNamaFile(f.name);
       setTeksBuku(/\.html?$/i.test(f.name) ? htmlKeTeks(teks) : teks);
@@ -479,7 +537,7 @@ export default function ImporBukuHtmlPage() {
           sections: b.sections || [], ujiPemahaman: b.ujiPemahaman || [],
           urutan: ii + 1, tipe: 'teks', status: 'draft',
           halamanSumber: b.halamanMulai != null ? [b.halamanMulai, b.halamanSelesai] : null,
-          sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : 'buku-html',
+          sumberImpor: modeSumber === 'teks' ? 'teks-ocr' : modeSumber === 'pdf' ? 'pdf-ocr' : modeSumber === 'latex' ? 'latex-html' : 'buku-html',
           providerAi: (b.provider || []).join('/'),
           updatedAt: serverTimestamp(),
         };
@@ -619,6 +677,7 @@ export default function ImporBukuHtmlPage() {
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'teks' ? '#0e7490' : '#fff', color: modeSumber === 'teks' ? '#fff' : '#334155' }} onClick={() => setModeSumber('teks')}>📄 Teks OCR (.txt/.html — bebas kuota)</button>
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'folder' ? '#b45309' : '#fff', color: modeSumber === 'folder' ? '#fff' : '#334155' }} onClick={() => setModeSumber('folder')}>📁 Folder gambar halaman</button>
           <button type="button" style={{ ...st.kecil, background: modeSumber === 'pdf' ? '#166534' : '#fff', color: modeSumber === 'pdf' ? '#fff' : '#334155' }} onClick={() => setModeSumber('pdf')}>📑 PDF berteks (hasil OCR)</button>
+          <button type="button" style={{ ...st.kecil, background: modeSumber === 'latex' ? '#0f767e' : '#fff', color: modeSumber === 'latex' ? '#fff' : '#334155' }} onClick={() => setModeSumber('latex')}>🧮 HTML LaTeX (crop presisi)</button>
         </div>
         {modeSumber === 'pdf' ? (
           <input type="file" accept="application/pdf,.pdf" onChange={(e) => e.target.files?.[0] && bacaPdf(e.target.files[0])} />
@@ -689,6 +748,11 @@ export default function ImporBukuHtmlPage() {
           soal pemantapan hasil ekstraksi ikut masuk bank_soal (dapat dipanggil per bab untuk try out / kuis / cetak)
         </label>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+          {modeSumber === 'latex' && latexHasil && (
+            <button style={st.tombol(sibuk)} disabled={sibuk} onClick={bangunPratinjauLatex}>
+              <BookUp size={15} /> Pratinjau HTML LaTeX (unggah gambar, tanpa AI)
+            </button>
+          )}
           {aksiModeImpor(modeSumber).perluPratinjauTeks && (
             <button style={st.tombol(sibuk || !teksBuku)} disabled={sibuk || !teksBuku} onClick={bangunPratinjauTeks}>
               <BookUp size={15} /> Pratinjau hasil teks (tanpa AI)
