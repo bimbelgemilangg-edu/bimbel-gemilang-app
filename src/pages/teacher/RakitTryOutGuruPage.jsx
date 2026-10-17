@@ -42,7 +42,8 @@ import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimest
 import { ambilKonten } from '../../utils/sumberKonten';
 import { soalDariImporBuku } from '../../utils/pecahBukuHtml';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
-import { identitasDari, teksSoalDari } from '../../utils/fieldButirSoal';
+import { identitasDari, teksSoalDari, potongTeksSoalAman } from '../../utils/fieldButirSoal';
+import { MathText } from '../../components/MathText';
 import { benderaButir, masukKeranjangBanyak, keluarKeranjang, pindahUrutan } from '../../utils/keranjangSoalGuru';
 import {
   GRANULARITAS, MIN_BUTIR, MAKS_BUTIR,
@@ -366,6 +367,21 @@ export default function RakitTryOutGuruPage() {
             <b>Kiri: memilih</b> (saring lalu centang per kelompok) · <b>Kanan: merakit</b> (judul, subtes, timer) · lalu kirim ke admin.
             Paket Anda <b>tidak langsung terbit</b> — admin yang menyetujui dan menentukan jadwalnya.
           </p>
+          {/* 🧭 17 Okt: BAR LANGKAH lengket — guru selalu tahu posisi &
+              syarat kurang; menjawab keluhan "bingung alurnya". */}
+          <div style={{ position: 'sticky', top: 0, zIndex: 6, background: '#f8fafcee', backdropFilter: 'blur(4px)', borderBottom: '1px solid #e2e8f0', padding: '8px 4px', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', fontSize: 11.5, marginBottom: 12 }}>
+            <span style={{ fontWeight: 800, color: '#334155' }}>Alur:</span>
+            <span style={{ border: `1px solid ${mapelPaket ? '#bbf7d0' : '#fecaca'}`, background: mapelPaket ? '#f0fdf4' : '#fef2f2', borderRadius: 999, padding: '3px 10px' }}>
+              1 · Mapel {mapelPaket ? `✓ ${mapelPaket}` : '← pilih dulu'}
+            </span>
+            <span style={{ border: `1px solid ${keranjang.length ? '#bbf7d0' : '#fecaca'}`, background: keranjang.length ? '#f0fdf4' : '#fef2f2', borderRadius: 999, padding: '3px 10px' }}>
+              2 · Butir {keranjang.length ? `✓ ${keranjang.length} terpilih` : '← centang kelompok'}
+            </span>
+            <span style={{ border: `1px solid ${putusan.boleh ? '#bbf7d0' : '#fecaca'}`, background: putusan.boleh ? '#f0fdf4' : '#fef2f2', borderRadius: 999, padding: '3px 10px' }}>
+              3 · Paket {putusan.boleh ? '✓ siap kirim' : `← ${putusan.alasan.length} syarat kurang`}
+            </span>
+            <span style={{ color: '#64748b' }}>Paket dikirim sebagai USULAN — admin menyetujui & menjadwalkan.</span>
+          </div>
         </div>
 
         {error && (
@@ -571,12 +587,28 @@ export default function RakitTryOutGuruPage() {
                             <label key={String(s.id)} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', padding: '7px 10px', borderRadius: 9, background: kena ? '#eef2ff' : '#fff', border: `1px solid ${kena ? '#c7d2fe' : '#f1f5f9'}`, marginBottom: 5, cursor: 'pointer' }}>
                               <input type="checkbox" checked={kena} onChange={(e) => pilih(s, e.target.checked)} style={{ marginTop: 3 }} />
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 12, color: '#0f172a', lineHeight: 1.5 }}>{teksSoalDari(s).slice(0, 150) || '(tanpa teks soal)'}</div>
+                                {/* 17 Okt: rumus dirender, potongan tidak membelah $...$ */}
+                                <div style={{ fontSize: 12, color: '#0f172a', lineHeight: 1.5 }}><MathText text={potongTeksSoalAman(teksSoalDari(s), 220) || '(tanpa teks soal)'} /></div>
                                 <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 2 }}>
                                   {String(s.tipe || 'pg_sederhana').replace(/_/g, ' ')}
                                   {s.tingkatKesulitan ? ` · ${s.tingkatKesulitan}` : ''}
+                                  {soalDariImporBuku(s) && <span style={{ color: '#0f767e' }}> · 📖 impor buku</span>}
+                                  {s.kunciTerverifikasi && <span style={{ color: '#166534' }}> · ✓ kunci resmi</span>}
+                                  {(s.gambarUrls || []).length > 0 && <span style={{ color: '#b45309' }}> · 🖼 {(s.gambarUrls || []).length}</span>}
                                   {bendera.length > 0 && <span style={{ color: '#b45309' }}> · ⚠ {bendera[0]}</span>}
                                 </div>
+                                <details style={{ marginTop: 4 }}>
+                                  <summary style={{ cursor: 'pointer', fontSize: 10.5, color: '#5B2ECC', fontWeight: 700 }}>lihat opsi & pembahasan</summary>
+                                  <ol type="a" style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                                    {(s.opsiJawaban || []).map((o, oi) => (
+                                      <li key={oi} style={{ fontSize: 11.5, marginBottom: 2 }}>
+                                        <MathText text={String(o)} />{s.kunciJawaban === String.fromCharCode(65 + oi) ? ' ✓' : ''}
+                                      </li>
+                                    ))}
+                                  </ol>
+                                  {(s.gambarUrls || []).slice(0, 2).map((u, ui) => <img key={ui} src={u} alt="" style={{ maxHeight: 90, border: '1px solid #e2e8f0', borderRadius: 6, margin: '4px 6px 0 0' }} />)}
+                                  {s.pembahasan && <div style={{ fontSize: 11.5, color: '#334155', marginTop: 4, borderLeft: '3px solid #99f6e4', paddingLeft: 8 }}><MathText text={String(s.pembahasan).slice(0, 400)} /></div>}
+                                </details>
                               </div>
                             </label>
                           );
