@@ -94,13 +94,36 @@ export function adaptorBukuJson(obj = {}) {
     const sections = (Array.isArray(b.materi) ? b.materi : []).map((m, mi) => {
       const blocks = [];
       if (m.penjelasan) blocks.push({ tipe: 'p', teks: String(m.penjelasan) });
-      for (const r of Array.isArray(m.rumus_latex) ? m.rumus_latex : []) blocks.push({ tipe: 'math', teks: latexMurni(r) });
-      for (const g of [m.gambar_base64, ...(Array.isArray(m.daftar_gambar_base64) ? m.daftar_gambar_base64 : [])].filter(Boolean)) {
-        blocks.push({ tipe: 'gambar', src: keDataUri(g), alt: m.judul || '', caption: m.judul || '' });
-        statistik.gambar += 1;
+      for (const r of Array.isArray(m.rumus_latex) ? m.rumus_latex : []) {
+        // 17 Okt: entri rumus_latex yang sebenarnya PROSA ber-inline-math
+        // ("1. Bentuk Dasar: Jika $...$; jika $...$") dulu dipaksa jadi
+        // blok math -> KaTeX menerima kalimat -> dinding teks merah.
+        // Prosa -> blok p (MathText); murni display -> blok math.
+        const plain = String(r).replace(/\$\$[\s\S]*?\$\$|\$[^\n$]*?\$/g, '').replace(/[^A-Za-z]/g, '');
+        if (plain.length > 12) blocks.push({ tipe: 'p', teks: String(r) });
+        else blocks.push({ tipe: 'math', teks: latexMurni(r) });
       }
+      const gambars = [m.gambar_base64, ...(Array.isArray(m.daftar_gambar_base64) ? m.daftar_gambar_base64 : [])].filter(Boolean);
+      gambars.forEach((g, gi) => {
+        statistik.gambar += 1;
+        blocks.push({
+          tipe: 'gambar',
+          src: keDataUri(g),
+          alt: m.judul || '',
+          caption: gambars.length > 1 ? `${m.judul || ''} — gambar ${gi + 1}/${gambars.length}` : (m.judul || ''),
+        });
+      });
+      // tumpukan gambar beruntun -> satu blok GALERI (grid rapi), bukan
+      // dinding gambar tanpa konteks (keluhan owner 17 Okt)
+      const rapat = [];
+      for (const bl of blocks) {
+        if (bl.tipe === 'gambar' && rapat[rapat.length - 1]?.tipe === 'galeri') rapat[rapat.length - 1].items.push({ src: bl.src, caption: bl.caption });
+        else if (bl.tipe === 'gambar') rapat.push({ tipe: 'galeri', items: [{ src: bl.src, caption: bl.caption }] });
+        else rapat.push(bl);
+      }
+      const keluar = rapat.map((bl) => (bl.tipe === 'galeri' && bl.items.length === 1 ? { tipe: 'gambar', src: bl.items[0].src, alt: bl.items[0].caption, caption: bl.items[0].caption } : bl));
       statistik.seksi += 1;
-      return { id: `${b.id_bab || 'bab'}-s${mi + 1}`, judul: `${m.kode_subbab ? `${m.kode_subbab}. ` : ''}${m.judul || ''}`, blocks };
+      return { id: `${b.id_bab || 'bab'}-s${mi + 1}`, judul: `${m.kode_subbab ? `${m.kode_subbab}. ` : ''}${m.judul || ''}`, blocks: keluar };
     });
     const uji = [];
     const uraian = [];

@@ -73,6 +73,11 @@ export default function PratinjauBukuAdmin() {
     else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     else if (blok.tipe === 'tips' && blok.teks) inti = <div style={st.boxTips}><b>Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     else if (blok.tipe === 'gambar' && blok.src) inti = <GambarBuku src={blok.src} alt={blok.alt} caption={blok.caption} />;
+    else if (blok.tipe === 'galeri' && Array.isArray(blok.items)) inti = (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', margin: '10px 0' }}>
+        {blok.items.map((it, gi) => <div key={gi} style={{ flex: '1 1 220px', maxWidth: 340 }}><GambarBuku src={it.src} alt={it.caption} caption={it.caption} /></div>)}
+      </div>
+    );
     else if (blok.tipe === 'interaktif' && blok.widget) inti = <WidgetInteraktif widget={blok.widget} />;
     else if (JENIS_INTERAKTIF.has(blok.tipe)) inti = <WidgetInteraktif widget={{ ...blok, jenis: blok.tipe }} />;
     const visual = blok.visual ? <VisualBuku visual={blok.visual} /> : null;
@@ -204,8 +209,8 @@ export default function PratinjauBukuAdmin() {
                       {q.gambar?.src && <GambarBuku src={q.gambar.src} alt={q.gambar.alt} caption={q.gambar.caption} />}
                       {(q.gambarUrls || []).filter((u) => u !== q.gambar?.src).map((u, ui) => <GambarBuku key={ui} src={u} alt={`gambar soal ${qi + 1}`} caption="" />)}
                       {q.pembahasan && <details style={{ marginTop: 6 }}><summary style={{ cursor: 'pointer', fontSize: 11.5, color: '#0f767e', fontWeight: 700 }}>Pembahasan</summary><div style={{ fontSize: 12.5, marginTop: 4 }}><MathText text={q.pembahasan} /></div></details>}
-                      <ol style={{ margin: '6px 0 0', paddingLeft: 20, type: 'a' }}>
-                        {(q.pilihan || []).map((p, pi) => <li key={pi} style={{ fontSize: 12.5, marginBottom: 3 }}>{p}{Number(q.benar) === pi ? ' ✓' : ''}</li>)}
+                      <ol type="a" style={{ margin: '6px 0 0', paddingLeft: 20 }}>
+                        {(q.pilihan || []).map((p, pi) => <li key={pi} style={{ fontSize: 12.5, marginBottom: 3 }}><MathText text={p} />{Number(q.benar) === pi ? ' ✓' : ''}</li>)}
                       </ol>
                     </div>
                   ))}

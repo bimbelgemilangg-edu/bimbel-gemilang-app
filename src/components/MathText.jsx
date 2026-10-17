@@ -6,7 +6,11 @@ import React from 'react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
-const REGEX_MATH = /(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\))/g;
+// 17 Okt 2026: display math ($$...$$ / \[...\]) SERING multiline pada
+// pembahasan JSON owner; titik tidak melewati \n sehingga dulu lolos
+// sebagai teks mentah. Pakai [\s\S] untuk blok display; inline tetap
+// satu baris agar tidak melahap dua rumus terpisah.
+const REGEX_MATH = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[^\n$]*?\$|\\\([^\n]*?\\\))/g;
 
 class MathSafe extends React.Component {
   constructor(props) {
@@ -18,7 +22,7 @@ class MathSafe extends React.Component {
   }
   render() {
     if (this.state.error) {
-      return <span style={{ color: '#dc2626' }}>{this.props.fallback}</span>;
+      return <span style={{ color: '#334155' }} title="rumus gagal dirender KaTeX">{this.props.fallback}</span>;
     }
     return this.props.children;
   }
@@ -55,6 +59,11 @@ export function MathText({ text }) {
 
 export function MathBlock({ text }) {
   if (!text) return null;
+  // 17 Okt 2026: block 'math' warisan adaptor awal ada yang sebenarnya
+  // PROSA ber-inline-math; BlockMath atas kalimat = error. Route ulang
+  // ke MathText supaya dokumen tersimpan sembuh saat render.
+  const plain = String(text).replace(REGEX_MATH, '').replace(/[^A-Za-z]/g, '');
+  if (plain.length > 12) return <MathText text={text} />;
   // 🔧 16 Okt 2026: data tersimpan dari adaptor awal masih membawa
   // pembungkus '$$...$$' -> KaTeX error (teks merah). Lucut di sini
   // supaya dokumen lama ikut sembuh tanpa impor ulang.

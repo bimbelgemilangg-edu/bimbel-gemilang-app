@@ -24,6 +24,10 @@ export function susunBarisPdfBab(bab = {}) {
     if (sek?.judul) baris.push({ tipe: 'h2', teks: String(sek.judul) });
     for (const bl of Array.isArray(sek?.blocks) ? sek.blocks : []) {
       if (!bl) continue;
+      if (bl.tipe === 'galeri' && Array.isArray(bl.items)) {
+        for (const it of bl.items) baris.push({ tipe: 'gambar', src: it.src, teks: it.caption || '' });
+        continue;
+      }
       if (bl.tipe === 'gambar' && bl.src) baris.push({ tipe: 'gambar', src: bl.src, teks: bl.caption || bl.alt || '' });
       else if (bl.tipe === 'contoh' && bl.teks) baris.push({ tipe: 'contoh', teks: bl.teks });
       else if (bl.tipe === 'tips' && bl.teks) baris.push({ tipe: 'tips', teks: bl.teks });
