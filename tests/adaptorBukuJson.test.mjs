@@ -81,3 +81,31 @@ test('rencanakanUpsertBab: tanpa kodeSumber, judul jadi kunci', () => {
   );
   assert.equal(perbarui.length, 1);
 });
+
+test('adaptorBukuJson v3: soal bergambar, HOTS, multi-gambar materi, teks bersih', () => {
+  const doc = {
+    metadata: { judul_dokumen: 'Semester 1 HOTS' },
+    daftar_bab: [{
+      id_bab: 'k10-bab-01', nomor_bab_buku: 1, judul_bab: 'Eksponen',
+      materi: [{ judul: 'A', penjelasan: 'x.', gambar_base64: 'data:image/png;base64,AAA', daftar_gambar_base64: ['data:image/png;base64,BBB'] }],
+      latihan_soal: [{
+        nomor: 1, pertanyaan: 'Soal graf?', opsi: { A: '1', B: '2' }, kunci_jawaban: 'B',
+        gambar_base64: 'data:image/png;base64,CCC', daftar_gambar_base64: ['data:image/png;base64,DDD'],
+        pertanyaan_teks_bersih: 'Soal graf (bersih)', opsi_teks_bersih: { A: 'satu', B: 'dua' },
+      }],
+      soal_hots_ujian_asli: [{ nomor: 1, pertanyaan: 'HOTS?', opsi: { A: '1', B: '2', C: '3' }, kunci_jawaban: 'C', pembahasan: 'karena.' }],
+    }],
+  };
+  const { bab, statistik } = adaptorBukuJson(doc);
+  assert.equal(statistik.gambar, 2, 'materi: gambar tunggal + daftar');
+  assert.equal(statistik.soalHots, 1);
+  assert.equal(statistik.soalBergambar, 1);
+  const q = bab[0].ujiPemahaman[0];
+  assert.deepEqual(q.gambarUrls, ['data:image/png;base64,CCC', 'data:image/png;base64,DDD']);
+  assert.equal(q.soalTeksBersih, 'Soal graf (bersih)');
+  assert.deepEqual(q.opsiTeksBersih, ['satu', 'dua']);
+  const h = bab[0].ujiPemahaman[1];
+  assert.equal(h.asalJenis, 'hots');
+  assert.equal(h.benar, 2);
+  assert.equal(h.pembahasan, 'karena.');
+});
