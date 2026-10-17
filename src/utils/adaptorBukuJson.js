@@ -61,6 +61,12 @@ function soalDari(item = {}, opts = {}) {
   if (pilihan.length < 2) return null;
   const hurufKunci = item.kunci_jawaban || item.jawaban || (opts.kunciMap || {})[item.nomor];
   const idx = typeof hurufKunci === 'string' ? hurufKunci.toUpperCase().charCodeAt(0) - 65 : -1;
+  // 17 Okt: soal BERGAMBAR wajib ikut ter-render di semua hilir —
+  // gambar (tunggal maupun daftar) dibawa sebagai data-URI lalu
+  // diunggah ke penyimpanan oleh halaman impor sebelum simpan.
+  const gambarUrls = [item.gambar_base64, ...(Array.isArray(item.daftar_gambar_base64) ? item.daftar_gambar_base64 : [])]
+    .filter(Boolean).map(keDataUri);
+  const opsiBersih = item.opsi_teks_bersih || {};
   return {
     tipe: 'pg',
     nomor: Number(item.nomor || 0),
@@ -68,7 +74,9 @@ function soalDari(item = {}, opts = {}) {
     pilihan,
     benar: idx >= 0 && idx < pilihan.length ? idx : null,
     pembahasan: String(item.pembahasan || ''),
-    gambarUrls: [],
+    gambarUrls,
+    soalTeksBersih: String(item.pertanyaan_teks_bersih || '').trim(),
+    opsiTeksBersih: HURUF.filter((h) => opsiBersih[h] != null).map((h) => String(opsiBersih[h])),
     asalJenis: opts.asal || 'latihan',
     ...(idx >= 0 ? { kunciResmiBuku: true } : {}),
   };
@@ -81,14 +89,14 @@ function soalDari(item = {}, opts = {}) {
 export function adaptorBukuJson(obj = {}) {
   const daftar = Array.isArray(obj.daftar_bab) ? obj.daftar_bab : [];
   const bab = [];
-  const statistik = { bab: 0, seksi: 0, soalContoh: 0, soalLatihan: 0, soalBerkunci: 0, soalUraian: 0, gambar: 0, babTanpaLatihan: [] };
+  const statistik = { bab: 0, seksi: 0, soalContoh: 0, soalLatihan: 0, soalHots: 0, soalBerkunci: 0, soalUraian: 0, gambar: 0, soalBergambar: 0, babTanpaLatihan: [] };
   for (const b of daftar) {
     const sections = (Array.isArray(b.materi) ? b.materi : []).map((m, mi) => {
       const blocks = [];
       if (m.penjelasan) blocks.push({ tipe: 'p', teks: String(m.penjelasan) });
       for (const r of Array.isArray(m.rumus_latex) ? m.rumus_latex : []) blocks.push({ tipe: 'math', teks: latexMurni(r) });
-      if (m.gambar_base64) {
-        blocks.push({ tipe: 'gambar', src: keDataUri(m.gambar_base64), alt: m.judul || '', caption: m.judul || '' });
+      for (const g of [m.gambar_base64, ...(Array.isArray(m.daftar_gambar_base64) ? m.daftar_gambar_base64 : [])].filter(Boolean)) {
+        blocks.push({ tipe: 'gambar', src: keDataUri(g), alt: m.judul || '', caption: m.judul || '' });
         statistik.gambar += 1;
       }
       statistik.seksi += 1;
@@ -103,12 +111,17 @@ export function adaptorBukuJson(obj = {}) {
     for (const c of Array.isArray(b.contoh_soal) ? b.contoh_soal : []) {
       if (!c.opsi || Object.keys(c.opsi).length < 2) { masukUraian(c, 'contoh'); continue; }
       const q = soalDari(c, { asal: 'contoh' });
-      if (q) { uji.push(q); statistik.soalContoh += 1; if (q.benar !== null) statistik.soalBerkunci += 1; }
+      if (q) { uji.push(q); statistik.soalContoh += 1; if (q.benar !== null) statistik.soalBerkunci += 1; if (q.gambarUrls.length) statistik.soalBergambar += 1; }
     }
     for (const l of Array.isArray(b.latihan_soal) ? b.latihan_soal : []) {
       if (!l.opsi || Object.keys(l.opsi).length < 2) { masukUraian(l, 'latihan'); continue; }
       const q = soalDari(l, { asal: 'latihan', kunciMap: b.kunci_jawaban_latihan });
-      if (q) { uji.push(q); statistik.soalLatihan += 1; if (q.benar !== null) statistik.soalBerkunci += 1; }
+      if (q) { uji.push(q); statistik.soalLatihan += 1; if (q.benar !== null) statistik.soalBerkunci += 1; if (q.gambarUrls.length) statistik.soalBergambar += 1; }
+    }
+    for (const h of Array.isArray(b.soal_hots_ujian_asli) ? b.soal_hots_ujian_asli : []) {
+      if (!h.opsi || Object.keys(h.opsi).length < 2) { masukUraian(h, 'hots'); continue; }
+      const q = soalDari(h, { asal: 'hots', kunciMap: b.kunci_jawaban_latihan });
+      if (q) { uji.push(q); statistik.soalHots += 1; if (q.benar !== null) statistik.soalBerkunci += 1; }
     }
     if (!(Array.isArray(b.latihan_soal) && b.latihan_soal.length)) statistik.babTanpaLatihan.push(b.judul_bab || b.id_bab);
     statistik.bab += 1;

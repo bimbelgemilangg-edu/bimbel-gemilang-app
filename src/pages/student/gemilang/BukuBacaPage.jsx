@@ -609,6 +609,7 @@ export default function BukuBacaPage({ audience = 'student' }) {
               </div>
               {q.visual && <VisualBuku visual={q.visual} />}
               {q.gambar && <GambarBuku src={q.gambar.src} alt={q.gambar.alt} caption={q.gambar.caption} />}
+              {(q.gambarUrls || []).filter((u) => u !== q.gambar?.src).map((u, ui) => <GambarBuku key={ui} src={u} alt={`gambar soal ${i + 1}`} caption="" />)}
               {q.tipe === 'pg' && <InputPg q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
               {q.tipe === 'multi' && <InputMulti q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}
               {q.tipe === 'bs' && <InputBs q={q} nilai={jawaban[q.id]} set={(v) => setJawaban((p) => ({ ...p, [q.id]: v }))} />}

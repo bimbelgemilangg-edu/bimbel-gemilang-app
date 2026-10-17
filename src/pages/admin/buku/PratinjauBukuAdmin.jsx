@@ -202,6 +202,8 @@ export default function PratinjauBukuAdmin() {
                     <div key={q.id || qi} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: 10, marginBottom: 8, fontSize: 13 }}>
                       <b>{qi + 1}.</b> <MathText text={q.soal} />
                       {q.gambar?.src && <GambarBuku src={q.gambar.src} alt={q.gambar.alt} caption={q.gambar.caption} />}
+                      {(q.gambarUrls || []).filter((u) => u !== q.gambar?.src).map((u, ui) => <GambarBuku key={ui} src={u} alt={`gambar soal ${qi + 1}`} caption="" />)}
+                      {q.pembahasan && <details style={{ marginTop: 6 }}><summary style={{ cursor: 'pointer', fontSize: 11.5, color: '#0f767e', fontWeight: 700 }}>Pembahasan</summary><div style={{ fontSize: 12.5, marginTop: 4 }}><MathText text={q.pembahasan} /></div></details>}
                       <ol style={{ margin: '6px 0 0', paddingLeft: 20, type: 'a' }}>
                         {(q.pilihan || []).map((p, pi) => <li key={pi} style={{ fontSize: 12.5, marginBottom: 3 }}>{p}{Number(q.benar) === pi ? ' ✓' : ''}</li>)}
                       </ol>

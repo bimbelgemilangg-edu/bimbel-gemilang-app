@@ -108,8 +108,10 @@ const PX_PER_MM = 96 / 25.4;
 // mencentang. Gambar dibatasi tinggi 140px di layar supaya daftar tetap
 // mudah digulir; ukuran cetak sesungguhnya dihitung mesin naskah.
 function KartuBacaSoal({ soal, nomor, tercentang, onCentang, bacaSaja }) {
-  const segmen = pisahTeksDanGambar(teksSoalMentah(soal), soal?.gambarUrls);
-  const opsi = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  // 17 Okt: JSON owner membawa varian TEKS BERSIH (tanpa latex) — PDF
+  // tidak merender KaTeX, maka cetak memakai varian itu bila ada.
+  const segmen = pisahTeksDanGambar(soal?.soalTeksBersih || teksSoalMentah(soal), soal?.gambarUrls);
+  const opsi = Array.isArray(soal?.opsiTeksBersih) && soal.opsiTeksBersih.length ? soal.opsiTeksBersih : (Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : []);
   return (
     <div style={{ border: `1.5px solid ${tercentang ? '#3730a3' : '#e2e8f0'}`, background: tercentang ? '#eef2ff' : 'white', borderRadius: 10, padding: '10px 12px', marginBottom: 8 }}>
       <label style={{ display: 'flex', gap: 10, cursor: 'pointer', alignItems: 'flex-start' }}>
