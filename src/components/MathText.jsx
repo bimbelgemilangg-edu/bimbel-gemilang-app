@@ -62,8 +62,10 @@ export function MathBlock({ text }) {
   // 17 Okt 2026: block 'math' warisan adaptor awal ada yang sebenarnya
   // PROSA ber-inline-math; BlockMath atas kalimat = error. Route ulang
   // ke MathText supaya dokumen tersimpan sembuh saat render.
-  const plain = String(text).replace(REGEX_MATH, '').replace(/[^A-Za-z]/g, '');
-  if (plain.length > 12) return <MathText text={text} />;
+  const t0 = String(text);
+  const punyaDelim = /\$|\\\[|\\\(/.test(t0);
+  const plain = t0.replace(REGEX_MATH, '').replace(/[^A-Za-z]/g, '');
+  if (punyaDelim && plain.length > 12) return <MathText text={text} />;
   // 🔧 16 Okt 2026: data tersimpan dari adaptor awal masih membawa
   // pembungkus '$$...$$' -> KaTeX error (teks merah). Lucut di sini
   // supaya dokumen lama ikut sembuh tanpa impor ulang.

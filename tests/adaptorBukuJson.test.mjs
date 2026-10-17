@@ -2,7 +2,7 @@
 // bertahap (16 Okt 2026) + mesin upsert lintas ekstraksi.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adaptorBukuJson, rencanakanUpsertBab } from '../src/utils/adaptorBukuJson.js';
+import { adaptorBukuJson, rencanakanUpsertBab, klasifikasiBlokLatex } from '../src/utils/adaptorBukuJson.js';
 
 const DOC = {
   metadata: { judul_dokumen: 'Bank Materi Matematika SMA Kelas 10' },
@@ -101,7 +101,8 @@ test('adaptorBukuJson v3: soal bergambar, HOTS, multi-gambar materi, teks bersih
   assert.equal(statistik.soalHots, 1);
   assert.equal(statistik.soalBergambar, 1);
   const q = bab[0].ujiPemahaman[0];
-  assert.deepEqual(q.gambarUrls, ['data:image/png;base64,CCC', 'data:image/png;base64,DDD']);
+  assert.deepEqual(q.gambarUrls, ['data:image/png;base64,CCC'], 'gambar_base64 = gambar SOAL');
+  assert.deepEqual(q.pembahasanGambarUrls, ['data:image/png;base64,DDD'], 'daftar_gambar_base64 = gambar PEMBAHASAN');
   assert.equal(q.soalTeksBersih, 'Soal graf (bersih)');
   assert.deepEqual(q.opsiTeksBersih, ['satu', 'dua']);
   const h = bab[0].ujiPemahaman[1];
@@ -134,4 +135,10 @@ test('adaptorBukuJson v3.1: rumus-prosa jadi p, gambar beruntun jadi galeri (reg
   assert.equal(blocks[3].tipe, 'galeri', 'tiga gambar beruntun jadi satu galeri');
   assert.equal(blocks[3].items.length, 3);
   assert.match(blocks[3].items[0].caption, /gambar 1\/3/);
+});
+
+test('klasifikasiBlokLatex: latex telanjang tetap math, prosa ber-$ jadi p', () => {
+  assert.equal(klasifikasiBlokLatex('a^{\\frac{p}{q}} = \\sqrt[q]{a^p}'), 'math');
+  assert.equal(klasifikasiBlokLatex('$$a^n = b$$'), 'math');
+  assert.equal(klasifikasiBlokLatex('1. Bentuk Dasar: Jika $a=1$ maka $b=2$; jika $c=3$ maka $d=4$ seterusnya'), 'prosa');
 });

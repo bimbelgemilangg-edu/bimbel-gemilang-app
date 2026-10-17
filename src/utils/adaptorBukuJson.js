@@ -54,6 +54,20 @@ export function butirUraianDari(item = {}, identitas = {}) {
   };
 }
 
+/**
+ * Klasifikasi entri latex: MATH murni (tanpa delimeter $ atau hanya
+ * display) vs PROSA ber-inline-math. Regresi 17 Okt: latex TELANJANG
+ * (tanpa $, mis. 'a^{p/q} = \sqrt[q]{a^p}') ikut terdeteksi "prosa"
+ * karena hurufnya banyak -> dirender MathText -> teks mentah hitam.
+ */
+export function klasifikasiBlokLatex(teks = '') {
+  const t = String(teks || '');
+  const punyaDelim = /\$|\\\[|\\\(/.test(t);
+  const plain = t.replace(/\$\$[\s\S]*?\$\$|\$[^\n$]*?\$/g, '').replace(/[^A-Za-z]/g, '');
+  if (punyaDelim && plain.length > 12) return 'prosa';
+  return 'math';
+}
+
 /** Satu soal JSON (contoh/latihan) -> soal kontrak reader. */
 function soalDari(item = {}, opts = {}) {
   const opsi = item.opsi || {};
@@ -64,8 +78,13 @@ function soalDari(item = {}, opts = {}) {
   // 17 Okt: soal BERGAMBAR wajib ikut ter-render di semua hilir —
   // gambar (tunggal maupun daftar) dibawa sebagai data-URI lalu
   // diunggah ke penyimpanan oleh halaman impor sebelum simpan.
-  const gambarUrls = [item.gambar_base64, ...(Array.isArray(item.daftar_gambar_base64) ? item.daftar_gambar_base64 : [])]
-    .filter(Boolean).map(keDataUri);
+  // 17 Okt: gambar_base64 = gambar SOAL; daftar_gambar_base64 =
+  // gambar PEMBAHASAN (diagram solusi) — dulu dicampur di bawah soal
+  // ("kok dua?"). Pisahkan: pembahasanGambarUrls dirender bersama
+  // pembahasan di reader/admin/cetak.
+  const gambarSoal = item.gambar_base64 ? [keDataUri(item.gambar_base64)] : [];
+  const gambarPembahasan = (Array.isArray(item.daftar_gambar_base64) ? item.daftar_gambar_base64 : [])
+    .filter((g) => g && g !== item.gambar_base64).map(keDataUri);
   const opsiBersih = item.opsi_teks_bersih || {};
   return {
     tipe: 'pg',
@@ -74,7 +93,8 @@ function soalDari(item = {}, opts = {}) {
     pilihan,
     benar: idx >= 0 && idx < pilihan.length ? idx : null,
     pembahasan: String(item.pembahasan || ''),
-    gambarUrls,
+    gambarUrls: gambarSoal,
+    pembahasanGambarUrls: gambarPembahasan,
     soalTeksBersih: String(item.pertanyaan_teks_bersih || '').trim(),
     opsiTeksBersih: HURUF.filter((h) => opsiBersih[h] != null).map((h) => String(opsiBersih[h])),
     asalJenis: opts.asal || 'latihan',
@@ -99,8 +119,7 @@ export function adaptorBukuJson(obj = {}) {
         // ("1. Bentuk Dasar: Jika $...$; jika $...$") dulu dipaksa jadi
         // blok math -> KaTeX menerima kalimat -> dinding teks merah.
         // Prosa -> blok p (MathText); murni display -> blok math.
-        const plain = String(r).replace(/\$\$[\s\S]*?\$\$|\$[^\n$]*?\$/g, '').replace(/[^A-Za-z]/g, '');
-        if (plain.length > 12) blocks.push({ tipe: 'p', teks: String(r) });
+        if (klasifikasiBlokLatex(r) === 'prosa') blocks.push({ tipe: 'p', teks: String(r) });
         else blocks.push({ tipe: 'math', teks: latexMurni(r) });
       }
       const gambars = [m.gambar_base64, ...(Array.isArray(m.daftar_gambar_base64) ? m.daftar_gambar_base64 : [])].filter(Boolean);
@@ -134,12 +153,12 @@ export function adaptorBukuJson(obj = {}) {
     for (const c of Array.isArray(b.contoh_soal) ? b.contoh_soal : []) {
       if (!c.opsi || Object.keys(c.opsi).length < 2) { masukUraian(c, 'contoh'); continue; }
       const q = soalDari(c, { asal: 'contoh' });
-      if (q) { uji.push(q); statistik.soalContoh += 1; if (q.benar !== null) statistik.soalBerkunci += 1; if (q.gambarUrls.length) statistik.soalBergambar += 1; }
+      if (q) { uji.push(q); statistik.soalContoh += 1; if (q.benar !== null) statistik.soalBerkunci += 1; if (q.gambarUrls.length || q.pembahasanGambarUrls.length) statistik.soalBergambar += 1; }
     }
     for (const l of Array.isArray(b.latihan_soal) ? b.latihan_soal : []) {
       if (!l.opsi || Object.keys(l.opsi).length < 2) { masukUraian(l, 'latihan'); continue; }
       const q = soalDari(l, { asal: 'latihan', kunciMap: b.kunci_jawaban_latihan });
-      if (q) { uji.push(q); statistik.soalLatihan += 1; if (q.benar !== null) statistik.soalBerkunci += 1; if (q.gambarUrls.length) statistik.soalBergambar += 1; }
+      if (q) { uji.push(q); statistik.soalLatihan += 1; if (q.benar !== null) statistik.soalBerkunci += 1; if (q.gambarUrls.length || q.pembahasanGambarUrls.length) statistik.soalBergambar += 1; }
     }
     for (const h of Array.isArray(b.soal_hots_ujian_asli) ? b.soal_hots_ujian_asli : []) {
       if (!h.opsi || Object.keys(h.opsi).length < 2) { masukUraian(h, 'hots'); continue; }

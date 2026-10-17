@@ -121,6 +121,7 @@ export function butirBankDariUjiPemahaman(item, identitas = {}, halamanSumber = 
     // 17 Okt: varian teks tanpa latex untuk konteks tanpa KaTeX (PDF cetak)
     ...(item.soalTeksBersih ? { soalTeksBersih: String(item.soalTeksBersih) } : {}),
     ...(Array.isArray(item.opsiTeksBersih) && item.opsiTeksBersih.length ? { opsiTeksBersih: item.opsiTeksBersih.map((x) => String(x)) } : {}),
+    ...(Array.isArray(item.pembahasanGambarUrls) && item.pembahasanGambarUrls.length ? { pembahasanGambarUrls: item.pembahasanGambarUrls } : {}),
     mataPelajaran: identitas.mapel || '',
     materi: identitas.materi || '',
     tingkatKelas: identitas.kelas || '',

@@ -647,6 +647,11 @@ export default function BukuBacaPage({ audience = 'student' }) {
               {item.q.gambar && <GambarBuku src={item.q.gambar.src} alt={item.q.gambar.alt} caption={item.q.gambar.caption} />}
               <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 3 }}>Jawabanmu: <b>{teksJawaban(item.q, item.j)}</b></div>
               {!item.benar && <div style={{ fontSize: 11.5, color: '#16a34a', marginBottom: 3 }}>Kunci: <b>{teksKunci(item.q)}</b></div>}
+              {(item.q.pembahasanGambarUrls || []).length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', margin: '6px 0' }}>
+                  {item.q.pembahasanGambarUrls.map((u, ui) => <GambarBuku key={ui} src={u} alt={`gambar pembahasan ${i + 1}`} caption="" />)}
+                </div>
+              )}
               {item.q.pembahasan && (
                 <div style={st.boxPembahasan}>
                   <b>Pembahasan</b>
