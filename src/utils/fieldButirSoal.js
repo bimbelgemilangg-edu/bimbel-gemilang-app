@@ -97,3 +97,24 @@ export function identitasDari(soal) {
 }
 
 export default { WATERMARK, teksSoalDari, bacaanDari, identitasDari };
+
+/**
+ * Potong teks soal untuk kartu daftar TANPA membelah rumus di tengah
+ * (regresi 17 Okt: kartu rakit memotong 150 karakter polos sehingga
+ * '$\\frac{...}$' terpenggal dan latex mentah berceceran). Bila titik
+ * potong jatuh di dalam segmen $...$ yang belum tertutup, perpanjang
+ * sampai penutupnya.
+ */
+export function potongTeksSoalAman(teks = '', maks = 150) {
+  const t = String(teks || '').trim();
+  if (t.length <= maks) return t;
+  let cut = t.lastIndexOf(' ', maks);
+  if (cut < 40) cut = maks;
+  let out = t.slice(0, cut);
+  const dolar = (out.match(/\$/g) || []).length;
+  if (dolar % 2 === 1) {
+    const tutup = t.indexOf('$', cut);
+    if (tutup > -1) out = t.slice(0, tutup + 1);
+  }
+  return `${out} …`;
+}
