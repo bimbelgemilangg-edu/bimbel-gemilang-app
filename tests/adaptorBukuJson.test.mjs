@@ -109,3 +109,29 @@ test('adaptorBukuJson v3: soal bergambar, HOTS, multi-gambar materi, teks bersih
   assert.equal(h.benar, 2);
   assert.equal(h.pembahasan, 'karena.');
 });
+
+test('adaptorBukuJson v3.1: rumus-prosa jadi p, gambar beruntun jadi galeri (regresi 17 Okt)', () => {
+  const doc = {
+    daftar_bab: [{
+      id_bab: 'x1', nomor_bab_buku: 1, judul_bab: 'Uji',
+      materi: [{
+        judul: 'M',
+        penjelasan: 'teks.',
+        rumus_latex: [
+          '1. Bentuk Dasar: Jika $a=1$ maka $b=2$; jika $c=3$ maka $d=4$ dan seterusnya panjang',
+          '$$a^n = b$$',
+        ],
+        gambar_base64: 'data:image/png;base64,AAA',
+        daftar_gambar_base64: ['data:image/png;base64,BBB', 'data:image/png;base64,CCC'],
+      }],
+    }],
+  };
+  const { bab } = adaptorBukuJson(doc);
+  const blocks = bab[0].sections[0].blocks;
+  assert.equal(blocks[0].tipe, 'p');
+  assert.equal(blocks[1].tipe, 'p', 'rumus-prosa tidak lagi jadi dinding merah');
+  assert.equal(blocks[2].tipe, 'math');
+  assert.equal(blocks[3].tipe, 'galeri', 'tiga gambar beruntun jadi satu galeri');
+  assert.equal(blocks[3].items.length, 3);
+  assert.match(blocks[3].items[0].caption, /gambar 1\/3/);
+});

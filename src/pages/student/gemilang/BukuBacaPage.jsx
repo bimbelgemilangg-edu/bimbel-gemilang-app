@@ -341,6 +341,11 @@ export default function BukuBacaPage({ audience = 'student' }) {
     else if (blok.tipe === 'contoh' && blok.teks) inti = <div style={st.boxContoh}><b>Contoh</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     else if (blok.tipe === 'tips' && blok.teks) inti = <div style={st.boxTips}><b>Tips</b><div style={{ marginTop: 4 }}><MathText text={blok.teks} /></div></div>;
     else if (blok.tipe === 'gambar' && blok.src) inti = <GambarBuku src={blok.src} alt={blok.alt} caption={blok.caption} />;
+    else if (blok.tipe === 'galeri' && Array.isArray(blok.items)) inti = (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', margin: '10px 0' }}>
+        {blok.items.map((it, gi) => <div key={gi} style={{ flex: '1 1 220px', maxWidth: 340 }}><GambarBuku src={it.src} alt={it.caption} caption={it.caption} /></div>)}
+      </div>
+    );
     // 🔥 MATERI INTERAKTIF (Turn 87): dua cara pakai di buku digital —
     //   (a) blok.tipe = 'interaktif' + blok.widget = {jenis:'flashcard',...}
     //   (b) blok.tipe langsung nama widget: 'jodohMini' | 'isianRumpang' |
