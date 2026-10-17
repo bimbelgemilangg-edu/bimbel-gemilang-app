@@ -40,6 +40,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ambilKonten } from '../../utils/sumberKonten';
+import { soalDariImporBuku } from '../../utils/pecahBukuHtml';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { identitasDari, teksSoalDari } from '../../utils/fieldButirSoal';
 import { benderaButir, masukKeranjangBanyak, keluarKeranjang, pindahUrutan } from '../../utils/keranjangSoalGuru';
@@ -130,6 +131,7 @@ export default function RakitTryOutGuruPage() {
   const [fKelas, setFKelas] = useState('');
   const [fTipe, setFTipe] = useState('');
   const [fKesulitan, setFKesulitan] = useState('');
+  const [fSumber, setFSumber] = useState(''); // '' | 'buku' | 'lain' (17 Okt)
   const [fCari, setFCari] = useState('');
   const [hanyaBelum, setHanyaBelum] = useState(false);
   const [kelompokTerbuka, setKelompokTerbuka] = useState({});
@@ -218,12 +220,16 @@ export default function RakitTryOutGuruPage() {
       if (fKelas && id.kelas !== fKelas) return false;
       if (fTipe && String(s.tipe || 'pg_sederhana') !== fTipe) return false;
       if (fKesulitan && String(s.tingkatKesulitan || '') !== fKesulitan) return false;
+      // 🔍 17 Okt 2026: saringan SUMBER agar soal impor buku owner
+      // (kategori 'Buku') bisa dipanggil sekali klik di antara ribuan butir.
+      if (fSumber === 'buku' && !soalDariImporBuku(s)) return false;
+      if (fSumber === 'lain' && soalDariImporBuku(s)) return false;
       if (hanyaBelum && idTerpilih.has(String(s.id))) return false;
       if (q && !`${teksSoalDari(s)} ${id.mapel} ${id.materi}`.toLowerCase().includes(q)) return false;
       return true;
     });
    
-  }, [semuaSoal, cakupanMapel, fJenjang, fMateri, fKelas, fTipe, fKesulitan, fCari, hanyaBelum, idTerpilih]);
+  }, [semuaSoal, cakupanMapel, fJenjang, fMateri, fKelas, fTipe, fKesulitan, fSumber, fCari, hanyaBelum, idTerpilih]);
 
   const kelompok = useMemo(() => {
     const m = new Map();
@@ -237,7 +243,7 @@ export default function RakitTryOutGuruPage() {
       || a.mapel.localeCompare(b.mapel, 'id') || a.materi.localeCompare(b.materi, 'id'));
   }, [tersaring]);
 
-  const jumlahFilterAktif = [fJenjang, fMateri, fKelas, fTipe, fKesulitan, fCari].filter(Boolean).length + mapelTambahan.length;
+  const jumlahFilterAktif = [fJenjang, fMateri, fKelas, fTipe, fKesulitan, fSumber, fCari].filter(Boolean).length + mapelTambahan.length;
 
   // ----------------------------------------------------------
   // Subtes & putusan kirim
@@ -495,6 +501,11 @@ export default function RakitTryOutGuruPage() {
                   <option value="mudah">mudah</option>
                   <option value="sedang">sedang</option>
                   <option value="sulit">sulit</option>
+                </select>
+                <select style={st.select} value={fSumber} onChange={(e) => setFSumber(e.target.value)}>
+                  <option value="">semua sumber</option>
+                  <option value="buku">impor buku digital (kategori Buku)</option>
+                  <option value="lain">selain impor buku</option>
                 </select>
                 <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
                   <Search size={14} style={{ position: 'absolute', left: 9, top: 9, color: '#9ca3af' }} />
