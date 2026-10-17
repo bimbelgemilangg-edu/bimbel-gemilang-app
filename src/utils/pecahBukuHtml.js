@@ -369,3 +369,13 @@ export function pesanRingkasanSimpan(s = {}) {
   if (!baru) return '↷ Tidak ada bab/soal yang lolos untuk disimpan (periksa centang "ikut" pada pratinjau).';
   return `✓ TERSIMPAN: ${baru}${lewat ? ` · ${lewat} dilewati karena sudah ada (anti-duplikat)` : ''}. Tinjau di Admin → Buku.`;
 }
+
+/**
+ * Penanda butir hasil IMPOR BUKU (kategori 'Buku' / tag 'buku') —
+ * dipakai saringan "Sumber" di Rakit Try Out guru (17 Okt 2026) agar
+ * soal dari buku digital owner (JSON/latex/scan) bisa dipanggil
+ * sekali klik di antara ribuan butir bank.
+ */
+export function soalDariImporBuku(s = {}) {
+  return Boolean(s && (s.kategori === 'Buku' || (Array.isArray(s.tags) && s.tags.includes('buku'))));
+}

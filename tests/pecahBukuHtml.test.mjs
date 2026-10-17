@@ -8,7 +8,7 @@ import {
   klasifikasiGagalEkstraksi, parseResponsEkstraksi,
   saringButirDuplikat, saringBabDuplikat,
   angkaBerkas, urutkanBerkasGambar, klasifikasiGambarHalaman, aksiModeImpor,
-  labelBabTersimpan, pesanRingkasanSimpan,
+  labelBabTersimpan, pesanRingkasanSimpan, soalDariImporBuku,
 } from '../src/utils/pecahBukuHtml.js';
 
 const uri = (n) => `data:image/png;base64,aGVsbG8${n}`;
@@ -230,4 +230,11 @@ test('butirBank: kunci RESMI buku menyalakan kunciTerverifikasi (adaptor latex 1
   assert.equal(butirBankDariUjiPemahaman(item, { mapel: 'Matematika' }, null).kunciTerverifikasi, true);
   const tebakan = { ...item, kunciResmiBuku: undefined };
   assert.equal(butirBankDariUjiPemahaman(tebakan, { mapel: 'Matematika' }, null).kunciTerverifikasi, false);
+});
+
+test('soalDariImporBuku: penanda saringan Rakit Try Out (17 Okt)', () => {
+  assert.equal(soalDariImporBuku({ kategori: 'Buku' }), true);
+  assert.equal(soalDariImporBuku({ tags: ['buku', 'Bab 1 Eksponen'] }), true);
+  assert.equal(soalDariImporBuku({ kategori: 'TPS', tags: ['lain'] }), false);
+  assert.equal(soalDariImporBuku(null), false);
 });
