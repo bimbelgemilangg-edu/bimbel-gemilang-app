@@ -3,11 +3,15 @@
 // serah uang): tab bertambah dari 3 jadi 5, dan tab awal bisa dipilih
 // lewat query ?tab= (dipakai link sidebar "Kwitansi" & tab serah uang).
 // Urutan tab = alur kerja kasir sehari-hari:
-//   Dashboard -> Input -> Riwayat -> Kwitansi -> Serah Uang ke Owner
+//   Dashboard -> Input -> Riwayat -> Kwitansi
+// 🔥 2026-10-18: tab "Serah Uang ke Owner" DIHAPUS SELURUHNYA (keputusan
+// owner: fitur tak ada dalam operasi nyata & mengekspos total kumulatif
+// ke admin). Keuangan admin kini murni SIKLUS BULANAN: reset tiap
+// tanggal 1; laporan lengkap seluruh periode dipegang owner.
 // 🔥 DIUBAH 2026-10-01: tab terakhir dulu bernama "Tutup Kasir" (upacara
 // kunci penerimaan akhir giliran + antrean verifikasi owner). Atas keputusan
 // owner ("pilihan 1") ia menjadi catatan serah uang ada-hoc tanpa upacara;
-// lihat kepala berkas SerahUangKeOwner.jsx.
+// (berkas SerahUangKeOwner.jsx sudah dihapus dari repo.)
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
@@ -15,10 +19,9 @@ import FinanceDashboard from './FinanceDashboard';
 import TransactionForm from './TransactionForm';
 import TransactionHistory from './TransactionHistory';
 import RiwayatKwitansi from './RiwayatKwitansi';
-import SerahUangKeOwner from './SerahUangKeOwner';
-import { LayoutDashboard, PlusCircle, List, Receipt, HandCoins } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, List, Receipt } from 'lucide-react';
 
-const TAB_SAH = ['dashboard', 'add', 'history', 'kwitansi', 'kasir'];
+const TAB_SAH = ['dashboard', 'add', 'history', 'kwitansi'];
 
 const FinanceLayout = () => {
   const [searchParams] = useSearchParams();
@@ -43,7 +46,6 @@ const FinanceLayout = () => {
     { key: 'add', label: 'Input Transaksi', icon: <PlusCircle size={16} /> },
     { key: 'history', label: 'Riwayat', icon: <List size={16} /> },
     { key: 'kwitansi', label: 'Kwitansi', icon: <Receipt size={16} /> },
-    { key: 'kasir', label: 'Serah Uang ke Owner', icon: <HandCoins size={16} /> },
   ];
 
   return (
@@ -64,13 +66,21 @@ const FinanceLayout = () => {
           ))}
         </div>
 
+        {/* 🗓️ 18 Okt 2026 (keputusan owner): keuangan ADMIN bersiklus
+            BULANAN — tampilan reset tiap tanggal 1 dan hanya memuat
+            bulan berjalan; laporan lengkap seluruh periode hanya
+            dipegang owner di /owner/finance. */}
+        <div style={{ marginTop: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '8px 12px', fontSize: 12, color: '#166534' }}>
+          <b>Siklus bulanan:</b> tampilan keuangan admin otomatis reset setiap tanggal 1 dan hanya memuat bulan berjalan.
+          Laporan lengkap seluruh periode dipegang owner di area owner.
+        </div>
+
         {/* Content */}
         <div style={{marginTop: 20}}>
           {activeTab === 'dashboard' && <FinanceDashboard />}
           {activeTab === 'add' && <TransactionForm />}
           {activeTab === 'history' && <TransactionHistory />}
           {activeTab === 'kwitansi' && <RiwayatKwitansi />}
-          {activeTab === 'kasir' && <SerahUangKeOwner />}
         </div>
       </div>
     </div>
