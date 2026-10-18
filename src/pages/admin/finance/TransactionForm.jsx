@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { bolehCatatAdmin } from '../../../utils/keuanganAudit';
 import { Save, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
@@ -66,6 +67,9 @@ const TransactionForm = () => {
     e.preventDefault();
     if (!form.amount || parseInt(form.amount) <= 0) return showAlert('⚠️ Nominal harus diisi!');
     if (!form.category) return showAlert('⚠️ Pilih kategori!');
+    // 🛡 18 Okt (kebijakan owner): pengeluaran BCA bukan hak catat admin.
+    const cek = bolehCatatAdmin(form.type, form.method);
+    if (!cek.boleh) return showAlert(`⚠️ ${cek.alasan}`);
     // 🔥 BARU (modul rekonsiliasi): pemasukan via TRANSFER BANK wajib
     // punya jejak -- nomor referensi struk ATAU foto bukti transfer.
     // Tanpa ini, owner tidak punya bahan buat mencocokkan mutasi

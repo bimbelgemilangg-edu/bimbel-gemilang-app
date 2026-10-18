@@ -9,7 +9,7 @@
 // ============================================================
 import React, { useMemo, useState } from 'react';
 import { db } from '../../../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { Download, FileSpreadsheet, Plus, Search } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { jsPDF } from 'jspdf';
@@ -17,7 +17,7 @@ import autoTable from 'jspdf-autotable';
 import { KANAL, LABEL_KANAL } from '../../../utils/kanalUang';
 import {
   KATEGORI_PRIVE, KATEGORI_GAJI, KATEGORI_SERAH, KATEGORI_OWNER_BARU,
-  barisAudit, ringkasanAudit, trenBulanan, keCsvAudit,
+  barisAudit, ringkasanAudit, trenBulanan, keCsvAudit, statusPlafon, PLAFON_DEFAULT,
 } from '../../../utils/keuanganAudit';
 
 const st = {
@@ -42,6 +42,17 @@ export default function PanelAudit({ logs = [], rp = (n) => String(n), isMobile 
   const [cari, setCari] = useState('');
   const [formBuka, setFormBuka] = useState(false);
   const [pesan, setPesan] = useState('');
+  const [sett, setSett] = useState(null);
+  const [formSett, setFormSett] = useState({ plafonKasAdmin: '', saldoAwalKas: '' });
+  React.useEffect(() => {
+    import('firebase/firestore').then(({ getDoc }) => {
+      getDoc(doc(db, 'finance_settings', 'umum')).then((sn) => {
+        const d = sn.exists() ? sn.data() : null;
+        setSett(d);
+        if (d) setFormSett({ plafonKasAdmin: String(d.plafonKasAdmin ?? ''), saldoAwalKas: String(d.saldoAwalKas ?? '') });
+      });
+    });
+  }, []);
   const [form, setForm] = useState({
     type: 'Pengeluaran', date: `${fBulan}-${String(kini.getDate()).padStart(2, '0')}`,
     category: KATEGORI_PRIVE, amount: '', note: '', memoOwner: '',
@@ -220,6 +231,44 @@ export default function PanelAudit({ logs = [], rp = (n) => String(n), isMobile 
           </div>
         ))}
       </div>
+
+      {(() => {
+        const serahBulan = logs.filter((t) => t.type === 'Transfer' && (t.kanalDari || 'kasAdmin') === 'kasAdmin' && (!fBulan || String(t.date || '').startsWith(fBulan)));
+        const totalSerah = serahBulan.reduce((a, t) => a + Number(t.amount || 0), 0);
+        const bca = logs.filter((t) => t.type !== 'Transfer' && (t.kanal === 'bankBimbel') && (!fBulan || String(t.date || '').startsWith(fBulan)));
+        const bcaMasuk = bca.filter((t) => t.type === 'Pemasukan').reduce((a, t) => a + Number(t.amount || 0), 0);
+        const bcaKeluar = bca.filter((t) => t.type === 'Pengeluaran').reduce((a, t) => a + Number(t.amount || 0), 0);
+        const stPlafonKini = statusPlafon(ring.perKantong.kasAdmin?.saldo || 0, sett?.plafonKasAdmin || PLAFON_DEFAULT);
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 8 }}>
+            <div style={st.kartu}>
+              <div style={st.label}>🤝 SERAH TUNAI ADMIN → OWNER ({fBulan || 'semua'})</div>
+              <div style={st.angka('#1d4ed8')}>{rp(totalSerah)}</div>
+              <div style={{ fontSize: 10.5, color: '#64748b', marginTop: 4 }}>{serahBulan.length} kali serah · mingguan/akhir bulan · uang pindah kantong, BUKAN pengeluaran.</div>
+              <button style={{ ...st.tombol(false), marginTop: 8, background: '#5B2ECC' }} onClick={() => { setFormBuka(true); setForm({ type: 'Transfer', date: `${fBulan || `${kini.getFullYear()}-${String(kini.getMonth() + 1).padStart(2, '0')}`}-${String(kini.getDate()).padStart(2, '0')}`, category: KATEGORI_SERAH, amount: '', note: 'Serah tunai kas admin', memoOwner: '', method: 'Transfer', kanalDari: KANAL.KAS_ADMIN, kanalKe: KANAL.BANK }); }}>
+                <Plus size={14} /> Catat serah tunai sekarang
+              </button>
+            </div>
+            <div style={st.kartu}>
+              <div style={st.label}>🏦 REKENING BCA BIMBEL ({fBulan || 'semua'} — view-only admin)</div>
+              <div style={st.angka('#5B2ECC')}>{rp(bcaMasuk - bcaKeluar)}</div>
+              <div style={{ fontSize: 10.5, color: '#64748b', marginTop: 4 }}>masuk {rp(bcaMasuk)} · keluar {rp(bcaKeluar)}. Setiap keluar BCA wajib tercatat saat transaksi (oleh owner); admin melihat barisnya di laporan bulan berjalan.</div>
+            </div>
+            <div style={{ ...st.kartu, border: `1px solid ${stPlafonKini.melebihi ? '#fecaca' : '#bbf7d0'}` }}>
+              <div style={st.label}>🛡 PLAFON KAS ADMIN & SETELAN</div>
+              <div style={st.angka(stPlafonKini.melebihi ? '#991b1b' : '#166534')}>{rp(stPlafonKini.saldo)} / {rp(stPlafonKini.plafon)}</div>
+              <div style={{ fontSize: 10.5, color: stPlafonKini.melebihi ? '#991b1b' : '#64748b', marginTop: 4 }}>
+                {stPlafonKini.melebihi ? `⚠ kas admin melebihi plafon — wajib serah ${rp(stPlafonKini.wajibSerah)}.` : 'kas admin dalam plafon (saldo seluruh periode).'}
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                <input style={st.input} inputMode="numeric" placeholder="plafon (Rp)" value={formSett.plafonKasAdmin} onChange={(e) => setFormSett({ ...formSett, plafonKasAdmin: e.target.value })} />
+                <input style={st.input} inputMode="numeric" placeholder="saldo awal kas (Rp)" value={formSett.saldoAwalKas} onChange={(e) => setFormSett({ ...formSett, saldoAwalKas: e.target.value })} />
+                <button style={st.tombol(false)} onClick={() => { setDoc(doc(db, 'finance_settings', 'umum'), { plafonKasAdmin: parseInt(formSett.plafonKasAdmin, 10) || PLAFON_DEFAULT, saldoAwalKas: parseInt(formSett.saldoAwalKas, 10) || 0, diperbaruiPada: serverTimestamp() }, { merge: true }).then(() => { setSett({ plafonKasAdmin: parseInt(formSett.plafonKasAdmin, 10) || PLAFON_DEFAULT, saldoAwalKas: parseInt(formSett.saldoAwalKas, 10) || 0 }); setPesan('✓ Setelan plafon & saldo awal tersimpan.'); }); }}>Simpan</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <div style={st.kartu}>
         <div style={st.label}>TREN 12 BULAN (masuk vs keluar)</div>

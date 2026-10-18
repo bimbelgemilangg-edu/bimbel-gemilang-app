@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ringkasanAudit, trenBulanan, keCsvAudit, barisAudit, KATEGORI_PRIVE, KATEGORI_GAJI,
+  statusPlafon, bolehCatatAdmin, saldoKasAdmin,
 } from '../src/utils/keuanganAudit.js';
 
 const LOGS = [
@@ -45,4 +46,15 @@ test('barisAudit: fallback dicatatOleh admin & kantong default', () => {
   const b = barisAudit({ date: '2026-01-01', type: 'Pemasukan', amount: 1 });
   assert.equal(b.dicatatOleh, 'admin');
   assert.equal(b.kantong, 'tanpaMetode');
+});
+
+test('statusPlafon & bolehCatatAdmin & saldoKasAdmin (kebijakan 18 Okt)', () => {
+  assert.deepEqual(statusPlafon(1500000, 2000000), { melebihi: false, wajibSerah: 0, saldo: 1500000, plafon: 2000000 });
+  const st = statusPlafon(5000000, 2000000);
+  assert.equal(st.melebihi, true);
+  assert.equal(st.wajibSerah, 3000000);
+  assert.equal(bolehCatatAdmin('Pengeluaran', 'Transfer').boleh, false, 'pengeluaran BCA hak owner');
+  assert.equal(bolehCatatAdmin('Pengeluaran', 'Tunai').boleh, true);
+  assert.equal(bolehCatatAdmin('Pemasukan', 'Transfer').boleh, true, 'pemasukan transfer admin boleh (rekonsiliasi pending)');
+  assert.equal(saldoKasAdmin({ saldoAwal: 2000000, tunaiMasuk: 5000000, tunaiKeluar: 1000000, setorKas: 4000000, transferMasukKas: 0 }), 2000000);
 });

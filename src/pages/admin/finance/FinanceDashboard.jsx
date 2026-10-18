@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, query, onSnapshot, getDocs, where } from "firebase/firestore";
+import { saldoKasAdmin, statusPlafon, PLAFON_DEFAULT } from '../../../utils/keuanganAudit';
+import { collection, query, onSnapshot, getDocs, where , doc, getDoc} from "firebase/firestore";
 import { 
   Eye, EyeOff, TrendingUp, TrendingDown,
   CreditCard, AlertCircle, Users, ArrowRight, DollarSign,
   Calendar, RefreshCw, MessageCircle
-} from 'lucide-react';
+, ShieldCheck} from 'lucide-react';
 
 const FinanceDashboard = () => {
   const navigate = useNavigate();
@@ -21,7 +22,12 @@ const FinanceDashboard = () => {
   // uangnya belum masuk (dan nanti kehitung sekali lagi waktu tiap
   // cicilannya beneran dibayar). Komitmen itu sekarang dipisah ke field
   // `cicilan` dan cuma tampil sebagai keterangan "belum diterima".
-  const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0, cicilan: 0, setorKas: 0 });
+  const [monthStats, setMonthStats] = useState({ pemasukan: 0, pengeluaran: 0, cicilan: 0, setorKas: 0, transferMasukKas: 0 });
+  // 🛡 18 Okt: plafon & saldo awal kas admin (doc finance_settings/umum)
+  const [settKeuangan, setSettKeuangan] = useState(null);
+  useEffect(() => {
+    getDoc(doc(db, 'finance_settings', 'umum')).then((sn) => setSettKeuangan(sn.exists() ? sn.data() : null)).catch(() => setSettKeuangan(null));
+  }, []);
 
   // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): sebelumnya halaman ini cuma
   // nampilin TOTAL "Pemasukan Bulan Ini" & "Pengeluaran Bulan Ini" --
@@ -67,6 +73,7 @@ const FinanceDashboard = () => {
       // ke kas owner. Tapi brankas admin jelas berkurang karenanya, jadi
       // kartu "Uang Tunai di Brankas" di bawah harus mengurangkannya.
       let setorKasAdmin = 0;
+      let transferMasukKas = 0;
 
       // 🔥 BARU (RINCIAN TUNAI vs TRANSFER): pecah total bulan ini per
       // metode pembayaran. "Lainnya" = penjaga buat data lama yang
@@ -91,6 +98,7 @@ const FinanceDashboard = () => {
         // palsu dan tidak cocok dengan Portal Owner.
         if (data.type === 'Transfer') {
           if ((data.kanalDari || 'kasAdmin') === 'kasAdmin') setorKasAdmin += amt;
+          if ((data.kanalKe || '') === 'kasAdmin') transferMasukKas += amt;
           return;
         }
         const bucket = perMetode[data.method] ? data.method : 'Lainnya';
@@ -113,7 +121,7 @@ const FinanceDashboard = () => {
         }
       });
 
-      setMonthStats({ pemasukan: pemasukanDiterima, pengeluaran: pengeluaranBulanIni, cicilan: cicilanTercatat, setorKas: setorKasAdmin });
+      setMonthStats({ pemasukan: pemasukanDiterima, pengeluaran: pengeluaranBulanIni, cicilan: cicilanTercatat, setorKas: setorKasAdmin, transferMasukKas });
       setMethodStats(perMetode);
     });
 
@@ -248,6 +256,14 @@ const FinanceDashboard = () => {
     return `https://api.whatsapp.com/send?phone=${s.noHp}&text=${encodeURIComponent(pesan)}`;
   };
 
+  const saldoBrankas = saldoKasAdmin({
+    saldoAwal: settKeuangan?.saldoAwalKas || 0,
+    tunaiMasuk: methodStats?.Tunai?.masuk || 0,
+    tunaiKeluar: methodStats?.Tunai?.keluar || 0,
+    setorKas: monthStats.setorKas || 0,
+    transferMasukKas: monthStats.transferMasukKas || 0,
+  });
+  const stPlafon = statusPlafon(saldoBrankas, settKeuangan?.plafonKasAdmin || PLAFON_DEFAULT);
   return (
     <div>
       {/* HEADER */}
@@ -297,6 +313,21 @@ const FinanceDashboard = () => {
           )}
           <span style={{display: 'block', fontSize: 10, color: '#047857', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
             Uang fisik yang bisa dihitung di brankas bulan ini -- uang transfer tidak termasuk (masuknya ke rekening).
+          </span>
+        </div>
+        {/* 🛡 18 Okt (kebijakan owner): plafon kas operasional admin. */}
+        <div style={styles.mediumCard(stPlafon.melebihi ? '#fef2f2' : '#f0fdf4', stPlafon.melebihi ? '#dc2626' : '#10b981')}>
+          <ShieldCheck size={20} color={stPlafon.melebihi ? '#dc2626' : '#10b981'} />
+          <span style={styles.mediumLabel}>🛡 Plafon Kas Admin (operasional)</span>
+          <h2 style={{...styles.mediumValue, color: stPlafon.melebihi ? '#dc2626' : '#10b981'}}>{rp(saldoBrankas)}</h2>
+          <div style={styles.cardSplit}>
+            <span>Plafon: <b>{rp(stPlafon.plafon)}</b></span>
+            <span>Saldo awal: <b>{rp(settKeuangan?.saldoAwalKas || 0)}</b></span>
+          </div>
+          <span style={{display: 'block', fontSize: 10, color: stPlafon.melebihi ? '#991b1b' : '#047857', fontWeight: 700, marginTop: 6, lineHeight: 1.4}}>
+            {stPlafon.melebihi
+              ? `⚠ MELEBIHI PLAFON — wajib serah ${rp(stPlafon.wajibSerah)} ke owner (setor ke rekening bimbel atau brankas owner); catat sebagai Transfer di panel owner.`
+              : 'Aman di bawah plafon. Kelebihan kas wajib diserah ke owner (serah mingguan / akhir bulan).'}
           </span>
         </div>
 

@@ -113,3 +113,40 @@ export function keCsvAudit(logs = []) {
 }
 
 export default { KATEGORI_PRIVE, KATEGORI_GAJI, KATEGORI_SERAH, barisAudit, ringkasanAudit, trenBulanan, keCsvAudit };
+
+// ------------------------------------------------------------
+// PLAFON KAS ADMIN & KEBIJAKAN PENCATATAN (18 Okt 2026, keputusan
+// owner): admin hanya boleh memegang kas operasional terbatas
+// (default 2 jt); kelebihan WAJIB diserah ke owner (mingguan atau
+// kapan diminta) via Transfer kasAdmin -> bankBimbel/brankas owner.
+// BCA dicatat OWNER saat transaksi terjadi; admin hanya MELIHAT
+// baris bulan berjalan (read-only) di laporannya.
+// ------------------------------------------------------------
+export const PLAFON_DEFAULT = 2000000;
+
+/** Status plafon kas admin: berapa yang wajib segera diserah. */
+export function statusPlafon(saldo = 0, plafon = PLAFON_DEFAULT) {
+  const melebihi = saldo > plafon;
+  return { melebihi, wajibSerah: melebihi ? saldo - plafon : 0, saldo, plafon };
+}
+
+/**
+ * Kebijakan hak catat: pengeluaran dari rekening BCA BUKAN hak admin
+ * (M-banking dipegang owner); admin mencatat tunai & pemasukan transfer
+ * (rekonsiliasi pending), owner mencatat semua arus BCA saat terjadi.
+ */
+export function bolehCatatAdmin(type = '', method = '') {
+  if (type === 'Pengeluaran' && method === 'Transfer') {
+    return { boleh: false, alasan: 'Pengeluaran dari rekening BCA dicatat OWNER saat transaksi terjadi (panel owner 🔍 Audit). Admin melihat barisnya di laporan bulan berjalan (read-only).' };
+  }
+  return { boleh: true, alasan: '' };
+}
+
+/**
+ * Saldo kas brankas admin BERJALAN = saldo awal (hitung fisik saat
+// setup/tutup bulan) + arus tunai bulan ini − serah ke owner + transfer
+ * masuk ke kas (mis. owner menambah uang operasional).
+ */
+export function saldoKasAdmin({ saldoAwal = 0, tunaiMasuk = 0, tunaiKeluar = 0, setorKas = 0, transferMasukKas = 0 } = {}) {
+  return (Number(saldoAwal) || 0) + (Number(tunaiMasuk) || 0) - (Number(tunaiKeluar) || 0) - (Number(setorKas) || 0) + (Number(transferMasukKas) || 0);
+}
