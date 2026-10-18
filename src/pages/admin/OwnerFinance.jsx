@@ -38,6 +38,7 @@ import PanelNeraca from './owner/PanelNeraca';
 // 🔥 BARU (modul rekonsiliasi + honor tentor & input uang owner):
 import PanelRekonsiliasi from './owner/PanelRekonsiliasi';
 import PanelInputHonor from './owner/PanelInputHonor';
+import PanelAudit from './owner/PanelAudit';
 
 const TABS = [
   { id: 'posisi', label: '📡 Posisi Real-time' },
@@ -46,6 +47,7 @@ const TABS = [
   { id: 'honor', label: '👩‍🏫 Honor & Input Owner' },
   { id: 'analisis', label: '📈 Analisis' },
   { id: 'neraca', label: '🏦 Neraca & Laporan' },
+  { id: 'audit', label: '🔍 Audit & Unduh' },
 ];
 
 const OwnerFinance = () => {
@@ -207,6 +209,9 @@ const OwnerFinance = () => {
         )}
         {tab === 'honor' && (
           <PanelInputHonor {...panelProps} />
+        )}
+        {tab === 'audit' && (
+          <PanelAudit logs={logs} rp={rp} isMobile={isMobile} />
         )}
         {tab === 'analisis' && (
           <PanelAnalisis {...panelProps} privacyMode={privacyMode} />

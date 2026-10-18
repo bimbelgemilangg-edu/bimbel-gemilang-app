@@ -826,7 +826,7 @@ const TransactionHistory = () => {
                       {t.noKwitansi && <div style={{ fontSize: 9, color: '#7c3aed', fontWeight: 800, marginTop: 2, fontFamily: 'monospace' }}>🧾 {t.noKwitansi}</div>}
                       {t.refTransfer && <div style={{ fontSize: 9, color: '#1d4ed8', fontWeight: 700, marginTop: 1 }}>ref: {t.refTransfer}</div>}
                     </td>
-                    <td style={styles.td}>{t.category}</td>
+                    <td style={styles.td}>{t.category}{t.dicatatOleh === 'owner' && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 800, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 999, padding: '1px 7px' }}>dicatat owner</span>}</td>
                     <td style={{...styles.td, fontSize: 11, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
                       {t.note || '-'}
                     </td>

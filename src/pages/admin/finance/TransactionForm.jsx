@@ -114,6 +114,8 @@ const TransactionForm = () => {
         // tahu persis pintu masuk/keluar uangnya.
         kanal: form.method === 'Transfer' ? KANAL.BANK : KANAL.KAS_ADMIN,
         note: form.note,
+        // 18 Okt: penanda pencatat agar admin tak bingung pada entri owner
+        dicatatOleh: 'admin',
         refTransfer: refTransfer.trim(),
         buktiUrl,
         noKwitansi,
