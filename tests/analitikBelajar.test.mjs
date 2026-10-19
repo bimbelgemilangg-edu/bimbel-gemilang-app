@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  bangunAnalitikBelajar, detikPerSoalSesi, arahProgres, AMBANG_DELTA,
+  bangunAnalitikBelajar, detikPerSoalSesi, arahProgres, AMBANG_DELTA, identitasTampilSiswa,
 } from '../src/utils/analitikBelajar.js';
 
 const H = 3600_000;
@@ -71,4 +71,11 @@ test('baris non-TKA/UTBK & tanpa waktu selesai tidak masuk dashboard', () => {
   ]);
   assert.equal(a.siswa.length, 0);
   assert.equal(a.kohort.jumlahSesi, 0);
+});
+
+test('identitasTampilSiswa: alias nama/kelas/jenjang (regresi tabel ber-ID 19 Okt)', () => {
+  assert.equal(identitasTampilSiswa({ namaLengkap: 'Tasya R', kelasSekolah: '9A' }, { studentId: 'STD-1' }).nama, 'Tasya R');
+  assert.equal(identitasTampilSiswa({}, { studentName: 'Budi', kelas: '9B' }).nama, 'Budi');
+  assert.equal(identitasTampilSiswa({}, { studentId: 'STD-2' }).nama, 'STD-2');
+  assert.equal(identitasTampilSiswa({ jenjang: 'SMP/MTs' }, {}).jenjang, 'SMP/MTs');
 });

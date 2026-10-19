@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { ArrowLeft, LineChart, Users, Timer, TrendingUp, Target } from 'lucide-react';
-import { bangunAnalitikBelajar, IDEAL_DETIK_PER_SOAL } from '../../../utils/analitikBelajar.js';
+import { bangunAnalitikBelajar, IDEAL_DETIK_PER_SOAL , identitasTampilSiswa } from '../../../utils/analitikBelajar.js';
 import { unduhLaporanOrangTuaPdf } from '../../../utils/laporanOrangTuaPdf';
 import { jenisUjianUntukAnalitik } from '../../../utils/papanJelajah.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
@@ -65,10 +65,12 @@ export default function AnalitikBelajarPage() {
             return { nama: sb.nama || sb.judul || 'Subtes', skorPersen: r?.totalSkorPersen ?? null };
           }).filter((x) => x.skorPersen !== null);
           const sv = siswaById.get(s.studentId) || {};
+          const ident = identitasTampilSiswa(sv, s);
           hasil.push({
             studentId: s.studentId || '',
-            nama: sv.nama || sv.name || s.studentId || '(tanpa nama)',
-            kelas: sv.kelas || sv.kelasSekolah || '',
+            nama: ident.nama,
+            kelas: ident.kelas,
+            jenjang: ident.jenjang || p?.jenjang || p?.targetJenjang || '',
             paketId: p?.id || '',
             jenisUjian: jenis,
             totalSkorPersen: s.totalSkorPersen,
@@ -88,7 +90,18 @@ export default function AnalitikBelajarPage() {
     return () => { hidup = false; };
   }, []);
 
-  const analitik = useMemo(() => bangunAnalitikBelajar(baris), [baris]);
+  const [fJenjang, setFJenjang] = useState('');
+  const [fJenis, setFJenis] = useState('');
+  const [fNama, setFNama] = useState('');
+  const barisTerpilah = useMemo(() => baris.filter((b) => {
+    if (fJenjang && String(b.jenjang || '') !== fJenjang) return false;
+    if (fJenis && String(b.jenisUjian || '') !== fJenis) return false;
+    if (fNama && !`${b.nama} ${b.studentId}`.toLowerCase().includes(fNama.toLowerCase())) return false;
+    return true;
+  }), [baris, fJenjang, fJenis, fNama]);
+  const opsiJenjang = useMemo(() => [...new Set(baris.map((b) => b.jenjang).filter(Boolean))].sort(), [baris]);
+  const opsiJenis = useMemo(() => [...new Set(baris.map((b) => b.jenisUjian).filter(Boolean))].sort(), [baris]);
+  const analitik = useMemo(() => bangunAnalitikBelajar(barisTerpilah), [barisTerpilah]);
   const { kohort } = analitik;
   const trenTerakhir = kohort.trenPekan.length ? kohort.trenPekan[kohort.trenPekan.length - 1] : null;
 
@@ -145,6 +158,19 @@ export default function AnalitikBelajarPage() {
         </div>
       </div>
 
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 10px' }}>
+        {/* 19 Okt: saringan jenjang & jenis ujian otomatis + cari nama */}
+        <select value={fJenjang} onChange={(e) => setFJenjang(e.target.value)} style={{ padding: '7px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12, background: '#fff' }}>
+          <option value="">semua jenjang</option>
+          {opsiJenjang.map((j) => <option key={j} value={j}>{j}</option>)}
+        </select>
+        <select value={fJenis} onChange={(e) => setFJenis(e.target.value)} style={{ padding: '7px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12, background: '#fff' }}>
+          <option value="">semua jenis ujian</option>
+          {opsiJenis.map((j) => <option key={j} value={j}>{j}</option>)}
+        </select>
+        <input value={fNama} onChange={(e) => setFNama(e.target.value)} placeholder="cari nama / ID siswa..." style={{ padding: '7px 10px', borderRadius: 9, border: '1px solid #cbd5e1', fontSize: 12, minWidth: 200 }} />
+        <span style={{ fontSize: 11.5, color: '#64748b' }}>{barisTerpilah.length} sesi cocok · {analitik.siswa.length} siswa</span>
+      </div>
       <div style={{ ...kartu, padding: 0, overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, minWidth: 820 }}>
           <thead>
