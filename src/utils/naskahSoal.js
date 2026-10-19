@@ -290,9 +290,16 @@ export function escapeHtml(s) {
 
 export function teksKeHtml(teks) {
   const bersih = String(teks ?? '').replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ').replace(/\s+/g, ' ').trim();
-  const bagian = bersih.split(/(\$[^$]+\$)/g);
+  const bagian = bersih.split(/(\$\$[\s\S]*?\$\$|\$[^$]+\$)/g);
   return bagian
     .map((b) => {
+      if (b.startsWith('$$') && b.endsWith('$$') && b.length > 4) {
+        try {
+          return katex.renderToString(`\\displaystyle ${b.slice(2, -2)}`, { throwOnError: false });
+        } catch {
+          return escapeHtml(b);
+        }
+      }
       if (b.startsWith('$') && b.endsWith('$') && b.length > 2) {
         try {
           // 🔥 2026-10-09 (komplain guru matematika: "rumus gak seperti di
@@ -610,6 +617,24 @@ export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
 function htmlBlokPembahasan(teks, kunciHuruf = '', gambar = null) {
   const sorot = (t) => escapeHtml(t).replace(/==([^=]+)==|&lt;mark&gt;(.*?)&lt;\/mark&gt;/gi,
     (m, a, b) => `<span class="nsk-bhs-mark">${a ?? b}</span>`);
+  // 🔥 19 Okt 2026 (kunci guru berantakan): blok pembahasan dulu hanya
+  // di-escape sehingga $$...$$ / $...$ tercetak MENTAH di pegangan guru.
+  // Kini segmen math dirender KaTeX (displaystyle untuk $$), segmen polos
+  // tetap memakai sorot stabilo.
+  const sorotMatika = (t) => String(t ?? '').split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g).map((b) => {
+    if (!b) return '';
+    if (b.startsWith('$$') && b.endsWith('$$') && b.length > 4) {
+      try { return katex.renderToString(`\\displaystyle ${b.slice(2, -2)}`, { throwOnError: false }); } catch { return escapeHtml(b); }
+    }
+    if (b.startsWith('$') && b.endsWith('$') && b.length > 2) {
+      try {
+        const isi = b.slice(1, -1);
+        const bertingkat = /\\(frac|dfrac|tfrac|sqrt|sum|prod|int|oint|lim|binom|begin\{)/.test(isi);
+        return katex.renderToString(bertingkat ? `\\displaystyle ${isi}` : isi, { throwOnError: false });
+      } catch { return escapeHtml(b); }
+    }
+    return sorot(b);
+  }).join('');
   // Ekor pembahasan yang putus di OCR ("Jawaba", "= Jawaban f") dilengkapi
   // dari kunci soal itu sendiri -- aturan yang sama dengan layar siswa &
   // preview impor, supaya naskah kunci guru identik bentuknya dengan buku.
@@ -619,10 +644,10 @@ function htmlBlokPembahasan(teks, kunciHuruf = '', gambar = null) {
   const imgHtml = (i) => `<img class="nsk-gbr-blok" src="${escapeHtml(urls[i])}" alt="Gambar pembahasan ${i + 1}" style="max-width:70mm;max-height:55mm;object-fit:contain;" />`;
   let html = strukturPembahasan(lengkap.teks).map((b) => {
     if (b.jenis === 'kode') return `<div class="nsk-bhs-kode">${escapeHtml(b.teks)}</div>`;
-    if (b.jenis === 'logika') return `<div class="nsk-bhs-logika">${b.baris.map(sorot).join('<br/>')}</div>`;
-    if (b.jenis === 'kesimpulan') return `<div class="nsk-bhs-kesimpulan">${sorot(b.teks)}</div>`;
+    if (b.jenis === 'logika') return `<div class="nsk-bhs-logika">${b.baris.map(sorotMatika).join('<br/>')}</div>`;
+    if (b.jenis === 'kesimpulan') return `<div class="nsk-bhs-kesimpulan">${sorotMatika(b.teks)}</div>`;
     if (b.jenis === 'jawaban') return `<div class="nsk-bhs-jawaban">Jawaban: ${escapeHtml(b.huruf)}</div>`;
-    return `<div class="nsk-bhs-teks">${sorot(b.teks)}</div>`;
+    return `<div class="nsk-bhs-teks">${sorotMatika(b.teks)}</div>`;
   }).join('');
   // 🔥 2026-10-11 (integrasi renderer bergaya buku PR #188 dengan perbaikan
   // gambar pembahasan): blok buku ini dulunya memproses pembahasan sebagai
