@@ -44,6 +44,7 @@ import { soalDariImporBuku } from '../../utils/pecahBukuHtml';
 import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { identitasDari, teksSoalDari, potongTeksSoalAman } from '../../utils/fieldButirSoal';
 import { MathText } from '../../components/MathText';
+import DialogCetakNaskah from '../../components/DialogCetakNaskah';
 import { benderaButir, masukKeranjangBanyak, keluarKeranjang, pindahUrutan } from '../../utils/keranjangSoalGuru';
 import {
   GRANULARITAS, MIN_BUTIR, MAKS_BUTIR,
@@ -148,6 +149,7 @@ export default function RakitTryOutGuruPage() {
   const [catatan, setCatatan] = useState('');
   const [mengirim, setMengirim] = useState(false);
   const [pesanKirim, setPesanKirim] = useState('');
+  const [bacaNaskah, setBacaNaskah] = useState(false); // 📖 praterbit 19 Okt
 
   // ----------------------------------------------------------
   // Muat data: bank soal lewat cache bersama, usulan sendiri lewat query.
@@ -764,6 +766,17 @@ export default function RakitTryOutGuruPage() {
                 </div>
               )}
 
+              {bacaNaskah && (
+                <DialogCetakNaskah
+                  input={{ judul: judul || 'DRAF PAKET (praterbit — belum dikirim)', daftarSoal: keranjang, modeTimer, durasiTotalMenit: durasi }}
+                  onClose={() => setBacaNaskah(false)}
+                />
+              )}
+              {/* 📖 19 Okt 2026: tentor wajib bisa MEMBACA naskah penuh +
+                  kunci SEBELUM mengirim paket — menelaah dulu bersama. */}
+              <button style={{ ...st.tombolKecil, marginBottom: 8, width: '100%', justifyContent: 'center' }} disabled={!keranjang.length} onClick={() => setBacaNaskah(true)}>
+                📖 Baca naskah + kunci (praterbit)
+              </button>
               <button style={{ ...st.tombol(!putusan.boleh || mengirim), marginTop: 12 }} onClick={kirimUsulan} disabled={!putusan.boleh || mengirim}>
                 {mengirim ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                 {editId ? 'Simpan perbaikan & kirim ulang' : 'Kirim untuk persetujuan admin'}
