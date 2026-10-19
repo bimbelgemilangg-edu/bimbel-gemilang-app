@@ -1,10 +1,10 @@
 // src/pages/teacher/TeacherAttendance.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../firebase';
+import { keteranganAbsensi } from '../../utils/identitasAbsensi';
 import { 
-  collection, query, where, getDocs, doc, getDoc, addDoc, 
-  onSnapshot, updateDoc, serverTimestamp, setDoc
+  collection, query, where, getDocs, doc, getDoc,
+  onSnapshot, serverTimestamp, setDoc
 } from "firebase/firestore";
 import { 
   Calendar, Clock, MapPin, Users, BookOpen, 
@@ -13,13 +13,20 @@ import {
 } from 'lucide-react';
 
 const TeacherAttendance = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   // Data guru
-  const [guru, setGuru] = useState(null);
-  const [loading, setLoading] = useState(false);
+  // 19 Okt: lazy initializer mengganti useEffect+setGuru (aturan
+  // react-hooks/set-state-in-effect) - perilaku sama, render sekali.
+  const [guru] = useState(() => {
+    try {
+      const stored = localStorage.getItem('teacherData');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      console.error('Error parsing teacher data:', e);
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(true);
   const [schedules, setSchedules] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendanceLogs, setAttendanceLogs] = useState({});
@@ -30,84 +37,6 @@ const TeacherAttendance = () => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [attendanceList, setAttendanceList] = useState([]);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Ambil data guru dari localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('teacherData');
-    if (stored) {
-      try {
-        const data = JSON.parse(stored);
-        setGuru(data);
-      } catch (e) {
-        console.error("Error parsing teacher data:", e);
-      }
-    }
-  }, []);
-
-  // Fetch jadwal hari ini
-  useEffect(() => {
-    if (!guru?.guruId && !guru?.id) return;
-
-    const dateStr = getDateStr(selectedDate);
-    setLoading(true);
-
-    const teacherId = guru.guruId || guru.id;
-
-    // 🔥 FIX BUG: sebelumnya query utama di sini nyari field "guruId" di
-    // dokumen jadwal_bimbel -- padahal SchedulePage.jsx (tempat jadwal
-    // dibuat) TIDAK PERNAH menulis field bernama "guruId" ke jadwal_bimbel,
-    // yang ditulis adalah field "teacherId". Karena field yang dicari itu
-    // memang tidak pernah ada, query ini SELALU 0 hasil, dan kode selalu
-    // "terpaksa" lewat jalur fallback (cari pakai nama guru) tanpa pernah
-    // benar-benar lewat jalur utamanya. Sekarang dibetulkan pakai nama
-    // field yang sebenarnya.
-    let q = query(
-      collection(db, "jadwal_bimbel"),
-      where("teacherId", "==", teacherId),
-      where("dateStr", "==", dateStr)
-    );
-
-    const unsubscribe = onSnapshot(q, (snap) => {
-      let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // FALLBACK: Jika tidak ada, coba dengan teacherName
-      if (data.length === 0 && guru.nama) {
-        const qFallback = query(
-          collection(db, "jadwal_bimbel"),
-          where("teacherName", "==", guru.nama),
-          where("dateStr", "==", dateStr)
-        );
-        
-        unsubscribe();
-        
-        const unsubFallback = onSnapshot(qFallback, (snap2) => {
-          const fallbackData = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
-          setSchedules(fallbackData);
-          fallbackData.forEach(s => loadAttendance(s.id, dateStr));
-          setLoading(false);
-        });
-        
-        return () => unsubFallback();
-      }
-      
-      setSchedules(data);
-      data.forEach(s => loadAttendance(s.id, dateStr));
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching schedules:", error);
-      setLoading(false);
-    });
-
-    fetchDailyCode(dateStr);
-
-    return () => unsubscribe();
-  }, [guru, selectedDate]);
 
   const fetchDailyCode = async (dateStr) => {
     try {
@@ -159,6 +88,68 @@ const TeacherAttendance = () => {
     return `${year}-${month}-${day}`;
   };
 
+
+
+  // Fetch jadwal hari ini
+  useEffect(() => {
+    if (!guru?.guruId && !guru?.id) return;
+
+    const dateStr = getDateStr(selectedDate);
+
+    const teacherId = guru.guruId || guru.id;
+
+    // 🔥 FIX BUG: sebelumnya query utama di sini nyari field "guruId" di
+    // dokumen jadwal_bimbel -- padahal SchedulePage.jsx (tempat jadwal
+    // dibuat) TIDAK PERNAH menulis field bernama "guruId" ke jadwal_bimbel,
+    // yang ditulis adalah field "teacherId". Karena field yang dicari itu
+    // memang tidak pernah ada, query ini SELALU 0 hasil, dan kode selalu
+    // "terpaksa" lewat jalur fallback (cari pakai nama guru) tanpa pernah
+    // benar-benar lewat jalur utamanya. Sekarang dibetulkan pakai nama
+    // field yang sebenarnya.
+    let q = query(
+      collection(db, "jadwal_bimbel"),
+      where("teacherId", "==", teacherId),
+      where("dateStr", "==", dateStr)
+    );
+
+    const unsubscribe = onSnapshot(q, (snap) => {
+      let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // FALLBACK: Jika tidak ada, coba dengan teacherName
+      if (data.length === 0 && guru.nama) {
+        const qFallback = query(
+          collection(db, "jadwal_bimbel"),
+          where("teacherName", "==", guru.nama),
+          where("dateStr", "==", dateStr)
+        );
+        
+        unsubscribe();
+        
+        const unsubFallback = onSnapshot(qFallback, (snap2) => {
+          const fallbackData = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
+          setSchedules(fallbackData);
+          fallbackData.forEach(s => loadAttendance(s.id, dateStr));
+          setLoading(false);
+        });
+        
+        return () => unsubFallback();
+      }
+      
+      setSchedules(data);
+      data.forEach(s => loadAttendance(s.id, dateStr));
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching schedules:", error);
+      setLoading(false);
+    });
+
+    // 19 Okt: microtask agar tidak setState sinkron di badan effect
+    // (aturan react-hooks/set-state-in-effect); perilaku tetap sama.
+    queueMicrotask(() => fetchDailyCode(dateStr));
+
+    return () => unsubscribe();
+  }, [guru, selectedDate]);
+
   const handleOpenAttendance = (schedule) => {
     setSelectedSchedule(schedule);
     const students = schedule.students || [];
@@ -198,6 +189,12 @@ const TeacherAttendance = () => {
     setAttendanceList(updated);
   };
 
+  const handleUpdateNote = (studentId, note) => {
+    setAttendanceList(attendanceList.map((s) => (
+      (s.studentId === studentId || s.id === studentId) ? { ...s, note } : s
+    )));
+  };
+
   // 🔥 FIX BUG BESAR: sebelumnya nulis ke field attendance_list di dalam
   // jadwal_bimbel (terpisah dari sistem yang beneran dipakai). Sekarang
   // nulis ke collection "attendance" yang sama, pakai skema ID dokumen &
@@ -228,7 +225,7 @@ const TeacherAttendance = () => {
           tanggal: dateStr,
           timestamp: serverTimestamp(),
           status: s.status,
-          keterangan: s.note || 'Input manual guru (Absensi Siswa)',
+          keterangan: keteranganAbsensi(s.note, s.status),
           mapel: selectedSchedule.title || selectedSchedule.mapelName || 'Umum',
           scheduleId: selectedSchedule.id || '',
           planet: selectedSchedule.planet || 'Ruang Umum',
@@ -250,6 +247,7 @@ const TeacherAttendance = () => {
   const handleDateChange = (days) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + days);
+    setLoading(true);
     setSelectedDate(newDate);
   };
 
@@ -263,15 +261,6 @@ const TeacherAttendance = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'Hadir': return <CheckCircle size={14} color="#22c55e" />;
-      case 'Sakit': return <AlertCircle size={14} color="#f59e0b" />;
-      case 'Izin': return <FileText size={14} color="#3b82f6" />;
-      case 'Alpha': return <XCircle size={14} color="#ef4444" />;
-      default: return <Clock size={14} color="#94a3b8" />;
-    }
-  };
 
   // Tampilan Loading
   if (loading) {
@@ -461,6 +450,13 @@ const TeacherAttendance = () => {
                           </button>
                         ))}
                       </div>
+                      <input
+                        type="text"
+                        placeholder="Penanda / keterangan siswa (opsional): mis. demam, izin lomba, terlambat 15 menit"
+                        value={student.note || ''}
+                        onChange={(e) => handleUpdateNote(student.studentId || student.id, e.target.value)}
+                        style={{ width: '100%', marginTop: 6, padding: '7px 9px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}
+                      />
                     </div>
                   ))}
                 </div>

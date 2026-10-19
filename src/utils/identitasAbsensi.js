@@ -80,3 +80,18 @@ export function gabungkanDokUnik(kumpulanSnapDocs = []) {
 }
 
 export default { daftarQueryAbsensi, gabungkanDokUnik };
+
+/**
+ * Keterangan absensi yang tersimpan (19 Okt 2026, permintaan owner:
+ * guru memberi penanda/keterangan siswa saat mengabsen). Bila guru
+ * menulis catatan pakailah itu; bila kosong jatuh ke bawaan yang jujur
+ * per status supaya kolom keterangan di admin/CSV tidak kosong polos.
+ * @param {string} note catatan guru (opsional)
+ * @param {string} status Hadir|Sakit|Izin|Alpha
+ */
+export function keteranganAbsensi(note = '', status = '') {
+  const t = String(note || '').trim();
+  if (t) return t;
+  if (status === 'Hadir') return 'Input manual guru (Absensi Siswa)';
+  return String(status || '');
+}
