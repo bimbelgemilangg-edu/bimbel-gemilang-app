@@ -45,6 +45,7 @@ import { bacaIdentitasGuru } from '../../utils/identitasGuru';
 import { identitasDari, teksSoalDari, potongTeksSoalAman } from '../../utils/fieldButirSoal';
 import { MathText } from '../../components/MathText';
 import DialogCetakNaskah from '../../components/DialogCetakNaskah';
+import { buatKodePaket } from '../../utils/kodePaket';
 import { benderaButir, masukKeranjangBanyak, keluarKeranjang, pindahUrutan } from '../../utils/keranjangSoalGuru';
 import {
   GRANULARITAS, MIN_BUTIR, MAKS_BUTIR,
@@ -631,7 +632,14 @@ export default function RakitTryOutGuruPage() {
           {/* ================= KOLOM KANAN: MERAKIT ================= */}
           <div style={{ width: isMobile ? '100%' : 400, flexShrink: 0, position: isMobile ? 'static' : 'sticky', top: 16 }}>
             <div style={st.kartu}>
-              <div style={st.judulKartu}>3 · Paket saya ({keranjang.length} butir)</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                <div style={st.judulKartu}>3 · Paket saya ({keranjang.length} butir)</div>
+                {/* 19 Okt: pintu baca naskah DIPINDAH ke kepala keranjang
+                    supaya tentor menemukannya tanpa menggulir formulir. */}
+                <button style={{ ...st.tombolKecil, background: '#0f767e', color: '#fff', borderColor: '#0f767e' }} disabled={!keranjang.length} onClick={() => setBacaNaskah(true)}>
+                  📖 Naskah kertas + kunci (praterbit)
+                </button>
+              </div>
               {mapelPaket && (
                 <div style={{ fontSize: 11.5, color: '#334155', marginBottom: 8 }}>
                   Mapel paket: <b>{mapelPaket}</b>
@@ -768,7 +776,17 @@ export default function RakitTryOutGuruPage() {
 
               {bacaNaskah && (
                 <DialogCetakNaskah
-                  input={{ judul: judul || 'DRAF PAKET (praterbit — belum dikirim)', daftarSoal: keranjang, modeTimer, durasiTotalMenit: durasi }}
+                  input={{
+          judul: judul || 'DRAF PAKET (praterbit — belum dikirim)',
+          daftarSoal: keranjang,
+          modeTimer,
+          durasiTotalMenit: durasi,
+          mapel: mapelPaket,
+          targetKelas: tKelas !== 'Semua' ? tKelas : '',
+          jenjang: tJenjang,
+          kodePaket: buatKodePaket({ jenjang: tJenjang, jenisUjian: 'Reguler' }),
+          praterbit: true,
+        }}
                   onClose={() => setBacaNaskah(false)}
                 />
               )}

@@ -76,8 +76,8 @@ export default function DialogCetakNaskah({ input, onClose }) {
   const daftarSoal = Array.isArray(input?.daftarSoal) ? input.daftarSoal : [];
   const meta = {
     judul: input?.judul || 'Naskah Soal',
-    mapel: input?.targetKategori && input.targetKategori !== 'Semua' ? input.targetKategori : '',
-    targetKelas: input?.targetKelas && input.targetKelas !== 'Semua' ? input.targetKelas : '',
+    mapel: input?.mapel || (input?.targetKategori && input.targetKategori !== 'Semua' ? input.targetKategori : ''),
+    targetKelas: [input?.jenjang, input?.targetKelas && input.targetKelas !== 'Semua' ? input.targetKelas : ''].filter(Boolean).join(' · '),
     bab: input?.bab || '',
   };
 
@@ -183,6 +183,16 @@ export default function DialogCetakNaskah({ input, onClose }) {
           </div>
           <button onClick={onClose} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#334155' }}>Tutup</button>
         </div>
+
+        {/* 📋 19 Okt: penanda praterbit — kode kop adalah contoh format
+            kode terbit; naskah untuk ditelaah tentor sebelum dikirim. */}
+        {input?.praterbit && (
+          <div style={{ fontSize: 11, color: '#92400e', background: '#fffbeb', borderBottom: '1px solid #fde68a', padding: '6px 16px', lineHeight: 1.5 }}>
+            📋 <b>PRATERBIT</b>: kode di kop adalah CONTOH format kode terbit untuk jenjang/mapel ini
+            (kode final dicetak saat admin menyetujui paket). Naskah ini untuk dibaca & ditelaah
+            tentor sebelum dikirim — belum terlihat siswa.
+          </div>
+        )}
 
         {daftarSoal.length === 0 ? (
           <div style={{ padding: 24, fontSize: 13, color: '#64748b' }}>Paket ini tidak punya soal untuk dicetak.</div>
