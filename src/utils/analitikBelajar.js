@@ -132,3 +132,18 @@ export function bangunAnalitikBelajar(baris = []) {
 }
 
 export default { bangunAnalitikBelajar, detikPerSoalSesi, arahProgres, AMBANG_DELTA, IDEAL_DETIK_PER_SOAL };
+
+/**
+ * Identitas tampilan siswa untuk analitik & laporan ortu (19 Okt):
+ * dokumen students & sesi memakai alias berbeda-beda (nama/namaLengkap/
+ * name/studentName; kelas/kelasSekolah) sehingga tabel dulu jatuh ke ID.
+ * Murni & teruji.
+ */
+export function identitasTampilSiswa(sv = {}, sesi = {}) {
+  const nama = sv.nama || sv.namaLengkap || sv.name || sesi.studentName || sesi.namaSiswa || sesi.nama || '';
+  return {
+    nama: nama || String(sesi.studentId || '(tanpa nama)'),
+    kelas: sv.kelas || sv.kelasSekolah || sesi.kelas || sesi.kelasSekolah || '',
+    jenjang: sv.jenjang || sv.jenjangSekolah || sesi.jenjang || sesi.targetJenjang || '',
+  };
+}
