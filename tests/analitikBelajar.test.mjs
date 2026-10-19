@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   bangunAnalitikBelajar, detikPerSoalSesi, arahProgres, AMBANG_DELTA, identitasTampilSiswa,
+  analitikPerSubtes, deskripsiSubtes, deskripsiSiswaLengkap, kategoriAkurasi,
 } from '../src/utils/analitikBelajar.js';
 
 const H = 3600_000;
@@ -78,4 +79,24 @@ test('identitasTampilSiswa: alias nama/kelas/jenjang (regresi tabel ber-ID 19 Ok
   assert.equal(identitasTampilSiswa({}, { studentName: 'Budi', kelas: '9B' }).nama, 'Budi');
   assert.equal(identitasTampilSiswa({}, { studentId: 'STD-2' }).nama, 'STD-2');
   assert.equal(identitasTampilSiswa({ jenjang: 'SMP/MTs' }, {}).jenjang, 'SMP/MTs');
+});
+
+test('analitikPerSubtes & deskripsi: agregat, tren, kategori, kalimat kuantitatif', () => {
+  const baris = [
+    { waktuSelesaiMs: 1000, subtes: [{ nama: 'Matematika', skorPersen: 60 }, { nama: 'Bahasa', skorPersen: 80 }, { nama: 'Logika', skorPersen: 30 }] },
+    { waktuSelesaiMs: 2000, subtes: [{ nama: 'Matematika', skorPersen: 75 }, { nama: 'Bahasa', skorPersen: 70 }, { nama: 'Logika', skorPersen: 35 }] },
+  ];
+  const per = analitikPerSubtes(baris);
+  const mat = per.find((x) => x.nama === 'Matematika');
+  assert.equal(mat.jumlahSesi, 2);
+  assert.equal(mat.skorRata, 68);
+  assert.equal(mat.delta, 15);
+  assert.equal(mat.arah, 'naik');
+  assert.equal(mat.kategori, 'berkembang');
+  assert.match(deskripsiSubtes(mat), /Matematika: 2 sesi terukur, akurasi rata-rata 68% \(kategori berkembang\), tren naik 15 poin/);
+  const desc = deskripsiSiswaLengkap({ jumlahSesi: 2, skorRata: 71, delta: 5, arah: 'naik', detikPerSoal: 60, tempoWajar: true }, per);
+  assert.ok(desc.join(' ').includes('prioritas pendampingan pada Logika'), 'subtes <45% masuk prioritas');
+  assert.ok(desc.join(' ').includes('keunggulan terpeta pada Bahasa'), 'subtes >=70% disebut kekuatan');
+  assert.equal(kategoriAkurasi(75), 'kuat');
+  assert.equal(kategoriAkurasi(null), 'tanpa data');
 });

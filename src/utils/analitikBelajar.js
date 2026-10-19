@@ -147,3 +147,80 @@ export function identitasTampilSiswa(sv = {}, sesi = {}) {
     jenjang: sv.jenjang || sv.jenjangSekolah || sesi.jenjang || sesi.targetJenjang || '',
   };
 }
+
+// ------------------------------------------------------------
+// ANALISIS PER SUBTES/MAPEL + DESKRIPSI KUANTITATIF (19 Okt 2026,
+// permintaan owner: sistem analisis dibagi per mapel/subtes dengan
+// diagram naik-turun & laba-laba + deskripsi rinci, objektif,
+// kuantitatif, analitik — dipakai modal admin & PDF orang tua).
+// ------------------------------------------------------------
+
+/** Kategori akurasi subtes: ambang konsisten dengan laporan ortu. */
+export function kategoriAkurasi(skor) {
+  if (skor == null || skor === '') return 'tanpa data';
+  const n = Number(skor);
+  if (!Number.isFinite(n)) return 'tanpa data';
+  if (n >= 70) return 'kuat';
+  if (n >= 45) return 'berkembang';
+  return 'perlu pendampingan';
+}
+
+/**
+ * Agregat per subtes/mapel untuk SATU siswa: jumlah sesi, rata-rata,
+ * skor pertama & terakhir, delta, arah, kategori.
+ * @param {Array} barisSesi baris sesi milik satu siswa (format bangunAnalitikBelajar)
+ */
+export function analitikPerSubtes(barisSesi = []) {
+  const per = new Map();
+  for (const b of Array.isArray(barisSesi) ? barisSesi : []) {
+    if (b?.waktuSelesaiMs == null) continue;
+    for (const sb of Array.isArray(b?.subtes) ? b.subtes : []) {
+      const nama = String(sb?.nama || '').trim();
+      if (!nama || !Number.isFinite(Number(sb?.skorPersen))) continue;
+      if (!per.has(nama)) per.set(nama, []);
+      per.get(nama).push({ ms: Number(b.waktuSelesaiMs), skor: Math.round(Number(sb.skorPersen)) });
+    }
+  }
+  return [...per.entries()].map(([nama, list]) => {
+    list.sort((a, b) => a.ms - b.ms);
+    const skor = list.map((x) => x.skor);
+    const rata = Math.round(skor.reduce((a, b) => a + b, 0) / skor.length);
+    const delta = list.length > 1 ? skor[skor.length - 1] - skor[0] : null;
+    return {
+      nama,
+      jumlahSesi: list.length,
+      skorRata: rata,
+      skorPertama: skor[0],
+      skorTerakhir: skor[skor.length - 1],
+      delta,
+      arah: delta == null ? 'tetap' : delta >= 5 ? 'naik' : delta <= -5 ? 'turun' : 'tetap',
+      kategori: kategoriAkurasi(rata),
+      seri: list,
+    };
+  }).sort((a, b) => b.skorRata - a.skorRata || a.nama.localeCompare(b.nama, 'id'));
+}
+
+/** Deskripsi satu subtes: kalimat kuantitatif & objektif. */
+export function deskripsiSubtes(x = {}) {
+  const tren = x.delta == null
+    ? 'baru satu sesi sehingga tren belum terukur'
+    : `tren ${x.arah} ${Math.abs(x.delta)} poin dari sesi pertama (${x.skorPertama}%) ke sesi terakhir (${x.skorTerakhir}%)`;
+  return `${x.nama}: ${x.jumlahSesi} sesi terukur, akurasi rata-rata ${x.skorRata}% (kategori ${x.kategori}), ${tren}.`;
+}
+
+/**
+ * Deskripsi analisis lengkap satu siswa (paragraf objektif-kuantitatif)
+ * untuk PDF orang tua: cakupan, tempo, urutan subtes, penutup analitik.
+ */
+export function deskripsiSiswaLengkap(a = {}, perSubtes = []) {
+  const par = [];
+  par.push(`Cakupan pengukuran: ${a.jumlahSesi || 0} sesi try out selesai dengan ${perSubtes.length} subtes terukur. Skor rata-rata keseluruhan ${a.skorRata ?? 0}%${a.delta != null ? `; perubahan sesi terakhir ${a.delta >= 0 ? '+' : ''}${a.delta} poin (${a.arah})` : ''}.`);
+  if (a.detikPerSoal != null) {
+    par.push(`Tempo kerja: rata-rata ${a.detikPerSoal} detik per soal (${a.tempoWajar ? 'dalam rentang ideal <= 90 detik' : 'di atas rentang ideal'}), dihitung dari selisih waktu mulai-selesai sesi yang sah.`);
+  }
+  for (const x of perSubtes) par.push(deskripsiSubtes(x));
+  const lemah = perSubtes.filter((x) => x.kategori === 'perlu pendampingan').map((x) => x.nama);
+  const kuat = perSubtes.filter((x) => x.kategori === 'kuat').map((x) => x.nama);
+  par.push(`Sintesis: ${kuat.length ? `keunggulan terpeta pada ${kuat.join(', ')}` : 'belum ada subtes pada kategori kuat'}; ${lemah.length ? `prioritas pendampingan pada ${lemah.join(', ')}` : 'tidak ada subtes pada kategori perlu pendampingan'}. Rencana tindak lanjut disusun mengikuti urutan prioritas tersebut dan akan ditinjau ulang pada siklus pekanan berikutnya.`);
+  return par;
+}

@@ -11,6 +11,7 @@
 // ============================================================
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { analitikPerSubtes, deskripsiSiswaLengkap } from './analitikBelajar.js';
 
 /** Data bagan skor per sesi (urut waktu) — murni & teruji. */
 export function dataBaganSkor(barisSesi = []) {
@@ -126,6 +127,38 @@ export function unduhLaporanOrangTuaPdf({ siswa = {}, barisSesi = [], identitas 
     headStyles: { fillColor: [91, 46, 204] },
     margin: { left: M, right: M },
   });
+
+  // 🔥 19 Okt (permintaan owner): ANALISIS PER BAGIAN — tabel rinci per
+  // subtes + deskripsi objektif-kuantitatif, sebelum narasi hangat.
+  const perSubtes = analitikPerSubtes(barisSesi);
+  if (perSubtes.length) {
+    autoTable(pdf, {
+      startY: pdf.lastAutoTable ? pdf.lastAutoTable.finalY + 8 : 150,
+      head: [['Subtes / mapel', 'Sesi', 'Akurasi pertama', 'Akurasi terakhir', 'Tren', 'Kategori']],
+      body: perSubtes.map((x) => [
+        x.nama, String(x.jumlahSesi), `${x.skorPertama}%`, `${x.skorTerakhir}%`,
+        x.delta == null ? '-' : `${x.delta >= 0 ? '+' : ''}${x.delta} (${x.arah})`, x.kategori,
+      ]),
+      styles: { fontSize: 8.5 },
+      headStyles: { fillColor: [15, 118, 126] },
+      margin: { left: M, right: M },
+    });
+    let y2 = pdf.lastAutoTable ? pdf.lastAutoTable.finalY + 8 : 200;
+    if (y2 > 250) { pdf.addPage(); y2 = 20; }
+    pdf.setFontSize(11); pdf.setFont('helvetica', 'bold');
+    pdf.text('Deskripsi analisis per bagian (objektif & kuantitatif)', M, y2);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9);
+    y2 += 5;
+    for (const par of deskripsiSiswaLengkap(siswa, perSubtes)) {
+      const lines = pdf.splitTextToSize(par, W);
+      for (const ln of lines) {
+        if (y2 > 280) { pdf.addPage(); y2 = 20; }
+        pdf.text(ln, M, y2);
+        y2 += 4.2;
+      }
+      y2 += 1.6;
+    }
+  }
 
   // narasi + saran
   let y = pdf.lastAutoTable ? pdf.lastAutoTable.finalY + 8 : 150;
