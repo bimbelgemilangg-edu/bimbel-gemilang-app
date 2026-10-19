@@ -16,9 +16,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { ArrowLeft, LineChart, Users, Timer, TrendingUp, Target } from 'lucide-react';
+import { ArrowLeft, LineChart as LineChartIcon, Users, Timer, TrendingUp, Target } from 'lucide-react';
 import { bangunAnalitikBelajar, IDEAL_DETIK_PER_SOAL , identitasTampilSiswa } from '../../../utils/analitikBelajar.js';
-import { unduhLaporanOrangTuaPdf } from '../../../utils/laporanOrangTuaPdf';
+import { unduhLaporanOrangTuaPdf, dataBaganSkor } from '../../../utils/laporanOrangTuaPdf';
+import { analitikPerSubtes, deskripsiSiswaLengkap } from '../../../utils/analitikBelajar';
+import {
+  LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
+} from 'recharts';
 import { jenisUjianUntukAnalitik } from '../../../utils/papanJelajah.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
 
@@ -50,7 +55,16 @@ export default function AnalitikBelajarPage() {
         const paketById = new Map();
         snapPaket.docs.forEach((d) => paketById.set(d.id, { id: d.id, ...d.data() }));
         const siswaById = new Map();
-        snapSiswa.docs.forEach((d) => siswaById.set(d.id, { id: d.id, ...d.data() }));
+        // 🔥 FIX BUG 19 Okt: join dulu hanya memakai ID dokumen Firestore,
+        // padahal sesi menyimpan KODE siswa (STD-...) yang hidup sebagai
+        // FIELD studentId di dokumen students -> join gagal untuk SEMUA
+        // siswa dan tabel jatuh ke ID. Kini map dikunci multi-kunci.
+        snapSiswa.docs.forEach((d) => {
+          const data = { id: d.id, ...d.data() };
+          siswaById.set(d.id, data);
+          if (data.studentId) siswaById.set(String(data.studentId), data);
+          if (data.kodeSiswa) siswaById.set(String(data.kodeSiswa), data);
+        });
         const hasil = [];
         snapSesi.docs.forEach((d) => {
           const s = { id: d.id, ...d.data() };
@@ -93,6 +107,7 @@ export default function AnalitikBelajarPage() {
   const [fJenjang, setFJenjang] = useState('');
   const [fJenis, setFJenis] = useState('');
   const [fNama, setFNama] = useState('');
+  const [analisisSiswa, setAnalisisSiswa] = useState(null); // 🔍 modal 19 Okt
   const barisTerpilah = useMemo(() => baris.filter((b) => {
     if (fJenjang && String(b.jenjang || '') !== fJenjang) return false;
     if (fJenis && String(b.jenisUjian || '') !== fJenis) return false;
@@ -102,6 +117,11 @@ export default function AnalitikBelajarPage() {
   const opsiJenjang = useMemo(() => [...new Set(baris.map((b) => b.jenjang).filter(Boolean))].sort(), [baris]);
   const opsiJenis = useMemo(() => [...new Set(baris.map((b) => b.jenisUjian).filter(Boolean))].sort(), [baris]);
   const analitik = useMemo(() => bangunAnalitikBelajar(barisTerpilah), [barisTerpilah]);
+
+  const barisSiswaModal = analisisSiswa ? baris.filter((b) => String(b.studentId) === String(analisisSiswa.studentId)) : [];
+  const perSubtesModal = analitikPerSubtes(barisSiswaModal);
+  const trenModal = dataBaganSkor(barisSiswaModal);
+  const deskModal = analisisSiswa ? deskripsiSiswaLengkap(analisisSiswa, perSubtesModal) : [];
   const { kohort } = analitik;
   const trenTerakhir = kohort.trenPekan.length ? kohort.trenPekan[kohort.trenPekan.length - 1] : null;
 
@@ -113,7 +133,7 @@ export default function AnalitikBelajarPage() {
         <ArrowLeft size={16} /> Kembali
       </button>
       <h1 style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 21, fontWeight: 800, color: '#1e293b', margin: '0 0 4px' }}>
-        <LineChart size={22} color="#7c3aed" /> Analitik Belajar TKA/UTBK
+        <LineChartIcon size={22} color="#7c3aed" /> Analitik Belajar TKA/UTBK
       </h1>
       <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 16px', lineHeight: 1.6 }}>
         Kecepatan mengerjakan, kekuatan & kelemahan per subtes, dan arah progres nilai tiap siswa —
@@ -219,6 +239,13 @@ export default function AnalitikBelajarPage() {
                     >
                       ⬇ PDF ortu
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setAnalisisSiswa(s)}
+                      style={{ border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', borderRadius: 8, padding: '5px 9px', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap', marginLeft: 6 }}
+                    >
+                      🔍 Analisis
+                    </button>
                   </td>
                 </tr>
               );
@@ -230,6 +257,51 @@ export default function AnalitikBelajarPage() {
         Progres = selisih skor dua sesi terakhir siswa (±{`≥5`} poin = naik/turun). Tempo dihitung dari waktu mulai→selesai
         sesi yang sah; sesi susulan offline jujur tidak punya tempo. Kekuatan/kelemahan = rata-rata skor per subtes lintas sesi.
       </p>
-    </div>
+    
+      {analisisSiswa && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 1400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: '#fff', borderRadius: 14, width: 'min(980px, 96vw)', maxHeight: '92vh', overflow: 'auto', padding: 18, boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#1e293b' }}>🔍 Analisis per subtes — {analisisSiswa.nama}</div>
+                <div style={{ fontSize: 11.5, color: '#64748b' }}>kelas {analisisSiswa.kelas || '-'} · {analisisSiswa.jumlahSesi} sesi · diagram naik-turun & laba-laba + deskripsi kuantitatif</div>
+              </div>
+              <button type="button" onClick={() => setAnalisisSiswa(null)} style={{ border: 'none', background: '#f1f5f9', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Tutup</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 12, marginTop: 12 }}>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 10 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: '#475569', marginBottom: 6 }}>DIAGRAM NAIK-TURUN (skor per sesi)</div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={trenModal}>
+                    <XAxis dataKey="label" fontSize={10} /><YAxis domain={[0, 100]} fontSize={10} />
+                    <Tooltip /><Legend />
+                    <Line type="monotone" dataKey="skor" name="skor %" stroke="#5B2ECC" strokeWidth={2.5} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, padding: 10 }}>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: '#475569', marginBottom: 6 }}>DIAGRAM LABA-LABA (akurasi per subtes)</div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <RadarChart data={perSubtesModal.map((x) => ({ subtes: x.nama, skor: x.skorRata }))} outerRadius="70%">
+                    <PolarGrid /><PolarAngleAxis dataKey="subtes" fontSize={9} /><PolarRadiusAxis domain={[0, 100]} fontSize={8} />
+                    <Radar name="akurasi %" dataKey="skor" stroke="#0f767e" fill="#0f767e" fillOpacity={0.35} />
+                    <Tooltip />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: '#475569', marginBottom: 6 }}>DESKRIPSI ANALISIS (objektif & kuantitatif)</div>
+              {deskModal.map((d, di) => <p key={di} style={{ fontSize: 12, color: '#334155', lineHeight: 1.65, margin: '0 0 6px' }}>{d}</p>)}
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <button type="button" onClick={() => unduhLaporanOrangTuaPdf({ siswa: analisisSiswa, barisSesi: barisSiswaModal, identitas: { namaBimbel: 'Bimbel Gemilang', penandatangan: '', jabatan: 'Kepala Operasional Bimbel Gemilang' } })} style={{ border: 'none', background: '#166534', color: '#fff', borderRadius: 10, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>
+                ⬇ Unduh PDF laporan ortu (lengkap per bagian)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+</div>
   );
 }
