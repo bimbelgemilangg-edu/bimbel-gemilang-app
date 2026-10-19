@@ -19,7 +19,7 @@
 // ============================================================
 
 import assert from 'node:assert/strict';
-import { daftarQueryAbsensi, gabungkanDokUnik } from '../src/utils/identitasAbsensi.js';
+import { daftarQueryAbsensi, gabungkanDokUnik , keteranganAbsensi} from '../src/utils/identitasAbsensi.js';
 
 let lulus = 0;
 let gagal = 0;
@@ -135,6 +135,17 @@ console.log(`\n${'='.repeat(60)}`);
 console.log(`  LULUS : ${lulus}`);
 console.log(`  GAGAL : ${gagal}`);
 console.log('='.repeat(60));
+
+// ============================================================
+bagian('KETERANGAN ABSENSI GURU (19 Okt: penanda saat mengabsen)');
+// ============================================================
+
+uji('keteranganAbsensi: catatan guru menang, kosong jatuh ke bawaan status', () => {
+  assert.equal(keteranganAbsensi('demam, diantar ibu', 'Sakit'), 'demam, diantar ibu');
+  assert.equal(keteranganAbsensi('   ', 'Izin'), 'Izin');
+  assert.equal(keteranganAbsensi('', 'Hadir'), 'Input manual guru (Absensi Siswa)');
+  assert.equal(keteranganAbsensi(null, 'Alpha'), 'Alpha');
+});
 
 if (gagal > 0) {
   console.log('\nRingkasan kegagalan:');
