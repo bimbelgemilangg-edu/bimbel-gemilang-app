@@ -18,6 +18,7 @@ import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { ArrowLeft, LineChart, Users, Timer, TrendingUp, Target } from 'lucide-react';
 import { bangunAnalitikBelajar, IDEAL_DETIK_PER_SOAL } from '../../../utils/analitikBelajar.js';
+import { unduhLaporanOrangTuaPdf } from '../../../utils/laporanOrangTuaPdf';
 import { jenisUjianUntukAnalitik } from '../../../utils/papanJelajah.js';
 import { hitungTotalSkor } from '../../../utils/skorSoalTryOut.js';
 
@@ -148,14 +149,14 @@ export default function AnalitikBelajarPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, minWidth: 820 }}>
           <thead>
             <tr style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
-              {['#', 'Siswa', 'Kelas', 'Sesi', 'Skor rata-rata', 'Progres', 'Tempo', 'Kekuatan', 'Kelemahan'].map((h, i) => (
+              {['#', 'Siswa', 'Kelas', 'Sesi', 'Skor rata-rata', 'Progres', 'Tempo', 'Kekuatan', 'Kelemahan', 'Laporan'].map((h, i) => (
                 <th key={h} style={{ padding: '9px 10px', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap', textAlign: i >= 3 ? 'center' : 'left' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {analitik.siswa.length === 0 ? (
-              <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 12.5 }}>Belum ada sesi TKA/UTBK selesai untuk dianalisis.</td></tr>
+              <tr><td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 12.5 }}>Belum ada sesi TKA/UTBK selesai untuk dianalisis.</td></tr>
             ) : analitik.siswa.map((s, i) => {
               const c = chipArah[s.arah] || chipArah.baru;
               return (
@@ -178,6 +179,20 @@ export default function AnalitikBelajarPage() {
                   </td>
                   <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                     {s.terlemah ? <span style={{ color: '#991b1b', fontWeight: 700 }}>{s.terlemah.nama} ({s.terlemah.skor}%)</span> : '—'}
+                  </td>
+                  <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                    {/* 19 Okt: unduh PDF laporan orang tua per anak (permintaan owner) */}
+                    <button
+                      type="button"
+                      onClick={() => unduhLaporanOrangTuaPdf({
+                        siswa: s,
+                        barisSesi: baris.filter((b) => String(b.studentId) === String(s.studentId)),
+                        identitas: { namaBimbel: 'Bimbel Gemilang', penandatangan: '', jabatan: 'Kepala Operasional Bimbel Gemilang' },
+                      })}
+                      style={{ border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#166534', borderRadius: 8, padding: '5px 9px', fontSize: 11, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      ⬇ PDF ortu
+                    </button>
                   </td>
                 </tr>
               );
