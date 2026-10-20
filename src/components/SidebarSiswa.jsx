@@ -75,6 +75,8 @@ const SidebarSiswa = ({ activeMenu, setActiveMenu, isOpen, setIsOpen }) => {
         { id: 'latihan-harian', label: 'Latihan Harian', icon: <Flame size={18} />, path: '/siswa/latihan-harian', color: '#dc2626' },
         { id: 'belajar', label: 'Materi Belajar', icon: <Library size={18} />, path: '/siswa/belajar', color: '#1E9BF0', badge: 'BARU' },
         { id: 'materi', label: 'E-Learning', icon: <BookOpen size={18} />, path: '/siswa/materi', color: '#10b981' },
+  // 📙 20 Okt: pintu eksplisit buku PDF di sidebar (desktop & drawer)
+  { id: 'bukupdf', label: 'Buku PDF Gemilang', icon: <BookOpen size={18} />, path: '/siswa/buku-pdf', color: '#f97316' },
         { id: 'jadwal', label: 'Jadwal', icon: <Calendar size={18} />, path: '/siswa/jadwal', color: '#ec4899' },
         // 🔥 Menu ini sebelumnya TIDAK PERNAH ADA sejak awal, padahal
         // halaman & rutenya (/siswa/absensi) sudah lengkap dan berfungsi.
