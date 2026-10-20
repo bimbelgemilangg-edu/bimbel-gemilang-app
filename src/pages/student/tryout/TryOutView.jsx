@@ -37,6 +37,7 @@ import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2  , FileText, Award,
 import { useTimerTryOut } from './useTimerTryOut';
 import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
+import { kodeSoalSiswa } from '../../../utils/kodeSoalSiswa';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
 import TeksSoalBergambar from '../../../components/TeksSoalBergambar';
@@ -1048,6 +1049,13 @@ export default function TryOutView() {
                 🙋 {tersalinTentor ? 'Tersalin!' : `Salin ${daftar.length} nomor salah untuk dibahas tentor`}
               </button>
               <span style={{ fontSize: 11, color: '#cbd5e1' }}>tempel di chat tentor / grup kelas supaya pembahasan tepat sasaran</span>
+              <button
+                type="button"
+                onClick={() => navigate('/siswa/kode-soal')}
+                style={{ padding: '9px 14px', borderRadius: 10, border: '1px solid #fdba74', background: '#ffedd5', color: '#9a3412', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
+              >
+                🔖 Arsip kode soalku
+              </button>
             </div>
           );
         })()}
@@ -1064,6 +1072,9 @@ export default function TryOutView() {
                   <RenderMath text={s.bacaan.teks} />
                 </div>
               )}
+              <div style={{ ...st.kodeChip, color: '#9a3412', background: '#ffedd5', border: '1px solid #fdba74' }}>
+                🔖 {kodeSoalSiswa({ mapel: paket.mapel || paket.targetKategori || '', paket, nomor: i + 1 })}
+              </div>
               {pisahKodeSumber(teksSoalDari(s)).kode && (
                 <div style={st.kodeChip}>{pisahKodeSumber(teksSoalDari(s)).kode}</div>
               )}
@@ -1299,8 +1310,15 @@ export default function TryOutView() {
           return kodeSrc.kode ? <div style={st.kodeChip}>{kodeSrc.kode}</div> : null;
         })()}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
-          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>
-            Soal {indexSoalAktif + 1}/{daftarSoalAktif.length}
+          <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>
+              Soal {indexSoalAktif + 1}/{daftarSoalAktif.length}
+            </span>
+            {/* 🔖 20 Okt: kode pendek untuk ditulis siswa di buku tulis —
+                nomor = posisi soal di PAKET (stabil walau tampil diacak) */}
+            <span style={{ fontSize: 10.5, color: '#9a3412', background: '#ffedd5', border: '1px solid #fdba74', borderRadius: 999, padding: '3px 10px', fontWeight: 800, letterSpacing: 0.3 }}>
+              🔖 {kodeSoalSiswa({ mapel: paket.mapel || paket.targetKategori || '', paket, nomor: (paket.daftarSoal || []).findIndex((q) => q.id === soalAktif.id) + 1 })}
+            </span>
           </span>
           <span style={{ fontSize: 10.5, color: '#3949AB', background: '#eef0fb', borderRadius: 999, padding: '3px 10px', fontWeight: 800 }}>
             {soalAktif.materi || (paket.modeTimer === 'per-subtes' ? paket.subtes[subtesAktifIndex]?.nama : '')}
