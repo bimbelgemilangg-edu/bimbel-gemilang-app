@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, User, BookOpen, Edit,
+  LayoutDashboard, User, BookOpen, BookMarked, Edit,
   History, Calendar, ClipboardCheck, LogOut, Menu, X,
   Database, GraduationCap, Projector, Presentation, Printer,
   Library, Layers,
@@ -30,6 +30,8 @@ const SidebarGuru = () => {
 
   const menu = [
     { name: 'Perpustakaan', path: '/guru/perpustakaan', icon: <Library size={20} /> },
+    // 📙 20 Okt: pintu guru ke buku PDF (baca penuh + kunci materi siswa)
+    { name: 'Buku PDF Gemilang', path: '/guru/buku-pdf', icon: <BookMarked size={20} /> },
     { name: 'Dashboard', path: '/guru/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Jadwal Mengajar', path: '/guru/schedule', icon: <Calendar size={20} /> },
     { name: 'E-Learning', path: '/guru/modul', icon: <BookOpen size={20} /> },
