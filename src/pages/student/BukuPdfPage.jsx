@@ -8,13 +8,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../../firebase';
 import { BookOpen, ArrowLeft } from 'lucide-react';
-import { muatKatalogBukuPdf } from '../../services/bukuPdfService';
+import { muatKatalogBukuPdf, perbaruiKatalogBukuPdf } from '../../services/bukuPdfService';
 import FlipbookBukuPdf from '../../components/buku/FlipbookBukuPdf';
 
 export default function BukuPdfPage({ mode = 'siswa' }) {
   const navigate = useNavigate();
   const { bukuId } = useParams();
   const [katalog, setKatalog] = useState([]);
+  const [batasInput, setBatasInput] = useState('');
   const [memuat, setMemuat] = useState(true);
   useEffect(() => {
     (async () => {
@@ -28,6 +29,15 @@ export default function BukuPdfPage({ mode = 'siswa' }) {
     })();
   }, []);
   const buku = bukuId ? katalog.find((b) => b.id === bukuId) || null : null;
+
+  const simpanBatas = async () => {
+    if (!buku) return;
+    const n = Math.max(1, Math.min(Number(buku.totalHalaman) || 9999, Number(batasInput) || 0));
+    if (!Number(batasInput)) return;
+    await perbaruiKatalogBukuPdf(db, buku.id, { batasHalamanSiswa: n });
+    setKatalog((k) => k.map((b) => (b.id === buku.id ? { ...b, batasHalamanSiswa: n } : b)));
+    setBatasInput('');
+  };
 
   if (bukuId && !memuat && !buku) {
     return <div style={{ padding: 24, fontSize: 13, color: '#64748b' }}>Buku PDF tidak ditemukan di katalog (mungkin disembunyikan admin).</div>;
@@ -45,7 +55,34 @@ export default function BukuPdfPage({ mode = 'siswa' }) {
         <p style={{ fontSize: 11.5, color: '#64748b', margin: '0 0 12px' }}>
           {buku.mapel} · {buku.jenjang} Kelas {buku.kelas} · Semester {buku.semester} · {buku.kurikulum} · {buku.totalHalaman} halaman
         </p>
-        <FlipbookBukuPdf buku={buku} mode={mode} />
+        {mode === 'guru' && (
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: 12, marginBottom: 12 }}>
+            <b style={{ fontSize: 12.5, color: '#92400e' }}>🔒 Kunci materi yang belum diajarkan</b>
+            <div style={{ fontSize: 11, color: '#78350f', marginTop: 4, marginBottom: 8 }}>
+              Siswa hanya bisa membuka sampai halaman yang tentor tetapkan di sini (halaman pembahasan tetap tersembunyi apa pun itu).
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                inputMode="numeric"
+                value={batasInput}
+                onChange={(e) => setBatasInput(e.target.value)}
+                placeholder={`s.d. halaman (maks ${buku.totalHalaman || '?'})`}
+                style={{ padding: '8px 10px', borderRadius: 9, border: '1px solid #fcd34d', fontSize: 12.5, width: 190 }}
+              />
+              <button type="button" onClick={simpanBatas} style={{ border: 'none', background: '#b45309', color: '#fff', borderRadius: 9, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>
+                Simpan batas siswa
+              </button>
+              <span style={{ fontSize: 11, color: '#92400e' }}>
+                saat ini: {buku.batasHalamanSiswa ? `s.d. hal ${buku.batasHalamanSiswa}` : 'terbuka penuh'}
+              </span>
+            </div>
+          </div>
+        )}
+        <FlipbookBukuPdf
+          buku={buku}
+          mode={mode}
+          coretanId={mode === 'siswa' ? `${localStorage.getItem('studentId') || 'anon'}__${buku.id}` : ''}
+        />
       </div>
     );
   }
