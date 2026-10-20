@@ -196,6 +196,7 @@ import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
 // 🔥 BUKU INTERAKTIF DIGITAL -- rak buku + reader per bab
 import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
 import AksesBelajarPage from './pages/student/AksesBelajarPage';
+import KodeSoalSiswaPage from './pages/student/tryout/KodeSoalSiswaPage';
 import BukuPdfPage from './pages/student/BukuPdfPage';
 import KelolaBukuPdfPage from './pages/admin/buku/KelolaBukuPdfPage';
 import BottomNavSiswa from './components/BottomNavSiswa';import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
@@ -951,6 +952,8 @@ function App() {
             ==================================================== */}
         <Route path="/siswa/dashboard" element={<SiswaPage><StudentDashboard /></SiswaPage>} />
         <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><PilihTampilanTryOut /></SiswaPageBelajar>} />
+        {/* 🔖 20 Okt: arsip kode soal siswa (sinkron buku tulis <-> sistem) */}
+        <Route path="/siswa/kode-soal" element={<SiswaPage><KodeSoalSiswaPage /></SiswaPage>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaFiturBelajar fitur="Try Out"><TryOutView /></SiswaFiturBelajar>} />
         <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
         {/* 📱 20 Okt: hub tombol tengah navigasi bawah */}

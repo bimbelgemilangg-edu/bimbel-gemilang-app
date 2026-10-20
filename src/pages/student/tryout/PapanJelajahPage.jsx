@@ -21,7 +21,7 @@ import { db } from '../../../firebase';
 import { collection, documentId, getDocs, query, where } from 'firebase/firestore';
 import {
   CalendarDays, Sparkles, Target, Timer, Rocket, Gem,
-  ChevronLeft, ChevronRight, Lock, Play, CheckCircle2, Hourglass,
+  ChevronLeft, ChevronRight, Lock, Play, CheckCircle2, Hourglass, Bookmark,
 } from 'lucide-react';
 import {
   hitungAnalitik, potongUntukQuery, bolaMascotUntukMapel, kunciTanggal, jenisUjianUntukAnalitik,
@@ -306,6 +306,8 @@ export default function PapanJelajahPage({ studentId = '' }) {
           <span style={{ ...st.chip('#f97316'), display: 'inline-flex', alignItems: 'center', gap: 5 }}><Gem size={13} /> {xp} XP</span>
           <button type="button" style={st.tab(tab === 'misi')} onClick={() => setTab('misi')}><CalendarDays size={14} style={{ verticalAlign: -2 }} /> Misi</button>
           <button type="button" style={st.tab(tab === 'analitik')} onClick={() => setTab('analitik')}><Sparkles size={14} style={{ verticalAlign: -2 }} /> Papan Analitik</button>
+          {/* 🔖 20 Okt: pintu arsip kode soal — sinkron buku tulis & sistem */}
+          <button type="button" style={st.tab(false)} onClick={() => navigate('/siswa/kode-soal')}><Bookmark size={14} style={{ verticalAlign: -2 }} /> Kode Soalku</button>
         </div>
       </div>
 
