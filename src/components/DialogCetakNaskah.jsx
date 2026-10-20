@@ -48,6 +48,7 @@ import {
   susunNaskahDariBlok,
   GAYA_NASKAH,
 } from '../utils/naskahSoal';
+import { kodePaketTampil } from '../utils/kodePaket.js';
 import { rencanaSeksiNaskah, blokNaskahDariSeksi, perkiraanTinggiBlokSeksi } from '../utils/seksiNaskahTryOut';
 import { cetakLewatIframe } from '../utils/kwitansi';
 
@@ -79,6 +80,12 @@ export default function DialogCetakNaskah({ input, onClose }) {
     mapel: input?.mapel || (input?.targetKategori && input.targetKategori !== 'Semua' ? input.targetKategori : ''),
     targetKelas: [input?.jenjang, input?.targetKelas && input.targetKelas !== 'Semua' ? input.targetKelas : ''].filter(Boolean).join(' · '),
     bab: input?.bab || '',
+    // 21 Okt: kop & kode soal per butir harus TERSEMBUNG: meta ikut
+    // membawa kodePaket/id/jenjang supaya kodePaketTampil tidak jatuh
+    // ke GM-ARSIP-UMU-0000 lagi.
+    kodePaket: input?.kodePaket || kodePaketTampil(input || {}),
+    id: input?.id || '',
+    jenjang: input?.jenjang || '',
   };
 
   const seksi = rencanaSeksiNaskah(input).seksi;

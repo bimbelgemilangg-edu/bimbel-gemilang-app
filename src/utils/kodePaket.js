@@ -69,6 +69,14 @@ function tanggalDari(v) {
  */
 export function kodePaketTampil(paket = {}) {
   if (String(paket.kodePaket || '').trim()) return String(paket.kodePaket).trim();
+  // 21 Okt: jenjang sering hanya terbawa di targetKelas ('9 SMP SMP')
+  // pada paket lama -> turunkan token jenjang dari sana supaya kode
+  // arsip tidak lagi 'UMU' dan kode soal tersambung lintas permukaan.
+  paket = { ...paket };
+  if (!paket.jenjang && !paket.jenjangTemplate) {
+    const mjen = /(SD|SMP|SMA|SMK)/i.exec(String(paket.targetKelas || '') + ' ' + String(paket.judul || ''));
+    if (mjen) paket.jenjang = mjen[1];
+  }
   const d = tanggalDari(paket.createdAt ?? paket.waktuBuka);
   const id = String(paket.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || '0000';
   if (!d) return `GM-ARSIP-${tokenJenjang(paket.jenjangTemplate || paket.jenjang)}-${id}`;

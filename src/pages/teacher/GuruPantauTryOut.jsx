@@ -18,6 +18,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { buatKodePaket } from '../../utils/kodePaket.js';
 import { doc, getDoc, getDocs, query, collection, where, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, isSoalEsai, poinEsai, pilihBarisBenarSalah, SKALA_NILAI_ESAI } from '../../utils/skorSoalTryOut';
@@ -151,6 +152,22 @@ export default function GuruPantauTryOut() {
           setMemuat(false); return;
         }
         setPaket({ id: snap.id, ...d });
+        // 21 Okt: backfill kodePaket untuk paket lama (dibuat sebelum stempel
+        // kode saat persetujuan) supaya kode soal TERSEMBUNG: kop naskah,
+        // chip per butir, layar siswa, dan arsip memakai sumber yang sama.
+        if (!String(d.kodePaket || '').trim()) {
+          const mjen = /(SD|SMP|SMA|SMK)/i.exec(String(d.targetKelas || '') + ' ' + String(d.judul || ''));
+          const tgl = d.createdAt?.toDate ? d.createdAt.toDate() : (d.createdAt ? new Date(d.createdAt) : new Date());
+          const kode = buatKodePaket({
+            jenjang: d.jenjang || d.jenjangTemplate || (mjen ? mjen[1] : ''),
+            jenisUjian: d.jenisUjian || d.jenis || 'Reguler',
+            tanggal: Number.isNaN(tgl?.getTime?.()) ? new Date() : tgl,
+          });
+          try {
+            await updateDoc(doc(db, 'tryout_paket', snap.id), { kodePaket: kode });
+            setPaket({ id: snap.id, ...d, kodePaket: kode });
+          } catch { /* tulis gagal: tampilan tetap jatuh ke kode arsip stabil */ }
+        }
         await muatSesi();
       } catch (e) { setPesan({ tipe: 'err', teks: e.message }); }
       if (!batal) setMemuat(false);

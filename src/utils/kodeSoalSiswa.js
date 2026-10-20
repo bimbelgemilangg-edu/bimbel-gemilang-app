@@ -17,6 +17,8 @@
 // MURNI & TERUJI.
 // ============================================================
 
+import { kodePaketTampil, parseKodePaket } from './kodePaket.js';
+
 const TOKEN_MAPEL = {
   matematika: 'MTK',
   'bahasa indonesia': 'BIND',
@@ -53,14 +55,18 @@ export function tanggalKeyPaket(paket = {}) {
 }
 
 /**
- * Kode pendek satu soal untuk ditulis siswa di buku tulis.
- * @param {object} args { mapel, paket, nomor }
- * @returns {string} mis. "MTK-1017-07"
+ * Kode pendek satu soal — TERSEMBUNG dengan kode paket di kop naskah:
+ * diambil dari kodePaketTampil (GM-<JEN>-<JENIS>-<YYYYMMDD>-<SUFFIX>)
+ * menjadi `<JEN>-<SUFFIX>-<NN>` mis. SMP-0800-07. Nomor = posisi soal
+ * di paket (stabil walau urutan tampil diacak). Paket lama tanpa
+ * kodePaket mendapat kode arsip ber-suffix id dokumen (tetap stabil).
+ * @param {object} args { paket, nomor }
  */
-export function kodeSoalSiswa({ mapel = '', paket = {}, nomor = 0 } = {}) {
-  const key = tanggalKeyPaket(paket);
-  const mmdd = key === '00000000' ? '0000' : key.slice(4);
-  return `${tokenMapel(mapel)}-${mmdd}-${String(Number(nomor) || 0).padStart(2, '0')}`;
+export function kodeSoalSiswa({ paket = {}, nomor = 0 } = {}) {
+  const u = parseKodePaket(kodePaketTampil(paket));
+  const jen = u ? u.jenjang : 'UMU';
+  const suf = u ? u.suffix : (String(paket.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || '0000');
+  return `${jen}-${suf}-${String(Number(nomor) || 0).padStart(2, '0')}`;
 }
 
 /** Cocokkan kueri pencarian siswa terhadap kode/nomor (toleran spasi/huruf kecil). */
