@@ -309,7 +309,8 @@ export default function GuruPantauTryOut() {
                   <div style={{ flex: 1, minWidth: 180 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{s.nama || s.studentId}</div>
                     <div style={{ fontSize: 10.5, color: '#94a3b8' }}>
-                      {s.kelasSekolah || ''} · {s.status === 'selesai' ? 'selesai' : (s.status || 'aktif')} · {s.xpFinal || 0} XP
+                      {s.kelasSekolah || ''} · {s.status === 'selesai' ? 'selesai' : (s.status || 'aktif')}
+                      {s.status !== 'selesai' && s.progres?.total ? ` · mengerjakan ${s.progres.terjawab || 0}/${s.progres.total}` : ''} · {s.xpFinal || 0} XP
                     </div>
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 800, color: Number(s.totalSkorPersen) >= 70 ? '#16a34a' : '#d97706' }}>{Math.round(Number(s.totalSkorPersen) || 0)}%</span>

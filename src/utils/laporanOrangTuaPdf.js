@@ -28,17 +28,17 @@ export function dataBaganSkor(barisSesi = []) {
 export function susunNarasiOrangTua(a = {}) {
   const nama = String(a.nama || 'Ananda');
   const par = [];
-  par.push(`Assalamu'alaikum / salam sejahtera bagi Bapak/Ibuka orang tua/wali dari ${nama} (kelas ${a.kelas || '-'}). Laporan ini merangkum ${a.jumlahSesi || 0} sesi try out yang telah ananda selesaikan pada periode berjalan, dihitung otomatis dari hasil kerja ananda sendiri.`);
-  const arahKata = a.arah === 'naik' ? 'menunjukkan tren MENINGKAT' : a.arah === 'turun' ? 'sedang menurun dibanding sesi sebelumnya' : 'cenderung stabil';
-  par.push(`Rata-rata skor ananda adalah ${a.skorRata ?? 0}%${a.delta != null ? ` , dengan perubahan ${a.delta >= 0 ? '+' : ''}${a.delta} poin pada sesi terakhir sehingga progresnya ${arahKata}` : ''}. Kami melihat perkembangan ini sebagai bahan pembinaan, bukan penghakiman.`);
+  par.push(`Laporan ini disusun oleh Bimbingan Belajar Gemilang sebagai dokumen pemantauan perkembangan belajar ananda ${nama} (kelas ${a.kelas || '-'}), berdasarkan ${a.jumlahSesi || 0} sesi try out terukur pada periode berjalan. Seluruh angka dihitung otomatis dari hasil pekerjaan ananda sendiri.`);
+  const arahKata = a.arah === 'naik' ? 'meningkat' : a.arah === 'turun' ? 'menurun' : 'stabil';
+  par.push(`Hasil pengukuran: skor rata-rata ${a.skorRata ?? 0}%${a.delta != null ? `, dengan perubahan ${a.delta >= 0 ? '+' : ''}${a.delta} poin pada sesi terakhir sehingga arah progres dinyatakan ${arahKata} (ambang penilaian +-5 poin antar sesi berurutan)` : ''}.`);
   if (a.detikPerSoal != null) {
-    par.push(a.tempoWajar
-      ? `Dari sisi tempo, ananda mengerjakan rata-rata ${a.detikPerSoal} detik per soal — termasuk tempo kerja yang wajar dan terjaga.`
-      : `Dari sisi tempo, ananda menghabiskan rata-rata ${a.detikPerSoal} detik per soal — sedikit lebih lama dari tempo ideal; ini biasanya tanda kehati-hatian yang bisa dilatih menjadi kecepatan melalui pembiasaan timer.`);
+    par.push(`Tempo pengerjaan rata-rata ${a.detikPerSoal} detik per soal, ${a.tempoWajar ? 'berada dalam rentang ideal (<= 90 detik per soal)' : 'berada di atas rentang ideal (90 detik per soal) sehingga diperlukan pembiasaan pengelolaan waktu'}.`);
   }
-  if (a.terkuat) par.push(`Kekuatan ananda saat ini berada pada materi ${a.terkuat.nama} (akurasi ${a.terkuat.skor}%). Pertahankan dengan variasi soal yang lebih menantang.`);
-  if (a.terlemah) par.push(`Bidang yang kami dampingi lebih intensif adalah ${a.terlemah.nama} (akurasi ${a.terlemah.skor}%). Mohon dukungan Bapak/Ibu untuk jadwal belajar tambahan yang tenang di rumah pada topik ini.`);
-  par.push('Demikian laporan ini kami sampaikan. Terima kasih atas kepercayaan dan kerja sama Bapak/Ibu; pintu diskusi kami terbuka setiap saat.');
+  if (a.terkuat || a.terlemah) {
+    par.push(`Pemetaan kompetensi: ${a.terkuat ? `capaian tertinggi pada ${a.terkuat.nama} (${a.terkuat.skor}%)` : 'belum ada subtes pada kategori kuat'}${a.terlemah ? `; capaian terendah pada ${a.terlemah.nama} (${a.terlemah.skor}%)` : ''}. Rincian kuantitatif per subtes tersaji pada tabel dan deskripsi bagian sebelumnya.`);
+  }
+  par.push('Tindak lanjut: penyesuaian materi pendampingan diprioritaskan pada subtes berkategori perlu pendampingan, disertai pengayaan pada subtes kuat; pemantauan tren dilanjutkan pada siklus pekanan berikutnya.');
+  par.push('Demikian laporan ini disampaikan untuk keperluan pemantauan bersama antara lembaga dan orang tua/wali. Informasi tambahan dapat diperoleh melalui administrasi Bimbingan Belajar Gemilang.');
   return par;
 }
 
@@ -131,6 +131,7 @@ export function unduhLaporanOrangTuaPdf({ siswa = {}, barisSesi = [], identitas 
   // 🔥 19 Okt (permintaan owner): ANALISIS PER BAGIAN — tabel rinci per
   // subtes + deskripsi objektif-kuantitatif, sebelum narasi hangat.
   const perSubtes = analitikPerSubtes(barisSesi);
+  let yLanjut = 0;
   if (perSubtes.length) {
     autoTable(pdf, {
       startY: pdf.lastAutoTable ? pdf.lastAutoTable.finalY + 8 : 150,
@@ -145,6 +146,7 @@ export function unduhLaporanOrangTuaPdf({ siswa = {}, barisSesi = [], identitas 
     });
     let y2 = pdf.lastAutoTable ? pdf.lastAutoTable.finalY + 8 : 200;
     if (y2 > 250) { pdf.addPage(); y2 = 20; }
+    yLanjut = y2;
     pdf.setFontSize(11); pdf.setFont('helvetica', 'bold');
     pdf.text('Deskripsi analisis per bagian (objektif & kuantitatif)', M, y2);
     pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9);
@@ -158,10 +160,12 @@ export function unduhLaporanOrangTuaPdf({ siswa = {}, barisSesi = [], identitas 
       }
       y2 += 1.6;
     }
+    yLanjut = y2;
   }
 
-  // narasi + saran
-  let y = pdf.lastAutoTable ? pdf.lastAutoTable.finalY + 8 : 150;
+  // narasi + saran — y MELANJUTKAN bagian sebelumnya (regresi 19 Okt:
+  // dulu y di-reset dari lastAutoTable sehingga narasi menimpa deskripsi)
+  let y = yLanjut ? yLanjut + 8 : (pdf.lastAutoTable ? pdf.lastAutoTable.finalY + 8 : 150);
   if (y > 240) { pdf.addPage(); y = 20; }
   pdf.setFontSize(11); pdf.setFont('helvetica', 'bold');
   pdf.text('Catatan untuk orang tua/wali', M, y);
@@ -189,14 +193,27 @@ export function unduhLaporanOrangTuaPdf({ siswa = {}, barisSesi = [], identitas 
       y += 4.4;
     }
   }
-  y += 10;
-  if (y > 265) { pdf.addPage(); y = 30; }
-  pdf.text('Hormat kami,', M, y);
-  y += 16;
+  y += 12;
+  if (y > 255) { pdf.addPage(); y = 30; }
+  // 🔥 20 Okt (keputusan owner): laporan TIDAK ditandatangani pribadi —
+  // disahkan dengan CAP LEMBAGA "Bimbingan Belajar Gemilang".
+  pdf.setDrawColor(91, 46, 204);
+  pdf.setLineWidth(0.9);
+  pdf.roundedRect(M, y, 74, 28, 3, 3, 'S');
+  pdf.setLineWidth(0.35);
+  pdf.roundedRect(M + 2.5, y + 2.5, 69, 23, 2, 2, 'S');
+  pdf.setFontSize(10.5); pdf.setFont('helvetica', 'bold'); pdf.setTextColor(91, 46, 204);
+  pdf.text('BIMBINGAN BELAJAR', M + 37, y + 11, { align: 'center' });
+  pdf.text('GEMILANG', M + 37, y + 17.5, { align: 'center' });
+  pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+  pdf.text('cap resmi lembaga', M + 37, y + 23, { align: 'center' });
+  pdf.setTextColor(0);
+  pdf.setFontSize(9.5); pdf.setFont('helvetica', 'normal');
+  pdf.text('Disahkan dengan cap lembaga oleh:', M + 86, y + 9);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(identitas.penandatangan || '(nama penandatangan)', M, y);
+  pdf.text(`${identitas.penandatangan || 'Admin Operasional'} - Bimbingan Belajar Gemilang`, M + 86, y + 15);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(identitas.jabatan || 'Kepala Operasional Bimbel Gemilang', M, y + 4.5);
+  pdf.text(`dicetak & dicap: ${new Date().toLocaleString('id-ID')}`, M + 86, y + 21);
 
   const slug = String(siswa.nama || 'siswa').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
   pdf.save(`laporan-orang-tua-${slug}.pdf`);
