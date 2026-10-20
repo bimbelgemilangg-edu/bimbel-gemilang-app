@@ -691,7 +691,7 @@ const StudentDashboard = () => {
             { key: 'tryout', label: 'TryOut', emoji: '🎯', warna: '#fef3c7', warnaTeks: '#92400e', segeraHadir: false },
             // 🔥 BARU: tile "Bank Soal" (placeholder "Segera") diganti jadi
             // pintu masuk Buku Interaktif Digital (rak -> daftar isi -> reader).
-            { key: 'buku', label: 'Buku Digital', emoji: '📖', warna: '#ede9fe', warnaTeks: '#5b21b6', segeraHadir: false },
+            { key: 'buku', label: 'Buku PDF Gemilang', emoji: '📙', warna: '#ffedd5', warnaTeks: '#9a3412', segeraHadir: false },
             { key: 'progres', label: 'Progres Saya', emoji: '📊', warna: '#dcfce7', warnaTeks: '#166534', segeraHadir: true },
             { key: 'leaderboard', label: 'Leaderboard', emoji: '🏆', warna: '#fce7f3', warnaTeks: '#9d174d', segeraHadir: false },
             { key: 'kehadiran', label: 'Kehadiran', emoji: '🗓️', warna: '#dbeafe', warnaTeks: '#1e40af', segeraHadir: false },
@@ -769,7 +769,7 @@ const StudentDashboard = () => {
                       } else if (m.key === 'leaderboard') {
                         navigate('/siswa/leaderboard');
                       } else if (m.key === 'buku') {
-                        navigate('/siswa/buku');
+                        navigate('/siswa/buku-pdf');
                       } else if (m.segeraHadir) {
                         alert(`✨ ${m.label} segera hadir!`);
                       }

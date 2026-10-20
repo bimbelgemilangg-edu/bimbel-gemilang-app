@@ -11,7 +11,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { BookOpen, MonitorPlay, Layers, Sparkles } from 'lucide-react';
+import { BookOpen, MonitorPlay, Layers, Sparkles, FlipVertical } from 'lucide-react';
+import { KATALOG_BUKU_PDF } from '../../data/katalogBukuPdf';
 
 const st = {
   kartu: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 14 },
@@ -53,7 +54,25 @@ export default function AksesBelajarPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 14 }}>
+      {/* 📚 20 Okt: buku PDF konvensional jadi warga kelas satu —
+          review siswa: buku konvensional disukai, modul interaktif tidak. */}
+      <div style={st.kartu}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <FlipVertical size={17} color="#f97316" />
+          <b style={{ fontSize: 13.5, color: '#1e293b' }}>Buku PDF Gemilang — baca & balik seperti buku cetak</b>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+          {KATALOG_BUKU_PDF.map((b) => (
+            <button key={b.id} type="button" onClick={() => navigate(`/siswa/buku-pdf/${b.id}`)} style={{ border: '1px solid #fed7aa', background: '#fff7ed', borderRadius: 12, padding: 12, textAlign: 'left', cursor: 'pointer' }}>
+              <div style={{ fontSize: 24 }}>{b.emoji}</div>
+              <b style={{ fontSize: 12.5, color: '#7c2d12', display: 'block', marginTop: 4, lineHeight: 1.35 }}>{b.judul}</b>
+              <span style={{ fontSize: 10.5, color: '#9a3412' }}>{b.totalHalaman} halaman · kunci & pembahasan khusus guru</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, margin: '14px 0' }}>
         <button type="button" style={st.zona('#0e7490')} onClick={() => navigate('/siswa/materi')}>
           <span style={{ background: '#ecfeff', color: '#0e7490', borderRadius: 12, padding: 10 }}><MonitorPlay size={22} /></span>
           <span>
@@ -70,10 +89,10 @@ export default function AksesBelajarPage() {
         </button>
       </div>
 
-      <div style={st.kartu}>
+      <div style={{ ...st.kartu, marginTop: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <BookOpen size={17} color="#5B2ECC" />
-          <b style={{ fontSize: 13.5, color: '#1e293b' }}>Rak Buku Digital ({memuat ? '…' : buku.length})</b>
+          <BookOpen size={17} color="#94a3b8" />
+          <b style={{ fontSize: 12.5, color: '#64748b' }}>Arsip buku digital interaktif ({memuat ? '…' : buku.length}) — versi lama</b>
         </div>
         {memuat ? (
           <div style={{ fontSize: 12, color: '#94a3b8' }}>memuat rak…</div>
