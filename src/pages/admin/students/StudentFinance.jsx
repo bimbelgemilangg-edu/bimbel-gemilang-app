@@ -18,6 +18,7 @@ import {
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
+import { bangunPenyesuaianTagihan } from '../../../utils/penyesuaianTagihan';
 // 🔥 BARU (hotfix 2026-10-13): pintu koreksi SATU baris buku besar (diskon /
 // salah nominal / salah metode) + detektor "dua buku tidak cocok".
 import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
@@ -73,6 +74,12 @@ const StudentFinance = () => {
   // pembayaran jadi kacau -- lihat penjelasan lengkap di tombol buka
   // panel ini).
   const [showKoreksiModal, setShowKoreksiModal] = useState(false);
+  //  20 Okt: PENYESUAIAN HARGA BERBASIS KESEPAKATAN — penawaran/diskon/
+  // paket pecah sah dicatat; cicilan dihitung ulang otomatis & kwitansi
+  // tetap tercetak dari nominal riil yang diterima.
+  const [showPenyesuaianModal, setShowPenyesuaianModal] = useState(false);
+  const [penyesuaianData, setPenyesuaianData] = useState({ kesepakatan: '', alasan: '', rincian: '' });
+  const [isPenyesuaianProcessing, setIsPenyesuaianProcessing] = useState(false);
   const [koreksiData, setKoreksiData] = useState(null);
   const [isKoreksiProcessing, setIsKoreksiProcessing] = useState(false);
   // 🔥 BARU: log buku besar yang sedang dikoreksi nominal/metodenya lewat
@@ -610,6 +617,46 @@ const StudentFinance = () => {
     setShowPayModal(true);
   };
 
+  const handlePenyesuaian = async (e) => {
+    e.preventDefault();
+    const kesepakatan = parseInt(penyesuaianData.kesepakatan, 10);
+    if (!Number.isFinite(kesepakatan) || kesepakatan <= 0) return showAlert('⚠️ Nominal kesepakatan tidak valid!');
+    if (!String(penyesuaianData.alasan || '').trim()) return showAlert('⚠️ Alasan penawaran wajib diisi (jejak audit untuk owner).');
+    setIsPenyesuaianProcessing(true);
+    try {
+      const kodeUnik = student?.studentId || id;
+      const hasil = bangunPenyesuaianTagihan({
+        student: student || {},
+        tagihan: tagihan || null,
+        kesepakatan,
+        alasan: penyesuaianData.alasan,
+        rincian: penyesuaianData.rincian,
+      });
+      const batch = writeBatch(db);
+      batch.set(doc(db, 'students', id), hasil.siswa, { merge: true });
+      if (tagihan && hasil.tagihan) batch.set(doc(db, 'finance_tagihan', tagihan.id), hasil.tagihan, { merge: true });
+      batch.set(doc(collection(db, 'koreksi_data_log')), {
+        studentId: kodeUnik,
+        jenis: 'penyesuaian_harga',
+        totalKatalog: hasil.totalKatalog,
+        kesepakatan,
+        selisihPenawaran: hasil.selisih,
+        sisaSetelahPenyesuaian: hasil.sisa,
+        alasan: penyesuaianData.alasan,
+        rincian: penyesuaianData.rincian || '',
+        createdAt: serverTimestamp(),
+      });
+      await batch.commit();
+      setShowPenyesuaianModal(false);
+      setPenyesuaianData({ kesepakatan: '', alasan: '', rincian: '' });
+      showAlert(`✅ Harga kesepakatan Rp ${kesepakatan.toLocaleString()} berlaku. Cicilan belum lunas dihitung ulang otomatis (sisa Rp ${hasil.sisa.toLocaleString()}); kwitansi tetap tercetak dari nominal riil yang diterima.`);
+      fetchData();
+    } catch (err) {
+      showAlert(`❌ Gagal menyimpan penyesuaian: ${err?.message || err}`);
+    }
+    setIsPenyesuaianProcessing(false);
+  };
+
   const handleBayar = async (e) => {
     e.preventDefault();
     const nominal = parseInt(payAmount);
@@ -929,6 +976,13 @@ const StudentFinance = () => {
             <button onClick={openKoreksiModal} style={styles.btnKoreksi}>
               <Edit3 size={14} /> Koreksi Data (kalau salah input)
             </button>
+            <button
+              onClick={() => { setPenyesuaianData({ kesepakatan: String(student?.totalTagihan || ''), alasan: '', rincian: '' }); setShowPenyesuaianModal(true); }}
+              style={{ ...styles.btnKoreksi, background: '#0f767e', borderColor: '#0f767e' }}
+              title="Penawaran / diskon / paket pecah: cicilan menyesuaikan otomatis"
+            >
+              <Edit3 size={14} /> Penyesuaian Harga / Penawaran
+            </button>
           </div>
 
           {/* KANAN - Cicilan & Riwayat */}
@@ -1193,6 +1247,34 @@ const StudentFinance = () => {
         )}
 
         {/* 🔥 BARU: MODAL KOREKSI DATA PAKET */}
+        {showPenyesuaianModal && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <h3 style={styles.modalTitle}>🤝 Penyesuaian Harga / Penawaran</h3>
+              <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+                Harga katalog: <b>Rp {(student?.totalKatalog || student?.totalTagihan || 0).toLocaleString()}</b>.
+                Kesepakatan baru (penawaran, diskon, paket pecah) akan menjadi dasar tagihan,
+                cicilan belum lunas dihitung ulang otomatis, dan selisihnya tercatat untuk laporan owner.
+                Kwitansi tetap tercetak dari uang riil yang diterima.
+              </p>
+              <form onSubmit={handlePenyesuaian}>
+                <label style={styles.formLabel}>Nominal kesepakatan (Rp)</label>
+                <input type="number" value={penyesuaianData.kesepakatan} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, kesepakatan: e.target.value })} style={styles.formInput} required />
+                <label style={styles.formLabel}>Alasan penawaran (wajib — jejak audit)</label>
+                <input type="text" value={penyesuaianData.alasan} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, alasan: e.target.value })} style={styles.formInput} placeholder="mis. penawaran keluarga, paket pecah 2 modul, diskon saudara" required />
+                <label style={styles.formLabel}>Rincian paket pecah (opsional)</label>
+                <textarea value={penyesuaianData.rincian} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, rincian: e.target.value })} style={styles.formInput} rows={2} placeholder="mis. modul eksponen 1.200.000; modul akar 1.200.000" />
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <button type="submit" disabled={isPenyesuaianProcessing} style={{ ...styles.btnKoreksi, background: '#0f767e', borderColor: '#0f767e' }}>
+                    {isPenyesuaianProcessing ? 'Menyimpan…' : 'Simpan kesepakatan'}
+                  </button>
+                  <button type="button" onClick={() => setShowPenyesuaianModal(false)} style={styles.btnKoreksi}>Batal</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {showKoreksiModal && koreksiData && (
           <div style={styles.modalOverlay} onClick={() => !isKoreksiProcessing && setShowKoreksiModal(false)}>
             <div style={{...styles.modalContent(isMobile), maxWidth: '480px'}} onClick={e => e.stopPropagation()}>
