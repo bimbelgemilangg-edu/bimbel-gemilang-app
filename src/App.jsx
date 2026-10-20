@@ -197,6 +197,7 @@ import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
 import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
 import AksesBelajarPage from './pages/student/AksesBelajarPage';
 import BukuPdfPage from './pages/student/BukuPdfPage';
+import KelolaBukuPdfPage from './pages/admin/buku/KelolaBukuPdfPage';
 import BottomNavSiswa from './components/BottomNavSiswa';import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
@@ -653,6 +654,8 @@ function App() {
         <Route path="/admin/buku" element={<AdminRoute><ManajerBuku /></AdminRoute>} />
         {/* 📚 14 Okt 2026 (owner): buku scan/HTML -> draf materi + bank soal per bab. */}
         <Route path="/admin/buku/impor-html" element={<AdminRoute><ImporBukuHtmlPage /></AdminRoute>} />
+        {/* 📙 20 Okt: owner unggah sendiri buku PDF; katalog hidup tanpa deploy */}
+        <Route path="/admin/buku-pdf" element={<AdminRoute><KelolaBukuPdfPage /></AdminRoute>} />
         {/* 📖 16 Okt 2026 (owner): isi buku draf bisa DIBACA & DIUNDUH PDF oleh admin tanpa login siswa. */}
         <Route path="/admin/buku/:bukuId/baca" element={<AdminRoute><PratinjauBukuAdmin /></AdminRoute>} />
         {/* MATERI v2 FASE 4 -- manajer konten baru (aditif) */}

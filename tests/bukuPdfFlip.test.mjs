@@ -1,7 +1,7 @@
 // regresi 20 Okt: pemisahan halaman pembahasan guru dari edisi siswa.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { daftarHalamanSiswa, labelModeBaca } from '../src/utils/bukuPdfFlip.js';
+import { daftarHalamanSiswa, labelModeBaca, slugBukuPdf, rentangPembahasanDariInput } from '../src/utils/bukuPdfFlip.js';
 
 test('daftarHalamanSiswa menyembunyikan rentang pembahasan', () => {
   const hal = daftarHalamanSiswa(81, [69, 81]);
@@ -20,4 +20,13 @@ test('tanpa rentang = semua halaman; rentang kosong aman', () => {
 test('label mode baca jujur', () => {
   assert.match(labelModeBaca('guru'), /MODE GURU/);
   assert.match(labelModeBaca('siswa'), /EDISI SISWA/);
+});
+
+test('slugBukuPdf & rentangPembahasanDariInput (form upload owner)', () => {
+  assert.equal(slugBukuPdf('Master Matematika SMP/MTs Kelas IX!'), 'master-matematika-smp-mts-kelas-ix');
+  assert.deepEqual(rentangPembahasanDariInput('69-81'), [69, 81]);
+  assert.deepEqual(rentangPembahasanDariInput('81 s/d 69'), [69, 81]);
+  assert.deepEqual(rentangPembahasanDariInput('69..81'), [69, 81]);
+  assert.deepEqual(rentangPembahasanDariInput(''), []);
+  assert.deepEqual(rentangPembahasanDariInput('tidak ada'), []);
 });

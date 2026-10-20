@@ -32,3 +32,24 @@ export function labelModeBaca(mode = 'siswa') {
 }
 
 export default { daftarHalamanSiswa, labelModeBaca };
+
+/** Slug aman untuk nama berkas storage dari judul buku. */
+export function slugBukuPdf(judul = '') {
+  return String(judul || 'buku')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'buku';
+}
+
+/**
+ * Parse input rentang halaman pembahasan milik admin:
+ * "69-81" | "69 s/d 81" | "69..81" -> [69, 81]; kosong/'-' -> [].
+ * Toleran terhadap spasi &格式 salah (urut naik otomatis).
+ */
+export function rentangPembahasanDariInput(teks = '') {
+  const m = String(teks || '').trim().match(/(\d{1,4})\s*(?:-+|\.+|s\/d|sampai|\u2013|\u2014)\s*(\d{1,4})/i);
+  if (!m) return [];
+  const a = Number(m[1]); const b = Number(m[2]);
+  return [Math.min(a, b), Math.max(a, b)];
+}

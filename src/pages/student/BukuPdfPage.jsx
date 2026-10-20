@@ -4,19 +4,36 @@
 // Mode 'siswa' menyembunyikan halaman pembahasan; mode 'guru'
 // (rute /guru/buku-pdf/:id) membuka seluruh buku sebagai pegangan.
 // ============================================================
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { db } from '../../firebase';
 import { BookOpen, ArrowLeft } from 'lucide-react';
-import { KATALOG_BUKU_PDF, bukuPdfDariId } from '../../data/katalogBukuPdf';
+import { muatKatalogBukuPdf } from '../../services/bukuPdfService';
 import FlipbookBukuPdf from '../../components/buku/FlipbookBukuPdf';
 
 export default function BukuPdfPage({ mode = 'siswa' }) {
   const navigate = useNavigate();
   const { bukuId } = useParams();
-  const buku = bukuId ? bukuPdfDariId(bukuId) : null;
+  const [katalog, setKatalog] = useState([]);
+  const [memuat, setMemuat] = useState(true);
+  useEffect(() => {
+    (async () => {
+      try {
+        setKatalog(await muatKatalogBukuPdf(db, true));
+      } catch (e) {
+        console.error('Gagal memuat katalog buku PDF:', e);
+      } finally {
+        setMemuat(false);
+      }
+    })();
+  }, []);
+  const buku = bukuId ? katalog.find((b) => b.id === bukuId) || null : null;
 
-  if (bukuId && !buku) {
-    return <div style={{ padding: 24, fontSize: 13, color: '#64748b' }}>Buku PDF tidak ditemukan di katalog.</div>;
+  if (bukuId && !memuat && !buku) {
+    return <div style={{ padding: 24, fontSize: 13, color: '#64748b' }}>Buku PDF tidak ditemukan di katalog (mungkin disembunyikan admin).</div>;
+  }
+  if (bukuId && memuat) {
+    return <div style={{ padding: 24, fontSize: 13, color: '#64748b' }}>memuat buku…</div>;
   }
   if (buku) {
     return (
@@ -41,8 +58,14 @@ export default function BukuPdfPage({ mode = 'siswa' }) {
       <p style={{ fontSize: 11.5, color: '#64748b', margin: '0 0 14px' }}>
         Buku konvensional digital: baca & balik halaman seperti buku cetak. Kunci & pembahasan tersimpan untuk guru.
       </p>
+      {memuat && <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 8 }}>memuat rak…</div>}
+      {!memuat && katalog.length === 0 && (
+        <div style={{ fontSize: 12.5, color: '#64748b', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 12 }}>
+          Rak masih kosong. Owner/admin mengunggah buku PDF lewat <b>Admin → Buku PDF Gemilang</b>; begitu diunggah, buku langsung muncul di sini tanpa deploy.
+        </div>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
-        {KATALOG_BUKU_PDF.map((b) => (
+        {katalog.map((b) => (
           <button
             key={b.id}
             type="button"
