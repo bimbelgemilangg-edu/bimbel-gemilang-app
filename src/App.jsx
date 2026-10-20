@@ -195,7 +195,8 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
 // 🔥 BUKU INTERAKTIF DIGITAL -- rak buku + reader per bab
 import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
-import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
+import AksesBelajarPage from './pages/student/AksesBelajarPage';
+import BottomNavSiswa from './components/BottomNavSiswa';import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
 import StudentGrades from './pages/student/StudentGrades';
@@ -420,6 +421,9 @@ const SiswaLayout = ({ children }) => {
           {children}
         </div>
       </main>
+      {/* 📱 20 Okt: navigasi bawah ala app bank; tombol tengah = hub
+          Akses Belajar Mudah (e-learning + buku digital). */}
+      <BottomNavSiswa />
     </div>
   );
 };
@@ -495,6 +499,7 @@ const SiswaPage = ({ children }) => (
 const SiswaFiturBelajar = ({ children, fitur }) => (
   <SiswaRoute>
     <GateAksesSiswa fitur={fitur}>{children}</GateAksesSiswa>
+    <BottomNavSiswa />
   </SiswaRoute>
 );
 
@@ -944,6 +949,8 @@ function App() {
         <Route path="/siswa/tryout" element={<SiswaPageBelajar fitur="Try Out"><PilihTampilanTryOut /></SiswaPageBelajar>} />
         <Route path="/siswa/tryout/:paketId" element={<SiswaFiturBelajar fitur="Try Out"><TryOutView /></SiswaFiturBelajar>} />
         <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
+        {/* 📱 20 Okt: hub tombol tengah navigasi bawah */}
+        <Route path="/siswa/akses-belajar" element={<SiswaPageBelajar fitur="E-Learning"><AksesBelajarPage /></SiswaPageBelajar>} />
         {/* MATERI v2 -- tampilan materi belajar baru (fase 1-2,
             docs/RENCANA-ROMBAK-MATERI.md). Reader full-screen. */}
         <Route
