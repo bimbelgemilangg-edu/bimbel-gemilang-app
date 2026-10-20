@@ -72,12 +72,28 @@ export default function AnalitikBelajarPage() {
           const jenis = jenisUjianUntukAnalitik(p || {});
           if (!/tka|utbk/i.test(jenis)) return; // dashboard ini khusus TKA/UTBK
           const daftar = p?.daftarSoal || [];
-          const subtes = (p?.subtes || []).map((sb) => {
+          let subtes = (p?.subtes || []).map((sb) => {
             const ids = new Set(sb.soalIds || sb.daftarSoal || []);
             const kelompok = ids.size ? daftar.filter((q) => ids.has(q.id)) : [];
             const r = kelompok.length ? hitungTotalSkor(kelompok, s.jawaban || {}) : null;
             return { nama: sb.nama || sb.judul || 'Subtes', skorPersen: r?.totalSkorPersen ?? null };
           }).filter((x) => x.skorPersen !== null);
+          // 🔥 20 Okt (koneksi data): paket try out otomatis/draf lama ada
+          // yang TIDAK menyimpan struktur subtes -> kekuatan/kelemahan &
+          // radar kosong ('—'). Turunkan subtes dari mapel butir bank agar
+          // laporan tetap berdata penuh.
+          if (!subtes.length && daftar.length) {
+            const grup = new Map();
+            daftar.forEach((q) => {
+              const mp = q.mataPelajaran || q.mapel || q.materi || 'Umum';
+              if (!grup.has(mp)) grup.set(mp, []);
+              grup.get(mp).push(q);
+            });
+            subtes = [...grup.entries()].map(([nama, kelompok]) => ({
+              nama,
+              skorPersen: hitungTotalSkor(kelompok, s.jawaban || {})?.totalSkorPersen ?? null,
+            })).filter((x) => x.skorPersen !== null);
+          }
           const sv = siswaById.get(s.studentId) || {};
           const ident = identitasTampilSiswa(sv, s);
           hasil.push({

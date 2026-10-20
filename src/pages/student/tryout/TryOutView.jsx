@@ -454,6 +454,15 @@ export default function TryOutView() {
         subtesAktifIndex: subtesIndexBaru,
         waktuMulaiSubtesMs: waktuSubtesBaru,
         updatedAt: serverTimestamp(),
+        // 🔥 20 Okt (tracker saat mengerjakan, permintaan owner): field
+        // progres turunan supaya monitor guru/admin bisa menampilkan
+        // "mengerjakan x/y" tanpa menghitung ulang map jawaban, dan
+        // data tempo/keaktifan ikut terolah ke laporan.
+        progres: {
+          terjawab: Object.keys(jawabanBaru || {}).length,
+          total: Number(paket?.totalSoal || paket?.daftarSoal?.length || 0),
+          terakhirMs: Date.now(),
+        },
       });
       setGagalSimpanProgres(false);
     } catch (e) {
