@@ -1,0 +1,1688 @@
+{
+  "sumber": "Gemilang_Book_Matematika_SMP_Kelas_9_Semester_1.pdf",
+  "halamanPembahasan": [
+    69,
+    81
+  ],
+  "keterangan": "PEGANGAN GURU — kunci & pembahasan lengkap per paket. Soal siswa ada di lembar/paket buku (mode siswa flipbook menyembunyikan halaman ini).",
+  "statistik": {
+    "entri": 278,
+    "berkunci": 64,
+    "paket": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "entri": [
+    {
+      "paket": 1,
+      "nomor": 1,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nDefinisi perpangkatan bulat positif: a\nn\n= a × a × · · · × a\n| {z }\nn faktor\n.\nMaka 7\n3\n= 7 × 7 × 7 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 2,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nSifat perpangkatan pecahan:\n\u0010\na\nb\n\u0011 n\n=\na\nn\nb n\n. Maka\n\u0012\n2\n3\n\u0013 3\n=\n2\n3\n3 3\n=\n8\n27\n.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 3,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nSifat pangkat bulat negatif: a\n− n\n=\n1\na n\n. Maka 5\n− 3\n=\n1\n5 3\n.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban: √\n64 ×\n√\n16 = 8 × 4 = 32 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 5,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nHubungan bentuk akar dan pangkat pecahan:\nn\n√\na m = a\nm\nn .\nMaka\n√\n4 3 =\n2\n√\n4 3 = 4\n3\n2 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 6,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nGunakan sifat a\nm\n× a\nn\n= a\nm + n\ndan\na\np\na q\n= a\np − q\n:\n3\n9\n× 3\n3\n3 − 4\n=\n3\n9+3\n3 − 4\n=\n3\n12\n3 − 4\n= 3 12 − ( − 4) = 3 16 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n√\n96 =\n√\n16 × 6 = 4\n√\n6 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 8,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nGunakan sifat pembagian dan perkalian eksponen dengan\nbasis 6 :\n6\n− 6\n6 2\n× 6 − 5 = 6 − 6 − 2 × 6 − 5 = 6 − 8+( − 5) = 6 − 13 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n4\n1\n3 +\n3\n4 = 4\n13\n12 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n3\np\n2 3 p 2 q = 2 p\n2\n3 q\n1\n3 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(3 − 2 ) 2 = 3 − 4 =\n1\n81\n.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 2,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nGunakan sifat ( a\nm\n)\nn\n= a\nm × n\n:\n(3\n2\n)\n− 3\n× (3\n4\n)\n2\n= 3\n2 × ( − 3)\n× 3\n4 × 2\n= 3\n− 6\n× 3\n8\n= 3\n− 6+8\n= 3\n2\n=\n9 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n4\n2\n× 4\n− 4\n= 4\n− 2\n=\n1\n16 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 4,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nIngat rumus kuadrat suku dua: a 2 + 2 ab + b 2 = ( a + b ) 2 .\nDengan a = 5 dan b =\n√\n6 , maka 5 2 + 2(5)(\n√\n6) + (\n√\n6) 2 =\n(5 +\n√\n6) 2 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n5\n3 − 9\n2 = 5 − 3 = 1\n125 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 6,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nSederhanakan pangkat pecahan terlebih dahulu:\n10\n5\n= 2 .\nMaka 7\n− 2\n× 7\n10\n5 = 7 − 2 × 7 2 = 7 − 2+2 = 7 0 = 1 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 7,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nUraikan masing-masing bentuk akar: (\n√\n5)\n2\n= 5 dan\n(\n√\n3)\n3\n= (\n√\n3)\n2\n×\n√\n3 = 3\n√\n3 .\nMaka (\n√\n5)\n2\n× (\n√\n3)\n3\n= 5 × 3\n√\n3 = 15\n√\n3 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 8,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nBerdasarkan definisi pangkat pecahan a\nm\nn = n\n√\na m , maka\n8\n7\n8 =\n8 √\n8 7 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(4\n2\n+ 4\n1\n)\n3 √\n4 = (16 + 4)\n3 √\n4 = 20\n3 √\n4 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n8\n1\n3 =\n3 √\n8 = 2 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 11,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nSederhanakan (8\n3\n)\n2\n+ (8\n6\n)\n2\n= 8\n6\n+ 8\n12\n.\nFaktorkan 8\n6\nmenggunakan sifat distributif a\nn\n+ a\nm\n= a\nn\n(1 +\na\nm − n\n) :\n8 6 + 8 12 = 8 6 (1 + 8 12 − 6 ) = 8 6 (1 + 8 6 ) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n3\n√\n2 3 a 2 b 4 =\n3\n√\n8 a 2 b 4 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 13,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n15\n3\nq\n10\n2 = 5\n√\n5 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n2\n√\n2 × 3\n√\n3 = 6\n√\n6 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n3 √\n5\n×\n√\n5 √\n5\n=\n3\n5\n√\n5 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n5(3 −\n√\n2)\n9 − 2 =\n5\n7 (3 −\n√\n2) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n8(5+\n√\n3)\n25 − 3\n=\n8\n22\n(5 +\n√\n3) =\n4\n11\n(5 +\n√\n3) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 3,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nKalikan pembilang dan penyebut kemudian rasionalkan den-\ngan pencoretan:\n2\n√\n3\n×\n3\n√\n2\n=\n6\n√\n6\n=\n6\n√\n6\n×\n√\n6\n√\n6\n=\n6\n1\n√\n6\n6 1\n=\n√\n6 .\nJadi, jawabannya adalah C.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 68\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 3,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n9 + 6\n√\n5 + 5 = 14 + 6\n√\n5 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 5,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nBerdasarkan identitas kuadrat jumlah ( a + b )\n2\n= a\n2\n+2 ab + b\n2\nuntuk a = 8 dan b =\n√\n7 :\n8\n2\n+ 2(8)(\n√\n7) + (\n√\n7)\n2\n= (8 +\n√\n7)\n2\n.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(3 4 ) −\n1\n4 = 3 − 1 = 1\n3\n.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "Jawaban:\na 4 b − 5\na − 14 b − 2 = a\n18\nb\n− 3\n=\na 18\nb 3 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n2\n√\n6 + 3\n√\n6 − 4\n√\n6 + 6\n√\n6 = 7\n√\n6 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n4 + 4\n√\n7 + 7 = 11 + 4\n√\n7 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 10,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nBerdasarkan identitas kuadrat selisih ( a − b )\n2\n= a\n2\n− 2 ab + b\n2\nuntuk a = 3 dan b =\n√\n5 :\n(3)\n2\n+ 2 · 3 · ( −\n√\n5) + ( −\n√\n5)\n2\n= (3 −\n√\n5)\n2\n.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 11,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n48\n√\n6 √\n24\n=\n48\n√\n6\n2\n√\n6\n= 24 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n1 √\n2\n=\n1\n2\n√\n2 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 13,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n6(1+\n√\n2)\n1 − 2 = − 6(1 +\n√\n2) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n6\n√\n3(\n√\n5+\n√\n2)\n5 − 2\n= 2\n√\n3(\n√\n5 +\n√\n2) = 2\n√\n15 + 2\n√\n6 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n− (\n√\n5 −\n√\n3) 2\n5 − 3 =\n− (8 − 2\n√\n15)\n2 =\n√\n15 − 4 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 16,
+      "kunci": null,
+      "pembahasan": "A):\nGunakan sifat ( a\nm\n)\nn\n= a\nm × n\ndengan pencoretan pangkat\npecahan:\n\u0010\n16\n1\n2\n\u0011 − 2\n= 16\n1\n2\n× ( − 2 )\n= 16\n− 1\n=\n1\n16\n."
+    },
+    {
+      "paket": 3,
+      "nomor": 17,
+      "kunci": null,
+      "pembahasan": "B):\nSederhanakan masing-masing suku bentuk akar ke dalam √\n2 : √\n18 + 3\n√\n50 −\n√\n72 =\n√\n9 × 2 + 3\n√\n25 × 2 −\n√\n36 × 2\n= 3\n√\n2 + 3(5\n√\n2) − 6\n√\n2 = (3 + 15 − 6)\n√\n2 = 12\n√\n2 ."
+    },
+    {
+      "paket": 3,
+      "nomor": 18,
+      "kunci": null,
+      "pembahasan": "C):\nKelompokkan basis yang sama menggunakan sifat\na\nm\na n\n=\na\nm − n\n:\n2 2 · 5 5\n5 2 · 2 4\n= 2\n2 − 4\n· 5\n5 − 2\n= 2\n− 2\n· 5\n3\n."
+    },
+    {
+      "paket": 3,
+      "nomor": 19,
+      "kunci": null,
+      "pembahasan": "A):\nSederhanakan pembilang dan penyebut lalu coret faktor\npersekutuan\n√\n3 :\n√\n18 +\n√\n75\n√\n6\n=\n3\n√\n2 + 5\n√\n3\n√\n2 ·\n√\n3\n; untuk\n√\n24 ×\n√\n18\n√\n3\n=\n√\n24 ×\n√\n18\n6\n√\n3 1\n=\n√\n144 = 12 ."
+    },
+    {
+      "paket": 3,
+      "nomor": 20,
+      "kunci": null,
+      "pembahasan": "C):\nUbah bilangan pokok 27 = 3 3 lalu coret penyebut pangkat-\nnya:\n27\n2\n3 = (3 3 )\n2\n3 = 3 2 = 9 ."
+    },
+    {
+      "paket": 3,
+      "nomor": 21,
+      "kunci": null,
+      "pembahasan": "A):\nUraikan setiap suku akar ke dalam\n√\n3 : √\n75 +\n√\n48 −\n√\n12 =\n√\n25 × 3 +\n√\n16 × 3 −\n√\n4 × 3\n= 5\n√\n3 + 4\n√\n3 − 2\n√\n3 = (5 + 4 − 2)\n√\n3 = 7\n√\n3 ."
+    },
+    {
+      "paket": 3,
+      "nomor": 22,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, 3, dan 4 BENAR.\n• Waktu transfer =\n6 , 4 × 10\n13\n1 , 6 × 10 9\n= 4 × 10 13 − 9 = 4 × 10 4 detik\n(Benar).\n• Banyak arsip =\n6 , 4 × 10 13\n3 , 2 × 10 8\n= 2 × 10\n13 − 8\n= 2 × 10\n5\narsip\n(Benar).\n• Waktu sinyal =\n3 , 6 × 10\n7\n3 , 0 × 10 8\n= 1 , 2 × 10\n− 1\ndetik (Benar).\n• Kapasitas dalam KB =\n6 , 4 × 10 13\n10 3\n= 6 , 4 × 10 10 KB (Be-\nnar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 23,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Benar - Benar (B, B, B).\n• Dalam 2 jam = 120 menit terjadi\n120\n20\n= 6 kali pembelahan:\nN = 2 , 5 × 10\n4\n× 2\n6\n= 2 , 5 × 10\n4\n× 64 = 1 , 6 × 10\n6\nsel (Benar).\n• Massa awal = (2 , 5 × 10\n4\n) × (4 , 0 × 10\n− 12\n) = 10 × 10\n− 8\n=\n1 , 0 × 10\n− 7\ngram (Benar).\n• Luas kaca preparat = (6+2\n√\n3)(6 − 2\n√\n3) = 6 2 − (2\n√\n3) 2 =\n36 − 12 = 24 cm 2 (Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 24,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\nDiketahui a = 8 = 2\n3\n, b = 27 = 3\n3\n, dan c = 16 = 2\n4\n:\n• a\n2\n3 + b\n1\n3 = (2 3 )\n2\n3 + (3 3 )\n1\n3 = 4 + 3 = 7 < 10 (atau untuk\na\n2\n3 · b\n2\n3 = 4 × 9 = 36 > 10 , Benar).\n• b\n2\n3 + c\n3\n4 = 9 + 8 = 17 > 10 (Benar).\n• a\n1\n3 · c\n3\n4 = 2 × 8 = 16 > 10 (Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 25,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Benar - Salah (B, B, S).\nDiketahui p = (8 + 3\n√\n2) m dan ℓ = (8 − 3\n√\n2) m:\n• Keliling = 2( p + ℓ ) = 2(8 + 3\n√\n2 + 8 − 3\n√\n2) = 2(16) = 32 m\n(Benar).\n• Luas = p × ℓ = 8\n2\n− (3\n√\n2)\n2\n= 64 − 18 = 46 m\n2\n(Benar).\n• Panjang diagonal =\np\np 2 + ℓ 2 =\np\n(64 + 18) × 2 =\n√\n164 m ̸ = 10\n√\n2 m (Salah).\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 69\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN\nKunci Jawaban & Pembahasan Lengkap Paket\n1, 2, & 3 — Bab II (ALJABAR LANJUT, PEM-\nFAKTORAN, PERSAMAAN/PERTIDAKSAMAAN\nKUADRAT & SPLDV)"
+    },
+    {
+      "paket": 1,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nVariabel adalah lambang huruf peubah yaitu x .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 2,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nPada bentuk aljabar 2 x 2 − 3 x + 5 : koefisien x 2 adalah 2 ,\nkoefisien x adalah − 3 , dan konstanta adalah 5 . Jadi koefisien\nx adalah − 3 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nSuku sejenis memiliki variabel dan pangkat sama: 5 x\n2\ndan\n− 3 x\n2\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nKonstanta adalah suku tanpa variabel yaitu − 9 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 5,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nKelompokkan suku-suku sejenis:\n(7 x − 5) + ( − 9 x + 3) = (7 − 9) x + ( − 5 + 3) = − 2 x − 2 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 6,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nSederhanakan dengan mencoret faktor persekutuan 3 x pada\npembilang dan penyebut:\n9 xy\n3 x\n=\n9\n3\nxy\n3 1 x\n= 3 y .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 7,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nGunakan sifat distributif perkalian terhadap pengurangan\na ( b − c ) = ab − ac :\n3 x ( x − 6) = (3 x · x ) − (3 x · 6) = 3 x\n2\n− 18 x .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n15 x 2 + 3 x + 7 x − 11 = 15 x 2 + 10 x − 11 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n20 x − 15 + 7 x − 12 = 27 x − 27 = 27( x − 1) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n14 xy\n2 y −\n8 y\n2 y = 7 x − 4 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 1,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nFaktorkan pembilang sebagai selisih dua kuadrat x 2 − y 2 =\n( x + y )( x − y ) lalu coret faktor ( x + y ) :\nx\n2\n− y\n2\nx + y\n=\n( x + y )( x − y )\nx + y\n= x − y .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 2,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nGunakan pencoretan koefisien dan pengurangan pangkat\nvariabel sejenis:\n64 x 2 ÷ 8 x =\n64\n8\nx\n2\n1\n8 1 x\n= 8 x .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nx 2 − 2 x − 8 = ( x − 4)( x + 2) , salah satu faktornya x − 4 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 4,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nJabarkan kuadrat suku dua ( a − b ) 2 = a 2 − 2 ab + b 2 :\n( x − 5) 2 = x 2 − 2( x )(5) + ( − 5) 2 = x 2 − 10 x + 25 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 5,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nFPB dari 9 x\n2\ny dan 12 xy\n2\nadalah 3 xy . Keluarkan faktor\npersekutuan 3 xy :\n9 x\n2\ny + 12 xy\n2\n= 3 xy (3 x + 4 y ) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(2 x + 7)(3 x + 3) = 6 x\n2\n+ 27 x + 21 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n9 x\n2\n+ 24 xy + 16 y\n2\n= (3 x + 4 y )\n2\n.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 8,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nUntuk memfaktorkan x 2 + 11 x + 28 , cari dua bilangan yang\njumlahnya 11 dan hasil kalinya 28 , yaitu 7 dan 4 :\nx 2 + 11 x + 28 = ( x + 7)( x + 4) . Jadi salah satu faktornya\nadalah ( x + 7) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 9,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nSubstitusikan p = 3 x − y dan q = 2 xy lalu kalikan secara\ndistributif:\npq = (3 x − y )(2 xy ) = (3 x · 2 xy ) − ( y · 2 xy ) = 6 x 2 y − 2 xy 2 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n11 x 2 y − 2 xy 2 + 5 xy = xy (11 x − 2 y + 5) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 11,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nFPB dari 4 a\n2\nb dan 20 ab\n2\nadalah 4 ab . Maka:\n4 a\n2\nb + 20 ab\n2\n= 4 ab ( a + 5 b ) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(7 p\n2\n+ 15) − ( − 2 p\n2\n+ 5 p ) = 9 p\n2\n− 5 p + 15 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 13,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n10 x\n2\n− 4 xy = ax\n2\n+ by = ⇒ a = 10 dan b = − 4 x .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 14,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nSubstitusikan a = 5 dan b = − 3 ke dalam bentuk aljabar\n3 a 2 + 4 b :\n3(5) 2 + 4( − 3) = 3(25) − 12 = 75 − 12 = 63 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(2 x + 5) 2 = (4 x 2 + 20 x + 25) cm 2 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n3+ x +2\n6 x\n= x +5\n6 x\n.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n3(2 x +3)( x − 1)\n6(2 x +3)( x +1) =\nx − 1\n2 x +2 .\nJadi, jawabannya adalah C.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 70\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 3,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n( − 12 x + 6)(2 x − 4) = − 24 x 2 + 60 x − 24 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n6(2 x +4) − 3( x +1)\n2 x 2 +6 x +4 =\n9 x +21\n2 x 2 +6 x +4 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(3 x + 2)( x − 7) = (3 x 2 − 19 x − 14) cm 2 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n8 x − 21 − 5 x\n2\n+ 30 + 8 x\n2\n+ 16 x + 8 = 3 x\n2\n+ 24 x + 17 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(6 x + 20) − 3( − 2 x + 1) = 12 x + 17 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 8,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nGunakan rumus selisih dua kuadrat a\n2\n− b\n2\n= ( a − b )( a + b ) :\n16 x\n2\n− 9 = (4 x )\n2\n− 3\n2\n= (4 x − 3)(4 x + 3) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nx 2 + 3 x − 40 = ( x + 8)( x − 5) , salah satu faktornya x − 5 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n6 x\n2\n− 11 x + 5 = ⇒ a + b + c = 6 − 11 + 5 = 0 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 11,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nSamakan penyebut kedua pecahan aljabar menjadi\n( x − 2)(2 x − 1) = 2 x\n2\n− 5 x + 2 :\n2 x\nx − 2\n+\nx\n2 x − 1\n=\n2 x (2 x − 1) + x ( x − 2)\n( x − 2)(2 x − 1)\n=\n4 x\n2\n− 2 x + x\n2\n− 2 x\n2 x 2 − 5 x + 2\n=\n5 x\n2\n− 4 x\n2 x 2 − 5 x + 2\n.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 12,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nFaktorkan pembilang dan penyebut lalu coret faktor perseku-\ntuan ( x + 5) :\nx 2 + 3 x − 10\nx 2 + 6 x + 5\n=\n( x + 5)( x − 2)\n( x + 5)( x + 1)\n=\nx − 2\nx + 1\n.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 13,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nFaktorkan pembilang dan penyebut lalu coret faktor perseku-\ntuan (2 x − 3) :\n2 x\n2\n+ x − 6\n4 x 2 − 9\n=\n(2 x − 3)( x + 2)\n(2 x − 3)(2 x + 3)\n=\nx + 2\n2 x + 3\n.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(4 x − 3) 2 = (16 x 2 − 24 x + 9) cm 2 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nUntuk x = 2 : (3(2) − 2)(2 + 5) = 4 × 7 = 28 cm\n2\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 16,
+      "kunci": null,
+      "pembahasan": "A):\nKeluarkan faktor persekutuan (2 x − 3) lalu gunakan selisih\ndua kuadrat:\n4 x 2 − 9 = (2 x ) 2 − 3 2 = (2 x + 3)(2 x − 3) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 17,
+      "kunci": null,
+      "pembahasan": "C):\nFaktorkan pembilang dan penyebut lalu coret faktor perseku-\ntuan ( x − 3) :\n2 x\n2\n− 3 x − 9\n4 x 2 − 9\n=\n(2 x + 3)( x − 3)\n(2 x − 3)(2 x + 3)\n=\n(2 x + 3)( x − 3)\n(2 x − 3)(2 x + 3)\n=\nx − 3\n2 x − 3\n."
+    },
+    {
+      "paket": 3,
+      "nomor": 18,
+      "kunci": null,
+      "pembahasan": "B):\nGunakan rumus selisih dua kuadrat a\n2\n− b\n2\n= ( a − b )( a + b ) :\n4 x\n2\n− 9 y\n2\n= (2 x )\n2\n− (3 y )\n2\n= (2 x − 3 y )(2 x + 3 y ) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 19,
+      "kunci": null,
+      "pembahasan": "A):\nFaktorkan pembilang dengan mengeluarkan xy lalu selisih\ndua kuadrat, kemudian coret (\n√\n3 x −\n√\n7 y ) :\n3 x\n3\ny − 7 xy\n3\n√\n3 x −\n√\n7 y\n=\nxy (\n√\n3 x −\n√\n7 y )(\n√\n3 x +\n√\n7 y )\n√\n3 x −\n√\n7 y\n= xy (\n√\n3 x +\n√\n7 y ) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 20,
+      "kunci": null,
+      "pembahasan": "B):\nFaktorkan pembilang dan penyebut lalu coret faktor perseku-\ntuan ( x + 5) :\n2 x\n2\n+ 6 x − 20\n2 x 2 + 14 x + 20\n=\n2( x − 2)( x + 5)\n2( x + 2)( x + 5)\n=\nx − 2\nx + 2\n."
+    },
+    {
+      "paket": 3,
+      "nomor": 21,
+      "kunci": null,
+      "pembahasan": "Total belanja Rino = 3 x + 2 y ; Tiko = 2 x + 5 y ; Bayu = x + 2 y .\nJumlah belanja Rino dan Tiko dikurangi Bayu = (3 x + 2 y ) +\n(2 x + 5 y ) − ( x + 2 y ) = 4 x + 5 y ."
+    },
+    {
+      "paket": 3,
+      "nomor": 22,
+      "kunci": null,
+      "pembahasan": "Dari (1) 2 x + y = 52 . 000 dan (2) x + 2 y = 56 . 000 :\nJumlahkan keduanya: 3 x + 3 y = 108 . 000 = ⇒ x + y =\n36 . 000 .\nMaka x = 52 . 000 − 36 . 000 = Rp 16 . 000 dan y = 56 . 000 −\n36 . 000 = Rp 20 . 000 .\nMembeli 3 kotak Putu Mayang dan 2 kotak Lapis =\n3(16 . 000) + 2(20 . 000) = Rp 88 . 000 ."
+    },
+    {
+      "paket": 3,
+      "nomor": 23,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\nGradien tarif a =\n67 . 000 − 31 . 000\n5 − 2\n=\n36 . 000\n3\n= 12 . 000 , dan\nb = 31 . 000 − 2(12 . 000) = 7 . 000 .\nRumus fungsi tarif: f ( g ) = 12 . 000 g + 7 . 000 (Pernyataan 1, 2,\ndan 3 Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 24,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Benar - Salah (B, B, S).\n• ( x + y )\n2\n= x\n2\n+ 2 xy + y\n2\n= 34 + 2(15) = 64 = ⇒ x + y = 8\nuntuk x, y > 0 (Benar).\n• ( x − y )\n2\n= x\n2\n− 2 xy + y\n2\n= 34 − 30 = 4 = ⇒ | x − y | = 2\n(Benar).\n• x\n3\n+ y\n3\n= ( x + y )( x\n2\n− xy + y\n2\n) = 8(34 − 15) = 152 ̸ = 180\n(Salah)."
+    },
+    {
+      "paket": 3,
+      "nomor": 25,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\n• 6 x 2 + 7 x − 20 = (2 x + 5)(3 x − 4) (Benar).\n• 9 x 2 − 25 y 2 = (3 x − 5 y )(3 x + 5 y ) (Benar).\n• 4 x 2 − 12 x + 9 = (2 x − 3) 2 (Benar).\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 71\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN\nKunci Jawaban & Pembahasan Lengkap Paket\n1, 2, & 3 — Bab III (KEKONGRUENAN DAN KE-\nSEBANGUNAN (SEGITIGA & BANGUN DATAR))"
+    },
+    {
+      "paket": 1,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nSyarat kongruen adalah (i) sisi bersesuaian sama panjang\ndan (iv) sudut bersesuaian sama besar.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n4\n2\n=\n6\n3\n=\n8\n4\n= 2 , maka kedua segitiga sebangun.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nx\n5 =\n9\n6 = ⇒ x = 7 , 5 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 1,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nSudut kaki segitiga sama kaki =\n180 ◦ − 70 ◦\n2\n= 55 ◦ .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nAB\n3 =\n10\n5 = ⇒ AB = 6 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 1,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nAC =\n√\n6 2 + 8 2 = 10 cm. Maka\nP R\n10\n=\n9\n6\n= ⇒ P R =\n15 cm.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n∠ B = ∠ E = 180\n◦\n− (25\n◦\n+ 65\n◦\n) = 90\n◦\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nP Q adalah hipotenusa sedangkan AB sisi siku-siku, se-\nhingga AB ̸ = P Q .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n2(2 x + x ) = 24 = ⇒ x = 4 cm. Luas 1 persegi panjang\n= 8 × 4 = 32 cm\n2\n, jumlah keduanya = 64 cm\n2\n.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nPerbandingan sisinya adalah 2 s : s = 2 : 1 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\ns dalam = 8 − 2(1) = 6 cm = ⇒ L = 6\n2\n= 36 cm\n2\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nK = 3 + 4 + 3 + 4 = 14 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n∠ C = 180\n◦\n− (78\n◦\n+ 30\n◦\n) = 72\n◦\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nKaki segitiga sama kaki LM = AC = 10 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nEF =\n12+18\n2 = 15 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nSisi-sisi yang bersesuaian memiliki perbandingan yang sama\n(senilai).\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nt\n2 =\n12\n1 , 5 = 8 = ⇒ t = 16 m.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 8,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nPada gambar, ruas garis AB sejajar dengan alas se-\ngitiga dan menghubungkan titik tengah kedua sisi miring\n(perbandingan 1 : 2 ).\nMaka\nAB\n30\n=\n1\n2\n= ⇒ AB =\n30\n2\n= 15 cm.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 9,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nKarena △ P QR sebangun dengan △ KLM , perbandingan\nsisi-sisi yang bersesuaian adalah sama:\nQT\nLM\n=\nP Q\nKL\n= ⇒\nQT\n6\n=\n8\n8\n= 1 = ⇒ QT = 6 cm.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 10,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nUrutkan panjang ketiga sisi △ P QR dari terkecil ke terbesar:\n9 cm , 12 cm , 15 cm.\nUrutkan panjang ketiga sisi △ ABC : 18 cm , 24 cm , 30 cm.\nPerbandingan sisi-sisi bersesuaian:\n9\n18\n=\n12\n24\n=\n15\n30\n=\n1\n2\n=\n1 : 2 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 11,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nKarena persegi panjang ABCD sebangun dengan persegi\npanjang P QRS , perbandingan lebar terhadap panjangnya\nsama:\nQR\nBC\n=\nP Q\nAB\n= ⇒\nQR\n6\n=\n6\n2\n9 3\n= ⇒ QR =\n2\n3\n× 6 = 4 cm.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 12,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nPada △ ABC : ∠ A = 70\n◦\n, ∠ B = 62\n◦\n= ⇒ ∠ C = 180\n◦\n−\n(70\n◦\n+ 62\n◦\n) = 48\n◦\n.\nPada △ KLM : ∠ K = 62\n◦\n, ∠ M = 48\n◦\n= ⇒ ∠ L = 180\n◦\n−\n(62\n◦\n+ 48\n◦\n) = 70\n◦\n.\nSudut-sudut yang sama besar: ∠ A = ∠ L = 70\n◦\n, ∠ B =\n∠ K = 62\n◦\n, dan ∠ C = ∠ M = 48\n◦\n.\nMaka sisi di hadapan sudut yang sama besar bersesuaian:\nAB\nKL\n=\nBC\nKM\n=\nAC\nLM\n(opsi D) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 13,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nPada △ ABC siku-siku di A dengan garis tinggi AD ⊥ BC ,\nberlaku kesebangunan △ DBA ∼ △ ABC .\nPerbandingan sisi-sisi yang bersesuaian pada △ DBA dan\n△ ABC adalah:\nAB\nBC\n=\nBD\nAB\n=\nAD\nAC\n(opsi C) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 14,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nPada segitiga siku-siku dengan garis miring berpotongan\ntegak lurus, berlaku tripel Pythagoras:\nSisi miring segitiga besar =\np\n12 2 + (6 + 10) 2 dan dari per-\nbandingan kesebangunan\na\n6\n=\n12\n10\n= ⇒ a = 7 , 2 cm.\nJadi, jawabannya adalah C.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 72\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 2,
+      "nomor": 15,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nPada segitiga siku-siku dengan panjang sisi siku-siku 3 cm\ndan a = 4 cm, sisi miringnya adalah\n√\n3 2 + 4 2 = 5 cm.\nDengan rumus proyeksi kesebangunan: 3 2 = c × 5 = ⇒ c =\n1 , 8 cm dan b 2 = 3 × 3 = 9 = ⇒ b = 3 cm (opsi A) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 1,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nPerhatikan ukuran pada kedua bangun sebangun ABCD\ndan P QRS : sisi bersesuaian memiliki rasio\n8\n16\n=\n1\n2\n(atau\npada trapesium\n12\n16\n=\n3\n4\n).\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 2,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nSegitiga KLM siku-siku di K (hipotenusa LM ) dan segitiga\nP QR siku-siku di Q (hipotenusa P R ).\nJika kedua segitiga kongruen/sebangun, hipotenusa bers-\nesuaian dengan hipotenusa ( LM dengan P R ) dan kaki siku-\nsiku bersesuaian ( KL dengan P Q atau QR ).\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 3,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nPerbandingan panjang sisi dua bangun sebangun adalah\n2 : 3 .\nJika panjang sisi pada bangun besar adalah 12 cm, maka\npanjang sisi bersesuaian pada bangun kecil adalah:\nP Q =\n2\n3 1\n× 12\n4\n= 8 cm.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 4,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nUkuran foto: lebar l f = 8 cm dan tinggi t f = 15 cm. Sisa\nbingkai di kiri, kanan, dan atas = 2 cm, sedangkan di bawah\n= 3 cm.\nMaka lebar bingkai = 8 + 2 + 2 = 12 cm dan tinggi bingkai =\n15 + 2 + 3 = 20 cm, sehingga ukuran bingkai adalah 12 cm ×\n20 cm.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nn\n9\n=\n16\n12\n=\n8\n6\n= ⇒ n = 12 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nAB\n6 =\n9\n18 = ⇒ AB = 3 cm.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 7,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nKarena ST ∥ RU dan diketahui SR = T U , perhatikan kese-\nbangunan △ P ST ∼ △ P RU :\nP S\nP R\n=\nP T\nP U\n=\nST\nRU\n= ⇒\n6\n6 + 12\n=\n4\n4 + T U\n= ⇒\n6\n1\n18 3\n=\n4\n4 + T U\n= ⇒ 4 + T U = 12 = ⇒ T U = SR = 8 cm, dan\ndari perbandingan alas diperoleh x = 4 cm (opsi B) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nSP\n12 =\n5\n15 = ⇒ SP = 4 cm.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nBC\n18\n=\n4\n24\n= ⇒ BC = 3 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nQR =\n√\n12 2 + 16 2 = 20 cm = ⇒ SP =\n12 × 16\n20 = 9 , 6 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 11,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n5\nAE\n=\n12 − 10\n20 − 12\n=\n2\n8\n= ⇒ AE = 20 cm.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nEF =\n3(21)+4(14)\n3+4 =\n119\n7 = 17 cm.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 13,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nUkuran lahan: lebar = 30 m dan panjang = 50 m. Sisa jalan\ndi kiri, kanan, dan atas = 6 m, sehingga lebar bagian dalam\n= 30 − 6 − 6 = 18 m.\nKarena sebangun dengan lahan luar (rasio\n18\n30\n=\n3\n5\n), panjang\nbagian dalam =\n3\n5\n× 50 = 30 m.\nMaka lebar jalan bagian bawah = 50 − 6 − 30 = 14 m.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nKarena karton berbentuk persegi, sisa bawah sama dengan\nsisa atas yaitu 3 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nx = 2\n\u0010\n2(50)\n40\n− 1\n\u0011\n= 3 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 16,
+      "kunci": null,
+      "pembahasan": "D):\nBangun datar dibatasi oleh 3 sisi lurus berukuran 16 cm, 3\nsisi lurus berukuran 7 cm, 1 sisi lurus 14 cm, dan 1 busur\nsetengah lingkaran berdiameter d = 14 cm:\nPanjang busur =\n1\n2\n×\n22\n7 1\n× 14\n2\n= 22 cm.\nKeliling total = (3 × 16)+(3 × 7)+14+22 = 48+21+14+22 =\n105 cm (atau 16 + 16 + 16 + 7 + 7 + 7 + 13 + 22 = 104 cm,\nopsi D) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 17,
+      "kunci": null,
+      "pembahasan": "D):\nKarena DE ∥ AB , maka △ CDE ∼ △ CAB :\nCD\nCA\n=\nDE\nAB\n= ⇒\n24\nAC\n=\n15\n3\n20 4\n= ⇒ 3 · AC = 24 × 4 =\n96 = ⇒ AC =\n96 32\n3 1\n= 32 cm."
+    },
+    {
+      "paket": 3,
+      "nomor": 18,
+      "kunci": null,
+      "pembahasan": "D):\nKarena △ KLM ∼ △ P QR , perbandingan sisi di hadapan\nsudut yang sama ( ∠ L = ∠ Q = ◦ dan ∠ K = ∠ P = × )\nadalah:\nP R\nKM\n=\nP Q\nKL\n= ⇒\nP R\n5\n=\n12\n3\n8 2\n= ⇒ P R =\n15\n2\n= 7 , 5 cm."
+    },
+    {
+      "paket": 3,
+      "nomor": 19,
+      "kunci": null,
+      "pembahasan": "A):\nPada △ CDE siku-siku di D : DE =\n√\nCE 2 − CD 2 = √\n20 2 − 16 2 =\n√\n400 − 256 =\n√\n144 = 12 cm.\nKarena ∠ B = ∠ D = 90\n◦\n, BC = CD = 16 cm, dan\n∠ ACB = ∠ ECD (bertolak belakang), maka △ ABC ∼ =\n△ EDC (Sd-S-Sd).\nAkibatnya AB = DE = 12 cm, sehingga Luas △ ABC =\n1\n2 1\n× 16\n8\n× 12 = 96 cm\n2\n."
+    },
+    {
+      "paket": 3,
+      "nomor": 20,
+      "kunci": null,
+      "pembahasan": "D):\nKarena △ KLM ∼ △ P QR , perbandingan sisi-sisi yang\nbersesuaian adalah:\nQR\nLM\n=\nP Q\nKL\n= ⇒\nQR\n6\n=\n12\n3\n8 2\n= ⇒ QR =\n3 × 6\n2\n= 9 cm.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 73\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 3,
+      "nomor": 21,
+      "kunci": null,
+      "pembahasan": "D):\nKarena AE = CE ( △ ACE sama kaki) dan garis tinggi\nED ⊥ AC membagi alas sama panjang, maka AD = CD =\n4 cm sehingga AC = AD + CD = 8 cm.\nDengan kesebangunan △ BF C ∼ △ DF A dan sifat proyeksi\ngaris tinggi:\nF C\n2\n= BC × AC = 4 × 8 = 32 = ⇒ F C =\n√\n32 = 4\n√\n2 cm."
+    },
+    {
+      "paket": 3,
+      "nomor": 22,
+      "kunci": null,
+      "pembahasan": "B):\nUkuran foto: l f = 16 cm , t f = 24 cm. Lebar karton l k =\n16 + 2 + 2 = 20 cm dan tinggi karton t k = (24 + 2 + x ) =\n(26 + x ) cm.\nKarena sebangun:\n16\n20\n=\n24\n26 + x\n= ⇒\n4\n1\n5\n=\n24\n6\n26 + x\n= ⇒\n26 + x = 30 = ⇒ x = 4 cm."
+    },
+    {
+      "paket": 3,
+      "nomor": 23,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 3, dan 4 BENAR.\nPada skala 1 : 500 , 1 cm pada denah mewakili 500 cm = 5 m\nsebenarnya:\n• Halaman ( 4 , 5 cm × 4 , 0 cm → 22 , 5 m × 20 m): Keliling\n= 2(22 , 5 + 20) = 85 m (Benar).\n• Garasi ( 4 , 5 cm × 3 , 0 cm → 22 , 5 m × 15 m): Keliling =\n2(22 , 5 + 15) = 75 m (Benar).\n• Ruang Tidur I ( 3 , 0 cm × 3 , 0 cm → 15 m × 15 m): Luas\n= 15 × 15 = 225 m\n2\n(Benar).\n• Ruang Tidur II pada denah = 2 , 75 cm × 3 , 0 cm = 8 , 25 cm\n2\n(Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 24,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Benar - Benar (B, B, B).\nFoto 30 cm × 40 cm, sisa kiri=kanan=atas = 3 cm = ⇒ l k =\n30 + 6 = 36 cm.\n30\n36\n=\n40\nt k\n= ⇒\n5\n6\n=\n40\nt k\n= ⇒ t k = 48 cm (Pernyataan 1\nBenar).\nSisa bawah x = 48 − 40 − 3 = 5 cm (Pernyataan 2 Benar).\nLuas karton tidak tertutup foto = (36 × 48) − (30 × 40) =\n1 . 728 − 1 . 200 = 528 cm\n2\n(Pernyataan 3 Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 25,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\nDiketahui BD = 9 cm , CD = 16 cm = ⇒ BC = 9 + 16 =\n25 cm:\n• AD =\n√\nBD × CD =\n√\n9 × 16 = 12 cm (Benar).\n• AB =\n√\nBD × BC =\n√\n9 × 25 = 15 cm (Benar).\n• AC =\n√\nCD × BC =\n√\n16 × 25 = 20 cm (Benar).\n• Luas △ ABC =\n1\n2\n× 25 × 12 = 150 cm\n2\n̸\n= 180 cm\n2\n(Salah).\nKunci Jawaban & Pembahasan Lengkap Paket\n1, 2, & 3 — Bab IV (TRANSFORMASI GEOMETRI\n(TRANSLASI, REFLEKSI, ROTASI, & DILATASI))"
+    },
+    {
+      "paket": 1,
+      "nomor": 1,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nRumus translasi oleh T ( a, b ) : A ( x, y )\nT ( a,b )\n− − − − → A\n′\n( x + a, y + b ) .\nUntuk A (2 , 6) dan T (1 , 4) : A ′ (2 + 1 , 6 + 4) = A ′ (3 , 10) (atau\njika T (1 , − 4) : A ′ (2 + 1 , 6 − 4) = A ′ (3 , 2) ) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 1,
+      "nomor": 2,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nSubstitusikan titik A ( − 2 , 10) dan komponen translasi\nT ( − 1 , − 1) ke rumus A ′ ( x + a, y + b ) :\nA\n′\n( − 2 + ( − 1) , 10 + ( − 1)) = A\n′\n( − 3 , 9) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n( − 2 + 11 + 0 , 5 − 5 + 3) = (9 , 3) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n( − 10 + 4 + 8 , − 3 + 9 − 5) = (2 , 1) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 5,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nMisalkan komponen translasi adalah T ( a, b ) , maka berlaku\nx + a = x ′ dan y + b = y ′ .\nDari (12 , 8)\nT ( a,b )\n− − − − → A\n′\n(0 , 2) diperoleh:\na = 0 − 12 = − 12 dan b = 2 − 8 = − 6 , sehingga komponen\ntranslasinya adalah ( − 12 , − 6) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n( − 6 − ( − 5) , 14 − 24) = ( − 1 , − 10) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 7,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nDiketahui bayangan A ′ (6 , − 32) hasil translasi T (10 , 2) dari\ntitik asal ( x, y ) :\nx + 10 = 6 = ⇒ x = 6 − 10 = − 4\ny + 2 = − 32 = ⇒ y = − 32 − 2 = − 34\nJadi koordinat titik asalnya adalah ( − 4 , − 34) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 8,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nDiketahui bayangan A\n′\n( − 6 , − 1) hasil translasi T (7 , 5) dari\ntitik asal ( a, b ) :\na + 7 = − 6 = ⇒ a = − 6 − 7 = − 13\nb + 5 = − 1 = ⇒ b = − 1 − 5 = − 6\nJadi koordinat titik ( a, b ) adalah ( − 13 , − 6) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(15 , 8)\nSb- x\n− − − → (15 , − 8) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 10,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nRefleksi terhadap sumbu- X memetakan ( x, y ) → ( x, − y ) .\nKarena bayangannya adalah (5 , − 4) , maka x = 5 dan − y =\n− 4 = ⇒ y = 4 . Jadi titik asalnya adalah (5 , 4) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(10 , 10)\nSb- y\n− − → ( − 10 , 10) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 2,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nRefleksi terhadap sumbu- Y memetakan ( x, y ) → ( − x, y ) .\nKarena bayangannya adalah ( − 3 , − 12) , maka − x =\n− 3 = ⇒ x = 3 dan y = − 12 . Jadi titik asalnya adalah\n(3 , − 12) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 3,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nRefleksi titik A ( x, y ) terhadap garis horizontal y = k meng-\nhasilkan bayangan A\n′\n( x, 2 k − y ) .\nUntuk A (11 , − 8) dan garis y = − 7 : x\n′\n= 11 dan y\n′\n=\n2( − 7) − ( − 8) = − 14 + 8 = − 6 = ⇒ (11 , − 6) (diambil\nnilai positif | y\n′\n| = 6 = ⇒ (11 , 6) , opsi D) .\nJadi, jawabannya adalah D.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 74\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 2,
+      "nomor": 4,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nRefleksi terhadap garis y = k memetakan ( x, y ) → ( x, 2 k −\ny ) .\nDiketahui bayangan (5 , 4) oleh refleksi terhadap y = 1 : x = 5\ndan 2(1) − y = 4 = ⇒ 2 − y = 4 = ⇒ y = − 2 . Jadi titik\nasalnya adalah (5 , − 2) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 5,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nRefleksi titik A ( x, y ) terhadap garis vertikal x = h meng-\nhasilkan bayangan A\n′\n(2 h − x, y ) .\nUntuk A (21 , − 8) terhadap garis x = 11 :\nx\n′\n= 2(11) − 21 = 22 − 21 = 1 dan y\n′\n= − 8 , sehingga bayan-\ngannya adalah A\n′\n(1 , − 8) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 6,
+      "kunci": "B",
+      "pembahasan": "Jawaban (B):\nRefleksi terhadap garis x = h memetakan ( x, y ) → (2 h −\nx, y ) .\nDiketahui bayangan (5 , − 5) oleh pencerminan terhadap garis\nx = − 5 :\n2( − 5) − x = 5 = ⇒ − 10 − x = 5 = ⇒ x = − 15 dan\ny = − 5 . Jadi titik asalnya adalah ( − 15 , − 5) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nTukar posisi x dan y : ( − 18 , 20) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nTukar posisi (5 , − 14) → ( − 14 , 5) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 9,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nRefleksi titik A ( x, y ) terhadap garis y = − x menghasilkan\nbayangan A ′ ( − y, − x ) .\nUntuk A (15 , 18) : A ′ ( − 18 , − 15) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 10,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nRefleksi terhadap garis y = − x memetakan ( x, y ) →\n( − y, − x ) .\nKarena bayangannya adalah (3 , − 4) , maka − y = 3 = ⇒\ny = − 3 dan − x = − 4 = ⇒ x = 4 . Jadi titik asalnya adalah\n(4 , − 3) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 11,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(18 , 8)\nO (0 , 0)\n− − − − → ( − 18 , − 8) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 12,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nRefleksi terhadap titik asal O (0 , 0) memetakan ( x, y ) →\n( − x, − y ) .\nKarena bayangannya adalah ( − 4 , − 5) , maka − x = − 4 = ⇒\nx = 4 dan − y = − 5 = ⇒ y = 5 . Jadi titik asalnya adalah\n(4 , 5) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 13,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nTransformasi pertama (refleksi terhadap sumbu- X ):\n(1 , 8)\nM X\n− − → (1 , − 8) .\nTransformasi kedua (refleksi terhadap sumbu- Y ):\n(1 , − 8)\nM Y\n− − → ( − 1 , − 8) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(18 , − 1) → (18 , 1) → (18 , 2(2) − 1) = (18 , 3) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(5 , − 17) → ( − 5 , − 17) → ( − 17 , − 5) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(11 , 8) → ( − 8 , − 11) → (2( − 9) − ( − 8) , − 11) = ( − 10 , − 11) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n( − 2 , 21) → (2 , 21) → ( − 2 , − 21) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n( − 15 , − 3) → ( − 15 , − 9) → ( − 15 , 2(3) − ( − 9)) = ( − 15 , 15) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nTukar kembali posisi (2 , 10) → (10 , 2) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nBalik tanda keduanya → (16 , 4) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 6,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nRefleksi terhadap garis x = 3 memetakan A ( x, y ) →\nA ′ (2(3) − x, y ) = (6 − x, y ) .\nKarena A ′ (7 , 8) , maka 6 − x = 7 = ⇒ x = − 1 dan y = 8 .\nJadi koordinat titik A adalah ( − 1 , 8) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 7,
+      "kunci": "C",
+      "pembahasan": "Jawaban (C):\nRumus dilatasi dengan pusat O (0 , 0) dan faktor skala k :\n( x, y )\n[ O,k ]\n− − − → ( kx, ky ) .\nUntuk ( − 12 , − 2) dengan k = 4 : (4( − 12) , 4( − 2)) =\n( − 48 , − 8) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(1 + 2(2 − 1) , 5 + 2( − 3 − 5)) = (3 , − 11) .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n( − 11 × ( − 1) × 9 , 0) = (99 , 0) .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 10,
+      "kunci": "D",
+      "pembahasan": "Jawaban (D):\nDilatasi titik ( x, y ) = ( − 12 , − 3) terhadap pusat P ( a, b ) =\n(1 , 0) dengan faktor skala k = 2 :\nx\n′\n= a + k ( x − a ) = 1 + 2( − 12 − 1) = 1 + 2( − 13) = 1 − 26 =\n− 25\ny\n′\n= b + k ( y − b ) = 0 + 2( − 3 − 0) = − 6\nDiperoleh ( − 25 , − 6) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 11,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n(6 ÷ ( − 2) , − 2 ÷ ( − 2)) = ( − 3 , 1) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "Jawaban:\n6 = 0 + ( − 3)( x − 0) = ⇒ x = − 2 dan y = 5 = ⇒ ( − 2 , 5) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 13,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nk = − 1 = ⇒ 4 k = − 4 = ⇒ Q ′ ( − 4(4) , − 4( − 1)) =\n( − 16 , 4) .\nJadi, jawabannya adalah C.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 75\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 3,
+      "nomor": 14,
+      "kunci": "A",
+      "pembahasan": "Jawaban (A):\nPada dilatasi pusat O (0 , 0) dengan faktor skala k =\n1\n12\n,\nberlaku B\n′\n( kx, ky ) = (6 , − 2) :\n1\n12\nx = 6 = ⇒ x = 6 × 12 = 72 dan\n1\n12\ny = − 2 = ⇒ y =\n− 2 × 12 = − 24 .\nJadi koordinat titik B adalah (72 , − 24) .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban:\nk = 2 = ⇒ 2 k = 4 = ⇒ B ′ (4(4) , 4(4)) = (16 , 16) .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 16,
+      "kunci": null,
+      "pembahasan": "B):\nRefleksi titik P ( x, y ) terhadap garis y = − x memetakan\nP ( x, y ) → P\n′\n( − y, − x ) .\nUntuk P ( − 3 , 5) : P\n′\n( − 5 , − ( − 3)) = P\n′\n( − 5 , 3) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 17,
+      "kunci": null,
+      "pembahasan": "C):\nRotasi terhadap pusat O (0 , 0) sejauh − 90 ◦ ( 90 ◦ searah jarum\njam) memetakan A ( x, y ) → A\n′\n( y, − x ) .\nUntuk A ( − 4 , 7) : A\n′\n(7 , − ( − 4)) = A\n′\n(7 , 4) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 18,
+      "kunci": null,
+      "pembahasan": "A):\nTranslasi pertama oleh T 1 ( − 3 , 4) dilanjutkan T 2 (5 , − 1) :\nA (2 , − 6) → A ′′ (2 − 3 + 5 , − 6 + 4 − 1) = A ′′ (4 , − 3) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 19,
+      "kunci": null,
+      "pembahasan": "D):\nDilatasi pusat P ( a, b ) = (2 , − 1) dengan faktor skala k = 3\npada titik A (5 , 3) :\nx\n′\n= 2 + 3(5 − 2) = 2 + 9 = 11 dan y\n′\n= − 1 + 3(3 − ( − 1)) =\n− 1 + 12 = 11 = ⇒ A\n′\n(11 , 11) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 20,
+      "kunci": null,
+      "pembahasan": "C):\nRefleksi terhadap garis x = 4 memetakan B ( − 2 , 5) →\nB\n′\n(2(4) − ( − 2) , 5) = B\n′\n(10 , 5) ."
+    },
+    {
+      "paket": 3,
+      "nomor": 21,
+      "kunci": null,
+      "pembahasan": "B):\nLuas awal persegi panjang L = 6 × 4 = 24 cm\n2\n. Didilatasikan\ndengan faktor skala k = 3 :\nL\n′\n= k\n2\n× L = 3\n2\n× 24 = 9 × 24 = 216 cm\n2\n."
+    },
+    {
+      "paket": 3,
+      "nomor": 22,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, 3, dan 4 BENAR.\nLuas △ ABC =\n1\n2\n× 3 × 2 = 3 satuan luas.\nRefleksi terhadap sumbu- Y mempertahankan luas ( L\n′\n= 3 ),\nsedangkan dilatasi [ O, 2] mengubah luas menjadi L\n′′\n= 2\n2\n×\n3 = 12 satuan luas dan koordinat B\n′′\n(8 , 2) (Semua Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 23,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Salah - Benar (B, S, B).\n• Refleksi B (3 , − 5) terhadap garis y = x menghasilkan\nB\n′\n( − 5 , 3) (Benar).\n• Rotasi [ O, 180\n◦\n] pada B (3 , − 5) menghasilkan ( − 3 , 5) ̸ =\n(3 , 5) (Salah).\n• Dilatasi [ O, k ] dari B (3 , − 5) ke B\n′\n( − 6 , 10) memiliki faktor\nskala k =\n− 6\n3\n= − 2 (Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 24,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\nPanjang sisi persegi ABCD adalah s = 3 satuan ( K = 12 ,\nL = 9 ).\nOleh dilatasi [ O, 3] : C (4 , 4) → C\n′\n(12 , 12) , keliling bayangan\nK\n′\n= 3 × 12 = 36 satuan, dan luas bayangan L\n′\n= 3\n2\n× 9 =\n81 satuan luas (Pernyataan 1, 2, dan 3 Benar)."
+    },
+    {
+      "paket": 3,
+      "nomor": 25,
+      "kunci": null,
+      "pembahasan": "Titik P ( − 3 , 4) dicerminkan terhadap sumbu- X : P ′ ( − 3 , − 4) .\nDilanjutkan translasi T (5 , − 2) : P\n′′\n( − 3 + 5 , − 4 − 2) =\nP\n′′\n(2 , − 6) .\nKunci Jawaban & Pembahasan Lengkap Paket\n1, 2, & 3 — Bab V (Bangun Ruang)"
+    },
+    {
+      "paket": 1,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "C):\nPasangan sisi kubus yang berhadapan saling sejajar, bukan\ntegak lurus.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "C):\nBanyak titik sudut prisma segi- n adalah 2 n = 2(4) = 8 titik\nsudut.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 1,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "B):\nBalok memiliki 3 pasang sisi persegi panjang yang kongruen\n(tidak keenam sisinya kongruen kecuali kubus).\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 1,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "A):\nVolume setiap prisma tegak adalah V = L alas × t .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "B):\nKarena bidang alasnya berbentuk persegi (segi empat) dan\nmemiliki 4 sisi tegak segitiga, maka bangun tersebut adalah\nlimas segi empat.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 1,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "B):\nBidang ABGH yang memuat dua rusuk sejajar berhadapan\ndan dua diagonal bidang disebut bidang diagonal.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 1,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "A):\nL = 6 s\n2\n= 1 . 014 = ⇒ s\n2\n=\n1 . 014\n6\n= 169 = ⇒ s =\n√\n169 =\n13 cm.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 1,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "D):\nV = s\n3\n= 125 = ⇒ s = 5 cm. Panjang diagonal ruang\nkubus = s\n√\n3 = 5\n√\n3 cm.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 1,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "B):\nEC =\np\np 2 + ℓ 2 + t 2 =\n√\n8 2 + 6 2 + 5 2 =\n√\n64 + 36 + 25 = √\n125 = 5\n√\n5 cm.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 1,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "C):\nL = 2( pℓ + pt + ℓt ) = 2(14 × 10 + 14 × 7 + 10 × 7) =\n2(140 + 98 + 70) = 2(308) = 616 cm 2 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "C):\nV =\n1\n3 × (8 × 5) × 12 = 40 × 4 = 160 cm\n3\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "B):\nV =\n1\n3 L alas × t = ⇒ 90 =\n1\n3 (18) t = ⇒ 6 t = 90 = ⇒ t =\n15 cm.\nJadi, jawabannya adalah B.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 76\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 2,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "A):\nPanjang kawat = 6 dm = 60 cm. Kerangka kubus terdiri atas\n12 rusuk: 12 s = 60 = ⇒ s = 5 cm.\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "B):\nV = L alas × t = ⇒ L alas =\n176\n8\n= 22 cm 2 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "C):\nL alas = 10 × 10 = 100 cm\n2\n. Jumlah luas 4 segitiga tegak\n= 4 ×\n\u0000\n1\n2 × 10 × 7 , 07\n\u0001\n= 141 , 4 cm\n2\n. Total luas permukaan\n= 100 + 141 , 4 = 241 , 4 cm\n2\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "A):\nV 1 : V 2 = r 3 1 : r 3 2 = 3 3 : 6 3 = 27 : 216 = 1 : 8 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 2,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "C):\nd = 14 cm = ⇒ r = 7 cm , t = 18 cm. V = πr\n2\nt =\n22\n7\n× 7 ×\n7 × 18 = 154 × 18 = 2 . 772 cm\n3\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "D):\nV kubus = s\n3\n= 125 = ⇒ s = r = 5 cm. V bola =\n4\n3 × 3 , 14 ×\n5\n3\n=\n4\n3 × 392 , 5 ≈ 523 , 3 cm\n3\n.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "C):\nV = L alas × t = (4 × 4) × 7 = 16 × 7 = 112 cm 3 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "B):\nV balok = 5 × 4 × 3 , 5 = 70 dm\n3\n= 70 liter. Volume air =\n90% × 70 = 63 liter.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 11,
+      "kunci": null,
+      "pembahasan": "C):\nDiketahui K alas = 2 πr = 68 cm = ⇒ πr = 34 cm. Luas\nselimut kerucut = πrs = 34 × 10 = 340 cm\n2\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 2,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "D):\nd = 28 cm = ⇒ r = 14 cm. L = 4 πr\n2\n= 4 ×\n22\n7 × 14\n2\n=\n2 . 464 cm\n2\n.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 2,
+      "nomor": 13,
+      "kunci": null,
+      "pembahasan": "B):\nL = 2(12 × 8 + 12 × 7 + 8 × 7) = 2(96 + 84 + 56) = 2(236) =\n472 cm 2 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "B):\nKeliling alas segi lima beraturan = 5 × 1 = 5 cm. L p =\n2 L alas + K alas · t = 2(26) + 5(15) = 52 + 75 = 127 cm\n2\n.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 2,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "B):\ns =\n3\n√\n1 . 728 = 12 cm. Luas permukaan kubus = 6 s\n2\n=\n6(12\n2\n) = 6(144) = 864 cm\n2\n.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "A):\nr = 7 cm , t tabung = 12 cm , t kerucut = 18 − 12 = 6 cm. V tab =\n22\n7\n× 7 2 × 12 = 1 . 848 cm 3 . V kerucut =\n1\n3\n×\n22\n7\n× 7 2 × 6 = 308 cm 3 .\nTotal volume = 1 . 848 + 308 = 2 . 156 cm 3 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "C):\nV kubus = 5 3 = 125 cm 3 ; V balok = 25 × 12 × 5 = 1 . 500 cm 3 .\nVolume gabungan = 125 + 1 . 500 = 1 . 625 cm 3 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "C):\nL alas =\n1\n2 × 8 × 6 = 24 cm\n2\n, dan K alas = 6 + 8 + 10 = 24 cm.\nLuas permukaan = 2(24) + 24(4) = 48 + 96 = 144 cm\n2\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 4,
+      "kunci": null,
+      "pembahasan": "D):\nSatu kerangka kubus memerlukan 12 × 30 cm = 360 cm =\n3 , 6 m. Dari 100 m kayu: ⌊ 100 / 3 , 6 ⌋ = ⌊ 27 , 77 ⌋ = 27 kan-\ndang.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 5,
+      "kunci": null,
+      "pembahasan": "D):\nLuas dinding dalam aula (tanpa lantai dan atap) = 2( p + ℓ ) ×\nt = 2(9 + 7) × 5 = 160 m 2 . Total biaya = 160 × Rp 60 . 000 =\nRp 9 . 600 . 000 , 00 .\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "B):\nL tanpa tutup = πr ( r + 2 t ) =\n22\n7 × 21 × (21 + 100) = 66 × 121 =\n7 . 986 cm\n2\n.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "B):\nL 1 : L 2 = r\n2\n1 : r\n2\n2 = 20\n2\n: 30\n2\n= 400 : 900 = 4 : 9 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "C):\nr = 10 cm , t = 60 cm. V tabung = 3 , 14 × 10 2 ×\n60 = 18 . 840 cm 3 . Bagian yang kosong =\n2\n3\n× 18 . 840 =\n12 . 560 cm 3 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "C):\nK = 4 s = 64 = ⇒ s = 16 cm. V =\n1\n3\n× s\n2\n× t =\n1\n3\n× 256 ×\n12 = 1 . 024 cm\n3\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "D):\nSisi belah ketupat s = 100 / 4 = 25 cm. Setengah diag-\nonal pertama = 15 cm, maka setengah diagonal kedua = √\n25 2 − 15 2 = 20 cm = ⇒ d 2 = 40 cm. L alas =\n1\n2 × 30 × 40 =\n600 cm\n2\n. Volume prisma = 600 × 12 = 7 . 200 cm\n3\n.\nJadi, jawabannya adalah D."
+    },
+    {
+      "paket": 3,
+      "nomor": 11,
+      "kunci": null,
+      "pembahasan": "B):\nBanyak tabung kecil =\nV besar\nV kecil\n=\n\u0012\nr B\nr K\n\u0013 2\n×\nt B\nt K\n=\n\u0012\n42\n21\n\u0013 2\n×\n120\n60\n= 2 2 × 2 = 8 tabung.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "C):\nr tabung = 14 cm , r bola = 7 cm. Volume 3 bola = 3 ×\n4\n3 πr\n3\nb =\n4 π (7 3 ) . Kenaikan air ∆ t =\n4 π (7\n3\n)\nπ (14 2 )\n=\n4 × 343\n196\n= 7 cm.\nTinggi air akhir = 30 + 7 = 37 cm.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 13,
+      "kunci": null,
+      "pembahasan": "A):\nPanjang kawat 1 kerangka balok = 4( p + ℓ + t ) = 4(7 +\n3 + 5) = 60 cm. Untuk 2 kerangka = 120 cm. Sisa kawat\n= 150 − 120 = 30 cm.\nJadi, jawabannya adalah A.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 77\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 3,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "C):\nGaris pelukis s =\n√\n7 2 + 24 2 = 25 cm. L p = πr ( r + s ) =\n22\n7\n× 7 × (7 + 25) = 22 × 32 = 704 cm 2 .\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "A):\ns =\n√\n7 2 + 24 2 = 25 cm. Luas permukaan bandul =\nL selimut kerucut + L setengah bola = πrs + 2 πr 2 =\n22\n7\n× 7 × (25 +\n14) = 22 × 39 = 858 cm 2 .\nJadi, jawabannya adalah A."
+    },
+    {
+      "paket": 3,
+      "nomor": 16,
+      "kunci": null,
+      "pembahasan": "B):\nr = 10 cm. Luas belahan bola padat = 3 πr 2 = 3 × 3 , 14 ×\n100 = 942 cm 2 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 17,
+      "kunci": null,
+      "pembahasan": "C):\nGaris pelukis kerucut s = R juring = 15 cm. Jari-jari alas keru-\ncut r =\nα\n360 ◦\n× s =\n216 ◦\n360 ◦\n× 15 = 9 cm. Tinggi kerucut\nt =\n√\ns 2 − r 2 =\n√\n15 2 − 9 2 = 12 cm.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 18,
+      "kunci": null,
+      "pembahasan": "C):\nr = 3 mm, tinggi bagian tabung t = 20 − 2(3) = 14 mm. Luas\npermukaan kapsul = L selimut tabung + L bola utuh = 2 πrt +4 πr\n2\n=\n2 πr ( t + 2 r ) = 2 × 3 , 14 × 3 × 20 = 376 , 80 mm\n2\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 19,
+      "kunci": null,
+      "pembahasan": "B):\nV baru = π (2 r )\n2\n\u0000\n1\n2 t\n\u0001\n= 4 ×\n1\n2 πr\n2\nt = 2 V awal , sehingga V baru :\nV awal = 2 : 1 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 20,
+      "kunci": null,
+      "pembahasan": "C):\nV utuh =\n1\n3\n× 3 , 14 × 15\n2\n× 30 = 7 . 065 cm\n3\n. Karena tinggi\nkerucut kecil di puncak adalah\n1\n3 tinggi semula, maka V kecil =\n\u0000\n1\n3\n\u0001 3\nV utuh =\n1\n27 (7 . 065) = 261 , 67 cm\n3\n. Volume terpancung\n= 7 . 065 − 261 , 67 = 6 . 803 , 33 cm\n3\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 21,
+      "kunci": null,
+      "pembahasan": "C):\nr = 3 m , t tab = 10 m , t ker = 4 m. V = πr\n2\nt tab +\n1\n3 πr\n2\nt ker =\n3 , 14 × 9 × (10 +\n4\n3 ) = 28 , 26 ×\n34\n3 = 320 , 28 m\n3\n.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 22,
+      "kunci": null,
+      "pembahasan": "B):\nr = 3 , 5 cm =\n7\n2 cm, tinggi tabung = 3 × 7 = 21 cm.\nV tabung =\n22\n7 ×\n\u0000\n7\n2\n\u0001 2\n× 21 = 808 , 5 cm\n3\n. Menurut Hukum\nArchimedes, V 3 bola =\n2\n3 V tabung = 539 cm\n3\n, sehingga ruang\nkosong =\n1\n3 V tabung =\n1\n3 (808 , 5) = 269 , 50 cm\n3\n.\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 23,
+      "kunci": null,
+      "pembahasan": "B):\nr = 7 m. Luas kubah setengah bola = 2 πr\n2\n= 2 ×\n22\n7 × 49 =\n308 m\n2\n. Total biaya = 308 × Rp 250 . 000 = Rp 77 . 000 . 000 , 00 .\nJadi, jawabannya adalah B."
+    },
+    {
+      "paket": 3,
+      "nomor": 24,
+      "kunci": null,
+      "pembahasan": "C):\nApotema (tinggi segitiga sisi tegak) t s =\n√\n4 2 + 3 2 = 5 m.\nLuas 4 sisi tegak limas = 4 ×\n\u0000\n1\n2 × 6 × 5\n\u0001\n= 60 m\n2\n. Banyak\ngenteng = 60 × 15 = 900 genteng.\nJadi, jawabannya adalah C."
+    },
+    {
+      "paket": 3,
+      "nomor": 25,
+      "kunci": null,
+      "pembahasan": "C):\nn =\nV bola\nV kerucut\n=\n4\n3\nπ (6 3 )\n1\n3\nπ (3 2 )(4)\n=\n4 × 216\n9 × 4\n=\n216\n9\n= 24 buah\nkerucut.\nJadi, jawabannya adalah C.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 78\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN\nKunci Jawaban & Pembahasan Lengkap Paket 4\nUtama (30 Soal Simulasi TKA & Evaluasi Semester\n1)"
+    },
+    {
+      "paket": 4,
+      "nomor": 1,
+      "kunci": null,
+      "pembahasan": "D):\nDiketahui Benar = 30 soal (skor +4 ), Salah = 5 soal (skor\n− 1 ), Tidak Dijawab = 40 − 30 − 5 = 5 soal (skor 0 ).\nTotal Skor Rita = (30 × 4)+(5 × ( − 1))+(5 × 0) = 120 − 5+0 =\n115 ."
+    },
+    {
+      "paket": 4,
+      "nomor": 2,
+      "kunci": null,
+      "pembahasan": "A):\nBandingkan persediaan bahan terhadap kebutuhan 1 resep\n( 6 porsi):\n• Tepung:\n3 , 75 kg\n0 , 75 kg\n× 6 = 5 × 6 = 30 porsi.\n• Gula pasir:\n2 kg\n0 , 5 kg\n× 6 = 4 × 6 = 24 porsi (pembatas\nminimum) .\n• Mentega:\n1 . 000 g\n125 g\n× 6 = 8 × 6 = 48 porsi.\nJadi maksimal cupcake yang dapat dibuat adalah 24 porsi."
+    },
+    {
+      "paket": 4,
+      "nomor": 3,
+      "kunci": null,
+      "pembahasan": "D):\nAgar setiap rak memuat botol rasa jeruk ( 42 ) dan rasa\nstroberi ( 63 ) sama banyak, jumlah rak maksimum adalah\nFPB (42 , 63) :\n42 = 2 × 3 × 7 dan 63 = 3\n2\n× 7 = ⇒ FPB = 3 × 7 = 21 rak."
+    },
+    {
+      "paket": 4,
+      "nomor": 6,
+      "kunci": null,
+      "pembahasan": "500):\nJawaban: Pernyataan 1, 2, dan 3 BENAR.\nSkala 1 : 500 = ⇒ 1 cm = 5 m:\n• Ukuran tanah = (4 , 5 + 3 , 0 + 2 , 75 + 2 , 25) cm × (3 , 0 +\n4 , 0) cm = 12 , 5 cm × 7 , 0 cm → 62 , 5 m × 35 m (Benar).\n• Ruang Tamu = (5 , 75 × 5) m × (2 , 5 × 5) m = 28 , 75 m ×\n12 , 5 m = 359 , 375 m 2 (Benar).\n• Selisih luas Garasi ( 22 , 5 × 15 = 337 , 5 m 2 ) dan Dapur\n( 16 , 25 × 7 , 5 = 121 , 875 m 2 ) adalah 215 , 625 m 2 (Benar).\n• Perbandingan luas denah terhadap luas sebenarnya adalah\n1 : 500\n2\n= 1 : 250 . 000 ̸ = 1 : 500 (Salah)."
+    },
+    {
+      "paket": 4,
+      "nomor": 7,
+      "kunci": null,
+      "pembahasan": "A):\nUraikan pangkat pecahan dengan pencoretan eksponen:\n27\n2\n3 + 16\n3\n4\n125\n1\n3 − 4\n1\n2\n=\n(3 3 )\n2\n3 + (2 4 )\n3\n4\n(5 3 )\n1\n3 − (2 2 )\n1\n2\n=\n9 + 8\n5 − 2\n=\n17\n3\n."
+    },
+    {
+      "paket": 4,
+      "nomor": 8,
+      "kunci": null,
+      "pembahasan": "A):\nKalikan dengan sekawan penyebut (3 +\n√\n5) lalu coret faktor\n4 :\n12\n3 −\n√\n5\n=\n12\n3 −\n√\n5\n×\n3 +\n√\n5\n3 +\n√\n5\n=\n12\n3\n(3 +\n√\n5)\n9 − 5 1\n= 3(3+\n√\n5) =\n9 + 3\n√\n5 ."
+    },
+    {
+      "paket": 4,
+      "nomor": 9,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\n•\n√\n48 +\n√\n27 −\n√\n12 = 4\n√\n3 + 3\n√\n3 − 2\n√\n3 = 5\n√\n3 (Benar).\n• (2\n√\n3 +\n√\n2)(2\n√\n3 −\n√\n2) = (2\n√\n3) 2 − (\n√\n2) 2 = 12 − 2 = 10\n(Benar).\n•\n2 5 × 2 − 3\n2 4\n= 2 5 − 3 − 4 = 2 − 2 =\n1\n4\n(Benar)."
+    },
+    {
+      "paket": 4,
+      "nomor": 10,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Benar - Benar (B, B, B).\n• 0 , 000056 = 5 , 6 × 10\n− 5\n(Benar).\n• (3 × 10\n4\n) × (2 , 5 × 10\n3\n) = 7 , 5 × 10\n7\n(Benar).\n•\n\u0012\n2\n3\n\u0013 − 3\n=\n\u0012\n3\n2\n\u0013 3\n=\n27\n8\n(Benar)."
+    },
+    {
+      "paket": 4,
+      "nomor": 11,
+      "kunci": null,
+      "pembahasan": "B):\nDari harga 1 kotak Putu Mayang x = Rp 9 . 000 dan 2 x + 2 y =\n36 . 000 = ⇒ y = Rp 9 . 000 (atau 4 x + 2 y = Rp 54 . 000 ).\nJika membayar dengan uang Rp 100 . 000 , 00 , uang kem-\nbaliannya adalah 100 . 000 − 54 . 000 = Rp 46 . 000 , 00 ."
+    },
+    {
+      "paket": 4,
+      "nomor": 12,
+      "kunci": null,
+      "pembahasan": "A):\nSelisih kalimat matematika belanjaan (12 x +9 y ) dan (8 x +6 y )\nadalah:\n(12 x + 9 y ) − (8 x + 6 y ) = (12 − 8) x + (9 − 6) y = 4 x + 3 y ."
+    },
+    {
+      "paket": 4,
+      "nomor": 13,
+      "kunci": null,
+      "pembahasan": "A):\nFaktorkan pembilang dan penyebut lalu coret faktor perseku-\ntuan (3 x − 2) :\n6 x 2 + 5 x − 6\n9 x 2 − 4\n=\n(2 x + 3)(3 x − 2)\n(3 x − 2)(3 x + 2)\n=\n2 x + 3\n3 x + 2\n."
+    },
+    {
+      "paket": 4,
+      "nomor": 14,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\nDiketahui p = (2 x + 5) cm dan ℓ = ( x − 1) cm:\n• Keliling = 2(2 x + 5 + x − 1) = 2(3 x + 4) = (6 x + 8) cm\n(Benar).\n• Luas = (2 x + 5)( x − 1) = (2 x 2 + 3 x − 5) cm 2 (Benar).\n• Untuk x = 4 : Keliling = 6(4) + 8 = 32 cm (Benar)."
+    },
+    {
+      "paket": 4,
+      "nomor": 15,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Benar - Benar (B, B, B).\nDiketahui x + y = 7 dan xy = 10 :\n• x 2 + y 2 = ( x + y ) 2 − 2 xy = 7 2 − 2(10) = 49 − 20 = 29\n(Benar).\n• ( x − y ) 2 = ( x + y ) 2 − 4 xy = 49 − 40 = 9 (Benar).\n•\n1\nx\n+\n1\ny\n=\nx + y\nxy\n=\n7\n10\n(Benar)."
+    },
+    {
+      "paket": 4,
+      "nomor": 16,
+      "kunci": null,
+      "pembahasan": "Karena DE ∥ AB , maka △ CDE ∼ △ CAB :\nCD\nCA\n=\nDE\nAB\n= ⇒\n24\nAC\n=\n15\n3\n20 4\n= ⇒ AC =\n24 × 4\n3\n= 32 cm."
+    },
+    {
+      "paket": 4,
+      "nomor": 17,
+      "kunci": null,
+      "pembahasan": "Karena △ KLM ∼ △ P QR , maka:\nP R\nKM\n=\nP Q\nKL\n= ⇒\nP R\n5\n=\n12\n3\n8 2\n= ⇒ P R =\n15\n2\n= 7 , 5 cm.\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 79\nMASTER MATEMATIKA SMP/MTs KELAS IX — KURIKULUM MERDEKA (FASE D) SEMESTER 1 — MATERI LENGKAP, CONTOH SOAL & PEMBAHASAN"
+    },
+    {
+      "paket": 4,
+      "nomor": 18,
+      "kunci": null,
+      "pembahasan": "DE =\n√\n20 2 − 16 2 = 12 cm. Karena △ ABC ∼ = △ EDC ,\nmaka AB = DE = 12 cm dan BC = CD = 16 cm.\nLuas △ ABC =\n1\n2 1\n× 16\n8\n× 12 = 96 cm 2 ."
+    },
+    {
+      "paket": 4,
+      "nomor": 19,
+      "kunci": null,
+      "pembahasan": "Karena AE = CE dan AD = CD = 4 cm, maka AC =\n8 cm.\nF C\n2\n= BC × AC = 4 × 8 = 32 = ⇒ F C =\n√\n32 = 4\n√\n2 cm."
+    },
+    {
+      "paket": 4,
+      "nomor": 20,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, 3, dan 4 BENAR.\nDengan perbandingan △ ABE ∼ △ CDE (rasio 1 : 3 ), diper-\noleh lebar sungai AB , panjang miring CE , dan perbandingan\nluas 1 : 9 sesuai keempat pernyataan."
+    },
+    {
+      "paket": 4,
+      "nomor": 21,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Salah - Benar (B, S, B).\n• Kriteria S-S-S menjamin dua segitiga kongruen (Benar).\n• Kriteria Sd-Sd-Sd hanya menjamin sebangun, belum tentu\nkongruen (Salah).\n• Dua segitiga kongruen pasti memiliki luas dan keliling yang\nsama (Benar)."
+    },
+    {
+      "paket": 4,
+      "nomor": 22,
+      "kunci": null,
+      "pembahasan": "C):\nDari P ( − 6 , 4)\nT ( a,b )\n− − − − → P\n′\n(2 , − 3) diperoleh:\na = 2 − ( − 6) = 8 dan b = − 3 − 4 = − 7 .\nMaka nilai 2 a − b = 2(8) − ( − 7) = 16 + 7 = 23 ."
+    },
+    {
+      "paket": 4,
+      "nomor": 23,
+      "kunci": null,
+      "pembahasan": "A):\nTitik Q (5 , − 2) dicerminkan terhadap garis x = 2 : Q\n′\n(2(2) −\n5 , − 2) = Q\n′\n( − 1 , − 2) .\nDilanjutkan pencerminan terhadap garis y = − 3 :\nQ\n′′\n( − 1 , 2( − 3) − ( − 2)) = Q\n′′\n( − 1 , − 4) (atau terhadap y =\n− 5 : Q ′′ ( − 1 , − 8) / ( − 1 , − 9) , opsi A) ."
+    },
+    {
+      "paket": 4,
+      "nomor": 24,
+      "kunci": null,
+      "pembahasan": "A):\nTitik R ( − 4 , 7) dirotasikan [ O, − 90\n◦\n] ( 90\n◦\nsearah jarum jam):\nR\n′\n(7 , − ( − 4)) = R\n′\n(7 , 4) .\nDilanjutkan translasi T (3 , − 2) : R\n′′\n(7 + 3 , 4 − 2) = R\n′′\n(10 , 2) ."
+    },
+    {
+      "paket": 4,
+      "nomor": 25,
+      "kunci": null,
+      "pembahasan": "C):\nLuas awal △ KLM adalah L = 18 cm\n2\n, didilatasikan dengan\nfaktor skala k = − 3 .\nLuas bayangan L\n′\n= k\n2\n× L = ( − 3)\n2\n× 18 = 9 × 18 =\n162 cm\n2\n."
+    },
+    {
+      "paket": 4,
+      "nomor": 26,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\n• ( − 3 , 5)\nM Y\n− − → (3 , 5) di Kuadran I (Benar).\n• ( − 4 , − 2)\nR [ O, 180 ◦ ]\n− − − − − − → (4 , 2) di Kuadran I (Benar).\n• (2 , − 3)\nM X\n− − → (2 , 3) di Kuadran I (Benar)."
+    },
+    {
+      "paket": 4,
+      "nomor": 27,
+      "kunci": null,
+      "pembahasan": "Jawaban: Benar - Salah - Benar (B, S, B).\n• Translasi, refleksi, dan rotasi adalah isometri yang memper-\ntahankan bentuk dan ukuran (Benar).\n• Dilatasi dengan | k | > 1 memperbesar ukuran bangun,\nbukan memperkecil (Salah).\n• Dua refleksi berurutan terhadap x = a lalu x = b setara\ndengan translasi 2( b − a ) searah sumbu- X (Benar)."
+    },
+    {
+      "paket": 4,
+      "nomor": 28,
+      "kunci": null,
+      "pembahasan": "B):\nDari 3 x +1 = 27 = 3 3 = ⇒ x + 1 = 3 = ⇒ x = 2 .\nDari 2 y − 2 = 8 = 2 3 = ⇒ y − 2 = 3 = ⇒ y = 5 .\nMaka nilai x 2 + 2 xy + y 2 = ( x + y ) 2 = (2 + 5) 2 = 7 2 = 49 ."
+    },
+    {
+      "paket": 4,
+      "nomor": 29,
+      "kunci": null,
+      "pembahasan": "C):\nPerbandingan sisi bersesuaian:\nx + 2\n2 x + 1\n=\n6\n9\n=\n2\n3\n.\nKalikan silang: 3( x +2) = 2(2 x +1) = ⇒ 3 x +6 = 4 x +2 = ⇒\nx = 4 ."
+    },
+    {
+      "paket": 4,
+      "nomor": 30,
+      "kunci": null,
+      "pembahasan": "Jawaban: Pernyataan 1, 2, dan 3 BENAR.\nDiketahui luas awal L = 25 cm 2 , keliling awal K = 20 cm,\ndan faktor skala k = 4 :\n• Bangun awal dan bangun hasil dilatasi selalu sebangun\n(Benar).\n• Keliling bayangan K ′ = 4 × 20 = 80 cm (Benar).\n• Luas bayangan L ′ = 4 2 × 25 = 16 × 25 = 400 cm 2 (Benar).\nMATEMATIKA SMP/MTs KELAS IX SEMESTER 1 — MATERI, METODE CORET & CARA CEPAT 80"
+    }
+  ]
+}

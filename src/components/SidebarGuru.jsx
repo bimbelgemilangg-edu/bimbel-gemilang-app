@@ -37,7 +37,6 @@ const SidebarGuru = () => {
     // MATERI v2 (Fase 3): panggung presentasi sinkron guru-siswa.
     // Turn 91 (koreksi owner): menu PRESENTASI & PPT-ku digabung jadi SATU;
     // halaman dalamnya punya 2 tab + tombol Baca per bab (reader versi siswa).
-    { name: 'Presentasi & PPT-ku', path: '/guru/presentasi', icon: <Projector size={20} /> },
     // Ruang kerja PRIVAT guru: bank referensi buku paket + generate alat bantu
     // belajar yang grounded ke buku yang diupload. Tidak tampil ke siswa.
     { name: 'Alat Bantu Guru', path: '/guru/alat-bantu', icon: <GraduationCap size={20} /> },

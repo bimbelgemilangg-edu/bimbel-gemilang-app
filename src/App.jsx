@@ -196,6 +196,7 @@ import LatihanHarianPage from './pages/student/gemilang/LatihanHarianPage';
 // 🔥 BUKU INTERAKTIF DIGITAL -- rak buku + reader per bab
 import BukuInteraktifPage from './pages/student/gemilang/BukuInteraktifPage';
 import AksesBelajarPage from './pages/student/AksesBelajarPage';
+import BukuPdfPage from './pages/student/BukuPdfPage';
 import BottomNavSiswa from './components/BottomNavSiswa';import BukuBacaPage from './pages/student/gemilang/BukuBacaPage';
 import StudentSchedule from './pages/student/StudentSchedule';
 import StudentFinanceSiswa from './pages/student/StudentFinance';
@@ -951,6 +952,12 @@ function App() {
         <Route path="/siswa/materi" element={<SiswaPageBelajar fitur="E-Learning"><StudentElearning /></SiswaPageBelajar>} />
         {/* 📱 20 Okt: hub tombol tengah navigasi bawah */}
         <Route path="/siswa/akses-belajar" element={<SiswaPageBelajar fitur="E-Learning"><AksesBelajarPage /></SiswaPageBelajar>} />
+        {/* 📚 20 Okt (pivot owner): buku digital = PDF konvensional yang
+            bisa dibalik; pembahasan terpisah untuk guru. */}
+        <Route path="/siswa/buku-pdf" element={<SiswaPageBelajar fitur="Buku Digital"><BukuPdfPage mode="siswa" /></SiswaPageBelajar>} />
+        <Route path="/siswa/buku-pdf/:bukuId" element={<SiswaPageBelajar fitur="Buku Digital"><BukuPdfPage mode="siswa" /></SiswaPageBelajar>} />
+        <Route path="/guru/buku-pdf" element={<GuruPage><BukuPdfPage mode="guru" /></GuruPage>} />
+        <Route path="/guru/buku-pdf/:bukuId" element={<GuruPage><BukuPdfPage mode="guru" /></GuruPage>} />
         {/* MATERI v2 -- tampilan materi belajar baru (fase 1-2,
             docs/RENCANA-ROMBAK-MATERI.md). Reader full-screen. */}
         <Route
