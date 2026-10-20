@@ -82,6 +82,7 @@ export function butuhLebarPenuh(tinggiKolomMm, kapasitasMm) {
 // dua pengertian berbeda soal "teks soal" dan "bacaan".
 import { teksSoalDari, bacaanDari, WATERMARK } from './fieldButirSoal.js';
 import { kodePaketTampil } from './kodePaket.js';
+import { kodeSoalSiswa } from './kodeSoalSiswa.js';
 // 🔥 BARU (2026-10-10, permintaan owner): naskah cetak bergaya buku sumber --
 // kode sumber jadi kepala butir, pembahasan berstruktur (premis, kesimpulan
 // bergaris, jawaban tebal). Parser strukturnya murni & teruji.
@@ -413,6 +414,7 @@ export const GAYA_NASKAH = `
 .naskah .nsk-bacaan img { max-width: 100%; }
 .naskah .nsk-footer { position: absolute; left: 0; right: 0; bottom: 2.5mm; text-align: center; font-size: 10px; color: #000; }
 .naskah .katex { font-size: 1.02em; }
+.naskah .nsk-kodesoal { display: inline-block; margin: 0 0 3px 26px; font-size: 8.5px; font-weight: 700; color: #9a3412; background: #ffedd5; border: 1px solid #fdba74; border-radius: 999px; padding: 1px 7px; }
 `;
 
 function imgNaskahHtml(src, alt, ukuran) {
@@ -593,7 +595,7 @@ export function butirNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}, opsiB
   // esai tempat menjawabnya -- siswa tidak lagi disuruh menjawab di ruang
   // yang tidak tercetak.
   const isiJawaban = isiJawabanNaskah(soal, nomor, lebarKolom, rasioGambar);
-  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${kodeHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
+  return `<div class="nsk-butir">${opsiButir.kode ? `<div class="nsk-kodesoal">🔖 ${escapeHtml(opsiButir.kode)}</div>` : ''}<div class="nsk-no">${nomor}.</div><div class="nsk-isi">${bacaanHtml}${kodeHtml}${badan}${opsiHtml ? `<div class="nsk-opsi" style="grid-template-columns:repeat(${nKolomOpsi},1fr);">${opsiHtml}</div>` : ''}${isiJawaban}</div></div>`;
 }
 
 export function kopNaskahHtml(paket, judulDok, denganIdentitas) {
@@ -674,7 +676,7 @@ function htmlBlokPembahasan(teks, kunciHuruf = '', gambar = null) {
   return html;
 }
 
-export function kunciButirNaskahHtml(soal, nomor) {
+export function kunciButirNaskahHtml(soal, nomor, opsiButir = {}) {
   const kunci = Array.isArray(soal?.kunciJawaban)
     ? soal.kunciJawaban.map((k) => String.fromCharCode(65 + Number(k))).join(', ')
     : escapeHtml(String(soal?.kunci ?? soal?.kunciJawaban ?? '-'));
@@ -687,7 +689,7 @@ export function kunciButirNaskahHtml(soal, nomor) {
     : '';
   const perBaris = kunciPerBaris(soal);
   const kunciTampil = perBaris ? `${kunci}${kunci ? ' · ' : ''}${perBaris}` : kunci;
-  return `<div class="nsk-butir"><div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? `<div class="nsk-bhs">${pembahasan}</div>` : ''}</div></div>`;
+  return `<div class="nsk-butir">${opsiButir.kode ? `<div class="nsk-kodesoal">🔖 ${escapeHtml(opsiButir.kode)}</div>` : ''}<div class="nsk-no">${nomor}.</div><div class="nsk-isi nsk-kunci-baris"><b>Kunci:</b> ${kunciTampil || '-'}${pembahasan ? `<div class="nsk-bhs">${pembahasan}</div>` : ''}</div></div>`;
 }
 
 /**
@@ -849,14 +851,14 @@ export function daftarBlokNaskah(mode, paket, soalList, lebarKolom, rasioGambar 
     ? `<div class="nsk-peringatan">PEGANGAN GURU — JANGAN DICETAK UNTUK SISWA</div>${kopNaskahHtml(paket, 'KUNCI & PEMBAHASAN', false)}`
     : kopNaskahHtml(paket, 'NASKAH SOAL', true);
   if (mode === 'kunci') {
-    return [kop, ...daftar.map((s, i) => kunciButirNaskahHtml(s, i + 1))];
+    return [kop, ...daftar.map((s, i) => kunciButirNaskahHtml(s, i + 1, { kode: kodeSoalSiswa({ paket, nomor: i + 1 }) }))];
   }
   const blok = [kop];
   for (const unit of kelompokkanStimulus(daftar)) {
     if (unit.jenis === 'bacaan') {
       for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) blok.push(chunk.html);
     } else {
-      blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+      blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, kode: kodeSoalSiswa({ paket, nomor: unit.nomor }) }));
     }
   }
   return blok;

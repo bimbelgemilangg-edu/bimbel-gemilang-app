@@ -18,17 +18,17 @@ test('tanggalKeyPaket: dari kodePaket dulu, lalu createdAt', () => {
   assert.equal(tanggalKeyPaket({}), '00000000');
 });
 
-test('kodeSoalSiswa: bentuk MTK-1017-07 & stabil per nomor paket', () => {
+test('kodeSoalSiswa v2: turunan kode paket, stabil per nomor paket', () => {
   const paket = { kodePaket: 'GM-SMP-TKA-20261017-0800' };
-  assert.equal(kodeSoalSiswa({ mapel: 'Matematika', paket, nomor: 7 }), 'MTK-1017-07');
-  assert.equal(kodeSoalSiswa({ mapel: 'Matematika', paket, nomor: 7 }), 'MTK-1017-07', 'tak bergantung urutan acak');
-  assert.equal(kodeSoalSiswa({ mapel: 'Bahasa Indonesia', paket, nomor: 12 }), 'BIND-1017-12');
+  assert.equal(kodeSoalSiswa({ paket, nomor: 7 }), 'SMP-0800-07');
+  assert.equal(kodeSoalSiswa({ paket, nomor: 7 }), 'SMP-0800-07', 'tak bergantung urutan acak');
+  assert.equal(kodeSoalSiswa({ paket, nomor: 12 }), 'SMP-0800-12');
 });
 
 test('cocokCariKode: toleran spasi, strip, huruf kecil', () => {
-  assert.equal(cocokCariKode('MTK-1017-07', 'mtk101707'), true);
-  assert.equal(cocokCariKode('MTK-1017-07', '1017-07'), true);
-  assert.equal(cocokCariKode('MTK-1017-07', '07'), true);
-  assert.equal(cocokCariKode('MTK-1017-07', 'bind'), false);
-  assert.equal(cocokCariKode('MTK-1017-07', ''), true);
+  assert.equal(cocokCariKode('SMP-0800-07', 'smp080007'), true);
+  assert.equal(cocokCariKode('SMP-0800-07', '0800-07'), true);
+  assert.equal(cocokCariKode('SMP-0800-07', '07'), true);
+  assert.equal(cocokCariKode('SMP-0800-07', 'sma'), false);
+  assert.equal(cocokCariKode('SMP-0800-07', ''), true);
 });
