@@ -185,6 +185,7 @@ const SidebarAdmin = () => {
     { name: 'Import Buku & Soal (AI)', path: '/admin/bank-soal/import', icon: <Brain size={20} /> },
         // 📚 14 Okt 2026: buku scan/HTML -> draf materi + bank soal per bab.
         { name: 'Impor Buku HTML', path: '/admin/buku/impor-html', icon: <BookUp size={20} /> },
+    { name: 'Buku PDF Gemilang', path: '/admin/buku-pdf', icon: <BookOpen size={18} /> },
     { name: 'Kesiapan Stok', path: '/admin/bank-soal/stok', icon: <Archive size={18} /> },
     { name: 'Riwayat Paket', path: '/admin/bank-soal/riwayat-paket', icon: <History size={18} /> },
     { name: 'Dashboard',    path: '/admin',            icon: <LayoutDashboard size={18} /> },

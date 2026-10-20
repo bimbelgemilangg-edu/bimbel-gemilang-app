@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { BookOpen, MonitorPlay, Layers, Sparkles, FlipVertical } from 'lucide-react';
-import { KATALOG_BUKU_PDF } from '../../data/katalogBukuPdf';
+
 
 const st = {
   kartu: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 14 },
@@ -61,15 +61,10 @@ export default function AksesBelajarPage() {
           <FlipVertical size={17} color="#f97316" />
           <b style={{ fontSize: 13.5, color: '#1e293b' }}>Buku PDF Gemilang — baca & balik seperti buku cetak</b>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-          {KATALOG_BUKU_PDF.map((b) => (
-            <button key={b.id} type="button" onClick={() => navigate(`/siswa/buku-pdf/${b.id}`)} style={{ border: '1px solid #fed7aa', background: '#fff7ed', borderRadius: 12, padding: 12, textAlign: 'left', cursor: 'pointer' }}>
-              <div style={{ fontSize: 24 }}>{b.emoji}</div>
-              <b style={{ fontSize: 12.5, color: '#7c2d12', display: 'block', marginTop: 4, lineHeight: 1.35 }}>{b.judul}</b>
-              <span style={{ fontSize: 10.5, color: '#9a3412' }}>{b.totalHalaman} halaman · kunci & pembahasan khusus guru</span>
-            </button>
-          ))}
-        </div>
+        <button type="button" onClick={() => navigate('/siswa/buku-pdf')} style={{ width: '100%', border: '1px solid #fed7aa', background: '#fff7ed', borderRadius: 12, padding: 12, textAlign: 'left', cursor: 'pointer' }}>
+          <b style={{ fontSize: 12.5, color: '#7c2d12' }}>📙 Buka Rak Buku PDF Gemilang</b>
+          <div style={{ fontSize: 10.5, color: '#9a3412', marginTop: 2 }}>baca & balik halaman seperti buku cetak · kunci & pembahasan khusus guru</div>
+        </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, margin: '14px 0' }}>
