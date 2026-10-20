@@ -12,7 +12,12 @@
 // Semua fungsi MURNI & teruji.
 // ============================================================
 
-const LUNAS = (c = {}) => /lunas/i.test(String(c.status || ''));
+const LUNAS = (c = {}) => {
+  const st = String(c.status || '').trim();
+  // 'Belum Lunas' MENGANDUNG kata 'lunas' — wajib dicek negasi dulu
+  // (regresi tertangkap uji 20 Okt).
+  return /lunas/i.test(st) && !/belum/i.test(st);
+};
 
 /**
  * Hitung ulang nominal cicilan BELUM lunas agar jumlahnya persis
