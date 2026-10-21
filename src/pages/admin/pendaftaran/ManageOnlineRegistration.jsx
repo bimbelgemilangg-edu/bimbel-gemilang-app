@@ -29,14 +29,12 @@ const ManageOnlineRegistration = () => {
   const [editingTT, setEditingTT] = useState(false);
 
   // Modals
-  const [showBayarModal, setShowBayarModal] = useState(false);
   const [showVirtualModal, setShowVirtualModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedReg, setSelectedReg] = useState(null);
   
   // Pembayaran
   const [payNominal, setPayNominal] = useState('');
-  const [payMethod, setPayMethod] = useState('Tunai');
   const [payNote, setPayNote] = useState('');
   const [processingId, setProcessingId] = useState(null);
   const [virtualLoading, setVirtualLoading] = useState(false);
@@ -139,7 +137,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     try {
       const snap = await getDoc(doc(db, "settings", "tata_tertib"));
       setTataTertib(snap.exists() && snap.data().konten ? snap.data().konten : DEFAULT_TATA_TERTIB);
-    } catch (e) { setTataTertib(DEFAULT_TATA_TERTIB); }
+    } catch (_e) { setTataTertib(DEFAULT_TATA_TERTIB); }
     setLoadingTT(false);
   };
 

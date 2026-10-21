@@ -35,7 +35,7 @@ import IsiSections from '../../../components/belajar/IsiSections';
 import { buatSlide, SlideView } from '../../../components/belajar/slideMateri';
 import JodohBoard from '../../../components/belajar/JodohBoard';
 import {
-  cariSesiAktif, cariDaftarSesiAktif, cariSesiByKodePresentasi, pantauSesi, tandaiPeserta, kirimJawabanLive,
+  cariDaftarSesiAktif, cariSesiByKodePresentasi, pantauSesi, tandaiPeserta, kirimJawabanLive,
   antreMaju, batalAntre, pantauAntreanSaya,
 } from '../../../services/sesiPresentasiService';
 import {

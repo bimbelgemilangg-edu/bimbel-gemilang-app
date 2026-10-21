@@ -1,6 +1,6 @@
 // src/pages/student/StudentElearning.jsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { db } from '../../firebase';
 import { 
   collection, getDocs, doc, getDoc, query, orderBy, where 
@@ -74,7 +74,6 @@ const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
 // MAIN COMPONENT
 // ============================================================
 const StudentElearning = () => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   // ===== STATES =====
@@ -165,7 +164,7 @@ const StudentElearning = () => {
     try {
       const raw = localStorage.getItem('studentEnrolledSubjects');
       enrolledSubjectsFallback = raw ? JSON.parse(raw) : [];
-    } catch (e) { enrolledSubjectsFallback = []; }
+    } catch (_e) { enrolledSubjectsFallback = []; }
 
     setStudentData({ id, nim, name, kelas, program, enrolledSubjects: enrolledSubjectsFallback });
 
@@ -212,7 +211,7 @@ const StudentElearning = () => {
       // StudentQuizView) yang baca dari sini juga dapat data terbaru.
       try {
         localStorage.setItem('studentEnrolledSubjects', JSON.stringify(enrolled));
-      } catch (e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
+      } catch (_e) { /* localStorage penuh/gak tersedia -- gak fatal */ }
     };
 
     // 🔥 FIX BUG NYATA (lanjutan dari fix ID-vs-kode di atas): asumsi
