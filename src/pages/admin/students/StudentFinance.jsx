@@ -19,6 +19,12 @@ import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
 import { bangunPenyesuaianTagihan } from '../../../utils/penyesuaianTagihan';
+// 🔥 BARU (21 Okt 2026, keluhan owner: "paket bisa 2 bulan, 4, dll sesuai
+// kadang promonya"): durasi perpanjangan bebas (preset 1/2/3/4/6/12/24 +
+// custom 1–60) + PROMO BONUS BULAN ("bayar 2 dapat 3") + penyesuaian
+// kesepakatan yang bisa membawa durasi paket baru. Logika murni di utils.
+import PilihDurasiBulan from '../../../components/admin/PilihDurasiBulan';
+import { rencanaPaketPromo, normalisasiDurasi, normalisasiBonus, tambahBulanKeTanggal } from '../../../utils/durasiPaket';
 // 🔥 BARU (hotfix 2026-10-13): pintu koreksi SATU baris buku besar (diskon /
 // salah nominal / salah metode) + detektor "dua buku tidak cocok".
 import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
@@ -78,7 +84,10 @@ const StudentFinance = () => {
   // paket pecah sah dicatat; cicilan dihitung ulang otomatis & kwitansi
   // tetap tercetak dari nominal riil yang diterima.
   const [showPenyesuaianModal, setShowPenyesuaianModal] = useState(false);
-  const [penyesuaianData, setPenyesuaianData] = useState({ kesepakatan: '', alasan: '', rincian: '' });
+  // 🔥 21 Okt (durasi bebas + promo): `durasi` = durasi paket kesepakatan
+  // (bulan, opsional) — paket promo 2/4/x bulan bisa menyesuaikan nominal
+  // DAN lama paket sekaligus; kosong/0 = durasi tidak diubah.
+  const [penyesuaianData, setPenyesuaianData] = useState({ kesepakatan: '', alasan: '', rincian: '', durasi: '' });
   const [isPenyesuaianProcessing, setIsPenyesuaianProcessing] = useState(false);
   const [koreksiData, setKoreksiData] = useState(null);
   const [isKoreksiProcessing, setIsKoreksiProcessing] = useState(false);
@@ -105,6 +114,12 @@ const StudentFinance = () => {
     // sendiri sebelum bisa lanjut. Gak ada lagi opsi "keliru gara-gara
     // gak ngecek default".
     durasiTambah: 0,
+    // 🔥 BARU (21 Okt, promo): bonus bulan GRATIS di luar bulan yang
+    // dibayar ("bayar 2 dapat 3" → durasiTambah 2, bonusBulan 1). Tidak
+    // ditagih, tapi MEMANJANGKAN tanggal selesai & durasi paket — dan
+    // dicatat terstruktur di finance_logs supaya pembalikan transaksi
+    // (TransactionHistory) tetap akurat.
+    bonusBulan: 0,
     metodeBayar: 'Tunai',
     tenor: 1,
     tanggalCicilan1: tanggalLokalHariIni(),
@@ -265,8 +280,20 @@ const StudentFinance = () => {
   };
 
   // 🔥 HITUNG PERPANJANGAN (SYNCHRONOUS - pakai harga dari state)
+  // 21 Okt (promo bonus bulan): rencana dihitung lewat util murni
+  // rencanaPaketPromo — UANG hanya dari bulan bayar; bulan bonus gratis
+  // tapi ikut memanjangkan tanggal selesai (clamp akhir bulan, bukan
+  // setMonth meluber). Null = durasi belum/tidak valid dipilih.
+  const rencanaPerpanjangSaatIni = () => rencanaPaketPromo({
+    hargaPerBulan: hargaPaket,
+    bulanBayar: perpanjangData.durasiTambah,
+    bulanBonus: perpanjangData.bonusBulan,
+    tanggalSelesaiLama: student?.tanggalSelesai || '',
+    tanggalAcuan: tanggalLokalHariIni(),
+  });
+
   const hitungTotalPerpanjangan = () => {
-    return hargaPaket * perpanjangData.durasiTambah;
+    return rencanaPerpanjangSaatIni()?.totalTagihan || 0;
   };
 
   const hitungCicilanPerpanjang = () => {
@@ -415,7 +442,19 @@ const StudentFinance = () => {
 
     setIsProcessing(true);
     try {
-      const totalPerpanjangan = hitungTotalPerpanjangan();
+      // 🔥 21 Okt (promo): satu rencana murni — uang dari bulan BAYAR,
+      // tanggal selesai maju bulan BAYAR + BONUS, omzet amortisasi dibagi
+      // bulan TOTAL. Rencana null mustahil di sini (guard durasi di atas).
+      const rencana = rencanaPerpanjangSaatIni();
+      // Defensif: guard durasi & harga di atas seharusnya membuat rencana
+      // tak pernah null — tapi kalau sampai null, JANGAN tinggalkan tombol
+      // dalam keadaan memproses (setIsProcessing ada di akhir fungsi).
+      if (!rencana) {
+        setIsProcessing(false);
+        return showAlert('❌ Durasi perpanjangan tidak valid!');
+      }
+      const totalPerpanjangan = rencana.totalTagihan;
+      const bulanTotal = rencana.bulanTotal;
       const today = tanggalLokalHariIni();
       const kodeUnik = student?.studentId || id;
 
@@ -436,11 +475,11 @@ const StudentFinance = () => {
         ? await ambilNomorKwitansiBerikutnya(new Date(`${today}T00:00:00`))
         : '';
 
-      // 1. Hitung tanggal selesai baru
-      const oldSelesai = student.tanggalSelesai || today;
-      const newSelesai = new Date(oldSelesai);
-      newSelesai.setMonth(newSelesai.getMonth() + perpanjangData.durasiTambah);
-      const newSelesaiStr = newSelesai.toISOString().split('T')[0];
+      // 1. Hitung tanggal selesai baru — MAJU SEJUMLAH BULAN TOTAL
+      // (bayar + bonus promo) via util murni (clamp akhir bulan: 31 Okt
+      // + 1 bln = 30 Nov, bukan meluber). setMonth mentah + toISOString
+      // lama juga rawan geser zona waktu.
+      const newSelesaiStr = rencana.tanggalSelesaiBaru || today;
 
       // 2. Hitung nilai baru buat students
       const newTotalTagihan = (parseInt(student.totalTagihan || 0)) + totalPerpanjangan;
@@ -463,7 +502,9 @@ const StudentFinance = () => {
         totalTagihan: newTotalTagihan,
         totalBayar: newTotalBayar,
         tanggalSelesai: newSelesaiStr,
-        durasiBulan: (parseInt(student.durasiBulan || 0)) + perpanjangData.durasiTambah
+        // 🔥 21 Okt (promo): durasi paket bertambah bulan BAYAR + BONUS —
+        // bulan gratis tetap bagian dari masa aktif paket siswa.
+        durasiBulan: (parseInt(student.durasiBulan || 0)) + bulanTotal
       });
 
       const logRef = doc(collection(db, "finance_logs"));
@@ -475,7 +516,9 @@ const StudentFinance = () => {
         category: 'Perpanjangan Paket',
         amount: totalPerpanjangan,
         method: perpanjangData.metodeBayar,
-        note: `Perpanjangan ${perpanjangData.durasiTambah} bulan: ${student?.nama} (s.d ${newSelesaiStr})`,
+        note: rencana.bulanBonus > 0
+          ? `Perpanjangan ${rencana.bulanBayar} bulan + ${rencana.bulanBonus} bulan PROMO (gratis): ${student?.nama} (s.d ${newSelesaiStr})`
+          : `Perpanjangan ${rencana.bulanBayar} bulan: ${student?.nama} (s.d ${newSelesaiStr})`,
         // 🔥 BARU (modul kanal uang & rekonsiliasi & kwitansi): kanal
         // eksplisit + jejak transfer + nomor kwitansi (lunas saja) +
         // status rekonsiliasi pending buat transfer.
@@ -495,7 +538,14 @@ const StudentFinance = () => {
         // laporan nyata yang masuk: admin salah pilih 3 bulan, sudah
         // dikoreksi nominalnya di Riwayat, tapi tanggal selesai & durasi
         // paket TETAP kebawa 3 bulan).
-        durasiTambah: perpanjangData.durasiTambah,
+        // 🔥 21 Okt (promo): kontrak reversal (reversePerpanjangan di
+        // TransactionHistory) membaca `durasiTambah` sebagai TOTAL bulan
+        // yang dulu ditambahkan ke tanggal selesai & durasi paket — maka
+        // field ini wajib berisi bulan bayar + bonus. Rinciannya disimpan
+        // terpisah (bulanBayar/bulanBonus) buat transparansi laporan owner.
+        durasiTambah: bulanTotal,
+        bulanBayar: rencana.bulanBayar,
+        bulanBonus: rencana.bulanBonus,
         createdAt: serverTimestamp()
       });
 
@@ -537,7 +587,10 @@ const StudentFinance = () => {
 
       await batch.commit();
 
-      showAlert(`✅ Perpanjangan ${perpanjangData.durasiTambah} bulan berhasil! Selesai: ${newSelesaiStr}`);
+      const teksBulan = rencana.bulanBonus > 0
+        ? `${rencana.bulanBayar} bulan + ${rencana.bulanBonus} bulan promo`
+        : `${rencana.bulanBayar} bulan`;
+      showAlert(`✅ Perpanjangan ${teksBulan} berhasil! Selesai: ${newSelesaiStr}`);
       setShowPerpanjangModal(false);
       // 🔥 BARU (modul kwitansi): tawarkan cetak kwitansi buat perpanjangan
       // LUNAS (uang riil diterima). Jalur cicilan tidak ada kwitansi di
@@ -549,17 +602,21 @@ const StudentFinance = () => {
         diterimaDari: student?.nama || 'Siswa',
         studentId: kodeUnik,
         jumlah: totalPerpanjangan,
-        keperluan: `Perpanjangan paket ${perpanjangData.durasiTambah} bulan (s.d. ${newSelesaiStr})`,
+        keperluan: `Perpanjangan paket ${teksBulan} (s.d. ${newSelesaiStr})`,
         metode: perpanjangData.metodeBayar,
         refTransfer: perpanjangRef.trim(),
       } : null;
       setPerpanjangRef('');
       setPerpanjangBukti(null);
+      // 🔥 21 Okt: kosongkan pilihan durasi & bonus setelah sukses — modal
+      // berikutnya mulai dari "-- Pilih Durasi --" lagi (semangat guard
+      // anti-salah-default Okt 2026: tidak ada pilihan lama yang nyangkut).
+      setPerpanjangData(prev => ({ ...prev, durasiTambah: 0, bonusBulan: 0 }));
       fetchData();
       if (dataCetakPerpanjang && window.confirm(
-        `✅ Perpanjangan ${perpanjangData.durasiTambah} bulan tercatat!\n\n` +
+        `✅ Perpanjangan ${teksBulan} tercatat!\n\n` +
         `Uang diterima: Rp ${totalPerpanjangan.toLocaleString()} (kas masuk hari ini).\n` +
-        `Omzet diakui bulan ini: Rp ${Math.round(totalPerpanjangan / perpanjangData.durasiTambah).toLocaleString()}/bulan x masa berjalan -- sisanya DANA TITIPAN yang cair bertahap ke laporan (bukan hak hari ini).\n\n` +
+        `Omzet diakui bulan ini: Rp ${rencana.omzetPerBulan.toLocaleString()}/bulan x masa berjalan (dibagi ${bulanTotal} bulan${rencana.bulanBonus > 0 ? ' termasuk bonus promo' : ''}) -- sisanya DANA TITIPAN yang cair bertahap ke laporan (bukan hak hari ini).\n\n` +
         `Kwitansi ${noKwitansiPerpanjang} sudah dibuat. Cetak sekarang?`
       )) {
         cetakKwitansi(dataCetakPerpanjang);
@@ -622,6 +679,14 @@ const StudentFinance = () => {
     const kesepakatan = parseInt(penyesuaianData.kesepakatan, 10);
     if (!Number.isFinite(kesepakatan) || kesepakatan <= 0) return showAlert('⚠️ Nominal kesepakatan tidak valid!');
     if (!String(penyesuaianData.alasan || '').trim()) return showAlert('⚠️ Alasan penawaran wajib diisi (jejak audit untuk owner).');
+    // 🔥 BARU (21 Okt, durasi kesepakatan): field durasi OPSIONAL — tapi
+    // kalau admin MENGISI sesuatu yang tidak valid (0, 99, teks), tolak
+    // eksplisit; jangan diam-diam dianggap "durasi tidak berubah".
+    const durasiDiisi = String(penyesuaianData.durasi ?? '').trim() !== '';
+    const durasiKesepakatan = normalisasiDurasi(penyesuaianData.durasi);
+    if (durasiDiisi && !durasiKesepakatan) {
+      return showAlert('⚠️ Durasi kesepakatan tidak valid — isi 1–60 bulan, atau KOSONGKAN kalau lama paket tidak berubah.');
+    }
     setIsPenyesuaianProcessing(true);
     try {
       const kodeUnik = student?.studentId || id;
@@ -631,6 +696,7 @@ const StudentFinance = () => {
         kesepakatan,
         alasan: penyesuaianData.alasan,
         rincian: penyesuaianData.rincian,
+        durasiKesepakatan,
       });
       const batch = writeBatch(db);
       batch.set(doc(db, 'students', id), hasil.siswa, { merge: true });
@@ -642,14 +708,23 @@ const StudentFinance = () => {
         kesepakatan,
         selisihPenawaran: hasil.selisih,
         sisaSetelahPenyesuaian: hasil.sisa,
+        // 🔥 BARU: jejak durasi kesepakatan (0 = durasi tidak diubah) —
+        // owner bisa audit paket promo 2/4 bulan dari log yang sama.
+        durasiKesepakatan: durasiKesepakatan || 0,
+        tanggalSelesaiBaru: hasil.durasi?.tanggalSelesai || '',
         alasan: penyesuaianData.alasan,
         rincian: penyesuaianData.rincian || '',
         createdAt: serverTimestamp(),
       });
       await batch.commit();
       setShowPenyesuaianModal(false);
-      setPenyesuaianData({ kesepakatan: '', alasan: '', rincian: '' });
-      showAlert(`✅ Harga kesepakatan Rp ${kesepakatan.toLocaleString()} berlaku. Cicilan belum lunas dihitung ulang otomatis (sisa Rp ${hasil.sisa.toLocaleString()}); kwitansi tetap tercetak dari nominal riil yang diterima.`);
+      setPenyesuaianData({ kesepakatan: '', alasan: '', rincian: '', durasi: '' });
+      const infoDurasi = hasil.durasi
+        ? (hasil.durasi.tanggalSelesai
+          ? ` Lama paket jadi ${hasil.durasi.durasiBulan} bulan (s.d. ${hasil.durasi.tanggalSelesai}).`
+          : ` ⚠️ ${hasil.durasi.peringatan}`)
+        : '';
+      showAlert(`✅ Harga kesepakatan Rp ${kesepakatan.toLocaleString()} berlaku. Cicilan belum lunas dihitung ulang otomatis (sisa Rp ${hasil.sisa.toLocaleString()}); kwitansi tetap tercetak dari nominal riil yang diterima.${infoDurasi}`);
       fetchData();
     } catch (err) {
       showAlert(`❌ Gagal menyimpan penyesuaian: ${err?.message || err}`);
@@ -977,9 +1052,9 @@ const StudentFinance = () => {
               <Edit3 size={14} /> Koreksi Data (kalau salah input)
             </button>
             <button
-              onClick={() => { setPenyesuaianData({ kesepakatan: String(student?.totalTagihan || ''), alasan: '', rincian: '' }); setShowPenyesuaianModal(true); }}
+              onClick={() => { setPenyesuaianData({ kesepakatan: String(student?.totalTagihan || ''), alasan: '', rincian: '', durasi: '' }); setShowPenyesuaianModal(true); }}
               style={{ ...styles.btnKoreksi, background: '#0f767e', borderColor: '#0f767e' }}
-              title="Penawaran / diskon / paket pecah: cicilan menyesuaikan otomatis"
+              title="Penawaran / diskon / paket pecah / paket promo 2-4 bulan: cicilan & durasi menyesuaikan otomatis"
             >
               <Edit3 size={14} /> Penyesuaian Harga / Penawaran
             </button>
@@ -1160,17 +1235,50 @@ const StudentFinance = () => {
                 <form onSubmit={handlePerpanjang}>
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>Tambah Durasi</label>
-                    <select style={styles.input} value={perpanjangData.durasiTambah} onChange={e => setPerpanjangData(prev => ({...prev, durasiTambah: parseInt(e.target.value)}))}>
-                      <option value={0}>-- Pilih Durasi --</option>
-                      <option value={1}>1 Bulan - Rp {(hargaPaket * 1).toLocaleString()}</option>
-                      <option value={3}>3 Bulan (1 Term) - Rp {(hargaPaket * 3).toLocaleString()}</option>
-                      <option value={6}>6 Bulan (1 Semester) - Rp {(hargaPaket * 6).toLocaleString()}</option>
-                      <option value={12}>12 Bulan (1 Tahun) - Rp {(hargaPaket * 12).toLocaleString()}</option>
-                    </select>
+                    {/* 🔥 21 Okt (durasi bebas + promo): preset kini termasuk
+                        2 & 4 bulan + "Lainnya (custom)" sampai 60 bulan —
+                        sesuai paket promo yang berubah-ubah. Mode wajib
+                        pilih ("-- Pilih Durasi --") DIPERTAHANKAN: guard
+                        anti-salah-default Okt 2026 tetap hidup. */}
+                    <PilihDurasiBulan
+                      value={perpanjangData.durasiTambah}
+                      onChange={(n) => setPerpanjangData(prev => ({ ...prev, durasiTambah: n }))}
+                      hargaPerBulan={hargaPaket}
+                      bolehKosong
+                      style={styles.input}
+                    />
                   </div>
 
+                  {/* 🔥 BARU (21 Okt, promo): bonus bulan GRATIS — "bayar 2
+                      dapat 3". Tidak menambah tagihan; tanggal selesai &
+                      durasi paket maju bulan bayar + bonus. */}
+                  {perpanjangData.durasiTambah > 0 && (
+                    <div style={{ background: '#fdf4ff', border: '1px solid #f5d0fe', borderRadius: 10, padding: '12px 12px 6px', marginBottom: 12 }}>
+                      <div style={styles.inputGroup}>
+                        <label style={styles.label}>🎁 Bonus Bulan Promo (opsional — tidak ditagih)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={24}
+                          value={normalisasiBonus(perpanjangData.bonusBulan)}
+                          onChange={e => setPerpanjangData(prev => ({ ...prev, bonusBulan: e.target.value === '' ? 0 : parseInt(e.target.value, 10) }))}
+                          style={styles.input}
+                        />
+                        <p style={{ fontSize: 10.5, color: '#86198f', margin: '4px 0 0', lineHeight: 1.5 }}>
+                          Promo seperti "bayar 2 dapat 3": pilih durasi 2 bulan, isi bonus 1.
+                          Bonus tidak ditagih, tapi masa aktif paket tetap bertambah.
+                        </p>
+                      </div>
+                      {normalisasiBonus(perpanjangData.bonusBulan) > 0 && rencanaPerpanjangSaatIni()?.tanggalSelesaiBaru && (
+                        <p style={{ fontSize: 11, color: '#701a75', fontWeight: 700, margin: '0 0 6px' }}>
+                          📅 Masa paket: {perpanjangData.durasiTambah} bulan bayar + {normalisasiBonus(perpanjangData.bonusBulan)} bulan bonus = {rencanaPerpanjangSaatIni().bulanTotal} bulan → berakhir {rencanaPerpanjangSaatIni().tanggalSelesaiBaru}.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div style={styles.inputGroup}>
-                    <label style={styles.label}>Total: <strong style={{color: '#10b981'}}>Rp {hitungTotalPerpanjangan().toLocaleString()}</strong></label>
+                    <label style={styles.label}>Total: <strong style={{color: '#10b981'}}>Rp {hitungTotalPerpanjangan().toLocaleString()}</strong> (hanya {perpanjangData.durasiTambah || 0} bulan bayar{normalisasiBonus(perpanjangData.bonusBulan) > 0 ? `; ${normalisasiBonus(perpanjangData.bonusBulan)} bulan bonus GRATIS` : ''})</label>
                   </div>
 
                   <div style={styles.inputGroup}>
@@ -1204,7 +1312,7 @@ const StudentFinance = () => {
                   {perpanjangData.durasiTambah > 0 && perpanjangData.metodeBayar !== 'Cicilan' && (
                     <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 12px', marginBottom: 12, fontSize: 10.5, color: '#166534', lineHeight: 1.6 }}>
                       💡 <b>Alur uang paket (lunas):</b> Kas diterima hari ini <b>Rp {hitungTotalPerpanjangan().toLocaleString()}</b> —
-                      tapi omzet yang diakui bulan ini cuma <b>Rp {Math.round(hitungTotalPerpanjangan() / perpanjangData.durasiTambah).toLocaleString()}</b> ({perpanjangData.durasiTambah} bulan pertama);
+                      tapi omzet yang diakui bulan ini cuma <b>Rp {Math.round(hitungTotalPerpanjangan() / Math.max(1, (rencanaPerpanjangSaatIni()?.bulanTotal || perpanjangData.durasiTambah))).toLocaleString()}</b> ({(rencanaPerpanjangSaatIni()?.bulanTotal || perpanjangData.durasiTambah)} bulan pertama{normalisasiBonus(perpanjangData.bonusBulan) > 0 ? ', termasuk bulan bonus promo' : ''});
                       sisanya jadi <b>DANA TITIPAN</b> yang cair bertahap ke laporan tiap bulan. Kwitansi terbit otomatis.
                     </div>
                   )}
@@ -1264,6 +1372,25 @@ const StudentFinance = () => {
                 <input type="text" value={penyesuaianData.alasan} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, alasan: e.target.value })} style={styles.formInput} placeholder="mis. penawaran keluarga, paket pecah 2 modul, diskon saudara" required />
                 <label style={styles.formLabel}>Rincian paket pecah (opsional)</label>
                 <textarea value={penyesuaianData.rincian} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, rincian: e.target.value })} style={styles.formInput} rows={2} placeholder="mis. modul eksponen 1.200.000; modul akar 1.200.000" />
+                {/* 🔥 BARU (21 Okt, paket promo 2/4/x bulan): kesepakatan
+                    boleh membawa durasi paket — tanggal selesai dihitung
+                    ulang dari tanggal mulai, tercatat di jejak audit. */}
+                <label style={styles.formLabel}>Durasi paket sesuai kesepakatan (bulan — opsional)</label>
+                <input type="number" min={1} max={60} value={penyesuaianData.durasi} onChange={(e) => setPenyesuaianData({ ...penyesuaianData, durasi: e.target.value })} style={styles.formInput} placeholder="Kosongkan bila lama paket tidak berubah; isi 2 / 4 / … untuk paket promo" />
+                <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.6, margin: '4px 0 0' }}>
+                  📅 Tanggal selesai dihitung ulang = tanggal mulai ({student?.tanggalMulai || 'tidak ditemukan'}) + durasi.
+                  Promo seperti "bayar 3 dapat 4": nominal = harga 3 bulan, durasi = 4 bulan.
+                </p>
+                {normalisasiDurasi(penyesuaianData.durasi) > 0 && student?.tanggalMulai && (
+                  <p style={{ fontSize: 11, color: '#0f767e', fontWeight: 700, margin: '4px 0 0' }}>
+                    → Tanggal selesai baru: {tambahBulanKeTanggal(student.tanggalMulai, normalisasiDurasi(penyesuaianData.durasi))}
+                  </p>
+                )}
+                {!student?.tanggalMulai && normalisasiDurasi(penyesuaianData.durasi) > 0 && (
+                  <p style={{ fontSize: 11, color: '#b45309', fontWeight: 700, margin: '4px 0 0' }}>
+                    ⚠️ Siswa ini tidak punya tanggal mulai — durasi akan disimpan, tapi tanggal selesai harus dibetulkan lewat Koreksi Data Paket.
+                  </p>
+                )}
                 <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                   <button type="submit" disabled={isPenyesuaianProcessing} style={{ ...styles.btnKoreksi, background: '#0f767e', borderColor: '#0f767e' }}>
                     {isPenyesuaianProcessing ? 'Menyimpan…' : 'Simpan kesepakatan'}

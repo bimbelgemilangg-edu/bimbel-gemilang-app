@@ -9,8 +9,14 @@
 //      adalah sejarah, tak diubah);
 //   3. selisih katalog−kesepakatan tercatat untuk laporan owner;
 //   4. kwitansi tetap tercetak dari nominal RIIL yang diterima.
+// PERLUASAN 21 Okt (keluhan owner: "paket bisa 2 bulan, 4, dll sesuai
+// promonya"): kesepakatan boleh membawa DURASI paket — nominal dan lama
+// paket disesuaikan bareng (tanggal selesai = tanggal mulai + durasi).
+// Tanpa durasiKesepakatan, perilaku lama 100% utuh (backward-compatible).
 // Semua fungsi MURNI & teruji.
 // ============================================================
+
+import { rencanaDurasiKesepakatan } from './durasiPaket.js';
 
 const LUNAS = (c = {}) => {
   const st = String(c.status || '').trim();
@@ -46,18 +52,28 @@ export function hitungSelisihPenawaran(totalKatalog = 0, kesepakatan = 0) {
 /**
  * Payload penyesuaian: satu sumber kebenaran untuk students &
  * finance_tagihan supaya tidak lagi sinkron setengah-setengah.
+ * `durasiKesepakatan` (opsional, bulan): paket promo 2/4/x bulan —
+ * durasi & tanggal selesai siswa ikut disesuaikan (0/kosong = durasi
+ * tidak diubah). Tanggal selesai TIDAK PERNAH dikarang: tanpa tanggal
+ * mulai yang sah, hanya durasiBulan disimpan + peringatan jujur.
  */
-export function bangunPenyesuaianTagihan({ student = {}, tagihan = null, kesepakatan, alasan = '', rincian = '' } = {}) {
+export function bangunPenyesuaianTagihan({ student = {}, tagihan = null, kesepakatan, alasan = '', rincian = '', durasiKesepakatan = 0 } = {}) {
   const totalKatalog = Number(tagihan?.totalKatalog || student.totalKatalog || student.totalTagihan || 0);
   const setuju = Math.max(0, Number(kesepakatan) || 0);
   const totalBayar = Math.min(setuju, Number(student.totalBayar || 0));
   const sisa = Math.max(0, setuju - totalBayar);
+  const durasi = rencanaDurasiKesepakatan({ tanggalMulai: student.tanggalMulai, durasiKesepakatan });
+  const siswa = {
+    totalTagihan: setuju,
+    totalKatalog,
+    catatanPenawaran: String(alasan || '').trim(),
+  };
+  if (durasi) {
+    siswa.durasiBulan = durasi.durasiBulan;
+    if (durasi.tanggalSelesai) siswa.tanggalSelesai = durasi.tanggalSelesai;
+  }
   return {
-    siswa: {
-      totalTagihan: setuju,
-      totalKatalog,
-      catatanPenawaran: String(alasan || '').trim(),
-    },
+    siswa,
     tagihan: tagihan ? {
       totalTagihan: setuju,
       totalKatalog,
@@ -70,6 +86,9 @@ export function bangunPenyesuaianTagihan({ student = {}, tagihan = null, kesepak
     sisa,
     totalKatalog,
     selisih: hitungSelisihPenawaran(totalKatalog, setuju),
+    // null = durasi tidak disentuh (perilaku lama); selain itu rencana
+    // durasi { durasiBulan, tanggalSelesai, peringatan } buat UI & log.
+    durasi,
   };
 }
 
