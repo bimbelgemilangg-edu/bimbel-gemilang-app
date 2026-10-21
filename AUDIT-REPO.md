@@ -294,3 +294,57 @@ semuanya lulus dan kini ikut terjaga. Uji baru cukup disimpan di `tests/`.
 LatihanAktivitasPage.jsx, ManageBlog.jsx, ManageSurvey.jsx), ditambah 31
 `no-unused-vars` yang menumpang di 9 berkas berperilaku di atas. Urutan kerja:
 satu berkas per PR, mekanis + perilaku sekaligus, supaya gerbang CI hijau.
+
+---
+
+## Pembaruan 2026-10-21 — sisa `no-unused-vars` LUNAS (commit `b677e64`)
+
+Diukur ulang dengan `npx eslint . -f json` pada `main` @ `eb2f530`, sebelum dan
+sesudah perubahan:
+
+```
+                    SEBELUM -> SESUDAH
+Berkas dilint          510  ->  510
+Berkas bersih          460 (90%)
+Berkas kotor            50  ->   50
+Error                   34  ->   18
+Warning                 97  ->   97
+
+  no-unused-vars        16  ->    0   ← LUNAS
+  react-hooks/immutability    8  ->    8
+  react-hooks/set-state-in-effect 7 -> 7
+  react-hooks/purity          1  ->    1
+  react-hooks/refs            1  ->    1
+  react-refresh/only-export-components 1 -> 1
+```
+
+Ini melunasi bagian `no-unused-vars` dari **Tahap 2** yang di pembaruan
+2026-10-14 ditangguhkan karena "menumpang di 9 berkas berperilaku". Lima berkas
+yang tersisa (`IsiSections.jsx`, `ManageOnlineRegistration.jsx`,
+`StudentElearning.jsx`, `BelajarReader.jsx`, `ManageTugas.jsx`) ternyata utang
+mekanisnya bisa dipisahkan dari utang perilakunya tanpa menyentuh perilaku, jadi
+dibayar lebih dulu. Kelimanya **masih kotor** oleh error perilaku
+(`immutability`, `set-state-in-effect`, `purity`) — itulah sebabnya angka
+"berkas kotor" tidak berubah: 50 -> 50. Yang berubah hanya jumlah errornya.
+
+**Satu penyimpangan dari metode 2026-10-14 yang perlu dicatat.** Metode lama
+me-rename elemen destructuring `useState` berawalan `_`. Untuk `ManageTugas.jsx`
+itu tidak dipakai, karena `guruData` dan `isMobile` getter-nya mati tapi
+**setter-nya masih hidup** (`setGuruData` di L68, `setIsMobile` di handler
+resize). Keduanya diubah ke array-hole `const [, setX] = useState(...)` —
+lint bersih, urutan hook React tetap utuh, efek samping identik. Menghapus
+state-nya outright akan mengubah perilaku, jadi tidak dilakukan.
+
+> **Utang baru yang muncul dari temuan ini:** `isMobile` di `ManageTugas.jsx`
+> adalah *dead code* yang sesungguhnya — nilai responsifnya dihitung di setiap
+> resize tapi tidak pernah dibaca untuk render apa pun. Butuh keputusan owner:
+> dipakai untuk layout mobile, atau dibuang bersama `useEffect` resize-nya.
+
+**Verifikasi:** `npm test` 110/110 berkas LULUS (510 subtest TAP) sebelum dan
+sesudah; penjaga konten, rute, impor, dan komponen JSX (5 berkas) semua hijau.
+
+**Angka 2026-10-14 di atas (85 berkas uji / 351 subtest) sudah kedaluwarsa** —
+runner kini menemukan 110 berkas / 510 subtest.
+
+Audit yang lebih luas dari pembaruan ini — mencakup keamanan, performa bundle,
+dan dependensi, bukan hanya lint — ada di `docs/AUDIT-MENYELURUH-2026-10-21.md`.

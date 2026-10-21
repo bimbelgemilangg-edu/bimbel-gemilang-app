@@ -102,3 +102,5 @@ Kandidat bernilai tertinggi berdasarkan dokumen yang sudah ada
 | Tanggal | Fase | Catatan |
 |---|---|---|
 | 2026-10-14 | 0 | Runner uji + lint mekanis lunas (146→24 error, 35→15 berkas kotor); docs sinkron |
+| 2026-10-21 | 1 | Butir 1 bagian `no-unused-vars` **LUNAS** (commit `b677e64`, 16→0, total error lint 34→18). Sisa Fase 1 butir 1 tinggal 18 error perilaku `react-hooks`/`react-refresh` — wajib satu berkas per PR. |
+| 2026-10-21 | — | **Audit menyeluruh** diterbitkan: `docs/AUDIT-MENYELURUH-2026-10-21.md`. Menemukan 3 masalah P0 di luar peta fase ini (password siswa plaintext, 12 endpoint `api/` tanpa auth pemanggil, harga Midtrans dikendalikan klien) + mengukur peluang Fase 2 butir 1: siswa mengunduh ±77.492 baris kode admin/guru karena `React.lazy` masih nol. Urutan pengerjaan baru ada di §"Urutan pengerjaan yang disarankan" dokumen itu. |
