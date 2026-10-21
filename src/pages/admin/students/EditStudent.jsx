@@ -9,6 +9,11 @@ import {
   ArrowLeft, Save, User, BookOpen, Calendar, CreditCard, 
   IdCard, Phone, Edit3, X, AlertCircle, Hash, Key, Info, Camera, RotateCcw
 } from 'lucide-react';
+// 🔥 BARU (21 Okt 2026, durasi paket bebas + promo): samakan dengan
+// AddStudent — preset 1/2/3/4/6/12/24 + custom 1–60 bulan, tanggal
+// selesai dihitung dengan clamp akhir bulan (bukan setMonth meluber).
+import PilihDurasiBulan from '../../../components/admin/PilihDurasiBulan';
+import { tambahBulanKeTanggal, normalisasiDurasi } from '../../../utils/durasiPaket';
 
 // 🔥 BARU: sama persis logikanya dengan normalisasiNoHp() di AddStudent.jsx
 // -- diperlukan supaya format nomor HASIL EDIT juga selalu 628xxx (format
@@ -324,9 +329,9 @@ const EditStudent = () => {
 
   const getTanggalSelesai = () => {
     if (!formData.tanggalMulai) return '-';
-    const start = new Date(formData.tanggalMulai);
-    start.setMonth(start.getMonth() + parseInt(formData.durasiBulan || 0));
-    return start.toISOString().split('T')[0];
+    // 🔥 21 Okt: util murni dengan clamp akhir bulan (31 Jan + 1 bln =
+    // 28 Feb) — setMonth mentah dulu meluber jadi 3 Mar.
+    return tambahBulanKeTanggal(formData.tanggalMulai, parseInt(formData.durasiBulan || 0)) || '-';
   };
 
   // ============================================================
@@ -383,6 +388,12 @@ const EditStudent = () => {
   // ============================================================
   const handleSave = async () => {
     if (!formData.nama) return showAlert('⚠️ Nama tidak boleh kosong!');
+
+    // 🔥 BARU (21 Okt, durasi bebas): mode custom bisa ditinggal kosong —
+    // tolak eksplisit supaya tidak menyimpan paket berdurasi 0 bulan.
+    if (!normalisasiDurasi(formData.durasiBulan)) {
+      return showAlert('⚠️ Isi durasi paket dulu (1–60 bulan)! Kalau pakai "Lainnya (custom)", ketik jumlah bulannya.');
+    }
 
     // 🔥 BERUBAH: dari OPSIONAL jadi WAJIB. Kalau kosong, siswa ini gak
     // akan bisa akses materi/kuis mapel apa pun (sistem sekarang sengaja
@@ -843,17 +854,14 @@ const EditStudent = () => {
                 </div>
                 <div style={styles.inputGroup}>
                   <label style={styles.labelSmall}>Durasi (Bulan)</label>
-                  <select 
-                    style={styles.input} 
-                    value={formData.durasiBulan} 
-                    onChange={e => updateField('durasiBulan', parseInt(e.target.value))}
-                  >
-                    <option value={1}>1 Bulan</option>
-                    <option value={3}>3 Bulan (1 Term)</option>
-                    <option value={6}>6 Bulan (1 Semester)</option>
-                    <option value={12}>12 Bulan (1 Tahun)</option>
-                    <option value={24}>24 Bulan (2 Tahun)</option>
-                  </select>
+                  {/* 🔥 21 Okt (durasi bebas + promo): preset 1/2/3/4/6/12/24
+                      + custom 1–60 bulan — sama seperti AddStudent. */}
+                  <PilihDurasiBulan
+                    value={formData.durasiBulan}
+                    onChange={(n) => updateField('durasiBulan', n)}
+                    hargaPerBulan={selectedPkg?.price || 0}
+                    style={styles.input}
+                  />
                 </div>
               </div>
 

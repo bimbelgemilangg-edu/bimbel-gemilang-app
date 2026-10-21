@@ -14,6 +14,12 @@ import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi, rp } from '../../../utils/kwitansi';
 import { rincianAmortisasi } from '../owner/keuanganOwnerUtils';
+// 🔥 BARU (21 Okt 2026, durasi paket bebas + promo): dropdown durasi tak
+// lagi terpaku 1/3/6/12 — paket 2, 4, dst. bisa dipilih/diketik custom,
+// dan tanggal selesai dihitung dengan clamp akhir bulan (31 Jan + 1 bln
+// = 28 Feb, bukan 3 Mar seperti perilaku setMonth lama).
+import PilihDurasiBulan from '../../../components/admin/PilihDurasiBulan';
+import { tambahBulanKeTanggal, normalisasiDurasi } from '../../../utils/durasiPaket';
 
 // 🔥 FIX BUG NYATA (zona waktu): sama seperti di StudentFinance.jsx admin --
 // "tanggal hari ini" harus dari waktu LOKAL, bukan toISOString() (UTC).
@@ -322,9 +328,9 @@ const AddStudent = () => {
 
   const getTanggalSelesai = () => {
     if (!formData.tanggalMulai) return '-';
-    const start = new Date(formData.tanggalMulai);
-    start.setMonth(start.getMonth() + parseInt(formData.durasiBulan || 0));
-    return start.toISOString().split('T')[0];
+    // 🔥 21 Okt: pakai util murni tambahBulanKeTanggal (clamp akhir bulan)
+    // — setMonth mentah dulu bikin 31 Jan + 1 bulan = 3 Mar (meleset).
+    return tambahBulanKeTanggal(formData.tanggalMulai, parseInt(formData.durasiBulan || 0)) || '-';
   };
 
   const getUsername = () => {
@@ -376,6 +382,14 @@ const AddStudent = () => {
     const pkg = getSelectedPackage();
     if (!pkg) {
       showAlert('⚠️ Pilih paket terlebih dahulu!');
+      return;
+    }
+
+    // 🔥 BARU (21 Okt, durasi bebas): dropdown sekarang punya mode custom
+    // (input angka) — admin bisa meninggalkannya kosong/0. Tolak EKSPLISIT
+    // di sini supaya tidak ada paket tertagih/tertanggal dengan durasi 0.
+    if (!normalisasiDurasi(formData.durasiBulan)) {
+      showAlert('⚠️ Isi durasi paket dulu (1–60 bulan)! Kalau pakai "Lainnya (custom)", ketik jumlah bulannya.');
       return;
     }
 
@@ -780,13 +794,15 @@ const AddStudent = () => {
           </div>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Durasi (Bulan)</label>
-            <select style={styles.input} value={formData.durasiBulan} onChange={e => updateField('durasiBulan', parseInt(e.target.value))}>
-              <option value={1}>1 Bulan</option>
-              <option value={3}>3 Bulan (1 Term)</option>
-              <option value={6}>6 Bulan (1 Semester)</option>
-              <option value={12}>12 Bulan (1 Tahun)</option>
-              <option value={24}>24 Bulan (2 Tahun)</option>
-            </select>
+            {/* 🔥 21 Okt (durasi bebas + promo): preset 1/2/3/4/6/12/24 +
+                "Lainnya (custom)" 1–60 bulan — paket promo 2/4 bulan dst.
+                sah dipilih tanpa mengarang paket baru di Settings. */}
+            <PilihDurasiBulan
+              value={formData.durasiBulan}
+              onChange={(n) => updateField('durasiBulan', n)}
+              hargaPerBulan={getBasePrice()}
+              style={styles.input}
+            />
           </div>
         </div>
 
