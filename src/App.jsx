@@ -423,10 +423,15 @@ const SiswaLayout = ({ children }) => {
         <div style={gayaIsiSiswa(isMobile)}>
           {children}
         </div>
+        {/* 📱 20 Okt: navigasi bawah ala app bank; tombol tengah = hub
+            Akses Belajar Mudah (e-learning + buku digital).
+            21 Okt: DIPINDAH ke dalam <main> supaya spacer 84px benar-benar
+            masuk alur konten -- dulu ia sibling flex-row sehingga tidak
+            berpengaruh dan ujung bawah halaman bisa tertutup bar fixed.
+            Di rute "sedang mengerjakan" (try out/kuis/latihan harian)
+            komponen ini return null, lihat util navBawahSembunyiDiRute. */}
+        <BottomNavSiswa />
       </main>
-      {/* 📱 20 Okt: navigasi bawah ala app bank; tombol tengah = hub
-          Akses Belajar Mudah (e-learning + buku digital). */}
-      <BottomNavSiswa />
     </div>
   );
 };

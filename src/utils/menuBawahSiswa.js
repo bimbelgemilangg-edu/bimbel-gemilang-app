@@ -16,6 +16,32 @@ export const DAFTAR_MENU_BAWAH = [
 ];
 
 /**
+ * Rute "sedang mengerjakan" yang harus TAMPIL PENUH tanpa navigasi
+ * bawah (21 Okt 2026, foto owner dari ponsel: "harusnya full tampilan
+ * soal ... tombol kirim submit ... bahkan soal tertutupi" -- bar navigasi
+ * zIndex 1200 menutupi opsi jawaban, tombol Kirim try out, dan bahkan
+ * bar submit kuis yang zIndex-nya cuma 100).
+ *
+ * Disembunyikan di:
+ *  - /siswa/tryout/<paketId>  -> sesi ujian layar penuh (BUKAN daftar
+ *    /siswa/tryout yang tetap butuh nav); TryOutView punya tombol
+ *    "Kembali" sendiri di setiap tahap.
+ *  - /siswa/kuis/<id>         -> kuis ber-timer dengan bar submit fixed
+ *    sendiri di bawah (StudentQuizView).
+ *  - /siswa/latihan-harian    -> gaya app mobile dengan tombol kembali
+ *    sendiri di tiap tahap.
+ * Halaman konten/belajar lain (modul, buku, materi, survei) TETAP
+ * menampilkan nav supaya siswa tidak kehilangan orientasi.
+ */
+export function navBawahSembunyiDiRute(pathname = '') {
+  const p = String(pathname || '');
+  if (/^\/siswa\/tryout\/[^/?#]+/.test(p)) return true;
+  if (/^\/siswa\/kuis\/[^/?#]+/.test(p)) return true;
+  if (/^\/siswa\/latihan-harian(\/|$|\?|#)/.test(p)) return true;
+  return false;
+}
+
+/**
  * Slot mana yang menyala untuk pathname kini. Seluruh rute anak
  * e-learning & buku digital menyalakan slot TENGAH supaya siswa
  * selalu tahu "aku masih di kawasan belajar".
@@ -35,4 +61,4 @@ export function menuAktifBawah(pathname = '') {
   return '';
 }
 
-export default { DAFTAR_MENU_BAWAH, menuAktifBawah };
+export default { DAFTAR_MENU_BAWAH, menuAktifBawah, navBawahSembunyiDiRute };
