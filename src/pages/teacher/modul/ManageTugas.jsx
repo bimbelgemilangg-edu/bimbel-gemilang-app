@@ -1,14 +1,57 @@
 // src/pages/teacher/modul/ManageTugas.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { notifyStudents } from '../../../utils/notifications';
+import {
+  SASARAN, apakahSasaranLuas, jenisSasaran,
+} from '../../../utils/sasaranTugas';
 import { 
   Edit3, Clock, ArrowLeft, BookOpen, Target, Users, 
   CheckCircle, AlertCircle, Shield, Hash, Tag, User,
   Calendar, Send, ChevronDown, ChevronUp, Sparkles
 } from 'lucide-react';
+
+// ============================================================
+// Penyusun blok "Instruksi Tugas" untuk payload bimbel_modul.
+//
+// SENGAJA ditaruh di module scope, bukan di dalam komponen, karena dua
+// alasan yang saling menguatkan:
+//
+// 1. Ia tidak membaca state/props apa pun di luar argumennya, jadi secara
+//    desain memang milik module scope — bukan closure komponen.
+// 2. `Date.now()` di dalamnya adalah panggilan tak-murni. Selama ia berada
+//    di dalam badan komponen, rule `react-hooks/purity` menganggapnya
+//    "dipanggil saat render" dan menolak berkas ini — padahal kenyataannya
+//    kode itu HANYA dieksekusi dari handler `onSubmit` (lihat <form
+//    onSubmit={handleCreate}>), jadi sama sekali tidak memengaruhi render.
+//
+// Memindahkannya ke sini membereskan STRUKTURNYA, sehingga peringatan itu
+// hilang dengan sendirinya. Ini sengaja BUKAN `eslint-disable`: menekan
+// peringatan akan meninggalkan kesan bahwa ada kemurnian yang dikorbankan,
+// padahal tidak ada.
+//
+// Perilaku identik dengan bentuk lama: bentuk objek, urutan kunci, dan
+// nilainya sama persis (id, type, title, content, endTime).
+// ============================================================
+function susunBlokInstruksi(content, endTime) {
+  return {
+    id: Date.now(),
+    type: 'assignment',
+    title: 'Instruksi Tugas',
+    content,
+    endTime,
+  };
+}
+
+// ------------------------------------------------------------
+// Klasifikasi jangkauan tugas (seberapa luas ia diterbitkan) dipindah ke
+// `src/utils/sasaranTugas.js` supaya murni dan bisa diuji di Node — lihat
+// tests/sasaranTugas.test.mjs. Diekspor dari berkas komponen ini akan
+// memicu rule react-refresh/only-export-components, jadi memang harus
+// tinggal di utils.
+// ------------------------------------------------------------
 
 const ManageTugas = () => {
   const navigate = useNavigate();
@@ -30,15 +73,7 @@ const ManageTugas = () => {
   const [showConfig, setShowConfig] = useState(true);
   const [warningShown, setWarningShown] = useState(false);
   const [, setGuruData] = useState(null);
-  const [, setIsMobile] = useState(window.innerWidth <= 768);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  // ===== RESPONSIVE =====
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // ===== AMBIL DATA GURU & KELAS =====
   useEffect(() => {
@@ -90,12 +125,56 @@ const ManageTugas = () => {
   }, []);
 
   // ===== PERINGATAN TARGET =====
-  useEffect(() => {
-    if ((tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua') && !warningShown && tugas.title) {
-      setWarningShown(true);
-      setTimeout(() => setWarningShown(false), 5000);
+  // Banner muncul 5 detik setelah guru memilih sasaran luas ("Semua"), lalu
+  // hilang sendiri.
+  //
+  // BENTUK LAMA (useEffect) dan tiga cacat nyatanya:
+  //   useEffect(() => {
+  //     if ((targetKelas === 'Semua' || targetKategori === 'Semua')
+  //         && !warningShown && tugas.title) {
+  //       setWarningShown(true);
+  //       setTimeout(() => setWarningShown(false), 5000);
+  //     }
+  //   }, [targetKelas, targetKategori, tugas.title, warningShown]);
+  //
+  //   1. BERKEDIP TANPA HENTI. `warningShown` ikut jadi dependency, jadi saat
+  //      timeout menyembunyikan banner (false) effect langsung jalan lagi,
+  //      syarat `!warningShown` lolos lagi, banner muncul lagi -- berulang
+  //      tiap 5 detik selama sasaran masih "Semua". Bukan kosmetik: ini
+  //      render + setState selamanya selama tab terbuka.
+  //   2. `tugas.title` juga dependency, jadi tiap ketikan pada judul memicu
+  //      ulang effect-nya.
+  //   3. setTimeout-nya tidak pernah dibersihkan, termasuk saat unmount.
+  //
+  // BENTUK BARU: pemicunya dipindah ke onChange dropdown. Peringatan ini
+  // memang REAKSI ATAS TINDAKAN PENGGUNA (guru memilih sasaran), bukan
+  // sinkronisasi state terhadap props -- jadi handler adalah tempat yang
+  // benar, sesuai react.dev/learn/you-might-not-need-an-effect. Ini juga
+  // yang menghilangkan setState-sinkron-di-effect yang ditolak rule
+  // react-hooks/set-state-in-effect, tanpa perlu eslint-disable.
+  //
+  // SATU PERUBAHAN PERILAKU YANG DISENGAJA: syarat `tugas.title` dihapus.
+  // Peringatan ini soal SASARAN, bukan soal judul; mengaitkannya ke judul
+  // justru yang membuat cacat #2. Indikator permanen di bagian bawah form
+  // (baris "Tugas akan muncul untuk SEMUA KELAS ...") juga tidak pernah
+  // memeriksa judul, jadi sekarang keduanya konsisten.
+  const timerPeringatan = useRef(null);
+
+  const ingatkanSasaranLuas = (kelasBaru, kategoriBaru) => {
+    if (timerPeringatan.current) clearTimeout(timerPeringatan.current);
+    if (!apakahSasaranLuas(kelasBaru, kategoriBaru)) {
+      setWarningShown(false);
+      return;
     }
-  }, [tugas.targetKelas, tugas.targetKategori, tugas.title, warningShown]);
+    setWarningShown(true);
+    timerPeringatan.current = setTimeout(() => setWarningShown(false), 5000);
+  };
+
+  // Membersihkan timer bila komponen unmount di tengah hitungan 5 detik,
+  // supaya tidak ada setState pada komponen yang sudah dilepas.
+  useEffect(() => () => {
+    if (timerPeringatan.current) clearTimeout(timerPeringatan.current);
+  }, []);
 
   // ===== HANDLE CREATE =====
   const handleCreate = async (e) => {
@@ -103,11 +182,17 @@ const ManageTugas = () => {
     if (!tugas.title) return alert("❌ Judul tugas wajib diisi!");
     if (!tugas.desc) return alert("❌ Instruksi tugas wajib diisi!");
     
-    if (tugas.targetKelas === 'Semua' && tugas.targetKategori === 'Semua') {
+    // Dihitung di sini, bukan membaca `sasaran` dari bagian render: fungsi
+    // ini dideklarasikan lebih awal di badan komponen, jadi mengandalkan
+    // const yang baru diinisialisasi di bawahnya berarti bergantung pada
+    // urutan eksekusi render. Menghitung ulang dari `tugas` yang sama hasilnya
+    // identik (jenisSasaran murni) dan jauh lebih mudah dibaca.
+    const sasaranSubmit = jenisSasaran(tugas.targetKelas, tugas.targetKategori);
+    if (sasaranSubmit === SASARAN.SEMUANYA) {
       if (!window.confirm("⚠️ Tugas ini akan muncul untuk SEMUA siswa (semua kelas dan program).\n\nLanjutkan?")) return;
-    } else if (tugas.targetKelas === 'Semua') {
+    } else if (sasaranSubmit === SASARAN.SEMUA_KELAS) {
       if (!window.confirm(`⚠️ Tugas ini akan muncul untuk SEMUA kelas pada program ${tugas.targetKategori}.\n\nLanjutkan?`)) return;
-    } else if (tugas.targetKategori === 'Semua') {
+    } else if (sasaranSubmit === SASARAN.SEMUA_PROGRAM) {
       if (!window.confirm(`⚠️ Tugas ini akan muncul untuk SEMUA program pada kelas ${tugas.targetKelas}.\n\nLanjutkan?`)) return;
     }
     
@@ -128,13 +213,7 @@ const ManageTugas = () => {
         guruId: tugas.guruId,
         kodeMapel: tugas.kodeMapel,
         guruName: tugas.guruName,
-        blocks: [{ 
-          id: Date.now(), 
-          type: 'assignment', 
-          title: "Instruksi Tugas", 
-          content: tugas.desc,
-          endTime: tugas.deadline || null
-        }],
+        blocks: [susunBlokInstruksi(tugas.desc, tugas.deadline || null)],
         quizData: [],
         authorName: tugas.guruName || localStorage.getItem('teacherName') || localStorage.getItem('userName') || "Guru",
         createdAt: serverTimestamp(),
@@ -175,6 +254,14 @@ const ManageTugas = () => {
       hour: '2-digit', minute: '2-digit'
     });
   };
+
+  // ===== NILAI TURUNAN (murni, dihitung tiap render) =====
+  // Satu-satunya tempat di komponen ini yang memutuskan "seberapa luas"
+  // sasaran tugas. Banner peringatan, warna indikator, teks indikator, dan
+  // pesan konfirmasi submit semuanya membaca dari sini — sebelumnya tiap-tiap
+  // menulis ulang perbandingan literal 'Semua' sendiri-sendiri.
+  const sasaran = jenisSasaran(tugas.targetKelas, tugas.targetKategori);
+  const sasaranLuas = apakahSasaranLuas(tugas.targetKelas, tugas.targetKategori);
 
   // ===== RENDER =====
   return (
@@ -229,7 +316,7 @@ const ManageTugas = () => {
         )}
 
         {/* WARNING */}
-        {warningShown && (tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua') && (
+        {warningShown && sasaranLuas && (
           <div style={styles.warningBox}>
             <AlertCircle size={16} color="#f59e0b" />
             <span style={styles.warningText}>
@@ -307,7 +394,13 @@ const ManageTugas = () => {
                   </label>
                   <select 
                     value={tugas.targetKategori}
-                    onChange={e => setTugas({...tugas, targetKategori: e.target.value})}
+                    onChange={e => {
+                      setTugas({...tugas, targetKategori: e.target.value});
+                      // Peringatan dihitung dari nilai BARU kategori + nilai
+                      // kelas yang sedang berlaku, bukan dari state `tugas`
+                      // yang belum ter-update (setState bersifat async).
+                      ingatkanSasaranLuas(tugas.targetKelas, e.target.value);
+                    }}
                     style={{...styles.select, borderColor: tugas.targetKategori === 'Semua' ? '#f59e0b' : '#e2e8f0'}}
                   >
                     <option value="Reguler">📚 Reguler</option>
@@ -321,7 +414,10 @@ const ManageTugas = () => {
                   </label>
                   <select 
                     value={tugas.targetKelas}
-                    onChange={e => setTugas({...tugas, targetKelas: e.target.value})}
+                    onChange={e => {
+                      setTugas({...tugas, targetKelas: e.target.value});
+                      ingatkanSasaranLuas(e.target.value, tugas.targetKategori);
+                    }}
                     style={{...styles.select, borderColor: tugas.targetKelas === 'Semua' ? '#f59e0b' : '#e2e8f0'}}
                   >
                     {availableClasses.map(k => (
@@ -332,13 +428,13 @@ const ManageTugas = () => {
               </div>
               
               <div style={styles.infoBox}>
-                <AlertCircle size={12} color={tugas.targetKelas === 'Semua' || tugas.targetKategori === 'Semua' ? '#f59e0b' : '#10b981'} />
+                <AlertCircle size={12} color={sasaranLuas ? '#f59e0b' : '#10b981'} />
                 <span style={styles.infoText}>
-                  {tugas.targetKelas === 'Semua' && tugas.targetKategori === 'Semua' ? (
+                  {sasaran === SASARAN.SEMUANYA ? (
                     <strong style={{ color: '#f59e0b' }}>⚠️ Tugas akan muncul untuk SEMUA siswa!</strong>
-                  ) : tugas.targetKelas === 'Semua' ? (
+                  ) : sasaran === SASARAN.SEMUA_KELAS ? (
                     <span>Tugas akan muncul untuk <strong>SEMUA KELAS</strong> pada program <strong>{tugas.targetKategori}</strong>.</span>
-                  ) : tugas.targetKategori === 'Semua' ? (
+                  ) : sasaran === SASARAN.SEMUA_PROGRAM ? (
                     <span>Tugas akan muncul untuk <strong>SEMUA PROGRAM</strong> pada kelas <strong>{tugas.targetKelas}</strong>.</span>
                   ) : (
                     <span>Tugas akan muncul untuk program <strong>{tugas.targetKategori}</strong> - Kelas <strong>{tugas.targetKelas}</strong>.</span>
