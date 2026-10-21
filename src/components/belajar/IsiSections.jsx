@@ -13,9 +13,8 @@ import {
   Map as IconMap, Crown, X,
 } from 'lucide-react';
 import { MathText, MathBlock } from '../MathText';
-import bintangGemilang from '../../assets/bintang-gemilang.png';
 import WidgetInteraktif, { JENIS_INTERAKTIF } from './WidgetInteraktif';
-import { T, kotakRumus, kotakTips, kotakSukses } from '../../pages/student/belajar/tema';
+import { T, kotakRumus } from '../../pages/student/belajar/tema';
 
 export const URL_FRAME_CG =
   'https://hqoasblnrsijbflupoir.supabase.co/storage/v1/object/public/materi-bimbel/materi-v2/gambar-sumber/cara-gemilang-frame.png';

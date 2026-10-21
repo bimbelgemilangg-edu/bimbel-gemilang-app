@@ -1,7 +1,7 @@
 // src/pages/teacher/modul/ManageTugas.jsx
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
-import { collection, addDoc, serverTimestamp, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { notifyStudents } from '../../../utils/notifications';
 import { 
@@ -29,8 +29,8 @@ const ManageTugas = () => {
   const [availableClasses, setAvailableClasses] = useState([]);
   const [showConfig, setShowConfig] = useState(true);
   const [warningShown, setWarningShown] = useState(false);
-  const [guruData, setGuruData] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [, setGuruData] = useState(null);
+  const [, setIsMobile] = useState(window.innerWidth <= 768);
   const [showSuccess, setShowSuccess] = useState(false);
 
   // ===== RESPONSIVE =====
