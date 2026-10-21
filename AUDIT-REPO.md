@@ -335,10 +335,35 @@ resize). Keduanya diubah ke array-hole `const [, setX] = useState(...)` —
 lint bersih, urutan hook React tetap utuh, efek samping identik. Menghapus
 state-nya outright akan mengubah perilaku, jadi tidak dilakukan.
 
-> **Utang baru yang muncul dari temuan ini:** `isMobile` di `ManageTugas.jsx`
+> ~~**Utang baru yang muncul dari temuan ini:** `isMobile` di `ManageTugas.jsx`
 > adalah *dead code* yang sesungguhnya — nilai responsifnya dihitung di setiap
 > resize tapi tidak pernah dibaca untuk render apa pun. Butuh keputusan owner:
-> dipakai untuk layout mobile, atau dibuang bersama `useEffect` resize-nya.
+> dipakai untuk layout mobile, atau dibuang bersama `useEffect` resize-nya.~~
+>
+> **DILUNASI 2026-10-21 (commit `07c23f6`).** Owner memutuskan: dibuang.
+> Sebelum dihapus, diverifikasi dulu tidak ada pekerjaan layout mobile yang
+> tertunda di balik state itu — nol kelas responsif Tailwind di berkas itu,
+> objek `styles`-nya sudah fluid (`width:'100%', maxWidth:'700px'`, `topBar`
+> sudah `flexWrap:'wrap'`), dan `index.html` sudah punya meta viewport. Jadi
+> CSS-nya memang sudah menangani responsivitas; state JS itu mubazir sungguhan.
+>
+> Membersihkannya justru **membuka dua masalah yang lebih penting** di berkas
+> yang sama, keduanya ikut dibereskan di commit itu:
+> 1. **Bug nyata:** banner peringatan sasaran *berkedip tanpa henti* tiap
+>    5 detik, karena `warningShown` ikut jadi dependency effect-nya sendiri.
+> 2. `react-hooks/purity` pada `Date.now()` — diperbaiki strukturnya
+>    (diekstrak ke module scope), **bukan** ditekan dengan `eslint-disable`.
+>
+> **Catatan metodologis yang perlu diingat sesi berikutnya:** error
+> `set-state-in-effect` di berkas itu **tersembunyi** selama error `purity`
+> masih ada. Rule React Compiler bisa berhenti melapor setelah error tertentu,
+> jadi *"berkas ini cuma punya 1 error"* belum tentu berarti begitu sesudahnya
+> diperbaiki. Selesaikan, lalu lint ulang — jangan percaya hitungan pertama.
+>
+> Hasilnya: `ManageTugas.jsx` kini **0 error / 0 warning** — berkas utang
+> perilaku pertama yang lunas total. Klasifikasi sasaran dipindah ke
+> `src/utils/sasaranTugas.js` + `tests/sasaranTugas.test.mjs` (14 uji).
+> Berkas kotor repo **50 -> 49**, error lint **18 -> 17**.
 
 **Verifikasi:** `npm test` 110/110 berkas LULUS (510 subtest TAP) sebelum dan
 sesudah; penjaga konten, rute, impor, dan komponen JSX (5 berkas) semua hijau.
