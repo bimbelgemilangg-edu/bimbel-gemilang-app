@@ -6,11 +6,15 @@
 // sempit (<=820px) supaya ponsel terasa seperti aplikasi asli;
 // desktop tetap memakai sidebar. Slot aktif dihitung util murni
 // menuBawahSiswa (teruji).
+// 21 Okt 2026 (foto owner: nav menutupi opsi + tombol Kirim saat try
+// out): komponen ini MENGHILANG TOTAL (termasuk spacer 84px) di rute
+// "sedang mengerjakan" -- sesi try out, kuis, latihan harian -- lewat
+// util murni navBawahSembunyiDiRute. Soal harus tampil penuh.
 // ============================================================
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Rocket, GraduationCap, Calendar, UserCheck } from 'lucide-react';
-import { DAFTAR_MENU_BAWAH, menuAktifBawah } from '../utils/menuBawahSiswa';
+import { DAFTAR_MENU_BAWAH, menuAktifBawah, navBawahSembunyiDiRute } from '../utils/menuBawahSiswa';
 
 const IKON = { Home, Rocket, GraduationCap, Calendar, UserCheck };
 
@@ -25,6 +29,10 @@ export default function BottomNavSiswa() {
   const { pathname } = useLocation();
   const aktif = menuAktifBawah(pathname);
   if (!mobile) return null;
+  // 📵 Saat siswa sedang mengerjakan (try out/kuis/latihan harian) bar
+  // ini disembunyikan total -- kalau tidak, ia menutupi opsi jawaban,
+  // tombol Kirim, bahkan bar submit kuis (zIndex 100 < 1200).
+  if (navBawahSembunyiDiRute(pathname)) return null;
   return (
     <>
       {/* spacer agar konten tidak tertutup bar */}
