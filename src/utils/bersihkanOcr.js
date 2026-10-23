@@ -73,13 +73,23 @@ function barisTerpotong(baris) {
 /**
  * Bersihkan satu bidang teks (teks soal / opsi / bacaan / pembahasan).
  * @param {string} teks
- * @param {{jagaBaris?: boolean}} [opsi] `jagaBaris: true` melewatkan reflow
+ * @param {{jagaBaris?: boolean, untukOpsi?: boolean}} [opsi]
+ *   `jagaBaris: true` melewatkan reflow
  *   (penyambungan baris yang belum berakhir tanda baca). Dipakai untuk
  *   PEMBAHASAN: tata letak barisnya adalah bagian dari isi buku — baris
  *   "Semua A, B" / "Kesimpulan : ..." / "Jawaban C" harus tetap berdiri
  *   sendiri supaya bisa dirender bergaya buku (utils/strukturPembahasan.js).
  *   Bila disambung, struktur itu hancur jadi satu paragraf panjang
  *   (insiden 2026-10-10: owner membandingkan preview dengan PDF buku).
+ *   `untukOpsi: true` melewatkan aturan pembuang baris yang isinya ANGKA
+ *   POLOS / SIMBOL SAHAJA (RE_NOMOR_YATIM, RE_NOMOR_GANDA, RE_SIMBOL_SAHAJA).
+ *   INSIDEN 2026-10-23: untuk OPSI JAWABAN, baris "15", "27", "243" adalah
+ *   ISI SAH pilihan ganda matematika, bukan nomor halaman yatim. Tanpa
+ *   flag ini seluruh opsi angka polos "dibersihkan" jadi kosong dan soal
+ *   ditolak "Pilihan jawaban kurang dari 2" padahal HTML-nya utuh —
+ *   54 dari 391 soal owner tertolak karena ini. Aturan lain (penanda
+ *   halaman, slogan buku, judul kolom rusak) TETAP berlaku untuk opsi,
+ *   karena mustahil jadi isi pilihan.
  * @returns {{teks: string, catatan: string[]}}
  */
 export function bersihkanOcrTeks(teks, opsi = {}) {
@@ -87,6 +97,7 @@ export function bersihkanOcrTeks(teks, opsi = {}) {
   const asli = String(teks ?? '');
   if (!asli.trim()) return { teks: asli, catatan };
   const jagaBaris = Boolean(opsi.jagaBaris);
+  const untukOpsi = Boolean(opsi.untukOpsi);
 
   const baris = asli.split(/\n/);
   const sisa = [];
@@ -103,20 +114,36 @@ export function bersihkanOcrTeks(teks, opsi = {}) {
       sisa.push(b);
       continue;
     }
-    if (
+    // Aturan pembuang dipisah jadi dua kelompok. Kelompok pertama mustahil
+    // jadi isi bidang mana pun (penanda halaman, judul kolom rusak, slogan
+    // buku) -- berlaku selalu. Kelompok kedua (angka polos, deret angka,
+    // simbol sahaja) AMBIVALEN: di teks soal ia sampah OCR, tapi di OPSI
+    // JAWABAN ia isi sah ("15", "27", "√") -- jadi dilewati bila untukOpsi.
+    const strukturalPasti =
       RE_PENANDA_HALAMAN.test(b)
-      || RE_NOMOR_YATIM.test(b)
-      || RE_NOMOR_GANDA.test(b)
-      || RE_SIMBOL_SAHAJA.test(b)
       || RE_JUDUL_KOLOM_RUSAK.test(b)
-      || RE_SLOGAN_BUKU.test(b)
-    ) {
+      || RE_SLOGAN_BUKU.test(b);
+    const strukturalAmbivalen =
+      RE_NOMOR_YATIM.test(b)
+      || RE_NOMOR_GANDA.test(b)
+      || RE_SIMBOL_SAHAJA.test(b);
+    if (strukturalPasti || (!untukOpsi && strukturalAmbivalen)) {
       buangStruktural += 1;
       continue;
     }
     if (barisGarbar(b)) {
-      // Baris acak pendek seperti "m5 Om>" hampir pasti rácak OCR, tapi
-      // tetap dicatat, bukan dibuang diam-diam.
+      // Baris acak pendek seperti "m5 Om>" hampir pasti rácak OCR. Untuk
+      // TEKS SOAL ia dibuang (tetap dicatat). Untuk OPSI ia TIDAK dibuang:
+      // opsi sah memang pendek dan miskin vokal ("7 rak", "12 cm", "3 m/s",
+      // "pH 5") -- insiden 2026-10-23, opsi "7 rak"/"9 rak"/"14 rak"/"21 rak"
+      // terhapus semua sehingga soal ditolak "Pilihan jawaban kurang dari 2".
+      // Opsi yang ragu cukup DICATAT supaya admin melihatnya di preview dan
+      // memutuskan sendiri; membuang opsi = soal utuh jadi tertolak.
+      if (untukOpsi) {
+        catatan.push(`baris diduga sisa OCR tapi DIPERTAHANKAN karena ini opsi: "${b.trim()}"`);
+        sisa.push(b);
+        continue;
+      }
       catatan.push(`baris sisa OCR dibuang: "${b.trim()}"`);
       continue;
     }
@@ -281,7 +308,7 @@ export function penandaiKualitasOcr({ teksSoal = '', opsi = [], pembahasan = '' 
     if (teksOpsi.length > 400) {
       catatan.push(`opsi ${String.fromCharCode(65 + i)} sangat panjang (${teksOpsi.length} karakter) -- diduga kemasukan teks bagian lain saat OCR; PERIKSA MANUAL`);
     }
-    const r = bersihkanOcrTeks(teksOpsi);
+    const r = bersihkanOcrTeks(teksOpsi, { untukOpsi: true });
     for (const c of r.catatan) catatan.push(`opsi ${String.fromCharCode(65 + i)}: ${c}`);
   });
   return catatan;

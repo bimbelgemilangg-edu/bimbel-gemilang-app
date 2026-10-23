@@ -1879,7 +1879,13 @@ function parseHTMLMaster(raw) {
         tabel: table ? normalizeTabel(table.baris.map((row, i) => ({ kolom: table.header[i] || `Kolom ${i + 1}`, isi: row.join(' | ') }))) : [],
       };
     }).filter(opt => !optionIsEmpty(opt)).map((opt) => {
-      const bersih = bersihkanOcrTeks(opt.teks || '');
+      // 🔥 FIX 2026-10-23 (insiden 54/391 soal owner tertolak): OPSI tidak
+      // boleh dibersihkan dengan aturan pembuang "baris angka polos".
+      // Opsi matematika SAH berupa angka polos ("15", "27", "243"); dulu
+      // semuanya jadi kosong di sini, lalu normalizeSoal membuang opsi
+      // kosong itu, dan validasi berteriak "Pilihan jawaban kurang dari 2"
+      // padahal HTML sumbernya utuh 4 opsi. Lihat docs di bersihkanOcr.js.
+      const bersih = bersihkanOcrTeks(opt.teks || '', { untukOpsi: true });
       return { ...opt, teks: bersih.teks };
     });
     // Cacat khas OCR dua kolom: blok opsi terpindah JUGA ke dalam teks soal

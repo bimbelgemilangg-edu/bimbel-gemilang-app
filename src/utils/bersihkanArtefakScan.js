@@ -135,11 +135,19 @@ function barisWatermark(baris) {
 
 /**
  * Bersihkan SATU string teks dari artefak scan.
- * Rumus $...$ / $$...$$ dan baris isi TIDAK disentuh.
+ * Rumus $...$ / $...$ dan baris isi TIDAK disentuh.
  * @param {string} teks
+ * @param {{untukOpsi?: boolean}} [opsi] `untukOpsi: true` melewatkan pembuang
+ *   baris angka polos (RE_BARIS_NOMOR) dan huruf kapital lepas
+ *   (RE_BARIS_HURUF_LEPAS). INSIDEN 2026-10-23: untuk OPSI JAWABAN baris
+ *   "15", "27", "243" adalah ISI SAH pilihan ganda, bukan nomor urut kolom
+ *   sebelah yang lepas. Tanpa flag ini opsi angka polos jadi kosong dan soal
+ *   utuh tertolak "Pilihan jawaban kurang dari 2". Penanda kolom, watermark,
+ *   dan garis sampah TETAP dibuang untuk opsi karena mustahil jadi isi pilihan.
  * @returns {string}
  */
-export function bersihkanArtefakTeks(teks) {
+export function bersihkanArtefakTeks(teks, opsi = {}) {
+  const untukOpsi = Boolean(opsi && opsi.untukOpsi);
   let t = String(teks ?? '');
   if (!t.trim()) return t;
   t = t.replace(RE_MARKER_KOLOM, ' ');
@@ -151,8 +159,8 @@ export function bersihkanArtefakTeks(teks) {
   t = t
     .split('\n')
     .map((baris) => {
-      if (RE_BARIS_NOMOR.test(baris)) return '';
-      if (RE_BARIS_HURUF_LEPAS.test(baris)) return '';
+      if (!untukOpsi && RE_BARIS_NOMOR.test(baris)) return '';
+      if (!untukOpsi && RE_BARIS_HURUF_LEPAS.test(baris)) return '';
       if (RE_BARIS_GARIS.test(baris)) return '';
       if (barisWatermark(baris)) return '';
       return baris;
@@ -166,10 +174,13 @@ export function bersihkanArtefakTeks(teks) {
 }
 
 function bersihkanOpsi(opsi) {
-  // artefak dulu, lalu awalan huruf opsi dobel + garbage margin
-  if (typeof opsi === 'string') return bersihkanAwalanOpsi(bersihkanArtefakTeks(opsi));
+  // artefak dulu, lalu awalan huruf opsi dobel + garbage margin.
+  // 🔥 FIX 2026-10-23: OPSI dibersihkan dengan flag untukOpsi supaya baris
+  // angka polos ("15", "27", "243") dan huruf lepas tidak dianggap artefak
+  // scan -- itu ISI SAH pilihan ganda. Lihat bersihkanArtefakTeks.
+  if (typeof opsi === 'string') return bersihkanAwalanOpsi(bersihkanArtefakTeks(opsi, { untukOpsi: true }));
   if (opsi && typeof opsi === 'object') {
-    return { ...opsi, teks: bersihkanAwalanOpsi(bersihkanArtefakTeks(opsi.teks ?? '')) };
+    return { ...opsi, teks: bersihkanAwalanOpsi(bersihkanArtefakTeks(opsi.teks ?? '', { untukOpsi: true })) };
   }
   return opsi;
 }
