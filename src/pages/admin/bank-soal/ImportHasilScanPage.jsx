@@ -97,6 +97,9 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 // util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
 import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan, wariskanBacaanYatim } from '../../../utils/bersihkanArtefakScan';
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
+// 🔥 2026-10-23 (keputusan owner): gerbang STANDAR SINTAKS LATEX. Sistem
+// MENOLAK keluaran yang melanggar template prompt, bukan menambalnya.
+import { periksaLatexSoal } from '../../../utils/validasiLatex';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
 import { bacaKualitas, pesanKualitas } from '../../../utils/kualitasButir';
@@ -337,6 +340,7 @@ Tulis semua rumus dalam LaTeX. Ada 2 mode, PILIH SESUAI BENTUK RUMUSNYA — ini 
 - Display \`$$...$$\` — WAJIB dipakai untuk rumus LEBAR atau multi-baris: matriks (\\begin{pmatrix}, \\begin{bmatrix}), vektor kolom, pecahan besar bersusun, sistem persamaan, integral dengan batas, limit kompleks. JANGAN taruh matriks/vektor kolom di dalam inline \`$...$\` karena akan tampil terhimpit/rusak di tengah teks kalimat — pisahkan jadi baris sendiri pakai \`$$...$$\`.
 
 Sistem merender LaTeX ini otomatis (KaTeX) — jangan biarkan karakter rusak hasil OCR, tulis ulang jadi LaTeX bersih.
+- STANDAR SINTAKS LATEX (WAJIB, importer MENOLAK yang melanggar): (a) nama perintah LaTeX HARUS berhenti pada batas yang jelas -- spasi, kurung kurawal, atau simbol non-huruf. BENAR: \`$\rightarrow a=18$\`, \`$p \times l$\`. SALAH: \`$\rightarrowa=18$\`, \`$p\timesl$\` -- bentuk lengket adalah macro tak dikenal dan soal DITOLAK. (b) "tidak sama dengan" WAJIB \`$\ne\` atau \`$\neq\`; DILARANG memakai karakter gabung U+0338 (combining long solidus), baik menempel pada "=" ("152̸=180") maupun pada token lain ("2̸2"). (c) kalau importer menolak dengan pesan "LaTeX tidak sahih", perbaiki segmen yang disebut lalu kirim ulang -- sistem SENGAJA tidak menebak atau menambal markupmu.
 
 Untuk FISIKA/KIMIA, tulis besaran dan satuan secara profesional: gunakan \`$v=5\\,\\mathrm{m\\,s^{-1}}$\`, \`$F=20\\,\\mathrm{N}$\`, \`$I=2\\,\\mathrm{A}$\`, dan \`$\\mu_0=4\\pi\\times10^{-7}\\,\\mathrm{T\\,m\\,A^{-1}}$\`. Jangan memakai karakter OCR seperti \`m.s-1\`, \`oC\`, atau \`x 105\`; normalisasikan menjadi LaTeX yang benar.
 
@@ -478,6 +482,7 @@ ATURAN WAJIB:
 2. Pertanyaan utama berada di <div data-field="teks_soal">...</div>.
 3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Kalau kamu bisa mengisolasi persis gambar/grafik/diagram soal itu saja, embed itu. KALAU TIDAK BISA mengisolasi dengan presisi (mis. grafik menyatu dengan teks di layout PDF), JANGAN dilewatkan/dikosongkan begitu saja -- sertakan screenshot SATU HALAMAN PENUH tempat gambar itu berada sebagai fallback, dan tulis di alt/deskripsi: "Perlu di-crop admin, gambar asli ada di halaman ini". Sistem punya fitur crop bawaan (drag-pilih area), jadi admin bisa memotong sendiri dari screenshot halaman penuh itu -- jangan pernah mengarang gambar atau URL yang tidak benar-benar ada. WAJIB: atribut src ditulis POLOS apa adanya (contoh: src="https://contoh.org/g.png" atau src="data:image/png;base64,...") -- DILARANG membungkus alamat dengan kurung siku/kurung bundar gaya tautan markdown seperti src="[url](url)", karena browser tidak bisa memuat alamat yang terbungkus dan gambar akan terlihat rusak/palsu di halaman impor.
 4. Rumus harus dipertahankan sebagai LaTeX, misalnya $x^2+1$, \\(x^2+1\\), atau <span data-latex="x^2+1">...</span>. WAJIB: setiap notasi matematika (termasuk simbol akar, pangkat, atau perintah LaTeX seperti \\log, \\frac, \\sqrt) HARUS ada DI DALAM salah satu pembungkus itu ($...$ dsb) -- JANGAN PERNAH menulis kode LaTeX mentah tanpa pembungkus (menulis "^3\\log 81" polos di luar tanda $ itu SALAH, sistem gak bisa merender jadi rumus, siswa lihat kode mentahnya apa adanya; yang benar: "$^3\\log 81$"). Kalau ragu, lebih aman dibungkus $ daripada dibiarkan polos.
+4b. STANDAR SINTAKS LATEX (WAJIB -- importer MENOLAK soal yang melanggarnya): (a) nama perintah LaTeX HARUS berhenti pada batas yang jelas: spasi, kurung kurawal, atau simbol non-huruf. BENAR: \`$\rightarrow a=18$\`, \`$p \times l$\`. SALAH: \`$\rightarrowa=18$\`, \`$p\timesl$\`, \`$\triangleABC$\` -- bentuk lengket adalah macro tak dikenal, bukan rumus. (b) "tidak sama dengan" WAJIB \`$\ne\` atau \`$\neq\`; DILARANG memakai karakter gabung U+0338 (combining long solidus), baik menempel pada "=" ("152̸=180") maupun pada token lain ("2̸2"). (c) kalau importer menolak dengan pesan "LaTeX tidak sahih", itu BERARTI keluaranmu yang melanggar template ini: perbaiki segmen yang disebut di pesan, lalu kirim ulang. Sistem SENGAJA tidak menebak dan tidak menambal markupmu.
 5. Pilihan jawaban berada di <ol data-field="opsi_jawaban"><li>...</li></ol>. Setiap <li> boleh berisi gambar dan tabel.
 6. Kunci ditulis di <meta data-field="kunci_jawaban" data-value="B" />. 🔥 KEBIJAKAN BARU: kalau dokumen sumber menyertakan kunci resmi, SELALU pakai itu. TAPI kalau kunci tidak ditemukan di sumber ATAU kunci sumber tampak salah (bertentangan dengan hasil analisismu sendiri terhadap soal itu), JANGAN dikosongkan — SELESAIKAN soal itu sendiri langkah demi langkah (persis seperti guru mengerjakan soal), tulis kunci hasil analisismu di data-value, lalu tandai dengan <meta data-field="kunci_terverifikasi" data-value="false" />. Kalau kunci dari sumber dipakai apa adanya tanpa keraguan, tulis <meta data-field="kunci_terverifikasi" data-value="true" /> (atau boleh tidak ditulis sama sekali, true adalah default).
    ⚠️ PENTING soal data-field="pembahasan": ini akan DIBACA LANGSUNG OLEH SISWA, jadi HARUS murni penjelasan cara mengerjakan soal seperti guru menjelaskan ke murid -- JANGAN PERNAH menyebut hal-hal teknis/internal seperti "tidak ada kunci resmi", "kunci_terverifikasi", "dokumen sumber", "AI", "hasil analisis ulang", dsb. Cukup jelaskan penyelesaiannya secara langsung, seolah itu memang kunci yang benar (mis. "$4^2=16$; $225^{\frac12}=15$; ... Maka hasilnya $\frac{10}{3}$." -- BUKAN "Tidak ada kunci resmi... kunci di bawah hasil penyelesaian ulang penulis (kunci_terverifikasi=false). $4^2=16$...").
@@ -1333,6 +1338,34 @@ function normalizeSoal(qMasuk, idx) {
   if (menunjukGambarDiTeks && gambar.length === 0) {
     errors.push(
       'Soal ini menunjuk "gambar/grafik/diagram" di teksnya, tapi TIDAK ADA gambar terlampir sama sekali. Upload gambar manual dulu di panel "Kelola Gambar", atau soal ini tidak akan bisa dijawab siswa.',
+    );
+  }
+
+  // ----------------------------------------------------------
+  // 🔥 GERBANG STANDAR SINTAKS LATEX (2026-10-23, keputusan owner).
+  // Prompt impor adalah kontrak: pihak ketiga WAJIB tunduk. LaTeX yang
+  // tidak sahih (macro lengket "\rightarrowa", negasi U+0338, dsb.)
+  // DITOLAK di sini dengan pesan yang menyebut segmen persisnya, supaya
+  // yang memperbaiki adalah SUMBERNYA. Sistem sengaja tidak menambal:
+  // menambal = menutupi ketidakpatuhan dan mengarang markup atas nama
+  // pihak ketiga. Lihat aturan 4/4b pada template prompt di berkas ini.
+  // ----------------------------------------------------------
+  const masalahLatex = periksaLatexSoal({
+    teks_soal: teksSoal,
+    opsi_jawaban: opsiJawaban,
+    pembahasan: pembahasanMentah,
+    bacaan: bacaan && bacaan.teks ? bacaan.teks : '',
+  });
+  if (masalahLatex.length) {
+    const rincian = masalahLatex
+      .slice(0, 3)
+      .map((m) => `${m.field}: "$${m.segmen}$" (${m.pesan})`)
+      .join('; ');
+    const lebih = masalahLatex.length > 3 ? `; +${masalahLatex.length - 3} segmen lain` : '';
+    errors.push(
+      `LaTeX tidak sahih di ${masalahLatex.length} segmen: ${rincian}${lebih} -- ` +
+      'keluaran melanggar STANDAR SINTAKS LATEX pada template prompt (aturan 4/4b). ' +
+      'Perbaiki segmen yang disebut lalu kirim ulang; sistem sengaja tidak menambal markup.',
     );
   }
 
