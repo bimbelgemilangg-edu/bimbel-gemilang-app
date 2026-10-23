@@ -3576,6 +3576,12 @@ export default function ImportHasilScanPage() {
   const [promptMode, setPromptMode] = useState('html');
   const [catatanPrompt, setCatatanPrompt] = useState('');
   const [promptCopied, setPromptCopied] = useState(false);
+  // 🔥 2026-10-23 (loop umpan balik ke pihak 3): prompt koreksi siap tempel
+  // + penghitung siklus per berkas, supaya kelihatan berapa ronde pihak
+  // ketiga butuh untuk patuh kontrak.
+  const [promptKoreksi, setPromptKoreksi] = useState('');
+  const [koreksiCopied, setKoreksiCopied] = useState(false);
+  const [siklusKoreksi, setSiklusKoreksi] = useState(0);
   // 🔥 BARU: "Generate Langsung" -- BEDA dari mode biasa (yang selalu
   // nganggep AI lagi NGEKSTRAK dari buku/PDF yang dilampirkan). Mode
   // ini buat kasus "Penguatan Dasar" (Literasi/Numerasi/Logika) yang
@@ -3634,6 +3640,125 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       console.error('Gagal menyalin prompt:', error);
     }
   }, [generatedPrompt]);
+
+  // ----------------------------------------------------------
+  // 🔥 PROMPT KOREKSI (2026-10-23) — penutup loop umpan balik ke pihak 3.
+  // Pihak ketiga di alur owner adalah AI percakapan: ia tidak bisa
+  // menjalankan validator, ia hanya bisa MENERIMA TEKS. Maka daftar
+  // penolakan gerbang dirangkai jadi satu prompt perbaikan siap tempel:
+  // menyebut butir kontrak yang dilanggar + kutipan segmen persis, dan
+  // mewajibkan kirim ulang SELURUH dokumen (bukan potongan).
+  // ----------------------------------------------------------
+  const bangunPromptKoreksi = useCallback(() => {
+    const invalid = soalList.filter((q) => !q.valid);
+    if (!invalid.length) return '';
+
+    const ATURAN = [
+      { id: '4b', re: /LaTeX tidak sahih/, judul: 'STANDAR SINTAKS LATEX',
+        wajib: 'Nama perintah LaTeX WAJIB berhenti pada batas jelas (spasi, kurung kurawal, atau simbol non-huruf): "$\\rightarrow a=18$" BENAR, "$\\rightarrowa=18$" SALAH. "Tidak sama dengan" WAJIB $\\ne$ atau $\\neq$; DILARANG U+0338 (combining solidus) seperti "152̸=180".' },
+      { id: '5', re: /kurang dari 2/, judul: 'OPSI JAWABAN LENGKAP',
+        wajib: 'Setiap soal pg_sederhana/pg_kompleks WAJIB punya 2-6 butir <li> berisi teks/gambar/tabel di dalam <ol data-field="opsi_jawaban">. Opsi tidak boleh kosong.' },
+      { id: '6', re: /Kunci jawaban belum ditemukan/, judul: 'KUNCI JAWABAN',
+        wajib: 'Kunci WAJIB diisi di <meta data-field="kunci_jawaban">. Bila sumber tidak punya kunci atau kuncinya tampak salah, selesaikan soalnya sendiri lalu tandai <meta data-field="kunci_terverifikasi" data-value="false" />.' },
+      { id: '2', re: /Teks soal kosong/, judul: 'TEKS SOAL',
+        wajib: 'Pertanyaan utama WAJIB berada di <div data-field="teks_soal"> dan tidak boleh kosong.' },
+      { id: '10', re: /Pernyataan kategori|Benar-Salah belum ditemukan/, judul: 'PERNYATAAN BENAR/SALAH & KATEGORI',
+        wajib: 'Soal benar_salah/pg_kategori WAJIB punya <table data-field="pernyataan"> atau <div data-field="tabel_benar_salah"> yang terisi.' },
+      { id: '3', re: /tidak ada gambar terlampir|gambar/, judul: 'GAMBAR',
+        wajib: 'Soal yang menyuruh "perhatikan gambar/grafik/diagram" WAJIB menyertakan gambarnya di <div data-field="gambar">; jangan menunjuk gambar yang tidak dilampirkan.' },
+    ];
+
+    const kantong = ATURAN.map((a) => ({ ...a, baris: [] }));
+    const lain = [];
+    for (const q of invalid) {
+      const label = 'soal #' + q.nomor + (q.paket ? ' (paket ' + q.paket + ')' : '');
+      const kena = new Set();
+      for (const err of safeArray(q.errors)) {
+        const teks = safeString(err);
+        const aturan = ATURAN.find((a) => a.re.test(teks));
+        if (!aturan) { lain.push(label + ': ' + teks); continue; }
+        if (kena.has(aturan.id)) continue;
+        kena.add(aturan.id);
+        let kutip = '';
+        if (aturan.id === '4b') {
+          const seg = periksaLatexSoal({
+            teks_soal: q.teks_soal,
+            opsi_jawaban: q.opsi_jawaban,
+            pembahasan: q.pembahasan,
+            bacaan: q.bacaan && q.bacaan.teks ? q.bacaan.teks : '',
+          }).slice(0, 2).map((m) => m.field + ': "$' + m.segmen + '$" -> ' + m.pesan);
+          kutip = seg.length ? ' | ' + seg.join(' ; ') : '';
+        }
+        kantong.find((k) => k.id === aturan.id).baris.push('  - ' + label + kutip + ' | ' + teks);
+      }
+    }
+
+    const MAX_BARIS = 10;
+    const bagian = [];
+    for (const k of kantong) {
+      if (!k.baris.length) continue;
+      const lebih = k.baris.length > MAX_BARIS ? k.baris.length - MAX_BARIS : 0;
+      bagian.push(
+        '[' + k.id + '] ' + k.judul + ' -- ' + k.baris.length + ' soal',
+        ...k.baris.slice(0, MAX_BARIS),
+        ...(lebih ? ['  - ... +' + lebih + ' soal lain melanggar butir yang sama'] : []),
+        '    WAJIB: ' + k.wajib,
+        '',
+      );
+    }
+    if (lain.length) {
+      bagian.push('[LAINNYA] temuan gerbang:', ...lain.slice(0, MAX_BARIS), '');
+    }
+
+    return [
+      'KOREKSI WAJIB -- KELUARANMU DITOLAK GERBANG BANK SOAL GEMILANG',
+      '',
+      'Berkas: ' + (sumberFile || '(tempelan)'),
+      'Siklus koreksi ke-' + (siklusKoreksi + 1) + ' untuk berkas ini.',
+      'Soal tertolak: ' + invalid.length + ' dari ' + soalList.length + '.',
+      '',
+      'Kamu menerima TEMPLATE PROMPT Bank Soal Gemilang dan keluaran terakhirmu',
+      'melanggar kontrak tersebut pada butir-butir di bawah. Perbaiki SEMUA',
+      'butir, lalu KIRIM ULANG SELURUH DOKUMEN HTML DARI AWAL -- jangan hanya',
+      'mengirim potongan yang diperbaiki; nomor, paket, dan field lain harus',
+      'utuh seperti semula.',
+      '',
+      'ATURAN YANG DILANGGAR:',
+      '',
+      ...bagian,
+      'SETELAH MEMPERBAIKI: setiap rumus WAJIB berada di dalam $...$ atau',
+      '$$...$$; setiap opsi terisi; kunci menunjuk huruf opsi yang benar; dan',
+      'jangan menambahkan penjelasan apa pun di luar HTML.',
+    ].join('\n');
+  }, [soalList, sumberFile, siklusKoreksi]);
+
+  const handleKopiKoreksi = useCallback(async () => {
+    const teks = bangunPromptKoreksi();
+    if (!teks) return;
+    setPromptKoreksi(teks);
+    const kunci = 'gemilang_impor_siklus::' + (sumberFile || 'tempelan');
+    let n = 0;
+    try { n = Number(localStorage.getItem(kunci) || 0); } catch (_e) { n = 0; }
+    n += 1;
+    try { localStorage.setItem(kunci, String(n)); } catch (_e) { /* penyimpanan penuh/tak tersedia: hitungan sesi saja */ }
+    setSiklusKoreksi(n);
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(teks);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = teks;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setKoreksiCopied(true);
+      setTimeout(() => setKoreksiCopied(false), 2000);
+    } catch (error) {
+      console.error('Gagal menyalin prompt koreksi:', error);
+    }
+  }, [bangunPromptKoreksi, sumberFile]);
 
   // ----------------------------------------------------------
   // STATS
@@ -4876,6 +5001,27 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                 >
                   🩹 Selamatkan bacaan terjebak ({hitungKandidatBacaan(soalList)} soal) — potong dari wadah salahnya & jadikan bacaan bersama
                 </button>
+              )}
+              {soalList.some((q) => !q.valid) && (
+                <div style={{ marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={handleKopiKoreksi}
+                    style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #b91c1c', background: koreksiCopied ? '#dcfce7' : '#fef2f2', color: '#991b1b', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    {koreksiCopied ? '✅ Tersalin — tempel ke AI pihak 3' : '📋 Buat prompt perbaikan (' + soalList.filter((q) => !q.valid).length + ' soal tertolak)'}
+                  </button>
+                  <div style={{ fontSize: '11px', color: '#92400e', marginTop: '6px' }}>
+                    Merangkai semua penolakan gerbang jadi satu prompt siap tempel ke AI pihak 3,
+                    lengkap dengan kutipan segmen yang melanggar. Siklus koreksi berkas ini: ke-{siklusKoreksi || 1}.
+                  </div>
+                  {promptKoreksi && (
+                    <details style={{ marginTop: '8px' }}>
+                      <summary style={{ fontSize: '11px', color: '#92400e', cursor: 'pointer' }}>lihat / salin manual prompt koreksi</summary>
+                      <pre style={{ marginTop: '6px', padding: '10px', background: '#fff', border: '1px solid #fca5a5', borderRadius: '8px', fontSize: '11px', whiteSpace: 'pre-wrap', maxHeight: '260px', overflow: 'auto' }}>{promptKoreksi}</pre>
+                    </details>
+                  )}
+                </div>
               )}
               <div style={{ fontSize: '12px', color: '#b45309', marginTop: '12px' }}>Soal yang valid tetap bisa disimpan.</div>
             </div>
