@@ -96,6 +96,9 @@ import { lepasBungkusanSrcGambar } from '../../../utils/normalisasiSrcGambar';
 // ditemukan dengan berburu manual di puluhan soal. Keduanya kini ditangani
 // util murni bersihkanArtefakScan (teruji), halaman tetap cuma urusan klik.
 import { bersihkanArtefakSoal, tandaiBacaanTerjebak, pindahkanBacaanTerjebak, hitungKandidatBacaan, wariskanBacaanYatim } from '../../../utils/bersihkanArtefakScan';
+// 🔥 2026-10-23: pulihkan perintah LaTeX lengket ("\rightarrowa" dsb) supaya
+// KaTeX di layar siswa/cetak tidak merender potongan merah. Lihat utilnya.
+import { rapikanLatexSoal } from '../../../utils/rapikanLatexLengket';
 import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpor';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
@@ -935,7 +938,10 @@ function normalizeSoal(qMasuk, idx) {
   // deteksi duplikat, dan penulisan field -- supaya penanda kolom pemindai,
   // watermark berkas, dan nomor urut kolom sebelah tidak ikut tersimpan ke
   // bank soal dan tidak mengotori pembanding duplikat.
-  const q = bersihkanArtefakSoal(qMasuk);
+  // Urutan sengaja: artefak scan dulu (baris sampah hilang), baru pemulihan
+  // perintah LaTeX lengket -- supaya spasi yang disisipkan tidak menempel
+  // pada baris yang sebentar lagi dibuang.
+  const q = rapikanLatexSoal(bersihkanArtefakSoal(qMasuk));
   if (!q || typeof q !== 'object') {
     return {
       nomor: idx + 1,
