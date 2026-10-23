@@ -5,6 +5,7 @@
 import React from 'react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
+import { pecahSegmenMatematika, sumberKaTeX } from '../utils/segmenMatematika.js';
 
 // 17 Okt 2026: display math ($$...$$ / \[...\]) SERING multiline pada
 // pembahasan JSON owner; titik tidak melewati \n sehingga dulu lolos
@@ -30,28 +31,14 @@ class MathSafe extends React.Component {
 
 export function MathText({ text }) {
   if (!text) return null;
-  const parts = String(text).split(REGEX_MATH);
   return (
     <>
-      {parts.map((part, i) => {
-        if (!part) return null;
-        if (part.startsWith('$$') && part.endsWith('$$')) {
-          const raw = part.slice(2, -2);
-          return <MathSafe key={i} fallback={raw}><BlockMath math={raw} /></MathSafe>;
-        }
-        if (part.startsWith('\\[') && part.endsWith('\\]')) {
-          const raw = part.slice(2, -2);
-          return <MathSafe key={i} fallback={raw}><BlockMath math={raw} /></MathSafe>;
-        }
-        if (part.startsWith('$') && part.endsWith('$')) {
-          const raw = part.slice(1, -1);
-          return <MathSafe key={i} fallback={raw}><InlineMath math={raw} /></MathSafe>;
-        }
-        if (part.startsWith('\\(') && part.endsWith('\\)')) {
-          const raw = part.slice(2, -2);
-          return <MathSafe key={i} fallback={raw}><InlineMath math={raw} /></MathSafe>;
-        }
-        return <React.Fragment key={i}>{part}</React.Fragment>;
+      {pecahSegmenMatematika(text).map((seg, i) => {
+        if (seg.jenis === 'teks') return <React.Fragment key={i}>{seg.isi}</React.Fragment>;
+        const math = sumberKaTeX(seg);
+        return seg.jenis === 'blok'
+          ? <MathSafe key={i} fallback={seg.isi}><BlockMath math={math} /></MathSafe>
+          : <MathSafe key={i} fallback={seg.isi}><InlineMath math={math} /></MathSafe>;
       })}
     </>
   );

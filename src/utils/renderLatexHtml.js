@@ -1,23 +1,13 @@
 import katex from 'katex';
+import { pecahSegmenMatematika, sumberKaTeX } from './segmenMatematika.js';
 
 const SKIP = new Set(['STYLE', 'SCRIPT', 'CODE', 'PRE', 'TEXT', 'TSPAN']);
-const RE_MATH = /(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?!\s)[^$\n]+?\$)/g;
-
-function pecahToken(token) {
-  if (token.startsWith('\\[') && token.endsWith('\\]')) {
-    return { raw: token.slice(2, -2), display: true };
-  }
-  if (token.startsWith('\\(') && token.endsWith('\\)')) {
-    return { raw: token.slice(2, -2), display: false };
-  }
-  if (token.startsWith('$$') && token.endsWith('$$')) {
-    return { raw: token.slice(2, -2), display: true };
-  }
-  return { raw: token.slice(1, -1), display: false };
-}
-
-function buatMath(doc, token) {
-  const { raw, display } = pecahToken(token);
+// Pemecahan segmen & kebijakan ukuran kini SATU SUMBER di
+// utils/segmenMatematika.js (audit 2026-10-23): keempat permukaan render
+// (buku/live, try out, belajar, cetak) wajib berperilaku identik.
+function buatMath(doc, segmen) {
+  const raw = sumberKaTeX(segmen);
+  const display = segmen.jenis === 'blok';
   const wadah = doc.createElement(display ? 'div' : 'span');
   wadah.className = display ? 'gb-katex gb-katex-block' : 'gb-katex gb-katex-inline';
   try {
@@ -51,22 +41,16 @@ export function renderLatexHtml(html) {
     const node = walker.currentNode;
     const parent = node.parentElement;
     if (!parent || SKIP.has(parent.tagName) || parent.closest('.katex')) continue;
-    if (RE_MATH.test(node.nodeValue || '')) nodes.push(node);
-    RE_MATH.lastIndex = 0;
+    if (pecahSegmenMatematika(node.nodeValue || '').some((s) => s.jenis !== 'teks')) nodes.push(node);
   }
 
   nodes.forEach((node) => {
     const text = node.nodeValue || '';
     const frag = doc.createDocumentFragment();
-    let cursor = 0;
-    let match;
-    RE_MATH.lastIndex = 0;
-    while ((match = RE_MATH.exec(text))) {
-      if (match.index > cursor) frag.appendChild(doc.createTextNode(text.slice(cursor, match.index)));
-      frag.appendChild(buatMath(doc, match[0]));
-      cursor = match.index + match[0].length;
+    for (const seg of pecahSegmenMatematika(text)) {
+      if (seg.jenis === 'teks') frag.appendChild(doc.createTextNode(seg.isi));
+      else frag.appendChild(buatMath(doc, seg));
     }
-    if (cursor < text.length) frag.appendChild(doc.createTextNode(text.slice(cursor)));
     node.replaceWith(frag);
   });
 

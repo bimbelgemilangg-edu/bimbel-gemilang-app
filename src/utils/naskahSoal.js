@@ -25,6 +25,7 @@
 // ============================================================
 
 import katex from 'katex';
+import { pecahSegmenMatematika, sumberKaTeX } from './segmenMatematika.js';
 import { pisahTeksDanGambar } from './penempatanGambar.js';
 import { bersihkanTeksOpsi } from './bersihkanGlifKunci.js';
 
@@ -291,31 +292,17 @@ export function escapeHtml(s) {
 
 export function teksKeHtml(teks) {
   const bersih = String(teks ?? '').replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ').replace(/\s+/g, ' ').trim();
-  const bagian = bersih.split(/(\$\$[\s\S]*?\$\$|\$[^$]+\$)/g);
-  return bagian
-    .map((b) => {
-      if (b.startsWith('$$') && b.endsWith('$$') && b.length > 4) {
-        try {
-          return katex.renderToString(`\\displaystyle ${b.slice(2, -2)}`, { throwOnError: false });
-        } catch {
-          return escapeHtml(b);
-        }
+  // 🔥 2026-10-23: pakai pemecah SATU SUMBER (utils/segmenMatematika).
+  // Sebelumnya cetak TIDAK mengenal \(..\) / \[..\] sehingga delimiter itu
+  // tercetak MENTAH di kertas, padahal kontrak impor mengizinkannya.
+  return pecahSegmenMatematika(bersih)
+    .map((seg) => {
+      if (seg.jenis === 'teks') return escapeHtml(seg.isi);
+      try {
+        return katex.renderToString(sumberKaTeX(seg), { throwOnError: false });
+      } catch {
+        return escapeHtml(seg.isi);
       }
-      if (b.startsWith('$') && b.endsWith('$') && b.length > 2) {
-        try {
-          // 🔥 2026-10-09 (komplain guru matematika: "rumus gak seperti di
-          // buku"). KaTeX merender matematika INLINE dalam textstyle, sehingga
-          // pecahan/akar muncul kecil dan gepeng. Buku pelajaran mencetaknya
-          // dalam displaystyle. Prefix \displaystyle hanya disisipkan bila
-          // rumusnya memang memuat konstruksi bertingkat.
-          const isi = b.slice(1, -1);
-          const bertingkat = /\\(frac|dfrac|tfrac|sqrt|sum|prod|int|oint|lim|binom|begin\{)/.test(isi);
-          return katex.renderToString(bertingkat ? `\\displaystyle ${isi}` : isi, { throwOnError: false });
-        } catch {
-          return escapeHtml(b);
-        }
-      }
-      return escapeHtml(b);
     })
     .join('');
 }
@@ -623,19 +610,12 @@ function htmlBlokPembahasan(teks, kunciHuruf = '', gambar = null) {
   // di-escape sehingga $$...$$ / $...$ tercetak MENTAH di pegangan guru.
   // Kini segmen math dirender KaTeX (displaystyle untuk $$), segmen polos
   // tetap memakai sorot stabilo.
-  const sorotMatika = (t) => String(t ?? '').split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g).map((b) => {
-    if (!b) return '';
-    if (b.startsWith('$$') && b.endsWith('$$') && b.length > 4) {
-      try { return katex.renderToString(`\\displaystyle ${b.slice(2, -2)}`, { throwOnError: false }); } catch { return escapeHtml(b); }
-    }
-    if (b.startsWith('$') && b.endsWith('$') && b.length > 2) {
-      try {
-        const isi = b.slice(1, -1);
-        const bertingkat = /\\(frac|dfrac|tfrac|sqrt|sum|prod|int|oint|lim|binom|begin\{)/.test(isi);
-        return katex.renderToString(bertingkat ? `\\displaystyle ${isi}` : isi, { throwOnError: false });
-      } catch { return escapeHtml(b); }
-    }
-    return sorot(b);
+  // 🔥 2026-10-23: pemecah SATU SUMBER (utils/segmenMatematika) -- kunci guru
+  // kini mengenal \(..\)/\[..\] dan kebijakan ukuran yang sama dengan
+  // layar siswa, supaya bentuk di kertas = bentuk di layar.
+  const sorotMatika = (t) => pecahSegmenMatematika(t).map((seg) => {
+    if (seg.jenis === 'teks') return sorot(seg.isi);
+    try { return katex.renderToString(sumberKaTeX(seg), { throwOnError: false }); } catch { return sorot(seg.isi); }
   }).join('');
   // Ekor pembahasan yang putus di OCR ("Jawaba", "= Jawaban f") dilengkapi
   // dari kunci soal itu sendiri -- aturan yang sama dengan layar siswa &

@@ -21,26 +21,22 @@
 import React from 'react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
+import { pecahSegmenMatematika, sumberKaTeX } from '../utils/segmenMatematika.js';
 
 export default function RenderMath({ text }) {
   if (!text) return null;
-  const parts = String(text).split(/(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\]|\\\(.*?\\\))/g);
+  // 🔥 2026-10-23: pemecah lama di sini pakai titik yang TIDAK melewati \n,
+  // sehingga $$ multiline lolos sebagai teks mentah di try out. Kini pakai
+  // SATU SUMBER utils/segmenMatematika + kebijakan ukuran seragam (layar =
+  // kertas).
   return (
     <>
-      {parts.map((part, i) => {
-        if (part.startsWith('$$') && part.endsWith('$$')) {
-          try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch { return <span key={i}>{part}</span>; }
-        }
-        if (part.startsWith('$') && part.endsWith('$')) {
-          try { return <InlineMath key={i} math={part.slice(1, -1)} />; } catch { return <span key={i}>{part}</span>; }
-        }
-        if (part.startsWith('\\[') && part.endsWith('\\]')) {
-          try { return <BlockMath key={i} math={part.slice(2, -2)} />; } catch { return <span key={i}>{part}</span>; }
-        }
-        if (part.startsWith('\\(') && part.endsWith('\\)')) {
-          try { return <InlineMath key={i} math={part.slice(2, -2)} />; } catch { return <span key={i}>{part}</span>; }
-        }
-        return <React.Fragment key={i}>{part}</React.Fragment>;
+      {pecahSegmenMatematika(text).map((seg, i) => {
+        if (seg.jenis === 'teks') return <React.Fragment key={i}>{seg.isi}</React.Fragment>;
+        const math = sumberKaTeX(seg);
+        return seg.jenis === 'blok'
+          ? <BlockMath key={i} math={math} />
+          : <InlineMath key={i} math={math} />;
       })}
     </>
   );
