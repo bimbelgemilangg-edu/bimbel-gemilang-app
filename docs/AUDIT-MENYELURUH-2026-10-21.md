@@ -394,3 +394,57 @@ kode — CI GitHub dan Vercel punya RAM lebih besar dan build-nya lolos.
 Karena itu seluruh audit ini divalidasi lewat 5 gerbang CI yang ringan, dan
 **angka penghematan bundle (P1-1) sengaja tidak diklaim** — harus diukur di CI
 GitHub lewat langkah `Ringkasan ukuran bundle` yang sudah ada.
+
+---
+
+## Pembaruan 2026-10-24 — audit ulang + status roadmap
+
+Diaudit ulang atas permintaan owner ("audit kembali, coba kerjakan").
+Angka di bawah hasil eksekusi ulang, bukan proyeksi.
+
+### Baseline terukur ulang
+
+```
+uji logika        : 116 berkas LULUS (510 subtest TAP)   [naik dari 110: +6 berkas uji baru]
+lint              : 17 error · 97 warning · 49 berkas kotor
+                    (set-state-in-effect 7 · immutability 8 · refs 1 ·
+                     only-export-components 1 · no-unused-vars 0 · purity 0)
+npm audit --omit=dev : 29 (3 critical · 11 high · 13 moderate · 2 low)
+function Vercel   : 12/12  (batas maksimum; Midtrans masih ada karena
+                    penghapusan menunggu keputusan owner — lihat pratinjau
+                    PRATINJAU-HAPUS-MIDTRANS)
+```
+
+### Status roadmap §"Urutan pengerjaan yang disarankan"
+
+| # | Pekerjaan | Status 2026-10-24 |
+|---|---|---|
+| 1 | Pindah `IMPOR-*.json` + fixture → `data/impor/` | **SELESAI hari ini**: 23 berkas pindah; 14 baris penulis di `scripts/build-*.mjs`, default `bangun-impor-ptn.py`, dan 2 pembaca di `tests/rencanaImporPtn.test.mjs` diperbarui; nol rujukan akar tersisa |
+| 2 | `npm audit fix` non-major | belum — sengaja: sandbox tak bisa menjalankan build produksi, jadi bump dependensi harus diverifikasi job CI (lakukan di branch) |
+| 3 | Lapisan auth `lib/apiAuth.js` di endpoint AI | belum |
+| 4 | Rate-limit `verifyStaffLogin.js` | **TERNYATA SUDAH ADA** (audit 2026-10-21 ketinggalan): peta in-memory 8 percobaan/10 menit per kunci, dengan komentar jujur bahwa Vercel stateless membuat ini perlambatan, bukan pertahanan; pertahanan sebenarnya disebut di Rules + Firebase Auth |
+| 5 | Kunci harga Midtrans / hapus Midtrans | menunggu keputusan owner (pratinjau penghapusan sudah dibuat) |
+| 6 | Hash password siswa | belum (P0 tertua yang masih terbuka) |
+| 7 | Code-splitting `React.lazy` | belum (`React.lazy` masih nol) |
+| 8 | Pecah `ImportHasilScanPage.jsx` | belum (malah bertambah: gerbang LaTeX, prompt koreksi) |
+| 9 | Konsolidasi `xlsx` → `exceljs` | belum |
+| 10 | 18 error lint perilaku, 1 berkas/PR | 1 berkas lunas (`ManageTugas.jsx`, commit `07c23f6`); sisa 17 |
+
+### Pekerjaan incident-driven di luar roadmap (2026-10-21 s/d 24)
+
+`838da53` opsi angka polos · `8812875`+`5364778` pemulihan LaTeX lalu REVERT
+(prinsip kontrak) · `c2de2aa` gerbang LaTeX + prompt 4b · `915527c` tombol
+prompt koreksi · `6ce53e1` paritas render 4 permukaan · `5c210c1` skala
+100–1000 + bobot resmi · `35c8a2d` dua bug konsistensi nilai · `ca53aff`
+jenis ujian + skala TKA · `a696805` standar TKA 2026 bersumber.
+
+### Temuan audit-ulang pada kode baru (diperbaiki hari ini)
+
+1. `modeSkalaTka()` jatuh ke skala SD/SMP bila jenjang tak terbaca = menebak.
+   Kini mengembalikan null dan `hitungSkalaSesi` meminta admin melengkapi
+   jenjang paket dengan alasan jujur.
+2. Total gabungan TKA dibulatkan integer padahal laporan resmi 2 desimal.
+   Kini round2.
+3. Layar hasil menampilkan kode mata uji lowercase untuk mode TKA.
+   Kini memakai nama mapel asli.
+   Ketiganya dikunci 2 uji baru di `tests/skorSkalaTka.test.mjs` (18 uji).
