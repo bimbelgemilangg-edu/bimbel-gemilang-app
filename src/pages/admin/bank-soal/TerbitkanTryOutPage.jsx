@@ -76,6 +76,9 @@ import { jenjangPaket } from '../../../utils/skorSkalaTka';
 import {
   bandingkanDenganStandar, ringkasanStruktur, BENTUK_SOAL_RESMI, SURVEI_SD_SMP_MENIT,
 } from '../../../utils/standarTka2026';
+import {
+  durasiRencanaMs, peringatanJendelaVsDurasi,
+} from '../../../utils/aksesJendelaTryOut';
 import { MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 import { apakahMapelUtbk } from '../../../../lib/kunciGemini';
 
@@ -925,6 +928,19 @@ export default function TerbitkanTryOutPage() {
       // cetak di panel keranjang menampilkan struktur yang SAMA persis
       // dengan yang disimpan tombol ini, dan rumusnya bisa diuji Node.
       const subtes = bangunSubtesKeranjang(soalDipilih, { modeTimer, granularitasSubtes, durasiPerSoal, durasiSubtes });
+
+      // 🔥 2026-10-24 (audit): jendela jadwal lebih pendek dari durasi =
+      // siswa yang mulai di ujung jendela tetap mendapat durasi penuh dan
+      // mengirim SETELAH deadline. Admin wajib sadar sebelum menerbitkan.
+      const peringatanJendela = peringatanJendelaVsDurasi({
+        waktuBukaMs: pakaiJadwalBuka ? new Date(waktuBuka).getTime() : null,
+        waktuTutupMs: pakaiDeadline ? new Date(waktuTutup).getTime() : null,
+        durasiMs: durasiRencanaMs({ modeTimer, durasiTotalMenit: Number(durasiTotalMenit), subtes }),
+      });
+      if (peringatanJendela && !window.confirm(`${peringatanJendela}\n\nTetap terbitkan dengan jadwal ini?`)) {
+        setMenerbitkan(false);
+        return;
+      }
 
       const payload = {
         judul: judulTryOut.trim(),

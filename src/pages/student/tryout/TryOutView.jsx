@@ -25,7 +25,7 @@
 //   bukan ujian nasional bersertifikat).
 // ============================================================
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { filterSoalTryOutByMapelSiswa } from '../../../utils/aksesKontenSiswa';
@@ -35,6 +35,10 @@ import {
 import { ArrowLeft, Camera, ShieldAlert, Clock, CheckCircle2  , FileText, Award, Timer, ChevronLeft, ChevronDown } from 'lucide-react';
 
 import { useTimerTryOut } from './useTimerTryOut';
+// 🔥 2026-10-24 (audit): kebijakan jendela waktu dipaku di util murni teruji,
+// dan "kini" dikalibrasi ke waktu server supaya jam perangkat yang ngaco
+// tidak lagi menentukan siapa boleh mulai.
+import { putuskanAksesJendela, kalibrasiOffsetWaktuServer } from '../../../utils/aksesJendelaTryOut';
 import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
 import { kodeSoalSiswa } from '../../../utils/kodeSoalSiswa';
@@ -140,6 +144,8 @@ export default function TryOutView() {
   const studentId = localStorage.getItem('studentId');
 
   const [tahap, setTahap] = useState('memuat'); // 'memuat' | 'mulai' | 'mengerjakan' | 'selesai'
+  const [offsetWaktu, setOffsetWaktu] = useState(0); // ms; jam server - jam perangkat
+  const offsetWaktuRef = useRef(0);
   const [paket, setPaket] = useState(null);
   const [sesiId, setSesiId] = useState(null);
   const [jawaban, setJawaban] = useState({}); // { soalId: value }
@@ -336,21 +342,30 @@ export default function TryOutView() {
         // Cek jadwal buka/deadline SEBELUM kasih tahap 'mulai'. Jaga-
         // jaga kalau siswa buka link try out langsung (bukan lewat
         // daftar yang udah nge-filter duluan).
-        const sekarang = new Date();
-        const belumDibuka = dataPaket.waktuBuka && sekarang < new Date(dataPaket.waktuBuka);
-        const sudahLewatDeadline = dataPaket.waktuTutup && sekarang > new Date(dataPaket.waktuTutup);
-
-        if (sudahLewatDeadline) {
+        // "Kini" = jam perangkat + offset kalibrasi header Date server.
+        const sekarangMs = Date.now() + offsetWaktuRef.current;
+        const waktuBukaMs = dataPaket.waktuBuka ? new Date(dataPaket.waktuBuka).getTime() : null;
+        const waktuTutupMs = dataPaket.waktuTutup ? new Date(dataPaket.waktuTutup).getTime() : null;
+        let izinBerlaku = false;
+        if (waktuTutupMs !== null && sekarangMs > waktuTutupMs) {
           // "Izin Ulang Khusus" -- admin bisa kasih 1 siswa izin buat
           // ngerjain LAGI walau deadline PAKET-nya udah lewat, TANPA
           // harus buka deadline itu buat semua orang.
           const snapIzin = await getDoc(doc(db, 'tryout_izin_ulang', `${paketId}_${studentId}`));
-          const izinMasihBerlaku = snapIzin.exists() && sekarang < new Date(snapIzin.data().waktuBerlakuSampai);
-          if (!izinMasihBerlaku) {
-            setTahap('lewat-deadline');
-            return;
-          }
-        } else if (belumDibuka) {
+          izinBerlaku = snapIzin.exists() && sekarangMs < new Date(snapIzin.data().waktuBerlakuSampai).getTime();
+        }
+        const putusan = putuskanAksesJendela({
+          adaSesiBerjalan: false,
+          sekarangMs,
+          waktuBukaMs,
+          waktuTutupMs,
+          izinBerlaku,
+        });
+        if (putusan.aksi === 'lewat-deadline') {
+          setTahap('lewat-deadline');
+          return;
+        }
+        if (putusan.aksi === 'belum-dibuka') {
           setTahap('belum-dibuka');
           return;
         }
@@ -378,6 +393,36 @@ export default function TryOutView() {
     muatPaketDanSesi();
   }, [paketId, studentId]);
   /* eslint-enable react-hooks/exhaustive-deps */
+
+  // 🔥 2026-10-24 (audit): KALIBRASI JAM ke waktu server lewat header `Date`
+  // respons HEAD ke origin sendiri (Vercel edge). Gagal/offline = offset 0 =
+  // perilaku lama; kalibrasi TIDAK PERNAH menghalangi siswa ujian.
+  useEffect(() => {
+    let hidup = true;
+    (async () => {
+      try {
+        const sebelum = Date.now();
+        const res = await fetch(`${window.location.origin}/`, { method: 'HEAD', cache: 'no-store' });
+        const sesudah = Date.now();
+        if (!hidup || !res?.headers) return;
+        const offset = kalibrasiOffsetWaktuServer(res.headers.get('date'), Math.round((sebelum + sesudah) / 2));
+        offsetWaktuRef.current = offset;
+        setOffsetWaktu(offset);
+      } catch (_e) {
+        offsetWaktuRef.current = 0;
+      }
+    })();
+    return () => { hidup = false; };
+  }, []);
+
+  // 🔥 2026-10-24 (audit): saat terkunci "belum dibuka"/"lewat deadline",
+  // nilai ulang otomatis tiap 30 detik supaya layar berubah sendiri ketika
+  // jendela terbuka (atau izin terbit) tanpa menyuruh siswa reload manual.
+  useEffect(() => {
+    if (tahap !== 'belum-dibuka' && tahap !== 'lewat-deadline') return undefined;
+    const id = setInterval(() => { muatPaketDanSesi(); }, 30000);
+    return () => clearInterval(id);
+  }, [tahap, muatPaketDanSesi]);
 
   // Daftar soal yang SEDANG BOLEH dikerjakan -- kalau mode per-subtes,
   // cuma soal di subtes aktif (soal di subtes lain/sebelumnya TIDAK
@@ -801,6 +846,12 @@ export default function TryOutView() {
         <div style={{ fontSize: 40 }}>🔒</div>
         <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini belum dibuka</div>
         <div style={{ fontSize: 12.5 }}>Dibuka {new Date(paket.waktuBuka).toLocaleString('id-ID')}</div>
+        {Math.abs(offsetWaktu) >= 30000 && (
+          <div style={{ fontSize: 11, color: '#b45309', marginTop: 4 }}>
+            🕐 Jam perangkatmu selisih ~{Math.round(Math.abs(offsetWaktu) / 1000)} detik dari waktu server.
+            Pemeriksaan jadwal memakai waktu terkoreksi, jadi layar ini bukan akibat jam perangkatmu.
+          </div>
+        )}
         <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
       </div></div>
     );
@@ -811,6 +862,12 @@ export default function TryOutView() {
         <div style={{ fontSize: 40 }}>⏰</div>
         <div style={{ fontWeight: 700, color: '#1e293b' }}>Try out ini sudah lewat deadline</div>
         <div style={{ fontSize: 12.5 }}>Ditutup {new Date(paket.waktuTutup).toLocaleString('id-ID')}</div>
+        {Math.abs(offsetWaktu) >= 30000 && (
+          <div style={{ fontSize: 11, color: '#b45309', marginTop: 4 }}>
+            🕐 Jam perangkatmu selisih ~{Math.round(Math.abs(offsetWaktu) / 1000)} detik dari waktu server.
+            Pemeriksaan jadwal memakai waktu terkoreksi, jadi layar ini bukan akibat jam perangkatmu.
+          </div>
+        )}
         <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 4 }}>Kalau kamu merasa ini keliru, minta admin/gurumu buat cek ulang.</div>
         <button onClick={() => navigate('/siswa/tryout')} style={{ ...st.tombolSekunder, marginTop: 10 }}>Kembali</button>
       </div></div>
