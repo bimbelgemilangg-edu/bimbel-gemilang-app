@@ -111,9 +111,17 @@ export function jenisUjianPaket(paket, cekUtbk = () => false) {
   return tebakJenisUjian(paket, cekUtbk);
 }
 
-/** Apakah jenjang paket memakai skala TKA 200-800 (SMA/SMK) atau 0-100? */
+/**
+ * Apakah jenjang paket memakai skala TKA 200-800 (SMA/SMK) atau 0-100
+ * (SD/SMP)? Mengembalikan NULL bila jenjang tidak terbaca -- menebak
+ * SD/SMP untuk paket tanpa jenjang adalah menebak, dan audit 2026-10-24
+ * melarangnya: lebih jujur minta admin melengkapi jenjang paketnya.
+ */
 export function modeSkalaTka(paket) {
-  return adalahSma(jenjangPaket(paket)) ? 'tka-sma' : 'tka-dasmen';
+  const j = jenjangPaket(paket);
+  if (adalahSma(j)) return 'tka-sma';
+  if (adalahSdSmp(j)) return 'tka-dasmen';
+  return null;
 }
 
 export default {

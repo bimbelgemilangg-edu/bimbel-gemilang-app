@@ -142,6 +142,34 @@ uji('mode utbk tetap jalan (tidak regresi)', () => {
   assert.equal(r.total, 1000);
 });
 
+uji('AUDIT 2026-10-24: jenjang tak terbaca -> mode null, BUKAN menebak SD/SMP', () => {
+  const paket = { jenisUjian: 'tka', targetKelas: 'Semua', daftarSoal: [pg('m1', 'Matematika')] };
+  assert.equal(modeSkalaTka(paket), null);
+  const sesi = { status: 'selesai', jawaban: { m1: 0 }, soalDinilaiIds: ['m1'] };
+  const r = hitungSkalaSesi(sesi, paket);
+  assert.equal(r.total, null);
+  assert.match(r.alasan, /jenjang/);
+});
+
+uji('AUDIT 2026-10-24: total gabungan TKA dua desimal seperti laporan resmi', () => {
+  const paket = {
+    jenisUjian: 'tka', targetKelas: '6 SD',
+    daftarSoal: [
+      pg('m1', 'Matematika'), pg('m2', 'Matematika'), pg('m3', 'Matematika'),
+      pg('b1', 'Bahasa Indonesia'), pg('b2', 'Bahasa Indonesia'), pg('b3', 'Bahasa Indonesia'),
+    ],
+  };
+  const sesi = {
+    status: 'selesai',
+    jawaban: { m1: 0, m2: 0, b1: 0, b2: 0, b3: 0 },
+    soalDinilaiIds: ['m1', 'm2', 'm3', 'b1', 'b2', 'b3'],
+  };
+  const r = hitungSkalaSesi(sesi, paket);
+  assert.equal(r.perSubtes.find((x) => x.kode === 'matematika').skala, 66.67);
+  assert.equal(r.perSubtes.find((x) => x.kode === 'bahasa indonesia').skala, 100);
+  assert.equal(r.total, 83.34); // (66.67 + 100) / 2, dua desimal
+});
+
 console.log('');
 console.log(`# skorSkalaTka: ${lulus} lulus, ${gagal} gagal`);
 if (gagal > 0) process.exit(1);

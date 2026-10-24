@@ -988,7 +988,7 @@ export default function TryOutView() {
               <div style={{ marginTop: 10, fontSize: 12, color: '#3949AB', background: '#eef0fb', borderRadius: 10, padding: '8px 10px', fontWeight: 700 }}>
                 Skala Gemilang gaya {skalaOtomatis.mode === 'tka' ? 'TKA' : 'UTBK'}: {skalaOtomatis.total}
                 <div style={{ fontSize: 10, fontWeight: 500, color: '#64748b', marginTop: 2 }}>
-                  {skalaOtomatis.perSubtes.map((x) => `${x.kode} ${x.skala}${x.predikat ? ` (${x.predikat})` : ''}`).join(' · ')}
+                  {skalaOtomatis.perSubtes.map((x) => `${skalaOtomatis.mode === 'tka' ? (x.nama || x.kode) : x.kode} ${x.skala}${x.predikat ? ` (${x.predikat})` : ''}`).join(' · ')}
                 </div>
               </div>
             )}

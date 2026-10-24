@@ -93,6 +93,9 @@ export function hitungSkalaSesi(sesi, paket) {
 
   // ---- mode TKA ----
   const skalaMode = modeSkalaTka(paket);
+  if (!skalaMode) {
+    return kosong('tka', 'jenjang paket tidak terbaca: isi jenjang/target kelas (mis. "12 SMA" atau "6 SD") supaya skala TKA yang benar (SMA/SMK 200-800 vs SD/SMP 0-100) bisa dipilih');
+  }
   const perSubtes = baris.map((b) => {
     const persen = (b.skor / b.total) * 100;
     const skala = skalaMode === 'tka-sma'
@@ -105,7 +108,7 @@ export function hitungSkalaSesi(sesi, paket) {
       predikat: skalaMode === 'tka-sma' ? predikatTka(skala) : null,
     };
   });
-  const total = Math.round(perSubtes.reduce((x, b) => x + b.skala, 0) / perSubtes.length);
+  const total = Math.round((perSubtes.reduce((x, b) => x + b.skala, 0) / perSubtes.length) * 100) / 100;
   return {
     mode: 'tka',
     skalaMode,
