@@ -22,18 +22,18 @@ const paketUtbk = {
 };
 const sesi = (jawaban, status = 'selesai') => ({ status, jawaban });
 
-uji('semua benar -> skala maksimum 800', () => {
+uji('semua benar -> skala maksimum 1000', () => {
   const r = hitungSkalaSesi(sesi({ pk1: 0, pk2: 0, pu1: 0, pu2: 0, mtk1: 1 }), paketUtbk);
-  assert.equal(r.total, 800);
+  assert.equal(r.total, 1000);
   assert.equal(r.perSubtes.length, 2, 'soal Matematika tidak ikut');
 });
 
-uji('semua salah -> skala minimum 300, bukan 0', () => {
+uji('semua salah -> skala minimum 100, bukan 0', () => {
   const r = hitungSkalaSesi(sesi({ pk1: 1, pk2: 1, pu1: 1, pu2: 1 }), paketUtbk);
-  assert.equal(r.total, 300);
+  assert.equal(r.total, 100);
 });
 
-uji('setengah benar -> 550 (linear, tertimbang jumlah soal)', () => {
+uji('setengah benar -> 550 (linear; satu komponen = bobot ternormalisasi)', () => {
   const r = hitungSkalaSesi(sesi({ pk1: 0, pk2: 1, pu1: 0, pu2: 1 }), paketUtbk);
   assert.equal(r.total, 550);
   assert.equal(r.perSubtes.find((p) => p.kode === 'PK').persen, 50);
@@ -58,7 +58,7 @@ uji('soal tak dijawab tidak dihitung benar tapi tetap masuk penyebut', () => {
   assert.equal(r.perSubtes.reduce((a, b) => a + b.total, 0), 4);
   assert.equal(r.total, persenKe(1, 4));
 });
-function persenKe(b, t) { return Math.round(300 + (500 * b) / t); }
+function persenKe(b, t) { return Math.round(100 + (900 * b) / t); }
 
 uji('sesiTerbaru memilih yang paling akhir, mengabaikan yang belum selesai', () => {
   const list = [

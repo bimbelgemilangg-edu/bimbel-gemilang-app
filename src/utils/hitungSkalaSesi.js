@@ -1,6 +1,6 @@
 // src/utils/hitungSkalaSesi.js
 // ============================================================
-// Menghitung skala 300-800 (utils/skorSkalaUtbk.js) LANGSUNG dari dokumen
+// Menghitung skala 100-1000 (utils/skorSkalaUtbk.js) LANGSUNG dari dokumen
 // sesi try out + paketnya, tanpa input manual admin.
 //
 // 🔥 KENAPA TIDAK DIHITUNG SAAT SISWA SUBMIT

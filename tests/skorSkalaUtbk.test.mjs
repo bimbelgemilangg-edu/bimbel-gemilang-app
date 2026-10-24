@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import {
   persenKeSkala, hitungSkalaUtbk, LABEL_SKALA, SKALA_MIN, SKALA_MAKS,
+  BOBOT_KOMPONEN, komponenDariKode,
 } from '../src/utils/skorSkalaUtbk.js';
 import { TOTAL_SOAL_UTBK, TOTAL_MENIT_UTBK, templateTryoutUtbkSabtu, KOMPOSISI_SUBTES_UTBK } from '../src/utils/templateTryoutUtbk.js';
 
@@ -13,7 +14,7 @@ function uji(n, f) {
 }
 console.log('skorSkalaUtbk + template Sabtu');
 
-uji('pemetaan linear & monoton di rentang 300-800', () => {
+uji('pemetaan linear & monoton di rentang 100-1000', () => {
   assert.equal(persenKeSkala(0), SKALA_MIN);
   assert.equal(persenKeSkala(100), SKALA_MAKS);
   assert.equal(persenKeSkala(50), 550);
@@ -32,14 +33,44 @@ uji('persen di luar 0-100 dipotong, bukan meledak', () => {
   assert.equal(persenKeSkala(null), null);
 });
 
-uji('total tertimbang jumlah soal, bukan rata-rata polos', () => {
+uji('total BERBOBOT RESMI SNBT 2025, bukan tertimbang jumlah soal', () => {
   const r = hitungSkalaUtbk([
-    { kode: 'utbk_pu', benar: 30, total: 30 },   // 100%
-    { kode: 'utbk_pm', benar: 0, total: 120 },   // 0%
+    { kode: 'utbk_pu', benar: 30, total: 30 },   // TPS 100% -> skala 1000
+    { kode: 'utbk_pm', benar: 0, total: 120 },   // PM  0%   -> skala 100
   ]);
-  // 30/150 = 20% -> 300 + 5*20 = 400, BUKAN (800+300)/2 = 550
-  assert.equal(r.total, 400);
+  // Bobot resmi: TPS 50, PM 15 (dinormalisasi 65 karena komponen lain kosong)
+  // -> (50*1000 + 15*100) / 65 = 792. Bukan tertimbang jumlah soal (dahulu 400)
+  // dan bukan rata-rata polos (550).
+  assert.equal(r.total, 792);
   assert.equal(r.perSubtes.length, 2);
+  assert.deepEqual(r.perKomponen.map((k) => k.komponen).sort(), ['PM', 'TPS']);
+});
+
+uji('komponen tunggal: total = skala komponen itu (renormalisasi bobot)', () => {
+  const r = hitungSkalaUtbk([{ kode: 'LBI', benar: 10, total: 20 }]);
+  assert.equal(r.total, r.perKomponen[0].skala);
+  assert.equal(r.total, persenKeSkala(50));
+  assert.match(r.catatan || '', /dinormalisasi/);
+});
+
+uji('kode subtes dua bentuk dikenali komponen yang sama', () => {
+  assert.equal(komponenDariKode('PU'), 'TPS');
+  assert.equal(komponenDariKode('utbk_pu'), 'TPS');
+  assert.equal(komponenDariKode('utbk_lbe'), 'LBE');
+  assert.equal(komponenDariKode('PM'), 'PM');
+  assert.equal(komponenDariKode('TPS'), 'TPS');
+  assert.equal(komponenDariKode('matematika'), null);
+});
+
+uji('kode tak dikenal: jatuh ke tertimbang jumlah soal + catatan jujur', () => {
+  const r = hitungSkalaUtbk([{ kode: 'XYZ', benar: 1, total: 4 }]);
+  assert.equal(r.total, persenKeSkala(25));
+  assert.match(r.catatan || '', /tidak dikenal bobot resmi/);
+});
+
+uji('bobot resmi berjumlah 100 dan keempat komponen ada', () => {
+  assert.equal(Object.values(BOBOT_KOMPONEN).reduce((a, b) => a + b, 0), 100);
+  assert.deepEqual(Object.keys(BOBOT_KOMPONEN), ['TPS', 'LBI', 'LBE', 'PM']);
 });
 
 uji('tanpa subtes bernilai -> total null + alasan, bukan 0', () => {
@@ -61,6 +92,8 @@ uji('INVARIAN: setiap hasil membawa label kejujuran', () => {
   assert.equal(r.label, LABEL_SKALA);
   assert.match(LABEL_SKALA, /BUKAN skor UTBK resmi/i);
   assert.match(LABEL_SKALA, /IRT/);
+  assert.match(LABEL_SKALA, /100-1000/);
+  assert.match(LABEL_SKALA, /SNBT 2025/);
 });
 
 // ---------------- template Sabtu ----------------

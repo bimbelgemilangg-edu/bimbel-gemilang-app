@@ -217,7 +217,7 @@ export default function TargetKampusSiswaPage() {
     setAlasan('');
     setSkalaOtomatis(null);
     // Skala UTBK otomatis: ambil sesi tryout selesai terbaru siswa ini, bila
-    // paketnya paket subtes UTBK hitung skala 300-800 dari jawabannya.
+    // paketnya paket subtes UTBK hitung skala 100-1000 dari jawabannya.
     // Admin tinggal klik "pakai angka ini" -- tidak ada lagi input manual
     // yang bisa salah ketik.
     (async () => {
@@ -613,8 +613,9 @@ export default function TargetKampusSiswaPage() {
               </div>
             )}
             <div style={{ ...S.kecil, marginTop: 6 }}>
-              Angka ini BUKAN skor UTBK resmi: ia skala internal 300-800 yang menyerupai rentang
-              UTBK, atau catatan konsultasi bila diisi manual. Karena itu keterangannya wajib diisi.
+              Angka ini BUKAN skor UTBK resmi: ia skala internal 100-1000 per komponen dengan
+              total berbobot resmi SNBT 2025, atau catatan konsultasi bila diisi manual.
+              Karena itu keterangannya wajib diisi.
             </div>
           </div>
 

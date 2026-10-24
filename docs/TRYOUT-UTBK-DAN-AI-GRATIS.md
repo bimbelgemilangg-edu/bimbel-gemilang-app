@@ -105,12 +105,17 @@ Urutan yang benar untuk try out UTBK, sesuai blueprint §4:
 
 ## 5. Penskoran: skala menyerupai, bukan menyetarakan
 
-`utils/skorSkalaUtbk.js` (8 uji) memetakan persen benar per subtes ke rentang
-**300-800** secara linear dan monoton, total tertimbang jumlah soal. Setiap
-hasil **wajib** membawa `LABEL_SKALA`:
+`utils/skorSkalaUtbk.js` memetakan persen benar per subtes ke rentang
+**100-1000** secara linear dan monoton -- rentang yang sama dengan skala per
+komponen SNBT 2025 (acuan BPPP Kemendikbudristek) -- dan merakit total dengan
+**bobot resmi**: TPS 50%, Literasi Bahasa Indonesia 20%, Literasi Bahasa
+Inggris 15%, Penalaran Matematika 15% (dinormalisasi ulang bila paket tidak
+memuat semua komponen). Sebelum 2026-10-24 rentangnya 300-800 dengan total
+tertimbang jumlah soal; diubah atas keputusan owner setelah riset skala resmi.
+Setiap hasil **wajib** membawa `LABEL_SKALA`:
 
-> *"Skala internal Gemilang 300-800 yang menyerupai rentang skor UTBK …
-> BUKAN skor UTBK resmi: tidak dihitung dengan IRT panitia…"*
+> *"Skala internal Gemilang 100-1000 per komponen dengan total berbobot resmi
+> SNBT 2025 … BUKAN skor UTBK resmi: tidak dihitung dengan IRT panitia…"*
 
 Skor UTBK resmi memakai IRT atas soal berkalibrasi rahasia; meniru angkanya
 tanpa mengaku adalah kebohongan yang rapi. Angka skala ini yang nantinya
