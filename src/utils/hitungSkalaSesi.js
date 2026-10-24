@@ -15,7 +15,7 @@
 // fixture), tidak menyentuh jaringan.
 // ============================================================
 
-import { skorSatuSoal, soalBisaDinilai, isSoalEsai } from './skorSoalTryOut.js';
+import { skorSatuSoal, soalBisaDinilai, isSoalEsai, pilihSoalDinilai } from './skorSoalTryOut.js';
 import { hitungSkalaUtbk } from './skorSkalaUtbk.js';
 import { MAPEL_UTBK } from './mesinTaksonomiSoal.js';
 import { apakahMapelUtbk } from '../../lib/kunciGemini.js';
@@ -37,7 +37,10 @@ export function hitungSkalaSesi(sesi, paket) {
   if (!sesi || sesi.status !== 'selesai') {
     return { total: null, perSubtes: [], alasan: 'sesi belum selesai' };
   }
-  const daftar = paket?.daftarSoal || [];
+  // 🔥 2026-10-24: pakai daftar soal yang DINILAI saat submit (soalDinilaiIds)
+  // supaya skala sisi baca/admin sama dengan yang dilihat siswa saat submit,
+  // termasuk untuk siswa yang daftarnya difilter akses mapel.
+  const daftar = pilihSoalDinilai(paket?.daftarSoal || [], sesi);
   const jawaban = sesi.jawaban || {};
   const perSubtesAgg = new Map();
   for (const soal of daftar) {
@@ -46,16 +49,23 @@ export function hitungSkalaSesi(sesi, paket) {
     if (isSoalEsai(soal) || !soalBisaDinilai(soal)) continue; // esai dinilai manusia, tidak ikut skala
     const subtes = subtesDariMapel(mapel);
     if (!subtes) continue;
-    const agg = perSubtesAgg.get(subtes) || { benar: 0, total: 0 };
+    const agg = perSubtesAgg.get(subtes) || { benar: 0, skor: 0, total: 0 };
     agg.total += 1;
     const s = skorSatuSoal(soal, jawaban[soal.id]);
-    if (s !== null && s >= 0.999) agg.benar += 1;
+    // 🔥 2026-10-24 (bug konsistensi): persen & skala memakai SKOR PROPORSIONAl
+    // (sama seperti totalSkorPersen), bukan hanya kredit penuh. Sebelumnya
+    // pg_kompleks/benar_salah yang dinilai proporsional membuat skala siswa
+    // sistematis lebih rendah dari persennya sendiri.
+    if (s !== null) {
+      agg.skor += s;
+      if (s >= 0.999) agg.benar += 1;
+    }
     perSubtesAgg.set(subtes, agg);
   }
   if (perSubtesAgg.size === 0) {
     return { total: null, perSubtes: [], alasan: 'paket ini bukan try out subtes UTBK' };
   }
-  const subtes = [...perSubtesAgg.entries()].map(([kode, v]) => ({ kode, ...v }));
+  const subtes = [...perSubtesAgg.entries()].map(([kode, v]) => ({ kode, benar: v.benar, skor: v.skor, total: v.total }));
   return hitungSkalaUtbk(subtes);
 }
 

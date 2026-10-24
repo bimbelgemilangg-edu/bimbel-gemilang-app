@@ -4,6 +4,8 @@
 //     node tests/hitungSkalaSesi.test.mjs
 import assert from 'node:assert/strict';
 import { hitungSkalaSesi, sesiTerbaru } from '../src/utils/hitungSkalaSesi.js';
+import { hitungTotalSkor, pilihSoalDinilai } from '../src/utils/skorSoalTryOut.js';
+import { persenKeSkala } from '../src/utils/skorSkalaUtbk.js';
 
 let lulus = 0, gagal = 0;
 function uji(n, f) {
@@ -68,6 +70,40 @@ uji('sesiTerbaru memilih yang paling akhir, mengabaikan yang belum selesai', () 
   ];
   assert.equal(sesiTerbaru(list).id, 'b');
   assert.equal(sesiTerbaru([]), null);
+});
+
+uji('BUG-2026-10-24: soalDinilaiIds membuat hitung ulang memakai penyebut siswa', () => {
+  const paketMentah = {
+    daftarSoal: [
+      soal('pk1', 'TPS/Pengetahuan Kuantitatif'),
+      soal('pk2', 'TPS/Pengetahuan Kuantitatif'),
+      soal('x1', 'TPS/Penalaran Umum'), // tidak pernah diterima siswa (filter akses)
+    ],
+  };
+  const jawaban = { pk1: 0, pk2: 0 };
+  const sesi = { status: 'selesai', jawaban, soalDinilaiIds: ['pk1', 'pk2'] };
+  // sisi siswa (daftar terfilter) vs cara lama admin (paket mentah)
+  assert.equal(hitungTotalSkor(pilihSoalDinilai(paketMentah.daftarSoal, sesi), jawaban).totalSkorPersen, 100);
+  assert.equal(hitungTotalSkor(paketMentah.daftarSoal, jawaban).totalSkorPersen, 67);
+  // skala sisi baca wajib memakai penyebut sesi, bukan paket mentah
+  const r = hitungSkalaSesi(sesi, paketMentah);
+  assert.equal(r.perSubtes.length, 1);
+  assert.equal(r.perSubtes[0].total, 2);
+  assert.equal(r.total, 1000);
+});
+
+uji('BUG-2026-10-24: skala memakai skor proporsional (pg_kompleks separuh)', () => {
+  const kompleks = {
+    id: 'k1', mapel: 'TPS/Penalaran Umum', tipe: 'pg_kompleks',
+    opsiJawaban: ['a', 'b', 'c', 'd'], kunciJawaban: ['A', 'C'],
+  };
+  const paket = { daftarSoal: [kompleks] };
+  const sesi = { status: 'selesai', jawaban: { k1: ['A'] } }; // 1 dari 2 kunci -> 0.5
+  const r = hitungSkalaSesi(sesi, paket);
+  assert.equal(r.perSubtes[0].skor, 0.5);
+  assert.equal(r.perSubtes[0].persen, 50);
+  assert.equal(r.perSubtes[0].benar, 0, 'kredit penuh memang 0, tapi persen tidak boleh ikut 0');
+  assert.equal(r.total, persenKeSkala(50));
 });
 
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);

@@ -179,6 +179,25 @@ export function skorSatuSoal(soal, jawaban) {
  * jawaban yang sudah tersimpan (baik pas submit pertama kali maupun
  * pas mau dihitung ulang belakangan).
  */
+/**
+ * 🔥 2026-10-24 (bug "nilai berubah saat dihitung ulang"): siswa bisa
+ * menerima daftar soal yang SUDAH DIFILTER akses mapelnya, sedangkan sisi
+ * admin/guru menghitung ulang dari paket MENTAH -- soal yang tidak pernah
+ * diterima siswa ikut jadi penyebut dan nilainya turun. Sejak ini sesi
+ * menyimpan `soalDinilaiIds` (id soal yang benar-benar dinilai saat submit),
+ * dan semua jalur hitung ulang WAJIB memakainya bila ada.
+ * @param {Array} daftarSoal paket mentah atau terfilter
+ * @param {object} [sesi] dokumen sesi (boleh punya soalDinilaiIds)
+ * @returns {Array} daftar soal yang sah dipakai penyebut
+ */
+export function pilihSoalDinilai(daftarSoal, sesi) {
+  const daftar = Array.isArray(daftarSoal) ? daftarSoal : [];
+  const ids = Array.isArray(sesi?.soalDinilaiIds) ? sesi.soalDinilaiIds : null;
+  if (!ids || ids.length === 0) return daftar;
+  const set = new Set(ids);
+  return daftar.filter((s) => set.has(s?.id));
+}
+
 export function hitungTotalSkor(daftarSoal, jawaban, nilaiEsai = null) {
   const daftar = daftarSoal || [];
   const soalAuto = daftar.filter((s) => !isSoalEsai(s) && soalBisaDinilai(s));

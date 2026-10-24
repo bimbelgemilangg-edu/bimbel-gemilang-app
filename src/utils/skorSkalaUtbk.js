@@ -103,14 +103,21 @@ export function hitungSkalaUtbk(subtes = []) {
     return { total: null, perSubtes: [], perKomponen: [], alasan: 'belum ada subtes yang bisa dinilai', label: LABEL_SKALA };
   }
   const perSubtes = daftar.map((s) => {
-    const benar = Math.min(Number(s.total), Math.max(0, Number(s.benar) || 0));
-    const persen = (benar / Number(s.total)) * 100;
+    const total = Number(s.total);
+    const benar = Math.min(total, Math.max(0, Number(s.benar) || 0));
+    // `skor` = kredit proporsional (pg_kompleks/benar_salah dinilai sebagian).
+    // Bila tidak diberikan, jatuh ke jumlah kredit penuh (`benar`).
+    const skorPokok = Number.isFinite(Number(s.skor))
+      ? Math.min(total, Math.max(0, Number(s.skor)))
+      : benar;
+    const persen = (skorPokok / total) * 100;
     return {
       kode: s.kode || null,
       nama: s.nama || s.kode || null,
       komponen: komponenDariKode(s.kode),
       benar,
-      total: Number(s.total),
+      skor: Number(skorPokok.toFixed(2)),
+      total,
       persen: Number(persen.toFixed(1)),
       skala: persenKeSkala(persen),
     };
@@ -121,17 +128,19 @@ export function hitungSkalaUtbk(subtes = []) {
   const agg = new Map();
   for (const s of perSubtes) {
     if (!s.komponen) continue;
-    const a = agg.get(s.komponen) || { benar: 0, total: 0 };
+    const a = agg.get(s.komponen) || { benar: 0, skor: 0, total: 0 };
     a.benar += s.benar;
+    a.skor += s.skor;
     a.total += s.total;
     agg.set(s.komponen, a);
   }
   const perKomponen = [...agg.entries()].map(([komponen, a]) => {
-    const persen = (a.benar / a.total) * 100;
+    const persen = (a.skor / a.total) * 100;
     return {
       komponen,
       bobot: BOBOT_KOMPONEN[komponen],
       benar: a.benar,
+      skor: Number(a.skor.toFixed(2)),
       total: a.total,
       persen: Number(persen.toFixed(1)),
       skala: persenKeSkala(persen),

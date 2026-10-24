@@ -643,6 +643,11 @@ export default function TryOutView() {
       xpMentah,
       xpFinal,
       jumlahSoalRusak: jumlahTidakBisaDinilai || 0,
+      // 🔥 2026-10-24: rekam DAFTAR SOAL yang benar-benar dinilai (sudah
+      // terfilter akses mapel siswa) supaya hitung ulang di admin/guru
+      // memakai penyebut yang SAMA -- tidak menurunkan nilai siswa karena
+      // soal yang tidak pernah ia terima.
+      soalDinilaiIds: (paket.daftarSoal || []).map((s) => s.id),
     };
 
     try {
@@ -657,6 +662,7 @@ export default function TryOutView() {
             xpMentah,
             xpFinal,
             pelanggaran,
+            soalDinilaiIds: skorRingkas.soalDinilaiIds,
             fotoPengawasan,
             // 🔥 BARU (audit keluhan siswa): jumlah soal yang DIKELUARKAN dari
             // penilaian karena datanya rusak (mis. baris benar/salah tanpa

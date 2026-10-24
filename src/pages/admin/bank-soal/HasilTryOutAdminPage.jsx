@@ -16,7 +16,7 @@ import { saringPaketTerbit } from '../../../utils/statusTryOutPaket';
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
 } from 'lucide-react';
-import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, pilihSoalDinilai } from '../../../utils/skorSoalTryOut';
 import { terapkanPotonganXP, LABEL_PELANGGARAN } from '../../../utils/potonganXPTryOut';
 import { validasiNilaiSusulan, bangunSesiSusulan, SUMBER_NILAI_SUSULAN } from '../../../utils/catatNilaiSusulan';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -269,7 +269,7 @@ export default function HasilTryOutAdminPage() {
     const nilaiEsaiBaru = { ...(item.sesi.nilaiEsai || {}), [soal.id]: entri };
     try {
       const { totalSkor, totalSkorPersen } = hitungTotalSkor(
-        paketTerpilih.daftarSoal, item.sesi.jawaban || {}, nilaiEsaiBaru,
+        pilihSoalDinilai(paketTerpilih.daftarSoal, item.sesi), item.sesi.jawaban || {}, nilaiEsaiBaru,
       );
       const xpMentahBaru = Math.round(totalSkor * 10);
       const { xpFinal: xpFinalBaru } = terapkanPotonganXP(xpMentahBaru, item.sesi.pelanggaran || []);
@@ -322,7 +322,7 @@ export default function HasilTryOutAdminPage() {
     setSedangHitungUlang(item.student.studentId || item.student.id);
     try {
       const { totalSkor, totalSkorPersen } = hitungTotalSkor(
-        paketTerpilih.daftarSoal, item.sesi.jawaban || {}, item.sesi.nilaiEsai || null,
+        pilihSoalDinilai(paketTerpilih.daftarSoal, item.sesi), item.sesi.jawaban || {}, item.sesi.nilaiEsai || null,
       );
       const xpMentahBaru = Math.round(totalSkor * 10); // XP_PER_SOAL, konsisten sama TryOutView.jsx
       const { xpFinal: xpFinalBaru } = terapkanPotonganXP(xpMentahBaru, item.sesi.pelanggaran || []);

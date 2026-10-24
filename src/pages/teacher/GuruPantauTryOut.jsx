@@ -21,7 +21,7 @@ import { useParams, Link } from 'react-router-dom';
 import { buatKodePaket } from '../../utils/kodePaket.js';
 import { doc, getDoc, getDocs, query, collection, where, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, isSoalEsai, poinEsai, pilihBarisBenarSalah, SKALA_NILAI_ESAI } from '../../utils/skorSoalTryOut';
+import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, isSoalEsai, poinEsai, pilihBarisBenarSalah, SKALA_NILAI_ESAI, pilihSoalDinilai } from '../../utils/skorSoalTryOut';
 import { cariIndexBenar, kunciBarisBenarSalah } from '../../utils/skoringSoalKompleks';
 import { terapkanPotonganXP } from '../../utils/potonganXPTryOut';
 import { tambahXpMingguan } from '../../utils/mingguIni';
@@ -190,7 +190,7 @@ export default function GuruPantauTryOut() {
     const entri = { poin, penilai: guru.guruNama || 'guru', pada: new Date().toISOString() };
     const nilaiEsaiBaru = { ...(detail.nilaiEsai || {}), [soal.id]: entri };
     try {
-      const { totalSkor, totalSkorPersen } = hitungTotalSkor(paket.daftarSoal || [], detail.jawaban || {}, nilaiEsaiBaru);
+      const { totalSkor, totalSkorPersen } = hitungTotalSkor(pilihSoalDinilai(paket.daftarSoal || [], detail), detail.jawaban || {}, nilaiEsaiBaru);
       const xpMentahBaru = Math.round(totalSkor * 10);
       const { xpFinal: xpFinalBaru } = terapkanPotonganXP(xpMentahBaru, detail.pelanggaran || []);
       const selisihXp = xpFinalBaru - (detail.xpFinal || 0);
