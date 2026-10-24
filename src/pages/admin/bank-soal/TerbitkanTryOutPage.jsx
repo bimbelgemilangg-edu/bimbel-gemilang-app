@@ -72,6 +72,10 @@ import { bangunSubtesKeranjang } from '../../../utils/seksiNaskahTryOut';
 // baca (UTBK 100-1000 / TKA SMA 200-800 / TKA SD-SMP 0-100). Admin memilih
 // saat menerbitkan; 'otomatis' = ditebak dari isi paket.
 import { jenisUjianPaket } from '../../../utils/skorSkalaTka';
+import { jenjangPaket } from '../../../utils/skorSkalaTka';
+import {
+  bandingkanDenganStandar, ringkasanStruktur, BENTUK_SOAL_RESMI, SURVEI_SD_SMP_MENIT,
+} from '../../../utils/standarTka2026';
 import { MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
 import { apakahMapelUtbk } from '../../../../lib/kunciGemini';
 
@@ -1618,6 +1622,49 @@ export default function TerbitkanTryOutPage() {
                   Menentukan skala kebiasaan yang dilihat siswa & kartu target. Bukan skor resmi.
                 </span>
               </div>
+
+              {jenisUjian === 'tka' && (() => {
+                const jenjangKini = jenjangPaket({ targetKelas, daftarSoal: [...keranjang.values()] });
+                const baris = bandingkanDenganStandar([...keranjang.values()], targetKelas);
+                const ring = ringkasanStruktur(baris);
+                return (
+                  <div style={{ border: '1px solid #c7d2fe', background: '#eef2ff', borderRadius: 10, padding: '10px 12px', marginBottom: 12, fontSize: 12 }}>
+                    <div style={{ fontWeight: 800, color: '#3730a3', marginBottom: 6 }}>
+                      📐 Standar TKA 2026 — acuan resmi untuk jenjang {jenjangKini || '(belum terbaca)'}
+                    </div>
+                    {baris.length === 0 && (
+                      <div style={{ color: '#b45309' }}>
+                        Jenjang belum terbaca dari target kelas. Pilih target kelas yang memuat jenjang
+                        (mis. &quot;12 SMA&quot;, &quot;9 SMP&quot;, &quot;6 SD&quot;) supaya struktur resmi bisa ditampilkan.
+                      </div>
+                    )}
+                    {baris.map((x) => (
+                      <div key={x.mapel + x.kategori} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline', margin: '3px 0' }}>
+                        <span style={{ fontWeight: 700 }}>{x.mapel}</span>
+                        <span style={{ color: '#4338ca' }}>({x.kategori})</span>
+                        <span style={{ color: x.isiKeranjang === x.butir ? '#15803d' : '#b45309', fontWeight: 700 }}>
+                          {x.isiKeranjang}/{x.butir} butir · {x.durasiMenit} menit {x.isiKeranjang === x.butir ? '✅' : '⚠️'}
+                        </span>
+                      </div>
+                    ))}
+                    {baris.length > 0 && (
+                      <div style={{ marginTop: 6, color: '#3730a3' }}>
+                        Total resmi: {ring.totalButir} butir · {ring.totalMenit} menit
+                        {(jenjangKini === 'SD' || jenjangKini === 'SMP') ? ` + ${SURVEI_SD_SMP_MENIT} menit survei karakter` : ''}.
+                        {' '}Bentuk soal resmi: {BENTUK_SOAL_RESMI.map((x) => x.kode).join(' & ')}
+                        (di Bank Soal: {BENTUK_SOAL_RESMI.map((x) => x.tipe).join(' + ')}).
+                      </div>
+                    )}
+                    <div style={{ marginTop: 6, fontSize: 10.5, color: '#6b7280', lineHeight: 1.6 }}>
+                      Sumber angka: pernyataan Kepala Pusat Asesmen Pendidikan 2026 (SMA wajib 25 butir /
+                      75 menit; pedoman sebelumnya 30 butir), Kompas Skola 07-09-2026 (SMA pilihan 25 butir /
+                      60 menit), pedoman TKA 2026 SD/SMP (30 butir / 75 menit per mata uji), dan
+                      pusmendik.kemendikdasmen.go.id (mata uji per jenjang & bentuk soal).
+                      Selisih dengan keranjang TIDAK dikoreksi otomatis -- keputusan isi tetap di admin.
+                    </div>
+                  </div>
+                );
+              })()}
               <div style={{ display: 'flex', gap: 16, marginBottom: modeTimer === 'per-subtes' ? 10 : 0 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5 }}>
                   <input type="radio" checked={modeTimer === 'total'} onChange={() => setModeTimer('total')} /> Total keseluruhan
