@@ -362,7 +362,7 @@ function nested(v) { if (Array.isArray(v)) return v.some((x) => Array.isArray(x)
 if (nested(draft.bab)) { console.error('nested array!'); process.exit(1); }
 
 const outDraft = join(ROOT, 'docs/drafts/draft-bahasa-indonesia-k12-v1-bab1.json');
-const outImpor = join(ROOT, 'IMPOR-BAHASA-INDONESIA-BAB1-TERBARU.json');
+const outImpor = join(ROOT, 'data/impor/IMPOR-BAHASA-INDONESIA-BAB1-TERBARU.json');
 writeFileSync(outDraft, json + '\n');
 writeFileSync(outImpor, json + '\n');
 console.log('SELESAI bab1 | sections:', sections.length, '| soal:', ujiPemahaman.length,

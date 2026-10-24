@@ -531,7 +531,7 @@ if (adaNestedArray(draft.bab)) { console.error('NESTED ARRAY terdeteksi — Fire
 
 // ---------- 9. TULIS FILE ----------
 const outDraft = join(ROOT, 'docs/drafts/draft-bahasa-indonesia-k12-v1-bab4.json');
-const outImpor = join(ROOT, 'IMPOR-BAHASA-INDONESIA-BAB4-TERBARU.json');
+const outImpor = join(ROOT, 'data/impor/IMPOR-BAHASA-INDONESIA-BAB4-TERBARU.json');
 writeFileSync(outDraft, json + '\n');
 writeFileSync(outImpor, json + '\n');
 console.log('SELESAI.');

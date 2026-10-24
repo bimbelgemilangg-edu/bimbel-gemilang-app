@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # scripts/bangun-impor-ptn.py
 # ============================================================
-# Pembangun SEKALI-PAKAI: Excel owner -> IMPOR-PTN-2026.json
+# Pembangun SEKALI-PAKAI: Excel owner -> data/impor/IMPOR-PTN-2026.json
 #
 # KENAPA PYTHON, BUKAN .mjs SEPERTI BUILDER LAIN DI FOLDER INI
 # Repo sudah punya builder Node (build-mate-k12-bab1.mjs dkk.) dan dependensi
@@ -537,4 +537,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(__doc__)
         sys.exit(1)
-    utama(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "IMPOR-PTN-2026.json")
+    utama(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "data/impor/IMPOR-PTN-2026.json")

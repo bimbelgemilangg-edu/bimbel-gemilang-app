@@ -175,7 +175,7 @@ export function buatVersiBaru(targetLama, perubahan = {}, meta = {}) {
  *
  * @param {object} target hasil bentukTarget()
  * @param {Map|object} dataProdi peta kunci `${idPtn}|${idProdi}` -> dokumen prodi
- *   (bentuk dokumen: lihat IMPOR-PTN-2026.json / docs/RANCANGAN-DATABASE-PTN.md §4.2)
+ *   (bentuk dokumen: lihat data/impor/IMPOR-PTN-2026.json / docs/RANCANGAN-DATABASE-PTN.md §4.2)
  * @param {number|null} skorSiswa skor try out internal terbaru
  * @returns {object} siap dikonsumsi UI; tidak ada field yang perlu dihitung ulang di komponen
  */

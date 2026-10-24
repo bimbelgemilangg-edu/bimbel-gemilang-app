@@ -7,7 +7,7 @@
 // berkas lama, berkas hasil edit tangan di spreadsheet, atau builder yang
 // berubah perilaku.
 //
-// Satu test memakai IMPOR-PTN-2026.json yang SUNGGUHAN di root repo, supaya
+// Satu test memakai IMPOR-PTN-2026.json yang SUNGGUHAN di data/impor, supaya
 // gerbang ini terbukti menerima data nyata, bukan hanya contoh karangan.
 // ============================================================
 import assert from 'node:assert/strict';
@@ -151,11 +151,11 @@ uji('contohBaris mengambil cuplikan yang cukup untuk pratinjau manusia', () => {
 
 // ================================================== BERKAS SUNGGUHAN
 uji('IMPOR-PTN-2026.json yang asli lolos gerbang dengan jumlah yang benar', () => {
-  const jalan = join(ROOT, 'IMPOR-PTN-2026.json');
+  const jalan = join(ROOT, 'data/impor/IMPOR-PTN-2026.json');
   if (!existsSync(jalan)) {
     // Berkasnya bagian dari repo; kalau hilang, itu kegagalan yang berbeda dan
     // harus terlihat, bukan dilewati diam-diam.
-    assert.fail('IMPOR-PTN-2026.json tidak ditemukan di root repo');
+    assert.fail('IMPOR-PTN-2026.json tidak ditemukan di data/impor');
   }
   const json = JSON.parse(readFileSync(jalan, 'utf-8'));
   const r = periksaBerkasImpor(json);
@@ -175,7 +175,7 @@ uji('IMPOR-PTN-2026.json yang asli lolos gerbang dengan jumlah yang benar', () =
 });
 
 uji('INVARIAN: setiap prodi di berkas asli punya induk PTN', () => {
-  const json = JSON.parse(readFileSync(join(ROOT, 'IMPOR-PTN-2026.json'), 'utf-8'));
+  const json = JSON.parse(readFileSync(join(ROOT, 'data/impor/IMPOR-PTN-2026.json'), 'utf-8'));
   const idPtn = new Set(json.ptn.map((p) => p.id));
   const yatim = json.prodi.filter((p) => !idPtn.has(p.idPtn));
   assert.equal(yatim.length, 0, `ada ${yatim.length} prodi yatim`);
