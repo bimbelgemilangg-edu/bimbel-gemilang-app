@@ -68,6 +68,12 @@ import {
 // diuji otomatis (utils/seksiNaskahTryOut.js).
 import DialogCetakNaskah from '../../../components/DialogCetakNaskah';
 import { bangunSubtesKeranjang } from '../../../utils/seksiNaskahTryOut';
+// 🔥 2026-10-24: jenis ujian menentukan skala kebiasaan yang dipakai sisi
+// baca (UTBK 100-1000 / TKA SMA 200-800 / TKA SD-SMP 0-100). Admin memilih
+// saat menerbitkan; 'otomatis' = ditebak dari isi paket.
+import { jenisUjianPaket } from '../../../utils/skorSkalaTka';
+import { MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
+import { apakahMapelUtbk } from '../../../../lib/kunciGemini';
 
 const inputStyle = { padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none' };
 const btnPrimary = {
@@ -519,6 +525,9 @@ export default function TerbitkanTryOutPage() {
 
   // 🔥 2 MODE TIMER -- ini beda utama dari sistem kuis lama.
   const [modeTimer, setModeTimer] = useState('total'); // 'total' | 'per-subtes'
+  // 'otomatis' | 'utbk' | 'tka' | 'kurikulum' -- disimpan ke paket sebagai
+  // null bila 'otomatis' supaya paket lama & tebakan isi tetap jalan.
+  const [jenisUjian, setJenisUjian] = useState('otomatis');
   const [durasiTotalMenit, setDurasiTotalMenit] = useState(90);
   // subtes: dibuat OTOMATIS dari mataPelajaran yang ada di keranjang,
   // admin tinggal atur durasi & nama tiap subtes (bisa diedit).
@@ -716,6 +725,10 @@ export default function TerbitkanTryOutPage() {
     }
   }, []);
 
+  // Jenis ujian untuk badge: pilihan eksplisit admin menang, sonst tebakan
+  // dari isi paket (memerlukan pemeriksa mapel UTBK yang sebenarnya).
+  const jenisDari = (p) => jenisUjianPaket(p, (m) => apakahMapelUtbk(m, MAPEL_UTBK));
+
   function statusJadwal(paket) {
     const sekarang = new Date();
     if (paket.status !== 'aktif') return { label: '⏸️ Nonaktif', warna: '#9ca3af' };
@@ -753,6 +766,7 @@ export default function TerbitkanTryOutPage() {
     setPakaiDeadline(!!p.waktuTutup);
     setWaktuTutup(isoKeDatetimeLocal(p.waktuTutup));
     setModeTimer(p.modeTimer || 'total');
+    setJenisUjian(p.jenisUjian || 'otomatis');
     setDurasiTotalMenit(p.durasiTotalMenit || 60);
     // Tebak granularitas dari bentuk subtes aslinya (util teruji) biar
     // radio "Per soal individual" ter-centang sesuai kondisi paket.
@@ -918,6 +932,7 @@ export default function TerbitkanTryOutPage() {
         daftarSoal: soalDipilih,
         totalSoal: soalDipilih.length,
         modeTimer, // 'total' | 'per-subtes'
+        jenisUjian: jenisUjian === 'otomatis' ? null : jenisUjian,
         durasiTotalMenit: modeTimer === 'total' ? Number(durasiTotalMenit) || 60 : null,
         subtes, // dipakai kalau modeTimer === 'per-subtes'
         antiCheatAktif,
@@ -1079,6 +1094,10 @@ export default function TerbitkanTryOutPage() {
                     </div>
                     <div style={{ fontSize: 11, color: '#9ca3af' }}>
                       {p.totalSoal} soal · {p.targetKelas} · {p.targetKategori} · {p.modeTimer === 'total' ? `${p.durasiTotalMenit} menit` : `${p.subtes?.length || 0} subtes`}
+                      <span style={{ display: 'inline-block', marginLeft: 8, padding: '2px 8px', borderRadius: 12, background: '#eef2ff', color: '#4338ca', fontSize: 10, fontWeight: 800 }}>
+                        {jenisDari(p) === 'utbk' ? 'UTBK' : jenisDari(p) === 'tka' ? 'TKA' : 'KURIKULUM'}
+                        {p.jenisUjian ? '' : ' (otomatis)'}
+                      </span>
                     </div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 700, color: st.warna, whiteSpace: 'nowrap' }}>{st.label}</span>
@@ -1582,6 +1601,22 @@ export default function TerbitkanTryOutPage() {
             <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 10, marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 8 }}>
                 <Timer size={14} /> Mode Timer
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 12.5, fontWeight: 700 }}>Jenis ujian:</span>
+                <select
+                  value={jenisUjian}
+                  onChange={(e) => setJenisUjian(e.target.value)}
+                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 12.5, background: '#fff' }}
+                >
+                  <option value="otomatis">Otomatis (tebak dari isi paket)</option>
+                  <option value="utbk">UTBK-SNBT (subtes PU/PPU/PBM/PK/LBI/LBE/PM) — skala 100-1000</option>
+                  <option value="tka">TKA per mata uji — SMA/SMK 200-800, SD/SMP 0-100</option>
+                  <option value="kurikulum">Kurikulum/sekolah — persen saja, tanpa skala nasional</option>
+                </select>
+                <span style={{ fontSize: 11, color: '#6b7280' }}>
+                  Menentukan skala kebiasaan yang dilihat siswa & kartu target. Bukan skor resmi.
+                </span>
               </div>
               <div style={{ display: 'flex', gap: 16, marginBottom: modeTimer === 'per-subtes' ? 10 : 0 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5 }}>

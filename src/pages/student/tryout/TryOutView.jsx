@@ -986,9 +986,9 @@ export default function TryOutView() {
             <div style={{ fontSize: 11.5, color: '#64748b' }}>{paket.judul}</div>
             {skalaOtomatis.total !== null && (
               <div style={{ marginTop: 10, fontSize: 12, color: '#3949AB', background: '#eef0fb', borderRadius: 10, padding: '8px 10px', fontWeight: 700 }}>
-                Skala Gemilang gaya UTBK: {skalaOtomatis.total}
+                Skala Gemilang gaya {skalaOtomatis.mode === 'tka' ? 'TKA' : 'UTBK'}: {skalaOtomatis.total}
                 <div style={{ fontSize: 10, fontWeight: 500, color: '#64748b', marginTop: 2 }}>
-                  {skalaOtomatis.perSubtes.map((x) => `${x.kode} ${x.skala}`).join(' · ')}
+                  {skalaOtomatis.perSubtes.map((x) => `${x.kode} ${x.skala}${x.predikat ? ` (${x.predikat})` : ''}`).join(' · ')}
                 </div>
               </div>
             )}

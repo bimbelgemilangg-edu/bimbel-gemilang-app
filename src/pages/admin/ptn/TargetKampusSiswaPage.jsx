@@ -613,7 +613,7 @@ export default function TargetKampusSiswaPage() {
               </div>
             )}
             <div style={{ ...S.kecil, marginTop: 6 }}>
-              Angka ini BUKAN skor UTBK resmi: ia skala internal 100-1000 per komponen dengan
+              Angka ini BUKAN skor ujian resmi: ia skala internal 100-1000 per komponen (UTBK) atau 200-800 per mata uji (TKA SMA) dengan
               total berbobot resmi SNBT 2025, atau catatan konsultasi bila diisi manual.
               Karena itu keterangannya wajib diisi.
             </div>

@@ -52,7 +52,7 @@ uji('sesi berjalan/belum mulai tidak dinilai', () => {
 uji('paket kurikulum murni -> null + alasan, bukan skala palsu', () => {
   const r = hitungSkalaSesi(sesi({ mtk1: 0 }), { daftarSoal: [soal('mtk1', 'Matematika')] });
   assert.equal(r.total, null);
-  assert.match(r.alasan, /bukan try out subtes UTBK/);
+  assert.match(r.alasan, /kurikulum/);
 });
 
 uji('soal tak dijawab tidak dihitung benar tapi tetap masuk penyebut', () => {
