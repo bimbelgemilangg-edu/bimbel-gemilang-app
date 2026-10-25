@@ -138,6 +138,13 @@ class PenahanErrorSoal extends React.Component {
   }
 }
 
+/** Angka skala ditulis gaya Indonesia: pemisah ribuan titik, desimal koma. */
+function formatAngkaSkala(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return '-';
+  return v.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+}
+
 export default function TryOutView() {
   const { paketId } = useParams();
   const navigate = useNavigate();
@@ -1035,19 +1042,44 @@ export default function TryOutView() {
           <span style={st.tiketLekukKiri} /><span style={st.tiketLekukKanan} />
           <div style={{ textAlign: 'center', padding: '22px 18px 14px' }}>
             <div style={{ fontSize: 13.5, color: '#334155', fontWeight: 700 }}>
-              {hasilAkhir?.totalSkorPersen >= 70 ? 'Selamat! Kerja bagus.' : 'Terima kasih sudah berjuang.'} Skormu
+              {hasilAkhir?.totalSkorPersen >= 70 ? 'Selamat! Kerja bagus.' : 'Terima kasih sudah berjuang.'}
             </div>
-            <div style={{ fontSize: 44, fontWeight: 900, color: '#0f172a', margin: '6px 0 2px' }}>
-              {hasilAkhir?.totalSkorPersen ?? 0}%
-            </div>
-            <div style={{ fontSize: 11.5, color: '#64748b' }}>{paket.judul}</div>
-            {skalaOtomatis.total !== null && (
-              <div style={{ marginTop: 10, fontSize: 12, color: '#3949AB', background: '#eef0fb', borderRadius: 10, padding: '8px 10px', fontWeight: 700 }}>
-                Skala Gemilang gaya {skalaOtomatis.mode === 'tka' ? 'TKA' : 'UTBK'}: {skalaOtomatis.total}
-                <div style={{ fontSize: 10, fontWeight: 500, color: '#64748b', marginTop: 2 }}>
-                  {skalaOtomatis.perSubtes.map((x) => `${skalaOtomatis.mode === 'tka' ? (x.nama || x.kode) : x.kode} ${x.skala}${x.predikat ? ` (${x.predikat})` : ''}`).join(' · ')}
+            <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>{paket.judul}</div>
+            {skalaOtomatis.total !== null ? (
+              <>
+                {/* 🔥 2026-10-25 (revisi owner): SKALA adalah angka utama --
+                    persentase sudah tampil di lencana bawah, jadi menaruhnya
+                    besar di sini membuat dobel. Istilah "gaya" dibuang:
+                    penulisan mengikuti nama resmi ujiannya. */}
+                <div style={{ fontSize: 44, fontWeight: 900, color: '#0f172a', margin: '10px 0 2px', fontVariantNumeric: 'tabular-nums' }}>
+                  {formatAngkaSkala(skalaOtomatis.total)}
                 </div>
-              </div>
+                <div style={{ fontSize: 12.5, color: '#3949AB', fontWeight: 700 }}>
+                  Skala {skalaOtomatis.mode === 'tka' ? 'TKA' : 'UTBK-SNBT'}
+                  {' · rentang '}
+                  {skalaOtomatis.mode === 'tka'
+                    ? (skalaOtomatis.skalaMode === 'tka-sma' ? '200–800' : '0–100')
+                    : '100–1000'}
+                </div>
+                {skalaOtomatis.perSubtes.length > 1 && (
+                  <div style={{ fontSize: 11, color: '#475569', marginTop: 6 }}>
+                    {skalaOtomatis.perSubtes.map((x) => `${skalaOtomatis.mode === 'tka' ? (x.nama || x.kode) : x.kode} ${formatAngkaSkala(x.skala)}${x.predikat ? ` (${x.predikat})` : ''}`).join(' · ')}
+                  </div>
+                )}
+                <div style={{ fontSize: 11.5, color: '#475569', marginTop: 8 }}>
+                  Ketuntasan jawaban: <b>{hasilAkhir?.totalSkorPersen ?? 0}%</b>
+                </div>
+                <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }} title={skalaOtomatis.label}>
+                  Skala internal pembanding — bukan skor resmi panitia.
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 44, fontWeight: 900, color: '#0f172a', margin: '10px 0 2px' }}>
+                  {hasilAkhir?.totalSkorPersen ?? 0}%
+                </div>
+                <div style={{ fontSize: 11.5, color: '#64748b' }}>Ketuntasan jawaban</div>
+              </>
             )}
           </div>
           <div style={st.tiketGaris} />

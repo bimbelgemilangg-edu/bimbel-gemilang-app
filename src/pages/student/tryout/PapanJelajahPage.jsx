@@ -16,6 +16,8 @@
 // Hidup di balik sakelar fitur 'papanJelajah' (default MATI).
 // ============================================================
 import React, { useEffect, useMemo, useState } from 'react';
+// 🔥 2026-10-25 (revisi owner): strip tanggal berhenti di hari ini.
+import { jumlahTanggalTampil, bolehBulanBerikutnya } from '../../../utils/kalenderMisi';
 import { useNavigate, Link } from 'react-router-dom';
 import { db } from '../../../firebase';
 import { collection, documentId, getDocs, query, where } from 'firebase/firestore';
@@ -245,7 +247,9 @@ export default function PapanJelajahPage({ studentId = '' }) {
   const level = 1 + Math.floor(xp / 100);
 
   const hariBulan = useMemo(() => {
-    const jumlah = new Date(bulan.y, bulan.m + 1, 0).getDate();
+    // 🔥 2026-10-25: bulan berjalan hanya menampilkan tanggal s.d. HARI INI;
+    // bulan lalu penuh; bulan depan kosong & tombol majunya dinonaktifkan.
+    const jumlah = jumlahTanggalTampil(bulan.y, bulan.m, kini);
     return Array.from({ length: jumlah }, (_, i) => {
       const key = `${bulan.y}-${String(bulan.m + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
       const dok = dokumenPerTanggal.get(key) || [];
@@ -318,8 +322,19 @@ export default function PapanJelajahPage({ studentId = '' }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <button type="button" style={st.tab(false)} onClick={() => setBulan((b) => (b.m === 0 ? { y: b.y - 1, m: 11 } : { y: b.y, m: b.m - 1 }))}><ChevronLeft size={14} /></button>
               <div style={{ fontWeight: 800, fontSize: 14 }}>{BULAN[bulan.m]} {bulan.y}</div>
-              <button type="button" style={st.tab(false)} onClick={() => setBulan((b) => (b.m === 11 ? { y: b.y + 1, m: 0 } : { y: b.y, m: b.m + 1 }))}><ChevronRight size={14} /></button>
+              <button
+                type="button"
+                style={{ ...st.tab(false), opacity: bolehBulanBerikutnya(bulan.y, bulan.m, kini) ? 1 : 0.35, cursor: bolehBulanBerikutnya(bulan.y, bulan.m, kini) ? 'pointer' : 'not-allowed' }}
+                disabled={!bolehBulanBerikutnya(bulan.y, bulan.m, kini)}
+                title={bolehBulanBerikutnya(bulan.y, bulan.m, kini) ? 'Bulan berikutnya' : 'Strip tanggal berhenti di hari ini'}
+                onClick={() => setBulan((b) => (b.m === 11 ? { y: b.y + 1, m: 0 } : { y: b.y, m: b.m + 1 }))}
+              ><ChevronRight size={14} /></button>
             </div>
+            {hariBulan.length === 0 && (
+              <div style={{ fontSize: 12, color: '#9aa3d6', padding: '6px 2px' }}>
+                Belum ada tanggal yang dapat ditampilkan pada bulan ini.
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6 }}>
               {hariBulan.map((h) => (
                 <button
@@ -347,7 +362,7 @@ export default function PapanJelajahPage({ studentId = '' }) {
               ))}
             </div>
             <div style={{ fontSize: 11, color: '#9aa3d6', marginTop: 6 }}>
-              ↕ Geser tanggal: lingkaran ber-titik = ada misi, ✓ hijau = semua misi tanggal itu selesai. Tidak ada arsip — misi lama hidup di tanggalnya.
+              Geser tanggal untuk meninjau hari lain: lingkaran ber-titik = ada misi, ✓ hijau = semua misi tanggal itu selesai. Strip berhenti di hari ini; bulan sebelumnya tersedia lewat tombol panah.
             </div>
           </div>
 
