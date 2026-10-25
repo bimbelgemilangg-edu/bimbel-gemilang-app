@@ -40,7 +40,6 @@ memakainya. Ringkasnya:
 | Wajib untuk | Variabel |
 |---|---|
 | Semua fitur AI (6 endpoint) | `GEMINI_API_KEY` |
-| Pembayaran pendaftaran online | `MIDTRANS_SERVER_KEY` |
 | Upload gambar bank soal | `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL` |
 
 Semua secret dibaca **hanya di sisi server** (`api/*.js`) lewat `process.env`.
@@ -57,7 +56,7 @@ diizinkan, bukan lewat kerahasiaan `apiKey`.
 
 ```
 ├── api/          Vercel Serverless Functions (Node). Semua panggilan AI,
-│                 ekstraksi PDF, pembayaran Midtrans, upload gambar.
+│                 ekstraksi PDF, upload gambar.
 ├── src/
 │   ├── App.jsx           Seluruh definisi rute + guard per peran.
 │   ├── firebase.js       Inisialisasi Firestore/Auth/Storage + cache persisten.

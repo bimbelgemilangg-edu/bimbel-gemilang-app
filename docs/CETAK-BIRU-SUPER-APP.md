@@ -75,7 +75,9 @@ Kandidat bernilai tertinggi berdasarkan dokumen yang sudah ada
 (`CETAK-BIRU-GEMILANG-PREMIUM.md`, `PETA-SINKRONISASI-ADMIN-SISWA.md`, dll.):
 1. Notifikasi terpadu (in-app + WA wali) dari satu modul `notifications`.
 2. Pembayaran terpadu: semua transaksi (pendaftaran, paket, try out premium)
-   lewat satu pintu Midtrans + rekonsiliasi otomatis di Finance.
+   tercatat satu pintu di Finance dengan rekonsiliasi manual admin.
+   (Catatan 2026-10-25: integrasi Midtrans DIHAPUS karena pendaftaran bimbel
+   ditolak Midtrans; penagihan berjalan manual -- lihat addendum audit.)
 3. Dashboard terpadu per peran: satu beranda berisi tugas/try out/jadwal/
    tagihan yang relevan untuk peran tersebut (hari ini tersebar per halaman).
 4. Perpustakaan konten siswa lintas jenjang (materi + video + latihan)

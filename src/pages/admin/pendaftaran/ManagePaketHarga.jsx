@@ -176,17 +176,9 @@ const ManagePaketHarga = () => {
                   <div style={s.vaInst}>{vaInfo.instructions}</div>
                 </div>
               )}
-              <div style={s.vaInfo}>💳 Info ini digunakan di menu <strong>"Kirim Virtual"</strong> pada halaman Pendaftaran Online.</div>
+              <div style={s.vaInfo}>🏦 Info rekening ini adalah acuan admin untuk penagihan manual (transfer bank). Saat ini tidak ditampilkan otomatis ke siswa; siswa dikonfirmasi lewat admin.</div>
             </div>
 
-            <div style={s.card}>
-              <div style={s.cardHead}><h3 style={s.cardTitle}>🔌 Integrasi Midtrans</h3></div>
-              <div style={s.midInfo}>
-                <p>📋 <strong>Status:</strong> <span style={{color:'#f59e0b',fontWeight:700}}>Demo / Development</span></p>
-                <p>💳 Pembayaran virtual via Midtrans Snap sudah terpasang di API <code>/api/create-payment</code>.</p>
-                <p>🔑 Untuk production, update Server Key & Client Key di file <code>.env</code>.</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

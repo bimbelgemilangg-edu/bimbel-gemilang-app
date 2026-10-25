@@ -19,7 +19,7 @@ hal struktural** yang semuanya sudah terukur di bawah:
 |---|---|---|---|
 | **P0-1** | Password siswa teks polos, dibandingkan di browser | `LoginSiswa.jsx:197,210` | Kebocoran kredensial anak |
 | **P0-2** | 12 endpoint `api/` tanpa verifikasi pemanggil | 0 `req.headers` di seluruh `api/` | Kuota AI & pembayaran terbuka |
-| **P0-3** | Harga Midtrans dikendalikan klien | `create-payment.js` | Bayar Rp1 untuk paket apa pun |
+| **P0-3** | ~~Harga Midtrans dikendalikan klien~~ **TUTUP 2026-10-25: Midtrans DIHAPUS total** (owner ditolak Midtrans); celah harga ikut lenyap bersama endpointnya | `create-payment.js` (dihapus) | - |
 | **P1-1** | Tidak ada code-splitting sama sekali | 0 `React.lazy`; 130 impor eager | Siswa unduh 77.492 baris kode admin |
 | **P1-2** | 3 critical + 10 high npm advisory | `npm audit --omit=dev` | `xlsx` tak punya perbaikan |
 | **P2-1** | 2 berkas >5.700 baris | lihat §5 | Sulit diubah dengan aman |

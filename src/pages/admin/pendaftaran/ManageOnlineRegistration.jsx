@@ -91,26 +91,17 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
     return () => unsub();
   }, []);
 
-  useEffect(() => {
-    if (activeTab === 'tatatertib') fetchTataTertib();
-  }, [activeTab]);
-
-  useEffect(() => {
-    fetchPaketData();
-    fetchWAAdmin();
-  }, []);
-
   // ============================================================
   // FETCH DATA
   // ============================================================
-  const fetchPaketData = async () => {
+  async function fetchPaketData() {
     try {
       const snap = await getDoc(doc(db, "settings", "paket_bimbel"));
       if (snap.exists()) setPaketData(snap.data());
     } catch (e) { console.error(e); }
-  };
+  }
 
-  const fetchWAAdmin = async () => {
+  async function fetchWAAdmin() {
     try {
       const snap = await getDoc(doc(db, "settings", "whatsapp_admin"));
       if (snap.exists() && snap.data().number) {
@@ -118,7 +109,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
         setTempWA(snap.data().number);
       }
     } catch (e) { console.error(e); }
-  };
+  }
 
   const handleSaveWA = async () => {
     try {
@@ -132,14 +123,34 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
   // ============================================================
   // TATA TERTIB
   // ============================================================
-  const fetchTataTertib = async () => {
+  async function fetchTataTertib() {
     setLoadingTT(true);
     try {
       const snap = await getDoc(doc(db, "settings", "tata_tertib"));
       setTataTertib(snap.exists() && snap.data().konten ? snap.data().konten : DEFAULT_TATA_TERTIB);
     } catch (_e) { setTataTertib(DEFAULT_TATA_TERTIB); }
     setLoadingTT(false);
-  };
+  }
+
+  // 🔥 2026-10-25 (pelunasan utang lint berkas ini): rule React Compiler
+  // set-state-in-effect menolak setState yang tercapai sinkron dari badan
+  // effect (termasuk lewat fungsi yang dipanggil di sana). Memuat data
+  // dijadwalkan satu tick lewat setTimeout supaya setState terjadi di
+  // callback timer, bukan di badan effect -- perilaku sama (muat saat mount
+  // / saat tab dibuka), dan timer dibersihkan bila komponen dilepas.
+  useEffect(() => {
+    if (activeTab !== 'tatatertib') return undefined;
+    const id = setTimeout(() => { fetchTataTertib(); }, 0);
+    return () => clearTimeout(id);
+  }, [activeTab]);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      fetchPaketData();
+      fetchWAAdmin();
+    }, 0);
+    return () => clearTimeout(id);
+  }, []);
 
   const handleSaveTT = async () => {
     if (!tataTertib.trim()) return alert('⚠️ Konten tidak boleh kosong!');
@@ -206,20 +217,26 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
   };
 
   // ============================================================
-  // KIRIM VIRTUAL (MIDTRANS) + UPDATE PAKET
+  // SIMPAN TAGIHAN + UPDATE PAKET.
+  // 🔥 2026-10-25: Midtrans DIHAPUS atas keputusan owner (pendaftaran
+  // bimbel ditolak Midtrans). Fungsi ini kini HANYA menyimpan paket +
+  // nominal tagihan ke Firestore; penagihan & konfirmasi pembayaran
+  // dilakukan MANUAL oleh admin (transfer bank/tunai), sesuai info
+  // rekening di halaman ManagePaketHarga. Tidak ada lagi panggilan ke
+  // endpoint pembayaran maupun pembuka tautan pihak ketiga.
   // ============================================================
-  const handleKirimVirtual = async (e) => {
+  const handleSimpanTagihan = async (e) => {
     e.preventDefault();
     const nominal = parseInt(payNominal);
     if (!nominal || nominal <= 0) return alert('⚠️ Nominal tidak valid!');
-    
+
     setVirtualLoading(true);
     try {
-      // Update data pendaftaran dengan paket yang dipilih
       const updateData = {
-        paymentLinkAmount: nominal
+        paymentLinkAmount: nominal,
+        keteranganTagihan: payNote || '',
       };
-      
+
       if (selectedPaket) {
         updateData.paketBimbelId = selectedPaket.id;
         updateData.paketBimbelNama = selectedPaket.nama;
@@ -228,39 +245,16 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
         updateData.paketBimbelJenjang = selectedPaket.jenjang;
       }
 
-      const response = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: selectedReg.id,
-          grossAmount: nominal,
-          customerName: selectedReg.namaLengkap,
-          customerPhone: selectedReg.whatsappAktif,
-          paketNama: selectedPaket ? selectedPaket.nama : 'Pendaftaran',
-          note: payNote || ''
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.redirect_url) {
-        updateData.paymentLink = data.redirect_url;
-        updateData.paymentLinkCreated = new Date().toISOString();
-      }
-
       await updateDoc(doc(db, "online_registrations", selectedReg.id), updateData);
-
-      if (data.success && data.redirect_url) {
-        // Buka Midtrans di tab baru
-        window.open(data.redirect_url, '_blank');
-        setShowVirtualModal(false);
-        alert('🔗 Link pembayaran dibuat! Buka tab baru untuk membayar.\n\nSiswa juga bisa cek di iPad dengan input Nama & WA.');
-      } else {
-        setShowVirtualModal(false);
-        alert('✅ Data paket & nominal tersimpan! Midtrans belum tersedia.\n\nSiswa bisa cek di iPad.');
-      }
-    } catch (e) { 
-      alert('❌ Gagal: ' + e.message); 
+      setShowVirtualModal(false);
+      alert(
+        '✅ Tagihan tersimpan di data pendaftaran.\n\n'
+        + 'Penagihan dan konfirmasi pembayaran dilakukan manual oleh admin. '
+        + 'Siswa/wali dapat melihat tagihan & statusnya lewat menu "Cek Pembayaran" '
+        + 'di halaman pendaftaran online.',
+      );
+    } catch (eSimpan) {
+      alert('❌ Gagal menyimpan tagihan: ' + eSimpan.message);
     }
     setVirtualLoading(false);
   };
@@ -530,7 +524,7 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                 </div>
               </div>
 
-              <form onSubmit={handleKirimVirtual}>
+              <form onSubmit={handleSimpanTagihan}>
                 <div style={s.fg}>
                   <label style={s.lb}>Nominal Tagihan (Rp) *</label>
                   <input type="number" value={payNominal} onChange={e=>setPayNominal(e.target.value)} style={s.inp} required autoFocus placeholder="Masukkan nominal" />
@@ -543,12 +537,13 @@ Dengan menandatangani formulir ini, Saya menyatakan SETUJU dan siap MEMATUHI sel
                   <input value={payNote} onChange={e=>setPayNote(e.target.value)} style={s.inp} placeholder="Misal: DP Pendaftaran, Biaya Buku, dll" />
                 </div>
                 <div style={{...s.inf,background:'#eef2ff',color:'#4338ca',marginBottom:10}}>
-                  💳 Klik <strong>"Generate & Kirim"</strong> untuk membuat link pembayaran Midtrans (Gopay, OVO, Transfer Bank).
+                  💳 Klik <strong>"Simpan Tagihan"</strong> untuk menyimpan paket & nominal ke data pendaftaran.
+                  Penagihan dan konfirmasi pembayaran dilakukan manual oleh admin (transfer bank/tunai).
                 </div>
                 <div style={s.mf}>
                   <button type="button" onClick={()=>setShowVirtualModal(false)} style={s.btnC}>Batal</button>
                   <button type="submit" disabled={virtualLoading} style={{...s.btnS,background:'#6366f1'}}>
-                    {virtualLoading ? '⏳' : <><Send size={14} /> Generate & Kirim</>}
+                    {virtualLoading ? '⏳' : <><Send size={14} /> Simpan Tagihan</>}
                   </button>
                 </div>
               </form>

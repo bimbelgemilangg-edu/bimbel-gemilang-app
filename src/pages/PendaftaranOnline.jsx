@@ -169,38 +169,6 @@ const PendaftaranOnline = () => {
     setCekLoading(false);
   };
 
-  // ===== BAYAR VIA MIDTRANS =====
-  const handleBayarSekarang = async (reg) => {
-    if (reg.paymentLink) {
-      window.open(reg.paymentLink, '_blank');
-      return;
-    }
-    
-    // Jika belum ada link, generate baru
-    setLoading(true);
-    try {
-      const nominal = reg.paketBimbelHarga || reg.paymentLinkAmount || 0;
-      const response = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: reg.id,
-          grossAmount: nominal,
-          customerName: reg.namaLengkap,
-          customerPhone: reg.whatsappAktif,
-          paketNama: reg.paketBimbelNama || 'Pendaftaran'
-        })
-      });
-      const data = await response.json();
-      if (data.success && data.redirect_url) {
-        window.open(data.redirect_url, '_blank');
-      } else {
-        alert('⚠️ Gagal membuat link pembayaran. Hubungi admin.');
-      }
-    } catch (e) { alert('❌ Gagal: ' + e.message); }
-    setLoading(false);
-  };
-
   const formatRupiah = (n) => 'Rp ' + (n || 0).toLocaleString('id-ID');
 
   // ===== RENDER =====
@@ -257,10 +225,10 @@ const PendaftaranOnline = () => {
               )}
 
               {cekResult.status === 'pending_bayar' && (
-                <button onClick={() => handleBayarSekarang(cekResult)} disabled={loading}
-                  style={{...styles.btnSubmit,width:'100%',marginTop:12}}>
-                  {loading ? '⏳' : '💳 BAYAR SEKARANG'}
-                </button>
+                <div style={{textAlign:'center',marginTop:12,color:'#64748b',fontSize:12,lineHeight:1.7}}>
+                  📞 Tagihan belum lunas. Silakan transfer sesuai info dari admin, lalu
+                  konfirmasi ke admin Bimbel Gemilang agar pembayaran dicatat.
+                </div>
               )}
 
               {cekResult.status === 'pending_admin' && (
@@ -313,7 +281,7 @@ const PendaftaranOnline = () => {
             <div style={styles.successInfo}>
               <p>📞 Admin akan menghubungi WhatsApp <strong>{form.whatsappAktif}</strong></p>
               <p>💳 Admin akan membuat tagihan pembayaran untuk Anda.</p>
-              <p>🔍 Setelah itu, Anda bisa cek & bayar di sini.</p>
+              <p>🔍 Setelah itu, Anda bisa cek tagihan & status pembayaran di sini.</p>
             </div>
             <button onClick={() => {setShowCekBayar(true);setCekWA(form.whatsappAktif);}} style={styles.btnNext}>
               💳 Cek Pembayaran
