@@ -22,23 +22,10 @@ export function daftarSalahUntukTentor(items = []) {
     .sort((a, b) => a.nomor - b.nomor);
 }
 
-/**
- * Pesan siap tempel untuk tentor (WhatsApp/catatan kelas).
- * @param {Array<{nomor:number,kode:string}>} daftarSalah
- * @param {object} meta { paket, siswa }
- * @returns {string}
- */
-export function teksSalinUntukTentor(daftarSalah = [], meta = {}) {
-  const daftar = Array.isArray(daftarSalah) ? daftarSalah : [];
-  if (!daftar.length) return '';
-  const butir = daftar.map((d) => `nomor ${d.nomor}${d.kode ? ` [${d.kode}]` : ''}`).join(', ');
-  return `Halo Tentor, saya ${meta.siswa || 'siswa'} minta bantu membahas try out${meta.paket ? ` ${meta.paket}` : ''} yang saya salah: ${butir}. Terima kasih!`;
-}
-
 /** Kunci dalam bentuk huruf untuk chip pembanding ("B" / "A, D"). */
 export function kunciTampil(kunci) {
   if (Array.isArray(kunci)) return kunci.map((k) => (typeof k === 'number' ? String.fromCharCode(65 + k) : String(k))).join(', ');
   return String(kunci ?? '');
 }
 
-export default { daftarSalahUntukTentor, teksSalinUntukTentor, kunciTampil };
+export default { daftarSalahUntukTentor, kunciTampil };

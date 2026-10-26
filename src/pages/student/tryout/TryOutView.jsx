@@ -89,7 +89,7 @@ import {
 import {
   kodeGagalKirim, putusanPemulihanKirim, pilihSesiUtama,
 } from '../../../utils/pulihKirimHasilTryOut.js';
-import { daftarSalahUntukTentor, teksSalinUntukTentor, kunciTampil } from '../../../utils/ringkasReviewHasil';
+import { daftarSalahUntukTentor, kunciTampil } from '../../../utils/ringkasReviewHasil';
 import { kodePaketTampil } from '../../../utils/kodePaket';
 import { WATERMARK } from '../../../utils/fieldButirSoal';
 
@@ -162,7 +162,6 @@ export default function TryOutView() {
   const [indexSoalAktif, setIndexSoalAktif] = useState(0);
   const [siapPeraturan, setSiapPeraturan] = useState(false);
   const [hasilAkhir, setHasilAkhir] = useState(null); // { xpMentah, xpFinal, totalSkorPersen, ... }
-  const [tersalinTentor, setTersalinTentor] = useState(false);
   const [fotoPengawasan, setFotoPengawasan] = useState([]);
 
   // 🔥 BARU (2026-10-08): pesan transisi subtes NON-MEMBLOKIR. Dulu
@@ -1056,10 +1055,6 @@ export default function TryOutView() {
                 </div>
                 <div style={{ fontSize: 12.5, color: '#3949AB', fontWeight: 700 }}>
                   Skala {skalaOtomatis.mode === 'tka' ? 'TKA' : 'UTBK-SNBT'}
-                  {' · rentang '}
-                  {skalaOtomatis.mode === 'tka'
-                    ? (skalaOtomatis.skalaMode === 'tka-sma' ? '200–800' : '0–100')
-                    : '100–1000'}
                 </div>
                 {skalaOtomatis.perSubtes.length > 1 && (
                   <div style={{ fontSize: 11, color: '#475569', marginTop: 6 }}>
@@ -1068,9 +1063,6 @@ export default function TryOutView() {
                 )}
                 <div style={{ fontSize: 11.5, color: '#475569', marginTop: 8 }}>
                   Ketuntasan jawaban: <b>{hasilAkhir?.totalSkorPersen ?? 0}%</b>
-                </div>
-                <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }} title={skalaOtomatis.label}>
-                  Skala internal pembanding — bukan skor resmi panitia.
                 </div>
               </>
             ) : (
@@ -1131,19 +1123,14 @@ export default function TryOutView() {
           })));
           if (!daftar.length) return null;
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(teksSalinUntukTentor(daftar, { paket: paket.nama || paket.judul || '', siswa: '' }))
-                    .then(() => { setTersalinTentor(true); setTimeout(() => setTersalinTentor(false), 2500); })
-                    .catch(() => setTersalinTentor(false));
-                }}
-                style={{ padding: '9px 14px', borderRadius: 10, border: '1px solid #fbbf24', background: '#fffbeb', color: '#92400e', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
-              >
-                🙋 {tersalinTentor ? 'Tersalin!' : `Salin ${daftar.length} nomor salah untuk dibahas tentor`}
-              </button>
-              <span style={{ fontSize: 11, color: '#cbd5e1' }}>tempel di chat tentor / grup kelas supaya pembahasan tepat sasaran</span>
+            <div style={{ marginBottom: 10 }}>
+              {/* 🔥 2026-10-25 (revisi owner): fitur SALIN & arahan "tempel di
+                  chat" DIHAPUS dari layar siswa. Siswa cukup menunjukkan
+                  daftar nomor ini (atau soalnya) ke tentor secara langsung. */}
+              <div style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 700, marginBottom: 8 }}>
+                {daftar.length} nomor untuk dibahas bersama tentor: {daftar.map((d) => d.nomor).join(', ')}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => navigate('/siswa/kode-soal')}
@@ -1151,6 +1138,7 @@ export default function TryOutView() {
               >
                 🔖 Arsip kode soalku
               </button>
+              </div>
             </div>
           );
         })()}
