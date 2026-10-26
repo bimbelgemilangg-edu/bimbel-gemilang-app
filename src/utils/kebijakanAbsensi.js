@@ -88,9 +88,33 @@ export function statusDariDokumenAbsensi(data) {
   return undefined;
 }
 
+/**
+ * Kalimat KETERANGAN satu status untuk ditampilkan LANGSUNG saat tentor
+ * mengetuk nama siswa (keputusan owner 2026-10-26: "di tekan langsung muncul
+ * keterangannya"). Murni & teruji supaya kalimat yang dilihat tentor, yang
+ * dipakai layanan, dan yang dilihat admin tidak pernah bercabang.
+ * @returns {string} kalimat keterangan; kosong untuk status tak dikenal
+ */
+export function keteranganKebijakan(status) {
+  switch (String(status ?? '')) {
+    case 'Hadir':
+      return 'Hadir — mengikuti kelas seperti biasa, tanpa konsekuensi tambahan.';
+    case 'Izin':
+      return 'Izin — absen TERMAAFKAN. Akses susulan untuk try out yang sudah tertutup dibukakan OTOMATIS selama '
+        + GRACE_IZIN_HARI + ' hari. Keterangan ini tersimpan dan terlihat juga di sisi admin.';
+    case 'Sakit':
+      return 'Sakit — absen TERMAAFKAN. Akses susulan untuk try out yang sudah tertutup dibukakan OTOMATIS selama '
+        + GRACE_IZIN_HARI + ' hari. Keterangan ini tersimpan dan terlihat juga di sisi admin.';
+    case 'Alpha':
+      return 'Alpha — tidak hadir tanpa keterangan. TIDAK ada akses otomatis; perlu tindak lanjut admin/wali.';
+    default:
+      return '';
+  }
+}
+
 /** ISO waktu kedaluwarsa akses susulan: sekarang + GRACE_IZIN_HARI. */
 export function waktuBerlakuSampaiIso(sekarangMs = Date.now()) {
   return new Date(sekarangMs + GRACE_IZIN_HARI * 24 * 60 * 60 * 1000).toISOString();
 }
 
-export default { STATUS_ABSENSI, SIKLUS_ABSENSI, GRACE_IZIN_HARI, statusBerikutnya, kebijakanUntukStatus, paketPerluIzinUlang, waktuBerlakuSampaiIso, statusDariDokumenAbsensi };
+export default { STATUS_ABSENSI, SIKLUS_ABSENSI, GRACE_IZIN_HARI, statusBerikutnya, kebijakanUntukStatus, paketPerluIzinUlang, waktuBerlakuSampaiIso, statusDariDokumenAbsensi, keteranganKebijakan };

@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import {
   statusBerikutnya, kebijakanUntukStatus, paketPerluIzinUlang,
-  waktuBerlakuSampaiIso, GRACE_IZIN_HARI, SIKLUS_ABSENSI, statusDariDokumenAbsensi,
+  waktuBerlakuSampaiIso, GRACE_IZIN_HARI, SIKLUS_ABSENSI, statusDariDokumenAbsensi, keteranganKebijakan,
 } from '../src/utils/kebijakanAbsensi.js';
 
 let lulus = 0, gagal = 0;
@@ -60,6 +60,16 @@ uji('REGRESI PRODUKSI 2026-10-26: dokumen lama boolean/tak dikenal tidak crash U
   assert.equal(statusDariDokumenAbsensi({}), undefined);
   // nilai truthy tak dikenal dipetakan aman, bukan dibiarkan non-string
   assert.equal(typeof statusDariDokumenAbsensi({ status: 1 }), 'string');
+});
+
+uji('keterangan muncul untuk tiap status, kosong untuk tak dikenal', () => {
+  assert.match(keteranganKebijakan('Izin'), /TERMAAFKAN/);
+  assert.match(keteranganKebijakan('Izin'), /7 hari/);
+  assert.match(keteranganKebijakan('Sakit'), /OTOMATIS/);
+  assert.match(keteranganKebijakan('Alpha'), /TIDAK ada akses otomatis/);
+  assert.match(keteranganKebijakan('Hadir'), /tanpa konsekuensi/);
+  assert.equal(keteranganKebijakan('Entah'), '');
+  assert.equal(keteranganKebijakan(undefined), '');
 });
 
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);

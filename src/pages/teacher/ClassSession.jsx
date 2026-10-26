@@ -13,7 +13,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip } from 'lucide-react';
 import KameraBelakang from '../../components/KameraBelakang';
-import { STATUS_ABSENSI, statusBerikutnya, kebijakanUntukStatus, statusDariDokumenAbsensi } from '../../utils/kebijakanAbsensi';
+import { STATUS_ABSENSI, statusBerikutnya, kebijakanUntukStatus, statusDariDokumenAbsensi, keteranganKebijakan } from '../../utils/kebijakanAbsensi';
 import { keteranganAbsensi } from '../../utils/identitasAbsensi';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { uploadElearningFile } from '../../services/uploadService';
@@ -38,7 +38,8 @@ const ClassSession = () => {
   const [uploadingAbsensi, setUploadingAbsensi] = useState(false);
   const [absensiError, setAbsensiError] = useState('');
   const [kameraAbsensi, setKameraAbsensi] = useState(null); // 'environment' | 'user'
-  const [izinOtomatisInfo, setIzinOtomatisInfo] = useState('');
+  const [izinPerSiswa, setIzinPerSiswa] = useState({});
+  const [siswaTerpilih, setSiswaTerpilih] = useState(null);
   const [materiFileUploadedUrl, setMateriFileUploadedUrl] = useState('');
   const [uploadingMateriFile, setUploadingMateriFile] = useState(false);
   const [googleForms, setGoogleForms] = useState({ sd: '', smp: '', sma: '', english: '', default: '' });
@@ -161,8 +162,11 @@ const ClassSession = () => {
           keterangan: keteranganAbsensi('', next),
           diberikanOleh: `tentor: ${teacher.nama || teacher.id}`,
         });
-        if (dibukakan.length) setIzinOtomatisInfo(`🔓 ${student.nama}: akses susulan otomatis dibukakan untuk ${dibukakan.length} try out tertutup (${dibukakan.join(', ')}), berlaku 7 hari.`);
+        if (dibukakan.length) setIzinPerSiswa((prev) => ({ ...prev, [student.id]: `🔓 Akses susulan otomatis dibukakan untuk ${dibukakan.length} try out tertutup: ${dibukakan.join(', ')} — berlaku 7 hari.` }));
       }
+      // 🔥 2026-10-26 (revisi UI owner): keterangan status harus muncul
+      // LANGSUNG saat nama diketuk, bukan di kotak info terpisah.
+      setSiswaTerpilih(student);
     } catch { setAttendanceMap((p) => ({ ...p, [student.id]: cur })); }
   };
 
@@ -330,13 +334,35 @@ const ClassSession = () => {
                     );
                   })}
                 </div>
+                {siswaTerpilih && (
+                  <div style={{ marginTop: 4, border: '1px solid #cbd5e1', borderRadius: 10, padding: '10px 12px', background: '#ffffff' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a' }}>
+                        {siswaTerpilih.nama} —{' '}
+                        <span style={{ color: attendanceMap[siswaTerpilih.id] === 'Alpha' ? '#dc2626' : attendanceMap[siswaTerpilih.id] === 'Izin' ? '#2563eb' : attendanceMap[siswaTerpilih.id] === 'Sakit' ? '#d97706' : '#16a34a' }}>
+                          {String(attendanceMap[siswaTerpilih.id] || 'BELUM').toUpperCase()}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button type="button" onClick={() => toggleStudent(siswaTerpilih)} style={{ fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 8, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', cursor: 'pointer' }}>Ganti status</button>
+                        <button type="button" onClick={() => setSiswaTerpilih(null)} style={{ fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#64748b', cursor: 'pointer' }}>Tutup</button>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#334155', marginTop: 6, lineHeight: 1.6 }}>
+                      {keteranganKebijakan(attendanceMap[siswaTerpilih.id]) || 'Belum ada status. Ketuk "Ganti status" untuk mulai roll-call siswa ini.'}
+                    </div>
+                    {izinPerSiswa[siswaTerpilih.id] && (
+                      <div style={{ fontSize: 11.5, color: '#166534', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 10px', marginTop: 6 }}>
+                        {izinPerSiswa[siswaTerpilih.id]}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
           <button onClick={() => setStep(2)} disabled={!absensiUploadedUrl || !semuaTerabsen} style={{ ...st.btnMain(isMobile), ...(absensiUploadedUrl && semuaTerabsen ? {} : st.btnDisabled), marginTop: 12 }}>
-          {izinOtomatisInfo && (
-            <div style={{ marginTop: 10, fontSize: 11.5, color: '#166534', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 10px' }}>{izinOtomatisInfo}</div>
-          )}
+
             {!absensiUploadedUrl ? '🔒 Foto bukti kehadiran (real-time) dulu' : !semuaTerabsen ? `🔒 Absen semua siswa dulu (${jumlahTerabsen}/${jumlahSiswaRoster})` : 'Selesai & Masuk Kelas Live ⮕'}
           </button>
         </div>
