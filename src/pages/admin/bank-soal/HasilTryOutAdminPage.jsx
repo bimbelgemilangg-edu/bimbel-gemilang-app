@@ -10,7 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
-import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
+import { onSnapshot, collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { createPortal } from 'react-dom';
 import { saringPaketTerbit } from '../../../utils/statusTryOutPaket';
 import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
@@ -209,6 +209,19 @@ export default function HasilTryOutAdminPage() {
   const [susulanBuka, setSusulanBuka] = useState(false);
   const [susulanSiswa, setSusulanSiswa] = useState('');
   const [susulanSkor, setSusulanSkor] = useState('');
+  const [izinPerSiswa, setIzinPerSiswa] = useState({});
+
+  // 🔥 2026-10-26 (konek admin): baca izin susulan otomatis akibat absensi
+  // Izin/Sakit supaya admin melihat dari mana akses siswa datang.
+  useEffect(() => {
+    if (!paketTerpilih?.id) { setIzinPerSiswa({}); return undefined; }
+    const un = onSnapshot(query(collection(db, 'tryout_izin_ulang'), where('paketId', '==', paketTerpilih.id)), (snap) => {
+      const map = {};
+      snap.docs.forEach((d) => { map[d.data().studentId] = { id: d.id, ...d.data() }; });
+      setIzinPerSiswa(map);
+    });
+    return () => un();
+  }, [paketTerpilih]);
   const [susulanCatatan, setSusulanCatatan] = useState('');
   const [busySusulan, setBusySusulan] = useState(false);
   const [pesanSusulan, setPesanSusulan] = useState('');
@@ -534,7 +547,14 @@ export default function HasilTryOutAdminPage() {
                             <td style={{ padding: '8px 10px', fontWeight: 700, color: selesai && i < 3 ? '#d97706' : '#9ca3af' }}>
                               {selesai ? i + 1 : '-'}
                             </td>
-                            <td style={{ padding: '8px 10px', color: '#1e293b' }}>{b.student.nama}</td>
+                            <td style={{ padding: '8px 10px', color: '#1e293b' }}>
+                              {b.student.nama}
+                              {izinPerSiswa[b.student.studentId || b.student.id] && (
+                                <span title={izinPerSiswa[b.student.studentId || b.student.id].alasan || 'izin susulan'} style={{ display: 'block', fontSize: 10, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '1px 7px', marginTop: 3, width: 'fit-content' }}>
+                                  🔓 izin s.d. {new Date(izinPerSiswa[b.student.studentId || b.student.id].waktuBerlakuSampai).toLocaleDateString('id-ID')} · {izinPerSiswa[b.student.studentId || b.student.id].diberikanOleh}
+                                </span>
+                              )}
+                            </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               {selesai ? <CheckCircle2 size={14} color="#16a34a" style={{ display: 'inline' }} />
                                 : berjalan ? <Clock size={14} color="#d97706" style={{ display: 'inline' }} />

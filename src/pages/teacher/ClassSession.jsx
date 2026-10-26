@@ -11,7 +11,11 @@ import {
   onSnapshot, query, where, updateDoc,
 } from 'firebase/firestore';
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, ArrowLeft, Camera, Upload, CheckCircle, Paperclip } from 'lucide-react';
+import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip } from 'lucide-react';
+import KameraBelakang from '../../components/KameraBelakang';
+import { STATUS_ABSENSI, statusBerikutnya, kebijakanUntukStatus } from '../../utils/kebijakanAbsensi';
+import { keteranganAbsensi } from '../../utils/identitasAbsensi';
+import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { uploadElearningFile } from '../../services/uploadService';
 import LiveSessionTeacher from './LiveSessionTeacher';
 
@@ -33,6 +37,8 @@ const ClassSession = () => {
   const [absensiUploadedUrl, setAbsensiUploadedUrl] = useState('');
   const [uploadingAbsensi, setUploadingAbsensi] = useState(false);
   const [absensiError, setAbsensiError] = useState('');
+  const [kameraAbsensi, setKameraAbsensi] = useState(null); // 'environment' | 'user'
+  const [izinOtomatisInfo, setIzinOtomatisInfo] = useState('');
   const [materiFileUploadedUrl, setMateriFileUploadedUrl] = useState('');
   const [uploadingMateriFile, setUploadingMateriFile] = useState(false);
   const [googleForms, setGoogleForms] = useState({ sd: '', smp: '', sma: '', english: '', default: '' });
@@ -107,9 +113,7 @@ const ClassSession = () => {
     return () => un();
   }, [schedule]);
 
-  const handleAbsensiFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const unggahBuktiAbsensi = async (file) => {
     setAbsensiError(''); setUploadingAbsensi(true);
     setAbsensiPreviewUrl(URL.createObjectURL(file));
     try {
@@ -134,8 +138,8 @@ const ClassSession = () => {
 
   const toggleStudent = async (student) => {
     if (!schedule || !teacher) return;
-    const cur = !!attendanceMap[student.id];
-    const next = !cur;
+    const cur = attendanceMap[student.id];
+    const next = statusBerikutnya(cur);
     setAttendanceMap((p) => ({ ...p, [student.id]: next }));
     const today = new Date().toISOString().split('T')[0];
     try {
@@ -145,16 +149,26 @@ const ClassSession = () => {
         kelasSekolah: student.kelas || student.kelasSekolah || '-',
         teacherId: teacher.id, teacherName: teacher.nama,
         date: today, tanggal: today, timestamp: serverTimestamp(),
-        status: next ? 'Hadir' : 'Alpha',
-        keterangan: next ? 'Input Manual Guru' : 'Siswa tidak hadir',
+        status: next,
+        keterangan: keteranganAbsensi('', next),
         mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
       }, { merge: true });
+      if (kebijakanUntukStatus(next).beriIzinUlang) {
+        const dibukakan = await terapkanIzinAbsensiOtomatis({
+          siswa: { ...student, studentId: student.studentId || student.id },
+          status: next,
+          tanggalStr: today,
+          keterangan: keteranganAbsensi('', next),
+          diberikanOleh: `tentor: ${teacher.nama || teacher.id}`,
+        });
+        if (dibukakan.length) setIzinOtomatisInfo(`🔓 ${student.nama}: akses susulan otomatis dibukakan untuk ${dibukakan.length} try out tertutup (${dibukakan.join(', ')}), berlaku 7 hari.`);
+      }
     } catch { setAttendanceMap((p) => ({ ...p, [student.id]: cur })); }
   };
 
   const hitungHonor = () => {
     if (!salaryRules) return { nominal: 0, detailTxt: ' ', statusGaji: 'Menunggu Validasi' };
-    const hadir = (schedule.students || []).filter((s) => attendanceMap[s.id]);
+    const hadir = (schedule.students || []).filter((s) => attendanceMap[s.id] === 'Hadir');
     const [sh, sm] = schedule.start.split(':');
     const [eh, em] = schedule.end.split(':');
     const diff = (new Date(0, 0, 0, eh, em) - new Date(0, 0, 0, sh, sm)) / 36e5;
@@ -172,6 +186,10 @@ const ClassSession = () => {
     return { nominal: Math.round(rate * diff), detailTxt: (schedule.program || 'Reguler') + ' - ' + (match?.label || level) + ' - ' + materiAktual, statusGaji: 'Menunggu Validasi' };
   };
 
+  const jumlahSiswaRoster = (schedule?.students || []).length;
+  const jumlahTerabsen = (schedule?.students || []).filter((s2) => STATUS_ABSENSI.includes(attendanceMap[s2.id])).length;
+  const semuaTerabsen = jumlahSiswaRoster === 0 || jumlahTerabsen === jumlahSiswaRoster;
+
   const handleFinalizeClass = async () => {
     if (!materiAktual) return alert('Mohon isi materi yang diajarkan!');
     if (!absensiUploadedUrl) { alert('⚠️ Bukti kehadiran wajib diunggah dulu.'); setStep(1); return; }
@@ -184,25 +202,25 @@ const ClassSession = () => {
       const rem = dm >= 60 ? Math.floor(dm / 60) + ' jam ' + (dm % 60) + ' menit' : dm + ' menit';
       if (!window.confirm('⏰ Kelas belum mencapai jam selesai (' + schedule.end + ')!\n⏳ Sisa: ' + rem + '\nYakin akhiri lebih awal?')) return;
     }
-    if (!window.confirm('Yakin akhiri kelas? Siswa tidak hadir dicatat Alpha.')) return;
+    if (!window.confirm('Yakin akhiri kelas? Siswa berstatus Belum akan dicatat Alpha.')) return;
     setLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
       await Promise.all((schedule.students || []).map(async (s) => {
-        const present = !!attendanceMap[s.id];
+        const present = (attendanceMap[s.id] || 'Alpha') === 'Hadir';
         return setDoc(doc(db, 'attendance', s.id + '_' + today + '_' + schedule.id), {
           studentId: s.id, studentName: s.nama,
           program: s.program || schedule.program || 'Reguler',
           kelasSekolah: s.kelas || s.kelasSekolah || '-',
           teacherId: teacher.id, teacherName: teacher.nama,
           date: today, tanggal: today, timestamp: serverTimestamp(),
-          status: present ? 'Hadir' : 'Alpha',
-          keterangan: present ? 'Sesi Selesai' : 'Siswa tidak hadir (Otomatis Alpha)',
+          status: STATUS_ABSENSI.includes(attendanceMap[s.id]) ? attendanceMap[s.id] : 'Alpha',
+          keterangan: (STATUS_ABSENSI.includes(attendanceMap[s.id]) && attendanceMap[s.id] !== 'Hadir') ? keteranganAbsensi('', attendanceMap[s.id]) : (present ? 'Sesi Selesai' : 'Siswa tidak hadir (Otomatis Alpha)'),
           mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
         }, { merge: true });
       }));
       const honor = hitungHonor();
-      const hadirList = (schedule.students || []).filter((s) => attendanceMap[s.id]);
+      const hadirList = (schedule.students || []).filter((s) => attendanceMap[s.id] === 'Hadir');
       const [sh, sm] = schedule.start.split(':');
       const diff = (new Date(0, 0, 0, eh, em) - new Date(0, 0, 0, sh, sm)) / 36e5;
       const kelasNama = [...new Set(hadirList.map((s) => s.kelas || s.kelasSekolah).filter(Boolean))].join(', ') || (schedule.title || 'Umum');
@@ -229,6 +247,14 @@ const ClassSession = () => {
 
   return (
     <div style={st.container(isMobile)}>
+      {kameraAbsensi && (
+        <KameraBelakang
+          facing={kameraAbsensi}
+          judul="Foto bukti kehadiran guru (real-time)"
+          onClose={() => setKameraAbsensi(null)}
+          onHasil={(file) => { setKameraAbsensi(null); unggahBuktiAbsensi(file); }}
+        />
+      )}
       <button onClick={() => { if (window.confirm('Yakin kembali? Data belum disimpan hilang.')) navigate('/guru/dashboard'); }} style={st.btnBack(isMobile)}>
         <ArrowLeft size={16} /> Kembali
       </button>
@@ -266,9 +292,8 @@ const ClassSession = () => {
               <p style={st.absensiHint(isMobile)}>{tipeKelas === 'online' ? 'Kelas online wajib screenshot sesi video call.' : 'Ambil foto sebagai bukti Anda hadir di lokasi.'}</p>
               {!absensiUploadedUrl ? (
                 <div style={st.uploadOptionsRow(isMobile)}>
-                  <label style={st.uploadBox(isMobile, uploadingAbsensi)}><input type="file" accept="image/*" capture="environment" onChange={handleAbsensiFileChange} disabled={uploadingAbsensi} style={{ display: 'none' }} /><Camera size={18} /> Kamera Belakang</label>
-                  <label style={st.uploadBox(isMobile, uploadingAbsensi)}><input type="file" accept="image/*" capture="user" onChange={handleAbsensiFileChange} disabled={uploadingAbsensi} style={{ display: 'none' }} /><Camera size={18} /> Kamera Depan</label>
-                  <label style={st.uploadBoxImport(isMobile, uploadingAbsensi)}><input type="file" accept="image/*" onChange={handleAbsensiFileChange} disabled={uploadingAbsensi} style={{ display: 'none' }} /><Upload size={18} /> {uploadingAbsensi ? 'Mengunggah...' : 'Import dari Galeri'}</label>
+                      <button type="button" onClick={() => setKameraAbsensi('environment')} disabled={uploadingAbsensi} style={st.uploadBox(isMobile, uploadingAbsensi)}><Camera size={18} /> {uploadingAbsensi ? 'Mengunggah...' : 'Kamera Belakang (real-time)'}</button>
+                      <button type="button" onClick={() => setKameraAbsensi('user')} disabled={uploadingAbsensi} style={st.uploadBox(isMobile, uploadingAbsensi)}><Camera size={18} /> {uploadingAbsensi ? 'Mengunggah...' : 'Kamera Depan (real-time)'}</button>
                 </div>
               ) : (
                 <div style={st.absensiSuccessBox(isMobile)}>
@@ -296,10 +321,11 @@ const ClassSession = () => {
                 <div style={st.studentScrollArea}>
                   {(schedule.students || []).map((s) => {
                     const p = attendanceMap[s.id];
+                    const warna = p === 'Hadir' ? '#27ae60' : p === 'Izin' ? '#3b82f6' : p === 'Sakit' ? '#f59e0b' : p === 'Alpha' ? '#ef4444' : '#f8fafc';
                     return (
-                      <div key={s.id} onClick={() => toggleStudent(s)} style={{ ...st.studentItem(isMobile), background: p ? '#27ae60' : '#f8fafc', color: p ? 'white' : '#64748b', border: p ? 'none' : '1px solid #e2e8f0' }}>
+                      <div key={s.id} onClick={() => toggleStudent(s)} style={{ ...st.studentItem(isMobile), background: warna, color: p ? 'white' : '#64748b', border: p ? 'none' : '1px solid #e2e8f0' }}>
                         <div style={st.studentName(isMobile)}>{s.nama}</div>
-                        <div style={st.studentStatus}>{p ? 'HADIR' : 'BELUM HADIR'}</div>
+                        <div style={st.studentStatus}>{p ? p.toUpperCase() : 'KETUK: HADIR'}</div>
                       </div>
                     );
                   })}
@@ -307,8 +333,11 @@ const ClassSession = () => {
               </div>
             </div>
           )}
-          <button onClick={() => setStep(2)} disabled={!absensiUploadedUrl} style={{ ...st.btnMain(isMobile), ...(absensiUploadedUrl ? {} : st.btnDisabled), marginTop: 12 }}>
-            {absensiUploadedUrl ? 'Selesai & Masuk Kelas Live ⮕' : '🔒 Unggah bukti kehadiran dulu'}
+          <button onClick={() => setStep(2)} disabled={!absensiUploadedUrl || !semuaTerabsen} style={{ ...st.btnMain(isMobile), ...(absensiUploadedUrl && semuaTerabsen ? {} : st.btnDisabled), marginTop: 12 }}>
+          {izinOtomatisInfo && (
+            <div style={{ marginTop: 10, fontSize: 11.5, color: '#166534', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 10px' }}>{izinOtomatisInfo}</div>
+          )}
+            {!absensiUploadedUrl ? '🔒 Foto bukti kehadiran (real-time) dulu' : !semuaTerabsen ? `🔒 Absen semua siswa dulu (${jumlahTerabsen}/${jumlahSiswaRoster})` : 'Selesai & Masuk Kelas Live ⮕'}
           </button>
         </div>
       )}

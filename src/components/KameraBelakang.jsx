@@ -39,7 +39,7 @@ import { ukuranFoto } from '../utils/ukuranFoto';
 const MAKS_SISI = 1600;   // cukup tajam untuk membaca tulisan tangan
 const KUALITAS_JPEG = 0.82;
 
-export default function KameraBelakang({ onHasil, onClose, judul = 'Foto jawaban tulisan tangan' }) {
+export default function KameraBelakang({ onHasil, onClose, judul = 'Foto jawaban tulisan tangan', facing = 'environment' }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const [status, setStatus] = useState('memuat'); // memuat | aktif | gagal
@@ -61,7 +61,7 @@ export default function KameraBelakang({ onHasil, onClose, judul = 'Foto jawaban
       return undefined;
     }
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })
+      .getUserMedia({ video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })
       .then((stream) => {
         if (batal) { stream.getTracks().forEach((t) => t.stop()); return; }
         streamRef.current = stream;

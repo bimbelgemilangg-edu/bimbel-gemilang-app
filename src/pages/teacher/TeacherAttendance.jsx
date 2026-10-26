@@ -1,5 +1,7 @@
 // src/pages/teacher/TeacherAttendance.jsx
 import React, { useState, useEffect } from 'react';
+import { kebijakanUntukStatus } from '../../utils/kebijakanAbsensi';
+import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { db } from '../../firebase';
 import { keteranganAbsensi } from '../../utils/identitasAbsensi';
 import { 
@@ -213,6 +215,7 @@ const TeacherAttendance = () => {
 
       await Promise.all(toSave.map(s => {
         const studentDocId = s.id || s.studentId;
+
         const absenId = studentDocId + '_' + dateStr + '_' + selectedSchedule.id;
         return setDoc(doc(db, "attendance", absenId), {
           studentId: studentDocId,
@@ -231,11 +234,30 @@ const TeacherAttendance = () => {
           planet: selectedSchedule.planet || 'Ruang Umum',
         }, { merge: true });
       }));
+      // 🔥 2026-10-26 (keputusan owner): absensi Izin/Sakit yang disimpan
+      // tentor OTOMATIS membukakan akses susulan try out tertutup lewat
+      // tryout_izin_ulang; admin melihat keterangan & sumber yang sama.
+      const perluIzin = toSave.filter((x) => kebijakanUntukStatus(x.status).beriIzinUlang);
+      const ringkasan = [];
+      for (const x of perluIzin) {
+        try {
+          const dibukakan = await terapkanIzinAbsensiOtomatis({
+            siswa: { ...x, studentId: x.studentId || x.id },
+            status: x.status,
+            tanggalStr: getDateStr(selectedDate),
+            keterangan: keteranganAbsensi(x.note, x.status),
+            diberikanOleh: `tentor: ${guru?.nama || guru?.id || ''}`,
+          });
+          if (dibukakan.length) ringkasan.push(`${x.nama}: ${dibukakan.length} try out`);
+        } catch (eIzin) {
+          console.warn('Gagal memberi izin susulan otomatis:', eIzin);
+        }
+      }
 
       // Refresh tampilan dari collection attendance (sumber kebenaran yang sama)
       await loadAttendance(selectedSchedule.id, dateStr);
 
-      alert("✅ Absensi berhasil disimpan!");
+      alert("✅ Absensi berhasil disimpan!" + (ringkasan.length ? `\n\n🔓 Akses susulan otomatis (izin/sakit) dibukakan untuk:\n- ${ringkasan.join('\n- ')}\nBerlaku 7 hari. Admin melihat sumber izin ini di Hasil & Ranking Try Out.` : ""));
       setShowModal(false);
     } catch (e) {
       console.error("Error saving attendance:", e);
