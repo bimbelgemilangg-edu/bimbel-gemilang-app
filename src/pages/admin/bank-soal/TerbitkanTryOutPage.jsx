@@ -72,6 +72,7 @@ import { bangunSubtesKeranjang } from '../../../utils/seksiNaskahTryOut';
 // baca (UTBK 100-1000 / TKA SMA 200-800 / TKA SD-SMP 0-100). Admin memilih
 // saat menerbitkan; 'otomatis' = ditebak dari isi paket.
 import { jenisUjianPaket } from '../../../utils/skorSkalaTka';
+import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { jenjangPaket } from '../../../utils/skorSkalaTka';
 import {
   bandingkanDenganStandar, ringkasanStruktur, BENTUK_SOAL_RESMI, SURVEI_SD_SMP_MENIT,
@@ -421,9 +422,7 @@ export default function TerbitkanTryOutPage() {
       const siswaCocok = snapSiswa.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .filter((s) => {
-          const cocokKelas = targetKelas === 'Semua' || s.kelasSekolah === targetKelas;
-          const cocokKategori = targetKategori === 'Semua' || s.kategori === targetKategori;
-          return cocokKelas && cocokKategori && !s.isBlocked;
+          return cocokkanTargetPaket({ targetKelas, targetKategori }, s).cocok && !s.isBlocked;
         });
 
       if (siswaCocok.length === 0) {
@@ -1029,9 +1028,7 @@ export default function TerbitkanTryOutPage() {
       const penerimaIds = snapSiswa.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .filter((s) => {
-          const cocokKelas = targetKelas === 'Semua' || s.kelasSekolah === targetKelas;
-          const cocokKategori = targetKategori === 'Semua' || s.kategori === targetKategori;
-          return cocokKelas && cocokKategori && !s.isBlocked;
+          return cocokkanTargetPaket({ targetKelas, targetKategori }, s).cocok && !s.isBlocked;
         })
         .map((s) => s.studentId || s.id);
 

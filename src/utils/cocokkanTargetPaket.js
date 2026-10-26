@@ -124,6 +124,17 @@ function cocokKelasToleran(nilaiTarget, siswa) {
 }
 
 /**
+ * Pencocokan KELAS saja (toleran: '9' == '9 SMP' == 'kelas 9'), untuk
+ * halaman yang memfilter satu dimensi (modul/kuis siswa).
+ * 🔥 2026-10-26: diekspor supaya TIDAK ADA lagi layar yang membandingkan
+ * string persis -- sumber bug paket terbitan AI bertarget "9" yang kosong
+ * di mata admin & guru padahal siswa melihatnya.
+ */
+export function cocokTargetKelas(nilaiTarget, siswa) {
+  return cocokKelasToleran(nilaiTarget, siswa);
+}
+
+/**
  * SATU PINTU penyaringan daftar paket untuk seorang siswa (14 Okt 2026):
  * dipakai Papan Jelajah, Daftar Try Out, dan banner dashboard supaya tidak
  * ada lagi layar siswa yang lupa menyaring target (insiden paket TKA kelas 9
@@ -205,6 +216,7 @@ export function labelSasaran(paket = {}) {
 }
 
 export default { hitungSiswaCocok,
+  cocokTargetKelas,
   daftarTarget,
   targetUntukSemua,
   cocokkanTarget,

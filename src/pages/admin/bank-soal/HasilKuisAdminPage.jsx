@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { db } from '../../../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import {
@@ -63,9 +64,7 @@ export default function HasilKuisAdminPage() {
       const targetSiswa = snapSiswa.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .filter((s) => {
-          const cocokKelas = kuis.targetKelas === 'Semua' || s.kelasSekolah === kuis.targetKelas;
-          const cocokKategori = kuis.targetKategori === 'Semua' || s.kategori === kuis.targetKategori;
-          return cocokKelas && cocokKategori && !s.isBlocked;
+          return cocokkanTargetPaket(kuis, s).cocok && !s.isBlocked;
         });
 
       // 2) Semua jawaban yang sudah masuk untuk kuis ini

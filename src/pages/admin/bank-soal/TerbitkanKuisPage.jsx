@@ -35,6 +35,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { db } from '../../../firebase';
 import {
   collection, getDocs, addDoc, query, where, serverTimestamp, deleteDoc, doc, writeBatch,
@@ -491,9 +492,7 @@ export default function TerbitkanKuisPage() {
       const penerimaIds = snapSiswa.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .filter((s) => {
-          const cocokKelas = targetKelas === 'Semua' || s.kelasSekolah === targetKelas;
-          const cocokKategori = targetKategori === 'Semua' || s.kategori === targetKategori;
-          return cocokKelas && cocokKategori && !s.isBlocked;
+          return cocokkanTargetPaket({ targetKelas, targetKategori }, s).cocok && !s.isBlocked;
         })
         .map((s) => s.studentId || s.id);
 

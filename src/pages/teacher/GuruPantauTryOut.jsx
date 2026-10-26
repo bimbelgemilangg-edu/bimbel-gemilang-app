@@ -24,6 +24,7 @@ import { db } from '../../firebase';
 import { hitungTotalSkor, skorSatuSoal, soalBelumDijawab, isSoalEsai, poinEsai, pilihBarisBenarSalah, SKALA_NILAI_ESAI, pilihSoalDinilai } from '../../utils/skorSoalTryOut';
 import { cariIndexBenar, kunciBarisBenarSalah } from '../../utils/skoringSoalKompleks';
 import { terapkanPotonganXP } from '../../utils/potonganXPTryOut';
+import { hitungSkalaSesi } from '../../utils/hitungSkalaSesi';
 import { tambahXpMingguan } from '../../utils/mingguIni';
 import { catatAudit, KATEGORI } from '../../utils/auditLog';
 import { bacaIdentitasGuru, guruCocokDenganTentor } from '../../utils/identitasGuru';
@@ -321,6 +322,9 @@ export default function GuruPantauTryOut() {
             )}
             {sesiList.map((s) => {
               const belumDinilai = daftar.filter((so) => isSoalEsai(so) && poinEsai(so, s.nilaiEsai) === null).length;
+              // 🔥 2026-10-26: sistem penilaian baru konek ke sisi guru --
+              // selain akurasi (%), tampilkan SKOR pada rentang resmi paket.
+              const skala = s.status === 'selesai' ? hitungSkalaSesi(s, paket) : null;
               return (
                 <div key={s.id} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 12px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <div style={{ flex: 1, minWidth: 180 }}>
@@ -330,7 +334,12 @@ export default function GuruPantauTryOut() {
                       {s.status !== 'selesai' && s.progres?.total ? ` · mengerjakan ${s.progres.terjawab || 0}/${s.progres.total}` : ''} · {s.xpFinal || 0} XP
                     </div>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: Number(s.totalSkorPersen) >= 70 ? '#16a34a' : '#d97706' }}>{Math.round(Number(s.totalSkorPersen) || 0)}%</span>
+                  <span title="Akurasi jawaban" style={{ fontSize: 12, fontWeight: 800, color: Number(s.totalSkorPersen) >= 70 ? '#16a34a' : '#d97706' }}>akurasi {Math.round(Number(s.totalSkorPersen) || 0)}%</span>
+                  {skala?.total != null && (
+                    <span title={skala.label || 'Skor pada rentang resmi jenis ujian paket ini'} style={{ fontSize: 12, fontWeight: 800, color: '#3949AB', background: '#eef2ff', borderRadius: 999, padding: '2px 8px' }}>
+                      skor {skala.total}
+                    </span>
+                  )}
                   {belumDinilai > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: '#d97706', background: '#fef3c7', borderRadius: 999, padding: '2px 8px' }}>{belumDinilai} esai menunggu</span>}
                   <button onClick={() => { setDetail(s); setInputEsai({}); setPesan({ tipe: null, teks: '' }); }}
                           style={{ fontSize: 11.5, padding: '6px 12px', borderRadius: 8, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', fontWeight: 700, cursor: 'pointer' }}>

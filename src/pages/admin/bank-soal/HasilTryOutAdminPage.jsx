@@ -13,6 +13,8 @@ import { db } from '../../../firebase';
 import { collection, getDocs, query, where, doc, getDoc, updateDoc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { createPortal } from 'react-dom';
 import { saringPaketTerbit } from '../../../utils/statusTryOutPaket';
+import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
+import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import {
   ArrowLeft, Trophy, Loader2, CheckCircle2, Clock, XCircle, ShieldAlert, RotateCcw, Ticket,
 } from 'lucide-react';
@@ -95,11 +97,11 @@ export default function HasilTryOutAdminPage() {
       // udah punya sesi doang.
       const snapSiswa = await getDocs(collection(db, 'students'));
       const semuaSiswa = snapSiswa.docs.map((d) => ({ id: d.id, ...d.data() }));
-      const targetSiswa = semuaSiswa.filter((s) => {
-        const cocokKelas = paket.targetKelas === 'Semua' || s.kelasSekolah === paket.targetKelas;
-        const cocokKategori = paket.targetKategori === 'Semua' || s.kategori === paket.targetKategori;
-        return cocokKelas && cocokKategori && !s.isBlocked;
-      });
+      // 🔥 2026-10-26 (bug paket AI kosong): SATU pintu pencocokan target
+      // yang toleran ('9' == '9 SMP'). Perbandingan persis di sini membuat
+      // paket bertarget kelas telanjang TIDAK punya peserta sama sekali di
+      // mata admin, walau siswa melihat & mengerjakan paketnya.
+      const targetSiswa = semuaSiswa.filter((s) => cocokkanTargetPaket(paket, s).cocok && !s.isBlocked);
 
       const snapSesi = await getDocs(query(collection(db, 'tryout_sesi'), where('paketId', '==', paket.id)));
       // 🔥 BARU (2026-10-08): dulu baris per anak selalu pakai dokumen
@@ -516,6 +518,7 @@ export default function HasilTryOutAdminPage() {
                         <th style={{ padding: '8px 10px', textAlign: 'left' }}>Nama</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>Status</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>Akurasi</th>
+                        <th style={{ padding: '8px 10px', textAlign: 'center' }} title="Skor = angka pada rentang resmi jenis ujian paket ini">Skor</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>XP</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>Pelanggaran</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>Aksi</th>
@@ -546,6 +549,9 @@ export default function HasilTryOutAdminPage() {
                                   ) : null}
                                 </>
                               ) : '-'}
+                            </td>
+                            <td style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 700, color: '#3949AB' }}>
+                              {selesai ? (hitungSkalaSesi(b.sesi, paketTerpilih).total ?? '-') : '-'}
                             </td>
                             <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                               {selesai ? b.sesi.xpFinal : '-'}
