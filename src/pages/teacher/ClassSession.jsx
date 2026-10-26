@@ -13,7 +13,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip } from 'lucide-react';
 import KameraBelakang from '../../components/KameraBelakang';
-import { STATUS_ABSENSI, statusBerikutnya, kebijakanUntukStatus, statusDariDokumenAbsensi, keteranganKebijakan } from '../../utils/kebijakanAbsensi';
+import { STATUS_ABSENSI, kebijakanUntukStatus, statusDariDokumenAbsensi, keteranganKebijakan } from '../../utils/kebijakanAbsensi';
 import { keteranganAbsensi } from '../../utils/identitasAbsensi';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { uploadElearningFile } from '../../services/uploadService';
@@ -137,10 +137,13 @@ const ClassSession = () => {
     setUploadingMateriFile(false);
   };
 
-  const toggleStudent = async (student) => {
+  // 🔥 2026-10-26 (revisi UX owner, lanjutan): mengetuk nama TIDAK lagi
+  // bersiklus buta. Ketukan membuka lembar pilihan status yang langsung
+  // memperlihatkan KETERANGAN tiap pilihan; pemilihan di lembar itu yang
+  // menulis status + memicu konsekuensi otomatis.
+  const pilihStatusAbsensi = async (student, next) => {
     if (!schedule || !teacher) return;
     const cur = attendanceMap[student.id];
-    const next = statusBerikutnya(cur);
     setAttendanceMap((p) => ({ ...p, [student.id]: next }));
     const today = new Date().toISOString().split('T')[0];
     try {
@@ -164,9 +167,6 @@ const ClassSession = () => {
         });
         if (dibukakan.length) setIzinPerSiswa((prev) => ({ ...prev, [student.id]: `🔓 Akses susulan otomatis dibukakan untuk ${dibukakan.length} try out tertutup: ${dibukakan.join(', ')} — berlaku 7 hari.` }));
       }
-      // 🔥 2026-10-26 (revisi UI owner): keterangan status harus muncul
-      // LANGSUNG saat nama diketuk, bukan di kotak info terpisah.
-      setSiswaTerpilih(student);
     } catch { setAttendanceMap((p) => ({ ...p, [student.id]: cur })); }
   };
 
@@ -251,6 +251,37 @@ const ClassSession = () => {
 
   return (
     <div style={st.container(isMobile)}>
+      {siswaTerpilih && (
+        <div role="dialog" aria-modal="true" aria-label={`Absensi ${siswaTerpilih.nama}`} style={{ position: 'fixed', inset: 0, zIndex: 3900, background: 'rgba(2,6,23,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setSiswaTerpilih(null)}>
+          <div style={{ background: '#fff', borderRadius: 14, padding: '16px 16px 12px', width: '100%', maxWidth: 460, maxHeight: '86vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
+              Absensi: {siswaTerpilih.nama}
+            </div>
+            <div style={{ fontSize: 11, color: '#64748b', marginTop: 2, marginBottom: 10 }}>
+              Status sekarang: <b>{String(attendanceMap[siswaTerpilih.id] || 'BELUM').toUpperCase()}</b> — pilih status; keterangannya muncul di bawah tiap pilihan.
+            </div>
+            {STATUS_ABSENSI.map((stt) => {
+              const aktif = attendanceMap[siswaTerpilih.id] === stt;
+              const warnaOpt = stt === 'Hadir' ? '#16a34a' : stt === 'Izin' ? '#2563eb' : stt === 'Sakit' ? '#d97706' : '#dc2626';
+              return (
+                <button
+                  key={stt}
+                  type="button"
+                  onClick={() => { pilihStatusAbsensi(siswaTerpilih, stt); setSiswaTerpilih(null); }}
+                  style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 8, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', background: aktif ? '#f0fdf4' : '#f8fafc', border: aktif ? `2px solid ${warnaOpt}` : '1px solid #e2e8f0' }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 800, color: warnaOpt }}>{stt.toUpperCase()}{aktif ? ' · terpilih' : ''}</div>
+                  <div style={{ fontSize: 11, color: '#475569', marginTop: 3, lineHeight: 1.55 }}>{keteranganKebijakan(stt)}</div>
+                </button>
+              );
+            })}
+            {izinPerSiswa[siswaTerpilih.id] && (
+              <div style={{ fontSize: 11.5, color: '#166534', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 10px', marginBottom: 8 }}>{izinPerSiswa[siswaTerpilih.id]}</div>
+            )}
+            <button type="button" onClick={() => setSiswaTerpilih(null)} style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Tutup tanpa mengubah</button>
+          </div>
+        </div>
+      )}
       {kameraAbsensi && (
         <KameraBelakang
           facing={kameraAbsensi}
@@ -321,43 +352,20 @@ const ClassSession = () => {
                 <p style={st.qrHint(isMobile)}>Siswa silakan scan</p>
               </div>
               <div style={st.card(isMobile)}>
-                <h4 style={{ ...st.cardTitle, color: '#3498db' }}>Siswa ({Object.values(attendanceMap).filter((v) => v).length}/{(schedule.students || []).length})</h4>
+                <h4 style={{ ...st.cardTitle, color: '#3498db' }}>Siswa ({(schedule.students || []).filter((x) => STATUS_ABSENSI.includes(attendanceMap[x.id])).length}/{(schedule.students || []).length})</h4>
                 <div style={st.studentScrollArea}>
                   {(schedule.students || []).map((s) => {
                     const p = attendanceMap[s.id];
                     const warna = p === 'Hadir' ? '#27ae60' : p === 'Izin' ? '#3b82f6' : p === 'Sakit' ? '#f59e0b' : p === 'Alpha' ? '#ef4444' : '#f8fafc';
                     return (
-                      <div key={s.id} onClick={() => toggleStudent(s)} style={{ ...st.studentItem(isMobile), background: warna, color: p ? 'white' : '#64748b', border: p ? 'none' : '1px solid #e2e8f0' }}>
+                      <div key={s.id} onClick={() => setSiswaTerpilih(s)} style={{ ...st.studentItem(isMobile), background: warna, color: p ? 'white' : '#64748b', border: p ? 'none' : '1px solid #e2e8f0' }}>
                         <div style={st.studentName(isMobile)}>{s.nama}</div>
-                        <div style={st.studentStatus}>{p ? String(p).toUpperCase() : 'KETUK: HADIR'}</div>
+                        <div style={st.studentStatus}>{p ? String(p).toUpperCase() : 'KETUK'}</div>
+                        {izinPerSiswa[s.id] ? <div style={{ fontSize: 12, marginTop: 2 }} title={izinPerSiswa[s.id]}>🔓</div> : null}
                       </div>
                     );
                   })}
                 </div>
-                {siswaTerpilih && (
-                  <div style={{ marginTop: 4, border: '1px solid #cbd5e1', borderRadius: 10, padding: '10px 12px', background: '#ffffff' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a' }}>
-                        {siswaTerpilih.nama} —{' '}
-                        <span style={{ color: attendanceMap[siswaTerpilih.id] === 'Alpha' ? '#dc2626' : attendanceMap[siswaTerpilih.id] === 'Izin' ? '#2563eb' : attendanceMap[siswaTerpilih.id] === 'Sakit' ? '#d97706' : '#16a34a' }}>
-                          {String(attendanceMap[siswaTerpilih.id] || 'BELUM').toUpperCase()}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button type="button" onClick={() => toggleStudent(siswaTerpilih)} style={{ fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 8, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', cursor: 'pointer' }}>Ganti status</button>
-                        <button type="button" onClick={() => setSiswaTerpilih(null)} style={{ fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#64748b', cursor: 'pointer' }}>Tutup</button>
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11.5, color: '#334155', marginTop: 6, lineHeight: 1.6 }}>
-                      {keteranganKebijakan(attendanceMap[siswaTerpilih.id]) || 'Belum ada status. Ketuk "Ganti status" untuk mulai roll-call siswa ini.'}
-                    </div>
-                    {izinPerSiswa[siswaTerpilih.id] && (
-                      <div style={{ fontSize: 11.5, color: '#166534', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '8px 10px', marginTop: 6 }}>
-                        {izinPerSiswa[siswaTerpilih.id]}
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           )}
