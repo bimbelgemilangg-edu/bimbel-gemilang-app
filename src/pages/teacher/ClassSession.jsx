@@ -13,7 +13,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip } from 'lucide-react';
 import KameraBelakang from '../../components/KameraBelakang';
-import { STATUS_ABSENSI, statusBerikutnya, kebijakanUntukStatus } from '../../utils/kebijakanAbsensi';
+import { STATUS_ABSENSI, statusBerikutnya, kebijakanUntukStatus, statusDariDokumenAbsensi } from '../../utils/kebijakanAbsensi';
 import { keteranganAbsensi } from '../../utils/identitasAbsensi';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { uploadElearningFile } from '../../services/uploadService';
@@ -106,7 +106,7 @@ const ClassSession = () => {
       const m = { ...attendanceMap };
       snap.docs.forEach((d) => {
         const data = d.data();
-        if (schedule.students && schedule.students.some((s) => s.id === data.studentId)) m[data.studentId] = (data.status === 'Hadir');
+        if (schedule.students && schedule.students.some((s) => s.id === data.studentId)) m[data.studentId] = statusDariDokumenAbsensi(data);
       });
       setAttendanceMap(m);
     });
@@ -325,7 +325,7 @@ const ClassSession = () => {
                     return (
                       <div key={s.id} onClick={() => toggleStudent(s)} style={{ ...st.studentItem(isMobile), background: warna, color: p ? 'white' : '#64748b', border: p ? 'none' : '1px solid #e2e8f0' }}>
                         <div style={st.studentName(isMobile)}>{s.nama}</div>
-                        <div style={st.studentStatus}>{p ? p.toUpperCase() : 'KETUK: HADIR'}</div>
+                        <div style={st.studentStatus}>{p ? String(p).toUpperCase() : 'KETUK: HADIR'}</div>
                       </div>
                     );
                   })}

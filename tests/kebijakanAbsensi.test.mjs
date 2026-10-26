@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import {
   statusBerikutnya, kebijakanUntukStatus, paketPerluIzinUlang,
-  waktuBerlakuSampaiIso, GRACE_IZIN_HARI, SIKLUS_ABSENSI,
+  waktuBerlakuSampaiIso, GRACE_IZIN_HARI, SIKLUS_ABSENSI, statusDariDokumenAbsensi,
 } from '../src/utils/kebijakanAbsensi.js';
 
 let lulus = 0, gagal = 0;
@@ -49,6 +49,17 @@ uji('tidak perlu: tutup sebelum hari absen, masih terbuka, sudah selesai, nonakt
 uji('masa berlaku akses = sekarang + 7 hari', () => {
   const kini = 1700000000000;
   assert.equal(new Date(waktuBerlakuSampaiIso(kini)).getTime() - kini, GRACE_IZIN_HARI * HARI);
+});
+
+uji('REGRESI PRODUKSI 2026-10-26: dokumen lama boolean/tak dikenal tidak crash UI', () => {
+  assert.equal(statusDariDokumenAbsensi({ status: true }), 'Hadir');
+  assert.equal(statusDariDokumenAbsensi({ status: false }), undefined);
+  assert.equal(statusDariDokumenAbsensi({ status: 'Izin' }), 'Izin');
+  assert.equal(statusDariDokumenAbsensi({ status: 'Alpha' }), 'Alpha');
+  assert.equal(statusDariDokumenAbsensi({ status: 'hadir' }), 'Hadir');
+  assert.equal(statusDariDokumenAbsensi({}), undefined);
+  // nilai truthy tak dikenal dipetakan aman, bukan dibiarkan non-string
+  assert.equal(typeof statusDariDokumenAbsensi({ status: 1 }), 'string');
 });
 
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);

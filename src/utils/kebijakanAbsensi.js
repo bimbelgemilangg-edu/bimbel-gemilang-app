@@ -69,9 +69,28 @@ export function paketPerluIzinUlang(paket, { tanggalAbsenMs, sekarangMs, adaSesi
   return true;
 }
 
+/**
+ * Status absensi dari satu dokumen koleksi `attendance`, dinormalisasi ke
+ * STATUS_ABSENSI. DOKUMEN LAMA bisa menyimpan bentuk lain (boolean dari
+ * penulis lama, string bebas) -- semuanya dipetakan aman, karena UI
+ * memanggil metode string pada nilai ini (insiden produksi 2026-10-26:
+ * `re.toUpperCase is not a function` saat nilai masih boolean).
+ *
+ * @param {object} data data dokumen attendance
+ * @returns {string|undefined} status baku, atau undefined bila belum ada
+ */
+export function statusDariDokumenAbsensi(data) {
+  const st = data?.status;
+  if (STATUS_ABSENSI.includes(st)) return st;
+  if (st === true || st === 'hadir') return 'Hadir';
+  if (st === false) return undefined;
+  if (st) return 'Hadir'; // nilai truthy tak dikenal: perlakukan hadir, jangan crash
+  return undefined;
+}
+
 /** ISO waktu kedaluwarsa akses susulan: sekarang + GRACE_IZIN_HARI. */
 export function waktuBerlakuSampaiIso(sekarangMs = Date.now()) {
   return new Date(sekarangMs + GRACE_IZIN_HARI * 24 * 60 * 60 * 1000).toISOString();
 }
 
-export default { STATUS_ABSENSI, SIKLUS_ABSENSI, GRACE_IZIN_HARI, statusBerikutnya, kebijakanUntukStatus, paketPerluIzinUlang, waktuBerlakuSampaiIso };
+export default { STATUS_ABSENSI, SIKLUS_ABSENSI, GRACE_IZIN_HARI, statusBerikutnya, kebijakanUntukStatus, paketPerluIzinUlang, waktuBerlakuSampaiIso, statusDariDokumenAbsensi };
