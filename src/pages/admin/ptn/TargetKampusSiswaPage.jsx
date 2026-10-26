@@ -601,19 +601,19 @@ export default function TargetKampusSiswaPage() {
             {skalaOtomatis && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12, color: '#15803d', fontWeight: 700 }}>
-                  ⚡ Skala otomatis tersedia: {skalaOtomatis.total} dari {skalaOtomatis.judul}{skalaOtomatis.pada ? ` (${skalaOtomatis.pada})` : ''}
+                  ⚡ Skor otomatis tersedia: {skalaOtomatis.total} dari {skalaOtomatis.judul}{skalaOtomatis.pada ? ` (${skalaOtomatis.pada})` : ''}
                 </span>
                 <button
                   type="button"
                   style={S.tombolKecil}
-                  onClick={() => { setSkor(String(skalaOtomatis.total)); setKeteranganSkor(`Skala otomatis try out: ${skalaOtomatis.judul}${skalaOtomatis.pada ? `, ${skalaOtomatis.pada}` : ''}`); }}
+                  onClick={() => { setSkor(String(skalaOtomatis.total)); setKeteranganSkor(`Skor otomatis try out: ${skalaOtomatis.judul}${skalaOtomatis.pada ? `, ${skalaOtomatis.pada}` : ''}`); }}
                 >
                   Pakai angka ini
                 </button>
               </div>
             )}
             <div style={{ ...S.kecil, marginTop: 6 }}>
-              Angka ini BUKAN skor ujian resmi: ia skala internal 100-1000 per komponen (UTBK) atau 200-800 per mata uji (TKA SMA) dengan
+              Angka ini BUKAN skor ujian resmi: ia skor internal 100-1000 per komponen (UTBK) atau 200-800 per mata uji (TKA SMA) dengan
               total berbobot resmi SNBT 2025, atau catatan konsultasi bila diisi manual.
               Karena itu keterangannya wajib diisi.
             </div>

@@ -47,7 +47,18 @@ yang diubah.
   18/30 butir ⚠️") dan menampilkan sumbernya. Ia **tidak** mengoreksi,
   menolak, atau melengkapi isi keranjang otomatis: keputusan isi tetap manusia.
 
-## 3. Perilaku sistem per jenis ujian
+## 3. Istilah yang wajib dipakai di semua permukaan (keputusan owner 2026-10-25)
+
+- **AKURASI** = persentase jawaban benar/proposional (0-100%). Contoh UI:
+  "Akurasi jawaban: 64%", chip "akurasi 64%", lencana "Akurasi 64%".
+- **SKOR** = angka pada rentang resmi (UTBK-SNBT 100-1000; TKA SMA/SMK
+  200-800; TKA SD/SMP 0-100). Contoh UI: "Skor TKA: 586,93".
+- Kata "skala" hanya boleh muncul sebagai nama MEKANISME pemetaan di kode
+  dan dokumen teknis, TIDAK sebagai label angka di permukaan pengguna.
+- Persen TIDAK boleh disebut "skor" di UI mana pun; skor TIDAK boleh
+  ditampilkan dengan tanda %.
+
+## 4. Perilaku sistem per jenis ujian
 
 | `jenisUjian` paket | Skala yang ditampilkan | Catatan |
 |---|---|---|
@@ -57,7 +68,7 @@ yang diubah.
 | `kurikulum` | tidak ada skala; persen saja | alasan jujur ditampilkan |
 | kosong / `otomatis` | ditebak dari isi paket (subtes UTBK → utbk; mapel TKA + jenjang → tka; sonst kurikulum) | badge kartu paket menandai "(otomatis)" |
 
-## 4. Cara mengukur ulang standar ini
+## 5. Cara mengukur ulang standar ini
 
 Semua angka resmi di atas mempunyai tautan sumber pada §1. Bila peraturan
 berubah (mis. Kepmendikdasmen baru), perbarui **hanya** konstanta di

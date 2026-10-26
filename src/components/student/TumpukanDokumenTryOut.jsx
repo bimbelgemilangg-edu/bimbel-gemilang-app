@@ -178,7 +178,7 @@ export default function TumpukanDokumenTryOut({ dokumen = [], onBuka, petunjuk =
                       <span style={chip(warna)}><FileText size={12} /> {d.jumlahSoal} soal</span>
                       {d.durasiMenit ? <span style={chip(warna)}><Clock3 size={12} /> {d.durasiMenit} mnt</span> : null}
                       {d.waktuBuka ? <span style={chip(warna)}><CalendarDays size={12} /> dibuka {tgl(d.waktuBuka)}</span> : null}
-                      {d.skor !== null && d.skor !== undefined ? <span style={chip('#16a34a')}><CheckCircle2 size={12} /> skor {Math.round(d.skor)}%</span> : null}
+                      {d.skor !== null && d.skor !== undefined ? <span style={chip('#16a34a')}><CheckCircle2 size={12} /> akurasi {Math.round(d.skor)}%</span> : null}
                     </div>
                     {d.catatan ? (
                       <div style={{ marginTop: 8, fontSize: 11.5, color: '#57534e', background: '#faf7ef', border: '1px solid #eee6d2', borderRadius: 8, padding: '6px 9px', lineHeight: 1.5 }}>

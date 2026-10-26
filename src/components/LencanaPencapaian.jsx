@@ -28,7 +28,7 @@ const IKON = { streak: '🔥', skor: '🏆', level: '⭐' };
 export default function LencanaPencapaian({ tipe = 'streak', nilai, namaSiswa, xp, keterangan }) {
   const judul = {
     streak: `${nilai} Hari Beruntun!`,
-    skor: `Skor ${nilai}%`,
+    skor: `Akurasi ${nilai}%`,
     level: `Level ${nilai} Tercapai!`,
   }[tipe];
 

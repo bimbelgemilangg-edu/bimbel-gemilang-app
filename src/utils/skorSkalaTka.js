@@ -39,7 +39,7 @@ const TKA_MAPEL_SD_SMP = new Set([
 ]);
 
 export const LABEL_SKALA_TKA =
-  'Skala internal Gemilang 200-800 per mata uji (SMA/SMK) atau 0-100 (SD/SMP) '
+  'Skor internal Gemilang 200-800 per mata uji (SMA/SMK) atau 0-100 (SD/SMP) '
   + 'yang menyerupai cara hasil TKA dilaporkan (Kepmendikdasmen No. 56 Tahun '
   + '2026 untuk SMA/SMK), dipetakan linear dari persen benar untuk '
   + 'membiasakan pembacaan angka. BUKAN skor TKA resmi: tidak dihitung dengan '

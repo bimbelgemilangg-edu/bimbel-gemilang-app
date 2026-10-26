@@ -100,7 +100,7 @@ export default function KodeSoalSiswaPage() {
               <div>
                 <b style={{ fontSize: 13.5, color: '#0f172a' }}>{paket.judul || paket.nama || 'Paket'}</b>
                 <div style={{ fontSize: 10.5, color: '#64748b', marginTop: 2 }}>
-                  {kodePaketTampil(paket)} · {sesi.tanggal || ''} · skor {sesi.totalSkorPersen ?? '-'}%
+                  {kodePaketTampil(paket)} · {sesi.tanggal || ''} · akurasi {sesi.totalSkorPersen ?? '-'}%
                 </div>
               </div>
             </div>

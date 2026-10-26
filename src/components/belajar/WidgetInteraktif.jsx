@@ -167,7 +167,7 @@ function BarisSkor({ benar, total, onUlangi }) {
     <div style={{ ...S.skor, borderColor: persen === 100 ? '#86EFAC' : '#DDD6FE' }}>
       <Trophy size={16} color={persen === 100 ? '#16A34A' : '#7C3AED'} />
       <span>
-        Skor: {benar}/{total} ({persen}%)
+        Benar {benar}/{total} · Akurasi {persen}%
         {persen === 100 ? ' — Sempurna! 🎉' : persen >= 60 ? ' — Bagus, coba lagi yang meleset!' : ' — Pelan-pelan, ulangi ya!'}
       </span>
       {onUlangi ? (

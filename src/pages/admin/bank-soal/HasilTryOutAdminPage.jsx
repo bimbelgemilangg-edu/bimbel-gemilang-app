@@ -216,7 +216,7 @@ export default function HasilTryOutAdminPage() {
     const studentId = item.student.studentId || item.student.id;
     const konfirmasi = window.prompt(
       `Ketik ulang nama PERSIS "${item.student.nama}" buat izinkan dia ngerjain ULANG dari NOL:\n\n` +
-      `- Hasil lama (skor ${item.sesi.totalSkorPersen}%, ${item.sesi.xpFinal || 0} XP) akan DIHAPUS PERMANEN.\n` +
+      `- Hasil lama (akurasi ${item.sesi.totalSkorPersen}%, ${item.sesi.xpFinal || 0} XP) akan DIHAPUS PERMANEN.\n` +
       `- XP yang sempat masuk dari sesi lama akan ditarik balik (biar gak dobel).\n` +
       `- Dia akan bisa mulai lagi dari nol selama 3 jam ke depan, WALAU deadline try out ini udah lewat -- ` +
       `siswa lain TIDAK ikut kesenggol/TIDAK dibukakan deadline-nya.` +
@@ -494,7 +494,7 @@ export default function HasilTryOutAdminPage() {
                       return (
                         <div key={t.id} style={{ background: 'white', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginBottom: 6, fontSize: 12, color: '#1e293b' }}>
                           <b>{namaTertahan}</b>
-                          {' · skor '}
+                          {' · akurasi '}
                           {t.totalSkorPersen ?? '-'}%
                           {' · '}
                           {t.xpFinal ?? 0}
@@ -515,7 +515,7 @@ export default function HasilTryOutAdminPage() {
                         <th style={{ padding: '8px 10px', textAlign: 'left', width: 40 }}>#</th>
                         <th style={{ padding: '8px 10px', textAlign: 'left' }}>Nama</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>Status</th>
-                        <th style={{ padding: '8px 10px', textAlign: 'center' }}>Skor</th>
+                        <th style={{ padding: '8px 10px', textAlign: 'center' }}>Akurasi</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>XP</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>Pelanggaran</th>
                         <th style={{ padding: '8px 10px', textAlign: 'center' }}>Aksi</th>
@@ -700,7 +700,7 @@ export default function HasilTryOutAdminPage() {
                         ? (poinEsaiSiswa !== null
                           ? `Soal ${i + 1} -- ESAI • nilai ${Math.round(poinEsaiSiswa * SKALA_NILAI_ESAI)}/${SKALA_NILAI_ESAI}`
                           : `Soal ${i + 1} -- ESAI • ${belumDijawab ? 'tidak dijawab' : 'MENUNGGU PENILAIAN ANDA'}`)
-                        : `Soal ${i + 1} -- skor ${Math.round(skor * 100)}%${belumDijawab ? ' (Tidak dijawab)' : ''}`}
+                        : `Soal ${i + 1} -- akurasi ${Math.round(skor * 100)}%${belumDijawab ? ' (Tidak dijawab)' : ''}`}
                     </div>
                     {s.bacaan?.teks && (
                       <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}><RenderMath text={s.bacaan.teks} /></div>

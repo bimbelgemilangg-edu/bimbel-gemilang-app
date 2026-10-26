@@ -135,7 +135,7 @@ function KartuMisiBola({ dok, onBuka }) {
         <div style={{ marginTop: 7 }}>
           <span style={st.chip(warna)}>{dok.jumlahSoal} soal</span>
           {dok.durasiMenit ? <span style={st.chip(warna)}>{dok.durasiMenit} mnt</span> : null}
-          {dok.skor !== null && dok.skor !== undefined ? <span style={st.chip('#16a34a')}>skor {Math.round(dok.skor)}%</span> : null}
+          {dok.skor !== null && dok.skor !== undefined ? <span style={st.chip('#16a34a')}>akurasi {Math.round(dok.skor)}%</span> : null}
         </div>
         {dok.catatan ? <div style={{ ...st.deskripsi, fontSize: 11.5 }}>{dok.catatan}</div> : null}
         <button

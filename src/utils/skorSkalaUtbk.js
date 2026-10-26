@@ -30,6 +30,14 @@
 // disimpan sebagai angka skala), jadi perubahan rentang tidak merusak
 // riwayat sesi lama.
 // ============================================================
+//
+// ISTILAH TAMPILAN (keputusan owner 2026-10-25, berlaku di seluruh UI):
+//   - persen benar/proposional  = AKURASI   (mis. "Akurasi jawaban: 64%")
+//   - angka pada rentang resmi    = SKOR     (mis. "Skor TKA: 586,93")
+// Jangan pernah menyebut persen sebagai "skor" di permukaan pengguna:
+// skor adalah angka berrentang (100-1000 / 200-800 / 0-100), akurasi adalah
+// persentasenya. Identifier kode (totalSkorPersen dsb.) dibiarkan apa adanya
+// demi sejarah git; yang dijaga adalah kata yang dibaca manusia.
 
 export const SKALA_MIN = 100;
 export const SKALA_MAKS = 1000;
@@ -64,7 +72,7 @@ export function komponenDariKode(kode) {
 }
 
 export const LABEL_SKALA =
-  'Skala internal Gemilang 100-1000 per komponen dengan total berbobot resmi '
+  'Skor internal Gemilang 100-1000 per komponen dengan total berbobot resmi '
   + 'SNBT 2025 (TPS 50%, Literasi Bahasa Indonesia 20%, Literasi Bahasa '
   + 'Inggris 15%, Penalaran Matematika 15%), dipetakan linear dari persen '
   + 'benar untuk membiasakan pembacaan angka. BUKAN skor UTBK resmi: tidak '

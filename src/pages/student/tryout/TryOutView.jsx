@@ -1054,7 +1054,7 @@ export default function TryOutView() {
                   {formatAngkaSkala(skalaOtomatis.total)}
                 </div>
                 <div style={{ fontSize: 12.5, color: '#3949AB', fontWeight: 700 }}>
-                  Skala {skalaOtomatis.mode === 'tka' ? 'TKA' : 'UTBK-SNBT'}
+                  Skor {skalaOtomatis.mode === 'tka' ? 'TKA' : 'UTBK-SNBT'}
                 </div>
                 {skalaOtomatis.perSubtes.length > 1 && (
                   <div style={{ fontSize: 11, color: '#475569', marginTop: 6 }}>
@@ -1062,7 +1062,7 @@ export default function TryOutView() {
                   </div>
                 )}
                 <div style={{ fontSize: 11.5, color: '#475569', marginTop: 8 }}>
-                  Ketuntasan jawaban: <b>{hasilAkhir?.totalSkorPersen ?? 0}%</b>
+                  Akurasi jawaban: <b>{hasilAkhir?.totalSkorPersen ?? 0}%</b>
                 </div>
               </>
             ) : (
@@ -1148,7 +1148,7 @@ export default function TryOutView() {
           return (
             <div key={s.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: '0 2px 10px rgba(15,23,42,0.08)' }}>
               <div style={{ fontSize: 11.5, color: skor >= 0.99 ? '#16a34a' : skor > 0 ? '#d97706' : '#dc2626', fontWeight: 700, marginBottom: 6 }}>
-                Soal {i + 1} -- skor {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
+                Soal {i + 1} -- akurasi {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
               </div>
               {s.bacaan?.teks && (
                 <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}>

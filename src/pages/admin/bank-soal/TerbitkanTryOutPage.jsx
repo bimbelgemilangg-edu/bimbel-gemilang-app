@@ -1888,7 +1888,7 @@ export default function TerbitkanTryOutPage() {
                       <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{sesi.namaSiswa}</div>
                       <div style={{ fontSize: 11, color: '#9ca3af' }}>
                         {sesi.status === 'selesai'
-                          ? `Selesai · skor ${sesi.totalSkorPersen ?? 0}% · ${sesi.xpFinal ?? 0} XP`
+                          ? `Selesai · akurasi ${sesi.totalSkorPersen ?? 0}% · ${sesi.xpFinal ?? 0} XP`
                           : 'Sedang berjalan / belum dikumpulkan'}
                         {sesi.createdAt?.toMillis?.() ? ` · mulai ${new Date(sesi.createdAt.toMillis()).toLocaleString('id-ID')}` : ''}
                       </div>

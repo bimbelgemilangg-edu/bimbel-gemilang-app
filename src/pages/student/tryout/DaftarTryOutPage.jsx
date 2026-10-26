@@ -243,7 +243,7 @@ export default function DaftarTryOutPage() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 800, color: '#16a34a', justifyContent: 'flex-end' }}>
-                        <CheckCircle2 size={14} /> {x.p.sesi?.totalSkorPersen}%
+                        <CheckCircle2 size={14} /> akurasi {x.p.sesi?.totalSkorPersen}%
                       </div>
                       <div style={{ fontSize: 10.5, color: '#7c3aed', fontWeight: 700 }}>belajar kembali →</div>
                     </div>

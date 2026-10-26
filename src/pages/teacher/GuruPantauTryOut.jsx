@@ -219,7 +219,7 @@ export default function GuruPantauTryOut() {
       setDetail({ ...detail, nilaiEsai: nilaiEsaiBaru, totalSkor, totalSkorPersen, xpFinal: xpFinalBaru });
       setSesiList((lama) => lama.map((s) => (s.id === detail.id ? { ...s, nilaiEsai: nilaiEsaiBaru, totalSkor, totalSkorPersen, xpFinal: xpFinalBaru } : s)));
       setInputEsai((m) => { const c = { ...m }; delete c[String(soal.id)]; return c; });
-      setPesan({ tipe: 'ok', teks: `Nilai esai tersimpan: ${poin}/${SKALA_NILAI_ESAI}. Total ${siswa.nama || siswa.studentId} sekarang ${totalSkorPersen}% (${xpFinalBaru} XP).` });
+      setPesan({ tipe: 'ok', teks: `Nilai esai tersimpan: ${poin}/${SKALA_NILAI_ESAI}. Total ${siswa.nama || siswa.studentId} sekarang akurasi ${totalSkorPersen}% (${xpFinalBaru} XP).` });
       catatAudit('tryout.esai.nilai.guru', {
         kategori: KATEGORI.LAINNYA,
         target: `Esai ${soal.id} • ${siswa.nama || siswa.studentId} • ${paket.judul}`,
@@ -344,7 +344,7 @@ export default function GuruPantauTryOut() {
               <div style={{ marginTop: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>
-                    👁️ Jawaban {detail.nama || detail.studentId} — skor {Math.round(Number(detail.totalSkorPersen) || 0)}% · {detail.xpFinal || 0} XP
+                    👁️ Jawaban {detail.nama || detail.studentId} — akurasi {Math.round(Number(detail.totalSkorPersen) || 0)}% · {detail.xpFinal || 0} XP
                   </div>
                   <button onClick={() => setDetail(null)} style={{ fontSize: 11, padding: '5px 10px', borderRadius: 8, border: '1px solid #d1d5db', background: 'white', cursor: 'pointer' }}>Tutup</button>
                 </div>
@@ -419,7 +419,7 @@ export default function GuruPantauTryOut() {
                             >
                               {simpanEsaiId === String(s.id) ? 'Menyimpan...' : '💾 Simpan Penilaian'}
                             </button>
-                            <span style={{ fontSize: 10.5, color: '#6b7280' }}>Total skor & XP siswa terhitung ulang otomatis (termasuk potongan anti-curang).</span>
+                            <span style={{ fontSize: 10.5, color: '#6b7280' }}>Akurasi & XP siswa terhitung ulang otomatis (termasuk potongan anti-curang).</span>
                           </div>
                         </div>
                       )}

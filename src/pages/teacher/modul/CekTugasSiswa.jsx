@@ -1052,19 +1052,19 @@ const CekTugasSiswa = () => {
               <div style={{ ...s.profBucketCard, background: '#fee2e2' }}>
                 <div style={{ fontSize: 22, fontWeight: 800, color: '#b91c1c' }}>{classSummary.needingAttention}</div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: '#b91c1c' }}>{classSummary.needingAttentionPct}% • Perlu Perhatian</div>
-                <div style={{ fontSize: 9, color: '#991b1b' }}>skor di bawah 60</div>
+                <div style={{ fontSize: 9, color: '#991b1b' }}>akurasi di bawah 60</div>
               </div>
 
               <div style={{ ...s.profBucketCard, background: '#fef3c7' }}>
                 <div style={{ fontSize: 22, fontWeight: 800, color: '#b45309' }}>{classSummary.workingTowards}</div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: '#b45309' }}>{classSummary.workingTowardsPct}% • Sedang Berkembang</div>
-                <div style={{ fontSize: 9, color: '#92400e' }}>skor 60-84</div>
+                <div style={{ fontSize: 9, color: '#92400e' }}>akurasi 60-84</div>
               </div>
 
               <div style={{ ...s.profBucketCard, background: '#dcfce7' }}>
                 <div style={{ fontSize: 22, fontWeight: 800, color: '#166534' }}>{classSummary.mastered}</div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: '#166534' }}>{classSummary.masteredPct}% • Menguasai</div>
-                <div style={{ fontSize: 9, color: '#15803d' }}>skor 85 ke atas</div>
+                <div style={{ fontSize: 9, color: '#15803d' }}>akurasi 85 ke atas</div>
               </div>
             </div>
 
