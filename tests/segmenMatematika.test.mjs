@@ -110,6 +110,12 @@ uji('cetak: placeholder gambar dibuang seperti sebelumnya', () => {
   assert.ok(!h.includes('{{GAMBAR'));
 });
 
+uji('CETAK: ganti baris naskah buku menjadi <br> (2026-10-27)', () => {
+  const h = teksKeHtml('Langkah:\n$2^3=8$\nJadi delapan.');
+  assert.match(h, /Langkah:<br>/);
+  assert.match(h, /<br>Jadi delapan/);
+});
+
 console.log('');
 console.log(`# segmenMatematika: ${lulus} lulus, ${gagal} gagal`);
 if (gagal > 0) process.exit(1);

@@ -291,17 +291,23 @@ export function escapeHtml(s) {
 }
 
 export function teksKeHtml(teks) {
-  const bersih = String(teks ?? '').replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ').replace(/\s+/g, ' ').trim();
+  // 🔥 2026-10-27: JANGAN ratakan ganti baris -- struktur baris naskah buku
+  // (bullet himpunan, langkah penyelesaian) harus bertahan sampai kertas.
+  const bersih = String(teks ?? '')
+    .replace(/\{\{GAMBAR(?:_\d+)?\}\}/g, ' ')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
   // 🔥 2026-10-23: pakai pemecah SATU SUMBER (utils/segmenMatematika).
   // Sebelumnya cetak TIDAK mengenal \(..\) / \[..\] sehingga delimiter itu
   // tercetak MENTAH di kertas, padahal kontrak impor mengizinkannya.
   return pecahSegmenMatematika(bersih)
     .map((seg) => {
-      if (seg.jenis === 'teks') return escapeHtml(seg.isi);
+      if (seg.jenis === 'teks') return escapeHtml(seg.isi).replace(/\n/g, '<br>');
       try {
         return katex.renderToString(sumberKaTeX(seg), { throwOnError: false });
       } catch {
-        return escapeHtml(seg.isi);
+        return escapeHtml(seg.isi).replace(/\n/g, '<br>');
       }
     })
     .join('');
@@ -614,8 +620,8 @@ function htmlBlokPembahasan(teks, kunciHuruf = '', gambar = null) {
   // kini mengenal \(..\)/\[..\] dan kebijakan ukuran yang sama dengan
   // layar siswa, supaya bentuk di kertas = bentuk di layar.
   const sorotMatika = (t) => pecahSegmenMatematika(t).map((seg) => {
-    if (seg.jenis === 'teks') return sorot(seg.isi);
-    try { return katex.renderToString(sumberKaTeX(seg), { throwOnError: false }); } catch { return sorot(seg.isi); }
+    if (seg.jenis === 'teks') return sorot(seg.isi).replace(/\n/g, '<br>');
+    try { return katex.renderToString(sumberKaTeX(seg), { throwOnError: false }); } catch { return sorot(seg.isi).replace(/\n/g, '<br>'); }
   }).join('');
   // Ekor pembahasan yang putus di OCR ("Jawaba", "= Jawaban f") dilengkapi
   // dari kunci soal itu sendiri -- aturan yang sama dengan layar siswa &

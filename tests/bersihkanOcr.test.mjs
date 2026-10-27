@@ -330,4 +330,16 @@ uji('lengkapEkorJawaban: kalimat biasa yang kebetulan menyebut "menjawab" tidak 
 
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
+uji('REGRESI 2026-10-27: baris daftar TIDAK di-reflow jadi satu paragraf', () => {
+  const masuk = 'Diberikan tiga himpunan:\n• A = {x | x < 6, x ∈ bilangan asli}\n• B = {x | x bilangan genap}\n• C = {x | x ≤ 10, x ∈ bilangan prima}';
+  const r = bersihkanOcrTeks(masuk);
+  assert.equal(r.teks.split('\n').length, 4, r.teks);
+});
+
+uji('REGRESI 2026-10-27: baris definisi himpunan tidak dimakan barisGarbar', () => {
+  const r = bersihkanOcrTeks('C = {x | x ≤ 10}\nA = {x | x ∈ bilangan asli}');
+  assert.equal(r.teks.split('\n').length, 2, r.teks);
+  assert.deepEqual(r.catatan, []);
+});
+
 console.log('✅ Semua test lulus.');

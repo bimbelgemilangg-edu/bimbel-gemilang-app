@@ -28,10 +28,19 @@ const RE_JUDUL_KOLOM_RUSAK = /^\s*a{1,2}al-?soal\s*$/i;
 // Baris sepanjang ini yang ISINYA hanya slogan tidak mungkin bagian kalimat.
 const RE_SLOGAN_BUKU = /^\s*(belajar|has[ij]l|hbsil|mbksimal|winimal)\s*(minimal|maksimal|minima[,.]?|maksima[,.]?|mbksimal|hbsil)?[,.]?\s*$/i;
 
-const PUNCAKUS_AKHIR = /[.!?:;…)\]"']$/;
+const PUNCAKUS_AKHIR = /[.!?:;…)}\]"']$/;
+// Penanda baris daftar: bullet, huruf/angka bernomor, atau opsi berhuruf.
+const RE_BARIS_DAFTAR = /^([•\-*▪◦]\s*|\([a-eA-E0-9]{1,2}\)|[a-eA-E][.)]|\d{1,2}[.)])\s*\S/;
+
+// Simbol yang hanya muncul di baris MATEMATIKA, tidak pernah di rácak OCR.
+const RE_SIMBOL_MATIKA = /[{∈≤≥≠√∩∪]/;
 
 function barisGarbar(baris) {
   const t = String(baris ?? '').trim();
+  // 🔥 2026-10-27: baris definisi himpunan/interval ("C = {x | x ≤ 10}")
+  // miskin huruf sehingga dulu tertelan aturan rácak kolom. Baris bersimbol
+  // matematika adalah ISI buku, bukan sampah scan.
+  if (RE_SIMBOL_MATIKA.test(t)) return false;
   const huruf = t.replace(/[^a-zA-Z]/g, '');
   if (huruf.length < 3) return false;
   const vokal = (huruf.match(/[aeiouAEIOU]/g) || []).length;
@@ -170,11 +179,19 @@ export function bersihkanOcrTeks(teks, opsi = {}) {
     return { teks: sisa.join('\n').replace(/\n{3,}/g, '\n\n').trim(), catatan };
   }
 
+  // 🔥 2026-10-27 (insiden "rumus tidak seperti buku"): baris DAFTAR tidak
+  // boleh ikut di-reflow. Bullet himpunan/opsi/langkah di naskah sumber
+  // sering berakhir tanpa tanda baca ("A = {x | x < 6, ...}") sehingga
+  // reflow meleminya jadi satu paragraf panjang. Baris yang diawali penanda
+  // daftar, dan baris yang mengikuti penanda daftar, dipertahankan sebagai
+  // barisnya sendiri -- persis tata letak buku.
   const gabung = [];
   for (const baris of sisa) {
     if (baris.trim() === '') { gabung.push(''); continue; }
     const prev = gabung[gabung.length - 1];
-    if (prev !== undefined && prev !== '' && !PUNCAKUS_AKHIR.test(prev.trim())) {
+    const barisDaftar = RE_BARIS_DAFTAR.test(baris.trim());
+    const prevDaftar = prev !== undefined && prev !== undefined && RE_BARIS_DAFTAR.test(prev.trim());
+    if (prev !== undefined && prev !== '' && !PUNCAKUS_AKHIR.test(prev.trim()) && !barisDaftar && !prevDaftar) {
       gabung[gabung.length - 1] = `${prev.trim()} ${baris.trim()}`;
     } else {
       gabung.push(baris);

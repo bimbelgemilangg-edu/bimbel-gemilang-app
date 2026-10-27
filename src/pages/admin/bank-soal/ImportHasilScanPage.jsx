@@ -1536,7 +1536,28 @@ function htmlNodeText(node) {
     const latex = el.getAttribute('data-latex');
     if (latex) el.replaceWith(document.createTextNode(`$${latex}$`));
   });
-  return safeString(clone.textContent).replace(/\s+\n/g, '\n').replace(/\n\s+/g, '\n').trim();
+  // 🔥 2026-10-27 (insiden "rumus tidak seperti buku"): textContent MELUMAT
+  // semua batas elemen, sehingga baris bullet naskah sumber (definisi
+  // himpunan A/B/C, fungsi sepenggal g(y), langkah penyelesaian) terlem jadi
+  // SATU paragraf panjang di preview, layar siswa, dan cetak. Kembalikan
+  // struktur barisnya: <br> jadi ganti baris, dan setiap elemen blok
+  // menyumbang satu ganti baris penutup.
+  clone.querySelectorAll?.('br').forEach(el => el.replaceWith(document.createTextNode('\n')));
+  // Bullet yang ditulis INLINE di sumber ("...90;• g(y) = ...") dipisah jadi
+  // barisnya sendiri supaya tata letaknya seperti daftar di buku.
+  clone.querySelectorAll?.('*').forEach((el) => {
+    if (el.children.length === 0 && el.textContent.includes('•')) {
+      el.textContent = el.textContent.replace(/([^\n])•/g, '$1\n•');
+    }
+  });
+  clone.querySelectorAll?.('li, p, tr, h1, h2, h3, h4, h5, h6, div').forEach((el) => {
+    el.appendChild(document.createTextNode('\n'));
+  });
+  return safeString(clone.textContent)
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n\s+/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 function htmlImageToObject(img, index = 0) {

@@ -31,8 +31,10 @@ class MathSafe extends React.Component {
 
 export function MathText({ text }) {
   if (!text) return null;
+  // pre-line: ganti baris dari naskah sumber (bullet/step buku) tampil
+  // sebagai baris, bukan terlem jadi satu paragraf (insiden 2026-10-27).
   return (
-    <>
+    <span style={{ whiteSpace: 'pre-line' }}>
       {pecahSegmenMatematika(text).map((seg, i) => {
         if (seg.jenis === 'teks') return <React.Fragment key={i}>{seg.isi}</React.Fragment>;
         const math = sumberKaTeX(seg);
@@ -40,7 +42,7 @@ export function MathText({ text }) {
           ? <MathSafe key={i} fallback={seg.isi}><BlockMath math={math} /></MathSafe>
           : <MathSafe key={i} fallback={seg.isi}><InlineMath math={math} /></MathSafe>;
       })}
-    </>
+    </span>
   );
 }
 

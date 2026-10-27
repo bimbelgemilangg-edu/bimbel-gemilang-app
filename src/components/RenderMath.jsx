@@ -29,8 +29,9 @@ export default function RenderMath({ text }) {
   // sehingga $$ multiline lolos sebagai teks mentah di try out. Kini pakai
   // SATU SUMBER utils/segmenMatematika + kebijakan ukuran seragam (layar =
   // kertas).
+  // pre-line: baris buku (bullet/step) tetap baris di try out & latihan
   return (
-    <>
+    <span style={{ whiteSpace: 'pre-line' }}>
       {pecahSegmenMatematika(text).map((seg, i) => {
         if (seg.jenis === 'teks') return <React.Fragment key={i}>{seg.isi}</React.Fragment>;
         const math = sumberKaTeX(seg);
@@ -38,6 +39,6 @@ export default function RenderMath({ text }) {
           ? <BlockMath key={i} math={math} />
           : <InlineMath key={i} math={math} />;
       })}
-    </>
+    </span>
   );
 }
