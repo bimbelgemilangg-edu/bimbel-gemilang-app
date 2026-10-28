@@ -479,10 +479,45 @@ DETEKSI TIPE SOAL (jangan diseragamkan jadi pg_sederhana):
 - Isian angka/singkat → data-tipe="isian_singkat"
 - Menjodohkan → data-tipe="menjodohkan"
 
-TUJUAN: keluarkan SATU dokumen HTML Master yang dapat langsung di-upload ke Bank Soal Gemilang. Jangan keluarkan JSON, Markdown, atau penjelasan di luar HTML.
+TUJUAN: keluarkan SATU dokumen TEMplat BARIS (skema gemilang-baris@1) yang dapat langsung ditempel ke halaman "Periksa Berkas" atau di-upload ke Bank Soal Gemilang. Jangan keluarkan HTML, JSON, Markdown bebas, atau penjelasan di luar templat.
+
+FORMAT KELUARAN WAJIB (templat baris gemilang-baris@1):
+- Baris pertama: SKEMA: gemilang-baris@1
+- Baris paket: JUDUL PAKET: <judul>
+- Setiap soal diawali baris: ##SOAL <nomor>
+- Field per soal ditulis SATU per baris dengan awalan kata kunci berakhiran titik dua: TIPE:, MATERI:, KESULITAN:, KELAS:, KUNCI:, GAMBAR:, TEKS:, OPSI:, PEMBAHASAN:
+- Nilai TEKS:, OPSI:, PEMBAHASAN: ditulis pada baris-baris BERIKUTNYA (boleh lebih dari satu baris; baris bullet dan langkah pembahasan TETAP sebagai baris tersendiri, JANGAN disambung jadi satu paragraf).
+- Setiap opsi ditulis sebagai baris berawalan "- " (satu opsi satu baris; lanjutan opsi ditulis sebagai baris menjorok di bawahnya).
+- LaTeX DITULIS APA ADANYA dengan satu backslash (JANGAN digandakan seperti di JSON): $\\frac{1}{2}$ ditulis sebagai $\frac{1}{2}$ di dalam berkas.
+- Bila soal memuat gambar/grafik/tabel yang tidak bisa kamu sematkan: tulis GAMBAR: ya dan letakkan penanda {{GAMBAR_1}}, {{GAMBAR_2}}, dst. pada posisi gambar di TEKS/OPSI. Sistem akan mengantrikan soal itu untuk dilengkapi admin, BUKAN menolaknya.
+- Bila soal tidak memuat visual: tulis GAMBAR: tidak.
+- TIPE yang diakui: pg_sederhana, pg_kompleks, benar_salah, pg_kategori, menjodohkan, isian_singkat, numerik, uraian.
+- KUNCI: huruf opsi (mis. A atau A,C untuk pg_kompleks) atau nilai untuk isian/uraian.
+
+CONTOH BENTUK (garis pemisah hanya ilustrasi, jangan ditulis):
+---
+SKEMA: gemilang-baris@1
+JUDUL PAKET: TO Matriks SMA
+##SOAL 1
+TIPE: pg_sederhana
+MATERI: Matriks
+KESULITAN: sedang
+KELAS: 12 SMA
+KUNCI: A
+GAMBAR: tidak
+TEKS:
+Diketahui matriks $A=\\begin{pmatrix} -1 & 2 \\ 3 & 4 \\end{pmatrix}$. Invers dari $A$ adalah ....
+OPSI:
+- $\\begin{pmatrix} -2 & 3 \\ 1 & -1 \\end{pmatrix}$
+- $\\begin{pmatrix} 2 & -3 \\ -1 & 1 \\end{pmatrix}$
+PEMBAHASAN:
+$\\det(A)=-11$.
+Tukar elemen diagonal, negasikan elemen luar diagonal.
+Jawaban: A
+---
 Kualitas produksi: pihak ketiga AI HARUS menjaga nomor berurutan, opsi lengkap, kunci + pembahasan, dan identitas (materi, kesulitan) per soal agar try out otomatis bisa memfilter mapel/jenjang/kelompok dengan benar.
 
-ATURAN WAJIB:
+ATURAN ISI (berlaku untuk SEMUA field pada templat; aturan struktur HTML di bawahnya hanya FALLBACK bila penerima menyatakan tidak mendukung templat baris):
 1. Setiap soal wajib berada di <article data-gemilang-question data-nomor="1" data-tipe="pg_sederhana" data-paket="1">.
 2. Pertanyaan utama berada di <div data-field="teks_soal">...</div>.
 3. Gambar/grafik/diagram berada di <div data-field="gambar"><img src="data:image/png;base64,..." alt="..." /></div>. Kalau kamu bisa mengisolasi persis gambar/grafik/diagram soal itu saja, embed itu. KALAU TIDAK BISA mengisolasi dengan presisi (mis. grafik menyatu dengan teks di layout PDF), JANGAN dilewatkan/dikosongkan begitu saja -- sertakan screenshot SATU HALAMAN PENUH tempat gambar itu berada sebagai fallback, dan tulis di alt/deskripsi: "Perlu di-crop admin, gambar asli ada di halaman ini". Sistem punya fitur crop bawaan (drag-pilih area), jadi admin bisa memotong sendiri dari screenshot halaman penuh itu -- jangan pernah mengarang gambar atau URL yang tidak benar-benar ada. WAJIB: atribut src ditulis POLOS apa adanya (contoh: src="https://contoh.org/g.png" atau src="data:image/png;base64,...") -- DILARANG membungkus alamat dengan kurung siku/kurung bundar gaya tautan markdown seperti src="[url](url)", karena browser tidak bisa memuat alamat yang terbungkus dan gambar akan terlihat rusak/palsu di halaman impor.
