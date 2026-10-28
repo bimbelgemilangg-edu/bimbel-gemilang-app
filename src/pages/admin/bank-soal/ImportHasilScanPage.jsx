@@ -104,6 +104,7 @@ import { periksaLatexSoal } from '../../../utils/validasiLatex';
 // opsi gambar hilang, rujukan visual hilang, dll. ditolak SAAT IMPOR, bukan
 // dibiarkan tersimpan lalu membingungkan di kertas/layar siswa.
 import { alasanKelayakan } from '../../../utils/kelayakanSoal';
+import { looksLikeTemplatBaris, parseTemplatBaris } from '../../../utils/templatBaris';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
 import { bacaKualitas, pesanKualitas } from '../../../utils/kualitasButir';
@@ -939,7 +940,14 @@ function isiUlangBacaanSegrup(daftarSoal) {
   });
 }
 
-function normalizeSoal(qMasuk, idx) {
+// 🔥 2026-10-28: diekspor supaya halaman /admin/bank-soal/periksa memakai
+// normalisasi+validasi yang IDENTIK dengan impor (satu sumber kebenaran).
+// Disable beralasan (preseden repo: no-control-regex): memindah normalizeSoal
+// ke modul sendiri berarti memindah pula puluhan helper lokalnya dalam satu
+// langkah berisiko; nilai berbagi satu mesin validasi lebih besar daripada
+// kerapihan fast-refresh di halaman admin yang tidak pernah di-HMR-kan siswa.
+// eslint-disable-next-line react-refresh/only-export-components
+export function normalizeSoal(qMasuk, idx) {
   // 🔥 BARU (2026-10-11): lepas artefak scan DULU, sebelum validasi sinyal,
   // deteksi duplikat, dan penulisan field -- supaya penanda kolom pemindai,
   // watermark berkas, dan nomor urut kolom sebelah tidak ikut tersimpan ke
@@ -1381,8 +1389,25 @@ function normalizeSoal(qMasuk, idx) {
     if (r === 'teks soal kosong' && errors.some((e) => String(e).includes('Teks soal kosong'))) return false;
     return true;
   });
-  if (alasanKelayakanButir.length) {
-    errors.push('TIDAK LAYAK TAMPIL: ' + alasanKelayakanButir.join('; ') + '.');
+  // 🔥 2026-10-28 (keputusan owner: penolakan tidak boleh jadi jalan buntu):
+  // bila SATU-SATUNYA cacat adalah visual yang tidak terbawa, dan butirnya
+  // MEMANG mendeklarasikan butuh gambar (GAMBAR: ya atau placeholder
+  // {{GAMBAR_n}}), butir tidak ditolak -- ia masuk ANTREAN "menunggu
+  // gambar": tersimpan dengan flag perluGambar, dikeluarkan dari penerbitan
+  // sampai admin melampirkan gambarnya lewat UI kelola gambar.
+  const alasanVisual = alasanKelayakanButir.filter((r) => /menunjuk gambar|visual|opsi bermakna hanya 0/.test(r));
+  const alasanNonVisual = alasanKelayakanButir.filter((r) => !alasanVisual.includes(r));
+  const mendeklarasikanGambar = Boolean(q.butuhGambar) || /\{\{\s*GAMBAR/.test(teksSoal);
+  const perluGambar = alasanVisual.length > 0 && mendeklarasikanGambar && alasanNonVisual.length === 0;
+  if (perluGambar) {
+    peringatanLunak.push(
+      'MENUNGGU GAMBAR: butir ini mendeklarasikan visual yang belum terbawa. '
+      + 'Disimpan sebagai draf berflag perluGambar dan TIDAK bisa diterbitkan '
+      + 'sampai gambar dilampirkan lewat panel Kelola Gambar.',
+    );
+  }
+  if (alasanNonVisual.length) {
+    errors.push('TIDAK LAYAK TAMPIL: ' + alasanNonVisual.join('; ') + '.');
   }
 
   if (masalahLatex.length) {
@@ -1455,6 +1480,7 @@ function normalizeSoal(qMasuk, idx) {
       return DAFTAR_MAPEL.includes(rawMapel) ? rawMapel : '';
     })(),
     valid: errors.length === 0,
+    perluGambar: Boolean(perluGambar),
     errors,
     // 🔥 BARU: peringatan yang TIDAK menghalangi penyimpanan -- beda
     // dari `errors` yang bikin soal invalid. Ditampilkan ke admin biar
@@ -4028,11 +4054,22 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
     }
 
     try {
-      const raw =
-        activeFormat === 'json' ? parseJSON(content)
-        : activeFormat === 'html' ? parseHTMLMaster(content)
-        : activeFormat === 'tex' ? parseTeX(content)
-        : parseCSV(content);
+      // 🔥 2026-10-28: KONTRAK RESMI pihak ketiga kini templat baris
+    // (gemilang-baris@1). Dideteksi dari ISI berkas sebelum format apa pun,
+    // sebab berkasnya sering ber-ekstensi .txt/.md dan dulu jatuh ke jalur
+    // JSON lalu gagal dengan pesan yang menyesatkan.
+    const raw = looksLikeTemplatBaris(content)
+      ? (() => {
+        const t = parseTemplatBaris(content);
+        if (t.errors.length) {
+          throw new Error('Templat baris belum valid:\n' + t.errors.slice(0, 12).map((e) => `baris ${e.baris}: ${e.pesan}`).join('\n'));
+        }
+        return t.soal;
+      })()
+      : activeFormat === 'json' ? parseJSON(content)
+      : activeFormat === 'html' ? parseHTMLMaster(content)
+      : activeFormat === 'tex' ? parseTeX(content)
+      : parseCSV(content);
 
       // 🔥 BARU: ekstrak rangkuman materi (kalau ada) -- terpisah total
       // dari parsing soal di atas, gak akan pernah bikin proses soal
@@ -5094,6 +5131,13 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                   <div>
                     <h2 style={{ fontWeight: '700', color: '#1f2937', fontSize: '18px' }}>Preview — {soalList.length} soal</h2>
+                    <button
+                      type="button"
+                      onClick={() => { window.location.hash = '#/admin/bank-soal/periksa'; }}
+                      style={{ marginLeft: 10, padding: '6px 10px', borderRadius: 8, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      🔍 Periksa berkas pihak ketiga
+                    </button>
                     <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
                       {adaPengelompokan
                         ? `Dikelompokkan otomatis menjadi ${groupedByPaket.length} paket. Gambar/tabel/grafik opsi ditampilkan apa adanya.`

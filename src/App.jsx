@@ -109,6 +109,7 @@ import ManageSurvey from './pages/admin/portal-siswa/ManageSurvey';
 // 🔥 BARU: Manajer Buku Digital (CRUD buku + bab, paste JSON, validasi)
 import ManajerBuku from './pages/admin/buku/ManajerBuku';
 import ImporBukuHtmlPage from './pages/admin/buku/ImporBukuHtmlPage';
+import PeriksaBerkasPage from './pages/admin/bank-soal/PeriksaBerkasPage';
 import PratinjauBukuAdmin from './pages/admin/buku/PratinjauBukuAdmin';
 // 🔥 v5: Impor Modul massal (banyak PDF sekaligus -> bab terbit otomatis)
 import ImporModul from './pages/admin/buku/ImporModul';
@@ -727,7 +728,8 @@ function App() {
           path="/admin/bank-soal/tryout-otomatis"
           element={<AdminRoute><JadwalTryOutOtomatisPage /></AdminRoute>}
         />
-        <Route
+                <Route path="/admin/bank-soal/periksa" element={<AdminRoute><PeriksaBerkasPage /></AdminRoute>} />
+<Route
           path="/admin/bank-soal/import"
           element={<AdminRoute><ImportHasilScanPage /></AdminRoute>}
         />

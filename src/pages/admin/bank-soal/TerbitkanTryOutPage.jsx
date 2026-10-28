@@ -913,7 +913,23 @@ export default function TerbitkanTryOutPage() {
       return alert('Deadline harus SETELAH waktu buka.');
     }
 
-    const soalDipilih = Array.from(keranjang.values());
+    const soalDipilihSemua = Array.from(keranjang.values());
+    // 🔥 2026-10-28: butir berflag perluGambar adalah ANTREAN lengkapi, bukan
+    // konten siap uji -- menerbitkannya berarti menerbitkan soal yang tidak
+    // bisa dijawab siswa.
+    const tertahanGambar = soalDipilihSemua.filter((x) => x.perluGambar);
+    if (tertahanGambar.length) {
+      alert(
+        `⏸️ ${tertahanGambar.length} soal di keranjang masih MENUNGGU GAMBAR dan `
+        + 'otomatis dikeluarkan dari paket ini. Lampirkan gambarnya lewat '
+        + 'Bank Soal dulu, lalu terbitkan ulang.',
+      );
+    }
+    const soalDipilih = soalDipilihSemua.filter((x) => !x.perluGambar);
+    if (!soalDipilih.length) {
+      setMenerbitkan(false);
+      return;
+    }
 
     setMenerbitkan(true);
     setHasil(null);
@@ -1537,7 +1553,7 @@ export default function TerbitkanTryOutPage() {
                   // sebelum maupun tanpa menerbitkan -- struktur subtes diambil
                   // dari rumus yang SAMA dengan tombol Terbitkan supaya yang
                   // dilihat di pratinjau cetak = yang akan diterima siswa.
-                  const soalDipilih = Array.from(keranjang.values());
+                  const soalDipilih = Array.from(keranjang.values()).filter((x) => !x.perluGambar);
                   setCetakInput({
                     judul: judulTryOut.trim() || 'Naskah Soal (belum diterbitkan)',
                     targetKelas,
