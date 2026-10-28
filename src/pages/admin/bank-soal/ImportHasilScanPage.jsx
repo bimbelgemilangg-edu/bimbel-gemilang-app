@@ -100,6 +100,10 @@ import { pesanSalahPintu, URL_PINTU_SCAN } from '../../../utils/kenaliDialekImpo
 // 🔥 2026-10-23 (keputusan owner): gerbang STANDAR SINTAKS LATEX. Sistem
 // MENOLAK keluaran yang melanggar template prompt, bukan menambalnya.
 import { periksaLatexSoal } from '../../../utils/validasiLatex';
+// 🔥 2026-10-28 (insiden naskah TKA Mat Lanjut): gerbang kelayakan butir --
+// opsi gambar hilang, rujukan visual hilang, dll. ditolak SAAT IMPOR, bukan
+// dibiarkan tersimpan lalu membingungkan di kertas/layar siswa.
+import { alasanKelayakan } from '../../../utils/kelayakanSoal';
 import { pesanPembahasanTertukar } from '../../../utils/kodeSumberSoal';
 import { deteksiAsalPembahasan } from '../../../utils/asalPembahasan';
 import { bacaKualitas, pesanKualitas } from '../../../utils/kualitasButir';
@@ -1356,6 +1360,31 @@ function normalizeSoal(qMasuk, idx) {
     pembahasan: pembahasanMentah,
     bacaan: bacaan && bacaan.teks ? bacaan.teks : '',
   });
+  // ----------------------------------------------------------
+  // 🔥 GERBANG KELAYAKAN (2026-10-28): butir yang cacat objektif (opsi
+  // kosong karena gambar tak terbawa, teks menunjuk visual yang tidak ada,
+  // opsi kembar identik, LaTeX tak terrender, pembahasan kosong) DITOLAK
+  // dengan alasan yang bisa diteruskan ke pihak ketiga lewat tombol
+  // "Buat prompt perbaikan". Alasan yang sudah diwakili pesan validasi
+  // lain disaring supaya tidak berisik dua kali.
+  // ----------------------------------------------------------
+  const alasanKelayakanButir = alasanKelayakan({
+    tipe,
+    teks_soal: teksSoal,
+    opsi_jawaban: opsiJawaban,
+    kunci_jawaban: kunciJawaban,
+    pembahasan: pembahasanMentah,
+    gambar,
+    tabel_soal: q.tabel_soal || q.tabelSoal,
+  }).filter((r) => {
+    if (/opsi bermakna hanya/.test(r) && errors.some((e) => String(e).includes('kurang dari 2'))) return false;
+    if (r === 'teks soal kosong' && errors.some((e) => String(e).includes('Teks soal kosong'))) return false;
+    return true;
+  });
+  if (alasanKelayakanButir.length) {
+    errors.push('TIDAK LAYAK TAMPIL: ' + alasanKelayakanButir.join('; ') + '.');
+  }
+
   if (masalahLatex.length) {
     const rincian = masalahLatex
       .slice(0, 3)
