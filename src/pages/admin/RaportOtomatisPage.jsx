@@ -10,6 +10,14 @@
 // `raport_final`, id dokumen deterministik = idempoten) → backfill
 // Agu–Okt 2026 sekali jalan untuk laporan besar.
 //
+// 🔥 FASE 2 (21 Okt 2026): CETAK PDF per siswa & massal per jenjang/kelas
+// lewat engine cetak yang sudah distabilkan (cetakLewatIframe — font siap,
+// gambar ter-decode, @page A4). HTML dibangun utils/raportCetak.js (murni,
+// teruji tests/raportCetak.test.mjs) dari dokumen yang sama persis dengan
+// yang diterbitkan (bangunDokumenRaport) — yang dilihat = yang dicetak =
+// yang tersimpan. Catatan guru (raport_catatan_guru, opsional) ikut
+// tercetak pada cetak tunggal; cetak massal tanpa catatan (disebut di sampul).
+//
 // KEPUTUSAN PENTING:
 //   - Semua perhitungan ada di src/utils/raportOtomatis.js (MURNI +
 //     teruji tests/raportOtomatis.test.mjs). Halaman ini hanya memuat
@@ -33,6 +41,9 @@ import {
   hitungRaportSemuaSiswa, rentangPeriode, bangunDokumenRaport,
   bolehTimpaRaportFinal, VERSI_MESIN, MAPEL_PROSES,
 } from '../../utils/raportOtomatis';
+import { htmlRaportSiswa, htmlRaportMassal, judulCetakRaport } from '../../utils/raportCetak';
+import { cetakLewatIframe } from '../../utils/kwitansi';
+import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { catatAudit, KATEGORI } from '../../utils/auditLog';
 
 const gayaKartu = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 };
@@ -308,6 +319,87 @@ export default function RaportOtomatisPage() {
     }
   }, [mentah, jenjang, kelas, paksa, tulisSatuPeriode]);
 
+  // ---------------- CETAK PDF (Fase 2) ----------------
+  // Catatan guru opsional (raport_catatan_guru) digabung ke cetakan tunggal.
+  // Query equality-only (studentId + periode) → tidak butuh composite index.
+  const ambilCatatanGuru = useCallback(async (studentId, periode) => {
+    try {
+      const snap = await getDocs(query(
+        collection(db, RAPORT_COLLECTIONS.CATATAN_GURU),
+        where('studentId', '==', studentId),
+        where('periode', '==', periode),
+      ));
+      return snap.docs
+        .map((d) => {
+          const x = d.data();
+          const isi = String(x.catatan || '').trim();
+          return isi ? `${x.mapel || 'Umum'}: ${isi}` : '';
+        })
+        .filter(Boolean)
+        .join('\n');
+    } catch {
+      return ''; // catatan guru opsional — gagal baca tidak boleh memblokir cetakan
+    }
+  }, []);
+
+  const cetakSatu = useCallback(async (r) => {
+    try {
+      // Dokumen cetak = dokumen terbit (bangunDokumenRaport) — satu kebenaran.
+      const { docsAkademik, dokProses } = bangunDokumenRaport(r);
+      const catatan = await ambilCatatanGuru(r.studentId, r.periode);
+      cetakLewatIframe(
+        htmlRaportSiswa({
+          dokAkademik: docsAkademik.map((d) => d.data),
+          dokProses: dokProses.data,
+          catatanGuru: catatan,
+          identitas: { jenjang: r.jenjang },
+        }),
+        judulCetakRaport({ nama: r.studentName, periode: r.periode }),
+      );
+      catatAudit('raport.cetak', {
+        kategori: KATEGORI.SISWA,
+        target: `Cetak raport ${r.studentName} — ${r.periode}`,
+        detail: { studentId: r.studentId, periode: r.periode, mode: 'tunggal', versiMesin: VERSI_MESIN, catatanGuruDisertakan: catatan.length > 0 },
+      });
+    } catch (e) {
+      alert(`Gagal menyiapkan cetakan: ${e?.message || e}`);
+    }
+  }, [ambilCatatanGuru]);
+
+  const cetakSemua = useCallback(() => {
+    if (!hasil) return;
+    const daftar = hasil.siswa;
+    if (!daftar.length) { alert('Tidak ada siswa pada pratinjau ini.'); return; }
+    if (daftar.length > 40 && !window.confirm(
+      `Cetak massal ${daftar.length} siswa menghasilkan SATU dokumen panjang (± ${daftar.length + 1} halaman lebih). Lanjutkan?`,
+    )) return;
+    try {
+      const payload = daftar.map((r) => {
+        const { docsAkademik, dokProses } = bangunDokumenRaport(r);
+        return {
+          dokAkademik: docsAkademik.map((d) => d.data),
+          dokProses: dokProses.data,
+          identitas: { jenjang: r.jenjang },
+        };
+      });
+      cetakLewatIframe(
+        htmlRaportMassal({
+          daftar: payload,
+          judul: `Rapor ${jenjang === 'Semua' ? 'Semua Jenjang' : jenjang}${kelas !== 'Semua' ? ` — Kelas ${kelas}` : ''}`,
+          periodeLabel: hasil.periode.label,
+        }),
+        `Rapor massal ${hasil.periode.label}`,
+      );
+      catatAudit('raport.cetak', {
+        kategori: KATEGORI.SISWA,
+        target: `Cetak massal raport ${hasil.periode.label} — ${jenjang}${kelas !== 'Semua' ? ` kelas ${kelas}` : ''}`,
+        detail: { periode: hasil.periode.label, mode: 'massal', jumlahSiswa: daftar.length, jenjang, kelas, versiMesin: VERSI_MESIN },
+      });
+    } catch (e) {
+      alert(`Gagal menyiapkan cetakan massal: ${e?.message || e}`);
+    }
+  }, [hasil, jenjang, kelas]);
+
   // ---------------- RENDER ----------------
   const h = hasil;
   const detail = h && dibuka ? h.siswa.find((x) => x.studentId === dibuka) : null;
@@ -375,9 +467,14 @@ export default function RaportOtomatisPage() {
           <div style={{ ...gayaKartu, marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
               <b style={{ fontSize: 14 }}>Pratinjau periode {h.periode.label}</b>
-              <span style={{ fontSize: 11.5, color: '#475569' }}>
-                {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} layak terbit penuh · {h.ringkasan.belumCukup} data belum cukup · {h.ringkasan.totalPelanggaran} catatan pengawasan
-              </span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 11.5, color: '#475569' }}>
+                  {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} layak terbit penuh · {h.ringkasan.belumCukup} data belum cukup · {h.ringkasan.totalPelanggaran} catatan pengawasan
+                </span>
+                <button type="button" onClick={cetakSemua} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#4338ca', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
+                  🖨️ Cetak PDF Semua ({h.ringkasan.totalSiswa} siswa)
+                </button>
+              </div>
             </div>
             {h.ringkasan.logTakDikenal && Object.values(h.ringkasan.logTakDikenal).some((n) => n > 0) && (
               <div style={{ fontSize: 11.5, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
@@ -432,8 +529,15 @@ export default function RaportOtomatisPage() {
         {/* ============ DETAIL SISWA ============ */}
         {detail && (
           <div style={{ ...gayaKartu, marginBottom: 14, borderColor: '#c7d2fe' }}>
-            <b style={{ fontSize: 14 }}>Rincian {detail.studentName}</b>
-            <span style={{ color: '#64748b', fontSize: 11.5 }}> — {detail.studentKelas} {detail.jenjang} · periode {detail.periode}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
+              <div>
+                <b style={{ fontSize: 14 }}>Rincian {detail.studentName}</b>
+                <span style={{ color: '#64748b', fontSize: 11.5 }}> — {detail.studentKelas} {detail.jenjang} · periode {detail.periode}</span>
+              </div>
+              <button type="button" onClick={() => cetakSatu(detail)} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#4338ca', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                🖨️ Cetak PDF Siswa Ini
+              </button>
+            </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 700, margin: '12px 0 4px' }}>Blok A — Akademik per mapel</div>
             {detail.akademik.perMapel.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8' }}>Tidak ada aktivitas akademik terdeteksi pada periode ini.</div>}
@@ -634,7 +738,8 @@ export default function RaportOtomatisPage() {
         <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 20 }}>
           Keterbatasan jujur v1: ketepatan waktu belum terukur (timestamp absensi = waktu guru mencatat); rasio tugas vs terbit menunggu
           daftar tugas terbit per periode; akurasi latihan = akumulasi log Leitner. Semua komponen yang belum terukur TIDAK dinolkan —
-          bobotnya diredistribusi dan keterangannya tampil di dokumen. Unduh PDF per siswa/jenjang = Fase 2.
+          bobotnya diredistribusi dan keterangannya tampil di dokumen. Cetak PDF per siswa (tombol di rincian) & massal per jenjang/kelas
+          (tombol di pratinjau) memakai engine cetak yang sudah distabilkan — simpan sebagai PDF dari dialog cetak browser.
         </div>
       </div>
     </div>

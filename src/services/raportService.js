@@ -442,6 +442,10 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
   
   for (const student of students) {
     const scores = { kuis: [], tugas: [], ujian: [] };
+    // 🔥 Fase 2 (pensiun dimensi palsu): label jujur asal angka dimensi ikut
+    // naik ke raport_final supaya UI siswa bisa menandainya. Hanya bila SEMUA
+    // sumbernya konversi satu nilai — campuran berarti sebagian terukur.
+    const sumberDimensi = new Set();
     
     let scoresQuery = query(
       collection(db, RAPORT_COLLECTIONS.SCORES),
@@ -462,6 +466,7 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
     
     scoresSnap.forEach(doc => {
       const data = doc.data();
+      if (data.dimensiSumber) sumberDimensi.add(data.dimensiSumber);
       if (data.komponen && scores[data.komponen] !== undefined) {
         // Ambil data dimensi dari dokumen
         scores[data.komponen].push(data.dimensi || {
@@ -519,6 +524,11 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
       catatan_guru: catatanGuru?.catatan || null,
       updatedAt: serverTimestamp()
     };
+    // Label jujur asal dimensi (lihat komentar di atas) — dipakai
+    // StudentSmartReport untuk menandai dimensi hasil konversi.
+    if (sumberDimensi.size > 0 && [...sumberDimensi].every((s) => s === 'konversi-nilai-tunggal')) {
+      finalData.dimensiSumber = 'konversi-nilai-tunggal';
+    }
     
     let existingQuery = query(
       collection(db, RAPORT_COLLECTIONS.FINAL),

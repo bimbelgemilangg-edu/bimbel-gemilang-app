@@ -39,6 +39,14 @@
         { "fieldPath": "studentId", "order": "ASCENDING" },
         { "fieldPath": "updatedAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "raport_final",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "studentId", "order": "ASCENDING" },
+        { "fieldPath": "periode", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

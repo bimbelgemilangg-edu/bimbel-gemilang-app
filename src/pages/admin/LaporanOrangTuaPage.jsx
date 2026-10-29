@@ -17,15 +17,25 @@
 //
 // BACA-SAJA terhadap Firestore; satu-satunya keluaran adalah jendela
 // cetak browser (PDF rapi berlogo Gemilang via dialog print).
+//
+// 🔥 FASE 2 RAPORT OTOMATIS (21 Okt 2026): halaman ini kini juga membaca
+// snapshot TERBIT (raport_final sumber:'otomatis') dan menyediakan cetak
+// PDF raport otomatis per siswa (periode bulanan / laporan besar) lewat
+// engine cetak yang sudah distabilkan — HTML dibangun utils/raportCetak.js
+// (murni + teruji). Menerbitkan snapshot tetap di /admin/raport; halaman
+// ini tidak menulis apa pun.
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SidebarAdmin from '../../components/SidebarAdmin';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { hitungTrenMingguan, kalimatDelta, targetPoinDariSiswa } from '../../utils/trenMingguan';
 import { kodePaketTampil } from '../../utils/kodePaket';
 import { WATERMARK } from '../../utils/fieldButirSoal';
+import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
+import { kelompokDokOtomatis, htmlRaportSiswa, judulCetakRaport } from '../../utils/raportCetak';
+import { cetakLewatIframe } from '../../utils/kwitansi';
 
 const gayaKartu = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 };
 const fmtTgl = (t) => (t ? new Date(t).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
@@ -42,6 +52,8 @@ export default function LaporanOrangTuaPage() {
   const [siswa, setSiswa] = useState([]);
   const [sesiPerSiswa, setSesiPerSiswa] = useState({});
   const [paketPerId, setPaketPerId] = useState({});
+  // 🔥 Fase 2: snapshot raport otomatis TERBIT per siswa (baca-saja).
+  const [rapotPerSiswa, setRapotPerSiswa] = useState({});
   const [statusMuat, setStatusMuat] = useState('');
   const [pilih, setPilih] = useState('');
   const [catatan, setCatatan] = useState('');
@@ -50,10 +62,12 @@ export default function LaporanOrangTuaPage() {
   const muat = useCallback(async () => {
     setStatusMuat('memuat…');
     try {
-      const [snapS, snapSesi, snapP] = await Promise.all([
+      const [snapS, snapSesi, snapP, snapR] = await Promise.all([
         getDocs(collection(db, 'students')),
         getDocs(collection(db, 'tryout_sesi')),
         getDocs(collection(db, 'tryout_paket')),
+        // equality-only (sumber) → tanpa composite index; dokumen otomatis kecil.
+        getDocs(query(collection(db, RAPORT_COLLECTIONS.FINAL), where('sumber', '==', 'otomatis'))),
       ]);
       setSiswa(snapS.docs.map((d) => ({ id: d.id, ...d.data() })));
       const per = {};
@@ -64,7 +78,18 @@ export default function LaporanOrangTuaPage() {
       });
       setSesiPerSiswa(per);
       setPaketPerId(Object.fromEntries(snapP.docs.map((d) => [d.id, { id: d.id, ...d.data() }])));
-      setStatusMuat(`${snapS.size} siswa · ${snapSesi.size} sesi · ${snapP.size} paket`);
+      // Kelompokkan snapshot otomatis per siswa → daftar periode terbit.
+      const dokPer = {};
+      snapR.forEach((d) => {
+        const x = { id: d.id, ...d.data() };
+        const k = String(x.studentId || '');
+        if (!k) return;
+        (dokPer[k] = dokPer[k] || []).push(x);
+      });
+      setRapotPerSiswa(Object.fromEntries(
+        Object.entries(dokPer).map(([k, docs]) => [k, kelompokDokOtomatis(docs)]),
+      ));
+      setStatusMuat(`${snapS.size} siswa · ${snapSesi.size} sesi · ${snapP.size} paket · ${snapR.size} dokumen raport otomatis`);
     } catch (e) {
       setStatusMuat(`Gagal memuat: ${e?.message || e}`);
     }
@@ -83,10 +108,29 @@ export default function LaporanOrangTuaPage() {
       mapel: paketPerId[x.paketId]?.judul || '',
     })));
     const sabtu = sesi.filter((x) => (tanggalDari(x.updatedAt || x.waktuSelesai || x.createdAt)?.getDay() === 6)).length;
-    return { s, sesi, tren, sabtu };
-  }).sort((a, b) => String(a.s.nama || a.s.name || '').localeCompare(String(b.s.nama || b.s.name || ''))), [siswa, sesiPerSiswa, paketPerId]);
+    // kunci identitas sama dengan mesin raport (studentId || docId)
+    const rapot = rapotPerSiswa[s.studentId || s.id] || [];
+    return { s, sesi, tren, sabtu, rapot };
+  }).sort((a, b) => String(a.s.nama || a.s.name || '').localeCompare(String(b.s.nama || b.s.name || ''))), [siswa, sesiPerSiswa, paketPerId, rapotPerSiswa]);
 
   const terpilih = baris.find((b) => b.s.id === pilih) || null;
+
+  // 🔥 Fase 2: cetak PDF raport otomatis TERBIT (snapshot terkunci) — engine
+  // cetak sama dengan kwitansi/naskah (font siap, gambar ter-decode, A4).
+  // Catatan tentor di bawah (hidup hanya di cetakan) ikut sebagai catatan guru.
+  const cetakRapotOtomatis = useCallback((entri) => {
+    if (!terpilih || !entri) return;
+    const nama = terpilih.s.nama || terpilih.s.name || entri.studentName || 'Siswa';
+    cetakLewatIframe(
+      htmlRaportSiswa({
+        dokAkademik: entri.akademik,
+        dokProses: entri.proses,
+        catatanGuru: catatan,
+        identitas: { jenjang: String(terpilih.s.jenjang || '') },
+      }),
+      judulCetakRaport({ nama, periode: entri.periode }),
+    );
+  }, [terpilih, catatan]);
 
   const cetak = () => {
     if (!terpilih) return;
@@ -157,7 +201,7 @@ ${sesi.map((x) => { const p = paketPerId[x.paketId]; const t = tanggalDari(x.upd
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 760 }}>
             <thead>
               <tr style={{ background: '#f8fafc', color: '#475569', textAlign: 'left' }}>
-                {['Siswa', 'Kelas', 'Try out', 'Hadir Sabtu', 'Rata pekan ini', 'Delta', ''].map((h) => (
+                {['Siswa', 'Kelas', 'Try out', 'Hadir Sabtu', 'Rata pekan ini', 'Delta', 'Rapot otomatis', ''].map((h) => (
                   <th key={h} style={{ padding: '8px 10px', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
@@ -173,13 +217,48 @@ ${sesi.map((x) => { const p = paketPerId[x.paketId]; const t = tanggalDari(x.upd
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', fontWeight: 800, color: (b.tren.terakhir?.delta || 0) > 0 ? '#16a34a' : (b.tren.terakhir?.delta || 0) < 0 ? '#dc2626' : '#64748b' }}>
                     {b.tren.terakhir?.delta == null ? '—' : `${b.tren.terakhir.delta > 0 ? '+' : ''}${b.tren.terakhir.delta}`}
                   </td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9', fontSize: 11, color: b.rapot.length ? '#4338ca' : '#94a3b8', fontWeight: b.rapot.length ? 700 : 400, whiteSpace: 'nowrap' }}>
+                    {b.rapot.length ? `📊 ${b.rapot.length} periode` : '—'}
+                  </td>
                   <td style={{ padding: '8px 10px', borderBottom: '1px solid #f1f5f9' }}>{pilih === b.s.id ? '✔' : ''}</td>
                 </tr>
               ))}
-              {baris.length === 0 && <tr><td colSpan={7} style={{ padding: 20, textAlign: 'center', color: '#94a3b8' }}>Belum ada data siswa.</td></tr>}
+              {baris.length === 0 && <tr><td colSpan={8} style={{ padding: 20, textAlign: 'center', color: '#94a3b8' }}>Belum ada data siswa.</td></tr>}
             </tbody>
           </table>
         </div>
+
+        {terpilih && (
+          <div style={{ ...gayaKartu, marginBottom: 12, borderColor: '#c7d2fe' }}>
+            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>
+              📊 Rapor Otomatis terbit — {terpilih.s.nama || terpilih.s.studentId}
+            </div>
+            {terpilih.rapot.length === 0 ? (
+              <div style={{ fontSize: 11.5, color: '#94a3b8' }}>
+                Belum ada snapshot rapor otomatis yang terbit untuk siswa ini. Terbitkan lebih dulu di halaman <b>/admin/raport</b> (Hitung Pratinjau → Terbitkan).
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize: 11.5, color: '#475569', marginBottom: 8 }}>
+                  Snapshot terkunci & tertelusur ke log aktivitas (mesin raport otomatis). Catatan tentor di bawah — bila diisi — ikut tercetak sebagai catatan guru.
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {terpilih.rapot.map((entri) => (
+                    <div key={entri.periode} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px', background: '#f8fafc' }}>
+                      <div style={{ fontSize: 12, fontWeight: 800 }}>{entri.labelManusiawi}{entri.terkunci ? ' 🔒' : ''}</div>
+                      <div style={{ fontSize: 10.5, color: '#64748b', marginBottom: 6 }}>
+                        {entri.akademik.length} mapel · proses {entri.proses && Number.isFinite(entri.proses.nilai_akhir) ? entri.proses.nilai_akhir : '—'}
+                      </div>
+                      <button onClick={() => cetakRapotOtomatis(entri)} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#4338ca', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>
+                        🖨️ PDF rapor
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {terpilih && (
           <div style={gayaKartu}>
@@ -188,7 +267,7 @@ ${sesi.map((x) => { const p = paketPerId[x.paketId]; const t = tanggalDari(x.upd
             </div>
             <textarea value={catatan} onChange={(e) => setCatatan(e.target.value)} rows={4} placeholder="Mis.: Ananda konsisten naik 3 pekan berturut-turut; fokus bulan ini pada Penalaran Matematika…" style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 12.5 }} />
             <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-              <button onClick={cetak} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: '#0e7490', color: '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>🖨️ Cetak / PDF laporan</button>
+              <button onClick={cetak} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: '#0e7490', color: '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>🖨️ Cetak / PDF laporan pekanan</button>
               <button onClick={() => { setPilih(''); setCatatan(''); }} style={{ padding: '10px 16px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>Batal</button>
             </div>
           </div>

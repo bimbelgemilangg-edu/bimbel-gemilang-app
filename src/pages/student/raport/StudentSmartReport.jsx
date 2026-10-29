@@ -6,6 +6,11 @@ import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { RAPORT_COLLECTIONS, DIMENSI_CONFIG, DIMENSI_KEYS } from '../../../firebase/raportCollection';
 import { getRelativeLeaderboard, getRankingGabungan } from '../../../services/raportService';
 import RelativeLeaderboard from '../../../components/raport/RelativeLeaderboard';
+// 🔥 Fase 2 raport otomatis (21 Okt 2026): snapshot terbitan mesin
+// (sumber:'otomatis' + blok:'proses') kini DIPERLIHATKAN ke siswa lewat
+// komponen khusus yang jujur terhadap null ("belum terukur", bukan 0).
+import RapotOtomatisSiswa from '../../../components/raport/RapotOtomatisSiswa';
+import { kelompokDokOtomatis } from '../../../utils/raportCetak';
 import { 
   FileText, Award, Calendar, Target, ChevronDown, ChevronUp, 
   Brain, Lightbulb, Clock, Zap, Trophy, ArrowLeft, Star, MessageSquare 
@@ -14,6 +19,8 @@ import {
 const StudentSmartReport = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
+  // Snapshot otomatis TERBIT, dikelompokkan per periode (utils/raportCetak).
+  const [grupOtomatis, setGrupOtomatis] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriode, setSelectedPeriode] = useState(null);
   const [selectedMapel, setSelectedMapel] = useState('Semua');
@@ -57,16 +64,15 @@ const StudentSmartReport = () => {
         orderBy("periode", "desc")
       );
       const snap = await getDocs(q);
-      // 🔥 Fase 1 Raport Otomatis (21 Okt 2026): snapshot terbitan mesin
-      // (sumber:'otomatis', termasuk blok:'proses') BELUM ditampilkan di
-      // layar ini — UI lama merender dimensi yang belum terukur (null)
-      // sebagai angka 0, dan itu klaim palsu. Fase 2 merancang tampilan
-      // khusus (tren, peta topik, label "belum terukur"); sampai saat itu
-      // tampilan siswa tidak berubah sama sekali (zero-regression).
-      const data = snap.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(r => r.sumber !== 'otomatis' && r.blok !== 'proses');
+      // 🔥 Fase 2 Raport Otomatis (21 Okt 2026): dokumen mesin dipisah dari
+      // dokumen manual. UI lama (leaderboard, ranking, kartu 5 dimensi manual)
+      // HANYA membaca dokumen manual — zero-regression. Snapshot otomatis
+      // dirender komponen RapotOtomatisSiswa yang memperlakukan null sebagai
+      // "belum terukur" (tidak pernah 0) — janji yang dipatok tests/raportCetak.
+      const semua = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = semua.filter(r => r.sumber !== 'otomatis' && r.blok !== 'proses');
       setReports(data);
+      setGrupOtomatis(kelompokDokOtomatis(semua));
       
       // Ambil daftar mapel unik
       const mapelList = [...new Set(data.map(r => r.mapel).filter(Boolean))];
@@ -195,7 +201,7 @@ const StudentSmartReport = () => {
     );
   }
   
-  if (reports.length === 0) {
+  if (reports.length === 0 && grupOtomatis.length === 0) {
     return (
       <div style={{ maxWidth: 800, margin: '0 auto', padding: isMobile ? '12px' : '0' }}>
         <button onClick={() => navigate('/siswa/dashboard')}
@@ -208,7 +214,7 @@ const StudentSmartReport = () => {
         <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 16 }}>
           <FileText size={48} color="#cbd5e1" />
           <h3 style={{ margin: '12px 0 4px', fontSize: 16, color: '#64748b' }}>Belum Ada Raport</h3>
-          <p style={{ fontSize: 12, color: '#94a3b8' }}>Raport akan muncul setelah guru menginput nilai dan melakukan generate.</p>
+          <p style={{ fontSize: 12, color: '#94a3b8' }}>Raport akan muncul setelah ada aktivitas belajar yang diterbitkan (guru menginput nilai / admin menerbitkan rapor otomatis).</p>
         </div>
       </div>
     );
@@ -231,9 +237,18 @@ const StudentSmartReport = () => {
           Laporan penilaian berdasarkan Pemahaman, Analisis, Ketelitian, Waktu, & Daya Tangkap
         </p>
       </div>
-      
-      {/* Pilih Periode & Mapel */}
+
+      {/* 🔥 Fase 2: RAPOR OTOMATIS (snapshot terbit — tren, proses, peta topik) */}
+      {grupOtomatis.length > 0 && (
+        <RapotOtomatisSiswa grup={grupOtomatis} isMobile={isMobile} />
+      )}
+
+      {/* Pilih Periode & Mapel (alur manual guru) */}
+      {reports.length > 0 && (
       <div style={{ background: 'white', borderRadius: 12, padding: 16, marginBottom: 20, border: '1px solid #e2e8f0' }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: '#94a3b8', marginBottom: 8, letterSpacing: '.4px' }}>
+          RAPORT INPUT GURU (manual)
+        </div>
         <div style={{ display: 'flex', gap: 12, flexDirection: isMobile ? 'column' : 'row' }}>
           <div style={{ flex: 1 }}>
             <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -264,6 +279,7 @@ const StudentSmartReport = () => {
           </div>
         </div>
       </div>
+      )}
       
       {currentReport && (
         <>
@@ -350,8 +366,18 @@ const StudentSmartReport = () => {
               
               {showDimensiDetail && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+                  {/* 🔥 Fase 2 (jujur ke siswa): rapor manual yang dimensinya hasil
+                      konversi satu nilai diberi label terang-terangan — bukan
+                      pengukuran terpisah. Dimensi terukur nyata ada di Rapor Otomatis. */}
+                  {currentReport.dimensiSumber === 'konversi-nilai-tunggal' && (
+                    <div style={{ fontSize: 10.5, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px' }}>
+                      ℹ️ Angka 5 dimensi pada rapor ini = konversi merata dari satu nilai input guru (belum pengukuran terpisah per dimensi).
+                    </div>
+                  )}
                   {DIMENSI_KEYS.map(key => {
-                    const nilai = currentReport.detail_dimensi?.[key] || 0;
+                    const nilaiRaw = currentReport.detail_dimensi?.[key];
+                    // null/tak terhingga = BELUM TERUKUR — tidak pernah dipalsukan jadi 0.
+                    const nilai = Number.isFinite(nilaiRaw) ? nilaiRaw : null;
                     const config = DIMENSI_CONFIG[key];
                     return (
                       <div key={key} style={{
@@ -360,9 +386,9 @@ const StudentSmartReport = () => {
                       }}>
                         <div style={{
                           width: 40, height: 40, borderRadius: 10,
-                          background: nilai >= 70 ? '#dcfce7' : nilai >= 50 ? '#fef3c7' : '#fee2e2',
+                          background: nilai === null ? '#f1f5f9' : nilai >= 70 ? '#dcfce7' : nilai >= 50 ? '#fef3c7' : '#fee2e2',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: getDimensiColor(nilai)
+                          color: nilai === null ? '#94a3b8' : getDimensiColor(nilai)
                         }}>
                           {dimensiIcons[key]}
                         </div>
@@ -375,14 +401,14 @@ const StudentSmartReport = () => {
                             overflow: 'hidden'
                           }}>
                             <div style={{ 
-                              height: '100%', width: `${nilai}%`, borderRadius: 3,
-                              background: getDimensiColor(nilai),
+                              height: '100%', width: `${nilai ?? 0}%`, borderRadius: 3,
+                              background: nilai === null ? '#e2e8f0' : getDimensiColor(nilai),
                               transition: 'width 0.5s ease'
                             }} />
                           </div>
                         </div>
-                        <span style={{ fontWeight: 800, fontSize: 16, color: getDimensiColor(nilai), minWidth: 35, textAlign: 'center' }}>
-                          {nilai}
+                        <span style={{ fontWeight: 800, fontSize: nilai === null ? 12 : 16, color: nilai === null ? '#94a3b8' : getDimensiColor(nilai), minWidth: 35, textAlign: 'center', fontStyle: nilai === null ? 'italic' : 'normal' }}>
+                          {nilai === null ? 'belum terukur' : nilai}
                         </span>
                       </div>
                     );
