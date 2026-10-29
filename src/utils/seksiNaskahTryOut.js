@@ -154,7 +154,7 @@ export function blokNaskahDariSeksi(mode, meta, seksi, lebarKolom, rasioGambar =
           blok.push(chunk.html);
         }
       } else {
-        blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+        blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat }));
         nomor = unit.nomor + 1;
       }
     }
@@ -185,7 +185,7 @@ export function perkiraanTinggiBlokSeksi(mode, seksi, lebarKolom, rasioGambar = 
           tinggi.push(chunk.tinggi);
         }
       } else {
-        tinggi.push(estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+        tinggi.push(estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat }));
       }
     }
   });
@@ -215,7 +215,7 @@ export function daftarBlokPenuhSeksi(mode, seksi, lebarKolom, rasioGambar = {}, 
           tanda.push(!!chunk.penuh);
         }
       } else {
-        const t = estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan });
+        const t = estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan, gambarAngkat: unit.gambarAngkat });
         tanda.push(butuhLebarPenuh(t, ambang));
       }
     }

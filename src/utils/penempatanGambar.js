@@ -29,6 +29,11 @@
 //     token mentah, jangan mencetak gambar rusak)
 //   - gambar sisa tanpa placeholder  -> diletakkan di AKHIR (perilaku lama
 //     untuk soal yang tidak memakai placeholder sama sekali)
+//   - opts.lewati (array/Set URL)    -> gambar TIDAK dirender walau posisi/
+//     placeholder menunjuknya. Dipakai mesin cetak saat gambar diangkat ke
+//     blok stimulus grup ("satu gambar untuk soal N-M" tak boleh tercetak
+//     lagi di tiap butir). Placeholder-nya TETAP dianggap terpakai supaya
+//     indeks gambar lain tidak bergeser dan gambar tak muncul dobel di akhir.
 //   - teks di antara placeholder tetap utuh, termasuk rumus $...$
 //
 // MURNI & TERUJI (tests/penempatanGambar.test.mjs) karena dipakai lima
@@ -54,6 +59,9 @@ export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
   const gambar = Array.isArray(gambarUrls) ? gambarUrls.filter(Boolean) : [];
   const meta = Array.isArray(opts?.meta) ? opts.meta : null;
   const region = opts?.region || 'badan';
+  const lewati = opts?.lewati instanceof Set
+    ? opts.lewati
+    : new Set(Array.isArray(opts?.lewati) ? opts.lewati.filter(Boolean) : []);
   const sumber = String(teks ?? '');
   const segmen = [];
   const terpakai = new Set();
@@ -84,11 +92,18 @@ export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
       indeks = ambilBerikutnya();
     }
     if (indeks >= 0) {
-      // placeholder terpenuhi: teks sebelum gambar ditutup, gambar masuk
-      // persis di posisi yang ditunjuk kalimat.
-      flush();
-      segmen.push({ jenis: 'gambar', url: gambar[indeks], indeks });
       terpakai.add(indeks);
+      if (lewati.has(gambar[indeks])) {
+        // gambar sudah diangkat ke blok stimulus: placeholder lenyap sebagai
+        // satu spasi (kalimat tetap utuh), indeks TETAP terpakai supaya gambar
+        // yang sama tidak menempel lagi di akhir teks.
+        buffer += ' ';
+      } else {
+        // placeholder terpenuhi: teks sebelum gambar ditutup, gambar masuk
+        // persis di posisi yang ditunjuk kalimat.
+        flush();
+        segmen.push({ jenis: 'gambar', url: gambar[indeks], indeks });
+      }
     } else {
       // placeholder tanpa gambar: lenyap INLINE sebagai satu spasi, supaya
       // kalimat tidak terbelah jadi dua baris dan token tidak tercetak.
@@ -103,6 +118,7 @@ export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
   // KECUALI bila meta region tersedia: sisa hanya milik region teks ini.
   for (let i = 0; i < gambar.length; i += 1) {
     if (terpakai.has(i)) continue;
+    if (lewati.has(gambar[i])) continue;
     if (meta) {
       const regionGambar = String(meta[i]?.region || 'badan');
       if (regionGambar !== region) continue;

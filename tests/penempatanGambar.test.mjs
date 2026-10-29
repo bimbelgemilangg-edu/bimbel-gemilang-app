@@ -167,6 +167,35 @@ uji('adaPlaceholderBocor mendeteksi nomor di luar jangkauan', () => {
 });
 
 // ============================================================
+bagian('7. OPTS.LEWATI — GAMBAR DIANGKAT KE BLOK STIMULUS GRUP (2026-10-29)');
+// ============================================================
+// Audit owner: satu foto stimulus tercetak di SETIAP butir grupnya.
+// Mesin cetak kini mengangkat gambar bersama ke blok stimulus; supaya
+// gambar tidak dobel, renderer butir memakai opts.lewati — dan indeks
+// placeholder gambar LAIN tidak boleh bergeser karenanya.
+
+uji('gambar lewati tidak dirender walau placeholder menunjuknya', () => {
+  const seg = pisahTeksDanGambar('Lihat {{GAMBAR}} dulu lalu {{GAMBAR_2}} kemudian.', ['u1', 'u2'], { lewati: ['u1'] });
+  assert.equal(jenis(seg), 'teks,gambar,teks');
+  assert.equal(seg[1].url, 'u2', 'placeholder kedua tetap memakai gambarUrls[1], tidak bergeser');
+  assert.ok(!JSON.stringify(seg).includes('u1'), 'gambar terangkat tidak dirender');
+  assert.ok(!JSON.stringify(seg).includes('{{GAMBAR'), 'token tidak bocor');
+});
+
+uji('gambar sisa tanpa placeholder pun dilewati (tidak menumpuk di akhir)', () => {
+  const seg = pisahTeksDanGambar('Teks polos tanpa placeholder.', ['u1', 'u2'], { lewati: ['u1'] });
+  assert.equal(jenis(seg), 'teks,gambar');
+  assert.equal(seg[1].url, 'u2');
+});
+
+uji('lewati menerima Set maupun array, dan kosong berarti perilaku lama', () => {
+  const denganSet = pisahTeksDanGambar('a {{GAMBAR}} b', ['u1'], { lewati: new Set(['u1']) });
+  assert.equal(jenis(denganSet), 'teks', 'placeholder terlewati lenyap sebagai spasi, teks menyatu');
+  const tanpaLewati = pisahTeksDanGambar('a {{GAMBAR}} b', ['u1']);
+  assert.equal(jenis(tanpaLewati), 'teks,gambar,teks');
+});
+
+// ============================================================
 // RINGKASAN
 // ============================================================
 console.log(`\n${'='.repeat(60)}`);

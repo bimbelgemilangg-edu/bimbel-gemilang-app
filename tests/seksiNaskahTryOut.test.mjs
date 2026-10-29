@@ -159,4 +159,33 @@ const blokKunciGrup = blokNaskahDariSeksi('kunci', { judul: 'TO Uji' }, seksiGru
 assert.equal(blokKunciGrup.length, 1 + 2 + 6, 'kop + 2 kepala seksi + 6 butir kunci');
 assert.ok(!blokKunciGrup.join('').includes(WACANA_SEKSI), 'wacana tidak menyusup ke lembar kunci');
 
+// ============================================================
+// STIMULUS GAMBAR BERSAMA (2026-10-29, audit owner: 6 gambar unik tercetak
+// 23 kali di PDF TO B.Inggris). Mesin seksi wajib ikut: gambar serun dicetak
+// SEKALI dengan penanda rentang, dan trio array pendamping (blok/tinggi/
+// bendera) tetap SELARAS INDEKS walau ada blok stimulus gambar.
+// ============================================================
+const FOTO_SEKSI = 'https://cdn.gemilang.id/stimulus/perpustakaan.png';
+const seksiGambar = [{
+  judul: 'B.Inggris',
+  soalList: [
+    { id: 'ga', soal: 'q1', gambarUrls: [FOTO_SEKSI] },
+    { id: 'gb', soal: 'q2', gambarUrls: [FOTO_SEKSI] },
+    { id: 'gc', soal: 'q3', gambarUrls: [FOTO_SEKSI] },
+    { id: 'gd', soal: 'q4', gambarUrls: ['https://cdn.gemilang.id/mandiri.png'] },
+  ],
+}];
+const blokG = blokNaskahDariSeksi('siswa', { judul: 'TO Gambar', kodePaket: 'GM-X' }, seksiGambar, 90);
+const gabungG = blokG.join('');
+assert.equal(gabungG.split(FOTO_SEKSI).length - 1, 1, 'gambar stimulus grup tercetak SEKALI di mesin seksi');
+assert.ok(gabungG.includes('Perhatikan gambar berikut untuk soal 1–3'), 'penanda rentang gambar hadir');
+assert.equal(gabungG.split('mandiri.png').length - 1, 1, 'gambar butir mandiri tetap di butinya');
+const nomorG = blokG.map((b) => b.match(/nsk-no">(\d+)\./)?.[1]).filter(Boolean);
+assert.deepEqual(nomorG, ['1', '2', '3', '4'], 'nomor butir tetap urut walau ada blok stimulus gambar');
+const perkG = perkiraanTinggiBlokSeksi('siswa', seksiGambar, 90);
+assert.equal(perkG.length, blokG.length, 'tinggi perkiraan selaras indeks dengan blok bergambar');
+assert.ok(perkG.every((t) => Number.isFinite(t) && t > 0));
+const penuhG = daftarBlokPenuhSeksi('siswa', seksiGambar, 90);
+assert.equal(penuhG.length, blokG.length, 'bendera lebar penuh selaras indeks');
+
 console.log('OK tests/seksiNaskahTryOut.test.mjs — seksi naskah try out: nomor lanjut, kepala seksi jujur, tiada soal hilang');

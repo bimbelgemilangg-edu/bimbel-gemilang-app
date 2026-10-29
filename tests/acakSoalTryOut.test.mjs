@@ -68,3 +68,28 @@ test('input tidak sah aman (null / bukan array)', () => {
   assert.deepEqual(acakSoalPerSiswa(null, 'a', 'b'), []);
   assert.deepEqual(unitSoalBerurutan(undefined), []);
 });
+test('grup GAMBAR-murni (tanpa teks bacaan) tetap bersebelahan setelah diacak', () => {
+  // 🔥 2026-10-29: stimulus tidak selalu teks — foto/bagan yang dipakai beberapa
+  // soal pun satu kesatuan. kunciStimulus kini bersidik jari daftar gambar
+  // (`gbr:...`) sehingga pengacak tidak memecah grup gambar dari soal-soalnya.
+  const FOTO = 'https://cdn.gemilang.id/stimulus/gunung.png';
+  const daftar = [
+    { id: 'm1', soal: 'q' },
+    { id: 'g1', soal: 'q', gambarUrls: [FOTO] },
+    { id: 'g2', soal: 'q', gambarUrls: [FOTO] },
+    { id: 'g3', soal: 'q', gambarUrls: [FOTO] },
+    { id: 'm2', soal: 'q', gambarUrls: ['https://cdn.gemilang.id/lain.png'] },
+  ];
+  for (const siswa of ['s1', 's2', 's3', 's4']) {
+    const urutan = acakSoalPerSiswa(daftar, siswa, 'paket-to').map((s) => s.id);
+    const pos = ['g1', 'g2', 'g3'].map((id) => urutan.indexOf(id));
+    assert.ok(pos[1] === pos[0] + 1 && pos[2] === pos[1] + 1,
+      `grup gambar harus tetap run bersebelahan, dapat: ${urutan.join(',')}`);
+  }
+});
+
+test('butir bergambar UNIK bukan grup (unit tunggal, tidak memaksa bersebelahan)', () => {
+  const daftar = [1, 2, 3].map((n) => ({ id: `b${n}`, soal: 'q', gambarUrls: [`https://cdn.gemilang.id/u${n}.png`] }));
+  const units = unitSoalBerurutan(daftar);
+  assert.deepEqual(units.map((u) => u.length), [1, 1, 1]);
+});

@@ -96,12 +96,40 @@ export function bacaanDari(soal) {
  * Urutan bukti:
  *   1. `stimulusGrup`/`bacaan.grup` bila ada (kontrak impor data-grup);
  *   2. sidik jari teks (160 karakter pertama, spasi dinormalkan) + URL
- *      gambar — fallback untuk jalur impor yang tidak mengisi grup.
- * @returns {string} kunci; '' bila butir tidak punya bacaan sama sekali.
+ *      gambar — fallback untuk jalur impor yang tidak mengisi grup;
+ *   3. daftar URL gambar butir (`gbr:...`) bila teks bacaan tidak ada —
+ *      stimulus berbentuk gambar/bagan/foto murni tetap satu kelompok.
+ * @returns {string} kunci; '' bila butir tidak punya bacaan maupun gambar.
  */
+/**
+ * Gambar milik BUTIR (ilustrasi soal / gambar stimulus yang menempel di badan
+ * soal), sadar-alias: `gambarUrls` (jalur impor utama) atau `gambar` berbentuk
+ * array (string atau objek {url,uploadedUrl}). Dipusatkan di sini supaya kunci
+ * grup, mesin cetak, dan penaksir tinggi memakai pengertian YANG SAMA tentang
+ * "butir ini membawa gambar" — audit owner 2026-10-29 menunjukkan gambar
+ * stimulus (foto gunung untuk soal 1–5, foto perpustakaan untuk 6–10) tersimpan
+ * di TIAP butir lalu tercetak berulang sekali per butir.
+ * @returns {string[]} daftar URL; [] bila butir tak bergambar
+ */
+export function gambarButirDari(soal) {
+  const sumber = (Array.isArray(soal?.gambarUrls) && soal.gambarUrls.length)
+    ? soal.gambarUrls
+    : (Array.isArray(soal?.gambar) ? soal.gambar : []);
+  return sumber
+    .map((g) => (typeof g === 'string' ? g : String(g?.url || g?.uploadedUrl || '')))
+    .filter(Boolean);
+}
+
 export function kunciStimulus(soal) {
   const b = bacaanDari(soal);
-  if (!b) return '';
+  if (!b) {
+    // 🔥 2026-10-29: butir TANPA teks bacaan tetapi membawa gambar yang sama
+    // dengan tetangganya = stimulus gambar bersama (infografis, foto, bagan).
+    // Sidik jari daftar URL-nya jadi kunci grup supaya mesin cetak bisa
+    // mengangkat gambar ke satu blok dan pengacak tidak memecah grupnya.
+    const gbr = gambarButirDari(soal);
+    return gbr.length ? `gbr:${gbr.join(',')}` : '';
+  }
   const grup = soal?.stimulusGrup || b.grup;
   if (grup) return String(grup);
   const gambar = (Array.isArray(b.gambar) ? b.gambar : [])
@@ -121,7 +149,7 @@ export function identitasDari(soal) {
   };
 }
 
-export default { WATERMARK, teksSoalDari, bacaanDari, kunciStimulus, identitasDari };
+export default { WATERMARK, teksSoalDari, bacaanDari, kunciStimulus, gambarButirDari, identitasDari };
 
 /**
  * Potong teks soal untuk kartu daftar TANPA membelah rumus di tengah
