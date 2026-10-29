@@ -88,6 +88,9 @@ export const LABEL_AKSI = {
   'raport.terbitkan': 'Terbitkan raport otomatis (snapshot terkunci)',
   'raport.terbitkan-ulang': 'TERBIT ULANG raport otomatis terkunci (paksa + alasan)',
   'raport.backfill': 'Backfill raport otomatis Agu–Okt 2026',
+  // 🕸️ 21 Okt 2026 (Fase 2 poles + Fase 3): jejak unduh PDF & penerbitan cron
+  'raport.cetak': 'Unduh/cetak PDF raport otomatis',
+  'raport.terbitkan-otomatis': 'Terbitkan raport otomatis oleh CRON bulanan (sistem)',
 };
 
 /**

@@ -9,5 +9,11 @@
     "api/**/*.js": {
       "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/raport-bulanan",
+      "schedule": "5 17 * * *"
+    }
+  ]
 }

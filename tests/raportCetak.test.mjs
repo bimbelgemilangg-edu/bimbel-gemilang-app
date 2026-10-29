@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import {
   escapeHtml, labelPeriodeManusiawi, dataDok, kelompokDokOtomatis,
   poinSparkline, svgSparkline, warnaPredikatHuruf, warnaStatusTopik,
+  poinRadar, svgRadar, seriRadarDariModel, LOGO_KOP, NAMA_PENERBIT,
   siapkanModelRaport, htmlRaportSiswa, htmlRaportMassal, judulCetakRaport,
 } from '../src/utils/raportCetak.js';
 import { hitungRaportSemuaSiswa, bangunDokumenRaport } from '../src/utils/raportOtomatis.js';
@@ -296,6 +297,98 @@ uji('htmlRaportMassal: sampul + semua siswa + page break per siswa + CSS sekali'
 uji('htmlRaportMassal: daftar kosong → sampul jujur tanpa melempar', () => {
   const h = htmlRaportMassal({ daftar: [], periodeLabel: '2026-09' });
   assert.ok(h.includes('Tidak ada siswa untuk dicetak'));
+});
+
+// ---------------- Fase 3+poles: bagan jaring laba-laba ----------------
+uji('poinRadar: geometri sumbu atas, radius proporsional nilai, null dilewati', () => {
+  const g = poinRadar([
+    { label: 'Global', tebal: true, dimensi: { pemahaman: 100, analisis: 50, ketelitian: null, waktu: 75, dayaTangkap: null } },
+  ], { ukuran: 200 });
+  assert.ok(g);
+  assert.equal(g.sumbu.length, 5);
+  // sumbu pertama (Pemahaman) tepat di atas pusat
+  assert.equal(g.sumbu[0].xUjung, g.pusat.x);
+  assert.ok(g.sumbu[0].yUjung < g.pusat.y);
+  const s = g.seri[0];
+  assert.equal(s.jumlahNull, 2);          // ketelitian & dayaTangkap null → TIDAK digambar di 0
+  assert.equal(s.poin.length, 3);
+  assert.equal(s.bisaPoligon, true);      // 3 titik terukur → poligon sah
+  const jarak = (p) => Math.hypot(p.x - g.pusat.x, p.y - g.pusat.y);
+  assert.ok(Math.abs(jarak(s.poin[0]) - g.R) < 1);        // nilai 100 → tepi
+  assert.ok(Math.abs(jarak(s.poin[1]) - g.R / 2) < 1);    // nilai 50 → tengah
+});
+uji('poinRadar: <3 dimensi terukur → tanpa poligon (titik saja); semua null → null', () => {
+  const tipis = poinRadar([{ label: 'X', dimensi: { pemahaman: 80, analisis: 60 } }]);
+  assert.equal(tipis.seri[0].bisaPoligon, false);
+  assert.equal(poinRadar([{ label: 'X', dimensi: { pemahaman: null, analisis: null, ketelitian: null, waktu: null, dayaTangkap: null } }]), null);
+  assert.equal(poinRadar([]), null);
+});
+uji('svgRadar: SVG berisi poligon, label sumbu ter-escape, legenda; kosong → ""', () => {
+  const svg = svgRadar([
+    { label: 'Global <b>', tebal: true, dimensi: { pemahaman: 90, analisis: 70, ketelitian: 80, waktu: null, dayaTangkap: 60 } },
+    { label: 'Matematika', warna: '#0ea5e9', dimensi: { pemahaman: 60, analisis: 55, ketelitian: 65, waktu: 50, dayaTangkap: 70 } },
+  ]);
+  assert.ok(svg.startsWith('<svg'));
+  assert.ok(svg.includes('<polygon'));
+  assert.ok(svg.includes('Global &lt;b&gt;'));   // escape anti-XSS di legenda
+  assert.ok(svg.includes('Pemahaman') && svg.includes('Daya Tangkap'));
+  assert.ok(svg.includes('1 belum terukur')); // jujur di legenda
+  assert.equal(svgRadar([]), '');
+});
+uji('seriRadarDariModel: global dulu, mapel tipis disaring, cap RADAR_MAKS_SERI', () => {
+  const m = {
+    proses: { dimensi_global: { pemahaman: 80, analisis: 70, ketelitian: 75, waktu: null, dayaTangkap: 65 } },
+    akademik: [
+      { mapel: 'Matematika', detail_dimensi: { pemahaman: 80, analisis: 70, ketelitian: null, waktu: null, dayaTangkap: null } },
+      { mapel: 'Fisika', detail_dimensi: { pemahaman: null, analisis: null, ketelitian: null, waktu: null, dayaTangkap: null } },
+    ],
+  };
+  const r = seriRadarDariModel(m);
+  assert.equal(r.seri[0].label, 'Global (semua aktivitas)');
+  assert.equal(r.seri[0].tebal, true);
+  assert.deepEqual(r.seri.slice(1).map((s) => s.label), ['Matematika']); // Fisika 0 terukur → tidak digambar
+  assert.equal(r.jumlahMapel, 1);
+});
+uji('html siswa: bagan jaring laba-laba tercetak + kalimat jujur sumbu kosong', () => {
+  assert.ok(htmlBudi.includes('jaring laba-laba'));
+  assert.ok(htmlBudi.includes('<svg') && htmlBudi.includes('<polygon'));
+  assert.ok(htmlBudi.includes('belum terukur'));
+});
+
+// ---------------- Fase 3+poles: tanda tangan & logo kop ----------------
+uji('html siswa: ttd "Hormat kami, Bimbingan Belajar Gemilang" + ortu', () => {
+  assert.equal(NAMA_PENERBIT, 'Bimbingan Belajar Gemilang');
+  assert.ok(htmlBudi.includes('Hormat kami,'));
+  assert.ok(htmlBudi.includes(NAMA_PENERBIT));
+  assert.ok(htmlBudi.includes('Tentor Pendamping'));
+  assert.ok(htmlBudi.includes('Orang Tua/Wali,'));
+  assert.equal((htmlBudi.match(/\(\.{5,}\)/g) || []).length, 2); // dua ruang tanda tangan
+});
+uji('logo kop: default LOGO_KOP, bisa diganti logoUrl (logo transparan)', () => {
+  assert.ok(htmlBudi.includes(`src="${LOGO_KOP}"`));
+  const h = htmlRaportSiswa({
+    dokAkademik: dokBudi.docsAkademik.map((d) => d.data),
+    dokProses: dokBudi.dokProses.data,
+    logoUrl: '/logo-transparan.png',
+  });
+  assert.ok(h.includes('src="/logo-transparan.png"'));
+  assert.equal(h.includes(`src="${LOGO_KOP}"`), false);
+});
+
+// ---------------- Fase 3+poles: jenjang tanpa TKA/SNBT ----------------
+uji('tren tanpa skala nasional: analisis persen benar (bukan sekadar "—", bukan skala karangan)', () => {
+  // Budi: TO paket kurikulum (tanpa skala UTBK/TKA) → trenSkala kosong tapi ada sesi 'to'
+  assert.equal((dokBudi.dokProses.data.trenSkala || []).length, 0);
+  assert.ok(htmlBudi.includes('persen benar per paket'));
+  assert.ok(htmlBudi.includes('75')); // persen sesi TO-nya tercetak apa adanya
+  assert.equal(htmlBudi.includes('skala-utbk'), false);
+});
+uji('tren tanpa TO sama sekali: kalimat jujur "—" belum terukur, tidak dinolkan', () => {
+  const h = htmlRaportSiswa({
+    dokAkademik: dokSari.docsAkademik.map((d) => d.data),
+    dokProses: dokSari.dokProses.data,
+  });
+  assert.ok(h.includes("kolom skala dibiarkan '—' (belum terukur), tidak dinolkan"));
 });
 
 console.log(`\n[${lulus} lulus, ${gagal} gagal]`);

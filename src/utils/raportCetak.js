@@ -98,6 +98,17 @@ export const warnaStatusTopik = (status) => (
   { hijau: '#16a34a', kuning: '#ca8a04', merah: '#dc2626', abu: '#94a3b8' }[status] || '#94a3b8'
 );
 
+/** Nama penerbit pada blok tanda tangan (permintaan owner 21 Okt 2026:
+ * "Hormat kami, Bimbingan Belajar Gemilang"). */
+export const NAMA_PENERBIT = 'Bimbingan Belajar Gemilang';
+
+/** Logo kop cetakan. Default = logo PWA yang sudah dipakai watermark.
+ * 🖼️ Cara memasang LOGO TRANSPARAN (keputusan owner: kop manual / logo
+ * transparan): ganti nilai ini dengan data-URI PNG transparan ATAU path
+ * /logo-transparan.png di folder public/, atau sodorkan `logoUrl` per
+ * panggilan htmlRaportSiswa/htmlRaportMassal. Cukup SATU tempat ini. */
+export const LOGO_KOP = WATERMARK.logo;
+
 // ------------------------------------------------------------
 // KELOMPOK DOKUMEN TERBIT (dipakai UI siswa & halaman ortu)
 // ------------------------------------------------------------
@@ -196,6 +207,154 @@ export function svgSparkline(trenHarian = [], opts = {}) {
 }
 
 // ------------------------------------------------------------
+// BAGAN JARING LABA-LABA (radar 5 dimensi — murni, SVG string)
+// ------------------------------------------------------------
+
+// Palet poligon per mapel (kontras di kertas & layar; global selalu indigo
+// gelap + garis tebal agar mudah dibedakan dari mapel).
+export const WARNA_RADAR_MAPEL = [
+  '#0ea5e9', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444',
+  '#14b8a6', '#f97316', '#84cc16',
+];
+export const WARNA_RADAR_GLOBAL = '#4338ca';
+/** Maksimal poligon mapel dalam satu bagan (lebih dari ini tak terbaca). */
+export const RADAR_MAKS_SERI = 8;
+
+/** Sudut sumbu ke-i (rad): mulai dari atas (-90°), searah jarum jam. */
+function sudutSumbu(i, jumlah) {
+  return (-90 + (i * 360) / jumlah) * (Math.PI / 180);
+}
+
+/** Geometri bagan jaring laba-laba untuk N seri dimensi (0–100).
+ * @param {Array<{label:string, warna?:string, tebal?:boolean, putus?:boolean,
+ *   dimensi:Object<string, number|null>}>} seri
+ * @param {{ukuran?:number}} opts ukuran = sisi area gambar (label di luar).
+ * @returns {null|{pusat:{x,y}, R:number, lebar:number, tinggi:number,
+ *   sumbu:Array<{key,label,xUjung,yUjung,xLabel,yLabel,anchor}>,
+ *   cincin:Array<number>,
+ *   seri:Array<{label,warna,tebal,putus,jumlahNull,poin:Array<{key,x,y,nilai}>,
+ *     points:string, bisaPoligon:boolean}>, legenda:Array<{label,warna,tebal,putus,jumlahNull}>}}
+ *
+ * Aturan JUJUR (sama dengan sparkline):
+ *   - dimensi null TIDAK digambar di 0 — sumbu itu dilewati poligon; seri
+ *     dengan <3 dimensi terukur tidak diberi poligon (hanya titik) supaya
+ *     tidak membentuk segitiga menyesatkan.
+ *   - tidak ada satu pun titik terukur → null (pemanggil mencetak kalimat
+ *     jujur, bukan bagan kosong yang pura-pura ada data). */
+export function poinRadar(seri = [], { ukuran = 250 } = {}) {
+  const daftar = (Array.isArray(seri) ? seri : [])
+    .map((s) => ({
+      label: String(s?.label || ''),
+      warna: s?.warna || WARNA_RADAR_GLOBAL,
+      tebal: s?.tebal === true,
+      putus: s?.putus === true,
+      dimensi: s?.dimensi || {},
+    }));
+  const keys = DIMENSI_KEYS;
+  const n = keys.length;
+  const margin = 52; // ruang label sumbu
+  const R = ukuran / 2;
+  const pusat = { x: margin + R, y: margin + R };
+  const lebar = ukuran + margin * 2;
+
+  const posisi = (i, r) => ({
+    x: Math.round((pusat.x + Math.cos(sudutSumbu(i, n)) * r) * 10) / 10,
+    y: Math.round((pusat.y + Math.sin(sudutSumbu(i, n)) * r) * 10) / 10,
+  });
+  const sumbu = keys.map((k, i) => {
+    const ujung = posisi(i, R);
+    const lab = posisi(i, R + 16);
+    // anchor teks mengikuti sisi bagan agar label tidak menabrak garis
+    const anchor = Math.abs(lab.x - pusat.x) < 8 ? 'middle' : (lab.x > pusat.x ? 'start' : 'end');
+    return { key: k, label: DIMENSI_LABEL[k], xUjung: ujung.x, yUjung: ujung.y, xLabel: lab.x, yLabel: lab.y + 3, anchor };
+  });
+
+  const seriKeluar = [];
+  let adaTitik = false;
+  for (const s of daftar) {
+    const poin = [];
+    let jumlahNull = 0;
+    keys.forEach((k, i) => {
+      const v = s.dimensi?.[k];
+      if (!Number.isFinite(v)) { jumlahNull += 1; return; }
+      const r = (Math.max(0, Math.min(100, v)) / 100) * R;
+      const p = posisi(i, r);
+      poin.push({ key: k, x: p.x, y: p.y, nilai: v });
+      adaTitik = true;
+    });
+    seriKeluar.push({
+      label: s.label, warna: s.warna, tebal: s.tebal, putus: s.putus,
+      jumlahNull, poin,
+      points: poin.map((p) => `${p.x},${p.y}`).join(' '),
+      bisaPoligon: poin.length >= 3,
+    });
+  }
+  if (!adaTitik) return null;
+  return { pusat, R, lebar, tinggi: ukuran + margin * 2, sumbu, cincin: [25, 50, 75, 100], seri: seriKeluar };
+}
+
+/** Susun seri radar dari model cetakan: dimensi global (garis tebal) +
+ * satu poligon per mapel yang punya ≥3 dimensi terukur. Mapel berlebih
+ * dipotong ke RADAR_MAKS_SERI (dilaporkan jujur oleh pemanggil). */
+export function seriRadarDariModel(m) {
+  const seri = [];
+  if (m?.proses?.dimensi_global) {
+    seri.push({ label: 'Global (semua aktivitas)', warna: WARNA_RADAR_GLOBAL, tebal: true, dimensi: m.proses.dimensi_global });
+  }
+  const mapel = (m?.akademik || [])
+    .map((d, i) => ({
+      label: String(d.mapel || d.mapelKode || `Mapel ${i + 1}`),
+      warna: WARNA_RADAR_MAPEL[i % WARNA_RADAR_MAPEL.length],
+      dimensi: d.detail_dimensi || {},
+    }))
+    .filter((s) => DIMENSI_KEYS.filter((k) => Number.isFinite(s.dimensi[k])).length >= 2);
+  return { seri: seri.concat(mapel).slice(0, RADAR_MAKS_SERI + 1), jumlahMapel: mapel.length };
+}
+
+/** SVG jaring laba-laba siap sisip (string) untuk cetakan. null/'' bila
+ * tidak ada satu pun dimensi terukur — pemanggil menampilkan kalimat jujur. */
+export function svgRadar(seri = [], opts = {}) {
+  const g = poinRadar(seri, opts);
+  if (!g) return '';
+  const { pusat, R, lebar, tinggi, sumbu, cincin, seri: s } = g;
+  const ring = (pct) => {
+    const pts = sumbu.map((_, i) => {
+      const r = (pct / 100) * R;
+      const a = (-90 + (i * 360) / sumbu.length) * (Math.PI / 180);
+      return `${Math.round((pusat.x + Math.cos(a) * r) * 10) / 10},${Math.round((pusat.y + Math.sin(a) * r) * 10) / 10}`;
+    }).join(' ');
+    return `<polygon points="${pts}" fill="none" stroke="#e2e8f0" stroke-width="1" />`;
+  };
+  const sumbuGaris = sumbu.map((a) => `<line x1="${pusat.x}" y1="${pusat.y}" x2="${a.xUjung}" y2="${a.yUjung}" stroke="#cbd5e1" stroke-width="1" />`).join('');
+  const labelSumbu = sumbu.map((a) => `<text x="${a.xLabel}" y="${a.yLabel}" font-size="9.5" font-weight="700" fill="#334155" text-anchor="${a.anchor}">${escapeHtml(a.label)}</text>`).join('');
+  const poligon = s.map((x) => {
+    if (!x.bisaPoligon) {
+      // <3 dimensi terukur: gambar TITIK saja (poligon akan mengarang bentuk)
+      return x.poin.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="2.5" fill="${x.warna}" />`).join('');
+    }
+    return `<polygon points="${x.points}" fill="${x.warna}" fill-opacity="${x.tebal ? 0.1 : 0.05}" stroke="${x.warna}" stroke-width="${x.tebal ? 2.6 : 1.6}"${x.putus ? ' stroke-dasharray="4 3"' : ''} />`
+      + x.poin.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="${x.tebal ? 2.6 : 2}" fill="${x.warna}" />`).join('');
+  }).join('');
+  // angka dimensi hanya untuk seri tebal (global) — poligon mapel sudah punya chip di tabel
+  const angkaGlobal = s.filter((x) => x.tebal).flatMap((x) => x.poin.map((p) => {
+    const dx = p.x - pusat.x; const dy = p.y - pusat.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    return `<text x="${Math.round((p.x + (dx / len) * 10) * 10) / 10}" y="${Math.round((p.y + (dy / len) * 10) * 10) / 10}" font-size="9" font-weight="800" fill="${x.warna}" text-anchor="middle">${escapeHtml(p.nilai)}</text>`;
+  })).join('');
+  const tinggiLegenda = 14 * Math.ceil(s.length / 3) + 6;
+  const legenda = s.map((x, i) => {
+    const kolom = i % 3; const baris = Math.floor(i / 3);
+    const lx = 8 + kolom * Math.round((lebar - 16) / 3);
+    const ly = tinggi + 10 + baris * 14;
+    const kurang = x.jumlahNull ? ` · ${x.jumlahNull} belum terukur` : '';
+    return `<rect x="${lx}" y="${ly - 7}" width="9" height="9" rx="2" fill="${x.warna}" />`
+      + `<text x="${lx + 13}" y="${ly + 1}" font-size="8.5" fill="#334155">${escapeHtml(`${x.label}${kurang}`.slice(0, 34))}</text>`;
+  }).join('');
+  return `<svg width="${lebar}" height="${tinggi + tinggiLegenda}" viewBox="0 0 ${lebar} ${tinggi + tinggiLegenda}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bagan jaring laba-laba dimensi">`
+    + cincin.map(ring).join('') + sumbuGaris + poligon + angkaGlobal + labelSumbu + legenda + '</svg>';
+}
+
+// ------------------------------------------------------------
 // MODEL CETAKAN
 // ------------------------------------------------------------
 
@@ -291,6 +450,9 @@ export function cssRaport() {
   white-space: pre-wrap; font-size: 11px; page-break-inside: avoid; }
 .rp-ttd { margin-top: 20px; display: flex; justify-content: space-between; font-size: 10.5px;
   page-break-inside: avoid; }
+.rp-ttd .garis { margin-top: 42px; }
+.rp-radar { text-align: center; margin: 6px 0 2px; page-break-inside: avoid; }
+.rp-radar svg { max-width: 100%; height: auto; }
 .rp-footer { margin-top: 10px; border-top: 1px solid #cbd5e1; padding-top: 6px; font-size: 9px;
   color: #64748b; }
 .rp-hal { page-break-before: always; }
@@ -376,7 +538,7 @@ function bagianProses(p) {
 ${komponenTakTerukur.length ? `<div class="rp-warn rp-kecil" style="margin-top:4px">Bobot diredistribusi — komponen belum terukur: ${escapeHtml(komponenTakTerukur.join(', '))}. Tidak ada komponen yang dinolkan.</div>` : ''}`;
 }
 
-function bagianPerkembangan(p) {
+function bagianPerkembangan(p, m = null) {
   const trenSkala = p.trenSkala || [];
   const trenHarian = p.trenHarian || [];
   const petaTopik = p.petaTopik || [];
@@ -386,6 +548,16 @@ function bagianPerkembangan(p) {
   const harianDitampil = trenHarian.slice(-CAP_TABEL_HARIAN);
   const dimensiGlobal = p.dimensi_global || {};
   const dimensiSumber = p.dimensi_global_sumber || {};
+  // Jenjang TANPA TO berskala nasional (SD/SMP yang tidak menyentuh TKA/SNBT):
+  // tren ujian TETAP dianalisis jujur lewat persen benar per paket (dari
+  // snapshot trenHarian jenis 'to') — bukan sekadar tanda '—', dan TANPA
+  // menyulap persen jadi skala nasional (itu mengarang).
+  const trenPersen = trenSkala.length
+    ? []
+    : trenHarian.filter((t) => t.jenis === 'to' && t.skor !== null && t.skor !== undefined);
+  const radar = m ? seriRadarDariModel(m) : { seri: [], jumlahMapel: 0 };
+  const radarSvg = svgRadar(radar.seri, { ukuran: 240 });
+  const mapelTerpotong = Math.max(0, radar.jumlahMapel - RADAR_MAKS_SERI);
   return `
 <h3>Tren try out (skala nasional)</h3>
 ${trenSkala.length ? `<table>
@@ -397,7 +569,21 @@ ${trenSkala.length ? `<table>
   <td><b>${fmt(t.skalaTotal)}</b></td>
   <td>${fmt1(t.nilai100)}</td>
   <td class="rp-kecil">${(t.perSubtes || []).map((s) => `${escapeHtml(s.kode)}: ${s.skala ?? '—'}`).join(' · ')}</td>
-</tr>`).join('')}</tbody></table>` : '<div class="rp-muted rp-kecil">Belum ada try out berskala nasional pada periode ini.</div>'}
+</tr>`).join('')}</tbody></table>` : (trenPersen.length ? `<table>
+<thead><tr><th>Tanggal</th><th>Try out</th><th>Persen benar</th></tr></thead>
+<tbody>${trenPersen.map((t) => `<tr>
+  <td>${escapeHtml(t.tanggal)}</td>
+  <td>${escapeHtml(t.label)}</td>
+  <td><b>${fmt1(t.skor)}%</b></td>
+</tr>`).join('')}</tbody></table>
+<div class="rp-muted rp-kecil">Jenjang/program ini tidak memakai try out berskala nasional UTBK/TKA — perkembangan ujian dianalisis dari <b>persen benar per paket</b> (angka di atas adalah capaian sesungguhnya, bukan konversi skala). Bila belum ada try out sama sekali, kolom ini menampilkan '—' (belum terukur), TIDAK PERNAH 0.</div>`
+    : '<div class="rp-muted rp-kecil">Belum ada try out berskala nasional pada periode ini — kolom skala dibiarkan \'—\' (belum terukur), tidak dinolkan. Perkembangan tetap terlihat dari kuis, latihan harian, dan tugas di bawah.</div>')}
+
+<h3>Bagan jaring laba-laba — profil 5 dimensi</h3>
+${radarSvg
+    ? `<div class="rp-radar">${radarSvg}</div>
+<div class="rp-muted rp-kecil" style="text-align:center">Garis tebal indigo = dimensi global (semua aktivitas); poligon tipis = per mapel. Sumbu yang tidak tersentuh poligon berarti <b>belum terukur</b> — sengaja tidak digambar di 0.${mapelTerpotong ? ` Menampilkan ${RADAR_MAKS_SERI} mapel pertama dari ${radar.jumlahMapel} (sisanya di tabel Blok A).` : ''}</div>`
+    : '<div class="rp-muted rp-kecil">Belum ada dimensi terukur (perlu minimal bukti kuis/try out/latihan) — bagan tidak digambar daripada menampilkan bentuk kosong yang menyesatkan.</div>'}
 
 <h3>Catatan tren harian</h3>
 ${spark || '<div class="rp-muted rp-kecil">Belum ada minimal 2 aktivitas berskor untuk digambar.</div>'}
@@ -430,7 +616,7 @@ ${DIMENSI_KEYS.map((k) => {
 
 /** HTML satu raport siswa (tanpa <style> — pemanggil menyatukan lewat
  * htmlRaportSiswa/htmlRaportMassal agar CSS tidak dobel saat massal). */
-function bagianSiswa(m, { kodeCetak = '' } = {}) {
+function bagianSiswa(m, { kodeCetak = '', logoUrl = '' } = {}) {
   const idn = m.identitas;
   const jejak = m.jejak || {};
   const jumlahSumber = jejak.jumlahDokumenSumber || null;
@@ -439,7 +625,7 @@ function bagianSiswa(m, { kodeCetak = '' } = {}) {
   return `
 <div class="rp">
   <div class="rp-kop">
-    <img src="${WATERMARK.logo}" alt="" />
+    <img src="${escapeHtml(logoUrl || LOGO_KOP)}" alt="" />
     <div>
       <h1>${escapeHtml(idn.namaBimbel)} — RAPOR PERKEMBANGAN BELAJAR</h1>
       <div class="rp-sub">Periode <b>${escapeHtml(labelPeriodeManusiawi(m.periode))}</b>${kodeCetak ? ` · kode cetak ${escapeHtml(kodeCetak)}` : ''}</div>
@@ -484,7 +670,7 @@ function bagianSiswa(m, { kodeCetak = '' } = {}) {
   ${m.proses ? bagianProses(m.proses) : '<div class="rp-muted rp-kecil">Dokumen blok proses tidak ditemukan untuk periode ini (belum diterbitkan).</div>'}
 
   <h2>BLOK C — PERKEMBANGAN & PETA TOPIK</h2>
-  ${m.proses ? bagianPerkembangan(m.proses) : '<div class="rp-muted rp-kecil">Tren & peta topik tersedia setelah blok proses diterbitkan.</div>'}
+  ${m.proses ? bagianPerkembangan(m.proses, m) : '<div class="rp-muted rp-kecil">Tren & peta topik tersedia setelah blok proses diterbitkan.</div>'}
 
   <h2>CATATAN GURU (opsional)</h2>
   <div class="rp-catatan">${m.catatanGuru ? escapeHtml(m.catatanGuru) : '<span class="rp-muted">(belum diisi — bagian ini opsional dan tidak memengaruhi angka otomatis)</span>'}</div>
@@ -492,8 +678,14 @@ function bagianSiswa(m, { kodeCetak = '' } = {}) {
   ${m.proses?.narasi ? `<div class="rp-kecil" style="margin-top:8px;background:#f8fafc;border-left:4px solid #6d28d9;padding:8px 10px;border-radius:0 6px 6px 0">${escapeHtml(m.proses.narasi)}</div>` : ''}
 
   <div class="rp-ttd">
-    <div>Hormat kami,<br/><br/><br/>Tentor Pendamping</div>
-    <div>Orang Tua/Wali,<br/><br/><br/>(...........................)</div>
+    <div>Hormat kami,<br/><b>${escapeHtml(NAMA_PENERBIT)}</b>
+      <div class="garis">(...........................)</div>
+      <div>Tentor Pendamping</div>
+    </div>
+    <div style="text-align:right">Orang Tua/Wali,
+      <div class="garis">(...........................)</div>
+      <div>Nama &amp; tanda tangan</div>
+    </div>
   </div>
 
   <div class="rp-footer">
@@ -509,17 +701,18 @@ export function judulCetakRaport({ nama = '', periode = '' } = {}) {
   return `Rapot ${String(nama || 'Siswa')} — ${labelPeriodeManusiawi(periode)}`;
 }
 
-/** HTML lengkap SATU siswa, siap disodorkan ke cetakLewatIframe. */
+/** HTML lengkap SATU siswa, siap disodorkan ke cetakLewatIframe.
+ * `logoUrl` opsional → mengganti LOGO_KOP (mis. logo transparan bimbel). */
 export function htmlRaportSiswa(opts = {}) {
   const m = siapkanModelRaport(opts);
   const kode = `GM-RPT-${Date.now().toString(36).toUpperCase()}`;
-  return `<style>${cssRaport()}</style><div class="rp-wm"></div>${bagianSiswa(m, { kodeCetak: kode })}`;
+  return `<style>${cssRaport()}</style><div class="rp-wm"></div>${bagianSiswa(m, { kodeCetak: kode, logoUrl: opts.logoUrl || '' })}`;
 }
 
 /** HTML KUMPULAN raport (cetak massal per jenjang/kelas): halaman sampul +
  * satu raport per siswa, masing-masing mulai di halaman baru.
- * @param {{daftar:Array<{dokAkademik,dokProses,catatanGuru?}>, judul?:string, periodeLabel?:string}} opts */
-export function htmlRaportMassal({ daftar = [], judul = '', periodeLabel = '' } = {}) {
+ * @param {{daftar:Array<{dokAkademik,dokProses,catatanGuru?}>, judul?:string, periodeLabel?:string, logoUrl?:string}} opts */
+export function htmlRaportMassal({ daftar = [], judul = '', periodeLabel = '', logoUrl = '' } = {}) {
   const models = (Array.isArray(daftar) ? daftar : [])
     .map((d) => siapkanModelRaport(d))
     .filter((m) => m.identitas.nama !== '—');
@@ -536,7 +729,7 @@ export function htmlRaportMassal({ daftar = [], judul = '', periodeLabel = '' } 
   const sampul = `
 <div class="rp">
   <div class="rp-kop">
-    <img src="${WATERMARK.logo}" alt="" />
+    <img src="${escapeHtml(logoUrl || LOGO_KOP)}" alt="" />
     <div>
       <h1>${escapeHtml(judul || 'Kumpulan Rapor Perkembangan Belajar')}</h1>
       <div class="rp-sub">Periode <b>${escapeHtml(labelPeriodeManusiawi(periodeLabel))}</b> · ${models.length} siswa · dicetak ${escapeHtml(fmtTglPanjang(new Date().toISOString()))}</div>
@@ -550,7 +743,7 @@ export function htmlRaportMassal({ daftar = [], judul = '', periodeLabel = '' } 
   <div class="rp-muted rp-kecil">Catatan guru tidak disertakan pada cetak massal (opsional per siswa lewat cetak tunggal). Nilai akademik dan proses/karakter adalah dua angka terpisah sesuai keputusan owner.</div>
 </div>`;
   const halaman = models.map((m, i) => (
-    `<div${i > 0 ? ' class="rp-hal"' : ' style="page-break-before:always"'}>${bagianSiswa(m)}</div>`
+    `<div${i > 0 ? ' class="rp-hal"' : ' style="page-break-before:always"'}>${bagianSiswa(m, { logoUrl })}</div>`
   )).join('');
   return `<style>${cssRaport()}</style><div class="rp-wm"></div>${sampul}${halaman}`;
 }
@@ -558,6 +751,8 @@ export function htmlRaportMassal({ daftar = [], judul = '', periodeLabel = '' } 
 export default {
   escapeHtml, labelPeriodeManusiawi, dataDok, kelompokDokOtomatis,
   poinSparkline, svgSparkline, warnaPredikatHuruf, warnaStatusTopik,
+  poinRadar, svgRadar, seriRadarDariModel, WARNA_RADAR_MAPEL, WARNA_RADAR_GLOBAL, RADAR_MAKS_SERI,
+  NAMA_PENERBIT, LOGO_KOP,
   DIMENSI_LABEL, DIMENSI_KEYS,
   siapkanModelRaport, cssRaport, judulCetakRaport,
   htmlRaportSiswa, htmlRaportMassal,

@@ -17,6 +17,7 @@ import React, { useState } from 'react';
 import { Bot, Brain, Lightbulb, Target, Clock, Zap, ShieldCheck, TrendingUp } from 'lucide-react';
 import {
   poinSparkline, warnaStatusTopik, warnaPredikatHuruf, DIMENSI_LABEL, DIMENSI_KEYS,
+  poinRadar, seriRadarDariModel, WARNA_RADAR_GLOBAL, RADAR_MAKS_SERI,
 } from '../../utils/raportCetak';
 import { predikatDariNilai } from '../../utils/raportOtomatis';
 
@@ -49,6 +50,70 @@ function SparklineTren({ trenHarian, lebar }) {
   );
 }
 
+/** Bagan jaring laba-laba React dari poinRadar (murni) — dimensi null tidak
+ * digambar di 0; seri <3 dimensi terukur tampil sebagai titik (jujur). */
+function RadarDimensi({ proses, akademik, isMobile }) {
+  const { seri, jumlahMapel } = seriRadarDariModel({ proses, akademik });
+  const g = poinRadar(seri, { ukuran: isMobile ? 210 : 250 });
+  if (!g) {
+    return <div style={{ fontSize: 11, color: '#94a3b8' }}>Belum ada dimensi terukur — bagan tidak digambar daripada menampilkan bentuk kosong yang menyesatkan.</div>;
+  }
+  const terpotong = Math.max(0, jumlahMapel - RADAR_MAKS_SERI);
+  const sudut = (i) => ((-90 + (i * 360) / g.sumbu.length) * Math.PI) / 180;
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <svg width="100%" viewBox={`0 0 ${g.lebar} ${g.tinggi}`} style={{ maxWidth: g.lebar }} role="img" aria-label="Bagan jaring laba-laba dimensi">
+        {g.cincin.map((pct) => (
+          <polygon
+            key={pct}
+            points={g.sumbu.map((_, i) => {
+              const r = (pct / 100) * g.R;
+              return `${Math.round((g.pusat.x + Math.cos(sudut(i)) * r) * 10) / 10},${Math.round((g.pusat.y + Math.sin(sudut(i)) * r) * 10) / 10}`;
+            }).join(' ')}
+            fill="none"
+            stroke="#e2e8f0"
+          />
+        ))}
+        {g.sumbu.map((a) => <line key={a.key} x1={g.pusat.x} y1={g.pusat.y} x2={a.xUjung} y2={a.yUjung} stroke="#cbd5e1" />)}
+        {g.seri.map((x) => (
+          <g key={x.label}>
+            {x.bisaPoligon ? (
+              <polygon points={x.points} fill={x.warna} fillOpacity={x.tebal ? 0.1 : 0.05} stroke={x.warna} strokeWidth={x.tebal ? 2.6 : 1.6} strokeDasharray={x.putus ? '4 3' : undefined} />
+            ) : null}
+            {x.poin.map((p) => <circle key={p.key} cx={p.x} cy={p.y} r={x.tebal ? 2.6 : 2} fill={x.warna} />)}
+            {x.tebal && x.poin.map((p) => {
+              const dx = p.x - g.pusat.x; const dy = p.y - g.pusat.y;
+              const len = Math.hypot(dx, dy) || 1;
+              return (
+                <text key={p.key} x={p.x + (dx / len) * 11} y={p.y + (dy / len) * 11} fontSize="9" fontWeight="800" fill={WARNA_RADAR_GLOBAL} textAnchor="middle">
+                  {p.nilai}
+                </text>
+              );
+            })}
+          </g>
+        ))}
+        {g.sumbu.map((a) => (
+          <text key={a.key} x={a.xLabel} y={a.yLabel} fontSize="9.5" fontWeight="700" fill="#334155" textAnchor={a.anchor}>
+            {a.label}
+          </text>
+        ))}
+      </svg>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: 'center', marginTop: 4 }}>
+        {g.seri.map((x) => (
+          <span key={x.label} style={{ fontSize: 9.5, display: 'inline-flex', alignItems: 'center', gap: 4, color: '#334155' }}>
+            <span style={{ width: 9, height: 9, borderRadius: 2, background: x.warna, display: 'inline-block' }} />
+            {x.label}{x.jumlahNull ? ` · ${x.jumlahNull} belum terukur` : ''}
+          </span>
+        ))}
+      </div>
+      <div style={{ fontSize: 9.5, color: '#94a3b8', marginTop: 4 }}>
+        Garis tebal indigo = dimensi global; poligon tipis = per mapel. Sumbu yang tidak tersentuh poligon berarti belum terukur (tidak digambar di 0).
+        {terpotong > 0 ? ` Menampilkan ${RADAR_MAKS_SERI} mapel pertama dari ${jumlahMapel}.` : ''}
+      </div>
+    </div>
+  );
+}
+
 export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
   const [periodeSel, setPeriodeSel] = useState(null);
   const entri = grup.find((g) => g.periode === periodeSel) || grup[0] || null;
@@ -71,6 +136,11 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
   const kw = dp.ketepatanWaktu || {};
   const ig = dp.integritas || {};
   const trenSkala = (proses && proses.trenSkala) || [];
+  // Jenjang tanpa TO berskala nasional (tidak menyentuh TKA/SNBT): tren ujian
+  // tetap dianalisis dari persen benar per paket — '—' jujur, bukan 0 karangan.
+  const trenPersen = trenSkala.length
+    ? []
+    : ((proses && proses.trenHarian) || []).filter((t) => t.jenis === 'to' && t.skor !== null && t.skor !== undefined);
   const petaTopik = (proses && proses.petaTopik) || [];
   const rekomendasi = (proses && proses.rekomendasi) || [];
   const dihitungPada = entri.jejak?.dihitungPada ? new Date(entri.jejak.dihitungPada).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
@@ -217,6 +287,9 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
 
           {/* 5 dimensi global (proksi otomatis) */}
           <h3 style={{ margin: '14px 0 8px', fontSize: 13, fontWeight: 700 }}>🧠 5 Dimensi (proksi otomatis dari log)</h3>
+          <div style={{ marginBottom: 12 }}>
+            <RadarDimensi proses={proses} akademik={akademik} isMobile={isMobile} />
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {DIMENSI_KEYS.map((k) => {
               const v = proses.dimensi_global?.[k];
@@ -273,6 +346,30 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
                 ))}
               </div>
             </>
+          )}
+          {trenSkala.length === 0 && trenPersen.length > 0 && (
+            <>
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Try out — persen benar (jenjang tanpa skala nasional UTBK/TKA)</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 6 }}>
+                {trenPersen.map((t, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '8px 10px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 11.5 }}>
+                    <div>
+                      <b>{t.label}</b>
+                      <div style={{ fontSize: 10, color: '#64748b' }}>{t.tanggal}</div>
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{fmt(t.skor)}%</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 12 }}>
+                Jenjang/program ini tidak memakai try out berskala nasional — perkembangan dianalisis dari persen benar per paket (capaian sesungguhnya, bukan konversi karangan).
+              </div>
+            </>
+          )}
+          {trenSkala.length === 0 && trenPersen.length === 0 && (
+            <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
+              Belum ada try out pada periode ini — bagian skala dibiarkan &ldquo;—&rdquo; (belum terukur), tidak pernah dinolkan. Perkembangan tetap terlihat dari kuis, latihan harian, dan tugas.
+            </div>
           )}
 
           <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Catatan tren harian</div>
