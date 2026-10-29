@@ -24,8 +24,19 @@
 //   OPSI:
 //   - opsi satu baris (boleh LaTeX)
 //   - opsi berikutnya
+//   PERNYATAAN:                          (opsional; wajib makna utk benar_salah/pg_kategori)
+//   - pernyataan satu baris (boleh multiline lewat baris menjorok)
 //   PEMBAHASAN:
 //   baris bebas
+//
+// 🔥 2026-10-29 (insiden Kimia TKA 30 soal owner): field PERNYATAAN ditambah
+// karena kontrak lama mengakui tipe benar_salah/pg_kategori tapi tidak punya
+// cara menuliskan pernyataannya -- penolakan jadi jalan buntu. Berkas lama yang
+// menulis pernyataan di OPSI tetap diterima: baris OPSI dipindah jadi
+// pernyataan + peringatan lunak (lihat blok fallback di bawah). Parser TIDAK
+// pernah membuang/menambal isi field lain (mis. baris sitiran "[x.pdf — ...]"):
+// penambalan siluman pihak ketiga dilarang; penolakan tetap wewenang gerbang
+// hilir supaya yang memperbaiki adalah SUMBERNYA.
 //
 // 🔥 2026-10-29 (audit owner: PDF TO B.Inggris — satu wacana tercetak 5×):
 // field BACAAN/GRUP-BACAAN membuat kontrak resmi bisa mengungkapkan
@@ -45,12 +56,12 @@
 export const SKEMA_TEMPLAT_BARIS = 'gemilang-baris@1';
 
 const RE_SOAL = /^##\s*SOAL\s+(\d+)\s*$/i;
-const RE_KUNCI_BARIS = /^(SKEMA|JUDUL PAKET|TIPE|MATERI|CAPAIAN|KESULITAN|KELAS|KUNCI|GAMBAR|TAGS|TEKS|OPSI|PEMBAHASAN|CATATAN_ADMIN|GRUP-BACAAN|BACAAN)\s*:\s?(.*)$/i;
+const RE_KUNCI_BARIS = /^(SKEMA|JUDUL PAKET|TIPE|MATERI|CAPAIAN|KESULITAN|KELAS|KUNCI|GAMBAR|TAGS|TEKS|OPSI|PEMBAHASAN|CATATAN_ADMIN|GRUP-BACAAN|BACAAN|PERNYATAAN)\s*:\s?(.*)$/i;
 const FIELD_PETAK = {
   'TIPE': 'tipe', 'MATERI': 'materi', 'CAPAIAN': 'capaian_pembelajaran', 'KESULITAN': 'kesulitan',
   'KELAS': 'kelas', 'KUNCI': 'kunci_jawaban', 'GAMBAR': '__gambar', 'TAGS': 'tags',
   'TEKS': 'teks_soal', 'OPSI': '__opsi', 'PEMBAHASAN': 'pembahasan', 'CATATAN_ADMIN': 'catatan_admin',
-  'GRUP-BACAAN': '__grupBacaan', 'BACAAN': '__bacaan',
+  'GRUP-BACAAN': '__grupBacaan', 'BACAAN': '__bacaan', 'PERNYATAAN': '__pernyataan',
 };
 
 export function looksLikeTemplatBaris(teks) {
@@ -73,6 +84,7 @@ export function parseTemplatBaris(teks) {
 
   const nilaiField = (s, key, val) => {
     if (key === '__opsi') { s.__opsiBuf = s.__opsiBuf || []; s.__opsiBuf.push(val); return; }
+    if (key === '__pernyataan') { s.__pernyataanBuf = s.__pernyataanBuf || []; s.__pernyataanBuf.push(val); return; }
     if (key === '__gambar') { s.butuhGambar = /^ya$/i.test(val.trim()); return; }
     if (key === '__bacaan') { s.__bacaanBuf = s.__bacaanBuf ? s.__bacaanBuf + '\n' + val : val; return; }
     if (key === '__grupBacaan') { s.__grupBacaan = val.trim(); return; }
@@ -110,10 +122,20 @@ export function parseTemplatBaris(teks) {
       continue;
     }
     if (!soalKini) { errors.push({ baris: no, pesan: 'baris tidak dikenali sebelum ##SOAL pertama' }); continue; }
-    if (fieldKini === '__opsi' || (soalKini.__opsiBuf && fieldKini === null)) {
-      if (/^[-*]\s+/.test(t)) { nilaiField(soalKini, '__opsi', t.replace(/^[-*]\s+/, '')); fieldKini = '__opsi'; continue; }
+    if (fieldKini === '__opsi' || fieldKini === '__pernyataan' || (soalKini.__opsiBuf && fieldKini === null)) {
+      if (/^[-*]\s+/.test(t)) {
+        const bufKey = fieldKini === '__pernyataan' ? '__pernyataan' : '__opsi';
+        nilaiField(soalKini, bufKey, t.replace(/^[-*]\s+/, ''));
+        fieldKini = bufKey;
+        continue;
+      }
       if (fieldKini === '__opsi') { // lanjutan opsi multiline: tempel ke opsi terakhir
         const buf = soalKini.__opsiBuf;
+        buf[buf.length - 1] += '\n' + t;
+        continue;
+      }
+      if (fieldKini === '__pernyataan') { // lanjutan pernyataan multiline: tempel ke pernyataan terakhir
+        const buf = soalKini.__pernyataanBuf;
         buf[buf.length - 1] += '\n' + t;
         continue;
       }
@@ -122,16 +144,47 @@ export function parseTemplatBaris(teks) {
     errors.push({ baris: no, pesan: 'baris isi tanpa field tujuan (field terakhir tidak dikenal)' });
   }
 
+  const warnings = [];
   const keluar = soal.map((s) => {
-    const { __opsiBuf, __bacaanBuf, __grupBacaan, ...rest } = s;
-    const opsi = (__opsiBuf || []).map((t) => ({ teks: t }));
+    const { __opsiBuf, __bacaanBuf, __grupBacaan, __pernyataanBuf, ...rest } = s;
+    let opsi = (__opsiBuf || []).map((t) => ({ teks: t }));
+    let pernyataan = (__pernyataanBuf || []).map((t) => ({ teks: t, jawaban: '' }));
+    const tipe = String(s.tipe || 'pg_sederhana');
+    // 🔥 2026-10-29 (insiden Kimia TKA 30 soal owner, keputusan owner:
+    // "kalau sistem Gemilang yang salah, perbaiki"): kontrak lama MENGAKUI
+    // tipe benar_salah/pg_kategori tapi TIDAK menyediakan field PERNYATAAN --
+    // pihak ketiga yang tunduk pun tidak punya cara mengungkapkan pernyataannya
+    // dan semua butir tipe itu tertolak "Pernyataan belum ditemukan" (jalan
+    // buntu: yang diminta tidak bisa ditulis). Sekarang field PERNYATAAN ada;
+    // berkas LAMA yang telanjur menulis pernyataan di OPSI (pilihan paling
+    // wajar) tidak dibuang: baris OPSI DIPINDAH jadi pernyataan (opsi
+    // dikosongkan) dan jawaban per baris dipulihkan hilir oleh
+    // pulihkanJawabanDariKunciGabungan dari KUNCI gabungan (mis. "S,B,S").
+    // Transparan: diperingatkan lunak, tidak senyap.
+    if (!pernyataan.length && ['benar_salah', 'pg_kategori'].includes(tipe) && opsi.length >= 2) {
+      pernyataan = opsi.map((o) => ({ teks: o.teks, jawaban: '' }));
+      const jumlah = opsi.length;
+      opsi = [];
+      warnings.push({
+        nomor: s.nomor,
+        pesan: `tipe ${tipe} tanpa field PERNYATAAN: ${jumlah} baris OPSI dipakai sebagai pernyataan `
+          + '(jawaban per baris dipulihkan dari urutan KUNCI gabungan). Kontrak sekarang punya field '
+          + 'PERNYATAAN: -- pakai itu pada kiriman berikutnya.',
+      });
+    }
     const teksBacaan = String(__bacaanBuf || '').trim();
     const grup = String(__grupBacaan || '').trim();
     // Bentuk objek bacaan yang SUDAH dimengerti normalizeSoal (teks/gambar/
     // grup). GRUP-BACAAN tanpa BACAAN tetap dibawa (teks kosong) supaya
     // isiUlangBacaanSegrup di halaman impor bisa mengisi dari master grup.
     const bacaan = (teksBacaan || grup) ? { teks: teksBacaan, gambar: [], grup } : null;
-    return { ...rest, opsi_jawaban: opsi, gambar: [], bacaan };
+    return {
+      ...rest,
+      opsi_jawaban: opsi,
+      ...(pernyataan.length ? { pernyataan } : {}),
+      gambar: [],
+      bacaan,
+    };
   });
 
   keluar.forEach((q, idx) => {
@@ -143,7 +196,7 @@ export function parseTemplatBaris(teks) {
   });
   if (!keluar.length) errors.push({ baris: 1, pesan: 'tidak ada blok ##SOAL ditemukan' });
 
-  return { skema, judul, soal: keluar, errors };
+  return { skema, judul, soal: keluar, errors, warnings };
 }
 
 export default { SKEMA_TEMPLAT_BARIS, looksLikeTemplatBaris, parseTemplatBaris };

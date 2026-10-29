@@ -111,6 +111,79 @@ uji('baris "- " di dalam BACAAN tidak dicuri jadi opsi', () => {
   assert.equal(r.soal[0].opsi_jawaban.length, 2);
 });
 
+// ------------------------------------------------------------
+// 🔥 2026-10-29 (insiden Kimia TKA 30 soal owner): field PERNYATAAN +
+// fallback berkas lama. Keputusan owner: bug kontrak = perbaiki sistem;
+// kesalahan pihak ketiga = biarkan gerbang menolak (parser TIDAK menambal).
+// ------------------------------------------------------------
+const BS_BARU = `SKEMA: gemilang-baris@1
+##SOAL 1
+TIPE: benar_salah
+KUNCI: S,B,S
+GAMBAR: tidak
+TEKS:
+Tentukan Benar/Salah tiap pernyataan!
+PERNYATAAN:
+- Rumus kimia hidrokarbon tersebut adalah $\\text{C}_4\\text{H}_{10}$.
+- Strukturnya rantai lurus
+  (n-butana).
+- Titik didihnya lebih rendah dari isomernya.
+PEMBAHASAN:
+Pernyataan 1 dan 2 benar, pernyataan 3 salah.
+`;
+const BS_LAMA = `SKEMA: gemilang-baris@1
+##SOAL 2
+TIPE: benar_salah
+KUNCI: B,S,B
+GAMBAR: tidak
+TEKS:
+Tentukan Tepat/Tidak Tepat!
+OPSI:
+- Komposisi A menghasilkan 1,435 gram.
+- Komposisi B menghasilkan 1,435 gram.
+- Komposisi C menghasilkan 1,435 gram.
+PEMBAHASAN:
+Hanya komposisi B.
+`;
+
+uji('field PERNYATAAN terparse jadi objek pernyataan (bullet + lanjutan menjorok)', () => {
+  const r = parseTemplatBaris(BS_BARU);
+  assert.deepEqual(r.errors, [], JSON.stringify(r.errors));
+  const q = r.soal[0];
+  assert.equal(q.tipe, 'benar_salah');
+  assert.equal(q.pernyataan.length, 3);
+  assert.match(q.pernyataan[1].teks, /rantai lurus\n\(n-butana\)\./, 'lanjutan menjorok menempel ke pernyataan terakhir');
+  assert.equal(q.opsi_jawaban.length, 0, 'tidak ada opsi pada soal benar_salah ber-field PERNYATAAN');
+  assert.deepEqual(r.warnings, [], 'tidak ada warning bila kontrak diikuti');
+});
+uji('berkas lama benar_salah tanpa PERNYATAAN: OPSI dipindah jadi pernyataan + warning lunak', () => {
+  const r = parseTemplatBaris(BS_LAMA);
+  assert.deepEqual(r.errors, [], JSON.stringify(r.errors));
+  const q = r.soal[0];
+  assert.equal(q.pernyataan.length, 3, 'pernyataan diisi dari baris OPSI');
+  assert.equal(q.pernyataan[0].teks, 'Komposisi A menghasilkan 1,435 gram.');
+  assert.equal(q.opsi_jawaban.length, 0, 'opsi dikosongkan supaya tidak dobel hilir');
+  assert.equal(r.warnings.length, 1);
+  assert.equal(r.warnings[0].nomor, 2);
+  assert.match(r.warnings[0].pesan, /OPSI dipakai sebagai pernyataan/);
+});
+uji('pg_sederhana TIDAK terkena fallback (opsi tetap opsi, tanpa warning)', () => {
+  const r = parseTemplatBaris(CONTOH);
+  const q = r.soal[0];
+  assert.equal(q.opsi_jawaban.length, 2);
+  assert.ok(!q.pernyataan || q.pernyataan.length === 0);
+  assert.deepEqual(r.warnings, []);
+});
+uji('parser TIDAK menambal pihak ketiga: baris sitiran "[x.pdf ...]" dibiarkan utuh di teks (gerbang hilir yang menolak)', () => {
+  const r = parseTemplatBaris('##SOAL 4\nTIPE: pg_sederhana\nKUNCI: A\nGAMBAR: tidak\nTEKS:\n[Safari.pdf — Kimia Simulasi No. 6, Hal. 165 & 652]\nDiketahui notasi dua macam unsur berikut:\nOPSI:\n- a\n- b\nPEMBAHASAN:\nx\n');
+  assert.deepEqual(r.errors, [], JSON.stringify(r.errors));
+  const teks = r.soal[0].teks_soal;
+  assert.ok(teks.includes('[Safari.pdf — Kimia Simulasi No. 6, Hal. 165 & 652]'), 'sitiran tetap ada, tidak dibuang senyap');
+  // Sinyal 1 gerbang impor (salin persis kondisi ImportHasilScanPage.jsx):
+  assert.ok(/\.(pdf|docx?|xlsx?|pptx?)\b/i.test(teks), 'gerbang hilir tetap menolaknya -- penambalan bukan urusan parser');
+  assert.deepEqual(r.warnings, [], 'parser tidak mengaku memperbaiki apa pun');
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');

@@ -485,7 +485,9 @@ FORMAT KELUARAN WAJIB (templat baris gemilang-baris@1):
 - Baris pertama: SKEMA: gemilang-baris@1
 - Baris paket: JUDUL PAKET: <judul>
 - Setiap soal diawali baris: ##SOAL <nomor>
-- Field per soal ditulis SATU per baris dengan awalan kata kunci berakhiran titik dua: TIPE:, MATERI:, KESULITAN:, KELAS:, KUNCI:, GAMBAR:, TEKS:, OPSI:, PEMBAHASAN:, serta OPSIONAL GRUP-BACAAN: dan BACAAN: untuk wacana bersama.
+- Field per soal ditulis SATU per baris dengan awalan kata kunci berakhiran titik dua: TIPE:, MATERI:, KESULITAN:, KELAS:, KUNCI:, GAMBAR:, TEKS:, OPSI:, PEMBAHASAN:, serta OPSIONAL GRUP-BACAAN: dan BACAAN: untuk wacana bersama, dan PERNYATAAN: untuk tipe benar_salah/pg_kategori.
+- Field PERNYATAAN: (WAJIB makna untuk tipe benar_salah/pg_kategori): satu pernyataan per baris berawalan "- " (boleh lanjutan menjorok); jawaban Benar/Salah per baris TIDAK ditulis di sini melainkan lewat urutan KUNCI gabungan (mis. KUNCI: S,B,S untuk tiga pernyataan).
+- 🔥 DILARANG menuliskan baris sitiran sumber / nama berkas scan (mis. "[Safari.pdf — Kimia Simulasi No. 6, Hal. 165 & 652]") di field mana pun, termasuk TEKS: dan PEMBAHASAN:. gemilang-baris@1 TIDAK punya field sumber, dan gerbang bank soal MENOLAK soal yang teks_soal-nya memuat nama berkas (".pdf" dst.). Bila sitiran benar-benar penting, tulis di CATATAN_ADMIN:.
 - Nilai TEKS:, OPSI:, PEMBAHASAN: ditulis pada baris-baris BERIKUTNYA (boleh lebih dari satu baris; baris bullet dan langkah pembahasan TETAP sebagai baris tersendiri, JANGAN disambung jadi satu paragraf).
 - Setiap opsi ditulis sebagai baris berawalan "- " (satu opsi satu baris; lanjutan opsi ditulis sebagai baris menjorok di bawahnya).
 - LaTeX DITULIS APA ADANYA dengan satu backslash (JANGAN digandakan seperti di JSON): $\\frac{1}{2}$ ditulis sebagai $\frac{1}{2}$ di dalam berkas.
@@ -4088,6 +4090,10 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
     setSaveLog([]);
 
     const activeFormat = formatOverride || format;
+    // 🔥 2026-10-29: peringatan lunak dari parser templat baris (mis. OPSI
+    // benar_salah dipindah jadi pernyataan) -- ditampilkan sebagai peringatan
+    // per soal, tidak memblokir penyimpanan.
+    let peringatanBarisParser = [];
 
     if (!safeString(content).trim()) {
       setParseError('Input kosong. Upload 1 file JSON/CSV/.tex (bisa berisi banyak paket sekaligus).');
@@ -4105,6 +4111,9 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
         if (t.errors.length) {
           throw new Error('Templat baris belum valid:\n' + t.errors.slice(0, 12).map((e) => `baris ${e.baris}: ${e.pesan}`).join('\n'));
         }
+        // 🔥 2026-10-29: perbaikan transparan parser (mis. OPSI benar_salah
+        // dipakai sebagai pernyataan) wajib KELIHATAN oleh admin, bukan senyap.
+        peringatanBarisParser = t.warnings || [];
         return t.soal;
       })()
       : activeFormat === 'json' ? parseJSON(content)
@@ -4126,6 +4135,17 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
       let normalized = raw
         .map((question, index) => normalizeSoal(question, index))
         .map((q, index) => ({ ...q, _idx: index }));
+
+      // 🔥 2026-10-29: tempel peringatan lunak parser templat baris ke soal
+      // yang bersangkutan (dicocokkan per nomor, jatuh balik ke urutan) supaya
+      // admin melihat perbaikan transparan yang dilakukan parser.
+      if (peringatanBarisParser.length) {
+        normalized = normalized.map((q, i) => {
+          const milik = peringatanBarisParser.filter((w) => w.nomor === q.nomor || w.nomor === i + 1);
+          if (!milik.length) return q;
+          return { ...q, peringatan: [...(q.peringatan || []), ...milik.map((w) => w.pesan)] };
+        });
+      }
 
       // 🔥 BARU: isi ulang otomatis bacaan segrup -- lihat penjelasan
       // lengkap di isiUlangBacaanSegrup(). Dijalankan SEBELUM validasi
