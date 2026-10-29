@@ -485,12 +485,13 @@ FORMAT KELUARAN WAJIB (templat baris gemilang-baris@1):
 - Baris pertama: SKEMA: gemilang-baris@1
 - Baris paket: JUDUL PAKET: <judul>
 - Setiap soal diawali baris: ##SOAL <nomor>
-- Field per soal ditulis SATU per baris dengan awalan kata kunci berakhiran titik dua: TIPE:, MATERI:, KESULITAN:, KELAS:, KUNCI:, GAMBAR:, TEKS:, OPSI:, PEMBAHASAN:
+- Field per soal ditulis SATU per baris dengan awalan kata kunci berakhiran titik dua: TIPE:, MATERI:, KESULITAN:, KELAS:, KUNCI:, GAMBAR:, TEKS:, OPSI:, PEMBAHASAN:, serta OPSIONAL GRUP-BACAAN: dan BACAAN: untuk wacana bersama.
 - Nilai TEKS:, OPSI:, PEMBAHASAN: ditulis pada baris-baris BERIKUTNYA (boleh lebih dari satu baris; baris bullet dan langkah pembahasan TETAP sebagai baris tersendiri, JANGAN disambung jadi satu paragraf).
 - Setiap opsi ditulis sebagai baris berawalan "- " (satu opsi satu baris; lanjutan opsi ditulis sebagai baris menjorok di bawahnya).
 - LaTeX DITULIS APA ADANYA dengan satu backslash (JANGAN digandakan seperti di JSON): $\\frac{1}{2}$ ditulis sebagai $\frac{1}{2}$ di dalam berkas.
 - Bila soal memuat gambar/grafik/tabel yang tidak bisa kamu sematkan: tulis GAMBAR: ya dan letakkan penanda {{GAMBAR_1}}, {{GAMBAR_2}}, dst. pada posisi gambar di TEKS/OPSI. Sistem akan mengantrikan soal itu untuk dilengkapi admin, BUKAN menolaknya.
 - Bila soal tidak memuat visual: tulis GAMBAR: tidak.
+- 🔥 BACAAN BERSAMA (satu wacana/teks panjang/infografis dipakai beberapa soal — pola WAJIB soal literasi/TKA): tulis wacana UTUH di field BACAAN: pada SETIAP soal yang memakainya, dan beri baris GRUP-BACAAN: dengan nama yang SAMA PERSIS untuk semua soal segolongan (mis. GRUP-BACAAN: bacaan_1). Field TEKS: cukup berisi PERTANYAANNYA SAJA — DILARANG menyalin ulang wacana di dalam TEKS:. Alternatif hemat: BACAAN: lengkap hanya di soal PERTAMA grup, soal berikutnya menulis GRUP-BACAAN: saja tanpa BACAAN: — sistem otomatis mengisi ulang dari master grup. Contoh: soal 1-5 memakai satu teks → kelimanya menulis GRUP-BACAAN: bacaan_1, TEKS: masing-masing hanya pertanyaannya.
 - TIPE yang diakui: pg_sederhana, pg_kompleks, benar_salah, pg_kategori, menjodohkan, isian_singkat, numerik, uraian.
 - KUNCI: huruf opsi (mis. A atau A,C untuk pg_kompleks) atau nilai untuk isian/uraian.
 
@@ -936,7 +937,12 @@ function getCorrectAnswerIndexes(opsi, kunci) {
 // bukan cuma di soal tetangganya). Fungsi ini yang menjembatani dua
 // kebutuhan itu: AI boleh irit nulis, tapi hasil akhirnya tetap
 // lengkap di setiap soal.
-function isiUlangBacaanSegrup(daftarSoal) {
+// 🔥 2026-10-29: DIEKSPOR — halaman Periksa Berkas memakai fungsi yang
+// SAMA supaya pratinjau pemeriksaan = hasil impor sesungguhnya.
+// (Pengecualian lint sama seperti normalizeSoal di bawah: ekspor fungsi murni
+// dari berkas halaman demi satu sumber kebenaran, dengan sadar.)
+// eslint-disable-next-line react-refresh/only-export-components
+export function isiUlangBacaanSegrup(daftarSoal) {
   // 1. Cari "master" tiap grup -- bacaan paling lengkap (teks
   //    terpanjang) yang ditemukan di grup itu, dari soal manapun.
   const masterPerGrup = {};

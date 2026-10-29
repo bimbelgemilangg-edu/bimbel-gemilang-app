@@ -13,7 +13,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { looksLikeTemplatBaris, parseTemplatBaris, SKEMA_TEMPLAT_BARIS } from '../../../utils/templatBaris';
-import { normalizeSoal } from './ImportHasilScanPage';
+import { normalizeSoal, isiUlangBacaanSegrup } from './ImportHasilScanPage';
+import { deteksiBacaanTertanam } from '../../../utils/deteksiBacaanTertanam';
 import { bangunPromptKoreksi } from '../../../utils/promptKoreksiImpor';
 
 const S = {
@@ -27,6 +28,7 @@ const S = {
   btn2: { padding: '9px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', color: '#475569', fontWeight: 700, fontSize: 12.5, cursor: 'pointer' },
   ok: { background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: 10, padding: '10px 12px', fontSize: 12.5, fontWeight: 700 },
   buruk: { background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 10, padding: '10px 12px', fontSize: 12.5 },
+  waspada: { background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', borderRadius: 10, padding: '10px 12px', fontSize: 12.5 },
   li: { margin: '3px 0', lineHeight: 1.55 },
   kecil: { fontSize: 11, color: '#64748b', lineHeight: 1.6 },
 };
@@ -40,7 +42,7 @@ export default function PeriksaBerkasPage() {
   const [tersalin, setTersalin] = useState(false);
 
   const periksa = () => {
-    const lap = { format: null, errorParse: [], butir: [] };
+    const lap = { format: null, errorParse: [], butir: [], bacaanTertanam: [] };
     const isi = input.trim();
     if (!isi) { setLaporan({ ...lap, errorParse: [{ baris: 0, pesan: 'tempel atau pilih berkas dulu' }] }); return; }
     let mentah = null;
@@ -68,7 +70,12 @@ export default function PeriksaBerkasPage() {
       lap.errorParse = [{ baris: 0, pesan: String(e.message || e) }];
     }
     if (mentah && Array.isArray(mentah)) {
-      lap.butir = mentah.map((q, i) => normalizeSoal(q, i));
+      // 🔥 2026-10-29: (1) isi ulang bacaan segrup PERSIS seperti jalur impor
+      // sungguhan (GRUP-BACAAN tanpa BACAAN diisi dari master grup), supaya
+      // pratinjau = hasil impor; (2) deteksi wacana yang TERTANAM di teks_soal
+      // (pihak ketiga tidak patuh kontrak) — peringatan, bukan penolakan.
+      lap.butir = isiUlangBacaanSegrup(mentah.map((q, i) => normalizeSoal(q, i)));
+      lap.bacaanTertanam = deteksiBacaanTertanam(lap.butir);
     }
     setLaporan(lap);
     setPromptKoreksi('');
@@ -115,7 +122,7 @@ export default function PeriksaBerkasPage() {
             r.readAsText(f, 'UTF-8');
           }} style={{ fontSize: 12 }} />
           <div style={{ ...S.kecil, marginTop: 6 }}>berkas: {sumber || '(tempelan manual)'}</div>
-          <textarea style={{ ...S.ta, marginTop: 8 }} value={input} onChange={(e) => setInput(e.target.value)} placeholder={'SKEMA: gemilang-baris@1\n##SOAL 1\nTIPE: pg_sederhana\nKUNCI: A\nTEKS:\n...\nOPSI:\n- ...\n- ...\nPEMBAHASAN:\n...'} />
+          <textarea style={{ ...S.ta, marginTop: 8 }} value={input} onChange={(e) => setInput(e.target.value)} placeholder={'SKEMA: gemilang-baris@1\n##SOAL 1\nTIPE: pg_sederhana\nKUNCI: A\nGRUP-BACAAN: bacaan_1   (opsional, sama untuk soal segolongan)\nBACAAN:                 (opsional, wacana bersama di baris berikut)\n...\nTEKS:\n... (pertanyaannya saja)\nOPSI:\n- ...\n- ...\nPEMBAHASAN:\n...'} />
           <div style={{ marginTop: 10 }}>
             <button type="button" style={S.btn} onClick={periksa}>Periksa sekarang</button>
             <button type="button" style={S.btn2} onClick={() => { setInput(''); setLaporan(null); setPromptKoreksi(''); }}>Bersihkan</button>
@@ -135,6 +142,25 @@ export default function PeriksaBerkasPage() {
                     <li key={i} style={S.li}>{e.baris ? `baris ${e.baris}: ` : ''}{e.pesan}</li>
                   ))}
                 </ul>
+              </div>
+            )}
+            {laporan.bacaanTertanam.length > 0 && (
+              <div style={{ ...S.waspada, marginTop: 10 }}>
+                <b>⚠️ Wacana bersama tertanam di TEKS ({laporan.bacaanTertanam.length} kelompok):</b>
+                <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                  {laporan.bacaanTertanam.slice(0, 12).map((t, i) => (
+                    <li key={i} style={S.li}>
+                      Soal #{t.nomor[0]}–#{t.nomor[t.nomor.length - 1]} ({t.jumlahSoal} butir) berbagi awalan teks identik ±{t.panjangAwalan} karakter
+                      tanpa field BACAAN terpisah — “{t.contohAwalan}”.
+                    </li>
+                  ))}
+                </ul>
+                <div style={{ ...S.kecil, marginTop: 6 }}>
+                  Akibatnya saat dicetak wacana akan TERULANG di setiap nomor dan sistem tidak bisa mengelompokkannya
+                  (boros kertas, siswa membaca teks sama berkali-kali). Perbaikan: minta pihak ketiga memindahkan wacana
+                  ke field <code>BACAAN:</code> dengan <code>GRUP-BACAAN:</code> yang sama untuk semua soal segolongan,
+                  dan <code>TEKS:</code> cukup pertanyaannya saja. Ini peringatan — berkas tetap bisa disimpan apa adanya.
+                </div>
               </div>
             )}
             {laporan.butir.length > 0 && (

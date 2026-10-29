@@ -71,6 +71,46 @@ uji('opsi multiline menempel ke opsi sebelumnya, bukan jadi opsi baru', () => {
   assert.match(r.soal[0].opsi_jawaban[0].teks, /lanjutan opsi/);
 });
 
+// 🔥 2026-10-29 (audit owner: wacana bersama tidak bisa diungkapkan di
+// kontrak resmi templat baris — pihak ketiga terpaksa menumpuk wacana ke
+// TEKS atau keluar dari kontrak): field opsional BACAAN: + GRUP-BACAAN:.
+uji('BACAAN multiline + GRUP-BACAAN masuk field bacaan; TEKS tetap pertanyaan saja', () => {
+  const r = parseTemplatBaris([
+    'SKEMA: gemilang-baris@1',
+    '##SOAL 1',
+    'TIPE: pg_sederhana',
+    'KUNCI: A',
+    'GRUP-BACAAN: bacaan_1',
+    'BACAAN:',
+    'Baris wacana satu.',
+    'Baris wacana dua $x^2$ apa adanya.',
+    'TEKS:',
+    'Pertanyaan tentang wacana?',
+    'OPSI:',
+    '- satu',
+    '- dua',
+  ].join('\n'));
+  assert.equal(r.errors.length, 0, JSON.stringify(r.errors));
+  const q = r.soal[0];
+  assert.deepEqual(q.bacaan, { teks: 'Baris wacana satu.\nBaris wacana dua $x^2$ apa adanya.', gambar: [], grup: 'bacaan_1' });
+  assert.equal(q.teks_soal, 'Pertanyaan tentang wacana?');
+});
+uji('GRUP-BACAAN tanpa BACAAN tetap dibawa (pola irit: importer isi ulang dari master grup)', () => {
+  const r = parseTemplatBaris('##SOAL 2\nKUNCI: B\nGRUP-BACAAN: bacaan_1\nTEKS: pertanyaan lanjut?\nOPSI:\n- a\n- b\n');
+  assert.equal(r.errors.length, 0, JSON.stringify(r.errors));
+  assert.deepEqual(r.soal[0].bacaan, { teks: '', gambar: [], grup: 'bacaan_1' });
+});
+uji('soal tanpa BACAAN sama sekali: bacaan null (berkas lama tak berubah arti)', () => {
+  const q = parseTemplatBaris(CONTOH).soal[0];
+  assert.equal(q.bacaan, null);
+});
+uji('baris "- " di dalam BACAAN tidak dicuri jadi opsi', () => {
+  const r = parseTemplatBaris('##SOAL 3\nKUNCI: A\nGRUP-BACAAN: b1\nBACAAN:\n- poin wacana satu\n- poin wacana dua\nTEKS: t?\nOPSI:\n- a\n- b\n');
+  assert.equal(r.errors.length, 0, JSON.stringify(r.errors));
+  assert.match(r.soal[0].bacaan.teks, /- poin wacana satu\n- poin wacana dua/);
+  assert.equal(r.soal[0].opsi_jawaban.length, 2);
+});
+
 console.log(`\n  LULUS: ${lulus}  GAGAL: ${gagal}`);
 if (gagal > 0) process.exit(1);
 console.log('✅ Semua test lulus.');

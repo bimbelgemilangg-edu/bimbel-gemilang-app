@@ -16,6 +16,9 @@
 //   ##SOAL 1
 //   TIPE: pg_sederhana
 //   MATERI: ... / KESULITAN: ... / KELAS: ... / KUNCI: A / GAMBAR: ya|tidak
+//   GRUP-BACAAN: bacaan_1              (opsional; sama untuk semua soal segolongan)
+//   BACAAN:                            (opsional; baris-baris berikutnya = teks wacana)
+//   teks wacana bersama, boleh multiline, LaTeX apa adanya
 //   TEKS:
 //   baris bebas, LaTeX apa adanya, boleh multiline
 //   OPSI:
@@ -23,6 +26,15 @@
 //   - opsi berikutnya
 //   PEMBAHASAN:
 //   baris bebas
+//
+// 🔥 2026-10-29 (audit owner: PDF TO B.Inggris — satu wacana tercetak 5×):
+// field BACAAN/GRUP-BACAAN membuat kontrak resmi bisa mengungkapkan
+// "satu bacaan dipakai beberapa soal". Aturannya sama dengan kontrak HTML:
+// salin wacana UTUH ke BACAAN: di SETIAP soal segolongan dengan
+// GRUP-BACAAN: yang identik, dan TEKS: cukup pertanyaannya saja. Bila
+// pihak ketiga menulis wacana lengkap hanya di soal pertama, soal berikutnya
+// boleh menulis GRUP-BACAAN: saja (tanpa BACAAN:) — importer otomatis
+// mengisi ulang dari master grup (isiUlangBacaanSegrup).
 //
 // Keluaran parser = bentuk mentah yang SUDAH diterima normalizeSoal, jadi
 // seluruh gerbang hilir (kelayakan, LaTeX, skala) berlaku tanpa duplikasi.
@@ -33,11 +45,12 @@
 export const SKEMA_TEMPLAT_BARIS = 'gemilang-baris@1';
 
 const RE_SOAL = /^##\s*SOAL\s+(\d+)\s*$/i;
-const RE_KUNCI_BARIS = /^(SKEMA|JUDUL PAKET|TIPE|MATERI|CAPAIAN|KESULITAN|KELAS|KUNCI|GAMBAR|TAGS|TEKS|OPSI|PEMBAHASAN|CATATAN_ADMIN)\s*:\s?(.*)$/i;
+const RE_KUNCI_BARIS = /^(SKEMA|JUDUL PAKET|TIPE|MATERI|CAPAIAN|KESULITAN|KELAS|KUNCI|GAMBAR|TAGS|TEKS|OPSI|PEMBAHASAN|CATATAN_ADMIN|GRUP-BACAAN|BACAAN)\s*:\s?(.*)$/i;
 const FIELD_PETAK = {
   'TIPE': 'tipe', 'MATERI': 'materi', 'CAPAIAN': 'capaian_pembelajaran', 'KESULITAN': 'kesulitan',
   'KELAS': 'kelas', 'KUNCI': 'kunci_jawaban', 'GAMBAR': '__gambar', 'TAGS': 'tags',
   'TEKS': 'teks_soal', 'OPSI': '__opsi', 'PEMBAHASAN': 'pembahasan', 'CATATAN_ADMIN': 'catatan_admin',
+  'GRUP-BACAAN': '__grupBacaan', 'BACAAN': '__bacaan',
 };
 
 export function looksLikeTemplatBaris(teks) {
@@ -61,6 +74,8 @@ export function parseTemplatBaris(teks) {
   const nilaiField = (s, key, val) => {
     if (key === '__opsi') { s.__opsiBuf = s.__opsiBuf || []; s.__opsiBuf.push(val); return; }
     if (key === '__gambar') { s.butuhGambar = /^ya$/i.test(val.trim()); return; }
+    if (key === '__bacaan') { s.__bacaanBuf = s.__bacaanBuf ? s.__bacaanBuf + '\n' + val : val; return; }
+    if (key === '__grupBacaan') { s.__grupBacaan = val.trim(); return; }
     if (key === 'teks_soal' || key === 'pembahasan' || key === 'catatan_admin') { s[key] = s[key] ? s[key] + '\n' + val : val; return; }
     s[key] = val;
   };
@@ -108,9 +123,15 @@ export function parseTemplatBaris(teks) {
   }
 
   const keluar = soal.map((s) => {
-    const { __opsiBuf, ...rest } = s;
+    const { __opsiBuf, __bacaanBuf, __grupBacaan, ...rest } = s;
     const opsi = (__opsiBuf || []).map((t) => ({ teks: t }));
-    return { ...rest, opsi_jawaban: opsi, gambar: [] };
+    const teksBacaan = String(__bacaanBuf || '').trim();
+    const grup = String(__grupBacaan || '').trim();
+    // Bentuk objek bacaan yang SUDAH dimengerti normalizeSoal (teks/gambar/
+    // grup). GRUP-BACAAN tanpa BACAAN tetap dibawa (teks kosong) supaya
+    // isiUlangBacaanSegrup di halaman impor bisa mengisi dari master grup.
+    const bacaan = (teksBacaan || grup) ? { teks: teksBacaan, gambar: [], grup } : null;
+    return { ...rest, opsi_jawaban: opsi, gambar: [], bacaan };
   });
 
   keluar.forEach((q, idx) => {
