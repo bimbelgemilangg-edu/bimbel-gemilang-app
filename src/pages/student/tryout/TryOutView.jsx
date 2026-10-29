@@ -66,7 +66,7 @@ import { skorSatuSoal, hitungTotalSkor, soalBelumDijawab } from '../../../utils/
 import { hitungSkalaSesi } from '../../../utils/hitungSkalaSesi';
 import { pisahKodeSumber } from '../../../utils/strukturPembahasan';
 import RenderPembahasan from '../../../components/RenderPembahasan';
-import { teksSoalDari } from '../../../utils/fieldButirSoal';
+import { teksSoalDari, kunciStimulus } from '../../../utils/fieldButirSoal';
 import { terapkanPotonganXP } from '../../../utils/potonganXPTryOut';
 import { acakSoalPerSiswa } from '../../../utils/acakSoalTryOut';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
@@ -1426,7 +1426,21 @@ export default function TryOutView() {
             <div style={{ fontSize: 11, fontWeight: 800, color: '#64748b', marginBottom: 8, letterSpacing: 0.3, textTransform: 'uppercase' }}>
               {(() => {
                 const r = soalAktif.stimulusRentang || soalAktif.bacaan?.rentang;
-                return r ? `Bacaan bersama (no ${r.dari}–${r.sampai})` : 'Bacaan / stimulus';
+                if (r) return `Bacaan bersama (no ${r.dari}–${r.sampai})`;
+                // 🔥 2026-10-29: data impor lama sering tidak membawa rentang.
+                // Hitung dari tampilan: run soal BERSEBELAHAN dengan kunci
+                // stimulus sama (pengacakan kini sadar grup, jadi grup tetap
+                // bersebelahan di layar). Siswa tahu teks ini dipakai bersama
+                // dan tidak bingung "bacaannya untuk soal yang mana".
+                const k = kunciStimulus(soalAktif);
+                if (k) {
+                  let a = indexSoalAktif;
+                  let b = indexSoalAktif;
+                  while (a > 0 && kunciStimulus(daftarSoalAktif[a - 1]) === k) a -= 1;
+                  while (b < daftarSoalAktif.length - 1 && kunciStimulus(daftarSoalAktif[b + 1]) === k) b += 1;
+                  if (b > a) return `Bacaan bersama · dipakai ${b - a + 1} soal (no ${a + 1}–${b + 1})`;
+                }
+                return 'Bacaan / stimulus';
               })()}
             </div>
             {soalAktif.bacaan?.teks && (

@@ -26,6 +26,9 @@ import { pagarIdentitasTemplate, gerbangStokDraf, kisiKisiUntukBaris } from './p
 // materi & sasaran otomatis SEBELUM pagar & penyusunan soal — satu sumber
 // kebenaran dengan form admin (src/utils/aturanJenisUjian.js).
 import { terapkanJenisUjian } from './aturanJenisUjian.js';
+// 🔥 2026-10-29: pengacakan terbit SADAR GRUP — wacana + soal-soalnya
+// dipindah sebagai satu unit, tidak pernah tersebar (praktik ujian besar).
+import { unitSoalBerurutan } from './acakSoalTryOut.js';
 // 🔥 BARU (2026-10-10): db bisa DIGANTI dari skrip (cron/seed) lewat pakaiDb().
 // Sebelumnya berkas ini mengimpor db langsung dari src/firebase.js, yang di
 // Node polos jatuh ke konfigurasi PRODUKSI -- artinya skrip penjadwal Sabtu
@@ -370,16 +373,22 @@ export async function siapkanDrafDariTemplate(template, slot, rules) {
   let daftarSoal = susunan.daftarSoal || [];
   const grupMapel = susunan.grupMapel || [];
   const soalAcak = r.soalAcak !== false && template.soalAcak !== false;
-  // Acak dalam tiap mapel (bukan campur antar mapel) agar subtes tetap utuh
+  // Acak dalam tiap mapel (bukan campur antar mapel) agar subtes tetap utuh.
+  // 🔥 2026-10-29: yang diacak adalah UNIT (satu wacana + soal-soalnya yang
+  // bersebelahan), bukan butir lepas — supaya paket terbit tetap bisa
+  // dicetak dengan wacana SEKALI cetak dan siswa tidak pernah melihat
+  // bacaannya terpisah dari soal grupnya.
   if (soalAcak) {
     const byId = {};
     daftarSoal.forEach((s) => { byId[s.id] = s; });
     const ordered = [];
     grupMapel.forEach((g) => {
-      g.soalIds = acakArray(g.soalIds || []);
+      const objek = (g.soalIds || []).map((id) => byId[id]).filter(Boolean);
+      const unitAcak = objek.length ? acakArray(unitSoalBerurutan(objek)).flat() : [];
+      g.soalIds = unitAcak.length ? unitAcak.map((s) => s.id) : acakArray(g.soalIds || []);
       g.soalIds.forEach((id) => { if (byId[id]) ordered.push(byId[id]); });
     });
-    daftarSoal = ordered.length ? ordered : acakArray(daftarSoal);
+    daftarSoal = ordered.length ? ordered : acakArray(unitSoalBerurutan(daftarSoal)).flat();
   }
 
   const kekurangan = susunan.kekurangan || [];
