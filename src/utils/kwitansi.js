@@ -110,6 +110,7 @@ export const cetakLewatIframe = (htmlIsi, judulDokumen = 'Cetak', opsi = {}) => 
 <html lang="id">
 <head>
 <meta charset="utf-8" />
+<base href="/" />
 <title>${judulDokumen}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -124,7 +125,24 @@ export const cetakLewatIframe = (htmlIsi, judulDokumen = 'Cetak', opsi = {}) => 
 <body>
 <button class="tombol-cetak no-print" onclick="window.print()">🖨️ Cetak</button>
 ${htmlIsi}
-<script>window.onload = function () { setTimeout(function () { window.print(); }, 250); };${'</'}script>
+<script>
+window.onload = function () {
+  var sudah = false;
+  var cetak = function () { if (sudah) return; sudah = true; window.print(); };
+  var tungguGambar = function () {
+    var imgs = document.images ? Array.prototype.slice.call(document.images) : [];
+    if (!imgs.length) return cetak();
+    Promise.all(imgs.map(function (i) {
+      return i.decode ? i.decode().catch(function () {}) : Promise.resolve();
+    })).then(function () { setTimeout(cetak, 60); }).catch(cetak);
+  };
+  // Font web (KaTeX) WAJIB siap: tanpa ini simbol matematika tercetak kosong.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(tungguGambar).catch(tungguGambar);
+  } else { setTimeout(tungguGambar, 500); }
+  // Jaring pengaman: kalau font tak pernah 'ready', cetak maksimal 5 detik.
+  setTimeout(cetak, 5000);
+};${'</'}script>
 </body>
 </html>`;
 

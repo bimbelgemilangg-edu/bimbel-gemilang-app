@@ -316,11 +316,11 @@ export function teksKeHtml(teks) {
 // ---- gaya tampilan (selector selalu di bawah .naskah supaya aman
 //      disuntikkan ke halaman admin untuk lapisan ukur) ----
 export const GAYA_NASKAH = `
-.naskah { font-family: Arial, Helvetica, sans-serif; font-size: 11.5px; color: #000; background: #fff; line-height: 1.45; }
+.naskah { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; background: #fff; line-height: 1.38; }
 .naskah .nsk-hal { position: relative; background: #fff; padding: ${MARGIN_MM}mm ${MARGIN_MM}mm ${FOOTER_MM}mm; overflow: hidden; break-after: page; page-break-after: always; }
 .naskah .nsk-kolomwrap { display: flex; gap: ${GAP_KOLOM_MM}mm; height: 100%; align-items: flex-start; }
 .naskah .nsk-kolom { flex: 1 1 0; min-width: 0; overflow: hidden; }
-.naskah .nsk-kop { border-bottom: 0.8mm solid #000; padding-bottom: 2mm; margin-bottom: 3mm; break-inside: avoid; }
+.naskah .nsk-kop { border-bottom: 0.8mm solid #000; padding-bottom: 1.5mm; margin-bottom: 2mm; break-inside: avoid; }
 .naskah .nsk-kop h1 { font-size: 14px; margin: 0 0 1mm; letter-spacing: 0.4px; }
 .naskah .nsk-kop .nsk-meta { font-size: 10.5px; color: #000; }
 /* 🔥 BARU (2026-10-12, arahan owner): kode paket + logo di POJOK ATAS setiap
@@ -332,19 +332,19 @@ export const GAYA_NASKAH = `
 .naskah .nsk-kop-kode img { width: 5mm; height: 5mm; object-fit: contain; }
 .naskah .nsk-seksi-kode { float: right; display: inline-flex; align-items: center; gap: 1mm; font-size: 8px; font-weight: 800; letter-spacing: 0.3px; color: #334155; text-transform: none; }
 .naskah .nsk-seksi-kode img { width: 4mm; height: 4mm; object-fit: contain; }
-.naskah .nsk-identitas { display: flex; gap: 8mm; font-size: 10.5px; margin-top: 2.5mm; }
+.naskah .nsk-identitas { display: flex; gap: 8mm; font-size: 10.5px; margin-top: 1.5mm; }
 .naskah .nsk-identitas span { border-bottom: 0.35mm solid #000; min-width: 45mm; padding-bottom: 2.5mm; }
 .naskah .nsk-peringatan { border: 0.7mm solid #000; padding: 1.5mm 3mm; font-size: 11.5px; font-weight: 800; text-align: center; margin-bottom: 3mm; letter-spacing: 0.5px; break-inside: avoid; }
 /* 🔥 BARU (2026-10-08): kepala seksi subtes di naskah try out (lihat
    seksiNaskahTryOut.js) -- pita tipis berbingkai, tidak boleh terbelah
    kolom, dan terpisah jelas dari butir pertama seksinya. */
 .naskah .nsk-seksi { border: 0.4mm solid #000; padding: 1mm 2.5mm; font-size: 11.5px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; margin: 0 0 2.5mm; break-inside: avoid; }
-.naskah .nsk-butir { margin: 0 0 4mm; break-inside: avoid; display: flex; gap: 2mm; }
+.naskah .nsk-butir { margin: 0 0 2.2mm; break-inside: avoid; display: flex; gap: 2mm; }
 .naskah .nsk-butir > .nsk-no { flex: 0 0 5.5mm; font-weight: 800; text-align: left; }
 .naskah .nsk-butir > .nsk-isi { flex: 1 1 auto; min-width: 0; }
 .naskah .nsk-gbr-samping { float: left; margin: 0 3mm 1.5mm 0; }
 .naskah .nsk-gbr-blok { display: block; margin: 1.5mm auto; }
-.naskah .nsk-opsi { display: grid; gap: 0.8mm 5mm; margin: 1.5mm 0 0 7.5mm; }
+.naskah .nsk-opsi { display: grid; gap: 0.4mm 4mm; margin: 1mm 0 0 7.5mm; }
 .naskah .nsk-opsi > span { break-inside: avoid; }
 /* 🔥 2026-10-09: kotak centang KOSONG untuk pg_kompleks di lembar siswa.
    Sebelumnya satu-satunya "kotak" di lembar adalah glif ☑/☐ yang terbawa
@@ -407,6 +407,10 @@ export const GAYA_NASKAH = `
 .naskah .nsk-bacaan img { max-width: 100%; }
 .naskah .nsk-footer { position: absolute; left: 0; right: 0; bottom: 2.5mm; text-align: center; font-size: 10px; color: #000; }
 .naskah .katex { font-size: 1.02em; }
+/* Lapisan MathML disembunyikan tegas: bila CSS KaTeX gagal termuat di jendela
+   cetak, MathML ikut tergambar dan menumpuk di dasar halaman (matematika
+   menggunung jauh dari kalimatnya). */
+.naskah .katex-mathml { display: none !important; }
 .naskah .nsk-kodesoal { display: inline-block; margin: 0 0 3px 26px; font-size: 8.5px; font-weight: 700; color: #9a3412; background: #ffedd5; border: 1px solid #fdba74; border-radius: 999px; padding: 1px 7px; }
 `;
 
@@ -1042,6 +1046,40 @@ export function seimbangkanHalamanTerakhir(halaman, tinggi, kolomPerHalaman) {
   return [...halaman.slice(0, -1), kolom];
 }
 
+// 2026-10-21 (owner: itemnya dikit banget, banyak space kosong, membuang
+// kertas): penyeimbang kolom kini dipakai di SEMUA halaman, bukan hanya halaman
+// terakhir. Pengepakan rakus menyisakan lubang di dasar kolom tiap kali satu
+// butir utuh tak muat di sisa ruang, dan lubang itu menumpuk jadi kertas kosong.
+// Di sini butir dibagi ulang ke kolom TERPENDEK (urutan nomor tetap naik, butir
+// tetap utuh -- tidak ada yang terpotong), dan hasilnya hanya dipakai bila tidak
+// ada kolom kosong dan tidak ada kolom yang melampaui kapasitas.
+export function seimbangkanKolomHalaman(halaman, tinggi, kolomPerHalaman, kapasitasMm) {
+  const n = kolomPerHalaman > 1 ? kolomPerHalaman : 1;
+  if (!Array.isArray(halaman) || !halaman.length || n < 2) return halaman;
+  const kapasitas = Number.isFinite(kapasitasMm) && kapasitasMm > 0 ? kapasitasMm : Infinity;
+  const tinggiBlok = (i) => (Number.isFinite(tinggi?.[i]) ? tinggi[i] : 10);
+  return halaman.map((kolomLista) => {
+    if (!Array.isArray(kolomLista) || kolomLista.length < 2) return kolomLista;
+    const urut = kolomLista.flat().sort((a, b) => a - b);
+    const kolom = Array.from({ length: n }, () => []);
+    const total = new Array(n).fill(0);
+    for (const idx of urut) {
+      let p = 0;
+      for (let k = 1; k < n; k += 1) if (total[k] < total[p]) p = k;
+      kolom[p].push(idx);
+      total[p] += tinggiBlok(idx);
+    }
+    if (kolom.some((k) => k.length === 0)) return kolomLista;
+    if (total.some((t) => t > kapasitas)) return kolomLista;
+    const lubangLama = kolomLista.reduce((a, k) => a + k.reduce((x, i) => x + tinggiBlok(i), 0), 0);
+    const lubangBaru = total.reduce((a, t) => a + t, 0);
+    const selisihLama = Math.max(...kolomLista.map((k) => k.reduce((x, i) => x + tinggiBlok(i), 0)))
+      - Math.min(...kolomLista.map((k) => k.reduce((x, i) => x + tinggiBlok(i), 0)));
+    const selisihBaru = Math.max(...total) - Math.min(...total);
+    return selisihBaru < selisihLama && lubangBaru <= lubangLama ? kolom : kolomLista;
+  });
+}
+
 export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   const kertas = kertasDariKode(opsi.kertas);
   const nKolom = opsi.jumlahKolom > 0 ? opsi.jumlahKolom : kolomOtomatis(kertas);
@@ -1063,10 +1101,14 @@ export function susunNaskahDariBlok(blokHtml, opsi = {}) {
   // Halaman terakhir yang punya PITA lebar penuh tidak diseimbangkan: ruang
   // kolomnya sudah dipotong tinggi pita, dan menyebar blok ke kolom lain bisa
   // membuat isinya meluber di bawah pita.
-  const pitaTerakhir = pitaHalaman[hasilKolom.halaman.length - 1] || [];
-  const halaman = pitaTerakhir.length
-    ? hasilKolom.halaman
-    : seimbangkanHalamanTerakhir(hasilKolom.halaman, tinggi, nKolom);
+  // Halaman ber-PITA (bacaan lebar penuh) TIDAK diseimbangkan: ruang kolomnya
+  // sudah dipotong tinggi pita, menyebar blok bisa membuatnya meluber.
+  const halaman = hasilKolom.halaman.map((kolomLista, h) => {
+    const pita = pitaHalaman[h] || [];
+    if (pita.length) return kolomLista;
+    const seimbang = seimbangkanKolomHalaman([kolomLista], tinggi, nKolom, kapasitas);
+    return Array.isArray(seimbang[0]) ? seimbang[0] : kolomLista;
+  });
   const totalHal = Math.max(1, halaman.length);
   // Watermark default HIDUP. Dimatikan hanya dengan `watermark: false`
   // eksplisit (mis. dokumen internal yang tidak akan beredar).
@@ -1110,6 +1152,7 @@ export default {
   AMBANG_BACAAN_PANJANG,
   FAKTOR_TINGGI_LEBAR_PENUH,
   seimbangkanHalamanTerakhir,
+  seimbangkanKolomHalaman,
   bacaanNaskahHtml,
   LOGO_WATERMARK,
   gayaWatermark,
