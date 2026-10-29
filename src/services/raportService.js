@@ -5,6 +5,11 @@ import {
   doc, serverTimestamp, Timestamp, orderBy 
 } from 'firebase/firestore';
 import { RAPORT_COLLECTIONS } from '../firebase/raportCollection';
+// 🔥 21 Okt 2026 (Fase 1 raport otomatis): snapshot yang diterbitkan mesin
+// otomatis bersifat IMUTABEL (terkunci). Alur manual guru tidak boleh
+// menimpanya diam-diam; dokumen blok:'proses' & sumber:'otomatis' juga tidak
+// boleh mencemari leaderboard/ranking sampai Fase 2 merancang tampilannya.
+import { bolehTimpaRaportFinal } from '../utils/raportOtomatis';
 
 // ============================================================
 // KONFIGURASI 5 DIMENSI PENILAIAN
@@ -344,7 +349,7 @@ export const getCatatanGuru = async (studentId, mapel, periode) => {
 export const exportToRaportScores = async (data) => {
   const { 
     studentId, studentName, mapel, topik, nilai, komponen, 
-    dimensi, teacherId, teacherName, catatan 
+    dimensi, teacherId, teacherName, catatan, dimensiSumber 
   } = data;
   
   const periode = new Date().toISOString().slice(0, 7);
@@ -392,6 +397,10 @@ export const exportToRaportScores = async (data) => {
     if (dimensi) {
       scoreData.dimensi = dimensi;
     }
+    // Label jujur asal angka dimensi ('input-guru' | 'konversi-nilai-tunggal').
+    if (dimensiSumber) {
+      scoreData.dimensiSumber = dimensiSumber;
+    }
     
     // Simpan catatan guru
     if (catatan) {
@@ -429,6 +438,7 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
   
   let results = [];
   let incompleteStudents = [];
+  let lockedStudents = [];
   
   for (const student of students) {
     const scores = { kuis: [], tugas: [], ujian: [] };
@@ -533,6 +543,18 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
         createdAt: serverTimestamp()
       });
     } else {
+      // 🔒 GUARD (Fase 1 raport otomatis): dokumen snapshot mesin otomatis
+      // TERKUNCI — generate manual harus MELEWATINYA, bukan menimpanya.
+      // Koreksi snapshot otomatis hanya lewat /admin/raport (paksa + alasan
+      // tertulis yang masuk audit_logs).
+      const dokLama = existingSnap.docs[0].data();
+      if (!bolehTimpaRaportFinal(dokLama).boleh) {
+        lockedStudents.push({
+          studentId: student.id, name: student.nama,
+          alasan: 'snapshot raport otomatis terkunci — dilewati',
+        });
+        continue;
+      }
       await updateDoc(doc(db, RAPORT_COLLECTIONS.FINAL, existingSnap.docs[0].id), finalData);
     }
     
@@ -553,6 +575,7 @@ export const syncAllScoresToRaport = async (periode, mapel = null) => {
     totalStudents: students.length,
     processed: results.length,
     incomplete: incompleteStudents,
+    locked: lockedStudents,
     results: results,
     mapel: mapel || "Semua"
   };
@@ -583,11 +606,14 @@ export const updateLeaderboard = async (periode, mapel = null) => {
   
   const finalSnap = await getDocs(finalQuery);
   
-  const allScores = finalSnap.docs.map((doc, index) => ({
-    id: doc.id,
-    ...doc.data(),
-    rank: index + 1
-  }));
+  // Saring snapshot mesin otomatis (sumber:'otomatis' / blok:'proses') —
+  // leaderboard alur manual tidak boleh tercemar sampai Fase 2 memutuskan
+  // cara menampilkannya. Rank dihitung SETELAH penyaringan.
+  const allScores = finalSnap.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }))
+    .filter((d) => d.sumber !== 'otomatis' && d.blok !== 'proses')
+    .sort((a, b) => (b.nilai_akhir || 0) - (a.nilai_akhir || 0))
+    .map((d, index) => ({ ...d, rank: index + 1 }));
   
   const leaderboardKey = mapel ? `${periode}_${mapel}` : periode;
   
@@ -654,7 +680,10 @@ export const getRankingGabungan = async (periode) => {
     where("periode", "==", periode)
   ));
   
-  const allFinals = finalSnap.docs.map(d => d.data());
+  // Saring snapshot otomatis/proses — lihat alasan di updateLeaderboard.
+  const allFinals = finalSnap.docs
+    .map(d => d.data())
+    .filter(d => d.sumber !== 'otomatis' && d.blok !== 'proses');
   
   // Group by student
   const studentMap = {};

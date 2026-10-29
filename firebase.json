@@ -1,0 +1,6 @@
+{
+  "//": "firebase.json SENGAJA hanya memuat pointer INDEXES. Kunci 'rules' TIDAK diisi sesuai docs/INSIDEN-KEAMANAN-FIRESTORE-TERBUKA.md & RUNBOOK-KEAMANAN: rules masih dikelola manual via Console sampai tahapan kredensial selesai — `firebase deploy` dari repo ini TIDAK AKAN menyentuh rules. Deploy index: `firebase deploy --only firestore:indexes` (dibutuhkan Fase 3 raport otomatis: query jendela per siswa).",
+  "firestore": {
+    "indexes": "firebase/firestore.indexes.json"
+  }
+}

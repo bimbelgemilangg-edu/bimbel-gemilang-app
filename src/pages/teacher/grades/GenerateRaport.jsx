@@ -46,13 +46,16 @@ const GenerateRaport = () => {
   const handleExportSingle = async (item) => {
     setLoading(true);
     try {
-      // Konversi ke 5 dimensi default
+      // 🔥 DIPENSIUNKAN (Fase 1 raport otomatis, 21 Okt 2026) — lihat
+      // penjelasan lengkap di TeacherInputGrade.jsx: tidak lagi mengarang
+      // variasi dimensi (nilai−5/−10); nilai tunggal disimpan apa adanya
+      // dengan label sumber yang jujur.
       const nilaiScore = item.score || 75;
       const defaultDimensi = {
         pemahaman: nilaiScore,
-        analisis: Math.max(0, nilaiScore - 5),
-        ketelitian: Math.max(0, nilaiScore - 10),
-        waktu: Math.max(0, nilaiScore - 5),
+        analisis: nilaiScore,
+        ketelitian: nilaiScore,
+        waktu: nilaiScore,
         dayaTangkap: nilaiScore
       };
       
@@ -68,6 +71,7 @@ const GenerateRaport = () => {
         nilai: avgNilai,
         komponen: item.source === 'kuis' ? 'kuis' : 'tugas',
         dimensi: defaultDimensi,
+        dimensiSumber: 'konversi-nilai-tunggal',
         teacherId: teacherData.id,
         teacherName: teacherData.nama
       });

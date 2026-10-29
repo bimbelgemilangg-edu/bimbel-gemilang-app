@@ -121,6 +121,7 @@ import ImportHasilScanPage from './pages/admin/bank-soal/ImportHasilScanPage';
 import DasborKesiapanStokPage from './pages/admin/bank-soal/DasborKesiapanStokPage';
 import RiwayatPaketPage from './pages/admin/bank-soal/RiwayatPaketPage';
 import LaporanOrangTuaPage from './pages/admin/LaporanOrangTuaPage';
+import RaportOtomatisPage from './pages/admin/RaportOtomatisPage';
 import MesinBankSoalPage from './pages/admin/bank-soal/MesinBankSoalPage';
 import JadwalTryOutOtomatisPage from './pages/admin/bank-soal/JadwalTryOutOtomatisPage';
 import DashboardAnalisis from './pages/admin/DashboardAnalisis';
@@ -744,6 +745,13 @@ function App() {
         <Route
           path="/admin/laporan-orang-tua"
           element={<AdminRoute><LaporanOrangTuaPage /></AdminRoute>}
+        />
+        {/* 📊 21 Okt 2026 (owner, Fase 1 raport otomatis): mesin agregasi log
+            aktivitas → raport bulanan + laporan besar 3 bulan. Pratinjau dulu,
+            terbitkan = snapshot terkunci di raport_final (sumber:'otomatis'). */}
+        <Route
+          path="/admin/raport"
+          element={<AdminRoute><RaportOtomatisPage /></AdminRoute>}
         />
         <Route
           path="/admin/bank-soal/terbitkan"

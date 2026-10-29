@@ -57,7 +57,15 @@ const StudentSmartReport = () => {
         orderBy("periode", "desc")
       );
       const snap = await getDocs(q);
-      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // 🔥 Fase 1 Raport Otomatis (21 Okt 2026): snapshot terbitan mesin
+      // (sumber:'otomatis', termasuk blok:'proses') BELUM ditampilkan di
+      // layar ini — UI lama merender dimensi yang belum terukur (null)
+      // sebagai angka 0, dan itu klaim palsu. Fase 2 merancang tampilan
+      // khusus (tren, peta topik, label "belum terukur"); sampai saat itu
+      // tampilan siswa tidak berubah sama sekali (zero-regression).
+      const data = snap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(r => r.sumber !== 'otomatis' && r.blok !== 'proses');
       setReports(data);
       
       // Ambil daftar mapel unik

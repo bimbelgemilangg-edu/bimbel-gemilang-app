@@ -265,13 +265,18 @@ const TeacherInputGrade = () => {
   const handleImportSingleForStudent = async (item) => {
     setSubmitting(true);
     try {
-      // Konversi nilai lama ke 5 dimensi (rata-rata)
+      // 🔥 DIPENSIUNKAN (Fase 1 raport otomatis, 21 Okt 2026): konverter ini
+      // dulu MENGARANG variasi dimensi (analisis = nilai−5, ketelitian =
+      // nilai−10) — angka terlihat terukur padahal tidak ada pengukurannya.
+      // Sekarang satu-satunya angka yang diketahui (nilai komponen) disimpan
+      // apa adanya + label sumber jujur; dimensi yang BENAR-BENAR terukur
+      // datang dari mesin otomatis (/admin/raport, sumber:'otomatis').
       const nilaiScore = item.score || 75;
       const defaultDimensi = {
         pemahaman: nilaiScore,
-        analisis: Math.max(0, nilaiScore - 5),
-        ketelitian: Math.max(0, nilaiScore - 10),
-        waktu: Math.max(0, nilaiScore - 5),
+        analisis: nilaiScore,
+        ketelitian: nilaiScore,
+        waktu: nilaiScore,
         dayaTangkap: nilaiScore
       };
       
@@ -287,6 +292,7 @@ const TeacherInputGrade = () => {
         nilai: avgNilai,
         komponen: item.source === 'kuis' ? 'kuis' : 'tugas',
         dimensi: defaultDimensi,
+        dimensiSumber: 'konversi-nilai-tunggal',
         teacherId: guru.id,
         teacherName: guru.nama
       });

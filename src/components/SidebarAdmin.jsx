@@ -204,6 +204,9 @@ const SidebarAdmin = () => {
         // absensi tentor -- validasi sesi & unduh riwayat, tanpa uang.
         { name: 'Sesi & Validasi Guru', path: '/admin/teachers/sesi', icon: <ClipboardCheck size={18} /> },
         { name: 'Rapor & Nilai',path: '/admin/grades',           icon: <TrendingUp size={18} /> },
+        // Raport Otomatis: agregasi log aktivitas → raport bulanan + laporan
+        // besar 3 bulan (Fase 1, keputusan owner 21 Okt 2026).
+        { name: 'Raport Otomatis', path: '/admin/raport', icon: <BarChart3 size={18} /> },
         // 📊 14 Okt 2026 (owner): analitik belajar TKA/UTBK per siswa.
         { name: 'Analitik Belajar', path: '/admin/analitik-belajar', icon: <LineChart size={18} /> },
         { name: 'Laporan Orang Tua', path: '/admin/laporan-orang-tua', icon: <Receipt size={18} /> },

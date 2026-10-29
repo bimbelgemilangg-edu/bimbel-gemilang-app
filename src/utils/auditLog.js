@@ -83,6 +83,11 @@ export const LABEL_AKSI = {
   'ptn.impor': 'Impor database PTN & prodi',
   'ptn.target.buat': 'Daftarkan target kampus siswa (versi 1)',
   'ptn.target.perbarui': 'Perbarui target kampus siswa (versi baru)',
+  // 📊 21 Okt 2026 (Fase 1 raport otomatis): penerbitan snapshot raport
+  // adalah aksi sensitif (imutabel, terkunci) — wajib berjejak audit.
+  'raport.terbitkan': 'Terbitkan raport otomatis (snapshot terkunci)',
+  'raport.terbitkan-ulang': 'TERBIT ULANG raport otomatis terkunci (paksa + alasan)',
+  'raport.backfill': 'Backfill raport otomatis Agu–Okt 2026',
 };
 
 /**
