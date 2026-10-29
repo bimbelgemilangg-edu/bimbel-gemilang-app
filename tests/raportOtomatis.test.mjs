@@ -463,7 +463,7 @@ uji('dokAkademikSaja menyaring blok proses (rata-rata siswa tidak tercemar)', ()
   assert.equal(dokAkademikSaja({ blok: 'proses' }), false);
 });
 uji('bangunDokumenRaport: struktur lengkap + dimensi null BUKAN 0', () => {
-  const { docsAkademik, dokProses } = bangunDokumenRaport(kosong);
+  const { dokProses } = bangunDokumenRaport(kosong);
   assert.equal(dokProses.data.blok, 'proses');
   assert.equal(dokProses.data.mapel, MAPEL_PROSES);
   assert.equal(dokProses.data.sumber, 'otomatis');
