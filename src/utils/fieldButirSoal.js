@@ -86,6 +86,31 @@ export function bacaanDari(soal) {
   return hasil;
 }
 
+/**
+ * Kunci kesamaan stimulus/wacana antar butir — SATU sumber kebenaran yang
+ * dipakai mesin cetak (kelompokkanStimulus di naskahSoal.js) dan pengacak
+ * urutan soal (acakSoalTryOut.js), supaya "bacaan yang sama" tidak pernah
+ * punya dua pengertian berbeda (cetak mengelompokkan A-B, pengacak malah
+ * memisahkan A-B).
+ *
+ * Urutan bukti:
+ *   1. `stimulusGrup`/`bacaan.grup` bila ada (kontrak impor data-grup);
+ *   2. sidik jari teks (160 karakter pertama, spasi dinormalkan) + URL
+ *      gambar — fallback untuk jalur impor yang tidak mengisi grup.
+ * @returns {string} kunci; '' bila butir tidak punya bacaan sama sekali.
+ */
+export function kunciStimulus(soal) {
+  const b = bacaanDari(soal);
+  if (!b) return '';
+  const grup = soal?.stimulusGrup || b.grup;
+  if (grup) return String(grup);
+  const gambar = (Array.isArray(b.gambar) ? b.gambar : [])
+    .map((g) => (typeof g === 'string' ? g : String(g?.url || g?.uploadedUrl || '')))
+    .filter(Boolean)
+    .join(',');
+  return `teks:${String(b.teks || '').replace(/\s+/g, ' ').trim().slice(0, 160)}|${gambar}`;
+}
+
 /** Identitas butir, sadar-alias. */
 export function identitasDari(soal) {
   return {
@@ -96,7 +121,7 @@ export function identitasDari(soal) {
   };
 }
 
-export default { WATERMARK, teksSoalDari, bacaanDari, identitasDari };
+export default { WATERMARK, teksSoalDari, bacaanDari, kunciStimulus, identitasDari };
 
 /**
  * Potong teks soal untuk kartu daftar TANPA membelah rumus di tengah

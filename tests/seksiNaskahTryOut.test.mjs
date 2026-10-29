@@ -28,6 +28,7 @@ import {
   rencanaSeksiNaskah,
   blokNaskahDariSeksi,
   perkiraanTinggiBlokSeksi,
+  daftarBlokPenuhSeksi,
 } from '../src/utils/seksiNaskahTryOut.js';
 import { susunNaskahDariBlok } from '../src/utils/naskahSoal.js';
 
@@ -124,5 +125,38 @@ assert.ok(hasil.fragmen.includes('Matematika'), 'judul seksi tampil di fragmen (
 assert.ok(hasil.fragmen.includes(`— 1 / ${hasil.jumlahHalaman} —`), 'kaki halaman hadir');
 assert.ok(hasil.jumlahHalaman >= 1 && hasil.jumlahKolom === 2);
 assert.ok(judulSeksiHtml('A & B').includes('&amp;'), 'judul seksi di-escape supaya aman disuntikkan');
+
+// ---- 6. WACANA BERSAMA (audit 2026-10-29: PDF TO B.Inggris 21 halaman —
+// satu bacaan yang dipakai 5 soal TERCETAK 5 KALI karena mesin seksi tidak
+// pernah memanggil kelompokkanStimulus): wacana kini dicetak SEKALI per grup
+// dengan penanda "untuk soal N–M", nomor tetap urut lanjut lintas seksi. ----
+const WACANA_SEKSI = 'Teks wacana bersama grup untuk uji mesin seksi naskah try out.';
+const soalW = (id, mapel, grup) => ({ ...soal(id, mapel), bacaan: { teks: WACANA_SEKSI, gambar: [], grup } });
+const seksiGrup = [
+  { judul: 'B.Inggris', soalList: [soalW('p', 'BI', 'g1'), soalW('q', 'BI', 'g1'), soal('r', 'BI'), soalW('s', 'BI', 'g2'), soalW('t', 'BI', 'g2')] },
+  { judul: 'Matematika', soalList: [soal('u', 'MTK')] },
+];
+const blokGrup = blokNaskahDariSeksi('siswa', { judul: 'TO Uji' }, seksiGrup, 90);
+assert.equal(blokGrup.length, 11, 'kop + 2 kepala seksi + 2 blok bacaan + 6 butir');
+const gabGrup = blokGrup.join('');
+assert.equal(gabGrup.split(WACANA_SEKSI).length - 1, 2, 'INVARIAN: wacana tercetak SEKALI per grup, bukan per butir');
+assert.ok(blokGrup[2].includes('untuk soal 1–2'), 'blok bacaan pertama berpenanda rentang');
+assert.ok(blokGrup[6].includes('untuk soal 4–5'), 'grup kedua sadar offset nomor (bukan mulai lagi dari 1)');
+const nomorGrup = [3, 4, 5, 7, 8, 10].map((i) => blokGrup[i].match(/nsk-no">(\d+)\./)?.[1]);
+assert.deepEqual(nomorGrup, ['1', '2', '3', '4', '5', '6'], 'nomor butir urut lanjut lintas seksi walau ada grup');
+assert.ok(!blokGrup[3].includes(WACANA_SEKSI), 'butir segolongan TIDAK mengulang wacana di dalam bloknya');
+
+// array pendamping SELARAS INDEKS dengan blok terkelompok
+const perkGrup = perkiraanTinggiBlokSeksi('siswa', seksiGrup, 90);
+assert.equal(perkGrup.length, blokGrup.length, 'perkiraan tinggi selaras blok terkelompok');
+assert.ok(perkGrup.every((t) => Number.isFinite(t) && t > 0), 'semua taksiran positif');
+const penuhGrup = daftarBlokPenuhSeksi('siswa', seksiGrup, 90);
+assert.equal(penuhGrup.length, blokGrup.length, 'bendera lebar penuh selaras blok');
+assert.ok(penuhGrup.every((p) => typeof p === 'boolean'), 'bendera berupa boolean semua');
+
+// mode kunci tidak ikut pengelompokan: satu blok per butir (kunci bukan tempat membaca)
+const blokKunciGrup = blokNaskahDariSeksi('kunci', { judul: 'TO Uji' }, seksiGrup, 90);
+assert.equal(blokKunciGrup.length, 1 + 2 + 6, 'kop + 2 kepala seksi + 6 butir kunci');
+assert.ok(!blokKunciGrup.join('').includes(WACANA_SEKSI), 'wacana tidak menyusup ke lembar kunci');
 
 console.log('OK tests/seksiNaskahTryOut.test.mjs — seksi naskah try out: nomor lanjut, kepala seksi jujur, tiada soal hilang');

@@ -81,7 +81,7 @@ export function butuhLebarPenuh(tinggiKolomMm, kapasitasMm) {
 // 🔥 2026-10-08: pembaca field sadar-alias + konstanta watermark dipusatkan
 // di fieldButirSoal.js supaya mesin cetak dan kartu baca layar tidak punya
 // dua pengertian berbeda soal "teks soal" dan "bacaan".
-import { teksSoalDari, bacaanDari, WATERMARK } from './fieldButirSoal.js';
+import { teksSoalDari, bacaanDari, kunciStimulus, WATERMARK } from './fieldButirSoal.js';
 import { kodePaketTampil } from './kodePaket.js';
 import { kodeSoalSiswa } from './kodeSoalSiswa.js';
 // 🔥 BARU (2026-10-10, permintaan owner): naskah cetak bergaya buku sumber --
@@ -699,28 +699,26 @@ export function kunciButirNaskahHtml(soal, nomor, opsiButir = {}) {
  * jauh di belakang memang layak dicetak ulang (siswa tidak disuruh membuka
  * halaman sebelumnya).
  */
-export function kelompokkanStimulus(daftar) {
-  const kunci = (s) => {
-    const b = bacaanDari(s);
-    if (!b) return '';
-    const grup = s?.stimulusGrup || b.grup;
-    if (grup) return String(grup);
-    return `teks:${String(b.teks || '').replace(/\s+/g, ' ').slice(0, 160)}|${(b.gambar || []).join(',')}`;
-  };
+export function kelompokkanStimulus(daftar, nomorAwal = 1) {
+  const kunci = (s) => kunciStimulus(s);
   const units = [];
   const daftarSoal = Array.isArray(daftar) ? daftar : [];
+  // Nomor mulai dari `nomorAwal` supaya mesin seksi (blokNaskahDariSeksi)
+  // bisa menjaga nomor URUT LANJUT lintas subtes sambil tetap mengelompokkan
+  // wacana per seksi.
+  const geser = Number.isFinite(nomorAwal) && nomorAwal > 1 ? Math.floor(nomorAwal) - 1 : 0;
   let i = 0;
   while (i < daftarSoal.length) {
     const k = kunci(daftarSoal[i]);
     if (!k) {
-      units.push({ jenis: 'butir', soal: daftarSoal[i], nomor: i + 1, tanpaBacaan: false });
+      units.push({ jenis: 'butir', soal: daftarSoal[i], nomor: i + 1 + geser, tanpaBacaan: false });
       i += 1;
       continue;
     }
     let j = i;
     while (j < daftarSoal.length && kunci(daftarSoal[j]) === k) j += 1;
-    units.push({ jenis: 'bacaan', bacaan: bacaanDari(daftarSoal[i]), dari: i + 1, sampai: j });
-    for (let q = i; q < j; q += 1) units.push({ jenis: 'butir', soal: daftarSoal[q], nomor: q + 1, tanpaBacaan: true });
+    units.push({ jenis: 'bacaan', bacaan: bacaanDari(daftarSoal[i]), dari: i + 1 + geser, sampai: j + geser });
+    for (let q = i; q < j; q += 1) units.push({ jenis: 'butir', soal: daftarSoal[q], nomor: q + 1 + geser, tanpaBacaan: true });
     i = j;
   }
   return units;
@@ -1061,22 +1059,49 @@ export function seimbangkanKolomHalaman(halaman, tinggi, kolomPerHalaman, kapasi
   return halaman.map((kolomLista) => {
     if (!Array.isArray(kolomLista) || kolomLista.length < 2) return kolomLista;
     const urut = kolomLista.flat().sort((a, b) => a - b);
-    const kolom = Array.from({ length: n }, () => []);
-    const total = new Array(n).fill(0);
-    for (const idx of urut) {
-      let p = 0;
-      for (let k = 1; k < n; k += 1) if (total[k] < total[p]) p = k;
-      kolom[p].push(idx);
-      total[p] += tinggiBlok(idx);
+    const m = urut.length;
+    if (m < n) return kolomLista;
+    // 🔥 2026-10-29 (audit owner: PDF naskah B.Inggris menunjukkan nomor
+    // tercetak SELANG-SELING antar kolom — 21,23,22,24 / 43,45,44): versi
+    // lama menyebar blok dengan greedy "kolom termuat dulu", yang bisa
+    // menghasilkan kolom [21,23] dan [22,24]. Di naskah ujian, siswa membaca
+    // kolom 1 atas-bawah lalu kolom 2 — nomor WAJIB urut lanjut, jadi satu-
+    // satunya penyebaran yang sah adalah POTONGAN BERURUTAN: kolom 1 = blok
+    // ke-1..k, kolom 2 = blok ke-(k+1)..m. Semua titik potong diuji (n=2)
+    // atau dikombinasikan (n>2, jumlah blok per halaman kecil) dan yang
+    // dipilih adalah potongan dengan selisih tinggi terkecil.
+    const pref = new Array(m + 1).fill(0);
+    for (let i = 0; i < m; i += 1) pref[i + 1] = pref[i] + tinggiBlok(urut[i]);
+    const tinggiRentang = (dari, sampai) => pref[sampai] - pref[dari];
+    const total = pref[m];
+    let terbaik = null;
+    const evaluasi = (potongan) => {
+      const batas = [0, ...potongan, m];
+      const t = [];
+      for (let c = 0; c < n; c += 1) t.push(tinggiRentang(batas[c], batas[c + 1]));
+      if (t.some((x) => x > kapasitas)) return;
+      const selisih = Math.max(...t) - Math.min(...t);
+      if (!terbaik || selisih < terbaik.selisih) terbaik = { selisih, batas };
+    };
+    if (n === 2) {
+      for (let k = 1; k < m; k += 1) evaluasi([k]);
+    } else {
+      const cari = (mulai, sisa, acc) => {
+        if (sisa === 0) { evaluasi(acc); return; }
+        for (let k = mulai; k <= m - sisa; k += 1) cari(k + 1, sisa - 1, [...acc, k]);
+      };
+      cari(1, n - 1, []);
     }
+    if (!terbaik) return kolomLista;
+    const kolom = [];
+    for (let c = 0; c < n; c += 1) kolom.push(urut.slice(terbaik.batas[c], terbaik.batas[c + 1]));
     if (kolom.some((k) => k.length === 0)) return kolomLista;
-    if (total.some((t) => t > kapasitas)) return kolomLista;
     const lubangLama = kolomLista.reduce((a, k) => a + k.reduce((x, i) => x + tinggiBlok(i), 0), 0);
-    const lubangBaru = total.reduce((a, t) => a + t, 0);
     const selisihLama = Math.max(...kolomLista.map((k) => k.reduce((x, i) => x + tinggiBlok(i), 0)))
       - Math.min(...kolomLista.map((k) => k.reduce((x, i) => x + tinggiBlok(i), 0)));
-    const selisihBaru = Math.max(...total) - Math.min(...total);
-    return selisihBaru < selisihLama && lubangBaru <= lubangLama ? kolom : kolomLista;
+    // Total tinggi tidak pernah berubah (himpunan blok sama), jadi syarat
+    // "lubangBaru <= lubangLama" otomatis terpenuhi; tetap ditulis jujur.
+    return terbaik.selisih < selisihLama && total <= lubangLama ? kolom : kolomLista;
   });
 }
 

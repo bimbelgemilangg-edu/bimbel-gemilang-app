@@ -158,3 +158,14 @@ test('INVARIAN: panjang daftarTinggiPerkiraan == panjang daftarBlokNaskah', () =
     assert.ok(tinggi.every((t) => Number.isFinite(t) && t > 0));
   }
 });
+
+// 🔥 2026-10-29: mesin seksi (blokNaskahDariSeksi) mengelompokkan per subtes
+// dengan nomor URUT LANJUT lintas seksi — kelompokkanStimulus harus bisa
+// memulai penomoran dari angka berapa pun, bukan selalu 1.
+test('kelompokkanStimulus menerima nomor awal (seksi lintas subtes tetap urut lanjut)', () => {
+  const units = kelompokkanStimulus([butir(1, 'g1'), butir(2, 'g1')], 10);
+  assert.equal(units[0].jenis, 'bacaan');
+  assert.equal(units[0].dari, 10);
+  assert.equal(units[0].sampai, 11);
+  assert.deepEqual(units.slice(1).map((u) => u.nomor), [10, 11]);
+});

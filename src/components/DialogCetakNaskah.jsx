@@ -45,11 +45,12 @@ import {
   kertasDariKode,
   kolomOtomatis,
   lebarKolomMm,
+  kapasitasKolomMm,
   susunNaskahDariBlok,
   GAYA_NASKAH,
 } from '../utils/naskahSoal';
 import { kodePaketTampil } from '../utils/kodePaket.js';
-import { rencanaSeksiNaskah, blokNaskahDariSeksi, perkiraanTinggiBlokSeksi } from '../utils/seksiNaskahTryOut';
+import { rencanaSeksiNaskah, blokNaskahDariSeksi, perkiraanTinggiBlokSeksi, daftarBlokPenuhSeksi } from '../utils/seksiNaskahTryOut';
 import { cetakLewatIframe } from '../utils/kwitansi';
 
 const PX_PER_MM = 96 / 25.4;
@@ -92,9 +93,17 @@ export default function DialogCetakNaskah({ input, onClose }) {
   const kertas = kertasDariKode(kodeKertas);
   const jumlahKolom = kolomPaksa > 0 ? kolomPaksa : kolomOtomatis(kertas);
   const lebarKolom = lebarKolomMm(kertas, jumlahKolom);
+  // 🔥 2026-10-29 (audit owner: satu bacaan dicetak berulang per soal di PDF
+  // TO Bahasa Inggris): mesin seksi kini butuh kapasitas kolom + jumlah kolom
+  // supaya (a) wacana bersama dikelompokkan jadi SATU blok "untuk soal N-M",
+  // (b) wacana raksasa bisa naik ke pita lebar penuh, sama seperti mesin
+  // halaman guru CetakPaketLatihan.
+  const kapasitasMm = kapasitasKolomMm(kertas);
+  const opsiSeksi = { kapasitasMm, kolomPerHalaman: jumlahKolom };
 
-  const blokSiswa = daftarSoal.length ? blokNaskahDariSeksi('siswa', meta, seksi, lebarKolom, rasioGambar) : [];
-  const blokKunci = daftarSoal.length ? blokNaskahDariSeksi('kunci', meta, seksi, lebarKolom, rasioGambar) : [];
+  const blokSiswa = daftarSoal.length ? blokNaskahDariSeksi('siswa', meta, seksi, lebarKolom, rasioGambar, opsiSeksi) : [];
+  const blokKunci = daftarSoal.length ? blokNaskahDariSeksi('kunci', meta, seksi, lebarKolom, rasioGambar, opsiSeksi) : [];
+  const penuhSiswa = daftarSoal.length ? daftarBlokPenuhSeksi('siswa', seksi, lebarKolom, rasioGambar, opsiSeksi) : [];
 
   // Lapisan ukur tersembunyi: tinggi SUNGGUHAN tiap blok (mm) dibaca dari
   // DOM dengan lebar kolom yang sama persis dengan dokumen cetak. KENAPA
@@ -147,11 +156,11 @@ export default function DialogCetakNaskah({ input, onClose }) {
   // Tinggi taksiran selaras blok (kop=26mm di indeks 0); susunNaskahDariBlok
   // memakai tinggiPerkiraanMm[i-1] untuk blok i, jadi yang diserahkan adalah
   // versi tanpa kop sebagai cadangan sebelum pengukuran layar tiba.
-  const perkiraanSiswa = perkiraanTinggiBlokSeksi('siswa', seksi, lebarKolom, rasioGambar).slice(1);
-  const perkiraanKunci = perkiraanTinggiBlokSeksi('kunci', seksi, lebarKolom, rasioGambar).slice(1);
+  const perkiraanSiswa = perkiraanTinggiBlokSeksi('siswa', seksi, lebarKolom, rasioGambar, opsiSeksi).slice(1);
+  const perkiraanKunci = perkiraanTinggiBlokSeksi('kunci', seksi, lebarKolom, rasioGambar, opsiSeksi).slice(1);
 
   const naskahSiswa = blokSiswa.length
-    ? susunNaskahDariBlok(blokSiswa, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiSiswa, tinggiPerkiraanMm: perkiraanSiswa, cssTambahan: katexCssInline })
+    ? susunNaskahDariBlok(blokSiswa, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiSiswa, tinggiPerkiraanMm: perkiraanSiswa, blokPenuh: penuhSiswa, cssTambahan: katexCssInline })
     : null;
   const naskahKunci = blokKunci.length
     ? susunNaskahDariBlok(blokKunci, { kertas: kodeKertas, jumlahKolom, tinggiBlokMm: tinggiKunci, tinggiPerkiraanMm: perkiraanKunci, cssTambahan: katexCssInline })

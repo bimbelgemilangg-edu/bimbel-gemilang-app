@@ -34,6 +34,10 @@ import {
   escapeHtml,
   WATERMARK,
   estimasiTinggiBlokMm,
+  kelompokkanStimulus,
+  blokBacaanNaskah,
+  butuhLebarPenuh,
+  ambangBacaanPanjangMm,
 } from './naskahSoal.js';
 
 /** Kepala seksi naskah (pita berbingkai tipis, tidak boleh terbelah kolom). */
@@ -116,9 +120,20 @@ export function rencanaSeksiNaskah(paket) {
  * Blok 0 selalu kepala dokumen; sesudahnya kepala seksi (bila ada)
  * dan butir dengan NOMOR URUT LANJUT lintas seksi.
  * Panjang array inilah yang diukur lapisan ukur halaman -- jadi
- * pasangan perkiraannya lihat `perkiraanTinggiBlokSeksi`.
+ * pasangan perkiraannya lihat `perkiraanTinggiBlokSeksi` dan
+ * pasangan bendera lebar-penuhnya lihat `daftarBlokPenuhSeksi`.
+ *
+ * 🔥 2026-10-29 (audit owner: PDF TO Bahasa Inggris 21 halaman -- satu
+ * bacaan yang dipakai 5 soal TERCETAK 5 KALI): mesin seksi kini memakai
+ * `kelompokkanStimulus` per seksi, sama seperti mesin halaman guru
+ * (daftarBlokNaskah). Wacana bersama dicetak SEKALI sebagai blok
+ * "Bacalah teks berikut untuk soal N-M", butir-butirnya menyusul tanpa
+ * mengulang teks. Nomor tetap urut lanjut lintas seksi: pengelompokan
+ * dipanggil dengan `nomorAwal` = nomor butir berikutnya.
  */
-export function blokNaskahDariSeksi(mode, meta, seksi, lebarKolom, rasioGambar = {}) {
+export function blokNaskahDariSeksi(mode, meta, seksi, lebarKolom, rasioGambar = {}, opsi = {}) {
+  const kapasitasMm = Number(opsi.kapasitasMm) > 0 ? Number(opsi.kapasitasMm) : 0;
+  const kolomPerHalaman = opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2;
   const kop = mode === 'kunci'
     ? `<div class="nsk-peringatan">PEGANGAN GURU — JANGAN DICETAK UNTUK SISWA</div>${kopNaskahHtml(meta, 'KUNCI & PEMBAHASAN', false)}`
     : kopNaskahHtml(meta, 'NASKAH SOAL', true);
@@ -126,29 +141,86 @@ export function blokNaskahDariSeksi(mode, meta, seksi, lebarKolom, rasioGambar =
   let nomor = 1;
   (Array.isArray(seksi) ? seksi : []).forEach((sec) => {
     if (sec.judul) blok.push(judulSeksiHtml(sec.judul, meta?.kodePaket || meta?.paket?.kodePaket || ''));
-    (sec.soalList || []).forEach((s) => {
-      blok.push(mode === 'kunci'
-        ? kunciButirNaskahHtml(s, nomor)
-        : butirNaskahHtml(s, nomor, lebarKolom, rasioGambar));
-      nomor += 1;
-    });
+    if (mode === 'kunci') {
+      (sec.soalList || []).forEach((s) => {
+        blok.push(kunciButirNaskahHtml(s, nomor));
+        nomor += 1;
+      });
+      return;
+    }
+    for (const unit of kelompokkanStimulus(sec.soalList || [], nomor)) {
+      if (unit.jenis === 'bacaan') {
+        for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) {
+          blok.push(chunk.html);
+        }
+      } else {
+        blok.push(butirNaskahHtml(unit.soal, unit.nomor, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+        nomor = unit.nomor + 1;
+      }
+    }
   });
   return blok;
 }
 
 /**
  * Taksiran tinggi (mm) SELARAS INDEKS dengan keluaran blokNaskahDariSeksi
- * (kepala=26mm, kepala seksi=9mm, butir=estimasi mesin naskah). Dipakai
- * sebagai cadangan susunNaskahDariBlok sebelum pengukuran layar tiba;
- * kalau panjangnya tidak sama dengan jumlah blok, susunan awal melenceng.
+ * (kepala=26mm, kepala seksi=9mm, blok bacaan=tinggi chunk, butir=estimasi
+ * mesin naskah dengan `tanpaBacaan` yang sama). Dipakai sebagai cadangan
+ * susunNaskahDariBlok sebelum pengukuran layar tiba; kalau panjangnya
+ * tidak sama dengan jumlah blok, susunan awal melenceng.
  */
-export function perkiraanTinggiBlokSeksi(mode, seksi, lebarKolom, rasioGambar = {}) {
+export function perkiraanTinggiBlokSeksi(mode, seksi, lebarKolom, rasioGambar = {}, opsi = {}) {
+  const kapasitasMm = Number(opsi.kapasitasMm) > 0 ? Number(opsi.kapasitasMm) : 0;
+  const kolomPerHalaman = opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2;
   const tinggi = [26];
   (Array.isArray(seksi) ? seksi : []).forEach((sec) => {
     if (sec.judul) tinggi.push(9);
-    (sec.soalList || []).forEach((s) => tinggi.push(estimasiTinggiBlokMm(mode, s, lebarKolom, rasioGambar)));
+    if (mode === 'kunci') {
+      (sec.soalList || []).forEach((s) => tinggi.push(estimasiTinggiBlokMm('kunci', s, lebarKolom, rasioGambar)));
+      return;
+    }
+    for (const unit of kelompokkanStimulus(sec.soalList || [])) {
+      if (unit.jenis === 'bacaan') {
+        for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) {
+          tinggi.push(chunk.tinggi);
+        }
+      } else {
+        tinggi.push(estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan }));
+      }
+    }
   });
   return tinggi;
+}
+
+/**
+ * Bendera "blok ini halaman lebar penuh", SELARAS INDEKS dengan keluaran
+ * blokNaskahDariSeksi — padanan `daftarBlokPenuh` milik mesin naskah.
+ * Tanpa array ini, wacana panjang hasil pengelompokan tidak pernah naik ke
+ * pita lebar penuh di DialogCetakNaskah dan tetap diremas di kolom sempit.
+ */
+export function daftarBlokPenuhSeksi(mode, seksi, lebarKolom, rasioGambar = {}, opsi = {}) {
+  const kapasitasMm = Number(opsi.kapasitasMm) > 0 ? Number(opsi.kapasitasMm) : 0;
+  const kolomPerHalaman = opsi.kolomPerHalaman > 1 ? opsi.kolomPerHalaman : 2;
+  const ambang = kapasitasMm > 0 ? ambangBacaanPanjangMm(kapasitasMm) : Infinity;
+  const tanda = [false]; // kop
+  (Array.isArray(seksi) ? seksi : []).forEach((sec) => {
+    if (sec.judul) tanda.push(false);
+    if (mode === 'kunci') {
+      (sec.soalList || []).forEach(() => tanda.push(false));
+      return;
+    }
+    for (const unit of kelompokkanStimulus(sec.soalList || [])) {
+      if (unit.jenis === 'bacaan') {
+        for (const chunk of blokBacaanNaskah(unit, lebarKolom, rasioGambar, kapasitasMm, kolomPerHalaman)) {
+          tanda.push(!!chunk.penuh);
+        }
+      } else {
+        const t = estimasiTinggiBlokMm('siswa', unit.soal, lebarKolom, rasioGambar, { tanpaBacaan: unit.tanpaBacaan });
+        tanda.push(butuhLebarPenuh(t, ambang));
+      }
+    }
+  });
+  return tanda;
 }
 
 export default {
@@ -157,4 +229,5 @@ export default {
   rencanaSeksiNaskah,
   blokNaskahDariSeksi,
   perkiraanTinggiBlokSeksi,
+  daftarBlokPenuhSeksi,
 };
