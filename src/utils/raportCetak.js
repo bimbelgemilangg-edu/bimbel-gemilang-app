@@ -493,6 +493,15 @@ export function siapkanModelRaport({
     .sort((a, b) => String(a.mapel || '').localeCompare(String(b.mapel || '')));
   const proses = dataDok(dokProses) || null;
   const sumberIdentitas = proses || akademikDocs[0] || {};
+  // v1.5: fokus pendampingan per mapel untuk blok rencana T3 — diambil dari
+  // rencana pengayaan yang ditulis tentor (sumber primer), bila ada.
+  const akademik = akademikDocs.map((d) => {
+    const g = (Array.isArray(laporanGuru) ? laporanGuru : []).find(
+      (x) => x && (x.kodeMapel === d.mapelKode || x.namaMapel === d.mapel),
+    );
+    const fokus = String(g?.pengayaan || '').trim();
+    return fokus ? { ...d, rencana_fokus: fokus } : d;
+  });
   const rataRata = proses && Number.isFinite(proses.rataRataAkademik)
     ? proses.rataRataAkademik
     : (() => {
@@ -517,7 +526,7 @@ export function siapkanModelRaport({
     versiMesin: sumberIdentitas.versiMesin || '',
     jejak: sumberIdentitas.jejak || null,
     terkunci: sumberIdentitas.terkunci === true,
-    akademik: akademikDocs,
+    akademik,
     proses,
     ringkasan: {
       rataRataAkademik: rataRata,
@@ -618,6 +627,13 @@ function bagianAkademik(m) {
     `<div class="rp-kecil rp-muted">${escapeHtml(u.tanggal)} · ${escapeHtml(u.paketJudul)} · ${fmt(u.nilai)} (${escapeHtml(u.dasar || 'persen')}${u.skala != null ? `, skala ${u.skala}` : ''})</div>`
   )).join('');
   const predikat = m.predikat || {};
+  // v1.5: mapel tier T3 (belum ada asesmen periode ini) mendapat baris RENCANA
+  // konkret di bawah deskripsi — laporan orang tua selalu menutup dengan
+  // langkah depan, bukan kekosongan.
+  const adaKomponen = ['kuis', 'tugas', 'ujian'].some((k) => komponen[k] && Number.isFinite(komponen[k].total));
+  const barisRencana = adaKomponen ? '' : (
+    `<div class="rp-kecil" style="color:#475569;margin-top:3px">Rencana: asesmen ${escapeHtml(m.mapel)} dijadwalkan pada periode berikutnya; fokus pendampingan: ${escapeHtml(m.rencana_fokus || 'penguatan materi prasyarat secara terbimbing bersama tentor')}.</div>`
+  );
   return `
 <tr>
   <td><b>${escapeHtml(m.mapel)}</b></td>
@@ -626,7 +642,7 @@ function bagianAkademik(m) {
   <td>${selKomponen(komponen.ujian)}${rincianUjian}</td>
   <td style="text-align:center"><b style="font-size:13px">${fmt(m.nilai_akhir)}</b></td>
   <td style="text-align:center;color:${warnaPredikatHuruf(predikat.huruf)};font-weight:800">${escapeHtml(predikat.huruf || '—')}</td>
-  <td class="rp-kecil">${escapeHtml(deskripsiMapel(m))}</td>
+  <td class="rp-kecil">${escapeHtml(deskripsiMapel(m))}${barisRencana}</td>
 </tr>`;
 }
 

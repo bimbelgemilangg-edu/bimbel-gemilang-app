@@ -98,6 +98,7 @@ export default function RaportOtomatisPage() {
   const [hasil, setHasil] = useState(null);
   const [sedangMenghitung, setSedangMenghitung] = useState(false);
   const urutanHitung = useRef(0); // penanda balapan antar hitungan pratinjau
+  const [petaCapaian, setPetaCapaian] = useState({}); // v1.5: studentId -> jumlah dok capaian tentor periode pratinjau
   const [dibuka, setDibuka] = useState(null); // studentId baris yang diperluas
   const [paksa, setPaksa] = useState(false);
   const [alasanPaksa, setAlasanPaksa] = useState('');
@@ -440,7 +441,7 @@ export default function RaportOtomatisPage() {
     }
   }, []);
 
-  // Capaian yang diisi guru (laporan_belajar) untuk satu periode → peta
+  // v1.4: capaian yang diisi guru (laporan_belajar) untuk satu periode → peta
   // studentId -> [dok capaian]. Query equality tunggal (periode) agar tidak
   // butuh composite index; pengelompokan per siswa di sisi klien.
   const ambilLaporanGuru = useCallback(async (periode) => {
@@ -459,6 +460,23 @@ export default function RaportOtomatisPage() {
       return {}; // capaian guru bersifat memperkaya — gagal baca tak memblokir cetakan
     }
   }, []);
+
+  // v1.5: kehadiran capaian tentor per siswa untuk periode pratinjau aktif —
+  // mengisi ikon ✍️ pada chip profil bukti & alasan di Antrean Aksi Bukti.
+  useEffect(() => {
+    let batal = false;
+    const periode = hasil?.periode?.label || '';
+    if (!periode) { setPetaCapaian({}); return undefined; }
+    ambilLaporanGuru(periode)
+      .then((peta) => {
+        if (batal) return;
+        const ring = {};
+        for (const [sid, arr] of Object.entries(peta)) ring[sid] = arr.length;
+        setPetaCapaian(ring);
+      })
+      .catch(() => { if (!batal) setPetaCapaian({}); });
+    return () => { batal = true; };
+  }, [hasil?.periode?.label, ambilLaporanGuru]);
 
   const cetakSatu = useCallback(async (r) => {
     try {
@@ -541,6 +559,8 @@ export default function RaportOtomatisPage() {
   // & cetak SEMUA disembunyikan supaya baris basi dari filter lain tak terlihat.
   const pratinjauBasi = !h || h.kunciFilter !== kunciFilterAktif || sedangMenghitung;
   const detail = !pratinjauBasi && dibuka ? h.siswa.find((x) => x.studentId === dibuka) : null;
+  // v1.5: siswa tanpa bukti terukur penuh (T1=0) = antrean aksi bukti periode ini.
+  const perluAksi = !pratinjauBasi ? h.siswa.filter((r) => !(r.kelayakan?.profilBukti?.t1)) : [];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
@@ -647,12 +667,13 @@ export default function RaportOtomatisPage() {
 
         {/* ============ HASIL PRATINJAU ============ */}
         {!pratinjauBasi ? (
+          <>
           <div style={{ ...gayaKartu, marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
               <b style={{ fontSize: 14 }}>Pratinjau periode {h.periode.label}</b>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11.5, color: '#475569' }}>
-                  {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} layak terbit penuh · {h.ringkasan.belumCukup} data belum cukup · {h.ringkasan.totalPelanggaran} catatan pengawasan{h.ringkasan.siswaDikecualikan ? ` · ${h.ringkasan.siswaDikecualikan.jumlah} siswa nonaktif/diblokir dikecualikan` : ''}
+                  {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} bukti terukur penuh · {perluAksi.length} perlu rencana/aksi bukti · {h.ringkasan.totalPelanggaran} catatan pengawasan{h.ringkasan.siswaDikecualikan ? ` · ${h.ringkasan.siswaDikecualikan.jumlah} siswa nonaktif/diblokir dikecualikan` : ''}
                 </span>
                 <button type="button" onClick={() => { setCetakSetelahTerbit(true); terbitkan(); }} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
                   📄 Terbitkan & Cetak PDF ({h.ringkasan.totalSiswa} siswa)
@@ -718,9 +739,19 @@ export default function RaportOtomatisPage() {
                       <td style={gayaTd}>{r.kelayakan.mapelLayak}/{r.kelayakan.mapelTotal}</td>
                       <td style={gayaTd}>{r.proses.integritas.jumlahPelanggaran > 0 ? <span style={{ color: '#b45309', fontWeight: 700 }}>{r.proses.integritas.jumlahPelanggaran} catatan</span> : 'bersih'}</td>
                       <td style={gayaTd}>
-                        <span style={{ fontSize: 10.5, fontWeight: 700, color: r.akademik.statusData === 'lengkap' ? '#166534' : r.akademik.statusData === 'sebagian' ? '#b45309' : '#991b1b' }}>
-                          {r.akademik.statusData === 'lengkap' ? 'LENGKAP' : r.akademik.statusData === 'sebagian' ? 'SEBAGIAN' : 'DATA BELUM CUKUP'}
-                        </span>
+                        {(() => {
+                          // v1.5: chip PROFIL BUKTI netral menggantikan label merah
+                          // 'DATA BELUM CUKUP' — kekurangan jadi daftar kerja, bukan vonis.
+                          const pb = r.kelayakan?.profilBukti || { t1: r.kelayakan?.mapelLayak || 0, t2: 0, t3: Math.max(0, (r.kelayakan?.mapelTotal || 0) - (r.kelayakan?.mapelLayak || 0)) };
+                          const adaGuru = (petaCapaian[r.studentId] || 0) > 0;
+                          const warna = pb.t1 > 0 ? '#166534' : pb.t2 > 0 ? '#b45309' : '#475569';
+                          const latar = pb.t1 > 0 ? '#dcfce7' : pb.t2 > 0 ? '#fef3c7' : '#f1f5f9';
+                          return (
+                            <span title={`Diagnosa internal: ${r.akademik.statusData}`} style={{ fontSize: 10.5, fontWeight: 700, color: warna, background: latar, border: '1px solid #e2e8f0', borderRadius: 99, padding: '2px 8px', whiteSpace: 'nowrap' }}>
+                              {pb.t1} terukur · {pb.t2} awal · {pb.t3} rencana{adaGuru ? ' · ✍️ tentor' : ''}
+                            </span>
+                          );
+                        })()}
                       </td>
                     </tr>
                   ))}
@@ -729,6 +760,36 @@ export default function RaportOtomatisPage() {
             </div>
             <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>Klik baris untuk rincian per siswa (mapel, dimensi, proses, tren, peta topik).</div>
           </div>
+          {perluAksi.length > 0 && (
+            <div style={{ ...gayaKartu, marginBottom: 14, borderColor: '#fde68a' }}>
+              <b style={{ fontSize: 13.5, color: '#92400e' }}>🗂 Antrean Aksi Bukti — {perluAksi.length} siswa butuh tindak lanjut periode ini</b>
+              <div style={{ fontSize: 11, color: '#78350f', marginTop: 3 }}>
+                "Belum terukur" adalah daftar kerja lembaga, bukan vonis untuk anak: setiap baris punya pemilik aksi.
+              </div>
+              <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 11.5, color: '#475569', lineHeight: 1.6 }}>
+                {perluAksi.slice(0, 12).map((r) => {
+                  const t3names = (r.kelayakan?.tierPerMapel || []).filter((t) => t.tier === 'T3').map((t) => t.nama);
+                  const aksi = [];
+                  if (t3names.length) aksi.push(`${t3names.join(', ')}: jadwalkan kuis/try out pada periode berikutnya`);
+                  if (!(petaCapaian[r.studentId] || 0)) aksi.push('tentor belum mengisi capaian → ingatkan via menu Laporan Belajar');
+                  const kh = r.proses?.detail_proses?.kehadiran;
+                  if (!kh || !kh.total) aksi.push('kehadiran belum tercatat → konfirmasi ke orang tua/CS');
+                  return (
+                    <li key={r.studentId} style={{ marginTop: 4 }}>
+                      <b>{r.studentName}</b> ({r.studentKelas || '—'}) — {aksi.join('; ') || 'tinjau rincian per siswa'}
+                    </li>
+                  );
+                })}
+                {perluAksi.length > 12 && <li style={{ marginTop: 4 }}>… dan {perluAksi.length - 12} siswa lain (lihat chip profil bukti di tabel).</li>}
+              </ul>
+            </div>
+          )}
+          {perluAksi.length === 0 && h.siswa.length > 0 && (
+            <div style={{ ...gayaKartu, marginBottom: 14, borderColor: '#bbf7d0', color: '#166534', fontSize: 12 }}>
+              ✅ Semua siswa pada sasaran ini memiliki bukti terukur penuh periode ini — tidak ada aksi bukti tertunda.
+            </div>
+          )}
+          </>
         ) : (
           <div style={{ ...gayaKartu, marginBottom: 14, padding: '18px 16px', color: '#475569', fontSize: 12.5 }}>
             ⏳ Menghitung pratinjau untuk filter yang terpilih (periode · jenjang · kelas)…

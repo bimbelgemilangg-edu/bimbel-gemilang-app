@@ -59,7 +59,7 @@
 // ============================================================
 
 import { kodeMapel as kodeMapelDariNama } from './aliasMapel.js';
-import { mapelBerlaku, petakanNamaMapel } from './kurikulumMerdeka.js';
+import { mapelBerlaku, petakanNamaMapel, daftarMapelUntuk } from './kurikulumMerdeka.js';
 import { jenjangBaku } from './jenjangBaku.js';
 import { KATALOG_MAPEL, MAPEL_UTBK } from './mesinTaksonomiSoal.js';
 import {
@@ -67,7 +67,7 @@ import {
 } from './skorSoalTryOut.js';
 import { hitungSkalaSesi } from './hitungSkalaSesi.js';
 
-export const VERSI_MESIN = 'v1.3'; // v1.3: laporan naratif otomatis — nol frasa 'data belum cukup/lengkap/valid' di wajah orang tua
+export const VERSI_MESIN = 'v1.5'; // v1.5: model bukti bertingkat (T1/T2/T3) — 'data belum cukup' jadi profil bukti + antrean aksi
 
 /** mapel pseudo untuk dokumen Blok B+C (proses, tren, peta topik). */
 export const MAPEL_PROSES = 'Proses & Karakter';
@@ -707,6 +707,27 @@ export function hitungRaportSiswa({
     mapelDikesampingkan.push({ kode, nama: namaMapel(kode), alasan: cek.alasan });
     return false;
   });
+  // v1.5: mapel yang DIDAFTARKAN siswa (enrolledSubjects) tetapi belum punya
+  // asesmen pada periode ini masuk laporan sebagai tier T3 — baris rencana
+  // jujur untuk orang tua ("asesmen dijadwalkan periode berikutnya"), bukan
+  // ruang kosong. 'semua' diurai lewat peta kurikulum per jenjang/kelas.
+  const kodeTerdaftar = new Set();
+  const enrolledMentah = Array.isArray(profil.profil.enrolledSubjects) ? profil.profil.enrolledSubjects : [];
+  for (const e of enrolledMentah) {
+    const k = String(e || '').trim().toLowerCase();
+    if (!k) continue;
+    if (k === 'semua') {
+      for (const m of daftarMapelUntuk({ jenjang: konteksJenjang.jenjang, kelas: konteksJenjang.kelas })) {
+        kodeTerdaftar.add(String(m.kode || '').toLowerCase());
+      }
+    } else kodeTerdaftar.add(k);
+  }
+  for (const kode of kodeTerdaftar) {
+    if (!kode || kodeSemua.has(kode) || kodeSah.includes(kode)) continue;
+    if (!mapelSahUntukSiswa(kode, konteksJenjang).sah) continue; // jaring pengaman tetap
+    kodeSah.push(kode);
+  }
+  kodeSah.sort();
   const perMapel = [];
   for (const kode of kodeSah) {
     const kuisMapel = kuis.filter((k) => normalisasiMapelKuis(k) === kode);
@@ -744,7 +765,8 @@ export function hitungRaportSiswa({
     }
     const titikData = nilaiKuis.length + semuaTugas.length + nilaiUjian.length;
     const jumlahKomponen = ['kuis', 'tugas', 'ujian'].filter((k) => komponen[k].ada).length;
-    const layak = jumlahKomponen >= 2 && titikData >= 3;
+    const tier = tierBuktiDariHitungan(jumlahKomponen, titikData);
+    const layak = tier === 'T1';
     if (!layak && jumlahKomponen > 0) {
       catatan.push(`${namaMapel(kode)}: gambaran awal dari ${jumlahKomponen} sumber asesmen (${titikData} titik nilai) — capaian dimatangkan otomatis oleh asesmen berikutnya.`);
     }
@@ -768,7 +790,7 @@ export function hitungRaportSiswa({
 
     perMapel.push({
       kode, nama: namaMapel(kode), komponen, bobotEfektif: bobot,
-      nilaiAkhir, predikat: predikatDariNilai(nilaiAkhir), layak,
+      nilaiAkhir, predikat: predikatDariNilai(nilaiAkhir), layak, tier,
       titikData, jumlahKomponen, rincianUjian, dimensi: dimensiMapel,
     });
   }
@@ -938,6 +960,9 @@ export function hitungRaportSiswa({
       layakTerbit: mapelLayak.length > 0,
       mapelLayak: mapelLayak.length, mapelTotal: perMapel.length,
       alasan: mapelLayak.length ? '' : 'Sebagian mapel belum menjadwalkan kuis/try out pada periode ini — laporan diterbitkan dengan angka dari asesmen yang sudah berjalan.',
+      // v1.5: profil bukti bertingkat — dasar chip admin & Antrean Aksi Bukti.
+      profilBukti: profilBuktiSiswa(perMapel),
+      tierPerMapel: perMapel.map((m) => ({ kode: m.kode, nama: m.nama, tier: m.tier })),
     },
   };
 }
@@ -955,6 +980,28 @@ export function cocokSasaran(r = {}, sasaran = {}) {
   if (j && String(r.jenjang || '').trim() !== j) return false;
   if (k && String(r.studentKelas || '').trim() !== k) return false;
   return true;
+}
+
+/** v1.5: tier bukti SATU mapel — T1 terukur penuh (aturan layak lama TIDAK
+ * diturunkan: >=2 komponen & >=3 titik), T2 gambaran awal (ada asesmen tapi
+ * di bawah ambang), T3 dalam penjadwalan (belum ada asesmen periode ini).
+ * Satu sumber untuk mesin, dokumen terbit, cetakan, dan layar admin. */
+export function tierBuktiDariHitungan(jumlahKomponen = 0, titikData = 0) {
+  if (jumlahKomponen >= 2 && titikData >= 3) return 'T1';
+  if (jumlahKomponen > 0) return 'T2';
+  return 'T3';
+}
+
+/** Tier dari entri perMapel hasil mesin. */
+export function tierBuktiMapel(m = {}) {
+  return tierBuktiDariHitungan(m.jumlahKomponen || 0, m.titikData || 0);
+}
+
+/** Ringkasan profil bukti satu siswa: hitungan per tier (untuk admin & antrean aksi). */
+export function profilBuktiSiswa(perMapel = []) {
+  const hit = { T1: 0, T2: 0, T3: 0 };
+  for (const m of perMapel) hit[tierBuktiMapel(m)] += 1;
+  return { t1: hit.T1, t2: hit.T2, t3: hit.T3 };
 }
 
 /** Ringkasan pratinjau dari daftar hasil siswa + hitungan log jujur.
@@ -1214,6 +1261,7 @@ export function bangunDokumenRaport(hasil, { jejak = {} } = {}) {
       blok: 'akademik',
       mapel: m.nama,
       mapelKode: m.kode,
+      tier: m.tier || tierBuktiMapel(m),
       nilai_akhir: m.nilaiAkhir,
       predikat: m.predikat,
       statusData: m.layak ? (hasil.akademik.statusData === 'lengkap' ? 'lengkap' : 'sebagian') : 'belum-cukup',
@@ -1289,6 +1337,7 @@ export default {
   VERSI_MESIN, MAPEL_PROSES, KALIBRASI_V1, SELISIH_WIB_MS,
   rentangPeriode, waktuMs, tanggalUtc, tanggalWib,
   cocokSasaran, buatRingkasan,
+  tierBuktiDariHitungan, tierBuktiMapel, profilBuktiSiswa,
   normalisasiMapelKuis, namaMapel, bacaKesulitan,
   predikatDariNilai, timbangUlang, skalaKeNilai100, nilaiSah,
   bangunIndeksIdentitas, cariPemilikDok,

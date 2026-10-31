@@ -467,5 +467,32 @@ uji('v1.4: capaian guru jadi ISI UTAMA laporan ortu (primer atas narasi otomatis
   assert.ok(auto.includes('Laporan untuk Orang Tua/Wali'));
 });
 
+uji('v1.5: mapel T3 mendapat baris RENCANA di cetakan; fokus diambil dari pengayaan tentor bila ada; NOL frasa defisit', () => {
+  const data = {
+    siswa: [{ id: 'dC', studentId: 'cetak-1', nama: 'Caca', jenjang: 'SMP/MTs', kelasSekolah: '7', enrolledSubjects: ['mtk', 'bing'] }],
+    paket: [], kuis: [], sesi: [],
+    absensi: [{ studentId: 'cetak-1', namaSiswa: 'Caca', tanggal: '2026-10-06', status: 'hadir', scheduleId: 'c1' }],
+    tugas: [], nilaiGuru: [], progresSoal: [], soalMeta: {}, progresSiswa: [],
+  };
+  const h = hitungRaportSemuaSiswa(data, { bulan: '2026-10' });
+  const c = h.siswa.find((s) => s.studentId === 'cetak-1');
+  const dok = bangunDokumenRaport(c);
+  const html = htmlRaportSiswa({
+    dokAkademik: dok.docsAkademik.map((d) => d.data),
+    dokProses: dok.dokProses.data,
+    laporanGuru: [{
+      kodeMapel: 'bing', namaMapel: 'Bahasa Inggris',
+      capaian: { pemahaman: { predikat: 'B' }, keaktifan: { predikat: 'B' }, sikap: { predikat: 'A' }, perkembangan: { predikat: 'B' } },
+      catatan: 'Aktif bertanya selama sesi.', pengayaan: 'proyek literasi data kecil',
+    }],
+  });
+  assert.ok(html.includes('Rencana: asesmen Matematika dijadwalkan pada periode berikutnya'));
+  assert.ok(html.includes('fokus pendampingan: penguatan materi prasyarat secara terbimbing bersama tentor'));
+  assert.ok(html.includes('fokus pendampingan: proyek literasi data kecil'));
+  for (const dilarang of ['data belum cukup', 'Data belum cukup', 'belum valid', 'belum lengkap']) {
+    assert.ok(!html.includes(dilarang), `cetakan memuat frasa terlarang: ${dilarang}`);
+  }
+});
+
 console.log(`\n[${lulus} lulus, ${gagal} gagal]`);
 process.exit(gagal ? 1 : 0);

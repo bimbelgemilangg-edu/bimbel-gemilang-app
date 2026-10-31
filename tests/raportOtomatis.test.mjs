@@ -12,6 +12,7 @@ import {
   VERSI_MESIN, MAPEL_PROSES, KALIBRASI_V1,
   rentangPeriode, waktuMs, tanggalUtc, tanggalWib,
   cocokSasaran, buatRingkasan,
+  tierBuktiDariHitungan, tierBuktiMapel, profilBuktiSiswa,
   normalisasiMapelKuis, namaMapel, bacaKesulitan,
   predikatDariNilai, timbangUlang, skalaKeNilai100, nilaiSah,
   bangunIndeksIdentitas, cariPemilikDok,
@@ -641,6 +642,59 @@ uji('v1.3.1 mapel luar jenjang diabaikan mesin + dicatat untuk admin (Sosiologi-
   assert.ok(!kodeAda.includes('sos'), 'Sosiologi harus tersaring dari rapor SMP');
   assert.equal(h.siswa[0].mapelDikesampingkan.length, 1);
   assert.equal(h.siswa[0].mapelDikesampingkan[0].kode, 'sos');
+});
+
+// ---------------- v1.5: model bukti bertingkat (T1/T2/T3) ----------------
+uji('v1.5 tierBuktiDariHitungan: ambang T1 TIDAK diturunkan (>=2 komponen & >=3 titik)', () => {
+  assert.equal(tierBuktiDariHitungan(2, 3), 'T1');
+  assert.equal(tierBuktiDariHitungan(3, 12), 'T1');
+  assert.equal(tierBuktiDariHitungan(1, 9), 'T2');
+  assert.equal(tierBuktiDariHitungan(2, 2), 'T2');
+  assert.equal(tierBuktiDariHitungan(0, 5), 'T3');
+  assert.equal(tierBuktiDariHitungan(), 'T3');
+  assert.equal(tierBuktiMapel({ jumlahKomponen: 2, titikData: 4 }), 'T1');
+  assert.deepEqual(profilBuktiSiswa([
+    { jumlahKomponen: 2, titikData: 4 }, { jumlahKomponen: 1, titikData: 2 }, { jumlahKomponen: 0, titikData: 0 },
+  ]), { t1: 1, t2: 1, t3: 1 });
+});
+
+const kuisT3 = (modul, skor, tgl) => ({
+  studentNim: 't3-1', studentName: 'Tika', subject: 'Matematika', modulTitle: modul,
+  score: skor, correctAnswers: 8, totalQuestions: 10, timeUsed: 600,
+  isAutoSubmit: false, cheatViolationCount: 0, submittedAt: ts(tgl),
+});
+const dataT3 = (denganKuis) => ({
+  siswa: [{ id: 'dT3', studentId: 't3-1', nama: 'Tika', jenjang: 'SMP/MTs', kelasSekolah: '7', enrolledSubjects: ['mtk', 'bing', 'sos'] }],
+  paket: [],
+  kuis: denganKuis ? [kuisT3('Aljabar 1', 80, '2026-10-05T03:00:00Z'), kuisT3('Aljabar 2', 90, '2026-10-12T03:00:00Z')] : [],
+  sesi: [],
+  absensi: [{ studentId: 't3-1', namaSiswa: 'Tika', tanggal: '2026-10-05', status: 'hadir', scheduleId: 'x1' }],
+  tugas: denganKuis ? [{ studentNim: 't3-1', studentName: 'Tika', subject: 'Matematika', modulTitle: 'PR Aljabar', score: 85, submittedAt: ts('2026-10-10T03:00:00Z') }] : [],
+  nilaiGuru: [], progresSoal: [], soalMeta: {}, progresSiswa: [],
+});
+
+uji('v1.5: mapel terdaftar tanpa asesmen = baris T3; mapel luar jenjang tetap TIDAK muncul', () => {
+  const h = hitungRaportSemuaSiswa(dataT3(true), { bulan: '2026-10' });
+  const t = h.siswa.find((s) => s.studentId === 't3-1');
+  const tiers = Object.fromEntries(t.akademik.perMapel.map((m) => [m.kode, m.tier]));
+  assert.equal(tiers.mtk, 'T1'); // kuis 2x + tugas 1x = 2 komponen, 3 titik
+  assert.equal(tiers.bing, 'T3'); // terdaftar di enrolledSubjects, belum ada asesmen
+  assert.equal(tiers.sos, undefined); // Sosiologi fase E/F — siswa SMP tak boleh melihatnya
+  assert.deepEqual(t.kelayakan.profilBukti, { t1: 1, t2: 0, t3: 1 });
+  assert.deepEqual(t.kelayakan.tierPerMapel.find((x) => x.kode === 'bing'), { kode: 'bing', nama: 'Bahasa Inggris', tier: 'T3' });
+  assert.equal(t.kelayakan.layakTerbit, true);
+  const dok = bangunDokumenRaport(t).docsAkademik.map((d) => d.data);
+  assert.equal(dok.find((d) => d.mapelKode === 'bing').tier, 'T3');
+  assert.equal(dok.find((d) => d.mapelKode === 'mtk').tier, 'T1');
+});
+
+uji('v1.5: siswa tanpa asesmen sama sekali → profil bukti semua T3, layakTerbit false (field lama kompatibel)', () => {
+  const h = hitungRaportSemuaSiswa(dataT3(false), { bulan: '2026-10' });
+  const t = h.siswa.find((s) => s.studentId === 't3-1');
+  assert.deepEqual(t.kelayakan.profilBukti, { t1: 0, t2: 0, t3: 2 });
+  assert.equal(t.kelayakan.layakTerbit, false); // kompatibilitas: cron/api lama tetap paham
+  assert.equal(t.akademik.statusData, 'belum-cukup'); // field internal dipertahankan
+  assert.equal(t.akademik.rataRata, null);
 });
 
 console.log(`\n${gagal === 0 ? '✅' : '❌'} raportOtomatis: ${lulus} lulus, ${gagal} gagal`);

@@ -200,6 +200,10 @@ export default function LaporanBelajarPage() {
           </div>
         ) : (
           <>
+            {/* v1.5: penegas peran tentor — capaian guru = isi utama PDF orang tua */}
+            <div style={{ background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 12, padding: '10px 14px', marginBottom: 14, fontSize: 11.5, color: '#3730a3', lineHeight: 1.55 }}>
+              ✍️ Capaian yang Anda isi adalah <b>isi utama PDF orang tua</b>; bukti otomatis (kuis, try out, kehadiran) tampil sebagai bahan pendukung. Siswa yang bukti otomatisnya masih tipis periode ini sangat mengandalkan penilaian Anda.
+            </div>
             {/* bar periode + mapel + progres */}
             <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, marginBottom: 14 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
