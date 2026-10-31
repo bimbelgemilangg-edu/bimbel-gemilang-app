@@ -65,7 +65,7 @@ import {
 } from './skorSoalTryOut.js';
 import { hitungSkalaSesi } from './hitungSkalaSesi.js';
 
-export const VERSI_MESIN = 'v1.1'; // v1.1: jendela periode & label tanggal kalender WIB (UTC+7), sasaran filter dihitung jujur
+export const VERSI_MESIN = 'v1.2'; // v1.2: rapor ramah ortu — bukti minimum peta topik (anti banjir merah n=1), bahasa manusiawi
 
 /** mapel pseudo untuk dokumen Blok B+C (proses, tren, peta topik). */
 export const MAPEL_PROSES = 'Proses & Karakter';
@@ -101,6 +101,7 @@ export const KALIBRASI_V1 = {
   topikMerahAkurasi: 50,
   trenHarianMaks: 400,           // batas embed ke snapshot (dok Firestore)
   petaTopikMaks: 60,
+  topikMinimalBukti: 3,          // v1.2: <3 soal = 'tipis' (abu) — 1 soal salah BUKAN penguasaan 0%
 };
 
 /** Predikat (blueprint §4). */
@@ -482,7 +483,7 @@ export function hitungDimensi(bukti, ctx = {}) {
     } else {
       const accKuis = akurasi(semua.filter((b) => b.sumber === 'kuis').map((b) => b.skorParsial01));
       hasil.pemahaman = accKuis !== null
-        ? { nilai: bulatkan(accKuis * 100), sumber: 'akurasi kuis (proksi kasar — soal kuis tidak berlabel kesulitan)', terukur: true }
+        ? { nilai: bulatkan(accKuis * 100), sumber: 'akurasi kuis mapel (semua tingkat kesulitan)', terukur: true }
         : { nilai: null, sumber: 'belum terukur (tidak ada bukti berlabel kesulitan maupun kuis)', terukur: false };
     }
   }
@@ -504,7 +505,7 @@ export function hitungDimensi(bukti, ctx = {}) {
     } else {
       const parsial = akurasi(semua.filter((b) => b.sumber === 'kuis').map((b) => b.skorParsial01));
       hasil.ketelitian = parsial !== null
-        ? { nilai: bulatkan(parsial * 100), sumber: 'kredit parsial kuis (proksi prosedur)', terukur: true }
+        ? { nilai: bulatkan(parsial * 100), sumber: 'kredit parsial kuis (penghargaan atas prosedur pengerjaan)', terukur: true }
         : { nilai: null, sumber: mudah.length ? `belum terukur (baru ${mudah.length} soal mudah, minimal ${K.minSoalMudah})` : 'belum terukur', terukur: false };
     }
   }
@@ -515,7 +516,7 @@ export function hitungDimensi(bukti, ctx = {}) {
     const t = Number.isFinite(ctx.terjawabRatio) ? ctx.terjawabRatio : null;
     const a = Number.isFinite(ctx.autoSubmitRatio) ? ctx.autoSubmitRatio : null;
     if (t !== null && a !== null) {
-      hasil.waktu = { nilai: bulatkan(100 * (0.6 * t + 0.4 * (1 - a))), sumber: 'rasio soal TO terjawab + disiplin submit kuis', terukur: true };
+      hasil.waktu = { nilai: bulatkan(100 * (0.6 * t + 0.4 * (1 - a))), sumber: 'kelengkapan jawaban try out + ketepatan waktu pengumpulan kuis', terukur: true };
     } else if (t !== null) {
       hasil.waktu = { nilai: bulatkan(100 * t), sumber: 'rasio soal try out terjawab', terukur: true };
     } else if (a !== null && ctx.jumlahKuis > 0) {
@@ -552,6 +553,12 @@ export const DIMENSI_KEYS_OTOMATIS = ['pemahaman', 'analisis', 'ketelitian', 'wa
 export function statusTopik({ akurasiPersen, dicoba, sumberLatihan }) {
   const K = KALIBRASI_V1;
   if (!Number.isFinite(akurasiPersen)) return { status: 'abu', alasan: 'belum ada hasil' };
+  // v1.2 (keluhan owner 31 Okt 2026: ortu melihat banjir '0% (1)' dan menganggap
+  // rapor tidak valid): bukti <3 soal TIDAK boleh diwarnai merah/kuning — satu
+  // butir salah adalah kejadian, bukan pengukuran penguasaan.
+  if (dicoba < K.topikMinimalBukti) {
+    return { status: 'tipis', alasan: `bukti baru ${dicoba} soal — belum diwarnai (minimal ${K.topikMinimalBukti})` };
+  }
   if (akurasiPersen < K.topikMerahAkurasi) return { status: 'merah', alasan: `akurasi ${bulatkan(akurasiPersen)}% < ${K.topikMerahAkurasi}%` };
   if (sumberLatihan && dicoba < K.topikMinimalDicoba) {
     return { status: 'merah', alasan: `jarang dilatih (${dicoba} soal)` };
@@ -620,7 +627,7 @@ export function hitungPetaTopik(bukti, kuisSiswa = []) {
   return hasil.slice(0, K.petaTopikMaks);
 }
 
-const rankStatus = (s) => ({ merah: 0, kuning: 1, hijau: 2, abu: 3 }[s] ?? 4);
+const rankStatus = (s) => ({ merah: 0, kuning: 1, hijau: 2, tipis: 3, abu: 4 }[s] ?? 5);
 
 // ------------------------------------------------------------
 // MESIN UTAMA PER SISWA
@@ -684,11 +691,11 @@ export function hitungRaportSiswa({
     const jumlahKomponen = ['kuis', 'tugas', 'ujian'].filter((k) => komponen[k].ada).length;
     const layak = jumlahKomponen >= 2 && titikData >= 3;
     if (!layak && jumlahKomponen > 0) {
-      catatan.push(`${namaMapel(kode)}: data belum cukup untuk terbit penuh (${jumlahKomponen} komponen, ${titikData} titik data; minimal 2 komponen & 3 titik).`);
+      catatan.push(`${namaMapel(kode)}: bukti masih tipis (${jumlahKomponen} sumber asesmen, ${titikData} titik nilai) — angka ditampilkan sebagai gambaran, belum sebagai nilai final mapel.`);
     }
     if (adaRedistribusi && nilaiAkhir !== null) {
       const mapHilang = { kuis: 'kuis', tugas: 'tugas', ujian: 'ujian' };
-      catatan.push(`${namaMapel(kode)}: nilai dari komponen yang ada — data ${hilang.map((h) => mapHilang[h]).join(' & ')} belum tersedia, bobot didistribusikan ulang (tidak dinolkan).`);
+      catatan.push(`${namaMapel(kode)}: nilai dihitung dari sumber yang ada (${hilang.map((h) => mapHilang[h]).join(' & ')} belum dilaksanakan) — bobot komponen kosong dibagikan ulang ke sumber yang ada, TIDAK dinolkan, supaya anak tidak dihukum atas ujian yang belum diadakan.`);
     }
 
     // dimensi per mapel (bukti difilter kode) — null bila tipis
@@ -751,7 +758,7 @@ export function hitungRaportSiswa({
   const tugasKomponen = Number.isFinite(tugasTerbit) && tugasTerbit > 0
     ? { terukur: true, skor: bulatkan(Math.min(1, tugasTerkumpul / tugasTerbit) * 100), terbit: tugasTerbit, terkumpul: tugasTerkumpul }
     : { terukur: false, skor: null, terbit: null, terkumpul: tugasTerkumpul, dinilai: tugasDinilai,
-        alasan: 'daftar tugas terbit per periode belum tersedia di v1 — jumlah mutlak ditampilkan apa adanya' };
+        alasan: 'daftar tugas terbit per periode belum tersedia — jumlah pengumpulan ditampilkan apa adanya' };
 
   const hariAktifSet = new Set(latihan.map((l) => l.terakhirDicoba).filter(Boolean));
   const hariAktif = hariAktifSet.size;
@@ -852,7 +859,7 @@ export function hitungRaportSiswa({
   const rekomendasi = petaTopik
     .filter((t) => t.status === 'merah')
     .slice(0, 6)
-    .map((t) => `Perkuat ${t.topik} (${t.mapelNama}) — ${t.alasan}`);
+    .map((t) => `Pendampingan terfokus: topik "${t.topik}" (${t.mapelNama}) — akurasi ${t.akurasi}% dari ${t.dicoba} soal; Gemilang menjadwalkan latihan terbimbing untuk topik ini.`);
 
   return {
     studentId: profil.kunci, studentName: profil.nama || profil.kunci,

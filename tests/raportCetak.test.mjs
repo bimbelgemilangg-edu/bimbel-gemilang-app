@@ -15,6 +15,7 @@ import {
   poinSparkline, svgSparkline, warnaPredikatHuruf, warnaStatusTopik,
   poinRadar, svgRadar, seriRadarDariModel, LOGO_KOP, NAMA_PENERBIT,
   siapkanModelRaport, htmlRaportSiswa, htmlRaportMassal, judulCetakRaport,
+  daftarKekuatan, trenSemangat,
 } from '../src/utils/raportCetak.js';
 import { hitungRaportSemuaSiswa, bangunDokumenRaport, VERSI_MESIN } from '../src/utils/raportOtomatis.js';
 

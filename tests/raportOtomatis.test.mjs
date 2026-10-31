@@ -299,7 +299,7 @@ uji('nilai akhir mapel lengkap: 30/30/40 → 82*.3+70*.3+75*.4 = 75.6 (B)', () =
 uji('mapel 1 komponen: TIDAK layak terbit penuh + catatan redistribusi/kekurangan', () => {
   assert.equal(bing.layak, false);
   assert.equal(bing.nilaiAkhir, 85); // tetap dihitung dari yang ada (indikasi), tidak disembunyikan
-  assert.ok(budi.catatan.some((c) => c.includes('data belum cukup')));
+  assert.ok(budi.catatan.some((c) => c.includes('bukti masih tipis'))); // wording v1.2 ramah ortu
 });
 uji('UTBK: ujian per subtes dinormalkan (skala 1000→100, 550→50, rata-rata 75)', () => {
   const pk = mapelSari('utbk_pk');
@@ -423,12 +423,36 @@ uji('trenHarian terurut & memuat kuis/to/latihan; di luar jendela tidak ikut', (
   assert.ok(t.some((x) => x.jenis === 'to' && x.skor === 75));
   assert.ok(t.some((x) => x.jenis === 'latihan'));
 });
-uji('petaTopik: akurasi <50% → merah + rekomendasi "Perkuat"', () => {
+uji('petaTopik v1.2: topik berbukti 1 soal = TIPIS & TIDAK masuk rekomendasi', () => {
   const stat = budi.petaTopik.find((t) => t.topik === 'Statistika' && t.sumber.includes('latihan'));
   assert.ok(stat, 'topik Statistika dari latihan ada');
-  assert.equal(stat.status, 'merah'); // b7: 1/10 benar (b8 tanpa jawaban tidak ikut)
   assert.equal(stat.dicoba, 1);
-  assert.ok(budi.rekomendasi.some((r) => r.includes('Statistika')));
+  assert.equal(stat.status, 'tipis'); // dulu merah '0% (1)' — bikin ortu menganggap rapor tak valid
+  assert.ok(!budi.rekomendasi.some((r) => r.includes('Statistika')));
+});
+uji('petaTopik v1.2: merah butuh bukti >=3 & rekomendasi berbahasa tindakan', () => {
+  const bukti = [];
+  for (let i = 0; i < 4; i += 1) {
+    bukti.push({ sumber: 'latihan', kode: 'mtk', topik: 'Pecahan', skorParsial01: 0, kotak: 1 });
+  }
+  const peta = hitungPetaTopik(bukti);
+  assert.equal(peta[0].status, 'merah');
+  assert.equal(peta[0].dicoba, 4);
+  const h = hitungRaportSemuaSiswa({
+    siswa: [{ id: 'x1', studentId: 'X1', nama: 'Xeni', jenjang: 'SMP', kelas: '7 SMP' }],
+    kuis: [], sesi: [], paket: [], absensi: [], tugas: [], nilaiGuru: [],
+    progresSoal: bukti.map((b, i) => ({
+      studentId: 'X1', soalId: `s${i}`, kotak: 1, benarCount: 0, salahCount: 1,
+      benarBerturut: 0, terakhirDicoba: `2026-09-0${i + 1}`,
+    })),
+    soalMeta: Object.fromEntries(bukti.map((b, i) => [`s${i}`, { mataPelajaran: 'Matematika', materi: 'Pecahan', kesulitan: 'sedang' }])),
+    progresSiswa: [],
+  }, { bulan: '2026-09' });
+  const rek = h.siswa[0].rekomendasi;
+  assert.ok(rek.length > 0);
+  assert.ok(rek[0].includes('Pendampingan terfokus'));
+  assert.ok(rek[0].includes('Pecahan'));
+  assert.ok(!rek[0].includes('< 50%')); // threshold mentah tak lagi dipamerkan ke ortu
 });
 uji('petaTopik: topik kuis akurasi 80% dari 10 butir → hijau', () => {
   const nar = budi.petaTopik.find((t) => t.topik === 'Teks Naratif');
@@ -436,13 +460,16 @@ uji('petaTopik: topik kuis akurasi 80% dari 10 butir → hijau', () => {
   assert.equal(nar.status, 'hijau');
   assert.equal(nar.akurasi, 85); // (8+9)/20 dari dua kuis
 });
-uji('statusTopik ambang 80/50 + jarang dilatih = merah (blueprint §3 Blok C)', () => {
+uji('statusTopik v1.2: bukti <3 soal = TIPIS (anti banjir merah n=1, keluhan ortu)', () => {
   assert.equal(statusTopik({ akurasiPersen: 85, dicoba: 5, sumberLatihan: true }).status, 'hijau');
-  const jarang = statusTopik({ akurasiPersen: 85, dicoba: 2, sumberLatihan: true });
-  assert.equal(jarang.status, 'merah'); // akurasi tinggi tapi jarang dilatih = sinyal pembinaan
-  assert.ok(jarang.alasan.includes('jarang dilatih'));
+  const tipis1 = statusTopik({ akurasiPersen: 0, dicoba: 1, sumberLatihan: false });
+  assert.equal(tipis1.status, 'tipis'); // '0% (1)' TIDAK boleh lagi jadi merah
+  assert.ok(tipis1.alasan.includes('bukti baru 1 soal'));
+  const tipis2 = statusTopik({ akurasiPersen: 90, dicoba: 2, sumberLatihan: true });
+  assert.equal(tipis2.status, 'tipis');
+  const cukup = statusTopik({ akurasiPersen: 85, dicoba: 3, sumberLatihan: true });
+  assert.equal(cukup.status, 'hijau'); // v1.2: cabang 'jarang dilatih' pensiun — bukti <3 kini tipis, bukan merah
   assert.equal(statusTopik({ akurasiPersen: 40, dicoba: 9, sumberLatihan: true }).status, 'merah');
-  assert.equal(statusTopik({ akurasiPersen: 90, dicoba: 1, sumberLatihan: false }).status, 'kuning'); // kuis tunggal: bukan 'jarang dilatih'
 });
 uji('hitungPetaTopik butir latihan tanpa jawaban tidak jadi merah palsu (unit)', () => {
   const peta = hitungPetaTopik([
@@ -503,7 +530,7 @@ uji('bangunDokumenRaport: struktur lengkap + dimensi null BUKAN 0', () => {
 uji('dokumen proses memuat petaTopik + rekomendasi (bahan Fase 2)', () => {
   const { dokProses } = bangunDokumenRaport(budi);
   assert.ok(dokProses.data.petaTopik.length > 0);
-  assert.ok(dokProses.data.rekomendasi.length > 0);
+  assert.ok(Array.isArray(dokProses.data.rekomendasi)); // v1.2: boleh kosong bila tiada merah berbukti cukup
   assert.ok(dokProses.data.trenSkala === undefined || true); // trenSkala milik siswa ber-TO
 });
 uji('KALIBRASI_V1 diekspor (kebijakan terlihat, bisa direvisi owner)', () => {

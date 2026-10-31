@@ -95,8 +95,58 @@ export const warnaPredikatHuruf = (huruf) => (
 );
 
 export const warnaStatusTopik = (status) => (
-  { hijau: '#16a34a', kuning: '#ca8a04', merah: '#dc2626', abu: '#94a3b8' }[status] || '#94a3b8'
+  { hijau: '#16a34a', kuning: '#ca8a04', merah: '#dc2626', abu: '#94a3b8', tipis: '#94a3b8' }[status] || '#94a3b8'
 );
+
+// ------------------------------------------------------------
+// v1.2 — RAPOR RAMAH ORANG TUA (keluhan owner 31 Okt 2026: rapor terasa
+// 'tidak valid' karena banjir merah n=1 & bahasa mesin). Tiga tambahan murni
+// sisi cetak: kotak 'cara membaca', daftar kekuatan otomatis (strengths-first
+// ala laporan bimbel internasional), dan panah tren semangat dari tren harian.
+// ------------------------------------------------------------
+
+/** Kekuatan periode ini — dihitung dari snapshot, strengths-first.
+ * Kosong pun jujur: satu kalimat 'bukti masih dikumpulkan'. */
+export function daftarKekuatan(m = {}) {
+  const p = m.proses || null;
+  const det = (p && p.detail_proses) || {};
+  const k = [];
+  const hadir = det.kehadiran || null;
+  if (hadir && Number.isFinite(hadir.persenHadir) && hadir.persenHadir >= 85) {
+    k.push(`Kehadiran terjaga: ${hadir.persenHadir}% sesi diikuti (${hadir.hadir} hadir dari ${hadir.total} sesi).`);
+  }
+  const lat = det.latihan || null;
+  if (lat && lat.hariAktif > 0) {
+    k.push(`Semangat latihan mandiri: ${lat.hariAktif} hari aktif · ${lat.soalDikerjakan} soal dikerjakan di luar jam kelas.`);
+  }
+  const intg = det.integritas || null;
+  if (intg && intg.jumlahPelanggaran === 0) {
+    k.push('Integritas bersih: tiada catatan pelanggaran — pengerjaan anak dapat dipercaya.');
+  }
+  const terbaik = (m.akademik || [])
+    .filter((d) => Number.isFinite(d.nilai_akhir))
+    .sort((a, b) => b.nilai_akhir - a.nilai_akhir)[0];
+  if (terbaik) {
+    k.push(`Mapel terkuat: ${terbaik.mapel} (${terbaik.nilai_akhir}, predikat ${(terbaik.predikat && terbaik.predikat.huruf) || '—'}).`);
+  }
+  const hijau = (p && p.petaTopik ? p.petaTopik : []).filter((t) => t.status === 'hijau');
+  if (hijau.length) k.push(`${hijau.length} topik dikuasai dengan baik (akurasi tinggi, bukti cukup).`);
+  if (!k.length) k.push('Bukti kekuatan masih dikumpulkan periode ini — kehadiran, kuis, dan latihan pertama akan muncul di sini.');
+  return k;
+}
+
+/** Arah tren semangat: bandingkan paruh akhir vs paruh awal tren harian.
+ * null bila titik <4 (jujur: belum cukup untuk membaca arah). */
+export function trenSemangat(trenHarian = []) {
+  const skor = trenHarian.map((t) => t && t.skor).filter((x) => Number.isFinite(x));
+  if (skor.length < 4) return null;
+  const half = Math.floor(skor.length / 2);
+  const rata = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+  const delta = Math.round(rata(skor.slice(half)) - rata(skor.slice(0, half)));
+  if (delta >= 5) return { ikon: '▲', warna: '#16a34a', teks: `menanjak (+${delta} poin paruh akhir dibanding paruh awal periode)` };
+  if (delta <= -5) return { ikon: '▼', warna: '#b45309', teks: `melunak (${delta} poin) — momen baik untuk pendampingan lebih dekat, bukan untuk menghukum` };
+  return { ikon: '→', warna: '#475569', teks: 'stabil di sepanjang periode' };
+}
 
 /** Nama penerbit pada blok tanda tangan (permintaan owner 21 Okt 2026:
  * "Hormat kami, Bimbingan Belajar Gemilang"). */
@@ -451,6 +501,10 @@ export function cssRaport() {
 .rp-ttd { margin-top: 20px; display: flex; justify-content: space-between; font-size: 10.5px;
   page-break-inside: avoid; }
 .rp-ttd .garis { margin-top: 42px; }
+.rp-cara { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; margin: 8px 0; page-break-inside: avoid; }
+.rp-cara ul { margin: 4px 0 0; padding-left: 18px; }
+.rp-cara li { margin: 2px 0; }
+.rp-kekuatan { background: #f0fdf4; border-color: #bbf7d0; }
 .rp-radar { text-align: center; margin: 6px 0 2px; page-break-inside: avoid; }
 .rp-radar svg { max-width: 100%; height: auto; }
 .rp-footer { margin-top: 10px; border-top: 1px solid #cbd5e1; padding-top: 6px; font-size: 9px;
@@ -555,10 +609,12 @@ function bagianPerkembangan(p, m = null) {
   const trenPersen = trenSkala.length
     ? []
     : trenHarian.filter((t) => t.jenis === 'to' && t.skor !== null && t.skor !== undefined);
+  const semangat = trenSemangat(trenHarian);
   const radar = m ? seriRadarDariModel(m) : { seri: [], jumlahMapel: 0 };
   const radarSvg = svgRadar(radar.seri, { ukuran: 240 });
   const mapelTerpotong = Math.max(0, radar.jumlahMapel - RADAR_MAKS_SERI);
   return `
+${semangat ? `<div class="rp-cara"><b>🔥 Semangat & kebiasaan belajar:</b> tren aktivitas harian <b style="color:${semangat.warna}">${semangat.ikon} ${escapeHtml(semangat.teks)}</b>. Grafik harian di bawah ini adalah bukti mentahnya — naik-turunnya wajar, yang kami jaga adalah arahnya.</div>` : '<div class="rp-cara"><b>🔥 Semangat & kebiasaan belajar:</b> titik aktivitas masih sedikit periode ini — arah tren belum dibaca (bukan buruk, belum cukup bukti).</div>'}
 <h3>Tren try out (skala nasional)</h3>
 ${trenSkala.length ? `<table>
 <thead><tr><th>Tanggal</th><th>Try out</th><th>Mode</th><th>Skala</th><th>Nilai/100</th><th>Per subtes</th></tr></thead>
@@ -596,13 +652,16 @@ ${trenHarian.length ? `<table class="rp-kecil">
 </tr>`).join('')}</tbody></table>
 ${trenHarian.length > CAP_TABEL_HARIAN ? `<div class="rp-muted rp-kecil">Menampilkan ${CAP_TABEL_HARIAN} entri terakhir dari ${trenHarian.length} (snapshot memuat semuanya).</div>` : ''}` : '<div class="rp-muted rp-kecil">Belum ada aktivitas tercatat pada periode ini.</div>'}
 
-<h3>Peta topik (merah = perlu perhatian)</h3>
-${petaTopik.length
-    ? `<div>${petaTopik.map((t) => {
+<h3>Peta topik (warna = rencana pendampingan, bukan vonis)</h3>
+${(() => {
+      const petaTipis = petaTopik.filter((t) => t.status === 'tipis' || t.status === 'abu');
+      const petaWarna = petaTopik.filter((t) => t.status !== 'tipis' && t.status !== 'abu');
+      return `${petaTipis.length ? `<div class="rp-muted rp-kecil" style="margin-bottom:4px">Masih mengumpulkan bukti (belum diwarnai): ${petaTipis.length} topik berbukti &lt;3 soal — satu benar/salah belum menggambarkan penguasaan: ${escapeHtml(petaTipis.slice(0, 6).map((t) => `${t.mapelNama}: ${t.topik}`).join(' · '))}${petaTipis.length > 6 ? ' · …' : ''}</div>` : ''}${petaWarna.length ? `<div>${petaWarna.map((t) => {
       const w = warnaStatusTopik(t.status);
       return `<span class="rp-chip" style="border-color:${w};color:${w}" title="${escapeHtml(t.alasan || '')} · sumber: ${escapeHtml((t.sumber || []).join('+'))}">${escapeHtml(t.mapelNama || t.mapelKode || '')}: ${escapeHtml(t.topik)} · ${fmt(t.akurasi)}% (${fmt(t.dicoba)})</span>`;
     }).join('')}</div>`
-    : '<div class="rp-muted rp-kecil">Belum cukup bukti untuk memetakan topik.</div>'}
+    : '<div class="rp-muted rp-kecil">Belum cukup bukti untuk memetakan topik.</div>'}`;
+    })()}
 ${rekomendasi.length ? `<div class="rp-bad rp-kecil" style="margin-top:6px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:6px 10px"><b>Rekomendasi penguatan:</b><ul style="margin:4px 0 0;padding-left:18px">${rekomendasi.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>` : ''}
 
 <h3>Dimensi global (proksi otomatis dari log)</h3>
@@ -647,6 +706,21 @@ function bagianSiswa(m, { kodeCetak = '', logoUrl = '' } = {}) {
       <th>Dicetak pada</th><td>${escapeHtml(fmtTglPanjang(new Date().toISOString()))}</td>
     </tr>
   </table>
+
+  <div class="rp-cara">
+    <b>Cara membaca rapor ini (untuk orang tua)</b>
+    <ul>
+      <li><b>Dua angka yang berbeda makna:</b> Rata-rata Akademik = penguasaan materi dari kuis/tugas/try out yang sudah dilaksanakan. Nilai Proses & Karakter = kebiasaan belajar (kehadiran, disiplin tugas, latihan mandiri, integritas). Keduanya sengaja TIDAK dicampur.</li>
+      <li><b>Warna adalah rencana, bukan vonis:</b> hijau = kekuatan · kuning = sedang berkembang · merah = fokus pendampingan (Gemilang menyertakan rencana tindak lanjut) · abu-abu = belum terukur, ARTINYA BELUM ADA BUKTI, bukan nilai nol.</li>
+      <li><b>Setiap angka bisa ditelusuri:</b> dihitung dari lembar jawaban, absensi, dan catatan latihan anak pada periode ini — bukan kesan subjektif. Bukti yang masih tipis (mis. 1 soal) sengaja tampil abu-abu agar tidak dibaca sebagai penguasaan maupun kelemahan.</li>
+      <li><b>Kode seperti "Mapel-007"</b> = paket soal yang penamaan mapelnya sedang distandarkan admin; isinya tetap terlihat dari judul topiknya.</li>
+    </ul>
+  </div>
+
+  <div class="rp-cara rp-kekuatan">
+    <b>✨ Kekuatan periode ini</b>
+    <ul>${daftarKekuatan(m).map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+  </div>
 
   <div class="rp-ringkas">
     <div class="rp-angka">
@@ -741,6 +815,7 @@ export function htmlRaportMassal({ daftar = [], judul = '', periodeLabel = '', l
     <tbody>${barisSampul || '<tr><td colspan="8" class="rp-muted">Tidak ada siswa untuk dicetak.</td></tr>'}</tbody>
   </table>
   <div class="rp-muted rp-kecil">Catatan guru tidak disertakan pada cetak massal (opsional per siswa lewat cetak tunggal). Nilai akademik dan proses/karakter adalah dua angka terpisah sesuai keputusan owner.</div>
+  <div class="rp-muted rp-kecil">Tanda '—' pada kolom Akademik = bukti akademik periode ini belum memenuhi syarat terbit (minimal 2 sumber asesmen & 3 titik nilai per mapel) — BUKAN nilai nol. Rincian jujur beserta rencana pendampingan ada di halaman tiap siswa.</div>
 </div>`;
   const halaman = models.map((m, i) => (
     `<div${i > 0 ? ' class="rp-hal"' : ' style="page-break-before:always"'}>${bagianSiswa(m, { logoUrl })}</div>`
