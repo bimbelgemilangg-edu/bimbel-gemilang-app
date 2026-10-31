@@ -97,6 +97,7 @@ export default function RaportOtomatisPage() {
   const [progresTerbit, setProgresTerbit] = useState('');
   const [hasilTerbit, setHasilTerbit] = useState(null);
   const [sedangBackfill, setSedangBackfill] = useState(false);
+  const [cetakSetelahTerbit, setCetakSetelahTerbit] = useState(false); // v1.2: satu alur utama
   const [progresBackfill, setProgresBackfill] = useState('');
 
   // ---------------- MUAT DATA MENTAH ----------------
@@ -430,6 +431,16 @@ export default function RaportOtomatisPage() {
     }
   }, [hasil, jenjang, kelas]);
 
+  // v1.2 diet tombol: satu alur utama — begitu penerbitan sukses tercatat,
+  // dialog cetak PDF massal (SATU dokumen berisi rapor tiap siswa) terbuka
+  // otomatis; flag dibersihkan sendiri sehingga tak pernah mencetak ganda.
+  useEffect(() => {
+    if (cetakSetelahTerbit && hasilTerbit && !hasilTerbit.backfill) {
+      setCetakSetelahTerbit(false);
+      cetakSemua();
+    }
+  }, [cetakSetelahTerbit, hasilTerbit, cetakSemua]);
+
   // ---------------- RENDER ----------------
   const h = hasil;
   const detail = h && dibuka ? h.siswa.find((x) => x.studentId === dibuka) : null;
@@ -488,11 +499,17 @@ export default function RaportOtomatisPage() {
                 {daftarKelas.map((k) => <option key={k} value={k}>{k}</option>)}
               </select>
             </label>
-            <button type="button" onClick={hitung} disabled={!mentah || sedangMenghitung} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 700, cursor: !mentah || sedangMenghitung ? 'wait' : 'pointer' }}>
-              {sedangMenghitung ? 'Menghitung…' : '🧮 Hitung Pratinjau'}
-            </button>
           </div>
-          <div style={{ marginTop: 8, fontSize: 11.5, color: '#64748b' }}>{statusMuat || (mentah ? '' : 'Memuat data mentah dari Firestore…')}</div>
+          <div style={{ marginTop: 8, fontSize: 11.5, color: '#64748b' }}>
+            {statusMuat || (mentah ? '' : 'Memuat data mentah dari Firestore…')}
+            {mentah && (
+              <button type="button" onClick={muat} style={{ background: 'none', border: 'none', color: '#4338ca', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', padding: 0, marginLeft: 8 }}>
+                ⟳ muat ulang data mentah
+              </button>
+            )}
+            {sedangMenghitung && <span style={{ color: '#4f46e5' }}> · menghitung…</span>}
+            <span style={{ color: '#94a3b8' }}> · pratinjau dihitung otomatis setiap filter/periode berubah — tanpa tombol</span>
+          </div>
         </div>
 
         {/* ============ HASIL PRATINJAU ============ */}
@@ -504,8 +521,11 @@ export default function RaportOtomatisPage() {
                 <span style={{ fontSize: 11.5, color: '#475569' }}>
                   {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} layak terbit penuh · {h.ringkasan.belumCukup} data belum cukup · {h.ringkasan.totalPelanggaran} catatan pengawasan
                 </span>
-                <button type="button" onClick={cetakSemua} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#4338ca', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
-                  🖨️ Cetak PDF Semua ({h.ringkasan.totalSiswa} siswa)
+                <button type="button" onClick={() => { setCetakSetelahTerbit(true); terbitkan(); }} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
+                  📄 Terbitkan & Cetak PDF ({h.ringkasan.totalSiswa} siswa)
+                </button>
+                <button type="button" onClick={cetakSemua} style={{ background: 'none', border: 'none', color: '#4338ca', fontSize: 10.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                  cetak draf tanpa menerbitkan
                 </button>
               </div>
             </div>
@@ -742,6 +762,11 @@ export default function RaportOtomatisPage() {
               Menulis ke <code>raport_final</code> (blok akademik per mapel + blok {MAPEL_PROSES}) dengan id deterministik
               <code> studentId__mapel__periode</code> — aman dijalankan ulang. Dokumen terkunci dilewati kecuali mode paksa.
             </div>
+            <details style={{ marginBottom: 4 }}>
+              <summary style={{ cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#475569' }}>
+                ⚙️ Opsi lanjutan (terbit tanpa cetak · paksa terbit ulang · backfill)
+              </summary>
+              <div style={{ marginTop: 10 }}>
             <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, marginBottom: 8 }}>
               <input type="checkbox" checked={paksa} onChange={(e) => setPaksa(e.target.checked)} />
               Paksa terbitkan ulang dokumen terkunci (wajib alasan tertulis — tercatat di audit log)
@@ -762,6 +787,8 @@ export default function RaportOtomatisPage() {
                 {sedangBackfill ? 'Backfill berjalan…' : '⏪ Backfill Agu–Okt 2026 (4 periode)'}
               </button>
             </div>
+              </div>
+            </details>
             {(progresTerbit || progresBackfill) && (
               <div style={{ marginTop: 8, fontSize: 11.5, color: '#4f46e5' }}>{progresTerbit || progresBackfill}</div>
             )}

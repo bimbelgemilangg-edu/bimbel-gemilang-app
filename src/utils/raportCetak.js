@@ -28,7 +28,7 @@
 // ============================================================
 
 import { WATERMARK } from './fieldButirSoal.js';
-import { predikatDariNilai } from './raportOtomatis.js';
+import { predikatDariNilai, KALIBRASI_V1 } from './raportOtomatis.js';
 
 // ------------------------------------------------------------
 // DASAR
@@ -97,6 +97,39 @@ export const warnaPredikatHuruf = (huruf) => (
 export const warnaStatusTopik = (status) => (
   { hijau: '#16a34a', kuning: '#ca8a04', merah: '#dc2626', abu: '#94a3b8', tipis: '#94a3b8' }[status] || '#94a3b8'
 );
+
+/** v1.2: peta topik SIAP TAMPIL — snapshot lama (mesin v1.1) masih menyimpan
+ * status 'merah' untuk topik berbukti 1 soal; gerbang bukti diterapkan ULANG
+ * di lapisan tampilan supaya wajah v1.2 berlaku tanpa menerbitkan ulang
+ * snapshot terkunci (janji kunci tetap utuh). */
+export function petaTampil(petaTopik = []) {
+  const min = KALIBRASI_V1.topikMinimalBukti;
+  const tipisSemu = (t) => t.status === 'tipis' || t.status === 'abu' || (t.status === 'merah' && t.dicoba < min);
+  return {
+    tipis: petaTopik.filter(tipisSemu),
+    berwarna: petaTopik.filter((t) => !tipisSemu(t)),
+  };
+}
+
+/** v1.2: rekomendasi dihitung ulang dari peta (merah berbukti cukup) dengan
+ * bahasa rencana pendampingan — string lama ('Perkuat X — akurasi N% < 50%')
+ * di snapshot lama tidak lagi dipamerkan ke orang tua. */
+export function rekomendasiTampil(petaTopik = []) {
+  const min = KALIBRASI_V1.topikMinimalBukti;
+  return petaTopik
+    .filter((t) => t.status === 'merah' && t.dicoba >= min)
+    .slice(0, 6)
+    .map((t) => `Pendampingan terfokus: topik "${t.topik}" (${t.mapelNama}) — akurasi ${t.akurasi}% dari ${t.dicoba} soal; Gemilang menjadwalkan latihan terbimbing untuk topik ini.`);
+}
+
+/** v1.2: terjemahkan catatan snapshot lama ke bahasa orang tua saat render. */
+export function catatanTampil(catatan = []) {
+  return catatan.map((c) => String(c)
+    .replace(/^([^:]+): data belum cukup untuk terbit penuh \((\d+) komponen, (\d+) titik data; minimal 2 komponen & 3 titik\)\.$/,
+      '$1: bukti masih tipis ($2 sumber asesmen, $3 titik nilai) — angka ditampilkan sebagai gambaran, belum sebagai nilai final mapel.')
+    .replace(/bobot didistribusikan ulang \(tidak dinolkan\)\.$/,
+      'bobot komponen kosong dibagikan ulang ke sumber yang ada, TIDAK dinolkan, supaya anak tidak dihukum atas ujian yang belum diadakan.'));
+}
 
 // ------------------------------------------------------------
 // v1.2 — RAPOR RAMAH ORANG TUA (keluhan owner 31 Okt 2026: rapor terasa
@@ -548,7 +581,7 @@ function bagianAkademik(m) {
     <span class="rp-muted">Bobot efektif: ${escapeHtml(m.mode_perhitungan || '—')}</span>
     ${redistribusi ? ' <span class="rp-warn">· komponen kosong TIDAK dinolkan — bobot diredistribusi</span>' : ''}
     <div style="margin-top:3px">${barisDimensi(m.detail_dimensi, m.dimensi_sumber)}</div>
-    ${(m.catatan || []).map((c) => `<div class="rp-warn rp-kecil">• ${escapeHtml(c)}</div>`).join('')}
+    ${catatanTampil(m.catatan || []).map((c) => `<div class="rp-warn rp-kecil">• ${escapeHtml(c)}</div>`).join('')}
   </td>
 </tr>`;
 }
@@ -596,7 +629,7 @@ function bagianPerkembangan(p, m = null) {
   const trenSkala = p.trenSkala || [];
   const trenHarian = p.trenHarian || [];
   const petaTopik = p.petaTopik || [];
-  const rekomendasi = p.rekomendasi || [];
+  const rekomendasi = rekomendasiTampil(petaTopik); // v1.2: snapshot lama ikut berwajah baru
   const spark = svgSparkline(trenHarian, { lebar: 460, tinggi: 46 });
   const CAP_TABEL_HARIAN = 40;
   const harianDitampil = trenHarian.slice(-CAP_TABEL_HARIAN);
@@ -654,8 +687,7 @@ ${trenHarian.length > CAP_TABEL_HARIAN ? `<div class="rp-muted rp-kecil">Menampi
 
 <h3>Peta topik (warna = rencana pendampingan, bukan vonis)</h3>
 ${(() => {
-      const petaTipis = petaTopik.filter((t) => t.status === 'tipis' || t.status === 'abu');
-      const petaWarna = petaTopik.filter((t) => t.status !== 'tipis' && t.status !== 'abu');
+      const { tipis: petaTipis, berwarna: petaWarna } = petaTampil(petaTopik);
       return `${petaTipis.length ? `<div class="rp-muted rp-kecil" style="margin-bottom:4px">Masih mengumpulkan bukti (belum diwarnai): ${petaTipis.length} topik berbukti &lt;3 soal — satu benar/salah belum menggambarkan penguasaan: ${escapeHtml(petaTipis.slice(0, 6).map((t) => `${t.mapelNama}: ${t.topik}`).join(' · '))}${petaTipis.length > 6 ? ' · …' : ''}</div>` : ''}${petaWarna.length ? `<div>${petaWarna.map((t) => {
       const w = warnaStatusTopik(t.status);
       return `<span class="rp-chip" style="border-color:${w};color:${w}" title="${escapeHtml(t.alasan || '')} · sumber: ${escapeHtml((t.sumber || []).join('+'))}">${escapeHtml(t.mapelNama || t.mapelKode || '')}: ${escapeHtml(t.topik)} · ${fmt(t.akurasi)}% (${fmt(t.dicoba)})</span>`;

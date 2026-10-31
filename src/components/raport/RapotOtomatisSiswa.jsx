@@ -18,6 +18,7 @@ import { Bot, Brain, Lightbulb, Target, Clock, Zap, ShieldCheck, TrendingUp } fr
 import {
   poinSparkline, warnaStatusTopik, warnaPredikatHuruf, DIMENSI_LABEL, DIMENSI_KEYS,
   poinRadar, seriRadarDariModel, WARNA_RADAR_GLOBAL, RADAR_MAKS_SERI,
+  petaTampil, rekomendasiTampil,
 } from '../../utils/raportCetak';
 import { predikatDariNilai } from '../../utils/raportOtomatis';
 
@@ -142,7 +143,7 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
     ? []
     : ((proses && proses.trenHarian) || []).filter((t) => t.jenis === 'to' && t.skor !== null && t.skor !== undefined);
   const petaTopik = (proses && proses.petaTopik) || [];
-  const rekomendasi = (proses && proses.rekomendasi) || [];
+  const rekomendasi = rekomendasiTampil(petaTopik); // v1.2: wajah baru tanpa terbit ulang
   const dihitungPada = entri.jejak?.dihitungPada ? new Date(entri.jejak.dihitungPada).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
 
   return (
@@ -377,9 +378,14 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
 
           {petaTopik.length > 0 && (
             <>
-              <div style={{ fontSize: 12, fontWeight: 700, margin: '12px 0 6px' }}>Peta topik</div>
+              <div style={{ fontSize: 12, fontWeight: 700, margin: '12px 0 6px' }}>Peta topik (warna = rencana pendampingan, bukan vonis)</div>
+              {petaTampil(petaTopik).tipis.length > 0 && (
+                <div style={{ fontSize: 10.5, color: '#64748b', marginBottom: 4 }}>
+                  Masih mengumpulkan bukti (belum diwarnai): {petaTampil(petaTopik).tipis.length} topik berbukti &lt;3 soal.
+                </div>
+              )}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                {petaTopik.map((t, i) => (
+                {petaTampil(petaTopik).berwarna.map((t, i) => (
                   <span key={i} title={`${t.alasan} · sumber: ${(t.sumber || []).join('+')}`} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 999, border: `1px solid ${warnaStatusTopik(t.status)}`, color: warnaStatusTopik(t.status), background: '#fff' }}>
                     {t.mapelNama}: {t.topik} · {fmt(t.akurasi)}% ({fmt(t.dicoba)})
                   </span>

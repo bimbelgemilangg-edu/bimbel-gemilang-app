@@ -15,7 +15,7 @@ import {
   poinSparkline, svgSparkline, warnaPredikatHuruf, warnaStatusTopik,
   poinRadar, svgRadar, seriRadarDariModel, LOGO_KOP, NAMA_PENERBIT,
   siapkanModelRaport, htmlRaportSiswa, htmlRaportMassal, judulCetakRaport,
-  daftarKekuatan, trenSemangat,
+  daftarKekuatan, trenSemangat, petaTampil, rekomendasiTampil, catatanTampil,
 } from '../src/utils/raportCetak.js';
 import { hitungRaportSemuaSiswa, bangunDokumenRaport, VERSI_MESIN } from '../src/utils/raportOtomatis.js';
 
@@ -407,6 +407,26 @@ uji('v1.2: trenSemangat jujur (null bila titik <4) + daftarKekuatan strengths-fi
   assert.ok(k.some((x) => x.includes('Integritas bersih')));
   const kosong = daftarKekuatan({});
   assert.ok(kosong[0].includes('Bukti kekuatan masih dikumpulkan'));
+});
+
+uji('v1.2: snapshot LAMA (merah n=1) tampil tipis TANPA terbit ulang', () => {
+  const lama = [{ status: 'merah', dicoba: 1, akurasi: 0, topik: 'Satu Soal', mapelNama: 'Matematika', sumber: ['latihan'], alasan: 'akurasi 0% < 50' }];
+  const { tipis, berwarna } = petaTampil(lama);
+  assert.equal(berwarna.length, 0);
+  assert.equal(tipis.length, 1);
+  assert.equal(rekomendasiTampil(lama).length, 0); // bukti n=1 tak boleh jadi rekomendasi
+  const cukup = [{ status: 'merah', dicoba: 5, akurasi: 40, topik: 'Pecahan', mapelNama: 'Matematika', sumber: ['latihan'], alasan: '' }];
+  assert.ok(rekomendasiTampil(cukup)[0].includes('Pendampingan terfokus'));
+});
+uji('v1.2: catatanTampil menerjemahkan kalimat mesin v1.1 ke bahasa ortu', () => {
+  const t = catatanTampil([
+    'Matematika: data belum cukup untuk terbit penuh (1 komponen, 1 titik data; minimal 2 komponen & 3 titik).',
+    'IPA: nilai dari komponen yang ada — data tugas & ujian belum tersedia, bobot didistribusakan ulang (tidak dinolkan).',
+    'IPA: nilai dari komponen yang ada — data tugas & ujian belum tersedia, bobot didistribusikan ulang (tidak dinolkan).',
+  ]);
+  assert.ok(t[0].includes('bukti masih tipis'));
+  assert.ok(t[2].includes('dibagikan ulang'));
+  assert.ok(!t[2].includes('didistribusikan'));
 });
 
 console.log(`\n[${lulus} lulus, ${gagal} gagal]`);
