@@ -15,7 +15,7 @@ import {
   poinSparkline, svgSparkline, warnaPredikatHuruf, warnaStatusTopik,
   poinRadar, svgRadar, seriRadarDariModel, LOGO_KOP, NAMA_PENERBIT,
   siapkanModelRaport, htmlRaportSiswa, htmlRaportMassal, judulCetakRaport,
-  daftarKekuatan, trenSemangat, petaTampil, rekomendasiTampil, catatanTampil,
+  trenSemangat, petaTampil, rekomendasiTampil, narasiLaporan, deskripsiMapel,
 } from '../src/utils/raportCetak.js';
 import { hitungRaportSemuaSiswa, bangunDokumenRaport, VERSI_MESIN } from '../src/utils/raportOtomatis.js';
 
@@ -179,15 +179,15 @@ uji('warna predikat & status topik punya fallback', () => {
 });
 
 // ---------------- model ----------------
-uji('siapkanModelRaport: tanpa dokProses → rata-rata dihitung dari mapel layak saja', () => {
+uji('v1.3: siapkanModelRaport → rata-rata capaian dari SEMUA mapel berangka', () => {
   const m = siapkanModelRaport({
     dokAkademik: [
       { data: { blok: 'akademik', mapel: 'A', studentName: 'X', periode: '2026-09', nilai_akhir: 80, statusData: 'lengkap' } },
       { data: { blok: 'akademik', mapel: 'B', studentName: 'X', periode: '2026-09', nilai_akhir: 40, statusData: 'belum-cukup' } },
     ],
   });
-  assert.equal(m.ringkasan.rataRataAkademik, 80); // B belum-cukup TIDAK ikut rata-rata
-  assert.equal(m.ringkasan.predikatAkademik.huruf, 'B');
+  assert.equal(m.ringkasan.rataRataAkademik, 60); // v1.3: B ikut — laporan ortu tak mengenal 'menunggu layak'
+  assert.ok(m.ringkasan.predikatAkademik.huruf !== '—');
   assert.equal(m.identitas.nama, 'X');
 });
 uji('judulCetakRaport: judul file PDF terbaca', () => {
@@ -204,14 +204,14 @@ uji('html end-to-end: identitas, periode manusiawi, cap otomatis, versi mesin te
   assert.ok(htmlBudi.includes('SMP/MTs')); // jenjang dari identitas
 });
 uji('html end-to-end: dua nilai terpisah (akademik & proses), tidak digabung', () => {
-  assert.ok(htmlBudi.includes('RATA-RATA AKADEMIK'));
+  assert.ok(htmlBudi.includes('CAPAIAN AKADEMIK'));
   assert.ok(htmlBudi.includes('NILAI PROSES & KARAKTER'));
   assert.ok(htmlBudi.includes('TIDAK digabung menjadi satu angka'));
 });
 uji('html end-to-end: komponen tercetak dengan jumlahnya + redistribusi bobot dijelaskan', () => {
   assert.ok(htmlBudi.includes('Bahasa Inggris'));
   assert.ok(htmlBudi.includes('(2×)')); // 2 kuis bing
-  assert.ok(htmlBudi.includes('diredistribusi'));
+  assert.ok(htmlBudi.includes('Gambaran awal capaian dari') || htmlBudi.includes('Capaian final dari')); // v1.3: kolom Deskripsi otomatis
   assert.ok(htmlBudi.includes('TO Matematika September')); // rincian ujian
 });
 uji('html end-to-end: pelanggaran = catatan, nilai tidak dipotong', () => {
@@ -221,8 +221,8 @@ uji('html end-to-end: pelanggaran = catatan, nilai tidak dipotong', () => {
 uji('html end-to-end: kehadiran adil (sakit tidak dihukum) + ketepatan waktu jujur', () => {
   assert.ok(htmlBudi.includes('3/4 hadir (75%)'));
   assert.ok(htmlBudi.includes('1 sakit'));
-  assert.ok(htmlBudi.includes('belum terukur (v1)')); // ketepatan waktu
-  assert.ok(htmlBudi.includes('waktu guru mencatat')); // alasan jujur
+  assert.ok(htmlBudi.includes('belum ada tugas berjatuh tempo pada periode ini')); // ketepatan waktu
+  assert.ok(!htmlBudi.includes('(v1)')); // v1.3: nol bocoran internal
 });
 uji('html end-to-end: latihan mandiri, XP, peta topik, tren', () => {
   assert.ok(htmlBudi.includes('350 total')); // XP
@@ -252,7 +252,7 @@ uji('html: dokumen datar gaya Firestore menghasilkan cetakan yang sama', () => {
     dokProses: datarDari(dokBudi.dokProses),
   });
   assert.ok(htmlDatar.includes('Budi'));
-  assert.ok(htmlDatar.includes('RATA-RATA AKADEMIK'));
+  assert.ok(htmlDatar.includes('CAPAIAN AKADEMIK'));
 });
 uji('html: dokumen kosong total → tetap tercetak jujur, tidak melempar', () => {
   const h = htmlRaportSiswa({});
@@ -270,10 +270,9 @@ uji('html: dimensi null dicetak "belum terukur", bukan 0', () => {
       dimensi_sumber: { dayaTangkap: 'benarBerturut' }, catatan: [], narasi: '',
     }],
   });
-  assert.ok(h.includes('belum terukur'));
-  assert.ok(h.includes('Daya Tangkap: 72'));
-  assert.ok(!h.includes('Pemahaman: 0'));
-  assert.ok(h.includes('data belum cukup'));
+  assert.ok(!h.includes('Pemahaman: 0')); // dimensi null tak pernah dicetak 0
+  assert.ok(!h.includes('data belum cukup')); // v1.3: nol frasa defisit
+  assert.ok(h.includes('Gambaran awal capaian dari kuis')); // deskripsi otomatis per mapel
 });
 
 // ---------------- cetak massal ----------------
@@ -392,23 +391,35 @@ uji('tren tanpa TO sama sekali: kalimat jujur "—" belum terukur, tidak dinolka
   assert.ok(h.includes("kolom skala dibiarkan '—' (belum terukur), tidak dinolkan"));
 });
 
-uji('v1.2: kotak cara membaca & kekuatan selalu ada di cetakan siswa', () => {
-  assert.ok(htmlBudi.includes('Cara membaca rapor ini'));
-  assert.ok(htmlBudi.includes('Kekuatan periode ini'));
+uji('v1.3: narasi otomatis lengkap; NOL frasa defisit di cetakan orang tua', () => {
+  assert.ok(htmlBudi.includes('Laporan untuk Orang Tua/Wali'));
   assert.ok(htmlBudi.includes('Semangat & kebiasaan belajar'));
-  assert.ok(htmlBudi.includes('bukan nilai nol'));
+  for (const dilarang of ['Cara membaca rapor ini', 'data belum cukup', 'Data belum cukup',
+    'bukan nilai nol', '(v1)', 'Bobot efektif', 'Kekuatan periode ini', 'belum diwarnai',
+    'Rekomendasi penguatan', 'belum cukup untuk dinilai', 'masih tipis']) {
+    assert.ok(!htmlBudi.includes(dilarang), `cetakan masih memuat frasa terlarang: ${dilarang}`);
+  }
+  // siswa tanpa satu pun asesmen akademik pun tetap dapat narasi utuh + deskripsi netral
+  const h = htmlRaportSiswa({ dokProses: dokSari.dokProses.data });
+  assert.ok(h.includes('Laporan untuk Orang Tua/Wali'));
+  assert.ok(!h.includes('data belum cukup'));
 });
-uji('v1.2: trenSemangat jujur (null bila titik <4) + daftarKekuatan strengths-first', () => {
+uji('v1.3: narasiLaporan & deskripsiMapel selalu menghasilkan kalimat (tak pernah kosong)', () => {
+  const kosong = narasiLaporan({});
+  assert.ok(kosong.length > 100);
+  assert.ok(kosong.includes('asesmen pertama') || kosong.includes('terisi otomatis'));
+  assert.equal(deskripsiMapel({}), 'Belum ada asesmen mapel ini pada periode ini; capaian akan terisi otomatis begitu kuis atau try out pertama dilaksanakan.');
+  assert.ok(deskripsiMapel({
+    statusData: 'lengkap', predikat: { huruf: 'A' },
+    detail_komponen: { kuis: { total: 80, jumlah: 2 }, tugas: { total: 90, jumlah: 1 }, ujian: { total: 85, jumlah: 1 } },
+  }).includes('Capaian final dari kuis + tugas + try out/ujian'));
+});
+uji('v1.3: trenSemangat jujur (null bila titik <4)', () => {
   assert.equal(trenSemangat([]), null);
   assert.equal(trenSemangat([{ skor: 1 }, { skor: 2 }]), null);
   const naik = trenSemangat([{ skor: 50 }, { skor: 52 }, { skor: 70 }, { skor: 75 }]);
   assert.equal(naik.ikon, '▲');
-  const k = daftarKekuatan({ proses: { detail_proses: { integritas: { jumlahPelanggaran: 0 } }, petaTopik: [] }, akademik: [] });
-  assert.ok(k.some((x) => x.includes('Integritas bersih')));
-  const kosong = daftarKekuatan({});
-  assert.ok(kosong[0].includes('Bukti kekuatan masih dikumpulkan'));
 });
-
 uji('v1.2: snapshot LAMA (merah n=1) tampil tipis TANPA terbit ulang', () => {
   const lama = [{ status: 'merah', dicoba: 1, akurasi: 0, topik: 'Satu Soal', mapelNama: 'Matematika', sumber: ['latihan'], alasan: 'akurasi 0% < 50' }];
   const { tipis, berwarna } = petaTampil(lama);
@@ -417,16 +428,6 @@ uji('v1.2: snapshot LAMA (merah n=1) tampil tipis TANPA terbit ulang', () => {
   assert.equal(rekomendasiTampil(lama).length, 0); // bukti n=1 tak boleh jadi rekomendasi
   const cukup = [{ status: 'merah', dicoba: 5, akurasi: 40, topik: 'Pecahan', mapelNama: 'Matematika', sumber: ['latihan'], alasan: '' }];
   assert.ok(rekomendasiTampil(cukup)[0].includes('Pendampingan terfokus'));
-});
-uji('v1.2: catatanTampil menerjemahkan kalimat mesin v1.1 ke bahasa ortu', () => {
-  const t = catatanTampil([
-    'Matematika: data belum cukup untuk terbit penuh (1 komponen, 1 titik data; minimal 2 komponen & 3 titik).',
-    'IPA: nilai dari komponen yang ada — data tugas & ujian belum tersedia, bobot didistribusakan ulang (tidak dinolkan).',
-    'IPA: nilai dari komponen yang ada — data tugas & ujian belum tersedia, bobot didistribusikan ulang (tidak dinolkan).',
-  ]);
-  assert.ok(t[0].includes('bukti masih tipis'));
-  assert.ok(t[2].includes('dibagikan ulang'));
-  assert.ok(!t[2].includes('didistribusikan'));
 });
 
 console.log(`\n[${lulus} lulus, ${gagal} gagal]`);

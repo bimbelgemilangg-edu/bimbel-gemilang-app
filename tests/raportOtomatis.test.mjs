@@ -299,7 +299,7 @@ uji('nilai akhir mapel lengkap: 30/30/40 → 82*.3+70*.3+75*.4 = 75.6 (B)', () =
 uji('mapel 1 komponen: TIDAK layak terbit penuh + catatan redistribusi/kekurangan', () => {
   assert.equal(bing.layak, false);
   assert.equal(bing.nilaiAkhir, 85); // tetap dihitung dari yang ada (indikasi), tidak disembunyikan
-  assert.ok(budi.catatan.some((c) => c.includes('bukti masih tipis'))); // wording v1.2 ramah ortu
+  assert.ok(budi.catatan.some((c) => c.includes('gambaran awal'))); // wording v1.2 ramah ortu
 });
 uji('UTBK: ujian per subtes dinormalkan (skala 1000→100, 550→50, rata-rata 75)', () => {
   const pk = mapelSari('utbk_pk');
@@ -377,7 +377,7 @@ uji('kehadiran < 3 sesi TIDAK diskor (1 alpha tidak menghancurkan nilai proses)'
   assert.equal(kosong.proses.kehadiran.total, 1);
   assert.equal(kosong.proses.kehadiran.alpha, 1); // fakta tetap ditampilkan
   assert.equal(kosong.proses.kehadiran.skor, null);
-  assert.ok(kosong.proses.kehadiran.alasan.includes('minimal'));
+  assert.ok(kosong.proses.kehadiran.alasan.includes('skor kehadiran aktif otomatis setelah'));
 });
 uji('analisis terukur dari >= 3 soal sulit (b4,b5,b6 → akurasi (2/5+1/3+3/4)/3)', () => {
   const d = budi.dimensi.analisis;

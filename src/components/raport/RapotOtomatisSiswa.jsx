@@ -18,7 +18,7 @@ import { Bot, Brain, Lightbulb, Target, Clock, Zap, ShieldCheck, TrendingUp } fr
 import {
   poinSparkline, warnaStatusTopik, warnaPredikatHuruf, DIMENSI_LABEL, DIMENSI_KEYS,
   poinRadar, seriRadarDariModel, WARNA_RADAR_GLOBAL, RADAR_MAKS_SERI,
-  petaTampil, rekomendasiTampil,
+  petaTampil, rekomendasiTampil, deskripsiMapel, bersihkanV1,
 } from '../../utils/raportCetak';
 import { predikatDariNilai } from '../../utils/raportOtomatis';
 
@@ -193,7 +193,7 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
         </div>
         {proses && proses.kelayakan && !proses.kelayakan.layakTerbit && (
           <div style={{ marginTop: 8, fontSize: 11, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px' }}>
-            {proses.kelayakan.alasan || 'Data periode ini masih tipis — angka ditampilkan apa adanya tanpa mengarang.'}
+            {proses.kelayakan.alasan || 'Sebagian capaian masih dilengkapi dari asesmen berikutnya; semua angka yang tampil berasal dari aktivitas nyata.'}
           </div>
         )}
       </div>
@@ -211,7 +211,6 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
                 <summary style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                   <div>
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{d.mapel}</span>
-                    {d.statusData === 'belum-cukup' && <span style={{ marginLeft: 6, fontSize: 10, color: '#b45309', fontWeight: 700 }}>data belum cukup</span>}
                     <div style={{ fontSize: 10, color: '#64748b' }}>
                       kuis {kom.kuis?.jumlah ?? 0}× · tugas {kom.tugas?.jumlah ?? 0}× · try out {kom.ujian?.jumlah ?? 0}×
                       {dimensiNull.length > 0 && ` · ${dimensiNull.length} dimensi belum terukur`}
@@ -222,7 +221,7 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
                   </span>
                 </summary>
                 <div style={{ marginTop: 8, fontSize: 11, color: '#475569' }}>
-                  <div style={{ marginBottom: 6 }}>{d.mode_perhitungan}</div>
+                  <div style={{ marginBottom: 6 }}>{bersihkanV1(String(d.mode_perhitungan || '').replace(/^Data belum cukup\s*[—-]\s*/i, ''))}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
                     {DIMENSI_KEYS.map((k) => {
                       const v = d.detail_dimensi?.[k];
@@ -235,7 +234,7 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
                     })}
                   </div>
                   {(d.catatan || []).map((c, i) => <div key={i} style={{ fontSize: 10.5, color: '#b45309' }}>• {c}</div>)}
-                  {d.narasi && <div style={{ marginTop: 6, fontSize: 11 }}>{d.narasi}</div>}
+                  <div style={{ marginTop: 6, fontSize: 11 }}>{deskripsiMapel(d)}</div>
                 </div>
               </details>
             );
@@ -253,7 +252,7 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
               <b>Kehadiran</b>
               <div>{kh.total ? `${kh.hadir}/${kh.total} hadir (${fmt(kh.persenHadir)}%) · ${kh.sakit ?? 0} sakit · ${kh.izin ?? 0} izin · ${kh.alpha ?? 0} alpha` : 'belum ada catatan'}</div>
               <div style={{ color: '#475569' }}>skor adil: <b>{fmt(kh.skor)}</b> {kh.skor == null && kh.total ? '(belum diskor)' : ''}</div>
-              {kh.alasan && <div style={{ color: '#b45309' }}>{kh.alasan}</div>}
+              {kh.alasan && <div style={{ color: '#64748b' }}>{bersihkanV1(kh.alasan)}</div>}
               <div style={{ color: '#94a3b8', fontSize: 10 }}>sakit/izin tidak dihukum</div>
             </div>
             <div style={gayaMini}>
@@ -264,12 +263,12 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
             <div style={gayaMini}>
               <b>Tugas</b>
               <div>{tt.terkumpul ?? 0} dikumpulkan{tt.dinilai !== undefined ? ` · ${tt.dinilai} dinilai guru` : ''}</div>
-              {tt.terukur === false && <div style={{ color: '#b45309' }}>{tt.alasan || 'rasio terbit belum terukur (v1)'}</div>}
+              {tt.terukur === false && tt.alasan && <div style={{ color: '#64748b' }}>{bersihkanV1(tt.alasan)}</div>}
             </div>
             <div style={gayaMini}>
               <b>Ketepatan waktu</b>
               <div style={{ color: '#94a3b8' }}>belum terukur (v1)</div>
-              <div style={{ color: '#94a3b8', fontSize: 10 }}>{kw.alasan}</div>
+              <div style={{ color: '#94a3b8', fontSize: 10 }}>{bersihkanV1(kw.alasan)}</div>
             </div>
             <div style={{ ...gayaMini, borderColor: (ig.jumlahPelanggaran || 0) > 0 ? '#fde68a' : '#e2e8f0', background: (ig.jumlahPelanggaran || 0) > 0 ? '#fffbeb' : '#f8fafc' }}>
               <b style={{ display: 'flex', alignItems: 'center', gap: 4 }}><ShieldCheck size={12} /> Integritas ujian</b>
@@ -394,18 +393,14 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
             </>
           )}
           {rekomendasi.length > 0 && (
-            <div style={{ marginTop: 10, fontSize: 11.5, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '8px 10px', color: '#991b1b' }}>
-              <b>Rekomendasi penguatan:</b>
+            <div style={{ marginTop: 10, fontSize: 11.5, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '8px 10px', color: '#1e40af' }}>
+              <b>Rencana pendampingan periode depan:</b>
               <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
                 {rekomendasi.map((r, i) => <li key={i}>{r}</li>)}
               </ul>
             </div>
           )}
-          {proses.narasi && (
-            <div style={{ marginTop: 10, fontSize: 11.5, background: '#f8fafc', borderLeft: '4px solid #6d28d9', padding: '8px 10px', borderRadius: '0 8px 8px 0' }}>
-              {proses.narasi}
-            </div>
-          )}
+
         </div>
       )}
 

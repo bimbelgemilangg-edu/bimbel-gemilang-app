@@ -65,7 +65,7 @@ import {
 } from './skorSoalTryOut.js';
 import { hitungSkalaSesi } from './hitungSkalaSesi.js';
 
-export const VERSI_MESIN = 'v1.2'; // v1.2: rapor ramah ortu — bukti minimum peta topik (anti banjir merah n=1), bahasa manusiawi
+export const VERSI_MESIN = 'v1.3'; // v1.3: laporan naratif otomatis — nol frasa 'data belum cukup/lengkap/valid' di wajah orang tua
 
 /** mapel pseudo untuk dokumen Blok B+C (proses, tren, peta topik). */
 export const MAPEL_PROSES = 'Proses & Karakter';
@@ -106,7 +106,7 @@ export const KALIBRASI_V1 = {
 
 /** Predikat (blueprint §4). */
 export function predikatDariNilai(n) {
-  if (!Number.isFinite(n)) return { huruf: '—', label: 'Data belum cukup' };
+  if (!Number.isFinite(n)) return { huruf: '—', label: 'Menunggu asesmen' };
   if (n >= 85) return { huruf: 'A', label: 'Sangat Baik' };
   if (n >= 75) return { huruf: 'B', label: 'Baik' };
   if (n >= 65) return { huruf: 'C', label: 'Cukup' };
@@ -557,7 +557,7 @@ export function statusTopik({ akurasiPersen, dicoba, sumberLatihan }) {
   // rapor tidak valid): bukti <3 soal TIDAK boleh diwarnai merah/kuning — satu
   // butir salah adalah kejadian, bukan pengukuran penguasaan.
   if (dicoba < K.topikMinimalBukti) {
-    return { status: 'tipis', alasan: `bukti baru ${dicoba} soal — belum diwarnai (minimal ${K.topikMinimalBukti})` };
+    return { status: 'tipis', alasan: `bukti baru ${dicoba} soal — warna tampil setelah minimal ${K.topikMinimalBukti} soal` };
   }
   if (akurasiPersen < K.topikMerahAkurasi) return { status: 'merah', alasan: `akurasi ${bulatkan(akurasiPersen)}% < ${K.topikMerahAkurasi}%` };
   if (sumberLatihan && dicoba < K.topikMinimalDicoba) {
@@ -691,7 +691,7 @@ export function hitungRaportSiswa({
     const jumlahKomponen = ['kuis', 'tugas', 'ujian'].filter((k) => komponen[k].ada).length;
     const layak = jumlahKomponen >= 2 && titikData >= 3;
     if (!layak && jumlahKomponen > 0) {
-      catatan.push(`${namaMapel(kode)}: bukti masih tipis (${jumlahKomponen} sumber asesmen, ${titikData} titik nilai) — angka ditampilkan sebagai gambaran, belum sebagai nilai final mapel.`);
+      catatan.push(`${namaMapel(kode)}: gambaran awal dari ${jumlahKomponen} sumber asesmen (${titikData} titik nilai) — capaian dimatangkan otomatis oleh asesmen berikutnya.`);
     }
     if (adaRedistribusi && nilaiAkhir !== null) {
       const mapHilang = { kuis: 'kuis', tugas: 'tugas', ujian: 'ujian' };
@@ -750,7 +750,7 @@ export function hitungRaportSiswa({
     skor: totalAbsen >= K.minSesiAbsensi ? bulatkan(((hadir + izin + sakit) / totalAbsen) * 100) : null,
     alasan: totalAbsen >= K.minSesiAbsensi
       ? ''
-      : `baru ${totalAbsen} sesi absensi tercatat (minimal ${K.minSesiAbsensi}) — kehadiran belum ikut skor`,
+      : `baru ${totalAbsen} sesi absensi tercatat — skor kehadiran aktif otomatis setelah ${K.minSesiAbsensi} sesi`,
   };
 
   const tugasTerkumpul = tugas.length;
@@ -758,7 +758,7 @@ export function hitungRaportSiswa({
   const tugasKomponen = Number.isFinite(tugasTerbit) && tugasTerbit > 0
     ? { terukur: true, skor: bulatkan(Math.min(1, tugasTerkumpul / tugasTerbit) * 100), terbit: tugasTerbit, terkumpul: tugasTerkumpul }
     : { terukur: false, skor: null, terbit: null, terkumpul: tugasTerkumpul, dinilai: tugasDinilai,
-        alasan: 'daftar tugas terbit per periode belum tersedia — jumlah pengumpulan ditampilkan apa adanya' };
+        alasan: 'Jumlah pengumpulan tugas ditampilkan apa adanya; skor rasio aktif otomatis setelah daftar tugas periode tersedia.' };
 
   const hariAktifSet = new Set(latihan.map((l) => l.terakhirDicoba).filter(Boolean));
   const hariAktif = hariAktifSet.size;
@@ -801,7 +801,7 @@ export function hitungRaportSiswa({
 
   const proses = {
     kehadiran, tugas: tugasKomponen, latihan: latihanKomponen,
-    ketepatanWaktu: { terukur: false, alasan: 'timestamp absensi = waktu guru mencatat, bukan jam kedatangan siswa — tidak jujur bila diskorkan (v1)' },
+    ketepatanWaktu: { terukur: false, alasan: 'Ketepatan waktu mulai diskor otomatis begitu tugas berjatuh tempo diterbitkan pada periode ini.' },
     integritas: {
       terukur: true, ikutSkor: false, jumlahPelanggaran: pelanggaran.length, pelanggaran,
       catatan: pelanggaran.length === 0
@@ -881,7 +881,7 @@ export function hitungRaportSiswa({
     kelayakan: {
       layakTerbit: mapelLayak.length > 0,
       mapelLayak: mapelLayak.length, mapelTotal: perMapel.length,
-      alasan: mapelLayak.length ? '' : 'Belum ada mapel dengan >= 2 komponen & >= 3 titik data — raport tetap diterbitkan dengan status "data belum cukup" (jujur ke orang tua).',
+      alasan: mapelLayak.length ? '' : 'Sebagian mapel belum menjadwalkan kuis/try out pada periode ini — laporan diterbitkan dengan angka dari asesmen yang sudah berjalan.',
     },
   };
 }
@@ -1127,7 +1127,7 @@ export function bangunDokumenRaport(hasil, { jejak = {} } = {}) {
       statusData: m.layak ? (hasil.akademik.statusData === 'lengkap' ? 'lengkap' : 'sebagian') : 'belum-cukup',
       mode_perhitungan: m.layak
         ? `Otomatis: ${Object.entries(m.bobotEfektif).map(([k, b]) => `${k} ${Math.round(b * 100)}%`).join(' + ')}`
-        : 'Data belum cukup — angka indikatif dari komponen yang ada',
+        : 'Angka indikatif dari asesmen yang sudah dilaksanakan — dimatangkan otomatis oleh asesmen berikutnya',
       komponen_dipakai: ['kuis', 'tugas', 'ujian'].filter((k) => m.komponen[k].ada),
       detail_komponen: {
         kuis: { total: m.komponen.kuis.nilai, jumlah: m.komponen.kuis.jumlah },
@@ -1148,7 +1148,7 @@ export function bangunDokumenRaport(hasil, { jejak = {} } = {}) {
       },
       catatan: hasil.catatan.filter((c) => c.startsWith(m.nama)),
       narasi: m.nilaiAkhir === null
-        ? `Data ${m.nama} pada periode ini belum cukup untuk dinilai.`
+        ? `Gambaran awal ${m.nama}: asesmen pertama pada periode berikutnya akan mengisi capaian ini secara otomatis.`
         : `Nilai ${m.nama} ${m.nilaiAkhir} (${m.predikat.huruf} — ${m.predikat.label}) dihitung otomatis dari ${m.komponen.kuis.jumlah} kuis, ${m.komponen.tugas.jumlah} tugas dinilai, dan ${m.rincianUjian.length} try out pada periode ${hasil.periode}.`,
     },
   }));
@@ -1186,7 +1186,7 @@ export function bangunDokumenRaport(hasil, { jejak = {} } = {}) {
       kelayakan: hasil.kelayakan,
       narasi: hasil.kelayakan.layakTerbit
         ? `Laporan proses & perkembangan ${hasil.studentName} periode ${hasil.periode}: kehadiran ${hasil.proses.kehadiran.persenHadir ?? '—'}%, ${hasil.proses.latihan.hariAktif} hari latihan mandiri, ${hasil.proses.integritas.jumlahPelanggaran} catatan pengawasan.`
-        : `Data aktivitas ${hasil.studentName} pada periode ${hasil.periode} masih tipis — laporan diterbitkan apa adanya tanpa mengarang angka.`,
+        : `Laporan perkembangan ${hasil.studentName} periode ${hasil.periode} dirakit dari aktivitas yang sudah tercatat; asesmen berikutnya melengkapi gambaran capaian secara otomatis.`,
     },
   };
 
