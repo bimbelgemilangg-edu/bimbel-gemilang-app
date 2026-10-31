@@ -139,14 +139,14 @@ export function useDeteksiKecuranganTryOut({ aktif, wajibKamera = true, onFotoTe
   const jedaBerikutnyaRef = useRef(0);
 
   const cobaFrameRef = useRef(0);
-  const ambilSatuFoto = useCallback(() => {
+  const ambilSatuFoto = useCallback(function ulangAmbil() { // nama lokal: rekursi jeda foto tanpa self-TDZ
     try {
       const video = videoRef.current;
       if (!video) return;
       if (!video.videoWidth || !video.videoHeight) {
         if (cobaFrameRef.current < 8) {
           cobaFrameRef.current += 1;
-          setTimeout(() => ambilSatuFoto(), 300);
+          setTimeout(() => ulangAmbil(), 300);
         }
         return;
       }

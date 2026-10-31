@@ -72,7 +72,6 @@ const ManageSurvey = () => {
     window.addEventListener('resize', h);
     return () => window.removeEventListener('resize', h);
   }, []);
-  useEffect(() => { fetchData(); fetchClasses(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -104,6 +103,10 @@ const ManageSurvey = () => {
       console.error("Error fetch classes:", err);
     }
   };
+
+  // v1.1-fix: efek pemanggilan ditaruh SETELAH deklarasi fetchData/fetchClasses
+  // (urutan lama memicu peringatan react-compiler 'accessed before declared').
+  useEffect(() => { fetchData(); fetchClasses(); }, []);
 
   const resetForm = () => {
     setForm(emptyForm());

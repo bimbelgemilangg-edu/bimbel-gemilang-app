@@ -14,17 +14,19 @@ const StudentLeaderboard = () => {
   
   const studentId = localStorage.getItem('studentId');
   const studentName = localStorage.getItem('studentName');
-  
-  useEffect(() => {
-    fetchLeaderboard();
-  }, [selectedPeriode]);
-  
+
   const fetchLeaderboard = async () => {
     setLoading(true);
     const data = await getRelativeLeaderboard(selectedPeriode, studentId);
     setLeaderboard(data);
     setLoading(false);
   };
+
+  // v1.1-fix: efek dipindah SETELAH deklarasi fetchLeaderboard (urutan lama
+  // memicu react-compiler 'accessed before declared').
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [selectedPeriode]);
   
   return (
     <div style={{ maxWidth: 600, margin: '0 auto' }}>

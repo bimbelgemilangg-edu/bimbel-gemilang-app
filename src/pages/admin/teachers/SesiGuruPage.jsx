@@ -87,6 +87,27 @@ const SesiGuruPage = () => {
 
   useEffect(() => { muat(); }, [muat]);
 
+  // 🔥 PENGAWAL KECURANGAN: setiap sesi diperiksa polanya (0 hadir, tanpa
+  // jadwal, tanggal depan, jam tak wajar, nominal manual, validasi instan,
+  // tumpang tindih). Bendera TIDAK memblokir -- ia diterangkan ke admin
+  // SEBELUM menyetujui dan ikut terlihat oleh Manajemen di panel bayar.
+  // URUTAN DEKLARASI DIPERBAIKI (insiden 31 Okt 2026, /admin/teachers/sesi
+  // crash 'Cannot access before initialization'): `tampil` dulu merujuk
+  // `benderaOf` & `hanyaBerbendera` yang baru dideklarasikan DI BAWAHNYA
+  // (TDZ saat render pertama). Tumpang tindih kini dihitung dari log MENTAH,
+  // bukan hasil saringan: tumpang tindih adalah fakta sesi, bukan fakta filter.
+  const hariIni = tanggalLokalHariIni();
+  const tumpang = useMemo(() => deteksiTumpangTindih(logs), [logs]);
+  const benderaOf = useCallback(
+    (l) => {
+      const b = deteksiKejanggalanSesi(l, hariIni);
+      if (tumpang.has(l.id)) b.push('TUMPANG_TINDIH');
+      return b;
+    },
+    [hariIni, tumpang],
+  );
+  const [hanyaBerbendera, setHanyaBerbendera] = useState(false);
+
   // ============================================================
   // FILTER (sisi klien -- datanya sudah di tangan, murah)
   // ============================================================
@@ -116,25 +137,10 @@ const SesiGuruPage = () => {
     [tampil],
   );
 
-  // 🔥 PENGAWAL KECURANGAN: setiap sesi diperiksa polanya (0 hadir, tanpa
-  // jadwal, tanggal depan, jam tak wajar, nominal manual, validasi instan,
-  // tumpang tindih). Bendera TIDAK memblokir -- ia diterangkan ke admin
-  // SEBELUM menyetujui dan ikut terlihat oleh Manajemen di panel bayar.
-  const hariIni = tanggalLokalHariIni();
-  const tumpang = useMemo(() => deteksiTumpangTindih(tampil), [tampil]);
-  const benderaOf = useCallback(
-    (l) => {
-      const b = deteksiKejanggalanSesi(l, hariIni);
-      if (tumpang.has(l.id)) b.push('TUMPANG_TINDIH');
-      return b;
-    },
-    [hariIni, tumpang],
-  );
   const jumlahBerbendera = useMemo(
     () => tampil.filter((l) => benderaOf(l).length > 0).length,
     [tampil, benderaOf],
   );
-  const [hanyaBerbendera, setHanyaBerbendera] = useState(false);
 
   // ============================================================
   // AKSI VALIDASI (operasional, BUKAN uang)
