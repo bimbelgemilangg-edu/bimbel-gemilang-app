@@ -30,6 +30,7 @@
 import { WATERMARK } from './fieldButirSoal.js';
 import { predikatDariNilai, KALIBRASI_V1 } from './raportOtomatis.js';
 import { narasiCapaianSiswa, ringkasBahanOtomatis } from './laporanBelajar.js';
+import { kodeKurikulumDariNama } from './identitasMapel.js';
 
 // ------------------------------------------------------------
 // DASAR
@@ -495,9 +496,17 @@ export function siapkanModelRaport({
   const sumberIdentitas = proses || akademikDocs[0] || {};
   // v1.5: fokus pendampingan per mapel untuk blok rencana T3 — diambil dari
   // rencana pengayaan yang ditulis tentor (sumber primer), bila ada.
+  // v1.5.3: pencocokan capaian tentor TOLERAN terhadap varian nama registry
+  // ('GEOGRAFI SMA' / kode MAPEL-019 tetap menempel ke mapel kurikulum 'geo')
+  // supaya penilaian tentor tidak pernah gagal menempel diam-diam.
   const akademik = akademikDocs.map((d) => {
+    const kodeDok = String(d.mapelKode || '');
     const g = (Array.isArray(laporanGuru) ? laporanGuru : []).find(
-      (x) => x && (x.kodeMapel === d.mapelKode || x.namaMapel === d.mapel),
+      (x) => x && (
+        x.kodeMapel === d.mapelKode
+        || x.namaMapel === d.mapel
+        || (kodeDok && kodeKurikulumDariNama(x.namaMapel) === kodeDok)
+      ),
     );
     const fokus = String(g?.pengayaan || '').trim();
     return fokus ? { ...d, rencana_fokus: fokus } : d;

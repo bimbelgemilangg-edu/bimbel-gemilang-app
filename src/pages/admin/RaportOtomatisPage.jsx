@@ -602,6 +602,9 @@ export default function RaportOtomatisPage() {
           for (const m of mapelDiampuGuru(guru)) {
             const guruMapel = { ...guru, kodeMapel: m.kodeMapel, mapelDetails: [m] };
             const daftar = filterSiswaUntukGuru(semuaSiswa, guruMapel);
+            // v1.5.3: pasangan guru×mapel TANPA siswa terdaftar = noise murni
+            // (mis. guru memegang mapel jenjang lain) — tidak ditampilkan.
+            if (!daftar.length) continue;
             let selesai = 0;
             for (const s of daftar) {
               const dok = dokLap[`${s.id}__${String(m.kodeMapel).toLowerCase()}`];
@@ -613,8 +616,7 @@ export default function RaportOtomatisPage() {
               mapel: String(m.namaMapel || m.kodeMapel),
               total: daftar.length,
               selesai,
-            });
-          }
+            });          }
         }
         baris.sort((a, b) => (a.selesai / Math.max(1, a.total)) - (b.selesai / Math.max(1, b.total)) || a.nama.localeCompare(b.nama));
         if (!batal) setRekapGuru(baris);

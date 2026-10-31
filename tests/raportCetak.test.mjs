@@ -494,5 +494,25 @@ uji('v1.5: mapel T3 mendapat baris RENCANA di cetakan; fokus diambil dari pengay
   }
 });
 
+uji('v1.5.3: capaian tentor kode varian (MAPEL-019 "GEOGRAFI SMA") tetap menempel ke mapel kurikulum geo', () => {
+  const m = siapkanModelRaport({
+    dokAkademik: [{
+      blok: 'akademik', mapel: 'Geografi', mapelKode: 'geo', tier: 'T3', nilai_akhir: null,
+      predikat: { huruf: '—' }, detail_komponen: {}, statusData: 'belum-cukup',
+    }],
+    dokProses: { blok: 'proses', nilai_akhir: 80, studentName: 'Vera', periode: '2026-10' },
+    laporanGuru: [{
+      kodeMapel: 'MAPEL-019', namaMapel: 'GEOGRAFI SMA',
+      capaian: { pemahaman: { predikat: 'B' }, keaktifan: { predikat: 'B' }, sikap: { predikat: 'A' }, perkembangan: { predikat: 'B' } },
+      catatan: 'Aktif membaca peta.', pengayaan: 'proyek peta tematik daerah',
+    }],
+  });
+  assert.equal(m.akademik[0].rencana_fokus, 'proyek peta tematik daerah');
+  const html = htmlRaportSiswa({ dokAkademik: m.akademik, dokProses: m.proses, laporanGuru: m.laporanGuru });
+  assert.ok(html.includes('capaian dinilai tentor'));
+  assert.ok(html.includes('fokus pendampingan: proyek peta tematik daerah'));
+  assert.ok(!html.includes('data belum cukup'));
+});
+
 console.log(`\n[${lulus} lulus, ${gagal} gagal]`);
 process.exit(gagal ? 1 : 0);

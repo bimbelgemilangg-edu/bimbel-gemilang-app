@@ -6,6 +6,8 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 // diarahkan ke halaman operasionalnya sendiri (Sesi & Validasi Guru),
 // bukan dibiarkan menabrak rute yang menolak mereka.
 import { isOwnerSession } from '../../../utils/roleAkses';
+import { daftarMapelUntuk } from '../../../utils/kurikulumMerdeka';
+import { kodeKurikulumDariNama, namaKurikulum, grupVarian } from '../../../utils/identitasMapel';
 import { db, auth } from '../../../firebase';
 import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, query, where, runTransaction, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { 
@@ -146,10 +148,15 @@ const TeacherList = () => {
   const [mapelForm, setMapelForm] = useState({
     namaMapel: '',
     deskripsi: '',
-    kodeMapel: ''
+    kodeMapel: '',
+    sumberKurikulum: '', // v1.5.3: kode kurikulum pilihan, '__lokal', atau ''
+    sadarLokal: false,   // v1.5.3: konfirmasi sadar membuat mapel di luar peta
   });
   const [addingMapel, setAddingMapel] = useState(false);
   const [deletingMapel, setDeletingMapel] = useState(null);
+  // v1.5.3: peta varian registry (dua nama resolve ke kode kurikulum sama) —
+  // ditampilkan sebagai badge peringatan di daftar mapel.
+  const varianGrup = grupVarian(mapelList.map((x) => x.namaMapel));
 
   // EDIT MODAL
   const [editModal, setEditModal] = useState(null);
@@ -178,6 +185,7 @@ const TeacherList = () => {
 
   useEffect(() => {
     fetchAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dimuat sekali saat mount; fetchAllData sengaja tidak jadi dependensi agar tidak loop
   }, []);
 
   // ===== FUNGSI AMBIL DATA =====
@@ -340,20 +348,43 @@ const TeacherList = () => {
         showAlert(`✅ Mapel "${namaTrim}" berhasil diperbarui!${affectedTeachers.length > 0 ? ` (${affectedTeachers.length} guru ikut disinkronkan)` : ''}`);
       } else {
         // MODE TAMBAH — mapel baru
+        // v1.5.3 GUARDRAIL ANAK-PINAK: mapel kurikulum hanya boleh masuk SATU
+        // kali (varian 'GEOGRAFI SMA' vs 'GEOGRAFI SMP' dst. ditolak); nama di
+        // luar peta Kurikulum Merdeka wajib konfirmasi sadar (program bimbel
+        // seperti TKA/English Course tetap sah, tapi ditandai 'lokal').
+        const sumber = mapelForm.sumberKurikulum || '';
+        const kodeKurikulum = sumber && sumber !== '__lokal'
+          ? sumber
+          : kodeKurikulumDariNama(namaTrim);
+        if (kodeKurikulum) {
+          const duplikat = mapelList.find((m) => kodeKurikulumDariNama(m.namaMapel) === kodeKurikulum);
+          if (duplikat) {
+            showAlert(`❌ Mapel kurikulum "${namaKurikulum(kodeKurikulum)}" SUDAH terdaftar sebagai "${duplikat.namaMapel}" (${duplikat.kodeMapel}). Pakai yang sudah ada — varian baru ditolak agar data tidak beranak pinak.`, true);
+            setAddingMapel(false);
+            return;
+          }
+        } else if (!mapelForm.sadarLokal) {
+          showAlert('❌ Nama ini tidak ada di peta Kurikulum Merdeka. Bila memang program/lokal (mis. TKA, English Course), centang kotak konfirmasi di bawah pilihan sumber.', true);
+          setAddingMapel(false);
+          return;
+        }
+        const namaEfektif = kodeKurikulum ? (namaKurikulum(kodeKurikulum) || namaTrim) : namaTrim;
         const kodeMapel = await generateMapelId();
         await addDoc(collection(db, "mapel"), {
-          namaMapel: namaTrim,
+          namaMapel: namaEfektif,
           deskripsi: mapelForm.deskripsi || '',
           kodeMapel: kodeMapel,
+          kodeKurikulum: kodeKurikulum || '',
+          kategoriMapel: kodeKurikulum ? 'kurikulum' : 'lokal',
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
-        showAlert(`✅ Mapel "${namaTrim}" berhasil ditambahkan! (${kodeMapel})`);
+        showAlert(`✅ Mapel "${namaEfektif}" berhasil ditambahkan! (${kodeMapel}${kodeKurikulum ? ` · kurikulum ${kodeKurikulum}` : ' · lokal/program'})`);
       }
 
       setShowMapelModal(false);
       setEditingMapelId(null);
-      setMapelForm({ namaMapel: '', deskripsi: '', kodeMapel: '' });
+      setMapelForm({ namaMapel: '', deskripsi: '', kodeMapel: '', sumberKurikulum: '', sadarLokal: false });
       fetchMapel();
       fetchTeachers();
     } catch (error) {
@@ -374,7 +405,7 @@ const TeacherList = () => {
 
   const handleCancelEditMapel = () => {
     setEditingMapelId(null);
-    setMapelForm({ namaMapel: '', deskripsi: '', kodeMapel: '' });
+    setMapelForm({ namaMapel: '', deskripsi: '', kodeMapel: '', sumberKurikulum: '', sadarLokal: false });
   };
 
   // 🔥 BARU: hapus mapel, dengan pengaman -- kalau masih ada guru yang
@@ -910,13 +941,45 @@ const TeacherList = () => {
               </div>
               <form onSubmit={handleAddMapel} style={styles.modalBody}>
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Nama Mapel *</label>
+                  {!editingMapelId && (
+                    <>
+                      <label style={styles.formLabel}>Sumber mapel *</label>
+                      <select
+                        value={mapelForm.sumberKurikulum}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setMapelForm({
+                            ...mapelForm,
+                            sumberKurikulum: v,
+                            namaMapel: v && v !== '__lokal' ? (namaKurikulum(v) || '') : '',
+                            sadarLokal: false,
+                          });
+                        }}
+                        style={styles.formInput}
+                        required
+                      >
+                        <option value="">— pilih sumber mapel —</option>
+                        {daftarMapelUntuk({}).filter((m) => !mapelList.some((x) => kodeKurikulumDariNama(x.namaMapel) === m.kode)).map((m) => (
+                          <option key={m.kode} value={m.kode}>{m.nama} · Kurikulum Merdeka</option>
+                        ))}
+                        <option value="__lokal">🏷️ Program/lokal di luar peta (TKA, English Course, …)</option>
+                      </select>
+                      {mapelForm.sumberKurikulum === '__lokal' && (
+                        <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 11.5, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginTop: 8 }}>
+                          <input type="checkbox" checked={mapelForm.sadarLokal} onChange={(e) => setMapelForm({ ...mapelForm, sadarLokal: e.target.checked })} style={{ marginTop: 2 }} />
+                          <span>Saya sadar mapel ini DI LUAR peta Kurikulum Merdeka: dipakai untuk program bimbel yang sah (TKA, English Course, dll.) dan akan ditandai "lokal" di daftar mapel.</span>
+                        </label>
+                      )}
+                    </>
+                  )}
+                  <label style={{ ...styles.formLabel, marginTop: 8 }}>Nama Mapel *</label>
                   <input 
                     type="text" 
                     value={mapelForm.namaMapel} 
                     onChange={e => setMapelForm({...mapelForm, namaMapel: e.target.value})} 
                     style={styles.formInput} 
-                    placeholder="Contoh: Matematika, IPA, Bahasa Inggris"
+                    placeholder={mapelForm.sumberKurikulum === '__lokal' ? 'Contoh: TKA Penalaran Matematika, English Conversation' : 'Terisi otomatis dari sumber kurikulum yang dipilih'}
+                    readOnly={!editingMapelId && !!mapelForm.sumberKurikulum && mapelForm.sumberKurikulum !== '__lokal'}
                     required 
                   />
                 </div>
@@ -971,6 +1034,18 @@ const TeacherList = () => {
                           <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{m.namaMapel}</div>
                           <div style={{ fontSize: 9, color: '#94a3b8' }}>
                             {m.kodeMapel} {jumlahGuru > 0 && `• dipakai ${jumlahGuru} guru`}
+                          </div>
+                          <div style={{ fontSize: 9, marginTop: 2 }}>
+                            {(() => {
+                              const kodeKur = kodeKurikulumDariNama(m.namaMapel);
+                              if (!kodeKur) {
+                                return <span style={{ color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 99, padding: '0 6px' }}>LOKAL/PROGRAM — di luar peta kurikulum</span>;
+                              }
+                              const jumlahVarian = (varianGrup[kodeKur] || []).length;
+                              return jumlahVarian > 1
+                                ? <span style={{ color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 99, padding: '0 6px' }}>VARIAN ({jumlahVarian} entri) dari kurikulum {kodeKur} — gunakan satu saja</span>
+                                : <span style={{ color: '#166534', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 99, padding: '0 6px' }}>kurikulum {kodeKur}</span>;
+                            })()}
                           </div>
                         </div>
                         <button onClick={() => handleOpenEditMapel(m)} title="Edit mapel" style={{ background: '#fef3c7', color: '#b45309', border: 'none', padding: 6, borderRadius: 6, cursor: 'pointer', display: 'flex' }}>
