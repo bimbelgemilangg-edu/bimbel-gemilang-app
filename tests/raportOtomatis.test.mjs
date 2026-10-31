@@ -10,7 +10,8 @@
 import assert from 'node:assert/strict';
 import {
   VERSI_MESIN, MAPEL_PROSES, KALIBRASI_V1,
-  rentangPeriode, waktuMs, tanggalUtc,
+  rentangPeriode, waktuMs, tanggalUtc, tanggalWib,
+  cocokSasaran, buatRingkasan,
   normalisasiMapelKuis, namaMapel, bacaKesulitan,
   predikatDariNilai, timbangUlang, skalaKeNilai100, nilaiSah,
   bangunIndeksIdentitas, cariPemilikDok,
@@ -150,34 +151,48 @@ const bing = budi.akademik.perMapel.find((m) => m.kode === 'bing');
 const mapelSari = (k) => sari.akademik.perMapel.find((m) => m.kode === k);
 
 // ---------------- 1. periode & waktu ----------------
-uji('rentangPeriode bulan → jendela UTC + label', () => {
+// v1.1: jendela periode = KALENDER WIB (UTC+7). Aktivitas dini hari WIB
+// (00.00–06.59) wajib masuk bulan yang sama menurut kalender Indonesia.
+const WIB = 7 * 60 * 60 * 1000;
+uji('rentangPeriode bulan → jendela WIB + label', () => {
   const p = rentangPeriode({ bulan: '2026-09' });
-  assert.equal(p.mulaiMs, Date.UTC(2026, 8, 1));
-  assert.equal(p.selesaiMs, Date.UTC(2026, 9, 1)); // eksklusif
+  assert.equal(p.mulaiMs, Date.UTC(2026, 8, 1) - WIB);
+  assert.equal(p.selesaiMs, Date.UTC(2026, 9, 1) - WIB); // eksklusif
   assert.equal(p.label, '2026-09');
   assert.equal(p.jumlahHari, 30);
 });
-uji('rentangPeriode multi-bulan (laporan besar 3 bulan)', () => {
+uji('rentangPeriode multi-bulan (laporan besar 3 bulan) jendela WIB', () => {
   const p = rentangPeriode({ mulai: '2026-08', selesai: '2026-10' });
-  assert.equal(p.mulaiMs, Date.UTC(2026, 7, 1));
-  assert.equal(p.selesaiMs, Date.UTC(2026, 10, 1));
+  assert.equal(p.mulaiMs, Date.UTC(2026, 7, 1) - WIB);
+  assert.equal(p.selesaiMs, Date.UTC(2026, 10, 1) - WIB);
   assert.equal(p.label, '2026-08..2026-10');
   assert.equal(p.jumlahHari, 92);
+});
+uji('v1.1 kuis 1 Okt 06.00 WIB masuk jendela Oktober (dulu jatuh ke September)', () => {
+  const p = rentangPeriode({ bulan: '2026-10' });
+  const diniHariWib = Date.UTC(2026, 9, 1, 6, 0) - WIB; // 06.00 WIB = 30 Sep 23.00 UTC
+  assert.ok(diniHariWib >= p.mulaiMs && diniHariWib < p.selesaiMs);
+  const tengahMalamNovWib = Date.UTC(2026, 10, 1, 0, 0) - WIB; // 1 Nov 00.00 WIB
+  assert.ok(tengahMalamNovWib >= p.selesaiMs); // tak bocor ke Oktober
 });
 uji('rentangPeriode menolak input rusak (bukan menebak)', () => {
   assert.throws(() => rentangPeriode({ bulan: '2026-13' }));
   assert.throws(() => rentangPeriode({ mulai: '2026-10', selesai: '2026-08' }));
 });
-uji('waktuMs membaca Timestamp/Date/ms/ISO/YYYY-MM-DD; rusak → null', () => {
+uji('waktuMs membaca Timestamp/Date/ms/ISO; YYYY-MM-DD = tengah malam WIB', () => {
   assert.equal(waktuMs(ts('2026-09-01T00:00:00Z')), Date.UTC(2026, 8, 1));
   assert.equal(waktuMs(new Date('2026-09-01T00:00:00Z')), Date.UTC(2026, 8, 1));
   assert.equal(waktuMs(Date.UTC(2026, 8, 1)), Date.UTC(2026, 8, 1));
-  assert.equal(waktuMs('2026-09-01'), Date.UTC(2026, 8, 1));
+  assert.equal(waktuMs('2026-09-01'), Date.UTC(2026, 8, 1) - WIB);
   assert.equal(waktuMs('bukan-tanggal'), null);
   assert.equal(waktuMs(null), null);
 });
 uji('tanggalUtc konsisten dengan field tanggal penulis absensi', () => {
   assert.equal(tanggalUtc(Date.UTC(2026, 8, 30, 23, 59)), '2026-09-30');
+});
+uji('v1.1 tanggalWib: dini hari WIB tak lagi dilabeli hari kemarin', () => {
+  assert.equal(tanggalWib(Date.UTC(2026, 8, 30, 23, 0)), '2026-10-01'); // 30 Sep 23.00 UTC = 1 Okt 06.00 WIB
+  assert.equal(tanggalWib(Date.UTC(2026, 8, 30, 16, 59)), '2026-09-30'); // 30 Sep 23.59 WIB
 });
 
 // ---------------- 2. mapel & kesulitan ----------------
@@ -496,6 +511,48 @@ uji('KALIBRASI_V1 diekspor (kebijakan terlihat, bisa direvisi owner)', () => {
   assert.equal(KALIBRASI_V1.topikMerahAkurasi, 50);
   assert.equal(KALIBRASI_V1.minSesiAbsensi, 3);
   assert.equal(typeof VERSI_MESIN, 'string');
+});
+
+// ---------------- 9. sasaran filter & ringkasan jujur (v1.1) ----------------
+uji('cocokSasaran: sasaran kosong = semua; jenjang/kelas harus cocok', () => {
+  const r = { jenjang: 'SMP', studentKelas: '7 SMP' };
+  assert.equal(cocokSasaran(r, {}), true);
+  assert.equal(cocokSasaran(r, { jenjang: 'SMP' }), true);
+  assert.equal(cocokSasaran(r, { jenjang: 'SMP', kelas: '9 SMP' }), false);
+  assert.equal(cocokSasaran(r, { kelas: '7 SMP' }), true);
+});
+uji('buatRingkasan merangkum subset tanpa menghitung ulang mesin', () => {
+  const buat = (layak, pel) => ({ kelayakan: { layakTerbit: layak }, proses: { integritas: { jumlahPelanggaran: pel } } });
+  const ring = buatRingkasan([buat(true, 1), buat(false, 2)], { logTakDikenal: { kuis: 3, sesi: 0, absensi: 0, tugas: 0, latihan: 0 } });
+  assert.equal(ring.totalSiswa, 2);
+  assert.equal(ring.layakTerbit, 1);
+  assert.equal(ring.belumCukup, 1);
+  assert.equal(ring.totalPelanggaran, 3);
+  assert.equal(ring.logTakDikenal.kuis, 3);
+});
+uji('v1.1 log siswa luar sasaran = logLuarSaringan, BUKAN orphan menakutkan', () => {
+  const siswa = [
+    { id: 's1', studentId: 'S1', nama: 'Satu', jenjang: 'SMP', kelas: '7 SMP' },
+    { id: 's2', studentId: 'S2', nama: 'Dua', jenjang: 'SMP', kelas: '9 SMP' },
+  ];
+  const kuis = (nim, nama, hari) => ({ studentNim: nim, studentName: nama, score: 80, subject: 'Matematika', submittedAt: Date.UTC(2026, 9, hari, 2, 0) });
+  const data = {
+    siswa,
+    kuis: [kuis('S1', 'Satu', 5), kuis('S1', 'Satu', 6), kuis('S2', 'Dua', 7), kuis('S2', 'Dua', 8)],
+    sesi: [], paket: [], absensi: [], tugas: [], nilaiGuru: [], progresSoal: [], soalMeta: {}, progresSiswa: [],
+  };
+  const sasaran = { jenjang: 'SMP', kelas: '7 SMP' };
+  const h = hitungRaportSemuaSiswa(data, { bulan: '2026-10' }, { sasaran });
+  assert.equal(h.ringkasan.logTakDikenal.kuis, 0); // tak ada orphan sungguh
+  assert.equal(h.ringkasan.logLuarSaringan.kuis, 2); // kuis S2 di luar sasaran
+  const subset = h.siswa.filter((r) => cocokSasaran(r, sasaran));
+  assert.equal(subset.length, 1);
+  const ring = buatRingkasan(subset, {
+    logTakDikenal: h.ringkasan.logTakDikenal,
+    logLuarSaringan: h.ringkasan.logLuarSaringan,
+  });
+  assert.equal(ring.totalSiswa, 1);
+  assert.equal(ring.logLuarSaringan.kuis, 2);
 });
 
 console.log(`\n${gagal === 0 ? '✅' : '❌'} raportOtomatis: ${lulus} lulus, ${gagal} gagal`);

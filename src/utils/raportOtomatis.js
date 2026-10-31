@@ -65,7 +65,7 @@ import {
 } from './skorSoalTryOut.js';
 import { hitungSkalaSesi } from './hitungSkalaSesi.js';
 
-export const VERSI_MESIN = 'v1.0';
+export const VERSI_MESIN = 'v1.1'; // v1.1: jendela periode & label tanggal kalender WIB (UTC+7), sasaran filter dihitung jujur
 
 /** mapel pseudo untuk dokumen Blok B+C (proses, tren, peta topik). */
 export const MAPEL_PROSES = 'Proses & Karakter';
@@ -127,23 +127,41 @@ export function waktuMs(v) {
     return Number.isFinite(d?.getTime?.()) ? d.getTime() : null;
   }
   if (typeof v === 'string') {
-    // 'YYYY-MM-DD' diperlakukan sebagai tanggal UTC (konsisten keputusan a).
+    // 'YYYY-MM-DD' = tengah malam kalender WIB (konsisten keputusan jendela
+    // WIB di bawah): 2026-10-01 berarti aktivitas tanggal 1 Oktober menurut
+    // kalender Indonesia, bukan menurut kalender server UTC.
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
-    if (m) return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    if (m) return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) - SELISIH_WIB_MS;
     const t = Date.parse(v);
     return Number.isFinite(t) ? t : null;
   }
   return null;
 }
 
+/** Selisih WIB terhadap UTC dalam ms (UTC+7, tanpa DST — Indonesia tidak
+ * memakai jam musim). SATU SUMBER: utils/raportCron.js mengekspor ulang
+ * konstanta ini supaya jadwal cron dan jendela mesin tak pernah berpisah. */
+export const SELISIH_WIB_MS = 7 * 60 * 60 * 1000;
+
+/** Tanggal kalender WIB (YYYY-MM-DD) dari ms epoch — label yang jujur untuk
+ * aktivitas malam/dini hari WIB yang oleh label UTC jatuh ke hari kemarin. */
+export function tanggalWib(ms) {
+  if (!Number.isFinite(ms)) return '';
+  return new Date(ms + SELISIH_WIB_MS).toISOString().slice(0, 10);
+}
+
 const labelBulan = (y, m1) => `${y}-${String(m1).padStart(2, '0')}`;
 
-/** Bangun jendela periode.
+/** Bangun jendela periode — KALENDER WIB (UTC+7), bukan kalender server.
+ * Kenapa: seluruh aktivitas bimbel terjadi di WIB (absensi pagi, kuis malam).
+ * Jendela UTC menggeser 7 jam: aktivitas 1 Okt 00.00–06.59 WIB masuk raport
+ * September, dan 1 Nov 00.00–06.59 WIB masuk raport Oktober. Cron (Fase 3)
+ * sudah berpikir WIB untuk JADWALnya; sejak v1.1 jendela isinya pun WIB.
  * @param {{bulan?: string, mulai?: string, selesai?: string}} opts
  *   - {bulan:'2026-08'}                  → raport bulanan
  *   - {mulai:'2026-08', selesai:'2026-10'} → laporan besar multi-bulan
  * @returns {{mulaiMs:number, selesaiMs:number, label:string, jumlahHari:number}}
- *   selesaiMs = EKSKLUSIF (awal bulan berikutnya, UTC).
+ *   selesaiMs = EKSKLUSIF (tengah malam WIB awal bulan berikutnya).
  */
 export function rentangPeriode(opts = {}) {
   const parse = (s) => {
@@ -157,16 +175,16 @@ export function rentangPeriode(opts = {}) {
     const p = parse(opts.bulan);
     if (!p) throw new Error(`periode bulan tidak valid: ${opts.bulan}`);
     return {
-      mulaiMs: Date.UTC(p.y, p.mo - 1, 1),
-      selesaiMs: Date.UTC(p.y, p.mo, 1),
+      mulaiMs: Date.UTC(p.y, p.mo - 1, 1) - SELISIH_WIB_MS,
+      selesaiMs: Date.UTC(p.y, p.mo, 1) - SELISIH_WIB_MS,
       label: labelBulan(p.y, p.mo),
       jumlahHari: Math.round((Date.UTC(p.y, p.mo, 1) - Date.UTC(p.y, p.mo - 1, 1)) / 86400000),
     };
   }
   const a = parse(opts.mulai); const b = parse(opts.selesai);
   if (!a || !b) throw new Error(`periode rentang tidak valid: ${opts.mulai}..${opts.selesai}`);
-  const mulaiMs = Date.UTC(a.y, a.mo - 1, 1);
-  const selesaiMs = Date.UTC(b.y, b.mo, 1);
+  const mulaiMs = Date.UTC(a.y, a.mo - 1, 1) - SELISIH_WIB_MS;
+  const selesaiMs = Date.UTC(b.y, b.mo, 1) - SELISIH_WIB_MS;
   if (selesaiMs <= mulaiMs) throw new Error('periode selesai harus >= periode mulai');
   return {
     mulaiMs,
@@ -177,6 +195,9 @@ export function rentangPeriode(opts = {}) {
 }
 
 /** Tanggal UTC 'YYYY-MM-DD' dari ms — konsisten dengan field `tanggal`. */
+/** UTILITAS LAMA (label UTC murni) — dipertahankan untuk kompatibilitas
+ * penulis absensi berbasis string; semua LABEL bisnis sejak v1.1 memakai
+ * tanggalWib(ms). Jangan dipakai untuk jendela/label raport baru. */
 export function tanggalUtc(ms) {
   return new Date(ms).toISOString().slice(0, 10);
 }
@@ -700,7 +721,7 @@ export function hitungRaportSiswa({
   const seen = new Set();
   const absenUnik = [];
   for (const a of absensi) {
-    const tgl = String(a.tanggal || a.date || '').slice(0, 10) || tanggalUtc(waktuMs(a.timestamp) ?? periode.mulaiMs);
+    const tgl = String(a.tanggal || a.date || '').slice(0, 10) || tanggalWib(waktuMs(a.timestamp) ?? periode.mulaiMs);
     const key = `${String(a.studentId || a.namaSiswa || a.studentName || '')}|${tgl}|${String(a.scheduleId || a.mapel || '')}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -759,7 +780,7 @@ export function hitungRaportSiswa({
 
   // Integritas: CATATAN OTOMATIS — tidak memotong nilai apa pun (owner #3).
   const pelanggaran = sesiAgg.flatMap((s) => s.pelanggaran.map((p) => ({
-    tanggal: p.waktu ? tanggalUtc(p.waktu) : s.tanggal, jenis: p.jenis, asal: 'tryout', paketJudul: s.paketJudul,
+    tanggal: p.waktu ? tanggalWib(p.waktu) : s.tanggal, jenis: p.jenis, asal: 'tryout', paketJudul: s.paketJudul,
   })));
   for (const k of kuis) {
     const n = Number(k.cheatViolationCount) || 0;
@@ -862,14 +883,44 @@ export function hitungRaportSiswa({
 // ORKESTRASI SEMUA SISWA
 // ------------------------------------------------------------
 
+/** Cocokkan satu hasil/profil siswa dengan sasaran filter jenjang/kelas.
+ * SATU SUMBER untuk halaman admin & mesin supaya baris tabel, tombol terbit,
+ * dan cetak massal tak pernah lagi berbeda pendapat soal "siapa difilter". */
+export function cocokSasaran(r = {}, sasaran = {}) {
+  const j = String(sasaran.jenjang || '').trim();
+  const k = String(sasaran.kelas || '').trim();
+  if (j && String(r.jenjang || '').trim() !== j) return false;
+  if (k && String(r.studentKelas || '').trim() !== k) return false;
+  return true;
+}
+
+/** Ringkasan pratinjau dari daftar hasil siswa + hitungan log jujur.
+ * Diekspor supaya halaman admin bisa menyusun ringkasan ULANG untuk subset
+ * terfilter tanpa menghitung ulang mesin (dan tanpa berbohong soal orphan). */
+export function buatRingkasan(hasilSiswa = [], ekstra = {}) {
+  return {
+    totalSiswa: hasilSiswa.length,
+    layakTerbit: hasilSiswa.filter((h) => h.kelayakan.layakTerbit).length,
+    belumCukup: hasilSiswa.filter((h) => !h.kelayakan.layakTerbit).length,
+    totalPelanggaran: hasilSiswa.reduce((s, h) => s + h.proses.integritas.jumlahPelanggaran, 0),
+    logTakDikenal: ekstra.logTakDikenal || null,
+    logLuarSaringan: ekstra.logLuarSaringan || null,
+    dataBermasalah: ekstra.dataBermasalah || [],
+  };
+}
+
 /** Fungsi utama: data mentah sekoleksi → raport semua siswa.
  * @param {object} dataMentah { siswa, kuis, sesi, paket, absensi, tugas,
  *   nilaiGuru, progresSoal, soalMeta, progresSiswa, tugasTerbit? }
  *   - paket: peta {paketId: dokumen} ATAU array dokumen ber-id
  *   - soalMeta: peta {soalId: {mataPelajaran/mapel, materi, kesulitan}}
  * @param {{bulan?:string, mulai?:string, selesai?:string}} periodeOpts
+ * @param {{sasaran?:{jenjang?:string, kelas?:string}}} [opts] sasaran hanya
+ *   untuk MELABELI log milik siswa di luar filter (logLuarSaringan) supaya
+ *   peringatan orphan tak lagi menuduh identitas rusak padahal cuma beda
+ *   kelas/jenjang dari sasaran pratinjau.
  */
-export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}) {
+export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}, opts = {}) {
   const periode = rentangPeriode(periodeOpts);
   const dalamJendela = (ms) => ms !== null && ms >= periode.mulaiMs && ms < periode.selesaiMs;
 
@@ -895,7 +946,7 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}) {
     const ms = waktuMs(k.submittedAt ?? k.createdAt);
     if (!dalamJendela(ms)) continue;
     const b = masukkan({ studentId: k.studentNim, studentName: k.studentName }, 'studentId', 'studentName', 'kuis');
-    if (b) b.kuis.push({ ...k, tanggal: tanggalUtc(ms) });
+    if (b) b.kuis.push({ ...k, tanggal: tanggalWib(ms) });
   }
   // Try out: hanya sesi SELESAI; waktu = waktuSelesai (fallback updatedAt).
   for (const s of dataMentah.sesi || []) {
@@ -909,7 +960,7 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}) {
     const agg = agregatSatuSesi(s, paket, soalMeta);
     b.sesiAgg.push({
       ...agg,
-      tanggal: tanggalUtc(ms),
+      tanggal: tanggalWib(ms),
       paketJudul: String(paket.judul || s.paketId || 'Try Out'),
       persen: nilaiSah(s.totalSkorPersen),
       paketId: s.paketId,
@@ -928,7 +979,7 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}) {
     const ms = waktuMs(t.submittedAt ?? t.createdAt);
     if (!dalamJendela(ms)) continue;
     const b = masukkan({ studentId: t.studentNim, studentName: t.studentName }, 'studentId', 'studentName', 'tugas');
-    if (b) b.tugas.push({ ...t, tanggal: tanggalUtc(ms) });
+    if (b) b.tugas.push({ ...t, tanggal: tanggalWib(ms) });
   }
   // Nilai guru legacy (koleksi `grades`; tak ada penulis UI aktif lagi).
   for (const g of dataMentah.nilaiGuru || []) {
@@ -972,18 +1023,36 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}) {
     });
   });
 
+  // Log milik siswa yang ADA tapi di luar sasaran filter (bukan orphan):
+  // dihitung dari bucket supaya peringatan identitas tak lagi salah tuduh.
+  let logLuarSaringan = null;
+  const sasaran = opts?.sasaran || null;
+  if (sasaran && (sasaran.jenjang || sasaran.kelas)) {
+    logLuarSaringan = { kuis: 0, sesi: 0, absensi: 0, tugas: 0, latihan: 0 };
+    for (const e of indeks) {
+      const semu = {
+        jenjang: String(e.profil.jenjang || ''),
+        studentKelas: String(e.profil.kelas || e.profil.kelasSekolah || e.profil.tingkatKelas || ''),
+      };
+      if (cocokSasaran(semu, sasaran)) continue;
+      const b = bucket.get(e.kunci);
+      logLuarSaringan.kuis += b.kuis.length;
+      logLuarSaringan.sesi += b.sesiAgg.length;
+      logLuarSaringan.absensi += b.absensi.length;
+      logLuarSaringan.tugas += b.tugas.length;
+      logLuarSaringan.latihan += b.latihan.length;
+    }
+  }
+
   return {
     periode,
     versiMesin: VERSI_MESIN,
     siswa: hasilSiswa,
-    ringkasan: {
-      totalSiswa: hasilSiswa.length,
-      layakTerbit: hasilSiswa.filter((h) => h.kelayakan.layakTerbit).length,
-      belumCukup: hasilSiswa.filter((h) => !h.kelayakan.layakTerbit).length,
-      totalPelanggaran: hasilSiswa.reduce((s, h) => s + h.proses.integritas.jumlahPelanggaran, 0),
+    ringkasan: buatRingkasan(hasilSiswa, {
       logTakDikenal: takDikenal,
+      logLuarSaringan,
       dataBermasalah: salah.slice(0, 20),
-    },
+    }),
   };
 }
 
@@ -1118,8 +1187,9 @@ export function bangunDokumenRaport(hasil, { jejak = {} } = {}) {
 }
 
 export default {
-  VERSI_MESIN, MAPEL_PROSES, KALIBRASI_V1,
-  rentangPeriode, waktuMs, tanggalUtc,
+  VERSI_MESIN, MAPEL_PROSES, KALIBRASI_V1, SELISIH_WIB_MS,
+  rentangPeriode, waktuMs, tanggalUtc, tanggalWib,
+  cocokSasaran, buatRingkasan,
   normalisasiMapelKuis, namaMapel, bacaKesulitan,
   predikatDariNilai, timbangUlang, skalaKeNilai100, nilaiSah,
   bangunIndeksIdentitas, cariPemilikDok,

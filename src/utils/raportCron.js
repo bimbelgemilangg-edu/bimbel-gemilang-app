@@ -26,8 +26,12 @@
 // ============================================================
 
 /** Selisih WIB terhadap UTC dalam ms (UTC+7, tanpa DST — Indonesia tidak
- * memakai DST, jadi konstanta ini sah sepanjang tahun). */
-export const SELISIH_WIB_MS = 7 * 60 * 60 * 1000;
+ * memakai DST, jadi konstanta ini sah sepanjang tahun).
+ * v1.1: SATU SUMBER di utils/raportOtomatis.js (jendela mesin); berkas ini
+ * mengekspor ulang supaya jadwal cron dan jendela isi raport tak berpisah. */
+import { SELISIH_WIB_MS } from './raportOtomatis.js';
+
+export { SELISIH_WIB_MS };
 
 /** Bulan awal trimester/semester bimbel (Agustus = 8). Jendela laporan
  * besar 3 bulan diselaraskan ke sini: Agu–Okt, Nov–Jan, Feb–Apr, Mei–Jul. */

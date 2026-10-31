@@ -16,7 +16,7 @@ import {
   poinRadar, svgRadar, seriRadarDariModel, LOGO_KOP, NAMA_PENERBIT,
   siapkanModelRaport, htmlRaportSiswa, htmlRaportMassal, judulCetakRaport,
 } from '../src/utils/raportCetak.js';
-import { hitungRaportSemuaSiswa, bangunDokumenRaport } from '../src/utils/raportOtomatis.js';
+import { hitungRaportSemuaSiswa, bangunDokumenRaport, VERSI_MESIN } from '../src/utils/raportOtomatis.js';
 
 let lulus = 0, gagal = 0;
 function uji(n, f) {
@@ -194,12 +194,12 @@ uji('judulCetakRaport: judul file PDF terbaca', () => {
 });
 
 // ---------------- HTML dari mesin NYATA (end-to-end anti-drift) ----------------
-uji('html end-to-end: identitas, periode manusiawi, cap otomatis, mesin v1.0', () => {
+uji('html end-to-end: identitas, periode manusiawi, cap otomatis, versi mesin terkini', () => {
   assert.ok(htmlBudi.includes('Budi'));
   assert.ok(htmlBudi.includes('September 2026'));
   assert.ok(htmlBudi.includes('Dihitung otomatis dari log aktivitas'));
   assert.ok(htmlBudi.includes('snapshot TERKUNCI'));
-  assert.ok(htmlBudi.includes('Mesin v1.0'));
+  assert.ok(htmlBudi.includes(`Mesin ${VERSI_MESIN}`)); // versi ikut mesin, tak dipatok keras
   assert.ok(htmlBudi.includes('SMP/MTs')); // jenjang dari identitas
 });
 uji('html end-to-end: dua nilai terpisah (akademik & proses), tidak digabung', () => {

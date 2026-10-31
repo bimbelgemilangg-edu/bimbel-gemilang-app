@@ -39,7 +39,7 @@ import { collection, getDocs, getDoc, setDoc, doc, serverTimestamp, query, where
 import { db } from '../../firebase';
 import {
   hitungRaportSemuaSiswa, rentangPeriode, bangunDokumenRaport,
-  bolehTimpaRaportFinal, VERSI_MESIN, MAPEL_PROSES,
+  bolehTimpaRaportFinal, VERSI_MESIN, MAPEL_PROSES, cocokSasaran, buatRingkasan,
 } from '../../utils/raportOtomatis';
 import { htmlRaportSiswa, htmlRaportMassal, judulCetakRaport } from '../../utils/raportCetak';
 import { cetakLewatIframe } from '../../utils/kwitansi';
@@ -173,16 +173,20 @@ export default function RaportOtomatisPage() {
     setSedangMenghitung(true);
     setHasilTerbit(null);
     try {
-      const siswaTersaring = mentah.siswa.filter((s) => {
-        if (jenjang !== 'Semua' && String(s.jenjang || '').trim() !== jenjang) return false;
-        if (kelas !== 'Semua') {
-          const k = String(s.kelas || s.kelasSekolah || s.tingkatKelas || '').trim();
-          if (k !== kelas) return false;
-        }
-        return true;
+      // v1.1: mesin melihat SEMUA siswa (supaya logTakDikenal = orphan SUNGGUHAN,
+      // bukan siswa di luar filter), lalu hasil disubset sesuai sasaran.
+      const sasaran = { jenjang: jenjang === 'Semua' ? '' : jenjang, kelas: kelas === 'Semua' ? '' : kelas };
+      const h = hitungRaportSemuaSiswa(mentah, periodeOpts, { sasaran });
+      const subset = h.siswa.filter((r) => cocokSasaran(r, sasaran));
+      setHasil({
+        ...h,
+        siswa: subset,
+        ringkasan: buatRingkasan(subset, {
+          logTakDikenal: h.ringkasan.logTakDikenal,
+          logLuarSaringan: h.ringkasan.logLuarSaringan,
+          dataBermasalah: h.ringkasan.dataBermasalah,
+        }),
       });
-      const h = hitungRaportSemuaSiswa({ ...mentah, siswa: siswaTersaring }, periodeOpts);
-      setHasil(h);
       setDibuka(null);
     } catch (e) {
       setErrorMuat(`Gagal menghitung: ${e?.message || e}`);
@@ -192,15 +196,30 @@ export default function RaportOtomatisPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- periodeOpts dibaca saat klik; sengaja tidak jadi dependensi agar tidak menghitung ulang sendiri
   }, [mentah, jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan]);
 
+  // v1.1: pratinjau TAK BOLEH basi — ganti jenjang/kelas/bulan langsung dihitung
+  // ulang (insiden 31 Okt 2026: select '9 SMP' tapi tabel masih isi hitungan
+  // '7 SMP', dikira filter rusak). Data sudah di memori, biaya hitung murah.
+  useEffect(() => {
+    if (mentah) hitung();
+  }, [mentah, hitung]);
+
   // ---------------- TERBITKAN ----------------
   const tulisSatuPeriode = useCallback(async (optsPeriode, labelLangkah) => {
     if (!mentah) return { ditulis: 0, dilewati: 0, gagal: 0 };
-    const siswaTersaring = mentah.siswa.filter((s) => {
-      if (jenjang !== 'Semua' && String(s.jenjang || '').trim() !== jenjang) return false;
-      if (kelas !== 'Semua' && String(s.kelas || s.kelasSekolah || s.tingkatKelas || '').trim() !== kelas) return false;
-      return true;
-    });
-    const h = hitungRaportSemuaSiswa({ ...mentah, siswa: siswaTersaring }, optsPeriode);
+    // v1.1: pola sama dengan pratinjau — mesin melihat semua siswa, yang
+    // DITERBITKAN hanya subset sasaran (audit & dokumen konsisten tabel).
+    const sasaran = { jenjang: jenjang === 'Semua' ? '' : jenjang, kelas: kelas === 'Semua' ? '' : kelas };
+    const hSemua = hitungRaportSemuaSiswa(mentah, optsPeriode, { sasaran });
+    const subset = hSemua.siswa.filter((r) => cocokSasaran(r, sasaran));
+    const h = {
+      ...hSemua,
+      siswa: subset,
+      ringkasan: buatRingkasan(subset, {
+        logTakDikenal: hSemua.ringkasan.logTakDikenal,
+        logLuarSaringan: hSemua.ringkasan.logLuarSaringan,
+        dataBermasalah: hSemua.ringkasan.dataBermasalah,
+      }),
+    };
     const jendela = rentangPeriode(optsPeriode);
     let ditulis = 0; let dilewati = 0; let gagal = 0;
     const alasan = String(alasanPaksa || '').trim();
@@ -479,6 +498,11 @@ export default function RaportOtomatisPage() {
             {h.ringkasan.logTakDikenal && Object.values(h.ringkasan.logTakDikenal).some((n) => n > 0) && (
               <div style={{ fontSize: 11.5, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
                 ⚠️ Ada log yang tidak cocok ke siswa mana pun (identitas berubah/hapus): {Object.entries(h.ringkasan.logTakDikenal).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(', ')}. Tidak dihitung — perbaiki identitas siswa bila perlu.
+              </div>
+            )}
+            {h.ringkasan.logLuarSaringan && Object.values(h.ringkasan.logLuarSaringan).some((n) => n > 0) && (
+              <div style={{ fontSize: 11.5, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
+                ℹ️ Log periode ini milik siswa di luar jenjang/kelas sasaran: {Object.entries(h.ringkasan.logLuarSaringan).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(', ')}. Tidak ditampilkan di tabel ini — dan BUKAN kesalahan identitas.
               </div>
             )}
             {h.ringkasan.dataBermasalah?.length > 0 && (
