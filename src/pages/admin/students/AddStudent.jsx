@@ -12,6 +12,7 @@ import {
 // 🔥 BARU (modul kanal uang, rekonsiliasi & kwitansi + amortisasi paket):
 import { uploadElearningFile } from '../../../services/uploadService';
 import { KANAL } from '../../../utils/kanalUang';
+import { saringMapelUntukSiswa, pangkasKodeMapelTerpilih } from '../../../utils/aksesMapelPerJenjang';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi, rp } from '../../../utils/kwitansi';
 import { rincianAmortisasi } from '../owner/keuanganOwnerUtils';
 // 🔥 BARU (21 Okt 2026, durasi paket bebas + promo): dropdown durasi tak
@@ -272,7 +273,7 @@ const AddStudent = () => {
     if (!tglLahir.tahun) {
       setTglLahir(prev => ({ ...prev, tahun: (currentYear - 12).toString() }));
     }
-  }, []);
+  }, [currentYear, tglLahir.tahun]);
 
   useEffect(() => {
     if (formData.programType === 'Reguler') {
@@ -280,8 +281,12 @@ const AddStudent = () => {
       if (formData.kelasSekolah.includes('SMP')) jenjang = 'SMP';
       else if (formData.kelasSekolah.includes('SMA')) jenjang = 'SMA';
       setFormData(prev => ({...prev, jenjang, paketId: null}));
+      // Pangkas akses mapel yang jadi tak sah setelah jenjang berubah.
+      setSelectedMapelCodes(prev => pangkasKodeMapelTerpilih(prev, mapelList, {
+        jenjang, kelas: formData.kelasSekolah, programType: formData.programType,
+      }));
     }
-  }, [formData.kelasSekolah, formData.programType]);
+  }, [formData.kelasSekolah, formData.programType, mapelList]);
 
   const [customDueDates, setCustomDueDates] = useState([]);
   useEffect(() => {
@@ -768,7 +773,10 @@ const AddStudent = () => {
           {mapelList.length === 0 ? (
             <p style={{ fontSize: 11, color: '#94a3b8', gridColumn: '1 / -1' }}>Belum ada data mapel.</p>
           ) : (
-            mapelList.map(m => (
+            saringMapelUntukSiswa(mapelList, {
+              jenjang: formData.jenjang, kelas: formData.kelasSekolah,
+              programType: formData.programType, kategori: formData.programType,
+            }).tersaring.map(m => (
               <label key={m.id} style={styles.mapelCheckItem(selectedMapelCodes.includes(m.kodeMapel))}>
                 <input
                   type="checkbox"
@@ -781,6 +789,17 @@ const AddStudent = () => {
             ))
           )}
         </div>
+        {(() => {
+          const { tersembunyi } = saringMapelUntukSiswa(mapelList, {
+            jenjang: formData.jenjang, kelas: formData.kelasSekolah,
+            programType: formData.programType, kategori: formData.programType,
+          });
+          return tersembunyi.length ? (
+            <div style={{ fontSize: 11, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', marginTop: 8 }}>
+              🧭 {tersembunyi.length} mapel disembunyikan karena bukan mapel jenjang {formData.jenjang || 'siswa ini'} (mis. {tersembunyi.slice(0, 3).map((m) => m.namaMapel).join(', ')}{tersembunyi.length > 3 ? ', …' : ''}). Ini mencegah kasus seperti Sosiologi tercentang untuk siswa SMP.
+            </div>
+          ) : null;
+        })()}
 
         <div style={styles.sectionHeader}>
           <Calendar size={20} color="#8b5cf6" />

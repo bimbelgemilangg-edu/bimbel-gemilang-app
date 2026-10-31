@@ -154,7 +154,7 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
           <Bot size={18} color="#4338ca" />
           <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1e293b' }}>Rapor Otomatis</h3>
           <span style={{ fontSize: 9.5, fontWeight: 700, color: '#4338ca', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 999, padding: '2px 8px' }}>
-            dihitung dari log aktivitasmu{entri.terkunci ? ' · snapshot terkunci 🔒' : ''}
+            dihitung otomatis oleh Asisten Belajar Gemilang dari log aktivitasmu{entri.terkunci ? ' · snapshot terkunci 🔒' : ''}
           </span>
         </div>
         {grup.length > 1 && (
@@ -405,7 +405,7 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
       )}
 
       <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 18, textAlign: 'center' }}>
-        Snapshot terkunci{entri.versiMesin ? ` · mesin ${entri.versiMesin}` : ''} · dihitung {dihitungPada} dari log aktivitas (kuis, try out, latihan, absensi, tugas).
+        Snapshot terkunci{entri.versiMesin ? ` · mesin ${entri.versiMesin}` : ''} · dihitung otomatis oleh Asisten Belajar Gemilang pada {dihitungPada} dari log aktivitas (kuis, try out, latihan, absensi, tugas).
         Angka yang sama tercetak pada PDF rapor yang diterima orang tua/wali.
       </div>
     </div>

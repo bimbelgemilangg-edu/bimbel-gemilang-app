@@ -17,6 +17,7 @@ import {
   bangunIndeksIdentitas, cariPemilikDok,
   hitungRaportSemuaSiswa, hitungDimensi, hitungPetaTopik, statusTopik,
   kunciDokRaport, bolehTimpaRaportFinal, dokAkademikSaja, bangunDokumenRaport,
+  alasanSiswaNonaktif, mapelSahUntukSiswa,
 } from '../src/utils/raportOtomatis.js';
 
 let lulus = 0, gagal = 0;
@@ -580,6 +581,66 @@ uji('v1.1 log siswa luar sasaran = logLuarSaringan, BUKAN orphan menakutkan', ()
   });
   assert.equal(ring.totalSiswa, 1);
   assert.equal(ring.logLuarSaringan.kuis, 2);
+});
+
+uji('v1.3.1 alasanSiswaNonaktif: blokir/status/masa-habis terdeteksi, aktif tidak', () => {
+  const now = Date.UTC(2026, 9, 31, 12, 0);
+  assert.equal(alasanSiswaNonaktif({ id: 'a', isBlocked: true }, now), 'diblokir sistem');
+  assert.equal(alasanSiswaNonaktif({ id: 'a', isBlocked: 'true' }, now), 'diblokir sistem');
+  assert.ok(alasanSiswaNonaktif({ id: 'a', status: 'Nonaktif' }, now).includes('status akun'));
+  assert.equal(alasanSiswaNonaktif({ id: 'a', status: 'Aktif' }, now), null);
+  assert.equal(alasanSiswaNonaktif({ id: 'a' }, now), null); // tanpa status = aktif
+  // tanggalSelesai '2026-10-20' = tengah malam WIB; +1 hari = 21 Okt WIB, sudah lewat
+  assert.ok(alasanSiswaNonaktif({ id: 'a', tanggalSelesai: '2026-10-20' }, now));
+  // tanggalSelesai hari ini belum kedaluwarsa (masih hari aktif terakhir)
+  assert.equal(alasanSiswaNonaktif({ id: 'a', tanggalSelesai: '2026-10-31' }, now), null);
+});
+
+uji('v1.3.1 mapelSahUntukSiswa: Sosiologi BUKAN mapel SMP, Matematika sah', () => {
+  assert.equal(mapelSahUntukSiswa('sos', { jenjang: 'SMP', kelas: '8 SMP' }).sah, false);
+  assert.equal(mapelSahUntukSiswa('Sosiologi', { jenjang: 'SMP' }).sah, false);
+  assert.equal(mapelSahUntukSiswa('mtk', { jenjang: 'SMP', kelas: '8 SMP' }).sah, true);
+  assert.equal(mapelSahUntukSiswa('Matematika', { jenjang: 'SMA' }).sah, true);
+  assert.equal(mapelSahUntukSiswa('Sosiologi', { jenjang: 'SMA' }).sah, true); // sah di SMA
+  // kode asing/lokal & jenjang tak diketahui TETAP sah (tidak mengarang)
+  assert.equal(mapelSahUntukSiswa('umum', { jenjang: 'SMP', kelas: '8 SMP' }).sah, true);
+  assert.equal(mapelSahUntukSiswa('sos', {}).sah, true); // tanpa jenjang/kelas
+});
+
+uji('v1.3.1 siswa nonaktif/diblokir TIDAK masuk laporan; log-nya tak jadi orphan', () => {
+  const siswa = [
+    { id: 'a1', studentId: 'A1', nama: 'Aktif Satu', jenjang: 'SMP', kelas: '8 SMP' },
+    { id: 'b1', studentId: 'B1', nama: 'Blokir Dua', jenjang: 'SMP', kelas: '8 SMP', isBlocked: true },
+    { id: 'c1', studentId: 'C1', nama: 'Habis Tiga', jenjang: 'SMP', kelas: '8 SMP', tanggalSelesai: '2026-08-01' },
+  ];
+  const kuis = (nim, nama, hari, mapel = 'Matematika') => ({ studentNim: nim, studentName: nama, score: 80, subject: mapel, submittedAt: Date.UTC(2026, 9, hari, 2, 0) });
+  const data = {
+    siswa,
+    kuis: [kuis('A1', 'Aktif Satu', 5), kuis('A1', 'Aktif Satu', 6), kuis('B1', 'Blokir Dua', 7), kuis('C1', 'Habis Tiga', 8)],
+    sesi: [], paket: [], absensi: [], tugas: [], nilaiGuru: [], progresSoal: [], soalMeta: {}, progresSiswa: [],
+  };
+  const h = hitungRaportSemuaSiswa(data, { bulan: '2026-10' });
+  assert.equal(h.siswa.length, 1); // hanya siswa aktif
+  assert.equal(h.siswa[0].studentId, 'A1');
+  assert.equal(h.ringkasan.siswaDikecualikan.jumlah, 2);
+  assert.equal(h.ringkasan.logTakDikenal.kuis, 0); // log nonaktif BUKAN orphan
+  assert.equal(h.ringkasan.logSiswaNonaktif.kuis, 2); // 2 kuis milik B1 & C1
+});
+
+uji('v1.3.1 mapel luar jenjang diabaikan mesin + dicatat untuk admin (Sosiologi-SMP)', () => {
+  const siswa = [{ id: 'a1', studentId: 'A1', nama: 'Siswa SMP', jenjang: 'SMP', kelas: '8 SMP' }];
+  const kuis = (hari, mapel, score) => ({ studentNim: 'A1', studentName: 'Siswa SMP', score, subject: mapel, submittedAt: Date.UTC(2026, 9, hari, 2, 0) });
+  const data = {
+    siswa,
+    kuis: [kuis(5, 'Matematika', 80), kuis(6, 'Matematika', 85), kuis(7, 'Sosiologi', 96)],
+    sesi: [], paket: [], absensi: [], tugas: [], nilaiGuru: [], progresSoal: [], soalMeta: {}, progresSiswa: [],
+  };
+  const h = hitungRaportSemuaSiswa(data, { bulan: '2026-10' });
+  const kodeAda = h.siswa[0].akademik.perMapel.map((m) => m.kode);
+  assert.ok(kodeAda.includes('mtk'));
+  assert.ok(!kodeAda.includes('sos'), 'Sosiologi harus tersaring dari rapor SMP');
+  assert.equal(h.siswa[0].mapelDikesampingkan.length, 1);
+  assert.equal(h.siswa[0].mapelDikesampingkan[0].kode, 'sos');
 });
 
 console.log(`\n${gagal === 0 ? '✅' : '❌'} raportOtomatis: ${lulus} lulus, ${gagal} gagal`);

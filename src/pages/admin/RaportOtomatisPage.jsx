@@ -519,7 +519,7 @@ export default function RaportOtomatisPage() {
               <b style={{ fontSize: 14 }}>Pratinjau periode {h.periode.label}</b>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11.5, color: '#475569' }}>
-                  {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} layak terbit penuh · {h.ringkasan.belumCukup} data belum cukup · {h.ringkasan.totalPelanggaran} catatan pengawasan
+                  {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} layak terbit penuh · {h.ringkasan.belumCukup} data belum cukup · {h.ringkasan.totalPelanggaran} catatan pengawasan{h.ringkasan.siswaDikecualikan ? ` · ${h.ringkasan.siswaDikecualikan.jumlah} siswa nonaktif/diblokir dikecualikan` : ''}
                 </span>
                 <button type="button" onClick={() => { setCetakSetelahTerbit(true); terbitkan(); }} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
                   📄 Terbitkan & Cetak PDF ({h.ringkasan.totalSiswa} siswa)
@@ -537,6 +537,11 @@ export default function RaportOtomatisPage() {
             {h.ringkasan.logLuarSaringan && Object.values(h.ringkasan.logLuarSaringan).some((n) => n > 0) && (
               <div style={{ fontSize: 11.5, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
                 ℹ️ Log periode ini milik siswa di luar jenjang/kelas sasaran: {Object.entries(h.ringkasan.logLuarSaringan).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(', ')}. Tidak ditampilkan di tabel ini — dan BUKAN kesalahan identitas.
+              </div>
+            )}
+            {h.ringkasan.siswaDikecualikan && (
+              <div style={{ fontSize: 11.5, color: '#475569', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
+                🚫 {h.ringkasan.siswaDikecualikan.jumlah} siswa nonaktif/diblokir TIDAK diikutkan ke laporan (kebijakan owner): {h.ringkasan.siswaDikecualikan.daftar.map((x) => `${x.nama || x.studentId} — ${x.alasan}`).join('; ')}. Log mereka dihitung terpisah, tidak dicampur ke siswa lain.
               </div>
             )}
             {h.ringkasan.dataBermasalah?.length > 0 && (
@@ -608,6 +613,11 @@ export default function RaportOtomatisPage() {
 
             <div style={{ fontSize: 12.5, fontWeight: 700, margin: '12px 0 4px' }}>Blok A — Akademik per mapel</div>
             {detail.akademik.perMapel.length === 0 && <div style={{ fontSize: 12, color: '#94a3b8' }}>Tidak ada aktivitas akademik terdeteksi pada periode ini.</div>}
+            {detail.mapelDikesampingkan?.length > 0 && (
+              <div style={{ fontSize: 11.5, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', marginTop: 8 }}>
+                🧭 Mapel di luar jenjang siswa ini — TIDAK ikut rapor: {detail.mapelDikesampingkan.map((x) => `${x.nama} (${x.alasan})`).join('; ')}. Perbaiki dari akarnya: cek akses mapel saat pendaftaran siswa (Kelola Siswa) dan mapel kuis/tugas yang diterbitkan guru.
+              </div>
+            )}
             <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
               <thead>
                 <tr>

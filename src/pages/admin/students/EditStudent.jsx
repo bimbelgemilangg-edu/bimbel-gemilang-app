@@ -14,6 +14,7 @@ import {
 // selesai dihitung dengan clamp akhir bulan (bukan setMonth meluber).
 import PilihDurasiBulan from '../../../components/admin/PilihDurasiBulan';
 import { tambahBulanKeTanggal, normalisasiDurasi } from '../../../utils/durasiPaket';
+import { saringMapelUntukSiswa, pangkasKodeMapelTerpilih } from '../../../utils/aksesMapelPerJenjang';
 
 // 🔥 BARU: sama persis logikanya dengan normalisasiNoHp() di AddStudent.jsx
 // -- diperlukan supaya format nomor HASIL EDIT juga selalu 628xxx (format
@@ -273,7 +274,9 @@ const EditStudent = () => {
     };
     
     if (id) fetchData();
-  }, [id]); // ← HANYA [id], BUKAN [id, pricing]!
+    // navigate stabil dari react-router; pricing SENGAJA tidak dimasukkan
+    // (fetch tidak boleh mengulang saat pricing dimuat ulang).
+  }, [id, navigate]);
 
   // ============================================================
   // HELPER FUNCTIONS
@@ -475,7 +478,18 @@ const EditStudent = () => {
       // 🔥 BERUBAH: karena sekarang WAJIB (divalidasi di atas sebelum sampai
       // sini), selectedMapelCodes dijamin gak kosong -- langsung disimpan
       // apa adanya, gak perlu lagi jalur deleteField() buat "hapus override".
-      payload.enrolledSubjects = selectedMapelCodes;
+      // v1.3.1: mapel di luar jenjang TIDAK ikut tersimpan — inilah akar
+      // bocornya Sosiologi ke siswa SMP. Data lama yang telanjur centang
+      // ikut terbersihkan saat admin menyimpan.
+      {
+        const { tersaring: mapelSah } = saringMapelUntukSiswa(mapelList, {
+          jenjang: formData.jenjang, kelas: formData.kelasSekolah,
+          programType: formData.programType, kategori: formData.kategori,
+        });
+        payload.enrolledSubjects = mapelList.length
+          ? selectedMapelCodes.filter((k) => mapelSah.some((m) => m.kodeMapel === k))
+          : selectedMapelCodes;
+      }
 
       await updateDoc(doc(db, "students", id), payload);
 
@@ -722,7 +736,10 @@ const EditStudent = () => {
               {mapelList.length === 0 ? (
                 <p style={{ fontSize: 11, color: '#94a3b8', gridColumn: '1 / -1' }}>Belum ada data mapel.</p>
               ) : (
-                mapelList.map(m => (
+                saringMapelUntukSiswa(mapelList, {
+                  jenjang: formData.jenjang, kelas: formData.kelasSekolah,
+                  programType: formData.programType, kategori: formData.kategori,
+                }).tersaring.map(m => (
                   <label key={m.id} style={styles.mapelCheckItem(selectedMapelCodes.includes(m.kodeMapel))}>
                     <input
                       type="checkbox"
@@ -735,6 +752,21 @@ const EditStudent = () => {
                 ))
               )}
             </div>
+            {(() => {
+              const { tersembunyi } = saringMapelUntukSiswa(mapelList, {
+                jenjang: formData.jenjang, kelas: formData.kelasSekolah,
+                programType: formData.programType, kategori: formData.kategori,
+              });
+              const terpilihTersembunyi = tersembunyi.filter(m => selectedMapelCodes.includes(m.kodeMapel));
+              return tersembunyi.length ? (
+                <div style={{ fontSize: 11, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', marginTop: 8 }}>
+                  🧭 {tersembunyi.length} mapel bukan jenjang {formData.jenjang || 'siswa ini'} disembunyikan (mis. {tersembunyi.slice(0, 3).map((m) => m.namaMapel).join(', ')}{tersembunyi.length > 3 ? ', …' : ''}).
+                  {terpilihTersembunyi.length > 0 && (
+                    <span style={{ color: '#991b1b' }}> ⚠️ Siswa ini masih punya akses ke {terpilihTersembunyi.map((m) => m.namaMapel).join(', ')} yang tak sesuai jenjangnya — itu penyebab nilai seperti Sosiologi muncul di rapor SMP. Hapus centangnya.</span>
+                  )}
+                </div>
+              ) : null;
+            })()}
           </div>
 
           {/* KANAN: Program + Akun + Keuangan */}
@@ -783,6 +815,10 @@ const EditStudent = () => {
                       onChange={e => {
                         updateField('jenjang', e.target.value);
                         updateField('paketId', null);
+                        // Pangkas akses mapel yang tak sah di jenjang baru.
+                        setSelectedMapelCodes(prev => pangkasKodeMapelTerpilih(prev, mapelList, {
+                          jenjang: e.target.value, kelas: formData.kelasSekolah, programType: formData.programType,
+                        }));
                       }}
                     >
                       <option value="SD">SD (Kelas 1-6)</option>

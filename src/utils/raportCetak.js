@@ -150,7 +150,7 @@ export function narasiLaporan(m = {}) {
   const p = m.proses || {};
   const det = p.detail_proses || {};
   const kalimat = [];
-  kalimat.push(`${idn.nama || 'Ananda'} (${idn.kelas || '—'}) menerima laporan periode ${labelPeriodeManusiawi(m.periode || '')} yang seluruhnya dihitung otomatis dari log aktivitas belajar.`);
+  kalimat.push(`${idn.nama || 'Ananda'} (${idn.kelas || '—'}) menerima laporan periode ${labelPeriodeManusiawi(m.periode || '')} yang seluruhnya dihitung otomatis oleh ${NAMA_ASISTEN} dari log aktivitas belajar.`);
   const kh = det.kehadiran || null;
   if (kh && kh.total > 0) {
     kalimat.push(`Kehadiran tercatat ${kh.persenHadir}% (${kh.hadir} dari ${kh.total} sesi diikuti)${kh.alpha ? `; ${kh.alpha} sesi tanpa keterangan menjadi bahan binaan wali — bukan pengurang nilai` : ''}.`);
@@ -212,6 +212,10 @@ export function trenSemangat(trenHarian = []) {
 /** Nama penerbit pada blok tanda tangan (permintaan owner 21 Okt 2026:
  * "Hormat kami, Bimbingan Belajar Gemilang"). */
 export const NAMA_PENERBIT = 'Bimbingan Belajar Gemilang';
+/** Nama agen penghitung otomatis (keputusan owner 31 Okt 2026: istilah
+ * 'otomatis' harus dinamai — bukan 'dihitung otomatis' anonim, tapi
+ * 'dihitung otomatis oleh Asisten Belajar Gemilang'). */
+export const NAMA_ASISTEN = 'Asisten Belajar Gemilang';
 
 /** Logo kop cetakan. Default = logo PWA yang sudah dipakai watermark.
  * 🖼️ Cara memasang LOGO TRANSPARAN (keputusan owner: kop manual / logo
@@ -726,7 +730,7 @@ function bagianSiswa(m, { kodeCetak = '', logoUrl = '' } = {}) {
   const idn = m.identitas;
   const jejak = m.jejak || {};
   const jumlahSumber = jejak.jumlahDokumenSumber || null;
-  const capOtomatis = 'Dihitung otomatis dari log aktivitas (kuis · try out · latihan harian · absensi · tugas)'
+  const capOtomatis = `Dihitung otomatis oleh ${NAMA_ASISTEN} dari log aktivitas (kuis · try out · latihan harian · absensi · tugas)`
     + (m.terkunci ? ' · snapshot TERKUNCI' : '');
   return `
 <div class="rp">
@@ -843,7 +847,7 @@ export function htmlRaportMassal({ daftar = [], judul = '', periodeLabel = '', l
     <div>
       <h1>${escapeHtml(judul || 'Kumpulan Rapor Perkembangan Belajar')}</h1>
       <div class="rp-sub">Periode <b>${escapeHtml(labelPeriodeManusiawi(periodeLabel))}</b> · ${models.length} siswa · dicetak ${escapeHtml(fmtTglPanjang(new Date().toISOString()))}</div>
-      <span class="rp-cap">🤖 Dihitung otomatis dari log aktivitas · snapshot terkunci</span>
+      <span class="rp-cap">🤖 Dihitung otomatis oleh ${escapeHtml(NAMA_ASISTEN)} dari log aktivitas · snapshot terkunci</span>
     </div>
   </div>
   <table class="rp-kecil">
@@ -862,7 +866,7 @@ export default {
   escapeHtml, labelPeriodeManusiawi, dataDok, kelompokDokOtomatis,
   poinSparkline, svgSparkline, warnaPredikatHuruf, warnaStatusTopik,
   poinRadar, svgRadar, seriRadarDariModel, WARNA_RADAR_MAPEL, WARNA_RADAR_GLOBAL, RADAR_MAKS_SERI,
-  NAMA_PENERBIT, LOGO_KOP,
+  NAMA_PENERBIT, NAMA_ASISTEN, LOGO_KOP,
   DIMENSI_LABEL, DIMENSI_KEYS,
   siapkanModelRaport, cssRaport, judulCetakRaport,
   htmlRaportSiswa, htmlRaportMassal,

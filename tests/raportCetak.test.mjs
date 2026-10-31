@@ -394,6 +394,9 @@ uji('tren tanpa TO sama sekali: kalimat jujur "—" belum terukur, tidak dinolka
 uji('v1.3: narasi otomatis lengkap; NOL frasa defisit di cetakan orang tua', () => {
   assert.ok(htmlBudi.includes('Laporan untuk Orang Tua/Wali'));
   assert.ok(htmlBudi.includes('Semangat & kebiasaan belajar'));
+  // v1.3.1: istilah 'otomatis' harus dinamai — cap & narasi menyebut asisten
+  assert.ok(htmlBudi.includes('Dihitung otomatis oleh Asisten Belajar Gemilang'));
+  assert.ok(htmlBudi.includes('dihitung otomatis oleh Asisten Belajar Gemilang dari log aktivitas belajar'));
   for (const dilarang of ['Cara membaca rapor ini', 'data belum cukup', 'Data belum cukup',
     'bukan nilai nol', '(v1)', 'Bobot efektif', 'Kekuatan periode ini', 'belum diwarnai',
     'Rekomendasi penguatan', 'belum cukup untuk dinilai', 'masih tipis']) {

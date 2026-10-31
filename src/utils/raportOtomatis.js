@@ -59,6 +59,8 @@
 // ============================================================
 
 import { kodeMapel as kodeMapelDariNama } from './aliasMapel.js';
+import { mapelBerlaku, petakanNamaMapel } from './kurikulumMerdeka.js';
+import { jenjangBaku } from './jenjangBaku.js';
 import { KATALOG_MAPEL, MAPEL_UTBK } from './mesinTaksonomiSoal.js';
 import {
   skorSatuSoal, soalBisaDinilai, isSoalEsai, pilihSoalDinilai,
@@ -280,6 +282,44 @@ const rata2 = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length
 export function nilaiSah(v) {
   const n = Number(v);
   return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null;
+}
+
+// ------------------------------------------------------------
+// STATUS SISWA (keputusan owner 31 Okt 2026): siswa yang diblokir atau masa
+// aktifnya habis TIDAK pernah masuk laporan — apa pun yang terjadi. Mereka
+// juga dikeluarkan dari indeks identitas supaya fallback pencocokan nama
+// tidak pernah memindahkan log mereka ke siswa aktif bernama sama.
+// ------------------------------------------------------------
+
+/** Alasan siswa dianggap nonaktif untuk laporan, atau null bila aktif.
+ * Kriteria: isBlocked, status akun bukan 'Aktif', atau tanggalSelesai lewat
+ * (tanggal selesai sendiri masih dihitung hari aktif terakhir). */
+export function alasanSiswaNonaktif(s = {}, sekarangMs = Date.now()) {
+  if (s.isBlocked === true || s.isBlocked === 'true') return 'diblokir sistem';
+  const st = String(s.status ?? '').trim().toLowerCase();
+  if (st && st !== 'aktif' && st !== 'active') return `status akun "${st}"`;
+  const selesai = waktuMs(s.tanggalSelesai);
+  if (selesai !== null && selesai + 86400000 <= sekarangMs) return 'masa aktif habis';
+  return null;
+}
+
+/** Mapel sah untuk profil siswa menurut peta Kurikulum Merdeka?
+ * Hanya MENYARING mapel yang dikenal peta kurikulum (Sosiologi untuk SMP =
+ * tersaring); kode asing/lokal (Mapel-007, 'umum', paket English) TETAP
+ * ditampilkan — menyembunyikan data yang tidak kita pahami lebih berbahaya.
+ * @returns {{sah:boolean, alasan:string}} */
+export function mapelSahUntukSiswa(kode, { jenjang = '', kelas = '' } = {}) {
+  const j = jenjangBaku(jenjang).baku;
+  const nomorKelas = (/^(\d{1,2})/.exec(String(kelas || '').trim()) || [])[1] || '';
+  if (!j && !nomorKelas) return { sah: true, alasan: '' }; // identitas jenjang tak diketahui
+  const nama = namaMapel(kode);
+  const peta = petakanNamaMapel(nama, {});
+  if (!peta.kode) return { sah: true, alasan: '' }; // di luar peta kurikulum
+  if (mapelBerlaku(peta.kode, { jenjang: j, kelas: nomorKelas })) return { sah: true, alasan: '' };
+  return {
+    sah: false,
+    alasan: `${nama} bukan mapel jenjang ${j || `kelas ${nomorKelas}`} (peta Kurikulum Merdeka) — nilai diabaikan dari rapor`,
+  };
 }
 
 // ------------------------------------------------------------
@@ -652,8 +692,23 @@ export function hitungRaportSiswa({
     ...tugas.map((t) => normalisasiMapelKuis(t)),
     ...nilaiGuru.map((g) => kodeMapelDariNama(String(g.mapel || '')) || 'umum'),
   ]);
+  // v1.3.1 (keluhan owner: siswa SMP punya nilai Sosiologi): mapel yang tak
+  // sah di jenjang siswa DISARING di sini — akar datanya dari pendaftaran/
+  // penerbitan kuis, tapi rapor tidak boleh menampilkannya apa pun yang
+  // terjadi. Disaring ≠ dihapus: dicatat di mapelDikesampingkan untuk admin.
+  const konteksJenjang = {
+    jenjang: String(profil.profil.jenjang || ''),
+    kelas: String(profil.profil.kelas || profil.profil.kelasSekolah || profil.profil.tingkatKelas || ''),
+  };
+  const mapelDikesampingkan = [];
+  const kodeSah = [...kodeSemua].sort().filter((kode) => {
+    const cek = mapelSahUntukSiswa(kode, konteksJenjang);
+    if (cek.sah) return true;
+    mapelDikesampingkan.push({ kode, nama: namaMapel(kode), alasan: cek.alasan });
+    return false;
+  });
   const perMapel = [];
-  for (const kode of [...kodeSemua].sort()) {
+  for (const kode of kodeSah) {
     const kuisMapel = kuis.filter((k) => normalisasiMapelKuis(k) === kode);
     const nilaiKuis = kuisMapel.map((k) => nilaiSah(k.score)).filter((n) => n !== null);
     const tugasMapel = tugas.filter((t) => normalisasiMapelKuis(t) === kode);
@@ -878,6 +933,7 @@ export function hitungRaportSiswa({
     petaTopik,
     rekomendasi,
     catatan,
+    mapelDikesampingkan,
     kelayakan: {
       layakTerbit: mapelLayak.length > 0,
       mapelLayak: mapelLayak.length, mapelTotal: perMapel.length,
@@ -912,6 +968,8 @@ export function buatRingkasan(hasilSiswa = [], ekstra = {}) {
     totalPelanggaran: hasilSiswa.reduce((s, h) => s + h.proses.integritas.jumlahPelanggaran, 0),
     logTakDikenal: ekstra.logTakDikenal || null,
     logLuarSaringan: ekstra.logLuarSaringan || null,
+    logSiswaNonaktif: ekstra.logSiswaNonaktif || null,
+    siswaDikecualikan: ekstra.siswaDikecualikan || null,
     dataBermasalah: ekstra.dataBermasalah || [],
   };
 }
@@ -931,7 +989,27 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}, opts =
   const periode = rentangPeriode(periodeOpts);
   const dalamJendela = (ms) => ms !== null && ms >= periode.mulaiMs && ms < periode.selesaiMs;
 
-  const indeks = bangunIndeksIdentitas(dataMentah.siswa || []);
+  // v1.3.1: siswa diblokir / masa aktif habis / status nonaktif DIKECUALIKAN
+  // dari laporan dan dari indeks identitas (log mereka tidak boleh 'pindah'
+  // ke siswa aktif bernama sama lewat fallback nama).
+  const sekarangMs = opts?.sekarangMs ?? Date.now();
+  const daftarNonaktif = [];
+  const siswaNonaktifDok = [];
+  const daftarAktif = (dataMentah.siswa || []).filter((s) => {
+    const alasan = s && s.id ? alasanSiswaNonaktif(s, sekarangMs) : null;
+    if (alasan) {
+      siswaNonaktifDok.push(s);
+      daftarNonaktif.push({
+        studentId: String(s.studentId || s.nim || s.id || ''),
+        nama: String(s.nama || s.name || ''),
+        alasan,
+      });
+      return false;
+    }
+    return true;
+  });
+  const indeks = bangunIndeksIdentitas(daftarAktif);
+  const indeksNonaktif = bangunIndeksIdentitas(siswaNonaktifDok);
   const paketById = Array.isArray(dataMentah.paket)
     ? Object.fromEntries((dataMentah.paket || []).map((p) => [p.id, p]))
     : (dataMentah.paket || {});
@@ -940,11 +1018,21 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}, opts =
   // Bucket log per siswa + hitung yang tak dikenal (dilaporkan jujur).
   const bucket = new Map(indeks.map((e) => [e.kunci, { kuis: [], sesiAgg: [], absensi: [], tugas: [], nilaiGuru: [], latihan: [], progresSiswa: null }]));
   const takDikenal = { kuis: 0, sesi: 0, absensi: 0, tugas: 0, latihan: 0 };
+  const logSiswaNonaktif = { kuis: 0, sesi: 0, absensi: 0, tugas: 0, latihan: 0 };
   const salah = [];
 
   const masukkan = (dok, fieldId, fieldNama, jenis) => {
     const pemilik = cariPemilikDok(indeks, dok, { fieldId, fieldNama });
-    if (!pemilik) { takDikenal[jenis] = (takDikenal[jenis] || 0) + 1; return null; }
+    if (!pemilik) {
+      // Log milik siswa nonaktif = BUKAN orphan; hitung terpisah supaya
+      // peringatan identitas tidak salah tuduh.
+      if (cariPemilikDok(indeksNonaktif, dok, { fieldId, fieldNama })) {
+        logSiswaNonaktif[jenis] = (logSiswaNonaktif[jenis] || 0) + 1;
+      } else {
+        takDikenal[jenis] = (takDikenal[jenis] || 0) + 1;
+      }
+      return null;
+    }
     return bucket.get(pemilik.kunci);
   };
 
@@ -1058,6 +1146,10 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}, opts =
     ringkasan: buatRingkasan(hasilSiswa, {
       logTakDikenal: takDikenal,
       logLuarSaringan,
+      logSiswaNonaktif: daftarNonaktif.length ? logSiswaNonaktif : null,
+      siswaDikecualikan: daftarNonaktif.length
+        ? { jumlah: daftarNonaktif.length, daftar: daftarNonaktif.slice(0, 20) }
+        : null,
       dataBermasalah: salah.slice(0, 20),
     }),
   };
