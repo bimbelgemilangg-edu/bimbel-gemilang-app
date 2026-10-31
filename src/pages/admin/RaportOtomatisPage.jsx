@@ -120,8 +120,8 @@ export default function RaportOtomatisPage() {
   // dihitung; tabel & tombol cetak hanya boleh tampil bila kunci cocok — baris basi
   // dari filter lain TAK BOLEH terlihat sedetik pun (insiden 31 Okt 2026: label
   // '7 SMP' masih menampilkan baris hitungan 'Semua SMP' selama hitung sinkron berjalan).
-  const kunciAlias = Object.entries(aliasIdentitas).map(([k, v]) => `${k}>${v}`).sort().join(',');
-  const kunciFilterAktif = [jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan, kunciAlias].join('|');
+  // CATATAN URUTAN: diturunkan SETELAH semua useState (aliasIdentitas dll.) —
+  // membacanya di atas deklarasi state = ReferenceError TDZ (crash prod v1.5.1).
 
   // ---------------- hasil hitung & terbit ----------------
   const [hasil, setHasil] = useState(null);
@@ -134,6 +134,9 @@ export default function RaportOtomatisPage() {
   const [dibuka, setDibuka] = useState(null); // studentId baris yang diperluas
   const [paksa, setPaksa] = useState(false);
   const [alasanPaksa, setAlasanPaksa] = useState('');
+
+  const kunciAlias = Object.entries(aliasIdentitas).map(([k, v]) => `${k}>${v}`).sort().join(',');
+  const kunciFilterAktif = [jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan, kunciAlias].join('|');
   const [sedangTerbit, setSedangTerbit] = useState(false);
   const [progresTerbit, setProgresTerbit] = useState('');
   const [hasilTerbit, setHasilTerbit] = useState(null);
