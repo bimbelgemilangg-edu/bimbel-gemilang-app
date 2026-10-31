@@ -1,5 +1,5 @@
 // src/pages/student/raport/StudentLeaderboard.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getRelativeLeaderboard } from '../../../services/raportService';
 import RelativeLeaderboard from '../../../components/raport/RelativeLeaderboard';
 import { Trophy, Calendar } from 'lucide-react';
@@ -15,18 +15,19 @@ const StudentLeaderboard = () => {
   const studentId = localStorage.getItem('studentId');
   const studentName = localStorage.getItem('studentName');
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     const data = await getRelativeLeaderboard(selectedPeriode, studentId);
     setLeaderboard(data);
     setLoading(false);
-  };
+  }, [selectedPeriode, studentId]);
 
   // v1.1-fix: efek dipindah SETELAH deklarasi fetchLeaderboard (urutan lama
-  // memicu react-compiler 'accessed before declared').
+  // memicu react-compiler 'accessed before declared'); queueMicrotask supaya
+  // tak setState sinkron di badan efek (pola bersih repo: TeacherAttendance).
   useEffect(() => {
-    fetchLeaderboard();
-  }, [selectedPeriode]);
+    queueMicrotask(() => { fetchLeaderboard(); });
+  }, [fetchLeaderboard]);
   
   return (
     <div style={{ maxWidth: 600, margin: '0 auto' }}>

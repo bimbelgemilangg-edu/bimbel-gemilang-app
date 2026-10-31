@@ -1,5 +1,5 @@
 // src/pages/admin/portal-siswa/ManageSurvey.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../../components/SidebarAdmin';
 import { db } from '../../../firebase';
@@ -73,7 +73,7 @@ const ManageSurvey = () => {
     return () => window.removeEventListener('resize', h);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const snap = await getDocs(query(collection(db, "surveys"), orderBy("createdAt", "desc")));
@@ -90,9 +90,9 @@ const ManageSurvey = () => {
       console.error("Error fetch data:", err);
     }
     setLoading(false);
-  };
+  }, []);
 
-  const fetchClasses = async () => {
+  const fetchClasses = useCallback(async () => {
     try {
       // 🔥 Diambil LANGSUNG dari koleksi students (bukan lewat jadwal),
       // konsisten dengan perbaikan di modul E-Learning sebelumnya.
@@ -102,11 +102,15 @@ const ManageSurvey = () => {
     } catch (err) {
       console.error("Error fetch classes:", err);
     }
-  };
+  }, []);
 
   // v1.1-fix: efek pemanggilan ditaruh SETELAH deklarasi fetchData/fetchClasses
-  // (urutan lama memicu peringatan react-compiler 'accessed before declared').
-  useEffect(() => { fetchData(); fetchClasses(); }, []);
+  // (urutan lama memicu react-compiler 'accessed before declared'), dan
+  // pemanggilannya lewat queueMicrotask supaya tak setState sinkron di badan
+  // efek (pola bersih repo: TeacherAttendance.jsx) — perilaku tetap sama.
+  useEffect(() => {
+    queueMicrotask(() => { fetchData(); fetchClasses(); });
+  }, [fetchData, fetchClasses]);
 
   const resetForm = () => {
     setForm(emptyForm());
