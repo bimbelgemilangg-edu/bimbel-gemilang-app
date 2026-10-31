@@ -53,6 +53,17 @@ const gayaTd = { border: '1px solid #cbd5e1', padding: '5px 8px', fontSize: 11.5
 const warnaPredikat = (huruf) => ({ A: '#166534', B: '#1d4ed8', C: '#b45309', D: '#991b1b', '—': '#64748b' }[huruf] || '#334155');
 const warnaStatus = (s) => ({ hijau: '#16a34a', kuning: '#ca8a04', merah: '#dc2626', abu: '#94a3b8' }[s] || '#94a3b8');
 
+// Penjelasan manusiawi untuk jenis data yang dilewati mesin (jujur, bukan
+// gangguan aplikasi). Jenis baru cukup ditambah satu baris di sini.
+const LABEL_MASALAH_LOG = {
+  'sesi-tanpa-paket': 'sesi try out berstatus SELESAI yang paket soalnya tak ditemukan di koleksi (paket terhapus/dipindah) — tidak diskor, karena menghitung tanpa paket = mengarang',
+};
+const ringkasMasalah = (daftar = []) => {
+  const g = new Map();
+  for (const x of daftar) g.set(x.jenis, (g.get(x.jenis) || 0) + 1);
+  return [...g.entries()];
+};
+
 const fmtAngka = (n) => (Number.isFinite(n) ? n : '—');
 
 function bulanIni() {
@@ -426,7 +437,10 @@ export default function RaportOtomatisPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <SidebarAdmin />
-      <div style={{ flex: 1, padding: isMobile ? 12 : 22, minWidth: 0 }}>
+      {/* SidebarAdmin position:fixed (lebar 216) — konten WAJIB memberi offset
+          kiri sendiri, kalau tidak ia menutupi panel kontrol & banner (insiden
+          31 Okt 11.01 WIB: halaman ini satu-satunya yang lupa marginLeft). */}
+      <div style={{ flex: 1, marginLeft: isMobile ? 0 : 216, padding: isMobile ? 12 : 22, minWidth: 0 }}>
         <h1 style={{ margin: '0 0 4px', fontSize: isMobile ? 18 : 22 }}>📊 Raport Otomatis</h1>
         <div style={{ fontSize: 12, color: '#475569', marginBottom: 14 }}>
           Agregasi otomatis log aktivitas (kuis · try out · latihan harian · absensi · tugas · XP) menjadi raport
@@ -507,7 +521,16 @@ export default function RaportOtomatisPage() {
             )}
             {h.ringkasan.dataBermasalah?.length > 0 && (
               <div style={{ fontSize: 11.5, color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
-                Data bermasalah dilewati jujur: {h.ringkasan.dataBermasalah.map((x) => `${x.jenis}${x.sesiId ? ` (${x.sesiId})` : ''}`).join(', ')}
+                ⛔ Data dilewati JUJUR (bukan gangguan aplikasi): {ringkasMasalah(h.ringkasan.dataBermasalah).map(([jenis, n]) => `${n} ${LABEL_MASALAH_LOG[jenis] || jenis}`).join(' · ')}.
+                Pulihkan paket try out terkait (atau arsipkan sesi-sesinya) supaya peringatan ini hilang dan angkanya ikut terhitung.
+                <details style={{ marginTop: 4 }}>
+                  <summary style={{ cursor: 'pointer', fontSize: 10.5, color: '#7f1d1d' }}>
+                    Lihat ID sesi untuk pelacakan{h.ringkasan.dataBermasalah.length >= 20 ? ' (20 pertama — mesin membatasi daftar demi ukuran dokumen)' : ''}
+                  </summary>
+                  <div style={{ fontSize: 10.5, marginTop: 4, wordBreak: 'break-all' }}>
+                    {h.ringkasan.dataBermasalah.map((x) => x.sesiId || x.jenis).join(', ')}
+                  </div>
+                </details>
               </div>
             )}
             <div style={{ overflowX: 'auto' }}>
