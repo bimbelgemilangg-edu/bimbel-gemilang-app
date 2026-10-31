@@ -392,5 +392,22 @@ uji('tren tanpa TO sama sekali: kalimat jujur "—" belum terukur, tidak dinolka
   assert.ok(h.includes("kolom skala dibiarkan '—' (belum terukur), tidak dinolkan"));
 });
 
+uji('v1.2: kotak cara membaca & kekuatan selalu ada di cetakan siswa', () => {
+  assert.ok(htmlBudi.includes('Cara membaca rapor ini'));
+  assert.ok(htmlBudi.includes('Kekuatan periode ini'));
+  assert.ok(htmlBudi.includes('Semangat & kebiasaan belajar'));
+  assert.ok(htmlBudi.includes('bukan nilai nol'));
+});
+uji('v1.2: trenSemangat jujur (null bila titik <4) + daftarKekuatan strengths-first', () => {
+  assert.equal(trenSemangat([]), null);
+  assert.equal(trenSemangat([{ skor: 1 }, { skor: 2 }]), null);
+  const naik = trenSemangat([{ skor: 50 }, { skor: 52 }, { skor: 70 }, { skor: 75 }]);
+  assert.equal(naik.ikon, '▲');
+  const k = daftarKekuatan({ proses: { detail_proses: { integritas: { jumlahPelanggaran: 0 } }, petaTopik: [] }, akademik: [] });
+  assert.ok(k.some((x) => x.includes('Integritas bersih')));
+  const kosong = daftarKekuatan({});
+  assert.ok(kosong[0].includes('Bukti kekuatan masih dikumpulkan'));
+});
+
 console.log(`\n[${lulus} lulus, ${gagal} gagal]`);
 process.exit(gagal ? 1 : 0);
