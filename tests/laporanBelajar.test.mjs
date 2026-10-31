@@ -19,7 +19,7 @@ import {
   ringkasBahanOtomatis, keteranganTidakIkut,
   kalimatDimensi, narasiCapaianSiswa,
   kunciDokLaporan, bentukDokumenLaporan,
-  pengisianDibuka, bentukSakelarLaporan,
+  pengisianDibuka, tombolSakelarLaporan, bentukSakelarLaporan,
 } from '../src/utils/laporanBelajar.js';
 
 let lulus = 0, gagal = 0;
@@ -246,6 +246,18 @@ uji('pengisianDibuka: default menolak; hanya dibuka=true + periode yang menyalak
   const on = pengisianDibuka({ dibuka: true, periode: '2026-10', periodeLabel: 'Oktober 2026' });
   assert.equal(on.dibuka, true);
   assert.equal(on.periode, '2026-10');
+});
+uji('tombolSakelarLaporan: null-safe saat settings belum ada (regresi crash /admin/raport)', () => {
+  // Dokumen settings/global_config belum ada → cfg null. Halaman admin harus
+  // tetap render (tombol Buka), BUKAN TypeError "reading 'periode'".
+  assert.equal(tombolSakelarLaporan(null, '2026-10'), 'buka');
+  assert.equal(tombolSakelarLaporan(undefined, '2026-10'), 'buka');
+  assert.equal(tombolSakelarLaporan({}, '2026-10'), 'buka');
+  assert.equal(tombolSakelarLaporan({ dibuka: false, periode: '2026-10' }, '2026-10'), 'buka');
+  // Periode dibuka tetapi berbeda dari pilihan → tetap tombol Buka (pindah periode).
+  assert.equal(tombolSakelarLaporan({ dibuka: true, periode: '2026-09' }, '2026-10'), 'buka');
+  // Periode dibuka sama dengan pilihan → tombol Tutup.
+  assert.equal(tombolSakelarLaporan({ dibuka: true, periode: '2026-10' }, '2026-10'), 'tutup');
 });
 uji('bentukSakelarLaporan: bentuk dokumen konsisten', () => {
   const p = bentukSakelarLaporan({ dibuka: true, periode: '2026-10', periodeLabel: 'Oktober', dibukaOleh: 'owner' });

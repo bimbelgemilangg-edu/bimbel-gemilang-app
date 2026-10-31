@@ -45,7 +45,7 @@ import { htmlRaportSiswa, htmlRaportMassal, judulCetakRaport, labelPeriodeManusi
 import { cetakLewatIframe } from '../../utils/kwitansi';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { catatAudit, aktorSaatIni, KATEGORI } from '../../utils/auditLog';
-import { FIELD_LAPORAN_BELAJAR, bentukSakelarLaporan, pengisianDibuka } from '../../utils/laporanBelajar';
+import { FIELD_LAPORAN_BELAJAR, bentukSakelarLaporan, pengisianDibuka, tombolSakelarLaporan } from '../../utils/laporanBelajar';
 
 const gayaKartu = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 };
 const gayaTh = { border: '1px solid #cbd5e1', padding: '5px 8px', textAlign: 'left', background: '#f1f5f9', fontSize: 11.5 };
@@ -611,7 +611,7 @@ export default function RaportOtomatisPage() {
               )}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {!pengisianDibuka(sakelarLaporan) || sakelarLaporan.periode !== periodeLaporanKey ? (
+              {tombolSakelarLaporan(sakelarLaporan, periodeLaporanKey) === 'buka' ? (
                 <button type="button" disabled={sedangSakelar || !periodeLaporanKey} onClick={() => ubahSakelarLaporan(true)}
                   style={{ padding: '9px 16px', borderRadius: 9, border: 'none', background: '#4338ca', color: 'white', fontWeight: 700, fontSize: 12.5, cursor: sedangSakelar ? 'default' : 'pointer', opacity: sedangSakelar || !periodeLaporanKey ? 0.6 : 1 }}>
                   {sedangSakelar ? 'Memproses…' : '🔓 Buka Pengisian Periode Ini'}

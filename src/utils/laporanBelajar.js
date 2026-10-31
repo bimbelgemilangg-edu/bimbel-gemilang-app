@@ -474,6 +474,15 @@ export function pengisianDibuka(cfg) {
   return { dibuka: true, alasan: `periode ${cfg.periodeLabel || cfg.periode} sedang dibuka`, periode: cfg.periode, periodeLabel: cfg.periodeLabel || '' };
 }
 
+/** Tombol sakelar mana yang tampil di kartu admin: 'buka' atau 'tutup'.
+ *  Murni & null-safe: dokumen settings mungkin belum ada (cfg null) saat
+ *  halaman pertama kali render — jangan pernah dereferensi cfg di sini. */
+export function tombolSakelarLaporan(cfg, periodeKey) {
+  const putus = pengisianDibuka(cfg);
+  if (!putus.dibuka) return 'buka';
+  return String(cfg.periode || '') === String(periodeKey || '') ? 'tutup' : 'buka';
+}
+
 /** Bentuk patch sakelar untuk disimpan admin (bentuk di satu tempat). */
 export function bentukSakelarLaporan({ dibuka = false, periode = '', periodeLabel = '', dibukaOleh = '', catatan = '' }) {
   return {
@@ -496,5 +505,5 @@ export default {
   ringkasBahanOtomatis, keteranganTidakIkut,
   kalimatDimensi, narasiCapaianSiswa, adaIsi,
   kunciDokLaporan, bentukDokumenLaporan,
-  FIELD_LAPORAN_BELAJAR, pengisianDibuka, bentukSakelarLaporan,
+  FIELD_LAPORAN_BELAJAR, pengisianDibuka, tombolSakelarLaporan, bentukSakelarLaporan,
 };
