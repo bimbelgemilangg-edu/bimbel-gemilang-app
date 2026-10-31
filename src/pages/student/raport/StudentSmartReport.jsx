@@ -21,6 +21,7 @@ const StudentSmartReport = () => {
   const [reports, setReports] = useState([]);
   // Snapshot otomatis TERBIT, dikelompokkan per periode (utils/raportCetak).
   const [grupOtomatis, setGrupOtomatis] = useState([]);
+  const [capaianPerPeriode, setCapaianPerPeriode] = useState({}); // v1.5.1: capaian tentor per periode
   const [loading, setLoading] = useState(true);
   const [selectedPeriode, setSelectedPeriode] = useState(null);
   const [selectedMapel, setSelectedMapel] = useState('Semua');
@@ -53,6 +54,7 @@ const StudentSmartReport = () => {
   
   useEffect(() => {
     fetchReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dimuat sekali saat mount; fetchReports sengaja tidak jadi dependensi agar tidak loop
   }, []);
   
   const fetchReports = async () => {
@@ -73,6 +75,20 @@ const StudentSmartReport = () => {
       const data = semua.filter(r => r.sumber !== 'otomatis' && r.blok !== 'proses');
       setReports(data);
       setGrupOtomatis(kelompokDokOtomatis(semua));
+      // v1.5.1: capaian yang diisi tentor (laporan_belajar) ikut tampil di layar
+      // siswa — bahasa sama dengan PDF orang tua. Gagal baca = tidak menampilkan,
+      // tidak boleh mengganggu rapor otomatis.
+      try {
+        const snapCap = await getDocs(query(collection(db, 'laporan_belajar'), where('studentId', '==', studentId)));
+        const perPeriode = {};
+        for (const dc of snapCap.docs) {
+          const x = dc.data();
+          (perPeriode[x.periode] = perPeriode[x.periode] || []).push(x);
+        }
+        setCapaianPerPeriode(perPeriode);
+      } catch {
+        setCapaianPerPeriode({});
+      }
       
       // Ambil daftar mapel unik
       const mapelList = [...new Set(data.map(r => r.mapel).filter(Boolean))];
@@ -240,7 +256,7 @@ const StudentSmartReport = () => {
 
       {/* 🔥 Fase 2: RAPOR OTOMATIS (snapshot terbit — tren, proses, peta topik) */}
       {grupOtomatis.length > 0 && (
-        <RapotOtomatisSiswa grup={grupOtomatis} isMobile={isMobile} />
+        <RapotOtomatisSiswa grup={grupOtomatis} isMobile={isMobile} capaianPerPeriode={capaianPerPeriode} />
       )}
 
       {/* Pilih Periode & Mapel (alur manual guru) */}

@@ -365,6 +365,16 @@ export function cariPemilikDok(indeks, dok, { fieldId = 'studentId', fieldNama =
   return byNama; // nama = fallback rapuh (pola identitasAbsensi), dipakai terakhir
 }
 
+/** v1.5.1: kunci identitas sebuah log untuk reparasi — id mentah, lalu nama.
+ *  Kunci inilah yang dipasangkan admin ke siswa benar di tool reparasi. */
+export function kunciIdentitasLog(dok, fieldId = 'studentId', fieldNama = '') {
+  if (!dok) return '';
+  const id = String(dok[fieldId] ?? '').trim();
+  if (id) return id;
+  const nama = fieldNama ? String(dok[fieldNama] ?? '').trim() : '';
+  return nama;
+}
+
 // ------------------------------------------------------------
 // AGREGASI TRY OUT
 // ------------------------------------------------------------
@@ -1014,6 +1024,8 @@ export function buatRingkasan(hasilSiswa = [], ekstra = {}) {
     belumCukup: hasilSiswa.filter((h) => !h.kelayakan.layakTerbit).length,
     totalPelanggaran: hasilSiswa.reduce((s, h) => s + h.proses.integritas.jumlahPelanggaran, 0),
     logTakDikenal: ekstra.logTakDikenal || null,
+    logDireparasi: ekstra.logDireparasi || null,
+    identitasTakDikenal: ekstra.identitasTakDikenal || null,
     logLuarSaringan: ekstra.logLuarSaringan || null,
     logSiswaNonaktif: ekstra.logSiswaNonaktif || null,
     siswaDikecualikan: ekstra.siswaDikecualikan || null,
@@ -1065,6 +1077,9 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}, opts =
   // Bucket log per siswa + hitung yang tak dikenal (dilaporkan jujur).
   const bucket = new Map(indeks.map((e) => [e.kunci, { kuis: [], sesiAgg: [], absensi: [], tugas: [], nilaiGuru: [], latihan: [], progresSiswa: null }]));
   const takDikenal = { kuis: 0, sesi: 0, absensi: 0, tugas: 0, latihan: 0 };
+  const logDireparasi = { kuis: 0, sesi: 0, absensi: 0, tugas: 0, latihan: 0 };
+  const identitasTakDikenal = {};
+  const aliasAktif = opts?.aliasIdentitas && typeof opts.aliasIdentitas === 'object' ? opts.aliasIdentitas : null;
   const logSiswaNonaktif = { kuis: 0, sesi: 0, absensi: 0, tugas: 0, latihan: 0 };
   const salah = [];
 
@@ -1075,8 +1090,27 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}, opts =
       // peringatan identitas tidak salah tuduh.
       if (cariPemilikDok(indeksNonaktif, dok, { fieldId, fieldNama })) {
         logSiswaNonaktif[jenis] = (logSiswaNonaktif[jenis] || 0) + 1;
+      } else if (aliasAktif && kunciIdentitasLog(dok, fieldId, fieldNama) && aliasAktif[kunciIdentitasLog(dok, fieldId, fieldNama)]) {
+        // v1.5.1: REPARASI NON-DESTRUKTIF — log yatim yang sudah dipasangkan
+        // admin ke siswa benar lewat alias settings dihitung ke siswa tujuan
+        // (log asli TIDAK ditulis ulang; pemetaan hidup di settings/audit).
+        const tujuan = aliasAktif[kunciIdentitasLog(dok, fieldId, fieldNama)];
+        const pemilikAlias = indeks.find((e) => e.idSet.has(tujuan) || e.kunci === tujuan);
+        if (pemilikAlias) {
+          logDireparasi[jenis] = (logDireparasi[jenis] || 0) + 1;
+          return bucket.get(pemilikAlias.kunci);
+        }
+        takDikenal[jenis] = (takDikenal[jenis] || 0) + 1;
       } else {
         takDikenal[jenis] = (takDikenal[jenis] || 0) + 1;
+        // v1.5.1: contoh identitas yatim per kunci supaya tool reparasi admin
+        // bisa menampilkan SIAPA yang harus dipasangkan (bukan cuma jumlah).
+        const kunciLog = kunciIdentitasLog(dok, fieldId, fieldNama) || '(tanpa identitas)';
+        if (Object.keys(identitasTakDikenal).length < 60) {
+          const ent = (identitasTakDikenal[kunciLog] = identitasTakDikenal[kunciLog]
+            || { kuis: 0, sesi: 0, absensi: 0, tugas: 0, latihan: 0 });
+          ent[jenis] += 1;
+        }
       }
       return null;
     }
@@ -1193,6 +1227,8 @@ export function hitungRaportSemuaSiswa(dataMentah = {}, periodeOpts = {}, opts =
     ringkasan: buatRingkasan(hasilSiswa, {
       logTakDikenal: takDikenal,
       logLuarSaringan,
+      logDireparasi,
+      identitasTakDikenal,
       logSiswaNonaktif: daftarNonaktif.length ? logSiswaNonaktif : null,
       siswaDikecualikan: daftarNonaktif.length
         ? { jumlah: daftarNonaktif.length, daftar: daftarNonaktif.slice(0, 20) }

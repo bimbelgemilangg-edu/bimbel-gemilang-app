@@ -21,6 +21,7 @@ import {
   petaTampil, rekomendasiTampil, deskripsiMapel, bersihkanV1,
 } from '../../utils/raportCetak';
 import { predikatDariNilai } from '../../utils/raportOtomatis';
+import { narasiCapaianSiswa } from '../../utils/laporanBelajar';
 
 const gayaKartu = { background: 'white', borderRadius: 16, padding: 16, border: '1px solid #e2e8f0', marginBottom: 16 };
 const gayaMini = { border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 10px', background: '#f8fafc', fontSize: 11, flex: '1 1 150px' };
@@ -115,7 +116,7 @@ function RadarDimensi({ proses, akademik, isMobile }) {
   );
 }
 
-export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
+export default function RapotOtomatisSiswa({ grup = [], isMobile = false, capaianPerPeriode = {} }) {
   const [periodeSel, setPeriodeSel] = useState(null);
   const entri = grup.find((g) => g.periode === periodeSel) || grup[0] || null;
   if (!entri) return null;
@@ -194,6 +195,18 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false }) {
         {proses && proses.kelayakan && !proses.kelayakan.layakTerbit && (
           <div style={{ marginTop: 8, fontSize: 11, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px' }}>
             {proses.kelayakan.alasan || 'Sebagian capaian masih dilengkapi dari asesmen berikutnya; semua angka yang tampil berasal dari aktivitas nyata.'}
+          </div>
+        )}
+        {/* v1.5.1: capaian yang dinilai tentor (laporan_belajar) — siswa melihat
+            penilaian tentornya dengan bahasa yang sama seperti PDF orang tua. */}
+        {(capaianPerPeriode[entri.periode] || []).length > 0 && (
+          <div style={{ marginTop: 12, background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 12, padding: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#3730a3' }}>✍️ Laporan dari Tentor — capaian dinilai tentor</div>
+            {(capaianPerPeriode[entri.periode] || []).map((d, i) => (
+              <div key={`${d.kodeMapel || i}`} style={{ marginTop: 6, fontSize: 11.5, color: '#1e293b', lineHeight: 1.6 }}>
+                <b>{d.namaMapel || d.kodeMapel || 'Capaian'}.</b> {narasiCapaianSiswa(d, {})}
+              </div>
+            ))}
           </div>
         )}
       </div>

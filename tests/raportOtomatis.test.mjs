@@ -697,5 +697,38 @@ uji('v1.5: siswa tanpa asesmen sama sekali → profil bukti semua T3, layakTerbi
   assert.equal(t.akademik.rataRata, null);
 });
 
+uji('v1.5.1 reparasi identitas: alias menyelamatkan log yatim tanpa menulis ulang log', () => {
+  const kuisYatim = (modul, tgl) => ({
+    studentNim: 'NIM-LAMA-1', studentName: 'Ali Lama', subject: 'Matematika', modulTitle: modul,
+    score: 80, correctAnswers: 8, totalQuestions: 10, timeUsed: 600,
+    isAutoSubmit: false, cheatViolationCount: 0, submittedAt: ts(tgl),
+  });
+  const data = {
+    siswa: [{ id: 'docA', studentId: 'smp-9', nama: 'Ali', jenjang: 'SMP/MTs', kelasSekolah: '8' }],
+    paket: [], sesi: [], absensi: [], tugas: [], nilaiGuru: [], progresSoal: [], soalMeta: {}, progresSiswa: [],
+    kuis: [
+      kuisYatim('X', '2026-10-05T03:00:00Z'),
+      kuisYatim('Y', '2026-10-06T03:00:00Z'),
+      { studentNim: 'smp-9', studentName: 'Ali', subject: 'Matematika', modulTitle: 'Z', score: 70, correctAnswers: 7, totalQuestions: 10, timeUsed: 600, isAutoSubmit: false, cheatViolationCount: 0, submittedAt: ts('2026-10-07T03:00:00Z') },
+    ],
+  };
+  // Tanpa alias: 2 kuis yatim + identitasnya TERCATAT untuk tool reparasi.
+  const tanpa = hitungRaportSemuaSiswa(data, { bulan: '2026-10' });
+  assert.equal(tanpa.ringkasan.logTakDikenal.kuis, 2);
+  assert.equal(tanpa.ringkasan.identitasTakDikenal['NIM-LAMA-1'].kuis, 2);
+  // Dengan alias: log masuk bucket siswa tujuan; direparasi tercatat jujur.
+  const dengan = hitungRaportSemuaSiswa(data, { bulan: '2026-10' }, { aliasIdentitas: { 'NIM-LAMA-1': 'smp-9' } });
+  assert.equal(dengan.ringkasan.logTakDikenal.kuis, 0);
+  assert.equal(dengan.ringkasan.logDireparasi.kuis, 2);
+  const ali = dengan.siswa.find((s) => s.studentId === 'smp-9');
+  const mtk = ali.akademik.perMapel.find((m) => m.kode === 'mtk');
+  assert.equal(mtk.titikData, 3); // 2 kuis alias + 1 kuis asli
+  assert.equal(mtk.tier, 'T2');   // 1 komponen → gambaran awal, bukan T1
+  // Alias ke siswa yang tidak ada = jujur tetap yatim (tidak mengarang).
+  const salah = hitungRaportSemuaSiswa(data, { bulan: '2026-10' }, { aliasIdentitas: { 'NIM-LAMA-1': 'TIDAK-ADA' } });
+  assert.equal(salah.ringkasan.logTakDikenal.kuis, 2);
+  assert.equal(salah.ringkasan.logDireparasi.kuis, 0);
+});
+
 console.log(`\n${gagal === 0 ? '✅' : '❌'} raportOtomatis: ${lulus} lulus, ${gagal} gagal`);
 process.exit(gagal === 0 ? 0 : 1);

@@ -40,14 +40,42 @@ import { db } from '../../firebase';
 import {
   hitungRaportSemuaSiswa, rentangPeriode, bangunDokumenRaport,
   bolehTimpaRaportFinal, VERSI_MESIN, MAPEL_PROSES, cocokSasaran, buatRingkasan,
+  alasanSiswaNonaktif,
 } from '../../utils/raportOtomatis';
 import { htmlRaportSiswa, htmlRaportMassal, judulCetakRaport, labelPeriodeManusiawi } from '../../utils/raportCetak';
 import { cetakLewatIframe } from '../../utils/kwitansi';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
 import { catatAudit, aktorSaatIni, KATEGORI } from '../../utils/auditLog';
-import { FIELD_LAPORAN_BELAJAR, bentukSakelarLaporan, pengisianDibuka, tombolSakelarLaporan } from '../../utils/laporanBelajar';
+import { FIELD_LAPORAN_BELAJAR, bentukSakelarLaporan, pengisianDibuka, tombolSakelarLaporan, mapelDiampuGuru, filterSiswaUntukGuru, statusPengisianSiswa } from '../../utils/laporanBelajar';
 
 const gayaKartu = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 };
+
+/** v1.5.1: satu baris tool reparasi identitas — pilihan siswa tujuan disimpan
+ *  lokal sampai admin menekan "Pasangkan" (non-destruktif via alias settings). */
+function BarisReparasi({ kunci, hit, kandidat, sedang, onSimpan }) {
+  const [pilih, setPilih] = useState('');
+  const total = Object.values(hit).reduce((a, b) => a + b, 0);
+  const rincian = Object.entries(hit).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(', ');
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', border: '1px solid #fde68a', background: '#fffbeb', borderRadius: 8, padding: '6px 10px', marginTop: 6 }}>
+      <div style={{ flex: '1 1 240px', fontSize: 11.5, color: '#78350f' }}>
+        <b>{kunci}</b> <span style={{ color: '#a16207' }}>· {total} log ({rincian})</span>
+      </div>
+      <select value={pilih} onChange={(e) => setPilih(e.target.value)} style={{ padding: '5px 8px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 11.5, flex: '1 1 200px' }}>
+        <option value="">— pilih siswa tujuan —</option>
+        {kandidat.map((s) => (
+          <option key={s.id} value={s.studentId || s.id}>
+            {s.nama || s.name} · {s.studentId || s.id} · {s.kelas || s.kelasSekolah || ''}
+          </option>
+        ))}
+      </select>
+      <button type="button" disabled={!pilih || sedang} onClick={() => onSimpan(kunci, pilih)}
+        style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#b45309', color: '#fff', fontWeight: 700, fontSize: 11, cursor: pilih && !sedang ? 'pointer' : 'default', opacity: pilih && !sedang ? 1 : 0.6 }}>
+        {sedang ? '…' : '🔧 Pasangkan'}
+      </button>
+    </div>
+  );
+}
 const gayaTh = { border: '1px solid #cbd5e1', padding: '5px 8px', textAlign: 'left', background: '#f1f5f9', fontSize: 11.5 };
 const gayaTd = { border: '1px solid #cbd5e1', padding: '5px 8px', fontSize: 11.5, verticalAlign: 'top' };
 
@@ -92,13 +120,17 @@ export default function RaportOtomatisPage() {
   // dihitung; tabel & tombol cetak hanya boleh tampil bila kunci cocok — baris basi
   // dari filter lain TAK BOLEH terlihat sedetik pun (insiden 31 Okt 2026: label
   // '7 SMP' masih menampilkan baris hitungan 'Semua SMP' selama hitung sinkron berjalan).
-  const kunciFilterAktif = [jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan].join('|');
+  const kunciAlias = Object.entries(aliasIdentitas).map(([k, v]) => `${k}>${v}`).sort().join(',');
+  const kunciFilterAktif = [jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan, kunciAlias].join('|');
 
   // ---------------- hasil hitung & terbit ----------------
   const [hasil, setHasil] = useState(null);
   const [sedangMenghitung, setSedangMenghitung] = useState(false);
   const urutanHitung = useRef(0); // penanda balapan antar hitungan pratinjau
   const [petaCapaian, setPetaCapaian] = useState({}); // v1.5: studentId -> jumlah dok capaian tentor periode pratinjau
+  const [aliasIdentitas, setAliasIdentitas] = useState({}); // v1.5.1: kunci log yatim -> studentId benar
+  const [sedangAlias, setSedangAlias] = useState('');
+  const [rekapGuru, setRekapGuru] = useState(null); // v1.5.1: progres pengisian per guru
   const [dibuka, setDibuka] = useState(null); // studentId baris yang diperluas
   const [paksa, setPaksa] = useState(false);
   const [alasanPaksa, setAlasanPaksa] = useState('');
@@ -205,7 +237,13 @@ export default function RaportOtomatisPage() {
   useEffect(() => {
     let batal = false;
     getDoc(doc(db, 'settings', 'global_config'))
-      .then((snap) => { if (!batal) setSakelarLaporan((snap.data() || {})[FIELD_LAPORAN_BELAJAR] || null); })
+      .then((snap) => {
+        if (batal) return;
+        const data = snap.data() || {};
+        setSakelarLaporan(data[FIELD_LAPORAN_BELAJAR] || null);
+        // v1.5.1: alias reparasi identitas hidup di dokumen settings yang sama.
+        setAliasIdentitas(data.aliasIdentitas && typeof data.aliasIdentitas === 'object' ? data.aliasIdentitas : {});
+      })
       .catch(() => { if (!batal) setSakelarLaporan(null); });
     return () => { batal = true; };
   }, []);
@@ -251,7 +289,7 @@ export default function RaportOtomatisPage() {
       // v1.1: mesin melihat SEMUA siswa (supaya logTakDikenal = orphan SUNGGUHAN,
       // bukan siswa di luar filter), lalu hasil disubset sesuai sasaran.
       const sasaran = { jenjang: jenjang === 'Semua' ? '' : jenjang, kelas: kelas === 'Semua' ? '' : kelas };
-      const h = hitungRaportSemuaSiswa(mentah, periodeOpts, { sasaran });
+      const h = hitungRaportSemuaSiswa(mentah, periodeOpts, { sasaran, aliasIdentitas });
       const subset = h.siswa.filter((r) => cocokSasaran(r, sasaran));
       setHasil({
         ...h,
@@ -287,7 +325,7 @@ export default function RaportOtomatisPage() {
     // v1.1: pola sama dengan pratinjau — mesin melihat semua siswa, yang
     // DITERBITKAN hanya subset sasaran (audit & dokumen konsisten tabel).
     const sasaran = { jenjang: jenjang === 'Semua' ? '' : jenjang, kelas: kelas === 'Semua' ? '' : kelas };
-    const hSemua = hitungRaportSemuaSiswa(mentah, optsPeriode, { sasaran });
+    const hSemua = hitungRaportSemuaSiswa(mentah, optsPeriode, { sasaran, aliasIdentitas });
     const subset = hSemua.siswa.filter((r) => cocokSasaran(r, sasaran));
     const h = {
       ...hSemua,
@@ -346,7 +384,7 @@ export default function RaportOtomatisPage() {
       }
     }
     return { ditulis, dilewati, gagal, daftarDilewati, periode: jendela.label, ringkasan: h.ringkasan };
-  }, [mentah, jenjang, kelas, paksa, alasanPaksa]);
+  }, [mentah, jenjang, kelas, paksa, alasanPaksa, aliasIdentitas]);
 
   const terbitkan = useCallback(async () => {
     if (!hasil) return;
@@ -477,6 +515,112 @@ export default function RaportOtomatisPage() {
       .catch(() => { if (!batal) setPetaCapaian({}); });
     return () => { batal = true; };
   }, [hasil?.periode?.label, ambilLaporanGuru]);
+
+  // v1.5.1: REPARASI IDENTITAS non-destruktif — kunci log yatim dipasangkan ke
+  // siswa benar; pemetaan hidup di settings/global_config.aliasIdentitas dan
+  // dipakai mesin saat pratinjau/terbit (log asli TIDAK pernah ditulis ulang).
+  const kandidatSiswaUntuk = useCallback((kunci) => {
+    const k = String(kunci || '').toLowerCase().trim();
+    if (!k) return [];
+    const daftar = (mentah?.siswa || []).filter((s) => s && s.id && !alasanSiswaNonaktif(s));
+    const skor = (s) => {
+      const sid = String(s.studentId || s.nim || '').toLowerCase();
+      if (sid && (sid === k || k.includes(sid) || sid.includes(k))) return 100;
+      const tokenK = k.split(/[^a-z0-9]+/).filter(Boolean);
+      const tokenN = String(s.nama || s.name || '').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+      return tokenK.filter((t) => tokenN.includes(t)).length;
+    };
+    return daftar.map((s) => ({ s, sk: skor(s) })).filter((x) => x.sk > 0)
+      .sort((a, b) => b.sk - a.sk || String(a.s.nama || '').localeCompare(String(b.s.nama || '')))
+      .slice(0, 6).map((x) => x.s);
+  }, [mentah]);
+
+  const simpanAlias = useCallback(async (kunci, studentId) => {
+    if (!kunci || !studentId) return;
+    setSedangAlias(kunci);
+    try {
+      const berikutnya = { ...aliasIdentitas, [kunci]: studentId };
+      await setDoc(doc(db, 'settings', 'global_config'), { aliasIdentitas: berikutnya }, { merge: true });
+      setAliasIdentitas(berikutnya);
+      catatAudit('raport.reparasi-alias', {
+        kategori: KATEGORI.SISWA,
+        target: `Log yatim "${kunci}" dipasangkan ke ${studentId}`,
+        detail: { kunci, studentId },
+      });
+    } catch (e) {
+      alert(`Gagal menyimpan alias: ${e?.message || e}`);
+    } finally {
+      setSedangAlias('');
+    }
+  }, [aliasIdentitas]);
+
+  const hapusAlias = useCallback(async (kunci) => {
+    setSedangAlias(kunci);
+    try {
+      const berikutnya = { ...aliasIdentitas };
+      delete berikutnya[kunci];
+      await setDoc(doc(db, 'settings', 'global_config'), { aliasIdentitas: berikutnya }, { merge: true });
+      setAliasIdentitas(berikutnya);
+      catatAudit('raport.reparasi-alias-hapus', {
+        kategori: KATEGORI.SISWA,
+        target: `Alias log "${kunci}" dihapus`,
+        detail: { kunci },
+      });
+    } catch (e) {
+      alert(`Gagal menghapus alias: ${e?.message || e}`);
+    } finally {
+      setSedangAlias('');
+    }
+  }, [aliasIdentitas]);
+
+  // v1.5.1: REKAP PROGRES PENGISIAN LAPORAN BELAJAR per guru (baca-saja),
+  // hidup hanya saat periode pengisian dibuka admin.
+  useEffect(() => {
+    let batal = false;
+    const putus = pengisianDibuka(sakelarLaporan);
+    if (!putus.dibuka) { setRekapGuru(null); return undefined; }
+    (async () => {
+      try {
+        const [snapGuru, snapSiswa, snapLap] = await Promise.all([
+          getDocs(collection(db, 'teachers')),
+          getDocs(collection(db, 'students')),
+          getDocs(query(collection(db, 'laporan_belajar'), where('periode', '==', putus.periode))),
+        ]);
+        if (batal) return;
+        const semuaSiswa = snapSiswa.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const dokLap = {};
+        for (const d of snapLap.docs) {
+          const x = d.data();
+          dokLap[`${String(x.studentId || '')}__${String(x.kodeMapel || '').toLowerCase()}`] = x;
+        }
+        const baris = [];
+        for (const dg of snapGuru.docs) {
+          const guru = { id: dg.id, ...dg.data() };
+          for (const m of mapelDiampuGuru(guru)) {
+            const guruMapel = { ...guru, kodeMapel: m.kodeMapel, mapelDetails: [m] };
+            const daftar = filterSiswaUntukGuru(semuaSiswa, guruMapel);
+            let selesai = 0;
+            for (const s of daftar) {
+              const dok = dokLap[`${s.id}__${String(m.kodeMapel).toLowerCase()}`];
+              if (statusPengisianSiswa(dok) === 'selesai') selesai += 1;
+            }
+            baris.push({
+              guruId: guru.id || '',
+              nama: String(guru.nama || guru.name || guru.email || 'Tentor'),
+              mapel: String(m.namaMapel || m.kodeMapel),
+              total: daftar.length,
+              selesai,
+            });
+          }
+        }
+        baris.sort((a, b) => (a.selesai / Math.max(1, a.total)) - (b.selesai / Math.max(1, b.total)) || a.nama.localeCompare(b.nama));
+        if (!batal) setRekapGuru(baris);
+      } catch {
+        if (!batal) setRekapGuru([]);
+      }
+    })();
+    return () => { batal = true; };
+  }, [sakelarLaporan]);
 
   const cetakSatu = useCallback(async (r) => {
     try {
@@ -662,6 +806,25 @@ export default function RaportOtomatisPage() {
                 </button>
               )}
             </div>
+            {rekapGuru && rekapGuru.length > 0 && (
+              <div style={{ marginTop: 10, borderTop: '1px dashed #c7d2fe', paddingTop: 10 }}>
+                <b style={{ fontSize: 12.5, color: '#3730a3' }}>📈 Rekap progres pengisian per tentor — periode {sakelarLaporan?.periodeLabel || sakelarLaporan?.periode}</b>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                  {rekapGuru.map((r) => {
+                    const pct = r.total ? Math.round((r.selesai / r.total) * 100) : 100;
+                    return (
+                      <div key={`${r.guruId}-${r.mapel}`} style={{ flex: '1 1 220px', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 10px', background: '#f8fafc' }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 700, color: '#1e293b' }}>{r.nama} <span style={{ color: '#64748b', fontWeight: 400 }}>· {r.mapel}</span></div>
+                        <div style={{ fontSize: 11, color: '#475569', marginTop: 2 }}>{r.selesai}/{r.total} siswa selesai ({pct}%)</div>
+                        <div style={{ height: 6, background: '#e2e8f0', borderRadius: 99, marginTop: 5 }}>
+                          <div style={{ height: 6, width: `${pct}%`, background: pct === 100 ? '#16a34a' : '#4f46e5', borderRadius: 99 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -673,7 +836,7 @@ export default function RaportOtomatisPage() {
               <b style={{ fontSize: 14 }}>Pratinjau periode {h.periode.label}</b>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11.5, color: '#475569' }}>
-                  {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} bukti terukur penuh · {perluAksi.length} perlu rencana/aksi bukti · {h.ringkasan.totalPelanggaran} catatan pengawasan{h.ringkasan.siswaDikecualikan ? ` · ${h.ringkasan.siswaDikecualikan.jumlah} siswa nonaktif/diblokir dikecualikan` : ''}
+                  {h.ringkasan.totalSiswa} siswa · {h.ringkasan.layakTerbit} bukti terukur penuh · {perluAksi.length} perlu rencana/aksi bukti · {h.ringkasan.totalPelanggaran} catatan pengawasan{h.ringkasan.logDireparasi && Object.values(h.ringkasan.logDireparasi).reduce((a, b) => a + b, 0) > 0 ? ` · ${Object.values(h.ringkasan.logDireparasi).reduce((a, b) => a + b, 0)} log terselamatkan alias` : ''}{h.ringkasan.siswaDikecualikan ? ` · ${h.ringkasan.siswaDikecualikan.jumlah} siswa nonaktif/diblokir dikecualikan` : ''}
                 </span>
                 <button type="button" onClick={() => { setCetakSetelahTerbit(true); terbitkan(); }} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontWeight: 700, fontSize: 11.5, cursor: 'pointer' }}>
                   📄 Terbitkan & Cetak PDF ({h.ringkasan.totalSiswa} siswa)
@@ -686,6 +849,32 @@ export default function RaportOtomatisPage() {
             {h.ringkasan.logTakDikenal && Object.values(h.ringkasan.logTakDikenal).some((n) => n > 0) && (
               <div style={{ fontSize: 11.5, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
                 ⚠️ Ada log yang tidak cocok ke siswa mana pun (identitas berubah/hapus): {Object.entries(h.ringkasan.logTakDikenal).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(', ')}. Tidak dihitung — perbaiki identitas siswa bila perlu.
+              </div>
+            )}
+            {(Object.keys(h.ringkasan.identitasTakDikenal || {}).length > 0 || Object.keys(aliasIdentitas).length > 0) && (
+              <div style={{ border: '1px solid #fde68a', background: '#fffdf5', borderRadius: 8, padding: '8px 10px', marginBottom: 8 }}>
+                <b style={{ fontSize: 12.5, color: '#92400e' }}>🔧 Reparasi Identitas Log Yatim</b>
+                <div style={{ fontSize: 11, color: '#78350f', marginTop: 2, lineHeight: 1.5 }}>
+                  Pasangkan identitas log yang tak dikenali ke siswa yang benar. Pemetaan disimpan sebagai alias di settings (log asli TIDAK ditulis ulang), langsung dipakai pratinjau & penerbitan, dan tercatat di audit.
+                </div>
+                {Object.entries(h.ringkasan.identitasTakDikenal || {})
+                  .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0))
+                  .slice(0, 15)
+                  .map(([kunci, hit]) => (
+                    <BarisReparasi key={kunci} kunci={kunci} hit={hit} sedang={sedangAlias === kunci}
+                      kandidat={kandidatSiswaUntuk(kunci)} onSimpan={simpanAlias} />
+                  ))}
+                {Object.keys(aliasIdentitas).length > 0 && (
+                  <div style={{ marginTop: 8, fontSize: 11, color: '#475569' }}>
+                    <b>Alias aktif:</b>
+                    {Object.entries(aliasIdentitas).map(([kunci, tujuan]) => (
+                      <span key={kunci} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#ecfdf5', border: '1px solid #bbf7d0', borderRadius: 99, padding: '1px 8px', margin: '4px 4px 0 0' }}>
+                        {kunci} → {tujuan}
+                        <button type="button" onClick={() => hapusAlias(kunci)} disabled={sedangAlias === kunci} style={{ border: 'none', background: 'none', color: '#b91c1c', cursor: 'pointer', fontSize: 11, padding: 0 }} title="Hapus alias">×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {h.ringkasan.logLuarSaringan && Object.values(h.ringkasan.logLuarSaringan).some((n) => n > 0) && (
