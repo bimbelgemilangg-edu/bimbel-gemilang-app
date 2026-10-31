@@ -305,11 +305,13 @@ const SchedulePage = () => {
 
       // 4. Fetch mapel
       const mSnap = await getDocs(collection(db, "mapel"));
-      const mapelData = mSnap.docs.map(d => ({ 
-        id: d.id, 
-        ...d.data(),
-        kodeMapel: d.data().kodeMapel || 'MAPEL-' + String(d.id).slice(0, 4)
-      }));
+      const mapelData = mSnap.docs
+        .map(d => ({ 
+          id: d.id, 
+          ...d.data(),
+          kodeMapel: d.data().kodeMapel || 'MAPEL-' + String(d.id).slice(0, 4)
+        }))
+        .filter(m => !m.dinonaktifkan); // v1.5.4: varian hasil migrasi v2 disembunyikan
       setAvailableMapel(mapelData);
 
       // 5. Fetch daily code
@@ -339,7 +341,10 @@ const SchedulePage = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, [selectedDate]);
+  // fetchData sengaja TIDAK masuk deps: ia ditutup-ulang tiap render (bukan
+  // useCallback) dan effect ini hanya boleh jalan saat selectedDate berubah —
+  // pola yang sama dipakai halaman bank-soal (muat() + disable-line).
+  useEffect(() => { fetchData(); }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset filter kelas ketika jenjang berubah
   useEffect(() => {

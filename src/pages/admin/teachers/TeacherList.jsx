@@ -8,8 +8,10 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { isOwnerSession } from '../../../utils/roleAkses';
 import { daftarMapelUntuk } from '../../../utils/kurikulumMerdeka';
 import { kodeKurikulumDariNama, namaKurikulum, grupVarian } from '../../../utils/identitasMapel';
+import { katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel, transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik } from '../../../utils/katalogMapelGemilang';
+import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 import { db, auth } from '../../../firebase';
-import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, query, where, runTransaction, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, query, where, runTransaction, setDoc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { 
   createUserWithEmailAndPassword, 
   sendPasswordResetEmail 
@@ -154,6 +156,10 @@ const TeacherList = () => {
   });
   const [addingMapel, setAddingMapel] = useState(false);
   const [deletingMapel, setDeletingMapel] = useState(null);
+  // v1.5.4: migrasi pondasi mapel v2 (dry-run → konfirmasi → batch)
+  const [rencanaMigrasi, setRencanaMigrasi] = useState(null);
+  const [sedangMigrasi, setSedangMigrasi] = useState(''); // '' | 'rencana' | 'jalan'
+  const [konfirmasiMigrasi, setKonfirmasiMigrasi] = useState('');
   // v1.5.3: peta varian registry (dua nama resolve ke kode kurikulum sama) —
   // ditampilkan sebagai badge peringatan di daftar mapel.
   const varianGrup = grupVarian(mapelList.map((x) => x.namaMapel));
@@ -217,8 +223,10 @@ const TeacherList = () => {
     try {
       const snap = await getDocs(collection(db, "mapel"));
       const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      data.sort((a, b) => (a.namaMapel || '').localeCompare(b.namaMapel || ''));
-      setMapelList(data);
+      // v1.5.4: entri yang sudah dilebur migrasi v2 disembunyikan (dinonaktifkan)
+      const aktif = data.filter(d => !d.dinonaktifkan);
+      aktif.sort((a, b) => (a.namaMapel || '').localeCompare(b.namaMapel || ''));
+      setMapelList(aktif);
     } catch (error) {
       console.error("Error fetching mapel:", error);
     }
@@ -348,38 +356,48 @@ const TeacherList = () => {
         showAlert(`✅ Mapel "${namaTrim}" berhasil diperbarui!${affectedTeachers.length > 0 ? ` (${affectedTeachers.length} guru ikut disinkronkan)` : ''}`);
       } else {
         // MODE TAMBAH — mapel baru
-        // v1.5.3 GUARDRAIL ANAK-PINAK: mapel kurikulum hanya boleh masuk SATU
-        // kali (varian 'GEOGRAFI SMA' vs 'GEOGRAFI SMP' dst. ditolak); nama di
-        // luar peta Kurikulum Merdeka wajib konfirmasi sadar (program bimbel
-        // seperti TKA/English Course tetap sah, tapi ditandai 'lokal').
+        // v1.5.3 GUARDRAIL ANAK-PINAK + v1.5.4 KATALOG KANONIK: mapel yang
+        // dikenal katalog (kurikulum Merdeka, subtes UTBK/SNBT, program lokal
+        // sah) hanya boleh masuk SATU kali dengan kode & nama kanonik; nama di
+        // luar katalog wajib konfirmasi sadar (ditandai 'lokal').
         const sumber = mapelForm.sumberKurikulum || '';
         const kodeKurikulum = sumber && sumber !== '__lokal'
           ? sumber
           : kodeKurikulumDariNama(namaTrim);
-        if (kodeKurikulum) {
-          const duplikat = mapelList.find((m) => kodeKurikulumDariNama(m.namaMapel) === kodeKurikulum);
+        const kodeKanonik = kodeKurikulum || kodeKanonikDariNamaLama(namaTrim);
+        const entriKatalog = kodeKanonik
+          ? katalogMapelGemilang().find((k) => k.kode === kodeKanonik)
+          : null;
+        if (kodeKanonik) {
+          const duplikat = mapelList.find((m) =>
+            m.kodeMapel === kodeKanonik ||
+            kodeKanonikDariNamaLama(m.namaMapel) === kodeKanonik
+          );
           if (duplikat) {
-            showAlert(`❌ Mapel kurikulum "${namaKurikulum(kodeKurikulum)}" SUDAH terdaftar sebagai "${duplikat.namaMapel}" (${duplikat.kodeMapel}). Pakai yang sudah ada — varian baru ditolak agar data tidak beranak pinak.`, true);
+            const namaKanonik = entriKatalog?.nama || namaKurikulum(kodeKurikulum) || kodeKanonik;
+            showAlert(`❌ "${namaKanonik}" SUDAH terdaftar sebagai "${duplikat.namaMapel}" (${duplikat.kodeMapel}). Pakai yang sudah ada — entri ganda ditolak agar pondasi mapel tidak beranak pinak.`, true);
             setAddingMapel(false);
             return;
           }
         } else if (!mapelForm.sadarLokal) {
-          showAlert('❌ Nama ini tidak ada di peta Kurikulum Merdeka. Bila memang program/lokal (mis. TKA, English Course), centang kotak konfirmasi di bawah pilihan sumber.', true);
+          showAlert('❌ Nama ini tidak ada di katalog kanonik (Kurikulum Merdeka / subtes UTBK-SNBT / program sah). Bila memang program/lokal (mis. kelas bilingual khusus), centang kotak konfirmasi di bawah pilihan sumber.', true);
           setAddingMapel(false);
           return;
         }
-        const namaEfektif = kodeKurikulum ? (namaKurikulum(kodeKurikulum) || namaTrim) : namaTrim;
-        const kodeMapel = await generateMapelId();
+        const namaEfektif = entriKatalog?.nama || (kodeKurikulum ? (namaKurikulum(kodeKurikulum) || namaTrim) : namaTrim);
+        // v1.5.4: entri katalog memakai kode kanonik sebagai kodeMapel (bukan
+        // MAPEL-XXX acak) supaya mesin raport/taksonomi langsung mengenalnya.
+        const kodeMapel = kodeKanonik || await generateMapelId();
         await addDoc(collection(db, "mapel"), {
           namaMapel: namaEfektif,
           deskripsi: mapelForm.deskripsi || '',
           kodeMapel: kodeMapel,
           kodeKurikulum: kodeKurikulum || '',
-          kategoriMapel: kodeKurikulum ? 'kurikulum' : 'lokal',
+          kategoriMapel: entriKatalog?.kelompok || (kodeKurikulum ? 'kurikulum' : 'lokal'),
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
-        showAlert(`✅ Mapel "${namaEfektif}" berhasil ditambahkan! (${kodeMapel}${kodeKurikulum ? ` · kurikulum ${kodeKurikulum}` : ' · lokal/program'})`);
+        showAlert(`✅ Mapel "${namaEfektif}" berhasil ditambahkan! (${kodeMapel}${kodeKurikulum ? ` · kurikulum ${kodeKurikulum}` : (entriKatalog ? ' · katalog kanonik' : ' · lokal/program')})`);
       }
 
       setShowMapelModal(false);
@@ -406,6 +424,180 @@ const TeacherList = () => {
   const handleCancelEditMapel = () => {
     setEditingMapelId(null);
     setMapelForm({ namaMapel: '', deskripsi: '', kodeMapel: '', sumberKurikulum: '', sadarLokal: false });
+  };
+
+  // ===== v1.5.4 MIGRASI PONDASI MAPEL v2 (dry-run → konfirmasi → batch) =====
+  // Owner: "ganti semua dan daftarin ulang guru lagi semua yang lebih rapi".
+  // Rencana dihitung fungsi MURNI katalogMapelGemilang; eksekusi di sini:
+  //  1) pastikan dokumen kanonik (reuse induk bila nama sudah kanonik),
+  //  2) tulis ulang referensi guru (mapelDetails/mapelIds/mapel/kodeMapel),
+  //  3) tulis ulang enrolledSubjects siswa (dedupe kode kanonik),
+  //  4) nonaktifkan varian yang dilebur + audit lengkap.
+  const hitungRencanaMigrasi = async () => {
+    setSedangMigrasi('rencana');
+    try {
+      const [snapGuru, snapSiswa] = await Promise.all([
+        getDocs(collection(db, 'teachers')),
+        getDocs(collection(db, 'students')),
+      ]);
+      const guruPerKode = {};
+      for (const dg of snapGuru.docs) {
+        const t = dg.data();
+        const details = t.mapelDetails || [];
+        const kode = new Set([
+          ...details.map((m) => m.kodeMapel || ''),
+          ...(String(t.kodeMapel || '').split(',').map((x) => x.trim())),
+        ]);
+        for (const k of kode) if (k) guruPerKode[k] = (guruPerKode[k] || 0) + 1;
+      }
+      const siswaPerKode = {};
+      for (const ds of snapSiswa.docs) {
+        for (const k of (ds.data().enrolledSubjects || [])) {
+          if (k) siswaPerKode[k] = (siswaPerKode[k] || 0) + 1;
+        }
+      }
+      const rencana = rencanaMigrasiMapel(mapelList, { guruPerKode, siswaPerKode });
+      rencana.jumlahGuru = snapGuru.size;
+      rencana.jumlahSiswa = snapSiswa.size;
+      // v1.5.4: owner minta katalog kanonik LENGKAP terdaftar ("masukkan
+      // semua") — entri katalog yang belum ada di registry ikut dibuat.
+      const kodeTarget = new Set(rencana.target.map((t) => t.kode));
+      rencana.entriBaru = katalogMapelGemilang().filter((k) => !kodeTarget.has(k.kode));
+      setRencanaMigrasi(rencana);
+    } catch (e) {
+      showAlert(`❌ Gagal menghitung rencana migrasi: ${e?.message || e}`, true);
+    }
+    setSedangMigrasi('');
+  };
+
+  const jalankanMigrasiMapel = async () => {
+    if (!rencanaMigrasi || konfirmasiMigrasi.trim().toUpperCase() !== 'MIGRASI') {
+      showAlert('❌ Ketik MIGRASI pada kotak konfirmasi untuk menjalankan.', true);
+      return;
+    }
+    setSedangMigrasi('jalan');
+    try {
+      const rencana = rencanaMigrasi;
+      const petaKode = rencana.petaKode;
+      const petaNama = rencana.petaNama;
+      // Fase 1: dokumen kanonik.
+      const petaDocId = {}; // id dokumen lama -> id dokumen kanonik
+      let dibuat = 0;
+      const kurOf = (kelompok, kode) => (String(kelompok).startsWith('sekolah') ? kode : '');
+      // Fase 0: seed entri katalog yang belum pernah terdaftar (mis. subtes
+      // UTBK/SNBT atau mapel jenjang yang bimbel belum buka) — owner: daftar
+      // ulang pondasi LENGKAP, bukan cuma melebur yang lama.
+      for (const k of (rencana.entriBaru || [])) {
+        await addDoc(collection(db, 'mapel'), {
+          namaMapel: k.nama, deskripsi: `Katalog kanonik v2 (${k.kelompok})`, kodeMapel: k.kode,
+          kodeKurikulum: kurOf(k.kelompok, k.kode), kategoriMapel: k.kelompok,
+          createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        });
+        dibuat += 1;
+      }
+      for (const t of rencana.target) {
+        const induk = mapelList.find((m) => m.id === t.indukId);
+        let idKanonik = t.indukId;
+        if (t.butuhUbahNama || !induk) {
+          if (induk) {
+            await updateDoc(doc(db, 'mapel', induk.id), {
+              namaMapel: t.nama, kodeMapel: t.kode, kodeKurikulum: kurOf(t.kelompok, t.kode),
+              kategoriMapel: t.kelompok, updatedAt: serverTimestamp(),
+            });
+          } else {
+            const ref = await addDoc(collection(db, 'mapel'), {
+              namaMapel: t.nama, deskripsi: `Kanonik v2 (${t.kelompok})`, kodeMapel: t.kode,
+              kodeKurikulum: kurOf(t.kelompok, t.kode), kategoriMapel: t.kelompok,
+              createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+            });
+            idKanonik = ref.id;
+            dibuat += 1;
+          }
+        } else {
+          await updateDoc(doc(db, 'mapel', induk.id), {
+            kodeMapel: t.kode, kodeKurikulum: kurOf(t.kelompok, t.kode), kategoriMapel: t.kelompok,
+            dinonaktifkan: false, updatedAt: serverTimestamp(),
+          });
+        }
+        if (t.indukId) petaDocId[t.indukId] = idKanonik;
+        for (const v of t.varianDinonaktifkan) if (v.id) petaDocId[v.id] = idKanonik;
+      }
+      // Fase 2+3: tulis ulang referensi guru & siswa (batch 300).
+      const [snapGuru, snapSiswa] = await Promise.all([
+        getDocs(collection(db, 'teachers')),
+        getDocs(collection(db, 'students')),
+      ]);
+      let batch = writeBatch(db);
+      let nBatch = 0;
+      let guruDiubah = 0;
+      let siswaDiubah = 0;
+      const commitIfNeeded = async () => {
+        if (nBatch >= 300) { await batch.commit(); batch = writeBatch(db); nBatch = 0; }
+      };
+      for (const dg of snapGuru.docs) {
+        const t = { id: dg.id, ...dg.data() };
+        const baru = transformGuruKeKodeKanonik(t, petaKode, petaNama);
+        const details = baru.mapelDetails.map((m) => ({ ...m, id: petaDocId[m.id] || m.id }));
+        const payload = {
+          ...baru,
+          mapelDetails: details,
+          mapelIds: details.map((m) => m.id).filter(Boolean),
+          mapelId: details[0]?.id || '',
+          updatedAt: serverTimestamp(),
+        };
+        const sama = JSON.stringify((t.mapelDetails || []).map((m) => [m.id, m.kodeMapel, m.namaMapel]))
+          === JSON.stringify(details.map((m) => [m.id, m.kodeMapel, m.namaMapel]));
+        if (!sama) {
+          batch.update(doc(db, 'teachers', t.id), payload);
+          nBatch += 1;
+          guruDiubah += 1;
+          await commitIfNeeded();
+        }
+      }
+      for (const ds of snapSiswa.docs) {
+        const s = { id: ds.id, ...ds.data() };
+        if (!Array.isArray(s.enrolledSubjects) || s.enrolledSubjects.length === 0) continue;
+        const baru = transformSiswaKeKodeKanonik(s, petaKode);
+        if (JSON.stringify(baru.enrolledSubjects) !== JSON.stringify(s.enrolledSubjects)) {
+          batch.update(doc(db, 'students', s.id), {
+            enrolledSubjects: baru.enrolledSubjects, updatedAt: serverTimestamp(),
+          });
+          nBatch += 1;
+          siswaDiubah += 1;
+          await commitIfNeeded();
+        }
+      }
+      // Fase 4: nonaktifkan varian yang dilebur.
+      for (const v of rencana.nonaktif) {
+        if (!v.id) continue;
+        batch.update(doc(db, 'mapel', v.id), {
+          dinonaktifkan: true, digantikanKode: v.keKode, updatedAt: serverTimestamp(),
+        });
+        nBatch += 1;
+      }
+      if (nBatch > 0) await batch.commit();
+      catatAuditMapelMigrasi({
+        disemai: (rencana.entriBaru || []).length, dibuat, guruDiubah, siswaDiubah,
+        varian: rencana.nonaktif.length,
+      });
+      showAlert(`✅ Migrasi pondasi mapel v2 selesai: ${dibuat} dokumen kanonik dibuat, ${guruDiubah} guru & ${siswaDiubah} siswa dipetakan ulang, ${rencana.nonaktif.length} varian dinonaktifkan.`);
+      setRencanaMigrasi(null);
+      setKonfirmasiMigrasi('');
+      await Promise.all([fetchMapel(), fetchTeachers()]);
+    } catch (e) {
+      showAlert(`❌ Migrasi gagal di tengah jalan (aman: batch yang sudah commit tetap konsisten): ${e?.message || e}`, true);
+    }
+    setSedangMigrasi('');
+  };
+
+  const catatAuditMapelMigrasi = (detail) => {
+    try {
+      catatAudit('mapel.migrasi-v2', {
+        kategori: KATEGORI.KONTEN,
+        target: 'Migrasi pondasi mapel v2 (katalog kanonik)',
+        detail,
+      });
+    } catch { /* audit gagal tidak boleh membatalkan migrasi */ }
   };
 
   // 🔥 BARU: hapus mapel, dengan pengaman -- kalau masih ada guru yang
@@ -1063,6 +1255,117 @@ const TeacherList = () => {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* 🔥 v1.5.4: PONDASI MAPEL v2 — panel migrasi katalog kanonik.
+                  Owner: "ganti semua dan daftarin ulang … ini akar/pondasi".
+                  Alur: Hitung Rencana (dry-run murni) → tinjau → ketik MIGRASI
+                  → eksekusi batch (dokumen kanonik, guru, siswa, nonaktifkan
+                  varian) → audit mapel.migrasi-v2. */}
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid #f1f5f9' }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Database size={14} color="#7c3aed" /> Pondasi Mapel v2 — Migrasi ke Katalog Kanonik
+                </h4>
+                <p style={{ margin: '0 0 10px', fontSize: 11, color: '#64748b', lineHeight: 1.6 }}>
+                  Merapikan SEMUA entri ke katalog kanonik (mapel sekolah Kurikulum Merdeka + subtes UTBK/SNBT
+                  termasuk Penalaran Umum/PU + program lokal), memetakan ulang guru &amp; siswa ke kode baru, lalu
+                  menonaktifkan varian lama. Klik <strong>Hitung Rencana</strong> dulu — <strong>tidak ada data yang
+                  berubah</strong> sebelum Anda mengetik <strong>MIGRASI</strong>.
+                </p>
+                {!rencanaMigrasi ? (
+                  <button
+                    type="button"
+                    onClick={hitungRencanaMigrasi}
+                    disabled={sedangMigrasi === 'rencana'}
+                    style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 700, cursor: sedangMigrasi === 'rencana' ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, opacity: sedangMigrasi === 'rencana' ? 0.6 : 1 }}
+                  >
+                    <ClipboardCheck size={14} /> {sedangMigrasi === 'rencana' ? 'Menghitung rencana…' : 'Hitung Rencana Migrasi (dry-run)'}
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {[
+                        { l: 'Entri kanonik hasil lebur', v: rencanaMigrasi.target.length, c: '#7c3aed' },
+                        { l: 'Entri katalog baru (disemai)', v: rencanaMigrasi.entriBaru?.length ?? 0, c: '#166534' },
+                        { l: 'Varian dinonaktifkan', v: rencanaMigrasi.nonaktif.length, c: '#b91c1c' },
+                        { l: 'Dibiarkan (tak terpeta)', v: rencanaMigrasi.takTerpeta.length, c: '#b45309' },
+                        { l: 'Guru diperiksa', v: rencanaMigrasi.jumlahGuru ?? '—', c: '#0369a1' },
+                        { l: 'Siswa diperiksa', v: rencanaMigrasi.jumlahSiswa ?? '—', c: '#0369a1' },
+                      ].map((s) => (
+                        <div key={s.l} style={{ border: `1px solid ${s.c}33`, background: `${s.c}0d`, borderRadius: 8, padding: '6px 10px', fontSize: 11 }}>
+                          <span style={{ fontWeight: 800, color: s.c, fontSize: 14, marginRight: 4 }}>{s.v}</span>
+                          <span style={{ color: '#475569' }}>{s.l}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {(rencanaMigrasi.entriBaru?.length ?? 0) > 0 && (
+                      <details style={{ fontSize: 11, color: '#475569' }}>
+                        <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#166534' }}>
+                          🌱 {rencanaMigrasi.entriBaru.length} entri katalog akan DIBUAT baru (belum pernah terdaftar)
+                        </summary>
+                        <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {rencanaMigrasi.entriBaru.map((k) => (
+                            <span key={k.kode} style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 99, padding: '1px 8px' }}>
+                              {k.nama} <code style={{ fontSize: 9 }}>{k.kode}</code>
+                            </span>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                    <div style={{ maxHeight: 180, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                        <thead>
+                          <tr style={{ background: '#f8fafc', position: 'sticky', top: 0 }}>
+                            {['Kode kanonik', 'Nama baru', 'Dari entri lama', 'Varian dilebur'].map((h) => (
+                              <th key={h} style={{ textAlign: 'left', padding: '6px 8px', color: '#64748b', fontWeight: 700, borderBottom: '1px solid #e2e8f0' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rencanaMigrasi.target.map((t) => (
+                            <tr key={t.kode} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '5px 8px', fontFamily: 'monospace', color: '#7c3aed', fontWeight: 700 }}>{t.kode}</td>
+                              <td style={{ padding: '5px 8px', color: '#1e293b' }}>{t.nama}{t.butuhUbahNama && <span style={{ marginLeft: 4, color: '#b45309' }}>(ganti nama)</span>}</td>
+                              <td style={{ padding: '5px 8px', color: '#64748b' }}>{t.namaIndukLama || '—'} <span style={{ fontFamily: 'monospace', fontSize: 9 }}>{t.indukKodeLama}</span></td>
+                              <td style={{ padding: '5px 8px', color: '#b91c1c' }}>{t.varianDinonaktifkan.length > 0 ? t.varianDinonaktifkan.map((v) => v.nama).join(', ') : '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {rencanaMigrasi.takTerpeta.length > 0 && (
+                      <div style={{ fontSize: 11, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px' }}>
+                        ⚠️ {rencanaMigrasi.takTerpeta.length} entri tak dikenali katalog dan <strong>dibiarkan aktif apa adanya</strong> (tidak dihapus, tidak ditebak):{' '}
+                        {rencanaMigrasi.takTerpeta.map((x) => x.nama || x.kodeLama).join(', ')}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input
+                        type="text"
+                        value={konfirmasiMigrasi}
+                        onChange={(e) => setKonfirmasiMigrasi(e.target.value)}
+                        placeholder='Ketik "MIGRASI" untuk konfirmasi'
+                        style={{ ...styles.formInput, maxWidth: 240, fontFamily: 'monospace', letterSpacing: 2 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={jalankanMigrasiMapel}
+                        disabled={sedangMigrasi === 'jalan' || konfirmasiMigrasi.trim().toUpperCase() !== 'MIGRASI'}
+                        style={{ background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, cursor: sedangMigrasi === 'jalan' ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, opacity: (sedangMigrasi === 'jalan' || konfirmasiMigrasi.trim().toUpperCase() !== 'MIGRASI') ? 0.5 : 1 }}
+                      >
+                        <Database size={14} /> {sedangMigrasi === 'jalan' ? 'Migrasi berjalan…' : 'Jalankan Migrasi Sekarang'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setRencanaMigrasi(null); setKonfirmasiMigrasi(''); }}
+                        disabled={sedangMigrasi === 'jalan'}
+                        style={styles.btnCancel}
+                      >
+                        Tutup Rencana
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

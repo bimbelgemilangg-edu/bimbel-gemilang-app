@@ -197,7 +197,7 @@ const EditStudent = () => {
         // sama dipakai halaman Kelola Guru) buat checkbox akses manual.
         try {
           const mapelSnap = await getDocs(collection(db, "mapel"));
-          setMapelList(mapelSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.namaMapel || '').localeCompare(b.namaMapel || '')));
+          setMapelList(mapelSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => !m.dinonaktifkan).sort((a, b) => (a.namaMapel || '').localeCompare(b.namaMapel || '')));
         } catch (e) {
           console.error("Gagal memuat daftar mapel:", e);
         }
