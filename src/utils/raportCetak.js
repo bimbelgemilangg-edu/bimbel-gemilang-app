@@ -29,6 +29,7 @@
 
 import { WATERMARK } from './fieldButirSoal.js';
 import { predikatDariNilai, KALIBRASI_V1 } from './raportOtomatis.js';
+import { narasiCapaianSiswa, ringkasBahanOtomatis } from './laporanBelajar.js';
 
 // ------------------------------------------------------------
 // DASAR
@@ -484,7 +485,7 @@ const fmtTglPanjang = (iso) => {
 /** Susun model tampilan dari dokumen snapshot. Semua field defensif:
  * dokumen terbit sebagian/tanpa blok proses tetap bisa dicetak jujur. */
 export function siapkanModelRaport({
-  dokAkademik = [], dokProses = null, catatanGuru = '', identitas = {},
+  dokAkademik = [], dokProses = null, catatanGuru = '', identitas = {}, laporanGuru = [],
 } = {}) {
   const akademikDocs = (Array.isArray(dokAkademik) ? dokAkademik : [])
     .map(dataDok)
@@ -525,7 +526,31 @@ export function siapkanModelRaport({
       predikatProses: predikatDariNilai(proses && Number.isFinite(proses.nilai_akhir) ? proses.nilai_akhir : null),
     },
     catatanGuru: String(catatanGuru || ''),
+    // v1.4: capaian yang diisi guru (koleksi laporan_belajar) — ISI UTAMA
+    // laporan orang tua. Kosong = jatuh ke narasi otomatis mesin.
+    laporanGuru: Array.isArray(laporanGuru) ? laporanGuru.filter((d) => d && d.capaian) : [],
   };
+}
+
+/** Isi kotak 'Laporan untuk Orang Tua/Wali'.
+ * Bila ada capaian guru → itu PRIMER (per mapel + bahan otomatis pendukung);
+ * bila tidak → narasi otomatis mesin (v1.3). Mengembalikan HTML ter-escape. */
+function isiNarasiUtama(m) {
+  const lg = Array.isArray(m.laporanGuru) ? m.laporanGuru : [];
+  if (!lg.length) return { html: escapeHtml(narasiLaporan(m)), dariGuru: false };
+  const bahan = ringkasBahanOtomatis({
+    proses: m.proses || {},
+    akademik: { perMapel: (m.akademik || []).map((d) => ({ mapel: d.mapel, detail_komponen: d.detail_komponen })) },
+  });
+  const bagian = lg.map((d) => {
+    const nar = narasiCapaianSiswa(d, {});
+    const judul = d.namaMapel || d.kodeMapel || 'Capaian';
+    return `<div style="margin-top:5px"><b>${escapeHtml(judul)}.</b> ${escapeHtml(nar)}</div>`;
+  }).join('');
+  const bahanLine = bahan.ringkasan.length
+    ? `<div class="rp-kecil" style="margin-top:7px;color:#475569"><b>Bahan otomatis sistem Gemilang:</b> ${escapeHtml(bahan.ringkasan.join('; '))}.</div>`
+    : '';
+  return { html: bagian + bahanLine, dariGuru: true };
 }
 
 // ------------------------------------------------------------
@@ -770,7 +795,7 @@ function bagianSiswa(m, { kodeCetak = '', logoUrl = '' } = {}) {
   </div>
 
   <div class="rp-narasi">
-    <b>📖 Laporan untuk Orang Tua/Wali.</b> ${escapeHtml(narasiLaporan(m))}
+    <b>📖 Laporan untuk Orang Tua/Wali${isiNarasiUtama(m).dariGuru ? ' — capaian dinilai tentor' : ''}.</b> ${isiNarasiUtama(m).html}
   </div>
   <div class="rp-kecil rp-muted" style="margin:-4px 0 6px">Dua nilai terpisah sesuai keputusan owner: capaian akademik dan proses/karakter TIDAK digabung menjadi satu angka.</div>
 

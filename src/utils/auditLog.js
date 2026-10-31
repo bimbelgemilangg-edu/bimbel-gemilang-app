@@ -91,6 +91,10 @@ export const LABEL_AKSI = {
   // 🕸️ 21 Okt 2026 (Fase 2 poles + Fase 3): jejak unduh PDF & penerbitan cron
   'raport.cetak': 'Unduh/cetak PDF raport otomatis',
   'raport.terbitkan-otomatis': 'Terbitkan raport otomatis oleh CRON bulanan (sistem)',
+  // 📝 31 Okt 2026 (Laporan Belajar): admin membuka/menutup periode pengisian
+  // capaian oleh guru — aksi sensitif karena menentukan kapan tugas muncul.
+  'laporan.buka-pengisian': 'Buka periode pengisian laporan belajar untuk guru',
+  'laporan.tutup-pengisian': 'Tutup periode pengisian laporan belajar untuk guru',
 };
 
 /**

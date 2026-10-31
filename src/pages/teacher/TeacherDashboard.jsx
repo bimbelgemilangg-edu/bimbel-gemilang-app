@@ -22,6 +22,10 @@ import {
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 import { daftarIdGuru } from '../../utils/identitasGuru';
 import { bolehTampilUmum } from '../../utils/statusTryOutPaket';
+import {
+  mapelDiampuGuru, filterSiswaUntukGuru, statusPengisianSiswa,
+  FIELD_LAPORAN_BELAJAR, pengisianDibuka,
+} from '../../utils/laporanBelajar';
 
 // ============================================================
 // LOGO COMPONENT - Menggunakan gambar dari folder public
@@ -127,6 +131,9 @@ const TeacherDashboard = () => {
     completedClasses: 0
   });
   const [greeting, setGreeting] = useState('');
+  // Tugas "Pengisian Laporan Belajar" (muncul saat admin membuka periode,
+  // hilang otomatis bila semua siswa mapel guru ini sudah selesai diisi).
+  const [laporanTugas, setLaporanTugas] = useState(null);
 
   // ===== REFS =====
   const notificationRef = useRef(null);
@@ -155,6 +162,53 @@ const TeacherDashboard = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // ===== TUGAS PENGISIAN LAPORAN BELAJAR =====
+  // Reaktif terhadap sakelar admin (onSnapshot settings) sehingga kartu
+  // muncul/hilang tanpa refresh. Beban ringan: hanya saat periode dibuka.
+  useEffect(() => {
+    let batal = false;
+    const ref = doc(db, 'settings', 'global_config');
+    const hitung = async (cfgLaporan) => {
+      const putus = pengisianDibuka(cfgLaporan);
+      if (!putus.dibuka || !guru) { if (!batal) setLaporanTugas(null); return; }
+      try {
+        const [snapSiswa, snapLaporan] = await Promise.all([
+          getDocs(collection(db, 'students')),
+          getDocs(query(collection(db, 'laporan_belajar'), where('periode', '==', putus.periode))),
+        ]);
+        if (batal) return;
+        const semuaSiswa = snapSiswa.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const dokLaporan = {};
+        for (const d of snapLaporan.docs) {
+          const x = d.data();
+          dokLaporan[`${String(x.studentId || '')}__${String(x.kodeMapel || '').toLowerCase()}`] = x;
+        }
+        const daftarMapel = mapelDiampuGuru(guru);
+        let total = 0; let selesai = 0;
+        for (const m of daftarMapel) {
+          const guruMapel = { ...guru, kodeMapel: m.kodeMapel, mapelDetails: [m] };
+          const daftar = filterSiswaUntukGuru(semuaSiswa, guruMapel);
+          for (const s of daftar) {
+            total += 1;
+            const dok = dokLaporan[`${s.id}__${String(m.kodeMapel).toLowerCase()}`];
+            if (statusPengisianSiswa(dok) === 'selesai') selesai += 1;
+          }
+        }
+        if (!batal) {
+          setLaporanTugas({
+            periode: putus.periode, periodeLabel: putus.periodeLabel || putus.periode,
+            total, selesai, semuaSelesai: total > 0 && selesai === total,
+          });
+        }
+      } catch (e) {
+        console.error('Gagal memuat tugas laporan belajar:', e);
+        if (!batal) setLaporanTugas(null);
+      }
+    };
+    const unsub = onSnapshot(ref, (snap) => { hitung((snap.data() || {})[FIELD_LAPORAN_BELAJAR] || null); }, () => { if (!batal) setLaporanTugas(null); });
+    return () => { batal = true; unsub(); };
+  }, [guru]);
 
   // ===== FETCH FUNCTIONS =====
   const fetchTeacherProfile = useCallback(async () => {
@@ -443,6 +497,30 @@ const TeacherDashboard = () => {
 
   return (
     <div style={styles.container}>
+      {/* ═══ TUGAS BESAR: PENGISIAN LAPORAN BELAJAR (owner 31 Okt 2026) ═══
+          Muncul selama admin membuka periode; HILANG otomatis begitu semua
+          siswa mapel guru ini selesai diisi. Capaian guru = isi utama PDF. */}
+      {laporanTugas && !laporanTugas.semuaSelesai && (
+        <button
+          type="button"
+          onClick={() => navigate('/guru/laporan-belajar')}
+          style={{ width: '100%', textAlign: 'left', margin: '0 0 16px', padding: '18px 20px', borderRadius: 16, cursor: 'pointer', border: '1px solid #c7d2fe', background: 'linear-gradient(135deg,#4f46e5,#7c3aed)', color: 'white', boxShadow: '0 8px 22px rgba(79,70,229,.28)' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 800, marginBottom: 6 }}>
+            <FileText size={19} /> Pengisian Laporan Belajar — {laporanTugas.periodeLabel}
+          </div>
+          <div style={{ fontSize: 12.5, color: '#e0e7ff', marginBottom: 10, lineHeight: 1.5 }}>
+            Isi capaian, catatan, dan rencana pengayaan untuk siswa Anda. Isian Anda menjadi <b>isi utama laporan belajar orang tua</b>; keaktifan otomatis (kuis, try out, absensi) dari sistem Gemilang ikut dilampirkan.
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 160px', height: 10, background: 'rgba(255,255,255,.28)', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${laporanTugas.total ? Math.round((laporanTugas.selesai / laporanTugas.total) * 100) : 0}%`, background: 'white', transition: 'width .3s' }} />
+            </div>
+            <span style={{ fontSize: 12.5, fontWeight: 800 }}>{laporanTugas.selesai}/{laporanTugas.total} siswa selesai</span>
+            <span style={{ fontSize: 12.5, fontWeight: 700, background: 'white', color: '#4338ca', borderRadius: 99, padding: '4px 12px' }}>Isi sekarang →</span>
+          </div>
+        </button>
+      )}
       {/* ═══ BANNER: TRY OUT TERHUBUNG (dipinta owner 2026-10) ═══
           Guru yang dipilih admin sebagai tentor pemantau melihat kartu ini;
           isinya: pantau peserta, soal, jawaban, skor, dan menilai esai. */}

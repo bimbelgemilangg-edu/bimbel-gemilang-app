@@ -433,5 +433,39 @@ uji('v1.2: snapshot LAMA (merah n=1) tampil tipis TANPA terbit ulang', () => {
   assert.ok(rekomendasiTampil(cukup)[0].includes('Pendampingan terfokus'));
 });
 
+uji('v1.4: capaian guru jadi ISI UTAMA laporan ortu (primer atas narasi otomatis)', () => {
+  const laporanGuru = [{
+    namaMapel: 'Matematika',
+    capaian: {
+      pemahaman: { predikat: 'A', deskriptor: ['menguasai'] },
+      keaktifan: { predikat: 'B', deskriptor: ['aktif-bertanya', 'menyanggah'] },
+      sikap: { predikat: 'A', deskriptor: ['disiplin'] },
+      perkembangan: { predikat: 'B', deskriptor: ['menanjak'] },
+    },
+    catatanGuru: 'Ananda sangat membantu teman sekelompok.',
+    pengayaan: 'lanjut ke soal HOTS',
+  }];
+  const h = htmlRaportSiswa({
+    dokAkademik: dokBudi.docsAkademik.map((d) => d.data),
+    dokProses: dokBudi.dokProses.data,
+    identitas: { jenjang: budi.jenjang },
+    laporanGuru,
+  });
+  assert.ok(h.includes('capaian dinilai tentor'));         // label primer
+  assert.ok(h.includes('Pemahaman Materi: Sangat Baik'));  // dimensi guru tercetak
+  assert.ok(h.includes('aktif bertanya') && h.includes('menyanggah'));
+  assert.ok(h.includes('Ananda sangat membantu teman'));   // catatan guru
+  assert.ok(h.includes('Rencana pengayaan'));              // pengayaan
+  assert.ok(h.includes('Matematika.'));                    // label mapel
+  // tetap tanpa frasa defisit
+  for (const dilarang of ['tidak valid', 'data belum cukup', 'belum lengkap']) {
+    assert.ok(!h.toLowerCase().includes(dilarang), `masih memuat: ${dilarang}`);
+  }
+  // tanpa laporanGuru → jatuh ke narasi otomatis mesin (tidak rusak)
+  const auto = htmlRaportSiswa({ dokAkademik: dokBudi.docsAkademik.map((d) => d.data), dokProses: dokBudi.dokProses.data, identitas: { jenjang: budi.jenjang } });
+  assert.ok(!auto.includes('capaian dinilai tentor'));
+  assert.ok(auto.includes('Laporan untuk Orang Tua/Wali'));
+});
+
 console.log(`\n[${lulus} lulus, ${gagal} gagal]`);
 process.exit(gagal ? 1 : 0);

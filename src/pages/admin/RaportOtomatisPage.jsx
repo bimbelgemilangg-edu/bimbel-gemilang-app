@@ -41,10 +41,11 @@ import {
   hitungRaportSemuaSiswa, rentangPeriode, bangunDokumenRaport,
   bolehTimpaRaportFinal, VERSI_MESIN, MAPEL_PROSES, cocokSasaran, buatRingkasan,
 } from '../../utils/raportOtomatis';
-import { htmlRaportSiswa, htmlRaportMassal, judulCetakRaport } from '../../utils/raportCetak';
+import { htmlRaportSiswa, htmlRaportMassal, judulCetakRaport, labelPeriodeManusiawi } from '../../utils/raportCetak';
 import { cetakLewatIframe } from '../../utils/kwitansi';
 import { RAPORT_COLLECTIONS } from '../../firebase/raportCollection';
-import { catatAudit, KATEGORI } from '../../utils/auditLog';
+import { catatAudit, aktorSaatIni, KATEGORI } from '../../utils/auditLog';
+import { FIELD_LAPORAN_BELAJAR, bentukSakelarLaporan, pengisianDibuka } from '../../utils/laporanBelajar';
 
 const gayaKartu = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14 };
 const gayaTh = { border: '1px solid #cbd5e1', padding: '5px 8px', textAlign: 'left', background: '#f1f5f9', fontSize: 11.5 };
@@ -99,6 +100,10 @@ export default function RaportOtomatisPage() {
   const [sedangBackfill, setSedangBackfill] = useState(false);
   const [cetakSetelahTerbit, setCetakSetelahTerbit] = useState(false); // v1.2: satu alur utama
   const [progresBackfill, setProgresBackfill] = useState('');
+
+  // ---------------- sakelar pengisian laporan belajar (guru) ----------------
+  const [sakelarLaporan, setSakelarLaporan] = useState(null);
+  const [sedangSakelar, setSedangSakelar] = useState(false);
 
   // ---------------- MUAT DATA MENTAH ----------------
   const muat = useCallback(async () => {
@@ -180,6 +185,49 @@ export default function RaportOtomatisPage() {
   // ---------------- HITUNG (pratinjau) ----------------
   const periodeOpts = modePeriode === 'bulan' ? { bulan } : { mulai: mulaiBulan, selesai: selesaiBulan };
 
+  // Periode yang akan dibuka untuk pengisian guru = periode yang sedang
+  // dipilih admin di halaman ini (konsisten dengan rapor yang dicetak).
+  const periodeLaporanKey = useMemo(() => {
+    try { return rentangPeriode(periodeOpts).label; } catch { return ''; }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modePeriode, bulan, mulaiBulan, selesaiBulan]);
+  const periodeLaporanLabel = periodeLaporanKey ? labelPeriodeManusiawi(periodeLaporanKey) : '';
+
+  // Muat sakelar pengisian laporan belajar yang sedang aktif (settings/global_config).
+  useEffect(() => {
+    let batal = false;
+    getDoc(doc(db, 'settings', 'global_config'))
+      .then((snap) => { if (!batal) setSakelarLaporan((snap.data() || {})[FIELD_LAPORAN_BELAJAR] || null); })
+      .catch(() => { if (!batal) setSakelarLaporan(null); });
+    return () => { batal = true; };
+  }, []);
+
+  // Buka/tutup periode pengisian laporan belajar untuk semua guru.
+  const ubahSakelarLaporan = useCallback(async (buka) => {
+    if (!periodeLaporanKey) { alert('Periode belum valid.'); return; }
+    setSedangSakelar(true);
+    try {
+      const patch = bentukSakelarLaporan({
+        dibuka: buka,
+        periode: periodeLaporanKey,
+        periodeLabel: periodeLaporanLabel,
+        dibukaOleh: aktorSaatIni().aktorNama || 'admin',
+        catatan: buka ? 'Dibuka dari halaman Raport Otomatis' : 'Ditutup dari halaman Raport Otomatis',
+      });
+      await setDoc(doc(db, 'settings', 'global_config'), { [FIELD_LAPORAN_BELAJAR]: { ...patch, diperbaruiAt: serverTimestamp() } }, { merge: true });
+      setSakelarLaporan(patch);
+      catatAudit(buka ? 'laporan.buka-pengisian' : 'laporan.tutup-pengisian', {
+        kategori: KATEGORI.SISWA,
+        target: `Pengisian laporan belajar ${periodeLaporanLabel || periodeLaporanKey}`,
+        detail: { periode: periodeLaporanKey, dibuka: buka },
+      });
+    } catch (e) {
+      alert(`Gagal memperbarui sakelar: ${e?.message || e}`);
+    } finally {
+      setSedangSakelar(false);
+    }
+  }, [periodeLaporanKey, periodeLaporanLabel]);
+
   const hitung = useCallback(async () => {
     if (!mentah) return;
     setSedangMenghitung(true);
@@ -196,6 +244,8 @@ export default function RaportOtomatisPage() {
         ringkasan: buatRingkasan(subset, {
           logTakDikenal: h.ringkasan.logTakDikenal,
           logLuarSaringan: h.ringkasan.logLuarSaringan,
+          logSiswaNonaktif: h.ringkasan.logSiswaNonaktif,
+          siswaDikecualikan: h.ringkasan.siswaDikecualikan,
           dataBermasalah: h.ringkasan.dataBermasalah,
         }),
       });
@@ -229,6 +279,8 @@ export default function RaportOtomatisPage() {
       ringkasan: buatRingkasan(subset, {
         logTakDikenal: hSemua.ringkasan.logTakDikenal,
         logLuarSaringan: hSemua.ringkasan.logLuarSaringan,
+        logSiswaNonaktif: hSemua.ringkasan.logSiswaNonaktif,
+        siswaDikecualikan: hSemua.ringkasan.siswaDikecualikan,
         dataBermasalah: hSemua.ringkasan.dataBermasalah,
       }),
     };
@@ -373,16 +425,40 @@ export default function RaportOtomatisPage() {
     }
   }, []);
 
+  // Capaian yang diisi guru (laporan_belajar) untuk satu periode → peta
+  // studentId -> [dok capaian]. Query equality tunggal (periode) agar tidak
+  // butuh composite index; pengelompokan per siswa di sisi klien.
+  const ambilLaporanGuru = useCallback(async (periode) => {
+    if (!periode) return {};
+    try {
+      const snap = await getDocs(query(collection(db, 'laporan_belajar'), where('periode', '==', periode)));
+      const peta = {};
+      for (const d of snap.docs) {
+        const x = d.data();
+        const sid = String(x.studentId || '');
+        if (!sid) continue;
+        (peta[sid] = peta[sid] || []).push(x);
+      }
+      return peta;
+    } catch {
+      return {}; // capaian guru bersifat memperkaya — gagal baca tak memblokir cetakan
+    }
+  }, []);
+
   const cetakSatu = useCallback(async (r) => {
     try {
       // Dokumen cetak = dokumen terbit (bangunDokumenRaport) — satu kebenaran.
       const { docsAkademik, dokProses } = bangunDokumenRaport(r);
-      const catatan = await ambilCatatanGuru(r.studentId, r.periode);
+      const [catatan, petaLaporan] = await Promise.all([
+        ambilCatatanGuru(r.studentId, r.periode),
+        ambilLaporanGuru(r.periode),
+      ]);
       cetakLewatIframe(
         htmlRaportSiswa({
           dokAkademik: docsAkademik.map((d) => d.data),
           dokProses: dokProses.data,
           catatanGuru: catatan,
+          laporanGuru: petaLaporan[r.studentId] || [],
           identitas: { jenjang: r.jenjang },
         }),
         judulCetakRaport({ nama: r.studentName, periode: r.periode }),
@@ -390,14 +466,14 @@ export default function RaportOtomatisPage() {
       catatAudit('raport.cetak', {
         kategori: KATEGORI.SISWA,
         target: `Cetak raport ${r.studentName} — ${r.periode}`,
-        detail: { studentId: r.studentId, periode: r.periode, mode: 'tunggal', versiMesin: VERSI_MESIN, catatanGuruDisertakan: catatan.length > 0 },
+        detail: { studentId: r.studentId, periode: r.periode, mode: 'tunggal', versiMesin: VERSI_MESIN, catatanGuruDisertakan: catatan.length > 0, capaianGuruDisertakan: (petaLaporan[r.studentId] || []).length },
       });
     } catch (e) {
       alert(`Gagal menyiapkan cetakan: ${e?.message || e}`);
     }
-  }, [ambilCatatanGuru]);
+  }, [ambilCatatanGuru, ambilLaporanGuru]);
 
-  const cetakSemua = useCallback(() => {
+  const cetakSemua = useCallback(async () => {
     if (!hasil) return;
     const daftar = hasil.siswa;
     if (!daftar.length) { alert('Tidak ada siswa pada pratinjau ini.'); return; }
@@ -405,11 +481,13 @@ export default function RaportOtomatisPage() {
       `Cetak massal ${daftar.length} siswa menghasilkan SATU dokumen panjang (± ${daftar.length + 1} halaman lebih). Lanjutkan?`,
     )) return;
     try {
+      const petaLaporan = await ambilLaporanGuru(hasil.periode.label);
       const payload = daftar.map((r) => {
         const { docsAkademik, dokProses } = bangunDokumenRaport(r);
         return {
           dokAkademik: docsAkademik.map((d) => d.data),
           dokProses: dokProses.data,
+          laporanGuru: petaLaporan[r.studentId] || [],
           identitas: { jenjang: r.jenjang },
         };
       });
@@ -429,7 +507,7 @@ export default function RaportOtomatisPage() {
     } catch (e) {
       alert(`Gagal menyiapkan cetakan massal: ${e?.message || e}`);
     }
-  }, [hasil, jenjang, kelas]);
+  }, [hasil, jenjang, kelas, ambilLaporanGuru]);
 
   // v1.2 diet tombol: satu alur utama — begitu penerbitan sukses tercatat,
   // dialog cetak PDF massal (SATU dokumen berisi rapor tiap siswa) terbuka
@@ -509,6 +587,42 @@ export default function RaportOtomatisPage() {
             )}
             {sedangMenghitung && <span style={{ color: '#4f46e5' }}> · menghitung…</span>}
             <span style={{ color: '#94a3b8' }}> · pratinjau dihitung otomatis setiap filter/periode berubah — tanpa tombol</span>
+          </div>
+        </div>
+
+        {/* ============ SAKELAR PENGISIAN LAPORAN BELAJAR (GURU) ============ */}
+        <div style={{ ...gayaKartu, marginBottom: 14, borderColor: '#c7d2fe', background: 'linear-gradient(135deg,#eef2ff,#faf5ff)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ minWidth: 240, flex: '1 1 320px' }}>
+              <b style={{ fontSize: 13.5, color: '#3730a3' }}>📝 Pengisian Laporan Belajar oleh Guru</b>
+              <div style={{ fontSize: 11.5, color: '#4c1d95', marginTop: 3, lineHeight: 1.5 }}>
+                Buka periode agar tiap guru mengisi capaian siswa mapelnya (sumber utama PDF orang tua). Menu muncul di dashboard guru dan hilang otomatis bila semua siswa sudah diisi.
+              </div>
+              <div style={{ fontSize: 11.5, color: '#475569', marginTop: 6 }}>
+                Periode terpilih: <b>{periodeLaporanLabel || '—'}</b>
+                {pengisianDibuka(sakelarLaporan).dibuka && (
+                  <span style={{ marginLeft: 8, color: '#166534', background: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: 99, padding: '1px 9px', fontWeight: 700 }}>
+                    AKTIF: {sakelarLaporan.periodeLabel || sakelarLaporan.periode}
+                  </span>
+                )}
+              </div>
+              {pengisianDibuka(sakelarLaporan).dibuka && sakelarLaporan.periode !== periodeLaporanKey && (
+                <div style={{ fontSize: 11, color: '#b45309', marginTop: 4 }}>⚠️ Periode aktif berbeda dari yang sedang dipilih. Membuka akan memindahkan pengisian ke periode terpilih.</div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {!pengisianDibuka(sakelarLaporan) || sakelarLaporan.periode !== periodeLaporanKey ? (
+                <button type="button" disabled={sedangSakelar || !periodeLaporanKey} onClick={() => ubahSakelarLaporan(true)}
+                  style={{ padding: '9px 16px', borderRadius: 9, border: 'none', background: '#4338ca', color: 'white', fontWeight: 700, fontSize: 12.5, cursor: sedangSakelar ? 'default' : 'pointer', opacity: sedangSakelar || !periodeLaporanKey ? 0.6 : 1 }}>
+                  {sedangSakelar ? 'Memproses…' : '🔓 Buka Pengisian Periode Ini'}
+                </button>
+              ) : (
+                <button type="button" disabled={sedangSakelar} onClick={() => ubahSakelarLaporan(false)}
+                  style={{ padding: '9px 16px', borderRadius: 9, border: '1px solid #fca5a5', background: '#fef2f2', color: '#b91c1c', fontWeight: 700, fontSize: 12.5, cursor: sedangSakelar ? 'default' : 'pointer' }}>
+                  {sedangSakelar ? 'Memproses…' : '🔒 Tutup Pengisian'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

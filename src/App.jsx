@@ -182,6 +182,7 @@ import LiveSessionStudent from './pages/student/LiveSessionStudent';
 // SMART RAPORT
 // ============================================================
 import GenerateRaport from './pages/teacher/grades/GenerateRaport';
+import LaporanBelajarPage from './pages/teacher/laporan/LaporanBelajarPage';
 
 import StudentLeaderboard from './pages/student/raport/StudentLeaderboard';
 import LeaderboardPage from './pages/student/LeaderboardPage';
@@ -887,6 +888,7 @@ function App() {
         <Route path="/guru/grades/input" element={<GuruPage><TeacherInputGrade /></GuruPage>} />
         <Route path="/guru/grades/manage" element={<GuruPage><TeacherGradeManager /></GuruPage>} />
         <Route path="/guru/grades/generate" element={<GuruPage><GenerateRaport /></GuruPage>} />
+        <Route path="/guru/laporan-belajar" element={<GuruRoute><LaporanBelajarPage /></GuruRoute>} />
         <Route path="/guru/modul" element={<GuruPage><ModulManager /></GuruPage>} />
         <Route path="/guru/modul/materi" element={<GuruPage><ManageMateriGuru /></GuruPage>} />
         <Route path="/guru/modul/tugas" element={<GuruPage><ManageTugas /></GuruPage>} />
