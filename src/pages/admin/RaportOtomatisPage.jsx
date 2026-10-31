@@ -33,7 +33,7 @@
 //     kejadian, bukan real-time. Otomasi terjadwal = Fase 3 (API).
 // ============================================================
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { collection, getDocs, getDoc, setDoc, doc, serverTimestamp, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -88,9 +88,16 @@ export default function RaportOtomatisPage() {
   const [jenjang, setJenjang] = useState('Semua');
   const [kelas, setKelas] = useState('Semua');
 
+  // v1.4.2: "tanda tangan" filter aktif. Hasil pratinjau menyimpan kunci ini saat
+  // dihitung; tabel & tombol cetak hanya boleh tampil bila kunci cocok — baris basi
+  // dari filter lain TAK BOLEH terlihat sedetik pun (insiden 31 Okt 2026: label
+  // '7 SMP' masih menampilkan baris hitungan 'Semua SMP' selama hitung sinkron berjalan).
+  const kunciFilterAktif = [jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan].join('|');
+
   // ---------------- hasil hitung & terbit ----------------
   const [hasil, setHasil] = useState(null);
   const [sedangMenghitung, setSedangMenghitung] = useState(false);
+  const urutanHitung = useRef(0); // penanda balapan antar hitungan pratinjau
   const [dibuka, setDibuka] = useState(null); // studentId baris yang diperluas
   const [paksa, setPaksa] = useState(false);
   const [alasanPaksa, setAlasanPaksa] = useState('');
@@ -230,7 +237,14 @@ export default function RaportOtomatisPage() {
 
   const hitung = useCallback(async () => {
     if (!mentah) return;
+    urutanHitung.current += 1;
+    const urutanSaya = urutanHitung.current;
     setSedangMenghitung(true);
+    // Beri browser satu frame untuk melukis placeholder "menghitung…" SEBELUM
+    // hitung sinkron memblokir main thread — kalau tidak, tabel lama tetap terlukis.
+    await new Promise((res) => setTimeout(res, 30));
+    // Balapan ganti filter: hanya hitungan TERBARU yang boleh menulis hasil.
+    if (urutanSaya !== urutanHitung.current) return;
     setHasilTerbit(null);
     try {
       // v1.1: mesin melihat SEMUA siswa (supaya logTakDikenal = orphan SUNGGUHAN,
@@ -241,6 +255,7 @@ export default function RaportOtomatisPage() {
       setHasil({
         ...h,
         siswa: subset,
+        kunciFilter: kunciFilterAktif,
         ringkasan: buatRingkasan(subset, {
           logTakDikenal: h.ringkasan.logTakDikenal,
           logLuarSaringan: h.ringkasan.logLuarSaringan,
@@ -253,10 +268,10 @@ export default function RaportOtomatisPage() {
     } catch (e) {
       setErrorMuat(`Gagal menghitung: ${e?.message || e}`);
     } finally {
-      setSedangMenghitung(false);
+      if (urutanSaya === urutanHitung.current) setSedangMenghitung(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- periodeOpts dibaca saat klik; sengaja tidak jadi dependensi agar tidak menghitung ulang sendiri
-  }, [mentah, jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan]);
+  }, [mentah, jenjang, kelas, modePeriode, bulan, mulaiBulan, selesaiBulan, kunciFilterAktif]);
 
   // v1.1: pratinjau TAK BOLEH basi — ganti jenjang/kelas/bulan langsung dihitung
   // ulang (insiden 31 Okt 2026: select '9 SMP' tapi tabel masih isi hitungan
@@ -521,7 +536,11 @@ export default function RaportOtomatisPage() {
 
   // ---------------- RENDER ----------------
   const h = hasil;
-  const detail = h && dibuka ? h.siswa.find((x) => x.studentId === dibuka) : null;
+  // v1.4.2: hasil dianggap BASI bila tidak dihitung dengan tanda tangan filter yang
+  // sedang aktif (atau hitungan masih berjalan) — tabel, rincian, tombol terbitkan
+  // & cetak SEMUA disembunyikan supaya baris basi dari filter lain tak terlihat.
+  const pratinjauBasi = !h || h.kunciFilter !== kunciFilterAktif || sedangMenghitung;
+  const detail = !pratinjauBasi && dibuka ? h.siswa.find((x) => x.studentId === dibuka) : null;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
@@ -627,7 +646,7 @@ export default function RaportOtomatisPage() {
         </div>
 
         {/* ============ HASIL PRATINJAU ============ */}
-        {h && (
+        {!pratinjauBasi ? (
           <div style={{ ...gayaKartu, marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
               <b style={{ fontSize: 14 }}>Pratinjau periode {h.periode.label}</b>
@@ -709,6 +728,13 @@ export default function RaportOtomatisPage() {
               </table>
             </div>
             <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>Klik baris untuk rincian per siswa (mapel, dimensi, proses, tren, peta topik).</div>
+          </div>
+        ) : (
+          <div style={{ ...gayaKartu, marginBottom: 14, padding: '18px 16px', color: '#475569', fontSize: 12.5 }}>
+            ⏳ Menghitung pratinjau untuk filter yang terpilih (periode · jenjang · kelas)…
+            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+              Tabel, tombol terbitkan, dan tombol cetak sengaja disembunyikan selama hitungan berjalan supaya baris basi dari filter lain tidak pernah terlihat maupun tercetak.
+            </div>
           </div>
         )}
 
@@ -879,7 +905,7 @@ export default function RaportOtomatisPage() {
         )}
 
         {/* ============ PENERBITAN ============ */}
-        {h && (
+        {!pratinjauBasi && (
           <div style={{ ...gayaKartu, marginBottom: 14 }}>
             <b style={{ fontSize: 13.5 }}>Terbitkan snapshot periode {h.periode.label}</b>
             <div style={{ fontSize: 11.5, color: '#475569', margin: '4px 0 10px' }}>
