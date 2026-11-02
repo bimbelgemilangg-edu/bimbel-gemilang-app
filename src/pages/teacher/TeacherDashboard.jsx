@@ -27,6 +27,7 @@ import {
   kunciPencocokLaporan, kunciQuerySiswaUntukGuru, hitungTugasLaporanBelajar,
 } from '../../utils/laporanBelajar';
 import { potongUntukQuery } from '../../utils/papanJelajah';
+import { tanggalLokalStr, geserHariLokal } from '../../utils/waktuLokal';
 
 // ============================================================
 // LOGO COMPONENT - Menggunakan gambar dari folder public
@@ -267,8 +268,12 @@ const TeacherDashboard = () => {
     setLoading(true);
     
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
       const today = new Date();
+      // v1.6.3: tanggal bisnis = LOKAL (WIB di lapangan), bukan UTC. Dulu
+      // toISOString() membuat dasbor menampilkan kelas KEMARIN dan kode harian
+      // kosong pada rentang 00:00-06:59 WIB, karena penulis jadwal/kode harian
+      // memakai komponen tanggal lokal. Lihat src/utils/waktuLokal.js.
+      const todayStr = tanggalLokalStr(today);
       const teacherName = teacher.nama.trim();
       const teacherId = teacher.guruId || teacher.id || teacherName;
 
@@ -284,17 +289,13 @@ const TeacherDashboard = () => {
         .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
       setTodaySchedules(todayScheds);
 
-      const futureDate = new Date(today);
-      futureDate.setDate(futureDate.getDate() + 7);
-      const futureStr = futureDate.toISOString().split('T')[0];
+      const futureStr = geserHariLokal(today, 7);
       const upcoming = allSchedules
         .filter(s => s.dateStr > todayStr && s.dateStr <= futureStr)
         .sort((a, b) => (a.dateStr || '').localeCompare(b.dateStr || ''));
       setUpcomingSchedules(upcoming);
 
-      const weekAgo = new Date(today);
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const weekAgoStr = weekAgo.toISOString().split('T')[0];
+      const weekAgoStr = geserHariLokal(today, -7);
       const weekSchedules = allSchedules.filter(s => 
         s.dateStr >= weekAgoStr && s.dateStr <= todayStr
       );
@@ -408,7 +409,7 @@ const TeacherDashboard = () => {
         await fetchData(teacher);
         if (cancelled) return;
         
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = tanggalLokalStr(); // lokal, bukan UTC (v1.6.3)
         const q = query(
           collection(db, "jadwal_bimbel"),
           where("teacherName", "==", teacher.nama.trim()),
