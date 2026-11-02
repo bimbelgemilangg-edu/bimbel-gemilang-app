@@ -51,5 +51,16 @@ uji('namaKurikulum mengembalikan nama kanonik untuk picker', () => {
   assert.equal(namaKurikulum('tidak-ada'), '');
 });
 
+uji('v1.5.5: kode pendek resolve ke dirinya — jebakan "bind"⊂"bindo tingkat lanjut"', () => {
+  assert.equal(kodeKurikulumDariNama('bind'), 'bind');
+  assert.equal(kodeKurikulumDariNama('bing'), 'bing');
+  assert.equal(kodeKurikulumDariNama('mtk'), 'mtk');
+  assert.equal(kodeKurikulumDariNama('ipa'), 'ipa');
+  assert.equal(kodeKurikulumDariNama('ipas'), 'ipas');
+  assert.equal(kodeKurikulumDariNama('bindo'), 'bind'); // exact alias tetap menang
+  assert.equal(kodeKurikulumDariNama('Bahasa Indonesia Tingkat Lanjut'), 'bind_tl');
+  assert.equal(kodeKurikulumDariNama('bind_tl'), 'bind_tl');
+});
+
 console.log(`\n${gagal === 0 ? '✅' : '❌'} identitasMapel: ${lulus} lulus, ${gagal} gagal`);
 process.exit(gagal === 0 ? 0 : 1);

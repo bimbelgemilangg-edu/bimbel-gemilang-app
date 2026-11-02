@@ -35,9 +35,20 @@ function buangSufiks(n) {
  *  Murni & deterministik — dipakai guardrail pembuatan mapel, pencocokan
  *  capaian tentor ke PDF, dan penanda varian di layar admin. */
 export function kodeKurikulumDariNama(nama) {
+  // 0a) exact KODE kurikulum apa adanya — SEBELUM norm(), karena norm()
+  //     membuang underscore ('bind_tl' → 'bind tl'). v1.5.5: kode kanonik
+  //     pasca-migrasi (bind_tl, mtk_tl, …) harus resolve ke dirinya sendiri.
+  const raw = String(nama || '').trim().toLowerCase();
+  const byKodeRaw = MAPEL_KURIKULUM.find((m) => m.kode === raw);
+  if (byKodeRaw) return byKodeRaw.kode;
   const n = norm(nama);
   if (!n) return '';
   if (TOKEN_PROGRAM.some((re) => re.test(n))) return ''; // program bimbel = lokal
+  // 0b) exact KODE kurikulum setelah norm ('bind', 'mtk', 'bing', …) — v1.5.5
+  //     FIX: tanpa langkah ini kode pendek 'bind' bisa terserempet aturan
+  //     includes ke kunci panjang mapel lain ('bindo tingkat lanjut' → bind_tl!).
+  const byKode = MAPEL_KURIKULUM.find((m) => m.kode === n);
+  if (byKode) return byKode.kode;
   const alias = semuaAlias();
   // 1) exact alias (paling aman: 'ipas sd' ≠ 'ipa')
   let ketemu = alias.find((a) => a.kunci === n);
@@ -46,8 +57,11 @@ export function kodeKurikulumDariNama(nama) {
     const tanpaSufiks = buangSufiks(n);
     if (tanpaSufiks !== n) ketemu = alias.find((a) => a.kunci === tanpaSufiks);
   }
-  // 3) includes kunci panjang (>=6 karakter) — hindari jebakan 'ipa'⊂'ipas'
-  if (!ketemu) ketemu = alias.find((a) => a.kunci.length >= 6 && (n.includes(a.kunci) || a.kunci.includes(n)));
+  // 3) includes kunci panjang (>=6 karakter) — hindari jebakan 'ipa'⊂'ipas'.
+  //    v1.5.5 FIX: arah kunci⊇input juga wajib input >=6 karakter, supaya
+  //    input pendek ('bind') tidak dicaplok kunci panjang ('bindo tingkat
+  //    lanjut' → bind_tl). Pencocokan longgar hanya untuk string panjang.
+  if (!ketemu) ketemu = alias.find((a) => a.kunci.length >= 6 && (n.includes(a.kunci) || (n.length >= 6 && a.kunci.includes(n))));
   return ketemu ? ketemu.kode : '';
 }
 

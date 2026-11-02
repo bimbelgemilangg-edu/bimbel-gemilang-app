@@ -1,6 +1,7 @@
 // src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
+import { cocokkanAksesModul } from '../../utils/aksesKontenSiswa';
 import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, deleteDoc, serverTimestamp, where, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
@@ -143,15 +144,11 @@ const AttendanceDonut = ({ hadir, izin, alpha, total }) => {
 // KOSONG = BLOKIR (kecuali konten "Umum"). Pencocokan lewat kode
 // (bukan nama) karena kode tidak pernah typo/beda ejaan.
 // ============================================================
-const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
-  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
-  const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
-  if (modulCodes.length === 0) return true; // modul gak punya kode mapel -> gak ada dasar buat blokir
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // kosong = BLOKIR
-  const norm = (s) => String(s || '').toLowerCase().trim();
-  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-  return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
-};
+// v1.5.5: definisi lokal DIPENSIUNKAN — satu sumber di utils/aksesKontenSiswa
+// (cocokkanAksesModul). Catatan: versi lokal halaman ini dulu lebih longgar
+// (tanpa pencocokan nama); sumber bersama melestarikan kelongsgaran itu HANYA
+// untuk modul tanpa kode, dan menambah fallback kanonik strict pasca-migrasi.
+const hasSubjectAccess = cocokkanAksesModul;
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -496,7 +493,10 @@ const StudentDashboard = () => {
       finally { setDataLoading(false); }
     };
     fetchData();
-  }, [authReady, studentId]);
+    // Deps sengaja hanya [authReady, studentId]: fetchData membaca identitas
+    // dari localStorage/state awal dan boleh jalan sekali per sesi auth —
+    // menambah dep lain memicu fetch ulang berantai tiap render.
+  }, [authReady, studentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const markNotifRead = async (notif) => {
     if (!notif.isRead) {

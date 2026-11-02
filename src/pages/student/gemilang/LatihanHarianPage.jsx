@@ -13,7 +13,7 @@
 // Semua kasus tepi terbukti benar.
 // ============================================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../firebase';
 import {
@@ -23,6 +23,7 @@ import { ArrowLeft, CheckCircle2, XCircle, Flame } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 import { cocokkanJenjang, ekstrakAngkaKelas, cocokkanKelas, cocokkanAksesMapel, isMapelPenguatanDasar } from '../../../utils/aksesKontenSiswa';
+import { kodeKanonikDariNamaLama } from '../../../utils/katalogMapelGemilang';
 import { tambahXpMingguan } from '../../../utils/mingguIni';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import RenderTable from '../../../components/RenderTable';
@@ -502,14 +503,27 @@ export default function LatihanHarianPage() {
         try {
           const snapMapel = await getDocs(collection(db, 'mapel'));
           const namaKeKode = {};
+          const kodeLamaKeKanonik = {};
           snapMapel.forEach((d) => {
             const m = d.data();
-            if (m.namaMapel) namaKeKode[m.namaMapel.toLowerCase().trim()] = m.kodeMapel;
+            // v1.5.5 (migrasi pondasi v2): nama registry — termasuk varian
+            // yang sudah dinonaktifkan — di-resolve ke kode KANONIK, dan kode
+            // lama (MAPEL-XXX) dipetakan ke kanonik. Dengan ini Latihan Harian
+            // tetap konsisten di dua era: pra-migrasi (enrolledSubjects masih
+            // kode lama) maupun pasca-migrasi (sudah kode kanonik).
+            const kanonik = kodeKanonikDariNamaLama(m.namaMapel) || m.kodeMapel || '';
+            if (m.kodeMapel) kodeLamaKeKanonik[String(m.kodeMapel)] = kanonik;
+            if (m.namaMapel) namaKeKode[m.namaMapel.toLowerCase().trim()] = kanonik;
+          });
+          const enrolledKanonik = (Array.isArray(enrolledSubjectsSiswa) ? enrolledSubjectsSiswa : []).map((e) => {
+            const s = String(e || '');
+            return kodeLamaKeKanonik[s] || kodeKanonikDariNamaLama(s) || s; // 'semua' & tak terpeta lewat apa adanya
           });
           soal = soal.filter((s) => {
             if (isMapelPenguatanDasar(s.mataPelajaran)) return true;
-            const kodeMapelSoal = namaKeKode[(s.mataPelajaran || '').toLowerCase().trim()];
-            return cocokkanAksesMapel(enrolledSubjectsSiswa, kodeMapelSoal);
+            const label = (s.mataPelajaran || '').toLowerCase().trim();
+            const kodeMapelSoal = namaKeKode[label] || kodeKanonikDariNamaLama(s.mataPelajaran) || '';
+            return cocokkanAksesMapel(enrolledKanonik, kodeMapelSoal);
           });
         } catch (e) {
           console.error('Gagal cek Akses Mapel:', e);
@@ -572,7 +586,13 @@ export default function LatihanHarianPage() {
   // 🔥 BARU: sesi SELALU dibatasi ke mapel yang sedang dipilih -- tidak
   // ada lagi campuran lintas mapel dalam 1 sesi latihan (1 sesi = 1
   // mapel, biar fokus & masuk akal secara pedagogis).
-  const soalMapelDipilih = mapelDipilih ? semuaSoal.filter((s) => (s.mataPelajaran || 'Lainnya') === mapelDipilih) : [];
+  // (v1.5.5, lint CI: dibungkus useMemo — dulu dihitung polos tiap render
+  // sehingga identitas array berubah terus dan dua useCallback di bawah
+  // ikut tercipta ulang setiap render.)
+  const soalMapelDipilih = useMemo(
+    () => (mapelDipilih ? semuaSoal.filter((s) => (s.mataPelajaran || 'Lainnya') === mapelDipilih) : []),
+    [mapelDipilih, semuaSoal],
+  );
 
   const mulaiSesiRekomendasi = useCallback(() => {
     // 🔥 BARU: target sesi dipotong sesuai sisa jatah harian -- kalau
@@ -880,7 +900,11 @@ export default function LatihanHarianPage() {
     }
     setSedangFinalisasi(false);
     setTahap('selesai');
-  }, [hasilSesi, studentId, soalSesi.length]);
+    // targetHarianSaatIni sengaja TIDAK masuk deps: nilainya dimuat sekali
+    // saat halaman dibuka (jauh sebelum sesi selesai) dan callback ini
+    // dipanggil dari effect animasi 'mengoreksi' — menambah dep berisiko
+    // memicu ulang effect animasi itu bila identitas callback berubah.
+  }, [hasilSesi, studentId, soalSesi.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ============================================================
   // RENDER

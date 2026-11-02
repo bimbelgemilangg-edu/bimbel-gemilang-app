@@ -8,7 +8,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { isOwnerSession } from '../../../utils/roleAkses';
 import { daftarMapelUntuk } from '../../../utils/kurikulumMerdeka';
 import { kodeKurikulumDariNama, namaKurikulum, grupVarian } from '../../../utils/identitasMapel';
-import { katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel, transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik } from '../../../utils/katalogMapelGemilang';
+import { katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel, transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik, transformModulKeKodeKanonik, transformJadwalKeKodeKanonik, transformLaporanKeKodeKanonik, bangunPetaReferensi } from '../../../utils/katalogMapelGemilang';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 import { db, auth } from '../../../firebase';
 import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, query, where, runTransaction, setDoc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
@@ -463,6 +463,38 @@ const TeacherList = () => {
       // semua") — entri katalog yang belum ada di registry ikut dibuat.
       const kodeTarget = new Set(rencana.target.map((t) => t.kode));
       rencana.entriBaru = katalogMapelGemilang().filter((k) => !kodeTarget.has(k.kode));
+      // v1.5.5 (audit pra-migrasi): kode mapel lama juga menempel di
+      // bimbel_modul (pagar akses siswa!), jadwal_bimbel, laporan_belajar
+      // (capaian guru). Dry-run menghitung berapa yang akan ikut dirapikan —
+      // tanpa koleksi ini siswa bisa terkunci dari modulnya sendiri.
+      const [snapModul, snapJadwal, snapLaporan] = await Promise.all([
+        getDocs(collection(db, 'bimbel_modul')),
+        getDocs(collection(db, 'jadwal_bimbel')),
+        getDocs(collection(db, 'laporan_belajar')),
+      ]);
+      const refPeta = bangunPetaReferensi(rencana);
+      let modulDiubah = 0;
+      for (const d of snapModul.docs) {
+        const m = d.data();
+        const t = transformModulKeKodeKanonik(m, rencana.petaKode);
+        if (String(t.kodeMapel ?? '') !== String(m.kodeMapel ?? '')) modulDiubah += 1;
+      }
+      let jadwalDiubah = 0;
+      for (const d of snapJadwal.docs) {
+        const t = transformJadwalKeKodeKanonik(d.data(), refPeta.petaDocId, refPeta.petaNamaDariDocId, refPeta.petaNamaDariNamaLama);
+        if (Object.keys(t).length > 0) jadwalDiubah += 1;
+      }
+      let laporanDiubah = 0;
+      for (const d of snapLaporan.docs) {
+        const t = transformLaporanKeKodeKanonik(d.data(), rencana.petaKode, rencana.petaNama);
+        if (Object.keys(t).length > 0) laporanDiubah += 1;
+      }
+      rencana.jumlahModul = snapModul.size;
+      rencana.jumlahJadwal = snapJadwal.size;
+      rencana.jumlahLaporan = snapLaporan.size;
+      rencana.modulDiubah = modulDiubah;
+      rencana.jadwalDiubah = jadwalDiubah;
+      rencana.laporanDiubah = laporanDiubah;
       setRencanaMigrasi(rencana);
     } catch (e) {
       showAlert(`❌ Gagal menghitung rencana migrasi: ${e?.message || e}`, true);
@@ -522,10 +554,13 @@ const TeacherList = () => {
         if (t.indukId) petaDocId[t.indukId] = idKanonik;
         for (const v of t.varianDinonaktifkan) if (v.id) petaDocId[v.id] = idKanonik;
       }
-      // Fase 2+3: tulis ulang referensi guru & siswa (batch 300).
-      const [snapGuru, snapSiswa] = await Promise.all([
+      // Fase 2+3: tulis ulang referensi guru & siswa & koleksi ikutan (batch 300).
+      const [snapGuru, snapSiswa, snapModul, snapJadwal, snapLaporan] = await Promise.all([
         getDocs(collection(db, 'teachers')),
         getDocs(collection(db, 'students')),
+        getDocs(collection(db, 'bimbel_modul')),
+        getDocs(collection(db, 'jadwal_bimbel')),
+        getDocs(collection(db, 'laporan_belajar')),
       ]);
       let batch = writeBatch(db);
       let nBatch = 0;
@@ -567,6 +602,46 @@ const TeacherList = () => {
           await commitIfNeeded();
         }
       }
+      // Fase 3b (v1.5.5): bimbel_modul — materi/kuis/tugas. WAJIB ikut,
+      // kalau tidak pagar akses siswa (hasSubjectAccess) membandingkan
+      // enrolledSubjects kanonik vs kodeMapel modul lama → siswa terkunci.
+      let modulDiubah = 0;
+      for (const dm of snapModul.docs) {
+        const m = dm.data();
+        const t = transformModulKeKodeKanonik(m, petaKode);
+        if (String(t.kodeMapel ?? '') !== String(m.kodeMapel ?? '')) {
+          batch.update(doc(db, 'bimbel_modul', dm.id), { kodeMapel: t.kodeMapel, updatedAt: serverTimestamp() });
+          nBatch += 1;
+          modulDiubah += 1;
+          await commitIfNeeded();
+        }
+      }
+      // Fase 3c (v1.5.5): jadwal_bimbel — mapelId varian → dokumen induk
+      // kanonik (jangan biarkan referensi menggantung ke dokumen nonaktif).
+      const refPeta = bangunPetaReferensi(rencana);
+      let jadwalDiubah = 0;
+      for (const dj of snapJadwal.docs) {
+        const t = transformJadwalKeKodeKanonik(dj.data(), petaDocId, refPeta.petaNamaDariDocId, refPeta.petaNamaDariNamaLama);
+        if (Object.keys(t).length > 0) {
+          batch.update(doc(db, 'jadwal_bimbel', dj.id), { ...t, updatedAt: serverTimestamp() });
+          nBatch += 1;
+          jadwalDiubah += 1;
+          await commitIfNeeded();
+        }
+      }
+      // Fase 3d (v1.5.5): laporan_belajar — capaian yang SUDAH diisi guru
+      // harus tetap terlihat di menu guru & menempel di PDF (pencocokan
+      // halaman guru eksak per kodeMapel). Id dokumen tidak disentuh.
+      let laporanDiubah = 0;
+      for (const dl of snapLaporan.docs) {
+        const t = transformLaporanKeKodeKanonik(dl.data(), petaKode, petaNama);
+        if (Object.keys(t).length > 0) {
+          batch.update(doc(db, 'laporan_belajar', dl.id), { ...t, diperbaruiAt: serverTimestamp() });
+          nBatch += 1;
+          laporanDiubah += 1;
+          await commitIfNeeded();
+        }
+      }
       // Fase 4: nonaktifkan varian yang dilebur.
       for (const v of rencana.nonaktif) {
         if (!v.id) continue;
@@ -578,9 +653,10 @@ const TeacherList = () => {
       if (nBatch > 0) await batch.commit();
       catatAuditMapelMigrasi({
         disemai: (rencana.entriBaru || []).length, dibuat, guruDiubah, siswaDiubah,
+        modulDiubah, jadwalDiubah, laporanDiubah,
         varian: rencana.nonaktif.length,
       });
-      showAlert(`✅ Migrasi pondasi mapel v2 selesai: ${dibuat} dokumen kanonik dibuat, ${guruDiubah} guru & ${siswaDiubah} siswa dipetakan ulang, ${rencana.nonaktif.length} varian dinonaktifkan.`);
+      showAlert(`✅ Migrasi pondasi mapel v2 selesai: ${dibuat} dokumen kanonik dibuat; ${guruDiubah} guru, ${siswaDiubah} siswa, ${modulDiubah} modul/kuis, ${jadwalDiubah} jadwal, ${laporanDiubah} laporan guru dipetakan ulang; ${rencana.nonaktif.length} varian dinonaktifkan.`);
       setRencanaMigrasi(null);
       setKonfirmasiMigrasi('');
       await Promise.all([fetchMapel(), fetchTeachers()]);
@@ -1291,6 +1367,9 @@ const TeacherList = () => {
                         { l: 'Dibiarkan (tak terpeta)', v: rencanaMigrasi.takTerpeta.length, c: '#b45309' },
                         { l: 'Guru diperiksa', v: rencanaMigrasi.jumlahGuru ?? '—', c: '#0369a1' },
                         { l: 'Siswa diperiksa', v: rencanaMigrasi.jumlahSiswa ?? '—', c: '#0369a1' },
+                        { l: 'Modul/kuis dirapikan', v: rencanaMigrasi.modulDiubah ?? 0, c: '#0369a1' },
+                        { l: 'Jadwal dirapikan', v: rencanaMigrasi.jadwalDiubah ?? 0, c: '#0369a1' },
+                        { l: 'Laporan guru dirapikan', v: rencanaMigrasi.laporanDiubah ?? 0, c: '#0369a1' },
                       ].map((s) => (
                         <div key={s.l} style={{ border: `1px solid ${s.c}33`, background: `${s.c}0d`, borderRadius: 8, padding: '6px 10px', fontSize: 11 }}>
                           <span style={{ fontWeight: 800, color: s.c, fontSize: 14, marginRight: 4 }}>{s.v}</span>

@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import {
   katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel,
   transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik,
+  transformModulKeKodeKanonik, transformJadwalKeKodeKanonik, transformLaporanKeKodeKanonik,
 } from '../src/utils/katalogMapelGemilang.js';
 
 let lulus = 0, gagal = 0;
@@ -98,6 +99,73 @@ uji('transform siswa: enrolledSubjects dedupe + "semua" dihormati + tak terpeta 
   assert.deepEqual(hasil.enrolledSubjects, ['geo', 'semua', 'MAPEL-777']);
   const tanpa = transformSiswaKeKodeKanonik({}, petaKode);
   assert.equal(tanpa.enrolledSubjects, undefined);
+});
+
+// ---- v1.5.5: koleksi ikutan (audit pra-migrasi: jangan ada siswa terkunci) ----
+
+uji('transform modul: kodeMapel lama → kanonik; kosong/gabungan/tak terpeta aman', () => {
+  const petaKode = { 'MAPEL-019': 'geo', 'MAPEL-007': 'ipa' };
+  assert.deepEqual(transformModulKeKodeKanonik({ kodeMapel: 'MAPEL-019' }, petaKode), { kodeMapel: 'geo' });
+  assert.deepEqual(transformModulKeKodeKanonik({ kodeMapel: '' }, petaKode), { kodeMapel: '' });
+  assert.deepEqual(transformModulKeKodeKanonik({}, petaKode), { kodeMapel: undefined });
+  assert.deepEqual(transformModulKeKodeKanonik({ kodeMapel: 'MAPEL-019, MAPEL-007' }, petaKode), { kodeMapel: 'geo, ipa' });
+  assert.deepEqual(transformModulKeKodeKanonik({ kodeMapel: 'MAPEL-999' }, petaKode), { kodeMapel: 'MAPEL-999' }); // tak terpeta = jujur
+  assert.deepEqual(transformModulKeKodeKanonik({ kodeMapel: 'geo' }, petaKode), { kodeMapel: 'geo' }); // idempoten
+});
+
+uji('transform jadwal: mapelId varian → induk kanonik + nama kanonik; induk reuse tidak diutak-atik id-nya', () => {
+  const petaDocId = { d1: 'd2' };
+  const petaNamaDariDocId = { d1: 'Geografi', d2: 'Geografi' };
+  const petaNamaDariNamaLama = { 'geografi sma': 'Geografi' };
+  assert.deepEqual(
+    transformJadwalKeKodeKanonik({ mapelId: 'd1', mapelName: 'GEOGRAFI SMA' }, petaDocId, petaNamaDariDocId, petaNamaDariNamaLama),
+    { mapelId: 'd2', mapelName: 'Geografi' },
+  );
+  assert.deepEqual(
+    transformJadwalKeKodeKanonik({ mapelId: 'd2', mapelName: 'Geografi' }, petaDocId, petaNamaDariDocId, petaNamaDariNamaLama),
+    {}, // induk kanonik: tidak ada perubahan
+  );
+  assert.deepEqual(
+    transformJadwalKeKodeKanonik({ mapelName: 'GEOGRAFI SMA' }, {}, {}, petaNamaDariNamaLama),
+    { mapelName: 'Geografi' }, // jadwal tanpa id tetap dirapikan lewat nama
+  );
+});
+
+uji('transform laporan belajar: capaian guru ikut kode kanonik; tak terpeta dibiarkan', () => {
+  const petaKode = { 'MAPEL-019': 'geo' };
+  const petaNama = { 'MAPEL-019': 'Geografi' };
+  assert.deepEqual(
+    transformLaporanKeKodeKanonik({ kodeMapel: 'MAPEL-019', namaMapel: 'GEOGRAFI SMA' }, petaKode, petaNama),
+    { kodeMapel: 'geo', namaMapel: 'Geografi' },
+  );
+  assert.deepEqual(transformLaporanKeKodeKanonik({ kodeMapel: 'geo', namaMapel: 'Geografi' }, petaKode, petaNama), {}); // sudah kanonik = tidak ada yang ditulis (idempoten)
+  assert.deepEqual(transformLaporanKeKodeKanonik({ kodeMapel: 'MAPEL-999' }, petaKode, petaNama), {}); // tak terpeta = jangan sentuh
+  assert.deepEqual(transformLaporanKeKodeKanonik({ kodeMapel: '' }, petaKode, petaNama), {});
+});
+
+uji('simulasi end-to-end: siswa TIDAK terkunci dari modul setelah migrasi penuh', () => {
+  // Skenario dunia nyata pra-migrasi: varian induk 'Geografi' (MAPEL-020, d2)
+  // + varian 'GEOGRAFI SMA' (MAPEL-019, d1). Siswa terdaftar di MAPEL-019,
+  // guru mengampu MAPEL-019, modul tersimpan dengan kodeMapel MAPEL-019.
+  const docs = [
+    { id: 'd1', kodeMapel: 'MAPEL-019', namaMapel: 'GEOGRAFI SMA' },
+    { id: 'd2', kodeMapel: 'MAPEL-020', namaMapel: 'Geografi' },
+  ];
+  const rencana = rencanaMigrasiMapel(docs, { guruPerKode: { 'MAPEL-019': 1 }, siswaPerKode: { 'MAPEL-019': 1 } });
+  const guru = { mapelDetails: [{ id: 'd1', namaMapel: 'GEOGRAFI SMA', kodeMapel: 'MAPEL-019' }] };
+  const siswa = { enrolledSubjects: ['MAPEL-019'] };
+  const modul = { subject: 'GEOGRAFI SMA', kodeMapel: 'MAPEL-019' };
+  // migrasi…
+  const gBaru = transformGuruKeKodeKanonik(guru, rencana.petaKode, rencana.petaNama);
+  const sBaru = transformSiswaKeKodeKanonik(siswa, rencana.petaKode);
+  const mBaru = transformModulKeKodeKanonik(modul, rencana.petaKode);
+  // guru tetap mengampu geo
+  assert.equal(gBaru.kodeMapel, 'geo');
+  // siswa tetap terdaftar geo
+  assert.deepEqual(sBaru.enrolledSubjects, ['geo']);
+  // modul ikut kanonik → pagar akses EKSAK tetap lolos
+  assert.equal(mBaru.kodeMapel, 'geo');
+  assert.ok(sBaru.enrolledSubjects.some((e) => String(mBaru.kodeMapel).split(',').includes(e)), 'SISWA TERKUNCI DARI MODULNYA!');
 });
 
 console.log(`\n${gagal === 0 ? '✅' : '❌'} katalogMapelGemilang: ${lulus} lulus, ${gagal} gagal`);

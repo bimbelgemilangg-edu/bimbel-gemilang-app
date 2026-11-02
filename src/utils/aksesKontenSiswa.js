@@ -14,6 +14,8 @@
 // terjadi -- keduanya wajib import dari sini.
 // ============================================================
 
+import { kodeKanonikDariNamaLama } from './katalogMapelGemilang.js';
+
 // 🔒 default MENOLAK kalau jenjang tidak jelas cocok -- bukan meloloskan.
 export function cocokkanJenjang(jenjangSoal, jenjangSiswa) {
   if (!jenjangSoal) return false; // soal tanpa jenjang ditolak, BUKAN diloloskan
@@ -100,6 +102,62 @@ export function cocokkanAksesMapel(enrolledSubjects, kodeMapelSoal) {
   const norm = (s) => String(s || '').toLowerCase().trim();
   if (enrolledSubjects.some((s) => norm(s) === 'semua')) return true;
   return enrolledSubjects.some((s) => norm(s) === norm(kodeMapelSoal));
+}
+
+// ------------------------------------------------------------
+// v1.5.5: SATU SUMBER pagar akses MODUL (materi/kuis) — sebelumnya ada 4
+// salinan hasSubjectAccess() identik di StudentElearning, StudentModuleView,
+// StudentQuizView, StudentDashboard (pola rawan-duplikat yang sama seperti
+// alasan file ini dibuat). Semantik dasar TIDAK berubah:
+//   - modul 'Umum'/tanpa label  = selalu lolos
+//   - enrolledSubjects kosong    = 🔒 BLOKIR (aturan keras owner)
+//   - 'semua'                    = lolos
+//   - kode/nama cocok eksak      = lolos
+// TAMBAHAN (jaring pengaman migrasi pondasi mapel v2): bila pencocokan
+// eksak gagal, kedua sisi di-resolve ke KODE KANONIK lewat resolver strict
+// katalog v2 (kodeKanonikDariNamaLama — anti jebakan 'ipa'⊂'ipas' dan
+// 'bind'⊂'bindo tingkat lanjut'). Gunanya: dokumen modul yang kodeMapel-nya
+// BELUM ternormalisasi (dibuat sebelum migrasi / lolos dari rewrite) tetap
+// bisa dibuka siswa yang terdaftar lewat kode kanonik — siswa tidak pernah
+// terkunci gara-gara selisih penamaan, sementara aturan "kosong = blokir"
+// tetap keras dan nama tak dikenal tetap ditolak (tidak pernah menebak).
+// ------------------------------------------------------------
+export function cocokkanAksesModul(enrolledSubjects, modulSubject, modulKodeMapel) {
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  if (!modulSubject || norm(modulSubject) === 'umum') return true;
+  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
+  const modulNameNorm = norm(modulSubject);
+  if (modulCodes.length === 0 && !modulNameNorm) return true; // gak ada dasar memblokir
+  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔒 kosong = BLOKIR
+  if (enrolledSubjects.some((s) => norm(s) === 'semua')) return true;
+  // 1) pencocokan eksak (perilaku lama, dipertahankan persis)
+  const eksak = enrolledSubjects.some((s) => {
+    const es = norm(s);
+    return modulCodes.includes(es) || es === modulNameNorm;
+  });
+  if (eksak) return true;
+  // 2) fallback kanonik v1.5.5 (strict) — kode/nama kedua sisi di-resolve
+  const kandidatKode = new Set();
+  const tambah = (v) => { const k = kodeKanonikDariNamaLama(v); if (k) kandidatKode.add(k); };
+  tambah(modulSubject);
+  for (const c of modulCodes) tambah(c);
+  const enrolledKanonic = enrolledSubjects.map((e) => kodeKanonikDariNamaLama(e)).filter(Boolean);
+  if (kandidatKode.size > 0) {
+    for (const e of enrolledSubjects) {
+      const es = norm(e);
+      if (kandidatKode.has(es)) return true;
+      const ke = kodeKanonikDariNamaLama(e);
+      if (ke && kandidatKode.has(ke)) return true;
+    }
+    // Kedua sisi SAMA-SAMA kanonik tapi beda mapel = mismatch sungguhan →
+    // blokir (persis semangat pagar lama). Bila enrolled masih kode lama
+    // (MAPEL-XXX, belum termigrasi) = tidak ada dasar menilai → longgarkan
+    // HANYA bila modulnya memang tak punya kode (melestarikan perilaku lama
+    // StudentDashboard/StudentQuizView: tanpa kode = jangan blokir siapa pun).
+    if (enrolledKanonic.length > 0) return false;
+    return modulCodes.length === 0;
+  }
+  return modulCodes.length === 0;
 }
 // Cek gabungan jenjang + kelas sekaligus -- dipakai admin buat AUDIT
 // (soal yang SUDAH dikerjakan siswa, cek ulang apa harusnya boleh atau

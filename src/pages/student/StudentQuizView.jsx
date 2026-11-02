@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
+import { cocokkanAksesModul } from '../../utils/aksesKontenSiswa';
 import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { 
   ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, 
@@ -81,15 +82,11 @@ const normalizeShortAnswer = (s) =>
 // penjelasan lengkap di StudentDashboard.jsx). Kosong = BLOKIR, bukan lagi
 // izinkan -- keputusan sadar buat nutup celah "siswa kelepasan akses semua
 // mapel padahal cuma bayar 1 mapel".
-const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
-  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
-  const modulCodes = String(modulKodeMapel || '').split(',').map(s => String(s || '').toLowerCase().trim()).filter(Boolean);
-  if (modulCodes.length === 0) return true; // modul/kuis ini gak punya kode mapel -> gak ada dasar buat blokir, biarkan lewat
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // 🔥 DIBALIK: kosong = BLOKIR
-  const norm = (s) => String(s || '').toLowerCase().trim();
-  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-  return enrolledSubjects.some(s => modulCodes.includes(norm(s)));
-};
+// v1.5.5: definisi lokal DIPENSIUNKAN — satu sumber di utils/aksesKontenSiswa
+// (cocokkanAksesModul). Catatan: versi lokal halaman ini dulu lebih longgar
+// (tanpa pencocokan nama); sumber bersama melestarikan kelongsgaran itu HANYA
+// untuk modul tanpa kode, dan menambah fallback kanonik strict pasca-migrasi.
+const hasSubjectAccess = cocokkanAksesModul;
 
 // ============================================================
 // 🔥 DIHAPUS: deriveEnrolledSubjectsFromSchedule()
@@ -617,7 +614,10 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     // ini yang mencegah hasil dari percobaan LAMA "mendarat belakangan" dan
     // menimpa hasil dari percobaan BARU yang lebih benar.
     return () => { cancelled = true; };
-  }, [modulId, studentInfo.nim, hasExistingAnswer]);
+    // Deps sengaja kunci [modulId, nim, hasExistingAnswer]: kuis hanya di-fetch
+    // ulang bila modul/siswa/status-jawaban berganti; enrolledSubjects & kelas
+    // dibaca saat fetch berjalan (bukan pemicu refetch — menghindari loop).
+  }, [modulId, studentInfo.nim, hasExistingAnswer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ===== TIMER =====
   useEffect(() => {
@@ -635,7 +635,11 @@ const StudentQuizView = ({ modulId, studentData, onBack }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [quizStarted, isSubmitted, hasExistingAnswer]);
+    // timeLeft & handleAutoSubmit SENGAJA tidak masuk deps: interval harus
+    // dibuat sekali per mulai/stop (timeLeft lewat updater fungsi prev), dan
+    // handleAutoSubmit sudah diamankan dari stale closure lewat pola ref —
+    // lihat penjelasan panjang tepat di bawah effect ini.
+  }, [quizStarted, isSubmitted, hasExistingAnswer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 🔥 FIX BUG KRITIS #2 (stale closure pada auto-submit): `handleAutoSubmit`
   // dibungkus `useCallback` dengan deps `[isSubmitted, hasExistingAnswer]`.

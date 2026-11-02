@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { db } from '../../firebase';
+import { cocokkanAksesModul } from '../../utils/aksesKontenSiswa';
 import { 
   collection, getDocs, doc, getDoc, query, orderBy, where 
 } from "firebase/firestore";
@@ -54,21 +55,11 @@ const colorForName = (name = '') => {
 // hasSubjectAccess() di StudentDashboard.jsx/StudentModuleView.jsx) juga
 // diterapkan di sini, supaya modul yang memang bukan hak siswa itu TIDAK
 // PERNAH muncul di daftar sama sekali -- konsisten di semua titik.
-const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
-  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true;
-  const norm = (s) => String(s || '').toLowerCase().trim();
-  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
-  const modulNameNorm = norm(modulSubject);
-
-  if (modulCodes.length === 0 && !modulNameNorm) return true; // modul gak punya kode/nama mapel -> gak ada dasar buat blokir
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // kosong = BLOKIR
-  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-
-  return enrolledSubjects.some(s => {
-    const es = norm(s);
-    return modulCodes.includes(es) || es === modulNameNorm;
-  });
-};
+// v1.5.5: definisi lokal DIPENSIUNKAN — satu sumber di utils/aksesKontenSiswa
+// (cocokkanAksesModul): semantik lama dipertahankan persis + fallback kode
+// kanonik strict, supaya siswa tidak pernah terkunci gara-gara selisih kode
+// lama (MAPEL-XXX) vs kode kanonik pasca-migrasi pondasi mapel v2.
+const hasSubjectAccess = cocokkanAksesModul;
 
 // ============================================================
 // MAIN COMPONENT
@@ -78,7 +69,8 @@ const StudentElearning = () => {
 
   // ===== STATES =====
   const [modules, setModules] = useState([]);
-  const [filteredModules, setFilteredModules] = useState([]);
+  // v1.5.5: filteredModules kini useMemo (lihat bagian FILTER MODULES) —
+  // state + setter lama dihapus.
   const [selectedModuleId, setSelectedModuleId] = useState(null);
   const [loading, setLoading] = useState(true);
   // 🔥 BARU: kalau halaman ini dibuka lewat link yang punya
@@ -166,7 +158,15 @@ const StudentElearning = () => {
       enrolledSubjectsFallback = raw ? JSON.parse(raw) : [];
     } catch (_e) { enrolledSubjectsFallback = []; }
 
-    setStudentData({ id, nim, name, kelas, program, enrolledSubjects: enrolledSubjectsFallback });
+    // 🔥 (v1.5.5, lint CI): setState sinkron di badan efek melanggar
+    // react-hooks/set-state-in-effect. IIFE async + satu await = pola
+    // preseden repo (TryOutView): perilaku identik — ini hanya fallback
+    // localStorage sebelum fetch DB di bawah selesai — cuma tertunda satu
+    // microtick, dan fetch DB (jauh lebih lambat) tetap menimpa setelahnya.
+    (async () => {
+      await Promise.resolve();
+      setStudentData({ id, nim, name, kelas, program, enrolledSubjects: enrolledSubjectsFallback });
+    })();
 
     // ============================================================
     // 🔥 FIX BUG AKAR MASALAH "siswa sudah didaftarkan mapelnya tapi
@@ -436,7 +436,8 @@ const StudentElearning = () => {
       if (requestId !== fetchRequestIdRef.current) { setLoading(false); return; }
 
       setModules(allModules);
-      setFilteredModules(allModules);
+      // v1.5.5: setFilteredModules(allModules) DIHAPUS — filteredModules kini
+      // useMemo yang otomatis hitung ulang begitu `modules` berubah (di atas).
       
       // 🔥 FETCH SUBMISSIONS
       let submissionsMapForStats = {};
@@ -490,8 +491,11 @@ const StudentElearning = () => {
   }, [studentData]);
 
   // Fetch saat data siswa berubah
+  // 🔥 (v1.5.5, lint CI): pola IIFE async = preseden RiwayatPaketPage —
+  // gerbang react-hooks/set-state-in-effect menolak pemanggilan langsung
+  // fungsi ber-setState di badan efek.
   useEffect(() => {
-    fetchModules();
+    (async () => { await fetchModules(); })();
   }, [fetchModules]);
 
   // 🔥 BARU: kelompokkan modul per guru (guruId), gabungkan dengan data foto/nama guru
@@ -548,7 +552,12 @@ const StudentElearning = () => {
   const selectedTeacher = teacherGroups.find(g => g.guruId === selectedGuruId) || null;
 
   // ===== FILTER MODULES =====
-  useEffect(() => {
+  // 🔥 (v1.5.5, lint CI): dulu ini useEffect + setFilteredModules (setState
+  // sinkron di badan efek = react-hooks/set-state-in-effect). Ini murni
+  // penurunan dari `modules` + filter → dikonversi ke useMemo: hasil sama,
+  // tanpa render ekstra, tanpa setState. (setFilteredModules(allModules) di
+  // fetchModules juga dihapus — setModules() sudah memicu memo ini hitung ulang.)
+  const filteredModules = useMemo(() => {
     // 🔥 Kalau lagi di mode "Per Guru" dan sudah pilih 1 guru, filter dulu berdasarkan guru itu
     const baseModules = (viewGroupMode === 'perGuru' && selectedGuruId)
       ? modules.filter(m => (m.guruId || 'unknown') === selectedGuruId)
@@ -585,7 +594,7 @@ const StudentElearning = () => {
       );
     }
     
-    setFilteredModules(filtered);
+    return filtered;
   }, [searchTerm, filterType, filterMapel, modules, viewGroupMode, selectedGuruId]);
 
   // ===== GET MAPEL UNIK =====

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useReducer, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
+import { cocokkanAksesModul } from '../../utils/aksesKontenSiswa';
 import { 
   doc, getDoc, collection, addDoc, serverTimestamp, 
   query, where, getDocs, deleteDoc 
@@ -55,21 +56,11 @@ import katex from 'katex';
 // dan kalau gak ketemu, coba juga lewat NAMA mapel (dinormalisasi huruf
 // kecil + spasi) sebagai fallback -- supaya siswa yang benar didaftarkan
 // (baik dicatat pakai kode ATAU nama) tetap ketemu aksesnya.
-const hasSubjectAccess = (enrolledSubjects, modulSubject, modulKodeMapel) => {
-  if (!modulSubject || modulSubject.toLowerCase().trim() === 'umum') return true; // konten umum selalu bisa diakses siapa saja
-  const norm = (s) => String(s || '').toLowerCase().trim();
-  const modulCodes = String(modulKodeMapel || '').split(',').map(norm).filter(Boolean);
-  const modulNameNorm = norm(modulSubject);
-
-  if (modulCodes.length === 0 && !modulNameNorm) return true; // modul ini gak punya kode/nama mapel -> gak ada dasar buat blokir (masalah data materi, bukan siswa)
-  if (!Array.isArray(enrolledSubjects) || enrolledSubjects.length === 0) return false; // kosong = BLOKIR
-  if (enrolledSubjects.some(s => norm(s) === 'semua')) return true;
-
-  return enrolledSubjects.some(s => {
-    const es = norm(s);
-    return modulCodes.includes(es) || es === modulNameNorm;
-  });
-};
+// v1.5.5: definisi lokal DIPENSIUNKAN — satu sumber di utils/aksesKontenSiswa
+// (cocokkanAksesModul): semantik lama dipertahankan persis + fallback kode
+// kanonik strict, supaya siswa tidak pernah terkunci gara-gara selisih kode
+// lama (MAPEL-XXX) vs kode kanonik pasca-migrasi pondasi mapel v2.
+const hasSubjectAccess = cocokkanAksesModul;
 
 // ============================================================
 // 🔥 DIHAPUS: deriveEnrolledSubjectsFromSchedule()
@@ -1064,7 +1055,10 @@ const StudentModuleView = ({ modulId, onBack, studentData }) => {
 
     fetchAll(hasCachedVersion);
     return () => { cancelled = true; };
-  }, [modulId, studentNim, studentKelas, studentProgram]);
+    // Deps sengaja kunci identitas+modul: fetch ulang hanya bila siswa/modul
+    // berganti. studentData.enrolledSubjects dibaca via closure saat fetch
+    // berjalan; memasukkannya ke deps memicu refetch-loop tiap update siswa.
+  }, [modulId, studentNim, studentKelas, studentProgram]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 🔥 BARU: lacak progress scroll konten -- dipakai buat progress bar
   // tipis di atas & buat auto-tandai "sudah dibaca" begitu sebuah bagian

@@ -162,7 +162,90 @@ export function transformSiswaKeKodeKanonik(siswa = {}, petaKode = {}) {
   return { enrolledSubjects: keluar };
 }
 
+// ------------------------------------------------------------
+// v1.5.5 — TRANSFORMASI KOLEKSI IKUTAN (audit pra-migrasi 31 Okt 2026)
+// Kode mapel lama TIDAK cuma hidup di teachers/students/mapel. Ia juga
+// menempel di:
+//   - bimbel_modul (materi/kuis/tugas): field kodeMapel → dibaca pagar
+//     akses siswa hasSubjectAccess() di 4 halaman siswa. Kalau tidak ikut
+//     dimigrasi, siswa TERKUNCI dari modulnya sendiri (enrolled 'geo' vs
+//     modul 'MAPEL-019').
+//   - jadwal_bimbel: mapelId (id dokumen registry) + mapelName → kalau id
+//     dibiarkan menunjuk dokumen varian yang dinonaktifkan, referensi
+//     jadwal menggantung.
+//   - laporan_belajar: kodeMapel + namaMapel → halaman Laporan Belajar
+//     guru mencocokkan EKSAK per kode; capaian yang sudah diisi guru bisa
+//     "menghilang" dari menu (dan dari PDF) bila tidak ikut dipetakan.
+// Semua transformasi di bawah MURNI + JUJUR: yang tidak terpeta dibiarkan.
+// ------------------------------------------------------------
+
+/** Rewrite kodeMapel dokumen bimbel_modul. Kode kosong/'Semua'/tak terpeta
+ *  dibiarkan persis (jangan pernah mengarang). */
+export function transformModulKeKodeKanonik(modul = {}, petaKode = {}) {
+  const lama = String(modul.kodeMapel ?? '');
+  if (!lama.trim()) return { kodeMapel: modul.kodeMapel };
+  // kodeMapel modul bisa gabungan koma (jarang) — petakan per bagian
+  const bagian = lama.split(',').map((x) => x.trim()).filter(Boolean);
+  const baru = [];
+  for (const b of bagian) {
+    const k = petaKode[b] || petaKode[b.toLowerCase()] || b;
+    if (!baru.some((x) => x.toLowerCase() === k.toLowerCase())) baru.push(k);
+  }
+  return { kodeMapel: baru.join(', ') };
+}
+
+/** Rewrite referensi mapel dokumen jadwal_bimbel (mapelId → dokumen induk
+ *  kanonik, mapelName → nama kanonik). Peta disusun eksekutor dari rencana:
+ *  petaDocId[idLama]=idKanonik; petaNamaDariDocId[idLama]=nama kanonik;
+ *  petaNamaDariNamaLama[nama lama (lowercase)]=nama kanonik (jadwal tanpa id). */
+export function transformJadwalKeKodeKanonik(jadwal = {}, petaDocId = {}, petaNamaDariDocId = {}, petaNamaDariNamaLama = {}) {
+  const keluar = {};
+  const idLama = String(jadwal.mapelId ?? '');
+  if (idLama && petaDocId[idLama] && petaDocId[idLama] !== idLama) keluar.mapelId = petaDocId[idLama];
+  const namaLamaNorm = String(jadwal.mapelName ?? '').toLowerCase().trim();
+  const namaBaru = (idLama && petaNamaDariDocId[idLama]) || petaNamaDariNamaLama[namaLamaNorm] || '';
+  if (namaBaru && String(jadwal.mapelName ?? '') !== namaBaru) keluar.mapelName = namaBaru;
+  return keluar; // {} = tidak ada yang perlu diubah
+}
+
+/** Rewrite kodeMapel+namaMapel dokumen laporan_belajar (capaian guru).
+ *  Id dokumen TIDAK diganti (history aman); halaman guru mencocokkan lewat
+ *  field, dan simpanan berikutnya idempoten di kunci baru. */
+export function transformLaporanKeKodeKanonik(dok = {}, petaKode = {}, petaNama = {}) {
+  const lama = String(dok.kodeMapel ?? '');
+  if (!lama.trim()) return {};
+  const kodeBaru = petaKode[lama] || petaKode[lama.toLowerCase()] || '';
+  if (!kodeBaru) return {}; // tak terpeta = dibiarkan (jujur)
+  const keluar = { kodeMapel: kodeBaru };
+  const namaBaru = petaNama[lama];
+  if (namaBaru && String(dok.namaMapel ?? '') !== namaBaru) keluar.namaMapel = namaBaru;
+  return keluar;
+}
+
+/** Peta referensi turunan dari rencana (MURNI): id dokumen lama → id/nama
+ *  kanonik + nama lama (lowercase) → nama kanonik. Dipakai dry-run & eksekusi
+ *  untuk jadwal_bimbel. Id induk TIDAK dimasukkan ke petaDocId (induk dipakai
+ *  ulang di tempat — id tidak berubah; transformJadwal hanya remap yang beda). */
+export function bangunPetaReferensi(rencana = {}) {
+  const petaDocId = {};
+  const petaNamaDariDocId = {};
+  const petaNamaDariNamaLama = {};
+  for (const t of rencana.target || []) {
+    if (t.indukId) petaNamaDariDocId[t.indukId] = t.nama;
+    const nn = String(t.namaIndukLama || '').toLowerCase().trim();
+    if (nn) petaNamaDariNamaLama[nn] = t.nama;
+    for (const v of t.varianDinonaktifkan || []) {
+      if (v.id && t.indukId) { petaDocId[v.id] = t.indukId; petaNamaDariDocId[v.id] = t.nama; }
+      const vn = String(v.nama || '').toLowerCase().trim();
+      if (vn) petaNamaDariNamaLama[vn] = t.nama;
+    }
+  }
+  return { petaDocId, petaNamaDariDocId, petaNamaDariNamaLama };
+}
+
 export default {
   katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel,
   transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik, MAPEL_PROGRAM_LOKAL,
+  transformModulKeKodeKanonik, transformJadwalKeKodeKanonik, transformLaporanKeKodeKanonik,
+  bangunPetaReferensi,
 };

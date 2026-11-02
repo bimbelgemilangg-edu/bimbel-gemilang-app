@@ -67,6 +67,7 @@ Yang dilakukan eksekutor (batch Firestore, aman diulang/idempoten):
 - **Fase 1** — induk varian teramai dipakai ulang jadi dokumen kanonik (nama & `kodeMapel` diganti ke kanonik); varian lain ditandai `dinonaktifkan: true` + `digantikanKode` (TIDAK dihapus — jejak terjaga).
 - **Fase 2** — **daftarin ulang semua guru**: `mapelDetails`/`mapelIds`/`mapel`/`kodeMapel`/`mapelId` ditulis ulang ke kode kanonik; varian per guru dilebur jadi satu entri; id dokumen di-remap ke induk kanonik; mapel lokal guru yang tak dikenali **dipertahankan**.
 - **Fase 3** — `enrolledSubjects` siswa dipetakan ke kode kanonik (dedupe; `semua` dihormati; yang tak terpeta dibiarkan).
+- **Fase 3b/3c/3d (v1.5.5)** — kode mapel lama yang menempel di `bimbel_modul` (materi/kuis/tugas — dibaca pagar akses siswa), `jadwal_bimbel` (mapelId+mapelName), dan `laporan_belajar` (capaian guru) ikut dipetakan ke kanonik.
 - **Fase 4** — varian dinonaktifkan; semua picker (guru, siswa, jadwal) otomatis menyembunyikan entri `dinonaktifkan`.
 
 ## 4. Setelah migrasi
@@ -77,8 +78,28 @@ Yang dilakukan eksekutor (batch Firestore, aman diulang/idempoten):
 
 ## 5. Jaminan keamanan data
 
-- Dry-run murni (fungsi teruji, 6/6 subtest) — rencana dapat dihitung ulang kapan pun.
+- Dry-run murni (fungsi teruji) — rencana dapat dihitung ulang kapan pun.
 - Tidak ada `deleteDoc`: varian hanya dinonaktifkan (bisa dipulihkan manual di Firestore dengan menghapus flag).
 - Tak terpeta = dibiarkan (prinsip "jangan pernah menebak" dari v1.5).
 - Batch di-commit per ≤300 op; gagal di tengah = batch yang sudah commit tetap konsisten, jalankan ulang aman (idempoten).
-- Audit lengkap: jumlah disemai/dibuat/guru/siswa/varian tercatat di `mapel.migrasi-v2`.
+- Audit lengkap: jumlah disemai/dibuat/guru/siswa/modul/jadwal/laporan/varian tercatat di `mapel.migrasi-v2`.
+
+## 6. Audit "akar rambut terkecil" pra-klik (v1.5.5, 31 Okt 2026)
+
+Owner: *"cek dari akar rambut terkecil, jangan sampai ada siswa atau guru terblokir karena salah sistem atau bug"*. Hasil telusur SEMUA jalur yang menyentuh kode mapel — 3 celah ditemukan dan ditutup SEBELUM migrasi boleh diklik:
+
+| # | Celah | Akibat bila dibiarkan | Fix v1.5.5 |
+|---|---|---|---|
+| 1 | Kode mapel lama juga menempel di `bimbel_modul` (materi/kuis/tugas), `jadwal_bimbel`, `laporan_belajar` — migrasi awal cuma menulis guru+siswa | **Siswa terkunci dari modulnya sendiri** (enrolled `geo` vs modul `MAPEL-019`); capaian guru "menghilang" dari menu Laporan Belajar; referensi jadwal menggantung ke dokumen nonaktif | Eksekutor menambah Fase 3b/3c/3d: rewrite `kodeMapel` modul, `mapelId`+`mapelName` jadwal, `kodeMapel`+`namaMapel` laporan guru (id dokumen tak disentuh — history aman). Dry-run menampilkan hitungannya. |
+| 2 | Bug resolver sejak v1.5.3: kode `'bind'` terserempet aturan includes ke `'bindo tingkat lanjut'` → resolve salah ke `bind_tl` | Salah caplok mapel di PDF/guardrail/pagar akses | `kodeKurikulumDariNama`: exact-KODE dicek dulu (sebelum & sesudah norm, underscore aman), arah substring wajib ≥6 karakter dua sisi. Regression test ditambahkan. |
+| 3 | Pagar akses modul ada 4 salinan identik (`hasSubjectAccess` di 4 halaman siswa), pencocokan eksak saja | Satu dokumen modul yang lolos rewrite = siswa terkunci diam-diam | Satu sumber `cocokkanAksesModul()` di `aksesKontenSiswa.js`: semantik lama persis + fallback kode kanonik STRICT (anti jebakan `ipa`⊂`ipas`, `bind`⊂`bind_tl`); 4 halaman kini impor dari satu file. Latihan Harian ikut dinormalisasi dua sisi (aman di era pra- maupun pasca-migrasi). |
+
+**Bukti otomatis** (bukan janji): `tests/simulasiMigrasiV2.test.mjs` membangun dunia mock berantakan (varian ganda, guru legacy field-tunggal, program lokal, subtes UTBK, mapel tak dikenal, siswa `semua`/kosong, modul tanpa kode) lalu menjalankan seluruh rantai migrasi dan memverifikasi 7 invarian keras — yang terpenting: **setiap pasangan (siswa × modul) yang lolos pagar akses SEBELUM migrasi PASTI tetap lolos SESUDAH migrasi** (diuji berpasangan, bukan sampling), tidak ada `undefined` di payload mana pun (Firestore menolaknya), guru tak kehilangan mapel sah, capaian guru tetap tercocokkan eksak, jadwal tak menggantung, dan aturan owner "enrolledSubjects kosong = BLOKIR" tetap keras. Semua hijau (7/7; total 134 berkas uji lulus).
+
+Yang **TIDAK** disentuh migrasi (sengaja): status blokir/aktif siswa, kredensial login guru, dokumen history (notifikasi lama, submission, progres soal) — tidak ada jalur migrasi yang bisa memblokir akun siapa pun.
+
+## 7. Catatan operasional
+
+- Jalankan saat aplikasi sedang sepi (di luar jam kelas): eksekusi batch hanya beberapa detik, tetapi selama itu ada jendela singkat di mana sebagian data sudah kanonik dan sebagian belum (pagar akses v1.5.5 sudah toleran dua arah, jadi tidak ada yang terkunci — hanya daftar guru/siswa bisa tampak belum lengkap sejenak).
+- Setelah migrasi selesai: guru & admin yang sedang login sebaiknya **memuat ulang halaman** (state lama mereka masih memegang kode pra-migrasi).
+
