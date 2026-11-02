@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SidebarAdmin from '../../components/SidebarAdmin';
 import { db } from '../../firebase';
@@ -55,18 +55,16 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchAllData = async () => {
-    setLoading(true);
+  // v1.5.9 (buru pembakar kuota, 2 Nov 2026): ringkasan "hari ini" (jadwal +
+  // absensi + log guru) DIPISAH dari fetch penuh. Sebelumnya bagian ini ikut
+  // ter-fetch (a) tiap 60 detik DAN (b) tiap SATU perubahan dokumen absensi
+  // (onSnapshot) — saat jam kelas, tiap klik absen guru memicu scan PENUH
+  // students+teachers+finance_logs. Itulah akar kuota baca harian habis.
+  // Sekarang: fetch penuh hanya saat halaman dibuka; ringkasan ini yang
+  // di-poll 5 menit + debounce 3 detik setelah perubahan absensi.
+  const muatRingkasanHariIni = useCallback(async () => {
     try {
       const today = tanggalLokalHariIni();
-
-      // Fetch students
-      const snapSiswa = await getDocs(collection(db, "students"));
-      const siswaList = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // Fetch teachers
-      const snapGuru = await getDocs(collection(db, "teachers"));
-      const guruList = snapGuru.docs.map(d => ({ id: d.id, ...d.data() }));
 
       // Fetch schedules today
       const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", today));
@@ -136,6 +134,25 @@ const Dashboard = () => {
         }
       });
       setTeacherAttendanceStatus(statusList);
+    } catch (err) { console.error("Ringkasan harian error:", err); }
+  }, []);
+
+  const fetchAllData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const today = tanggalLokalHariIni();
+
+      // Fetch students
+      const snapSiswa = await getDocs(collection(db, "students"));
+      const siswaList = snapSiswa.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Fetch teachers
+      const snapGuru = await getDocs(collection(db, "teachers"));
+      const guruList = snapGuru.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // v1.5.9: ringkasan hari kini dipanggil sekali dari sini; poller-nya
+      // hidup terpisah di useEffect (5 menit, bukan fetch penuh 60 detik).
+      await muatRingkasanHariIni();
 
       // Finance stats
       let totalPiutang = 0, piutangJumlah = 0, totalAktif = 0;
@@ -226,19 +243,32 @@ const Dashboard = () => {
 
     } catch (err) { console.error("Dashboard error:", err); }
     finally { setLoading(false); }
-  };
+  }, [muatRingkasanHariIni]);
 
   useEffect(() => {
     fetchAllData();
-    const intervalId = setInterval(fetchAllData, 60000);
+    // v1.5.9: poll ringkasan harian kecil tiap 5 menit — BUKAN fetch penuh
+    // tiap 60 detik (pembakar kuota baca harian).
+    const intervalId = setInterval(muatRingkasanHariIni, 300000);
     // 🔥 FIX (zona waktu): sama seperti di fetchAllData -- tanggal buat
     // listener absensi ini harus waktu lokal, bukan UTC (toISOString),
     // biar subuh-subuh tetap memantau absensi HARI INI, bukan kemarin.
     const today = tanggalLokalHariIni();
     const q = query(collection(db, "attendance"), where("date", "==", today));
-    const unsubscribe = onSnapshot(q, () => fetchAllData());
-    return () => { clearInterval(intervalId); unsubscribe(); };
-  }, []);
+    // v1.5.9: perubahan absensi dulu memicu fetch PENUH per klik (puluhan
+    // scan penuh per kelas!). Sekarang: ringkasan saja, didebounce 3 detik
+    // supaya 20 klik beruntun = 1 query kecil, bukan 20 fetch penuh.
+    let tDeb = null;
+    const unsubscribe = onSnapshot(q, () => {
+      if (tDeb) clearTimeout(tDeb);
+      tDeb = setTimeout(() => muatRingkasanHariIni(), 3000);
+    });
+    return () => {
+      clearInterval(intervalId);
+      unsubscribe();
+      if (tDeb) clearTimeout(tDeb);
+    };
+  }, [fetchAllData, muatRingkasanHariIni]);
 
   const totalHadir = attendanceSummary.reduce((s, k) => s + k.totalHadir, 0);
   const totalTidakHadir = attendanceSummary.reduce((s, k) => s + k.totalTidakHadir, 0);
