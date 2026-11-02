@@ -11,6 +11,7 @@ import { Crown, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 // 🔥 BARU (insiden Firestore terbuka): verifikasi PIN dicoba lewat SERVER
 // lebih dulu, supaya browser tidak perlu lagi membaca `ownerPin`.
 import { verifikasiLewatServer } from '../utils/adminAuth';
+import { stempelAktivitas } from '../utils/sesiNganggur';
 import { catatAudit, KATEGORI } from '../utils/auditLog';
 
 const LoginOwner = () => {
@@ -28,6 +29,8 @@ const LoginOwner = () => {
     localStorage.removeItem("adminSession");
     localStorage.setItem("isOwnerLoggedIn", "true");
     localStorage.setItem("role", "owner");
+    // v1.6.0: mulai hitungan nganggur 30 menit dari titik login owner.
+    stempelAktivitas();
     catatAudit('login.sukses', {
       kategori: KATEGORI.AUTH,
       target: 'Portal Owner',

@@ -54,6 +54,7 @@
 // ============================================================
 
 import { db } from '../firebase';
+import { stempelAktivitas } from './sesiNganggur';
 import {
   collection, getDocs, getDoc, doc, setDoc, updateDoc, serverTimestamp,
   query, where,
@@ -298,6 +299,8 @@ export function simpanSesiAdmin(akun, peranEfektif) {
   // Kompatibilitas guard lama.
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('role', 'admin');
+  // v1.6.0: mulai hitungan nganggur dari titik login (jangan warisi stempel lama).
+  stempelAktivitas();
   // Sesi admin meniadakan sesi owner (aturan lama dipertahankan).
   localStorage.removeItem('isOwnerLoggedIn');
   return sesi;

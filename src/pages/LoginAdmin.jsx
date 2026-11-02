@@ -45,6 +45,10 @@ const LoginAdmin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // v1.6.0: jelaskan kenapa dilempar ke sini oleh pengawal sesi (30 menit
+  // nganggur = keluar paksa) — biar admin tidak mengira sistem rusak.
+  const keluarKarenaNganggur = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('sesi') === 'nganggur';
   const [sisaPercobaan, setSisaPercobaan] = useState(MAKS_PERCOBAAN);
   const [ cooldownAktif, setCooldownAktif ] = useState(false);
   const [detikCooldown, setDetikCooldown] = useState(0);
@@ -246,6 +250,13 @@ const LoginAdmin = () => {
           <h1 style={styles.title}>Portal Admin</h1>
           <p style={styles.subtitle}>Masuk dengan akun staf Anda sendiri</p>
         </div>
+
+        {keluarKarenaNganggur && (
+          <div style={{ ...styles.errorBox, background: '#eff6ff', borderColor: '#bfdbfe', color: '#1e40af' }} role="status">
+            <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>Demi keamanan data siswa & keuangan, sesi ditutup otomatis setelah 30 menit tanpa aktivitas. Silakan masuk kembali.</span>
+          </div>
+        )}
 
         {error && (
           <div style={styles.errorBox} role="alert">

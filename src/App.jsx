@@ -21,6 +21,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 // tidak dilempar ke halaman login (yang dulu ikut membunuh sesi adminnya).
 import { catatAudit, KATEGORI } from './utils/auditLog';
 import { ambilSesiAdmin, LABEL_PERAN_ADMIN } from './utils/adminAuth';
+import { usePengawalSesiNganggur } from './utils/sesiNganggur';
 // 🔥 BARU (2026-10-05, keluhan owner: nama yang dibenarkan admin tidak
 // berubah di HP siswa): profil siswa kini dibaca lewat satu pintu yang
 // MENYEGARKAN diri dari Firestore, bukan salinan localStorage saat login.
@@ -238,6 +239,9 @@ import TeacherLayout from './pages/teacher/TeacherLayout';
 // ============================================================
 
 const AdminRoute = ({ children }) => {
+  // v1.6.0: sesi admin kedaluwarsa setelah 30 menit nganggur (keputusan
+  // owner: komputer tertinggal terbuka = keuangan terbaca orang lewat).
+  usePengawalSesiNganggur();
   // 🔥 UPGRADE (pemisahan hak akses): area /admin/* boleh dimasuki
   // Admin Kasir (login password) ATAU Owner (login PIN). Owner adalah
   // super admin -- dia yang pegang keuangan besar, wajar kalau dia juga
@@ -371,6 +375,8 @@ const LayarTerkunciOwner = () => {
 };
 
 const OwnerRoute = ({ children }) => {
+  // v1.6.0: portal owner pun ikut kebijakan nganggur 30 menit.
+  usePengawalSesiNganggur();
   const isAuth = localStorage.getItem('isOwnerLoggedIn') === 'true';
   if (isAuth) return children;
 
