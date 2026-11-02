@@ -103,3 +103,23 @@ Yang **TIDAK** disentuh migrasi (sengaja): status blokir/aktif siswa, kredensial
 - Jalankan saat aplikasi sedang sepi (di luar jam kelas): eksekusi batch hanya beberapa detik, tetapi selama itu ada jendela singkat di mana sebagian data sudah kanonik dan sebagian belum (pagar akses v1.5.5 sudah toleran dua arah, jadi tidak ada yang terkunci — hanya daftar guru/siswa bisa tampak belum lengkap sejenak).
 - Setelah migrasi selesai: guru & admin yang sedang login sebaiknya **memuat ulang halaman** (state lama mereka masih memegang kode pra-migrasi).
 
+
+## 8. Audit pasca-klik produksi + v1.5.6 (2 Nov 2026)
+
+Owner mengklik MIGRASI di produksi. Audit menyeluruh via Firestore REST (bukan janji — baca data nyata):
+
+**Yang benar ✅** — 32 dokumen kanonik aktif lengkap: **Matematika (`mtk`, wajib semua fase) dan Matematika Tingkat Lanjut (`mtk_tl`, peminatan fase F) dua-duanya ada dan terpisah dengan benar**; 8 varian lama dinonaktifkan rapi dengan `digantikanKode`; 27 laporan guru semuanya sudah kanonik.
+
+**Dua klaster sisa yang ditemukan & dibereskan** (akar masalahnya data lama pra-migrasi, bukan mesin v2):
+
+| Klaster | Akar masalah | Dampak | Penanganan |
+|---|---|---|---|
+| A — kode yatim `MAPEL-012` | Dokumen registry "IPS (Pengganti)" pernah **dihapus manual** sebelum migrasi → kodenya tak ada di katalog, migrasi tak bisa memetakannya ("jangan menebak") | 1 guru, 11 siswa (`enrolledSubjects`), 8 modul, 7 jadwal masih memegang kode mati | Data produksi diperbaiki via REST (guru Asril, 8 modul → `ips`, sebagian commit atomik sudah masuk); v1.5.6 menambah **penyelamat kode yatim** (`petakanKodeYatim`) di eksekutor agar kasus serupa di masa depan terdeteksi otomatis dari nama pendampingnya |
+| B — resolver sufiks rakus | Bug v1.5.3: `"matematika minat sma"` membuang SEMUA sufiks sekaligus → jatuh ke `matematika` (`mtk`) sebelum alias `"matematika minat"` → `mtk_tl` sempat dicoba | MAPEL-017 (Matematika Minat SMA) salah lebur ke `mtk` wajib; 1 guru kehilangan entri peminatan, 5 siswa kehilangan `mtk_tl`, 3 modul minat berkode `mtk` | Resolver v1.5.6 membuang sufiks **bertahap** dan menguji tiap tahap (`matematika minat sma` → `matematika minat` → `mtk_tl` ✓); `digantikanKode` MAPEL-017 dikoreksi ke `mtk_tl`; guru MIFTAH dipulihkan `[mtk, mtk_tl]` di produksi |
+
+**Perbaikan kode v1.5.6:**
+1. `identitasMapel.js` — langkah 2 resolver kini iteratif: setiap tahap pembuangan sufiks diuji terhadap exact-nama & alias (regression test `matematika minat sma` → `mtk_tl`).
+2. `katalogMapelGemilang.js` — fungsi murni `petakanKodeYatim(entriBernama, petaKode)`: kode yang tidak dikenal katalog tapi punya nama pendamping yang resolve STRICT ke entri kanonik → dipetakan (bukan ditebak).
+3. `TeacherList.jsx` — dry-run DAN eksekusi memakai peta hasil merge kode yatim yang sama (dihitung dari snapshot live: guru `mapelDetails`+legacy split, modul `kodeMapel`+`subject`, laporan `kodeMapel`+`namaMapel`); modal menampilkan chip **"Kode yatim diselamatkan"** + detail `lama → tujuan`; audit `mapel.migrasi-v2` mencatat daftar kodenya.
+
+**Status reparasi data produksi:** commit atomik pertama sudah masuk (HTTP 200): guru Asril, 8 modul `MAPEL-012`→`ips`, MIFTAH `[mtk, mtk_tl]`, plus `digantikanKode` MAPEL-017→`mtk_tl`. Sisanya (11 siswa drop `MAPEL-012`, 7 jadwal `mapelName`→IPS, 5 siswa +`mtk_tl`, 3 modul minat→`mtk_tl`) tertunda **kuota baca harian Firestore habis** (429 RESOURCE_EXHAUSTED, free tier; tulis tidak terpengaruh) — skrip `scratchpad/reparasi-hemat.mjs` (structuredQuery, penjaga jumlah 11/8/3/7/5) siap dijalankan setelah reset kuota (~15:00 WIB). Tidak ada risiko lockout: ke-11 siswa itu sudah memegang `ips`. PENTING: karena sumber nama MAPEL-012 di produksi sudah dibersihkan, menjalankan ulang migrasi UI TIDAK bisa menyembuhkan sendiri sisa klaster A — skrip reparasi wajib dijalankan.

@@ -243,9 +243,31 @@ export function bangunPetaReferensi(rencana = {}) {
   return { petaDocId, petaNamaDariDocId, petaNamaDariNamaLama };
 }
 
+/** v1.5.6: pemetaan KODE YATIM — kode MAPEL-XXX yang dokumen registry-nya
+ *  sudah terlanjur DIHAPUS sebelum migrasi, tapi kodenya masih menempel di
+ *  dokumen guru (mapelDetails.namaMapel), modul (subject), atau laporan guru
+ *  (namaMapel). Nama pendampingnya di-resolve STRICT ke katalog; hanya yang
+ *  resolve yang dipetakan — yang tidak, dibiarkan (jangan pernah menebak).
+ *  Kasus nyata produksi: 'IPS (Pengganti)'<MAPEL-012> — 1 guru, 11 siswa,
+ *  8 modul nyangkut karena dokumennya dihapus admin sebelum migrasi v2.
+ *  @param {Array<{kodeLama:string,nama:string}>} entriBernama
+ *  @param {Object} petaKode pemetaan yang sudah ada (tidak akan ditimpa)
+ *  @returns {Object} tambahan pemetaan kodeYatim → kode kanonik */
+export function petakanKodeYatim(entriBernama = [], petaKode = {}) {
+  const kodeKatalog = new Set(katalogMapelGemilang().map((k) => k.kode));
+  const tambahan = {};
+  for (const e of entriBernama) {
+    const kode = String(e?.kodeLama || '').trim();
+    if (!kode || petaKode[kode] || tambahan[kode] || kodeKatalog.has(kode)) continue;
+    const kanonik = kodeKanonikDariNamaLama(e?.nama);
+    if (kanonik) tambahan[kode] = kanonik;
+  }
+  return tambahan;
+}
+
 export default {
   katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel,
   transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik, MAPEL_PROGRAM_LOKAL,
   transformModulKeKodeKanonik, transformJadwalKeKodeKanonik, transformLaporanKeKodeKanonik,
-  bangunPetaReferensi,
+  bangunPetaReferensi, petakanKodeYatim,
 };

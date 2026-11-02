@@ -25,10 +25,21 @@ const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9.+ ]/g, ' ').
 
 const semuaAlias = () => MAPEL_KURIKULUM.flatMap((m) => [m.nama, ...(m.alias || [])].map((a) => ({ kode: m.kode, kunci: norm(a) })));
 
-function buangSufiks(n) {
+/** v1.5.6: semua bentuk bertahap setelah sufiks jenjang dikelupas satu per
+ *  satu, dari yang TERPANJANG (paling spesifik) ke terpendek.
+ *  'matematika minat sma' → ['matematika minat', 'matematika'].
+ *  Kenapa: versi lama langsung mengelupas SEMUA sufiks sekaligus, sehingga
+ *  'Matematika minat SMA' jatuh ke 'matematika' (mtk wajib) — padahal
+ *  'matematika minat' adalah alias eksak mtk_tl (Tingkat Lanjut). Kasus
+ *  nyata di produksi: 11 jadwal + 3 modul + 5 siswa kelas 12 salah lebur. */
+function varianTanpaSufiks(n) {
   const token = n.split(' ');
-  while (token.length > 1 && SUFIKS.includes(token[token.length - 1])) token.pop();
-  return token.join(' ');
+  const hasil = [];
+  while (token.length > 1 && SUFIKS.includes(token[token.length - 1])) {
+    token.pop();
+    hasil.push(token.join(' '));
+  }
+  return hasil;
 }
 
 /** Kode Kurikulum Merdeka untuk satu nama mapel registry; '' bila tak dikenal.
@@ -52,10 +63,14 @@ export function kodeKurikulumDariNama(nama) {
   const alias = semuaAlias();
   // 1) exact alias (paling aman: 'ipas sd' ≠ 'ipa')
   let ketemu = alias.find((a) => a.kunci === n);
-  // 2) exact setelah sufiks jenjang dibuang ('geografi sma' → 'geografi')
+  // 2) exact setelah sufiks jenjang dibuang BERTAHAP — coba bentuk paling
+  //    spesifik dulu ('geografi sma' → 'geografi'; 'matematika minat sma' →
+  //    'matematika minat' = alias mtk_tl, BUKAN langsung 'matematika' = mtk)
   if (!ketemu) {
-    const tanpaSufiks = buangSufiks(n);
-    if (tanpaSufiks !== n) ketemu = alias.find((a) => a.kunci === tanpaSufiks);
+    for (const kandidat of varianTanpaSufiks(n)) {
+      ketemu = alias.find((a) => a.kunci === kandidat);
+      if (ketemu) break;
+    }
   }
   // 3) includes kunci panjang (>=6 karakter) — hindari jebakan 'ipa'⊂'ipas'.
   //    v1.5.5 FIX: arah kunci⊇input juga wajib input >=6 karakter, supaya

@@ -8,6 +8,7 @@ import {
   katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel,
   transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik,
   transformModulKeKodeKanonik, transformJadwalKeKodeKanonik, transformLaporanKeKodeKanonik,
+  petakanKodeYatim,
 } from '../src/utils/katalogMapelGemilang.js';
 
 let lulus = 0, gagal = 0;
@@ -141,6 +142,19 @@ uji('transform laporan belajar: capaian guru ikut kode kanonik; tak terpeta dibi
   assert.deepEqual(transformLaporanKeKodeKanonik({ kodeMapel: 'geo', namaMapel: 'Geografi' }, petaKode, petaNama), {}); // sudah kanonik = tidak ada yang ditulis (idempoten)
   assert.deepEqual(transformLaporanKeKodeKanonik({ kodeMapel: 'MAPEL-999' }, petaKode, petaNama), {}); // tak terpeta = jangan sentuh
   assert.deepEqual(transformLaporanKeKodeKanonik({ kodeMapel: '' }, petaKode, petaNama), {});
+});
+
+uji('v1.5.6 kode yatim: nama pendamping resolve strict, yang tidak = dibiarkan', () => {
+  const petaKode = { 'MAPEL-019': 'geo' };
+  const yatim = petakanKodeYatim([
+    { kodeLama: 'MAPEL-012', nama: 'IPS (Pengganti)' },  // kasus nyata produksi
+    { kodeLama: 'MAPEL-019', nama: 'GEOGRAFI SMA' },     // sudah terpeta — lewati
+    { kodeLama: 'geo', nama: 'Geografi' },               // sudah kanonik — lewati
+    { kodeLama: 'MAPEL-777', nama: 'Mapel Ajaib' },      // tak teresolve — JANGAN ditebak
+    { kodeLama: '', nama: 'Matematika' },                // tanpa kode — lewati
+    { kodeLama: 'MAPEL-017', nama: 'Matematika minat SMA' }, // resolver bertahap v1.5.6
+  ], petaKode);
+  assert.deepEqual(yatim, { 'MAPEL-012': 'ips', 'MAPEL-017': 'mtk_tl' });
 });
 
 uji('simulasi end-to-end: siswa TIDAK terkunci dari modul setelah migrasi penuh', () => {

@@ -8,7 +8,7 @@ import SidebarAdmin from '../../../components/SidebarAdmin';
 import { isOwnerSession } from '../../../utils/roleAkses';
 import { daftarMapelUntuk } from '../../../utils/kurikulumMerdeka';
 import { kodeKurikulumDariNama, namaKurikulum, grupVarian } from '../../../utils/identitasMapel';
-import { katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel, transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik, transformModulKeKodeKanonik, transformJadwalKeKodeKanonik, transformLaporanKeKodeKanonik, bangunPetaReferensi } from '../../../utils/katalogMapelGemilang';
+import { katalogMapelGemilang, kodeKanonikDariNamaLama, rencanaMigrasiMapel, transformGuruKeKodeKanonik, transformSiswaKeKodeKanonik, transformModulKeKodeKanonik, transformJadwalKeKodeKanonik, transformLaporanKeKodeKanonik, bangunPetaReferensi, petakanKodeYatim } from '../../../utils/katalogMapelGemilang';
 import { catatAudit, KATEGORI } from '../../../utils/auditLog';
 import { db, auth } from '../../../firebase';
 import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc, query, where, runTransaction, setDoc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
@@ -432,13 +432,57 @@ const TeacherList = () => {
   //  1) pastikan dokumen kanonik (reuse induk bila nama sudah kanonik),
   //  2) tulis ulang referensi guru (mapelDetails/mapelIds/mapel/kodeMapel),
   //  3) tulis ulang enrolledSubjects siswa (dedupe kode kanonik),
+  //  3b/3c/3d) v1.5.5: bimbel_modul + jadwal_bimbel + laporan_belajar,
   //  4) nonaktifkan varian yang dilebur + audit lengkap.
+  // v1.5.6: + penyelamatan KODE YATIM (dokumen registry sudah dihapus tapi
+  // kodenya masih menempel di guru/modul/laporan — nama pendampingnya
+  // di-resolve strict ke katalog; kasus nyata: 'IPS (Pengganti)'/MAPEL-012).
+
+  /** Kumpulkan pasangan (kodeLama, nama) dari semua koleksi untuk deteksi
+   *  kode yatim — nama pendamping adalah satu-satunya bukti yang tersisa
+   *  bila dokumen registry-nya sudah dihapus. */
+  const kumpulkanEntriBernama = (snapGuru, snapModul, snapLaporan) => {
+    const entri = [];
+    for (const dg of snapGuru.docs) {
+      const t = dg.data();
+      for (const m of (t.mapelDetails || [])) entri.push({ kodeLama: m?.kodeMapel, nama: m?.namaMapel });
+      const kodeList = String(t.kodeMapel || '').split(',').map((x) => x.trim()).filter(Boolean);
+      const namaList = String(t.mapel || '').split(',').map((x) => x.trim()).filter(Boolean);
+      kodeList.forEach((k, i) => entri.push({ kodeLama: k, nama: namaList[i] || '' }));
+    }
+    for (const dm of snapModul.docs) {
+      const m = dm.data();
+      for (const k of String(m.kodeMapel || '').split(',').map((x) => x.trim()).filter(Boolean)) {
+        entri.push({ kodeLama: k, nama: m.subject || '' });
+      }
+    }
+    for (const dl of snapLaporan.docs) {
+      const l = dl.data();
+      entri.push({ kodeLama: l.kodeMapel, nama: l.namaMapel });
+    }
+    return entri;
+  };
+
+  /** Gabungkan peta kode yatim ke petaKode/petaNama (mutasi terkontrol). */
+  const gabungKodeYatim = (petaKode, petaNama, entriBernama) => {
+    const yatim = petakanKodeYatim(entriBernama, petaKode);
+    const namaKanonik = Object.fromEntries(katalogMapelGemilang().map((k) => [k.kode, k.nama]));
+    for (const [kodeLama, tujuan] of Object.entries(yatim)) {
+      petaKode[kodeLama] = tujuan;
+      petaNama[kodeLama] = namaKanonik[tujuan] || tujuan;
+    }
+    return yatim;
+  };
+
   const hitungRencanaMigrasi = async () => {
     setSedangMigrasi('rencana');
     try {
-      const [snapGuru, snapSiswa] = await Promise.all([
+      const [snapGuru, snapSiswa, snapModul, snapJadwal, snapLaporan] = await Promise.all([
         getDocs(collection(db, 'teachers')),
         getDocs(collection(db, 'students')),
+        getDocs(collection(db, 'bimbel_modul')),
+        getDocs(collection(db, 'jadwal_bimbel')),
+        getDocs(collection(db, 'laporan_belajar')),
       ]);
       const guruPerKode = {};
       for (const dg of snapGuru.docs) {
@@ -463,15 +507,15 @@ const TeacherList = () => {
       // semua") — entri katalog yang belum ada di registry ikut dibuat.
       const kodeTarget = new Set(rencana.target.map((t) => t.kode));
       rencana.entriBaru = katalogMapelGemilang().filter((k) => !kodeTarget.has(k.kode));
+      // v1.5.6: selamatkan kode yatim SEBELUM menghitung dampak, supaya
+      // dry-run menampilkan angka yang benar-benar akan terjadi.
+      rencana.kodeYatim = gabungKodeYatim(
+        rencana.petaKode, rencana.petaNama,
+        kumpulkanEntriBernama(snapGuru, snapModul, snapLaporan),
+      );
       // v1.5.5 (audit pra-migrasi): kode mapel lama juga menempel di
       // bimbel_modul (pagar akses siswa!), jadwal_bimbel, laporan_belajar
-      // (capaian guru). Dry-run menghitung berapa yang akan ikut dirapikan —
-      // tanpa koleksi ini siswa bisa terkunci dari modulnya sendiri.
-      const [snapModul, snapJadwal, snapLaporan] = await Promise.all([
-        getDocs(collection(db, 'bimbel_modul')),
-        getDocs(collection(db, 'jadwal_bimbel')),
-        getDocs(collection(db, 'laporan_belajar')),
-      ]);
+      // (capaian guru). Dry-run menghitung berapa yang akan ikut dirapikan.
       const refPeta = bangunPetaReferensi(rencana);
       let modulDiubah = 0;
       for (const d of snapModul.docs) {
@@ -510,8 +554,10 @@ const TeacherList = () => {
     setSedangMigrasi('jalan');
     try {
       const rencana = rencanaMigrasi;
-      const petaKode = rencana.petaKode;
-      const petaNama = rencana.petaNama;
+      // v1.5.6: salinan peta — kode yatim hasil deteksi live di-merge ke
+      // sini supaya eksekusi memakai peta yang sama persis dengan dry-run.
+      const petaKode = { ...rencana.petaKode };
+      const petaNama = { ...rencana.petaNama };
       // Fase 1: dokumen kanonik.
       const petaDocId = {}; // id dokumen lama -> id dokumen kanonik
       let dibuat = 0;
@@ -562,6 +608,14 @@ const TeacherList = () => {
         getDocs(collection(db, 'jadwal_bimbel')),
         getDocs(collection(db, 'laporan_belajar')),
       ]);
+      // v1.5.6: selamatkan KODE YATIM dari snapshot live (dokumen registry
+      // sudah terhapus tapi kodenya masih menempel — kasus nyata MAPEL-012
+      // 'IPS (Pengganti)': tanpa ini kode tak dikenal bertahan selamanya di
+      // data siswa/modul/laporan). Nama pendamping di-resolve strict.
+      const yatimJalan = gabungKodeYatim(
+        petaKode, petaNama,
+        kumpulkanEntriBernama(snapGuru, snapModul, snapLaporan),
+      );
       let batch = writeBatch(db);
       let nBatch = 0;
       let guruDiubah = 0;
@@ -618,7 +672,7 @@ const TeacherList = () => {
       }
       // Fase 3c (v1.5.5): jadwal_bimbel — mapelId varian → dokumen induk
       // kanonik (jangan biarkan referensi menggantung ke dokumen nonaktif).
-      const refPeta = bangunPetaReferensi(rencana);
+      const refPeta = bangunPetaReferensi({ ...rencana, petaKode, petaNama });
       let jadwalDiubah = 0;
       for (const dj of snapJadwal.docs) {
         const t = transformJadwalKeKodeKanonik(dj.data(), petaDocId, refPeta.petaNamaDariDocId, refPeta.petaNamaDariNamaLama);
@@ -654,6 +708,7 @@ const TeacherList = () => {
       catatAuditMapelMigrasi({
         disemai: (rencana.entriBaru || []).length, dibuat, guruDiubah, siswaDiubah,
         modulDiubah, jadwalDiubah, laporanDiubah,
+        kodeYatimDiselamatkan: Object.keys(yatimJalan || {}),
         varian: rencana.nonaktif.length,
       });
       showAlert(`✅ Migrasi pondasi mapel v2 selesai: ${dibuat} dokumen kanonik dibuat; ${guruDiubah} guru, ${siswaDiubah} siswa, ${modulDiubah} modul/kuis, ${jadwalDiubah} jadwal, ${laporanDiubah} laporan guru dipetakan ulang; ${rencana.nonaktif.length} varian dinonaktifkan.`);
@@ -1370,6 +1425,7 @@ const TeacherList = () => {
                         { l: 'Modul/kuis dirapikan', v: rencanaMigrasi.modulDiubah ?? 0, c: '#0369a1' },
                         { l: 'Jadwal dirapikan', v: rencanaMigrasi.jadwalDiubah ?? 0, c: '#0369a1' },
                         { l: 'Laporan guru dirapikan', v: rencanaMigrasi.laporanDiubah ?? 0, c: '#0369a1' },
+                        { l: 'Kode yatim diselamatkan', v: Object.keys(rencanaMigrasi.kodeYatim || {}).length, c: '#b45309' },
                       ].map((s) => (
                         <div key={s.l} style={{ border: `1px solid ${s.c}33`, background: `${s.c}0d`, borderRadius: 8, padding: '6px 10px', fontSize: 11 }}>
                           <span style={{ fontWeight: 800, color: s.c, fontSize: 14, marginRight: 4 }}>{s.v}</span>
@@ -1377,6 +1433,21 @@ const TeacherList = () => {
                         </div>
                       ))}
                     </div>
+                    {Object.keys(rencanaMigrasi.kodeYatim || {}).length > 0 && (
+                      <details style={{ fontSize: 11, color: '#475569' }}>
+                        <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#b45309' }}>
+                          🧭 Kode yatim (dokumen registry sudah terhapus) akan dipetakan otomatis
+                        </summary>
+                        <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {Object.entries(rencanaMigrasi.kodeYatim).map(([lama, tujuan]) => (
+                            <span key={lama} style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 99, padding: '1px 8px' }}>
+                              <code style={{ fontSize: 9 }}>{lama}</code> → <code style={{ fontSize: 9, fontWeight: 700 }}>{tujuan}</code>
+                              <span style={{ color: '#78716c' }}> ({rencanaMigrasi.petaNama?.[lama] || tujuan})</span>
+                            </span>
+                          ))}
+                        </div>
+                      </details>
+                    )}
                     {(rencanaMigrasi.entriBaru?.length ?? 0) > 0 && (
                       <details style={{ fontSize: 11, color: '#475569' }}>
                         <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#166534' }}>

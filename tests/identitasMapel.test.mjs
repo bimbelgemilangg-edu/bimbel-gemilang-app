@@ -62,5 +62,21 @@ uji('v1.5.5: kode pendek resolve ke dirinya — jebakan "bind"⊂"bindo tingkat 
   assert.equal(kodeKurikulumDariNama('bind_tl'), 'bind_tl');
 });
 
+uji('v1.5.6: sufiks dikelupas BERTAHAP — "Matematika minat SMA" = mtk_tl, bukan mtk wajib', () => {
+  // bug produksi nyata: varian 'Matematika minat SMA' (MAPEL-017) salah lebur
+  // ke mtk karena sufiks dikelupas rakus sekaligus ('minat'+'sma' → 'matematika')
+  assert.equal(kodeKurikulumDariNama('Matematika minat SMA'), 'mtk_tl');
+  assert.equal(kodeKurikulumDariNama('MATEMATIKA PEMINATAN'), 'mtk_tl');
+  assert.equal(kodeKurikulumDariNama('Matematika Tingkat Lanjut'), 'mtk_tl');
+  // yang wajib tetap wajib
+  assert.equal(kodeKurikulumDariNama('Matematika SMA'), 'mtk');
+  assert.equal(kodeKurikulumDariNama('Matematika SD'), 'mtk');
+  assert.equal(kodeKurikulumDariNama('Matematika'), 'mtk');
+  // nama lain tidak berubah perilakunya
+  assert.equal(kodeKurikulumDariNama('IPS (Pengganti)'), 'ips');
+  assert.equal(kodeKurikulumDariNama('BAHASA INGGRIS SMA'), 'bing');
+  assert.equal(kodeKurikulumDariNama('Bahasa Indonesia peminatan'), 'bind_tl');
+});
+
 console.log(`\n${gagal === 0 ? '✅' : '❌'} identitasMapel: ${lulus} lulus, ${gagal} gagal`);
 process.exit(gagal === 0 ? 0 : 1);
