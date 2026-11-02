@@ -3,7 +3,7 @@
 // Step 2 Mengajar + Latihan Live (menanam LiveSessionTeacher, mesin live
 // berbasis bab buku digital) -> Step 3 Laporan + honor.
 // TIDAK lagi memakai KelasLivePanel (dihapus) supaya mesin live cuma satu.
-// Google Form laporan materi DIHAPUS 31 Okt 2026 (keputusan owner): jawaban
+// Google Form laporan materi DIHAPUS 2 Nov 2026 (keputusan owner): jawaban
 // masuk spreadsheet Google, bukan Firestore, jadi tak pernah terbaca raport.
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';

@@ -123,7 +123,7 @@ const TeacherSalaries = () => {
   const [showPinPrompt, setShowPinPrompt] = useState(false);
   const [pinError, setPinError] = useState('');
 
-  // ⚠️ GOOGLE FORM DIHAPUS (31 Okt 2026, keputusan owner). Dulu ada panel
+  // ⚠️ GOOGLE FORM DIHAPUS (2 Nov 2026, keputusan owner). Dulu ada panel
   // "Google Form Laporan Materi Guru" di halaman ini: 5 link (SD/SMP/SMA/
   // English/Default) disimpan ke settings/google_forms lalu dibuka otomatis
   // di HP guru sesudah mengakhiri sesi. Masalahnya: jawaban masuk ke
