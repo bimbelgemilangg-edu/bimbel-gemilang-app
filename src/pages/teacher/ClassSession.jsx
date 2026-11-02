@@ -1,8 +1,10 @@
 // src/pages/teacher/ClassSession.jsx
 // Alur kelas hybrid: Step 1 Absensi (bukti guru + QR siswa) ->
 // Step 2 Mengajar + Latihan Live (menanam LiveSessionTeacher, mesin live
-// berbasis bab buku digital) -> Step 3 Laporan + honor + Google Form.
+// berbasis bab buku digital) -> Step 3 Laporan + honor.
 // TIDAK lagi memakai KelasLivePanel (dihapus) supaya mesin live cuma satu.
+// Google Form laporan materi DIHAPUS 31 Okt 2026 (keputusan owner): jawaban
+// masuk spreadsheet Google, bukan Firestore, jadi tak pernah terbaca raport.
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
@@ -42,7 +44,6 @@ const ClassSession = () => {
   const [siswaTerpilih, setSiswaTerpilih] = useState(null);
   const [materiFileUploadedUrl, setMateriFileUploadedUrl] = useState('');
   const [uploadingMateriFile, setUploadingMateriFile] = useState(false);
-  const [googleForms, setGoogleForms] = useState({ sd: '', smp: '', sma: '', english: '', default: '' });
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth <= 768);
@@ -91,8 +92,9 @@ const ClassSession = () => {
             { id: 'sma', label: 'SMA', pricePerHour: 50000 },
           ] });
         }
-        const fd = await getDoc(doc(db, 'settings', 'google_forms'));
-        if (fd.exists()) setGoogleForms(fd.data());
+        // settings/google_forms tidak dibaca lagi (fitur dihapus). Bonus:
+        // satu read Firestore hilang tiap kali guru membuka halaman kelas --
+        // relevan karena kuota read free-tier sempat jebol (v1.5.9).
         setLoading(false);
       } catch { alert('❌ Gagal memuat data kelas'); navigate('/guru/dashboard'); }
     };
@@ -104,12 +106,21 @@ const ClassSession = () => {
     const today = new Date().toISOString().split('T')[0];
     const q = query(collection(db, 'attendance'), where('date', '==', today), where('scheduleId', '==', schedule.id));
     const un = onSnapshot(q, (snap) => {
-      const m = { ...attendanceMap };
-      snap.docs.forEach((d) => {
-        const data = d.data();
-        if (schedule.students && schedule.students.some((s) => s.id === data.studentId)) m[data.studentId] = statusDariDokumenAbsensi(data);
+      // Bentuk FUNGSIONAL (prev => ...), bukan menutup nilai `attendanceMap`
+      // dari render saat efek berlangganan. Closure lama itu BASI: snapshot
+      // yang datang sesudah tentor menandai absen manual membangun ulang peta
+      // dari salinan lama, sehingga tanda manual sempat lenyap dari layar.
+      // Padahal `attendanceMap` inilah yang memutuskan Alpha vs Hadir dan
+      // menghitung `siswaHadir` untuk honor guru -- jadi ini urusan uang,
+      // bukan sekadar kedipan UI. Sekaligus menuntaskan warning exhaustive-deps.
+      setAttendanceMap((prev) => {
+        const m = { ...prev };
+        snap.docs.forEach((d) => {
+          const data = d.data();
+          if (schedule.students && schedule.students.some((s) => s.id === data.studentId)) m[data.studentId] = statusDariDokumenAbsensi(data);
+        });
+        return m;
       });
-      setAttendanceMap(m);
     });
     return () => un();
   }, [schedule]);
@@ -238,9 +249,7 @@ const ClassSession = () => {
         fotoAbsensiUrl: absensiUploadedUrl, materiFileUrl: materiFileUploadedUrl || null,
       });
       await updateDoc(doc(db, 'jadwal_bimbel', schedule.id), { status: 'completed', completedAt: serverTimestamp(), completedEarly: !isPast });
-      const link = googleForms[(schedule.level || 'sd').toLowerCase()] || googleForms.default || '';
-      alert('✅ Kelas Berhasil Disimpan!\n\n📚 Materi: ' + materiAktual + '\n👥 Kehadiran: ' + hadirList.length + '/' + (schedule.students || []).length + (link ? '\n\n📋 Klik OK untuk membuka Google Form laporan materi' : ''));
-      if (link) window.open(link, '_blank');
+      alert('✅ Kelas Berhasil Disimpan!\n\n📚 Materi: ' + materiAktual + '\n👥 Kehadiran: ' + hadirList.length + '/' + (schedule.students || []).length);
       navigate('/guru/dashboard');
     } catch (e) { alert('Gagal menyimpan sesi: ' + e.message); }
     finally { setLoading(false); }

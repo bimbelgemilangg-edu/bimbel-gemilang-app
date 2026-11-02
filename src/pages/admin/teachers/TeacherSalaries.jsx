@@ -12,7 +12,7 @@ import {
   collection, getDocs, doc, addDoc, deleteDoc, updateDoc, getDoc, setDoc,
   serverTimestamp  // 🔥 TAMBAHKAN INI
 } from "firebase/firestore";
-import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, FileText, Calendar, Link, Save, Globe } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Download, Eye, X, ChevronRight, Home, DollarSign, FileText, Calendar, Save, Globe } from 'lucide-react';
 
 const TeacherSalaries = () => {
   const navigate = useNavigate();
@@ -123,17 +123,14 @@ const TeacherSalaries = () => {
   const [showPinPrompt, setShowPinPrompt] = useState(false);
   const [pinError, setPinError] = useState('');
 
-  // 🔥 STATE UNTUK GOOGLE FORM
-  const [showFormSettings, setShowFormSettings] = useState(false);
-  const [googleForms, setGoogleForms] = useState({
-    sd: '',
-    smp: '',
-    sma: '',
-    english: '',
-    default: ''
-  });
-  const [savingForm, setSavingForm] = useState(false);
-  const [formSaved, setFormSaved] = useState(false);
+  // ⚠️ GOOGLE FORM DIHAPUS (31 Okt 2026, keputusan owner). Dulu ada panel
+  // "Google Form Laporan Materi Guru" di halaman ini: 5 link (SD/SMP/SMA/
+  // English/Default) disimpan ke settings/google_forms lalu dibuka otomatis
+  // di HP guru sesudah mengakhiri sesi. Masalahnya: jawaban masuk ke
+  // spreadsheet Google, BUKAN Firestore -- jadi tidak pernah tersambung ke
+  // raport otomatis maupun ke data siswa mana pun. Barang mati. Penggantinya
+  // (pengukuran "siswa paham atau tidak" sehabis kelas) harus hidup DI DALAM
+  // aplikasi supaya terbaca raportOtomatis. Jangan pasang lagi di sini.
 
   // 🔥 FETCH salaryRules (dari settings/global_config, field yang SAMA
   // yang dibaca ClassSession.jsx) + ownerPin (buat verifikasi).
@@ -250,22 +247,6 @@ const TeacherSalaries = () => {
     setSavingKomisi(false);
   };
 
-  // 🔥 FETCH GOOGLE FORM SETTINGS
-  useEffect(() => {
-    const fetchGoogleForms = async () => {
-      try {
-        const docRef = doc(db, "settings", "google_forms");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setGoogleForms(docSnap.data());
-        }
-      } catch (error) {
-        console.error("Error fetching google forms:", error);
-      }
-    };
-    fetchGoogleForms();
-  }, []);
-
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -275,23 +256,6 @@ const TeacherSalaries = () => {
   const showAlert = (msg) => {
     setAlertMsg(msg);
     setTimeout(() => setAlertMsg(null), 3000);
-  };
-
-  // 🔥 SAVE GOOGLE FORM SETTINGS
-  const handleSaveGoogleForms = async () => {
-    setSavingForm(true);
-    try {
-      await setDoc(doc(db, "settings", "google_forms"), {
-        ...googleForms,
-        updatedAt: new Date().toISOString()
-      });
-      setFormSaved(true);
-      showAlert("✅ Link Google Form berhasil disimpan!");
-      setTimeout(() => setFormSaved(false), 3000);
-    } catch (error) {
-      showAlert("❌ Gagal menyimpan: " + error.message);
-    }
-    setSavingForm(false);
   };
 
   // ============================================================
@@ -362,6 +326,14 @@ const TeacherSalaries = () => {
     finally { setLoading(false); }
   };
 
+  // `fetchData` SENGAJA tidak dimasukkan ke dependensi. Efek ini memang hanya
+  // boleh jalan ulang saat filter berubah (rentang tanggal / master guru).
+  // `fetchData` menutup banyak state lain (viewDetail, rekapList, ...), jadi
+  // menjadikannya dependensi -- langsung maupun lewat useCallback -- membuat
+  // efek ini berlangganan ulang tiap render dan memuat koleksi penuh berulang
+  // kali: persis pola pembakaran kuota read Firestore yang bikin jebol dan
+  // diperbaiki di v1.5.9. Jangan "dirapikan" tanpa membaca catatan ini.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchData(); }, [startDate, endDate, teachersMaster]);
 
   // ============================================================
@@ -719,104 +691,12 @@ const TeacherSalaries = () => {
             >
               <DollarSign size={14} /> {isMobile ? 'Komisi' : 'Pengaturan Komisi'}
             </button>
-            <button 
-              onClick={() => setShowFormSettings(!showFormSettings)} 
-              style={styles.btnGoogleForm(isMobile)}
-            >
-              <Link size={14} /> {isMobile ? 'Form' : 'Google Form'}
-            </button>
             <div style={styles.totalBox(isMobile)}>
               <small style={{fontWeight:'bold'}}>TOTAL PENGELUARAN:</small>
               <h2 style={{color:'#27ae60', margin:0, fontSize: isMobile ? 18 : 24}}>Rp {totalPengeluaran.toLocaleString()}</h2>
             </div>
           </div>
         </div>
-
-        {/* 🔥 GOOGLE FORM SETTINGS */}
-        {showFormSettings && (
-          <div style={styles.formSettingsCard}>
-            <div style={styles.formSettingsHeader}>
-              <h4 style={styles.formSettingsTitle}><Link size={18} /> Google Form Laporan Materi Guru</h4>
-              <button 
-                onClick={() => setShowFormSettings(false)} 
-                style={styles.formSettingsClose}
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <p style={styles.formSettingsDesc}>
-              Atur link Google Form untuk laporan materi yang akan diisi guru setelah selesai mengajar.
-              Link akan otomatis terbuka saat guru mengakhiri sesi.
-            </p>
-            
-            <div style={styles.formGrid}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SD</label>
-                <input 
-                  type="url" 
-                  placeholder="https://forms.google.com/..." 
-                  value={googleForms.sd || ''}
-                  onChange={(e) => setGoogleForms(prev => ({...prev, sd: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SMP</label>
-                <input 
-                  type="url" 
-                  placeholder="https://forms.google.com/..." 
-                  value={googleForms.smp || ''}
-                  onChange={(e) => setGoogleForms(prev => ({...prev, smp: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>📚 SMA</label>
-                <input 
-                  type="url" 
-                  placeholder="https://forms.google.com/..." 
-                  value={googleForms.sma || ''}
-                  onChange={(e) => setGoogleForms(prev => ({...prev, sma: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>🇬🇧 English</label>
-                <input 
-                  type="url" 
-                  placeholder="https://forms.google.com/..." 
-                  value={googleForms.english || ''}
-                  onChange={(e) => setGoogleForms(prev => ({...prev, english: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>🔗 Default (Semua Jenjang)</label>
-                <input 
-                  type="url" 
-                  placeholder="https://forms.google.com/..." 
-                  value={googleForms.default || ''}
-                  onChange={(e) => setGoogleForms(prev => ({...prev, default: e.target.value}))}
-                  style={styles.formInput}
-                />
-              </div>
-            </div>
-            
-            <div style={styles.formActions}>
-              <button 
-                onClick={handleSaveGoogleForms} 
-                disabled={savingForm}
-                style={{
-                  ...styles.btnSaveForm,
-                  opacity: savingForm ? 0.6 : 1,
-                  background: formSaved ? '#10b981' : '#3b82f6'
-                }}
-              >
-                {savingForm ? '⏳ Menyimpan...' : formSaved ? '✅ Tersimpan' : <><Save size={16} /> Simpan Link</>}
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* 🔥 BARU: PANEL PENGATURAN KOMISI -- terkunci owner. Dicek
             DUA KALI (isOwnerVerified di kondisi render DAN di
@@ -1169,20 +1049,6 @@ const styles = {
   pageTitle: (m) => ({ margin:0, fontSize: m ? 16 : 20, display:'flex', alignItems:'center', gap:8 }),
   subtitle: (m) => ({ color:'#94a3b8', marginTop:5, fontSize: m ? 11 : 13 }),
   totalBox: (m) => ({ textAlign: m ? 'center' : 'right', background:'#f0fdf4', padding: m ? '10px 15px' : '10px 20px', borderRadius:12, border:'1px solid #bbf7d0' }),
-  
-  btnGoogleForm: (m) => ({ 
-    background: '#8b5cf6', 
-    color: 'white', 
-    border: 'none', 
-    padding: m ? '8px 12px' : '10px 16px', 
-    borderRadius: 8, 
-    cursor: 'pointer', 
-    fontWeight: 'bold', 
-    fontSize: m ? 11 : 12, 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: 4 
-  }),
 
   // 🔥 BARU
   btnKomisiSettings: (m) => ({
@@ -1429,34 +1295,6 @@ const styles = {
     justifyContent: 'center',
   },
 
-  formGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: 12,
-    marginBottom: 16
-  },
-  
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4
-  },
-  
-  formLabel: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: '#64748b'
-  },
-  
-  formInput: {
-    padding: '8px 12px',
-    borderRadius: 8,
-    border: '1px solid #e2e8f0',
-    fontSize: 12,
-    outline: 'none',
-    transition: '0.2s'
-  },
-  
   formActions: {
     display: 'flex',
     justifyContent: 'flex-end'
