@@ -76,7 +76,13 @@ const StudentList = () => {
 
   const getMasaAktifStatus = (s) => {
     if (!s.tanggalSelesai) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9', days: null };
-    
+
+    // v1.5.8-hotfix: tanggalSelesai rusak ('-' tersimpan bila tanggalMulai
+    // kosong, atau string sampah) dulu jatuh ke cabang else = label 'Aktif'
+    // SELAMANYA (NaN gagal di semua perbandingan). Sekarang jujur: tidak diketahui.
+    const selesaiParse = new Date(s.tanggalSelesai);
+    if (Number.isNaN(selesaiParse.getTime())) return { label: 'Tidak Diketahui', color: '#94a3b8', bg: '#f1f5f9', days: null };
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const selesai = new Date(s.tanggalSelesai);

@@ -47,6 +47,10 @@ test('tambahBulanKeTanggal: clamp akhir bulan — 31 Jan + 1 bln = 28 Feb, BUKAN
   assert.equal(tambahBulanKeTanggal('2026-01-31', 1), '2026-02-28');
   assert.equal(tambahBulanKeTanggal('2028-01-31', 1), '2028-02-29', 'tahun kabisat');
   assert.equal(tambahBulanKeTanggal('2026-01-30', 1), '2026-02-28');
+  // v1.5.8-hotfix: MUNDUR dari akhir bulan juga di-clamp (regresi pembatalan
+  // perpanjangan di TransactionHistory: setMonth mentah 31 Mar -1 = 3 Mar).
+  assert.equal(tambahBulanKeTanggal('2026-03-31', -1), '2026-02-28', 'mundur akhir bulan di-clamp');
+  assert.equal(tambahBulanKeTanggal('2026-05-31', -3), '2026-02-28', 'mundur lintas bulan pendek');
   assert.equal(tambahBulanKeTanggal('2026-08-31', 6), '2027-02-28');
 });
 

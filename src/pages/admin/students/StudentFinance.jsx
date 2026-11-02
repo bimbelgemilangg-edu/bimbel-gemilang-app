@@ -587,6 +587,18 @@ const StudentFinance = () => {
 
       await batch.commit();
 
+      // v1.5.8-hotfix (kasus Wafiyy, 2 Nov 2026): uang & kwitansi tercatat tapi
+      // tanggal selesai di dokumen siswa pernah TIDAK ikut berubah (ketimpa
+      // simpanan halaman lain afterwards). Satu bacaan "kuitansi verifikasi"
+      // jauh lebih murah daripada siswa diam-diam jadi "HABIS" padahal bayar.
+      try {
+        const cekSnap = await getDoc(doc(db, 'students', id));
+        const cekSelesai = String(cekSnap.data()?.tanggalSelesai || '').slice(0, 10);
+        if (cekSelesai !== String(newSelesaiStr).slice(0, 10)) {
+          showAlert(`⚠️ Pembayaran tercatat, TAPI tanggal selesai di data siswa terbaca ${cekSelesai || '(kosong)'} — seharusnya ${newSelesaiStr}. Segera cek Koreksi Data siswa ini; jangan dibiarkan.`);
+        }
+      } catch { /* verifikasi gagal tidak boleh membatalkan transaksi sukses */ }
+
       const teksBulan = rencana.bulanBonus > 0
         ? `${rencana.bulanBayar} bulan + ${rencana.bulanBonus} bulan promo`
         : `${rencana.bulanBayar} bulan`;

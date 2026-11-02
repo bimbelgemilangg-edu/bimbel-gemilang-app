@@ -459,7 +459,18 @@ const EditStudent = () => {
         paketNama: paketName,
         detailProgram: detailProgram,
         tanggalMulai: formData.tanggalMulai,
-        tanggalSelesai: getTanggalSelesai(),
+        // v1.5.8-hotfix (kasus nyata Wafiyy, 2 Nov 2026): perpanjangan menghitung
+        // tanggal selesai secara BERANTAI dari tanggal selesai lama (bukan dari
+        // tanggal mulai), jadi rumus `tanggalMulai + durasiBulan` di sini bisa
+        // MELESET beberapa hari dari tanggal yang sudah dibayar siswa. Selama
+        // admin TIDAK mengubah tanggal mulai / durasi, tanggal selesai tersimpan
+        // DIPERTAHANKAN apa adanya — hitung ulang hanya bila dua field itu
+        // memang sengaja diubah.
+        tanggalSelesai: (
+          String(formData.tanggalMulai || '') === String(originalData?.tanggalMulai || '') &&
+          parseInt(formData.durasiBulan || 0) === parseInt(originalData?.durasiBulan || 0) &&
+          originalData?.tanggalSelesai
+        ) ? originalData.tanggalSelesai : getTanggalSelesai(),
         durasiBulan: parseInt(formData.durasiBulan),
         totalTagihan: total,
         status: formData.status,
@@ -489,6 +500,30 @@ const EditStudent = () => {
         payload.enrolledSubjects = mapelList.length
           ? selectedMapelCodes.filter((k) => mapelSah.some((m) => m.kodeMapel === k))
           : selectedMapelCodes;
+      }
+
+      // v1.5.8-hotfix (keluhan owner 2 Nov 2026: "menu koreksi membuat admin
+      // bingung & takut salah"): sebelum menulis, tunjukkan SECARA EKSPLISIT
+      // field uang/paket yang akan berubah. Kasus Wafiyy terjadi karena
+      // simpanan halaman ini diam-diam memundurkan tanggal selesai yang
+      // SUDAH DIBAYAR — admin tidak pernah diberi tahu.
+      const perubahanSensitif = [];
+      if (String(payload.tanggalSelesai || '') !== String(originalData?.tanggalSelesai || '')) {
+        perubahanSensitif.push(`tanggal selesai paket: ${originalData?.tanggalSelesai || '(kosong)'} → ${payload.tanggalSelesai}`);
+      }
+      if (Number(payload.totalTagihan || 0) !== Number(originalData?.totalTagihan || 0)) {
+        perubahanSensitif.push(`total tagihan: Rp ${Number(originalData?.totalTagihan || 0).toLocaleString('id-ID')} → Rp ${Number(payload.totalTagihan || 0).toLocaleString('id-ID')}`);
+      }
+      if (Number(payload.durasiBulan || 0) !== Number(originalData?.durasiBulan || 0)) {
+        perubahanSensitif.push(`durasi paket: ${originalData?.durasiBulan || 0} → ${payload.durasiBulan} bulan`);
+      }
+      if (perubahanSensitif.length > 0) {
+        const yakin = window.confirm(
+          `⚠️ SIMPANAN INI MENGUBAH FIELD UANG/PAKET:\n\n${perubahanSensitif.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\n`
+          + 'Pastikan perubahan ini memang disengaja. Bila ragu, BATALKAN dan cek '
+          + 'Riwayat Pembayaran siswa dulu di halaman Keuangan.\n\nLanjutkan simpan?'
+        );
+        if (!yakin) return;
       }
 
       await updateDoc(doc(db, "students", id), payload);

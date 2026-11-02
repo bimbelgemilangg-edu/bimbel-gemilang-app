@@ -8,6 +8,7 @@ import {
   Filter, Search, Edit3, Trash2, X, Save, RefreshCw, Calendar, Lock, Clock, Printer
 } from 'lucide-react';
 import { ambilNomorKwitansiBerikutnya, cetakKwitansi } from '../../../utils/kwitansi';
+import { tambahBulanKeTanggal } from '../../../utils/durasiPaket';
 // 🔥 BARU (hotfix 2026-10-13): pintu koreksi nominal/metode transaksi
 // (diskon / salah input) dengan kaskade atomik ke data siswa + jejak audit.
 import DialogKoreksiTransaksi from '../../../components/DialogKoreksiTransaksi';
@@ -302,11 +303,13 @@ const TransactionHistory = () => {
     const durasi = parseInt(item.durasiTambah || 0);
 
     // Balikin tanggalSelesai mundur sejumlah bulan yang sama seperti pas ditambahkan
+    // v1.5.8-hotfix: pakai util TERUJI dengan clamp akhir bulan — sebelumnya
+    // `d.setMonth(d.getMonth() - durasi)` mentah: batal perpanjangan 1 bulan
+    // dari 31 Mar "mundur" ke 31 Feb → overflow JS jadi 3 MAR (bukan 28 Feb).
+    // Siswa bisa tetap memegang ~1 bulan yang seharusnya sudah dibatalkan.
     let newSelesai = null;
     if (s.tanggalSelesai) {
-      const d = new Date(s.tanggalSelesai);
-      d.setMonth(d.getMonth() - durasi);
-      newSelesai = d.toISOString().split('T')[0];
+      newSelesai = tambahBulanKeTanggal(String(s.tanggalSelesai).slice(0, 10), -durasi) || null;
     }
 
     const newTotalTagihan = Math.max(0, parseInt(s.totalTagihan || 0) - amount);
