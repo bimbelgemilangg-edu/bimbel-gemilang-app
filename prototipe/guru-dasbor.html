@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototipe · Dasbor Guru — Gemilang</title>
+  <link rel="stylesheet" href="token.css">
+</head>
+<body>
+  <div class="ponsel">
+    <div class="ribbon-contoh">DATA CONTOH — PROTOTIPE FASE 0, BUKAN APLIKASI HIDUP</div>
+
+    <div class="layar">
+      <header class="kepala">
+        <div class="avatar" aria-hidden="true">RI</div>
+        <div>
+          <h1>Halo, Rina</h1>
+          <p>Minggu ke-14 · 4 kelas · 2 menunggu tindakanmu</p>
+        </div>
+        <button class="lonceng" type="button" aria-label="Notifikasi (2 belum dibaca)">🔔</button>
+      </header>
+
+      <!-- TINDAKAN UTAMA LAYAR INI: mulai kelas berikutnya -->
+      <section class="kartu hero" aria-labelledby="judul-kelas">
+        <span class="kartu-meta">HARI INI · 15:00–16:30 · RUANG 2</span>
+        <h2 id="judul-kelas">Matematika · 9A</h2>
+        <span class="kartu-meta">18 siswa terdaftar · materi: Pecahan & skala</span>
+        <div style="margin-top: var(--j4); display:flex; gap: var(--j2);">
+          <button class="tombol" type="button" style="flex:2;background:#fff;color:var(--merek-ungu);">▶ Mulai kelas & absen</button>
+          <button class="tombol tombol-sekunder" type="button" style="flex:1;">Rincian</button>
+        </div>
+      </section>
+
+      <div class="stat-baris">
+        <div class="stat"><b>28</b><span>jam mengajar bulan ini</span></div>
+        <div class="stat"><b style="color:var(--peringatan-teks);">1.120.000</b><span>honor menunggu validasi (Rp)</span></div>
+      </div>
+
+      <section class="kartu" aria-label="Utang tindakan guru">
+        <h2 class="kartu-judul">Menunggu tindakanmu</h2>
+        <div class="baris-daftar">
+          <div>
+            <b>Kuis pasca-kelas · Pecahan 9A</b>
+            <small>8 jawaban siswa menunggu penilaian · tenggat sebelum kelas berikutnya</small>
+          </div>
+          <span class="lencana perarahan">2 hari</span>
+        </div>
+        <div class="baris-daftar">
+          <div>
+            <b>Usulan try out minggu ke-15</b>
+            <small>menunggu kelengkapan stok soal IPA (18/20 butir)</small>
+          </div>
+          <span class="lencana perarahan">stok</span>
+        </div>
+        <div class="baris-daftar">
+          <div>
+            <b>Laporan belajar periode Oktober</b>
+            <small>23 dari 23 siswa selesai — tidak ada utang</small>
+          </div>
+          <span class="lencana ok">✓ tuntas</span>
+        </div>
+      </section>
+
+      <section class="kartu" aria-label="Partisipasi kelas minggu ini">
+        <h2 class="kartu-judul">Partisipasi kelas · minggu ini</h2>
+        <div class="batang-baris" role="img" aria-label="Partisipasi per hari: Senin 80%, Selasa 65%, Rabu 90%, Kamis 70%, Sabtu 55%">
+          <div class="batang" style="height:80%"><i style="height:100%"></i><span>Sen</span></div>
+          <div class="batang" style="height:65%"><i style="height:100%"></i><span>Sel</span></div>
+          <div class="batang" style="height:90%"><i style="height:100%"></i><span>Rab</span></div>
+          <div class="batang" style="height:70%"><i style="height:100%"></i><span>Kam</span></div>
+          <div class="batang" style="height:55%"><i style="height:100%;background:var(--peringatan-teks);"></i><span>Sab</span></div>
+        </div>
+        <p class="kartu-meta" style="margin-top: var(--j3);">Sabtu 55% = 8 dari 14 siswa belum membuka try out minggu ini · daftar nama ada di Kendali Penilaian (staf saja)</p>
+      </section>
+
+      <section class="kartu" aria-label="Contoh keadaan">
+        <h2 class="kartu-judul">Keadaan lain (demo desain)</h2>
+        <div class="banner sukses" style="margin-bottom: var(--j3);">✓ Semua kelas hari ini selesai. Foto absensi & materi tersimpan.</div>
+        <div class="kosong" style="background: var(--latar-lapis2); border-radius: var(--radius-kontrol); margin-bottom: var(--j3);">
+          <b>Tidak ada utang kuis</b>
+          Kuis pasca-kelas yang dinilai akan muncul di sini beserta tenggatnya.
+        </div>
+        <div class="kerangka" role="status" aria-label="Memuat kartu"></div>
+      </section>
+
+      <a class="tautan-prototipe" href="siswa-jalur.html">→ kembali ke prototipe jalur siswa</a>
+    </div>
+
+    <nav class="bilah" aria-label="Navigasi bawah">
+      <button type="button" aria-current="page"><span class="ikon">🏠</span>Dasbor</button>
+      <button type="button"><span class="ikon">📚</span>Kelas</button>
+      <button type="button"><span class="ikon">✅</span>Absensi</button>
+      <button type="button"><span class="ikon">💵</span>Honor</button>
+      <button type="button"><span class="ikon">👤</span>Profil</button>
+    </nav>
+  </div>
+</body>
+</html>

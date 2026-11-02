@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototipe · Jalur Siswa — Gemilang</title>
+  <link rel="stylesheet" href="token.css">
+</head>
+<body>
+  <div class="ponsel">
+    <div class="ribbon-contoh">DATA CONTOH — PROTOTIPE FASE 0, BUKAN APLIKASI HIDUP</div>
+
+    <div class="layar">
+      <header class="kepala">
+        <div class="avatar" aria-hidden="true">NA</div>
+        <div>
+          <h1>Halo, Nadia</h1>
+          <p>Kelas 9A · progres kewajiban minggu ini 76%</p>
+        </div>
+        <button class="lonceng" type="button" aria-label="Notifikasi (3 belum dibaca)">🔔</button>
+      </header>
+
+      <!-- TINDAKAN UTAMA LAYAR INI: kerjakan try out minggu ini -->
+      <section class="kartu hero" aria-labelledby="judul-hero">
+        <span class="kartu-meta">MINGGU KE-14 · JENDELA SABTU 07:00 – MINGGU 23:59</span>
+        <h2 id="judul-hero">Try Out Minggu Ini:<br>Matematika · Penalaran</h2>
+        <span class="kartu-meta">25 soal · 40 menit · pembahasan dibuka setelah jendela tutup</span>
+        <div style="margin-top: var(--j4);">
+          <button class="tombol tombol-penuh" type="button" style="background:#fff;color:var(--merek-ungu);">▶ Kerjakan sekarang</button>
+        </div>
+      </section>
+
+      <div class="stat-baris">
+        <div class="stat"><b>6</b><span>try out selesai</span></div>
+        <div class="stat"><b>12,5</b><span>jam belajar bulan ini</span></div>
+      </div>
+
+      <section aria-label="Jalur try out mingguan">
+        <div class="kartu">
+          <h2 class="kartu-judul">JalurmU</h2>
+          <p class="kartu-meta" style="margin-top:-6px;">12 dari 15 teman kelas 9A sudah selesai minggu ini</p>
+          <div class="jalur" aria-label="Peta jalur: 2 minggu selesai, minggu ini aktif, 2 minggu depan terkunci">
+            <div class="node-baris">
+              <div class="node selesai" role="button" tabindex="0" aria-label="Minggu 12 selesai, bintang 3">M12<span class="bintang">★3</span></div>
+              <div class="node selesai" role="button" tabindex="0" aria-label="Minggu 13 selesai, bintang 2">M13<span class="bintang">★2</span></div>
+            </div>
+            <div class="node-baris">
+              <div class="node aktif" role="button" tabindex="0" aria-label="Minggu 14: minggu ini, belum dikerjakan">M14<br>sekarang</div>
+              <div class="node libur" aria-label="Minggu 15 libur sekolah">M15<br>libur</div>
+            </div>
+            <div class="node-baris">
+              <div class="node terkunci" aria-label="Minggu 16 terkunci, terbuka Sabtu 07:00" aria-disabled="true">🔒 M16</div>
+              <div class="node terkunci" aria-label="Minggu 17 terkunci (siluet rencana, belum ada soal)" aria-disabled="true">🔒 M17</div>
+            </div>
+          </div>
+          <p class="kartu-meta">Bintang = ikut tepat waktu & tuntas · skor tetap angka tersendiri di Analitik</p>
+        </div>
+      </section>
+
+      <section aria-label="Mapel pada jenjangmu">
+        <div class="chip-baris">
+          <button class="chip" type="button" aria-pressed="true">MTK</button>
+          <button class="chip" type="button" aria-pressed="false">IPA</button>
+          <button class="chip" type="button" aria-pressed="false">BIND</button>
+          <button class="chip" type="button" aria-pressed="false">BING</button>
+        </div>
+      </section>
+
+      <section class="kartu" aria-label="Contoh keadaan">
+        <h2 class="kartu-judul">Keadaan lain (demo desain)</h2>
+        <div class="banner info" style="margin-bottom: var(--j3);">ℹ️ Kunci & pembahasan terbuka serentak setelah jendela tutup — supaya nilaimu dan nilai temanmu sama-sama berarti.</div>
+        <div class="kosong" style="background: var(--latar-lapis2); border-radius: var(--radius-kontrol); margin-bottom: var(--j3);">
+          <b>Belum ada try out minggu ini</b>
+          Coba Latihan Harian dulu — 10 soal Leitner menunggumu.
+        </div>
+        <div class="kerangka" role="status" aria-label="Memuat kartu"></div>
+      </section>
+
+      <a class="tautan-prototipe" href="guru-dasbor.html">→ lihat prototipe dasbor guru</a>
+    </div>
+
+    <nav class="bilah" aria-label="Navigasi bawah">
+      <button type="button"><span class="ikon">🏠</span>Beranda</button>
+      <button type="button" aria-current="page"><span class="ikon">🗺️</span>Jalur</button>
+      <button type="button"><span class="ikon">📊</span>Analitik</button>
+      <button type="button"><span class="ikon">📄</span>Laporan</button>
+      <button type="button"><span class="ikon">👤</span>Profil</button>
+    </nav>
+  </div>
+</body>
+</html>
