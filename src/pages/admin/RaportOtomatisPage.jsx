@@ -40,7 +40,7 @@ import { db } from '../../firebase';
 import {
   hitungRaportSemuaSiswa, rentangPeriode, bangunDokumenRaport,
   bolehTimpaRaportFinal, VERSI_MESIN, MAPEL_PROSES, cocokSasaran, buatRingkasan,
-  alasanSiswaNonaktif,
+  alasanSiswaNonaktif, waktuMs, waktuSelesaiSesi,
 } from '../../utils/raportOtomatis';
 import { htmlRaportSiswa, htmlRaportMassal, judulCetakRaport, labelPeriodeManusiawi } from '../../utils/raportCetak';
 import { cetakLewatIframe } from '../../utils/kwitansi';
@@ -227,6 +227,43 @@ export default function RaportOtomatisPage() {
 
   // ---------------- HITUNG (pratinjau) ----------------
   const periodeOpts = modePeriode === 'bulan' ? { bulan } : { mulai: mulaiBulan, selesai: selesaiBulan };
+
+  // v1.5.7 (keluhan owner: "nilai semua gak keluar, absensi 0 semua"):
+  // raport bulanan HANYA menghitung log yang jatuh di jendela periode — itu
+  // desain, bukan bug, tapi admin harus langsung bisa melihatnya. Ringkasan
+  // ini membandingkan aktivitas DI DALAM periode vs SELURUH log, sehingga
+  // "periode November baru berjalan 2 hari" langsung terbaca, bukan disangka
+  // data hilang. Diturunkan SETELAH semua useState (aturan TDZ v1.5.2).
+  const ringkasJendela = useMemo(() => {
+    if (!mentah) return null;
+    let periode = null;
+    try { periode = rentangPeriode(periodeOpts); } catch { return null; }
+    const dalam = (ms) => ms !== null && ms >= periode.mulaiMs && ms < periode.selesaiMs;
+    const hitung = (daftar, ambilMs) => {
+      let dalamP = 0; let total = 0;
+      for (const d of daftar || []) {
+        const ms = ambilMs(d);
+        if (ms === null) continue;
+        total += 1;
+        if (dalam(ms)) dalamP += 1;
+      }
+      return { dalamP, total };
+    };
+    // Cermin persis filter jendela di mesin (hitungRaportSemuaSiswa).
+    const kuis = hitung(mentah.kuis, (k) => waktuMs(k.submittedAt ?? k.createdAt));
+    const sesi = hitung(mentah.sesi, (s) => (s.status === 'selesai' ? waktuSelesaiSesi(s) : null));
+    const absensi = hitung(mentah.absensi, (a) => {
+      const tgl = String(a.tanggal || a.date || '').slice(0, 10);
+      return tgl ? waktuMs(tgl) : waktuMs(a.timestamp ?? a.createdAt);
+    });
+    const tugas = hitung(mentah.tugas, (t) => waktuMs(t.submittedAt ?? t.createdAt));
+    const latihan = hitung(mentah.progresSoal, (p) => waktuMs(p.terakhirDicoba) ?? waktuMs(p.updatedAt));
+    const jumlahDalam = kuis.dalamP + sesi.dalamP + absensi.dalamP + tugas.dalamP + latihan.dalamP;
+    const jumlahLuar = (kuis.total - kuis.dalamP) + (sesi.total - sesi.dalamP)
+      + (absensi.total - absensi.dalamP) + (tugas.total - tugas.dalamP) + (latihan.total - latihan.dalamP);
+    return { kuis, sesi, absensi, tugas, latihan, jumlahDalam, jumlahLuar, label: periode.label };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mentah, modePeriode, bulan, mulaiBulan, selesaiBulan]);
 
   // Periode yang akan dibuka untuk pengisian guru = periode yang sedang
   // dipilih admin di halaman ini (konsisten dengan rapor yang dicetak).
@@ -776,6 +813,28 @@ export default function RaportOtomatisPage() {
             {sedangMenghitung && <span style={{ color: '#4f46e5' }}> · menghitung…</span>}
             <span style={{ color: '#94a3b8' }}> · pratinjau dihitung otomatis setiap filter/periode berubah — tanpa tombol</span>
           </div>
+          {ringkasJendela && (
+            <div style={{
+              marginTop: 8, padding: '8px 10px', borderRadius: 8, fontSize: 11.5, lineHeight: 1.55,
+              border: `1px solid ${ringkasJendela.jumlahDalam === 0 && ringkasJendela.jumlahLuar > 0 ? '#fde68a' : '#e2e8f0'}`,
+              background: ringkasJendela.jumlahDalam === 0 && ringkasJendela.jumlahLuar > 0 ? '#fffbeb' : '#f8fafc',
+              color: '#475569',
+            }}>
+              <b style={{ color: '#334155' }}>📅 Jendela periode {ringkasJendela.label}:</b>{' '}
+              dalam periode — {ringkasJendela.kuis.dalamP} kuis · {ringkasJendela.sesi.dalamP} sesi TO · {ringkasJendela.absensi.dalamP} absensi · {ringkasJendela.tugas.dalamP} tugas · {ringkasJendela.latihan.dalamP} latihan{' '}
+              <span style={{ color: '#94a3b8' }}>| seluruh log — {ringkasJendela.kuis.total} kuis · {ringkasJendela.sesi.total} TO · {ringkasJendela.absensi.total} absensi · {ringkasJendela.tugas.total} tugas · {ringkasJendela.latihan.total} latihan</span>
+              {ringkasJendela.jumlahDalam === 0 && ringkasJendela.jumlahLuar > 0 && (
+                <div style={{ marginTop: 4, color: '#92400e', fontWeight: 600 }}>
+                  ⚠️ Belum ada aktivitas apa pun DI DALAM periode ini, padahal ada {ringkasJendela.jumlahLuar} log di luar periode. Raport bulanan hanya menghitung log dalam jendela — bukan data hilang. Periode ini kemungkinan baru dimulai; untuk rapor yang terisi, pilih bulan sebelumnya atau gunakan mode rentang (mis. Okt–Nov).
+                </div>
+              )}
+              {ringkasJendela.jumlahDalam > 0 && ringkasJendela.jumlahLuar > ringkasJendela.jumlahDalam * 9 && (
+                <div style={{ marginTop: 4, color: '#92400e' }}>
+                  ℹ️ Sebagian besar aktivitas ({ringkasJendela.jumlahLuar} log) berada DI LUAR periode terpilih — hanya {ringkasJendela.jumlahDalam} log yang ikut terhitung. Itu sesuai desain raport bulanan; gunakan mode rentang bila ingin menggabungkan beberapa bulan.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ============ SAKELAR PENGISIAN LAPORAN BELAJAR (GURU) ============ */}

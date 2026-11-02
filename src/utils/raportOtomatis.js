@@ -62,6 +62,7 @@ import { kodeMapel as kodeMapelDariNama } from './aliasMapel.js';
 import { mapelBerlaku, petakanNamaMapel, daftarMapelUntuk } from './kurikulumMerdeka.js';
 import { jenjangBaku } from './jenjangBaku.js';
 import { KATALOG_MAPEL, MAPEL_UTBK } from './mesinTaksonomiSoal.js';
+import { katalogMapelGemilang } from './katalogMapelGemilang.js';
 import {
   skorSatuSoal, soalBisaDinilai, isSoalEsai, pilihSoalDinilai,
 } from './skorSoalTryOut.js';
@@ -210,16 +211,36 @@ export function tanggalUtc(ms) {
 // ------------------------------------------------------------
 
 const PETA_NAMA_MAPEL = new Map(KATALOG_MAPEL.map((m) => [m.kode, m.nama]));
+/** v1.5.7: katalog kanonik v2 = sumber nama TERDEPAN (owner: "nama mapel
+ * masih aneh" — kode sah seperti prog_tka dulu jatuh ke title-case 'Prog Tka'
+ * karena taksonomi lama tidak mengenal kode program v2). */
+const PETA_KATALOG_V2 = new Map(katalogMapelGemilang().map((m) => [m.kode, m]));
 /** subtes UTBK ('PU') → kode mapel ('utbk_pu'). */
 const PETA_SUBTES_KE_KODE = new Map(MAPEL_UTBK.map((m) => [m.subtes, m.kode]));
 
 /** Nama mapel yang bisa dibaca manusia dari kode (fallback: title-case). */
 export function namaMapel(kode) {
   const k = String(kode || '');
+  const v2 = PETA_KATALOG_V2.get(k) || PETA_KATALOG_V2.get(k.toLowerCase());
+  if (v2) return v2.nama;
   if (PETA_NAMA_MAPEL.has(k)) return PETA_NAMA_MAPEL.get(k);
   const utbk = MAPEL_UTBK.find((m) => m.kode === k);
   if (utbk) return utbk.nama;
   return k.replace(/_/g, ' ').replace(/(^|\s)([a-z])/g, (_, p, c) => p + c.toUpperCase());
+}
+
+/** Kelompok katalog v2 untuk sebuah kode ('sekolah-wajib'|'sekolah-peminatan'|
+ * 'program-utbk'|'program'); '' bila kode tak dikenal katalog. */
+export function kelompokKatalogV2(kode) {
+  const k = String(kode || '');
+  const v2 = PETA_KATALOG_V2.get(k) || PETA_KATALOG_V2.get(k.toLowerCase());
+  return v2 ? String(v2.kelompok || '') : '';
+}
+
+/** Kode PROGRAM (prog_* lokal & subtes UTBK) — bukan mapel sekolah. */
+export function isKodeProgramKatalog(kode) {
+  const g = kelompokKatalogV2(kode);
+  return g === 'program' || g === 'program-utbk';
 }
 
 /** Normalisasi mapel kuis/tugas (string bebas dari guru) → kode standar.
@@ -735,6 +756,12 @@ export function hitungRaportSiswa({
   for (const kode of kodeTerdaftar) {
     if (!kode || kodeSemua.has(kode) || kodeSah.includes(kode)) continue;
     if (!mapelSahUntukSiswa(kode, konteksJenjang).sah) continue; // jaring pengaman tetap
+    // v1.5.7: kode PROGRAM (prog_*, subtes UTBK) yang terdaftar tapi belum
+    // punya data terukur TIDAK dijadikan baris "rencana" — program bukan
+    // mapel sekolah, dan hasil try out-nya sudah menetes ke mapel per subtes
+    // (matematika/bahasa/…). Baris kosong 'Prog Tka' hanya membuat PDF orang
+    // tua berisik dan nama tampak aneh (keluhan owner 2 Nov 2026).
+    if (isKodeProgramKatalog(kode)) continue;
     kodeSah.push(kode);
   }
   kodeSah.sort();

@@ -730,5 +730,44 @@ uji('v1.5.1 reparasi identitas: alias menyelamatkan log yatim tanpa menulis ulan
   assert.equal(salah.ringkasan.logDireparasi.kuis, 0);
 });
 
+// ===== v1.5.7: nama katalog v2 + baris program di Blok A =====
+// Keluhan owner 2 Nov 2026 setelah cetak massal 9 SMP: "nama mapel masih
+// aneh" (baris 'Prog Tka' & 'Mapel-012' tanpa nilai di setiap PDF).
+const dataKosong = (siswa, ekstra = {}) => ({
+  siswa, paket: [], kuis: [], sesi: [], absensi: [], tugas: [],
+  nilaiGuru: [], progresSoal: [], soalMeta: {}, progresSiswa: [], ...ekstra,
+});
+
+uji('v1.5.7: nama mapel mengikuti katalog kanonik v2 (bukan lagi "Prog Tka"); kode tak dikenal tetap title-case jujur', () => {
+  assert.equal(namaMapel('prog_tka'), 'TKA — Tes Kompetensi Akademik');
+  assert.equal(namaMapel('prog_engc'), 'English Course');
+  assert.equal(namaMapel('mtk_tl'), 'Matematika Tingkat Lanjut');
+  assert.equal(namaMapel('mapel-012'), 'Mapel-012'); // kode asing: jangan mengarang
+});
+
+uji('v1.5.7: kode PROGRAM tanpa data terukur tidak jadi baris "rencana" di Blok A', () => {
+  const h = hitungRaportSemuaSiswa(dataKosong([
+    { id: 'dP', studentId: 'p-1', nama: 'Purwa', jenjang: 'SMP/MTs', kelasSekolah: '9', enrolledSubjects: ['mtk', 'prog_tka', 'utbk_pu', 'MAPEL-012'] },
+  ]), { bulan: '2026-11' });
+  const t = h.siswa.find((s) => s.studentId === 'p-1');
+  const kode = t.akademik.perMapel.map((m) => m.kode);
+  assert.ok(kode.includes('mtk'));        // mapel sekolah tetap jadi baris rencana
+  assert.ok(!kode.includes('prog_tka'));  // program tanpa data = bukan baris berisik
+  assert.ok(!kode.includes('utbk_pu'));   // subtes UTBK tanpa data = bukan baris
+  assert.ok(kode.includes('mapel-012'));  // kode tak dikenal TETAP tampil jujur (sampai data direparasi)
+});
+
+uji('v1.5.7: program yang PUNYA data terukur tetap tampil dengan nama katalog', () => {
+  const h = hitungRaportSemuaSiswa(dataKosong(
+    [{ id: 'dP2', studentId: 'p-2', nama: 'Purwi', jenjang: 'SMA/MA', kelasSekolah: '12', enrolledSubjects: ['prog_engc'] }],
+    { kuis: [{ studentNim: 'p-2', studentName: 'Purwi', kodeMapel: 'prog_engc', subject: 'English Course', score: 88, correctAnswers: 8, totalQuestions: 10, submittedAt: ts('2026-11-01T03:00:00Z') }] },
+  ), { bulan: '2026-11' });
+  const t = h.siswa.find((s) => s.studentId === 'p-2');
+  const eng = t.akademik.perMapel.find((m) => m.kode === 'prog_engc');
+  assert.ok(eng);
+  assert.equal(eng.nama, 'English Course');
+  assert.equal(eng.komponen.kuis.nilai, 88);
+});
+
 console.log(`\n${gagal === 0 ? '✅' : '❌'} raportOtomatis: ${lulus} lulus, ${gagal} gagal`);
 process.exit(gagal === 0 ? 0 : 1);
