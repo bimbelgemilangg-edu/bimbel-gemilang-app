@@ -23,9 +23,10 @@ import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 import { daftarIdGuru } from '../../utils/identitasGuru';
 import { bolehTampilUmum } from '../../utils/statusTryOutPaket';
 import {
-  mapelDiampuGuru, filterSiswaUntukGuru, statusPengisianSiswa,
   FIELD_LAPORAN_BELAJAR, pengisianDibuka,
+  kunciPencocokLaporan, kunciQuerySiswaUntukGuru, hitungTugasLaporanBelajar,
 } from '../../utils/laporanBelajar';
+import { potongUntukQuery } from '../../utils/papanJelajah';
 
 // ============================================================
 // LOGO COMPONENT - Menggunakan gambar dari folder public
@@ -165,40 +166,51 @@ const TeacherDashboard = () => {
 
   // ===== TUGAS PENGISIAN LAPORAN BELAJAR =====
   // Reaktif terhadap sakelar admin (onSnapshot settings) sehingga kartu
-  // muncul/hilang tanpa refresh. Beban ringan: hanya saat periode dibuka.
+  // muncul/hilang tanpa refresh — TETAPI sejak v1.6.2 dua pembakar kuota
+  // dipadamkan:
+  //   1. siswa tidak lagi dibaca SELURUH koleksi; hanya query tertarget
+  //      `array-contains` per mapel ampuan (+ 'semua'), sebesar denominasi;
+  //   2. laporan_belajar tidak lagi dibaca seluruh periode; hanya dokumen
+  //      milik siswa guru ini (chunk ≤30 untuk batas `in` Firestore);
+  //   3. hitungan TIDAK ulang jalan bila irisan settings yang relevan
+  //      (FIELD_LAPORAN_BELAJAR) tidak berubah — perubahan gaji/sakelar/PIN
+  //      oleh admin tidak lagi memicu bacaan apa pun di HP guru.
+  // Logika hitungan pindah ke util murni hitungTugasLaporanBelajar (teruji).
   useEffect(() => {
     let batal = false;
     const ref = doc(db, 'settings', 'global_config');
+    let sidikTerakhir;
     const hitung = async (cfgLaporan) => {
       const putus = pengisianDibuka(cfgLaporan);
       if (!putus.dibuka || !guru) { if (!batal) setLaporanTugas(null); return; }
       try {
-        const [snapSiswa, snapLaporan] = await Promise.all([
-          getDocs(collection(db, 'students')),
-          getDocs(query(collection(db, 'laporan_belajar'), where('periode', '==', putus.periode))),
-        ]);
-        if (batal) return;
-        const semuaSiswa = snapSiswa.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const pakaiSiswa = new Map();
+        for (const kunci of kunciQuerySiswaUntukGuru(guru)) {
+          const snap = await getDocs(query(collection(db, 'students'), where('enrolledSubjects', 'array-contains', kunci)));
+          snap.docs.forEach((d) => {
+            const s = { id: d.id, ...d.data() };
+            if (!pakaiSiswa.has(s.id)) pakaiSiswa.set(s.id, s);
+          });
+        }
+        const daftarSiswa = [...pakaiSiswa.values()];
         const dokLaporan = {};
-        for (const d of snapLaporan.docs) {
-          const x = d.data();
-          dokLaporan[`${String(x.studentId || '')}__${String(x.kodeMapel || '').toLowerCase()}`] = x;
+        for (const chunk of potongUntukQuery(daftarSiswa.map((s) => s.id))) {
+          const snapLaporan = await getDocs(query(
+            collection(db, 'laporan_belajar'),
+            where('periode', '==', putus.periode),
+            where('studentId', 'in', chunk),
+          ));
+          snapLaporan.docs.forEach((d) => {
+            const x = d.data();
+            dokLaporan[kunciPencocokLaporan(x.studentId, x.kodeMapel)] = x;
+          });
         }
-        const daftarMapel = mapelDiampuGuru(guru);
-        let total = 0; let selesai = 0;
-        for (const m of daftarMapel) {
-          const guruMapel = { ...guru, kodeMapel: m.kodeMapel, mapelDetails: [m] };
-          const daftar = filterSiswaUntukGuru(semuaSiswa, guruMapel);
-          for (const s of daftar) {
-            total += 1;
-            const dok = dokLaporan[`${s.id}__${String(m.kodeMapel).toLowerCase()}`];
-            if (statusPengisianSiswa(dok) === 'selesai') selesai += 1;
-          }
-        }
+        if (batal) return;
+        const { total, selesai, semuaSelesai } = hitungTugasLaporanBelajar({ guru, daftarSiswa, dokLaporan });
         if (!batal) {
           setLaporanTugas({
             periode: putus.periode, periodeLabel: putus.periodeLabel || putus.periode,
-            total, selesai, semuaSelesai: total > 0 && selesai === total,
+            total, selesai, semuaSelesai,
           });
         }
       } catch (e) {
@@ -206,7 +218,13 @@ const TeacherDashboard = () => {
         if (!batal) setLaporanTugas(null);
       }
     };
-    const unsub = onSnapshot(ref, (snap) => { hitung((snap.data() || {})[FIELD_LAPORAN_BELAJAR] || null); }, () => { if (!batal) setLaporanTugas(null); });
+    const unsub = onSnapshot(ref, (snap) => {
+      const cfg = (snap.data() || {})[FIELD_LAPORAN_BELAJAR] || null;
+      const sidik = JSON.stringify(cfg);
+      if (sidik === sidikTerakhir) return; // perubahan settings LAIN: tanpa bacaan
+      sidikTerakhir = sidik;
+      hitung(cfg);
+    }, () => { if (!batal) setLaporanTugas(null); });
     return () => { batal = true; unsub(); };
   }, [guru]);
 

@@ -298,6 +298,52 @@ export function filterSiswaUntukGuru(daftarSiswa = [], guru = {}, { sekarangMs =
 }
 
 // ------------------------------------------------------------
+// TUGAS PENGISIAN DASHBOARD GURU (v1.6.2 — pembakar kuota dipadamkan)
+// Sebelumnya dasbor guru membaca SELURUH koleksi students + SELURUH
+// laporan_belajar periode itu, dan mengulang keduanya SETIAP kali dokumen
+// settings/global_config berubah (onSnapshot), walau perubahan itu soal gaji
+// atau sakelar fitur. Dua helper di bawah memindahkan logika hitungan ke
+// fungsi murni yang teruji, supaya dasbor hanya boleh: (1) menarik siswa
+// dengan query tertarget `array-contains` sebesar denominasinya sendiri, dan
+// (2) menghitung lewat fungsi ini — bukan lewat loop tersembunyi di efek.
+// ------------------------------------------------------------
+
+/** Kunci pencocokan LOKAL pasangan siswa×mapel (bukan id dokumen Firestore;
+ * id dokumen tetap `kunciDokLaporan(periode, ...)` yang bersanitasi). */
+export function kunciPencocokLaporan(studentId, kodeMapel) {
+  return `${String(studentId || '')}__${String(kodeMapel || '').toLowerCase()}`;
+}
+
+/** Kunci query `array-contains` untuk menarik HANYA siswa yang terdaftar pada
+ * mapel guru, plus pemilik enrollment 'semua' (perilaku lama dipertahankan:
+ * 'semua' lolos bahkan bila guru belum punya mapel jelas). */
+export function kunciQuerySiswaUntukGuru(guru = {}) {
+  const kode = mapelDiampuGuru(guru)
+    .map((m) => String(m.kodeMapel || '').trim())
+    .filter(Boolean);
+  return [...new Set([...kode, 'semua'])];
+}
+
+/** Hitung tugas pengisian laporan belajar: total = pasangan siswa×mapel
+ * ampuan (terdaftar & aktif), selesai = yang berstatus 'selesai'.
+ * MURNI & deterministik — dipakai dasbor guru dan diuji langsung. */
+export function hitungTugasLaporanBelajar({
+  guru = {}, daftarSiswa = [], dokLaporan = {}, sekarangMs = Date.now(),
+} = {}) {
+  let total = 0;
+  let selesai = 0;
+  for (const m of mapelDiampuGuru(guru)) {
+    const guruMapel = { ...guru, kodeMapel: m.kodeMapel, mapelDetails: [m] };
+    for (const s of filterSiswaUntukGuru(daftarSiswa, guruMapel, { sekarangMs })) {
+      total += 1;
+      const dok = dokLaporan[kunciPencocokLaporan(s.id, m.kodeMapel)];
+      if (statusPengisianSiswa(dok) === 'selesai') selesai += 1;
+    }
+  }
+  return { total, selesai, semuaSelesai: total > 0 && selesai === total };
+}
+
+// ------------------------------------------------------------
 // BAHAN OTOMATIS (sistem Gemilang) — pendukung, bukan penentu
 // Diambil dari hasil mesin rapor (utils/raportOtomatis) per siswa, diringkas
 // jadi kalimat faktual. TIDAK PERNAH memakai kata 'tidak valid/belum cukup'.
