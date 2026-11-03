@@ -71,7 +71,23 @@ export function pisahTeksDanGambar(teks, gambarUrls = [], opts = {}) {
   let m;
 
   const flush = () => {
-    if (buffer.trim()) segmen.push({ jenis: 'teks', isi: buffer.replace(/\s+/g, ' ').trim() });
+    // 🔥 2026-11-03 (BUG LAPANGAN: siswa bingung membaca soal yang
+    // "berantakan"): pemipihan `\s+`->spasi di sini MEMBUNUH semua ganti
+    // baris badan soal, padahal seluruh permukaan tampil (layar siswa,
+    // tinjauan, cetak) memakai whiteSpace pre-wrap/pre-line yang justru
+    // mengandalkan '\n' untuk baris buku/step. Daftar & langkah berubah
+    // jadi satu paragraf panjang tanpa struktur. Sekarang hanya spasi/tab
+    // horizontal yang dirapatkan; ganti baris DIPERTAHANKAN (maks 2 baris
+    // kosong beruntun) supaya struktur naskah sampai ke siswa.
+    if (buffer.trim()) {
+      const rapi = buffer
+        .split('\n')
+        .map((l) => l.replace(/[^\S\n]+/g, ' ').trimEnd())
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      if (rapi) segmen.push({ jenis: 'teks', isi: rapi });
+    }
     buffer = '';
   };
 

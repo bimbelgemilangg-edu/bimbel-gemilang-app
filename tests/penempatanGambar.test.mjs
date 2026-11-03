@@ -107,6 +107,15 @@ uji('tanpa gambar dan tanpa placeholder: satu segmen teks utuh', () => {
   assert.deepEqual(seg, [{ jenis: 'teks', isi: 'Hanya teks.' }]);
 });
 
+// 🔥 2026-11-03: ganti baris badan soal WAJIB bertahan (bug lapangan:
+// daftar/step soal impor tampil sebagai satu paragraf panjang di layar
+// siswa karena pemipihan \s+ membunuh '\n').
+uji('ganti baris badan soal dipertahankan, spasi ganda tetap dirapatkan', () => {
+  const seg = pisahTeksDanGambar('Langkah 1:  siapkan.\nLangkah 2: hitung.\n\n\nBaris baru.', []);
+  assert.equal(seg.length, 1);
+  assert.equal(seg[0].isi, 'Langkah 1: siapkan.\nLangkah 2: hitung.\n\nBaris baru.');
+});
+
 uji('masukan rusak tidak melempar', () => {
   assert.deepEqual(pisahTeksDanGambar(null, null), []);
   assert.deepEqual(pisahTeksDanGambar(undefined, undefined), []);
