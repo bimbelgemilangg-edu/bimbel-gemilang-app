@@ -541,6 +541,44 @@ const TIPE_ENUM = [
       }
     });
   
+    // 🔥 PAGAR TIPOGRAFI & KEBERSIHAN TEKS (insiden lapangan 2026-11-03):
+    // siswa pernah membaca soal berantakan karena tiga kelas cacat lolos
+    // impor: (1) markdown mentah `**tebal**` tercetak apa adanya, (2) pecahan
+    // garis miring di dalam pangkat (naskah cetak memakai pecahan bertumpuk
+    // \frac, versi miring terbaca aneh di layar), (3) simbol operasi seperti
+    // bintang yang lupa dibungkus $...$ sehingga tercetak sebagai teks
+    // mentah. Ketiganya kini diperingatkan di pintu masuk supaya admin/
+    // pipeline menolak SEBELUM soal menyentuh bank maupun paket tryout.
+    const semuaTeksButir = [
+      teksSoal,
+      String(q.pembahasan ?? ''),
+      ...opsiJawaban,
+      ...pernyataan,
+      ...tabelBenarSalah.map((r) => r.pernyataan),
+      ...pasangan.map((r) => `${r.kiri} ${r.kanan}`),
+    ];
+    for (const t of semuaTeksButir) {
+      const s = String(t);
+      if (/\*\*/.test(s)) {
+        const i = s.indexOf('**');
+        warnings.push(`markdown ** mentah tercetak ke siswa: "...${s.slice(Math.max(0, i - 20), i + 25)}..."`);
+        break;
+      }
+    }
+    for (const t of semuaTeksButir) {
+      const s = String(t);
+      const miring = s.match(/\^\{?[^}\s$]*\d+\/\d+/);
+      if (miring) {
+        warnings.push(`pangkat pecahan garis miring "${miring[0]}" (naskah memakai pecahan bertumpuk \\frac)`);
+        break;
+      }
+      const luarMatematika = s.split(/\$[^$\n]+\$/).join(' ');
+      if (luarMatematika.includes('*')) {
+        warnings.push('bintang * di luar rumus $...$ (bungkus sebagai matematika atau ganti dengan kata)');
+        break;
+      }
+    }
+
     // --- kunciJawaban ---
     const kunciJawaban = String(q.kunciJawaban ?? q.kunci_jawaban ?? '').trim();
   

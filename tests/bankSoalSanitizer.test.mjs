@@ -244,6 +244,48 @@ uji('berkas lama TANPA pembahasan tetap lolos (kontrak aditif, bukan merusak)', 
   assert.ok(!warnings.some((w) => w.includes('pembahasan')), 'berkas lama tidak boleh dihukum');
 });
 
+// 🔥 2026-11-03: pagar tipografi & kebersihan teks (insiden lapangan:
+// siswa membaca markdown mentah, pangkat pecahan miring, bintang telanjang).
+uji('PAGAR 2026-11-03: markdown ** mentah diperingatkan', () => {
+  const { warnings } = validateQuestion({
+    nomor: 1, tipe: 'pg_sederhana', teksSoal: 'Tentukan **Benar** atau **Salah**!',
+    opsiJawaban: ['a', 'b'], kunciJawaban: 'A',
+  });
+  assert.ok(warnings.some((w) => w.includes('markdown ** mentah')));
+});
+
+uji('PAGAR 2026-11-03: pangkat pecahan garis miring diperingatkan', () => {
+  const { warnings } = validateQuestion({
+    nomor: 1, tipe: 'pg_sederhana', teksSoal: 'Bentuk sederhana dari $8^{5/3}$ adalah ...',
+    opsiJawaban: ['a', 'b'], kunciJawaban: 'A',
+  });
+  assert.ok(warnings.some((w) => w.includes('pangkat pecahan garis miring')));
+});
+
+uji('PAGAR 2026-11-03: pangkat pecahan BERTUMPUK tidak diperingatkan', () => {
+  const { warnings } = validateQuestion({
+    nomor: 1, tipe: 'pg_sederhana', teksSoal: 'Bentuk sederhana dari $8^{\\frac{5}{3}}$ adalah ...',
+    opsiJawaban: ['a', 'b'], kunciJawaban: 'A',
+  });
+  assert.ok(!warnings.some((w) => w.includes('pangkat pecahan')));
+});
+
+uji('PAGAR 2026-11-03: bintang operasi di dalam rumus TIDAK diperingatkan', () => {
+  const { warnings } = validateQuestion({
+    nomor: 1, tipe: 'pg_sederhana', teksSoal: 'Operasi biner $*$ dengan $a * b = a + b$. Nilai $2 * 3$?',
+    opsiJawaban: ['5', '6'], kunciJawaban: 'A',
+  });
+  assert.ok(!warnings.some((w) => w.includes('bintang *')));
+});
+
+uji('PAGAR 2026-11-03: bintang telanjang di luar rumus diperingatkan', () => {
+  const { warnings } = validateQuestion({
+    nomor: 1, tipe: 'pg_sederhana', teksSoal: 'Operasi biner * didefinisikan sebagai berikut.',
+    opsiJawaban: ['a', 'b'], kunciJawaban: 'A',
+  });
+  assert.ok(warnings.some((w) => w.includes('bintang *')));
+});
+
 console.log(`\n${'='.repeat(56)}\n  LULUS : ${lulus}\n  GAGAL : ${gagal}\n${'='.repeat(56)}`);
 if (gagal > 0) {
   kegagalan.forEach((k, i) => console.log(`  ${i + 1}. ${k.nama}`));
