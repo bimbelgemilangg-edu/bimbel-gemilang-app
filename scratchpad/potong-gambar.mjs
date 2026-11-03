@@ -1,30 +1,18 @@
-// Potong wilayah GAMBAR dari halaman PDF (render 150dpi) lewat ink-bbox
-// dalam pita vertikal yang ditentukan manual per halaman.
+// Potong wilayah GAMBAR dari halaman PDF (render 300dpi = HD) lewat ink-bbox
+// dalam pita vertikal fraksional per halaman. Presisi: bbox tinta ketat + pad kecil.
+//   node potong-gambar.mjs <config.json>
+// config: { img: dir render 300dpi, out: dir aset, pita: [[hal, y0, y1, x0, x1, nama?], ...] }
 import fs from 'node:fs';
 import path from 'node:path';
 import { createCanvas, loadImage } from 'canvas';
-const IMG = '/tmp/arena/tenants/3615ec0a-62ef-4f7b-bb10-44d4e0a6b5b8/sessions/26e934d0-56d1-43f1-8354-d25cf13cf366/workspace/scratchpad/img-pdf-tka';
-const OUT = '/tmp/arena/tenants/3615ec0a-62ef-4f7b-bb10-44d4e0a6b5b8/sessions/26e934d0-56d1-43f1-8354-d25cf13cf366/workspace/repo/public/soal-tka-gel2';
-// [halaman, y0, y1, x0, x1] dalam FRAKSI tinggi/lebar halaman
-const PITA = [
-  [11, 0.10, 0.30, 0.25, 0.78], // 12 grafik daerah arsir
-  [12, 0.14, 0.36, 0.15, 0.80], // 13 cupcake (y0 dinaikkan: baris "berikut:" ikut terpotong sebelumnya)
-  [13, 0.10, 0.30, 0.25, 0.75], // 14 garis sejajar
-  [14, 0.09, 0.27, 0.25, 0.75], // 15 sudut
-  [15, 0.10, 0.30, 0.30, 0.70], // 16 bangun ruang
-  [16, 0.11, 0.31, 0.30, 0.70], // 17 trapesium
-  [17, 0.10, 0.33, 0.30, 0.70], // 18 rak
-  [19, 0.16, 0.34, 0.25, 0.75], // 19 tiang-bangunan (garis putus-putus)
-  [20, 0.12, 0.30, 0.25, 0.75], // 20 balok kabel
-  [21, 0.16, 0.34, 0.25, 0.75], // 21 ruang kelas tali hiasan
-  [22, 0.11, 0.36, 0.30, 0.70], // 22 jam
-  [24, 0.09, 0.29, 0.30, 0.70], // 24 segitiga
-  [25, 0.09, 0.235, 0.25, 0.75], // 25 segitiga (y1 diturunkan: baris pernyataan opsi ikut terpotong sebelumnya)
-  [26, 0.12, 0.44, 0.20, 0.80], // 26 diagram garis
-  [27, 0.12, 0.42, 0.20, 0.80], // 27 grafik
-];
+
+const cfgPath = process.argv[2];
+if (!cfgPath) { console.error('pakai: node potong-gambar.mjs <config.json>'); process.exit(1); }
+const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+const IMG = cfg.img;
+const OUT = cfg.out;
 fs.mkdirSync(OUT, { recursive: true });
-for (const [hal, y0, y1, x0, x1] of PITA) {
+for (const [hal, y0, y1, x0, x1, nama] of cfg.pita) {
   const src = path.join(IMG, `hal-${String(hal).padStart(2, '0')}.png`);
   const img = await loadImage(src);
   const W = img.width, H = img.height;
@@ -43,13 +31,13 @@ for (const [hal, y0, y1, x0, x1] of PITA) {
     }
   }
   if (maxX < 0) { console.log('hal', hal, 'KOSONG'); continue; }
-  const pad = 10;
+  const pad = 16;
   minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad);
   maxX = Math.min(bw - 1, maxX + pad); maxY = Math.min(bh - 1, maxY + pad);
   const cw = maxX - minX + 1, ch = maxY - minY + 1;
   const out = createCanvas(cw, ch);
   out.getContext('2d').drawImage(tmp, minX, minY, cw, ch, 0, 0, cw, ch);
-  const file = path.join(OUT, `gambar-${hal}.png`);
+  const file = path.join(OUT, nama || `gambar-${hal}.png`);
   fs.writeFileSync(file, out.toBuffer('image/png'));
-  console.log('OK', `gambar-${hal}.png`, `${cw}x${ch}`, `${(fs.statSync(file).size / 1024).toFixed(0)}KB`);
+  console.log('OK', path.basename(file), `${cw}x${ch}`, `${(fs.statSync(file).size / 1024).toFixed(0)}KB`);
 }

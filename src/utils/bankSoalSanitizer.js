@@ -469,7 +469,11 @@ const TIPE_ENUM = [
     const gambar = normalizeGambar(q.gambar);
   
     // --- validasi silang: field wajib per tipe harus terisi ---
-    if ((tipe === 'pg_sederhana' || tipe === 'pg_kompleks') && opsiJawaban.length === 0) {
+    // 🔥 2026-11-04 (lanjutan v1.6.8): syarat opsiJawaban kosong hanya milik
+    // pg_sederhana. pg_kompleks SAH berbekal pernyataan SAJA (checkbox
+    // pernyataan) sehingga kondisi lama ini jadi derau yang menutupi warning
+    // asli pada impor Fisika/Kimia Gelombang 2.
+    if (tipe === 'pg_sederhana' && opsiJawaban.length === 0) {
       warnings.push(`tipe "${tipe}" seharusnya punya opsiJawaban, tapi kosong`);
     }
     // 🔥 2026-11-03: permukaan centang pg_kompleks sah dari `opsiJawaban`
