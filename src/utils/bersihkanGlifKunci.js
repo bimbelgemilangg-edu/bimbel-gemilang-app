@@ -71,8 +71,19 @@ export function bersihkanTeksOpsi(teks) {
  * @param {object} soal
  * @returns {Array<string|object>}
  */
-export function opsiTampilDari(soal) {
+// 🔥 2026-11-03 (paket keluhan siswa): pg_kompleks hasil impor tertentu
+// menyimpan permukaan centangnya di field `pernyataan` (kontrak sanitizer)
+// bukan `opsiJawaban` -- renderer siswa dulu tampil dengan NOL kotak.
+// Fallback SATU sumber di sini supaya semua permukaan tampil (try out,
+// keranjang guru, kartu baca admin) sepakat.
+function daftarOpsiMentah(soal) {
   const daftar = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  if (daftar.length) return daftar;
+  return Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
+}
+
+export function opsiTampilDari(soal) {
+  const daftar = daftarOpsiMentah(soal);
   return daftar.map((o) => {
     if (typeof o === 'string') return bersihkanTeksOpsi(o);
     if (o && typeof o === 'object') return { ...o, teks: bersihkanTeksOpsi(o.teks || '') };
@@ -87,7 +98,7 @@ export function opsiTampilDari(soal) {
  * @returns {string[]}
  */
 export function daftarOpsiBersih(soal) {
-  const daftar = Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : [];
+  const daftar = daftarOpsiMentah(soal);
   return daftar.map((o) => bersihkanTeksOpsi(typeof o === 'string' ? o : (o?.teks || '')));
 }
 

@@ -68,6 +68,52 @@ export function hitungSkorPgKompleks(kunciJawaban, jawabanSiswa) {
 }
 
 /**
+ * 🔥 BARU (paket keluhan siswa 2026-11-03): daftar OPSI soal pg_kompleks
+ * dari SATU sumber. Kontrak sanitizer menyebut pg_kompleks menyimpan
+ * pernyataannya di field `pernyataan`, sementara importer lain menulis
+ * `opsiJawaban` -- renderer siswa dulu hanya membaca `opsiJawaban`, jadi
+ * soal ber-pernyataan tampil dengan NOL kotak centang (siswa tak bisa
+ * menjawab sama sekali). Fallback ini dipakai renderer, skoring, dan
+ * kelayakan supaya permukaan centang selalu ada.
+ */
+export function opsiPgKompleks(soal) {
+  const opsi = safeArray(soal?.opsiJawaban);
+  if (opsi.length) return opsi;
+  return safeArray(soal?.pernyataan);
+}
+
+/**
+ * 🔥 BARU (paket keluhan siswa 2026-11-03): kunci pg_kompleks dibakukan ke
+ * HURUF sesuai permukaan centang renderer. Data produksi menyimpan kunci
+ * angka ("1,3" / "2 4") padahal renderer & siswa bekerja dengan huruf
+ * A/B/C -- akibatnya centang siswa tak pernah cocok (semua ditandai salah,
+ * skor 0). Angka dipetakan 1-based dulu lalu 0-based (dua-duanya muncul di
+ * data lama); kunci yang sudah huruf lolos apa adanya.
+ */
+export function kunciHurufPgKompleks(soal) {
+  const mentah = safeArray(soal?.kunciJawaban)
+    .map((h) => String(h).trim())
+    .filter(Boolean);
+  if (!mentah.length) return [];
+  const huruf = mentah
+    .map((t) => (/^[a-z]$/i.test(t) ? t.toUpperCase() : null))
+    .filter(Boolean);
+  if (huruf.length === mentah.length) return huruf;
+  const jumlahOpsi = opsiPgKompleks(soal).length;
+  const angka = mentah.map((t) => (/^\d+$/.test(t) ? Number(t) : null));
+  if (angka.every((n) => n !== null) && jumlahOpsi > 0) {
+    return angka
+      .map((n) => {
+        if (n >= 1 && n <= jumlahOpsi) return String.fromCharCode(64 + n);
+        if (n >= 0 && n < jumlahOpsi) return String.fromCharCode(65 + n);
+        return null;
+      })
+      .filter(Boolean);
+  }
+  return huruf;
+}
+
+/**
  * Skor buat tipe "benar_salah" / "pg_kategori" (tabel per-baris).
  * Tiap baris/pernyataan dinilai SENDIRI-SENDIRI dan berbobot sama.
  *
@@ -80,8 +126,24 @@ export function hitungSkorPgKompleks(kunciJawaban, jawabanSiswa) {
 // menulis field `jawaban`, sanitizer JSON menulis `kunci`, dan ada data
 // produksi yang keduanya kosong (itulah bug yang membuat 194 soal selalu
 // bernilai 0 apapun jawaban siswa).
+// 🔥 BARU (paket keluhan siswa 2026-11-03): pembakuan DIALEK kategori
+// benar/salah. Data produksi menyimpan kunci baris dalam beberapa dialek:
+// 'benar'/'salah' (sanitizer), 'Benar'/'Salah' (impor lama), bahkan huruf
+// tunggal 'B'/'S' atau 'true'/'false'. Renderer menyusun KOLOM dari nilai
+// ini dan skoring membandingkannya dengan jawaban siswa (label kolom yang
+// diklik), jadi dua dialek berbeda = kolom tak pernah cocok = soal selalu
+// 0. Dibakukan DI SINI (satu sumber) supaya renderer, skoring, pemantau
+// guru, dan teks kunci semuanya menyebut kategori dengan kata yang sama.
+// Kategori custom (mis. 'Proses'/'Manfaat') lolos apa adanya.
+export function bakuKategoriBenarSalah(kunci) {
+  const t = String(kunci ?? '').trim().toLowerCase();
+  if (t === 'b' || t === 'benar' || t === 'true') return 'benar';
+  if (t === 's' || t === 'salah' || t === 'false') return 'salah';
+  return String(kunci ?? '').trim();
+}
+
 export function kunciBarisBenarSalah(baris) {
-  return String(baris?.jawaban ?? baris?.kunci ?? baris?.value ?? '').trim();
+  return bakuKategoriBenarSalah(baris?.jawaban ?? baris?.kunci ?? baris?.value ?? '');
 }
 
 export function barisBenarSalahBisaDinilai(baris) {

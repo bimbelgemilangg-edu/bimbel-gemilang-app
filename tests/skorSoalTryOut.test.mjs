@@ -214,13 +214,45 @@ uji('kunci pg_kompleks dialek string "B,C" kini dinilai penuh (split pemisah)', 
   assert.equal(hitungSkorPgKompleks(['A', 'D'], ['A', 'D']), 1);
 });
 
-uji('pg_kompleks ber-kunci angka (tak pernah bisa dicentang siswa) TIDAK dinilai', () => {
+// 🔥 2026-11-03 (paket keluhan siswa): perilaku BARU yang disengaja --
+// kunci angka kini DIBAKUKAN ke huruf (1-based dulu, 0-based fallback)
+// supaya centang siswa yang benar benar-benar bernilai. Yang tetap TIDAK
+// dinilai hanyalah kunci yang tak bisa dipetakan ke opsi mana pun.
+uji('pg_kompleks ber-kunci angka dibakukan ke huruf & dinilai adil', () => {
   const pgk = { id: 'k2', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b', 'c', 'd', 'e'], kunciJawaban: '1, 3, 5' };
-  assert.equal(soalBisaDinilai(pgk), false);
+  assert.equal(soalBisaDinilai(pgk), true);
+  assert.equal(skorSatuSoal(pgk, ['A', 'C', 'E']), 1);
+  assert.equal(skorSatuSoal(pgk, ['A', 'C']), 2 / 3);
   const kosong = { id: 'k3', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b'], kunciJawaban: [] };
   assert.equal(soalBisaDinilai(kosong), false);
   const hurufLuarRentang = { id: 'k4', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b'], kunciJawaban: ['A', 'D'] };
   assert.equal(soalBisaDinilai(hurufLuarRentang), false);
+  const angkaLuarRentang = { id: 'k5', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b'], kunciJawaban: '7, 9' };
+  assert.equal(soalBisaDinilai(angkaLuarRentang), false);
+});
+
+// 🔥 2026-11-03: pg_kompleks yang menyimpan permukaan centangnya di
+// `pernyataan` (kontrak sanitizer) tetap punya opsi & tetap bisa dinilai.
+uji('pg_kompleks ber-pernyataan (tanpa opsiJawaban) tetap terlayani', () => {
+  const pgk = { id: 'k6', tipe: 'pg_kompleks', pernyataan: ['p1', 'p2', 'p3'], kunciJawaban: 'A,C' };
+  assert.equal(soalBisaDinilai(pgk), true);
+  assert.equal(skorSatuSoal(pgk, ['A', 'C']), 1);
+});
+
+// 🔥 2026-11-03: tabel benar_salah dialek produksi (field `tabelBenarSalah`
+// + kunci `kunci`, termasuk dialek huruf 'B'/'S') terbaca skoring.
+uji('benar_salah dialek tabelBenarSalah + kunci huruf B/S dinilai', () => {
+  const bs = {
+    id: 'b1',
+    tipe: 'benar_salah',
+    tabelBenarSalah: [
+      { pernyataan: 'p1', kunci: 'B' },
+      { pernyataan: 'p2', kunci: 'S' },
+    ],
+  };
+  assert.equal(soalBisaDinilai(bs), true);
+  assert.equal(skorSatuSoal(bs, ['Benar', 'Salah']), 1);
+  assert.equal(skorSatuSoal(bs, ['Benar', 'Benar']), 0.5);
 });
 
 uji('isian_singkat/numerik tanpa kunci sama sekali TIDAK dinilai', () => {

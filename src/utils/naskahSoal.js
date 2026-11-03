@@ -89,6 +89,14 @@ import { kodeSoalSiswa } from './kodeSoalSiswa.js';
 // bergaris, jawaban tebal). Parser strukturnya murni & teruji.
 import { pisahKodeSumber, strukturPembahasan } from './strukturPembahasan.js';
 import { lengkapEkorJawaban } from './bersihkanOcr.js';
+// 🔥 2026-11-03 (paket keluhan siswa, perluasan sisi guru): lembar cetak &
+// unduhan guru dulu membaca baris benar-salah hanya dari field
+// `tabelBenarSalah`+`kunci`, padahal dialek produksi juga punya
+// `tabel_benar_salah` dan kunci di `jawaban` -- lembar KUNCI guru bisa
+// terbit tanpa kunci sama sekali. Kini pakai sumber kanonik yang sama
+// dengan skoring & renderer siswa.
+import { pilihBarisBenarSalah } from './skorSoalTryOut.js';
+import { kunciBarisBenarSalah, kunciHurufPgKompleks } from './skoringSoalKompleks.js';
 
 // Di-re-export supaya pemakai mesin cetak cukup mengimpor dari satu berkas,
 // dan supaya test bisa memaku bahwa layar & cetak memakai konstanta yang sama.
@@ -458,14 +466,13 @@ export function bacaanNaskahHtml(soal, nomor, lebarKolom, rasioGambar = {}) {
 }
 
 export function barisBenarSalah(soal) {
-  const tabel = Array.isArray(soal?.tabelBenarSalah) ? soal.tabelBenarSalah : [];
-  if (tabel.length) {
-    return tabel.map((r) => ({ teks: String(r?.pernyataan || ''), kunci: String(r?.kunci || '') }));
-  }
-  const per = Array.isArray(soal?.pernyataan) ? soal.pernyataan : [];
-  return per.map((r) => (typeof r === 'string'
+  // Satu sumber dengan skoring: pilihBarisBenarSalah mengenal semua dialek
+  // penyimpan baris; kunciBarisBenarSalah membakukan dialek kunci
+  // ('B'/'benar'/'true' -> 'benar', dst) supaya lembar kunci guru, layar
+  // tinjauan siswa, dan perhitungan skor menyebut kata yang sama.
+  return pilihBarisBenarSalah(soal).map((r) => (typeof r === 'string'
     ? { teks: r, kunci: '' }
-    : { teks: String(r?.teks || ''), kunci: String(r?.jawaban || r?.kunci || '') }));
+    : { teks: String(r?.pernyataan ?? r?.teks ?? ''), kunci: kunciBarisBenarSalah(r) }));
 }
 
 function gambarDalamTeks(teks, gambarUrls, nomor, rasioGambar, lebarKolom) {
@@ -673,9 +680,14 @@ function htmlBlokPembahasan(teks, kunciHuruf = '', gambar = null) {
 }
 
 export function kunciButirNaskahHtml(soal, nomor, opsiButir = {}) {
-  const kunci = Array.isArray(soal?.kunciJawaban)
-    ? soal.kunciJawaban.map((k) => String.fromCharCode(65 + Number(k))).join(', ')
-    : escapeHtml(String(soal?.kunci ?? soal?.kunciJawaban ?? '-'));
+  // 🔥 2026-11-03: pg_kompleks dibakukan ke huruf lewat sumber kanonik yang
+  // sama dengan renderer & skoring (dialek kunci angka "1, 3" ikut) supaya
+  // lembar kunci guru tak pernah menyebut kunci yang tak bisa dicentang.
+  const kunci = String(soal?.tipe || '') === 'pg_kompleks'
+    ? escapeHtml(kunciHurufPgKompleks(soal).join(', ') || '-')
+    : Array.isArray(soal?.kunciJawaban)
+      ? soal.kunciJawaban.map((k) => String.fromCharCode(65 + Number(k))).join(', ')
+      : escapeHtml(String(soal?.kunci ?? soal?.kunciJawaban ?? '-'));
   const pembahasan = soal?.pembahasan
     ? htmlBlokPembahasan(
       soal.pembahasan,

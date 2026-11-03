@@ -154,7 +154,11 @@ test('lembar siswa mode kotak: menjodohkan & esai tercetak', () => {
 test('barisBenarSalah membaca kedua bentuk penyimpanan', () => {
   assert.equal(barisBenarSalah(BS).length, 2);
   assert.equal(barisBenarSalah(BS)[0].kunci, 'benar');
-  assert.equal(barisBenarSalah(BS_PERNYATAAN_OBJEK)[1].kunci, 'Salah');
+  // 🔥 2026-11-03: kunci baris kini DIBAKUKAN ke dialek kanonik kecil
+  // ('benar'/'salah') lewat bakuKategoriBenarSalah -- lembar kunci guru
+  // menampilkan huruf besar sendiri, dan skoring/penyajian siswa selalu
+  // membandingkan case-insensitive, jadi tak ada informasi yang hilang.
+  assert.equal(barisBenarSalah(BS_PERNYATAAN_OBJEK)[1].kunci, 'salah');
   assert.deepEqual(barisBenarSalah({}), []);
 });
 

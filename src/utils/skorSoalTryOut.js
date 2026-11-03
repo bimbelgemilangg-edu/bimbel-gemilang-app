@@ -16,7 +16,8 @@
 
 import {
   hitungSkorPgKompleks, hitungSkorBenarSalah, cariIndexBenar,
-  barisBenarSalahBisaDinilai, safeArray,
+  barisBenarSalahBisaDinilai, kunciHurufPgKompleks,
+  opsiPgKompleks,
 } from './skoringSoalKompleks.js';
 
 // 🔥 BARU: 1 fungsi bersama buat "apa soal ini beneran tidak dijawab
@@ -137,9 +138,13 @@ export function soalBisaDinilai(soal) {
     return cariIndexBenar(soal) >= 0;
   }
   if (tipe === 'pg_kompleks') {
-    const kunci = safeArray(soal?.kunciJawaban).map((h) => String(h).toUpperCase().trim());
+    // 🔥 2026-11-03: kunci dibakukan dulu lewat kunciHurufPgKompleks
+    // (dialek angka "1,3" ikut terlayani) dan opsi lewat opsiPgKompleks
+    // (fallback pernyataan) -- sama persis dengan yang dilihat siswa di
+    // renderer, supaya "bisa dinilai" = "bisa dicentang siswa".
+    const kunci = kunciHurufPgKompleks(soal);
     if (!kunci.length) return false;
-    const nOpsi = (Array.isArray(soal?.opsiJawaban) ? soal.opsiJawaban : []).length;
+    const nOpsi = opsiPgKompleks(soal).length;
     return kunci.every((h) => /^[A-Z]$/.test(h) && h.charCodeAt(0) - 65 < nOpsi);
   }
   if (tipe === 'isian_singkat' || tipe === 'numerik') {
@@ -158,7 +163,9 @@ export function skorSatuSoal(soal, jawaban) {
   if (tipe === 'esai') return 0;
   if (jawaban === undefined || jawaban === null) return 0;
   try {
-    if (tipe === 'pg_kompleks') return hitungSkorPgKompleks(soal.kunciJawaban, jawaban);
+    // 🔥 2026-11-03: kunci dibakukan ke huruf dulu (dialek angka ikut) --
+    // sama dengan penanda hijau/merah di RendererPgKompleks.
+    if (tipe === 'pg_kompleks') return hitungSkorPgKompleks(kunciHurufPgKompleks(soal), jawaban);
     if (tipe === 'benar_salah' || tipe === 'pg_kategori') {
       const baris = pilihBarisBenarSalah(soal);
       return hitungSkorBenarSalah(baris, jawaban);

@@ -59,8 +59,13 @@ uji('pg_sederhana ber-kunci ganda DITOLAK mesin (tak pernah bisa dijawab benar)'
 uji('pg_kompleks kunci string huruf DITERIMA (dialek data, skoring sudah toleran)', () => {
   assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b', 'c', 'd'], kunciJawaban: 'B,C' }), true);
 });
-uji('pg_kompleks kunci angka DITOLAK (renderer pakai huruf, siswa tak bisa mencetak skor)', () => {
-  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b', 'c', 'd', 'e'], kunciJawaban: '1, 3, 5' }), false);
+// 🔥 2026-11-03 (paket keluhan siswa): kunci angka kini DIBAKUKAN ke huruf
+// (1-based lalu 0-based) di sumber kanonik yang sama dengan renderer &
+// skoring, jadi butir semacam ini justru LAYAK -- siswa bisa mencetak skor.
+// Yang tetap ditolak hanyalah kunci angka di luar rentang opsi.
+uji('pg_kompleks kunci angka dibakukan ke huruf jadi LAYAK', () => {
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b', 'c', 'd', 'e'], kunciJawaban: '1, 3, 5' }), true);
+  assert.equal(layakUntukTryOut({ status: 'aktif', tipe: 'pg_kompleks', opsiJawaban: ['a', 'b'], kunciJawaban: '7, 9' }), false);
 });
 
 uji('isian_singkat & numerik berkunci layak (renderer + penilaian sudah ada)', () => {

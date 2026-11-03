@@ -2,6 +2,11 @@
 import { perbaikiKurungHimpunanLatex } from './kurungLatex.js';
 // 🔥 2026-10-09: lepas glif penanda kunci (☑/☐) dari teks opsi hasil scan.
 import { bersihkanTeksOpsi } from './bersihkanGlifKunci.js';
+// 🔥 2026-11-03 (paket keluhan siswa, perluasan sisi impor): pembakuan
+// dialek kunci benar/salah dipakai JUGA di pintu masuk supaya impor tak
+// lagi membuang kunci yang ditulis di field `jawaban`/`value` atau dalam
+// dialek huruf 'B'/'S' (dulu semuanya jadi '' -> soal lahir tanpa kunci).
+import { bakuKategoriBenarSalah } from './skoringSoalKompleks.js';
 
 // ============================================================
 // bankSoalSanitizer.js
@@ -368,12 +373,20 @@ const TIPE_ENUM = [
   
   function normalizeTabelBenarSalah(val) {
     if (!Array.isArray(val)) return [];
-    return val.map((item) => ({
-      pernyataan: String(item?.pernyataan ?? item?.text ?? ''),
-      kunci: (item?.kunci === true || item?.kunci === 'benar') ? 'benar'
-           : (item?.kunci === false || item?.kunci === 'salah') ? 'salah'
-           : '',
-    }));
+    return val.map((item) => {
+      // Semua dialek kunci dibaca (kunci/jawaban/value, boolean, 'benar',
+      // 'B', 'true', ...) lewat SATU fungsi pembaku yang sama dengan
+      // skoring & renderer. Kategori custom (mis. 'Proses'/'Manfaat')
+      // dipertahankan apa adanya -- dulu dipaksa '' dan lenyap.
+      const mentah = item?.kunci ?? item?.jawaban ?? item?.value ?? '';
+      const baku = typeof mentah === 'boolean'
+        ? (mentah ? 'benar' : 'salah')
+        : bakuKategoriBenarSalah(mentah);
+      return {
+        pernyataan: String(item?.pernyataan ?? item?.text ?? ''),
+        kunci: baku,
+      };
+    });
   }
   
   function normalizePasangan(val) {

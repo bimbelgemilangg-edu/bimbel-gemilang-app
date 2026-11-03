@@ -13,7 +13,15 @@
 // ============================================================
 
 import React from 'react';
-import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+// 🔥 2026-11-03 (paket keluhan siswa "tabel benar-salah cuma muncul
+// Benar"): baris & kategori kini diambil dari SUMBER KANONIK yang sama
+// dengan skoring (skorSoalTryOut.js & skoringSoalKompleks.js). Dulu komponen
+// ini punya logika sendiri yang hanya mengenal field `tabel_benar_salah`
+// dan `pernyataan`, padahal penulis data produksi menulis `tabelBenarSalah`
+// dengan kunci di field `kunci` -- akibatnya tabel tampil tanpa baris atau
+// tanpa kolom jawaban sama sekali (siswa tak bisa klik apa pun).
+import { soalBelumDijawab, pilihBarisBenarSalah } from '../../../utils/skorSoalTryOut';
+import { kunciBarisBenarSalah } from '../../../utils/skoringSoalKompleks';
 import RenderMath from '../../../components/RenderMath';
 
 // 🔥 BARU (bug freeze/blank putih ditemukan): lihat penjelasan lengkap
@@ -25,8 +33,7 @@ function safeArray(v) {
 }
 
 export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false }) {
-  const barisMentah = safeArray(soal.tabel_benar_salah).length ? soal.tabel_benar_salah : soal.pernyataan;
-  const baris = safeArray(barisMentah);
+  const baris = safeArray(pilihBarisBenarSalah(soal));
   // 🔥 BARU (bug ditemukan): dulu kolomnya HARDCODE cuma "Benar"/"Salah"
   // -- soal yang beneran kategorinya lebih dari 2 (mis. "Proses/
   // Manfaat/Dampak", atau "Penglihatan/Pendengaran/Perabaan/Gerak")
@@ -37,14 +44,24 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
   // otomatis balik ke tampilan 2 kolom kayak biasa; kalau ada 3-4
   // kategori beda, otomatis nambah kolomnya.
   const kategoriUnik = [...new Set(
-    baris.map((item) => String(item?.jawaban || '').trim()).filter(Boolean)
+    baris.map((item) => kunciBarisBenarSalah(item)).filter(Boolean)
   )];
   // Urutan tampil: kalau kategorinya PERSIS "benar"/"salah" (case-
   // insensitive), taruh "Benar" duluan -- biar konsisten kayak sebelum-
   // nya. Kategori custom lain dipertahankan urutan kemunculan aslinya.
-  const kolom = kategoriUnik.some((k) => k.toLowerCase() === 'benar')
-    ? [...kategoriUnik].sort((a, b) => (a.toLowerCase() === 'benar' ? -1 : b.toLowerCase() === 'benar' ? 1 : 0))
-    : kategoriUnik;
+  // 🔥 2026-11-03: kalau data tidak memberi kategori apa-apa (kunci baris
+  // hilang semua) ATAU kategorinya memang dialek benar/salah, tampilkan
+  // DUA kolom baku "Benar | Salah" -- tabel benar-salah tanpa kolom Salah
+  // adalah tampilan yang mustahil dijawab dengan benar. Kategori custom
+  // (3-4 kolom) tetap dihormati urutan kemunculannya.
+  const hanyaDialekBenarSalah = kategoriUnik.every(
+    (k) => k.toLowerCase() === 'benar' || k.toLowerCase() === 'salah',
+  );
+  const kategoriAda = kategoriUnik.length > 0 && !hanyaDialekBenarSalah;
+  const kolomDasar = kategoriAda ? kategoriUnik : ['Benar', 'Salah'];
+  const kolom = kolomDasar.some((k) => k.toLowerCase() === 'benar')
+    ? [...kolomDasar].sort((a, b) => (a.toLowerCase() === 'benar' ? -1 : b.toLowerCase() === 'benar' ? 1 : 0))
+    : kolomDasar;
 
   const tidakDijawab = modeTinjau && soalBelumDijawab(soal, jawabanTerpilih);
 
@@ -76,7 +93,7 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
         <tbody>
           {baris.map((item, i) => {
             const teks = typeof item === 'object' ? (item.pernyataan || item.teks || '') : String(item);
-            const kunci = String(item?.jawaban ?? item?.kunci ?? '').toLowerCase().trim();
+            const kunci = kunciBarisBenarSalah(item).toLowerCase();
             const jawabanSiswa = String(jawabanTerpilih[i] || '').toLowerCase().trim();
 
             const renderSel = (labelSel) => {

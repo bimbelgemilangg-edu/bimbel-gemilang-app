@@ -29,11 +29,15 @@ import { opsiTampilDari } from '../../../utils/bersihkanGlifKunci.js';
 // kunci "B,C" terpecah jadi ['B',',','C'] -- koma ikut terhitung kunci
 // di skoring dan centang hijau di layar tinjauan tidak lengkap).
 // Satu fungsi, satu perilaku: renderer & skoring selalu sepakat.
-import { safeArray } from '../../../utils/skoringSoalKompleks.js';
+import { safeArray, kunciHurufPgKompleks } from '../../../utils/skoringSoalKompleks.js';
 
 export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
   const opsi = opsiTampilDari(soal);
-  const kunci = safeArray(soal.kunciJawaban).map((h) => String(h).toUpperCase().trim());
+  // 🔥 2026-11-03 (paket keluhan siswa): kunci dibakukan ke HURUF lewat
+  // sumber kanonik yang sama dengan skoring (dialek angka "1,3" ikut) --
+  // dulu kunci angka tak pernah cocok dengan permukaan centang huruf,
+  // jadi semua centang siswa ditandai salah & skor 0.
+  const kunci = kunciHurufPgKompleks(soal);
   const dipilih = new Set(safeArray(jawabanTerpilih).map((h) => String(h).toUpperCase().trim()));
   // 🔥 BARU: sama kayak RendererPgSederhana.jsx -- biar jelas beda
   // antara "siswa skip" vs "salah pilih semua".
