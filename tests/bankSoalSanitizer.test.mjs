@@ -105,10 +105,34 @@ uji('tipe tak dikenal jatuh ke pg_sederhana + warning', () => {
   assert.ok(warnings.some(w => w.includes('pg_sederhana')));
 });
 
-uji('enum tipe persis enam nilai (esai masuk 2026-10-04)', () => {
+// 🔥 2026-11-03: pg_kategori masuk enum (verifikasi impor TKA gel. 2) --
+// renderer, skoring, dan keranjang sudah lama mendukungnya; sanitizer
+// yang belum, sehingga impor sah ber-tipe pg_kategori dirusak ke
+// pg_sederhana dan tabel kategorinya lenyap.
+uji('enum tipe persis tujuh nilai (pg_kategori masuk 2026-11-03)', () => {
   assert.deepEqual(TIPE_ENUM, [
-    'pg_sederhana', 'pg_kompleks', 'benar_salah', 'isian_singkat', 'menjodohkan', 'esai',
+    'pg_sederhana', 'pg_kompleks', 'benar_salah', 'pg_kategori', 'isian_singkat', 'menjodohkan', 'esai',
   ]);
+});
+
+uji('pg_kategori bertabel kategori custom SAH tanpa warning', () => {
+  const { valid, warnings } = validateQuestion({
+    nomor: 1, tipe: 'pg_kategori', teksSoal: 'Kategori:',
+    tabelBenarSalah: [
+      { pernyataan: '5 buku tebal 4 cm', kunci: 'Tidak Cukup' },
+      { pernyataan: '7 buku tebal 2 cm', kunci: 'Cukup' },
+    ],
+    topik: 'Geometri',
+  }, 0);
+  assert.equal(valid, true, warnings.join(' | '));
+});
+
+uji('pg_kompleks ber-opsiJawaban saja SAH (permukaan centang sah dari opsi)', () => {
+  const { valid, warnings } = validateQuestion({
+    nomor: 2, tipe: 'pg_kompleks', teksSoal: 'Pilih semua yang benar.',
+    opsiJawaban: ['a', 'b', 'c'], kunciJawaban: 'A,C', topik: 'Umum',
+  }, 0);
+  assert.equal(valid, true, warnings.join(' | '));
 });
 
 uji('esai tanpa opsiJawaban TIDAK diperingatkan (memang tidak butuh opsi)', () => {

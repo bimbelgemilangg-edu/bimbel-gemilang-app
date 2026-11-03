@@ -53,6 +53,12 @@ const TIPE_ENUM = [
     'pg_sederhana',
     'pg_kompleks',
     'benar_salah',
+    // 🔥 2026-11-03 (verifikasi impor TKA gel. 2): pg_kategori dulu TIDAK
+    // ada di enum sehingga impor sah ber-tipe pg_kategori (tabel kategori
+    // custom: Cukup/Tidak Cukup, Sejajar/Berpotongan) di-default paksa ke
+    // pg_sederhana dan tabelnya lenyap. Renderer & skoring sudah lama
+    // mendukung tipe ini (TryOutView, skorSoalTryOut, keranjangTryOut).
+    'pg_kategori',
     'isian_singkat',
     'menjodohkan',
     // 🔥 BARU (2026-10-04): esai/uraian -- siswa mengetik atau memotret
@@ -466,18 +472,22 @@ const TIPE_ENUM = [
     if ((tipe === 'pg_sederhana' || tipe === 'pg_kompleks') && opsiJawaban.length === 0) {
       warnings.push(`tipe "${tipe}" seharusnya punya opsiJawaban, tapi kosong`);
     }
-    if (tipe === 'pg_kompleks' && pernyataan.length === 0) {
-      warnings.push('tipe "pg_kompleks" seharusnya punya pernyataan, tapi kosong');
+    // 🔥 2026-11-03: permukaan centang pg_kompleks sah dari `opsiJawaban`
+    // ATAU `pernyataan` (renderer & cetak membaca keduanya lewat
+    // opsiPgKompleks). Warning lama menuntut pernyataan saja sehingga soal
+    // ber-opsi (bentuk mayoritas data produksi) lahir "tidak valid".
+    if (tipe === 'pg_kompleks' && pernyataan.length === 0 && opsiJawaban.length === 0) {
+      warnings.push('tipe "pg_kompleks" seharusnya punya pernyataan atau opsiJawaban, tapi keduanya kosong');
     }
-    if (tipe === 'benar_salah' && tabelBenarSalah.length === 0) {
-      warnings.push('tipe "benar_salah" seharusnya punya tabelBenarSalah, tapi kosong');
+    if ((tipe === 'benar_salah' || tipe === 'pg_kategori') && tabelBenarSalah.length === 0) {
+      warnings.push(`tipe "${tipe}" seharusnya punya tabelBenarSalah, tapi kosong`);
     }
     // 🔥 BARU (audit keluhan siswa 2026-10-05): baris benar/salah TANPA kunci
     // adalah cacat impor yang dulu lolos diam-diam dan membuat soal selalu
     // bernilai 0 apapun jawaban siswa (194 soal produksi terkena). Sekarang
     // diperingatkan keras di preview impor supaya admin memperbaikinya
     // SEBELUM masuk bank soal.
-    if (tipe === 'benar_salah' && tabelBenarSalah.length > 0) {
+    if ((tipe === 'benar_salah' || tipe === 'pg_kategori') && tabelBenarSalah.length > 0) {
       const barisTanpaKunci = tabelBenarSalah.filter((r) => !String(r.kunci || '').trim()).length;
       if (barisTanpaKunci > 0) {
         warnings.push(

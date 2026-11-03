@@ -26,7 +26,8 @@
 // ============================================================
 
 import { tipeDidukung } from './keranjangTryOut.js';
-import { soalBisaDinilai } from './skorSoalTryOut.js';
+import { soalBisaDinilai, pilihBarisBenarSalah } from './skorSoalTryOut.js';
+import { barisBenarSalahBisaDinilai } from './skoringSoalKompleks.js';
 
 /**
  * @param {object} s butir bank_soal
@@ -41,9 +42,17 @@ export function layakUntukTryOut(s = {}) {
   if (!tipeDidukung(s)) return false;
   const k = s.kunciJawaban;
   // esai sah tanpa kunci huruf: rubrik penilaiannya hidup di pembahasan.
+  // 🔥 2026-11-03 (verifikasi impor TKA gel. 2): soal tabel (benar_salah/
+  // pg_kategori) menyimpan kuncinya DI BARIS (field kunci per pernyataan),
+  // bukan di kunciJawaban -- pagar lama menuntut kunciJawaban terisi sehingga
+  // soal tabel yang SAH dianggap tak layak dan diam-diam tidak masuk mesin
+  // try out / dasbor kesiapan. Kini kunci baris dihitung sebagai kunci.
   const berkunci = tipe === 'esai'
     ? true
-    : (Array.isArray(k) ? k.length > 0 : String(k ?? '').trim().length > 0);
+    : (tipe === 'benar_salah' || tipe === 'pg_kategori')
+      ? (barisBenarSalahBisaDinilai(pilihBarisBenarSalah(s))
+        || (Array.isArray(k) ? k.length > 0 : String(k ?? '').trim().length > 0))
+      : (Array.isArray(k) ? k.length > 0 : String(k ?? '').trim().length > 0);
   if (!berkunci) return false;
   // 🛡️ AUDIT 2026-10-13 (paket Sabtu): kunci "ADA" belum cukup -- kunci
   // harus BISA DINILAI. 4 butir pg_sederhana ber-kunci ganda ("A,D",
