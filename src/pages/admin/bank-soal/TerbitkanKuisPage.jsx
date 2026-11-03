@@ -37,6 +37,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cocokkanTargetPaket } from '../../../utils/cocokkanTargetPaket';
 import { db } from '../../../firebase';
+import { urutkanFolderTerbaruDulu } from '../../../utils/urutanFolderSumber';
 import {
   collection, getDocs, addDoc, query, where, serverTimestamp, deleteDoc, doc, writeBatch,
 } from 'firebase/firestore';
@@ -184,7 +185,10 @@ export default function TerbitkanKuisPage() {
       setLoadingFolder(true);
       try {
         const snap = await getDocs(collection(db, 'sumber_soal'));
-        setDaftarFolder(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        // 🔥 2026-11-03 (permintaan owner): folder TERBARU selalu paling
+        // atas supaya soal yang baru diimpor tidak terlempar ke bawah
+        // layar saat admin mau menerbitkan tryout/kuis.
+        setDaftarFolder(urutkanFolderTerbaruDulu(snap.docs.map((d) => ({ id: d.id, ...d.data() }))));
       } catch (e) {
         console.error('Gagal ambil daftar folder:', e);
       }

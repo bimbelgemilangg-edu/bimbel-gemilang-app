@@ -81,6 +81,7 @@ import {
   durasiRencanaMs, peringatanJendelaVsDurasi,
 } from '../../../utils/aksesJendelaTryOut';
 import { MAPEL_UTBK } from '../../../utils/mesinTaksonomiSoal';
+import { urutkanFolderTerbaruDulu } from '../../../utils/urutanFolderSumber';
 import { apakahMapelUtbk } from '../../../../lib/kunciGemini';
 
 const inputStyle = { padding: '9px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, outline: 'none' };
@@ -229,7 +230,10 @@ export default function TerbitkanTryOutPage() {
       setLoadingFolder(true);
       try {
         const snap = await getDocs(collection(db, 'sumber_soal'));
-        setDaftarFolder(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        // 🔥 2026-11-03 (permintaan owner): folder TERBARU selalu paling
+        // atas supaya soal yang baru diimpor tidak terlempar ke bawah
+        // layar saat admin mau menerbitkan tryout/kuis.
+        setDaftarFolder(urutkanFolderTerbaruDulu(snap.docs.map((d) => ({ id: d.id, ...d.data() }))));
       } catch (e) {
         console.error('Gagal ambil daftar folder:', e);
       }
