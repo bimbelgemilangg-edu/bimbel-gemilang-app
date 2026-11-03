@@ -16,7 +16,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip } from 'lucide-react';
 import KameraBelakang from '../../components/KameraBelakang';
 import { STATUS_ABSENSI, kebijakanUntukStatus, statusDariDokumenAbsensi, keteranganKebijakan } from '../../utils/kebijakanAbsensi';
-import { keteranganAbsensi } from '../../utils/identitasAbsensi';
+import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
+import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { uploadElearningFile } from '../../services/uploadService';
 import LiveSessionTeacher from './LiveSessionTeacher';
@@ -103,7 +104,7 @@ const ClassSession = () => {
 
   useEffect(() => {
     if (!schedule?.id) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = tanggalLokalStr(); // tanggal LOKAL, bukan UTC (A5/v1.6.4)
     const q = query(collection(db, 'attendance'), where('date', '==', today), where('scheduleId', '==', schedule.id));
     const un = onSnapshot(q, (snap) => {
       // Bentuk FUNGSIONAL (prev => ...), bukan menutup nilai `attendanceMap`
@@ -156,9 +157,9 @@ const ClassSession = () => {
     if (!schedule || !teacher) return;
     const cur = attendanceMap[student.id];
     setAttendanceMap((p) => ({ ...p, [student.id]: next }));
-    const today = new Date().toISOString().split('T')[0];
+    const today = tanggalLokalStr(); // tanggal LOKAL, bukan UTC (A5/v1.6.4)
     try {
-      await setDoc(doc(db, 'attendance', student.id + '_' + today + '_' + schedule.id), {
+      await setDoc(doc(db, 'attendance', kunciDokumenAbsensi(student.id, today, schedule.id)), {
         studentId: student.id, studentName: student.nama,
         program: student.program || schedule.program || 'Reguler',
         kelasSekolah: student.kelas || student.kelasSekolah || '-',
@@ -220,10 +221,10 @@ const ClassSession = () => {
     if (!window.confirm('Yakin akhiri kelas? Siswa berstatus Belum akan dicatat Alpha.')) return;
     setLoading(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = tanggalLokalStr(); // tanggal LOKAL, bukan UTC (A5/v1.6.4)
       await Promise.all((schedule.students || []).map(async (s) => {
         const present = (attendanceMap[s.id] || 'Alpha') === 'Hadir';
-        return setDoc(doc(db, 'attendance', s.id + '_' + today + '_' + schedule.id), {
+        return setDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.id, today, schedule.id)), {
           studentId: s.id, studentName: s.nama,
           program: s.program || schedule.program || 'Reguler',
           kelasSekolah: s.kelas || s.kelasSekolah || '-',
@@ -356,7 +357,7 @@ const ClassSession = () => {
               <div style={st.card(isMobile)}>
                 <h4 style={st.cardTitle}><QrCode size={18} /> Scan Absensi</h4>
                 <div style={st.qrWrapper}>
-                  <QRCodeSVG value={JSON.stringify({ type: 'ABSENSI_BIMBEL', scheduleId: schedule.id, mapel: schedule.title || 'Umum', teacher: teacher.nama, date: new Date().toISOString().split('T')[0], level: schedule.level || 'SD' })} size={isMobile ? 140 : 180} style={{ width: '100%', height: 'auto', maxWidth: isMobile ? 140 : 180 }} />
+                  <QRCodeSVG value={JSON.stringify({ type: 'ABSENSI_BIMBEL', scheduleId: schedule.id, mapel: schedule.title || 'Umum', teacher: teacher.nama, date: tanggalLokalStr(), level: schedule.level || 'SD' })} size={isMobile ? 140 : 180} style={{ width: '100%', height: 'auto', maxWidth: isMobile ? 140 : 180 }} />
                 </div>
                 <p style={st.qrHint(isMobile)}>Siswa silakan scan</p>
               </div>

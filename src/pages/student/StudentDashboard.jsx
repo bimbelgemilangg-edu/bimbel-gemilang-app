@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
 import { cocokkanAksesModul } from '../../utils/aksesKontenSiswa';
+import { tanggalLokalStr } from '../../utils/waktuLokal';
+import { kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
 import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, deleteDoc, serverTimestamp, where, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
@@ -541,8 +543,8 @@ const StudentDashboard = () => {
                 alert('❌ QR ini bukan untuk jadwal kelasmu hari ini. Absen tidak tercatat.\n\nKalau ini keliru, hubungi tentor/admin.');
                 return;
               }
-              const today = getSmartDateString(new Date());
-              await setDoc(doc(db, "attendance", studentId + '_' + today + '_' + (d.scheduleId || '')), {
+              const today = tanggalLokalStr(); // lokal, satu sumber (A5/v1.6.4)
+              await setDoc(doc(db, "attendance", kunciDokumenAbsensi(studentId, today, d.scheduleId || '')), {
                 studentId, studentName, teacherName: d.teacher, date: today,
                 tanggal: today, timestamp: serverTimestamp(), status: "Hadir",
                 mapel: d.mapel, scheduleId: d.scheduleId || '', keterangan: "Scan QR"

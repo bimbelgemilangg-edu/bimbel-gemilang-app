@@ -6,6 +6,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { 
   Save, Clock, UserCheck, ShieldAlert, CreditCard, 
   FileText, List, Bold, Italic, Download, Table, AlertTriangle,
@@ -78,7 +79,7 @@ const AdminDailyLog = () => {
 
   // === FORM DATA ===
   const [formData, setFormData] = useState({
-    tanggal: new Date().toISOString().split('T')[0],
+    tanggal: tanggalLokalStr(),
     adminName: "", jamMasuk: "", jamPulang: "",
     siswa: { jumlahHadir: 0, namaTidakHadir: "", alasanAbsen: "" },
     tentor: { id: "", nama: "", status: "Hadir" },
@@ -100,12 +101,20 @@ const AdminDailyLog = () => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+    // fetchCalendarData SENGAJA tidak dimasukkan ke dependensi tiga efek di
+    // bawah ini: ia bukan useCallback dan menutup banyak state, sehingga
+    // menjadikannya dependensi membuat efek berlangganan ulang TIAP render →
+    // fetch kalender & absensi berulang tanpa henti (pembakaran kuota baca,
+    // penyakit yang sama dengan v1.5.9). Urutan deklarasi sudah diperiksa:
+    // pemanggilan terjadi setelah render, jadi tidak ada bahaya TDZ.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchCalendarData(); }, [calendarDate]);
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = tanggalLokalStr(); // lokal, bukan UTC (A5/v1.6.4)
     const q = query(collection(db, "attendance"), where("date", "==", today));
     const unsubscribe = onSnapshot(q, () => {
       fetchAttendanceSummary();
@@ -113,6 +122,8 @@ const AdminDailyLog = () => {
       fetchCalendarData();
     });
     return () => unsubscribe();
+    // lihat alasan penguncian exhaustive-deps di efek mount di atas
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ============================================================
@@ -155,8 +166,8 @@ const AdminDailyLog = () => {
       const month = calendarDate.getMonth();
       const startOfMonth = new Date(year, month, 1);
       const endOfMonth = new Date(year, month + 1, 0);
-      const startStr = startOfMonth.toISOString().split('T')[0];
-      const endStr = endOfMonth.toISOString().split('T')[0];
+      const startStr = tanggalLokalStr(startOfMonth);
+      const endStr = tanggalLokalStr(endOfMonth);
 
       const qLogs = query(collection(db, "admin_daily_logs"),
         where("tanggal", ">=", startStr), where("tanggal", "<=", endStr), orderBy("tanggal", "asc"));
@@ -189,7 +200,7 @@ const AdminDailyLog = () => {
 
   const fetchAttendanceSummary = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = tanggalLokalStr(); // lokal, bukan UTC (A5/v1.6.4)
       const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", today));
       const snapJadwal = await getDocs(qJadwal);
       const jadwalList = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -239,7 +250,7 @@ const AdminDailyLog = () => {
   // === DETEKSI GURU BELUM ABSEN ===
   const fetchTeacherAttendanceStatus = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = tanggalLokalStr(); // lokal, bukan UTC (A5/v1.6.4)
       const qJadwal = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", today));
       const snapJadwal = await getDocs(qJadwal);
       const jadwalList = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -294,7 +305,7 @@ const AdminDailyLog = () => {
   // IZIN
   // ============================================================
   const openIzinModal = () => {
-    setIzinForm({ tanggal: new Date().toISOString().split('T')[0], adminName: '', alasan: '', status: 'Izin' });
+    setIzinForm({ tanggal: tanggalLokalStr(), adminName: '', alasan: '', status: 'Izin' });
     setShowIzinModal(true);
   };
   const handleSubmitIzin = async () => {

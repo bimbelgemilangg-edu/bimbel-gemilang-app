@@ -95,3 +95,14 @@ export function keteranganAbsensi(note = '', status = '') {
   if (status === 'Hadir') return 'Input manual guru (Absensi Siswa)';
   return String(status || '');
 }
+
+/** SATU FORMAT kunci dokumen `attendance`: `{siswa}_{tanggal}_{jadwal}`.
+ *  (v1.6.4, item A5) Sebelumnya format ini disalin inline di empat penulis
+ *  dengan sumber tanggal yang BERBEDA-BEDA (UTC di sisi guru, lokal di sisi
+ *  siswa) — pada 00:00-06:59 WIB satu kehadiran bisa terbelah menjadi dua
+ *  dokumen. Tanggal WAJIB hasil `tanggalLokalStr` (src/utils/waktuLokal.js);
+ *  fungsi ini hanya merakit format supaya tidak ada penulis keenam yang
+ *  mengarang variasi sendiri. */
+export function kunciDokumenAbsensi(studentId, tanggalStr, jadwalId = '') {
+  return `${String(studentId || '')}_${String(tanggalStr || '')}_${String(jadwalId || '')}`;
+}

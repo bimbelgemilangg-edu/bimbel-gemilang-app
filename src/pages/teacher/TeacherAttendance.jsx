@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { kebijakanUntukStatus } from '../../utils/kebijakanAbsensi';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { db } from '../../firebase';
-import { keteranganAbsensi } from '../../utils/identitasAbsensi';
+import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
 import { 
   collection, query, where, getDocs, doc, getDoc,
   onSnapshot, serverTimestamp, setDoc
@@ -216,7 +216,7 @@ const TeacherAttendance = () => {
       await Promise.all(toSave.map(s => {
         const studentDocId = s.id || s.studentId;
 
-        const absenId = studentDocId + '_' + dateStr + '_' + selectedSchedule.id;
+        const absenId = kunciDokumenAbsensi(studentDocId, dateStr, selectedSchedule.id);
         return setDoc(doc(db, "attendance", absenId), {
           studentId: studentDocId,
           studentName: s.nama || 'Siswa',
