@@ -1,6 +1,7 @@
 # REGISTER BUG — DASHBOARD GURU (`/guru/dashboard`)
 
-**Disusun:** Selasa 3 November 2026, 08.20 WIB · **Item master list:** B3
+**Disusun:** Selasa 3 November 2026, 08.20 WIB · **Diperbarui:** 3 November 2026
+(v1.6.5 — 24 dari 26 temuan sudah diperbaiki, lihat bab 11) · **Item master list:** B3
 **Pemicu:** owner lapor "dashboard guru banyak bug" + kuota baca Firestore masih
 `429` sehingga item A1 (sapu masa aktif) belum bisa dijalankan → sesuai protokol,
 kuota jebol dipakai untuk kerja yang **tidak butuh baca data**: audit kode.
@@ -37,36 +38,39 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
 
 ---
 
-## 1. Ringkasan (24 temuan)
+## 1. Ringkasan (26 temuan)
 
-| ID | Sev | Gejala singkat (bahasa sehari-hari) | Status |
+| ID | Sev | Gejala singkat (bahasa sehari-hari) | Status v1.6.5 |
 |---|---|---|---|
-| B-01 | S1 | Dasbor muter selamanya ("Memuat dashboard...") kalau data guru tak punya nama | SIAP EKSEKUSI |
-| B-02 | S1 | Lonceng notifikasi **mati total** — selamanya "Tidak ada notifikasi" | MENUNGGU KEPUTUSAN (D1) |
-| B-03 | S1 | Tombol "Tandai semua" tidak melakukan apa-apa (tombol mati) | MENUNGGU KEPUTUSAN (D1) |
-| B-04 | S1 | Satu query gagal → **semua** kartu jadi 0 dan pengumuman lenyap, tanpa pesan | SIAP EKSEKUSI |
-| B-05 | S1 | Kehadiran % kemungkinan selalu 0 karena log dicari pakai ID yang berbeda dengan ID yang ditulis | PERLU CEK CONSOLE |
-| B-06 | S1 | Buntu kode absen: kalau admin belum setel kode, guru dituduh "token salah" terus | MENUNGGU KEPUTUSAN (D2) |
-| B-07 | S2 | "Total Siswa" = semua siswa yang **pernah** terjadwal, diberi label "Aktif" | MENUNGGU KEPUTUSAN (D3) |
-| B-08 | S2 | "Total Kelas" = semua jadwal sepanjang masa, makin lama makin besar | MENUNGGU KEPUTUSAN (D3) |
-| B-09 | S2 | Badge "+N" di kartu "Sesi Hari Ini" sebenarnya jumlah sesi 7 hari **ke belakang** | SIAP EKSEKUSI |
-| B-10 | S2 | Persen kehadiran dibagi roster **hari ini**, bukan roster saat kelas berlangsung | MENUNGGU KEPUTUSAN (D4) |
-| B-11 | S2 | Pengumuman guru hilang kalau 5 pengumuman terbaru kebetulan untuk siswa | SIAP EKSEKUSI |
-| B-12 | S2 | Aplikasi dibiarkan terbuka lewat tengah malam → "Hari Ini" masih menampilkan kemarin | SIAP EKSEKUSI |
-| B-13 | S2 | Jadwal bisa muncul di halaman Absensi tapi **hilang** di Dasbor (dua kunci pencarian berbeda) | MENUNGGU KEPUTUSAN (D5) |
-| B-14 | S3 | Setiap buka dasbor = menarik **seluruh** riwayat jadwal guru (tanpa batas) | MENUNGGU KEPUTUSAN (D6) |
-| B-15 | S3 | Bocor: guru pindah halaman cepat → pendengar realtime tetap hidup selamanya | SIAP EKSEKUSI |
-| B-16 | S3 | Bocor kedua di halaman Absensi: pendengar cadangan tak pernah dimatikan | SIAP EKSEKUSI |
-| B-17 | S3 | Riwayat guru menarik semua `teacher_logs` tanpa `limit` (2 query) | SIAP EKSEKUSI |
-| B-18 | S4 | Avatar profil = `<div onClick>` → tak bisa diakses keyboard/pembaca layar | SIAP EKSEKUSI |
-| B-19 | S4 | Sasaran sentuh lonceng/refresh/logout ≈34 px (aturan: ≥44 px) | SIAP EKSEKUSI (E2) |
-| B-20 | S4 | Kontras gagal: `#94a3b8` di atas putih = **2,56:1** (syarat 4,5:1), dipakai 12+ tempat | SIAP EKSEKUSI (E2) |
-| B-21 | S4 | Teks 9–10 px (aturan sistem desain: tidak boleh di bawah 11 px) | SIAP EKSEKUSI (E2) |
-| B-22 | S4 | Semua kegagalan ditelan `console.error` → melanggar `docs/POLICY-ERROR-DAN-KUOTA.md` | SIAP EKSEKUSI |
-| B-23 | S4 | Salam "Selamat Pagi" dihitung sekali saat buka → salah kalau app terbuka lintas waktu | SIAP EKSEKUSI |
-| B-24 | S4 | Tiga nomor versi berbeda: header "v2.0", footer "Versi 2.0", `package.json` 3.0.0 | MENUNGGU KEPUTUSAN (D7) |
+| B-01 | S1 | Dasbor muter selamanya ("Memuat dashboard...") kalau data guru tak punya nama | ✅ **SELESAI** |
+| B-02 | S1 | Lonceng notifikasi mati total — selamanya "Tidak ada notifikasi" | 🟡 **SEBAGIAN** (kueri & field dibetulkan; pengirimnya masih keputusan D1) |
+| B-03 | S1 | Tombol "Tandai semua" tidak melakukan apa-apa (tombol mati) | ✅ **SELESAI** |
+| B-04 | S1 | Satu query gagal → semua kartu jadi 0 dan pengumuman lenyap, tanpa pesan | ✅ **SELESAI** |
+| B-05 | S1 | Kehadiran % selalu 0 karena log dicari pakai ID yang berbeda dengan yang ditulis | ✅ **SELESAI** (jalur cepat butuh deploy indeks) |
+| B-06 | S1 | Buntu kode absen: guru dituduh "token salah" padahal kode belum disetel | ✅ **SELESAI** |
+| B-07 | S2 | "Total Siswa" = semua siswa yang pernah terjadwal, diberi label "Aktif" | ✅ **SELESAI** (jadi "Siswa Terjadwal" + periodenya) |
+| B-08 | S2 | "Total Kelas" = semua jadwal sepanjang masa | ✅ **SELESAI** (jadi "Sesi 7 Hari Terakhir") |
+| B-09 | S2 | Badge "+N" di kartu "Sesi Hari Ini" sebenarnya sesi 7 hari ke belakang | ✅ **SELESAI** |
+| B-10 | S2 | Persen kehadiran dibagi roster hari ini, bukan roster saat kelas berlangsung | ✅ **SELESAI** (log baru menyimpan penyebutnya) |
+| B-11 | S2 | Pengumuman guru hilang kalau 5 pengumuman terbaru kebetulan untuk siswa | ✅ **SELESAI** |
+| B-12 | S2 | Aplikasi terbuka lewat tengah malam → "Hari Ini" masih menampilkan kemarin | ✅ **SELESAI** |
+| B-13 | S2 | Jadwal muncul di halaman Absensi tapi hilang di Dasbor (dua kunci pencarian) | ✅ **SELESAI** (satu aturan bersama) |
+| B-14 | S3 | Setiap buka dasbor menarik seluruh riwayat jadwal guru | ✅ **SELESAI** (jendela 15 hari, biaya datar) |
+| B-15 | S3 | Bocor: pindah halaman cepat → pendengar realtime hidup selamanya | ✅ **SELESAI** |
+| B-16 | S3 | Bocor kedua di halaman Absensi: pendengar cadangan tak pernah dimatikan | ✅ **SELESAI** |
+| B-17 | S3 | Riwayat guru menyapu `teacher_logs` tanpa `limit` (2 query) | ✅ **SELESAI** |
+| B-18 | S4 | Avatar profil = `<div onClick>` → tak bisa diakses keyboard | ✅ **SELESAI** |
+| B-19 | S4 | Sasaran sentuh ≈34 px (aturan: ≥44 px) | ⏳ **DITABUNG ke E2** (perubahan ukuran menggeser tata letak header) |
+| B-20 | S4 | Kontras `#94a3b8` = 2,56:1 (syarat 4,5:1) | ✅ **SELESAI** (29 tempat → `#4B5563` 7,5:1) |
+| B-21 | S4 | Teks 8–10 px (aturan: tidak boleh di bawah 11 px) | ✅ **SELESAI** (40 tempat → 11 px) |
+| B-22 | S4 | Kegagalan ditelan `console.error` → melanggar policy error & kuota | ✅ **SELESAI** |
+| B-23 | S4 | Salam dihitung sekali saat buka | ✅ **SELESAI** |
+| B-24 | S4 | Tiga nomor versi berbeda (v2.0 / Versi 2.0 / 3.0.0) | ✅ **SELESAI** (label versi dicabut dari UI) |
+| **B-25** | **S1** | **Logout guru tidak menutup sesi: `/guru/*` tetap terbuka sesudah keluar** | ✅ **SELESAI** (baru, lihat bab 5A) |
+| **B-26** | **S1** | **Angka gaji guru bocor ke browser guru (`stripNominal` salah nama field)** | ✅ **SELESAI** (baru, lihat bab 5A) |
 
-**Yang paling mahal:** B-04 + B-05 (guru melihat angka 0 dan menyimpulkan
+**Yang paling mahal:** B-26 (gaji bocor ke perangkat guru), B-25 (sesi tidak
+tertutup sesudah keluar), B-04 + B-05 (guru melihat angka 0 dan menyimpulkan
 "datanya hilang"), B-06 (kelas tidak bisa dibuka), B-14 (kuota).
 
 ---
@@ -74,6 +78,8 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
 ## 2. Detail S1 — fungsi mati / buntu
 
 ### B-01 · Dasbor muter selamanya bila data guru tak punya `nama`
+> **Status v1.6.5:** ✅ SELESAI — keluar dini kini menurunkan `loading`/`refreshing`; ada panel "Data profil Anda belum lengkap" + tombol Muat ulang / Keluar-masuk lagi.
+
 - **Gejala:** layar berhenti di spinner "Memuat dashboard..." — tidak pernah
   selesai, tidak ada pesan error. Tombol refresh juga berputar terus.
 - **Penyebab:** `TeacherDashboard.jsx:267` — `if (!teacher?.nama) return;`
@@ -89,6 +95,8 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
 - **Lubang:** tidak ada. Perilaku ini jelas salah di semua tafsir.
 
 ### B-02 · Lonceng notifikasi mati total (tiga lapis penyebab)
+> **Status v1.6.5:** 🟡 SEBAGIAN — sisi pembaca dibetulkan (satu kueri `recipientId in identitas`, `recipientType` guru/teacher, bendera `isRead`); pengirim `notifyTeachers()` masih nol pemanggil → menunggu keputusan D1.
+
 - **Gejala:** panel notifikasi selalu "Tidak ada notifikasi". Titik merah
   tidak pernah muncul, apa pun yang admin lakukan.
 - **Bukti, lapis demi lapis:**
@@ -112,6 +120,8 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
   (kuota tulis). Perlu diputuskan peristiwa mana yang boleh mengirim.
 
 ### B-03 · Tombol "Tandai semua" adalah tombol mati
+> **Status v1.6.5:** ✅ SELESAI — tombol benar-benar menulis `isRead` lewat batch write, menampilkan jumlahnya, dan nonaktif bila tak ada yang belum dibaca.
+
 - **Gejala:** diklik, tidak terjadi apa-apa. Tidak ada error.
 - **Bukti:** `TeacherDashboard.jsx:589` — `<button style={styles.notifMarkAll}>`
   tanpa `onClick`.
@@ -120,6 +130,8 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
   (aturan owner: jangan ada tombol/menu yang tidak berfungsi).
 
 ### B-04 · Satu query gagal → seluruh dasbor jadi 0, diam-diam
+> **Status v1.6.5:** ✅ SELESAI — `try` dipecah per blok data; kegagalan satu blok tidak menular; banner jujur per blok + tombol "Coba lagi"; indeks `teacher_logs` dideklarasikan.
+
 - **Gejala:** semua kartu statistik 0 (sesi hari ini 0, siswa 0, kehadiran 0%),
   blok Pengumuman hilang, lonceng kosong — padahal jadwalnya ada. Guru/admin
   menyimpulkan "datanya hilang".
@@ -131,9 +143,13 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
 - **Kenapa `teacher_logs` bisa gagal:** query-nya
   `where('teacherId','==',X) + orderBy('tanggal','desc') + limit(30)` —
   kombinasi "sama dengan" + "urut field lain" **wajib punya indeks komposit**
-  di Firestore. Repo ini **tidak punya `firestore.indexes.json`**, jadi indeks
-  hanya ada bila dulu seseorang mengklik link di error console. Kalau belum
-  pernah → query ini selalu gagal → gejala di atas.
+  di Firestore. Repo ini punya `firebase/firestore.indexes.json` (6 indeks:
+  tryout_sesi, jawaban_kuis, attendance ×2, siswa_soal_progress, raport_final)
+  tetapi **tidak ada satu pun untuk `teacher_logs`** — jadi indeksnya hanya ada
+  bila dulu seseorang mengklik link di error console. Kalau belum pernah →
+  query ini selalu gagal → gejala di atas.
+  *(Koreksi 3 Nov 2026: draf pertama dokumen ini menulis "repo tidak punya
+  firestore.indexes.json" — salah, berkasnya ada di folder `firebase/`.)*
 - **Usulan:** (1) pecah `try` per blok data agar kegagalan satu blok tidak
   menular; (2) tampilkan banner jujur + tombol "Coba lagi" sesuai
   `docs/POLICY-ERROR-DAN-KUOTA.md` (dasbor ini **belum** mengimpor
@@ -144,6 +160,8 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
   `firebase deploy --only firestore:indexes`). Perlu izin owner.
 
 ### B-05 · Kehadiran % kemungkinan selalu 0 (identitas guru ganda)
+> **Status v1.6.5:** ✅ SELESAI — log dicari dengan SEMUA identitas guru (`where teacherId in [...]` lewat `daftarIdGuru`), nama tidak lagi jadi kunci.
+
 - **Gejala:** kartu "Kehadiran" dan progress bar di banner tetap 0% walau guru
   rajin menyimpan kelas.
 - **Penyebab:** dasbor mencari log dengan
@@ -168,6 +186,8 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
   yang benar-benar ada di `teacher_logs`.
 
 ### B-06 · Buntu kode absen: guru dituduh "token salah" padahal kode belum disetel
+> **Status v1.6.5:** ✅ SELESAI — empat keadaan kode (siap / belum dibuat admin / kosong / gagal dibaca) + "Coba lagi" yang membaca satu dokumen; pesan tidak pernah menuduh guru atas kegagalan sistem.
+
 - **Gejala:** klik "Mulai Kelas" → isi kode apa pun → "⚠️ Token absensi salah!
   Silakan periksa kembali atau hubungi admin." Berulang, tanpa jalan keluar.
   Kelas hari itu tidak bisa dibuka dari dasbor.
@@ -190,23 +210,31 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
 ## 3. Detail S2 — angka & daftar yang menyesatkan
 
 ### B-07 · "Total Siswa" bukan siswa aktif
+> **Status v1.6.5:** ✅ SELESAI — kartu jadi "Siswa Terjadwal" dari jendela 15 hari, dengan rentang tanggalnya ditulis di kartu.
+
 `allStudents` dikumpulkan dari **seluruh** jadwal milik guru (`:303-310`),
 termasuk kelas setahun lalu dan kelas yang sudah selesai, lalu ditampilkan
 dengan badge "Aktif" (`:686-688`). Siswa yang sudah berhenti tetap terhitung.
 → Perlu definisi (D3).
 
 ### B-08 · "Total Kelas" = semua jadwal sepanjang masa
+> **Status v1.6.5:** ✅ SELESAI — kartu jadi "Sesi 7 Hari Terakhir" + sub-angka "N selesai".
+
 `totalClasses: allSchedules.length` (`:357`) dan
 `completedClasses: status === 'completed'` (`:358`). Angka ini hanya naik,
 tidak pernah menggambarkan beban sekarang. → Perlu definisi (D3).
 
 ### B-09 · Badge "+N" di kartu "Sesi Hari Ini" bukan tren
+> **Status v1.6.5:** ✅ SELESAI — badge "+N" diganti jumlah agenda 7 hari ke depan pada kartu yang tepat.
+
 Yang ditampilkan adalah `stats.weekSessions` = jumlah sesi **7 hari ke
 belakang termasuk hari ini** (`:299-301`, ditampilkan `:675`) dengan ikon panah
 naik dan tanda "+". Guru membacanya sebagai "hari ini bertambah N".
 → Usulan: ganti jadi "N sesi 7 hari terakhir" tanpa tanda "+", atau hapus.
 
 ### B-10 · Persen kehadiran dibagi roster hari ini, bukan roster saat itu
+> **Status v1.6.5:** ✅ SELESAI — log baru menyimpan `siswaTotal`; log lama tanpa penyebut ditandai `perkiraan`; tanpa bukti → tidak dihitung dan persen jadi "—".
+
 Pembilang = `l.siswaHadir` dari log historis; penyebut = `s.students.length`
 dari dokumen jadwal **versi sekarang** (`:339-349`). Bila roster sebuah jadwal
 ditambah siswa setelah kelas berlangsung, persen turun walau tidak ada yang
@@ -216,6 +244,8 @@ bolos. (Sudah tercatat sebagai "belum diperbaiki" di v1.6.3; kini diberi ID.)
 turut direparasi (D4).
 
 ### B-11 · Pengumuman guru hilang karena disaring **setelah** dibatasi 5
+> **Status v1.6.5:** ✅ SELESAI — 20 dokumen terbaru ditarik, baru disaring portal → 3 ditampilkan (tanpa indeks komposit).
+
 Query mengambil 5 dokumen terbaru dari `student_contents` **tanpa** filter
 portal (`:361-367`), baru disaring di klien untuk `Guru`/`Semua`/kosong
 (`:369`). Bila lima kiriman terakhir admin ditujukan ke portal Siswa,
@@ -227,6 +257,8 @@ tertangkap `in` → perlu diputuskan: migrasi field, atau terima bahwa kiriman
 lama tanpa portal tidak tampil di dasbor guru (tetap tampil di tempat lain).
 
 ### B-12 · "Hari Ini" membeku pada tanggal saat halaman dibuka
+> **Status v1.6.5:** ✅ SELESAI — tanggal bisnis & jendela dihitung ulang saat `visibilitychange`/`focus`; tanpa polling.
+
 `todayStr` dihitung sekali di `init()` (`:412`) lalu dipakai sebagai filter
 pendengar realtime (`:413-418`). Aplikasi yang dibiarkan terbuka melewati
 tengah malam WIB tetap menampilkan jadwal **kemarin** sampai guru memuat ulang.
@@ -234,6 +266,8 @@ tengah malam WIB tetap menampilkan jadwal **kemarin** sampai guru memuat ulang.
 tanggal berubah / app kembali terlihat), tetap dengan `tanggalLokalStr()`.
 
 ### B-13 · Otak terbelah: dasbor mencari jadwal pakai **nama**, halaman absensi pakai **ID**
+> **Status v1.6.5:** ✅ SELESAI — dasbor dan halaman absensi memakai aturan identitas yang sama dari `utils/identitasJadwal` (ID menang; nama hanya untuk data warisan).
+
 - Dasbor: `where('teacherName','==', teacher.nama.trim())` (`:280-283`).
 - Absensi: `where('teacherId','==', guruId||id)` lalu fallback
   `where('teacherName','==', guru.nama)` (`TeacherAttendance.jsx:101-137`).
@@ -254,6 +288,8 @@ dan kedua halaman memakai fungsi yang **sama**. (D5)
 ## 4. Detail S3 — kuota & kebocoran
 
 ### B-14 · Setiap buka dasbor menarik seluruh riwayat jadwal guru
+> **Status v1.6.5:** ✅ SELESAI — satu langganan jendela −7..+7 hari menggantikan sapuan seluruh riwayat + langganan harian terpisah; biaya jadi datar.
+
 `qJadwal` hanya memfilter `teacherName`, **tanpa rentang tanggal dan tanpa
 `limit`** (`:280-284`). Semua yang dibutuhkan layar sebenarnya cuma: hari ini,
 7 hari ke depan, 7 hari ke belakang. Untuk guru setahun mengajar, satu kali buka
@@ -269,6 +305,8 @@ angka dari sapuan penuh itu. Bila sapuan dipersempit, definisi kedua kartu
 **wajib** diputuskan lebih dulu (D3) — kalau tidak, angkanya berubah diam-diam.
 
 ### B-15 · Pendengar realtime bocor bila guru pindah halaman cepat
+> **Status v1.6.5:** ✅ SELESAI — effect mengembalikan fungsi `unsubscribe` secara langsung — tidak ada lagi variabel yang diisi async.
+
 `let unsubscribe = null` (`:403`) diisi **di dalam** `init()` yang async
 (`:419`). Cleanup effect hanya `if (unsubscribe) unsubscribe()` (`:431-434`).
 Bila komponen dilepas sebelum `init()` selesai (guru langsung klik menu lain,
@@ -278,6 +316,8 @@ selamanya, terus mengirim snapshot & membaca dokumen.
 batalkan `init` dengan token + tutup langganan bila sudah `cancelled`.
 
 ### B-16 · Kebocoran kedua di halaman Absensi guru
+> **Status v1.6.5:** ✅ SELESAI — kueri cadangan berdasarkan nama dihapus; satu langganan dengan cleanup yang benar.
+
 Di dalam callback `onSnapshot` ada `return () => unsubFallback()`
 (`TeacherAttendance.jsx:137`) — nilai kembalian dari callback **pendengar**
 tidak dipakai React; hanya kembalian dari callback **effect** yang dipakai.
@@ -286,6 +326,8 @@ Jadi saat jalur cadangan (berdasarkan nama) aktif, langganan cadangan itu
 → Usulan: simpan kedua `unsub` di ref, bersihkan keduanya di cleanup effect.
 
 ### B-17 · Riwayat guru menyapu `teacher_logs` tanpa batas
+> **Status v1.6.5:** ✅ SELESAI — log riwayat dibatasi (maks 200) dan dibaca lewat service bersama; fallback nama hanya bila identitas menghasilkan nol.
+
 `TeacherHistory.jsx:70-89` dan `:103-110`: query `orderBy('tanggal','desc')`
 **tanpa `limit`**, dan bila kosong diulang lagi dengan fallback nama → dua
 sapuan penuh koleksi log. Semakin lama bimbel berjalan, semakin mahal halaman
@@ -316,7 +358,52 @@ Perbaikannya bukan tambal per warna, melainkan bagian dari rombak **E2**.
 
 ---
 
-## 6. Register lubang — keputusan yang harus owner ambil
+## 5A. Dua temuan baru saat eksekusi (3 Nov 2026, v1.6.5)
+
+Keduanya ditemukan **ketika perbaikan sedang dikerjakan**, bukan dari audit awal
+— bukti bahwa register ini harus diperbarui tiap batch, bukan sekali jadi.
+
+### B-25 · S1 · Logout guru tidak menutup sesi (akses tetap terbuka)
+> **Status v1.6.5:** ✅ SELESAI — `utils/sesiLoginGuru.js` dipakai penjaga rute DAN kedua tombol Keluar; dikunci 8 uji termasuk reproduksi bug lama.
+- **Gejala:** guru menekan "Keluar", diarahkan ke halaman login — tetapi bila ia
+  (atau orang lain di komputer bersama) mengetik `/guru/laporan-belajar` atau
+  `/guru/history`, halaman **tetap terbuka**.
+- **Penyebab:** `LoginGuru.jsx:30-33` menulis `isGuruLoggedIn='true'`, `role='guru'`,
+  `teacherData`, `guruInfo`. Penjaga rute `GuruRoute` (`App.jsx:276-285`) memeriksa
+  `isGuruLoggedIn` **atau** `teacherData`, **dan** `role`. Tetapi tombol Keluar di
+  dasbor hanya menghapus `teacherData`, `isLoggedIn`, `userRole` — dua yang terakhir
+  bahkan tidak pernah ditulis proses login guru. Jadi `isGuruLoggedIn` dan `role`
+  tetap ada → penjaga tetap meluluskan.
+- **Pembanding:** `SidebarGuru.jsx:236-239` memakai `localStorage.clear()` — menutup
+  lubangnya, tetapi ikut membuang sesi admin/siswa dan preferensi non-sesi di
+  peramban yang sama.
+- **Perbaikan v1.6.5:** satu sumber kebenaran `src/utils/sesiLoginGuru.js`
+  (`hapusSesiGuru()` + `masihDianggapMasuk()`); penjaga rute dan KEDUA tombol Keluar
+  memakainya, jadi apa yang dihapus pasti sama dengan apa yang diperiksa. `role`
+  hanya dibuang bila nilainya `guru`/`teacher` (sesi admin di perangkat yang sama
+  tidak ikut keluar). Dikunci `tests/sesiLoginGuru.test.mjs` (8 uji), termasuk uji
+  yang **mereproduksi bug lama** supaya tidak bisa kembali diam-diam.
+
+### B-26 · S1 · Angka gaji guru bocor ke browser guru
+> **Status v1.6.5:** ✅ SELESAI — `utils/logMengajar.buangNominal()` membuang semua field uang, dipakai dasbor & riwayat lewat service bersama; dikunci 9 uji termasuk reproduksi pola lama.
+- **Gejala:** tidak terlihat di layar — itulah masalahnya. Buka DevTools → Network
+  → dokumen `teacher_logs` di halaman Riwayat, dan field `nominal` (rupiah per sesi)
+  ikut terkirim.
+- **Penyebab:** `TeacherHistory.jsx` punya fungsi bernama `stripNominal` dengan
+  komentar panjang "gaji TIDAK BOLEH sampai ke sisi guru dalam bentuk apapun",
+  tetapi isinya `const { _nominal, ...rest } = d.data()` — yang dibuang adalah field
+  bernama **`_nominal` yang tidak pernah ada**. Field aslinya `nominal`, jadi lolos
+  utuh. Dasbor guru membuang field yang benar (`{ nominal: _nominal, ...rest }`),
+  halaman Riwayat tidak → dua kebenaran untuk satu aturan.
+- **Perbaikan v1.6.5:** `src/utils/logMengajar.js` → `buangNominal()` membuang
+  SEMUA field bernilai uang (`nominal`, `_nominal`, `nominalGaji`, `gaji`, `honor`),
+  dipakai dasbor **dan** riwayat lewat `services/logMengajarService.js`.
+  Dikunci `tests/logMengajar.test.mjs` (9 uji) termasuk uji regresi yang meniru pola
+  lama dan membuktikan pola itu meloloskan gaji.
+
+---
+
+## 6. Register lubang — keputusan owner (D2/D3/D5 sudah dijawab 3 Nov 2026)
 
 | # | Pertanyaan | Pilihan | Usulan default (bila owner setuju) |
 |---|---|---|---|
@@ -330,6 +417,52 @@ Perbaikannya bukan tambal per warna, melainkan bagian dari rombak **E2**.
 | **D8** | Indeks komposit dideklarasikan di repo (`firestore.indexes.json`)? | (a) ya, deploy lewat CLI, (b) tidak, tetap klik manual di Console | **(a)** — tanpa ini B-04/B-14 bisa kambuh diam-diam setiap proyek dipasang ulang |
 | **D9** | Perbaikan S4 (B-18..B-21) dikerjakan sekarang atau ditabung ke E2? | (a) sekarang (tambal token di file lama), (b) tabung ke rombak E2, (c) hanya yang kontras (B-20) sekarang | **(c)** — kontras adalah masalah keterbacaan hari ini; sisanya lebih murah dikerjakan sekali di E2 |
 | **D10** | Bug mana yang diperbaiki lebih dulu? | (a) urutan S1 → S3 → S2 → S4, (b) kelompokkan per berkas sekali jalan, (c) owner menunjuk sendiri | **(a)** — S1 = guru buntu, S3 = kuota (sedang kritis), S2 = angka salah, S4 = wajah |
+
+
+### Keputusan yang SUDAH diambil owner (3 Nov 2026)
+
+- **D2 = opsi (c)**, dengan pesan owner: *"sesuai usulanmu tapi atur se-efisien
+  mungkin dan efektif."* → kode absen tetap dibuat admin; dasbor membedakan
+  empat keadaan (siap / belum dibuat admin / dokumen kosong / gagal dibaca karena
+  kuota) dan menyediakan "Coba lagi" yang membaca **satu dokumen** saja, bukan
+  memuat ulang seluruh dasbor. Tombol VERIFIKASI dinonaktifkan selama kode belum
+  siap, supaya guru tidak menghafal pesan tuduhan.
+- **D5 = opsi (a)**, dengan pesan owner: *"ya tapi atur agar loading tidak nyasar
+  atau lama karena pencocokan."* → satu aturan identitas bersama
+  (`utils/identitasJadwal`), dan **tanpa kueri beruntun**: jadwal ditarik SATU
+  kali berdasarkan jendela tanggal, pencocokan ID/nama dilakukan di klien. Nol
+  putaran jaringan tambahan, nol ketergantungan indeks, data warisan tetap
+  tertangkap. Aturan menangnya: **ID mutlak bila ada** (menutup lubang dua guru
+  bernama sama), nama hanya untuk dokumen tanpa `teacherId`.
+- **D3 = diserahkan ke asisten** (*"atur yang se-efisien se-efektif mungkin,
+  kalau perlu riset kamu putuskan saja"*). Keputusan yang diambil: kartu lama
+  "Total Siswa"/"Total Kelas" diganti **angka berjendela** yang bisa dihitung
+  dari data yang memang ditarik — "Sesi Hari Ini" (+ jumlah agenda),
+  "Sesi 7 Hari Terakhir" (+ jumlah selesai), "Siswa Terjadwal" (unik, dengan
+  rentang tanggalnya ditulis di kartu), "Kehadiran" (persen **atau** "—" bila
+  belum ada bukti, plus jumlah sesi yang jadi bahan hitungan). Alasan: kartu
+  yang jujur lebih berguna daripada kartu besar yang salah, dan semua angka ini
+  gratis karena berasal dari jendela yang sudah dibaca.
+
+### Keputusan yang diambil asisten sebagai turunan langsung (dilaporkan, boleh dibatalkan)
+
+- **D4 = (a)** — log mengajar baru menyimpan `siswaTotal` (penyebut kehadiran);
+  log lama yang belum punya penyebut ditandai `perkiraan` di UI, dan log tanpa
+  penyebut sama sekali **tidak dihitung** (bukan dihitung 0).
+- **D6 = (a)** — jendela jadwal −7..+7 hari (15 hari) untuk dasbor.
+- **D7 = (b)** — label versi ("v2.0"/"Versi 2.0") dicabut dari UI; sumber nomor
+  versi tetap `package.json`.
+- **D8 = (a)** — indeks `teacher_logs (teacherId ASC, tanggal DESC)` dideklarasikan
+  di `firebase/firestore.indexes.json`; **perlu di-deploy owner** (bab 7).
+
+### Masih menunggu owner
+
+- **D1** (notifikasi guru: hidupkan penuh / satu peristiwa dulu / cabut panelnya).
+  V1.6.5 sudah membetulkan sisi pembaca (nama field & kueri), tetapi
+  `notifyTeachers()` **masih nol pemanggil** — jadi panel tetap kosong sampai
+  owner memutuskan peristiwanya.
+- **D9** (sisa wajah: B-19 sasaran sentuh + penyatuan token warna → dikerjakan di E2).
+- **D10** tidak diperlukan lagi: urutan pengerjaan sudah dijalankan (bab 11).
 
 ---
 
@@ -345,6 +478,12 @@ menentukan apakah B-04/B-05/B-14 sudah benar-benar terjadi di produksi:
      `FAILED_PRECONDITION` + link `https://console.firebase.google.com/...indexes...`.
    - Dari sandbox tidak bisa: API metadata indeks menolak API key
      (`401 API keys are not supported by this API`) — butuh OAuth.
+   - **v1.6.5:** indeks `teacher_logs (teacherId ASC, tanggal DESC)` sudah
+     DIDEKLARASIKAN di `firebase/firestore.indexes.json`. Agar berlaku di
+     produksi perlu satu perintah: `firebase deploy --only firestore:indexes`
+     (tidak menyentuh rules — lihat komentar di `firebase.json`). Selama belum
+     di-deploy, kode otomatis memakai jalur cadangan tanpa `orderBy` + catatan
+     di localStorage, jadi dasbor tetap jalan (hanya lebih boros sedikit).
 2. **Ragam nilai `teacherId` di dalam `teacher_logs`.**
    - Cek: Console → Firestore → `teacher_logs` → lihat 5-10 dokumen → apakah
      `teacherId` berbentuk `GURU-0xx` atau docId acak (mis. `epmtJ3g3EMvq...`).
@@ -362,16 +501,16 @@ berulang — sesuai catatan bahwa spam retry memperpanjang masa jebol.
 
 ---
 
-## 8. Usulan urutan pengerjaan (menunggu "mulai" per batch)
+## 8. Urutan pengerjaan — batch 1-4 SUDAH dikerjakan (v1.6.5)
 
 | Batch | Isi | Berkas yang disentuh | Butuh keputusan | Butuh kuota baca? |
 |---|---|---|---|---|
-| **1 — anti-buntu** | B-01, B-04 (pecah try + banner jujur + "Coba lagi"), B-06, B-22 | `TeacherDashboard.jsx`, `keputusanMuat.js` (pakai yang ada) | D2 | Tidak |
-| **2 — identitas tunggal** | B-05, B-13 (satu fungsi identitas untuk jadwal & log) | `TeacherDashboard.jsx`, `TeacherAttendance.jsx`, `TeacherHistory.jsx`, `identitasGuru.js` | D5 | Tidak (tapi verifikasi butuh kuota) |
-| **3 — kuota** | B-14, B-15, B-16, B-17 (+ `firestore.indexes.json`) | 4 berkas guru + indeks | D3, D6, D8 | Tidak |
-| **4 — angka jujur** | B-07..B-12 | `TeacherDashboard.jsx` | D3, D4 | Tidak |
-| **5 — wajah** | B-18..B-21, B-23, B-24 → dikerjakan sebagai bagian **E2** (rombak dasbor guru dengan token) | `TeacherDashboard.jsx` (+ prototipe) | D7, D9 | Tidak |
-| **6 — notifikasi** | B-02, B-03 (hidupkan atau cabut) | `notifications.js`, `TeacherDashboard.jsx`, pemanggil baru | D1 | Tidak |
+| **1 — anti-buntu** ✅ | B-01, B-04 (pecah try + banner jujur + "Coba lagi"), B-06, B-22 | `TeacherDashboard.jsx` + `utils/kodeAbsenHarian.js` + `utils/keputusanMuat.js` | D2 ✅ | Tidak |
+| **2 — identitas tunggal** ✅ | B-05, B-13 (+ B-25, B-26 yang ketemu di jalan) | `TeacherDashboard.jsx`, `TeacherAttendance.jsx`, `TeacherHistory.jsx`, `ClassSession.jsx`, `App.jsx`, `SidebarGuru.jsx` + `utils/identitasJadwal.js`, `utils/logMengajar.js`, `utils/sesiLoginGuru.js`, `services/logMengajarService.js` | D5 ✅ | Tidak (verifikasi butuh kuota) |
+| **3 — kuota** ✅ | B-14, B-15, B-16, B-17 (+ deklarasi indeks) | 3 berkas guru + `firebase/firestore.indexes.json` | D6 ✅, D8 ✅ | Tidak |
+| **4 — angka jujur** ✅ | B-07..B-12 | `TeacherDashboard.jsx`, `ClassSession.jsx` + `utils/statistikGuru.js` | D3 ✅, D4 ✅ | Tidak |
+| **5 — wajah** 🟡 | B-18, B-20, B-21, B-23, B-24 ✅ dikerjakan sekarang; B-19 + penyatuan token warna ditabung ke **E2** | `TeacherDashboard.jsx`, `TeacherHistory.jsx` | D7 ✅, D9 🟡 | Tidak |
+| **6 — notifikasi** 🟡 | B-03 ✅ (tombol hidup); B-02 menunggu keputusan pengirim | `notifications.js` (belum disentuh), `TeacherDashboard.jsx` | D1 ⏳ | Tidak |
 
 Setiap batch wajib lolos gerbang yang sama: `npm run lint` **0 error 0 warning**
 pada berkas yang disentuh, `npm test` hijau (138 berkas), dan untuk batch 5
@@ -402,3 +541,91 @@ sama dari arah berbeda, atau bug yang tidak terlihat dari kode.
 - **3 Nov 2026 08.20 WIB** — versi pertama (item B3). Audit baca-kode penuh
   `TeacherDashboard.jsx` + 8 berkas terkait; 24 temuan (6×S1, 7×S2, 4×S3, 7×S4);
   10 lubang keputusan (D1-D10); 6 batch pengerjaan diusulkan. **Nol perubahan kode.**
+- **3 Nov 2026 (v1.6.5)** — owner menjawab D2 (opsi c), D5 (opsi a), dan
+  menyerahkan D3; batch 1-4 + sebagian batch 5/6 dieksekusi. Dua temuan baru
+  (B-25 logout tidak menutup sesi, B-26 gaji bocor ke browser guru) → total 26
+  temuan, 24 selesai, 1 sebagian (B-02), 1 ditabung ke E2 (B-19). Koreksi:
+  berkas indeks repo ada di `firebase/firestore.indexes.json`, bukan tidak ada.
+  Rincian di bab 11.
+
+---
+
+## 11. Status eksekusi v1.6.5 — apa yang berubah, dan cara membuktikannya
+
+### 11.1 Berkas baru (util murni + service + pengawal uji)
+
+| Berkas | Isi | Uji |
+|---|---|---|
+| `src/utils/identitasJadwal.js` | SATU aturan "jadwal ini punya guru siapa" (ID menang; nama hanya untuk data warisan) + jendela tanggal −7..+7 yang anti-drift zona | `tests/identitasJadwal.test.mjs` (13) |
+| `src/utils/statistikGuru.js` | Definisi baru angka kartu + kehadiran dengan penyebut dari log (`siswaTotal`), `perkiraan`, `tanpaBukti`, persen `null` bila tanpa bukti | `tests/statistikGuru.test.mjs` (11) |
+| `src/utils/kodeAbsenHarian.js` | Empat keadaan kode absensi + verifikasi yang tidak pernah menuduh guru atas kegagalan sistem | `tests/kodeAbsenHarian.test.mjs` (15) |
+| `src/utils/sesiLoginGuru.js` | Kunci sesi guru: `hapusSesiGuru()` + `masihDianggapMasuk()` (cermin syarat penjaga rute) | `tests/sesiLoginGuru.test.mjs` (8) |
+| `src/utils/logMengajar.js` | Buang SEMUA field uang dari log, urut terbaru, saring bulan | `tests/logMengajar.test.mjs` (9) |
+| `src/services/logMengajarService.js` | Pembaca `teacher_logs` bersama (identitas `in`, jalur cepat ber-`orderBy` + cadangan bila indeks belum di-deploy, batas dokumen) | lewat uji util di atas |
+
+### 11.2 Berkas yang diubah
+
+- `src/pages/teacher/TeacherDashboard.jsx` — lapisan data ditulis ulang: jendela
+  tanggal + identitas tunggal + kegagalan per blok + banner jujur; 4 kartu statistik
+  baru; modal kode absen ber-status; tombol "Tandai semua" hidup; avatar jadi tombol;
+  tanggal & salam disegarkan saat aplikasi terlihat lagi; label versi dicabut;
+  29 warna gagal kontras → token, 40 ukuran huruf <11 px → 11 px.
+- `src/pages/teacher/TeacherAttendance.jsx` — satu kueri tanggal (tanpa kueri
+  beruntun ID→nama), identitas bersama dengan dasbor, kebocoran langganan ditutup,
+  tanggal lokal dari satu util.
+- `src/pages/teacher/TeacherHistory.jsx` — identitas `in` (semua identitas guru),
+  batas dokumen, bulan pilihan memakai tanggal LOKAL (bukan UTC), gaji benar-benar
+  dibuang, banner gagal + tombol "Muat ulang", warning `exhaustive-deps` warisan ditutup.
+- `src/pages/teacher/ClassSession.jsx` — log mengajar kini menyimpan `siswaTotal`
+  (penyebut kehadiran yang tidak bisa berubah retroaktif).
+- `src/App.jsx` — `GuruRoute` memakai `masihDianggapMasuk()`.
+- `src/components/SidebarGuru.jsx` — tombol Keluar memakai `hapusSesiGuru()`
+  (bukan `localStorage.clear()`).
+- `firebase/firestore.indexes.json` — tambah indeks `teacher_logs (teacherId ASC,
+  tanggal DESC)`.
+
+### 11.3 Biaya baca per buka dasbor (inti keluhan kuota)
+
+| | Sebelum | Sesudah |
+|---|---|---|
+| Jadwal | SELURUH riwayat jadwal guru (tumbuh selamanya) **+** langganan terpisah untuk hari ini (baca ganda) | SATU langganan jendela 15 hari (biaya **datar**, tak peduli umur bimbel) |
+| Log mengajar | ≤30 bila indeks ada; bila tidak → error yang mematikan seluruh layar | ≤30 (jalur cepat) atau seluruh log guru itu sekali (cadangan, dicatat di localStorage agar tidak diulang) |
+| Pengumuman | 5 dokumen, disaring portal sesudahnya (bisa nol) | 20 dokumen, disaring portal → 3 ditampilkan |
+| Notifikasi | 2 kueri × 10 (field yang tak pernah ada) | 1 kueri, dibatasi 100 |
+| Kode harian | 1 dokumen | 1 dokumen (dibaca ulang hanya bila diminta "Coba lagi") |
+
+Langkah hemat berikutnya (belum dikerjakan, butuh keputusan): menambah indeks
+`jadwal_bimbel (teacherId, dateStr)` agar jendela bisa disempitkan ke jadwal guru
+itu saja (±90% lebih sedikit dokumen). Hambatannya: jadwal warisan tanpa
+`teacherId` akan lolos dari kueri berbasis ID, jadi perlu aturan gabungannya
+diputuskan dulu — dicatat sebagai lanjutan A4.
+
+### 11.4 Gerbang yang sudah dilewati
+
+- `npm test`: **143/143 berkas lulus** (sebelumnya 138; +5 berkas uji baru, 56 uji).
+- `npx eslint` pada SEMUA berkas yang disentuh: **0 error, 0 warning**
+  (termasuk menutup 1 warning `exhaustive-deps` warisan di `TeacherHistory.jsx`).
+- `esbuild --bundle` per berkas yang disentuh: lolos (pengganti `vite build`
+  yang OOM di sandbox — build produksi tetap dijalankan CI).
+- `npm run lint` penuh / `vite build` tidak dijalankan di sandbox: keduanya mati
+  karena kehabisan memori (terbukti environmental, terjadi juga di HEAD tanpa
+  perubahan). CI yang menentukan.
+
+### 11.5 Yang perlu owner lakukan (2 hal)
+
+1. **Deploy indeks** (sekali, ±2 menit): `firebase deploy --only firestore:indexes`
+   Perintah ini TIDAK menyentuh rules (lihat komentar `firebase.json`). Selama
+   belum dijalankan, dasbor tetap hidup lewat jalur cadangan — hanya lebih boros.
+2. **Cek setelah satu kelas disimpan:** kartu Kehadiran seharusnya menampilkan
+   persen + tulisan "N sesi", bukan "—". Bila masih "—", artinya belum ada log
+   baru yang menyimpan `siswaTotal` (log lama tanpa penyebut dihitung sebagai
+   `perkiraan` hanya bila jadwalnya masih di dalam jendela 15 hari).
+
+### 11.6 Yang masih terbuka
+
+- **B-02 (notifikasi guru)** — sisi pembaca sudah benar; pengirim
+  (`notifyTeachers`) masih nol pemanggil. Menunggu keputusan **D1**.
+- **B-19 (sasaran sentuh ≥44 px)** dan penyatuan seluruh warna ke token —
+  ditabung ke **E2** (rombak dasbor guru) karena mengubah tata letak header.
+- **Verifikasi produksi** B-04/B-05 (indeks & ragam `teacherId` di log) masih
+  butuh kuota baca — lihat bab 7.

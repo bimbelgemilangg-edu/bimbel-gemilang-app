@@ -7,6 +7,7 @@
 // SiswaPage/GuruPage untuk memangkas panjang baris.
 // ============================================================
 import React, { useState, useEffect } from 'react';
+import { masihDianggapMasuk } from './utils/sesiLoginGuru';
 import {
   BrowserRouter,
   Routes,
@@ -274,11 +275,12 @@ const ManajerRoute = ({ children }) => {
 };
 
 const GuruRoute = ({ children }) => {
-  const isAuth =
-    localStorage.getItem('isGuruLoggedIn') === 'true' ||
-    !!localStorage.getItem('teacherData');
-  const role = localStorage.getItem('role');
-  if (!isAuth || (role !== 'guru' && role !== 'teacher')) {
+  // v1.6.5 (register bug B-25): syarat "guru sudah masuk" kini SATU fungsi
+  // bersama utils/sesiLoginGuru.masihDianggapMasuk, sehingga tombol Keluar
+  // (yang memakai hapusSesiGuru dari berkas yang sama) pasti menutup apa yang
+  // diperiksa penjaga ini. Dulu logout menghapus kunci yang tidak diperiksa di
+  // sini, sehingga /guru/* tetap terbuka sesudah keluar.
+  if (!masihDianggapMasuk(localStorage)) {
     return <Navigate to="/login-guru" replace />;
   }
   return children;

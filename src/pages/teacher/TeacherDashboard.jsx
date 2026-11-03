@@ -1,10 +1,10 @@
 // src/pages/teacher/TeacherDashboard.jsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import {
   collection, query, where, getDocs, doc, getDoc,
-  orderBy, serverTimestamp, limit, onSnapshot, updateDoc
+  orderBy, serverTimestamp, limit, onSnapshot, updateDoc, writeBatch
 } from "firebase/firestore";
 import {
   Clock, Users, BookOpen, Star, ArrowRight,
@@ -27,7 +27,78 @@ import {
   kunciPencocokLaporan, kunciQuerySiswaUntukGuru, hitungTugasLaporanBelajar,
 } from '../../utils/laporanBelajar';
 import { potongUntukQuery } from '../../utils/papanJelajah';
-import { tanggalLokalStr, geserHariLokal } from '../../utils/waktuLokal';
+import { tanggalLokalStr } from '../../utils/waktuLokal';
+import { identitasPencariJadwal, jadwalMilikGuru, rentangTanggalJadwal } from '../../utils/identitasJadwal';
+import { hitungStatistikGuru } from '../../utils/statistikGuru';
+import {
+  STATUS_KODE, statusKodeHarian, keteranganStatusKode, verifikasiKodeAbsen,
+} from '../../utils/kodeAbsenHarian';
+import { kebijakanGagalMuat } from '../../utils/keputusanMuat';
+import { hapusSesiGuru } from '../../utils/sesiLoginGuru';
+import { bacaLogMengajar, BATAS_LOG_DASBOR } from '../../services/logMengajarService';
+
+// ============================================================
+// KONSTANTA & FUNGSI MURNI (di luar komponen: tidak ikut render ulang)
+// ============================================================
+// Batas dokumen yang boleh ditarik dasbor guru per kebutuhan. Angka ini pagar
+// kuota, bukan selera: lihat docs/REGISTER-BUG-DASHBOARD-GURU.md B-14/B-17.
+const BATAS_PENGUMUMAN_BACA = 20; // diambil 20 terbaru, disaring portal di klien
+const BATAS_PENGUMUMAN_TAMPIL = 3;
+const BATAS_NOTIFIKASI_BACA = 100; // pagar biaya; notifikasi guru jarang
+const BATAS_NOTIFIKASI_TAMPIL = 5;
+// Batas log mengajar + penanganan indeks yang belum dipasang ada di
+// services/logMengajarService.js supaya dasbor dan halaman Riwayat memakai
+// SATU cara baca (dan satu tempat membuang field gaji).
+
+// Label blok data untuk banner jujur (B-04/B-22): guru perlu tahu BAGIAN MANA
+// yang gagal, bukan melihat seluruh layar jadi 0 tanpa penjelasan.
+const LABEL_BLOK = {
+  profil: 'Profil guru',
+  jadwal: 'Jadwal mengajar',
+  logs: 'Riwayat mengajar (kehadiran)',
+  pengumuman: 'Pengumuman',
+  notifikasi: 'Notifikasi',
+  kode: 'Kode absensi harian',
+};
+
+/** Salam dihitung ulang tiap aplikasi terlihat lagi (B-23), bukan sekali seumur mount. */
+const salamUntukJam = (tanggal = new Date()) => {
+  const jam = tanggal.getHours();
+  if (jam < 12) return 'Selamat Pagi 🌅';
+  if (jam < 15) return 'Selamat Siang ☀️';
+  if (jam < 19) return 'Selamat Sore 🌤️';
+  return 'Selamat Malam 🌙';
+};
+
+/** Stempel waktu notifikasi bisa Timestamp/string/angka — dinormalkan ke ms. */
+const waktuNotifMs = (n) => {
+  const c = n?.createdAt;
+  if (!c) return 0;
+  if (typeof c.toMillis === 'function') return c.toMillis();
+  if (typeof c.toDate === 'function') {
+    const t = c.toDate().getTime();
+    return Number.isNaN(t) ? 0 : t;
+  }
+  if (typeof c === 'string' || typeof c === 'number') {
+    const t = new Date(c).getTime();
+    return Number.isNaN(t) ? 0 : t;
+  }
+  return 0;
+};
+
+/** Ringkas error Firestore jadi sebab yang bisa dibaca manusia (policy kuota). */
+const ringkasErrorMuat = (e) => {
+  const kode = String(e?.code || '');
+  const pesan = String(e?.message || '');
+  if (kode === 'resource-exhausted' || /429|quota exceeded/i.test(pesan)) return 'kuota baca habis';
+  if (kode === 'failed-precondition') return 'indeks pencarian belum dipasang';
+  if (kode === 'permission-denied') return 'akses ditolak';
+  if (kode === 'unavailable' || /network/i.test(pesan)) return 'jaringan';
+  return kode || pesan.slice(0, 40) || 'sebab tidak diketahui';
+};
+
+/** Notifikasi dianggap belum dibaca bila `isRead` (penulis) ATAU `read` (pembaca lama) falsy. */
+const belumDibaca = (n) => !((n?.isRead ?? n?.read) === true);
 
 // ============================================================
 // LOGO COMPONENT - Menggunakan gambar dari folder public
@@ -109,36 +180,75 @@ const TeacherDashboard = () => {
   }, []);
   
   // ===== STATES =====
+  // v1.6.5 (item B3, keputusan owner D2/D3/D5): dasbor tidak lagi menyimpan
+  // "daftar jadi" hasil sapuan SELURUH riwayat jadwal. Yang disimpan adalah
+  // SATU jendela tanggal (−7..+7 hari); pengelompokan layar dan angka kartu
+  // dihitung fungsi murni di utils/statistikGuru.js (teruji) supaya definisi
+  // angka hanya ada di satu tempat dan biaya bacanya DATAR selamanya.
   const [guru, setGuru] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [todaySchedules, setTodaySchedules] = useState([]);
-  const [upcomingSchedules, setUpcomingSchedules] = useState([]);
+  const [hariIniStr, setHariIniStr] = useState(() => tanggalLokalStr());
+  const [jadwalJendela, setJadwalJendela] = useState([]);
+  const [logsMengajar, setLogsMengajar] = useState([]);
   const [showStartModal, setShowStartModal] = useState(false);
   const [showBuku, setShowBuku] = useState(false);
   const [inputToken, setInputToken] = useState("");
+  const [pesanKode, setPesanKode] = useState("");
   const [pendingSchedule, setPendingSchedule] = useState(null);
-  const [dailyCode, setDailyCode] = useState("");
+  // Kode absensi = STATUS + isi, bukan string polos. String polos membuat tiga
+  // keadaan berbeda (belum dibuat admin / dokumen kosong / gagal baca karena
+  // kuota) sama-sama berakhir di tuduhan "token salah" — register bug B-06.
+  const [kodeAbsen, setKodeAbsen] = useState({ status: STATUS_KODE.MEMUAT, kode: '' });
+  const [memuatKode, setMemuatKode] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [announcements, setAnnouncements] = useState([]);
   const [selectedNews, setSelectedNews] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [stats, setStats] = useState({
-    todaySessions: 0,
-    weekSessions: 0,
-    totalStudents: 0,
-    attendanceRate: 0,
-    totalClasses: 0,
-    completedClasses: 0
-  });
   const [greeting, setGreeting] = useState('');
+  // Banner jujur per BLOK data (docs/POLICY-ERROR-DAN-KUOTA.md): satu kueri
+  // gagal tidak boleh menular ke blok lain, dan tidak boleh menyamar jadi "0".
+  const [gagalMuat, setGagalMuat] = useState({});
+  // B-01: profil tanpa identitas dulu membuat spinner muter selamanya.
+  const [profilBermasalah, setProfilBermasalah] = useState(null);
   // Tugas "Pengisian Laporan Belajar" (muncul saat admin membuka periode,
   // hilang otomatis bila semua siswa mapel guru ini sudah selesai diisi).
   const [laporanTugas, setLaporanTugas] = useState(null);
 
   // ===== REFS =====
   const notificationRef = useRef(null);
+  // Penanda "kita punya data lama" — dipakai kebijakanGagalMuat agar kegagalan
+  // baca mempertahankan data yang masih benar, bukan mengosongkan layar.
+  const punyaJadwalRef = useRef(false);
+  const punyaLogsRef = useRef(false);
+  const punyaPengumumanRef = useRef(false);
+  const punyaNotifRef = useRef(false);
+
+  // ===== TURUNAN MURNI (tanpa baca data; teruji di tests/) =====
+  // Identitas guru diturunkan dari PRIMITIF, bukan dari objek `guru`: setiap
+  // refresh membuat objek guru baru, dan bila objek itu jadi dependensi effect
+  // maka langganan jadwal akan dipasang-ulang (baca ulang) tiap refresh.
+  const guruKode = guru?.guruId || '';
+  const guruDocId = guru?.id || '';
+  const guruTeacherId = guru?.teacherId || '';
+  const guruNama = guru?.nama || '';
+  const identitas = useMemo(
+    () => identitasPencariJadwal({ guruId: guruKode, id: guruDocId, teacherId: guruTeacherId, nama: guruNama }),
+    [guruKode, guruDocId, guruTeacherId, guruNama],
+  );
+  // Jendela tanggal bisnis LOKAL — bukan UTC (lihat utils/waktuLokal.js).
+  const rentang = useMemo(() => rentangTanggalJadwal({ hariIniStr }), [hariIniStr]);
+  const statistik = useMemo(
+    () => hitungStatistikGuru({ jadwal: jadwalJendela, logs: logsMengajar, hariIniStr }),
+    [jadwalJendela, logsMengajar, hariIniStr],
+  );
+  const todaySchedules = statistik.daftarHariIni;
+  const upcomingSchedules = statistik.daftarMendatang;
+  const kehadiran = statistik.kehadiran;
+  const jumlahBelumDibaca = notifications.filter(belumDibaca).length;
+  const daftarGagal = Object.entries(gagalMuat).filter(([, v]) => v && v.pesan);
+  const keteranganKode = keteranganStatusKode(kodeAbsen.status);
 
   // ===== EFFECTS =====
   useEffect(() => {
@@ -147,12 +257,24 @@ const TeacherDashboard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Tanggal bisnis & salam disegarkan saat aplikasi kembali terlihat (B-12,
+  // B-23). Dulu keduanya dihitung SEKALI saat mount: aplikasi guru yang dibiarkan
+  // terbuka lewat tengah malam WIB tetap menampilkan jadwal KEMARIN sampai
+  // dimuat ulang, dan salamnya salah. Tidak ada polling — hanya peristiwa
+  // visibilitychange/focus, jadi nol biaya kuota tambahan.
   useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Selamat Pagi 🌅');
-    else if (hour < 15) setGreeting('Selamat Siang ☀️');
-    else if (hour < 19) setGreeting('Selamat Sore 🌤️');
-    else setGreeting('Selamat Malam 🌙');
+    const perbarui = () => {
+      const kini = tanggalLokalStr();
+      setHariIniStr((lama) => (lama === kini ? lama : kini));
+      setGreeting(salamUntukJam(new Date()));
+    };
+    queueMicrotask(perbarui); // hindari setState sinkron di badan effect
+    document.addEventListener('visibilitychange', perbarui);
+    window.addEventListener('focus', perbarui);
+    return () => {
+      document.removeEventListener('visibilitychange', perbarui);
+      window.removeEventListener('focus', perbarui);
+    };
   }, []);
 
   useEffect(() => {
@@ -229,7 +351,22 @@ const TeacherDashboard = () => {
     return () => { batal = true; unsub(); };
   }, [guru]);
 
-  // ===== FETCH FUNCTIONS =====
+  // ===== PEMUATAN DATA (v1.6.5: jendela tanggal + identitas tunggal) =====
+  // Tiga prinsip hemat kuota yang dipegang blok ini:
+  //   1. SATU kueri per kebutuhan, selalu dibatasi (jendela tanggal / limit).
+  //   2. Identitas guru lewat utils/identitasJadwal (docId + kode GURU-), bukan
+  //      pencocokan nama yang membuat dua halaman guru saling bertentangan.
+  //   3. Kegagalan per blok dicatat jujur, data lama dipertahankan
+  //      (docs/POLICY-ERROR-DAN-KUOTA.md) — tidak ada `catch` yang mengubah
+  //      "tidak tahu" menjadi "kosong".
+  const catatGagal = useCallback((blok, e, dataLamaAda) => {
+    setGagalMuat((g) => ({ ...g, [blok]: kebijakanGagalMuat(dataLamaAda, ringkasErrorMuat(e)) }));
+  }, []);
+
+  const hapusGagal = useCallback((blok) => {
+    setGagalMuat((g) => (g[blok] ? { ...g, [blok]: null } : g));
+  }, []);
+
   const fetchTeacherProfile = useCallback(async () => {
     try {
       const saved = JSON.parse(localStorage.getItem('teacherData'));
@@ -248,10 +385,16 @@ const TeacherDashboard = () => {
           const data = snap.docs[0].data();
           const fullData = { ...saved, ...data, id: snap.docs[0].id };
           setGuru(fullData);
+          hapusGagal('profil');
           return fullData;
         }
-      } catch {
-        console.log("Using cached teacher data");
+      } catch (e) {
+        // v1.6.5 (B-22): cache perangkat tetap dipakai — itu lebih baik daripada
+        // layar kosong — tetapi kegagalannya TIDAK lagi disembunyikan. Dulu
+        // `catch { console.log(...) }` membuat kuota habis terlihat seperti
+        // "data profil normal", padahal nama/mapel bisa saja sudah basi.
+        console.warn('Profil guru dipakai dari cache perangkat:', e);
+        catatGagal('profil', e, true);
       }
       
       setGuru(saved);
@@ -261,208 +404,214 @@ const TeacherDashboard = () => {
       navigate('/login-guru');
       return null;
     }
-  }, [navigate]);
+  }, [navigate, catatGagal, hapusGagal]);
+
+  // ── Kode absensi harian: SATU dokumen, dibaca ulang tanpa memuat dasbor ──
+  // Keputusan owner D2 (opsi c): kode tetap dibuat admin, tetapi dasbor wajib
+  // JUJUR soal keadaannya dan menyediakan "Coba lagi" yang murah (1 dokumen).
+  const bacaKodeHarian = useCallback(async (tanggalStr, { senyap = false } = {}) => {
+    if (!tanggalStr) return;
+    if (!senyap) setMemuatKode(true);
+    try {
+      const snap = await getDoc(doc(db, 'settings', `daily_code_${tanggalStr}`));
+      const kode = snap.exists() ? (snap.data().code || '') : '';
+      setKodeAbsen({ status: statusKodeHarian({ adaDokumen: snap.exists(), kode }), kode });
+      setPesanKode('');
+      hapusGagal('kode');
+    } catch (e) {
+      console.error('Gagal membaca kode absensi harian:', e);
+      setKodeAbsen({ status: STATUS_KODE.GAGAL_BACA, kode: '' });
+      catatGagal('kode', e, false);
+    } finally {
+      if (!senyap) setMemuatKode(false);
+    }
+  }, [catatGagal, hapusGagal]);
+
+  useEffect(() => {
+    queueMicrotask(() => { bacaKodeHarian(hariIniStr, { senyap: true }); });
+  }, [hariIniStr, bacaKodeHarian]);
 
   const fetchData = useCallback(async (teacher) => {
-    if (!teacher?.nama) return;
-    setLoading(true);
-    
-    try {
-      const today = new Date();
-      // v1.6.3: tanggal bisnis = LOKAL (WIB di lapangan), bukan UTC. Dulu
-      // toISOString() membuat dasbor menampilkan kelas KEMARIN dan kode harian
-      // kosong pada rentang 00:00-06:59 WIB, karena penulis jadwal/kode harian
-      // memakai komponen tanggal lokal. Lihat src/utils/waktuLokal.js.
-      const todayStr = tanggalLokalStr(today);
-      const teacherName = teacher.nama.trim();
-      const teacherId = teacher.guruId || teacher.id || teacherName;
-
-      const qJadwal = query(
-        collection(db, "jadwal_bimbel"),
-        where("teacherName", "==", teacherName)
-      );
-      const snapJadwal = await getDocs(qJadwal);
-      const allSchedules = snapJadwal.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      const todayScheds = allSchedules
-        .filter(s => s.dateStr === todayStr)
-        .sort((a, b) => (a.start || '').localeCompare(b.start || ''));
-      setTodaySchedules(todayScheds);
-
-      const futureStr = geserHariLokal(today, 7);
-      const upcoming = allSchedules
-        .filter(s => s.dateStr > todayStr && s.dateStr <= futureStr)
-        .sort((a, b) => (a.dateStr || '').localeCompare(b.dateStr || ''));
-      setUpcomingSchedules(upcoming);
-
-      const weekAgoStr = geserHariLokal(today, -7);
-      const weekSchedules = allSchedules.filter(s => 
-        s.dateStr >= weekAgoStr && s.dateStr <= todayStr
-      );
-
-      const allStudents = new Set();
-      allSchedules.forEach(s => {
-        if (s.students) {
-          s.students.forEach(st => {
-            const id = st.studentId || st.id || st;
-            if (id) allStudents.add(id);
-          });
-        }
-      });
-
-      try {
-        const codeDoc = await getDoc(doc(db, "settings", 'daily_code_' + todayStr));
-        if (codeDoc.exists()) {
-          setDailyCode(codeDoc.data().code || '');
-        } else {
-          setDailyCode('');
-        }
-      } catch {
-        setDailyCode('');
-      }
-
-      const qLogs = query(
-        collection(db, "teacher_logs"),
-        where("teacherId", "==", teacherId),
-        orderBy("tanggal", "desc"),
-        limit(30)
-      );
-      const snapLogs = await getDocs(qLogs);
-      
-      const logs = snapLogs.docs.map(d => {
-        const { nominal: _nominal, ...rest } = d.data(); // _nominal sengaja dibuang dari log
-        return { id: d.id, ...rest };
-      });
-
-      let attendanceRate = 0;
-      if (logs.length > 0) {
-        const scheduleTotalById = new Map();
-        allSchedules.forEach(s => scheduleTotalById.set(s.id, s.students?.length || 0));
-        let totalHadir = 0, totalSiswa = 0;
-        logs.forEach(l => {
-          const total = scheduleTotalById.get(l.jadwalId);
-          if (total) {
-            totalHadir += (l.siswaHadir || 0);
-            totalSiswa += total;
-          }
-        });
-        attendanceRate = totalSiswa > 0 ? Math.round((totalHadir / totalSiswa) * 100) : 0;
-      }
-
-      setStats({
-        todaySessions: todayScheds.length,
-        weekSessions: weekSchedules.length,
-        totalStudents: allStudents.size || 0,
-        attendanceRate,
-        totalClasses: allSchedules.length,
-        completedClasses: allSchedules.filter(s => s.status === 'completed').length
-      });
-
-      const qAnnounce = query(
-        collection(db, "student_contents"),
-        orderBy("createdAt", "desc"),
-        limit(5)
-      );
-      const snapAnnounce = await getDocs(qAnnounce);
-      const annData = snapAnnounce.docs.map(d => ({ id: d.id, ...d.data() }));
-      setAnnouncements(
-        annData.filter(p => p.targetPortal === "Guru" || p.targetPortal === "Semua" || !p.targetPortal)
-      );
-
-      const [snapNotifByUserId, snapNotifByRecipientId] = await Promise.all([
-        getDocs(query(
-          collection(db, "notifications"),
-          where("userId", "==", teacherId),
-          where("userType", "==", "teacher"),
-          limit(10)
-        )).catch(() => ({ docs: [] })),
-        getDocs(query(
-          collection(db, "notifications"),
-          where("recipientId", "==", teacherId),
-          where("recipientType", "==", "teacher"),
-          limit(10)
-        )).catch(() => ({ docs: [] })),
-      ]);
-      
-      const notifMerged = new Map();
-      [...snapNotifByUserId.docs, ...snapNotifByRecipientId.docs].forEach(d => notifMerged.set(d.id, { id: d.id, ...d.data() }));
-      const notifData = Array.from(notifMerged.values())
-        .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
-        .slice(0, 5);
-      setNotifications(notifData);
-    } catch (e) {
-      console.error('Error fetching data:', e);
-    } finally {
+    // B-01: keluar dini TANPA menurunkan `loading` = spinner muter selamanya.
+    if (!teacher) {
       setLoading(false);
       setRefreshing(false);
+      return null;
     }
-  }, []);
+    const idt = identitasPencariJadwal(teacher);
+    if (!idt.nama && idt.ids.length === 0) {
+      setProfilBermasalah('tanpa-identitas');
+      setLoading(false);
+      setRefreshing(false);
+      return null;
+    }
+    setProfilBermasalah(null);
+    setLoading(true);
 
-  // ===== MAIN EFFECT =====
-  useEffect(() => {
-    let unsubscribe = null;
-    let cancelled = false;
-    
-    const init = async () => {
-      const teacher = await fetchTeacherProfile();
-      if (teacher && !cancelled) {
-        await fetchData(teacher);
-        if (cancelled) return;
-        
-        const todayStr = tanggalLokalStr(); // lokal, bukan UTC (v1.6.3)
-        const q = query(
-          collection(db, "jadwal_bimbel"),
-          where("teacherName", "==", teacher.nama.trim()),
-          where("dateStr", "==", todayStr)
-        );
-        
-        unsubscribe = onSnapshot(q, (snapshot) => {
-          const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          data.sort((a, b) => (a.start || '').localeCompare(b.start || ''));
-          setTodaySchedules(data);
-        }, (error) => {
-          console.error("Real-time error:", error);
-        });
+    // 1. LOG MENGAJAR (bahan angka kehadiran)
+    if (idt.ids.length) {
+      try {
+        // Identitas tunggal + pembuangan field gaji: services/logMengajarService
+        // (dipakai juga halaman Riwayat) — lihat register bug B-05/B-26.
+        const logs = await bacaLogMengajar({ ids: idt.ids, batas: BATAS_LOG_DASBOR });
+        setLogsMengajar(logs);
+        punyaLogsRef.current = true;
+        hapusGagal('logs');
+      } catch (e) {
+        console.error('Gagal memuat log mengajar:', e);
+        catatGagal('logs', e, punyaLogsRef.current);
       }
-    };
-    
-    init();
-    
-    return () => {
-      cancelled = true;
-      if (unsubscribe) unsubscribe();
-    };
+    } else {
+      setLogsMengajar([]);
+    }
+
+    // 2. PENGUMUMAN — portal disaring dari 20 terbaru, bukan dari 5 terbaru.
+    // Dulu `limit(5)` dipasang SEBELUM filter portal: bila lima kiriman terakhir
+    // admin ditujukan ke siswa, guru tidak melihat pengumuman apa pun (B-11).
+    try {
+      const snapAnnounce = await getDocs(query(
+        collection(db, 'student_contents'),
+        orderBy('createdAt', 'desc'),
+        limit(BATAS_PENGUMUMAN_BACA),
+      ));
+      setAnnouncements(snapAnnounce.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((p) => p.targetPortal === 'Guru' || p.targetPortal === 'Semua' || !p.targetPortal)
+        .slice(0, BATAS_PENGUMUMAN_TAMPIL));
+      punyaPengumumanRef.current = true;
+      hapusGagal('pengumuman');
+    } catch (e) {
+      console.error('Gagal memuat pengumuman:', e);
+      catatGagal('pengumuman', e, punyaPengumumanRef.current);
+    }
+
+    // 3. NOTIFIKASI — SATU kueri (dulu dua), dengan nama field yang benar-benar
+    // ditulis src/utils/notifications.js: `recipientId` + `recipientType: 'guru'`
+    // dan bendera `isRead`. Kueri lama mencari `userType/recipientType == 'teacher'`
+    // yang tidak pernah ditulis siapa pun → panel mati total (B-02).
+    if (idt.ids.length) {
+      try {
+        const snapNotif = await getDocs(query(
+          collection(db, 'notifications'),
+          where('recipientId', 'in', idt.ids),
+          limit(BATAS_NOTIFIKASI_BACA),
+        ));
+        setNotifications(snapNotif.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((n) => {
+            const tipe = String(n.recipientType || 'guru').toLowerCase();
+            return tipe === 'guru' || tipe === 'teacher';
+          })
+          .sort((a, b) => waktuNotifMs(b) - waktuNotifMs(a))
+          .slice(0, BATAS_NOTIFIKASI_TAMPIL));
+        punyaNotifRef.current = true;
+        hapusGagal('notifikasi');
+      } catch (e) {
+        console.error('Gagal memuat notifikasi:', e);
+        catatGagal('notifikasi', e, punyaNotifRef.current);
+      }
+    }
+
+    setLoading(false);
+    setRefreshing(false);
+    return teacher;
+  }, [catatGagal, hapusGagal]);
+
+  // ===== LANGGANAN JADWAL: SATU kueri jendela, identitas dicocokkan di klien =====
+  // Pengganti dua pemborosan lama: (a) `getDocs` SELURUH riwayat jadwal guru
+  // tanpa batas tanggal, dan (b) `onSnapshot` terpisah untuk hari ini — jadi
+  // satu hari bisa membaca riwayat dua kali. Sekarang satu langganan jendela
+  // −7..+7 hari (biaya DATAR, tidak tumbuh seiring umur bimbel) dan aturan
+  // "jadwal ini punya siapa" berasal dari utils/identitasJadwal (ID menang;
+  // nama hanya untuk data warisan tanpa teacherId) sehingga dasbor dan halaman
+  // absensi tidak lagi bertentangan (B-13).
+  //
+  // Kueri ini SENGAJA hanya memfilter satu field (dateStr) agar cukup dengan
+  // indeks tunggal: tidak bergantung indeks komposit yang harus di-deploy dulu.
+  // Penyempitan lanjutan (filter teacherId juga) dicatat di register sebagai
+  // langkah hemat berikutnya, bukan syarat berjalannya perbaikan ini.
+  useEffect(() => {
+    if (!identitas.ids.length && !identitas.nama) return undefined;
+    const idt = identitas;
+    const q = query(
+      collection(db, 'jadwal_bimbel'),
+      where('dateStr', '>=', rentang.dari),
+      where('dateStr', '<=', rentang.sampai),
+    );
+    // Nilai kembali effect = fungsi unsubscribe itu sendiri, LANGSUNG.
+    // Pola lama menyimpannya ke variabel yang diisi di dalam `init()` async,
+    // sehingga bila guru pindah halaman sebelum init selesai, cleanup melihat
+    // null dan langganan bocor selamanya (B-15).
+    return onSnapshot(q, (snap) => {
+      const milik = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((j) => jadwalMilikGuru(j, idt));
+      if (milik.length > 0) punyaJadwalRef.current = true;
+      setJadwalJendela(milik);
+      hapusGagal('jadwal');
+    }, (err) => {
+      console.error('Gagal memuat jadwal (jendela):', err);
+      catatGagal('jadwal', err, punyaJadwalRef.current);
+      setLoading(false);
+      setRefreshing(false);
+    });
+  }, [identitas, rentang.dari, rentang.sampai, catatGagal, hapusGagal]);
+
+  // ===== INIT: profil guru → data =====
+  useEffect(() => {
+    let batal = false;
+    (async () => {
+      const teacher = await fetchTeacherProfile();
+      if (batal) return;
+      await fetchData(teacher);
+      if (!batal) setLoading(false);
+    })();
+    return () => { batal = true; };
   }, [fetchTeacherProfile, fetchData]);
 
   // ===== HANDLERS =====
   const handleRefresh = async () => {
     setRefreshing(true);
     const teacher = await fetchTeacherProfile();
-    if (teacher) await fetchData(teacher);
+    await fetchData(teacher);              // menangani teacher null sendiri (B-01)
+    await bacaKodeHarian(hariIniStr, { senyap: true });
+    setRefreshing(false);
   };
 
   const handleStartClass = (schedule) => {
     setPendingSchedule(schedule);
     setShowStartModal(true);
     setInputToken("");
+    setPesanKode("");
+    // Bila kode belum siap (belum dibuat admin / gagal dibaca), baca ulang SATU
+    // dokumen sekarang: jauh lebih murah daripada guru menebak-nebak atau
+    // memuat ulang seluruh dasbor, dan menutup jalan buntu B-06.
+    if (kodeAbsen.status !== STATUS_KODE.SIAP) bacaKodeHarian(hariIniStr);
   };
 
   const handleVerifyTokenAndStart = async () => {
     if (!pendingSchedule) {
-      alert("⚠️ Tidak ada jadwal yang dipilih!");
+      setPesanKode('Tidak ada jadwal yang dipilih. Tutup kotak ini dan pilih kelas dari daftar.');
       return;
     }
-    
-    if (!inputToken) {
-      alert("⚠️ Masukkan kode absensi terlebih dahulu!");
+
+    // Keputusan owner D2 (opsi c): verifikasi lewat SATU fungsi teruji yang
+    // membedakan "kode salah ketik" dari "kode belum dibuat admin" dan dari
+    // "gagal dibaca karena kuota". Dulu ketiganya dituduhkan sebagai
+    // "Token absensi salah!" dan guru buntu tanpa jalan keluar.
+    const hasil = verifikasiKodeAbsen({
+      input: inputToken,
+      kode: kodeAbsen.kode,
+      status: kodeAbsen.status,
+    });
+    if (!hasil.lulus) {
+      setPesanKode(hasil.pesan);
+      // Ketikan dikosongkan HANYA bila memang salah ketik; menghapus input saat
+      // penyebabnya di luar kendali guru cuma menghukum.
+      if (kodeAbsen.status === STATUS_KODE.SIAP) setInputToken("");
       return;
     }
-    
-    if (inputToken.trim().toUpperCase() !== dailyCode.trim().toUpperCase()) {
-      alert("⚠️ Token absensi salah! Silakan periksa kembali atau hubungi admin.");
-      setInputToken("");
-      return;
-    }
+    setPesanKode("");
 
     try {
       await updateDoc(doc(db, "jadwal_bimbel", pendingSchedule.id), {
@@ -481,10 +630,32 @@ const TeacherDashboard = () => {
 
   const handleLogout = () => {
     if (window.confirm('Yakin ingin keluar?')) {
-      localStorage.removeItem('teacherData');
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userRole');
+      // B-25: dulu yang dihapus `teacherData`, `isLoggedIn`, `userRole` — padahal
+      // penjaga rute GuruRoute memeriksa `isGuruLoggedIn` dan `role`. Sesudah
+      // logout keduanya masih ada sehingga /guru/* tetap terbuka di perangkat
+      // bersama. Sekarang kunci sesi dikelola satu tempat (utils/sesiLoginGuru).
+      hapusSesiGuru();
       navigate('/login-guru');
+    }
+  };
+
+  /**
+   * "Tandai semua" dulu tombol MATI (tanpa onClick — B-03). Sekarang benar-benar
+   * menulis `isRead` (nama field yang dipakai penulis notifikasi), dibatasi pada
+   * yang tampil saja, dan gagal pun dilaporkan jujur lewat banner.
+   */
+  const tandaiSemuaDibaca = async () => {
+    const belum = notifications.filter(belumDibaca);
+    if (belum.length === 0) return;
+    try {
+      const batch = writeBatch(db);
+      belum.forEach((n) => batch.update(doc(db, 'notifications', n.id), { isRead: true }));
+      await batch.commit();
+      setNotifications((lama) => lama.map((n) => ({ ...n, isRead: true })));
+      hapusGagal('notifikasi');
+    } catch (e) {
+      console.error('Gagal menandai notifikasi dibaca:', e);
+      catatGagal('notifikasi', e, punyaNotifRef.current);
     }
   };
 
@@ -514,8 +685,56 @@ const TeacherDashboard = () => {
     );
   }
 
+  // B-01: profil tanpa identitas dulu membuat spinner berputar SELAMANYA tanpa
+  // pesan apa pun. Sekarang keadaannya dinyatakan + ada dua jalan keluar.
+  if (profilBermasalah) {
+    return (
+      <div style={styles.loadingContainer}>
+        <LogoGemilang size="medium" variant="default" showText={true} />
+        <div style={styles.panelMasalah} role="status">
+          <h2 style={styles.judulMasalah}>Data profil Anda belum lengkap</h2>
+          <p style={styles.teksMasalah}>
+            Sistem tidak menemukan nama atau ID guru pada data login di perangkat ini,
+            sehingga jadwal dan riwayat Anda tidak bisa diambil. Data Anda di server tidak
+            hilang — ini soal sesi di perangkat ini.
+          </p>
+          <div style={styles.aksiMasalah}>
+            <button type="button" onClick={handleRefresh} style={styles.tombolUtama}>
+              <RefreshCw size={15} /> Muat ulang
+            </button>
+            <button type="button" onClick={handleLogout} style={styles.tombolSekunder}>
+              <LogOut size={15} /> Keluar &amp; masuk lagi
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
+      {/* ═══ BANNER JUJUR: blok data yang gagal dimuat (B-04, B-22) ═══
+          Dulu satu kueri yang gagal menelan SEMUA blok di bawahnya dan layar
+          menampilkan 0 tanpa penjelasan — guru menyimpulkan datanya hilang.
+          Sekarang tiap blok melaporkan dirinya sendiri, data lama dipertahankan,
+          dan ada satu tombol "Coba lagi" (docs/POLICY-ERROR-DAN-KUOTA.md). */}
+      {daftarGagal.length > 0 && (
+        <div style={styles.bannerGagal} role="status">
+          <div style={styles.judulBannerGagal}>
+            <AlertCircle size={16} /> Sebagian data belum bisa dimuat
+          </div>
+          <ul style={styles.isiBannerGagal}>
+            {daftarGagal.map(([blok, ket]) => (
+              <li key={blok}>
+                <b>{LABEL_BLOK[blok] || blok}</b>: {ket.pesan}
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={handleRefresh} disabled={refreshing} style={styles.tombolCobaLagi}>
+            <RefreshCw size={14} className={refreshing ? 'spin' : ''} /> Coba lagi
+          </button>
+        </div>
+      )}
       {/* ═══ TUGAS BESAR: PENGISIAN LAPORAN BELAJAR (owner 31 Okt 2026) ═══
           Muncul selama admin membuka periode; HILANG otomatis begitu semua
           siswa mapel guru ini selesai diisi. Capaian guru = isi utama PDF. */}
@@ -556,7 +775,7 @@ const TeacherDashboard = () => {
                 style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '1px solid #c7d2fe', background: 'white', cursor: 'pointer' }}
               >
                 <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1e1b4b' }}>{p.judul}</div>
-                <div style={{ fontSize: 10.5, color: '#6b7280', marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>
                   {p.totalSoal || p.daftarSoal?.length || 0} soal · {p.targetKelas} — pantau peserta, nilai esai, lihat skor →
                 </div>
               </button>
@@ -568,38 +787,50 @@ const TeacherDashboard = () => {
       <div style={styles.header}>
         <div style={styles.headerLeft}>
           <LogoGemilang size="small" variant="default" />
-          <span style={styles.headerVersion}>v2.0</span>
         </div>
         <div style={styles.headerRight}>
           <span style={styles.greeting}>{greeting}</span>
           <div style={styles.notifWrapper} ref={notificationRef}>
-            <button 
-              onClick={() => setShowNotifications(!showNotifications)} 
+            <button
+              type="button"
+              onClick={() => setShowNotifications(!showNotifications)}
               style={styles.notifBtn}
+              aria-label={jumlahBelumDibaca > 0 ? `Notifikasi, ${jumlahBelumDibaca} belum dibaca` : 'Notifikasi'}
             >
               <Bell size={18} />
-              {notifications.filter(n => !n.read).length > 0 && (
-                <span style={styles.notifDot}>{notifications.filter(n => !n.read).length}</span>
+              {jumlahBelumDibaca > 0 && (
+                <span style={styles.notifDot}>{jumlahBelumDibaca}</span>
               )}
             </button>
             {showNotifications && (
               <div style={styles.notifDropdown}>
                 <div style={styles.notifHeader}>
                   <span style={styles.notifTitle}>Notifikasi</span>
-                  <button style={styles.notifMarkAll}>Tandai semua</button>
+                  <button
+                    type="button"
+                    onClick={tandaiSemuaDibaca}
+                    disabled={jumlahBelumDibaca === 0}
+                    style={{
+                      ...styles.notifMarkAll,
+                      opacity: jumlahBelumDibaca === 0 ? 0.5 : 1,
+                      cursor: jumlahBelumDibaca === 0 ? 'default' : 'pointer',
+                    }}
+                  >
+                    Tandai semua{jumlahBelumDibaca > 0 ? ` (${jumlahBelumDibaca})` : ''}
+                  </button>
                 </div>
                 {notifications.length === 0 ? (
                   <div style={styles.notifEmpty}>Tidak ada notifikasi</div>
                 ) : (
                   notifications.map((n, i) => (
-                    <div key={n.id || i} style={styles.notifItem(!n.read)}>
+                    <div key={n.id || i} style={styles.notifItem(belumDibaca(n))}>
                       <div style={styles.notifIcon}>
                         {n.type === 'modul_baru' ? <BookOpen size={12} /> : <Bell size={12} />}
                       </div>
                       <div style={styles.notifContent}>
                         <div style={styles.notifMsg}>{n.message || n.title}</div>
                         <div style={styles.notifTime}>
-                          {n.createdAt?.toDate ? new Date(n.createdAt.toDate()).toLocaleDateString('id-ID') : 'Baru'}
+                          {waktuNotifMs(n) ? new Date(waktuNotifMs(n)).toLocaleDateString('id-ID') : 'Baru'}
                         </div>
                       </div>
                     </div>
@@ -608,13 +839,26 @@ const TeacherDashboard = () => {
               </div>
             )}
           </div>
-          <button onClick={handleRefresh} style={styles.refreshBtn} disabled={refreshing}>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            style={styles.refreshBtn}
+            disabled={refreshing}
+            aria-label="Muat ulang data dasbor"
+          >
             <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
           </button>
-          <div style={styles.avatar} onClick={() => navigate('/guru/profile')}>
+          {/* B-18: dulu `<div onClick>` — tidak bisa difokus keyboard dan tidak
+              terbaca screen reader. Sekarang tombol sungguhan. */}
+          <button
+            type="button"
+            onClick={() => navigate('/guru/profile')}
+            style={styles.avatar}
+            aria-label={`Profil ${guru?.nama || 'guru'}`}
+          >
             {getInitials(guru?.nama)}
-          </div>
-          <button onClick={handleLogout} style={styles.logoutBtn}>
+          </button>
+          <button type="button" onClick={handleLogout} style={styles.logoutBtn} aria-label="Keluar">
             <LogOut size={16} />
           </button>
         </div>
@@ -641,7 +885,7 @@ const TeacherDashboard = () => {
               <Clock size={12} /> {todaySchedules.length} sesi hari ini
             </span>
             <span style={styles.bannerTag}>
-              <Users size={12} /> {stats.totalStudents} siswa
+              <Users size={12} /> {statistik.siswaTerjadwal} siswa terjadwal
             </span>
           </div>
         </div>
@@ -652,39 +896,41 @@ const TeacherDashboard = () => {
           <div style={styles.bannerProgress}>
             <div style={styles.bannerProgressLabel}>
               <span>Kehadiran</span>
-              <span style={styles.bannerProgressValue}>{stats.attendanceRate}%</span>
+              <span style={styles.bannerProgressValue}>
+                {kehadiran.persen === null ? '—' : `${kehadiran.persen}%`}
+              </span>
             </div>
             <div style={styles.bannerProgressBar}>
-              <div style={{...styles.bannerProgressFill, width: stats.attendanceRate + '%'}} />
+              <div style={{...styles.bannerProgressFill, width: `${kehadiran.persen ?? 0}%`}} />
+            </div>
+            {/* Jujur soal bahan hitungannya: tanpa bukti, tampilkan "—" + sebab,
+                bukan 0% yang menuduh guru tidak hadir (B-05/B-10, keputusan D4). */}
+            <div style={styles.bannerProgressNote}>
+              {kehadiran.persen === null
+                ? 'Belum ada sesi tersimpan untuk dihitung'
+                : `${kehadiran.hadir}/${kehadiran.total} kehadiran · ${kehadiran.sesiTerhitung} sesi${kehadiran.perkiraan ? ` · ${kehadiran.perkiraan} perkiraan` : ''}`}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ===== STATS CARDS ===== */}
+      {/* ===== STATS CARDS =====
+          Definisi baru (keputusan owner D3, 3 Nov 2026): setiap angka wajib
+          bisa dihitung dari jendela 15 hari yang memang ditarik, dan labelnya
+          menyatakan periodenya. Kartu lama ("Total Siswa" ber-badge "Aktif",
+          "Total Kelas" sepanjang masa, "+N" yang ternyata sesi 7 hari ke
+          belakang) semuanya menyesatkan — register bug B-07/B-08/B-09. */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={styles.statIcon('primary')}>
             <Calendar size={20} color="#3b82f6" />
           </div>
           <div style={styles.statInfo}>
-            <div style={styles.statValue}>{stats.todaySessions}</div>
+            <div style={styles.statValue}>{statistik.sesiHariIni}</div>
             <div style={styles.statLabel}>Sesi Hari Ini</div>
           </div>
-          <div style={styles.statTrend('up')}>
-            <TrendingUp size={12} /> +{stats.weekSessions}
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon('success')}>
-            <Users size={20} color="#10b981" />
-          </div>
-          <div style={styles.statInfo}>
-            <div style={styles.statValue}>{stats.totalStudents}</div>
-            <div style={styles.statLabel}>Total Siswa</div>
-          </div>
           <div style={styles.statTrend('neutral')}>
-            <User size={12} /> Aktif
+            <CalendarDays size={12} /> {statistik.sesiMendatang} agenda
           </div>
         </div>
         <div style={styles.statCard}>
@@ -692,11 +938,23 @@ const TeacherDashboard = () => {
             <BookOpen size={20} color="#f59e0b" />
           </div>
           <div style={styles.statInfo}>
-            <div style={styles.statValue}>{stats.totalClasses}</div>
-            <div style={styles.statLabel}>Total Kelas</div>
+            <div style={styles.statValue}>{statistik.sesi7Hari}</div>
+            <div style={styles.statLabel}>Sesi 7 Hari Terakhir</div>
           </div>
-          <div style={styles.statTrend('up')}>
-            <CheckCircle size={12} /> {stats.completedClasses} selesai
+          <div style={styles.statTrend('neutral')}>
+            <CheckCircle size={12} /> {statistik.sesiSelesai7Hari} selesai
+          </div>
+        </div>
+        <div style={styles.statCard}>
+          <div style={styles.statIcon('success')}>
+            <Users size={20} color="#10b981" />
+          </div>
+          <div style={styles.statInfo}>
+            <div style={styles.statValue}>{statistik.siswaTerjadwal}</div>
+            <div style={styles.statLabel}>Siswa Terjadwal</div>
+          </div>
+          <div style={styles.statTrend('neutral')}>
+            <CalendarDays size={12} /> {formatDate(rentang.dari)}–{formatDate(rentang.sampai)}
           </div>
         </div>
         <div style={styles.statCard}>
@@ -704,12 +962,17 @@ const TeacherDashboard = () => {
             <Award size={20} color="#8b5cf6" />
           </div>
           <div style={styles.statInfo}>
-            <div style={styles.statValue}>{stats.attendanceRate}%</div>
+            <div style={styles.statValue}>
+              {kehadiran.persen === null ? '—' : `${kehadiran.persen}%`}
+            </div>
             <div style={styles.statLabel}>Kehadiran</div>
           </div>
-          <div style={styles.statTrend(stats.attendanceRate > 70 ? 'up' : 'down')}>
-            {stats.attendanceRate > 70 ? <TrendingUp size={12} /> : <TrendingUp size={12} style={{transform: 'rotate(180deg)'}} />}
-            {stats.attendanceRate}%
+          {/* Tanpa bukti = tanpa vonis: "—" dan jumlahnya, bukan 0% merah. */}
+          <div style={styles.statTrend(kehadiran.persen === null ? 'neutral' : kehadiran.persen >= 70 ? 'up' : 'down')}>
+            <Activity size={12} />
+            {kehadiran.persen === null
+              ? 'belum ada sesi'
+              : `${kehadiran.sesiTerhitung} sesi${kehadiran.perkiraan ? ` · ${kehadiran.perkiraan} perkiraan` : ''}`}
           </div>
         </div>
       </div>
@@ -957,7 +1220,7 @@ const TeacherDashboard = () => {
                       {p.createdAt?.toDate ? new Date(p.createdAt.toDate()).toLocaleDateString('id-ID') : ''}
                     </div>
                   </div>
-                  <ChevronRight size={14} color="#94a3b8" />
+                  <ChevronRight size={14} color="#4B5563" />
                 </div>
               ))}
             </div>
@@ -989,7 +1252,6 @@ const TeacherDashboard = () => {
         </div>
         <div style={styles.footerBottom}>
           <span>© {new Date().getFullYear()} Bimbel Gemilang. All rights reserved.</span>
-          <span style={styles.footerVersion}>Versi 2.0</span>
         </div>
       </div>
 
@@ -1019,32 +1281,81 @@ const TeacherDashboard = () => {
         </div>
       )}
 
-      {/* ===== MODAL: KODE ABSENSI ===== */}
+      {/* ===== MODAL: KODE ABSENSI (keputusan owner D2 = opsi c) =====
+          Kebijakan TIDAK berubah: kelas tetap dibuka dengan kode buatan admin.
+          Yang berubah adalah kejujurannya — tiga keadaan yang dulu sama-sama
+          dituduhkan sebagai "Token absensi salah!" kini dibedakan, dan tiap
+          keadaan punya jalan keluar (baca ulang SATU dokumen, bukan reload). */}
       {showStartModal && (
         <div style={styles.modalOverlay} onClick={() => setShowStartModal(false)}>
           <div style={styles.modalCode} onClick={e => e.stopPropagation()}>
-            <div style={styles.modalCodeIcon}>🔐</div>
+            <div style={styles.modalCodeIcon}>{keteranganKode.bolehVerifikasi ? '🔐' : '⚠️'}</div>
             <h3 style={styles.modalCodeTitle}>Otentikasi Kelas</h3>
             <p style={styles.modalCodeSub}>
-              Masukkan kode absensi harian untuk memulai sesi.
+              Masukkan kode absensi harian untuk memulai sesi {formatDate(hariIniStr)}.
             </p>
-            <input 
-              type="text" 
-              value={inputToken} 
-              onChange={e => setInputToken(e.target.value.toUpperCase())} 
-              style={styles.modalCodeInput} 
-              placeholder="KODE ABSEN" 
-              maxLength={6} 
+
+            {kodeAbsen.status !== STATUS_KODE.SIAP && (
+              <div style={styles.kodeNada(keteranganKode.nada)} role="status">
+                <div style={styles.kodeNadaJudul}>
+                  <AlertCircle size={14} /> {keteranganKode.judul}
+                </div>
+                <div style={styles.kodeNadaTeks}>{keteranganKode.pesan}</div>
+              </div>
+            )}
+
+            <input
+              type="text"
+              value={inputToken}
+              onChange={e => { setInputToken(e.target.value.toUpperCase()); setPesanKode(''); }}
+              style={{
+                ...styles.modalCodeInput,
+                opacity: keteranganKode.bolehVerifikasi ? 1 : 0.6,
+              }}
+              placeholder="KODE ABSEN"
+              maxLength={6}
               autoFocus
+              disabled={!keteranganKode.bolehVerifikasi || memuatKode}
+              aria-label="Kode absensi harian"
+              aria-describedby="ket-kode-harian"
             />
-            <div style={styles.modalCodeHint}>
-              <Clock size={12} /> Kode berlaku hari ini
+            <div style={styles.modalCodeHint} id="ket-kode-harian">
+              <Clock size={12} />
+              {memuatKode
+                ? 'Memeriksa kode hari ini…'
+                : kodeAbsen.status === STATUS_KODE.SIAP
+                  ? 'Kode berlaku hari ini'
+                  : 'Kode dibuat oleh admin untuk tanggal ini'}
             </div>
+
+            {pesanKode && (
+              <div style={styles.pesanKodeInline} role="alert">{pesanKode}</div>
+            )}
+
             <div style={styles.modalCodeActions}>
-              <button onClick={() => setShowStartModal(false)} style={styles.modalCodeCancel}>
+              <button type="button" onClick={() => setShowStartModal(false)} style={styles.modalCodeCancel}>
                 BATAL
               </button>
-              <button onClick={handleVerifyTokenAndStart} style={styles.modalCodeSubmit}>
+              {keteranganKode.saran && (
+                <button
+                  type="button"
+                  onClick={() => bacaKodeHarian(hariIniStr)}
+                  disabled={memuatKode}
+                  style={styles.modalCodeRetry}
+                >
+                  <RefreshCw size={14} className={memuatKode ? 'spin' : ''} /> {keteranganKode.saran}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleVerifyTokenAndStart}
+                disabled={!keteranganKode.bolehVerifikasi}
+                style={{
+                  ...styles.modalCodeSubmit,
+                  opacity: keteranganKode.bolehVerifikasi ? 1 : 0.55,
+                  cursor: keteranganKode.bolehVerifikasi ? 'pointer' : 'not-allowed',
+                }}
+              >
                 <Zap size={14} /> VERIFIKASI
               </button>
             </div>
@@ -1108,7 +1419,7 @@ const styles = {
     borderRadius: '50%',
     animation: 'spin 0.8s linear infinite',
   },
-  loadingText: { color: '#94a3b8', fontSize: 13, fontWeight: 500 },
+  loadingText: { color: '#4B5563', fontSize: 13, fontWeight: 500 },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -1121,14 +1432,6 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
   },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  headerVersion: {
-    fontSize: 8,
-    fontWeight: 700,
-    color: '#94a3b8',
-    background: '#f1f5f9',
-    padding: '2px 6px',
-    borderRadius: 4,
-  },
   headerRight: { display: 'flex', alignItems: 'center', gap: 8 },
   greeting: { fontSize: 12, color: '#64748b', fontWeight: 500 },
   notifWrapper: { position: 'relative' },
@@ -1148,9 +1451,9 @@ const styles = {
     position: 'absolute',
     top: -2,
     right: -2,
-    background: '#ef4444',
+    background: '#B91C1C',
     color: 'white',
-    fontSize: 8,
+    fontSize: 11,
     fontWeight: 700,
     width: 16,
     height: 16,
@@ -1181,8 +1484,8 @@ const styles = {
     borderBottom: '1px solid #f1f5f9',
   },
   notifTitle: { fontWeight: 700, fontSize: 13, color: '#1e293b' },
-  notifMarkAll: { fontSize: 10, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer' },
-  notifEmpty: { padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: 12 },
+  notifMarkAll: { fontSize: 11, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer' },
+  notifEmpty: { padding: '20px', textAlign: 'center', color: '#4B5563', fontSize: 12 },
   notifItem: (unread) => ({
     display: 'flex',
     gap: 10,
@@ -1206,7 +1509,7 @@ const styles = {
   },
   notifContent: { flex: 1 },
   notifMsg: { fontSize: 12, color: '#1e293b' },
-  notifTime: { fontSize: 9, color: '#94a3b8', marginTop: 2 },
+  notifTime: { fontSize: 11, color: '#4B5563', marginTop: 2 },
   refreshBtn: {
     background: '#f1f5f9',
     border: 'none',
@@ -1218,9 +1521,15 @@ const styles = {
     justifyContent: 'center',
     color: '#64748b',
   },
+  // Sekarang elemen <button> sungguhan (B-18) → default UA (border, padding,
+  // font) wajib dinetralkan agar tampilannya identik dengan versi lama.
+  // Ukuran sasaran sentuh 44 px sengaja ditabung ke rombak E2 (register B-19).
   avatar: {
     width: 36,
     height: 36,
+    border: 'none',
+    padding: 0,
+    fontFamily: 'inherit',
     borderRadius: '50%',
     background: 'linear-gradient(135deg, #652D90, #8b5cf6)',
     color: 'white',
@@ -1238,7 +1547,7 @@ const styles = {
     border: 'none',
     padding: '6px 8px',
     cursor: 'pointer',
-    color: '#94a3b8',
+    color: '#4B5563',
     borderRadius: 8,
     transition: '0.2s',
   },
@@ -1263,7 +1572,7 @@ const styles = {
     background: 'rgba(255,255,255,0.15)',
     padding: '2px 10px',
     borderRadius: 16,
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: 700,
     marginBottom: 4,
   },
@@ -1275,7 +1584,7 @@ const styles = {
     background: 'rgba(255,255,255,0.12)',
     padding: '3px 12px',
     borderRadius: 16,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 600,
     display: 'flex',
     alignItems: 'center',
@@ -1291,7 +1600,7 @@ const styles = {
     justifyContent: 'center',
   },
   bannerProgress: { width: 160 },
-  bannerProgressLabel: { display: 'flex', justifyContent: 'space-between', fontSize: 10, opacity: 0.8, marginBottom: 2 },
+  bannerProgressLabel: { display: 'flex', justifyContent: 'space-between', fontSize: 11, opacity: 0.8, marginBottom: 2 },
   bannerProgressValue: { fontWeight: 700 },
   bannerProgressBar: { height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2, overflow: 'hidden' },
   bannerProgressFill: { height: '100%', background: 'linear-gradient(90deg, #fbbf24, #10b981)', borderRadius: 2, transition: 'width 0.8s ease' },
@@ -1323,11 +1632,11 @@ const styles = {
   }),
   statInfo: { flex: 1 },
   statValue: { fontSize: 20, fontWeight: 900, color: '#1e293b', lineHeight: 1.2 },
-  statLabel: { fontSize: 10, color: '#94a3b8', fontWeight: 500 },
+  statLabel: { fontSize: 11, color: '#4B5563', fontWeight: 500 },
   statTrend: (direction) => ({
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: 600,
-    color: direction === 'up' ? '#10b981' : direction === 'down' ? '#ef4444' : '#94a3b8',
+    color: direction === 'up' ? '#15803D' : direction === 'down' ? '#B91C1C' : '#4B5563',
     display: 'flex',
     alignItems: 'center',
     gap: 2,
@@ -1384,8 +1693,8 @@ const styles = {
   },
   scheduleSubTitle: { fontSize: 12, fontWeight: 600, color: '#64748b' },
   scheduleCount: {
-    fontSize: 10,
-    color: '#94a3b8',
+    fontSize: 11,
+    color: '#4B5563',
     background: '#f1f5f9',
     padding: '2px 8px',
     borderRadius: 10
@@ -1404,7 +1713,7 @@ const styles = {
   },
   scheduleTime: { minWidth: 60, flexShrink: 0 },
   scheduleTimeText: { fontWeight: 800, fontSize: 13, color: '#1e293b' },
-  scheduleTimeEnd: { fontSize: 10, color: '#94a3b8' },
+  scheduleTimeEnd: { fontSize: 11, color: '#4B5563' },
   scheduleContent: { flex: 1, minWidth: 120 },
   scheduleTitle: {
     fontWeight: 700,
@@ -1416,7 +1725,7 @@ const styles = {
     flexWrap: 'wrap'
   },
   scheduleMapelId: {
-    fontSize: 8,
+    fontSize: 11,
     color: '#8b5cf6',
     background: '#ede9fe',
     padding: '1px 6px',
@@ -1430,12 +1739,12 @@ const styles = {
     alignItems: 'center',
     gap: 8,
     marginTop: 2,
-    fontSize: 10,
+    fontSize: 11,
     color: '#64748b',
     flexWrap: 'wrap'
   },
   programBadge: (p) => ({
-    fontSize: 8,
+    fontSize: 11,
     fontWeight: 700,
     padding: '2px 8px',
     borderRadius: 12,
@@ -1443,7 +1752,7 @@ const styles = {
     color: p === 'English' ? '#b45309' : '#2563eb',
   }),
   teacherIdBadge: {
-    fontSize: 8,
+    fontSize: 11,
     fontWeight: 600,
     padding: '1px 6px',
     borderRadius: 4,
@@ -1459,10 +1768,10 @@ const styles = {
     color: '#3730a3',
     padding: '1px 8px',
     borderRadius: 10,
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: 600,
   },
-  studentMore: { fontSize: 9, color: '#94a3b8' },
+  studentMore: { fontSize: 11, color: '#4B5563' },
   startBtn: {
     padding: '8px 16px',
     borderRadius: 8,
@@ -1476,7 +1785,7 @@ const styles = {
     flexShrink: 0,
     transition: '0.2s',
   },
-  emptyState: { textAlign: 'center', padding: '30px 12px', color: '#94a3b8' },
+  emptyState: { textAlign: 'center', padding: '30px 12px', color: '#4B5563' },
   emptyText: { fontSize: 13, fontWeight: 600, margin: '8px 0 2px', color: '#64748b' },
   emptySub: { fontSize: 11, margin: 0 },
   upcomingSection: { marginTop: 14, paddingTop: 14, borderTop: '1px solid #f1f5f9' },
@@ -1494,7 +1803,7 @@ const styles = {
   upcomingDate: { fontWeight: 600, color: '#1e293b', minWidth: 70 },
   upcomingTime: { color: '#3b82f6', fontWeight: 600 },
   upcomingTitle: { color: '#64748b', flex: 1 },
-  upcomingTeacher: { fontSize: 10, color: '#94a3b8' },
+  upcomingTeacher: { fontSize: 11, color: '#4B5563' },
   quickActionsCard: {
     background: 'white',
     padding: 14,
@@ -1531,8 +1840,8 @@ const styles = {
     justifyContent: 'center',
     marginBottom: 2,
   },
-  quickLabel: { fontSize: 10, fontWeight: 700, color: '#1e293b' },
-  quickDesc: { fontSize: 8, color: '#94a3b8' },
+  quickLabel: { fontSize: 11, fontWeight: 700, color: '#1e293b' },
+  quickDesc: { fontSize: 11, color: '#4B5563' },
   infoCard: {
     background: 'white',
     padding: 14,
@@ -1544,10 +1853,10 @@ const styles = {
   infoTitle: { margin: 0, fontWeight: 700, fontSize: 13, color: '#1e293b' },
   teacherInfo: { display: 'flex', flexDirection: 'column', gap: 6 },
   teacherInfoRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, padding: '2px 0' },
-  teacherInfoLabel: { color: '#94a3b8' },
+  teacherInfoLabel: { color: '#4B5563' },
   teacherInfoValue: { fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 4 },
-  mapelIdTag: { fontSize: 8, color: '#8b5cf6', background: '#ede9fe', padding: '1px 6px', borderRadius: 4 },
-  statusActive: { color: '#10b981', background: '#dcfce7', padding: '1px 8px', borderRadius: 10, fontSize: 9, fontWeight: 700 },
+  mapelIdTag: { fontSize: 11, color: '#8b5cf6', background: '#ede9fe', padding: '1px 6px', borderRadius: 4 },
+  statusActive: { color: '#15803D', background: '#dcfce7', padding: '1px 8px', borderRadius: 10, fontSize: 11, fontWeight: 700 },
   announceCard: {
     background: 'white',
     padding: 14,
@@ -1569,7 +1878,7 @@ const styles = {
   announceImage: { width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0 },
   announceContent: { flex: 1 },
   announceTitle: { fontSize: 11, fontWeight: 600, color: '#1e293b' },
-  announceDate: { fontSize: 8, color: '#94a3b8', marginTop: 2 },
+  announceDate: { fontSize: 11, color: '#4B5563', marginTop: 2 },
   footer: {
     marginTop: 20,
     paddingTop: 16,
@@ -1602,16 +1911,8 @@ const styles = {
     marginTop: 10,
     paddingTop: 10,
     borderTop: '1px solid #f1f5f9',
-    fontSize: 10,
-    color: '#94a3b8',
-  },
-  footerVersion: {
-    background: '#f1f5f9',
-    padding: '2px 10px',
-    borderRadius: 4,
-    fontSize: 8,
-    fontWeight: 700,
-    color: '#64748b',
+    fontSize: 11,
+    color: '#4B5563',
   },
   modalOverlay: {
     position: 'fixed',
@@ -1653,10 +1954,10 @@ const styles = {
   },
   modalImage: { width: '100%', maxHeight: 200, objectFit: 'cover' },
   modalBody: { padding: 20 },
-  modalTag: { fontSize: 9, color: '#652D90', fontWeight: 800, textTransform: 'uppercase' },
+  modalTag: { fontSize: 11, color: '#652D90', fontWeight: 800, textTransform: 'uppercase' },
   modalTitle: { margin: '4px 0 8px', fontSize: 18, fontWeight: 900, color: '#1e293b' },
   modalText: { fontSize: 13, color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap' },
-  modalDate: { marginTop: 12, fontSize: 10, color: '#94a3b8' },
+  modalDate: { marginTop: 12, fontSize: 11, color: '#4B5563' },
   modalCode: {
     background: 'white',
     padding: 28,
@@ -1682,7 +1983,7 @@ const styles = {
     background: '#f8fafc',
     transition: '0.2s',
   },
-  modalCodeHint: { fontSize: 10, color: '#94a3b8', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  modalCodeHint: { fontSize: 11, color: '#4B5563', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 },
   modalCodeActions: { display: 'flex', gap: 8, marginTop: 16 },
   modalCodeCancel: {
     flex: 1,
@@ -1710,6 +2011,136 @@ const styles = {
     justifyContent: 'center',
     gap: 6,
     boxShadow: '0 4px 12px rgba(101,45,144,0.3)',
+  },
+
+  // ============================================================
+  // v1.6.5 — keadaan JUJUR (register bug B-01/B-04/B-06/B-22).
+  // Warna mengikuti token docs/SISTEM-DESAIN-GEMILANG.md: teks bahaya #B91C1C,
+  // peringatan #B45309, info #2563EB, teks sekunder #4B5563 — semua terukur
+  // ≥4,5:1 di atas latar tintanya.
+  // ============================================================
+  bannerGagal: {
+    margin: '0 0 16px',
+    padding: '12px 14px',
+    borderRadius: 14,
+    background: '#FEF2F2',
+    border: '1px solid #FECACA',
+  },
+  judulBannerGagal: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    fontSize: 13,
+    fontWeight: 800,
+    color: '#B91C1C',
+  },
+  isiBannerGagal: {
+    margin: '6px 0 10px',
+    paddingLeft: 18,
+    fontSize: 12.5,
+    lineHeight: 1.55,
+    color: '#1F2937',
+  },
+  tombolCobaLagi: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    padding: '10px 16px',
+    borderRadius: 999,
+    border: '1px solid #B91C1C',
+    background: 'white',
+    color: '#B91C1C',
+    fontSize: 12.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  panelMasalah: {
+    maxWidth: 460,
+    padding: 20,
+    background: 'white',
+    border: '1px solid #E7DFD3',
+    borderRadius: 20,
+    textAlign: 'center',
+    boxShadow: '0 8px 24px rgba(31,41,55,0.08)',
+  },
+  judulMasalah: { fontSize: 17, fontWeight: 800, color: '#1F2937', margin: '0 0 8px' },
+  teksMasalah: { fontSize: 13.5, lineHeight: 1.55, color: '#4B5563', margin: '0 0 16px' },
+  aksiMasalah: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' },
+  tombolUtama: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    padding: '10px 18px',
+    borderRadius: 999,
+    border: 'none',
+    background: '#652D90',
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  tombolSekunder: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    padding: '10px 18px',
+    borderRadius: 999,
+    border: '1px solid #652D90',
+    background: 'white',
+    color: '#652D90',
+    fontSize: 13,
+    fontWeight: 700,
+    cursor: 'pointer',
+  },
+  // Catatan kecil di bawah bar kehadiran (di atas banner gelap → teks terang).
+  bannerProgressNote: { fontSize: 11, marginTop: 6, color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 },
+  kodeNada: (nada) => ({
+    margin: '0 0 12px',
+    padding: '10px 12px',
+    borderRadius: 14,
+    textAlign: 'left',
+    background: nada === 'bahaya' ? '#FEF2F2' : nada === 'peringatan' ? '#FFFBEB' : '#EFF6FF',
+    border: `1px solid ${nada === 'bahaya' ? '#FECACA' : nada === 'peringatan' ? '#FDE68A' : '#BFDBFE'}`,
+  }),
+  kodeNadaJudul: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    fontSize: 12.5,
+    fontWeight: 800,
+    marginBottom: 2,
+    color: '#1F2937',
+  },
+  kodeNadaTeks: { fontSize: 12.5, lineHeight: 1.5, color: '#4B5563' },
+  pesanKodeInline: {
+    margin: '10px 0 0',
+    padding: '8px 10px',
+    borderRadius: 10,
+    background: '#FEF2F2',
+    border: '1px solid #FECACA',
+    color: '#B91C1C',
+    fontSize: 12.5,
+    fontWeight: 600,
+    textAlign: 'center',
+  },
+  modalCodeRetry: {
+    flex: 1,
+    minHeight: 44,
+    padding: 10,
+    background: 'white',
+    color: '#B45309',
+    border: '1px solid #B45309',
+    borderRadius: 10,
+    fontWeight: 700,
+    fontSize: 12,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
 };
 

@@ -5,6 +5,7 @@
 // sendiri: satu-satunya pintu masuk adalah tombol "Mulai Kelas / Lanjutkan
 // Kelas" di Dashboard guru, supaya jalur absensi tetap tunggal & jelas.
 import React, { useState, useEffect } from 'react';
+import { hapusSesiGuru } from '../utils/sesiLoginGuru';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, User, BookOpen, BookMarked, Edit,
@@ -234,7 +235,11 @@ const SidebarGuru = () => {
         >
           <button
             onClick={() => {
-              localStorage.clear();
+              // v1.6.5 (register bug B-25): `localStorage.clear()` memang
+              // menutup sesi guru, tetapi ikut membuang sesi admin/siswa dan
+              // preferensi non-sesi di peramban yang sama. Sekarang kunci sesi
+              // guru dikelola satu tempat (utils/sesiLoginGuru).
+              hapusSesiGuru();
               window.location.href = '/login-guru';
             }}
             style={{

@@ -244,6 +244,11 @@ const ClassSession = () => {
         teacherId: teacher.id, namaGuru: teacher.nama, tanggal: today, waktu: new Date().toLocaleTimeString(),
         jadwalId: schedule.id, program: schedule.program, level: schedule.level || 'SD',
         kegiatan: 'Mengajar', detail: honor.detailTxt, siswaHadir: hadirList.length, durasiJam: diff,
+        // v1.6.5 (keputusan owner D4 opsi a): penyebut kehadiran disimpan DI
+        // DALAM log, bukan dihitung ulang dari roster jadwal versi sekarang.
+        // Tanpa ini, menambah siswa ke sebuah jadwal membuat persen kehadiran
+        // kelas LAMA turun walau tidak ada yang bolos (register bug B-10).
+        siswaTotal: (schedule.students || []).length,
         nominal: honor.nominal, status: honor.statusGaji, createdAt: serverTimestamp(),
         tipeKelas, kelasNama,
         daftarSiswaHadir: hadirList.map((s) => ({ id: s.id, nama: s.nama, kelas: s.kelas || s.kelasSekolah || '-' })),

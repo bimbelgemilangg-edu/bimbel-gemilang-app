@@ -4,6 +4,8 @@ import { kebijakanUntukStatus } from '../../utils/kebijakanAbsensi';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { db } from '../../firebase';
 import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
+import { identitasPencariJadwal, jadwalMilikGuru } from '../../utils/identitasJadwal';
+import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { 
   collection, query, where, getDocs, doc, getDoc,
   onSnapshot, serverTimestamp, setDoc
@@ -83,60 +85,42 @@ const TeacherAttendance = () => {
     }
   };
 
-  const getDateStr = (dateObj) => {
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  // Tanggal bisnis = tanggal LOKAL perangkat, dari satu util (utils/waktuLokal).
+  // Salinan fungsi ini dulu ditulis ulang di lima berkas berbeda — selama masih
+  // identik hasilnya tidak terlihat, begitu salah satunya memakai UTC (kasus
+  // 00:00-06:59 WIB, v1.6.3/v1.6.4) jadwal guru terbelah dua hari.
+  const getDateStr = (dateObj) => tanggalLokalStr(dateObj);
 
 
 
-  // Fetch jadwal hari ini
+  // ===== JADWAL TANGGAL TERPILIH: SATU kueri, identitas bersama =====
+  // Tiga perbaikan sekaligus (register bug B-13, B-16; keputusan owner D5):
+  //   1. Dulu halaman ini mencari `teacherId` lebih dulu lalu — hanya bila kosong
+  //      — memasang kueri KEDUA berdasarkan nama, sedangkan dasbor guru mencari
+  //      nama saja. Satu spasi/typo/nama yang pernah diperbaiki admin membuat
+  //      kelas muncul di satu halaman dan hilang di halaman lain. Sekarang kedua
+  //      halaman memakai aturan yang sama dari utils/identitasJadwal: ID menang
+  //      bila ada; nama hanya untuk data warisan tanpa teacherId.
+  //   2. Tidak ada lagi kueri beruntun (ID → nama) yang membuat loading terasa
+  //      "nyasar": satu kueri tanggal (indeks tunggal, tanpa orderBy) lalu
+  //      pencocokan identitas di klien — nol putaran jaringan tambahan.
+  //   3. Kebocoran langganan ditutup: `return () => unsubFallback()` di dalam
+  //      callback onSnapshot tidak pernah dipakai React, sehingga langganan
+  //      cadangan hidup terus dan menumpuk tiap ganti tanggal.
   useEffect(() => {
-    if (!guru?.guruId && !guru?.id) return;
+    const identitas = identitasPencariJadwal(guru);
+    if (!identitas.ids.length && !identitas.nama) {
+      queueMicrotask(() => setLoading(false)); // hindari setState sinkron di badan effect
+      return undefined;
+    }
 
     const dateStr = getDateStr(selectedDate);
-
-    const teacherId = guru.guruId || guru.id;
-
-    // 🔥 FIX BUG: sebelumnya query utama di sini nyari field "guruId" di
-    // dokumen jadwal_bimbel -- padahal SchedulePage.jsx (tempat jadwal
-    // dibuat) TIDAK PERNAH menulis field bernama "guruId" ke jadwal_bimbel,
-    // yang ditulis adalah field "teacherId". Karena field yang dicari itu
-    // memang tidak pernah ada, query ini SELALU 0 hasil, dan kode selalu
-    // "terpaksa" lewat jalur fallback (cari pakai nama guru) tanpa pernah
-    // benar-benar lewat jalur utamanya. Sekarang dibetulkan pakai nama
-    // field yang sebenarnya.
-    let q = query(
-      collection(db, "jadwal_bimbel"),
-      where("teacherId", "==", teacherId),
-      where("dateStr", "==", dateStr)
-    );
+    const q = query(collection(db, "jadwal_bimbel"), where("dateStr", "==", dateStr));
 
     const unsubscribe = onSnapshot(q, (snap) => {
-      let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // FALLBACK: Jika tidak ada, coba dengan teacherName
-      if (data.length === 0 && guru.nama) {
-        const qFallback = query(
-          collection(db, "jadwal_bimbel"),
-          where("teacherName", "==", guru.nama),
-          where("dateStr", "==", dateStr)
-        );
-        
-        unsubscribe();
-        
-        const unsubFallback = onSnapshot(qFallback, (snap2) => {
-          const fallbackData = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
-          setSchedules(fallbackData);
-          fallbackData.forEach(s => loadAttendance(s.id, dateStr));
-          setLoading(false);
-        });
-        
-        return () => unsubFallback();
-      }
-      
+      const data = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(j => jadwalMilikGuru(j, identitas));
       setSchedules(data);
       data.forEach(s => loadAttendance(s.id, dateStr));
       setLoading(false);
@@ -149,7 +133,7 @@ const TeacherAttendance = () => {
     // (aturan react-hooks/set-state-in-effect); perilaku tetap sama.
     queueMicrotask(() => fetchDailyCode(dateStr));
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, [guru, selectedDate]);
 
   const handleOpenAttendance = (schedule) => {

@@ -1,8 +1,12 @@
 // src/pages/teacher/TeacherHistory.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { db } from '../../firebase';
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { daftarIdGuru } from '../../utils/identitasGuru';
+import {
+  bacaLogMengajar, bacaLogMengajarBerdasarkanNama, BATAS_LOG_RIWAYAT,
+} from '../../services/logMengajarService';
+import { siapkanLogBulan } from '../../utils/logMengajar';
+import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { Calendar, Clock, Users, Printer } from 'lucide-react';
 
 const TeacherHistory = () => {
@@ -13,7 +17,11 @@ const TeacherHistory = () => {
   const [guru, setGuru] = useState(null);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [pesanGagal, setPesanGagal] = useState('');
+  // Bulan pilihan = bulan LOKAL. `toISOString()` berzona UTC sehingga pada
+  // tanggal 1 pukul 00:00-06:59 WIB riwayat membuka bulan SEBELUMNYA
+  // (kelas bug yang sama dengan v1.6.3/v1.6.4).
+  const [selectedMonth, setSelectedMonth] = useState(() => tanggalLokalStr().slice(0, 7));
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -42,83 +50,49 @@ const TeacherHistory = () => {
 
   useEffect(() => {
     if (!guru) return;
+    setPesanGagal('');
     fetchLogs();
-  }, [guru, selectedMonth]);
+  }, [guru, fetchLogs]);
 
   // 🔥 PENTING: nominal/gaji TIDAK BOLEH pernah sampai ke sisi guru dalam
   // bentuk apapun -- bukan cuma "tidak ditampilkan di tabel", tapi memang
   // tidak boleh ada di data yang dikirim ke browser guru sama sekali.
   // Kalau cuma "tidak dirender", field itu tetap ada di React state dan
-  // bisa dilihat siapa saja yang buka DevTools browser. Fungsi ini
-  // membuang field `nominal` SEBELUM data masuk ke state, di titik paling
-  // awal setelah data diambil dari Firestore -- berapapun nominalnya,
-  // gak pernah nyampe ke sisi guru.
-  const stripNominal = (docs) => docs.map(d => {
-    const { _nominal, ...rest } = d.data();
-    return { id: d.id, ...rest };
-  });
-
-  // 🔥 FETCH LOGS - FIXED: Pakai guruId
-  const fetchLogs = async () => {
+  // bisa dilihat siapa saja yang buka DevTools browser.
+  //
+  // ⚠️ PERBAIKAN B-26 (3 Nov 2026): fungsi di berkas ini dulu bernama
+  // `stripNominal` tetapi isinya `const { _nominal, ...rest } = d.data()` —
+  // yang dibuang adalah field `_nominal` yang TIDAK PERNAH ADA, sehingga field
+  // asli `nominal` tetap lolos ke browser guru. Sekarang pembuangan field uang
+  // dilakukan SATU fungsi bersama (utils/logMengajar.buangNominal) yang
+  // dipakai halaman ini DAN dasbor guru, dan dikunci oleh tests/logMengajar.test.mjs.
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
-      let data = [];
-      
-      // 🔥 Priority: Pakai guruId
-      const teacherId = guru.guruId || guru.id;
-      
-      if (teacherId) {
-        const q = query(
-          collection(db, "teacher_logs"), 
-          where("teacherId", "==", teacherId),
-          orderBy("tanggal", "desc")
-        );
-        const snap = await getDocs(q);
-        data = stripNominal(snap.docs);
+      // Identitas tunggal: log ditulis ClassSession dengan docId Firestore,
+      // sedangkan halaman ini dulu mencari hanya dengan `guruId` (GURU-0xx)
+      // → 0 baris (register bug B-05). Semua identitas guru ikut dicari.
+      const ids = daftarIdGuru(guru);
+      let data = ids.length
+        ? await bacaLogMengajar({ ids, batas: BATAS_LOG_RIWAYAT })
+        : [];
+
+      // Cadangan HANYA untuk data warisan yang log-nya tak punya teacherId cocok.
+      // Tidak dipakai bila data berbasis identitas sudah ketemu, supaya nama
+      // (yang bukan identitas aman: dua guru bisa bernama sama) tidak jadi kunci.
+      if (data.length === 0 && guru?.nama) {
+        data = await bacaLogMengajarBerdasarkanNama({ nama: guru.nama, batas: BATAS_LOG_RIWAYAT });
       }
-      
-      // 🔥 FALLBACK: Jika tidak ada, coba dengan nama
-      if (data.length === 0 && guru.nama) {
-        const qFallback = query(
-          collection(db, "teacher_logs"), 
-          where("namaGuru", "==", guru.nama),
-          orderBy("tanggal", "desc")
-        );
-        const snapFallback = await getDocs(qFallback);
-        data = stripNominal(snapFallback.docs);
-      }
-      
-      // Filter berdasarkan bulan
-      const filtered = data.filter(item => {
-        if (!item.tanggal) return false;
-        // Format tanggal harus YYYY-MM-DD
-        const dateStr = item.tanggal.split(' ')[0];
-        return dateStr.startsWith(selectedMonth);
-      });
-      
-      setLogs(filtered);
-    } catch (err) { 
+
+      setLogs(siapkanLogBulan(data, selectedMonth));
+    } catch (err) {
       console.error("Error fetching logs:", err);
-      // Jika gagal karena index, coba tanpa orderBy
-      try {
-        const q = query(
-          collection(db, "teacher_logs"), 
-          where("teacherId", "==", guru.guruId || guru.id)
-        );
-        const snap = await getDocs(q);
-        let data = stripNominal(snap.docs);
-        data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-        const filtered = data.filter(item => {
-          if (!item.tanggal) return false;
-          return item.tanggal.startsWith(selectedMonth);
-        });
-        setLogs(filtered);
-      } catch (e2) {
-        console.error("Fallback error:", e2);
-      }
-    } 
-    finally { setLoading(false); }
-  };
+      // Data lama dipertahankan; kegagalan dilaporkan apa adanya (policy kuota).
+      setPesanGagal(`Gagal memuat riwayat (${String(err?.code || err?.message || 'jaringan').slice(0, 40)}). Tekan Muat ulang bila sudah reda.`);
+    } finally {
+      setLoading(false);
+    }
+  }, [guru, selectedMonth]);
 
   const handlePrint = () => window.print();
   
@@ -204,6 +178,33 @@ const TeacherHistory = () => {
         </div>
       </div>
 
+      {/* Banner jujur (docs/POLICY-ERROR-DAN-KUOTA.md): kegagalan muat tidak
+          boleh menyamar jadi "riwayat kosong". Data lama dipertahankan. */}
+      {pesanGagal && (
+        <div
+          role="status"
+          style={{
+            background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C',
+            borderRadius: 12, padding: '10px 14px', marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+            fontSize: 12.5, fontWeight: 600,
+          }}
+        >
+          <span style={{ flex: '1 1 220px' }}>{pesanGagal}</span>
+          <button
+            type="button"
+            onClick={fetchLogs}
+            disabled={loading}
+            style={{
+              background: 'white', color: '#B91C1C', border: '1px solid #B91C1C',
+              borderRadius: 999, padding: '8px 14px', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+            }}
+          >
+            Muat ulang
+          </button>
+        </div>
+      )}
+
       {/* 🔥 KARTU RINGKASAN */}
       <div style={{
         display: 'grid',
@@ -221,7 +222,7 @@ const TeacherHistory = () => {
           <div style={{ fontSize: 20, fontWeight: 900, color: '#3b82f6' }}>
             {logs.length}
           </div>
-          <div style={{ fontSize: 10, color: '#94a3b8' }}>Total Sesi</div>
+          <div style={{ fontSize: 11, color: '#4B5563' }}>Total Sesi</div>
         </div>
         <div style={{
           background: 'white',
@@ -233,7 +234,7 @@ const TeacherHistory = () => {
           <div style={{ fontSize: 20, fontWeight: 900, color: '#10b981' }}>
             {totalJam.toFixed(1)}
           </div>
-          <div style={{ fontSize: 10, color: '#94a3b8' }}>Total Jam</div>
+          <div style={{ fontSize: 11, color: '#4B5563' }}>Total Jam</div>
         </div>
         <div style={{
           background: 'white',
@@ -245,7 +246,7 @@ const TeacherHistory = () => {
           <div style={{ fontSize: 20, fontWeight: 900, color: '#8b5cf6' }}>
             {totalSiswa}
           </div>
-          <div style={{ fontSize: 10, color: '#94a3b8' }}>Total Siswa</div>
+          <div style={{ fontSize: 11, color: '#4B5563' }}>Total Siswa</div>
         </div>
       </div>
 
@@ -292,16 +293,16 @@ const TeacherHistory = () => {
           gap: 8
         }}>
           <div>
-            <small style={{ color: '#64748b', fontSize: 10 }}>Nama Pengajar</small>
+            <small style={{ color: '#64748b', fontSize: 11 }}>Nama Pengajar</small>
             <div style={{ fontWeight: 'bold', fontSize: 15 }}>{guru.nama}</div>
             {guru.guruId && (
-              <div style={{ fontSize: 10, color: '#94a3b8' }}>
+              <div style={{ fontSize: 11, color: '#4B5563' }}>
                 ID: {guru.guruId}
               </div>
             )}
           </div>
           <div style={{ textAlign: 'right' }}>
-            <small style={{ color: '#64748b', fontSize: 10 }}>Total Kontribusi</small>
+            <small style={{ color: '#64748b', fontSize: 11 }}>Total Kontribusi</small>
             <div style={{ fontWeight: 'bold', fontSize: 15, color: '#2563eb' }}>
               {totalJam.toFixed(1)} Jam
             </div>
@@ -324,21 +325,21 @@ const TeacherHistory = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} style={{ padding: 30, textAlign: 'center', color: '#94a3b8' }}>Memuat...</td></tr>
+                  <tr><td colSpan={6} style={{ padding: 30, textAlign: 'center', color: '#4B5563' }}>Memuat...</td></tr>
                 ) : logs.length === 0 ? (
-                  <tr><td colSpan={6} style={{ padding: 30, textAlign: 'center', color: '#94a3b8' }}>Belum ada data riwayat mengajar.</td></tr>
+                  <tr><td colSpan={6} style={{ padding: 30, textAlign: 'center', color: '#4B5563' }}>Belum ada data riwayat mengajar.</td></tr>
                 ) : logs.map(log => (
                   <tr key={log.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={{ padding: 12, fontSize: 13 }}>
                       {log.tanggal}
-                      <div style={{ fontSize: 9, color: '#94a3b8' }}>{log.waktu || ''}</div>
+                      <div style={{ fontSize: 11, color: '#4B5563' }}>{log.waktu || ''}</div>
                     </td>
                     <td style={{ padding: 12, fontWeight: 'bold', fontSize: 13 }}>
                       {log.program || log.kegiatan || 'Mengajar'}
                     </td>
                     <td style={{ padding: 12, fontSize: 11, color: '#64748b' }}>
                       {log.detail || '-'}
-                      {log.level && <span style={{ marginLeft: 4, fontSize: 9, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4 }}>{log.level}</span>}
+                      {log.level && <span style={{ marginLeft: 4, fontSize: 11, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4 }}>{log.level}</span>}
                     </td>
                     <td style={{ padding: 12, fontSize: 13 }}>
                       <Users size={12} style={{ display: 'inline', marginRight: 4 }} />
@@ -352,7 +353,7 @@ const TeacherHistory = () => {
                       <span style={{ 
                         padding: '3px 10px', 
                         borderRadius: 20, 
-                        fontSize: 10, 
+                        fontSize: 11, 
                         fontWeight: 'bold',
                         background: log.status === 'Valid / Sudah Terekap' || log.status === 'Disetujui' ? '#dcfce7' : 
                                   log.status === 'Ditolak' ? '#fee2e2' : '#fef3c7',
@@ -373,9 +374,9 @@ const TeacherHistory = () => {
         {isMobile && (
           <div>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: 30, color: '#94a3b8' }}>Memuat...</div>
+              <div style={{ textAlign: 'center', padding: 30, color: '#4B5563' }}>Memuat...</div>
             ) : logs.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 30, color: '#94a3b8' }}>Belum ada data riwayat mengajar.</div>
+              <div style={{ textAlign: 'center', padding: 30, color: '#4B5563' }}>Belum ada data riwayat mengajar.</div>
             ) : logs.map(log => (
               <div key={log.id} style={{ 
                 background: 'white', 
@@ -387,12 +388,12 @@ const TeacherHistory = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <strong style={{ fontSize: 13 }}>{log.tanggal}</strong>
-                    <div style={{ fontSize: 10, color: '#94a3b8' }}>{log.waktu || ''}</div>
+                    <div style={{ fontSize: 11, color: '#4B5563' }}>{log.waktu || ''}</div>
                   </div>
                   <span style={{ 
                     padding: '2px 10px', 
                     borderRadius: 12, 
-                    fontSize: 10, 
+                    fontSize: 11, 
                     fontWeight: 'bold',
                     background: log.status === 'Valid / Sudah Terekap' || log.status === 'Disetujui' ? '#dcfce7' : '#fef3c7',
                     color: log.status === 'Valid / Sudah Terekap' || log.status === 'Disetujui' ? '#16a34a' : '#d97706'
@@ -405,7 +406,7 @@ const TeacherHistory = () => {
                 </div>
                 <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>
                   {log.detail || '-'}
-                  {log.level && <span style={{ marginLeft: 4, fontSize: 9, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4 }}>{log.level}</span>}
+                  {log.level && <span style={{ marginLeft: 4, fontSize: 11, background: '#f1f5f9', padding: '1px 6px', borderRadius: 4 }}>{log.level}</span>}
                 </div>
                 <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#64748b', flexWrap: 'wrap' }}>
                   <span><Users size={12} style={{ display: 'inline', marginRight: 4 }} /> {log.siswaHadir || 0} Siswa</span>
@@ -421,8 +422,8 @@ const TeacherHistory = () => {
       <div style={{ 
         marginTop: 16, 
         textAlign: 'center', 
-        fontSize: 9, 
-        color: '#94a3b8',
+        fontSize: 11, 
+        color: '#4B5563',
         borderTop: '1px solid #f1f5f9',
         paddingTop: 12
       }}>
