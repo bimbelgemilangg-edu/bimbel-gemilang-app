@@ -367,27 +367,15 @@ export function mapelSahUntukSiswa(kode, { jenjang = '', kelas = '' } = {}) {
 // ------------------------------------------------------------
 
 /** Bangun indeks identitas per siswa dari koleksi `students`.
- * Mengumpulkan SEMUA variasi ID (docId, studentId, nim, nis, username)
- * agar kuis, tryout, tugas, dan absensi selalu terpetakan presisi. */
+ * @returns {Array<{kunci, profil, idSet:Set<string>, namaLower:string}>} */
 export function bangunIndeksIdentitas(daftarSiswa = []) {
   return daftarSiswa
-    .filter((s) => s && (s.id || s.studentId || s.nim || s.studentNim))
+    .filter((s) => s && (s.id || s.studentId))
     .map((s) => {
       const docId = String(s.id || '');
       const kode = String(s.studentId || s.nim || s.studentNim || '');
-      const kandidatIds = [
-        s.id,
-        s.studentId,
-        s.nim,
-        s.studentNim,
-        s.nis,
-        s.nisn,
-        s.username,
-        s.email,
-        s.uid,
-      ].map((v) => String(v ?? '').trim()).filter(Boolean);
-      const idSet = new Set(kandidatIds);
-      const nama = String(s.nama || s.name || s.studentName || '');
+      const idSet = new Set([docId, kode].filter(Boolean));
+      const nama = String(s.nama || s.name || '');
       return {
         kunci: kode || docId,
         profil: s,
@@ -398,44 +386,22 @@ export function bangunIndeksIdentitas(daftarSiswa = []) {
     });
 }
 
-/** Cari entri indeks pemilik sebuah dokumen log dengan multi-field checking. */
+/** Cari entri indeks pemilik sebuah dokumen log.
+ * @param {Array} indeks hasil bangunIndeksIdentitas
+ * @param {object} dok dokumen mentah
+ * @param {{fieldId?:string, fieldNama?:string}} field nama field identitas
+ * @returns {object|null} entri indeks, atau null bila tak dikenali
+ */
 export function cariPemilikDok(indeks, dok, { fieldId = 'studentId', fieldNama = '' } = {}) {
   if (!dok) return null;
-  // Kandidat ID dari dokumen log: periksa fieldId yang diminta + fallback umum
-  const idKandidat = [
-    dok[fieldId],
-    dok.studentId,
-    dok.studentNim,
-    dok.nim,
-    dok.userId,
-    dok.siswaId,
-    dok.uid,
-  ].map((v) => String(v ?? '').trim()).filter(Boolean);
-
-  for (const id of idKandidat) {
-    for (const entri of indeks) {
-      if (entri.idSet.has(id)) return entri;
-    }
+  const id = String(dok[fieldId] ?? '').trim();
+  const nama = fieldNama ? String(dok[fieldNama] ?? '').trim().toLowerCase() : '';
+  let byNama = null;
+  for (const entri of indeks) {
+    if (id && entri.idSet.has(id)) return entri;
+    if (!byNama && nama && entri.namaLower && entri.namaLower === nama) byNama = entri;
   }
-
-  // Fallback nama siswa
-  const namaKandidat = [
-    fieldNama ? dok[fieldNama] : '',
-    dok.studentName,
-    dok.namaSiswa,
-    dok.nama,
-    dok.name,
-  ].map((v) => String(v ?? '').trim().toLowerCase()).filter(Boolean);
-
-  for (const nama of namaKandidat) {
-    for (const entri of indeks) {
-      if (entri.namaLower && (entri.namaLower === nama || entri.namaLower.includes(nama) || nama.includes(entri.namaLower))) {
-        return entri;
-      }
-    }
-  }
-
-  return null;
+  return byNama; // nama = fallback rapuh (pola identitasAbsensi), dipakai terakhir
 }
 
 /** v1.5.1: kunci identitas sebuah log untuk reparasi — id mentah, lalu nama.
