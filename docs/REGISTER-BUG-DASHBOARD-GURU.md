@@ -68,6 +68,7 @@ dibaca penuh, lalu disilang dengan penulis/pembaca datanya:
 | B-24 | S4 | Tiga nomor versi berbeda (v2.0 / Versi 2.0 / 3.0.0) | ✅ **SELESAI** (label versi dicabut dari UI) |
 | **B-25** | **S1** | **Logout guru tidak menutup sesi: `/guru/*` tetap terbuka sesudah keluar** | ✅ **SELESAI** (baru, lihat bab 5A) |
 | **B-26** | **S1** | **Angka gaji guru bocor ke browser guru (`stripNominal` salah nama field)** | ✅ **SELESAI** (baru, lihat bab 5A) |
+| **B-27** | **S2** | **Sinkronisasi multi-id absensi siswa, status sesi selesai, dan isolasi kuis rombel paralel 9A/9B** | ✅ **SELESAI** (v1.6.6) |
 
 **Yang paling mahal:** B-26 (gaji bocor ke perangkat guru), B-25 (sesi tidak
 tertutup sesudah keluar), B-04 + B-05 (guru melihat angka 0 dan menyimpulkan
