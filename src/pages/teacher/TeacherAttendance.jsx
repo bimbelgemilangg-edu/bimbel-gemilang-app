@@ -40,6 +40,7 @@ const TeacherAttendance = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [attendanceList, setAttendanceList] = useState([]);
+  const [sessionMateri, setSessionMateri] = useState("");
   const [saving, setSaving] = useState(false);
 
   const fetchDailyCode = async (dateStr) => {
@@ -141,7 +142,12 @@ const TeacherAttendance = () => {
     const students = schedule.students || [];
     const attendance = attendanceLogs[schedule.id] || [];
     
-    // Merge student data with attendance status
+    // Temukan materi hari ini bila sudah ada yang mencatat sebelumnya
+    const existingMateri = attendance.find(a => a.materiHariIni)?.materiHariIni
+      || schedule.title || schedule.mapelName || '';
+    setSessionMateri(existingMateri);
+
+    // Merge student data with attendance status & pemahaman track record
     const merged = students.map(student => {
       const existing = attendance.find(a => 
         a.studentId === student.studentId || a.studentId === student.id
@@ -150,7 +156,8 @@ const TeacherAttendance = () => {
         ...student,
         status: existing?.status || 'Belum',
         checkInTime: existing?.checkInTime || null,
-        note: existing?.note || ''
+        note: existing?.note || existing?.catatanHarian || '',
+        tingkatPemahaman: existing?.tingkatPemahaman || 'mandiri',
       };
     });
     
@@ -167,12 +174,19 @@ const TeacherAttendance = () => {
         return {
           ...s,
           status: status,
-          checkInTime: status === 'Hadir' ? new Date().toLocaleTimeString() : null
+          checkInTime: status === 'Hadir' ? new Date().toLocaleTimeString() : null,
+          tingkatPemahaman: s.tingkatPemahaman || 'mandiri',
         };
       }
       return s;
     });
     setAttendanceList(updated);
+  };
+
+  const handleUpdatePemahaman = (studentId, tingkat) => {
+    setAttendanceList(attendanceList.map((s) => (
+      (s.studentId === studentId || s.id === studentId) ? { ...s, tingkatPemahaman: tingkat } : s
+    )));
   };
 
   const handleUpdateNote = (studentId, note) => {
@@ -216,6 +230,9 @@ const TeacherAttendance = () => {
           mapel: selectedSchedule.title || selectedSchedule.mapelName || 'Umum',
           scheduleId: selectedSchedule.id || '',
           planet: selectedSchedule.planet || 'Ruang Umum',
+          materiHariIni: sessionMateri || selectedSchedule.title || '',
+          tingkatPemahaman: s.status === 'Hadir' ? (s.tingkatPemahaman || 'mandiri') : null,
+          catatanHarian: s.note || '',
         }, { merge: true });
       }));
       // 🔥 2026-10-26 (keputusan owner): absensi Izin/Sakit yang disimpan
@@ -413,12 +430,25 @@ const TeacherAttendance = () => {
         <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
           <div style={styles.modal} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <div>
-                <h3 style={styles.modalTitle}>📋 Absensi Siswa</h3>
+              <div style={{ flex: 1, marginRight: 10 }}>
+                <h3 style={styles.modalTitle}>📋 Absensi &amp; Pemantauan Harian Siswa</h3>
                 <p style={styles.modalSubtitle}>
                   {selectedSchedule.title || selectedSchedule.mapelName || 'Materi'} - 
                   {selectedSchedule.start} {selectedSchedule.end}
                 </p>
+                <div style={{ marginTop: 10, background: '#f8fafc', padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>🎯 Materi / Topik Pertemuan Hari Ini:</span>
+                    <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 'normal' }}>(Terekam ke rekam jejak harian siswa &amp; rapor ortu)</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Bab 2 - Dinamika Gerak &amp; Hukum Newton (Latihan 1-15)"
+                    value={sessionMateri}
+                    onChange={(e) => setSessionMateri(e.target.value)}
+                    style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12, boxSizing: 'border-box' }}
+                  />
+                </div>
               </div>
               <button onClick={() => setShowModal(false)} style={styles.modalClose}>
                 ✕
@@ -456,9 +486,44 @@ const TeacherAttendance = () => {
                           </button>
                         ))}
                       </div>
+
+                      {student.status === 'Hadir' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, width: '100%', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Pemahaman Sesi Ini:</span>
+                          {[
+                            { key: 'mandiri', label: '🟢 Paham Mandiri', desc: 'Mampu menyelesaikan latihan mandiri di kelas' },
+                            { key: 'terbimbing', label: '🟡 Paham Terbimbing', desc: 'Paham dengan asistensi / contoh soal tentor' },
+                            { key: 'klinik', label: '🔵 Butuh Klinik PR', desc: 'Perlu penguatan konsep tambahan / remedial PR' },
+                          ].map((t) => {
+                            const active = (student.tingkatPemahaman || 'mandiri') === t.key;
+                            return (
+                              <button
+                                key={t.key}
+                                type="button"
+                                title={t.desc}
+                                onClick={() => handleUpdatePemahaman(student.studentId || student.id, t.key)}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: 6,
+                                  border: active ? '1.5px solid #6366f1' : '1px solid #e2e8f0',
+                                  background: active ? '#eef2ff' : '#ffffff',
+                                  color: active ? '#4338ca' : '#64748b',
+                                  fontSize: 10.5,
+                                  fontWeight: active ? 'bold' : 'normal',
+                                  cursor: 'pointer',
+                                  transition: '0.2s',
+                                }}
+                              >
+                                {t.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       <input
                         type="text"
-                        placeholder="Penanda / keterangan siswa (opsional): mis. demam, izin lomba, terlambat 15 menit"
+                        placeholder="Penanda / keterangan perkembangan siswa di kelas (opsional): mis. aktif bertanya, tugas tuntas"
                         value={student.note || ''}
                         onChange={(e) => handleUpdateNote(student.studentId || student.id, e.target.value)}
                         style={{ width: '100%', marginTop: 6, padding: '7px 9px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}

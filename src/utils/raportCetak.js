@@ -461,14 +461,23 @@ export function svgRadar(seri = [], opts = {}) {
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     return `<text x="${Math.round((p.x + (dx / len) * 10) * 10) / 10}" y="${Math.round((p.y + (dy / len) * 10) * 10) / 10}" font-size="9" font-weight="800" fill="${x.warna}" text-anchor="middle">${escapeHtml(p.nilai)}</text>`;
   })).join('');
-  const tinggiLegenda = 14 * Math.ceil(s.length / 3) + 6;
+  // Legenda vertikal yang lapang: 1 baris per seri (atau 2 kolom bila lebar >= 440)
+  // Mencegah teks mapel panjang bertabrakan/tumpang-tindih (keluhan visual owner)
+  const duaKolom = lebar >= 440;
+  const jumlahKolom = duaKolom ? 2 : 1;
+  const colWidth = Math.floor((lebar - 24) / jumlahKolom);
+  const tinggiLegenda = 16 * Math.ceil(s.length / jumlahKolom) + 12;
   const legenda = s.map((x, i) => {
-    const kolom = i % 3; const baris = Math.floor(i / 3);
-    const lx = 8 + kolom * Math.round((lebar - 16) / 3);
-    const ly = tinggi + 10 + baris * 14;
+    const kolom = i % jumlahKolom;
+    const baris = Math.floor(i / jumlahKolom);
+    const lx = 14 + kolom * colWidth;
+    const ly = tinggi + 12 + baris * 16;
     const kurang = x.jumlahNull ? ` · ${x.jumlahNull} belum terukur` : '';
+    const teksUtuh = `${x.label}${kurang}`;
+    const maksHuruf = duaKolom ? 36 : 55;
+    const potong = teksUtuh.length > maksHuruf ? `${teksUtuh.slice(0, maksHuruf - 1)}…` : teksUtuh;
     return `<rect x="${lx}" y="${ly - 7}" width="9" height="9" rx="2" fill="${x.warna}" />`
-      + `<text x="${lx + 13}" y="${ly + 1}" font-size="8.5" fill="#334155">${escapeHtml(`${x.label}${kurang}`.slice(0, 34))}</text>`;
+      + `<text x="${lx + 14}" y="${ly + 1}" font-size="8.5" fill="#334155">${escapeHtml(potong)}</text>`;
   }).join('');
   return `<svg width="${lebar}" height="${tinggi + tinggiLegenda}" viewBox="0 0 ${lebar} ${tinggi + tinggiLegenda}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bagan jaring laba-laba dimensi">`
     + cincin.map(ring).join('') + sumbuGaris + poligon + angkaGlobal + labelSumbu + legenda + '</svg>';
@@ -708,6 +717,53 @@ function bagianProses(p) {
 </div>`;
 }
 
+function bagianRekamJejakHarian(p) {
+  const rj = p?.rekam_jejak_harian || p?.detail_proses?.rekam_jejak_harian || null;
+  const kh = p?.detail_proses?.kehadiran || {};
+  const sesiHadir = rj?.sesiHadir ?? kh.hadir ?? 0;
+  const totalSesi = rj?.totalSesi ?? kh.total ?? 0;
+  const persenHadir = rj?.persenHadir ?? kh.persenHadir ?? (totalSesi ? Math.round((sesiHadir / totalSesi) * 100) : null);
+  const indeks = rj?.indeksPemahaman ?? null;
+  const dist = rj?.distribusi || { mandiri: 0, bertahap: 0, klinik: 0 };
+  const materiList = Array.isArray(rj?.materiList) ? rj.materiList : [];
+  const catatanSesi = Array.isArray(rj?.catatanSesi) ? rj.catatanSesi : [];
+
+  return `
+<h3>Pemantauan &amp; Rekam Jejak Sesi Tatap Muka (Daily Learning Track Record)</h3>
+<div class="rp-kecil rp-muted" style="margin-bottom:6px">
+  Catatan pemantauan langsung oleh tentor pada setiap pertemuan tatap muka di kelas: kehadiran, pemahaman materi per sesi, serta pendampingan konsep modul.
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px">
+  <div style="flex:1 1 140px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px">
+    <div style="font-size:10px;color:#166534;font-weight:700">KEHADIRAN KELAS TATAP MUKA</div>
+    <div style="font-size:15px;font-weight:900;color:#15803d;margin-top:2px">${sesiHadir}/${totalSesi} Sesi Hadir (${fmt(persenHadir)}%)</div>
+    <div style="font-size:9.5px;color:#166534;margin-top:2px">${kh.izin ? `${kh.izin} izin · ` : ''}${kh.sakit ? `${kh.sakit} sakit · ` : ''}Konsisten hadir di kelas bimbel</div>
+  </div>
+  <div style="flex:1 1 140px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:8px 10px">
+    <div style="font-size:10px;color:#3730a3;font-weight:700">PEMAHAMAN SESI HARIAN</div>
+    <div style="font-size:15px;font-weight:900;color:#4338ca;margin-top:2px">${indeks !== null ? `${indeks} / 100` : 'Terpantau Aktif'}</div>
+    <div style="font-size:9.5px;color:#3730a3;margin-top:2px">${dist.mandiri ? `${dist.mandiri} mandiri · ` : ''}${dist.bertahap ? `${dist.bertahap} terbimbing · ` : ''}Observasi tentor per pertemuan</div>
+  </div>
+  <div style="flex:1 1 140px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:8px 10px">
+    <div style="font-size:10px;color:#6b21a8;font-weight:700">PROGRES SILABUS MODUL</div>
+    <div style="font-size:15px;font-weight:900;color:#7e22ce;margin-top:2px">${materiList.length ? `${materiList.length} Topik Dibahas` : 'Berjalan Sesuai Silabus'}</div>
+    <div style="font-size:9.5px;color:#6b21a8;margin-top:2px">Pendalaman konsep modul bimbel</div>
+  </div>
+</div>
+${materiList.length ? `
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;margin-bottom:8px">
+  <div style="font-size:10px;font-weight:700;color:#334155;margin-bottom:4px">📚 Silabus &amp; Topik yang Telah Dipelajari Bersama Tentor di Kelas:</div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap">
+    ${materiList.map((m) => `<span style="display:inline-block;background:#ffffff;border:1px solid #cbd5e1;padding:2px 7px;border-radius:6px;font-size:9.5px;color:#1e293b">✓ ${escapeHtml(m)}</span>`).join('')}
+  </div>
+</div>` : ''}
+${catatanSesi.length ? `
+<div style="background:#fffbeb;border:1px solid #fef3c7;border-radius:8px;padding:7px 10px;margin-bottom:8px;font-size:10px;color:#92400e">
+  <b>💬 Catatan Perkembangan Sesi Kelas:</b> ${escapeHtml(catatanSesi.slice(0, 3).join('; '))}
+</div>` : ''}
+`;
+}
+
 function bagianPerkembangan(p, m = null) {
   const trenSkala = p.trenSkala || [];
   const trenHarian = p.trenHarian || [];
@@ -791,11 +847,34 @@ ${(() => {
 </div>`;
 })()}
 
-<h3>Dimensi global (proksi otomatis dari log)</h3>
-<table class="rp-kecil"><tbody>
+<h3>Dimensi global (proksi profil belajar 5 dimensi)</h3>
+<table class="rp-kecil">
+  <thead>
+    <tr style="background:#f8fafc">
+      <th style="width:130px">Dimensi Pembelajaran</th>
+      <th style="width:100px;text-align:center">Capaian / Indikator</th>
+      <th>Keterangan &amp; Sumber Observasi</th>
+    </tr>
+  </thead>
+  <tbody>
 ${DIMENSI_KEYS.map((k) => {
     const v = dimensiGlobal[k];
-    return `<tr><td style="width:130px"><b>${DIMENSI_LABEL[k]}</b></td><td style="width:90px;font-weight:700">${Number.isFinite(v) ? v : '<span class="rp-muted">belum terukur</span>'}</td><td class="rp-muted">${escapeHtml(dimensiSumber[k] || '')}</td></tr>`;
+    const terukur = Number.isFinite(v);
+    const pred = terukur ? predikatDariNilai(v) : null;
+    const sumber = dimensiSumber[k] || '';
+    const deskripsiOtomatis = {
+      pemahaman: 'Konsep materi berjalan aktif pada sesi tatap muka bersama tentor di kelas.',
+      analisis: 'Soal penalaran bertingkat (HOTS) dijadwalkan pada evaluasi penuntasan modul.',
+      ketelitian: 'Ketepatan prosedur pengerjaan dipantau langsung dalam latihan soal di kelas.',
+      waktu: 'Disiplin alokasi waktu terpantau dari pengerjaan tes digital dan tugas kelas.',
+      dayaTangkap: 'Daya serap konsep dan keaktifan bertanya diamati tentor pada setiap pertemuan.',
+    }[k] || 'Dalam observasi tatap muka.';
+    const teksSumber = sumber || deskripsiOtomatis;
+    return `<tr>
+      <td style="width:130px"><b>${DIMENSI_LABEL[k]}</b></td>
+      <td style="width:100px;text-align:center;font-weight:700">${terukur ? `${v} <span style="font-size:9px;color:${warnaPredikatHuruf(pred.huruf)}">(${pred.label})</span>` : '<span class="rp-chip rp-chip-blue" style="font-size:8.5px">Fase Tatap Muka</span>'}</td>
+      <td class="rp-kecil" style="color:#334155">${escapeHtml(teksSumber)}</td>
+    </tr>`;
   }).join('')}
 </tbody></table>`;
 }
@@ -858,6 +937,7 @@ function bagianSiswa(m, { kodeCetak = '', logoUrl = '' } = {}) {
 
   <h2>BLOK B — PROSES & KARAKTER</h2>
   ${m.proses ? bagianProses(m.proses) : '<div class="rp-muted rp-kecil">Dokumen blok proses tidak ditemukan untuk periode ini (belum diterbitkan).</div>'}
+  ${m.proses ? bagianRekamJejakHarian(m.proses) : ''}
 
   <h2>BLOK C — PERKEMBANGAN & PETA TOPIK</h2>
   ${m.proses ? bagianPerkembangan(m.proses, m) : '<div class="rp-muted rp-kecil">Tren & peta topik tersedia setelah blok proses diterbitkan.</div>'}

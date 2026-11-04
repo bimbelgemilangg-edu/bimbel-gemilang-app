@@ -153,7 +153,7 @@ export default function RaportOtomatisPage() {
     setStatusMuat('memuat koleksi…');
     setErrorMuat('');
     try {
-      const [snapSiswa, snapKuis, snapSesi, snapPaket, snapAbsen, snapTugas, snapGrades, snapProgSoal, snapProgSiswa] = await Promise.all([
+      const [snapSiswa, snapKuis, snapSesi, snapPaket, snapAbsen, snapTugas, snapGrades, snapProgSoal, snapProgSiswa, snapLaporan] = await Promise.all([
         getDocs(collection(db, 'students')),
         getDocs(collection(db, 'jawaban_kuis')),
         getDocs(collection(db, 'tryout_sesi')),
@@ -163,8 +163,32 @@ export default function RaportOtomatisPage() {
         getDocs(collection(db, 'grades')),
         getDocs(collection(db, 'siswa_soal_progress')),
         getDocs(collection(db, 'siswa_progress')),
+        getDocs(collection(db, 'laporan_belajar')),
       ]);
       const mapSnap = (s) => s.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      // Integrasi capaian pengamatan tentor dari laporan_belajar ke nilaiGuru
+      const nilaiLaporan = [];
+      const predToScore = { A: 92, B: 82, C: 72, D: 65 };
+      for (const docL of snapLaporan.docs) {
+        const d = docL.data() || {};
+        const stId = d.studentId || d.studentNim;
+        const pem = String(d.capaian?.pemahaman?.predikat || '').toUpperCase();
+        if (stId && predToScore[pem]) {
+          nilaiLaporan.push({
+            id: docL.id,
+            studentId: stId,
+            studentNim: stId,
+            mapel: d.namaMapel || d.kodeMapel || 'Umum',
+            kodeMapel: d.kodeMapel || '',
+            score: predToScore[pem],
+            nilai: predToScore[pem],
+            tanggal: d.updatedAt?.toDate?.()?.toISOString?.() || d.periode || '',
+            sumber: 'laporan_belajar',
+          });
+        }
+      }
+
       const data = {
         siswa: mapSnap(snapSiswa),
         kuis: mapSnap(snapKuis),
@@ -172,7 +196,7 @@ export default function RaportOtomatisPage() {
         paket: mapSnap(snapPaket),
         absensi: mapSnap(snapAbsen),
         tugas: mapSnap(snapTugas),
-        nilaiGuru: mapSnap(snapGrades),
+        nilaiGuru: [...mapSnap(snapGrades), ...nilaiLaporan],
         progresSoal: mapSnap(snapProgSoal),
         progresSiswa: mapSnap(snapProgSiswa),
         soalMeta: {},
