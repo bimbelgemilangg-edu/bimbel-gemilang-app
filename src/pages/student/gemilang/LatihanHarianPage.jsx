@@ -28,6 +28,7 @@ import { tambahXpMingguan } from '../../../utils/mingguIni';
 import LencanaPencapaian from '../../../components/LencanaPencapaian';
 import RenderTable from '../../../components/RenderTable';
 import MaskotAstronot from '../../../components/MaskotAstronot';
+import { GAYA_TEKS_NASKAH } from '../../../styles/naskahSoal';
 
 // 🔥 BARU (bug nyata ditemukan): soal-soal dari Bank Soal ternyata pakai
 // DUA gaya delimiter LaTeX yang beda -- \(...\) / \[...\] (gaya standar
@@ -1205,7 +1206,7 @@ export default function LatihanHarianPage() {
               </div>
             )}
 
-            <div style={{ fontSize: 14.5, color: '#1e293b', lineHeight: 1.6, marginBottom: 16, whiteSpace: 'pre-wrap', textAlign: 'left' }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
+            <div style={{ ...GAYA_TEKS_NASKAH, whiteSpace: 'pre-wrap', marginBottom: 16 }}>{renderMath(soalAktif.soal || soalAktif.teks_soal)}</div>
             {/* 🔥 BARU (celah serius ditemukan): gambar yang nempel
                 LANGSUNG di soal (bukan di bacaan) -- SEBELUMNYA GAK
                 PERNAH DIRENDER SAMA SEKALI di Latihan Harian juga,

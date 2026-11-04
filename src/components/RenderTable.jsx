@@ -15,6 +15,7 @@
 
 import React from 'react';
 import RenderMath from './RenderMath';
+import { FONT_NASKAH, UKURAN_BACAAN, WARNA_NASKAH } from '../styles/naskahSoal';
 
 function safeArray(v) {
   return Array.isArray(v) ? v : [];
@@ -30,7 +31,7 @@ export default function RenderTable({ table }) {
 
   return (
     <div style={{ marginTop: 10, marginBottom: 10, overflowX: 'auto', border: '1px solid #d1d5db', borderRadius: 10, background: '#fff' }}>
-      <table style={{ width: '100%', minWidth: 360, borderCollapse: 'collapse', fontSize: 13 }}>
+      <table style={{ width: '100%', minWidth: 360, borderCollapse: 'collapse', fontFamily: FONT_NASKAH, fontSize: UKURAN_BACAAN, color: WARNA_NASKAH }}>
         {header.length > 0 && (
           <thead>
             <tr>

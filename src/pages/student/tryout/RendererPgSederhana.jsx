@@ -11,6 +11,7 @@ import { cariIndexBenar } from '../../../utils/skoringSoalKompleks';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
 import RenderMath from '../../../components/RenderMath';
 import { opsiTampilDari } from '../../../utils/bersihkanGlifKunci.js';
+import { GAYA_TEKS_OPSI } from '../../../styles/naskahSoal';
 
 export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onChange, modeTinjau = false, disabled = false, onKlikGambar = null }) {
   const opsi = opsiTampilDari(soal);
@@ -63,7 +64,7 @@ export default function RendererPgSederhana({ soal, jawabanTerpilih = null, onCh
               display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left',
               padding: '13px 14px', borderRadius: 12, border: `1.5px solid ${border}`, marginBottom: 10,
               background: bg, cursor: modeTinjau || disabled ? 'default' : 'pointer',
-              fontSize: 13.5, color: '#1f2937', fontWeight: dipilih && !modeTinjau ? 700 : 500,
+              ...GAYA_TEKS_OPSI, fontWeight: dipilih && !modeTinjau ? 700 : 400,
             }}
           >
             <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>

@@ -23,6 +23,7 @@ import React from 'react';
 import { soalBelumDijawab, pilihBarisBenarSalah } from '../../../utils/skorSoalTryOut';
 import { kunciBarisBenarSalah } from '../../../utils/skoringSoalKompleks';
 import RenderMath from '../../../components/RenderMath';
+import { FONT_NASKAH, UKURAN_BACAAN, WARNA_NASKAH } from '../../../styles/naskahSoal';
 
 // 🔥 BARU (bug freeze/blank putih ditemukan): lihat penjelasan lengkap
 // di skoringSoalKompleks.js -- jangan percaya tabel_benar_salah/
@@ -80,7 +81,7 @@ export default function RendererBenarSalah({ soal, jawabanTerpilih = [], onChang
         </div>
       )}
       <div style={{ borderRadius: 10, border: '1px solid #cbd5e1', overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: FONT_NASKAH, fontSize: UKURAN_BACAAN, color: WARNA_NASKAH }}>
         <thead>
           <tr style={{ background: '#1e293b' }}>
             <th style={{ width: 36, padding: '10px 8px', textAlign: 'center', color: '#e2e8f0', fontWeight: 600, fontSize: 12, borderRight: '1px solid #334155' }}>No</th>

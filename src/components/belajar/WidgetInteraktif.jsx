@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { MathText } from '../MathText';
 import { T } from '../../pages/student/belajar/tema';
+import { GAYA_TEKS_BACAAN } from '../../styles/naskahSoal';
 
 // Daftar jenis yang dikenali (dipakai renderer + validator admin).
 export const JENIS_INTERAKTIF = new Set([
@@ -112,7 +113,7 @@ const S = {
     background: '#fff', border: '1px solid #DDD6FE', borderRadius: 14,
     padding: '10px 12px', marginBottom: 10,
   },
-  teksSoal: { fontSize: 13.5, fontWeight: 700, color: '#0F172A', marginBottom: 8, lineHeight: 1.65 },
+  teksSoal: { ...GAYA_TEKS_BACAAN, fontSize: 15.5, fontWeight: 400, marginBottom: 8 },
   tombol: {
     borderRadius: 12, padding: '9px 16px', border: 'none',
     background: '#7C3AED', color: '#fff', fontWeight: 900, fontSize: 12.5,

@@ -18,6 +18,7 @@
 
 import React from 'react';
 import { soalBelumDijawab } from '../../../utils/skorSoalTryOut';
+import { GAYA_TEKS_OPSI } from '../../../styles/naskahSoal';
 import RenderMath from '../../../components/RenderMath';
 // 🔥 2026-10-09: teks opsi tampil TANPA glif penanda kunci (☑/☐)
 // yang terbawa impor -- dulu siswa melihat kotak sudah tercentang
@@ -91,7 +92,7 @@ export default function RendererPgKompleks({ soal, jawabanTerpilih = [], onChang
             style={{
               display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
               padding: '13px 14px', borderRadius: 12, border: `2px solid ${border}`, marginBottom: 9,
-              background: bg, cursor: modeTinjau || disabled ? 'default' : 'pointer', fontSize: 13.5, color: '#1e293b',
+              background: bg, cursor: modeTinjau || disabled ? 'default' : 'pointer', ...GAYA_TEKS_OPSI,
             }}
           >
             <span style={{

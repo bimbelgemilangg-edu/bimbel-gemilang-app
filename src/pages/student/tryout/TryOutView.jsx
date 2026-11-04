@@ -41,6 +41,7 @@ import { useTimerTryOut } from './useTimerTryOut';
 import { putuskanAksesJendela, kalibrasiOffsetWaktuServer } from '../../../utils/aksesJendelaTryOut';
 import { useDeteksiKecuranganTryOut } from './useDeteksiKecuranganTryOut';
 import RendererPgSederhana from './RendererPgSederhana';
+import { GAYA_TEKS_BACAAN } from '../../../styles/naskahSoal';
 import { kodeSoalSiswa } from '../../../utils/kodeSoalSiswa';
 import RenderMath from '../../../components/RenderMath';
 import RenderTable from '../../../components/RenderTable';
@@ -534,7 +535,10 @@ export default function TryOutView() {
     }
   }
     return jalan(jawabanBaru, subtesIndexBaru, waktuSubtesBaru, sudahDicoba);
-  }, [sesiId]);
+    // 🔥 2026-11-04 (kontrak CI 0 warning): paket?.totalSoal &
+    // paket?.daftarSoal?.length dipakai di dalam (field progres.total) --
+    // ikut di deps supaya nilai total tidak basi saat paket berubah.
+  }, [sesiId, paket?.totalSoal, paket?.daftarSoal?.length]);
 
   // 🔥 BUG SERIUS DITEMUKAN & DIBENERIN: sebelumnya onFotoTersimpan
   // ditulis sebagai fungsi arrow INLINE langsung di dalam pemanggilan
@@ -1151,7 +1155,7 @@ export default function TryOutView() {
                 Soal {i + 1} -- akurasi {Math.round(skor * 100)}%{belumDijawab ? ' (Tidak dijawab)' : ''}
               </div>
               {s.bacaan?.teks && (
-                <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left' }}>
+                <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
                   <RenderMath text={s.bacaan.teks} />
                 </div>
               )}
@@ -1444,7 +1448,7 @@ export default function TryOutView() {
               })()}
             </div>
             {soalAktif.bacaan?.teks && (
-              <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+              <div style={{ ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
                 <RenderMath text={soalAktif.bacaan.teks} />
               </div>
             )}
@@ -1462,7 +1466,7 @@ export default function TryOutView() {
         <TeksSoalBergambar
           teks={pisahKodeSumber(teksSoalDari(soalAktif)).teks}
           gambarUrls={soalAktif.gambarUrls} gambarMeta={soalAktif.gambarMeta || null}
-          gayaTeks={{ fontSize: 14, marginBottom: 16 }}
+          gayaTeks={{ marginBottom: 16 }}
           gayaGambar={{ maxHeight: 320, marginBottom: 16 }}
         />
         {/* 🔥 BARU (celah serius lain ditemukan): tabel yang nempel di

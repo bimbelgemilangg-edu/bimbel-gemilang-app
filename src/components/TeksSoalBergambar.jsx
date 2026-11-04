@@ -16,6 +16,10 @@
 
 import RenderMath from './RenderMath';
 import { pisahTeksDanGambar } from '../utils/penempatanGambar';
+// 🔥 2026-11-04 (putusan owner: tampilan sekelas CBT profesional, wajib
+// sama dari sisi guru sampai siswa): tipografi naskah diambil dari SATU
+// token sumber -- serif ala kertas ujian, lebih besar, rata kiri-kanan.
+import { GAYA_TEKS_NASKAH } from '../styles/naskahSoal';
 // 🔥 BARU (2026-10-07): jaring pengaman tampilan -- dokumen bank_soal yang
 // telanjur tersimpan dengan src bungkus markdown "[url](url)" (keluhan
 // owner "gambar dari Gemini gak muncul") tetap bisa ditampilkan karena
@@ -47,7 +51,7 @@ export default function TeksSoalBergambar({
       {segmen.map((sg, i) => {
         if (sg.jenis === 'teks') {
           return (
-            <div key={i} style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6, whiteSpace: 'pre-wrap', textAlign: 'left', ...gayaTeks }}>
+            <div key={i} style={{ ...GAYA_TEKS_NASKAH, whiteSpace: 'pre-wrap', ...gayaTeks }}>
               <RenderMath text={sg.isi} />
             </div>
           );

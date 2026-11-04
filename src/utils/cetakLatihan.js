@@ -58,7 +58,7 @@ function gayaDasar(kodeKertas, opsi = {}) {
   return `${wm}
   @page { size: ${k.lebarMm}mm ${k.tinggiMm}mm; margin: 10mm; }
   * { box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; margin: 0; font-size: 12px; }
+  body { font-family: 'Times New Roman', Times, Georgia, serif; color: #000; background: #fff; margin: 0; font-size: 12.5px; }
   .kepala { border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
   .kepala h1 { font-size: 15px; margin: 0 0 2px; }
   .kepala .meta { font-size: 10.5px; }
@@ -94,7 +94,7 @@ function gayaDasar(kodeKertas, opsi = {}) {
   .nomor { display: inline-block; font-size: 15px; font-weight: 800; border: 1.5pt solid #000;
            border-radius: 50%; width: 26px; height: 26px; line-height: 23px; text-align: center;
            margin-right: 8px; }
-  .soal { margin: 6px 0; line-height: 1.5; }
+  .soal { margin: 6px 0; line-height: 1.55; text-align: justify; }
   .opsi { margin: 3px 0 3px 34px; line-height: 1.45; }
   img.gbr { max-width: 70mm; max-height: 55mm; border: 1pt solid #000; margin: 6px 0 6px 34px; display: block; }
   .kunci-teks { font-size: 11px; margin: 4px 0 4px 34px; }

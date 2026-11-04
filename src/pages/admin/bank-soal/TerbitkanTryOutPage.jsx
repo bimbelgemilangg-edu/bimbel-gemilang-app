@@ -37,6 +37,7 @@ import RendererBenarSalah from '../../student/tryout/RendererBenarSalah';
 import RendererIsianSingkat from '../../student/tryout/RendererIsianSingkat';
 import RendererEsai from '../../student/tryout/RendererEsai';
 import RenderMath from '../../../components/RenderMath';
+import { GAYA_TEKS_NASKAH, GAYA_TEKS_BACAAN } from '../../../styles/naskahSoal';
 import RenderTable from '../../../components/RenderTable';
 // 🔥 BARU (2026-10, permintaan owner "terbitkan try out langsung satu
 // folder"): pagar tipe soal + penghitung rincian keranjang sekarang
@@ -1849,11 +1850,11 @@ export default function TerbitkanTryOutPage() {
                     )}
                   </div>
                   {s.bacaan?.teks && (
-                    <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 12.5, color: '#334155' }}>
+                    <div style={{ background: '#f8fafc', borderRadius: 8, padding: 10, marginBottom: 10, ...GAYA_TEKS_BACAAN, whiteSpace: 'pre-wrap' }}>
                       <RenderMath text={s.bacaan.teks} />
                     </div>
                   )}
-                  <div style={{ fontSize: 13.5, color: '#1e293b', marginBottom: 12 }}><RenderMath text={s.soal || s.teks_soal} /></div>
+                  <div style={{ ...GAYA_TEKS_NASKAH, whiteSpace: 'pre-wrap', marginBottom: 12 }}><RenderMath text={s.soal || s.teks_soal} /></div>
                   {(s.gambarUrls || []).length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
                       {s.gambarUrls.map((url, gi) => (
