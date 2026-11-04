@@ -357,9 +357,9 @@ const StudentDashboard = () => {
         });
 
         // Petakan log absensi & pemantauan sesi hari ini ke jadwal
-        const todayStr = tanggalLokalStr();
+        const tglHariIni = tanggalLokalStr();
         const attHariIni = {};
-        attList.filter(a => (a.date === todayStr || a.tanggal === todayStr)).forEach(a => {
+        attList.filter(a => (a.date === tglHariIni || a.tanggal === tglHariIni || a.date === todayStr || a.tanggal === todayStr)).forEach(a => {
           if (a.scheduleId) attHariIni[a.scheduleId] = a;
         });
         setTodayAttendanceMap(attHariIni);

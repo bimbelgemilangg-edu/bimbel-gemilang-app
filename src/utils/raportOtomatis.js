@@ -352,7 +352,7 @@ export function mapelSahUntukSiswa(kode, { jenjang = '', kelas = '' } = {}) {
   const nomorKelas = (/^(\d{1,2})/.exec(String(kelas || '').trim()) || [])[1] || '';
   if (!j && !nomorKelas) return { sah: true, alasan: '' }; // identitas jenjang tak diketahui
   const nama = namaMapel(kode);
-  const peta = petakanNamaMapel(nama, { jenjang: j, kelas: nomorKelas });
+  const peta = petakanNamaMapel(nama, {});
   if (!peta.kode) return { sah: true, alasan: '' }; // di luar peta kurikulum
   if (mapelBerlaku(peta.kode, { jenjang: j, kelas: nomorKelas })) return { sah: true, alasan: '' };
   return {
