@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import {
   daftarBabSilabus,
-  cariBabSilabus,
 } from '../../utils/silabusKurikulumMerdeka';
 
 // ============================================================

@@ -7,9 +7,7 @@ import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbs
 import { identitasPencariJadwal, jadwalMilikGuru } from '../../utils/identitasJadwal';
 import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { 
-  daftarBabSilabus, 
-  semesterKalenderAktif, 
-  normalisasiKodeMapel 
+  daftarBabSilabus 
 } from '../../utils/silabusKurikulumMerdeka';
 import { 
   collection, query, where, getDocs, doc, getDoc,
