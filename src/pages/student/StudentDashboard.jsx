@@ -16,8 +16,13 @@ import {
   BookOpen, Calendar, ClipboardList, X, Camera, User, MapPin,
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
   Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
-  Megaphone, RefreshCw, IdCard, Search
+  Megaphone, RefreshCw, IdCard, Search, CheckCircle2, Bookmark,
+  Lightbulb, MessageCircle
 } from 'lucide-react';
+import {
+  daftarBabSilabus,
+  cariBabSilabus,
+} from '../../utils/silabusKurikulumMerdeka';
 
 // ============================================================
 // IKON & WARNA PER TIPE NOTIFIKASI
@@ -168,6 +173,8 @@ const StudentDashboard = () => {
   const [studentProgram, setStudentProgram] = useState(() => localStorage.getItem('studentProgram') || 'Reguler');
   const [studentNim, setStudentNim] = useState(() => localStorage.getItem('studentNim') || '');
   const [todaySchedules, setTodaySchedules] = useState([]);
+  const [todayAttendanceMap, setTodayAttendanceMap] = useState({});
+  const [modalSilabus, setModalSilabus] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [raportSummary, setRaportSummary] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
@@ -348,6 +355,14 @@ const StudentDashboard = () => {
           alpha: attList.filter(a => a.status === 'Alpha').length,
           total: attList.length,
         });
+
+        // Petakan log absensi & pemantauan sesi hari ini ke jadwal
+        const todayStr = tanggalLokalStr();
+        const attHariIni = {};
+        attList.filter(a => (a.date === todayStr || a.tanggal === todayStr)).forEach(a => {
+          if (a.scheduleId) attHariIni[a.scheduleId] = a;
+        });
+        setTodayAttendanceMap(attHariIni);
 
         const fetchedSchedules = schedSnap.docs
           .map(d => ({ id: d.id, ...d.data() }))
@@ -912,24 +927,149 @@ const StudentDashboard = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
           <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-            <h3 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Calendar size={17} color="#0d9488" /> Jadwal Hari Ini
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Calendar size={17} color="#0d9488" /> Panggung Belajar Hari Ini
+              </h3>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', background: '#f0fdfa', border: '1px solid #ccfbf1', padding: '3px 8px', borderRadius: 6 }}>
+                {todaySchedules.length} Sesi Terjadwal
+              </span>
+            </div>
             {dataLoading ? (
               <SkeletonLines count={2} />
             ) : todaySchedules.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 20, color: '#94a3b8', fontSize: 12 }}>📭 Tidak ada jadwal hari ini</div>
-            ) : todaySchedules.map((sch, i) => (
-              <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: i < todaySchedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                <div style={{ minWidth: 48, textAlign: 'center', fontWeight: 700, fontSize: 12, color: '#0d9488' }}>{sch.start}</div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{sch.title || "Kelas"}</div>
-                  <div style={{ fontSize: 10, color: '#64748b', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                    <MapPin size={9} /> {sch.planet || '-'} • <User size={9} /> {sch.teacherName || sch.booker || '-'}
-                  </div>
-                </div>
+              <div style={{ textAlign: 'center', padding: 24, color: '#94a3b8', fontSize: 12 }}>
+                <div style={{ fontSize: 24, marginBottom: 6 }}>🌟</div>
+                Tidak ada sesi kelas tatap muka hari ini. Manfaatkan waktu untuk eksplorasi modul &amp; latihan mandiri!
               </div>
-            ))}
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {todaySchedules.map((sch, i) => {
+                  const att = todayAttendanceMap[sch.id] || null;
+                  const kelasSiswa = studentProfile?.kelasSekolah || studentKelas || '7';
+                  const listBab = daftarBabSilabus({ kelas: kelasSiswa, mapel: sch.title || sch.mapelName });
+                  const babRelevan = listBab.find(b => b.id === att?.babId) || listBab[0] || null;
+                  const materiTampil = att?.materiHariIni || (babRelevan ? `${babRelevan.judul} — ${babRelevan.subBab?.[0] || 'Pendalaman'}` : (sch.title || 'Materi Kelas'));
+                  const statusKehadiran = att?.status || 'Belum Tercatat';
+                  const isHadir = statusKehadiran === 'Hadir';
+                  const isIzinSakit = statusKehadiran === 'Izin' || statusKehadiran === 'Sakit';
+                  const ketuntasan = att?.statusKetuntasanMateri || 'berjalan';
+
+                  return (
+                    <div key={sch.id || i} style={{
+                      background: '#f8fafc',
+                      borderRadius: 14,
+                      padding: 12,
+                      border: '1px solid #e2e8f0',
+                      transition: '0.2s',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: 13, color: '#1e293b' }}>
+                            {sch.title || sch.mapelName || 'Sesi Kelas'}
+                          </div>
+                          <div style={{ fontSize: 10.5, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                            <span style={{ fontWeight: 700, color: '#0d9488' }}>{sch.start} - {sch.end || 'Selesai'}</span>
+                            <span>•</span>
+                            <span><MapPin size={10} style={{ display: 'inline', verticalAlign: -1 }} /> {sch.planet || 'Ruang Kelas'}</span>
+                            <span>•</span>
+                            <span><User size={10} style={{ display: 'inline', verticalAlign: -1 }} /> {sch.teacherName || sch.booker || 'Tentor Gemilang'}</span>
+                          </div>
+                        </div>
+
+                        {/* Badge Kehadiran Siswa */}
+                        <div>
+                          {isHadir ? (
+                            <span style={{ fontSize: 10.5, fontWeight: 700, background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <CheckCircle2 size={12} /> Hadir di Kelas
+                            </span>
+                          ) : isIzinSakit ? (
+                            <span style={{ fontSize: 10.5, fontWeight: 700, background: '#fffbeb', color: '#b45309', border: '1px solid #fef3c7', padding: '3px 8px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <AlertCircle size={12} /> {statusKehadiran} Terpantau
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: 10.5, fontWeight: 600, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: 6 }}>
+                              ⏳ Menunggu Sesi
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Topik Materi & Status Ketuntasan */}
+                      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 10px', marginTop: 6 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <Bookmark size={13} color="#4f46e5" />
+                            <span>{materiTampil}</span>
+                          </div>
+                          <span style={{
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            padding: '2px 7px',
+                            borderRadius: 6,
+                            background: ketuntasan === 'tuntas' ? '#f0fdf4' : '#fffbeb',
+                            color: ketuntasan === 'tuntas' ? '#16a34a' : '#b45309',
+                            border: ketuntasan === 'tuntas' ? '1px solid #bbf7d0' : '1px solid #fef3c7',
+                          }}>
+                            {ketuntasan === 'tuntas' ? '✓ Bab Selesai Tuntas' : '🔄 Sedang Berjalan (Lanjut Sesi Depan)'}
+                          </span>
+                        </div>
+
+                        {att?.catatanHarian && (
+                          <div style={{ fontSize: 10.5, color: '#475569', marginTop: 6, fontStyle: 'italic', background: '#f8fafc', padding: '4px 8px', borderRadius: 6 }}>
+                            💬 <b>Catatan Tentor:</b> {att.catatanHarian}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tombol Aksi Langsung Siswa */}
+                      <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                        {babRelevan && (
+                          <button
+                            type="button"
+                            onClick={() => setModalSilabus(babRelevan)}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: 8,
+                              background: '#eef2ff',
+                              color: '#4338ca',
+                              border: '1px solid #c7d2fe',
+                              fontSize: 10.5,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                          >
+                            <Lightbulb size={12} /> Ringkasan Bab &amp; CP
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => navigate('/siswa/materi')}
+                          style={{
+                            padding: '5px 10px',
+                            borderRadius: 8,
+                            background: '#f0fdfa',
+                            color: '#0d9488',
+                            border: '1px solid #ccfbf1',
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                          }}
+                        >
+                          <BookOpen size={12} /> Buka Latihan Modul
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
@@ -1066,6 +1206,73 @@ const StudentDashboard = () => {
           />
         </div>
       </div>
+
+      {/* Modal Ringkasan Silabus Kurikulum Merdeka */}
+      {modalSilabus && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+          <div style={{ background: 'white', borderRadius: 20, width: '90%', maxWidth: 500, padding: 20, position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <button
+              onClick={() => setModalSilabus(null)}
+              style={{ position: 'absolute', top: 14, right: 14, background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <X size={16} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <Bookmark size={20} color="#4f46e5" />
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#1e293b' }}>{modalSilabus.judul}</h3>
+            </div>
+            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 12 }}>
+              Kurikulum Merdeka • Alokasi Pendalaman: ~{modalSilabus.alokasiSesi || 2} Pertemuan Tatap Muka
+            </div>
+
+            {modalSilabus.cp && (
+              <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 12, padding: 12, marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#0369a1', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Sparkles size={14} /> Capaian Pembelajaran (CP):
+                </div>
+                <div style={{ fontSize: 12, color: '#0c4a6e', lineHeight: 1.5 }}>
+                  {modalSilabus.cp}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Sub-Bab Pembelajaran:
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {(modalSilabus.subBab || []).map((sb, idx) => (
+                  <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '7px 10px', fontSize: 11.5, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#e0e7ff', color: '#4338ca', fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {idx + 1}
+                    </span>
+                    <span>{sb}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: '#fefce8', border: '1px solid #fef08a', borderRadius: 10, padding: 10, fontSize: 11, color: '#854d0e', marginBottom: 16 }}>
+              💡 <b>Tips Belajar Gemilang:</b> Materi ini didampingi langsung oleh tentor di kelas tatap muka. Jika ada konsep yang membingungkan, segera manfaatkan sesi tanya jawab atau klinik PR!
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setModalSilabus(null)}
+                style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: '#f1f5f9', border: 'none', color: '#475569', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+              >
+                Tutup
+              </button>
+              <button
+                onClick={() => { setModalSilabus(null); navigate('/siswa/materi'); }}
+                style={{ flex: 1, padding: '10px 14px', borderRadius: 10, background: '#4f46e5', border: 'none', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                <BookOpen size={14} /> Buka Latihan Soal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isScanning && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 16 }}>

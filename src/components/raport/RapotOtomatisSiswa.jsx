@@ -100,16 +100,33 @@ function RadarDimensi({ proses, akademik, isMobile }) {
           </text>
         ))}
       </svg>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: 'center', marginTop: 4 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8, padding: '0 4px' }}>
         {g.seri.map((x) => (
-          <span key={x.label} style={{ fontSize: 9.5, display: 'inline-flex', alignItems: 'center', gap: 4, color: '#334155' }}>
-            <span style={{ width: 9, height: 9, borderRadius: 2, background: x.warna, display: 'inline-block' }} />
-            {x.label}{x.jumlahNull ? ` · ${x.jumlahNull} belum terukur` : ''}
+          <span
+            key={x.label}
+            style={{
+              fontSize: 10,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              color: '#1e293b',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              padding: '3px 8px',
+              borderRadius: 6,
+              boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: x.warna, display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontWeight: x.tebal ? 700 : 500 }}>
+              {x.label}{x.jumlahNull ? ` (${x.jumlahNull} belum terukur)` : ''}
+            </span>
           </span>
         ))}
       </div>
-      <div style={{ fontSize: 9.5, color: '#94a3b8', marginTop: 4 }}>
-        Garis tebal indigo = dimensi global; poligon tipis = per mapel. Sumbu yang tidak tersentuh poligon berarti belum terukur (tidak digambar di 0).
+      <div style={{ fontSize: 10, color: '#64748b', marginTop: 8, lineHeight: 1.4, padding: '0 8px' }}>
+        Garis tebal indigo = dimensi global; poligon tipis = per mapel. Sumbu yang tidak tersentuh poligon berarti <b>belum terukur</b> (sengaja tidak digambar di 0).
         {terpotong > 0 ? ` Menampilkan ${RADAR_MAKS_SERI} mapel pertama dari ${jumlahMapel}.` : ''}
       </div>
     </div>

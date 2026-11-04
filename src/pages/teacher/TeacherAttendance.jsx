@@ -7,13 +7,19 @@ import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbs
 import { identitasPencariJadwal, jadwalMilikGuru } from '../../utils/identitasJadwal';
 import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { 
+  daftarBabSilabus, 
+  semesterKalenderAktif, 
+  normalisasiKodeMapel 
+} from '../../utils/silabusKurikulumMerdeka';
+import { 
   collection, query, where, getDocs, doc, getDoc,
   onSnapshot, serverTimestamp, setDoc
 } from "firebase/firestore";
 import { 
   Calendar, Clock, MapPin, Users, BookOpen, 
   CheckCircle, XCircle, AlertCircle, Search,
-  User, FileText, ChevronLeft, ChevronRight
+  User, FileText, ChevronLeft, ChevronRight,
+  Sparkles, Bookmark, RotateCcw, Edit3
 } from 'lucide-react';
 
 const TeacherAttendance = () => {
@@ -42,6 +48,13 @@ const TeacherAttendance = () => {
   const [attendanceList, setAttendanceList] = useState([]);
   const [sessionMateri, setSessionMateri] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Silabus Kurikulum Merdeka & Status Ketuntasan Sesi
+  const [daftarBab, setDaftarBab] = useState([]);
+  const [selectedBabId, setSelectedBabId] = useState("");
+  const [selectedSubBab, setSelectedSubBab] = useState("");
+  const [statusKetuntasan, setStatusKetuntasan] = useState("berjalan"); // 'berjalan' (lanjut sesi depan) | 'tuntas'
+  const [isManualInput, setIsManualInput] = useState(false);
 
   const fetchDailyCode = async (dateStr) => {
     try {
@@ -142,10 +155,39 @@ const TeacherAttendance = () => {
     const students = schedule.students || [];
     const attendance = attendanceLogs[schedule.id] || [];
     
-    // Temukan materi hari ini bila sudah ada yang mencatat sebelumnya
-    const existingMateri = attendance.find(a => a.materiHariIni)?.materiHariIni
-      || schedule.title || schedule.mapelName || '';
-    setSessionMateri(existingMateri);
+    // Deteksi kelas & mapel dari data jadwal untuk silabus Kurikulum Merdeka
+    const kelasTarget = schedule.kelas || students[0]?.kelas || students[0]?.kelasSekolah || '7';
+    const mapelTarget = schedule.title || schedule.mapelName || 'mtk';
+    const listBab = daftarBabSilabus({ kelas: kelasTarget, mapel: mapelTarget });
+    setDaftarBab(listBab);
+
+    // Temukan materi & status hari ini bila sudah ada yang mencatat sebelumnya
+    const existingLog = attendance.find(a => a.materiHariIni);
+    const existingMateri = existingLog?.materiHariIni || schedule.title || schedule.mapelName || '';
+    const existingKetuntasan = existingLog?.statusKetuntasanMateri || 'berjalan';
+    const existingBabId = existingLog?.babId || '';
+    const existingSubBab = existingLog?.subBab || '';
+
+    setStatusKetuntasan(existingKetuntasan);
+
+    if (existingBabId && listBab.some(b => b.id === existingBabId)) {
+      setSelectedBabId(existingBabId);
+      setSelectedSubBab(existingSubBab);
+      setSessionMateri(existingMateri);
+      setIsManualInput(false);
+    } else if (listBab.length > 0) {
+      const babAwal = listBab[0];
+      setSelectedBabId(babAwal.id);
+      const subAwal = babAwal.subBab?.[0] || '';
+      setSelectedSubBab(subAwal);
+      setSessionMateri(existingMateri || `${babAwal.judul} — ${subAwal}`);
+      setIsManualInput(false);
+    } else {
+      setSelectedBabId('');
+      setSelectedSubBab('');
+      setSessionMateri(existingMateri);
+      setIsManualInput(true);
+    }
 
     // Merge student data with attendance status & pemahaman track record
     const merged = students.map(student => {
@@ -163,6 +205,23 @@ const TeacherAttendance = () => {
     
     setAttendanceList(merged);
     setShowModal(true);
+  };
+
+  const handlePilihBab = (babId) => {
+    setSelectedBabId(babId);
+    const b = daftarBab.find(x => x.id === babId);
+    if (b) {
+      const sub = b.subBab?.[0] || '';
+      setSelectedSubBab(sub);
+      setSessionMateri(`${b.judul} — ${sub}`);
+    }
+  };
+
+  const handlePilihSubBab = (sub) => {
+    setSelectedSubBab(sub);
+    const b = daftarBab.find(x => x.id === selectedBabId);
+    const judulBab = b ? b.judul : 'Bab Materi';
+    setSessionMateri(`${judulBab} — ${sub}`);
   };
 
   const handleUpdateAttendance = async (studentId, status) => {
@@ -231,6 +290,9 @@ const TeacherAttendance = () => {
           scheduleId: selectedSchedule.id || '',
           planet: selectedSchedule.planet || 'Ruang Umum',
           materiHariIni: sessionMateri || selectedSchedule.title || '',
+          statusKetuntasanMateri: statusKetuntasan,
+          babId: selectedBabId || null,
+          subBab: selectedSubBab || null,
           tingkatPemahaman: s.status === 'Hadir' ? (s.tingkatPemahaman || 'mandiri') : null,
           catatanHarian: s.note || '',
         }, { merge: true });
@@ -436,18 +498,159 @@ const TeacherAttendance = () => {
                   {selectedSchedule.title || selectedSchedule.mapelName || 'Materi'} - 
                   {selectedSchedule.start} {selectedSchedule.end}
                 </p>
-                <div style={{ marginTop: 10, background: '#f8fafc', padding: '8px 12px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span>🎯 Materi / Topik Pertemuan Hari Ini:</span>
-                    <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 'normal' }}>(Terekam ke rekam jejak harian siswa &amp; rapor ortu)</span>
+                <div style={{ marginTop: 10, background: '#f8fafc', padding: '10px 14px', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Bookmark size={15} color="#4f46e5" />
+                      <span>Silabus &amp; Topik Kurikulum Merdeka</span>
+                    </div>
+                    {daftarBab.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsManualInput(!isManualInput)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#4f46e5',
+                          fontSize: 11,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 4,
+                        }}
+                      >
+                        {isManualInput ? <BookOpen size={13} /> : <Edit3 size={13} />}
+                        {isManualInput ? 'Pilih dari Silabus' : 'Tulis Bebas / Topik Khusus'}
+                      </button>
+                    )}
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Contoh: Bab 2 - Dinamika Gerak &amp; Hukum Newton (Latihan 1-15)"
-                    value={sessionMateri}
-                    onChange={(e) => setSessionMateri(e.target.value)}
-                    style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12, boxSizing: 'border-box' }}
-                  />
+
+                  {!isManualInput && daftarBab.length > 0 ? (
+                    <div>
+                      {/* Dropdown Bab */}
+                      <div style={{ marginBottom: 6 }}>
+                        <select
+                          value={selectedBabId}
+                          onChange={(e) => handlePilihBab(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: 8,
+                            border: '1.5px solid #cbd5e1',
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: '#1e293b',
+                            background: '#ffffff',
+                          }}
+                        >
+                          {daftarBab.map((b) => (
+                            <option key={b.id} value={b.id}>
+                              {b.judul} (Estimasi {b.alokasiSesi} sesi)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Sub-Bab Selector & Capaian Pembelajaran */}
+                      {(() => {
+                        const babAktif = daftarBab.find((b) => b.id === selectedBabId);
+                        if (!babAktif) return null;
+                        return (
+                          <div style={{ marginTop: 6 }}>
+                            {babAktif.subBab && babAktif.subBab.length > 0 && (
+                              <div style={{ marginBottom: 6 }}>
+                                <label style={{ fontSize: 10.5, color: '#64748b', fontWeight: 600, display: 'block', marginBottom: 3 }}>
+                                  Sub-Bab yang Dipelajari:
+                                </label>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                                  {babAktif.subBab.map((sb) => {
+                                    const isSubActive = selectedSubBab === sb;
+                                    return (
+                                      <button
+                                        key={sb}
+                                        type="button"
+                                        onClick={() => handlePilihSubBab(sb)}
+                                        style={{
+                                          padding: '4px 9px',
+                                          borderRadius: 6,
+                                          fontSize: 10.5,
+                                          border: isSubActive ? '1.5px solid #4f46e5' : '1px solid #cbd5e1',
+                                          background: isSubActive ? '#eef2ff' : '#ffffff',
+                                          color: isSubActive ? '#4338ca' : '#475569',
+                                          fontWeight: isSubActive ? 700 : 500,
+                                          cursor: 'pointer',
+                                        }}
+                                      >
+                                        {isSubActive ? '✓ ' : ''}{sb}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {babAktif.cp && (
+                              <div style={{ fontSize: 10.5, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', padding: '6px 9px', borderRadius: 6, marginTop: 4 }}>
+                                🎯 <b>Tujuan / Capaian Pembelajaran:</b> {babAktif.cp}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Contoh: Bab 2 - Dinamika Gerak &amp; Hukum Newton (Latihan 1-15)"
+                        value={sessionMateri}
+                        onChange={(e) => setSessionMateri(e.target.value)}
+                        style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 12, boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Status Ketuntasan Sesi (Melindungi beban tentor & transparan ke ortu) */}
+                  <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px dashed #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#475569' }}>
+                      Status Penuntasan Bab Ini:
+                    </span>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => setStatusKetuntasan('berjalan')}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          border: statusKetuntasan === 'berjalan' ? '1.5px solid #d97706' : '1px solid #e2e8f0',
+                          background: statusKetuntasan === 'berjalan' ? '#fffbeb' : '#ffffff',
+                          color: statusKetuntasan === 'berjalan' ? '#b45309' : '#64748b',
+                          fontSize: 11,
+                          fontWeight: statusKetuntasan === 'berjalan' ? 700 : 500,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        🔄 Sedang Berjalan (Lanjut Sesi Depan)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStatusKetuntasan('tuntas')}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          border: statusKetuntasan === 'tuntas' ? '1.5px solid #16a34a' : '1px solid #e2e8f0',
+                          background: statusKetuntasan === 'tuntas' ? '#f0fdf4' : '#ffffff',
+                          color: statusKetuntasan === 'tuntas' ? '#15803d' : '#64748b',
+                          fontSize: 11,
+                          fontWeight: statusKetuntasan === 'tuntas' ? 700 : 500,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✓ Selesai Tuntas
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <button onClick={() => setShowModal(false)} style={styles.modalClose}>
