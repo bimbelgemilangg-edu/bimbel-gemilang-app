@@ -602,6 +602,9 @@ const ManageQuiz = () => {
   // `selectedModul`/`modulList` DIHAPUS -- gak dipakai lagi.
   const [selectedKelas, setSelectedKelas] = useState("Semua");
   const [selectedProgram, setSelectedProgram] = useState("Semua");
+  const [mySchedules, setMySchedules] = useState([]);
+  const [selectedScheduleId, setSelectedScheduleId] = useState('');
+  const [targetRombel, setTargetRombel] = useState('');
   
   // Data referensi
   const [availableClasses, setAvailableClasses] = useState([]);
@@ -760,11 +763,15 @@ const ManageQuiz = () => {
     // pecah mapel-mapel MILIK GURU ITU SENDIRI jadi opsi individual.
     const savedTeacher = JSON.parse(localStorage.getItem('teacherData') || '{}');
     const teacherName = savedTeacher.nama || '';
+    const teacherId = savedTeacher.guruId || savedTeacher.id;
 
-    const [siswaResult, guruResult] = await Promise.allSettled([
+    const [siswaResult, guruResult, schedResult] = await Promise.allSettled([
       getDocs(collection(db, "students")),
       teacherName
         ? getDocs(query(collection(db, "teachers"), where("nama", "==", teacherName)))
+        : Promise.resolve({ docs: [] }),
+      teacherId
+        ? getDocs(query(collection(db, "jadwal_bimbel"), where("teacherId", "==", teacherId)))
         : Promise.resolve({ docs: [] }),
     ]);
 
@@ -843,6 +850,11 @@ const ManageQuiz = () => {
     } else {
       anyFailed = true;
       console.error("Gagal ambil data mapel guru:", guruResult.reason);
+    }
+
+    if (schedResult && schedResult.status === 'fulfilled') {
+      const scheds = schedResult.value.docs.map(d => ({ id: d.id, ...d.data() }));
+      setMySchedules(scheds);
     }
 
     setRefsStatus(anyFailed ? 'error' : 'loaded');
@@ -2330,9 +2342,9 @@ const ManageQuiz = () => {
     if (!isFromModul && !teacherMapelOptions.some(o => o.nama === quizSubject && o.kode === kodeMapel)) {
       return alert("❌ Mapel yang dipilih sudah tidak valid. Silakan pilih ulang mapel dari daftar dropdown sebelum menyimpan.");
     }
-    // 🔥 BARU: validasi buat mode target "Siswa Tertentu"
-    if (publishTarget === 'siswa' && selectedStudentsForQuiz.length === 0) {
-      return alert("❌ Pilih minimal 1 siswa dulu buat mode 'Siswa Tertentu'!");
+    // 🔥 BARU: validasi buat mode target "Siswa Tertentu" / "Jadwal"
+    if ((publishTarget === 'siswa' || publishTarget === 'jadwal') && selectedStudentsForQuiz.length === 0) {
+      return alert("❌ Pilih minimal 1 siswa atau pilih sesi jadwal kelas terlebih dahulu!");
     }
 
     const stillNeedsReview = valid.filter(q => q.needsManualAnswer).length;
@@ -2475,9 +2487,11 @@ const ManageQuiz = () => {
           kodeMapel: kodeMapel || '',
           targetKategori: publishTarget === 'jenjang' ? selectedProgram : "Semua",
           targetKelas: publishTarget === 'jenjang' ? selectedKelas : "Semua",
-          sendToSpecificStudents: publishTarget === 'siswa',
-          selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
-          studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
+          sendToSpecificStudents: publishTarget === 'siswa' || publishTarget === 'jadwal',
+          selectedStudents: (publishTarget === 'siswa' || publishTarget === 'jadwal') ? selectedStudentsForQuiz : [],
+          studentIds: (publishTarget === 'siswa' || publishTarget === 'jadwal') ? selectedStudentsForQuiz.map(s => s.studentId || s.id) : [],
+          targetJadwalId: publishTarget === 'jadwal' ? selectedScheduleId : '',
+          targetRombel: publishTarget === 'jadwal' ? targetRombel : '',
         });
         alert(`✅ Kuis "${quizTitle}" berhasil diperbarui!`);
         localStorage.removeItem(draftKey);
@@ -2636,9 +2650,11 @@ const ManageQuiz = () => {
         // 🔥 BARU: sebelumnya field-field ini TIDAK PERNAH ditulis di
         // jalur kuis standalone -- makanya "target siswa tertentu"
         // buat kuis mandiri gak pernah bisa berfungsi sama sekali.
-        sendToSpecificStudents: publishTarget === 'siswa',
-        selectedStudents: publishTarget === 'siswa' ? selectedStudentsForQuiz : [],
-        studentIds: publishTarget === 'siswa' ? selectedStudentsForQuiz.map(s => s.studentId) : [],
+        sendToSpecificStudents: publishTarget === 'siswa' || publishTarget === 'jadwal',
+        selectedStudents: (publishTarget === 'siswa' || publishTarget === 'jadwal') ? selectedStudentsForQuiz : [],
+        studentIds: (publishTarget === 'siswa' || publishTarget === 'jadwal') ? selectedStudentsForQuiz.map(s => s.studentId || s.id) : [],
+        targetJadwalId: publishTarget === 'jadwal' ? selectedScheduleId : '',
+        targetRombel: publishTarget === 'jadwal' ? targetRombel : '',
         status: 'aktif',
         guruId: savedTeacher.guruId || savedTeacher.id || '',
         kodeMapel: kodeMapel || savedTeacher.kodeMapel || '',
@@ -3255,7 +3271,84 @@ const ManageQuiz = () => {
           }}>
             <UserPlus size={14} color={publishTarget === 'siswa' ? '#8b5cf6' : '#94a3b8'} /> Siswa Tertentu
           </button>
+          <button onClick={() => setPublishTarget('jadwal')} style={{ 
+            padding: '8px 14px', 
+            borderRadius: 8, 
+            border: publishTarget === 'jadwal' ? '2px solid #0d9488' : '1px solid #e2e8f0',
+            background: publishTarget === 'jadwal' ? '#f0fdfa' : 'white',
+            cursor: 'pointer',
+            fontSize: 11,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}>
+            <Calendar size={14} color={publishTarget === 'jadwal' ? '#0d9488' : '#94a3b8'} /> Sesi Kelas / Rombel Saya
+          </button>
         </div>
+
+        {publishTarget === 'jadwal' && (
+          <div style={{ marginTop: 10, background: '#f8fafc', padding: 12, borderRadius: 10, border: '1px solid #ccfbf1', marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#0f766e', marginBottom: 6 }}>
+              📅 Pilih Sesi Jadwal Kelas Anda (Target otomatis terkunci ke siswa di ruangan ini):
+            </div>
+            {mySchedules.length === 0 ? (
+              <p style={{ margin: 0, fontSize: 11, color: '#64748b' }}>Belum ada jadwal mengajar aktif yang terhubung.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {mySchedules.map((sch) => {
+                  const isSel = selectedScheduleId === sch.id;
+                  const jml = sch.students?.length || 0;
+                  return (
+                    <div
+                      key={sch.id}
+                      onClick={() => {
+                        setSelectedScheduleId(sch.id);
+                        setTargetRombel(sch.title || sch.mapelName || '');
+                        setSelectedKelas(sch.level || 'Semua');
+                        setSelectedProgram(sch.program || 'Reguler');
+                        const mappedStudents = (sch.students || []).map(s => ({
+                          id: s.id || s.studentId,
+                          studentId: s.studentId || s.id,
+                          nama: s.nama || 'Siswa',
+                          kelasSekolah: s.kelasSekolah || sch.level || '-'
+                        }));
+                        setSelectedStudentsForQuiz(mappedStudents);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        background: isSel ? '#ccfbf1' : 'white',
+                        border: isSel ? '1.5px solid #0d9488' : '1px solid #e2e8f0',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
+                          {sch.title || sch.mapelName || 'Sesi Kelas'}
+                        </div>
+                        <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                          {sch.dateStr} • {sch.start}-{sch.end} • {sch.planet || 'Ruang'} • {jml} siswa terdaftar
+                        </div>
+                      </div>
+                      {isSel && (
+                        <span style={{ fontSize: 11, fontWeight: 800, color: '#0d9488' }}>✓ Terpilih</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {selectedStudentsForQuiz.length > 0 && selectedScheduleId && (
+              <div style={{ marginTop: 8, fontSize: 11, color: '#0f766e', fontWeight: 600 }}>
+                👥 {selectedStudentsForQuiz.length} siswa kelas ini otomatis menerima kuis. Siswa kelas/rombel lain TIDAK AKAN menerima kuis ini.
+              </div>
+            )}
+          </div>
+        )}
 
         {refsStatus === 'error' && (
           <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#ef4444' }}>

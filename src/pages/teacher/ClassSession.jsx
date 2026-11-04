@@ -160,7 +160,12 @@ const ClassSession = () => {
     const today = tanggalLokalStr(); // tanggal LOKAL, bukan UTC (A5/v1.6.4)
     try {
       await setDoc(doc(db, 'attendance', kunciDokumenAbsensi(student.id, today, schedule.id)), {
-        studentId: student.id, studentName: student.nama,
+        studentId: student.id,
+        studentDocId: student.id,
+        nim: student.studentId || student.id,
+        studentKodeUnik: student.studentId || '',
+        studentName: student.nama,
+        namaSiswa: student.nama,
         program: student.program || schedule.program || 'Reguler',
         kelasSekolah: student.kelas || student.kelasSekolah || '-',
         teacherId: teacher.id, teacherName: teacher.nama,
@@ -225,7 +230,12 @@ const ClassSession = () => {
       await Promise.all((schedule.students || []).map(async (s) => {
         const present = (attendanceMap[s.id] || 'Alpha') === 'Hadir';
         return setDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.id, today, schedule.id)), {
-          studentId: s.id, studentName: s.nama,
+          studentId: s.id,
+          studentDocId: s.id,
+          nim: s.studentId || s.id,
+          studentKodeUnik: s.studentId || '',
+          studentName: s.nama,
+          namaSiswa: s.nama,
           program: s.program || schedule.program || 'Reguler',
           kelasSekolah: s.kelas || s.kelasSekolah || '-',
           teacherId: teacher.id, teacherName: teacher.nama,

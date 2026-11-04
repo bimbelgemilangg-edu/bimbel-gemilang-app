@@ -1,9 +1,10 @@
 // src/pages/student/StudentDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
-import { cocokkanAksesModul } from '../../utils/aksesKontenSiswa';
+import { cocokkanAksesModul, ekstrakAngkaKelas } from '../../utils/aksesKontenSiswa';
 import { tanggalLokalStr } from '../../utils/waktuLokal';
-import { kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
+import { kunciDokumenAbsensi, daftarQueryAbsensi, gabungkanDokUnik } from '../../utils/identitasAbsensi';
+import { cocokTargetKelas } from '../../utils/cocokkanTargetPaket';
 import { collection, query, getDocs, orderBy, doc, getDoc, setDoc, deleteDoc, serverTimestamp, where, limit } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { Html5Qrcode } from "html5-qrcode";
@@ -17,7 +18,7 @@ import {
   Trophy, ArrowRight, AlertCircle, Award, Bell, Download,
   Trash2, FileQuestion, FileText, DollarSign, Sparkles, Inbox,
   Megaphone, RefreshCw, IdCard, Search, CheckCircle2, Bookmark,
-  Lightbulb, MessageCircle
+  Lightbulb, MessageCircle, XCircle
 } from 'lucide-react';
 import {
   daftarBabSilabus,
@@ -203,18 +204,76 @@ const StudentDashboard = () => {
   };
 
   // 🔥 Akses modul: modul target siswa tertentu = keputusan guru menang;
-  // selain itu harus LOLOS DUA-DUANYA: kelas cocok (targetKelas) DAN
-  // kode mapel cocok (enrolledSubjects).
+  // selain itu harus LOLOS:
+  // 1. Jenjang cocok (SMP tidak boleh kejatuhan modul SMA/SD)
+  // 2. Kelas cocok (toleran dan anti-nyasar kelas 7 ke kelas 9)
+  // 3. Rombel/Kelompok cocok (jika modul ditargetkan ke rombel tertentu seperti 9B, siswa 9A tidak terkena)
+  // 4. Mapel terdaftar (enrolledSubjects)
   const checkStudentAccess = (modul, studentId, studentKelas, studentProgram, studentEnrolledSubjects) => {
     if (modul.sendToSpecificStudents) {
       const studentIds = modul.studentIds || [];
       const selectedStudentIds = (modul.selectedStudents || []).map(s => s.studentId || s.id);
       const allTargetIds = [...studentIds, ...selectedStudentIds];
-      return allTargetIds.includes(studentId) || allTargetIds.includes(studentNim);
+      return allTargetIds.includes(studentId) || allTargetIds.includes(studentNim) || (studentDocId && allTargetIds.includes(studentDocId));
     }
+
+    const kelasClean = String(studentKelas || studentProfile?.kelasSekolah || '').toUpperCase();
+    const jenjangSiswa = kelasClean.includes('SMP') ? 'SMP' : (kelasClean.includes('SMA') || kelasClean.includes('SMK') ? 'SMA' : (kelasClean.includes('SD') ? 'SD' : ''));
+    const angkaSiswa = ekstrakAngkaKelas(kelasClean);
+
+    const judulModul = String(modul.title || modul.judul || '').toUpperCase();
+    const targetJenjangModul = String(modul.targetJenjang || modul.jenjang || '').toUpperCase();
+
+    // 🔒 Cegah kebocoran jenjang: modul SMA (TKA/UTBK/SNBT) tidak boleh tampil di SMP/SD
+    if (jenjangSiswa && jenjangSiswa !== 'SMA') {
+      if (targetJenjangModul.includes('SMA') || targetJenjangModul.includes('SMK')) return false;
+      if (/\b(TKA SMA|UTBK|SNBT|SMA|SMK)\b/i.test(judulModul)) return false;
+    }
+    // Cegah modul SD bocor ke SMP/SMA
+    if (jenjangSiswa && jenjangSiswa !== 'SD') {
+      if (targetJenjangModul.includes('SD')) return false;
+      if (/\b(SD|MI|SEKOLAH DASAR)\b/i.test(judulModul) && !judulModul.includes('SMP')) return false;
+    }
+
+    // 🔒 Filter kelas: jika modul berlabel "Semua" tapi judulnya spesifik kelas lain (contoh: "Kelas 7" untuk siswa kelas 9)
     const targetKelas = modul.targetKelas || 'Semua';
-    const matchKelas = targetKelas === 'Semua' || targetKelas === studentKelas;
-    return matchKelas && hasSubjectAccess(studentEnrolledSubjects, modul.subject || '', modul.kodeMapel || '');
+    if (targetKelas === 'Semua') {
+      const matchAngkaJudul = judulModul.match(/\b(?:KELAS|KLS|GRADE)\s*(\d{1,2})\b/i);
+      if (matchAngkaJudul && angkaSiswa && matchAngkaJudul[1] !== angkaSiswa) {
+        return false;
+      }
+    } else {
+      const cocokKelas = cocokTargetKelas(targetKelas, studentProfile || { kelasSekolah: studentKelas });
+      if (!cocokKelas) return false;
+    }
+
+    // 🔒 Filter rombel spesifik (misal targetRombel: 9B atau targetJadwalId tidak cocok)
+    const targetRombel = String(modul.targetRombel || '').trim().toUpperCase();
+    if (targetRombel) {
+      const rombelSiswa = todaySchedules.map(s => String(s.title || '').toUpperCase()).join(' ');
+      if (!rombelSiswa.includes(targetRombel)) return false;
+    }
+    if (modul.targetJadwalId && todaySchedules.length > 0) {
+      const adaDiJadwal = todaySchedules.some(sch => sch.id === modul.targetJadwalId);
+      if (!adaDiJadwal) return false;
+    }
+
+    // 🔒 Filter rombel paralel di judul (contoh: kuis memuat "9B" sementara jadwal siswa "9A")
+    const rombelDiJudul = judulModul.match(/\b(9[A-Z]|8[A-Z]|7[A-Z]|10[A-Z]|11[A-Z]|12[A-Z])\b/);
+    if (rombelDiJudul && todaySchedules.length > 0) {
+      const rombelTarget = rombelDiJudul[1];
+      const adaDiJadwalSiswa = todaySchedules.some(sch => String(sch.title || '').toUpperCase().includes(rombelTarget));
+      if (!adaDiJadwalSiswa) {
+        const angkaRombel = rombelTarget.replace(/\D/g, '');
+        const jadwalSiswaAngkaSama = todaySchedules.some(sch => {
+          const t = String(sch.title || '').toUpperCase();
+          return t.includes(angkaRombel) && !t.includes(rombelTarget);
+        });
+        if (jadwalSiswaAngkaSama) return false;
+      }
+    }
+
+    return hasSubjectAccess(studentEnrolledSubjects, modul.subject || '', modul.kodeMapel || '');
   };
 
   useEffect(() => {
@@ -306,13 +365,17 @@ const StudentDashboard = () => {
         const sSnap = await getDoc(doc(db, "students", resolvedDocId)).catch(() => null);
         let kelasVal = studentKelas, programVal = studentProgram, nimVal = studentNim || studentId;
         let enrolledSubjectsVal = null;
+        let realName = studentName;
         if (sSnap?.exists()) {
           const data = sSnap.data();
           setStudentProfile(data);
           kelasVal = data.kelasSekolah || '';
           programVal = data.kategori || 'Reguler';
           nimVal = data.studentId || data.id || studentId;
+          realName = data.nama || data.studentName || studentName;
           enrolledSubjectsVal = Array.isArray(data.enrolledSubjects) ? data.enrolledSubjects : [];
+          setStudentName(realName);
+          localStorage.setItem('studentName', realName);
           setStudentKelas(kelasVal);
           setStudentProgram(programVal);
           setStudentNim(nimVal);
@@ -325,10 +388,24 @@ const StudentDashboard = () => {
           } catch { /* localStorage penuh/gak tersedia -- gak fatal */ }
         }
 
+        // Siapkan query absensi komprehensif lintas 4 skema identitas
+        const queryDaftar = daftarQueryAbsensi({
+          studentId: nimVal || studentId,
+          docId: resolvedDocId,
+          nama: realName,
+        });
+        if (studentId && studentId !== nimVal && studentId !== resolvedDocId) {
+          queryDaftar.push({ field: 'studentId', nilai: studentId });
+        }
+        if (studentName && studentName !== realName) {
+          queryDaftar.push({ field: 'studentName', nilai: studentName });
+          queryDaftar.push({ field: 'namaSiswa', nilai: studentName });
+        }
+
         const [
           schedSnap, modulSnap, raportSnap, notifSnap, surveySnap,
           respByUserId, respByStudentId, respByRespondentId, respByNim,
-          attByDocId, attByKodeUnik, attByName, attByNamaSiswa,
+          ...attSnaps
         ] = await Promise.all([
           getDocs(query(collection(db, "jadwal_bimbel"), where("dateStr", "==", todayStr))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "bimbel_modul"), orderBy("updatedAt", "desc"), limit(200))).catch(() => ({ docs: [] })),
@@ -339,16 +416,44 @@ const StudentDashboard = () => {
           getDocs(query(collection(db, "survey_responses"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("respondentId", "==", nimVal))).catch(() => ({ docs: [] })),
           getDocs(query(collection(db, "survey_responses"), where("nim", "==", nimVal))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "attendance"), where("studentId", "==", studentId))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "attendance"), where("studentId", "==", nimVal))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "attendance"), where("studentName", "==", studentName))).catch(() => ({ docs: [] })),
-          getDocs(query(collection(db, "attendance"), where("namaSiswa", "==", studentName))).catch(() => ({ docs: [] })),
+          ...queryDaftar.map(q => getDocs(query(collection(db, "attendance"), where(q.field, "==", q.nilai))).catch(() => ({ docs: [] }))),
         ]);
 
+        const attList = gabungkanDokUnik(attSnaps.map(s => s.docs));
+
+        const fetchedSchedules = schedSnap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(sch => sch.students?.some(s => 
+            s === studentId || s.id === studentId || s.studentId === studentId ||
+            s === resolvedDocId || s.id === resolvedDocId ||
+            s === nimVal || s.studentId === nimVal ||
+            (s.nama && realName && s.nama.trim().toLowerCase() === realName.trim().toLowerCase())
+          ))
+          .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
+          .slice(0, 5);
+        setTodaySchedules(fetchedSchedules);
+
+        // Ambil dokumen deterministik absensi hari ini jika belum terambil di query
+        const tglHariIni = tanggalLokalStr();
+        for (const sch of fetchedSchedules) {
+          const kunciCek = [
+            resolvedDocId && kunciDokumenAbsensi(resolvedDocId, tglHariIni, sch.id),
+            studentId && kunciDokumenAbsensi(studentId, tglHariIni, sch.id),
+            nimVal && kunciDokumenAbsensi(nimVal, tglHariIni, sch.id),
+          ].filter(Boolean);
+          for (const k of kunciCek) {
+            if (!attList.some(a => a.id === k)) {
+              try {
+                const dSnap = await getDoc(doc(db, "attendance", k));
+                if (dSnap?.exists()) {
+                  attList.push({ id: dSnap.id, ...dSnap.data() });
+                }
+              } catch { /* abaikan jika dokumen tidak ada */ }
+            }
+          }
+        }
+
         // Ringkasan kehadiran (gabungkan semua skema identitas)
-        const attMerged = new Map();
-        [...attByDocId.docs, ...attByKodeUnik.docs, ...attByName.docs, ...attByNamaSiswa.docs].forEach(d => attMerged.set(d.id, d.data()));
-        const attList = Array.from(attMerged.values());
         setAttendanceSummary({
           hadir: attList.filter(a => a.status === 'Hadir').length,
           izin: attList.filter(a => a.status === 'Izin' || a.status === 'Sakit').length,
@@ -357,19 +462,21 @@ const StudentDashboard = () => {
         });
 
         // Petakan log absensi & pemantauan sesi hari ini ke jadwal
-        const tglHariIni = tanggalLokalStr();
         const attHariIni = {};
         attList.filter(a => (a.date === tglHariIni || a.tanggal === tglHariIni || a.date === todayStr || a.tanggal === todayStr)).forEach(a => {
-          if (a.scheduleId) attHariIni[a.scheduleId] = a;
+          const sId = a.scheduleId || a.jadwalId;
+          if (sId) attHariIni[sId] = a;
+        });
+        fetchedSchedules.forEach(sch => {
+          if (!attHariIni[sch.id]) {
+            const match = attList.find(a => 
+              (a.date === tglHariIni || a.tanggal === tglHariIni || a.date === todayStr || a.tanggal === todayStr) &&
+              (a.mapel === sch.title || a.mapel === sch.mapelName || a.scheduleId === sch.id || a.jadwalId === sch.id)
+            );
+            if (match) attHariIni[sch.id] = match;
+          }
         });
         setTodayAttendanceMap(attHariIni);
-
-        const fetchedSchedules = schedSnap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter(sch => sch.students?.some(s => s.id === studentId || s === studentId || s.studentId === studentId))
-          .sort((a, b) => (a.start || '').localeCompare(b.start || ''))
-          .slice(0, 5);
-        setTodaySchedules(fetchedSchedules);
 
         const rawModulsData = modulSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         const embeddedQuizIds = new Set();
@@ -929,7 +1036,7 @@ const StudentDashboard = () => {
           <div className="sd-card" style={{ background: 'white', padding: 18, borderRadius: 18, border: '1px solid #eef1f5', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Calendar size={17} color="#0d9488" /> Panggung Belajar Hari Ini
+                <Calendar size={17} color="#0d9488" /> Jadwal Sesi Tatap Muka Hari Ini
               </h3>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', background: '#f0fdfa', border: '1px solid #ccfbf1', padding: '3px 8px', borderRadius: 6 }}>
                 {todaySchedules.length} Sesi Terjadwal
@@ -953,7 +1060,22 @@ const StudentDashboard = () => {
                   const statusKehadiran = att?.status || 'Belum Tercatat';
                   const isHadir = statusKehadiran === 'Hadir';
                   const isIzinSakit = statusKehadiran === 'Izin' || statusKehadiran === 'Sakit';
+                  const isAlpha = statusKehadiran === 'Alpha';
                   const ketuntasan = att?.statusKetuntasanMateri || 'berjalan';
+
+                  const isCompleted = sch.status === 'completed';
+                  const isOngoing = sch.status === 'ongoing';
+
+                  // Cek apakah jam sesi kelas sudah berakhir
+                  const sekarang = new Date();
+                  let waktuLewat = false;
+                  if (sch.end) {
+                    const [eh, em] = sch.end.split(':').map(Number);
+                    const tAkhir = new Date();
+                    tAkhir.setHours(eh || 0, em || 0, 0, 0);
+                    if (sekarang > tAkhir) waktuLewat = true;
+                  }
+                  const sesiSelesai = isCompleted || waktuLewat;
 
                   return (
                     <div key={sch.id || i} style={{
@@ -977,15 +1099,27 @@ const StudentDashboard = () => {
                           </div>
                         </div>
 
-                        {/* Badge Kehadiran Siswa */}
+                        {/* Badge Kehadiran Siswa & Status Sesi */}
                         <div>
                           {isHadir ? (
                             <span style={{ fontSize: 10.5, fontWeight: 700, background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                              <CheckCircle2 size={12} /> Hadir di Kelas
+                              <CheckCircle2 size={12} /> {sesiSelesai ? 'Hadir · Sesi Selesai' : 'Hadir di Kelas'}
                             </span>
                           ) : isIzinSakit ? (
                             <span style={{ fontSize: 10.5, fontWeight: 700, background: '#fffbeb', color: '#b45309', border: '1px solid #fef3c7', padding: '3px 8px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                               <AlertCircle size={12} /> {statusKehadiran} Terpantau
+                            </span>
+                          ) : isAlpha ? (
+                            <span style={{ fontSize: 10.5, fontWeight: 700, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '3px 8px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <XCircle size={12} /> Tidak Hadir (Alpha)
+                            </span>
+                          ) : sesiSelesai ? (
+                            <span style={{ fontSize: 10.5, fontWeight: 700, background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <CheckCircle2 size={12} /> Sesi Kelas Selesai
+                            </span>
+                          ) : isOngoing ? (
+                            <span style={{ fontSize: 10.5, fontWeight: 700, background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '3px 8px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              🟢 Sedang Berlangsung
                             </span>
                           ) : (
                             <span style={{ fontSize: 10.5, fontWeight: 600, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: 6 }}>
@@ -1007,11 +1141,20 @@ const StudentDashboard = () => {
                             fontWeight: 700,
                             padding: '2px 7px',
                             borderRadius: 6,
-                            background: ketuntasan === 'tuntas' ? '#f0fdf4' : '#fffbeb',
-                            color: ketuntasan === 'tuntas' ? '#16a34a' : '#b45309',
-                            border: ketuntasan === 'tuntas' ? '1px solid #bbf7d0' : '1px solid #fef3c7',
+                            background: ketuntasan === 'tuntas' ? '#f0fdf4' : (sesiSelesai ? '#f8fafc' : '#fffbeb'),
+                            color: ketuntasan === 'tuntas' ? '#16a34a' : (sesiSelesai ? '#475569' : '#b45309'),
+                            border: ketuntasan === 'tuntas' ? '1px solid #bbf7d0' : (sesiSelesai ? '1px solid #e2e8f0' : '1px solid #fef3c7'),
                           }}>
-                            {ketuntasan === 'tuntas' ? '✓ Bab Selesai Tuntas' : '🔄 Sedang Berjalan (Lanjut Sesi Depan)'}
+                            {ketuntasan === 'tuntas'
+                              ? '✓ Bab Selesai Tuntas'
+                              : (sesiSelesai
+                                ? '📖 Pembahasan Dilanjutkan di Sesi Berikutnya'
+                                : (isOngoing
+                                  ? '🟢 Pembahasan Sedang Berlangsung di Kelas'
+                                  : '📋 Rencana Materi Sesi Ini'
+                                )
+                              )
+                            }
                           </span>
                         </div>
 

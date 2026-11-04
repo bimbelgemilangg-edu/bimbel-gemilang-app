@@ -276,7 +276,11 @@ const TeacherAttendance = () => {
         const absenId = kunciDokumenAbsensi(studentDocId, dateStr, selectedSchedule.id);
         return setDoc(doc(db, "attendance", absenId), {
           studentId: studentDocId,
+          studentDocId: s.id || studentDocId,
+          nim: s.studentId || studentDocId,
+          studentKodeUnik: s.studentId || '',
           studentName: s.nama || 'Siswa',
+          namaSiswa: s.nama || 'Siswa',
           program: s.program || selectedSchedule.program || 'Reguler',
           kelasSekolah: s.kelas || s.kelasSekolah || '-',
           teacherId: teacherId || '',
