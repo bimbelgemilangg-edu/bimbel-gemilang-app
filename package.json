@@ -1,6 +1,6 @@
 {
   "name": "bimbel-gemilang-app",
-  "version": "1.6.11",
+  "version": "1.6.12",
   "description": "Gemilang Super App — aplikasi pembelajaran & manajemen operasional Bimbel Gemilang (admin, guru, siswa, owner).",
   "private": true,
   "type": "module",
