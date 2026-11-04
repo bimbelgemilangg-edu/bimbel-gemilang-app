@@ -22,6 +22,17 @@ import { MAPEL_UTBK } from './mesinTaksonomiSoal.js';
 
 const norm = (s) => String(s || '').toLowerCase().trim();
 
+/** Pemetaan kode legacy Firestore (MAPEL-XXX) ke kode standar sistem */
+export const PETA_MAPEL_LEGACY = {
+  'mapel-001': 'mtk',
+  'mapel-002': 'bing',
+  'mapel-003': 'ipa',
+  'mapel-004': 'mtk',
+  'mapel-005': 'bind',
+  'mapel-008': 'ips',
+  'mapel-012': 'ips',
+};
+
 const ALIAS_MAPEL = [
   // Entri UTBK lebih dulu -- lihat catatan kepala berkas.
   ...MAPEL_UTBK.map((m) => ({ kode: m.kode, keys: [m.nama.toLowerCase(), ...m.keys] })),
@@ -48,6 +59,7 @@ const ALIAS_MAPEL = [
 export function kodeMapel(nama) {
   const n = norm(nama);
   if (!n) return '';
+  if (PETA_MAPEL_LEGACY[n]) return PETA_MAPEL_LEGACY[n];
   for (const row of ALIAS_MAPEL) {
     if (row.keys.some((k) => n === k || n.includes(k))) return row.kode;
   }
@@ -66,4 +78,4 @@ export function cocokkanMapel(soalNama, targetNama) {
   return false;
 }
 
-export default { kodeMapel, cocokkanMapel };
+export default { kodeMapel, cocokkanMapel, PETA_MAPEL_LEGACY };

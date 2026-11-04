@@ -21,6 +21,8 @@
 // temui, dengan label jujur yang tidak bisa dimatikan.
 // ============================================================
 
+import { kodeMapel } from './aliasMapel.js';
+
 export const SKALA_TKA_MIN = 200;
 export const SKALA_TKA_MAKS = 800;
 /** Predikat Istimewa TKA SMA 2026: skor >= 725,00 per mata uji. */
@@ -94,9 +96,10 @@ export function tebakJenisUjian(paket, cekUtbk = () => false) {
   const soal = Array.isArray(paket?.daftarSoal) ? paket.daftarSoal : [];
   if (soal.some((s) => cekUtbk(s?.mapel || s?.mataPelajaran || ''))) return 'utbk';
   const jenjang = jenjangPaket(paket);
-  const mapelAda = soal.map((s) => norm(s?.mapel || s?.mataPelajaran));
-  if (adalahSma(jenjang) && mapelAda.some((m) => TKA_MAPEL_SMA.has(m))) return 'tka';
-  if (adalahSdSmp(jenjang) && mapelAda.some((m) => TKA_MAPEL_SD_SMP.has(m))) return 'tka';
+  const fallbackMapel = norm(paket?.mapel || paket?.mataPelajaran || paket?.targetKategori || paket?.kategori || paket?.judul || '');
+  const mapelAda = soal.map((s) => norm(s?.mapel || s?.mataPelajaran) || fallbackMapel);
+  if (adalahSma(jenjang) && mapelAda.some((m) => TKA_MAPEL_SMA.has(m) || TKA_MAPEL_SMA.has(kodeMapel(m)))) return 'tka';
+  if (adalahSdSmp(jenjang) && mapelAda.some((m) => TKA_MAPEL_SD_SMP.has(m) || TKA_MAPEL_SD_SMP.has(kodeMapel(m)) || ['bio', 'fis', 'kim', 'ipa', 'ips', 'bing', 'bind', 'mtk'].includes(kodeMapel(m)))) return 'tka';
   return 'kurikulum';
 }
 

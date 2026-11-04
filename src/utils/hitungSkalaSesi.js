@@ -31,6 +31,7 @@ import {
 } from './skorSkalaTka.js';
 import { MAPEL_UTBK } from './mesinTaksonomiSoal.js';
 import { apakahMapelUtbk } from '../../lib/kunciGemini.js';
+import { kodeMapel } from './aliasMapel.js';
 
 const norm = (s) => String(s ?? '').toLowerCase().trim();
 
@@ -62,14 +63,22 @@ export function hitungSkalaSesi(sesi, paket) {
   }
 
   // Agregat per kelompok: subtes UTBK untuk mode utbk, mata uji untuk tka.
+  const fallbackMapel = paket?.mataPelajaran || paket?.mapel || paket?.targetKategori || paket?.kategori || paket?.judul || '';
+  const isSdSmp = modeSkalaTka(paket) === 'tka-dasmen' || /smp|sd/i.test(paket?.targetKelas || '') || /smp|sd/i.test(paket?.judul || '');
+
   const agg = new Map();
   for (const soal of daftar) {
-    const mapel = soal?.mapel || soal?.mataPelajaran || '';
+    let raw = soal?.mapel || soal?.mataPelajaran || fallbackMapel || '';
     if (isSoalEsai(soal) || !soalBisaDinilai(soal)) continue; // esai dinilai manusia
-    const kunci = mode === 'utbk' ? subtesDariMapel(mapel) : (norm(mapel) || null);
-    if (mode === 'utbk' && !apakahMapelUtbk(mapel, MAPEL_UTBK)) continue;
+    if (isSdSmp && mode !== 'utbk') {
+      const k = kodeMapel(raw);
+      if (['bio', 'fis', 'kim'].includes(k)) raw = 'ipa';
+      else if (['sos', 'geo', 'eko', 'sej', 'ant'].includes(k)) raw = 'ips';
+    }
+    const kunci = mode === 'utbk' ? subtesDariMapel(raw) : (norm(raw) || null);
+    if (mode === 'utbk' && !apakahMapelUtbk(raw, MAPEL_UTBK)) continue;
     if (!kunci) continue;
-    const a = agg.get(kunci) || { kunci, nama: mapel || kunci, benar: 0, skor: 0, total: 0 };
+    const a = agg.get(kunci) || { kunci, nama: raw || kunci, benar: 0, skor: 0, total: 0 };
     a.total += 1;
     const s = skorSatuSoal(soal, jawaban[soal.id]);
     if (s !== null) {

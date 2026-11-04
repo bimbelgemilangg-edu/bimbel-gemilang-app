@@ -58,7 +58,7 @@
 // baru tanpa keputusan owner.
 // ============================================================
 
-import { kodeMapel as kodeMapelDariNama } from './aliasMapel.js';
+import { kodeMapel as kodeMapelDariNama, PETA_MAPEL_LEGACY } from './aliasMapel.js';
 import { mapelBerlaku, petakanNamaMapel, daftarMapelUntuk } from './kurikulumMerdeka.js';
 import { jenjangBaku } from './jenjangBaku.js';
 import { KATALOG_MAPEL, MAPEL_UTBK } from './mesinTaksonomiSoal.js';
@@ -244,11 +244,29 @@ export function isKodeProgramKatalog(kode) {
 }
 
 /** Normalisasi mapel kuis/tugas (string bebas dari guru) → kode standar.
- * `kodeMapel` dokumen (denormalisasi dari modul) menang atas `subject`. */
+ * Toleran kode legacy Firestore (MAPEL-XXX) dan otomatis fallback ke subject. */
 export function normalisasiMapelKuis(dok = {}) {
+  const rawKode = String(dok.kodeMapel || '').trim().toLowerCase();
+  if (PETA_MAPEL_LEGACY?.[rawKode]) {
+    return PETA_MAPEL_LEGACY[rawKode];
+  }
+  // Bila ada nama subject eksplisit dan kodeMapel berformat internal tak dikenal
+  if (dok.subject && (/^mapel-\d+/i.test(rawKode) || !rawKode)) {
+    const kSubject = kodeMapelDariNama(dok.subject);
+    if (kSubject && !/^mapel-\d+/i.test(kSubject) && kSubject !== 'umum') {
+      return kSubject;
+    }
+  }
   const sumber = String(dok.kodeMapel || '').trim() || String(dok.subject || '').trim();
   if (!sumber) return 'umum';
   const kode = kodeMapelDariNama(sumber);
+  if (PETA_MAPEL_LEGACY?.[kode?.toLowerCase()]) {
+    return PETA_MAPEL_LEGACY[kode.toLowerCase()];
+  }
+  if (/^mapel-\d+/i.test(kode) && dok.subject) {
+    const kSubject = kodeMapelDariNama(dok.subject);
+    if (kSubject && !/^mapel-\d+/i.test(kSubject) && kSubject !== 'umum') return kSubject;
+  }
   return kode || 'umum';
 }
 
@@ -334,7 +352,7 @@ export function mapelSahUntukSiswa(kode, { jenjang = '', kelas = '' } = {}) {
   const nomorKelas = (/^(\d{1,2})/.exec(String(kelas || '').trim()) || [])[1] || '';
   if (!j && !nomorKelas) return { sah: true, alasan: '' }; // identitas jenjang tak diketahui
   const nama = namaMapel(kode);
-  const peta = petakanNamaMapel(nama, {});
+  const peta = petakanNamaMapel(nama, { jenjang: j, kelas: nomorKelas });
   if (!peta.kode) return { sah: true, alasan: '' }; // di luar peta kurikulum
   if (mapelBerlaku(peta.kode, { jenjang: j, kelas: nomorKelas })) return { sah: true, alasan: '' };
   return {
@@ -413,13 +431,26 @@ export function agregatSatuSesi(sesi, paket, soalMeta = {}) {
   const perMapel = new Map(); // kode → {skor, total, benar}
   const buktiButir = [];      // {kode, kesulitan, skor01, materi}
   let terjawab = 0;
+  const paketMapelNama = paket?.mataPelajaran || paket?.mapel || paket?.targetKategori || paket?.kategori || paket?.judul || '';
+  const fallbackKodePaket = kodeMapelDariNama(paketMapelNama);
+  const targetKelasStr = String(paket?.targetKelas || paket?.judul || '');
+  const isJenjangSmp = /smp/i.test(targetKelasStr) || /\b(7|8|9)\b/.test(targetKelasStr);
+  const isJenjangSd = /sd/i.test(targetKelasStr) || /\b(1|2|3|4|5|6)\b/.test(targetKelasStr);
+
   for (const soal of daftar) {
     if (isSoalEsai(soal) || !soalBisaDinilai(soal)) continue;
     const jw = jawaban[soal.id];
     if (jw !== undefined && jw !== null) terjawab += 1;
     const s01 = skorSatuSoal(soal, jw);
-    const kode = kodeMapelDariNama(String(soal.mapel || soal.mataPelajaran || '')) || 'umum';
     const meta = soalMeta[soal.id] || {};
+    const rawMapel = String(soal.mapel || soal.mataPelajaran || meta.mataPelajaran || '').trim();
+    let kode = (rawMapel ? kodeMapelDariNama(rawMapel) : '') || fallbackKodePaket || 'umum';
+    if (isJenjangSmp) {
+      if (['bio', 'fis', 'kim'].includes(kode)) kode = 'ipa';
+      else if (['sos', 'geo', 'eko', 'ant', 'sej'].includes(kode)) kode = 'ips';
+    } else if (isJenjangSd) {
+      if (['ipa', 'ips', 'bio', 'fis', 'kim', 'sos', 'geo', 'eko'].includes(kode)) kode = 'ipas';
+    }
     const kesulitan = bacaKesulitan(soal.kesulitan ?? meta.kesulitan);
     const materi = String(soal.materi || meta.materi || '').trim();
     buktiButir.push({ kode, kesulitan, skor01: s01, materi });
