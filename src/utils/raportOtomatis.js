@@ -113,7 +113,7 @@ export function predikatDariNilai(n) {
   if (n >= 85) return { huruf: 'A', label: 'Sangat Baik' };
   if (n >= 75) return { huruf: 'B', label: 'Baik' };
   if (n >= 65) return { huruf: 'C', label: 'Cukup' };
-  return { huruf: 'D', label: 'Perlu Pendampingan' };
+  return { huruf: 'D', label: 'Fokus Pemantapan' };
 }
 
 // ------------------------------------------------------------
@@ -367,15 +367,27 @@ export function mapelSahUntukSiswa(kode, { jenjang = '', kelas = '' } = {}) {
 // ------------------------------------------------------------
 
 /** Bangun indeks identitas per siswa dari koleksi `students`.
- * @returns {Array<{kunci, profil, idSet:Set<string>, namaLower:string}>} */
+ * Mengumpulkan SEMUA variasi ID (docId, studentId, nim, nis, username)
+ * agar kuis, tryout, tugas, dan absensi selalu terpetakan presisi. */
 export function bangunIndeksIdentitas(daftarSiswa = []) {
   return daftarSiswa
-    .filter((s) => s && (s.id || s.studentId))
+    .filter((s) => s && (s.id || s.studentId || s.nim || s.studentNim))
     .map((s) => {
       const docId = String(s.id || '');
       const kode = String(s.studentId || s.nim || s.studentNim || '');
-      const idSet = new Set([docId, kode].filter(Boolean));
-      const nama = String(s.nama || s.name || '');
+      const kandidatIds = [
+        s.id,
+        s.studentId,
+        s.nim,
+        s.studentNim,
+        s.nis,
+        s.nisn,
+        s.username,
+        s.email,
+        s.uid,
+      ].map((v) => String(v ?? '').trim()).filter(Boolean);
+      const idSet = new Set(kandidatIds);
+      const nama = String(s.nama || s.name || s.studentName || '');
       return {
         kunci: kode || docId,
         profil: s,
@@ -386,22 +398,44 @@ export function bangunIndeksIdentitas(daftarSiswa = []) {
     });
 }
 
-/** Cari entri indeks pemilik sebuah dokumen log.
- * @param {Array} indeks hasil bangunIndeksIdentitas
- * @param {object} dok dokumen mentah
- * @param {{fieldId?:string, fieldNama?:string}} field nama field identitas
- * @returns {object|null} entri indeks, atau null bila tak dikenali
- */
+/** Cari entri indeks pemilik sebuah dokumen log dengan multi-field checking. */
 export function cariPemilikDok(indeks, dok, { fieldId = 'studentId', fieldNama = '' } = {}) {
   if (!dok) return null;
-  const id = String(dok[fieldId] ?? '').trim();
-  const nama = fieldNama ? String(dok[fieldNama] ?? '').trim().toLowerCase() : '';
-  let byNama = null;
-  for (const entri of indeks) {
-    if (id && entri.idSet.has(id)) return entri;
-    if (!byNama && nama && entri.namaLower && entri.namaLower === nama) byNama = entri;
+  // Kandidat ID dari dokumen log: periksa fieldId yang diminta + fallback umum
+  const idKandidat = [
+    dok[fieldId],
+    dok.studentId,
+    dok.studentNim,
+    dok.nim,
+    dok.userId,
+    dok.siswaId,
+    dok.uid,
+  ].map((v) => String(v ?? '').trim()).filter(Boolean);
+
+  for (const id of idKandidat) {
+    for (const entri of indeks) {
+      if (entri.idSet.has(id)) return entri;
+    }
   }
-  return byNama; // nama = fallback rapuh (pola identitasAbsensi), dipakai terakhir
+
+  // Fallback nama siswa
+  const namaKandidat = [
+    fieldNama ? dok[fieldNama] : '',
+    dok.studentName,
+    dok.namaSiswa,
+    dok.nama,
+    dok.name,
+  ].map((v) => String(v ?? '').trim().toLowerCase()).filter(Boolean);
+
+  for (const nama of namaKandidat) {
+    for (const entri of indeks) {
+      if (entri.namaLower && (entri.namaLower === nama || entri.namaLower.includes(nama) || nama.includes(entri.namaLower))) {
+        return entri;
+      }
+    }
+  }
+
+  return null;
 }
 
 /** v1.5.1: kunci identitas sebuah log untuk reparasi — id mentah, lalu nama.

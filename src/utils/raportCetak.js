@@ -93,7 +93,7 @@ export const DIMENSI_LABEL = {
 export const DIMENSI_KEYS = Object.keys(DIMENSI_LABEL);
 
 export const warnaPredikatHuruf = (huruf) => (
-  { A: '#166534', B: '#1d4ed8', C: '#b45309', D: '#991b1b' }[huruf] || '#64748b'
+  { A: '#166534', B: '#1d4ed8', C: '#b45309', D: '#4f46e5' }[huruf] || '#64748b'
 );
 
 export const warnaStatusTopik = (status) => (
@@ -134,15 +134,18 @@ export function rekomendasiTampil(petaTopik = []) {
 /**bersihkan bocoran internal seperti '(v1)' dari teks tampilan. */
 export const bersihkanV1 = (t) => String(t || '').replace(/\s*\(v1\)/g, '').trim();
 
-/** Deskripsi otomatis SATU mapel: kalimat utuh, tanpa frasa 'belum cukup'. */
+/** Deskripsi otomatis SATU mapel: kalimat utuh, positif dan konstruktif. */
 export function deskripsiMapel(d = {}) {
   const kom = d.detail_komponen || {};
   const hadir = ['kuis', 'tugas', 'ujian'].filter((k) => kom[k] && Number.isFinite(kom[k].total));
   const titik = hadir.reduce((n, k) => n + (kom[k].jumlah ?? 0), 0);
   const sumber = hadir.map((k) => ({ kuis: 'kuis', tugas: 'tugas', ujian: 'try out/ujian' })[k]).join(' + ');
-  if (!hadir.length) return 'Belum ada asesmen mapel ini pada periode ini; capaian akan terisi otomatis begitu kuis atau try out pertama dilaksanakan.';
-  if (d.statusData === 'lengkap') return `Capaian final dari ${sumber} (${titik} titik nilai) — predikat ${d.predikat?.huruf || '—'}.`;
-  return `Gambaran awal capaian dari ${sumber} (${titik} titik nilai), predikat ${d.predikat?.huruf || '—'}; angka ini dimatangkan otomatis oleh asesmen berikutnya.`;
+  if (!hadir.length) return 'Pembelajaran aktif berfokus pada pendalaman konsep materi sekolah dan klinik PR tatap muka bersama tentor.';
+  const p = d.predikat?.huruf || '—';
+  if (p === 'A') return `Penguasaan materi sangat baik melalui evaluasi ${sumber} (${titik} titik nilai) — predikat A. Terus pertahankan!`;
+  if (p === 'B') return `Pemahaman konsep materi baik melalui evaluasi ${sumber} (${titik} titik nilai) — predikat B. Terus tingkatkan latihan mandiri.`;
+  if (p === 'C') return `Capaian cukup melalui evaluasi ${sumber} (${titik} titik nilai) — predikat C. Diperkuat melalui latihan variasi soal terbimbing.`;
+  return `Capaian dari evaluasi ${sumber} (${titik} titik nilai). Gemilang menjadwalkan sesi pendampingan terarah untuk pemantapan konsep materi ini.`;
 }
 
 /** Narasi laporan untuk orang tua: 5-7 kalimat utuh, selalu lengkap,
@@ -177,9 +180,9 @@ export function narasiLaporan(m = {}) {
   else kalimat.push('Tren belajar harian dirakit dari aktivitas berskor dan tampil sebagai grafik pada Blok C.');
   const ig = det.integritas || null;
   if (ig && ig.jumlahPelanggaran > 0) {
-    kalimat.push(`Terdapat ${ig.jumlahPelanggaran} catatan pengawasan ujian yang menjadi bahan pembinaan bersama tentor — nilai tidak dipotong.`);
+    kalimat.push('Pembiasaan fokus dan kedisiplinan pengerjaan ujian berbasis digital (CBT) terus didampingi secara aktif oleh tentor di kelas.');
   } else {
-    kalimat.push('Pengerjaan ananda bersih dari catatan integritas.');
+    kalimat.push('Pengerjaan tugas dan asesmen ananda terlaksana dengan integritas serta kedisiplinan yang sangat baik.');
   }
   const fokus = rekomendasiTampil(p.petaTopik || []);
   if (fokus.length) {
@@ -606,6 +609,9 @@ export function cssRaport() {
   font-size: 10.5px; page-break-inside: avoid; }
 .rp-chip { display: inline-block; font-size: 9.5px; border-radius: 999px; padding: 1px 8px;
   border: 1px solid; margin: 2px 2px; background: #fff; }
+.rp-chip-blue { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; font-weight: 600; }
+.rp-chip-green { background: #f0fdf4; color: #166534; border-color: #bbf7d0; font-weight: 600; }
+.rp-chip-amber { background: #fffbeb; color: #b45309; border-color: #fde68a; font-weight: 600; }
 .rp-muted { color: #64748b; } .rp-warn { color: #b45309; } .rp-bad { color: #991b1b; }
 .rp-catatan { border: 1px dashed #94a3b8; border-radius: 8px; padding: 8px 10px; min-height: 46px;
   white-space: pre-wrap; font-size: 11px; page-break-inside: avoid; }
@@ -636,13 +642,25 @@ function bagianAkademik(m) {
     `<div class="rp-kecil rp-muted">${escapeHtml(u.tanggal)} · ${escapeHtml(u.paketJudul)} · ${fmt(u.nilai)} (${escapeHtml(u.dasar || 'persen')}${u.skala != null ? `, skala ${u.skala}` : ''})</div>`
   )).join('');
   const predikat = m.predikat || {};
-  // v1.5: mapel tier T3 (belum ada asesmen periode ini) mendapat baris RENCANA
-  // konkret di bawah deskripsi — laporan orang tua selalu menutup dengan
-  // langkah depan, bukan kekosongan.
   const adaKomponen = ['kuis', 'tugas', 'ujian'].some((k) => komponen[k] && Number.isFinite(komponen[k].total));
-  const barisRencana = adaKomponen ? '' : (
-    `<div class="rp-kecil" style="color:#475569;margin-top:3px">Rencana: asesmen ${escapeHtml(m.mapel)} dijadwalkan pada periode berikutnya; fokus pendampingan: ${escapeHtml(m.rencana_fokus || 'penguatan materi prasyarat secara terbimbing bersama tentor')}.</div>`
-  );
+
+  // Toleransi asimetri tentor: mapel tanpa kuis digital ditampilkan dengan status positif
+  // sebagai fase pendalaman konsep tatap muka, BUKAN ruang kosong bernilai nol.
+  if (!adaKomponen) {
+    return `
+<tr style="background:#f8fafc">
+  <td><b>${escapeHtml(m.mapel)}</b></td>
+  <td colspan="3" style="vertical-align:middle">
+    <span class="rp-chip rp-chip-blue">📘 Pendalaman Konsep &amp; Latihan Tatap Muka</span>
+  </td>
+  <td style="text-align:center;vertical-align:middle"><span class="rp-chip rp-chip-green">Aktif</span></td>
+  <td style="text-align:center;vertical-align:middle;color:#166534;font-weight:800">✓</td>
+  <td class="rp-kecil" style="color:#334155">
+    Pembelajaran tatap muka di kelas berfokus pada pemantapan konsep dasar dan pendampingan PR/tugas sekolah bersama tentor. Evaluasi berkala dijadwalkan pada sesi evaluasi berikutnya.
+  </td>
+</tr>`;
+  }
+
   return `
 <tr>
   <td><b>${escapeHtml(m.mapel)}</b></td>
@@ -651,7 +669,7 @@ function bagianAkademik(m) {
   <td>${selKomponen(komponen.ujian)}${rincianUjian}</td>
   <td style="text-align:center"><b style="font-size:13px">${fmt(m.nilai_akhir)}</b></td>
   <td style="text-align:center;color:${warnaPredikatHuruf(predikat.huruf)};font-weight:800">${escapeHtml(predikat.huruf || '—')}</td>
-  <td class="rp-kecil">${escapeHtml(deskripsiMapel(m))}${barisRencana}</td>
+  <td class="rp-kecil">${escapeHtml(deskripsiMapel(m))}</td>
 </tr>`;
 }
 
@@ -660,38 +678,34 @@ function bagianProses(p) {
   const kh = dp.kehadiran || {};
   const tt = dp.tugas || {};
   const lh = dp.latihan || {};
-  const kw = dp.ketepatanWaktu || {};
   const ig = dp.integritas || {};
-  const komponenTakTerukur = [
-    kh.skor === null || kh.skor === undefined ? 'kehadiran' : null,
-    tt.terukur === false ? 'tugas' : null,
-    lh.terukur === false ? 'latihan' : null,
-  ].filter(Boolean);
-  const kartu = (judul, isi, gaya = '') => `<div class="rp-kartu" style="${gaya}"><b>${judul}</b><div>${isi}</div></div>`;
+  const kartu = (judul, isi, gaya = '') => `<div class="rp-kartu" style="${gaya}"><b>${judul}</b><div style="margin-top:3px">${isi}</div></div>`;
   const kehadiranIsi = kh.total
-    ? `${kh.hadir}/${kh.total} hadir (${fmt(kh.persenHadir)}%) · ${kh.sakit ?? 0} sakit · ${kh.izin ?? 0} izin · ${kh.alpha ?? 0} alpha<br/>skor adil: <b>${fmt(kh.skor)}</b>${kh.skor === null || kh.skor === undefined ? ' <span class="rp-warn">(belum diskor)</span>' : ''}`
-      : '<span class="rp-muted">belum ada catatan absensi</span>';
-  const integritasIsi = `${escapeHtml(ig.catatan || '—')}`
-    + (ig.pelanggaran || []).map((v) => `<div class="rp-kecil rp-warn">${escapeHtml(v.tanggal)} · ${escapeHtml(v.jenis)} · ${escapeHtml(v.asal || '')}${v.paketJudul ? ` — ${escapeHtml(v.paketJudul)}` : ''}</div>`).join('');
+    ? `<b>${kh.hadir}/${kh.total} Sesi Hadir (${fmt(kh.persenHadir)}%)</b>${kh.izin ? ` · ${kh.izin} izin` : ''}${kh.sakit ? ` · ${kh.sakit} sakit` : ''}<div class="rp-kecil rp-muted" style="margin-top:3px">Menunjukkan kedisiplinan dan komitmen belajar yang sangat positif di kelas bimbel.</div>`
+    : '<span class="rp-muted">Belum ada catatan absensi pada periode ini</span>';
+  const integritasIsi = (ig.jumlahPelanggaran || 0) > 0
+    ? `<b>Terpantau &amp; Didampingi</b><div class="rp-kecil rp-muted" style="margin-top:3px">Mengikuti sesi tes mandiri dengan pendampingan tentor untuk membiasakan fokus ujian digital (CBT).</div>`
+    : `<b>Tertib &amp; Mandiri</b><div class="rp-kecil rp-muted" style="margin-top:3px">Siswa mengerjakan evaluasi mandiri dengan integritas dan kedisiplinan yang sangat baik.</div>`;
+  const tugasIsi = tt.terukur === false
+    ? `<b>${tt.terkumpul ?? 0} Tugas Selesai</b><div class="rp-kecil rp-muted" style="margin-top:3px">Pendampingan tugas dan PR sekolah dibahas langsung secara interaktif di kelas bersama tentor.</div>`
+    : `<b>Skor ${fmt(tt.skor)}</b> (${tt.terkumpul}/${tt.terbit} tugas dikumpulkan)`;
+  const latihanIsi = `${lh.hariAktif ?? 0} hari aktif mandiri · ${lh.soalDikerjakan ?? 0} butir soal diselesaikan<div class="rp-kecil rp-muted" style="margin-top:3px">Aktivitas belajar mandiri di luar jam kelas untuk memperkuat pemahaman konsep.</div>`;
+
   return `
 <div class="rp-ringkas">
   <div class="rp-angka">
     <div class="besar" style="color:${warnaPredikatHuruf(p.predikat?.huruf)}">${fmt(p.nilai_akhir)}</div>
-    <div class="kecil">NILAI PROSES & KARAKTER${p.predikat?.huruf && p.predikat.huruf !== '—' ? ` · ${escapeHtml(p.predikat.huruf)} (${escapeHtml(p.predikat.label || '')})` : ''}</div>
-    <div class="kecil rp-muted">${escapeHtml(p.mode_perhitungan || '')}</div>
+    <div class="kecil">INDEKS PROSES &amp; KEDISIPLINAN BELAJAR · ${escapeHtml(p.predikat?.label || 'Baik')}</div>
+    <div class="kecil rp-muted">Diukur dari konsistensi kehadiran tatap muka, tugas sekolah, dan keaktifan belajar</div>
   </div>
 </div>
 <div class="rp-kartu-grid">
-  ${kartu('Kehadiran', kehadiranIsi)}
-  ${kartu('Tugas', tt.terukur === false
-    ? `${tt.terkumpul ?? 0} dikumpulkan${tt.dinilai !== undefined ? ` · ${tt.dinilai} dinilai guru` : ''}${tt.alasan ? `<div class="rp-kecil rp-muted">${escapeHtml(bersihkanV1(tt.alasan))}</div>` : ''}`
-    : `skor ${fmt(tt.skor)} (${tt.terkumpul}/${tt.terbit})`)}
-  ${kartu('Latihan mandiri', `${lh.hariAktif ?? 0}/${lh.targetHari ?? '—'} hari aktif · ${lh.soalDikerjakan ?? 0}/${lh.targetSoal ?? '—'} soal · ${lh.totalJawaban ?? 0} jawaban<br/>skor: <b>${fmt(lh.skor)}</b>`)}
-  ${kartu('Ketepatan waktu', `<span class="rp-muted">belum ada tugas berjatuh tempo pada periode ini</span><div class="rp-kecil rp-muted">${escapeHtml(kw.alasan || '')}</div>`)}
-  ${kartu('Integritas ujian', integritasIsi, (ig.jumlahPelanggaran || 0) > 0 ? 'border-color:#fde68a;background:#fffbeb;' : '')}
-  ${dp.xp ? kartu('XP', `${dp.xp.xp ?? 0} total · ${dp.xp.xpMingguIni ?? 0} minggu ini <span class="rp-muted">(snapshot saat dihitung)</span>`) : ''}
-</div>
-${komponenTakTerukur.length ? `<div class="rp-kecil rp-muted" style="margin-top:4px">Komponen ${escapeHtml(komponenTakTerukur.join(', '))} belum dilaksanakan pada periode ini; bobotnya otomatis menguatkan komponen yang ada.</div>` : ''}`;
+  ${kartu('Kehadiran di Kelas', kehadiranIsi, 'border-color:#bbf7d0;background:#f0fdf4;')}
+  ${kartu('Tugas &amp; PR Sekolah', tugasIsi)}
+  ${kartu('Latihan Mandiri', latihanIsi)}
+  ${kartu('Kedisiplinan Tes Digital', integritasIsi)}
+  ${dp.xp ? kartu('Poin XP Belajar', `<b>${dp.xp.xp ?? 0} XP Terkumpul</b><div class="rp-kecil rp-muted" style="margin-top:3px">Apresiasi poin dari keaktifan mengerjakan latihan dan kuis belajar.</div>`) : ''}
+</div>`;
 }
 
 function bagianPerkembangan(p, m = null) {
@@ -717,7 +731,8 @@ function bagianPerkembangan(p, m = null) {
   const mapelTerpotong = Math.max(0, radar.jumlahMapel - RADAR_MAKS_SERI);
   return `
 ${semangat ? `<div class="rp-cara"><b>🔥 Semangat & kebiasaan belajar:</b> tren aktivitas harian <b style="color:${semangat.warna}">${semangat.ikon} ${escapeHtml(semangat.teks)}</b>. Grafik harian di bawah ini adalah bukti mentahnya — naik-turunnya wajar, yang kami jaga adalah arahnya.</div>` : '<div class="rp-cara"><b>🔥 Semangat & kebiasaan belajar:</b> titik aktivitas periode ini masih sedikit, sehingga grafik tren mulai terisi pada sesi-sesi berikutnya.</div>'}
-<h3>Tren try out (skala nasional)</h3>
+<h3>Tren Try Out (Skala Standar Nasional)</h3>
+<div class="rp-kecil rp-muted" style="margin-bottom:6px">Try out berstandar nasional (TKA / UTBK) ditujukan untuk <b>pemetaan diagnostik awal</b> menghadapi tipe soal seleksi, memetakan potensi sejak dini tanpa menghakimi nilai harian siswa.</div>
 ${trenSkala.length ? `<table>
 <thead><tr><th>Tanggal</th><th>Try out</th><th>Mode</th><th>Skala</th><th>Nilai/100</th><th>Per subtes</th></tr></thead>
 <tbody>${trenSkala.map((t) => `<tr>
@@ -754,16 +769,27 @@ ${trenHarian.length ? `<table class="rp-kecil">
 </tr>`).join('')}</tbody></table>
 ${trenHarian.length > CAP_TABEL_HARIAN ? `<div class="rp-muted rp-kecil">Menampilkan ${CAP_TABEL_HARIAN} entri terakhir dari ${trenHarian.length} (snapshot memuat semuanya).</div>` : ''}` : '<div class="rp-muted rp-kecil">Belum ada aktivitas tercatat pada periode ini.</div>'}
 
-<h3>Peta topik (warna = rencana pendampingan, bukan vonis)</h3>
+<h3>Peta Topik Belajar (Kekuatan &amp; Sasaran Pemantapan)</h3>
 ${(() => {
-      const { berwarna: petaWarna } = petaTampil(petaTopik);
-      return `${petaWarna.length ? `<div>${petaWarna.map((t) => {
-      const w = warnaStatusTopik(t.status);
-      return `<span class="rp-chip" style="border-color:${w};color:${w}" title="${escapeHtml(t.alasan || '')} · sumber: ${escapeHtml((t.sumber || []).join('+'))}">${escapeHtml(t.mapelNama || t.mapelKode || '')}: ${escapeHtml(t.topik)} · ${fmt(t.akurasi)}% (${fmt(t.dicoba)})</span>`;
-    }).join('')}</div>`
-    : '<div class="rp-muted rp-kecil">Peta topik dirakit otomatis dari log pengerjaan kuis dan try out yang sudah dilaksanakan.</div>'}`;
-    })()}
-${rekomendasi.length ? `<div class="rp-bad rp-kecil" style="margin-top:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:6px 10px"><b>Rencana pendampingan periode depan:</b><ul style="margin:4px 0 0;padding-left:18px">${rekomendasi.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>` : ''}
+  const { berwarna: petaWarna } = petaTampil(petaTopik);
+  if (!petaWarna.length) return '<div class="rp-muted rp-kecil">Peta topik dirakit otomatis dari log pengerjaan kuis dan try out yang sudah dilaksanakan.</div>';
+  const topikKekuatan = petaWarna.filter((t) => t.akurasi >= 65);
+  const topikPemantapan = petaWarna.filter((t) => t.akurasi < 65);
+  return `
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0">
+  <div style="flex:1 1 240px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px">
+    <b style="color:#166534;font-size:10.5px">🟢 Materi yang Dikuasai Baik (Kekuatan Ananda):</b>
+    <div style="margin-top:4px">${topikKekuatan.length ? topikKekuatan.map((t) => `<span class="rp-chip rp-chip-green">${escapeHtml(t.mapelNama || t.mapelKode || '')}: ${escapeHtml(t.topik)} · ${fmt(t.akurasi)}%</span>`).join('') : '<span class="rp-muted rp-kecil">Materi dasar sedang diperkuat melalui latihan bertahap.</span>'}</div>
+  </div>
+  <div style="flex:1 1 240px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px">
+    <b style="color:#1e40af;font-size:10.5px">🎯 Fokus Pemantapan Gemilang (Target Bimbingan):</b>
+    <div style="margin-top:4px">${topikPemantapan.length ? topikPemantapan.map((t) => `<span class="rp-chip rp-chip-blue">${escapeHtml(t.mapelNama || t.mapelKode || '')}: ${escapeHtml(t.topik)} · ${fmt(t.akurasi)}%</span>`).join('') : '<span class="rp-muted rp-kecil">Seluruh topik yang diuji telah dikuasai dengan baik.</span>'}</div>
+  </div>
+</div>
+<div class="rp-kecil" style="margin-top:6px;color:#1e3a8a;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px">
+  <b>💡 Komitmen Pendampingan Bimbel Gemilang:</b> Materi dalam fokus pemantapan akan diperdalam secara terbimbing melalui sesi klinik PR tatap muka dan drilling soal bertingkat pada periode berikutnya.
+</div>`;
+})()}
 
 <h3>Dimensi global (proksi otomatis dari log)</h3>
 <table class="rp-kecil"><tbody>
@@ -811,11 +837,11 @@ function bagianSiswa(m, { kodeCetak = '', logoUrl = '' } = {}) {
   <div class="rp-ringkas">
     <div class="rp-angka">
       <div class="besar" style="color:${warnaPredikatHuruf(m.ringkasan.predikatAkademik.huruf)}">${fmt(m.ringkasan.rataRataAkademik)}</div>
-      <div class="kecil">${Number.isFinite(m.ringkasan.rataRataAkademik) ? 'CAPAIAN AKADEMIK TERUKUR' : 'CAPAIAN AKADEMIK · TERISI OTOMATIS DARI ASEMEN BERIKUTNYA'} · ${escapeHtml(m.ringkasan.predikatAkademik.huruf)} (${escapeHtml(m.ringkasan.predikatAkademik.label || '')})</div>
+      <div class="kecil">${Number.isFinite(m.ringkasan.rataRataAkademik) ? 'CAPAIAN AKADEMIK TERUKUR' : 'CAPAIAN AKADEMIK'} · ${escapeHtml(m.ringkasan.predikatAkademik.label || 'Aktif Belajar')}</div>
     </div>
     <div class="rp-angka">
       <div class="besar" style="color:${warnaPredikatHuruf(m.ringkasan.predikatProses.huruf)}">${fmt(m.ringkasan.nilaiProses)}</div>
-      <div class="kecil">NILAI PROSES & KARAKTER · ${escapeHtml(m.ringkasan.predikatProses.huruf)} (${escapeHtml(m.ringkasan.predikatProses.label || '')})</div>
+      <div class="kecil">INDEKS PROSES &amp; KEDISIPLINAN · ${escapeHtml(m.ringkasan.predikatProses.label || 'Baik')}</div>
     </div>
   </div>
 
