@@ -711,7 +711,6 @@ function bagianRekamJejakHarian(p) {
   const totalSesi = rj?.totalSesi ?? kh.total ?? 0;
   const persenHadir = rj?.persenHadir ?? kh.persenHadir ?? (totalSesi ? Math.round((sesiHadir / totalSesi) * 100) : null);
   const indeks = rj?.indeksPemahaman ?? null;
-  const dist = rj?.distribusi || { mandiri: 0, bertahap: 0, klinik: 0 };
   const materiList = Array.isArray(rj?.materiList) ? rj.materiList : [];
   const catatanSesi = Array.isArray(rj?.catatanSesi) ? rj.catatanSesi : [];
 
