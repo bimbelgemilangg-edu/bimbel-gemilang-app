@@ -4,10 +4,10 @@
 // Fitur Anti-Cheating:
 //   1. Blind Submission: TIDAK membocorkan kunci jawaban/tanda benar-salah
 //      secara instan agar teman sebangku tidak bisa menyalin jawaban.
-//   2. Pengacakan Nomor & Opsi: Urutan butir soal dan opsi A/B/C/D
+//   2. Pengacakan Nomor & Opsi: Urutan butir soal dan opsi A/B/C/D/E
 //      diacak unik per studentId.
-//   3. Penguncian Hasil: Begitu dikirim, terkunci dan langsung
-//      mendapatkan reward XP belajar harian.
+//   3. Render Matematika & Gambar: Menampilkan KaTeX presisi
+//      dan gambar soal secara utuh di tempatnya.
 // ============================================================
 
 import React, { useState, useMemo } from 'react';
@@ -21,6 +21,9 @@ import {
 } from 'lucide-react';
 import { db } from '../../firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
+import RenderMath from '../RenderMath';
+import TeksSoalBergambar from '../TeksSoalBergambar';
+import { normalisasiButirSoal } from '../../utils/normalisasiSoalLatihan';
 
 /**
  * Hash string sederhana untuk seeding pseudo-random deterministic
@@ -66,10 +69,12 @@ export default function ModalKerjakanLatihanSesi({
   // Siapkan daftar soal teracak deterministik berdasarkan studentId
   const soalListAcak = useMemo(() => {
     const raw = Array.isArray(latihan?.soalList) ? latihan.soalList : [];
-    if (!latihan?.acakSoal || !studentId) return raw;
+    const normalizedList = raw.map((q, idx) => normalisasiButirSoal(q, idx));
+
+    if (!latihan?.acakSoal || !studentId) return normalizedList;
 
     const seedUtama = hashString(cleanStudentId + (schedule?.id || 'sch'));
-    const shuffledQuestions = shuffleWithSeed(raw, seedUtama);
+    const shuffledQuestions = shuffleWithSeed(normalizedList, seedUtama);
 
     // Acak pula urutan opsi jawaban per soal
     return shuffledQuestions.map((q, idx) => {
@@ -152,7 +157,6 @@ export default function ModalKerjakanLatihanSesi({
           });
         }
       } catch (errXp) {
-        // Abaikan jika studentDocId tidak tersedia di auth anon
         void errXp;
       }
 
@@ -188,8 +192,8 @@ export default function ModalKerjakanLatihanSesi({
           background: '#ffffff',
           borderRadius: 20,
           width: '100%',
-          maxWidth: 640,
-          maxHeight: '90vh',
+          maxWidth: 680,
+          maxHeight: '92vh',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
@@ -199,7 +203,7 @@ export default function ModalKerjakanLatihanSesi({
         {/* Header Modal */}
         <div
           style={{
-            padding: '14px 18px',
+            padding: '14px 20px',
             borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
@@ -243,8 +247,8 @@ export default function ModalKerjakanLatihanSesi({
                 background: '#f1f5f9',
                 border: 'none',
                 borderRadius: '50%',
-                width: 30,
-                height: 30,
+                width: 32,
+                height: 32,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -351,7 +355,7 @@ export default function ModalKerjakanLatihanSesi({
             </button>
           </div>
         ) : (
-          /* BODY 2: PLAYER SOAL INTERAKTIF */
+          /* BODY 2: PLAYER SOAL INTERAKTIF (DENGAN RENDERMATH & GAMBAR UTUH) */
           <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
             {/* Progress Bar Soal */}
             <div style={{ background: '#f8fafc', padding: '10px 18px', borderBottom: '1px solid #e2e8f0' }}>
@@ -408,26 +412,21 @@ export default function ModalKerjakanLatihanSesi({
             <div style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
               {soalSekarang ? (
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', lineHeight: 1.6, marginBottom: 16 }}>
-                    {soalSekarang.teksSoal}
+                  {/* Teks Soal & Gambar melalui TeksSoalBergambar */}
+                  <div style={{ marginBottom: 18 }}>
+                    <TeksSoalBergambar
+                      teks={soalSekarang.teksSoal}
+                      gambarUrls={soalSekarang.gambarUrls || []}
+                      gayaTeks={{ fontSize: 14.5, lineHeight: 1.65, color: '#0f172a' }}
+                      gayaGambar={{ maxHeight: 260, margin: '12px auto', borderRadius: 8, border: '1px solid #e2e8f0', display: 'block' }}
+                    />
                   </div>
 
-                  {/* Gambar Soal (Jika ada) */}
-                  {soalSekarang.gambarUrl && (
-                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                      <img
-                        src={soalSekarang.gambarUrl}
-                        alt="Ilustrasi Soal"
-                        style={{ maxWidth: '100%', maxHeight: 220, borderRadius: 8, border: '1px solid #e2e8f0' }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Pilihan Ganda Opsi */}
+                  {/* Pilihan Ganda Opsi dengan RenderMath */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {(soalSekarang.opsiTampil || soalSekarang.opsiJawaban || []).map((op, oIdx) => {
-                      const label = typeof op === 'object' ? op.label : ['A', 'B', 'C', 'D'][oIdx];
-                      const teks = typeof op === 'object' ? op.teks : op;
+                      const label = typeof op === 'object' ? op.label : ['A', 'B', 'C', 'D', 'E'][oIdx];
+                      const teks = typeof op === 'object' ? op.teks : String(op);
                       const isSelected = jawabanUser[soalSekarang.id || nomorAktif] === label;
 
                       return (
@@ -448,22 +447,35 @@ export default function ModalKerjakanLatihanSesi({
                         >
                           <div
                             style={{
-                              width: 28,
-                              height: 28,
+                              width: 30,
+                              height: 30,
                               borderRadius: '50%',
                               background: isSelected ? '#16a34a' : '#f1f5f9',
                               color: isSelected ? '#ffffff' : '#475569',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: 12,
+                              fontSize: 12.5,
                               fontWeight: 800,
+                              flexShrink: 0,
                             }}
                           >
                             {label}
                           </div>
-                          <div style={{ fontSize: 13, color: isSelected ? '#15803d' : '#1e293b', fontWeight: isSelected ? 600 : 400, flex: 1 }}>
-                            {teks}
+                          <div style={{ fontSize: 13.5, color: isSelected ? '#15803d' : '#1e293b', fontWeight: isSelected ? 600 : 400, flex: 1, minWidth: 0 }}>
+                            <RenderMath text={teks} />
+                            {Array.isArray(op.gambar) && op.gambar.length > 0 && (
+                              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                                {op.gambar.map((g, gi) => (
+                                  <img
+                                    key={gi}
+                                    src={typeof g === 'string' ? g : g?.url}
+                                    alt={`Gambar opsi ${label}`}
+                                    style={{ maxHeight: 100, borderRadius: 6, border: '1px solid #cbd5e1' }}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

@@ -3,8 +3,9 @@
 // Modal Penyiapan Latihan Pemahaman Sesi Tatap Muka (Pra-Kelas)
 // Memungkinkan tentor memilih bab silabus resmi, menyeleksi 5-10
 // soal dari Bank Soal (manual atau AI/rekomendasi cerdas),
-// mereview butir soal sebelum diterbitkan, dan mengaktifkan mode
-// pengaman anti-cheating (Blind Submission + Acak Soal/Opsi).
+// mereview butir soal secara lengkap (KaTeX matematika rapi,
+// gambar tampil utuh, opsi A/B/C/D/E terstruktur), dan mengaktifkan
+// mode pengaman anti-cheating (Blind Submission + Acak Soal/Opsi).
 // ============================================================
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -25,6 +26,9 @@ import {
   semesterKalenderAktif,
   normalisasiKodeMapel,
 } from '../../utils/silabusKurikulumMerdeka';
+import RenderMath from '../RenderMath';
+import TeksSoalBergambar from '../TeksSoalBergambar';
+import { normalisasiButirSoal } from '../../utils/normalisasiSoalLatihan';
 
 export default function ModalSiapkanLatihanSesi({
   schedule,
@@ -98,7 +102,7 @@ export default function ModalSiapkanLatihanSesi({
       if (typeof lat.blindSubmission === 'boolean') setBlindSubmission(lat.blindSubmission);
       if (typeof lat.acakSoal === 'boolean') setAcakUrutan(lat.acakSoal);
       if (Array.isArray(lat.soalList) && lat.soalList.length > 0) {
-        setSoalTerpilih(lat.soalList);
+        setSoalTerpilih(lat.soalList.map((s, idx) => normalisasiButirSoal(s, idx)));
       }
     }
   }, [schedule]);
@@ -109,16 +113,15 @@ export default function ModalSiapkanLatihanSesi({
     const fetchBankSoal = async () => {
       setLoadingBank(true);
       try {
-        // Query Firestore bank_soal dengan filter longgar agar dapat soal relevan
         let qBank;
         try {
           qBank = query(
             collection(db, 'bank_soal'),
             where('status', '==', 'aktif'),
-            limit(60)
+            limit(100)
           );
         } catch {
-          qBank = query(collection(db, 'bank_soal'), limit(60));
+          qBank = query(collection(db, 'bank_soal'), limit(100));
         }
 
         const snap = await getDocs(qBank);
@@ -126,31 +129,20 @@ export default function ModalSiapkanLatihanSesi({
 
         const items = [];
         snap.forEach((d) => {
-          const dt = d.data();
-          items.push({
-            id: d.id,
-            nomor: dt.nomor || items.length + 1,
-            teksSoal: dt.teksSoal || dt.soal || dt.pertanyaan || dt.teks_soal || '',
-            opsiJawaban: dt.opsiJawaban || dt.opsi || dt.pilihan || [],
-            kunciJawaban: dt.kunciJawaban || dt.kunci || dt.jawabanBenar || 'A',
-            pembahasan: dt.pembahasan || '',
-            gambarUrl: dt.gambarUrl || dt.gambar || dt.mediaUrl || '',
-            materi: dt.materi || dt.bab || '',
-            mapel: dt.mataPelajaran || dt.mapel || '',
-            tingkatKelas: dt.tingkatKelas || dt.kelas || '',
-            jenjang: dt.jenjang || '',
-          });
+          const raw = { id: d.id, ...d.data() };
+          const norm = normalisasiButirSoal(raw, items.length);
+          if (norm && norm.teksSoal) {
+            items.push(norm);
+          }
         });
 
-        // Filter butir yang relevan dengan mapel / jenjang jika ada
+        // Filter butir yang relevan dengan mapel jika memungkinkan
         const relevan = items.filter((it) => {
-          if (!it.teksSoal) return false;
-          const mapelIt = normalisasiKodeMapel(it.mapel);
-          if (mapelIt === kodeMapel) return true;
-          return true; // jika bank masih sedikit, tetap tampilkan
+          const m = normalisasiKodeMapel(it.mapel);
+          return m === kodeMapel;
         });
 
-        setBankSoalList(relevan.length > 0 ? relevan : items);
+        setBankSoalList(relevan.length >= 5 ? relevan : items);
       } catch (err) {
         console.warn('Gagal memuat bank_soal:', err);
       } finally {
@@ -173,17 +165,20 @@ export default function ModalSiapkanLatihanSesi({
       mapelNama.toLowerCase(),
     ].join(' ');
 
-    // Urutkan bank soal berdasarkan kecocokan kata kunci
+    // Urutkan bank soal berdasarkan kecocokan materi dan kata kunci
     const skorButir = bankSoalList.map((item) => {
       let skor = 0;
       const teks = (item.teksSoal + ' ' + (item.materi || '')).toLowerCase();
       if (item.materi && item.materi.toLowerCase().includes(babTerpilihObj.judul.toLowerCase())) {
-        skor += 10;
+        skor += 20;
       }
-      if (teks.includes('persamaan') && kataKunci.includes('persamaan')) skor += 5;
-      if (teks.includes('bangun ruang') && kataKunci.includes('bangun ruang')) skor += 5;
-      if (teks.includes('transformasi') && kataKunci.includes('transformasi')) skor += 5;
-      if (teks.includes('peluang') && kataKunci.includes('peluang')) skor += 5;
+      if (teks.includes('persamaan') && kataKunci.includes('persamaan')) skor += 8;
+      if (teks.includes('spldv') || teks.includes('linear')) skor += 10;
+      if (teks.includes('bangun ruang') && kataKunci.includes('bangun ruang')) skor += 8;
+      if (teks.includes('transformasi') && kataKunci.includes('transformasi')) skor += 8;
+      if (teks.includes('peluang') && kataKunci.includes('peluang')) skor += 8;
+      // Prioritaskan soal yang memiliki gambar lengkap jika topik geometris/grafik
+      if (item.gambarUrls && item.gambarUrls.length > 0) skor += 3;
       return { item, skor };
     });
 
@@ -196,25 +191,25 @@ export default function ModalSiapkanLatihanSesi({
       const sisa = jumlahTarget - terpilih.length;
       for (let i = 1; i <= sisa; i++) {
         const no = terpilih.length + 1;
-        terpilih.push({
+        terpilih.push(normalisasiButirSoal({
           id: `seed-${Date.now()}-${no}`,
           nomor: no,
-          teksSoal: `[Latihan Pemahaman ${no}] Berdasarkan materi ${babTerpilihObj.judul} (${selectedSubBab || 'Konsep Dasar'}), tentukan pernyataan yang paling tepat untuk menyelesaikan model permasalahan tersebut!`,
+          teksSoal: `Diketahui permasalahan pada materi ${babTerpilihObj.judul}. Jika sistem persamaan linear dimodelkan dalam bentuk $ax + by = c$, tentukan metode penyelesaian yang paling efisien untuk menemukan pasangan nilai $(x, y)$!`,
           opsiJawaban: [
-            { label: 'A', teks: 'Menggunakan langkah eliminasi variabel terlebih dahulu' },
-            { label: 'B', teks: 'Melakukan substitusi nilai ke dalam persamaan dasar' },
-            { label: 'C', teks: 'Menyamakan koefisien kedua fungsi matematis' },
-            { label: 'D', teks: 'Menghitung nilai konstanta secara terpisah' },
+            { label: 'A', teks: 'Menggunakan metode eliminasi variabel terlebih dahulu' },
+            { label: 'B', teks: 'Melakukan substitusi nilai variabel ke dalam persamaan dasar' },
+            { label: 'C', teks: 'Menyamakan koefisien kedua fungsi matematika' },
+            { label: 'D', teks: 'Menghitung nilai determinan matriks $2 \\times 2$' },
           ],
           kunciJawaban: 'A',
-          pembahasan: `Analisis terstruktur: Pada materi ${babTerpilihObj.judul}, langkah utama diawali dengan menyederhanakan hubungan antar-variabel.`,
+          pembahasan: `Analisis terstruktur: Pada materi ${babTerpilihObj.judul}, penyelesaian dimulai dari menyederhanakan hubungan antar-variabel secara sistematis.`,
           materi: babTerpilihObj.judul,
-        });
+        }, terpilih.length));
       }
     }
 
     setSoalTerpilih(terpilih);
-    setPesanStatus(`✨ Berhasil menyiapkan ${terpilih.length} soal rekomendasi cerdas untuk ${babTerpilihObj.judul}`);
+    setPesanStatus(`✨ Berhasil menyiapkan ${terpilih.length} butir soal terverifikasi untuk ${babTerpilihObj.judul}`);
   };
 
   // Toggle pilihan butir soal pada mode manual
@@ -258,23 +253,15 @@ export default function ModalSiapkanLatihanSesi({
         acakSoal: Boolean(acakUrutan),
         terbitPada: schedule.latihanSesi?.terbitPada || new Date().toISOString(),
         diperbaruiPada: new Date().toISOString(),
-        status: 'aktif', // 'aktif' | 'ditutup'
+        status: 'aktif',
         soalList: soalTerpilih.map((s, idx) => ({
           id: s.id || `soal-${idx + 1}`,
           nomor: idx + 1,
-          teksSoal: s.teksSoal || s.soal || '',
-          opsiJawaban: Array.isArray(s.opsiJawaban)
-            ? s.opsiJawaban.map((op, oIdx) => {
-                if (typeof op === 'string') {
-                  const huruf = ['A', 'B', 'C', 'D', 'E'][oIdx] || 'A';
-                  return { label: huruf, teks: op };
-                }
-                return op;
-              })
-            : [],
+          teksSoal: s.teksSoal || '',
+          opsiJawaban: s.opsiJawaban || [],
           kunciJawaban: s.kunciJawaban || 'A',
           pembahasan: s.pembahasan || '',
-          gambarUrl: s.gambarUrl || '',
+          gambarUrls: s.gambarUrls || [],
         })),
         hasil: schedule.latihanSesi?.hasil || {},
       };
@@ -287,7 +274,7 @@ export default function ModalSiapkanLatihanSesi({
         subBab: selectedSubBab || '',
       });
 
-      alert(`✅ Latihan Sesi Berhasil Diterbitkan!\n\n${soalTerpilih.length} butir soal kini aktif untuk kelas ${schedule.title || 'Sesi Ini'}.\nSiswa dapat langsung mengerjakannya lewat Dashboard Siswa dengan mode Blind Submission.`);
+      alert(`✅ Latihan Sesi Berhasil Diterbitkan!\n\n${soalTerpilih.length} butir soal kini aktif untuk kelas ${schedule.title || 'Sesi Ini'}.\nSiswa dapat langsung membukanya di Dashboard Siswa dengan mode Blind Submission.`);
       if (onSuccess) onSuccess(dataLatihan);
       if (onClose) onClose();
     } catch (err) {
@@ -341,8 +328,8 @@ export default function ModalSiapkanLatihanSesi({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(15, 23, 42, 0.65)',
-        backdropFilter: 'blur(4px)',
+        background: 'rgba(15, 23, 42, 0.7)',
+        backdropFilter: 'blur(5px)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
@@ -355,8 +342,8 @@ export default function ModalSiapkanLatihanSesi({
           background: '#ffffff',
           borderRadius: 20,
           width: '100%',
-          maxWidth: 780,
-          maxHeight: '90vh',
+          maxWidth: 820,
+          maxHeight: '92vh',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -367,7 +354,7 @@ export default function ModalSiapkanLatihanSesi({
         {/* Header Modal */}
         <div
           style={{
-            padding: '16px 20px',
+            padding: '16px 22px',
             borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
@@ -388,9 +375,9 @@ export default function ModalSiapkanLatihanSesi({
                   textTransform: 'uppercase',
                 }}
               >
-                Pra-Kelas · Sesi Tatap Muka
+                Pra-Kelas · Verifikasi Guru
               </span>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
+              <h3 style={{ margin: 0, fontSize: 16.5, fontWeight: 800, color: '#0f172a' }}>
                 🎯 Penyiapan Latihan Pemahaman Sesi
               </h3>
             </div>
@@ -405,8 +392,8 @@ export default function ModalSiapkanLatihanSesi({
               background: '#f1f5f9',
               border: 'none',
               borderRadius: '50%',
-              width: 32,
-              height: 32,
+              width: 34,
+              height: 34,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -419,7 +406,7 @@ export default function ModalSiapkanLatihanSesi({
         </div>
 
         {/* Konten Scrollable */}
-        <div style={{ padding: 20, overflowY: 'auto', flex: 1 }}>
+        <div style={{ padding: 22, overflowY: 'auto', flex: 1 }}>
           {/* Status Aktif Latihan Sebelumnya */}
           {schedule?.latihanSesi?.status === 'aktif' && (
             <div
@@ -651,7 +638,7 @@ export default function ModalSiapkanLatihanSesi({
                     Tarik Butir Soal Sesuai Silabus Hari Ini
                   </div>
                   <div style={{ fontSize: 11, color: '#7e22ce', marginTop: 2 }}>
-                    Sistem akan memfilter bank soal yang paling cocok dengan {babTerpilihObj?.judul || 'Bab Ini'}.
+                    Sistem memfilter bank soal yang paling cocok dengan <b>{babTerpilihObj?.judul || 'Bab Ini'}</b>.
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -705,7 +692,7 @@ export default function ModalSiapkanLatihanSesi({
                   border: '1px solid #e2e8f0',
                   borderRadius: 12,
                   padding: 12,
-                  maxHeight: 220,
+                  maxHeight: 240,
                   overflowY: 'auto',
                 }}
               >
@@ -745,8 +732,13 @@ export default function ModalSiapkanLatihanSesi({
                         />
                         <div style={{ flex: 1, fontSize: 12, color: '#1e293b' }}>
                           <div style={{ fontWeight: 600, lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {soal.teksSoal}
+                            <RenderMath text={soal.teksSoal} />
                           </div>
+                          {soal.gambarUrls && soal.gambarUrls.length > 0 && (
+                            <div style={{ fontSize: 10, color: '#4338ca', marginTop: 2 }}>
+                              🖼️ Membawa {soal.gambarUrls.length} Gambar
+                            </div>
+                          )}
                           <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
                             Kunci: <b>{soal.kunciJawaban || 'A'}</b> · Materi: {soal.materi || babTerpilihObj?.judul || 'Umum'}
                           </div>
@@ -765,7 +757,7 @@ export default function ModalSiapkanLatihanSesi({
             </div>
           )}
 
-          {/* 3. Tinjau & Review Soal yang Akan Diterbitkan */}
+          {/* 3. Tinjau & Review Soal yang Akan Diterbitkan (DENGAN RENDERMATH & GAMBAR UTUH) */}
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -804,60 +796,119 @@ export default function ModalSiapkanLatihanSesi({
                 Belum ada butir soal yang dipilih. Klik <b>"Siapkan 5 Soal Cepat"</b> di atas atau centang manual dari Bank Soal.
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {soalTerpilih.map((soal, idx) => (
                   <div
                     key={soal.id || idx}
                     style={{
                       background: '#ffffff',
                       border: '1px solid #e2e8f0',
-                      borderRadius: 12,
-                      padding: 12,
-                      position: 'relative',
+                      borderRadius: 14,
+                      padding: 16,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', flex: 1 }}>
-                        <span style={{ color: '#4f46e5', marginRight: 4 }}>#{idx + 1}.</span> {soal.teksSoal}
+                    {/* Header Butir Soal */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ background: '#eef2ff', color: '#4338ca', fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 6 }}>
+                          Soal #{idx + 1}
+                        </span>
+                        {soal.materi && (
+                          <span style={{ fontSize: 10.5, color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: 6 }}>
+                            {soal.materi}
+                          </span>
+                        )}
                       </div>
                       <button
                         type="button"
                         onClick={() => handleHapusSoal(idx)}
-                        title="Hapus butir ini"
+                        title="Hapus butir ini dari paket latihan"
                         style={{
                           background: '#fef2f2',
-                          border: 'none',
+                          border: '1px solid #fecaca',
                           color: '#dc2626',
                           borderRadius: 6,
-                          padding: '4px 6px',
+                          padding: '4px 8px',
+                          fontSize: 11,
+                          fontWeight: 700,
                           cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
                         }}
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={12} /> Hapus
                       </button>
                     </div>
 
-                    {/* Opsi Jawaban & Kunci (Hanya Terlihat oleh Tentor di Review) */}
-                    <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {/* Badan Soal: KaTeX Matematika Rapi + Gambar Utuh */}
+                    <div style={{ marginBottom: 12 }}>
+                      <TeksSoalBergambar
+                        teks={soal.teksSoal}
+                        gambarUrls={soal.gambarUrls || []}
+                        gayaTeks={{ fontSize: 13.5, lineHeight: 1.6, color: '#0f172a' }}
+                        gayaGambar={{ maxHeight: 220, margin: '10px 0', borderRadius: 8, border: '1px solid #e2e8f0', display: 'block' }}
+                      />
+                    </div>
+
+                    {/* Opsi Jawaban Terstruktur & RenderMath */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }}>
                       {Array.isArray(soal.opsiJawaban) &&
                         soal.opsiJawaban.map((op, oIdx) => {
-                          const label = typeof op === 'object' ? op.label : ['A', 'B', 'C', 'D'][oIdx];
-                          const teks = typeof op === 'object' ? op.teks : op;
-                          const isKunci = String(label).toUpperCase() === String(soal.kunciJawaban || 'A').toUpperCase();
+                          const isKunci = String(op.label).toUpperCase() === String(soal.kunciJawaban || 'A').toUpperCase();
                           return (
                             <div
                               key={oIdx}
                               style={{
-                                fontSize: 11,
-                                padding: '5px 8px',
-                                borderRadius: 6,
-                                background: isKunci ? '#dcfce7' : '#f8fafc',
-                                border: isKunci ? '1px solid #86efac' : '1px solid #f1f5f9',
-                                color: isKunci ? '#166534' : '#475569',
-                                fontWeight: isKunci ? 700 : 500,
+                                fontSize: 12,
+                                padding: '8px 12px',
+                                borderRadius: 8,
+                                background: isKunci ? '#f0fdf4' : '#f8fafc',
+                                border: isKunci ? '1.5px solid #22c55e' : '1px solid #e2e8f0',
+                                color: isKunci ? '#15803d' : '#1e293b',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 8,
                               }}
                             >
-                              <b>{label}.</b> {teks} {isKunci && '✓ (Kunci)'}
+                              <span
+                                style={{
+                                  width: 22,
+                                  height: 22,
+                                  borderRadius: '50%',
+                                  background: isKunci ? '#16a34a' : '#e2e8f0',
+                                  color: isKunci ? '#ffffff' : '#334155',
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {op.label}
+                              </span>
+                              <div style={{ flex: 1, minWidth: 0, paddingTop: 1 }}>
+                                <RenderMath text={op.teks} />
+                                {isKunci && (
+                                  <span style={{ marginLeft: 6, fontSize: 10.5, fontWeight: 800, color: '#16a34a' }}>
+                                    ✓ (Kunci)
+                                  </span>
+                                )}
+                                {Array.isArray(op.gambar) && op.gambar.length > 0 && (
+                                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                                    {op.gambar.map((g, gi) => (
+                                      <img
+                                        key={gi}
+                                        src={typeof g === 'string' ? g : g?.url}
+                                        alt={`Gambar opsi ${op.label}`}
+                                        style={{ maxHeight: 90, borderRadius: 6, border: '1px solid #cbd5e1' }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
