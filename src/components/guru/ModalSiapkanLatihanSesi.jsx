@@ -78,7 +78,7 @@ export default function ModalSiapkanLatihanSesi({
       try {
         const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('teacherData') : null;
         if (stored) t = JSON.parse(stored);
-      } catch (err) {
+      } catch (_err) {
         t = null;
       }
     }
@@ -187,7 +187,7 @@ export default function ModalSiapkanLatihanSesi({
     const kataKunci = [
       babTerpilihObj.judul.toLowerCase(),
       selectedSubBab.toLowerCase(),
-      mapelNama.toLowerCase(),
+      (namaMapelLengkap(kodeMapel) || '').toLowerCase(),
     ].join(' ');
 
     // Urutkan bank soal berdasarkan kecocokan materi dan kata kunci

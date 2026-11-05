@@ -89,7 +89,7 @@ export default function ModalKerjakanLatihanSesi({
         opsiTampil: shuffledOpsi,
       };
     });
-  }, [latihan, cleanStudentId, schedule]);
+  }, [latihan, cleanStudentId, studentId, schedule]);
 
   const [nomorAktif, setNomorAktif] = useState(0);
   const [jawabanUser, setJawabanUser] = useState({}); // { [soalId]: labelOpsi }
