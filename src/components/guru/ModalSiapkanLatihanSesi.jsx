@@ -102,6 +102,20 @@ export default function ModalSiapkanLatihanSesi({
     return k >= 1 && k <= 6;
   }, [schedule, kelasAngka]);
 
+  // Ekstraksi jenjang sesi: 'sd' | 'smp' | 'sma'
+  const jenjangSesi = useMemo(() => {
+    if (!schedule) return 'smp';
+    const teks = `${schedule.title || ''} ${schedule.level || ''} ${schedule.program || ''} ${schedule.kelas || ''}`.toLowerCase();
+    if (teks.includes('smp') || teks.includes('mts')) return 'smp';
+    if (teks.includes('sma') || teks.includes('smk') || teks.includes('ma') || teks.includes('utbk') || teks.includes('snbt')) return 'sma';
+    if (teks.includes('sd') || teks.includes('mi')) return 'sd';
+    const k = parseInt(kelasAngka, 10);
+    if (k >= 1 && k <= 6) return 'sd';
+    if (k >= 7 && k <= 9) return 'smp';
+    if (k >= 10 && k <= 12) return 'sma';
+    return 'smp';
+  }, [schedule, kelasAngka]);
+
   // 2. Daftar Bab resmi berdasarkan silabus
   const listBab = useMemo(() => {
     return daftarBabSilabus({
@@ -284,13 +298,32 @@ export default function ModalSiapkanLatihanSesi({
           }
         });
 
-        // Filter butir yang relevan dengan mapel jika memungkinkan
+        // Filter butir yang relevan dengan mapel dan jenjang sesi
         const relevan = items.filter((it) => {
           const m = normalisasiKodeMapel(it.mapel);
-          return m === kodeMapel;
+          if (m !== kodeMapel) return false;
+
+          const teksGabungan = `${it.jenjang || ''} ${it.tingkatKelas || ''} ${it.fase || ''} ${it.materi || ''} ${it.teksSoal || ''}`.toLowerCase();
+
+          // Saring ketat materi SMA/UTBK agar tidak menyusup ke sesi SMP atau SD
+          if (jenjangSesi === 'smp' || jenjangSesi === 'sd') {
+            const isSMA = /\b(sma|smk|ma|utbk|snbt|fase e|fase f|kelas 10|kelas 11|kelas 12|kelas x\b|kelas xi\b|kelas xii\b)\b/i.test(teksGabungan);
+            const isSMAKeyword = /trigonometri|\bsin\b|\bcos\b|\btan\b|\\sin|\\cos|\\tan|komposisi\s+fungsi|fungsi\s+invers|turunan|integral|matriks|vektor|eksponen|logaritma|dimensi tiga/i.test(teksGabungan);
+            if (isSMA || isSMAKeyword) return false;
+          }
+
+          if (jenjangSesi === 'smp') {
+            const isSD = /\b(sd|mi|fase a|fase b|fase c|kelas [1-6]\b)\b/i.test(`${it.jenjang || ''} ${it.tingkatKelas || ''} ${it.fase || ''}`.toLowerCase());
+            if (isSD) return false;
+          } else if (jenjangSesi === 'sma') {
+            const isBawah = /\b(sd|smp|mi|mts|fase a|fase b|fase c|fase d|kelas [1-9]\b)\b/i.test(`${it.jenjang || ''} ${it.tingkatKelas || ''} ${it.fase || ''}`.toLowerCase());
+            if (isBawah) return false;
+          }
+
+          return true;
         });
 
-        setBankSoalList(relevan.length >= 5 ? relevan : items);
+        setBankSoalList(relevan);
       } catch (err) {
         console.warn('Gagal memuat bank_soal:', err);
       } finally {
@@ -302,7 +335,7 @@ export default function ModalSiapkanLatihanSesi({
     return () => {
       mounted = false;
     };
-  }, [kodeMapel]);
+  }, [kodeMapel, jenjangSesi]);
 
   // 4A. Ambil Soal dari Kuis E-Learning Guru
   const handleTerapkanKuisModul = (kuisTarget) => {
@@ -346,6 +379,14 @@ export default function ModalSiapkanLatihanSesi({
       (namaMapelLengkap(kodeMapel) || "").toLowerCase(),
     ].join(" ");
 
+    const isSisiLengkung = [
+      "sisi lengkung", "tabung", "kerucut", "bola", "selimut tabung", "selimut kerucut", "garis pelukis"
+    ].some((k) => kataKunci.includes(k));
+
+    const isSisiDatar = [
+      "sisi datar", "kubus", "balok", "prisma", "limas"
+    ].some((k) => kataKunci.includes(k));
+
     const isGeometriBangunRuang = [
       "bangun ruang", "bangun datar", "geometri", "kubus", "balok",
       "prisma", "limas", "tabung", "kerucut", "bola", "sisi datar",
@@ -360,33 +401,64 @@ export default function ModalSiapkanLatihanSesi({
     const skorButir = bankSoalList.map((item) => {
       let skor = 0;
       const teks = (item.teksSoal + " " + (item.materi || "")).toLowerCase();
+      const metaTeks = (teks + " " + (item.jenjang || "") + " " + (item.tingkatKelas || "") + " " + (item.fase || "")).toLowerCase();
 
-      // 1. Kecocokan nama bab / materi utama
-      if (item.materi && item.materi.toLowerCase().includes(judulBabLower)) {
-        skor += 35;
+      // Penalti mutlak jika jenjang SMP/SD mendapati materi tingkat SMA / UTBK
+      if (jenjangSesi === 'smp' || jenjangSesi === 'sd') {
+        const isSMA = /\b(sma|smk|ma|utbk|snbt|fase e|fase f|kelas 10|kelas 11|kelas 12|kelas x\b|kelas xi\b|kelas xii\b)\b/i.test(metaTeks);
+        const isSMAKeyword = /trigonometri|\bsin\b|\bcos\b|\btan\b|\\sin|\\cos|\\tan|komposisi\s+fungsi|fungsi\s+invers|turunan|integral|matriks|vektor|eksponen|logaritma|dimensi tiga/i.test(metaTeks);
+        if (isSMA || isSMAKeyword) {
+          return { item, skor: -1000 };
+        }
       }
 
-      // 2. Kategori Geometri / Bangun Ruang
-      if (isGeometriBangunRuang) {
-        const hasGeomTerms = ["bangun ruang", "kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola", "volume", "luas permukaan", "rusuk", "sisi", "titik sudut"].some(k => teks.includes(k));
+      // 1. Kecocokan nama bab / materi utama
+      if (item.materi && judulBabLower && item.materi.toLowerCase().includes(judulBabLower)) {
+        skor += 45;
+      }
+
+      // 2. Kategori Geometri Bangun Ruang Sisi Lengkung vs Sisi Datar
+      if (isSisiLengkung) {
+        // Harus ada istilah spesifik sisi lengkung
+        const hasLengkungTerms = ["tabung", "kerucut", "bola", "selimut", "garis pelukis", "\\pi", "pi", "jari-jari", "diameter"].some(k => teks.includes(k));
+        if (hasLengkungTerms) skor += 50;
+
+        // Penalti keras jika materi sisi lengkung tapi soal membahas bangun datar 2D murni tanpa bangun ruang
+        const isBangunDatarMurni = ["bujur sangkar", "persegi panjang", "luas persegi", "keliling dan luas"].some(k => teks.includes(k)) && !["tabung", "kerucut", "bola", "volume", "bangun ruang"].some(k => teks.includes(k));
+        if (isBangunDatarMurni) skor -= 500;
+
+        // Penalti jika materi sisi lengkung tapi soalnya bangun ruang sisi datar (kubus, balok, prisma, limas)
+        const isSisiDatarItem = ["kubus", "balok", "prisma", "limas"].some(k => teks.includes(k)) && !["tabung", "kerucut", "bola"].some(k => teks.includes(k));
+        if (isSisiDatarItem) skor -= 250;
+      } else if (isSisiDatar) {
+        const hasDatarTerms = ["kubus", "balok", "prisma", "limas", "rusuk", "diagonal sisi", "diagonal ruang", "jaring-jaring"].some(k => teks.includes(k));
+        if (hasDatarTerms) skor += 50;
+        // Penalti jika materi sisi datar tapi soalnya sisi lengkung
+        const isLengkungItem = ["tabung", "kerucut", "bola"].some(k => teks.includes(k)) && !["kubus", "balok"].some(k => teks.includes(k));
+        if (isLengkungItem) skor -= 250;
+      } else if (isGeometriBangunRuang) {
+        const hasGeomTerms = ["bangun ruang", "kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola", "volume", "luas permukaan", "rusuk", "titik sudut"].some(k => teks.includes(k));
         if (hasGeomTerms) skor += 25;
-        // Penalti keras jika materi bangun ruang tapi butir soal adalah aljabar/persamaan murni (SPLDV)
+      }
+
+      // Penalti aljabar/SPLDV jika geometri
+      if (isGeometriBangunRuang || isSisiLengkung || isSisiDatar) {
         const isSPLDV = teks.includes("spldv") || teks.includes("linear dua variabel") || (teks.includes("persamaan linear") && !teks.includes("volume"));
-        if (isSPLDV) skor -= 100;
+        if (isSPLDV) skor -= 500;
       }
 
       // 3. Kategori Aljabar / SPLDV
       if (isTopikSPLDV) {
         const hasSPLDVTerms = teks.includes("spldv") || teks.includes("linear") || teks.includes("eliminasi") || teks.includes("substitusi");
-        if (hasSPLDVTerms) skor += 25;
+        if (hasSPLDVTerms) skor += 40;
         // Penalti jika materi SPLDV tapi butir geometri bangun ruang
-        if (teks.includes("bangun ruang") || teks.includes("kubus") || teks.includes("balok")) skor -= 100;
+        if (teks.includes("bangun ruang") || teks.includes("kubus") || teks.includes("balok") || teks.includes("tabung")) skor -= 500;
       }
 
       // 4. Fokus Spesifik Hari Ini (Granularitas Sub-Topik Harian)
       if (fokusLower) {
         if (teks.includes(fokusLower)) {
-          skor += 60; // Prioritas tertinggi jika butir membidik langsung fokus materi harian
+          skor += 70; // Prioritas tertinggi jika butir membidik langsung fokus materi harian
         } else {
           // Jika guru memilih fokus spesifik (misal "Tabung saja"), saring keluar butir topik saingan (kerucut, bola)
           const saingan = subBabChips
@@ -394,17 +466,17 @@ export default function ModalSiapkanLatihanSesi({
             .filter((c) => c !== fokusLower && c.length > 2);
           const adaSaingan = saingan.some((s) => teks.includes(s));
           if (adaSaingan) {
-            skor -= 70; // Penalti kuat agar soal di luar fokus harian tidak tercampur
+            skor -= 80; // Penalti kuat agar soal di luar fokus harian tidak tercampur
           }
         }
       }
 
       // 5. Kata kunci tematik lainnya
-      if (teks.includes("transformasi") && kataKunci.includes("transformasi")) skor += 15;
-      if (teks.includes("peluang") && kataKunci.includes("peluang")) skor += 15;
-      if (teks.includes("statistika") && kataKunci.includes("statistika")) skor += 15;
-      if (teks.includes("pangkat") && kataKunci.includes("pangkat")) skor += 15;
-      if (teks.includes("akar") && kataKunci.includes("akar")) skor += 15;
+      if (teks.includes("transformasi") && kataKunci.includes("transformasi")) skor += 20;
+      if (teks.includes("peluang") && kataKunci.includes("peluang")) skor += 20;
+      if (teks.includes("statistika") && kataKunci.includes("statistika")) skor += 20;
+      if (teks.includes("pangkat") && kataKunci.includes("pangkat")) skor += 20;
+      if (teks.includes("akar") && kataKunci.includes("akar")) skor += 20;
 
       // Prioritaskan soal yang memiliki gambar lengkap jika topik geometris
       if (item.gambarUrls && item.gambarUrls.length > 0 && isGeometriBangunRuang) skor += 5;
@@ -415,9 +487,9 @@ export default function ModalSiapkanLatihanSesi({
     // Urutkan dari skor tertinggi
     skorButir.sort((a, b) => b.skor - a.skor);
 
-    // HANYA ambil butir soal yang benar-benar relevan (skor > 0)
+    // HANYA ambil butir soal yang benar-benar relevan dan berbobot (skor >= 35)
     let terpilih = skorButir
-      .filter((x) => x.skor > 0)
+      .filter((x) => x.skor >= 35)
       .slice(0, jumlahTarget)
       .map((x) => x.item);
 
@@ -652,6 +724,119 @@ export default function ModalSiapkanLatihanSesi({
             ],
             kunciJawaban: "A",
             pembahasan: "$L = 2(pl + pt + lt) = 2(60 + 40 + 24) = 2 \\times 124 = 248\\text{ cm}^2$.",
+          },
+        ];
+      } else if (isSisiLengkung) {
+        seedPool = [
+          {
+            teksSoal: "Sebuah tabung memiliki jari-jari alas $r = 7\\text{ cm}$ dan tinggi $t = 10\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume tabung tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.540\\text{ cm}^3$" },
+              { label: "B", teks: "$1.450\\text{ cm}^3$" },
+              { label: "C", teks: "$770\\text{ cm}^3$" },
+              { label: "D", teks: "$440\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume tabung dihitung dengan rumus $V = \\pi r^2 t = \\frac{22}{7} \\times 7^2 \\times 10 = 154 \\times 10 = 1.540\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Sebuah kaleng biskuit berbentuk tabung memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $20\\text{ cm}$. Luas selimut tabung tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$880\\text{ cm}^2$" },
+              { label: "B", teks: "$440\\text{ cm}^2$" },
+              { label: "C", teks: "$960\\text{ cm}^2$" },
+              { label: "D", teks: "$1.760\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas selimut tabung: $L_{\\text{selimut}} = 2\\pi r t = 2 \\times \\frac{22}{7} \\times 7 \\times 20 = 44 \\times 20 = 880\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Sebuah kerucut memiliki jari-jari alas $r = 6\\text{ cm}$ dan tinggi $t = 8\\text{ cm}$. Panjang garis pelukis ($s$) kerucut tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$10\\text{ cm}$" },
+              { label: "B", teks: "$14\\text{ cm}$" },
+              { label: "C", teks: "$12\\text{ cm}$" },
+              { label: "D", teks: "$16\\text{ cm}$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Panjang garis pelukis kerucut dihitung dengan rumus Pythagoras: $s = \\sqrt{r^2 + t^2} = \\sqrt{6^2 + 8^2} = \\sqrt{36 + 64} = \\sqrt{100} = 10\\text{ cm}$.",
+          },
+          {
+            teksSoal: "Sebuah kerucut memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $12\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume kerucut tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$616\\text{ cm}^3$" },
+              { label: "B", teks: "$1.848\\text{ cm}^3$" },
+              { label: "C", teks: "$308\\text{ cm}^3$" },
+              { label: "D", teks: "$924\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume kerucut: $V = \\frac{1}{3}\\pi r^2 t = \\frac{1}{3} \\times \\frac{22}{7} \\times 49 \\times 12 = 154 \\times 4 = 616\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Sebuah bola memiliki jari-jari $r = 7\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume bola tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.437{,}33\\text{ cm}^3$" },
+              { label: "B", teks: "$1.347{,}33\\text{ cm}^3$" },
+              { label: "C", teks: "$616\\text{ cm}^3$" },
+              { label: "D", teks: "$2.464\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume bola: $V = \\frac{4}{3}\\pi r^3 = \\frac{4}{3} \\times \\frac{22}{7} \\times 343 = \\frac{4}{3} \\times 1.078 = 1.437{,}33\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Luas seluruh permukaan bola yang memiliki jari-jari $7\\text{ cm}$ adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$616\\text{ cm}^2$" },
+              { label: "B", teks: "$308\\text{ cm}^2$" },
+              { label: "C", teks: "$1.232\\text{ cm}^2$" },
+              { label: "D", teks: "$154\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas permukaan bola: $L = 4\\pi r^2 = 4 \\times \\frac{22}{7} \\times 49 = 4 \\times 154 = 616\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Sebuah cetakan nasi tumpeng berbentuk kerucut memiliki diameter alas $14\\text{ cm}$ dan tinggi $15\\text{ cm}$. Volume cetakan tumpeng tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$770\\text{ cm}^3$" },
+              { label: "B", teks: "$1.540\\text{ cm}^3$" },
+              { label: "C", teks: "$2.310\\text{ cm}^3$" },
+              { label: "D", teks: "$385\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Diameter $= 14\\text{ cm} \\implies r = 7\\text{ cm}$. $V = \\frac{1}{3}\\pi r^2 t = \\frac{1}{3} \\times \\frac{22}{7} \\times 49 \\times 15 = 154 \\times 5 = 770\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Luas seluruh permukaan tabung tertutup dengan jari-jari alas $7\\text{ cm}$ dan tinggi $15\\text{ cm}$ adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$968\\text{ cm}^2$" },
+              { label: "B", teks: "$868\\text{ cm}^2$" },
+              { label: "C", teks: "$1.024\\text{ cm}^2$" },
+              { label: "D", teks: "$660\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas seluruh permukaan tabung tertutup: $L = 2\\pi r(r + t) = 2 \\times \\frac{22}{7} \\times 7 \\times (7 + 15) = 44 \\times 22 = 968\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Sebuah drum minyak berbentuk tabung memiliki jari-jari $7\\text{ dm}$ dan tinggi $10\\text{ dm}$. Jika drum terisi minyak penuh, volume minyak adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.540\\text{ liter}$" },
+              { label: "B", teks: "$3.080\\text{ liter}$" },
+              { label: "C", teks: "$770\\text{ liter}$" },
+              { label: "D", teks: "$6.160\\text{ liter}$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "$V = \\pi r^2 t = \\frac{22}{7} \\times 49 \\times 10 = 1.540\\text{ dm}^3 = 1.540\\text{ liter}$.",
+          },
+          {
+            teksSoal: "Sebuah belahan bola padat (setengah bola pejal) memiliki jari-jari $7\\text{ cm}$. Luas seluruh permukaannya adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$462\\text{ cm}^2$" },
+              { label: "B", teks: "$308\\text{ cm}^2$" },
+              { label: "C", teks: "$616\\text{ cm}^2$" },
+              { label: "D", teks: "$154\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas permukaan setengah bola pejal $= 3\\pi r^2 = 3 \\times \\frac{22}{7} \\times 49 = 3 \\times 154 = 462\\text{ cm}^2$.",
           },
         ];
       } else if (isGeometriBangunRuang) {

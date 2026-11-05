@@ -1210,6 +1210,17 @@ export function normalizeSoal(qMasuk, idx) {
     tipe = 'pg_kategori';
   }
 
+  // 🔥 AUTO-RECOVERY KEBALIKAN: Jika AI menandai tipe="benar_salah" atau "pg_kategori",
+  // tetapi pernyataan dan tabelBenarSalah kosong, padahal opsiJawaban >= 2 dan ada kunciJawaban,
+  // maka soal ini sebenarnya adalah format Pilihan Ganda (misal opsi A: Benar, B: Salah, atau PG A-D)!
+  // Ubah otomatis tipe jadi "pg_sederhana" agar soal valid dan tidak tertolak sia-sia!
+  if (['benar_salah', 'pg_kategori'].includes(tipe) && !pernyataan.length && !tabelBenarSalah.length && opsiJawaban.length >= 2 && kunciJawaban) {
+    peringatanLunak.push(
+      `Tipe soal otomatis dikoreksi dari "${tipe}" jadi "pg_sederhana" -- soal memiliki opsi pilihan jawaban dan kunci, tetapi AI menandai label "${tipe}".`,
+    );
+    tipe = 'pg_sederhana';
+  }
+
   if (!teksSoal.trim()) errors.push('Teks soal kosong.');
 
   if (['pg_sederhana', 'pg_kompleks'].includes(tipe) && opsiJawaban.length < 2) {
@@ -1768,52 +1779,77 @@ function selBerisiCentang(cell) {
 
 function parseHTMLStatements(container) {
   if (!container) return [];
-  return Array.from(container.querySelectorAll('tr')).map(row => {
+  const rows = Array.from(container.querySelectorAll('tr'));
+  if (rows.length === 0) {
+    // Dukung format daftar li/p jika AI tidak menggunakan tag <table>
+    const listItems = Array.from(container.querySelectorAll('li, p'));
+    if (listItems.length > 0) {
+      return listItems.map((item) => {
+        let t = htmlNodeText(item).trim();
+        if (!t) return null;
+        let ans = safeString(item.getAttribute('data-jawaban') || '').trim();
+        const m = t.match(/\s*[\(\[]?(benar|salah|true|false|b|s)[\)\]]?\s*$/i);
+        if (m) {
+          if (!ans) ans = /^(b|benar|true)$/i.test(m[1]) ? 'Benar' : 'Salah';
+          t = t.slice(0, m.index).trim();
+        }
+        return t ? { teks: t, jawaban: ans } : null;
+      }).filter(Boolean);
+    }
+    return [];
+  }
+
+  return rows.map(row => {
     const cells = Array.from(row.querySelectorAll(':scope > th, :scope > td'));
     if (cells.length < 2) return null;
 
     const teksSel = cells.map(c => htmlNodeText(c).trim());
 
-    // 🔥 BARU (bug nyata ditemukan): deteksi baris header DIPERKUAT.
-    // Sebelumnya cuma cek cells[0] cocok "pernyataan/statement/keterangan"
-    // -- GAGAL untuk tabel format "No | Pernyataan | Benar | Salah" karena
-    // sel pertama header-nya "No", bukan "Pernyataan". Akibatnya baris
-    // header ikut kebaca sebagai data (pernyataan #1 palsu berisi teks
-    // "No"). Sekarang dicek SEMUA sel dalam baris, bukan cuma sel pertama.
-    const adaSelHeader = teksSel.some(t => /^(no\.?|pernyataan|statement|keterangan|benar|salah)$/i.test(t));
-    if (adaSelHeader) return null;
+    // Deteksi baris header secara akurat:
+    // 1) Baris didominasi tag <th>
+    const thCount = cells.filter(c => c.tagName && c.tagName.toLowerCase() === 'th').length;
+    if (thCount >= 2 || thCount === cells.length) return null;
+
+    // 2) Teks sel pertama atau kedua secara eksplisit bertuliskan kata kolom header
+    const sel0 = (teksSel[0] || '').toLowerCase();
+    const sel1 = (teksSel[1] || '').toLowerCase();
+    if (/^(pernyataan|statement|keterangan)$/i.test(sel0)) return null;
+    if (/^(no\.?|nomor)$/i.test(sel0) && /^(pernyataan|statement|keterangan)$/i.test(sel1)) return null;
+
+    // 3) Kolom Benar dan Salah berdampingan di sel-sel pendek sebagai label header
+    const hasBenarCol = teksSel.some(t => /^(benar|true|sesuai)$/i.test(t));
+    const hasSalahCol = teksSel.some(t => /^(salah|false|tidak sesuai)$/i.test(t));
+    if (hasBenarCol && hasSalahCol && sel0.length < 15 && sel1.length < 15) return null;
 
     let text, answer;
 
     if (cells.length >= 4) {
-      // 🔥 BARU: format "No | Pernyataan | Benar (centang) | Salah (centang)"
-      // -- BUKAN 2 kolom seperti asumsi lama. Sebelumnya cells[0] (kolom
-      // "No", isinya cuma angka urut 1/2/3) SALAH dibaca sebagai teks
-      // pernyataan, dan cells[1] (pernyataan ASLI) malah dibaca sebagai
-      // jawaban -- pernyataan yang tampil jadi "1", "2", "3" alih-alih
-      // teks soal sungguhan. Sekarang: kolom ke-2 (index 1) yang dipakai
-      // sebagai teks pernyataan, kolom ke-3 & ke-4 dicek centangnya untuk
-      // tentukan jawaban Benar/Salah.
+      // Format "No | Pernyataan | Benar (centang) | Salah (centang)"
       text = teksSel[1];
       const benarDicentang = selBerisiCentang(cells[2]);
       const salahDicentang = selBerisiCentang(cells[3]);
       if (benarDicentang && !salahDicentang) answer = 'Benar';
       else if (salahDicentang && !benarDicentang) answer = 'Salah';
-      // Kalau tabel checkbox-nya KOSONG (mis. lembar kerja siswa yang
-      // belum diisi) -- coba data-jawaban di baris; kalau tetap tidak
-      // ada, biarkan kosong (nanti bisa diisi dari kunci_jawaban gabungan
-      // di normalizeSoal, lihat catatan di sana).
       else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
     } else if (cells.length === 3) {
-      // Format "Pernyataan | Benar (centang) | Salah (centang)" tanpa kolom No.
-      text = teksSel[0];
-      const benarDicentang = selBerisiCentang(cells[1]);
-      const salahDicentang = selBerisiCentang(cells[2]);
-      if (benarDicentang && !salahDicentang) answer = 'Benar';
-      else if (salahDicentang && !benarDicentang) answer = 'Salah';
-      else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
+      // Cek apakah cells[0] adalah nomor urut (format: No | Pernyataan | Jawaban)
+      if (/^\d+[\.\)]?$/.test(teksSel[0])) {
+        text = teksSel[1];
+        const val = safeString(row.getAttribute('data-jawaban') || teksSel[2]).trim();
+        if (/^(b|benar|true|1)$/i.test(val)) answer = 'Benar';
+        else if (/^(s|salah|false|0)$/i.test(val)) answer = 'Salah';
+        else answer = val;
+      } else {
+        // Format "Pernyataan | Benar (centang) | Salah (centang)" tanpa kolom No
+        text = teksSel[0];
+        const benarDicentang = selBerisiCentang(cells[1]);
+        const salahDicentang = selBerisiCentang(cells[2]);
+        if (benarDicentang && !salahDicentang) answer = 'Benar';
+        else if (salahDicentang && !benarDicentang) answer = 'Salah';
+        else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
+      }
     } else {
-      // Format lama (2 kolom): Pernyataan | Jawaban langsung sebagai teks.
+      // Format 2 kolom: Pernyataan | Jawaban langsung sebagai teks
       text = teksSel[0];
       answer = safeString(row.getAttribute('data-jawaban') || teksSel[1]).trim();
     }

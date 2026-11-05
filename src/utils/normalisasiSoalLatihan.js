@@ -163,8 +163,11 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
     kunciJawaban: kunci,
     pembahasan: String(rawSoal.pembahasan || rawSoal.explanation || '').trim(),
     gambarUrls,
-    materi: String(rawSoal.materi || rawSoal.bab || rawSoal.topik || rawSoal.subject || '').trim(),
+    materi: String(rawSoal.materi || rawSoal.bab || rawSoal.topik || rawSoal.subject || rawSoal.paket || '').trim(),
     mapel: String(rawSoal.mataPelajaran || rawSoal.mapel || rawSoal.kodeMapel || '').trim(),
     tingkatKelas: String(rawSoal.tingkatKelas || rawSoal.kelas || '').trim(),
+    jenjang: String(rawSoal.jenjang || rawSoal.level || rawSoal.kategori || '').trim(),
+    fase: String(rawSoal.fase || '').trim(),
+    tags: Array.isArray(rawSoal.tags) ? rawSoal.tags : (typeof rawSoal.tags === 'string' ? [rawSoal.tags] : []),
   };
 }
