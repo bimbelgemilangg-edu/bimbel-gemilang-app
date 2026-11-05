@@ -694,10 +694,13 @@ for s in soal_list:
     kj = s['kunci_jawaban']
     pb = s['pembahasan']
 
-    article = f'''<article data-gemilang-question data-nomor="{num}" data-tipe="{tp}">
+    article = f'''<article data-gemilang-question data-nomor="{num}" data-tipe="{tp}" data-kelas="{kl}" data-mapel="Bahasa Inggris" data-jenjang="{jj}" data-paket="Bab 1 - Greeting & Introducing" data-kesulitan="sedang" data-kunci="{kj}">
   <div data-field="jenjang">{jj}</div>
   <div data-field="kelas">{kl}</div>
+  <div data-field="mata_pelajaran">Bahasa Inggris</div>
   <div data-field="materi">{mt}</div>
+  <div data-field="tags">Bahasa Inggris, SMP, Kelas 7, Fase D, Greeting, Kurikulum Merdeka</div>
+  <div data-field="capaian_pembelajaran">Mengidentifikasi dan menggunakan ungkapan sapaan, perkenalan diri, dan berpamitan dalam konteks interaksi sosial resmi dan kasual sesuai CP Fase D.</div>
   {bacaan_html}
   <div data-field="teks_soal">{soal_t}</div>
   {opsi_html}
