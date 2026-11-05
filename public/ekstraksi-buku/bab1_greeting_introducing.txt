@@ -1,0 +1,670 @@
+SKEMA: gemilang-baris@1
+JUDUL PAKET: Bahasa Inggris SMP Bab 1 - Greeting & Introducing
+
+##SOAL 1
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_tina_dr_hill
+BACAAN:
+This dialogue is for question number 1 and 2.
+
+Tina : Hello, Dr. Hill
+Dr. Hill : Hello, Tina. (1) ...
+Tina : I am very well, thank you. And you?
+Dr. Hill : (2) ...
+TEKS:
+The best expression to complete is ...
+OPSI:
+- How's life?
+- How are you?
+- Good morning.
+- How do you do?
+PEMBAHASAN:
+Respon Tina adalah "I am very well, thank you", yang merupakan balasan standar atas pertanyaan sapaan menanyakan kabar "How are you?".
+
+##SOAL 2
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A
+GRUP-BACAAN: dialog_tina_dr_hill
+BACAAN:
+This dialogue is for question number 1 and 2.
+
+Tina : Hello, Dr. Hill
+Dr. Hill : Hello, Tina. (1) ...
+Tina : I am very well, thank you. And you?
+Dr. Hill : (2) ...
+TEKS:
+The best expression to respond to the question in is ...
+OPSI:
+- I am fine, thank you.
+- I have a problem in my house.
+- I am Dr. Hill.
+- Never mind.
+PEMBAHASAN:
+Tina menanyakan kabar balik dengan "And you?", maka Dr. Hill merespons kondisi kabarnya dengan "I am fine, thank you.".
+
+##SOAL 3
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A
+GRUP-BACAAN: dialog_kate_edward
+BACAAN:
+This dialogue is for question number 3 and 4.
+
+Kate : (3) ...
+Edward : Hi, Kate. How are you doing?
+Kate : (4) ... I have toothache.
+Edward : That's too bad. I hope you get better soon.
+Kate : Thank you.
+TEKS:
+The correct expression of greeting for is ...
+OPSI:
+- Hi, Edward.
+- I am Kate.
+- Can I have your name?
+- Good afternoon.
+PEMBAHASAN:
+Edward membalas dengan "Hi, Kate", sehingga sapaan pembuka dari Kate yang paling tepat dan akrab adalah "Hi, Edward.".
+
+##SOAL 4
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+GRUP-BACAAN: dialog_kate_edward
+BACAAN:
+This dialogue is for question number 3 and 4.
+
+Kate : (3) ...
+Edward : Hi, Kate. How are you doing?
+Kate : (4) ... I have toothache.
+Edward : That's too bad. I hope you get better soon.
+Kate : Thank you.
+TEKS:
+The most suitable answer for is ...
+OPSI:
+- I am very well.
+- I am fine.
+- Not so good.
+- So far so good.
+PEMBAHASAN:
+Kate sedang sakit gigi ("I have toothache") dan Edward merespons dengan simpati ("That's too bad"), maka jawaban kabar yang tepat adalah "Not so good.".
+
+##SOAL 5
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+GRUP-BACAAN: dialog_mr_terry
+BACAAN:
+This dialogue is for question number 5, 6, and 7.
+
+Mr. Terry : Hello everybody. (5) ... I am your new teacher for this semester.
+Students : Hello, Mr. Terry.
+Mr. Terry : (6) ...?
+Students : We're fine, thank you. And you?
+Mr. Terry : Very well, thank you. (7) ...
+Students : It's good to see you too.
+TEKS:
+The suitable expression of introducing ourselves in is ...
+OPSI:
+- How are you?
+- Do you know me? I am sure you do.
+- Let me introduce myself. I am Mr. Terry.
+- I will introduce my friend to you.
+PEMBAHASAN:
+Mr. Terry adalah guru baru yang memperkenalkan dirinya kepada seluruh murid kelas di awal semester: "Let me introduce myself. I am Mr. Terry.".
+
+##SOAL 6
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_mr_terry
+BACAAN:
+This dialogue is for question number 5, 6, and 7.
+
+Mr. Terry : Hello everybody. (5) ... I am your new teacher for this semester.
+Students : Hello, Mr. Terry.
+Mr. Terry : (6) ...?
+Students : We're fine, thank you. And you?
+Mr. Terry : Very well, thank you. (7) ...
+Students : It's good to see you too.
+TEKS:
+The correct expression that correspond the dialogue in is ...
+OPSI:
+- Good morning.
+- How are you doing?
+- How do you do?
+- What's up, buddy?
+PEMBAHASAN:
+Murid menjawab "We're fine, thank you", sehingga pertanyaan menanyakan kabar yang tepat adalah "How are you doing?".
+
+##SOAL 7
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A
+GRUP-BACAAN: dialog_mr_terry
+BACAAN:
+This dialogue is for question number 5, 6, and 7.
+
+Mr. Terry : Hello everybody. (5) ... I am your new teacher for this semester.
+Students : Hello, Mr. Terry.
+Mr. Terry : (6) ...?
+Students : We're fine, thank you. And you?
+Mr. Terry : Very well, thank you. (7) ...
+Students : It's good to see you too.
+TEKS:
+The best expression to complete is ...
+OPSI:
+- It's good to see you.
+- I am very happy.
+- Is it good?
+- Let's start the lesson, students.
+PEMBAHASAN:
+Murid membalas "It's good to see you too", sehingga ungkapan guru adalah "It's good to see you.".
+
+##SOAL 8
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: D
+GRUP-BACAAN: dialog_ms_ingalls
+BACAAN:
+This dialogue is for question number 8 and 9.
+
+Ms. Ingalls : Good morning, Keiko.
+Keiko : Oh, good morning, Ms. Ingalls. (8) ...
+Ms. Ingalls : I'm fine, thank you. I'm enjoying this weather.
+Keiko : Yes, so am I. By the way, (9) ... She is my friend from Japan.
+Ms. Ingalls : Hello, Yuna. How do you do?
+Yuna : How do you do.
+TEKS:
+The best expression to complete the greeting in is ...
+OPSI:
+- How have you been?
+- What's up?
+- What are you doing?
+- How are you today?
+PEMBAHASAN:
+Ms. Ingalls menjawab "I'm fine, thank you", maka sapaan murid yang sopan kepada guru adalah "How are you today?".
+
+##SOAL 9
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+GRUP-BACAAN: dialog_ms_ingalls
+BACAAN:
+This dialogue is for question number 8 and 9.
+
+Ms. Ingalls : Good morning, Keiko.
+Keiko : Oh, good morning, Ms. Ingalls. (8) ...
+Ms. Ingalls : I'm fine, thank you. I'm enjoying this weather.
+Keiko : Yes, so am I. By the way, (9) ... She is my friend from Japan.
+Ms. Ingalls : Hello, Yuna. How do you do?
+Yuna : How do you do.
+TEKS:
+The suitable expression which can be used to introduce someone in is ...
+OPSI:
+- Hello!
+- Excuse me, I am Yuna.
+- I would like to introduce you to my friend, Yuna.
+- Let me introduce myself.
+PEMBAHASAN:
+Keiko memperkenalkan temannya Yuna: "I would like to introduce you to my friend, Yuna.".
+
+##SOAL 10
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+GRUP-BACAAN: dialog_tommy_paul
+BACAAN:
+This dialogue is for question number 10 and 11.
+
+Tommy : Hi, (10) ...
+Paul : Hello, good afternoon. Excuse me, are you a new student here?
+Tommy : Yes, (11) ... And you?
+Paul : I am Paul. Nice to meet you Tommy. Please take a seat here. It's ok.
+Tommy : Nice to meet you too Paul. Thanks.
+TEKS:
+The best answer to greet people for the first time as in is ...
+OPSI:
+- How are you?
+- Good morning.
+- Good afternoon.
+- Good to see you.
+PEMBAHASAN:
+Paul merespons "Hello, good afternoon", sehingga sapaan yang sesuai adalah "Good afternoon.".
+
+##SOAL 11
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A
+GRUP-BACAAN: dialog_tommy_paul
+BACAAN:
+This dialogue is for question number 10 and 11.
+
+Tommy : Hi, (10) ...
+Paul : Hello, good afternoon. Excuse me, are you a new student here?
+Tommy : Yes, (11) ... And you?
+Paul : I am Paul. Nice to meet you Tommy. Please take a seat here. It's ok.
+Tommy : Nice to meet you too Paul. Thanks.
+TEKS:
+The most suitable expression of introducing ourselves for is ...
+OPSI:
+- I am Tommy.
+- What's your name?
+- Are you Paul?
+- Hello, Paul.
+PEMBAHASAN:
+Tommy memperkenalkan dirinya: "I am Tommy. And you?".
+
+##SOAL 12
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_close_class
+BACAAN:
+Teacher : Ok, students. The time is up and let's close the class. Remember there will be an exam next week. ...
+Students : Thank you, Sir. Have a nice weekend too. See you on Monday.
+TEKS:
+The correct expression of leave taking for is ...
+OPSI:
+- Goodbye.
+- Have a nice weekend.
+- See you.
+- Catch you later.
+PEMBAHASAN:
+Murid merespons "Have a nice weekend too", maka ucapan guru adalah "Have a nice weekend.".
+
+##SOAL 13
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: D
+GRUP-BACAAN: dialog_andy_bob
+BACAAN:
+Andy : Upps, I am sorry Bob. It's 9.15. ... I have an appointment with my dentist.
+Bob : Take it easy Andy. Goodbye then. See you tonight.
+Andy : See you.
+TEKS:
+The best expression for is ...
+OPSI:
+- Take care.
+- Bye, Bob.
+- You have to go.
+- I've got to go now.
+PEMBAHASAN:
+Andy harus segera pergi ke dokter gigi, sehingga ungkapan yang tepat adalah "I've got to go now.".
+
+##SOAL 14
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_jim_carrick
+BACAAN:
+This dialogue is for question number 14 and 15.
+
+Jim : Well, it's nice talking to you.
+Carrick : (14) ... We should really hang out again sometime.
+Jim : Yeah, I'll call you later. (15) ...
+Carrick : See you later, Jim.
+Jim : Bye.
+TEKS:
+The best expression to respond to Jim in is ...
+OPSI:
+- I must go now.
+- It's nice talking to you too.
+- See you again.
+- Really? Ok.
+PEMBAHASAN:
+Respon atas "it's nice talking to you" adalah "It's nice talking to you too.".
+
+##SOAL 15
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+GRUP-BACAAN: dialog_jim_carrick
+BACAAN:
+This dialogue is for question number 14 and 15.
+
+Jim : Well, it's nice talking to you.
+Carrick : (14) ... We should really hang out again sometime.
+Jim : Yeah, I'll call you later. (15) ...
+Carrick : See you later, Jim.
+Jim : Bye.
+TEKS:
+The correct expression to complete is ...
+OPSI:
+- Good afternoon.
+- Good night.
+- See you, Carrick.
+- Bye.
+PEMBAHASAN:
+Carrick membalas "See you later, Jim", sehingga Jim sebelumnya berucap "See you, Carrick.".
+
+##SOAL 16
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_galang_mr_rahmat
+BACAAN:
+This dialogue is for questions number 16 to 19.
+
+Galang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?
+Mr. Rahmat : Good morning. Yes, I am. And what is your name?
+Galang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.
+Mr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.
+Galang : It’s a pleasure to meet you too, Sir. Have a nice day!
+TEKS:
+Why does Galang use the expression "Allow me to introduce myself" instead of "Hi, I’m Galang"?
+OPSI:
+- Because Mr. Rahmat is his childhood classmate.
+- Because he is speaking to a teacher in a formal school situation.
+- Because he is angry with Mr. Rahmat.
+- Because they are meeting at a birthday party at night.
+PEMBAHASAN:
+Galang berbicara kepada guru di sekolah formal, sehingga ungkapan sopan resminya adalah "Allow me to introduce myself, Sir.".
+
+##SOAL 17
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+GRUP-BACAAN: dialog_galang_mr_rahmat
+BACAAN:
+This dialogue is for questions number 16 to 19.
+
+Galang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?
+Mr. Rahmat : Good morning. Yes, I am. And what is your name?
+Galang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.
+Mr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.
+Galang : It’s a pleasure to meet you too, Sir. Have a nice day!
+TEKS:
+When will Mr. Rahmat and Galang meet again?
+OPSI:
+- Tomorrow morning
+- Next week
+- At 9:00 a.m. in the classroom
+- After school in the canteen
+PEMBAHASAN:
+Mr. Rahmat mengatakan: "See you in class at 9 o’clock.".
+
+##SOAL 18
+TIPE: pg_kompleks
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A,B
+GRUP-BACAAN: dialog_galang_mr_rahmat
+BACAAN:
+This dialogue is for questions number 16 to 19.
+
+Galang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?
+Mr. Rahmat : Good morning. Yes, I am. And what is your name?
+Galang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.
+Mr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.
+Galang : It’s a pleasure to meet you too, Sir. Have a nice day!
+TEKS:
+[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]
+Which statements are TRUE based on the dialogue above? (Choose TWO correct answers)
+OPSI:
+- The conversation takes place in the morning at school.
+- Galang is a seventh-grade student at SMP Nusantara.
+- Mr. Rahmat is a new mathematics student in Class VII-A.
+- Galang forgets to say a leave-taking expression to Mr. Rahmat.
+PEMBAHASAN:
+Pernyataan A benar ("Good morning" di sekolah) dan B benar (Galang murid kelas 7-A). C salah (Mr. Rahmat guru baru). D salah (Galang mengucapkan "Have a nice day!").
+
+##SOAL 19
+TIPE: benar_salah
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B,S,B
+GRUP-BACAAN: dialog_galang_mr_rahmat
+BACAAN:
+This dialogue is for questions number 16 to 19.
+
+Galang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?
+Mr. Rahmat : Good morning. Yes, I am. And what is your name?
+Galang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.
+Mr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.
+Galang : It’s a pleasure to meet you too, Sir. Have a nice day!
+TEKS:
+[Tabel Benar / Salah (True or False)] Read the statements based on the dialogue above and give a tick in the True or False column!
+PERNYATAAN:
+- "Have a nice day!" is an expression of leave-taking (berpamitan).
+- Mr. Rahmat is heading to the school library right now.
+- Galang introduces himself formally using "Allow me to introduce myself, Sir."
+PEMBAHASAN:
+(a) True: "Have a nice day!" adalah ungkapan berpamitan. (b) False: Mr. Rahmat menuju ruang guru, bukan perpustakaan. (c) True: perkenalan diri Galang menggunakan ungkapan formal.
+
+##SOAL 20
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+GRUP-BACAAN: tabel_profil_monita_andre
+BACAAN:
+Compare the two student profile cards below for questions number 20 to 24!
+
+| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |
+| :--- | :--- | :--- |
+| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |
+| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |
+| Siblings | 1 older sister | Only child (no brothers or sisters) |
+TEKS:
+[Membandingkan Profil] What do Monita and Andre have in common?
+OPSI:
+- Both of them come from Surabaya.
+- Both of them have an older sister.
+- Both of them are thirteen years old.
+- Both of them love playing badminton.
+PEMBAHASAN:
+Keduanya sama-sama berusia 13 tahun (13 years old).
+
+##SOAL 21
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: tabel_profil_monita_andre
+BACAAN:
+Compare the two student profile cards below for questions number 20 to 24!
+
+| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |
+| :--- | :--- | :--- |
+| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |
+| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |
+| Siblings | 1 older sister | Only child (no brothers or sisters) |
+TEKS:
+If Monita introduces herself to the class, which sentence will she say?
+OPSI:
+- "Hi friends, I am an only child from Surabaya."
+- "Hello everyone, I am from Pontianak and I have one older sister."
+- "Good morning, my hobby is coding games and playing badminton."
+- "Hi, I am fifteen years old and I dislike reading comics."
+PEMBAHASAN:
+Monita berasal dari Pontianak dan punya 1 kakak perempuan.
+
+##SOAL 22
+TIPE: pg_kompleks
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A,B
+GRUP-BACAAN: tabel_profil_monita_andre
+BACAAN:
+Compare the two student profile cards below for questions number 20 to 24!
+
+| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |
+| :--- | :--- | :--- |
+| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |
+| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |
+| Siblings | 1 older sister | Only child (no brothers or sisters) |
+TEKS:
+[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]
+Which statements are CORRECT based on the two profile cards? (Choose TWO correct answers)
+OPSI:
+- Andre does not have any brothers or sisters.
+- Both Monita and Andre have at least one sports hobby (swimming / badminton).
+- Monita is two years older than Andre.
+- Andre comes from West Kalimantan.
+PEMBAHASAN:
+A benar (Andre anak tunggal) dan B benar (keduanya menyukai cabang olahraga renang / bulu tangkis).
+
+##SOAL 23
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+TEKS:
+Sinta meets her friend Dika at 07.30 p.m. at the bookstore. When they are about to go home and sleep, what leave-taking expression can Sinta say?
+OPSI:
+- Good morning, Dika!
+- Good afternoon, Dika!
+- Good night, Dika. See you tomorrow!
+- How do you do, Dika?
+PEMBAHASAN:
+Saat berpamitan di malam hari untuk tidur, ungkapan yang tepat adalah "Good night".
+
+##SOAL 24
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A
+GRUP-BACAAN: dialog_bagas_lina_edo
+BACAAN:
+Bagas : "Lina, I'd like you to meet my cousin, Edo. He just moved from Bali."
+Lina : "Hello, Edo. Nice to meet you."
+Edo : "... , Lina."
+TEKS:
+The best expression to complete Edo's response is ...
+OPSI:
+- Nice to meet you too
+- I'm sorry to hear that
+- See you yesterday
+- Thank you for your help
+PEMBAHASAN:
+Merespons "Nice to meet you", balasan yang tepat adalah "Nice to meet you too".
+
+##SOAL 25
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: C
+TEKS:
+Which of the following questions is NOT POLITE to ask when introducing yourself to a stranger or an older person in English culture?
+OPSI:
+- What is your name?
+- Where do you come from?
+- How much is your salary / How much do you weigh?
+- Nice to meet you, isn't it a lovely day?
+PEMBAHASAN:
+Menanyakan gaji (salary) atau berat badan (weight) dianggap tidak sopan dalam budaya Inggris.
+
+##SOAL 26
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_tiara_nindy
+BACAAN:
+Tiara : "Hi, Nindy! How's life?"
+Nindy : "... I just got an A on my English project!"
+TEKS:
+The best answer to fill the blank is ...
+OPSI:
+- Not so good.
+- Couldn't be better! Thanks.
+- Never mind.
+- Goodbye, Tiara.
+PEMBAHASAN:
+Nindy sangat gembira dapat nilai A, respons kabar terbaik adalah "Couldn't be better! Thanks.".
+
+##SOAL 27
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: A
+TEKS:
+[Menjodohkan Situasi] Match the time of day with the right greeting!
+(1) 08.15 a.m.
+(2) 02.30 p.m.
+(3) 07.00 p.m.
+
+(P) Good afternoon
+(Q) Good evening
+(R) Good morning
+OPSI:
+- 1–R, 2–P, 3–Q
+- 1–Q, 2–P, 3–R
+- 1–P, 2–Q, 3–R
+- 1–R, 2–Q, 3–P
+PEMBAHASAN:
+08.15 a.m. = Good morning (R); 02.30 p.m. = Good afternoon (P); 07.00 p.m. = Good evening (Q).
+
+##SOAL 28
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+TEKS:
+Rearrange these jumbled words into a good introduction sentence:
+introduce (1) – let (2) – friend (3) – my (4) – me (5) – new (6) – to (7) – you (8)
+OPSI:
+- 2 – 5 – 1 – 8 – 7 – 4 – 6 – 3
+- 2 – 5 – 1 – 4 – 6 – 3 – 7 – 8
+- 1 – 5 – 2 – 4 – 6 – 3 – 7 – 8
+- 4 – 6 – 3 – 2 – 5 – 1 – 7 – 8
+PEMBAHASAN:
+Susunan kalimat yang tepat adalah "Let me introduce my new friend to you" (2-5-1-4-6-3-7-8).
+
+##SOAL 29
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_mother_daughter
+BACAAN:
+Mother : "It's already 9.30 p.m., dear. Time to go to bed."
+Daughter : "Okay, Mom. ... , sweet dreams."
+TEKS:
+The best expression to complete the dialogue is ...
+OPSI:
+- Good evening
+- Good night
+- Good afternoon
+- Good day
+PEMBAHASAN:
+Sebelum tidur ("sweet dreams"), ungkapan yang tepat adalah "Good night".
+
+##SOAL 30
+TIPE: pg_sederhana
+KELAS: 7
+MATERI: Greeting, Introducing & Leave-Taking
+KUNCI: B
+GRUP-BACAAN: dialog_riko_bayu
+BACAAN:
+Riko : "Sorry, I have to go now. My bus is coming. Catch you later!"
+Bayu : "... , take care!"
+TEKS:
+The best response to Riko's leave taking is ...
+OPSI:
+- Nice to meet you
+- See you later
+- How do you do
+- Allow me to introduce myself
+PEMBAHASAN:
+Merespons "Catch you later!", balasan berpamitan yang sepadan adalah "See you later, take care!".

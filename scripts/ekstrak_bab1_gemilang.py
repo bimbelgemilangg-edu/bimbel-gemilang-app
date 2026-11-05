@@ -1,0 +1,756 @@
+import json
+import os
+
+repo_dir = '/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app'
+out_dir = os.path.join(repo_dir, 'public/ekstraksi-buku')
+os.makedirs(out_dir, exist_ok=True)
+
+soal_list = [
+    {
+        'nomor': 1,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_tina_dr_hill',
+            'teks': 'This dialogue is for question number 1 and 2.\n\nTina : Hello, Dr. Hill\nDr. Hill : Hello, Tina. (1) ...\nTina : I am very well, thank you. And you?\nDr. Hill : (2) ...'
+        },
+        'teks_soal': 'The best expression to complete is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': "How's life?"},
+            {'label': 'B', 'teks': 'How are you?'},
+            {'label': 'C', 'teks': 'Good morning.'},
+            {'label': 'D', 'teks': 'How do you do?'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Respon Tina adalah "I am very well, thank you", yang merupakan balasan standar atas pertanyaan sapaan menanyakan kabar "How are you?".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 2,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_tina_dr_hill',
+            'teks': 'This dialogue is for question number 1 and 2.\n\nTina : Hello, Dr. Hill\nDr. Hill : Hello, Tina. (1) ...\nTina : I am very well, thank you. And you?\nDr. Hill : (2) ...'
+        },
+        'teks_soal': 'The best expression to respond to the question in is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'I am fine, thank you.'},
+            {'label': 'B', 'teks': 'I have a problem in my house.'},
+            {'label': 'C', 'teks': 'I am Dr. Hill.'},
+            {'label': 'D', 'teks': 'Never mind.'}
+        ],
+        'kunci_jawaban': 'A',
+        'pembahasan': 'Tina menanyakan kabar balik dengan "And you?", maka Dr. Hill merespons kondisi kabarnya dengan "I am fine, thank you.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 3,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_kate_edward',
+            'teks': "This dialogue is for question number 3 and 4.\n\nKate : (3) ...\nEdward : Hi, Kate. How are you doing?\nKate : (4) ... I have toothache.\nEdward : That's too bad. I hope you get better soon.\nKate : Thank you."
+        },
+        'teks_soal': 'The correct expression of greeting for is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Hi, Edward.'},
+            {'label': 'B', 'teks': 'I am Kate.'},
+            {'label': 'C', 'teks': 'Can I have your name?'},
+            {'label': 'D', 'teks': 'Good afternoon.'}
+        ],
+        'kunci_jawaban': 'A',
+        'pembahasan': 'Edward membalas dengan "Hi, Kate", sehingga sapaan pembuka dari Kate yang paling tepat dan akrab adalah "Hi, Edward.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 4,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_kate_edward',
+            'teks': "This dialogue is for question number 3 and 4.\n\nKate : (3) ...\nEdward : Hi, Kate. How are you doing?\nKate : (4) ... I have toothache.\nEdward : That's too bad. I hope you get better soon.\nKate : Thank you."
+        },
+        'teks_soal': 'The most suitable answer for is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'I am very well.'},
+            {'label': 'B', 'teks': 'I am fine.'},
+            {'label': 'C', 'teks': 'Not so good.'},
+            {'label': 'D', 'teks': 'So far so good.'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Kate sedang sakit gigi ("I have toothache") dan Edward merespons dengan simpati ("That\'s too bad"), maka jawaban kabar yang tepat adalah "Not so good.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 5,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_mr_terry',
+            'teks': "This dialogue is for question number 5, 6, and 7.\n\nMr. Terry : Hello everybody. (5) ... I am your new teacher for this semester.\nStudents : Hello, Mr. Terry.\nMr. Terry : (6) ...?\nStudents : We're fine, thank you. And you?\nMr. Terry : Very well, thank you. (7) ...\nStudents : It's good to see you too."
+        },
+        'teks_soal': 'The suitable expression of introducing ourselves in is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'How are you?'},
+            {'label': 'B', 'teks': 'Do you know me? I am sure you do.'},
+            {'label': 'C', 'teks': 'Let me introduce myself. I am Mr. Terry.'},
+            {'label': 'D', 'teks': 'I will introduce my friend to you.'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Mr. Terry adalah guru baru yang memperkenalkan dirinya kepada seluruh murid kelas di awal semester: "Let me introduce myself. I am Mr. Terry.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 6,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_mr_terry',
+            'teks': "This dialogue is for question number 5, 6, and 7.\n\nMr. Terry : Hello everybody. (5) ... I am your new teacher for this semester.\nStudents : Hello, Mr. Terry.\nMr. Terry : (6) ...?\nStudents : We're fine, thank you. And you?\nMr. Terry : Very well, thank you. (7) ...\nStudents : It's good to see you too."
+        },
+        'teks_soal': 'The correct expression that correspond the dialogue in is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Good morning.'},
+            {'label': 'B', 'teks': 'How are you doing?'},
+            {'label': 'C', 'teks': 'How do you do?'},
+            {'label': 'D', 'teks': "What's up, buddy?"}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Murid menjawab "We\'re fine, thank you", sehingga pertanyaan menanyakan kabar yang tepat adalah "How are you doing?".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 7,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_mr_terry',
+            'teks': "This dialogue is for question number 5, 6, and 7.\n\nMr. Terry : Hello everybody. (5) ... I am your new teacher for this semester.\nStudents : Hello, Mr. Terry.\nMr. Terry : (6) ...?\nStudents : We're fine, thank you. And you?\nMr. Terry : Very well, thank you. (7) ...\nStudents : It's good to see you too."
+        },
+        'teks_soal': 'The best expression to complete is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': "It's good to see you."},
+            {'label': 'B', 'teks': 'I am very happy.'},
+            {'label': 'C', 'teks': 'Is it good?'},
+            {'label': 'D', 'teks': "Let's start the lesson, students."}
+        ],
+        'kunci_jawaban': 'A',
+        'pembahasan': 'Murid membalas "It\'s good to see you too", sehingga ungkapan guru adalah "It\'s good to see you.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 8,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_ms_ingalls',
+            'teks': "This dialogue is for question number 8 and 9.\n\nMs. Ingalls : Good morning, Keiko.\nKeiko : Oh, good morning, Ms. Ingalls. (8) ...\nMs. Ingalls : I'm fine, thank you. I'm enjoying this weather.\nKeiko : Yes, so am I. By the way, (9) ... She is my friend from Japan.\nMs. Ingalls : Hello, Yuna. How do you do?\nYuna : How do you do."
+        },
+        'teks_soal': 'The best expression to complete the greeting in is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'How have you been?'},
+            {'label': 'B', 'teks': "What's up?"},
+            {'label': 'C', 'teks': 'What are you doing?'},
+            {'label': 'D', 'teks': 'How are you today?'}
+        ],
+        'kunci_jawaban': 'D',
+        'pembahasan': 'Ms. Ingalls menjawab "I\'m fine, thank you", maka sapaan murid yang sopan kepada guru adalah "How are you today?".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 9,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_ms_ingalls',
+            'teks': "This dialogue is for question number 8 and 9.\n\nMs. Ingalls : Good morning, Keiko.\nKeiko : Oh, good morning, Ms. Ingalls. (8) ...\nMs. Ingalls : I'm fine, thank you. I'm enjoying this weather.\nKeiko : Yes, so am I. By the way, (9) ... She is my friend from Japan.\nMs. Ingalls : Hello, Yuna. How do you do?\nYuna : How do you do."
+        },
+        'teks_soal': 'The suitable expression which can be used to introduce someone in is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Hello!'},
+            {'label': 'B', 'teks': 'Excuse me, I am Yuna.'},
+            {'label': 'C', 'teks': 'I would like to introduce you to my friend, Yuna.'},
+            {'label': 'D', 'teks': 'Let me introduce myself.'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Keiko memperkenalkan temannya Yuna: "I would like to introduce you to my friend, Yuna.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 10,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_tommy_paul',
+            'teks': "This dialogue is for question number 10 and 11.\n\nTommy : Hi, (10) ...\nPaul : Hello, good afternoon. Excuse me, are you a new student here?\nTommy : Yes, (11) ... And you?\nPaul : I am Paul. Nice to meet you Tommy. Please take a seat here. It's ok.\nTommy : Nice to meet you too Paul. Thanks."
+        },
+        'teks_soal': 'The best answer to greet people for the first time as in is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'How are you?'},
+            {'label': 'B', 'teks': 'Good morning.'},
+            {'label': 'C', 'teks': 'Good afternoon.'},
+            {'label': 'D', 'teks': 'Good to see you.'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Paul merespons "Hello, good afternoon", sehingga sapaan yang sesuai adalah "Good afternoon.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 11,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_tommy_paul',
+            'teks': "This dialogue is for question number 10 and 11.\n\nTommy : Hi, (10) ...\nPaul : Hello, good afternoon. Excuse me, are you a new student here?\nTommy : Yes, (11) ... And you?\nPaul : I am Paul. Nice to meet you Tommy. Please take a seat here. It's ok.\nTommy : Nice to meet you too Paul. Thanks."
+        },
+        'teks_soal': 'The most suitable expression of introducing ourselves for is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'I am Tommy.'},
+            {'label': 'B', 'teks': "What's your name?"},
+            {'label': 'C', 'teks': 'Are you Paul?'},
+            {'label': 'D', 'teks': 'Hello, Paul.'}
+        ],
+        'kunci_jawaban': 'A',
+        'pembahasan': 'Tommy memperkenalkan dirinya: "I am Tommy. And you?".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 12,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_close_class',
+            'teks': "Teacher : Ok, students. The time is up and let's close the class. Remember there will be an exam next week. ...\nStudents : Thank you, Sir. Have a nice weekend too. See you on Monday."
+        },
+        'teks_soal': 'The correct expression of leave taking for is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Goodbye.'},
+            {'label': 'B', 'teks': 'Have a nice weekend.'},
+            {'label': 'C', 'teks': 'See you.'},
+            {'label': 'D', 'teks': 'Catch you later.'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Murid merespons "Have a nice weekend too", maka ucapan guru adalah "Have a nice weekend.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 13,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_andy_bob',
+            'teks': "Andy : Upps, I am sorry Bob. It's 9.15. ... I have an appointment with my dentist.\nBob : Take it easy Andy. Goodbye then. See you tonight.\nAndy : See you."
+        },
+        'teks_soal': 'The best expression for is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Take care.'},
+            {'label': 'B', 'teks': 'Bye, Bob.'},
+            {'label': 'C', 'teks': 'You have to go.'},
+            {'label': 'D', 'teks': "I've got to go now."}
+        ],
+        'kunci_jawaban': 'D',
+        'pembahasan': 'Andy harus segera pergi ke dokter gigi, sehingga ungkapan yang tepat adalah "I\'ve got to go now.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 14,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_jim_carrick',
+            'teks': "This dialogue is for question number 14 and 15.\n\nJim : Well, it's nice talking to you.\nCarrick : (14) ... We should really hang out again sometime.\nJim : Yeah, I'll call you later. (15) ...\nCarrick : See you later, Jim.\nJim : Bye."
+        },
+        'teks_soal': 'The best expression to respond to Jim in is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'I must go now.'},
+            {'label': 'B', 'teks': "It's nice talking to you too."},
+            {'label': 'C', 'teks': 'See you again.'},
+            {'label': 'D', 'teks': 'Really? Ok.'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Respon atas "it\'s nice talking to you" adalah "It\'s nice talking to you too.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 15,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_jim_carrick',
+            'teks': "This dialogue is for question number 14 and 15.\n\nJim : Well, it's nice talking to you.\nCarrick : (14) ... We should really hang out again sometime.\nJim : Yeah, I'll call you later. (15) ...\nCarrick : See you later, Jim.\nJim : Bye."
+        },
+        'teks_soal': 'The correct expression to complete is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Good afternoon.'},
+            {'label': 'B', 'teks': 'Good night.'},
+            {'label': 'C', 'teks': 'See you, Carrick.'},
+            {'label': 'D', 'teks': 'Bye.'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Carrick membalas "See you later, Jim", sehingga Jim sebelumnya berucap "See you, Carrick.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 16,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_galang_mr_rahmat',
+            'teks': 'This dialogue is for questions number 16 to 19.\n\nGalang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?\nMr. Rahmat : Good morning. Yes, I am. And what is your name?\nGalang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.\nMr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.\nGalang : It’s a pleasure to meet you too, Sir. Have a nice day!'
+        },
+        'teks_soal': 'Why does Galang use the expression "Allow me to introduce myself" instead of "Hi, I’m Galang"?',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Because Mr. Rahmat is his childhood classmate.'},
+            {'label': 'B', 'teks': 'Because he is speaking to a teacher in a formal school situation.'},
+            {'label': 'C', 'teks': 'Because he is angry with Mr. Rahmat.'},
+            {'label': 'D', 'teks': 'Because they are meeting at a birthday party at night.'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Galang berbicara kepada guru di sekolah formal, sehingga ungkapan sopan resminya adalah "Allow me to introduce myself, Sir.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 17,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_galang_mr_rahmat',
+            'teks': 'This dialogue is for questions number 16 to 19.\n\nGalang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?\nMr. Rahmat : Good morning. Yes, I am. And what is your name?\nGalang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.\nMr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.\nGalang : It’s a pleasure to meet you too, Sir. Have a nice day!'
+        },
+        'teks_soal': 'When will Mr. Rahmat and Galang meet again?',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Tomorrow morning'},
+            {'label': 'B', 'teks': 'Next week'},
+            {'label': 'C', 'teks': 'At 9:00 a.m. in the classroom'},
+            {'label': 'D', 'teks': 'After school in the canteen'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Mr. Rahmat mengatakan: "See you in class at 9 o’clock.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 18,
+        'tipe': 'pg_kompleks',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_galang_mr_rahmat',
+            'teks': 'This dialogue is for questions number 16 to 19.\n\nGalang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?\nMr. Rahmat : Good morning. Yes, I am. And what is your name?\nGalang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.\nMr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.\nGalang : It’s a pleasure to meet you too, Sir. Have a nice day!'
+        },
+        'teks_soal': '[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are TRUE based on the dialogue above? (Choose TWO correct answers)',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'The conversation takes place in the morning at school.'},
+            {'label': 'B', 'teks': 'Galang is a seventh-grade student at SMP Nusantara.'},
+            {'label': 'C', 'teks': 'Mr. Rahmat is a new mathematics student in Class VII-A.'},
+            {'label': 'D', 'teks': 'Galang forgets to say a leave-taking expression to Mr. Rahmat.'}
+        ],
+        'kunci_jawaban': 'A,B',
+        'pembahasan': 'Pernyataan A benar ("Good morning" di sekolah) dan B benar (Galang murid kelas 7-A). C salah (Mr. Rahmat guru baru). D salah (Galang mengucapkan "Have a nice day!").',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 19,
+        'tipe': 'benar_salah',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_galang_mr_rahmat',
+            'teks': 'This dialogue is for questions number 16 to 19.\n\nGalang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?\nMr. Rahmat : Good morning. Yes, I am. And what is your name?\nGalang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. Welcome to SMP Nusantara.\nMr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.\nGalang : It’s a pleasure to meet you too, Sir. Have a nice day!'
+        },
+        'teks_soal': '[Tabel Benar / Salah (True or False)] Read the statements based on the dialogue above and give a tick in the True or False column!',
+        'pernyataan': [
+            {'teks': '\"Have a nice day!\" is an expression of leave-taking (berpamitan).', 'jawaban': 'B'},
+            {'teks': 'Mr. Rahmat is heading to the school library right now.', 'jawaban': 'S'},
+            {'teks': 'Galang introduces himself formally using \"Allow me to introduce myself, Sir.\"', 'jawaban': 'B'}
+        ],
+        'kunci_jawaban': 'B,S,B',
+        'pembahasan': '(a) True: "Have a nice day!" adalah ungkapan berpamitan. (b) False: Mr. Rahmat menuju ruang guru, bukan perpustakaan. (c) True: perkenalan diri Galang menggunakan ungkapan formal.',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 20,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'tabel_profil_monita_andre',
+            'teks': 'Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |'
+        },
+        'teks_soal': '[Membandingkan Profil] What do Monita and Andre have in common?',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Both of them come from Surabaya.'},
+            {'label': 'B', 'teks': 'Both of them have an older sister.'},
+            {'label': 'C', 'teks': 'Both of them are thirteen years old.'},
+            {'label': 'D', 'teks': 'Both of them love playing badminton.'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Keduanya sama-sama berusia 13 tahun (13 years old).',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 21,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'tabel_profil_monita_andre',
+            'teks': 'Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |'
+        },
+        'teks_soal': 'If Monita introduces herself to the class, which sentence will she say?',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': '\"Hi friends, I am an only child from Surabaya.\"'},
+            {'label': 'B', 'teks': '\"Hello everyone, I am from Pontianak and I have one older sister.\"'},
+            {'label': 'C', 'teks': '\"Good morning, my hobby is coding games and playing badminton.\"'},
+            {'label': 'D', 'teks': '\"Hi, I am fifteen years old and I dislike reading comics.\"'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Monita berasal dari Pontianak dan punya 1 kakak perempuan.',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 22,
+        'tipe': 'pg_kompleks',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'tabel_profil_monita_andre',
+            'teks': 'Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |'
+        },
+        'teks_soal': '[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are CORRECT based on the two profile cards? (Choose TWO correct answers)',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Andre does not have any brothers or sisters.'},
+            {'label': 'B', 'teks': 'Both Monita and Andre have at least one sports hobby (swimming / badminton).'},
+            {'label': 'C', 'teks': 'Monita is two years older than Andre.'},
+            {'label': 'D', 'teks': 'Andre comes from West Kalimantan.'}
+        ],
+        'kunci_jawaban': 'A,B',
+        'pembahasan': 'A benar (Andre anak tunggal) dan B benar (keduanya menyukai cabang olahraga renang / bulu tangkis).',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 23,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'teks_soal': 'Sinta meets her friend Dika at 07.30 p.m. at the bookstore. When they are about to go home and sleep, what leave-taking expression can Sinta say?',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Good morning, Dika!'},
+            {'label': 'B', 'teks': 'Good afternoon, Dika!'},
+            {'label': 'C', 'teks': 'Good night, Dika. See you tomorrow!'},
+            {'label': 'D', 'teks': 'How do you do, Dika?'}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Saat berpamitan di malam hari untuk tidur, ungkapan yang tepat adalah "Good night".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 24,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_bagas_lina_edo',
+            'teks': 'Bagas : \"Lina, I\'d like you to meet my cousin, Edo. He just moved from Bali.\"\nLina : \"Hello, Edo. Nice to meet you.\"\nEdo : \"... , Lina.\"'
+        },
+        'teks_soal': 'The best expression to complete Edo\'s response is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Nice to meet you too'},
+            {'label': 'B', 'teks': "I'm sorry to hear that"},
+            {'label': 'C', 'teks': 'See you yesterday'},
+            {'label': 'D', 'teks': 'Thank you for your help'}
+        ],
+        'kunci_jawaban': 'A',
+        'pembahasan': 'Merespons "Nice to meet you", balasan yang tepat adalah "Nice to meet you too".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 25,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'teks_soal': 'Which of the following questions is NOT POLITE to ask when introducing yourself to a stranger or an older person in English culture?',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'What is your name?'},
+            {'label': 'B', 'teks': 'Where do you come from?'},
+            {'label': 'C', 'teks': 'How much is your salary / How much do you weigh?'},
+            {'label': 'D', 'teks': "Nice to meet you, isn't it a lovely day?"}
+        ],
+        'kunci_jawaban': 'C',
+        'pembahasan': 'Menanyakan gaji (salary) atau berat badan (weight) dianggap tidak sopan dalam budaya Inggris.',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 26,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_tiara_nindy',
+            'teks': 'Tiara : \"Hi, Nindy! How\'s life?\"\nNindy : \"... I just got an A on my English project!\"'
+        },
+        'teks_soal': 'The best answer to fill the blank is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Not so good.'},
+            {'label': 'B', 'teks': "Couldn't be better! Thanks."},
+            {'label': 'C', 'teks': 'Never mind.'},
+            {'label': 'D', 'teks': 'Goodbye, Tiara.'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Nindy sangat gembira dapat nilai A, respons kabar terbaik adalah "Couldn\'t be better! Thanks.".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 27,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'teks_soal': '[Menjodohkan Situasi] Match the time of day with the right greeting!\n(1) 08.15 a.m.\n(2) 02.30 p.m.\n(3) 07.00 p.m.\n\n(P) Good afternoon\n(Q) Good evening\n(R) Good morning',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': '1–R, 2–P, 3–Q'},
+            {'label': 'B', 'teks': '1–Q, 2–P, 3–R'},
+            {'label': 'C', 'teks': '1–P, 2–Q, 3–R'},
+            {'label': 'D', 'teks': '1–R, 2–Q, 3–P'}
+        ],
+        'kunci_jawaban': 'A',
+        'pembahasan': '08.15 a.m. = Good morning (R); 02.30 p.m. = Good afternoon (P); 07.00 p.m. = Good evening (Q).',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 28,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'teks_soal': 'Rearrange these jumbled words into a good introduction sentence:\nintroduce (1) – let (2) – friend (3) – my (4) – me (5) – new (6) – to (7) – you (8)',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': '2 – 5 – 1 – 8 – 7 – 4 – 6 – 3'},
+            {'label': 'B', 'teks': '2 – 5 – 1 – 4 – 6 – 3 – 7 – 8'},
+            {'label': 'C', 'teks': '1 – 5 – 2 – 4 – 6 – 3 – 7 – 8'},
+            {'label': 'D', 'teks': '4 – 6 – 3 – 2 – 5 – 1 – 7 – 8'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Susunan kalimat yang tepat adalah "Let me introduce my new friend to you" (2-5-1-4-6-3-7-8).',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 29,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_mother_daughter',
+            'teks': 'Mother : \"It\'s already 9.30 p.m., dear. Time to go to bed.\"\nDaughter : \"Okay, Mom. ... , sweet dreams.\"'
+        },
+        'teks_soal': 'The best expression to complete the dialogue is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Good evening'},
+            {'label': 'B', 'teks': 'Good night'},
+            {'label': 'C', 'teks': 'Good afternoon'},
+            {'label': 'D', 'teks': 'Good day'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Sebelum tidur ("sweet dreams"), ungkapan yang tepat adalah "Good night".',
+        'status': 'aktif'
+    },
+    {
+        'nomor': 30,
+        'tipe': 'pg_sederhana',
+        'tingkatKelas': '7',
+        'jenjang': 'SMP',
+        'mapel': 'bahasa_inggris',
+        'materi': 'Greeting, Introducing & Leave-Taking',
+        'bacaan': {
+            'grup': 'dialog_riko_bayu',
+            'teks': 'Riko : \"Sorry, I have to go now. My bus is coming. Catch you later!\"\nBayu : \"... , take care!\"'
+        },
+        'teks_soal': 'The best response to Riko\'s leave taking is ...',
+        'opsi_jawaban': [
+            {'label': 'A', 'teks': 'Nice to meet you'},
+            {'label': 'B', 'teks': 'See you later'},
+            {'label': 'C', 'teks': 'How do you do'},
+            {'label': 'D', 'teks': 'Allow me to introduce myself'}
+        ],
+        'kunci_jawaban': 'B',
+        'pembahasan': 'Merespons "Catch you later!", balasan berpamitan yang sepadan adalah "See you later, take care!".',
+        'status': 'aktif'
+    }
+]
+
+# 1. Output JSON
+json_path = os.path.join(out_dir, 'bab1_greeting_introducing.json')
+with open(json_path, 'w', encoding='utf-8') as f:
+    json.dump(soal_list, f, indent=2, ensure_ascii=False)
+print('JSON saved:', json_path, 'with', len(soal_list), 'soal')
+
+# 2. Output HTML Master (Direkomendasikan aplikasi)
+html_path = os.path.join(out_dir, 'bab1_greeting_introducing.html')
+html_articles = []
+for s in soal_list:
+    opsi_html = ''
+    if s.get('opsi_jawaban'):
+        items = []
+        for o in s['opsi_jawaban']:
+            lbl = o['label']
+            tk = o['teks']
+            items.append(f'<li data-option="{lbl}">{tk}</li>')
+        opsi_html = f'<ul data-field="opsi_jawaban">{"".join(items)}</ul>'
+    
+    pernyataan_html = ''
+    if s.get('pernyataan'):
+        tf_items = []
+        for p in s['pernyataan']:
+            jw = p['jawaban']
+            tk = p['teks']
+            tf_items.append(f'<li data-jawaban="{jw}">{tk}</li>')
+        pernyataan_html = f'<ul data-field="pernyataan">{"".join(tf_items)}</ul>'
+
+    bacaan_html = ''
+    if s.get('bacaan'):
+        grp = s['bacaan'].get('grup', '')
+        b_txt = s['bacaan']['teks']
+        bacaan_html = f'<div data-field="bacaan" data-grup="{grp}">{b_txt}</div>'
+
+    num = s['nomor']
+    tp = s['tipe']
+    jj = s['jenjang']
+    kl = s['tingkatKelas']
+    mt = s['materi']
+    soal_t = s['teks_soal']
+    kj = s['kunci_jawaban']
+    pb = s['pembahasan']
+
+    article = f'''<article data-gemilang-question data-nomor="{num}" data-tipe="{tp}">
+  <div data-field="jenjang">{jj}</div>
+  <div data-field="kelas">{kl}</div>
+  <div data-field="materi">{mt}</div>
+  {bacaan_html}
+  <div data-field="teks_soal">{soal_t}</div>
+  {opsi_html}
+  {pernyataan_html}
+  <div data-field="kunci_jawaban">{kj}</div>
+  <div data-field="pembahasan">{pb}</div>
+</article>'''
+    html_articles.append(article)
+
+full_html = f'''<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Gemilang - Bab 1 Greeting & Introducing</title>
+</head>
+<body>
+{''.join(html_articles)}
+</body>
+</html>'''
+
+with open(html_path, 'w', encoding='utf-8') as f:
+    f.write(full_html)
+print('HTML Master saved:', html_path)
+
+# 3. Output Templat Baris gemilang-baris@1
+txt_path = os.path.join(out_dir, 'bab1_greeting_introducing.txt')
+lines = ['SKEMA: gemilang-baris@1', 'JUDUL PAKET: Bahasa Inggris SMP Bab 1 - Greeting & Introducing\n']
+
+for s in soal_list:
+    lines.append(f'##SOAL {s["nomor"]}')
+    lines.append(f'TIPE: {s["tipe"]}')
+    lines.append(f'KELAS: {s["tingkatKelas"]}')
+    lines.append(f'MATERI: {s["materi"]}')
+    lines.append(f'KUNCI: {s["kunci_jawaban"]}')
+    if s.get('bacaan'):
+        lines.append(f'GRUP-BACAAN: {s["bacaan"].get("grup", "")}')
+        lines.append('BACAAN:')
+        lines.append(s['bacaan']['teks'])
+    lines.append('TEKS:')
+    lines.append(s['teks_soal'])
+    if s.get('opsi_jawaban'):
+        lines.append('OPSI:')
+        for o in s['opsi_jawaban']:
+            lines.append(f'- {o["teks"]}')
+    if s.get('pernyataan'):
+        lines.append('PERNYATAAN:')
+        for p in s['pernyataan']:
+            lines.append(f'- {p["teks"]}')
+    lines.append('PEMBAHASAN:')
+    lines.append(s['pembahasan'])
+    lines.append('')
+
+with open(txt_path, 'w', encoding='utf-8') as f:
+    f.write('\n'.join(lines))
+print('Templat baris saved:', txt_path)

@@ -1,0 +1,208 @@
+SKEMA: gemilang-baris@1
+JUDUL PAKET: Bahasa Inggris SMP Bab 12 - Notice, Warning & Caution
+
+##SOAL 21
+TIPE: pg_sederhana
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: C
+GRUP-BACAAN: eco_park_notice_board
+BACAAN:
+Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!
+{{GAMBAR}}
+Additional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."
+TEKS:
+Based on the notice board in the picture, what are visitors prohibited from bringing into the Eco-Park?
+OPSI:
+- Reusable tumblers
+- Bicycles
+- Single-use plastic bottles
+- Backpacks
+PEMBAHASAN:
+Pada papan peraturan tercantum tanda larangan bergambar botol dan tulisan: "NO PLASTIC BOTTLES" (botol plastik sekali pakai).
+
+##SOAL 22
+TIPE: pg_sederhana
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: B
+GRUP-BACAAN: eco_park_notice_board
+BACAAN:
+Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!
+{{GAMBAR}}
+Additional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."
+TEKS:
+Where are visitors allowed to ride their bicycles according to the sign?
+OPSI:
+- Anywhere on the grass lawn
+- Only on the designated bicycle lane
+- Inside the park administration office
+- On the pedestrian sidewalk among crowds
+PEMBAHASAN:
+Aturan ketiga pada papan menyatakan secara spesifik: "BICYCLES ONLY ON DESIGNATED LANE" (hanya di jalur sepeda yang ditentukan).
+
+##SOAL 23
+TIPE: pg_kompleks
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: A,B
+GRUP-BACAAN: eco_park_notice_board
+BACAAN:
+Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!
+{{GAMBAR}}
+Additional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."
+TEKS:
+[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]
+Which actions are obedient to the Eco-Park rules? (Choose TWO correct answers)
+OPSI:
+- Throwing snack wrappers into the designated trash can.
+- Bringing a refillable stainless steel tumbler for drinking.
+- Riding a bicycle carelessly across the flower gardens.
+- Leaving single-use plastic bottles on the wooden benches.
+PEMBAHASAN:
+Pilihan A mematuhi "KEEP THE PARK CLEAN" dan B mematuhi larangan botol plastik dengan membawa tumbler isi ulang. Pilihan C dan D melanggar aturan taman.
+
+##SOAL 24
+TIPE: benar_salah
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: B,S,B
+GRUP-BACAAN: eco_park_notice_board
+BACAAN:
+Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!
+{{GAMBAR}}
+Additional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."
+TEKS:
+[Tabel Benar / Salah (True or False)] Read the statements based on the notice board and give a tick in the True or False column!
+PERNYATAAN:
+- Visitors who throw trash carelessly on the ground will have to pay a fine of Rp50.000.
+- The notice board above is placed inside a hospital operating room.
+- Visitors can refill their reusable drinking bottles for free near the main gate.
+PEMBAHASAN:
+(a) True: denda buang sampah sembarangan adalah Rp50.000. (b) False: papan berada di gerbang taman (Eco-Park), bukan kamar operasi rumah sakit. (c) True: tersedia stasiun isi ulang air minum gratis di dekat gerbang.
+
+##SOAL 25
+TIPE: pg_sederhana
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: C
+GRUP-BACAAN: eco_park_notice_board
+BACAAN:
+Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!
+{{GAMBAR}}
+Additional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."
+TEKS:
+Why does the Eco-Park management put up the sign "NO PLASTIC BOTTLES"?
+OPSI:
+- To make visitors thirsty during their walk.
+- To sell more plastic bags at the gate.
+- To reduce plastic waste and protect the environment.
+- To forbid students from exercising.
+PEMBAHASAN:
+Tujuan peraturan larangan botol plastik adalah untuk mengurangi sampah plastik dan melestarikan lingkungan alam di taman (to reduce plastic waste and protect the environment).
+
+##SOAL 26
+TIPE: pg_sederhana
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: A
+GRUP-BACAAN: comparing_notices_lab
+BACAAN:
+Compare the two digital warning notices below for questions number 26 to 30!
+
+• NOTICE 1 (At the School Computer Lab): "CAUTION: DO NOT CLICK UNKNOWN LINKS OR SHARE YOUR PASSWORD. LOG OUT OF YOUR ACCOUNT BEFORE LEAVING THE COMPUTER."
+• NOTICE 2 (At the Science Laboratory): "WARNING: CORROSIVE CHEMICALS. WEAR GLOVES AND SAFETY GOGGLES AT ALL TIMES. WASH HANDS THOROUGHLY AFTER EXPERIMENT."
+TEKS:
+[Membandingkan Dua Notice] How do Notice 1 and Notice 2 differ in their safety focus?
+OPSI:
+- Notice 1 focuses on cybersecurity and data privacy, while Notice 2 focuses on physical safety from hazardous chemicals.
+- Notice 1 is found at a swimming pool, while Notice 2 is found at a library.
+- Both notices tell students to share their passwords with strangers.
+- Notice 1 is for chemistry teachers, while Notice 2 is for computer programmers.
+PEMBAHASAN:
+Notice 1 berfokus pada keamanan digital (cybersecurity) di lab komputer, sedangkan Notice 2 berfokus pada keselamatan fisik dari zat kimia korosif di lab sains.
+
+##SOAL 27
+TIPE: pg_sederhana
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: B
+GRUP-BACAAN: comparing_notices_lab
+BACAAN:
+Compare the two digital warning notices below for questions number 26 to 30!
+
+• NOTICE 1 (At the School Computer Lab): "CAUTION: DO NOT CLICK UNKNOWN LINKS OR SHARE YOUR PASSWORD. LOG OUT OF YOUR ACCOUNT BEFORE LEAVING THE COMPUTER."
+• NOTICE 2 (At the Science Laboratory): "WARNING: CORROSIVE CHEMICALS. WEAR GLOVES AND SAFETY GOGGLES AT ALL TIMES. WASH HANDS THOROUGHLY AFTER EXPERIMENT."
+TEKS:
+What might happen if a student ignores Notice 1 and forgets to log out of a public computer?
+OPSI:
+- The computer screen will melt from chemicals.
+- Another person might access and misuse the student’s personal account.
+- The student will get a free laptop from the school.
+- The internet connection will become faster.
+PEMBAHASAN:
+Jika lupa keluar (log out) dari komputer umum, akun siswa rawan disalahgunakan atau diakses oleh pengguna lain.
+
+##SOAL 28
+TIPE: pg_sederhana
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: C
+GRUP-BACAAN: comparing_notices_lab
+BACAAN:
+Compare the two digital warning notices below for questions number 26 to 30!
+
+• NOTICE 1 (At the School Computer Lab): "CAUTION: DO NOT CLICK UNKNOWN LINKS OR SHARE YOUR PASSWORD. LOG OUT OF YOUR ACCOUNT BEFORE LEAVING THE COMPUTER."
+• NOTICE 2 (At the Science Laboratory): "WARNING: CORROSIVE CHEMICALS. WEAR GLOVES AND SAFETY GOGGLES AT ALL TIMES. WASH HANDS THOROUGHLY AFTER EXPERIMENT."
+TEKS:
+In Notice 2, the word "corrosive" is closest in meaning to ....
+OPSI:
+- safe and sweet to drink
+- cold and refreshing
+- able to damage or burn skin and materials
+- very cheap and easy to find
+PEMBAHASAN:
+Kata "corrosive" berarti zat yang bersifat merusak, mengikis, atau melukai kulit dan benda (able to damage or burn skin and materials).
+
+##SOAL 29
+TIPE: pg_kompleks
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: A,B
+GRUP-BACAAN: comparing_notices_lab
+BACAAN:
+Compare the two digital warning notices below for questions number 26 to 30!
+
+• NOTICE 1 (At the School Computer Lab): "CAUTION: DO NOT CLICK UNKNOWN LINKS OR SHARE YOUR PASSWORD. LOG OUT OF YOUR ACCOUNT BEFORE LEAVING THE COMPUTER."
+• NOTICE 2 (At the Science Laboratory): "WARNING: CORROSIVE CHEMICALS. WEAR GLOVES AND SAFETY GOGGLES AT ALL TIMES. WASH HANDS THOROUGHLY AFTER EXPERIMENT."
+TEKS:
+[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]
+What must students do according to Notice 2? (Choose TWO correct answers)
+OPSI:
+- Wear protective gloves and safety goggles during the experiment.
+- Wash their hands thoroughly after finishing the experiment.
+- Taste the chemicals with a spoon.
+- Share their email password on the whiteboard.
+PEMBAHASAN:
+Notice 2 memerintahkan dua hal: memakai sarung tangan & kacamata pelindung (A) serta mencuci tangan hingga bersih setelah percobaan (B).
+
+##SOAL 30
+TIPE: pg_sederhana
+KELAS: 8
+MATERI: Notice, Warning, or Caution
+KUNCI: C
+GRUP-BACAAN: comparing_notices_lab
+BACAAN:
+Compare the two digital warning notices below for questions number 26 to 30!
+
+• NOTICE 1 (At the School Computer Lab): "CAUTION: DO NOT CLICK UNKNOWN LINKS OR SHARE YOUR PASSWORD. LOG OUT OF YOUR ACCOUNT BEFORE LEAVING THE COMPUTER."
+• NOTICE 2 (At the Science Laboratory): "WARNING: CORROSIVE CHEMICALS. WEAR GLOVES AND SAFETY GOGGLES AT ALL TIMES. WASH HANDS THOROUGHLY AFTER EXPERIMENT."
+TEKS:
+Who is the target audience of both Notice 1 and Notice 2?
+OPSI:
+- Toddlers in a playground
+- Bus drivers on the highway
+- Students and teachers using the school laboratories
+- Tourists at the beach
+PEMBAHASAN:
+Kedua notice ditujukan bagi warga sekolah (siswa & guru) yang beraktivitas di laboratorium komputer maupun laboratorium IPA.
