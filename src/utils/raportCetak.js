@@ -453,10 +453,12 @@ export function svgRadar(seri = [], opts = {}) {
       + x.poin.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="${x.tebal ? 2.6 : 2}" fill="${x.warna}" />`).join('');
   }).join('');
   // angka dimensi hanya untuk seri tebal (global) — poligon mapel sudah punya chip di tabel
+  // Skor >= 80 ditarik sedikit ke dalam agar tidak bertabrakan dengan label sumbu di luar lingkaran
   const angkaGlobal = s.filter((x) => x.tebal).flatMap((x) => x.poin.map((p) => {
     const dx = p.x - pusat.x; const dy = p.y - pusat.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
-    return `<text x="${Math.round((p.x + (dx / len) * 10) * 10) / 10}" y="${Math.round((p.y + (dy / len) * 10) * 10) / 10}" font-size="9" font-weight="800" fill="${x.warna}" text-anchor="middle">${escapeHtml(p.nilai)}</text>`;
+    const offsetDist = p.nilai >= 80 ? -10 : 10;
+    return `<text x="${Math.round((p.x + (dx / len) * offsetDist) * 10) / 10}" y="${Math.round((p.y + (dy / len) * offsetDist) * 10) / 10 + 3}" font-size="8.5" font-weight="800" fill="${x.warna}" text-anchor="middle">${escapeHtml(p.nilai)}</text>`;
   })).join('');
   // Legenda vertikal yang lapang: 1 baris per seri (atau 2 kolom bila lebar >= 440)
   // Mencegah teks mapel panjang bertabrakan/tumpang-tindih (keluhan visual owner)

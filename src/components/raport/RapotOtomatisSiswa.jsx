@@ -14,14 +14,16 @@
 // Komponen ini BACA-SAJA: menerima grup dokumen dari StudentSmartReport.
 // ============================================================
 import React, { useState } from 'react';
-import { Bot, Brain, Lightbulb, Target, Clock, Zap, ShieldCheck, TrendingUp } from 'lucide-react';
+import { Bot, Brain, Lightbulb, Target, Clock, Zap, ShieldCheck, TrendingUp, Printer } from 'lucide-react';
 import {
   poinSparkline, warnaStatusTopik, warnaPredikatHuruf, DIMENSI_LABEL, DIMENSI_KEYS,
   poinRadar, seriRadarDariModel, WARNA_RADAR_GLOBAL, RADAR_MAKS_SERI,
   petaTampil, rekomendasiTampil, deskripsiMapel, bersihkanV1,
+  htmlRaportSiswa, judulCetakRaport,
 } from '../../utils/raportCetak';
 import { predikatDariNilai } from '../../utils/raportOtomatis';
 import { narasiCapaianSiswa } from '../../utils/laporanBelajar';
+import { cetakLewatIframe } from '../../utils/kwitansi';
 
 const gayaKartu = { background: 'white', borderRadius: 16, padding: 16, border: '1px solid #e2e8f0', marginBottom: 16 };
 const gayaMini = { border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 10px', background: '#f8fafc', fontSize: 11, flex: '1 1 150px' };
@@ -86,8 +88,9 @@ function RadarDimensi({ proses, akademik, isMobile }) {
             {x.tebal && x.poin.map((p) => {
               const dx = p.x - g.pusat.x; const dy = p.y - g.pusat.y;
               const len = Math.hypot(dx, dy) || 1;
+              const offsetDist = p.nilai >= 80 ? -10 : 10;
               return (
-                <text key={p.key} x={p.x + (dx / len) * 11} y={p.y + (dy / len) * 11} fontSize="9" fontWeight="800" fill={WARNA_RADAR_GLOBAL} textAnchor="middle">
+                <text key={p.key} x={p.x + (dx / len) * offsetDist} y={p.y + (dy / len) * offsetDist + 3} fontSize="8.5" fontWeight="800" fill={WARNA_RADAR_GLOBAL} textAnchor="middle">
                   {p.nilai}
                 </text>
               );
@@ -168,12 +171,48 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false, capaia
     <div>
       {/* ===== KEPALA + PEMILIH PERIODE ===== */}
       <div style={{ ...gayaKartu, borderColor: '#c7d2fe' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <Bot size={18} color="#4338ca" />
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1e293b' }}>Rapor Otomatis</h3>
-          <span style={{ fontSize: 9.5, fontWeight: 700, color: '#4338ca', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 999, padding: '2px 8px' }}>
-            dihitung otomatis oleh Asisten Belajar Gemilang dari log aktivitasmu{entri.terkunci ? ' · snapshot terkunci 🔒' : ''}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <Bot size={18} color="#4338ca" />
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1e293b' }}>Rapor Otomatis</h3>
+            <span style={{ fontSize: 9.5, fontWeight: 700, color: '#4338ca', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 999, padding: '2px 8px' }}>
+              dihitung otomatis oleh Asisten Belajar Gemilang dari log aktivitasmu{entri.terkunci ? ' · snapshot terkunci 🔒' : ''}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const nm = localStorage.getItem('studentName') || entri.studentName || 'Siswa';
+              cetakLewatIframe(
+                htmlRaportSiswa({
+                  dokAkademik: entri.akademik,
+                  dokProses: entri.proses,
+                  identitas: {
+                    nama: nm,
+                    studentId: localStorage.getItem('studentId') || entri.studentId || '',
+                  },
+                }),
+                judulCetakRaport({ nama: nm, periode: entri.periode })
+              );
+            }}
+            title="Cetak atau simpan rapor resmi ke format PDF"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 12px',
+              borderRadius: 8,
+              background: '#15803d',
+              color: '#ffffff',
+              border: 'none',
+              fontSize: 11.5,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(21, 128, 61, 0.2)',
+            }}
+          >
+            <Printer size={13} /> Cetak / Unduh PDF Rapor
+          </button>
         </div>
         {grup.length > 1 && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
@@ -227,6 +266,84 @@ export default function RapotOtomatisSiswa({ grup = [], isMobile = false, capaia
           </div>
         )}
       </div>
+
+      {/* ===== REKAM JEJAK SESI TATAP MUKA & SILABUS KELAS ===== */}
+      {proses && (proses.rekam_jejak_harian || dp.rekam_jejak_harian) && (() => {
+        const rj = proses.rekam_jejak_harian || dp.rekam_jejak_harian;
+        const materiList = Array.isArray(rj.materiList) ? rj.materiList : [];
+        const catatanSesi = Array.isArray(rj.catatanSesi) ? rj.catatanSesi : [];
+        const sesiHadir = rj.sesiHadir ?? kh.hadir ?? 0;
+        const totalSesi = rj.totalSesi ?? kh.total ?? 0;
+        const persenHadir = rj.persenHadir ?? kh.persenHadir ?? (totalSesi ? Math.round((sesiHadir / totalSesi) * 100) : 100);
+        const indeks = rj.indeksPemahaman ?? null;
+
+        return (
+          <div style={gayaKartu}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>🏫 Rekam Jejak Tatap Muka & Silabus Kelas</span>
+                </h3>
+                <div style={{ fontSize: 10.5, color: '#64748b', marginTop: 2 }}>
+                  Catatan pemantauan langsung tentor di kelas bimbel: kehadiran, pemahaman materi, dan silabus Kurikulum Merdeka.
+                </div>
+              </div>
+              <span style={{ fontSize: 10, background: '#f0fdf4', color: '#15803d', border: '1px solid #86efac', borderRadius: 999, padding: '2px 8px', fontWeight: 700 }}>
+                ✓ Terverifikasi Tentor
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              <div style={{ flex: '1 1 120px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontSize: 10, color: '#166534', fontWeight: 700 }}>KEHADIRAN KELAS</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#15803d', marginTop: 2 }}>
+                  {sesiHadir}/{totalSesi} <span style={{ fontSize: 11, fontWeight: 700 }}>({fmt(persenHadir)}%)</span>
+                </div>
+                <div style={{ fontSize: 9.5, color: '#166534', marginTop: 2 }}>
+                  {kh.izin ? `${kh.izin} izin · ` : ''}{kh.sakit ? `${kh.sakit} sakit · ` : ''}Sakit/Izin tidak dipotong
+                </div>
+              </div>
+
+              <div style={{ flex: '1 1 120px', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontSize: 10, color: '#3730a3', fontWeight: 700 }}>PEMAHAMAN SESI</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#4338ca', marginTop: 2 }}>
+                  {indeks !== null ? `${indeks}` : 'Aktif'} <span style={{ fontSize: 11, fontWeight: 700 }}>{indeks !== null ? '/ 100' : ''}</span>
+                </div>
+                <div style={{ fontSize: 9.5, color: '#3730a3', marginTop: 2 }}>Observasi pemahaman materi tentor</div>
+              </div>
+
+              <div style={{ flex: '1 1 120px', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontSize: 10, color: '#6b21a8', fontWeight: 700 }}>PROGRES SILABUS</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#7e22ce', marginTop: 2 }}>
+                  {materiList.length ? `${materiList.length} Topik` : 'Berjalan Sesuai Silabus'}
+                </div>
+                <div style={{ fontSize: 9.5, color: '#6b21a8', marginTop: 2 }}>Pendalaman modul Kurikulum Merdeka</div>
+              </div>
+            </div>
+
+            {materiList.length > 0 && (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 12px', marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  📚 Topik & Bab Kurikulum Merdeka yang Telah Dipelajari di Kelas:
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {materiList.map((m, idx) => (
+                    <span key={idx} style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '3px 8px', fontSize: 10.5, color: '#1e293b', fontWeight: 600 }}>
+                      ✓ {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {catatanSesi.length > 0 && (
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: '#92400e', lineHeight: 1.5 }}>
+                <b>💬 Catatan Evaluasi Pendampingan Kelas:</b> {catatanSesi.slice(0, 3).join('; ')}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ===== BLOK A: PER MAPEL ===== */}
       <div style={gayaKartu}>
