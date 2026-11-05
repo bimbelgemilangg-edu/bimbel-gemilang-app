@@ -3554,8 +3554,8 @@ export function normalisasiKodeMapel(namaAtauKode) {
   if (/\b(kimia|kim)\b/i.test(s)) return 'kim';
   if (/\b(ipa|sains|alam)\b/i.test(s) || s === 'ipa') return 'ipa';
   if (/\b(ips|sosial)\b/i.test(s) || s === 'ips') return 'ips';
-  if (/\b(indo|indonesia|bind)\b/i.test(s)) return 'bind';
-  if (/\b(inggris|english|bing)\b/i.test(s)) return 'bing';
+  if (/\b(indo|indonesia|bind|bin|ind)\b|b[\s.]*indo|bahasa\s+ind/i.test(s)) return 'bind';
+  if (/\b(inggris|english|bing|big|eng)\b|b[\s.]*ing|bahasa\s+ing/i.test(s)) return 'bing';
   if (/\b(ekonomi|eko)\b/i.test(s)) return 'eko';
   if (/\b(sosiologi|sos)\b/i.test(s)) return 'sos';
   if (/\b(geografi|geo)\b/i.test(s)) return 'geo';
@@ -3698,6 +3698,8 @@ export function deteksiMapelJadwal(schedule, teacher = null) {
       teacherObj.mataPelajaran ||
       teacherObj.bidangStudi ||
       teacherObj.kodeMapel ||
+      teacherObj.subject ||
+      teacherObj.spesialisasi ||
       '';
     if (guruMapel) {
       const normGuru = normalisasiKodeMapel(guruMapel);
@@ -3740,7 +3742,24 @@ export function daftarBabSilabus({ kelas = 7, mapel = 'mtk', semester = null } =
 
   let dataMapel = dataKelas[kode];
   if (!dataMapel) {
-    dataMapel = dataKelas['mtk'] || dataKelas['ipa'] || null;
+    // JANGAN PERNAH fallback ke 'mtk' jika bukan mapel matematika!
+    const namaMapel = namaMapelLengkap(kode);
+    return [
+      {
+        id: `${jenjang}${kStr}-${kode}-b1`,
+        judul: `Bab 1: Pembelajaran ${namaMapel}`,
+        subBab: ["Penguatan Konsep Pokok", "Latihan Pemahaman Terbimbing", "Evaluasi Formatif Mandiri"],
+        alokasiSesi: 2,
+        cp: `Mengembangkan pemahaman dan capaian pembelajaran mata pelajaran ${namaMapel}.`
+      },
+      {
+        id: `${jenjang}${kStr}-${kode}-b2`,
+        judul: `Bab 2: Pendalaman Materi ${namaMapel}`,
+        subBab: ["Aplikasi Kasus dan Analisis", "Penyelesaian Soal Mandiri"],
+        alokasiSesi: 2,
+        cp: `Penguatan kompetensi aplikatif untuk ${namaMapel}.`
+      }
+    ];
   }
   if (!dataMapel) return [];
 

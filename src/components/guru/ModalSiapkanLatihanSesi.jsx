@@ -20,6 +20,9 @@ import {
   ListChecks,
   FolderCheck,
   Tag,
+  PenTool,
+  Plus,
+  Eye,
 } from 'lucide-react';
 import { db } from '../../firebase';
 import { doc, updateDoc, collection, getDocs, query, where, limit } from 'firebase/firestore';
@@ -45,7 +48,7 @@ export default function ModalSiapkanLatihanSesi({
   const [selectedSubBab, setSelectedSubBab] = useState('');
   const [fokusBahasan, setFokusBahasan] = useState('');
   const [fokusKustom, setFokusKustom] = useState('');
-  const [modePilihan, setModePilihan] = useState('rekomendasi'); // 'rekomendasi' | 'manual' | 'kuis_guru'
+  const [modePilihan, setModePilihan] = useState('rekomendasi'); // 'rekomendasi' | 'manual' | 'kuis_guru' | 'tulis_mandiri'
   const [loadingBank, setLoadingBank] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bankSoalList, setBankSoalList] = useState([]);
@@ -58,6 +61,17 @@ export default function ModalSiapkanLatihanSesi({
   const [durasiMenit, setDurasiMenit] = useState(15);
   const [isKelasMandiri, setIsKelasMandiri] = useState(() => Boolean(schedule?.latihanSesi?.isKelasMandiri || schedule?.isKelasMandiri));
   const [pesanStatus, setPesanStatus] = useState('');
+
+  // State untuk Form "✍️ Tulis Soal Mandiri" (Otonomi Privat Tentor)
+  const [teksSoalBaru, setTeksSoalBaru] = useState('');
+  const [opsiBaruA, setOpsiBaruA] = useState('');
+  const [opsiBaruB, setOpsiBaruB] = useState('');
+  const [opsiBaruC, setOpsiBaruC] = useState('');
+  const [opsiBaruD, setOpsiBaruD] = useState('');
+  const [kunciBaru, setKunciBaru] = useState('A');
+  const [pembahasanBaru, setPembahasanBaru] = useState('');
+  const [gambarUrlBaru, setGambarUrlBaru] = useState('');
+  const [previewMath, setPreviewMath] = useState(false);
 
   // 1. Ekstraksi jenjang dan kelas dari jadwal
   const kelasAngka = useMemo(() => {
@@ -219,37 +233,50 @@ export default function ModalSiapkanLatihanSesi({
         if (!mounted) return;
 
         const list = [];
+        const myGuruId = teacher?.guruId || teacher?.id || '';
+
         snap.forEach((d) => {
           const data = d.data();
           const rawQuestions = Array.isArray(data.questions)
             ? data.questions
             : (Array.isArray(data.soalList) ? data.soalList : []);
           if (rawQuestions.length > 0) {
+            const kuisMapel = normalisasiKodeMapel(data.kodeMapel || data.subject || data.mapel || '');
+            const kuisGuruId = data.guruId || data.authorId || '';
+            const isMine = Boolean(myGuruId && kuisGuruId === myGuruId);
+
+            // ISOLASI KETAT PRIVASI & MAPEL:
+            // 1. Kuis mapel lain TIDAK BOLEH muncul pada sesi guru (mis: MTK tidak boleh masuk ke Bahasa Indonesia)
+            if (kuisMapel && kuisMapel !== 'umum' && kodeMapel && kodeMapel !== 'umum' && kuisMapel !== kodeMapel) {
+              return;
+            }
+
+            // 2. Jika kuis bertipe 'umum' / tanpa mapel, hanya tampilkan jika dibuat oleh guru ini sendiri
+            if (!isMine && (!kuisMapel || kuisMapel === 'umum') && kodeMapel !== 'umum') {
+              return;
+            }
+
             list.push({
               id: d.id,
               title: data.title || 'Kuis Tanpa Judul',
-              subject: data.subject || data.mapel || '',
-              kodeMapel: normalisasiKodeMapel(data.kodeMapel || data.subject || ''),
-              guruId: data.guruId || '',
-              guruName: data.guruName || '',
+              subject: data.subject || data.mapel || namaMapelLengkap(kuisMapel),
+              kodeMapel: kuisMapel,
+              guruId: kuisGuruId,
+              guruName: data.guruName || data.authorName || '',
               totalQuestions: rawQuestions.length,
               questions: rawQuestions,
               createdAt: data.createdAt,
               targetKelas: data.targetKelas || 'Semua',
               targetKategori: data.targetKategori || 'Semua',
+              isMine,
             });
           }
         });
 
-        // Urutkan: dahulukan kuis buatan guru sendiri, kemudian mapel yang cocok
-        const myGuruId = teacher?.guruId || teacher?.id || '';
+        // Urutkan: dahulukan kuis buatan guru sendiri (privat), baru kuis resmi mapel
         list.sort((a, b) => {
-          const aIsMine = myGuruId && a.guruId === myGuruId ? 1 : 0;
-          const bIsMine = myGuruId && b.guruId === myGuruId ? 1 : 0;
-          if (aIsMine !== bIsMine) return bIsMine - aIsMine;
-          const aMapelMatch = a.kodeMapel === kodeMapel ? 1 : 0;
-          const bMapelMatch = b.kodeMapel === kodeMapel ? 1 : 0;
-          return bMapelMatch - aMapelMatch;
+          if (a.isMine !== b.isMine) return b.isMine ? 1 : -1;
+          return 0;
         });
 
         setKuisTersediaList(list);
@@ -337,7 +364,63 @@ export default function ModalSiapkanLatihanSesi({
     };
   }, [kodeMapel, jenjangSesi]);
 
-  // 4A. Ambil Soal dari Kuis E-Learning Guru
+  // 4A. Tambah Butir Soal Mandiri (Otonomi Privat Tentor)
+  const handleTambahSoalMandiri = () => {
+    if (!teksSoalBaru.trim()) {
+      alert('Teks pertanyaan soal tidak boleh kosong.');
+      return;
+    }
+    if (!opsiBaruA.trim() || !opsiBaruB.trim()) {
+      alert('Mohon isi minimal Pilihan A dan Pilihan B.');
+      return;
+    }
+    if (soalTerpilih.length >= 20) {
+      alert('Maksimal 20 butir soal per sesi latihan agar siswa tidak kelelahan.');
+      return;
+    }
+
+    const opsiJawaban = [
+      { label: 'A', teks: opsiBaruA.trim() },
+      { label: 'B', teks: opsiBaruB.trim() },
+    ];
+    if (opsiBaruC.trim()) opsiJawaban.push({ label: 'C', teks: opsiBaruC.trim() });
+    if (opsiBaruD.trim()) opsiJawaban.push({ label: 'D', teks: opsiBaruD.trim() });
+
+    const nomorBaru = soalTerpilih.length + 1;
+    const butirBaru = normalisasiButirSoal(
+      {
+        id: `mandiri-${Date.now()}-${nomorBaru}`,
+        nomor: nomorBaru,
+        teksSoal: teksSoalBaru.trim(),
+        opsiJawaban,
+        kunciJawaban: kunciBaru || 'A',
+        pembahasan: pembahasanBaru.trim() || `Kunci jawaban yang tepat adalah pilihan ${kunciBaru}.`,
+        materi: fokusAktif
+          ? `${babTerpilihObj?.judul || 'Materi'} (${fokusAktif})`
+          : babTerpilihObj?.judul || 'Latihan Mandiri Tentor',
+        gambarUrls: gambarUrlBaru.trim() ? [gambarUrlBaru.trim()] : [],
+        isMandiri: true,
+        guruId: teacher?.id || teacher?.guruId || '',
+        guruName: teacher?.name || teacher?.nama || '',
+      },
+      soalTerpilih.length
+    );
+
+    setSoalTerpilih((prev) => [...prev, butirBaru]);
+    setPesanStatus(`✍️ Soal #${nomorBaru} berhasil ditambahkan! Total ${nomorBaru} soal siap.`);
+
+    // Reset formulir input mandiri
+    setTeksSoalBaru('');
+    setOpsiBaruA('');
+    setOpsiBaruB('');
+    setOpsiBaruC('');
+    setOpsiBaruD('');
+    setKunciBaru('A');
+    setPembahasanBaru('');
+    setGambarUrlBaru('');
+  };
+
+  // 4B. Ambil Soal dari Kuis E-Learning Guru
   const handleTerapkanKuisModul = (kuisTarget) => {
     const kuis = kuisTarget || kuisTersediaList.find((k) => k.id === selectedKuisId);
     if (!kuis || !Array.isArray(kuis.questions) || kuis.questions.length === 0) {
@@ -899,11 +982,9 @@ export default function ModalSiapkanLatihanSesi({
         ];
       }
 
-      for (let i = 1; i <= sisa; i++) {
-        const no = terpilih.length + 1;
-        const isSains = kodeMapel === "ipa" || kodeMapel === "bio" || kodeMapel === "fis" || kodeMapel === "kim" || kodeMapel === "ipas";
-
-        if (seedPool && seedPool.length > 0) {
+      if (seedPool && seedPool.length > 0 && kodeMapel === 'mtk') {
+        for (let i = 1; i <= sisa; i++) {
+          const no = terpilih.length + 1;
           const templateDipilih = seedPool[(no - 1) % seedPool.length];
           terpilih.push(normalisasiButirSoal({
             id: `seed-${fokusLower ? 'fokus' : 'geom'}-${Date.now()}-${no}`,
@@ -914,42 +995,28 @@ export default function ModalSiapkanLatihanSesi({
             pembahasan: templateDipilih.pembahasan,
             materi: fokusAktif ? `${judulBab} (${fokusAktif})` : judulBab,
           }, terpilih.length));
-        } else if (isSains) {
-          terpilih.push(normalisasiButirSoal({
-            id: `seed-sains-${Date.now()}-${no}`,
-            nomor: no,
-            teksSoal: `Pada pembelajaran ${judulBab}${fokusAktif ? ` dengan fokus bahasan '${fokusAktif}'` : ''} (${sub}), bagaimanakah mekanisme atau fenomena ilmiah yang mendasarinya dalam kehidupan sehari-hari?`,
-            opsiJawaban: [
-              { label: "A", teks: "Terjadi interaksi faktor biologis dan lingkungan yang mempertahankan kondisi seimbang" },
-              { label: "B", teks: "Penurunan laju reaksi secara spontan tanpa dipengaruhi rangsangan luar" },
-              { label: "C", teks: "Perubahan struktur molekuler secara acak tanpa adanya transfer energi kinetik" },
-              { label: "D", teks: "Peningkatan gradien konsentrasi zat secara pasif melawan arah difusi alami" },
-            ],
-            kunciJawaban: "A",
-            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}${fokusAktif ? ` (${fokusAktif})` : ''}, mekanisme ilmiah berfokus pada keteraturan prinsip dasar dan penerapannya.`,
-            materi: fokusAktif ? `${judulBab} (${fokusAktif})` : judulBab,
-          }, terpilih.length));
-        } else {
-          terpilih.push(normalisasiButirSoal({
-            id: `seed-umum-${Date.now()}-${no}`,
-            nomor: no,
-            teksSoal: `Diketahui pemodelan permasalahan pada ${judulBab}${fokusAktif ? ` dengan fokus pokok '${fokusAktif}'` : ''} (${sub}). Tentukan pendekatan analisis yang paling sistematis untuk memperoleh penyelesaian yang tepat!`,
-            opsiJawaban: [
-              { label: "A", teks: "Menganalisis hubungan antar-variabel dan menyusun formulasi pemecahan secara bertahap" },
-              { label: "B", teks: "Mengabaikan parameter batas dan langsung mengasumsikan nilai konstan" },
-              { label: "C", teks: "Memilih data ekstrem secara acak tanpa verifikasi hipotesis awal" },
-              { label: "D", teks: "Menyamakan semua faktor independen menjadi satu besaran tunggal" },
-            ],
-            kunciJawaban: "A",
-            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}${fokusAktif ? ` (${fokusAktif})` : ''}, penyelesaian dimulai dari memetakan variabel dan menyelesaikan secara bertahap.`,
-            materi: fokusAktif ? `${judulBab} (${fokusAktif})` : judulBab,
-          }, terpilih.length));
         }
       }
     }
 
+    if (terpilih.length === 0) {
+      setSoalTerpilih([]);
+      setPesanStatus(
+        `⚠️ Bank Soal belum memiliki butir aktif yang cocok untuk materi "${babTerpilihObj.judul}". Sistem tidak akan memaksakan soal generik. Silakan gunakan tab "✍️ Tulis Soal Mandiri" untuk mengetik soal Anda sendiri, atau gunakan tab "📂 Pakai Kuis Pribadi".`
+      );
+      return;
+    }
+
     setSoalTerpilih(terpilih);
-    setPesanStatus(`✨ Berhasil menyiapkan ${terpilih.length} butir soal terverifikasi untuk ${babTerpilihObj.judul}${fokusAktif ? ` (Fokus: ${fokusAktif})` : ''}`);
+    if (terpilih.length < jumlahTarget) {
+      setPesanStatus(
+        `✨ Ditemukan ${terpilih.length} butir soal terverifikasi untuk ${babTerpilihObj.judul}${fokusAktif ? ` (Fokus: ${fokusAktif})` : ''}. Anda dapat melengkapinya via tab "✍️ Tulis Soal Mandiri".`
+      );
+    } else {
+      setPesanStatus(
+        `✨ Berhasil menyiapkan ${terpilih.length} butir soal terverifikasi untuk ${babTerpilihObj.judul}${fokusAktif ? ` (Fokus: ${fokusAktif})` : ''}`
+      );
+    }
   };
 
   // Toggle pilihan butir soal pada mode manual
@@ -1458,20 +1525,20 @@ export default function ModalSiapkanLatihanSesi({
             )}
           </div>
 
-          {/* 2. Metode Penyiapan Soal: Rekomendasi Cerdas / AI Filter vs Manual vs Pakai Kuis Guru */}
+          {/* 2. Metode Penyiapan Soal: Otonomi Privat Tentor (Tulis Mandiri / Kuis Pribadi / Bank Soal / Rekomendasi) */}
           <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 12 }}>
               <button
                 type="button"
-                onClick={() => setModePilihan('rekomendasi')}
+                onClick={() => setModePilihan('tulis_mandiri')}
                 style={{
-                  padding: '10px 12px',
+                  padding: '9px 12px',
                   borderRadius: 10,
-                  border: modePilihan === 'rekomendasi' ? '2px solid #4f46e5' : '1px solid #e2e8f0',
-                  background: modePilihan === 'rekomendasi' ? '#eef2ff' : '#ffffff',
-                  color: modePilihan === 'rekomendasi' ? '#3730a3' : '#64748b',
+                  border: modePilihan === 'tulis_mandiri' ? '2px solid #4f46e5' : '1px solid #e2e8f0',
+                  background: modePilihan === 'tulis_mandiri' ? '#eef2ff' : '#ffffff',
+                  color: modePilihan === 'tulis_mandiri' ? '#3730a3' : '#64748b',
                   fontWeight: 700,
-                  fontSize: 12,
+                  fontSize: 11.5,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1479,41 +1546,20 @@ export default function ModalSiapkanLatihanSesi({
                   cursor: 'pointer',
                 }}
               >
-                <Sparkles size={15} color={modePilihan === 'rekomendasi' ? '#4f46e5' : '#64748b'} />
-                ✨ Rekomendasi Cerdas (AI Filter)
-              </button>
-              <button
-                type="button"
-                onClick={() => setModePilihan('manual')}
-                style={{
-                  padding: '10px 12px',
-                  borderRadius: 10,
-                  border: modePilihan === 'manual' ? '2px solid #4f46e5' : '1px solid #e2e8f0',
-                  background: modePilihan === 'manual' ? '#eef2ff' : '#ffffff',
-                  color: modePilihan === 'manual' ? '#3730a3' : '#64748b',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                <ListChecks size={15} color={modePilihan === 'manual' ? '#4f46e5' : '#64748b'} />
-                📋 Pilih Manual ({bankSoalList.length} Tersedia)
+                <PenTool size={14} color={modePilihan === 'tulis_mandiri' ? '#4f46e5' : '#64748b'} />
+                ✍️ Tulis Soal Mandiri
               </button>
               <button
                 type="button"
                 onClick={() => setModePilihan('kuis_guru')}
                 style={{
-                  padding: '10px 12px',
+                  padding: '9px 12px',
                   borderRadius: 10,
                   border: modePilihan === 'kuis_guru' ? '2px solid #059669' : '1px solid #e2e8f0',
                   background: modePilihan === 'kuis_guru' ? '#ecfdf5' : '#ffffff',
                   color: modePilihan === 'kuis_guru' ? '#065f46' : '#64748b',
                   fontWeight: 700,
-                  fontSize: 12,
+                  fontSize: 11.5,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1521,10 +1567,242 @@ export default function ModalSiapkanLatihanSesi({
                   cursor: 'pointer',
                 }}
               >
-                <FolderCheck size={15} color={modePilihan === 'kuis_guru' ? '#059669' : '#64748b'} />
-                📂 Pakai Kuis yang Sudah Dibuat ({kuisTersediaList.length})
+                <FolderCheck size={14} color={modePilihan === 'kuis_guru' ? '#059669' : '#64748b'} />
+                📂 Pakai Kuis Pribadi ({kuisTersediaList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setModePilihan('manual')}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: 10,
+                  border: modePilihan === 'manual' ? '2px solid #0284c7' : '1px solid #e2e8f0',
+                  background: modePilihan === 'manual' ? '#f0f9ff' : '#ffffff',
+                  color: modePilihan === 'manual' ? '#0369a1' : '#64748b',
+                  fontWeight: 700,
+                  fontSize: 11.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                }}
+              >
+                <ListChecks size={14} color={modePilihan === 'manual' ? '#0284c7' : '#64748b'} />
+                📋 Bank Soal ({bankSoalList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setModePilihan('rekomendasi')}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: 10,
+                  border: modePilihan === 'rekomendasi' ? '2px solid #7c3aed' : '1px solid #e2e8f0',
+                  background: modePilihan === 'rekomendasi' ? '#faf5ff' : '#ffffff',
+                  color: modePilihan === 'rekomendasi' ? '#6b21a8' : '#64748b',
+                  fontWeight: 700,
+                  fontSize: 11.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                }}
+              >
+                <Sparkles size={14} color={modePilihan === 'rekomendasi' ? '#7c3aed' : '#64748b'} />
+                ✨ Rekomendasi Cerdas
               </button>
             </div>
+
+            {/* Panel Mode Tulis Soal Mandiri (Otonomi Privat Tentor) */}
+            {modePilihan === 'tulis_mandiri' && (
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1.5px solid #c7d2fe',
+                  borderRadius: 12,
+                  padding: 16,
+                  marginBottom: 10,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#312e81', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <PenTool size={16} color="#4338ca" /> Tulis Butir Soal Mandiri (Khusus Sesi Ini)
+                    </div>
+                    <div style={{ fontSize: 11, color: '#6366f1', marginTop: 2 }}>
+                      Ketik soal orisinal sesuai materi yang diajarkan hari ini. Bersifat privat untuk sesi kelas Anda.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMath(!previewMath)}
+                    style={{
+                      background: previewMath ? '#4f46e5' : '#e0e7ff',
+                      color: previewMath ? '#ffffff' : '#3730a3',
+                      border: 'none',
+                      borderRadius: 6,
+                      padding: '4px 10px',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Eye size={13} /> {previewMath ? 'Tutup Preview Math' : 'Live KaTeX Preview'}
+                  </button>
+                </div>
+
+                {/* Teks Pertanyaan */}
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Pertanyaan / Teks Soal: <span style={{ fontSize: 10.5, fontWeight: 400, color: '#64748b' }}>(Dukungan rumus matematika: ketik $r = 7\text{ cm}$ atau $\pi r^2 t$)</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={teksSoalBaru}
+                    onChange={(e) => setTeksSoalBaru(e.target.value)}
+                    placeholder="Contoh: Sebuah tabung memiliki jari-jari $r = 7\text{ cm}$ dan tinggi $t = 10\text{ cm}$. Dengan $\pi = \frac{22}{7}$, volume tabung adalah ..."
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                      border: '1px solid #cbd5e1',
+                      fontSize: 12.5,
+                      fontFamily: 'inherit',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  {previewMath && teksSoalBaru && (
+                    <div style={{ marginTop: 6, padding: '8px 12px', background: '#ffffff', border: '1px dashed #818cf8', borderRadius: 8, fontSize: 12.5 }}>
+                      <div style={{ fontSize: 10, color: '#6366f1', fontWeight: 700, marginBottom: 2 }}>Preview KaTeX:</div>
+                      <RenderMath text={teksSoalBaru} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Opsi Pilihan Ganda (A, B, C, D) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 10 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      Pilihan A {kunciBaru === 'A' && <span style={{ color: '#16a34a', fontWeight: 800 }}>✓ (Kunci)</span>}:
+                    </label>
+                    <input
+                      type="text"
+                      value={opsiBaruA}
+                      onChange={(e) => setOpsiBaruA(e.target.value)}
+                      placeholder="Jawaban A (mis: $1.540\text{ cm}^3$)"
+                      style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      Pilihan B {kunciBaru === 'B' && <span style={{ color: '#16a34a', fontWeight: 800 }}>✓ (Kunci)</span>}:
+                    </label>
+                    <input
+                      type="text"
+                      value={opsiBaruB}
+                      onChange={(e) => setOpsiBaruB(e.target.value)}
+                      placeholder="Jawaban B"
+                      style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      Pilihan C {kunciBaru === 'C' && <span style={{ color: '#16a34a', fontWeight: 800 }}>✓ (Kunci)</span>}:
+                    </label>
+                    <input
+                      type="text"
+                      value={opsiBaruC}
+                      onChange={(e) => setOpsiBaruC(e.target.value)}
+                      placeholder="Jawaban C (opsional)"
+                      style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      Pilihan D {kunciBaru === 'D' && <span style={{ color: '#16a34a', fontWeight: 800 }}>✓ (Kunci)</span>}:
+                    </label>
+                    <input
+                      type="text"
+                      value={opsiBaruD}
+                      onChange={(e) => setOpsiBaruD(e.target.value)}
+                      placeholder="Jawaban D (opsional)"
+                      style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Baris Kunci Jawaban, Pembahasan Singkat, Gambar & Tombol Tambah */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-end' }}>
+                  <div style={{ minWidth: 120 }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      Kunci Jawaban:
+                    </label>
+                    <select
+                      value={kunciBaru}
+                      onChange={(e) => setKunciBaru(e.target.value)}
+                      style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #86efac', fontSize: 12, fontWeight: 700, color: '#166534', background: '#f0fdf4' }}
+                    >
+                      <option value="A">Pilihan A</option>
+                      <option value="B">Pilihan B</option>
+                      <option value="C">Pilihan C</option>
+                      <option value="D">Pilihan D</option>
+                    </select>
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 180 }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      Pembahasan Singkat (Opsional):
+                    </label>
+                    <input
+                      type="text"
+                      value={pembahasanBaru}
+                      onChange={(e) => setPembahasanBaru(e.target.value)}
+                      placeholder="Rumus/Langkah penyelesaian..."
+                      style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 160 }}>
+                    <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      URL Gambar (Opsional):
+                    </label>
+                    <input
+                      type="text"
+                      value={gambarUrlBaru}
+                      onChange={(e) => setGambarUrlBaru(e.target.value)}
+                      placeholder="https://..."
+                      style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 11.5, boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleTambahSoalMandiri}
+                    style={{
+                      background: '#4f46e5',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '8px 16px',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      boxShadow: '0 2px 4px rgba(79, 70, 229, 0.25)',
+                    }}
+                  >
+                    <Plus size={15} /> Tambahkan ke Latihan
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Panel Mode Rekomendasi Cerdas */}
             {modePilihan === 'rekomendasi' && (
@@ -1620,7 +1898,7 @@ export default function ModalSiapkanLatihanSesi({
                   </div>
                 ) : kuisTersediaList.length === 0 ? (
                   <div style={{ padding: 14, textAlign: 'center', fontSize: 12, color: '#15803d', background: '#ffffff', borderRadius: 8 }}>
-                    Belum ada kuis yang ditemukan di E-Learning. Anda dapat menggunakan <b>Rekomendasi Cerdas (AI Filter)</b> atau centang dari Bank Soal.
+                    Belum ada kuis yang ditemukan untuk mata pelajaran ini. Anda dapat menggunakan tab <b>"✍️ Tulis Soal Mandiri"</b> untuk mengetik soal pribadi Anda, atau centang dari Bank Soal.
                   </div>
                 ) : (
                   <div>
@@ -1641,14 +1919,11 @@ export default function ModalSiapkanLatihanSesi({
                           fontWeight: 600,
                         }}
                       >
-                        {kuisTersediaList.map((k) => {
-                          const isMine = teacher?.id && k.guruId === teacher.id;
-                          return (
-                            <option key={k.id} value={k.id}>
-                              {isMine ? '★ [Milik Saya] ' : ''}{k.title} ({k.totalQuestions} Soal{k.subject ? ` · ${k.subject}` : ''})
-                            </option>
-                          );
-                        })}
+                        {kuisTersediaList.map((k) => (
+                          <option key={k.id} value={k.id}>
+                            {k.isMine ? '★ [Kuis Saya] ' : ''}{k.title} ({k.totalQuestions} Soal{k.subject ? ` · ${k.subject}` : ''})
+                          </option>
+                        ))}
                       </select>
                       <button
                         type="button"
@@ -1767,24 +2042,35 @@ export default function ModalSiapkanLatihanSesi({
 
           {/* 3. Tinjau & Review Soal yang Akan Diterbitkan (DENGAN RENDERMATH & GAMBAR UTUH) */}
           <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
               <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span>📖 Tinjau Butir Soal Terpilih ({soalTerpilih.length} Soal)</span>
               </div>
               {soalTerpilih.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setSoalTerpilih([])}
+                  onClick={() => {
+                    if (window.confirm('Kosongkan semua butir soal dalam daftar terpilih ini? Anda dapat memilih atau menulis butir soal baru.')) {
+                      setSoalTerpilih([]);
+                      setPesanStatus('🗑️ Daftar soal telah dikosongkan. Silakan tulis soal mandiri atau pilih butir baru.');
+                    }
+                  }}
+                  title="Kosongkan seluruh butir yang dipilih dan buat baru"
                   style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#ef4444',
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    color: '#dc2626',
+                    borderRadius: 6,
+                    padding: '4px 10px',
                     fontSize: 11,
                     fontWeight: 700,
                     cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
                   }}
                 >
-                  Kosongkan
+                  <Trash2 size={12} /> 🗑️ Kosongkan & Buat Ulang
                 </button>
               )}
             </div>
@@ -1797,11 +2083,17 @@ export default function ModalSiapkanLatihanSesi({
                   background: '#f8fafc',
                   border: '1px dashed #cbd5e1',
                   borderRadius: 12,
-                  color: '#94a3b8',
+                  color: '#64748b',
                   fontSize: 12,
+                  lineHeight: 1.6,
                 }}
               >
-                Belum ada butir soal yang dipilih. Klik <b>"Siapkan 5 Soal Cepat"</b> di atas atau centang manual dari Bank Soal.
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                  Belum Ada Butir Soal Terpilih
+                </div>
+                <div>
+                  Silakan tulis soal orisinal di tab <b>"✍️ Tulis Soal Mandiri"</b>, gunakan kuis di tab <b>"📂 Pakai Kuis Pribadi"</b>, atau pilih dari Bank Soal.
+                </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
