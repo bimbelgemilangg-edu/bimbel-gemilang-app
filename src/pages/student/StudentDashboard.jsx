@@ -23,7 +23,6 @@ import {
 import {
   daftarBabSilabus,
   deteksiMapelJadwal,
-  namaMapelLengkap,
 } from '../../utils/silabusKurikulumMerdeka';
 import ModalKerjakanLatihanSesi from '../../components/student/ModalKerjakanLatihanSesi';
 

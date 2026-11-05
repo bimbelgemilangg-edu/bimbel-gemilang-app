@@ -9,7 +9,6 @@ import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { 
   daftarBabSilabus,
   deteksiMapelJadwal,
-  namaMapelLengkap,
 } from '../../utils/silabusKurikulumMerdeka';
 import { 
   collection, query, where, getDocs, doc, getDoc,
