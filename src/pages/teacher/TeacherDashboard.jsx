@@ -190,6 +190,15 @@ const TeacherDashboard = () => {
   // dihitung fungsi murni di utils/statistikGuru.js (teruji) supaya definisi
   // angka hanya ada di satu tempat dan biaya bacanya DATAR selamanya.
   const [guru, setGuru] = useState(null);
+  const guruAktif = useMemo(() => {
+    if (guru) return guru;
+    try {
+      const stored = localStorage.getItem('teacherData');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }, [guru]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [hariIniStr, setHariIniStr] = useState(() => tanggalLokalStr());
@@ -1112,6 +1121,22 @@ const TeacherDashboard = () => {
                   btnBg = '#f59e0b';
                   disabled = false;
                 }
+
+                const isSD = (() => {
+                  const lvl = String(item.level || '').toUpperCase();
+                  if (lvl.includes('SD')) return true;
+                  const prog = String(item.program || '').toUpperCase();
+                  if (prog.includes('SD')) return true;
+                  const title = String(item.title || '').toUpperCase();
+                  if (title.includes(' SD')) return true;
+                  if (Array.isArray(item.students) && item.students.length > 0) {
+                    for (const s of item.students) {
+                      const k = parseInt(String(s.kelas || s.kelasSekolah || '').replace(/[^0-9]/g, ''), 10);
+                      if (k >= 1 && k <= 6) return true;
+                    }
+                  }
+                  return false;
+                })();
                 
                 return (
                   <div key={item.id} style={styles.scheduleCard}>
@@ -1123,7 +1148,7 @@ const TeacherDashboard = () => {
                       <div style={styles.scheduleTitle}>
                         {item.title && item.title !== 'Materi Umum'
                           ? item.title
-                          : (namaMapelLengkap(deteksiMapelJadwal(item, teacherData)) || 'Materi Umum')}
+                          : (namaMapelLengkap(deteksiMapelJadwal(item, guruAktif)) || 'Materi Umum')}
                         {item.mapelId && (
                           <span style={styles.scheduleMapelId}>
                             <Tag size={10} /> {item.mapelId}
@@ -1156,33 +1181,53 @@ const TeacherDashboard = () => {
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setJadwalLatihanSesi(item);
-                        }}
-                        title="Siapkan butir soal latihan pemahaman untuk sesi tatap muka hari ini"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 4,
-                          padding: '7px 11px',
-                          borderRadius: 10,
-                          border: item.latihanSesi?.status === 'aktif' ? '1px solid #86efac' : '1px solid #cbd5e1',
-                          background: item.latihanSesi?.status === 'aktif' ? '#f0fdf4' : '#ffffff',
-                          color: item.latihanSesi?.status === 'aktif' ? '#15803d' : '#475569',
-                          fontSize: 11,
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {item.latihanSesi?.status === 'aktif' ? (
-                          <>✓ Latihan ({item.latihanSesi.totalSoal || item.latihanSesi.soalList?.length || 5})</>
-                        ) : (
-                          <>🎯 Siapkan Latihan</>
-                        )}
-                      </button>
+                      {!isSD ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setJadwalLatihanSesi(item);
+                          }}
+                          title="Siapkan butir soal latihan pemahaman untuk sesi tatap muka hari ini (SMP & SMA)"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '7px 11px',
+                            borderRadius: 10,
+                            border: item.latihanSesi?.status === 'aktif' ? '1px solid #86efac' : '1px solid #cbd5e1',
+                            background: item.latihanSesi?.status === 'aktif' ? '#f0fdf4' : '#ffffff',
+                            color: item.latihanSesi?.status === 'aktif' ? '#15803d' : '#475569',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {item.latihanSesi?.status === 'aktif' ? (
+                            <>✓ Latihan ({item.latihanSesi.totalSoal || item.latihanSesi.soalList?.length || 5})</>
+                          ) : (
+                            <>🎯 Siapkan Latihan</>
+                          )}
+                        </button>
+                      ) : (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '6px 10px',
+                            borderRadius: 8,
+                            background: '#f8fafc',
+                            border: '1px dashed #cbd5e1',
+                            color: '#64748b',
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                          }}
+                          title="Kelas jenjang SD menggunakan materi mandiri tentor"
+                        >
+                          🌱 Mandiri SD
+                        </span>
+                      )}
                       <button 
                         onClick={() => {
                           if (isOngoing) {
@@ -1519,7 +1564,7 @@ const TeacherDashboard = () => {
       {jadwalLatihanSesi && (
         <ModalSiapkanLatihanSesi
           schedule={jadwalLatihanSesi}
-          teacher={teacherData}
+          teacher={guruAktif}
           onClose={() => setJadwalLatihanSesi(null)}
           onSuccess={(updatedLatihan) => {
             setJadwalJendela((prev) =>

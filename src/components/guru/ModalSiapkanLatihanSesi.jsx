@@ -84,6 +84,16 @@ export default function ModalSiapkanLatihanSesi({
     return deteksiMapelJadwal(schedule, t);
   }, [schedule, teacher]);
 
+  const isJenjangSD = useMemo(() => {
+    if (!schedule) return false;
+    const lvl = String(schedule.level || '').toUpperCase();
+    if (lvl.includes('SD')) return true;
+    const prog = String(schedule.program || '').toUpperCase();
+    if (prog.includes('SD')) return true;
+    const k = parseInt(kelasAngka, 10);
+    return k >= 1 && k <= 6;
+  }, [schedule, kelasAngka]);
+
   // 2. Daftar Bab resmi berdasarkan silabus
   const listBab = useMemo(() => {
     return daftarBabSilabus({
@@ -440,6 +450,27 @@ export default function ModalSiapkanLatihanSesi({
 
         {/* Konten Scrollable */}
         <div style={{ padding: 22, overflowY: 'auto', flex: 1 }}>
+          {isJenjangSD && (
+            <div
+              style={{
+                background: '#fef3c7',
+                border: '1px solid #fde68a',
+                borderRadius: 12,
+                padding: '12px 16px',
+                marginBottom: 16,
+                color: '#92400e',
+                fontSize: 12,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🌱</span>
+              <div>
+                <b>Pengecualian Sementara:</b> Penyiapan latihan pemahaman sesi tatap muka saat ini difokuskan penuh untuk jenjang <b>SMP</b> dan <b>SMA</b>. Untuk kelas <b>SD</b>, materi pembelajaran dicatat secara mandiri oleh tentor di laporan sesi.
+              </div>
+            </div>
+          )}
           {/* Status Aktif Latihan Sebelumnya */}
           {schedule?.latihanSesi?.status === 'aktif' && (
             <div

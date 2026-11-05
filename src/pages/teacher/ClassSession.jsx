@@ -74,6 +74,23 @@ const ClassSession = () => {
   const [englishTopic, setEnglishTopic] = useState('');
   const [englishVocab, setEnglishVocab] = useState('');
 
+  // Pengecualian Sementara Jenjang SD (Sistem Silabus & Bank Soal difokuskan ke SMP & SMA)
+  const isJenjangSD = useMemo(() => {
+    if (!schedule) return false;
+    const lvl = String(schedule.level || '').toUpperCase();
+    if (lvl.includes('SD')) return true;
+    const prog = String(schedule.program || '').toUpperCase();
+    if (prog.includes('SD')) return true;
+    const title = String(schedule.title || '').toUpperCase();
+    if (title.includes(' SD')) return true;
+    const k = parseInt(kelasAngka, 10);
+    return k >= 1 && k <= 6;
+  }, [schedule, kelasAngka]);
+
+  const [sdMapelPilihan, setSdMapelPilihan] = useState('Matematika SD');
+  const [sdTopikMateri, setSdTopikMateri] = useState('');
+  const [sdCatatan, setSdCatatan] = useState('');
+
   const kelasAngka = useMemo(() => {
     if (!schedule) return '7';
     if (schedule.kelas) {
@@ -300,6 +317,8 @@ const ClassSession = () => {
   const handleFinalizeClass = async () => {
     const materiSimpan = isEnglishCourse
       ? (materiAktual || `[English Course] ${englishFocus}: ${englishTopic || 'Session Practice'}${englishVocab ? ' (Vocab: ' + englishVocab + ')' : ''}`)
+      : isJenjangSD
+      ? (materiAktual || `[Kelas SD] ${sdMapelPilihan}: ${sdTopikMateri || 'Materi Harian'}${sdCatatan ? ' (' + sdCatatan + ')' : ''}`)
       : materiAktual;
 
     if (!materiSimpan) return alert('Mohon isi materi yang diajarkan!');
@@ -334,10 +353,14 @@ const ClassSession = () => {
           keterangan: (STATUS_ABSENSI.includes(attendanceMap[s.id]) && attendanceMap[s.id] !== 'Hadir') ? keteranganAbsensi('', attendanceMap[s.id]) : (present ? 'Sesi Selesai' : 'Siswa tidak hadir (Otomatis Alpha)'),
           mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
           materiHariIni: materiSimpan,
-          babId: isEnglishCourse ? null : (selectedBabId || null),
-          babJudul: isEnglishCourse ? null : (babTerpilihObj?.judul || null),
-          subBab: isEnglishCourse ? null : (selectedSubBab || null),
+          babId: (isEnglishCourse || isJenjangSD) ? null : (selectedBabId || null),
+          babJudul: (isEnglishCourse || isJenjangSD) ? null : (babTerpilihObj?.judul || null),
+          subBab: (isEnglishCourse || isJenjangSD) ? null : (selectedSubBab || null),
           isEnglishCourse: !!isEnglishCourse,
+          isJenjangSD: !!isJenjangSD,
+          sdMapel: isJenjangSD ? sdMapelPilihan : null,
+          sdTopik: isJenjangSD ? sdTopikMateri : null,
+          sdCatatan: isJenjangSD ? sdCatatan : null,
           englishFocus: isEnglishCourse ? englishFocus : null,
           englishTopic: isEnglishCourse ? englishTopic : null,
           englishVocab: isEnglishCourse ? englishVocab : null,
@@ -360,10 +383,14 @@ const ClassSession = () => {
         daftarSiswaHadir: hadirList.map((s) => ({ id: s.id, nama: s.nama, kelas: s.kelas || s.kelasSekolah || '-' })),
         fotoAbsensiUrl: absensiUploadedUrl, materiFileUrl: materiFileUploadedUrl || null,
         materiHariIni: materiSimpan,
-        babId: isEnglishCourse ? null : (selectedBabId || null),
-        babJudul: isEnglishCourse ? null : (babTerpilihObj?.judul || null),
-        subBab: isEnglishCourse ? null : (selectedSubBab || null),
+        babId: (isEnglishCourse || isJenjangSD) ? null : (selectedBabId || null),
+        babJudul: (isEnglishCourse || isJenjangSD) ? null : (babTerpilihObj?.judul || null),
+        subBab: (isEnglishCourse || isJenjangSD) ? null : (selectedSubBab || null),
         isEnglishCourse: !!isEnglishCourse,
+        isJenjangSD: !!isJenjangSD,
+        sdMapel: isJenjangSD ? sdMapelPilihan : null,
+        sdTopik: isJenjangSD ? sdTopikMateri : null,
+        sdCatatan: isJenjangSD ? sdCatatan : null,
         englishFocus: isEnglishCourse ? englishFocus : null,
         englishTopic: isEnglishCourse ? englishTopic : null,
         englishVocab: isEnglishCourse ? englishVocab : null,
@@ -375,10 +402,14 @@ const ClassSession = () => {
         completedAt: serverTimestamp(),
         completedEarly: !isPast,
         materiTerakhir: materiSimpan,
-        babId: isEnglishCourse ? null : (selectedBabId || null),
-        babJudul: isEnglishCourse ? null : (babTerpilihObj?.judul || null),
-        subBab: isEnglishCourse ? null : (selectedSubBab || null),
+        babId: (isEnglishCourse || isJenjangSD) ? null : (selectedBabId || null),
+        babJudul: (isEnglishCourse || isJenjangSD) ? null : (babTerpilihObj?.judul || null),
+        subBab: (isEnglishCourse || isJenjangSD) ? null : (selectedSubBab || null),
         isEnglishCourse: !!isEnglishCourse,
+        isJenjangSD: !!isJenjangSD,
+        sdMapel: isJenjangSD ? sdMapelPilihan : null,
+        sdTopik: isJenjangSD ? sdTopikMateri : null,
+        sdCatatan: isJenjangSD ? sdCatatan : null,
         englishFocus: isEnglishCourse ? englishFocus : null,
         englishTopic: isEnglishCourse ? englishTopic : null,
         englishVocab: isEnglishCourse ? englishVocab : null,
@@ -712,13 +743,17 @@ const ClassSession = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
             <div>
               <h4 style={{ ...st.step2Title(isMobile), margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <BookOpen size={18} color={isEnglishCourse ? '#7c3aed' : '#e67e22'} /> 📝 Laporan Materi Pembelajaran
+                <BookOpen size={18} color={isEnglishCourse ? '#7c3aed' : (isJenjangSD ? '#16a34a' : '#e67e22')} /> 📝 Laporan Materi Pembelajaran
               </h4>
               <p style={{ fontSize: 11.5, color: '#64748b', margin: '4px 0 0' }}>
-                {isEnglishCourse ? '🗣️ Program Khusus: English Course (Kurikulum Mandiri Tentor)' : `Silabus Kurikulum Merdeka • Kelas ${kelasAngka} (${namaMapelLengkap(mapelTerdeteksi)})`}
+                {isEnglishCourse
+                  ? '🗣️ Program Khusus: English Course (Kurikulum Mandiri Tentor)'
+                  : isJenjangSD
+                  ? '🌱 Kelas SD (Pengecualian Kurmer • Materi Mandiri Tentor • Fokus Sistem: SMP & SMA)'
+                  : `Silabus Kurikulum Merdeka • Kelas ${kelasAngka} (${namaMapelLengkap(mapelTerdeteksi)})`}
               </p>
             </div>
-            {!isEnglishCourse && (
+            {!isEnglishCourse && !isJenjangSD && (
               <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', padding: 3, borderRadius: 8 }}>
                 <button
                   type="button"
@@ -756,7 +791,7 @@ const ClassSession = () => {
             )}
           </div>
 
-          {/* Pemilihan Bab: English Course (Mandiri) vs Kurikulum Merdeka (Reguler) */}
+          {/* Pemilihan Bab: English Course (Mandiri) vs SD (Mandiri) vs Kurikulum Merdeka (SMP & SMA) */}
           {isEnglishCourse ? (
             <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 12, padding: 14, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
@@ -849,6 +884,100 @@ const ClassSession = () => {
                 />
               </div>
             </div>
+          ) : isJenjangSD ? (
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Sparkles size={15} color="#16a34a" /> Pembelajaran Kelas SD (Materi Mandiri Tentor)
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 6 }}>
+                  Pengecualian Kurmer Nasional
+                </span>
+              </div>
+              <p style={{ fontSize: 11, color: '#15803d', margin: '0 0 10px 0', lineHeight: 1.5 }}>
+                Sistem silabus dan bank soal saat ini difokuskan penuh untuk jenjang SMP dan SMA. Untuk kelas SD, tentor dapat mencatat mata pelajaran dan materi yang diajarkan secara mandiri sesuai kebutuhan siswa.
+              </p>
+
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  Mata Pelajaran SD:
+                </label>
+                <select
+                  value={sdMapelPilihan}
+                  onChange={(e) => {
+                    const m = e.target.value;
+                    setSdMapelPilihan(m);
+                    setMateriAktual(`${m}: ${sdTopikMateri || 'Materi Harian'}${sdCatatan ? ' (' + sdCatatan + ')' : ''}`);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    fontSize: 12.5,
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    outline: 'none',
+                  }}
+                >
+                  <option value="Matematika SD">Matematika SD (Hitung Dasar, Operasi Bilangan, Pecahan, Geometri)</option>
+                  <option value="Bahasa Indonesia SD">Bahasa Indonesia SD (Membaca, Menulis, Kalimat, Tata Bahasa)</option>
+                  <option value="IPAS SD">IPAS SD (Sains Dasar & Lingkungan Sosial)</option>
+                  <option value="Calistung Dasar">Calistung Dasar (Membaca, Menulis, Berhitung Pemula)</option>
+                  <option value="Pendampingan PR & Tugas Sekolah">Pendampingan PR &amp; Tugas Sekolah</option>
+                  <option value="Materi Tematik Terpadu">Materi Tematik Terpadu SD</option>
+                  <option value="Materi Mandiri Tentor">Materi Mandiri Tentor Lainnya</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  Topik / Pokok Bahasan Hari Ini:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Operasi Penjumlahan & Pengurangan Pecahan Biasa, Latihan Soal Cerita, dll."
+                  value={sdTopikMateri}
+                  onChange={(e) => {
+                    const t = e.target.value;
+                    setSdTopikMateri(t);
+                    setMateriAktual(`${sdMapelPilihan}: ${t}${sdCatatan ? ' (' + sdCatatan + ')' : ''}`);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    fontSize: 12.5,
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  Catatan Pembelajaran / Capaian Siswa (Opsional):
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Siswa sudah lancar menghitung pembagian bersusun, perlu latihan tambahan perkalian"
+                  value={sdCatatan}
+                  onChange={(e) => {
+                    const c = e.target.value;
+                    setSdCatatan(c);
+                    setMateriAktual(`${sdMapelPilihan}: ${sdTopikMateri || 'Materi Harian'}${c ? ' (' + c + ')' : ''}`);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    fontSize: 12,
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            </div>
           ) : (
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, marginBottom: 14 }}>
               <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
@@ -913,37 +1042,39 @@ const ClassSession = () => {
             </div>
           )}
 
-          {/* Latihan Pemahaman Sesi Tatap Muka */}
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, marginBottom: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <div>
-                <div style={{ fontSize: 11.5, fontWeight: 700, color: '#334155' }}>
-                  🎯 Latihan Pemahaman Sesi Hari Ini:
+          {/* Latihan Pemahaman Sesi Tatap Muka (Hanya SMP & SMA) */}
+          {!isJenjangSD && (
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: '#334155' }}>
+                    🎯 Latihan Pemahaman Sesi Hari Ini:
+                  </div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                    {schedule.latihanSesi?.status === 'aktif'
+                      ? `✅ Latihan aktif: ${schedule.latihanSesi.judul} (${schedule.latihanSesi.totalSoal} Soal). Siswa dapat mengerjakannya di HP masing-masing.`
+                      : 'Belum ada latihan sesi yang diterbitkan. Siswa belum memiliki kuis pemahaman untuk sesi ini.'}
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
-                  {schedule.latihanSesi?.status === 'aktif'
-                    ? `✅ Latihan aktif: ${schedule.latihanSesi.judul} (${schedule.latihanSesi.totalSoal} Soal). Siswa dapat mengerjakannya di HP masing-masing.`
-                    : 'Belum ada latihan sesi yang diterbitkan. Siswa belum memiliki kuis pemahaman untuk sesi ini.'}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setBukaModalLatihan(true)}
+                  style={{
+                    background: schedule.latihanSesi?.status === 'aktif' ? '#0284c7' : '#4f46e5',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '7px 12px',
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {schedule.latihanSesi?.status === 'aktif' ? 'Kelola / Tinjau Latihan' : '🎯 Siapkan Latihan Sesi'}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setBukaModalLatihan(true)}
-                style={{
-                  background: schedule.latihanSesi?.status === 'aktif' ? '#0284c7' : '#4f46e5',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '7px 12px',
-                  fontSize: 11.5,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                {schedule.latihanSesi?.status === 'aktif' ? 'Kelola / Tinjau Latihan' : '🎯 Siapkan Latihan Sesi'}
-              </button>
             </div>
-          </div>
+          )}
 
           {/* Status Ketuntasan Materi & Pemahaman Siswa */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 14 }}>
