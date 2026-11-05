@@ -6,7 +6,7 @@
 // ============================================================
 
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, doc, writeBatch } from 'firebase/firestore';
 
 // Inisialisasi Firebase konfigurasi client (atau gunakan environment)
 const firebaseConfig = {
