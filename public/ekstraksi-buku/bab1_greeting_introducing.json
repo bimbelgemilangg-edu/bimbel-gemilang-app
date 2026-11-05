@@ -650,7 +650,31 @@
     "materi": "Greeting, Introducing & Leave-Taking",
     "bacaan": {
       "grup": "tabel_profil_monita_andre",
-      "teks": "Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |"
+      "teks": "Compare the two student profile cards below for questions number 20 to 24!"
+    },
+    "tabel_soal": {
+      "header": [
+        "Profile",
+        "STUDENT 1: MONITA",
+        "STUDENT 2: ANDRE"
+      ],
+      "baris": [
+        [
+          "Origin / Age",
+          "Pontianak / 13 years old",
+          "Surabaya / 13 years old"
+        ],
+        [
+          "Hobbies",
+          "Reading digital comics & swimming",
+          "Playing badminton & coding games"
+        ],
+        [
+          "Siblings",
+          "1 older sister",
+          "Only child (no brothers or sisters)"
+        ]
+      ]
     },
     "teks_soal": "[Membandingkan Profil] What do Monita and Andre have in common?",
     "opsi_jawaban": [
@@ -684,7 +708,31 @@
     "materi": "Greeting, Introducing & Leave-Taking",
     "bacaan": {
       "grup": "tabel_profil_monita_andre",
-      "teks": "Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |"
+      "teks": "Compare the two student profile cards below for questions number 20 to 24!"
+    },
+    "tabel_soal": {
+      "header": [
+        "Profile",
+        "STUDENT 1: MONITA",
+        "STUDENT 2: ANDRE"
+      ],
+      "baris": [
+        [
+          "Origin / Age",
+          "Pontianak / 13 years old",
+          "Surabaya / 13 years old"
+        ],
+        [
+          "Hobbies",
+          "Reading digital comics & swimming",
+          "Playing badminton & coding games"
+        ],
+        [
+          "Siblings",
+          "1 older sister",
+          "Only child (no brothers or sisters)"
+        ]
+      ]
     },
     "teks_soal": "If Monita introduces herself to the class, which sentence will she say?",
     "opsi_jawaban": [
@@ -718,7 +766,31 @@
     "materi": "Greeting, Introducing & Leave-Taking",
     "bacaan": {
       "grup": "tabel_profil_monita_andre",
-      "teks": "Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |"
+      "teks": "Compare the two student profile cards below for questions number 20 to 24!"
+    },
+    "tabel_soal": {
+      "header": [
+        "Profile",
+        "STUDENT 1: MONITA",
+        "STUDENT 2: ANDRE"
+      ],
+      "baris": [
+        [
+          "Origin / Age",
+          "Pontianak / 13 years old",
+          "Surabaya / 13 years old"
+        ],
+        [
+          "Hobbies",
+          "Reading digital comics & swimming",
+          "Playing badminton & coding games"
+        ],
+        [
+          "Siblings",
+          "1 older sister",
+          "Only child (no brothers or sisters)"
+        ]
+      ]
     },
     "teks_soal": "[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are CORRECT based on the two profile cards? (Choose TWO correct answers)",
     "opsi_jawaban": [

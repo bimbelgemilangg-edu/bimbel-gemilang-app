@@ -459,12 +459,6 @@ KUNCI: C
 GRUP-BACAAN: tabel_profil_monita_andre
 BACAAN:
 Compare the two student profile cards below for questions number 20 to 24!
-
-| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |
-| :--- | :--- | :--- |
-| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |
-| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |
-| Siblings | 1 older sister | Only child (no brothers or sisters) |
 TEKS:
 [Membandingkan Profil] What do Monita and Andre have in common?
 OPSI:
@@ -483,12 +477,6 @@ KUNCI: B
 GRUP-BACAAN: tabel_profil_monita_andre
 BACAAN:
 Compare the two student profile cards below for questions number 20 to 24!
-
-| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |
-| :--- | :--- | :--- |
-| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |
-| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |
-| Siblings | 1 older sister | Only child (no brothers or sisters) |
 TEKS:
 If Monita introduces herself to the class, which sentence will she say?
 OPSI:
@@ -507,12 +495,6 @@ KUNCI: A,B
 GRUP-BACAAN: tabel_profil_monita_andre
 BACAAN:
 Compare the two student profile cards below for questions number 20 to 24!
-
-| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |
-| :--- | :--- | :--- |
-| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |
-| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |
-| Siblings | 1 older sister | Only child (no brothers or sisters) |
 TEKS:
 [Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]
 Which statements are CORRECT based on the two profile cards? (Choose TWO correct answers)

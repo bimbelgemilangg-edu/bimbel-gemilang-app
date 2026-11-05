@@ -1,9 +1,16 @@
 import json
 import os
+import base64
 
 repo_dir = '/Users/macbook/.gemini/antigravity/scratch/bimbel-gemilang-app'
 out_dir = os.path.join(repo_dir, 'public/ekstraksi-buku')
 os.makedirs(out_dir, exist_ok=True)
+
+# Load Eco-Park image and convert to Base64 Data URI so it is 100% self-contained
+img_path = os.path.join(repo_dir, 'public/soal/bahasa-inggris/bab12_ecopark_notice.jpg')
+with open(img_path, 'rb') as f:
+    ecopark_b64 = base64.b64encode(f.read()).decode('utf-8')
+ecopark_data_uri = f'data:image/jpeg;base64,{ecopark_b64}'
 
 soal_list = [
     {
@@ -16,8 +23,9 @@ soal_list = [
         'bacaan': {
             'grup': 'eco_park_notice_board',
             'teks': 'Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!\n{{GAMBAR}}\nAdditional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."',
-            'gambar': ['/soal/bahasa-inggris/bab12_ecopark_notice.jpg']
+            'gambar': [ecopark_data_uri]
         },
+        'gambar': [ecopark_data_uri],
         'teks_soal': 'Based on the notice board in the picture, what are visitors prohibited from bringing into the Eco-Park?',
         'opsi_jawaban': [
             {'label': 'A', 'teks': 'Reusable tumblers'},
@@ -39,8 +47,9 @@ soal_list = [
         'bacaan': {
             'grup': 'eco_park_notice_board',
             'teks': 'Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!\n{{GAMBAR}}\nAdditional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."',
-            'gambar': ['/soal/bahasa-inggris/bab12_ecopark_notice.jpg']
+            'gambar': [ecopark_data_uri]
         },
+        'gambar': [ecopark_data_uri],
         'teks_soal': 'Where are visitors allowed to ride their bicycles according to the sign?',
         'opsi_jawaban': [
             {'label': 'A', 'teks': 'Anywhere on the grass lawn'},
@@ -62,8 +71,9 @@ soal_list = [
         'bacaan': {
             'grup': 'eco_park_notice_board',
             'teks': 'Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!\n{{GAMBAR}}\nAdditional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."',
-            'gambar': ['/soal/bahasa-inggris/bab12_ecopark_notice.jpg']
+            'gambar': [ecopark_data_uri]
         },
+        'gambar': [ecopark_data_uri],
         'teks_soal': '[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich actions are obedient to the Eco-Park rules? (Choose TWO correct answers)',
         'opsi_jawaban': [
             {'label': 'A', 'teks': 'Throwing snack wrappers into the designated trash can.'},
@@ -85,8 +95,9 @@ soal_list = [
         'bacaan': {
             'grup': 'eco_park_notice_board',
             'teks': 'Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!\n{{GAMBAR}}\nAdditional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."',
-            'gambar': ['/soal/bahasa-inggris/bab12_ecopark_notice.jpg']
+            'gambar': [ecopark_data_uri]
         },
+        'gambar': [ecopark_data_uri],
         'teks_soal': '[Tabel Benar / Salah (True or False)] Read the statements based on the notice board and give a tick in the True or False column!',
         'pernyataan': [
             {'teks': 'Visitors who throw trash carelessly on the ground will have to pay a fine of Rp50.000.', 'jawaban': 'B'},
@@ -107,8 +118,9 @@ soal_list = [
         'bacaan': {
             'grup': 'eco_park_notice_board',
             'teks': 'Observe the Eco-Park Notice Board illustration below for questions number 21 to 25!\n{{GAMBAR}}\nAdditional Notice at the Gate: "Free drinking water refill stations are available near the main gate. Visitors who litter will be fined Rp50.000."',
-            'gambar': ['/soal/bahasa-inggris/bab12_ecopark_notice.jpg']
+            'gambar': [ecopark_data_uri]
         },
+        'gambar': [ecopark_data_uri],
         'teks_soal': 'Why does the Eco-Park management put up the sign "NO PLASTIC BOTTLES"?',
         'opsi_jawaban': [
             {'label': 'A', 'teks': 'To make visitors thirsty during their walk.'},
@@ -253,21 +265,51 @@ for s in soal_list:
     
     pernyataan_html = ''
     if s.get('pernyataan'):
-        tf_items = []
-        for p in s['pernyataan']:
-            jw = p['jawaban']
+        tf_rows = []
+        for i, p in enumerate(s['pernyataan']):
+            idx_label = f"({chr(97 + i)})"
             tk = p['teks']
-            tf_items.append(f'<li data-jawaban="{jw}">{tk}</li>')
-        pernyataan_html = f'<ul data-field="pernyataan">{"".join(tf_items)}</ul>'
+            is_benar = p['jawaban'] in ['B', 'True', 'Benar']
+            centang_benar = '✓' if is_benar else ''
+            centang_salah = '' if is_benar else '✓'
+            jw_word = 'Benar' if is_benar else 'Salah'
+            tf_rows.append(f'''      <tr data-jawaban="{jw_word}">
+        <td style="text-align: center;">{idx_label}</td>
+        <td>{tk}</td>
+        <td style="text-align: center;">{centang_benar}</td>
+        <td style="text-align: center;">{centang_salah}</td>
+      </tr>''')
+        pernyataan_html = f'''  <div data-field="pernyataan">
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Statements (Pernyataan)</th>
+          <th>True (Benar)</th>
+          <th>False (Salah)</th>
+        </tr>
+      </thead>
+      <tbody>
+{chr(10).join(tf_rows)}
+      </tbody>
+    </table>
+  </div>'''
+
+    gambar_html = ''
+    if s.get('gambar'):
+        g_imgs = ''.join([f'<img src="{im}" alt="Notice Illustration" />' for im in s['gambar']])
+        gambar_html = f'  <div data-field="gambar">{g_imgs}</div>'
 
     bacaan_html = ''
     if s.get('bacaan'):
         grp = s['bacaan'].get('grup', '')
-        b_txt = s['bacaan']['teks']
+        b_txt = s['bacaan']['teks'].replace('{{GAMBAR}}', '')
+        paragraphs = b_txt.split('\n\n')
+        p_html = ''.join([f'<p>{p.replace(chr(10), "<br/>")}</p>' for p in paragraphs if p.strip()])
         b_img = ''
         if s['bacaan'].get('gambar'):
-            b_img = ''.join([f'<img src="{im}" alt="Stimulus" />' for im in s['bacaan']['gambar']])
-        bacaan_html = f'<div data-field="bacaan" data-grup="{grp}">{b_txt}{b_img}</div>'
+            b_img = ''.join([f'<img src="{im}" alt="Eco-Park Rules" />' for im in s['bacaan']['gambar']])
+        bacaan_html = f'<div data-field="bacaan" data-grup="{grp}">{p_html}{b_img}</div>'
 
     num = s['nomor']
     tp = s['tipe']
@@ -286,6 +328,7 @@ for s in soal_list:
   <div data-field="tags">Bahasa Inggris, SMP, Kelas 8, Fase D, Notice, Visual, Kurikulum Merdeka</div>
   <div data-field="capaian_pembelajaran">Menganalisis dan menafsirkan informasi visual serta teks multimodal pada papan peringatan (notice, warning, caution) di lingkungan sekolah dan publik sesuai CP Fase D.</div>
   {bacaan_html}
+  {gambar_html}
   <div data-field="teks_soal">{soal_t}</div>
   {opsi_html}
   {pernyataan_html}

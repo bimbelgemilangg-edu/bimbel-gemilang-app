@@ -432,7 +432,15 @@ soal_list = [
         'materi': 'Greeting, Introducing & Leave-Taking',
         'bacaan': {
             'grup': 'tabel_profil_monita_andre',
-            'teks': 'Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |'
+            'teks': 'Compare the two student profile cards below for questions number 20 to 24!'
+        },
+        'tabel_soal': {
+            'header': ['Profile', 'STUDENT 1: MONITA', 'STUDENT 2: ANDRE'],
+            'baris': [
+                ['Origin / Age', 'Pontianak / 13 years old', 'Surabaya / 13 years old'],
+                ['Hobbies', 'Reading digital comics & swimming', 'Playing badminton & coding games'],
+                ['Siblings', '1 older sister', 'Only child (no brothers or sisters)']
+            ]
         },
         'teks_soal': '[Membandingkan Profil] What do Monita and Andre have in common?',
         'opsi_jawaban': [
@@ -454,7 +462,15 @@ soal_list = [
         'materi': 'Greeting, Introducing & Leave-Taking',
         'bacaan': {
             'grup': 'tabel_profil_monita_andre',
-            'teks': 'Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |'
+            'teks': 'Compare the two student profile cards below for questions number 20 to 24!'
+        },
+        'tabel_soal': {
+            'header': ['Profile', 'STUDENT 1: MONITA', 'STUDENT 2: ANDRE'],
+            'baris': [
+                ['Origin / Age', 'Pontianak / 13 years old', 'Surabaya / 13 years old'],
+                ['Hobbies', 'Reading digital comics & swimming', 'Playing badminton & coding games'],
+                ['Siblings', '1 older sister', 'Only child (no brothers or sisters)']
+            ]
         },
         'teks_soal': 'If Monita introduces herself to the class, which sentence will she say?',
         'opsi_jawaban': [
@@ -476,7 +492,15 @@ soal_list = [
         'materi': 'Greeting, Introducing & Leave-Taking',
         'bacaan': {
             'grup': 'tabel_profil_monita_andre',
-            'teks': 'Compare the two student profile cards below for questions number 20 to 24!\n\n| Profile | STUDENT 1: MONITA | STUDENT 2: ANDRE |\n| :--- | :--- | :--- |\n| Origin / Age | Pontianak / 13 years old | Surabaya / 13 years old |\n| Hobbies | Reading digital comics & swimming | Playing badminton & coding games |\n| Siblings | 1 older sister | Only child (no brothers or sisters) |'
+            'teks': 'Compare the two student profile cards below for questions number 20 to 24!'
+        },
+        'tabel_soal': {
+            'header': ['Profile', 'STUDENT 1: MONITA', 'STUDENT 2: ANDRE'],
+            'baris': [
+                ['Origin / Age', 'Pontianak / 13 years old', 'Surabaya / 13 years old'],
+                ['Hobbies', 'Reading digital comics & swimming', 'Playing badminton & coding games'],
+                ['Siblings', '1 older sister', 'Only child (no brothers or sisters)']
+            ]
         },
         'teks_soal': '[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are CORRECT based on the two profile cards? (Choose TWO correct answers)',
         'opsi_jawaban': [
@@ -672,18 +696,61 @@ for s in soal_list:
     
     pernyataan_html = ''
     if s.get('pernyataan'):
-        tf_items = []
-        for p in s['pernyataan']:
-            jw = p['jawaban']
+        tf_rows = []
+        for i, p in enumerate(s['pernyataan']):
+            idx_label = f"({chr(97 + i)})"
             tk = p['teks']
-            tf_items.append(f'<li data-jawaban="{jw}">{tk}</li>')
-        pernyataan_html = f'<ul data-field="pernyataan">{"".join(tf_items)}</ul>'
+            is_benar = p['jawaban'] in ['B', 'True', 'Benar']
+            centang_benar = '✓' if is_benar else ''
+            centang_salah = '' if is_benar else '✓'
+            jw_word = 'Benar' if is_benar else 'Salah'
+            tf_rows.append(f'''      <tr data-jawaban="{jw_word}">
+        <td style="text-align: center;">{idx_label}</td>
+        <td>{tk}</td>
+        <td style="text-align: center;">{centang_benar}</td>
+        <td style="text-align: center;">{centang_salah}</td>
+      </tr>''')
+        pernyataan_html = f'''  <div data-field="pernyataan">
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Statements (Pernyataan)</th>
+          <th>True (Benar)</th>
+          <th>False (Salah)</th>
+        </tr>
+      </thead>
+      <tbody>
+{chr(10).join(tf_rows)}
+      </tbody>
+    </table>
+  </div>'''
+
+    tabel_soal_html = ''
+    if s.get('tabel_soal'):
+        th_items = ''.join([f'<th>{h}</th>' for h in s['tabel_soal']['header']])
+        tr_rows = []
+        for r in s['tabel_soal']['baris']:
+            tds = ''.join([f'<td>{c}</td>' for c in r])
+            tr_rows.append(f'<tr>{tds}</tr>')
+        tabel_soal_html = f'''  <div data-field="tabel_soal">
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+      <thead>
+        <tr>{th_items}</tr>
+      </thead>
+      <tbody>
+        {"".join(tr_rows)}
+      </tbody>
+    </table>
+  </div>'''
 
     bacaan_html = ''
     if s.get('bacaan'):
         grp = s['bacaan'].get('grup', '')
         b_txt = s['bacaan']['teks']
-        bacaan_html = f'<div data-field="bacaan" data-grup="{grp}">{b_txt}</div>'
+        paragraphs = b_txt.split('\n\n')
+        p_html = ''.join([f'<p>{p.replace(chr(10), "<br/>")}</p>' for p in paragraphs if p.strip()])
+        bacaan_html = f'<div data-field="bacaan" data-grup="{grp}">{p_html}</div>'
 
     num = s['nomor']
     tp = s['tipe']
@@ -702,6 +769,7 @@ for s in soal_list:
   <div data-field="tags">Bahasa Inggris, SMP, Kelas 7, Fase D, Greeting, Kurikulum Merdeka</div>
   <div data-field="capaian_pembelajaran">Mengidentifikasi dan menggunakan ungkapan sapaan, perkenalan diri, dan berpamitan dalam konteks interaksi sosial resmi dan kasual sesuai CP Fase D.</div>
   {bacaan_html}
+  {tabel_soal_html}
   <div data-field="teks_soal">{soal_t}</div>
   {opsi_html}
   {pernyataan_html}
