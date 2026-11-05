@@ -25,7 +25,8 @@ export default defineConfig({
         // TAPI perbaikan utamanya ada di manualChunks di bawah: vendor
         // dipecah jadi beberapa file supaya tidak ada satu chunk pun yang
         // mendekati limit ini lagi ke depannya.
-        maximumFileSizeToCacheInBytes: 6000000
+        maximumFileSizeToCacheInBytes: 6000000,
+        globIgnores: ['**/ekstraksi-buku/**']
       },
       manifest: {
         name: 'Gemilang Super App',
