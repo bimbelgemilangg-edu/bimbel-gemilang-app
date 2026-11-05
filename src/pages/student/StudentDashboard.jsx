@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import {
   daftarBabSilabus,
+  deteksiMapelJadwal,
+  namaMapelLengkap,
 } from '../../utils/silabusKurikulumMerdeka';
 import ModalKerjakanLatihanSesi from '../../components/student/ModalKerjakanLatihanSesi';
 
@@ -1055,7 +1057,7 @@ const StudentDashboard = () => {
                 {todaySchedules.map((sch, i) => {
                   const att = todayAttendanceMap[sch.id] || null;
                   const kelasSiswa = studentProfile?.kelasSekolah || studentKelas || '7';
-                  const listBab = daftarBabSilabus({ kelas: kelasSiswa, mapel: sch.title || sch.mapelName });
+                  const listBab = daftarBabSilabus({ kelas: kelasSiswa, mapel: deteksiMapelJadwal(sch) });
                   const babRelevan = listBab.find(b => b.id === att?.babId) || listBab[0] || null;
                   const materiTampil = att?.materiHariIni || (babRelevan ? `${babRelevan.judul} — ${babRelevan.subBab?.[0] || 'Pendalaman'}` : (sch.title || 'Materi Kelas'));
                   const statusKehadiran = att?.status || 'Belum Tercatat';

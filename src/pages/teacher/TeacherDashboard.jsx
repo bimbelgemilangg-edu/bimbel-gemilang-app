@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 import ModalSiapkanLatihanSesi from '../../components/guru/ModalSiapkanLatihanSesi';
+import { deteksiMapelJadwal, namaMapelLengkap } from '../../utils/silabusKurikulumMerdeka';
 import { daftarIdGuru } from '../../utils/identitasGuru';
 import { bolehTampilUmum } from '../../utils/statusTryOutPaket';
 import {
@@ -1120,7 +1121,9 @@ const TeacherDashboard = () => {
                     </div>
                     <div style={styles.scheduleContent}>
                       <div style={styles.scheduleTitle}>
-                        {item.title || 'Materi Umum'}
+                        {item.title && item.title !== 'Materi Umum'
+                          ? item.title
+                          : (namaMapelLengkap(deteksiMapelJadwal(item, teacherData)) || 'Materi Umum')}
                         {item.mapelId && (
                           <span style={styles.scheduleMapelId}>
                             <Tag size={10} /> {item.mapelId}
@@ -1516,6 +1519,7 @@ const TeacherDashboard = () => {
       {jadwalLatihanSesi && (
         <ModalSiapkanLatihanSesi
           schedule={jadwalLatihanSesi}
+          teacher={teacherData}
           onClose={() => setJadwalLatihanSesi(null)}
           onSuccess={(updatedLatihan) => {
             setJadwalJendela((prev) =>

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { normalisasiKodeMapel, namaMapelLengkap } from '../../../utils/silabusKurikulumMerdeka';
 
 // ============================================================
 // DATA HARI LIBUR NASIONAL INDONESIA
@@ -430,12 +431,16 @@ const SchedulePage = () => {
   const handleTeacherSelect = (teacherId) => {
     const teacher = availableTeachers.find(t => t.id === teacherId || t.guruId === teacherId);
     if (teacher) {
+      const guruMapelName = teacher.mapel || teacher.mataPelajaran || '';
+      const guruKodeMapel = teacher.kodeMapel || (guruMapelName ? normalisasiKodeMapel(guruMapelName) : '');
+      const shouldUpdateTitle = !formData.title || formData.title === 'Materi Umum' || formData.title === 'Sesi Belajar';
       setFormData({
         ...formData,
         teacherId: teacher.guruId || teacher.id,
         teacherName: teacher.nama,
-        mapelId: teacher.kodeMapel || '',
-        mapelName: teacher.mapel || ''
+        mapelId: formData.mapelId || guruKodeMapel || '',
+        mapelName: formData.mapelName || guruMapelName || '',
+        title: shouldUpdateTitle ? (formData.mapelName || guruMapelName || formData.title) : formData.title
       });
     } else {
       setFormData({
@@ -451,10 +456,12 @@ const SchedulePage = () => {
   const handleMapelSelect = (mapelId) => {
     const mapel = availableMapel.find(m => m.id === mapelId || m.kodeMapel === mapelId);
     if (mapel) {
+      const shouldUpdateTitle = !formData.title || formData.title === 'Materi Umum' || formData.title === 'Sesi Belajar';
       setFormData({
         ...formData,
         mapelId: mapel.kodeMapel || mapel.id,
-        mapelName: mapel.namaMapel
+        mapelName: mapel.namaMapel,
+        title: shouldUpdateTitle ? mapel.namaMapel : formData.title
       });
     }
   };
@@ -581,13 +588,18 @@ const SchedulePage = () => {
         if (!proceed) return;
       }
 
+      const namaMapelFinal = formData.mapelName || (formData.mapelId ? namaMapelLengkap(formData.mapelId) : '');
+      const judulFinal = (formData.title && formData.title.trim() && formData.title.trim() !== 'Materi Umum')
+        ? formData.title.trim()
+        : (namaMapelFinal || 'Sesi Belajar');
+
       const scheduleData = {
         planet: activePlanet,
         program: formData.program,
         level: formData.level,
-        title: formData.title || 'Materi Umum',
-        mapelId: formData.mapelId,
-        mapelName: formData.mapelName,
+        title: judulFinal,
+        mapelId: formData.mapelId || normalisasiKodeMapel(namaMapelFinal || judulFinal),
+        mapelName: namaMapelFinal || judulFinal,
         teacherId: formData.teacherId,
         teacherName: formData.teacherName,
         start: formData.start,

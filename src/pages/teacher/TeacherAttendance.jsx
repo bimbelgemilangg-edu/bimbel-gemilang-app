@@ -7,7 +7,9 @@ import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbs
 import { identitasPencariJadwal, jadwalMilikGuru } from '../../utils/identitasJadwal';
 import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { 
-  daftarBabSilabus 
+  daftarBabSilabus,
+  deteksiMapelJadwal,
+  namaMapelLengkap,
 } from '../../utils/silabusKurikulumMerdeka';
 import { 
   collection, query, where, getDocs, doc, getDoc,
@@ -155,7 +157,7 @@ const TeacherAttendance = () => {
     
     // Deteksi kelas & mapel dari data jadwal untuk silabus Kurikulum Merdeka
     const kelasTarget = schedule.kelas || students[0]?.kelas || students[0]?.kelasSekolah || '7';
-    const mapelTarget = schedule.title || schedule.mapelName || 'mtk';
+    const mapelTarget = deteksiMapelJadwal(schedule, guru);
     const listBab = daftarBabSilabus({ kelas: kelasTarget, mapel: mapelTarget });
     setDaftarBab(listBab);
 

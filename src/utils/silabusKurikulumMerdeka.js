@@ -3541,23 +3541,39 @@ export function semesterKalenderAktif(tanggal = new Date()) {
  */
 export function normalisasiKodeMapel(namaAtauKode) {
   const s = String(namaAtauKode || '').toLowerCase().trim();
-  if (!s) return 'mtk';
-  if (s.includes('mat') || s.includes('mtk') || s.includes('hitung') || s.includes('math')) {
-    if (s.includes('lanjut') || s.includes('minat') || s.includes('tl')) return 'mtk_tl';
+  if (!s) return 'umum';
+  // Bersihkan kata-kata pengisi umum agar tidak bentrok dengan pencocokan kata kunci mapel
+  const bersih = s
+    .replace(/\b(materi|pembahasan|sesi|kelas|kurikulum|bab|topik|ruang|pelajaran|mapel|guru|pengajar|tentor)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (s.includes('ipas')) return 'ipas';
+  if (/\b(biologi|bio)\b/i.test(s)) return 'bio';
+  if (/\b(fisika|fis)\b/i.test(s)) return 'fis';
+  if (/\b(kimia|kim)\b/i.test(s)) return 'kim';
+  if (/\b(ipa|sains|alam)\b/i.test(s) || s === 'ipa') return 'ipa';
+  if (/\b(ips|sosial)\b/i.test(s) || s === 'ips') return 'ips';
+  if (/\b(indo|indonesia|bind)\b/i.test(s)) return 'bind';
+  if (/\b(inggris|english|bing)\b/i.test(s)) return 'bing';
+  if (/\b(ekonomi|eko)\b/i.test(s)) return 'eko';
+  if (/\b(sosiologi|sos)\b/i.test(s)) return 'sos';
+  if (/\b(geografi|geo)\b/i.test(s)) return 'geo';
+  if (/\b(sejarah|sej)\b/i.test(s)) return 'sej';
+
+  // Matematika: periksa kata kunci pada string yang sudah dibersihkan dari kata 'materi'
+  if (
+    /\b(matematika|mtk|math|hitung|aljabar|kalkulus|geometri|trigonometri)\b/i.test(bersih) ||
+    /\bmat\b/i.test(bersih) ||
+    bersih.startsWith('mtk')
+  ) {
+    if (bersih.includes('lanjut') || bersih.includes('minat') || bersih.includes('tl')) {
+      return 'mtk_tl';
+    }
     return 'mtk';
   }
-  if (s.includes('ipas')) return 'ipas';
-  if (s.includes('fisika') || s === 'fis') return 'fis';
-  if (s.includes('kimia') || s === 'kim') return 'kim';
-  if (s.includes('biologi') || s === 'bio') return 'bio';
-  if (s.includes('ipa') || s.includes('sains')) return 'ipa';
-  if (s.includes('ips') || s.includes('sosial')) return 'ips';
-  if (s.includes('indo') || s.includes('bind')) return 'bind';
-  if (s.includes('ingg') || s.includes('bing') || s.includes('english')) return 'bing';
-  if (s.includes('eko')) return 'eko';
-  if (s.includes('sos')) return 'sos';
-  if (s.includes('geo')) return 'geo';
-  if (s.includes('sej')) return 'sej';
+
+  if (!bersih || bersih === 'umum') return 'umum';
   return s;
 }
 
@@ -3565,7 +3581,7 @@ export function normalisasiKodeMapel(namaAtauKode) {
  * Deteksi jenjang dari angka kelas (1-6: sd, 7-9: smp, 10-12: sma)
  */
 export function jenjangDariKelasAngka(kelas) {
-  const k = parseInt(kelas, 10);
+  const k = parseInt(String(kelas || '7').replace(/[^0-9]/g, '') || '7', 10);
   if (k >= 1 && k <= 6) return 'sd';
   if (k >= 7 && k <= 9) return 'smp';
   if (k >= 10 && k <= 12) return 'sma';
@@ -3573,19 +3589,159 @@ export function jenjangDariKelasAngka(kelas) {
 }
 
 /**
+ * Nama resmi dan rapi mata pelajaran untuk tampilan UI
+ */
+export function namaMapelLengkap(kodeAtauNama) {
+  const norm = normalisasiKodeMapel(kodeAtauNama);
+  const MAPEL_LABELS = {
+    mtk: 'Matematika',
+    mtk_tl: 'Matematika Tingkat Lanjut',
+    ipa: 'IPA Terpadu',
+    ipas: 'IPAS',
+    ips: 'IPS Terpadu',
+    bio: 'Biologi',
+    fis: 'Fisika',
+    kim: 'Kimia',
+    bind: 'Bahasa Indonesia',
+    bing: 'Bahasa Inggris',
+    eko: 'Ekonomi',
+    geo: 'Geografi',
+    sos: 'Sosiologi',
+    sej: 'Sejarah',
+  };
+  return MAPEL_LABELS[norm] || String(kodeAtauNama || 'Materi Umum');
+}
+
+/**
+ * Deteksi mata pelajaran resmi dari dokumen jadwal dan profil guru secara komprehensif.
+ * Memprioritaskan field eksplisit (mapelId, mapelName), title spesifik (MTK 9B, IPA 7),
+ * dan fallback cerdas ke profil guru pengampu (teacher.mapel).
+ * Menghilangkan false-positive "Materi Umum" terdeteksi sebagai "mtk".
+ */
+export function deteksiMapelJadwal(schedule, teacher = null) {
+  if (!schedule && !teacher) return 'mtk';
+
+  // 1. Dapatkan perkiraan angka kelas & jenjang untuk penyelarasan fase
+  let kelasAngka = '7';
+  if (schedule?.kelas) {
+    kelasAngka = String(schedule.kelas).replace(/[^0-9]/g, '') || '7';
+  } else if (Array.isArray(schedule?.students) && schedule.students.length > 0) {
+    for (const s of schedule.students) {
+      const k = String(s.kelas || s.kelasSekolah || '').replace(/[^0-9]/g, '');
+      if (k) {
+        kelasAngka = k;
+        break;
+      }
+    }
+  } else if (schedule?.title) {
+    const m = String(schedule.title).match(/\b([1-9]|1[0-2])\b/);
+    if (m) kelasAngka = m[1];
+  } else if (schedule?.level) {
+    const m = String(schedule.level).match(/\b([1-9]|1[0-2])\b/);
+    if (m) kelasAngka = m[1];
+  }
+  const jenjang = jenjangDariKelasAngka(kelasAngka);
+
+  const selaraskanDenganJenjang = (kode) => {
+    if (!kode || kode === 'umum') return null;
+    if (jenjang === 'smp' && (kode === 'bio' || kode === 'fis' || kode === 'kim')) return 'ipa';
+    if (jenjang === 'sd' && (kode === 'ipa' || kode === 'ips' || kode === 'bio' || kode === 'fis')) return 'ipas';
+    return kode;
+  };
+
+  // 2. Periksa field mapel eksplisit pada dokumen jadwal
+  const calonEksplisit = [
+    schedule?.mapelId,
+    schedule?.mapelName,
+    schedule?.mapel,
+    schedule?.subject,
+    schedule?.kodeMapel,
+  ].filter(Boolean);
+
+  for (const c of calonEksplisit) {
+    const norm = normalisasiKodeMapel(c);
+    const selaras = selaraskanDenganJenjang(norm);
+    if (selaras) return selaras;
+  }
+
+  // 3. Periksa title jadwal HANYA jika bukan judul generik
+  const title = String(schedule?.title || '').trim();
+  const titleLower = title.toLowerCase();
+  const isGenerik =
+    !title ||
+    titleLower === 'materi umum' ||
+    titleLower === 'umum' ||
+    titleLower === 'sesi belajar' ||
+    titleLower === 'kelas reguler' ||
+    titleLower === 'sesi kelas';
+
+  if (!isGenerik) {
+    const normTitle = normalisasiKodeMapel(title);
+    const selaras = selaraskanDenganJenjang(normTitle);
+    if (selaras) return selaras;
+  }
+
+  // 4. Fallback ke profil guru pengampu (teacher)
+  let teacherObj = teacher;
+  if (!teacherObj) {
+    try {
+      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('teacherData') : null;
+      if (stored) teacherObj = JSON.parse(stored);
+    } catch {
+      teacherObj = null;
+    }
+  }
+
+  if (teacherObj) {
+    const guruMapel =
+      teacherObj.mapel ||
+      teacherObj.mataPelajaran ||
+      teacherObj.bidangStudi ||
+      teacherObj.kodeMapel ||
+      '';
+    if (guruMapel) {
+      const normGuru = normalisasiKodeMapel(guruMapel);
+      const selaras = selaraskanDenganJenjang(normGuru);
+      if (selaras) return selaras;
+    }
+  }
+
+  // 5. Default jika benar-benar tidak teridentifikasi
+  return jenjang === 'sd' ? 'mtk' : (jenjang === 'smp' ? 'ipa' : 'mtk');
+}
+
+/**
  * Mengambil daftar bab silabus berdasarkan kelas, mapel, dan semester
  */
 export function daftarBabSilabus({ kelas = 7, mapel = 'mtk', semester = null } = {}) {
-  const kStr = String(kelas || '7').replace(/[^0-9]/g, '');
+  const kStr = String(kelas || '7').replace(/[^0-9]/g, '') || '7';
   const jenjang = jenjangDariKelasAngka(kStr);
-  const kode = normalisasiKodeMapel(mapel);
+  let kode = normalisasiKodeMapel(mapel);
+
+  // Penyelarasan jenjang SMP: Biologi, Fisika, Kimia menjadi 'ipa'
+  if (jenjang === 'smp' && (kode === 'bio' || kode === 'fis' || kode === 'kim')) {
+    kode = 'ipa';
+  }
+  // Penyelarasan jenjang SD: IPA, IPS, Biologi, Fisika menjadi 'ipas'
+  if (jenjang === 'sd' && (kode === 'ipa' || kode === 'ips' || kode === 'bio' || kode === 'fis')) {
+    kode = 'ipas';
+  }
+  // Jika kode masih 'umum' atau tidak dikenal, fallback cerdas
+  if (kode === 'umum' || !kode) {
+    kode = jenjang === 'sd' ? 'mtk' : (jenjang === 'smp' ? 'ipa' : 'mtk');
+  }
+
   const sem = semester ? String(semester) : semesterKalenderAktif();
 
   const dataJenjang = SILABUS_KURIKULUM_MERDEKA[jenjang];
   if (!dataJenjang) return [];
   const dataKelas = dataJenjang[kStr];
   if (!dataKelas) return [];
-  const dataMapel = dataKelas[kode];
+
+  let dataMapel = dataKelas[kode];
+  if (!dataMapel) {
+    dataMapel = dataKelas['mtk'] || dataKelas['ipa'] || null;
+  }
   if (!dataMapel) return [];
 
   if (sem && dataMapel[sem]) {
@@ -3612,6 +3768,8 @@ export default {
   SILABUS_KURIKULUM_MERDEKA,
   semesterKalenderAktif,
   normalisasiKodeMapel,
+  namaMapelLengkap,
+  deteksiMapelJadwal,
   jenjangDariKelasAngka,
   daftarBabSilabus,
   cariBabSilabus,

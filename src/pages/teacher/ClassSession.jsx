@@ -21,7 +21,12 @@ import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { uploadElearningFile } from '../../services/uploadService';
 import LiveSessionTeacher from './LiveSessionTeacher';
-import { daftarBabSilabus, semesterKalenderAktif } from '../../utils/silabusKurikulumMerdeka';
+import {
+  daftarBabSilabus,
+  semesterKalenderAktif,
+  deteksiMapelJadwal,
+  namaMapelLengkap,
+} from '../../utils/silabusKurikulumMerdeka';
 import ModalSiapkanLatihanSesi from '../../components/guru/ModalSiapkanLatihanSesi';
 
 const ClassSession = () => {
@@ -88,14 +93,18 @@ const ClassSession = () => {
     return '9';
   }, [schedule]);
 
+  const mapelTerdeteksi = useMemo(() => {
+    return deteksiMapelJadwal(schedule, teacher);
+  }, [schedule, teacher]);
+
   const listBabSilabus = useMemo(() => {
     if (!schedule) return [];
     return daftarBabSilabus({
       kelas: kelasAngka,
-      mapel: schedule.title || schedule.mapel || schedule.mapelName || 'Umum',
+      mapel: mapelTerdeteksi,
       semester: semesterPilihan,
     });
-  }, [schedule, kelasAngka, semesterPilihan]);
+  }, [schedule, kelasAngka, mapelTerdeteksi, semesterPilihan]);
 
   const babTerpilihObj = useMemo(() => {
     return listBabSilabus.find((b) => b.id === selectedBabId) || null;
@@ -706,7 +715,7 @@ const ClassSession = () => {
                 <BookOpen size={18} color={isEnglishCourse ? '#7c3aed' : '#e67e22'} /> 📝 Laporan Materi Pembelajaran
               </h4>
               <p style={{ fontSize: 11.5, color: '#64748b', margin: '4px 0 0' }}>
-                {isEnglishCourse ? '🗣️ Program Khusus: English Course (Kurikulum Mandiri Tentor)' : `Silabus Kurikulum Merdeka • Kelas ${kelasAngka} (${schedule.title || 'Umum'})`}
+                {isEnglishCourse ? '🗣️ Program Khusus: English Course (Kurikulum Mandiri Tentor)' : `Silabus Kurikulum Merdeka • Kelas ${kelasAngka} (${namaMapelLengkap(mapelTerdeteksi)})`}
               </p>
             </div>
             {!isEnglishCourse && (
@@ -1063,6 +1072,7 @@ const ClassSession = () => {
       {bukaModalLatihan && schedule && (
         <ModalSiapkanLatihanSesi
           schedule={schedule}
+          teacher={teacher}
           onClose={() => setBukaModalLatihan(false)}
           onSuccess={(latBaru) => {
             setSchedule((prev) => (prev ? { ...prev, latihanSesi: latBaru } : prev));

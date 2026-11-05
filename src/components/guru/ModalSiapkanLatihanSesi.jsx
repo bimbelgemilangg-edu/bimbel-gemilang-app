@@ -25,6 +25,8 @@ import {
   daftarBabSilabus,
   semesterKalenderAktif,
   normalisasiKodeMapel,
+  deteksiMapelJadwal,
+  namaMapelLengkap,
 } from '../../utils/silabusKurikulumMerdeka';
 import RenderMath from '../RenderMath';
 import TeksSoalBergambar from '../TeksSoalBergambar';
@@ -32,6 +34,7 @@ import { normalisasiButirSoal } from '../../utils/normalisasiSoalLatihan';
 
 export default function ModalSiapkanLatihanSesi({
   schedule,
+  teacher = null,
   onClose,
   onSuccess,
 }) {
@@ -68,17 +71,27 @@ export default function ModalSiapkanLatihanSesi({
     return '9';
   }, [schedule]);
 
-  const mapelNama = schedule?.title || schedule?.mapel || schedule?.mapelName || 'Umum';
-  const kodeMapel = normalisasiKodeMapel(mapelNama);
+  const kodeMapel = useMemo(() => {
+    let t = teacher;
+    if (!t) {
+      try {
+        const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('teacherData') : null;
+        if (stored) t = JSON.parse(stored);
+      } catch (err) {
+        t = null;
+      }
+    }
+    return deteksiMapelJadwal(schedule, t);
+  }, [schedule, teacher]);
 
   // 2. Daftar Bab resmi berdasarkan silabus
   const listBab = useMemo(() => {
     return daftarBabSilabus({
       kelas: kelasAngka,
-      mapel: mapelNama,
+      mapel: kodeMapel,
       semester: semesterPilihan,
     });
-  }, [kelasAngka, mapelNama, semesterPilihan]);
+  }, [kelasAngka, kodeMapel, semesterPilihan]);
 
   // Set default bab pertama jika belum terpilih
   useEffect(() => {
@@ -189,22 +202,42 @@ export default function ModalSiapkanLatihanSesi({
     // Fallback jika bank_soal Firestore masih kosong/sedikit
     if (terpilih.length < jumlahTarget) {
       const sisa = jumlahTarget - terpilih.length;
+      const judulBab = babTerpilihObj?.judul || 'Materi Pembelajaran';
+      const sub = selectedSubBab || babTerpilihObj?.subBab?.[0] || 'Konsep Dasar';
       for (let i = 1; i <= sisa; i++) {
         const no = terpilih.length + 1;
-        terpilih.push(normalisasiButirSoal({
-          id: `seed-${Date.now()}-${no}`,
-          nomor: no,
-          teksSoal: `Diketahui permasalahan pada materi ${babTerpilihObj.judul}. Jika sistem persamaan linear dimodelkan dalam bentuk $ax + by = c$, tentukan metode penyelesaian yang paling efisien untuk menemukan pasangan nilai $(x, y)$!`,
-          opsiJawaban: [
-            { label: 'A', teks: 'Menggunakan metode eliminasi variabel terlebih dahulu' },
-            { label: 'B', teks: 'Melakukan substitusi nilai variabel ke dalam persamaan dasar' },
-            { label: 'C', teks: 'Menyamakan koefisien kedua fungsi matematika' },
-            { label: 'D', teks: 'Menghitung nilai determinan matriks $2 \\times 2$' },
-          ],
-          kunciJawaban: 'A',
-          pembahasan: `Analisis terstruktur: Pada materi ${babTerpilihObj.judul}, penyelesaian dimulai dari menyederhanakan hubungan antar-variabel secara sistematis.`,
-          materi: babTerpilihObj.judul,
-        }, terpilih.length));
+        const isSains = kodeMapel === 'ipa' || kodeMapel === 'bio' || kodeMapel === 'fis' || kodeMapel === 'kim' || kodeMapel === 'ipas';
+        if (isSains) {
+          terpilih.push(normalisasiButirSoal({
+            id: `seed-${Date.now()}-${no}`,
+            nomor: no,
+            teksSoal: `Pada materi ${judulBab} terkait pokok bahasan "${sub}", bagaimanakah mekanisme atau fenomena ilmiah yang mendasari proses tersebut terjadi dalam konteks kehidupan sehari-hari?`,
+            opsiJawaban: [
+              { label: 'A', teks: 'Terjadi interaksi faktor biologis dan lingkungan yang mempertahankan kondisi seimbang' },
+              { label: 'B', teks: 'Penurunan laju reaksi secara spontan tanpa dipengaruhi rangsangan luar' },
+              { label: 'C', teks: 'Perubahan struktur molekuler secara acak tanpa adanya transfer energi kinetik' },
+              { label: 'D', teks: 'Peningkatan gradien konsentrasi zat secara pasif melawan arah difusi alami' },
+            ],
+            kunciJawaban: 'A',
+            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}, mekanisme ilmiah berfokus pada keseimbangan proses dan respons adaptif terhadap lingkungan.`,
+            materi: judulBab,
+          }, terpilih.length));
+        } else {
+          terpilih.push(normalisasiButirSoal({
+            id: `seed-${Date.now()}-${no}`,
+            nomor: no,
+            teksSoal: `Diketahui pemodelan permasalahan pada ${judulBab} terkait pokok bahasan "${sub}". Tentukan metode analisis yang paling sistematis untuk memperoleh kesimpulan yang valid!`,
+            opsiJawaban: [
+              { label: 'A', teks: 'Menganalisis hubungan antar-variabel dan menyusun formulasi pemecahan secara bertahap' },
+              { label: 'B', teks: 'Mengabaikan parameter batas dan langsung mengasumsikan nilai konstan' },
+              { label: 'C', teks: 'Memilih data ekstrem secara acak tanpa verifikasi hipotesis awal' },
+              { label: 'D', teks: 'Menyamakan semua faktor independen menjadi satu besaran tunggal' },
+            ],
+            kunciJawaban: 'A',
+            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}, penyelesaian dimulai dari memetakan variabel dan menyelesaikan secara bertahap.`,
+            materi: judulBab,
+          }, terpilih.length));
+        }
       }
     }
 
@@ -382,7 +415,7 @@ export default function ModalSiapkanLatihanSesi({
               </h3>
             </div>
             <p style={{ margin: '3px 0 0 0', fontSize: 12, color: '#64748b' }}>
-              Kelas: <b>{schedule?.title || 'MTK'}</b> · {schedule?.planet || 'Ruang Kelas'} · {schedule?.start} - {schedule?.end}
+              Kelas: <b>{(schedule?.title && schedule?.title !== 'Materi Umum') ? schedule.title : namaMapelLengkap(kodeMapel)}</b> · {schedule?.planet || 'Ruang Kelas'} · {schedule?.start} - {schedule?.end}
             </p>
           </div>
           <button
