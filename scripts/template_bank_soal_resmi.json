@@ -1,0 +1,40 @@
+[
+  {
+    "nomor": 1,
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "9",
+    "jenjang": "SMP",
+    "mapel": "matematika",
+    "materi": "Sistem Persamaan Linear Dua Variabel (SPLDV)",
+    "teksSoal": "Diketahui sistem persamaan linear $$a + 3b = 1$$ dan $$a - 2b = 2$$. Nilai dari $$2a + 5b$$ adalah ...",
+    "opsiJawaban": [
+      { "label": "A", "teks": "$-12$" },
+      { "label": "B", "teks": "$-1$" },
+      { "label": "C", "teks": "$3$" },
+      { "label": "D", "teks": "$5$" }
+    ],
+    "kunciJawaban": "C",
+    "pembahasan": "Eliminasi persamaan (1) dan (2):\n$(a + 3b) - (a - 2b) = 1 - 2$\n$5b = -1 \\implies b = -\\frac{1}{5}$.\nSubstitusi ke persamaan (1):\n$a + 3(-\\frac{1}{5}) = 1 \\implies a = 1 + \\frac{3}{5} = \\frac{8}{5}$.\nMaka $2a + 5b = 2(\\frac{8}{5}) + 5(-\\frac{1}{5}) = \\frac{16 - 5}{5} = \\frac{11}{5}$.",
+    "gambarUrls": [],
+    "status": "aktif"
+  },
+  {
+    "nomor": 2,
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "9",
+    "jenjang": "SMP",
+    "mapel": "ipa",
+    "materi": "Sistem Reproduksi pada Manusia",
+    "teksSoal": "Perhatikan organ reproduksi wanita berikut! Tempat terjadinya fertilisasi atau pembuahan sel telur oleh sperma berlangsung pada organ ...",
+    "opsiJawaban": [
+      { "label": "A", "teks": "Ovarium" },
+      { "label": "B", "teks": "Tuba Fallopii (Oviduk)" },
+      { "label": "C", "teks": "Uterus (Rahim)" },
+      { "label": "D", "teks": "Vagina" }
+    ],
+    "kunciJawaban": "B",
+    "pembahasan": "Fertilisasi terjadi di dalam saluran telur (tuba Fallopii atau oviduk). Sel telur yang telah dibuahi selanjutnya bergerak menuju uterus (rahim) untuk berkembang.",
+    "gambarUrls": [],
+    "status": "aktif"
+  }
+]

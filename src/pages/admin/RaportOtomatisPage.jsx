@@ -153,7 +153,19 @@ export default function RaportOtomatisPage() {
     setStatusMuat('memuat koleksi…');
     setErrorMuat('');
     try {
-      const [snapSiswa, snapKuis, snapSesi, snapPaket, snapAbsen, snapTugas, snapGrades, snapProgSoal, snapProgSiswa, snapLaporan] = await Promise.all([
+      const [
+        snapSiswa,
+        snapKuis,
+        snapSesi,
+        snapPaket,
+        snapAbsen,
+        snapTugas,
+        snapGrades,
+        snapProgSoal,
+        snapProgSiswa,
+        snapLaporan,
+        snapJadwal,
+      ] = await Promise.all([
         getDocs(collection(db, 'students')),
         getDocs(collection(db, 'jawaban_kuis')),
         getDocs(collection(db, 'tryout_sesi')),
@@ -164,6 +176,7 @@ export default function RaportOtomatisPage() {
         getDocs(collection(db, 'siswa_soal_progress')),
         getDocs(collection(db, 'siswa_progress')),
         getDocs(collection(db, 'laporan_belajar')),
+        getDocs(collection(db, 'jadwal_bimbel')).catch(() => ({ docs: [] })),
       ]);
       const mapSnap = (s) => s.docs.map((d) => ({ id: d.id, ...d.data() }));
 
@@ -189,9 +202,46 @@ export default function RaportOtomatisPage() {
         }
       }
 
+      // Integrasi hasil pengerjaan Latihan Pemahaman Sesi Tatap Muka ke Kuis Formatif
+      const kuisLatihanSesi = [];
+      for (const docJ of (snapJadwal.docs || [])) {
+        const sch = docJ.data() || {};
+        const lat = sch.latihanSesi;
+        if (lat && lat.hasil && typeof lat.hasil === 'object') {
+          const mapelNama = lat.babJudul ? lat.babJudul : (sch.title || sch.mapelName || 'Umum');
+          const kodeMapel = lat.kodeMapel || sch.mapelKode || '';
+          const tglTerbit = lat.terbitPada || sch.dateStr || sch.date || new Date().toISOString();
+
+          Object.entries(lat.hasil).forEach(([kunciSiswa, hasil]) => {
+            if (!hasil) return;
+            const stId = hasil.studentId || hasil.studentNim || kunciSiswa;
+            const skor = typeof hasil.skor === 'number'
+              ? hasil.skor
+              : (hasil.total > 0 ? Math.round((Number(hasil.benar || 0) / Number(hasil.total)) * 100) : null);
+
+            if (stId && skor !== null) {
+              kuisLatihanSesi.push({
+                id: `latsesi-${docJ.id}-${stId}`,
+                studentId: stId,
+                studentNim: stId,
+                studentName: hasil.studentName || '',
+                mapel: mapelNama,
+                kodeMapel,
+                score: skor,
+                nilai: skor,
+                submittedAt: hasil.selesaiPada || tglTerbit,
+                createdAt: hasil.selesaiPada || tglTerbit,
+                sumber: 'latihan_pemahaman_sesi',
+                judul: lat.judul || 'Latihan Pemahaman Sesi',
+              });
+            }
+          });
+        }
+      }
+
       const data = {
         siswa: mapSnap(snapSiswa),
-        kuis: mapSnap(snapKuis),
+        kuis: [...mapSnap(snapKuis), ...kuisLatihanSesi],
         sesi: mapSnap(snapSesi),
         paket: mapSnap(snapPaket),
         absensi: mapSnap(snapAbsen),

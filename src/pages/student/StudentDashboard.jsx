@@ -1172,13 +1172,22 @@ const StudentDashboard = () => {
                         const cleanId = String(studentId || '').replace(/[^a-zA-Z0-9_-]/g, '_');
                         const hasilSiswa = sch.latihanSesi.hasil?.[cleanId] || (studentNim && sch.latihanSesi.hasil?.[studentNim]) || null;
                         const sudahKirim = Boolean(hasilSiswa);
+                        const isAbsenIzinSakit = att?.status === 'Izin' || att?.status === 'Sakit';
 
                         return (
                           <div
                             style={{
                               marginTop: 8,
-                              background: sudahKirim ? '#f0fdf4' : 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
-                              border: sudahKirim ? '1px solid #bbf7d0' : '1px solid #a7f3d0',
+                              background: sudahKirim
+                                ? '#f0fdf4'
+                                : isAbsenIzinSakit
+                                ? '#fffbeb'
+                                : 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                              border: sudahKirim
+                                ? '1px solid #bbf7d0'
+                                : isAbsenIzinSakit
+                                ? '1px solid #fde68a'
+                                : '1px solid #a7f3d0',
                               borderRadius: 10,
                               padding: '10px 12px',
                               display: 'flex',
@@ -1189,12 +1198,29 @@ const StudentDashboard = () => {
                             }}
                           >
                             <div>
-                              <div style={{ fontSize: 12, fontWeight: 800, color: sudahKirim ? '#166534' : '#065f46', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 800,
+                                  color: sudahKirim ? '#166534' : isAbsenIzinSakit ? '#92400e' : '#065f46',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 6,
+                                }}
+                              >
                                 <span>🎯 {sch.latihanSesi.judul || 'Latihan Pemahaman Sesi'}</span>
                               </div>
-                              <div style={{ fontSize: 10.5, color: sudahKirim ? '#15803d' : '#047857', marginTop: 1 }}>
+                              <div
+                                style={{
+                                  fontSize: 10.5,
+                                  color: sudahKirim ? '#15803d' : isAbsenIzinSakit ? '#b45309' : '#047857',
+                                  marginTop: 1,
+                                }}
+                              >
                                 {sudahKirim
                                   ? '✅ Performa Anda telah terekam oleh tentor. Terima kasih atas partisipasinya!'
+                                  : isAbsenIzinSakit
+                                  ? 'ℹ️ Anda tercatat Izin/Sakit hari ini · Latihan pemahaman bersifat opsional (tidak memengaruhi performa)'
                                   : `📝 ${sch.latihanSesi.totalSoal || sch.latihanSesi.soalList?.length || 5} Soal · Cek pemahaman materi sesi tatap muka hari ini`}
                               </div>
                             </div>
@@ -1221,7 +1247,7 @@ const StudentDashboard = () => {
                                 type="button"
                                 onClick={() => setJadwalPengerjaanLatihan(sch)}
                                 style={{
-                                  background: '#059669',
+                                  background: isAbsenIzinSakit ? '#0d9488' : '#059669',
                                   color: '#ffffff',
                                   border: 'none',
                                   borderRadius: 8,
@@ -1229,10 +1255,12 @@ const StudentDashboard = () => {
                                   fontSize: 11.5,
                                   fontWeight: 700,
                                   cursor: 'pointer',
-                                  boxShadow: '0 2px 4px rgba(5, 150, 105, 0.2)',
+                                  boxShadow: isAbsenIzinSakit
+                                    ? '0 2px 4px rgba(13, 148, 136, 0.2)'
+                                    : '0 2px 4px rgba(5, 150, 105, 0.2)',
                                 }}
                               >
-                                ✏️ Kerjakan Latihan
+                                {isAbsenIzinSakit ? '✏️ Kerjakan Mandiri (Opsional)' : '✏️ Kerjakan Latihan'}
                               </button>
                             )}
                           </div>
