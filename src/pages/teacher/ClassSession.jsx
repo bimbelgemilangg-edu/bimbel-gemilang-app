@@ -417,11 +417,15 @@ const ClassSession = () => {
         await Promise.all(schedule.students.map(async (s) => {
           try {
             await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.id, today, schedule.id)));
-          } catch {}
+          } catch (err) {
+            void err;
+          }
           if (s.studentId && s.studentId !== s.id) {
             try {
               await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.studentId, today, schedule.id)));
-            } catch {}
+            } catch (err) {
+              void err;
+            }
           }
         }));
       }
@@ -434,7 +438,9 @@ const ClassSession = () => {
         );
         const snapAtt = await getDocs(qAtt);
         await Promise.all(snapAtt.docs.map(d => deleteDoc(d.ref)));
-      } catch {}
+      } catch (err) {
+        void err;
+      }
 
       // 3. Bersihkan teacher_logs
       try {
@@ -445,7 +451,9 @@ const ClassSession = () => {
         );
         const snapLog = await getDocs(qLog);
         await Promise.all(snapLog.docs.map(d => deleteDoc(d.ref)));
-      } catch {}
+      } catch (err) {
+        void err;
+      }
 
       alert('✅ Status kelas berhasil dikembalikan ke semula (Belum Dimulai)!\nData uji coba absensi dan log mengajar telah dibersihkan.');
       navigate('/guru/dashboard');

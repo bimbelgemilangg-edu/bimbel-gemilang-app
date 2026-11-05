@@ -627,11 +627,15 @@ const TeacherDashboard = () => {
         await Promise.all(item.students.map(async (s) => {
           try {
             await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.id, today, item.id)));
-          } catch {}
+          } catch (err) {
+            void err;
+          }
           if (s.studentId && s.studentId !== s.id) {
             try {
               await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.studentId, today, item.id)));
-            } catch {}
+            } catch (err) {
+              void err;
+            }
           }
         }));
       }
@@ -644,7 +648,9 @@ const TeacherDashboard = () => {
         );
         const snapAtt = await getDocs(qAtt);
         await Promise.all(snapAtt.docs.map(d => deleteDoc(d.ref)));
-      } catch {}
+      } catch (err) {
+        void err;
+      }
 
       // 3. Bersihkan teacher_logs
       try {
@@ -655,10 +661,12 @@ const TeacherDashboard = () => {
         );
         const snapLog = await getDocs(qLog);
         await Promise.all(snapLog.docs.map(d => deleteDoc(d.ref)));
-      } catch {}
+      } catch (err) {
+        void err;
+      }
 
-      // Update state lokal jadwal hari ini
-      setTodaySchedules((prev) =>
+      // Update state lokal jadwal
+      setJadwalJendela((prev) =>
         prev.map((sc) => sc.id === item.id ? { ...sc, status: 'scheduled', completedAt: null } : sc)
       );
 
