@@ -49,6 +49,7 @@ export default function ModalSiapkanLatihanSesi({
   const [blindSubmission, setBlindSubmission] = useState(true);
   const [acakUrutan, setAcakUrutan] = useState(true);
   const [durasiMenit, setDurasiMenit] = useState(15);
+  const [isKelasMandiri, setIsKelasMandiri] = useState(() => Boolean(schedule?.latihanSesi?.isKelasMandiri || schedule?.isKelasMandiri));
   const [pesanStatus, setPesanStatus] = useState('');
 
   // 1. Ekstraksi jenjang dan kelas dari jadwal
@@ -124,6 +125,7 @@ export default function ModalSiapkanLatihanSesi({
       if (lat.durasiMenit) setDurasiMenit(lat.durasiMenit);
       if (typeof lat.blindSubmission === 'boolean') setBlindSubmission(lat.blindSubmission);
       if (typeof lat.acakSoal === 'boolean') setAcakUrutan(lat.acakSoal);
+      if (typeof lat.isKelasMandiri === 'boolean') setIsKelasMandiri(lat.isKelasMandiri);
       if (Array.isArray(lat.soalList) && lat.soalList.length > 0) {
         setSoalTerpilih(lat.soalList.map((s, idx) => normalisasiButirSoal(s, idx)));
       }
@@ -286,7 +288,9 @@ export default function ModalSiapkanLatihanSesi({
     try {
       const dataLatihan = {
         id: schedule.latihanSesi?.id || `lat-${schedule.id}-${Date.now()}`,
-        judul: `Latihan Pemahaman: ${babTerpilihObj?.judul || 'Sesi Hari Ini'}`,
+        judul: isKelasMandiri
+          ? `Latihan Mandiri Terpandu: ${babTerpilihObj?.judul || 'Sesi Hari Ini'}`
+          : `Latihan Pemahaman: ${babTerpilihObj?.judul || 'Sesi Hari Ini'}`,
         babId: selectedBabId,
         babJudul: babTerpilihObj?.judul || '',
         subBab: selectedSubBab || '',
@@ -294,6 +298,9 @@ export default function ModalSiapkanLatihanSesi({
         durasiMenit: Number(durasiMenit) || 15,
         blindSubmission: Boolean(blindSubmission),
         acakSoal: Boolean(acakUrutan),
+        isKelasMandiri: Boolean(isKelasMandiri),
+        tipeSesi: isKelasMandiri ? 'mandiri' : 'tatap_muka',
+        pesanInstruksi: isKelasMandiri ? 'Tentor sesi hari ini berhalangan hadir. Sesi kelas dialihkan menjadi Belajar Mandiri Terpandu.' : '',
         terbitPada: schedule.latihanSesi?.terbitPada || new Date().toISOString(),
         diperbaruiPada: new Date().toISOString(),
         status: 'aktif',
@@ -311,13 +318,18 @@ export default function ModalSiapkanLatihanSesi({
 
       await updateDoc(doc(db, 'jadwal_bimbel', schedule.id), {
         latihanSesi: dataLatihan,
+        isKelasMandiri: Boolean(isKelasMandiri),
         materiTerakhir: `${babTerpilihObj?.judul || ''}${selectedSubBab ? ' — ' + selectedSubBab : ''}`,
         babId: selectedBabId,
         babJudul: babTerpilihObj?.judul || '',
         subBab: selectedSubBab || '',
       });
 
-      alert(`✅ Latihan Sesi Berhasil Diterbitkan!\n\n${soalTerpilih.length} butir soal kini aktif untuk kelas ${schedule.title || 'Sesi Ini'}.\nSiswa dapat langsung membukanya di Dashboard Siswa dengan mode Blind Submission.`);
+      alert(
+        isKelasMandiri
+          ? `⚡ Mode Kelas Mandiri Berhasil Diaktifkan!\n\n${soalTerpilih.length} butir soal terbit untuk kelas mandiri ${schedule.title || 'Sesi Ini'}.\nSiswa di kelas dapat langsung membuka panduan materi dan latihan mandiri di Dashboard Siswa.`
+          : `✅ Latihan Sesi Berhasil Diterbitkan!\n\n${soalTerpilih.length} butir soal kini aktif untuk kelas ${schedule.title || 'Sesi Ini'}.\nSiswa dapat langsung membukanya di Dashboard Siswa dengan mode Blind Submission.`
+      );
       if (onSuccess) onSuccess(dataLatihan);
       if (onClose) onClose();
     } catch (err) {
@@ -1048,6 +1060,26 @@ export default function ModalSiapkanLatihanSesi({
                   <option value={20}>20 Menit (Pendalaman Soal)</option>
                   <option value={30}>30 Menit (Kuis Sesi Panjang)</option>
                 </select>
+              </div>
+
+              {/* Mode Sesi Mandiri Terpandu */}
+              <div style={{ marginTop: 8, paddingTop: 10, borderTop: '1px dashed #cbd5e1' }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 11.5, color: '#1e293b', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={isKelasMandiri}
+                    onChange={(e) => setIsKelasMandiri(e.target.checked)}
+                    style={{ width: 16, height: 16, marginTop: 2, cursor: 'pointer' }}
+                  />
+                  <span>
+                    <b style={{ color: isKelasMandiri ? '#4338ca' : '#1e293b' }}>
+                      ⚡ Aktifkan Mode Sesi Mandiri Terpandu (Tentor Berhalangan Hadir)
+                    </b>
+                    <span style={{ display: 'block', fontSize: 10.5, color: '#64748b', marginTop: 2 }}>
+                      Centang ini jika tentor sesi berhalangan hadir. Siswa akan menerima instruksi panduan belajar mandiri & latihan terarah di kelas sehingga kegiatan belajar tetap produktif.
+                    </span>
+                  </span>
+                </label>
               </div>
             </div>
           </div>

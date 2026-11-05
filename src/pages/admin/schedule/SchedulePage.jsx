@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { normalisasiKodeMapel, namaMapelLengkap } from '../../../utils/silabusKurikulumMerdeka';
+import { normalisasiKodeMapel, namaMapelLengkap, isJadwalJenjangSD } from '../../../utils/silabusKurikulumMerdeka';
+import ModalSiapkanLatihanSesi from '../../../components/guru/ModalSiapkanLatihanSesi';
 
 // ============================================================
 // DATA HARI LIBUR NASIONAL INDONESIA
@@ -144,6 +145,7 @@ const SchedulePage = () => {
   // ini, atau ke SEMUA sesi (4 minggu) yang berbagi seri yang sama.
   const [editingSeriesId, setEditingSeriesId] = useState(null);
   const [applyToSeries, setApplyToSeries] = useState(false);
+  const [jadwalLatihanSesi, setJadwalLatihanSesi] = useState(null);
   
   // Form
   const defaultForm = {
@@ -1204,6 +1206,58 @@ const SchedulePage = () => {
                           </div>
                         )}
                         
+                        {/* Tombol Aksi Cepat Latihan Sesi / Mode Mandiri */}
+                        <div style={{ marginTop: 8 }}>
+                          {!isJadwalJenjangSD(item) ? (
+                            <button
+                              type="button"
+                              onClick={() => setJadwalLatihanSesi(item)}
+                              title={item.latihanSesi?.status === 'aktif' ? 'Kelola latihan pemahaman sesi tatap muka' : 'Aktifkan Mode Sesi Mandiri jika tentor berhalangan hadir'}
+                              style={{
+                                width: '100%',
+                                padding: '5px 8px',
+                                borderRadius: 6,
+                                background: item.latihanSesi?.status === 'aktif' ? (item.latihanSesi?.isKelasMandiri ? '#eef2ff' : '#f0fdf4') : '#f8fafc',
+                                color: item.latihanSesi?.status === 'aktif' ? (item.latihanSesi?.isKelasMandiri ? '#4338ca' : '#15803d') : '#475569',
+                                border: item.latihanSesi?.status === 'aktif' ? (item.latihanSesi?.isKelasMandiri ? '1px solid #c7d2fe' : '1px solid #86efac') : '1px dashed #cbd5e1',
+                                fontSize: 10.5,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 4,
+                                marginBottom: 6,
+                              }}
+                            >
+                              {item.latihanSesi?.status === 'aktif' ? (
+                                <>{item.latihanSesi?.isKelasMandiri ? '⚡ Mandiri Aktif' : '✓ Latihan Aktif'} ({item.latihanSesi.totalSoal || item.latihanSesi.soalList?.length || 5})</>
+                              ) : (
+                                <>⚡ Mode Mandiri / Latihan</>
+                              )}
+                            </button>
+                          ) : (
+                            <div
+                              style={{
+                                width: '100%',
+                                padding: '4px 6px',
+                                borderRadius: 6,
+                                background: '#f8fafc',
+                                color: '#64748b',
+                                border: '1px dashed #cbd5e1',
+                                fontSize: 9.5,
+                                fontWeight: 600,
+                                textAlign: 'center',
+                                marginBottom: 6,
+                                boxSizing: 'border-box',
+                              }}
+                              title="Kelas jenjang SD menggunakan materi mandiri tentor"
+                            >
+                              🌱 Mandiri SD
+                            </div>
+                          )}
+                        </div>
+
                         <div style={styles.scheduleActions}>
                           <button onClick={() => handleOpenModal(planet, true, item)} style={styles.btnEditSm}>
                             <Edit3 size={12} /> Edit
@@ -1324,6 +1378,88 @@ const SchedulePage = () => {
             </div>
             
             <div style={styles.detailRow}><span>📝 Materi</span><strong>{detailSchedule.title || '-'}</strong></div>
+            <div style={styles.detailDivider} />
+
+            {/* 🔥 Kontrol Mode Sesi Mandiri / Latihan */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <h4 style={{ margin: 0, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>⚡ Mode Sesi & Latihan Mandiri</span>
+                  {detailSchedule.latihanSesi?.status === 'aktif' && (
+                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: detailSchedule.latihanSesi.isKelasMandiri ? '#e0e7ff' : '#dcfce7', color: detailSchedule.latihanSesi.isKelasMandiri ? '#3730a3' : '#15803d', fontWeight: 800 }}>
+                      {detailSchedule.latihanSesi.isKelasMandiri ? 'MODE MANDIRI AKTIF' : 'LATIHAN AKTIF'}
+                    </span>
+                  )}
+                </h4>
+              </div>
+
+              {!isJadwalJenjangSD(detailSchedule) ? (
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 12 }}>
+                  {detailSchedule.latihanSesi?.status === 'aktif' ? (
+                    <>
+                      <div style={{ fontSize: 11.5, color: '#1e293b', fontWeight: 700, marginBottom: 4 }}>
+                        📝 {detailSchedule.latihanSesi.judul || 'Latihan Pemahaman Sesi'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>
+                        Total {detailSchedule.latihanSesi.totalSoal || detailSchedule.latihanSesi.soalList?.length || 5} butir soal · Blind submission aktif
+                        <br />
+                        📊 <b>{Object.keys(detailSchedule.latihanSesi.hasil || {}).length}</b> dari <b>{detailSchedule.students?.length || 0}</b> siswa telah mengumpulkan.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setJadwalLatihanSesi(detailSchedule);
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: 8,
+                          background: '#4f46e5',
+                          color: 'white',
+                          border: 'none',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ⚙️ Kelola / Edit Butir Latihan
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 11, color: '#475569', marginBottom: 8, lineHeight: 1.4 }}>
+                        Tentor berhalangan hadir atau kelas membutuhkan modul latihan terarah? Anda dapat mengaktifkan <b>Mode Sesi Mandiri</b> untuk kelas ini agar siswa tetap produktif di kelas.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setJadwalLatihanSesi(detailSchedule);
+                        }}
+                        style={{
+                          padding: '7px 14px',
+                          borderRadius: 8,
+                          background: '#4338ca',
+                          color: 'white',
+                          border: 'none',
+                          fontSize: 11.5,
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        ⚡ Aktifkan Mode Sesi Mandiri (Tentor Berhalangan)
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#64748b' }}>
+                  🌱 Kelas jenjang SD menggunakan materi dan pendampingan mandiri tentor.
+                </div>
+              )}
+            </div>
+
             <div style={styles.detailDivider} />
             
             <h4 style={{marginBottom: 8, fontSize: 13}}>👥 Daftar Siswa ({detailSchedule.students?.length || 0})</h4>
@@ -1751,6 +1887,24 @@ const SchedulePage = () => {
 
         {/* PDF DOWNLOAD MODAL */}
         {renderPdfModal()}
+
+        {/* MODAL SIAPKAN LATIHAN SESI / MODE MANDIRI ADMIN */}
+        {jadwalLatihanSesi && (
+          <ModalSiapkanLatihanSesi
+            schedule={jadwalLatihanSesi}
+            teacher={null}
+            onClose={() => setJadwalLatihanSesi(null)}
+            onSuccess={(updatedLatihan) => {
+              setSchedules((prev) =>
+                prev.map((s) => (s.id === jadwalLatihanSesi.id ? { ...s, latihanSesi: updatedLatihan, isKelasMandiri: updatedLatihan?.isKelasMandiri } : s))
+              );
+              if (detailSchedule && detailSchedule.id === jadwalLatihanSesi.id) {
+                setDetailSchedule((prev) => ({ ...prev, latihanSesi: updatedLatihan, isKelasMandiri: updatedLatihan?.isKelasMandiri }));
+              }
+              setJadwalLatihanSesi(null);
+            }}
+          />
+        )}
 
       </div>
       <style>{`

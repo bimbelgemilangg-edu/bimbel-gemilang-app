@@ -1173,20 +1173,25 @@ const StudentDashboard = () => {
                         const hasilSiswa = sch.latihanSesi.hasil?.[cleanId] || (studentNim && sch.latihanSesi.hasil?.[studentNim]) || null;
                         const sudahKirim = Boolean(hasilSiswa);
                         const isAbsenIzinSakit = att?.status === 'Izin' || att?.status === 'Sakit';
+                        const isMandiri = Boolean(sch.latihanSesi.isKelasMandiri || sch.isKelasMandiri);
 
                         return (
                           <div
                             style={{
                               marginTop: 8,
                               background: sudahKirim
-                                ? '#f0fdf4'
+                                ? (isMandiri ? '#f5f3ff' : '#f0fdf4')
                                 : isAbsenIzinSakit
                                 ? '#fffbeb'
+                                : isMandiri
+                                ? 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)'
                                 : 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
                               border: sudahKirim
-                                ? '1px solid #bbf7d0'
+                                ? (isMandiri ? '1px solid #ddd6fe' : '1px solid #bbf7d0')
                                 : isAbsenIzinSakit
                                 ? '1px solid #fde68a'
+                                : isMandiri
+                                ? '1px solid #c4b5fd'
                                 : '1px solid #a7f3d0',
                               borderRadius: 10,
                               padding: '10px 12px',
@@ -1202,25 +1207,39 @@ const StudentDashboard = () => {
                                 style={{
                                   fontSize: 12,
                                   fontWeight: 800,
-                                  color: sudahKirim ? '#166534' : isAbsenIzinSakit ? '#92400e' : '#065f46',
+                                  color: sudahKirim
+                                    ? (isMandiri ? '#5b21b6' : '#166534')
+                                    : isAbsenIzinSakit
+                                    ? '#92400e'
+                                    : isMandiri
+                                    ? '#4338ca'
+                                    : '#065f46',
                                   display: 'flex',
                                   alignItems: 'center',
                                   gap: 6,
                                 }}
                               >
-                                <span>🎯 {sch.latihanSesi.judul || 'Latihan Pemahaman Sesi'}</span>
+                                <span>{isMandiri ? '⚡' : '🎯'} {sch.latihanSesi.judul || (isMandiri ? 'Sesi Mandiri Terpandu' : 'Latihan Pemahaman Sesi')}</span>
                               </div>
                               <div
                                 style={{
                                   fontSize: 10.5,
-                                  color: sudahKirim ? '#15803d' : isAbsenIzinSakit ? '#b45309' : '#047857',
+                                  color: sudahKirim
+                                    ? (isMandiri ? '#6d28d9' : '#15803d')
+                                    : isAbsenIzinSakit
+                                    ? '#b45309'
+                                    : isMandiri
+                                    ? '#4f46e5'
+                                    : '#047857',
                                   marginTop: 1,
                                 }}
                               >
                                 {sudahKirim
-                                  ? '✅ Performa Anda telah terekam oleh tentor. Terima kasih atas partisipasinya!'
+                                  ? (isMandiri ? '✅ Sesi belajar mandiri Anda telah terekam di sistem. Kerja bagus!' : '✅ Performa Anda telah terekam oleh tentor. Terima kasih atas partisipasinya!')
                                   : isAbsenIzinSakit
                                   ? 'ℹ️ Anda tercatat Izin/Sakit hari ini · Latihan pemahaman bersifat opsional (tidak memengaruhi performa)'
+                                  : isMandiri
+                                  ? `📢 Tentor berhalangan hadir · Selesaikan ${sch.latihanSesi.totalSoal || sch.latihanSesi.soalList?.length || 5} soal mandiri terpandu di kelas`
                                   : `📝 ${sch.latihanSesi.totalSoal || sch.latihanSesi.soalList?.length || 5} Soal · Cek pemahaman materi sesi tatap muka hari ini`}
                               </div>
                             </div>
@@ -1230,28 +1249,28 @@ const StudentDashboard = () => {
                                 style={{
                                   fontSize: 10.5,
                                   fontWeight: 700,
-                                  color: '#15803d',
-                                  background: '#dcfce7',
+                                  color: isMandiri ? '#5b21b6' : '#15803d',
+                                  background: isMandiri ? '#ede9fe' : '#dcfce7',
                                   padding: '4px 9px',
                                   borderRadius: 6,
-                                  border: '1px solid #86efac',
+                                  border: isMandiri ? '1px solid #c4b5fd' : '1px solid #86efac',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: 4,
                                 }}
                               >
-                                <CheckCircle2 size={12} /> {isAbsenIzinSakit ? 'Latihan Mandiri Terekam' : 'Jawaban Terekam'}
+                                <CheckCircle2 size={12} /> {isAbsenIzinSakit ? 'Latihan Mandiri Terekam' : isMandiri ? 'Sesi Mandiri Terekam' : 'Jawaban Terekam'}
                               </span>
                             ) : (
                               <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                                {isAbsenIzinSakit && (
+                                {(isAbsenIzinSakit || isMandiri) && (
                                   <button
                                     type="button"
                                     onClick={() => navigate('/siswa/buku-pdf')}
                                     style={{
-                                      background: '#fef3c7',
-                                      color: '#92400e',
-                                      border: '1px solid #fde68a',
+                                      background: isMandiri && !isAbsenIzinSakit ? '#ede9fe' : '#fef3c7',
+                                      color: isMandiri && !isAbsenIzinSakit ? '#5b21b6' : '#92400e',
+                                      border: isMandiri && !isAbsenIzinSakit ? '1px solid #ddd6fe' : '1px solid #fde68a',
                                       borderRadius: 8,
                                       padding: '6px 11px',
                                       fontSize: 11,
@@ -1266,7 +1285,7 @@ const StudentDashboard = () => {
                                   type="button"
                                   onClick={() => setJadwalPengerjaanLatihan(sch)}
                                   style={{
-                                    background: isAbsenIzinSakit ? '#0d9488' : '#059669',
+                                    background: isAbsenIzinSakit ? '#0d9488' : isMandiri ? '#4f46e5' : '#059669',
                                     color: '#ffffff',
                                     border: 'none',
                                     borderRadius: 8,
@@ -1276,10 +1295,12 @@ const StudentDashboard = () => {
                                     cursor: 'pointer',
                                     boxShadow: isAbsenIzinSakit
                                       ? '0 2px 4px rgba(13, 148, 136, 0.2)'
+                                      : isMandiri
+                                      ? '0 2px 4px rgba(79, 70, 229, 0.25)'
                                       : '0 2px 4px rgba(5, 150, 105, 0.2)',
                                   }}
                                 >
-                                  {isAbsenIzinSakit ? '✏️ Kerjakan Mandiri (Opsional)' : '✏️ Kerjakan Latihan'}
+                                  {isAbsenIzinSakit ? '✏️ Kerjakan Mandiri (Opsional)' : isMandiri ? '✏️ Kerjakan Latihan Mandiri' : '✏️ Kerjakan Latihan'}
                                 </button>
                               </div>
                             )}
@@ -1607,6 +1628,10 @@ const StudentDashboard = () => {
           isSusulan={Boolean(
             todayAttendanceMap[jadwalPengerjaanLatihan.id]?.status === 'Izin' ||
             todayAttendanceMap[jadwalPengerjaanLatihan.id]?.status === 'Sakit'
+          )}
+          isKelasMandiri={Boolean(
+            jadwalPengerjaanLatihan.latihanSesi?.isKelasMandiri ||
+            jadwalPengerjaanLatihan.isKelasMandiri
           )}
           onClose={() => setJadwalPengerjaanLatihan(null)}
           onSuccess={(hasilBaru) => {

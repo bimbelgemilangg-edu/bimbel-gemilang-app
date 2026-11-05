@@ -3764,6 +3764,27 @@ export function cariBabSilabus({ kelas, mapel, query = '' } = {}) {
   return daftar.find((b) => b.id === q || b.judul.toLowerCase().includes(q)) || null;
 }
 
+/**
+ * Deteksi apakah jadwal bimbel merupakan jenjang SD (kelas 1-6)
+ * Digunakan untuk mengecualikan SD dari latihan Kurikulum Merdeka otomatis
+ */
+export function isJadwalJenjangSD(item = {}) {
+  if (!item) return false;
+  const lvl = String(item.level || '').toUpperCase();
+  if (lvl.includes('SD')) return true;
+  const prog = String(item.program || '').toUpperCase();
+  if (prog.includes('SD')) return true;
+  const title = String(item.title || '').toUpperCase();
+  if (title.includes(' SD')) return true;
+  if (Array.isArray(item.students) && item.students.length > 0) {
+    for (const s of item.students) {
+      const k = parseInt(String(s.kelas || s.kelasSekolah || '').replace(/[^0-9]/g, ''), 10);
+      if (k >= 1 && k <= 6) return true;
+    }
+  }
+  return false;
+}
+
 export default {
   SILABUS_KURIKULUM_MERDEKA,
   semesterKalenderAktif,
@@ -3773,4 +3794,5 @@ export default {
   jenjangDariKelasAngka,
   daftarBabSilabus,
   cariBabSilabus,
+  isJadwalJenjangSD,
 };

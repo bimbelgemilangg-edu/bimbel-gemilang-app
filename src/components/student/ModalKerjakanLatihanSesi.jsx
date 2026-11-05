@@ -61,6 +61,7 @@ export default function ModalKerjakanLatihanSesi({
   studentName,
   studentDocId,
   isSusulan = false,
+  isKelasMandiri = false,
   onClose,
   onSuccess,
 }) {
@@ -291,12 +292,18 @@ export default function ModalKerjakanLatihanSesi({
             </div>
 
             <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', margin: '0 0 8px 0' }}>
-              {isSusulan ? '🌟 Latihan Mandiri Berhasil Dikirim!' : '🎉 Jawaban Berhasil Dikirim!'}
+              {isSusulan
+                ? '🌟 Latihan Mandiri Berhasil Dikirim!'
+                : isKelasMandiri
+                ? '🌟 Sesi Belajar Mandiri Selesai!'
+                : '🎉 Jawaban Berhasil Dikirim!'}
             </h3>
 
             <p style={{ fontSize: 13.5, color: '#334155', maxWidth: 460, margin: '0 0 16px 0', lineHeight: 1.5 }}>
               {isSusulan
                 ? 'Luar biasa! Semangat belajar mandiri Anda dari rumah patut diapresiasi. Pemahaman materi Anda berhasil terekam ke sistem Gemilang Edu.'
+                : isKelasMandiri
+                ? 'Hebat! Meskipun tentor berhalangan hadir, Anda tetap aktif belajar mandiri dan rekam jejak pemahaman Anda berhasil terekam ke sistem Gemilang Edu.'
                 : 'Terima kasih! Pemahaman materi Anda pada sesi tatap muka hari ini sudah berhasil terekam ke sistem Gemilang Edu.'}
             </p>
 
@@ -315,11 +322,17 @@ export default function ModalKerjakanLatihanSesi({
               <Award size={28} color="#b45309" />
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: '#78350f' }}>
-                  {isSusulan ? '+30 Recovery XP Ditambahkan!' : '+30 XP Belajar Ditambahkan!'}
+                  {isSusulan
+                    ? '+30 Recovery XP Ditambahkan!'
+                    : isKelasMandiri
+                    ? '+30 XP Belajar Mandiri Ditambahkan!'
+                    : '+30 XP Belajar Ditambahkan!'}
                 </div>
                 <div style={{ fontSize: 11, color: '#92400e' }}>
                   {isSusulan
                     ? 'Aktivitas belajar mandiri tercatat sebagai pemulihan materi di profil Anda.'
+                    : isKelasMandiri
+                    ? 'Aktivitas sesi belajar mandiri kelas aktif dan tercatat pada profil Anda.'
                     : 'Aktivitas sesi kelas aktif dan tercatat pada profil Anda.'}
                 </div>
               </div>
