@@ -35,8 +35,7 @@ import {
 } from '../src/utils/silabusKurikulumMerdeka.js';
 
 import {
-  hitungRaportSiswa,
-  rentangPeriode,
+  hitungRaportSemuaSiswa,
 } from '../src/utils/raportOtomatis.js';
 
 // ------------------------------------------------------------
@@ -222,17 +221,18 @@ test('Siswa: Penilaian blind submission menghitung skor akurat tanpa bocor ke UI
 // ------------------------------------------------------------
 
 test('Admin: Hasil latihan sesi tatap muka masuk ke komponen kuis formatif raport siswa', () => {
-  const profilSiswa = {
-    id: 'SISWA-01',
-    profil: {
+  const siswaData = [
+    {
+      id: 'doc-siswa-1',
+      studentId: 'SISWA-01',
+      studentNim: 'SISWA-01',
       nama: 'Ahmad Siswa',
       jenjang: 'SMP',
       kelas: '9',
+      kelasSekolah: '9 SMP',
       enrolledSubjects: ['matematika'],
     },
-  };
-
-  const periode = rentangPeriode({ bulan: '2026-11' });
+  ];
 
   // Data kuis dari hasil latihan sesi tatap muka
   const kuisDariLatihanSesi = [
@@ -262,53 +262,69 @@ test('Admin: Hasil latihan sesi tatap muka masuk ke komponen kuis formatif rapor
     },
   ];
 
-  const hasilRaport = hitungRaportSiswa({
-    profil: profilSiswa,
-    periode,
-    kuis: kuisDariLatihanSesi,
-    sesiAgg: [],
-    absensi: [{ studentId: 'SISWA-01', status: 'Hadir', tanggal: '2026-11-05' }],
-    tugas: [],
-    nilaiGuru: [],
-    latihan: [],
-  });
+  const hasilSemua = hitungRaportSemuaSiswa(
+    {
+      siswa: siswaData,
+      kuis: kuisDariLatihanSesi,
+      sesi: [],
+      paket: [],
+      absensi: [{ studentId: 'SISWA-01', status: 'Hadir', tanggal: '2026-11-05' }],
+      tugas: [],
+      nilaiGuru: [],
+      progresSoal: [],
+      soalMeta: {},
+    },
+    { bulan: '2026-11' },
+    { sekarangMs: Date.parse('2026-11-05T12:00:00.000Z') }
+  );
+
+  assert.equal(hasilSemua.siswa.length, 1);
+  const siswaRaport = hasilSemua.siswa[0];
 
   // Nilai kuis matematika harus terhitung rata-rata (80 + 100) / 2 = 90
-  const mapelMtk = hasilRaport.perMapel.find((m) => m.kode === 'matematika');
+  const mapelMtk = siswaRaport.akademik.perMapel.find((m) => m.kode === 'mtk');
   assert.ok(mapelMtk, 'Mapel Matematika harus terdaftar');
   assert.equal(mapelMtk.komponen.kuis.ada, true);
   assert.equal(mapelMtk.komponen.kuis.jumlah, 2);
   assert.equal(mapelMtk.komponen.kuis.nilai, 90);
   assert.equal(mapelMtk.nilaiAkhir, 90);
-  assert.equal(mapelMtk.predikat, 'A');
+  assert.equal(mapelMtk.predikat.huruf, 'A');
 });
 
 test('Admin: Siswa sakit/izin tidak dihukum nilai 0 jika tidak ada latihan sesi', () => {
-  const profilSiswa = {
-    id: 'SISWA-SAKIT-01',
-    profil: {
+  const siswaData = [
+    {
+      id: 'doc-siswa-sakit',
+      studentId: 'SISWA-SAKIT-01',
+      studentNim: 'SISWA-SAKIT-01',
       nama: 'Budi Izin',
       jenjang: 'SMP',
       kelas: '9',
+      kelasSekolah: '9 SMP',
       enrolledSubjects: ['matematika'],
     },
-  };
-
-  const periode = rentangPeriode({ bulan: '2026-11' });
+  ];
 
   // Siswa sakit, tidak ada kuis latihan sesi yang dikerjakan
-  const hasilRaport = hitungRaportSiswa({
-    profil: profilSiswa,
-    periode,
-    kuis: [], // kosong karena izin/sakit
-    sesiAgg: [],
-    absensi: [{ studentId: 'SISWA-SAKIT-01', status: 'Sakit', tanggal: '2026-11-05' }],
-    tugas: [],
-    nilaiGuru: [],
-    latihan: [],
-  });
+  const hasilSemua = hitungRaportSemuaSiswa(
+    {
+      siswa: siswaData,
+      kuis: [], // kosong karena izin/sakit
+      sesi: [],
+      paket: [],
+      absensi: [{ studentId: 'SISWA-SAKIT-01', status: 'Sakit', tanggal: '2026-11-05' }],
+      tugas: [],
+      nilaiGuru: [],
+      progresSoal: [],
+      soalMeta: {},
+    },
+    { bulan: '2026-11' },
+    { sekarangMs: Date.parse('2026-11-05T12:00:00.000Z') }
+  );
 
-  const mapelMtk = hasilRaport.perMapel.find((m) => m.kode === 'matematika');
+  assert.equal(hasilSemua.siswa.length, 1);
+  const siswaRaport = hasilSemua.siswa[0];
+  const mapelMtk = siswaRaport.akademik.perMapel.find((m) => m.kode === 'mtk');
   // Tidak boleh ada nilai 0 palsu yang mengganjar siswa sakit
   assert.notEqual(mapelMtk?.nilaiAkhir, 0, 'Siswa sakit tidak boleh dihukum nilai 0');
 });
