@@ -62,6 +62,25 @@ const ClassSession = () => {
   const [loadingReset, setLoadingReset] = useState(false);
   const [bukaModalLatihan, setBukaModalLatihan] = useState(false);
 
+  const kelasAngka = useMemo(() => {
+    if (!schedule) return '7';
+    if (schedule.kelas) {
+      const k = String(schedule.kelas).replace(/[^0-9]/g, '');
+      if (k) return k;
+    }
+    if (Array.isArray(schedule.students) && schedule.students.length > 0) {
+      for (const s of schedule.students) {
+        const k = String(s.kelas || s.kelasSekolah || '').replace(/[^0-9]/g, '');
+        if (k) return k;
+      }
+    }
+    const mTitle = String(schedule.title || '').match(/\b([1-9]|1[0-2])\b/);
+    if (mTitle) return mTitle[1];
+    const mLevel = String(schedule.level || '').match(/\b([1-9]|1[0-2])\b/);
+    if (mLevel) return mLevel[1];
+    return '9';
+  }, [schedule]);
+
   // Khusus Program English Course (Kurikulum Mandiri Tentor - Pengecualian Kurmer)
   const isEnglishCourse = useMemo(() => {
     if (!schedule) return false;
@@ -90,25 +109,6 @@ const ClassSession = () => {
   const [sdMapelPilihan, setSdMapelPilihan] = useState('Matematika SD');
   const [sdTopikMateri, setSdTopikMateri] = useState('');
   const [sdCatatan, setSdCatatan] = useState('');
-
-  const kelasAngka = useMemo(() => {
-    if (!schedule) return '7';
-    if (schedule.kelas) {
-      const k = String(schedule.kelas).replace(/[^0-9]/g, '');
-      if (k) return k;
-    }
-    if (Array.isArray(schedule.students) && schedule.students.length > 0) {
-      for (const s of schedule.students) {
-        const k = String(s.kelas || s.kelasSekolah || '').replace(/[^0-9]/g, '');
-        if (k) return k;
-      }
-    }
-    const mTitle = String(schedule.title || '').match(/\b([1-9]|1[0-2])\b/);
-    if (mTitle) return mTitle[1];
-    const mLevel = String(schedule.level || '').match(/\b([1-9]|1[0-2])\b/);
-    if (mLevel) return mLevel[1];
-    return '9';
-  }, [schedule]);
 
   const mapelTerdeteksi = useMemo(() => {
     return deteksiMapelJadwal(schedule, teacher);
