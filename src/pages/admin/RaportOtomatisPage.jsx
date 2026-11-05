@@ -226,6 +226,7 @@ export default function RaportOtomatisPage() {
                 studentNim: stId,
                 studentName: hasil.studentName || '',
                 mapel: mapelNama,
+                subject: mapelNama,
                 kodeMapel,
                 score: skor,
                 nilai: skor,

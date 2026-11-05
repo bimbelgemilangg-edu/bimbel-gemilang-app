@@ -230,7 +230,7 @@ test('Admin: Hasil latihan sesi tatap muka masuk ke komponen kuis formatif rapor
       jenjang: 'SMP',
       kelas: '9',
       kelasSekolah: '9 SMP',
-      enrolledSubjects: ['matematika'],
+      enrolledSubjects: ['mtk'],
     },
   ];
 
@@ -242,7 +242,8 @@ test('Admin: Hasil latihan sesi tatap muka masuk ke komponen kuis formatif rapor
       studentNim: 'SISWA-01',
       studentName: 'Ahmad Siswa',
       mapel: 'Matematika',
-      kodeMapel: 'matematika',
+      subject: 'Matematika',
+      kodeMapel: 'mtk',
       score: 80,
       submittedAt: '2026-11-05T08:00:00.000Z',
       createdAt: '2026-11-05T08:00:00.000Z',
@@ -254,7 +255,8 @@ test('Admin: Hasil latihan sesi tatap muka masuk ke komponen kuis formatif rapor
       studentNim: 'SISWA-01',
       studentName: 'Ahmad Siswa',
       mapel: 'Matematika',
-      kodeMapel: 'matematika',
+      subject: 'Matematika',
+      kodeMapel: 'mtk',
       score: 100,
       submittedAt: '2026-11-05T10:00:00.000Z',
       createdAt: '2026-11-05T10:00:00.000Z',
@@ -301,7 +303,7 @@ test('Admin: Siswa sakit/izin tidak dihukum nilai 0 jika tidak ada latihan sesi'
       jenjang: 'SMP',
       kelas: '9',
       kelasSekolah: '9 SMP',
-      enrolledSubjects: ['matematika'],
+      enrolledSubjects: ['mtk'],
     },
   ];
 
