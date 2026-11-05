@@ -1788,7 +1788,7 @@ function parseHTMLStatements(container) {
         let t = htmlNodeText(item).trim();
         if (!t) return null;
         let ans = safeString(item.getAttribute('data-jawaban') || '').trim();
-        const m = t.match(/\s*[\(\[]?(benar|salah|true|false|b|s)[\)\]]?\s*$/i);
+        const m = t.match(/\s*(?:\(|\[)?(benar|salah|true|false|b|s)(?:\)|\])?\s*$/i);
         if (m) {
           if (!ans) ans = /^(b|benar|true)$/i.test(m[1]) ? 'Benar' : 'Salah';
           t = t.slice(0, m.index).trim();
@@ -1833,7 +1833,7 @@ function parseHTMLStatements(container) {
       else answer = safeString(row.getAttribute('data-jawaban') || '').trim();
     } else if (cells.length === 3) {
       // Cek apakah cells[0] adalah nomor urut (format: No | Pernyataan | Jawaban)
-      if (/^\d+[\.\)]?$/.test(teksSel[0])) {
+      if (/^\d+[.)]?$/.test(teksSel[0])) {
         text = teksSel[1];
         const val = safeString(row.getAttribute('data-jawaban') || teksSel[2]).trim();
         if (/^(b|benar|true|1)$/i.test(val)) answer = 'Benar';
