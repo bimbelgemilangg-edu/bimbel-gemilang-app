@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   Send,
   ListChecks,
+  FolderCheck,
+  Tag,
 } from 'lucide-react';
 import { db } from '../../firebase';
 import { doc, updateDoc, collection, getDocs, query, where, limit } from 'firebase/firestore';
@@ -41,10 +43,15 @@ export default function ModalSiapkanLatihanSesi({
   const [semesterPilihan, setSemesterPilihan] = useState(() => semesterKalenderAktif());
   const [selectedBabId, setSelectedBabId] = useState('');
   const [selectedSubBab, setSelectedSubBab] = useState('');
-  const [modePilihan, setModePilihan] = useState('rekomendasi'); // 'rekomendasi' | 'manual'
+  const [fokusBahasan, setFokusBahasan] = useState('');
+  const [fokusKustom, setFokusKustom] = useState('');
+  const [modePilihan, setModePilihan] = useState('rekomendasi'); // 'rekomendasi' | 'manual' | 'kuis_guru'
   const [loadingBank, setLoadingBank] = useState(false);
   const [saving, setSaving] = useState(false);
   const [bankSoalList, setBankSoalList] = useState([]);
+  const [kuisTersediaList, setKuisTersediaList] = useState([]);
+  const [loadingKuis, setLoadingKuis] = useState(false);
+  const [selectedKuisId, setSelectedKuisId] = useState('');
   const [soalTerpilih, setSoalTerpilih] = useState([]);
   const [blindSubmission, setBlindSubmission] = useState(true);
   const [acakUrutan, setAcakUrutan] = useState(true);
@@ -116,12 +123,56 @@ export default function ModalSiapkanLatihanSesi({
     return listBab.find((b) => b.id === selectedBabId) || listBab[0] || null;
   }, [listBab, selectedBabId]);
 
+  // Ekstraksi kata kunci / sub-topik granular dari teks sub-bab Kurikulum Merdeka
+  const subBabChips = useMemo(() => {
+    if (!selectedSubBab) return [];
+    const chips = [];
+    // 1. Cek isi dalam tanda kurung (...) mis: (Tabung, Kerucut, dan Bola)
+    const m = selectedSubBab.match(new RegExp('\\(([^)]+)\\)'));
+    if (m && m[1]) {
+      const part = m[1].split(new RegExp('[,/&]|(?:\\s+dan\\s+)|(?:\\s+atau\\s+)|(?:\\s+and\\s+)', 'i'));
+      for (const p of part) {
+        const clean = p.trim();
+        if (
+          clean.length > 1 &&
+          clean.length < 35 &&
+          !['lanjutan', 'penguatan', 'dll', 'dsb', 'dst'].includes(clean.toLowerCase())
+        ) {
+          chips.push(clean);
+        }
+      }
+    }
+    // 2. Jika tidak ada kurung atau chips kosong, split dari teks subBab langsung
+    if (chips.length === 0) {
+      const part = selectedSubBab.split(new RegExp('[,/&]|(?:\\s+dan\\s+)|(?:\\s+atau\\s+)|(?:\\s+and\\s+)', 'i'));
+      for (const p of part) {
+        const clean = p.replace(new RegExp('^\\d+[\\.\\)]\\s*'), '').trim();
+        if (clean.length > 2 && clean.length < 35) {
+          chips.push(clean);
+        }
+      }
+    }
+    return chips.slice(0, 6);
+  }, [selectedSubBab]);
+
+  const fokusAktif = useMemo(() => {
+    return (fokusKustom.trim() || fokusBahasan.trim() || '');
+  }, [fokusKustom, fokusBahasan]);
+
+  // Reset fokus bahasan harian saat bab atau sub-bab diganti
+  useEffect(() => {
+    setFokusBahasan('');
+    setFokusKustom('');
+  }, [selectedBabId, selectedSubBab]);
+
   // Inisialisasi jika latihan sudah pernah diterbitkan di jadwal
   useEffect(() => {
     if (schedule?.latihanSesi) {
       const lat = schedule.latihanSesi;
       if (lat.babId) setSelectedBabId(lat.babId);
       if (lat.subBab) setSelectedSubBab(lat.subBab);
+      if (lat.fokusBahasan) setFokusBahasan(lat.fokusBahasan);
+      if (lat.kuisModulId) setSelectedKuisId(lat.kuisModulId);
       if (lat.durasiMenit) setDurasiMenit(lat.durasiMenit);
       if (typeof lat.blindSubmission === 'boolean') setBlindSubmission(lat.blindSubmission);
       if (typeof lat.acakSoal === 'boolean') setAcakUrutan(lat.acakSoal);
@@ -131,6 +182,78 @@ export default function ModalSiapkanLatihanSesi({
       }
     }
   }, [schedule]);
+
+  // Muat Kuis E-Learning / Modul yang sudah pernah dibuat oleh guru
+  useEffect(() => {
+    let mounted = true;
+    const fetchKuisGuru = async () => {
+      setLoadingKuis(true);
+      try {
+        let qKuis;
+        try {
+          qKuis = query(
+            collection(db, 'bimbel_modul'),
+            where('type', '==', 'kuis_mandiri'),
+            where('status', '==', 'aktif'),
+            limit(60)
+          );
+        } catch {
+          qKuis = query(collection(db, 'bimbel_modul'), limit(60));
+        }
+
+        const snap = await getDocs(qKuis);
+        if (!mounted) return;
+
+        const list = [];
+        snap.forEach((d) => {
+          const data = d.data();
+          const rawQuestions = Array.isArray(data.questions)
+            ? data.questions
+            : (Array.isArray(data.soalList) ? data.soalList : []);
+          if (rawQuestions.length > 0) {
+            list.push({
+              id: d.id,
+              title: data.title || 'Kuis Tanpa Judul',
+              subject: data.subject || data.mapel || '',
+              kodeMapel: normalisasiKodeMapel(data.kodeMapel || data.subject || ''),
+              guruId: data.guruId || '',
+              guruName: data.guruName || '',
+              totalQuestions: rawQuestions.length,
+              questions: rawQuestions,
+              createdAt: data.createdAt,
+              targetKelas: data.targetKelas || 'Semua',
+              targetKategori: data.targetKategori || 'Semua',
+            });
+          }
+        });
+
+        // Urutkan: dahulukan kuis buatan guru sendiri, kemudian mapel yang cocok
+        const myGuruId = teacher?.guruId || teacher?.id || '';
+        list.sort((a, b) => {
+          const aIsMine = myGuruId && a.guruId === myGuruId ? 1 : 0;
+          const bIsMine = myGuruId && b.guruId === myGuruId ? 1 : 0;
+          if (aIsMine !== bIsMine) return bIsMine - aIsMine;
+          const aMapelMatch = a.kodeMapel === kodeMapel ? 1 : 0;
+          const bMapelMatch = b.kodeMapel === kodeMapel ? 1 : 0;
+          return bMapelMatch - aMapelMatch;
+        });
+
+        setKuisTersediaList(list);
+        if (list.length > 0 && !selectedKuisId) {
+          setSelectedKuisId(list[0].id);
+        }
+      } catch (err) {
+        console.warn('Gagal memuat kuis guru dari bimbel_modul:', err);
+      } finally {
+        if (mounted) setLoadingKuis(false);
+      }
+    };
+
+    fetchKuisGuru();
+    return () => {
+      mounted = false;
+    };
+  }, [kodeMapel, teacher, selectedKuisId]);
 
   // 3. Muat Bank Soal Firestore sesuai Mapel & Jenjang
   useEffect(() => {
@@ -181,14 +304,45 @@ export default function ModalSiapkanLatihanSesi({
     };
   }, [kodeMapel]);
 
-  // 4. Rekomendasi Cerdas / AI Filter Soal
+  // 4A. Ambil Soal dari Kuis E-Learning Guru
+  const handleTerapkanKuisModul = (kuisTarget) => {
+    const kuis = kuisTarget || kuisTersediaList.find((k) => k.id === selectedKuisId);
+    if (!kuis || !Array.isArray(kuis.questions) || kuis.questions.length === 0) {
+      alert('Kuis yang dipilih belum memiliki butir soal.');
+      return;
+    }
+
+    const converted = kuis.questions
+      .map((q, idx) => {
+        return normalisasiButirSoal({
+          ...q,
+          id: q.id || `kuis-${kuis.id}-${idx + 1}`,
+          nomor: idx + 1,
+          materi: kuis.title || babTerpilihObj?.judul || 'Materi Kuis',
+        }, idx);
+      })
+      .filter((s) => s && s.teksSoal);
+
+    if (converted.length === 0) {
+      alert('Tidak ada butir soal yang valid dalam kuis ini.');
+      return;
+    }
+
+    setSoalTerpilih(converted);
+    setPesanStatus(`📂 Berhasil memuat ${converted.length} butir soal dari kuis "${kuis.title}"`);
+  };
+
+  // 4B. Rekomendasi Cerdas / AI Filter Soal (Sadar Fokus Bahasan Harian)
   const handleTerapkanRekomendasi = (jumlahTarget = 5) => {
     if (!babTerpilihObj) return;
     const judulBabLower = (babTerpilihObj.judul || "").toLowerCase();
     const subBabLower = (selectedSubBab || "").toLowerCase();
+    const fokusLower = (fokusAktif || "").toLowerCase();
+
     const kataKunci = [
       judulBabLower,
       subBabLower,
+      fokusLower,
       (namaMapelLengkap(kodeMapel) || "").toLowerCase(),
     ].join(" ");
 
@@ -229,7 +383,23 @@ export default function ModalSiapkanLatihanSesi({
         if (teks.includes("bangun ruang") || teks.includes("kubus") || teks.includes("balok")) skor -= 100;
       }
 
-      // 4. Kata kunci tematik lainnya
+      // 4. Fokus Spesifik Hari Ini (Granularitas Sub-Topik Harian)
+      if (fokusLower) {
+        if (teks.includes(fokusLower)) {
+          skor += 60; // Prioritas tertinggi jika butir membidik langsung fokus materi harian
+        } else {
+          // Jika guru memilih fokus spesifik (misal "Tabung saja"), saring keluar butir topik saingan (kerucut, bola)
+          const saingan = subBabChips
+            .map((c) => c.toLowerCase())
+            .filter((c) => c !== fokusLower && c.length > 2);
+          const adaSaingan = saingan.some((s) => teks.includes(s));
+          if (adaSaingan) {
+            skor -= 70; // Penalti kuat agar soal di luar fokus harian tidak tercampur
+          }
+        }
+      }
+
+      // 5. Kata kunci tematik lainnya
       if (teks.includes("transformasi") && kataKunci.includes("transformasi")) skor += 15;
       if (teks.includes("peluang") && kataKunci.includes("peluang")) skor += 15;
       if (teks.includes("statistika") && kataKunci.includes("statistika")) skor += 15;
@@ -257,85 +427,313 @@ export default function ModalSiapkanLatihanSesi({
       const judulBab = babTerpilihObj?.judul || "Materi Pembelajaran";
       const sub = selectedSubBab || babTerpilihObj?.subBab?.[0] || "Konsep Dasar";
 
+      // Kumpulan seed kurasi spesifik per fokus topik
+      let seedPool = null;
+
+      if (fokusLower.includes("tabung")) {
+        seedPool = [
+          {
+            teksSoal: "Sebuah tabung memiliki jari-jari alas $r = 7\\text{ cm}$ dan tinggi $t = 10\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume tabung tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.540\\text{ cm}^3$" },
+              { label: "B", teks: "$1.450\\text{ cm}^3$" },
+              { label: "C", teks: "$770\\text{ cm}^3$" },
+              { label: "D", teks: "$440\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume tabung dihitung dengan rumus $V = \\pi r^2 t = \\frac{22}{7} \\times 7^2 \\times 10 = 154 \\times 10 = 1.540\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Sebuah kaleng biskuit berbentuk tabung memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $20\\text{ cm}$. Luas selimut tabung tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$880\\text{ cm}^2$" },
+              { label: "B", teks: "$440\\text{ cm}^2$" },
+              { label: "C", teks: "$960\\text{ cm}^2$" },
+              { label: "D", teks: "$1.760\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas selimut tabung dihitung dengan rumus $L_{\\text{selimut}} = 2\\pi r t = 2 \\times \\frac{22}{7} \\times 7 \\times 20 = 44 \\times 20 = 880\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Luas seluruh permukaan tabung tertutup yang memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $15\\text{ cm}$ adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$968\\text{ cm}^2$" },
+              { label: "B", teks: "$868\\text{ cm}^2$" },
+              { label: "C", teks: "$1.024\\text{ cm}^2$" },
+              { label: "D", teks: "$660\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas seluruh permukaan tabung tertutup: $L = 2\\pi r(r + t) = 2 \\times \\frac{22}{7} \\times 7 \\times (7 + 15) = 44 \\times 22 = 968\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Sebuah tabung memiliki volume $3.080\\text{ cm}^3$ dan jari-jari alas $7\\text{ cm}$. Tinggi tabung tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$20\\text{ cm}$" },
+              { label: "B", teks: "$15\\text{ cm}$" },
+              { label: "C", teks: "$25\\text{ cm}$" },
+              { label: "D", teks: "$10\\text{ cm}$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "$V = \\pi r^2 t \\implies 3.080 = \\frac{22}{7} \\times 49 \\times t \\implies 3.080 = 154 \\times t \\implies t = \\frac{3.080}{154} = 20\\text{ cm}$.",
+          },
+          {
+            teksSoal: "Sebuah drum penampungan air berbentuk tabung memiliki diameter $14\\text{ dm}$ dan tinggi $10\\text{ dm}$. Jika drum terisi air penuh, maka volume air di dalam drum adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.540\\text{ liter}$" },
+              { label: "B", teks: "$3.080\\text{ liter}$" },
+              { label: "C", teks: "$770\\text{ liter}$" },
+              { label: "D", teks: "$6.160\\text{ liter}$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Diameter $= 14\\text{ dm} \\implies r = 7\\text{ dm}$. Volume drum $V = \\pi r^2 t = \\frac{22}{7} \\times 49 \\times 10 = 1.540\\text{ dm}^3 = 1.540\\text{ liter}$.",
+          },
+        ];
+      } else if (fokusLower.includes("kerucut")) {
+        seedPool = [
+          {
+            teksSoal: "Sebuah kerucut memiliki jari-jari alas $r = 6\\text{ cm}$ dan tinggi $t = 8\\text{ cm}$. Panjang garis pelukis ($s$) kerucut tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$10\\text{ cm}$" },
+              { label: "B", teks: "$14\\text{ cm}$" },
+              { label: "C", teks: "$12\\text{ cm}$" },
+              { label: "D", teks: "$16\\text{ cm}$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Garis pelukis dihitung dengan teorema Pythagoras: $s = \\sqrt{r^2 + t^2} = \\sqrt{6^2 + 8^2} = \\sqrt{36 + 64} = \\sqrt{100} = 10\\text{ cm}$.",
+          },
+          {
+            teksSoal: "Sebuah kerucut memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $12\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume kerucut tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$616\\text{ cm}^3$" },
+              { label: "B", teks: "$1.848\\text{ cm}^3$" },
+              { label: "C", teks: "$308\\text{ cm}^3$" },
+              { label: "D", teks: "$924\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume kerucut: $V = \\frac{1}{3}\\pi r^2 t = \\frac{1}{3} \\times \\frac{22}{7} \\times 49 \\times 12 = \\frac{1}{3} \\times 154 \\times 12 = 154 \\times 4 = 616\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Sebuah caping (topi petani) berbentuk kerucut tanpa alas dengan jari-jari alas $7\\text{ cm}$ dan garis pelukis $25\\text{ cm}$. Luas selimut kerucut tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$550\\text{ cm}^2$" },
+              { label: "B", teks: "$500\\text{ cm}^2$" },
+              { label: "C", teks: "$450\\text{ cm}^2$" },
+              { label: "D", teks: "$350\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas selimut kerucut: $L_{\\text{selimut}} = \\pi r s = \\frac{22}{7} \\times 7 \\times 25 = 22 \\times 25 = 550\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Luas seluruh permukaan kerucut dengan panjang jari-jari alas $7\\text{ cm}$ dan garis pelukis $10\\text{ cm}$ adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$374\\text{ cm}^2$" },
+              { label: "B", teks: "$220\\text{ cm}^2$" },
+              { label: "C", teks: "$440\\text{ cm}^2$" },
+              { label: "D", teks: "$514\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas seluruh permukaan kerucut: $L = \\pi r(r + s) = \\frac{22}{7} \\times 7 \\times (7 + 10) = 22 \\times 17 = 374\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Sebuah cetakan tumpeng berbentuk kerucut memiliki diameter alas $14\\text{ cm}$ dan tinggi $15\\text{ cm}$. Volume cetakan tumpeng tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$770\\text{ cm}^3$" },
+              { label: "B", teks: "$1.540\\text{ cm}^3$" },
+              { label: "C", teks: "$2.310\\text{ cm}^3$" },
+              { label: "D", teks: "$385\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "$r = 7\\text{ cm}$. Volume: $V = \\frac{1}{3}\\pi r^2 t = \\frac{1}{3} \\times \\frac{22}{7} \\times 49 \\times 15 = 154 \\times 5 = 770\\text{ cm}^3$.",
+          },
+        ];
+      } else if (fokusLower.includes("bola")) {
+        seedPool = [
+          {
+            teksSoal: "Sebuah bola memiliki jari-jari $r = 7\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume bola tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.437{,}33\\text{ cm}^3$" },
+              { label: "B", teks: "$1.347{,}33\\text{ cm}^3$" },
+              { label: "C", teks: "$616\\text{ cm}^3$" },
+              { label: "D", teks: "$2.464\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume bola: $V = \\frac{4}{3}\\pi r^3 = \\frac{4}{3} \\times \\frac{22}{7} \\times 343 = \\frac{4}{3} \\times 1.078 = 1.437{,}33\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Luas seluruh permukaan bola yang memiliki jari-jari alas $7\\text{ cm}$ adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$616\\text{ cm}^2$" },
+              { label: "B", teks: "$308\\text{ cm}^2$" },
+              { label: "C", teks: "$1.232\\text{ cm}^2$" },
+              { label: "D", teks: "$154\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas permukaan bola: $L = 4\\pi r^2 = 4 \\times \\frac{22}{7} \\times 49 = 4 \\times 154 = 616\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Sebuah belahan bola padat (setengah bola tertutup) memiliki jari-jari $7\\text{ cm}$. Luas seluruh permukaannya adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$462\\text{ cm}^2$" },
+              { label: "B", teks: "$308\\text{ cm}^2$" },
+              { label: "C", teks: "$616\\text{ cm}^2$" },
+              { label: "D", teks: "$154\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas setengah bola padat $= 3\\pi r^2 = 3 \\times \\frac{22}{7} \\times 49 = 3 \\times 154 = 462\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Jika panjang jari-jari sebuah bola diperbesar menjadi $2$ kali semula, maka volumenya akan menjadi ...",
+            opsiJawaban: [
+              { label: "A", teks: "$8$ kali volume semula" },
+              { label: "B", teks: "$4$ kali volume semula" },
+              { label: "C", teks: "$2$ kali volume semula" },
+              { label: "D", teks: "$16$ kali volume semula" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "$V \\propto r^3$. Bila jari-jari dikalikan 2, volume menjadi $2^3 = 8$ kali volume semula.",
+          },
+          {
+            teksSoal: "Sebuah kubah miniatur berbentuk setengah bola berongga memiliki diameter $14\\text{ meter}$. Luas permukaan kubah yang akan dicat adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$308\\text{ m}^2$" },
+              { label: "B", teks: "$616\\text{ m}^2$" },
+              { label: "C", teks: "$154\\text{ m}^2$" },
+              { label: "D", teks: "$462\\text{ m}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "$r = 7\\text{ m}$. Luas setengah bola berongga $= 2\\pi r^2 = 2 \\times \\frac{22}{7} \\times 49 = 308\\text{ m}^2$.",
+          },
+        ];
+      } else if (fokusLower.includes("kubus")) {
+        seedPool = [
+          {
+            teksSoal: "Sebuah kubus memiliki panjang rusuk $6\\text{ cm}$. Luas seluruh permukaan kubus tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$216\\text{ cm}^2$" },
+              { label: "B", teks: "$180\\text{ cm}^2$" },
+              { label: "C", teks: "$144\\text{ cm}^2$" },
+              { label: "D", teks: "$96\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas permukaan kubus: $L = 6 \\times s^2 = 6 \\times 36 = 216\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Sebuah kubus memiliki volume $512\\text{ cm}^3$. Panjang rusuk kubus tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$8\\text{ cm}$" },
+              { label: "B", teks: "$6\\text{ cm}$" },
+              { label: "C", teks: "$7\\text{ cm}$" },
+              { label: "D", teks: "$9\\text{ cm}$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "$V = s^3 \\implies s = \\sqrt[3]{512} = 8\\text{ cm}$.",
+          },
+        ];
+      } else if (fokusLower.includes("balok")) {
+        seedPool = [
+          {
+            teksSoal: "Sebuah balok memiliki ukuran panjang $12\\text{ cm}$, lebar $8\\text{ cm}$, dan tinggi $5\\text{ cm}$. Volume balok tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$480\\text{ cm}^3$" },
+              { label: "B", teks: "$420\\text{ cm}^3$" },
+              { label: "C", teks: "$360\\text{ cm}^3$" },
+              { label: "D", teks: "$240\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume balok: $V = p \\times l \\times t = 12 \\times 8 \\times 5 = 480\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Luas seluruh permukaan balok dengan ukuran panjang $10\\text{ cm}$, lebar $6\\text{ cm}$, dan tinggi $4\\text{ cm}$ adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$248\\text{ cm}^2$" },
+              { label: "B", teks: "$240\\text{ cm}^2$" },
+              { label: "C", teks: "$124\\text{ cm}^2$" },
+              { label: "D", teks: "$180\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "$L = 2(pl + pt + lt) = 2(60 + 40 + 24) = 2 \\times 124 = 248\\text{ cm}^2$.",
+          },
+        ];
+      } else if (isGeometriBangunRuang) {
+        seedPool = [
+          {
+            teksSoal: "Sebuah balok memiliki ukuran panjang $12\\text{ cm}$, lebar $8\\text{ cm}$, dan tinggi $5\\text{ cm}$. Volume balok tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$480\\text{ cm}^3$" },
+              { label: "B", teks: "$420\\text{ cm}^3$" },
+              { label: "C", teks: "$360\\text{ cm}^3$" },
+              { label: "D", teks: "$240\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume balok dihitung dengan rumus $V = p \\times l \\times t = 12 \\times 8 \\times 5 = 480\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Sebuah kubus memiliki panjang rusuk $6\\text{ cm}$. Luas seluruh permukaan kubus tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$216\\text{ cm}^2$" },
+              { label: "B", teks: "$180\\text{ cm}^2$" },
+              { label: "C", teks: "$144\\text{ cm}^2$" },
+              { label: "D", teks: "$96\\text{ cm}^2$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Luas permukaan kubus memiliki 6 sisi persegi identik: $L = 6 \\times s^2 = 6 \\times 6^2 = 6 \\times 36 = 216\\text{ cm}^2$.",
+          },
+          {
+            teksSoal: "Banyaknya rusuk dan titik sudut pada sebuah prisma segitiga berturut-turut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$9$ rusuk dan $6$ titik sudut" },
+              { label: "B", teks: "$6$ rusuk dan $9$ titik sudut" },
+              { label: "C", teks: "$8$ rusuk dan $5$ titik sudut" },
+              { label: "D", teks: "$12$ rusuk dan $8$ titik sudut" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Prisma segitiga memiliki 9 rusuk (3 rusuk alas, 3 rusuk tutup, 3 rusuk tegak) dan 6 titik sudut.",
+          },
+          {
+            teksSoal: "Sebuah tabung memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $10\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume tabung tersebut adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.540\\text{ cm}^3$" },
+              { label: "B", teks: "$1.450\\text{ cm}^3$" },
+              { label: "C", teks: "$770\\text{ cm}^3$" },
+              { label: "D", teks: "$440\\text{ cm}^3$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume tabung dihitung dengan rumus $V = \\pi r^2 t = \\frac{22}{7} \\times 7^2 \\times 10 = 154 \\times 10 = 1.540\\text{ cm}^3$.",
+          },
+          {
+            teksSoal: "Sebuah bak penampungan air berbentuk kubus dengan panjang rusuk bagian dalam $1\\text{ meter}$. Jika bak terisi air penuh, maka volume air di dalam bak adalah ...",
+            opsiJawaban: [
+              { label: "A", teks: "$1.000\\text{ liter}$" },
+              { label: "B", teks: "$100\\text{ liter}$" },
+              { label: "C", teks: "$500\\text{ liter}$" },
+              { label: "D", teks: "$10.000\\text{ liter}$" },
+            ],
+            kunciJawaban: "A",
+            pembahasan: "Volume kubus $V = s^3 = 1\\text{ m}^3$. Karena $1\\text{ m}^3 = 1.000\\text{ dm}^3 = 1.000\\text{ liter}$, maka volume air adalah $1.000\\text{ liter}$.",
+          },
+        ];
+      }
+
       for (let i = 1; i <= sisa; i++) {
         const no = terpilih.length + 1;
         const isSains = kodeMapel === "ipa" || kodeMapel === "bio" || kodeMapel === "fis" || kodeMapel === "kim" || kodeMapel === "ipas";
 
-        if (isGeometriBangunRuang) {
-          // Fallback spesifik Bangun Ruang SMP agar tidak pernah tertukar SPLDV
-          const soalBangunRuangList = [
-            {
-              teksSoal: "Sebuah balok memiliki ukuran panjang $12\\text{ cm}$, lebar $8\\text{ cm}$, dan tinggi $5\\text{ cm}$. Volume balok tersebut adalah ...",
-              opsiJawaban: [
-                { label: "A", teks: "$480\\text{ cm}^3$" },
-                { label: "B", teks: "$420\\text{ cm}^3$" },
-                { label: "C", teks: "$360\\text{ cm}^3$" },
-                { label: "D", teks: "$240\\text{ cm}^3$" },
-              ],
-              kunciJawaban: "A",
-              pembahasan: "Volume balok dihitung dengan rumus $V = p \\times l \\times t = 12 \\times 8 \\times 5 = 480\\text{ cm}^3$.",
-            },
-            {
-              teksSoal: "Sebuah kubus memiliki panjang rusuk $6\\text{ cm}$. Luas seluruh permukaan kubus tersebut adalah ...",
-              opsiJawaban: [
-                { label: "A", teks: "$216\\text{ cm}^2$" },
-                { label: "B", teks: "$180\\text{ cm}^2$" },
-                { label: "C", teks: "$144\\text{ cm}^2$" },
-                { label: "D", teks: "$96\\text{ cm}^2$" },
-              ],
-              kunciJawaban: "A",
-              pembahasan: "Luas permukaan kubus memiliki 6 sisi persegi identik: $L = 6 \\times s^2 = 6 \\times 6^2 = 6 \\times 36 = 216\\text{ cm}^2$.",
-            },
-            {
-              teksSoal: "Banyaknya rusuk dan titik sudut pada sebuah prisma segitiga berturut-turut adalah ...",
-              opsiJawaban: [
-                { label: "A", teks: "$9$ rusuk dan $6$ titik sudut" },
-                { label: "B", teks: "$6$ rusuk dan $9$ titik sudut" },
-                { label: "C", teks: "$8$ rusuk dan $5$ titik sudut" },
-                { label: "D", teks: "$12$ rusuk dan $8$ titik sudut" },
-              ],
-              kunciJawaban: "A",
-              pembahasan: "Prisma segitiga memiliki 9 rusuk (3 rusuk alas, 3 rusuk tutup, 3 rusuk tegak) dan 6 titik sudut.",
-            },
-            {
-              teksSoal: "Sebuah tabung memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $10\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume tabung tersebut adalah ...",
-              opsiJawaban: [
-                { label: "A", teks: "$1.540\\text{ cm}^3$" },
-                { label: "B", teks: "$1.450\\text{ cm}^3$" },
-                { label: "C", teks: "$770\\text{ cm}^3$" },
-                { label: "D", teks: "$440\\text{ cm}^3$" },
-              ],
-              kunciJawaban: "A",
-              pembahasan: "Volume tabung dihitung dengan rumus $V = \\pi r^2 t = \\frac{22}{7} \\times 7^2 \\times 10 = 154 \\times 10 = 1.540\\text{ cm}^3$.",
-            },
-            {
-              teksSoal: "Sebuah bak penampungan air berbentuk kubus dengan panjang rusuk bagian dalam $1\\text{ meter}$. Jika bak terisi air penuh, maka volume air di dalam bak adalah ...",
-              opsiJawaban: [
-                { label: "A", teks: "$1.000\\text{ liter}$" },
-                { label: "B", teks: "$100\\text{ liter}$" },
-                { label: "C", teks: "$500\\text{ liter}$" },
-                { label: "D", teks: "$10.000\\text{ liter}$" },
-              ],
-              kunciJawaban: "A",
-              pembahasan: "Volume kubus $V = s^3 = 1\\text{ m}^3$. Karena $1\\text{ m}^3 = 1.000\\text{ dm}^3 = 1.000\\text{ liter}$, maka volume air adalah $1.000\\text{ liter}$.",
-            },
-          ];
-
-          const templateDipilih = soalBangunRuangList[(no - 1) % soalBangunRuangList.length];
+        if (seedPool && seedPool.length > 0) {
+          const templateDipilih = seedPool[(no - 1) % seedPool.length];
           terpilih.push(normalisasiButirSoal({
-            id: `seed-geom-${Date.now()}-${no}`,
+            id: `seed-${fokusLower ? 'fokus' : 'geom'}-${Date.now()}-${no}`,
             nomor: no,
             teksSoal: templateDipilih.teksSoal,
             opsiJawaban: templateDipilih.opsiJawaban,
             kunciJawaban: templateDipilih.kunciJawaban,
             pembahasan: templateDipilih.pembahasan,
-            materi: judulBab,
+            materi: fokusAktif ? `${judulBab} (${fokusAktif})` : judulBab,
           }, terpilih.length));
         } else if (isSains) {
           terpilih.push(normalisasiButirSoal({
-            id: `seed-${Date.now()}-${no}`,
+            id: `seed-sains-${Date.now()}-${no}`,
             nomor: no,
-            teksSoal: `Pada materi ${judulBab} terkait pokok bahasan "${sub}", bagaimanakah mekanisme atau fenomena ilmiah yang mendasari proses tersebut terjadi dalam konteks kehidupan sehari-hari?`,
+            teksSoal: `Pada pembelajaran ${judulBab}${fokusAktif ? ` dengan fokus bahasan '${fokusAktif}'` : ''} (${sub}), bagaimanakah mekanisme atau fenomena ilmiah yang mendasarinya dalam kehidupan sehari-hari?`,
             opsiJawaban: [
               { label: "A", teks: "Terjadi interaksi faktor biologis dan lingkungan yang mempertahankan kondisi seimbang" },
               { label: "B", teks: "Penurunan laju reaksi secara spontan tanpa dipengaruhi rangsangan luar" },
@@ -343,14 +741,14 @@ export default function ModalSiapkanLatihanSesi({
               { label: "D", teks: "Peningkatan gradien konsentrasi zat secara pasif melawan arah difusi alami" },
             ],
             kunciJawaban: "A",
-            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}, mekanisme ilmiah berfokus pada keseimbangan proses dan respons adaptif terhadap lingkungan.`,
-            materi: judulBab,
+            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}${fokusAktif ? ` (${fokusAktif})` : ''}, mekanisme ilmiah berfokus pada keteraturan prinsip dasar dan penerapannya.`,
+            materi: fokusAktif ? `${judulBab} (${fokusAktif})` : judulBab,
           }, terpilih.length));
         } else {
           terpilih.push(normalisasiButirSoal({
-            id: `seed-${Date.now()}-${no}`,
+            id: `seed-umum-${Date.now()}-${no}`,
             nomor: no,
-            teksSoal: `Diketahui pemodelan permasalahan pada materi ${judulBab} (${sub}). Tentukan metode analisis yang paling sistematis untuk memperoleh solusi yang valid!`,
+            teksSoal: `Diketahui pemodelan permasalahan pada ${judulBab}${fokusAktif ? ` dengan fokus pokok '${fokusAktif}'` : ''} (${sub}). Tentukan pendekatan analisis yang paling sistematis untuk memperoleh penyelesaian yang tepat!`,
             opsiJawaban: [
               { label: "A", teks: "Menganalisis hubungan antar-variabel dan menyusun formulasi pemecahan secara bertahap" },
               { label: "B", teks: "Mengabaikan parameter batas dan langsung mengasumsikan nilai konstan" },
@@ -358,15 +756,15 @@ export default function ModalSiapkanLatihanSesi({
               { label: "D", teks: "Menyamakan semua faktor independen menjadi satu besaran tunggal" },
             ],
             kunciJawaban: "A",
-            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}, penyelesaian dimulai dari memetakan variabel dan menyelesaikan secara bertahap.`,
-            materi: judulBab,
+            pembahasan: `Analisis terstruktur: Pada materi ${judulBab}${fokusAktif ? ` (${fokusAktif})` : ''}, penyelesaian dimulai dari memetakan variabel dan menyelesaikan secara bertahap.`,
+            materi: fokusAktif ? `${judulBab} (${fokusAktif})` : judulBab,
           }, terpilih.length));
         }
       }
     }
 
     setSoalTerpilih(terpilih);
-    setPesanStatus(`✨ Berhasil menyiapkan ${terpilih.length} butir soal terverifikasi untuk ${babTerpilihObj.judul}`);
+    setPesanStatus(`✨ Berhasil menyiapkan ${terpilih.length} butir soal terverifikasi untuk ${babTerpilihObj.judul}${fokusAktif ? ` (Fokus: ${fokusAktif})` : ''}`);
   };
 
   // Toggle pilihan butir soal pada mode manual
@@ -401,11 +799,14 @@ export default function ModalSiapkanLatihanSesi({
       const dataLatihan = {
         id: schedule.latihanSesi?.id || `lat-${schedule.id}-${Date.now()}`,
         judul: isKelasMandiri
-          ? `Latihan Mandiri Terpandu: ${babTerpilihObj?.judul || 'Sesi Hari Ini'}`
-          : `Latihan Pemahaman: ${babTerpilihObj?.judul || 'Sesi Hari Ini'}`,
+          ? `Latihan Mandiri Terpandu: ${babTerpilihObj?.judul || 'Sesi Hari Ini'}${fokusAktif ? ` (Fokus: ${fokusAktif})` : ''}`
+          : `Latihan Pemahaman: ${babTerpilihObj?.judul || 'Sesi Hari Ini'}${fokusAktif ? ` (Fokus: ${fokusAktif})` : ''}`,
         babId: selectedBabId,
         babJudul: babTerpilihObj?.judul || '',
         subBab: selectedSubBab || '',
+        fokusBahasan: fokusAktif || '',
+        kuisModulId: modePilihan === 'kuis_guru' ? selectedKuisId : (schedule.latihanSesi?.kuisModulId || null),
+        sumberLatihan: modePilihan === 'kuis_guru' ? 'kuis_mandiri' : 'bank_soal',
         totalSoal: soalTerpilih.length,
         durasiMenit: Number(durasiMenit) || 15,
         blindSubmission: Boolean(blindSubmission),
@@ -431,10 +832,11 @@ export default function ModalSiapkanLatihanSesi({
       await updateDoc(doc(db, 'jadwal_bimbel', schedule.id), {
         latihanSesi: dataLatihan,
         isKelasMandiri: Boolean(isKelasMandiri),
-        materiTerakhir: `${babTerpilihObj?.judul || ''}${selectedSubBab ? ' — ' + selectedSubBab : ''}`,
+        materiTerakhir: `${babTerpilihObj?.judul || ''}${selectedSubBab ? ' — ' + selectedSubBab : ''}${fokusAktif ? ` [Fokus: ${fokusAktif}]` : ''}`,
         babId: selectedBabId,
         babJudul: babTerpilihObj?.judul || '',
         subBab: selectedSubBab || '',
+        fokusBahasan: fokusAktif || '',
       });
 
       alert(
@@ -753,25 +1155,138 @@ export default function ModalSiapkanLatihanSesi({
                     </option>
                   ))}
                 </select>
+
+                {/* 1.B Granularitas / Fokus Spesifik Hari Ini (Misal: Tabung saja, Kerucut saja, GLB saja) */}
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: '10px 12px',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 10,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <label style={{ fontSize: 11.5, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Tag size={13} color="#4f46e5" />
+                      🎯 Fokus Bahasan Sesi Hari Ini (Jika Materi Baru Diajarkan Sebagian):
+                    </label>
+                    {fokusAktif && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFokusBahasan('');
+                          setFokusKustom('');
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ef4444',
+                          fontSize: 10.5,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Reset Fokus
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Chips Pilihan Cepat Sub-Topik Granular */}
+                  {subBabChips.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFokusBahasan('');
+                          setFokusKustom('');
+                        }}
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: 20,
+                          border: !fokusAktif ? '1.5px solid #4f46e5' : '1px solid #cbd5e1',
+                          background: !fokusAktif ? '#eef2ff' : '#f8fafc',
+                          color: !fokusAktif ? '#4338ca' : '#64748b',
+                          fontSize: 11,
+                          fontWeight: !fokusAktif ? 700 : 500,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        🌐 Seluruh Sub-Bab (Gabungan)
+                      </button>
+                      {subBabChips.map((chip, idx) => {
+                        const isSelected = fokusBahasan.toLowerCase() === chip.toLowerCase() && !fokusKustom;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setFokusBahasan(chip);
+                              setFokusKustom('');
+                            }}
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: 20,
+                              border: isSelected ? '1.5px solid #7c3aed' : '1px solid #e2e8f0',
+                              background: isSelected ? '#faf5ff' : '#ffffff',
+                              color: isSelected ? '#6b21a8' : '#334155',
+                              fontSize: 11,
+                              fontWeight: isSelected ? 700 : 500,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                          >
+                            <span>🔹 {chip} Saja</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Kolom Teks Fokus Kustom Bebas */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input
+                      type="text"
+                      value={fokusKustom}
+                      onChange={(e) => setFokusKustom(e.target.value)}
+                      placeholder="Atau ketik topik spesifik hari ini (mis: Tabung saja, Luas Permukaan Tabung, Eliminasi SPLDV)..."
+                      style={{
+                        flex: 1,
+                        padding: '7px 10px',
+                        borderRadius: 6,
+                        border: '1px solid #cbd5e1',
+                        fontSize: 11.5,
+                        outline: 'none',
+                        background: '#f8fafc',
+                      }}
+                    />
+                  </div>
+                  {fokusAktif && (
+                    <div style={{ fontSize: 10.5, color: '#6b21a8', marginTop: 5 }}>
+                      ✨ Rekomendasi AI & filter Bank Soal akan difokuskan khusus pada: <b>{fokusAktif}</b>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
-          {/* 2. Metode Penyiapan Soal: Rekomendasi Cerdas / AI Filter vs Manual */}
+          {/* 2. Metode Penyiapan Soal: Rekomendasi Cerdas / AI Filter vs Manual vs Pakai Kuis Guru */}
           <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 12 }}>
               <button
                 type="button"
                 onClick={() => setModePilihan('rekomendasi')}
                 style={{
-                  flex: 1,
-                  padding: '10px 14px',
+                  padding: '10px 12px',
                   borderRadius: 10,
                   border: modePilihan === 'rekomendasi' ? '2px solid #4f46e5' : '1px solid #e2e8f0',
                   background: modePilihan === 'rekomendasi' ? '#eef2ff' : '#ffffff',
                   color: modePilihan === 'rekomendasi' ? '#3730a3' : '#64748b',
                   fontWeight: 700,
-                  fontSize: 12.5,
+                  fontSize: 12,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -779,21 +1294,20 @@ export default function ModalSiapkanLatihanSesi({
                   cursor: 'pointer',
                 }}
               >
-                <Sparkles size={16} color={modePilihan === 'rekomendasi' ? '#4f46e5' : '#64748b'} />
-                ✨ Rekomendasi Cerdas (AI Filter Bank Soal)
+                <Sparkles size={15} color={modePilihan === 'rekomendasi' ? '#4f46e5' : '#64748b'} />
+                ✨ Rekomendasi Cerdas (AI Filter)
               </button>
               <button
                 type="button"
                 onClick={() => setModePilihan('manual')}
                 style={{
-                  flex: 1,
-                  padding: '10px 14px',
+                  padding: '10px 12px',
                   borderRadius: 10,
                   border: modePilihan === 'manual' ? '2px solid #4f46e5' : '1px solid #e2e8f0',
                   background: modePilihan === 'manual' ? '#eef2ff' : '#ffffff',
                   color: modePilihan === 'manual' ? '#3730a3' : '#64748b',
                   fontWeight: 700,
-                  fontSize: 12.5,
+                  fontSize: 12,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -801,8 +1315,29 @@ export default function ModalSiapkanLatihanSesi({
                   cursor: 'pointer',
                 }}
               >
-                <ListChecks size={16} color={modePilihan === 'manual' ? '#4f46e5' : '#64748b'} />
-                📋 Pilih Manual dari Bank Soal ({bankSoalList.length} Tersedia)
+                <ListChecks size={15} color={modePilihan === 'manual' ? '#4f46e5' : '#64748b'} />
+                📋 Pilih Manual ({bankSoalList.length} Tersedia)
+              </button>
+              <button
+                type="button"
+                onClick={() => setModePilihan('kuis_guru')}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: modePilihan === 'kuis_guru' ? '2px solid #059669' : '1px solid #e2e8f0',
+                  background: modePilihan === 'kuis_guru' ? '#ecfdf5' : '#ffffff',
+                  color: modePilihan === 'kuis_guru' ? '#065f46' : '#64748b',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                }}
+              >
+                <FolderCheck size={15} color={modePilihan === 'kuis_guru' ? '#059669' : '#64748b'} />
+                📂 Pakai Kuis yang Sudah Dibuat ({kuisTersediaList.length})
               </button>
             </div>
 
@@ -826,7 +1361,8 @@ export default function ModalSiapkanLatihanSesi({
                     Tarik Butir Soal Sesuai Silabus Hari Ini
                   </div>
                   <div style={{ fontSize: 11, color: '#7e22ce', marginTop: 2 }}>
-                    Sistem memfilter bank soal yang paling cocok dengan <b>{babTerpilihObj?.judul || 'Bab Ini'}</b>.
+                    Sistem memfilter bank soal yang paling cocok dengan <b>{babTerpilihObj?.judul || 'Bab Ini'}</b>
+                    {fokusAktif ? <span> · Fokus: <b>{fokusAktif}</b></span> : ''}.
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -869,6 +1405,105 @@ export default function ModalSiapkanLatihanSesi({
                     Siapkan 10 Soal
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Panel Mode Pakai Kuis yang Sudah Pernah Dibuat (E-Learning) */}
+            {modePilihan === 'kuis_guru' && (
+              <div
+                style={{
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: 12,
+                  padding: 14,
+                  marginBottom: 10,
+                }}
+              >
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#166534' }}>
+                    📂 Gunakan Kuis yang Sudah Pernah Dibuat di E-Learning
+                  </div>
+                  <div style={{ fontSize: 11.5, color: '#15803d', marginTop: 2 }}>
+                    Pilih kuis mandiri yang sudah pernah Anda buat di modul / e-learning sebelumnya.
+                    Seluruh butir soal akan langsung dipasang untuk aktivitas latihan kelas hari ini tanpa perlu input ulang!
+                  </div>
+                </div>
+
+                {loadingKuis ? (
+                  <div style={{ padding: 14, textAlign: 'center', fontSize: 12, color: '#15803d' }}>
+                    Memuat kuis dari e-learning...
+                  </div>
+                ) : kuisTersediaList.length === 0 ? (
+                  <div style={{ padding: 14, textAlign: 'center', fontSize: 12, color: '#15803d', background: '#ffffff', borderRadius: 8 }}>
+                    Belum ada kuis yang ditemukan di E-Learning. Anda dapat menggunakan <b>Rekomendasi Cerdas (AI Filter)</b> atau centang dari Bank Soal.
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <select
+                        value={selectedKuisId}
+                        onChange={(e) => setSelectedKuisId(e.target.value)}
+                        style={{
+                          flex: 1,
+                          minWidth: 260,
+                          padding: '8px 12px',
+                          borderRadius: 8,
+                          border: '1px solid #86efac',
+                          fontSize: 12,
+                          color: '#0f172a',
+                          background: '#ffffff',
+                          outline: 'none',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {kuisTersediaList.map((k) => {
+                          const isMine = teacher?.id && k.guruId === teacher.id;
+                          return (
+                            <option key={k.id} value={k.id}>
+                              {isMine ? '★ [Milik Saya] ' : ''}{k.title} ({k.totalQuestions} Soal{k.subject ? ` · ${k.subject}` : ''})
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => handleTerapkanKuisModul()}
+                        style={{
+                          background: '#16a34a',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '8px 14px',
+                          fontSize: 12,
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <FolderCheck size={14} /> Pasang Kuis Ini ke Sesi
+                      </button>
+                    </div>
+
+                    {/* Info ringkas kuis terpilih */}
+                    {selectedKuisId && (() => {
+                      const k = kuisTersediaList.find((item) => item.id === selectedKuisId);
+                      if (!k) return null;
+                      return (
+                        <div style={{ marginTop: 8, fontSize: 11, color: '#166534', background: '#dcfce7', padding: '6px 10px', borderRadius: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>
+                            <b>{k.title}</b> · Mapel: {k.subject || 'Umum'} · {k.totalQuestions} Soal
+                            {k.guruName ? ` · Dibuat oleh: ${k.guruName}` : ''}
+                          </span>
+                          <span style={{ fontSize: 10.5, color: '#15803d' }}>
+                            ID: {k.id.slice(0, 8)}...
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             )}
 

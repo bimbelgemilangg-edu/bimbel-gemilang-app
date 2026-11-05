@@ -64,7 +64,7 @@ export function teksSoalDari(soal) {
   // ('   ') itu truthy, jadi alias berikutnya tidak pernah dicoba dan butir
   // yang teksnya ada di `teksSoal` tetap terbaca kosong. Yang dipilih adalah
   // alias pertama yang benar-benar punya isi setelah dipangkas.
-  const kandidat = [soal?.soal, soal?.teksSoal, soal?.teks_soal, soal?.pertanyaan];
+  const kandidat = [soal?.soal, soal?.teksSoal, soal?.teks_soal, soal?.pertanyaan, soal?.question, soal?.teks];
   for (const nilai of kandidat) {
     const teks = String(nilai ?? '').trim();
     if (teks) return teks;
@@ -115,9 +115,13 @@ export function gambarButirDari(soal) {
   const sumber = (Array.isArray(soal?.gambarUrls) && soal.gambarUrls.length)
     ? soal.gambarUrls
     : (Array.isArray(soal?.gambar) ? soal.gambar : []);
-  return sumber
+  const list = sumber
     .map((g) => (typeof g === 'string' ? g : String(g?.url || g?.uploadedUrl || '')))
     .filter(Boolean);
+  if (soal?.qImage && typeof soal.qImage === 'string' && !list.includes(soal.qImage)) {
+    list.push(soal.qImage);
+  }
+  return list;
 }
 
 export function kunciStimulus(soal) {

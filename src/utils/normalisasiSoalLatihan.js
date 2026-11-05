@@ -39,8 +39,8 @@ export function ekstrakSemuaGambar(soal) {
     }
   }
 
-  // 3. String tunggal (gambarUrl, mediaUrl, image, foto, imgUrl, urlGambar)
-  const kunciString = ['gambarUrl', 'mediaUrl', 'image', 'foto', 'imgUrl', 'urlGambar', 'gambar'];
+  // 3. String tunggal (gambarUrl, mediaUrl, image, foto, imgUrl, urlGambar, qImage)
+  const kunciString = ['gambarUrl', 'mediaUrl', 'image', 'foto', 'imgUrl', 'urlGambar', 'gambar', 'qImage', 'questionImage'];
   for (const k of kunciString) {
     if (typeof soal[k] === 'string' && soal[k].trim()) {
       urls.push(soal[k].trim());
@@ -88,7 +88,7 @@ export function ekstrakSemuaGambar(soal) {
  * @param {Array} opsiRaw Array opsi dari Firestore
  * @returns {Array<{ label: string, teks: string, gambar: Array }>}
  */
-export function normalisasiDaftarOpsi(opsiRaw) {
+export function normalisasiDaftarOpsi(opsiRaw, optionImagesRaw = []) {
   if (!Array.isArray(opsiRaw)) return [];
 
   return opsiRaw.map((item, idx) => {
@@ -112,6 +112,12 @@ export function normalisasiDaftarOpsi(opsiRaw) {
       }
     } else {
       teks = String(item ?? '');
+    }
+
+    if (Array.isArray(optionImagesRaw) && optionImagesRaw[idx]) {
+      const optImg = optionImagesRaw[idx];
+      const u = typeof optImg === 'string' ? optImg : optImg?.url || optImg?.uploadedUrl;
+      if (u && !gambar.includes(u)) gambar.push(u);
     }
 
     // Lepas penanda glif kunci warisan (☑/☐/✓)
@@ -138,11 +144,13 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
   const teks = teksSoalDari(rawSoal);
   const gambarUrls = ekstrakSemuaGambar(rawSoal);
   const opsiJawaban = normalisasiDaftarOpsi(
-    rawSoal.opsiJawaban || rawSoal.opsi || rawSoal.pilihan || rawSoal.pernyataan
+    rawSoal.opsiJawaban || rawSoal.opsi || rawSoal.pilihan || rawSoal.pernyataan || rawSoal.options,
+    rawSoal.optionImages || []
   );
 
-  let kunci = String(rawSoal.kunciJawaban || rawSoal.kunci || rawSoal.jawabanBenar || 'A').toUpperCase().trim();
-  // Jika kunci adalah index angka (misal '0' -> 'A', '1' -> 'B')
+  const rawKunci = rawSoal.kunciJawaban ?? rawSoal.kunci ?? rawSoal.jawabanBenar ?? rawSoal.correctAnswer ?? rawSoal.correct ?? 'A';
+  let kunci = String(rawKunci).toUpperCase().trim();
+  // Jika kunci adalah index angka (misal 0 -> 'A', 1 -> 'B')
   if (/^[0-4]$/.test(kunci)) {
     kunci = HURUF_OPSI[parseInt(kunci, 10)] || 'A';
   }
@@ -153,10 +161,10 @@ export function normalisasiButirSoal(rawSoal, idx = 0) {
     teksSoal: teks,
     opsiJawaban,
     kunciJawaban: kunci,
-    pembahasan: String(rawSoal.pembahasan || '').trim(),
+    pembahasan: String(rawSoal.pembahasan || rawSoal.explanation || '').trim(),
     gambarUrls,
-    materi: String(rawSoal.materi || rawSoal.bab || rawSoal.topik || '').trim(),
-    mapel: String(rawSoal.mataPelajaran || rawSoal.mapel || '').trim(),
+    materi: String(rawSoal.materi || rawSoal.bab || rawSoal.topik || rawSoal.subject || '').trim(),
+    mapel: String(rawSoal.mataPelajaran || rawSoal.mapel || rawSoal.kodeMapel || '').trim(),
     tingkatKelas: String(rawSoal.tingkatKelas || rawSoal.kelas || '').trim(),
   };
 }
