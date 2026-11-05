@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import {
   collection, query, where, getDocs, doc, getDoc,
-  orderBy, serverTimestamp, limit, onSnapshot, updateDoc, writeBatch
+  orderBy, serverTimestamp, limit, onSnapshot, updateDoc, writeBatch,
+  deleteDoc, deleteField
 } from "firebase/firestore";
 import {
   Clock, Users, BookOpen, Star, ArrowRight,
@@ -17,7 +18,7 @@ import {
   Video, ExternalLink, Copy, Hash, Tag, Link2,
   CalendarDays, Clock4, User, GraduationCap,
   Briefcase, BarChart3, Activity, PieChart,
-  RefreshCw, Loader2, Eye, EyeOff, Radio
+  RefreshCw, Loader2, Eye, EyeOff, Radio, RotateCcw
 } from 'lucide-react';
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
 import { daftarIdGuru } from '../../utils/identitasGuru';
@@ -28,6 +29,7 @@ import {
 } from '../../utils/laporanBelajar';
 import { potongUntukQuery } from '../../utils/papanJelajah';
 import { tanggalLokalStr } from '../../utils/waktuLokal';
+import { kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
 import { identitasPencariJadwal, jadwalMilikGuru, rentangTanggalJadwal } from '../../utils/identitasJadwal';
 import { hitungStatistikGuru } from '../../utils/statistikGuru';
 import {
@@ -589,6 +591,83 @@ const TeacherDashboard = () => {
     if (kodeAbsen.status !== STATUS_KODE.SIAP) bacaKodeHarian(hariIniStr);
   };
 
+  const handleResetClass = async (item) => {
+    if (!item?.id) return;
+    const ok = window.confirm(
+      `Kembalikan kelas "${item.title || 'Sesi Kelas'}" ke status Belum Dimulai?\n\n` +
+      `• Status jadwal akan kembali ke "scheduled" (Belum Dimulai)\n` +
+      `• Data absensi uji coba hari ini untuk sesi ini akan dibersihkan\n` +
+      `• Log honor mengajar hari ini untuk sesi ini akan dibatalkan\n\n` +
+      `Lanjutkan reset?`
+    );
+    if (!ok) return;
+
+    try {
+      const today = tanggalLokalStr();
+
+      // 1. Reset dokumen jadwal_bimbel
+      await updateDoc(doc(db, 'jadwal_bimbel', item.id), {
+        status: 'scheduled',
+        completedAt: deleteField(),
+        completedEarly: false,
+        materiTerakhir: deleteField(),
+        babId: deleteField(),
+        babJudul: deleteField(),
+        subBab: deleteField(),
+        isEnglishCourse: deleteField(),
+        englishFocus: deleteField(),
+        englishTopic: deleteField(),
+        englishVocab: deleteField(),
+        statusKetuntasanMateri: deleteField(),
+        tingkatPemahaman: deleteField(),
+      });
+
+      // 2. Bersihkan absensi hari ini untuk jadwal ini
+      if (Array.isArray(item.students)) {
+        await Promise.all(item.students.map(async (s) => {
+          try {
+            await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.id, today, item.id)));
+          } catch {}
+          if (s.studentId && s.studentId !== s.id) {
+            try {
+              await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.studentId, today, item.id)));
+            } catch {}
+          }
+        }));
+      }
+
+      try {
+        const qAtt = query(
+          collection(db, 'attendance'),
+          where('scheduleId', '==', item.id),
+          where('date', '==', today)
+        );
+        const snapAtt = await getDocs(qAtt);
+        await Promise.all(snapAtt.docs.map(d => deleteDoc(d.ref)));
+      } catch {}
+
+      // 3. Bersihkan teacher_logs
+      try {
+        const qLog = query(
+          collection(db, 'teacher_logs'),
+          where('jadwalId', '==', item.id),
+          where('tanggal', '==', today)
+        );
+        const snapLog = await getDocs(qLog);
+        await Promise.all(snapLog.docs.map(d => deleteDoc(d.ref)));
+      } catch {}
+
+      // Update state lokal jadwal hari ini
+      setTodaySchedules((prev) =>
+        prev.map((sc) => sc.id === item.id ? { ...sc, status: 'scheduled', completedAt: null } : sc)
+      );
+
+      alert(`✅ Kelas "${item.title || 'Sesi'}" berhasil dikembalikan ke status Belum Dimulai!`);
+    } catch (err) {
+      alert('Gagal mereset kelas: ' + err.message);
+    }
+  };
+
   const handleVerifyTokenAndStart = async () => {
     if (!pendingSchedule) {
       setPesanKode('Tidak ada jadwal yang dipilih. Tutup kotak ini dan pilih kelas dari daftar.');
@@ -1062,24 +1141,51 @@ const TeacherDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <button 
-                      onClick={() => {
-                        if (isOngoing) {
-                          navigate('/guru/class-session/' + item.id);
-                        } else {
-                          handleStartClass(item);
-                        }
-                      }}
-                      style={{
-                        ...styles.startBtn,
-                        background: btnBg,
-                        opacity: disabled ? 0.7 : 1,
-                        cursor: disabled ? 'not-allowed' : 'pointer',
-                      }}
-                      disabled={disabled}
-                    >
-                      {btnText} <ArrowRight size={14} />
-                    </button>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <button 
+                        onClick={() => {
+                          if (isOngoing) {
+                            navigate('/guru/class-session/' + item.id);
+                          } else {
+                            handleStartClass(item);
+                          }
+                        }}
+                        style={{
+                          ...styles.startBtn,
+                          background: btnBg,
+                          opacity: disabled ? 0.7 : 1,
+                          cursor: disabled ? 'not-allowed' : 'pointer',
+                        }}
+                        disabled={disabled}
+                      >
+                        {btnText} <ArrowRight size={14} />
+                      </button>
+                      {isCompleted && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleResetClass(item);
+                          }}
+                          title="Kembalikan kelas ini ke status Belum Dimulai (bersihkan absensi & log uji coba)"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: '8px 10px',
+                            borderRadius: 10,
+                            border: '1px solid #cbd5e1',
+                            background: '#f8fafc',
+                            color: '#64748b',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <RotateCcw size={12} color="#64748b" /> Reset
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

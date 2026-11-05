@@ -1665,7 +1665,9 @@ const SchedulePage = () => {
                     <label style={styles.formLabel}>Program</label>
                     <select value={formData.program} onChange={e => setFormData({...formData, program: e.target.value})} style={styles.formSelect}>
                       <option value="Reguler">📚 Reguler</option>
+                      <option value="English Course">🗣️ English Course</option>
                       <option value="English">🗣️ English</option>
+                      <option value="Privat">⭐ Privat (1-on-1)</option>
                     </select>
                   </div>
                   <div style={styles.formGroup}>
@@ -1931,7 +1933,14 @@ const styles = {
   scheduleItem: { background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0', transition: '0.2s' },
   scheduleTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4 },
   timeBadge: { fontSize: 12, fontWeight: '900', color: '#1e293b', background: '#e2e8f0', padding: '2px 8px', borderRadius: 6 },
-  programBadge: (p) => ({ fontSize: 10, fontWeight: 'bold', color: p === 'English' ? '#ef4444' : '#10b981' }),
+  programBadge: (p) => ({
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: (p === 'English' || p === 'English Course') ? '#7c3aed' : p === 'Privat' || p === 'Private' ? '#b45309' : '#047857',
+    background: (p === 'English' || p === 'English Course') ? '#f5f3ff' : p === 'Privat' || p === 'Private' ? '#fffbeb' : '#ecfdf5',
+    padding: '2px 6px',
+    borderRadius: 4,
+  }),
   seriesBadge: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 9, fontWeight: 700, color: '#b45309', background: '#fef3c7', padding: '2px 7px', borderRadius: 10 },
   scheduleTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 4, color: '#1e293b' },
   scheduleCodes: { display: 'flex', gap: 6, marginBottom: 4, flexWrap: 'wrap' },

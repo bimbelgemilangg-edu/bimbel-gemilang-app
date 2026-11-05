@@ -10,10 +10,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import {
   collection, addDoc, doc, getDoc, setDoc, serverTimestamp,
-  onSnapshot, query, where, updateDoc,
+  onSnapshot, query, where, updateDoc, deleteDoc, deleteField, getDocs,
 } from 'firebase/firestore';
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip, BookOpen, Check, Clock } from 'lucide-react';
+import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip, BookOpen, Check, Clock, RotateCcw, Sparkles } from 'lucide-react';
 import KameraBelakang from '../../components/KameraBelakang';
 import { STATUS_ABSENSI, kebijakanUntukStatus, statusDariDokumenAbsensi, keteranganKebijakan } from '../../utils/kebijakanAbsensi';
 import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
@@ -53,6 +53,19 @@ const ClassSession = () => {
   const [selectedSubBab, setSelectedSubBab] = useState('');
   const [statusKetuntasan, setStatusKetuntasan] = useState('berjalan'); // 'berjalan' | 'tuntas'
   const [tingkatPemahaman, setTingkatPemahaman] = useState('cukup'); // 'paham' | 'cukup' | 'butuh_bimbingan'
+  const [loadingReset, setLoadingReset] = useState(false);
+
+  // Khusus Program English Course (Kurikulum Mandiri Tentor - Pengecualian Kurmer)
+  const isEnglishCourse = useMemo(() => {
+    if (!schedule) return false;
+    const prog = String(schedule.program || '').toLowerCase();
+    const title = String(schedule.title || '').toLowerCase();
+    return prog.includes('english') || title.includes('english course');
+  }, [schedule]);
+
+  const [englishFocus, setEnglishFocus] = useState('🗣️ Speaking & Conversation');
+  const [englishTopic, setEnglishTopic] = useState('');
+  const [englishVocab, setEnglishVocab] = useState('');
 
   const kelasAngka = useMemo(() => {
     if (!schedule) return '7';
@@ -274,7 +287,11 @@ const ClassSession = () => {
   const semuaTerabsen = jumlahSiswaRoster === 0 || jumlahTerabsen === jumlahSiswaRoster;
 
   const handleFinalizeClass = async () => {
-    if (!materiAktual) return alert('Mohon isi materi yang diajarkan!');
+    const materiSimpan = isEnglishCourse
+      ? (materiAktual || `[English Course] ${englishFocus}: ${englishTopic || 'Session Practice'}${englishVocab ? ' (Vocab: ' + englishVocab + ')' : ''}`)
+      : materiAktual;
+
+    if (!materiSimpan) return alert('Mohon isi materi yang diajarkan!');
     if (!absensiUploadedUrl) { alert('⚠️ Bukti kehadiran wajib diunggah dulu.'); setStep(1); return; }
     const now = new Date();
     const [eh, em] = schedule.end.split(':').map(Number);
@@ -305,10 +322,14 @@ const ClassSession = () => {
           status: STATUS_ABSENSI.includes(attendanceMap[s.id]) ? attendanceMap[s.id] : 'Alpha',
           keterangan: (STATUS_ABSENSI.includes(attendanceMap[s.id]) && attendanceMap[s.id] !== 'Hadir') ? keteranganAbsensi('', attendanceMap[s.id]) : (present ? 'Sesi Selesai' : 'Siswa tidak hadir (Otomatis Alpha)'),
           mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
-          materiHariIni: materiAktual,
-          babId: selectedBabId || null,
-          babJudul: babTerpilihObj?.judul || null,
-          subBab: selectedSubBab || null,
+          materiHariIni: materiSimpan,
+          babId: isEnglishCourse ? null : (selectedBabId || null),
+          babJudul: isEnglishCourse ? null : (babTerpilihObj?.judul || null),
+          subBab: isEnglishCourse ? null : (selectedSubBab || null),
+          isEnglishCourse: !!isEnglishCourse,
+          englishFocus: isEnglishCourse ? englishFocus : null,
+          englishTopic: isEnglishCourse ? englishTopic : null,
+          englishVocab: isEnglishCourse ? englishVocab : null,
           statusKetuntasanMateri: statusKetuntasan,
           tingkatPemahaman: tingkatPemahaman,
         }, { merge: true });
@@ -322,19 +343,19 @@ const ClassSession = () => {
         teacherId: teacher.id, namaGuru: teacher.nama, tanggal: today, waktu: new Date().toLocaleTimeString(),
         jadwalId: schedule.id, program: schedule.program, level: schedule.level || 'SD',
         kegiatan: 'Mengajar', detail: honor.detailTxt, siswaHadir: hadirList.length, durasiJam: diff,
-        // v1.6.5 (keputusan owner D4 opsi a): penyebut kehadiran disimpan DI
-        // DALAM log, bukan dihitung ulang dari roster jadwal versi sekarang.
-        // Tanpa ini, menambah siswa ke sebuah jadwal membuat persen kehadiran
-        // kelas LAMA turun walau tidak ada yang bolos (register bug B-10).
         siswaTotal: (schedule.students || []).length,
         nominal: honor.nominal, status: honor.statusGaji, createdAt: serverTimestamp(),
         tipeKelas, kelasNama,
         daftarSiswaHadir: hadirList.map((s) => ({ id: s.id, nama: s.nama, kelas: s.kelas || s.kelasSekolah || '-' })),
         fotoAbsensiUrl: absensiUploadedUrl, materiFileUrl: materiFileUploadedUrl || null,
-        materiHariIni: materiAktual,
-        babId: selectedBabId || null,
-        babJudul: babTerpilihObj?.judul || null,
-        subBab: selectedSubBab || null,
+        materiHariIni: materiSimpan,
+        babId: isEnglishCourse ? null : (selectedBabId || null),
+        babJudul: isEnglishCourse ? null : (babTerpilihObj?.judul || null),
+        subBab: isEnglishCourse ? null : (selectedSubBab || null),
+        isEnglishCourse: !!isEnglishCourse,
+        englishFocus: isEnglishCourse ? englishFocus : null,
+        englishTopic: isEnglishCourse ? englishTopic : null,
+        englishVocab: isEnglishCourse ? englishVocab : null,
         statusKetuntasanMateri: statusKetuntasan,
         tingkatPemahaman: tingkatPemahaman,
       });
@@ -342,17 +363,97 @@ const ClassSession = () => {
         status: 'completed',
         completedAt: serverTimestamp(),
         completedEarly: !isPast,
-        materiTerakhir: materiAktual,
-        babId: selectedBabId || null,
-        babJudul: babTerpilihObj?.judul || null,
-        subBab: selectedSubBab || null,
+        materiTerakhir: materiSimpan,
+        babId: isEnglishCourse ? null : (selectedBabId || null),
+        babJudul: isEnglishCourse ? null : (babTerpilihObj?.judul || null),
+        subBab: isEnglishCourse ? null : (selectedSubBab || null),
+        isEnglishCourse: !!isEnglishCourse,
+        englishFocus: isEnglishCourse ? englishFocus : null,
+        englishTopic: isEnglishCourse ? englishTopic : null,
+        englishVocab: isEnglishCourse ? englishVocab : null,
         statusKetuntasanMateri: statusKetuntasan,
         tingkatPemahaman: tingkatPemahaman,
       });
-      alert('✅ Kelas Berhasil Disimpan!\n\n📚 Materi: ' + materiAktual + '\n👥 Kehadiran: ' + hadirList.length + '/' + (schedule.students || []).length);
+      alert('✅ Kelas Berhasil Disimpan!\n\n📚 Materi: ' + materiSimpan + '\n👥 Kehadiran: ' + hadirList.length + '/' + (schedule.students || []).length);
       navigate('/guru/dashboard');
     } catch (e) { alert('Gagal menyimpan sesi: ' + e.message); }
     finally { setLoading(false); }
+  };
+
+  const handleResetSesi = async () => {
+    if (!schedule || !teacher) return;
+    const ok = window.confirm(
+      `Kembalikan sesi kelas "${schedule.title || 'Sesi Kelas'}" ke status Belum Dimulai?\n\n` +
+      `• Status jadwal akan kembali ke "scheduled" (Belum Dimulai)\n` +
+      `• Data absensi uji coba hari ini untuk sesi ini akan dibersihkan\n` +
+      `• Log honor mengajar hari ini untuk sesi ini akan dibatalkan\n\n` +
+      `Lanjutkan reset?`
+    );
+    if (!ok) return;
+
+    setLoadingReset(true);
+    try {
+      const today = tanggalLokalStr();
+
+      // 1. Reset dokumen jadwal_bimbel
+      await updateDoc(doc(db, 'jadwal_bimbel', schedule.id), {
+        status: 'scheduled',
+        completedAt: deleteField(),
+        completedEarly: false,
+        materiTerakhir: deleteField(),
+        babId: deleteField(),
+        babJudul: deleteField(),
+        subBab: deleteField(),
+        isEnglishCourse: deleteField(),
+        englishFocus: deleteField(),
+        englishTopic: deleteField(),
+        englishVocab: deleteField(),
+        statusKetuntasanMateri: deleteField(),
+        tingkatPemahaman: deleteField(),
+      });
+
+      // 2. Bersihkan absensi hari ini untuk jadwal ini
+      if (Array.isArray(schedule.students)) {
+        await Promise.all(schedule.students.map(async (s) => {
+          try {
+            await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.id, today, schedule.id)));
+          } catch {}
+          if (s.studentId && s.studentId !== s.id) {
+            try {
+              await deleteDoc(doc(db, 'attendance', kunciDokumenAbsensi(s.studentId, today, schedule.id)));
+            } catch {}
+          }
+        }));
+      }
+
+      try {
+        const qAtt = query(
+          collection(db, 'attendance'),
+          where('scheduleId', '==', schedule.id),
+          where('date', '==', today)
+        );
+        const snapAtt = await getDocs(qAtt);
+        await Promise.all(snapAtt.docs.map(d => deleteDoc(d.ref)));
+      } catch {}
+
+      // 3. Bersihkan teacher_logs
+      try {
+        const qLog = query(
+          collection(db, 'teacher_logs'),
+          where('jadwalId', '==', schedule.id),
+          where('tanggal', '==', today)
+        );
+        const snapLog = await getDocs(qLog);
+        await Promise.all(snapLog.docs.map(d => deleteDoc(d.ref)));
+      } catch {}
+
+      alert('✅ Status kelas berhasil dikembalikan ke semula (Belum Dimulai)!\nData uji coba absensi dan log mengajar telah dibersihkan.');
+      navigate('/guru/dashboard');
+    } catch (err) {
+      alert('Gagal mereset kelas: ' + err.message);
+    } finally {
+      setLoadingReset(false);
+    }
   };
 
   if (loading) return <div style={st.container(isMobile)}><div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}><div style={st.spinner} /><p>Memuat kelas...</p></div></div>;
@@ -411,9 +512,76 @@ const ClassSession = () => {
               {timeStatus.isPastEnd && <span style={{ color: '#10b981', marginLeft: 8 }}>✅ Waktu selesai telah lewat</span>}
             </p>
           </div>
-          <span style={st.badge(isMobile)}>{schedule.planet || 'Ruang Umum'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={st.badge(isMobile)}>{schedule.planet || 'Ruang Umum'}</span>
+            <button
+              type="button"
+              onClick={handleResetSesi}
+              disabled={loadingReset}
+              title="Kembalikan sesi kelas ini ke status Belum Dimulai (bersihkan absensi & log uji coba)"
+              style={{
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: 8,
+                padding: '5px 10px',
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#64748b',
+                cursor: loadingReset ? 'wait' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <RotateCcw size={12} color="#64748b" /> {loadingReset ? 'Mereset...' : 'Reset Sesi'}
+            </button>
+          </div>
         </div>
       </div>
+
+      {schedule.status === 'completed' && (
+        <div style={{
+          background: '#fffbeb',
+          border: '1px solid #fde68a',
+          borderRadius: 14,
+          padding: '12px 16px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 10,
+        }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#92400e', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Clock size={15} color="#b45309" /> Sesi Kelas Ini Berstatus Selesai (Pernah Diakhiri)
+            </div>
+            <div style={{ fontSize: 11, color: '#b45309', marginTop: 2 }}>
+              Jika Anda sedang menguji coba sistem atau ingin memulai kelas dari awal, klik tombol di samping untuk mengembalikannya ke semula.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleResetSesi}
+            disabled={loadingReset}
+            style={{
+              background: '#d97706',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '7px 12px',
+              fontSize: 11.5,
+              fontWeight: 700,
+              cursor: loadingReset ? 'wait' : 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            <RotateCcw size={13} /> {loadingReset ? 'Mereset Sesi...' : 'Kembalikan ke Belum Dimulai'}
+          </button>
+        </div>
+      )}
 
       {step === 1 && (
         <div>
@@ -503,110 +671,206 @@ const ClassSession = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
             <div>
               <h4 style={{ ...st.step2Title(isMobile), margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <BookOpen size={18} color="#e67e22" /> 📝 Laporan Materi Pembelajaran
+                <BookOpen size={18} color={isEnglishCourse ? '#7c3aed' : '#e67e22'} /> 📝 Laporan Materi Pembelajaran
               </h4>
               <p style={{ fontSize: 11.5, color: '#64748b', margin: '4px 0 0' }}>
-                Silabus Kurikulum Merdeka • Kelas {kelasAngka} ({schedule.title || 'Umum'})
+                {isEnglishCourse ? '🗣️ Program Khusus: English Course (Kurikulum Mandiri Tentor)' : `Silabus Kurikulum Merdeka • Kelas ${kelasAngka} (${schedule.title || 'Umum'})`}
               </p>
             </div>
-            <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', padding: 3, borderRadius: 8 }}>
-              <button
-                type="button"
-                onClick={() => setSemesterPilihan('1')}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  background: semesterPilihan === '1' ? '#2c3e50' : 'transparent',
-                  color: semesterPilihan === '1' ? '#ffffff' : '#64748b',
-                }}
-              >
-                Semester 1 (Ganjil)
-              </button>
-              <button
-                type="button"
-                onClick={() => setSemesterPilihan('2')}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: 'none',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  background: semesterPilihan === '2' ? '#2c3e50' : 'transparent',
-                  color: semesterPilihan === '2' ? '#ffffff' : '#64748b',
-                }}
-              >
-                Semester 2 (Genap)
-              </button>
-            </div>
+            {!isEnglishCourse && (
+              <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', padding: 3, borderRadius: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setSemesterPilihan('1')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    border: 'none',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: semesterPilihan === '1' ? '#2c3e50' : 'transparent',
+                    color: semesterPilihan === '1' ? '#ffffff' : '#64748b',
+                  }}
+                >
+                  Semester 1 (Ganjil)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSemesterPilihan('2')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    border: 'none',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: semesterPilihan === '2' ? '#2c3e50' : 'transparent',
+                    color: semesterPilihan === '2' ? '#ffffff' : '#64748b',
+                  }}
+                >
+                  Semester 2 (Genap)
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Pemilihan Bab & Sub-Bab */}
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-              Pilih Bab Kurikulum Merdeka:
-            </label>
-            <select
-              value={selectedBabId}
-              onChange={handlePilihBab}
-              style={{
-                width: '100%',
-                padding: '9px 12px',
-                borderRadius: 8,
-                border: '1px solid #cbd5e1',
-                fontSize: 12.5,
-                color: '#1e293b',
-                background: '#ffffff',
-                marginBottom: 8,
-                outline: 'none',
-              }}
-            >
-              <option value="">-- Pilih Bab dari Silabus Resmi (atau isi manual di bawah) --</option>
-              {listBabSilabus.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.judul} {b.alokasiSesi ? `(${b.alokasiSesi} Sesi)` : ''}
-                </option>
-              ))}
-            </select>
+          {/* Pemilihan Bab: English Course (Mandiri) vs Kurikulum Merdeka (Reguler) */}
+          {isEnglishCourse ? (
+            <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: '#5b21b6', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Sparkles size={15} color="#7c3aed" /> Modul &amp; Capaian English Course (Mandiri Tentor)
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, background: '#ede9fe', color: '#6d28d9', padding: '2px 8px', borderRadius: 6 }}>
+                  Pengecualian Kurikulum Nasional
+                </span>
+              </div>
+              <p style={{ fontSize: 11, color: '#6d28d9', margin: '0 0 10px 0', lineHeight: 1.5 }}>
+                Capaian materi English Course ditentukan langsung oleh tentor pengampu sesuai kemampuan dan target siswa (Conversation, Phonics, Grammar, Reading, dll).
+              </p>
 
-            {babTerpilihObj && Array.isArray(babTerpilihObj.subBab) && babTerpilihObj.subBab.length > 0 && (
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginBottom: 10 }}>
                 <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                  Pilih Sub-Bab / Pokok Bahasan:
+                  Fokus Kemampuan Bahasa Inggris Sesi Ini:
                 </label>
                 <select
-                  value={selectedSubBab}
-                  onChange={handlePilihSubBab}
+                  value={englishFocus}
+                  onChange={(e) => {
+                    const foc = e.target.value;
+                    setEnglishFocus(foc);
+                    setMateriAktual(`${foc}: ${englishTopic || 'Session Practice'}`);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    fontSize: 12.5,
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    outline: 'none',
+                  }}
+                >
+                  <option value="🗣️ Speaking & Conversation">🗣️ Speaking &amp; Conversation (Fluency, Dialogue, Daily Talk)</option>
+                  <option value="🔤 Phonics & Pronunciation">🔤 Phonics &amp; Pronunciation (Sound Drills, Accent &amp; Intonation)</option>
+                  <option value="📝 Grammar & Sentence Structure">📝 Grammar &amp; Sentence Structure (Tenses, Parts of Speech)</option>
+                  <option value="📖 Reading Comprehension & Story">📖 Reading Comprehension &amp; Storytelling</option>
+                  <option value="🎧 Listening & Comprehension">🎧 Listening &amp; Dialogue Comprehension</option>
+                  <option value="✍️ Creative Writing & Essay">✍️ Creative Writing &amp; Essay Composition</option>
+                  <option value="🎯 Test Preparation (TOEFL/IELTS/Cambridge)">🎯 Test Preparation (TOEFL Junior/Primary, Cambridge)</option>
+                  <option value="🎲 English Vocabulary & Games">🎲 English Vocabulary &amp; Interactive Roleplay</option>
+                  <option value="💡 Topik / Unit Mandiri Tentor">💡 Topik / Unit Mandiri Tentor</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  Topik / Unit Pembahasan Hari Ini:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Unit 3 - Daily Routine & Simple Present Tense, Food Vocabulary, dll."
+                  value={englishTopic}
+                  onChange={(e) => {
+                    const t = e.target.value;
+                    setEnglishTopic(t);
+                    setMateriAktual(`${englishFocus}: ${t}`);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    fontSize: 12.5,
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  Target Kosa Kata Baru (Vocabulary Focus):
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: delicious, beverage, menu, order, reservation, receipt"
+                  value={englishVocab}
+                  onChange={(e) => setEnglishVocab(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: 8,
                     border: '1px solid #cbd5e1',
                     fontSize: 12,
-                    color: '#1e293b',
-                    background: '#ffffff',
-                    outline: 'none',
+                    boxSizing: 'border-box',
                   }}
-                >
-                  {babTerpilihObj.subBab.map((sb, idx) => (
-                    <option key={idx} value={sb}>
-                      {idx + 1}. {sb}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
-            )}
+            </div>
+          ) : (
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Pilih Bab Kurikulum Merdeka:
+              </label>
+              <select
+                value={selectedBabId}
+                onChange={handlePilihBab}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: 8,
+                  border: '1px solid #cbd5e1',
+                  fontSize: 12.5,
+                  color: '#1e293b',
+                  background: '#ffffff',
+                  marginBottom: 8,
+                  outline: 'none',
+                }}
+              >
+                <option value="">-- Pilih Bab dari Silabus Resmi (atau isi manual di bawah) --</option>
+                {listBabSilabus.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.judul} {b.alokasiSesi ? `(${b.alokasiSesi} Sesi)` : ''}
+                  </option>
+                ))}
+              </select>
 
-            {babTerpilihObj?.cp && (
-              <div style={{ marginTop: 8, padding: '7px 10px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, fontSize: 11, color: '#1e40af', lineHeight: 1.5 }}>
-                <b>Capaian Pembelajaran (CP):</b> {babTerpilihObj.cp}
-              </div>
-            )}
-          </div>
+              {babTerpilihObj && Array.isArray(babTerpilihObj.subBab) && babTerpilihObj.subBab.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                    Pilih Sub-Bab / Pokok Bahasan:
+                  </label>
+                  <select
+                    value={selectedSubBab}
+                    onChange={handlePilihSubBab}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: '1px solid #cbd5e1',
+                      fontSize: 12,
+                      color: '#1e293b',
+                      background: '#ffffff',
+                      outline: 'none',
+                    }}
+                  >
+                    {babTerpilihObj.subBab.map((sb, idx) => (
+                      <option key={idx} value={sb}>
+                        {idx + 1}. {sb}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {babTerpilihObj?.cp && (
+                <div style={{ marginTop: 8, padding: '7px 10px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, fontSize: 11, color: '#1e40af', lineHeight: 1.5 }}>
+                  <b>Capaian Pembelajaran (CP):</b> {babTerpilihObj.cp}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Status Ketuntasan Materi & Pemahaman Siswa */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 14 }}>
