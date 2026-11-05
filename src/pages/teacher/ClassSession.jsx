@@ -5,7 +5,7 @@
 // TIDAK lagi memakai KelasLivePanel (dihapus) supaya mesin live cuma satu.
 // Google Form laporan materi DIHAPUS 2 Nov 2026 (keputusan owner): jawaban
 // masuk spreadsheet Google, bukan Firestore, jadi tak pernah terbaca raport.
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase';
 import {
@@ -13,7 +13,7 @@ import {
   onSnapshot, query, where, updateDoc,
 } from 'firebase/firestore';
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip } from 'lucide-react';
+import { QrCode, ArrowLeft, Camera, CheckCircle, Paperclip, BookOpen, Check, Clock } from 'lucide-react';
 import KameraBelakang from '../../components/KameraBelakang';
 import { STATUS_ABSENSI, kebijakanUntukStatus, statusDariDokumenAbsensi, keteranganKebijakan } from '../../utils/kebijakanAbsensi';
 import { keteranganAbsensi, kunciDokumenAbsensi } from '../../utils/identitasAbsensi';
@@ -21,6 +21,7 @@ import { tanggalLokalStr } from '../../utils/waktuLokal';
 import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis';
 import { uploadElearningFile } from '../../services/uploadService';
 import LiveSessionTeacher from './LiveSessionTeacher';
+import { daftarBabSilabus, semesterKalenderAktif } from '../../utils/silabusKurikulumMerdeka';
 
 const ClassSession = () => {
   const { id } = useParams();
@@ -45,6 +46,67 @@ const ClassSession = () => {
   const [siswaTerpilih, setSiswaTerpilih] = useState(null);
   const [materiFileUploadedUrl, setMateriFileUploadedUrl] = useState('');
   const [uploadingMateriFile, setUploadingMateriFile] = useState(false);
+
+  // Integrasi Kurikulum Merdeka & Ketuntasan Sesi Tatap Muka
+  const [semesterPilihan, setSemesterPilihan] = useState(() => semesterKalenderAktif());
+  const [selectedBabId, setSelectedBabId] = useState('');
+  const [selectedSubBab, setSelectedSubBab] = useState('');
+  const [statusKetuntasan, setStatusKetuntasan] = useState('berjalan'); // 'berjalan' | 'tuntas'
+  const [tingkatPemahaman, setTingkatPemahaman] = useState('cukup'); // 'paham' | 'cukup' | 'butuh_bimbingan'
+
+  const kelasAngka = useMemo(() => {
+    if (!schedule) return '7';
+    if (schedule.kelas) {
+      const k = String(schedule.kelas).replace(/[^0-9]/g, '');
+      if (k) return k;
+    }
+    if (Array.isArray(schedule.students) && schedule.students.length > 0) {
+      for (const s of schedule.students) {
+        const k = String(s.kelas || s.kelasSekolah || '').replace(/[^0-9]/g, '');
+        if (k) return k;
+      }
+    }
+    const mTitle = String(schedule.title || '').match(/\b([1-9]|1[0-2])\b/);
+    if (mTitle) return mTitle[1];
+    const mLevel = String(schedule.level || '').match(/\b([1-9]|1[0-2])\b/);
+    if (mLevel) return mLevel[1];
+    return '9';
+  }, [schedule]);
+
+  const listBabSilabus = useMemo(() => {
+    if (!schedule) return [];
+    return daftarBabSilabus({
+      kelas: kelasAngka,
+      mapel: schedule.title || schedule.mapel || schedule.mapelName || 'Umum',
+      semester: semesterPilihan,
+    });
+  }, [schedule, kelasAngka, semesterPilihan]);
+
+  const babTerpilihObj = useMemo(() => {
+    return listBabSilabus.find((b) => b.id === selectedBabId) || null;
+  }, [listBabSilabus, selectedBabId]);
+
+  const handlePilihBab = (e) => {
+    const babId = e.target.value;
+    setSelectedBabId(babId);
+    const b = listBabSilabus.find((item) => item.id === babId);
+    if (b) {
+      const sub = b.subBab?.[0] || '';
+      setSelectedSubBab(sub);
+      setMateriAktual(`${b.judul}${sub ? ' — ' + sub : ''}`);
+    }
+  };
+
+  const handlePilihSubBab = (e) => {
+    const sub = e.target.value;
+    setSelectedSubBab(sub);
+    const b = listBabSilabus.find((item) => item.id === selectedBabId);
+    if (b) {
+      setMateriAktual(`${b.judul}${sub ? ' — ' + sub : ''}`);
+    } else {
+      setMateriAktual(sub);
+    }
+  };
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth <= 768);
@@ -243,6 +305,12 @@ const ClassSession = () => {
           status: STATUS_ABSENSI.includes(attendanceMap[s.id]) ? attendanceMap[s.id] : 'Alpha',
           keterangan: (STATUS_ABSENSI.includes(attendanceMap[s.id]) && attendanceMap[s.id] !== 'Hadir') ? keteranganAbsensi('', attendanceMap[s.id]) : (present ? 'Sesi Selesai' : 'Siswa tidak hadir (Otomatis Alpha)'),
           mapel: schedule.title || 'Umum', scheduleId: schedule.id || '', planet: schedule.planet || 'Ruang Umum',
+          materiHariIni: materiAktual,
+          babId: selectedBabId || null,
+          babJudul: babTerpilihObj?.judul || null,
+          subBab: selectedSubBab || null,
+          statusKetuntasanMateri: statusKetuntasan,
+          tingkatPemahaman: tingkatPemahaman,
         }, { merge: true });
       }));
       const honor = hitungHonor();
@@ -263,8 +331,24 @@ const ClassSession = () => {
         tipeKelas, kelasNama,
         daftarSiswaHadir: hadirList.map((s) => ({ id: s.id, nama: s.nama, kelas: s.kelas || s.kelasSekolah || '-' })),
         fotoAbsensiUrl: absensiUploadedUrl, materiFileUrl: materiFileUploadedUrl || null,
+        materiHariIni: materiAktual,
+        babId: selectedBabId || null,
+        babJudul: babTerpilihObj?.judul || null,
+        subBab: selectedSubBab || null,
+        statusKetuntasanMateri: statusKetuntasan,
+        tingkatPemahaman: tingkatPemahaman,
       });
-      await updateDoc(doc(db, 'jadwal_bimbel', schedule.id), { status: 'completed', completedAt: serverTimestamp(), completedEarly: !isPast });
+      await updateDoc(doc(db, 'jadwal_bimbel', schedule.id), {
+        status: 'completed',
+        completedAt: serverTimestamp(),
+        completedEarly: !isPast,
+        materiTerakhir: materiAktual,
+        babId: selectedBabId || null,
+        babJudul: babTerpilihObj?.judul || null,
+        subBab: selectedSubBab || null,
+        statusKetuntasanMateri: statusKetuntasan,
+        tingkatPemahaman: tingkatPemahaman,
+      });
       alert('✅ Kelas Berhasil Disimpan!\n\n📚 Materi: ' + materiAktual + '\n👥 Kehadiran: ' + hadirList.length + '/' + (schedule.students || []).length);
       navigate('/guru/dashboard');
     } catch (e) { alert('Gagal menyimpan sesi: ' + e.message); }
@@ -416,20 +500,233 @@ const ClassSession = () => {
 
       {step === 3 && (
         <div style={st.card(isMobile)}>
-          <h4 style={st.step2Title(isMobile)}>📝 Laporan Materi</h4>
-          <textarea rows={isMobile ? 4 : 5} value={materiAktual} onChange={(e) => setMateriAktual(e.target.value)} placeholder="Tuliskan materi yang diajarkan hari ini..." style={st.textarea(isMobile)} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+            <div>
+              <h4 style={{ ...st.step2Title(isMobile), margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <BookOpen size={18} color="#e67e22" /> 📝 Laporan Materi Pembelajaran
+              </h4>
+              <p style={{ fontSize: 11.5, color: '#64748b', margin: '4px 0 0' }}>
+                Silabus Kurikulum Merdeka • Kelas {kelasAngka} ({schedule.title || 'Umum'})
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 4, background: '#f1f5f9', padding: 3, borderRadius: 8 }}>
+              <button
+                type="button"
+                onClick={() => setSemesterPilihan('1')}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  border: 'none',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: semesterPilihan === '1' ? '#2c3e50' : 'transparent',
+                  color: semesterPilihan === '1' ? '#ffffff' : '#64748b',
+                }}
+              >
+                Semester 1 (Ganjil)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSemesterPilihan('2')}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  border: 'none',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: semesterPilihan === '2' ? '#2c3e50' : 'transparent',
+                  color: semesterPilihan === '2' ? '#ffffff' : '#64748b',
+                }}
+              >
+                Semester 2 (Genap)
+              </button>
+            </div>
+          </div>
+
+          {/* Pemilihan Bab & Sub-Bab */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+              Pilih Bab Kurikulum Merdeka:
+            </label>
+            <select
+              value={selectedBabId}
+              onChange={handlePilihBab}
+              style={{
+                width: '100%',
+                padding: '9px 12px',
+                borderRadius: 8,
+                border: '1px solid #cbd5e1',
+                fontSize: 12.5,
+                color: '#1e293b',
+                background: '#ffffff',
+                marginBottom: 8,
+                outline: 'none',
+              }}
+            >
+              <option value="">-- Pilih Bab dari Silabus Resmi (atau isi manual di bawah) --</option>
+              {listBabSilabus.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.judul} {b.alokasiSesi ? `(${b.alokasiSesi} Sesi)` : ''}
+                </option>
+              ))}
+            </select>
+
+            {babTerpilihObj && Array.isArray(babTerpilihObj.subBab) && babTerpilihObj.subBab.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                  Pilih Sub-Bab / Pokok Bahasan:
+                </label>
+                <select
+                  value={selectedSubBab}
+                  onChange={handlePilihSubBab}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    fontSize: 12,
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    outline: 'none',
+                  }}
+                >
+                  {babTerpilihObj.subBab.map((sb, idx) => (
+                    <option key={idx} value={sb}>
+                      {idx + 1}. {sb}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {babTerpilihObj?.cp && (
+              <div style={{ marginTop: 8, padding: '7px 10px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, fontSize: 11, color: '#1e40af', lineHeight: 1.5 }}>
+                <b>Capaian Pembelajaran (CP):</b> {babTerpilihObj.cp}
+              </div>
+            )}
+          </div>
+
+          {/* Status Ketuntasan Materi & Pemahaman Siswa */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 14 }}>
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Status Ketuntasan Materi Sesi Ini:
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexDirection: 'column' }}>
+                <button
+                  type="button"
+                  onClick={() => setStatusKetuntasan('berjalan')}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    border: statusKetuntasan === 'berjalan' ? '2px solid #f59e0b' : '1px solid #cbd5e1',
+                    background: statusKetuntasan === 'berjalan' ? '#fffbeb' : '#ffffff',
+                    color: statusKetuntasan === 'berjalan' ? '#b45309' : '#475569',
+                  }}
+                >
+                  <span>🔄 Masih Berjalan (Lanjut Sesi Depan)</span>
+                  {statusKetuntasan === 'berjalan' && <Clock size={14} color="#b45309" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusKetuntasan('tuntas')}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    border: statusKetuntasan === 'tuntas' ? '2px solid #10b981' : '1px solid #cbd5e1',
+                    background: statusKetuntasan === 'tuntas' ? '#ecfdf5' : '#ffffff',
+                    color: statusKetuntasan === 'tuntas' ? '#047857' : '#475569',
+                  }}
+                >
+                  <span>✓ Selesai Tuntas</span>
+                  {statusKetuntasan === 'tuntas' && <Check size={14} color="#047857" />}
+                </button>
+              </div>
+              <div style={{ fontSize: 10, color: '#64748b', marginTop: 6, lineHeight: 1.4 }}>
+                💡 Jika bab panjang dan belum tuntas 1 pertemuan, pilih "Masih Berjalan" agar tentor sesi berikutnya langsung melanjutkan tanpa bingung.
+              </div>
+            </div>
+
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Tingkat Pemahaman Siswa Hari Ini:
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexDirection: 'column' }}>
+                {[
+                  { id: 'paham', label: '🌟 Sangat Paham', desc: 'Siswa antusias & latihan tuntas' },
+                  { id: 'cukup', label: '👍 Cukup Paham', desc: 'Perlu sedikit latihan pendalaman' },
+                  { id: 'butuh_bimbingan', label: '⚠️ Butuh Bimbingan', desc: 'Perlu review konsep mendasar' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setTingkatPemahaman(opt.id)}
+                    style={{
+                      padding: '7px 10px',
+                      borderRadius: 8,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      border: tingkatPemahaman === opt.id ? '2px solid #6366f1' : '1px solid #cbd5e1',
+                      background: tingkatPemahaman === opt.id ? '#eef2ff' : '#ffffff',
+                      color: tingkatPemahaman === opt.id ? '#4338ca' : '#475569',
+                    }}
+                  >
+                    <div>{opt.label}</div>
+                    <div style={{ fontSize: 10, fontWeight: 400, opacity: 0.85, marginTop: 1 }}>{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+            Rincian Pembahasan / Catatan Kelas:
+          </label>
+          <textarea
+            rows={isMobile ? 3 : 4}
+            value={materiAktual}
+            onChange={(e) => setMateriAktual(e.target.value)}
+            placeholder="Tuliskan materi yang diajarkan hari ini..."
+            style={st.textarea(isMobile)}
+          />
+
           <div style={st.lampiranBox(isMobile)}>
             {!materiFileUploadedUrl ? (
-              <label style={st.uploadBoxSecondary(isMobile, uploadingMateriFile)}><input type="file" accept="image/*,.pdf" onChange={handleMateriFileChange} disabled={uploadingMateriFile} style={{ display: 'none' }} />{uploadingMateriFile ? '⏳ Mengunggah lampiran...' : <><Paperclip size={16} /> Lampirkan foto materi/worksheet (opsional)</>}</label>
+              <label style={st.uploadBoxSecondary(isMobile, uploadingMateriFile)}>
+                <input type="file" accept="image/*,.pdf" onChange={handleMateriFileChange} disabled={uploadingMateriFile} style={{ display: 'none' }} />
+                {uploadingMateriFile ? '⏳ Mengunggah lampiran...' : <><Paperclip size={16} /> Lampirkan foto materi/worksheet (opsional)</>}
+              </label>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: 11 }}><CheckCircle size={14} /> Lampiran materi tersimpan
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#10b981', fontWeight: 'bold', fontSize: 11 }}>
+                <CheckCircle size={14} /> Lampiran materi tersimpan
                 <button type="button" onClick={() => setMateriFileUploadedUrl('')} style={st.btnGantiFoto}>Ganti</button>
               </div>
             )}
           </div>
+
           <div style={st.footerBtns(isMobile)}>
             <button onClick={() => setStep(2)} style={st.btnSecondary(isMobile)}>⬅ Kembali</button>
-            <button onClick={handleFinalizeClass} disabled={loading} style={st.btnSave(isMobile, loading)}>{loading ? 'Menyimpan...' : '💾 Simpan Sesi'}</button>
+            <button onClick={handleFinalizeClass} disabled={loading} style={st.btnSave(isMobile, loading)}>
+              {loading ? 'Menyimpan...' : '💾 Simpan Sesi & Selesai'}
+            </button>
           </div>
         </div>
       )}

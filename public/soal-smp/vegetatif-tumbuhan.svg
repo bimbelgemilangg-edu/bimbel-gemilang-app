@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 400" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <rect width="680" height="400" fill="#f8fafc" rx="12" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">MACAM-MACAM PERKEMBANGBIAKAN VEGETATIF ALAMI PADA TUMBUHAN</text>
+  <text x="340" y="43" text-anchor="middle" font-size="11" fill="#64748b">Asesmen Kurikulum Merdeka Fase D — IPA SMP Kelas 9</text>
+
+  <!-- Panel A: Rhizoma (Rimpang) Jahe / Kunyit -->
+  <rect x="30" y="60" width="290" height="150" rx="8" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5"/>
+  <text x="45" y="82" font-size="12" font-weight="bold" fill="#b45309">A. Rhizoma (Rimpang)</text>
+  <text x="45" y="98" font-size="10" fill="#78350f">Batang tumbuh menjalar di bawah tanah berbuku-buku.</text>
+  <!-- Bentuk rimpang -->
+  <path d="M 60 160 C 90 140, 140 165, 180 145 C 220 125, 260 155, 280 145" fill="none" stroke="#d97706" stroke-width="18" stroke-linecap="round"/>
+  <!-- Tunas & Daun -->
+  <path d="M 140 145 C 135 120, 145 105, 150 100 C 155 105, 165 120, 160 145 Z" fill="#22c55e"/>
+  <text x="175" y="195" font-size="10.5" font-weight="bold" fill="#92400e">Contoh: Jahe, Kunyit, Lengkuas</text>
+
+  <!-- Panel B: Stolon / Geragih (Stroberi / Pegagan) -->
+  <rect x="360" y="60" width="290" height="150" rx="8" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+  <text x="375" y="82" font-size="12" font-weight="bold" fill="#047857">B. Stolon (Geragih)</text>
+  <text x="375" y="98" font-size="10" fill="#065f46">Batang beruas-ruas menjalar mendatar di atas tanah.</text>
+  <!-- Batang stolon -->
+  <path d="M 390 160 C 440 135, 480 135, 530 160 C 560 140, 600 140, 620 160" fill="none" stroke="#10b981" stroke-width="4"/>
+  <!-- Tanaman Anakan di buku stolon -->
+  <circle cx="390" cy="155" r="8" fill="#15803d"/>
+  <circle cx="530" cy="155" r="8" fill="#15803d"/>
+  <circle cx="620" cy="155" r="6" fill="#15803d"/>
+  <path d="M 530 148 C 520 125, 540 120, 530 110" stroke="#22c55e" stroke-width="2.5" fill="none"/>
+  <text x="505" y="195" font-size="10.5" font-weight="bold" fill="#065f46" text-anchor="middle">Contoh: Stroberi, Arbei, Pegagan</text>
+
+  <!-- Panel C: Umbi Lapis (Bawang Merah) -->
+  <rect x="30" y="225" width="290" height="155" rx="8" fill="#fdf2f8" stroke="#fbcfe8" stroke-width="1.5"/>
+  <text x="45" y="247" font-size="12" font-weight="bold" fill="#be185d">C. Umbi Lapis (Bulbus)</text>
+  <text x="45" y="263" font-size="10" fill="#831843">Modifikasi batang (cakram) dan daun berlapis-lapis tebal.</text>
+  <!-- Lapisan daun bawang -->
+  <ellipse cx="175" cy="320" rx="35" ry="30" fill="#f43f5e" opacity="0.4"/>
+  <ellipse cx="175" cy="320" rx="25" ry="24" fill="#f43f5e" opacity="0.6"/>
+  <ellipse cx="175" cy="320" rx="15" ry="16" fill="#f43f5e"/>
+  <!-- Akar serabut & tunas -->
+  <path d="M 175 296 L 175 275" stroke="#22c55e" stroke-width="3"/>
+  <path d="M 165 350 L 160 365 M 175 350 L 175 368 M 185 350 L 190 365" stroke="#ca8a04" stroke-width="1.8"/>
+  <text x="175" y="372" font-size="10.5" font-weight="bold" fill="#9d174d" text-anchor="middle">Contoh: Bawang Merah, Bawang Putih, Tulip</text>
+
+  <!-- Panel D: Tunas Adventif Daun (Cocor Bebek) -->
+  <rect x="360" y="225" width="290" height="155" rx="8" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+  <text x="375" y="247" font-size="12" font-weight="bold" fill="#15803d">D. Tunas Adventif Daun</text>
+  <text x="375" y="263" font-size="10" fill="#166534">Tunas tumbuh liar pada lekukan pinggiran helai daun.</text>
+  <!-- Daun cocor bebek -->
+  <path d="M 420 340 C 400 310, 420 280, 505 280 C 590 280, 610 310, 590 340 C 560 360, 450 360, 420 340 Z" fill="#86efac" stroke="#16a34a" stroke-width="2"/>
+  <!-- Tunas kecil di lekukan daun -->
+  <circle cx="430" cy="305" r="5" fill="#15803d"/>
+  <circle cx="455" cy="285" r="5" fill="#15803d"/>
+  <circle cx="555" cy="285" r="5" fill="#15803d"/>
+  <circle cx="580" cy="305" r="5" fill="#15803d"/>
+  <text x="505" y="372" font-size="10.5" font-weight="bold" fill="#14532d" text-anchor="middle">Contoh: Cocor Bebek (Kalanchoe)</text>
+</svg>

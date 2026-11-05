@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 420" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="shB" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arB" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect width="650" height="420" fill="#fafaf9" rx="12" stroke="#e7e5e4" stroke-width="2"/>
+  <text x="325" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">STRUKTUR MORFOLOGI DAN ANATOMI BUNGA ANGIOSPERMAE</text>
+  <text x="325" y="44" text-anchor="middle" font-size="11" fill="#64748b">Alat Perkembangbiakan Generatif Tumbuhan — IPA SMP Kelas 9</text>
+
+  <!-- Mahkota Bunga (Corolla) -->
+  <path d="M 325 240 C 220 220, 150 140, 180 90 C 210 50, 270 120, 325 180 C 380 120, 440 50, 470 90 C 500 140, 430 220, 325 240 Z" fill="#f43f5e" stroke="#be123c" stroke-width="2.5" opacity="0.85"/>
+  <path d="M 325 240 C 240 280, 120 230, 130 170 C 140 120, 220 180, 325 240 Z" fill="#fb7185" stroke="#e11d48" stroke-width="2" opacity="0.85"/>
+  <path d="M 325 240 C 410 280, 530 230, 520 170 C 510 120, 430 180, 325 240 Z" fill="#fb7185" stroke="#e11d48" stroke-width="2" opacity="0.85"/>
+
+  <!-- Dasar Bunga & Kelopak (Calyx) -->
+  <path d="M 290 280 C 270 290, 230 295, 210 270 C 225 295, 270 310, 295 305 Z" fill="#4ade80" stroke="#16a34a" stroke-width="2"/>
+  <path d="M 360 280 C 380 290, 420 295, 440 270 C 425 295, 380 310, 355 305 Z" fill="#4ade80" stroke="#16a34a" stroke-width="2"/>
+  <ellipse cx="325" cy="295" rx="35" ry="16" fill="#86efac" stroke="#16a34a" stroke-width="2"/>
+
+  <!-- Tangkai Bunga -->
+  <path d="M 318 310 L 318 390 L 332 390 L 332 310 Z" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
+
+  <!-- Bakal Buah (Ovarium) & Bakal Biji (Ovulum) -->
+  <path d="M 305 285 C 295 240, 310 215, 325 215 C 340 215, 355 240, 345 285 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="2.2"/>
+  <ellipse cx="325" cy="255" rx="12" ry="16" fill="#fde047" stroke="#a16207" stroke-width="1.8"/>
+  <circle cx="325" cy="255" r="4.5" fill="#ca8a04"/>
+
+  <!-- Tangkai Putik & Kepala Putik (Pistillum) -->
+  <line x1="325" y1="215" x2="325" y2="120" stroke="#65a30d" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 315 120 C 315 105, 335 105, 335 120 Z" fill="#84cc16" stroke="#4d7c0f" stroke-width="2.5"/>
+  <circle cx="320" cy="112" r="5" fill="#a3e635"/>
+  <circle cx="330" cy="112" r="5" fill="#a3e635"/>
+
+  <!-- Benang Sari (Stamen: Tangkai Sari & Kepala Sari) -->
+  <!-- Kiri -->
+  <path d="M 305 260 C 260 230, 240 180, 255 125" fill="none" stroke="#eab308" stroke-width="2.5"/>
+  <ellipse cx="255" cy="120" rx="8" ry="5" fill="#ca8a04" stroke="#854d0e" stroke-width="1.8"/>
+  <path d="M 310 260 C 280 230, 275 190, 285 135" fill="none" stroke="#eab308" stroke-width="2.5"/>
+  <ellipse cx="285" cy="130" rx="8" ry="5" fill="#ca8a04" stroke="#854d0e" stroke-width="1.8"/>
+
+  <!-- Kanan -->
+  <path d="M 345 260 C 390 230, 410 180, 395 125" fill="none" stroke="#eab308" stroke-width="2.5"/>
+  <ellipse cx="395" cy="120" rx="8" ry="5" fill="#ca8a04" stroke="#854d0e" stroke-width="1.8"/>
+  <path d="M 340 260 C 370 230, 375 190, 365 135" fill="none" stroke="#eab308" stroke-width="2.5"/>
+  <ellipse cx="365" cy="130" rx="8" ry="5" fill="#ca8a04" stroke="#854d0e" stroke-width="1.8"/>
+
+  <!-- Labels -->
+  <!-- 1. Mahkota -->
+  <g filter="url(#shB)">
+    <circle cx="100" cy="90" r="14" fill="#e11d48"/>
+    <text x="100" y="95" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">1</text>
+  </g>
+  <line x1="120" y1="95" x2="165" y2="115" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="100" y="70" font-size="11.5" font-weight="bold" fill="#9f1239" text-anchor="middle">(1) Mahkota Bunga</text>
+
+  <!-- 2. Kepala Putik -->
+  <g filter="url(#shB)">
+    <circle cx="325" cy="65" r="14" fill="#65a30d"/>
+    <text x="325" y="70" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">2</text>
+  </g>
+  <line x1="325" y1="82" x2="325" y2="105" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="325" y="48" font-size="11.5" font-weight="bold" fill="#365314" text-anchor="middle">(2) Kepala Putik (Stigma)</text>
+
+  <!-- 3. Kepala Sari -->
+  <g filter="url(#shB)">
+    <circle cx="475" cy="115" r="14" fill="#ca8a04"/>
+    <text x="475" y="120" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">3</text>
+  </g>
+  <line x1="455" y1="118" x2="405" y2="120" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="545" y="120" font-size="11.5" font-weight="bold" fill="#713f12">(3) Kepala Sari (Anthera)</text>
+
+  <!-- 4. Bakal Biji -->
+  <g filter="url(#shB)">
+    <circle cx="210" cy="255" r="14" fill="#0284c7"/>
+    <text x="210" y="260" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">4</text>
+  </g>
+  <line x1="228" y1="255" x2="310" y2="255" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="145" y="260" font-size="11.5" font-weight="bold" fill="#075985" text-anchor="middle">(4) Bakal Biji (Ovulum)</text>
+
+  <!-- 5. Kelopak Bunga -->
+  <g filter="url(#shB)">
+    <circle cx="485" cy="285" r="14" fill="#16a34a"/>
+    <text x="485" y="290" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">5</text>
+  </g>
+  <line x1="465" y1="285" x2="415" y2="285" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="555" y="290" font-size="11.5" font-weight="bold" fill="#14532d">(5) Kelopak Bunga (Calyx)</text>
+</svg>

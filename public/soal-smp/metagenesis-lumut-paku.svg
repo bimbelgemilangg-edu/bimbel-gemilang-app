@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 420" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <marker id="arM" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#15803d"/>
+    </marker>
+  </defs>
+
+  <rect width="680" height="420" fill="#f0fdf4" rx="12" stroke="#bbf7d0" stroke-width="2"/>
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">SKEMA METAGENESIS (PERGILIRAN KETURUNAN) LUMUT DAN PAKU</text>
+  <text x="340" y="43" text-anchor="middle" font-size="11" fill="#64748b">Perbandingan Generasi Gametofit (Haploid/n) dan Sporofit (Diploid/2n)</text>
+
+  <!-- Kolom Kiri: Lumut (Bryophyta) - Gametofit Dominan -->
+  <rect x="25" y="60" width="300" height="340" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.8"/>
+  <text x="175" y="85" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">LUMUT (Gametofit Dominan)</text>
+
+  <!-- Kotak Fase Gametofit n -->
+  <rect x="40" y="100" width="270" height="155" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="50" y="118" font-size="10" font-weight="bold" fill="#166534">Fase Gametofit (n) - Hidup Bebas Dominan</text>
+
+  <rect x="125" y="125" width="100" height="24" rx="4" fill="#fff" stroke="#16a34a"/>
+  <text x="175" y="141" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">Spora (n)</text>
+
+  <line x1="175" y1="149" x2="175" y2="162" stroke="#15803d" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="110" y="162" width="130" height="24" rx="4" fill="#fff" stroke="#16a34a"/>
+  <text x="175" y="178" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">Protonema (n)</text>
+
+  <line x1="175" y1="186" x2="175" y2="198" stroke="#15803d" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="90" y="198" width="170" height="26" rx="4" fill="#22c55e" stroke="#15803d"/>
+  <text x="175" y="215" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle">Tumbuhan Lumut (n)</text>
+
+  <!-- Anteridium & Arkegonium -->
+  <text x="100" y="240" font-size="9" font-weight="bold" fill="#15803d">Anteridium (♂)</text>
+  <text x="210" y="240" font-size="9" font-weight="bold" fill="#15803d">Arkegonium (♀)</text>
+
+  <!-- Fertilisasi & Kotak Sporofit 2n -->
+  <rect x="40" y="265" width="270" height="125" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="50" y="282" font-size="10" font-weight="bold" fill="#92400e">Fase Sporofit (2n) - Menumpang</text>
+
+  <rect x="125" y="292" width="100" height="24" rx="4" fill="#fff" stroke="#d97706"/>
+  <text x="175" y="308" font-size="10" font-weight="bold" fill="#b45309" text-anchor="middle">Zigot (2n)</text>
+
+  <line x1="175" y1="316" x2="175" y2="328" stroke="#d97706" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="100" y="328" width="150" height="24" rx="4" fill="#fff" stroke="#d97706"/>
+  <text x="175" y="344" font-size="10" font-weight="bold" fill="#b45309" text-anchor="middle">Sporogonium (2n)</text>
+
+  <line x1="175" y1="352" x2="175" y2="362" stroke="#d97706" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="100" y="362" width="150" height="22" rx="4" fill="#f59e0b" stroke="#b45309"/>
+  <text x="175" y="377" font-size="9.5" font-weight="bold" fill="#fff" text-anchor="middle">Kotak Spora / Meiosis</text>
+
+  <!-- Kolom Kanan: Paku (Pteridophyta) - Sporofit Dominan -->
+  <rect x="355" y="60" width="300" height="340" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.8"/>
+  <text x="505" y="85" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">PAKU (Sporofit Dominan)</text>
+
+  <!-- Kotak Fase Gametofit n (Protalium) -->
+  <rect x="370" y="100" width="270" height="120" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="380" y="118" font-size="10" font-weight="bold" fill="#166534">Fase Gametofit (n) - Redusir</text>
+
+  <rect x="455" y="125" width="100" height="24" rx="4" fill="#fff" stroke="#16a34a"/>
+  <text x="505" y="141" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">Spora (n)</text>
+
+  <line x1="505" y1="149" x2="505" y2="162" stroke="#15803d" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="425" y="162" width="160" height="26" rx="4" fill="#fff" stroke="#16a34a"/>
+  <text x="505" y="179" font-size="11" font-weight="bold" fill="#15803d" text-anchor="middle">Protalium (n)</text>
+
+  <text x="430" y="205" font-size="9" font-weight="bold" fill="#15803d">Anteridium (♂)</text>
+  <text x="540" y="205" font-size="9" font-weight="bold" fill="#15803d">Arkegonium (♀)</text>
+
+  <!-- Kotak Fase Sporofit 2n (Tumbuhan Paku) -->
+  <rect x="370" y="230" width="270" height="160" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="380" y="248" font-size="10" font-weight="bold" fill="#92400e">Fase Sporofit (2n) - Tumbuhan Paku Sejati</text>
+
+  <rect x="455" y="258" width="100" height="24" rx="4" fill="#fff" stroke="#d97706"/>
+  <text x="505" y="274" font-size="10" font-weight="bold" fill="#b45309" text-anchor="middle">Zigot (2n)</text>
+
+  <line x1="505" y1="282" x2="505" y2="294" stroke="#d97706" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="415" y="294" width="180" height="28" rx="4" fill="#f59e0b" stroke="#b45309"/>
+  <text x="505" y="312" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle">Tumbuhan Paku Dewasa (2n)</text>
+
+  <line x1="505" y1="322" x2="505" y2="334" stroke="#d97706" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="430" y="334" width="150" height="24" rx="4" fill="#fff" stroke="#d97706"/>
+  <text x="505" y="350" font-size="10" font-weight="bold" fill="#b45309" text-anchor="middle">Sporofil / Sorus (2n)</text>
+
+  <line x1="505" y1="358" x2="505" y2="368" stroke="#d97706" stroke-width="1.5" marker-end="url(#arM)"/>
+
+  <rect x="430" y="368" width="150" height="20" rx="4" fill="#fef3c7" stroke="#d97706"/>
+  <text x="505" y="382" font-size="9" font-weight="bold" fill="#b45309" text-anchor="middle">Sporangium → Meiosis</text>
+</svg>

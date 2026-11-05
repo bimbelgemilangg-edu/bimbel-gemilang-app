@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 420" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect width="650" height="420" fill="url(#bgGrad)" rx="12" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="325" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">STRUKTUR ORGAN REPRODUKSI PRIA (PENAMPANG SAGITAL)</text>
+  <text x="325" y="44" text-anchor="middle" font-size="11" fill="#64748b">Asesmen Kurikulum Merdeka Fase D — IPA Kelas 9 SMP</text>
+
+  <!-- Kandung Kemih (Vesica Urinaria) -->
+  <path d="M 270 120 C 270 80, 360 80, 360 130 C 360 170, 320 180, 290 175 C 270 170, 260 150, 270 120 Z" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+  <text x="315" y="130" font-size="10.5" fill="#9a3412" font-weight="600" text-anchor="middle">Kandung Kemih</text>
+
+  <!-- Tulang Kemaluan (Pubis) -->
+  <path d="M 200 170 Q 220 160 230 185 Q 220 205 195 195 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>
+  <text x="210" y="185" font-size="9" fill="#334155" text-anchor="middle">S. Pubis</text>
+
+  <!-- Vesikula Seminalis -->
+  <path d="M 365 140 C 385 130, 395 150, 385 165 C 375 175, 360 170, 365 140 Z" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+
+  <!-- Kelenjar Prostat -->
+  <path d="M 310 175 C 340 175, 355 195, 345 220 C 330 230, 305 225, 295 205 C 290 190, 300 175, 310 175 Z" fill="#fbcfe8" stroke="#db2777" stroke-width="2"/>
+
+  <!-- Kelenjar Cowper (Bulbouretra) -->
+  <circle cx="315" cy="235" r="7" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.8"/>
+
+  <!-- Skrotum -->
+  <path d="M 230 290 C 210 320, 215 375, 265 380 C 315 385, 335 340, 315 295 C 295 285, 255 280, 230 290 Z" fill="#ffedd5" stroke="#f97316" stroke-width="2"/>
+
+  <!-- Testis -->
+  <ellipse cx="270" cy="335" rx="30" ry="24" fill="#fed7aa" stroke="#ea580c" stroke-width="2.2"/>
+
+  <!-- Epididimis -->
+  <path d="M 243 318 C 240 300, 275 300, 292 315 C 305 328, 303 355, 294 365" fill="none" stroke="#dc2626" stroke-width="4.5" stroke-linecap="round"/>
+
+  <!-- Vas Deferens -->
+  <path d="M 292 360 C 320 350, 330 270, 335 240 C 340 210, 370 190, 380 180 C 390 170, 395 140, 370 115 C 345 90, 290 100, 270 135 C 260 150, 265 190, 290 200 C 300 205, 315 205, 318 215 L 318 230 L 312 250 C 305 265, 280 275, 240 290 L 160 300" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="4,2"/>
+
+  <!-- Penis & Uretra -->
+  <path d="M 215 195 C 220 220, 230 260, 240 280 L 175 315 C 160 322, 140 305, 145 290 L 190 205 Z" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+  <path d="M 315 185 L 315 235 L 305 255 L 235 288 L 155 320" fill="none" stroke="#0284c7" stroke-width="2.8"/>
+
+  <!-- Label 1: Testis -->
+  <g filter="url(#shadow)">
+    <circle cx="95" cy="360" r="14" fill="#ea580c"/>
+    <text x="95" y="365" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">1</text>
+  </g>
+  <line x1="115" y1="360" x2="245" y2="340" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="95" y="390" font-size="11.5" font-weight="700" fill="#9a3412" text-anchor="middle">(1) Testis</text>
+
+  <!-- Label 2: Epididimis -->
+  <g filter="url(#shadow)">
+    <circle cx="390" cy="355" r="14" fill="#dc2626"/>
+    <text x="390" y="360" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">2</text>
+  </g>
+  <line x1="375" y1="355" x2="305" y2="345" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="445" y="360" font-size="11.5" font-weight="700" fill="#991b1b">(2) Epididimis</text>
+
+  <!-- Label 3: Vas Deferens -->
+  <g filter="url(#shadow)">
+    <circle cx="490" cy="265" r="14" fill="#2563eb"/>
+    <text x="490" y="270" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">3</text>
+  </g>
+  <line x1="475" y1="265" x2="345" y2="255" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="510" y="270" font-size="11.5" font-weight="700" fill="#1e40af">(3) Vas Deferens</text>
+
+  <!-- Label 4: Vesikula Seminalis -->
+  <g filter="url(#shadow)">
+    <circle cx="510" cy="145" r="14" fill="#ca8a04"/>
+    <text x="510" y="150" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">4</text>
+  </g>
+  <line x1="495" y1="145" x2="390" y2="150" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="530" y="150" font-size="11.5" font-weight="700" fill="#854d0e">(4) Vesikula Seminalis</text>
+
+  <!-- Label 5: Kelenjar Prostat -->
+  <g filter="url(#shadow)">
+    <circle cx="460" cy="205" r="14" fill="#db2777"/>
+    <text x="460" y="210" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">5</text>
+  </g>
+  <line x1="445" y1="205" x2="350" y2="205" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="480" y="210" font-size="11.5" font-weight="700" fill="#9d174d">(5) Kelenjar Prostat</text>
+
+  <!-- Label 6: Uretra -->
+  <g filter="url(#shadow)">
+    <circle cx="70" cy="285" r="14" fill="#0284c7"/>
+    <text x="70" y="290" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">6</text>
+  </g>
+  <line x1="85" y1="285" x2="160" y2="295" stroke="#334155" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="70" y="315" font-size="11.5" font-weight="700" fill="#0369a1" text-anchor="middle">(6) Uretra</text>
+</svg>

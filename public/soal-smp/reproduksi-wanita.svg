@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 420" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <linearGradient id="bgGradW" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff5f5"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
+    </linearGradient>
+    <filter id="shadowW" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arrowW" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect width="650" height="420" fill="url(#bgGradW)" rx="12" stroke="#fecdd3" stroke-width="2"/>
+  <text x="325" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">STRUKTUR ORGAN REPRODUKSI WANITA (PENAMPANG DEPAN)</text>
+  <text x="325" y="44" text-anchor="middle" font-size="11" fill="#64748b">Asesmen Kurikulum Merdeka Fase D — IPA Kelas 9 SMP</text>
+
+  <!-- Uterus (Rahim) Luar -->
+  <path d="M 240 130 C 240 100, 410 100, 410 130 C 410 180, 365 240, 360 270 L 290 270 C 285 240, 240 180, 240 130 Z" fill="#fda4af" stroke="#e11d48" stroke-width="2.5"/>
+
+  <!-- Endometrium & Rongga Uterus -->
+  <path d="M 270 135 C 275 120, 375 120, 380 135 C 375 160, 345 220, 340 250 L 310 250 C 305 220, 275 160, 270 135 Z" fill="#ffe4e6" stroke="#f43f5e" stroke-width="2"/>
+  <path d="M 290 145 C 300 135, 350 135, 360 145 C 350 170, 335 210, 330 240 L 320 240 C 315 210, 300 170, 290 145 Z" fill="#fff1f2"/>
+
+  <!-- Tuba Fallopi (Oviduk) Kiri & Kanan -->
+  <!-- Kiri -->
+  <path d="M 245 120 C 190 100, 150 115, 125 150 C 120 160, 125 175, 140 180" fill="none" stroke="#e11d48" stroke-width="12" stroke-linecap="round"/>
+  <!-- Fimbriae Kiri -->
+  <path d="M 125 155 Q 115 165 125 175 M 128 152 Q 112 158 122 172 M 132 150 Q 120 150 128 165" stroke="#be123c" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Kanan -->
+  <path d="M 405 120 C 460 100, 500 115, 525 150 C 530 160, 525 175, 510 180" fill="none" stroke="#e11d48" stroke-width="12" stroke-linecap="round"/>
+  <!-- Fimbriae Kanan -->
+  <path d="M 525 155 Q 535 165 525 175 M 522 152 Q 538 158 528 172 M 518 150 Q 530 150 522 165" stroke="#be123c" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Ovarium Kiri & Kanan -->
+  <ellipse cx="160" cy="195" rx="28" ry="18" fill="#fef08a" stroke="#ca8a04" stroke-width="2.2"/>
+  <ellipse cx="490" cy="195" rx="28" ry="18" fill="#fef08a" stroke="#ca8a04" stroke-width="2.2"/>
+  <!-- Folikel di ovarium -->
+  <circle cx="152" cy="192" r="5" fill="#f59e0b"/>
+  <circle cx="168" cy="198" r="4" fill="#f59e0b"/>
+  <circle cx="482" cy="195" r="5" fill="#f59e0b"/>
+  <circle cx="498" cy="192" r="4" fill="#f59e0b"/>
+
+  <!-- Ligamen Ovarium -->
+  <path d="M 188 195 Q 225 185 245 160" stroke="#f43f5e" stroke-width="3" fill="none"/>
+  <path d="M 462 195 Q 425 185 405 160" stroke="#f43f5e" stroke-width="3" fill="none"/>
+
+  <!-- Serviks (Leher Rahim) -->
+  <rect x="300" y="270" width="50" height="35" rx="4" fill="#fb7185" stroke="#e11d48" stroke-width="2"/>
+  <line x1="325" y1="270" x2="325" y2="305" stroke="#881337" stroke-width="2"/>
+
+  <!-- Vagina -->
+  <path d="M 295 305 L 290 380 L 360 380 L 355 305 Z" fill="#fbcfe8" stroke="#db2777" stroke-width="2.2"/>
+  <line x1="325" y1="305" x2="325" y2="380" stroke="#be185d" stroke-width="2" stroke-dasharray="3,3"/>
+
+  <!-- Label P: Ovarium -->
+  <g filter="url(#shadowW)">
+    <circle cx="65" cy="205" r="14" fill="#ca8a04"/>
+    <text x="65" y="210" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">P</text>
+  </g>
+  <line x1="85" y1="205" x2="135" y2="200" stroke="#334155" stroke-width="1.6" marker-end="url(#arrowW)"/>
+  <text x="65" y="235" font-size="11.5" font-weight="700" fill="#854d0e" text-anchor="middle">P (Ovarium)</text>
+
+  <!-- Label Q: Tuba Fallopi / Oviduk -->
+  <g filter="url(#shadowW)">
+    <circle cx="130" cy="85" r="14" fill="#dc2626"/>
+    <text x="130" y="90" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">Q</text>
+  </g>
+  <line x1="145" y1="90" x2="190" y2="105" stroke="#334155" stroke-width="1.6" marker-end="url(#arrowW)"/>
+  <text x="130" y="65" font-size="11.5" font-weight="700" fill="#991b1b" text-anchor="middle">Q (Tuba Fallopi)</text>
+
+  <!-- Label R: Uterus / Rahim -->
+  <g filter="url(#shadowW)">
+    <circle cx="325" cy="80" r="14" fill="#e11d48"/>
+    <text x="325" y="85" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">R</text>
+  </g>
+  <line x1="325" y1="95" x2="325" y2="140" stroke="#334155" stroke-width="1.6" marker-end="url(#arrowW)"/>
+  <text x="325" y="60" font-size="11.5" font-weight="700" fill="#9f1239" text-anchor="middle">R (Uterus / Rahim)</text>
+
+  <!-- Label S: Endometrium -->
+  <g filter="url(#shadowW)">
+    <circle cx="445" cy="235" r="14" fill="#7c3aed"/>
+    <text x="445" y="240" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">S</text>
+  </g>
+  <line x1="430" y1="235" x2="355" y2="215" stroke="#334155" stroke-width="1.6" marker-end="url(#arrowW)"/>
+  <text x="515" y="240" font-size="11.5" font-weight="700" fill="#6d28d9">S (Endometrium)</text>
+
+  <!-- Label T: Serviks -->
+  <g filter="url(#shadowW)">
+    <circle cx="435" cy="290" r="14" fill="#db2777"/>
+    <text x="435" y="295" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">T</text>
+  </g>
+  <line x1="420" y1="290" x2="355" y2="285" stroke="#334155" stroke-width="1.6" marker-end="url(#arrowW)"/>
+  <text x="495" y="295" font-size="11.5" font-weight="700" fill="#9d174d">T (Serviks)</text>
+
+  <!-- Label U: Vagina -->
+  <g filter="url(#shadowW)">
+    <circle cx="435" cy="345" r="14" fill="#0284c7"/>
+    <text x="435" y="350" fill="#fff" font-weight="bold" font-size="13" text-anchor="middle">U</text>
+  </g>
+  <line x1="420" y1="345" x2="360" y2="345" stroke="#334155" stroke-width="1.6" marker-end="url(#arrowW)"/>
+  <text x="495" y="350" font-size="11.5" font-weight="700" fill="#0369a1">U (Vagina)</text>
+</svg>

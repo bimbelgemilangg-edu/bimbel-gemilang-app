@@ -40,6 +40,7 @@ import { sudahBaku, jenjangBaku } from '../../../utils/jenjangBaku';
 // mencegah dokumen SD tertag Biologi.
 import { daftarMapelUntuk, petakanNamaMapel, jenjangDipetakan } from '../../../utils/kurikulumMerdeka';
 import { bandingkanDuplikat } from '../../../utils/kunciDuplikatSoal';
+import paketSmp50 from '../../../../docs/drafts/bank-soal-50-smp-reproduksi.json';
 
 const COL = 'bank_soal';
 const BATCH_MAX = 400;
@@ -212,6 +213,45 @@ export default function MesinBankSoalPage() {
     const teks = await f.text();
     setRawText(teks);
     prosesTeks(teks, f.name);
+  }
+
+  function muatPaketResmiSMP9() {
+    setFileName('bank-soal-50-smp-reproduksi.json');
+    setRawText(JSON.stringify(paketSmp50));
+    setHint({
+      mapel: 'IPA',
+      jenjang: 'SMP',
+      kelas: '9',
+      kelompok: 'hots-asli-kurikulum-merdeka',
+      sumber: 'Naskah Asli Ujian Nasional & AKM Sains SMP',
+    });
+    const konteks = {
+      fileName: 'bank-soal-50-smp-reproduksi.json',
+      mapel: 'IPA',
+      jenjang: 'SMP',
+      kelas: '9',
+      kelompok: 'hots-asli-kurikulum-merdeka',
+      sumber: 'Naskah Asli Ujian Nasional & AKM Sains SMP',
+    };
+    const daftar = Array.isArray(paketSmp50?.soal) ? paketSmp50.soal : [];
+    const hasil = daftar.map((item, i) => {
+      const tak = deteksiTaksonomiSoal(item, konteks);
+      tak.mapel = 'IPA';
+      tak.mataPelajaran = 'IPA';
+      tak.jenjang = 'SMP/MTs';
+      tak.kelas = '9';
+      tak.tingkatKelas = '9';
+      tak.bab = item.materi;
+      tak.materi = item.materi;
+      const docData = keDokumenBank(item, tak, konteks);
+      return {
+        ...docData,
+        _key: `smp9-${i + 1}-${Date.now()}`,
+        taksonomiYakin: 1.0,
+      };
+    });
+    setPreview(tautkanStimulusBersama(hasil));
+    setPesan(`✅ 50 Butir Soal Asli Kurikulum Merdeka (SMP Kelas 9 IPA Sistem Reproduksi & Perkembangbiakan) berhasil dimuat. Siap disimpan ke bank_soal.`);
   }
 
   async function simpanImpor() {
@@ -461,6 +501,19 @@ export default function MesinBankSoalPage() {
                 <Upload size={14} /> Pilih file JSON
                 <input type="file" accept=".json,.txt" style={{ display: 'none' }} onChange={onFile} />
               </label>
+              <button
+                type="button"
+                style={{
+                  ...st.fileBtn,
+                  background: '#f0fdf4',
+                  border: '1px solid #86efac',
+                  color: '#15803d',
+                  cursor: 'pointer',
+                }}
+                onClick={muatPaketResmiSMP9}
+              >
+                <Sparkles size={14} color="#15803d" /> 📦 Muat 50 Soal Asli Kurmer (SMP 9 IPA Reproduksi)
+              </button>
               {fileName && <span style={{ fontSize: 12, color: '#64748b' }}>{fileName}</span>}
               {rawText && (
                 <button type="button" style={st.btnGhost} onClick={() => prosesTeks(rawText, fileName)}>
