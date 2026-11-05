@@ -22,6 +22,7 @@ import { terapkanIzinAbsensiOtomatis } from '../../services/izinAbsensiOtomatis'
 import { uploadElearningFile } from '../../services/uploadService';
 import LiveSessionTeacher from './LiveSessionTeacher';
 import { daftarBabSilabus, semesterKalenderAktif } from '../../utils/silabusKurikulumMerdeka';
+import ModalSiapkanLatihanSesi from '../../components/guru/ModalSiapkanLatihanSesi';
 
 const ClassSession = () => {
   const { id } = useParams();
@@ -54,6 +55,7 @@ const ClassSession = () => {
   const [statusKetuntasan, setStatusKetuntasan] = useState('berjalan'); // 'berjalan' | 'tuntas'
   const [tingkatPemahaman, setTingkatPemahaman] = useState('cukup'); // 'paham' | 'cukup' | 'butuh_bimbingan'
   const [loadingReset, setLoadingReset] = useState(false);
+  const [bukaModalLatihan, setBukaModalLatihan] = useState(false);
 
   // Khusus Program English Course (Kurikulum Mandiri Tentor - Pengecualian Kurmer)
   const isEnglishCourse = useMemo(() => {
@@ -524,6 +526,28 @@ const ClassSession = () => {
             <span style={st.badge(isMobile)}>{schedule.planet || 'Ruang Umum'}</span>
             <button
               type="button"
+              onClick={() => setBukaModalLatihan(true)}
+              title="Siapkan butir soal latihan pemahaman untuk sesi ini"
+              style={{
+                background: schedule.latihanSesi?.status === 'aktif' ? '#f0fdf4' : '#ffffff',
+                border: schedule.latihanSesi?.status === 'aktif' ? '1px solid #86efac' : '1px solid #cbd5e1',
+                borderRadius: 8,
+                padding: '5px 10px',
+                fontSize: 11,
+                fontWeight: 700,
+                color: schedule.latihanSesi?.status === 'aktif' ? '#15803d' : '#475569',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              {schedule.latihanSesi?.status === 'aktif'
+                ? `✓ Latihan Aktif (${schedule.latihanSesi.totalSoal || schedule.latihanSesi.soalList?.length || 5})`
+                : '🎯 Siapkan Latihan'}
+            </button>
+            <button
+              type="button"
               onClick={handleResetSesi}
               disabled={loadingReset}
               title="Kembalikan sesi kelas ini ke status Belum Dimulai (bersihkan absensi & log uji coba)"
@@ -880,6 +904,38 @@ const ClassSession = () => {
             </div>
           )}
 
+          {/* Latihan Pemahaman Sesi Tatap Muka */}
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12, marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: '#334155' }}>
+                  🎯 Latihan Pemahaman Sesi Hari Ini:
+                </div>
+                <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                  {schedule.latihanSesi?.status === 'aktif'
+                    ? `✅ Latihan aktif: ${schedule.latihanSesi.judul} (${schedule.latihanSesi.totalSoal} Soal). Siswa dapat mengerjakannya di HP masing-masing.`
+                    : 'Belum ada latihan sesi yang diterbitkan. Siswa belum memiliki kuis pemahaman untuk sesi ini.'}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBukaModalLatihan(true)}
+                style={{
+                  background: schedule.latihanSesi?.status === 'aktif' ? '#0284c7' : '#4f46e5',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '7px 12px',
+                  fontSize: 11.5,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                {schedule.latihanSesi?.status === 'aktif' ? 'Kelola / Tinjau Latihan' : '🎯 Siapkan Latihan Sesi'}
+              </button>
+            </div>
+          </div>
+
           {/* Status Ketuntasan Materi & Pemahaman Siswa */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 14 }}>
             <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12 }}>
@@ -1001,6 +1057,18 @@ const ClassSession = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Modal Penyiapan Latihan Sesi Tatap Muka */}
+      {bukaModalLatihan && schedule && (
+        <ModalSiapkanLatihanSesi
+          schedule={schedule}
+          onClose={() => setBukaModalLatihan(false)}
+          onSuccess={(latBaru) => {
+            setSchedule((prev) => (prev ? { ...prev, latihanSesi: latBaru } : prev));
+            setBukaModalLatihan(false);
+          }}
+        />
       )}
     </div>
   );

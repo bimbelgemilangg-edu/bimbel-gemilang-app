@@ -21,6 +21,7 @@ import {
   RefreshCw, Loader2, Eye, EyeOff, Radio, RotateCcw
 } from 'lucide-react';
 import ModalBukuGuru from '../../components/buku/ModalBukuGuru';
+import ModalSiapkanLatihanSesi from '../../components/guru/ModalSiapkanLatihanSesi';
 import { daftarIdGuru } from '../../utils/identitasGuru';
 import { bolehTampilUmum } from '../../utils/statusTryOutPaket';
 import {
@@ -217,6 +218,8 @@ const TeacherDashboard = () => {
   // Tugas "Pengisian Laporan Belajar" (muncul saat admin membuka periode,
   // hilang otomatis bila semua siswa mapel guru ini sudah selesai diisi).
   const [laporanTugas, setLaporanTugas] = useState(null);
+  // Modal Penyiapan Latihan Sesi Tatap Muka (Pra-Kelas)
+  const [jadwalLatihanSesi, setJadwalLatihanSesi] = useState(null);
 
   // ===== REFS =====
   const notificationRef = useRef(null);
@@ -1149,7 +1152,34 @@ const TeacherDashboard = () => {
                         </div>
                       )}
                     </div>
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setJadwalLatihanSesi(item);
+                        }}
+                        title="Siapkan butir soal latihan pemahaman untuk sesi tatap muka hari ini"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          padding: '7px 11px',
+                          borderRadius: 10,
+                          border: item.latihanSesi?.status === 'aktif' ? '1px solid #86efac' : '1px solid #cbd5e1',
+                          background: item.latihanSesi?.status === 'aktif' ? '#f0fdf4' : '#ffffff',
+                          color: item.latihanSesi?.status === 'aktif' ? '#15803d' : '#475569',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {item.latihanSesi?.status === 'aktif' ? (
+                          <>✓ Latihan ({item.latihanSesi.totalSoal || item.latihanSesi.soalList?.length || 5})</>
+                        ) : (
+                          <>🎯 Siapkan Latihan</>
+                        )}
+                      </button>
                       <button 
                         onClick={() => {
                           if (isOngoing) {
@@ -1480,6 +1510,22 @@ const TeacherDashboard = () => {
       {/* 🔥 BARU: Modal Buku Digital (Mode Persiapan Guru) */}
       {showBuku && (
         <ModalBukuGuru open={showBuku} onClose={() => setShowBuku(false)} />
+      )}
+
+      {/* 🎯 Modal Penyiapan Latihan Pemahaman Sesi Tatap Muka (Pra-Kelas) */}
+      {jadwalLatihanSesi && (
+        <ModalSiapkanLatihanSesi
+          schedule={jadwalLatihanSesi}
+          onClose={() => setJadwalLatihanSesi(null)}
+          onSuccess={(updatedLatihan) => {
+            setJadwalJendela((prev) =>
+              prev.map((sch) =>
+                sch.id === jadwalLatihanSesi.id ? { ...sch, latihanSesi: updatedLatihan } : sch
+              )
+            );
+            setJadwalLatihanSesi(null);
+          }}
+        />
       )}
 
       <style>{`

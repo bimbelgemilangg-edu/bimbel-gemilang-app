@@ -23,6 +23,7 @@ import {
 import {
   daftarBabSilabus,
 } from '../../utils/silabusKurikulumMerdeka';
+import ModalKerjakanLatihanSesi from '../../components/student/ModalKerjakanLatihanSesi';
 
 // ============================================================
 // IKON & WARNA PER TIPE NOTIFIKASI
@@ -175,6 +176,7 @@ const StudentDashboard = () => {
   const [todaySchedules, setTodaySchedules] = useState([]);
   const [todayAttendanceMap, setTodayAttendanceMap] = useState({});
   const [modalSilabus, setModalSilabus] = useState(null);
+  const [jadwalPengerjaanLatihan, setJadwalPengerjaanLatihan] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [raportSummary, setRaportSummary] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
@@ -1164,6 +1166,78 @@ const StudentDashboard = () => {
                         )}
                       </div>
 
+                      {/* Latihan Pemahaman Sesi Tatap Muka (Blind Submission) */}
+                      {sch.latihanSesi && sch.latihanSesi.status === 'aktif' && (() => {
+                        const cleanId = String(studentId || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+                        const hasilSiswa = sch.latihanSesi.hasil?.[cleanId] || (studentNim && sch.latihanSesi.hasil?.[studentNim]) || null;
+                        const sudahKirim = Boolean(hasilSiswa);
+
+                        return (
+                          <div
+                            style={{
+                              marginTop: 8,
+                              background: sudahKirim ? '#f0fdf4' : 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                              border: sudahKirim ? '1px solid #bbf7d0' : '1px solid #a7f3d0',
+                              borderRadius: 10,
+                              padding: '10px 12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              flexWrap: 'wrap',
+                              gap: 8,
+                            }}
+                          >
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 800, color: sudahKirim ? '#166534' : '#065f46', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span>🎯 {sch.latihanSesi.judul || 'Latihan Pemahaman Sesi'}</span>
+                              </div>
+                              <div style={{ fontSize: 10.5, color: sudahKirim ? '#15803d' : '#047857', marginTop: 1 }}>
+                                {sudahKirim
+                                  ? '✅ Performa Anda telah terekam oleh tentor. Terima kasih atas partisipasinya!'
+                                  : `📝 ${sch.latihanSesi.totalSoal || sch.latihanSesi.soalList?.length || 5} Soal · Cek pemahaman materi sesi tatap muka hari ini`}
+                              </div>
+                            </div>
+
+                            {sudahKirim ? (
+                              <span
+                                style={{
+                                  fontSize: 10.5,
+                                  fontWeight: 700,
+                                  color: '#15803d',
+                                  background: '#dcfce7',
+                                  padding: '4px 9px',
+                                  borderRadius: 6,
+                                  border: '1px solid #86efac',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                }}
+                              >
+                                <CheckCircle2 size={12} /> Jawaban Terekam
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setJadwalPengerjaanLatihan(sch)}
+                                style={{
+                                  background: '#059669',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  borderRadius: 8,
+                                  padding: '6px 12px',
+                                  fontSize: 11.5,
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  boxShadow: '0 2px 4px rgba(5, 150, 105, 0.2)',
+                                }}
+                              >
+                                ✏️ Kerjakan Latihan
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
+
                       {/* Tombol Aksi Langsung Siswa */}
                       <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
                         {babRelevan && (
@@ -1425,6 +1499,39 @@ const StudentDashboard = () => {
             <div id="reader" style={{ width: '100%', borderRadius: 12, overflow: 'hidden' }}></div>
           </div>
         </div>
+      )}
+
+      {/* Modal Pengerjaan Latihan Sesi Tatap Muka (Blind Submission) */}
+      {jadwalPengerjaanLatihan && (
+        <ModalKerjakanLatihanSesi
+          schedule={jadwalPengerjaanLatihan}
+          studentId={studentId}
+          studentName={studentName}
+          studentDocId={studentDocId}
+          onClose={() => setJadwalPengerjaanLatihan(null)}
+          onSuccess={(hasilBaru) => {
+            const cleanId = String(studentId || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+            setTodaySchedules((prev) =>
+              prev.map((s) => {
+                if (s.id === jadwalPengerjaanLatihan.id) {
+                  const lat = s.latihanSesi || {};
+                  return {
+                    ...s,
+                    latihanSesi: {
+                      ...lat,
+                      hasil: {
+                        ...(lat.hasil || {}),
+                        [cleanId]: hasilBaru,
+                      },
+                    },
+                  };
+                }
+                return s;
+              })
+            );
+            setProgresXp((xp) => xp + 30);
+          }}
+        />
       )}
 
       {isMobile && (
