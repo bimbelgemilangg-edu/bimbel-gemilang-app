@@ -1280,83 +1280,71 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp7-mtk-s1-b1",
-            "judul": "Bab 1: Bilangan Bulat dan Bilangan Rasional",
+            "judul": "Bab 1: Bilangan Bulat",
             "subBab": [
-              "Operasi Hitung Bilangan Bulat dan Sifat-sifatnya",
-              "Pecahan, Desimal, dan Persen",
-              "Notasi Ilmiah dan Faktorisasi"
+              "Pengertian Bilangan Bulat Positif dan Negatif",
+              "Operasi Hitung Bilangan Bulat (Penjumlahan, Pengurangan, Perkalian, Pembagian)",
+              "Faktor Bilangan Bulat, FPB, dan KPK"
             ],
             "alokasiSesi": 3,
-            "cp": "Menguasai operasi hitung bilangan bulat dan rasional serta penerapannya."
+            "cp": "Memahami bilangan bulat, melakukan operasi aritmatika, serta menyelesaikan masalah FPB dan KPK."
           },
           {
             "id": "smp7-mtk-s1-b2",
-            "judul": "Bab 2: Aljabar Dasar",
+            "judul": "Bab 2: Bilangan Rasional",
             "subBab": [
-              "Unsur Aljabar: Koefisien, Variabel, Konstanta, Suku",
-              "Penjumlahan dan Pengurangan Bentuk Aljabar",
-              "Perkalian dan Pembagian Aljabar"
+              "Pengertian Bilangan Rasional (Pecahan dan Desimal)",
+              "Membandingkan dan Mengurutkan Bilangan Rasional",
+              "Operasi Hitung pada Bilangan Rasional"
             ],
             "alokasiSesi": 3,
-            "cp": "Menyatakan situasi dunia nyata ke dalam model dan operasi aljabar."
+            "cp": "Menyatakan dan mengoperasikan pecahan dan desimal dalam representasi bilangan rasional."
           },
           {
             "id": "smp7-mtk-s1-b3",
-            "judul": "Bab 3: Persamaan dan Pertidaksamaan Linear Satu Variabel (PLSV & PtLSV)",
+            "judul": "Bab 3: Rasio",
             "subBab": [
-              "Konsep Kesetaraan Persamaan",
-              "Menyelesaikan PLSV",
-              "Menyelesaikan PtLSV dan Garis Bilangan",
-              "Model Matematika Masalah Kontekstual"
+              "Konsep Rasio dan Perbandingan",
+              "Skala pada Peta dan Gambar Denah",
+              "Laju Perubahan Satuan (Kecepatan, Debit, dll.)"
             ],
             "alokasiSesi": 3,
-            "cp": "Menemukan solusi PLSV dan PtLSV dalam permasalahan sehari-hari."
+            "cp": "Menggunakan rasio dan laju perubahan satuan dalam pemecahan masalah kontekstual."
           }
         ],
         "2": [
           {
-            "id": "smp7-mtk-s2-b1",
-            "judul": "Bab 4: Rasio dan Perbandingan",
-            "subBab": [
-              "Skala dan Rasio Dua Besaran",
-              "Perbandingan Senilai (Tabel & Grafik)",
-              "Perbandingan Berbalik Nilai"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menganalisis perbandingan senilai dan berbalik nilai melalui grafik."
-          },
-          {
-            "id": "smp7-mtk-s2-b2",
-            "judul": "Bab 5: Aritmetika Sosial",
-            "subBab": [
-              "Untung, Rugi, Harga Jual, Harga Beli",
-              "Diskon (Rabat) dan Pajak (PPN/PPh)",
-              "Bruto, Netto, Tara",
-              "Bunga Tunggal Tabungan"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menghitung transaksi keuangan dan aritmetika sosial harian."
-          },
-          {
-            "id": "smp7-mtk-s2-b3",
-            "judul": "Bab 6: Garis, Sudut, dan Bangun Datar Segi Banyak",
-            "subBab": [
-              "Hubungan Antarsudut (Berpelurus, Berpenyiku, Bertolak Belakang)",
-              "Sudut pada Dua Garis Sejajar yang Dipotong Garis Lain",
-              "Keliling dan Luas Segiempat & Segitiga"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menghitung besar sudut dan luas bangun datar poligon."
-          },
-          {
             "id": "smp7-mtk-s2-b4",
-            "judul": "Bab 7: Statistika dan Diagram Data",
+            "judul": "Bab 4: Bentuk Aljabar",
             "subBab": [
-              "Membaca Histogram, Diagram Garis, dan Diagram Lingkaran",
-              "Ukuran Pemusatan: Mean, Median, Modus"
+              "Mengenal Unsur Aljabar (Variabel, Koefisien, Konstanta, Suku)",
+              "Operasi Hitung Bentuk Aljabar (Suku Sejenis)",
+              "Pemodelan Matematika Menggunakan Bentuk Aljabar"
             ],
-            "alokasiSesi": 2,
-            "cp": "Menyajikan data dan mengevaluasi mean, median, modus."
+            "alokasiSesi": 3,
+            "cp": "Menginterpretasikan dan memanipulasi bentuk aljabar untuk memodelkan situasi matematis."
+          },
+          {
+            "id": "smp7-mtk-s2-b5",
+            "judul": "Bab 5: Kesebangunan dan Sudut",
+            "subBab": [
+              "Hubungan Antar Sudut (Berpelurus, Berpenyiku, Sehadap, Berseberangan)",
+              "Konsep Kesebangunan pada Bangun Datar",
+              "Ukuran Proporsional pada Bangun Geometri"
+            ],
+            "alokasiSesi": 3,
+            "cp": "Menganalisis hubungan sudut-sudut dan menerapkan prinsip kesebangunan bangun datar."
+          },
+          {
+            "id": "smp7-mtk-s2-b6",
+            "judul": "Bab 6: Data dan Diagram",
+            "subBab": [
+              "Pengumpulan Data dalam Statistika",
+              "Penyajian Data Menggunakan Diagram (Batang, Lingkaran, Garis)",
+              "Membaca dan Menginterpretasikan Data dari Diagram"
+            ],
+            "alokasiSesi": 3,
+            "cp": "Mengumpulkan, menyajikan, dan menarik kesimpulan dari representasi diagram statistika."
           }
         ]
       },
@@ -1364,83 +1352,82 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp7-ipa-s1-b1",
-            "judul": "Bab 1: Hakikat Ilmu Sains dan Metode Ilmiah",
+            "judul": "Bab 1: Hakikat Sains dan Metode Ilmiah",
             "subBab": [
-              "Cabang-Cabang Sains dan Alat Laboratorium",
-              "Tahapan Metode Ilmiah dan Variabel Percobaan",
-              "Pengukuran dan Besaran Pokok/Turunan"
+              "Pengenalan Laboratorium IPA dan Aturan Keselamatan Kerja",
+              "Metode Ilmiah, Besaran Pokok dan Turunan, serta Satuan SI",
+              "Pengukuran Akurat dan Pelaporan Data Eksperimen Ilmiah"
             ],
-            "alokasiSesi": 2,
-            "cp": "Merancang percobaan ilmiah dan menggunakan instrumen laboratorium."
+            "alokasiSesi": 3,
+            "cp": "Menerapkan metode ilmiah, keselamatan kerja laboratorium, dan pengukuran besaran fisis secara presisi."
           },
           {
             "id": "smp7-ipa-s1-b2",
             "judul": "Bab 2: Zat dan Perubahannya",
             "subBab": [
-              "Partikel Zat (Padat, Cair, Gas)",
-              "Kerapatan Zat (Massa Jenis)",
-              "Perubahan Fisika vs Perubahan Kimia"
+              "Wujud Zat (Padat, Cair, Gas) dan Model Partikel",
+              "Perubahan Fisika dan Perubahan Kimia",
+              "Kerapatan Zat (Densitas / Massa Jenis) dan Penerapannya"
             ],
             "alokasiSesi": 3,
-            "cp": "Menjelaskan konsep massa jenis dan perubahan materi berdasarkan teori partikel."
+            "cp": "Menjelaskan model partikel zat, membedakan perubahan fisika-kimia, dan menghitung massa jenis."
           },
           {
             "id": "smp7-ipa-s1-b3",
             "judul": "Bab 3: Suhu, Kalor, dan Pemuaian",
             "subBab": [
-              "Konversi Skala Termometer (C, R, F, K)",
-              "Rumus Kalor (Q = m.c.deltaT)",
-              "Asas Black dan Kalor Laten",
-              "Pemuaian Panjang, Luas, dan Volume"
+              "Pengukuran Suhu dan Konversi Skala Termometer (C, R, F, K)",
+              "Konsep Kalor dan Asas Black",
+              "Perpindahan Kalor (Konduksi, Konveksi, Radiasi) dan Pemuaian Zat"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis perpindahan kalor dan dampak pemuaian zat."
+            "cp": "Menganalisis konsep suhu, kalor, mekanisme perpindahan panas, dan fenomena pemuaian termal."
           },
           {
             "id": "smp7-ipa-s1-b4",
             "judul": "Bab 4: Gerak dan Gaya",
             "subBab": [
-              "Gerak Lurus Beraturan (GLB)",
-              "Gerak Lurus Berubah Beraturan (GLBB)",
-              "Hukum I, II, III Newton tentang Gerak"
+              "Konsep Gerak Lurus: Posisi, Jarak, Perpindahan, Kelajuan, dan Kecepatan",
+              "Percepatan dan Gerak Lurus Beraturan (GLB / GLBB)",
+              "Pengertian Gaya, Jenis-Jenis Gaya, Resultan Gaya, dan Hukum Newton"
             ],
             "alokasiSesi": 3,
-            "cp": "Menerapkan Hukum Newton dalam menjelaskan fenomena gerak benda."
+            "cp": "Menyelidiki konsep kinematika gerak lurus serta menganalisis pengaruh gaya terhadap gerak benda."
           }
         ],
         "2": [
           {
-            "id": "smp7-ipa-s2-b1",
+            "id": "smp7-ipa-s2-b5",
             "judul": "Bab 5: Klasifikasi Makhluk Hidup",
             "subBab": [
-              "Ciri-Ciri Makhluk Hidup",
-              "Kunci Determinasi dan Binomial Nomenklatur",
-              "Klasifikasi 5 Kingdom (Monera, Protista, Fungi, Plantae, Animalia)"
+              "Karakteristik dan Ciri-Ciri Makhluk Hidup",
+              "Kunci Dikotomi dan Kunci Determinasi",
+              "Dasar Klasifikasi Sistem 5 Kingdom (Monera, Protista, Fungi, Plantae, Animalia)"
             ],
             "alokasiSesi": 3,
-            "cp": "Mengelompokkan organisme hidup berdasarkan ciri morfologi dan filogenik."
+            "cp": "Mengklasifikasikan makhluk hidup berdasarkan karakteristik dan menggunakan kunci determinasi."
           },
           {
-            "id": "smp7-ipa-s2-b2",
-            "judul": "Bab 6: Ekologi dan Keanekaragaman Hayati",
+            "id": "smp7-ipa-s2-b6",
+            "judul": "Bab 6: Ekologi dan Keanekaragaman Hayati Indonesia",
             "subBab": [
-              "Komponen Biotik dan Abiotik",
-              "Interaksi Antarmakhluk Hidup (Simbiosis, Predasi, Kompetisi)",
-              "Konservasi Hayati Indonesia"
+              "Komponen Biotik dan Abiotik Ekosistem",
+              "Interaksi dalam Ekosistem (Rantai Makanan, Jaring-Jaring, Simbiosis, Daur Biogeokimia)",
+              "Konservasi Keanekaragaman Hayati Indonesia dan Pencegahan Pencemaran Lingkungan"
             ],
             "alokasiSesi": 3,
-            "cp": "Mengevaluasi dinamika ekosistem dan upaya konservasi keanekaragaman hayati."
+            "cp": "Menganalisis interaksi antar-komponen ekosistem dan merancang upaya pelestarian keanekaragaman hayati."
           },
           {
-            "id": "smp7-ipa-s2-b3",
+            "id": "smp7-ipa-s2-b7",
             "judul": "Bab 7: Bumi dan Tata Surya",
             "subBab": [
-              "Struktur Lapisan Bumi dan Lempeng Tektonik",
-              "Gunung Berapi dan Gempa Bumi (Mitigasi)",
-              "Sistem Tata Surya dan Karakteristik Planet"
+              "Sistem Tata Surya, Karakteristik Planet, Asteroid, Komet, dan Meteoroid",
+              "Gerak Rotasi dan Revolusi Bumi serta Pengaruhnya (Siang-Malam, Musim, Waktu)",
+              "Gerak Bulan, Fase Bulan, Pasang Surut Air Laut, dan Fenomena Gerhana"
             ],
-            "alokasiSesi": 2,
-            "cp": "Menjelaskan dinamika lempeng bumi serta fenomena keplanetan."
+            "alokasiSesi": 3,
+            "cp": "Memahami sistem tata surya dan menjelaskan dampak rotasi/revolusi bumi-bulan bagi kehidupan."
           }
         ]
       },
@@ -1448,47 +1435,49 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp7-ips-s1-b1",
-            "judul": "Bab 1: Keluarga Awal Kehidupan dan Ruang Geografis",
+            "judul": "Bab 1: Keluarga Awal Kehidupan",
             "subBab": [
-              "Keberadaan Diri dan Keluarga di Tengah Lingkungan",
-              "Letak Geologis dan Geografis Indonesia",
-              "Potensi Sumber Daya Alam Indonesia"
+              "Keberadaan Diri dan Keluarga (Asal-Usul Keluarga)",
+              "Mengenal Lokasi Tempat Tinggal Menggunakan Peta dan Komponen Peta",
+              "Sosialisasi dalam Masyarakat: Pembentukan Norma dan Nilai Sosial"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis interaksi antarruang dan pengaruh lokasi geografis Indonesia."
+            "cp": "Memahami keberadaan diri, membaca informasi spasial peta, dan pembentukan norma sosial keluarga."
           },
           {
             "id": "smp7-ips-s1-b2",
-            "judul": "Bab 2: Keberagaman Lingkungan Sekitar dan Sejarah Lokal",
+            "judul": "Bab 2: Keberagaman Lingkungan Sekitar",
             "subBab": [
-              "Masa Praaksara di Indonesia",
-              "Pencemaran Lingkungan dan Pembangunan Berkelanjutan"
+              "Proses Alam Pembentukan Permukaan Bumi dan Masa Praaksara",
+              "Pencemaran Lingkungan dan Upaya Pelestariannya",
+              "Konsep Interaksi Sosial Secara Tatap Muka dan Digital"
             ],
             "alokasiSesi": 3,
-            "cp": "Memahami kronologi sejarah praaksara serta tantangan kelestarian lingkungan."
+            "cp": "Menganalisis sejarah asal-usul bumi, kehidupan masa praaksara, dan dinamika interaksi sosial."
           }
         ],
         "2": [
           {
-            "id": "smp7-ips-s2-b1",
-            "judul": "Bab 3: Potensi Ekonomi Lingkungan dan Kelangkaan",
+            "id": "smp7-ips-s2-b3",
+            "judul": "Bab 3: Potensi Ekonomi Lingkungan",
             "subBab": [
-              "Kelangkaan sebagai Masalah Inti Ekonomi",
-              "Kebutuhan Manusia dan Skala Prioritas",
-              "Interaksi Pasar: Permintaan, Penawaran, dan Harga Keseimbangan"
+              "Konsep Kelangkaan Sumber Daya Ekonomi dan Kebutuhan Manusia",
+              "Kegiatan Ekonomi (Produksi, Distribusi, Konsumsi) dan Pelaku Ekonomi",
+              "Pengaruh Kebudayaan Islam dan Hindu-Buddha terhadap Perdagangan Nusantara"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis motif ekonomi, kelangkaan, dan mekanisme pasar."
+            "cp": "Menganalisis kegiatan ekonomi dalam mengatasi kelangkaan dan sejarah perdagangan nusantara."
           },
           {
-            "id": "smp7-ips-s2-b2",
-            "judul": "Bab 4: Pemberdayaan Masyarakat dan Keragaman Budaya",
+            "id": "smp7-ips-s2-b4",
+            "judul": "Bab 4: Pemberdayaan Masyarakat",
             "subBab": [
-              "Masa Kerajaan Hindu-Buddha dan Islam di Nusantara",
-              "Pelestarian Budaya dan Pemberdayaan Komunitas"
+              "Keragaman Fenomena Sosial-Budaya di Indonesia",
+              "Permasalahan Ekonomi Masyarakat dan Pengelolaan Keuangan Keluarga (Literasi Finansial)",
+              "Komunitas Lokal di Masyarakat dan Peran Pemberdayaannya"
             ],
             "alokasiSesi": 3,
-            "cp": "Menelusuri peninggalan kerajaan Hindu-Buddha-Islam dan dinamika masyarakat."
+            "cp": "Memahami pemberdayaan komunitas lokal dan menerapkan literasi pengelolaan keuangan keluarga."
           }
         ]
       },
@@ -1631,104 +1620,71 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp8-mtk-s1-b1",
-            "judul": "Bab 1: Pola Bilangan dan Deret",
+            "judul": "Bab 1: Bilangan Berpangkat",
             "subBab": [
-              "Barisan Aritmetika (Suku ke-n)",
-              "Barisan Geometri",
-              "Jumlah Deret Sederhana dan Penerapan Kontekstual"
+              "Sifat-Sifat Bilangan Berpangkat (Positif, Nol, dan Negatif)",
+              "Konsep dan Operasi Bentuk Akar serta Penyederhanaannya",
+              "Penulisan Notasi Ilmiah atau Bentuk Baku"
             ],
             "alokasiSesi": 3,
-            "cp": "Menentukan rumus suku ke-n dan menjumlahkan barisan bilangan."
+            "cp": "Memahami operasi bilangan berpangkat, menyederhanakan bentuk akar, dan menulis notasi ilmiah."
           },
           {
             "id": "smp8-mtk-s1-b2",
-            "judul": "Bab 2: Bidang Koordinat Kartesius",
+            "judul": "Bab 2: Teorema Pythagoras",
             "subBab": [
-              "Menentukan Posisi Titik terhadap Sumbu-X dan Sumbu-Y",
-              "Posisi Garis Sejajar dan Tegak Lurus terhadap Sumbu"
+              "Menemukan dan Membuktikan Konsep Teorema Pythagoras",
+              "Menghitung Panjang Sisi Segitiga Siku-Siku dan Tripel Pythagoras",
+              "Penerapan Pythagoras pada Bangun Datar dan Bangun Ruang"
             ],
-            "alokasiSesi": 2,
-            "cp": "Menggunakan bidang koordinat kartesius untuk memetakan posisi."
+            "alokasiSesi": 3,
+            "cp": "Membuktikan Teorema Pythagoras dan menerapkannya dalam menghitung panjang sisi dan jarak ruang."
           },
           {
             "id": "smp8-mtk-s1-b3",
-            "judul": "Bab 3: Relasi dan Fungsi",
+            "judul": "Bab 3: Persamaan dan Pertidaksamaan Linear Satu Variabel",
             "subBab": [
-              "Bentuk Penyajian Relasi (Diagram Panah, Pasangan Berurutan, Grafik)",
-              "Definisi Fungsi/Pemetaan",
-              "Menentukan Nilai Fungsi dan Notasi f(x)"
+              "Pemodelan Situasi Nyata ke Bentuk Persamaan Linear Satu Variabel (PLSV)",
+              "Penyelesaian dan Sifat Kesetaraan PLSV",
+              "Penyelesaian Pertidaksamaan Linear Satu Variabel (PtLSV)"
             ],
             "alokasiSesi": 3,
-            "cp": "Membedakan relasi dan fungsi serta menghitung nilai fungsi f(x)."
-          },
-          {
-            "id": "smp8-mtk-s1-b4",
-            "judul": "Bab 4: Persamaan Garis Lurus (PGL)",
-            "subBab": [
-              "Gradien (Kemiringan Garis)",
-              "Persamaan Garis Melalui Satu dan Dua Titik",
-              "Garis Sejajar dan Garis Saling Tegak Lurus"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menyusun persamaan garis lurus dan menganalisis gradien."
-          },
-          {
-            "id": "smp8-mtk-s1-b5",
-            "judul": "Bab 5: Sistem Persamaan Linear Dua Variabel (SPLDV)",
-            "subBab": [
-              "Metode Grafik",
-              "Metode Substitusi dan Eliminasi",
-              "Penyelesaian Soal Cerita SPLDV"
-            ],
-            "alokasiSesi": 4,
-            "cp": "Menyelesaikan SPLDV menggunakan berbagai metode aljabar."
+            "cp": "Memodelkan masalah sehari-hari dan menentukan himpunan penyelesaian PLSV dan PtLSV."
           }
         ],
         "2": [
           {
-            "id": "smp8-mtk-s2-b1",
-            "judul": "Bab 6: Teorema Pythagoras",
-            "subBab": [
-              "Membuktikan Teorema Pythagoras",
-              "Menentukan Jenis Segitiga (Lancip, Tumpul, Siku-siku)",
-              "Tripel Pythagoras",
-              "Penerapan pada Bangun Datar dan Ruang"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menerapkan teorema Pythagoras dalam menyelesaikan masalah geometri."
-          },
-          {
-            "id": "smp8-mtk-s2-b2",
-            "judul": "Bab 7: Lingkaran",
-            "subBab": [
-              "Sudut Pusat dan Sudut Keliling",
-              "Panjang Busur dan Luas Juring",
-              "Garis Singgung Persekutuan Luar dan Dalam Dua Lingkaran"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menghitung sudut, busur, juring, serta garis singgung persekutuan lingkaran."
-          },
-          {
-            "id": "smp8-mtk-s2-b3",
-            "judul": "Bab 8: Bangun Ruang Sisi Datar",
-            "subBab": [
-              "Kubus dan Balok (Jaring-jaring, Luas Permukaan, Volume)",
-              "Prisma dan Limas",
-              "Luas Permukaan dan Volume Bangun Gabungan"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menghitung luas permukaan dan volume bangun ruang sisi datar."
-          },
-          {
             "id": "smp8-mtk-s2-b4",
-            "judul": "Bab 9: Statistika dan Peluang",
+            "judul": "Bab 4: Relasi dan Fungsi",
             "subBab": [
-              "Kuartil, Jangkauan Interkuartil, dan Boxplot",
-              "Titik Sampel dan Ruang Sampel",
-              "Peluang Teoretik dan Empirik"
+              "Memahami Perbedaan Konsep Relasi dan Fungsi (Pemetaan)",
+              "Penyajian Fungsi (Diagram Panah, Himpunan Pasangan Berurutan, Tabel, Grafik)",
+              "Rumus dan Nilai Fungsi"
             ],
             "alokasiSesi": 3,
-            "cp": "Menentukan sebaran data dan peluang kejadian tunggal."
+            "cp": "Membedakan relasi dan fungsi serta menyajikan korespondensi matematis dalam berbagai representasi."
+          },
+          {
+            "id": "smp8-mtk-s2-b5",
+            "judul": "Bab 5: Persamaan Garis Lurus",
+            "subBab": [
+              "Memahami Grafik Persamaan Garis Lurus pada Bidang Kartesius",
+              "Menentukan Kemiringan Garis (Gradien / m)",
+              "Menyusun Persamaan Garis (Hubungan Sejajar dan Tegak Lurus)"
+            ],
+            "alokasiSesi": 3,
+            "cp": "Menganalisis gradien kemiringan garis dan menyusun persamaan garis lurus pada koordinat Kartesius."
+          },
+          {
+            "id": "smp8-mtk-s2-b6",
+            "judul": "Bab 6: Statistika",
+            "subBab": [
+              "Pengusutan Masalah Statistika Melalui Pengumpulan Data",
+              "Ukuran Pemusatan Data: Menghitung Mean, Median, dan Modus",
+              "Penyajian dan Penarikan Kesimpulan Data Statistik"
+            ],
+            "alokasiSesi": 3,
+            "cp": "Menentukan ukuran pemusatan data (mean, median, modus) serta menyimpulkan fenomena dari data statistik."
           }
         ]
       },
@@ -1736,62 +1692,72 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp8-ipa-s1-b1",
-            "judul": "Bab 1: Struktur dan Fungsi Tubuh Makhluk Hidup",
+            "judul": "Bab 1: Pengenalan Sel",
             "subBab": [
-              "Nutrisi dan Sistem Pencernaan Makanan",
-              "Sistem Peredaran Darah (Jantung, Pembuluh, Golongan Darah)",
-              "Sistem Pernapasan (Mekanisme Dada & Perut)",
-              "Sistem Ekskresi (Ginjal, Paru, Kulit, Hati)"
+              "Penggunaan Mikroskop Cahaya dan Pengamatan Preparat Sel",
+              "Struktur dan Fungsi Organel Sel Hewan vs Sel Tumbuhan",
+              "Spesialisasi Sel dan Diferensiasi Jaringan Makhluk Hidup"
             ],
-            "alokasiSesi": 4,
-            "cp": "Menganalisis sistem organ tubuh manusia dalam menjaga homeostasis."
+            "alokasiSesi": 3,
+            "cp": "Mengidentifikasi struktur dan fungsi organel sel mikroskopis serta spesialisasi jaringan biologis."
           },
           {
             "id": "smp8-ipa-s1-b2",
-            "judul": "Bab 2: Struktur dan Fungsi Tumbuhan",
+            "judul": "Bab 2: Struktur dan Fungsi Tubuh Makhluk Hidup",
             "subBab": [
-              "Jaringan Meristem, Epidermis, Pengangkut (Xilem & Floem)",
-              "Struktur Akar, Batang, dan Daun",
-              "Teknologi yang Terinspirasi Struktur Tumbuhan"
+              "Sistem Pencernaan: Nutrisi Makanan, Organ Pencernaan, dan Enzim",
+              "Sistem Peredaran Darah: Jantung, Pembuluh Darah, Komponen Darah, dan Tekanan",
+              "Sistem Pernapasan: Organ Respirasi, Mekanisme Dada & Perut, dan Kapasitas Paru",
+              "Sistem Ekskresi: Ginjal, Nefron, Kulit, Paru-paru, Hati, dan Gangguan Kesehatan"
+            ],
+            "alokasiSesi": 4,
+            "cp": "Menganalisis keterkaitan sistem pencernaan, peredaran darah, pernapasan, dan ekskresi manusia."
+          },
+          {
+            "id": "smp8-ipa-s1-b3",
+            "judul": "Bab 3: Usaha, Energi, dan Pesawat Sederhana",
+            "subBab": [
+              "Konsep Usaha dan Hubungannya dengan Perpindahan",
+              "Energi Mekanik: Energi Kinetik, Energi Potensial Gravitasi, dan Hukum Kekekalan Energi",
+              "Jenis-Jenis Pesawat Sederhana (Tuas/Pengungkit, Katrol, Bidang Miring, Roda Berporos)"
             ],
             "alokasiSesi": 3,
-            "cp": "Menghubungkan anatomi tumbuhan dengan fungsi fisiologis dan aplikasinya."
+            "cp": "Menghitung besar usaha, energi mekanik, dan keuntungan mekanik berbagai pesawat sederhana."
           }
         ],
         "2": [
           {
-            "id": "smp8-ipa-s2-b1",
-            "judul": "Bab 3: Usaha, Energi, dan Pesawat Sederhana",
-            "subBab": [
-              "Usaha (W = F.s) dan Daya",
-              "Tuas/Pengungkit, Bidang Miring, Katrol, dan Roda Bergandar",
-              "Keuntungan Mekanis Pesawat Sederhana"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menghitung keuntungan mekanis pesawat sederhana dan efisiensi energi."
-          },
-          {
-            "id": "smp8-ipa-s2-b2",
+            "id": "smp8-ipa-s2-b4",
             "judul": "Bab 4: Getaran, Gelombang, dan Cahaya",
             "subBab": [
-              "Periode, Frekuensi, dan Amplitudo Getaran",
-              "Gelombang Transversal dan Longitudinal",
-              "Sifat Gelombang Bunyi (Resonansi & Pemantulan)",
-              "Cermin Cekung/Cembung dan Lensa (Rumus Titik Fokus)"
+              "Konsep Getaran: Frekuensi, Periode, dan Amplitudo",
+              "Perambatan Gelombang Transversal, Gelombang Longitudinal, dan Bunyi",
+              "Sifat-Sifat Cahaya, Pembentukan Bayangan pada Cermin & Lensa, serta Alat Optik"
             ],
             "alokasiSesi": 4,
-            "cp": "Menganalisis fenomena gelombang bunyi dan optik geometri pembentukan bayangan."
+            "cp": "Menganalisis fenomena getaran, perambatan gelombang bunyi, dan sifat optik cermin/lensa."
           },
           {
-            "id": "smp8-ipa-s2-b3",
+            "id": "smp8-ipa-s2-b5",
             "judul": "Bab 5: Unsur, Senyawa, dan Campuran",
             "subBab": [
-              "Tabel Periodik Dasar",
-              "Campuran Homogen dan Heterogen",
-              "Metode Pemisahan Campuran (Filtrasi, Destilasi, Kromatografi)"
+              "Klasifikasi Materi: Unsur Atom Tunggal dan Lambang Kimia",
+              "Senyawa Kimia dan Rumus Molekul Sederhana",
+              "Campuran Homogen dan Heterogen serta Metode Pemisahan Campuran (Filtrasi, Destilasi, Kromatografi)"
             ],
-            "alokasiSesi": 2,
-            "cp": "Membedakan sifat unsur-senyawa-campuran dan teknik pemisahannya."
+            "alokasiSesi": 3,
+            "cp": "Membedakan unsur, senyawa, dan campuran serta melakukan pemisahan campuran secara laboratoris."
+          },
+          {
+            "id": "smp8-ipa-s2-b6",
+            "judul": "Bab 6: Struktur Bumi dan Perkembangannya",
+            "subBab": [
+              "Lapisan Interior Bumi: Kerak, Mantel, Inti Luar, dan Inti Dalam",
+              "Litosfer, Hidrosfer, Atmosfer, dan Teori Pergerakan Lempeng Tektonik",
+              "Mitigasi Bencana Alam Gempa Bumi, Tsunami, dan Erupsi Gunung Berapi"
+            ],
+            "alokasiSesi": 3,
+            "cp": "Menjelaskan lapisan litosfer-atmosfer bumi dan merancang strategi mitigasi bencana geologis."
           }
         ]
       },
@@ -1799,49 +1765,49 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp8-ips-s1-b1",
-            "judul": "Bab 1: Keunggulan Geografis dan Keragaman Hayati",
+            "judul": "Bab 1: Kondisi Geografis dan Pelestarian Sumber Daya Alam",
             "subBab": [
-              "Iklim Tropis dan Pengaruh Geografis Indonesia",
-              "Potensi Sumber Daya Tambang dan Kelautan",
-              "Pemanfaatan Berkelanjutan"
+              "Keragaman Alam Indonesia (Letak Geografis, Geologis, dan Iklim)",
+              "Pemanfaatan dan Pelestarian Sumber Daya Alam (Hutan, Tambang, Maritim)",
+              "Kualitas Sumber Daya Manusia (SDM) dan Peran Lembaga Sosial"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis potensi geostrategis dan kekayaan maritim nusantara."
+            "cp": "Menganalisis pengaruh geografis Indonesia terhadap keragaman potensi dan pelestarian SDA."
           },
           {
             "id": "smp8-ips-s1-b2",
-            "judul": "Bab 2: Dinamika Penduduk dan Mobilitas Sosial",
+            "judul": "Bab 2: Kemajemukan Masyarakat Indonesia",
             "subBab": [
-              "Bentuk-Bentuk Mobilitas Sosial (Vertikal & Horizontal)",
-              "Faktor Pendorong dan Penghambat Mobilitas Sosial",
-              "Pluralitas Masyarakat Indonesia (Agama, Suku, Ras, Profesi)"
+              "Proses Integrasi dan Faktor Pendorong Kemajemukan Suku, Agama, Budaya",
+              "Dinamika Penduduk dan Saluran Mobilitas Sosial di Indonesia",
+              "Pengaruh Kolonialisme Barat (VOC, Belanda, Inggris) dan Pendudukan Jepang"
             ],
             "alokasiSesi": 3,
-            "cp": "Memahami dampak mobilitas sosial dan harmoni keberagaman bangsa."
+            "cp": "Menganalisis kemajemukan bangsa, mobilitas sosial, dan masa kolonialisme di Indonesia."
           }
         ],
         "2": [
           {
-            "id": "smp8-ips-s2-b1",
+            "id": "smp8-ips-s2-b3",
             "judul": "Bab 3: Nasionalisme dan Jati Diri Bangsa",
             "subBab": [
-              "Latar Belakang Penjajahan Bangsa Barat di Indonesia",
-              "Pergerakan Nasional dan Sumpah Pemuda 1928",
-              "Pendudukan Jepang dan Persiapan Kemerdekaan"
+              "Pergerakan Kebangsaan Indonesia Menuju Kemerdekaan (Organisasi Pemuda & Tokoh Nasional)",
+              "Pemerataan Pembangunan dan Tata Ruang Wilayah",
+              "Konsep Konflik Sosial, Integrasi Sosial, dan Resolusi Perdamaian"
             ],
             "alokasiSesi": 3,
-            "cp": "Menelusuri sejarah pergerakan kebangsaan menuju Indonesia merdeka."
+            "cp": "Menelusuri sejarah kebangkitan nasionalisme dan merumuskan resolusi atas konflik sosial."
           },
           {
-            "id": "smp8-ips-s2-b2",
-            "judul": "Bab 4: Perekonomian dan Pembangunan Nasional",
+            "id": "smp8-ips-s2-b4",
+            "judul": "Bab 4: Pembangunan Perekonomian Indonesia",
             "subBab": [
-              "Perdagangan Antardaerah dan Internasional",
-              "Ekonomi Maritim dan Ekonomi Agrikultur",
-              "Kebijakan Redistribusi Pendapatan"
+              "Peran Perekonomian Antarwilayah dan Antarpulau di Indonesia",
+              "Perdagangan Internasional, Ekspor-Impor, dan Kerja Sama Ekonomi Bilateral/Multilateral",
+              "Pengembangan Ekonomi Kreatif dan Transformasi Digital Indonesia"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis peluang ekonomi maritim dan keadilan distribusi pendapatan."
+            "cp": "Menganalisis perdagangan antarpulau, perdagangan internasional, dan potensi ekonomi kreatif."
           }
         ]
       },
@@ -1984,75 +1950,49 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp9-mtk-s1-b1",
-            "judul": "Bab 1: Perpangkatan dan Bentuk Akar",
+            "judul": "Bab 1: Sistem Persamaan Linear Dua Variabel (SPLDV)",
             "subBab": [
-              "Sifat-Sifat Operasi Bilangan Berpangkat Bulat",
-              "Bentuk Akar dan Menyederhanakan Akar",
-              "Merasionalkan Penyebut Pecahan Bentuk Akar",
-              "Notasi Ilmiah dan Bilangan Baku"
+              "Memodelkan Masalah Sehari-hari ke dalam SPLDV",
+              "Menyelesaikan SPLDV dengan Metode Grafik dan Substitusi",
+              "Menyelesaikan SPLDV dengan Metode Eliminasi dan Gabungan/Campuran"
             ],
-            "alokasiSesi": 3,
-            "cp": "Menguasai operasi eksponen dan bentuk akar serta penerapannya."
+            "alokasiSesi": 4,
+            "cp": "Memodelkan fenomena kontekstual ke dalam SPLDV dan menentukan solusi dengan berbagai metode."
           },
           {
             "id": "smp9-mtk-s1-b2",
-            "judul": "Bab 2: Persamaan dan Fungsi Kuadrat",
+            "judul": "Bab 2: Bangun Ruang Sisi Lengkung",
             "subBab": [
-              "Akar Persamaan Kuadrat (Faktorisasi, Melengkapkan Kuadrat, Rumus ABC)",
-              "Diskriminan dan Sifat-Sifat Akar",
-              "Grafik Fungsi Kuadrat, Titik Puncak, dan Sumbu Simetri",
-              "Nilai Maksimum/Minimum Masalah Kontekstual"
+              "Karakteristik, Jaring-Jaring, dan Luas Permukaan Tabung, Kerucut, dan Bola",
+              "Volume Bangun Ruang Sisi Lengkung (Tabung, Kerucut, dan Bola)",
+              "Pengaruh Perubahan Skala pada Luas Permukaan dan Volume Bangun Ruang"
             ],
             "alokasiSesi": 4,
-            "cp": "Menyelesaikan persamaan kuadrat dan menginterpretasi grafik fungsi kuadrat."
-          },
-          {
-            "id": "smp9-mtk-s1-b3",
-            "judul": "Bab 3: Transformasi Geometri",
-            "subBab": [
-              "Translasi (Pergeseran)",
-              "Refleksi (Pencerminan)",
-              "Rotasi (Perputaran dengan Titik Pusat)",
-              "Dilatasi (Perkalian Skala)"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menentukan koordinat bayangan objek melalui transformasi geometri."
+            "cp": "Menentukan luas permukaan dan volume bangun ruang sisi lengkung serta menganalisis efek faktor skala."
           }
         ],
         "2": [
           {
-            "id": "smp9-mtk-s2-b1",
-            "judul": "Bab 4: Kekongruenan dan Kesebangunan",
-            "subBab": [
-              "Syarat Dua Bangun Kongruen",
-              "Syarat Kekongruenan Dua Segitiga (S-S-S, S-Sd-S, Sd-S-Sd)",
-              "Kesebangunan Bangun Datar dan Segitiga",
-              "Penerapan Menaksir Tinggi Gedung/Pohon"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Membuktikan kekongruenan dan kesebangunan pada bangun geometri."
-          },
-          {
-            "id": "smp9-mtk-s2-b2",
-            "judul": "Bab 5: Bangun Ruang Sisi Lengkung",
-            "subBab": [
-              "Tabung: Jaring-jaring, Luas Permukaan, dan Volume",
-              "Kerucut: Hubungan Garis Pelukis, Luas, dan Volume",
-              "Bola: Luas Permukaan dan Volume",
-              "Bangun Ruang Gabungan dan Masalah Praktis"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menghitung luas permukaan dan isi bangun ruang sisi lengkung."
-          },
-          {
             "id": "smp9-mtk-s2-b3",
-            "judul": "Bab 6: Pemantapan Ujian Masuk SMA & TPA/Numerasi",
+            "judul": "Bab 3: Transformasi Geometri",
             "subBab": [
-              "Bedah Pola Soal Seleksi SMA Unggulan",
-              "Penalaran Numerik dan Strategi Eliminasi Cepat"
+              "Pergeseran Posisi Objek: Translasi dan Refleksi",
+              "Perputaran dan Perubahan Ukuran Objek: Rotasi dan Dilatasi",
+              "Menganalisis Prinsip Kesebangunan dan Kekongruenan Bangun Datar"
+            ],
+            "alokasiSesi": 4,
+            "cp": "Menerapkan transformasi geometri pada bidang koordinat dan menganalisis kesebangunan serta kekongruenan."
+          },
+          {
+            "id": "smp9-mtk-s2-b4",
+            "judul": "Bab 4: Peluang dan Pemilihan Sampel",
+            "subBab": [
+              "Menentukan Ruang Sampel dan Titik Sampel",
+              "Menghitung Peluang Empiris, Peluang Teoretis, dan Frekuensi Harapan",
+              "Pemilihan Sampel Data yang Adil dan Representatif dalam Statistika"
             ],
             "alokasiSesi": 3,
-            "cp": "Menguji pemahaman matematika komprehensif untuk persiapan jenjang SMA."
+            "cp": "Menentukan peluang kejadian, menghitung frekuensi harapan, dan merancang teknik pengambilan sampel acak."
           }
         ]
       },
@@ -2060,85 +2000,85 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp9-ipa-s1-b1",
-            "judul": "Bab 1: Sistem Reproduksi Manusia dan Penyakitnya",
+            "judul": "Bab 1: Pertumbuhan dan Perkembangan",
             "subBab": [
-              "Pembelahan Sel (Mitosis dan Meiosis)",
-              "Organ Reproduksi Pria dan Spermatogenesis",
-              "Organ Reproduksi Wanita, Oogenesis, dan Siklus Menstruasi",
-              "Penyakit Menular Seksual dan Upaya Pencegahannya"
+              "Tahapan Pertumbuhan dan Perkembangan Manusia (Embrio, Bayi, Anak, Remaja, Dewasa, Lansia)",
+              "Metamorfosis Sempurna dan Tidak Sempurna pada Hewan",
+              "Pertumbuhan Vegetatif dan Generatif pada Tumbuhan Berbiji"
             ],
             "alokasiSesi": 3,
-            "cp": "Menjelaskan pembelahan sel dan sistem reproduksi serta pemeliharaan kesehatannya."
+            "cp": "Menganalisis fase-fase pertumbuhan dan faktor yang mempengaruhi perkembangan makhluk hidup."
           },
           {
             "id": "smp9-ipa-s1-b2",
-            "judul": "Bab 2: Perkembangbiakan Tumbuhan dan Hewan",
+            "judul": "Bab 2: Sistem Koordinasi, Reproduksi, dan Homeostasis Manusia",
             "subBab": [
-              "Reproduksi Vegetatif dan Generatif Tumbuhan Angiospermae/Gymnospermae",
-              "Teknologi Reproduksi Tumbuhan (Hidroponik, Vertikultur, Kultur Jaringan)",
-              "Reproduksi Aseksual dan Seksual Hewan"
+              "Sistem Saraf: Neuron, Impuls Saraf, Otak, dan Sumsum Tulang Belakang",
+              "Sistem Hormon / Endokrin dan Pengaruh Zat Adiktif terhadap Sistem Saraf",
+              "Sistem Reproduksi Manusia, Gametogenesis, Siklus Menstruasi, dan Fertilisasi",
+              "Konsep Menjaga Keseimbangan Internal Tubuh (Homeostasis dan Termoregulasi)"
             ],
-            "alokasiSesi": 3,
-            "cp": "Menganalisis sistem perkembangbiakan organisme dan teknologi reproduksi modern."
+            "alokasiSesi": 4,
+            "cp": "Memahami mekanisme koordinasi saraf-hormon, reproduksi manusia, dan pemeliharaan homeostasis."
           },
           {
             "id": "smp9-ipa-s1-b3",
-            "judul": "Bab 3: Pewarisan Sifat (Genetika)",
+            "judul": "Bab 3: Tekanan",
             "subBab": [
-              "Materi Genetik (Gen dan Kromosom)",
-              "Hukum Pewarisan Sifat Mendel (Monohibrid & Dihibrid)",
-              "Pewarisan Sifat Kelainan Genetika (Buta Warna & Hemofilia)"
+              "Tekanan Zat Padat dan Luas Bidang Sentuh",
+              "Tekanan Zat Cair: Tekanan Hidrostatis, Hukum Pascal, dan Hukum Archimedes",
+              "Tekanan Gas / Udara serta Barometer",
+              "Aplikasi Tekanan pada Makhluk Hidup (Transportasi Air Tumbuhan dan Pengukuran Tekanan Darah)"
+            ],
+            "alokasiSesi": 3,
+            "cp": "Menerapkan konsep tekanan zat padat, cair, dan gas serta relevansinya pada sistem biologis."
+          },
+          {
+            "id": "smp9-ipa-s1-b4",
+            "judul": "Bab 4: Listrik, Magnet, dan Sumber Energi Alternatif",
+            "subBab": [
+              "Gejala Listrik Statis: Muatan Listrik, Hukum Coulomb, dan Medan Listrik",
+              "Kelistrikan Dinamis: Kuat Arus, Hukum Ohm, Rangkaian Seri-Paralel, dan Hukum Kirchhoff",
+              "Sifat Kemagnetan, Medan Magnet, dan Induksi Elektromagnetik (Trafo dan Generator)",
+              "Pemanfaatan Sumber Energi Listrik Terbarukan dan Ramah Lingkungan"
             ],
             "alokasiSesi": 4,
-            "cp": "Menerapkan hukum pewarisan sifat Mendel dalam persilangan monohibrid dan dihibrid."
+            "cp": "Menganalisis fenomena elektrostatik, rangkaian sirkuit arus listrik, elektromagnet, dan energi hijau."
           }
         ],
         "2": [
           {
-            "id": "smp9-ipa-s2-b1",
-            "judul": "Bab 4: Listrik Statis dan Kelistrikan pada Saraf",
+            "id": "smp9-ipa-s2-b5",
+            "judul": "Bab 5: Reaksi Kimia dan Partikel Penyusun Benda",
             "subBab": [
-              "Muatan Listrik dan Hukum Coulomb",
-              "Medan Listrik dan Potensial Listrik",
-              "Kelistrikan pada Sel Saraf Manusia dan Hewan Penghasil Listrik"
+              "Konsep Dasar Partikel Materi: Atom, Molekul Unsur, Molekul Senyawa, dan Ion",
+              "Ciri-Ciri Terjadinya Reaksi Kimia di Lingkungan Sekitar",
+              "Asam, Basa, Garam, dan Indikator pH Alami"
             ],
             "alokasiSesi": 3,
-            "cp": "Menjelaskan fenomena elektrostatika dan transmisi sinyal listrik pada sistem saraf."
+            "cp": "Mengidentifikasi partikel materi atom/ion dan mengenali ciri-ciri transformasi reaksi kimia."
           },
           {
-            "id": "smp9-ipa-s2-b2",
-            "judul": "Bab 5: Rangkaian Listrik Dinamis dan Energi Listrik",
+            "id": "smp9-ipa-s2-b6",
+            "judul": "Bab 6: Pewarisan Sifat dan Bioteknologi",
             "subBab": [
-              "Kuat Arus, Beda Potensial, dan Hukum Ohm (V = I.R)",
-              "Rangkaian Hambatan Seri dan Paralel",
-              "Hukum I Kirchhoff",
-              "Daya Listrik (P = V.I), Energi Listrik, dan Perhitungan Tarif PLN"
+              "Materi Genetik Pembawa Sifat: Kromosom, Gen, DNA, dan RNA",
+              "Hukum Pewarisan Sifat Mendel: Persilangan Monohibrid dan Dihibrid",
+              "Penerapan Bioteknologi Konvensional (Fermentasi Tempe, Roti, Yoghurt) dan Bioteknologi Modern"
             ],
             "alokasiSesi": 4,
-            "cp": "Menganalisis rangkaian listrik dinamis dan menghitung biaya konsumsi energi listrik."
+            "cp": "Memahami pola pewarisan sifat genetik menurut Mendel dan menilai produk bioteknologi pangan."
           },
           {
-            "id": "smp9-ipa-s2-b3",
-            "judul": "Bab 6: Kemagnetan dan Induksi Elektromagnetik",
+            "id": "smp9-ipa-s2-b7",
+            "judul": "Bab 7: Isu-Isu Lingkungan",
             "subBab": [
-              "Medan Magnet dan Kaidah Tangan Kanan",
-              "Gaya Lorentz (F = B.I.L)",
-              "Induksi Elektromagnetik dan Transformator (Trafo Step Up/Down)",
-              "Pemanfaatan Medan Magnet pada Navigasi Hewan"
+              "Analisis Dampak Krisis Lingkungan Global dan Pemanasan Global (Global Warming)",
+              "Dampak Pencemaran Air, Tanah, dan Udara terhadap Kesehatan Ekologis",
+              "Solusi Teknologi Ramah Lingkungan dan Pengolahan Limbah Berkelanjutan"
             ],
             "alokasiSesi": 3,
-            "cp": "Menerapkan konsep elektromagnetik dan prinsip kerja transformator."
-          },
-          {
-            "id": "smp9-ipa-s2-b4",
-            "judul": "Bab 7: Bioteknologi Ramah Lingkungan",
-            "subBab": [
-              "Bioteknologi Konvensional (Fermentasi)",
-              "Bioteknologi Modern (Rekayasa Genetika & Kloning)",
-              "Dampak Bioteknologi terhadap Sains dan Etika"
-            ],
-            "alokasiSesi": 2,
-            "cp": "Membedakan bioteknologi konvensional dan modern serta implikasinya."
+            "cp": "Mengevaluasi krisis perubahan iklim global dan mengusulkan solusi teknologi mitigasi lingkungan."
           }
         ]
       },
@@ -2146,48 +2086,49 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "smp9-ips-s1-b1",
-            "judul": "Bab 1: Perubahan Sosial Budaya dan Globalisasi",
+            "judul": "Bab 1: Manusia dan Perubahan",
             "subBab": [
-              "Bentuk-Bentuk Perubahan Sosial Budaya",
-              "Faktor Pendorong dan Penghambat Perubahan",
-              "Dampak Globalisasi dalam Bidang Iptek, Ekonomi, Komunikasi, Budaya"
+              "Konsep dan Bentuk-Bentuk Perubahan Sosial Budaya di Masyarakat",
+              "Globalisasi di Berbagai Bidang Kehidupan dan Dampaknya bagi Bangsa Indonesia",
+              "Modernisasi, Digitalisasi, Literasi Keuangan, dan Kearifan Lokal di Era Digital"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis dampak dinamika perubahan sosial dan globalisasi bagi masyarakat."
+            "cp": "Menganalisis dinamika perubahan sosial budaya serta menyikapi arus globalisasi secara bijak."
           },
           {
             "id": "smp9-ips-s1-b2",
-            "judul": "Bab 2: Interaksi Antarnegara Asia dan Benua Lainnya",
+            "judul": "Bab 2: Keberagaman Lingkungan Dunia",
             "subBab": [
-              "Letak dan Karakteristik Benua Asia dan Benua Lainnya",
-              "Interaksi Keruangan dan Pengaruh Perubahan Ruang"
+              "Kondisi Geografis, Iklim, dan Bentang Alam Benua-Benua di Dunia (Asia, Amerika, Afrika, Eropa, Australia)",
+              "Dinamika Penduduk Benua-Benua dan Interaksi Ruang Antarnegara",
+              "Potensi dan Pengaruh Kerja Sama Internasional bagi Pembangunan Bangsa"
             ],
             "alokasiSesi": 3,
-            "cp": "Menjelaskan kondisi geografis benua di dunia dan pola interaksi global."
+            "cp": "Menganalisis bentang geografis benua di dunia dan dampak interaksi global antarnegara."
           }
         ],
         "2": [
           {
-            "id": "smp9-ips-s2-b1",
-            "judul": "Bab 3: Ketergantungan Antarruang dan Kesejahteraan Masyarakat",
+            "id": "smp9-ips-s2-b3",
+            "judul": "Bab 3: Perjuangan Mempertahankan Kemerdekaan",
             "subBab": [
-              "Konsep Ekonomi Kreatif",
-              "Pusat-Pusat Keunggulan Ekonomi Indonesia",
-              "Pasar Bebas (MEA, AFTA, APEC, WTO)"
+              "Perjuangan Fisik dan Diplomasi Mempertahankan Kemerdekaan RI (1945-1949)",
+              "Perkembangan Politik dan Ekonomi Masa Awal Kemerdekaan, Demokrasi Liberal, hingga Demokrasi Terpimpin",
+              "Integrasi Wilayah dan Kedaulatan Negara Kesatuan Republik Indonesia"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis pengaruh pusat keunggulan ekonomi terhadap migrasi dan kesejahteraan."
+            "cp": "Menganalisis upaya mempertahankan kemerdekaan secara bersenjata dan diplomatik di kancah global."
           },
           {
-            "id": "smp9-ips-s2-b2",
-            "judul": "Bab 4: Indonesia dari Masa Kemerdekaan hingga Era Reformasi",
+            "id": "smp9-ips-s2-b4",
+            "judul": "Bab 4: Kerja Sama Dunia dalam Keberagaman",
             "subBab": [
-              "Masa Kemerdekaan (1945-1950) dan Diplomasi Fisik",
-              "Masa Demokrasi Parlementer dan Terpimpin",
-              "Masa Orde Baru dan Era Reformasi"
+              "Peran Aktif Indonesia dalam Perdamaian Dunia (PBB, KAA, Gerakan Non-Blok, ASEAN)",
+              "Isu-Isu Global Masa Kini: Lingkungan Hidup, Krisis Energi, Perdamaian, dan HAM",
+              "Tantangan dan Strategi Menjadi Warga Dunia yang Aktif Menjaga Ketertiban Global"
             ],
             "alokasiSesi": 3,
-            "cp": "Menelaah dinamika politik dan ekonomi bangsa Indonesia dari 1945 hingga reformasi."
+            "cp": "Mengevaluasi peran aktif Indonesia dalam diplomasi internasional dan penanganan isu global."
           }
         ]
       },
@@ -2334,83 +2275,80 @@ export const SILABUS_KURIKULUM_MERDEKA = {
             "id": "sma10-mtk-s1-b1",
             "judul": "Bab 1: Eksponen dan Logaritma",
             "subBab": [
-              "Sifat-Sifat Bilangan Berpangkat (Eksponen)",
-              "Persamaan dan Fungsi Eksponen",
-              "Definisi dan Sifat-Sifat Logaritma",
-              "Persamaan Logaritma dan Terapan Peluruhan/Pertumbuhan"
+              "Sifat-Sifat Eksponen dan Fungsi Eksponensial",
+              "Pertumbuhan dan Peluruhan Eksponensial (Bunga Majemuk, Bakteri, Radioaktif)",
+              "Pengertian Logaritma dan Sifat-Sifat Operasi Logaritma"
             ],
             "alokasiSesi": 4,
-            "cp": "Menggunakan sifat eksponen dan logaritma dalam memodelkan fenomena eksponensial."
+            "cp": "Menggeneralisasi sifat eksponen dan logaritma untuk memodelkan pertumbuhan dan peluruhan."
           },
           {
             "id": "sma10-mtk-s1-b2",
             "judul": "Bab 2: Barisan dan Deret",
             "subBab": [
-              "Barisan dan Deret Aritmetika",
+              "Barisan dan Deret Aritmatika",
               "Barisan dan Deret Geometri",
-              "Deret Geometri Tak Hingga",
-              "Aplikasi Bunga Tunggal dan Majemuk"
+              "Deret Geometri Tak Hingga Konvergen dan Divergen"
             ],
             "alokasiSesi": 4,
-            "cp": "Menyelesaikan masalah keuangan dan populasi menggunakan barisan dan deret."
+            "cp": "Menerapkan pola barisan dan deret aritmatika/geometri dalam masalah finansial dan numerik."
           },
           {
             "id": "sma10-mtk-s1-b3",
             "judul": "Bab 3: Vektor dan Operasinya",
             "subBab": [
-              "Konsep Vektor pada Bidang Datar (R2)",
-              "Operasi Penjumlahan, Pengurangan, dan Perkalian Skalar",
-              "Vektor Satuan dan Panjang Vektor"
+              "Notasi, Panjang, dan Arah Vektor pada Bidang Koordinat R2 dan Ruang R3",
+              "Operasi Penjumlahan dan Pengurangan Vektor",
+              "Perkalian Skalar Dua Vektor (Dot Product)"
             ],
             "alokasiSesi": 3,
-            "cp": "Menyatakan dan mengoperasikan besaran vektor secara geometris dan aljabar."
+            "cp": "Mempresentasikan vektor secara geometris dan aljabar serta melakukan operasi aljabar vektor."
           }
         ],
         "2": [
           {
-            "id": "sma10-mtk-s2-b1",
+            "id": "sma10-mtk-s2-b4",
             "judul": "Bab 4: Trigonometri Dasar",
             "subBab": [
-              "Perbandingan Trigonometri pada Segitiga Siku-siku (Sin, Cos, Tan, Cosec, Sec, Cotan)",
-              "Sudut Istimewa (0, 30, 45, 60, 90 derajat)",
-              "Sudut Berelasi di Berbagai Kuadran (I, II, III, IV)",
-              "Aturan Sinus dan Aturan Cosinus",
-              "Luas Segitiga Sembarang"
+              "Perbandingan Trigonometri (Sinus, Cosinus, Tangen) pada Segitiga Siku-Siku",
+              "Sudut-Sudut Istimewa dan Kuadran",
+              "Penerapan Trigonometri untuk Menghitung Tinggi dan Jarak Objek Nyata"
             ],
             "alokasiSesi": 4,
-            "cp": "Menerapkan rasio trigonometri dan aturan sinus-cosinus dalam pemecahan masalah."
+            "cp": "Menentukan perbandingan trigonometri dan mengaplikasikannya dalam navigasi dan pengukuran elevasi."
           },
           {
-            "id": "sma10-mtk-s2-b2",
-            "judul": "Bab 5: Sistem Persamaan Linear Tiga Variabel (SPLTV)",
+            "id": "sma10-mtk-s2-b5",
+            "judul": "Bab 5: Sistem Persamaan dan Pertidaksamaan Linear",
             "subBab": [
-              "Bentuk Umum SPLTV",
-              "Metode Substitusi, Eliminasi, dan Campuran",
-              "Model Matematika Masalah Nyata"
+              "Sistem Persamaan Linear Tiga Variabel (SPLTV) dan Metode Penyelesaiannya",
+              "Sistem Pertidaksamaan Linear Dua Variabel (SPtLDV)",
+              "Grafik dan Daerah Himpunan Penyelesaian Sistem Linear"
             ],
             "alokasiSesi": 3,
-            "cp": "Memodelkan dan memecahkan masalah kontekstual dengan SPLTV."
+            "cp": "Menyelesaikan sistem persamaan tiga variabel dan menentukan daerah penyelesaian SPtLDV."
           },
           {
-            "id": "sma10-mtk-s2-b3",
-            "judul": "Bab 6: Sistem Pertidaksamaan Linear Dua Variabel (SPtLDV)",
+            "id": "sma10-mtk-s2-b6",
+            "judul": "Bab 6: Fungsi Kuadrat",
             "subBab": [
-              "Menentukan Daerah Himpunan Penyelesaian (DHP)",
-              "Sistem Pertidaksamaan Linear dan Kuadrat"
+              "Karakteristik Grafik Fungsi Kuadrat (Titik Puncak, Sumbu Simetri, Diskriminan D)",
+              "Menggambar dan Memodifikasi Kurva Parabola",
+              "Pemodelan Masalah Nilai Maksimum dan Minimum Menggunakan Fungsi Kuadrat"
             ],
             "alokasiSesi": 3,
-            "cp": "Menggambar dan menentukan daerah penyelesaian SPtLDV pada bidang kartesius."
+            "cp": "Menganalisis sifat kurva parabola fungsi kuadrat dan memodelkan masalah optimasi kontekstual."
           },
           {
-            "id": "sma10-mtk-s2-b4",
+            "id": "sma10-mtk-s2-b7",
             "judul": "Bab 7: Statistika dan Peluang",
             "subBab": [
-              "Data Tunggal dan Berkelompok (Histogram & Poligon)",
-              "Ukuran Penyebaran (Jangkauan, Ragam, Simpangan Baku)",
-              "Peluang Kejadian Saling Lepas dan Saling Bebas"
+              "Penyajian Data Berkelompok (Histogram, Poligon Frekuensi, Ogive)",
+              "Ukuran Pemusatan (Mean, Median, Modus) dan Penyebaran (Kuartil, Desil, Variansi, Simpangan Baku)",
+              "Ruang Sampel dan Peluang Suatu Kejadian (Saling Lepas dan Saling Bebas)"
             ],
             "alokasiSesi": 3,
-            "cp": "Menganalisis dispersi data statistik dan menentukan probabilitas majemuk."
+            "cp": "Menganalisis data berkelompok, mengukur dispersi data, dan menghitung peluang kejadian majemuk."
           }
         ]
       },
@@ -2733,49 +2671,36 @@ export const SILABUS_KURIKULUM_MERDEKA = {
             "id": "sma11-mtk-s1-b1",
             "judul": "Bab 1: Komposisi Fungsi dan Fungsi Invers",
             "subBab": [
-              "Operasi Aljabar pada Fungsi",
-              "Komposisi Fungsi (f o g)(x) dan Sifat-sifatnya",
-              "Fungsi Invers f^(-1)(x)",
-              "Invers dari Komposisi Fungsi"
+              "Domain, Kodomain, dan Range Suatu Fungsi Formal",
+              "Operasi Aljabar Fungsi dan Konsep Fungsi Komposisi (f o g)(x)",
+              "Konsep Fungsi Invers f^(-1)(x) dan Sifat-Sifatnya"
             ],
             "alokasiSesi": 4,
-            "cp": "Menguasai operasi aljabar fungsi, konsep fungsi komposisi dan fungsi invers."
+            "cp": "Menganalisis sifat operasi komposisi fungsi dan menentukan rumus fungsi invers matematis."
           },
           {
             "id": "sma11-mtk-s1-b2",
-            "judul": "Bab 2: Geometri Lingkaran Analitis",
+            "judul": "Bab 2: Lingkaran (Geometri Lingkaran)",
             "subBab": [
-              "Persamaan Lingkaran Berpusat di (0,0) dan (a,b)",
-              "Bentuk Umum Persamaan Lingkaran",
-              "Kedudukan Titik dan Garis terhadap Lingkaran",
-              "Persamaan Garis Singgung Lingkaran"
+              "Teorema Hubungan Sudut Pusat dan Sudut Keliling Lingkaran",
+              "Garis Singgung Persekutuan Luar dan Persekutuan Dalam Dua Lingkaran",
+              "Tali Busur, Juring, dan Panjang Busur Lingkaran"
             ],
             "alokasiSesi": 4,
-            "cp": "Menyusun dan menganalisis persamaan lingkaran serta garis singgungnya."
+            "cp": "Menerapkan teorema geometri sudut lingkaran, garis singgung persekutuan, dan busur-juring."
           }
         ],
         "2": [
           {
-            "id": "sma11-mtk-s2-b1",
-            "judul": "Bab 3: Matriks dan Transformasi",
+            "id": "sma11-mtk-s2-b3",
+            "judul": "Bab 3: Statistika Terapan (Analisis Data Dua Variabel)",
             "subBab": [
-              "Ordo dan Jenis-Jenis Matriks",
-              "Operasi Matriks: Penjumlahan, Pengurangan, Perkalian Skalar & Matriks",
-              "Determinan dan Invers Matriks Ordo 2x2 dan 3x3",
-              "Aplikasi Matriks dalam SPLDV dan Transformasi Geometri"
+              "Membuat dan Membaca Diagram Pencar (Scatter Plot)",
+              "Menganalisis Tren Hubungan Korelasi Linier Antar-Dua Variabel Numerik",
+              "Interpolasi dan Ekstrapolasi Data Menggunakan Garis Regresi Linear Terbaik"
             ],
             "alokasiSesi": 4,
-            "cp": "Mengoperasikan matriks serta menggunakannya untuk transformasi dan penyelesaian SPL."
-          },
-          {
-            "id": "sma11-mtk-s2-b2",
-            "judul": "Bab 4: Statistika Inferensial dan Regresi",
-            "subBab": [
-              "Diagram Pencar (Scatter Plot) dan Korelasi Data Bivariat",
-              "Garis Best-Fit / Regresi Linear Sederhana"
-            ],
-            "alokasiSesi": 3,
-            "cp": "Menginterpretasikan hubungan dua variabel kuantitatif melalui analisis regresi."
+            "cp": "Menyajikan diagram pencar bivariat, menentukan korelasi Pearson, dan memprediksi dengan garis regresi."
           }
         ]
       },
@@ -3202,52 +3127,38 @@ export const SILABUS_KURIKULUM_MERDEKA = {
         "1": [
           {
             "id": "sma12-mtk-s1-b1",
-            "judul": "Bab 1: Dimensi Tiga (Geometri Ruang)",
+            "judul": "Bab 1: Kaidah Pencacahan dan Kombinatorika",
             "subBab": [
-              "Jarak Antara Titik ke Titik pada Bangun Ruang",
-              "Jarak Titik ke Garis",
-              "Jarak Titik ke Bidang",
-              "Sudut Antara Garis dan Bidang pada Kubus/Balok/Limas"
+              "Aturan Penjumlahan dan Aturan Perkalian dalam Pengambilan Keputusan",
+              "Konsep Faktorial dan Permutasi (Unsur Berbeda, Berulang, dan Siklis)",
+              "Konsep Kombinasi dan Teorema Binomial Newton"
             ],
             "alokasiSesi": 4,
-            "cp": "Menghitung jarak dan sudut dalam ruang berdimensi tiga secara teliti."
+            "cp": "Menganalisis kaidah pencacahan, permutasi, dan kombinasi untuk menyelesaikan problem kombinatorik."
           },
           {
             "id": "sma12-mtk-s1-b2",
-            "judul": "Bab 2: Statistika Data Berkelompok",
+            "judul": "Bab 2: Peluang Kejadian Majemuk",
             "subBab": [
-              "Penyusunan Tabel Distribusi Frekuensi dan Histogram",
-              "Menghitung Mean Data Berkelompok (Metode Rataan Sementara)",
-              "Menghitung Median dan Modus Data Berkelompok",
-              "Kuartil, Desil, Persentil, dan Ragam/Simpangan Baku"
+              "Peluang Kejadian Saling Lepas dan Kejadian Tidak Saling Lepas",
+              "Peluang Kejadian Saling Bebas",
+              "Peluang Kejadian Bersyarat dan Teorema Bayes Sederhana"
             ],
             "alokasiSesi": 4,
-            "cp": "Menganalisis ukuran pemusatan dan letak data berkelompok untuk penarikan simpulan."
-          },
-          {
-            "id": "sma12-mtk-s1-b3",
-            "judul": "Bab 3: Kaidah Pencacahan dan Teori Peluang",
-            "subBab": [
-              "Aturan Penjumlahan dan Aturan Perkalian",
-              "Permutasi (Unsur Berbeda, Unsur Sama, Siklis)",
-              "Kombinasi dan Binomial Newton",
-              "Peluang Kejadian Majemuk (Saling Bebas, Bersyarat)"
-            ],
-            "alokasiSesi": 4,
-            "cp": "Menerapkan kaidah pencacahan dan probabilitas bersyarat dalam pemecahan masalah."
+            "cp": "Menghitung peluang kejadian saling lepas, independen, dan peluang bersyarat dalam pemecahan masalah."
           }
         ],
         "2": [
           {
-            "id": "sma12-mtk-s2-b1",
-            "judul": "Bab 4: Persiapan UTBK-SNBT (Penalaran Matematika & Kuantitatif)",
+            "id": "sma12-mtk-s2-b3",
+            "judul": "Bab 3: Geometri Ruang (Dimensi Tiga)",
             "subBab": [
-              "Penalaran Matematika Kontekstual Lanjutan",
-              "Pengetahuan Kuantitatif dan Soal Kecukupan Data",
-              "Trik Cepat Aljabar dan Logika Aritmetika"
+              "Konsep Kedudukan Titik, Garis, dan Bidang pada Bangun Ruang (Kubus, Balok, Limas)",
+              "Menghitung Jarak Titik ke Titik dan Titik ke Garis pada Bangun Ruang",
+              "Menghitung Jarak Titik ke Bidang dan Sudut Antar-Dua Bidang"
             ],
-            "alokasiSesi": 5,
-            "cp": "Mengintegrasikan konsep matematika dalam penyelesaian soal seleksi nasional UTBK-SNBT."
+            "alokasiSesi": 4,
+            "cp": "Menentukan kedudukan dan menghitung jarak geometris antar-titik, garis, dan bidang pada dimensi tiga."
           }
         ]
       },
