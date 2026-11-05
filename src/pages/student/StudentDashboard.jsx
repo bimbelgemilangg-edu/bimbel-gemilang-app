@@ -1240,32 +1240,99 @@ const StudentDashboard = () => {
                                   gap: 4,
                                 }}
                               >
-                                <CheckCircle2 size={12} /> Jawaban Terekam
+                                <CheckCircle2 size={12} /> {isAbsenIzinSakit ? 'Latihan Mandiri Terekam' : 'Jawaban Terekam'}
                               </span>
                             ) : (
-                              <button
-                                type="button"
-                                onClick={() => setJadwalPengerjaanLatihan(sch)}
-                                style={{
-                                  background: isAbsenIzinSakit ? '#0d9488' : '#059669',
-                                  color: '#ffffff',
-                                  border: 'none',
-                                  borderRadius: 8,
-                                  padding: '6px 12px',
-                                  fontSize: 11.5,
-                                  fontWeight: 700,
-                                  cursor: 'pointer',
-                                  boxShadow: isAbsenIzinSakit
-                                    ? '0 2px 4px rgba(13, 148, 136, 0.2)'
-                                    : '0 2px 4px rgba(5, 150, 105, 0.2)',
-                                }}
-                              >
-                                {isAbsenIzinSakit ? '✏️ Kerjakan Mandiri (Opsional)' : '✏️ Kerjakan Latihan'}
-                              </button>
+                              <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                                {isAbsenIzinSakit && (
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate('/siswa/buku-pdf')}
+                                    style={{
+                                      background: '#fef3c7',
+                                      color: '#92400e',
+                                      border: '1px solid #fde68a',
+                                      borderRadius: 8,
+                                      padding: '6px 11px',
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    📖 Baca Buku Digital
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setJadwalPengerjaanLatihan(sch)}
+                                  style={{
+                                    background: isAbsenIzinSakit ? '#0d9488' : '#059669',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    borderRadius: 8,
+                                    padding: '6px 12px',
+                                    fontSize: 11.5,
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    boxShadow: isAbsenIzinSakit
+                                      ? '0 2px 4px rgba(13, 148, 136, 0.2)'
+                                      : '0 2px 4px rgba(5, 150, 105, 0.2)',
+                                  }}
+                                >
+                                  {isAbsenIzinSakit ? '✏️ Kerjakan Mandiri (Opsional)' : '✏️ Kerjakan Latihan'}
+                                </button>
+                              </div>
                             )}
                           </div>
                         );
                       })()}
+
+                      {/* Jalur Belajar Mandiri dari Rumah bila Izin/Sakit tanpa Kuis Sesi Aktif */}
+                      {(att?.status === 'Izin' || att?.status === 'Sakit') && (!sch.latihanSesi || sch.latihanSesi.status !== 'aktif') && (
+                        <div
+                          style={{
+                            marginTop: 8,
+                            background: '#fffbeb',
+                            border: '1px solid #fde68a',
+                            borderRadius: 10,
+                            padding: '10px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: 8,
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontSize: 12, fontWeight: 800, color: '#92400e', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span>🏠 Jalur Belajar Mandiri Susulan dari Rumah</span>
+                            </div>
+                            <div style={{ fontSize: 10.5, color: '#b45309', marginTop: 2 }}>
+                              Anda tercatat beristirahat hari ini. Materi tatap muka: <b>{materiTampil}</b>. Pelajari buku digital agar tetap mengikuti perkembangan materi kelas.
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => navigate('/siswa/buku-pdf')}
+                            style={{
+                              background: '#d97706',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: 8,
+                              padding: '6px 12px',
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 4px rgba(217, 119, 6, 0.2)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                            }}
+                          >
+                            📖 Baca Buku Digital
+                          </button>
+                        </div>
+                      )}
 
                       {/* Tombol Aksi Langsung Siswa */}
                       <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
@@ -1537,6 +1604,10 @@ const StudentDashboard = () => {
           studentId={studentId}
           studentName={studentName}
           studentDocId={studentDocId}
+          isSusulan={Boolean(
+            todayAttendanceMap[jadwalPengerjaanLatihan.id]?.status === 'Izin' ||
+            todayAttendanceMap[jadwalPengerjaanLatihan.id]?.status === 'Sakit'
+          )}
           onClose={() => setJadwalPengerjaanLatihan(null)}
           onSuccess={(hasilBaru) => {
             const cleanId = String(studentId || '').replace(/[^a-zA-Z0-9_-]/g, '_');
