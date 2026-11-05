@@ -576,11 +576,10 @@ export default function ModalSiapkanLatihanSesi({
       .slice(0, jumlahTarget)
       .map((x) => x.item);
 
-    // Fallback cerdas jika bank_soal Firestore masih belum memiliki soal yang cocok
-    if (terpilih.length < jumlahTarget) {
+    // Fallback kurasi terverifikasi HANYA untuk Matematika spesifik jika bank_soal masih kosong
+    if (terpilih.length < jumlahTarget && kodeMapel === 'mtk') {
       const sisa = jumlahTarget - terpilih.length;
       const judulBab = babTerpilihObj?.judul || "Materi Pembelajaran";
-      const sub = selectedSubBab || babTerpilihObj?.subBab?.[0] || "Konsep Dasar";
 
       // Kumpulan seed kurasi spesifik per fokus topik
       let seedPool = null;
@@ -1658,7 +1657,7 @@ export default function ModalSiapkanLatihanSesi({
                 {/* Teks Pertanyaan */}
                 <div style={{ marginBottom: 10 }}>
                   <label style={{ display: 'block', fontSize: 11.5, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
-                    Pertanyaan / Teks Soal: <span style={{ fontSize: 10.5, fontWeight: 400, color: '#64748b' }}>(Dukungan rumus matematika: ketik $r = 7\text{ cm}$ atau $\pi r^2 t$)</span>
+                    Pertanyaan / Teks Soal: <span style={{ fontSize: 10.5, fontWeight: 400, color: '#64748b' }}>{"(Dukungan rumus matematika KaTeX: ketik $r = 7\\text{ cm}$ atau $\\pi r^2 t$)"}</span>
                   </label>
                   <textarea
                     rows={3}
