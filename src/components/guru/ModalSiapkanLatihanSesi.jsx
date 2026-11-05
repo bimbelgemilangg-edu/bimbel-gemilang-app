@@ -184,53 +184,165 @@ export default function ModalSiapkanLatihanSesi({
   // 4. Rekomendasi Cerdas / AI Filter Soal
   const handleTerapkanRekomendasi = (jumlahTarget = 5) => {
     if (!babTerpilihObj) return;
+    const judulBabLower = (babTerpilihObj.judul || "").toLowerCase();
+    const subBabLower = (selectedSubBab || "").toLowerCase();
     const kataKunci = [
-      babTerpilihObj.judul.toLowerCase(),
-      selectedSubBab.toLowerCase(),
-      (namaMapelLengkap(kodeMapel) || '').toLowerCase(),
-    ].join(' ');
+      judulBabLower,
+      subBabLower,
+      (namaMapelLengkap(kodeMapel) || "").toLowerCase(),
+    ].join(" ");
 
-    // Urutkan bank soal berdasarkan kecocokan materi dan kata kunci
+    const isGeometriBangunRuang = [
+      "bangun ruang", "bangun datar", "geometri", "kubus", "balok",
+      "prisma", "limas", "tabung", "kerucut", "bola", "sisi datar",
+      "sisi lengkung", "volume", "luas permukaan", "rusuk", "titik sudut",
+    ].some((k) => kataKunci.includes(k));
+
+    const isTopikSPLDV = [
+      "spldv", "sistem persamaan", "linear dua variabel", "eliminasi", "substitusi",
+    ].some((k) => kataKunci.includes(k));
+
+    // Urutkan bank soal berdasarkan kecocokan materi dan kata kunci spesifik
     const skorButir = bankSoalList.map((item) => {
       let skor = 0;
-      const teks = (item.teksSoal + ' ' + (item.materi || '')).toLowerCase();
-      if (item.materi && item.materi.toLowerCase().includes(babTerpilihObj.judul.toLowerCase())) {
-        skor += 20;
+      const teks = (item.teksSoal + " " + (item.materi || "")).toLowerCase();
+
+      // 1. Kecocokan nama bab / materi utama
+      if (item.materi && item.materi.toLowerCase().includes(judulBabLower)) {
+        skor += 35;
       }
-      if (teks.includes('persamaan') && kataKunci.includes('persamaan')) skor += 8;
-      if (teks.includes('spldv') || teks.includes('linear')) skor += 10;
-      if (teks.includes('bangun ruang') && kataKunci.includes('bangun ruang')) skor += 8;
-      if (teks.includes('transformasi') && kataKunci.includes('transformasi')) skor += 8;
-      if (teks.includes('peluang') && kataKunci.includes('peluang')) skor += 8;
-      // Prioritaskan soal yang memiliki gambar lengkap jika topik geometris/grafik
-      if (item.gambarUrls && item.gambarUrls.length > 0) skor += 3;
+
+      // 2. Kategori Geometri / Bangun Ruang
+      if (isGeometriBangunRuang) {
+        const hasGeomTerms = ["bangun ruang", "kubus", "balok", "prisma", "limas", "tabung", "kerucut", "bola", "volume", "luas permukaan", "rusuk", "sisi", "titik sudut"].some(k => teks.includes(k));
+        if (hasGeomTerms) skor += 25;
+        // Penalti keras jika materi bangun ruang tapi butir soal adalah aljabar/persamaan murni (SPLDV)
+        const isSPLDV = teks.includes("spldv") || teks.includes("linear dua variabel") || (teks.includes("persamaan linear") && !teks.includes("volume"));
+        if (isSPLDV) skor -= 100;
+      }
+
+      // 3. Kategori Aljabar / SPLDV
+      if (isTopikSPLDV) {
+        const hasSPLDVTerms = teks.includes("spldv") || teks.includes("linear") || teks.includes("eliminasi") || teks.includes("substitusi");
+        if (hasSPLDVTerms) skor += 25;
+        // Penalti jika materi SPLDV tapi butir geometri bangun ruang
+        if (teks.includes("bangun ruang") || teks.includes("kubus") || teks.includes("balok")) skor -= 100;
+      }
+
+      // 4. Kata kunci tematik lainnya
+      if (teks.includes("transformasi") && kataKunci.includes("transformasi")) skor += 15;
+      if (teks.includes("peluang") && kataKunci.includes("peluang")) skor += 15;
+      if (teks.includes("statistika") && kataKunci.includes("statistika")) skor += 15;
+      if (teks.includes("pangkat") && kataKunci.includes("pangkat")) skor += 15;
+      if (teks.includes("akar") && kataKunci.includes("akar")) skor += 15;
+
+      // Prioritaskan soal yang memiliki gambar lengkap jika topik geometris
+      if (item.gambarUrls && item.gambarUrls.length > 0 && isGeometriBangunRuang) skor += 5;
+
       return { item, skor };
     });
 
+    // Urutkan dari skor tertinggi
     skorButir.sort((a, b) => b.skor - a.skor);
 
-    let terpilih = skorButir.slice(0, jumlahTarget).map((x) => x.item);
+    // HANYA ambil butir soal yang benar-benar relevan (skor > 0)
+    let terpilih = skorButir
+      .filter((x) => x.skor > 0)
+      .slice(0, jumlahTarget)
+      .map((x) => x.item);
 
-    // Fallback jika bank_soal Firestore masih kosong/sedikit
+    // Fallback cerdas jika bank_soal Firestore masih belum memiliki soal yang cocok
     if (terpilih.length < jumlahTarget) {
       const sisa = jumlahTarget - terpilih.length;
-      const judulBab = babTerpilihObj?.judul || 'Materi Pembelajaran';
-      const sub = selectedSubBab || babTerpilihObj?.subBab?.[0] || 'Konsep Dasar';
+      const judulBab = babTerpilihObj?.judul || "Materi Pembelajaran";
+      const sub = selectedSubBab || babTerpilihObj?.subBab?.[0] || "Konsep Dasar";
+
       for (let i = 1; i <= sisa; i++) {
         const no = terpilih.length + 1;
-        const isSains = kodeMapel === 'ipa' || kodeMapel === 'bio' || kodeMapel === 'fis' || kodeMapel === 'kim' || kodeMapel === 'ipas';
-        if (isSains) {
+        const isSains = kodeMapel === "ipa" || kodeMapel === "bio" || kodeMapel === "fis" || kodeMapel === "kim" || kodeMapel === "ipas";
+
+        if (isGeometriBangunRuang) {
+          // Fallback spesifik Bangun Ruang SMP agar tidak pernah tertukar SPLDV
+          const soalBangunRuangList = [
+            {
+              teksSoal: "Sebuah balok memiliki ukuran panjang $12\\text{ cm}$, lebar $8\\text{ cm}$, dan tinggi $5\\text{ cm}$. Volume balok tersebut adalah ...",
+              opsiJawaban: [
+                { label: "A", teks: "$480\\text{ cm}^3$" },
+                { label: "B", teks: "$420\\text{ cm}^3$" },
+                { label: "C", teks: "$360\\text{ cm}^3$" },
+                { label: "D", teks: "$240\\text{ cm}^3$" },
+              ],
+              kunciJawaban: "A",
+              pembahasan: "Volume balok dihitung dengan rumus $V = p \\times l \\times t = 12 \\times 8 \\times 5 = 480\\text{ cm}^3$.",
+            },
+            {
+              teksSoal: "Sebuah kubus memiliki panjang rusuk $6\\text{ cm}$. Luas seluruh permukaan kubus tersebut adalah ...",
+              opsiJawaban: [
+                { label: "A", teks: "$216\\text{ cm}^2$" },
+                { label: "B", teks: "$180\\text{ cm}^2$" },
+                { label: "C", teks: "$144\\text{ cm}^2$" },
+                { label: "D", teks: "$96\\text{ cm}^2$" },
+              ],
+              kunciJawaban: "A",
+              pembahasan: "Luas permukaan kubus memiliki 6 sisi persegi identik: $L = 6 \\times s^2 = 6 \\times 6^2 = 6 \\times 36 = 216\\text{ cm}^2$.",
+            },
+            {
+              teksSoal: "Banyaknya rusuk dan titik sudut pada sebuah prisma segitiga berturut-turut adalah ...",
+              opsiJawaban: [
+                { label: "A", teks: "$9$ rusuk dan $6$ titik sudut" },
+                { label: "B", teks: "$6$ rusuk dan $9$ titik sudut" },
+                { label: "C", teks: "$8$ rusuk dan $5$ titik sudut" },
+                { label: "D", teks: "$12$ rusuk dan $8$ titik sudut" },
+              ],
+              kunciJawaban: "A",
+              pembahasan: "Prisma segitiga memiliki 9 rusuk (3 rusuk alas, 3 rusuk tutup, 3 rusuk tegak) dan 6 titik sudut.",
+            },
+            {
+              teksSoal: "Sebuah tabung memiliki jari-jari alas $7\\text{ cm}$ dan tinggi $10\\text{ cm}$. Dengan menggunakan $\\pi = \\frac{22}{7}$, volume tabung tersebut adalah ...",
+              opsiJawaban: [
+                { label: "A", teks: "$1.540\\text{ cm}^3$" },
+                { label: "B", teks: "$1.450\\text{ cm}^3$" },
+                { label: "C", teks: "$770\\text{ cm}^3$" },
+                { label: "D", teks: "$440\\text{ cm}^3$" },
+              ],
+              kunciJawaban: "A",
+              pembahasan: "Volume tabung dihitung dengan rumus $V = \\pi r^2 t = \\frac{22}{7} \\times 7^2 \\times 10 = 154 \\times 10 = 1.540\\text{ cm}^3$.",
+            },
+            {
+              teksSoal: "Sebuah bak penampungan air berbentuk kubus dengan panjang rusuk bagian dalam $1\\text{ meter}$. Jika bak terisi air penuh, maka volume air di dalam bak adalah ...",
+              opsiJawaban: [
+                { label: "A", teks: "$1.000\\text{ liter}$" },
+                { label: "B", teks: "$100\\text{ liter}$" },
+                { label: "C", teks: "$500\\text{ liter}$" },
+                { label: "D", teks: "$10.000\\text{ liter}$" },
+              ],
+              kunciJawaban: "A",
+              pembahasan: "Volume kubus $V = s^3 = 1\\text{ m}^3$. Karena $1\\text{ m}^3 = 1.000\\text{ dm}^3 = 1.000\\text{ liter}$, maka volume air adalah $1.000\\text{ liter}$.",
+            },
+          ];
+
+          const templateDipilih = soalBangunRuangList[(no - 1) % soalBangunRuangList.length];
+          terpilih.push(normalisasiButirSoal({
+            id: `seed-geom-${Date.now()}-${no}`,
+            nomor: no,
+            teksSoal: templateDipilih.teksSoal,
+            opsiJawaban: templateDipilih.opsiJawaban,
+            kunciJawaban: templateDipilih.kunciJawaban,
+            pembahasan: templateDipilih.pembahasan,
+            materi: judulBab,
+          }, terpilih.length));
+        } else if (isSains) {
           terpilih.push(normalisasiButirSoal({
             id: `seed-${Date.now()}-${no}`,
             nomor: no,
             teksSoal: `Pada materi ${judulBab} terkait pokok bahasan "${sub}", bagaimanakah mekanisme atau fenomena ilmiah yang mendasari proses tersebut terjadi dalam konteks kehidupan sehari-hari?`,
             opsiJawaban: [
-              { label: 'A', teks: 'Terjadi interaksi faktor biologis dan lingkungan yang mempertahankan kondisi seimbang' },
-              { label: 'B', teks: 'Penurunan laju reaksi secara spontan tanpa dipengaruhi rangsangan luar' },
-              { label: 'C', teks: 'Perubahan struktur molekuler secara acak tanpa adanya transfer energi kinetik' },
-              { label: 'D', teks: 'Peningkatan gradien konsentrasi zat secara pasif melawan arah difusi alami' },
+              { label: "A", teks: "Terjadi interaksi faktor biologis dan lingkungan yang mempertahankan kondisi seimbang" },
+              { label: "B", teks: "Penurunan laju reaksi secara spontan tanpa dipengaruhi rangsangan luar" },
+              { label: "C", teks: "Perubahan struktur molekuler secara acak tanpa adanya transfer energi kinetik" },
+              { label: "D", teks: "Peningkatan gradien konsentrasi zat secara pasif melawan arah difusi alami" },
             ],
-            kunciJawaban: 'A',
+            kunciJawaban: "A",
             pembahasan: `Analisis terstruktur: Pada materi ${judulBab}, mekanisme ilmiah berfokus pada keseimbangan proses dan respons adaptif terhadap lingkungan.`,
             materi: judulBab,
           }, terpilih.length));
@@ -238,14 +350,14 @@ export default function ModalSiapkanLatihanSesi({
           terpilih.push(normalisasiButirSoal({
             id: `seed-${Date.now()}-${no}`,
             nomor: no,
-            teksSoal: `Diketahui pemodelan permasalahan pada ${judulBab} terkait pokok bahasan "${sub}". Tentukan metode analisis yang paling sistematis untuk memperoleh kesimpulan yang valid!`,
+            teksSoal: `Diketahui pemodelan permasalahan pada materi ${judulBab} (${sub}). Tentukan metode analisis yang paling sistematis untuk memperoleh solusi yang valid!`,
             opsiJawaban: [
-              { label: 'A', teks: 'Menganalisis hubungan antar-variabel dan menyusun formulasi pemecahan secara bertahap' },
-              { label: 'B', teks: 'Mengabaikan parameter batas dan langsung mengasumsikan nilai konstan' },
-              { label: 'C', teks: 'Memilih data ekstrem secara acak tanpa verifikasi hipotesis awal' },
-              { label: 'D', teks: 'Menyamakan semua faktor independen menjadi satu besaran tunggal' },
+              { label: "A", teks: "Menganalisis hubungan antar-variabel dan menyusun formulasi pemecahan secara bertahap" },
+              { label: "B", teks: "Mengabaikan parameter batas dan langsung mengasumsikan nilai konstan" },
+              { label: "C", teks: "Memilih data ekstrem secara acak tanpa verifikasi hipotesis awal" },
+              { label: "D", teks: "Menyamakan semua faktor independen menjadi satu besaran tunggal" },
             ],
-            kunciJawaban: 'A',
+            kunciJawaban: "A",
             pembahasan: `Analisis terstruktur: Pada materi ${judulBab}, penyelesaian dimulai dari memetakan variabel dan menyelesaikan secara bertahap.`,
             materi: judulBab,
           }, terpilih.length));
