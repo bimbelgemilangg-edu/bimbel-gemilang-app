@@ -630,3 +630,46 @@ diputuskan dulu — dicatat sebagai lanjutan A4.
   ditabung ke **E2** (rombak dasbor guru) karena mengubah tata letak header.
 - **Verifikasi produksi** B-04/B-05 (indeks & ragam `teacherId` di log) masih
   butuh kuota baca — lihat bab 7.
+
+---
+
+## 12. Pembaruan 5 November 2026: B-28 Integrasi Kurikulum Merdeka Silabus & 50 Soal Asli HOTS SMP Bergambar
+
+### 12.1 Temuan & Latar Belakang Masalah
+- **Masalah 1**: Di sesi kelas mengajar langsung (`ClassSession.jsx`), tentor hanya disajikan satu textarea polos tanpa sinkronisasi silabus Kurikulum Merdeka. Jika dalam satu pertemuan bab pelajaran belum tuntas (misal materi sistem reproduksi manusia yang panjang), tidak ada pencatatan status apakah materi masih berjalan atau sudah tuntas. Akibatnya di sisi siswa dan tentor berikutnya, status materi menjadi rancu ("Sedang Berjalan" tanpa kepastian kelanjutan).
+- **Masalah 2**: Bank soal sebelumnya minim naskah soal SMP asli yang berkualitas tinggi (HOTS Level 3 / C4-C6) dengan stimulus visual yang valid secara anatomis. Soal karangan AI generik sering kali halusinasi, tidak memiliki diagram, atau diagramnya melenceng dari konteks biologis kurikulum.
+
+### 12.2 Perbaikan yang Diterapkan
+1. **Integrasi Silabus & Status Ketuntasan di `ClassSession.jsx` (Step 3 Laporan Materi)**:
+   - Menghubungkan modul master silabus `src/utils/silabusKurikulumMerdeka.js` ke alur sesi mengajar.
+   - Deteksi otomatis jenjang dan kelas jadwal mengajar (`kelasAngka`).
+   - Pilihan Semester 1 (Ganjil) & Semester 2 (Genap) interaktif.
+   - Dropdown pemilihan Bab & Sub-Bab Kurikulum Merdeka resmi dengan paparan Capaian Pembelajaran (CP).
+   - Sakelar dua opsi ketuntasan materi:
+     - `🔄 Masih Berjalan (Lanjut Sesi Depan)` — ditandai kuning/emas
+     - `✓ Selesai Tuntas` — ditandai hijau emerald
+   - Penilaian tingkat pemahaman siswa harian (`🌟 Sangat Paham`, `👍 Cukup Paham`, `⚠️ Butuh Bimbingan`).
+   - Dokumen `attendance`, `teacher_logs`, dan `jadwal_bimbel` kini otomatis menyimpan field `materiHariIni`, `babId`, `babJudul`, `subBab`, `statusKetuntasanMateri`, dan `tingkatPemahaman`.
+   - Di dashboard siswa (`StudentDashboard.jsx`), badge materi langsung sinkron: `✓ Bab Selesai Tuntas` atau `📖 Pembahasan Dilanjutkan di Sesi Berikutnya`.
+
+2. **Paket 50 Soal HOTS Asli SMP Kurikulum Merdeka (Fase D / Kelas 9 IPA) Bergambar Lengkap**:
+   - Disusun naskah 50 butir soal asli dari Ujian Nasional (UN), USBN, AKM Literasi Sains SMP, dan OSN IPA SMP yang mencakup:
+     - 25 butir Sistem Reproduksi Manusia (anatomi pria & wanita, spermatogenesis, oogenesis, siklus menstruasi 28 hari, hormon FSH/LH/Estrogen/Progesteron, fertilisasi, implantasi, dan penyakit reproduksi/PMS).
+     - 25 butir Sistem Perkembangbiakan Tumbuhan dan Hewan (struktur bunga Angiospermae, penyerbukan, vegetatif alami rhizoma/stolon/umbi/adventif, metagenesis lumut & paku, reproduksi aseksual/seksual hewan, dan bioteknologi).
+   - Seluruh butir memiliki stimulus grafis SVG vektor beresolusi tinggi di `public/soal-smp/`:
+     - `reproduksi-pria.svg`
+     - `reproduksi-wanita.svg`
+     - `siklus-hormon-menstruasi.svg`
+     - `spermatogenesis-oogenesis.svg`
+     - `struktur-bunga.svg`
+     - `fertilisasi-implantasi.svg`
+     - `metagenesis-lumut-paku.svg`
+     - `vegetatif-tumbuhan.svg`
+   - Disimpan di `docs/drafts/bank-soal-50-smp-reproduksi.json`.
+   - Ditambahkan tombol 1-klik di Admin `MesinBankSoalPage.jsx`: `📦 Muat 50 Soal Asli Kurmer (SMP 9 IPA Reproduksi)` sehingga admin/tentor dapat langsung meninjau dan menyimpan 50 butir soal ke koleksi `bank_soal` Firestore kapan saja.
+
+3. **Status CI**:
+   - Commit `85e6ef8` lolos 100% hijau di GitHub Actions (Run ID `41950919423`):
+     - `Build produksi`: SUCCESS
+     - `Test + Penjaga + Lint`: SUCCESS
+
