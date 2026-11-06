@@ -1,0 +1,281 @@
+[
+  {
+    "nomor": 36,
+    "tipe": "pg_sederhana",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 16 - Descriptive Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "teks_soal": "[Membandingkan Dua Teks Deskriptif]\nHow do Borobudur and Prambanan differ in their architectural shape and religious background?",
+    "soal": "[Membandingkan Dua Teks Deskriptif]\nHow do Borobudur and Prambanan differ in their architectural shape and religious background?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Borobudur is a tall pointed Hindu temple, while Prambanan is a stepped Buddhist pyramid."
+      },
+      {
+        "label": "B",
+        "teks": "Borobudur is a Buddhist monument with nine stacked platforms and a central dome, whereas Prambanan is a Hindu temple complex featuring tall, pointed shrines up to 47 meters high."
+      },
+      {
+        "label": "C",
+        "teks": "Borobudur was built in the 20th century using cement, while Prambanan was built of wood."
+      },
+      {
+        "label": "D",
+        "teks": "Both temples tell the story of Malin Kundang on their relief panels."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Borobudur is a tall pointed Hindu temple, while Prambanan is a stepped Buddhist pyramid."
+      },
+      {
+        "label": "B",
+        "teks": "Borobudur is a Buddhist monument with nine stacked platforms and a central dome, whereas Prambanan is a Hindu temple complex featuring tall, pointed shrines up to 47 meters high."
+      },
+      {
+        "label": "C",
+        "teks": "Borobudur was built in the 20th century using cement, while Prambanan was built of wood."
+      },
+      {
+        "label": "D",
+        "teks": "Both temples tell the story of Malin Kundang on their relief panels."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Borobudur adalah monumen Buddha berundak 9 lantai dengan kubah sentral, sedangkan Prambanan adalah candi Hindu berarsitektur ramping meruncing setinggi 47 meter.",
+    "capaian_pembelajaran": "Menganalisis teks deskriptif mengenai bangunan bersejarah dan cagar budaya, mengenali frasa kata benda deskriptif dan struktur identification serta description.",
+    "bacaan": {
+      "grup": "descriptive_borobudur_prambanan",
+      "teks": "<p>Read and compare the two Descriptive Texts about Indonesian Cultural Heritage Sites below and answer questions number 36 to 40!</p>\n<p><strong>TEXT 1 (BOROBUDUR TEMPLE):</strong> Borobudur is the world’s largest Buddhist temple, located in Magelang, Central Java. Built in the 9th century during the Syailendra Dynasty, the monument consists of nine stacked platforms—six square and three circular—topped by a magnificent central dome. It is decorated with 2,672 relief panels and 504 Buddha statues, built from dark gray volcanic andesite stone without using any cement.</p>\n<p><strong>TEXT 2 (PRAMBANAN TEMPLE):</strong> Prambanan is the largest Hindu temple complex in Indonesia, located on the border between Central Java and Yogyakarta. Also built in the 9th century, Prambanan is famous for its tall, pointed architecture. Its three main shrines are dedicated to Trimurti (Brahma, Vishnu, and Shiva), with the central Shiva temple rising 47 meters high. Its stone reliefs tell the epic story of Ramayana.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 37,
+    "tipe": "pg_sederhana",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 16 - Descriptive Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "mudah",
+    "kunci_jawaban": "A",
+    "kunci": "A",
+    "teks_soal": "What similarity do both Borobudur and Prambanan share based on the two texts?",
+    "soal": "What similarity do both Borobudur and Prambanan share based on the two texts?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Both were built in the 9th century in Java and feature carved stone relief panels."
+      },
+      {
+        "label": "B",
+        "teks": "Both are located in East Kalimantan."
+      },
+      {
+        "label": "C",
+        "teks": "Both have 504 Buddha statues on circular platforms."
+      },
+      {
+        "label": "D",
+        "teks": "Both are dedicated to Trimurti (Brahma, Vishnu, and Shiva)."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Both were built in the 9th century in Java and feature carved stone relief panels."
+      },
+      {
+        "label": "B",
+        "teks": "Both are located in East Kalimantan."
+      },
+      {
+        "label": "C",
+        "teks": "Both have 504 Buddha statues on circular platforms."
+      },
+      {
+        "label": "D",
+        "teks": "Both are dedicated to Trimurti (Brahma, Vishnu, and Shiva)."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Kedua candi sama-sama dibangun pada abad ke-9 di Jawa dan memiliki panel relief batu berukir (carved stone relief panels).",
+    "capaian_pembelajaran": "Menganalisis teks deskriptif mengenai bangunan bersejarah dan cagar budaya, mengenali frasa kata benda deskriptif dan struktur identification serta description.",
+    "bacaan": {
+      "grup": "descriptive_borobudur_prambanan",
+      "teks": "<p>Refer to the two Descriptive Texts about Borobudur and Prambanan above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 38,
+    "tipe": "pg_kompleks",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 16 - Descriptive Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "A,B",
+    "kunci": "A,B",
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are TRUE according to the two descriptive texts? (Choose TWO correct answers)",
+    "soal": "[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are TRUE according to the two descriptive texts? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Borobudur’s blocks of volcanic stone were interlocked without using any cement."
+      },
+      {
+        "label": "B",
+        "teks": "The stone reliefs on Prambanan Temple illustrate the Hindu epic story of Ramayana."
+      },
+      {
+        "label": "C",
+        "teks": "The central Shiva temple at Prambanan is only 5 meters tall."
+      },
+      {
+        "label": "D",
+        "teks": "Both texts are written in the Simple Past Tense only and have no Identification section."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Borobudur’s blocks of volcanic stone were interlocked without using any cement."
+      },
+      {
+        "label": "B",
+        "teks": "The stone reliefs on Prambanan Temple illustrate the Hindu epic story of Ramayana."
+      },
+      {
+        "label": "C",
+        "teks": "The central Shiva temple at Prambanan is only 5 meters tall."
+      },
+      {
+        "label": "D",
+        "teks": "Both texts are written in the Simple Past Tense only and have no Identification section."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Pernyataan A benar (batu andesit Borobudur disusun saling mengunci tanpa semen). Pernyataan B benar (relief Prambanan mengisahkan epos Ramayana).",
+    "capaian_pembelajaran": "Menganalisis teks deskriptif mengenai bangunan bersejarah dan cagar budaya, mengenali frasa kata benda deskriptif dan struktur identification serta description.",
+    "bacaan": {
+      "grup": "descriptive_borobudur_prambanan",
+      "teks": "<p>Refer to the two Descriptive Texts about Borobudur and Prambanan above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 39,
+    "tipe": "pg_kompleks",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 16 - Descriptive Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "A,B",
+    "kunci": "A,B",
+    "teks_soal": "[Pilihan Ganda Kompleks — Unsur Kebahasaan Descriptive Text]\nWhich phrases from the texts are descriptive noun phrases (Adjective + Noun) describing physical appearance? (Choose TWO correct answers)",
+    "soal": "[Pilihan Ganda Kompleks — Unsur Kebahasaan Descriptive Text]\nWhich phrases from the texts are descriptive noun phrases (Adjective + Noun) describing physical appearance? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "magnificent central dome"
+      },
+      {
+        "label": "B",
+        "teks": "tall, pointed architecture"
+      },
+      {
+        "label": "C",
+        "teks": "located on the border"
+      },
+      {
+        "label": "D",
+        "teks": "tell the epic story"
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "magnificent central dome"
+      },
+      {
+        "label": "B",
+        "teks": "tall, pointed architecture"
+      },
+      {
+        "label": "C",
+        "teks": "located on the border"
+      },
+      {
+        "label": "D",
+        "teks": "tell the epic story"
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "'magnificent central dome' dan 'tall, pointed architecture' merupakan frasa kata benda deskriptif (Adjective + Noun) yang melukiskan rupa fisik candi.",
+    "capaian_pembelajaran": "Menganalisis teks deskriptif mengenai bangunan bersejarah dan cagar budaya, mengenali frasa kata benda deskriptif dan struktur identification serta description.",
+    "bacaan": {
+      "grup": "descriptive_borobudur_prambanan",
+      "teks": "<p>Refer to the two Descriptive Texts about Borobudur and Prambanan above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 40,
+    "tipe": "benar_salah",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 16 - Descriptive Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "B,B,S",
+    "kunci": "B,B,S",
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Read the statements comparing Borobudur and Prambanan, then give a tick in the True or False column!",
+    "soal": "[Tabel Benar / Salah (True or False)] Read the statements comparing Borobudur and Prambanan, then give a tick in the True or False column!",
+    "opsi_jawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "teks": "Borobudur has six square platforms and three circular platforms topped by a central dome.",
+        "jawaban": "Benar"
+      },
+      {
+        "teks": "Prambanan is located on the border between Central Java and Yogyakarta.",
+        "jawaban": "Benar"
+      },
+      {
+        "teks": "Borobudur is a Hindu temple complex, while Prambanan is a Buddhist temple.",
+        "jawaban": "Salah"
+      }
+    ],
+    "pembahasan": "(a) Benar: Borobudur terdiri atas 6 teras bujur sangkar dan 3 teras melingkar. (b) Benar: Prambanan terletak di perbatasan Jawa Tengah dan DIY. (c) Salah: Terbalik (Borobudur adalah candi Buddha, Prambanan candi Hindu).",
+    "capaian_pembelajaran": "Menganalisis teks deskriptif mengenai bangunan bersejarah dan cagar budaya, mengenali frasa kata benda deskriptif dan struktur identification serta description.",
+    "bacaan": {
+      "grup": "descriptive_borobudur_prambanan",
+      "teks": "<p>Refer to the two Descriptive Texts about Borobudur and Prambanan above.</p>"
+    },
+    "gambar": []
+  }
+]

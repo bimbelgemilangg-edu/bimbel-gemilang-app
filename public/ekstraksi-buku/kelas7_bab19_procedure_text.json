@@ -1,0 +1,281 @@
+[
+  {
+    "nomor": 51,
+    "tipe": "pg_sederhana",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 19 - Procedure Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "mudah",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "teks_soal": "What is the communicative purpose of the multimodal procedure text above?",
+    "soal": "What is the communicative purpose of the multimodal procedure text above?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "To describe the price of a new plastic bottle in the supermarket."
+      },
+      {
+        "label": "B",
+        "teks": "To show the step-by-step instructions on how to make a self-watering pot from a used plastic bottle."
+      },
+      {
+        "label": "C",
+        "teks": "To retell a past holiday experience in a botanical garden."
+      },
+      {
+        "label": "D",
+        "teks": "To persuade people to throw away all their house plants."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "To describe the price of a new plastic bottle in the supermarket."
+      },
+      {
+        "label": "B",
+        "teks": "To show the step-by-step instructions on how to make a self-watering pot from a used plastic bottle."
+      },
+      {
+        "label": "C",
+        "teks": "To retell a past holiday experience in a botanical garden."
+      },
+      {
+        "label": "D",
+        "teks": "To persuade people to throw away all their house plants."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Tujuan komunikatif teks prosedur adalah menunjukkan panduan langkah demi langkah cara membuat pot tanaman swasiram dari botol plastik bekas.",
+    "capaian_pembelajaran": "Memahami tujuan komunikatif, bahan, alat, dan langkah-langkah kerja dalam teks petunjuk prosedur multimodal membuat karya daur ulang praktis.",
+    "bacaan": {
+      "grup": "procedure_self_watering_pot",
+      "teks": "<p>Study the 4-step visual procedure guide below and answer questions number 51 to 55!</p>\n<p><strong>How to Make a Self-Watering Plant Pot from a Used Plastic Bottle</strong></p>\n<p><strong>Materials:</strong> A 1.5-liter used plastic bottle, a cutter/scissors, a nail, a thick cotton string (20 cm), water, soil, and a small plant seedling.</p>\n<p><strong>Steps:</strong><br/>\n1. <strong>Step 1:</strong> Cut the plastic bottle in half using a cutter and scissors so you have a bottom part and a top part.<br/>\n2. <strong>Step 2:</strong> Make a small hole in the bottle cap using a nail, then thread the cotton string through the hole.<br/>\n3. <strong>Step 3:</strong> Fill the bottom half of the bottle with water, then place the top half upside down (inverted) into the bottom half so the cotton string touches the water.<br/>\n4. <strong>Step 4:</strong> Put fertile soil into the inverted top half using a small trowel and plant your seedling. The cotton string will absorb water up into the soil automatically!</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 52,
+    "tipe": "pg_sederhana",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 19 - Procedure Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "mudah",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "teks_soal": "Based on the text, what is the function of the cotton string in Step 2 and Step 3?",
+    "soal": "Based on the text, what is the function of the cotton string in Step 2 and Step 3?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "To tie the plastic bottle to a tree branch."
+      },
+      {
+        "label": "B",
+        "teks": "To absorb and draw water from the bottom container up into the soil."
+      },
+      {
+        "label": "C",
+        "teks": "To cut the plastic bottle into two equal halves."
+      },
+      {
+        "label": "D",
+        "teks": "To measure the height of the plant leaves."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "To tie the plastic bottle to a tree branch."
+      },
+      {
+        "label": "B",
+        "teks": "To absorb and draw water from the bottom container up into the soil."
+      },
+      {
+        "label": "C",
+        "teks": "To cut the plastic bottle into two equal halves."
+      },
+      {
+        "label": "D",
+        "teks": "To measure the height of the plant leaves."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Tali katun berfungsi menyerap air dari wadah bawah ke atas menuju tanah tempat bibit tanaman tumbuh secara kapiler otomatis.",
+    "capaian_pembelajaran": "Memahami tujuan komunikatif, bahan, alat, dan langkah-langkah kerja dalam teks petunjuk prosedur multimodal membuat karya daur ulang praktis.",
+    "bacaan": {
+      "grup": "procedure_self_watering_pot",
+      "teks": "<p>Refer to the procedure guide How to Make a Self-Watering Plant Pot above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 53,
+    "tipe": "pg_kompleks",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 19 - Procedure Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "A,B",
+    "kunci": "A,B",
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich tools are needed in Step 1 and Step 2 according to the guide? (Choose TWO correct answers)",
+    "soal": "[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich tools are needed in Step 1 and Step 2 according to the guide? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A cutter and a pair of scissors to cut the bottle"
+      },
+      {
+        "label": "B",
+        "teks": "A nail to poke a hole in the bottle cap"
+      },
+      {
+        "label": "C",
+        "teks": "A frying pan and a gas stove"
+      },
+      {
+        "label": "D",
+        "teks": "A kitchen blender and mixer"
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "A cutter and a pair of scissors to cut the bottle"
+      },
+      {
+        "label": "B",
+        "teks": "A nail to poke a hole in the bottle cap"
+      },
+      {
+        "label": "C",
+        "teks": "A frying pan and a gas stove"
+      },
+      {
+        "label": "D",
+        "teks": "A kitchen blender and mixer"
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Alat yang dibutuhkan pada Langkah 1 adalah cutter dan gunting untuk memotong botol, dan Langkah 2 adalah paku untuk melubangi tutup botol.",
+    "capaian_pembelajaran": "Memahami tujuan komunikatif, bahan, alat, dan langkah-langkah kerja dalam teks petunjuk prosedur multimodal membuat karya daur ulang praktis.",
+    "bacaan": {
+      "grup": "procedure_self_watering_pot",
+      "teks": "<p>Refer to the procedure guide How to Make a Self-Watering Plant Pot above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 54,
+    "tipe": "benar_salah",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 19 - Procedure Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "B,S,B",
+    "kunci": "B,S,B",
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Read the statements based on the 4-step visual procedure above and give a tick in the True or False column!",
+    "soal": "[Tabel Benar / Salah (True or False)] Read the statements based on the 4-step visual procedure above and give a tick in the True or False column!",
+    "opsi_jawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "teks": "In Step 3, the top half of the bottle is placed upside down (inverted) inside the bottom half.",
+        "jawaban": "Benar"
+      },
+      {
+        "teks": "You must fill the bottom container with soil and the top container with water.",
+        "jawaban": "Salah"
+      },
+      {
+        "teks": "The cotton string works automatically to draw water from the bottom container up into the soil.",
+        "jawaban": "Benar"
+      }
+    ],
+    "pembahasan": "(a) Benar: Pada Langkah 3, bagian atas botol diletakkan terbalik (inverted) ke bagian bawah. (b) Salah: Terbalik (wadah bawah diisi air, wadah atas diisi tanah). (c) Benar: Tali katun menyerap air secara otomatis.",
+    "capaian_pembelajaran": "Memahami tujuan komunikatif, bahan, alat, dan langkah-langkah kerja dalam teks petunjuk prosedur multimodal membuat karya daur ulang praktis.",
+    "bacaan": {
+      "grup": "procedure_self_watering_pot",
+      "teks": "<p>Refer to the procedure guide How to Make a Self-Watering Plant Pot above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 55,
+    "tipe": "pg_sederhana",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 19 - Procedure Text",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "mudah",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "teks_soal": "What will happen if the cotton string is too short and does NOT touch the water in the bottom container?",
+    "soal": "What will happen if the cotton string is too short and does NOT touch the water in the bottom container?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "The water will still flow up into the soil by itself."
+      },
+      {
+        "label": "B",
+        "teks": "The soil will dry out because the string cannot absorb water from the bottom part."
+      },
+      {
+        "label": "C",
+        "teks": "The plastic bottle will turn into glass."
+      },
+      {
+        "label": "D",
+        "teks": "The seedling will grow ten times faster."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "The water will still flow up into the soil by itself."
+      },
+      {
+        "label": "B",
+        "teks": "The soil will dry out because the string cannot absorb water from the bottom part."
+      },
+      {
+        "label": "C",
+        "teks": "The plastic bottle will turn into glass."
+      },
+      {
+        "label": "D",
+        "teks": "The seedling will grow ten times faster."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Jika tali katun tidak menyentuh air, maka air tidak dapat terserap ke atas sehingga tanah akan mengering (the soil will dry out).",
+    "capaian_pembelajaran": "Memahami tujuan komunikatif, bahan, alat, dan langkah-langkah kerja dalam teks petunjuk prosedur multimodal membuat karya daur ulang praktis.",
+    "bacaan": {
+      "grup": "procedure_self_watering_pot",
+      "teks": "<p>Refer to the procedure guide How to Make a Self-Watering Plant Pot above.</p>"
+    },
+    "gambar": []
+  }
+]

@@ -1,0 +1,278 @@
+[
+  {
+    "nomor": 31,
+    "tipe": "pg_sederhana",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 8 - Noun & Comparison",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "B",
+    "kunci": "B",
+    "teks_soal": "[Membandingkan Tabel — Degrees of Comparison]\nBased on the table above, which comparison sentence is CORRECT?",
+    "soal": "[Membandingkan Tabel — Degrees of Comparison]\nBased on the table above, which comparison sentence is CORRECT?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nova Tote is more expensive than Aero Bag."
+      },
+      {
+        "label": "B",
+        "teks": "Terra Pack is the most expensive and has the largest capacity among the three bags."
+      },
+      {
+        "label": "C",
+        "teks": "Aero Bag is heavier than Terra Pack."
+      },
+      {
+        "label": "D",
+        "teks": "Terra Pack is as cheap as Nova Tote."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Nova Tote is more expensive than Aero Bag."
+      },
+      {
+        "label": "B",
+        "teks": "Terra Pack is the most expensive and has the largest capacity among the three bags."
+      },
+      {
+        "label": "C",
+        "teks": "Aero Bag is heavier than Terra Pack."
+      },
+      {
+        "label": "D",
+        "teks": "Terra Pack is as cheap as Nova Tote."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Berdasarkan tabel spesifikasi: Terra Pack adalah tas paling mahal (Rp240.000) dan memiliki kapasitas buku terbanyak (12 buku) di antara ketiga tas.",
+    "capaian_pembelajaran": "Mengidentifikasi bentuk kata benda jamak beraturan dan tidak beraturan serta membandingkan karakteristik benda (degrees of comparison: comparative, superlative) sesuai konteks.",
+    "bacaan": {
+      "grup": "tabel_backpacks_comparison",
+      "teks": "<p>Study the comparison table of three student backpacks below and answer questions number 31 to 35!</p>\n<table class=\"matrix-box\" border=\"1\" style=\"border-collapse: collapse; width: 100%; text-align: left;\">\n  <thead>\n    <tr style=\"background-color: #f1f5f9;\">\n      <th style=\"padding: 6px;\">Specification</th>\n      <th style=\"padding: 6px;\">AERO BAG</th>\n      <th style=\"padding: 6px;\">TERRA PACK</th>\n      <th style=\"padding: 6px;\">NOVA TOTE</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td style=\"padding: 6px; font-weight: bold;\">Price</td>\n      <td style=\"padding: 6px;\">Rp185.000</td>\n      <td style=\"padding: 6px;\">Rp240.000</td>\n      <td style=\"padding: 6px;\">Rp150.000</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 6px; font-weight: bold;\">Weight</td>\n      <td style=\"padding: 6px;\">450 grams</td>\n      <td style=\"padding: 6px;\">700 grams</td>\n      <td style=\"padding: 6px;\">450 grams</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 6px; font-weight: bold;\">Capacity (Books)</td>\n      <td style=\"padding: 6px;\">8 thick books</td>\n      <td style=\"padding: 6px;\">12 thick books</td>\n      <td style=\"padding: 6px;\">5 thick books</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 6px; font-weight: bold;\">Waterproof Rating</td>\n      <td style=\"padding: 6px;\">Water-resistant</td>\n      <td style=\"padding: 6px;\">100% Waterproof</td>\n      <td style=\"padding: 6px;\">Not waterproof</td>\n    </tr>\n  </tbody>\n</table>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 32,
+    "tipe": "pg_sederhana",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 8 - Noun & Comparison",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "mudah",
+    "kunci_jawaban": "C",
+    "kunci": "C",
+    "teks_soal": "Look at the weight row: Aero Bag (450g) and Nova Tote (450g). We can conclude that Aero Bag is ... Nova Tote.",
+    "soal": "Look at the weight row: Aero Bag (450g) and Nova Tote (450g). We can conclude that Aero Bag is ... Nova Tote.",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "heavier than"
+      },
+      {
+        "label": "B",
+        "teks": "the heaviest of"
+      },
+      {
+        "label": "C",
+        "teks": "as light as"
+      },
+      {
+        "label": "D",
+        "teks": "more lighter than"
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "heavier than"
+      },
+      {
+        "label": "B",
+        "teks": "the heaviest of"
+      },
+      {
+        "label": "C",
+        "teks": "as light as"
+      },
+      {
+        "label": "D",
+        "teks": "more lighter than"
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Karena berat Aero Bag dan Nova Tote sama-sama 450 gram, bentuk perbandingan setara (positive degree) yang tepat adalah 'as light as'.",
+    "capaian_pembelajaran": "Mengidentifikasi bentuk kata benda jamak beraturan dan tidak beraturan serta membandingkan karakteristik benda (degrees of comparison: comparative, superlative) sesuai konteks.",
+    "bacaan": {
+      "grup": "tabel_backpacks_comparison",
+      "teks": "<p>Refer to the comparison table of three student backpacks above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 33,
+    "tipe": "pg_kompleks",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 8 - Noun & Comparison",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "A,B",
+    "kunci": "A,B",
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are TRUE according to the specification table? (Choose TWO correct answers)",
+    "soal": "[Pilihan Ganda Kompleks — Pilih Lebih dari Satu!]\nWhich statements are TRUE according to the specification table? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nova Tote is the cheapest bag, but it holds the fewest books (5 books)."
+      },
+      {
+        "label": "B",
+        "teks": "Aero Bag can hold more books than Nova Tote, and it is cheaper than Terra Pack."
+      },
+      {
+        "label": "C",
+        "teks": "Terra Pack is lighter than Aero Bag."
+      },
+      {
+        "label": "D",
+        "teks": "Nova Tote is better than Terra Pack for hiking in heavy rain."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Nova Tote is the cheapest bag, but it holds the fewest books (5 books)."
+      },
+      {
+        "label": "B",
+        "teks": "Aero Bag can hold more books than Nova Tote, and it is cheaper than Terra Pack."
+      },
+      {
+        "label": "C",
+        "teks": "Terra Pack is lighter than Aero Bag."
+      },
+      {
+        "label": "D",
+        "teks": "Nova Tote is better than Terra Pack for hiking in heavy rain."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "Pernyataan A benar (Nova Tote termurah Rp150.000 dengan muatan paling sedikit 5 buku). Pernyataan B benar (Aero Bag muat 8 buku > Nova Tote 5 buku, dan Rp185.000 lebih murah dari Terra Pack Rp240.000).",
+    "capaian_pembelajaran": "Mengidentifikasi bentuk kata benda jamak beraturan dan tidak beraturan serta membandingkan karakteristik benda (degrees of comparison: comparative, superlative) sesuai konteks.",
+    "bacaan": {
+      "grup": "tabel_backpacks_comparison",
+      "teks": "<p>Refer to the comparison table of three student backpacks above.</p>"
+    },
+    "gambar": []
+  },
+  {
+    "nomor": 34,
+    "tipe": "pg_kompleks",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 8 - Noun & Comparison",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "A,B",
+    "kunci": "A,B",
+    "teks_soal": "[Pilihan Ganda Kompleks — Plural Nouns]\nWhich sentences use plural nouns and quantifiers correctly? (Choose TWO correct answers)",
+    "soal": "[Pilihan Ganda Kompleks — Plural Nouns]\nWhich sentences use plural nouns and quantifiers correctly? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Many children bring their own lunchboxes to school."
+      },
+      {
+        "label": "B",
+        "teks": "We saw five deer and several sheep at the conservation park."
+      },
+      {
+        "label": "C",
+        "teks": "My mother bought two sharp knifes and three loafs of bread."
+      },
+      {
+        "label": "D",
+        "teks": "The teacher gave us many useful informations about the exam."
+      }
+    ],
+    "opsi": [
+      {
+        "label": "A",
+        "teks": "Many children bring their own lunchboxes to school."
+      },
+      {
+        "label": "B",
+        "teks": "We saw five deer and several sheep at the conservation park."
+      },
+      {
+        "label": "C",
+        "teks": "My mother bought two sharp knifes and three loafs of bread."
+      },
+      {
+        "label": "D",
+        "teks": "The teacher gave us many useful informations about the exam."
+      }
+    ],
+    "pernyataan": [],
+    "pembahasan": "A benar ('children' dan 'lunchboxes' jamak beraturan/tidak beraturan yang benar). B benar ('deer' dan 'sheep' bentuk jamak tanpa akhiran -s). Pilihan C salah ('knives' dan 'loaves'). Pilihan D salah ('information' uncountable noun, tidak boleh 'informations').",
+    "capaian_pembelajaran": "Mengidentifikasi bentuk kata benda jamak beraturan dan tidak beraturan serta membandingkan karakteristik benda (degrees of comparison: comparative, superlative) sesuai konteks.",
+    "bacaan": null,
+    "gambar": []
+  },
+  {
+    "nomor": 35,
+    "tipe": "benar_salah",
+    "kelas": "7",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "paket": "Paket Bab 8 - Noun & Comparison",
+    "materi": "Bahasa Inggris",
+    "kesulitan": "sedang",
+    "kunci_jawaban": "B,S,B",
+    "kunci": "B,S,B",
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Read the statements comparing the three bags and give a tick in the True or False column!",
+    "soal": "[Tabel Benar / Salah (True or False)] Read the statements comparing the three bags and give a tick in the True or False column!",
+    "opsi_jawaban": [],
+    "opsi": [],
+    "pernyataan": [
+      {
+        "teks": "Terra Pack costs Rp55.000 more than Aero Bag.",
+        "jawaban": "Benar"
+      },
+      {
+        "teks": "Aero Bag can hold more thick books (8 books) than Terra Pack (12 books).",
+        "jawaban": "Salah"
+      },
+      {
+        "teks": "If a student needs to carry 10 thick books and rides a bicycle in the rain, Terra Pack is the most suitable choice.",
+        "jawaban": "Benar"
+      }
+    ],
+    "pembahasan": "(a) Benar: Rp240.000 - Rp185.000 = Rp55.000. (b) Salah: Terra Pack muat 12 buku, lebih banyak dari Aero Bag (8 buku). (c) Benar: Terra Pack muat 12 buku (memenuhi kebutuhan 10 buku) dan 100% waterproof cocok untuk hujan.",
+    "capaian_pembelajaran": "Mengidentifikasi bentuk kata benda jamak beraturan dan tidak beraturan serta membandingkan karakteristik benda (degrees of comparison: comparative, superlative) sesuai konteks.",
+    "bacaan": {
+      "grup": "tabel_backpacks_comparison",
+      "teks": "<p>Refer to the comparison table of three student backpacks above.</p>"
+    },
+    "gambar": []
+  }
+]
