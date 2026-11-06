@@ -61,6 +61,7 @@ export default function ModalSiapkanLatihanSesi({
   const [durasiMenit, setDurasiMenit] = useState(15);
   const [isKelasMandiri, setIsKelasMandiri] = useState(() => Boolean(schedule?.latihanSesi?.isKelasMandiri || schedule?.isKelasMandiri));
   const [pesanStatus, setPesanStatus] = useState('');
+  const [loadingAiRekomendasi, setLoadingAiRekomendasi] = useState(false);
 
   // State untuk Form "✍️ Tulis Soal Mandiri" (Otonomi Privat Tentor)
   const [teksSoalBaru, setTeksSoalBaru] = useState('');
@@ -448,12 +449,97 @@ export default function ModalSiapkanLatihanSesi({
     setPesanStatus(`📂 Berhasil memuat ${converted.length} butir soal dari kuis "${kuis.title}"`);
   };
 
-  // 4B. Rekomendasi Cerdas / AI Filter Soal (Sadar Fokus Bahasan Harian)
-  const handleTerapkanRekomendasi = (jumlahTarget = 5) => {
+  // 4C. Rekomendasi Cerdas Berbasis RAG AI Gemini (Membaca & Memilih Soal Berkualitas)
+  const handleTerapkanRekomendasi = async (jumlahTarget = 5) => {
     if (!babTerpilihObj) return;
+
+    setLoadingAiRekomendasi(true);
+    setPesanStatus('🧠 Gemini AI sedang membaca & menyeleksi butir soal berkualitas tinggi dari Bank Soal...');
+
     const judulBabLower = (babTerpilihObj.judul || "").toLowerCase();
     const subBabLower = (selectedSubBab || "").toLowerCase();
     const fokusLower = (fokusAktif || "").toLowerCase();
+
+    // 1. Siapkan kolam kandidat dari Bank Soal yang relevan
+    const kandidatPool = bankSoalList.map((item) => ({
+      id: item.id,
+      teks: (item.teksSoal || '').replace(/\s+/g, ' ').slice(0, 300),
+      materi: item.materi || '',
+      kelas: item.tingkatKelas || item.kelas || '',
+      fase: item.fase || '',
+      jenjang: item.jenjang || '',
+      opsi: Array.isArray(item.opsiJawaban)
+        ? item.opsiJawaban.map((o) => `${o.label}: ${(o.teks || '').slice(0, 60)}`).join(' | ')
+        : '',
+    }));
+
+    // 2. Hubungi Otak Cerdas Gemini AI (Gratis via endpoint Vercel /api/generateQuizFromTopic)
+    if (kandidatPool.length > 0) {
+      try {
+        const resp = await fetch('/api/generateQuizFromTopic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'pilih-dari-bank',
+            strictQuality: true,
+            kelompok: 'soal',
+            mapel: namaMapelLengkap(kodeMapel),
+            jenjang: jenjangSesi,
+            fokus: fokusAktif,
+            jumlah: jumlahTarget,
+            kisiKisi: [
+              `Mata Pelajaran: ${namaMapelLengkap(kodeMapel)}`,
+              `Jenjang Target: ${jenjangSesi.toUpperCase()} (Kelas ${kelasAngka})`,
+              `Bab Silabus: ${babTerpilihObj.judul}`,
+              `Sub-Bab Pokok: ${selectedSubBab || 'Umum'}`,
+              fokusAktif ? `Fokus Spesifik Sesi: ${fokusAktif}` : '',
+              `Capaian Pembelajaran (CP): ${babTerpilihObj.cp || 'Pemahaman konsep dasar dan aplikasi'}`,
+              `Target Butir: ${jumlahTarget} butir formatif bermutu tinggi.`,
+            ]
+              .filter(Boolean)
+              .join('\n'),
+            ringkas: kandidatPool.slice(0, 70),
+          }),
+        });
+
+        if (resp.ok) {
+          const dataAi = await resp.json();
+          if (Array.isArray(dataAi?.pilihan) && dataAi.pilihan.length > 0) {
+            const mapBank = new Map(bankSoalList.map((item) => [item.id, item]));
+            const terpilihAi = [];
+
+            for (const p of dataAi.pilihan) {
+              const asli = mapBank.get(p.id);
+              if (asli) {
+                terpilihAi.push({
+                  ...asli,
+                  alasanAi: p.alasan || 'Pilihan kurasi cerdas Gemini AI',
+                });
+              }
+            }
+
+            if (terpilihAi.length > 0) {
+              setSoalTerpilih(terpilihAi);
+              setPesanStatus(
+                `✨ Gemini AI (${dataAi.model || 'Flash'}) berhasil membaca & memilih ${terpilihAi.length} butir soal terverifikasi untuk ${babTerpilihObj.judul}${fokusAktif ? ` (Fokus: ${fokusAktif})` : ''}!`
+              );
+              setLoadingAiRekomendasi(false);
+              return;
+            }
+          } else if (Array.isArray(dataAi?.pilihan) && dataAi.pilihan.length === 0) {
+            // Gemini menolak semua kandidat karena dinilai tidak ada yang cocok/bermutu untuk materi ini
+            setSoalTerpilih([]);
+            setPesanStatus(
+              `⚠️ Gemini AI telah membaca butir di Bank Soal dan menilai belum ada butir yang cukup berkualitas/relevan untuk materi "${babTerpilihObj.judul}${fokusAktif ? ` (${fokusAktif})` : ''}". Demi menjaga mutu belajar siswa, AI tidak memaksakan soal ngarang. Silakan gunakan tab "✍️ Tulis Soal Mandiri".`
+            );
+            setLoadingAiRekomendasi(false);
+            return;
+          }
+        }
+      } catch (errAi) {
+        console.warn('Panggilan Gemini AI gagal, beralih ke cadangan kurasi:', errAi);
+      }
+    }
 
     const kataKunci = [
       judulBabLower,
@@ -998,6 +1084,7 @@ export default function ModalSiapkanLatihanSesi({
       }
     }
 
+    setLoadingAiRekomendasi(false);
     if (terpilih.length === 0) {
       setSoalTerpilih([]);
       setPesanStatus(
@@ -1609,7 +1696,7 @@ export default function ModalSiapkanLatihanSesi({
                 }}
               >
                 <Sparkles size={14} color={modePilihan === 'rekomendasi' ? '#7c3aed' : '#64748b'} />
-                ✨ Rekomendasi Cerdas
+                ✨ AI Gemini (RAG)
               </button>
             </div>
 
@@ -1803,68 +1890,79 @@ export default function ModalSiapkanLatihanSesi({
               </div>
             )}
 
-            {/* Panel Mode Rekomendasi Cerdas */}
+            {/* Panel Mode Rekomendasi Cerdas Gemini AI (RAG Bank Soal) */}
             {modePilihan === 'rekomendasi' && (
               <div
                 style={{
                   background: '#faf5ff',
-                  border: '1px dashed #d8b4fe',
+                  border: '1.5px solid #d8b4fe',
                   borderRadius: 12,
-                  padding: 14,
+                  padding: 16,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   flexWrap: 'wrap',
-                  gap: 10,
+                  gap: 12,
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#581c87' }}>
-                    Tarik Butir Soal Sesuai Silabus Hari Ini
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#581c87', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Sparkles size={15} color="#7c3aed" />
+                    <span>Kurasi Cerdas Gemini AI (RAG Bank Soal)</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: '#047857', background: '#d1fae5', padding: '2px 8px', borderRadius: 4 }}>
+                      ⚡ AI Studio
+                    </span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#7e22ce', marginTop: 2 }}>
-                    Sistem memfilter bank soal yang paling cocok dengan <b>{babTerpilihObj?.judul || 'Bab Ini'}</b>
-                    {fokusAktif ? <span> · Fokus: <b>{fokusAktif}</b></span> : ''}.
+                  <div style={{ fontSize: 11.5, color: '#7e22ce', marginTop: 3 }}>
+                    AI membaca seluruh butir Bank Soal secara kontekstual untuk materi <b>{babTerpilihObj?.judul || 'Bab Ini'}</b>
+                    {fokusAktif ? <span> · Fokus: <b>{fokusAktif}</b></span> : ''} ({jenjangSesi.toUpperCase()} Kelas {kelasAngka}).
+                    <div style={{ fontSize: 10.5, color: '#6b21a8', marginTop: 2 }}>
+                      🛡️ AI secara cerdas menolak soal di luar jenjang (mis. Trigonometri SMA) atau soal yang tidak relevan dengan fokus hari ini.
+                    </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button
                     type="button"
                     onClick={() => handleTerapkanRekomendasi(5)}
+                    disabled={loadingAiRekomendasi}
                     style={{
-                      background: '#7c3aed',
+                      background: loadingAiRekomendasi ? '#c084fc' : '#7c3aed',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: 8,
-                      padding: '7px 12px',
-                      fontSize: 11.5,
+                      padding: '8px 14px',
+                      fontSize: 12,
                       fontWeight: 700,
-                      cursor: 'pointer',
+                      cursor: loadingAiRekomendasi ? 'wait' : 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: 4,
+                      gap: 6,
+                      boxShadow: '0 2px 4px rgba(124, 58, 237, 0.25)',
                     }}
                   >
-                    <Sparkles size={13} /> Siapkan 5 Soal Cepat
+                    <Sparkles size={13} /> {loadingAiRekomendasi ? 'Membaca Bank Soal...' : '✨ Siapkan 5 Soal (Gemini AI)'}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleTerapkanRekomendasi(10)}
+                    disabled={loadingAiRekomendasi}
                     style={{
-                      background: '#4f46e5',
+                      background: loadingAiRekomendasi ? '#818cf8' : '#4f46e5',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: 8,
-                      padding: '7px 12px',
-                      fontSize: 11.5,
+                      padding: '8px 14px',
+                      fontSize: 12,
                       fontWeight: 700,
-                      cursor: 'pointer',
+                      cursor: loadingAiRekomendasi ? 'wait' : 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: 4,
+                      gap: 6,
+                      boxShadow: '0 2px 4px rgba(79, 70, 229, 0.25)',
                     }}
                   >
-                    Siapkan 10 Soal
+                    {loadingAiRekomendasi ? 'Membaca Bank Soal...' : 'Siapkan 10 Soal (Gemini AI)'}
                   </button>
                 </div>
               </div>
@@ -2140,6 +2238,27 @@ export default function ModalSiapkanLatihanSesi({
                         <Trash2 size={12} /> Hapus
                       </button>
                     </div>
+
+                    {/* Alasan Kurasi Cerdas Gemini AI */}
+                    {soal.alasanAi && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: '#4338ca',
+                          background: '#eef2ff',
+                          border: '1px solid #c7d2fe',
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          marginBottom: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <Sparkles size={12} color="#6366f1" />
+                        <span><b>Kurasi AI Gemini:</b> {soal.alasanAi}</span>
+                      </div>
+                    )}
 
                     {/* Badan Soal: KaTeX Matematika Rapi + Gambar Utuh */}
                     <div style={{ marginBottom: 12 }}>

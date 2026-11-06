@@ -5117,22 +5117,50 @@ function stripExamFormatMention(
 // (b) SETIAP kegagalan pulang membawa teks error jujur (lib/modelPilih.js)
 // yang diteruskan mesin ke log draf admin.
 async function modePilihDariBank(req, res) {
-  const { ringkas = [], jumlah = 10, kisiKisi = '', kelompok = 'soal' } = req.body || {};
+  const {
+    ringkas = [],
+    jumlah = 10,
+    kisiKisi = '',
+    kelompok = 'soal',
+    strictQuality = false,
+    jenjang = '',
+    mapel = '',
+    fokus = '',
+  } = req.body || {};
   const apiKey = kunciGeminiUntuk(process.env, kelompok);
   if (!apiKey) return res.status(500).json({ error: pesanKunciBelumAda(kelompok) });
   const models = rantaiModelPilih(process.env, AI_MODEL, AI_MODEL_FALLBACKS);
-  const prompt = [
-    'Kamu adalah PEMILIH SOAL bank soal bimbel. Pilih TEPAT', jumlah, 'butir dari kolam berikut.',
-    'KISI-KISI:', kisiKisi,
-    'ATURAN: hanya boleh memakai id dari kolam; urutkan dari paling mewakili kisi-kisi;',
-    'beri alasan <= 25 kata per pilihan; tandai id yang kamu ragukan di "ragu".',
-    'Balas HANYA JSON: {"pilihan":[{"id":"...","alasan":"..."}],"ragu":["..."]}',
-    'KOLAM:', JSON.stringify(ringkas),
-  ].join('\n');
+
+  const prompt = strictQuality
+    ? [
+        'Kamu adalah ASISTEN PENDIDIKAN AI & KURATOR BANK SOAL BIMBEL GEMILANG (RAG INTELLIGENT RETRIEVAL).',
+        'TUGAS UTAMA: BACA butir-butir soal di KOLAM dengan teliti dan kritis. Jangan sekadar mencocokkan kata kunci.',
+        `Pilihlah MAKSIMAL ${jumlah} butir soal yang BENAR-BENAR relevan, mendalam, dan berkualitas tinggi sesuai KISI-KISI.`,
+        `TARGET: Mapel: ${mapel || 'Sesuai Kisi-Kisi'}, Jenjang: ${jenjang ? jenjang.toUpperCase() : 'Sesuai Kisi-Kisi'}, Fokus Materi: ${fokus || 'Sesuai Kisi-Kisi'}.`,
+        'ATURAN KETAT KURASI PENDIDIKAN:',
+        '1. TOLAK soal di luar jenjang (misal: soal SMA seperti Trigonometri sin/cos/tan, Dimensi Tiga, Turunan/Integral, Matriks DILARANG KERAS masuk ke jenjang SMP atau SD!).',
+        '2. TOLAK soal yang tidak sesuai fokus topik (misal jika fokus materi adalah Tabung, JANGAN pilih soal Kubus, SPLDV, atau Geometri Datar 2D!).',
+        `3. KUALITAS MUTLAK: JANGAN PERNAH memaksakan memilih soal yang tidak relevan hanya demi menggenapkan kuota ${jumlah} soal! Lebih baik memilih lebih sedikit soal yang tepat dan bermutu tinggi (atau array kosong [] jika tidak ada yang cocok) daripada memberikan soal ngawur kepada siswa.`,
+        '4. Berikan alasan edukatif singkat (maksimal 20 kata) untuk tiap butir di field "alasan".',
+        'Balas HANYA JSON: {"pilihan":[{"id":"...","alasan":"..."}],"ragu":["..."]}',
+        'KISI-KISI:', kisiKisi,
+        'KOLAM SOAL KANDIDAT:', JSON.stringify(ringkas),
+      ].join('\n')
+    : [
+        'Kamu adalah PEMILIH SOAL bank soal bimbel. Pilih TEPAT', jumlah, 'butir dari kolam berikut.',
+        'KISI-KISI:', kisiKisi,
+        'ATURAN: hanya boleh memakai id dari kolam; urutkan dari paling mewakili kisi-kisi;',
+        'beri alasan <= 25 kata per pilihan; tandai id yang kamu ragukan di "ragu".',
+        'Balas HANYA JSON: {"pilihan":[{"id":"...","alasan":"..."}],"ragu":["..."]}',
+        'KOLAM:', JSON.stringify(ringkas),
+      ].join('\n');
+
   try {
     const hasil = await callAIWithFallback({
       apiKey,
-      systemPrompt: 'Kamu membalas HANYA dengan JSON valid, tanpa teks lain.',
+      systemPrompt: strictQuality
+        ? 'Kamu adalah evaluator dan kurator soal bimbel yang kritis, berfokus pada ketepatan kurikulum dan kesesuaian jenjang pendidikan. Kamu membalas HANYA dengan JSON valid tanpa teks lain.'
+        : 'Kamu membalas HANYA dengan JSON valid, tanpa teks lain.',
       userPrompt: prompt,
       // Keluaran mode pilih kecil (maks ~300 id + alasan pendek);
       // 6000 token jauh di atas kebutuhan dan di bawah plafon lunak.
