@@ -1,0 +1,3138 @@
+[
+  {
+    "nomor": 1,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 1: Galang from Kalimantan",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Greetings & Self Introduction",
+    "capaian_pembelajaran": "Mengidentifikasi dan menggunakan ungkapan sapaan, perkenalan diri, dan informasi identitas pribadi sesuai CP Fase D.",
+    "bacaan": {
+      "grup": "dialog_galang_mr_rahmat",
+      "teks": "Read the dialogue below for questions number 1 to 5!\n\nGalang : Good morning, Sir. Excuse me, are you Mr. Rahmat, the new English teacher?\nMr. Rahmat : Good morning. Yes, I am. And what is your name?\nGalang : Allow me to introduce myself, Sir. My name is Galang Pratama from Class VII-A. I come from Kalimantan and now I live in SMP Nusantara dormitory. Welcome to our school!\nMr. Rahmat : Thank you, Galang. It’s a pleasure to meet you. By the way, I need to go to the teachers’ office now. See you in class at 9 o’clock.\nGalang : It’s a pleasure to meet you too, Sir. Have a nice day!",
+      "gambar": []
+    },
+    "gambar": [],
+    "teks_soal": "Where does Galang come from and which class is he in?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "He comes from Sumatra and he is in Class VII-B."
+      },
+      {
+        "label": "B",
+        "teks": "He comes from Kalimantan and he is in Class VII-A."
+      },
+      {
+        "label": "C",
+        "teks": "He comes from Java and he is in Class VIII-A."
+      },
+      {
+        "label": "D",
+        "teks": "He comes from Bali and he is in Class IX-C."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Berdasarkan dialog, Galang menyatakan: \"My name is Galang Pratama from Class VII-A. I come from Kalimantan...\". Pilihan B tepat."
+  },
+  {
+    "nomor": 2,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 1: Galang from Kalimantan",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: To Be (am, is, are)",
+    "capaian_pembelajaran": "Menerapkan kaidah tata bahasa dasar to be dan kata ganti orang dalam kalimat perkenalan diri dan orang lain.",
+    "bacaan": {
+      "grup": "dialog_galang_mr_rahmat",
+      "teks": "Galang is introducing his new friend, Andre, to Mr. Rahmat."
+    },
+    "gambar": [],
+    "teks_soal": "Complete the sentences with the correct form of \"to be\"!\n\"Andre and Galang ... new students at SMP Nusantara. Galang ... from Kalimantan, while Andre ... from Surabaya.\"",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "is – are – is"
+      },
+      {
+        "label": "B",
+        "teks": "are – is – is"
+      },
+      {
+        "label": "C",
+        "teks": "am – is – are"
+      },
+      {
+        "label": "D",
+        "teks": "are – am – are"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Subjek jamak \"Andre and Galang\" memakai \"are\". Subjek tunggal orang ketiga \"Galang\" dan \"Andre\" memakai \"is\". Urutan yang tepat adalah are – is – is (B)."
+  },
+  {
+    "nomor": 3,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 1: Galang from Kalimantan",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Greetings & Introductions",
+    "capaian_pembelajaran": "Menganalisis ungkapan sapaan dan perkenalan formal dan kasual dalam situasi sekolah.",
+    "bacaan": {
+      "grup": "dialog_galang_mr_rahmat",
+      "teks": "Refer to the dialogue between Galang and Mr. Rahmat."
+    },
+    "gambar": [],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich of the following expressions in the dialogue are used for INTRODUCING ONESELF? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "”Allow me to introduce myself, Sir.”"
+      },
+      {
+        "label": "B",
+        "teks": "”My name is Galang Pratama from Class VII-A.”"
+      },
+      {
+        "label": "C",
+        "teks": "”See you in class at 9 o’clock.”"
+      },
+      {
+        "label": "D",
+        "teks": "”I need to go to the teachers’ office now.”"
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Ungkapan untuk memperkenalkan diri (introducing oneself) adalah \"Allow me to introduce myself, Sir\" (A) dan \"My name is Galang Pratama...\" (B). Pilihan C adalah leave-taking (berpamitan)."
+  },
+  {
+    "nomor": 4,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 1: Galang from Kalimantan",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Evaluating Dialogue Statements",
+    "capaian_pembelajaran": "Mengevaluasi kebenaran informasi faktual dalam dialog sapaan dan perkenalan.",
+    "bacaan": {
+      "grup": "dialog_galang_mr_rahmat",
+      "teks": "Refer to the dialogue between Galang and Mr. Rahmat."
+    },
+    "gambar": [],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Read the statements based on the dialogue and give a tick in the True or False column!",
+    "pernyataan": [
+      {
+        "teks": "Galang greets Mr. Rahmat politely in the morning before class begins.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Mr. Rahmat is heading towards the school library to borrow books.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "”Have a nice day!” is used by Galang as a polite leave-taking expression.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Galang menyapa dengan sopan \"Good morning, Sir\". (b) Salah: Mr. Rahmat menuju teachers’ office (ruang guru), bukan perpustakaan. (c) Benar: \"Have a nice day!\" adalah ungkapan berpamitan santun."
+  },
+  {
+    "nomor": 5,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 1: Galang from Kalimantan",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Leave-Taking Expressions",
+    "capaian_pembelajaran": "Menggunakan ungkapan berpamitan (leave-taking) yang tepat sesuai situasi sosial.",
+    "bacaan": null,
+    "gambar": [],
+    "teks_soal": "Mr. Rahmat says: ”I need to go to the teachers’ office now. See you in class at 9 o’clock.”\nWhat is the most appropriate response for Galang to say?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "”You’re welcome, Sir.”"
+      },
+      {
+        "label": "B",
+        "teks": "”See you later, Sir. Have a great day!”"
+      },
+      {
+        "label": "C",
+        "teks": "”I am very sorry to hear that.”"
+      },
+      {
+        "label": "D",
+        "teks": "”No problem, don’t mention it.”"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Respon yang tepat terhadap ucapan berpamitan \"See you in class...\" adalah \"See you later, Sir. Have a great day!\" (B)."
+  },
+  {
+    "nomor": 6,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 2: I Love Fishing",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Talking about Hobbies",
+    "capaian_pembelajaran": "Mendeskripsikan hobi, minat, dan aktivitas waktu luang menggunakan Simple Present Tense.",
+    "bacaan": {
+      "grup": "teks_galang_fishing",
+      "teks": "Read the short text below for questions number 6 to 10!\n\nGalang has an exciting hobby. He loves fishing in the calm river near his grandfather’s house in Kalimantan. Every Sunday morning, he prepares his fishing rod, natural bait, and a clean bucket. He usually goes fishing with his father. Galang says that fishing teaches him patience and helps him relax after studying all week. When he catches fresh fish, his mother cooks delicious grilled fish with spicy sambal for lunch.",
+      "gambar": []
+    },
+    "gambar": [],
+    "teks_soal": "Why does Galang love fishing according to the text?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Because he wants to sell fish at the traditional market."
+      },
+      {
+        "label": "B",
+        "teks": "Because fishing teaches him patience and helps him relax after studying."
+      },
+      {
+        "label": "C",
+        "teks": "Because his teacher gives him homework to catch fish."
+      },
+      {
+        "label": "D",
+        "teks": "Because he dislikes playing outdoor games with his friends."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Teks menyebutkan secara eksplisit: \"Galang says that fishing teaches him patience and helps him relax after studying all week.\" Pilihan B tepat."
+  },
+  {
+    "nomor": 7,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 2: I Love Fishing",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: Simple Present Verbs",
+    "capaian_pembelajaran": "Menerapkan kesesuaian subjek dan kata kerja (subject-verb agreement) pada kalimat afirmatif Simple Present Tense.",
+    "bacaan": {
+      "grup": "teks_galang_fishing",
+      "teks": "Refer to Galang’s hobby text."
+    },
+    "gambar": [],
+    "teks_soal": "Choose the grammatically correct sentence to describe Galang’s weekly routine!",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Galang enjoy fishing in the river every Sunday."
+      },
+      {
+        "label": "B",
+        "teks": "Galang enjoys fishing in the river every Sunday."
+      },
+      {
+        "label": "C",
+        "teks": "Galang are enjoying fishing in the river every Sunday."
+      },
+      {
+        "label": "D",
+        "teks": "Galang enjoying fishing in the river every Sunday."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Subjek orang ketiga tunggal (Galang = he) dalam Simple Present Tense membutuhkan akhiran -s/-es pada kata kerjanya: \"enjoys\" (B)."
+  },
+  {
+    "nomor": 8,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 2: I Love Fishing",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Tools and Equipment for Hobbies",
+    "capaian_pembelajaran": "Mengidentifikasi kosakata benda dan perlengkapan terkait hobi luar ruangan.",
+    "bacaan": {
+      "grup": "teks_galang_fishing",
+      "teks": "Refer to Galang’s hobby text."
+    },
+    "gambar": [],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhat items does Galang prepare before going fishing? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A fishing rod and natural bait."
+      },
+      {
+        "label": "B",
+        "teks": "A clean bucket for keeping the catch."
+      },
+      {
+        "label": "C",
+        "teks": "A badminton racket and shuttlecocks."
+      },
+      {
+        "label": "D",
+        "teks": "A laptop and a computer mouse."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Dalam teks dinyatakan: \"he prepares his fishing rod, natural bait, and a clean bucket\". Pilihan A dan B benar."
+  },
+  {
+    "nomor": 9,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 2: I Love Fishing",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Fact Checking in Descriptive Passage",
+    "capaian_pembelajaran": "Memverifikasi kebenaran rincian informasi spesifik pada teks hobi.",
+    "bacaan": {
+      "grup": "teks_galang_fishing",
+      "teks": "Refer to Galang’s hobby text."
+    },
+    "gambar": [],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on Galang’s fishing hobby!",
+    "pernyataan": [
+      {
+        "teks": "Galang always goes fishing alone in the deep sea.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "Galang usually goes fishing with his father in a calm river on Sundays.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Galang’s mother cooks the caught fresh fish into delicious grilled fish.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "S,B,B",
+    "pembahasan": "(a) Salah: Galang memancing di sungai (river), bukan di laut dalam, dan ditemani ayahnya. (b) Benar: Galang memancing bersama ayahnya pada hari Minggu. (c) Benar: Ibunya memasak ikan hasil pancingan menjadi ikan bakar."
+  },
+  {
+    "nomor": 10,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 2: I Love Fishing",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Vocabulary in Context",
+    "capaian_pembelajaran": "Menentukan arti kata sifat emosional dan sikap positif dalam teks.",
+    "bacaan": null,
+    "gambar": [],
+    "teks_soal": "”Fishing teaches Galang patience ...”\nWhat is the closest meaning of the word ”patience”?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "The ability to wait calmly without getting annoyed or angry."
+      },
+      {
+        "label": "B",
+        "teks": "The speed of running very fast in a competition."
+      },
+      {
+        "label": "C",
+        "teks": "The skill of speaking multiple foreign languages."
+      },
+      {
+        "label": "D",
+        "teks": "The strength to lift heavy metal objects."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kata \"patience\" bermakna kesabaran (the ability to stay calm and wait without complaining). Pilihan A tepat."
+  },
+  {
+    "nomor": 11,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 3: My Friends and I",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Comparing Identity Profiles",
+    "capaian_pembelajaran": "Membandingkan informasi profil identitas pribadi dua siswa melalui media multimodal kartu pengenal.",
+    "bacaan": {
+      "grup": "tabel_profil_monita_andre",
+      "teks": "Compare the two student profile cards below for questions number 11 to 15!\n\n[STUDENT 1: MONITA]\n• Origin: Pontianak\n• Age: 13 years old\n• Hobbies: Reading digital comics & swimming\n• Siblings: 1 older sister\n\n[STUDENT 2: ANDRE]\n• Origin: Surabaya\n• Age: 13 years old\n• Hobbies: Playing badminton & coding games\n• Siblings: Only child (no brothers or sisters)",
+      "gambar": [
+        "monita_andre_profile.png"
+      ]
+    },
+    "gambar": [
+      "monita_andre_profile.png"
+    ],
+    "teks_soal": "What do Monita and Andre have in common according to the profile cards?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Both of them are 13 years old."
+      },
+      {
+        "label": "B",
+        "teks": "Both of them come from Pontianak."
+      },
+      {
+        "label": "C",
+        "teks": "Both of them love playing badminton."
+      },
+      {
+        "label": "D",
+        "teks": "Both of them are only children."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kedua kartu profil menunjukkan bahwa Monita berusia 13 tahun dan Andre berusia 13 tahun. Pilihan A tepat."
+  },
+  {
+    "nomor": 12,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 3: My Friends and I",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: Possessive Adjectives",
+    "capaian_pembelajaran": "Menggunakan kata sifat kepemilikan (possessive adjectives: my, his, her, their, our) secara tepat dalam mendeskripsikan orang lain.",
+    "bacaan": {
+      "grup": "tabel_profil_monita_andre",
+      "teks": "Refer to the profile cards of Monita and Andre."
+    },
+    "gambar": [
+      "monita_andre_profile.png"
+    ],
+    "teks_soal": "Complete the sentences with the correct possessive adjectives!\n”Monita is proud of ... older sister. Meanwhile, Andre spends his weekend in ... bedroom coding games with ... laptop.”",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "his – her – his"
+      },
+      {
+        "label": "B",
+        "teks": "her – his – his"
+      },
+      {
+        "label": "C",
+        "teks": "my – your – their"
+      },
+      {
+        "label": "D",
+        "teks": "their – our – her"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kepemilikan perempuan tunggal (Monita) menggunakan \"her\" (her older sister). Kepemilikan laki-laki tunggal (Andre) menggunakan \"his\" (his bedroom, his laptop). Pilihan B tepat."
+  },
+  {
+    "nomor": 13,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 3: My Friends and I",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Profile Comparison Analysis",
+    "capaian_pembelajaran": "Mengidentifikasi detail perbedaan identitas dan hobi antar teman sebaya.",
+    "bacaan": {
+      "grup": "tabel_profil_monita_andre",
+      "teks": "Refer to the profile cards of Monita and Andre."
+    },
+    "gambar": [
+      "monita_andre_profile.png"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich statements are TRUE based on the profile cards? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Andre has an interest in coding games and playing badminton."
+      },
+      {
+        "label": "B",
+        "teks": "Monita has one older sister and enjoys swimming."
+      },
+      {
+        "label": "C",
+        "teks": "Monita comes from Surabaya, while Andre comes from Pontianak."
+      },
+      {
+        "label": "D",
+        "teks": "Andre has two younger brothers living with him."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Pilihan A benar (hobi Andre coding games & badminton). Pilihan B benar (Monita punya 1 older sister & suka berenang). Pilihan C salah (asal kota terbalik), dan D salah (Andre anak tunggal)."
+  },
+  {
+    "nomor": 14,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 3: My Friends and I",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Profile Evaluation",
+    "capaian_pembelajaran": "Menilai keabsahan pernyataan komparatif profil siswa.",
+    "bacaan": {
+      "grup": "tabel_profil_monita_andre",
+      "teks": "Refer to the profile cards of Monita and Andre."
+    },
+    "gambar": [
+      "monita_andre_profile.png"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the profile cards!",
+    "pernyataan": [
+      {
+        "teks": "Monita loves reading digital comics in her leisure time.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Andre has an older brother who teaches him how to code games.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "Both Monita and Andre are Grade 7 students at SMP Nusantara.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Hobi Monita adalah reading digital comics. (b) Salah: Andre adalah anak tunggal (only child). (c) Benar: Keduanya berumur 13 tahun dan bersekolah di SMP Nusantara."
+  },
+  {
+    "nomor": 15,
+    "semester": "Semester 1",
+    "chapter": "Chapter 1: About Me",
+    "unit": "Unit 3: My Friends and I",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Constructing Self Introduction",
+    "capaian_pembelajaran": "Menyusun kalimat perkenalan diri lisan berdasarkan data profil pribadi.",
+    "bacaan": {
+      "grup": "tabel_profil_monita_andre",
+      "teks": "Refer to Monita’s profile card."
+    },
+    "gambar": [
+      "monita_andre_profile.png"
+    ],
+    "teks_soal": "If Monita introduces herself in front of the class, what will she say?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "”Hello friends, I am from Surabaya and my hobby is coding games.”"
+      },
+      {
+        "label": "B",
+        "teks": "”Hi everyone, I am Monita from Pontianak. I am 13 years old and I love swimming and reading digital comics.”"
+      },
+      {
+        "label": "C",
+        "teks": "”Good morning, I am an only child and I have no siblings at home.”"
+      },
+      {
+        "label": "D",
+        "teks": "”Hello, I am fifteen years old and I dislike swimming.”"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Perkenalan diri Monita yang akurat sesuai kartu profil adalah menyebutkan asal Pontianak, umur 13 tahun, serta hobi berenang dan membaca komik (B)."
+  },
+  {
+    "nomor": 16,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 1: My Favorite Food",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Describing Traditional Food",
+    "capaian_pembelajaran": "Mendeskripsikan makanan khas Nusantara menggunakan kata sifat sensorik rasa dan tekstur.",
+    "bacaan": {
+      "grup": "teks_pisang_goreng",
+      "teks": "Read the descriptive text below for questions number 16 to 20!\n\nIndonesia is famous for its rich culinary heritage. Galang’s absolute favorite afternoon snack is Pisang Goreng Pontianak (fried bananas). Unlike ordinary fried bananas, Pisang Goreng Pontianak is dipped in a special rice flour batter that creates a crispy, golden, fan-shaped crust outside, while the sweet Raja banana inside remains soft and moist. Galang enjoys eating it warm with a cup of hot sweet tea. The combination of sweet, savory, and crunchy textures makes it an irresistible treat.",
+      "gambar": []
+    },
+    "gambar": [],
+    "teks_soal": "What is the main topic of the descriptive text above?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "How to grow banana trees in Kalimantan."
+      },
+      {
+        "label": "B",
+        "teks": "The special characteristics and delicious taste of Pisang Goreng Pontianak."
+      },
+      {
+        "label": "C",
+        "teks": "The history of hot tea plantation in West Java."
+      },
+      {
+        "label": "D",
+        "teks": "Why fast food restaurants are popular in big cities."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Teks mendeskripsikan ciri khas, adonan renyah, dan kelezatan camilan tradisional Pisang Goreng Pontianak (B)."
+  },
+  {
+    "nomor": 17,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 1: My Favorite Food",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Sensory Adjectives: Texture & Taste",
+    "capaian_pembelajaran": "Mengidentifikasi kata sifat sensorik rasa dan tekstur makanan.",
+    "bacaan": {
+      "grup": "teks_pisang_goreng",
+      "teks": "Refer to the Pisang Goreng text."
+    },
+    "gambar": [],
+    "teks_soal": "Which words from the text describe the TEXTURE of the fried banana crust?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Spicy and salty"
+      },
+      {
+        "label": "B",
+        "teks": "Crispy and crunchy"
+      },
+      {
+        "label": "C",
+        "teks": "Bitter and sour"
+      },
+      {
+        "label": "D",
+        "teks": "Cold and frozen"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tekstur kulit luar pisang goreng digambarkan sebagai \"crispy\" dan \"crunchy\" (renyah garing). Pilihan B tepat."
+  },
+  {
+    "nomor": 18,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 1: My Favorite Food",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Sensory Descriptions of Food",
+    "capaian_pembelajaran": "Menganalisis perpaduan rasa pada makanan tradisional Indonesia.",
+    "bacaan": {
+      "grup": "teks_pisang_goreng",
+      "teks": "Refer to the Pisang Goreng text."
+    },
+    "gambar": [],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two statements accurately describe Pisang Goreng Pontianak based on the text? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "The banana inside the crust remains soft, sweet, and moist."
+      },
+      {
+        "label": "B",
+        "teks": "It has a crispy, golden, fan-shaped outer crust made from rice flour batter."
+      },
+      {
+        "label": "C",
+        "teks": "Galang prefers to eat it frozen with cold chili sauce."
+      },
+      {
+        "label": "D",
+        "teks": "It is an extremely bitter medicinal food from ancient times."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Pilihan A benar (pisang di dalamnya lembut, manis, dan lembap) dan B benar (kulit luar renyah berbentuk kipas dari adonan tepung beras)."
+  },
+  {
+    "nomor": 19,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 1: My Favorite Food",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Fact Checking in Culinary Descriptions",
+    "capaian_pembelajaran": "Menilai kebenaran pernyataan deskripsi kuliner nusantara.",
+    "bacaan": {
+      "grup": "teks_pisang_goreng",
+      "teks": "Refer to the Pisang Goreng text."
+    },
+    "gambar": [],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the text!",
+    "pernyataan": [
+      {
+        "teks": "Pisang Goreng Pontianak uses sweet Raja banana as its main filling.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Galang enjoys eating fried bananas with a glass of ice-cold coffee at midnight.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "The combination of sweet, savory, and crunchy textures makes it delicious.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Teks menyebutkan pisang Raja manis sebagai isian. (b) Salah: Galang menikmatinya hangat bersama teh manis hangat di sore hari. (c) Benar: Perpaduan manis, gurih, dan renyah membuatnya sangat lezat."
+  },
+  {
+    "nomor": 20,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 1: My Favorite Food",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Idiomatic & Expressive Vocabulary",
+    "capaian_pembelajaran": "Memahami ungkapan ekspresif selera makan dalam teks bahasa Inggris.",
+    "bacaan": null,
+    "gambar": [],
+    "teks_soal": "”The warm aroma of fried banana is totally mouth-watering.”\nWhat does the adjective ”mouth-watering” mean?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Looking or smelling so delicious that it makes you want to eat immediately."
+      },
+      {
+        "label": "B",
+        "teks": "Tasting excessively salty and making you thirsty."
+      },
+      {
+        "label": "C",
+        "teks": "Spilling water all over the dining table."
+      },
+      {
+        "label": "D",
+        "teks": "Being completely tasteless and unappealing."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kata \"mouth-watering\" adalah ungkapan kiasan untuk makanan yang sangat menggugah selera (sangat lezat aromanya hingga menerbitkan air liur). Pilihan A tepat."
+  },
+  {
+    "nomor": 21,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 2: My Favorite Snack",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Reading Nutrition Facts Labels",
+    "capaian_pembelajaran": "Menganalisis label fakta nutrisi pada kemasan minuman dan camilan ringan.",
+    "bacaan": {
+      "grup": "label_nutrisi_oat_choco",
+      "teks": "Observe and compare the two Nutrition Facts labels below for questions number 21 to 25!\n\nPRODUCT A: FRESH OAT MILK (250 ml)\n• Total Fat: 2.5 g (Saturated Fat: 0.5 g, Trans Fat: 0 g)\n• Cholesterol: 0 mg\n• Sodium: 85 mg\n• Total Carbohydrate: 18 g (Dietary Fiber: 4 g, Sugars: 4 g)\n• Protein: 8 g\n• Calcium: 35% DV, Vitamin D: 25% DV\n• Storage: Keep refrigerated at 4°C, consume within 3 days.\n\nPRODUCT B: CHOCO MALT DRINK (250 ml)\n• Total Fat: 6 g (Saturated Fat: 3.5 g, Trans Fat: 0 g)\n• Cholesterol: 15 mg\n• Sodium: 140 mg\n• Total Carbohydrate: 32 g (Dietary Fiber: 1 g, Sugars: 24 g)\n• Protein: 3 g\n• Calcium: 15% DV, Vitamin D: 10% DV\n• Storage: Store in a cool dry place.",
+      "gambar": [
+        "eval4_nutrition_facts_highres.jpg"
+      ]
+    },
+    "gambar": [
+      "eval4_nutrition_facts_highres.jpg"
+    ],
+    "teks_soal": "Which product has LOWER sugar content and HIGHER protein per serving?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Choco Malt Drink"
+      },
+      {
+        "label": "B",
+        "teks": "Fresh Oat Milk"
+      },
+      {
+        "label": "C",
+        "teks": "Both have identical sugar and protein levels."
+      },
+      {
+        "label": "D",
+        "teks": "Neither product contains any protein."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Fresh Oat Milk mengandung gula lebih rendah (4g vs 24g pada Choco Malt) dan protein lebih tinggi (8g vs 3g). Pilihan B tepat."
+  },
+  {
+    "nomor": 22,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 2: My Favorite Snack",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Healthy Snacking Choices",
+    "capaian_pembelajaran": "Memilih makanan dan minuman bernutrisi seimbang untuk menjaga kesehatan remaja.",
+    "bacaan": {
+      "grup": "label_nutrisi_oat_choco",
+      "teks": "Refer to the Nutrition Facts comparison."
+    },
+    "gambar": [
+      "eval4_nutrition_facts_highres.jpg"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhy is Fresh Oat Milk considered a healthier snack drink choice for students? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It provides significantly higher dietary fiber (4 g vs 1 g)."
+      },
+      {
+        "label": "B",
+        "teks": "It contains 0 mg cholesterol and much lower sugar (4 g vs 24 g)."
+      },
+      {
+        "label": "C",
+        "teks": "It contains higher saturated fat and artificial food coloring."
+      },
+      {
+        "label": "D",
+        "teks": "It is loaded with 50 g of added refined white sugar."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Oat milk lebih sehat karena serat pangan lebih tinggi (4g vs 1g) dan bebas kolesterol (0 mg) dengan gula jauh lebih rendah (4g vs 24g). Pilihan A dan B benar."
+  },
+  {
+    "nomor": 23,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 2: My Favorite Snack",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Nutrition Label Verification",
+    "capaian_pembelajaran": "Memvalidasi klaim gizi dan petunjuk penyimpanan pada kemasan minuman.",
+    "bacaan": {
+      "grup": "label_nutrisi_oat_choco",
+      "teks": "Refer to the Nutrition Facts comparison."
+    },
+    "gambar": [
+      "eval4_nutrition_facts_highres.jpg"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the Nutrition Facts!",
+    "pernyataan": [
+      {
+        "teks": "Fresh Oat Milk supplies 35% of the Daily Value of Calcium.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Choco Malt Drink contains 24 g of sugar per 250 ml serving.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Fresh Oat Milk can be left open under hot direct sunlight for two months without spoiling.",
+        "jawaban": "S"
+      }
+    ],
+    "kunci_jawaban": "B,B,S",
+    "pembahasan": "(a) Benar: Calcium Oat Milk adalah 35% DV. (b) Benar: Choco Malt mengandung 24g gula. (c) Salah: Oat milk wajib disimpan di kulkas pada suhu 4°C dan dihabiskan dalam 3 hari."
+  },
+  {
+    "nomor": 24,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 2: My Favorite Snack",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Mathematical Literacy in Reading Labels",
+    "capaian_pembelajaran": "Menghitung selisih kandungan gizi antar dua produk pangan dalam bahasa Inggris.",
+    "bacaan": {
+      "grup": "label_nutrisi_oat_choco",
+      "teks": "Refer to the Nutrition Facts comparison."
+    },
+    "gambar": [
+      "eval4_nutrition_facts_highres.jpg"
+    ],
+    "teks_soal": "What is the difference in Carbohydrate content between Choco Malt Drink (32 g) and Fresh Oat Milk (18 g)?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "10 grams"
+      },
+      {
+        "label": "B",
+        "teks": "14 grams"
+      },
+      {
+        "label": "C",
+        "teks": "20 grams"
+      },
+      {
+        "label": "D",
+        "teks": "50 grams"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Selisih karbohidrat: 32 g - 18 g = 14 g. Pilihan B tepat."
+  },
+  {
+    "nomor": 25,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 2: My Favorite Snack",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Evaluating Health Recommendations",
+    "capaian_pembelajaran": "Menentukan rekomendasi produk konsumsi yang sesuai dengan kebutuhan kesehatan tubuh.",
+    "bacaan": {
+      "grup": "label_nutrisi_oat_choco",
+      "teks": "Refer to the Nutrition Facts comparison."
+    },
+    "gambar": [
+      "eval4_nutrition_facts_highres.jpg"
+    ],
+    "teks_soal": "Bima is training for a basketball competition and his coach asks him to avoid sugary drinks while increasing calcium and protein. Which beverage should Bima choose?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Choco Malt Drink because it has 24 grams of sugar."
+      },
+      {
+        "label": "B",
+        "teks": "Fresh Oat Milk because it offers 8 grams of protein, 35% Calcium, and only 4 grams of sugar."
+      },
+      {
+        "label": "C",
+        "teks": "Carbonated soda with high artificial sweetener."
+      },
+      {
+        "label": "D",
+        "teks": "Sweet milk tea with extra sugar syrup."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Fresh Oat Milk memberikan protein tinggi (8g), kalsium tinggi (35%), dan kadar gula rendah (4g), paling sesuai untuk rekomendasi pelatih Bima (B)."
+  },
+  {
+    "nomor": 26,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 3: A Secret Recipe",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Procedure Text: Goal and Ingredients",
+    "capaian_pembelajaran": "Memahami tujuan sosial, struktur teks (goal, ingredients, steps), dan fitur kebahasaan teks prosedur kuliner.",
+    "bacaan": {
+      "grup": "resep_es_teh_lemon",
+      "teks": "Read the recipe below for questions number 26 to 30!\n\nHOW TO MAKE REFRESHING ICED LEMON TEA\n\nIngredients:\n• 2 tea bags of black tea\n• 2 cups of boiling water\n• 2 tablespoons of honey or organic sugar\n• 1 fresh lemon (sliced thinly)\n• 6 ice cubes\n• Fresh mint leaves (optional for garnish)\n\nUtensils: A glass pitcher, a spoon, a knife, and serving glasses.\n\nSteps:\n1. First, brew the 2 tea bags in 2 cups of boiling water inside the pitcher for about 4 minutes until dark amber.\n2. Next, remove the tea bags and add 2 tablespoons of honey. Stir well until the honey completely dissolves.\n3. After that, squeeze half of the fresh lemon juice into the tea and stir gently.\n4. Then, drop the thin lemon slices and ice cubes into the pitcher.\n5. Finally, pour the iced lemon tea into serving glasses and garnish with mint leaves. Serve immediately!",
+      "gambar": []
+    },
+    "gambar": [],
+    "teks_soal": "What is the goal of the procedure text above?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "To explain how to plant tea bushes in the garden."
+      },
+      {
+        "label": "B",
+        "teks": "To tell the steps of making refreshing iced lemon tea."
+      },
+      {
+        "label": "C",
+        "teks": "To describe the chemical composition of lemons."
+      },
+      {
+        "label": "D",
+        "teks": "To review a modern beverage restaurant."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tujuan (goal) dari teks prosedur tersebut tertera jelas pada judul: \"How to Make Refreshing Iced Lemon Tea\" (B)."
+  },
+  {
+    "nomor": 27,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 3: A Secret Recipe",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: Imperative Sentences",
+    "capaian_pembelajaran": "Mengidentifikasi kalimat perintah (imperatives) dan kata kerja tindakan (action verbs) dalam teks prosedur.",
+    "bacaan": {
+      "grup": "resep_es_teh_lemon",
+      "teks": "Refer to the recipe text."
+    },
+    "gambar": [],
+    "teks_soal": "Which sentence from the recipe is an IMPERATIVE SENTENCE?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Indonesia is famous for its tea."
+      },
+      {
+        "label": "B",
+        "teks": "Squeeze half of the fresh lemon juice into the tea."
+      },
+      {
+        "label": "C",
+        "teks": "Iced tea is very popular among teenagers."
+      },
+      {
+        "label": "D",
+        "teks": "Galang likes sweet drinks very much."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Kalimat imperatif (perintah instruksi) diawali oleh kata kerja dasar (Bare Infinitive): \"Squeeze half of the fresh lemon juice...\" (B)."
+  },
+  {
+    "nomor": 28,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 3: A Secret Recipe",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Recipe Utensils & Sequence",
+    "capaian_pembelajaran": "Mengklasifikasi peralatan dapur dan kata penghubung urutan langkah (sequence connectors).",
+    "bacaan": {
+      "grup": "resep_es_teh_lemon",
+      "teks": "Refer to the recipe text."
+    },
+    "gambar": [],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two utensils are specifically required to make and serve this recipe? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A glass pitcher and a stirring spoon."
+      },
+      {
+        "label": "B",
+        "teks": "A sharp kitchen knife to slice the fresh lemon."
+      },
+      {
+        "label": "C",
+        "teks": "An electric microwave oven."
+      },
+      {
+        "label": "D",
+        "teks": "A heavy metal frying pan."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Dalam daftar peralatan tertulis: glass pitcher, spoon, knife, dan serving glasses. Pilihan A dan B benar."
+  },
+  {
+    "nomor": 29,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 3: A Secret Recipe",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Sequential Steps Verification",
+    "capaian_pembelajaran": "Memeriksa urutan logis langkah-langkah pembuatan resep minuman.",
+    "bacaan": {
+      "grup": "resep_es_teh_lemon",
+      "teks": "Refer to the recipe text."
+    },
+    "gambar": [],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the recipe steps!",
+    "pernyataan": [
+      {
+        "teks": "The tea bags should be brewed in boiling water for about 4 minutes.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Honey is added while the tea bags are still inside the pitcher before boiling.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "Ice cubes and fresh lemon slices are added after the honey dissolves.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Teh diseduh sekitar 4 menit. (b) Salah: Kantong teh diangkat terlebih dahulu (remove the tea bags) baru madu ditambahkan. (c) Benar: Es batu dan irisan lemon dimasukkan setelah madu larut."
+  },
+  {
+    "nomor": 30,
+    "semester": "Semester 1",
+    "chapter": "Chapter 2: Culinary and Me",
+    "unit": "Unit 3: A Secret Recipe",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Chronological Sequence Comprehension",
+    "capaian_pembelajaran": "Menentukan tindakan yang wajib dilakukan sebelum tahapan berikutnya pada teks prosedur.",
+    "bacaan": {
+      "grup": "resep_es_teh_lemon",
+      "teks": "Refer to the recipe text."
+    },
+    "gambar": [],
+    "teks_soal": "What must we do BEFORE adding the ice cubes into the pitcher?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Drink the entire tea immediately."
+      },
+      {
+        "label": "B",
+        "teks": "Stir the honey until it completely dissolves and squeeze lemon juice into the tea."
+      },
+      {
+        "label": "C",
+        "teks": "Wash the mint leaves with hot boiling oil."
+      },
+      {
+        "label": "D",
+        "teks": "Throw away the pitcher into the trash can."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Sebelum memasukkan es batu (Langkah 4), kita harus melarutkan madu dan memeras air lemon (Langkah 2 dan 3). Pilihan B tepat."
+  },
+  {
+    "nomor": 31,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 1: My House",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Describing Rooms and Belongings",
+    "capaian_pembelajaran": "Mendeskripsikan ruangan rumah dan perbandingan spesifikasi perlengkapan belajar siswa.",
+    "bacaan": {
+      "grup": "tabel_tiga_ransel",
+      "teks": "Compare the specifications of three student school backpacks below for questions number 31 to 35!\n\n[SPECIFICATION TABLE: 3 SCHOOL BACKPACKS]\n1. AERO BAG\n   • Material: High-density Ripstop Nylon (Waterproof Rating: 100% Water Resistant)\n   • Capacity: 22 Liters (Laptop Sleeve: Fits up to 14-inch laptop)\n   • Empty Weight: 550 grams\n   • Price: Rp185.000\n\n2. TERRA PACK\n   • Material: Heavy-duty Canvas (Waterproof Rating: Water Repellent with Rain Cover included)\n   • Capacity: 28 Liters (Laptop Sleeve: Fits up to 15.6-inch laptop)\n   • Empty Weight: 850 grams\n   • Price: Rp240.000\n\n3. NOVA TOTE\n   • Material: Recycled Polyester (Waterproof Rating: Splash Resistant only)\n   • Capacity: 18 Liters (Laptop Sleeve: Padded tablet sleeve up to 11-inch)\n   • Empty Weight: 420 grams\n   • Price: Rp150.000",
+      "gambar": [
+        "bab8_backpacks_table.png"
+      ]
+    },
+    "gambar": [
+      "bab8_backpacks_table.png"
+    ],
+    "teks_soal": "Which backpack is the MOST EXPENSIVE and has the LARGEST capacity?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Aero Bag"
+      },
+      {
+        "label": "B",
+        "teks": "Terra Pack"
+      },
+      {
+        "label": "C",
+        "teks": "Nova Tote"
+      },
+      {
+        "label": "D",
+        "teks": "All three bags have the exact same price and capacity."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Berdasarkan tabel, Terra Pack memiliki kapasitas terbesar (28 Liter) dan harga paling mahal (Rp240.000). Pilihan B tepat."
+  },
+  {
+    "nomor": 32,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 1: My House",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: Prepositions of Place",
+    "capaian_pembelajaran": "Menerapkan kata depan tempat (prepositions of place: on, under, next to, behind) dalam mendeskripsikan letak benda di kamar tidur.",
+    "bacaan": {
+      "grup": "tabel_tiga_ransel",
+      "teks": "Andre is organizing his bedroom."
+    },
+    "gambar": [],
+    "teks_soal": "Look at the description: ”Andre places his study lamp ... the desk, right ... his laptop.”\nWhich pair of prepositions correctly completes the sentence?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "under – inside"
+      },
+      {
+        "label": "B",
+        "teks": "on – next to"
+      },
+      {
+        "label": "C",
+        "teks": "behind – above"
+      },
+      {
+        "label": "D",
+        "teks": "between – through"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Lampu belajar ditaruh di atas permukaan meja (\"on the desk\") di sebelah laptop (\"next to his laptop\"). Pilihan B tepat."
+  },
+  {
+    "nomor": 33,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 1: My House",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Backpack Features Comparison",
+    "capaian_pembelajaran": "Menganalisis fitur produk tas sekolah multimodal.",
+    "bacaan": {
+      "grup": "tabel_tiga_ransel",
+      "teks": "Refer to the 3 School Backpacks table."
+    },
+    "gambar": [
+      "bab8_backpacks_table.png"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two statements are TRUE based on the backpack specification table? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nova Tote is the lightest bag among the three (only 420 grams)."
+      },
+      {
+        "label": "B",
+        "teks": "Aero Bag offers 100% waterproof protection made of Ripstop Nylon."
+      },
+      {
+        "label": "C",
+        "teks": "Terra Pack is made of cheap paper and costs Rp50.000."
+      },
+      {
+        "label": "D",
+        "teks": "Nova Tote can fit a 17-inch gaming laptop."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Pilihan A benar (Nova Tote paling ringan, 420 gram) dan B benar (Aero Bag tahan air 100% dari bahan Ripstop Nylon)."
+  },
+  {
+    "nomor": 34,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 1: My House",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Backpack Comparison",
+    "capaian_pembelajaran": "Mengevaluasi kebenaran data perbandingan berat dan harga perlengkapan rumah/sekolah.",
+    "bacaan": {
+      "grup": "tabel_tiga_ransel",
+      "teks": "Refer to the 3 School Backpacks table."
+    },
+    "gambar": [
+      "bab8_backpacks_table.png"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the table!",
+    "pernyataan": [
+      {
+        "teks": "The price difference between Terra Pack (Rp240.000) and Aero Bag (Rp185.000) is Rp55.000.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Terra Pack is lighter than Nova Tote by 300 grams.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "Nova Tote is made from environmentally friendly recycled polyester.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Rp240.000 - Rp185.000 = Rp55.000. (b) Salah: Terra Pack lebih berat (850g vs 420g). (c) Benar: Nova Tote dibuat dari bahan poliester daur ulang."
+  },
+  {
+    "nomor": 35,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 1: My House",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Degrees of Comparison",
+    "capaian_pembelajaran": "Menerapkan tingkat perbandingan (comparative & superlative degrees) pada benda sehari-hari.",
+    "bacaan": {
+      "grup": "tabel_tiga_ransel",
+      "teks": "Refer to the 3 School Backpacks table."
+    },
+    "gambar": [
+      "bab8_backpacks_table.png"
+    ],
+    "teks_soal": "Which comparative sentence correctly describes the three bags?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Nova Tote is cheaper than Aero Bag, but Terra Pack is the most expensive of all."
+      },
+      {
+        "label": "B",
+        "teks": "Terra Pack is cheaper than Nova Tote."
+      },
+      {
+        "label": "C",
+        "teks": "Aero Bag is the heaviest backpack."
+      },
+      {
+        "label": "D",
+        "teks": "All three bags are equally heavy."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nova Tote (Rp150k) lebih murah dari Aero Bag (Rp185k), dan Terra Pack (Rp240k) adalah yang paling mahal. Pilihan A tepat."
+  },
+  {
+    "nomor": 36,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 2: My House Chores",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Daily House Chores & Responsibility",
+    "capaian_pembelajaran": "Mendeskripsikan pembagian tugas kebersihan rumah tangga dalam keluarga.",
+    "bacaan": {
+      "grup": "jadwal_kebersihan_rumah",
+      "teks": "Read the text below for questions number 36 to 40!\n\nIn Galang’s family, keeping the house clean and comfortable is a shared responsibility. Every Saturday morning after breakfast, each family member has a specific chore:\n• Galang’s father sweeps the front yard, trims the garden bushes, and washes the motorcycle.\n• Galang’s mother wipes the kitchen counters, mops the dining area, and cooks lunch.\n• Galang cleans his own bedroom, sweeps the living room, and waters the flower pots in the porch.\n• Galang’s sister, Ara, wipes the glass windows and washes the breakfast dishes at the sink.\nBy working together, the entire house looks sparkling clean and tidy in less than two hours.",
+      "gambar": []
+    },
+    "gambar": [],
+    "teks_soal": "Who is responsible for washing the breakfast dishes at the kitchen sink?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Galang’s father"
+      },
+      {
+        "label": "B",
+        "teks": "Galang’s sister, Ara"
+      },
+      {
+        "label": "C",
+        "teks": "Galang himself"
+      },
+      {
+        "label": "D",
+        "teks": "Their neighbor"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Teks menyebutkan: \"Galang’s sister, Ara, wipes the glass windows and washes the breakfast dishes at the sink.\" Pilihan B tepat."
+  },
+  {
+    "nomor": 37,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 2: My House Chores",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: Subject-Verb Agreement in Chores",
+    "capaian_pembelajaran": "Menerapkan tata bahasa Simple Present Tense untuk kebiasaan rutin rumah tangga.",
+    "bacaan": {
+      "grup": "jadwal_kebersihan_rumah",
+      "teks": "Refer to Galang’s family chore text."
+    },
+    "gambar": [],
+    "teks_soal": "Complete the sentence with the correct verb forms!\n”Every Saturday, Galang ... the living room while his parents ... in the kitchen and yard.”",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "sweep – works"
+      },
+      {
+        "label": "B",
+        "teks": "sweeps – work"
+      },
+      {
+        "label": "C",
+        "teks": "swept – working"
+      },
+      {
+        "label": "D",
+        "teks": "is sweeping – works"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Galang (tunggal) memerlukan kata kerja \"sweeps\", sedangkan his parents (jamak) memerlukan \"work\". Pilihan B tepat."
+  },
+  {
+    "nomor": 38,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 2: My House Chores",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Household Cleaning Vocabulary",
+    "capaian_pembelajaran": "Mengidentifikasi frasa kata kerja tugas rumah tangga (chores verb phrases).",
+    "bacaan": {
+      "grup": "jadwal_kebersihan_rumah",
+      "teks": "Refer to Galang’s family chore text."
+    },
+    "gambar": [],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two chores are specifically performed by GALANG according to the text? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Sweeping the living room and tidying his bedroom."
+      },
+      {
+        "label": "B",
+        "teks": "Watering the flower pots in the porch."
+      },
+      {
+        "label": "C",
+        "teks": "Trimming the tall garden bushes with a mechanical saw."
+      },
+      {
+        "label": "D",
+        "teks": "Washing the family car and motorcycle."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Galang membersihkan kamarnya, menyapu ruang tamu (A), dan menyiram tanaman bunga di teras (B). Memangkas semak dan mencuci motor dilakukan ayahnya."
+  },
+  {
+    "nomor": 39,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 2: My House Chores",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Fact Checking in Family Collaboration",
+    "capaian_pembelajaran": "Memeriksa detail fakta pembagian tugas rumah tangga.",
+    "bacaan": {
+      "grup": "jadwal_kebersihan_rumah",
+      "teks": "Refer to Galang’s family chore text."
+    },
+    "gambar": [],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the text!",
+    "pernyataan": [
+      {
+        "teks": "Galang’s father does all the house chores alone without any help.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "Working together enables the family to finish cleaning the house in less than two hours.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Galang’s mother is responsible for wiping kitchen counters and mopping the dining area.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "S,B,B",
+    "pembahasan": "(a) Salah: Semua anggota keluarga berbagi tugas bersama. (b) Benar: Kerja sama membuat rumah bersih dalam waktu kurang dari 2 jam. (c) Benar: Ibu mengelap konter dapur dan mengepel ruang makan."
+  },
+  {
+    "nomor": 40,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 2: My House Chores",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Values and Character Education in Texts",
+    "capaian_pembelajaran": "Menyimpulkan nilai karakter gotong royong dan tanggung jawab dalam keluarga.",
+    "bacaan": {
+      "grup": "jadwal_kebersihan_rumah",
+      "teks": "Refer to Galang’s family chore text."
+    },
+    "gambar": [],
+    "teks_soal": "What positive value can students learn from Galang’s family routine?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Teamwork and mutual responsibility make heavy work feel lighter and quicker."
+      },
+      {
+        "label": "B",
+        "teks": "Children should avoid doing chores and let parents work all day."
+      },
+      {
+        "label": "C",
+        "teks": "Houses do not need to be cleaned if we stay in our bedrooms."
+      },
+      {
+        "label": "D",
+        "teks": "Eating breakfast is a waste of time on Saturday mornings."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nilai karakter utama adalah gotong royong dan rasa tanggung jawab bersama (teamwork & mutual responsibility) yang meringankan beban pekerjaan rumah (A)."
+  },
+  {
+    "nomor": 41,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 3: Let’s Clean Up!",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Visual Procedure: Upcycling Plastic Bottles",
+    "capaian_pembelajaran": "Menganalisis teks prosedur visual multimodal pembuatan pot swasiram (self-watering pot) dari botol bekas.",
+    "bacaan": {
+      "grup": "prosedur_pot_swasiram",
+      "teks": "Study the 4-step visual procedure guide below for questions number 41 to 45!\n\nHOW TO MAKE A SELF-WATERING POT FROM USED PLASTIC BOTTLES\n\nStep 1: Cut a clean 1.5-liter plastic bottle horizontally into two halves using scissors.\nStep 2: Poke a small drainage hole in the plastic bottle cap and thread a piece of cotton wick/cloth strip through it.\nStep 3: Invert the top bottle half (upside down) and place it inside the bottom half filled with water. The wick will absorb water upward.\nStep 4: Fill the inverted top section with fertile planting soil and plant your seedling. Water once, and the self-watering system will keep the soil moist automatically.",
+      "gambar": [
+        "bab19_procedure_self_watering_pot.jpg"
+      ]
+    },
+    "gambar": [
+      "bab19_procedure_self_watering_pot.jpg"
+    ],
+    "teks_soal": "What is the main environmental benefit of making a self-watering pot according to the guide?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It increases the use of brand-new single-use plastic cups."
+      },
+      {
+        "label": "B",
+        "teks": "It reduces household plastic waste by upcycling discarded bottles into functional plant pots."
+      },
+      {
+        "label": "C",
+        "teks": "It requires cutting down tall trees in the rainforest."
+      },
+      {
+        "label": "D",
+        "teks": "It uses huge amounts of electricity to pump water."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Manfaat lingkungan terpenting adalah mengurangi sampah plastik dengan mendaur ulang (upcycling) botol bekas menjadi pot swasiram fungsional (B)."
+  },
+  {
+    "nomor": 42,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 3: Let’s Clean Up!",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Functional Mechanics in Scientific Procedure",
+    "capaian_pembelajaran": "Menjelaskan fungsi bagian benda (cotton wick) pada mekanisme kapilaritas pot tanaman.",
+    "bacaan": {
+      "grup": "prosedur_pot_swasiram",
+      "teks": "Refer to the Self-Watering Pot guide."
+    },
+    "gambar": [
+      "bab19_procedure_self_watering_pot.jpg"
+    ],
+    "teks_soal": "What is the primary function of the cotton wick/cloth strip in Step 2 and Step 3?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "To color the water into rainbow shades."
+      },
+      {
+        "label": "B",
+        "teks": "To absorb water from the bottom reservoir up into the fertile soil automatically."
+      },
+      {
+        "label": "C",
+        "teks": "To keep insects trapped inside the bottle cap."
+      },
+      {
+        "label": "D",
+        "teks": "To heat up the soil during nighttime."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Fungsi sumbu kain katun (cotton wick) adalah menyerap air dari wadah penampung bawah ke tanah secara kapilaritas (B)."
+  },
+  {
+    "nomor": 43,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 3: Let’s Clean Up!",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Materials Identification in Eco-DIY",
+    "capaian_pembelajaran": "Mengidentifikasi bahan daur ulang yang diperlukan dalam proyek swakarya lingkungan.",
+    "bacaan": {
+      "grup": "prosedur_pot_swasiram",
+      "teks": "Refer to the Self-Watering Pot guide."
+    },
+    "gambar": [
+      "bab19_procedure_self_watering_pot.jpg"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two materials are essential to create the self-watering container? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "A clean 1.5-liter used plastic bottle with its cap."
+      },
+      {
+        "label": "B",
+        "teks": "A strip of cotton cloth or wick."
+      },
+      {
+        "label": "C",
+        "teks": "A large ceramic brick."
+      },
+      {
+        "label": "D",
+        "teks": "An electric battery motor."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Bahan inti adalah botol plastik bekas 1,5 liter beserta tutupnya (A) dan sehelai sumbu/kain katun (B)."
+  },
+  {
+    "nomor": 44,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 3: Let’s Clean Up!",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Step Verification in Illustrated Guide",
+    "capaian_pembelajaran": "Memvalidasi urutan dan teknik perakitan pot tanaman swasiram.",
+    "bacaan": {
+      "grup": "prosedur_pot_swasiram",
+      "teks": "Refer to the Self-Watering Pot guide."
+    },
+    "gambar": [
+      "bab19_procedure_self_watering_pot.jpg"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the guide!",
+    "pernyataan": [
+      {
+        "teks": "The bottle is cut into two equal halves horizontally.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Water is poured into the top inverted section while soil is stored at the bottom.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "The self-watering pot allows plants to receive moisture continuously without daily manual pouring.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Botol dipotong melintang menjadi 2 bagian. (b) Salah: Air di wadah bawah, tanah di wadah atas terbalik. (c) Benar: Sistem ini menjaga kelembapan tanah secara mandiri."
+  },
+  {
+    "nomor": 45,
+    "semester": "Semester 1",
+    "chapter": "Chapter 3: Home Sweet Home",
+    "unit": "Unit 3: Let’s Clean Up!",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Environmental Notices & Rules",
+    "capaian_pembelajaran": "Menginterpretasikan papan peringatan kebersihan lingkungan sekolah dan taman publik.",
+    "bacaan": {
+      "grup": "papan_peringatan_taman",
+      "teks": "Observe the notice board at the School Eco-Park: ”DO NOT LITTER! Keep our school garden clean and green. Violators will be fined Rp50.000 or assigned 2 hours of community compost duty.”"
+    },
+    "gambar": [
+      "bab12_ecopark_notice.jpg"
+    ],
+    "teks_soal": "What happens if a student throws plastic wrappers carelessly in the school garden?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "They will receive free snacks from the principal."
+      },
+      {
+        "label": "B",
+        "teks": "They must pay a fine of Rp50.000 or do 2 hours of community compost duty."
+      },
+      {
+        "label": "C",
+        "teks": "They are awarded a gold medal for creativity."
+      },
+      {
+        "label": "D",
+        "teks": "They are allowed to throw more rubbish."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Berdasarkan papan peringatan, pelanggar yang membuang sampah sembarangan akan didenda Rp50.000 atau menjalani 2 jam tugas kompos (B)."
+  },
+  {
+    "nomor": 46,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 1: My Class Schedule",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "School Subjects and Timetables",
+    "capaian_pembelajaran": "Membaca dan membandingkan jadwal pelajaran mingguan antar dua kelas pada jenjang SMP.",
+    "bacaan": {
+      "grup": "jadwal_7a_7b",
+      "teks": "Compare the Wednesday Morning Schedule of Class 7A and Class 7B below for questions number 46 to 50!\n\n[WEDNESDAY MORNING TIMETABLE]\n• 07.15 – 08.35:\n  - Class 7A: English (with Mr. Rahmat)\n  - Class 7B: Mathematics (with Mrs. Tari)\n• 08.35 – 09.55:\n  - Class 7A: Natural Science (with Mr. Joko)\n  - Class 7B: English (with Mr. Rahmat)\n• 09.55 – 10.15:\n  - First Break (Istirahat Pertama — 20 minutes)\n• 10.15 – 11.35:\n  - Class 7A: Mathematics (with Mrs. Tari)\n  - Class 7B: Indonesian Language (with Mrs. Dewi)",
+      "gambar": [
+        "bab5_jadwal_7a_7b.png"
+      ]
+    },
+    "gambar": [
+      "bab5_jadwal_7a_7b.png"
+    ],
+    "teks_soal": "Which subject does Class 7A study on Wednesday at 07.15 – 08.35 AM?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Mathematics"
+      },
+      {
+        "label": "B",
+        "teks": "English (with Mr. Rahmat)"
+      },
+      {
+        "label": "C",
+        "teks": "Natural Science"
+      },
+      {
+        "label": "D",
+        "teks": "Indonesian Language"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jadwal menunjukkan Kelas 7A belajar English bersama Mr. Rahmat pada pukul 07.15 – 08.35 (B)."
+  },
+  {
+    "nomor": 47,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 1: My Class Schedule",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Calculating Lesson Duration",
+    "capaian_pembelajaran": "Menghitung durasi waktu pembelajaran dalam bahasa Inggris menggunakan format jam dan menit.",
+    "bacaan": {
+      "grup": "jadwal_7a_7b",
+      "teks": "Refer to the Wednesday Morning Schedule."
+    },
+    "gambar": [
+      "bab5_jadwal_7a_7b.png"
+    ],
+    "teks_soal": "How long does the first lesson session last (from 07.15 to 08.35)?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "45 minutes"
+      },
+      {
+        "label": "B",
+        "teks": "60 minutes"
+      },
+      {
+        "label": "C",
+        "teks": "80 minutes"
+      },
+      {
+        "label": "D",
+        "teks": "120 minutes"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Dari pukul 07.15 hingga 08.35 berdurasi 1 jam 20 menit = 80 menit (C)."
+  },
+  {
+    "nomor": 48,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 1: My Class Schedule",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Schedule Comparison & Facts",
+    "capaian_pembelajaran": "Mengidentifikasi persamaan dan perbedaan jadwal dua kelas secara komparatif.",
+    "bacaan": {
+      "grup": "jadwal_7a_7b",
+      "teks": "Refer to the Wednesday Morning Schedule."
+    },
+    "gambar": [
+      "bab5_jadwal_7a_7b.png"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two statements are CORRECT based on the Wednesday schedule? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Both Class 7A and Class 7B have their First Break at 09.55 – 10.15 (20 minutes)."
+      },
+      {
+        "label": "B",
+        "teks": "Mr. Rahmat teaches English to Class 7A first, and then to Class 7B at 08.35."
+      },
+      {
+        "label": "C",
+        "teks": "Class 7A studies Indonesian Language at 10.15."
+      },
+      {
+        "label": "D",
+        "teks": "There is no break time on Wednesday morning."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Pilihan A benar (istirahat bersama pukul 09.55–10.15) dan B benar (Mr. Rahmat mengajar 7A di sesi 1 lalu 7B di sesi 2)."
+  },
+  {
+    "nomor": 49,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 1: My Class Schedule",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Timetable Verification",
+    "capaian_pembelajaran": "Memverifikasi kebenaran informasi alokasi waktu mata pelajaran.",
+    "bacaan": {
+      "grup": "jadwal_7a_7b",
+      "teks": "Refer to the Wednesday Morning Schedule."
+    },
+    "gambar": [
+      "bab5_jadwal_7a_7b.png"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the schedule!",
+    "pernyataan": [
+      {
+        "teks": "Mrs. Tari teaches Mathematics to Class 7B in the first session (07.15 – 08.35).",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Class 7A finishes their morning Mathematics class at 11.35 AM.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Natural Science for Class 7A starts at 07.15 AM.",
+        "jawaban": "S"
+      }
+    ],
+    "kunci_jawaban": "B,B,S",
+    "pembahasan": "(a) Benar: Mrs. Tari mengajar MTK kelas 7B di sesi pertama. (b) Benar: Sesi ketiga kelas 7A selesai pukul 11.35. (c) Salah: IPA kelas 7A dimulai pukul 08.35, bukan 07.15."
+  },
+  {
+    "nomor": 50,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 1: My Class Schedule",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: Prepositions of Time (at, on, in)",
+    "capaian_pembelajaran": "Menerapkan preposisi waktu (at untuk jam, on untuk hari, in untuk bulan/bagian hari) secara tepat.",
+    "bacaan": null,
+    "gambar": [],
+    "teks_soal": "Complete the sentence with the correct prepositions of time!\n”Class 7A has English ... Wednesday ... 07.15 in the morning.”",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "at – on"
+      },
+      {
+        "label": "B",
+        "teks": "on – at"
+      },
+      {
+        "label": "C",
+        "teks": "in – on"
+      },
+      {
+        "label": "D",
+        "teks": "by – for"
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Hari menggunakan \"on\" (on Wednesday), sedangkan jam spesifik menggunakan \"at\" (at 07.15). Pilihan B tepat."
+  },
+  {
+    "nomor": 51,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Exact Hour",
+    "capaian_pembelajaran": "Menyatakan waktu tepat (o’clock) dalam bahasa Inggris berdasarkan stimulus jam digital.",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal1.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is one o’clock."
+      },
+      {
+        "label": "B",
+        "teks": "It is two o’clock."
+      },
+      {
+        "label": "C",
+        "teks": "It is twelve o’clock."
+      },
+      {
+        "label": "D",
+        "teks": "It is half past two."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jam digital menunjukkan 02.00, dinyatakan: \"It is two o’clock\" (B)."
+  },
+  {
+    "nomor": 52,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Minutes Past",
+    "capaian_pembelajaran": "Menyatakan waktu lewat menit (past) dalam bahasa Inggris.",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal2.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is twenty past two."
+      },
+      {
+        "label": "B",
+        "teks": "It is two past twenty."
+      },
+      {
+        "label": "C",
+        "teks": "It is half past two."
+      },
+      {
+        "label": "D",
+        "teks": "It is twenty to three."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jam digital menunjukkan 02.20, dinyatakan: \"It is twenty past two\" (B)."
+  },
+  {
+    "nomor": 53,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: A Quarter Past",
+    "capaian_pembelajaran": "Menyatakan waktu lewat seperempat jam (a quarter past).",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal3.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is four past fifteen."
+      },
+      {
+        "label": "B",
+        "teks": "It is a quarter past four."
+      },
+      {
+        "label": "C",
+        "teks": "It is a quarter to four."
+      },
+      {
+        "label": "D",
+        "teks": "It is half past four."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jam digital menunjukkan 04.15, dinyatakan: \"It is a quarter past four\" (B)."
+  },
+  {
+    "nomor": 54,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Minutes Past",
+    "capaian_pembelajaran": "Menyatakan waktu lewat menit pada jam sembilan.",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal4.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is twenty-five past nine."
+      },
+      {
+        "label": "B",
+        "teks": "It is twenty-five to nine."
+      },
+      {
+        "label": "C",
+        "teks": "It is nine past twenty-five."
+      },
+      {
+        "label": "D",
+        "teks": "It is half past nine."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jam digital menunjukkan 09.25, dinyatakan: \"It is twenty-five past nine\" (A)."
+  },
+  {
+    "nomor": 55,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Half Past",
+    "capaian_pembelajaran": "Menyatakan waktu lewat setengah jam (half past).",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal5.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is ten o’clock."
+      },
+      {
+        "label": "B",
+        "teks": "It is half past ten."
+      },
+      {
+        "label": "C",
+        "teks": "It is half past eleven."
+      },
+      {
+        "label": "D",
+        "teks": "It is a quarter past ten."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Jam digital menunjukkan 10.30, dinyatakan: \"It is half past ten\" (B)."
+  },
+  {
+    "nomor": 56,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Minutes To",
+    "capaian_pembelajaran": "Menyatakan waktu menuju jam berikutnya menggunakan kata \"to\".",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal6.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is twenty-five to nine."
+      },
+      {
+        "label": "B",
+        "teks": "It is thirty-five past eight."
+      },
+      {
+        "label": "C",
+        "teks": "It is twenty-five past eight."
+      },
+      {
+        "label": "D",
+        "teks": "It is eight to thirty-five."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jam 08.35 berarti kurang 25 menit menuju jam 9: \"It is twenty-five to nine\" (A)."
+  },
+  {
+    "nomor": 57,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: A Quarter To",
+    "capaian_pembelajaran": "Menyatakan waktu kurang seperempat jam (a quarter to).",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal7.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is a quarter to twelve."
+      },
+      {
+        "label": "B",
+        "teks": "It is a quarter past eleven."
+      },
+      {
+        "label": "C",
+        "teks": "It is eleven forty-five o’clock."
+      },
+      {
+        "label": "D",
+        "teks": "It is half past eleven."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jam 11.45 berarti kurang seperempat jam menuju jam 12: \"It is a quarter to twelve\" (A)."
+  },
+  {
+    "nomor": 58,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Minutes To",
+    "capaian_pembelajaran": "Menyatakan waktu sepuluh menit menuju jam berikutnya.",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal8.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is ten to ten."
+      },
+      {
+        "label": "B",
+        "teks": "It is nine to fifty."
+      },
+      {
+        "label": "C",
+        "teks": "It is ten past nine."
+      },
+      {
+        "label": "D",
+        "teks": "It is fifty past ten."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jam 09.50 berarti kurang 10 menit menuju jam 10: \"It is ten to ten\" (A)."
+  },
+  {
+    "nomor": 59,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Minutes To",
+    "capaian_pembelajaran": "Menyatakan waktu dua puluh menit menuju jam satu.",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal9.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is twenty to one."
+      },
+      {
+        "label": "B",
+        "teks": "It is forty past twelve."
+      },
+      {
+        "label": "C",
+        "teks": "It is twenty past one."
+      },
+      {
+        "label": "D",
+        "teks": "It is half past twelve."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jam 12.40 berarti kurang 20 menit menuju jam 1: \"It is twenty to one\" (A)."
+  },
+  {
+    "nomor": 60,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 2: My Online Class",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Telling Time: Precise Minutes To",
+    "capaian_pembelajaran": "Menyatakan waktu menit ganjil presisi sebelum jam genap.",
+    "bacaan": null,
+    "gambar": [
+      "bab5_clock_soal10.png"
+    ],
+    "teks_soal": "Look at the digital clock below!\nWhat time is it?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "It is eight minutes to two."
+      },
+      {
+        "label": "B",
+        "teks": "It is fifty-two minutes past one."
+      },
+      {
+        "label": "C",
+        "teks": "It is eight past two."
+      },
+      {
+        "label": "D",
+        "teks": "It is two to eight."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Jam 01.52 berarti kurang 8 menit menuju jam 2: \"It is eight minutes to two\" (A)."
+  },
+  {
+    "nomor": 61,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 3: My Study Habits",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Digital Habits and Student Productivity",
+    "capaian_pembelajaran": "Menganalisis data survei kebiasaan belajar dan pemanfaatan gawai di kalangan siswa SMP.",
+    "bacaan": {
+      "grup": "survei_gawai_belajar",
+      "teks": "Read the school survey report below for questions number 61 to 65!\n\nSURVEY DATA: SCREEN TIME & STUDENT PRODUCTIVITY (SMP NUSANTARA, 240 STUDENTS)\n• 45% of students (108 students) use gadgets primarily for Collaborative Learning & Digital Creation (designing e-magazines, programming robots, and practicing English).\n• 35% of students (84 students) use gadgets mainly for Social Media & Short Videos.\n• 20% of students (48 students) use gadgets mainly for Online Gaming.\n\nStudent Reflection — Nadia (Grade 7A): ”In my view, laptops and tablets are super beneficial when we work together in the library. However, we must always set a daily time limit for social media so we stay productive and don’t lose focus.”",
+      "gambar": [
+        "bab21_students_digital_robotics.jpg"
+      ]
+    },
+    "gambar": [
+      "bab21_students_digital_robotics.jpg"
+    ],
+    "teks_soal": "What is the main finding regarding students who use gadgets productively at SMP Nusantara?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Almost half of the students (45%) utilize gadgets for collaborative learning and digital creation."
+      },
+      {
+        "label": "B",
+        "teks": "All students spend 10 hours a day playing video games."
+      },
+      {
+        "label": "C",
+        "teks": "Gadgets are strictly banned inside the library."
+      },
+      {
+        "label": "D",
+        "teks": "No student uses tablets for English learning."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Data survei menunjukkan 45% (108 siswa) memanfaatkan gawai untuk collaborative learning dan kreasi digital (A)."
+  },
+  {
+    "nomor": 62,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 3: My Study Habits",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Grammar Focus: Adverbs of Frequency",
+    "capaian_pembelajaran": "Menerapkan kata keterangan frekuensi (always, usually, sometimes, never) dalam mendeskripsikan kebiasaan belajar.",
+    "bacaan": {
+      "grup": "survei_gawai_belajar",
+      "teks": "Refer to the study habits text."
+    },
+    "gambar": [],
+    "teks_soal": "Nadia studies every single day without missing a day. Which adverb of frequency correctly completes the sentence?\n”Nadia ... reviews her class notes before going to bed.”",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "never"
+      },
+      {
+        "label": "B",
+        "teks": "rarely"
+      },
+      {
+        "label": "C",
+        "teks": "always"
+      },
+      {
+        "label": "D",
+        "teks": "seldom"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Karena dilakukan setiap hari 100% tanpa putus, kata keterangan frekuensi yang tepat adalah \"always\" (selalu) (C)."
+  },
+  {
+    "nomor": 63,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 3: My Study Habits",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Positive Study Habits",
+    "capaian_pembelajaran": "Mengidentifikasi kebiasaan belajar efektif berbantuan teknologi digital.",
+    "bacaan": {
+      "grup": "survei_gawai_belajar",
+      "teks": "Refer to the survey text."
+    },
+    "gambar": [
+      "bab21_students_digital_robotics.jpg"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nAccording to Nadia’s reflection and the survey, which TWO habits support high academic productivity? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Working collaboratively on digital learning projects in the library."
+      },
+      {
+        "label": "B",
+        "teks": "Setting a clear daily time limit for social media and short videos."
+      },
+      {
+        "label": "C",
+        "teks": "Scrolling social media until 3 AM on school nights."
+      },
+      {
+        "label": "D",
+        "teks": "Skipping study sessions to play games during class."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Dua kebiasaan positif yang disarankan adalah kolaborasi belajar digital di perpustakaan (A) dan membatasi waktu media sosial secara disiplin (B)."
+  },
+  {
+    "nomor": 64,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 3: My Study Habits",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Survey Data Evaluation",
+    "capaian_pembelajaran": "Memverifikasi perbandingan persentase data survei siswa.",
+    "bacaan": {
+      "grup": "survei_gawai_belajar",
+      "teks": "Refer to the survey text."
+    },
+    "gambar": [
+      "bab21_students_digital_robotics.jpg"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the survey data!",
+    "pernyataan": [
+      {
+        "teks": "More students use gadgets for collaborative learning (108) than for online gaming (48).",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Social media and short videos account for 35% of total screen time.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Nadia suggests that students should never touch computers for school work.",
+        "jawaban": "S"
+      }
+    ],
+    "kunci_jawaban": "B,B,S",
+    "pembahasan": "(a) Benar: 108 siswa (45%) > 48 siswa (20%). (b) Benar: Media sosial sebesar 35%. (c) Salah: Nadia justru mendukung pemanfaatan laptop/tablet untuk proyek bersama."
+  },
+  {
+    "nomor": 65,
+    "semester": "Semester 2",
+    "chapter": "Chapter 4: My School Activities",
+    "unit": "Unit 3: My Study Habits",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Expressing Opinion in Discourse",
+    "capaian_pembelajaran": "Mengidentifikasi frasa pengantar opini pribadi (introducing personal opinion).",
+    "bacaan": {
+      "grup": "survei_gawai_belajar",
+      "teks": "Refer to Nadia’s quote in the survey text."
+    },
+    "gambar": [],
+    "teks_soal": "Which phrase did Nadia use to state her personal viewpoint?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "”In my view, ...”"
+      },
+      {
+        "label": "B",
+        "teks": "”I strictly forbid you to ...”"
+      },
+      {
+        "label": "C",
+        "teks": "”The teacher ordered us to ...”"
+      },
+      {
+        "label": "D",
+        "teks": "”Never believe that ...”"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Nadia menyatakan pandangan pribadinya dengan frasa pengantar opini: \"In my view, ...\" (A)."
+  },
+  {
+    "nomor": 66,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 1: School Buildings",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Describing School Buildings & Direction",
+    "capaian_pembelajaran": "Mendeskripsikan denah gedung sekolah, fasilitas belajar, dan arah lokasi dalam bahasa Inggris.",
+    "bacaan": {
+      "grup": "gedung_smp_nusantara",
+      "teks": "Read the descriptive passage below for questions number 66 to 70!\n\nSMP Nusantara is a green and modern junior high school located in a peaceful area. The school has three main two-story buildings surrounding a spacious green courtyard. As you enter through the main gate, the administration office and teachers’ room are on your left. Directly in front of the gate across the courtyard is the Digital Library, which stores thousands of e-books and printed references. Next to the library on the right wing is the Integrated Science Laboratory and the Robotics Makerspace. The school cafeteria and eco-garden are behind the main hall. Every building is equipped with ramps for wheelchair accessibility, wide glass windows for natural lighting, and waste separation bins.",
+      "gambar": []
+    },
+    "gambar": [],
+    "teks_soal": "Where is the Digital Library located according to the description?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Behind the parking lot outside the school complex."
+      },
+      {
+        "label": "B",
+        "teks": "Directly in front of the main gate across the courtyard."
+      },
+      {
+        "label": "C",
+        "teks": "Inside the principal’s private garage."
+      },
+      {
+        "label": "D",
+        "teks": "Under the sports field stadium."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Teks menyatakan: \"Directly in front of the gate across the courtyard is the Digital Library...\". Pilihan B tepat."
+  },
+  {
+    "nomor": 67,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 1: School Buildings",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "School Facilities Function",
+    "capaian_pembelajaran": "Mengidentifikasi fungsi ruangan dan fasilitas laboratorium sains serta ruang kreasi robotika.",
+    "bacaan": {
+      "grup": "gedung_smp_nusantara",
+      "teks": "Refer to the SMP Nusantara school buildings text."
+    },
+    "gambar": [],
+    "teks_soal": "In which facility can students practice coding robots and doing science experiments?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "The school parking lot."
+      },
+      {
+        "label": "B",
+        "teks": "The Integrated Science Laboratory and Robotics Makerspace."
+      },
+      {
+        "label": "C",
+        "teks": "The school cafeteria."
+      },
+      {
+        "label": "D",
+        "teks": "The security guard post."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Fasilitas untuk eksperimen sains dan robotika adalah \"Integrated Science Laboratory and Robotics Makerspace\" (B)."
+  },
+  {
+    "nomor": 68,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 1: School Buildings",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Facility Features Analysis",
+    "capaian_pembelajaran": "Menganalisis fasilitas ramah lingkungan dan aksesibilitas inklusif di lingkungan sekolah.",
+    "bacaan": {
+      "grup": "gedung_smp_nusantara",
+      "teks": "Refer to the SMP Nusantara school buildings text."
+    },
+    "gambar": [],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two eco-friendly and inclusive features are highlighted in the school buildings? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Ramps for wheelchair accessibility and inclusive mobility."
+      },
+      {
+        "label": "B",
+        "teks": "Wide glass windows for natural lighting and waste separation bins."
+      },
+      {
+        "label": "C",
+        "teks": "High smoke chimneys burning coal inside classrooms."
+      },
+      {
+        "label": "D",
+        "teks": "Single-use plastic cups provided in every corridor."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Fasilitas inklusif & hijau meliputi jalur landai kursi roda (A) serta jendela kaca lebar hemat energi dan tempat sampah pilah (B)."
+  },
+  {
+    "nomor": 69,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 1: School Buildings",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Layout Verification",
+    "capaian_pembelajaran": "Memvalidasi detail tata letak ruangan sekolah pada teks deskriptif.",
+    "bacaan": {
+      "grup": "gedung_smp_nusantara",
+      "teks": "Refer to the SMP Nusantara school buildings text."
+    },
+    "gambar": [],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the school layout!",
+    "pernyataan": [
+      {
+        "teks": "The administration office and teachers’ room are on the left as you enter the gate.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "The school has no green courtyard and is covered completely in dark mud.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "The cafeteria and eco-garden are situated behind the school main hall.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Ruang guru & TU di sebelah kiri gerbang. (b) Salah: Sekolah memiliki halaman rumput hijau yang luas. (c) Benar: Kantin dan taman lingkungan berada di belakang aula utama."
+  },
+  {
+    "nomor": 70,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 1: School Buildings",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Vocabulary: Architecture & Space",
+    "capaian_pembelajaran": "Menentukan arti kata sifat deskripsi ruangan luas dan terbuka.",
+    "bacaan": null,
+    "gambar": [],
+    "teks_soal": "”The school has three main two-story buildings surrounding a spacious green courtyard.”\nWhat does the word ”spacious” mean?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Large, roomy, and having lots of open space."
+      },
+      {
+        "label": "B",
+        "teks": "Extremely narrow and cramped."
+      },
+      {
+        "label": "C",
+        "teks": "Very dark and dangerous."
+      },
+      {
+        "label": "D",
+        "teks": "Completely flooded with dirty water."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Kata \"spacious\" berarti luas, lapang, dan beruang terbuka banyak (large and having ample space) (A)."
+  },
+  {
+    "nomor": 71,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 2: Extracurricular Activities",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Extracurricular Club Comparison",
+    "capaian_pembelajaran": "Menganalisis tabel perbandingan klub ekstrakurikuler sekolah dan biaya keikutsertaan.",
+    "bacaan": {
+      "grup": "tabel_ekskul_smp",
+      "teks": "Study the Extracurricular Clubs table below for questions number 71 to 75!\n\n[SMP NUSANTARA EXTRACURRICULAR CLUBS]\n1. CLUB 1: BADMINTON CLUB\n   • Training Days: Tuesday & Thursday (03.30 – 05.00 PM)\n   • Venue: Indoor Sports Hall (Room 12)\n   • Coach: Coach Bima (Certified PBSI Coach)\n   • Monthly Fee: Rp45.000 (shuttlecocks maintenance)\n   • Target: All Grades (7, 8, 9)\n\n2. CLUB 2: SCOUT (PRAMUKA)\n   • Training Days: Friday afternoon (02.00 – 04.00 PM)\n   • Venue: School Courtyard & Scout Base\n   • Coach: Kak Dimas\n   • Monthly Fee: Rp0 (Free / Funded by School Operational BOS)\n   • Target: Mandatory for Grade 7, optional for Grade 8 & 9\n\n3. CLUB 3: ROBOTICS & CODING CLUB\n   • Training Days: Saturday morning (08.30 – 11.00 AM)\n   • Venue: Robotics Makerspace\n   • Coach: Mr. Indra\n   • Monthly Fee: Rp50.000 (microcontroller components & sensors)\n   • Target: Grade 7 & 8",
+      "gambar": [
+        "eval4_ekskul_table.png"
+      ]
+    },
+    "gambar": [
+      "eval4_ekskul_table.png"
+    ],
+    "teks_soal": "Which extracurricular club has NO monthly fee (Rp0 / Free) and is mandatory for all Grade 7 students?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Club 1: Badminton Club"
+      },
+      {
+        "label": "B",
+        "teks": "Club 2: Scout (Pramuka)"
+      },
+      {
+        "label": "C",
+        "teks": "Club 3: Robotics & Coding Club"
+      },
+      {
+        "label": "D",
+        "teks": "All clubs require a mandatory Rp100.000 fee."
+      }
+    ],
+    "kunci_jawaban": "B",
+    "pembahasan": "Tabel menunjukkan Club 2: Scout berbiaya Rp0 (gratis didanai BOS) dan wajib bagi siswa Kelas 7 (B)."
+  },
+  {
+    "nomor": 72,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 2: Extracurricular Activities",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Cost Calculation in Club Activities",
+    "capaian_pembelajaran": "Menghitung total biaya iuran kegiatan ekstrakurikuler dalam bahasa Inggris.",
+    "bacaan": {
+      "grup": "tabel_ekskul_smp",
+      "teks": "Refer to the Extracurricular Clubs table."
+    },
+    "gambar": [
+      "eval4_ekskul_table.png"
+    ],
+    "teks_soal": "Andre wants to join both the Badminton Club (Rp45.000/month) and Robotics Club (Rp50.000/month). What is his total monthly fee?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Rp45.000"
+      },
+      {
+        "label": "B",
+        "teks": "Rp50.000"
+      },
+      {
+        "label": "C",
+        "teks": "Rp95.000"
+      },
+      {
+        "label": "D",
+        "teks": "Rp150.000"
+      }
+    ],
+    "kunci_jawaban": "C",
+    "pembahasan": "Total iuran bulanan: Rp45.000 + Rp50.000 = Rp95.000 (C)."
+  },
+  {
+    "nomor": 73,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 2: Extracurricular Activities",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Club Scheduling & Eligibility",
+    "capaian_pembelajaran": "Menganalisis kesesuaian waktu latihan dan tingkatan kelas pada ekstrakurikuler.",
+    "bacaan": {
+      "grup": "tabel_ekskul_smp",
+      "teks": "Refer to the Extracurricular Clubs table."
+    },
+    "gambar": [
+      "eval4_ekskul_table.png"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nWhich two statements are TRUE based on the extracurricular schedule? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Badminton Club trains twice a week on Tuesday and Thursday afternoons."
+      },
+      {
+        "label": "B",
+        "teks": "Robotics Club holds its training sessions on Saturday mornings in the Makerspace."
+      },
+      {
+        "label": "C",
+        "teks": "Scout training is held at midnight on Sunday in the science laboratory."
+      },
+      {
+        "label": "D",
+        "teks": "Grade 7 students are strictly forbidden from joining any club."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Pilihan A benar (Badminton latihan Selasa & Kamis sore) dan B benar (Robotika latihan Sabtu pagi di Makerspace)."
+  },
+  {
+    "nomor": 74,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 2: Extracurricular Activities",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Extracurricular Verification",
+    "capaian_pembelajaran": "Memverifikasi keabsahan data tempat dan pelatih kegiatan sekolah.",
+    "bacaan": {
+      "grup": "tabel_ekskul_smp",
+      "teks": "Refer to the Extracurricular Clubs table."
+    },
+    "gambar": [
+      "eval4_ekskul_table.png"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the club table!",
+    "pernyataan": [
+      {
+        "teks": "Coach Bima is a certified PBSI coach leading the Badminton Club in Room 12.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Badminton Club and Robotics Club have a direct schedule conflict on Tuesday afternoon.",
+        "jawaban": "S"
+      },
+      {
+        "teks": "Club 2 (Scout) is funded by the school so students pay zero monthly fee.",
+        "jawaban": "B"
+      }
+    ],
+    "kunci_jawaban": "B,S,B",
+    "pembahasan": "(a) Benar: Pelatih bulutangkis adalah Coach Bima bersertifikat PBSI di Room 12. (b) Salah: Badminton Selasa/Kamis sore, sedangkan Robotika Sabtu pagi, jadi tidak ada bentrok jadwal. (c) Benar: Pramuka gratis didanai sekolah."
+  },
+  {
+    "nomor": 75,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 2: Extracurricular Activities",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Recommending Appropriate Activities",
+    "capaian_pembelajaran": "Memberikan rekomendasi kegiatan ekstrakurikuler yang sesuai dengan minat dan bakat teman.",
+    "bacaan": {
+      "grup": "tabel_ekskul_smp",
+      "teks": "Andre loves computer programming and building microcontrollers. Galang asks him which club he should sign up for."
+    },
+    "gambar": [
+      "eval4_ekskul_table.png"
+    ],
+    "teks_soal": "Which club is the MOST SUITABLE for Andre based on his hobby?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Club 3: Robotics & Coding Club on Saturday morning."
+      },
+      {
+        "label": "B",
+        "teks": "Cooking Club"
+      },
+      {
+        "label": "C",
+        "teks": "Traditional Dance Club"
+      },
+      {
+        "label": "D",
+        "teks": "Swimming Club"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Karena Andre gemar coding dan merakit komponen komputer, klub paling tepat adalah Robotics & Coding Club (A)."
+  },
+  {
+    "nomor": 76,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 3: School Festival",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Comparing Event Posters",
+    "capaian_pembelajaran": "Menganalisis dan membandingkan informasi teks poster pengumuman festival sekolah.",
+    "bacaan": {
+      "grup": "poster_festival_sekolah",
+      "teks": "Observe and compare the two school event posters below for questions number 76 to 80!\n\n[POSTER A: SCHOOL SCIENCE FAIR 2026]\n• Date & Time: Saturday, 14 November 2026 (08.00 AM – 02.00 PM)\n• Venue: School Main Hall\n• Participation Rule: Team of 3 Students (bring your own project materials; registration closes 10 November 2026)\n• Registration Fee: Free for all SMP students\n\n[POSTER B: ENGLISH STORYTELLING FESTIVAL 2026]\n• Date & Time: Sunday, 15 November 2026 (09.00 AM – 01.00 PM)\n• Venue: School Auditorium\n• Participation Rule: Individual / Solo Participant (7-minute Indonesian folktale in English; traditional costume is optional)\n• Registration Fee: Free for all SMP students",
+      "gambar": [
+        "bab21_school_festival_posters.jpg"
+      ]
+    },
+    "gambar": [
+      "bab21_school_festival_posters.jpg"
+    ],
+    "teks_soal": "What is the main difference between the participation rules in Poster A and Poster B?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Poster A requires a team of 3 students, whereas Poster B is for individual (solo) participants."
+      },
+      {
+        "label": "B",
+        "teks": "Poster A is only for teachers, while Poster B is for parents."
+      },
+      {
+        "label": "C",
+        "teks": "Poster A charges Rp200.000, while Poster B is completely free."
+      },
+      {
+        "label": "D",
+        "teks": "Poster A takes place on Monday morning at 6 AM."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Poster A mewajibkan tim beranggotakan 3 siswa (team of 3), sedangkan Poster B adalah kompetisi individu/solo (A)."
+  },
+  {
+    "nomor": 77,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 3: School Festival",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Comparing Event Duration & Schedule",
+    "capaian_pembelajaran": "Membandingkan durasi waktu dan tanggal pelaksanaan dua kegiatan festival sekolah.",
+    "bacaan": {
+      "grup": "poster_festival_sekolah",
+      "teks": "Refer to the School Event Posters."
+    },
+    "gambar": [
+      "bab21_school_festival_posters.jpg"
+    ],
+    "teks_soal": "Compare the duration of the two events! Which statement is CORRECT?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "The Science Fair lasts for 6 hours (08.00 AM – 02.00 PM), which is 2 hours longer than the Storytelling Festival (4 hours)."
+      },
+      {
+        "label": "B",
+        "teks": "Both events last for exactly 10 hours."
+      },
+      {
+        "label": "C",
+        "teks": "The Storytelling Festival lasts longer than the Science Fair."
+      },
+      {
+        "label": "D",
+        "teks": "The Science Fair only lasts for 30 minutes."
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Science Fair: 08.00–14.00 (6 jam). Storytelling Festival: 09.00–13.00 (4 jam). Selisihnya adalah 2 jam lebih lama (A)."
+  },
+  {
+    "nomor": 78,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 3: School Festival",
+    "tipe": "pg_kompleks",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Event Facts Analysis",
+    "capaian_pembelajaran": "Menganalisis jadwal dan tempat kompetisi festival.",
+    "bacaan": {
+      "grup": "poster_festival_sekolah",
+      "teks": "Refer to the School Event Posters."
+    },
+    "gambar": [
+      "bab21_school_festival_posters.jpg"
+    ],
+    "teks_soal": "[Pilihan Ganda Kompleks — Pilih Dua Jawaban Benar!]\nDimas wants to join both events with his friends. Which two statements are TRUE based on the posters? (Choose TWO correct answers)",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "Dimas can join the Science Fair on Saturday and the Storytelling Festival on Sunday because the dates do not conflict."
+      },
+      {
+        "label": "B",
+        "teks": "Both competitions are free of charge (free registration) for all SMP students."
+      },
+      {
+        "label": "C",
+        "teks": "Both events take place in the school swimming pool."
+      },
+      {
+        "label": "D",
+        "teks": "Students must pay a registration fee of Rp150.000 for each event."
+      }
+    ],
+    "kunci_jawaban": "A, B",
+    "pembahasan": "Pilihan A benar (Sabtu 14 Nov vs Minggu 15 Nov, jadwal tidak bentrok) dan B benar (kedua acara gratis untuk seluruh siswa SMP)."
+  },
+  {
+    "nomor": 79,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 3: School Festival",
+    "tipe": "benar_salah",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "True/False Festival Posters Verification",
+    "capaian_pembelajaran": "Memvalidasi rincian persyaratan lomba pada poster pengumuman.",
+    "bacaan": {
+      "grup": "poster_festival_sekolah",
+      "teks": "Refer to the School Event Posters."
+    },
+    "gambar": [
+      "bab21_school_festival_posters.jpg"
+    ],
+    "teks_soal": "[Tabel Benar / Salah (True or False)] Give a tick in the True or False column based on the posters!",
+    "pernyataan": [
+      {
+        "teks": "The School Science Fair is held in the School Main Hall on Saturday, 14 November 2026.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "In the Storytelling Festival, participants perform a 7-minute Indonesian folktale in English.",
+        "jawaban": "B"
+      },
+      {
+        "teks": "Wearing expensive traditional costumes is strictly mandatory for the Storytelling Festival.",
+        "jawaban": "S"
+      }
+    ],
+    "kunci_jawaban": "B,B,S",
+    "pembahasan": "(a) Benar: Science Fair di Aula Utama pada Sabtu 14 Nov. (b) Benar: Storytelling berdurasi 7 menit berbahasa Inggris tentang cerita rakyat Indonesia. (c) Salah: Kostum tradisional bersifat opsional (optional), bukan wajib."
+  },
+  {
+    "nomor": 80,
+    "semester": "Semester 2",
+    "chapter": "Chapter 5: This is My School",
+    "unit": "Unit 3: School Festival",
+    "tipe": "pg_sederhana",
+    "tingkatKelas": "7",
+    "jenjang": "SMP",
+    "fase": "D",
+    "mapel": "Bahasa Inggris",
+    "materi": "Congratulating Expressions in School Events",
+    "capaian_pembelajaran": "Mengucapkan ucapan selamat (congratulations) atas prestasi teman dalam festival sekolah.",
+    "bacaan": null,
+    "gambar": [],
+    "teks_soal": "Dimas wins First Place in the English Storytelling Festival. What should his classmates say to congratulate him?",
+    "opsi_jawaban": [
+      {
+        "label": "A",
+        "teks": "”Congratulations on winning first prize, Dimas! Your storytelling was truly inspiring.”"
+      },
+      {
+        "label": "B",
+        "teks": "”I am so sorry for your terrible loss.”"
+      },
+      {
+        "label": "C",
+        "teks": "”Don’t mention it, you are welcome.”"
+      },
+      {
+        "label": "D",
+        "teks": "”Please forgive me for not knowing you.”"
+      }
+    ],
+    "kunci_jawaban": "A",
+    "pembahasan": "Ucapan selamat yang tepat atas kemenangan juara 1 adalah: \"Congratulations on winning first prize, Dimas! Your storytelling was truly inspiring\" (A)."
+  }
+]
