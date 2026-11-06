@@ -24,20 +24,31 @@ def to_base64_uri(filename):
         with open(path, 'rb') as f:
             b64 = base64.b64encode(f.read()).decode('utf-8')
         ext = filename.split('.')[-1]
-        return f"data:image/{ext};base64,{b64}"
+        mime = 'jpeg' if ext in ['jpg', 'jpeg'] else ext
+        return f"data:image/{mime};base64,{b64}"
     return f"/soal/bahasa-inggris/{filename}"
 
+# URIs
 monita_andre_uri = to_base64_uri('monita_andre_profile.png')
 bab5_jadwal_uri = to_base64_uri('bab5_jadwal_7a_7b.png')
-eval4_nutrition_uri = to_base64_uri('eval4_nutrition_facts.png')
+bab8_backpacks_uri = to_base64_uri('bab8_backpacks_table.png')
+bab19_procedure_uri = to_base64_uri('bab19_procedure_self_watering_pot.jpg')
+eval4_nutrition_uri = to_base64_uri('eval4_nutrition_facts_highres.jpg')
+eval4_bekantan_uri = to_base64_uri('eval4_bekantan_orangutan.jpg')
 eval4_ekskul_uri = to_base64_uri('eval4_ekskul_table.png')
+
+# 10 clock pictures for Bab 5 Soal 1-10
+clock_uris = {}
+for i in range(1, 11):
+    clock_uris[i] = to_base64_uri(f'bab5_clock_soal{i}.png')
 
 # Attach visual stimuli to Bab 1
 for s in soal_list_bab1:
-    if s.get('bacaan') and s['bacaan'].get('grup') == 'tabel_profil_monita_andre':
+    if 20 <= s['nomor'] <= 24:
         s['gambar'] = [monita_andre_uri]
-        s['bacaan']['gambar'] = [monita_andre_uri]
-        s['bacaan']['custom_html'] = f'''<p>Compare the two student profile cards below for questions number 20 to 24!</p>
+        if s.get('bacaan'):
+            s['bacaan']['gambar'] = [monita_andre_uri]
+            s['bacaan']['custom_html'] = f'''<p>Compare the two student profile cards below for questions number 20 to 24!</p>
 <div class="figure-container"><img src="{monita_andre_uri}" alt="Profile Cards of Monita and Andre" style="max-width:100%; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin:8px 0;"/></div>
 <table border="1" style="border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 0.9em;">
   <thead>
@@ -68,7 +79,10 @@ for s in soal_list_bab1:
 
 # Attach visual stimuli to Bab 5
 for s in soal_list_bab5:
-    if 31 <= s['nomor'] <= 35:
+    num = s['nomor']
+    if 1 <= num <= 10:
+        s['gambar'] = [clock_uris[num]]
+    elif 31 <= num <= 35:
         s['gambar'] = [bab5_jadwal_uri]
         if s.get('bacaan'):
             s['bacaan']['gambar'] = [bab5_jadwal_uri]
@@ -106,15 +120,81 @@ for s in soal_list_bab5:
   </tbody>
 </table>'''
 
+# Attach visual stimuli to Bab 8
+for s in DATA_BAB8:
+    s['gambar'] = [bab8_backpacks_uri]
+    if s.get('bacaan'):
+        s['bacaan']['gambar'] = [bab8_backpacks_uri]
+        s['bacaan']['custom_html'] = f'''<p>Study the comparison table of three student backpacks below and answer questions number 31 to 35!</p>
+<div class="figure-container"><img src="{bab8_backpacks_uri}" alt="Comparison Table of Three Backpacks" style="max-width:100%; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin:8px 0;"/></div>
+<table class="matrix-box" border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+  <thead>
+    <tr style="background-color: #f1f5f9;">
+      <th style="padding: 6px;">Specification</th>
+      <th style="padding: 6px;">AERO BAG</th>
+      <th style="padding: 6px;">TERRA PACK</th>
+      <th style="padding: 6px;">NOVA TOTE</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 6px; font-weight: bold;">Price</td>
+      <td style="padding: 6px;">Rp185.000</td>
+      <td style="padding: 6px;">Rp240.000</td>
+      <td style="padding: 6px;">Rp150.000</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px; font-weight: bold;">Weight</td>
+      <td style="padding: 6px;">450 grams</td>
+      <td style="padding: 6px;">700 grams</td>
+      <td style="padding: 6px;">450 grams</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px; font-weight: bold;">Capacity (Books)</td>
+      <td style="padding: 6px;">8 thick books</td>
+      <td style="padding: 6px;">12 thick books</td>
+      <td style="padding: 6px;">5 thick books</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px; font-weight: bold;">Waterproof Rating</td>
+      <td style="padding: 6px;">Water-resistant</td>
+      <td style="padding: 6px;">100% Waterproof</td>
+      <td style="padding: 6px;">Not waterproof</td>
+    </tr>
+  </tbody>
+</table>'''
+
+# Attach visual stimuli to Bab 19
+for s in DATA_BAB19:
+    s['gambar'] = [bab19_procedure_uri]
+    if s.get('bacaan'):
+        s['bacaan']['gambar'] = [bab19_procedure_uri]
+        s['bacaan']['custom_html'] = f'''<p>Study the 4-step visual procedure guide below and answer questions number 51 to 55!</p>
+<div class="figure-container"><img src="{bab19_procedure_uri}" alt="4-Step Visual Procedure Guide: Self-Watering Pot" style="max-width:100%; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin:8px 0;"/></div>
+<p><strong>How to Make a Self-Watering Plant Pot from a Used Plastic Bottle</strong></p>
+<p><strong>Materials:</strong> A 1.5-liter used plastic bottle, a cutter/scissors, a nail, a thick cotton string (20 cm), water, soil, and a small plant seedling.</p>
+<p><strong>Steps:</strong><br/>
+1. <strong>Step 1:</strong> Cut the plastic bottle in half using a cutter and scissors so you have a bottom part and a top part.<br/>
+2. <strong>Step 2:</strong> Make a small hole in the bottle cap using a nail, then thread the cotton string through the hole.<br/>
+3. <strong>Step 3:</strong> Fill the bottom half of the bottle with water, then place the top half upside down (inverted) into the bottom half so the cotton string touches the water.<br/>
+4. <strong>Step 4:</strong> Put fertile soil into the inverted top half using a small trowel and plant your seedling. The cotton string will absorb water up into the soil automatically!</p>'''
+
 # Attach visual stimuli to Evaluasi 4
 for s in soal_list_eval4:
-    if 1 <= s['nomor'] <= 6:
+    num = s['nomor']
+    if 1 <= num <= 6:
         s['gambar'] = [eval4_nutrition_uri]
         if s.get('bacaan'):
             s['bacaan']['gambar'] = [eval4_nutrition_uri]
             s['bacaan']['custom_html'] = f'''<p>Observe and compare the two Nutrition Facts labels below for questions number 1 to 6!</p>
-<div class="figure-container"><img src="{eval4_nutrition_uri}" alt="Nutrition Facts Comparison" style="max-width:100%; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin:8px 0;"/></div>'''
-    elif 14 <= s['nomor'] <= 19:
+<div class="figure-container"><img src="{eval4_nutrition_uri}" alt="Nutrition Facts Comparison: Fresh Oat Milk vs Choco Malt" style="max-width:100%; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin:8px 0;"/></div>'''
+    elif 7 <= num <= 13:
+        s['gambar'] = [eval4_bekantan_uri]
+        if s.get('bacaan'):
+            s['bacaan']['gambar'] = [eval4_bekantan_uri]
+            s['bacaan']['custom_html'] = f'''<p>Compare the two Report Texts and wildlife illustration below for questions number 7 to 13!</p>
+<div class="figure-container"><img src="{eval4_bekantan_uri}" alt="Bekantan in Mangrove vs Orangutan in Rainforest" style="max-width:100%; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.12); margin:8px 0;"/></div>'''
+    elif 14 <= num <= 19:
         s['gambar'] = [eval4_ekskul_uri]
         if s.get('bacaan'):
             s['bacaan']['gambar'] = [eval4_ekskul_uri]
@@ -184,9 +264,10 @@ def generate_article(s, paket_nama, cp_default):
                 p_html = ''.join([f'<p>{p.replace(chr(10), "<br/>")}</p>' for p in paragraphs if p.strip()])
                 bacaan_html = f'<div data-field="bacaan" data-grup="{grp}">{p_html}</div>'
 
+    # ALWAYS output data-field="gambar" if image exists so parser populates q.gambar
     gambar_html = ''
-    if norm.get('gambar') and not norm.get('bacaan', {}).get('custom_html'):
-        imgs = ''.join([f'<img src="{g}" alt="Ilustrasi Soal {num}" />' for g in norm['gambar']])
+    if norm.get('gambar'):
+        imgs = ''.join([f'<img src="{g}" alt="Gambar Stimulus Soal {num}" />' for g in norm['gambar']])
         gambar_html = f'<div data-field="gambar">{imgs}</div>'
 
     opsi_html = ''
@@ -289,7 +370,9 @@ def build_package(raw_soal_list, filename_prefix, title, paket_nama, cp):
         f.write(full_html)
     with open(json_file, 'w', encoding='utf-8') as f:
         json.dump(normalized_list, f, indent=2, ensure_ascii=False)
-    print(f'Package [{paket_nama}]: {len(normalized_list)} soal -> {html_file}')
+    
+    img_count = sum(1 for s in normalized_list if len(s.get('gambar', [])) > 0)
+    print(f'Package [{paket_nama}]: {len(normalized_list)} soal ({img_count} bergambar) -> {html_file}')
     return articles, normalized_list
 
 # 1. Bab 1
@@ -386,7 +469,9 @@ all_soal_json = norm1 + norm2 + norm5 + norm8 + norm16 + norm19 + norm_eval4
 with open(master_json_file, 'w', encoding='utf-8') as f:
     json.dump(all_soal_json, f, indent=2, ensure_ascii=False)
 
+total_bergambar = sum(1 for s in all_soal_json if len(s.get('gambar', [])) > 0)
 print(f'\n=== MASTER PACKAGE COMPILED SUCCESSFULLY ===')
 print(f'Total butir soal Kelas 7 terkompilasi: {len(all_soal_json)} butir!')
+print(f'Total butir soal dengan gambar visual: {total_bergambar} butir!')
 print(f'HTML Master: {master_html_file}')
 print(f'JSON Master: {master_json_file}')

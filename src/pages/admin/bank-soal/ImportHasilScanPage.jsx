@@ -3926,6 +3926,7 @@ Ikuti PERSIS format/skema HTML di bawah ini buat cara nulis soalnya (struktur da
 
     const denganGambar = soalList.filter(q =>
       safeArray(q.gambar).some(image => Boolean(getImageSrc(image))) ||
+      (q.bacaan && safeArray(q.bacaan.gambar).some(image => Boolean(getImageSrc(image)))) ||
       q.opsi_jawaban.some(opt => safeArray(opt.gambar).some(image => Boolean(getImageSrc(image)))),
     ).length;
 
@@ -5789,15 +5790,17 @@ function QuestionPreview({ question, mathReady, onCropImage, imageStatus = {}, d
   // menambahkan gambar ke SOAL APA PUN, bukan cuma yang kebetulan lolos
   // deteksi kata kunci AI.
   const gambarSoal = safeArray(q.gambar);
+  const gambarBacaan = q.bacaan ? safeArray(q.bacaan.gambar) : [];
   const semuaGambar = [
-    ...(gambarSoal.length > 0
-      ? gambarSoal.map((img, i) => ({ img, location: 'soal', imageIndex: i, label: `Gambar soal #${i + 1}` }))
-      : [{ img: {}, location: 'soal', imageIndex: 0, label: 'Gambar soal (belum ada)' }]),
-    ...(q.bacaan ? safeArray(q.bacaan.gambar).map((img, i) => ({ img, location: 'bacaan', imageIndex: i, label: `Gambar bacaan #${i + 1}` })) : []),
+    ...(gambarSoal.map((img, i) => ({ img, location: 'soal', imageIndex: i, label: `Gambar soal #${i + 1}` }))),
+    ...(gambarBacaan.map((img, i) => ({ img, location: 'bacaan', imageIndex: i, label: `Gambar bacaan #${i + 1}` }))),
     ...safeArray(q.opsi_jawaban).flatMap((opt, oi) =>
       safeArray(opt.gambar).map((img, i) => ({ img, location: { opsi: oi }, imageIndex: i, label: `Gambar opsi ${optionLetter(oi)} #${i + 1}` })),
     ),
   ];
+  if (semuaGambar.length === 0) {
+    semuaGambar.push({ img: {}, location: 'soal', imageIndex: 0, label: 'Gambar soal (belum ada)' });
+  }
 
   // Ringkasan status gambar soal ini -- dipakai buat badge peringatan
   // di header kartu soal.
