@@ -81,7 +81,7 @@ export function alasanKelayakan(soal) {
   }
 
   if (teks && RE_MENUNJUK_VISUAL.test(teks)) {
-    const punyaGambar = (Array.isArray(soal.gambar) && soal.gambar.some((g) => g && (g.url || g.uploadedUrl)))
+    const punyaGambar = (Array.isArray(soal.gambar) && soal.gambar.some((g) => g && (g.url || g.uploadedUrl || g.dataUrl)))
       || bermakna.some((o) => (typeof o === 'object' && (o.gambar || []).length));
     const punyaTabel = (Array.isArray(soal.tabel_soal) && soal.tabel_soal.length)
       || bermakna.some((o) => (typeof o === 'object' && (o.tabel || []).length));
